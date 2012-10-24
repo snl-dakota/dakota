@@ -120,7 +120,8 @@ usage: dakota [options and <args>]
         -output <$val> (Redirect DAKOTA standard output to file $val)
         -error <$val> (Redirect DAKOTA standard error to file $val)
         -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
-        -check (Perform input checks)
+	-no_input_echo (Do not echo DAKOTA input file)
+	-check (Perform input checks)
         -pre_run [$val] (Perform pre-run (variables generation) phase)
         -run [$val] (Perform run (model evaluation) phase)
         -post_run [$val] (Perform post-run (final results) phase)
@@ -142,7 +143,11 @@ checked for errors, but the study is not performed. The
 ``\texttt{-input}'' option provides the name of the DAKOTA input file.
 The ``\texttt{-output}'' and ``\texttt{-error}'' options provide file
 names for redirection of the DAKOTA standard output (stdout) and
-standard error (stderr), respectively.  The ``\texttt{-parser}'' input
+standard error (stderr), respectively.  By default, DAKOTA will echo
+the input file to the output stream, but ``\texttt{-no_input_echo}''
+can override this behavior.
+
+The ``\texttt{-parser}'' input
 is for debugging and will not be further described here.  The
 ``\texttt{-read\_restart}'' and ``\texttt{-write\_restart}'' command
 line inputs provide the names of restart databases to read from and

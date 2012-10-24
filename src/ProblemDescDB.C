@@ -186,6 +186,7 @@ manage_inputs(CommandLineHandler& cmd_line_handler)
   else {
     const char* dakota_input_file = NULL;
     const char* parser_options    = NULL;
+    bool echo_input = true;
     if (parallelLib.world_rank() == 0) {// only the master parses the input file
 
       // retrieve the name of the DAKOTA input file from the command line
@@ -195,10 +196,12 @@ manage_inputs(CommandLineHandler& cmd_line_handler)
       parser_options = cmd_line_handler.retrieve("parser");
       if (!parser_options)
 	parser_options = std::getenv("DAKOTA_PARSER");
+
+      echo_input = !cmd_line_handler.retrieve("no_input_echo");
     }
 
     // process the input file with options (no callbacks)
-    manage_inputs(dakota_input_file, parser_options);
+    manage_inputs(dakota_input_file, parser_options, echo_input);
   }
 }
 
@@ -207,15 +210,17 @@ manage_inputs(CommandLineHandler& cmd_line_handler)
     post-process the data on all processors. */
 void ProblemDescDB::
 manage_inputs(const char* dakota_input_file, const char* parser_options,
+	      bool echo_input,
 	      void (*callback)(void*), void *callback_data)
 {
   if (dbRep)
-    dbRep->manage_inputs(dakota_input_file, parser_options,
+    dbRep->manage_inputs(dakota_input_file, parser_options, echo_input,
 			 callback, callback_data);
   else {
     // parse the input file, execute the callback (if present), and
     // check the keyword counts
-    parse_inputs(dakota_input_file, parser_options, callback, callback_data);
+    parse_inputs(dakota_input_file, parser_options, echo_input,
+		 callback, callback_data);
 
     // bcast a minimal MPI buffer containing the input specification
     // data prior to post-processing
@@ -233,14 +238,15 @@ manage_inputs(const char* dakota_input_file, const char* parser_options,
     perform basic checks on keyword counts. */
 void ProblemDescDB::
 parse_inputs(const char* dakota_input_file, const char* parser_options,
-	     void (*callback)(void*), void *callback_data)
+	     bool echo_input, void (*callback)(void*), void *callback_data)
 {
   if (dbRep)
-    dbRep->parse_inputs(dakota_input_file, parser_options,
+    dbRep->parse_inputs(dakota_input_file, parser_options, echo_input,
 			callback, callback_data);
   else {
     // Only the master parses the input file.
     if (parallelLib.world_rank() == 0) {
+
       // Parse the input file using one of the derived parser-specific classes
       derived_parse_inputs(dakota_input_file, parser_options);
 
@@ -253,7 +259,7 @@ parse_inputs(const char* dakota_input_file, const char* parser_options,
 
       // Check to make sure at least one of each of the keywords was found
       // in the problem specification file
-      check_input();
+      check_input(dakota_input_file, echo_input);
     }
   }
 }
@@ -347,15 +353,18 @@ void ProblemDescDB::derived_post_process()
 }
 
 
-void ProblemDescDB::check_input()
+void ProblemDescDB::check_input(const char* dakota_input_file, bool echo_input)
 {
   if (dbRep)
-    dbRep->check_input();
+    dbRep->check_input(dakota_input_file, echo_input);
   else {
     // NOTE: when using library mode in a parallel application, check_input()
     // should either be called only on worldRank 0, or it should follow a
     // matched send_db_buffer()/receive_db_buffer() pair.
 
+    if (echo_input)
+      echo_input_file(dakota_input_file);
+ 
     int num_errors = 0;
     //if (!strategyCntr) { // Allow strategy omission (default = single_method)
     //  Cerr << "No strategy specification found in input file.\n";
@@ -2886,6 +2895,52 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 	}
   }
   Bad_name(entry_name, "set(StringArray&)");
+}
+
+
+void ProblemDescDB::echo_input_file(const char* dakota_input_file)
+{
+  // Generate the startup header, now that streams are potentially
+  // reassigned in ParallelLibrary manage_outputs_restart()
+  Cout << parallelLib.startup_message(); 
+  std::time_t curr_time = std::time(NULL);
+  std::string pretty_time(std::asctime(std::localtime(&curr_time))); 
+  Cout << "Start time: " << pretty_time << std::endl;
+
+  if (dakota_input_file) {
+    bool input_is_stdin = 
+      (dakota_input_file[0] == '-' && !dakota_input_file[1]);
+    if (!input_is_stdin) {
+      std::ifstream inputstream(dakota_input_file);
+      if (!inputstream.good()) {
+	Cerr << "\nError: Could not open input file '" << dakota_input_file 
+	     << "' for reading." << std::endl;
+	abort_handler(-1);
+      }
+
+      // want to output FQ path, but only valid in BFS v3; need wrapper
+      //boost::filesystem::path bfs_file(dakota_input_file);
+      //boost::filesystem::path bfs_abs_path = bfs_file.absolute();
+
+      // header to span the potentially long filename
+      size_t header_len = std::max((size_t) 23, 
+				   std::strlen(dakota_input_file));
+      std::string header(header_len, '-');
+      Cout << header << '\n';
+      Cout << "Begin DAKOTA input file\n";
+      Cout << dakota_input_file << "\n"; 
+      Cout << header << std::endl;
+      int inputchar = inputstream.get();
+      while (inputstream.good()) {
+	Cout << (char) inputchar;
+	inputchar = inputstream.get();
+      }
+      Cout << "---------------------\n";
+      Cout << "End DAKOTA input file\n";
+      Cout << "---------------------\n" << std::endl;
+    }
+  }
+
 }
 
 } // namespace Dakota

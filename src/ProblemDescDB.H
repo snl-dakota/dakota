@@ -109,6 +109,7 @@ public:
   /// library_mode.C.
   void manage_inputs(const char* dakota_input_file,
 		     const char* parser_options = NULL,
+		     bool echo_input = true,
 		     void(*callback)(void*) = NULL, void* callback_data = NULL);
   /// parses the input file and populates the problem description database.
   /// This function reads from the dakota input filename passed in and
@@ -118,11 +119,12 @@ public:
   /// have been provided.
   void parse_inputs(const char* dakota_input_file,
 		    const char* parser_options = NULL,
+		    bool echo_input = true,
 		    void(*callback)(void*) = NULL, void* callback_data = NULL);
 
   /// verifies that there is at least one of each of the required
   /// keywords in the dakota input file.  Used by parse_inputs().
-  void check_input();
+  void check_input(const char* dakota_input_file = NULL, bool echo_input = true);
   /// invokes send_db_buffer() and receive_db_buffer() to broadcast DB
   /// data across the processor allocation.  Used by manage_inputs().
   void broadcast();
@@ -370,6 +372,8 @@ private:
   /// and dataResponsesList.  Used by manage_inputs().
   void receive_db_buffer();
 
+  /// echo the (potentially) specified input file to stdout
+  void echo_input_file(const char* dakota_input_file);
 
   //
   //- Heading: Data

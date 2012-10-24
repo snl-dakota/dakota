@@ -13,9 +13,9 @@
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
 #include "DakotaBuildInfo.H"
-#ifdef DAKOTA_HAVE_MPI
-#include <mpi.h>
-#endif // DAKOTA_HAVE_MPI
+// #ifdef DAKOTA_HAVE_MPI
+// #include <mpi.h>
+// #endif // DAKOTA_HAVE_MPI
 #include <string>
 
 
@@ -354,6 +354,9 @@ void CommandLineHandler::initialize_options()
   enroll("parser",  GetLongOpt::MandatoryValue,
 	 "Parsing technology: nidr[strict][:dumpfile]", NULL);
 
+  enroll("no_input_echo", GetLongOpt::Valueless, 
+	 "Do not echo DAKOTA input file", NULL);
+
   // run mode options
   enroll("check",   GetLongOpt::Valueless, "Perform input checks", NULL);
 
@@ -407,13 +410,19 @@ void CommandLineHandler::check_usage(int argc, char** argv)
 //#endif // USE_MPI
   }
 
+  // potentially re-assign Cout/Cerr to file streams, keeping this
+  // class self-contained and independent of ParallelLibrary
+  assign_streams();
+
   if (retrieve("help") != NULL) {
+    // usage may be version-specific, so include it
+    output_version();
     usage();
     return;  // no further processing for usage
   }
 
   if (retrieve("version") != NULL) {
-    output_version(Cout);
+    output_version();
     return;  // no further processing for version
   }
 
@@ -422,7 +431,7 @@ void CommandLineHandler::check_usage(int argc, char** argv)
       GetLongOpt::store("input", argv[optind]);
     else {
       usage();
-      Cerr << "Missing input file command line argument." << std::endl;
+      output_helper("Missing input file command line argument.", Cerr);
       abort_handler(-1);
     }
   }
@@ -431,30 +440,85 @@ void CommandLineHandler::check_usage(int argc, char** argv)
   if (retrieve("pre_run") != NULL && retrieve("run") == NULL && 
       retrieve("post_run") != NULL) {
     usage();
-    Cerr <<  "\nRun phase '-run' is required when specifying both '-pre_run' "
-	 << "and '-post_run'." << std::endl;
+    std::string err_msg("\nRun phase '-run' is required when specifying both ");
+    err_msg += "'-pre_run' and '-post_run'.";
+    output_helper(err_msg, Cerr);
     abort_handler(-1);
   }
 
   if (retrieve("read_restart") == NULL && retrieve("stop_restart") != NULL) {
     usage();
-    Cerr <<  "\nread_restart is REQUIRED for use with stop_restart." << std::endl;
+    output_helper("\nread_restart is REQUIRED for use with stop_restart.", Cerr);
     abort_handler(-1);
   }
 
   cs = retrieve("parser");
   if (cs /*&& std::strncmp(cs,"idr",3)*/ && std::strncmp(cs,"nidr",4)) {
     usage();
-    Cerr << "\n-parser must specify nidr...." << std::endl;
+    output_helper("\n-parser must specify nidr....", Cerr);
     abort_handler(-1);
   }
   
   // always output version before run proceeds
-  output_version(Cout);
+  output_version();
+
+  reset_streams();
 }
 
 
-void CommandLineHandler::output_version(std::ostream& s) const
+/** Redirect output/error to files, including output from this
+    class. If there is a valid ParallelLibrary, only redirect on rank
+    0 to avoid file clash. */
+void CommandLineHandler::assign_streams()
+{
+  if (Dak_pl && Dak_pl->world_rank() > 0)
+    return;
+
+  if (retrieve("output")) {
+    std::string std_output_filename = retrieve("output");
+    output_ofstream.open(std_output_filename.c_str(), std::ios::out);
+    if (!output_ofstream.good()) {
+      std::string err_msg("\nError opening output file '" + std_output_filename);
+      err_msg += "'.";
+      output_helper(err_msg, Cerr);
+      abort_handler(-1);
+    }
+    dakota_cout = &output_ofstream;
+  }
+
+  if (retrieve("error")) {
+    std::string std_error_filename = retrieve("error");
+    error_ofstream.open(std_error_filename.c_str(), std::ios::out);
+    if (!error_ofstream.good()) {
+      std::string err_msg("\nError opening error file '" + std_error_filename);
+      err_msg += "'.";
+      output_helper(err_msg, Cerr);
+      abort_handler(-1);
+    }
+    dakota_cerr = &error_ofstream;
+  }
+  
+}
+
+
+void CommandLineHandler::reset_streams()
+{
+  if (Dak_pl && Dak_pl->world_rank() > 0)
+    return;
+
+  if (retrieve("output")) {
+    output_ofstream.close();
+    dakota_cout = &std::cout;
+  }
+
+  if (retrieve("error")) {
+    error_ofstream.close();
+    dakota_cerr = &std::cerr;
+  }
+}
+
+/** Version is always output to Cout */ 
+void CommandLineHandler::output_version() const
 {
   std::string version_info;
 
@@ -468,11 +532,17 @@ void CommandLineHandler::output_version(std::ostream& s) const
     + " built " + DakotaBuildInfo::getDate()
     + " " + DakotaBuildInfo::getTime() + ".";
 
-  if (Dak_pl)
-    Dak_pl->output_helper(version_info);
-  else
-    Cout << version_info << std::endl;
+  output_helper(version_info, Cout);
+}
 
+/** When there is a valid ParallelLibrary, output only on rank 0 */
+void CommandLineHandler::
+output_helper(const std::string message, std::ostream &os) const
+{
+ if (Dak_pl)
+   Dak_pl->output_helper(message, os);
+ else
+   os << message << std::endl;
 }
 
 } // namespace Dakota

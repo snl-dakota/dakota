@@ -185,6 +185,9 @@ public:
   /// Whether command line args dictate instantiation of objects for run
   bool instantiate_flag() const;
 
+  /// Whether steps beyond check are requested
+  bool run_flag() const;
+
 private:
 
   //
@@ -194,8 +197,25 @@ private:
   /// enrolls the supported command line inputs.
   void initialize_options();
 
+  /// conditionally associate Cout/Cerr with file streams, if specified by user
+  void assign_streams();
+  /// conditionally restore Cout/Cerr to default
+  void reset_streams();
+
   /// outputs the DAKOTA version
-  void output_version(std::ostream& s) const;
+  void output_version() const;
+
+  /// perform output of message to ostream os on rank 0 only
+  void output_helper(const std::string message, std::ostream &os) const;
+
+  //
+  //- Heading: Data
+  //
+
+  // Define these locally to keep CLH self-contained
+  std::ofstream output_ofstream; ///< temporary file redirection of stdout
+  std::ofstream error_ofstream;  ///< temporary file redirection of stderr
+
 };
 
 
@@ -220,7 +240,16 @@ inline int CommandLineHandler::read_restart_evals() const
 /** Instantiate objects if not just getting help or version */
 inline bool CommandLineHandler::instantiate_flag() const
 {
-  return !(retrieve("help") || retrieve("version"));
+  if (retrieve("help") || retrieve("version"))
+    return false;
+  return true;
+}
+
+inline bool CommandLineHandler::run_flag() const
+{
+  if (retrieve("help") || retrieve("version") || retrieve("check"))
+    return false;
+  return true;
 }
 
 } // namespace Dakota

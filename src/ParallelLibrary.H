@@ -418,8 +418,11 @@ public:
   /// finalize MPI with correct communicator for abort
   void abort_helper(int code) const;
 
-  /// perform stdout on rank 0 only
-  void output_helper(const std::string& s, std::ostream &outfile = Cout) const;
+  /// get pretty startup message
+  const std::string& startup_message() const;
+
+  /// perform output of message on rank 0 only
+  void output_helper(const std::string& message, std::ostream &os = Cout) const;
 
   // Functions to get run_mode data
   bool command_line_check() const;      ///< return checkFlag
@@ -591,6 +594,9 @@ private:
   /// initialize DAKOTA and UTILIB timers
   void initialize_timers();
 
+  /// conditionally output timers in destructor
+  void output_timers();
+
   /// split a parent communicator into child server communicators
   void init_communicators(const ParallelLevel& parent_pl,
     const int& num_servers, const int& procs_per_server,
@@ -677,6 +683,11 @@ private:
   void split_filenames(const char * filenames, std::string& input_filename,
 		       std::string& output_filename);
 
+  /// potentially reassign streams during initial specification of
+  /// output and error files; may later get overridden with tagged
+  /// files.
+  void assign_streams(bool append);
+
 
   //
   //- Heading: Data
@@ -696,6 +707,9 @@ private:
   bool stdOutputToFile; ///< flags redirection of DAKOTA std output to a file
   bool stdErrorToFile;  ///< flags redirection of DAKOTA std error to a file
 
+  /// cached startup message for use in check_inputs
+  std::string startupMessage;
+
   // run mode flags and I/O files
   // Could condense flags into a bit-wise short, but using bool for
   // now for clarity; could use map or vector with enum for Strings
@@ -709,6 +723,7 @@ private:
   bool runFlag;         ///< flags invocation with command line option -run
   bool postRunFlag;     ///< flags invocation with command line option -post_run
   bool userModesFlag;   ///< whether user run mdoes are active
+  bool outputTimings;   ///< timing info only beyond help/version/check
   std::string preRunInput;   ///< filename for pre_run input
   std::string preRunOutput;  ///< filename for pre_run output
   std::string runInput;      ///< filename for run input
@@ -948,7 +963,9 @@ inline void ParallelLibrary::free_evaluation_communicators()
 inline void ParallelLibrary::free_analysis_communicators()
 { free_communicators(*currPCIter->eaPLIter); }
 
-
+inline const std::string& ParallelLibrary::startup_message() const
+{ return startupMessage; }
+  
 inline bool ParallelLibrary::command_line_check() const
 { return checkFlag; }
 

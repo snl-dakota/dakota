@@ -51,7 +51,8 @@ extern ParallelLibrary *Dak_pl;
     the real ParallelLibrary object is not available. */
 ParallelLibrary::ParallelLibrary(const std::string& dummy): 
   dummyFlag(true), checkFlag(false),
-  preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false)
+  preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
+  outputTimings(false)
 { }
 
 
@@ -61,8 +62,8 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
   dakotaMPIComm(MPI_COMM_WORLD), worldRank(0), worldSize(1), mpirunFlag(false), 
   ownMPIFlag(false), dummyFlag(false), stdOutputToFile(false),
   stdErrorToFile(false), checkFlag(false), preRunFlag(true), 
-  runFlag(true), postRunFlag(true), userModesFlag(false), startClock(0),
-  stopRestartEvals(0),
+  runFlag(true), postRunFlag(true), userModesFlag(false), outputTimings(false),
+  startClock(0), stopRestartEvals(0),
   currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
 {
   // detect parallel launch of DAKOTA using mpirun/mpiexec/poe/etc.
@@ -90,7 +91,7 @@ ParallelLibrary::ParallelLibrary(): dakotaMPIComm(MPI_COMM_WORLD), worldRank(0),
   worldSize(1), mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
   stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
   preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
-  startClock(0), stopRestartEvals(0),
+  outputTimings(true), startClock(0), stopRestartEvals(0),
   currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
 {
   initialize_timers();
@@ -116,7 +117,7 @@ ParallelLibrary::ParallelLibrary(MPI_Comm dakota_mpi_comm):
   mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
   stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
   preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false), 
-  startClock(0), stopRestartEvals(0),
+  outputTimings(true), startClock(0), stopRestartEvals(0),
   currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
 {
   initialize_timers();
@@ -153,12 +154,12 @@ void ParallelLibrary::init_mpi_comm()
     pl.serverIntraComm = MPI_COMM_NULL;
 
   if (worldSize > 1) {
-    if (worldRank==0)
-      Cout << "Running MPI executable in parallel on " << worldSize 
-           << " processors.\n";
+    startupMessage = "Running MPI executable in parallel on ";
+    startupMessage += boost::lexical_cast<std::string>(worldSize) + 
+      " processors.\n";
   }
   else
-    Cout << "Running MPI executable in serial mode.\n";
+    startupMessage = "Running MPI executable in serial mode.\n";
 #else // mpi not available
   if (mpirunFlag) {
     Cerr << "Error: Attempting to run serial executable in parallel."
@@ -167,7 +168,7 @@ void ParallelLibrary::init_mpi_comm()
   }
   else { // use defaults: worldRank = 0, worldSize = 1
     pl.serverIntraComm = MPI_COMM_NULL;
-    Cout << "Running serial executable in serial mode.\n";
+    startupMessage = "Running serial executable in serial mode.\n";
   }
 #endif // DAKOTA_HAVE_MPI
 
@@ -982,7 +983,6 @@ void ParallelLibrary::print_configuration()
   // worldRank == 0 prints configuration
   // -----------------------------------
   if (worldRank == 0) { // does all output
-    using std::cout;
     using std::setw;
 
     int  num_eval_srv = ie_pl.numServers, p_per_eval = ie_pl.procsPerServer;
@@ -998,7 +998,7 @@ void ParallelLibrary::print_configuration()
     }
 
     // Strategy diagnostics
-    cout << "\n---------------------------------------------------------------"
+    Cout << "\n---------------------------------------------------------------"
 	 << "--------------\nDAKOTA parallel configuration:\n\n"
 	 << "Level\t\t\tnum_servers    procs_per_server    partition/"
 	 << "schedule\n-----\t\t\t-----------    ----------------    "
@@ -1006,28 +1006,28 @@ void ParallelLibrary::print_configuration()
          << si_pl.numServers << "\t\t   " << setw(4) << si_pl.procsPerServer
 	 << "\t\t     ";
     if (si_pl.dedicatedMasterFlag)
-      cout << "ded. master/self\n";
+      Cout << "ded. master/self\n";
     else
-      cout << "peer/static\n";
+      Cout << "peer/static\n";
 
     // Iterator diagnostics
-    cout << "concurrent evaluations\t  " << setw(4) << num_eval_srv << "\t\t   "
+    Cout << "concurrent evaluations\t  " << setw(4) << num_eval_srv << "\t\t   "
 	 << setw(4) << p_per_eval << "\t\t     ";
     if (iterator_ded_master_flag)
-      cout << "ded. master/self\n";
+      Cout << "ded. master/self\n";
     else
-      cout << "peer/static\n";
+      Cout << "peer/static\n";
 
     // Evaluation diagnostics
-    cout << "concurrent analyses\t  " << setw(4) << num_anal_srv << "\t\t   "
+    Cout << "concurrent analyses\t  " << setw(4) << num_anal_srv << "\t\t   "
 	 << setw(4) << p_per_anal << "\t\t     ";
     if (eval_ded_master_flag)
-      cout << "ded. master/self\n";
+      Cout << "ded. master/self\n";
     else
-      cout << "peer/static\n";
+      Cout << "peer/static\n";
 
     // Analysis diagnostics
-    cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
+    Cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
          << "\t\t     N/A\t        N/A\n\nTotal parallelism levels =   " 
          << par_levels << "\n-------------------------------------------------"
 	 << "----------------------------" << std::endl;
@@ -1067,6 +1067,7 @@ specify_outputs_restart(CommandLineHandler& cmd_line_handler)
     stopRestartEvals     = cmd_line_handler.read_restart_evals();
 
     manage_run_modes(cmd_line_handler);
+    assign_streams(true);
   }
 }
 
@@ -1107,6 +1108,8 @@ specify_outputs_restart(const char* clh_std_output_filename,
     userModesFlag = preRunFlag = true;
     runFlag = postRunFlag = false;
   }
+  
+  assign_streams(false);
 }
 
 
@@ -1134,6 +1137,9 @@ void ParallelLibrary::manage_run_modes(CommandLineHandler& cmd_line_handler)
   }
   else
     userModesFlag = true;  // one or more active user modes
+
+  // override timing output default if proceeding to run
+  outputTimings = cmd_line_handler.run_flag();
 }
 
 
@@ -1162,6 +1168,48 @@ split_filenames(const char * filenames, std::string& input_filename,
     else
       input_filename = runarg;
   }
+}
+
+
+void ParallelLibrary::assign_streams(bool append)
+{
+  // Direct output/error to file early, possibly overriding later
+  // after Strategy is running and manage_outputs_restart gets called.
+  // Would prefer to share with CLH, but don't want tighter coupling.
+  
+  // Therefore do only on DAKOTA rank 0 for now
+  if (worldRank == 0) {
+
+    // If using CLH, file should be created, so append, else write
+    if (!stdOutputFilename.empty()) {
+      if (append)
+	output_ofstream.open(stdOutputFilename.c_str(), std::ios::app);
+      else
+	output_ofstream.open(stdOutputFilename.c_str(), std::ios::out);
+      if (!output_ofstream.good()) {
+	Cerr << "\nError opening output file '" << stdOutputFilename << "'" 
+	     << std::endl;
+	abort_handler(-1);
+      }
+      // assign global dakota_cout to this ofstream
+      dakota_cout = &output_ofstream;
+    }
+    if (!stdErrorFilename.empty()) {
+      if (append)
+	error_ofstream.open(stdErrorFilename.c_str(), std::ios::app);
+      else
+	error_ofstream.open(stdErrorFilename.c_str(), std::ios::out);
+      if (!error_ofstream.good()) {
+	Cerr << "\nError opening error file '" << stdErrorFilename << "'"
+	     << std::endl;
+	abort_handler(-1);
+      }
+      // assign global dakota_cerr to this ofstream
+      dakota_cerr = &error_ofstream;
+    }
+
+  }
+
 }
 
 
@@ -1273,11 +1321,17 @@ manage_outputs_restart(const ParallelLevel& pl)
   // the ofstreams and attach them to Cout/Cerr (if required).  Note that the
   // opening of files on processors for which there is no output is avoided.
   if (stdOutputToFile) {
+    // If ofstreams are active and there is a file name change, close,
+    // reopen and assign; what if stdOutputFilename empty?
+    if (std_output_filename != stdOutputFilename && output_ofstream.is_open())
+      output_ofstream.close();
     output_ofstream.open(std_output_filename.c_str(), std::ios::out);
     // assign global dakota_cout to this ofstream
     dakota_cout = &output_ofstream;
   }
   if (stdErrorToFile) {
+    if (std_error_filename != stdErrorFilename && error_ofstream.is_open())
+      error_ofstream.close();
     error_ofstream.open(std_error_filename.c_str(), std::ios::out);
     // assign global dakota_cerr to this ofstream
     dakota_cerr = &error_ofstream;
@@ -1411,13 +1465,13 @@ void ParallelLibrary::close_streams()
   if (mc_ptr_int)
     mc_release_com(ireturn, iprint, mc_ptr_int);
   if (ireturn == -1) {
-    std::cerr << "Error: mc_release of API pointer unsuccessful." << std::endl;
+    Cerr << "Error: mc_release of API pointer unsuccessful." << std::endl;
     abort_handler(-1);
   }
   if (dc_ptr_int)
     mc_release_com(ireturn, iprint, dc_ptr_int);
   if (ireturn == -1) {
-    std::cerr << "Error: mc_release of DC pointer unsuccessful." << std::endl;
+    Cerr << "Error: mc_release of DC pointer unsuccessful." << std::endl;
     abort_handler(-1);
   }
 #endif // DAKOTA_MODELCENTER
@@ -1452,14 +1506,14 @@ void ParallelLibrary::abort_helper(int code) const {
 
 
 void ParallelLibrary::
-output_helper(const std::string& s, std::ostream &outfile) const
+output_helper(const std::string& message, std::ostream &os) const
 {
   if (mpirunFlag) {
     if (worldRank == 0)
-      outfile << s << std::endl;
+      os << message << std::endl;
   }
   else 
-    outfile << s << std::endl;
+    os << message << std::endl;
 }
 
 
@@ -1498,45 +1552,65 @@ ParallelLibrary::~ParallelLibrary()
     Dak_pl = NULL;
 
   if (!dummyFlag) { // protect MPI_Finalize in case of dummy_lib
-    using std::setw;
+
+    // Output timings before closing streams, in case of redirection
+    output_timers();
 
     // Close the output and restart streams and any other services
     close_streams();
 
-    // Compute elapsed times.
-    // TODO: sometimes totalCPU is zero, but parent is zero;
-    //       need to consistently use system or utilib for this computation
-    //       or bound below by zero
-    Real totalCPU = (Real)(clock() - startClock)/CLOCKS_PER_SEC;
-#ifdef DAKOTA_UTILIB
-    Real parentCPU = CPUSeconds() - startCPUTime, 
-      childCPU  = totalCPU - parentCPU,
-      totalWC   = WallClockSeconds() - startWCTime;
-#endif // DAKOTA_UTILIB
-      
-    if (mpirunFlag) { // MPI functions are available
 #ifdef DAKOTA_HAVE_MPI
-      if (worldRank==0) {
-	Real runWC = parallel_time();
-	Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
-	     << "DAKOTA master processor execution time in seconds:\n"
-	     << "  Total CPU        = " << setw(10) << totalCPU;
-
-#ifdef DAKOTA_UTILIB
-	Real initWC = totalWC - runWC;
-	Cout << " [parent   = " << setw(10) << parentCPU << ", child = " 
-	     << setw(10) << childCPU << "]\n  Total wall clock = " << setw(10)
-	     << totalWC << " [MPI_Init = " << setw(10) << initWC 
-	     << ", run   = " << setw(10) << runWC << "]" << std::endl;
-#else
-	Cout << "\n  MPI wall clock = " << setw(10) << runWC << std::endl;
-#endif // DAKOTA_UTILIB
-      }
-      if (ownMPIFlag) // call MPI_Finalize only if DAKOTA called MPI_Init
-	MPI_Finalize(); // finalize MPI
+    // call MPI_Finalize only if DAKOTA called MPI_Init
+    if (mpirunFlag && ownMPIFlag)
+      MPI_Finalize();
 #endif // DAKOTA_HAVE_MPI
+      
+    if (worldRank == 0)
+      dakota_graphics.close(); // after completion of timings
+
+  }
+}
+
+
+void ParallelLibrary::output_timers()
+{
+  if (!outputTimings)
+    return;
+
+  using std::setw;
+
+  // Compute elapsed times.
+  // TODO: sometimes totalCPU is zero, but parent is zero;
+  //       need to consistently use system or utilib for this computation
+  //       or bound below by zero
+  Real totalCPU = (Real)(clock() - startClock)/CLOCKS_PER_SEC;
+#ifdef DAKOTA_UTILIB
+  Real parentCPU = CPUSeconds() - startCPUTime, 
+    childCPU  = totalCPU - parentCPU,
+    totalWC   = WallClockSeconds() - startWCTime;
+#endif // DAKOTA_UTILIB
+
+  if (mpirunFlag) { // MPI functions are available
+#ifdef DAKOTA_HAVE_MPI
+    if (worldRank==0) {
+      Real runWC = parallel_time();
+      Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
+	   << "DAKOTA master processor execution time in seconds:\n"
+	   << "  Total CPU        = " << setw(10) << totalCPU;
+      
+#ifdef DAKOTA_UTILIB
+      Real initWC = totalWC - runWC;
+      Cout << " [parent   = " << setw(10) << parentCPU << ", child = " 
+	   << setw(10) << childCPU << "]\n  Total wall clock = " << setw(10)
+	   << totalWC << " [MPI_Init = " << setw(10) << initWC 
+	   << ", run   = " << setw(10) << runWC << "]" << std::endl;
+#else
+      Cout << "\n  MPI wall clock = " << setw(10) << runWC << std::endl;
+#endif // DAKOTA_UTILIB
     }
-    else { // MPI functions are not available
+#endif // DAKOTA_HAVE_MPI
+  }
+  else { // MPI functions are not available
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
 	   << "DAKOTA execution time in seconds:\n  Total CPU        = " 
 	   << setw(10) << totalCPU;
@@ -1547,9 +1621,6 @@ ParallelLibrary::~ParallelLibrary()
 #else
       Cout << std::endl;
 #endif // DAKOTA_UTILIB
-    }
-    if (worldRank == 0)
-      dakota_graphics.close(); // after completion of timings
   }
 }
 

@@ -370,7 +370,9 @@ void run_dakota_mixed(const char* dakota_input_file)
   data.db = &problem_db;
   // In mixed mode, use parse_inputs() instead of manage_inputs() in order to
   // defer broadcast() & post_process() until all DB inputs have been provided.
-  problem_db.parse_inputs(dakota_input_file, NULL, my_callback_function, &data);
+  bool echo_input = true;
+  problem_db.parse_inputs(dakota_input_file, NULL, echo_input, 
+			  my_callback_function, &data);
 
   // Demonstrate changes to DB data initially set by parse_inputs():
   // if we're using rosenbrock, change the initial guess.  This update is
