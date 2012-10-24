@@ -1223,10 +1223,9 @@ manage_outputs_restart(const ParallelLevel& pl)
 		  << checkFlag << preRunFlag << runFlag << postRunFlag 
 		  << userModesFlag << preRunInput << preRunOutput << runInput
 		  << runOutput << postRunInput << postRunOutput
-		  << read_restart_flag
-                  << std_output_filename << std_error_filename
-                  << read_restart_filename << write_restart_filename
-                  << stopRestartEvals;
+		  << read_restart_flag << std_output_filename
+		  << std_error_filename << read_restart_filename
+		  << write_restart_filename << stopRestartEvals;
       int buffer_len = send_buffer.size();
       bcast(buffer_len,  pl.hubServerIntraComm);
       bcast(send_buffer, pl.hubServerIntraComm);
@@ -1241,10 +1240,9 @@ manage_outputs_restart(const ParallelLevel& pl)
 		>> checkFlag >> preRunFlag >> runFlag >> postRunFlag 
 		>> userModesFlag >> preRunInput >> preRunOutput >> runInput
 		>> runOutput >> postRunInput >> postRunOutput
-		>> read_restart_flag
-                >> std_output_filename >> std_error_filename
-                >> read_restart_filename >> write_restart_filename
-                >> stopRestartEvals;
+		>> read_restart_flag >> std_output_filename
+		>> std_error_filename >> read_restart_filename
+		>> write_restart_filename >> stopRestartEvals;
   }
 
   // TODO: tagging for pre/run/post I/O files

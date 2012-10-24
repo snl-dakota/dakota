@@ -1893,7 +1893,7 @@ void NonDExpansion::print_covariance(std::ostream& s)
   case DIAGONAL_COVARIANCE:
     if (!respVariance.empty()) {
       s << "\nVariance vector for response functions:\n";
-      write_data(s, respVariance);
+      write_col_vector_trans(s, 0, true, true, true, respVariance);
     }
     break;
   case FULL_COVARIANCE:

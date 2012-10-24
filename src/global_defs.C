@@ -29,14 +29,12 @@ namespace Dakota {
 // --------------------------
 // Instantiate global objects
 // --------------------------
-using std::cout;
-using std::cerr;
-std::ostream* dakota_cout = &cout; ///< DAKOTA stdout initially points to cout,
-                              ///< but may be redirected to a tagged ofstream if
-                              ///< there are concurrent iterators.
-std::ostream* dakota_cerr = &cerr; ///< DAKOTA stderr initially points to cerr,
-                              ///< but may be redirected to a tagged ofstream if
-                              ///< there are concurrent iterators.
+std::ostream* dakota_cout = &std::cout; ///< DAKOTA stdout initially points to
+  ///< std::cout, but may be redirected to a tagged ofstream if there are
+  ///< concurrent iterators.
+std::ostream* dakota_cerr = &std::cerr; ///< DAKOTA stderr initially points to
+  ///< std::cerr, but may be redirected to a tagged ofstream if there are
+  ///< concurrent iterators.
 PRPCache data_pairs;          ///< contains all parameter/response pairs.
 BoStream write_restart;       ///< the restart binary output stream (doesn't
                               ///< really need to be global anymore except for
