@@ -326,7 +326,7 @@ bool NonlinearCGOptimizer::compute_step()
   }
 
   default:
-    cerr << "ERROR (NonlinearCG_LS): Requested linesearch type not available." 
+    Cerr << "ERROR (NonlinearCG_LS): Requested linesearch type not available." 
 	 << endl;
     abort_handler(-1);
     break;
@@ -679,7 +679,7 @@ void NonlinearCGOptimizer::parse_options()
       }
 
       if (outputLevel > NORMAL_OUTPUT)
-	cout << "INFO (NonlinearCG): User parameter '" << opt << "': " << val 
+	Cout << "INFO (NonlinearCG): User parameter '" << opt << "': " << val 
 	     << endl;
 
     }

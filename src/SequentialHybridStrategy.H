@@ -173,7 +173,7 @@ initialize_iterator(const VariablesArray& param_sets)
   else if (selectedIterators[seqCount].accepts_multiple_points())
     selectedIterators[seqCount].initial_points(param_sets);
   else {
-    std::cerr << "Error: bad parameter sets array in SequentialHybridStrategy::"
+    Cerr << "Error: bad parameter sets array in SequentialHybridStrategy::"
 	      << "initialize_iterator()" << std::endl;
     abort_handler(-1);
   }

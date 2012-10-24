@@ -269,9 +269,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     RealVector stdv(numFunctions);
     for (size_t i=0; i<numFunctions; i++)
       stdv[i] = std::sqrt(variance[i]);
-    std::cout << "\nexpected values    =\n" << mean
-	      << "\nstandard deviation =\n" << stdv
-    	      << "\nexpected violation =\n" << ev << std::endl;
+    Cout << "\nexpected values    =\n" << mean
+	 << "\nstandard deviation =\n" << stdv
+	 << "\nexpected violation =\n" << ev << std::endl;
 #endif //DEBUG
 
     // Check for convergence based on max EIF

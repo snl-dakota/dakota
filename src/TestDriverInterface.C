@@ -2571,7 +2571,7 @@ herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
       +(-1.6+2.56*rtemp2_sq)*std::exp(-0.8*rtemp2_sq)
       +3.2*std::sin(rtemp3);
   if(der_mode > 7) {
-    std::cerr << "only 0th through 2nd derivatives are implemented for herbie1D()\n";
+    Cerr << "only 0th through 2nd derivatives are implemented for herbie1D()\n";
     assert(false); //should throw an exception get brian to help
   }
 }
@@ -2601,7 +2601,7 @@ smooth_herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
       (-2.0+4.0*rtemp1_sq)*std::exp(-rtemp1_sq)
       +(-1.6+2.56*rtemp2_sq)*std::exp(-0.8*rtemp2_sq);
   if(der_mode > 7) {
-    std::cerr << "only 0th through 2nd derivatives are implemented for smooth_herbie1D()\n";
+    Cerr << "only 0th through 2nd derivatives are implemented for smooth_herbie1D()\n";
     assert(false); //should throw an exception get brian to help
   }
 }
@@ -2635,7 +2635,7 @@ shubert1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
     }
   }
   if(der_mode > 7) {
-    std::cerr << "only 0th through 2nd derivatives are implemented for shubert1D()\n";
+    Cerr << "only 0th through 2nd derivatives are implemented for shubert1D()\n";
     assert(false); //should throw an exception get brian to help
   }
 }

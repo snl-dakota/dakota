@@ -107,7 +107,8 @@ derived_parse_inputs(const char* dakota_input_file, const char* parser_options)
   }
 
   // nidr_parse parses the input file and invokes the keyword handlers
-  if (nidr_parse(parser_options,0)) {
+  FILE *dump_file = NULL;
+  if (nidr_parse(parser_options, dump_file)) {
     //Cerr << "\nErrors parsing input file." << std::endl;
     abort_handler(-1); // allows proper abort in parallel case
   }
