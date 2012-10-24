@@ -358,55 +358,6 @@ inline int ParamStudy::index_step(size_t start, size_t end, int num_steps) const
 }
 
 
-inline void ParamStudy::
-write_ordered(std::ostream& s, const RealVector& c_vector,
-	      const IntVector& di_vector, const RealVector& dr_vector)
-{
-  const SizetArray& vc_totals
-    = iteratedModel.current_variables().variables_components_totals();
-  size_t i, j, num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2],  num_cauv  = vc_totals[3],
-    num_dauiv = vc_totals[4],  num_daurv = vc_totals[5],
-    num_ceuv  = vc_totals[6],  num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8],  num_csv   = vc_totals[9],
-    num_dsiv  = vc_totals[10], num_dsrv  = vc_totals[11];
-  write_data_partial(s, 0, num_cdv, c_vector);
-  write_data_partial(s, 0, num_ddiv, di_vector);
-  write_data_partial(s, 0, num_ddrv, dr_vector);
-  write_data_partial(s, num_cdv, num_cauv, c_vector);
-  write_data_partial(s, num_ddiv, num_dauiv, di_vector);
-  write_data_partial(s, num_ddrv, num_daurv, dr_vector);
-  write_data_partial(s, num_cdv+num_cauv, num_ceuv, c_vector);
-  //write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, di_vector);
-  //write_data_partial(s, num_ddrv+num_daurv, num_deurv, dr_vector);
-  write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv, c_vector);
-  write_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv, di_vector);
-  write_data_partial(s, num_ddrv+num_daurv+num_deurv, num_dsrv, dr_vector);
-}
-
-
-inline void ParamStudy::
-write_ordered(std::ostream& s, const RealVector& c_vector,
-	      const IntVector& d_vector)
-{
-  const SizetArray& vc_totals
-    = iteratedModel.current_variables().variables_components_totals();
-  size_t i, j, num_cdv = vc_totals[0],
-    num_ddv  = vc_totals[1] + vc_totals[2], num_cauv = vc_totals[3],
-    num_dauv = vc_totals[4] + vc_totals[5], num_ceuv = vc_totals[6],
-    num_deuv = vc_totals[7] + vc_totals[8], num_csv  = vc_totals[9],
-    num_dsv  = vc_totals[10] + vc_totals[11];
-  write_data_partial(s, 0, num_cdv, c_vector);
-  write_data_partial(s, 0, num_ddv, d_vector);
-  write_data_partial(s, num_cdv, num_cauv, c_vector);
-  write_data_partial(s, num_ddv, num_dauv, d_vector);
-  write_data_partial(s, num_cdv+num_cauv, num_ceuv, c_vector);
-  //write_data_partial(s, num_ddv+num_dauv, num_deuv, d_vector);
-  write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv, c_vector);
-  write_data_partial(s, num_ddv+num_dauv+num_deuv, num_dsv, d_vector);
-}
-
-
 inline void ParamStudy::c_step(size_t c_index, int increment, Variables& vars)
 {
   // bounds currently ignored for range types

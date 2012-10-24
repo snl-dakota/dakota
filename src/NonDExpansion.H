@@ -83,6 +83,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// set covarianceControl defaults and shape respCovariance
+  void initialize_response_covariance();
   /// update function values within finalStatistics
   void update_final_statistics();
   /// update function gradients within finalStatistics
@@ -174,8 +176,11 @@ protected:
   /// DIMENSION_ADAPTIVE_CONTROL_GENERALIZED
   short refineControl;
 
-  /// symmetric matrix of analytic response covariance
+  /// symmetric matrix of analytic response covariance (full response
+  /// covariance option)
   RealSymMatrix respCovariance;
+  /// vector of response variances (diagonal response covariance option)
+  RealVector respVariance;
 
   /// stores the initial variables data in u-space
   RealVector initialPtU;
@@ -200,8 +205,10 @@ private:
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 
-  /// calculate respCovariance
+  /// calculate the response covariance (diagonal or full matrix)
   void compute_covariance();
+  /// calculate respVariance or diagonal terms respCovariance(i,i)
+  void compute_diagonal_variance();
   /// calculate respCovariance(i,j) for j<i
   void compute_off_diagonal_covariance();
 
@@ -255,6 +262,10 @@ private:
   short vbdControl;
   /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
+
+  /// enumeration for controlling response covariance calculation and
+  /// output: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
+  short covarianceControl;
 };
 
 

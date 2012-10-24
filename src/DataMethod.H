@@ -39,6 +39,9 @@ enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
 enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
 // define special values for sparseGridBasisType
 enum { DEFAULT_INTERPOLANT, NODAL_INTERPOLANT, HIERARCHICAL_INTERPOLANT };
+// define special values for covarianceControl
+enum { DEFAULT_COVARIANCE, NO_COVARIANCE, DIAGONAL_COVARIANCE,
+       FULL_COVARIANCE };
 // define special values for probability integration refinement
 enum { NO_INT_REFINE, IS, AIS, MMAIS };
 // define special values for responseLevelTarget
@@ -625,6 +628,9 @@ public:
   /// vbdFlag is on, controls granularity of calculation/output of
   /// main/interaction/total effects
   short vbdControl;
+  /// restrict the calculation of a full response covariance matrix
+  /// for high dimensional outputs: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
+  short covarianceControl;
   /// the \c basic random-number generator for NonD
   String rngName;
   /// refinement type for stochastic expansions from dimension refinement

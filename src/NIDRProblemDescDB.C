@@ -5409,6 +5409,8 @@ static size_t
 	MP_(numParents);
 
 static Method_mp_type
+	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
+	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
 	MP2s(distributionType,CUMULATIVE),
 	MP2s(emulatorType,GAUSSIAN_PROCESS),

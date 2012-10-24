@@ -460,6 +460,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      [ univariate_effects {N_mdm(type,vbdControl_UNIVARIATE_VBD)} ]
 		      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
 		    ]
+		    [ diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+		      | full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+		    ]
 		    [ sample_refinement {0}
 		      import {N_mdm(lit,integrationRefine_is)}
 		      | adapt_import {N_mdm(lit,integrationRefine_ais)}
@@ -507,6 +510,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    [ variance_based_decomp {N_mdm(true,vbdFlag)}
 		      [ univariate_effects {N_mdm(type,vbdControl_UNIVARIATE_VBD)} ]
 		      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+		    ]
+		    [ diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+		      | full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
 		    ]
 	      	    [ sample_refinement {0}
 		      import {N_mdm(lit,integrationRefine_is)}

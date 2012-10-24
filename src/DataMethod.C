@@ -103,9 +103,11 @@ DataMethodRep::DataMethodRep():
   randomSeed(0),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false), previousSamples(0), vbdFlag(false),
+  vbdDropTolerance(-1.),
   // NonD
-  vbdControl(Pecos::ALL_VBD), vbdDropTolerance(-1.), rngName("mt19937"),
-  refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
+  vbdControl(Pecos::ALL_VBD), covarianceControl(DEFAULT_COVARIANCE),
+  rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
+  refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
@@ -204,9 +206,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << vbdFlag << vbdDropTolerance;
 
   // NonD
-  s << vbdControl << rngName << refinementType << refinementControl
-    << nestingOverride << growthOverride << expansionType << piecewiseBasis
-    << sparseGridBasisType << expansionTerms << expansionOrder
+  s << vbdControl << covarianceControl << rngName << refinementType
+    << refinementControl << nestingOverride << growthOverride << expansionType
+    << piecewiseBasis << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << pointReuse
@@ -308,9 +310,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> vbdFlag >> vbdDropTolerance;
 
   // NonD
-  s >> vbdControl >> rngName >> refinementType >> refinementControl
-    >> nestingOverride >> growthOverride >> expansionType >> piecewiseBasis
-    >> sparseGridBasisType >> expansionTerms >> expansionOrder
+  s >> vbdControl >> covarianceControl >> rngName >> refinementType
+    >> refinementControl >> nestingOverride >> growthOverride >> expansionType
+    >> piecewiseBasis >> sparseGridBasisType >> expansionTerms >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> pointReuse
@@ -412,9 +414,9 @@ void DataMethodRep::write(std::ostream& s) const
     << vbdFlag << vbdDropTolerance;
 
   // NonD
-  s << vbdControl << rngName << refinementType << refinementControl
-    << nestingOverride << growthOverride << expansionType << piecewiseBasis
-    << sparseGridBasisType << expansionTerms << expansionOrder
+  s << vbdControl << covarianceControl << rngName << refinementType
+    << refinementControl << nestingOverride << growthOverride << expansionType
+    << piecewiseBasis << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << pointReuse

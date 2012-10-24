@@ -43,7 +43,8 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
     probDescDB.get_short("method.nond.expansion_refinement_control")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
-  expSampling(false), impSampling(false)
+  expSampling(false), impSampling(false),
+  covarianceControl(probDescDB.get_short("method.nond.covariance_control"))
 {
   // Re-assign defaults specialized to refinement of stochastic expansions
   if (maxIterations < 0) // ctor chain picks up DataMethod default of -1
@@ -59,6 +60,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   //       enforced in NonDExpansion::construct_{quadrature,sparse_grid}
   //Cout << "VBD control = " << vbdControl << std::endl;
 
+  initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
 }
 
@@ -73,14 +75,50 @@ NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
   ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), expSampling(false),
-  impSampling(false), vbdControl(Pecos::NO_VBD)
-{ } // level mappings not yet available (defer initialize_final_statistics())
+  impSampling(false), vbdControl(Pecos::NO_VBD),
+  covarianceControl(DEFAULT_COVARIANCE)
+{
+  // level mappings not yet available
+  // (defer initialize_response_covariance() and initialize_final_statistics())
+}
 
 
 NonDExpansion::~NonDExpansion()
 { 
   if (impSampling)
     uSpaceModel.free_communicators(importanceSampler.maximum_concurrency());
+}
+
+
+void NonDExpansion::initialize_response_covariance()
+{
+  // if diagonal only, utilize a vector (or sparse matrix) to optimize
+  // both computational performance and memory footprint)
+  bool refine_by_covar = (refineControl == Pecos::UNIFORM_CONTROL ||
+    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ||
+    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY ||
+    ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
+      !totalLevelRequests ) );
+  switch (covarianceControl) {
+  case DEFAULT_COVARIANCE: // assign context-specific default
+    if (refine_by_covar)      covarianceControl = FULL_COVARIANCE;
+    else if (subIteratorFlag) covarianceControl = NO_COVARIANCE;
+    else                      covarianceControl = (numFunctions > 10) ?
+				DIAGONAL_COVARIANCE : FULL_COVARIANCE;
+    break;
+  case NO_COVARIANCE: // won't happen since NO_COVARIANCE not exposed in spec
+    if (refine_by_covar) {
+      Cerr << "Warning: covariance required by refinement.  Adding diagonal "
+	   << "covariance terms." << std::endl;
+      covarianceControl = DIAGONAL_COVARIANCE;
+    }
+    break;
+  }
+  // now that setting is defined, size the variance/covariance storage
+  if (covarianceControl == FULL_COVARIANCE)
+    respCovariance.shapeUninitialized(numFunctions);
+  else if (covarianceControl == DIAGONAL_COVARIANCE)
+    respVariance.sizeUninitialized(numFunctions);
 }
 
 
@@ -881,7 +919,8 @@ Real NonDExpansion::increment_sets()
 
   // store reference points for computing refinement metrics
   if (totalLevelRequests) stats_ref = finalStatistics.function_values();
-  else                    covar_ref = respCovariance;
+  else if (covarianceControl == FULL_COVARIANCE) covar_ref = respCovariance;
+  else stats_ref = respVariance;
 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
@@ -913,7 +952,9 @@ Real NonDExpansion::increment_sets()
       // on the selected index set
       if (outputLevel < DEBUG_OUTPUT) {
 	if (totalLevelRequests) stats_star = finalStatistics.function_values();
-	else                    covar_star = respCovariance;
+	else if (covarianceControl == FULL_COVARIANCE)
+	                        covar_star = respCovariance;
+	else                    stats_star = respVariance;
       }
     }
     compute_print_increment_results();
@@ -924,7 +965,8 @@ Real NonDExpansion::increment_sets()
     nond_sparse->decrement_set();
     // restore reference point for next metric calculation
     if (totalLevelRequests) finalStatistics.function_values(stats_ref);
-    else                    respCovariance = covar_ref;
+    else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_ref;
+    else respVariance = stats_ref;
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
@@ -935,7 +977,8 @@ Real NonDExpansion::increment_sets()
   nond_sparse->update_reference();
   if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
     if (totalLevelRequests) finalStatistics.function_values(stats_star);
-    else                    respCovariance = covar_star;
+    else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_star;
+    else respVariance = stats_star;
   }
 
   return delta_star;
@@ -1090,18 +1133,36 @@ Real NonDExpansion::compute_covariance_metric()
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
-  RealSymMatrix delta_resp_covar = respCovariance; // deep copy
-  compute_covariance();                            // update
-  delta_resp_covar -= respCovariance;              // compute change
-
+  switch (covarianceControl) {
+  case DIAGONAL_COVARIANCE: {
+    RealVector delta_resp_var = respVariance; // deep copy
+    compute_covariance();                     // update
+    delta_resp_var -= respVariance;           // compute change
 #ifdef DEBUG
-  Cout << "resp_covar_ref:\n"; write_data(Cout, resp_covar_ref,false,true,true);
-  Cout << "respCovariance:\n"; write_data(Cout, respCovariance,false,true,true);
-  Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
-       << std::endl;
+    Cout << "resp_var_ref:\n"; write_data(Cout, resp_var_ref);
+    Cout << "respVariance:\n"; write_data(Cout, respVariance);
+    Cout << "norm of delta_resp_var = " << delta_resp_var.normFrobenius()
+	 << std::endl;
 #endif // DEBUG
-
-  return delta_resp_covar.normFrobenius();
+    return delta_resp_var.normFrobenius();
+    break;
+  }
+  case FULL_COVARIANCE: {
+    RealSymMatrix delta_resp_covar = respCovariance; // deep copy
+    compute_covariance();                            // update
+    delta_resp_covar -= respCovariance;              // compute change
+#ifdef DEBUG
+    Cout << "resp_covar_ref:\n";
+    write_data(Cout, resp_covar_ref, false, true, true);
+    Cout << "respCovariance:\n";
+    write_data(Cout, respCovariance, false, true, true);
+    Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
+	 << std::endl;
+#endif // DEBUG
+    return delta_resp_covar.normFrobenius();
+    break;
+  }
+  }
 }
 
 
@@ -1235,27 +1296,33 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
 
 void NonDExpansion::compute_covariance()
 {
-  if (respCovariance.empty())
-    respCovariance.shapeUninitialized(numFunctions);
+  if (covarianceControl >= DIAGONAL_COVARIANCE)
+    compute_diagonal_variance();
+  if (numFunctions > 1 && covarianceControl == FULL_COVARIANCE)
+    compute_off_diagonal_covariance();
+}
 
+
+void NonDExpansion::compute_diagonal_variance()
+{
   bool warn_flag = false,
     all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
+    Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE) ?
+      respVariance[i] : respCovariance(i,i);
     PecosApproximation* poly_approx_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep_i->expansion_coefficient_flag())
-      respCovariance(i,i) = (all_vars) ?
-	poly_approx_rep_i->variance(initialPtU) : poly_approx_rep_i->variance();
+      var_i = (all_vars) ? poly_approx_rep_i->variance(initialPtU) :
+	                   poly_approx_rep_i->variance();
     else
-      { warn_flag = true; respCovariance(i,i) = 0.; }
+      { warn_flag = true; var_i = 0.; }
   }
   if (warn_flag)
     Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
-	 << "compute_covariance().\n         Zeroing affected variance terms."
-	 << std::endl;
-  if (numFunctions > 1)
-    compute_off_diagonal_covariance();
+	 << "compute_diagonal_variance().\n         Zeroing affected variance "
+	 << "terms." << std::endl;
 }
 
 
@@ -1299,18 +1366,14 @@ void NonDExpansion::compute_statistics()
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  bool covariance_flag = (!subIteratorFlag ||
-    refineControl != Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);
   size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
     num_final_grad_vars = final_dvv.size();
 
-  // initialize computed*Levels, expGradsMeanX and respCovariance
+  // initialize computed*Levels and expGradsMeanX
   if (totalLevelRequests)
     initialize_distribution_mappings();
   if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT && expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
-  if (covariance_flag)
-    respCovariance.shapeUninitialized(numFunctions);
 
   // -----------------------------
   // Calculate analytic statistics
@@ -1340,7 +1403,8 @@ void NonDExpansion::compute_statistics()
       const RealVector& moments = poly_approx_rep->moments(); // virtual
       // Pecos provides central moments
       mu = moments[0]; const Real& var = moments[1];
-      if (covariance_flag) respCovariance(i,i) = var;
+      if (covarianceControl ==  DIAGONAL_COVARIANCE) respVariance[i]     = var;
+      else if (covarianceControl == FULL_COVARIANCE) respCovariance(i,i) = var;
       if (var >= 0.)
 	sigma = std::sqrt(var);
       else { // negative variance can happen with SC on sparse grids
@@ -1486,8 +1550,8 @@ void NonDExpansion::compute_statistics()
       poly_approx_rep->compute_total_effects();
     }
   }
-  if (covariance_flag)
-    compute_off_diagonal_covariance(); // diagonals were filled in above
+  if (numFunctions > 1 && covarianceControl == FULL_COVARIANCE)
+    compute_off_diagonal_covariance(); // diagonal entries were filled in above
 
   // ------------------------------
   // Calculate numerical statistics
@@ -1825,8 +1889,20 @@ void NonDExpansion::print_moments(std::ostream& s)
 
 void NonDExpansion::print_covariance(std::ostream& s)
 {
-  s << "\nCovariance among response functions:\n";
-  write_data(s, respCovariance, true, true, true);
+  switch (covarianceControl) {
+  case DIAGONAL_COVARIANCE:
+    if (!respVariance.empty()) {
+      s << "\nVariance vector for response functions:\n";
+      write_data(s, respVariance);
+    }
+    break;
+  case FULL_COVARIANCE:
+    if (!respCovariance.empty()) {
+      s << "\nCovariance matrix for response functions:\n";
+      write_data(s, respCovariance, true, true, true);
+    }
+    break;
+  }
 }
 
 

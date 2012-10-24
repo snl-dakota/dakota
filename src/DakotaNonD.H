@@ -107,6 +107,8 @@ protected:
   /// distributions into response statistics
   virtual void quantify_uncertainty() = 0;
 
+  /// initializes respCovariance
+  virtual void initialize_response_covariance();
   /// initializes finalStatistics for storing NonD final results
   virtual void initialize_final_statistics();
   /// update finalStatistics::functionValues

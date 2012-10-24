@@ -477,6 +477,7 @@ requested_levels(const RealVectorArray& req_resp_levels,
     pdfOutput = true;
 
   initialize_final_statistics();
+  initialize_response_covariance();
 }
 
 
@@ -1591,6 +1592,10 @@ void NonD::verify_correlation_support()
       abort_handler(-1);
   }
 }
+
+
+void NonD::initialize_response_covariance()
+{ } // default is no-op
 
 
 /** Default definition of virtual function (used by sampling, reliability,

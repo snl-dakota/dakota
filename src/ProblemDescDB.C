@@ -2094,6 +2094,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	Locked_db();
     #define P &DataMethodRep::
     static KW<short, DataMethodRep> Shdme[] = {	// must be sorted
+	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
 	{"nond.emulator", P emulatorType},
 	{"nond.expansion_refinement_control", P refinementControl},

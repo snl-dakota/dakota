@@ -714,6 +714,8 @@ TAG "method/polynomial_chaos/variance_based_decomp/univariate_effects"
 TAG "method/polynomial_chaos/variance_based_decomp/drop_tolerance"
 	DESC "{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDMC"
 
+TAG "method/polynomial_chaos/diagonal_covariance"
+TAG "method/polynomial_chaos/full_covariance"
 TAG "method/polynomial_chaos/sample_refinement"
 	DESC "{Importance sampling refinement} MethodCommands.html#MethodNonDPCE"
 
@@ -767,6 +769,8 @@ TAG "method/stoch_collocation/variance_based_decomp/univariate_effects"
 TAG "method/stoch_collocation/variance_based_decomp/drop_tolerance"
 	DESC "{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDSC"
 
+TAG "method/stoch_collocation/diagonal_covariance"
+TAG "method/stoch_collocation/full_covariance"
 TAG "method/stoch_collocation/sample_refinement"
 TAG "method/stoch_collocation/sample_refinement/import"
 TAG "method/stoch_collocation/sample_refinement/adapt_import"
