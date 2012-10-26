@@ -79,7 +79,7 @@ private:
   /// distributes incoming list_of_pts among listCVPoints, listDIVPoints,
   /// and listDRVPoints
   bool distribute_list_of_points(const RealVector& list_of_pts);
-  /// distributes incoming step_vector among contStepVector and discStepVector
+  /// distributes incoming step_vector among {cont,discInt,discReal}StepVector
   bool distribute_step_vector(const RealVector& step_vector);
   /// compute step vectors from finalPoint, initial points, and numSteps
   void final_point_to_step_vector();
@@ -111,33 +111,25 @@ private:
   /// check for out of bounds and index remainder and return step
   int index_step(size_t start, size_t end, int num_steps) const;
 
-  /// reorder CV/DIV/DRV into standard output order
-  void write_ordered(std::ostream& s, const RealVector& c_vector,
-		     const IntVector& di_vector, const RealVector& dr_vector);
-  /// reorder CV/DV into standard output order
-  void write_ordered(std::ostream& s, const RealVector& c_vector,
-		     const IntVector& d_vector);
-
   /// helper function for performing a continuous step in one variable
   void c_step(size_t c_index, int increment, Variables& vars);
   /// helper function for performing a discrete step in an integer
   /// range variable
-  void dri_step(size_t d_index, size_t di_index, int increment,
-		Variables& vars);
+  void dri_step(size_t di_index, int increment,	Variables& vars);
   /// helper function for performing a discrete step in an integer set variable
-  void dsi_step(size_t d_index, size_t di_index, int increment,
-		const IntSet& values, Variables& vars);
+  void dsi_step(size_t di_index, int increment, const IntSet& values,
+		Variables& vars);
   /// helper function for performing a discrete step in an uncertain
   /// integer set variable
-  void dsi_step(size_t d_index, size_t di_index, int increment,
-		const IntRealMap& vals_probs, Variables& vars);
+  void dsi_step(size_t di_index, int increment,	const IntRealMap& vals_probs,
+		Variables& vars);
   /// helper function for performing a discrete step in a real set variable
-  void dsr_step(size_t d_index, size_t dr_index, int increment,
-		const RealSet& values, Variables& vars);
+  void dsr_step(size_t dr_index, int increment, const RealSet& values,
+		Variables& vars);
   /// helper function for performing a discrete step in an uncertain
   /// real set variable
-  void dsr_step(size_t d_index, size_t dr_index, int increment,
-		const RealRealMap& vals_probs, Variables& vars);
+  void dsr_step(size_t dr_index, int increment, const RealRealMap& vals_probs,
+		Variables& vars);
 
   //
   //- Heading: Data
@@ -163,13 +155,17 @@ private:
   /// the continuous starting point for vector and centered parameter studies
   RealVector initialDRVPoint;
 
+  /// the n-dimensional continuous increment
+  RealVector contStepVector;
+  /// the n-dimensional discrete value or index increment
+  IntVector discIntStepVector;
+  /// the n-dimensional discrete real index increment
+  IntVector discRealStepVector;
+
   /// the ending point for vector_parameter_study (a specification option)
   RealVector finalPoint;
-  /// the n-dimensional continuous increment in vector_parameter_study
-  RealVector contStepVector;
-  /// the n-dimensional discrete increment in vector_parameter_study
-  IntVector discStepVector;
-  /// the number of times stepVector is applied in vector_parameter_study
+  /// the number of times continuous/discrete step vectors are applied
+  /// for vector_parameter_study (a specification option)
   int numSteps;
 
   /// number of offsets in the plus and the minus direction for each
@@ -367,17 +363,17 @@ inline void ParamStudy::c_step(size_t c_index, int increment, Variables& vars)
 
 
 inline void ParamStudy::
-dri_step(size_t d_index, size_t di_index, int increment, Variables& vars)
+dri_step(size_t di_index, int increment, Variables& vars)
 {
   // bounds currently ignored for range types
-  int di_var = initialDIVPoint[di_index] + increment * discStepVector[d_index];
+  int di_var = initialDIVPoint[di_index]
+             + increment * discIntStepVector[di_index];
   vars.discrete_int_variable(di_var, di_index);
 }
 
 
 inline void ParamStudy::
-dsi_step(size_t d_index, size_t di_index, int increment, const IntSet& values,
-	 Variables& vars)
+dsi_step(size_t di_index, int increment, const IntSet& values, Variables& vars)
 {
   // valid values and indices are checked for set types
   size_t index0 = set_value_to_index(initialDIVPoint[di_index], values);
@@ -386,7 +382,7 @@ dsi_step(size_t d_index, size_t di_index, int increment, const IntSet& values,
 	 << "within discrete integer set in ParamStudy::dsi_step()."<<std::endl;
     abort_handler(-1);
   }
-  int index = index0 + increment * discStepVector[d_index]; // +/- increments
+  int index = index0 + increment * discIntStepVector[di_index];// +/- increments
   if (index >= 0 && index < values.size())
     vars.discrete_int_variable(set_index_to_value(index, values), di_index);
   else {
@@ -398,8 +394,8 @@ dsi_step(size_t d_index, size_t di_index, int increment, const IntSet& values,
 
 
 inline void ParamStudy::
-dsi_step(size_t d_index, size_t di_index, int increment,
-	 const IntRealMap& vals_probs, Variables& vars)
+dsi_step(size_t di_index, int increment, const IntRealMap& vals_probs,
+	 Variables& vars)
 {
   // valid values and indices are checked for set types
   size_t index0 = map_key_to_index(initialDIVPoint[di_index], vals_probs);
@@ -408,7 +404,7 @@ dsi_step(size_t d_index, size_t di_index, int increment,
 	 << "within discrete integer set in ParamStudy::dsi_step()."<<std::endl;
     abort_handler(-1);
   }
-  int index = index0 + increment * discStepVector[d_index]; // +/- increments
+  int index = index0 + increment * discIntStepVector[di_index];// +/- increments
   if (index >= 0 && index < vals_probs.size())
     vars.discrete_int_variable(map_index_to_key(index, vals_probs), di_index);
   else {
@@ -420,8 +416,7 @@ dsi_step(size_t d_index, size_t di_index, int increment,
 
 
 inline void ParamStudy::
-dsr_step(size_t d_index, size_t dr_index, int increment,
-	 const RealSet& values, Variables& vars)
+dsr_step(size_t dr_index, int increment, const RealSet& values, Variables& vars)
 {
   // valid values and indices are checked for set types
   size_t index0 = set_value_to_index(initialDRVPoint[dr_index], values);
@@ -430,7 +425,7 @@ dsr_step(size_t d_index, size_t dr_index, int increment,
 	 << "within discrete real set in ParamStudy::dsr_step()." << std::endl;
     abort_handler(-1);
   }
-  int index = index0 + increment * discStepVector[d_index]; // +/- increments
+  int index = index0 + increment * discRealStepVector[dr_index];//+/- increments
   if (index >= 0 && index < values.size())
     vars.discrete_real_variable(set_index_to_value(index, values), dr_index);
   else {
@@ -442,8 +437,8 @@ dsr_step(size_t d_index, size_t dr_index, int increment,
 
 
 inline void ParamStudy::
-dsr_step(size_t d_index, size_t dr_index, int increment,
-	 const RealRealMap& vals_probs, Variables& vars)
+dsr_step(size_t dr_index, int increment, const RealRealMap& vals_probs,
+	 Variables& vars)
 {
   // valid values and indices are checked for set types
   size_t index0 = map_key_to_index(initialDRVPoint[dr_index], vals_probs);
@@ -452,7 +447,7 @@ dsr_step(size_t d_index, size_t dr_index, int increment,
 	 << "within discrete real set in ParamStudy::dsr_step()." << std::endl;
     abort_handler(-1);
   }
-  int index = index0 + increment * discStepVector[d_index]; // +/- increments
+  int index = index0 + increment * discRealStepVector[dr_index];//+/- increments
   if (index >= 0 && index < vals_probs.size())
     vars.discrete_real_variable(map_index_to_key(index, vals_probs), dr_index);
   else {

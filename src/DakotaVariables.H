@@ -1057,6 +1057,118 @@ inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const Variables& vars)
 inline bool operator!=(const Variables& vars1, const Variables& vars2)
 { return !(vars1 == vars2); }
 
+
+/// ScalarType1 will be Real, ScalarType2 will be int, and ScalarType3 may be
+/// int or Real, but written for arbitrary types
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2,
+          typename ScalarType3>
+inline void write_ordered(std::ostream& s, const SharedVariablesData& svd,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& c_vector,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& di_vector,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType3>& dr_vector)
+{
+  const SizetArray& vc_totals = svd.components_totals();
+  size_t i, j, num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
+    num_ddrv  = vc_totals[2],   num_cauv = vc_totals[3],
+    num_dauiv = vc_totals[4],  num_daurv = vc_totals[5],
+    num_ceuv  = vc_totals[6],  num_deuiv = vc_totals[7],
+    num_deurv = vc_totals[8],    num_csv = vc_totals[9],
+    num_dsiv  = vc_totals[10],  num_dsrv = vc_totals[11],
+    cv_start  = svd.cv_start(),   cv_end = cv_start  + svd.cv(),
+    div_start = svd.div_start(), div_end = div_start + svd.div(),
+    drv_start = svd.drv_start(), drv_end = drv_start + svd.drv(), cv_cntr = 0,
+    acv_cntr = 0, div_cntr = 0, adiv_cntr = 0, drv_cntr = 0, adrv_cntr = 0;
+
+  // design
+  if (num_cdv) {
+    if (acv_cntr >= cv_start && acv_cntr < cv_end) {
+      write_data_partial(s, cv_cntr, num_cdv, c_vector);
+      cv_cntr += num_cdv;
+    }
+    acv_cntr += num_cdv;
+  }
+  if (num_ddiv) {
+    if (adiv_cntr >= div_start && adiv_cntr < div_end) {
+      write_data_partial(s, div_cntr, num_ddiv, di_vector);
+      div_cntr += num_ddiv;
+    }
+    adiv_cntr += num_ddiv;
+  }
+  if (num_ddrv) {
+    if (adrv_cntr >= drv_start && adrv_cntr < drv_end) {
+      write_data_partial(s, drv_cntr, num_ddrv, dr_vector);
+      drv_cntr += num_ddrv;
+    }
+    adrv_cntr += num_ddrv;
+  }
+  // aleatory uncertain
+  if (num_cauv) {
+    if (acv_cntr >= cv_start && acv_cntr < cv_end) {
+      write_data_partial(s, cv_cntr, num_cauv, c_vector);
+      cv_cntr += num_cauv;
+    }
+    acv_cntr += num_cauv;
+  }
+  if (num_dauiv) {
+    if (adiv_cntr >= div_start && adiv_cntr < div_end) {
+      write_data_partial(s, div_cntr, num_dauiv, di_vector);
+      div_cntr += num_dauiv;
+    }
+    adiv_cntr += num_dauiv;
+  }
+  if (num_daurv) {
+    if (adrv_cntr >= drv_start && adrv_cntr < drv_end) {
+      write_data_partial(s, drv_cntr, num_daurv, dr_vector);
+      drv_cntr += num_daurv;
+    }
+    adrv_cntr += num_daurv;
+  }
+  // epistemic uncertain
+  if (num_ceuv) {
+    if (acv_cntr >= cv_start && acv_cntr < cv_end) {
+      write_data_partial(s, cv_cntr, num_ceuv, c_vector);
+      cv_cntr += num_ceuv;
+    }
+    acv_cntr += num_ceuv;
+  }
+  if (num_deuiv) {
+    if (adiv_cntr >= div_start && adiv_cntr < div_end) {
+      write_data_partial(s, div_cntr, num_deuiv, di_vector);
+      div_cntr += num_deuiv;
+    }
+    adiv_cntr += num_deuiv;
+  }
+  if (num_deurv) {
+    if (adrv_cntr >= drv_start && adrv_cntr < drv_end) {
+      write_data_partial(s, drv_cntr, num_deurv, dr_vector);
+      drv_cntr += num_deurv;
+    }
+    adrv_cntr += num_deurv;
+  }
+  // state
+  if (num_csv) {
+    if (acv_cntr >= cv_start && acv_cntr < cv_end) {
+      write_data_partial(s, cv_cntr, num_csv, c_vector);
+      //cv_cntr += num_csv;
+    }
+    //acv_cntr += num_csv;
+  }
+  if (num_dsiv) {
+    if (adiv_cntr >= div_start && adiv_cntr < div_end) {
+      write_data_partial(s, div_cntr, num_dsiv, di_vector);
+      //div_cntr += num_dsiv;
+    }
+    //adiv_cntr += num_dsiv;
+  }
+  if (num_dsrv) {
+    if (adrv_cntr >= drv_start && adrv_cntr < drv_end) {
+      write_data_partial(s, drv_cntr, num_dsrv, dr_vector);
+      //drv_cntr += num_dsrv;
+    }
+    //adrv_cntr += num_dsrv;
+  }
+}
+
 } // namespace Dakota
 
 #endif

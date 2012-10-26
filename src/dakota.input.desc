@@ -302,7 +302,7 @@ TAG "method/moga/fitness_type"
 TAG "method/moga/fitness_type/layer_rank"
 TAG "method/moga/fitness_type/domination_count"
 TAG "method/moga/replacement_type"
-	DESC "{Replacement type} MethodCommands.html#MethodJEGADC"
+	DESC "{Replacement type} MethodCommands.html#MethodJEGAMOGA"
 
 TAG "method/moga/replacement_type/elitist"
 TAG "method/moga/replacement_type/roulette_wheel"

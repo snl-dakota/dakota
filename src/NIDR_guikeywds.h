@@ -733,7 +733,7 @@ static GuiKeyWord
 		{"population_size",0x29,0,15,0,345,0,0.,0.,0.,0,"{Number of population members} MethodCommands.html#MethodJEGADC"},
 		{"postprocessor_type",8,1,5,0,309,kw_114,0.,0.,0.,0,"{Post_processor type} MethodCommands.html#MethodJEGAMOGA"},
 		{"print_each_pop",8,0,17,0,349,0,0.,0.,0.,0,"{Population output} MethodCommands.html#MethodJEGADC"},
-		{"replacement_type",8,4,2,0,283,kw_116,0.,0.,0.,0,"{Replacement type} MethodCommands.html#MethodJEGADC"},
+		{"replacement_type",8,4,2,0,283,kw_116,0.,0.,0.,0,"{Replacement type} MethodCommands.html#MethodJEGAMOGA"},
 		{"seed",0x19,0,21,0,391,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodJEGADC"}
 		},
 	kw_118[1] = {
