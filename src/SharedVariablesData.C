@@ -658,7 +658,7 @@ void SharedVariablesDataRep::initialize_active_components()
   activeVarsCompsTotals.resize(12);
 
   // design
-  activeVarsCompsTotals[0] = (acv_cntr >= cvStart && acv_cntr < cv_end)
+  activeVarsCompsTotals[0] = (acv_cntr  >=  cvStart &&  acv_cntr <  cv_end)
                            ? num_cdv : 0;
   activeVarsCompsTotals[1] = (adiv_cntr >= divStart && adiv_cntr < div_end)
                            ? num_ddiv : 0;
@@ -666,7 +666,7 @@ void SharedVariablesDataRep::initialize_active_components()
                            ? num_ddrv : 0;
   acv_cntr += num_cdv; adiv_cntr += num_ddiv; adrv_cntr += num_ddrv;
   // aleatory uncertain
-  activeVarsCompsTotals[3] = (acv_cntr >= cvStart && acv_cntr < cv_end)
+  activeVarsCompsTotals[3] = (acv_cntr  >=  cvStart &&  acv_cntr <  cv_end)
                            ? num_cauv : 0;
   activeVarsCompsTotals[4] = (adiv_cntr >= divStart && adiv_cntr < div_end)
                            ? num_dauiv : 0;
@@ -674,7 +674,7 @@ void SharedVariablesDataRep::initialize_active_components()
                            ? num_daurv : 0;
   acv_cntr += num_cauv; adiv_cntr += num_dauiv; adrv_cntr += num_daurv;
   // epistemic uncertain
-  activeVarsCompsTotals[6] = (acv_cntr >= cvStart && acv_cntr < cv_end)
+  activeVarsCompsTotals[6] = (acv_cntr  >=  cvStart &&  acv_cntr <  cv_end)
                            ? num_ceuv : 0;
   activeVarsCompsTotals[7] = (adiv_cntr >= divStart && adiv_cntr < div_end)
                            ? num_deuiv : 0;
@@ -682,8 +682,8 @@ void SharedVariablesDataRep::initialize_active_components()
                            ? num_deurv : 0;
   acv_cntr += num_ceuv; adiv_cntr += num_deuiv; adrv_cntr += num_deurv;
   // state
-  activeVarsCompsTotals[9] = (acv_cntr >= cvStart && acv_cntr < cv_end)
-                           ? num_csv : 0;
+  activeVarsCompsTotals[9]  = (acv_cntr  >=  cvStart &&  acv_cntr <  cv_end)
+                            ? num_csv : 0;
   activeVarsCompsTotals[10] = (adiv_cntr >= divStart && adiv_cntr < div_end)
                             ? num_dsiv : 0;
   activeVarsCompsTotals[11] = (adrv_cntr >= drvStart && adrv_cntr < drv_end)
@@ -701,13 +701,13 @@ void SharedVariablesDataRep::initialize_inactive_components()
     num_ceuv  = variablesCompsTotals[6],  num_deuiv = variablesCompsTotals[7],
     num_deurv = variablesCompsTotals[8],  num_csv   = variablesCompsTotals[9],
     num_dsiv  = variablesCompsTotals[10], num_dsrv  = variablesCompsTotals[11],
-    icv_end   = icvStart  + numICV,  idiv_end  = idivStart + numIDIV,
+    icv_end   = icvStart  + numICV,  idiv_end = idivStart + numIDIV,
     idrv_end  = idrvStart + numIDRV, acv_cntr = 0, adiv_cntr = 0, adrv_cntr = 0;
 
   inactiveVarsCompsTotals.resize(12);
 
   // design
-  inactiveVarsCompsTotals[0] = (acv_cntr >= icvStart && acv_cntr < icv_end)
+  inactiveVarsCompsTotals[0] = (acv_cntr  >=  icvStart &&  acv_cntr <  icv_end)
                              ? num_cdv : 0;
   inactiveVarsCompsTotals[1] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
                              ? num_ddiv : 0;
@@ -715,7 +715,7 @@ void SharedVariablesDataRep::initialize_inactive_components()
                              ? num_ddrv : 0;
   acv_cntr += num_cdv; adiv_cntr += num_ddiv; adrv_cntr += num_ddrv;
   // aleatory uncertain
-  inactiveVarsCompsTotals[3] = (acv_cntr >= icvStart && acv_cntr < icv_end)
+  inactiveVarsCompsTotals[3] = (acv_cntr  >=  icvStart &&  acv_cntr <  icv_end)
                              ? num_cauv : 0;
   inactiveVarsCompsTotals[4] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
                              ? num_dauiv : 0;
@@ -723,7 +723,7 @@ void SharedVariablesDataRep::initialize_inactive_components()
                              ? num_daurv : 0;
   acv_cntr += num_cauv; adiv_cntr += num_dauiv; adrv_cntr += num_daurv;
   // epistemic uncertain
-  inactiveVarsCompsTotals[6] = (acv_cntr >= icvStart && acv_cntr < icv_end)
+  inactiveVarsCompsTotals[6] = (acv_cntr  >=  icvStart &&  acv_cntr <  icv_end)
                              ? num_ceuv : 0;
   inactiveVarsCompsTotals[7] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
                              ? num_deuiv : 0;
@@ -731,8 +731,8 @@ void SharedVariablesDataRep::initialize_inactive_components()
                              ? num_deurv : 0;
   acv_cntr += num_ceuv; adiv_cntr += num_deuiv; adrv_cntr += num_deurv;
   // state
-  inactiveVarsCompsTotals[9] = (acv_cntr >= icvStart && acv_cntr < icv_end)
-                             ? num_csv : 0;
+  inactiveVarsCompsTotals[9]  = (acv_cntr  >=  icvStart &&  acv_cntr <  icv_end)
+                              ? num_csv : 0;
   inactiveVarsCompsTotals[10] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
                               ? num_dsiv : 0;
   inactiveVarsCompsTotals[11] = (adrv_cntr >= idrvStart && adrv_cntr < idrv_end)

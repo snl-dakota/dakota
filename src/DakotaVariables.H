@@ -1062,18 +1062,17 @@ inline bool operator!=(const Variables& vars1, const Variables& vars2)
 /// int or Real, but written for arbitrary types
 template <typename OrdinalType, typename ScalarType1, typename ScalarType2,
           typename ScalarType3>
-inline void write_ordered(std::ostream& s, const SharedVariablesData& svd,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& c_vector,
+inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>&  c_vector,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& di_vector,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType3>& dr_vector)
 {
-  const SizetArray& active_totals = svd.active_components_totals();
-  size_t i, j, num_cdv = active_totals[0], num_ddiv = active_totals[1],
-    num_ddrv  = active_totals[2],  num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4],  num_daurv = active_totals[5],
-    num_ceuv  = active_totals[6],  num_deuiv = active_totals[7],
-    num_deurv = active_totals[8],  num_csv   = active_totals[9],
-    num_dsiv  = active_totals[10], num_dsrv  = active_totals[11],
+  size_t i, j, num_cdv = comp_totals[0], num_ddiv = comp_totals[1],
+    num_ddrv  = comp_totals[2],  num_cauv  = comp_totals[3],
+    num_dauiv = comp_totals[4],  num_daurv = comp_totals[5],
+    num_ceuv  = comp_totals[6],  num_deuiv = comp_totals[7],
+    num_deurv = comp_totals[8],  num_csv   = comp_totals[9],
+    num_dsiv  = comp_totals[10], num_dsrv  = comp_totals[11],
     cv_cntr = 0, div_cntr = 0, drv_cntr = 0;
 
   // design

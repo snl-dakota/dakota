@@ -153,8 +153,8 @@ void ParamStudy::pre_run()
   case VECTOR_FP: // vector_parameter_study (final_point & num_steps)
     if (outputLevel > SILENT_OUTPUT) {
       Cout << "\nVector parameter study from\n";
-      write_ordered(Cout, svd, initialCVPoint, initialDIVPoint,
-		    initialDRVPoint);
+      write_ordered(Cout, svd.active_components_totals(),
+		    initialCVPoint, initialDIVPoint, initialDRVPoint);
       Cout << "to\n";
       write_data(Cout, finalPoint);
       Cout << "using " << numSteps << " steps\n\n";
@@ -167,11 +167,11 @@ void ParamStudy::pre_run()
     if (outputLevel > SILENT_OUTPUT) {
       Cout << "\nVector parameter study for " << numSteps
 	   << " steps starting from\n";
-      write_ordered(Cout, svd, initialCVPoint, initialDIVPoint,
-		    initialDRVPoint);
+      write_ordered(Cout, svd.active_components_totals(),
+		    initialCVPoint, initialDIVPoint, initialDRVPoint);
       Cout << "with a step vector of\n";
-      write_ordered(Cout, svd, contStepVector, discIntStepVector,
-		    discRealStepVector);
+      write_ordered(Cout, svd.active_components_totals(),
+		    contStepVector, discIntStepVector, discRealStepVector);
       Cout << '\n';
     }
     vector_loop();
@@ -181,11 +181,11 @@ void ParamStudy::pre_run()
       Cout << "\nCentered parameter study with steps per variable\n";
       write_data(Cout, stepsPerVariable);
       Cout << "and increments of\n";
-      write_ordered(Cout, svd, contStepVector, discIntStepVector,
-		    discRealStepVector);
+      write_ordered(Cout, svd.active_components_totals(),
+		    contStepVector, discIntStepVector, discRealStepVector);
       Cout << "with the following center point:\n";
-      write_ordered(Cout, svd, initialCVPoint, initialDIVPoint,
-		    initialDRVPoint);
+      write_ordered(Cout, svd.active_components_totals(),
+		    initialCVPoint, initialDIVPoint, initialDRVPoint);
       Cout << '\n';
     }
     centered_loop();
