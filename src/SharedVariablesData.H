@@ -73,6 +73,12 @@ private:
   /// initialize allDiscreteRealTypes
   void initialize_all_discrete_real_types();
 
+  /// initialize activeVarsCompsTotals given {c,di,dr}vStart and num{C,DI,DR}V
+  void initialize_active_components();
+  /// initialize inactiveVarsCompsTotals given i{c,di,dr}vStart and
+  /// numI{C,DI,DR}V
+  void initialize_inactive_components();
+
   /// retrieve the count within variablesComponents corresponding to key
   size_t vc_lookup(unsigned short key) const;
 
@@ -89,6 +95,14 @@ private:
   /// {continuous,discrete integer,discrete real}
   /// {design,aleatory uncertain,epistemic uncertain,state}
   SizetArray variablesCompsTotals;
+  /// totals for active variable type counts for
+  /// {continuous,discrete integer,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}
+  SizetArray activeVarsCompsTotals;
+  /// totals for inactive variable type counts for
+  /// {continuous,discrete integer,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}
+  SizetArray inactiveVarsCompsTotals;
 
   /// the variables view pair containing active (first) and inactive (second)
   /// view enumerations
@@ -237,6 +251,11 @@ public:
   /// initialize types for all of the discrete real variables
   void initialize_all_discrete_real_types();
 
+  /// initialize the active components totals given active variable counts
+  void initialize_active_components();
+  /// initialize the inactive components totals given inactive variable counts
+  void initialize_inactive_components();
+
   /// get num_items continuous labels beginning at index start 
   StringMultiArrayView
     all_continuous_labels(size_t start, size_t num_items) const;
@@ -281,10 +300,19 @@ public:
 
   /// return the user-provided or default Variables identifier
   const String& id() const;
+
   /// return variable type counts for
   /// {continuous,discrete integer,discrete real}
   /// {design,aleatory uncertain,epistemic uncertain,state}
   const SizetArray& components_totals() const;
+  /// return active variable type counts for
+  /// {continuous,discrete integer,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}
+  const SizetArray& active_components_totals() const;
+  /// return inactive variable type counts for
+  /// {continuous,discrete integer,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}
+  const SizetArray& inactive_components_totals() const;
 
   /// retrieve the variables type count within
   /// svdRep->variablesComponents corresponding to (a fine-grain
@@ -416,6 +444,14 @@ inline void SharedVariablesData::initialize_all_discrete_real_types()
 { svdRep->initialize_all_discrete_real_types(); }
 
 
+inline void SharedVariablesData::initialize_active_components()
+{ svdRep->initialize_active_components(); }
+
+
+inline void SharedVariablesData::initialize_inactive_components()
+{ svdRep->initialize_inactive_components(); }
+
+
 inline StringMultiArrayView SharedVariablesData::
 all_continuous_labels(size_t start, size_t num_items) const
 {
@@ -526,6 +562,14 @@ inline const String& SharedVariablesData::id() const
 
 inline const SizetArray& SharedVariablesData::components_totals() const
 { return svdRep->variablesCompsTotals; }
+
+
+inline const SizetArray& SharedVariablesData::active_components_totals() const
+{ return svdRep->activeVarsCompsTotals; }
+
+
+inline const SizetArray& SharedVariablesData::inactive_components_totals() const
+{ return svdRep->inactiveVarsCompsTotals; }
 
 
 inline size_t SharedVariablesData::vc_lookup(unsigned short key) const

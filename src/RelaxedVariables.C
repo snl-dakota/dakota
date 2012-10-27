@@ -167,6 +167,7 @@ void RelaxedVariables::build_active_views()
   sharedVarsData.cv_start(cv_start); sharedVarsData.cv(num_cv);
   sharedVarsData.div_start(0);       sharedVarsData.div(0);
   sharedVarsData.drv_start(0);       sharedVarsData.drv(0);
+  sharedVarsData.initialize_active_components();
   if (num_cv)
     continuousVars
       = RealVector(Teuchos::View, &allContinuousVars[cv_start], num_cv);
@@ -213,6 +214,7 @@ void RelaxedVariables::build_inactive_views()
   sharedVarsData.icv_start(icv_start); sharedVarsData.icv(num_icv);
   sharedVarsData.idiv_start(0);        sharedVarsData.idiv(0);
   sharedVarsData.idrv_start(0);        sharedVarsData.idrv(0);
+  sharedVarsData.initialize_inactive_components();
   if (num_icv)
     inactiveContinuousVars
       = RealVector(Teuchos::View, &allContinuousVars[icv_start], num_icv);

@@ -642,4 +642,102 @@ void SharedVariablesDataRep::initialize_all_discrete_real_types()
     allDiscreteRealTypes[adrv_cntr] = DISCRETE_STATE_SET_REAL;
 }
 
+
+void SharedVariablesDataRep::initialize_active_components()
+{
+  size_t i, j,
+    num_cdv   = variablesCompsTotals[0],  num_ddiv  = variablesCompsTotals[1],
+    num_ddrv  = variablesCompsTotals[2],  num_cauv  = variablesCompsTotals[3],
+    num_dauiv = variablesCompsTotals[4],  num_daurv = variablesCompsTotals[5],
+    num_ceuv  = variablesCompsTotals[6],  num_deuiv = variablesCompsTotals[7],
+    num_deurv = variablesCompsTotals[8],  num_csv   = variablesCompsTotals[9],
+    num_dsiv  = variablesCompsTotals[10], num_dsrv  = variablesCompsTotals[11],
+    cv_end    = cvStart  + numCV,  div_end  = divStart + numDIV,
+    drv_end   = drvStart + numDRV, acv_cntr = 0, adiv_cntr = 0, adrv_cntr = 0;
+
+  activeVarsCompsTotals.resize(12);
+
+  // design
+  activeVarsCompsTotals[0] = (acv_cntr >= cvStart && acv_cntr < cv_end)
+                           ? num_cdv : 0;
+  activeVarsCompsTotals[1] = (adiv_cntr >= divStart && adiv_cntr < div_end)
+                           ? num_ddiv : 0;
+  activeVarsCompsTotals[2] = (adrv_cntr >= drvStart && adrv_cntr < drv_end)
+                           ? num_ddrv : 0;
+  acv_cntr += num_cdv; adiv_cntr += num_ddiv; adrv_cntr += num_ddrv;
+  // aleatory uncertain
+  activeVarsCompsTotals[3] = (acv_cntr >= cvStart && acv_cntr < cv_end)
+                           ? num_cauv : 0;
+  activeVarsCompsTotals[4] = (adiv_cntr >= divStart && adiv_cntr < div_end)
+                           ? num_dauiv : 0;
+  activeVarsCompsTotals[5] = (adrv_cntr >= drvStart && adrv_cntr < drv_end)
+                           ? num_daurv : 0;
+  acv_cntr += num_cauv; adiv_cntr += num_dauiv; adrv_cntr += num_daurv;
+  // epistemic uncertain
+  activeVarsCompsTotals[6] = (acv_cntr >= cvStart && acv_cntr < cv_end)
+                           ? num_ceuv : 0;
+  activeVarsCompsTotals[7] = (adiv_cntr >= divStart && adiv_cntr < div_end)
+                           ? num_deuiv : 0;
+  activeVarsCompsTotals[8] = (adrv_cntr >= drvStart && adrv_cntr < drv_end)
+                           ? num_deurv : 0;
+  acv_cntr += num_ceuv; adiv_cntr += num_deuiv; adrv_cntr += num_deurv;
+  // state
+  activeVarsCompsTotals[9] = (acv_cntr >= cvStart && acv_cntr < cv_end)
+                           ? num_csv : 0;
+  activeVarsCompsTotals[10] = (adiv_cntr >= divStart && adiv_cntr < div_end)
+                            ? num_dsiv : 0;
+  activeVarsCompsTotals[11] = (adrv_cntr >= drvStart && adrv_cntr < drv_end)
+                            ? num_dsrv : 0;
+  //acv_cntr += num_csv; adiv_cntr += num_dsiv; adrv_cntr += num_dsrv;
+}
+
+
+void SharedVariablesDataRep::initialize_inactive_components()
+{
+  size_t i, j,
+    num_cdv   = variablesCompsTotals[0],  num_ddiv  = variablesCompsTotals[1],
+    num_ddrv  = variablesCompsTotals[2],  num_cauv  = variablesCompsTotals[3],
+    num_dauiv = variablesCompsTotals[4],  num_daurv = variablesCompsTotals[5],
+    num_ceuv  = variablesCompsTotals[6],  num_deuiv = variablesCompsTotals[7],
+    num_deurv = variablesCompsTotals[8],  num_csv   = variablesCompsTotals[9],
+    num_dsiv  = variablesCompsTotals[10], num_dsrv  = variablesCompsTotals[11],
+    icv_end   = icvStart  + numICV,  idiv_end  = idivStart + numIDIV,
+    idrv_end  = idrvStart + numIDRV, acv_cntr = 0, adiv_cntr = 0, adrv_cntr = 0;
+
+  inactiveVarsCompsTotals.resize(12);
+
+  // design
+  inactiveVarsCompsTotals[0] = (acv_cntr >= icvStart && acv_cntr < icv_end)
+                             ? num_cdv : 0;
+  inactiveVarsCompsTotals[1] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
+                             ? num_ddiv : 0;
+  inactiveVarsCompsTotals[2] = (adrv_cntr >= idrvStart && adrv_cntr < idrv_end)
+                             ? num_ddrv : 0;
+  acv_cntr += num_cdv; adiv_cntr += num_ddiv; adrv_cntr += num_ddrv;
+  // aleatory uncertain
+  inactiveVarsCompsTotals[3] = (acv_cntr >= icvStart && acv_cntr < icv_end)
+                             ? num_cauv : 0;
+  inactiveVarsCompsTotals[4] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
+                             ? num_dauiv : 0;
+  inactiveVarsCompsTotals[5] = (adrv_cntr >= idrvStart && adrv_cntr < idrv_end)
+                             ? num_daurv : 0;
+  acv_cntr += num_cauv; adiv_cntr += num_dauiv; adrv_cntr += num_daurv;
+  // epistemic uncertain
+  inactiveVarsCompsTotals[6] = (acv_cntr >= icvStart && acv_cntr < icv_end)
+                             ? num_ceuv : 0;
+  inactiveVarsCompsTotals[7] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
+                             ? num_deuiv : 0;
+  inactiveVarsCompsTotals[8] = (adrv_cntr >= idrvStart && adrv_cntr < idrv_end)
+                             ? num_deurv : 0;
+  acv_cntr += num_ceuv; adiv_cntr += num_deuiv; adrv_cntr += num_deurv;
+  // state
+  inactiveVarsCompsTotals[9] = (acv_cntr >= icvStart && acv_cntr < icv_end)
+                             ? num_csv : 0;
+  inactiveVarsCompsTotals[10] = (adiv_cntr >= idivStart && adiv_cntr < idiv_end)
+                              ? num_dsiv : 0;
+  inactiveVarsCompsTotals[11] = (adrv_cntr >= idrvStart && adrv_cntr < idrv_end)
+                              ? num_dsrv : 0;
+  //acv_cntr += num_csv; adiv_cntr += num_dsiv; adrv_cntr += num_dsrv;
+}
+
 } // namespace Dakota

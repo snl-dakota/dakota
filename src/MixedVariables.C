@@ -169,7 +169,7 @@ void MixedVariables::build_active_views()
     drv_start = num_ddrv + num_daurv; num_drv = num_deurv;            break;
   case MIXED_UNCERTAIN:
     // skip over the design variables
-    cv_start  = num_cdv;  num_cv  = num_cauv + num_ceuv;
+    cv_start  = num_cdv;  num_cv  = num_cauv  + num_ceuv;
     div_start = num_ddiv; num_div = num_dauiv + num_deuiv;
     drv_start = num_ddrv; num_drv = num_daurv + num_deurv;            break;
   case MIXED_STATE:
@@ -181,12 +181,13 @@ void MixedVariables::build_active_views()
   sharedVarsData.cv_start(cv_start);   sharedVarsData.cv(num_cv);
   sharedVarsData.div_start(div_start); sharedVarsData.div(num_div);
   sharedVarsData.drv_start(drv_start); sharedVarsData.drv(num_drv);
+  sharedVarsData.initialize_active_components();
   if (num_cv)
     continuousVars
-      = RealVector(Teuchos::View, &allContinuousVars[cv_start], num_cv);
+      = RealVector(Teuchos::View, &allContinuousVars[cv_start],    num_cv);
   if (num_div)
     discreteIntVars
-      = IntVector(Teuchos::View, &allDiscreteIntVars[div_start], num_div);
+      = IntVector(Teuchos::View,  &allDiscreteIntVars[div_start],  num_div);
   if (num_drv)
     discreteRealVars
       = RealVector(Teuchos::View, &allDiscreteRealVars[drv_start], num_drv);
@@ -233,7 +234,7 @@ void MixedVariables::build_inactive_views()
     idrv_start = num_ddrv + num_daurv; num_idrv = num_deurv;             break;
   case MIXED_UNCERTAIN:
     // skip over the design variables
-    icv_start  = num_cdv;  num_icv  = num_cauv + num_ceuv;
+    icv_start  = num_cdv;  num_icv  = num_cauv  + num_ceuv;
     idiv_start = num_ddiv; num_idiv = num_dauiv + num_deuiv;
     idrv_start = num_ddrv; num_idrv = num_daurv + num_deurv;             break;
   case MIXED_STATE:
@@ -245,6 +246,7 @@ void MixedVariables::build_inactive_views()
   sharedVarsData.icv_start(icv_start);   sharedVarsData.icv(num_icv);
   sharedVarsData.idiv_start(idiv_start); sharedVarsData.idiv(num_idiv);
   sharedVarsData.idrv_start(idrv_start); sharedVarsData.idrv(num_idrv);
+  sharedVarsData.initialize_inactive_components();
   if (num_icv)
     inactiveContinuousVars
       = RealVector(Teuchos::View, &allContinuousVars[icv_start],    num_icv);
