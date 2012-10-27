@@ -67,7 +67,8 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
     RealVectorArray empty_rv_array; // empty
     se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
-			     empty_rv_array, respLevelTarget, cdfFlag);
+			     empty_rv_array, respLevelTarget,
+			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
     emulatorModel.init_communicators(mcmc_concurrency);

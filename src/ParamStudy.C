@@ -303,21 +303,21 @@ void ParamStudy::vector_loop()
     size_t di_cntr = 0, dr_cntr = 0;
 
     // active continuous
-    for (j=0; j<num_cv; ++j)                                // cv
+    for (j=0; j<num_cv; ++j)                                // cdv,cauv,ceuv,csv
       c_step(j, i, vars);
 
     // active discrete int
-    for (j=0; j<num_ddriv; ++j, ++di_cntr)                  // ddiv 1
+    for (j=0; j<num_ddriv; ++j, ++di_cntr)                  // ddriv
       dri_step(di_cntr, i, vars);
-    for (j=0; j<num_ddsiv; ++j, ++di_cntr)                  // ddiv 2
+    for (j=0; j<num_ddsiv; ++j, ++di_cntr)                  // ddsiv
       dsi_step(di_cntr, i, ddsi_values[j], vars);
     for (j=0; j<num_dauiv+num_deuriv; ++j, ++di_cntr)       // dauiv, deuriv
       dri_step(di_cntr, i, vars);
     for (j=0; j<num_deusiv; ++j, ++di_cntr)                 // deusiv
       dsi_step(di_cntr, i, dusi_vals_probs[j], vars);
-    for (j=0; j<num_dsriv; ++j, ++di_cntr)                  // dsiv 1
+    for (j=0; j<num_dsriv; ++j, ++di_cntr)                  // dsriv
       dri_step(di_cntr, i, vars);
-    for (j=0; j<num_dssiv; ++j, ++di_cntr)                  // dsiv 2
+    for (j=0; j<num_dssiv; ++j, ++di_cntr)                  // dssiv
       dsi_step(di_cntr, i, dssi_values[j], vars);
 
     // active discrete real
@@ -481,10 +481,10 @@ void ParamStudy::centered_loop()
 	}
 	else if (k < num_dv + num_uv + num_csv)                           // csv
 	  c_step(k - num_ddv - num_dauv - num_deuv, i, vars);
-	else if (k < num_dv + num_uv + num_csv + num_dsriv)            // dsiv 1
+	else if (k < num_dv + num_uv + num_csv + num_dsriv)             // dsriv
 	  dri_step(k - num_cdv - num_cauv - num_ceuv - num_csv - num_ddsrv -
 		   num_daurv - num_deurv, i, vars);
-	else if (k < num_dv + num_uv + num_csv + num_dsiv) {           // dsiv 2
+	else if (k < num_dv + num_uv + num_csv + num_dsiv) {            // dssiv
 	  size_t offset_di  = k - num_cdv - num_cauv - num_ceuv - num_csv
 	                    - num_ddsrv - num_daurv - num_deurv,
 	         offset_dsi = offset_di - num_ddiv - num_dauiv - num_deuiv

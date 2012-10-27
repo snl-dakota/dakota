@@ -430,9 +430,11 @@ requested_levels(const RealVectorArray& req_resp_levels,
 		 const RealVectorArray& req_prob_levels,
 		 const RealVectorArray& req_rel_levels,
 		 const RealVectorArray& req_gen_rel_levels,
-		 short resp_lev_target, bool cdf_flag)
+		 short resp_lev_tgt, short resp_lev_tgt_reduce, bool cdf_flag)
 {
-  respLevelTarget = resp_lev_target; cdfFlag = cdf_flag;
+  respLevelTarget = resp_lev_tgt;
+  respLevelTargetReduce = resp_lev_tgt_reduce;
+  cdfFlag = cdf_flag;
 
   size_t i;
   totalLevelRequests = 0;

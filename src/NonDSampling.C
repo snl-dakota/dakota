@@ -727,6 +727,18 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
   RealArray sorted_samples; // STL-based array for sorting
   SizetArray bins; Real min, max;
 
+  // check if moments are required, and if so, compute them now
+  if (momentStats.empty()) {
+    bool need_moments = false;
+    for (i=0; i<numFunctions; ++i)
+      if ( !requestedRelLevels[i].empty() ||
+	   ( !requestedRespLevels[i].empty() &&
+	     respLevelTarget == RELIABILITIES ) )
+	{ need_moments = true; break; }
+    if (need_moments)
+      compute_moments(samples);
+  }
+
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
 
@@ -790,7 +802,6 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
     // ----------------
     // Process mappings
     // ----------------
-    Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
     if (rl_len) {
       switch (respLevelTarget) {
       case PROBABILITIES: case GEN_RELIABILITIES: {
@@ -807,7 +818,8 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 	}
 	break;
       }
-      case RELIABILITIES: // z -> beta (based on moment projection)
+      case RELIABILITIES: { // z -> beta (based on moment projection)
+	Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
 	for (j=0; j<rl_len; j++) {
 	  const Real& z = requestedRespLevels[i][j];
 	  if (std_dev > Pecos::SMALL_NUMBER) {
@@ -820,6 +832,7 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 	      ? -Pecos::LARGE_NUMBER : Pecos::LARGE_NUMBER;
 	}
 	break;
+      }
       }
     }
     for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
@@ -843,10 +856,13 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
       else
 	computedRespLevels[i][j+bl_len] = sorted_samples[index];
     }
-    for (j=0; j<bl_len; j++) { // beta -> z
-      const Real& beta = requestedRelLevels[i][j];
-      computedRespLevels[i][j+pl_len] = (cdfFlag) ?
-	mean - beta * std_dev : mean + beta * std_dev;
+    if (bl_len) {
+      Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
+      for (j=0; j<bl_len; j++) { // beta -> z
+	const Real& beta = requestedRelLevels[i][j];
+	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
+	  mean - beta * std_dev : mean + beta * std_dev;
+      }
     }
 
     // ---------------------------------------------------------------------

@@ -412,7 +412,8 @@ void NonDExpansion::construct_expansion_sampler()
     RealVectorArray& req_resp_levs = (respLevelTarget == RELIABILITIES) ?
       empty_rv_array : requestedRespLevels;
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
-      empty_rv_array, requestedGenRelLevels, respLevelTarget, cdfFlag);
+      empty_rv_array, requestedGenRelLevels, respLevelTarget,
+      respLevelTargetReduce, cdfFlag);
 
     const String& integration_refine
       = probDescDB.get_string("method.nond.integration_refinement");
@@ -441,7 +442,8 @@ void NonDExpansion::construct_expansion_sampler()
         (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
       imp_sampler_rep->output_level(outputLevel);
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
-	empty_rv_array, empty_rv_array, respLevelTarget, cdfFlag);
+	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
+	cdfFlag);
     }
   }
 }

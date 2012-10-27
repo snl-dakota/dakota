@@ -51,7 +51,8 @@ public:
 			const RealVectorArray& req_prob_levels,
 			const RealVectorArray& req_rel_levels,
 			const RealVectorArray& req_gen_rel_levels,
-			short resp_lev_target, bool cdf_flag);
+			short resp_lev_tgt, short resp_lev_tgt_reduce,
+			bool cdf_flag);
 
   /// set distParamDerivs
   void distribution_parameter_derivatives(bool dist_param_derivs);
