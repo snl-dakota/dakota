@@ -735,8 +735,18 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 	   ( !requestedRespLevels[i].empty() &&
 	     respLevelTarget == RELIABILITIES ) )
 	{ need_moments = true; break; }
-    if (need_moments)
-      compute_moments(samples);
+    if (need_moments) {
+      Cerr << "Error: required moments not available in compute_distribution_"
+	   << "mappings().  Call compute_moments() first." << std::endl;
+      abort_handler(-1);
+      // Issue with the following approach is that subsequent invocations of
+      // compute_distribution_mappings() without compute_moments() would not
+      // be detected and old moments would be used.  Performing more rigorous
+      // bookkeeping of moment updates is overkill for current use cases.
+      //Cerr << "Warning: moments not available in compute_distribution_"
+      //     << "mappings(); computing them now." << std::endl;
+      //compute_moments(samples);
+    }
   }
 
   IntRespMCIter it;
