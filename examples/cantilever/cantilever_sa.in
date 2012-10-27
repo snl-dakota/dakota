@@ -1,13 +1,13 @@
 strategy,    
-  single_method 
-    tabular_graphics_data    
+	single_method graphics
+	  tabular_graphics_data    
 
-method,									 
-        sampling 
-        sample_type lhs
-        seed =52983
-        samples = 100
-        # variance_based_decomp
+method,
+	sampling 
+          sample_type lhs
+          seed =52983
+          samples = 100
+#	  variance_based_decomp
 
 variables,
         uniform_uncertain = 6
