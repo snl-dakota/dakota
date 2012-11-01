@@ -122,10 +122,12 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     endforeach()
 
 
-    # if Dakota test has parallel tests (i.e. #p[0-9]+), add parallel test
-    file(STRINGS ${test_input_file} PTestList REGEX "#p[0-9]+" LIMIT_COUNT 1)
-    if (NOT ${PTestList} EQUAL "")
-        add_application_test(
+    # only add parallel tests when MPI enabled
+    if (DAKOTA_HAVE_MPI)
+      # if Dakota test has parallel tests (i.e. #p[0-9]+), add parallel test
+      file(STRINGS ${test_input_file} PTestList REGEX "#p[0-9]+" LIMIT_COUNT 1)
+      if (NOT ${PTestList} EQUAL "")
+	add_application_test(
 	  p${test_name}
 	  FILE_DEPENDENCIES "${test_all_files}"
 	  PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_pdiffs.out
@@ -142,8 +144,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 	  set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
 	  list(APPEND copied_test_files_abs "${copied_file}")
 	endforeach()
-
       endif() # add parallel test
+    endif() # MPI enabled
 
     # TODO: The following regex needs to be based on output of dakota_diff.perl
     #       and account for consistency with baseline
