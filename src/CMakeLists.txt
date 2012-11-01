@@ -739,6 +739,13 @@ set(Dakota_LIBS dakota_src dakota_src_fortran ${TPL_LIBS})
 # Remove teuchos from Dakota_LIBS
 list(REMOVE_ITEM Dakota_LIBS teuchos)
 
+# Trunk Trilinos has refactored Teuchos into sub-packages
+# Assume for now that anyone building Dakota under Trilinos is on trunk of both
+list(REMOVE_ITEM EXPORT_TARGETS teuchos)
+list(APPEND EXPORT_TARGETS 
+  teuchosremainder teuchosnumerics teuchoscomm teuchosparameterlist teuchoscore
+  )
+
 set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
     "Dakota libraries")
 set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
