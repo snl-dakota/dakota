@@ -19,13 +19,26 @@ endif()
 include(DakotaEnableSpecMaint)
 DakotaEnableSpecMaint()
 
-set(TPL_LIBS teuchos nidr)
+set(TPL_LIBS nidr)
 set(EXTRA_TPL_LIBS "")
-
 # WJB - ToDo:  convince myself that dakota_src_fortran should have a
 #              better name and be specified in the initial EXPORTS_TARGETS set
-set(EXPORT_TARGETS dakota_src teuchos nidr)
+set(EXPORT_TARGETS dakota_src nidr)
 link_directories(${Teuchos_LIBRARY_DIRS})
+
+
+# Trunk Trilinos has refactored Teuchos into sub-packages
+# Assume for now that anyone building Dakota under Trilinos is on trunk of both
+if (BUILD_IN_TRILINOS)
+  list(APPEND TPL_LIBS teuchosremainder teuchosnumerics teuchoscomm 
+    teuchosparameterlist teuchoscore)
+  list(APPEND EXPORT_TARGETS teuchosremainder teuchosnumerics teuchoscomm
+    teuchosparameterlist teuchoscore)
+else()
+  list(APPEND TPL_LIBS teuchos)
+  list(APPEND EXPORT_TARGETS teuchos)
+endif()
+
 
 option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
 if(DAKOTA_PLUGIN)
@@ -732,27 +745,20 @@ message(STATUS "EXTRA TPL LIBS: ${EXTRA_TPL_LIBS}")
 
 # Pass some data back to Trilinos
 if (BUILD_IN_TRILINOS)
-get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
-set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
+  get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
+  set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
     "Dakota include directories")
-set(Dakota_LIBS dakota_src dakota_src_fortran ${TPL_LIBS})
-# Remove teuchos from Dakota_LIBS
-list(REMOVE_ITEM Dakota_LIBS teuchos)
-
-# Trunk Trilinos has refactored Teuchos into sub-packages
-# Assume for now that anyone building Dakota under Trilinos is on trunk of both
-list(REMOVE_ITEM EXPORT_TARGETS teuchos)
-list(APPEND EXPORT_TARGETS 
-  teuchosremainder teuchosnumerics teuchoscomm teuchosparameterlist teuchoscore
-  )
-
-set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
+  set(Dakota_LIBS dakota_src dakota_src_fortran ${TPL_LIBS})
+  # Only remove the Teuchos libraries from the Dakota_LIBS variable
+  list(REMOVE_ITEM Dakota_LIBS teuchosremainder teuchosnumerics teuchoscomm 
+    teuchosparameterlist teuchoscore)
+  set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
     "Dakota libraries")
-set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
+  set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
     "Dakota extra libraries")
-message(STATUS 
-  "Export targets to <export-name> = ${ExportTarget}: ${EXPORT_TARGETS}"
-  )
-export(TARGETS ${EXPORT_TARGETS} FILE
-       "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
+  message(STATUS 
+    "Export targets to <export-name> = ${ExportTarget}: ${EXPORT_TARGETS}"
+    )
+  export(TARGETS ${EXPORT_TARGETS} FILE
+    "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
 endif()
