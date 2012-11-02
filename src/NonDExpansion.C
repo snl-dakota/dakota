@@ -1922,11 +1922,11 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   if (vbdControl == Pecos::ALL_VBD) {
     // create aggregate interaction labels
     poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
-    const Pecos::BitSetULongMap& s_index_map
+    const Pecos::BitArrayULongMap& s_index_map
       = poly_approx_rep->sobol_index_map();
     num_indices = poly_approx_rep->sobol_indices().length();
     sobol_labels.resize(boost::extents[num_indices]);
-    for (Pecos::BSULMCIter map_cit=s_index_map.begin();
+    for (Pecos::BAULMCIter map_cit=s_index_map.begin();
 	 map_cit!=s_index_map.end(); ++map_cit)
       for (j=0; j<numContinuousVars; ++j)
 	if (map_cit->first[j])
