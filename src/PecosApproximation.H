@@ -90,7 +90,7 @@ public:
   /// computing total effects
   void compute_total_effects();
   /// return polyApproxRep->sobolIndexMap
-  const Pecos::IntIntMap& sobol_index_map() const;
+  const Pecos::BitSetULongMap& sobol_index_map() const;
   /// return polyApproxRep->sobolIndices
   const Pecos::RealVector& sobol_indices() const;
   /// return polyApproxRep->totalSobolIndices
@@ -331,7 +331,7 @@ inline void PecosApproximation::compute_total_effects()
 { polyApproxRep->compute_total_effects(); }
 
 
-inline const Pecos::IntIntMap& PecosApproximation::sobol_index_map() const
+inline const Pecos::BitSetULongMap& PecosApproximation::sobol_index_map() const
 { return polyApproxRep->sobol_index_map(); }
 
 
