@@ -172,6 +172,11 @@ public:
   /// return the method identifier (methodId)
   const String& method_id() const;
 
+  /// set the method convergence tolerance (convergenceTol)
+  void convergence_tolerance(Real conv_tol);
+  /// return the method convergence tolerance (convergenceTol)
+  Real convergence_tolerance() const;
+
   /// set the method output level (outputLevel)
   void output_level(short out_lev);
   /// return the method output level (outputLevel)
@@ -401,6 +406,17 @@ inline const String& Iterator::method_name() const
 
 inline const String& Iterator::method_id() const
 { return (iteratorRep) ? iteratorRep->methodId : methodId; }
+
+
+inline void Iterator::convergence_tolerance(Real conv_tol)
+{
+  if (iteratorRep) iteratorRep->convergenceTol = conv_tol;
+  else             convergenceTol = conv_tol; 
+}
+
+
+inline Real Iterator::convergence_tolerance() const
+{ return (iteratorRep) ? iteratorRep->convergenceTol : convergenceTol; }
 
 
 inline void Iterator::output_level(short out_lev)

@@ -184,9 +184,17 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
     // constraintTol = approxSubProbMinimizer.constraint_tolerance();
     if (constraintTol <= 0.) { // not specified in SBLM method spec
       Real aspm_constr_tol = probDescDB.get_real("method.constraint_tolerance");
-      constraintTol = (aspm_constr_tol > 0.) ?
-	aspm_constr_tol : // sub-method has spec: enforce consistency
-	1.e-4;            // compromise value among NPSOL/DOT/CONMIN
+      if (aspm_constr_tol > 0.) // sub-method has spec: enforce SBLM consistency
+	constraintTol = aspm_constr_tol;
+      else { // neither has spec: assign default and enforce consistency
+	constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
+	Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+	aspm->constraint_tolerance(constraintTol);
+      }
+    }
+    else { // SBLM method spec takes precedence over approxSubProbMinimizer spec
+      Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+      aspm->constraint_tolerance(constraintTol);
     }
     probDescDB.set_db_method_node(method_index); // restore method only
   }
@@ -195,6 +203,8 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
     approxSubProbMinimizer = Iterator(approx_method_name, approxSubProbModel);
     if (constraintTol <= 0.) // not specified in SBLM method spec
       constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
+    Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
+    aspm->constraint_tolerance(constraintTol);
   }
 
   // Allocate comms in approxSubProbModel/iteratedModel for parallel SBLM.

@@ -44,8 +44,13 @@ class Minimizer: public Iterator
 public:
 
   //
-  //- Heading: Virtual member function redefinitions
+  //- Heading: Member functions
   //
+
+  /// set the method constraint tolerance (constraintTol)
+  void constraint_tolerance(Real constr_tol);
+  /// return the method constraint tolerance (constraintTol)
+  Real constraint_tolerance() const;
 
 protected:
 
@@ -249,6 +254,14 @@ inline Minimizer::Minimizer(): scaleFlag(false)
 
 
 inline Minimizer::~Minimizer() { }
+
+
+inline void Minimizer::constraint_tolerance(Real constr_tol)
+{ constraintTol = constr_tol; }
+
+
+inline Real Minimizer::constraint_tolerance() const
+{ return constraintTol; }
 
 
 inline void Minimizer::finalize_run()
