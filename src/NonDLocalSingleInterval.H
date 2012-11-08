@@ -49,7 +49,7 @@ protected:
   //
 
   void initialize();
-  void post_process_cell_results(bool minimize);
+  void post_process_cell_results(bool maximize);
 
 private:
 

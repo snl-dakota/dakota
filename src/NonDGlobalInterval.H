@@ -65,9 +65,9 @@ protected:
   /// set the optimization variable bounds for each cell
   virtual void set_cell_bounds();
   /// determine truthFnStar and approxFnStar
-  virtual void get_best_sample(bool minimize, bool eval_approx);
+  virtual void get_best_sample(bool maximize, bool eval_approx);
   /// post-process a cell minimization/maximization result
-  virtual void post_process_cell_results(bool minimize);
+  virtual void post_process_cell_results(bool maximize);
   /// post-process the interval computed for a response function
   virtual void post_process_response_fn_results();
   /// perform final post-processing
@@ -79,7 +79,7 @@ protected:
 
   /// post-process an optimization execution: output results,
   /// update convergence controls, and update GP approximation
-  void post_process_run_results(bool minimize);
+  void post_process_run_results(bool maximize);
   /// evaluate the truth response at the optimal variables solution
   /// and update the GP with the new data
   void evaluate_response_star_truth();
@@ -125,16 +125,13 @@ private:
 				const Response& sub_model_response,
 				Response& recast_response);
 
-  /// static function used as the objective function when minimizing the GP
-  static void objective_min(const Variables& sub_model_vars,
-			    const Variables& recast_vars,
-			    const Response& sub_model_response,
-			    Response& recast_response);
-  /// static function used as the objective function when maximizing the GP
-  static void objective_max(const Variables& sub_model_vars,
-			    const Variables& recast_vars,
-			    const Response& sub_model_response,
-			    Response& recast_response);
+  /// static function used to extract the active objective function
+  /// when optimizing for an interval lower or upper bound (non-EIF
+  /// formulations).  The sense of the optimization is set separately.
+  static void extract_objective(const Variables& sub_model_vars,
+				const Variables& recast_vars,
+				const Response& sub_model_response,
+				Response& recast_response);
 
   //
   //- Heading: Data

@@ -1762,9 +1762,7 @@ PMA_objective_eval(const Variables& sub_model_vars,
   // The PMA objective function is G(u)
   // ----------------------------------
 
-  short asv_val    = recast_response.active_set_request_vector()[0];
   int   resp_fn    = nondLocRelInstance->respFnCount;
-  bool  pma_max    = nondLocRelInstance->pmaMaximizeG;
   short sm_asv_val = sub_model_response.active_set_request_vector()[resp_fn];
   Real fn; RealVector fn_grad_u; RealSymMatrix fn_hess_u;
   if (sm_asv_val & 2)
@@ -1782,6 +1780,8 @@ PMA_objective_eval(const Variables& sub_model_vars,
 					    fn_grad_u, fn_hess_u);
   }
 
+  short asv_val = recast_response.active_set_request_vector()[0];
+  bool  pma_max = nondLocRelInstance->pmaMaximizeG;
   if (asv_val & 1) {
     fn = sub_model_response.function_value(resp_fn);
     if (pma_max) recast_response.function_value(-fn, 0);

@@ -237,6 +237,7 @@ void NonDGlobalInterval::quantify_uncertainty()
   primary_resp_map[0].resize(1);
   BoolDequeArray nonlinear_resp_map(1);
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
+  BoolDeque max_sense(1);
   RecastModel* int_opt_model_rep = (RecastModel*)intervalOptModel.model_rep();
 
   initialize(); // virtual fn
@@ -245,6 +246,10 @@ void NonDGlobalInterval::quantify_uncertainty()
 
     primary_resp_map[0][0] = respFnCntr;
     nonlinear_resp_map[0][respFnCntr] = true;
+    if (!eifFlag)
+      int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	primary_resp_map, secondary_resp_map, nonlinear_resp_map, 
+	extract_objective, NULL);
 
     for (cellCntr=0; cellCntr<numCells; ++cellCntr) {
 
@@ -255,10 +260,10 @@ void NonDGlobalInterval::quantify_uncertainty()
 	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
 	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  EIF_objective_min, NULL);
-      else
-	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
-	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	  objective_min, NULL);
+      else {
+	max_sense[0] = false;
+	int_opt_model_rep->primary_response_fn_sense(max_sense);
+      }
 
       // Iterate until EGO converges
       distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
@@ -269,45 +274,10 @@ void NonDGlobalInterval::quantify_uncertainty()
 
 	// determine approxFnStar from minimum among sample data
 	if (eifFlag)
-	  get_best_sample(true, true);
+	  get_best_sample(false, true);
 
 	// Execute GLOBAL search and retrieve results
 	Cout << "\n>>>>> Initiating global minimization: response "
-	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
-	     << sbIterNum << "\n\n";
-	// no summary output since on-the-fly constructed:
-	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
-	intervalOptimizer.run_iterator(Cout);
-	// output iteration results, update convergence controls, and update GP
-	post_process_run_results(true);
-      }
-      if (gpModelFlag)
-	get_best_sample(true, false); // pull truthFnStar from sample data
-      post_process_cell_results(true); // virtual fn: post-process min
-
-      // initialize the recast model for upper bound estimation
-      if (eifFlag)
-	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
-	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	  EIF_objective_max, NULL);
-      else
-	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
-	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	  objective_max, NULL);
-
-      // Iterate until EGO converges
-      distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
-      prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
-      boundConverged = false;
-      while (!boundConverged) {
-	++sbIterNum;
-
-	// determine approxFnStar from maximum among sample data
-	if (eifFlag)
-	  get_best_sample(false, true);
-
-	// Execute GLOBAL search
-	Cout << "\n>>>>> Initiating global maximization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
@@ -318,7 +288,42 @@ void NonDGlobalInterval::quantify_uncertainty()
       }
       if (gpModelFlag)
 	get_best_sample(false, false); // pull truthFnStar from sample data
-      post_process_cell_results(false); // virtual fn: post-process max
+      post_process_cell_results(false); // virtual fn: post-process min
+
+      // initialize the recast model for upper bound estimation
+      if (eifFlag)
+	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	  EIF_objective_max, NULL);
+      else {
+	max_sense[0] = true;
+	int_opt_model_rep->primary_response_fn_sense(max_sense);
+      }
+
+      // Iterate until EGO converges
+      distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
+      prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
+      boundConverged = false;
+      while (!boundConverged) {
+	++sbIterNum;
+
+	// determine approxFnStar from maximum among sample data
+	if (eifFlag)
+	  get_best_sample(true, true);
+
+	// Execute GLOBAL search
+	Cout << "\n>>>>> Initiating global maximization: response "
+	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
+	     << sbIterNum << "\n\n";
+	// no summary output since on-the-fly constructed:
+	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
+	intervalOptimizer.run_iterator(Cout);
+	// output iteration results, update convergence controls, and update GP
+	post_process_run_results(true);
+      }
+      if (gpModelFlag)
+	get_best_sample(true, false); // pull truthFnStar from sample data
+      post_process_cell_results(true); // virtual fn: post-process max
     }
     post_process_response_fn_results(); // virtual fn: post-process respFn
     nonlinear_resp_map[0][respFnCntr] = false; // reset
@@ -338,7 +343,7 @@ void NonDGlobalInterval::set_cell_bounds()
 { } // default is no-op
 
 
-void NonDGlobalInterval::post_process_run_results(bool minimize)
+void NonDGlobalInterval::post_process_run_results(bool maximize)
 {
   const Variables&     vars_star = intervalOptimizer.variables_results();
   const RealVector&  c_vars_star = vars_star.continuous_variables();
@@ -354,21 +359,15 @@ void NonDGlobalInterval::post_process_run_results(bool minimize)
   if (eifFlag)
     Cout << "Expected Improvement    =\n                     "
 	 << std::setw(write_precision+7) << -fn_star << '\n';
-  else if (minimize) {
-    if (gpModelFlag) Cout << "Estimate of lower bound =\n                     ";
-    else             Cout <<             "Lower bound =\n                     ";
-    Cout << std::setw(write_precision+7) <<  fn_star << '\n';
-  }
   else {
-    if (gpModelFlag) Cout << "Estimate of upper bound =\n                     ";
-    else             Cout <<             "Upper bound =\n                     ";
-    Cout << std::setw(write_precision+7) << -fn_star << '\n';
+    if (gpModelFlag) Cout << "Estimate of ";
+    if (maximize)    Cout << "Upper Bound =\n                     ";
+    else             Cout << "Lower Bound =\n                     ";
+    Cout << std::setw(write_precision+7) << fn_star << '\n';
   }
 
-  if (!gpModelFlag) {
-    truthFnStar = (minimize) ? fn_star : -fn_star;
-    boundConverged = true; return;
-  }
+  if (!gpModelFlag)
+    { truthFnStar = fn_star; boundConverged = true; return; }
 
   if (prevCVStar.empty() && prevDIVStar.empty() && prevDRVStar.empty())
     dist_conv = fn_conv = DBL_MAX; // first iteration
@@ -452,11 +451,11 @@ void NonDGlobalInterval::evaluate_response_star_truth()
 }
 
 
-void NonDGlobalInterval::get_best_sample(bool minimize, bool eval_approx)
+void NonDGlobalInterval::get_best_sample(bool maximize, bool eval_approx)
 { } // default is no-op
 
 
-void NonDGlobalInterval::post_process_cell_results(bool minimize)
+void NonDGlobalInterval::post_process_cell_results(bool maximize)
 { } // default is no-op
 
 
@@ -469,28 +468,18 @@ void NonDGlobalInterval::post_process_final_results()
 
 
 void NonDGlobalInterval::
-objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
-	      const Response& sub_model_response, Response& recast_response)
+extract_objective(const Variables& sub_model_vars, const Variables& recast_vars,
+		  const Response& sub_model_response, Response& recast_response)
 {
+  // minimize or maximize sense is set separately, so this fn only
+  // extracts the active response fn using respFnCntr
+
   Real sub_model_fn
     = sub_model_response.function_values()[nondGIInstance->respFnCntr];
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1)
-    recast_response.function_value(sub_model_fn, 0);  // minimize with minimizer
+    recast_response.function_value(sub_model_fn, 0);
   // Note: could track c/di/drVarsStar and approxFnStar here
-}
-
-
-void NonDGlobalInterval::
-objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
-	      const Response& sub_model_response, Response& recast_response)
-{
-  Real sub_model_fn
-    = sub_model_response.function_values()[nondGIInstance->respFnCntr];
-  const ShortArray& recast_asv = recast_response.active_set_request_vector();
-  if (recast_asv[0] & 1)
-    recast_response.function_value(-sub_model_fn, 0); // maximize with minimizer
-  // Note: could track c/di/drVarsStar and approxFnStar here 
 }
 
 

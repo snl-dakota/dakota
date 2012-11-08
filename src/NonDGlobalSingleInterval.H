@@ -51,8 +51,8 @@ protected:
   //
 
   void initialize();
-  void post_process_cell_results(bool minimize);
-  void get_best_sample(bool find_max, bool eval_approx);
+  void post_process_cell_results(bool maximize);
+  void get_best_sample(bool maximize, bool eval_approx);
 
 private:
 

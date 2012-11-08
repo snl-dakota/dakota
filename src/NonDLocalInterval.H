@@ -69,7 +69,7 @@ protected:
   /// truncate initial_pt to respect current cell lower/upper bounds
   virtual void truncate_to_cell_bounds(RealVector& initial_pt);
   /// post-process a cell minimization/maximization result
-  virtual void post_process_cell_results(bool minimize);
+  virtual void post_process_cell_results(bool maximize);
   /// post-process the interval computed for a response function
   virtual void post_process_response_fn_results();
   /// perform final post-processing
@@ -81,7 +81,7 @@ protected:
 
   /// local gradient-based optimizer
   Iterator minMaxOptimizer;
-  /// recast model with sign flip for maximizing
+  /// recast model which extracts the active objective function
   Model minMaxModel;
 
 private:
@@ -90,18 +90,12 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// static function used as the objective function in minimizing for
-  /// the interval lower bound
-  static void objective_min(const Variables& sub_model_vars,
-			    const Variables& recast_vars,
-			    const Response& sub_model_response,
-			    Response& recast_response);
-  /// static function used as the objective function in maximizing for
-  /// the interval upper bound
-  static void objective_max(const Variables& sub_model_vars,
-			    const Variables& recast_vars,
-			    const Response& sub_model_response,
-			    Response& recast_response);
+  /// static function used to extract the active objective function
+  /// when optimizing for an interval lower or upper bound
+  static void extract_objective(const Variables& sub_model_vars,
+				const Variables& recast_vars,
+				const Response& sub_model_response,
+				Response& recast_response);
 
   //
   //- Heading: Data

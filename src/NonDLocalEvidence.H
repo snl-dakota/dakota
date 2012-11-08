@@ -57,7 +57,7 @@ protected:
   void initialize();
   void set_cell_bounds();
   void truncate_to_cell_bounds(RealVector& initial_pt);
-  void post_process_cell_results(bool minimize);
+  void post_process_cell_results(bool maximize);
   void post_process_response_fn_results();
   void post_process_final_results();
 

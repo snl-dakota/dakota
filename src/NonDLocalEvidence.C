@@ -76,18 +76,17 @@ void NonDLocalEvidence::truncate_to_cell_bounds(RealVector& initial_pt)
 }
 
 
-void NonDLocalEvidence::post_process_cell_results(bool minimize)
+void NonDLocalEvidence::post_process_cell_results(bool maximize)
 {
-  NonDLocalInterval::post_process_cell_results(minimize);
+  NonDLocalInterval::post_process_cell_results(maximize);
 
   // Write the optimization results to cell data structures
   const RealVector& fns_star_approx
     = minMaxOptimizer.response_results().function_values();
-  Real fn_star = (minimize) ? fns_star_approx[0] : -fns_star_approx[0];
-  if (minimize)
-    cellFnLowerBounds[respFnCntr][cellCntr] = fn_star;
+  if (maximize)
+    cellFnUpperBounds[respFnCntr][cellCntr] = fns_star_approx[0];
   else
-    cellFnUpperBounds[respFnCntr][cellCntr] = fn_star;
+    cellFnLowerBounds[respFnCntr][cellCntr] = fns_star_approx[0];
 }
 
 

@@ -166,6 +166,7 @@ void NonDLocalInterval::quantify_uncertainty()
   primary_resp_map[0].resize(1);
   BoolDequeArray nonlinear_resp_map(1);
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
+  BoolDeque max_sense(1);
   RecastModel* model_rep = (RecastModel*)minMaxModel.model_rep();
 
   initialize(); // virtual fn for initializing loop controls
@@ -173,15 +174,17 @@ void NonDLocalInterval::quantify_uncertainty()
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
 
     primary_resp_map[0][0] = respFnCntr;
+    model_rep->initialize(vars_map, false, NULL, NULL, primary_resp_map,
+			  secondary_resp_map, nonlinear_resp_map,
+			  extract_objective, NULL);
 
     for (cellCntr=0; cellCntr<numCells; ++cellCntr) { 
 
       set_cell_bounds(); // virtual fn for setting bounds for local min/max
 
-      // re-initialize recast model function pointers
-      model_rep->initialize(vars_map, false, NULL, NULL, primary_resp_map,
-			    secondary_resp_map, nonlinear_resp_map,
-			    objective_min, NULL);
+      // set minimization sense
+      max_sense[0] = false;
+      model_rep->primary_response_fn_sense(max_sense);
       // Execute local search and retrieve results
       Cout << "\n>>>>> Initiating local minimization\n";
       truncate_to_cell_bounds(min_initial_pt);
@@ -191,12 +194,11 @@ void NonDLocalInterval::quantify_uncertainty()
       if (numCells>1 && cellCntr<numCells-1)            // warm start next min
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
 		  min_initial_pt);
-      post_process_cell_results(true); // virtual fn: post-process min
+      post_process_cell_results(false); // virtual fn: post-process min
 
-      // re-initialize recast model function pointers
-      model_rep->initialize(vars_map, false, NULL, NULL, primary_resp_map,
-			    secondary_resp_map, nonlinear_resp_map,
-			    objective_max, NULL);
+      // set maximization sense
+      max_sense[0] = true;
+      model_rep->primary_response_fn_sense(max_sense);
       // Execute local search and retrieve results
       Cout << "\n>>>>> Initiating local maximization\n";
       truncate_to_cell_bounds(max_initial_pt);
@@ -206,7 +208,7 @@ void NonDLocalInterval::quantify_uncertainty()
       if (numCells>1 && cellCntr<numCells-1)            // warm start next max
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
 		  max_initial_pt);
-      post_process_cell_results(false); // virtual fn: post-process max
+      post_process_cell_results(true); // virtual fn: post-process max
     }
     post_process_response_fn_results(); // virtual fn: post-process respFn
   }
@@ -230,7 +232,7 @@ void NonDLocalInterval::truncate_to_cell_bounds(RealVector& initial_pt)
 
 
 // default is partial output; invoked by derived class implementations
-void NonDLocalInterval::post_process_cell_results(bool minimize)
+void NonDLocalInterval::post_process_cell_results(bool maximize)
 {
   const Variables&    vars_star = minMaxOptimizer.variables_results();
   const RealVector& c_vars_star = vars_star.continuous_variables();
@@ -240,9 +242,8 @@ void NonDLocalInterval::post_process_cell_results(bool minimize)
 
   const RealVector& fns_star_approx
     = minMaxOptimizer.response_results().function_values();
-  Real fn_star = (minimize) ? fns_star_approx[0] : -fns_star_approx[0];
   Cout << "Final response          =\n                     "
-       << std::setw(write_precision+7) << fn_star << "\n";
+       << std::setw(write_precision+7) << fns_star_approx[0] << "\n";
 }
 
 
@@ -255,8 +256,8 @@ void NonDLocalInterval::post_process_final_results()
 
 
 void NonDLocalInterval::
-objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
-	      const Response& sub_model_response, Response& recast_response)
+extract_objective(const Variables& sub_model_vars, const Variables& recast_vars,
+		  const Response& sub_model_response, Response& recast_response)
 {
   // pass through the sub_model_response data corresponding to respFnCntr
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
@@ -269,30 +270,6 @@ objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
   if (recast_asv[0] & 4)
     recast_response.function_hessian(
       sub_model_response.function_hessian(nondLIInstance->respFnCntr), 0);
-}
-
-
-void NonDLocalInterval::
-objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
-	      const Response& sub_model_response, Response& recast_response)
-{
-  // negate the sub_model_response data corresponding to respFnCntr
-  const ShortArray& recast_asv = recast_response.active_set_request_vector();
-  if (recast_asv[0] & 1)
-    recast_response.function_value(
-      -sub_model_response.function_value(nondLIInstance->respFnCntr), 0);
-  if (recast_asv[0] & 2) {
-    RealVector sm_fn_grad
-      = sub_model_response.function_gradient_copy(nondLIInstance->respFnCntr);
-    sm_fn_grad *= -1.;
-    recast_response.function_gradient(sm_fn_grad, 0);
-  }
-  if (recast_asv[0] & 4) {
-    RealSymMatrix sm_fn_hess
-      = sub_model_response.function_hessian(nondLIInstance->respFnCntr);
-    sm_fn_hess *= -1.;
-    recast_response.function_hessian(sm_fn_hess, 0);
-  }
 }
 
 

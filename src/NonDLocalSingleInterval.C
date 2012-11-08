@@ -30,14 +30,13 @@ void NonDLocalSingleInterval::initialize()
 { numCells = 1; statCntr = 0; }
 
 
-void NonDLocalSingleInterval::post_process_cell_results(bool minimize)
+void NonDLocalSingleInterval::post_process_cell_results(bool maximize)
 {
-  NonDLocalInterval::post_process_cell_results(minimize);
+  NonDLocalInterval::post_process_cell_results(maximize);
 
   const RealVector& fns_star_approx
     = minMaxOptimizer.response_results().function_values();
-  Real fn_star = (minimize) ? fns_star_approx[0] : -fns_star_approx[0];
-  finalStatistics.function_value(fn_star, statCntr++);
+  finalStatistics.function_value(fns_star_approx[0], statCntr++);
 }
 
 } // namespace Dakota
