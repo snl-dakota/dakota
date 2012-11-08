@@ -70,9 +70,15 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
     sample_reuse_file, sample_file_annotated), false);
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
-  numEmulEval = 10000;
+  numEmulEval = probDescDB.get_int("method.nond.emulator_samples");
+  if (numEmulEval==0)
+    numEmulEval = 10000;
   construct_lhs(gpEval, gpModel, sample_type, numEmulEval, randomSeed,
 		rngName, vary_pattern);
+  if (maxIterations == -1)
+    numPtsAdd = 150;
+  else
+    numPtsAdd = maxIterations;
 
   //gpModel.init_communicators(gpBuild.maximum_concurrency());
   gpModel.init_communicators(gpEval.maximum_concurrency());
@@ -106,9 +112,7 @@ NonDGPImpSampling::~NonDGPImpSampling()
 void NonDGPImpSampling::quantify_uncertainty()
 {
 
-  numPtsAdd = 150; // need to include this in the input spec
   numPtsTotal = numSamples + numPtsAdd;
-  numEmulEval = 10000; // perhaps add to input spec?
  
   // Build initial GP model.  This will be built over the initial LHS sample set
   // defined in the constructor.

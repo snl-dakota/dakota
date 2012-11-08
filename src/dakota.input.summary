@@ -822,6 +822,47 @@ KEYWORD12 method
 	  )
 	|
 	( importance_sampling ALIAS nond_importance_sampling
+	  [ sample_refinement
+	    import
+	    | adapt_import
+	    | mm_adapt_import
+	    ]
+	  [ points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  )
+	|
+	( gpais ALIAS gaussian_process_adaptive_importance_sampling
+	  [ samples INTEGER ]
+	  [ emulator_samples INTEGER ]
 	  [ points_file STRING
 	    [ annotated
 	    | freeform ]

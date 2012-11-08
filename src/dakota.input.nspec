@@ -559,6 +559,31 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		)
 	      |
 	      ( importance_sampling ALIAS nond_importance_sampling {N_mdm(lit,methodName_nond_importance_sampling)}
+		[ sample_refinement {0}
+		      import {N_mdm(lit,integrationRefine_is)}
+		      | adapt_import {N_mdm(lit,integrationRefine_ais)}
+		      | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
+		    ]
+	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                   ] 
+		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+		  [ compute {0}
+		    probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		    | gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		    [ system {0}
+		      series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		      | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		      ]
+		    ]
+		  ]
+		)
+              |
+	      ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(lit,methodName_nond_gaussian_process_adaptive_importance_sampling)}
+	        [ samples INTEGER {N_mdm(int,numSamples)} ]
+	        [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
 	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
                      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 

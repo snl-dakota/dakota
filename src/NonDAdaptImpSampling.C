@@ -31,7 +31,7 @@ namespace Dakota {
 
 /** This is the primary constructor.  It accepts a Model reference. */
 NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
-  NonDSampling(model), importanceSamplingType(MMAIS), initLHS(true),
+  NonDSampling(model), initLHS(true),
   // if initial points in x-space, they must be transformed because method
   //   expects all points in u-space
   transInitPoints(true),
@@ -43,6 +43,16 @@ NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
 { 
   samplingVarsMode = ACTIVE;
   initialize_random_variables(STD_NORMAL_U);
+  const String& integration_refine
+    = probDescDB.get_string("method.nond.integration_refinement");
+  if (integration_refine.empty()) 
+    importanceSamplingType = MMAIS;
+  else if (integration_refine == "is")
+    importanceSamplingType = IS;
+  else if (integration_refine == "ais")
+    importanceSamplingType = AIS;
+  else if (integration_refine == "mmais")
+    importanceSamplingType = MMAIS;
 }
 
 
