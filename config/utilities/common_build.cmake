@@ -20,13 +20,13 @@ endforeach()
 if ( NOT DAKOTA_JENKINS_BUILD AND NOT CTEST_BUILD_NAME )
   message( FATAL_ERROR "ERROR: CTEST_BUILD_NAME must be defined" )
 endif()
-message( "CTEST_BUILD_NAME defined") 
+message( "CTEST_BUILD_NAME defined, value = ${CTEST_BUILD_NAME}" ) 
 
 # CTEST_DASHBOARD_ROOT is required for all non-Jenkins builds
 if ( NOT DAKOTA_JENKINS_BUILD AND NOT CTEST_DASHBOARD_ROOT )
   message( FATAL_ERROR "ERROR: CTEST_DASHBORAD_ROOT must be defined" )
 endif()
-message( "CTEST_DASHBOARD_ROOT defined") 
+message( "CTEST_DASHBOARD_ROOT defined, value = ${CTEST_DASHBOARD_ROOT}" ) 
 
 #*****************************************************************
 # Error checking on required variables
@@ -265,7 +265,9 @@ message("processing test results")
 process_dakota_test_results( ${CTEST_BINARY_DIRECTORY} )
 message("done processing test results")
 
-if ( DAKOTA_DO_PACK AND ${CtestStatus} EQUAL 0 )
+# Enable packing if requested, regardless of status
+# (occasionally, need to download the resulting package and test manually)
+if ( DAKOTA_DO_PACK )
   # TODO: Consider whether to do this with make package, make package_source?
   #execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
   #  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
