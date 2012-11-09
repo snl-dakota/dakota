@@ -145,6 +145,12 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 	  list(APPEND copied_test_files_abs "${copied_file}")
 	endforeach()
       endif() # add parallel test
+
+    else()
+      # Cleanup any dangling tests from previously attempted parallel runs
+      # (which would, of course, ALL FAIL, since dakota.exe does NOT enable MPI)
+      file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/p${test_name})
+
     endif() # MPI enabled
 
     # TODO: The following regex needs to be based on output of dakota_diff.perl
