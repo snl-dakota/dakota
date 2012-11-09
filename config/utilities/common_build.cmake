@@ -58,7 +58,7 @@ if ( NOT DAKOTA_DO_TEST )
 endif()
 
 if ( NOT DAKOTA_DO_PACK )
-  set( DAKOTA_DO_PACK OFF )
+  set( DAKOTA_DO_PACK ON )
 endif()
 
 #*****************************************************************
@@ -265,7 +265,7 @@ message("processing test results")
 process_dakota_test_results( ${CTEST_BINARY_DIRECTORY} )
 message("done processing test results")
 
-if ( DAKOTA_DO_PACK EQUAL "ON" AND ${CtestStatus} EQUAL 0 )
+if ( DAKOTA_DO_PACK AND ${CtestStatus} EQUAL 0 )
   # TODO: Consider whether to do this with make package, make package_source?
   #execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
   #  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
@@ -273,3 +273,4 @@ if ( DAKOTA_DO_PACK EQUAL "ON" AND ${CtestStatus} EQUAL 0 )
   ctest_build(TARGET package APPEND)
   ctest_build(TARGET package_source APPEND)
 endif() # DAKOTA_DO_PACK
+
