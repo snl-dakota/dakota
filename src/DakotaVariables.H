@@ -17,6 +17,7 @@
 #include "data_types.h"
 #include "global_defs.h"  // for BaseConstructor
 #include "SharedVariablesData.H"
+#include "data_io.h"
 
 
 namespace Dakota {
