@@ -822,11 +822,9 @@ KEYWORD12 method
 	  )
 	|
 	( importance_sampling ALIAS nond_importance_sampling
-	  [ sample_refinement
-	    import
-	    | adapt_import
-	    | mm_adapt_import
-	    ]
+	  [ import
+	  | adapt_import
+	  | mm_adapt_import ]
 	  [ points_file STRING
 	    [ annotated
 	    | freeform ]
@@ -860,8 +858,7 @@ KEYWORD12 method
 	  [ seed INTEGER > 0 ]
 	  )
 	|
-	( gpais ALIAS gaussian_process_adaptive_importance_sampling
-	  [ samples INTEGER ]
+	( gpais ALIAS nond_gpais
 	  [ emulator_samples INTEGER ]
 	  [ points_file STRING
 	    [ annotated

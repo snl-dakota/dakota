@@ -331,7 +331,7 @@ Iterator* Iterator::get_iterator(Model& model)
   }
   else if (method_name == "nond_importance_sampling")
     return new NonDAdaptImpSampling(model);
-  else if (method_name == "nond_gaussian_process_adaptive_importance_sampling")
+  else if (method_name == "nond_gpais")
     return new NonDGPImpSampling(model);
   else if (method_name == "surrogate_based_local")
     return new SurrBasedLocalMinimizer(model);
