@@ -1545,11 +1545,11 @@ void NonDExpansion::compute_statistics()
       Teuchos::setCol(exp_grad_x_pv, (int)i, expGradsMeanX);
     }
 
-    // *** global sensitivities
+    // *** global sensitivities:
+    // UNIVARIATE_VBD --> main, total; ALL_VBD --> main, interaction, total
     if (vbdControl && poly_approx_rep->expansion_coefficient_flag()) {
-      if (vbdControl == Pecos::ALL_VBD)
-	poly_approx_rep->compute_component_effects();
-      poly_approx_rep->compute_total_effects();
+      poly_approx_rep->compute_component_effects(); // main or main+interaction
+      poly_approx_rep->compute_total_effects();     // total
     }
   }
   if (numFunctions > 1 && covarianceControl == FULL_COVARIANCE)
