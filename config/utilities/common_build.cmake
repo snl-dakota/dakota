@@ -66,14 +66,26 @@ endif()
 #    (default: hostname and hostname.cmake )
 
 if ( NOT CTEST_SITE )
-  find_program( HOSTNAME hostname )
+  if ( DEFINED ENV{SNLSYSTEM} )
+    set( hostname "$ENV{SNLSYSTEM}" )
 
-  # TODO: change to execute_process, verify works in Windows
-  #exec_program(${HOSTNAME} OUTPUT_VARIABLE hostname)
-  #string(REGEX REPLACE "[/\\\\+<> #]" "-" hostname "${hostname}")
-  execute_process( COMMAND ${HOSTNAME} OUTPUT_VARIABLE hostname )
-  string( REGEX REPLACE "([^.]+).*" "\\1" hostname "${hostname}" )
+  elseif( DEFINED ENV{NODE_NAME} )
+    set( hostname "$ENV{NODE_NAME}" )
+
+  else()
+    # fall-through to previous implementation (does NOT rely on ENV hashing)
+
+    find_program( HOSTNAME hostname )
+
+    # TODO: change to execute_process, verify works in Windows
+    #exec_program(${HOSTNAME} OUTPUT_VARIABLE hostname)
+    #string(REGEX REPLACE "[/\\\\+<> #]" "-" hostname "${hostname}")
+    execute_process( COMMAND ${HOSTNAME} OUTPUT_VARIABLE hostname )
+    string( REGEX REPLACE "([^.]+).*" "\\1" hostname "${hostname}" )
+  endif()
+
   set( CTEST_SITE "${hostname}" )
+
   if ( NOT DAKOTA_CMAKE_HOSTFILE )
     set( DAKOTA_CMAKE_HOSTFILE "${hostname}.cmake" )
   endif()
