@@ -41792,9 +41792,9 @@ Moment-based statistics for each response function:
   numerical:    4.5566661580e+02  6.0690124366e+02  2.0554942605e+00  4.2920270857e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      5.1061752606e-01  7.1441790538e-01 x1
-                      3.1641069426e-01  5.2021107358e-01 x2
-                      2.0380037933e-01 x1 x2 
+                      4.9728108425e-01  7.0334263080e-01 x1
+                      2.9665736920e-01  5.0271891575e-01 x2
+                      2.0606154656e-01 x1 x2 
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 177 total (177 new, 0 duplicate)
 Moment-based statistics for each response function:
@@ -41803,9 +41803,9 @@ Moment-based statistics for each response function:
   numerical:    4.5566585286e+02  6.0636432967e+02  2.0339222436e+00  4.0359124991e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      5.3023203313e-01  7.3330574353e-01 x1
-                      3.2823825751e-01  5.3131196791e-01 x2
-                      2.0307371040e-01 x1 x2 
+                      4.9754135648e-01  7.0379995238e-01 x1
+                      2.9620004762e-01  5.0245864352e-01 x2
+                      2.0625859590e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.5147206155e-01
