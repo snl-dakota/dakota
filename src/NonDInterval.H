@@ -101,11 +101,11 @@ protected:
   /// Storage array to hold cell upper bounds
   RealVectorArray cellUpperBounds;
   /// Storage array to hold cell min
-  Real2DArray cellFnLowerBounds;
+  RealVectorArray cellFnLowerBounds;
   /// Storage array to hold cell max
-  Real2DArray cellFnUpperBounds;
+  RealVectorArray cellFnUpperBounds;
   /// Storage array to hold cell bpa
-  RealArray cellBPA;
+  RealVector cellBPA;
 
   /// response function counter
   size_t respFnCntr;

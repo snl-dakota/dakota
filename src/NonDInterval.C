@@ -188,8 +188,9 @@ void NonDInterval::calculate_cells_and_bpas()
        << " numCells "     << numCells << '\n';
 
   // shape cell length
-  cellLowerBounds.resize(numCells); cellUpperBounds.resize(numCells);
-  cellBPA.resize(numCells);         cellBPA.assign(numCells, 1);
+  cellLowerBounds.resize(numCells);
+  cellUpperBounds.resize(numCells);
+  cellBPA.sizeUninitialized(numCells); cellBPA = 1.;
   for (i=0; i<numCells; ++i) {
     cellLowerBounds[i].resize(num_total_vars);
     cellUpperBounds[i].resize(num_total_vars);
@@ -296,35 +297,35 @@ void NonDInterval::calculate_cbf_cpf(bool complementary)
   // sum up the BPAs, in that order; corresponding min value is response level
   // Similar logic for CCBF and CCPF
 
-  // Because cellFn values are of DakotaArray type, use sorted
+  // Because cellFn values are of RealVector type, use sorted
   // containers instead of STL algorithmic sort
   std::multimap<Real, size_t> cell_min;
   std::multimap<Real, size_t> cell_max;
   std::multimap<Real, size_t>::iterator it_max, it_min;
   size_t i;
   // Insert into a map and sort by key (i.e. function value)
-  Real bpa_sum = 0;
+  Real bpa_sum = 0.;
+  RealVector& cell_fn_lb = cellFnLowerBounds[respFnCntr];
+  RealVector& cell_fn_ub = cellFnUpperBounds[respFnCntr];
   for (i=0; i<numCells; ++i) {
     bpa_sum += cellBPA[i];
-    cell_min.insert(
-      std::pair<Real, size_t>(cellFnLowerBounds[respFnCntr][i], i) );
-    cell_max.insert(
-      std::pair<Real, size_t>(cellFnUpperBounds[respFnCntr][i], i) );
+    cell_min.insert(std::pair<Real, size_t>(cell_fn_lb[i], i));
+    cell_max.insert(std::pair<Real, size_t>(cell_fn_ub[i], i));
   }
 
   Real bel_total, plaus_total;
-  RealVector bel_fn(numCells,0), plaus_fn(numCells,0), bel_val(numCells,0),
-          plaus_val(numCells,0);
+  RealVector bel_fn(numCells, false),  plaus_fn(numCells, false),
+            bel_val(numCells, false), plaus_val(numCells, false);
   // if CCBF/CCPF desired
   if (complementary) {
     bel_total = bpa_sum; plaus_total = bpa_sum;
-    for (it_max=cell_max.begin(), it_min=cell_min.begin(), i=0; 
-	 it_max!=cell_max.end(), it_min!=cell_min.end(), i<numCells;
+    for (it_max  = cell_max.begin(), it_min  = cell_min.begin(), i=0; 
+	 it_max != cell_max.end(),   it_min != cell_min.end(),   i<numCells;
 	 ++it_max, ++it_min, ++i) {
-      bel_fn[i] = bel_total;
-      plaus_fn[i] = plaus_total;
-      bel_val[i] = (*it_min).first;
-      plaus_val[i] = (*it_max).first;
+      bel_fn[i]    = bel_total;
+      plaus_fn[i]  = plaus_total;
+      bel_val[i]   = it_min->first;
+      plaus_val[i] = it_max->first;
 
 #ifdef DEBUG
       Cout << "(response_level,belief)\t( " << bel_val[i] << ", " << bel_fn[i]
@@ -332,22 +333,22 @@ void NonDInterval::calculate_cbf_cpf(bool complementary)
 	   << plaus_val[i] << ", " << plaus_fn[i] << ")\n";
 #endif
 
-      bel_total -= cellBPA[(*it_min).second];
-      plaus_total -= cellBPA[(*it_max).second];
+      bel_total   -= cellBPA[it_min->second];
+      plaus_total -= cellBPA[it_max->second];
     }
   }
   // if CBF/CPF desired
   else {
-    bel_total = 0; plaus_total = 0;
-    for (it_max=cell_max.begin(), it_min=cell_min.begin(), i=0; 
-	 it_max!=cell_max.end(), it_min!=cell_min.end(), i<numCells;
-	 it_max++, it_min++, ++i) {
-      bel_total   += cellBPA[(*it_max).second];
-      plaus_total += cellBPA[(*it_min).second];
-      bel_fn[i] = bel_total;
-      plaus_fn[i] = plaus_total;
-      bel_val[i] = (*it_max).first;
-      plaus_val[i] = (*it_min).first;
+    bel_total = plaus_total = 0.;
+    for (it_max  = cell_max.begin(), it_min  = cell_min.begin(), i=0; 
+	 it_max != cell_max.end(),   it_min != cell_min.end(),   i<numCells;
+	 ++it_max, ++it_min, ++i) {
+      bel_total   += cellBPA[it_max->second];
+      plaus_total += cellBPA[it_min->second];
+      bel_fn[i]    = bel_total;
+      plaus_fn[i]  = plaus_total;
+      bel_val[i]   = it_max->first;
+      plaus_val[i] = it_min->first;
 
 #ifdef DEBUG
       Cout << "(response_level,belief)\t( " << bel_val[i] << ", " << bel_fn[i]

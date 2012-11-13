@@ -47,8 +47,8 @@ void NonDLHSEvidence::post_process_samples()
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
     // Use the max and mins to determine the cumulative distributions
     // of plausibility and belief
-    RealArray& cell_fn_l_bnds = cellFnLowerBounds[respFnCntr];
-    RealArray& cell_fn_u_bnds = cellFnUpperBounds[respFnCntr];
+    RealVector& cell_fn_l_bnds = cellFnLowerBounds[respFnCntr];
+    RealVector& cell_fn_u_bnds = cellFnUpperBounds[respFnCntr];
     for (size_t i=0; i <numCells; i++) {
       cell_fn_l_bnds[i] =  DBL_MAX;
       cell_fn_u_bnds[i] = -DBL_MAX; 
