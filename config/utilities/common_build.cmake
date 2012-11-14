@@ -286,5 +286,10 @@ if ( DAKOTA_DO_PACK )
     )
 
   #ctest_build(TARGET package_source APPEND)
+  execute_process(COMMAND ${CMAKE_COMMAND}
+    --build ${CTEST_BINARY_DIRECTORY}
+    --target package_source
+    )
+
 endif() # DAKOTA_DO_PACK
 
