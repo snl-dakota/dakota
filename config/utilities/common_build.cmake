@@ -280,11 +280,11 @@ message("done processing test results")
 # Enable packing if requested, regardless of status
 # (occasionally, need to download the resulting package and test manually)
 if ( DAKOTA_DO_PACK )
-  # TODO: Consider whether to do this with make package, make package_source?
-  #execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
-  #  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
-  #  )
-  ctest_build(TARGET package APPEND)
-  ctest_build(TARGET package_source APPEND)
+  #ctest_build(TARGET package APPEND) -- WJB: too bad no ctest_package function
+  execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
+    WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+    )
+
+  #ctest_build(TARGET package_source APPEND)
 endif() # DAKOTA_DO_PACK
 
