@@ -17,7 +17,7 @@ set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
 #     "${CTEST_DASHBOARD_ROOT}/dakota")
 #******************************************* #
 
-set( DAKOTA_CTEST_PROJECT_TAG "Experimental" )
+set( DAKOTA_CTEST_PROJECT_TAG "Continuous" )
 set( CTEST_BUILD_CONFIGURATION RelWithDebInfo )
 
 set( DAKOTA_CTEST_REGEXP "dakota_*" )
