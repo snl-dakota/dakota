@@ -244,6 +244,16 @@ install(TARGETS
   text_book text_book1 text_book2 text_book3 text_book_ouu
   DESTINATION "${DAKOTA_TEST_INSTALL}/test")
 
+install(FILES dakota_test.perl
+  DESTINATION "${DAKOTA_TEST_INSTALL}/test" PERMISSIONS
+  OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+# WJB - DBG ToDo: only "install" a subset of test_support_files (.perl and .sh)?
+install(FILES ${test_support_files}
+  DESTINATION "${DAKOTA_TEST_INSTALL}/test" PERMISSIONS
+  OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 if(DAKOTA_HAVE_MPI)
   install(TARGETS text_book_par DESTINATION "${DAKOTA_TEST_INSTALL}/test")
 endif()
+
