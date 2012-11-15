@@ -5,7 +5,7 @@
 ############################################################################
 
 ############################################################################
-# BLAS, LAPACK libraries assumed to be installed in /usr/lib64 on RHEL6
+# BLAS, LAPACK libraries assumed to be installed in /usr/lib64 on RHEL5
 # (Default (dakota/CMakeLists.txt): CMake will find_library( blas/lapack )
 #set( BLAS_LIBS 
 #      "/usr/lib64"

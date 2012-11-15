@@ -1,20 +1,7 @@
 ############################################################################
 #
-# CMake configuration file for RHEL6 platform
+# CMake configuration file for Cygwin platform
 #
-############################################################################
-
-
-############################################################################
-# Make 2.8.6 has problems with RHEL6/Boost -- the following is a workaround
-#
-#set( Boost_NO_BOOST_CMAKE ON 
-#     CACHE BOOL "Obtain desired behavior on RHEL6" FORCE)
-#
-# Boost_NO_BOOST_CMAKE
-#     Do not do a find_package call in config mode before searching
-#     for a regular boost install. This will avoid finding boost-cmake
-#     installs. Defaults to OFF.                 [Since CMake 2.8.6]
 ############################################################################
 
 ############################################################################
@@ -35,3 +22,4 @@ set( DAKOTA_HAVE_MPI OFF
 # Use shared libraries and don't use static
 set(BUILD_STATIC_LIBS TRUE  CACHE BOOL "Build static libs?")
 set(BUILD_SHARED_LIBS FALSE CACHE BOOL "Build shared libs?")
+
