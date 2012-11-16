@@ -188,12 +188,37 @@ void NonDInterval::calculate_cells_and_bpas()
        << " numCells "     << numCells << '\n';
 
   // shape cell length
-  cellLowerBounds.resize(numCells);
-  cellUpperBounds.resize(numCells);
+  if (numContIntervalVars) {
+    cellContLowerBounds.resize(numCells);
+    cellContUpperBounds.resize(numCells);
+  }
+  if (numDiscIntervalVars) {
+    cellIntRangeLowerBounds.resize(numCells);
+    cellIntRangeUpperBounds.resize(numCells);
+  }
+  if (numDiscSetIntUncVars) {
+    cellIntSetBounds.resize(numCells);
+  }
+  if (numDiscSetRealUncVars) {
+    cellRealSetBounds.resize(numCells);
+  }
+  
   cellBPA.sizeUninitialized(numCells); cellBPA = 1.;
   for (i=0; i<numCells; ++i) {
-    cellLowerBounds[i].resize(num_total_vars);
-    cellUpperBounds[i].resize(num_total_vars);
+    if (numContIntervalVars) {
+      cellContLowerBounds[i].resize(numContIntervalVars);
+      cellContUpperBounds[i].resize(numContIntervalVars);
+    }
+    if (numDiscIntervalVars) {
+      cellIntRangeLowerBounds[i].resize(numDiscIntervalVars);
+      cellIntRangeUpperBounds[i].resize(numDiscIntervalVars);
+    }
+    if (numDiscSetIntUncVars) {
+      cellIntSetBounds[i].resize(numDiscSetIntUncVars);
+    }
+    if (numDiscSetRealUncVars) {
+      cellRealSetBounds[i].resize(numDiscSetRealUncVars);
+    }
   }
 
   // This loops num_variables*num_cells
@@ -206,8 +231,8 @@ void NonDInterval::calculate_cells_and_bpas()
       cell_cntr = i*scale_factor[var_cntr];
       while (cell_cntr < numCells) {
 	for (k=0; k<scale_factor[var_cntr]; k++) {
-	  cellLowerBounds[cell_cntr+k][var_cntr] = ci_l_bnds[j][i];
-	  cellUpperBounds[cell_cntr+k][var_cntr] = ci_u_bnds[j][i];
+	  cellContLowerBounds[cell_cntr+k][j] = ci_l_bnds[j][i];
+	  cellContUpperBounds[cell_cntr+k][j] = ci_u_bnds[j][i];
 	  cellBPA[cell_cntr+k] *= ci_bpa[j][i];
 	}
 	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
@@ -221,8 +246,8 @@ void NonDInterval::calculate_cells_and_bpas()
       cell_cntr = i*scale_factor[var_cntr];
       while (cell_cntr < numCells) {
 	for (k=0; k<scale_factor[var_cntr]; k++) {
-	  cellLowerBounds[cell_cntr+k][var_cntr] = di_l_bnds[j][i];
-	  cellUpperBounds[cell_cntr+k][var_cntr] = di_u_bnds[j][i];
+	  cellIntRangeLowerBounds[cell_cntr+k][j] = di_l_bnds[j][i];
+	  cellIntRangeUpperBounds[cell_cntr+k][j] = di_u_bnds[j][i];
 	  cellBPA[cell_cntr+k] *= di_bpa[j][i];
 	}
 	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
@@ -237,8 +262,7 @@ void NonDInterval::calculate_cells_and_bpas()
       cell_cntr = i*scale_factor[var_cntr];
       while (cell_cntr < numCells) {
 	for (k=0; k<scale_factor[var_cntr]; k++) {
-	  cellLowerBounds[cell_cntr+k][var_cntr] = cit->first;
-	  cellUpperBounds[cell_cntr+k][var_cntr] = cit->first;
+	  cellIntSetBounds[cell_cntr+k][j] = cit->first;
 	  cellBPA[cell_cntr+k] *= cit->second;
 	}
 	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
@@ -253,8 +277,7 @@ void NonDInterval::calculate_cells_and_bpas()
       cell_cntr = i*scale_factor[var_cntr];
       while (cell_cntr < numCells) {
 	for (k=0; k<scale_factor[var_cntr]; k++) {
-	  cellLowerBounds[cell_cntr+k][var_cntr] = cit->first;
-	  cellUpperBounds[cell_cntr+k][var_cntr] = cit->first;
+	  cellRealSetBounds[cell_cntr+k][j] = cit->first;
 	  cellBPA[cell_cntr+k] *= cit->second;
 	}
 	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
@@ -264,8 +287,14 @@ void NonDInterval::calculate_cells_and_bpas()
 
   for (i=0; i<numCells; ++i) {
     Cout << "Cell " << i << '\n';
-    for (j=0; j<num_total_vars; ++j)
-      Cout << cellLowerBounds[i][j] << " \n";
+    for (j=0; j<numContIntervalVars; ++j)
+      Cout << cellContLowerBounds[i][j] << "  " << cellContUpperBounds[i][j] << "\n";
+    for (j=0; j<numDiscIntervalVars; ++j)
+      Cout << cellIntRangeLowerBounds[i][j] << "  " << cellIntRangeUpperBounds[i][j] << "\n";
+    for (j=0; j<numDiscSetIntUncVars; ++j)
+      Cout << cellIntSetBounds[i][j] << "  "  << "\n";
+    for (j=0; j<numDiscSetRealUncVars; ++j)
+      Cout << cellRealSetBounds[i][j] << "  "  << "\n";
   }
 
   // shape belief/plausibility structure arrays

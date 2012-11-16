@@ -96,10 +96,18 @@ protected:
   /// Storage array to hold CCP response values
   RealVectorArray ccPlausVal;
 
-  /// Storage array to hold cell lower bounds
-  RealVectorArray cellLowerBounds;
-  /// Storage array to hold cell upper bounds
-  RealVectorArray cellUpperBounds;
+  /// Storage array to hold cell lower bounds for continuous variables
+  RealVectorArray cellContLowerBounds;
+  /// Storage array to hold cell upper bounds for continuous variables
+  RealVectorArray cellContUpperBounds;
+  /// Storage array to hold cell lower bounds for discrete int range variables
+  IntVectorArray cellIntRangeLowerBounds;
+  /// Storage array to hold cell upper bounds for discrete int range variables
+  IntVectorArray cellIntRangeUpperBounds;
+  /// Storage array to hold cell values for discrete integer set variables
+  IntVectorArray cellIntSetBounds;
+  /// Storage array to hold cell value for discrete real set variables
+  IntVectorArray cellRealSetBounds;
   /// Storage array to hold cell min
   RealVectorArray cellFnLowerBounds;
   /// Storage array to hold cell max

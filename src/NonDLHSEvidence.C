@@ -41,9 +41,9 @@ void NonDLHSEvidence::post_process_samples()
   // Use the sample set generated above to determine the maximum and minimum 
   // of each function within each input interval combination
 
-  const RealMatrix&     all_samples   = lhsSampler.all_samples();
+  const RealMatrix&     all_samples = lhsSampler.all_samples();
   const IntResponseMap& all_responses = lhsSampler.all_responses();
-  
+
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
     // Use the max and mins to determine the cumulative distributions
     // of plausibility and belief
@@ -60,34 +60,34 @@ void NonDLHSEvidence::post_process_samples()
     for (i=0, it=all_responses.begin(); i<numSamples; i++, ++it) {
 
       const Real& fn_val = it->second.function_value(respFnCntr);
-      const Real* c_vars = all_samples[i]; // column vector
+      Variables all_vars = iteratedModel.current_variables().copy();
+      sample_to_variables(all_samples[i],all_vars);
 
-      int num_total_vars = numContIntervalVars+numDiscIntervalVars+
-                           numDiscSetIntUncVars+numDiscSetRealUncVars;
-      RealVector in_cell(num_total_vars);
-      Real total_incell;
-      //for (j=0; j< num_total_vars; j++) 
-      //  Cout << "cvars " << c_vars[j] << "\n";
-        
+      const RealVector&  c_vars = all_vars.continuous_variables();
+      const IntVector&  di_vars = all_vars.discrete_int_variables();
+      const RealVector& dr_vars = all_vars.discrete_real_variables();
+
       for (cellCntr=0; cellCntr<numCells; ++cellCntr) {
-	total_incell = 1;
-	j=0;
-	const RealVector& cell_l_bnds = cellLowerBounds[cellCntr];
-	const RealVector& cell_u_bnds = cellUpperBounds[cellCntr];
-        //Cout << "cell l bounds " << cell_l_bnds << "\n";
-        //Cout << "cell u bounds " << cell_u_bnds << "\n";
-        // for now, treat ContIntervalVars and DiscInterval vars as the same (real bounds
-        // but check for equality of the discrete set types when calculating 
-        // number in a cell.  Note we need to redo getting all the samples in a RealMatrix 
-        while (total_incell && j<num_total_vars) {
-	  in_cell[j]=0;
-	  if (cell_l_bnds[j] <= c_vars[j] && c_vars[j] <= cell_u_bnds[j]) 
-	      in_cell[j] = 1;
-	  total_incell = in_cell[j]*total_incell;
-	  ++j;
-	}
+        bool in_bounds = true;
+        for (j=0; j<numContIntervalVars; ++j)
+          if (c_vars[j] < cellContLowerBounds[cellCntr][j] ||
+              c_vars[j] > cellContUpperBounds[cellCntr][j])
+            { in_bounds = false; break; }
+        if (in_bounds)
+          for (j=0; j<numDiscIntervalVars; ++j)
+            if (di_vars[j] < cellIntRangeLowerBounds[cellCntr][j] ||
+                di_vars[j] > cellIntRangeUpperBounds[cellCntr][j]) // TO DO
+              { in_bounds = false; break; }
+        if (in_bounds)
+          for (j=0; j<numDiscSetIntUncVars; ++j)
+            if (di_vars[j+numDiscIntervalVars] != cellIntSetBounds[cellCntr][j]) // TO DO
+              { in_bounds = false; break; }
+        if (in_bounds)
+          for (j=0; j<numDiscSetRealUncVars; ++j)
+            if (dr_vars[j] != cellRealSetBounds[cellCntr][j]) // TO DO
+              { in_bounds = false; break; }
 
-	if (total_incell == 1) {
+	if (in_bounds) {
 	  if (fn_val < cell_fn_l_bnds[cellCntr]) 
 	    cell_fn_l_bnds[cellCntr] = fn_val;
 	  if (fn_val > cell_fn_u_bnds[cellCntr])

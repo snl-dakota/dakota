@@ -37,23 +37,23 @@ void NonDLocalEvidence::initialize()
 
 void NonDLocalEvidence::set_cell_bounds()
 {
-  size_t j, cntr=0;
-  for (j=0; j<numContIntervalVars; j++,cntr++) {
-    minMaxModel.continuous_lower_bound(cellLowerBounds[cellCntr][cntr],j);
-    minMaxModel.continuous_upper_bound(cellLowerBounds[cellCntr][cntr],j);
+  size_t j ;
+  for (j=0; j<numContIntervalVars; j++) {
+    minMaxModel.continuous_lower_bound(cellContLowerBounds[cellCntr][j],j);
+    minMaxModel.continuous_upper_bound(cellContLowerBounds[cellCntr][j],j);
   }
 
-  for (j=0; j<(numDiscIntervalVars); j++,cntr++) {
-    minMaxModel.discrete_int_lower_bound(cellLowerBounds[cellCntr][cntr],j);
-    minMaxModel.discrete_int_upper_bound(cellLowerBounds[cellCntr][cntr],j);
+  for (j=0; j<(numDiscIntervalVars); j++) {
+    minMaxModel.discrete_int_lower_bound(cellIntRangeLowerBounds[cellCntr][j],j);
+    minMaxModel.discrete_int_upper_bound(cellIntRangeUpperBounds[cellCntr][j],j);
   }
 
-  for (j=0; j<numDiscSetIntUncVars; j++,cntr++) {
-    minMaxModel.discrete_int_variable(cellLowerBounds[cellCntr][cntr],j);
+  for (j=0; j<numDiscSetIntUncVars; j++) {
+    minMaxModel.discrete_int_variable(cellIntSetBounds[cellCntr][j],j);
   }
 
-  for (j=0; j<numDiscSetRealUncVars; j++,cntr++) {
-    minMaxModel.discrete_real_variable(cellLowerBounds[cellCntr][cntr],j);
+  for (j=0; j<numDiscSetRealUncVars; j++) {
+    minMaxModel.discrete_real_variable(cellRealSetBounds[cellCntr][j],j);
   }
 
 }
@@ -62,8 +62,8 @@ void NonDLocalEvidence::set_cell_bounds()
 void NonDLocalEvidence::truncate_to_cell_bounds(RealVector& initial_pt)
 {
   size_t i, num_vars = initial_pt.length();
-  const RealVector& cell_l_bnds = cellLowerBounds[cellCntr];
-  const RealVector& cell_u_bnds = cellUpperBounds[cellCntr];
+  const RealVector& cell_l_bnds = cellContLowerBounds[cellCntr];
+  const RealVector& cell_u_bnds = cellContUpperBounds[cellCntr];
   for (i=0; i<num_vars; ++i) {
     const Real& lwr = cell_l_bnds[i];
     const Real& upr = cell_u_bnds[i];
@@ -99,9 +99,9 @@ void NonDLocalEvidence::post_process_final_results()
 #ifdef DEBUG
   for (size_t i=0; i < numCells; i++) {
     Cout << "Cell " << i << "\nBPA: " << cellBPA[i] << std::endl;;
-    for (size_t ii=0; ii<numIntervalVars; ii++) {
+    for (size_t ii=0; ii<numContIntervalVars; ii++) {
       Cout << "Cell Bounds for variable " << ii << ": ("
-	   << cellLowerBounds[i][ii] << ", " << cellUpperBounds[i][ii] << ")"
+	   << cellContLowerBounds[i][ii] << ", " << cellContUpperBounds[i][ii] << ")"
 	   << std::endl;
     }
     Cout << "(min,max) for cell " << i << ": (" << cellFnLowerBounds[0][i]
