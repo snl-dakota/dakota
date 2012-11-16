@@ -325,12 +325,32 @@ if(DAKOTA_DISTRO GREATER DAKOTA_InternalWeb)
   list(APPEND CPACK_SOURCE_IGNORE_FILES "packages/NLPQL")
 endif()
 
-if(WIN32 OR CYGWIN)
+if(NOT WIN32)
+
+  # if(APPLE)
+  #else if(NOT CYGWIN)
+  if(NOT CYGWIN)
+    # All unix-like systems EXCEPT cygwin (WJB - ToDo:  MacOSX)
+    set(CPACK_GENERATOR TGZ)
+    set(CPACK_SOURCE_GENERATOR TGZ)
+
+  else()
+
+    # Workaround for surprising error with Source TGZ creation on Cygwin
+    #set(CPACK_GENERATOR CygwinBinary)
+    set(CPACK_GENERATOR TGZ)
+
+    message("Will create a custom, Cygwin SOURCE archive")
+    set(CPACK_SOURCE_GENERATOR CygwinSource)
+
+  endif() # NOT CYGWIN
+
+else()
+
   set(CPACK_GENERATOR ZIP)
   set(CPACK_SOURCE_GENERATOR ZIP)
-else()
-  set(CPACK_GENERATOR TGZ)
-  set(CPACK_SOURCE_GENERATOR TGZ)
-endif()
+
+endif() # NOT WIN32
 
 include(CPack)
+
