@@ -101,9 +101,9 @@ endif()
 #*****************************************************************
 # Set CTEST_CMAKE_GENERATOR
 
-#if ( NOT CTEST_CMAKE_GENERATOR )
-#  set( CTEST_CMAKE_GENERATOR "Unix Makefiles" )
-#endif()
+if ( NOT CTEST_CMAKE_GENERATOR )
+  set( CTEST_CMAKE_GENERATOR "Unix Makefiles" )
+endif()
 message( "CTEST_CMAKE_GENERATOR = ${CTEST_CMAKE_GENERATOR}" ) 
 
 #*****************************************************************
