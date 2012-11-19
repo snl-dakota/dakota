@@ -115,6 +115,21 @@ protected:
   /// function value
   void post_run(std::ostream& s);
 
+  /// Retrieve response from Colin AppResponse, return pair indicating
+  /// success for <objective, constraints>
+  std::pair<bool, bool> 
+  colin_cache_lookup(const colin::AppResponse& colinResponse,
+		     Response& tmpResponseHolder);
+
+  /// Lookup passed Variables in DAKOTA DB and return corresponding
+  /// response, transformed to iterator space
+  bool dakota_db_lookup(const Variables& tmpVarsHolder, 
+			Response& tmpResponseHolder);
+  
+  /// Compute constraint violation, based on nonlinear constraints in
+  /// iteratedModel and provided Response data
+  double constraint_violation(const Response& tmpResponseHolder);
+
   /// resize bestVariablesArray
   void resize_final_points(size_t newsize);
 

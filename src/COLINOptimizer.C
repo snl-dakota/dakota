@@ -475,7 +475,13 @@ void COLINOptimizer::solver_setup(const String& method_name, Model& model)
 
    //   colin::CacheFactory().set_default_cache_type("Local");
    colinCache = colin::CacheFactory().create("Local");
-   colin::CacheFactory().intersolver_cache() = colin::CacheFactory().evaluation_cache();
+
+   // BMA: fix per JDS, 11/16/2012
+   //colin::CacheFactory().intersolver_cache() 
+   //  = colin::CacheFactory().evaluation_cache();
+   colin::CacheFactory().intersolver_cache() 
+     = colin::CacheFactory().evaluation_cache() = colinCache;
+
    //colin::CacheFactory().register_cache(colinCache, "useThisCache");
    // BMA: temporary fix (try to generate a unique cache name, even for 
    // some lightweight constructed solvers)
@@ -922,60 +928,31 @@ void COLINOptimizer::set_solver_parameters()
   }
 }
 
-  /** This overrides Optimizer::post_run().  Do this because we need
-      to unscale variables in order to look responses up in the
-      database. */
 
+/** Supplement Optimizer::post_run to first retrieve points from the
+    Colin cache (or possibly the Dakota DB) and rank them.  When
+    complete, this function will populate bestVariablesArray and
+    bestResponsesArray with iterator-space data, that is, in the
+    context of the solver, leaving any further untransformation to
+    Optimizer. */
 void COLINOptimizer::post_run(std::ostream& s)
 {
-  // Retreive the COLIN points (local cache) in the right Application
-  // context.
-
-  list<Any> points;
+  // Retreive the COLIN points (local cache) in the right Application context.  
   PointSet ps = colinSolver->get_final_points();
-  ps.get_points(colinProblem.second, points);
 
-  // Need iterators through the point list and maps to hold the sorted
-  // list of variables and responses.
-
-  list<Any>::iterator pt_it = points.begin();
-  list<Any>::iterator pt_end = points.end();
+  // Maps to hold the sorted list of variables and responses.
   std::multimap<RealRealPair, Variables> variableSortMap;
   std::multimap<RealRealPair, Response> responseSortMap;
 
-  // Also need a COLIN Cache iterator for the case when function
-  // values aren't in the DAKOTA cache (e.g., when using surrogates).
-  // Ultimately won't need both points and cache iterators when switch
-  // to COLIN cache is complete but do for now.
-
-  colin::Cache::iterator cache_it = ps->begin(colinProblem.second);
-  colin::Cache::iterator cache_itEnd = ps->end();
-
-  // If we have any recast model, need to get the native and/or
-  // user-provided pieces to do database lookup and/or sort.
-
-  Model& model_for_sort = (scaleFlag || localObjectiveRecast) ?
-    iteratedModel.subordinate_model() : iteratedModel;
+  // COLIN Cache iterator for primary lookup mechanism
+  colin::Cache::iterator cache_it  = ps->begin(colinProblem.second);
+  colin::Cache::iterator cache_end = ps->end();
 
   // Temporary data structures needed for sort.
-
   RealVector cdv;
   IntVector ddv;
-  ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
-  Variables tmpVariableHolder = model_for_sort.current_variables().copy();
-  Response tmpResponseHolder = model_for_sort.current_response().copy();
-
-  // Need number of constraints and bounds so we can determine
-  // constraint violation.
-
-  size_t num_nln_ineq = model_for_sort.num_nonlinear_ineq_constraints(),
-         num_nln_eq   = model_for_sort.num_nonlinear_eq_constraints();
-  const RealVector& nln_ineq_lwr_bnds
-    = model_for_sort.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = model_for_sort.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets
-    = model_for_sort.nonlinear_eq_constraint_targets();
+  Variables tmpVariableHolder = iteratedModel.current_variables().copy();
+  Response tmpResponseHolder = iteratedModel.current_response().copy();
 
   // One specification type for discrete variables is a set of values.
   // Get that list of values if the user provided one.  Also,
@@ -983,24 +960,26 @@ void COLINOptimizer::post_run(std::ostream& s)
   // integer variables.
 
   const IntSetArray& ddsiv_values
-    = model_for_sort.discrete_design_set_int_values();
+    = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsrv_values
-    = model_for_sort.discrete_design_set_real_values();
+    = iteratedModel.discrete_design_set_real_values();
   size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
     num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
 
   // Iterate through points returned by COLIN.
 
   bool colin_cache_warn = false;
-  for(size_t i=0; pt_it!=pt_end; i++, pt_it++, cache_it++) {
-     //std::cerr << "Point #" << i << ": ";
-     //::operator<<(std::cerr, *pt_it) << endl;
+  for(size_t i=0; cache_it != cache_end; ++i, ++cache_it) {
+    //std::cerr << "Point #" << i << ": ";
+    //::operator<<(std::cerr, *pt_it) << endl;
 
-    // Get the mixed variables for the point.
+    // Extract the Colin response from the cache
+    colin::AppResponse colinResponse = 
+      cache_it->second.asResponse(colinProblem.second);
 
-    utilib::Any tmp;
-    TypeManager()->lexical_cast(*pt_it, tmp, typeid(utilib::MixedIntVars));
-    utilib::MixedIntVars& miv = tmp.expose<utilib::MixedIntVars>();
+    // Get the mixed variables for the point from the cache.
+    utilib::MixedIntVars miv;
+    colinResponse.get_domain(miv);
 
     // Cast the continuous variables from COLIN to DAKOTA.
 
@@ -1036,76 +1015,55 @@ void COLINOptimizer::post_run(std::ostream& s)
       tmpVariableHolder.discrete_real_variable(dakota_value, j);
     }
 
-    // Unscale variables back to user/native for database lookup.
+    // BMA: cautiously optimistic implementation, assuming we can
+    // reliably get functions and constraints from the Colin cache...
 
-    if (varsScaleFlag)
-      tmpVariableHolder.continuous_variables(
-	    modify_s2n(tmpVariableHolder.continuous_variables(), 
-	    cvScaleTypes, cvScaleMultipliers, cvScaleOffsets));
+    // Get the objective and constraint values associated with the
+    // point.  Fn and constraint status: true if okay (needed/present
+    // or unneeded).  Using two bools in case we need to later rely on
+    // Dakota for one, but not the other.
+    std::pair<bool, bool> cache_status = 
+      colin_cache_lookup(colinResponse, tmpResponseHolder);
 
-    // For first step of switching over to using COLIN Cache, need
-    // this outside the "if/else" block because it constraintViolation
-    // needs to be 0.0 after "else" block is executed (if it is
-    // executed).  It will be computed appropriately in the "if" block
-    // if necessary in that case.
+    bool cache_success = (cache_status.first && cache_status.second);
 
-    double constraintViolation = 0.0;
-    RealVector fn_vals(numFunctions);
+    if (!cache_success) {
+      if (!cache_status.first)
+	Cerr << "\nWarning: Couldn't get objectives from Colin cache.";
+      if (!cache_status.second)
+	Cerr << "\nWarning: Couldn't get constraints from Colin cache.";
+      Cerr << "\nAll function values from COLIN:";
+      write_data(Cout, tmpResponseHolder.function_values());
+      Cerr << std::endl;
 
-    // Get the optimal response and constraint values associated with
-    // the point.
-
-    if (lookup_by_val(data_pairs, model_for_sort.interface_id(), 
-		      tmpVariableHolder, search_set, tmpResponseHolder)) {
-      fn_vals = tmpResponseHolder.function_values();
-
-      // Compute constraint violation for nonlinear inequality and
-      // equality constraints using sum of squares of component-wise
-      // differences.  Only done for infeasible points.
-
-      for(size_t j=0; j<num_nln_ineq; j++) {
-	if (fn_vals[j+numUserPrimaryFns] > nln_ineq_upr_bnds[j])
-	  constraintViolation += std::pow(fn_vals[j+numUserPrimaryFns]-nln_ineq_upr_bnds[j],2);
-	else if (fn_vals[j+numUserPrimaryFns] < nln_ineq_lwr_bnds[j])
-	  constraintViolation += std::pow(nln_ineq_lwr_bnds[j]-fn_vals[j+numUserPrimaryFns],2);
+      // attempt to fallback on Dakota DB if needed (hopefully can go away)
+      bool db_status = 
+	dakota_db_lookup(tmpVariableHolder, tmpResponseHolder);
+      if (!db_status) {
+	Cerr << "\nError: Couldn't get Colin final point from DAKOTA DB."
+	     << std::endl;
+	abort_handler(-1);
       }
-      for (size_t j=0; j<num_nln_eq; j++) {
-	if (std::fabs(fn_vals[j+numUserPrimaryFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
-	  constraintViolation += std::pow(fn_vals[j+numUserPrimaryFns+num_nln_ineq]-nln_eq_targets[j], 2);
-      }
-    }
-    else {
-      colin_cache_warn = true;
 
-      // Get the response object from the COLIN cache.
-
-      colin::AppResponse colinResponse = cache_it->second.asResponse(colinProblem.second);
-
-      // If a function value has been computed, get it from the
-      // response object.  Need both fn_vals[0] and a DAKOTA response
-      // object for the ensuing sort of returned points.  This should
-      // be a lot cleaner after switching over to getting all info
-      // from the COLIN cache.
-
-      if (colinResponse.is_computed(mf_info)) {
-	colinResponse.get(mf_info, fn_vals[0]);
-	tmpResponseHolder.function_value(fn_vals[0], 0);
-      }
     }
 
-    // All of this sort logic applies whether function value came from
-    // DAKOTA cache or COLIN cache, so put it here after the "if"
-    // block.
+    // BMA TODO: incorporate constraint tolerance, possibly via
+    // elevating SurrBasedMinimizer::constraint_violation() to
+    // Minimizer
+    double constraintViolation = constraint_violation(tmpResponseHolder);
 
     // For feasible points, compute (sum of) objectives.
+    const RealVector& fn_vals = tmpResponseHolder.function_values();
 
-    double obj_fn_metric = 0.0;
-    if (constraintViolation > 0.0)
-      obj_fn_metric = DBL_MAX;
-    else
-      obj_fn_metric = (localObjectiveRecast) ?
-	objective(fn_vals, model_for_sort.primary_response_fn_sense(),
-		  model_for_sort.primary_response_fn_weights()) : fn_vals[0];
+    // BMA: MSE suggests don't want to set objective to DBL_MAX in
+    // case two points have the exact same constraint
+    // violation... 
+
+    // Use the objective "reduction" even in the single objective case
+    // as it will get the sense (min/max) correct
+    double obj_fn_metric = 
+      objective(fn_vals, iteratedModel.primary_response_fn_sense(),
+		iteratedModel.primary_response_fn_weights());
 
     RealRealPair metrics(constraintViolation, obj_fn_metric);
 
@@ -1136,10 +1094,8 @@ void COLINOptimizer::post_run(std::ostream& s)
   }
 
   if (colin_cache_warn)
-    Cerr << "Warning: Final points obtained directly from COLIN cache, "
-	 << "currently only implemented for unconstrained,\n         "
-	 << "single-objective problems.  If you have constraints, some points "
-	 << "returned may be infeasible." << endl;
+    Cerr << "Warning: Lookup of some COLIN final points failed.\n         If you"
+	 << " have constraints, some points returned may be infeasible." << endl;
 
   // Make sure bestVariablesArray and bestResponseArray are the right
   // size.
@@ -1164,9 +1120,183 @@ void COLINOptimizer::post_run(std::ostream& s)
 
   ps->clear();
 
-  // Call Optimizer::post_run() to finish up.
+  // New design relies on Optimizer to perform transformation from
+  // iterated to user space as needed
+  Optimizer::post_run(s);
+}
 
-  Iterator::post_run(s);
+
+
+/** Encapsulated Colin Cache response extraction, which will
+    ultimately become the default lookup.  Might want to return
+    separate vectors of function values and constraints for use in the
+    sort, but not for now (least change).  Return true if not needed or
+    successful lookup. */
+std::pair<bool, bool> COLINOptimizer::
+colin_cache_lookup(const colin::AppResponse& colinResponse,
+		   Response& tmpResponseHolder)
+{
+  bool fns_status = colinResponse.is_computed(mf_info);
+  if (fns_status) {
+    RealVector fn_vals(numObjectiveFns);    
+    // BMA: previous implementation:
+    //colinResponse.get(mf_info, fn_vals[0]);
+    //tmpResponseHolder.function_value(fn_vals[0], 0);  
+    colinResponse.get(mf_info, fn_vals);
+    // BMA:
+    // Cout << "fns are:";
+    // write_data(Cout, fn_vals);
+    for (size_t i = 0; i < numObjectiveFns; ++i)
+      tmpResponseHolder.function_value(fn_vals[i], i);
+  }
+
+  bool cons_status = true;
+  if (numNonlinearConstraints > 0) {
+    cons_status = colinResponse.is_computed(nlcf_info);
+    if (cons_status) {
+      RealVector cons_vals(numNonlinearConstraints);
+      colinResponse.get(nlcf_info, cons_vals);
+      // BMA:
+      // Cout << "constraints are:\n";
+      // write_data(Cout, cons_vals);
+      for (size_t i = 0; i < numNonlinearConstraints; ++i)
+	tmpResponseHolder.function_value(cons_vals[i], numObjectiveFns + i);
+    }
+  }
+
+  return std::make_pair(fns_status, cons_status);
+}
+
+
+/** Encapsulated DAKOTA DB lookup that returns an iterator space set
+    of functions for sorting.  Here care is taken not to mutate the
+    passed-in variables object, as we want to preserve it for
+    insertion in best variables */
+bool COLINOptimizer::
+dakota_db_lookup(const Variables& tmpVarsHolder, Response& tmpResponseHolder)
+{
+
+  return false;
+
+  // If we have any recast model, need to get the native and/or
+  // user-provided pieces to do database lookup and/or sort.
+
+  // NOTE: This will still break in cases where the underlying model
+  // is recast in another context, like interval estimation.
+
+  // TODO: if there was a least squares recast to optimization,
+  // retreived values will have unexpected size...
+
+  // TODO: needs refinement to be correct In fact the model we want
+  // for weights and sense is the original user model?!?
+
+  // My guess is we want the constraints, variables, etc. from the
+  // fully recast (iteratedModel), not the userDefinedModel.  The only
+  // gotcha is if there is an objective reduction, it needs to reset
+  // the weights in the RecastModel, so we don't get misled...
+
+  // Model& model_for_sort = (scaleFlag || localObjectiveRecast) ?
+  //   iteratedModel.subordinate_model() : iteratedModel;
+
+
+
+  /* BMA: The mess that will be required if we continue to DAKOTA DB lookup...
+
+  // BMA: Using the subordinate model is wrong, but hard to make right...
+  const Model& model_for_sort = (scaleFlag || localObjectiveRecast) ? 
+    iteratedModel.subordinate_model() : iteratedModel;
+
+  bool lookup_success = false;
+  Response user_resp = tmpResponseHolder.copy();
+  const String& interface_id = model_for_sort.interface_id();
+  ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
+  
+  if (minimizerRecast) {
+    
+    // if we do a DAKOTA database lookup, we have to map the functions
+    // and constraints through any transformations applied by Optimizer
+
+    // Unscale variables back to user/native for database lookup.  not
+    // implementing a generic "untransform" at minimizer since this will
+    // go away
+    Variables user_vars = varsScaleFlag ? tmpVarsHolder.copy() : tmpVarsHolder;
+    if (varsScaleFlag) {
+      user_vars.continuous_variables(
+        modify_s2n(user_vars.continuous_variables(), cvScaleTypes, 
+		   cvScaleMultipliers, cvScaleOffsets));
+      lookup_success = lookup_by_val(data_pairs, interface_id, user_vars, 
+				     search_set, user_resp);
+    }
+    else 
+      lookup_success = lookup_by_val(data_pairs, interface_id, user_vars, 
+				     search_set, user_resp);
+    
+    // apply Response transformations
+
+    if (localObjectiveRecast && obsDataFlag)
+      data_difference_core(user_resp, tmpResponseHolder);
+
+    // scaling functions have conditional built-in
+    response_scaler_core(user_vars, tmpVarsHolder, 
+			 user_resp, tmpResponseHolder,
+			 0, numUserPrimaryFns + numNonlinearConstraints);
+
+    if (localObjectiveRecast)
+      objective_reduction(user_resp, model_for_sort.primary_response_fn_sense(),
+			  model_for_sort.primary_response_fn_weights(), 
+			  tmpResponseHolder);
+  }
+  else {
+    lookup_success = lookup_by_val(data_pairs, interface_id, tmpVarsHolder, 
+				   search_set, tmpResponseHolder);
+  }
+
+  return(lookup_success);
+
+  BMA: End mess
+  */
+
+}
+
+
+
+/** BMA TODO: incorporate constraint tolerance, possibly via elevating
+    SurrBasedMinimizer::constraint_violation().  Always use
+    iteratedModel to get the constraints; they are in the right
+    space. */
+double COLINOptimizer::constraint_violation(const Response& tmpResponseHolder)
+{
+  // Need number of constraints and bounds so we can determine
+  // constraint violation.
+
+  size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
+         num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+  const RealVector& nln_ineq_lwr_bnds
+    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+  const RealVector& nln_ineq_upr_bnds
+    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+  const RealVector& nln_eq_targets
+    = iteratedModel.nonlinear_eq_constraint_targets();
+
+  // Compute constraint violation for nonlinear inequality and
+  // equality constraints using sum of squares of component-wise
+  // differences.  Only done for infeasible points.
+
+  double cons_violation = 0.0;
+  const RealVector& fn_vals = tmpResponseHolder.function_values();
+
+  for(size_t j=0; j<num_nln_ineq; j++) {
+    if (fn_vals[j+numIterPrimaryFns] > nln_ineq_upr_bnds[j])
+      cons_violation += std::pow(fn_vals[j+numIterPrimaryFns]-nln_ineq_upr_bnds[j],2);
+    else if (fn_vals[j+numIterPrimaryFns] < nln_ineq_lwr_bnds[j])
+      cons_violation += std::pow(nln_ineq_lwr_bnds[j]-fn_vals[j+numIterPrimaryFns],2);
+  }
+  for (size_t j=0; j<num_nln_eq; j++) {
+    if (std::fabs(fn_vals[j+numIterPrimaryFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
+      cons_violation += std::pow(fn_vals[j+numIterPrimaryFns+num_nln_ineq]-nln_eq_targets[j], 2);
+  }
+
+  return cons_violation;
 }
 
 
