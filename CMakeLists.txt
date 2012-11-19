@@ -327,6 +327,8 @@ endif()
 
 if(NOT WIN32)
 
+  message("Debugging CPACK logic -- In the UNIX TGZ branch")
+
   # if(APPLE)
   #else if(NOT CYGWIN)
   if(NOT CYGWIN)
@@ -340,15 +342,19 @@ if(NOT WIN32)
     #set(CPACK_GENERATOR CygwinBinary)
     set(CPACK_GENERATOR TGZ)
 
-    message("Will create a custom, Cygwin SOURCE archive")
-    set(CPACK_SOURCE_GENERATOR CygwinSource)
+    message("BROKEN!  Will NOT create a custom, Cygwin SOURCE archive")
+    # Unfortunately, FAILS too -- set(CPACK_SOURCE_GENERATOR CygwinSource)
+    # Need to rely on windows builds for the source distro format (zip)
 
   endif() # NOT CYGWIN
 
 else()
 
+  message("Debugging CPACK logic -- In the Windows ZIP branch")
   set(CPACK_GENERATOR ZIP)
   set(CPACK_SOURCE_GENERATOR ZIP)
+
+  message("Verify CPACK GENERATOR on windows: ${CPACK_GENERATOR}")
 
 endif() # NOT WIN32
 
