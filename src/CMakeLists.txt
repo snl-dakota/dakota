@@ -330,6 +330,9 @@ list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 if(HAVE_PECOS)
   include_directories(${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
                       ${VPISparseGrid_SOURCE_DIR}/src)
+else()
+  message(FATAL_ERROR
+    "DAKOTA cannot currently be configured without PECOS: ${Pecos_SOURCE_DIR}")
 endif(HAVE_PECOS)
 
 
