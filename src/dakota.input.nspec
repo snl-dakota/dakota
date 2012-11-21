@@ -580,7 +580,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		  ]
 		)
               |
-	      ( gpais ALIAS nond_gpais {N_mdm(lit,methodName_nond_gpais)}
+	      ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(lit,methodName_nond_gpais)}
 	        [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
 	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 

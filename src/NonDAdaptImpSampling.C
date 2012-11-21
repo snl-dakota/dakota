@@ -41,6 +41,7 @@ NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
   // should the model bounds be respected?
   useModelBounds(false)
 { 
+  statsFlag=true;
   samplingVarsMode = ACTIVE;
   initialize_random_variables(STD_NORMAL_U);
   const String& integration_refine
@@ -175,7 +176,12 @@ void NonDAdaptImpSampling::quantify_uncertainty()
              pl_len = requestedProbLevels[resp_fn_count].length(),
              gl_len = requestedGenRelLevels[resp_fn_count].length(),
              num_levels = rl_len + pl_len + gl_len;
-    
+      if (pl_len || gl_len) {
+        Cerr << "Error: importance sampling only computes a probability level (CDF or CCDF)" 
+             << "for each response level requested.  It does not compute an estimated response" 
+             << "level given a probability level." << std::endl;
+        abort_handler(-1);
+      }
       // Loop over response/probability/reliability levels
       for (level_count=0; level_count<num_levels; level_count++) {
  
@@ -210,7 +216,10 @@ void NonDAdaptImpSampling::quantify_uncertainty()
 	  // iteratively generate samples from final set of
 	  // representative points until probability converges
 	  converge_probability();
+#ifdef DEBUG
         Cout << "Final Probability " << finalProb << '\n';
+#endif
+        computedProbLevels[resp_fn_count][level_count]=finalProb;
       }
     }
   }
@@ -802,6 +811,14 @@ calculate_statistics(const RealVectorArray& samples,
       sum_var += std::pow((failure_pdf[i]/failure_mmpdf[i]) - prob, 2);
     Real var = sum_var/double(total_samples)/double(total_samples - 1);
     cov = std::sqrt(var)/prob;
+  }
+}
+
+void NonDAdaptImpSampling::print_results(std::ostream& s)
+{
+  if (statsFlag) {
+    s << "\nStatistics based on the importance sampling calculations:\n";
+    print_distribution_mappings(s);
   }
 }
 

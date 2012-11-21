@@ -431,148 +431,148 @@ static GuiKeyWord
 		{"variance_based_decomp",8,1,4,0,1259,kw_60,0.,0.,0.,0,"{Variance based decomposition} MethodCommands.html#MethodFSUDACE"}
 		},
 	kw_62[2] = {
-		{"annotated",8,0,1,0,901},
-		{"freeform",8,0,1,0,903}
-		},
-	kw_63[2] = {
-		{"parallel",8,0,1,1,919},
-		{"series",8,0,1,1,917}
-		},
-	kw_64[3] = {
-		{"gen_reliabilities",8,0,1,1,913},
-		{"probabilities",8,0,1,1,911},
-		{"system",8,2,2,0,915,kw_63}
-		},
-	kw_65[2] = {
-		{"compute",8,3,2,0,909,kw_64},
-		{"num_response_levels",13,0,1,0,907}
-		},
-	kw_66[2] = {
-		{"dakota",8,0,1,1,891},
-		{"surfpack",8,0,1,1,889}
-		},
-	kw_67[3] = {
-		{"gaussian_process",8,2,1,0,887,kw_66},
-		{"kriging",0,2,1,0,886,kw_66},
-		{"use_derivatives",8,0,2,0,893}
-		},
-	kw_68[12] = {
-		{"distribution",8,2,6,0,921,kw_10,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
-		{"ea",8,0,1,0,895},
-		{"ego",8,3,1,0,885,kw_67},
-		{"gen_reliability_levels",14,1,8,0,931,kw_11,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
-		{"lhs",8,0,1,0,897},
-		{"points_file",11,2,2,0,899,kw_62},
-		{"probability_levels",14,1,7,0,927,kw_12,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
-		{"response_levels",14,2,3,0,905,kw_65},
-		{"rng",8,2,9,0,935,kw_13,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
-		{"samples",9,0,5,0,1077,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"sbo",8,3,1,0,883,kw_67},
-		{"seed",0x19,0,4,0,1079,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"}
-		},
-	kw_69[2] = {
-		{"annotated",8,0,1,0,961},
-		{"freeform",8,0,1,0,963}
-		},
-	kw_70[2] = {
-		{"mt19937",8,0,1,1,967},
-		{"rnum2",8,0,1,1,969}
-		},
-	kw_71[2] = {
-		{"dakota",8,0,1,1,951},
-		{"surfpack",8,0,1,1,949}
-		},
-	kw_72[3] = {
-		{"gaussian_process",8,2,1,0,947,kw_71,0.,0.,0.,0,"{EGO GP selection} MethodCommands.html#MethodNonDGlobalIntervalEst"},
-		{"kriging",0,2,1,0,946,kw_71},
-		{"use_derivatives",8,0,2,0,953,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalIntervalEst"}
-		},
-	kw_73[8] = {
-		{"ea",8,0,1,0,955},
-		{"ego",8,3,1,0,945,kw_72},
-		{"lhs",8,0,1,0,957},
-		{"points_file",11,2,2,0,959,kw_69},
-		{"rng",8,2,3,0,965,kw_70,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDGlobalIntervalEst"},
-		{"samples",9,0,5,0,1077,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"sbo",8,3,1,0,943,kw_72},
-		{"seed",0x19,0,4,0,1079,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"}
-		},
-	kw_74[2] = {
-		{"complementary",8,0,1,1,1239},
-		{"cumulative",8,0,1,1,1237}
-		},
-	kw_75[1] = {
-		{"num_gen_reliability_levels",13,0,1,0,1247}
-		},
-	kw_76[1] = {
-		{"num_probability_levels",13,0,1,0,1243}
-		},
-	kw_77[2] = {
-		{"annotated",8,0,1,0,1205},
-		{"freeform",8,0,1,0,1207}
-		},
-	kw_78[2] = {
-		{"parallel",8,0,1,1,1233},
-		{"series",8,0,1,1,1231}
-		},
-	kw_79[3] = {
-		{"gen_reliabilities",8,0,1,1,1227},
-		{"probabilities",8,0,1,1,1225},
-		{"system",8,2,2,0,1229,kw_78}
-		},
-	kw_80[2] = {
-		{"compute",8,3,2,0,1223,kw_79},
-		{"num_response_levels",13,0,1,0,1221}
-		},
-	kw_81[2] = {
-		{"mt19937",8,0,1,1,1215},
-		{"rnum2",8,0,1,1,1217}
-		},
-	kw_82[2] = {
-		{"dakota",8,0,1,0,1201},
-		{"surfpack",8,0,1,0,1199}
-		},
-	kw_83[12] = {
-		{"distribution",8,2,7,0,1235,kw_74},
-		{"gen_reliability_levels",14,1,9,0,1245,kw_75},
-		{"points_file",11,2,2,0,1203,kw_77},
-		{"probability_levels",14,1,8,0,1241,kw_76},
-		{"response_levels",14,2,6,0,1219,kw_80},
-		{"rng",8,2,5,0,1213,kw_81},
-		{"seed",0x19,0,4,0,1211,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
-		{"u_gaussian_process",8,2,1,1,1197,kw_82},
-		{"u_kriging",0,0,1,1,1196},
-		{"use_derivatives",8,0,3,0,1209,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalRel"},
-		{"x_gaussian_process",8,2,1,1,1195,kw_82},
-		{"x_kriging",0,2,1,1,1194,kw_82}
-		},
-	kw_84[2] = {
 		{"annotated",8,0,1,0,835},
 		{"freeform",8,0,1,0,837}
 		},
-	kw_85[2] = {
+	kw_63[2] = {
 		{"parallel",8,0,1,1,853},
 		{"series",8,0,1,1,851}
 		},
-	kw_86[3] = {
+	kw_64[3] = {
 		{"gen_reliabilities",8,0,1,1,847},
 		{"probabilities",8,0,1,1,845},
-		{"system",8,2,2,0,849,kw_85}
+		{"system",8,2,2,0,849,kw_63}
 		},
-	kw_87[2] = {
-		{"compute",8,3,2,0,843,kw_86},
+	kw_65[2] = {
+		{"compute",8,3,2,0,843,kw_64},
 		{"num_response_levels",13,0,1,0,841}
 		},
-	kw_88[9] = {
+	kw_66[9] = {
 		{"distribution",8,2,6,0,921,kw_10,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
 		{"emulator_samples",9,0,1,0,831},
 		{"gen_reliability_levels",14,1,8,0,931,kw_11,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
-		{"points_file",11,2,2,0,833,kw_84},
+		{"points_file",11,2,2,0,833,kw_62},
 		{"probability_levels",14,1,7,0,927,kw_12,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
-		{"response_levels",14,2,3,0,839,kw_87},
+		{"response_levels",14,2,3,0,839,kw_65},
 		{"rng",8,2,9,0,935,kw_13,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,5,0,1077,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
 		{"seed",0x19,0,4,0,1079,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"}
+		},
+	kw_67[2] = {
+		{"annotated",8,0,1,0,901},
+		{"freeform",8,0,1,0,903}
+		},
+	kw_68[2] = {
+		{"parallel",8,0,1,1,919},
+		{"series",8,0,1,1,917}
+		},
+	kw_69[3] = {
+		{"gen_reliabilities",8,0,1,1,913},
+		{"probabilities",8,0,1,1,911},
+		{"system",8,2,2,0,915,kw_68}
+		},
+	kw_70[2] = {
+		{"compute",8,3,2,0,909,kw_69},
+		{"num_response_levels",13,0,1,0,907}
+		},
+	kw_71[2] = {
+		{"dakota",8,0,1,1,891},
+		{"surfpack",8,0,1,1,889}
+		},
+	kw_72[3] = {
+		{"gaussian_process",8,2,1,0,887,kw_71},
+		{"kriging",0,2,1,0,886,kw_71},
+		{"use_derivatives",8,0,2,0,893}
+		},
+	kw_73[12] = {
+		{"distribution",8,2,6,0,921,kw_10,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
+		{"ea",8,0,1,0,895},
+		{"ego",8,3,1,0,885,kw_72},
+		{"gen_reliability_levels",14,1,8,0,931,kw_11,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
+		{"lhs",8,0,1,0,897},
+		{"points_file",11,2,2,0,899,kw_67},
+		{"probability_levels",14,1,7,0,927,kw_12,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
+		{"response_levels",14,2,3,0,905,kw_70},
+		{"rng",8,2,9,0,935,kw_13,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
+		{"samples",9,0,5,0,1077,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
+		{"sbo",8,3,1,0,883,kw_72},
+		{"seed",0x19,0,4,0,1079,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"}
+		},
+	kw_74[2] = {
+		{"annotated",8,0,1,0,961},
+		{"freeform",8,0,1,0,963}
+		},
+	kw_75[2] = {
+		{"mt19937",8,0,1,1,967},
+		{"rnum2",8,0,1,1,969}
+		},
+	kw_76[2] = {
+		{"dakota",8,0,1,1,951},
+		{"surfpack",8,0,1,1,949}
+		},
+	kw_77[3] = {
+		{"gaussian_process",8,2,1,0,947,kw_76,0.,0.,0.,0,"{EGO GP selection} MethodCommands.html#MethodNonDGlobalIntervalEst"},
+		{"kriging",0,2,1,0,946,kw_76},
+		{"use_derivatives",8,0,2,0,953,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalIntervalEst"}
+		},
+	kw_78[8] = {
+		{"ea",8,0,1,0,955},
+		{"ego",8,3,1,0,945,kw_77},
+		{"lhs",8,0,1,0,957},
+		{"points_file",11,2,2,0,959,kw_74},
+		{"rng",8,2,3,0,965,kw_75,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDGlobalIntervalEst"},
+		{"samples",9,0,5,0,1077,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
+		{"sbo",8,3,1,0,943,kw_77},
+		{"seed",0x19,0,4,0,1079,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"}
+		},
+	kw_79[2] = {
+		{"complementary",8,0,1,1,1239},
+		{"cumulative",8,0,1,1,1237}
+		},
+	kw_80[1] = {
+		{"num_gen_reliability_levels",13,0,1,0,1247}
+		},
+	kw_81[1] = {
+		{"num_probability_levels",13,0,1,0,1243}
+		},
+	kw_82[2] = {
+		{"annotated",8,0,1,0,1205},
+		{"freeform",8,0,1,0,1207}
+		},
+	kw_83[2] = {
+		{"parallel",8,0,1,1,1233},
+		{"series",8,0,1,1,1231}
+		},
+	kw_84[3] = {
+		{"gen_reliabilities",8,0,1,1,1227},
+		{"probabilities",8,0,1,1,1225},
+		{"system",8,2,2,0,1229,kw_83}
+		},
+	kw_85[2] = {
+		{"compute",8,3,2,0,1223,kw_84},
+		{"num_response_levels",13,0,1,0,1221}
+		},
+	kw_86[2] = {
+		{"mt19937",8,0,1,1,1215},
+		{"rnum2",8,0,1,1,1217}
+		},
+	kw_87[2] = {
+		{"dakota",8,0,1,0,1201},
+		{"surfpack",8,0,1,0,1199}
+		},
+	kw_88[12] = {
+		{"distribution",8,2,7,0,1235,kw_79},
+		{"gen_reliability_levels",14,1,9,0,1245,kw_80},
+		{"points_file",11,2,2,0,1203,kw_82},
+		{"probability_levels",14,1,8,0,1241,kw_81},
+		{"response_levels",14,2,6,0,1219,kw_85},
+		{"rng",8,2,5,0,1213,kw_86},
+		{"seed",0x19,0,4,0,1211,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
+		{"u_gaussian_process",8,2,1,1,1197,kw_87},
+		{"u_kriging",0,0,1,1,1196},
+		{"use_derivatives",8,0,3,0,1209,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalRel"},
+		{"x_gaussian_process",8,2,1,1,1195,kw_87},
+		{"x_kriging",0,2,1,1,1194,kw_87}
 		},
 	kw_89[2] = {
 		{"annotated",8,0,1,0,809},
@@ -684,10 +684,10 @@ static GuiKeyWord
 		{"num_response_levels",13,0,1,0,1173}
 		},
 	kw_110[6] = {
-		{"distribution",8,2,4,0,1235,kw_74},
-		{"gen_reliability_levels",14,1,6,0,1245,kw_75},
+		{"distribution",8,2,4,0,1235,kw_79},
+		{"gen_reliability_levels",14,1,6,0,1245,kw_80},
 		{"mpp_search",8,10,1,0,1133,kw_105,0.,0.,0.,0,"{MPP search type} MethodCommands.html#MethodNonDLocalRel"},
-		{"probability_levels",14,1,5,0,1241,kw_76},
+		{"probability_levels",14,1,5,0,1241,kw_81},
 		{"reliability_levels",14,1,3,0,1189,kw_106},
 		{"response_levels",14,2,2,0,1171,kw_109}
 		},
@@ -1209,10 +1209,11 @@ static GuiKeyWord
 		{"final_solutions",0x29,0,10,0,89,0,0.,0.,0.,0,"{Final solutions} MethodCommands.html#MethodIndControl"},
 		{"fsu_cvt",8,8,11,1,1051,kw_59,0.,0.,0.,0,0,"DACE"},
 		{"fsu_quasi_mc",8,10,11,1,1249,kw_61,0.,0.,0.,0,0,"DACE"},
-		{"global_evidence",8,12,11,1,881,kw_68,0.,0.,0.,0,0,"Uncertainty Quantification"},
-		{"global_interval_est",8,8,11,1,941,kw_73,0.,0.,0.,0,0,"Uncertainty Quantification"},
-		{"global_reliability",8,12,11,1,1193,kw_83,0.,0.,0.,0,0,"Uncertainty Quantification"},
-		{"gpais",8,9,11,1,829,kw_88},
+		{"gaussian_process_adaptive_importance_sampling",0,9,11,1,828,kw_66},
+		{"global_evidence",8,12,11,1,881,kw_73,0.,0.,0.,0,0,"Uncertainty Quantification"},
+		{"global_interval_est",8,8,11,1,941,kw_78,0.,0.,0.,0,0,"Uncertainty Quantification"},
+		{"global_reliability",8,12,11,1,1193,kw_88,0.,0.,0.,0,0,"Uncertainty Quantification"},
+		{"gpais",8,9,11,1,829,kw_66},
 		{"id_method",11,0,1,0,61,0,0.,0.,0.,0,"{Method set identifier} MethodCommands.html#MethodIndControl"},
 		{"importance_sampling",8,11,11,1,799,kw_93,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"list_parameter_study",8,1,11,1,1281,kw_94,0.,0.,0.,0,"{List parameter study} MethodCommands.html#MethodPSLPS","Parameter Studies"},
@@ -1230,10 +1231,9 @@ static GuiKeyWord
 		{"nlssol_sqp",8,12,11,1,187,kw_156,0.,0.,0.,0,0,"Nonlinear Least Squares"},
 		{"nond_adaptive_sampling",0,9,11,1,854,kw_18},
 		{"nond_bayes_calibration",0,10,11,1,970,kw_32},
-		{"nond_global_evidence",0,12,11,1,880,kw_68},
-		{"nond_global_interval_est",0,8,11,1,940,kw_73},
-		{"nond_global_reliability",0,12,11,1,1192,kw_83},
-		{"nond_gpais",0,9,11,1,828,kw_88},
+		{"nond_global_evidence",0,12,11,1,880,kw_73},
+		{"nond_global_interval_est",0,8,11,1,940,kw_78},
+		{"nond_global_reliability",0,12,11,1,1192,kw_88},
 		{"nond_importance_sampling",0,11,11,1,798,kw_93},
 		{"nond_local_evidence",0,6,11,1,1088,kw_101},
 		{"nond_local_interval_est",0,2,11,1,1124,kw_102},

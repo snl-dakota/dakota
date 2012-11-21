@@ -858,7 +858,7 @@ KEYWORD12 method
 	  [ seed INTEGER > 0 ]
 	  )
 	|
-	( gpais ALIAS nond_gpais
+	( gpais ALIAS gaussian_process_adaptive_importance_sampling
 	  [ emulator_samples INTEGER ]
 	  [ points_file STRING
 	    [ annotated
