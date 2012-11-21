@@ -4597,6 +4597,12 @@ Test Number 0 succeeded
    1.1000000000e+00   7.5528379242e-01  -6.9121185462e-01  -6.9121185462e-01
    1.3000000000e+00   7.9400076418e-01  -8.2038182780e-01  -8.2038182780e-01
    1.5000000000e+00   8.2526852037e-01  -9.3563148261e-01  -9.3563148261e-01
+dakota_herbie_gpais.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 105 total (105 new, 0 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+  -1.0650000000e+00   2.5229006333e-03
 dakota_herbie_smoothherbie_shubert.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
@@ -12191,6 +12197,22 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                       7.6581595095e-09
 <<<<< Best data captured at function evaluation 240
+dakota_rosenbrock_importance.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1289 total (600 new, 689 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   3.0000000000e+00   1.4122049085e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 25039 total (24350 new, 689 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   3.0000000000e+00   1.2772399752e-01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 25039 total (24350 new, 689 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   3.0000000000e+00   1.2772399752e-01
 dakota_rosenbrock_users.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)

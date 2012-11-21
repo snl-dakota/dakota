@@ -6,17 +6,23 @@
 # with standard normal inputs and a response level of 3 is 0.1, 
 # but the "true" probability of failure is 0.0675, which is 
 # what we are trying to attain with the importance sampling.
+# NOTE:  for this test file, the results are more accurate if the 
+# initial number of samples is 100 or larger, but to keep the computational 
+# costs down, it is set to 50 samples. 
 
 strategy,
 	single_method
 	  tabular_graphics_data
 
 method,
-	importance
-	  response_levels = 3.0
+        importance_sampling
+          import                                    #0
+          #adapt_import                             #1
+          #mm_adapt_import                          #2
+	  response_levels = 3.0  
           samples = 50
-	  seed = 1234567
-          output debug
+	  seed = 5639
+          output quiet 
 
 variables,
 #	uniform_uncertain = 2
@@ -32,6 +38,6 @@ interface,
 	  analysis_driver = 'rosenbrock'
 
 responses,
-	response_functions = 1
+	response_functions = 1 
 	no_gradients
 	no_hessians
