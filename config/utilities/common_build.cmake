@@ -281,16 +281,21 @@ message("done processing test results")
 # Enable packing if requested, regardless of status
 # (occasionally, need to download the resulting package and test manually)
 if ( DAKOTA_DO_PACK )
-  #ctest_build(TARGET package APPEND) -- WJB: too bad no ctest_package function
-  execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
-    WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
-    )
+  if ( EXISTS ${CTEST_BINARY_DIRECTORY}/CPackConfig.cmake )
+    #ctest_build(TARGET package APPEND) - WJB: too bad no ctest_package function
+    execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
+      WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+      )
+  endif() # CPackConfig.cmake exists
 
-  #ctest_build(TARGET package_source APPEND)
-  execute_process(COMMAND ${CMAKE_COMMAND}
-    --build ${CTEST_BINARY_DIRECTORY}
-    --target package_source
-    )
+  # WJB- ToDo: Assess the need for another variable, DAKOTA_DO_SOURCE_PACK
+  #            PROBABLY is needed since only need to create source tarball once
+  if ( EXISTS ${CTEST_BINARY_DIRECTORY}/CPackSourceConfig.cmake )
+    execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
+      --config ${CTEST_BINARY_DIRECTORY}/CPackSourceConfig.cmake
+      WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+      )
+  endif() # CPackSourceConfig.cmake exists
 
 endif() # DAKOTA_DO_PACK
 
