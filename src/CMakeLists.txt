@@ -588,8 +588,15 @@ endif(HAVE_NL2SOL)
 
 CheckPackage(NPSOL)
 if(HAVE_NPSOL)
-  set(iterator_src ${iterator_src} SOLBase.C NPSOLOptimizer.C NLSSOLLeastSq.C)
-  set(Dakota_src_fortran ${Dakota_src_fortran} npoptn_wrapper.f)
+  list(APPEND iterator_src SOLBase.C NPSOLOptimizer.C NLSSOLLeastSq.C)
+
+  if(NOT APPLE)
+    list(APPEND Dakota_src_fortran npoptn_wrapper.f)
+  else()
+    # ToDo: Debug unusual Mac build error when npoptn_wrapper.f is appended
+    #       to the Dakota_src_fortran list rather than the iterator_src list
+    list(APPEND iterator_src npoptn_wrapper.f)
+  endif()
 endif(HAVE_NPSOL)
 
 if(HAVE_OPTPP)
@@ -645,7 +652,8 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${iterator_src})
 
 if(MSVC)
-  set_source_files_properties(${Dakota_src} PROPERTIES LANGUAGE "CXX")
+  # WJB - ToDo: Investigate further whether forcing C++ compilation is needed
+  #set_source_files_properties(${Dakota_src} PROPERTIES LANGUAGE "CXX")
 
   # May need to treat dirent.c separately from the ${Dakota_src} list of sources
   list(APPEND Dakota_src dirent.h dirent.c)
