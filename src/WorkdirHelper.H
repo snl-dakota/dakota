@@ -27,6 +27,7 @@ namespace bfs = boost::filesystem;
 
 #if defined(_WIN32) || defined(_WIN64)
 
+  #define NOMINMAX
   #include <io.h>
   #include <windows.h>
   #include <direct.h>
