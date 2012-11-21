@@ -90,13 +90,16 @@ private:
   //- Heading: Convenience/Helper functions
   //
 
-  /// primary response conversion map for RecastModel used in scaling and 
-  /// multiobjective:  transform objectives (fns, grads, Hessians)
-  /// from native (user) to iterator space
-  static void primary_resp_recast(const Variables& native_vars,
-				  const Variables& scaled_vars,
-				  const Response& native_response,
-				  Response& scaled_response);
+  /// Wrap iteratedModel in a RecastModel that performs (weighted)
+  /// multi-objective or sum-of-squared residuals transformation
+  void reduce_model(bool local_nls_recast, bool require_hessians);
+
+  /// Recast callback to reduce multiple objectives or residuals to a
+  /// single objective, with gradients and Hessians as needed
+  static void primary_resp_reducer(const Variables& full_vars,
+				   const Variables& reduced_vars,
+				   const Response& full_response,
+				   Response& reduced_response);
 
   /// forward mapping: maps multiple primary response functions to a single
   /// weighted objective for single-objective optimizers
@@ -120,7 +123,7 @@ inline Optimizer::Optimizer(): localObjectiveRecast(false)
 
 inline Optimizer::~Optimizer()
 { 
-  if (scaleFlag || localObjectiveRecast)
+  if (minimizerRecast)
     iteratedModel.free_communicators(maxConcurrency);
 }
 

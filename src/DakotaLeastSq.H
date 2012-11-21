@@ -59,18 +59,6 @@ protected:
   /// for the least squares branch.
   virtual void minimize_residuals() = 0;
 
-  //
-  //- Heading: Convenience/Helper functions
-  //
-
-  /// primary response conversion map for RecastModel used in scaling:
-  /// transform least squares terms (fns, grads, Hessians) from native
-  /// (user) to iterator space
-  static void primary_resp_recast(const Variables& native_vars,
-				  const Variables& scaled_vars,
-				  const Response& native_response,
-				  Response& scaled_response);
-
   /// Calculate confidence intervals on estimated parameters
   void get_confidence_intervals();
 
@@ -87,12 +75,6 @@ protected:
 
   /// flag indicating whether weighted least squares is active
   bool weightFlag;
-  /// filename from which to read observed data
-  String obsDataFilename;
-  /// flag indicating whether user-supplied data is active
-  bool obsDataFlag;
-  /// storage for user-supplied data for computing residuals
-  RealVector obsData;
   /// lower bounds for confidence intervals on calibration parameters
   RealVector confBoundsLower;
   /// upper bounds for confidence intervals on calibration parameters
@@ -101,18 +83,32 @@ protected:
 private:
 
   //
+  //- Heading: Convenience/Helper functions
+  //
+
+  /// Wrap iteratedModel in a RecastModel that weights the residuals
+  void weight_model();
+
+  /// Recast callback function to weight least squares residuals,
+  /// gradients, and Hessians
+  static void primary_resp_weighter(const Variables& unweighted_vars,
+				    const Variables& weighted_vars,
+				    const Response& unweighted_response,
+				    Response& weighted_response);
+
+  //
   //- Heading: Data
   //
 };
 
 
-inline LeastSq::LeastSq(): weightFlag(false), obsDataFlag(false)
+inline LeastSq::LeastSq(): weightFlag(false)
 { }
 
 
 inline LeastSq::~LeastSq()
 { 
-  if (weightFlag || scaleFlag || obsDataFlag) 
+  if (minimizerRecast) 
     iteratedModel.free_communicators(maxConcurrency);
 }
 

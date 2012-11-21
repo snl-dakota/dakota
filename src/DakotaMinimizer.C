@@ -14,6 +14,7 @@
 #include "DakotaMinimizer.H"
 #include "system_defs.h"
 #include "data_io.h"
+#include "tabular_io.h"
 #include "DakotaModel.H"
 #include "ProblemDescDB.H"
 #include "ParamResponsePair.H"
@@ -32,7 +33,8 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
-Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
+Minimizer::Minimizer(Model& model): 
+  Iterator(BaseConstructor(), model),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   numNonlinearIneqConstraints(model.num_nonlinear_ineq_constraints()),
@@ -47,9 +49,15 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
   numIterPrimaryFns(numFunctions - numNonlinearConstraints),
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
+  minimizerRecast(false),
+  obsDataFilename(probDescDB.get_string("responses.exp_data_filename")),
+  obsDataFlag(!obsDataFilename.empty()),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
+  // initialize the iteratedModel, which may later get wrapped in RecastModel
+  iteratedModel = model;
+
   // Re-assign Iterator defaults specialized to Minimizer branch
   if (maxIterations < 0) // DataMethod default set to -1
     maxIterations = 100;
@@ -187,10 +195,11 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(numFunctions - numNonlinearConstraints),
   numIterPrimaryFns(numFunctions - numNonlinearConstraints),
-  boundConstraintFlag(false), speculativeFlag(false), scaleFlag(false),
-  varsScaleFlag(false), primaryRespScaleFlag(false),
-  secondaryRespScaleFlag(false)
+  boundConstraintFlag(false), speculativeFlag(false), minimizerRecast(false), 
+  obsDataFlag(false), scaleFlag(false), varsScaleFlag(false),
+  primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
+  // initialize the iteratedModel, which may later get wrapped in RecastModel
   iteratedModel = model;
 
   // set boundConstraintFlag
@@ -246,8 +255,9 @@ Minimizer(NoDBBaseConstructor, size_t num_lin_ineq, size_t num_lin_eq,
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
-  speculativeFlag(false), scaleFlag(false), varsScaleFlag(false),
-  primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
+  speculativeFlag(false), minimizerRecast(false), obsDataFlag(false),
+  scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false), 
+  secondaryRespScaleFlag(false)
 { }
 
 
@@ -274,9 +284,243 @@ void Minimizer::initialize_run()
 }
 
 
-/** helper function used in constructors of derived classes to set up
-    scaling types, multipliers and offsets when input scaling flag is
-    enabled */
+/** Reads observation data to compute least squares residuals.  Does
+    not change size of responses, and is the first wrapper, therefore
+    sizes are based on userDefinedModel. This will set weights to
+    sigma[i]^-2 if appropriate. */
+bool Minimizer::data_transform_model(bool weight_flag)
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initializing data transformation" << std::endl;
+  
+  // These may be promoted to members once we use state vars / sigma
+  size_t num_experiments = probDescDB.get_sizet("responses.num_experiments");
+  size_t num_config_vars_read = 
+    probDescDB.get_sizet("responses.num_config_vars");
+  size_t num_sigma_read = 
+    probDescDB.get_sizet("responses.num_std_deviations");
+
+  if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
+    Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
+	 << "only first will be used." << std::endl;
+  if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
+    Cout << "\nWarning (least squares): experimental_config_variables " 
+	 << "will be read from file, but ignored." << std::endl;
+
+  // a matrix with numExperiments rows and cols
+  // numExpConfigVars X, numFunctions Y, [1 or numFunctions Sigma]
+  RealMatrix experimental_data;
+    
+  size_t num_cols = num_config_vars_read + numUserPrimaryFns + num_sigma_read;
+
+  bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
+
+  TabularIO::read_data_tabular(obsDataFilename, "Least Squares", 
+			       experimental_data, num_experiments, num_cols, 
+			       annotated);
+
+  // copy the y portion of the data to obsData
+  obsData.resize(numUserPrimaryFns);
+  for (int y_ind = 0; y_ind < numUserPrimaryFns; ++y_ind)
+    obsData[y_ind] = experimental_data(0, num_config_vars_read + y_ind);
+  if (outputLevel >= VERBOSE_OUTPUT) {
+    Cout << "\nUsing calibration data from " << obsDataFilename << ":\n";
+    write_data(Cout, obsData);
+    Cout << std::endl;
+  }
+
+  // weight the terms with sigma from the file if active
+  if (num_sigma_read > 0) {
+    if (weight_flag) {
+      Cerr << "\nError: both weights and experimental standard deviations "
+	   << "specified in Dakota::LeastSq." << std::endl;
+      abort_handler(-1);
+    }
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nLeast squares: weighting least squares terms with 1 / square"
+	   << " of standard deviations read from file." << std::endl;
+    RealVector lsq_weights(numUserPrimaryFns);
+    if (num_sigma_read == 1) {
+      double sigma = 
+	experimental_data(0, num_config_vars_read + numUserPrimaryFns);
+      lsq_weights = std::pow(sigma, -2.);
+    }
+    else if (num_sigma_read == numUserPrimaryFns) {
+      for (size_t i=0; i<numUserPrimaryFns; ++i) {
+	double sigma = 
+	  experimental_data(0, num_config_vars_read + numUserPrimaryFns + i);
+	lsq_weights[i] = std::pow(sigma, -2.);
+      }
+    }
+    else {
+      Cerr << "\nError: std_deviations read needs to be length 1 or number "
+	   << "of calibration_terms in Dakota::LeastSq." << std::endl;
+      abort_handler(-1);
+    }
+
+    // this will potentially be setting on the scale/data transformed model
+    iteratedModel.primary_response_fn_weights(lsq_weights);
+    weight_flag = true;
+  }
+
+
+  // !!! The size of the variables map should be all active variables,
+  // !!! not continuous!!!
+
+  size_t i;
+  Sizet2DArray var_map_indices(numContinuousVars), 
+    primary_resp_map_indices(numUserPrimaryFns), 
+    secondary_resp_map_indices(numNonlinearConstraints);
+  bool nonlinear_vars_map = false;
+  size_t num_recast_fns = numUserPrimaryFns + numNonlinearConstraints;
+  BoolDequeArray nonlinear_resp_map(num_recast_fns);
+
+  for (i=0; i<numContinuousVars; i++) {
+    var_map_indices[i].resize(1);
+    var_map_indices[i][0] = i;
+  }
+  for (i=0; i<numUserPrimaryFns; i++) {
+    primary_resp_map_indices[i].resize(1);
+    primary_resp_map_indices[i][0] = i;
+    nonlinear_resp_map[i].resize(1);
+    nonlinear_resp_map[i][0] = false;
+  }
+  for (i=0; i<numNonlinearConstraints; i++) {
+    secondary_resp_map_indices[i].resize(1);
+    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
+    nonlinear_resp_map[numUserPrimaryFns+i].resize(1);
+    nonlinear_resp_map[numUserPrimaryFns+i][0] = false;
+  }
+
+  void (*vars_recast) (const Variables&, Variables&) = NULL;
+  void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+  void (*pri_resp_recast) (const Variables&, const Variables&,
+			   const Response&, Response&)
+    = primary_resp_differencer;
+  void (*sec_resp_recast) (const Variables&, const Variables&,
+			   const Response&, Response&)
+    = secondary_resp_copier;
+
+
+  size_t recast_secondary_offset = numNonlinearIneqConstraints;
+  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  iteratedModel.assign_rep(new
+    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
+		nonlinear_vars_map, vars_recast, set_recast, 
+		primary_resp_map_indices, secondary_resp_map_indices, 
+		recast_secondary_offset, nonlinear_resp_map, 
+		pri_resp_recast, sec_resp_recast), false);
+
+  // Preserve weights through data transformations
+  bool recurse_flag = false;
+  const RealVector& submodel_weights = 
+    iteratedModel.subordinate_model().primary_response_fn_weights();
+  iteratedModel.primary_response_fn_weights(submodel_weights);
+
+  // Preserve sense through data transformation
+  const BoolDeque& submodel_sense = 
+    iteratedModel.subordinate_model().primary_response_fn_sense();
+  iteratedModel.primary_response_fn_sense(submodel_sense);
+
+  return weight_flag;
+}
+
+/** Wrap the iteratedModel in a scaling transformation, such that
+    iteratedModel now contains a scaling recast model. Potentially
+    affects variables, primary, and secondary responses */
+void Minimizer::scale_model()
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initializing scaling transformation" << std::endl;
+
+  // RecastModel is constructed, then later initialized because scaled
+  // properties need to be set on the RecastModel, like bounds, but
+  // the nonlinearity of the mapping is determined by the scales
+  // themselves.
+
+  // iteratedModel becomes the sub-model of a RecastModel:
+  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  iteratedModel.assign_rep(new
+      RecastModel(iteratedModel, recast_vars_comps_total, numUserPrimaryFns, 
+		  numNonlinearConstraints, numNonlinearIneqConstraints), false);
+
+  // initialize_scaling function needs to modify the iteratedModel
+  initialize_scaling();
+
+  // setup recast model mappings and flags
+  // recast map is all one to one unless single objective transformation
+  size_t i;
+  size_t num_recast_fns = numUserPrimaryFns + numNonlinearConstraints;
+  Sizet2DArray var_map_indices(numContinuousVars), 
+    primary_resp_map_indices(numUserPrimaryFns), 
+    secondary_resp_map_indices(numNonlinearConstraints);
+  bool nonlinear_vars_map = false;
+  BoolDequeArray nonlinear_resp_map(num_recast_fns);
+
+  // the scaling transformation doesn't change any counts of variables
+  // or responses, but may require a nonlinear transformation of
+  // responses (grad, Hess) when variables are transformed
+  for (i=0; i<numContinuousVars; i++) {
+    var_map_indices[i].resize(1);
+    var_map_indices[i][0] = i;
+    if (varsScaleFlag && cvScaleTypes[i] & SCALE_LOG)
+      nonlinear_vars_map = true;
+  }
+  for (i=0; i<numUserPrimaryFns; i++) {
+    primary_resp_map_indices[i].resize(1);
+    primary_resp_map_indices[i][0] = i;
+    nonlinear_resp_map[i].resize(1);
+    nonlinear_resp_map[i][0] = 
+      (primaryRespScaleFlag && responseScaleTypes[i] & SCALE_LOG);
+  }
+  for (i=0; i<numNonlinearConstraints; i++) {
+    secondary_resp_map_indices[i].resize(1);
+    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
+    nonlinear_resp_map[numUserPrimaryFns+i].resize(1);
+    nonlinear_resp_map[numUserPrimaryFns+i][0] = secondaryRespScaleFlag &&
+      responseScaleTypes[numUserPrimaryFns + i] & SCALE_LOG;
+  }
+
+  void (*vars_recast) (const Variables&, Variables&) = variables_scaler;
+  void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+
+  // register primary response scaler if requested, or variables scaled
+  void (*pri_resp_recast) (const Variables&, const Variables&,
+			   const Response&, Response&)
+    = (primaryRespScaleFlag || varsScaleFlag) ? primary_resp_scaler : NULL;
+
+  // scale secondary response if requested, or variables scaled
+  void (*sec_resp_recast) (const Variables&, const Variables&,
+			   const Response&, Response&)
+    = (secondaryRespScaleFlag || varsScaleFlag) ? secondary_resp_scaler : NULL;
+
+
+  RecastModel* recast_model_rep = (RecastModel*)iteratedModel.model_rep();
+  recast_model_rep->initialize(var_map_indices, nonlinear_vars_map,
+			       vars_recast, set_recast,
+			       primary_resp_map_indices,
+			       secondary_resp_map_indices, nonlinear_resp_map,
+			       pri_resp_recast, sec_resp_recast);
+
+  // Preserve weights through scaling transformation
+  bool recurse_flag = false;
+  const RealVector& submodel_weights = 
+    iteratedModel.subordinate_model().primary_response_fn_weights();
+  iteratedModel.primary_response_fn_weights(submodel_weights);
+
+  // Preserve sense through scaling transformation
+  // Note: for a specification of negative scaling, we will assume that
+  // the user's intent is to overlay the scaling and sense as specified,
+  // such that we will not enforce a flip in sense for negative scaling. 
+  const BoolDeque& submodel_sense = 
+    iteratedModel.subordinate_model().primary_response_fn_sense();
+  iteratedModel.primary_response_fn_sense(submodel_sense);
+
+}
+
+
+/** Initialize scaling types, multipliers, and offsets.  Update the
+    iteratedModel appropriately */
 void Minimizer::initialize_scaling()
 {
   if (outputLevel > NORMAL_OUTPUT)
@@ -667,10 +911,58 @@ compute_scaling(int object_type, // type of object being scaled
 }
 
 
+/** Difference the primary responses with observed data */
+void Minimizer::
+primary_resp_differencer(const Variables& raw_vars, 
+			 const Variables& residual_vars,
+			 const Response& raw_response, 
+			 Response& residual_response)
+{
+  // data differencing doesn't affect gradients and Hessians, as long
+  // as they use the updated residual in their computation.  They probably don't!
+
+  if (minimizerInstance->outputLevel > NORMAL_OUTPUT) {
+    Cout << "\n-----------------------------------------------------------";
+    Cout << "\nPost-processing Function Evaluation: Data Transformation";
+    Cout << "\n-----------------------------------------------------------" 
+	 << std::endl;
+  }
+
+  bool functions_req = 
+    minimizerInstance->data_difference_core(raw_response, residual_response);
+
+  if (minimizerInstance->outputLevel > NORMAL_OUTPUT && functions_req) {
+    Cout << "Least squares data transformation:\n";
+    write_data(Cout, residual_response.function_values(),
+	       residual_response.function_labels());
+    Cout << std::endl;
+  }
+
+}
+
+
+bool Minimizer::
+data_difference_core(const Response& raw_response, Response& residual_response) 
+{
+  const ShortArray& asv = residual_response.active_set_request_vector();
+  bool functions_req = false; // toggle output on function transformation
+  const RealVector& fn_vals = raw_response.function_values();
+
+  residual_response.update(raw_response);
+  for (size_t i=0; i<minimizerInstance->numUserPrimaryFns; i++) {
+    if (asv[i] & 1) {
+      residual_response.function_value(fn_vals[i] - 
+				       minimizerInstance->obsData[i],i);
+      functions_req = true;
+    }
+  }
+  return functions_req;
+}
+
 /** Variables map from iterator/scaled space to user/native space
     using a RecastModel. */
 void Minimizer::
-variables_recast(const Variables& scaled_vars, Variables& native_vars)
+variables_scaler(const Variables& scaled_vars, Variables& native_vars)
 {
   if (minimizerInstance->outputLevel > NORMAL_OUTPUT) {
     Cout << "\n----------------------------------";
@@ -703,31 +995,83 @@ gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
 }
 
 
+void Minimizer::
+primary_resp_scaler(const Variables& native_vars, const Variables& scaled_vars,
+		    const Response& native_response, Response& iterator_response)
+{
+  if (minimizerInstance->outputLevel > NORMAL_OUTPUT) {
+    Cout << "\n-----------------------------------------------------------";
+    Cout << "\nPost-processing Function Evaluation: Scaling Transformation";
+    Cout << "\n-----------------------------------------------------------" 
+	 << std::endl;
+  }
+
+  // scaling is always applied on a model with user's original size
+  minimizerInstance->
+    response_scaler_core(native_vars, scaled_vars, native_response, 
+			 iterator_response, 0, 
+			 minimizerInstance->numUserPrimaryFns);
+}
+
+
+
+
 /** Constraint function map from user/native space to iterator/scaled/combined
     space using a RecastModel. */
 void Minimizer::
-secondary_resp_recast(const Variables& native_vars,
+secondary_resp_scaler(const Variables& native_vars,
 		      const Variables& scaled_vars,
 		      const Response& native_response,
 		      Response& iterator_response)
 {
   // need to scale if secondary responses are scaled or (variables are
   // scaled and grad or hess requested)
-  bool scale_transform_needed = minimizerInstance->secondaryRespScaleFlag || 
+  // scaling is always applied on a model with user's original size
+  minimizerInstance->
+    response_scaler_core(native_vars, scaled_vars, native_response, 
+			 iterator_response, 
+			 minimizerInstance->numUserPrimaryFns,
+			 minimizerInstance->numNonlinearConstraints);
+}
+
+void Minimizer::
+response_scaler_core(const Variables& native_vars,
+		     const Variables& scaled_vars,
+		     const Response& native_response,
+		     Response& iterator_response,
+		     size_t start_offset, size_t num_responses)
+{
+  // need to scale if primary responses are scaled or (variables are
+  // scaled and grad or hess requested)
+  bool scale_transform_needed = minimizerInstance->primaryRespScaleFlag ||
     minimizerInstance->need_resp_trans_byvars(
-     native_response.active_set_request_vector(),
-     minimizerInstance->numUserPrimaryFns, 
-     minimizerInstance->numNonlinearConstraints);
+      native_response.active_set_request_vector(), start_offset,
+      num_responses);
 
   if (scale_transform_needed)
-    minimizerInstance->response_modify_n2s(native_vars, native_response, 
-      iterator_response, minimizerInstance->numUserPrimaryFns, 
-      minimizerInstance->numIterPrimaryFns,
-      minimizerInstance->numNonlinearConstraints);
+    minimizerInstance->response_modify_n2s(native_vars, native_response,
+      iterator_response, start_offset, num_responses);
   else
-    iterator_response.update_partial(minimizerInstance->numIterPrimaryFns,
-      minimizerInstance->numNonlinearConstraints, native_response,
-      minimizerInstance->numUserPrimaryFns);
+    // could reach this if variables are scaled and only functions are requested
+    iterator_response.update_partial(start_offset, num_responses,
+				     native_response, start_offset);
+}
+
+
+/** Constraint function map from user/native space to iterator/scaled/combined
+    space using a RecastModel. */
+void Minimizer::
+secondary_resp_copier(const Variables& input_vars,
+		      const Variables& output_vars,
+		      const Response& input_response,
+		      Response& output_response)
+{
+  // in cases where we reduce or data transform, only need to topu
+  // TODO: fix use of numIter here!!!
+
+  output_response.update_partial(minimizerInstance->numIterPrimaryFns,
+    minimizerInstance->numNonlinearConstraints, input_response,
+    minimizerInstance->numUserPrimaryFns);
 }
 
 
@@ -791,16 +1135,17 @@ modify_s2n(const RealVector& scaled_vars, const IntArray& scale_types,
 }
 
 
-/** scaling response mapping: modifies response from a model (user/native) for
-    use in iterators (scaled) -- not including MOO/NLS objective reductions */
+/** Scaling response mapping: modifies response from a model
+    (user/native) for use in iterators (scaled). Maps num_responses
+    starting at response_offset */
 void Minimizer::response_modify_n2s(const Variables& native_vars,
 				    const Response& native_response,
 				    Response& recast_response,
-				    int native_offset, int recast_offset,
+				    int start_offset,
 				    int num_responses) const
 {
-  // (offsets are zero-based indices of the first response to transform)
-  int i, j, k, ri;
+  int i, j, k;
+  int end_offset = start_offset + num_responses;
   SizetMultiArray var_ids;
   RealVector cdv;
 
@@ -827,7 +1172,7 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
   }
 
   if (outputLevel > NORMAL_OUTPUT)
-    if (recast_offset < numIterPrimaryFns)
+    if (start_offset < numUserPrimaryFns)
       Cout << "Primary response scaling transformation:\n";
     else
       Cout << "Secondary response scaling transformation:\n";
@@ -840,7 +1185,7 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
   Real recast_val;
   const RealVector&  native_vals   = native_response.function_values();
   const StringArray& recast_labels = recast_response.function_labels();
-  for (ri=0, i=native_offset; ri<num_responses; ++ri, ++i)
+  for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 1) {
       // SCALE_LOG case here includes case of SCALE_LOG && SCALE_VALUE
       if (responseScaleTypes[i] & SCALE_LOG)
@@ -851,15 +1196,15 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
 	  responseScaleMultipliers[i]; 
       else
 	recast_val = native_vals[i];
-      recast_response.function_value(recast_val, recast_offset+ri);
+      recast_response.function_value(recast_val, i);
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "                     " << std::setw(write_precision+7) 
-	     << recast_val << ' ' << recast_labels[recast_offset+ri] << '\n';
+	     << recast_val << ' ' << recast_labels[i] << '\n';
     }
 
   // scale gradients
   const RealMatrix& native_grads = native_response.function_gradients();
-  for (ri=0, i=native_offset; ri<num_responses; ++ri, ++i)
+  for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 2) {
 
       Real fn_divisor;
@@ -872,7 +1217,7 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
 	fn_divisor = 1.;
 
       RealVector recast_grad
-	= recast_response.function_gradient_view(recast_offset+ri);
+	= recast_response.function_gradient_view(i);
       copy_data(native_grads[i], (int)num_deriv_vars, recast_grad);
       for (j=0; j<num_deriv_vars; ++j) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
@@ -888,19 +1233,19 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
 	  recast_grad[xj_index] *= cvScaleMultipliers[xj_index];
       }
       if (outputLevel > NORMAL_OUTPUT) {
-	write_col_vector_trans(Cout, recast_offset+ri,
-          true, true, false, recast_response.function_gradients());
-	Cout << recast_labels[recast_offset+ri] << " gradient\n";
+	write_col_vector_trans(Cout, i, true, true, false, 
+			       recast_response.function_gradients());
+	Cout << recast_labels[i] << " gradient\n";
       }
     }
   
   // scale hessians
   const RealSymMatrixArray& native_hessians
     = native_response.function_hessians();
-  for (ri=0, i=native_offset; ri<num_responses; ++ri, ++i)
+  for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 4) {
       RealSymMatrix recast_hess
-	= recast_response.function_hessian_view(recast_offset+ri);
+	= recast_response.function_hessian_view(i);
       recast_hess.assign(native_hessians[i]);
 
       Real offset_fn = 1.;
@@ -951,7 +1296,7 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
       }
       if (outputLevel > NORMAL_OUTPUT) {
 	write_data(Cout, recast_hess, true, true, false);
-	Cout << recast_labels[recast_offset+ri] << " Hessian\n";
+	Cout << recast_labels[i] << " Hessian\n";
       }
     }
   
@@ -959,18 +1304,19 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
     Cout << std::endl;
 }
 
-/** scaling response mapping: modifies response from scaled (iterator) to 
-    native (user) space -- not including MOO/NLS objective reductions */
+/** Unscaling response mapping: modifies response from scaled
+    (iterator) to native (user) space.  Maps num_responses starting at
+    response_offset */
 void Minimizer::response_modify_s2n(const Variables& native_vars,
 				    const Response& scaled_response,
 				    Response& native_response,
-				    int scaled_offset, int native_offset,
+				    int start_offset,
 				    int num_responses) const
 {
   using std::pow;
 
-  // (offsets are zero-based indices of the first response to transform)
-  int i, j, k, ri;
+  int i, j, k;
+  int end_offset = start_offset + num_responses;
   SizetMultiArray var_ids;
   RealVector cdv;
 
@@ -997,7 +1343,7 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
   }
 
   if (outputLevel > NORMAL_OUTPUT)
-    if (native_offset < numIterPrimaryFns)
+    if (start_offset < numUserPrimaryFns)
       Cout << "Primary response unscaling transformation:\n";
     else
       Cout << "Secondary response unscaling transformation:\n";
@@ -1010,7 +1356,7 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
   Real native_val;
   const RealVector&  scaled_vals   = scaled_response.function_values();
   const StringArray& native_labels = native_response.function_labels();
-  for (ri=0, i=scaled_offset; ri<num_responses; ++ri, ++i)
+  for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 1) {
       // SCALE_LOG case here includes case of SCALE_LOG && SCALE_VALUE
       if (responseScaleTypes[i] & SCALE_LOG)
@@ -1022,16 +1368,16 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
 	  responseScaleOffsets[i];
       else
 	native_val = scaled_vals[i];
-      native_response.function_value(native_val, native_offset+ri);
+      native_response.function_value(native_val, i);
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "                     " << std::setw(write_precision+7) 
-	     << native_val << ' ' << native_labels[native_offset+ri] << '\n';
+	     << native_val << ' ' << native_labels[i] << '\n';
     }
 
   // scale gradients
   Real df_dfscl;
   const RealMatrix& scaled_grads = scaled_response.function_gradients();
-  for (ri=0, i=scaled_offset; ri<num_responses; ++ri, ++i)
+  for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 2) {
 
       if (responseScaleTypes[i] & SCALE_LOG)
@@ -1043,7 +1389,7 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
 	df_dfscl = 1.;
 
       RealVector native_grad
-	= native_response.function_gradient_view(native_offset+ri);
+	= native_response.function_gradient_view(i);
       copy_data(scaled_grads[i], (int)num_deriv_vars, native_grad);
       for (j=0; j<num_deriv_vars; ++j) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
@@ -1059,16 +1405,16 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
 	  native_grad[xj_index] /= cvScaleMultipliers[xj_index];
       }
       if (outputLevel > NORMAL_OUTPUT) {
-	write_col_vector_trans(Cout, native_offset+ri,
-          true, true, false, native_response.function_gradients());
-	Cout << native_labels[native_offset+ri] << " gradient\n";
+	write_col_vector_trans(Cout, i, true, true, false, 
+			       native_response.function_gradients());
+	Cout << native_labels[i] << " gradient\n";
       }
     }
   
   // scale hessians
   const RealSymMatrixArray& scaled_hessians
     = scaled_response.function_hessians();
-  for (ri=0, i=scaled_offset; ri<num_responses; ++ri, ++i)
+  for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 4) {
  
      if (responseScaleTypes[i] & SCALE_LOG)
@@ -1080,7 +1426,7 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
 	df_dfscl = 1.;
 
       RealSymMatrix native_hess
-	= native_response.function_hessian_view(native_offset+ri);
+	= native_response.function_hessian_view(i);
       native_hess.assign(scaled_hessians[i]);
       for (j=0; j<num_deriv_vars; ++j) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
@@ -1124,7 +1470,7 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
       }
       if (outputLevel > NORMAL_OUTPUT) {
 	write_data(Cout, native_hess, true, true, false);
-	Cout << native_labels[native_offset+ri] << " Hessian\n";
+	Cout << native_labels[i] << " Hessian\n";
       }
     }
   
@@ -1303,6 +1649,42 @@ objective(const RealVector& fn_vals, const BoolDeque& max_sense,
   return obj_fn;
 }
 
+/** This "composite" objective is a more general case of the previous
+    objective(), but doesn't presume a reduction map from user to
+    iterated space.  Used to apply weights and sense in COLIN results
+    sorting.  Leaving as a duplicate implementation pending resolution
+    of COLIN lookups. */
+Real Minimizer::
+objective(const RealVector& fn_vals, size_t num_fns,
+	  const BoolDeque& max_sense,
+	  const RealVector& primary_wts) const
+{
+  Real obj_fn = 0.0;
+  if (optimizationFlag) { // MOO
+    bool use_sense = !max_sense.empty();
+    if (primary_wts.empty()) {
+      for (size_t i=0; i<num_fns; ++i)
+	if (use_sense && max_sense[i]) obj_fn -= fn_vals[i];
+	else                           obj_fn += fn_vals[i];
+      if (num_fns > 1)
+	obj_fn /= (Real)num_fns; // default weight = 1/n
+    }
+    else {
+      for (size_t i=0; i<num_fns; ++i)
+	if (use_sense && max_sense[i]) obj_fn -= primary_wts[i] * fn_vals[i];
+	else                           obj_fn += primary_wts[i] * fn_vals[i];
+    }
+  }
+  else { // NLS
+    if (primary_wts.empty())
+      for (size_t i=0; i<num_fns; ++i)
+	obj_fn += std::pow(fn_vals[i], 2); // default weight = 1
+    else
+      for (size_t i=0; i<num_fns; ++i)
+	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
+  }
+  return obj_fn;
+}
 
 /** The composite objective gradient computation combines the
     contributions from one of more primary function gradients,

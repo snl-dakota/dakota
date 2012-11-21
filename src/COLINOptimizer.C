@@ -1067,7 +1067,8 @@ void COLINOptimizer::post_run(std::ostream& s)
     // Use the objective "reduction" even in the single objective case
     // as it will get the sense (min/max) correct
     double obj_fn_metric = 
-      objective(fn_vals, iteratedModel.primary_response_fn_sense(),
+      objective(fn_vals, numObjectiveFns,
+		iteratedModel.primary_response_fn_sense(),
 		iteratedModel.primary_response_fn_weights());
 
     RealRealPair metrics(constraintViolation, obj_fn_metric);

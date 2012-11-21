@@ -560,6 +560,7 @@ void SNLLLeastSq::post_run(std::ostream& s)
     search_asv[i] = 0; // don't need constr from DB due to getConstraintValue()
   activeSet.request_vector(search_asv);
 
+  // The retrieved primary response will be unweighted and unscaled
   Response desired_resp;
   if (lookup_by_val(data_pairs, iteratedModel.interface_id(),
 		    bestVariablesArray.front(), activeSet, desired_resp))
@@ -580,16 +581,28 @@ void SNLLLeastSq::post_run(std::ostream& s)
     RealVector scaled_cons(numFunctions);
     scaled_cons = 1.;
     copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), scaled_cons,
-		  numLeastSqTerms);
-    if (secondaryRespScaleFlag)
+			       numLeastSqTerms);
+    // primary functions unscaled/unweighted from lookup; unscale secondary
+    if (secondaryRespScaleFlag || 
+	need_resp_trans_byvars(activeSet.request_vector(), numLeastSqTerms, 
+			       numNonlinearConstraints)) {
+      // scale all functions, but only copy constraints
       copy_data_partial(
         modify_s2n(scaled_cons, responseScaleTypes, responseScaleMultipliers,
 		   responseScaleOffsets),
 	numLeastSqTerms, numNonlinearConstraints, best_fns, numLeastSqTerms);
+    }
     else
       copy_data_partial(scaled_cons, numLeastSqTerms, numNonlinearConstraints,
 			best_fns, numLeastSqTerms);
   }
+
+  // For LeastSq methods, always report the residuals
+  // A DB lookup needs to have the data differenced off from the user response
+  if (obsDataFlag)
+    for (size_t i=0; i<numLeastSqTerms; ++i)
+      best_fns[i] -= obsData[i];
+
   bestResponseArray.front().function_values(best_fns);
 
   // post-process results to compute confidence intervals on parameter estimates

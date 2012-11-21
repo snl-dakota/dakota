@@ -927,6 +927,8 @@ void SNLLOptimizer::post_run(std::ostream& s)
     bestResponseArray.front().function_values(best_fns);
   }
 
+  // Best functions now contain objective with correct sense and
+  // constraints; this will handle any unscaling:
   Optimizer::post_run(s);
 }
 

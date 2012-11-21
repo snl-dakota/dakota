@@ -13,7 +13,6 @@
 
 #include "system_defs.h"
 #include "data_io.h"
-#include "tabular_io.h"
 #include "DakotaModel.H"
 #include "DakotaLeastSq.H"
 #include "ParamResponsePair.H"
@@ -39,9 +38,8 @@ LeastSq* LeastSq::leastSqInstance(NULL);
     settings. */
 LeastSq::LeastSq(Model& model): Minimizer(model),
   numLeastSqTerms(probDescDB.get_sizet("responses.num_least_squares_terms")),
-  weightFlag(!model.primary_response_fn_weights().empty()),
-  obsDataFilename(probDescDB.get_string("responses.exp_data_filename")),
-  obsDataFlag(!obsDataFilename.empty())
+  weightFlag(!model.primary_response_fn_weights().empty())
+				// TODO: wrong because of recastings layers
 {
   // Check for proper function definition
   if (numLeastSqTerms <= 0) {
@@ -50,142 +48,30 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
     abort_handler(-1);
   }
 
-  // read observation data to compute least squares residuals if specified
-  if (obsDataFlag) {
-
-    // These may be promoted to members once we use state vars / sigma
-    size_t num_experiments = probDescDB.get_sizet("responses.num_experiments");
-    size_t num_config_vars_read = 
-      probDescDB.get_sizet("responses.num_config_vars");
-    size_t num_sigma_read = 
-      probDescDB.get_sizet("responses.num_std_deviations");
-
-    if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
-      Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
-	   << "only first will be used." << std::endl;
-    if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
-      Cout << "\nWarning (least squares): experimental_config_variables " 
-	   << "will be read from file, but ignored." << std::endl;
-
-    // a matrix with numExperiments rows and cols
-    // numExpConfigVars X, numFunctions Y, [1 or numFunctions Sigma]
-    RealMatrix experimental_data;
-    
-    size_t num_cols = num_config_vars_read + numLeastSqTerms + num_sigma_read;
-
-    bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
-
-    TabularIO::read_data_tabular(obsDataFilename, "Least Squares", 
-				 experimental_data, num_experiments, num_cols, 
-				 annotated);
-
-    // copy the y portion of the data to obsData
-    obsData.resize(numLeastSqTerms);
-    for (int y_ind = 0; y_ind < numLeastSqTerms; ++y_ind) {
-      obsData[y_ind] = experimental_data(0, num_config_vars_read + y_ind);
-      Cout << obsData[y_ind] << std::endl;
-    }
-
-    // weight the terms with sigma from the file if active
-    if (num_sigma_read > 0) {
-      if (weightFlag) {
-	Cerr << "\nError: both weights and experimental standard deviations "
-	     << "specified in Dakota::LeastSq." << std::endl;
-	abort_handler(-1);
-      }
-      if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "\nLeast squares: weighting least squares terms with 1 / square"
-	     << " of standard deviations read from file." << std::endl;
-      RealVector lsq_weights(numLeastSqTerms);
-      if (num_sigma_read == 1) {
-	double sigma = 
-	  experimental_data(0, num_config_vars_read + numLeastSqTerms);
-	lsq_weights = std::pow(sigma, -2.);
-      }
-      else if (num_sigma_read == numLeastSqTerms) {
-	for (size_t i=0; i<numLeastSqTerms; ++i) {
-	  double sigma = 
-	    experimental_data(0, num_config_vars_read + numLeastSqTerms + i);
-	  lsq_weights[i] = std::pow(sigma, -2.);
-	}
-      }
-      else {
-	Cerr << "\nError: std_deviations read needs to be length 1 or number "
-	     << "of calibration_terms in Dakota::LeastSq." << std::endl;
-	abort_handler(-1);
-      }
-      model.primary_response_fn_weights(lsq_weights);
-      weightFlag = true;
-    }
-  }
-
   // Register RecastModel as needed.  Problem size doesn't change, so
   // don't update numIter/numUserPrimaryFns
   optimizationFlag  = false;
-  if (weightFlag || scaleFlag || obsDataFlag){
 
-    // user-space model becomes the sub-model of a RecastModel:
-    SizetArray recast_vars_comps_total; // default: empty; no change in size
-    iteratedModel.assign_rep(new
-      RecastModel(model, recast_vars_comps_total, numLeastSqTerms,
-		  numNonlinearConstraints, numNonlinearIneqConstraints), false);
+  // Wrap the iteratedModel, which initially is the userDefinedModel,
+  // in 0 -- 3 RecastModels, potentially resulting in weight(scale(data(model)))
 
-    if (scaleFlag)
-      initialize_scaling();
+  if (obsDataFlag) 
+    // this might set weights based on exp std deviations
+    weightFlag = data_transform_model(weightFlag);
+  if (scaleFlag)
+    scale_model();
+  if (weightFlag)
+    weight_model();
 
-    // setup recast model mappings and flags
-    // recast map is all one to one for least squares
-    size_t i;
-    Sizet2DArray var_map_indices(numContinuousVars), 
-                 primary_resp_map_indices(numLeastSqTerms), 
-                 secondary_resp_map_indices(numNonlinearConstraints);
-    bool nonlinear_vars_map = false;
-    BoolDequeArray nonlinear_resp_map(numFunctions);
+  // register whether a Recast is active within Minimizer
+  minimizerRecast = (obsDataFlag || scaleFlag || weightFlag);
 
-    for (i=0; i<numContinuousVars; ++i) {
-      var_map_indices[i].resize(1);
-      var_map_indices[i][0] = i;
-      if (varsScaleFlag && (cvScaleTypes[i] & SCALE_LOG))
-	nonlinear_vars_map = true;
-    }
-    for (i=0; i<numLeastSqTerms; ++i) {
-      primary_resp_map_indices[i].resize(1);
-      primary_resp_map_indices[i][0] = i;
-      nonlinear_resp_map[i].resize(1);
-      nonlinear_resp_map[i][0] = primaryRespScaleFlag && 
-	(responseScaleTypes[i] & SCALE_LOG);
-    }
-    for (i=0; i<numNonlinearConstraints; i++) {
-      secondary_resp_map_indices[i].resize(1);
-      secondary_resp_map_indices[i][0] = numLeastSqTerms + i;
-      nonlinear_resp_map[numLeastSqTerms + i].resize(1);
-      nonlinear_resp_map[numLeastSqTerms + i][0] = secondaryRespScaleFlag &&
-	(responseScaleTypes[numLeastSqTerms + i] & SCALE_LOG);
-    }
-
-    // complete initialization of the RecastModel after alternate construction
-    // may need response recast when variables are scaled (for grad, hess)
-    void (*vars_recast) (const Variables&, Variables&)
-      = (varsScaleFlag) ? variables_recast : NULL;
-    void (*pri_resp_recast) (const Variables&, const Variables&,
-                             const Response&, Response&)
-      = (weightFlag || obsDataFlag || primaryRespScaleFlag || varsScaleFlag) ? 
-      primary_resp_recast : NULL;
-    void (*sec_resp_recast) (const Variables&, const Variables&,
-                             const Response&, Response&)
-      = (secondaryRespScaleFlag || varsScaleFlag) ? 
-      secondary_resp_recast : NULL;
-    RecastModel* recast_model_rep = (RecastModel*)iteratedModel.model_rep();
-    recast_model_rep->initialize(var_map_indices, nonlinear_vars_map,
-				 vars_recast, NULL, primary_resp_map_indices,
-				 secondary_resp_map_indices, nonlinear_resp_map,
-				 pri_resp_recast, sec_resp_recast);
+  if  (minimizerRecast) {
     // since all LeastSq iterators are currently gradient-based, maxConcurrency
     // has already been defined in the Iterator initializer list, so init here:
-    iteratedModel.init_communicators(maxConcurrency);
+    bool recurse_flag = true;  // explicit default: recurse down models
+    iteratedModel.init_communicators(maxConcurrency, recurse_flag);
   }
-  else
-    iteratedModel = model;
 
   // Initialize a best variables instance
   bestVariablesArray.push_back(model.current_variables().copy());
@@ -195,8 +81,7 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
 LeastSq::LeastSq(NoDBBaseConstructor, Model& model):
   Minimizer(NoDBBaseConstructor(), model),
   numLeastSqTerms(numFunctions - numNonlinearConstraints),
-  weightFlag(false), //(!model.primary_response_fn_weights().empty()), // TO DO
-  obsDataFlag(false)
+  weightFlag(false) //(!model.primary_response_fn_weights().empty()), // TO DO
 {
   // Check for proper function definition
   if (numLeastSqTerms <= 0) {
@@ -215,6 +100,74 @@ LeastSq::LeastSq(NoDBBaseConstructor, Model& model):
 
   // Initialize a best variables instance
   bestVariablesArray.push_back(model.current_variables().copy());
+}
+
+
+/** Setup Recast for weighting model the weighting transformation
+    doesn't resize, so use numUserPrimaryFns.  No vars, active set or
+    secondary mapping.  All indices are one-to-one mapped (no change
+    in counts)
+*/
+void LeastSq::weight_model()
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initializing weighting transformation" << std::endl;
+
+  size_t i;
+  size_t num_recast_fns = numUserPrimaryFns + numNonlinearConstraints;
+  Sizet2DArray var_map_indices(numContinuousVars), 
+    primary_resp_map_indices(numUserPrimaryFns), 
+    secondary_resp_map_indices(numNonlinearConstraints);
+  bool nonlinear_vars_map = false;
+  BoolDequeArray nonlinear_resp_map(num_recast_fns);
+
+  for (i=0; i<numContinuousVars; i++) {
+    var_map_indices[i].resize(1);
+    var_map_indices[i][0] = i;
+  }
+  for (i=0; i<numUserPrimaryFns; i++) {
+    primary_resp_map_indices[i].resize(1);
+    primary_resp_map_indices[i][0] = i;
+    nonlinear_resp_map[i].resize(1);
+    nonlinear_resp_map[i][0] = false;
+  }
+  for (i=0; i<numNonlinearConstraints; i++) {
+    secondary_resp_map_indices[i].resize(1);
+    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
+    nonlinear_resp_map[numUserPrimaryFns+i].resize(1);
+    nonlinear_resp_map[numUserPrimaryFns+i][0] = false;
+  }
+
+  void (*vars_recast) (const Variables&, Variables&) = NULL;
+  void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+  void (*pri_resp_recast) (const Variables&, const Variables&,
+			   const Response&, Response&)
+    = primary_resp_weighter;
+  void (*sec_resp_recast) (const Variables&, const Variables&,
+			   const Response&, Response&)
+    = secondary_resp_copier;
+
+  size_t recast_secondary_offset = numNonlinearIneqConstraints;
+  SizetArray recast_vars_comps_total; // default: empty; no change in size
+
+  iteratedModel.assign_rep(new
+    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
+		nonlinear_vars_map, vars_recast, set_recast, 
+		primary_resp_map_indices, secondary_resp_map_indices, 
+		recast_secondary_offset, nonlinear_resp_map, 
+		pri_resp_recast, sec_resp_recast), false);
+
+  // This transformation consumes weights, so the resulting wrapped
+  // model doesn't need them any longer, however don't want to recurse
+  // and wipe out in sub-models.  Be explicit in case later
+  // update_from_sub_model is used instead.
+  bool recurse_flag = false;
+  iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
+
+  // Preserve sense through the weighting transformation.
+  const BoolDeque& submodel_sense = 
+    iteratedModel.subordinate_model().primary_response_fn_sense();
+  iteratedModel.primary_response_fn_sense(submodel_sense);
 }
 
 
@@ -242,8 +195,10 @@ void LeastSq::print_results(std::ostream& s)
     << 0.5*t << '\n';
 
   // Print best response functions
-  s << "<<<<< Best residual terms      =\n";
+  if (numUserPrimaryFns > 1) s << "<<<<< Best residual terms      =\n";
+  else                       s << "<<<<< Best residual term       =\n";
   write_data_partial(s, 0, numLeastSqTerms, fn_vals_star);
+
   size_t num_cons = numFunctions - numLeastSqTerms;
   if (num_cons) {
     s << "<<<<< Best constraint values   =\n";
@@ -279,141 +234,92 @@ void LeastSq::print_results(std::ostream& s)
 }
 
 
-/** Least squares function map from user/native space to iterator/scaled space
-    using a RecastModel. If no scaling also copies constraints. */
+/** Apply weights to least squares residuals */
 void LeastSq::
-primary_resp_recast(const Variables& native_vars,
-		    const Variables& scaled_vars,
-		    const Response& native_response,
-		    Response& iterator_response)
+primary_resp_weighter(const Variables& unweighted_vars,
+		      const Variables& weighted_vars,
+		      const Response& unweighted_response,
+		      Response& weighted_response)
 {
   if (leastSqInstance->outputLevel > NORMAL_OUTPUT) {
-    Cout << "\n-----------------------------------";
-    Cout << "\nPost-processing Function Evaluation";
-    Cout << "\n-----------------------------------" << std::endl;
+    Cout << "\n--------------------------------------------------------";
+    Cout << "\nPost-processing Function Evaluation: Weighting Residuals";
+    Cout << "\n--------------------------------------------------------" 
+	 << std::endl;
   }
 
-  // need to scale if primary responses are scaled or (variables are
-  // scaled and grad or hess requested)
-  bool scale_transform_needed = leastSqInstance->primaryRespScaleFlag ||
-    leastSqInstance->need_resp_trans_byvars(
-      native_response.active_set_request_vector(), 0,
-      leastSqInstance->numLeastSqTerms);
-
-  const ShortArray& asv = iterator_response.active_set_request_vector();
-
-  // if necessary, compute residuals by subtracting observations, then scale
-  if (leastSqInstance->obsDataFlag) {
-    bool functions_req = false; // toggle output on function transformation
-    const RealVector& fn_vals = native_response.function_values();
-    // obs data plus scaling
-    if (scale_transform_needed) {
-      Response tmp_response = native_response.copy();
-      for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
-	if (asv[i] & 1) {
-	  tmp_response.function_value(fn_vals[i]-leastSqInstance->obsData[i],i);
-	  functions_req = true;
-	}
-      }
-      if (leastSqInstance->outputLevel > NORMAL_OUTPUT && functions_req) {
-	Cout << "Least squares data transformation:\n";
-	write_data(Cout, tmp_response.function_values(),
-                   tmp_response.function_labels());
-	Cout << std::endl;
-      }
-      leastSqInstance->response_modify_n2s(native_vars, tmp_response,
-        iterator_response, 0, 0, leastSqInstance->numLeastSqTerms);
-    }
-    // obs data only
-    else {
-      iterator_response.update(native_response);
-      for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
-	if (asv[i] & 1) {
-	  iterator_response.function_value(fn_vals[i] - 
-					   leastSqInstance->obsData[i],i);
-	  functions_req = true;
-	}
-      }
-      if (leastSqInstance->outputLevel > NORMAL_OUTPUT && functions_req) {
-	Cout << "Least squares data transformation:\n";
-	write_data(Cout, iterator_response.function_values(),
-                   iterator_response.function_labels());
-	Cout << std::endl;
-      }
-    }
-  }
-  // scaling only
-  else if (scale_transform_needed)
-    leastSqInstance->response_modify_n2s(native_vars, native_response,
-      iterator_response, 0, 0, leastSqInstance->numLeastSqTerms);
-  // copy response
-  else
-    iterator_response.update_partial(0, leastSqInstance->numLeastSqTerms, 
-				     native_response, 0);
+  // TODO: is the DVV management necessary here?
 
   // apply any weights as necessary (consider code reuse with multi-objective?)
   // for now, recast models don't have the appropriate data for weights
   // TO DO: consider adding to the update from subordinate
-  if (leastSqInstance->weightFlag) {
 
-    const RealVector& lsq_weights = leastSqInstance->
-      iteratedModel.subordinate_model().primary_response_fn_weights();
+  // weighting is the last transformation, so weights are available in
+  // the first sub-model
+  const RealVector& lsq_weights = leastSqInstance->
+    iteratedModel.subordinate_model().primary_response_fn_weights();
 
-    size_t i,j,k;
-    SizetMultiArray var_ids;
+  size_t i,j,k;
+  SizetMultiArray var_ids;
 
-    const SizetArray& dvv = iterator_response.active_set_derivative_vector();
-    const size_t num_deriv_vars = dvv.size(); 
+  const ShortArray& asv = weighted_response.active_set_request_vector();
+  const SizetArray& dvv = weighted_response.active_set_derivative_vector();
+  const size_t num_deriv_vars = dvv.size(); 
 
-    if (dvv == native_vars.continuous_variable_ids()) {
-      var_ids.resize(boost::extents[native_vars.cv()]);
-      var_ids = native_vars.continuous_variable_ids();
-    }
-    else if (dvv == native_vars.inactive_continuous_variable_ids()) {
-      var_ids.resize(boost::extents[native_vars.icv()]);
-      var_ids = native_vars.inactive_continuous_variable_ids();
-    }
-    else { // general derivatives
-      var_ids.resize(boost::extents[native_vars.acv()]);
-      var_ids = native_vars.all_continuous_variable_ids();
-    }
+  if (dvv == unweighted_vars.continuous_variable_ids()) {
+    var_ids.resize(boost::extents[unweighted_vars.cv()]);
+    var_ids = unweighted_vars.continuous_variable_ids();
+  }
+  else if (dvv == unweighted_vars.inactive_continuous_variable_ids()) {
+    var_ids.resize(boost::extents[unweighted_vars.icv()]);
+    var_ids = unweighted_vars.inactive_continuous_variable_ids();
+  }
+  else { // general derivatives
+    var_ids.resize(boost::extents[unweighted_vars.acv()]);
+    var_ids = unweighted_vars.all_continuous_variable_ids();
+  }
 
-    RealVector fn_vals = iterator_response.function_values_view();
-    for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
-      // \Sum_i w_i T^2_i => residual scaling as \Sum_i [sqrt(w_i) T_i]^2
-      Real wt_i = std::sqrt(lsq_weights[i]);
-      // functions
-      if (asv[i] & 1)
-	fn_vals[i] *= wt_i;
-      // gradients
-      if (asv[i] & 2) {
-	RealVector fn_grad = iterator_response.function_gradient_view(i);
-	for (j=0; j<num_deriv_vars; ++j) {
-	  size_t xj_index = find_index(var_ids, dvv[j]);
-	  if (xj_index != _NPOS)
-	    fn_grad[xj_index] *= wt_i;
-	}
+  // TODO: review for efficiency (needless copies); can we just update
+  // from the unweighted response, then modify?
+  const RealVector& fn_vals = unweighted_response.function_values();
+  RealVector wt_fn_vals = weighted_response.function_values_view();
+  for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
+    // \Sum_i w_i T^2_i => residual scaling as \Sum_i [sqrt(w_i) T_i]^2
+    Real wt_i = std::sqrt(lsq_weights[i]);
+    // functions
+    if (asv[i] & 1)
+      wt_fn_vals[i] = wt_i * fn_vals[i];
+    // gradients
+    if (asv[i] & 2) {
+      const RealMatrix& fn_grads = unweighted_response.function_gradients();
+      RealMatrix wt_fn_grads = weighted_response.function_gradients_view();
+      for (j=0; j<num_deriv_vars; ++j) {
+	size_t xj_index = find_index(var_ids, dvv[j]);
+	if (xj_index != _NPOS)
+	  wt_fn_grads(xj_index,i) = wt_i * fn_grads(xj_index,i);
       }
-      // hessians
-      if (asv[i] & 4) {
-	RealSymMatrix fn_hess = iterator_response.function_hessian_view(i);
-	for (j=0; j<num_deriv_vars; ++j) {
-	  size_t xj_index = find_index(var_ids, dvv[j]);
-	  if (xj_index != _NPOS) {
-	    for (k=0; k<=j; ++k) {
-	      size_t xk_index = find_index(var_ids, dvv[k]);
-	      if (xk_index != _NPOS)
-		fn_hess(xj_index,xk_index) *= wt_i;
-	    }
+    }
+    // hessians
+    if (asv[i] & 4) {
+      const RealSymMatrix& fn_hess = unweighted_response.function_hessian(i);
+      RealSymMatrix wt_fn_hess = weighted_response.function_hessian_view(i);
+      for (j=0; j<num_deriv_vars; ++j) {
+	size_t xj_index = find_index(var_ids, dvv[j]);
+	if (xj_index != _NPOS) {
+	  for (k=0; k<=j; ++k) {
+	    size_t xk_index = find_index(var_ids, dvv[k]);
+	    if (xk_index != _NPOS)
+	      wt_fn_hess(xj_index,xk_index) = wt_i * fn_hess(xj_index,xk_index);
 	  }
 	}
       }
-    } // loop over least squares terms
+    }
+  } // loop over least squares terms
 
-    if (leastSqInstance->outputLevel > NORMAL_OUTPUT)
-      Cout << "Least squares weighting transformation:\n" << iterator_response 
-	   << std::endl;
-  }
+  if (leastSqInstance->outputLevel > NORMAL_OUTPUT)
+    Cout << "Least squares weight-transformed response:\n" << weighted_response 
+	 << std::endl;
+
 }
 
 
@@ -445,7 +351,6 @@ void LeastSq::initialize_run()
     post_run() (which would otherwise hide it). */
 void LeastSq::post_run(std::ostream& s)
 {
-  // scaling transformation needs to be performed on each best point
   size_t num_points = bestVariablesArray.size();
   if (num_points != bestResponseArray.size()) {
     Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
@@ -458,15 +363,10 @@ void LeastSq::post_run(std::ostream& s)
     Variables& best_vars = bestVariablesArray[point_index];
     Response&  best_resp = bestResponseArray[point_index];
 
-    if (varsScaleFlag)
-      best_vars.continuous_variables(
-        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
-		   cvScaleMultipliers, cvScaleOffsets));
+    // Reverse transformations on each point in best data: unweight,
+    // unscale, but leave differenced with data (for LeastSq problems,
+    // always report the residuals)
 
-    // Unweight and unscale residuals. If this class applied an observed
-    // data transformation to a user model, we leave that in place,
-    // reporting residuals.
-    // TO DO: add support for bestResponseArray derivative scaling
     if (weightFlag) {
       const RealVector& lsq_weights
 	= iteratedModel.subordinate_model().primary_response_fn_weights();
@@ -474,15 +374,18 @@ void LeastSq::post_run(std::ostream& s)
       for (size_t i=0; i<numLeastSqTerms; i++)
 	best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
     }
-  
-    // TODO: need to transform back if gradients and CDV scaled
-    if (primaryRespScaleFlag || secondaryRespScaleFlag) {
 
+    if (varsScaleFlag)
+      best_vars.continuous_variables(
+        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
+		   cvScaleMultipliers, cvScaleOffsets));
+  
+    if (primaryRespScaleFlag || secondaryRespScaleFlag) {
       Response tmp_response = best_resp.copy();
       if (primaryRespScaleFlag || 
 	  need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
 				 numLeastSqTerms)) {
-	response_modify_s2n(best_vars, best_resp, tmp_response, 0, 0,
+	response_modify_s2n(best_vars, best_resp, tmp_response, 0,
 			    numLeastSqTerms);
 	best_resp.update_partial(0, numLeastSqTerms, tmp_response, 0);
       }
@@ -490,7 +393,7 @@ void LeastSq::post_run(std::ostream& s)
 	  need_resp_trans_byvars(tmp_response.active_set_request_vector(),
 				 numLeastSqTerms, numNonlinearConstraints)) {
 	response_modify_s2n(best_vars, best_resp, tmp_response, numLeastSqTerms,
-			    numLeastSqTerms, numNonlinearConstraints);
+			    numNonlinearConstraints);
 	best_resp.update_partial(numLeastSqTerms, numNonlinearConstraints,
 				 tmp_response, numLeastSqTerms);
       }

@@ -29,7 +29,8 @@ namespace Dakota {
 /** Default recast model constructor.  Requires full definition of the
     transformation.  Parameter vars_comps_totals indicates the number
     of each type of variable {4 types} x {3 domains} in the recast
-    variable space */
+    variable space.  Note: recast_secondary_offset is the start index
+    for equality constraints, typically num nonlinear ineq constraints. */
 RecastModel::
 RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	    const SizetArray& vars_comps_totals, bool nonlinear_vars_mapping,
@@ -135,8 +136,10 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     minimum information needed to construct currentVariables,
     currentResponse, and userDefinedConstraints.  The resulting model
     is sufficiently complete for passing to an Iterator.  Parameter
-    vars_comps_totals indicates the number of each type of variable
-    {4 types} x {3 domains} in the recast variable space */
+    vars_comps_totals indicates the number of each type of variable {4
+    types} x {3 domains} in the recast variable space. Note:
+    recast_secondary_offset is the start index for equality
+    constraints, typically num nonlinear ineq constraints. */
 RecastModel::
 RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	    const SizetArray& vars_comps_totals,
