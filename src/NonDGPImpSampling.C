@@ -45,6 +45,7 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
     if (hessianType  != "none") data_order |= 4;
   }
   String sample_type("lhs"); // hard-wired for now
+  statsFlag = true; //print computed probability levels at end
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
   const String& sample_reuse_file
@@ -96,17 +97,6 @@ NonDGPImpSampling::~NonDGPImpSampling()
 }
  
 
-//NonDGPImpSampling::
-//NonDGPImpSampling(Model& model, const String& sample_type, int samples,
-//                     int seed, const String& rng,
-//                     short sampling_vars_mode = ACTIVE,
-//                     const RealVector& lower_bnds, const RealVector& upper_bnds):
-//  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng)
-//{
-//
-//}
-
-
 /** Calculate the failure probabilities for specified probability levels 
     using Gaussian process based importance sampling. */
 void NonDGPImpSampling::quantify_uncertainty()
@@ -135,8 +125,7 @@ void NonDGPImpSampling::quantify_uncertainty()
 
   int i,j,k;
  
-// KEITH:  You will probably not need to use this.  This piece of 
-// code prints out the build points, not the approximation points.
+// This piece of code prints out the build points, not the approximation points.
 // const Pecos::SurrogateData& gp_data = gpModel.approximation_data(0);
 //  for (j = 0; j < numSamples; j++) {
 //    Cout << " Surrogate Vars " << gp_data.continuous_variables(j) << '\n';
@@ -148,22 +137,24 @@ void NonDGPImpSampling::quantify_uncertainty()
 // We will need to add error handling:  we will only be calculating 
 // results per response level, not probability level or reliability index.
    
-  int respFnCount, levelCount, iter;
+  size_t resp_fn_count, level_count, iter;
   RealVector new_X;
+  initialize_distribution_mappings();
  
-  for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
-    size_t num_levels = requestedRespLevels[respFnCount].length();
-    const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
-    for (levelCount=0; levelCount<num_levels; levelCount++) {
-      Cout << "Starting calculations for response function " << respFnCount+1 << '\n';
-      Cout << "Starting calculations for level  " << levelCount+1 << '\n';
-      Cout << "Threshold level is " << requestedRespLevels[respFnCount][levelCount] << '\n';
-      Real z = requestedRespLevels[respFnCount][levelCount];
+  for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
+    size_t num_levels = requestedRespLevels[resp_fn_count].length();
+    const Pecos::SurrogateData& gp_data = gpModel.approximation_data(resp_fn_count);
+    for (level_count=0; level_count<num_levels; level_count++) {
+      Cout << "Starting calculations for response function " << resp_fn_count+1 << '\n';
+      Cout << "Starting calculations for level  " << level_count+1 << '\n';
+      Cout << "Threshold level is " << requestedRespLevels[resp_fn_count][level_count] << '\n';
+      Real z = requestedRespLevels[resp_fn_count][level_count];
        // Calculate indicator over the true function evaluations
       double cdfMult = (cdfFlag?1.0:-1.0);
       for (j = 0; j < numSamples; j++) {
         indicator(j) = static_cast<double>((z-gp_data.response_function(j))*cdfMult>0.0); 
-        Cout << "indicator(" << j << ")=" << indicator(j) << '\n';
+        if (outputLevel > NORMAL_OUTPUT)
+          Cout << "indicator(" << j << ")=" << indicator(j) << '\n';
       }
       
       // rho0 is the original PDF, rho1 is the compon importance pdf, rho2 is the 
@@ -209,7 +200,7 @@ void NonDGPImpSampling::quantify_uncertainty()
         }
           
        // calculate expected indicator function;
-        expIndicator = calcExpIndicator(respFnCount,z);
+        expIndicator = calcExpIndicator(resp_fn_count,z);
        // calculate distribution pdfs required to calculate the draw distribution
        // distribution_pdf(rhoEmul2);
        // distribution_pdf(rhoEmul0);
@@ -265,7 +256,7 @@ void NonDGPImpSampling::quantify_uncertainty()
           }
           
        // calculate expected indicator function;
-          expIndicator = calcExpIndicator(respFnCount,z);
+          expIndicator = calcExpIndicator(resp_fn_count,z);
           for (j = 0; j < numEmulEval; j++) 
             rhoDraw(j)=expIndicator(j)*rho0const/rho2const;
           Real temp_norm_this=0.0;
@@ -278,7 +269,8 @@ void NonDGPImpSampling::quantify_uncertainty()
 
        // xDrawThis, rhoDrawThis, and expIndThis should be populated now
         normConst(k)=temp_norm_const/iter;
-        Cout << "NormConst " << k << " =  " << normConst(k) << '\n';
+        if (outputLevel > NORMAL_OUTPUT) 
+          Cout << "NormConst " << k << " =  " << normConst(k) << '\n';
  
         int num_eval_kept = xDrawThis.size();  
         Real est_prob_hit_failregion; 
@@ -351,8 +343,9 @@ void NonDGPImpSampling::quantify_uncertainty()
             this_mean = gpModel.current_response().function_values();
             this_var
 	      = gpModel.approximation_variances(gpModel.current_variables());
-            exp_ind_this(k) = calcExpIndPoint(respFnCount,z,this_mean,this_var);
-            Cout << "exp_ind_final " << k << " " <<  exp_ind_this(k) << '\n';
+            exp_ind_this(k) = calcExpIndPoint(resp_fn_count,z,this_mean,this_var);
+            if (outputLevel > NORMAL_OUTPUT) 
+              Cout << "exp_ind_final " << k << " " <<  exp_ind_this(k) << '\n';
           }
           for (k = 0; k < numPtsTotal; k++) 
             rhoMix(k)=rhoMix(k)+exp_ind_this(k)*rho0const/normConst(j);
@@ -368,8 +361,10 @@ void NonDGPImpSampling::quantify_uncertainty()
 //gpModel.pop_approximation();
 //
       }            
-      Cout << "rhoMix " << rhoMix << '\n';
-      Cout << "indicator " << indicator << '\n'; 
+      if (outputLevel > NORMAL_OUTPUT) {
+        Cout << "rhoMix " << rhoMix << '\n';
+        Cout << "indicator " << indicator << '\n'; 
+      }
       for (j = 0; j < numPtsTotal; j++) {
 	Real yada=rhoMix(j);
         rhoMix(j)=yada/numPtsTotal;
@@ -386,7 +381,8 @@ void NonDGPImpSampling::quantify_uncertainty()
         fract_fail_mix+=indicator(j);
       fract_fail_mix/=numPtsTotal;
       Cout << "Fraction Fail IS " << fract_fail_mix << '\n'; 
-        
+      finalProb = prob_mix; 
+      computedProbLevels[resp_fn_count][level_count]=finalProb;  
     }
   }
 }
@@ -463,23 +459,23 @@ void NonDGPImpSampling::calcRhoDraw()
   //}
 }
 
-RealVector NonDGPImpSampling::calcExpIndicator(const int respFnCount, const Real respThresh)
+RealVector NonDGPImpSampling::calcExpIndicator(const int resp_fn_count, const Real respThresh)
 {
   int i, j;
   RealVector ei(numEmulEval);
 
   Real cdf,snv,stdv;
   for (i = 0; i< numEmulEval; i++) {
-    //Cout << "GPmean  " << gpMeans[i][respFnCount];
-    //Cout << "GPvar  " << gpVar[i][respFnCount];
-    snv = (respThresh-gpMeans[i][respFnCount])*(cdfFlag?1.0:-1.0);
+    //Cout << "GPmean  " << gpMeans[i][resp_fn_count];
+    //Cout << "GPvar  " << gpVar[i][resp_fn_count];
+    snv = (respThresh-gpMeans[i][resp_fn_count])*(cdfFlag?1.0:-1.0);
     //this conditional sign maps the problem to the case where the mean being
     //"below" the threshold (i.e. snv > 0) indicates "mostly failure" and the
     //mean being "above" the threshold (i.e. snv < 0) indicates "mostly not
     //failure" this allows the mapped problem to ALWAYS use the cdf (instead
     //of complimentary cdf)
 
-    stdv = std::sqrt(gpVar[i][respFnCount]); 
+    stdv = std::sqrt(gpVar[i][resp_fn_count]); 
     if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
       //this will trap the denominator=0.0 case even if numerator=0.0
       ei(i)=(snv>=0.0)?1.0:0.0;
@@ -494,26 +490,26 @@ RealVector NonDGPImpSampling::calcExpIndicator(const int respFnCount, const Real
       //even a change in sign)
     }
 
-    //Cout << "EI " << ei(i) << " respThresh= " << respThresh << " mu= " << gpMeans[i][respFnCount] << " stdv= " << stdv << '\n';
+    //Cout << "EI " << ei(i) << " respThresh= " << respThresh << " mu= " << gpMeans[i][resp_fn_count] << " stdv= " << stdv << '\n';
   }    
   return ei;
 }
 
-Real NonDGPImpSampling::calcExpIndPoint(const int respFnCount, const Real respThresh, const RealVector this_mean, const RealVector this_var)
+Real NonDGPImpSampling::calcExpIndPoint(const int resp_fn_count, const Real respThresh, const RealVector this_mean, const RealVector this_var)
 {
   int i, j;
   Real ei;
 
   Real cdf,snv,stdv;
-  //  Cout << "GPmean  " << this_mean(respFnCount);
-  //  Cout << "GPvar  " << this_var(respFnCount);
-  snv = (respThresh-this_mean(respFnCount))*(cdfFlag?1.0:-1.0);
+  //  Cout << "GPmean  " << this_mean(resp_fn_count);
+  //  Cout << "GPvar  " << this_var(resp_fn_count);
+  snv = (respThresh-this_mean(resp_fn_count))*(cdfFlag?1.0:-1.0);
     //this conditional sign maps the problem to the case where the mean being
     //"below" the threshold (i.e. snv > 0) indicates "mostly failure" and the
     //mean being "above" the threshold (i.e. snv < 0) indicates "mostly not
     //failure" this allows the mapped problem to ALWAYS use the cdf (instead
     //of complimentary cdf)
-  stdv = std::sqrt(this_var(respFnCount)); 
+  stdv = std::sqrt(this_var(resp_fn_count)); 
   if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
     //this will trap the denominator=0.0 case even if numerator=0.0
     ei=(snv>=0.0)?1.0:0.0;
@@ -528,9 +524,17 @@ Real NonDGPImpSampling::calcExpIndPoint(const int respFnCount, const Real respTh
     //even a change in sign)
   }
 
-  //Cout << "EI " << ei << " respThresh= " << respThresh << " mu= " << this_mean(respFnCount) << " stdv= " << stdv << '\n';
+  //Cout << "EI " << ei << " respThresh= " << respThresh << " mu= " << this_mean(resp_fn_count) << " stdv= " << stdv << '\n';
       
   return ei;
+}
+
+void NonDGPImpSampling::print_results(std::ostream& s)
+{
+  if (statsFlag) {
+    s << "\nStatistics based on the importance sampling calculations:\n";
+    print_distribution_mappings(s);
+  }
 }
 
 } // namespace Dakota

@@ -50,8 +50,6 @@ public:
 
   ~NonDGPImpSampling(); ///< destructor
 
-protected:
-
   //
   //- Heading: Virtual function redefinitions
   //
@@ -62,6 +60,8 @@ protected:
   /// returns the probability calculated by the importance sampling
   const Real& get_probability();
  
+  /// print the final statistics
+  void print_results(std::ostream& s);
 
 private:
 
