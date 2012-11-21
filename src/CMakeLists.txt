@@ -426,7 +426,6 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     NonDAdaptImpSampling.C NonDGPImpSampling.C NonDIncremLHSSampling.C
     DakotaMinimizer.C DakotaOptimizer.C DakotaLeastSq.C NonlinearCGOptimizer.C 
     SurrBasedMinimizer.C SurrBasedLocalMinimizer.C SurrBasedGlobalMinimizer.C
-    lawson_hanson1.f
     EffGlobalMinimizer.C
 )
 set(Dakota_src_fortran lawson_hanson1.f)
@@ -589,8 +588,8 @@ endif(HAVE_NL2SOL)
 
 CheckPackage(NPSOL)
 if(HAVE_NPSOL)
-  set(iterator_src ${iterator_src} SOLBase.C NPSOLOptimizer.C NLSSOLLeastSq.C
-      npoptn_wrapper.f)
+  set(iterator_src ${iterator_src} SOLBase.C NPSOLOptimizer.C NLSSOLLeastSq.C)
+  set(Dakota_src_fortran ${Dakota_src_fortran} npoptn_wrapper.f)
 endif(HAVE_NPSOL)
 
 if(HAVE_OPTPP)
@@ -646,6 +645,9 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${iterator_src})
 
 if(MSVC)
+  set_source_files_properties(${Dakota_src} PROPERTIES LANGUAGE "CXX")
+
+  # May need to treat dirent.c separately from the ${Dakota_src} list of sources
   list(APPEND Dakota_src dirent.h dirent.c)
 endif()
 
