@@ -67,7 +67,6 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
 
   // Check for proper response function definition (optimization data set)
   // and manage requirements for local recasting
-  numUserPrimaryFns = numFunctions - numNonlinearConstraints;
   bool local_nls_recast = false, local_moo_recast = false;
   if (numObjectiveFns == 0) { // no user spec for num_objective_functions
     optimizationFlag = false; // used to distinguish NLS from MOO
@@ -338,6 +337,7 @@ void Optimizer::print_results(std::ostream& s)
 void Optimizer::
 local_objective_recast_retrieve(const Variables& vars, Response& response) const
 {
+  // TODO: if reduced, the active set may have the wrong size
   Response desired_resp;
   if (lookup_by_val(data_pairs, iteratedModel.interface_id(), vars,
 		    response.active_set(), desired_resp))

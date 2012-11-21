@@ -952,7 +952,12 @@ void COLINOptimizer::post_run(std::ostream& s)
   RealVector cdv;
   IntVector ddv;
   Variables tmpVariableHolder = iteratedModel.current_variables().copy();
-  Response tmpResponseHolder = iteratedModel.current_response().copy();
+  // BMA: Current convention across the code is that
+  // bestResponsesArray is sized in the original problem space, even
+  // when reduction is active...
+  Model& model_for_responses = (scaleFlag || localObjectiveRecast) ?
+    iteratedModel.subordinate_model() : iteratedModel;
+  Response tmpResponseHolder = model_for_responses.current_response().copy();
 
   // One specification type for discrete variables is a set of values.
   // Get that list of values if the user provided one.  Also,

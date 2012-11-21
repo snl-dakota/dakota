@@ -119,9 +119,8 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
     }
   }
 
-  // set minimizer data for number of functions or least squares terms
-  // and then instantiate RecastModel as necessary
-  numIterPrimaryFns = numUserPrimaryFns = numLeastSqTerms;
+  // Register RecastModel as needed.  Problem size doesn't change, so
+  // don't update numIter/numUserPrimaryFns
   optimizationFlag  = false;
   if (weightFlag || scaleFlag || obsDataFlag){
 
@@ -212,9 +211,6 @@ LeastSq::LeastSq(NoDBBaseConstructor, Model& model):
     abort_handler(-1);
   }
 
-  // set minimizer data for number of functions or least squares terms
-  // and then instantiate RecastModel as necessary
-  numIterPrimaryFns = numUserPrimaryFns = numLeastSqTerms;
   optimizationFlag  = false;
 
   // Initialize a best variables instance
