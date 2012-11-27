@@ -19,4 +19,4 @@ os.system('rosenbrock rosen.in rosen.out')
 os.remove('rosen.in')
 
 # mock post-processing
-shutil.movefile('rosen.out', sys.argv[2])
+shutil.move('rosen.out', sys.argv[2])
