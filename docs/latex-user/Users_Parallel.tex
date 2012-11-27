@@ -273,7 +273,8 @@ and second-order probability (see Chapters~\ref{sbm}
 and~\ref{adv_models}).  Support is as follows:
 
 \begin{itemize}
-\item Single model: parallelism is managed by the singe interface instance.
+\item Single model: any parallelism is managed as specified in the
+model's associated \texttt{interface} instance.
 
 \item Recast model: most parallelism is forwarded on to the sub-model.
 An exception to this is finite differencing in the presence of
