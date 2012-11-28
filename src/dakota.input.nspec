@@ -600,7 +600,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		)
 	      |
 	      ( adaptive_sampling ALIAS nond_adaptive_sampling {N_mdm(lit,methodName_nond_adaptive_sampling)}
-	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+	        [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
+                [ fitness_metric {0}
+                  predicted_variance {N_mdm(lit,fitnessMetricType_predicted_variance)}
+                  | distance {N_mdm(lit,fitnessMetricType_distance)} 
+                  | persistence {N_mdm(lit,fitnessMetricType_persistence)} ]
+                [ batch_selection {0}
+                  naive {N_mdm(lit,batchSelectionType_naive)}
+                  | distance_penalty {N_mdm(lit,batchSelectionType_distance_penalty)} 
+                  | topology {N_mdm(lit,batchSelectionType_topology)} 
+                  | constant_liar {N_mdm(lit,batchSelectionType_constant_liar)} ]
+	        [ batch_size INTEGER {N_mdm(int,batchSize)} ]
+		[ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
                      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
                    ] 

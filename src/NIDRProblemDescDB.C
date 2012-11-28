@@ -5100,6 +5100,10 @@ static Method_mp_ilit2z
 	MP3(crossoverType,numCrossPoints,multi_point_real);
 
 static Method_mp_lit
+	MP2(batchSelectionType,naive),
+	MP2(batchSelectionType,distance_penalty),
+	MP2(batchSelectionType,topology),
+	MP2(batchSelectionType,constant_liar),
 	MP2(boxDivision,all_dimensions),
 	MP2(boxDivision,major_dimension),
 	MP2(convergenceType,average_fitness_tracker),
@@ -5121,6 +5125,9 @@ static Method_mp_lit
 	MP2(fitnessType,linear_rank),
 	MP2(fitnessType,merit_function),
 	MP2(fitnessType,proportional),
+	MP2(fitnessMetricType,predicted_variance),
+	MP2(fitnessMetricType,distance),
+	MP2(fitnessMetricType,persistence),
 	MP2(initializationType,random),
 	MP2(initializationType,unique_random),
 	MP2(integrationRefine,ais),
@@ -5381,6 +5388,7 @@ static short
 	MP_(refinementType);
 
 static int
+	MP_(batchSize),
 	MP_(collocationPoints),
 	MP_(contractAfterFail),
 	MP_(covarianceType),

@@ -894,6 +894,19 @@ KEYWORD12 method
 	  )
 	|
 	( adaptive_sampling ALIAS nond_adaptive_sampling
+	  [ emulator_samples INTEGER ]
+	  [ fitness_metric
+	    predicted_variance
+	    | distance
+	    | persistence
+	    ]
+	  [ batch_selection
+	    naive
+	    | distance_penalty
+	    | topology
+	    | constant_liar
+	    ]
+	  [ batch_size INTEGER ]
 	  [ points_file STRING
 	    [ annotated
 	    | freeform ]

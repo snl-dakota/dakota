@@ -739,6 +739,13 @@ public:
   Real proposalCovScale;
   /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
   Real likelihoodScale;
+  /// the \c fitness metric type specification in \ref MethodNonDAdaptiveSampling
+  String fitnessMetricType;
+  /// the \c batch selection type specification in \ref MethodNonDAdaptiveSampling
+  String batchSelectionType;
+  /// The size of the batch (e.g. number of supplemental points added) to be added
+  /// to be added to the build points for an emulator at each iteration
+  int batchSize;
 
   // Parameter Study
 

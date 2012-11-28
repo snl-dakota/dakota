@@ -118,6 +118,7 @@ DataMethodRep::DataMethodRep():
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), proposalCovScale(1.0), likelihoodScale(1.0),
+  fitnessMetricType("predicted_variance"),batchSelectionType("naive"),batchSize(0),
   // Parameter Study
   numSteps(0),
   // Verification
@@ -218,7 +219,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << responseLevelTargetReduce << responseLevels << probabilityLevels
     << reliabilityLevels << genReliabilityLevels << emulatorSamples
     << emulatorType << rejectionType << metropolisType << proposalCovScale
-    << likelihoodScale;
+    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -322,7 +323,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
     >> reliabilityLevels >> genReliabilityLevels >> emulatorSamples
     >> emulatorType >> rejectionType >> metropolisType >> proposalCovScale
-    >> likelihoodScale;
+    >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -426,7 +427,7 @@ void DataMethodRep::write(std::ostream& s) const
     << responseLevelTargetReduce << responseLevels << probabilityLevels
     << reliabilityLevels << genReliabilityLevels << emulatorSamples
     << emulatorType << rejectionType << metropolisType << proposalCovScale
-    << likelihoodScale;
+    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
