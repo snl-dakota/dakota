@@ -233,7 +233,7 @@ COLINOptimizer::COLINOptimizer(Model& model):
   // maxConcurrency is updated within set_method_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
-  if (scaleFlag || localObjectiveRecast)
+  if (minimizerRecast)
     iteratedModel.init_communicators(maxConcurrency);
 }
 
@@ -955,7 +955,7 @@ void COLINOptimizer::post_run(std::ostream& s)
   // BMA: Current convention across the code is that
   // bestResponsesArray is sized in the original problem space, even
   // when reduction is active...
-  Model& model_for_responses = (scaleFlag || localObjectiveRecast) ?
+  Model& model_for_responses = localObjectiveRecast ?
     iteratedModel.subordinate_model() : iteratedModel;
   Response tmpResponseHolder = model_for_responses.current_response().copy();
 

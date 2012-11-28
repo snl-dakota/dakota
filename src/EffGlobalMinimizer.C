@@ -109,7 +109,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
     sample_reuse, sample_reuse_file, sample_file_annotated), false);
 
   // *** TO DO: support scaling and other forced Recasts. ***
-  //if (scaleFlag || localObjectiveRecast)
+  //if (minimizerRecast)
   //  iteratedModel.init_communicators(maxConcurrency);
 
   // eifModel.init_communicators() recursion is currently sufficient for

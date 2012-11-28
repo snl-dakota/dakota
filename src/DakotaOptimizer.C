@@ -459,7 +459,7 @@ void Optimizer::initialize_run()
   Minimizer::initialize_run();
 
   // pull any late updates into the RecastModel
-  if (scaleFlag || localObjectiveRecast)
+  if (minimizerRecast)
     iteratedModel.update_from_subordinate_model(false); // recursion not reqd
 
   // Track any previous object instance in case of recursion.  Note that
