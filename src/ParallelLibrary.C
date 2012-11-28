@@ -1321,18 +1321,35 @@ manage_outputs_restart(const ParallelLevel& pl)
   // the ofstreams and attach them to Cout/Cerr (if required).  Note that the
   // opening of files on processors for which there is no output is avoided.
   if (stdOutputToFile) {
-    // If ofstreams are active and there is a file name change, close,
-    // reopen and assign; what if stdOutputFilename empty?
-    if (std_output_filename != stdOutputFilename && output_ofstream.is_open())
-      output_ofstream.close();
-    output_ofstream.open(std_output_filename.c_str(), std::ios::out);
+    // check if there was a file name added or changed
+    if (std_output_filename != stdOutputFilename) {
+      // close and reopen the stream to a different file, no need to append
+      if (output_ofstream.is_open())
+	output_ofstream.close();
+      output_ofstream.open(std_output_filename.c_str(), std::ios::out);
+    }
+    else {
+      // If already open, just keep writing.  If not, either append
+      // (created by CLH) or create new (library) file.  This is safe
+      // only because the option to append is handled above, and
+      // needed because a library customer may never call
+      // specify_outputs_restart.
+      if (!output_ofstream.is_open())
+	output_ofstream.open(std_output_filename.c_str(), std::ios::out);
+    }
     // assign global dakota_cout to this ofstream
     dakota_cout = &output_ofstream;
   }
   if (stdErrorToFile) {
-    if (std_error_filename != stdErrorFilename && error_ofstream.is_open())
-      error_ofstream.close();
-    error_ofstream.open(std_error_filename.c_str(), std::ios::out);
+    if (std_error_filename != stdErrorFilename) {
+      if (error_ofstream.is_open())
+	error_ofstream.close();
+      error_ofstream.open(std_error_filename.c_str(), std::ios::out);
+    }
+    else {
+      if (!error_ofstream.is_open())
+	error_ofstream.open(std_error_filename.c_str(), std::ios::out);
+    }
     // assign global dakota_cerr to this ofstream
     dakota_cerr = &error_ofstream;
   }
