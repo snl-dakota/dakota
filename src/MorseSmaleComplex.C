@@ -11,9 +11,10 @@
 //- Owner:        Dan Maljovec, Mohamed Ebeida
 //- Version: $Id$
 
-#include "MS_Complex.h"
+#include "MorseSmaleComplex.H"
 #include <map>
 #include <vector>
+// From the Dionysus package
 #include "topology/persistence-diagram.h"
 
 #ifdef USING_GL

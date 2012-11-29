@@ -68,6 +68,7 @@ set(CMAKE_Fortran_FLAGS_DISTRIBUTION "-O2")
 
 option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
 
+# Note: May need this in some Cygwin builds as well
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
   set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
@@ -121,6 +122,11 @@ option(HAVE_SURFPACK "Build the Surfpack package." ON)
 if(HAVE_SURFPACK AND SURFPACK_STANDALONE)
   list(APPEND dakota_boost_components "serialization")
 endif()
+
+# Options for adaptive sampling that affect both packages and src
+option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" OFF)
+option(HAVE_MORSE_SMALE 
+  "Use Morse-Smale; requires ANN and Dionysus libraries" OFF)
 
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
