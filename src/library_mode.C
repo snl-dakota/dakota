@@ -146,7 +146,7 @@ void run_dakota_parse(const char* dakota_input_file)
     Cout << "Library mode 1: run_dakota_parse()\n";
 
   // specify_outputs_restart() is only necessary if specifying non-defaults
-  parallel_lib.specify_outputs_restart("dakota.dak", NULL, NULL, NULL);
+  //parallel_lib.specify_outputs_restart("dakota.dak", NULL, NULL, NULL);
 
   // Manage input file parsing, output redirection, and restart processing
   // without a CommandLineHandler.  This version relies on parsing of an
