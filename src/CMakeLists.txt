@@ -465,7 +465,7 @@ if(HAVE_ADAPTIVE_SAMPLING)
   list(APPEND iterator_src NonDAdaptiveSampling.C)
   if(HAVE_MORSE_SMALE)
     add_definitions("-DHAVE_MORSE_SMALE")
-    list(APPEND iterator_src MS_Complex.cpp)
+    list(APPEND iterator_src MorseSmaleComplex.C)
     # ANN does approximate k-nearest neighbor search
     include_directories(${Dakota_SOURCE_DIR}/packages/ann/include)
     list(APPEND link_directories ${Dakota_SOURCE_DIR}/packages/ann/lib)
