@@ -393,10 +393,10 @@ public:
   /// design set integer variables
   void discrete_design_set_int_values(const IntSetArray& isa);
   /// return the sets of values available for each of the discrete
-  /// design set integer variables
+  /// design set real variables
   const RealSetArray& discrete_design_set_real_values() const;
   /// define the sets of values available for each of the discrete
-  /// design set integer variables
+  /// design set real variables
   void discrete_design_set_real_values(const RealSetArray& rsa);
 
   /// return the sets of values and probabilities available for each
@@ -408,11 +408,11 @@ public:
   void discrete_uncertain_set_int_values_probabilities(
     const IntRealMapArray& irma);
   /// return the sets of values and probabilities available for each
-  /// of the discrete uncertain set integer variables
+  /// of the discrete uncertain set real variables
   const RealRealMapArray&
     discrete_uncertain_set_real_values_probabilities() const;
   /// define the sets of values and probabilities available for each
-  /// of the discrete uncertain set integer variables
+  /// of the discrete uncertain set real variables
   void discrete_uncertain_set_real_values_probabilities(
     const RealRealMapArray& rrma);
 
@@ -423,11 +423,23 @@ public:
   /// state set integer variables
   void discrete_state_set_int_values(const IntSetArray& isa);
   /// return the sets of values available for each of the discrete
-  /// state set integer variables
+  /// state set real variables
   const RealSetArray& discrete_state_set_real_values() const;
   /// define the sets of values available for each of the discrete
-  /// state set integer variables
+  /// state set real variables
   void discrete_state_set_real_values(const RealSetArray& rsa);
+
+  /// define and return discreteIntSets
+  const BitArray& discrete_int_sets();
+  // define and return discreteRealSets
+  //const BitArray& discrete_real_sets();
+
+  /// return the sets of values available for each of the active
+  /// discrete set integer variables (aggregated in activeDiscSetIntValues)
+  const IntSetArray& discrete_set_int_values();
+  /// return the sets of values available for each of the active
+  /// discrete set real variables (aggregated in activeDiscSetRealValues)
+  const RealSetArray& discrete_set_real_values();
 
   /// return distribParams
   Pecos::DistributionParams& distribution_parameters();
@@ -1067,6 +1079,19 @@ private:
   /// used to cache the data returned from derived_synchronize_nowait() prior
   /// to sequential input into the graphics
   IntResponseMap graphicsRespMap;
+
+  /// aggregation of the admissible value sets for all active discrete
+  /// set integer variables
+  IntSetArray activeDiscSetIntValues;
+  /// aggregation of the admissible value sets for all active discrete
+  /// set real variables
+  RealSetArray activeDiscSetRealValues;
+  /// key for identifying discrete integer set variables within the
+  /// active discrete integer variables
+  BitArray discreteIntSets;
+  // key for identifying discrete real set variables within the active
+  // discrete real variables
+  //BitArray discreteRealSets;
 
   /// pointer to the letter (initialized only for the envelope)
   Model* modelRep;

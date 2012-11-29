@@ -39,24 +39,22 @@ void NonDGlobalEvidence::initialize()
 
 void NonDGlobalEvidence::set_cell_bounds()
 {
-  // TO DO: av_cntr assumes all active variables are interval variables
   size_t j; 
   for (j=0; j<numContIntervalVars; ++j) {
-    intervalOptModel.continuous_lower_bound(cellContLowerBounds[cellCntr][j],
-					    j);
-    intervalOptModel.continuous_upper_bound(cellContUpperBounds[cellCntr][j],
-					    j);
+    intervalOptModel.continuous_lower_bound(cellContLowerBounds[cellCntr][j],j);
+    intervalOptModel.continuous_upper_bound(cellContUpperBounds[cellCntr][j],j);
   }
    
   for (j=0; j<numDiscIntervalVars; ++j) {
-    intervalOptModel.discrete_int_lower_bound(cellIntRangeLowerBounds[cellCntr][j],
-					      j);
-    intervalOptModel.discrete_int_upper_bound(cellIntRangeUpperBounds[cellCntr][j],
-					      j);
+    intervalOptModel.discrete_int_lower_bound(
+      cellIntRangeLowerBounds[cellCntr][j], j);
+    intervalOptModel.discrete_int_upper_bound(
+      cellIntRangeUpperBounds[cellCntr][j], j);
   } 
 
   for (j=0; j<numDiscSetIntUncVars; ++j)
-    intervalOptModel.discrete_int_variable(cellIntSetBounds[cellCntr][j],j);
+    intervalOptModel.discrete_int_variable(cellIntSetBounds[cellCntr][j],
+					   j+numDiscIntervalVars);
 
   for (j=0; j<numDiscSetRealUncVars; ++j)
     intervalOptModel.discrete_real_variable(cellRealSetBounds[cellCntr][j],j);
@@ -89,13 +87,13 @@ void NonDGlobalEvidence::post_process_final_results()
     for (j=0; j<numDiscIntervalVars; ++j)
       Cout << "Cell bounds for discrete int range variable " << j << ": ("
 	   << cellIntRangeLowerBounds[i][j] << ", "
-	   << cellIntRangeUpperBounds[i][j] << ")\n"; // TO DO
+	   << cellIntRangeUpperBounds[i][j] << ")\n";
     for (j=0; j<numDiscSetIntUncVars; ++j)
       Cout << "Cell value for discrete int set variable " << j << ": "
-	   << cellIntSetBounds[i][j] << '\n'; // TO DO
+	   << cellIntSetBounds[i][j] << '\n';
     for (j=0; j<numDiscSetRealUncVars; ++j)
       Cout << "Cell value for discrete real set variable " << j << ": "
-	   << cellRealSetBounds[i][j] << '\n'; // TO DO
+	   << cellRealSetBounds[i][j] << '\n';
     for (j=0; j<numFunctions; ++j)
       Cout << "Response fn " << j << " (min,max) for cell " << i << ": ("
 	   << cellFnLowerBounds[j][i] << ", " << cellFnUpperBounds[j][i]
@@ -117,7 +115,7 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
 
   // GT:
   // We want to make sure that we pick a data point that lies inside the cell
-  size_t i, j, v_cntr, av_cntr, index_star, num_data_pts = gp_data.size();
+  size_t i, j, index_star, num_data_pts = gp_data.size();
   truthFnStar = (maximize) ? -DBL_MAX : DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
     const Real&      truth_fn = gp_data.response_function(i);
@@ -132,15 +130,15 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
     if (in_bounds)
       for (j=0; j<numDiscIntervalVars; ++j)
 	if (di_vars[j] < cellIntRangeLowerBounds[cellCntr][j] ||
-	    di_vars[j] > cellIntRangeUpperBounds[cellCntr][j]) // TO DO
+	    di_vars[j] > cellIntRangeUpperBounds[cellCntr][j])
 	  { in_bounds = false; break; }
     if (in_bounds)
       for (j=0; j<numDiscSetIntUncVars; ++j)
-	if (di_vars[j+numDiscIntervalVars] != cellIntSetBounds[cellCntr][j]) // TO DO
+	if (di_vars[j+numDiscIntervalVars] != cellIntSetBounds[cellCntr][j])
 	  { in_bounds = false; break; }
     if (in_bounds)
       for (j=0; j<numDiscSetRealUncVars; ++j)
-	if (dr_vars[j] != cellRealSetBounds[cellCntr][j]) // TO DO
+	if (dr_vars[j] != cellRealSetBounds[cellCntr][j])
 	  { in_bounds = false; break; }
 
     if ( in_bounds && ( (  maximize && truth_fn > truthFnStar ) ||
@@ -158,16 +156,16 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
 	fHatModel.continuous_variable(
 	  ( cellContLowerBounds[cellCntr][i] + 
 	    cellContUpperBounds[cellCntr][i] ) / 2., i);
-      for (i=0, av_cntr=0; i<numDiscIntervalVars; ++i, ++av_cntr)
+      for (i=0; i<numDiscIntervalVars; ++i)
 	fHatModel.discrete_int_variable(
 	  ( cellIntRangeLowerBounds[cellCntr][i] + 
-	    cellIntRangeUpperBounds[cellCntr][i] ) / 2, av_cntr); // TO DO
-      for (i=0; i<numDiscSetIntUncVars; ++i, ++av_cntr)
+	    cellIntRangeUpperBounds[cellCntr][i] ) / 2, i);
+      for (i=0; i<numDiscSetIntUncVars; ++i)
 	fHatModel.discrete_int_variable(
-	  cellIntSetBounds[cellCntr][i], av_cntr); // TO DO
+	  cellIntSetBounds[cellCntr][i], i+numDiscIntervalVars);
       for (i=0; i<numDiscSetRealUncVars; ++i)
 	fHatModel.discrete_real_variable(
-	  cellRealSetBounds[cellCntr][i], i); // TO DO
+	  cellRealSetBounds[cellCntr][i], i);
     }
     else {
       if (numContIntervalVars)

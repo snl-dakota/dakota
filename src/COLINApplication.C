@@ -82,51 +82,44 @@ void COLINApplication::set_problem(Model& model) {
   // determine the size of those sets and the number of non-set
   // integer variables.
 
-  const IntSetArray& ddsiv_values
-    = iteratedModel.discrete_design_set_int_values();
-  const RealSetArray& ddsrv_values
-    = iteratedModel.discrete_design_set_real_values();
-  size_t i, num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
-    num_ddrv = model.div() - num_ddsiv;
-
   // Get the upper and lower bounds on the discrete variables.
 
-  _num_int_vars = model.div()+model.drv();
-  if (num_int_vars > 0)
-  {
-    const IntVector& lower_bnds = iteratedModel.discrete_int_lower_bounds();
-    const IntVector& upper_bnds = iteratedModel.discrete_int_upper_bounds();
+  size_t i, j, num_div = model.div(), num_drv = model.drv(),
+    num_dv = num_div + num_drv;
+  _num_int_vars = num_dv;
+  if (num_dv) {
+    const BitArray&     di_set_bits = model.discrete_int_sets();
+    const IntVector&    lower_bnds  = model.discrete_int_lower_bounds();
+    const IntVector&    upper_bnds  = model.discrete_int_upper_bounds();
+    const IntSetArray&  dsiv_values = model.discrete_set_int_values();
+    const RealSetArray& dsrv_values = model.discrete_set_real_values();
 
     // Need temporary storage in which to consolidate all types of
     // discrete variables;
 
-    IntVector lower(model.div()+model.drv());
-    IntVector upper(model.div()+model.drv());
+    IntVector lower(num_dv), upper(num_dv);
 
-    // For non-set integer variables, just assign the values to
-    // temporary storage.
-
-    for (i=0; i<num_ddrv; ++i) {
-      lower[i] = lower_bnds[i];
-      upper[i] = upper_bnds[i];
-    }
-
-    // For integer set variables, map to integer index sequence
-    // [0,num_items-1].
-
-    size_t offset = num_ddrv;
-    for (i=0; i<num_ddsiv; ++i) {
-      lower[i+offset] = 0;
-      upper[i+offset] = ddsiv_values[i].size() - 1;
+    size_t dsi_cntr = 0;
+    for (i=0; i<num_div; ++i) {
+      if (di_set_bits[i]) {
+	// this active discrete int var is a set type: map to integer
+	// index sequence [0,num_items-1].
+	lower[i] = 0;
+	upper[i] = dsiv_values[dsi_cntr].size() - 1;
+	++dsi_cntr;
+      }
+      else {
+	// this active discrete int var is a range type: use range bounds
+	lower[i] = lower_bnds[i];
+	upper[i] = upper_bnds[i];
+      }
     }
 
     // For real set variables, map to integer index sequence
     // [0,num_items-1].
-
-    offset += num_ddsiv;
-    for (i=0; i<num_ddsrv; ++i) {
-      lower[i+offset] = 0;
-      upper[i+offset] = ddsrv_values[i].size() - 1;
+    for (i=0; i<num_drv; ++i) {
+      lower[i+num_div] = 0;
+      upper[i+num_div] = dsrv_values[i].size() - 1;
     }
 
     // Now assign to the COLIN vectors.
@@ -155,7 +148,7 @@ void COLINApplication::set_problem(Model& model) {
     //  _sense = (max_sense[0]) ? colin::maximization : colin::minimization;
     //else {
     std::vector<colin::optimizationSense> min_max(numObj);
-    for (size_t i=0; i<numObj; ++i)
+    for (i=0; i<numObj; ++i)
       min_max[i] = (max_sense[i]) ? colin::maximization : colin::minimization;
     _sense = min_max;
     //}
@@ -183,22 +176,22 @@ void COLINApplication::set_problem(Model& model) {
 
     // Lower bounds and targets go together in COLIN lower bounds.
 
-    for (size_t i=0; i<model.num_nonlinear_ineq_constraints(); i++)
+    for (i=0; i<model.num_nonlinear_ineq_constraints(); i++)
       bounds[i] = ineq_lower[i];
 
     size_t ndx = model.num_nonlinear_ineq_constraints();
-    for (size_t i=0; i<model.num_nonlinear_eq_constraints(); i++, ndx++)
+    for (i=0; i<model.num_nonlinear_eq_constraints(); i++, ndx++)
       bounds[ndx] = eq_targets[i];
 
     _nonlinear_constraint_lower_bounds = bounds;
 
     // Lower bounds and targets go together in COLIN upper bounds.
 
-    for (size_t i=0; i<model.num_nonlinear_ineq_constraints(); i++)
+    for (i=0; i<model.num_nonlinear_ineq_constraints(); i++)
       bounds[i] = ineq_upper[i];
 
     ndx = model.num_nonlinear_ineq_constraints();
-    for (size_t i=0; i<model.num_nonlinear_eq_constraints(); i++, ndx++)
+    for (i=0; i<model.num_nonlinear_eq_constraints(); i++, ndx++)
       bounds[ndx] = eq_targets[i];
 
     _nonlinear_constraint_upper_bounds = bounds;
@@ -217,22 +210,21 @@ void COLINApplication::set_problem(Model& model) {
     RealMatrix linear_coeffs( num_linear_constraints.as<size_t>(), 
                               domain_size.as<size_t>() );
 
-    const RealMatrix& linear_ineq_coeffs = iteratedModel.linear_ineq_constraint_coeffs();
-    const RealMatrix& linear_eq_coeffs = iteratedModel.linear_eq_constraint_coeffs();
+    const RealMatrix& linear_ineq_coeffs = model.linear_ineq_constraint_coeffs();
+    const RealMatrix& linear_eq_coeffs = model.linear_eq_constraint_coeffs();
 
     // Populate the coefficient matrix, first with inequality
     // coefficients, then with equality coefficients.
 
-    size_t ndx = 0;
-    size_t ndy = 0;
-    for (int i=0; i<model.num_linear_ineq_constraints(); i++) {
-      for (int j=0; domain_size>j; j++)
+    size_t ndx = 0, ndy = 0;
+    for (i=0; i<model.num_linear_ineq_constraints(); i++) {
+      for (j=0; domain_size>j; j++)
 	linear_coeffs[ndx][ndy++] = linear_ineq_coeffs[i][j];
       ndx++;
     }
 
-    for (int i=0; i<model.num_linear_eq_constraints(); i++) {
-      for (int j=0; domain_size>j; j++)
+    for (i=0; i<model.num_linear_eq_constraints(); i++) {
+      for (j=0; domain_size>j; j++)
 	linear_coeffs[ndx][ndy++] = linear_eq_coeffs[i][j];
       ndx++;
     }
@@ -251,11 +243,11 @@ void COLINApplication::set_problem(Model& model) {
    // Lower bounds and equality targets go together in COLIN lower
    // bounds.
 
-   for (size_t i=0; i<model.num_linear_ineq_constraints(); i++) 
+   for (i=0; i<model.num_linear_ineq_constraints(); i++) 
      bounds[i] = lin_ineq_lower[i];
 
    ndx = model.num_linear_ineq_constraints();
-   for (size_t i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
+   for (i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
      bounds[ndx] = lin_eq_targets[i];
 
    _linear_constraint_lower_bounds = bounds;
@@ -263,11 +255,11 @@ void COLINApplication::set_problem(Model& model) {
    // Upper bounds and equality targets go together in COLIN upper
    // bounds.
 
-   for (size_t i=0; i<model.num_linear_ineq_constraints(); i++) 
+   for (i=0; i<model.num_linear_ineq_constraints(); i++) 
      bounds[i] = lin_ineq_upper[i];
 
    ndx = model.num_linear_ineq_constraints();
-   for (size_t i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
+   for (i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
      bounds[ndx] = lin_eq_targets[i];
 
    _linear_constraint_upper_bounds = bounds;
@@ -374,18 +366,6 @@ colin_request_to_dakota_request(const utilib::Any &domain,
                    const colin::AppRequest::request_map_t &requests,
                    utilib::seed_t &seed)
 {
-  // One specification type for discrete variables is a set of values.
-  // Get that list of values if the user provided one.  Also,
-  // determine the size of those sets and the number of non-set
-  // integer variables.
-
-  const IntSetArray& ddsiv_values
-    = iteratedModel.discrete_design_set_int_values();
-  const RealSetArray& ddsrv_values
-    = iteratedModel.discrete_design_set_real_values();
-  size_t num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
-    num_ddrv = iteratedModel.div() - num_ddsiv, offset;
-
   // Get the mixed variables for the point.
 
   const utilib::MixedIntVars& miv = domain.expose<MixedIntVars>();
@@ -401,35 +381,36 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   IntVector ddv;
   TypeManager()->lexical_cast(miv.Integer(), ddv);
 
-  IntVector   intVariableHolder(iteratedModel.div());
-  RealVector realVariableHolder(iteratedModel.drv());
+  // One specification type for discrete variables is a set of values.
+  // Get that list of values if the user provided one.
 
-  // Assign non-set integer variables to DAKOTA integer variables.
+  const     BitArray& di_set_bits = iteratedModel.discrete_int_sets();
+  const IntSetArray&  dsiv_values = iteratedModel.discrete_set_int_values();
+  const RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
 
-  for (size_t j=0; j<num_ddrv; j++)
-    intVariableHolder[j] = ddv[j];
-
+  // Assign COLIN integer variables to DAKOTA discrete integer variables.
   // Remember, COLIN is operating on the index for the set discrete
   // variables.  Get the integer values associated with each index and
   // assign them to DAKOTA integer variables.
 
-  offset = num_ddrv;
-  for (size_t j=0; j<num_ddsiv; j++) {
-    int colin_index = ddv[j+offset];
-    intVariableHolder[j+offset] = set_index_to_value(colin_index, ddsiv_values[j]);
+  size_t j, dsi_cntr, num_div = iteratedModel.div(),
+    num_drv = iteratedModel.drv();
+  for (j=0, dsi_cntr=0; j<num_div; ++j) {
+    if (di_set_bits[j]) { // this active discrete int var is a set type
+      int dakota_value = set_index_to_value(ddv[j], dsiv_values[dsi_cntr]);
+      iteratedModel.discrete_int_variable(dakota_value, j);
+      ++dsi_cntr;
+    }
+    else                  // this active discrete int var is a range type
+      iteratedModel.discrete_int_variable(ddv[j], j);
   }
-
-  iteratedModel.discrete_int_variables(intVariableHolder);
 
   // Likewise for the real set discrete variables.
 
-  offset += num_ddsiv;
-  for (size_t j=0; j<num_ddsrv; j++) {
-    int colin_index = ddv[j+offset];
-    realVariableHolder[j] = set_index_to_value(colin_index, ddsrv_values[j]);
+  for (size_t j=0; j<num_drv; ++j) {
+    Real dakota_value = set_index_to_value(ddv[j+num_div], dsrv_values[j]);
+    iteratedModel.discrete_real_variable(dakota_value, j);
   }
-
-  iteratedModel.discrete_real_variables(realVariableHolder);
 
   // Map COLIN info requests (pair<ResponseInfo, *>) to DAKOTA
   // objectives and constraints.  COLIN will always request ALL

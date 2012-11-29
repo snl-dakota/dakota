@@ -1381,14 +1381,8 @@ JEGAOptimizer::LoadTheDesignVariables(
     // is contained in the data structures of the base classes.
     // In particular, the Model (iteratedModel) has most of the
     // info.  We will create a shorthand for it here to ease syntax.
-    const Model& m = this->iteratedModel;
-
-    // We will start with the continuous variables.  The data for
-    // those is in the Model as continuous_lower_bounds,
-    // continuous_upper_bounds, and continuous_variable_labels.
-    const RealVector& clbs = m.continuous_lower_bounds();
-    const RealVector& cubs = m.continuous_upper_bounds();
-    StringMultiArrayConstView clabels = m.continuous_variable_labels();
+    Model& m = this->iteratedModel;
+    size_t i, dsi_cntr;
 
     // Loop over all continuous variables and add an info object.  Don't worry
     // about the precision so much.  It is only considered by the operators
@@ -1396,15 +1390,11 @@ JEGAOptimizer::LoadTheDesignVariables(
     // the RandomBitMutator.  Other than that, it is largely ignored by this
     // implementation.  It can have a fairly profound effect on the preformance
     // of those operators that use it to encode to binary.
-    for(size_t i=0; i<this->numContinuousVars; ++i)
-        pConfig.AddContinuumRealVariable(clabels[i], clbs[i], cubs[i], 6);
-
-    const IntSetArray&  disv = m.discrete_design_set_int_values();
-    const RealSetArray& drsv = m.discrete_design_set_real_values();
-
-    const size_t ndisv = disv.size();
-    const size_t ndirv = this->numDiscreteIntVars - ndisv;
-    const size_t ndrsv = drsv.size();
+    const RealVector& clbs = m.continuous_lower_bounds();
+    const RealVector& cubs = m.continuous_upper_bounds();
+    StringMultiArrayConstView clabels = m.continuous_variable_labels();
+    for(i=0; i<this->numContinuousVars; ++i)
+      pConfig.AddContinuumRealVariable(clabels[i], clbs[i], cubs[i], 6);
 
     // now move on to the discrete variables.  The data for those is in the
     // Model as discrete_lower_bounds, discrete_upper_bounds, and
@@ -1412,34 +1402,33 @@ JEGAOptimizer::LoadTheDesignVariables(
     const IntVector& dilbs = m.discrete_int_lower_bounds();
     const IntVector& diubs = m.discrete_int_upper_bounds();
     StringMultiArrayConstView dilabels = m.discrete_int_variable_labels();
-
-    // Load in all the discrete range (continuous range of integer) variables.
-    for(size_t i=0; i<ndirv; ++i)
-        pConfig.AddContinuumIntegerVariable(dilabels[i], dilbs[i], diubs[i]);
-
-    // Follow that by the "discrete set of integer" variables.
-    for(size_t i=0; i<ndisv; ++i)
+    const BitArray& di_set_bits = m.discrete_int_sets();
+    const IntSetArray& dsiv = m.discrete_set_int_values();
+    for(i=0, dsi_cntr=0; i<this->numDiscreteIntVars; ++i)
     {
-        const IntSet& dakVals = disv[i];
-        pConfig.AddDiscreteIntegerVariable(
-            dilabels[i+ndirv], JEGA::IntVector(dakVals.begin(), dakVals.end())
-            );
+      if (di_set_bits[i]) { // discrete set variables
+        const IntSet& dak_set = dsiv[dsi_cntr];
+        pConfig.AddDiscreteIntegerVariable(dilabels[i],
+	  JEGA::IntVector(dak_set.begin(), dak_set.end()) );
+	++dsi_cntr;
+      }
+      else // discrete range variables
+        pConfig.AddContinuumIntegerVariable(dilabels[i], dilbs[i], diubs[i]);
     }
 
     // Finally, load in the "discrete set of real" variables.
+    const RealSetArray& dsrv = m.discrete_set_real_values();
     StringMultiArrayConstView drlabels = m.discrete_real_variable_labels();
-
-    for(size_t i=0; i<ndrsv; ++i)
+    for(i=0; i<this->numDiscreteRealVars; ++i)
     {
-        const RealSet& dakVals = drsv[i];
-        pConfig.AddDiscreteRealVariable(
-            drlabels[i], JEGA::DoubleVector(dakVals.begin(), dakVals.end())
-            );
+      const RealSet& dak_set = dsrv[i];
+      pConfig.AddDiscreteRealVariable(drlabels[i],
+	JEGA::DoubleVector(dak_set.begin(), dak_set.end()) );
     }
 
     // Now make sure that an info was created for each variable.
-    EDDY_ASSERT(pConfig.GetDesignTarget().GetNDV() ==
-        (this->numContinuousVars + this->numDiscreteIntVars + ndrsv));
+    EDDY_ASSERT(pConfig.GetDesignTarget().GetNDV() == (this->numContinuousVars +
+		this->numDiscreteIntVars + this->numDiscreteRealVars));
 }
 
 void
@@ -1918,25 +1907,14 @@ JEGAOptimizer::Evaluator::SeparateVariables(
 {
     EDDY_FUNC_DEBUGSCOPE
 
+    size_t num_cv  = this->_model.cv(), num_div = this->_model.div(),
+           num_drv = this->_model.drv();
+
     // "into" vectors may not yet be sized. If not, size them.  If they are,
     // don't size them b/c it will be a lot of wasted effort.
-    if(intoCont.length() != this->_model.cv())
-        intoCont.size(this->_model.cv());
-
-    if(intoDiscInt.length() != this->_model.div())
-        intoDiscInt.size(this->_model.div());
-
-    if(intoDiscReal.length() != this->_model.drv())
-        intoDiscReal.size(this->_model.drv());
-
-    const IntSetArray&  disv = this->_model.discrete_design_set_int_values();
-    const RealSetArray& drsv = this->_model.discrete_design_set_real_values();
-
-    const size_t ndisv = disv.size();
-    const size_t tndiv = this->_model.div();
-    const size_t ndirv = tndiv - ndisv;
-    const size_t ndrsv = drsv.size();
-    const size_t ncrrv = this->_model.cv();
+    if(intoCont.length()     != num_cv)  intoCont.size(num_cv);
+    if(intoDiscInt.length()  != num_div) intoDiscInt.size(num_div);
+    if(intoDiscReal.length() != num_drv) intoDiscReal.size(num_drv);
 
     // Because we cannot easily distinguish real from integral variables
     // (true of both continuum and discrete), we will rely on the fact that
@@ -1949,39 +1927,32 @@ JEGAOptimizer::Evaluator::SeparateVariables(
 
     // We will be marching through the dvis and need to keep track of were we
     // are from loop to loop.
-    size_t dvi_cntr = 0;
+    size_t i, dvi_cntr = 0;
 
     // Start with the DAKOTA continuous variables.
-    for(size_t i=0; i<ncrrv; ++i, ++dvi_cntr)
+    for(i=0; i<num_cv; ++i, ++dvi_cntr)
     {
-        EDDY_ASSERT(dvis[dvi_cntr]->IsContinuum());
-        intoCont[i] = dvis[dvi_cntr]->WhichValue(from);
+      EDDY_ASSERT(dvis[dvi_cntr]->IsContinuum());
+      intoCont[i] = dvis[dvi_cntr]->WhichValue(from);
     }
 
-    // Move on to the DAKOTA integer range variables.  These will actually be
-    // continuum nature in JEGA.  Note that the next two loops could be
-    // collapsed if the assertions were taken out or took into account the
-    // number of integer range/set variables.
-    for(size_t i=0; i<ndirv; ++i, ++dvi_cntr)
+    // Move on to the DAKOTA discrete integer {range,set} variables.
+    const BitArray& di_set_bits = this->_model.discrete_int_sets();
+    for(i=0; i<num_div; ++i, ++dvi_cntr)
     {
-        EDDY_ASSERT(dvis[dvi_cntr]->IsContinuum());
-        intoDiscInt[i] = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
-    }
-
-    // Follow that by the "discrete set of integer" variables.  These will
-    // be discrete in JEGA
-    for(size_t i=ndirv; i<tndiv; ++i, ++dvi_cntr)
-    {
+      if (di_set_bits[i]) // set variables are discrete nature in JEGA
         EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
-        intoDiscInt[i] = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
+      else // range variables are continuum nature in JEGA
+        EDDY_ASSERT(dvis[dvi_cntr]->IsContinuum());
+      intoDiscInt[i] = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
     }
 
-    // Finally, process the "discrete set of real" variables.  These will also
-    // be discrete in JEGA.
-    for(size_t i=0; i<ndrsv; ++i, ++dvi_cntr)
+    // Finally, process the "discrete set of real" variables.
+    // These will also be discrete nature in JEGA.
+    for(i=0; i<num_drv; ++i, ++dvi_cntr)
     {
-        EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
-        intoDiscReal[i] = dvis[dvi_cntr]->WhichValue(from);
+      EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
+      intoDiscReal[i] = dvis[dvi_cntr]->WhichValue(from);
     }
 }
 

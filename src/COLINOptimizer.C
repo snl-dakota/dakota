@@ -284,7 +284,8 @@ void COLINOptimizer::find_optimum()
      colinEvalMgr = colin::EvalManagerFactory()
         .create(iteratedModel.asynch_flag() ? "Concurrent" : "Serial");
      if (colinEvalMgr->has_property("max_concurrency"))
-       colinEvalMgr->property("max_concurrency") = iteratedModel.evaluation_capacity();
+       colinEvalMgr->property("max_concurrency")
+	 = iteratedModel.evaluation_capacity();
 
      // Instantiate the solver.
 
@@ -330,69 +331,62 @@ void COLINOptimizer::find_optimum()
     const RealVector& drv_init = iteratedModel.discrete_real_variables();
     IntVector dv_init(numDiscreteIntVars+numDiscreteRealVars);
 
-    // One specification type for discrete variables is a set of
-    // values.  Get that list of values if the user provided one.
-    // Also, determine the size of those sets and the number of
-    // non-set integer variables.
-
-    const IntSetArray& ddsiv_values
-      = iteratedModel.discrete_design_set_int_values();
-    const RealSetArray& ddsrv_values
-      = iteratedModel.discrete_design_set_real_values();
-    size_t num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
-      num_ddrv = numDiscreteIntVars - num_ddsiv, offset;
-
     // Initialize the continuous variables in COLIN's mixed-variable
     // object.
 
-    MixedIntVars miv_init(0, numDiscreteIntVars+numDiscreteRealVars, cv_init.length());
+    MixedIntVars miv_init(0, numDiscreteIntVars+numDiscreteRealVars,
+			  cv_init.length());
     TypeManager()->lexical_cast(cv_init, miv_init.Real());
 
-    // Need to consolidate all of the discrete variables in one
-    // place.  Start by assigning the initial values of the non-set
-    // integer variables to a temporary vector.
+    // Need to consolidate all of the discrete variables in one place.
+    // First do all of the active discrete integer variables.  Note that
+    // this could involve a reordering if more than one type of discrete
+    // integer variables is active, as we won't try to mimic the full DAKOTA
+    // variables ordering.  Note: the abstraction to active discrete vars
+    // is necessary to allow usage beyond design optimization; e.g., for
+    // epistemic interval estimation.
 
-    for (size_t i=0; i<num_ddrv; i++)
-      dv_init[i] = div_init[i];
-
-    // Next do the integer set variables.  Given the initial value,
-    // find it's index (i.e., relative location) in the list of
-    // possible values.  Treat that index as the value on which the
-    // COLIN solver will operate.  We can put bounds on the index
-    // (done in COLINApplication), thereby restricting the solver's
-    // exploration to the prescribed values.  We have to undo this
-    // transformation when doing a function evaluation (in
-    // COLINApplication) and when getting the final points.  May want
-    // to consider a helper function for these transformations.
-
-    offset = num_ddrv;
-    for (size_t i=0; i<num_ddsiv; i++) {
-      size_t index = set_value_to_index(div_init[i+offset], ddsiv_values[i]);
-      if (index == _NPOS) {
-	Cerr << "\nError: failure in discrete integer set lookup within "
-	     << "COLINOptimizer::find_optimum()" << std::endl;
-	abort_handler(-1);
+    const     BitArray& di_set_bits = iteratedModel.discrete_int_sets();
+    const  IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
+    const RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
+    size_t i, index, dsi_cntr;
+    for (i=0, dsi_cntr=0; i<numDiscreteIntVars; ++i) {
+      if (di_set_bits[i]) { // this active discrete int var is a set type
+	// Given the initial value, find its index (i.e., relative location)
+	// in the list of possible values.  Treat that index as the value
+	// on which the COLIN solver will operate.  We can put bounds on
+	// the index (done in COLINApplication), thereby restricting the
+	// solver's exploration to the prescribed values.  We have to
+	// undo this transformation when doing a function evaluation
+	// (in COLINApplication) and when getting the final points.
+	index = set_value_to_index(div_init[i], dsiv_values[dsi_cntr]);
+	if (index == _NPOS) {
+	  Cerr << "\nError: failure in discrete integer set lookup within "
+	       << "COLINOptimizer::find_optimum()" << std::endl;
+	  abort_handler(-1);
+	}
+	else
+	  dv_init[i] = (int)index;
+	++dsi_cntr;
       }
-      else
-	dv_init[i+offset] = (int)index;
+      else                  // this active discrete int var is a range type
+	dv_init[i] = div_init[i];
     }
 
-    // Do the same for the real set variables.
+    // Do the same for the active discrete real vars, which are all set types
 
-    offset += num_ddsiv;
-    for (size_t i=0; i<num_ddsrv; i++) {
-      size_t index = set_value_to_index(drv_init[i], ddsrv_values[i]);
+    for (i=0; i<numDiscreteRealVars; ++i) {
+      index = set_value_to_index(drv_init[i], dsrv_values[i]);
       if (index == _NPOS) {
 	Cerr << "\nError: failure in discrete real set lookup within "
 	     << "COLINOptimizer::find_optimum()" << std::endl;
 	abort_handler(-1);
       }
       else
-	dv_init[i+offset] = (int)index;
+	dv_init[i+numDiscreteIntVars] = (int)index;
     }
 
-    // Now initialize the discrete variables in COLIN's mixed-variable
-    // object.
+    // Now initialize the discrete variables in COLIN's mixed-variable object
 
     TypeManager()->lexical_cast(dv_init, miv_init.Integer());
 
@@ -952,9 +946,8 @@ void COLINOptimizer::post_run(std::ostream& s)
   RealVector cdv;
   IntVector ddv;
   Variables tmpVariableHolder = iteratedModel.current_variables().copy();
-  // BMA: Current convention across the code is that
-  // bestResponsesArray is sized in the original problem space, even
-  // when reduction is active...
+  // BMA: Current convention across the code is that bestResponsesArray is
+  // sized in the original problem space, even when reduction is active...
   Model& model_for_responses = localObjectiveRecast ?
     iteratedModel.subordinate_model() : iteratedModel;
   Response tmpResponseHolder = model_for_responses.current_response().copy();
@@ -964,17 +957,15 @@ void COLINOptimizer::post_run(std::ostream& s)
   // determine the size of those sets and the number of non-set
   // integer variables.
 
-  const IntSetArray& ddsiv_values
-    = iteratedModel.discrete_design_set_int_values();
-  const RealSetArray& ddsrv_values
-    = iteratedModel.discrete_design_set_real_values();
-  size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
-    num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
+  const     BitArray& di_set_bits = iteratedModel.discrete_int_sets();
+  const  IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
+  const RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
+  size_t i, j, dsi_cntr;
 
   // Iterate through points returned by COLIN.
 
   bool colin_cache_warn = false;
-  for(size_t i=0; cache_it != cache_end; ++i, ++cache_it) {
+  for(i=0; cache_it != cache_end; ++i, ++cache_it) {
     //std::cerr << "Point #" << i << ": ";
     //::operator<<(std::cerr, *pt_it) << endl;
 
@@ -995,28 +986,24 @@ void COLINOptimizer::post_run(std::ostream& s)
 
     TypeManager()->lexical_cast(miv.Integer(), ddv);
 
-    // Assign non-set integer variables to DAKOTA integer variables.
-
-    for (size_t j=0; j<num_ddrv; j++)
-      tmpVariableHolder.discrete_int_variable(ddv[j], j);
-
-    // Remember, COLIN is operating on the index for the set discrete
-    // variables.  Get the integer values associated with each index
-    // and assign them to DAKOTA integer variables.
-
-    offset = num_ddrv;
-    for (size_t j=0; j<num_ddsiv; j++) {
-      int colin_index = ddv[j+offset];
-      int dakota_value = set_index_to_value(colin_index, ddsiv_values[j]);
-      tmpVariableHolder.discrete_int_variable(dakota_value, j+offset);
+    // Assign COLIN integer variables to DAKOTA discrete integer {range,set}
+    // variables.  For discrete set types, COLIN is operating on the index
+    // and we must map these back to the corresponding integer set values.
+    for (j=0, dsi_cntr=0; j<numDiscreteIntVars; ++j) {
+      if (di_set_bits[j]) { // this active discrete int var is a set type
+	int dakota_value = set_index_to_value(ddv[j], dsiv_values[dsi_cntr]);
+	tmpVariableHolder.discrete_int_variable(dakota_value, j);
+	++dsi_cntr;
+      }
+      else                  // this active discrete int var is a range type
+	tmpVariableHolder.discrete_int_variable(ddv[j], j);
     }
 
-    // Likewise for the real set discrete variables.
+    // Do the same for the active discrete real vars, which are all set types
 
-    offset += num_ddsiv;
-    for (size_t j=0; j<num_ddsrv; j++) {
-      int colin_index = ddv[j+offset];
-      double dakota_value = set_index_to_value(colin_index, ddsrv_values[j]);
+    for (j=0; j<numDiscreteRealVars; ++j) {
+      Real dakota_value
+	= set_index_to_value(ddv[j+numDiscreteIntVars], dsrv_values[j]);
       tmpVariableHolder.discrete_real_variable(dakota_value, j);
     }
 
@@ -1049,20 +1036,17 @@ void COLINOptimizer::post_run(std::ostream& s)
 	     << std::endl;
 	abort_handler(-1);
       }
-
     }
 
     // BMA TODO: incorporate constraint tolerance, possibly via
-    // elevating SurrBasedMinimizer::constraint_violation() to
-    // Minimizer
+    // elevating SurrBasedMinimizer::constraint_violation() to Minimizer
     double constraintViolation = constraint_violation(tmpResponseHolder);
 
     // For feasible points, compute (sum of) objectives.
     const RealVector& fn_vals = tmpResponseHolder.function_values();
 
     // BMA: MSE suggests don't want to set objective to DBL_MAX in
-    // case two points have the exact same constraint
-    // violation... 
+    // case two points have the exact same constraint violation... 
 
     // Use the objective "reduction" even in the single objective case
     // as it will get the sense (min/max) correct

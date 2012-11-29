@@ -746,6 +746,18 @@ const ValueType& map_index_to_value(OrdinalType index,
 
 /// calculate the map index corresponding to the passed key
 template <typename KeyType, typename ValueType>
+void map_keys_to_set(const std::map<KeyType, ValueType>& source_map,
+		     std::set<KeyType>& target_set)
+{
+  target_set.clear();
+  typename std::map<KeyType, ValueType>::const_iterator cit;
+  for (cit=source_map.begin(); cit!=source_map.end(); ++cit)
+    target_set.insert(cit->first);
+}
+
+
+/// calculate the map index corresponding to the passed key
+template <typename KeyType, typename ValueType>
 size_t map_key_to_index(const KeyType& key,
 			const std::map<KeyType, ValueType>& pairs)
 {

@@ -3195,6 +3195,170 @@ void Model::inactive_view(short view, bool recurse_flag)
 }
 
 
+const BitArray& Model::discrete_int_sets()
+{
+  if (modelRep)
+    return modelRep->discrete_int_sets();
+
+  // distinguish discrete integer ranges from discrete integer sets
+  discreteIntSets.resize(currentVariables.div()); discreteIntSets.reset();
+  const SharedVariablesData&  svd = currentVariables.shared_data();
+  const SizetArray& active_totals = svd.active_components_totals();
+  size_t i, di_cntr = 0;
+  if (active_totals[1]) {
+    di_cntr  += svd.vc_lookup(DISCRETE_DESIGN_RANGE);
+    size_t num_ddsiv = discreteDesignSetIntValues.size();
+    for (i=0; i<num_ddsiv; ++i, ++di_cntr)
+      discreteIntSets.flip(di_cntr);
+  }
+  di_cntr += active_totals[4];
+  if (active_totals[7]) {
+    di_cntr += svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
+    size_t num_deusiv
+      = distParams.discrete_set_int_values_probabilities().size();
+    for (i=0; i<num_deusiv; ++i, ++di_cntr)
+      discreteIntSets.flip(di_cntr);
+  }
+  if (active_totals[10]) {
+    di_cntr  += svd.vc_lookup(DISCRETE_STATE_RANGE);
+    size_t num_dssiv = discreteStateSetIntValues.size();
+    for (i=0; i<num_dssiv; ++i, ++di_cntr)
+      discreteIntSets.flip(di_cntr);
+  }
+
+  return discreteIntSets;
+}
+
+
+/*
+const BitArray& Model::discrete_real_sets()
+{
+  if (modelRep)
+    return modelRep->discrete_real_sets();
+  else {
+    discreteRealSets.resize(currentVariables.drv());
+    discreteRealSets.set(); // all active discrete real vars are set types
+    return discreteRealSets;
+  }
+}
+*/
+
+
+const IntSetArray& Model::discrete_set_int_values()
+{
+  if (modelRep)
+    return modelRep->discrete_set_int_values();
+
+  switch (currentVariables.view().first) {
+  case MIXED_DESIGN:
+    return discreteDesignSetIntValues; break;
+  //case MIXED_ALEATORY_UNCERTAIN:
+  //  break;
+  case MIXED_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN: {
+    const IntRealMapArray& dusi_vals_probs
+      = distParams.discrete_set_int_values_probabilities();
+    size_t i, num_deusiv = dusi_vals_probs.size();
+    activeDiscSetIntValues.resize(num_deusiv);
+    for (i=0; i<num_deusiv; ++i)
+      map_keys_to_set(dusi_vals_probs[i], activeDiscSetIntValues[i]);
+    break;
+  }
+  case MIXED_STATE:
+    return discreteStateSetIntValues; break;
+  case MIXED_ALL: {
+    const IntRealMapArray& dusi_vals_probs
+      = distParams.discrete_set_int_values_probabilities();
+    size_t i, offset, num_ddsiv = discreteDesignSetIntValues.size(),
+      num_deusiv = dusi_vals_probs.size(),
+      num_dssiv  = discreteStateSetIntValues.size();
+    activeDiscSetIntValues.resize(num_ddsiv + num_deusiv + num_dssiv);
+    for (i=0; i<num_ddsiv; ++i)
+      activeDiscSetIntValues[i] = discreteDesignSetIntValues[i];
+    offset = num_ddsiv;
+    for (i=0; i<num_deusiv; ++i)
+      map_keys_to_set(dusi_vals_probs[i], activeDiscSetIntValues[i+offset]);
+    offset += num_deusiv;
+    for (i=0; i<num_dssiv; ++i)
+      activeDiscSetIntValues[i+offset] = discreteStateSetIntValues[i];
+    break;
+  }
+  default:
+    activeDiscSetIntValues.clear(); break;
+  }
+
+  return activeDiscSetIntValues;
+}
+
+
+const RealSetArray& Model::discrete_set_real_values()
+{
+  if (modelRep)
+    return modelRep->discrete_set_real_values();
+
+  switch (currentVariables.view().first) {
+  case MIXED_DESIGN:
+    return discreteDesignSetRealValues; break;
+  case MIXED_ALEATORY_UNCERTAIN: {
+    const RealVectorArray& h_pt_prs = distParams.histogram_point_pairs();
+    size_t i, num_dausrv = h_pt_prs.size();
+    activeDiscSetRealValues.resize(num_dausrv);
+    for (i=0; i<num_dausrv; ++i)
+      x_y_pairs_to_x_set(h_pt_prs[i], activeDiscSetRealValues[i]);
+    break;
+  }
+  case MIXED_EPISTEMIC_UNCERTAIN: {
+    const RealRealMapArray& dusr_vals_probs
+      = distParams.discrete_set_real_values_probabilities();
+    size_t i, num_deusrv = dusr_vals_probs.size();
+    activeDiscSetRealValues.resize(num_deusrv);
+    for (i=0; i<num_deusrv; ++i)
+      map_keys_to_set(dusr_vals_probs[i], activeDiscSetRealValues[i]);
+    break;
+  }
+  case MIXED_UNCERTAIN: {
+    const RealVectorArray& h_pt_prs = distParams.histogram_point_pairs();
+    const RealRealMapArray& dusr_vals_probs
+      = distParams.discrete_set_real_values_probabilities();
+    size_t i, num_dausrv = h_pt_prs.size(), num_deusrv = dusr_vals_probs.size();
+    activeDiscSetRealValues.resize(num_dausrv+num_deusrv);
+    for (i=0; i<num_dausrv; ++i)
+      x_y_pairs_to_x_set(h_pt_prs[i], activeDiscSetRealValues[i]);
+    for (i=0; i<num_deusrv; ++i)
+      map_keys_to_set(dusr_vals_probs[i],activeDiscSetRealValues[i+num_dausrv]);
+    break;
+  }
+  case MIXED_STATE:
+    return discreteStateSetRealValues; break;
+  case MIXED_ALL: {
+    const RealVectorArray& h_pt_prs = distParams.histogram_point_pairs();
+    const RealRealMapArray& dusr_vals_probs
+      = distParams.discrete_set_real_values_probabilities();
+    size_t i, offset, num_ddsiv = discreteDesignSetRealValues.size(),
+      num_dausrv = h_pt_prs.size(), num_deusrv = dusr_vals_probs.size(),
+      num_dssiv = discreteStateSetRealValues.size();
+    activeDiscSetRealValues.resize(num_ddsiv  + num_dausrv +
+				       num_deusrv + num_dssiv);
+    for (i=0; i<num_ddsiv; ++i)
+      activeDiscSetRealValues[i] = discreteDesignSetRealValues[i];
+    offset = num_ddsiv;
+    for (i=0; i<num_dausrv; ++i)
+      x_y_pairs_to_x_set(h_pt_prs[i], activeDiscSetRealValues[i+offset]);
+    offset += num_dausrv;
+    for (i=0; i<num_deusrv; ++i)
+      map_keys_to_set(dusr_vals_probs[i],activeDiscSetRealValues[i+offset]);
+    offset += num_deusrv;
+    for (i=0; i<num_dssiv; ++i)
+      activeDiscSetRealValues[i+offset] = discreteStateSetRealValues[i];
+    break;
+  }
+  default:
+    activeDiscSetRealValues.clear(); break;
+  }
+
+  return activeDiscSetRealValues; // if not previously returned
+}
+
+
 int Model::evaluation_id() const
 {
   if (modelRep) // envelope fwd to letter

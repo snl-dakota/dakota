@@ -12,6 +12,7 @@
 #include "system_defs.h"
 #include "Teuchos_SerialDenseVector.hpp"
 #include <boost/multi_array.hpp>
+#include "boost/dynamic_bitset.hpp"
 #include <list>
 
 namespace Dakota {
@@ -51,7 +52,9 @@ typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
 // ---------------------------------------
 // Admin/bookkeeping arrays (serial only):
 // ---------------------------------------
-typedef std::deque<bool>            BoolDeque; // See Effective STL (Meyers) #18
+typedef std::deque<bool> BoolDeque; // See Meyers' Effective STL #18
+typedef boost::dynamic_bitset<unsigned long> BitArray;
+
 typedef std::vector<BoolDeque>      BoolDequeArray;
 typedef std::vector<Real>           RealArray;
 typedef std::vector<RealArray>      Real2DArray;

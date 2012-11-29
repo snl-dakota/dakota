@@ -277,21 +277,21 @@ void ParamStudy::vector_loop()
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i, j, num_cv =
     active_totals[0] + active_totals[3] + active_totals[6] + active_totals[9],
-    num_ddriv = 0, num_ddsiv = 0, num_ddsrv = active_totals[2], 
-    num_dauiv = active_totals[4], num_daurv = active_totals[5],
+    num_ddriv  = 0, num_ddsiv  = 0, num_ddsrv = active_totals[2],
+    num_dauiv  = active_totals[4],  num_daurv = active_totals[5],
     num_deuriv = 0, num_deusiv = 0, num_deurv = active_totals[8],
-    num_dsriv = 0, num_dssiv = 0, num_dssrv = active_totals[11];
+    num_dsriv  = 0, num_dssiv  = 0, num_dssrv = active_totals[11];
   if (active_totals[1]) {
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE);
-    num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
+    num_ddsiv = ddsi_values.size();
   }
   if (active_totals[7]) {
     num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
-    num_deusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+    num_deusiv = dusi_vals_probs.size();
   }
   if (active_totals[10]) {
     num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE);
-    num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    num_dssiv = dssi_values.size();
   }
 
   RealSetArray x_sets(num_daurv);
@@ -367,29 +367,29 @@ void ParamStudy::centered_loop()
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i, j, k, cntr = 0,
     num_vars  = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
-    num_cdv   = active_totals[0], num_ddriv = 0, num_ddsiv = 0,
-    num_ddsrv = active_totals[2], num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4], num_daurv = active_totals[5],
+    num_cdv   = active_totals[0], num_ddriv  = 0, num_ddsiv  = 0,
+    num_ddsrv = active_totals[2], num_cauv   = active_totals[3],
+    num_dauiv = active_totals[4], num_daurv  = active_totals[5],
     num_ceuv  = active_totals[6], num_deuriv = 0, num_deusiv = 0,
-    num_deurv = active_totals[8], num_csv   = active_totals[9],
-    num_dsriv = 0, num_dssiv = 0, num_dssrv = active_totals[11];
+    num_deurv = active_totals[8], num_csv    = active_totals[9],
+    num_dsriv = 0, num_dssiv = 0, num_dssrv  = active_totals[11];
   if (active_totals[1]) {
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE);
-    num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
+    num_ddsiv = ddsi_values.size();
   }
   if (active_totals[7]) {
     num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
-    num_deusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+    num_deusiv = dusi_vals_probs.size();
   }
   if (active_totals[10]) {
     num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE);
-    num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    num_dssiv = dssi_values.size();
   }
-  size_t num_ddiv = num_ddriv + num_ddsiv, num_ddv   = num_ddiv  + num_ddsrv,
-         num_dv   = num_cdv   + num_ddv,   num_dauv  = num_dauiv + num_daurv,
-         num_auv  = num_cauv  + num_dauv,  num_deuiv = num_deuriv + num_deusiv,
-         num_deuv = num_deuiv + num_deurv, num_euv   = num_ceuv  + num_deuv,
-         num_uv   = num_auv   + num_euv,   num_dsiv  = num_dsriv + num_dssiv;
+  size_t num_ddiv = num_ddriv + num_ddsiv, num_ddv = num_ddiv  + num_ddsrv,
+    num_dv   = num_cdv   + num_ddv,   num_dauv  = num_dauiv + num_daurv,
+    num_auv  = num_cauv  + num_dauv,  num_deuiv = num_deuriv + num_deusiv,
+    num_deuv = num_deuiv + num_deurv, num_euv   = num_ceuv  + num_deuv,
+    num_uv   = num_auv   + num_euv,   num_dsiv  = num_dsriv + num_dssiv;
 
   // Always evaluate center point, even if steps_per_variable = 0
   if (outputLevel > SILENT_OUTPUT)
@@ -527,22 +527,22 @@ void ParamStudy::multidim_loop()
     = iteratedModel.current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i, j, num_cdv = active_totals[0], num_ddriv = 0, num_ddsiv = 0,
-    num_ddsrv = active_totals[2], num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4], num_daurv = active_totals[5],
+    num_ddsrv = active_totals[2], num_cauv   = active_totals[3],
+    num_dauiv = active_totals[4], num_daurv  = active_totals[5],
     num_ceuv  = active_totals[6], num_deuriv = 0, num_deusiv = 0,
-    num_deurv = active_totals[8], num_csv   = active_totals[9],
-    num_dsriv = 0, num_dssiv = 0, num_dssrv = active_totals[11];
+    num_deurv = active_totals[8], num_csv    = active_totals[9],
+    num_dsriv = 0, num_dssiv = 0, num_dssrv  = active_totals[11];
   if (active_totals[1]) {
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE);
-    num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
+    num_ddsiv = ddsi_values.size();
   }
   if (active_totals[7]) {
     num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
-    num_deusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+    num_deusiv = dusi_vals_probs.size();
   }
   if (active_totals[10]) {
     num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE);
-    num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    num_dssiv = dssi_values.size();
   }
 
   UShortArray multidim_indices(numContinuousVars + numDiscreteIntVars +
@@ -624,22 +624,22 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     = iteratedModel.current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i, j, num_cdv = active_totals[0], num_ddriv = 0, num_ddsiv = 0,
-    num_ddsrv = active_totals[2], num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4], num_daurv = active_totals[5],
+    num_ddsrv = active_totals[2], num_cauv   = active_totals[3],
+    num_dauiv = active_totals[4], num_daurv  = active_totals[5],
     num_ceuv  = active_totals[6], num_deuriv = 0, num_deusiv = 0,
-    num_deurv = active_totals[8], num_csv   = active_totals[9],
-    num_dsriv = 0, num_dssiv = 0, num_dssrv = active_totals[11], l_cntr = 0;
+    num_deurv = active_totals[8], num_csv    = active_totals[9],
+    num_dsriv = 0, num_dssiv = 0, num_dssrv  = active_totals[11], l_cntr = 0;
   if (active_totals[1]) {
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE);
-    num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
+    num_ddsiv = ddsi_values.size();
   }
   if (active_totals[7]) {
     num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
-    num_deusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+    num_deusiv = dusi_vals_probs.size();
   }
   if (active_totals[10]) {
     num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE);
-    num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    num_dssiv = dssi_values.size();
   }
 
   RealSetArray x_sets(num_daurv);
@@ -872,23 +872,23 @@ void ParamStudy::distribute_partitions()
     = iteratedModel.current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i, num_cdv = active_totals[0], num_ddriv = 0, num_ddsiv = 0,
-    num_ddsrv = active_totals[2], num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4], num_daurv = active_totals[5],
+    num_ddsrv = active_totals[2], num_cauv   = active_totals[3],
+    num_dauiv = active_totals[4], num_daurv  = active_totals[5],
     num_ceuv  = active_totals[6], num_deuriv = 0, num_deusiv = 0,
     num_deurv = active_totals[8], num_csv   = active_totals[9],
     num_dsriv = 0, num_dssiv = 0, num_dssrv = active_totals[11],
     p_cntr = 0, c_cntr = 0, di_cntr = 0, dr_cntr = 0;
   if (active_totals[1]) {
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE);
-    num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
+    num_ddsiv = ddsi_values.size();
   }
   if (active_totals[7]) {
     num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
-    num_deusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+    num_deusiv = dusi_vals_probs.size();
   }
   if (active_totals[10]) {
     num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE);
-    num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    num_dssiv = dssi_values.size();
   }
 
   for (i=0; i<num_cdv; ++i, ++p_cntr, ++c_cntr) {
@@ -1117,23 +1117,23 @@ void ParamStudy::final_point_to_step_vector()
     = iteratedModel.current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i, num_cdv = active_totals[0], num_ddriv = 0, num_ddsiv = 0,
-    num_ddsrv = active_totals[2], num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4], num_daurv = active_totals[5],
+    num_ddsrv = active_totals[2], num_cauv   = active_totals[3],
+    num_dauiv = active_totals[4], num_daurv  = active_totals[5],
     num_ceuv  = active_totals[6], num_deuriv = 0, num_deusiv = 0,
-    num_deurv = active_totals[8], num_csv   = active_totals[9],
-    num_dsriv = 0, num_dssiv = 0, num_dssrv = active_totals[11],
+    num_deurv = active_totals[8], num_csv    = active_totals[9],
+    num_dsriv = 0, num_dssiv = 0, num_dssrv  = active_totals[11],
     f_cntr = 0, c_cntr = 0, di_cntr = 0, dr_cntr = 0;
   if (active_totals[1]) {
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE);
-    num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
+    num_ddsiv = ddsi_values.size();
   }
   if (active_totals[7]) {
     num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
-    num_deusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+    num_deusiv = dusi_vals_probs.size();
   }
   if (active_totals[10]) {
     num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE);
-    num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    num_dssiv = dssi_values.size();
   }
 
   bool not_found_err = false, modulo_err = false;
