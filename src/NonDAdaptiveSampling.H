@@ -48,6 +48,9 @@ public:
 
   ~NonDAdaptiveSampling(); ///< destructor
 
+  /// print the final statistics
+  void print_results(std::ostream& s);
+
 protected:
 
   //
@@ -238,6 +241,9 @@ private:
 
   /// compute the median of the sorted values passed in
   Real median(const RealVector& sorted_data);
+
+  /// Explore Emulator using a a specified numEmulEval and score each sample point
+  void explore_emulator( );
 
 };
 
