@@ -199,18 +199,20 @@ endforeach(v)
 if ( DAKOTA_DEBUG )
   file( WRITE ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out ${vars} )
 endif()
-list( APPEND CTEST_NOTES_FILES 
-  ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out )
+if ( EXISTS ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out )
+  list( APPEND CTEST_NOTES_FILES 
+    ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out )
+endif()
 message("Dashboard script configuration:\n${vars}\n")
-
-# Create a notes file to be submitted to the Dashboard
-list( APPEND CTEST_NOTES_FILES ${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME} )
-create_cmake_system_file( ${CTEST_BINARY_DIRECTORY} )
 
 ctest_start(${DAKOTA_CTEST_PROJECT_TAG})
 
 ctest_configure(RETURN_VALUE ConfigStatus)
 message("ctest_configure: cmake return code: ${ConfigStatus}")
+
+# Create a notes file to be submitted to the Dashboard
+list( APPEND CTEST_NOTES_FILES ${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME} )
+create_cmake_system_file( ${CTEST_BINARY_DIRECTORY} )
 
 # Using file(WRITE...) resets the dakotaCtestResultsFile for each CTest run
 file( WRITE ${dakotaCtestResultsFile} "ctest_configure: ${ConfigStatus}\n" )

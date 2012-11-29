@@ -16,7 +16,7 @@ function (create_cmake_system_file _build_path )
   endif()
 
   execute_process(
-    COMMAND ${CMAKE_COMMAND} --system-information 
+    COMMAND ${CMAKE_COMMAND} -N --system-information 
     ${_build_path}/dakota_system.out )
 
   list( APPEND CTEST_NOTES_FILES 
@@ -24,3 +24,4 @@ function (create_cmake_system_file _build_path )
   message( "CTEST_NOTES_FILES: ${CTEST_NOTES_FILES}" )
 
 endfunction()
+
