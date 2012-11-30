@@ -1098,6 +1098,45 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
   //cv_cntr += num_csv; div_cntr += num_dsiv; drv_cntr += num_dsrv;
 }
 
+
+/// ScalarType1 will be Real, ScalarType2 will be int, and ScalarType3 may be
+/// int or Real, but written for arbitrary types
+template <typename ScalarType>
+inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
+			  const std::vector<ScalarType>&  c_vector,
+			  const std::vector<ScalarType>& di_vector,
+			  const std::vector<ScalarType>& dr_vector)
+{
+  size_t i, j, num_cdv = comp_totals[0], num_ddiv = comp_totals[1],
+    num_ddrv  = comp_totals[2],  num_cauv  = comp_totals[3],
+    num_dauiv = comp_totals[4],  num_daurv = comp_totals[5],
+    num_ceuv  = comp_totals[6],  num_deuiv = comp_totals[7],
+    num_deurv = comp_totals[8],  num_csv   = comp_totals[9],
+    num_dsiv  = comp_totals[10], num_dsrv  = comp_totals[11],
+    cv_cntr = 0, div_cntr = 0, drv_cntr = 0;
+
+  // design
+  write_data_partial(s,  cv_cntr, num_cdv,   c_vector);
+  write_data_partial(s, div_cntr, num_ddiv, di_vector);
+  write_data_partial(s, drv_cntr, num_ddrv, dr_vector);
+  cv_cntr += num_cdv; div_cntr += num_ddiv; drv_cntr += num_ddrv;
+  // aleatory uncertain
+  write_data_partial(s,  cv_cntr, num_cauv,   c_vector);
+  write_data_partial(s, div_cntr, num_dauiv, di_vector);
+  write_data_partial(s, drv_cntr, num_daurv, dr_vector);
+  cv_cntr += num_cauv; div_cntr += num_dauiv; drv_cntr += num_daurv;
+  // epistemic uncertain
+  write_data_partial(s,  cv_cntr, num_ceuv,   c_vector);
+  write_data_partial(s, div_cntr, num_deuiv, di_vector);
+  write_data_partial(s, drv_cntr, num_deurv, dr_vector);
+  cv_cntr += num_ceuv; div_cntr += num_deuiv; drv_cntr += num_deurv;
+  // state
+  write_data_partial(s,  cv_cntr, num_csv,   c_vector);
+  write_data_partial(s, div_cntr, num_dsiv, di_vector);
+  write_data_partial(s, drv_cntr, num_dsrv, dr_vector);
+  //cv_cntr += num_csv; div_cntr += num_dsiv; drv_cntr += num_dsrv;
+}
+
 } // namespace Dakota
 
 #endif

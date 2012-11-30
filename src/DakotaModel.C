@@ -3206,7 +3206,7 @@ const BitArray& Model::discrete_int_sets()
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i, di_cntr = 0;
   if (active_totals[1]) {
-    di_cntr  += svd.vc_lookup(DISCRETE_DESIGN_RANGE);
+    di_cntr += svd.vc_lookup(DISCRETE_DESIGN_RANGE);
     size_t num_ddsiv = discreteDesignSetIntValues.size();
     for (i=0; i<num_ddsiv; ++i, ++di_cntr)
       discreteIntSets.flip(di_cntr);
@@ -3220,7 +3220,7 @@ const BitArray& Model::discrete_int_sets()
       discreteIntSets.flip(di_cntr);
   }
   if (active_totals[10]) {
-    di_cntr  += svd.vc_lookup(DISCRETE_STATE_RANGE);
+    di_cntr += svd.vc_lookup(DISCRETE_STATE_RANGE);
     size_t num_dssiv = discreteStateSetIntValues.size();
     for (i=0; i<num_dssiv; ++i, ++di_cntr)
       discreteIntSets.flip(di_cntr);
@@ -3337,7 +3337,7 @@ const RealSetArray& Model::discrete_set_real_values()
       num_dausrv = h_pt_prs.size(), num_deusrv = dusr_vals_probs.size(),
       num_dssiv = discreteStateSetRealValues.size();
     activeDiscSetRealValues.resize(num_ddsiv  + num_dausrv +
-				       num_deusrv + num_dssiv);
+				   num_deusrv + num_dssiv);
     for (i=0; i<num_ddsiv; ++i)
       activeDiscSetRealValues[i] = discreteDesignSetRealValues[i];
     offset = num_ddsiv;
@@ -3345,7 +3345,7 @@ const RealSetArray& Model::discrete_set_real_values()
       x_y_pairs_to_x_set(h_pt_prs[i], activeDiscSetRealValues[i+offset]);
     offset += num_dausrv;
     for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(dusr_vals_probs[i],activeDiscSetRealValues[i+offset]);
+      map_keys_to_set(dusr_vals_probs[i], activeDiscSetRealValues[i+offset]);
     offset += num_deusrv;
     for (i=0; i<num_dssiv; ++i)
       activeDiscSetRealValues[i+offset] = discreteStateSetRealValues[i];

@@ -945,7 +945,9 @@ Real NonDExpansion::increment_sets()
     // assess effect of increment (non-negative norm)
     delta = (totalLevelRequests) ? compute_final_statistics_metric()
                                  : compute_covariance_metric();
-    // normalize effect of increment based on cost (# of collocation pts)
+    // normalize effect of increment based on cost (# of collocation pts).
+    // Note: increment size must be nonzero since growth restriction is
+    // precluded for generalized sparse grids.
     delta /= nond_sparse->increment_size();
     // track best increment evaluated thus far
     if (delta > delta_star) {

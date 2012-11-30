@@ -24,6 +24,7 @@
 #endif // HAVE_SURFPACK
 #include "DakotaGraphics.H"
 
+//#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
 //#define DEBUG
 
 

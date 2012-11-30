@@ -76,14 +76,31 @@ private:
   /// defined by a set of multidimensional partitions
   void multidim_loop();
 
+  /// distributes incoming all vector in standard variable ordering among
+  /// continuous, discrete int, and discrete real vectors
+  template <typename OrdinalType,  typename ScalarTypeA, typename ScalarTypeC,
+	    typename ScalarTypeDI, typename ScalarTypeDR> 
+  bool distribute(
+    const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
+    Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>& c_data,
+    Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
+    Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data);
+
+  /// distributes incoming all array in standard variable ordering among
+  /// continuous, discrete int, and discrete real arrays
+  template <typename ScalarType> 
+  bool distribute(const std::vector<ScalarType>& all_data,
+		  std::vector<ScalarType>& c_data,
+		  std::vector<ScalarType>& di_data,
+		  std::vector<ScalarType>& dr_data);
+
   /// distributes incoming list_of_pts among listCVPoints, listDIVPoints,
   /// and listDRVPoints
   bool distribute_list_of_points(const RealVector& list_of_pts);
-  /// distributes incoming step_vector among {cont,discInt,discReal}StepVector
-  bool distribute_step_vector(const RealVector& step_vector);
   /// compute step vectors from finalPoint, initial points, and numSteps
   void final_point_to_step_vector();
-  /// compute step vectors from variablePartitions and global bounds
+  /// compute step vectors from {cont,discInt,discReal}VarPartitions
+  /// and global bounds
   void distribute_partitions();
 
   /// perform error checks on numSteps
@@ -92,7 +109,7 @@ private:
   bool check_final_point(const RealVector& final_pt);
   /// perform error checks on stepsPerVariable
   bool check_steps_per_variable(const IntVector& steps_per_var);
-  /// perform error checks on variablePartitions
+  /// perform error checks on variable partitions
   bool check_variable_partitions(const UShortArray& partitions);
   /// check for finite variable bounds within iteratedModel,
   /// as required for computing partitions of finite ranges
@@ -100,12 +117,12 @@ private:
   /// sanity check for vector parameter study
   bool check_ranges_sets(int num_steps);
   /// sanity check for centered parameter study
-  bool check_ranges_sets(const IntVector& steps);
+  bool check_ranges_sets(const IntVector& c_steps, const IntVector& di_steps,
+			 const IntVector& dr_steps);
   /// sanity check for increments along int/real set dimensions
-  bool check_sets(const IntVector& steps);
+  bool check_sets(const IntVector& c_steps, const IntVector& di_steps,
+		  const IntVector& dr_steps);
 
-  /// cast Real to int and ensure no resulting change in value
-  int truncate(const Real& value) const;
   /// check for integer remainder and return step
   int integer_step(int range, int num_steps) const;
   /// check for out of bounds and index remainder and return step
@@ -119,17 +136,15 @@ private:
   /// helper function for performing a discrete step in an integer set variable
   void dsi_step(size_t di_index, int increment, const IntSet& values,
 		Variables& vars);
-  /// helper function for performing a discrete step in an uncertain
-  /// integer set variable
-  void dsi_step(size_t di_index, int increment,	const IntRealMap& vals_probs,
-		Variables& vars);
   /// helper function for performing a discrete step in a real set variable
   void dsr_step(size_t dr_index, int increment, const RealSet& values,
 		Variables& vars);
-  /// helper function for performing a discrete step in an uncertain
-  /// real set variable
-  void dsr_step(size_t dr_index, int increment, const RealRealMap& vals_probs,
-		Variables& vars);
+
+  /// reset vars to initial point (center)
+  void reset(Variables& vars);
+  /// store a centered parameter study header within allHeaders
+  void centered_header(const String& type, size_t var_index, int step,
+		       size_t hdr_index);
 
   //
   //- Heading: Data
@@ -169,15 +184,178 @@ private:
   int numSteps;
 
   /// number of offsets in the plus and the minus direction for each
-  /// variable in a centered_parameter_study
-  IntVector stepsPerVariable;
+  /// continuous variable in a centered_parameter_study
+  IntVector contStepsPerVariable;
+  /// number of offsets in the plus and the minus direction for each
+  /// discrete integer variable in a centered_parameter_study
+  IntVector discIntStepsPerVariable;
+  /// number of offsets in the plus and the minus direction for each
+  /// discrete real variable in a centered_parameter_study
+  IntVector discRealStepsPerVariable;
 
-  /// number of partitions for each variable in a multidim_parameter_study
-  UShortArray variablePartitions;
+  /// number of partitions for each continuous variable in a
+  /// multidim_parameter_study
+  UShortArray contVarPartitions;
+  /// number of partitions for each discrete integer variable in a
+  /// multidim_parameter_study
+  UShortArray discIntVarPartitions;
+  /// number of partitions for each discrete real variable in a
+  /// multidim_parameter_study
+  UShortArray discRealVarPartitions;
 };
 
 
 inline ParamStudy::~ParamStudy() { }
+
+
+template <typename OrdinalType,  typename ScalarTypeA, typename ScalarTypeC,
+	  typename ScalarTypeDI, typename ScalarTypeDR> 
+bool ParamStudy::
+distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
+	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>&   c_data,
+	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
+	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data)
+{
+  size_t num_vars
+    = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  if (all_data.length() != num_vars) {
+    Cerr << "\nError: ParamStudy::distribute() input length must be "
+	 << num_vars << '.' << std::endl;
+    return true;
+  }
+  c_data.sizeUninitialized(numContinuousVars);
+  di_data.sizeUninitialized(numDiscreteIntVars);
+  dr_data.sizeUninitialized(numDiscreteRealVars);
+
+  // Extract in order:
+  //   cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv, csv/dsiv/dsrv
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  const SizetArray& active_totals = svd.active_components_totals();
+  size_t i, num_cdv = active_totals[0], num_ddiv  = active_totals[1],
+    num_ddrv  = active_totals[2],  num_cauv  = active_totals[3],
+    num_dauiv = active_totals[4],  num_daurv = active_totals[5],
+    num_ceuv  = active_totals[6],  num_deuiv = active_totals[7],
+    num_deurv = active_totals[8],  num_csv   = active_totals[9],
+    num_dsiv  = active_totals[10], num_dsrv  = active_totals[11],
+    s_cntr = 0, c_cntr = 0, di_cntr = 0, dr_cntr = 0;
+  for (i=0; i<num_cdv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
+  for (i=0; i<num_ddiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
+  for (i=0; i<num_ddrv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
+  for (i=0; i<num_cauv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
+  for (i=0; i<num_dauiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
+  for (i=0; i<num_daurv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
+  for (i=0; i<num_ceuv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
+  for (i=0; i<num_deuiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
+  for (i=0; i<num_deurv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
+  for (i=0; i<num_csv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
+  for (i=0; i<num_dsiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
+  for (i=0; i<num_dsrv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
+
+#ifdef DEBUG
+  Cout << "distribute():\n";
+  if (numContinuousVars) {
+    Cout << "continuous vector:\n";
+    write_data(Cout, c_data);
+  }
+  if (numDiscreteIntVars) {
+    Cout << "discrete int vector:\n";
+    write_data(Cout, di_data);
+  }
+  if (numDiscreteRealVars) {
+    Cout << "discrete real vector:\n";
+    write_data(Cout, dr_data);
+  }
+#endif // DEBUG
+
+  return false;
+}
+
+
+template <typename ScalarType> 
+bool ParamStudy::
+distribute(const std::vector<ScalarType>& all_data,
+	   std::vector<ScalarType>& c_data, std::vector<ScalarType>& di_data,
+	   std::vector<ScalarType>& dr_data)
+{
+  size_t num_vars
+    = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  if (all_data.size() != num_vars) {
+    Cerr << "\nError: ParamStudy::distribute() input length must be "
+	 << num_vars << '.' << std::endl;
+    return true;
+  }
+  c_data.resize(numContinuousVars);
+  di_data.resize(numDiscreteIntVars);
+  dr_data.resize(numDiscreteRealVars);
+
+  // Extract in order:
+  //   cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv, csv/dsiv/dsrv
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  const SizetArray& active_totals = svd.active_components_totals();
+  size_t i, num_cdv = active_totals[0], num_ddiv  = active_totals[1],
+    num_ddrv  = active_totals[2],  num_cauv  = active_totals[3],
+    num_dauiv = active_totals[4],  num_daurv = active_totals[5],
+    num_ceuv  = active_totals[6],  num_deuiv = active_totals[7],
+    num_deurv = active_totals[8],  num_csv   = active_totals[9],
+    num_dsiv  = active_totals[10], num_dsrv  = active_totals[11],
+    s_cntr = 0, c_cntr = 0, di_cntr = 0, dr_cntr = 0;
+  for (i=0; i<num_cdv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = all_data[s_cntr];
+  for (i=0; i<num_ddiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_ddrv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = all_data[s_cntr];
+  for (i=0; i<num_cauv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = all_data[s_cntr];
+  for (i=0; i<num_dauiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_daurv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = all_data[s_cntr];
+  for (i=0; i<num_ceuv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = all_data[s_cntr];
+  for (i=0; i<num_deuiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_deurv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = all_data[s_cntr];
+  for (i=0; i<num_csv; ++i, ++s_cntr, ++c_cntr)
+    c_data[c_cntr]   = all_data[s_cntr];
+  for (i=0; i<num_dsiv; ++i, ++s_cntr, ++di_cntr)
+    di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_dsrv; ++i, ++s_cntr, ++dr_cntr)
+    dr_data[dr_cntr] = all_data[s_cntr];
+
+#ifdef DEBUG
+  Cout << "distribute():\n";
+  if (numContinuousVars) {
+    Cout << "continuous vector:\n";
+    write_data(Cout, c_data);
+  }
+  if (numDiscreteIntVars) {
+    Cout << "discrete int vector:\n";
+    write_data(Cout, di_data);
+  }
+  if (numDiscreteRealVars) {
+    Cout << "discrete real vector:\n";
+    write_data(Cout, dr_data);
+  }
+#endif // DEBUG
+
+  return false;
+}
 
 
 inline bool ParamStudy::check_num_steps(int num_steps)
@@ -216,19 +394,29 @@ inline bool ParamStudy::check_steps_per_variable(const IntVector& steps_per_var)
     num_vars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
   // allow spv_len of 1 or num_vars
   if (spv_len == num_vars)
-    stepsPerVariable = steps_per_var;
+    distribute(steps_per_var, contStepsPerVariable, discIntStepsPerVariable,
+	       discRealStepsPerVariable);
   else if (spv_len == 1) {
-    stepsPerVariable.sizeUninitialized(num_vars);
-    stepsPerVariable = steps_per_var[0];
+    int steps = steps_per_var[0];
+    contStepsPerVariable.sizeUninitialized(numContinuousVars);
+    contStepsPerVariable = steps;
+    discIntStepsPerVariable.sizeUninitialized(numDiscreteIntVars);
+    discIntStepsPerVariable = steps;
+    discRealStepsPerVariable.sizeUninitialized(numDiscreteRealVars);
+    discRealStepsPerVariable = steps;
   }
   else {
     Cerr << "\nError: steps_per_variable must be of length 1 or " << num_vars
 	 << " in centered_parameter_study." << std::endl;
     return true;
   }
-  int spv_sum = 0;
-  for (size_t i=0; i<num_vars; ++i)
-    spv_sum += std::abs(stepsPerVariable[i]);
+  size_t i, spv_sum = 0;
+  for (i=0; i<numContinuousVars; ++i)
+    spv_sum += std::abs(contStepsPerVariable[i]);
+  for (i=0; i<numDiscreteIntVars; ++i)
+    spv_sum += std::abs(discIntStepsPerVariable[i]);
+  for (i=0; i<numDiscreteRealVars; ++i)
+    spv_sum += std::abs(discRealStepsPerVariable[i]);
   numEvals = 2*spv_sum + 1;
   return false;
 }
@@ -236,23 +424,33 @@ inline bool ParamStudy::check_steps_per_variable(const IntVector& steps_per_var)
 
 inline bool ParamStudy::check_variable_partitions(const UShortArray& partitions)
 {
-  size_t vp_len = partitions.size(),
-    num_vars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  size_t i, vp_len = partitions.size();
   // allow vp_len of 1 or num_vars
-  if (vp_len == num_vars)
-    variablePartitions = partitions;
+  if (vp_len == numContinuousVars + numDiscreteIntVars + numDiscreteRealVars)
+    distribute(partitions, contVarPartitions, discIntVarPartitions,
+	       discRealVarPartitions);
   else if (vp_len == 1) {
-    variablePartitions.resize(num_vars);
-    variablePartitions.assign(num_vars, partitions[0]);
+    unsigned short part = partitions[0];
+    contVarPartitions.resize(numContinuousVars);
+    contVarPartitions.assign(numContinuousVars, part);
+    discIntVarPartitions.resize(numDiscreteIntVars);
+    discIntVarPartitions.assign(numDiscreteIntVars, part);
+    discRealVarPartitions.resize(numDiscreteRealVars);
+    discRealVarPartitions.assign(numDiscreteRealVars, part);
   }
   else {
-    Cerr << "\nError: partitions must be of length 1 or " << num_vars 
+    Cerr << "\nError: partitions must be of length 1 or "
+	 << numContinuousVars + numDiscreteIntVars + numDiscreteRealVars
 	 << " in multidim_parameter_study." << std::endl;
     return true;
   }
   numEvals = 1;
-  for (size_t i=0; i<num_vars; ++i)
-    numEvals *= variablePartitions[i] + 1;
+  for (i=0; i<numContinuousVars; ++i)
+    numEvals *= contVarPartitions[i] + 1;
+  for (i=0; i<numDiscreteIntVars; ++i)
+    numEvals *= discIntVarPartitions[i] + 1;
+  for (i=0; i<numDiscreteRealVars; ++i)
+    numEvals *= discRealVarPartitions[i] + 1;
   return false;
 }
 
@@ -294,37 +492,29 @@ inline bool ParamStudy::check_finite_bounds()
 inline bool ParamStudy::check_ranges_sets(int num_steps)
 {
   // convert scalar to a single vector
-  IntVector
-    steps(numContinuousVars + numDiscreteIntVars + numDiscreteRealVars, false);
-  steps = num_steps;
-  return check_sets(steps);
+  IntVector c_steps_per_var(numContinuousVars,   false),
+           di_steps_per_var(numDiscreteIntVars,  false),
+           dr_steps_per_var(numDiscreteRealVars, false);
+  c_steps_per_var  = num_steps;
+  di_steps_per_var = num_steps;
+  dr_steps_per_var = num_steps;
+  return check_sets(c_steps_per_var, di_steps_per_var, dr_steps_per_var);
 }
 
 
-inline bool ParamStudy::check_ranges_sets(const IntVector& steps_per_var)
+inline bool ParamStudy::
+check_ranges_sets(const IntVector& c_steps_per_var,
+		  const IntVector& di_steps_per_var,
+		  const IntVector& dr_steps_per_var)
 {
   // convert vector to plus and minus vector steps
-  size_t i,
-    num_vars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
-  IntVector steps(steps_per_var);
-  bool err = check_sets(steps); // positive offsets
-  steps.scale(-1);
-  if (check_sets(steps))        // negative offsets
+  IntVector c_steps(c_steps_per_var), di_steps(di_steps_per_var),
+           dr_steps(dr_steps_per_var);
+  bool err = check_sets(c_steps, di_steps, dr_steps); // positive offsets
+  c_steps.scale(-1); di_steps.scale(-1); dr_steps.scale(-1);
+  if (check_sets(c_steps, di_steps, dr_steps))        // negative offsets
     err = true;
   return err;
-}
-
-
-inline int ParamStudy::truncate(const Real& value) const
-{
-  int truncated_value = (int)value;
-  if (std::abs((Real)truncated_value - value) > DBL_EPSILON) {
-    Cerr << "\nError: truncation of Real to discrete integer resulted in "
-	 << "change in value.  Verify that input specification for discrete "
-	 << "types is integral." << std::endl;
-    abort_handler(-1);
-  }
-  return truncated_value;
 }
 
 
@@ -394,28 +584,6 @@ dsi_step(size_t di_index, int increment, const IntSet& values, Variables& vars)
 
 
 inline void ParamStudy::
-dsi_step(size_t di_index, int increment, const IntRealMap& vals_probs,
-	 Variables& vars)
-{
-  // valid values and indices are checked for set types
-  size_t index0 = map_key_to_index(initialDIVPoint[di_index], vals_probs);
-  if (index0 == _NPOS) {
-    Cerr << "\nError: value " << initialDIVPoint[di_index] << " does not exist "
-	 << "within discrete integer set in ParamStudy::dsi_step()."<<std::endl;
-    abort_handler(-1);
-  }
-  int index = index0 + increment * discIntStepVector[di_index];// +/- increments
-  if (index >= 0 && index < vals_probs.size())
-    vars.discrete_int_variable(map_index_to_key(index, vals_probs), di_index);
-  else {
-    Cerr << "\nError: index " << index << " out of range within discrete "
-	 << "integer set in ParamStudy::dsi_step()." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-inline void ParamStudy::
 dsr_step(size_t dr_index, int increment, const RealSet& values, Variables& vars)
 {
   // valid values and indices are checked for set types
@@ -436,25 +604,27 @@ dsr_step(size_t dr_index, int increment, const RealSet& values, Variables& vars)
 }
 
 
-inline void ParamStudy::
-dsr_step(size_t dr_index, int increment, const RealRealMap& vals_probs,
-	 Variables& vars)
+inline void ParamStudy::reset(Variables& vars)
 {
-  // valid values and indices are checked for set types
-  size_t index0 = map_key_to_index(initialDRVPoint[dr_index], vals_probs);
-  if (index0 == _NPOS) {
-    Cerr << "\nError: value " << initialDRVPoint[dr_index] << " does not exist "
-	 << "within discrete real set in ParamStudy::dsr_step()." << std::endl;
-    abort_handler(-1);
-  }
-  int index = index0 + increment * discRealStepVector[dr_index];//+/- increments
-  if (index >= 0 && index < vals_probs.size())
-    vars.discrete_real_variable(map_index_to_key(index, vals_probs), dr_index);
-  else {
-    Cerr << "\nError: index " << index << " out of range within discrete "
-	 << "real set in ParamStudy::dsr_step()." << std::endl;
-    abort_handler(-1);
-  }
+  if (numContinuousVars)   vars.continuous_variables(initialCVPoint);
+  if (numDiscreteIntVars)  vars.discrete_int_variables(initialDIVPoint);
+  if (numDiscreteRealVars) vars.discrete_real_variables(initialDRVPoint);
+}
+
+
+inline void ParamStudy::
+centered_header(const String& type, size_t var_index, int step,
+		size_t hdr_index)
+{
+  String& h_string = allHeaders[hdr_index];
+  h_string.clear();
+  if (asynchFlag)
+    h_string += "\n\n";
+  h_string += ">>>>> Centered parameter study evaluation for " + type + "[" +
+              boost::lexical_cast<std::string>(var_index+1) + "]";
+  if (step < 0) h_string += " - " + boost::lexical_cast<std::string>(-step);
+  else          h_string += " + " + boost::lexical_cast<std::string>( step);
+  h_string += "delta:\n";
 }
 
 } // namespace Dakota

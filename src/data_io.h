@@ -487,6 +487,23 @@ void write_data_aprepro(std::ostream& s,
 
 
 /// standard ostream insertion operator for partial SerialDenseVector
+template <typename ScalarType>
+void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
+			const std::vector<ScalarType>& v)
+{
+  size_t i, end = start_index + num_items;
+  if (end > v.size()) { 
+    Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
+	 << "length of std::vector." << std::endl;
+    abort_handler(-1);
+  }
+  s << std::scientific << std::setprecision(write_precision);
+  for (i=start_index; i<end; ++i)
+    s << "                     " << std::setw(write_precision+7) << v[i] <<'\n';
+}
+
+
+/// standard ostream insertion operator for partial SerialDenseVector
 template <typename OrdinalType, typename ScalarType>
 void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
