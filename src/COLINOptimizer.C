@@ -407,6 +407,7 @@ void COLINOptimizer::find_optimum()
     // before optimize.
 
     colinSolver->reset();
+    colinCache->clear();
     colinSolver->optimize();
 
     if (outputLevel == DEBUG_OUTPUT) {
