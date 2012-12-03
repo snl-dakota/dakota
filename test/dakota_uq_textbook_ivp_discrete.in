@@ -11,8 +11,10 @@ method,
 	model_pointer = 'EPIST_M'
 	global_interval_est lhs			#0
 #	global_interval_est sbo			#1
+#	global_interval_est ea			#2
 #	sampling			
-	  samples = 10 seed = 12347			
+        samples = 10 seed = 12347		#0,#1
+#       max_iterations = 20 seed =234	        #2
 
 model,
 	id_model = 'EPIST_M'
@@ -20,8 +22,8 @@ model,
 	  variables_pointer  = 'EPIST_V'
 	  sub_method_pointer = 'ALEATORY'
 	  responses_pointer  = 'EPIST_R'
-	  primary_variable_mapping   = 'X1'   'X2'   'dssi_ModelForm'	
-	  secondary_variable_mapping = 'mean' 'mean' ''
+	  primary_variable_mapping   = 'X1'   'X2'   'dssi_ModelForm' 'X5' 'X6'	
+	  secondary_variable_mapping = 'mean' 'mean' '' '' ''
 	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
 	  			       0. 0. 0. 0. 1. 0. 0. 0.
 				       0. 0. 0. 0. 0. 0. 0. 1.
@@ -37,6 +39,10 @@ variables,
 #	  set_probs  = .1 .2 .4 .2 .1
 	  set_values =  1  2  3  4  5
 	  descriptors = 'ModelForm'		
+        discrete_uncertain_set_real = 2             
+          num_set_values = 3 2                         
+#          set_probs = 0.3 0.7 
+          set_values = 1.1 2.3 4.5 1.2 2.4          
 
 responses,
 	id_responses = 'EPIST_R'
@@ -55,9 +61,9 @@ method,
 	polynomial_chaos  #non_nested
 #	stoch_collocation #non_nested
 	  sparse_grid_level = 1
-	  num_response_levels = 0 1 1
-	  response_levels = 10000. 10000.
-	  compute reliabilities
+	  num_response_levels = 0 1 1      
+	  response_levels = 10000. 10000.    
+	  compute reliabilities 
 	  complementary distribution
 
 model,
@@ -76,7 +82,11 @@ variables,
 	discrete_state_set_integer = 1
 	  set_values     = 1 2 3 4 5
 	  descriptors    = 'dssi_ModelForm'	
-
+        discrete_state_set_real = 2
+          num_set_values = 3 2
+	  set_values = 1.1 2.3 4.5 1.2 2.4
+	  descriptors      'X5' 'X6'
+	
 interface,
 	id_interface = 'ALEAT_I'
 	direct
@@ -85,7 +95,7 @@ interface,
 
 responses,
 	id_responses = 'ALEAT_R'
-	response_functions = 3
+	response_functions = 3             
 	no_gradients
 	no_hessians
 

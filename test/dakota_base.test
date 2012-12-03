@@ -54617,15 +54617,33 @@ Test Number 5 succeeded
    2.5000000000e-01   6.6000000000e-01   0.0000000000e+00
    5.0000000000e-01   7.0000000000e-01   1.1000000000e-01
    7.5000000000e-01   8.5000000000e-01   1.1000000000e-01
+dakota_uq_textbook_interval.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+response_fn_1:  Min = 4.4376104545e+01  Max = 1.2000223265e+04
+response_fn_2:  Min = -3.6713252985e+00  Max = 9.8183834392e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 60 total (58 new, 2 duplicate)
+response_fn_1:  Min = 4.0425600000e+01  Max = 1.3950161600e+04
+response_fn_2:  Min = -4.0000000000e+00  Max = 9.9500000000e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 3347 total (3345 new, 2 duplicate)
+response_fn_1:  Min = 4.0425600000e+01  Max = 1.3950161600e+04
+response_fn_2:  Min = -4.0000000000e+00  Max = 9.9500000000e+01
 dakota_uq_textbook_ivp_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 90 total (90 new, 0 duplicate)
-mean_f1:  Min = 2.6660723049e+06  Max = 5.0839299608e+06
-ccdf_beta_f2:  Min = 1.1140063093e+01  Max = 1.4997877200e+01
-ccdf_beta_f3:  Min = 2.1142441716e+01  Max = 2.9959806072e+01
+mean_f1:  Min = 2.9224259407e+06  Max = 5.6798492523e+06
+ccdf_beta_f2:  Min = 1.1142846380e+01  Max = 1.5000341555e+01
+ccdf_beta_f3:  Min = 2.1149763722e+01  Max = 2.9965272113e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 252 total (252 new, 0 duplicate)
-mean_f1:  Min = 2.4269060000e+06  Max = 6.2680260000e+06
+<<<<< Function evaluation summary (ALEAT_I): 261 total (261 new, 0 duplicate)
+mean_f1:  Min = 2.4271658417e+06  Max = 6.2681799041e+06
+ccdf_beta_f2:  Min = 1.0918832972e+01  Max = 1.5386715423e+01
+ccdf_beta_f3:  Min = 2.0696377241e+01  Max = 3.0762469002e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 55953 total (55953 new, 0 duplicate)
+mean_f1:  Min = 2.4269088577e+06  Max = 6.2684320641e+06
 ccdf_beta_f2:  Min = 1.0918832972e+01  Max = 1.5386715423e+01
 ccdf_beta_f3:  Min = 2.0696377241e+01  Max = 3.0762469002e+01
 dakota_uq_textbook_lhs.in
