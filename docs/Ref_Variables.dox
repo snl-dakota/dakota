@@ -52,6 +52,12 @@ namespace Dakota {
     <ul>
     <li> <a href="VarCommands.html#VarCEUV_Interval">Interval</a>
     </ul>
+  <li> Discrete 
+    <ul>
+    <li> <a href="VarCommands.html#VarDIUV">Interval Range</a>
+    <li> <a href="VarCommands.html#VarDUSIV">Integer Set</a>
+    <li> <a href="VarCommands.html#VarDUSRV">Real Set</a>
+    </ul>
   </ul>
 <li> <a href="VarCommands.html#VarSV">State Variables</a>
   <ul>
@@ -121,7 +127,6 @@ repaired to satisfy any specified distribution bounds, mean values for
 discrete integer range distributions are rounded down to the nearest
 integer, and mean values for discrete set distributions are rounded to
 the nearest set value.
-
 In addition to tags and bounds specifications, normal variables
 include mean and standard deviation specifications, lognormal
 variables include lambda and zeta, mean and standard deviation, or
@@ -1906,11 +1911,22 @@ Specification detail for aleatory uncertain correlations
 
 In addition to continuous and discrete aleatory probability
 distributions, DAKOTA provides support for epistemic uncertainties
-through its interval variable specification. This is not a probability
-distribution; rather, it specifies a set of belief structures based on
-intervals that may be contiguous, overlapping, or disjoint.  It is
+through its interval variable specifications for both continuous and 
+discrete variables. Interval-based variables do not represent probability
+distributions.  In the case of continuous intervals, they can specify a 
+single interval per variable which may be used in interval analysis, where 
+the goal is to determine the interval bounds on the output corresponding to 
+the interval bounds on the input. More detailed continuous interval 
+representations can specify a set of belief structures based on
+intervals that may be contiguous, overlapping, or disjoint.  This is
 used in specifying the inputs necessary for an epistemic uncertainty
-analysis using Dempster-Shafer theory of evidence.
+analysis using Dempster-Shafer theory of evidence. 
+In the discrete case, interval variables may be used to specify 
+categorical choices which are epistemic.  For example, 
+if we have three possible forms for a physics model (model 1, 2, or 3) and 
+there is epistemic uncertainty about which one is correct, a discrete 
+uncertain interval or a discrete set may be used to represent 
+this type of uncertainty.
 
 
 \subsection VarCEUV_Interval Interval Uncertain Variable
@@ -2006,6 +2022,172 @@ Specification detail for interval uncertain variables
 <td>vector of <tt>'iuv_i'</tt> where <tt>i = 1,2,3,...</tt>
 </table>
 
+\subsection VarDIUV Discrete Interval Uncertain Variables 
+Discrete variables may be used to represent things like epistemic model form 
+uncertainty, as mentioned above. For example, if one wants to analyze the 
+effect of Model 1 vs. Model 2 vs. Model 3 in an epistemic analysis 
+(either an interval analysis or a Dempster-Shafer evidence theory analysis), 
+one can use a discrete interval variable to represent the uncertainty in the 
+model form.  There are three types of discrete uncertain variables:  a 
+discrete interval variable in which a discrete variable may take any integer 
+value within a range such as 1 to 4 (allowing values of 1, 2, 3, or 4); 
+a discrete uncertain set of integers, in which the discrete value may take any value within the integer set (for example, the set may be defined as 1, 2, and 4); and a discrete uncertain set of reals, in which the discrete variable may
+take any value defined within the real set (for example, a parameter 
+may have two allowable real values, 3.285 or 4.79).
+The following Tables \ref T7d26 "7.26" through
+\ref T7d28 "7.28" summarize the required and optional specifications
+for each discrete uncertain variable subtype. 
+Note these specifications are analogous to those for \ref VarDV but they 
+have the additional concept of defining probabilities per interval 
+or probabilities per set value. 
+
+\anchor T7d26
+<table>
+<caption align = "top">
+\htmlonly
+Table 7.26
+\endhtmlonly
+Specification detail for discrete interval uncertain variables
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Discrete interval uncertain variables
+<td>\c discrete_interval_uncertain
+<td>integer
+<td>Optional group
+<td>No discrete interval uncertain variables
+<tr>
+<td>Number of intervals defined for each interval variable
+<td>\c num_intervals
+<td>list of integers
+<td>Required group
+<td>None (typically one interval is defined for each interval variable)
+<tr>
+<td>Basic probability assignments per interval
+<td>\c interval_probs
+<td>list of reals
+<td>Required group.  Note that the probabilities per variable must sum to one.
+<td>None (if only one interval is defined, this probability should be 1.0).
+<tr>
+<td>Lower bounds
+<td>\c lower_bounds
+<td>list of integers
+<td>Optional
+<td>vector values = \c INT_MIN
+<tr>
+<td>Upper bounds
+<td>\c upper_bounds
+<td>list of integers
+<td>Optional
+<td>vector values = \c INT_MAX
+<tr>
+<td>Descriptors
+<td>\c descriptors
+<td>list of strings
+<td>Optional
+<td>vector of <tt>'diuv_i'</tt> where <tt>i = 1,2,3,...</tt>
+</table>
+
+\subsection VarDUSIV Discrete Uncertain Integer Set Variables 
+
+\anchor T7d27
+<table>
+<caption align = "top">
+\htmlonly
+Table 7.27
+\endhtmlonly
+Specification detail for discrete uncertain set of integer variables
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Discrete uncertain set of integer variables
+<td>\c discrete_uncertain_set_integer
+<td>integer
+<td>Optional group
+<td>no discrete uncertain set of integer variables
+<tr>
+<td>Number of values for each variable
+<td>\c num_set_values
+<td>list of integers
+<td>Optional
+<td>equal distribution
+<tr>
+<td>Set values
+<td>\c set_values
+<td>list of integers
+<td>Required
+<td>N/A
+<tr>
+<td>Probabilities per each member of the set
+<td>\c set_probs
+<td>list of reals
+<td>Required group.  Note that the probabilities across all set values for a particular variable must sum to one.
+<td>None
+<tr>
+<td>Descriptors
+<td>\c descriptors
+<td>list of strings
+<td>Optional
+<td>vector of <tt>'dusiv_i'</tt> where <tt>i = 1,2,3,...</tt>
+</table>
+
+\subsection VarDUSRV Discrete Uncertain Real Set Variables 
+
+\anchor T7d28
+<table>
+<caption align = "top">
+\htmlonly
+Table 7.28
+\endhtmlonly
+Specification detail for discrete uncertain set of real variables
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Discrete state set of real variables
+<td>\c discrete_uncertain_set_real
+<td>integer
+<td>Optional group
+<td>no discrete uncertain set of real variables
+<tr>
+<td>Number of values for each variable
+<td>\c num_set_values
+<td>list of integers
+<td>Optional
+<td>equal distribution
+<tr>
+<td>Set values
+<td>\c set_values
+<td>list of reals
+<td>Required
+<td>N/A
+<tr>
+<td>Probabilities per each member of the set
+<td>\c set_probs
+<td>list of reals
+<td>Required group.  Note that the probabilities across all set values for a particular variable must sum to one.
+<td>None
+<tr>
+<td>Descriptors
+<td>\c descriptors
+<td>list of strings
+<td>Optional
+<td>vector of <tt>'dusrv_i'</tt> where <tt>i = 1,2,3,...</tt>
+</table>
 
 \section VarSV State Variables
 
@@ -2015,8 +2197,8 @@ tolerances, and time step controls.  Types include continuous real,
 discrete range of integer values (contiguous integers), discrete set
 of integer values, and discrete set of real values.  Within each
 optional state variables specification group, the number of variables
-is always required.  The following Tables \ref T7d26 "7.26" through
-\ref T7d29 "7.29" summarize the required and optional specifications
+is always required.  The following Tables \ref T7d29 "7.29" through
+\ref T7d32 "7.32" summarize the required and optional specifications
 for each state variable subtype.  The \c initial_state specifications
 provide the initial values for the state variables which will be
 passed through to the simulator (e.g., in order to define
@@ -2025,11 +2207,11 @@ analagous to those for \ref VarDV.
 
 \subsection VarCSV Continuous State Variables
 
-\anchor T7d26
+\anchor T7d29
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.26
+Table 7.29
 \endhtmlonly
 Specification detail for continuous state variables
 </caption>
@@ -2073,11 +2255,11 @@ Specification detail for continuous state variables
 
 \subsection VarDSRIV Discrete State Range Variables
 
-\anchor T7d27
+\anchor T7d30
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.27
+Table 7.30
 \endhtmlonly
 Specification detail for discrete state range variables
 </caption>
@@ -2121,11 +2303,11 @@ Specification detail for discrete state range variables
 
 \subsection VarDSSIV Discrete State Integer Set Variables
 
-\anchor T7d28
+\anchor T7d31
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.28
+Table 7.31
 \endhtmlonly
 Specification detail for discrete state set of integer variables
 </caption>
@@ -2169,11 +2351,11 @@ Specification detail for discrete state set of integer variables
 
 \subsection VarDSSRV Discrete State Real Set Variables
 
-\anchor T7d29
+\anchor T7d32
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.29
+Table 7.32
 \endhtmlonly
 Specification detail for discrete state set of real variables
 </caption>
