@@ -159,7 +159,7 @@ namespace Dakota
 
 		
 		#ifdef HAVE_MORSE_SMALE
-			update_amsc(); 
+		//	update_amsc(); 
 		#endif
 
 		////***ATTENTION***
@@ -233,7 +233,7 @@ namespace Dakota
 			gpModel.append_approximation(points_to_add,responses_to_add, true);
 			
 			#ifdef HAVE_MORSE_SMALE
-			update_amsc(respFnCount);
+			//update_amsc(respFnCount);
 			#endif
 
 			Cout << "Done with iteration  " << k << std::endl; 
@@ -315,7 +315,7 @@ namespace Dakota
 				gpVar[i] = 0;
 			}
 		}
-
+                Cout << gpCvars[0] << '\n';
 		IntRespMCIter resp_it = all_resp.begin();
 		for (int j = 0; j < numEmulEval; ++j) 
 		{
@@ -661,7 +661,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       Variables point_to_add(gpModel.current_variables());
       gpModel.append_approximation(point_to_add,response_to_add, true);
 #ifdef HAVE_MORSE_SMALE
-      update_amsc(respFnCount);
+     // update_amsc(respFnCount);
 #endif
     }
     gpModel.pop_approximation(false, true/*, batchSize*/);
