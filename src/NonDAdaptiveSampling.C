@@ -117,6 +117,10 @@ namespace Dakota
 		{
 			construct_lhs(gpEval, gpModel, String("lhs"), numEmulEval, randomSeed,
 						  rngName, vary_pattern);
+
+			numFinalEmulEval = 10000; // may be we should add that as a paramter
+			construct_lhs(gpFinalEval, gpModel, String("lhs"), numFinalEmulEval, randomSeed,
+						  rngName, vary_pattern);
 		}
 		else
 		{
@@ -126,6 +130,7 @@ namespace Dakota
 
 		gpModel.init_communicators(gpEval.maximum_concurrency());
 
+		gpModel.init_communicators(gpFinalEval.maximum_concurrency());
 		#pragma endregion
 	}
 
@@ -133,18 +138,7 @@ namespace Dakota
 	{
 		gpModel.free_communicators(gpEval.maximum_concurrency());
 	}
- 
-	#pragma region Commented Code:
-	//NonDAdaptiveSampling::
-	//NonDAdaptiveSampling(Model& model, const String& sample_type, int samples,
-	//                  int seed, const String& rng,
-	//                  short sampling_vars_mode = ACTIVE,
-	//                  const RealVector& lower_bnds, const RealVector& upper_bnds):
-	//  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng)
-	//{
-	//
-	//}
-	#pragma endregion
+
 
 
 	//This is where all the magic happens
@@ -159,9 +153,7 @@ namespace Dakota
 
 		gpCvars.resize(numEmulEval);
 		gpVar.resize(numEmulEval);
-		gpMeans.resize(numEmulEval);
-		indicator.resize(numPtsTotal);
-		//  int num_problem_vars=iteratedModel.acv();
+		gpMeans.resize(numEmulEval);		
 
 		predictionErrors.resize(numRounds+1);
 
@@ -182,136 +174,7 @@ namespace Dakota
 
 		if(gp_data.size() > 1) dim = gp_data.continuous_variables(0).length();
 
-		
-		#pragma region Commented Code by Ebeida - to be deleted later:
-		/*
-		if(dim == 2) 
-		{
-			int gridSize = 50;
-			validationSetSize = gridSize*gridSize;
-			validationSet.resize(validationSetSize);
-			yTrue.resize(validationSetSize);
-			yModel.resize(validationSetSize);
-
-			RealVector lower_bounds = gpModel.continuous_lower_bounds();
-			RealVector upper_bounds = gpModel.continuous_upper_bounds();
-			RealVector increments;
-
-			increments.resize(dim);
-			for(int d = 0; d < dim; d++)
-				increments[d] = (upper_bounds[d] - lower_bounds[d]) / (gridSize-1.0);
-
-			for(int row = 0; row < gridSize; row++)
-			{
-				for(int col = 0; col < gridSize; col++) 
-				{
-					validationSet[row*gridSize+col].resize(2);
-					validationSet[row*gridSize+col][0] = lower_bounds[0]+increments[0]*col;
-					validationSet[row*gridSize+col][1] = lower_bounds[1]+increments[1]*row;
-					iteratedModel.continuous_variables(validationSet[row*gridSize+col]);
-					iteratedModel.compute_response();
-					yTrue[row*gridSize+col] = iteratedModel.current_response().function_value(0);
-				}
-			}
-
-			
-
-			if(outputValidationData) 
-			{
-				String outBuffer;
-				std::stringstream summary_sstream;
-				summary_sstream << outputDir << "/summary.txt";
-				summary_sstream >> outBuffer;
-				std::ofstream summary_out(outBuffer.c_str());
-
-				std::stringstream domain_sstream;
-				domain_sstream << outputDir << "/domain.txt";
-				domain_sstream >> outBuffer;
-				std::ofstream domain_out(outBuffer.c_str());
-
-				std::stringstream y_true_sstream;
-				y_true_sstream << outputDir << "/truth.txt";
-				y_true_sstream >> outBuffer;
-				std::ofstream y_true_out(outBuffer.c_str());
-
-				std::stringstream training_sstream;
-				training_sstream << outputDir << "/training.txt";
-				training_sstream >> outBuffer;
-				std::ofstream training_out(outBuffer.c_str());
-
-				summary_out << "Dimensions = " << 2 << "\n";
-				summary_out << "GridSize = " << gridSize << "\n";
-				summary_out << "TrainingSize = " << numSamples << "\n";
-				summary_out << "Rounds = " << numRounds << "\n";
-				summary_out << "CandidateSize = " << numEmulEval << "\n";
-				summary_out << "KNN = " << numKneighbors << "\n";
-				summary_out << "BatchSize = " << batchSize << "\n";
-				summary_out << "Sampling = " << "LHS" << "\n";
-				summary_out << "Scoring = " << scoringMetric << "\n";
-
-				domain_out << validationSet;
-
-				for(int j = 0; j < yTrue.length(); j++)
-				{
-					y_true_out  << std::setprecision(15) << yTrue[j] << "\n";  
-				}
-			
-				RealVectorArray training_set;
-				training_set.resize(gp_data.size());
-				for (int j = 0; j < gp_data.size(); j++)
-				{
-					training_set[j] = gp_data.continuous_variables(j);
-				}
-
-				training_out << std::setprecision(15);
-				for(int j = 0; j < training_set.size(); j++)
-				{
-			
-					for(int k = 0; k < training_set[j].length();k++)
-						training_out << training_set[j][k] << " ";
-
-					iteratedModel.continuous_variables(training_set[j]);
-					iteratedModel.compute_response();
-					training_out << iteratedModel.current_response().function_value(0) 
-									<< "\n";
-				}
-
-				summary_out.close();
-				domain_out.close();
-				y_true_out.close();
-				training_out.close();
-			}
-		}
-		else 
-		{
-			int i, j;
-			Iterator validation_generator;
-			////***ATTENTION***
-			//// You may want to be able to modify the size of the validation set
-			////***END ATTENTION***
-			validationSetSize = dim*1000;
-			construct_lhs(validation_generator, iteratedModel, "lhs", validationSetSize, 888, rngName, false);
-			validationSet.resize(validationSetSize);
-			yTrue.resize(validationSetSize);
-			yModel.resize(validationSetSize);
-			iteratedModel.init_communicators(validation_generator.maximum_concurrency());
-			validation_generator.run_iterator(Cout);
-
-				// obtain results 
-			const RealMatrix&  all_samples = validation_generator.all_samples();
-
-			for (i = 0; i< validationSetSize; i++) 
-			{
-				validationSet[i] = Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(all_samples), i);
-  				iteratedModel.continuous_variables(validationSet[i]);
-				iteratedModel.compute_response();
-				yTrue[j] = iteratedModel.current_response().function_value(0);
-			}
-		}
-		*/
-		#pragma endregion
-
-		int i,j,k;
+		int i,j;
  
 
 		// We have built the initial GP.  Now we need to go through, per response 
@@ -319,7 +182,7 @@ namespace Dakota
 		// We will need to add error handling:  we will only be calculating 
 		// results per response level, not probability level or reliability index.
    
-		int respFnCount, levelCount, iter;
+		int iter;
 		RealVectorArray new_Xs;
 
 		////***ATTENTION***
@@ -333,107 +196,89 @@ namespace Dakota
 		ss >> improvementFile;
 		std::ofstream fout(improvementFile.c_str());
 		fout << "Round\tTrue_Min\tTrue_Max\tTrue_Saddle\tModel_Min\tModel_Max"
-			<< "\tModel_Saddle\tBottleneck\tRMSPE" << std::endl;
+			 << "\tModel_Saddle\tBottleneck\tRMSPE" << std::endl;
 
 		initialize_distribution_mappings();
-		for (respFnCount=0; respFnCount<numFunctions; respFnCount++) 
-		{
-			size_t num_levels = requestedRespLevels[respFnCount].length();
-		
-			const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
 
-		
-			for (levelCount=0; levelCount<num_levels; levelCount++) 
+
+		for (int k = 0; k < numRounds; k++) 
+		{ 
+			pick_new_candidates();
+
+			score_new_candidates();
+					
+			new_Xs = drawNewX(k);
+			output_round_data(k);
+
+			////***ATTENTION***
+			//// The following two lines will write data to improvement.txt a file for
+			//// measuring how much improvement your surrogate is making as we progress,
+			//// I have disabled a bunch of the output which compares the topologies.
+			////***END ATTENTION***
+			fout << k << "\t";
+			compare_complices(dim, fout);
+
+			// add new_X to the build points and append approximation
+			VariablesArray points_to_add;
+			IntResponseMap responses_to_add;
+			for(int i = 0; i < new_Xs.size(); i++) 
 			{
-				Cout << "Starting calculations for response function " 
-					<< respFnCount+1 << '\n';
-				Cout << "Starting calculations for level  " << levelCount+1 << '\n';
-				Cout << "Threshold level is " 
-					<< requestedRespLevels[respFnCount][levelCount] << '\n';
-
-				Real z = requestedRespLevels[respFnCount][levelCount];
-				for (j = 0; j < numSamples; j++) 
-				{
-					if (gp_data.response_function(j)<z) 
-						indicator(j)=1;
-					else 
-						indicator(j)=0;
-				}
-       
-				// Here we are going to perform the adaptively sampling by adding points
-				// batchSize at a time
-
-				for (k = 0; k < numRounds; k++) 
-				{ 
-					explore_emulator();
-
-
-					// calculate the scores
-					emulEvalScores.resize(0);
-					if(scoringMetric == "alm")
-						calc_score_alm(respFnCount);
-					else if(scoringMetric == "distance")
-						calc_score_delta_x(respFnCount);
-					else if(scoringMetric == "gradient")
-						calc_score_delta_y(respFnCount);
-					else if(scoringMetric == "bottleneck")
-						calc_score_topo_bottleneck(respFnCount);
-					else if(scoringMetric == "avg_persistence")
-						calc_score_topo_avg_persistence(respFnCount);
-					else if(scoringMetric == "highest_persistence")
-						calc_score_topo_highest_persistence(respFnCount);
-					else if(scoringMetric == "alm_topo_hybrid")
-						calc_score_topo_alm_hybrid(respFnCount);
-
-					new_Xs = drawNewX(k);
-					output_round_data(k);
-
-					////***ATTENTION***
-					//// The following two lines will write data to improvement.txt a file for
-					//// measuring how much improvement your surrogate is making as we progress,
-					//// I have disabled a bunch of the output which compares the topologies.
-					////***END ATTENTION***
-					fout << k << "\t";
-					compare_complices(dim, fout);
-
-					// add new_X to the build points and append approximation
-					VariablesArray points_to_add;
-					IntResponseMap responses_to_add;
-					for(int i = 0; i < new_Xs.size(); i++) {
-						iteratedModel.continuous_variables(new_Xs[i]);
-						iteratedModel.compute_response();
-						responses_to_add.insert(IntResponsePair(iteratedModel.evaluation_id(),
-												iteratedModel.current_response()));
-						points_to_add.push_back(iteratedModel.current_variables());
-					}
-					gpModel.append_approximation(points_to_add,responses_to_add, true);
-			
-					#ifdef HAVE_MORSE_SMALE
-					update_amsc(respFnCount);
-					#endif
-					Cout << "Done with iteration  " << k << std::endl; 
-				}
-
-				RealVectorArray gp_final_data(numPtsTotal);
-				for (j = 0; j < numPtsTotal; j++) 
-				{
-					gp_final_data[j] = gp_data.continuous_variables(j);
-				}
-				Real fract_fail_mix = 0.0;
-				for (j = 0; j < numPtsTotal; j++) 
-					fract_fail_mix+=indicator(j);
-
-				fract_fail_mix/=numPtsTotal;
-
-				Cout << "Fraction Fail IS " << fract_fail_mix << '\n';    
-
-
-				// new format for output - Ebeida and Laura
-				computedProbLevels[respFnCount][levelCount]=fract_fail_mix; 
+				iteratedModel.continuous_variables(new_Xs[i]);
+				iteratedModel.compute_response();
+				responses_to_add.insert(IntResponsePair(iteratedModel.evaluation_id(),
+										iteratedModel.current_response()));
+				points_to_add.push_back(iteratedModel.current_variables());
 			}
 
-			// E
+			gpModel.append_approximation(points_to_add,responses_to_add, true);
+			
+			#ifdef HAVE_MORSE_SMALE
+			update_amsc(respFnCount);
+			#endif
+
+			Cout << "Done with iteration  " << k << std::endl; 
 		}
+
+		// Exploring the final Emulator:
+		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+		{
+			size_t num_levels = requestedRespLevels[ifunc].length();
+			for (int ilevel = 0; ilevel < num_levels; ilevel++) computedProbLevels[ifunc][ilevel] = 0.0;		
+		}
+	
+		// Exploring Final Emulator
+		gpFinalEval.run_iterator(Cout);
+		const IntResponseMap& all_resp = gpFinalEval.all_responses();
+		IntRespMCIter resp_it = all_resp.begin();
+
+		for (int icand = 0; icand < numFinalEmulEval; icand++) 
+		{
+			for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+			{
+				Real response_value = resp_it->second.function_value(ifunc);
+
+				size_t num_levels = requestedRespLevels[ifunc].length();
+				for (int ilevel = 0; ilevel < num_levels; ilevel++) 
+				{
+					Real z = requestedRespLevels[ifunc][ilevel];						
+					if (response_value < z) computedProbLevels[ifunc][ilevel]+=1.0;
+				}
+			}
+			++resp_it;
+		}
+
+		double sf = 1.0 / double(numFinalEmulEval);
+		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+		{
+			size_t num_levels = requestedRespLevels[ifunc].length();
+			for (int ilevel = 0; ilevel < num_levels; ilevel++) 
+			{
+				computedProbLevels[ifunc][ilevel] *= sf; 
+
+				Cout << "Fraction Fail IS " << computedProbLevels[ifunc][ilevel] << '\n';    
+			}
+		}
+
 		predictionErrors(numRounds) = compute_rmspe();
 		////***ATTENTION***
 		//// If you are performing the optimization pipeline this next line is 
@@ -444,9 +289,9 @@ namespace Dakota
 		#pragma endregion
 	}
 
-	void NonDAdaptiveSampling::explore_emulator()
+	void NonDAdaptiveSampling::pick_new_candidates()
 	{
-		#pragma region Explore Emulator:
+		#pragma region Pick New Candidates from Emulator:
 		RealVector temp_cvars;
 
 		// generate new set of emulator samples.  Note this will have a different seed  each time.
@@ -471,7 +316,6 @@ namespace Dakota
 			}
 		}
 
-		int num_in_failure(0);
 		IntRespMCIter resp_it = all_resp.begin();
 		for (int j = 0; j < numEmulEval; ++j) 
 		{
@@ -483,6 +327,47 @@ namespace Dakota
 		}
 		#pragma endregion
 	}
+
+	void NonDAdaptiveSampling::score_new_candidates()
+	{
+		#pragma region Score New Candidates:
+		// calculate the scores
+		emulEvalScores.resize(0);
+		if(scoringMetric == "alm")
+			calc_score_alm();
+		else if(scoringMetric == "distance")
+			calc_score_delta_x(0);
+		else if(scoringMetric == "gradient")
+			calc_score_delta_y(0);
+		else if(scoringMetric == "bottleneck")
+			calc_score_topo_bottleneck(0);
+		else if(scoringMetric == "avg_persistence")
+			calc_score_topo_avg_persistence(0);
+		else if(scoringMetric == "highest_persistence")
+			calc_score_topo_highest_persistence(0);
+		else if(scoringMetric == "alm_topo_hybrid")
+			calc_score_topo_alm_hybrid(0);
+		#pragma endregion
+	}
+
+	void NonDAdaptiveSampling::calc_score_alm() 
+	{
+		#pragma region Score Emultor sample points based on their approximation variance:
+		emulEvalScores.resize(numEmulEval);
+		for (int i = 0; i < numEmulEval; i++)
+		{
+			Real max_score;
+			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
+			{			
+				gpModel.continuous_variables(gpCvars[i]);
+				Real score = gpModel.approximation_variances(gpModel.current_variables())[respFnCount];
+				if (respFnCount==0 || score > max_score) max_score = score;
+			}
+			emulEvalScores(i) = max_score;
+		}
+		#pragma endregion
+	}
+
 
 ////***ATTENTION***
 //// This function should go away at some point. I use it every now and again
@@ -743,7 +628,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       //Rescore the candidates after refitting the gp each time
       emulEvalScores.resize(0);
       if(scoringMetric == "alm")
-        calc_score_alm(respFnCount);
+        calc_score_alm(); // ebeida
       else if(scoringMetric == "distance")
         calc_score_delta_x(respFnCount);
       else if(scoringMetric == "gradient")
@@ -934,18 +819,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
   return selected_data;
 }
 
-	void NonDAdaptiveSampling::calc_score_alm(int respFnCount) 
-	{
-		#pragma region Score Emultor sample points based on their approximation variance:
-		int i;
-		emulEvalScores.resize(numEmulEval);
-		for (i = 0; i < numEmulEval; i++)
-		{
-			gpModel.continuous_variables(gpCvars[i]);
-			emulEvalScores(i) = gpModel.approximation_variances(gpModel.current_variables())[respFnCount];
-		}
-		#pragma endregion
-	}
+	
 
 
 	void NonDAdaptiveSampling::calc_score_delta_y(int respFnCount) 
@@ -1775,7 +1649,7 @@ construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model,
 void NonDAdaptiveSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
-    s << "\nStatistics based on the importance sampling calculations:\n";
+    s << "\nStatistics based on the adaptive sampling calculations:\n";
     print_distribution_mappings(s);
   }
 }
