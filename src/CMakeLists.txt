@@ -714,6 +714,16 @@ file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 // -- WJB: CMake version needs to replace sed/awk for .build-info creation
 " )
 
+if(MSVC)
+  # Create "Native Windows dirent" source files in the binary tree so they
+  # will only be seen by Native Windows builds.
+
+  configure_file(${Dakota_SOURCE_DIR}/config/win_dirent.c.in
+                 ${Dakota_BINARY_DIR}/src/dirent.c COPYONLY)
+
+  configure_file(${Dakota_SOURCE_DIR}/config/win_dirent.h.in
+                 ${Dakota_BINARY_DIR}/src/dirent.h COPYONLY)
+endif()
 
 ## DAKOTA executables.
 add_executable(dakota main.C)
@@ -774,3 +784,4 @@ if (BUILD_IN_TRILINOS)
   export(TARGETS ${EXPORT_TARGETS} FILE
     "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
 endif()
+
