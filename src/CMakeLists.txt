@@ -463,12 +463,13 @@ if(HAVE_ADAPTIVE_SAMPLING)
   if(HAVE_MORSE_SMALE)
     add_definitions("-DHAVE_MORSE_SMALE")
     list(APPEND iterator_src MorseSmaleComplex.C)
+
     # ANN does approximate k-nearest neighbor search
     include_directories(
-      ${Dakota_BINARY_DIR}/packages/ann_ext-prefix/src/ann_ext/include)
-    list(APPEND link_directories 
-      ${Dakota_BINARY_DIR}/packages/ann_ext-prefix/src/ann_ext/lib)
-    list(APPEND EXTRA_TPL_LIBS ANN)
+      ${Dakota_SOURCE_DIR}/packages/ann/include)
+    list(APPEND TPL_LIBS ANN)
+    list(APPEND EXPORT_TARGETS ANN)
+
     # Dionysus provides persistence diagram and bottleneck distance
     # The MS_Complex class requires this unconditionally
     add_definitions("-DHAVE_DIONYSUS")

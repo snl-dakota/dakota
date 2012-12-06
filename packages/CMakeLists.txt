@@ -119,24 +119,8 @@ endif() #sh
 
 
 if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
-  # Compile ANN in-place with native make only system
-  # TODO: reimplement or convert to CMake...
-  # TODO: wider usage will require overriding C++ compiler
-  if (APPLE)
-    set(ann_make_cmd ${CMAKE_MAKE_PROGRAM} macosx-g++)
-  else()
-    set(ann_make_cmd ${CMAKE_MAKE_PROGRAM} linux-g++)
-  endif()
-  externalproject_add(ann_ext
-    # Can't get download to work properly with proxy
-    #URL http://www.cs.umd.edu/~mount/ANN/Files/1.1.2/ann_1.1.2.tar.gz
-    URL_MD5 ""
-    URL ${CMAKE_CURRENT_SOURCE_DIR}/ann_1.1.2.tar.gz
-    BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND "${ann_make_cmd}"
-    INSTALL_COMMAND ""
-    )
+  #svn co https://software.sandia.gov/svn/public/tpl/ann/trunk ann
+  add_subdirectory(ann/src)
 
   # Extract Dionysus, but no build required
   externalproject_add(dionysus_ext
