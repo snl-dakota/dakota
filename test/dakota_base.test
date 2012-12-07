@@ -32310,12 +32310,12 @@ stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
 displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
 dakota_uq_cantilever_ivp_exp.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 4459 total (4410 new, 49 duplicate)
-         weight: 637 val (588 n, 49 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 2646 val (2646 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 3430 total (3430 new, 0 duplicate)
+         weight: 539 val (539 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 1715 val (1715 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
-ccdf_beta_s:  Min = -1.0282373125e+01  Max = 1.9532427486e+01
+ccdf_beta_s:  Min = -1.0280259644e+01  Max = 1.9532427486e+01
 ccdf_beta_d:  Min = -9.6345245456e+00  Max = 1.4095788060e+03
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
@@ -32326,12 +32326,12 @@ mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
 ccdf_beta_s:  Min = -1.3732302901e+01  Max = 1.9808834781e+01
 ccdf_beta_d:  Min = -1.4545923525e+01  Max = 9.4539727705e+02
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 4459 total (4410 new, 49 duplicate)
-         weight: 637 val (588 n, 49 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 2646 val (2646 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 3430 total (3430 new, 0 duplicate)
+         weight: 539 val (539 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 1715 val (1715 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
-ccdf_beta_s:  Min = -1.0282373125e+01  Max = 1.9532427486e+01
+ccdf_beta_s:  Min = -1.0280259644e+01  Max = 1.9532427486e+01
 ccdf_beta_d:  Min = -9.6345266678e+00  Max = 1.4095791165e+03
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
@@ -41561,16 +41561,16 @@ Test Number 0 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   5.0000000000e-01   7.5000000000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 15400 total (14300 new, 1100 duplicate)
-  response_fn_1: 15400 val (14300 n, 1100 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 17200 total (15800 new, 1400 duplicate)
+  response_fn_1: 17200 val (15800 n, 1400 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 3800 total (3700 new, 100 duplicate)
-  response_fn_1: 3800 val (3700 n, 100 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 6100 total (5700 new, 400 duplicate)
+  response_fn_1: 6100 val (5700 n, 400 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
@@ -42078,11 +42078,11 @@ Test Number 0 succeeded
 mean:  Min = 3.4615198127e+02  Max = 1.1533050900e+03
 std_dev:  Min = 1.0052201478e+03  Max = 2.5527136417e+03
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 567 total (546 new, 21 duplicate)
-mean:  Min = 3.0200131522e+02  Max = 1.6010000000e+03
+<<<<< Function evaluation summary (ALEAT_I): 588 total (567 new, 21 duplicate)
+mean:  Min = 3.0164997170e+02  Max = 1.6010000000e+03
 std_dev:  Min = 7.7606185691e+02  Max = 3.1217946761e+03
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 49980 total (44457 new, 5523 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 45129 total (44457 new, 672 duplicate)
 mean:  Min = 3.0200260044e+02  Max = 1.6050000000e+03
 std_dev:  Min = 7.7895759933e+02  Max = 3.1243588142e+03
 dakota_uq_rosenbrock_pce.in
@@ -52204,30 +52204,30 @@ Test Number 0 succeeded
 mean_limit:  Min = -7.1726082293e+00  Max = 8.4492360254e+00
 std_dev_limit:  Min = 2.2123955936e-01  Max = 7.4099283986e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2695 total (2541 new, 154 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2541 total (2387 new, 154 duplicate)
 mean_limit:  Min = -1.1807930097e+01  Max = 1.0327710960e+01
 std_dev_limit:  Min = 2.0229642834e-01  Max = 1.1201081379e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 3230 total (3145 new, 85 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2805 total (2635 new, 170 duplicate)
 mean_limit:  Min = -1.1802556867e+01  Max = 1.0417384095e+01
 std_dev_limit:  Min = 2.0192896185e-01  Max = 1.1153851585e+01
 Test Number 3 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2926 total (2849 new, 77 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2310 total (2156 new, 154 duplicate)
 mean_limit:  Min = -1.1807930097e+01  Max = 1.0146186145e+01
 std_dev_limit:  Min = 2.0016844611e-01  Max = 1.1062806921e+01
 Test Number 4 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 3400 total (3315 new, 85 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2975 total (2890 new, 85 duplicate)
 mean_limit:  Min = -1.1802556867e+01  Max = 1.0479881985e+01
 std_dev_limit:  Min = 1.9957448390e-01  Max = 1.0988137837e+01
 Test Number 5 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 183260 total (181951 new, 1309 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 182182 total (181951 new, 231 duplicate)
 mean_limit:  Min = -1.1807930097e+01  Max = 9.1037752388e+00
 std_dev_limit:  Min = 2.1475320873e-01  Max = 1.1201081379e+01
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 620 total (589 new, 31 duplicate)
-           area: 403 val (372 n, 31 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 403 val (403 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
+           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
 cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
 Test Number 1 succeeded
@@ -52237,9 +52237,9 @@ Test Number 1 succeeded
 mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
 cdf_beta:  Min = -2.3690080817e+00  Max = 1.2735527997e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 620 total (589 new, 31 duplicate)
-           area: 403 val (372 n, 31 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 403 val (403 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
+           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
 cdf_beta:  Min = -2.1873457070e+00  Max = 1.1590048509e+01
 Test Number 3 succeeded
@@ -54699,7 +54699,7 @@ Test Number 0 succeeded
 response_fn_1:  Min = 4.4376104545e+01  Max = 1.2000223265e+04
 response_fn_2:  Min = -3.6713252985e+00  Max = 9.8183834392e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 60 total (58 new, 2 duplicate)
+<<<<< Function evaluation summary: 59 total (58 new, 1 duplicate)
 response_fn_1:  Min = 4.0425600000e+01  Max = 1.3950161600e+04
 response_fn_2:  Min = -4.0000000000e+00  Max = 9.9500000000e+01
 Test Number 2 succeeded
