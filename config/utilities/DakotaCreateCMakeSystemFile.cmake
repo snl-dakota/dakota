@@ -20,8 +20,6 @@ function (create_cmake_system_file _build_path )
     ${_build_path}/dakota_system.out )
 
   list( APPEND CTEST_NOTES_FILES 
-    ${_build_path}/CMakeCache.txt )
-  list( APPEND CTEST_NOTES_FILES 
     ${_build_path}/dakota_system.out )
   message( "CTEST_NOTES_FILES: ${CTEST_NOTES_FILES}" )
 
