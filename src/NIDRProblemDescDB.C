@@ -5298,6 +5298,7 @@ static Real
 	MP_(mutationScale),
 	MP_(proposalCovScale),
 	MP_(refinementRate),
+	MP_(regressionL2Penalty),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
@@ -5327,6 +5328,7 @@ static RealVector
 	MP_(linearIneqUpperBnds),
 	MP_(linearIneqScales),
 	MP_(listOfPoints),
+	MP_(regressionNoiseTol),
 	MP_(stepVector);
 
 static RealVectorArray
@@ -5363,6 +5365,7 @@ static StringArray
 static bool
 	MP_(approxPointFileAnnotated),
 	MP_(constantPenalty),
+	MP_(crossValidation),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
@@ -5431,6 +5434,8 @@ static Method_mp_type
 	MP2s(expansionType,STD_NORMAL_U),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
+	MP2p(lsRegressionType,EQ_CON_QR),                  // Pecos enumeration
+	MP2p(lsRegressionType,SVD),                        // Pecos enumeration
 	MP2s(methodOutput,DEBUG_OUTPUT),
 	MP2s(methodOutput,NORMAL_OUTPUT),
 	MP2s(methodOutput,QUIET_OUTPUT),
@@ -5445,6 +5450,12 @@ static Method_mp_type
 	MP2p(refinementControl,UNIFORM_CONTROL),                       // Pecos
 	MP2p(refinementType,P_REFINEMENT),                 // Pecos enumeration
         MP2p(refinementType,H_REFINEMENT),                 // Pecos enumeration
+	MP2p(regressionType,BP),                           // Pecos enumeration
+	MP2p(regressionType,BPDN),                         // Pecos enumeration
+	MP2p(regressionType,LARS),                         // Pecos enumeration
+	MP2p(regressionType,LASSO),                        // Pecos enumeration
+	MP2p(regressionType,LS),                           // Pecos enumeration
+	MP2p(regressionType,OMP),                          // Pecos enumeration
 	MP2s(responseLevelTarget,GEN_RELIABILITIES),
 	MP2s(responseLevelTarget,PROBABILITIES),
 	MP2s(responseLevelTarget,RELIABILITIES),

@@ -682,6 +682,18 @@ public:
   /// or computing the collocation ratio within regression PCE;
   /// based on the \c ratio_order specification in \ref MethodNonDPCE
   Real collocRatioTermsOrder;
+  /// type of regression: LS, OMP, BP, BPDN, LARS, or LASSO
+  short regressionType;
+  /// type of least squares regression: SVD or EQ_CON_QR
+  short lsRegressionType;
+  /// noise tolerance(s) for OMP, BPDN, LARS, and LASSO
+  RealVector regressionNoiseTol;
+  /// L2 regression penalty for a variant of LASSO known as the
+  /// elastic net method (default of 0 gives standard LASSO)
+  Real regressionL2Penalty;
+  /// flag indicating the use of cross-validation across expansion orders
+  /// (given a prescribed maximum order) and, for some methods, noise tolerances
+  bool crossValidation;
   /// allows PCE construction to reuse points from previous sample
   /// sets or data import using the \c reuse_points specification in
   /// \ref MethodNonDPCE
@@ -739,12 +751,14 @@ public:
   Real proposalCovScale;
   /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
   Real likelihoodScale;
-  /// the \c fitness metric type specification in \ref MethodNonDAdaptiveSampling
+  /// the \c fitness metric type specification in \ref
+  /// MethodNonDAdaptiveSampling
   String fitnessMetricType;
-  /// the \c batch selection type specification in \ref MethodNonDAdaptiveSampling
+  /// the \c batch selection type specification in \ref
+  /// MethodNonDAdaptiveSampling
   String batchSelectionType;
-  /// The size of the batch (e.g. number of supplemental points added) to be added
-  /// to be added to the build points for an emulator at each iteration
+  /// The size of the batch (e.g. number of supplemental points added) to be
+  /// added to be added to the build points for an emulator at each iteration
   int batchSize;
 
   // Parameter Study
@@ -768,6 +782,7 @@ public:
   Real refinementRate;
  
   // File read for GP surrogates
+
   /// whether the point reuse file is annotated (default true)
   bool approxPointFileAnnotated;
   /// the file name for the points file in methods such as GP based surrogates

@@ -113,12 +113,16 @@ DataMethodRep::DataMethodRep():
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
   expansionTerms(0), expansionSamples(-1), cubIntOrder(USHRT_MAX),
   collocationPoints(-1), collocationRatio(0.), collocRatioTermsOrder(1.),
-  probCollocFlag(false), //expansionSampleType("lhs"), sampleType("lhs"),
+  regressionType(Pecos::DEFAULT_SOLVER),
+  lsRegressionType(Pecos::DEFAULT_LS_SOLVER), regressionL2Penalty(0.),
+  crossValidation(false), probCollocFlag(false),
+  //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), proposalCovScale(1.0), likelihoodScale(1.0),
-  fitnessMetricType("predicted_variance"),batchSelectionType("naive"),batchSize(0),
+  fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
+  batchSize(0),
   // Parameter Study
   numSteps(0),
   // Verification
@@ -212,14 +216,16 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << piecewiseBasis << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << pointReuse
-    << probCollocFlag << expansionImportFile << sampleType
-    << reliabilitySearchType << reliabilityIntegration << integrationRefine
-    << nondOptAlgorithm << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << emulatorSamples
-    << emulatorType << rejectionType << metropolisType << proposalCovScale
-    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize;
+    << collocationRatio << collocRatioTermsOrder << regressionType
+    << lsRegressionType << regressionNoiseTol << regressionL2Penalty
+    << crossValidation << pointReuse << probCollocFlag << expansionImportFile
+    << sampleType << reliabilitySearchType << reliabilityIntegration
+    << integrationRefine << nondOptAlgorithm << distributionType
+    << responseLevelTarget << responseLevelTargetReduce << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << proposalCovScale << likelihoodScale << fitnessMetricType
+    << batchSelectionType << batchSize;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -316,14 +322,16 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> piecewiseBasis >> sparseGridBasisType >> expansionTerms >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder >> collocationPoints
-    >> collocationRatio >> collocRatioTermsOrder >> pointReuse
-    >> probCollocFlag >> expansionImportFile >> sampleType
-    >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
-    >> nondOptAlgorithm >> distributionType >> responseLevelTarget
-    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
-    >> reliabilityLevels >> genReliabilityLevels >> emulatorSamples
-    >> emulatorType >> rejectionType >> metropolisType >> proposalCovScale
-    >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize;
+    >> collocationRatio >> collocRatioTermsOrder >> regressionType
+    >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
+    >> crossValidation >> pointReuse >> probCollocFlag >> expansionImportFile
+    >> sampleType >> reliabilitySearchType >> reliabilityIntegration
+    >> integrationRefine >> nondOptAlgorithm >> distributionType
+    >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
+    >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
+    >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType
+    >> proposalCovScale >> likelihoodScale >> fitnessMetricType
+    >> batchSelectionType >> batchSize;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -420,14 +428,16 @@ void DataMethodRep::write(std::ostream& s) const
     << piecewiseBasis << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << pointReuse
-    << probCollocFlag << expansionImportFile << sampleType
-    << reliabilitySearchType << reliabilityIntegration << integrationRefine
-    << nondOptAlgorithm << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << emulatorSamples
-    << emulatorType << rejectionType << metropolisType << proposalCovScale
-    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize;
+    << collocationRatio << collocRatioTermsOrder << regressionType
+    << lsRegressionType << regressionNoiseTol << regressionL2Penalty
+    << crossValidation << pointReuse << probCollocFlag << expansionImportFile
+    << sampleType << reliabilitySearchType << reliabilityIntegration
+    << integrationRefine << nondOptAlgorithm << distributionType
+    << responseLevelTarget << responseLevelTargetReduce << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << proposalCovScale << likelihoodScale << fitnessMetricType
+    << batchSelectionType << batchSize;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
