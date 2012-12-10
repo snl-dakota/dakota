@@ -434,17 +434,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    | ( ( ( collocation_points INTEGER >= 0 {N_mdm(nnint,collocationPoints)}
 		            | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
 			  [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-			  [ ( least_squares {N_mdm(type,regressionType_LS)}
-			      [ svd {N_mdm(type,lsRegressionType_SVD)}
-			        | equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_QR)} ] )
-			    | ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_OMP)}
+			  [ ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
+			      [ svd {N_mdm(type,lsRegressionType_SVD_LS)}
+			        | equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)} ] )
+			    | ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
 			        [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ] )
-			    | basis_pursuit ALIAS bp {N_mdm(type,regressionType_BP)}
-			    | ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BPDN)}
+			    | basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
+			    | ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
 			        [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ] )
-			    | ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LARS)}
+			    | ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
 			        [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ] )
-			    | ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO)}
+			    | ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
 			        [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
 			        [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ] )
 			    ]

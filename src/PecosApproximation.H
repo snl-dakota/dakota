@@ -120,12 +120,21 @@ public:
   /// get Pecos::OrthogPolyApproximation::polynomialBasis
   const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
 
+  /// invoke Pecos::OrthogPolyApproximation::cross_validation()
+  void cross_validation(bool flag);
   /// invoke Pecos::OrthogPolyApproximation::coefficients_norms_flag()
   void coefficients_norms_flag(bool flag);
+
   /// invoke Pecos::OrthogPolyApproximation::expansion_terms()
   void expansion_terms(size_t terms);
   /// return Pecos::OrthogPolyApproximation::expansion_terms()
   size_t expansion_terms() const;
+
+  /// set the noise tolerance(s) for compressed sensing algorithms
+  void noise_tolerance(const RealVector& noise_tol);
+  /// set the L2 penalty parameter for LASSO (elastic net variant)
+  void l2_penalty(Real l2_pen);
+
   /// invoke Pecos::PolynomialApproximation::allocate_arrays()
   void allocate_arrays();
 
@@ -386,6 +395,10 @@ polynomial_basis() const
 { return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->polynomial_basis(); }
 
 
+inline void PecosApproximation::cross_validation(bool flag)
+{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->cross_validation(flag); }
+
+
 inline void PecosApproximation::coefficients_norms_flag(bool flag)
 {
   ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
@@ -399,6 +412,16 @@ inline void PecosApproximation::expansion_terms(size_t terms)
 
 inline size_t PecosApproximation::expansion_terms() const
 { return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_terms(); }
+
+
+inline void PecosApproximation::noise_tolerance(const RealVector& noise_tol)
+{
+  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->noise_tolerance(noise_tol);
+}
+
+
+inline void PecosApproximation::l2_penalty(Real l2_pen)
+{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->l2_penalty(l2_pen); }
 
 
 inline void PecosApproximation::allocate_arrays()

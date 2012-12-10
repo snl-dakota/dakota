@@ -34,7 +34,10 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     probDescDB.get_string("method.nond.expansion_import_file")),
   expansionTerms(probDescDB.get_int("method.nond.expansion_terms")),
   collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
+  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
+  crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
+  noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
+  l2Penalty(probDescDB.get_real("method.nond.regression_penalty"))
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -97,7 +100,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       expansionCoeffsApproach = Pecos::CUBATURE;
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
     }
-    else { // expansion_samples or collocation_points
+    else { // expansion_samples or collocation_{points,ratio}
       // default pattern is static for consistency in any outer loop,
       // but gets overridden below for unstructured grid refinement.
       bool vary_pattern = false;
@@ -128,11 +131,24 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
 	  // adaptive precluded since grid anisotropy not readily supported
 	  // for synchronization with expansion anisotropy.
-	  Cerr << "Error: only uniform refinement is supported for LHS "
+	  Cerr << "Error: only uniform refinement is supported for PCE "
 	       << "regression." << std::endl;
 	  abort_handler(-1);
 	}
-	expansionCoeffsApproach = Pecos::REGRESSION;
+
+	expansionCoeffsApproach
+	  = probDescDB.get_short("method.nond.regression_type");
+	if (expansionCoeffsApproach == Pecos::DEFAULT_LEAST_SQ_REGRESSION) {
+	  switch(probDescDB.get_short(
+		 "method.nond.least_squares_regression_type")) {
+	  case SVD_LS:
+	    expansionCoeffsApproach = Pecos::SVD_LEAST_SQ_REGRESSION;    break;
+	  case EQ_CON_LS:
+	    expansionCoeffsApproach = Pecos::EQ_CON_LEAST_SQ_REGRESSION; break;
+	  // else leave as DEFAULT_LEAST_SQ_REGRESSION
+	  }
+	}
+
 	size_t exp_terms = (exp_order.empty()) ? expansionTerms : 
 	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
 	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
@@ -147,6 +163,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	else if (collocRatio > 0.)
 	  numSamplesOnModel
 	    = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+
 	if (tensorRegression) {// "probabilistic collocation": subset of TPQ pts
 	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
 	  // in turn invokes daceIterator.run_iterator(), we need to avoid
@@ -225,7 +242,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int_level, short u_space_type,
 		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs)
+		piecewise_basis, use_derivs), 
+  crossValidation(false), l2Penalty(0.)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -324,7 +342,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // ctor.  Any additional specification data needed by OrthogPolyApproximation
   // must be passed through by diving through the hierarchy.
   bool num_int = (expansionCoeffsApproach == Pecos::QUADRATURE ||
-		  expansionCoeffsApproach == Pecos::CUBATURE ||
+		  expansionCoeffsApproach == Pecos::CUBATURE   ||
 		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const Pecos::ShortArray& u_types = natafTransform.u_types();
@@ -362,6 +380,16 @@ void NonDPolynomialChaos::initialize_u_space_model()
       // transfer an expansionTerms spec to the OrthogPolyApproximation
       if (expansionTerms)
 	poly_approx_rep->expansion_terms(expansionTerms);
+      // transfer regression data: cross validation, noise tol, and L2 penalty
+      // Note: regression solver type is transferred via expansionCoeffsApproach
+      //       in NonDExpansion::initialize_u_space_model()
+      if (expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
+	poly_approx_rep->cross_validation(crossValidation);
+	if (!noiseTols.empty())
+	  poly_approx_rep->noise_tolerance(noiseTols);
+	if (expansionCoeffsApproach == Pecos::LASSO_REGRESSION)
+	  poly_approx_rep->l2_penalty(l2Penalty);
+      }
     }
   }
 

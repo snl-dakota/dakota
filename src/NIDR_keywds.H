@@ -811,8 +811,8 @@ static KeyWord
 		{"noise_tolerance",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,regressionNoiseTol)}
 		},
 	kw_148[2] = {
-		{"equality_constrained",8,0,1,0,0,0.,0.,0,N_mdm(type,lsRegressionType_EQ_CON_QR)},
-		{"svd",8,0,1,0,0,0.,0.,0,N_mdm(type,lsRegressionType_SVD)}
+		{"equality_constrained",8,0,1,0,0,0.,0.,0,N_mdm(type,lsRegressionType_EQ_CON_LS)},
+		{"svd",8,0,1,0,0,0.,0.,0,N_mdm(type,lsRegressionType_SVD_LS)}
 		},
 	kw_149[1] = {
 		{"noise_tolerance",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,regressionNoiseTol)}
@@ -820,18 +820,18 @@ static KeyWord
 	kw_150[19] = {
 		{0,0,2,0,0,kw_142},
 		{0,0,1,0,0,kw_144},
-		{"basis_pursuit",8,0,2,0,0,0.,0.,0,N_mdm(type,regressionType_BP)},
-		{"basis_pursuit_denoising",8,1,2,0,kw_145,0.,0.,0,N_mdm(type,regressionType_BPDN)},
-		{"bp",0,0,2,0,0,0.,0.,-2,N_mdm(type,regressionType_BP)},
-		{"bpdn",0,1,2,0,kw_145,0.,0.,-2,N_mdm(type,regressionType_BPDN)},
+		{"basis_pursuit",8,0,2,0,0,0.,0.,0,N_mdm(type,regressionType_BASIS_PURSUIT)},
+		{"basis_pursuit_denoising",8,1,2,0,kw_145,0.,0.,0,N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)},
+		{"bp",0,0,2,0,0,0.,0.,-2,N_mdm(type,regressionType_BASIS_PURSUIT)},
+		{"bpdn",0,1,2,0,kw_145,0.,0.,-2,N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)},
 		{"cross_validation",8,0,3,0,0,0.,0.,0,N_mdm(true,crossValidation)},
-		{"lars",0,1,2,0,kw_146,0.,0.,3,N_mdm(type,regressionType_LARS)},
-		{"lasso",0,2,2,0,kw_147,0.,0.,1,N_mdm(type,regressionType_LASSO)},
-		{"least_absolute_shrinkage",8,2,2,0,kw_147,0.,0.,0,N_mdm(type,regressionType_LASSO)},
-		{"least_angle_regression",8,1,2,0,kw_146,0.,0.,0,N_mdm(type,regressionType_LARS)},
-		{"least_squares",8,2,2,0,kw_148,0.,0.,0,N_mdm(type,regressionType_LS)},
-		{"omp",0,1,2,0,kw_149,0.,0.,1,N_mdm(type,regressionType_OMP)},
-		{"orthogonal_matching_pursuit",8,1,2,0,kw_149,0.,0.,0,N_mdm(type,regressionType_OMP)},
+		{"lars",0,1,2,0,kw_146,0.,0.,3,N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)},
+		{"lasso",0,2,2,0,kw_147,0.,0.,1,N_mdm(type,regressionType_LASSO_REGRESSION)},
+		{"least_absolute_shrinkage",8,2,2,0,kw_147,0.,0.,0,N_mdm(type,regressionType_LASSO_REGRESSION)},
+		{"least_angle_regression",8,1,2,0,kw_146,0.,0.,0,N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)},
+		{"least_squares",8,2,2,0,kw_148,0.,0.,0,N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)},
+		{"omp",0,1,2,0,kw_149,0.,0.,1,N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)},
+		{"orthogonal_matching_pursuit",8,1,2,0,kw_149,0.,0.,0,N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)},
 		{"ratio_order",10,0,1,0,0,0.,0.,0,N_mdm(Realp,collocRatioTermsOrder)},
 		{"reuse_points",8,0,6,0,0,0.,0.,0,N_mdm(lit,pointReuse_all)},
 		{"reuse_samples",0,0,6,0,0,0.,0.,-1,N_mdm(lit,pointReuse_all)},

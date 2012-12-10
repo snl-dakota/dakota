@@ -5434,8 +5434,8 @@ static Method_mp_type
 	MP2s(expansionType,STD_NORMAL_U),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
-	MP2p(lsRegressionType,EQ_CON_QR),                  // Pecos enumeration
-	MP2p(lsRegressionType,SVD),                        // Pecos enumeration
+	MP2s(lsRegressionType,EQ_CON_LS),
+	MP2s(lsRegressionType,SVD_LS),
 	MP2s(methodOutput,DEBUG_OUTPUT),
 	MP2s(methodOutput,NORMAL_OUTPUT),
 	MP2s(methodOutput,QUIET_OUTPUT),
@@ -5450,12 +5450,12 @@ static Method_mp_type
 	MP2p(refinementControl,UNIFORM_CONTROL),                       // Pecos
 	MP2p(refinementType,P_REFINEMENT),                 // Pecos enumeration
         MP2p(refinementType,H_REFINEMENT),                 // Pecos enumeration
-	MP2p(regressionType,BP),                           // Pecos enumeration
-	MP2p(regressionType,BPDN),                         // Pecos enumeration
-	MP2p(regressionType,LARS),                         // Pecos enumeration
-	MP2p(regressionType,LASSO),                        // Pecos enumeration
-	MP2p(regressionType,LS),                           // Pecos enumeration
-	MP2p(regressionType,OMP),                          // Pecos enumeration
+	MP2p(regressionType,BASIS_PURSUIT),                // Pecos enumeration
+	MP2p(regressionType,BASIS_PURSUIT_DENOISING),      // Pecos enumeration
+	MP2p(regressionType,DEFAULT_LEAST_SQ_REGRESSION),  // Pecos enumeration
+	MP2p(regressionType,LASSO_REGRESSION),             // Pecos enumeration
+	MP2p(regressionType,LEAST_ANGLE_REGRESSION),       // Pecos enumeration
+	MP2p(regressionType,ORTHOG_MATCH_PURSUIT),         // Pecos enumeration
 	MP2s(responseLevelTarget,GEN_RELIABILITIES),
 	MP2s(responseLevelTarget,PROBABILITIES),
 	MP2s(responseLevelTarget,RELIABILITIES),

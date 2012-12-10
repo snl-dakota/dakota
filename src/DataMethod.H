@@ -52,8 +52,10 @@ enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 enum { CUMULATIVE, COMPLEMENTARY };
 
 // -------------
-// NonDExpansion (enums delegated to Pecos in pecos_global_defs.hpp)
+// NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
 // -------------
+// define special values for lsRegressionType
+enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
 
 // --------------------
 // NonDBayesCalibration

@@ -89,6 +89,14 @@ private:
   Real termsOrder;
   /// option for regression PCE using a filtered set tensor-product points
   bool tensorRegression;
+  /// flag for use of cross-validation for selection of parameter settings
+  /// in regression approaches
+  bool crossValidation;
+  /// noise tolerance for compressive sensing algorithms; vector form used
+  /// in cross-validation
+  RealVector noiseTols;
+  /// L2 penalty for LASSO algorithm (elastic net variant)
+  Real l2Penalty;
 
   /// derivative of the PCE with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)

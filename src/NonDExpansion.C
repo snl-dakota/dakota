@@ -779,7 +779,12 @@ void NonDExpansion::refine_expansion()
 	update_expansion();
 	break;
       }
-      case Pecos::REGRESSION:
+      case Pecos::DEFAULT_REGRESSION: case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
+      case Pecos::SVD_LEAST_SQ_REGRESSION:
+      case Pecos::EQ_CON_LEAST_SQ_REGRESSION:
+      case Pecos::BASIS_PURSUIT:        case Pecos::BASIS_PURSUIT_DENOISING:
+      case Pecos::ORTHOG_MATCH_PURSUIT: case Pecos::LASSO_REGRESSION:
+      case Pecos::LEAST_ANGLE_REGRESSION:
 	// ramp expansion order and update regression samples, keeping
 	// initial collocation ratio (either user specified or inferred)
 	increment_order(); // virtual fn defined for NonDPCE
