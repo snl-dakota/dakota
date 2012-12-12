@@ -42,7 +42,7 @@ public:
 
   // alternate constructor for instantiations "on the fly"
   NonDSparseGrid(Model& model, short exp_coeffs_approach,
-		 const UShortArray& ssg_level, const RealVector& dim_pref,
+		 const UShortArray& ssg_level_seq, const RealVector& dim_pref,
 		 //short sparse_grid_usage,
 		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
 		 //short refine_type  = Pecos::NO_REFINEMENT,
@@ -59,7 +59,7 @@ public:
   /// update ssgDriver::ssgAnisoLevelWts and increment ssgDriver::ssgLevel
   /// based on specified anisotropic weighting
   void increment_grid_weights(const RealVector& aniso_wts);
-  /// advance to next nevel in ssgLevelSpec sequence
+  /// advance to next nevel in ssgLevelSeqSpec sequence
   void increment_refinement_sequence();
 
   /// returns SparseGridDriver::active_multi_index()
@@ -129,7 +129,7 @@ private:
 
   /// the user specification for the Smolyak sparse grid level, defining a
   /// sequence of refinement levels.
-  UShortArray ssgLevelSpec;
+  UShortArray ssgLevelSeqSpec;
 
   /// reference point (e.g., lower bound) for the Smolyak sparse grid level
   /// maintained within ssgDriver
@@ -140,14 +140,14 @@ private:
 inline void NonDSparseGrid::reset()
 {
   // restore user specification state prior to any uniform/adaptive refinement
-  ssgLevelRef = ssgLevelSpec[sequenceIndex]; ssgDriver->level(ssgLevelRef);
+  ssgLevelRef = ssgLevelSeqSpec[sequenceIndex]; ssgDriver->level(ssgLevelRef);
   ssgDriver->dimension_preference(dimPrefSpec);
 }
 
 
 inline void NonDSparseGrid::increment_refinement_sequence()
 {
-  if (sequenceIndex+1 < ssgLevelSpec.size())
+  if (sequenceIndex+1 < ssgLevelSeqSpec.size())
     ++sequenceIndex;
   reset();
 }

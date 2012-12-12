@@ -2047,7 +2047,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.collocation_points", P collocationPoints},
 	{"nond.emulator_samples", P emulatorSamples},
 	{"nond.expansion_samples", P expansionSamples},
-	{"nond.expansion_terms", P expansionTerms},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},

@@ -111,8 +111,8 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
-  expansionTerms(0), expansionSamples(-1), cubIntOrder(USHRT_MAX),
-  collocationPoints(-1), collocationRatio(0.), collocRatioTermsOrder(1.),
+  expansionSamples(-1), cubIntOrder(USHRT_MAX), collocationPoints(-1),
+  collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
   regressionL2Penalty(0.), crossValidation(false), probCollocFlag(false),
   //expansionSampleType("lhs"), sampleType("lhs"),
@@ -212,7 +212,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // NonD
   s << vbdControl << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << sparseGridBasisType << expansionTerms << expansionOrder
+    << piecewiseBasis << sparseGridBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
@@ -318,7 +318,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // NonD
   s >> vbdControl >> covarianceControl >> rngName >> refinementType
     >> refinementControl >> nestingOverride >> growthOverride >> expansionType
-    >> piecewiseBasis >> sparseGridBasisType >> expansionTerms >> expansionOrder
+    >> piecewiseBasis >> sparseGridBasisType >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> regressionType
@@ -424,7 +424,7 @@ void DataMethodRep::write(std::ostream& s) const
   // NonD
   s << vbdControl << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << sparseGridBasisType << expansionTerms << expansionOrder
+    << piecewiseBasis << sparseGridBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType

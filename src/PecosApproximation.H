@@ -125,8 +125,6 @@ public:
   /// invoke Pecos::OrthogPolyApproximation::coefficients_norms_flag()
   void coefficients_norms_flag(bool flag);
 
-  /// invoke Pecos::OrthogPolyApproximation::expansion_terms()
-  void expansion_terms(size_t terms);
   /// return Pecos::OrthogPolyApproximation::expansion_terms()
   size_t expansion_terms() const;
 
@@ -404,10 +402,6 @@ inline void PecosApproximation::coefficients_norms_flag(bool flag)
   ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
     coefficients_norms_flag(flag);
 }
-
-
-inline void PecosApproximation::expansion_terms(size_t terms)
-{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_terms(terms); }
 
 
 inline size_t PecosApproximation::expansion_terms() const

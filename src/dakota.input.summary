@@ -647,7 +647,6 @@ KEYWORD12 method
 	      | freeform ]
 	      ]
 	    expansion_order INTEGERLIST
-	    | expansion_terms INTEGER >= 0
 	    )
 	  |
 	  ( expansion_samples INTEGER >= 0
@@ -658,12 +657,10 @@ KEYWORD12 method
 	      | freeform ]
 	      ]
 	    expansion_order INTEGERLIST
-	    | expansion_terms INTEGER >= 0
 	    )
 	  |
 	  ( expansion_import_file STRING
 	    expansion_order INTEGERLIST
-	    | expansion_terms INTEGER >= 0
 	    )
 	  [ variance_based_decomp
 	    [ univariate_effects ]

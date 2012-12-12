@@ -219,7 +219,8 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     const UShortArray& quad_order, const RealVector& dim_pref)
+		     const UShortArray& quad_order_seq,
+		     const RealVector& dim_pref)
 {
   // sanity checks: no GSG for TPQ
   if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
@@ -237,7 +238,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 		  ( refineType && ruleNestingOverride != Pecos::NON_NESTED ) );
 
   u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, quad_order, dim_pref), false);
+    NonDQuadrature(g_u_model, quad_order_seq, dim_pref), false);
 }
 
 
@@ -270,7 +271,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 		     int random_samples, int seed,
-		     const UShortArray& quad_order, const RealVector& dim_pref)
+		     const UShortArray& quad_order_seq,
+		     const RealVector& dim_pref)
 {
   // sanity checks: only uniform refinement supported for probabilistic
   // collocation (regression using filtered tensor grids)
@@ -290,13 +292,14 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   */
 
   u_space_sampler.assign_rep(new NonDQuadrature(
-    g_u_model, random_samples, seed, quad_order, dim_pref), false);
+    g_u_model, random_samples, seed, quad_order_seq, dim_pref), false);
 }
 
 
 void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-		      const UShortArray& ssg_level, const RealVector& dim_pref)
+		      const UShortArray& ssg_level_seq,
+		      const RealVector& dim_pref)
 {
   // enforce minimum required VBD control
   if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
@@ -331,7 +334,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
 
   u_space_sampler.assign_rep(new
-    NonDSparseGrid(g_u_model, expansionCoeffsApproach, ssg_level, dim_pref,
+    NonDSparseGrid(g_u_model, expansionCoeffsApproach, ssg_level_seq, dim_pref,
 		   growth_rate, refineControl, track_wts, track_colloc), false);
 }
 

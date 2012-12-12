@@ -21,6 +21,9 @@
 
 namespace Dakota {
 
+// define special values for quadMode
+enum { FULL_TENSOR, FILTERED_TENSOR, RANDOM_TENSOR };
+
 
 /// Derived nondeterministic class that generates N-dimensional
 /// numerical quadrature points for evaluation of expectation
@@ -47,7 +50,7 @@ public:
 
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
-  NonDQuadrature(Model& model, const UShortArray& quad_order,
+  NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
 		 const RealVector& dim_pref);
   /// alternate constructor for instantiations "on the fly" that
   /// generate a filtered tensor product sample set
@@ -56,24 +59,29 @@ public:
   /// alternate constructor for instantiations "on the fly" that
   /// sample randomly from a tensor product multi-index
   NonDQuadrature(Model& model, int num_rand_samples, int seed,
-		 const UShortArray& quad_order, const RealVector& dim_pref);
+		 const UShortArray& quad_order_seq, const RealVector& dim_pref);
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void increment_grid();
 
   //
   //- Heading: Member functions
   //
 
+  /// propagate any numSamples updates and/or grid increments
+  void update();
+
   /// return Pecos::TensorProductDriver::quadOrder
   const Pecos::UShortArray& quadrature_order() const;
 
-  /// set numFilteredSamples
-  void filtered_samples(size_t samples);
+  /// set numSamples
+  void samples(size_t samples);
 
-  /// calculate smallest dimQuadOrderRef with at least numFilteredSamples
-  void compute_minimum_quadrature_order();
-  /// calculate smallest dim_quad_order with at least min_samples
-  void compute_minimum_quadrature_order(size_t min_samples,
-					const RealVector& dim_pref,
-					UShortArray& dim_quad_order);
+  /// return quadMode
+  short mode() const;
 
 protected:
 
@@ -95,7 +103,6 @@ protected:
   void reset();
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
 
-  void increment_grid();
   void increment_grid_preference(const RealVector& dim_pref);
   void increment_refinement_sequence();
 
@@ -113,7 +120,12 @@ private:
   void increment_grid_preference(const RealVector& dim_pref,
 				 UShortArray& dim_quad_order);
 
-  /// prune allSamples back to size numFilteredSamples, retaining points
+  /// calculate smallest dim_quad_order with at least min_samples
+  void compute_minimum_quadrature_order(size_t min_samples,
+					const RealVector& dim_pref,
+					UShortArray& dim_quad_order);
+
+  /// prune allSamples back to size numSamples, retaining points
   /// with highest product weight
   void filter_parameter_sets();
 
@@ -155,21 +167,20 @@ private:
   bool nestedRules;
 
   /// a sequence of scalar quadrature orders, one per refinement level
-  UShortArray quadOrderSpec;
+  UShortArray quadOrderSeqSpec;
   /// reference point for Pecos::TensorProductDriver::quadOrder: the original
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
   UShortArray dimQuadOrderRef;
 
-  /// size of a random set of tensor quadrature points; used by the
+  /// point generation mode: FULL_TENSOR, FILTERED_TENSOR, RANDOM_TENSOR
+  short quadMode;
+  /// size of a subset of tensor quadrature points (filtered based on product
+  /// weight or sampled uniformly from the tensor multi-index); used by the
   /// regression PCE approach known as "probabilistic collocation"
-  size_t numFilteredSamples;
-  /// number of random samples drawn from a population of tensor quadrature
-  /// points of order quadOrder (the tensor multi-index is sampled uniformly);
-  /// used by probabilistic collocation.
-  size_t numRandomSamples;
-  /// seed for the random number generator used in sampling of the
-  /// tensor multi-index
+  size_t numSamples;
+  /// seed for the random number generator used in sampling of the tensor
+  /// multi-index
   int randomSeed;
 };
 
@@ -178,21 +189,42 @@ inline const Pecos::UShortArray& NonDQuadrature::quadrature_order() const
 { return tpqDriver->quadrature_order(); }
 
 
-inline void NonDQuadrature::filtered_samples(size_t samples)
-{ numFilteredSamples = samples; }
-
-
-inline void NonDQuadrature::compute_minimum_quadrature_order()
+inline void NonDQuadrature::samples(size_t samples)
 {
-  compute_minimum_quadrature_order(numFilteredSamples, dimPrefSpec,
-				   dimQuadOrderRef);
+  switch (quadMode) {
+  case FULL_TENSOR: {
+    Cerr << "Error: setting samples not supported in FULL_TENSOR mode."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  case FILTERED_TENSOR: case RANDOM_TENSOR:
+    numSamples = samples; break;
+  }
 }
 
 
 inline void NonDQuadrature::reset()
 {
-  initialize_dimension_quadrature_order(quadOrderSpec[sequenceIndex],
+  initialize_dimension_quadrature_order(quadOrderSeqSpec[sequenceIndex],
 					dimPrefSpec, dimQuadOrderRef);
+}
+
+
+inline void NonDQuadrature::update()
+{
+  switch (quadMode) {
+  case FILTERED_TENSOR:
+    // update settings and propagate to tpqDriver
+    compute_minimum_quadrature_order(numSamples, dimPrefSpec, dimQuadOrderRef);
+    break;
+  case RANDOM_TENSOR:
+    // propagate updated settings to tpqDriver
+    reset();
+    // revise settings if needed to enforce min order
+    // (in this context, this just reduces resampling)
+    sampling_reset(numSamples, false, false);
+    break;
+  }
 }
 
 
@@ -207,14 +239,23 @@ increment_grid_preference(const RealVector& dim_pref)
 
 inline void NonDQuadrature::increment_refinement_sequence()
 {
-  if (sequenceIndex+1 < quadOrderSpec.size())
+  if (sequenceIndex+1 < quadOrderSeqSpec.size())
     ++sequenceIndex;
   reset();
 }
 
 
 inline int NonDQuadrature::num_samples() const
-{ return (numFilteredSamples) ? numFilteredSamples : tpqDriver->grid_size(); }
+{
+  switch (quadMode) {
+  case FULL_TENSOR:             return tpqDriver->grid_size(); break;
+  case FILTERED_TENSOR: case RANDOM_TENSOR: return numSamples; break;
+  }
+}
+
+
+inline short NonDQuadrature::mode() const
+{ return quadMode; }
 
 } // namespace Dakota
 

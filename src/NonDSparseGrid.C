@@ -32,8 +32,8 @@ namespace Dakota {
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
-  ssgLevelSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
-  ssgLevelRef(ssgLevelSpec[sequenceIndex])
+  ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
+  ssgLevelRef(ssgLevelSeqSpec[sequenceIndex])
 {
   // initialize the numerical integration driver
   short exp_coeffs_approach =
@@ -94,12 +94,12 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
     evaluation of sparse grids within PCE and SC. */
 NonDSparseGrid::
 NonDSparseGrid(Model& model, short exp_coeffs_approach,
-	       const UShortArray& ssg_level,
+	       const UShortArray& ssg_level_seq,
 	       const RealVector& dim_pref, short growth_rate,
 	       short refine_control, bool track_uniq_prod_wts,
 	       bool track_colloc_indices): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
-  ssgLevelSpec(ssg_level), ssgLevelRef(ssgLevelSpec[sequenceIndex])
+  ssgLevelSeqSpec(ssg_level_seq), ssgLevelRef(ssgLevelSeqSpec[sequenceIndex])
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(exp_coeffs_approach);
@@ -158,7 +158,7 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
 void NonDSparseGrid::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // ssgLevelRef (potentially incremented from ssgLevelSpec[numIntSeqIndex]
+  // ssgLevelRef (potentially incremented from ssgLevelSeqSpec[numIntSeqIndex]
   // due to uniform/adaptive refinements) provides the current lower bound
   // reference point.  Pecos::SparseGridDriver::ssgLevel may be increased
   // ***or decreased*** to provide at least min_samples subject to this lower

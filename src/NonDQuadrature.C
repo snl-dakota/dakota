@@ -33,7 +33,8 @@ namespace Dakota {
 NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
   nestedRules(
     probDescDB.get_short("method.nond.nesting_override") == Pecos::NESTED),
-  quadOrderSpec(probDescDB.get_usa("method.nond.quadrature_order"))
+  quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
+  numSamples(0), quadMode(FULL_TENSOR)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -61,10 +62,10 @@ NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, const UShortArray& quad_order,
+NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
 	       const RealVector& dim_pref):
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
-  quadOrderSpec(quad_order), numFilteredSamples(0), numRandomSamples(0)
+  quadOrderSeqSpec(quad_order_seq), numSamples(0), quadMode(FULL_TENSOR)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -82,7 +83,7 @@ NonDQuadrature(Model& model, const UShortArray& quad_order,
 NonDQuadrature::
 NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
-  numFilteredSamples(num_filt_samples), numRandomSamples(0)
+  quadMode(FILTERED_TENSOR), numSamples(num_filt_samples)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -99,10 +100,10 @@ NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref):
     evaluation of random sampling from a tensor quadrature multi-index. */
 NonDQuadrature::
 NonDQuadrature(Model& model, int num_rand_samples, int seed,
-	       const UShortArray& quad_order, const RealVector& dim_pref): 
+	       const UShortArray& quad_order_seq, const RealVector& dim_pref): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
-  quadOrderSpec(quad_order), numFilteredSamples(0),
-  numRandomSamples(num_rand_samples), randomSeed(seed)
+  quadOrderSeqSpec(quad_order_seq), quadMode(RANDOM_TENSOR),
+  numSamples(num_rand_samples), randomSeed(seed)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -124,17 +125,8 @@ void NonDQuadrature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   tpqDriver->initialize_grid(poly_basis);
-  if (numFilteredSamples) {
-    // nested overrides not currently part of tensor regression spec
-    //for () if () { nestedRules = true; break; }
-    compute_minimum_quadrature_order();
-    maxConcurrency *= numFilteredSamples;
-  }
-  else if (numRandomSamples) {
-    reset();
-    maxConcurrency *= numRandomSamples;
-  }
-  else {
+  switch (quadMode) {
+  case FULL_TENSOR:
     // infer nestedRules
     for (size_t i=0; i<numContinuousVars; ++i) {
       short colloc_rule = poly_basis[i].collocation_rule();
@@ -150,6 +142,14 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     }
     reset();
     maxConcurrency *= tpqDriver->grid_size();
+    break;
+  case FILTERED_TENSOR: case RANDOM_TENSOR:
+    // nested overrides not currently part of tensor regression spec
+    //for () if () { nestedRules = true; break; }
+
+    update();
+    maxConcurrency *= numSamples;
+    break;
   }
 }
 
@@ -180,7 +180,7 @@ compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref,
 {
   dim_quad_order.reserve(numContinuousVars);
   dim_quad_order.assign(numContinuousVars, 1);
-  // compute minimal order tensor grid with at least numFilteredSamples points
+  // compute minimal order tensor grid with at least numSamples points
   if (dim_pref.empty()) // isotropic tensor grid
     while (tpqDriver->grid_size() < min_samples)
       increment_grid(dim_quad_order);
@@ -204,59 +204,75 @@ void NonDQuadrature::get_parameter_sets(Model& model)
     Cout << quad_order[i] << ' ';
   Cout << "}\n";
 
+  switch (quadMode) {
+  // --------------------------------
+  // Tensor quadrature (default mode)
+  // --------------------------------
+  case FULL_TENSOR:
+    Cout << "Total number of integration points: " << num_quad_points << '\n';
+    // Compute the tensor-product grid and store in allSamples
+    tpqDriver->compute_grid(allSamples);
+    if (outputLevel > NORMAL_OUTPUT)
+      print_points_weights("dakota_quadrature_tabular.dat");
+    break;
   // ------------------------------------------------------------------------
   // Probabilistic collocation from a tensor grid filtered by product weights
   // ------------------------------------------------------------------------
-  if (numFilteredSamples) {
-    Cout << "Filtered to " << numFilteredSamples
-	 << "samples with max product weight\n.";
+  case FILTERED_TENSOR:
+    Cout << "Filtered to " << numSamples
+	 << " samples with max product weight\n.";
     // Compute the tensor-product grid and store in allSamples
     tpqDriver->compute_grid(allSamples);
     // retain a subset of the minimal order tensor grid
     filter_parameter_sets();
-  }
+    break;
   // ----------------------------------------------------------------------
   // Probabilistic collocation from random sampling of a tensor multi-index
   // ----------------------------------------------------------------------
-  else if (numRandomSamples) {
-    Cout << numRandomSamples << " samples drawn randomly from multi-index\n.";
-
-    // sample randomly from the tensor multi-index
-    IntMatrix index_samples;
-    IntVector index_l_bnds(numContinuousVars), // init to 0
-              index_u_bnds(numContinuousVars, false);
-    for (j=0; j<numContinuousVars; ++j)
-      index_u_bnds[j] = quad_order[j] - 1;
-    Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
-    if (!randomSeed)
-      randomSeed = generate_system_seed();
-    lhs.seed(randomSeed);
-    lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds,
-				       numRandomSamples, index_samples);
-
-    // convert multi-index samples into allSamples
+  case RANDOM_TENSOR:
+    Cout << numSamples << " samples drawn randomly from tensor grid\n.";
     const Pecos::UShortArray& lev_index = tpqDriver->level_index();
     tpqDriver->update_1d_collocation_points_weights(quad_order, lev_index);
     const Pecos::Real3DArray& colloc_pts_1d
       = tpqDriver->collocation_points_1d();
-    allSamples.shapeUninitialized(numContinuousVars, numRandomSamples);
-    for (i=0; i<numRandomSamples; ++i) {
-      Real*  all_samp_i =    allSamples[i];
-      int* index_samp_i = index_samples[i];
-      for (j=0; j<numContinuousVars; ++j)
-	all_samp_i[j] = colloc_pts_1d[lev_index[j]][j][index_samp_i[j]];
-    }
-  }
-  // --------------------------------
-  // Tensor quadrature (default mode)
-  // --------------------------------
-  else {
-    Cout << "Total number of integration points: " << num_quad_points << '\n';
-    // Compute the tensor-product grid and store in allSamples
-    tpqDriver->compute_grid(allSamples);
+    allSamples.shapeUninitialized(numContinuousVars, numSamples);
 
-    if (outputLevel > NORMAL_OUTPUT)
-      print_points_weights("dakota_quadrature_tabular.dat");
+    // prevent case of all lhs_const variables, which is an lhs_prep error
+    bool lhs_error_trap = true;
+    for (i=0; i<numContinuousVars; ++i)
+      if (quad_order[i] > 1)
+	{ lhs_error_trap = false; break; }
+
+    if (lhs_error_trap) {
+      for (i=0; i<numContinuousVars; ++i) {
+	Real samp_i = colloc_pts_1d[0][i][0]; // all levels,indices = 0
+	for (j=0; j<numSamples; ++j)
+	  allSamples(i,j) = samp_i;
+      }
+    }
+    else {
+      // sample randomly from the tensor multi-index
+      IntMatrix index_samples;
+      IntVector index_l_bnds(numContinuousVars), // init to 0
+                index_u_bnds(numContinuousVars, false);
+      for (j=0; j<numContinuousVars; ++j)
+	index_u_bnds[j] = quad_order[j] - 1;
+      Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
+      if (!randomSeed)
+	randomSeed = generate_system_seed();
+      lhs.seed(randomSeed);
+      lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds,
+					 numSamples, index_samples);
+
+      // convert multi-index samples into allSamples
+      for (i=0; i<numSamples; ++i) {
+	Real*  all_samp_i =    allSamples[i];
+	int* index_samp_i = index_samples[i];
+	for (j=0; j<numContinuousVars; ++j)
+	  all_samp_i[j] = colloc_pts_1d[lev_index[j]][j][index_samp_i[j]];
+      }
+    }
+    break;
   }
 }
 
@@ -275,10 +291,10 @@ void NonDQuadrature::filter_parameter_sets()
     RealVector col_i(Teuchos::Copy, allSamples[i], numContinuousVars);
     ordered_pts.insert(std::pair<Real, RealVector>(-std::abs(wts[i]), col_i));
   }
-  // truncate allSamples to the first numFilteredSamples with largest weight
-  allSamples.reshape(numContinuousVars, numFilteredSamples);
+  // truncate allSamples to the first numSamples with largest weight
+  allSamples.reshape(numContinuousVars, numSamples);
   std::multimap<Real, RealVector>::iterator it;
-  for (i=0, it=ordered_pts.begin(); i<numFilteredSamples; ++i, ++it)
+  for (i=0, it=ordered_pts.begin(); i<numSamples; ++i, ++it)
     Teuchos::setCol(it->second, (int)i, allSamples);
 #ifdef DEBUG
   Cout << "allSamples post-filter:" << allSamples;
@@ -292,7 +308,7 @@ void NonDQuadrature::filter_parameter_sets()
 void NonDQuadrature::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // dimQuadOrderRef (potentially incremented from quadOrderSpec[numIntSeqIndex]
+  // dimQuadOrderRef (possibly incremented from quadOrderSeqSpec[numIntSeqIndex]
   // due to uniform/adaptive refinements) provides the current lower bound
   // reference point.  Pecos::TensorProductDriver::quadOrder may be increased
   // ***or decreased*** to provide at least min_samples subject to this lower

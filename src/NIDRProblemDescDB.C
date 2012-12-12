@@ -5398,7 +5398,6 @@ static int
 	MP_(emulatorSamples),
 	MP_(expandAfterSuccess),
 	MP_(expansionSamples),
-	MP_(expansionTerms),
 	MP_(maxFunctionEvaluations),
 	MP_(maxIterations),
 	MP_(mutationRange),

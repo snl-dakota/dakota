@@ -716,9 +716,6 @@ TAG "method/polynomial_chaos/expansion_import_file"
 TAG "method/polynomial_chaos/collocation_points/expansion_order"
 	DESC "{Expansion order} MethodCommands.html#MethodNonDPCE"
 
-TAG "method/polynomial_chaos/collocation_points/expansion_terms"
-	DESC "{Expansion terms} MethodCommands.html#MethodNonDPCE"
-
 TAG "method/polynomial_chaos/variance_based_decomp"
 	DESC "{Variance based decomposition (VBD)} MethodCommands.html#MethodNonDMC"
 

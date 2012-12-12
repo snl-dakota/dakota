@@ -656,8 +656,6 @@ public:
   /// enumeration for type of basis in sparse grid interpolation:
   /// DEFAULT_INTERPOLANT, NODAL_INTERPOLANT, or HIERARCHICAL_INTERPOLANT
   short sparseGridBasisType;
-  /// the \c expansion_terms specification in \ref MethodNonDPCE
-  int expansionTerms;
   /// the \c expansion_order specification in \ref MethodNonDPCE
   UShortArray expansionOrder;
   /// the \c expansion_samples specification in \ref MethodNonDPCE

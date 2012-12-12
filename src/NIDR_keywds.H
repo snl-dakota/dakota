@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1046 distinct keywords (plus 160 aliases) **/
+/** 1045 distinct keywords (plus 160 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -789,9 +789,8 @@ static KeyWord
 	kw_141[1] = {
 		{"fixed_seed",8,0,1,0,0,0.,0.,0,N_mdm(true,fixedSeedFlag)}
 		},
-	kw_142[2] = {
-		{"expansion_order",13,0,1,1,0,0.,0.,0,N_mdm(usharray,expansionOrder)},
-		{"expansion_terms",0x29,0,1,1,0,0.,0.,0,N_mdm(nnint,expansionTerms)}
+	kw_142[1] = {
+		{"expansion_order",13,0,1,1,0,0.,0.,0,N_mdm(usharray,expansionOrder)}
 		},
 	kw_143[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxPointFileAnnotated)},
@@ -818,7 +817,7 @@ static KeyWord
 		{"noise_tolerance",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,regressionNoiseTol)}
 		},
 	kw_150[19] = {
-		{0,0,2,0,0,kw_142},
+		{0,0,1,0,0,kw_142},
 		{0,0,1,0,0,kw_144},
 		{"basis_pursuit",8,0,2,0,0,0.,0.,0,N_mdm(type,regressionType_BASIS_PURSUIT)},
 		{"basis_pursuit_denoising",8,1,2,0,kw_145,0.,0.,0,N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)},
@@ -839,7 +838,7 @@ static KeyWord
 		{"use_derivatives",8,0,4,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
 	kw_151[5] = {
-		{0,0,2,0,0,kw_142},
+		{0,0,1,0,0,kw_142},
 		{0,0,1,0,0,kw_144},
 		{"incremental_lhs",8,0,2,0,0,0.,0.,0,N_mdm(lit,expansionSampleType_incremental_lhs)},
 		{"reuse_points",8,0,1,0,0,0.,0.,0,N_mdm(lit,pointReuse_all)},
@@ -888,7 +887,7 @@ static KeyWord
 		{"collocation_ratio",10,17,3,1,kw_150,0.,0.,0,N_mdm(Realp,collocationRatio)},
 		{"cubature_integrand",9,0,3,1,0,0.,0.,0,N_mdm(ushint,cubIntOrder)},
 		{"diagonal_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)},
-		{"expansion_import_file",11,2,3,1,kw_142,0.,0.,0,N_mdm(str,expansionImportFile)},
+		{"expansion_import_file",11,1,3,1,kw_142,0.,0.,0,N_mdm(str,expansionImportFile)},
 		{"expansion_samples",0x29,3,3,1,kw_151,0.,0.,0,N_mdm(nnint,expansionSamples)},
 		{"full_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_FULL_COVARIANCE)},
 		{"p_refinement",8,2,1,0,kw_153,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},

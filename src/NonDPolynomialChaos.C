@@ -32,7 +32,6 @@ namespace Dakota {
 NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   expansionImportFile(
     probDescDB.get_string("method.nond.expansion_import_file")),
-  expansionTerms(probDescDB.get_int("method.nond.expansion_terms")),
   collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
   crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
@@ -80,20 +79,20 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   }
   bool annotated_file = false;
   if (expansionImportFile.empty()) {
-    const UShortArray& quad_order_spec
+    const UShortArray& quad_order_seq_spec
       = probDescDB.get_usa("method.nond.quadrature_order");
-    const UShortArray& ssg_level_spec
+    const UShortArray& ssg_level_seq_spec
       = probDescDB.get_usa("method.nond.sparse_grid_level");
     unsigned short cub_int_spec
       = probDescDB.get_ushort("method.nond.cubature_integrand");
-    if (!quad_order_spec.empty()) {
+    if (!quad_order_seq_spec.empty()) {
       expansionCoeffsApproach = Pecos::QUADRATURE;
-      construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
+      construct_quadrature(u_space_sampler, g_u_model, quad_order_seq_spec,
 	probDescDB.get_rv("method.nond.dimension_preference"));
     }
-    else if (!ssg_level_spec.empty()) {
+    else if (!ssg_level_seq_spec.empty()) {
       expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
-      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
+      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_seq_spec,
 	probDescDB.get_rv("method.nond.dimension_preference"));
     }
     else if (cub_int_spec != USHRT_MAX) {
@@ -149,8 +148,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  }
 	}
 
-	size_t exp_terms = (exp_order.empty()) ? expansionTerms : 
-	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
+	size_t exp_terms
+	  = Pecos::PolynomialApproximation::total_order_terms(exp_order);
 	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
 	termsOrder
 	  = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
@@ -165,24 +164,29 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	    = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
 
 	if (tensorRegression) {// "probabilistic collocation": subset of TPQ pts
-	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
-	  // in turn invokes daceIterator.run_iterator(), we need to avoid
-	  // execution of the full tensor grid in real fn evals by overloading
-	  // the NonDQuad ctor to allow internal point set filtering.
-	  UShortArray quad_order(1); // one level of refinement
-	  unsigned short p; RealVector dim_pref; // empty pref if isotropic
-	  if (exp_order.empty()) // expansion_terms specification
-	    terms_to_total_order(expansionTerms, p);
-	  else // see NonDQuadrature::anisotropic_preference()
-	    exp_order_to_dim_preference(exp_order, p, dim_pref);
-	  quad_order[0] = p + 1; // m > p to avoid zeros in Psi matrix
+	  // define nominal quadrature order as exp_order + 1
+	  // (m > p avoids most of the 0's in the Psi measurement matrix)
+	  UShortArray dim_quad_order(numContinuousVars);
+	  for (size_t i=0; i<numContinuousVars; ++i) // misses nested increment
+	    dim_quad_order[i] = exp_order[i] + 1;
+	  // define order sequence for input to NonDQuadrature
+	  UShortArray quad_order_seq(1); // one level of refinement
+	  // convert aniso vector to scalar + dim_pref.  If isotropic, dim_pref
+	  // is empty; if aniso, it differs from exp_order aniso due to offset.
+	  RealVector dim_pref;
+	  order_to_dim_preference(dim_quad_order, quad_order_seq[0], dim_pref);
+	  // use alternate NonDQuad ctor to filter or sample TPQ points
+	  // (NonDExpansion invokes uSpaceModel.build_approximation()
+	  // which invokes daceIterator.run_iterator()).  The quad order inputs
+	  // are updated within NonDQuadrature as needed to satisfy min order
+	  // constraints (but not nested constraints: nestedRules is false).
 	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
 			       probDescDB.get_int("method.random_seed"),
-			       quad_order, dim_pref);
+			       quad_order_seq, dim_pref);
 	  // don't allow data import (currently permissible in input spec)
 	  pt_reuse.clear(); pt_reuse_file.clear();
 	}
-	else {                 // "point collocation": LHS sampling
+	else { // "point collocation": unstructured grid with LHS samples
 	  // if reusing samples within a refinement strategy, ensure different
 	  // random numbers are generated for points within the grid (even if
 	  // the number of samples differs)
@@ -384,9 +388,6 @@ void NonDPolynomialChaos::initialize_u_space_model()
       // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
       // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
       poly_approx_rep->coefficients_norms_flag(true);
-      // transfer an expansionTerms spec to the OrthogPolyApproximation
-      if (expansionTerms)
-	poly_approx_rep->expansion_terms(expansionTerms);
       // Transfer regression data: cross validation, noise tol, and L2 penalty.
       // Note: regression solver type is transferred via expansionCoeffsApproach
       //       in NonDExpansion::initialize_u_space_model()
@@ -465,10 +466,12 @@ void NonDPolynomialChaos::increment_order()
   if (tensorRegression) {
     NonDQuadrature* nond_quad
       = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_quad->filtered_samples(numSamplesOnModel);
-    nond_quad->compute_minimum_quadrature_order();
+    nond_quad->samples(numSamplesOnModel);
+    if (nond_quad->mode() == RANDOM_TENSOR)
+      nond_quad->increment_grid(); // increment dimension quad order
+    nond_quad->update();
   }
-  else {
+  else { // enforce increment through sampling_reset()
     NonDSampling* nond_sampling
       = (NonDSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
     nond_sampling->sampling_reference(0); // no lower bound

@@ -465,7 +465,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			)
 		    	| expansion_import_file STRING {N_mdm(str,expansionImportFile)}
 		      	expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
-		      	| expansion_terms INTEGER >= 0 {N_mdm(nnint,expansionTerms)}
                       )
 		    [ variance_based_decomp {N_mdm(true,vbdFlag)}
 		      [ univariate_effects {N_mdm(type,vbdControl_UNIVARIATE_VBD)} ]

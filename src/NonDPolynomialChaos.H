@@ -72,17 +72,10 @@ private:
   /// to a collocation ratio
   Real terms_samples_to_ratio(size_t num_exp_terms, int samples,
 			      Real terms_order);
-  /// convert an expansion_terms specification into the lowest order isotropic
-  /// total-order expansion (scalar) that contains at least this many terms
-  void terms_to_total_order(size_t tgt_exp_terms, unsigned short& p);
-  /// convert an expansion_terms specification into the lowest order isotropic
-  /// total-order expansion (vector) that contains at least this many terms
-  void terms_to_total_order_expansion(size_t tgt_exp_terms,
-				      UShortArray& to_exp);
   /// convert an isotropic/anisotropic expansion_order vector into a scalar
   /// plus a dimension preference vector
-  void exp_order_to_dim_preference(const UShortArray& exp_order,
-				   unsigned short& p, RealVector& dim_pref);
+  void order_to_dim_preference(const UShortArray& order, unsigned short& p,
+			       RealVector& dim_pref);
 
   //
   //- Heading: Data
@@ -90,10 +83,8 @@ private:
 
   /// filename for import of chaos coefficients
   String expansionImportFile;
-  /// user specification of PCE terms
-  int expansionTerms;
-  /// factor applied to expansionTerms^termsOrder in computing number of
-  /// regression points, either user specified or inferred
+  /// factor applied to terms^termsOrder in computing number of regression
+  /// points, either user specified or inferred
   Real collocRatio;
   /// exponent applied to number of expansion terms for computing
   /// number of regression points
@@ -138,46 +129,22 @@ terms_samples_to_ratio(size_t num_exp_terms, int samples, Real terms_order)
 
 
 inline void NonDPolynomialChaos::
-terms_to_total_order(size_t tgt_exp_terms, unsigned short& p)
-{
-  p = 0; size_t p_exp_terms = 1;
-  while (p_exp_terms < tgt_exp_terms) {
-    ++p;
-    p_exp_terms = (size_t)std::floor(
-      Pecos::BasisPolynomial::n_choose_k(p+numContinuousVars, p)+.5); // rounded
-  }
-}
-
-
-inline void NonDPolynomialChaos::
-terms_to_total_order_expansion(size_t tgt_exp_terms, UShortArray& to_exp)
-{
-  unsigned short p;
-  terms_to_total_order(tgt_exp_terms, p);
-  if (to_exp.size() != numContinuousVars)
-    to_exp.resize(numContinuousVars);
-  to_exp.assign(numContinuousVars, p);
-}
-
-
-inline void NonDPolynomialChaos::
-exp_order_to_dim_preference(const UShortArray& exp_order, unsigned short& p,
-			    RealVector& dim_pref)
+order_to_dim_preference(const UShortArray& order, unsigned short& scalar,
+			RealVector& dim_pref)
 {
   // Note: this function is the inverse of NonDQuadrature::
   // anisotropic_preference(unsigned short, const RealVector&, UShortArray&)
 
-  p = exp_order[0];
-  size_t i, max_index = 0;
-  bool anisotropic = false;
+  scalar = order[0];
+  size_t i; bool anisotropic = false;
   for (i=1; i<numContinuousVars; ++i)
-    if (exp_order[i] > p)
-      { p = exp_order[i]; max_index = i; anisotropic = true; }
+    if (order[i] > scalar)
+      { scalar = order[i]; anisotropic = true; }
 
   if (anisotropic) { // preserve ratios; normalization not required
     dim_pref.resize(numContinuousVars);
     for (i=0; i<numContinuousVars; ++i)
-      dim_pref[i] = (Real)exp_order[i];
+      dim_pref[i] = (Real)order[i];
   }
   else
     dim_pref.resize(0);
