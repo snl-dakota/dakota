@@ -18,6 +18,12 @@
 #include "DakotaModel.H"
 #include "ProblemDescDB.H"
 #include "PolynomialApproximation.hpp"
+#include "LHSDriver.hpp"
+#ifdef DAKOTA_DDACE
+#include "Distribution.h"
+#elif defined(DAKOTA_UTILIB)
+#include <utilib/seconds.h>
+#endif
 
 static const char rcsId[]="@(#) $Id: NonDQuadrature.C,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
@@ -63,7 +69,7 @@ NonDQuadrature::
 NonDQuadrature(Model& model, const UShortArray& quad_order,
 	       const RealVector& dim_pref):
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
-  quadOrderSpec(quad_order), numFilteredSamples(0)
+  quadOrderSpec(quad_order), numFilteredSamples(0), numRandomSamples(0)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -77,11 +83,31 @@ NonDQuadrature(Model& model, const UShortArray& quad_order,
 
 
 /** This alternate constructor is used for on-the-fly generation and
-    evaluation of numerical quadrature points. */
+    evaluation of filtered tensor quadrature points. */
 NonDQuadrature::
 NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
-  numFilteredSamples(num_filt_samples)
+  numFilteredSamples(num_filt_samples), numRandomSamples(0)
+{
+  // initialize the numerical integration driver
+  numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
+  tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+
+  // local natafTransform not yet updated: x_types would have to be passed in
+  // from NonDExpansion if check_variables() needed to be called here.  Instead,
+  // it is deferred until run time in NonDIntegration::quantify_uncertainty().
+  //check_variables(x_types);
+}
+
+
+/** This alternate constructor is used for on-the-fly generation and
+    evaluation of random sampling from a tensor quadrature multi-index. */
+NonDQuadrature::
+NonDQuadrature(Model& model, int num_rand_samples, int seed,
+	       const UShortArray& quad_order, const RealVector& dim_pref): 
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
+  quadOrderSpec(quad_order), numFilteredSamples(0),
+  numRandomSamples(num_rand_samples), randomSeed(seed)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -108,6 +134,10 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     //for () if () { nestedRules = true; break; }
     compute_minimum_quadrature_order();
     maxConcurrency *= numFilteredSamples;
+  }
+  else if (numRandomSamples) {
+    reset();
+    maxConcurrency *= numRandomSamples;
   }
   else {
     // infer nestedRules
@@ -177,16 +207,70 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   Cout << "\nNumber of Gauss points per variable: { ";
   for (i=0; i<numContinuousVars; ++i)
     Cout << quad_order[i] << ' ';
-  Cout << "}\nTotal number of integration points: " << num_quad_points << '\n';
+  Cout << "}\n";
 
-  // Compute the tensor-product grid and store in allSamples
-  tpqDriver->compute_grid(allSamples);
-
-  // retain a subset of the minimal order tensor grid
-  if (numFilteredSamples)
+  // ------------------------------------------------------------------------
+  // Probabilistic collocation from a tensor grid filtered by product weights
+  // ------------------------------------------------------------------------
+  if (numFilteredSamples) {
+    Cout << "Filtered to " << numFilteredSamples
+	 << "samples with max product weight\n.";
+    // Compute the tensor-product grid and store in allSamples
+    tpqDriver->compute_grid(allSamples);
+    // retain a subset of the minimal order tensor grid
     filter_parameter_sets();
-  else if (outputLevel > NORMAL_OUTPUT)
-    print_points_weights("dakota_quadrature_tabular.dat");
+  }
+  // ----------------------------------------------------------------------
+  // Probabilistic collocation from random sampling of a tensor multi-index
+  // ----------------------------------------------------------------------
+  else if (numRandomSamples) {
+    Cout << numRandomSamples << " samples drawn randomly from multi-index\n.";
+
+    // sample randomly from the tensor multi-index
+    IntMatrix index_samples;
+    IntVector index_l_bnds(numContinuousVars), // init to 0
+              index_u_bnds(numContinuousVars, false);
+    for (j=0; j<numContinuousVars; ++j)
+      index_u_bnds[j] = quad_order[j] - 1;
+    Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
+    if (!randomSeed) { // taken from NonDSampling::initialize_lhs()
+      randomSeed = 1;
+#ifdef DAKOTA_DDACE
+      randomSeed += DistributionBase::timeSeed(); // microsecs, time of day
+#elif defined(DAKOTA_UTILIB)
+      randomSeed += (int)CurrentTime();           // secs, time of day
+#else
+      randomSeed += (int)clock();                 // clock ticks, exec time
+#endif
+    }
+    lhs.seed(randomSeed);
+    lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds,
+				       numRandomSamples, index_samples);
+
+    // convert multi-index samples into allSamples
+    const Pecos::UShortArray& lev_index = tpqDriver->level_index();
+    tpqDriver->update_1d_collocation_points_weights(quad_order, lev_index);
+    const Pecos::Real3DArray& colloc_pts_1d
+      = tpqDriver->collocation_points_1d();
+    allSamples.shapeUninitialized(numContinuousVars, numRandomSamples);
+    for (i=0; i<numRandomSamples; ++i) {
+      Real*  all_samp_i =    allSamples[i];
+      int* index_samp_i = index_samples[i];
+      for (j=0; j<numContinuousVars; ++j)
+	all_samp_i[j] = colloc_pts_1d[lev_index[j]][j][index_samp_i[j]];
+    }
+  }
+  // --------------------------------
+  // Tensor quadrature (default mode)
+  // --------------------------------
+  else {
+    Cout << "Total number of integration points: " << num_quad_points << '\n';
+    // Compute the tensor-product grid and store in allSamples
+    tpqDriver->compute_grid(allSamples);
+
+    if (outputLevel > NORMAL_OUTPUT)
+      print_points_weights("dakota_quadrature_tabular.dat");
+  }
 }
 
 

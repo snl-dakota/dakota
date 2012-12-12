@@ -14,7 +14,7 @@
 #define NOND_POLYNOMIAL_CHAOS_H
 
 #include "NonDExpansion.H"
-
+#include "BasisPolynomial.hpp"
 
 namespace Dakota {
 
@@ -72,6 +72,17 @@ private:
   /// to a collocation ratio
   Real terms_samples_to_ratio(size_t num_exp_terms, int samples,
 			      Real terms_order);
+  /// convert an expansion_terms specification into the lowest order isotropic
+  /// total-order expansion (scalar) that contains at least this many terms
+  void terms_to_total_order(size_t tgt_exp_terms, unsigned short& p);
+  /// convert an expansion_terms specification into the lowest order isotropic
+  /// total-order expansion (vector) that contains at least this many terms
+  void terms_to_total_order_expansion(size_t tgt_exp_terms,
+				      UShortArray& to_exp);
+  /// convert an isotropic/anisotropic expansion_order vector into a scalar
+  /// plus a dimension preference vector
+  void exp_order_to_dim_preference(const UShortArray& exp_order,
+				   unsigned short& p, RealVector& dim_pref);
 
   //
   //- Heading: Data
@@ -123,6 +134,53 @@ terms_samples_to_ratio(size_t num_exp_terms, int samples, Real terms_order)
   size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;;
   return (Real)(samples * data_per_pt) /
     std::pow((Real)num_exp_terms, terms_order);
+}
+
+
+inline void NonDPolynomialChaos::
+terms_to_total_order(size_t tgt_exp_terms, unsigned short& p)
+{
+  p = 0; size_t p_exp_terms = 1;
+  while (p_exp_terms < tgt_exp_terms) {
+    ++p;
+    p_exp_terms = (size_t)std::floor(
+      Pecos::BasisPolynomial::n_choose_k(p+numContinuousVars, p)+.5); // rounded
+  }
+}
+
+
+inline void NonDPolynomialChaos::
+terms_to_total_order_expansion(size_t tgt_exp_terms, UShortArray& to_exp)
+{
+  unsigned short p;
+  terms_to_total_order(tgt_exp_terms, p);
+  if (to_exp.size() != numContinuousVars)
+    to_exp.resize(numContinuousVars);
+  to_exp.assign(numContinuousVars, p);
+}
+
+
+inline void NonDPolynomialChaos::
+exp_order_to_dim_preference(const UShortArray& exp_order, unsigned short& p,
+			    RealVector& dim_pref)
+{
+  // Note: this function is the inverse of NonDQuadrature::
+  // anisotropic_preference(unsigned short, const RealVector&, UShortArray&)
+
+  p = exp_order[0];
+  size_t i, max_index = 0;
+  bool anisotropic = false;
+  for (i=1; i<numContinuousVars; ++i)
+    if (exp_order[i] > p)
+      { p = exp_order[i]; max_index = i; anisotropic = true; }
+
+  if (anisotropic) { // preserve ratios; normalization not required
+    dim_pref.resize(numContinuousVars);
+    for (i=0; i<numContinuousVars; ++i)
+      dim_pref[i] = (Real)exp_order[i];
+  }
+  else
+    dim_pref.resize(0);
 }
 
 } // namespace Dakota

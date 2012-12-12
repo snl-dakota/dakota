@@ -49,11 +49,14 @@ public:
   /// quadrature order specification
   NonDQuadrature(Model& model, const UShortArray& quad_order,
 		 const RealVector& dim_pref);
-
-  /// alternate constructor for instantiations "on the fly" based on
-  /// the size of a filtered tensor product sample set
+  /// alternate constructor for instantiations "on the fly" that
+  /// generate a filtered tensor product sample set
   NonDQuadrature(Model& model, int num_filt_samples,
 		 const RealVector& dim_pref);
+  /// alternate constructor for instantiations "on the fly" that
+  /// sample randomly from a tensor product multi-index
+  NonDQuadrature(Model& model, int num_rand_samples, int seed,
+		 const UShortArray& quad_order, const RealVector& dim_pref);
 
   //
   //- Heading: Member functions
@@ -158,9 +161,16 @@ private:
   /// any refinements posted by increment_grid()
   UShortArray dimQuadOrderRef;
 
-  /// size of a filtered set of tensor quadrature points; used by the
+  /// size of a random set of tensor quadrature points; used by the
   /// regression PCE approach known as "probabilistic collocation"
   size_t numFilteredSamples;
+  /// number of random samples drawn from a population of tensor quadrature
+  /// points of order quadOrder (the tensor multi-index is sampled uniformly);
+  /// used by probabilistic collocation.
+  size_t numRandomSamples;
+  /// seed for the random number generator used in sampling of the
+  /// tensor multi-index
+  int randomSeed;
 };
 
 

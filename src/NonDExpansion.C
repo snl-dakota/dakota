@@ -268,6 +268,33 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 
 void NonDExpansion::
+construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+		     int random_samples, int seed,
+		     const UShortArray& quad_order, const RealVector& dim_pref)
+{
+  // sanity checks: only uniform refinement supported for probabilistic
+  // collocation (regression using filtered tensor grids)
+  if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
+    Cerr << "Error: only uniform refinement is supported for regression with "
+	 << "the tensor_grid option." << std::endl;
+    abort_handler(-1);
+  }
+
+  /*
+  // enforce minimum required VBD control
+  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
+    vbdControl = Pecos::UNIVARIATE_VBD;
+  // nested overrides not currently part of tensor regression spec
+  nestedRules = (ruleNestingOverride == Pecos::NESTED ||
+    (refineType && ruleNestingOverride != Pecos::NON_NESTED));
+  */
+
+  u_space_sampler.assign_rep(new NonDQuadrature(
+    g_u_model, random_samples, seed, quad_order, dim_pref), false);
+}
+
+
+void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 		      const UShortArray& ssg_level, const RealVector& dim_pref)
 {

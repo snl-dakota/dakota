@@ -112,10 +112,16 @@ protected:
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 			    const UShortArray& quad_order,
 			    const RealVector& dim_pref);
-  /// assign a NonDQuadrature instance within u_space_sampler based on
-  /// the size of a filtered tensor product sample set
+  /// assign a NonDQuadrature instance within u_space_sampler that
+  /// generates a filtered tensor product sample set
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 			    int filtered_samples, const RealVector& dim_pref);
+  /// assign a NonDQuadrature instance within u_space_sampler that
+  /// samples randomly from a tensor product multi-index
+  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+			    int random_samples, int seed,
+			    const UShortArray& quad_order,
+			    const RealVector& dim_pref);
   /// assign a NonDSparseGrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 			     const UShortArray& ssg_level,

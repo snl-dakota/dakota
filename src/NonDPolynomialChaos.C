@@ -169,9 +169,16 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  // in turn invokes daceIterator.run_iterator(), we need to avoid
 	  // execution of the full tensor grid in real fn evals by overloading
 	  // the NonDQuad ctor to allow internal point set filtering.
-	  RealVector dim_pref; // empty (not part of regression spec)
+	  UShortArray quad_order(1); // one level of refinement
+	  unsigned short p; RealVector dim_pref; // empty pref if isotropic
+	  if (exp_order.empty()) // expansion_terms specification
+	    terms_to_total_order(expansionTerms, p);
+	  else // see NonDQuadrature::anisotropic_preference()
+	    exp_order_to_dim_preference(exp_order, p, dim_pref);
+	  quad_order[0] = p + 1; // m > p to avoid zeros in Psi matrix
 	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
-			       dim_pref);
+			       probDescDB.get_int("method.random_seed"),
+			       quad_order, dim_pref);
 	  // don't allow data import (currently permissible in input spec)
 	  pt_reuse.clear(); pt_reuse_file.clear();
 	}
@@ -380,7 +387,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
       // transfer an expansionTerms spec to the OrthogPolyApproximation
       if (expansionTerms)
 	poly_approx_rep->expansion_terms(expansionTerms);
-      // transfer regression data: cross validation, noise tol, and L2 penalty
+      // Transfer regression data: cross validation, noise tol, and L2 penalty.
       // Note: regression solver type is transferred via expansionCoeffsApproach
       //       in NonDExpansion::initialize_u_space_model()
       if (expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {

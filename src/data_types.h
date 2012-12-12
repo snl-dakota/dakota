@@ -41,9 +41,10 @@ typedef double Real;
 // -----------------------------------
 
 typedef Teuchos::SerialDenseVector<int, Real>    RealVector;
-typedef Teuchos::SerialDenseVector<int, int>     IntVector;
 typedef Teuchos::SerialDenseMatrix<int, Real>    RealMatrix;
 typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
+typedef Teuchos::SerialDenseVector<int, int>     IntVector;
+typedef Teuchos::SerialDenseMatrix<int, int>     IntMatrix;
 
 //typedef Tpetra::CrsMatrix<int, Real>             RealSparseMatrix
 //typedef Tpetra::Vector<int, Real>                RealParallelVector
