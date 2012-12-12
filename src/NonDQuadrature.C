@@ -19,11 +19,6 @@
 #include "ProblemDescDB.H"
 #include "PolynomialApproximation.hpp"
 #include "LHSDriver.hpp"
-#ifdef DAKOTA_DDACE
-#include "Distribution.h"
-#elif defined(DAKOTA_UTILIB)
-#include <utilib/seconds.h>
-#endif
 
 static const char rcsId[]="@(#) $Id: NonDQuadrature.C,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
@@ -233,16 +228,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
     for (j=0; j<numContinuousVars; ++j)
       index_u_bnds[j] = quad_order[j] - 1;
     Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
-    if (!randomSeed) { // taken from NonDSampling::initialize_lhs()
-      randomSeed = 1;
-#ifdef DAKOTA_DDACE
-      randomSeed += DistributionBase::timeSeed(); // microsecs, time of day
-#elif defined(DAKOTA_UTILIB)
-      randomSeed += (int)CurrentTime();           // secs, time of day
-#else
-      randomSeed += (int)clock();                 // clock ticks, exec time
-#endif
-    }
+    if (!randomSeed)
+      randomSeed = generate_system_seed();
     lhs.seed(randomSeed);
     lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds,
 				       numRandomSamples, index_samples);

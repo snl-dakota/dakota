@@ -19,6 +19,11 @@
 #include "ProblemDescDB.H"
 #include "tabular_io.h"
 #include "pecos_stat_util.hpp"
+#ifdef DAKOTA_DDACE
+#include "Distribution.h"
+#elif defined(DAKOTA_UTILIB)
+#include <utilib/seconds.h>
+#endif
 
 //#define DEBUG
 
@@ -422,6 +427,29 @@ NonD::NonD(NoDBBaseConstructor, const RealVector& lower_bnds,
 
   numContinuousVars  = numUniformVars;
   numDiscreteIntVars = numDiscreteRealVars = 0;
+}
+
+
+int NonD::generate_system_seed()
+{
+  // Generate initial seed from a system clock.  NOTE: the system clock
+  // should not used for multiple LHS calls since (1) clock granularity can
+  // be too coarse (can repeat on subsequent runs for inexpensive test fns)
+  // and (2) seed progression can be highly structured, which could induce
+  // correlation between sample sets.  Instead, the clock-generated case
+  // varies the seed below using the same approach as the user-specified
+  // case.  This has the additional benefit that a random run can be
+  // recreated by specifying the clock-generated seed in the input file.
+  int seed = 1;
+#ifdef DAKOTA_DDACE
+  seed += DistributionBase::timeSeed(); // microsecs, time of day
+#elif defined(DAKOTA_UTILIB)
+  seed += (int)CurrentTime();           // secs, time of day
+#else
+  seed += (int)clock();                 // clock ticks, exec time
+#endif
+
+  return seed;
 }
 
 

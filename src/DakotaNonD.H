@@ -119,6 +119,9 @@ protected:
   //- Heading: Utility routines
   //
 
+  /// create a system-generated unique seed (when a seed is unspecified)
+  int generate_system_seed();
+
   /// instantiate natafTransform
   void initialize_random_variable_transformation();
   /// initializes ranVarTypesX and ranVarTypesU within natafTransform

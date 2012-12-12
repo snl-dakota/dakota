@@ -19,11 +19,6 @@
 #include "NonDSampling.H"
 #include "ProblemDescDB.H"
 #include "SensAnalysisGlobal.H"
-#ifdef DAKOTA_DDACE
-#include "Distribution.h"
-#elif defined(DAKOTA_UTILIB)
-#include <utilib/seconds.h>
-#endif
 #include "pecos_data_types.hpp"
 #include "pecos_stat_util.hpp"
 #include <algorithm>
@@ -486,24 +481,8 @@ void NonDSampling::initialize_lhs(bool write_message)
   // one run to the next.
   if (numLHSRuns == 1) { // set initial seed
     lhsDriver.rng(rngName);
-    if (!seedSpec) { // no user specification: nonrepeatable behavior
-      // Generate initial seed from a system clock.  NOTE: the system clock
-      // should not used for multiple LHS calls since (1) clock granularity can
-      // be too coarse (can repeat on subsequent runs for inexpensive test fns)
-      // and (2) seed progression can be highly structured, which could induce
-      // correlation between sample sets.  Instead, the clock-generated case
-      // varies the seed below using the same approach as the user-specified
-      // case.  This has the additional benefit that a random run can be
-      // recreated by specifying the clock-generated seed in the input file.
-      randomSeed = 1;
-#ifdef DAKOTA_DDACE
-      randomSeed += DistributionBase::timeSeed(); // microsecs, time of day
-#elif defined(DAKOTA_UTILIB)
-      randomSeed += (int)CurrentTime();           // secs, time of day
-#else
-      randomSeed += (int)clock();                 // clock ticks, exec time
-#endif
-    }
+    if (!seedSpec) // no user specification --> nonrepeatable behavior
+      randomSeed = generate_system_seed();
     lhsDriver.seed(randomSeed);
   }
   else if (varyPattern) // define sequence of seed values for numLHSRuns > 1
