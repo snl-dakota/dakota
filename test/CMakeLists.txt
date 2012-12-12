@@ -69,33 +69,19 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   get_target_property(LIBMODE_EXE_LOC dakota_library_mode LOCATION)
   get_target_property(LIBSPLIT_EXE_LOC dakota_library_split LOCATION)
 
-  if(NOT CYGWIN)
-  add_custom_target(test_dakota ALL
-    ${CMAKE_COMMAND} -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS dakota)  
-
-  add_custom_target(test_lib_mode_dakota ALL
-    ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS dakota_library_mode)  
-
-  if(DAKOTA_HAVE_MPI)
-    add_custom_target(test_lib_split ALL ${CMAKE_COMMAND} -E 
-      copy ${LIBSPLIT_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
-      DEPENDS dakota_library_split)
-  endif()
-
-  else() # Debug CYGWIN file copy
-
-  message("Debugging dakota.exe COPY command -- CYGWIN case -- add a slash")
   add_custom_target(test_dakota ALL
     ${CMAKE_COMMAND} -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/
     DEPENDS dakota)  
 
   add_custom_target(test_lib_mode_dakota ALL
-    ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/dakota_library_mode
+    ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/
     DEPENDS dakota_library_mode)  
 
-  endif() # end CYGWIN Debug
+  if(DAKOTA_HAVE_MPI)
+    add_custom_target(test_lib_split ALL ${CMAKE_COMMAND} -E 
+      copy ${LIBSPLIT_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/
+      DEPENDS dakota_library_split)
+  endif()
 
   get_target_property(Dakota_EXECUTABLE_OUTPUT_DIR dakota LOCATION)
   get_filename_component(
