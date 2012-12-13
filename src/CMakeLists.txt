@@ -759,6 +759,17 @@ if (DAKOTA_HAVE_MPI)
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
+# Install non-default dyanamic deps
+# CMake variables aren't passed to the script, so we have to invoke
+# separate scripts for each platform
+if (CYGWIN)
+  install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallCygwinDLLs.cmake")
+#elseif (APPLE)
+#  install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallDarwinDylibs.cmake")
+#elseif (UNIX)
+#  install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallLinuxSOs.cmake")
+endif()
+
 if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
   message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")
 endif()
