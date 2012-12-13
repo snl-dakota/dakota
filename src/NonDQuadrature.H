@@ -218,8 +218,6 @@ inline void NonDQuadrature::update()
     compute_minimum_quadrature_order(numSamples, dimPrefSpec, dimQuadOrderRef);
     break;
   case RANDOM_TENSOR:
-    // propagate updated settings to tpqDriver
-    reset();
     // revise settings if needed to enforce min order
     // (in this context, this just reduces resampling)
     sampling_reset(numSamples, false, false);
