@@ -267,9 +267,36 @@ void NonDQuadrature::get_parameter_sets(Model& model)
       if (!randomSeed)
 	randomSeed = generate_system_seed();
       lhs.seed(randomSeed);
-      lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds,
-					 numSamples, index_samples);
-
+      // eliminate redundant samples by resampling if necessary
+      // TO DO: ensure that random seed is NOT reset
+      std::set<IntArray> sorted_samples; std::set<IntArray>::iterator it;
+      IntArray sample; bool complete = false, initial = true;
+      while (!complete) {
+	lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds,
+					   numSamples, index_samples);
+	if (initial) {
+	  for (i=0; i<numSamples; ++i) {
+	    copy_data(index_samples[i], numContinuousVars, sample);
+	    sorted_samples.insert(sample);
+	  }
+	  if (sorted_samples.size() == numSamples) complete = true;
+	  else initial = false;
+	}
+	else {
+	  for (i=0; i<numSamples; ++i)
+	    if (sorted_samples.size() < numSamples) {
+	      copy_data(index_samples[i], numContinuousVars, sample);
+	      sorted_samples.insert(sample);
+	    }
+	    else
+	      { complete = true; break; }
+	}
+      }
+      // original IntMatrix was updated; convert set back into IntMatrix
+      if (!initial)
+	for (it =sorted_samples.begin(), i=0;
+	     it!=sorted_samples.end(), i<numSamples; ++it, ++i)
+	  copy_data(*it, index_samples[i], numContinuousVars);
       // convert multi-index samples into allSamples
       for (i=0; i<numSamples; ++i) {
 	Real*  all_samp_i =    allSamples[i];

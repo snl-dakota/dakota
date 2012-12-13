@@ -149,15 +149,26 @@ inline void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
 
 /// copy Array<T> to T*
 template <typename T>
-void copy_data(const std::vector<T>& dbv, T* ptr, const int ptr_len)
+void copy_data(const std::vector<T>& vec, T* ptr, const size_t ptr_len)
 {
-  if (ptr_len != dbv.size()) { // could use <, but enforce exact match
+  if (ptr_len != vec.size()) { // could use <, but enforce exact match
     Cerr << "Error: bad ptr_len in copy_data(Dakota::Array<T>, T* ptr)."
 	 << std::endl;
     abort_handler(-1);
   }
   for (size_t i=0; i<ptr_len; ++i)
-    ptr[i] = dbv[i];
+    ptr[i] = vec[i];
+}
+
+
+/// copy T* to Array<T>
+template <typename T>
+void copy_data(const T* ptr, const size_t ptr_len, std::vector<T>& vec)
+{
+  if (ptr_len != vec.size())
+    vec.resize(ptr_len);
+  for (size_t i=0; i<ptr_len; ++i)
+    vec[i] = ptr[i];
 }
 
 
