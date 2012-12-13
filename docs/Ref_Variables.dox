@@ -2025,7 +2025,7 @@ Specification detail for interval uncertain variables
 \subsection VarDIUV Discrete Interval Uncertain Variables 
 Discrete variables may be used to represent things like epistemic model form 
 uncertainty, as mentioned above. For example, if one wants to analyze the 
-effect of Model 1 vs. Model 2 vs. Model 3 in an epistemic analysis 
+effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis 
 (either an interval analysis or a Dempster-Shafer evidence theory analysis), 
 one can use a discrete interval variable to represent the uncertainty in the 
 model form.  There are three types of discrete uncertain variables:  a 

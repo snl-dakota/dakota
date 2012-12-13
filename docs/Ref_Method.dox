@@ -106,6 +106,8 @@ namespace Dakota {
 	  methods</a>
     <li> <a href="MethodCommands.html#MethodNonDGlobalRel">Global reliability
 	  methods</a>
+    <li> <a href="MethodCommands.html#MethodNonDImportance">Importance sampling
+	  methods</a>
     <li> <a href="MethodCommands.html#MethodNonDPCE">
          Polynomial chaos expansion method</a>
     <li> <a href="MethodCommands.html#MethodNonDSC">
@@ -5067,6 +5069,172 @@ Specification detail for global reliability methods
 </table>
 
 
+\subsubsection MethodNonDImportance Importance sampling methods
+<!-- dakota subcat importance_sampling -->
+
+Importance sampling is a method that allows one to estimate statistical 
+quantities such as failure probabilities (e.g. the probability that 
+a response quantity will exceed a threshold or fall below a threshold value)
+in a way that is more efficient than Monte Carlo sampling.  The core idea 
+in importance sampling is that one generates samples that preferentially 
+samples important regions in the space (e.g. in or near the failure region 
+or user-defined region of interest), and then appropriately weights 
+the samples to obtain an unbiased estimate of the failure probability
+[\ref Srinivasan "Srinivasan, 2002"]. 
+In importance sampling, the samples are generated from a density which is 
+called the importance density:  it is not the original probability density 
+of the input distributions.  The importance density should be centered near the 
+failure region of interest.  For black-box simulations such as those commonly 
+interfaced with DAKOTA, it is difficult to specify the importance density a priori: 
+the user often does not know where the failure region lies, especially in a high-dimensional 
+space.[\ref Swiler2010 "Swiler and West, 2010"].  
+We have developed two importance sampling approaches which do not 
+rely on the user explicitly specifying an importance density. 
+
+The first method is based on ideas in reliability modeling \ref MethodNonDLocalRel.
+An initial Latin Hypercube sampling is performed to generate an initial set of samples.
+These initial samples are augmented with samples from an importance density as follows:   
+The variables are transformed to standard normal space. In the transformed space, 
+the importance density is a set of normal densities centered around points which 
+are in the failure region.  Note that this is similar in spirit to the reliability 
+methods, in which importance sampling is centered around a Most Probable Point (MPP). 
+In the case of the LHS samples, the importance sampling density will simply by 
+a mixture of normal distributions centered around points in the failure region. 
+The options for importance sampling are as follows:  \c import centers a sampling 
+density at one of the initial LHS samples identified in the failure region.  
+It then generates the importance samples, weights them by their probability of occurence 
+given the original density, and calculates the required probability (CDF or CCDF level). 
+\c adapt_import is the same as \c import but is performed iteratively until the 
+failure probability estimate converges. 
+\c mm_adapt_import starts with all of the samples located in the failure region  
+to build a multimodal sampling density. First, it uses a small number of samples around 
+each of the initial samples in the failure region.  Note that these samples 
+are allocated to the different points based on their relative probabilities of occurrence:
+more probable points get more samples. This early part of the approach is done 
+to search for "representative" points. Once these are located, the multimodal sampling 
+density is set and then \c mm_adapt_import proceeds similarly to \c adapt_import (sample 
+until convergence).  
+
+\ref T5d35 "Table 5.35" provides details of the \c importance_sampling method.
+
+\anchor T5d35
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.35
+\endhtmlonly
+Specification detail for the LHS-based importance sampling method
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Importance sampling method
+<td>\c importance_sampling
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Type of importance sampling performed
+<td>\c import | \c adapt_import | \c mm_adapt_import
+<td>none
+<td>Required
+<td>N/A
+<tr>
+<td>Random seed
+<td>\c seed
+<td>integer
+<td>Optional
+<td>randomly generated seed
+<tr>
+<td>Random number generator
+<td>\c rng
+<td>\c mt19937 | \c rnum2
+<td>Optional
+<td>Mersenne twister (\c mt19937)
+<tr>
+<td>File name for previously generated points to be imported as the basis for the initial GP
+<td>\c points_file
+<td>string
+<td>annotated|freeform
+<td>N/A
+</table>
+
+The second importance sampling method in DAKOTA, \c gpais, is the one we recommend, 
+at least for problems that have a relatively small number of input variables (e.g. 
+less than 10-20).  This method, Gaussian Process Adaptive Importance Sampling, 
+is outlined in the paper [\ref Dalbey2012 "Dalbey and Swiler, 2012"].  
+This method  starts with an initial set of LHS samples and adds samples one at a time, 
+with the goal of adaptively improving the estimate of the ideal importance density 
+during the process.  The approach uses a mixture of component densities.  An   
+itterative process is used
+to construct the sequence of improving component densities. At each
+iteration, a Gaussian process (GP) surrogate is used to help identify areas
+in the space where failure is likely to occur.  The GPs are not used to
+directly calculate the failure probability; they are only used to approximate
+the importance density. Thus, the Gaussian process adaptive importance
+sampling algorithm overcomes limitations involving using a potentially
+inaccurate surrogate model directly in importance sampling calculations.  
+
+\ref T5d36 "Table 5.36" provides details of the \c gpais method
+for Gaussian process adaptive importance sampling 
+
+\anchor T5d36
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.36
+\endhtmlonly
+Specification detail for Gaussian process adaptive importance sampling method
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Gaussian process adaptive importance sampling method
+<td>\c gpais
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Number of initial LHS samples
+<td>\c samples
+<td>integer
+<td>Required
+<td>N/A
+<tr>
+<td>Number of samples on the emulator to generate a new true sample each iteration
+<td>\c emulator_samples
+<td>integer
+<td>Optional
+<td>10,000
+<tr>
+<td>Random seed
+<td>\c seed
+<td>integer
+<td>Optional
+<td>randomly generated seed
+<tr>
+<td>Random number generator
+<td>\c rng
+<td>\c mt19937 | \c rnum2
+<td>Optional
+<td>Mersenne twister (\c mt19937)
+<tr>
+<td>File name for previously generated points to be imported as the basis for the initial GP
+<td>\c points_file
+<td>string
+<td>annotated|freeform
+<td>N/A
+</table>
+
+
 \subsubsection MethodNonDPCE Polynomial chaos expansion method
 <!-- dakota subcat polynomial_chaos -->
 
@@ -5128,9 +5296,9 @@ The \c p_refinement keyword specifies the usage of automated
 polynomial order refinement, which can be either \c uniform or \c
 dimension_adaptive.  The \c dimension_adaptive option is supported for
 the tensor-product quadrature and Smolyak sparse grid options (see
-\ref T5d36 "Table 5.36" below), and \c uniform is supported for tensor
+\ref T5d38 "Table 5.38" below), and \c uniform is supported for tensor
 and sparse grids as well as regression approaches (\c collocation_points 
-or \c collocation_ratio, see \ref T5d37 "Table 5.37" below).  Each of
+or \c collocation_ratio, see \ref T5d39 "Table 5.39" below).  Each of
 these refinement cases makes use of the \c max_iterations and \c
 convergence_tolerance method independent controls (see \ref T5d1
 "Table 5.1"); the former control limits the number of refinement 
@@ -5184,16 +5352,16 @@ the aleatory random variable domain is integrated, leaving behind a
 polynomial relationship between the statistics and the remaining
 design/state/epistemic variables.
 
-\ref T5d35 "Table 5.35" shows these general PCE controls and it, along
-with Tables \ref T5d36 "5.36", \ref T5d37 "5.37", and \ref T5d38 "5.38" 
+\ref T5d37 "Table 5.37" shows these general PCE controls and it, along
+with Tables \ref T5d38 "5.38", \ref T5d39 "5.39", and \ref T5d40 "5.40" 
 to follow, provide the details of the polynomial chaos expansion 
 specifications beyond those of \ref T5d28 "Table 5.28".
 
-\anchor T5d35
+\anchor T5d37
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.35
+Table 5.37
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: general controls.
 </caption>
@@ -5255,7 +5423,7 @@ Specification detail for polynomial chaos expansion method: general controls.
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
 options are provided and the specification details for these options
-are provided in Tables \ref T5d36 "5.36" and \ref T5d37 "5.37":
+are provided in Tables \ref T5d38 "5.38" and \ref T5d39 "5.39":
 
 <ol>
 <li> multidimensional integration by a tensor-product of Gaussian
@@ -5344,11 +5512,11 @@ are provided in Tables \ref T5d36 "5.36" and \ref T5d37 "5.37":
      distributions, so the \e iid restriction would not be problematic
      in that case.
 
-\anchor T5d36
+\anchor T5d38
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.36
+Table 5.38
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: quadrature, 
 cubature, and sparse grid approaches.
@@ -5448,11 +5616,11 @@ cubature, and sparse grid approaches.
      must be specified using either \c expansion_order or \c
      expansion_terms.
 
-\anchor T5d37
+\anchor T5d39
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.37
+Table 5.39
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: expansion 
 sampling, regression, and expansion import options.
@@ -5585,14 +5753,14 @@ the number of refinement samples is not under the user's control
 (these evaluations are approximation-based, so management of this
 expense is less critical).  This option allows for refinement of
 probability and generalized reliability results using importance
-sampling. \ref T5d38 "Table 5.38" provide the details of these
+sampling. \ref T5d40 "Table 5.40" provide the details of these
 sampling specifications for polynomial chaos.
 
-\anchor T5d38
+\anchor T5d40
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.38
+Table 5.40
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: sampling controls.
 </caption>
@@ -5788,16 +5956,16 @@ integrals are evaluated, only the aleatory random variable domain is
 integrated, leaving behind a polynomial relationship between the
 statistics and the remaining design/state/epistemic variables.
 
-\ref T5d39 "Table 5.39" shows these general SC controls, and it along
-with \ref T5d40 "Table 5.40" to follow provide the details of the
+\ref T5d41 "Table 5.41" shows these general SC controls, and it along
+with \ref T5d42 "Table 5.42" to follow provide the details of the
 SC specifications beyond those of Tables \ref T5d28 "5.28" and 
-\ref T5d38 "5.38".
+\ref T5d38 "5.40".
 
-\anchor T5d39
+\anchor T5d41
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.39
+Table 5.41
 \endhtmlonly
 Specification detail for stochastic collocation method: general controls.
 </caption>
@@ -5871,7 +6039,7 @@ Specification detail for stochastic collocation method: general controls.
 
 To form the multidimensional interpolants \f$L_i\f$ of the expansion,
 two options are provided and the specification details for these options
-are provided in \ref T5d40 "Table 5.40".
+are provided in \ref T5d42 "Table 5.42".
 
 <ol>
 <li> interpolation on a tensor-product of Gaussian quadrature points
@@ -5890,11 +6058,11 @@ are provided in \ref T5d40 "Table 5.40".
      \c non_nested option, and the growth rules are restricted unless
      overridden by the \c unrestricted keyword.
 
-\anchor T5d40
+\anchor T5d42
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.40
+Table 5.42
 \endhtmlonly
 Specification detail for stochastic collocation method: grid controls.
 </caption>
@@ -5952,7 +6120,7 @@ MethodNonD, the \c sample_type, \c samples, \c seed, \c fixed_seed,
 and \c rng specifications described in \ref MethodNonDMC, and the \c
 sample_refinement specification described in \ref MethodNonDPCE.  Each
 of the sampling specifications is identical to those for PCE shown in
-\ref T5d38 "Table 5.38" and refer to sampling on the interpolant for
+\ref T5d40 "Table 5.40" and refer to sampling on the interpolant for
 the purposes of generating approximate statistics, which should not be
 confused with collocation evaluations used for forming the
 interpolant.  Finally, the process for multifidelity UQ is identical
@@ -6037,15 +6205,15 @@ methods to calculate these bounds.  \c local_interval_est
 allows the user to specify either \c sqp which is sequential
 quadratic programming, or \c nip which is a nonlinear interior point
 method.  
-\ref T5d41 "Table 5.41" provides the specification for the 
+\ref T5d43 "Table 5.43" provides the specification for the 
 local interval method. 
 
 
-\anchor T5d41
+\anchor T5d43
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.41
+Table 5.43
 \endhtmlonly
 Specification detail for local interval estimation used in epistemic uncertainty
 </caption>
@@ -6094,14 +6262,14 @@ implementation may be selected instead.  If \c use_derivatives is
 specified the GP model will be built using available derivative data
 (Surfpack GP only). When using \c lhs or \c ego,
 one can specify a seed for the number of LHS samples, the random
-number generator, and the number of samples.  \ref T5d42 "Table 5.42"
+number generator, and the number of samples.  \ref T5d44 "Table 5.44"
 provides the specification for the global interval methods.
 
-\anchor T5d42
+\anchor T5d44
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.42
+Table 5.44
 \endhtmlonly
 Specification detail for global interval estimation used in epistemic uncertainty
 </caption>
@@ -6211,16 +6379,16 @@ gen_reliability_levels) or outputs (\c response_levels with \c compute
 probability levels and the same probability-based mappings described
 above are performed.
 
-\ref T5d43 "Table 5.43" provides the specification for the \c
+\ref T5d45 "Table 5.45" provides the specification for the \c
 local_evidence method. Note that two local optimization methods 
 are available:  \c sqp (sequential quadratic programming or \c nip
 (nonlinear interior point method). 
 
-\anchor T5d43
+\anchor T5d45
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.43
+Table 5.45
 \endhtmlonly
 Specification detail for local evidence theory method for epistemic uncertainty
 </caption>
@@ -6256,7 +6424,7 @@ and maximum function value must be calculated for each "interval cell
 combination."  These bounds are aggregated into belief and
 plausibility.
 
-\ref T5d44 "Table 5.44" provides the specification for the \c
+\ref T5d46 "Table 5.46" provides the specification for the \c
 global_evidence method.  \c global_evidence allows the user to specify
 either \c lhs or \c ego.  \c lhs performs Latin Hypercube Sampling and
 takes the minimum and maximum of the samples as the bounds per
@@ -6286,11 +6454,11 @@ uses optimization methods instead to find the minimum and maximum
 sample values within each cell, this can also be computationally
 expensive.
 
-\anchor T5d44
+\anchor T5d46
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.44
+Table 5.46
 \endhtmlonly
 Specification detail for global evidence theory method for epistemic uncertainty
 </caption>
@@ -6372,23 +6540,121 @@ Chain (MCMC) sampling algorithms.  MCMC methods require many samples, often
 tens of thousands, so in the case of model calibration, often emulators 
 of the computational simulation are used.   
 
-We have two Bayesian calibration methods under development 
-in DAKOTA.  GPMSA (Gaussian Process Models for Simulation Analysis) is 
+We have two Bayesian calibration methods under development in DAKOTA: 
+one called QUESO and one called GPMSA.  They are specified with the
+\c bayes_calibration \c queso or \c bayes_calibration \c gpmsa, respectively. 
+The QUESO method is using components from the QUESO library 
+(Quantification of Uncertainty for Estimation, Simulation, and 
+Optimization) developed at the University of Texas. 
+We are using a DRAM (Delayed Rejected Adaptive Metropolis) algorithm 
+for the MCMC sampling from the QUESO library. 
+GPMSA (Gaussian Process Models for Simulation Analysis) is 
 a code that has been developed at Los Alamos National Laboratory. 
 It uses a Gaussian process model as the emulator for the expensive 
 computational simulation.  GPMSA also has extensive features for 
 calibration, such as the capability to include a "model discrepancy" term
 and the capability to model functional data such as time series data. 
-The other method is using components from the QUESO library 
-(Quantification of Uncertainty for Estimation, Simulation, and 
-Optimization) developed at the University of Texas. 
-We are using a DRAM (Delayed Rejected Adaptive Metropolis) algorithm 
-for the MCMC sampling from the QUESO library. 
+ 
+For the QUESO method, one can use an emulator in the MCMC sampling.  This will 
+greatly improve the speed, since the Monte Carlo Markov Chain will generate 
+thousands of samples on the emulator instead of the real simulation code. 
+However, in the case of fast running evaluations, we recommend the use of 
+no emulator.  An emulator may be specified with the keyword \c emulator, 
+followed by a \c gaussian_process emulator, a \c pce emulator (polynomial chaos
+expansion), or a \c sc emulator (stochastic collocation).  For the 
+\c gaussian_process emulator, the user can define the number of samples 
+\c emulator_samples from which the emulator should be built.  It is also 
+possible to build the Gaussian process from points read in from the 
+\c points_file.  For \c pce or \c sc, the user can define a \c sparse_grid_level. 
+In terms of the MCMC sampling, one can specify the following for the QUESO method: 
+With the \c metropolis type, we have the options \c hastings for a standard 
+Metropolis-Hastings algorithm, or \c adaptive for the adaptive Metropolis 
+in which the covariance of the proposal density is updated adaptively. 
+For the delayed rejection part of the DRAM algorithm, one specifies \c rejection, 
+followed by \c standard (no delayed rejection) or \c delayed.  Finally, the user 
+has two scale factors which help control the scaling involved in the problem. 
+The \c likelihood_scale is a number which multiplies the likelihood.  This 
+is useful for situations with very small likelihoods (e.g. the model is either 
+very far away from the data or there is a lot of data so the likelihood function 
+involves multiplying many likelihoods together and becomes very small). 
+The second factor is a \c proposal_covariance_scale which scales the proposal 
+covariance.  This may be useful when the input variables being calibrated 
+are of different magnitudes:  one may want to take a larger step in a direction 
+with a larger magnitude, for example.  
 
-These methods are under active development and are not included 
-in the current DAKOTA release.
+For the GPMSA method, one can define the number of samples which will be used 
+in construction of the emulator, \c emulator_samples.  The emulator 
+involves Gaussian processes in GPMSA, so the user does not specify anything 
+about emulator type.    Note that the QUESO and GPMSA methods 
+are under active development.  They are only included in some releases.  GPMSA 
+especially is in active development:  we anticipate more controls being added 
+in future releases.  At this point, \c emulator_samples and \c samples (number 
+of MCMC samples) are the only controls active at this point. 
 
-<!-- TO DO: add Table for specification options. -->
+
+\ref T5d47 "Table 5.47" provides the specification 
+details for the \c bayes_calibration methods.
+
+\anchor T5d47
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.47
+\endhtmlonly
+Specification detail for the Bayesian calibration methods
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Bayesian calibration 
+<td>\c bayes_calibration
+<td>\c queso | \c gpmsa
+<td>Required group
+<td>N/A
+<tr>
+<td>Emulator type
+<td>\c emulator  \c gaussian_process | \c pce | \c sc
+<td>\c emulator samples (for gaussian process), \c sparse_grid_level (for pce or sc)
+<td>Optional
+<td>N/A
+<tr>
+<td>Metropolis type for the MCMC algorithm 
+<td>\c metropolis 
+<td>\c hastings | \c adaptive
+<td>Optional
+<td>hastings
+<tr>
+<td>Rejection type for the MCMC algorithms
+<td>\c rejection 
+<td>\c standard | \c delayed
+<td>Optional
+<td>standard
+<tr>
+<td>Random seed generator
+<td>\c rng
+<td>\c mt19937 or \c rnum2
+<td>Optional
+<td>Mersenne twister (\c mt19937)
+<tr>
+<td>Random seed
+<td>\c seed
+<td>integer
+<td>Optional
+<td>randomly generated seed
+<tr>
+<td>Number of samples taken in the MCMC sampling
+<td>\c samples
+<td>integer
+<td>Optional
+<td>10000
+</table>
+
+
+\section MethodDACE Design of Computer Experiments Methods
 
 
 \section MethodSoln Solution Verification Methods
@@ -6435,14 +6701,14 @@ In each of these cases, convergence order for a response quantity of
 interest (QOI) is estimated from
 \f[p = ln(\frac{QOI_3 - QOI_2}{QOI_2 - QOI_1})/ln(r)\f]
 where \f$r\f$ is the uniform refinement rate specified by \c 
-refinement_rate.  \ref T5d45 "Table 5.45" provides the specification 
+refinement_rate.  \ref T5d48 "Table 5.48" provides the specification 
 details for the \c richardson_extrap method.
 
-\anchor T5d45
+\anchor T5d48
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.45
+Table 5.48
 \endhtmlonly
 Specification detail for Richardson extrapolation method for solution verification
 </caption>
@@ -6535,13 +6801,13 @@ indices which indicate how important the uncertainty in each input
 variable is in contributing to the output variance.  More details 
 on variance based decomposition are given in \ref MethodNonDMC.
 Design of experiments specification detail is
-given in \ref T5d46 "Table 5.46".
+given in \ref T5d49 "Table 5.49".
 
-\anchor T5d46
+\anchor T5d49
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.46
+Table 5.49
 \endhtmlonly
 Specification detail for design of experiments methods
 </caption>
@@ -6667,7 +6933,7 @@ these sequences, see [\ref Halton1960 "Halton, 1960",
 \ref Kocis1997 "Kocis and Whiten, 1997"].
  
 The specification for specifying quasi-Monte Carlo (\c fsu_quasi_mc) 
-is given below in \ref T5d47 "Table 5.47".  
+is given below in \ref T5d50 "Table 5.50".  
 The user must specify if the sequence is 
 (\c halton) or (\c hammersley).  The user must also specify the number 
 of samples to generate for each variable (\c samples). 
@@ -6728,11 +6994,11 @@ distribution).  Complete explanation of these measures can be found in
 [\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 
 <!-- dakota subcat fsu_quasi_mc -->
-\anchor T5d47
+\anchor T5d50
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.47
+Table 5.50
 \endhtmlonly
 Specification detail for FSU Quasi-Monte Carlo sequences 
 </caption>
@@ -6865,14 +7131,14 @@ More details on the quality measures are given under the description of the
 QMC methods. 
 
 The specification detail for the FSU CVT method is given in 
-\ref T5d48 "Table 5.48".
+\ref T5d51 "Table 5.51".
 
 <!-- dakota subcat fsu_cvt -->
-\anchor T5d48
+\anchor T5d51
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.48
+Table 5.51
 \endhtmlonly
 Specification detail for FSU Centroidal Voronoi Tesselation sampling
 </caption>
@@ -6966,13 +7232,13 @@ partitions) applies to each variable being studied and must be odd
 also be adjusted at runtime as necessary.  For information on
 practical use of this method, see 
 [\ref Saltelli2004 "Saltelli, et al., 2004"].  The specification detail
-for the PSUADE MOAT method is given in \ref T5d49 "Table 5.49".
+for the PSUADE MOAT method is given in \ref T5d52 "Table 5.52".
 
-\anchor T5d49
+\anchor T5d52
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.49
+Table 5.52
 \endhtmlonly
 Specification detail for PSUADE methods
 </caption>
@@ -7066,14 +7332,14 @@ appropriate steps with any discrete range and discrete set variables.
 A \c num_steps specification must result in discrete range and set
 index steps that are integral: no remainder is currently permitted in
 the integer step calculation and no rounding to integer steps will
-occur.  The \c final_point specification detail is given in \ref T5d50
-"Table 5.50".
+occur.  The \c final_point specification detail is given in \ref T5d53
+"Table 5.53".
 
-\anchor T5d50
+\anchor T5d53
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.50
+Table 5.53
 \endhtmlonly
 final_point specification detail for the vector parameter study
 </caption>
@@ -7111,13 +7377,13 @@ state; real or integer), the steps are set index offsets, not steps
 between the actual set values.  This increment process is performed \c
 num_steps times, and since the initial values are included, the total
 number of simulations is again equal to \c num_steps+1. The \c
-step_vector specification detail is given in \ref T5d51 "Table 5.51".
+step_vector specification detail is given in \ref T5d54 "Table 5.54".
 
-\anchor T5d51
+\anchor T5d54
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.51
+Table 5.54
 \endhtmlonly
 step_vector specification detail for the vector parameter study
 </caption>
@@ -7166,13 +7432,13 @@ specification will not be used, they need not be specified. For
 discrete set types, the actual values should be specified, not the set
 indices, although the values will be validated for membership within
 the set value specifications.  The list parameter study specification
-detail is given in \ref T5d52 "Table 5.52".
+detail is given in \ref T5d55 "Table 5.55".
 
-\anchor T5d52
+\anchor T5d55
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.52
+Table 5.55
 \endhtmlonly
 Specification detail for the list parameter study
 </caption>
@@ -7214,14 +7480,14 @@ MethodPSVPS) in either actual values (continuous and discrete range)
 or index offsets (discrete set). The \c steps_per_variable
 specification provides the number of increments per variable (again,
 employed sequentially) in each of the plus and minus directions. The
-centered parameter study specification detail is given in \ref T5d53
-"Table 5.53".
+centered parameter study specification detail is given in \ref T5d56
+"Table 5.56".
 
-\anchor T5d53
+\anchor T5d56
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.53
+Table 5.56
 \endhtmlonly
 Specification detail for the centered parameter study
 </caption>
@@ -7273,13 +7539,13 @@ occurs, so the partitions specification must be carefully selected in
 the presence of these types.  Since the initial values from the
 variables specification will not be used, they need not be
 specified. The multidimensional parameter study specification detail
-is given in \ref T5d54 "Table 5.54".
+is given in \ref T5d57 "Table 5.57".
 
-\anchor T5d54
+\anchor T5d57
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.54
+Table 5.57
 \endhtmlonly
 Specification detail for the multidimensional parameter study
 </caption>

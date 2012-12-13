@@ -20,6 +20,11 @@ Vol. 110, No. 3, pp. 357-366.
 \li \anchor Conn2000 Conn, A. R. and Gould, N. I. M. and Toint, P. L.,
 2000.  <i>Trust-Region Methods</i>, SIAM-MPS, Philadelphia.
 
+\li \anchor Dalbey2012  Dalbey, K. and L. P. Swiler, 2012. 
+"Gaussian Process Adaptive Importance Sampling." 
+submitted to
+<i>International Journal for Uncertainty Quantification</i>.
+
 \li \anchor Du1999  Du,Q., V. Faber, and M. Gunzburger, 1999.
 "Centroidal Voronoi Tessellations: Applications and Algorithms,"
 <i>SIAM Review</i>, Volume 41, 1999, pages 637-676.
@@ -231,8 +236,16 @@ Germany.
 Preprocessor for Parameterizing Finite Element Analyses," Sandia National
 Laboratories Technical Report SAND92-2291, Albuquerque, NM.
 
+\li \anchor Srinivasan Srinivasan, R.,2002.   "Importance Sampling."  
+Springer-Verlag. 
+
 \li \anchor Stroud1971 Stroud, A. H., 1971. "Approximate Calculation of
 Multiple Integrals," Prentice Hall.
+
+\li \anchor Swiler2010 Swiler, L. P. and N. J. West, 2010. 
+"Importance Sampling:  Promises and Limitations."   
+<i>Proceedings of the 12th AIAA Non-Deterministic Approaches Conference
+</i>, Orlando, FL.  Paper AIAA-2010-2850. 
 
 \li \anchor Tapia1 Tapia, R. A., and Argaez, M., "Global Convergence
 of a Primal-Dual Interior-Point Newton Method for Nonlinear
