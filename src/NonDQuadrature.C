@@ -248,61 +248,32 @@ void NonDQuadrature::get_parameter_sets(Model& model)
     for (i=0; i<numContinuousVars; ++i)
       if (quad_order[i] > 1)
 	{ lhs_error_trap = false; break; }
-
-    if (lhs_error_trap) {
+    if (lhs_error_trap) { // only 1 point from which to draw samples
       for (i=0; i<numContinuousVars; ++i) {
 	Real samp_i = colloc_pts_1d[0][i][0]; // all levels,indices = 0
 	for (j=0; j<numSamples; ++j)
 	  allSamples(i,j) = samp_i;
       }
     }
-    else {
-      // sample randomly from the tensor multi-index
-      IntMatrix index_samples;
+    else { // sample randomly from the tensor multi-index
       IntVector index_l_bnds(numContinuousVars), // init to 0
                 index_u_bnds(numContinuousVars, false);
       for (j=0; j<numContinuousVars; ++j)
 	index_u_bnds[j] = quad_order[j] - 1;
-      Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
-      if (!randomSeed)
-	randomSeed = generate_system_seed();
-      lhs.seed(randomSeed);
-      // eliminate redundant samples by resampling if necessary
-      // TO DO: ensure that random seed is NOT reset
       std::set<IntArray> sorted_samples; std::set<IntArray>::iterator it;
-      IntArray sample; bool complete = false, initial = true;
-      while (!complete) {
-	lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds,
-					   numSamples, index_samples);
-	if (initial) {
-	  for (i=0; i<numSamples; ++i) {
-	    copy_data(index_samples[i], numContinuousVars, sample);
-	    sorted_samples.insert(sample);
-	  }
-	  if (sorted_samples.size() == numSamples) complete = true;
-	  else initial = false;
-	}
-	else {
-	  for (i=0; i<numSamples; ++i)
-	    if (sorted_samples.size() < numSamples) {
-	      copy_data(index_samples[i], numContinuousVars, sample);
-	      sorted_samples.insert(sample);
-	    }
-	    else
-	      { complete = true; break; }
-	}
-      }
-      // original IntMatrix was updated; convert set back into IntMatrix
-      if (!initial)
-	for (it =sorted_samples.begin(), i=0;
-	     it!=sorted_samples.end(), i<numSamples; ++it, ++i)
-	  copy_data(*it, index_samples[i], numContinuousVars);
+      // generate unique samples since redundancy degrades the conditioning
+      Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
+      if (!randomSeed) randomSeed = generate_system_seed();
+      lhs.seed(randomSeed);
+      lhs.generate_unique_index_samples(index_l_bnds, index_u_bnds, numSamples,
+					sorted_samples);
       // convert multi-index samples into allSamples
-      for (i=0; i<numSamples; ++i) {
-	Real*  all_samp_i =    allSamples[i];
-	int* index_samp_i = index_samples[i];
+      for (it =sorted_samples.begin(), i=0;
+	   it!=sorted_samples.end(),   i<numSamples; ++it, ++i) {
+	Real*              all_samp_i = allSamples[i];
+	const IntArray& sorted_samp_i = *it;
 	for (j=0; j<numContinuousVars; ++j)
-	  all_samp_i[j] = colloc_pts_1d[lev_index[j]][j][index_samp_i[j]];
+	  all_samp_i[j] = colloc_pts_1d[lev_index[j]][j][sorted_samp_i[j]];
       }
     }
     break;
