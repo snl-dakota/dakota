@@ -27,8 +27,6 @@
 #include "NLP.h"
 #include "OptppArray.h"
 
-using namespace OPTPP;
-
 static const char rcsId[]="@(#) $Id: SNLLLeastSq.C 7029 2010-10-22 00:17:02Z mseldre $";
 
 
@@ -62,7 +60,7 @@ SNLLLeastSq::SNLLLeastSq(Model& model): LeastSq(model), SNLLBase(model),
       abort_handler(-1);
     }
 
-    nlf2 = new NLF2(numContinuousVars, nlf2_evaluator_gn, init_fn);
+    nlf2 = new OPTPP::NLF2(numContinuousVars, nlf2_evaluator_gn, init_fn);
     nlfObjective = nlf2;
     nlfObjective->setModeOverride(true);
     if (numConstraints) { // nonlinear interior-point
@@ -77,34 +75,34 @@ SNLLLeastSq::SNLLLeastSq(Model& model): LeastSq(model), SNLLBase(model),
       if (outputLevel == DEBUG_OUTPUT)
         Cout << "Instantiating OptDHNIPS optimizer with NLF2 Gauss-Newton "
              << "evaluator.\n";
-      optdhnips = new OptDHNIPS(nlf2);
+      optdhnips = new OPTPP::OptDHNIPS(nlf2);
       //optdhnips->setSearchStrategy(searchStrat);// search strat not supported
       optdhnips->setMeritFcn(meritFn);
       optdhnips->setStepLengthToBdry(stepLenToBndry);
       optdhnips->setCenteringParameter(centeringParam);
       theOptimizer = optdhnips;
 
-      nlf1Con = new NLF1(numContinuousVars, numNonlinearConstraints,
-                         constraint1_evaluator_gn, init_fn);
+      nlf1Con = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
+				constraint1_evaluator_gn, init_fn);
       nlfConstraint = nlf1Con;
-      nlpConstraint = new NLP(nlf1Con);
+      nlpConstraint = new OPTPP::NLP(nlf1Con);
     }
     else if (boundConstraintFlag) { // bound-constrained
       if (outputLevel == DEBUG_OUTPUT)
         Cout << "Instantiating OptBCNewton optimizer with NLF2 Gauss-Newton "
              << "evaluator.\n";
-      optbcnewton = new OptBCNewton(nlf2);
+      optbcnewton = new OPTPP::OptBCNewton(nlf2);
       optbcnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optbcnewton->setTRSize(maxStep);
+      if (searchStrat == OPTPP::TrustRegion) optbcnewton->setTRSize(maxStep);
       theOptimizer = optbcnewton;
     }
     else { // unconstrained
       if (outputLevel == DEBUG_OUTPUT)
         Cout << "Instantiating OptNewton optimizer with NLF2 Gauss-Newton "
              << "evaluator.\n";
-      optnewton = new OptNewton(nlf2);
+      optnewton = new OPTPP::OptNewton(nlf2);
       optnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optnewton->setTRSize(maxStep);
+      if (searchStrat == OPTPP::TrustRegion) optnewton->setTRSize(maxStep);
       theOptimizer = optnewton;
     }
   }
@@ -151,7 +149,7 @@ SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
       abort_handler(-1);
     }
 
-    nlf2 = new NLF2(numContinuousVars, nlf2_evaluator_gn, init_fn);
+    nlf2 = new OPTPP::NLF2(numContinuousVars, nlf2_evaluator_gn, init_fn);
     nlfObjective = nlf2;
     nlfObjective->setModeOverride(true);
     if (numConstraints) { // nonlinear interior-point
@@ -166,34 +164,34 @@ SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
       if (outputLevel == DEBUG_OUTPUT)
         Cout << "Instantiating OptDHNIPS optimizer with NLF2 Gauss-Newton "
              << "evaluator.\n";
-      optdhnips = new OptDHNIPS(nlf2);
+      optdhnips = new OPTPP::OptDHNIPS(nlf2);
       //optdhnips->setSearchStrategy(searchStrat);// search strat not supported
       optdhnips->setMeritFcn(meritFn);
       optdhnips->setStepLengthToBdry(0.99995); // default for argaez_tapia
       optdhnips->setCenteringParameter(0.2);   // default for argaez_tapia
       theOptimizer = optdhnips;
 
-      nlf1Con = new NLF1(numContinuousVars, numNonlinearConstraints,
-                         constraint1_evaluator_gn, init_fn);
+      nlf1Con = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
+				constraint1_evaluator_gn, init_fn);
       nlfConstraint = nlf1Con;
-      nlpConstraint = new NLP(nlf1Con);
+      nlpConstraint = new OPTPP::NLP(nlf1Con);
     }
     else if (boundConstraintFlag) { // bound-constrained
       if (outputLevel == DEBUG_OUTPUT)
         Cout << "Instantiating OptBCNewton optimizer with NLF2 Gauss-Newton "
              << "evaluator.\n";
-      optbcnewton = new OptBCNewton(nlf2);
+      optbcnewton = new OPTPP::OptBCNewton(nlf2);
       optbcnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optbcnewton->setTRSize(1000.);
+      if (searchStrat == OPTPP::TrustRegion) optbcnewton->setTRSize(1000.);
       theOptimizer = optbcnewton;
     }
     else { // unconstrained
       if (outputLevel == DEBUG_OUTPUT)
         Cout << "Instantiating OptNewton optimizer with NLF2 Gauss-Newton "
              << "evaluator.\n";
-      optnewton = new OptNewton(nlf2);
+      optnewton = new OPTPP::OptNewton(nlf2);
       optnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optnewton->setTRSize(1000.);
+      if (searchStrat == OPTPP::TrustRegion) optnewton->setTRSize(1000.);
       theOptimizer = optnewton;
     }
   }
@@ -314,7 +312,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "    nlf2_evaluator_gn results: objective fn. =\n   " 
 	   << std::setw(write_precision+7) << f << '\n';
-    result_mode = NLPFunction;
+    result_mode = OPTPP::NLPFunction;
   }
 
   // Get the gradient of the objective = 2*[J]'{R}.
@@ -330,7 +328,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
     }
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "]\n";
-    result_mode |= NLPGradient;
+    result_mode |= OPTPP::NLPGradient;
   }
 
   // Get a Hessian approximation = 2*[J]'[J].
@@ -349,7 +347,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n";
       write_data(Cout, hess_f, true, true, true);
     }
-    result_mode |= NLPHessian;
+    result_mode |= OPTPP::NLPHessian;
   }
   Cout << std::endl;
 }
@@ -397,14 +395,14 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    snllLSqInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
-				   snllLSqInstance->numLeastSqTerms);
-    result_mode = NLPFunction;
+    snllLSqInstance->copy_con_vals_dak_to_optpp(
+      local_response.function_values(), g, snllLSqInstance->numLeastSqTerms);
+    result_mode = OPTPP::NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
     snllLSqInstance->copy_con_grad(local_response.function_gradients(), grad_g,
 				   snllLSqInstance->numLeastSqTerms);
-    result_mode |= NLPGradient;
+    result_mode |= OPTPP::NLPGradient;
   }
 }
 
@@ -463,19 +461,20 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    snllLSqInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
-				   snllLSqInstance->numLeastSqTerms);
-    result_mode = NLPFunction;
+    snllLSqInstance->
+      copy_con_vals_dak_to_optpp(local_response.function_values(), g,
+				 snllLSqInstance->numLeastSqTerms);
+    result_mode = OPTPP::NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
     snllLSqInstance->copy_con_grad(local_response.function_gradients(), grad_g,
 				   snllLSqInstance->numLeastSqTerms);
-    result_mode |= NLPGradient;
+    result_mode |= OPTPP::NLPGradient;
   }
   if (mode & 4) { // 3rd bit is present, mode >= 4
     snllLSqInstance->copy_con_hess(local_response.function_hessians(), hess_g,
 				   snllLSqInstance->numLeastSqTerms);
-    result_mode |= NLPHessian;
+    result_mode |= OPTPP::NLPHessian;
   }
 }
 

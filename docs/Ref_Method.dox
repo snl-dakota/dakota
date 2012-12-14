@@ -1117,14 +1117,14 @@ for the method independent controls is provided in Tables
 
 OPT++'s method dependent controls are \c max_step, \c
 gradient_tolerance, \c search_method, \c merit_function, \c
-central_path, \c steplength_to_boundary, \c centering_parameter, and
-\c search_scheme_size. The \c max_step control specifies the maximum
-step that can be taken when computing a change in the current design
-point (e.g., limiting the Newton step computed from current gradient
-and Hessian information). It is equivalent to a move limit or a
-maximum trust region size. The \c gradient_tolerance control defines
-the threshold value on the L2 norm of the objective function gradient
-that indicates convergence to an unconstrained minimum (no active
+steplength_to_boundary, \c centering_parameter, and \c
+search_scheme_size. The \c max_step control specifies the maximum step
+that can be taken when computing a change in the current design point
+(e.g., limiting the Newton step computed from current gradient and
+Hessian information). It is equivalent to a move limit or a maximum
+trust region size. The \c gradient_tolerance control defines the
+threshold value on the L2 norm of the objective function gradient that
+indicates convergence to an unconstrained minimum (no active
 constraints). The \c gradient_tolerance control is defined for all
 gradient-based optimizers.
 
@@ -1184,13 +1184,13 @@ pattern search techniques.  Use of a line search is the default for
 bound-constrained and generally-constrained problems, and use of a \c
 trust_region search method is the default for unconstrained problems.
 
-The \c merit_function, \c central_path, \c steplength_to_boundary, and
-\c centering_parameter selections are additional specifications that
-are defined for the solution of generally-constrained problems with
+The \c merit_function, \c steplength_to_boundary, and \c
+centering_parameter selections are additional specifications that are
+defined for the solution of generally-constrained problems with
 nonlinear interior-point algorithms.  A \c merit_function is a
 function in constrained optimization that attempts to provide joint
 progress toward reducing the objective function and satisfying the
-constraints.  Valid options are \c el_bakry, \c argaez_tapia, or \c 
+constraints.  Valid options are \c el_bakry, \c argaez_tapia, or \c
 van_shanno, where user input is not case sensitive in this case.
 Details for these selections are as follows:
 
@@ -1215,21 +1215,24 @@ function evaluation. For more information see
 If the function evaluation is expensive or noisy, set the \c
 merit_function to "argaez_tapia" or "van_shanno".
 
+<!-- MSE/PDH: option retired on 12/14/2012 as OPT++ hardwires this
+     	      internally to match merit_function.
 The \c central_path specification represents a measure of proximity to
 the central path and specifies an update strategy for the perturbation
 parameter mu.  Refer to [\ref Argaez2002 "Argaez et al., 2002"] for a
 detailed discussion on proximity measures to the central region. Valid
 options are, again, \c el_bakry, \c argaez_tapia, or \c van_shanno.
 The default value for \c central_path is the value of \c
-merit_function (either user-selected or default).  The \c
-steplength_to_boundary specification is a parameter (between 0 and 1)
-that controls how close to the boundary of the feasible region the
-algorithm is allowed to move.  A value of 1 means that the algorithm
-is allowed to take steps that may reach the boundary of the feasible
-region.  If the user wishes to maintain strict feasibility of the
-design parameters this value should be less than 1.  Default values
-are .8, .99995, and .95 for the \c el_bakry, \c argaez_tapia, and
-\c van_shanno merit functions, respectively.  The \c
+merit_function (either user-selected or default). -->
+
+The \c steplength_to_boundary specification is a parameter (between 0
+and 1) that controls how close to the boundary of the feasible region
+the algorithm is allowed to move.  A value of 1 means that the
+algorithm is allowed to take steps that may reach the boundary of the
+feasible region.  If the user wishes to maintain strict feasibility of
+the design parameters this value should be less than 1.  Default
+values are .8, .99995, and .95 for the \c el_bakry, \c argaez_tapia,
+and \c van_shanno merit functions, respectively.  The \c
 centering_parameter specification is a parameter (between 0 and 1)
 that controls how closely the algorithm should follow the "central
 path". See [\ref Wright1 "Wright"] for the definition of central path.
@@ -1287,12 +1290,6 @@ Specification detail for OPT++ Newton-based optimization methods
 <td>\c argaez_tapia, \c el_bakry, or \c van_shanno
 <td>Optional
 <td>\c argaez_tapia
-<tr>
-<td>Central path
-<td>\c central_path
-<td>\c argaez_tapia, \c el_bakry, or \c van_shanno
-<td>Optional
-<td>value of \c merit_function
 <tr>
 <td>Steplength to boundary
 <td>\c steplength_to_boundary

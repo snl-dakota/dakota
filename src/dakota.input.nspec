@@ -161,10 +161,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	        el_bakry {N_mdm(type,meritFn_NormFmu)}
 		| argaez_tapia {N_mdm(type,meritFn_ArgaezTapia)}
 		| van_shanno {N_mdm(type,meritFn_VanShanno)} ]
-#	      [ central_path {0}
-#	        el_bakry {N_mdm(type,centralPath_NormFmu)}
-#		| argaez_tapia {N_mdm(type,centralPath_ArgaezTapia)}
-#		| van_shanno {N_mdm(type,centralPath_VanShanno)} ]
 	      [ steplength_to_boundary REAL {N_mdm(Real,stepLenToBoundary)} ]
 	      [ centering_parameter REAL {N_mdm(Real,centeringParam)} ]
 	      )

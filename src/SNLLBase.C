@@ -54,14 +54,13 @@ SNLLBase::SNLLBase(Model& model)
   maxStep         =  problem_db.get_real("method.optpp.max_step");
   stepLenToBndry  =  problem_db.get_real("method.optpp.steplength_to_boundary");
   centeringParam  =  problem_db.get_real("method.optpp.centering_parameter");
-  // an indirection is required to convert short to OPTPP::MeritFcn:
   //meritFn       =  problem_db.get_short("method.optpp.merit_function");//error
+  // an indirection is required to convert short to OPTPP::MeritFcn:
   switch (problem_db.get_short("method.optpp.merit_function")) {
   case OPTPP::NormFmu:     meritFn = OPTPP::NormFmu; break;
   case OPTPP::ArgaezTapia: meritFn = OPTPP::ArgaezTapia; break;
   case OPTPP::VanShanno:   meritFn = OPTPP::VanShanno; break;
   }
-  //centralPath   =  problem_db.get_short("method.optpp.central_path");
 }
 
 

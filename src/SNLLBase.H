@@ -143,8 +143,6 @@ protected:
 
   /// value from \c max_step specification
   Real maxStep;
-  // string from \c central_path specification
-  //String centralPath;
   /// value from \c steplength_to_boundary specification
   Real stepLenToBndry;
   /// value from \c centering_parameter specification

@@ -5373,9 +5373,6 @@ static size_t
 	MP_(numParents);
 
 static Method_mp_type
-//	MP2o(centralPath,ArgaezTapia),                     // OPTPP enumeration
-//	MP2o(centralPath,NormFmu),                         // OPTPP enumeration
-//	MP2o(centralPath,VanShanno),                       // OPTPP enumeration
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),

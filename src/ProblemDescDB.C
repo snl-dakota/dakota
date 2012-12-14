@@ -2119,7 +2119,6 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
 	{"nond.sparse_grid_basis_type", P sparseGridBasisType},
 	{"nond.vbd_control", P vbdControl},
-//	{"optpp.central_path", P centralPath},
 	{"optpp.merit_function", P meritFn},
 	{"output", P methodOutput},
 	{"sbl.acceptance_logic", P surrBasedLocalAcceptLogic},

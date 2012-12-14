@@ -48,9 +48,7 @@ DataMethodRep::DataMethodRep():
   // OPT++
   // searchMethod default is null since "trust_region" is preferred for 
   // unconstrained opt., whereas "line_search" is preferred for bc opt.
-  gradientTolerance(0.0001),
-  maxStep(1.e+3),             // only used in trust_region case
-  meritFn(OPTPP::ArgaezTapia), //centralPath(OPTPP::ArgaezTapia),
+  gradientTolerance(0.0001), maxStep(1.e+3), meritFn(OPTPP::ArgaezTapia),
   stepLenToBoundary(-1.), centeringParam(-1.), // dummy defaults (see SNLLBase)
   searchSchemeSize(32),
   // APPSPACK
@@ -165,7 +163,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << initTRRadius << covarianceType << regressDiag;
 
   // OPT++
-  s << searchMethod << gradientTolerance << maxStep << meritFn //<< centralPath
+  s << searchMethod << gradientTolerance << maxStep << meritFn
     << stepLenToBoundary << centeringParam << searchSchemeSize;
 
   // APPSPACK
@@ -271,7 +269,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> initTRRadius >> covarianceType >> regressDiag;
 
   // OPT++
-  s >> searchMethod >> gradientTolerance >> maxStep >> meritFn //>> centralPath
+  s >> searchMethod >> gradientTolerance >> maxStep >> meritFn
     >> stepLenToBoundary >> centeringParam >> searchSchemeSize;
 
   // APPSPACK
@@ -377,7 +375,7 @@ void DataMethodRep::write(std::ostream& s) const
     << initTRRadius << covarianceType << regressDiag;
 
   // OPT++
-  s << searchMethod << gradientTolerance << maxStep << meritFn //<< centralPath
+  s << searchMethod << gradientTolerance << maxStep << meritFn
     << stepLenToBoundary << centeringParam << searchSchemeSize;
 
   // APPSPACK

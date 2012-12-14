@@ -341,9 +341,6 @@ public:
   /// the \c merit_function specification for nonlinear
   /// interior-point methods in \ref MethodOPTPPDC
   short meritFn;
-  // the \c central_path specification for nonlinear interior-point
-  // methods in \ref MethodOPTPPDC
-  //String centralPath;
   /// the \c steplength_to_boundary specification for nonlinear
   /// interior-point methods in \ref MethodOPTPPDC
   Real stepLenToBoundary;
