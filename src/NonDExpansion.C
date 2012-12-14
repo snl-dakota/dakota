@@ -46,10 +46,6 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   expSampling(false), impSampling(false),
   covarianceControl(probDescDB.get_short("method.nond.covariance_control"))
 {
-  // Re-assign defaults specialized to refinement of stochastic expansions
-  if (maxIterations < 0) // ctor chain picks up DataMethod default of -1
-    maxIterations = 100;
-
   if (probDescDB.get_bool("method.variance_based_decomp")) {
     vbdControl = probDescDB.get_short("method.nond.vbd_control");
     vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
@@ -783,8 +779,10 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // Uniform/adaptive refinement approaches
   // --------------------------------------
-  size_t i, iter = 1;
-  bool converged = (iter > maxIterations);
+  // DataMethod default for maxIterations is -1, indicating no user spec.
+  // Assign a context-specific default in this case.
+  size_t i, iter = 1, max_iter = (maxIterations < 0) ? 100 : maxIterations;
+  bool converged = (iter > max_iter);
   Real metric;
 
   // post-process nominal expansion
@@ -863,7 +861,7 @@ void NonDExpansion::refine_expansion()
       break;
     }
 
-    converged = (metric <= convergenceTol || ++iter > maxIterations);
+    converged = (metric <= convergenceTol || ++iter > max_iter);
     if (!converged)
       compute_print_iteration_results(false);
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
