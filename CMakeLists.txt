@@ -313,6 +313,10 @@ set(CPACK_PACKAGE_FILE_NAME "dakota-${local_version}.${local_arch}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${local_version}.src")
 
 set(CPACK_SOURCE_IGNORE_FILES ".svn")
+set(CPACK_SOURCE_IGNORE_FILES "packages/pecos/packages/teuchos"
+set(CPACK_SOURCE_IGNORE_FILES "packages/pecos/packages/boost"
+set(CPACK_SOURCE_IGNORE_FILES "packages/surfpack/packages/CONMIN"
+set(CPACK_SOURCE_IGNORE_FILES "packages/surfpack/packages/NCSUOpt"
 
 if(DAKOTA_DISTRO GREATER DAKOTA_InternalFull)
   list(APPEND CPACK_SOURCE_IGNORE_FILES "local/buildscripts")
