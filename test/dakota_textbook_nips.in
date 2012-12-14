@@ -22,7 +22,7 @@ method,
 #	optpp_g_newton			#5
 #	nlssol_sqp			#6
 #       nl2sol                          #7,#8
-	  merit_function = 'el_bakry'	#0,#1,#2,#3,#4,#5
+	  merit_function el_bakry	#0,#1,#2,#3,#4,#5
 	  max_iterations = 50
 	  convergence_tolerance = 1e-8
 #	  linear_inequality_constraint_matrix = 1. 1.	#5,#6

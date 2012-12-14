@@ -31,7 +31,7 @@ method,
 #	dot_sqp				#2,#3
 #	npsol_sqp			#4,#5,#20
 #	optpp_q_newton			#6,#7
-#	  merit_function = 'el_bakry'	#6,#7
+#	  merit_function el_bakry	#6,#7
 #	coliny_direct			#8,#9,#21
 #	  division major_dimension      #8,#9,#21
 	  convergence_tolerance = 1e-8	#0,#1,#2,#3,#4,#5,#6
