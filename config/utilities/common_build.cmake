@@ -30,13 +30,12 @@ message( "CTEST_DASHBOARD_ROOT defined, value = ${CTEST_DASHBOARD_ROOT}" )
 
 #*****************************************************************
 # Error checking on required variables
-
 #*****************************************************************
 # Get|set default CTEST_[SOURCE|BINARY]_DIRECTORY
 #   (default: ${CTEST_DASHBOARD_ROOT}/[source|build])
 
 if ( DAKOTA_JENKINS_BUILD )
-  include( DakotaJenkins )
+  include( DakotaJenkins ) 
 else ()
   if ( NOT CTEST_BINARY_DIRECTORY )
     set( CTEST_BINARY_DIRECTORY
@@ -153,7 +152,7 @@ set(CTEST_CONFIGURE_COMMAND
 
 #*****************************************************************
 # Since this is the filename used by the email notification, this
-# cannot be overridden by the user
+# cannot be overridden by the user. Change filename here.
 set( dakotaCtestResultsFile 
      "${CTEST_BINARY_DIRECTORY}/dakota_ctest_results.log" )
 
@@ -161,58 +160,10 @@ set( dakotaCtestResultsFile
 # The work begins...
 ##############################################################################
 
-#*****************************************************************
-# Print summary information.
-
-foreach(v
-    CMAKE_MODULE_PATH
-    CTEST_SITE
-    CTEST_BUILD_NAME
-    CTEST_DASHBOARD_ROOT
-    CTEST_SOURCE_DIRECTORY
-    CTEST_BINARY_DIRECTORY
-    CTEST_SCRIPT_DIRECTORY
-    CTEST_CMAKE_GENERATOR
-    CTEST_BUILD_CONFIGURATION
-    CTEST_CONFIGURE_COMMAND
-    CTEST_BUILD_COMMAND
-    CTEST_TEST_COMMAND
-    CTEST_NOTES_FILE
-    DAKOTA_CMAKE_PLATFORM
-    DAKOTA_CMAKE_COMPILER
-    DAKOTA_CMAKE_HOSTFILE
-    DAKOTA_CMAKE_BUILD_TYPE
-    DAKOTA_CTEST_PROJECT_TAG
-    DAKOTA_CTEST_PARALLEL_LEVEL
-    DAKOTA_CTEST_REGEXP
-    DAKOTA_DEBUG
-    DAKOTA_DO_TEST
-    DAKOTA_TEST_SBATCH
-    DAKOTA_DO_PACK
-    DAKOTA_CONFIG_DIR
-    DAKOTA_LOCAL_CONFIG_DIR
-    dakotaCtestResultsFile
-    )
-  set(vars "${vars}  ${v}=[${${v}}]\n")
-endforeach(v)
-
-if ( DAKOTA_DEBUG )
-  file( WRITE ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out ${vars} )
-endif()
-if ( EXISTS ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out )
-  list( APPEND CTEST_NOTES_FILES 
-    ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out )
-endif()
-message("Dashboard script configuration:\n${vars}\n")
-
 ctest_start(${DAKOTA_CTEST_PROJECT_TAG})
 
 ctest_configure(RETURN_VALUE ConfigStatus)
 message("ctest_configure: cmake return code: ${ConfigStatus}")
-
-# Create a notes file to be submitted to the Dashboard
-list( APPEND CTEST_NOTES_FILES ${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME} )
-create_cmake_system_file( ${CTEST_BINARY_DIRECTORY} )
 
 # Using file(WRITE...) resets the dakotaCtestResultsFile for each CTest run
 file( WRITE ${dakotaCtestResultsFile} "ctest_configure: ${ConfigStatus}\n" )
@@ -300,4 +251,83 @@ if ( DAKOTA_DO_PACK )
   endif() # CPackSourceConfig.cmake exists
 
 endif() # DAKOTA_DO_PACK
+
+##############################################################################
+# Print all data
+##############################################################################
+
+#*****************************************************************
+# FILE: dakota_jenkins.out
+if ( DAKOTA_JENKINS_BUILD )
+  include( DakotaPrintJenkinsVars )
+  print_jenkins_vars( ${CTEST_BINARY_DIRECTORY} )
+endif()
+
+#*****************************************************************
+# FILE: dakota_system.out
+create_cmake_system_file( ${CTEST_BINARY_DIRECTORY} )
+
+#*****************************************************************
+# FILE: dakota_ctest_variables.out
+
+# Set TAG
+if ( EXISTS ${CTEST_BINARY_DIRECTORY}/Testing/TAG )
+  file( STRINGS ${CTEST_BINARY_DIRECTORY}/Testing/TAG taginfo 
+    LIMIT_COUNT 1 )
+  set( DAKOTA_CTEST_TAG ${taginfo} )
+endif()
+
+# Set CTEST_NOTES_FILES
+# Create empty file for next step. This file will be overwritten with
+# next commands
+file( WRITE ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out "" )
+
+foreach(v
+    dakota_ctest_results.log
+    dakota_test_results.log
+    dakota_ctest_variables.out
+    dakota_jenkins.out
+    dakota_system.out
+)
+  if ( EXISTS ${CTEST_BINARY_DIRECTORY}/${v} )
+    list( APPEND CTEST_NOTES_FILES ${CTEST_BINARY_DIRECTORY}/${v} )
+  endif()
+endforeach()
+
+# Print all variables to dakota_ctest_variables.out
+foreach(v
+    CMAKE_MODULE_PATH
+    CTEST_SITE
+    CTEST_BUILD_NAME
+    CTEST_DASHBOARD_ROOT
+    CTEST_SOURCE_DIRECTORY
+    CTEST_BINARY_DIRECTORY
+    CTEST_SCRIPT_DIRECTORY
+    CTEST_CMAKE_GENERATOR
+    CTEST_BUILD_CONFIGURATION
+    CTEST_CONFIGURE_COMMAND
+    CTEST_BUILD_COMMAND
+    CTEST_TEST_COMMAND
+    CTEST_NOTES_FILES
+    DAKOTA_CMAKE_PLATFORM
+    DAKOTA_CMAKE_COMPILER
+    DAKOTA_CMAKE_HOSTFILE
+    DAKOTA_CMAKE_BUILD_TYPE
+    DAKOTA_CTEST_PROJECT_TAG
+    DAKOTA_CTEST_PARALLEL_LEVEL
+    DAKOTA_CTEST_REGEXP
+    DAKOTA_CTEST_TAG
+    DAKOTA_DEBUG
+    DAKOTA_DO_TEST
+    DAKOTA_TEST_SBATCH
+    DAKOTA_DO_PACK
+    DAKOTA_CONFIG_DIR
+    DAKOTA_LOCAL_CONFIG_DIR
+    dakotaCtestResultsFile
+    )
+  set(vars "${vars}  ${v}=[${${v}}]\n")
+endforeach(v)
+
+file( WRITE ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out ${vars} )
+message("Dashboard script configuration:\n${vars}\n")
 
