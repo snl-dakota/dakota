@@ -27,7 +27,7 @@ execute_process(
   # Omit the header and get the library only
   COMMAND awk "FNR > 1 {print $1}"
   # Omit libs in the build tree
-  COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/.+.so"
+  COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_SUFFIX}"
   # Omit system libraries
   COMMAND egrep -v "(^/System|^/usr/lib|^/usr/X11)"
   COMMAND tr "\\n" ";"
