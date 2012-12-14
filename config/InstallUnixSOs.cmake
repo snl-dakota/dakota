@@ -1,4 +1,4 @@
-# Find the Darwin dylib dependencies of dakota, excluding system libraries, 
+# Find the Unix so dependencies of dakota, excluding system libraries, 
 # and install to ${CMAKE_INSTALL_PREFIX}/bin
 
 # NOTE: This script will only work for make install from top of build tree
@@ -20,40 +20,29 @@ function(dakota_install_dll dakota_dll)
 endfunction()
 
 
-# Get the dylibs excluding system libraries and anything in the build
-# tree (as will be installed to lib/) as a semicolon-separated list
+# Get the shared objects excluding system libraries and anything in
+# the build tree (as will be installed to lib/) as a
+# semicolon-separated list
 execute_process(
-  COMMAND otool -L "${CMAKE_CURRENT_BINARY_DIR}/src/dakota"
-  # Omit the header and get the library only
-  COMMAND awk "FNR > 1 {print $1}"
+  COMMAND ldd "${CMAKE_CURRENT_BINARY_DIR}/src/dakota"
+  COMMAND awk "/=>/ {print $3}"
+  # Omit linux-vdso.so and ld-linux-x86-64.so for example
+  COMMAND grep ".so"
   # Omit libs in the build tree
   COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/.+.so"
-  # Omit system libraries
-  COMMAND egrep -v "(^/System|^/usr/lib|^/usr/X11)"
+  # Omit other system libraries
+  COMMAND egrep -v "(^/lib|^/usr/lib)"
   COMMAND tr "\\n" ";"
-  OUTPUT_VARIABLE dakota_darwin_dylibs
+  OUTPUT_VARIABLE dakota_unix_sos
   )
-
-# Get the secondary dylibs of the dylibs
-foreach(pri_lib ${dakota_darwin_dylibs})
-  execute_process(
-    COMMAND otool -L "${pri_lib}"
-    COMMAND awk "FNR > 1 {print $1}"
-    # Omit system libraries
-    COMMAND egrep -v "(^/System|^/usr/lib|^/usr/X11)"
-    COMMAND tr "\\n" ";"
-    OUTPUT_VARIABLE dakota_secondary_dylibs
-    )
-  list(APPEND dakota_darwin_dylibs ${dakota_secondary_dylibs})
-endforeach()
 
 # Ignore empty list elements:
 cmake_policy(PUSH)
 cmake_policy(SET CMP0007 OLD)
-list(REMOVE_DUPLICATES dakota_darwin_dylibs)
+list(REMOVE_DUPLICATES dakota_unix_sos)
 cmake_policy(POP)
 
-# Process each DLL and install
-foreach(dakota_dll ${dakota_darwin_dylibs})
+## Process each DLL and install
+foreach(dakota_dll ${dakota_unix_sos})
   dakota_install_dll("${dakota_dll}")
 endforeach()

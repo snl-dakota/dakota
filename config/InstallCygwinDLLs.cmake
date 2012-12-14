@@ -1,6 +1,7 @@
 # Find the Cygwin DLL dependencies of dakota.exe that live in /bin or
 # /lib and install to ${CMAKE_INSTALL_PREFIX}/bin
 
+# NOTE: This script will only work for make install from top of build tree
 # TODO: Review string quoting conventions and test with spaces in filename
 
 # Function to install a single Dakota dll dependency
@@ -20,11 +21,17 @@ endfunction()
 
 # Get the DLLs only in cygwin\bin or cygwin\lib as a semicolon-separated list
 execute_process(
-  COMMAND cygcheck.exe ${CMAKE_CURRENT_BINARY_DIR}/dakota.exe 
+  COMMAND cygcheck.exe "${CMAKE_CURRENT_BINARY_DIR}/src/dakota.exe"
   COMMAND egrep "cygwin\\\\(bin|lib)\\\\"
   COMMAND tr "\\n" ";"
   OUTPUT_VARIABLE dakota_cygwin_dlls
   )
+
+# Ignore empty list elements:
+cmake_policy(PUSH)
+cmake_policy(SET CMP0007 OLD)
+list(REMOVE_DUPLICATES dakota_cygwin_dlls)
+cmake_policy(POP)
 
 # Process each DLL and install
 foreach(dakota_dll ${dakota_cygwin_dlls})
@@ -37,4 +44,3 @@ foreach(dakota_dll ${dakota_cygwin_dlls})
   string(STRIP "${dakota_dll}" dakota_dll)
   dakota_install_dll("${dakota_dll}")
 endforeach()
-

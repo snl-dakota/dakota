@@ -344,6 +344,13 @@ set(util_src ParallelLibrary.C MPIPackBuffer.C
     data_util.C tabular_io.C global_defs.C CommandLineHandler.C DakotaGraphics.C
     DakotaString.C DakotaBinStream.C SensAnalysisGlobal.C WorkdirHelper.C)
 
+## Results Database sources
+option(DAKOTA_RESULTS_DB "Enable Dakota results DB" OFF)
+if(DAKOTA_RESULTS_DB)
+  list(APPEND util_src IteratorAnyDB.C ResultsManager.C)
+endif()
+
+
 if(HAVE_RPC_XDR_H)
   list(APPEND util_src dak_xdr_interface.c)
 endif(HAVE_RPC_XDR_H)
@@ -759,17 +766,21 @@ if (DAKOTA_HAVE_MPI)
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
-# Install non-default dyanamic deps
+# Install dyanamic deps, omitting standard system libs
 # CMake variables aren't passed to the script, so we have to invoke
 # separate scripts for each platform
-if (CYGWIN)
-  install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallCygwinDLLs.cmake")
-elseif (APPLE)
-  install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallDarwinDylibs.cmake")
-#elseif (UNIX)
-#  install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallLinuxSOs.cmake")
+option(DAKOTA_INSTALL_DYNAMIC_DEPS 
+  "Install Dakota's dynamic dependencies to CMAKE_INSTALL_PREFIX/bin/" ON)
+if (DAKOTA_INSTALL_DYNAMIC_DEPS)
+  if (CYGWIN)
+    install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallCygwinDLLs.cmake")
+  elseif (APPLE)
+    install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallDarwinDylibs.cmake")
+  elseif (UNIX)
+    install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallUnixSOs.cmake")
+  endif()
 endif()
-
+  
 if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
   message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")
 endif()
