@@ -5568,32 +5568,27 @@ cubature, and sparse grid approaches.
 <li> multidimensional integration by Latin hypercube sampling
      (specified with \c expansion_samples).  In this case, the
      expansion order \e p cannot be inferred from the numerical
-     integration specification and it is necessary to provide either
-     \c expansion_order or \c expansion_terms to specify either \e p
-     or \e N, respectively, for a total-order expansion, where the
-     latter specification allows the use of a partial-order expansion
-     (truncation of a complete order expansion, while supported, is
-     not generally recommended).
+     integration specification and it is necessary to provide an
+     \c expansion_order to specify \e p for a total-order expansion.
 <li> linear regression (specified with either \c collocation_points or
      \c collocation_ratio).  A total-order expansion is used and must
-     be specified using either \c expansion_order or \c
-     expansion_terms as described in the previous option.  Given \e p
-     or \e N, the total number of collocation points (including any
-     sample reuse) must be at least \e N, and an oversampling is
-     generally advisable.  To more easily satisfy this requirement
-     (i.e., to avoid requiring the user to calculate \e N from \e n
-     and \e p), \c collocation_ratio allows for specification of a
-     constant oversampling factor applied to \e N (e.g., \c
-     collocation_ratio = \c 2. produces samples = \e 2N).  In addition,
-     the default linear relationship with \e N can be overridden using a
-     real-valued exponent specified using \c ratio_order.  In this
-     case, the number of samples becomes \f$cN^o\f$ where \f$c\f$ is
-     the \c collocation_ratio and \f$o\f$ is the \c ratio_order.  The
-     \c use_derivatives flag informs the regression approach to
-     include derivative matching equations (limited to gradients at
-     present) in the least squares solutions, enabling the use of
-     fewer collocation points for a given expansion order and
-     dimension (number of points required becomes
+     be specified using \c expansion_order as described in the
+     previous option.  Given \e p or \e N, the total number of
+     collocation points (including any sample reuse) must be at least
+     \e N, and an oversampling is generally advisable.  To more easily
+     satisfy this requirement (i.e., to avoid requiring the user to
+     calculate \e N from \e n and \e p), \c collocation_ratio allows
+     for specification of a constant oversampling factor applied to \e
+     N (e.g., \c collocation_ratio = \c 2. produces samples = \e 2N).
+     In addition, the default linear relationship with \e N can be
+     overridden using a real-valued exponent specified using \c
+     ratio_order.  In this case, the number of samples becomes
+     \f$cN^o\f$ where \f$c\f$ is the \c collocation_ratio and \f$o\f$
+     is the \c ratio_order.  The \c use_derivatives flag informs the
+     regression approach to include derivative matching equations
+     (limited to gradients at present) in the least squares solutions,
+     enabling the use of fewer collocation points for a given
+     expansion order and dimension (number of points required becomes
      \f$\frac{cN^o}{n+1}\f$).  When admissible, a constrained least
      squares approach is employed in which response values are first
      reproduced exactly and error in reproducing response derivatives
@@ -5613,8 +5608,7 @@ cubature, and sparse grid approaches.
      approach using an unstructured grid.
 <li> coefficient import from a file (specified with \c
      expansion_import_file).  A total-order expansion is assumed and
-     must be specified using either \c expansion_order or \c
-     expansion_terms.
+     must be specified using \c expansion_order.
 
 \anchor T5d39
 <table>
@@ -5688,14 +5682,8 @@ sampling, regression, and expansion import options.
 <tr>
 <td>Expansion order
 <td>\c expansion_order
-<td>integer
-<td>Required (1 of 2 selections) for any above required spec
-<td>N/A
-<tr>
-<td>Expansion terms
-<td>\c expansion_terms
-<td>integer
-<td>Required (1 of 2 selections) for any above required spec
+<td>list of integers (scalar input accepted for isotropic)
+<td>Required
 <td>N/A
 </table>
 </ol>
