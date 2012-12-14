@@ -1190,8 +1190,8 @@ are defined for the solution of generally-constrained problems with
 nonlinear interior-point algorithms.  A \c merit_function is a
 function in constrained optimization that attempts to provide joint
 progress toward reducing the objective function and satisfying the
-constraints.  Valid string inputs are "el_bakry", "argaez_tapia", or
-"van_shanno", where user input is not case sensitive in this case.
+constraints.  Valid options are \c el_bakry, \c argaez_tapia, or \c 
+van_shanno, where user input is not case sensitive in this case.
 Details for these selections are as follows:
 
 \li The "el_bakry" merit function is the L2-norm of the first order
@@ -1219,24 +1219,24 @@ The \c central_path specification represents a measure of proximity to
 the central path and specifies an update strategy for the perturbation
 parameter mu.  Refer to [\ref Argaez2002 "Argaez et al., 2002"] for a
 detailed discussion on proximity measures to the central region. Valid
-options are, again, "el_bakry", "argaez_tapia", or "van_shanno", where
-user input is not case sensitive.  The default value for \c
-central_path is the value of \c merit_function (either user-selected
-or default).  The \c steplength_to_boundary specification is a
-parameter (between 0 and 1) that controls how close to the boundary of
-the feasible region the algorithm is allowed to move.  A value of 1
-means that the algorithm is allowed to take steps that may reach the
-boundary of the feasible region.  If the user wishes to maintain
-strict feasibility of the design parameters this value should be less
-than 1.  Default values are .8, .99995, and .95 for the "el_bakry",
-"argaez_tapia", and "van_shanno" merit functions, respectively.  The
-\c centering_parameter specification is a parameter (between 0 and 1)
+options are, again, \c el_bakry, \c argaez_tapia, or \c van_shanno.
+The default value for \c central_path is the value of \c
+merit_function (either user-selected or default).  The \c
+steplength_to_boundary specification is a parameter (between 0 and 1)
+that controls how close to the boundary of the feasible region the
+algorithm is allowed to move.  A value of 1 means that the algorithm
+is allowed to take steps that may reach the boundary of the feasible
+region.  If the user wishes to maintain strict feasibility of the
+design parameters this value should be less than 1.  Default values
+are .8, .99995, and .95 for the \c el_bakry, \c argaez_tapia, and
+\c van_shanno merit functions, respectively.  The \c
+centering_parameter specification is a parameter (between 0 and 1)
 that controls how closely the algorithm should follow the "central
 path". See [\ref Wright1 "Wright"] for the definition of central path.
 The larger the value, the more closely the algorithm follows the
 central path, which results in small steps. A value of 0 indicates
 that the algorithm will take a pure Newton step. Default values are
-.2, .2, and .1 for the "el_bakry", "argaez_tapia", and "van_shanno"
+.2, .2, and .1 for the \c el_bakry, \c argaez_tapia, and \c van_shanno
 merit functions, respectively.
 
 \ref T5d6 "Table 5.6" provides the details for the Newton-based methods.
@@ -1284,13 +1284,13 @@ Specification detail for OPT++ Newton-based optimization methods
 <tr>
 <td>Merit function
 <td>\c merit_function
-<td>string
+<td>\c argaez_tapia, \c el_bakry, or \c van_shanno
 <td>Optional
-<td>\c "argaez_tapia"
+<td>\c argaez_tapia
 <tr>
 <td>Central path
 <td>\c central_path
-<td>string
+<td>\c argaez_tapia, \c el_bakry, or \c van_shanno
 <td>Optional
 <td>value of \c merit_function
 <tr>
