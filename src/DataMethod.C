@@ -13,6 +13,9 @@
 #include "DataMethod.H"
 #include "data_io.h"
 #include "pecos_global_defs.hpp"
+#ifdef HAVE_OPTPP
+#include "globals.h"
+#endif
 
 
 namespace Dakota {
@@ -47,9 +50,8 @@ DataMethodRep::DataMethodRep():
   // unconstrained opt., whereas "line_search" is preferred for bc opt.
   gradientTolerance(0.0001),
   maxStep(1.e+3),             // only used in trust_region case
-  meritFn("argaez_tapia"), centralPath("argaez_tapia"),
-  stepLenToBoundary(0.99995), // see IDRProblemDescDB.C for meritFn dependence
-  centeringParam(0.2),        // see IDRProblemDescDB.C for meritFn dependence
+  meritFn(OPTPP::ArgaezTapia), //centralPath(OPTPP::ArgaezTapia),
+  stepLenToBoundary(-1.), centeringParam(-1.), // dummy defaults (see SNLLBase)
   searchSchemeSize(32),
   // APPSPACK
   initStepLength(1.0), contractStepLength(0.5), threshStepLength(0.01),
@@ -163,7 +165,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << initTRRadius << covarianceType << regressDiag;
 
   // OPT++
-  s << searchMethod << gradientTolerance << maxStep << meritFn << centralPath
+  s << searchMethod << gradientTolerance << maxStep << meritFn //<< centralPath
     << stepLenToBoundary << centeringParam << searchSchemeSize;
 
   // APPSPACK
@@ -269,7 +271,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> initTRRadius >> covarianceType >> regressDiag;
 
   // OPT++
-  s >> searchMethod >> gradientTolerance >> maxStep >> meritFn >> centralPath
+  s >> searchMethod >> gradientTolerance >> maxStep >> meritFn //>> centralPath
     >> stepLenToBoundary >> centeringParam >> searchSchemeSize;
 
   // APPSPACK
@@ -375,7 +377,7 @@ void DataMethodRep::write(std::ostream& s) const
     << initTRRadius << covarianceType << regressDiag;
 
   // OPT++
-  s << searchMethod << gradientTolerance << maxStep << meritFn << centralPath
+  s << searchMethod << gradientTolerance << maxStep << meritFn //<< centralPath
     << stepLenToBoundary << centeringParam << searchSchemeSize;
 
   // APPSPACK

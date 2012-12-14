@@ -121,11 +121,8 @@ public:
   KWH(method_litc);
   KWH(method_liti);
   KWH(method_litp);
-  KWH(method_litpp);
-  KWH(method_litpp_final);
   KWH(method_litr);
   KWH(method_litz);
-  KWH(method_meritFn);
   KWH(method_moga_begin);
   KWH(method_moga_final);
   KWH(method_nnint);

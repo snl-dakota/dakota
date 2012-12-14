@@ -29,16 +29,14 @@
 #include "OptppArray.h"
 #include "data_util.h"
 
-using namespace OPTPP;
-
 static const char rcsId[]="@(#) $Id: SNLLBase.C 7029 2010-10-22 00:17:02Z mseldre $";
 
 namespace Dakota {
 
-Minimizer*      SNLLBase::optLSqInstance(NULL);
-bool            SNLLBase::modeOverrideFlag(false);
-EvalType        SNLLBase::lastFnEvalLocn(NLFEvaluator);
-int             SNLLBase::lastEvalMode(1);
+Minimizer* SNLLBase::optLSqInstance(NULL);
+bool       SNLLBase::modeOverrideFlag(false);
+EvalType   SNLLBase::lastFnEvalLocn(NLFEvaluator);
+int        SNLLBase::lastEvalMode(1);
 RealVector SNLLBase::lastEvalVars;
 
 
@@ -53,22 +51,38 @@ SNLLBase::SNLLBase(Model& model)
   const ProblemDescDB& problem_db = model.problem_description_db();
   searchMethod    =  problem_db.get_string("method.optpp.search_method");
   constantASVFlag = !problem_db.get_bool("interface.active_set_vector");
+  maxStep         =  problem_db.get_real("method.optpp.max_step");
+  stepLenToBndry  =  problem_db.get_real("method.optpp.steplength_to_boundary");
+  centeringParam  =  problem_db.get_real("method.optpp.centering_parameter");
+  // an indirection is required to convert short to OPTPP::MeritFcn:
+  //meritFn       =  problem_db.get_short("method.optpp.merit_function");//error
+  switch (problem_db.get_short("method.optpp.merit_function")) {
+  case OPTPP::NormFmu:     meritFn = OPTPP::NormFmu; break;
+  case OPTPP::ArgaezTapia: meritFn = OPTPP::ArgaezTapia; break;
+  case OPTPP::VanShanno:   meritFn = OPTPP::VanShanno; break;
+  }
+  //centralPath   =  problem_db.get_short("method.optpp.central_path");
 }
 
 
-void SNLLBase::
-snll_pre_instantiate(const String& merit_fn, bool bound_constr_flag,
-		     const int& num_constr)
+void SNLLBase::snll_pre_instantiate(bool bound_constr_flag, int num_constr)
 {
   // OPT++ options are set here, in post_instantiate() below, and in the
   // SNLLOptimizer/SNLLLeastSq constructors to circumvent the "opt.input" file.
 
-  if (merit_fn == "el_bakry")
-    meritFn = NormFmu;
-  else if (merit_fn == "argaez_tapia")
-    meritFn = ArgaezTapia;
-  else
-    meritFn = VanShanno;
+  if (stepLenToBndry == -1.) // dummy default indicating no user spec
+    switch (meritFn) {
+    case OPTPP::NormFmu:     stepLenToBndry = 0.8;     break;
+    case OPTPP::ArgaezTapia: stepLenToBndry = 0.99995; break;
+    case OPTPP::VanShanno:   stepLenToBndry = 0.95;    break;
+    }
+
+  if (centeringParam == -1.) // dummy default indicating no user spec
+    switch (meritFn) {
+    case OPTPP::NormFmu:     centeringParam = 0.2; break;
+    case OPTPP::ArgaezTapia: centeringParam = 0.2; break;
+    case OPTPP::VanShanno:   centeringParam = 0.1; break;
+    }
 
   // Constraints are not handled properly with the trust region search strategy.
   // Therefore, make LineSearch the default for bound-constrained optimizers and
@@ -77,25 +91,25 @@ snll_pre_instantiate(const String& merit_fn, bool bound_constr_flag,
   // the setting is not important for these methods.
   if (searchMethod == "value_based_line_search" || 
       searchMethod == "gradient_based_line_search")
-    searchStrat = LineSearch; // value-/gradient-based set by setIsExpensive
+    searchStrat = OPTPP::LineSearch; // value-/grad-based set by setIsExpensive
   else if (searchMethod == "tr_pds") {
     if (bound_constr_flag || num_constr) {
       Cerr << "Warning: tr_pds is only available for unconstrained problems.\n"
            << "         search_method will be set to trust_region." 
 	   << std::endl;
-      searchStrat = TrustRegion;
+      searchStrat = OPTPP::TrustRegion;
     }
     else
-      searchStrat = TrustPDS;
+      searchStrat = OPTPP::TrustPDS;
   }
   else if (searchMethod.empty() && bound_constr_flag)
-    searchStrat = LineSearch; // default for BC optimizers
+    searchStrat = OPTPP::LineSearch; // default for BC optimizers
   else if (!searchMethod.empty() && num_constr)
     Cerr << "\nWarning: nonlinear interior-point optimizers do not support a "
          << "search_method specification.\n\n";
-    //searchStrat = LineSearch; // default for NIPS optimizers
+    //searchStrat = OPTPP::LineSearch; // default for NIPS optimizers
   else
-    searchStrat = TrustRegion; // all other cases, including unconstrained opt.
+    searchStrat = OPTPP::TrustRegion; // all other cases, including unconstr opt
 }
 
 
@@ -119,15 +133,15 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
     // OPT++'s internal finite differencing in use.
     Real fcn_acc, mcheps = DBL_EPSILON;
     if (finite_diff_type == "central") {
-      fd_nlf1->setDerivOption(CentralDiff); // See libopt/globals.h for enum
+      fd_nlf1->setDerivOption(OPTPP::CentralDiff); // See libopt/globals.h
       if (num_constr)
-        fd_nlf1_con->setDerivOption(CentralDiff);
+        fd_nlf1_con->setDerivOption(OPTPP::CentralDiff);
       fcn_acc = std::pow(fdss, 3);
     }
     else {
-      fd_nlf1->setDerivOption(ForwardDiff); // See libopt/globals.h for enum
+      fd_nlf1->setDerivOption(OPTPP::ForwardDiff); // See libopt/globals.h
       if (num_constr)
-        fd_nlf1_con->setDerivOption(ForwardDiff);
+        fd_nlf1_con->setDerivOption(OPTPP::ForwardDiff);
       fcn_acc = std::pow(fdss, 2);
     }
     fcn_acc = std::max(mcheps,fcn_acc);
@@ -203,7 +217,7 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
 
   // Instantiate bound, linear, and nonlinear constraints and append them to
   // constraint_array.
-  OptppArray<Constraint> constraint_array(0);
+  OPTPP::OptppArray<OPTPP::Constraint> constraint_array(0);
 
   // Initialize bound constraints.
   // get current model bounds, copy them to ColumnVectors, and then set them
@@ -211,7 +225,8 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // so that any bounds modifications at the strategy layer (e.g., 
   // BranchBndStrategy, SurrBasedOptStrategy) are properly captured.
   if (bound_constr_flag) {
-    Constraint bc = new BoundConstraint(num_cv, lower_bounds, upper_bounds);
+    OPTPP::Constraint bc
+      = new OPTPP::BoundConstraint(num_cv, lower_bounds, upper_bounds);
     constraint_array.append(bc);
   }
 
@@ -227,12 +242,15 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   if (num_lin_con) {
 
     if (num_lin_ineq_con){
-      Constraint li = new LinearInequality(lin_ineq_coeffs, lin_ineq_l_bnds, lin_ineq_u_bnds);
+      OPTPP::Constraint li = new OPTPP::LinearInequality(lin_ineq_coeffs,
+							 lin_ineq_l_bnds,
+							 lin_ineq_u_bnds);
       constraint_array.append(li);
     }
 
     if (num_lin_eq_con) {
-      Constraint le = new LinearEquation(lin_eq_coeffs, lin_eq_targets);
+      OPTPP::Constraint le = new OPTPP::LinearEquation(lin_eq_coeffs,
+						       lin_eq_targets);
       constraint_array.append(le);
     }
   }
@@ -259,14 +277,16 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
 	augmented_upper_bnds(i+num_nln_eq_con) = nln_ineq_u_bnds[i];
       }
     }
-    Constraint nc = new NonLinearConstraint(nlp_constraint,
-                                            augmented_lower_bnds,
-                                            augmented_upper_bnds,
-                                            num_nln_eq_con, num_nln_ineq_con);
+    OPTPP::Constraint nc = new OPTPP::NonLinearConstraint(nlp_constraint,
+							  augmented_lower_bnds,
+							  augmented_upper_bnds,
+							  num_nln_eq_con,
+							  num_nln_ineq_con);
     constraint_array.append(nc);
   }
 
-  CompoundConstraint* cc = new CompoundConstraint(constraint_array);
+  OPTPP::CompoundConstraint* cc
+    = new OPTPP::CompoundConstraint(constraint_array);
   nlf_objective->setConstraints(cc);
 
   // R. Lee/C. Moen: This initial Eval is required in order for bound 

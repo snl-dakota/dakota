@@ -247,8 +247,11 @@ KEYWORD12 method
 	    | trust_region
 	    | tr_pds
 	    ]
-	  [ merit_function STRING ]
-	  [ central_path STRING ]
+	  [ merit_function
+	    el_bakry
+	    | argaez_tapia
+	    | van_shanno
+	    ]
 	  [ steplength_to_boundary REAL ]
 	  [ centering_parameter REAL ]
 	  [ max_step REAL ]

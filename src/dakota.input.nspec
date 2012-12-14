@@ -147,18 +147,24 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 #	  | reduced_sqp
 	  ( optpp_cg {N_mdm(lit,methodName_optpp_cg)}
 	    |
-	    ( optpp_q_newton {N_mdf(litpp,methodName_optpp_q_newton)}
-	      | optpp_fd_newton {N_mdf(litpp,methodName_optpp_fd_newton)}
-	      | optpp_g_newton {N_mdf(litpp,methodName_optpp_g_newton)}
-	      | optpp_newton {N_mdf(litpp,methodName_optpp_newton)}
+	    ( optpp_q_newton {N_mdm(lit,methodName_optpp_q_newton)}
+	      | optpp_fd_newton {N_mdm(lit,methodName_optpp_fd_newton)}
+	      | optpp_g_newton {N_mdm(lit,methodName_optpp_g_newton)}
+	      | optpp_newton {N_mdm(lit,methodName_optpp_newton)}
 	      [ search_method {0}
 		value_based_line_search {N_mdm(lit,searchMethod_value_based_line_search)}
 		| gradient_based_line_search {N_mdm(lit,searchMethod_gradient_based_line_search)}
 		| trust_region {N_mdm(lit,searchMethod_trust_region)}
 		| tr_pds {N_mdm(lit,searchMethod_tr_pds)}
 		]
-	      [ merit_function STRING {N_mdm(meritFn,meritFn)} ]
-	      [ central_path STRING {N_mdm(meritFn,centralPath)} ]
+	      [ merit_function {0}
+	        el_bakry {N_mdm(type,meritFn_NormFmu)}
+		| argaez_tapia {N_mdm(type,meritFn_ArgaezTapia)}
+		| van_shanno {N_mdm(type,meritFn_VanShanno)} ]
+#	      [ central_path {0}
+#	        el_bakry {N_mdm(type,centralPath_NormFmu)}
+#		| argaez_tapia {N_mdm(type,centralPath_ArgaezTapia)}
+#		| van_shanno {N_mdm(type,centralPath_VanShanno)} ]
 	      [ steplength_to_boundary REAL {N_mdm(Real,stepLenToBoundary)} ]
 	      [ centering_parameter REAL {N_mdm(Real,centeringParam)} ]
 	      )

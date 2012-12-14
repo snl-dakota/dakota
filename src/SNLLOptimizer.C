@@ -56,16 +56,7 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
   theOptimizer(NULL), setUpType("model")
 {
   // convenience function from SNLLBase
-  snll_pre_instantiate(probDescDB.get_string("method.optpp.merit_function"),
-		       boundConstraintFlag, numConstraints); // from SNLLBase
-
-  const Real& max_step = probDescDB.get_real("method.optpp.max_step");
-  const String& central_path
-    = probDescDB.get_string("method.optpp.central_path"); // *** NOT USED !! ***
-  const Real& steplen_to_bndry
-    = probDescDB.get_real("method.optpp.steplength_to_boundary");
-  const Real& centering_param
-    = probDescDB.get_real("method.optpp.centering_parameter");
+  snll_pre_instantiate(boundConstraintFlag, numConstraints); // from SNLLBase
 
   // Instantiate NLF & Optimizer objects based on method & gradient selections
 
@@ -195,19 +186,19 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
       theOptimizer = optqnips;
       //optqnips->setSearchStrategy(searchStrat);//search strategy not supported
       optqnips->setMeritFcn(meritFn);
-      optqnips->setStepLengthToBdry(steplen_to_bndry);
-      optqnips->setCenteringParameter(centering_param);
+      optqnips->setStepLengthToBdry(stepLenToBndry);
+      optqnips->setCenteringParameter(centeringParam);
     }
     else if (boundConstraintFlag) { // bound-constrained
       theOptimizer = optbcqnewton;
       optbcqnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optbcqnewton->setTRSize(max_step);
+      if (searchStrat == TrustRegion) optbcqnewton->setTRSize(maxStep);
     }
     else { // unconstrained
       if(numContinuousVars < LARGE_SCALE){
         theOptimizer = optqnewton;
         optqnewton->setSearchStrategy(searchStrat);
-        if (searchStrat == TrustRegion) optqnewton->setTRSize(max_step);
+        if (searchStrat == TrustRegion) optqnewton->setTRSize(maxStep);
       }
       else{
         theOptimizer = optlbfgs;
@@ -273,18 +264,18 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
       theOptimizer = optfdnips;
       //optfdnips->setSearchStrategy(searchStrat);// search strat. not supported
       optfdnips->setMeritFcn(meritFn);
-      optfdnips->setStepLengthToBdry(steplen_to_bndry);
-      optfdnips->setCenteringParameter(centering_param);
+      optfdnips->setStepLengthToBdry(stepLenToBndry);
+      optfdnips->setCenteringParameter(centeringParam);
     }
     else if (boundConstraintFlag) { // bound-constrained
       theOptimizer = optbcfdnewton;
       optbcfdnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optbcfdnewton->setTRSize(max_step);
+      if (searchStrat == TrustRegion) optbcfdnewton->setTRSize(maxStep);
     }
     else { // unconstrained
       theOptimizer = optfdnewton;
       optfdnewton->setSearchStrategy(searchStrat);  
-      if (searchStrat == TrustRegion) optfdnewton->setTRSize(max_step);
+      if (searchStrat == TrustRegion) optfdnewton->setTRSize(maxStep);
     }
   }
 
@@ -298,8 +289,8 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
       optnips = new OptNIPS(nlf2);
       //optnips->setSearchStrategy(searchStrat);// search strategy not supported
       optnips->setMeritFcn(meritFn);
-      optnips->setStepLengthToBdry(steplen_to_bndry);
-      optnips->setCenteringParameter(centering_param);
+      optnips->setStepLengthToBdry(stepLenToBndry);
+      optnips->setCenteringParameter(centeringParam);
       theOptimizer = optnips;
 
       nlf2Con = new NLF2(numContinuousVars, numNonlinearConstraints,
@@ -312,7 +303,7 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
         Cout << "Instantiating OptBCNewton optimizer with NLF2 evaluator.\n";
       optbcnewton = new OptBCNewton(nlf2);
       optbcnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optbcnewton->setTRSize(max_step);
+      if (searchStrat == TrustRegion) optbcnewton->setTRSize(maxStep);
       theOptimizer = optbcnewton;
     }
     else { // unconstrained
@@ -320,7 +311,7 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
         Cout << "Instantiating OptNewton optimizer with NLF2 evaluator.\n";
       optnewton = new OptNewton(nlf2);
       optnewton->setSearchStrategy(searchStrat); 
-      if (searchStrat == TrustRegion) optnewton->setTRSize(max_step);
+      if (searchStrat == TrustRegion) optnewton->setTRSize(maxStep);
       theOptimizer = optnewton;
     }
   }
@@ -336,7 +327,7 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
 			intervalType, fdGradStepSize, maxIterations,
 			maxFunctionEvals, convergenceTol, 
 			probDescDB.get_real("method.optpp.gradient_tolerance"), 
-			max_step, boundConstraintFlag, numConstraints,
+			maxStep, boundConstraintFlag, numConstraints,
 			outputLevel, theOptimizer, nlfObjective, fdnlf1,
 			fdnlf1Con);
 }
@@ -352,7 +343,7 @@ SNLLOptimizer::SNLLOptimizer(const String& method_name, Model& model):
   methodName = method_name; // TO DO: expand supported methods beyond QNewton
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_pre_instantiate("argaez_tapia", boundConstraintFlag, numConstraints);
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
   // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
   nlf1 = new NLF1(numContinuousVars, nlf1_evaluator, init_fn);
@@ -415,11 +406,11 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
   const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
   const RealVector& lin_eq_tgts, const RealVector& nln_ineq_l_bnds,
   const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-			     void (*user_obj_eval) (int mode, int n, const RealVector& x,
-						    double& f, RealVector& grad_f,
+  void (*user_obj_eval) (int mode, int n, const RealVector& x,
+			 double& f, RealVector& grad_f,
 			 int& result_mode),
-			     void (*user_con_eval) (int mode, int n, const RealVector& x, 
-						    RealVector& g, RealMatrix& grad_g,
+  void (*user_con_eval) (int mode, int n, const RealVector& x, 
+			 RealVector& g, RealMatrix& grad_g,
 			 int& result_mode) ): // use default SNLLBase ctor
   Optimizer(NoDBBaseConstructor(), initial_pt.length(), 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
@@ -436,7 +427,7 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
     }
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_pre_instantiate("argaez_tapia", boundConstraintFlag, numConstraints);
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
   // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
   nlf1 = new NLF1(numContinuousVars, user_obj_eval, init_fn);
@@ -451,7 +442,7 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
     nlpConstraint = new NLP(nlf1Con);
     theOptimizer = optqnips;
     //optqnips->setSearchStrategy(searchStrat); // search strategy not supported
-    optqnips->setMeritFcn(meritFn);
+    optqnips->setMeritFcn(meritFn); // ArgaezTapia
     optqnips->setStepLengthToBdry(0.99995);
     optqnips->setCenteringParameter(0.2);
   }

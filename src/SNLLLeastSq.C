@@ -43,16 +43,7 @@ SNLLLeastSq::SNLLLeastSq(Model& model): LeastSq(model), SNLLBase(model),
   theOptimizer(NULL)
 {
   // convenience function from SNLLBase
-  snll_pre_instantiate(probDescDB.get_string("method.optpp.merit_function"),
-		       boundConstraintFlag, numConstraints);
-
-  const Real& max_step = probDescDB.get_real("method.optpp.max_step");
-  const String& central_path
-    = probDescDB.get_string("method.optpp.central_path"); // *** NOT USED !! ***
-  const Real& steplen_to_bndry
-    = probDescDB.get_real("method.optpp.steplength_to_boundary");
-  const Real& centering_param
-    = probDescDB.get_real("method.optpp.centering_parameter");
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
   // Instantiate NLF & Optimizer objects based on method & gradient selections
 
@@ -89,8 +80,8 @@ SNLLLeastSq::SNLLLeastSq(Model& model): LeastSq(model), SNLLBase(model),
       optdhnips = new OptDHNIPS(nlf2);
       //optdhnips->setSearchStrategy(searchStrat);// search strat not supported
       optdhnips->setMeritFcn(meritFn);
-      optdhnips->setStepLengthToBdry(steplen_to_bndry);
-      optdhnips->setCenteringParameter(centering_param);
+      optdhnips->setStepLengthToBdry(stepLenToBndry);
+      optdhnips->setCenteringParameter(centeringParam);
       theOptimizer = optdhnips;
 
       nlf1Con = new NLF1(numContinuousVars, numNonlinearConstraints,
@@ -104,7 +95,7 @@ SNLLLeastSq::SNLLLeastSq(Model& model): LeastSq(model), SNLLBase(model),
              << "evaluator.\n";
       optbcnewton = new OptBCNewton(nlf2);
       optbcnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optbcnewton->setTRSize(max_step);
+      if (searchStrat == TrustRegion) optbcnewton->setTRSize(maxStep);
       theOptimizer = optbcnewton;
     }
     else { // unconstrained
@@ -113,7 +104,7 @@ SNLLLeastSq::SNLLLeastSq(Model& model): LeastSq(model), SNLLBase(model),
              << "evaluator.\n";
       optnewton = new OptNewton(nlf2);
       optnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == TrustRegion) optnewton->setTRSize(max_step);
+      if (searchStrat == TrustRegion) optnewton->setTRSize(maxStep);
       theOptimizer = optnewton;
     }
   }
@@ -128,7 +119,7 @@ SNLLLeastSq::SNLLLeastSq(Model& model): LeastSq(model), SNLLBase(model),
 			intervalType, fdGradStepSize, maxIterations,
 			maxFunctionEvals, convergenceTol,
 			probDescDB.get_real("method.optpp.gradient_tolerance"), 
-			max_step, boundConstraintFlag, numConstraints,
+			maxStep, boundConstraintFlag, numConstraints,
 			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
 }
 
@@ -141,7 +132,7 @@ SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
   methodName = method_name;
 
   // convenience function from SNLLBase
-  snll_pre_instantiate("argaez_tapia", boundConstraintFlag, numConstraints);
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
   // Instantiate NLF & Optimizer objects based on method & gradient selections
 

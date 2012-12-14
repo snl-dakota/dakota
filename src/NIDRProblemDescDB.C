@@ -23,6 +23,9 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_OPTPP
+#include "globals.h"
+#endif
 
 #ifdef DAKOTA_DL_SOLVER
 #ifdef _WIN32
@@ -984,14 +987,6 @@ method_litp(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-method_litpp(const char *keyname, Values *val, void **g, void *v)
-{
-  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-  dm->*((Method_mp_lit*)v)->sp = ((Method_mp_lit*)v)->lit;
-  dm->stepLenToBoundary = dm->centeringParam = -1.;
-}
-
-void NIDRProblemDescDB::
 method_litz(const char *keyname, Values *val, void **g, void *v)
 {
   DataMethodRep *dm = (*(Meth_Info**)g)->dme;
@@ -1000,48 +995,6 @@ method_litz(const char *keyname, Values *val, void **g, void *v)
     botch("%s must be nonnegative",keyname);
   if ((dm->*((Method_mp_litc*)v)->rp = t) == 0.)
     dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
-}
-
-// MSE: This OPT++ function mirrors method-dependent default assignments
-// from old IDRProblemDescDB.C.  Could be moved to SNLLOptimizer ctor for
-// greater consistency with, e.g., maxIterations method-dependent default.
-void NIDRProblemDescDB::
-method_litpp_final(const char *keyname, Values *val, void **g, void *v)
-{
-  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-
-  if (dm->stepLenToBoundary == -1.) {
-    if (dm->meritFn == "el_bakry")
-      dm->stepLenToBoundary = 0.8;
-    else if (dm->meritFn == "argaez_tapia")
-      dm->stepLenToBoundary = 0.99995;
-    else if (dm->meritFn == "van_shanno")
-      dm->stepLenToBoundary = 0.95;
-    else
-    Botch: botch("Unexpected meritFn in method_litpp_final");
-  }
-  if (dm->centeringParam == -1.) {
-    if (dm->meritFn == "el_bakry")
-      dm->centeringParam = 0.2;
-    else if (dm->meritFn == "argaez_tapia")
-      dm->centeringParam = 0.2;
-    else if (dm->meritFn == "van_shanno")
-      dm->centeringParam = 0.1;
-    else
-      goto Botch;
-  }
-}
-
-void NIDRProblemDescDB::
-method_meritFn(const char *keyname, Values *val, void **g, void *v)
-{
-  const char *s;
-
-  (*(Meth_Info**)g)->dme->**(String DataMethodRep::**)v = s = *val->s;
-  if (strcmp(s,"el_bakry")
-      && strcmp(s,"argaez_tapia")
-      && strcmp(s,"van_shanno"))
-    botch("merit_function %s not supported", s);
 }
 
 // MSE: These moga functions mirror method-dependent default assignments
@@ -5079,6 +5032,7 @@ static int
 #define MP_(x) DataMethodRep::* method_mp_##x = &DataMethodRep::x
 #define MP2(x,y) method_mp_##x##_##y = {&DataMethodRep::x,#y}
 #define MP2s(x,y) method_mp_##x##_##y = {&DataMethodRep::x,y}
+#define MP2o(x,y) method_mp_##x##_##y = {&DataMethodRep::x,OPTPP::y}
 #define MP2p(x,y) method_mp_##x##_##y = {&DataMethodRep::x,Pecos::y}
 #define MP3(x,y,z) method_mp_3##x##_##z = {&DataMethodRep::x,&DataMethodRep::y,#z}
 #define MP4(w,x,y,z) method_mp_##w##_##y = {&DataMethodRep::w,&DataMethodRep::x,#y,z}
@@ -5348,11 +5302,9 @@ static UShortArray
 
 static String
 	MP_(approxPointReuseFile),
-	MP_(centralPath),
 	MP_(expansionImportFile),
 	MP_(idMethod),
 	MP_(logFile),
-	MP_(meritFn),
 	MP_(modelPointer),
 	MP_(subMethodName),
         MP_(subMethodPointer);
@@ -5421,6 +5373,9 @@ static size_t
 	MP_(numParents);
 
 static Method_mp_type
+//	MP2o(centralPath,ArgaezTapia),                     // OPTPP enumeration
+//	MP2o(centralPath,NormFmu),                         // OPTPP enumeration
+//	MP2o(centralPath,VanShanno),                       // OPTPP enumeration
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
 	MP2s(covarianceControl,FULL_COVARIANCE),
 	MP2s(distributionType,COMPLEMENTARY),
@@ -5435,6 +5390,9 @@ static Method_mp_type
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(lsRegressionType,EQ_CON_LS),
 	MP2s(lsRegressionType,SVD_LS),
+	MP2o(meritFn,ArgaezTapia),                         // OPTPP enumeration
+	MP2o(meritFn,NormFmu),                             // OPTPP enumeration
+	MP2o(meritFn,VanShanno),                           // OPTPP enumeration
 	MP2s(methodOutput,DEBUG_OUTPUT),
 	MP2s(methodOutput,NORMAL_OUTPUT),
 	MP2s(methodOutput,QUIET_OUTPUT),
@@ -5481,6 +5439,7 @@ static Method_mp_type
 #undef MP4
 #undef MP3
 #undef MP2s
+#undef MP2o
 #undef MP2p
 #undef MP2
 #undef MP_
@@ -5871,7 +5830,7 @@ static Var_mp_type
 #define N_ifm(x,y)	NIDRProblemDescDB::iface_##x,&iface_mp_##y
 #define N_ifm3(x,y,z)	NIDRProblemDescDB::iface_##x,y,NIDRProblemDescDB::iface_##z
 #define N_mdm(x,y)	NIDRProblemDescDB::method_##x,&method_mp_##y
-#define N_mdf(x,y)	N_mdm(x,y),NIDRProblemDescDB::method_##x##_final
+//#define N_mdf(x,y)	N_mdm(x,y),NIDRProblemDescDB::method_##x##_final
 #define N_mdm3(x,y,z)	NIDRProblemDescDB::method_##x,y,NIDRProblemDescDB::method_##z
 #define N_mom(x,y)	NIDRProblemDescDB::model_##x,&model_mp_##y
 #define N_mof(x,y)	N_mom(x,y),NIDRProblemDescDB::model_##x##_final

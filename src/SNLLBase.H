@@ -90,8 +90,7 @@ protected:
 
   /// convenience function for setting OPT++ options prior to the
   /// method instantiation
-  void snll_pre_instantiate(const String& merit_fn, bool bound_constr_flag,
-			    const int& num_constr);
+  void snll_pre_instantiate(bool bound_constr_flag, int num_constr);
 
   /// convenience function for setting OPT++ options after the
   /// method instantiation
@@ -142,6 +141,15 @@ protected:
   /// enum: NormFmu, ArgaezTapia, or VanShanno
   OPTPP::MeritFcn meritFn;
 
+  /// value from \c max_step specification
+  Real maxStep;
+  // string from \c central_path specification
+  //String centralPath;
+  /// value from \c steplength_to_boundary specification
+  Real stepLenToBndry;
+  /// value from \c centering_parameter specification
+  Real centeringParam;
+
   /// flags a user selection of active_set_vector == constant.  By mapping
   /// this into mode override, reliance on duplicate detection can be avoided.
   bool constantASVFlag;
@@ -162,9 +170,12 @@ protected:
 };
 
 
-inline SNLLBase::SNLLBase()  { }
+inline SNLLBase::SNLLBase(): meritFn(OPTPP::ArgaezTapia)
+{ }
 
-inline SNLLBase::~SNLLBase() { }
+
+inline SNLLBase::~SNLLBase()
+{ }
 
 } // namespace Dakota
 
