@@ -68,6 +68,11 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
+  /// set pecosBasisApprox.configOptions.vbdControl
+  void vbd_control(short vbd_cntl);
+  /// get pecosBasisApprox.configOptions.vbdControl
+  short vbd_control() const;
+
   // set pecosBasisApprox.configOptions.refinementType
   //void refinement_type(short refine_type);
   // get pecosBasisApprox.configOptions.refinementType
@@ -78,10 +83,15 @@ public:
   /// get pecosBasisApprox.configOptions.refinementControl
   short refinement_control() const;
 
-  /// set pecosBasisApprox.configOptions.vbdControl
-  void vbd_control(short vbd_cntl);
-  /// get pecosBasisApprox.configOptions.vbdControl
-  short vbd_control() const;
+  /// set pecosBasisApprox.configOptions.maxIterations
+  void maximum_iterations(int max_iter);
+  /// get pecosBasisApprox.configOptions.maxIterations
+  int maximum_iterations() const;
+
+  /// set pecosBasisApprox.configOptions.convergenceTol
+  void convergence_tolerance(Real conv_tol);
+  /// get pecosBasisApprox.configOptions.convergenceTol
+  Real convergence_tolerance() const;
 
   /// Performs global sensitivity analysis using Sobol' Indices by
   /// computing component (main and interaction) effects
@@ -306,6 +316,14 @@ inline bool PecosApproximation::expansion_gradient_flag() const
 { return polyApproxRep->expansion_coefficient_gradient_flag(); }
 
 
+inline void PecosApproximation::vbd_control(short vbd_cntl)
+{ polyApproxRep->vbd_control(vbd_cntl); }
+
+
+inline short PecosApproximation::vbd_control() const
+{ return polyApproxRep->vbd_control(); }
+
+
 //inline void PecosApproximation::refinement_type(short refine_type)
 //{ polyApproxRep->refinement_type(refine_type); }
 
@@ -322,12 +340,20 @@ inline short PecosApproximation::refinement_control() const
 { return polyApproxRep->refinement_control(); }
 
 
-inline void PecosApproximation::vbd_control(short vbd_cntl)
-{ polyApproxRep->vbd_control(vbd_cntl); }
+inline void PecosApproximation::maximum_iterations(int max_iter)
+{ polyApproxRep->maximum_iterations(max_iter); }
 
 
-inline short PecosApproximation::vbd_control() const
-{ return polyApproxRep->vbd_control(); }
+inline int PecosApproximation::maximum_iterations() const
+{ return polyApproxRep->maximum_iterations(); }
+
+
+inline void PecosApproximation::convergence_tolerance(Real conv_tol)
+{ polyApproxRep->convergence_tolerance(conv_tol); }
+
+
+inline Real PecosApproximation::convergence_tolerance() const
+{ return polyApproxRep->convergence_tolerance(); }
 
 
 inline void PecosApproximation::compute_component_effects()

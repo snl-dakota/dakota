@@ -385,8 +385,10 @@ void NonDExpansion::initialize_u_space_model()
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
       poly_approx_rep->solution_approach(expansionCoeffsApproach);
-      poly_approx_rep->refinement_control(refineControl);
       poly_approx_rep->vbd_control(vbdControl);
+      poly_approx_rep->refinement_control(refineControl);
+      poly_approx_rep->maximum_iterations(maxIterations);
+      poly_approx_rep->convergence_tolerance(convergenceTol);
       if (num_int)
 	poly_approx_rep->integration_iterator(u_space_sampler);
       if (all_vars)
