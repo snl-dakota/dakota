@@ -66,6 +66,8 @@ protected:
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based emulatorModel
   Iterator stochExpIterator;
+  /// LHS iterator for generating samples for GP 
+  Iterator lhsIterator;
 
 private:
 

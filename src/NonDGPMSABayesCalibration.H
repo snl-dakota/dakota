@@ -17,6 +17,8 @@
 #define NOND_GPMSA_BAYES_CALIBRATION_H
 
 #include "NonDBayesCalibration.H"
+#include "uqGslVector.h"
+#include "uqGslMatrix.h"
 
 
 namespace Dakota {
@@ -56,6 +58,20 @@ public:
   //
   //- Heading: Data
   //
+    /// Rejection type (standard or delayed, in the DRAM framework)
+    String rejectionType;
+    /// Metropolis type (hastings or adaptive, in the DRAM framework)
+    String metropolisType;
+    /// number of samples in the chain (e.g. number of MCMC samples)
+    int numSamples;
+    /// number of samples of the simulation to construct the GP 
+    int emulatorSamples;
+    /// scale factor for proposal covariance
+    Real proposalCovScale;
+    /// scale factor for likelihood
+    Real likelihoodScale;
+    /// flag to indicated if the sigma terms should be calibrated (default true)
+    bool calibrateSigmaFlag;
 
 protected:
 
@@ -70,23 +86,33 @@ protected:
   void quantify_uncertainty();
 
   /// print the final statistics
-  void print_results(std::ostream& s);
+  //void print_results(std::ostream& s);
+  //
+  //  //- Heading: Data
+  /// Matrix that holds the experimental realizations of state variables x
+  RealMatrix xObsData;
+  /// Matrix that holds the experimental realizations of responses y
+  RealMatrix yObsData;
+  /// Matrix that holds the experimental realizations of std deviations
+  /// of responses y
+  RealMatrix yStdData;
+  /// random seed to pass to QUESO
+  int randomSeed;
+  
 
 private:
 
   //
   //- Heading: Data
   //
+   short emulatorType;
+ 
+  /// Pointer to current class instance for use in static callback functions
+  static NonDGPMSABayesCalibration* NonDGPMSAInstance;
+  /// LHS iterator for generating samples for GP 
+  Iterator lhsIter;
+  
 
-  /// LHS sampling iterator
-  Iterator lhsSampler;
-  /// number of samples to construct the GP emulator
-  int numEmulatorSamples;
-  /// number of draws from the MCMC chain 
-  int numDraws;
-  const int seedSpec;   ///< the user seed specification (default is 0)     
-  String    rngName;    ///< name of the random number generator
-  /// Storage for the observed x data (inputs) provided by the user
 };
 
 } // namespace Dakota

@@ -537,11 +537,21 @@ endif(HAVE_FSUDACE)
 
 if(HAVE_GPMSA)
   add_definitions("-DDAKOTA_GPMSA")
-  include_directories(${GPMSA_SOURCE_DIR})
+  add_dependencies(queso_ext grvy_ext)
   list(APPEND iterator_src NonDGPMSABayesCalibration.C)
+  #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
+  include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
+                      ${Dakota_BINARY_DIR}/packages/grvy_ext/include
+                      ~/dakota/packages/queso_tarballs/code/libs/gpmsa/inc
+                      ${GSL_INCLUDE_DIRS})
+
+  #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
+  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib
+       ${Dakota_BINARY_DIR}/packages/grvy_ext/lib
+       ~/dakota/packages/queso_tarballs/code/libs/gpmsa/lib)
   #link_directories(${Dakota_BINARY_DIR}/packages/gpmsa)
-  list(APPEND TPL_LIBS gpmsa)
-  list(APPEND EXPORT_TARGETS gpmsa)
+  list(APPEND TPL_LIBS queso grvy gpmsa_any)
+  list(APPEND EXPORT_TARGETS queso grvy gpmsa_any)
 endif(HAVE_GPMSA)
 
 if(HAVE_HOPSPACK)

@@ -94,20 +94,20 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
       { samples = 0; sample_reuse = "all"; }
      
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
-    Iterator lhs_iterator;
+    //Iterator lhs_iterator;
     if (standardizedSpace) {
       Model g_u_model;
       transform_model(iteratedModel, g_u_model, true); // globally bounded
-      lhs_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
+      lhsIterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
 	samples, seed, rng, true, ACTIVE_UNIFORM), false);
-      emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
+      emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse, pt_reuse_file, pt_file_annotated), false);
     }
     else {
-      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+      lhsIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
 	samples, seed, rng, true, ACTIVE_UNIFORM), false);
-      emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
+      emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse, pt_reuse_file, pt_file_annotated), false);
     }

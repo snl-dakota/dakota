@@ -18,6 +18,8 @@
 #include "tabular_io.h"
 #include "uqStatisticalInverseProblem.h"
 #include "uqStatisticalInverseProblemOptions.h"
+#include "uqMetropolisHastingsSGOptions.h"
+#include "uqSequenceStatisticalOptions.h"
 #include "uqGslVector.h"
 #include "uqGslMatrix.h"
 #include "uqEnvironment.h"
@@ -255,66 +257,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     ip("", calIpOptionsValues, priorRv, likelihoodFunctionObj, postRv);
 
   uqMhOptionsValuesClass* calIpMhOptionsValues = NULL;
-  uqSsOptionsValuesClass ssOptionsValues1;
-  uqSsOptionsValuesClass ssOptionsValues2;
 
-  //ssOptionsValues1.m_initialDiscardedPortions.resize(3);
-  //ssOptionsValues1.m_initialDiscardedPortions[0] = 0.;
-  //ssOptionsValues1.m_initialDiscardedPortions[1] = 0.05;
-  //ssOptionsValues1.m_initialDiscardedPortions[2] = 0.10;
-  //ssOptionsValues1.m_initialDiscardedPortions[3] = 0.15;
-  //ssOptionsValues1.m_initialDiscardedPortions[1] = 0.20;
-  //ssOptionsValues1.m_initialDiscardedPortions[5] = 0.25;
-  //ssOptionsValues1.m_initialDiscardedPortions[6] = 0.30;
-  //ssOptionsValues1.m_initialDiscardedPortions[7] = 0.35;
-  //ssOptionsValues1.m_initialDiscardedPortions[2] = 0.40;
-  //ssOptionsValues1.m_bmmRun                      = false;
-  //ssOptionsValues1.m_fftCompute                  = false;
-  //ssOptionsValues1.m_psdCompute                  = false;
-  //ssOptionsValues1.m_psdAtZeroCompute            = false;
-  //ssOptionsValues1.m_gewekeCompute               = true;
-  //ssOptionsValues1.m_gewekeNaRatio               = .1;
-  //ssOptionsValues1.m_gewekeNbRatio               = .5;
-  //ssOptionsValues1.m_gewekeDisplay               = true;
-  //ssOptionsValues1.m_gewekeWrite                 = true;
-  //ssOptionsValues1.m_autoCorrComputeViaDef       = false;
-  //ssOptionsValues1.m_autoCorrComputeViaFft       = true;
-  //ssOptionsValues1.m_autoCorrSecondLag           = 2;
-  //ssOptionsValues1.m_autoCorrLagSpacing          = 2;
-  //ssOptionsValues1.m_autoCorrNumLags             = 15;
-  //ssOptionsValues1.m_autoCorrDisplay             = true;
-  //ssOptionsValues1.m_autoCorrWrite               = true;
-  //ssOptionsValues1.m_meanStaccCompute            = false;
-  //ssOptionsValues1.m_histCompute                 = false;
-  //ssOptionsValues1.m_cdfStaccCompute             = false;
-  ssOptionsValues1.m_kdeCompute                  = false;
-  ssOptionsValues1.m_covMatrixCompute            = true;
-  ssOptionsValues1.m_corrMatrixCompute           = true;
-
-  //ssOptionsValues2.m_initialDiscardedPortions.resize(1);
-  //ssOptionsValues2.m_initialDiscardedPortions[0] = 0.;
-  //ssOptionsValues2.m_bmmRun                      = false;
-  //ssOptionsValues2.m_fftCompute                  = false;
-  //ssOptionsValues2.m_psdCompute                  = false;
-  //ssOptionsValues2.m_psdAtZeroCompute            = false;
-  //ssOptionsValues2.m_gewekeCompute               = false;
-  //ssOptionsValues2.m_autoCorrComputeViaDef       = false;
-  //ssOptionsValues2.m_autoCorrComputeViaFft       = true;
-  //ssOptionsValues2.m_autoCorrSecondLag           = 2;
-  //ssOptionsValues2.m_autoCorrLagSpacing          = 2;
-  //ssOptionsValues2.m_autoCorrNumLags             = 15;
-  //ssOptionsValues2.m_autoCorrDisplay             = true;
-  //ssOptionsValues2.m_autoCorrWrite               = true;
-  //ssOptionsValues2.m_meanStaccCompute            = false;
-  //ssOptionsValues2.m_histCompute                 = true;
-  //ssOptionsValues2.m_histNumInternalBins         = 250;
-  //ssOptionsValues2.m_cdfStaccCompute             = false;
-  ssOptionsValues2.m_kdeCompute                  = true;
-  ssOptionsValues2.m_kdeNumEvalPositions         = 250;
-  ssOptionsValues2.m_covMatrixCompute            = true;
-  ssOptionsValues2.m_corrMatrixCompute           = true;
-
-  calIpMhOptionsValues = new uqMhOptionsValuesClass(&ssOptionsValues1,&ssOptionsValues2);
+  calIpMhOptionsValues = new uqMhOptionsValuesClass();
   calIpMhOptionsValues->m_dataOutputFileName   = "outputData/tgaCalOutput";
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
@@ -330,7 +274,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   calIpMhOptionsValues->m_rawChainDataOutputFileName    = "outputData/file_cal_ip_raw";
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(1);
-  calIpMhOptionsValues->m_rawChainComputeStats          = true;
+  // NO LONGER SUPPORTED.  calIpMhOptionsValues->m_rawChainComputeStats          = true;
 
   //calIpMhOptionsValues->m_displayCandidates         = false;
   calIpMhOptionsValues->m_putOutOfBoundsInChain       = true;
@@ -353,10 +297,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   calIpMhOptionsValues->m_filteredChainGenerate              = true;
   calIpMhOptionsValues->m_filteredChainDiscardedPortion      = 0.;
   calIpMhOptionsValues->m_filteredChainLag                   = 20;
-  calIpMhOptionsValues->m_filteredChainDataOutputFileName    = ".";
+  calIpMhOptionsValues->m_filteredChainDataOutputFileName    = "outputData/file_cal_ip_filt";
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);
-  calIpMhOptionsValues->m_filteredChainComputeStats          = true;
+  //calIpMhOptionsValues->m_filteredChainComputeStats          = true;
 
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
