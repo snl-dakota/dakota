@@ -45,9 +45,9 @@ if WITH_FSUDACE
 SUBDIRS += FSUDace
 endif
 
-if WITH_GPMSA
-SUBDIRS += gpmsa
-endif
+#if WITH_GPMSA
+#SUBDIRS += gpmsa
+#endif
 
 ## Need some AC_SUBST magic to handle optional directories like HOPSPACK.
 SUBDIRS += $(MAYBE_HOPSPACK)
