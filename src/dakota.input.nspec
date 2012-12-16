@@ -728,7 +728,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
-              [ proposal_covariance_scale REAL {N_mdm(Real,proposalCovScale)} ]
+              [ proposal_covariance_scale REALLIST {N_mdm(RealDL,proposalCovScale)} ]
               [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
 	      )
 	    |

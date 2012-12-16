@@ -119,7 +119,7 @@ DataMethodRep::DataMethodRep():
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
-  metropolisType("hastings"), proposalCovScale(1.0), likelihoodScale(1.0),
+  metropolisType("hastings"), likelihoodScale(1.0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   batchSize(0),
   // Parameter Study

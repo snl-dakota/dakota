@@ -745,7 +745,7 @@ public:
   /// the \c metropolis type specification in \ref MethodNonDBayesCalib
   String metropolisType;
   /// the \c proposal covariance scale factor in \ref MethodNonDBayesCalib
-  Real proposalCovScale;
+  RealVector proposalCovScale;
   /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
   Real likelihoodScale;
   /// the \c fitness metric type specification in \ref

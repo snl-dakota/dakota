@@ -5250,7 +5250,6 @@ static Real
 	MP_(minBoxSize),
 	MP_(mutationRate),
 	MP_(mutationScale),
-	MP_(proposalCovScale),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
@@ -5282,6 +5281,7 @@ static RealVector
 	MP_(linearIneqUpperBnds),
 	MP_(linearIneqScales),
 	MP_(listOfPoints),
+	MP_(proposalCovScale),
 	MP_(regressionNoiseTol),
 	MP_(stepVector);
 

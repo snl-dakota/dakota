@@ -219,7 +219,7 @@ static KeyWord
 		{"gpmsa",8,1,1,1,kw_28,0.,0.,0,N_mdm(lit,subMethodName_gpmsa)},
 		{"likelihood_scale",10,0,7,0,0,0.,0.,0,N_mdm(Real,likelihoodScale)},
 		{"metropolis",8,2,3,0,kw_29},
-		{"proposal_covariance_scale",10,0,6,0,0,0.,0.,0,N_mdm(Real,proposalCovScale)},
+		{"proposal_covariance_scale",14,0,6,0,0,0.,0.,0,N_mdm(RealDL,proposalCovScale)},
 		{"queso",8,1,1,1,kw_35,0.,0.,0,N_mdm(lit,subMethodName_queso)},
 		{"rejection",8,2,2,0,kw_36},
 		{"rng",8,2,5,0,kw_37},

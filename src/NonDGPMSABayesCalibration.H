@@ -67,7 +67,7 @@ public:
     /// number of samples of the simulation to construct the GP 
     int emulatorSamples;
     /// scale factor for proposal covariance
-    Real proposalCovScale;
+    RealVector proposalCovScale;
     /// scale factor for likelihood
     Real likelihoodScale;
     /// flag to indicated if the sigma terms should be calibrated (default true)

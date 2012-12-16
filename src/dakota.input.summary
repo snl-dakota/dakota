@@ -1068,7 +1068,7 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ proposal_covariance_scale REAL ]
+	  [ proposal_covariance_scale REALLIST ]
 	  [ likelihood_scale REAL ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]

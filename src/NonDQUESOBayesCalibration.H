@@ -51,7 +51,7 @@ public:
   /// number of samples in the chain (e.g. number of MCMC samples)
   int numSamples;
   /// scale factor for proposal covariance
-  Real proposalCovScale;
+  RealVector proposalCovScale;
   /// scale factor for likelihood
   Real likelihoodScale;
   /// flag to indicated if the sigma terms should be calibrated (default true)

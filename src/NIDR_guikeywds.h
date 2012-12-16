@@ -205,7 +205,7 @@ static GuiKeyWord
 		{"gpmsa",8,1,1,1,1047,kw_24},
 		{"likelihood_scale",10,0,7,0,1073},
 		{"metropolis",8,2,3,0,1057,kw_25,0.,0.,0.,0,"{Metropolis type for the MCMC algorithm } MethodCommands.html#MethodNonDBayesCalib"},
-		{"proposal_covariance_scale",10,0,6,0,1071},
+		{"proposal_covariance_scale",14,0,6,0,1071},
 		{"queso",8,1,1,1,1025,kw_31},
 		{"rejection",8,2,2,0,1051,kw_32,0.,0.,0.,0,"{Rejection type for the MCMC algorithms} MethodCommands.html#MethodNonDBayesCalib"},
 		{"rng",8,2,5,0,1065,kw_33,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDBayesCalib"},

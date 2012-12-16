@@ -46,7 +46,7 @@ NonDQUESOBayesCalibration::NonDQUESOBayesCalibration(Model& model):
   metropolisType(probDescDB.get_string("method.metropolis")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  proposalCovScale(probDescDB.get_real("method.proposal_covariance_scale")),
+  proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale"))
 { }
 
@@ -317,9 +317,18 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   for (int i=numContinuousVars;i<total_num_params;i++) {
     paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
   }
-  for (int i=0;i<total_num_params;i++) {
-    covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i])*proposalCovScale;
+  Cout << "proposalCovScale " << proposalCovScale << '\n';
+  if (!proposalCovScale.empty()) {
+    for (int i=0;i<total_num_params;i++) {
+      covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i])*proposalCovScale[i];
+    }
   }
+  else { 
+    for (int i=0;i<total_num_params;i++) {
+      covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i]);
+    }
+  }
+
   Cout << "covDiag " << covDiag << '\n';
   Cout << "initParams " << paramInitials << '\n';
 
