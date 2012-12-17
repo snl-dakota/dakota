@@ -717,9 +717,6 @@ if(HAVE_AMPL)
 endif(HAVE_AMPL)
 
 
-#message( "Should be set -- via CMk var - Dakota_SOURCE_DIR to ${Dakota_SOURCE_DIR}" )
-message( "Should be set -- via CMk var - CMAKE_PROJECT_NAME to ${CMAKE_PROJECT_NAME}" )
-
 if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
   # SVN checkout, determine revision level
   find_package(Subversion)
@@ -739,7 +736,7 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C)
     message(WARNING "DakotaBuildInfo.C found in the source tree - please remove!")
-  endif() # likely STALE, DakotaBuildInfo.C located in source
+  endif() # incorrect location DakotaBuildInfo.C
 
 else() # source tree NOT an SVN checkout
 
@@ -748,12 +745,6 @@ else() # source tree NOT an SVN checkout
 
 endif() # No .svn directory exists
 
-
-# WJB - ToDo:  svn delete ${Dakota_SOURCE_DIR}/config/DakotaBuildInfo.C.in
-#file(READ ${Dakota_SOURCE_DIR}/config/DakotaBuildInfo.C.in build-info-contents)
-#string(REGEX MATCH "Dakota\\^([0-9]+)" notused ${build-info-contents})
-#file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
-#      " \"${CMAKE_MATCH_1}\"; " )
 
 file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 "
