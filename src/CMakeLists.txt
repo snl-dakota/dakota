@@ -717,19 +717,47 @@ if(HAVE_AMPL)
 endif(HAVE_AMPL)
 
 
-file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
-      "// -- AUTO GENERATED FILE; DO NOT EDIT --
-      #include \"DakotaBuildInfo.H\"
-      std::string Dakota::DakotaBuildInfo::rev =" )
+#message( "Should be set -- via CMk var - Dakota_SOURCE_DIR to ${Dakota_SOURCE_DIR}" )
+message( "Should be set -- via CMk var - CMAKE_PROJECT_NAME to ${CMAKE_PROJECT_NAME}" )
 
-file(READ ${Dakota_SOURCE_DIR}/config/DakotaBuildInfo.C.in build-info-contents)
-string(REGEX MATCH "Dakota\\^([0-9]+)" notused ${build-info-contents})
-file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
-      " \"${CMAKE_MATCH_1}\"; " )
+if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
+  # SVN checkout, determine revision level
+  find_package(Subversion)
+  if(Subversion_FOUND)
+    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} ${CMAKE_PROJECT_NAME})
+    message("Current revision is Dakota_WC_REVISION: ${Dakota_WC_REVISION}")
+
+  else() # SVN NOT FOUND
+    #set(Dakota_WC_REVISION svn)
+    message("Verify no harm if revision is uninitialized: ${Dakota_WC_REVISION}")
+  endif(Subversion_FOUND)
+
+  file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
+        "// -- AUTO GENERATED FILE; DO NOT EDIT --
+        #include \"DakotaBuildInfo.H\"
+        std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_WC_REVISION}\";")
+
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C)
+    message(WARNING "DakotaBuildInfo.C found in the source tree - please remove!")
+  endif() # likely STALE, DakotaBuildInfo.C located in source
+
+else() # source tree NOT an SVN checkout
+
+  # WJB: EXPECT DakotaBuildInfo.C in ${CMAKE_CURRENT_SOURCE_DIR}
+  # Next iteration of PACKAGING task: COPY DakotaBuildInfo.C into source tree
+
+endif() # No .svn directory exists
+
+
+# WJB - ToDo:  svn delete ${Dakota_SOURCE_DIR}/config/DakotaBuildInfo.C.in
+#file(READ ${Dakota_SOURCE_DIR}/config/DakotaBuildInfo.C.in build-info-contents)
+#string(REGEX MATCH "Dakota\\^([0-9]+)" notused ${build-info-contents})
+#file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
+#      " \"${CMAKE_MATCH_1}\"; " )
 
 file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 "
-// -- WJB: CMake version needs to replace sed/awk for .build-info creation
+// WJB - ToDo: gather SVN rev for key TPLs, e.g. pecos, surfpack, etc. 
 " )
 
 if(MSVC)
