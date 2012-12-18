@@ -718,38 +718,45 @@ endif(HAVE_AMPL)
 
 
 if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
-  # SVN checkout, determine revision level
-  find_package(Subversion)
-  if(Subversion_FOUND)
-    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} ${CMAKE_PROJECT_NAME})
-    message("Current revision is Dakota_WC_REVISION: ${Dakota_WC_REVISION}")
 
-  else() # SVN NOT FOUND
-    #set(Dakota_WC_REVISION svn)
-    message("Verify no harm if revision is uninitialized: ${Dakota_WC_REVISION}")
-  endif(Subversion_FOUND)
+  # SVN checkout, determine revision level
+
+  if(DEFINED ENV{SVN_REVISION})
+    set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
+    message("Current revision is Dakota_SVN_REV: ${Dakota_SVN_REV}")
+
+  else() # SVN_REVISION is NOT an environment variable
+    find_package(Subversion)
+
+    if(Subversion_FOUND)
+      Subversion_WC_INFO(${PROJECT_SOURCE_DIR} ${CMAKE_PROJECT_NAME})
+      set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
+      message("Current revision is Dakota_WC_REVISION: ${Dakota_WC_REVISION}")
+    endif(Subversion_FOUND) # Subversion_FOUND
+
+  endif() # DEFINED ENV{SVN_REVISION}
 
   file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
         #include \"DakotaBuildInfo.H\"
-        std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_WC_REVISION}\";")
+        std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_SVN_REV}\"; 
+        "
+        // WJB - ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
+        //             Lower priority - possibly a post-5.3 release task
+        " )
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C)
-    message(WARNING "DakotaBuildInfo.C found in the source tree - please remove!")
+    message(STATUS "DakotaBuildInfo.C found in the source tree; please remove!")
   endif() # incorrect location DakotaBuildInfo.C
 
 else() # source tree NOT an SVN checkout
 
   # WJB: EXPECT DakotaBuildInfo.C in ${CMAKE_CURRENT_SOURCE_DIR}
-  # Next iteration of PACKAGING task: COPY DakotaBuildInfo.C into source tree
+  # as a result of jenkins/PACKAGING job: COPY DakotaBuildInfo.C into source tree
+  message(STATUS "EXPECTED - DakotaBuildInfo.C found in the source tree.")
 
-endif() # No .svn directory exists
+endif() # .svn directory conditional
 
-
-file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
-"
-// WJB - ToDo: gather SVN rev for key TPLs, e.g. pecos, surfpack, etc. 
-" )
 
 if(MSVC)
   # Create "Native Windows dirent" source files in the binary tree so they
