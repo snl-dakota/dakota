@@ -740,7 +740,6 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
         #include \"DakotaBuildInfo.H\"
         std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_SVN_REV}\"; 
-        "
         // WJB - ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
         //             Lower priority - possibly a post-5.3 release task
         " )
