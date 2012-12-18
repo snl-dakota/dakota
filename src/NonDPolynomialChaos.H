@@ -110,12 +110,25 @@ inline int NonDPolynomialChaos::
 terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
 		       Real terms_order)
 {
+  // min_samples logic inactive due to support of under-determined solves with
+  // colloc_ratio < 1
   size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;;
   Real min_pts = std::pow((Real)num_exp_terms, terms_order) / (Real)data_per_pt;
-  //int min_samples = (int)std::ceil(min_pts),                    // lower bound
   int tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
-  return tgt_samples;
-  //return std::max(min_samples, tgt_samples);
+  if (colloc_ratio >= 1.) {
+    // logic is to round to the nearest integral sample count for the given
+    // colloc_ratio, but with a lower bound determined by rounding up with a
+    // unit colloc_ratio.  The lower bound prevents creating an under-determined
+    // system due to rounding down when the intent is over- or uniquely
+    // determined (can only happen with non-integral min_pts from use of
+    // derivatives and colloc_ratio at or near 1).
+    int min_samples = (int)std::ceil(min_pts); // lower bound
+    return std::max(min_samples, tgt_samples);
+  }
+  else
+    // for under-determined systems, data starvation is not a problem and we
+    // just need at least one sample.
+    return std::max(tgt_samples, 1);
 }
 
 
