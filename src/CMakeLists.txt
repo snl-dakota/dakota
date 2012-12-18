@@ -730,7 +730,7 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
     if(Subversion_FOUND)
       Subversion_WC_INFO(${PROJECT_SOURCE_DIR} ${CMAKE_PROJECT_NAME})
-      set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
+      set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
       message("Current revision is Dakota_WC_REVISION: ${Dakota_WC_REVISION}")
     endif(Subversion_FOUND) # Subversion_FOUND
 
