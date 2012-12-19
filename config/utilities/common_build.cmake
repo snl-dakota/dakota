@@ -263,6 +263,15 @@ if ( DAKOTA_DO_PACK )
 
 endif() # DAKOTA_DO_PACK
 
+# Packing complete - OK to remove the BuildInfo file from the source tree
+
+if ( EXISTS ${CTEST_SOURCE_DIRECTORY}/src/DakotaBuildInfo.C )
+  execute_process(COMMAND ${CMAKE_COMMAND} -E remove
+    ${CTEST_SOURCE_DIRECTORY}/src/DakotaBuildInfo.C
+    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/src
+    )
+endif()
+
 ##############################################################################
 # Print all data
 ##############################################################################
