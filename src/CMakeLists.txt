@@ -1,4 +1,4 @@
-# CMakeLists.txt for Dakota src
+pp# CMakeLists.txt for Dakota src
 
 include_directories(
   ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/src
@@ -729,7 +729,10 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
     find_package(Subversion)
 
     if(Subversion_FOUND)
-      Subversion_WC_INFO(${PROJECT_SOURCE_DIR} ${CMAKE_PROJECT_NAME})
+      # Workarounds for Trilinos, where CMAKE_PROJECT_NAME != Dakota
+      # and the Dakota/ directory may be symlinked.
+      get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
+      Subversion_WC_INFO(${abs_source_dir} Dakota)
       set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
       message("Current revision is Dakota_WC_REVISION: ${Dakota_WC_REVISION}")
     endif(Subversion_FOUND) # Subversion_FOUND
