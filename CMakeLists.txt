@@ -312,27 +312,32 @@ set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_PACKAGE_FILE_NAME "dakota-${local_version}.${local_arch}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${local_version}.src")
 
-set(CPACK_SOURCE_IGNORE_FILES "Makefile\\\\.am$"
-    "^${Dakota_SOURCE_DIR}.*/.svn/"
-    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/")
-set(CPACK_SOURCE_IGNORE_FILES "packages/surfpack/packages/CONMIN")
-set(CPACK_SOURCE_IGNORE_FILES "packages/surfpack/packages/NCSUOpt")
+set(CPACK_SOURCE_IGNORE_FILES "Makefile\\\\.am$" ".*\\\\.svn/"
+    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
+    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"
+    "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/CONMIN/"
+    "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/NCSUOpt/"
+)
 
 if(DAKOTA_DISTRO GREATER DAKOTA_InternalFull)
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/buildscripts")
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/examples")
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/miscscripts")
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/sqa")
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/www.sandia.gov")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES
+    "^${Dakota_SOURCE_DIR}/local/buildscripts/"
+    "^${Dakota_SOURCE_DIR}/local/examples/"
+    "^${Dakota_SOURCE_DIR}/local/miscscripts/"
+    "^${Dakota_SOURCE_DIR}/local/sqa/"
+    "^${Dakota_SOURCE_DIR}/local/www.sandia.gov/"
+  )
 endif()
 
 if(DAKOTA_DISTRO GREATER DAKOTA_InternalSupervised)
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "packages/DOT")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/packages/DOT/")
 endif()
 
 if(DAKOTA_DISTRO GREATER DAKOTA_InternalWeb)
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "packages/NPSOL")
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "packages/NLPQL")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES
+    "^${Dakota_SOURCE_DIR}/packages/NPSOL/"
+    "^${Dakota_SOURCE_DIR}/packages/NLPQL/"
+  )
 endif()
 
 if(NOT WIN32)
