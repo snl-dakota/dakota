@@ -312,8 +312,9 @@ set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_PACKAGE_FILE_NAME "dakota-${local_version}.${local_arch}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${local_version}.src")
 
-set(CPACK_SOURCE_IGNORE_FILES ".svn")
-set(CPACK_SOURCE_IGNORE_FILES "packages/pecos/packages/teuchos")
+set(CPACK_SOURCE_IGNORE_FILES "Makefile\\\\.am$"
+    "^${Dakota_SOURCE_DIR}.*/.svn/"
+    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/")
 set(CPACK_SOURCE_IGNORE_FILES "packages/surfpack/packages/CONMIN")
 set(CPACK_SOURCE_IGNORE_FILES "packages/surfpack/packages/NCSUOpt")
 
