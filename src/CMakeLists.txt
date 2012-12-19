@@ -1,4 +1,4 @@
-pp# CMakeLists.txt for Dakota src
+# CMakeLists.txt for Dakota src
 
 include_directories(
   ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/src
