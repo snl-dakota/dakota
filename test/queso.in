@@ -1,0 +1,48 @@
+# DAKOTA INPUT FILE - dakota_bayes.in
+
+strategy,							
+	single_method 							
+        tabular_graphics_data
+
+method,									
+       bayes_calibration queso,						
+#       emulator
+#      	gp
+#        emulator_samples = 50
+     #   points_file = 'ros.txt' freeform
+#        pce 
+#        sparse_grid_level = 3 
+          samples = 1000 #seed = 348					
+          rejection delayed 
+          metropolis adaptive
+          likelihood_scale = 0.001 
+          output verbose
+          #proposal_covariance_scale = 0.1 0.3
+
+variables,								
+         #active all 
+         continuous_design = 2 
+         lower_bounds = 0. 0. 
+         upper_bounds = 3. 3.
+         initial_point = 1. 1.
+        # continuous_state = 1
+        # lower_bounds = 1.
+        # upper_bounds = 22.
+
+interface,								
+           direct
+            #asynchronous evaluation_concurrency = 5
+           analysis_driver = 'text_book'
+
+responses,								
+	calibration_terms = 1					
+	#calibration_terms = 3					
+        #calibration_data_file = 'text3C.txt'
+        calibration_data_file = 'test10_sig.txt'
+        #calibration_data_file = 'textbook20.txt'
+          freeform
+          num_experiments = 10
+         # num_config_variables = 1 
+          num_std_deviations = 1
+	no_gradients							
+	no_hessians
