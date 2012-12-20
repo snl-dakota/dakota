@@ -13,6 +13,8 @@ TAG "strategy/tabular_graphics_data/tabular_graphics_file"
 TAG "strategy/output_precision"
 	DESC "{Numeric output precision} StratCommands.html#StratIndControl"
 
+TAG "strategy/results_output"
+TAG "strategy/results_output/results_output_file"
 TAG "strategy/iterator_servers"
 	DESC "{Number of iterator servers} StratCommands.html#StratIndControl"
 
@@ -2094,15 +2096,9 @@ TAG "responses/mixed_gradients/dakota"
 TAG "responses/mixed_gradients/dakota/ignore_bounds"
 	DESC "{Ignore variable bounds} RespCommands.html#RespGradMixed"
 
-TAG "responses/mixed_gradients/dakota/absolute"
-	DESC "[Use absolute step size for Dakota FD gradients]"
-
-TAG "responses/mixed_gradients/dakota/bounds"
-	DESC "[Use step size relative to variable range for Dakota FD gradients]"
-
 TAG "responses/mixed_gradients/dakota/relative"
-	DESC "[Use step size relative to variable magnitude for Dakota FD gradients]"
-
+TAG "responses/mixed_gradients/dakota/absolute"
+TAG "responses/mixed_gradients/dakota/bounds"
 TAG "responses/mixed_gradients/vendor"
 TAG "responses/mixed_gradients/interval_type"
 	DESC "{Interval type} RespCommands.html#RespGradNum"
@@ -2125,15 +2121,9 @@ TAG "responses/numerical_hessians"
 TAG "responses/numerical_hessians/fd_step_size"
 	DESC "{Finite difference step size} RespCommands.html#RespHessNum"
 
-TAG "responses/numerical_hessians/absolute"
-	DESC "[Use absolute step size for Dakota FD hessians]"
-
-TAG "responses/numerical_hessians/bounds"
-	DESC "[Use step size relative to variable range for Dakota FD hessians]"
-
 TAG "responses/numerical_hessians/relative"
-	DESC "[Use step size relative to variable magnitude for Dakota FD hessians]"
-
+TAG "responses/numerical_hessians/absolute"
+TAG "responses/numerical_hessians/bounds"
 TAG "responses/numerical_hessians/forward"
 	DESC "@"
 
@@ -2162,15 +2152,9 @@ TAG "responses/mixed_hessians/id_numerical_hessians"
 TAG "responses/mixed_hessians/id_numerical_hessians/fd_step_size"
 	DESC "{Finite difference step size} RespCommands.html#RespHessMixed"
 
-TAG "responses/mixed_hessians/absolute"
-	DESC "[Use absolute step size for Dakota FD hessians]"
-
-TAG "responses/mixed_hessians/bounds"
-	DESC "[Use step size relative to variable range for Dakota FD hessians]"
-
 TAG "responses/mixed_hessians/relative"
-	DESC "[Use step size relative to variable magnitude for Dakota FD hessians]"
-
+TAG "responses/mixed_hessians/absolute"
+TAG "responses/mixed_hessians/bounds"
 TAG "responses/mixed_hessians/forward"
 	DESC "@"
 

@@ -4,6 +4,9 @@ KEYWORD01 strategy
 	  [ tabular_graphics_file STRING ]
 	  ]
 	[ output_precision INTEGER >= 0 ]
+	[ results_output
+	  [ results_output_file STRING ]
+	  ]
 	[ iterator_servers INTEGER ]
 	[ iterator_self_scheduling ]
 	[ iterator_static_scheduling ]
@@ -1717,7 +1720,9 @@ KEYWORD12 responses
 	  [ method_source ]
 	  [ ( dakota
 	      [ ignore_bounds ]
-	      [ relative | absolute | bounds ]
+	      [ relative
+	      | absolute
+	      | bounds ]
 	      )
 	  | vendor ]
 	  [ interval_type ]
@@ -1730,7 +1735,9 @@ KEYWORD12 responses
 	  [ method_source ]
 	  [ ( dakota
 	      [ ignore_bounds ]
-	      [ relative | absolute | bounds ]
+	      [ relative
+	      | absolute
+	      | bounds ]
 	      )
 	  | vendor ]
 	  [ interval_type ]
@@ -1742,7 +1749,9 @@ KEYWORD12 responses
 	|
 	( numerical_hessians
 	  [ fd_step_size ALIAS fd_hessian_step_size REALLIST ]
-	  [ relative | absolute | bounds ]
+	  [ relative
+	  | absolute
+	  | bounds ]
 	  [ forward
 	  | central ]
 	  )
@@ -1759,7 +1768,9 @@ KEYWORD12 responses
 	  [ id_numerical_hessians INTEGERLIST
 	    [ fd_step_size ALIAS fd_hessian_step_size REALLIST ]
 	    ]
-	  [ relative | absolute | bounds ]
+	  [ relative
+	  | absolute
+	  | bounds ]
 	  [ forward
 	  | central ]
 	  [ id_quasi_hessians INTEGERLIST

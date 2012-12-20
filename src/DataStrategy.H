@@ -59,6 +59,10 @@ public:
   String tabularDataFile;
   /// output precision for tabular and screen output
   int outputPrecision;
+  /// flags use of results output to default file
+  bool resultsOutputFlag;
+  /// named file for results output
+  String resultsOutputFile;
   /// number of servers for concurrent iterator parallelism (from
   /// the iterator_servers specification in \ref StratIndControl)
   int iteratorServers;

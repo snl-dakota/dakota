@@ -5646,6 +5646,7 @@ static String
 	MP_(hybridGlobalMethodPointer),
 	MP_(hybridLocalMethodPointer),
 	MP_(methodPointer),
+        MP_(resultsOutputFile),
 	MP_(tabularDataFile);
 
 static StringArray
@@ -5653,6 +5654,7 @@ static StringArray
 
 static bool
 	MP_(graphicsFlag),
+        MP_(resultsOutputFlag),
 	MP_(tabularDataFlag);
 
 static int

@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1056 distinct keywords (plus 160 aliases) **/
+/** 1058 distinct keywords (plus 160 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1544,24 +1544,28 @@ static KeyWord
 		{"weight_sets",14,0,3,0,0,0.,0.,0,N_stm(RealL,concurrentParameterSets)}
 		},
 	kw_253[1] = {
-		{"method_pointer",11,0,1,0,0,0.,0.,0,N_stm(str,methodPointer)}
+		{"results_output_file",11,0,1,0,0,0.,0.,0,N_stm(str,resultsOutputFile)}
 		},
 	kw_254[1] = {
+		{"method_pointer",11,0,1,0,0,0.,0.,0,N_stm(str,methodPointer)}
+		},
+	kw_255[1] = {
 		{"tabular_graphics_file",11,0,1,0,0,0.,0.,0,N_stm(str,tabularDataFile)}
 		},
-	kw_255[10] = {
+	kw_256[11] = {
 		{"graphics",8,0,1,0,0,0.,0.,0,N_stm(true,graphicsFlag)},
-		{"hybrid",8,5,7,1,kw_248,0.,0.,0,N_stm(lit,strategyType_hybrid)},
-		{"iterator_self_scheduling",8,0,5,0,0,0.,0.,0,N_stm(lit,iteratorScheduling_self)},
-		{"iterator_servers",9,0,4,0,0,0.,0.,0,N_stm(int,iteratorServers)},
-		{"iterator_static_scheduling",8,0,6,0,0,0.,0.,0,N_stm(lit,iteratorScheduling_static)},
-		{"multi_start",8,3,7,1,kw_250,0.,0.,0,N_stm(lit,strategyType_multi_start)},
+		{"hybrid",8,5,8,1,kw_248,0.,0.,0,N_stm(lit,strategyType_hybrid)},
+		{"iterator_self_scheduling",8,0,6,0,0,0.,0.,0,N_stm(lit,iteratorScheduling_self)},
+		{"iterator_servers",9,0,5,0,0,0.,0.,0,N_stm(int,iteratorServers)},
+		{"iterator_static_scheduling",8,0,7,0,0,0.,0.,0,N_stm(lit,iteratorScheduling_static)},
+		{"multi_start",8,3,8,1,kw_250,0.,0.,0,N_stm(lit,strategyType_multi_start)},
 		{"output_precision",0x29,0,3,0,0,0.,0.,0,N_stm(int,outputPrecision)},
-		{"pareto_set",8,5,7,1,kw_252,0.,0.,0,N_stm(lit,strategyType_pareto_set)},
-		{"single_method",8,1,7,1,kw_253,0.,0.,0,N_stm(lit,strategyType_single_method)},
-		{"tabular_graphics_data",8,1,2,0,kw_254,0.,0.,0,N_stm(true,tabularDataFlag)}
+		{"pareto_set",8,5,8,1,kw_252,0.,0.,0,N_stm(lit,strategyType_pareto_set)},
+		{"results_output",8,1,4,0,kw_253,0.,0.,0,N_stm(true,resultsOutputFlag)},
+		{"single_method",8,1,8,1,kw_254,0.,0.,0,N_stm(lit,strategyType_single_method)},
+		{"tabular_graphics_data",8,1,2,0,kw_255,0.,0.,0,N_stm(true,tabularDataFlag)}
 		},
-	kw_256[6] = {
+	kw_257[6] = {
 		{"aleatory",8,0,1,1,0,0.,0.,0,N_vam(type,varsView_ALEATORY_UNCERTAIN_VIEW)},
 		{"all",8,0,1,1,0,0.,0.,0,N_vam(type,varsView_ALL_VIEW)},
 		{"design",8,0,1,1,0,0.,0.,0,N_vam(type,varsView_DESIGN_VIEW)},
@@ -1569,7 +1573,7 @@ static KeyWord
 		{"state",8,0,1,1,0,0.,0.,0,N_vam(type,varsView_STATE_VIEW)},
 		{"uncertain",8,0,1,1,0,0.,0.,0,N_vam(type,varsView_UNCERTAIN_VIEW)}
 		},
-	kw_257[10] = {
+	kw_258[10] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,betaUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLb,betaUncBetas)},
 		{"buv_alphas",6,0,1,1,0,0.,0.,-2,N_vam(RealLb,betaUncAlphas)},
@@ -1581,13 +1585,13 @@ static KeyWord
 		{"lower_bounds",14,0,3,3,0,0.,0.,0,N_vam(rvec,betaUncLowerBnds)},
 		{"upper_bounds",14,0,4,4,0,0.,0.,0,N_vam(rvec,betaUncUpperBnds)}
 		},
-	kw_258[4] = {
+	kw_259[4] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(dauilbl,DAUIVar_binomial)},
 		{"num_trials",13,0,2,2,0,0.,0.,0,N_vam(ivec,binomialUncNumTrials)},
 		{"prob_per_trial",6,0,1,1,0,0.,0.,1,N_vam(rvec,binomialUncProbPerTrial)},
 		{"probability_per_trial",14,0,1,1,0,0.,0.,0,N_vam(rvec,binomialUncProbPerTrial)}
 		},
-	kw_259[12] = {
+	kw_260[12] = {
 		{"cdv_descriptors",7,0,6,0,0,0.,0.,6,N_vam(strL,continuousDesignLabels)},
 		{"cdv_initial_point",6,0,1,0,0,0.,0.,6,N_vam(rvec,continuousDesignVars)},
 		{"cdv_lower_bounds",6,0,2,0,0,0.,0.,6,N_vam(rvec,continuousDesignLowerBnds)},
@@ -1601,7 +1605,7 @@ static KeyWord
 		{"scales",0x80e,0,5,0,0,0.,0.,0,N_vam(rvec,continuousDesignScales)},
 		{"upper_bounds",14,0,3,0,0,0.,0.,0,N_vam(rvec,continuousDesignUpperBnds)}
 		},
-	kw_260[9] = {
+	kw_261[9] = {
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(ceulbl,CEUVar_interval)},
 		{"interval_probabilities",14,0,2,0,0,0.,0.,0,N_vam(newrvec,Var_Info_CIp)},
 		{"interval_probs",6,0,2,0,0,0.,0.,-1,N_vam(newrvec,Var_Info_CIp)},
@@ -1612,7 +1616,7 @@ static KeyWord
 		{"num_intervals",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nCI)},
 		{"upper_bounds",14,0,4,2,0,0.,0.,0,N_vam(newrvec,Var_Info_CIub)}
 		},
-	kw_261[8] = {
+	kw_262[8] = {
 		{"csv_descriptors",7,0,4,0,0,0.,0.,4,N_vam(strL,continuousStateLabels)},
 		{"csv_initial_state",6,0,1,0,0,0.,0.,4,N_vam(rvec,continuousStateVars)},
 		{"csv_lower_bounds",6,0,2,0,0,0.,0.,4,N_vam(rvec,continuousStateLowerBnds)},
@@ -1622,7 +1626,7 @@ static KeyWord
 		{"lower_bounds",14,0,2,0,0,0.,0.,0,N_vam(rvec,continuousStateLowerBnds)},
 		{"upper_bounds",14,0,3,0,0,0.,0.,0,N_vam(rvec,continuousStateUpperBnds)}
 		},
-	kw_262[8] = {
+	kw_263[8] = {
 		{"ddv_descriptors",7,0,4,0,0,0.,0.,4,N_vam(strL,discreteDesignRangeLabels)},
 		{"ddv_initial_point",5,0,1,0,0,0.,0.,4,N_vam(ivec,discreteDesignRangeVars)},
 		{"ddv_lower_bounds",5,0,2,0,0,0.,0.,4,N_vam(ivec,discreteDesignRangeLowerBnds)},
@@ -1632,19 +1636,19 @@ static KeyWord
 		{"lower_bounds",13,0,2,0,0,0.,0.,0,N_vam(ivec,discreteDesignRangeLowerBnds)},
 		{"upper_bounds",13,0,3,0,0,0.,0.,0,N_vam(ivec,discreteDesignRangeUpperBnds)}
 		},
-	kw_263[4] = {
+	kw_264[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteDesignSetIntLabels)},
 		{"initial_point",13,0,1,0,0,0.,0.,0,N_vam(ivec,discreteDesignSetIntVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddsi)},
 		{"set_values",13,0,3,1,0,0.,0.,0,N_vam(newivec,Var_Info_ddsi)}
 		},
-	kw_264[4] = {
+	kw_265[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteDesignSetRealLabels)},
 		{"initial_point",14,0,1,0,0,0.,0.,0,N_vam(rvec,discreteDesignSetRealVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddsr)},
 		{"set_values",14,0,3,1,0,0.,0.,0,N_vam(newrvec,Var_Info_ddsr)}
 		},
-	kw_265[8] = {
+	kw_266[8] = {
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(deuilbl,DEUIVar_interval)},
 		{"interval_probabilities",14,0,2,0,0,0.,0.,0,N_vam(newrvec,Var_Info_DIp)},
 		{"interval_probs",6,0,2,0,0,0.,0.,-1,N_vam(newrvec,Var_Info_DIp)},
@@ -1654,7 +1658,7 @@ static KeyWord
 		{"range_probs",6,0,2,0,0,0.,0.,-5,N_vam(newrvec,Var_Info_DIp)},
 		{"upper_bounds",13,0,4,2,0,0.,0.,0,N_vam(newivec,Var_Info_DIub)}
 		},
-	kw_266[8] = {
+	kw_267[8] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteStateRangeLabels)},
 		{"dsv_descriptors",7,0,4,0,0,0.,0.,-1,N_vam(strL,discreteStateRangeLabels)},
 		{"dsv_initial_state",5,0,1,0,0,0.,0.,3,N_vam(ivec,discreteStateRangeVars)},
@@ -1664,39 +1668,39 @@ static KeyWord
 		{"lower_bounds",13,0,2,0,0,0.,0.,0,N_vam(ivec,discreteStateRangeLowerBnds)},
 		{"upper_bounds",13,0,3,0,0,0.,0.,0,N_vam(ivec,discreteStateRangeUpperBnds)}
 		},
-	kw_267[4] = {
+	kw_268[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteStateSetIntLabels)},
 		{"initial_state",13,0,1,0,0,0.,0.,0,N_vam(ivec,discreteStateSetIntVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_ndssi)},
 		{"set_values",13,0,3,1,0,0.,0.,0,N_vam(newivec,Var_Info_dssi)}
 		},
-	kw_268[4] = {
+	kw_269[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteStateSetRealLabels)},
 		{"initial_state",14,0,1,0,0,0.,0.,0,N_vam(rvec,discreteStateSetRealVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_ndssr)},
 		{"set_values",14,0,3,1,0,0.,0.,0,N_vam(newrvec,Var_Info_dssr)}
 		},
-	kw_269[5] = {
+	kw_270[5] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(deuilbl,DEUIVar_set_int)},
 		{"num_set_values",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_ndusi)},
 		{"set_probabilities",14,0,3,0,0,0.,0.,0,N_vam(newrvec,Var_Info_DSIp)},
 		{"set_probs",6,0,3,0,0,0.,0.,-1,N_vam(newrvec,Var_Info_DSIp)},
 		{"set_values",13,0,2,1,0,0.,0.,0,N_vam(newivec,Var_Info_dusi)}
 		},
-	kw_270[5] = {
+	kw_271[5] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(deurlbl,DEURVar_set_real)},
 		{"num_set_values",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_ndusr)},
 		{"set_probabilities",14,0,3,0,0,0.,0.,0,N_vam(newrvec,Var_Info_DSRp)},
 		{"set_probs",6,0,3,0,0,0.,0.,-1,N_vam(newrvec,Var_Info_DSRp)},
 		{"set_values",14,0,2,1,0,0.,0.,0,N_vam(newrvec,Var_Info_dusr)}
 		},
-	kw_271[4] = {
+	kw_272[4] = {
 		{"betas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,exponentialUncBetas)},
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_vae(caulbl,CAUVar_exponential)},
 		{"euv_betas",6,0,1,1,0,0.,0.,-2,N_vam(RealLb,exponentialUncBetas)},
 		{"euv_descriptors",7,0,2,0,0,0.,0.,-2,N_vae(caulbl,CAUVar_exponential)}
 		},
-	kw_272[6] = {
+	kw_273[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,frechetUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(rvec,frechetUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_frechet)},
@@ -1704,7 +1708,7 @@ static KeyWord
 		{"fuv_betas",6,0,2,2,0,0.,0.,-3,N_vam(rvec,frechetUncBetas)},
 		{"fuv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_frechet)}
 		},
-	kw_273[6] = {
+	kw_274[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,gammaUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLb,gammaUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_gamma)},
@@ -1712,12 +1716,12 @@ static KeyWord
 		{"gauv_betas",6,0,2,2,0,0.,0.,-3,N_vam(RealLb,gammaUncBetas)},
 		{"gauv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_gamma)}
 		},
-	kw_274[3] = {
+	kw_275[3] = {
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_vae(dauilbl,DAUIVar_geometric)},
 		{"prob_per_trial",6,0,1,1,0,0.,0.,1,N_vam(rvec,geometricUncProbPerTrial)},
 		{"probability_per_trial",14,0,1,1,0,0.,0.,0,N_vam(rvec,geometricUncProbPerTrial)}
 		},
-	kw_275[6] = {
+	kw_276[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,gumbelUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(rvec,gumbelUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_gumbel)},
@@ -1725,7 +1729,7 @@ static KeyWord
 		{"guuv_betas",6,0,2,2,0,0.,0.,-3,N_vam(rvec,gumbelUncBetas)},
 		{"guuv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_gumbel)}
 		},
-	kw_276[10] = {
+	kw_277[10] = {
 		{"abscissas",14,0,2,1,0,0.,0.,0,N_vam(newrvec,Var_Info_hba)},
 		{"counts",14,0,3,2,0,0.,0.,0,N_vam(newrvec,Var_Info_hbc)},
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(caulbl,CAUVar_histogram_bin)},
@@ -1737,7 +1741,7 @@ static KeyWord
 		{"num_pairs",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nhbp)},
 		{"ordinates",14,0,3,2,0,0.,0.,0,N_vam(newrvec,Var_Info_hbo)}
 		},
-	kw_277[8] = {
+	kw_278[8] = {
 		{"abscissas",14,0,2,1,0,0.,0.,0,N_vam(newrvec,Var_Info_hpa)},
 		{"counts",14,0,3,2,0,0.,0.,0,N_vam(newrvec,Var_Info_hpc)},
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(daurlbl,DAURVar_histogram_point)},
@@ -1747,35 +1751,35 @@ static KeyWord
 		{"huv_point_descriptors",7,0,4,0,0,0.,0.,-4,N_vae(daurlbl,DAURVar_histogram_point)},
 		{"num_pairs",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nhpp)}
 		},
-	kw_278[4] = {
+	kw_279[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(dauilbl,DAUIVar_hypergeometric)},
 		{"num_drawn",13,0,3,3,0,0.,0.,0,N_vam(ivec,hyperGeomUncNumDrawn)},
 		{"selected_population",13,0,2,2,0,0.,0.,0,N_vam(ivec,hyperGeomUncSelectedPop)},
 		{"total_population",13,0,1,1,0,0.,0.,0,N_vam(ivec,hyperGeomUncTotalPop)}
 		},
-	kw_279[2] = {
+	kw_280[2] = {
 		{"lnuv_zetas",6,0,1,1,0,0.,0.,1,N_vam(RealLb,lognormalUncZetas)},
 		{"zetas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,lognormalUncZetas)}
 		},
-	kw_280[4] = {
+	kw_281[4] = {
 		{"error_factors",14,0,1,1,0,0.,0.,0,N_vam(RealLb,lognormalUncErrFacts)},
 		{"lnuv_error_factors",6,0,1,1,0,0.,0.,-1,N_vam(RealLb,lognormalUncErrFacts)},
 		{"lnuv_std_deviations",6,0,1,1,0,0.,0.,1,N_vam(RealLb,lognormalUncStdDevs)},
 		{"std_deviations",14,0,1,1,0,0.,0.,0,N_vam(RealLb,lognormalUncStdDevs)}
 		},
-	kw_281[10] = {
+	kw_282[10] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(caulbl,CAUVar_lognormal)},
-		{"lambdas",14,2,1,1,kw_279,0.,0.,0,N_vam(rvec,lognormalUncLambdas)},
+		{"lambdas",14,2,1,1,kw_280,0.,0.,0,N_vam(rvec,lognormalUncLambdas)},
 		{"lnuv_descriptors",7,0,4,0,0,0.,0.,-2,N_vae(caulbl,CAUVar_lognormal)},
-		{"lnuv_lambdas",6,2,1,1,kw_279,0.,0.,-2,N_vam(rvec,lognormalUncLambdas)},
+		{"lnuv_lambdas",6,2,1,1,kw_280,0.,0.,-2,N_vam(rvec,lognormalUncLambdas)},
 		{"lnuv_lower_bounds",6,0,2,0,0,0.,0.,3,N_vam(RealLb,lognormalUncLowerBnds)},
-		{"lnuv_means",6,4,1,1,kw_280,0.,0.,3,N_vam(RealLb,lognormalUncMeans)},
+		{"lnuv_means",6,4,1,1,kw_281,0.,0.,3,N_vam(RealLb,lognormalUncMeans)},
 		{"lnuv_upper_bounds",6,0,3,0,0,0.,0.,3,N_vam(RealUb,lognormalUncUpperBnds)},
 		{"lower_bounds",14,0,2,0,0,0.,0.,0,N_vam(RealLb,lognormalUncLowerBnds)},
-		{"means",14,4,1,1,kw_280,0.,0.,0,N_vam(RealLb,lognormalUncMeans)},
+		{"means",14,4,1,1,kw_281,0.,0.,0,N_vam(RealLb,lognormalUncMeans)},
 		{"upper_bounds",14,0,3,0,0,0.,0.,0,N_vam(RealUb,lognormalUncUpperBnds)}
 		},
-	kw_282[6] = {
+	kw_283[6] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_loguniform)},
 		{"lower_bounds",14,0,1,1,0,0.,0.,0,N_vam(RealLb,loguniformUncLowerBnds)},
 		{"luuv_descriptors",7,0,3,0,0,0.,0.,-2,N_vae(caulbl,CAUVar_loguniform)},
@@ -1783,13 +1787,13 @@ static KeyWord
 		{"luuv_upper_bounds",6,0,2,2,0,0.,0.,1,N_vam(RealUb,loguniformUncUpperBnds)},
 		{"upper_bounds",14,0,2,2,0,0.,0.,0,N_vam(RealUb,loguniformUncUpperBnds)}
 		},
-	kw_283[4] = {
+	kw_284[4] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(dauilbl,DAUIVar_negative_binomial)},
 		{"num_trials",13,0,2,2,0,0.,0.,0,N_vam(ivec,negBinomialUncNumTrials)},
 		{"prob_per_trial",6,0,1,1,0,0.,0.,1,N_vam(rvec,negBinomialUncProbPerTrial)},
 		{"probability_per_trial",14,0,1,1,0,0.,0.,0,N_vam(rvec,negBinomialUncProbPerTrial)}
 		},
-	kw_284[10] = {
+	kw_285[10] = {
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(caulbl,CAUVar_normal)},
 		{"lower_bounds",14,0,3,0,0,0.,0.,0,N_vam(rvec,normalUncLowerBnds)},
 		{"means",14,0,1,1,0,0.,0.,0,N_vam(rvec,normalUncMeans)},
@@ -1801,11 +1805,11 @@ static KeyWord
 		{"std_deviations",14,0,2,2,0,0.,0.,0,N_vam(RealLb,normalUncStdDevs)},
 		{"upper_bounds",14,0,4,0,0,0.,0.,0,N_vam(rvec,normalUncUpperBnds)}
 		},
-	kw_285[2] = {
+	kw_286[2] = {
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_vae(dauilbl,DAUIVar_poisson)},
 		{"lambdas",14,0,1,1,0,0.,0.,0,N_vam(rvec,poissonUncLambdas)}
 		},
-	kw_286[8] = {
+	kw_287[8] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(caulbl,CAUVar_triangular)},
 		{"lower_bounds",14,0,2,2,0,0.,0.,0,N_vam(RealLb,triangularUncLowerBnds)},
 		{"modes",14,0,1,1,0,0.,0.,0,N_vam(rvec,triangularUncModes)},
@@ -1815,7 +1819,7 @@ static KeyWord
 		{"tuv_upper_bounds",6,0,3,3,0,0.,0.,1,N_vam(RealUb,triangularUncUpperBnds)},
 		{"upper_bounds",14,0,3,3,0,0.,0.,0,N_vam(RealUb,triangularUncUpperBnds)}
 		},
-	kw_287[6] = {
+	kw_288[6] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_uniform)},
 		{"lower_bounds",14,0,1,1,0,0.,0.,0,N_vam(RealLb,uniformUncLowerBnds)},
 		{"upper_bounds",14,0,2,2,0,0.,0.,0,N_vam(RealUb,uniformUncUpperBnds)},
@@ -1823,7 +1827,7 @@ static KeyWord
 		{"uuv_lower_bounds",6,0,1,1,0,0.,0.,-3,N_vam(RealLb,uniformUncLowerBnds)},
 		{"uuv_upper_bounds",6,0,2,2,0,0.,0.,-3,N_vam(RealUb,uniformUncUpperBnds)}
 		},
-	kw_288[6] = {
+	kw_289[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,weibullUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLb,weibullUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_weibull)},
@@ -1831,52 +1835,52 @@ static KeyWord
 		{"wuv_betas",6,0,2,2,0,0.,0.,-3,N_vam(RealLb,weibullUncBetas)},
 		{"wuv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_weibull)}
 		},
-	kw_289[37] = {
-		{"active",8,6,2,0,kw_256},
-		{"beta_uncertain",0x19,10,14,0,kw_257,0.,0.,0,N_vam(pintz,numBetaUncVars)},
-		{"binomial_uncertain",0x19,4,21,0,kw_258,0.,0.,0,N_vam(pintz,numBinomialUncVars)},
-		{"continuous_design",0x19,12,4,0,kw_259,0.,0.,0,N_vam(pintz,numContinuousDesVars)},
-		{"continuous_interval_uncertain",0x19,9,27,0,kw_260,0.,0.,0,N_vam(pintz,numContinuousIntervalUncVars)},
-		{"continuous_state",0x19,8,31,0,kw_261,0.,0.,0,N_vam(pintz,numContinuousStateVars)},
-		{"discrete_design_range",0x19,8,5,0,kw_262,0.,0.,0,N_vam(pintz,numDiscreteDesRangeVars)},
-		{"discrete_design_set_integer",0x19,4,6,0,kw_263,0.,0.,0,N_vam(pintz,numDiscreteDesSetIntVars)},
-		{"discrete_design_set_real",0x19,4,7,0,kw_264,0.,0.,0,N_vam(pintz,numDiscreteDesSetRealVars)},
-		{"discrete_interval_uncertain",0x19,8,28,0,kw_265,0.,0.,0,N_vam(pintz,numDiscreteIntervalUncVars)},
-		{"discrete_state_range",0x19,8,32,0,kw_266,0.,0.,0,N_vam(pintz,numDiscreteStateRangeVars)},
-		{"discrete_state_set_integer",0x19,4,33,0,kw_267,0.,0.,0,N_vam(pintz,numDiscreteStateSetIntVars)},
-		{"discrete_state_set_real",0x19,4,34,0,kw_268,0.,0.,0,N_vam(pintz,numDiscreteStateSetRealVars)},
-		{"discrete_uncertain_range",0x11,8,28,0,kw_265,0.,0.,-4,N_vam(pintz,numDiscreteIntervalUncVars)},
-		{"discrete_uncertain_set_integer",0x19,5,29,0,kw_269,0.,0.,0,N_vam(pintz,numDiscreteUncSetIntVars)},
-		{"discrete_uncertain_set_real",0x19,5,30,0,kw_270,0.,0.,0,N_vam(pintz,numDiscreteUncSetRealVars)},
-		{"exponential_uncertain",0x19,4,13,0,kw_271,0.,0.,0,N_vam(pintz,numExponentialUncVars)},
-		{"frechet_uncertain",0x19,6,17,0,kw_272,0.,0.,0,N_vam(pintz,numFrechetUncVars)},
-		{"gamma_uncertain",0x19,6,15,0,kw_273,0.,0.,0,N_vam(pintz,numGammaUncVars)},
-		{"geometric_uncertain",0x19,3,23,0,kw_274,0.,0.,0,N_vam(pintz,numGeometricUncVars)},
-		{"gumbel_uncertain",0x19,6,16,0,kw_275,0.,0.,0,N_vam(pintz,numGumbelUncVars)},
-		{"histogram_bin_uncertain",0x19,10,19,0,kw_276,0.,0.,0,N_vam(pintz,numHistogramBinUncVars)},
-		{"histogram_point_uncertain",0x19,8,25,0,kw_277,0.,0.,0,N_vam(pintz,numHistogramPtUncVars)},
-		{"hypergeometric_uncertain",0x19,4,24,0,kw_278,0.,0.,0,N_vam(pintz,numHyperGeomUncVars)},
+	kw_290[37] = {
+		{"active",8,6,2,0,kw_257},
+		{"beta_uncertain",0x19,10,14,0,kw_258,0.,0.,0,N_vam(pintz,numBetaUncVars)},
+		{"binomial_uncertain",0x19,4,21,0,kw_259,0.,0.,0,N_vam(pintz,numBinomialUncVars)},
+		{"continuous_design",0x19,12,4,0,kw_260,0.,0.,0,N_vam(pintz,numContinuousDesVars)},
+		{"continuous_interval_uncertain",0x19,9,27,0,kw_261,0.,0.,0,N_vam(pintz,numContinuousIntervalUncVars)},
+		{"continuous_state",0x19,8,31,0,kw_262,0.,0.,0,N_vam(pintz,numContinuousStateVars)},
+		{"discrete_design_range",0x19,8,5,0,kw_263,0.,0.,0,N_vam(pintz,numDiscreteDesRangeVars)},
+		{"discrete_design_set_integer",0x19,4,6,0,kw_264,0.,0.,0,N_vam(pintz,numDiscreteDesSetIntVars)},
+		{"discrete_design_set_real",0x19,4,7,0,kw_265,0.,0.,0,N_vam(pintz,numDiscreteDesSetRealVars)},
+		{"discrete_interval_uncertain",0x19,8,28,0,kw_266,0.,0.,0,N_vam(pintz,numDiscreteIntervalUncVars)},
+		{"discrete_state_range",0x19,8,32,0,kw_267,0.,0.,0,N_vam(pintz,numDiscreteStateRangeVars)},
+		{"discrete_state_set_integer",0x19,4,33,0,kw_268,0.,0.,0,N_vam(pintz,numDiscreteStateSetIntVars)},
+		{"discrete_state_set_real",0x19,4,34,0,kw_269,0.,0.,0,N_vam(pintz,numDiscreteStateSetRealVars)},
+		{"discrete_uncertain_range",0x11,8,28,0,kw_266,0.,0.,-4,N_vam(pintz,numDiscreteIntervalUncVars)},
+		{"discrete_uncertain_set_integer",0x19,5,29,0,kw_270,0.,0.,0,N_vam(pintz,numDiscreteUncSetIntVars)},
+		{"discrete_uncertain_set_real",0x19,5,30,0,kw_271,0.,0.,0,N_vam(pintz,numDiscreteUncSetRealVars)},
+		{"exponential_uncertain",0x19,4,13,0,kw_272,0.,0.,0,N_vam(pintz,numExponentialUncVars)},
+		{"frechet_uncertain",0x19,6,17,0,kw_273,0.,0.,0,N_vam(pintz,numFrechetUncVars)},
+		{"gamma_uncertain",0x19,6,15,0,kw_274,0.,0.,0,N_vam(pintz,numGammaUncVars)},
+		{"geometric_uncertain",0x19,3,23,0,kw_275,0.,0.,0,N_vam(pintz,numGeometricUncVars)},
+		{"gumbel_uncertain",0x19,6,16,0,kw_276,0.,0.,0,N_vam(pintz,numGumbelUncVars)},
+		{"histogram_bin_uncertain",0x19,10,19,0,kw_277,0.,0.,0,N_vam(pintz,numHistogramBinUncVars)},
+		{"histogram_point_uncertain",0x19,8,25,0,kw_278,0.,0.,0,N_vam(pintz,numHistogramPtUncVars)},
+		{"hypergeometric_uncertain",0x19,4,24,0,kw_279,0.,0.,0,N_vam(pintz,numHyperGeomUncVars)},
 		{"id_variables",11,0,1,0,0,0.,0.,0,N_vam(str,idVariables)},
-		{"interval_uncertain",0x11,9,27,0,kw_260,0.,0.,-21,N_vam(pintz,numContinuousIntervalUncVars)},
-		{"lognormal_uncertain",0x19,10,9,0,kw_281,0.,0.,0,N_vam(pintz,numLognormalUncVars)},
-		{"loguniform_uncertain",0x19,6,11,0,kw_282,0.,0.,0,N_vam(pintz,numLoguniformUncVars)},
+		{"interval_uncertain",0x11,9,27,0,kw_261,0.,0.,-21,N_vam(pintz,numContinuousIntervalUncVars)},
+		{"lognormal_uncertain",0x19,10,9,0,kw_282,0.,0.,0,N_vam(pintz,numLognormalUncVars)},
+		{"loguniform_uncertain",0x19,6,11,0,kw_283,0.,0.,0,N_vam(pintz,numLoguniformUncVars)},
 		{"mixed",8,0,3,0,0,0.,0.,0,N_vam(type,varsDomain_MIXED_DOMAIN)},
-		{"negative_binomial_uncertain",0x19,4,22,0,kw_283,0.,0.,0,N_vam(pintz,numNegBinomialUncVars)},
-		{"normal_uncertain",0x19,10,8,0,kw_284,0.,0.,0,N_vam(pintz,numNormalUncVars)},
-		{"poisson_uncertain",0x19,2,20,0,kw_285,0.,0.,0,N_vam(pintz,numPoissonUncVars)},
+		{"negative_binomial_uncertain",0x19,4,22,0,kw_284,0.,0.,0,N_vam(pintz,numNegBinomialUncVars)},
+		{"normal_uncertain",0x19,10,8,0,kw_285,0.,0.,0,N_vam(pintz,numNormalUncVars)},
+		{"poisson_uncertain",0x19,2,20,0,kw_286,0.,0.,0,N_vam(pintz,numPoissonUncVars)},
 		{"relaxed",8,0,3,0,0,0.,0.,0,N_vam(type,varsDomain_RELAXED_DOMAIN)},
-		{"triangular_uncertain",0x19,8,12,0,kw_286,0.,0.,0,N_vam(pintz,numTriangularUncVars)},
+		{"triangular_uncertain",0x19,8,12,0,kw_287,0.,0.,0,N_vam(pintz,numTriangularUncVars)},
 		{"uncertain_correlation_matrix",14,0,26,0,0,0.,0.,0,N_vam(newrvec,Var_Info_ucm)},
-		{"uniform_uncertain",0x19,6,10,0,kw_287,0.,0.,0,N_vam(pintz,numUniformUncVars)},
-		{"weibull_uncertain",0x19,6,18,0,kw_288,0.,0.,0,N_vam(pintz,numWeibullUncVars)}
+		{"uniform_uncertain",0x19,6,10,0,kw_288,0.,0.,0,N_vam(pintz,numUniformUncVars)},
+		{"weibull_uncertain",0x19,6,18,0,kw_289,0.,0.,0,N_vam(pintz,numWeibullUncVars)}
 		},
-	kw_290[6] = {
+	kw_291[6] = {
 		{"interface",0x308,10,5,5,kw_9,0.,0.,0,N_ifm3(start,0,stop)},
 		{"method",0x308,80,2,2,kw_200,0.,0.,0,N_mdm3(start,0,stop)},
 		{"model",8,6,3,3,kw_226,0.,0.,0,N_mom3(start,0,stop)},
 		{"responses",0x308,19,6,6,kw_244,0.,0.,0,N_rem3(start,0,stop)},
-		{"strategy",0x108,10,1,1,kw_255,0.,0.,0,NIDRProblemDescDB::strategy_start},
-		{"variables",0x308,37,4,4,kw_289,0.,0.,0,N_vam3(start,0,stop)}
+		{"strategy",0x108,11,1,1,kw_256,0.,0.,0,NIDRProblemDescDB::strategy_start},
+		{"variables",0x308,37,4,4,kw_290,0.,0.,0,N_vam3(start,0,stop)}
 		};
 
 } // namespace Dakota
@@ -1884,7 +1888,7 @@ static KeyWord
 #ifdef __cplusplus
 extern "C" {
 #endif
-KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_290};
+KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_291};
 #ifdef __cplusplus
 }
 #endif

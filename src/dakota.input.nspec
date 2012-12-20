@@ -4,6 +4,9 @@ KEYWORD01 strategy {NIDRProblemDescDB::strategy_start}
 	  [ tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
 	  ]
 	[ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
+        [ results_output {N_stm(true,resultsOutputFlag)}
+	  [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]
+          ] 
 	[ iterator_servers INTEGER {N_stm(int,iteratorServers)} ]
 	[ iterator_self_scheduling {N_stm(lit,iteratorScheduling_self)} ]
 	[ iterator_static_scheduling {N_stm(lit,iteratorScheduling_static)} ]

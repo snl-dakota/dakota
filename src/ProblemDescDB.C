@@ -1789,6 +1789,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"hybrid.type", P hybridType},
 	{"iterator_scheduling", P iteratorScheduling},
 	{"method_pointer", P methodPointer},
+	{"results_output_file", P resultsOutputFile},
 	{"tabular_graphics_file", P tabularDataFile},
 	{"type", P strategyType}};
     #undef P
@@ -2318,6 +2319,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataStrategyRep::
     static KW<bool, DataStrategyRep> Bds[] = {	// must be sorted
 	{"graphics", P graphicsFlag},
+	{"results_output", P resultsOutputFlag},
 	{"tabular_graphics_data", P tabularDataFlag}};
     #undef P
 
