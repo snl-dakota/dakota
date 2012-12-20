@@ -1389,6 +1389,9 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	  [ method_source {0} ] # formerly required for dakota | vendor
 	  [ (dakota {N_rem(lit,methodSource_dakota)}
 		[ ignore_bounds {N_rem(true,ignoreBounds)} ]
+		[ relative {N_rem(lit,fdGradStepType_relative)}
+		  | absolute {N_rem(lit,fdGradStepType_absolute)}
+		  | bounds {N_rem(lit,fdGradStepType_bounds)} ]
 		)
 	    | vendor {N_rem(lit,methodSource_vendor)}
 	    ]
@@ -1403,6 +1406,9 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	|
 	( numerical_hessians {N_rem(lit,hessianType_numerical)}
 	  [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
+	  [ relative {N_rem(lit,fdHessStepType_relative)}
+	    | absolute {N_rem(lit,fdHessStepType_absolute)}
+	    | bounds {N_rem(lit,fdHessStepType_bounds)} ]
 	  [ forward  {N_rem(false,centralHess)}
 	    | central {N_rem(true,centralHess)}
 	    ]
@@ -1420,6 +1426,9 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	  [ id_numerical_hessians INTEGERLIST {N_rem(intL,idNumericalHessians)}
 	    [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
 	    ]
+	  [ relative {N_rem(lit,fdHessStepType_relative)}
+	    | absolute {N_rem(lit,fdHessStepType_absolute)}
+	    | bounds {N_rem(lit,fdHessStepType_bounds)} ]
 	  [ forward  {N_rem(false,centralHess)}
 	    | central {N_rem(true,centralHess)}
 	    ]

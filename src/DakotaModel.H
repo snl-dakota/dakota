@@ -704,6 +704,8 @@ public:
   bool central_hess() const;
   /// return the finite difference gradient step size (fdGradSS)
   const RealVector& fd_gradient_step_size() const;
+  /// return the finite difference gradient step type (fdGradST)
+  const String& fd_gradient_step_type() const;
   /// return the mixed gradient analytic IDs (gradIdAnalytic)
   const IntList& gradient_id_analytic() const;
   /// return the mixed gradient numerical IDs (gradIdNumerical)
@@ -716,6 +718,8 @@ public:
   const RealVector& fd_hessian_by_grad_step_size() const;
   /// return function-based finite difference Hessian step size (fdHessByFnSS)
   const RealVector& fd_hessian_by_fn_step_size() const;
+  /// return the finite difference Hessian step type (fdHessST)
+  const String& fd_hessian_step_type() const;
   /// return the mixed Hessian analytic IDs (hessIdAnalytic)
   const IntList& hessian_id_analytic() const;
   /// return the mixed Hessian analytic IDs (hessIdNumerical)
@@ -778,6 +782,10 @@ public:
 
   /// flags finite-difference step size adjusted by bounds
   bool shortStep;
+  /// function to determine initial finite difference h (before step
+  /// length adjustment) based on type of step desired
+  Real initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size,
+		    String step_type);
   /// function returning finite-difference step size (affected by bounds)
   Real FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag);
   /// function returning second central-difference step size (affected
@@ -877,6 +885,7 @@ protected:
                              ///< finite differences
   bool	 centralHess; ///< option to use old 2nd-order finite diffs for Hessians
   RealVector fdGradSS;       ///< relative step sizes for numerical gradients
+  String fdGradST;           ///< step type for numerical gradients
   IntList gradIdAnalytic;    ///< analytic id's for mixed gradients
   IntList gradIdNumerical;   ///< numerical id's for mixed gradients
   String hessType;           ///< Hess type: none,numerical,quasi,analytic,mixed
@@ -885,6 +894,7 @@ protected:
                              ///< estimated with 1st-order grad differences
   RealVector fdHessByFnSS;   ///< relative step sizes for numerical Hessians
                              ///< estimated with 2nd-order fn differences
+  String fdHessST;           ///< step type for numerical Hessians
   IntList hessIdAnalytic;    ///< analytic id's for mixed Hessians
   IntList hessIdNumerical;   ///< numerical id's for mixed Hessians
   IntList hessIdQuasi;       ///< quasi id's for mixed Hessians
@@ -2436,6 +2446,10 @@ inline const RealVector& Model::fd_gradient_step_size() const
 { return (modelRep) ? modelRep->fdGradSS : fdGradSS; }
 
 
+inline const String& Model::fd_gradient_step_type() const
+{ return (modelRep) ? modelRep->fdGradST : fdGradST; }
+
+
 inline const IntList& Model::gradient_id_analytic() const
 { return (modelRep) ? modelRep->gradIdAnalytic : gradIdAnalytic; }
 
@@ -2458,6 +2472,10 @@ inline const RealVector& Model::fd_hessian_by_grad_step_size() const
 
 inline const RealVector& Model::fd_hessian_by_fn_step_size() const
 { return (modelRep) ? modelRep->fdHessByFnSS : fdHessByFnSS; }
+
+
+inline const String& Model::fd_hessian_step_type() const
+{ return (modelRep) ? modelRep->fdHessST : fdHessST; }
 
 
 inline const IntList& Model::hessian_id_analytic() const

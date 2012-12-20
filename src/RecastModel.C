@@ -603,6 +603,7 @@ void RecastModel::initialize_data_from_submodel()
   centralHess	  = subModel.central_hess();
   intervalType    = subModel.interval_type();
   fdGradSS        = subModel.fd_gradient_step_size();
+  fdGradST        = subModel.fd_gradient_step_type();
   gradIdAnalytic  = subModel.gradient_id_analytic();
   gradIdNumerical = subModel.gradient_id_numerical();
 
@@ -610,6 +611,7 @@ void RecastModel::initialize_data_from_submodel()
   quasiHessType   = subModel.quasi_hessian_type();
   fdHessByFnSS    = subModel.fd_hessian_by_fn_step_size();
   fdHessByGradSS  = subModel.fd_hessian_by_grad_step_size();
+  fdHessST        = subModel.fd_hessian_step_type();
   hessIdAnalytic  = subModel.hessian_id_analytic();
   hessIdNumerical = subModel.hessian_id_numerical();
   hessIdQuasi     = subModel.hessian_id_quasi();

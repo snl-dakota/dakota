@@ -1717,6 +1717,7 @@ KEYWORD12 responses
 	  [ method_source ]
 	  [ ( dakota
 	      [ ignore_bounds ]
+	      [ relative | absolute | bounds ]
 	      )
 	  | vendor ]
 	  [ interval_type ]
@@ -1729,6 +1730,7 @@ KEYWORD12 responses
 	  [ method_source ]
 	  [ ( dakota
 	      [ ignore_bounds ]
+	      [ relative | absolute | bounds ]
 	      )
 	  | vendor ]
 	  [ interval_type ]
@@ -1740,6 +1742,7 @@ KEYWORD12 responses
 	|
 	( numerical_hessians
 	  [ fd_step_size ALIAS fd_hessian_step_size REALLIST ]
+	  [ relative | absolute | bounds ]
 	  [ forward
 	  | central ]
 	  )
@@ -1756,6 +1759,7 @@ KEYWORD12 responses
 	  [ id_numerical_hessians INTEGERLIST
 	    [ fd_step_size ALIAS fd_hessian_step_size REALLIST ]
 	    ]
+	  [ relative | absolute | bounds ]
 	  [ forward
 	  | central ]
 	  [ id_quasi_hessians INTEGERLIST

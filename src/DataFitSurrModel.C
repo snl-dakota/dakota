@@ -210,11 +210,13 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     intervalType = "central";
     fdGradSS.resize(1);
     fdGradSS[0] = 0.001;
+    fdGradST = "relative";
   }
   if (hessType == "numerical") { // mixed not supported for this Model
     if (gradType == "numerical") {
       fdHessByFnSS.resize(1);
       fdHessByFnSS[0] = 0.002;
+      fdHessST = "relative";
     }
     else {
       fdHessByGradSS.resize(1);

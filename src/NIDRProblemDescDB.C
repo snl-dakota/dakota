@@ -5579,6 +5579,12 @@ static Resp_mp_lit
 	MP2(intervalType,forward),
 	MP2(methodSource,dakota),
 	MP2(methodSource,vendor),
+        MP2(fdGradStepType,absolute),
+        MP2(fdGradStepType,bounds),
+        MP2(fdGradStepType,relative),
+        MP2(fdHessStepType,absolute),
+        MP2(fdHessStepType,bounds),
+        MP2(fdHessStepType,relative),
 	MP2(quasiHessianType,bfgs),
 	MP2(quasiHessianType,damped_bfgs),
 	MP2(quasiHessianType,sr1);

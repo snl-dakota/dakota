@@ -166,12 +166,22 @@ public:
   /// or central differences (from the \c fd_gradient_step_size
   /// specification in \ref RespGradNum and \ref RespGradMixed)
   RealVector fdGradStepSize;
+  /// type of finite difference step to use for numerical gradient:
+  /// relative - step length is relative to x
+  /// absolute - step length is what is specified
+  /// bounds - step length is relative to range of x
+  String fdGradStepType;
   /// vector of finite difference step sizes for numerical Hessians, one step
   /// size per active continuous variable, used in computing 1st-order
   /// gradient-based differences and 2nd-order function-based differences
   /// (from the \c fd_hessian_step_size specification in \ref RespHessNum and
   /// \ref RespHessMixed)
   RealVector fdHessStepSize;
+  /// type of finite difference step to use for numerical Hessian:
+  /// relative - step length is relative to x
+  /// absolute - step length is what is specified
+  /// bounds - step length is relative to range of x
+  String fdHessStepType;
   /// mixed gradient numerical identifiers (from the \c id_numerical_gradients
   /// specification in \ref RespGradMixed)
   IntList idNumericalGrads;

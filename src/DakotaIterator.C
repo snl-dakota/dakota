@@ -122,8 +122,10 @@ Iterator::Iterator(BaseConstructor, Model& model):
   methodSource(probDescDB.get_string("responses.method_source")),
   intervalType(probDescDB.get_string("responses.interval_type")),
   hessianType(probDescDB.get_string("responses.hessian_type")),
-  fdGradStepSize(fdGradStepDflt), fdHessByGradStepSize(0.001),
-  fdHessByFnStepSize(0.002),
+  fdGradStepSize(fdGradStepDflt),
+  fdGradStepType(probDescDB.get_string("responses.fd_gradient_step_type")),
+  fdHessByGradStepSize(0.001), fdHessByFnStepSize(0.002), 
+  fdHessStepType(probDescDB.get_string("responses.fd_hessian_step_type")),
   numFinalSolutions(probDescDB.get_sizet("method.final_solutions")),
   // Output verbosity is observed within Iterator (algorithm verbosity),
   // Model (synchronize/estimate_derivatives verbosity), Interface
@@ -229,9 +231,11 @@ Iterator::Iterator(NoDBBaseConstructor, Model& model):
   activeSet(model.current_response().active_set()), subIteratorFlag(false),
   gradientType(model.gradient_type()), methodSource(model.method_source()),
   intervalType(model.interval_type()), hessianType(model.hessian_type()),
-  fdGradStepSize(0.001), fdHessByGradStepSize(0.001), 
-  fdHessByFnStepSize(0.002), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
-  summaryOutputFlag(false), writePrecision(0), methodId("NO_DB_METHOD"),
+  fdGradStepSize(0.001), fdGradStepType("relative"), 
+  fdHessByGradStepSize(0.001), fdHessByFnStepSize(0.002),
+  fdHessStepType("relative"), numFinalSolutions(1),
+  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
+  writePrecision(0), methodId("NO_DB_METHOD"),
   iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG

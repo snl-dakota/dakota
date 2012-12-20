@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1047 distinct keywords (plus 160 aliases) **/
+/** 1056 distinct keywords (plus 160 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1397,12 +1397,15 @@ static KeyWord
 		{"primary_scales",0x80e,0,2,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
 		{"weights",14,0,3,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
 		},
-	kw_231[1] = {
-		{"ignore_bounds",8,0,1,0,0,0.,0.,0,N_rem(true,ignoreBounds)}
+	kw_231[4] = {
+		{"absolute",8,0,2,0,0,0.,0.,0,N_rem(lit,fdGradStepType_absolute)},
+		{"bounds",8,0,2,0,0,0.,0.,0,N_rem(lit,fdGradStepType_bounds)},
+		{"ignore_bounds",8,0,1,0,0,0.,0.,0,N_rem(true,ignoreBounds)},
+		{"relative",8,0,2,0,0,0.,0.,0,N_rem(lit,fdGradStepType_relative)}
 		},
 	kw_232[8] = {
 		{"central",8,0,4,0,0,0.,0.,0,N_rem(lit,intervalType_central)},
-		{"dakota",8,1,2,0,kw_231,0.,0.,0,N_rem(lit,methodSource_dakota)},
+		{"dakota",8,4,2,0,kw_231,0.,0.,0,N_rem(lit,methodSource_dakota)},
 		{"fd_gradient_step_size",0x406,0,5,0,0,0.,0.,1,N_rem(RealL,fdGradStepSize)},
 		{"fd_step_size",0x40e,0,5,0,0,0.,0.,0,N_rem(RealL,fdGradStepSize)},
 		{"forward",8,0,4,0,0,0.,0.,0,N_rem(lit,intervalType_forward)},
@@ -1426,12 +1429,15 @@ static KeyWord
 		{"bfgs",8,1,1,1,kw_235,0.,0.,0,N_rem(lit,quasiHessianType_bfgs)},
 		{"sr1",8,0,1,1,0,0.,0.,0,N_rem(lit,quasiHessianType_sr1)}
 		},
-	kw_237[5] = {
-		{"central",8,0,2,0,0,0.,0.,0,N_rem(true,centralHess)},
-		{"forward",8,0,2,0,0,0.,0.,0,N_rem(false,centralHess)},
-		{"id_analytic_hessians",13,0,4,0,0,0.,0.,0,N_rem(intL,idAnalyticHessians)},
+	kw_237[8] = {
+		{"absolute",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_absolute)},
+		{"bounds",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_bounds)},
+		{"central",8,0,3,0,0,0.,0.,0,N_rem(true,centralHess)},
+		{"forward",8,0,3,0,0,0.,0.,0,N_rem(false,centralHess)},
+		{"id_analytic_hessians",13,0,5,0,0,0.,0.,0,N_rem(intL,idAnalyticHessians)},
 		{"id_numerical_hessians",13,2,1,0,kw_234,0.,0.,0,N_rem(intL,idNumericalHessians)},
-		{"id_quasi_hessians",13,2,3,0,kw_236,0.,0.,0,N_rem(intL,idQuasiHessians)}
+		{"id_quasi_hessians",13,2,4,0,kw_236,0.,0.,0,N_rem(intL,idQuasiHessians)},
+		{"relative",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_relative)}
 		},
 	kw_238[6] = {
 		{"nonlinear_equality_scale_types",0x807,0,2,0,0,0.,0.,3,N_rem(strL,nonlinearEqScaleTypes)},
@@ -1464,11 +1470,14 @@ static KeyWord
 		{"sense",0x80f,0,1,0,0,0.,0.,0,N_rem(strL,primaryRespFnSense)},
 		{"weights",14,0,4,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
 		},
-	kw_241[4] = {
-		{"central",8,0,2,0,0,0.,0.,0,N_rem(true,centralHess)},
+	kw_241[7] = {
+		{"absolute",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_absolute)},
+		{"bounds",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_bounds)},
+		{"central",8,0,3,0,0,0.,0.,0,N_rem(true,centralHess)},
 		{"fd_hessian_step_size",6,0,1,0,0,0.,0.,1,N_rem(RealL,fdHessStepSize)},
 		{"fd_step_size",14,0,1,0,0,0.,0.,0,N_rem(RealL,fdHessStepSize)},
-		{"forward",8,0,2,0,0,0.,0.,0,N_rem(false,centralHess)}
+		{"forward",8,0,3,0,0,0.,0.,0,N_rem(false,centralHess)},
+		{"relative",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_relative)}
 		},
 	kw_242[1] = {
 		{"damped",8,0,1,0,0,0.,0.,0,N_rem(lit,quasiHessianType_damped_bfgs)}
@@ -1485,14 +1494,14 @@ static KeyWord
 		{"id_responses",11,0,1,0,0,0.,0.,0,N_rem(str,idResponses)},
 		{"least_squares_terms",0x21,15,3,1,kw_230,0.,0.,-3,N_rem(nnintz,numLeastSqTerms)},
 		{"mixed_gradients",8,2,4,2,kw_233,0.,0.,0,N_rem(lit,gradientType_mixed)},
-		{"mixed_hessians",8,5,5,3,kw_237,0.,0.,0,N_rem(lit,hessianType_mixed)},
+		{"mixed_hessians",8,8,5,3,kw_237,0.,0.,0,N_rem(lit,hessianType_mixed)},
 		{"no_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_none)},
 		{"no_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_none)},
 		{"num_least_squares_terms",0x21,15,3,1,kw_230,0.,0.,-8,N_rem(nnintz,numLeastSqTerms)},
 		{"num_objective_functions",0x21,11,3,1,kw_240,0.,0.,4,N_rem(nnintz,numObjectiveFunctions)},
 		{"num_response_functions",0x21,0,3,1,0,0.,0.,6,N_rem(nnintz,numResponseFunctions)},
 		{"numerical_gradients",8,8,4,2,kw_232,0.,0.,0,N_rem(lit,gradientType_numerical)},
-		{"numerical_hessians",8,4,5,3,kw_241,0.,0.,0,N_rem(lit,hessianType_numerical)},
+		{"numerical_hessians",8,7,5,3,kw_241,0.,0.,0,N_rem(lit,hessianType_numerical)},
 		{"objective_functions",0x29,11,3,1,kw_240,0.,0.,0,N_rem(nnintz,numObjectiveFunctions)},
 		{"quasi_hessians",8,2,5,3,kw_243,0.,0.,0,N_rem(lit,hessianType_quasi)},
 		{"response_descriptors",7,0,2,0,0,0.,0.,-14,N_rem(strL,responseLabels)},

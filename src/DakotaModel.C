@@ -67,12 +67,14 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   methodSrc(problem_db.get_string("responses.method_source")),
   intervalType(problem_db.get_string("responses.interval_type")),
   fdGradSS(problem_db.get_rv("responses.fd_gradient_step_size")),
+  fdGradST(problem_db.get_string("responses.fd_gradient_step_type")),
   gradIdAnalytic(problem_db.get_il("responses.gradients.mixed.id_analytic")),
   gradIdNumerical(problem_db.get_il("responses.gradients.mixed.id_numerical")),
   hessType(problem_db.get_string("responses.hessian_type")),
   quasiHessType(problem_db.get_string("responses.quasi_hessian_type")),
   fdHessByFnSS(problem_db.get_rv("responses.fd_hessian_step_size")),
   fdHessByGradSS(problem_db.get_rv("responses.fd_hessian_step_size")),
+  fdHessST(problem_db.get_string("responses.fd_hessian_step_type")),
   hessIdAnalytic(problem_db.get_il("responses.hessians.mixed.id_analytic")),
   hessIdNumerical(problem_db.get_il("responses.hessians.mixed.id_numerical")),
   hessIdQuasi(problem_db.get_il("responses.hessians.mixed.id_quasi")),
@@ -718,6 +720,22 @@ const IntResponseMap& Model::synchronize_nowait()
 }
 
 
+/** Auxiliary function to determine initial finite difference h
+    (before step length adjustment) based on type of step desired. */
+Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size, String step_type)
+{
+  Real h;
+  if (step_type == "absolute")
+    h = std::max(step_size, std::sqrt(DBL_MIN));
+  else if (step_type == "bounds")
+    h = step_size*std::max((ub_j-lb_j), std::sqrt(DBL_MIN));
+  else     // relative
+    h = step_size*std::max(std::fabs(x_j),.01);
+
+  return h;
+}
+
+
 /** Auxiliary function to compute forward or first central-difference
     step size. */
 Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
@@ -997,7 +1015,9 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	// Enforce a minimum delta of fdgss*.01
 	Real fdgss = (fdGradSS.length() == num_deriv_vars)
 	           ? fdGradSS[xj_index] : fdGradSS[0];
-	Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
+	//	Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
+	Real h = FDstep1(x0_j, lb_j, ub_j,
+			 initialize_h(x0_j, lb_j, ub_j, fdgss, fdGradST));
 	if (asynch_flag) // communicate settings to synchronize_derivatives()
 	  deltaList.push_back(h);
 
@@ -1287,8 +1307,10 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	    // Enforce a minimum delta of fdhss*.01
 	    Real fdhbfss = (fdHessByFnSS.length() == num_deriv_vars)
 	                 ? fdHessByFnSS[xj_index] : fdHessByFnSS[0];
-	    Real h1 = FDstep1(x0_j, lb_j, ub_j, 2. * fdhbfss *
-			      std::max(std::fabs(x0_j), .01));
+	    //	    Real h1 = FDstep1(x0_j, lb_j, ub_j, 2. * fdhbfss *
+	    //			      std::max(std::fabs(x0_j), .01));
+	    Real h1 = FDstep1(x0_j, lb_j, ub_j,
+		      initialize_h(x0_j, lb_j, ub_j, 2.*fdhbfss, fdHessST));
 	    Real h2 = FDstep2(x0_j, lb_j, ub_j, h1);
 	    Real denom, hdiff;
 	    if (asynch_flag) { // transfer settings to synchronize_derivatives()
@@ -1415,8 +1437,10 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	  // Enforce a minimum delta of fdhss*.01
 	  Real fdhbgss = (fdHessByGradSS.length() == num_deriv_vars)
 	               ? fdHessByGradSS[xj_index] : fdHessByGradSS[0];
-	  Real h = FDstep1(x0_j, lb_j, ub_j, fdhbgss *
-			   std::max(std::fabs(x0_j), .01));
+	  //	  Real h = FDstep1(x0_j, lb_j, ub_j, fdhbgss *
+	  //			   std::max(std::fabs(x0_j), .01));
+	  Real h = FDstep1(x0_j, lb_j, ub_j,
+			   initialize_h(x0_j, lb_j, ub_j, fdhbgss, fdHessST));
 	  if (asynch_flag) // communicate settings to synchronize_derivatives()
 	    deltaList.push_back(h);
 

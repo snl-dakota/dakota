@@ -22,7 +22,8 @@ DataResponsesRep::DataResponsesRep(): numObjectiveFunctions(0),
   numLeastSqTerms(0), numResponseFunctions(0), numExperiments(1),
   numExpConfigVars(0), numExpStdDeviations(0), expDataFileAnnotated(true),
   ignoreBounds(false), centralHess(false), methodSource("dakota"),
-  intervalType("forward"), referenceCount(1)
+  intervalType("forward"), fdGradStepType("relative"), fdHessStepType("relative"), 
+  referenceCount(1)
 { }
 
 
@@ -45,7 +46,8 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << fdGradStepSize
-    << fdHessStepSize << idNumericalGrads << idAnalyticGrads
+    << fdGradStepType << fdHessStepSize << fdHessStepType
+    << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians;
 }
 
@@ -69,7 +71,8 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     // derivative settings
     >> gradientType >> hessianType >> ignoreBounds >> centralHess
     >> quasiHessianType >> methodSource >> intervalType >> fdGradStepSize
-    >> fdHessStepSize >> idNumericalGrads >> idAnalyticGrads
+    >> fdGradStepType >> fdHessStepSize >> fdHessStepType
+    >> idNumericalGrads >> idAnalyticGrads
     >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians;
 }
 
@@ -93,7 +96,8 @@ void DataResponsesRep::write(std::ostream& s) const
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << fdGradStepSize
-    << fdHessStepSize << idNumericalGrads << idAnalyticGrads
+    << fdGradStepType << fdHessStepSize << fdHessStepType
+    << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians;
 }
 

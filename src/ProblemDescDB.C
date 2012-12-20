@@ -1909,6 +1909,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<String, DataResponsesRep> Sdr[] = {	// must be sorted
 	{"exp_data_filename", P expDataFileName},
+	{"fd_gradient_step_type", P fdGradStepType},
+	{"fd_hessian_step_type", P fdHessStepType},
 	{"gradient_type", P gradientType},
 	{"hessian_type", P hessianType},
 	{"id", P idResponses},
