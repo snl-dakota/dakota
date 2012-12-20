@@ -370,6 +370,7 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   uqGslMatrixClass*       hessianMatrix,
   uqGslVectorClass*       hessianEffect)
 {
+  
   double result = 0.;
   size_t i,j;
   int num_exp = NonDQUESOInstance->numExperiments;
@@ -412,8 +413,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // Compute simulation response to use in likelihood 
   NonDQUESOInstance->emulatorModel.compute_response();
   RealVector fn_vals = NonDQUESOInstance->emulatorModel.current_response().function_values();
-  Cout << "input is " << x << '\n';
-  Cout << "output is " << fn_vals << '\n';
+  //Cout << "input is " << x << '\n';
+  //Cout << "output is " << fn_vals << '\n';
  
   // Calculate the likelihood depending on what information is available 
   // for the standard deviations
@@ -439,6 +440,16 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   result = -1.0*result;
   Cout << "result final " << result << '\n';
   Cout << "likelihood is " << exp(result) << '\n';
+  if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
+    std::ofstream QuesoOutput;
+    QuesoOutput.open("QuesoOutput.txt", std::ios::out | std::ios::app);
+    for (i=0; i<num_cont; i++) 
+      QuesoOutput << x(i) << ' ' ;
+    for (j=0; j<num_funcs; j++)
+      QuesoOutput << fn_vals(j) << ' ' ;
+    QuesoOutput << result << '\n';
+    QuesoOutput.close();
+  }
   return result;
 }
 
