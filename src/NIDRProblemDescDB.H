@@ -110,7 +110,6 @@ public:
   KWH(method_Realp);
   KWH(method_Realz);
   KWH(method_Ri);
-  KWH(method_coliny_ea);
   KWH(method_false);
   KWH(method_ilit2);
   KWH(method_ilit2p);
@@ -123,8 +122,6 @@ public:
   KWH(method_litp);
   KWH(method_litr);
   KWH(method_litz);
-  KWH(method_moga_begin);
-  KWH(method_moga_final);
   KWH(method_nnint);
   KWH(method_nnintz);
   KWH(method_num_resplevs);
@@ -135,8 +132,6 @@ public:
   KWH(method_resplevs01);
   KWH(method_shint);
   KWH(method_slit2);
-  KWH(method_soga_begin);
-  KWH(method_soga_final);
   KWH(method_start);
   KWH(method_stop);
   KWH(method_str);

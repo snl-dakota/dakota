@@ -92,6 +92,23 @@ namespace Dakota {
 
 namespace {
 
+void init_colin_cache()
+{
+  static colin::CacheHandle colinCache;
+  // we only want to initialize the cache once... so if the handle is
+  // not empty, this function should become a no-op.
+  if ( ! colinCache.empty() )
+    return;
+
+  // Tell COLIN solver to use COLIN's cache.  We don't need to
+  // register it.
+
+  colinCache = colin::CacheFactory().create("Local");
+
+  colin::CacheFactory().intersolver_cache() 
+    = colin::CacheFactory().evaluation_cache() = colinCache;
+}
+
   // These functions define the operations needed to cast from one
   // type to another in order to freely make assignments of one type
   // of data to another.  This is particularly useful in converting
@@ -215,7 +232,7 @@ const volatile bool dakota_cast_registered = register_dakota_cast();
 
 // Enumerate the solverType
 
-enum { COBYLA, DIRECT, EA, MS, PS, SW };
+enum { COBYLA, DIRECT, EA, MS, PS, SW, BETA };
 
   /// Default constructor.
 
@@ -389,6 +406,7 @@ void COLINOptimizer::find_optimum()
     // Now initialize the discrete variables in COLIN's mixed-variable object
 
     TypeManager()->lexical_cast(dv_init, miv_init.Integer());
+    colin::CacheFactory().evaluation_cache()->clear();
 
     // Set the initial point.
 
@@ -400,14 +418,12 @@ void COLINOptimizer::find_optimum()
       Cout << "COLIN Solver initial status and options:" << endl;
       utilib::PropertyDict_YamlPrinter printer;
       printer.print(Cout, colinSolver->Properties());
-      //      problem->PrintProperties(Cout);
     }
 
     // Solve the optimization problem.  Only call reset once just
     // before optimize.
 
     colinSolver->reset();
-    colinCache->clear();
     colinSolver->optimize();
 
     if (outputLevel == DEBUG_OUTPUT) {
@@ -466,23 +482,7 @@ void COLINOptimizer::solver_setup(const String& method_name, Model& model)
                      << interfaces::StaticInitializers::static_interfaces_registrations
                      << ").");
 
-   // Tell COLIN solver to use COLIN's cache.
-
-   //   colin::CacheFactory().set_default_cache_type("Local");
-   colinCache = colin::CacheFactory().create("Local");
-
-   // BMA: fix per JDS, 11/16/2012
-   //colin::CacheFactory().intersolver_cache() 
-   //  = colin::CacheFactory().evaluation_cache();
-   colin::CacheFactory().intersolver_cache() 
-     = colin::CacheFactory().evaluation_cache() = colinCache;
-
-   //colin::CacheFactory().register_cache(colinCache, "useThisCache");
-   // BMA: temporary fix (try to generate a unique cache name, even for 
-   // some lightweight constructed solvers)
-   String unique_cache_name(method_id());
-   unique_cache_name += methodName;
-   colin::CacheFactory().register_cache(colinCache, unique_cache_name);
+   init_colin_cache();
 
   // Initialize constraint-related buffer variables.  Explanation for
   // why these are need is in set_method_parameters().
@@ -517,6 +517,12 @@ void COLINOptimizer::solver_setup(const String& method_name, Model& model)
   else if (method_name == "coliny_solis_wets") {
     solverType = SW;
     solverstr = "sco:SolisWets";
+  }
+  else if (method_name == "coliny_beta") {
+    const String& beta_solver
+      = probDescDB.get_string("method.coliny.beta_solver_name");
+    solverType = BETA;
+    solverstr = string("sco:") + beta_solver;
   }
   else {
     Cerr << "Error (COLINOptimizer): unknown method " << method_name << endl;
@@ -619,18 +625,18 @@ void COLINOptimizer::set_solver_parameters()
       = probDescDB.get_string("method.coliny.division");
     if (colinSolver->has_property("division")) {
       if (division_type == "major_dimension")
-	colinSolver->property("division") = (string)"single";
+	colinSolver->property("division") = string("single");
       else if (division_type == "all_dimensions")
-	colinSolver->property("division") = (string)"multi";
+	colinSolver->property("division") = string("multi");
       else {
 	// User didn't specify, so by default use multiple division in
 	// asynch case, otherwise single division (a maximum of 2
 	// asynch evals).
 
 	if (iteratedModel.asynch_flag())
-	  colinSolver->property("division") = (string)"multi";
+	  colinSolver->property("division") = string("multi");
 	else
-	  colinSolver->property("division") = (string)"single";
+	  colinSolver->property("division") = string("single");
       }
     }
 
@@ -676,19 +682,26 @@ void COLINOptimizer::set_solver_parameters()
       probDescDB.get_string("method.fitness_type");
     if (colinSolver->has_property("selection_type")) {
       if (selection_type == "merit_function") 
-	colinSolver->property("selection_type") = (string)"proportional";
-      else if (selection_type == "linear_rank")
-	colinSolver->property("selection_type") = (string)"linear_rank";
+	colinSolver->property("selection_type") = string("proportional");
+      else // default selection_type = "linear_rank"
+	colinSolver->property("selection_type") = string("linear_rank");
     }
 
     const String& replacement_type =
       probDescDB.get_string("method.replacement_type");
-    if (colinSolver->has_property("replacement_method"))
-      colinSolver->property("replacement_method") = replacement_type.c_str();
+    if (colinSolver->has_property("replacement_method")) {
+      if (replacement_type != "")
+	colinSolver->property("replacement_method") = replacement_type.c_str();
+      else
+	colinSolver->property("replacement_method") = string("elitist");
+    }
 
     int keep_num = probDescDB.get_int("method.coliny.number_retained");
-    if (keep_num >= 0 && colinSolver->has_property("keep_num")) {
-      colinSolver->property("keep_num") = keep_num;
+    if (colinSolver->has_property("keep_num")) {
+      if (keep_num >= 0)
+	colinSolver->property("keep_num") = keep_num;
+      else
+	colinSolver->property("keep_num") = 1;
     }
 
     int new_solutions = 
@@ -698,23 +711,27 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     double crossover_rate  = probDescDB.get_real("method.crossover_rate");
-    if (colinSolver->has_property("xover_rate"))
-      colinSolver->property("xover_rate") = crossover_rate;
+    if (colinSolver->has_property("xover_rate")) {
+      if (crossover_rate >= 0.)
+	colinSolver->property("xover_rate") = crossover_rate;
+      else
+	colinSolver->property("xover_rate") = 0.8;
+    }
 
     const String& crossover_type =
       probDescDB.get_string("method.crossover_type");
     if (colinSolver->has_property("realarray_xover_type") && colinSolver->has_property("intarray_xover_type")) {
       if (crossover_type == "blend") {
-	colinSolver->property("realarray_xover_type") = (string)"blend";
-	colinSolver->property("intarray_xover_type") = (string)"twopoint";
+	colinSolver->property("realarray_xover_type") = string("blend");
+	colinSolver->property("intarray_xover_type") = string("twopoint");
       }
       else if (crossover_type == "uniform") {
-	colinSolver->property("realarray_xover_type") = (string)"uniform";
-	colinSolver->property("intarray_xover_type") = (string)"uniform";
+	colinSolver->property("realarray_xover_type") = string("uniform");
+	colinSolver->property("intarray_xover_type") = string("uniform");
       }
       else { // default crossover type = "two_point"
-	colinSolver->property("realarray_xover_type") = (string)"twopoint";
-	colinSolver->property("intarray_xover_type") = (string)"twopoint";
+	colinSolver->property("realarray_xover_type") = string("twopoint");
+	colinSolver->property("intarray_xover_type") = string("twopoint");
       }
     }
 
@@ -736,11 +753,11 @@ void COLINOptimizer::set_solver_parameters()
 	  mutation_type == "offset_normal" || mutation_type == "offset_cauchy")
 	colinSolver->property("realarray_mutation_type") = mutation_type.c_str();
       else // default mutation type = "offset_uniform"
-	colinSolver->property("realarray_mutation_type") = (string)"offset_uniform";
+	colinSolver->property("realarray_mutation_type") = string("offset_uniform");
     }
 
     if (colinSolver->has_property("intarray_mutation_type"))
-      colinSolver->property("intarray_mutation_type") = (string)"uniform";
+      colinSolver->property("intarray_mutation_type") = string("uniform");
 
     double mutation_scale = probDescDB.get_real("method.mutation_scale");
     if (colinSolver->has_property("realarray_mutation_scale"))
@@ -802,9 +819,9 @@ void COLINOptimizer::set_solver_parameters()
       = probDescDB.get_bool("method.coliny.randomize");
     if (colinSolver->has_property("step_selection")) {
       if (coliny_randomize)
-	colinSolver->property("step_selection") = (string)"random";
+	colinSolver->property("step_selection") = string("random");
       else
-	colinSolver->property("step_selection") = (string)"fixed";
+	colinSolver->property("step_selection") = string("fixed");
     }
 
     pattern_basis = probDescDB.get_string("method.coliny.pattern_basis");
@@ -876,7 +893,7 @@ void COLINOptimizer::set_solver_parameters()
   }
   else if (solverType == PS) {
     if (!pattern_basis.empty() && colinSolver->has_property("basis"))
-      colinSolver->property("basis") = (string)pattern_basis;
+      colinSolver->property("basis") = string(pattern_basis);
     maxConcurrency *= total_pattern_size;
     if (!blockingSynch)
       Cout << "\n 'synchronization nonblocking' is currently not fully functional."
@@ -898,7 +915,7 @@ void COLINOptimizer::set_solver_parameters()
   case DEBUG_OUTPUT:
       
     if (colinSolver->has_property("output_level"))
-      colinSolver->property("output_level") = (string)"verbose";
+      colinSolver->property("output_level") = string("verbose");
     if (colinSolver->has_property("debug"))
       colinSolver->property("debug") = 10000;
     break;
@@ -906,19 +923,19 @@ void COLINOptimizer::set_solver_parameters()
   case VERBOSE_OUTPUT:
       
     if (colinSolver->has_property("output_level"))
-      colinSolver->property("output_level") = (string)"summary";
+      colinSolver->property("output_level") = string("summary");
     break;
 
   case NORMAL_OUTPUT:
   case QUIET_OUTPUT:
 
     if (colinSolver->has_property("output_level"))
-      colinSolver->property("output_level") = (string)"normal";
+      colinSolver->property("output_level") = string("normal");
     break;
 
   case SILENT_OUTPUT:
     if (colinSolver->has_property("output_level"))
-      colinSolver->property("output_level") = (string)"none";
+      colinSolver->property("output_level") = string("none");
 
   }
 }
@@ -967,8 +984,6 @@ void COLINOptimizer::post_run(std::ostream& s)
 
   bool colin_cache_warn = false;
   for(i=0; cache_it != cache_end; ++i, ++cache_it) {
-    //std::cerr << "Point #" << i << ": ";
-    //::operator<<(std::cerr, *pt_it) << endl;
 
     // Extract the Colin response from the cache
     colin::AppResponse colinResponse = 
@@ -1028,15 +1043,6 @@ void COLINOptimizer::post_run(std::ostream& s)
       Cerr << "\nAll function values from COLIN:";
       write_data(Cout, tmpResponseHolder.function_values());
       Cerr << std::endl;
-
-      // attempt to fallback on Dakota DB if needed (hopefully can go away)
-      bool db_status = 
-	dakota_db_lookup(tmpVariableHolder, tmpResponseHolder);
-      if (!db_status) {
-	Cerr << "\nError: Couldn't get Colin final point from DAKOTA DB."
-	     << std::endl;
-	abort_handler(-1);
-      }
     }
 
     // BMA TODO: incorporate constraint tolerance, possibly via
@@ -1045,9 +1051,6 @@ void COLINOptimizer::post_run(std::ostream& s)
 
     // For feasible points, compute (sum of) objectives.
     const RealVector& fn_vals = tmpResponseHolder.function_values();
-
-    // BMA: MSE suggests don't want to set objective to DBL_MAX in
-    // case two points have the exact same constraint violation... 
 
     // Use the objective "reduction" even in the single objective case
     // as it will get the sense (min/max) correct
@@ -1130,13 +1133,7 @@ colin_cache_lookup(const colin::AppResponse& colinResponse,
   bool fns_status = colinResponse.is_computed(mf_info);
   if (fns_status) {
     RealVector fn_vals(numObjectiveFns);    
-    // BMA: previous implementation:
-    //colinResponse.get(mf_info, fn_vals[0]);
-    //tmpResponseHolder.function_value(fn_vals[0], 0);  
     colinResponse.get(mf_info, fn_vals);
-    // BMA:
-    // Cout << "fns are:";
-    // write_data(Cout, fn_vals);
     for (size_t i = 0; i < numObjectiveFns; ++i)
       tmpResponseHolder.function_value(fn_vals[i], i);
   }
@@ -1147,9 +1144,6 @@ colin_cache_lookup(const colin::AppResponse& colinResponse,
     if (cons_status) {
       RealVector cons_vals(numNonlinearConstraints);
       colinResponse.get(nlcf_info, cons_vals);
-      // BMA:
-      // Cout << "constraints are:\n";
-      // write_data(Cout, cons_vals);
       for (size_t i = 0; i < numNonlinearConstraints; ++i)
 	tmpResponseHolder.function_value(cons_vals[i], numObjectiveFns + i);
     }
@@ -1157,98 +1151,6 @@ colin_cache_lookup(const colin::AppResponse& colinResponse,
 
   return std::make_pair(fns_status, cons_status);
 }
-
-
-/** Encapsulated DAKOTA DB lookup that returns an iterator space set
-    of functions for sorting.  Here care is taken not to mutate the
-    passed-in variables object, as we want to preserve it for
-    insertion in best variables */
-bool COLINOptimizer::
-dakota_db_lookup(const Variables& tmpVarsHolder, Response& tmpResponseHolder)
-{
-
-  return false;
-
-  // If we have any recast model, need to get the native and/or
-  // user-provided pieces to do database lookup and/or sort.
-
-  // NOTE: This will still break in cases where the underlying model
-  // is recast in another context, like interval estimation.
-
-  // TODO: if there was a least squares recast to optimization,
-  // retreived values will have unexpected size...
-
-  // TODO: needs refinement to be correct In fact the model we want
-  // for weights and sense is the original user model?!?
-
-  // My guess is we want the constraints, variables, etc. from the
-  // fully recast (iteratedModel), not the userDefinedModel.  The only
-  // gotcha is if there is an objective reduction, it needs to reset
-  // the weights in the RecastModel, so we don't get misled...
-
-  // Model& model_for_sort = (scaleFlag || localObjectiveRecast) ?
-  //   iteratedModel.subordinate_model() : iteratedModel;
-
-
-
-  /* BMA: The mess that will be required if we continue to DAKOTA DB lookup...
-
-  // BMA: Using the subordinate model is wrong, but hard to make right...
-  const Model& model_for_sort = (scaleFlag || localObjectiveRecast) ? 
-    iteratedModel.subordinate_model() : iteratedModel;
-
-  bool lookup_success = false;
-  Response user_resp = tmpResponseHolder.copy();
-  const String& interface_id = model_for_sort.interface_id();
-  ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
-  
-  if (minimizerRecast) {
-    
-    // if we do a DAKOTA database lookup, we have to map the functions
-    // and constraints through any transformations applied by Optimizer
-
-    // Unscale variables back to user/native for database lookup.  not
-    // implementing a generic "untransform" at minimizer since this will
-    // go away
-    Variables user_vars = varsScaleFlag ? tmpVarsHolder.copy() : tmpVarsHolder;
-    if (varsScaleFlag) {
-      user_vars.continuous_variables(
-        modify_s2n(user_vars.continuous_variables(), cvScaleTypes, 
-		   cvScaleMultipliers, cvScaleOffsets));
-      lookup_success = lookup_by_val(data_pairs, interface_id, user_vars, 
-				     search_set, user_resp);
-    }
-    else 
-      lookup_success = lookup_by_val(data_pairs, interface_id, user_vars, 
-				     search_set, user_resp);
-    
-    // apply Response transformations
-
-    if (localObjectiveRecast && obsDataFlag)
-      data_difference_core(user_resp, tmpResponseHolder);
-
-    // scaling functions have conditional built-in
-    response_scaler_core(user_vars, tmpVarsHolder, 
-			 user_resp, tmpResponseHolder,
-			 0, numUserPrimaryFns + numNonlinearConstraints);
-
-    if (localObjectiveRecast)
-      objective_reduction(user_resp, model_for_sort.primary_response_fn_sense(),
-			  model_for_sort.primary_response_fn_weights(), 
-			  tmpResponseHolder);
-  }
-  else {
-    lookup_success = lookup_by_val(data_pairs, interface_id, tmpVarsHolder, 
-				   search_set, tmpResponseHolder);
-  }
-
-  return(lookup_success);
-
-  BMA: End mess
-  */
-
-}
-
 
 
 /** BMA TODO: incorporate constraint tolerance, possibly via elevating
@@ -1323,5 +1225,6 @@ void COLINOptimizer::resize_final_responses(size_t newsize)
   for(std::size_t i=bestResponseArray.size(); i<newsize; ++i)
     bestResponseArray.push_back(iteratedModel.current_response().copy());
 }
+
 
 } // namespace Dakota

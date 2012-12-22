@@ -331,6 +331,9 @@ KEYWORD12 method
 	  [ niching_type
 	    radial REALLIST
 	    | distance REALLIST
+	    | ( max_designs REALLIST
+	      	[ num_designs INTEGER >= 0 ]
+	      )
 	    ]
 	  [ convergence_type
 	    metric_tracker
@@ -467,8 +470,8 @@ KEYWORD12 method
 	    ]
 	  [ contraction_factor REAL ]
 	  [ constraint_penalty REAL ]
-	  initial_delta REAL
-	  threshold_delta REAL
+	  [ initial_delta REAL ]
+	  [ threshold_delta REAL ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -482,8 +485,8 @@ KEYWORD12 method
 	  [ constant_penalty ]
 	  [ contraction_factor REAL ]
 	  [ constraint_penalty REAL ]
-	  initial_delta REAL
-	  threshold_delta REAL
+	  [ initial_delta REAL ]
+	  [ threshold_delta REAL ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -491,8 +494,8 @@ KEYWORD12 method
 	  )
 	|
 	( coliny_cobyla
-	  initial_delta REAL
-	  threshold_delta REAL
+	  [ initial_delta REAL ]
+	  [ threshold_delta REAL ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -551,6 +554,14 @@ KEYWORD12 method
 	    [ non_adaptive ]
 	    ]
 	  [ constraint_penalty REAL ]
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ seed INTEGER > 0 ]
+	  [ show_misc_options ]
+	  [ misc_options STRINGLIST ]
+	  )
+	|
+	( coliny_beta
+	  beta_solver_name STRING
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]

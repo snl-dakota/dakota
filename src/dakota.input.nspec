@@ -197,7 +197,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ smoothing_factor REAL {N_mdm(Real,smoothFactor)} ]
             )
 	    |
-	    ( ( moga {N_mdm3(moga_begin,0,moga_final)}
+	    ( ( moga {N_mdm(lit,methodName_moga)}
 	      [ fitness_type {0}
 		layer_rank {N_mdm(lit,fitnessType_layer_rank)}
 		| domination_count {N_mdm(lit,fitnessType_domination_count)}
@@ -214,6 +214,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ niching_type {0}
 		radial REALLIST {N_mdm(RealLlit,3nichingType_radial)}
 		| distance REALLIST {N_mdm(RealLlit,3nichingType_distance)}
+		| (max_designs REALLIST {N_mdm(RealLlit,3nichingType_max_designs)}
+		  [ num_designs INTEGER >= 2 {N_mdm(pintz,numDesigns)} ]
+		  )
 		]
 	      [ convergence_type {0}
 		metric_tracker {N_mdm(lit,convergenceType_metric_tracker)}
@@ -225,7 +228,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		]
 	      )
 	    |
-	    ( soga {N_mdm3(soga_begin,0,soga_final)}
+	    ( soga {N_mdm(lit,methodName_soga)}
 	      [ fitness_type {0}
 		merit_function {N_mdm(lit,fitnessType_merit_function)}
 		[ constraint_penalty REAL {N_mdm(Realp,constraintTolerance)} ]
@@ -321,8 +324,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		[ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
 		)
 	      | coliny_cobyla {N_mdm(lit,methodName_coliny_cobyla)}
-	      initial_delta REAL {N_mdm(Real,initDelta)}
-	      threshold_delta REAL {N_mdm(Real,threshDelta)}
+	      [ initial_delta REAL {N_mdm(Real,initDelta)} ]
+	      [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
 	      )
 	    |
 	    ( coliny_direct {N_mdm(lit,methodName_coliny_direct)}
@@ -337,7 +340,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
 	      )
 	    |
-	    ( coliny_ea {NIDRProblemDescDB::method_coliny_ea}
+	    ( coliny_ea {N_mdm(lit,methodName_coliny_ea)}
 	      [ population_size INTEGER > 0 {N_mdm(pint,populationSize)} ]
 	      [ initialization_type {0}
 		simple_random {N_mdm(lit,initializationType_random)}
@@ -373,6 +376,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		[ non_adaptive {N_mdm(false,mutationAdaptive)} ]
 		]
 	      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+	      )
+	    |
+	    ( coliny_beta {N_mdm(lit,methodName_coliny_beta)}
+	      beta_solver_name STRING {N_mdm(str,betaSolverName)}
 	      )
 	    [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
 	    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
@@ -775,11 +782,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
 	  )
 	|
-#	( coliny_misc_solver
-#	  [ misc_options STRINGLIST ]
-#	  [ show_misc_options ]
-#	  )
-#	|
 	( ncsu_direct {N_mdm(lit,methodName_ncsu_direct)}
 	  [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
 	  [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]

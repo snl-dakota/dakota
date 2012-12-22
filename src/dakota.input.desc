@@ -320,6 +320,8 @@ TAG "method/moga/niching_type"
 
 TAG "method/moga/niching_type/radial"
 TAG "method/moga/niching_type/distance"
+TAG "method/moga/niching_type/max_designs"
+TAG "method/moga/niching_type/max_designs/num_designs"
 TAG "method/moga/convergence_type"
 TAG "method/moga/convergence_type/metric_tracker"
 	DESC "{Convergence type} MethodCommands.html#MethodJEGAMOGA"
@@ -585,6 +587,11 @@ TAG "method/coliny_ea/mutation_type/non_adaptive"
 	DESC "{Non-adaptive mutation flag} MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/constraint_penalty"
+
+TAG "method/coliny_beta" GROUP "Optimization: Global"
+TAG "method/coliny_beta/beta_solver_name"
+	DESC "{Name of beta solver to be used} MethodCommands.html#MethodSCOLIBBETA"
+
 TAG "method/coliny_pattern_search/solution_target"
 	DESC "{Desired solution target} MethodCommands.html#MethodSCOLIBDC"
 

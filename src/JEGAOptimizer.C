@@ -1026,24 +1026,44 @@ JEGAOptimizer::LoadTheParameterDatabase(
     this->ReCreateTheParameterDatabase();
 
     // Duplicate in all the integral parameters.
-    this->_theParamDB->AddIntegralParam(
-        "method.random_seed",
-        probDescDB.get_int("method.random_seed")
+    const int& random_seed = probDescDB.get_int("method.random_seed");
+    if (random_seed != 0)
+      this->_theParamDB->AddIntegralParam(
+	  "method.random_seed", random_seed
+        );
+    else
+      this->_theParamDB->AddIntegralParam(
+	  "method.random_seed", -1
         );
 
     // now all the reals
-    this->_theParamDB->AddDoubleParam(
-        "method.constraint_penalty",
-        probDescDB.get_real("method.constraint_penalty")
+    const Real& constraint_penalty = probDescDB.get_real("method.constraint_penalty");
+    if (constraint_penalty >= 0.)
+      this->_theParamDB->AddDoubleParam(
+	  "method.constraint_penalty", constraint_penalty
         );
-    this->_theParamDB->AddDoubleParam(
-        "method.crossover_rate",
-        probDescDB.get_real("method.crossover_rate")
+    else
+       this->_theParamDB->AddDoubleParam(
+	   "method.constraint_penalty", 1.0
         );
-    this->_theParamDB->AddDoubleParam(
-        "method.mutation_rate",
-        probDescDB.get_real("method.mutation_rate")
+    const Real& crossover_rate = probDescDB.get_real("method.crossover_rate");
+    if (crossover_rate >= 0.)
+      this->_theParamDB->AddDoubleParam(
+          "method.crossover_rate", crossover_rate
         );
+    else
+      this->_theParamDB->AddDoubleParam(
+          "method.crossover_rate", 0.75
+        );
+    if (this->probDescDB.get_string("method.mutation_type") != "")
+      this->_theParamDB->AddDoubleParam(
+	  "method.mutation_rate",
+	  probDescDB.get_real("method.mutation_rate")
+	  );
+    else
+      this->_theParamDB->AddDoubleParam(
+	  "method.mutation_rate", 0.1
+	  );
     this->_theParamDB->AddDoubleParam(
         "method.mutation_scale",
         probDescDB.get_real("method.mutation_scale")
@@ -1081,6 +1101,10 @@ JEGAOptimizer::LoadTheParameterDatabase(
     this->_theParamDB->AddSizeTypeParam(
         "method.jega.num_generations",
         probDescDB.get_sizet("method.jega.num_generations")
+        );
+    this->_theParamDB->AddSizeTypeParam(
+        "method.jega.max_designs",
+        probDescDB.get_sizet("method.jega.num_designs")
         );
     // Note that the population size, max evals, and max gens are in as ints.
     // Do a conversion for each here.
@@ -1171,20 +1195,20 @@ JEGAOptimizer::LoadTheParameterDatabase(
         this->_theParamDB->AddStringParam("method.fitness_type", "domination_count");
     }
 
-    const string& crossoverOperator =
+    const string& crossover_operator =
         this->probDescDB.get_string("method.crossover_type");
-    if (crossoverOperator != "")
+    if (crossover_operator != "")
       this->_theParamDB->AddStringParam(
-	  "method.crossover_type", crossoverOperator);
+	  "method.crossover_type", crossover_operator);
     else
       this->_theParamDB->AddStringParam(
 	  "method.crossover_type", "shuffle_random");
 
-    const string& mutationOperator =
+    const string& mutation_operator =
         this->probDescDB.get_string("method.mutation_type");
-    if (mutationOperator != "")
+    if (mutation_operator != "")
       this->_theParamDB->AddStringParam(
-	  "method.mutation_type", mutationOperator);
+	  "method.mutation_type", mutation_operator);
     else
       this->_theParamDB->AddStringParam(
 	  "method.mutation_type", "replace_uniform");
@@ -1229,12 +1253,12 @@ JEGAOptimizer::LoadTheParameterDatabase(
         "method.log_file",
         log_file == "JEGAGlobal.log" ? "" : log_file
         );
-    const string& convergenceOperator =
+    const string& convergence_operator =
         this->probDescDB.get_string("method.jega.convergence_type");
 
-    if (convergenceOperator != "")
+    if (convergence_operator != "")
       this->_theParamDB->AddStringParam(
-	  "method.jega.convergence_type", convergenceOperator);
+	  "method.jega.convergence_type", convergence_operator);
     else if (this->methodName == SOGA_METHOD_TXT)
       this->_theParamDB->AddStringParam(
 	  "method.jega.convergence_type", "average_fitness_tracker");

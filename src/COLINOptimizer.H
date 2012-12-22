@@ -67,9 +67,9 @@ public:
   ~COLINOptimizer() {
     if (rng) delete rng;
     //colin::CacheFactory().unregister_cache("useThisCache");
-    String unique_cache_name(method_id());
-    unique_cache_name += methodName;
-    colin::CacheFactory().unregister_cache(unique_cache_name);
+    //String unique_cache_name(method_id());
+    //unique_cache_name += methodName;
+    //colin::CacheFactory().unregister_cache(unique_cache_name);
   }
 
   //
@@ -120,11 +120,6 @@ protected:
   std::pair<bool, bool> 
   colin_cache_lookup(const colin::AppResponse& colinResponse,
 		     Response& tmpResponseHolder);
-
-  /// Lookup passed Variables in DAKOTA DB and return corresponding
-  /// response, transformed to iterator space
-  bool dakota_db_lookup(const Variables& tmpVarsHolder, 
-			Response& tmpResponseHolder);
   
   /// Compute constraint violation, based on nonlinear constraints in
   /// iteratedModel and provided Response data
@@ -145,9 +140,6 @@ protected:
 
   /// handle to the COLIN solver
   colin::SolverHandle colinSolver;
-
-  /// handle to the COLIN cache
-  colin::CacheHandle colinCache;
 
   /// handle and pointer to the COLINApplication object
   std::pair<colin::ApplicationHandle, COLINApplication*> colinProblem;

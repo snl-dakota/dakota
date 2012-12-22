@@ -889,19 +889,6 @@ method_Realz(const char *keyname, Values *val, void **g, void *v)
   (*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = t;
 }
 
-// MSE: This COLINY function mirrors method-dependent default assignments
-// from old IDRProblemDescDB.C.  Could be moved to COLINOptimizer ctor for
-// greater consistency with, e.g., maxIterations method-dependent default.
-void NIDRProblemDescDB::
-method_coliny_ea(const char *keyname, Values *val, void **g, void *v)
-{
-  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-  dm->methodName = "coliny_ea";
-  dm->fitnessType = "linear_rank";
-  dm->replacementType = "elitist";
-  dm->numberRetained = 1;
-}
-
 // MSE: This function just sets two values for one keyword.
 void NIDRProblemDescDB::
 method_piecewise(const char *keyname, Values *val, void **g, void *v)
@@ -995,30 +982,6 @@ method_litz(const char *keyname, Values *val, void **g, void *v)
     botch("%s must be nonnegative",keyname);
   if ((dm->*((Method_mp_litc*)v)->rp = t) == 0.)
     dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
-}
-
-// MSE: These moga functions mirror method-dependent default assignments
-// from old IDRProblemDescDB.C.  Could be moved to JEGAOptimizer ctor for
-// greater consistency with, e.g., maxIterations method-dependent default.
-void NIDRProblemDescDB::
-method_moga_begin(const char *keyname, Values *val, void **g, void *v)
-{
-  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-  dm->methodName = "moga";
-  dm->randomSeed = -1;	// MOGA should "randomly" choose a seed.
-  dm->crossoverRate = 0.75;
-  dm->mutationType = "";
-}
-
-void NIDRProblemDescDB::
-method_moga_final(const char *keyname, Values *val, void **g, void *v)
-{
-  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-
-  if (dm->mutationType == "") {
-    dm->mutationType = "replace_uniform";
-    dm->mutationRate = 0.1;
-  }
 }
 
 void NIDRProblemDescDB::
@@ -1163,36 +1126,6 @@ method_slit2(const char *keyname, Values *val, void **g, void *v)
 
   dm->*((Method_mp_slit2*)v)->sp  = ((Method_mp_slit2*)v)->lit;
   dm->*((Method_mp_slit2*)v)->sp2 = *val->s;
-}
-
-// MSE: These soga functions mirror method-dependent default assignments
-// from old IDRProblemDescDB.C.  Could be moved to JEGAOptimizer ctor for
-// greater consistency with, e.g., maxIterations method-dependent default.
-void NIDRProblemDescDB::
-method_soga_begin(const char *keyname, Values *val, void **g, void *v)
-{
-  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-  dm->methodName = "soga";
-  dm->constraintPenalty = 1.;
-  dm->crossoverType = "multi_point_parameterized_binary";
-  dm->fitnessType = "";
-  dm->mutationType = "";
-  dm->randomSeed = -1;	// SOGA should "randomly" choose a seed.
-}
-
-void NIDRProblemDescDB::
-method_soga_final(const char *keyname, Values *val, void **g, void *v)
-{
-  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-
-  if (dm->fitnessType == "") {
-    dm->fitnessType = "merit_function";
-    dm->constraintPenalty = 1.0;
-  }
-  if (dm->mutationType == "") {
-    dm->mutationType == "replace_uniform";
-    dm->mutationRate = 0.1;
-  }
 }
 
 void NIDRProblemDescDB::
@@ -5095,8 +5028,10 @@ static Method_mp_lit
         MP2(meritFunction,merit2_smooth),
         MP2(meritFunction,merit2_squared),
 	MP2(methodName,asynch_pattern_search),
+	MP2(methodName,coliny_beta),
 	MP2(methodName,coliny_cobyla),
 	MP2(methodName,coliny_direct),
+	MP2(methodName,coliny_ea),
 	MP2(methodName,coliny_pattern_search),
 	MP2(methodName,coliny_solis_wets),
 	MP2(methodName,conmin_frcg),
@@ -5111,6 +5046,7 @@ static Method_mp_lit
 	MP2(methodName,fsu_cvt),
 	MP2(methodName,fsu_halton),
 	MP2(methodName,fsu_hammersley),
+	MP2(methodName,moga),
 	MP2(methodName,ncsu_direct),
 	MP2(methodName,nl2sol),
 	MP2(methodName,nlpql_sqp),
@@ -5137,6 +5073,7 @@ static Method_mp_lit
 	MP2(methodName,optpp_q_newton),
 	MP2(methodName,psuade_moat),
 	MP2(methodName,richardson_extrap),
+	MP2(methodName,soga),
 	MP2(methodName,surrogate_based_global),
 	MP2(methodName,surrogate_based_local),
 	MP2(methodName,vector_parameter_study),
@@ -5216,6 +5153,7 @@ static Method_mp_litc
 
 static Method_mp_litrv
 	MP3(nichingType,nicheVector,distance),
+	MP3(nichingType,nicheVector,max_designs),
 	MP3(nichingType,nicheVector,radial),
 	MP3(postProcessorType,distanceVector,distance_postprocessor);
 
@@ -5302,6 +5240,7 @@ static UShortArray
 
 static String
 	MP_(approxPointReuseFile),
+        MP_(betaSolverName),
 	MP_(expansionImportFile),
 	MP_(idMethod),
 	MP_(logFile),
@@ -5367,6 +5306,7 @@ static int
 	MP_(verifyLevel);
 
 static size_t
+        MP_(numDesigns),
         MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),

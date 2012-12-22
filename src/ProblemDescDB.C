@@ -1807,6 +1807,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"asynch_pattern_search.merit_function", P meritFunction},
 	{"asynch_pattern_search.synchronization", P evalSynchronize},
 	{"batch_selection", P batchSelectionType},
+	{"coliny.beta_solver_name", P betaSolverName},
 	{"coliny.division", P boxDivision},
 	{"coliny.exploratory_moves", P exploratoryMoves},
 	{"coliny.pattern_basis", P patternBasis},
@@ -2207,6 +2208,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     static KW<size_t, DataMethodRep> Szdmo[] = {	// must be sorted
 	{"final_solutions", P numFinalSolutions},
 	{"jega.num_cross_points", P numCrossPoints},
+	{"jega.num_designs", P numDesigns},
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
 	{"jega.num_parents", P numParents}};

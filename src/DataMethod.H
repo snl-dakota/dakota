@@ -471,6 +471,8 @@ public:
   /// the \c pattern_basis specification for APPS/PS methods in
   /// \ref MethodAPPS and \ref MethodCOLINYPS
   String patternBasis;
+  /// beta solvers don't need documentation
+  String betaSolverName;
 
   // JEGA
 
@@ -526,6 +528,10 @@ public:
   // variables for the niching type
   /// The discretization percentage along each objective
   RealVector nicheVector;
+
+  /// The maximum number of designs to keep when using the max_designs
+  /// nicher
+  size_t numDesigns;
   
   // variables for the postprocessor operator
   /// The post processor type 

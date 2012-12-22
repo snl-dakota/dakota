@@ -57,13 +57,13 @@ DataMethodRep::DataMethodRep():
   meritFunction("merit2_squared"), constrPenalty(1.0), smoothFactor(0.0),
   // COLINY
   //evalSynchronization("nonblocking"), // leave empty string as default
-  constraintPenalty(-1.), constantPenalty(false), globalBalanceParam(-1.),
+  constantPenalty(false), globalBalanceParam(-1.),
   localBalanceParam(-1.), maxBoxSize(-1.), minBoxSize(-1.),
   //boxDivision("major_dimension"), // leave empty string as default
   showMiscOptions(false), mutationAdaptive(true),
   // These attributes must replicate the Coliny defaults due to Coliny 
   // member fn. structure:
-  crossoverRate(0.8), mutationRate(1.0),
+  mutationRate(1.0),
   mutationScale(0.1), contractFactor(0.5),
   // These attributes replicate COLINY defaults due to convenience:
   totalPatternSize(0), // simplifies maxConcurrency calculation
@@ -78,19 +78,19 @@ DataMethodRep::DataMethodRep():
   newSolnsGenerated(-9999), numberRetained(-9999),
   expansionFlag(true), // default = on, no_expansion spec turns off
   expandAfterSuccess(0), contractAfterFail(0), mutationRange(-9999),
-  randomizeOrderFlag(false),
+  randomizeOrderFlag(false), betaSolverName(""),
   // JEGA
   numCrossPoints(2), numParents(2), numOffspring(2),
   convergenceType(""), fitnessLimit(6.0),
   shrinkagePercent(0.9), percentChange(0.1), numGenerations(15),
-  nichingType("null_niching"),
+  nichingType("null_niching"), numDesigns(100),
   postProcessorType("null_postprocessor"),
   logFile("JEGAGlobal.log"),
   printPopFlag(false),
   // JEGA/COLINY
-  initializationType("unique_random"), crossoverType(""),
-  mutationType(""), replacementType(""), fitnessType(""),
-  populationSize(50), flatFile(),
+  constraintPenalty(-1.), crossoverRate(-1.), crossoverType(""),
+  initializationType("unique_random"), mutationType(""), replacementType(""), 
+  fitnessType(""), populationSize(50), flatFile(),
   // NCSU 
   volBoxSize(-1.),
   // DDACE
@@ -99,7 +99,7 @@ DataMethodRep::DataMethodRep():
   numTrials(10000), latinizeFlag(false), volQualityFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
   //initializationType("grid"), trialType("random"),
-  // COLINY, NonD, & DACE
+  // COLINY, JEGA, NonD, & DACE
   randomSeed(0),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false), previousSamples(0), vbdFlag(false),
@@ -185,8 +185,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // JEGA
   s << numCrossPoints << numParents << numOffspring << fitnessType
     << convergenceType << percentChange << numGenerations << fitnessLimit
-    << shrinkagePercent << nichingType << nicheVector << postProcessorType
-    << distanceVector;
+    << shrinkagePercent << nichingType << nicheVector << numDesigns
+    << postProcessorType << distanceVector;
 
   // JEGA/COLINY
   s << initializationType << flatFile << logFile << populationSize
@@ -291,8 +291,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // JEGA
   s >> numCrossPoints >> numParents >> numOffspring >> fitnessType
     >> convergenceType >> percentChange >> numGenerations >> fitnessLimit
-    >> shrinkagePercent >> nichingType >> nicheVector >> postProcessorType
-    >> distanceVector;
+    >> shrinkagePercent >> nichingType >> nicheVector >> numDesigns
+    >> postProcessorType >> distanceVector;
 
   // JEGA/COLINY
   s >> initializationType >> flatFile >> logFile >> populationSize
@@ -397,8 +397,8 @@ void DataMethodRep::write(std::ostream& s) const
   // JEGA
   s << numCrossPoints << numParents << numOffspring << fitnessType
     << convergenceType << percentChange << numGenerations << fitnessLimit
-    << shrinkagePercent << nichingType << nicheVector << postProcessorType
-    << distanceVector;
+    << shrinkagePercent << nichingType << nicheVector << numDesigns
+    << postProcessorType << distanceVector;
 
   // JEGA/COLINY
   s << initializationType << flatFile << logFile << populationSize
