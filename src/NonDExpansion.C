@@ -364,7 +364,7 @@ void NonDExpansion::initialize_u_space_model()
 		   expansionCoeffsApproach == Pecos::CUBATURE ||
 		   expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
 		   expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID);
-  BoolDeque random_vars_key; size_t i;
+  Pecos::BitArray random_vars_key; size_t i;
   if (all_vars) {
     random_vars_key.resize(numContinuousVars);
     for (i=0; i<numContinuousVars; ++i)

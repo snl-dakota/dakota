@@ -110,7 +110,7 @@ public:
   const Pecos::RealVector& dimension_decay_rates() const;
 
   /// set pecosBasisApprox.randomVarsKey
-  void random_variables_key(const Pecos::BoolDeque& random_vars_key);
+  void random_variables_key(const Pecos::BitArray& random_vars_key);
 
   /// set pecosBasisApprox.driverRep
   void integration_iterator(const Iterator& iterator);
@@ -383,7 +383,7 @@ dimension_decay_rates() const
 
 
 inline void PecosApproximation::
-random_variables_key(const Pecos::BoolDeque& random_vars_key)
+random_variables_key(const Pecos::BitArray& random_vars_key)
 { polyApproxRep->random_variables_key(random_vars_key); }
 
 
