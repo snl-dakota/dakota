@@ -342,14 +342,9 @@ set(Dakota_src DakotaBuildInfo.C)
 ## UTIL sources.
 set(util_src ParallelLibrary.C MPIPackBuffer.C
     data_util.C tabular_io.C global_defs.C CommandLineHandler.C DakotaGraphics.C
-    DakotaString.C DakotaBinStream.C SensAnalysisGlobal.C WorkdirHelper.C)
-
-## Results Database sources
-option(DAKOTA_RESULTS_DB "Enable Dakota results DB" OFF)
-if(DAKOTA_RESULTS_DB)
-  list(APPEND util_src IteratorAnyDB.C ResultsManager.C)
-endif()
-
+    DakotaString.C DakotaBinStream.C SensAnalysisGlobal.C WorkdirHelper.C
+    ResultsManager.C ResultsDBAny.C
+    )
 
 if(HAVE_RPC_XDR_H)
   list(APPEND util_src dak_xdr_interface.c)
@@ -716,6 +711,12 @@ if(HAVE_AMPL)
   list(APPEND EXPORT_TARGETS amplsolver)
 endif(HAVE_AMPL)
 
+#if(DAKOTA_RESULTS_DB)
+#  set(HAVE_YAML-CPP ON CACHE BOOL 
+#      "Results DB requires yaml-cpp" FORCE)
+#  CheckPackage(YAML-CPP)
+#  include_directories(${YAML_CPP_SOURCE_DIR}/include)
+#endif()
 
 if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
@@ -788,6 +789,10 @@ target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 
+#include(InstallRequiredSystemLibraries)
+#include(GetPrerequisites)
+#list_prerequisites(${CMAKE_CURRENT_BINARY_DIR}/dakota)
+
 install(TARGETS dakota_src_fortran EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
@@ -815,6 +820,7 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
   elseif (APPLE)
     install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallDarwinDylibs.cmake")
   elseif (UNIX)
+#    include(InstallRequiredSystemLibraries)
     install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallUnixSOs.cmake")
   endif()
 endif()
