@@ -721,12 +721,11 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
   # SVN checkout, determine revision level
 
-  #### WJB (1/1/13): temporarily disable jenkins SVN_REVISION while I debug
-  #if(DEFINED ENV{SVN_REVISION})
-  #  set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
-  #  message("Current revision is Dakota_SVN_REV: ${Dakota_SVN_REV}")
+  if(DEFINED ENV{SVN_REVISION})
+    set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
+    message("Current revision is Dakota_SVN_REV: ${Dakota_SVN_REV}")
 
-  #else() # SVN_REVISION is NOT an environment variable
+  else() # SVN_REVISION is NOT an environment variable
     find_package(Subversion)
 
     if(Subversion_FOUND)
@@ -738,7 +737,7 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
       message("Current revision is Dakota_WC_REVISION: ${Dakota_WC_REVISION}")
     endif(Subversion_FOUND) # Subversion_FOUND
 
-  #endif() # DEFINED ENV{SVN_REVISION}
+  endif() # DEFINED ENV{SVN_REVISION}
 
   file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
