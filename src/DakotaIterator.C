@@ -93,13 +93,17 @@
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
 #include "DakotaGraphics.H"
+#include "ResultsManager.H"
 
 static const char rcsId[]="@(#) $Id: DakotaIterator.C 7029 2010-10-22 00:17:02Z mseldre $";
 
 namespace Dakota {
-  extern Graphics dakota_graphics; // defined in ParallelLibrary.C
 
+extern Graphics dakota_graphics; // defined in ParallelLibrary.C
 extern ProblemDescDB dummy_db;    // defined in global_defs.C
+extern ResultsManager iterator_results_db;
+
+ResultsID* ResultsID::ptrResultsIDInstance = NULL;  
 
 /** This constructor builds the base class data for all inherited
     iterators.  get_iterator() instantiates a derived class and the
@@ -142,6 +146,7 @@ Iterator::Iterator(BaseConstructor, Model& model):
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
   writePrecision(probDescDB.get_int("strategy.output_precision")),
+  resultsDB(iterator_results_db),
   methodId(probDescDB.get_string("method.id")), iteratorRep(NULL),
   referenceCount(1)
 {
@@ -235,7 +240,7 @@ Iterator::Iterator(NoDBBaseConstructor, Model& model):
   fdHessByGradStepSize(0.001), fdHessByFnStepSize(0.002),
   fdHessStepType("relative"), numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
-  writePrecision(0), methodId("NO_DB_METHOD"),
+  writePrecision(0),  resultsDB(iterator_results_db), methodId("NO_DB_METHOD"),
   iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -258,8 +263,8 @@ Iterator::Iterator(NoDBBaseConstructor): probDescDB(dummy_db),
   maxConcurrency(1), subIteratorFlag(false), gradientType("none"),
   hessianType("none"), fdGradStepSize(0.001), fdHessByGradStepSize(0.001),
   fdHessByFnStepSize(0.002), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
-  summaryOutputFlag(false), writePrecision(0), methodId("NO_DB_METHOD"),
-  iteratorRep(NULL), referenceCount(1)
+  summaryOutputFlag(false), writePrecision(0), resultsDB(iterator_results_db),
+  methodId("NO_DB_METHOD"), iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
@@ -276,7 +281,7 @@ Iterator::Iterator(NoDBBaseConstructor): probDescDB(dummy_db),
     This makes it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
 Iterator::Iterator(): probDescDB(dummy_db), maxConcurrency(1),
-  iteratorRep(NULL), referenceCount(1)
+  resultsDB(iterator_results_db), iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -291,6 +296,7 @@ Iterator::Iterator(): probDescDB(dummy_db), maxConcurrency(1),
 Iterator::Iterator(Model& model):
   //iteratedModel(model), // no Model copy for envelope
   probDescDB(model.problem_description_db()),
+  resultsDB(iterator_results_db),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -471,6 +477,7 @@ Iterator* Iterator::get_iterator(Model& model)
 Iterator::Iterator(const String& method_name, Model& model):
   //iteratedModel(model), // no Model copy for envelope
   probDescDB(model.problem_description_db()),
+  resultsDB(iterator_results_db),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -566,7 +573,8 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
 /** Copy constructor manages sharing of iteratorRep and incrementing
     of referenceCount. */
 Iterator::Iterator(const Iterator& iterator):
-  probDescDB(iterator.problem_description_db())
+  probDescDB(iterator.problem_description_db()),
+  resultsDB(iterator_results_db)
 {
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
@@ -699,6 +707,11 @@ void Iterator::run_iterator(std::ostream& s)
     //ParallelLibrary& parallel_lib = iteratedModel.parallel_library();
     //ParConfigLIter prev_pc = parallel_lib.parallel_configuration_iterator();
 
+    // the same iterator might run multiple times, or need a unique ID
+    // due to name/id duplication, so increment the execution number
+    // for this name/id pair
+    execNum = ResultsID::instance()->increment_id(method_name(), method_id());
+
     initialize_run();
     if (summaryOutputFlag)
       s << "\n>>>>> Running "  << methodName <<" iterator.\n";
@@ -817,6 +830,9 @@ void Iterator::run()
     }
 
   }
+
+  resultsDB.write_databases();
+
 }
 
 
@@ -1081,6 +1097,12 @@ void Iterator::sub_iterator_flag(bool si_flag)
     // enable summary output for verbose sub-iterators
     summaryOutputFlag = (subIteratorFlag && outputLevel > NORMAL_OUTPUT);
   }
+}
+
+
+StrStrSizet Iterator::run_identifier() const
+{
+  return(boost::make_tuple(method_name(), method_id(), execNum));
 }
 
 

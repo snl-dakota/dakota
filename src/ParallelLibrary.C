@@ -17,6 +17,7 @@
 #include "ParamResponsePair.H"
 #include "DakotaGraphics.H"
 #include "PRPMultiIndex.H"
+#include "ResultsManager.H"
 #ifdef DAKOTA_UTILIB
 #include <utilib/exception_mngr.h>
 #include "utilib/seconds.h"
@@ -1226,7 +1227,8 @@ void ParallelLibrary::assign_streams(bool append)
     concurrent iterators, each iterator has its own restart file
     tagged with iterator number. */
 void ParallelLibrary::
-manage_outputs_restart(const ParallelLevel& pl)
+manage_outputs_restart(const ParallelLevel& pl, bool results_output,
+		       std::string results_filename)
 {
   // The incoming pl should be the lowest of the concurrent iterator levels
 
@@ -1312,6 +1314,8 @@ manage_outputs_restart(const ParallelLevel& pl)
     if (read_restart_flag)
       read_restart_filename += ctr_tag; // e.g., "dakota.rst.#"
     write_restart_filename  += ctr_tag; // e.g., "dakota_new.rst.#"
+    if (results_output)
+      results_filename += ctr_tag;
   }
 
   // --------------------------------
@@ -1352,6 +1356,12 @@ manage_outputs_restart(const ParallelLevel& pl)
     }
     // assign global dakota_cerr to this ofstream
     dakota_cerr = &error_ofstream;
+  }
+
+  // Manage iterator results output to database
+  if (results_output) {
+    extern ResultsManager iterator_results_db;
+    iterator_results_db.initialize(results_filename);
   }
 
   // ------------

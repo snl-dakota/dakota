@@ -331,8 +331,9 @@ KEYWORD12 method
 	  [ niching_type
 	    radial REALLIST
 	    | distance REALLIST
-	    | ( max_designs REALLIST
-	      	[ num_designs INTEGER >= 0 ]
+	    |
+	    ( max_designs REALLIST
+	      [ num_designs INTEGER >= 2 ]
 	      )
 	    ]
 	  [ convergence_type

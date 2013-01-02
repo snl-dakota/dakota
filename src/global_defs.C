@@ -20,6 +20,7 @@
 #include "DakotaInterface.H"
 #include "ParallelLibrary.H"
 #include "ProblemDescDB.H"
+#include "ResultsManager.H"
 
 static const char rcsId[]="@(#) $Id: global_defs.C 6716 2010-04-03 18:35:08Z wjbohnh $";
 
@@ -39,6 +40,11 @@ PRPCache data_pairs;          ///< contains all parameter/response pairs.
 BoStream write_restart;       ///< the restart binary output stream (doesn't
                               ///< really need to be global anymore except for
                               ///< abort_handler()).
+
+/// Global results database for iterator results
+ResultsManager iterator_results_db;
+
+
 Graphics dakota_graphics;     ///< the global Dakota::Graphics object used by
                               ///< strategies, models, and approximations
 int write_precision = 10;     ///< used in ostream data output functions

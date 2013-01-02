@@ -17,6 +17,7 @@
 
 #include "data_types.h"
 #include "DakotaModel.H"
+#include "ResultsManager.H"
 
 
 namespace Dakota {
@@ -253,6 +254,10 @@ protected:
   /// be meaningful after a call to initial_points mutator.
   virtual const VariablesArray& initial_points() const;
 
+  /// get the unique run identifier based on method name, id, and
+  /// number of executions
+  StrStrSizet run_identifier() const;
+
   //
   //- Heading: Data
   //
@@ -361,6 +366,12 @@ protected:
   /// write precision as specified by the user
   int writePrecision;
 
+  /// reference to the global iterator results database
+  ResultsManager& resultsDB;
+
+  /// valid names for iterator results
+  ResultsNames resultsNames;
+
 private:
 
   //
@@ -388,6 +399,11 @@ private:
   Iterator* iteratorRep;
   /// number of objects sharing iteratorRep
   int referenceCount;
+
+  /// an execution number for this instance of the class, unique
+  /// across all instances of same methodName/methodId
+  size_t execNum;
+
 };
 
 

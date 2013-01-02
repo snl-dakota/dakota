@@ -410,7 +410,9 @@ public:
 			       int stop_restart_evals = 0,
 			       bool pre_run_flag = false);
   /// manage output streams and restart file(s) (both modes)
-  void manage_outputs_restart(const ParallelLevel& pl);
+  void manage_outputs_restart(const ParallelLevel& pl,
+			      bool results_output = false,
+			      std::string results_filename = std::string());
 
   /// close streams, files, and any other services
   void close_streams();

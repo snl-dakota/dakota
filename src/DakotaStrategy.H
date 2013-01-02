@@ -173,6 +173,9 @@ protected:
   bool   graph2DFlag;     ///< flag for using 2D graphics plots
   bool   tabularDataFlag; ///< flag for file tabulation of graphics data
   String tabularDataFile; ///< filename for tabulation of graphics data
+  
+  bool resultsOutputFlag;         ///< whether to output results data
+  std::string resultsOutputFile;  ///< filename for results data
 
   int maxConcurrency;  ///< maximum iterator concurrency possible in Strategy
   int numIteratorJobs; ///< number of iterator executions to schedule

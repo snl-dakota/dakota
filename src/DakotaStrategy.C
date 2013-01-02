@@ -45,6 +45,8 @@ Strategy::Strategy(BaseConstructor, ProblemDescDB& problem_db):
   graph2DFlag(probDescDB.get_bool("strategy.graphics")),
   tabularDataFlag(probDescDB.get_bool("strategy.tabular_graphics_data")),
   tabularDataFile(probDescDB.get_string("strategy.tabular_graphics_file")),
+  resultsOutputFlag(probDescDB.get_bool("strategy.results_output")),
+  resultsOutputFile(probDescDB.get_string("strategy.results_output_file")),
   numIteratorJobs(1), maxConcurrency(1), strategyRep(NULL), referenceCount(1)
 {
   int db_write_precision = probDescDB.get_int("strategy.output_precision");
@@ -347,7 +349,8 @@ void Strategy::init_iterator_parallelism()
   // strategy level.  For concurrent iterators within a nested model, iterator
   // output will be suppressed but restart will need some additional attention.
   // -->> second level of tagging?  e.g., dakota.rst.1.3?
-  parallelLib.manage_outputs_restart(si_pl);
+  parallelLib.manage_outputs_restart(si_pl, resultsOutputFlag,
+				     resultsOutputFile);
 
   // *** TO DO: support for multiple concurrent iterator partitions.
   //
