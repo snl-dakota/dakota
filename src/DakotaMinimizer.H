@@ -141,6 +141,13 @@ protected:
 			 const RealVector& primary_wts,
 			 RealSymMatrix& obj_hess) const;
 
+  /// allocate results arrays and labels for multipoint storage
+  void archive_allocate_best(size_t num_points);
+
+  /// archive the best point into the results array
+  void archive_best(size_t index, 
+		    const Variables& best_vars, const Response& best_resp);
+ 
   //
   //- Heading: Data
   //

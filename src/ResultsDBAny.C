@@ -112,8 +112,6 @@ void ResultsDBAny::dump_data(std::ostream& os)
 
 void ResultsDBAny::print_data(std::ostream& os)
 {
-  os << "--- Iterator Results Database Begin ---\n";
-
   std::map<ResultsKeyType, ResultsValueType>::iterator data_it = 
     iteratorData.begin();
   std::map<ResultsKeyType, ResultsValueType>::const_iterator data_end = 
@@ -146,7 +144,6 @@ void ResultsDBAny::print_data(std::ostream& os)
     extract_data(the_any, os);
   }
 
-  os << "--- Iterator Results Database End ---";
   os << std::endl;
 
 }
@@ -233,7 +230,7 @@ void ResultsDBAny::output_data(const std::vector<RealMatrix>& data,
 
   os << "  Data (vector<RealMatrix>):\n";
   for (size_t i=0; i<data.size(); ++i) {
-    os << "      Set " << i+1 << ":\n";
+    os << "      Array Entry " << i+1 << ":\n";
     write_data(os, data[i], false, true, true);
     // std::ostream_iterator<double> spacedelimited(os, " ");
     // std::copy(data.begin(), data.end(), spacedelimited);
@@ -255,7 +252,7 @@ void ResultsDBAny::output_data(const std::vector<RealVector>& data,
 {
   os << "  Data (vector<vector<double>>):\n";
   for (size_t i=0; i<data.size(); ++i) {
-    os << "      Set " << i+1 << ":\n";
+    os << "      Array Entry " << i+1 << ":\n";
     write_data(os, data[i]);
     // std::ostream_iterator<double> spacedelimited(os, " ");
     // std::copy(data.begin(), data.end(), spacedelimited);

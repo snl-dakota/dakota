@@ -72,6 +72,10 @@ ResultsKeyType make_key(const StrStrSizet& iterator_id,
 
 /// create MetaDataValueType from the passed strings
 MetaDataValueType 
+make_metadatavalue(StringMultiArrayConstView labels);
+
+/// create MetaDataValueType from the passed strings
+MetaDataValueType 
 make_metadatavalue(StringMultiArrayConstView cv_labels,
 		   StringMultiArrayConstView div_labels,
 		   StringMultiArrayConstView drv_labels,
@@ -83,6 +87,10 @@ make_metadatavalue(const StringArray& resp_labels);
 
 /// create MetaDataValueType from the passed strings
 MetaDataValueType
+make_metadatavalue(const std::string&);
+
+//// create MetaDataValueType from the passed strings
+MetaDataValueType
 make_metadatavalue(const std::string&, const std::string&);
 
 /// create MetaDataValueType from the passed strings
@@ -93,6 +101,16 @@ make_metadatavalue(const std::string&, const std::string&,
 
 
 // Inline definitions of helper functions
+
+inline MetaDataValueType 
+make_metadatavalue(StringMultiArrayConstView labels)
+{
+  MetaDataValueType mdv;
+  for (size_t i=0; i<labels.size(); ++i)
+    mdv.push_back(labels[i]);
+  return mdv;
+}
+
 
 inline MetaDataValueType 
 make_metadatavalue(StringMultiArrayConstView cv_labels,
@@ -122,6 +140,14 @@ make_metadatavalue(const StringArray& resp_labels)
   for (size_t i=0; i<resp_labels.size(); ++i)
     mdv.push_back(resp_labels[i]);
   
+  return mdv;
+}
+
+inline MetaDataValueType
+make_metadatavalue(const std::string& s1)
+{
+  MetaDataValueType mdv;
+  mdv.push_back(s1);
   return mdv;
 }
 

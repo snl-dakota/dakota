@@ -706,6 +706,9 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
     abort_handler(-1); 
   } 
 
+  // initialize the results archive for this dataset
+  archive_allocate_best(num_best);
+
   const String& interface_id = (methodName.begins("surrogate_based_")) ?
     iteratedModel.truth_model().interface_id() : iteratedModel.interface_id();
   int eval_id;
@@ -745,6 +748,10 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
 	<< "\n\n";
     else
       s << "<<<<< Best data not found in evaluation cache\n\n";
+
+    // pass data to the results archive
+    archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
+
   }
 }
 

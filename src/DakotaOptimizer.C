@@ -24,7 +24,8 @@ static const char rcsId[]="@(#) $Id: DakotaOptimizer.C 7031 2010-10-22 16:23:52Z
 
 
 namespace Dakota {
-  extern PRPCache data_pairs; // global container
+
+extern PRPCache data_pairs; // global container
 
 // initialization of static needed by RecastModel
 Optimizer* Optimizer::optimizerInstance(NULL);
@@ -209,6 +210,9 @@ void Optimizer::print_results(std::ostream& s)
     abort_handler(-1); 
   } 
 
+  // initialize the results archive for this dataset
+  archive_allocate_best(num_best);
+
   const String& interface_id = iteratedModel.interface_id(); 
   int eval_id; 
   ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
@@ -264,6 +268,10 @@ void Optimizer::print_results(std::ostream& s)
         << "\n\n";
     else 
       s << "<<<<< Best data not found in evaluation cache\n\n"; 
+
+    // pass data to the results archive
+    archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
+
   } 
 }
 

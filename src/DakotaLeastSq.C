@@ -175,6 +175,11 @@ void LeastSq::weight_model()
     least squares results (residual terms and constraints). */
 void LeastSq::print_results(std::ostream& s)
 {
+  // archive the single best point
+  size_t num_best = 1, index = 0;
+  archive_allocate_best(num_best);
+  archive_best(index, bestVariablesArray.front(), bestResponseArray.front());
+
   // Print best design parameters.  Could just print all of best variables 
   // (as in ParamStudy::print_results), but restrict to just design 
   // parameters for the LeastSq branch.

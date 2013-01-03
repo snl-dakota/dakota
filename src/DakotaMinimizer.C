@@ -1842,4 +1842,84 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
   }
 }
 
+
+void Minimizer::archive_allocate_best(size_t num_points)
+{
+  // allocate arrays for best data (stored as a set even if only one best set)
+  if (numContinuousVars) {
+    // labels
+    resultsDB.insert
+      (run_identifier(), resultsNames.cv_labels, 
+       variables_results().continuous_variable_labels());
+    // best variables, with labels in metadata
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Best Sets");
+    md["Row Labels"] = 
+      make_metadatavalue(variables_results().continuous_variable_labels()); 
+    resultsDB.array_allocate<RealVector>
+      (run_identifier(), resultsNames.best_cv, num_points, md);
+  }
+  if (numDiscreteIntVars) {
+    // labels
+    resultsDB.insert
+      (run_identifier(), resultsNames.div_labels, 
+       variables_results().discrete_int_variable_labels());
+    // best variables, with labels in metadata
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Best Sets");
+    md["Row Labels"] = 
+      make_metadatavalue(variables_results().discrete_int_variable_labels()); 
+    resultsDB.array_allocate<IntVector>
+      (run_identifier(), resultsNames.best_div, num_points, md);
+  }
+  if (numDiscreteRealVars) {
+    // labels
+    resultsDB.insert
+      (run_identifier(), resultsNames.drv_labels, 
+       variables_results().discrete_real_variable_labels());
+    // best variables, with labels in metadata
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Best Sets");
+    md["Row Labels"] = 
+      make_metadatavalue(variables_results().discrete_real_variable_labels()); 
+    resultsDB.array_allocate<RealVector>
+      (run_identifier(), resultsNames.best_drv, num_points, md);
+  }
+  // labels
+  resultsDB.insert
+    (run_identifier(), resultsNames.fn_labels,
+     response_results().function_labels());
+  // best functions, with labels in metadata
+  MetaDataType md;
+  md["Array Spans"] = make_metadatavalue("Best Sets");
+  md["Row Labels"] = 
+    make_metadatavalue(response_results().function_labels());
+  resultsDB.array_allocate<RealVector>
+    (run_identifier(), resultsNames.best_fns, num_points, md);
+}
+
+void Minimizer::
+archive_best(size_t point_index, 
+	     const Variables& best_vars, const Response& best_resp)
+{
+  // archive the best point in the iterator database
+  if (numContinuousVars)
+    resultsDB.array_insert<RealVector>
+      (run_identifier(), resultsNames.best_cv, point_index,
+       best_vars.continuous_variables());
+  if (numDiscreteIntVars)
+    resultsDB.array_insert<IntVector>
+      (run_identifier(), resultsNames.best_div, point_index,
+       best_vars.discrete_int_variables());
+  if (numDiscreteRealVars)
+    resultsDB.array_insert<RealVector>
+      (run_identifier(), resultsNames.best_drv, point_index,
+       best_vars.discrete_real_variables());
+  resultsDB.array_insert<RealVector>
+    (run_identifier(), resultsNames.best_fns, point_index,
+     best_resp.function_values());
+} 
+
+
+
 } // namespace Dakota
