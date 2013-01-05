@@ -191,15 +191,27 @@ public:
   /// return the change in mean between two response expansions,
   /// treating all variables as random
   Real delta_mean();
+  /// return the change in mean between two response expansions,
+  /// treating a subset of variables as random
+  Real delta_mean(const RealVector& x);
   /// return the change in standard deviation between two response
   /// expansions, treating all variables as random
   Real delta_std_deviation();
+  /// return the change in standard deviation between two response
+  /// expansions, treating a subset of variables as random
+  Real delta_std_deviation(const RealVector& x);
   /// return the change in reliability index (mapped from z_bar) between
   /// two response expansions, treating all variables as random
   Real delta_beta(bool cdf_flag, Real z_bar);
+  /// return the change in reliability index (mapped from z_bar) between
+  /// two response expansions, treating a subset of variables as random
+  Real delta_beta(const RealVector& x, bool cdf_flag, Real z_bar);
+  /// return the change in response level (mapped from beta_bar) between
+  /// two response expansions, treating all variables as random
+  Real delta_z(bool cdf_flag, Real beta_bar);
   /// return the change in response level (mapped from beta_bar) between
   /// two response expansions, treating a subset of the variables as random
-  Real delta_z(bool cdf_flag, Real beta_bar);
+  Real delta_z(const RealVector& x, bool cdf_flag, Real beta_bar);
 
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
@@ -506,16 +518,34 @@ inline Real PecosApproximation::delta_mean()
 { return polyApproxRep->delta_mean(); }
 
 
+inline Real PecosApproximation::delta_mean(const RealVector& x)
+{ return polyApproxRep->delta_mean(x); }
+
+
 inline Real PecosApproximation::delta_std_deviation()
 { return polyApproxRep->delta_std_deviation(); }
+
+
+inline Real PecosApproximation::delta_std_deviation(const RealVector& x)
+{ return polyApproxRep->delta_std_deviation(x); }
 
 
 inline Real PecosApproximation::delta_beta(bool cdf_flag, Real z_bar)
 { return polyApproxRep->delta_beta(cdf_flag, z_bar); }
 
 
+inline Real PecosApproximation::
+delta_beta(const RealVector& x, bool cdf_flag, Real z_bar)
+{ return polyApproxRep->delta_beta(x, cdf_flag, z_bar); }
+
+
 inline Real PecosApproximation::delta_z(bool cdf_flag, Real beta_bar)
 { return polyApproxRep->delta_z(cdf_flag, beta_bar); }
+
+
+inline Real PecosApproximation::
+delta_z(const RealVector& x, bool cdf_flag, Real beta_bar)
+{ return polyApproxRep->delta_z(x, cdf_flag, beta_bar); }
 
 
 inline void PecosApproximation::compute_moments()

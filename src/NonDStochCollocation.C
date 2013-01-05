@@ -396,10 +396,13 @@ Real NonDStochCollocation::compute_final_statistics_metric()
 	if (pa_rep_i->expansion_coefficient_flag()) {
 	  if (respLevelTarget == RELIABILITIES)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
-	      delta = //(all_vars) ? pa_rep_i->delta_beta() :
 #ifdef DEBUG
-		delta_final_stats[cntr] =
+	      delta = delta_final_stats[cntr] = (all_vars) ?
+#else
+	      delta = (all_vars) ? 
 #endif // DEBUG
+		pa_rep_i->delta_beta(initialPtU, cdfFlag,
+				     requestedRespLevels[i][j]) :
 		pa_rep_i->delta_beta(cdfFlag, requestedRespLevels[i][j]);
 	      sum_sq += delta * delta;
 	    }
@@ -409,10 +412,12 @@ Real NonDStochCollocation::compute_final_statistics_metric()
 	  for (j=0; j<pl_len; ++j, ++cntr)
 	    sum_sq += delta_final_stats[cntr] * delta_final_stats[cntr];
 	  for (j=0; j<bl_len; ++j, ++cntr) {
-	    delta = //delta_final_stats[cntr] = // (all_vars) ? :
 #ifdef DEBUG
-	      delta_final_stats[cntr] =
+	    delta = delta_final_stats[cntr] = (all_vars) ?
+#else
+	    delta = (all_vars) ?
 #endif // DEBUG
+	      pa_rep_i->delta_z(initialPtU, cdfFlag, requestedRelLevels[i][j]) :
 	      pa_rep_i->delta_z(cdfFlag, requestedRelLevels[i][j]);
 	    sum_sq += delta * delta;
 	  }
