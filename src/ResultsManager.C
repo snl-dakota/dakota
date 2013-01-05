@@ -75,6 +75,11 @@ void ResultsManager::initialize(const std::string& text_filename)
 }
 
 
+bool ResultsManager::active() const
+{
+  return (coreDBActive || fileDBActive);
+}
+
 void ResultsManager::write_databases()
 {
   if (!coreDBActive) return;

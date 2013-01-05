@@ -176,19 +176,22 @@ protected:
   /// data structure to hold the sample ranks
   RealMatrix sampleRanks;
 
-  /// Plus/minus deltas on response function means for 95% confidence
-  /// intervals (calculated in compute_moments())
-  RealVector mean95CIDeltas;
-  /// Lower bound for 95% confidence interval on std deviation
-  /// (calculated in compute_moments())
-  RealVector stdDev95CILowerBnds;
-  /// Upper bound for 95% confidence interval on std deviation
-  /// (calculated in compute_moments())
-  RealVector stdDev95CIUpperBnds;  
-  /// initialize statistical post processing
+   /// initialize statistical post processing
   SensAnalysisGlobal nonDSampCorr;
 
 private:
+
+  /// allocate results array storage for distribution mappings
+  void archive_allocate_mappings();
+  /// archive the mappings from specified response levels for specified fn
+  void archive_from_resp(size_t fn_index);
+  /// archive the mappings to computed response levels for specified fn
+  void archive_to_resp(size_t fn_index);
+
+  /// allocate results array storage for pdf histograms
+  void archive_allocate_pdf();
+  /// archive a single pdf histogram for specified function
+  void archive_pdf(size_t fn_index);
 
   //
   //- Heading: Data
@@ -197,12 +200,14 @@ private:
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;
 
-  /// Min values of response functions for epistemic calculations
-  /// (calculated in compute_intervals())
-  RealVector minValues;
-  /// Max values of response functions for epistemic calculations
-  /// (calculated in compute_intervals())
-  RealVector maxValues;
+  /// Matrix of confidence internals on moments, with rows for
+  /// mean_lower, mean_upper, sd_lower, sd_upper (calculated in
+  /// compute_moments())
+  RealMatrix momentCIs;
+
+  /// Minimum (row 0) and maximum (row 1) values of response functions
+  /// for epistemic calculations (calculated in compute_intervals()),
+  RealMatrix extremeValues;
 
   /// sorted response PDF intervals bounds extracted from min/max sample
   /// and requested/computedRespLevels (vector lengths = num bins + 1)

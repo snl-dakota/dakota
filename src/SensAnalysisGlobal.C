@@ -14,6 +14,7 @@
 //- Version:
 
 #include "SensAnalysisGlobal.H"
+#include "ResultsManager.H"
 #include <algorithm>
 
 #include <boost/math/special_functions/fpclassify.hpp>
@@ -417,6 +418,90 @@ partial_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
 	partialCorr(i,m) = -partial_corr(i, num_in) /
 	  std::sqrt(partial_corr(num_in, num_in) * partial_corr(i, i));
     }
+  }
+}
+
+
+// TODO: combine archive with print
+void SensAnalysisGlobal::
+archive_correlations(const StrStrSizet& run_identifier,  
+		     ResultsManager& iterator_results,
+		     StringMultiArrayConstView cv_labels,
+		     StringMultiArrayConstView div_labels,
+		     StringMultiArrayConstView drv_labels,
+		     const StringArray& resp_labels) const
+{
+  if (!iterator_results.active())  return;
+
+  int num_in_out = numVars + numFns;
+  if (simpleCorr.numRows() == num_in_out &&
+      simpleCorr.numCols() == num_in_out) {
+    MetaDataType md;
+    md["Row labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+    md["Column labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+    iterator_results.insert(run_identifier, 
+			    iterator_results.results_names.correl_simple_all,
+			    simpleCorr, md);
+  }
+  else if (simpleCorr.numRows() == numVars &&
+	   simpleCorr.numCols() == numFns) {
+    MetaDataType md;
+    md["Row labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+    md["Column labels"] = make_metadatavalue(resp_labels);
+    iterator_results.insert(run_identifier, 
+			    iterator_results.results_names.correl_simple_io,
+			    simpleCorr, md);
+  }
+
+  if (partialCorr.numRows() == numVars &&
+      partialCorr.numCols() == numFns) {
+    MetaDataType md;
+    md["Row labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+    md["Column labels"] = make_metadatavalue(resp_labels);
+    iterator_results.insert(run_identifier, 
+			    iterator_results.results_names.correl_partial_io,
+			    partialCorr, md);
+  }
+  // TODO: metadata
+  //  if (numericalIssuesRaw)
+
+  if (simpleRankCorr.numRows() == num_in_out &&
+      simpleRankCorr.numCols() == num_in_out) {
+    MetaDataType md;
+    md["Row labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+    md["Column labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+    iterator_results.insert(run_identifier, 
+			    iterator_results.results_names.correl_simple_rank_all,
+			    simpleRankCorr, md);
+  }
+  else if (simpleRankCorr.numRows() == numVars &&
+	   simpleRankCorr.numCols() == numFns) {
+    MetaDataType md;
+    md["Row labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+    md["Column labels"] = make_metadatavalue(resp_labels);
+    iterator_results.insert(run_identifier, 
+			    iterator_results.results_names.correl_simple_rank_io,
+			    simpleRankCorr, md);
+
+
+  }
+
+  if (partialRankCorr.numRows() == numVars &&
+      partialRankCorr.numCols() == numFns) {
+    MetaDataType md;
+    md["Row labels"] = 
+      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+    md["Column labels"] = make_metadatavalue(resp_labels);
+    iterator_results.insert(run_identifier, 
+			    iterator_results.results_names.correl_partial_rank_io,
+			    partialRankCorr, md);
   }
 }
 

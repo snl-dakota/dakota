@@ -20,9 +20,11 @@
 #include "DakotaVariables.H"
 #include "DakotaResponse.H"
 #include "global_defs.h"
+#include "results_types.H"
 
 namespace Dakota {
 
+class ResultsManager;
 
 /// Class for a utility class containing correlation calculations
 /// and variance-based decomposition
@@ -56,6 +58,14 @@ public:
   /// simple, partial, simple rank, and partial rank
   void compute_correlations(const RealMatrix&     vars_samples,
 			    const IntResponseMap& resp_samples);
+
+  /// save correlations to database
+  void archive_correlations(const StrStrSizet& run_identifier,  
+			    ResultsManager& iterator_results,
+			    StringMultiArrayConstView cv_labels,
+			    StringMultiArrayConstView div_labels,
+			    StringMultiArrayConstView drv_labels,
+			    const StringArray& resp_labels) const;
 
   /// returns corrComputed to indicate whether compute_correlations()
   /// has been invoked

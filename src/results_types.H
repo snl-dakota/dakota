@@ -89,9 +89,14 @@ make_metadatavalue(const StringArray& resp_labels);
 MetaDataValueType
 make_metadatavalue(const std::string&);
 
-//// create MetaDataValueType from the passed strings
+/// create MetaDataValueType from the passed strings
 MetaDataValueType
 make_metadatavalue(const std::string&, const std::string&);
+
+/// create MetaDataValueType from the passed strings
+MetaDataValueType
+make_metadatavalue(const std::string&, const std::string&, 
+		   const std::string&);
 
 /// create MetaDataValueType from the passed strings
 MetaDataValueType
@@ -157,6 +162,17 @@ make_metadatavalue(const std::string& s1, const std::string& s2)
   MetaDataValueType mdv;
   mdv.push_back(s1);
   mdv.push_back(s2);
+  return mdv;
+}
+
+inline MetaDataValueType
+make_metadatavalue(const std::string& s1, const std::string& s2, 
+		   const std::string& s3)
+{
+  MetaDataValueType mdv;
+  mdv.push_back(s1);
+  mdv.push_back(s2);
+  mdv.push_back(s3);
   return mdv;
 }
 

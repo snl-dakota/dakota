@@ -102,7 +102,7 @@ public:
   ResultsNames():
     namesVersion(0),
 
-    // optimization 
+    // optimization
     best_cv("Best Continuous Variables"),
     best_div("Best Discrete Integer Variables"),
     best_drv("Best Discrete Real Variables"),
@@ -115,10 +115,15 @@ public:
     moments_central_num("Moments: Central: Numerical"),
     moments_std_exp("Moments: Standard: Expansion"),
     moments_central_exp("Moments: Central: Expansion"),
-    confidence_intervals("Confidence Intervals"),
-    mean_ci_deltas("Confidence Interval Deltas on Mean"),
-    stddev_ci_lower("Confidence Interval Lower on Standard Deviation"),
-    stddev_ci_upper("Confidence Interval Upper on Standard Deviation"),
+    moment_cis("Moment Confidence Intervals"),
+    extreme_values("Extreme Values"),
+    map_resp_prob("Response to Probability Mapping"),
+    map_resp_rel("Response to Reliability Mapping"),
+    map_resp_genrel("Response to Generalized Reliability Mapping"),
+    map_prob_resp("Probability to Response Mapping"),
+    map_rel_resp("Reliability to Response Mapping"),
+    map_genrel_resp("Generalized Reliability to Response Mapping"),
+    pdf_histograms("PDF Histograms"),
 
     // correlations
     correl_simple_all("Simple Correlations (All)"),
@@ -128,7 +133,7 @@ public:
     correl_simple_rank_io("Simple Rank Correlations (I/O)"),	
     correl_partial_rank_io("Partial Rank Correlations (I/O)"),
 
-    // labels
+    // labels for variables/resposes
     cv_labels("Continuous Variable Labels"),
     div_labels("Discrete Integer Variable Labels"),
     drv_labels("Discrete Real Variable Labels"),
@@ -139,25 +144,30 @@ public:
   size_t namesVersion;
 
 
-  // optimization
+  // optimization (all used)
   std::string best_cv;
   std::string best_div;
   std::string best_drv;
   std::string best_fns;
 
   // statistics
-  std::string moments_std;
+  std::string moments_std;              // used
   std::string moments_central;
   std::string moments_std_num;
   std::string moments_central_num;
   std::string moments_std_exp;
   std::string moments_central_exp;
-  std::string confidence_intervals;
-  std::string mean_ci_deltas;
-  std::string stddev_ci_lower;
-  std::string stddev_ci_upper;
+  std::string moment_cis;               // used
+  std::string extreme_values;           // used
+  std::string map_resp_prob;            // used
+  std::string map_resp_rel;             // used
+  std::string map_resp_genrel;          // used
+  std::string map_prob_resp;            // used
+  std::string map_rel_resp;             // used
+  std::string map_genrel_resp;          // used
+  std::string pdf_histograms;           // used
 
-  // correlations
+  // correlations (all used)
   std::string correl_simple_all;
   std::string correl_simple_io;
   std::string correl_partial_io;
@@ -165,7 +175,7 @@ public:
   std::string correl_simple_rank_io;
   std::string correl_partial_rank_io;
 
-  // labels
+  // labels for variables/resposes (all used)
   std::string cv_labels;
   std::string div_labels;
   std::string drv_labels;
@@ -204,6 +214,9 @@ public:
   /// initialize the results manager to manage an in-core database,
   /// writing to the specified file name
   void initialize(const std::string& text_filename);
+
+  /// whether any databases are active
+  bool active() const;
 
   // TODO: const
   /// Write in-core databases to file

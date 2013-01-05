@@ -516,6 +516,33 @@ void NonDSampling::
 compute_statistics(const RealMatrix&     vars_samples,
 		   const IntResponseMap& resp_samples)
 {
+  StringMultiArrayConstView
+    acv_labels  = iteratedModel.all_continuous_variable_labels(),
+    adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
+    adrv_labels = iteratedModel.all_discrete_real_variable_labels();
+  size_t cv_start, num_cv, div_start, num_div, drv_start, num_drv;
+  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+	      drv_start, num_drv);
+  StringMultiArrayConstView
+    cv_labels  =
+      acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
+    div_labels =
+      adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
+    drv_labels =
+      adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
+
+  // archive the active variables with the results
+  if (resultsDB.active()) {
+    if (num_cv)
+      resultsDB.insert(run_identifier(), resultsNames.cv_labels, cv_labels);
+    if (num_div)
+      resultsDB.insert(run_identifier(), resultsNames.div_labels, div_labels);
+    if (num_cv)
+      resultsDB.insert(run_identifier(), resultsNames.drv_labels, drv_labels);
+    resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
+		     iteratedModel.response_labels());
+  }
+
   if (numEpistemicUncVars) // Epistemic/mixed
     compute_intervals(resp_samples); // compute min/max response intervals
   else { // Aleatory
@@ -525,8 +552,14 @@ compute_statistics(const RealMatrix&     vars_samples,
     if (totalLevelRequests)
       compute_distribution_mappings(resp_samples);
   }
-  if (!subIteratorFlag)
+
+  if (!subIteratorFlag) {
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
+    // archive the correlations to the results DB
+    nonDSampCorr.archive_correlations(run_identifier(), resultsDB,
+				      cv_labels, div_labels, drv_labels,
+				      iteratedModel.response_labels());
+  }
   if (!finalStatistics.is_null())
     update_final_statistics();
 }
@@ -540,8 +573,7 @@ void NonDSampling::compute_intervals(const IntResponseMap& samples)
   size_t i, j, num_obs = samples.size(), num_samp;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  if (minValues.empty()) minValues.resize(numFunctions);
-  if (maxValues.empty()) maxValues.resize(numFunctions);
+  if (extremeValues.empty()) extremeValues.shapeUninitialized(2, numFunctions);
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
     num_samp = 0;
@@ -554,12 +586,20 @@ void NonDSampling::compute_intervals(const IntResponseMap& samples)
 	++num_samp;
       }
     }
-    minValues[i] = min;
-    maxValues[i] = max;
+    extremeValues(0, i) = min;
+    extremeValues(1, i) = max;
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for " << resp_labels[i] << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
+  }
+
+  if (resultsDB.active()) {
+    MetaDataType md;
+    md["Row Labels"] = make_metadatavalue("Min", "Max");
+    md["Column Labels"] = make_metadatavalue(resp_labels);
+    resultsDB.insert(run_identifier(), resultsNames.extreme_values, 
+		     extremeValues, md);
   }
 }
 
@@ -574,10 +614,8 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
   Real sum, var, skew, kurt;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  if (momentStats.empty())    momentStats.shapeUninitialized(4,numFunctions);
-  if (mean95CIDeltas.empty()) mean95CIDeltas.resize(numFunctions);
-  if (stdDev95CILowerBnds.empty()) stdDev95CILowerBnds.resize(numFunctions);
-  if (stdDev95CIUpperBnds.empty()) stdDev95CIUpperBnds.resize(numFunctions);
+  if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
+  if (momentCIs.empty()) momentCIs.shapeUninitialized(4, numFunctions);
 
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
@@ -651,15 +689,15 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
       // a function for the Student's t-distr. with (num_samp-1) degrees of
       // freedom (Haldar & Mahadevan, p. 127).
       Pecos::students_t_dist t_dist(dof);
-      mean95CIDeltas[i]
-	= std_dev*bmth::quantile(t_dist,0.975)/std::sqrt((Real)num_samp);
+      Real mean_ci_delta = 
+	std_dev*bmth::quantile(t_dist,0.975)/std::sqrt((Real)num_samp);
+      momentCIs(0,i) = mean - mean_ci_delta;
+      momentCIs(1,i) = mean + mean_ci_delta;
       // std dev: chi-square distribution with (num_samp-1) degrees of freedom
       // (Haldar & Mahadevan, p. 132).
       Pecos::chi_squared_dist chisq(dof);
-      stdDev95CILowerBnds[i]
-	= std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.975));
-      stdDev95CIUpperBnds[i]
-	= std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.025));
+      momentCIs(2,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.975));
+      momentCIs(3,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.025));
 /*
 #elif HAVE_GSL
       // mean: the better formula does not assume known variance but requires
@@ -682,7 +720,24 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 */
     }
     else
-      mean95CIDeltas[i] = stdDev95CILowerBnds[i] = stdDev95CIUpperBnds[i] = 0.;
+      momentCIs(0,i) = momentCIs(1,i) = momentCIs(2,i) = momentCIs(3,i) = 0.0;
+  }
+
+  if (resultsDB.active()) {
+    // archive the moments to results DB
+    MetaDataType md_moments;
+    md_moments["Row Labels"] = 
+      make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
+    md_moments["Column Labels"] = make_metadatavalue(resp_labels);
+    resultsDB.insert(run_identifier(), resultsNames.moments_std, 
+		     momentStats, md_moments);
+    // archive the confidence intervals to results DB
+    MetaDataType md;
+    md["Row Labels"] = 
+      make_metadatavalue("LowerCI_Mean", "UpperCI_Mean", "LowerCI_StdDev", 
+			 "UpperCI_StdDev");
+    md["Column Labels"] = make_metadatavalue(resp_labels);
+    resultsDB.insert(run_identifier(), resultsNames.moment_cis, momentCIs, md);
   }
 }
 
@@ -692,9 +747,11 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
   // Size the output arrays here instead of in the ctor in order to support
   // alternate sampling ctors.
   initialize_distribution_mappings();
+  archive_allocate_mappings();
   if (pdfOutput) {
     computedPDFAbscissas.resize(numFunctions);
     computedPDFOrdinates.resize(numFunctions);
+    archive_allocate_pdf();
   }
 
   // For the samples array, calculate the following statistics:
@@ -854,6 +911,11 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
       }
     }
 
+    // archive the mappings from response levels
+    archive_from_resp(i);
+    // archive the mappings to response levels
+    archive_to_resp(i);
+
     // ---------------------------------------------------------------------
     // Post-process for PDF incorporating all requested/computed resp levels
     // ---------------------------------------------------------------------
@@ -933,6 +995,7 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 	else
 	  abs_i[pdf_size] = pdf_rlevs[last_rl_index];
       }
+      archive_pdf(i);
     }
   }
 }
@@ -946,8 +1009,8 @@ void NonDSampling::update_final_statistics()
   if (numEpistemicUncVars) {
     size_t i, cntr = 0;
     for (i=0; i<numFunctions; ++i) {
-      finalStatistics.function_value(minValues[i], cntr++);
-      finalStatistics.function_value(maxValues[i], cntr++);
+      finalStatistics.function_value(extremeValues(0, i), cntr++);
+      finalStatistics.function_value(extremeValues(1, i), cntr++);
     }
   }
   else // moments + level mappings
@@ -984,7 +1047,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
       drv_labels =
         adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
     nonDSampCorr.print_correlations(s, cv_labels, div_labels, drv_labels,
-      iteratedModel.response_labels());
+				    iteratedModel.response_labels());
   }
 }
 
@@ -996,8 +1059,8 @@ void NonDSampling::print_intervals(std::ostream& s) const
   s << std::scientific << std::setprecision(write_precision)
     << "\nMin and Max values for each response function:\n";
   for (size_t i=0; i<numFunctions; ++i)
-    s << resp_labels[i] << ":  Min = " << minValues[i]
-      << "  Max = " << maxValues[i] << '\n';
+    s << resp_labels[i] << ":  Min = " << extremeValues(0, i)
+      << "  Max = " << extremeValues(1, i) << '\n';
 }
 
 
@@ -1026,14 +1089,12 @@ void NonDSampling::print_moments(std::ostream& s) const
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
       << "UpperCI_Mean" << std::setw(width+1)  << "LowerCI_StdDev" 
       << std::setw(width+2) << "UpperCI_StdDev\n";
-    for (i=0; i<numFunctions; ++i) {
-      const Real& mean_i = momentStats(0,i);
+    for (i=0; i<numFunctions; ++i)
       s << std::setw(14) << resp_labels[i]
-	<< ' ' << std::setw(width) << mean_i - mean95CIDeltas[i]
-	<< ' ' << std::setw(width) << mean_i + mean95CIDeltas[i]
-	<< ' ' << std::setw(width) << stdDev95CILowerBnds[i]
-	<< ' ' << std::setw(width) << stdDev95CIUpperBnds[i] << '\n';
-    }
+	<< ' ' << std::setw(width) << momentCIs(0, i)
+	<< ' ' << std::setw(width) << momentCIs(1, i)
+	<< ' ' << std::setw(width) << momentCIs(2, i)
+	<< ' ' << std::setw(width) << momentCIs(3, i) << '\n';
   }
 }
 
@@ -1061,6 +1122,187 @@ void NonDSampling::print_pdf_mappings(std::ostream& s) const
 	  << std::setw(width) << computedPDFOrdinates[i][j] << '\n';
     }
   }
+}
+
+
+void NonDSampling::archive_allocate_mappings()
+{
+  if (!resultsDB.active())  return;
+
+  bool req_resp = false, req_prob = false, req_rel = false, req_gen = false;
+  for (size_t i=0; i<numFunctions; ++i) {
+    if (requestedRespLevels[i].length() > 0)   req_resp = true;
+    if (requestedProbLevels[i].length() > 0)   req_prob = true;
+    if (requestedRelLevels[i].length() > 0)    req_rel  = true;
+    if (requestedGenRelLevels[i].length() > 0) req_gen  = true;
+  }
+
+  if (req_resp) {
+    std::string resp_target, data_name;
+    switch (respLevelTarget) { 
+    case PROBABILITIES:
+      resp_target = "Probability";
+      data_name = resultsNames.map_resp_prob;
+      break;
+    case RELIABILITIES:
+      resp_target = "Reliability";
+      data_name = resultsNames.map_resp_rel;
+      break;
+    case GEN_RELIABILITIES: 
+      resp_target = "Generalized Reliability";
+      data_name = resultsNames.map_resp_genrel;
+      break;
+    }
+
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Response Level", resp_target + " Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), data_name, numFunctions, md);
+  }
+  if (req_prob) {
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Probability Level", "Response Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), resultsNames.map_prob_resp, numFunctions, md);
+  }
+  if (req_rel) {
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Reliability Level", "Response Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), resultsNames.map_rel_resp, numFunctions, md);
+  }
+  if (req_gen) {
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Generalized Reliability Level", "Response Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), resultsNames.map_genrel_resp, numFunctions, md);
+  }
+}
+
+// archive the mappings from response levels
+void NonDSampling::archive_from_resp(size_t i)
+{
+  if (!resultsDB.active())  return;
+
+  size_t j, num_resp_levels = requestedRespLevels[i].length(); 
+  std::string data_name;
+
+  RealMatrix mapping(num_resp_levels, 2);
+  
+  // TODO: could use SetCol?
+  switch (respLevelTarget) { 
+  case PROBABILITIES:
+    data_name = resultsNames.map_resp_prob;
+    for (j=0; j<num_resp_levels; ++j) {
+      mapping(j, 0) = requestedRespLevels[i][j];
+      mapping(j, 1) = computedProbLevels[i][j];
+    }
+    break;
+  case RELIABILITIES:
+    data_name = resultsNames.map_resp_rel;
+    for (j=0; j<num_resp_levels; ++j) {
+      mapping(j, 0) = requestedRespLevels[i][j];
+      mapping(j, 1) = computedRelLevels[i][j];
+    }
+    break;
+  case GEN_RELIABILITIES: 
+    data_name = resultsNames.map_resp_genrel;
+    for (j=0; j<num_resp_levels; ++j) {
+      mapping(j, 0) = requestedRespLevels[i][j];
+      mapping(j, 1) = computedGenRelLevels[i][j];
+    }
+    break;
+  }
+
+  resultsDB.array_insert<RealMatrix>(run_identifier(), data_name, i, mapping);
+}
+
+
+// archive the mappings to response levels
+void NonDSampling::
+archive_to_resp(size_t i)
+{
+  if (!resultsDB.active())  return;
+
+  size_t j;
+  size_t num_prob_levels = requestedProbLevels[i].length();
+  if (num_prob_levels > 0) {
+    RealMatrix mapping(num_prob_levels, 2);
+    for (j=0; j<num_prob_levels; j++) {
+      mapping(j, 0) = requestedProbLevels[i][j];
+      mapping(j, 1) = computedRespLevels[i][j];
+    }
+    resultsDB.
+      array_insert<RealMatrix>(run_identifier(), 
+			       resultsNames.map_prob_resp, i, mapping);
+  } 
+  size_t num_rel_levels = requestedRelLevels[i].length();
+  size_t offset = num_prob_levels; 
+  if (num_rel_levels > 0) {
+    RealMatrix mapping(num_rel_levels, 2);
+    for (j=0; j<num_rel_levels; j++) {
+      mapping(j, 0) = requestedRelLevels[i][j];
+      mapping(j, 1) = computedRespLevels[i][j+offset];
+    }
+    resultsDB.
+      array_insert<RealMatrix>(run_identifier(), 
+			       resultsNames.map_rel_resp, i, mapping);
+  } 
+  size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
+  offset += num_rel_levels; 
+  if (num_gen_rel_levels > 0) {
+    RealMatrix mapping(num_gen_rel_levels, 2);
+    for (j=0; j<num_gen_rel_levels; j++) {
+      mapping(j, 0) = requestedGenRelLevels[i][j];
+      mapping(j, 1) = computedRespLevels[i][j+offset];
+    }
+    resultsDB.
+      array_insert<RealMatrix>(run_identifier(), 
+			       resultsNames.map_genrel_resp, i, mapping);
+  } 
+}
+
+
+void NonDSampling::archive_allocate_pdf() // const
+{
+  if (!resultsDB.active())  return;
+
+  // pdf per function, possibly empty
+  MetaDataType md;
+  md["Array Spans"] = make_metadatavalue("Response Functions");
+  md["Row Labels"] = 
+    make_metadatavalue("Bin Lower", "Bin Upper", "Density Value");
+  resultsDB.array_allocate<RealMatrix>
+    (run_identifier(), resultsNames.pdf_histograms, numFunctions, md);
+}
+
+
+void NonDSampling::archive_pdf(size_t i) // const
+{
+  if (!resultsDB.active()) return;
+
+  size_t pdf_len = computedPDFOrdinates[i].length();
+  RealMatrix pdf(3, pdf_len);
+  for (size_t j=0; j<pdf_len; ++j) {
+    pdf(0, j) = computedPDFAbscissas[i][j];
+    pdf(1, j) = computedPDFAbscissas[i][j+1];
+    pdf(2, j) = computedPDFOrdinates[i][j];
+  }
+  
+  resultsDB.array_insert<RealMatrix>
+    (run_identifier(), resultsNames.pdf_histograms, i, pdf);
 }
 
 } // namespace Dakota
