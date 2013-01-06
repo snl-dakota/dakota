@@ -1081,6 +1081,140 @@ Cumulative Distribution Function (CDF) for response_fn_1:
 \label{uq:figure12}
 \end{figure}
 
+\section{Importance Sampling Methods}\label{uq:importance}
+
+Importance sampling is a method that allows one to estimate statistical
+quantities such as failure probabilities (e.g. the probability that
+a response quantity will exceed a threshold or fall below a threshold value)
+in a way that is more efficient than Monte Carlo sampling.  The core idea
+in importance sampling is that one generates samples that preferentially
+samples important regions in the space (e.g. in or near the failure region
+or user-defined region of interest), and then appropriately weights
+the samples to obtain an unbiased estimate of the failure probability
+~\cite{Srinivasan2002}.
+In importance sampling, the samples are generated from a density which is
+called the importance density:  it is not the original probability density
+of the input distributions.  The importance density should be centered near the
+failure region of interest.  For black-box simulations such as those commonly
+interfaced with DAKOTA, it is difficult to specify the importance density a priori:
+the user often does not know where the failure region lies, especially in a high-dimensional
+space.~\cite{Swiler2010}
+
+More formally, we define the objective of importance sampling as calculating the probability, $P$, that the output will exceed a threshold level.  This is a failure 
+probability, where the failure probability is defined as some scalar function, 
+$y\left(\textbf{X}\right)$, exceeding a threshold, $T$, 
+where the inputs, $\textbf{X}$, are randomly distributed with density, $\rho\left(\textbf{X}\right)$.  
+When evaluating $y\left(\textbf{X}\right)$ is sufficiently expensive or $P$ is sufficiently small, Monte Carlo (MC) sampling methods to estimate $P$ will be infeasible due to the large number of function evaluations required
+for a specified accuracy. 
+
+The probability of failure can be thought of as the mean rate of occurrence
+of failure.  The Monte Carlo (MC) estimate of $P$ is therefore the sample
+mean of the indicator function, $I\left(\textbf{X}\right)$,
+\begin{equation}
+P_{MC}=\frac{1}{N}\sum_{i=1}^{N}I\left(\mathbf{X_i}\right)\ \ \textbf{X}\sim \rho\left(\textbf{X}\right),
+\label{mc_ind}
+\end{equation}
+where $N$ samples, $\mathbf{X_i}$, are drawn from
+$\rho\left(\textbf{X}\right)$,
+and the indicator function $I\left(\textbf{X}\right)$
+is 1 if failure occurs and zero otherwise.
+
+Importance sampling draws samples from the importance density 
+$\rho'\left(\textbf{X}\right)$ and scales the sample mean by the importance density:
+\begin{equation}
+P_{IS}=\frac{1}{N}\sum_{i=1}^N \left(I\left(\mathbf{X_i}\right)\frac{\rho\left(\mathbf{X_i}\right)}{\rho'\left(\mathbf{X_i}\right)}\right)\ \ \textbf{X}\sim\rho'\left(\textbf{X}\right).\label{eqn:ispfail}
+\end{equation}
+This reduces the asymptotic error variance from:
+\begin{equation}
+\sigma_{err_{MC}}^2=\frac{{\rm E}\left[\left(I\left(\textbf{X}\right)-P\right)^2\right]}{N}
+\end{equation}
+to
+\begin{equation}
+\sigma_{err_{IS}}^2=\frac{{\rm E}\left[\left(I\left(\textbf{X}\right)\frac{\rho\left(\textbf{X}\right)}{\rho'\left(\textbf{X}\right)}
+-P\right)^2\right]}{N}.
+\label{eqn:iserrorvar}
+\end{equation}
+Inspection of Eq. ~\ref{eqn:iserrorvar} reveals $\sigma_{err_{IS}}^2=0$ if
+$\rho'\left(\textbf{X}\right)$ equals the ideal importance density
+$\rho^*\left(\textbf{X}\right)$,
+\begin{equation}
+\rho^*\left(\textbf{X}\right)=\frac{I\left(\textbf{X}\right)\rho\left(\textbf{X}\right)}{P}.\end{equation}
+ 
+However, $\rho^*\left(\textbf{X}\right)$ is unknown a priori because
+$I\left(\textbf{X}\right)$ is only known where it has been evaluated.  
+Therefore, the required $P$ in the denominator is also unknown:  this is what we are trying to estimate.
+ 
+If importance sampling is to be effective, the practitioner must be able to
+choose a good $\rho'\left(\textbf{X}\right)$ without already knowing
+$I\left(\textbf{X}\right)$ everywhere.  
+There is a danger: a poor choice for $\rho'\left(\textbf{X}\right)$ can put most of the samples in
+unimportant regions and make $\sigma_{err_{IS}}^2$ much greater than
+$\sigma_{err_{MC}}^2$.
+In particular, importance sampling can be challenging for very low probability events in high-dimensional spaces where
+the output $y$ is calculated by a simulation.  In these cases, usually one
+does not know anything a priori about where the failure region exists
+in input space.  
+We have developed two importance sampling approaches which do not
+rely on the user explicitly specifying an importance density.
+
+\subsection{Importance Sampling Method based on Reliability Approach}\label{uq:importance_rel}
+The first method is based on ideas in reliability modeling ~\ref{uq:reliability:local}.
+An initial Latin Hypercube sampling is performed to generate an initial set of samples.
+These initial samples are augmented with samples from an importance density as follows:
+The variables are transformed to standard normal space. In the transformed space,
+the importance density is a set of normal densities centered around points which
+are in the failure region.  Note that this is similar in spirit to the reliability
+methods, in which importance sampling is centered around a Most Probable Point (MPP).
+In the case of the LHS samples, the importance sampling density will simply by
+a mixture of normal distributions centered around points in the failure region.
+
+This method is specified by the keyword \texttt{importance\_sampling}.
+The options for importance sampling are as follows:  \texttt{import} 
+centers a sampling
+density at one of the initial LHS samples identified in the failure region.
+It then generates the importance samples, weights them by their probability of occurence
+given the original density, and calculates the required probability (CDF or CCDF level).
+\texttt{adapt\_import} is the same as \texttt{import} but is performed iteratively until the
+failure probability estimate converges.
+\texttt{mm\_adapt\_import} starts with all of the samples located in the failure region
+to build a multimodal sampling density. First, it uses a small number of samples around
+each of the initial samples in the failure region.  Note that these samples
+are allocated to the different points based on their relative probabilities of occurrence:
+more probable points get more samples. This early part of the approach is done to 
+search for ``representative'' points. Once these are located, the multimodal sampling density is set and then the multi-modal adaptive method proceeds similarly to the 
+adaptive method (sample until convergence).
+ 
+\subsection{Gaussian Process Adaptive Importance Sampling Method}\label{uq:gpais}
+The second importance sampling method in DAKOTA is the one we recommend,
+at least for problems that have a relatively small number of input variables (e.g.
+less than 10).  This method, Gaussian Process Adaptive Importance Sampling,
+is outlined in the paper ~\cite{Dalbey2012}.
+This method  starts with an initial set of LHS samples and adds samples one at a time, 
+with the goal of adaptively improving the estimate of the ideal importance density
+during the process.  The approach uses a mixture of component densities.  An
+iterative process is used
+to construct the sequence of improving component densities. At each
+iteration, a Gaussian process (GP) surrogate is used to help identify areas
+in the space where failure is likely to occur.  The GPs are not used to
+directly calculate the failure probability; they are only used to approximate
+the importance density. Thus, the Gaussian process adaptive importance
+sampling algorithm overcomes limitations involving using a potentially
+inaccurate surrogate model directly in importance sampling calculations.
+
+This method is specified with the keyword \texttt{gpais}.  There are three 
+main controls which govern the behavior of the algorithm. 
+\texttt{samples} specifies the initial number of Latin Hypercube samples 
+which are used to create the initial Gaussian process surrogate. 
+\texttt{emulator\_samples} specifies the number of samples taken on the 
+latest Gaussian process model each iteration of the algorithm. 
+These samples are used in the construction of the next importance 
+sampling density.  The default is 10,000 samples.  The third control 
+is \texttt{max\_iterations}, which controls the number of iterations 
+of the algorithm.  Each iteration, one additional sample of the ``true'' 
+simulation is taken.  Thus, if \texttt{samples} were set at 100 and 
+\texttt{max\_iterations} were set to 200, there would be a total of 
+300 function evaluations of the simulator model taken. 
+
 \section{Epistemic Nondeterministic Methods}\label{uq:epistemic}
 
 Uncertainty quantification is often used as part of the risk
