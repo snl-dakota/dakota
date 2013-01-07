@@ -168,16 +168,43 @@ if ( NOT Trilinos_DIR )
   # are specified, indepedent of a "prefix"
   if(Extra_Teuchos_INCLUDE_DIR AND Extra_Teuchos_LIBRARY_DIR)
     AddExtraTeuchosPaths()
+
   else()
     # if no one has configured a local src Teuchos, do so
     # this will respect Teuchos_DIR if already set
     if( NOT Teuchos_DIR )
-      set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
+      if( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/packages/teuchos/cmake/tribits )
+        set( Teuchos_DIR
+          ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/packages/teuchos )
+        set( Trilinos_ENABLE_Teuchos ON CACHE BOOL
+          "ENABLE TriBITS build of teuchos" FORCE )
+
+        # Map key Dakota variables to TriBITS variables
+        set(TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI})
+        set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
+        set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+
+      else()
+        # Use "historical" directory hierarchy, before TriBITS
+        set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
+      endif() # tribits source directory EXISTS
+
       message( "Setting Teuchos_DIR to ${Teuchos_DIR}" )
       add_subdirectory(packages/teuchos)
+
     else()
-      message( "in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR already set to ${Teuchos_DIR}" )
+      message("in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR is: ${Teuchos_DIR}")
+    endif() # NOT Teuchos_DIR
+
+    if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/TrilinosConfig.cmake )
+      # Move the "TriBITS" config file to teuchos subdir (not the BuildRoot)
+      file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/TrilinosConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/TrilinosConfig.cmake)
+
+      # Additional setting to prevent multiple targets with the same name
+      set(Trilinos_TARGETS_IMPORTED 1)
     endif()
+
     find_package( Teuchos NO_MODULE REQUIRED )
   endif() # Extra_Teuchos_INCLUDE_DIR AND Extra_Teuchos_LIBRARY_DIR
 else()
