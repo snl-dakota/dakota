@@ -1,14 +1,20 @@
 # TODO
-# * Consider using file copy instead of configure_file, when config not needed?
-# * Create proper make clean information
-# * Generate files with deps to the source tree so you can update there and
-#   make in the binary tree
+# * Verify that deps are working
+# * Do same for theory manual if appropriate
 
-# Copy tex inputs into binary tree for now
-file(GLOB users_tex ${CMAKE_CURRENT_SOURCE_DIR}
-     "*.tex" "*.bib" "*.sty")
-file(COPY ${users_tex} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# Build a list of absolute paths of test inputs for use in dependencies
+set(users_inputs_abs "") 
 
+# Copy .tex and related files into binary tree (for now), with dep to src
+file(GLOB users_tex RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+  "*.tex" "*.bib" "*.sty")
+foreach(file ${users_tex}) 
+  add_file_copy_command( 
+    ${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+    ${CMAKE_CURRENT_BINARY_DIR}/${file} 
+    ) 
+  list(APPEND users_inputs_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
+endforeach() 
 
 # Create generated files into binary tree; use a list users_test_inputs with 
 #   test_input test_num test_output
@@ -70,16 +76,24 @@ set(users_test_inputs ${users_test_inputs}
 )
 
 # Users_Advanced_Interfaces.tex
-# TODO: consider file(COPY) instead?
-configure_file("${generic_path}/dakota_rosenbrock.in"
-	       dakota_rosenbrock.in COPYONLY)
-configure_file("${generic_path}/simulator_script"
-	       simulator_script COPYONLY)
-# TODO: head -47 of dprepro
-configure_file("${generic_path}/dprepro"
-	       dprepro_head COPYONLY)
-configure_file("${generic_path}/templatedir/ros.template"
-	       ros.template COPYONLY)
+add_file_copy_command("${generic_path}/dakota_rosenbrock.in" 
+  dakota_rosenbrock.in)
+add_file_copy_command("${generic_path}/simulator_script" simulator_script)
+add_file_copy_command("${generic_path}/templatedir/ros.template" ros.template)
+# TODO: use perl command for portability
+add_custom_command(
+  OUTPUT  dprepro_usage
+  DEPENDS "${generic_path}/dprepro"
+  COMMAND ${generic_path}/dprepro
+  ARGS    --help > dprepro_usage
+  )
+
+list(APPEND users_inputs_abs
+  "${CMAKE_CURRENT_BINARY_DIR}/dakota_rosenbrock.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/simulator_script"
+  "${CMAKE_CURRENT_BINARY_DIR}/dprepro_usage"
+  "${CMAKE_CURRENT_BINARY_DIR}/ros.template"
+  )
 
 # Users_Additional_Examples.tex
 set(users_test_inputs ${users_test_inputs}
@@ -90,8 +104,10 @@ set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_mogatest.in 1 dakota_mogatest2.in"
   "${test_path}/dakota_mogatest.in 2 dakota_mogatest3.in"
 )
-configure_file("${test_path}/dakota_separable_ego_5D.in"
-               dakota_separable_ego_5D.in COPYONLY)
+add_file_copy_command("${test_path}/dakota_separable_ego_5D.in"
+  dakota_separable_ego_5D.in)
+list(APPEND users_inputs_abs 
+  "${CMAKE_CURRENT_BINARY_DIRECTORY}/dakota_separable_ego_5D.in")
 
 # Now iterate over the list, parsing and extracting with dakota_test.perl.
 # Also create all_generated_inputs to use in dependency management
@@ -108,30 +124,40 @@ foreach(generated_input ${users_test_inputs})
 
   add_custom_command(
     OUTPUT  ${test_output}
+    DEPENDS ${test_input}
     COMMAND ${Dakota_SOURCE_DIR}/test/dakota_test.perl 
     ARGS    --extract ${test_input} ${test_num} --file-extract=${CMAKE_CURRENT_BINARY_DIR}/${test_output}
   )
+  list(APPEND users_inputs_abs "${CMAKE_CURRENT_BINARY_DIR}/${test_output}")
 
 endforeach()
 
-# for deps
-file(GLOB users_images 
-     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/images
-     "*.png" "*.eps"
-)
 
-# actually copy the files
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/images 
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory 
+  "${CMAKE_CURRENT_BINARY_DIR}/images")
+
+# Build a list of absolute paths of images for use in dependencies
+set(users_images_abs "") 
+file(GLOB_RECURSE users_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/images"
+  "*.png" "*.eps")
+foreach(file ${users_images}) 
+  add_file_copy_command( 
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/${file} 
+    ${CMAKE_CURRENT_BINARY_DIR}/images/${file} 
+    ) 
+  list(APPEND users_images_abs "${CMAKE_CURRENT_BINARY_DIR}/images/${file}")
+endforeach() 
+
 
 # Command with artificial dependencies to run latex commands in sequence
 # TODO: other deps; recopy files if out of date
 set(file_tex Users_Main)
 
+# TODO: verbosity-based control of latex output
 add_custom_command(
   OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux
   DEPENDS   ${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex 
-            ${all_generated_inputs} ${users_images}
+            ${all_generated_inputs} ${users_images_abs} ${users_inputs_abs}
   COMMAND   ${PDFLATEX_COMPILER}
   ARGS      -interaction=batchmode ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
   COMMENT   "Latex (first pass): User's"
@@ -167,3 +193,7 @@ add_custom_command(
 add_custom_target(docs-pdf-user echo
   DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf
 )
+
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+  "Users_Main.blg;Users_Main.brf;Users_Main.idx;Users_Main.out;Users_Main.toc"
+  )
