@@ -155,7 +155,7 @@ pdf2sand(user Users_Main)
 
 # Generate HTML Dev/Ref, PDF Theory/Users
 add_custom_target(docs)
-add_dependencies(docs docs-doxygen docs-latex-user docs-latex-theory)
+add_dependencies(docs docs-doxygen docs-pdf-user docs-pdf-theory)
 
 # Generate PDF Dev/Ref/Theory/Users
 add_custom_target(docs-pdf)
