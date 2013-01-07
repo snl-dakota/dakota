@@ -168,5 +168,5 @@ add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory docs-san
 
 # Remove Doxygen-generated directories on make clean
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
-  "html-dev;html-ref;latex-dev;latex-ref;man-dev;man-ref"
-)
+  "html-dev;html-ref;latex-dev;latex-ref;man-dev;man-ref;SAND-shell-dev.aux;SAND-shell-dev.log;SAND-shell-ref.aux;SAND-shell-ref.log;SAND-shell-theory.aux;SAND-shell-theory.log;SAND-shell-user.aux;SAND-shell-user.log"
+  )

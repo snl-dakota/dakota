@@ -1,60 +1,71 @@
-# TODO
-# * Consider using file copy instead of configure_file, when config not needed?
-# * Create proper make clean information
-# * Generate files with deps to the source tree so you can update there and
-#   make in the binary tree
 
-# Copy tex inputs into binary tree for now
-file(GLOB users_tex ${CMAKE_CURRENT_SOURCE_DIR}
-     "*.tex" "*.bib" "*.sty")
-file(COPY ${users_tex} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# Build a list of absolute paths of latex inputs for use in dependencies
+set(theory_inputs_abs "") 
 
-# for deps
-file(GLOB users_images 
-     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/images
-     "*.png" "*.eps"
-)
+# Copy .tex and related files into binary tree (for now), with dep to src
+file(GLOB theory_tex RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+  "*.tex" "*.bib" "*.sty")
+foreach(file ${theory_tex}) 
+  add_file_copy_command( 
+    "${CMAKE_CURRENT_SOURCE_DIR}/${file}" 
+    "${CMAKE_CURRENT_BINARY_DIR}/${file}"
+    ) 
+  list(APPEND theory_inputs_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
+endforeach() 
 
-# actually copy the files
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/images 
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory 
+  "${CMAKE_CURRENT_BINARY_DIR}/images")
+
+# Build a list of absolute paths of images for use in dependencies
+set(theory_images_abs "") 
+file(GLOB_RECURSE theory_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/images"
+  "*.png" "*.eps" "*.pdf")
+foreach(file ${theory_images}) 
+  add_file_copy_command( 
+    "${CMAKE_CURRENT_SOURCE_DIR}/images/${file}"
+    "${CMAKE_CURRENT_BINARY_DIR}/images/${file}"
+    ) 
+  list(APPEND theory_images_abs "${CMAKE_CURRENT_BINARY_DIR}/images/${file}")
+endforeach() 
+
 
 # Command with artificial dependencies to run latex commands in sequence
-# TODO: other deps; recopy files if out of date
 set(file_tex Theory_Main)
 
+# TODO: verbosity-based control of latex output
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux
-  DEPENDS   ${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex 
-            ${all_generated_inputs} ${users_images}
-  COMMAND   ${PDFLATEX_COMPILER}
-  ARGS      -interaction=batchmode ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux"
+  DEPENDS   "${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex" 
+            ${theory_images_abs} ${theory_inputs_abs}
+  COMMAND   "${PDFLATEX_COMPILER}"
+  ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (first pass): Theory"
 )
 
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl
-  DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux
-  COMMAND   ${BIBTEX_COMPILER}
-  ARGS      -terse ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl"
+  DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux"
+  COMMAND   "${BIBTEX_COMPILER}"
+  ARGS      -terse "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Bibtex: Theory"
 )
 
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi
-  DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl
-  COMMAND   ${PDFLATEX_COMPILER}
-  ARGS      -interaction=batchmode ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi"
+  DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl"
+  COMMAND   "${PDFLATEX_COMPILER}"
+  ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (second pass): Theory"
 )
 
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.log
-            ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf
-  DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl
-            ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi
-  COMMAND   ${PDFLATEX_COMPILER}
-  ARGS      -interaction=batchmode ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.log"
+            "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf"
+  DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl"
+            "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi"
+  COMMAND   "${PDFLATEX_COMPILER}"
+  ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (third pass): Theory"
 )
 
@@ -62,3 +73,7 @@ add_custom_command(
 add_custom_target(docs-pdf-theory echo
   DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf
 )
+
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+  "Theory_Main.blg;Theory_Main.brf;Theory_Main.idx;Theory_Main.out;Theory_Main.toc"
+  )

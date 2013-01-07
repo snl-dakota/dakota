@@ -1,17 +1,14 @@
-# TODO
-# * Verify that deps are working
-# * Do same for theory manual if appropriate
 
-# Build a list of absolute paths of test inputs for use in dependencies
+# Build a list of absolute paths of latex inputs for use in dependencies
 set(users_inputs_abs "") 
 
 # Copy .tex and related files into binary tree (for now), with dep to src
-file(GLOB users_tex RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+file(GLOB users_tex RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
   "*.tex" "*.bib" "*.sty")
 foreach(file ${users_tex}) 
   add_file_copy_command( 
-    ${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-    ${CMAKE_CURRENT_BINARY_DIR}/${file} 
+    "${CMAKE_CURRENT_SOURCE_DIR}/${file}" 
+    "${CMAKE_CURRENT_BINARY_DIR}/${file}"
     ) 
   list(APPEND users_inputs_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
 endforeach() 
@@ -20,8 +17,8 @@ endforeach()
 #   test_input test_num test_output
 
 # Directories in which inputs are found
-set(generic_path ${Dakota_SOURCE_DIR}/examples/script_interfaces/generic)
-set(test_path    ${Dakota_SOURCE_DIR}/test)
+set(generic_path "${Dakota_SOURCE_DIR}/examples/script_interfaces/generic")
+set(test_path    "${Dakota_SOURCE_DIR}/test")
 
 # Users_Tutorial.tex
 set(users_test_inputs
@@ -77,15 +74,16 @@ set(users_test_inputs ${users_test_inputs}
 
 # Users_Advanced_Interfaces.tex
 add_file_copy_command("${generic_path}/dakota_rosenbrock.in" 
-  dakota_rosenbrock.in)
-add_file_copy_command("${generic_path}/simulator_script" simulator_script)
-add_file_copy_command("${generic_path}/templatedir/ros.template" ros.template)
-# TODO: use perl command for portability
+  "${CMAKE_CURRENT_BINARY_DIR}/dakota_rosenbrock.in")
+add_file_copy_command("${generic_path}/simulator_script"
+  "${CMAKE_CURRENT_BINARY_DIR}/simulator_script")
+add_file_copy_command("${generic_path}/templatedir/ros.template"
+  "${CMAKE_CURRENT_BINARY_DIR}/ros.template")
 add_custom_command(
-  OUTPUT  dprepro_usage
+  OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/dprepro_usage"
   DEPENDS "${generic_path}/dprepro"
-  COMMAND ${generic_path}/dprepro
-  ARGS    --help > dprepro_usage
+  COMMAND "${PERL_EXECUTABLE}"
+  ARGS    "${generic_path}/dprepro" --help > "${CMAKE_CURRENT_BINARY_DIR}/dprepro_usage"
   )
 
 list(APPEND users_inputs_abs
@@ -105,9 +103,9 @@ set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_mogatest.in 2 dakota_mogatest3.in"
 )
 add_file_copy_command("${test_path}/dakota_separable_ego_5D.in"
-  dakota_separable_ego_5D.in)
+  "${CMAKE_CURRENT_BINARY_DIR}/dakota_separable_ego_5D.in")
 list(APPEND users_inputs_abs 
-  "${CMAKE_CURRENT_BINARY_DIRECTORY}/dakota_separable_ego_5D.in")
+  "${CMAKE_CURRENT_BINARY_DIR}/dakota_separable_ego_5D.in")
 
 # Now iterate over the list, parsing and extracting with dakota_test.perl.
 # Also create all_generated_inputs to use in dependency management
@@ -116,24 +114,24 @@ foreach(generated_input ${users_test_inputs})
 
   # generated a semicolon-separated list from the arguments so we can
   # treat as a list and extract the sub-elements
-  separate_arguments(geninput_as_args UNIX_COMMAND ${generated_input})
+  separate_arguments(geninput_as_args UNIX_COMMAND "${generated_input}")
   list(GET geninput_as_args 0 test_input)
   list(GET geninput_as_args 1 test_num)
   list(GET geninput_as_args 2 test_output)
-  list(APPEND all_generated_inputs ${test_output})
+  list(APPEND all_generated_inputs
+    "${CMAKE_CURRENT_BINARY_DIR}/${test_output}")
 
   add_custom_command(
-    OUTPUT  ${test_output}
-    DEPENDS ${test_input}
-    COMMAND ${Dakota_SOURCE_DIR}/test/dakota_test.perl 
-    ARGS    --extract ${test_input} ${test_num} --file-extract=${CMAKE_CURRENT_BINARY_DIR}/${test_output}
+    OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/${test_output}"
+    DEPENDS "${test_input}"
+    COMMAND "${PERL_EXECUTABLE}"
+    ARGS    "${Dakota_SOURCE_DIR}/test/dakota_test.perl" --extract ${test_input} ${test_num} --file-extract="${CMAKE_CURRENT_BINARY_DIR}/${test_output}"
   )
-  list(APPEND users_inputs_abs "${CMAKE_CURRENT_BINARY_DIR}/${test_output}")
 
 endforeach()
 
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory 
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory 
   "${CMAKE_CURRENT_BINARY_DIR}/images")
 
 # Build a list of absolute paths of images for use in dependencies
@@ -142,56 +140,55 @@ file(GLOB_RECURSE users_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/images"
   "*.png" "*.eps")
 foreach(file ${users_images}) 
   add_file_copy_command( 
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/${file} 
-    ${CMAKE_CURRENT_BINARY_DIR}/images/${file} 
+    "${CMAKE_CURRENT_SOURCE_DIR}/images/${file}"
+    "${CMAKE_CURRENT_BINARY_DIR}/images/${file}"
     ) 
   list(APPEND users_images_abs "${CMAKE_CURRENT_BINARY_DIR}/images/${file}")
 endforeach() 
 
 
 # Command with artificial dependencies to run latex commands in sequence
-# TODO: other deps; recopy files if out of date
 set(file_tex Users_Main)
 
 # TODO: verbosity-based control of latex output
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux
-  DEPENDS   ${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex 
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux"
+  DEPENDS   "${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex" 
             ${all_generated_inputs} ${users_images_abs} ${users_inputs_abs}
-  COMMAND   ${PDFLATEX_COMPILER}
-  ARGS      -interaction=batchmode ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  COMMAND   "${PDFLATEX_COMPILER}"
+  ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (first pass): User's"
 )
 
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl
-  DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux
-  COMMAND   ${BIBTEX_COMPILER}
-  ARGS      -terse ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl"
+  DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux"
+  COMMAND   "${BIBTEX_COMPILER}"
+  ARGS      -terse "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Bibtex: User's"
 )
 
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi
-  DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl
-  COMMAND   ${PDFLATEX_COMPILER}
-  ARGS      -interaction=batchmode ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi"
+  DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl"
+  COMMAND   "${PDFLATEX_COMPILER}"
+  ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (second pass): User's"
 )
 
 add_custom_command(
-  OUTPUT    ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.log
-            ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf
-  DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl
-            ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi
-  COMMAND   ${PDFLATEX_COMPILER}
-  ARGS      -interaction=batchmode ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}
+  OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.log"
+            "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf"
+  DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl"
+            "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.dvi"
+  COMMAND   "${PDFLATEX_COMPILER}"
+  ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (third pass): User's"
 )
 
 # Eventually trigger the whole process
 add_custom_target(docs-pdf-user echo
-  DEPENDS   ${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf
+  DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.pdf"
 )
 
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
