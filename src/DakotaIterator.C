@@ -103,8 +103,6 @@ extern Graphics dakota_graphics; // defined in ParallelLibrary.C
 extern ProblemDescDB dummy_db;    // defined in global_defs.C
 extern ResultsManager iterator_results_db;
 
-ResultsID* ResultsID::ptrResultsIDInstance = NULL;  
-
 /** This constructor builds the base class data for all inherited
     iterators.  get_iterator() instantiates a derived class and the
     derived class selects this base class constructor in its
@@ -710,7 +708,7 @@ void Iterator::run_iterator(std::ostream& s)
     // the same iterator might run multiple times, or need a unique ID
     // due to name/id duplication, so increment the execution number
     // for this name/id pair
-    execNum = ResultsID::instance()->increment_id(method_name(), method_id());
+    execNum = ResultsID::instance().increment_id(method_name(), method_id());
 
     initialize_run();
     if (summaryOutputFlag)

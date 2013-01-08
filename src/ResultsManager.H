@@ -62,10 +62,9 @@ namespace Dakota {
 class ResultsID {
 
 public:
-  static ResultsID* instance() {
-    if (!ptrResultsIDInstance)
-      ptrResultsIDInstance = new ResultsID();
-    return ptrResultsIDInstance;
+  static ResultsID& instance() {
+    static ResultsID resultsIDInstance;
+    return resultsIDInstance;
   }
   /// explicitly increment the iterator results ID, init to 1 if needed
   size_t increment_id(const std::string& method_name, 
@@ -79,13 +78,11 @@ public:
 		const std::string& method_id) const;
 
 private:
-  ResultsID() { }
-  ResultsID(ResultsID const&) { }
-  ResultsID& operator=(ResultsID const&) { }
+  ResultsID() { /* empty */ }
+  ~ResultsID() { /* empty */ }
+  ResultsID(ResultsID const&);
+  ResultsID& operator=(ResultsID const&);
 
-  /// pointer to sole ResultsID instance
-  static ResultsID* ptrResultsIDInstance;
-  
   /// storage for the results IDs
   std::map<std::pair<std::string, std::string>, size_t> idMap;
 
