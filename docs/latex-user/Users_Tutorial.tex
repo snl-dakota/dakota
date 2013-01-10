@@ -23,10 +23,42 @@ still download DAKOTA as described below.
 \subsubsection {Check DAKOTA Binary}\label{tutorial:installation:quickstart:binary}
 %Dena:  can you take this section? Also determine where/how we want to 
 %present the installation information
+
 \subsubsection {Running DAKOTA with simple input file}\label{tutorial:installation:quickstart:running}
-%Ken:  can you take this section?  It would involve a simpler 
-%version of the tutorial:installation:running section below, 
-%plus your discussion of the major components of the DAKOTA input file
+This section is intended for users who are new to DAKOTA.
+
+\subsubsubsection {First Steps}
+\begin{enumerate}
+  \item Make sure DAKOTA runs - see Section~\ref{tutorial:installation:quickstart:binary}
+  \item Create a working directory 
+  \item Copy \texttt{dakota_textbook.in from the \texttt{Dakota/examples/tutorial/} directory to the working directory
+  \item From the working directory, run \texttt{dakota -i dakota_textbook.in -o Dakota_textbook.out > Dakota_textbook.stdout}
+\end{enumerate}
+
+
+\subsubsubsection {What should happen}
+DAKOTA outputs a large amount of information to help users track the progress. Four files should have been created:
+\begin{enumerate}
+  \item The screen output has been redirected to the file \texttt{Dakota\_textbook.stdout}. \\
+  The contents are messages from DAKOTA and notes about the progress of the iterator (i.e. method/algorithm).
+  \item The output file \texttt{Dakota\_textbook.out} contains information about the function evaluations.
+  \item \texttt{dakota\_tabular.dat} is created due to the specification of \texttt{tabular\_graphics\_data}. This summarizes the variables and responses for each function evaluation.
+  \item \texttt{dakota.rst} is a restart file. If a DAKOTA analysis is interrupted, it can be often be restarted without losing all progress.
+\end{enumerate}
+In addition to the files, some plots are created due to the specification of \texttt{graphics}. These can be helpful when processing the data or diagnosing unexpected results.
+
+Dakota has some data processing capabilities built in. The output file will contain the relevant results. For more advanced or customized data processing or visualization, the tabular data file can be imported into another analysis tool. In this case, the output file indicates that an optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
+
+\subsubsubsection {What now?}
+\begin{itemize}
+  \item Assuming DAKOTA ran successfully, skim the three text files (restart files are in a binary format). These are described further in Section~\ref{tutorial:installation:quickstart:output}.
+  \item This analysis used a gradient-based optimization method, and the \texttt{textbook} example problem. More details about the analysis are in Section~\ref{tutorial:example:gradient2} and the example problem is described in Sections~\ref{additional:textbook} and~\ref{tutorial:rosenbrock}.
+  \item Explore the many methods available in DAKOTA in Chapter~\ref{capabilities}.
+  \item Learn the syntax needed to use these methods. For running DAKOTA - Section~\ref{tutorial:installation:running} and for input file info - Section~\ref{tutorial:dakota}. 
+  \item Learn how to use your own analysis code with DAKOTA in Chapter~\ref{advint}.
+\end{itemize}
+
+
 \subsubsection {Examples of DAKOTA output}\label{tutorial:installation:quickstart:output}
 %Lara:  Can you take this section?  I would discuss screen output, 
 %tabular output, output file (-o outfile) output, and hopefully 
@@ -379,6 +411,15 @@ symbol to indicate a comment, use of single or double quotes for string inputs
 specifications, and the optional use of ``='' symbols to indicate
 supplied data. See the DAKOTA Reference
 Manual~\cite{RefMan} for additional details on this input file syntax.
+
+Figure~\ref{tutorial:inputfile_block_layout} shows the relationships between the six keyword blocks. Strategies are used to coordinate between methods. Methods run models. Models blocks define the connections between variables, the interface, and responses.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[height=3in]{images/inputfile_block_layout}
+  \caption{Relationship between the six blocks}
+  \label{tutorial:inputfile_block_layout}
+\end{figure}
 
 The first section of the input file shown in
 Figure~\ref{tutorial:rosenbrock_2d} is the \emph{strategy} section.
