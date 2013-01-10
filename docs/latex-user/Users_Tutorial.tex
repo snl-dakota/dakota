@@ -27,16 +27,16 @@ still download DAKOTA as described below.
 \subsubsection {Running DAKOTA with simple input file}\label{tutorial:installation:quickstart:running}
 This section is intended for users who are new to DAKOTA.
 
-\subsubsubsection {First Steps}
+\paragraph{First Steps}
 \begin{enumerate}
   \item Make sure DAKOTA runs - see Section~\ref{tutorial:installation:quickstart:binary}
   \item Create a working directory 
-  \item Copy \texttt{dakota_textbook.in from the \texttt{Dakota/examples/tutorial/} directory to the working directory
-  \item From the working directory, run \texttt{dakota -i dakota_textbook.in -o Dakota_textbook.out > Dakota_textbook.stdout}
+  \item Copy \texttt{dakota\_textbook.in} from the \texttt{Dakota/examples/tutorial/} directory to the working directory
+  \item From the working directory, run \texttt{dakota -i dakota\_textbook.in -o Dakota\_textbook.out > Dakota\_textbook.stdout}
 \end{enumerate}
 
 
-\subsubsubsection {What should happen}
+\paragraph{What should happen}
 DAKOTA outputs a large amount of information to help users track the progress. Four files should have been created:
 \begin{enumerate}
   \item The screen output has been redirected to the file \texttt{Dakota\_textbook.stdout}. \\
@@ -49,7 +49,7 @@ In addition to the files, some plots are created due to the specification of \te
 
 Dakota has some data processing capabilities built in. The output file will contain the relevant results. For more advanced or customized data processing or visualization, the tabular data file can be imported into another analysis tool. In this case, the output file indicates that an optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
 
-\subsubsubsection {What now?}
+\paragraph{What now?}
 \begin{itemize}
   \item Assuming DAKOTA ran successfully, skim the three text files (restart files are in a binary format). These are described further in Section~\ref{tutorial:installation:quickstart:output}.
   \item This analysis used a gradient-based optimization method, and the \texttt{textbook} example problem. More details about the analysis are in Section~\ref{tutorial:example:gradient2} and the example problem is described in Sections~\ref{additional:textbook} and~\ref{tutorial:rosenbrock}.
