@@ -81,7 +81,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   supportsEstimDerivs(true),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false),
+  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1), 
   // See base constructor in DakotaIterator.C for full discussion of output
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
@@ -148,7 +148,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     problem_db.get_rrma("variables.discrete_uncertain_set_real.values_probs")),
   primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
-  estDerivsFlag(false), evaluationCapacity(1), initCommsBcastFlag(false),
+  estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
   // Define primaryRespFnSense BoolDeque from DB StringArray
@@ -216,9 +216,9 @@ Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
   userDefinedConstraints(svd), supportsEstimDerivs(true),
   probDescDB(dummy_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), outputLevel(output_level),
-  modelId("NO_DB_MODEL"), modelEvalCntr(0), estDerivsFlag(false),
-  evaluationCapacity(1), initCommsBcastFlag(false),
+  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
+  outputLevel(output_level), modelId("NO_DB_MODEL"), modelEvalCntr(0), 
+  estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -241,8 +241,8 @@ Model(RecastBaseConstructor, ProblemDescDB& problem_db,
   probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   modelType("recast"), supportsEstimDerivs(false),
-  componentParallelMode(0), asynchEvalFlag(false), modelEvalCntr(0),
-  estDerivsFlag(false), evaluationCapacity(1), initCommsBcastFlag(false),
+  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
+  modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG

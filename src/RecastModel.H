@@ -586,9 +586,10 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
   if (recurse_flag)
     subModel.set_communicators(max_iterator_concurrency);
 
-  // the following assignment is not overridden in Model::set_communicators()
+  // the following assignments are not overridden in Model::set_communicators()
   // since RecastModels do not define the ie_parallel_level
   asynchEvalFlag = subModel.asynch_flag();
+  evaluationCapacity = subModel.evaluation_capacity();
 }
 
 

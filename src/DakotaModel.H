@@ -921,6 +921,9 @@ protected:
   /// flags asynch evaluations (local or distributed)
   bool asynchEvalFlag;
 
+  /// capacity for concurrent evaluations supported by the Model
+  int evaluationCapacity;
+
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
@@ -1023,9 +1026,6 @@ private:
   /// flags presence of estimated derivatives within a set of calls to
   /// asynch_compute_response()
   bool estDerivsFlag;
-
-  /// capacity for concurrent evaluations supported by the Model
-  int evaluationCapacity;
 
   /// map<> used for tracking modelPCIter instances using concurrency
   /// level as the lookup key
