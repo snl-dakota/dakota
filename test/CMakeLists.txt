@@ -164,6 +164,21 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # Clean up test dir
   #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/dakota_diffs.out)
 
+  add_custom_target(dakota-diffs-clean
+    "${CMAKE_COMMAND}" -E remove dakota_diffs.out dakota_pdiffs.out
+                          dakota_*/dakota_diffs.out pdakota_*/dakota_pdiffs.out
+			  dakota_results.log
+    COMMENT "Remove all dakota_[p]diffs.out files from test/ and subdirs."
+    )
+
+  add_custom_target(dakota-diffs
+    "${CMAKE_COMMAND}"
+      -D CMAKE_MODULE_PATH:STRING="${Dakota_SOURCE_DIR}/config/utilities"
+      -D Dakota_BINARY_DIR:FILEPATH="${Dakota_BINARY_DIR}"
+      -P "${Dakota_SOURCE_DIR}/config/utilities/DakotaConcatDiffs.cmake"
+    COMMENT "Concatenate all dakota_[p]diffs.out files from test/ subdirs."
+    )
+
 endif() # BUILD_TESTING AND DAKOTA_ENABLE_TESTS
 
 
