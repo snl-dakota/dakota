@@ -18194,6 +18194,68 @@ Partial Rank Correlation Matrix between input and output:
         TF1u  6.17696e-01 
         TF2u  6.63758e-01 
         TF1e -4.38016e-01 
+dakota_textbook_lsq.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
+<<<<< Best parameters          =
+                      4.0011598866e+00 x1
+                      1.9766117810e+00 x2
+<<<<< Best residual terms      =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
+<<<<< Best data captured at function evaluation 11
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
+<<<<< Best parameters          =
+                      4.0011598866e+00 x1
+                      1.9766117810e+00 x2
+<<<<< Best residual terms      =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
+<<<<< Best data captured at function evaluation 11
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 61 total (61 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.0011599489e+00 x1
+                      1.9766102262e+00 x2
+<<<<< Best residual terms =
+                      3.5019659870e-02
+                     -4.7902417675e-01
+                     -9.3591988246e-02
+<<<<< Best data captured at function evaluation 61
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 22 total (21 new, 1 duplicate)
+<<<<< Best parameters          =
+                      4.0011599457e+00 x1
+                      1.9766102667e+00 x2
+<<<<< Best residual terms      =
+                      3.5019473472e-02
+                     -4.7902422196e-01
+                     -9.3591826598e-02
+<<<<< Best data captured at function evaluation 21
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 10046 total (10046 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.0037492937e+00 x1
+                      2.0402639744e+00 x2
+<<<<< Best residual terms =
+                      5.7673019410e-01
+                     -4.9012358041e-01
+                      1.6080243822e-01
+<<<<< Best data captured at function evaluation 4163
+Test Number 5 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 11 total (11 new, 0 duplicate)
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.0011629190e+00 x1
+                      1.9766149370e+00 x2
+<<<<< Best residual terms      =
+                      3.5014707882e-02
+                     -4.7900276451e-01
+                     -9.3574850365e-02
+<<<<< Best data not found in evaluation cache
 dakota_textbook_nips.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
