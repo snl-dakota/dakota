@@ -30,9 +30,9 @@ namespace Dakota {
 
 To modify DAKOTA's input specification (for maintenance or addition of
 new input syntax), specification maintenance mode must be enabled at
-DAKOTA configure time with the \c --enable-spec-maint option, e.g.,
+DAKOTA configure time with the \c -DENABLE_SPEC_MAINT option, e.g.,
 \code
-  ./configure --enable-spec-maint
+  ./cmake -DENABLE_SPEC_MAINT:BOOL=ON ..
 \endcode
 This will enable regeneration of NIDR and DAKOTA components which must
 be updated following a spec change.
@@ -84,8 +84,7 @@ and \c ddv_initial_point: so older input files can be used with no or fewer chan
 
 \section Rebuild Rebuild generated files
 
-As of DAKOTA 5.1, a separate make command in \c packages/nidr is no
-longer necessary.  When configured with \c --enable-spec-maint,
+When configured with \c -DENABLE_SPEC_MAINT,
 performing a make in Dakota/src will regenerate all files which derive
 from dakota.input.nspec, including NIDR_keywds.H,
 dakota.input.summary, NIDR_guikywds.H, and dakota.input.desc.  If you
@@ -93,13 +92,7 @@ commit changes to a source repository, be sure to commit any
 automatically generated files in addition to any modified in the
 following steps.  It is not strictly necessary to run make at this
 point in the sequence, and in fact may generate errors if necessary
-handlers aren't yet available.  One may optionally 
-\code
-  cd Dakota/src
-  make nidr-files
-\endcode
-to only rebuild generated dependencies of dakota.input.nspec.
-
+handlers aren't yet available.  
 
 \section UpdateIDRPDDB Update NIDRProblemDescDB.C in Dakota/src
 

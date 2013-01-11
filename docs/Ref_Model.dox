@@ -661,8 +661,8 @@ User's Manual).
 The \c use_derivatives flag specifies that any available derivative
 information should be used in global approximation builds. This
 capability is currently supported in SurrBasedLocalMinimizer,
-Pecos::SurrogateDataPoint, and \ref Approximation::build
-"Approximation::build()", and will soon be supported for \c
+Pecos::SurrogateDataPoint, \ref Approximation::build
+"Approximation::build()", and \c
 global_kriging models, but is not yet supported in any global
 approximation derived class redefinitions of build().
 
@@ -764,11 +764,11 @@ Specification detail for global approximations: build and correction controls
 <td>Optional
 <td>annotated
 <tr>
-<td>Use of gradient data in global approximation builds
-<td>\c use_gradients
+<td>Use of derivative data in global approximation builds
+<td>\c use_derivatives
 <td>none
 <td>Optional
-<td>gradient data not used in global approximation builds
+<td>derivative data not used in global approximation builds
 <tr>
 <td>Print diagnostic metrics about the surrogate goodness of fit
 <td>\c diagnostics

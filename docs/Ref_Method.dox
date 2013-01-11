@@ -6523,7 +6523,8 @@ likelihood function currently.  The algorithms that produce
 the posterior distributions on model parameters are Monte Carlo Markov 
 Chain (MCMC) sampling algorithms.  MCMC methods require many samples, often 
 tens of thousands, so in the case of model calibration, often emulators 
-of the computational simulation are used.   
+of the computational simulation are used. For more details on the algorithms
+underlying the methods, see the DAKOTA User's manual.  
 
 We have two Bayesian calibration methods under development in DAKOTA: 
 one called QUESO and one called GPMSA.  They are specified with the
@@ -6535,7 +6536,8 @@ We are using a DRAM (Delayed Rejected Adaptive Metropolis) algorithm
 for the MCMC sampling from the QUESO library. 
 GPMSA (Gaussian Process Models for Simulation Analysis) is 
 a code that has been developed at Los Alamos National Laboratory. 
-It uses a Gaussian process model as the emulator for the expensive 
+It uses Gaussian process models as part of constructing 
+an emulator for the expensive 
 computational simulation.  GPMSA also has extensive features for 
 calibration, such as the capability to include a "model discrepancy" term
 and the capability to model functional data such as time series data. 
@@ -6570,12 +6572,11 @@ with a larger magnitude, for example.
 For the GPMSA method, one can define the number of samples which will be used 
 in construction of the emulator, \c emulator_samples.  The emulator 
 involves Gaussian processes in GPMSA, so the user does not specify anything 
-about emulator type.    Note that the QUESO and GPMSA methods 
-are under active development.  They are only included in some releases.  GPMSA 
-especially is in active development:  we anticipate more controls being added 
-in future releases.  At this point, \c emulator_samples and \c samples (number 
-of MCMC samples) are the only controls active at this point. 
-
+about emulator type. At this point, the only controls active for GPMSA 
+are \c emulator_samples, \c seed and \c rng, and \c samples (the number of MCMC
+samples).   Note that the QUESO and GPMSA methods 
+are under active development.  Contact dakota-users@software.sandia.gov 
+if you are interested in obtaining these capabilities. 
 
 \ref T5d47 "Table 5.47" provides the specification 
 details for the \c bayes_calibration methods.
@@ -6603,7 +6604,7 @@ Specification detail for the Bayesian calibration methods
 <tr>
 <td>Emulator type
 <td>\c emulator  \c gaussian_process | \c pce | \c sc
-<td>\c emulator samples (for gaussian process), \c sparse_grid_level (for pce or sc)
+<td>\c emulator_samples (for gaussian process), \c sparse_grid_level (for pce or sc)
 <td>Optional
 <td>N/A
 <tr>
@@ -6636,8 +6637,19 @@ Specification detail for the Bayesian calibration methods
 <td>integer
 <td>Optional
 <td>10000
+<tr>
+<td>Likelihood scale factor
+<td>\c likelihood_scale
+<td>real
+<td>Optional
+<td>none
+<tr>
+<td>Proposal covariance scaling
+<td>\c proposal_covariance_scale
+<td>list of reals
+<td>Optional
+<td>none
 </table>
-
 
 \section MethodDACE Design of Computer Experiments Methods
 
