@@ -107,7 +107,7 @@ static KeyWord
 		},
 	kw_18[3] = {
 		{"distance",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessMetricType_distance)},
-		{"persistence",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessMetricType_persistence)},
+		{"gradient",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessMetricType_gradient)},
 		{"predicted_variance",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessMetricType_predicted_variance)}
 		},
 	kw_19[2] = {

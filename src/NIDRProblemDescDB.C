@@ -5014,7 +5014,7 @@ static Method_mp_lit
 	MP2(fitnessType,proportional),
 	MP2(fitnessMetricType,predicted_variance),
 	MP2(fitnessMetricType,distance),
-	MP2(fitnessMetricType,persistence),
+	MP2(fitnessMetricType,gradient),
 	MP2(initializationType,random),
 	MP2(initializationType,unique_random),
 	MP2(integrationRefine,ais),

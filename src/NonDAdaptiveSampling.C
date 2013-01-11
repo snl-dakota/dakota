@@ -55,10 +55,32 @@ namespace Dakota
 		//Defaults are set before parsing input parameters
 		outputValidationData = false;
 		numKneighbors = 5;
-		batchSize = 1;
-		batchStrategy="naive";
-
-		////***ATTENTION***
+                numRounds = maxIterations;
+                if (numRounds == -1)
+                  numRounds = 100;
+                
+                numEmulEval = probDescDB.get_int("method.nond.emulator_samples");
+                if (numEmulEval == 0)
+                  numEmulEval = 400; 
+                batchSize = probDescDB.get_int("method.nond.batch_size");
+                if (batchSize == 0)
+		  batchSize = 1;
+                batchStrategy = probDescDB.get_string("method.batch_selection");
+                if (batchStrategy.empty())
+		  batchStrategy="naive";
+                scoringMetric = probDescDB.get_string("method.fitness_metric");
+                if (scoringMetric == "predicted_variance") 
+                  scoringMetric = "alm";
+                if (scoringMetric.empty())
+                  scoringMetric = "alm";
+                
+                Cout << "numEmulEval " << numEmulEval << '\n';
+                Cout << "numRounds " << numRounds << '\n';
+                Cout << "batchSize " << batchSize << '\n';
+                Cout << "batchStrategy " << batchStrategy  << '\n';
+                Cout << "scoringMetric " << scoringMetric  << '\n';
+                
+      		////***ATTENTION***
 		//// So, I hard-coded this directory, it only matters if you set
 		//// outputValidationData to true
 		////***END ATTENTION***
@@ -66,8 +88,11 @@ namespace Dakota
 		outputDir = "adaptive.results";
 
 		//Now parse the inputs
-		parse_options();
+		const StringArray& misc_options = probDescDB.get_sa("method.coliny.misc_options");
+                if (misc_options.size() > 0)
+                  parse_options();
 
+                Cout << "misc options size " << misc_options.size()  << '\n';
 		samplingVarsMode = ACTIVE_UNIFORM;
 		String sample_reuse;
 		UShortArray approx_order; // not used by GP/kriging
@@ -87,19 +112,20 @@ namespace Dakota
 		{
 			samples = 0; sample_reuse = "all";
 		}
-
-		if (sampleDesign == "sampling_lhs")
-		{
-			gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, String("lhs"),
+                 
+                //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
+		//if (sampleDesign == "sampling_lhs")
+		//{
+		gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, String("lhs"),
 							   samples, randomSeed, rngName,
 							   varyPattern, ACTIVE_UNIFORM), false);
-		}
-		else
-		{
-			gpBuild.assign_rep(new FSUDesignCompExp(iteratedModel, samples, randomSeed,
-							   sampleDesign));
-		}
-
+		//}
+		//else
+		//{
+		//	gpBuild.assign_rep(new FSUDesignCompExp(iteratedModel, samples, randomSeed,
+		//					   sampleDesign));
+		//}
+                approx_type = "global_kriging";
 		gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel, approx_type,
 						  approx_order, corr_type, corr_order, data_order,
 						  outputLevel, sample_reuse, sample_reuse_file,
@@ -159,7 +185,10 @@ namespace Dakota
 
 		
 		#ifdef HAVE_MORSE_SMALE
-		//	update_amsc(); 
+		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+		{
+			update_amsc(ifunc);
+		}
 		#endif
 
 		////***ATTENTION***
@@ -233,7 +262,10 @@ namespace Dakota
 			gpModel.append_approximation(points_to_add,responses_to_add, true);
 			
 			#ifdef HAVE_MORSE_SMALE
-			//update_amsc(respFnCount);
+			for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+			{
+				update_amsc(ifunc);
+			}
 			#endif
 
 			Cout << "Done with iteration  " << k << std::endl; 
@@ -279,6 +311,8 @@ namespace Dakota
 			}
 		}
 
+		Cout << "Scoring Metric is " << scoringMetric << '\n';
+
 		predictionErrors(numRounds) = compute_rmspe();
 		////***ATTENTION***
 		//// If you are performing the optimization pipeline this next line is 
@@ -315,7 +349,7 @@ namespace Dakota
 				gpVar[i] = 0;
 			}
 		}
-                Cout << gpCvars[0] << '\n';
+
 		IntRespMCIter resp_it = all_resp.begin();
 		for (int j = 0; j < numEmulEval; ++j) 
 		{
@@ -336,11 +370,11 @@ namespace Dakota
 		if(scoringMetric == "alm")
 			calc_score_alm();
 		else if(scoringMetric == "distance")
-			calc_score_delta_x(0);
+			calc_score_delta_x( );
 		else if(scoringMetric == "gradient")
-			calc_score_delta_y(0);
+			calc_score_delta_y( );
 		else if(scoringMetric == "bottleneck")
-			calc_score_topo_bottleneck(0);
+			calc_score_topo_bottleneck( );
 		else if(scoringMetric == "avg_persistence")
 			calc_score_topo_avg_persistence(0);
 		else if(scoringMetric == "highest_persistence")
@@ -350,7 +384,7 @@ namespace Dakota
 		#pragma endregion
 	}
 
-	void NonDAdaptiveSampling::calc_score_alm() 
+	void NonDAdaptiveSampling::calc_score_alm( ) 
 	{
 		#pragma region Score Emultor sample points based on their approximation variance:
 		emulEvalScores.resize(numEmulEval);
@@ -361,13 +395,162 @@ namespace Dakota
 			{			
 				gpModel.continuous_variables(gpCvars[i]);
 				Real score = gpModel.approximation_variances(gpModel.current_variables())[respFnCount];
-				if (respFnCount==0 || score > max_score) max_score = score;
+				if (respFnCount == 0 || score > max_score) max_score = score;
 			}
 			emulEvalScores(i) = max_score;
 		}
 		#pragma endregion
 	}
 
+	void NonDAdaptiveSampling::calc_score_delta_x( ) 
+	{
+		#pragma region Score Emulator sample points based on the closest data point:
+		emulEvalScores.resize(numEmulEval);
+		for (int i = 0; i < numEmulEval; i++) 
+		{
+			Real max_score;
+			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
+			{			
+				const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+				double min_sq_dist;
+				int min_index;
+				bool first = true;
+				for (int j = 0; j < gp_data.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+				{
+					double sq_dist = 0;
+					for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
+					{
+						sq_dist += pow(gpCvars[i][d] - gp_data.continuous_variables(j)[d],2);
+					}
+					if(first || sq_dist < min_sq_dist) 
+					{
+						min_sq_dist = sq_dist;
+						min_index = j;
+						first = false;
+					}
+				}
+				Real score = sqrt(min_sq_dist);
+				if (respFnCount == 0 || score > max_score) max_score = score;
+			}
+			emulEvalScores(i) = max_score;
+		}
+		#pragma endregion
+	}
+	
+	void NonDAdaptiveSampling::calc_score_delta_y( ) 
+	{
+		#pragma region Score Emulator sample points based on the response function difference of closest data point and current candidate:
+		emulEvalScores.resize(numEmulEval);
+		for (int i = 0; i < numEmulEval; i++) 
+		{
+			Real max_score;
+			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
+			{	
+				const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+				double min_sq_dist;
+				int min_index;
+				bool first = true;
+
+				for (int j = 0; j < gp_data.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+				{
+					double sq_dist = 0;
+					for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
+					{
+						sq_dist += pow(gpCvars[i][d] - gp_data.continuous_variables(j)[d],2);
+					}
+					if(first || sq_dist < min_sq_dist) 
+					{
+						min_sq_dist = sq_dist;
+						min_index = j;
+						first = false;
+					}
+				}					
+				Real score = fabs(gpMeans[i][respFnCount] - gp_data.response_function(min_index));
+				if (respFnCount == 0 || score > max_score) max_score = score;
+			}
+			emulEvalScores(i) = max_score;
+		}
+		#pragma endregion
+	}
+
+	
+	void NonDAdaptiveSampling::calc_score_topo_bottleneck( )
+	{
+		#pragma region Score Emulator sample points based on Bottleneck distance:
+
+		#if defined(HAVE_MORSE_SMALE) && defined(HAVE_DIONYSUS)
+		emulEvalScores.resize(numEmulEval);
+		double *temp_x = NULL;
+
+		if(numEmulEval > 0)
+			temp_x = new double[gpCvars[0].length()+1];
+
+
+		for (int i = 0; i < numEmulEval; i++)
+		{
+
+			for(int d = 0; d < gpCvars[i].length(); d++)
+			{
+				temp_x[d] = gpCvars[i][d];
+			}
+
+			Real max_score;
+			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++)
+			{
+				temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
+				Real score = ScoreTOPOB((*AMSC), temp_x);
+				if (respFnCount == 0 || score > max_score) max_score = score;
+			}
+			emulEvalScores(i) = max_score;
+		}
+
+		delete [] temp_x;
+
+		#else
+	  	  #ifdef HAVE_MORSE_SMALE
+			Cout << "Dionysus library not enabled, therefore cannot compute the "
+				 << "bottleneck distance score, setting all scores to zero" << std::endl;
+	  	  #else
+			Cout << "ANN library not enabled, therefore cannot compute approximate "
+				 << "Morse-Smale complex or bottleneck score, setting all scores to "
+	             << "zero" << std::endl;
+	  	  #endif
+		  abort_handler(-1);
+		#endif
+		#pragma endregion
+	}
+
+	void NonDAdaptiveSampling::update_amsc(int respFnCount) 
+	{
+		#pragma region Update Morse Smale Complex using ANN
+		#ifdef HAVE_MORSE_SMALE
+		delete AMSC;
+		AMSC = NULL;
+ 
+		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+		if(gp_data.size() < 1) return;
+
+		int n = gp_data.size();
+		int d = gp_data.continuous_variables(0).length();
+		double *data_resp_vector = new double[n*(d+1)];
+
+		for (int i = 0; i < n; i++) 
+		{
+			for(int j = 0; j < d; j++)
+			{
+				data_resp_vector[i*(d+1)+j] = gp_data.continuous_variables(i)[j];
+			}
+			data_resp_vector[i*(d+1)+d] = gp_data.response_function(i);
+		} 
+		AMSC = new MS_Complex(data_resp_vector, d + 1, n, numKneighbors);
+		delete [] data_resp_vector;
+		#else
+			Cout << "ANN library not enabled, therefore cannot compute approximate "
+				 << "Morse-Smale complex" << std::endl;
+			abort_handler(-1);
+		#endif
+		#pragma endregion
+	}
 
 ////***ATTENTION***
 //// This function should go away at some point. I use it every now and again
@@ -630,11 +813,11 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       if(scoringMetric == "alm")
         calc_score_alm(); // ebeida
       else if(scoringMetric == "distance")
-        calc_score_delta_x(respFnCount);
+        calc_score_delta_x( ); // Ebeida
       else if(scoringMetric == "gradient")
-        calc_score_delta_y(respFnCount);
+        calc_score_delta_y( ); // Ebeida
       else if(scoringMetric == "bottleneck")
-        calc_score_topo_bottleneck(respFnCount);
+        calc_score_topo_bottleneck( );
       else if(scoringMetric == "avg_persistence")
         calc_score_topo_avg_persistence(respFnCount);
       else if(scoringMetric == "highest_persistence")
@@ -660,9 +843,12 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       IntResponsePair response_to_add(gpModel.evaluation_id(),current_response);
       Variables point_to_add(gpModel.current_variables());
       gpModel.append_approximation(point_to_add,response_to_add, true);
-#ifdef HAVE_MORSE_SMALE
-     // update_amsc(respFnCount);
-#endif
+		#ifdef HAVE_MORSE_SMALE
+		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+		{
+			update_amsc(ifunc);
+		}
+		#endif
     }
     gpModel.pop_approximation(false, true/*, batchSize*/);
   }
@@ -822,103 +1008,8 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
 	
 
 
-	void NonDAdaptiveSampling::calc_score_delta_y(int respFnCount) 
-	{
-		int i;
-		emulEvalScores.resize(numEmulEval);
-		for (i = 0; i<numEmulEval; i++) 
-		{
-			const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
-			double min_sq_dist;
-			int min_index;
-			bool first = true;
-
-			for (int j = 0; j < gp_data.size(); j++) 
-			{
-				double sq_dist = 0;
-				for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
-				{
-					sq_dist += pow(gpCvars[i][d] - gp_data.continuous_variables(j)[d],2);
-				}
-				if(first || sq_dist < min_sq_dist) 
-				{
-					min_sq_dist = sq_dist;
-					min_index = j;
-					first = false;
-				}
-			}
-			emulEvalScores(i) = fabs(gpMeans[i][respFnCount] - gp_data.response_function(min_index));
-		}
-	}
-
-void NonDAdaptiveSampling::calc_score_delta_x(int respFnCount) 
-{
-
-  int i;
-  emulEvalScores.resize(numEmulEval);
-
-  for (i = 0; i<numEmulEval; i++) {
-    const Pecos::SurrogateData& gp_data 
-      = gpModel.approximation_data(respFnCount);
-    double min_sq_dist;
-    int min_index;
-    bool first = true;
-
-    for (int j = 0; j < gp_data.size(); j++) {
-      double sq_dist = 0;
-      for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
-        sq_dist += pow(gpCvars[i][d]-gp_data.continuous_variables(j)[d],2);
-
-      if(first || sq_dist < min_sq_dist) {
-        min_sq_dist = sq_dist;
-        min_index = j;
-        first = false;
-      }
-    }
-    emulEvalScores(i) = sqrt(min_sq_dist);
-  }    
-}
-
-void NonDAdaptiveSampling::calc_score_topo_bottleneck(int respFnCount) 
-{
-
-#if defined(HAVE_MORSE_SMALE) && defined(HAVE_DIONYSUS)
-  emulEvalScores.resize(numEmulEval);
-  double *temp_x = NULL;
-
-  if(numEmulEval > 0)
-    temp_x = new double[gpCvars[0].length()+1];
 
 
-  for (int i = 0; i<numEmulEval; i++) {
-    for(int d = 0; d < gpCvars[i].length(); d++) {
-        temp_x[d] = gpCvars[i][d];
-    }
-
-    temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
-    emulEvalScores(i) = ScoreTOPOB((*AMSC), temp_x);
-  }
-
-  for (int i = 0; i<numEmulEval; i++) {
-    for(int d = 0; d < gpCvars[i].length(); d++) {
-        temp_x[d] = gpCvars[i][d];
-    }
-    temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
-    emulEvalScores(i) = ScoreTOPOB((*AMSC), temp_x);
-  }    
-  delete [] temp_x;  
-#else
-  #ifdef HAVE_MORSE_SMALE
-  Cout << "Dionysus library not enabled, therefore cannot compute the "
-       << "bottleneck distance score, setting all scores to zero" << std::endl;
-  #else
-  Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex or bottleneck score, setting all scores to " 
-       << "zero" << std::endl;
-  #endif
-  abort_handler(-1);
-#endif
-}
 
 void NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount) 
 {
@@ -1195,34 +1286,7 @@ Real NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount,
 
 
 
-void NonDAdaptiveSampling::update_amsc(int respFnCount) 
-{
-#ifdef HAVE_MORSE_SMALE
-  delete AMSC;
-  AMSC = NULL;
- 
-  const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
-  if(gp_data.size() < 1)
-    return;
 
-  int n = gp_data.size();
-  int d = gp_data.continuous_variables(0).length();
-  double *data_resp_vector = new double[n*(d+1)];
-
-  for (int i = 0; i < n; i++) {
-    for(int j = 0; j < d; j++)
-      data_resp_vector[i*(d+1)+j] = gp_data.continuous_variables(i)[j];
-    data_resp_vector[i*(d+1)+d] = gp_data.response_function(i);
-  } 
-
-	AMSC = new MS_Complex(data_resp_vector, d+1, n, numKneighbors);
-  delete [] data_resp_vector;
-#else
-  Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex" << std::endl;
-  abort_handler(-1);
-#endif
-}
 
 
 ////***ATTENTION***

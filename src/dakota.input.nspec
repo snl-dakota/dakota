@@ -626,7 +626,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ fitness_metric {0}
                   predicted_variance {N_mdm(lit,fitnessMetricType_predicted_variance)}
                   | distance {N_mdm(lit,fitnessMetricType_distance)} 
-                  | persistence {N_mdm(lit,fitnessMetricType_persistence)} ]
+                  | gradient {N_mdm(lit,fitnessMetricType_gradient)} ]
                 [ batch_selection {0}
                   naive {N_mdm(lit,batchSelectionType_naive)}
                   | distance_penalty {N_mdm(lit,batchSelectionType_distance_penalty)} 

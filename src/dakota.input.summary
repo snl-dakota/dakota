@@ -936,7 +936,7 @@ KEYWORD12 method
 	  [ fitness_metric
 	    predicted_variance
 	    | distance
-	    | persistence
+	    | gradient
 	    ]
 	  [ batch_selection
 	    naive

@@ -587,11 +587,8 @@ TAG "method/coliny_ea/mutation_type/non_adaptive"
 	DESC "{Non-adaptive mutation flag} MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/constraint_penalty"
-
-TAG "method/coliny_beta" GROUP "Optimization: Global"
+TAG "method/coliny_beta"
 TAG "method/coliny_beta/beta_solver_name"
-	DESC "{Name of beta solver to be used} MethodCommands.html#MethodSCOLIBBETA"
-
 TAG "method/coliny_pattern_search/solution_target"
 	DESC "{Desired solution target} MethodCommands.html#MethodSCOLIBDC"
 
@@ -872,7 +869,7 @@ TAG "method/adaptive_sampling/emulator_samples"
 TAG "method/adaptive_sampling/fitness_metric"
 TAG "method/adaptive_sampling/fitness_metric/predicted_variance"
 TAG "method/adaptive_sampling/fitness_metric/distance"
-TAG "method/adaptive_sampling/fitness_metric/persistence"
+TAG "method/adaptive_sampling/fitness_metric/gradient"
 TAG "method/adaptive_sampling/batch_selection"
 TAG "method/adaptive_sampling/batch_selection/naive"
 TAG "method/adaptive_sampling/batch_selection/distance_penalty"
@@ -987,7 +984,11 @@ TAG "method/bayes_calibration/rng"
 TAG "method/bayes_calibration/rng/mt19937"
 TAG "method/bayes_calibration/rng/rnum2"
 TAG "method/bayes_calibration/proposal_covariance_scale"
+	DESC "{Proposal covariance scaling} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/bayes_calibration/likelihood_scale"
+	DESC "{Likelihood scale factor} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/dace" GROUP "[CHOOSE method category]DACE"
 TAG "method/dace/grid"
 TAG "method/dace/random"
