@@ -55520,6 +55520,12 @@ response_fn_10  1.5377510978e+01  1.7933580171e-01
      Resp Level Set  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
                   1   8.2651843186e-01                     -9.4049612518e-01
+dakota_uq_textbook_adaptsampling.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 120 total (120 new, 0 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e+01   4.6730000000e-01
 dakota_uq_textbook_dste.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
