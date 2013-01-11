@@ -361,8 +361,6 @@ endif()
 
 if(NOT WIN32)
 
-  #message("Debugging CPACK logic -- In the UNIX TGZ branch")
-
   # if(APPLE)
   #else if(NOT CYGWIN)
   if(NOT CYGWIN)
