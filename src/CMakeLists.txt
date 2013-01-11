@@ -27,17 +27,16 @@ set(EXPORT_TARGETS dakota_src nidr)
 link_directories(${Teuchos_LIBRARY_DIRS})
 
 
-# Trunk Trilinos has refactored Teuchos into sub-packages
-# Assume for now that anyone building Dakota under Trilinos is on trunk of both
-if (BUILD_IN_TRILINOS)
-  list(APPEND TPL_LIBS teuchosremainder teuchosnumerics teuchoscomm 
-    teuchosparameterlist teuchoscore)
-  list(APPEND EXPORT_TARGETS teuchosremainder teuchosnumerics teuchoscomm
-    teuchosparameterlist teuchoscore)
-else()
-  list(APPEND TPL_LIBS teuchos)
-  list(APPEND EXPORT_TARGETS teuchos)
-endif()
+# Teuchos could be 1 or many libraries, so use the variable Trilinos exports
+#if (BUILD_IN_TRILINOS)
+#  list(APPEND TPL_LIBS teuchosremainder teuchosnumerics teuchoscomm 
+#    teuchosparameterlist teuchoscore)
+#  list(APPEND EXPORT_TARGETS teuchosremainder teuchosnumerics teuchoscomm
+#    teuchosparameterlist teuchoscore)
+#else()
+  list(APPEND TPL_LIBS ${Teuchos_LIBRARIES})
+  list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
+#endif()
 
 
 option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
@@ -839,8 +838,7 @@ if (BUILD_IN_TRILINOS)
     "Dakota include directories")
   set(Dakota_LIBS dakota_src dakota_src_fortran ${TPL_LIBS})
   # Only remove the Teuchos libraries from the Dakota_LIBS variable
-  list(REMOVE_ITEM Dakota_LIBS teuchosremainder teuchosnumerics teuchoscomm 
-    teuchosparameterlist teuchoscore)
+  list(REMOVE_ITEM Dakota_LIBS ${Teuchos_LIBRARIES})
   set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
     "Dakota libraries")
   set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 

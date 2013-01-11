@@ -46,7 +46,6 @@ if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
 
-include(AddExtraTeuchosPaths)
 include(FortranCInterface)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
@@ -156,20 +155,12 @@ set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING
 # when building inside Trilinos, the path to Teuchos will already be set
 if (NOT BUILD_IN_TRILINOS)
 
-# first probe for system-installed Trilinos
-# this will respect Trilinos_DIR if already set
-if(NOT Extra_Teuchos_INCLUDE_DIR OR NOT Extra_Teuchos_LIBRARY_DIR)
-find_package(Trilinos QUIET)
-endif()
+  # first probe for system-installed Trilinos
+  # this will respect Trilinos_DIR if already set
+  find_package(Trilinos QUIET)
 
-if ( NOT Trilinos_DIR )
+  if ( NOT Trilinos_DIR )
 
-  # Check a special case in which PATHs to Teuchos headers/lib
-  # are specified, indepedent of a "prefix"
-  if(Extra_Teuchos_INCLUDE_DIR AND Extra_Teuchos_LIBRARY_DIR)
-    AddExtraTeuchosPaths()
-
-  else()
     # if no one has configured a local src Teuchos, do so
     # this will respect Teuchos_DIR if already set
     if( NOT Teuchos_DIR )
@@ -180,7 +171,7 @@ if ( NOT Trilinos_DIR )
           "ENABLE TriBITS build of teuchos" FORCE )
 
         # Map key Dakota variables to TriBITS variables
-        set(TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI})
+        set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
         set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
         set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
 
@@ -206,10 +197,11 @@ if ( NOT Trilinos_DIR )
     endif()
 
     find_package( Teuchos NO_MODULE REQUIRED )
-  endif() # Extra_Teuchos_INCLUDE_DIR AND Extra_Teuchos_LIBRARY_DIR
-else()
-  message( "Using system trilinos in ${Trilinos_DIR}" )
-endif()
+
+  else()
+    message( "Using system trilinos in ${Trilinos_DIR}" )
+  endif()
+
 endif()
 
 
