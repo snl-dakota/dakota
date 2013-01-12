@@ -599,6 +599,8 @@ same information that would be passed to a DAKOTA direct function
 included in {\tt DirectFnApplicInterface.C}, with fields shown in
 Figure~\ref{advint:figure:matlabparams}.
 
+%TODO: update!
+
 \begin{figure}
 \centering
 \begin{bigbox}
@@ -618,9 +620,7 @@ Dakota.
   xDILabels           discrete integer var labels (cell array of numADIV strings)
   xDRLabels           discrete real var labels (cell array of numADIV strings)
   directFnASV         active set vector ([1 x numFns])
-  directFnASM         active set matrix ([3 x numFns]) -- see below
   directFnDVV         derivative variables vector ([1 x numDerivVars])
-  directFnDVV_bool    boolean DVV ([1 x numVars]) -- see below
   fnFlag              nonzero if function values requested
   gradFlag            nonzero if gradients requested
   hessFlag            nonzero if hessians requested

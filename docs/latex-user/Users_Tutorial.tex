@@ -821,8 +821,10 @@ Figure~\ref{tutorial:textbook_grad_constr_graphics}(b).
 %\newpage
 \subsubsection{Nonlinear Least Squares Methods for Optimization}\label{tutorial:example:nonlinear}
 
-Both the Rosenbrock and textbook example problems can be formulated as
-least-squares minimization problems (see
+Least squares methods are often used for calibration or parameter
+estimation, that is, to seek parameters maximizing agreement of models
+with experimental data.  Both the Rosenbrock and textbook example
+problems can be formulated as least-squares minimization problems (see
 Section~\ref{additional:textbook} and
 Section~\ref{additional:rosenbrock}). For example, the Rosenbrock
 problem can be cast as:
@@ -841,11 +843,11 @@ engineering design problems (e.g., parameter estimation) that can make
 use of the least-squares approach.
 
 Figure~\ref{tutorial:rosenbrock_nls} is a listing of the DAKOTA input
-file \texttt{dakota\_rosenbrock\_ls.in}. This input file differs from
-the input file shown in Figure~\ref{tutorial:rosenbrock_grad} in
-several key areas. The responses section of the input file uses the
-keyword \texttt{num\_least\_squares\_terms = 2} instead of the
-\texttt{num\_objective\_functions = 1}.
+file \texttt{dakota\_rosenbrock\_ls.in}. This differs from the input
+file shown in Figure~\ref{tutorial:rosenbrock_grad} in several key
+areas. The responses section of the input file uses the keyword
+\texttt{calibration\_terms = 2} instead of
+\texttt{objective\_functions = 1}.
 %The keywords in the interface section show that the Unix fork method
 %is used to run the C++ analysis code named \texttt{rosenbrock}.
 The method section of the input file shows that the NL2SOL
