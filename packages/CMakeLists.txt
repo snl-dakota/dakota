@@ -124,6 +124,9 @@ if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
 
   # Extract Dionysus, but no build required
   externalproject_add(dionysus_ext
+    # svn co 
+    #   https://software.sandia.gov/svn/public/tpl/dionysus/tags/91c35fefb54e
+    # mv dionysus-91c35fefb54e.tar.gz dionysus.tar.gz
     # Can't get download to work properly with proxy
     #URL http://hg.mrzv.org/Dionysus/archive/tip.tar.gz
     URL ${CMAKE_CURRENT_SOURCE_DIR}/dionysus.tar.gz
@@ -210,6 +213,10 @@ endif(HAVE_NPSOL)
 if(HAVE_PSUADE)
   add_subdirectory(PSUADE)
 endif(HAVE_PSUADE)
+
+#if(DAKOTA_RESULTS_DB)
+#  add_subdirectory(yaml-cpp)
+#endif()
 
 if(HAVE_X_GRAPHICS)
   add_subdirectory(motif)

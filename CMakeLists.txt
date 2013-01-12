@@ -117,13 +117,15 @@ endif()
 
 # Surfpack requires the serialization library in addition, if building
 # the standalone executable
+# Would like to have serialization be optional, unless building standalone?
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
-if(HAVE_SURFPACK AND SURFPACK_STANDALONE)
+option(SURFPACK_HAVE_BOOST_SERIALIZATION "Use Boost serialization library" ON)
+if(HAVE_SURFPACK AND SURFPACK_HAVE_BOOST_SERIALIZATION)
   list(APPEND dakota_boost_components "serialization")
 endif()
 
 # Options for adaptive sampling that affect both packages and src
-option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" OFF)
+option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" ON)
 option(HAVE_MORSE_SMALE 
   "Use Morse-Smale; requires ANN and Dionysus libraries" OFF)
 
