@@ -1215,6 +1215,133 @@ simulation is taken.  Thus, if \texttt{samples} were set at 100 and
 \texttt{max\_iterations} were set to 200, there would be a total of 
 300 function evaluations of the simulator model taken. 
 
+\section{Adaptive Sampling Methods}\label{uq:adaptive}
+The goal in performing adaptive sampling is to construct a surrogate model that
+can be used as an accurate predictor to some expensive simulation, thus it is
+to one's advantage to build a surrogate that minimizes the error over the entire
+domain of interest using as little data as possible from the expensive
+simulation.  The adaptive part alludes to the fact that the surrogate will be
+refined by focusing samples of the expensive simulation on particular areas of
+interest rather than rely on random selection or standard space-filling
+techniques. 
+
+At a high-level, the adaptive sampling pipeline is a four-step process:
+\begin{enumerate}
+\item Evaluate the expensive simulation (referred to as the true model) at
+initial sample points
+\item Fit/refit a surrogate model
+\item Create a candidate set and score based on information from surrogate
+\item Select a candidate point to evaluate the true model and Repeat 2-4
+\end{enumerate}
+
+In terms of the DAKOTA implementation, the adaptive sampling method 
+currently uses Latin Hypercube sampling (LHS) to generate the initial 
+points in Step 1 above.  For Step 2, we use a Gaussian process model. 
+The user can specify the scoring metric used to select the 
+next point (or points) to evaluate and add to the set.  
+We have investigated several scoring metrics with which to evaluate 
+candidate points for Step 3.  There are some classical ones such as distance 
+(e.g. add a point which maximizes the minimum distance to all of 
+the existing points).  This distance metric tends to generate 
+points that are space-fillinlg.  We have investigated several 
+methods that involve interesting topological features of the 
+space (e.g. points that are near saddle points).  These are 
+an area of active investigation but are not currently included 
+in DAKOTA.  The fitness metrics for scoring 
+candidate points currently include: 
+\begin{description}
+\item[Predicted Variance]
+First introduced in \cite{MacKay} and later
+used in \cite{Seo}, this method uses the predicted
+variance of the Gaussian process surrogate as the score of a candidate 
+point. Thus, the adaptively chosen points will be in areas of highest 
+uncertainty according to the Gaussian process model.
+\item[Distance]
+A candidate's score is the Euclidean distance in domain space between the
+candidate and its nearest neighbor in the set of points already evaluated on the
+true model. Therefore, the most undersampled area of the domain will always be
+selected. The adaptivity of this method could be brought to question as it would
+chose the exact same points regardless of the surrogate model used. However, it
+is useful to use to compare other adaptive metrics to one that relies purely on
+space-filling in an equivalent context.
+\item[Gradient]
+%DPM: PROBABLY WANT TO CHANGE THE NAME OF THIS METRIC
+Similar to the above metric, a candidate's nearest neighbor is determined as in
+the distance metric, only now the score is the absolute value of the difference
+in range space of the two points.  The range space values used are predicted
+from the surrogate model. Though this method is called the gradient metric, it
+actually does not take into account how close the candidate and its neighbor are
+in domain space. This method attempts to evenly fill the range space of the
+surrogate.
+\end{description}
+
+Note that in our approach, a Latin Hypercube sample is generated (a new one, 
+different from the initial sample) and the surrogate model is evaluated 
+at this points.  These are the ``candidate points'' that are then evaluated 
+according to the fitness metric outlined above.  The number of candidates used 
+in practice should be high enough to fill most
+of the input domain: we recommend at least hundreds of points for a low-
+dimensional problem. 
+All of the candidates (samples on the emulator) are 
+given a score and then the highest-scoring candidate is selected to be evaluated
+on the true model. 
+
+The adaptive sampling method also can generate batches of points 
+to add at a time. With batch or  multi-point 
+selection, the true model can be evaluated in parallel and thus
+increase throughput before refitting our surrogate model. This proposes a new
+challenge as the problem of choosing a single point and choosing multiple points
+off a surrogate are fundamentally different. Selecting the $n$ best scoring
+candidates is more than likely to generate a set of points clustered in one
+area which will not be conducive to adapting the surrogate.
+We have implemented several strategies for batch selection of points: 
+\begin{description}
+\item[\bf Naive Selection]  
+This strategy will select the $n$ highest scoring candidates regardless of their
+position. This tends to group an entire round of points in the same area.
+\item[\bf Distance Penalized Re-weighted Scoring] 
+In this strategy, the highest 
+scoring candidate is selected and then all
+remaining candidates are re-scored with a distance penalization factor added in
+to the score.  Only points selected within a round are used for the distance
+penalization.  The factor is the same as used in the distance penalization
+ scoring metrics from \cite{Maljovec}.  First, compute all of the minimum
+distances from each remaining candidate to the selected candidates.  Then,
+determine the median value of these distances.  If the smallest distance, $d$,
+between a point and the selected set is less than the computed median distance
+its score is unaltered, otherwise the score is multiplied by a value $\rho$
+determined by the following equation:
+\begin{equation}
+\rho = 1.5*d - 0.5*d^3
+\end{equation}
+\item[\bf Topological Maxima of Scoring Function]  
+In this strategy we look at the topology of the scoring function and select the
+$n$ highest maxima in the topology. To determine local maxima, we construct the
+approximate Morse-Smale complex. If the number of local maxima is less than $n$,
+ we revert to the distance strategy above.  As a further extension, one may
+want to filter low-persistence maxima, but to keep the framework general, we
+chose to omit this feature as defining a threshold for what deems a critical
+point as "low persistence" can vary drastically from problem to problem.
+\item[\bf Constant Liar]  
+We adapt the constant liar strategy presented in \cite{Ginsbourger} with the
+scoring metrics.  The strategy first selects
+the highest scoring candidate, and then refits the surrogate using a ``lie'' value
+at the point selected and repeating until $n$ points have been selected
+whereupon the lie values are removed from the surrogate and the selected points
+are evaluated on the true model and the surrogate is refit with these values.
+\end{description}
+
+The adaptive sampling method is specified by the method keyword 
+\texttt{adaptive\_sampling}.  There are many controls, including 
+the number of candidate samples to investigate each iteration 
+(\texttt{emulator\_samples}), the fitness metric used in scoring 
+candidates (\texttt{fitness\_metric}), and the number of iterations 
+to perform the adaptive sampling (\texttt{max\_iterations}). 
+For batch selection of points, one specifies a \texttt{batch\_selection} 
+strategy and a \texttt{batch\_size}. 
+The details of the specification are provided in the DAKOTA 
+reference manual.  
+
 \section{Epistemic Nondeterministic Methods}\label{uq:epistemic}
 
 Uncertainty quantification is often used as part of the risk
@@ -1568,8 +1695,12 @@ the probabilistic model defined by Eq.~(\ref{eq:model}) results in a
 likelihood function for $\theta$ that is the product of $n$ normal
 probability density functions
 as shown in Equation~\ref{eqn:Likelihood}.
-\begin{equation}\label{eqn:Likelihood}  
 TODO: Commented this as wouldn't compile!!!
+\begin{equation}\label{eqn:Likelihood}  
+\mathcal{L}({\theta};d) = \prod_{i=1}^n
+\frac{1}{\sigma \sqrt{2\pi}} \exp
+\left[ - \frac{\left(d_i-\mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
+
 %\mathcal{L}\left( {{\theta};d} \right) = \prod\limits_{i = 1}^n {\frac{1}{{\sigma \sqrt {2\pi } }}  \exp \left[  - \frac{\left(d_i - \mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
 \end{equation}
 
