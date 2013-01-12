@@ -24,20 +24,10 @@ set(EXTRA_TPL_LIBS "")
 # WJB - ToDo:  convince myself that dakota_src_fortran should have a
 #              better name and be specified in the initial EXPORTS_TARGETS set
 set(EXPORT_TARGETS dakota_src nidr)
+
 link_directories(${Teuchos_LIBRARY_DIRS})
-
-
-# Teuchos could be 1 or many libraries, so use the variable Trilinos exports
-#if (BUILD_IN_TRILINOS)
-#  list(APPEND TPL_LIBS teuchosremainder teuchosnumerics teuchoscomm 
-#    teuchosparameterlist teuchoscore)
-#  list(APPEND EXPORT_TARGETS teuchosremainder teuchosnumerics teuchoscomm
-#    teuchosparameterlist teuchoscore)
-#else()
-  list(APPEND TPL_LIBS ${Teuchos_LIBRARIES})
-  list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
-#endif()
-
+list(APPEND TPL_LIBS ${Teuchos_LIBRARIES})
+list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
 
 option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
 if(DAKOTA_PLUGIN)
@@ -569,8 +559,6 @@ if(HAVE_JEGA)
   include_directories(${JEGA_BINARY_DIR} ${JEGA_BINARY_DIR}/eddy
                       ${JEGA_SOURCE_DIR}/eddy ${JEGA_SOURCE_DIR}/include)
   list(APPEND iterator_src JEGAOptimizer.C)
-  #link_directories(${Dakota_BINARY_DIR}/packages/JEGA)
-  # WJB: "jega_link_libs: looks fishy; confer with Zack about JEGA commit 692
   list(APPEND TPL_LIBS jega jega_fe moga soga eutils utilities)
   list(APPEND EXPORT_TARGETS jega jega_fe moga soga eutils utilities)
 endif(HAVE_JEGA)
@@ -611,7 +599,6 @@ if(HAVE_NPSOL)
 endif(HAVE_NPSOL)
 
 if(HAVE_OPTPP)
-  # WJB - ToDo: FY11 contract - "pair-program" a FINAL iteration with Zack
   include_directories(${optpp_BINARY_DIR}/include ${optpp_SOURCE_DIR}/include)
 
   add_definitions("-DHAVE_OPTPP")
@@ -721,11 +708,37 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
   # SVN checkout, determine revision level
 
-  if(DEFINED ENV{SVN_REVISION})
-    set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
-    message("Current revision is Dakota_SVN_REV: ${Dakota_SVN_REV}")
+  #if(DEFINED ENV{SVN_REVISION})         Too bad the easy way does NOT work
+  #  set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
+  #  message("Current revision is Dakota_SVN_REV: ${Dakota_SVN_REV}")
 
-  else() # SVN_REVISION is NOT an environment variable
+  if(CYGWIN AND DEFINED ENV{BUILD_URL})
+    # Workarounds for Jenkins slave shell where svn is NEWER than
+    # the svn client that performed the 'update' step
+
+    set(build_url "$ENV{BUILD_URL}")
+    message("BUILD_URL is ${build_url}")
+    file(DOWNLOAD "${build_url}/consoleText" "$ENV{WORKSPACE}/consoleText")
+
+    # Get all the SVN revisions
+    file(STRINGS $ENV{WORKSPACE}/consoleText build_revs
+      REGEX "^At revision [0-9]+")
+    file(STRINGS $ENV{WORKSPACE}/consoleText build_revs
+      REGEX "^Updated to revision [0-9]+")
+
+    # Get the last appearance
+    list(GET build_revs -1 spaced_dakota_rev)
+
+    # Change spaces to list:
+    separate_arguments(list_dakota_rev UNIX_COMMAND "${spaced_dakota_rev}")
+
+    # Get the trailing entry (SVN rev of Dakota)
+    list(GET list_dakota_rev -1 Dakota_SVN_REV)
+    message("Trunk dakota_rev is currently at: ${Dakota_SVN_REV}")
+
+  else()
+    # NOT CYGWIN/jenkins so "assert" that the same svn client is used for
+    # 'update' and 'configure' steps
     find_package(Subversion)
 
     if(Subversion_FOUND)
@@ -733,18 +746,18 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
       # and the Dakota/ directory may be symlinked.
       get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
       Subversion_WC_INFO(${abs_source_dir} Dakota)
-      set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
-      message("Current revision is Dakota_WC_REVISION: ${Dakota_WC_REVISION}")
-    endif(Subversion_FOUND) # Subversion_FOUND
 
-  endif() # DEFINED ENV{SVN_REVISION}
+      set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
+      message("Trunk Dakota_SVN_REV is currently at: ${Dakota_WC_REVISION}")
+    endif(Subversion_FOUND) # Subversion_FOUND
+  endif()
 
   file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
         #include \"DakotaBuildInfo.H\"
         std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_SVN_REV}\"; 
-        // WJB - ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
-        //             Lower priority - possibly a post-5.3 release task
+        // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
+        //       Lower priority - a post-5.3 release task
         " )
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C)
@@ -753,9 +766,8 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
 else() # source tree NOT an SVN checkout
 
-  # WJB: EXPECT DakotaBuildInfo.C in ${CMAKE_CURRENT_SOURCE_DIR}
-  # as a result of jenkins/PACKAGING job: COPY DakotaBuildInfo.C into source tree
-  message(STATUS "EXPECTED - DakotaBuildInfo.C found in the source tree.")
+  # Higher-level Jenkins/PACKAGING job COPIES DakotaBuildInfo.C into source tree
+  message(STATUS "EXPECTED - DakotaBuildInfo.C found in the src tree.")
 
 endif() # .svn directory conditional
 
