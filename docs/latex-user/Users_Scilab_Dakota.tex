@@ -117,7 +117,7 @@ The dakscilab executable results from compiling \texttt{dakscilab.c}
 and has the following behavior and options.  The driver dakscilab
 launches a server.  This server then facilitates communication between
 Dakota and Scilab via named pipes communication. The user can also use
-the first named pipe (\texttt{\$\{DAKSCILAB\_PIPE\}1i}) to communicate
+the first named pipe (\texttt{\$\{DAKSCILAB\_PIPE\}1}) to communicate
 with the server:
 \begin{small}
 \begin{verbatim}
@@ -150,7 +150,7 @@ Here there is an initialization script
 (\texttt{init\_test\_automatic.sce;}) which is launched before the
 main computation.  It initializes a specific Scilab module called
 xcos. A finalization script to visualize the xcos solution is also
-specified (\texttt{visualize\_solution.sce}. Finally, the objective
+specified (\texttt{visualize\_solution.sce}). Finally, the objective
 function is given with the computation code called
 \texttt{f\_pid.sci}.
 

@@ -499,11 +499,12 @@ In addition to built-in polynomial test functions described in
 Section~\ref{interfaces:direct}, DAKOTA includes direct interfaces to
 Sandia's Salinas code for structural dynamics, Phoenix Integration's
 ModelCenter framework, The Mathworks' Matlab scientific computing
-environment, and Python.  While these can be interfaced to with a
-script-based approach, some usability and efficiency gains may be
-realized by re-compiling DAKOTA with these direct interfaces enabled.
-Some details on Matlab and Python interfaces are provided here.  Note
-that these capabilities permit using Matlab or Python to evaluate a
+environment, Scilab (as described in Section~\ref{scilab}), and
+Python.  While these can be interfaced to with a script-based
+approach, some usability and efficiency gains may be realized by
+re-compiling DAKOTA with these direct interfaces enabled.  Some
+details on Matlab and Python interfaces are provided here.  Note that
+these capabilities permit using Matlab or Python to evaluate a
 parameter to response mapping; they do not make DAKOTA algorithms
 available as a service, i.e., as a Matlab toolbox or Python module.
 
@@ -519,26 +520,21 @@ initializing the Matlab engine for each function evaluation.
 
 The DAKOTA/Matlab interface has been built and tested on 32-bit Linux
 with Matlab 7.0 (R14) and on 64-bit Linux with Matlab 7.1 (R14SP3).
-Configuration support for Solaris is included, but is untested.
-Builds on other platforms or with other versions of Matlab may require
-modifications to DAKOTA including its build system
+Configuration support for other platforms is included, but is
+untested.  Builds on other platforms or with other versions of Matlab
+may require modifications to DAKOTA including its build system
 
 To use the DAKOTA/Matlab interface, DAKOTA must be configured and
-compiled with the Matlab feature enabled (currently only supported in
-autotools builds of DAKOTA).  The Mathworks only provides shared
-object libraries for its engine API, so DAKOTA must be dynamically
-linked to at least the Matlab libraries.  To compile DAKOTA with the
-Matlab interface enabled, one might, for example:
-\begin{enumerate}
-\item Configure DAKOTA with (at minimum) the following directive:
-\begin{verbatim}
-configure --with-matlab=$MATLAB_ROOT
-\end{verbatim} %$
-where {\tt \$MATLAB\_ROOT} is the root of your Matlab installation (it should
-be a directory containing directories bin/YOURPLATFORM and
-extern/include).
+compiled with the Matlab feature enabled.  The Mathworks only provides
+shared object libraries for its engine API, so DAKOTA must be
+dynamically linked to at least the Matlab libraries.  To compile
+DAKOTA with the Matlab interface enabled, set the CMake variable {\tt
+  DAKOTA\_MATLAB:BOOL=ON}, possibly with {\tt
+  MATLAB\_DIR:FILEPATH=/path/to/matlab}, where \\ {\tt MATLAB\_DIR} is the
+root of your Matlab installation (it should be a directory containing
+directories bin/YOURPLATFORM and extern/include).
 
-\item Since the Matlab libraries are linked dynamically, they must be
+Since the Matlab libraries are linked dynamically, they must be
 accessible at compile time and at run time. Make sure the path to the
 appropriate Matlab shared object libraries is on your 
 {\tt LD\_LIBRARY\_PATH}.  For example to accomplish this in BASH on
@@ -548,37 +544,31 @@ export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
 \end{verbatim} %$
 or add such a command to the .bashrc file.  Then proceed with
 compiling as usual.
-\end{enumerate}
 
 Example files corresponding to the following tutorial are available in \\ 
 {\tt Dakota/examples/linked\_interfaces/Matlab}.
 
 \subsubsection{DAKOTA/Matlab input file specification}
 
-The use of the Matlab direct interface is specified through the
-combination of the {\tt direct} and {\tt analysis\_driver} keywords in
-an interface specification.  The Matlab m-file which performs the
-analysis is specified through the {\tt analysis\_components} keyword.
-Here is a sample DAKOTA {\tt interface} specification:
+The Matlab direct interface is specified with {\tt direct, matlab}
+keywords in an interface specification.  The Matlab m-file which
+performs the analysis is specified through the {\tt analysis\_drivers}
+keyword.  Here is a sample DAKOTA {\tt interface} specification:
 \begin{small}
 \begin{verbatim}
   interface,
-    direct
-      analysis_driver = 'matlab'
-      analysis_components = 'myanalysis.m'
+    matlab
+      analysis_drivers = 'myanalysis.m'
 \end{verbatim} 
 \end{small}
 
-Multiple Matlab analysis drivers are supported and may be specified in
-combination with other direct analysis drivers.  Multiple analysis
+Multiple Matlab analysis drivers are supported.  Multiple analysis
 components are supported as for other interfaces as described in
 Section~\ref{interfaces:components}.  The {\tt .m} extension in the
-{\tt analysis\_component} specification is optional; in fact any
-characters following the first period in the {\tt analysis\_component}
-specification will be stripped off by the interface, so {\tt
-myanalysis}, {\tt myanalysis.m}, and {\tt myanalysis.fun.m} will all
-cause the interface to attempt to execute a Matlab script called {\tt
-myanalysis.m} for the function evaluation.
+{\tt analysis\_drivers} specification is optional and will be stripped
+by the interface before invoking the function.  So {\tt myanalysis}
+and {\tt myanalysis.m} will both cause the interface to attempt to
+execute a Matlab function {\tt myanalysis} for the evaluation.
 
 \subsubsection{Matlab .m file specification}
 
@@ -596,10 +586,8 @@ Note that the structure named Dakota will be pushed into the Matlab
 workspace before the analysis function is called.  The structure
 passed from DAKOTA to the analysis m-function contains essentially the
 same information that would be passed to a DAKOTA direct function
-included in {\tt DirectFnApplicInterface.C}, with fields shown in
+included in {\tt DirectApplicInterface.C}, with fields shown in
 Figure~\ref{advint:figure:matlabparams}.
-
-%TODO: update!
 
 \begin{figure}
 \centering
@@ -631,43 +619,6 @@ Dakota.
 \caption{DAKOTA/Matlab parameter data
 structure.\label{advint:figure:matlabparams}}
 \end{figure}
-
-The {\tt directFnASM} field is a boolean matrix version of the active
-set vector, designed to make it easier for the Matlab user to
-determine which responses Dakota requires.  Its rows 1, 2, and 3
-correspond to functions, gradients, and Hessians, respectively, and
-its columns to each function (response, constraint) from 1--{\tt
-numFns}.  A {\tt directFnASM} matrix entry contains a 1 if the
-response is needed for that function and a 0 otherwise.  For example,
-for the fictitious
-\begin{small}
-\begin{verbatim}
-  directFnASV = [ 1, 2, 3, 4, 5, 6, 7 ],
-\end{verbatim}
-\end{small}
-the corresponding 
-\begin{small}
-\begin{verbatim}
-  directFnASM = [ 1, 0, 1, 0, 1, 0, 1     (functions)
-                  0, 1, 1, 0, 0, 1, 1     (gradients)
-                  0, 0 ,0 ,1, 1, 1, 1 ]   (hessians).
-\end{verbatim}
-\end{small}
-The {\tt directFnDVV\_bool} field is a similar boolean structure for
-the {\tt directFnDVV}.  It is a {\tt [1 x numVars]} vector with entry
-1 if a derivative with respect to that variable is requested and a 0
-otherwise.  So for an example with 6 functions if
-\begin{small}
-\begin{verbatim}
-  directFnDVV = [ 1, 3, 4, 6 ],
-\end{verbatim}
-\end{small}
-the corresponding 
-\begin{small}
-\begin{verbatim}
-  directFnDVV_bool = [ 1, 0, 1, 1, 0, 1 ].
-\end{verbatim}
-\end{small}
 
 The structure {\tt Dakota} returned from the analysis must contain a
 subset of the fields shown in
@@ -804,17 +755,10 @@ directly to an analysis function in a user-provided Python module.
 Data may flow between DAKOTA and Python either in multiply-subscripted
 lists or NumPy arrays.
 
-The Python direct interface must be enabled when compiling DAKOTA (and
-is only supported in autotools builds):
-\begin{verbatim}
-configure --with-python
-\end{verbatim}
-Configure will query the first available Python installation on the
-PATH to determine availability of necessary development headers and
-libraries.  If the available Python installation includes NumPy
-(detected via arrayobject.h), then DAKOTA will default to a NumPy
-array interface.  If not available, or if the variable
-DirectApplicInterface::userNumpyFlag is forced to be false, DAKOTA
+The Python direct interface must be enabled when compiling DAKOTA.
+Set the CMake variable \\ {\tt DAKOTA\_PYTHON:BOOL=ON}, and optionally
+{\tt DAKOTA\_PYTHON\_NUMPY:BOOL=ON} to use DAKOTA's NumPy array
+interface (requires arrayobject.h).  If NumPy is not enabled, DAKOTA
 will use multiply-subscripted lists for data flow.
 
 An example of using the Python direct interface with both lists and
@@ -822,8 +766,9 @@ arrays is included in \\
 {\tt examples/linked\_interfaces/Python}.  The Python direct driver is
 selected with, for example,
 \begin{verbatim}
-  analysis_drivers = 'python'				
-    analysis_components = 'python_module:analysis_function'
+  interface,
+    python
+      analysis_drivers = 'python_module:analysis_function'
 \end{verbatim}
 where {\tt python\_module} denotes the module (file {\tt
 python\_module.py}) DAKOTA will attempt to import into the Python

@@ -16,6 +16,8 @@ namespace Dakota {
   <li> <a href="InterfCommands.html#InterfApplicF">Fork interface</a>
   <li> <a href="InterfCommands.html#InterfApplicDF">Direct function 
        interface</a>
+  <li> <a href="InterfCommands.html#InterfApplicMSP">Matlab, Scilab, and 
+       Python interfaces</a>
   <li> <a href="InterfCommands.html#InterfApplicG">Grid interface</a>
   </ul>
 </ul>
@@ -631,7 +633,7 @@ Additional specifications for system call interfaces
 <td>System call interface 
 <td>\c system
 <td>none
-<td>Required group (1 of 4 selections)
+<td>Required group (1 of 7 selections)
 <td>N/A
 <tr>
 <td>Parameters file name
@@ -771,7 +773,7 @@ Additional specifications for direct function interfaces
 <td>Direct function interface 
 <td>\c direct
 <td>none
-<td>Required group (1 of 4 selections)
+<td>Required group (1 of 7 selections)
 <td>N/A
 <tr>
 <td>Number of processors per analysis
@@ -781,6 +783,13 @@ Additional specifications for direct function interfaces
 <td>no override of auto configure
 </table>
 
+The primary use of the direct interface is to invoke internal test
+functions that perform parameter to response mappings for simple
+functions as inexpensively as possible. These problems are compiled
+directly into the DAKOTA executable as part of the direct function
+interface class and are used for algorithm testing.  Refer to
+DirectApplicInterface for currently available testers.
+
 DAKOTA supports direct interfaces to a few select simulation codes.
 One example is ModelCenter, a commercial simulation management
 framework from Phoenix Integration.  To utilize this interface, a user
@@ -788,29 +797,58 @@ must first define the simulation specifics within a ModelCenter
 session and then save these definitions to a ModelCenter configuration
 file.  The \c analysis_components specification provides the means to
 communicate this configuration file to DAKOTA's ModelCenter interface.
-A similar direct interface to The Mathworks'
-(http://www.mathworks.com/) Matlab (specified by <tt> analysis_driver
-= 'matlab' </tt>) enables a user to employ the \c analysis_components
-specification to point to a Matlab m-file containing a function that
-performs the simulation.  This capability is disabled by default in
-DAKOTA binaries, but information on enabling and using it is available
-in the Users Manual [\ref UsersMan "Adams et al., 2010"].  Contact the
-DAKOTA users mailing list for assistance building and using DAKOTA
-with Matlab simulation support.  An experimental interface to Python
-simulation codes is also available and can be enabled when compiling
-DAKOTA from source.
 
 Other direct interfaces to simulation codes include Sandia's SALINAS
 structural dynamics code, Sandia's SIERRA multiphysics framework, and
 Sandia's SAGE computational fluid dynamics code, which are available
-within Sandia and supported to varying degrees.  In addition to
-interfaces with simulation codes, a common usage of the direct
-interface is for invoking internal test functions which are available
-for performing parameter to response mappings as inexpensively as
-possible. These problems are compiled directly into the DAKOTA
-executable as part of the direct function interface class and are used
-for algorithm testing.  Refer to DirectApplicInterface for currently
-available testers.
+within Sandia and supported to varying degrees.  
+
+\subsection InterfaceApplicMSP Matlab, Scilab, and Python interfaces
+
+DAKOTA supports library-linked interfaces to Matlab, Scilab, and
+Python scientific computation software, but they must be explicitly
+enabled when compiling DAKOTA from source.  First consult the Users
+Manual [\ref UsersMan "Adams et al., 2010"] for discussion and
+examples.  Contact the DAKOTA users mailing list for assistance
+building and using DAKOTA with these interfaces.  To enable, specify
+one of the interfaces in \ref T8d7 "Table 8.7".  In all these
+interfaces, the \c analysis_driver is used to specify a Matlab,
+Scilab, or Python file which implements the parameter to response
+mapping.
+
+\anchor T8d7
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.7
+\endhtmlonly
+Specification for scientific computing interfaces (specify one)
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Matlab interface 
+<td>\c matlab
+<td>none
+<td>Required group (1 of 7 selections)
+<td>N/A
+<tr>
+<td>Scilab interface 
+<td>\c scilab
+<td>none
+<td>Required group (1 of 7 selections)
+<td>N/A
+<tr>
+<td>Python interface 
+<td>\c python
+<td>none
+<td>Required group (1 of 7 selections)
+<td>N/A
+</table>
 
 
 \subsection InterfApplicG Grid interface
@@ -824,13 +862,13 @@ number of processors to use from each host. -->
 This capability has been used for interfaces with IDEA and JAVASpaces
 in the past and is currently a placeholder for future work with Condor
 and/or Globus services.  It is not currently operational.  The grid 
-interface specification is summarized in \ref T8d7 "Table 8.7".
+interface specification is summarized in \ref T8d8 "Table 8.8".
 
-\anchor T8d7
+\anchor T8d8
 <table>
 <caption align = "top">
 \htmlonly
-Table 8.7
+Table 8.8
 \endhtmlonly
 Additional specifications for grid interfaces
 </caption>
@@ -844,7 +882,7 @@ Additional specifications for grid interfaces
 <td>Grid interface 
 <td>\c grid
 <td>none
-<td>Required group (1 of 4 selections)
+<td>Required group (1 of 7 selections)
 <td>N/A
 <!-- 
 <tr>
