@@ -2,6 +2,8 @@
 
 # Script to help insert a table into the reference manual
 #
+# Requires Perl List/MoreUtils, install perl-List-MoreUtils on RHEL6, e.g.
+#
 # The Ref_File.dox and specified chapter must correspond, e.g.,
 #   insert_table.pl Ref_Method.dox 5 2
 #   insert_table.pl Ref_Variables.dox 7 2
