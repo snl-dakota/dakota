@@ -708,33 +708,16 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
   # SVN checkout, determine revision level
 
-  #if(DEFINED ENV{SVN_REVISION})         Too bad the easy way does NOT work
-  #  set(Dakota_SVN_REV "$ENV{SVN_REVISION}")
-  #  message("Current revision is Dakota_SVN_REV: ${Dakota_SVN_REV}")
+  if((APPLE AND DEFINED ENV{BUILD_URL}) OR (CYGWIN AND DEFINED ENV{BUILD_URL}))
+    # Workarounds for Jenkins slave shell where svn is different version
+    # than the svn client that performed the 'update' step
 
-  if(CYGWIN AND DEFINED ENV{BUILD_URL})
-    # Workarounds for Jenkins slave shell where svn is NEWER than
-    # the svn client that performed the 'update' step
+    file(STRINGS ${Dakota_SOURCE_DIR}/.svn/entries
+      list_dakota_rev LIMIT_COUNT 4)
 
-    set(build_url "$ENV{BUILD_URL}")
-    message("BUILD_URL is ${build_url}")
-    file(DOWNLOAD "${build_url}/consoleText" "$ENV{WORKSPACE}/consoleText")
-
-    # Get all the SVN revisions
-    file(STRINGS $ENV{WORKSPACE}/consoleText build_revs
-      REGEX "^At revision [0-9]+")
-    file(STRINGS $ENV{WORKSPACE}/consoleText build_revs
-      REGEX "^Updated to revision [0-9]+")
-
-    # Get the last appearance
-    list(GET build_revs -1 spaced_dakota_rev)
-
-    # Change spaces to list:
-    separate_arguments(list_dakota_rev UNIX_COMMAND "${spaced_dakota_rev}")
-
-    # Get the trailing entry (SVN rev of Dakota)
+    # Get the trailing (or 4th) entry (SVN rev of Dakota)
+    # Would also want to silence CMP0007, or remove blanks
     list(GET list_dakota_rev -1 Dakota_SVN_REV)
-    message("Trunk dakota_rev is currently at: ${Dakota_SVN_REV}")
 
   else()
     # NOT CYGWIN/jenkins so "assert" that the same svn client is used for
@@ -748,9 +731,10 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
       Subversion_WC_INFO(${abs_source_dir} Dakota)
 
       set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
-      message("Trunk Dakota_SVN_REV is currently at: ${Dakota_WC_REVISION}")
     endif(Subversion_FOUND) # Subversion_FOUND
   endif()
+
+  message("Trunk Dakota_SVN_REV is currently at: ${Dakota_SVN_REV}")
 
   file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
