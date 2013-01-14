@@ -1,0 +1,56 @@
+DAKOTA/Scilab script interface
+Yann Chapalain
+07/20/2011
+==============================
+
+FILES:
+
+First example : Rosenbrock function
+
+	dakota_scilab_rosenbrock.in	DAKOTA input file
+	
+	scilab_rosen_bb_simulator.sh  	analysis driver script called by DAKOTA
+     OR scilab_rosen_bb_simulator.bat
+
+     	scilab_rosen_wrapper.sci	scilab wrapper called by script
+	rosenbrock.sci            	objective function
+	  
+Second example : PID
+
+       pid.in				DAKOTA input file
+
+       scilab_rosen_bb_simulator.sh  	analysis driver script called by DAKOTA
+    OR scilab_rosen_bb_simulator.bat
+
+       init_test_automatic.sce		init xcos script called by shell script
+       visualize_solution.sce		script to visualize xcos solution
+       					called by shell script
+       scilab_rosen_wrapper.sci	scilab	wrapper called by shell script
+       f_pid.sci            		objective function
+       
+Third example : Bridge FemTRUSS
+FemTRUSS is a Truss finite element code for scilab.
+
+       bridge_optim_derivative.in	DAKOTA input file
+
+       scilab_rosen_bb_simulator.sh  	analysis driver script called by DAKOTA
+    OR scilab_rosen_bb_simulator.bat
+
+       init_bridge_optim_derivative.sce		init FemTRUSS script called by shell script
+       final_bridge_optim_derivative.sce	script to visualize FemTRUSS solution
+       						called by shell script
+       scilab_rosen_wrapper.sci	scilab	wrapper called by shell script
+       f.sci            		objective function
+       fp.sci				gradient
+
+      
+EXECUTION:
+
+This example presumes the Scilab executable is on the PATH.  If not,
+you'll need to modify the scilab_rosen_bb_simulator.* of the specific
+example to include the explicit path to it.
+
+To run the Rosenbrock example (minimize rosenbrock function using
+CONMIN's FRCG alg.):
+
+	dakota -i dakota_scilab_rosenbrock.in

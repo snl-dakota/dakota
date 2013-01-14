@@ -1,0 +1,28 @@
+# pid.in
+
+method,
+	optpp_q_newton
+	  max_iterations = 40,
+	  convergence_tolerance = 1e-3
+
+variables,
+	continuous_design = 2
+	  cdv_initial_point    1      1
+	  cdv_lower_bounds     0.01   0.01
+	  cdv_upper_bounds     1000   2.0
+	  cdv_descriptor       'P'   'I'
+
+interface,
+	fork
+	  analysis_driver = 'scilab_rosen_bb_simulator.sh'
+	  parameters_file = 'params.in'
+	  results_file = 'results.out'
+	  deactivate active_set_vector
+
+responses,
+	num_objective_functions = 1
+	numerical_gradients	        	#4
+	  method_source dakota	        	#4
+	  interval_type central	        	#4
+	  fd_gradient_step_size = 1.e-3 	#4
+	no_hessians
