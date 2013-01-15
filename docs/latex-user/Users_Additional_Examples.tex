@@ -9,7 +9,42 @@ convenience.
 
 \section{Textbook Example}\label{additional:textbook}
 
-Equation~\ref{tutorial:textbook_f} presents the 2-dimensional
+The two-variable version of the ``textbook'' example problem provides
+a nonlinearly constrained optimization test case. It is formulated as:
+\begin{eqnarray}
+\texttt{minimize }
+& & f = (x_1-1)^{4}+(x_2-1)^{4}     \nonumber \\
+\texttt{subject to }
+& & g_1 = x_1^2-\frac{x_2}{2} \le 0 \nonumber \\
+& & g_2 = x_2^2-\frac{x_1}{2} \le 0 \label{additional:textbook_f} \\
+& &  0.5 \le x_1 \le 5.8            \nonumber \\
+& & -2.9 \le x_2 \le 2.9            \nonumber
+\end{eqnarray}
+
+Contours of this example problem are illustrated in
+Figure~\ref{additional:textbook_prob}(a), with a close-up view of
+the feasible region given in
+Figure~\ref{additional:textbook_prob}(b).
+
+\begin{figure}[htp!]
+  \centering
+  \begin{tabular}{cc}
+  \includegraphics[height=2.5in]{images/textbook_contours} &
+  \includegraphics[height=2.5in]{images/textbook_closeup} \\
+  (a) & (b) \\
+  \end{tabular}
+  \caption{Contours of the textbook problem (a) on the $[-3,4] \times
+    [-3,4]$ domain and (b) zoomed into an area containing the
+    constrained optimum point $(x_1,x_2) = (0.5,0.5)$. The
+    feasible region lies at the intersection of the two constraints
+    $g_1$ (solid) and $g_2$ (dashed).}
+  \label{additional:textbook_prob}
+\end{figure}
+
+For the textbook example problem, the unconstrained minimum occurs at
+$(x_1,x_2) = (1,1)$. However, the inclusion of the constraints
+moves the minimum to $(x_1,x_2) = (0.5,0.5)$.
+Equation~\ref{additional:textbook_f} presents the 2-dimensional
 form of the textbook problem.  An extended formulation is stated as
 \begin{eqnarray}
 \texttt{minimize }   & & f = \sum_{i=1}^{n}(x_i-1)^4 \nonumber\\
@@ -23,7 +58,7 @@ where $n$ is the number of design variables. The objective function is
 designed to accommodate an arbitrary number of design variables in
 order to allow flexible testing of a variety of data sets. Contour
 plots for the $n=2$ case have been shown previously in
-Figure~\ref{tutorial:textbook_prob}.
+Figure~\ref{additional:textbook_prob}.
 
 This example problem may also be used to exercise least squares
 solution methods by modifying the problem formulation to:
@@ -48,7 +83,86 @@ Refer to Section~\ref{additional:rosenbrock} for an example of
 minimizing the same objective function using both optimization and
 least squares approaches.
 
-\subsection{Methods}\label{additional:textbook:methods}
+\subsection{Optimization Methods}\label{additional:textbook:methods}
+
+\subsubsection{Gradient-based Constrained Optimization}\label{tutorial:example:gradient2}
+
+This example demonstrates the use of a gradient-based optimization
+algorithm on a nonlinearly constrained problem. The ``textbook''
+example problem is used
+for this purpose and the DAKOTA input file for this example problem is
+shown in Figure~\ref{additional:textbook_grad_constr}.  This
+input file is similar to the input file for the unconstrained
+gradient-based optimization example problem involving the Rosenbrock
+function.  Note the addition of commands in the responses section of
+the input file that identify the number and type of constraints, along
+with the upper bounds on these constraints.  The commands
+\texttt{direct} and \texttt{analysis\_driver = 'text\_book'} specify
+that DAKOTA will use its internal version of the textbook problem.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_textbook.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Textbook gradient-based constrained optimization example:
+    the DAKOTA input file.}
+  \label{additional:textbook_grad_constr}
+\end{figure}
+
+The following command runs this example problem:
+\begin{small}
+\begin{verbatim}
+    dakota dakota_textbook.in > textbook.out
+\end{verbatim}
+\end{small}
+
+The \texttt{conmin\_mfd} keyword in Figure~\ref{additional:textbook_grad_constr} 
+tells DAKOTA to use the CONMIN package's implementation of the
+Method of Feasible Directions (see Section~\ref{opt:software:conmin} 
+for more details).  A significantly faster alternative is the DOT package's 
+Modified Method of Feasible Directions, i.e. \texttt{dot\_mmfd} (see 
+Section~\ref{opt:software:dot} for more details).  However, DOT is 
+licensed software that may not be available on a particular system.  If it 
+is installed on your system and DAKOTA has been compiled without the 
+\texttt{--without-dot} flag, you may use it by commenting out the line with
+\texttt{conmin\_mfd} and uncommenting the line with \texttt{dot\_mmfd}.
+
+The file \texttt{textbook.out.sav} is included in
+\texttt{Dakota/examples/tutorial} for comparison purposes. The
+results of the optimization example problem are listed at the end of
+the \texttt{textbook.out} file. This information shows that the
+optimizer stopped at the point $(x_1,x_2) = (0.5,0.5)$, where both
+constraints are approximately satisfied, and where the objective function value is
+$0.128$. The progress of the optimization algorithm is shown in
+Figure~\ref{additional:textbook_grad_constr_graphics}(a) where the
+dots correspond to the end points of each iteration in the algorithm.  The
+starting point is $(x_1,x_2) = (0.9,1.1)$, where both constraints
+are violated. The optimizer takes a
+sequence of steps to minimize the objective function while reducing
+the infeasibility of the constraints.
+The optimization graphics are also shown in
+Figure~\ref{additional:textbook_grad_constr_graphics}(b).
+
+\begin{figure}[ht!]
+  \centering
+  \begin{tabular}{c}
+  \includegraphics[width=\textwidth]{images/textbook_opt_hist}\\
+  (a)\\
+  \qquad\\
+  \includegraphics[height=2.5in]{images/textbook_history} \\
+  (b)
+  \end{tabular}
+  \caption{Textbook gradient-based constrained optimization example:
+    (a) screen capture of the DAKOTA graphics shows how the objective
+    function was reduced during the search for a feasible design point
+    and (b) iteration history (iterations marked by solid dots).}
+  \label{additional:textbook_grad_constr_graphics}
+\end{figure}
+
+\subsubsection{Other Optimization Methods}
 
 The \texttt{dakota\_textbook.in} file provided in the
 \texttt{Dakota/examples/tutorial} directory selects a \\
@@ -176,7 +290,7 @@ system/fork interfaces, but are supported in the direct interface.
 %\end{equation}
 
 Surface and contour plots for this function have been shown previously
-in Figure~\ref{tutorial:rosenbrock_prob}. This example problem
+in Figure~\ref{additional:rosenbrock_prob}. This example problem
 may also be used to exercise least squares solution methods by
 recasting the problem formulation into:
 \begin{equation}
@@ -195,6 +309,152 @@ modification in Section~\ref{additional:textbook}), the two problem
 formulations are equivalent and have identical solutions.
 
 \subsection{Methods}\label{additional:rosenbrock:methods}
+
+\subsubsection{Vector Parameter Study}\label{tutorial:example:param_study:vector}
+
+In addition to the multidimensional parameter study, DAKOTA can
+perform a vector parameter study, i.e., a parameter study between any
+two design points in an \emph{n}-dimensional parameter space.
+
+An input file for the vector parameter study is shown in Figure~
+\ref{additional:rosenbrock_vector}.  The primary differences
+between this input file and the previous input file are found in the
+\emph{variables} and \emph{method} sections. In the variables section,
+the keywords for the bounds are removed and replaced with the keyword
+\texttt{initial\_point} that specifies the starting point for the
+parameter study. In the method section, the
+\texttt{vector\_parameter\_study} keyword is used. The
+\texttt{final\_point} keyword indicates the stopping point for the
+parameter study, and \texttt{num\_steps} specifies the number of steps
+taken between the initial and final points in the parameter study.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock_vector.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Rosenbrock vector parameter study example: the DAKOTA input
+  file.}
+  \label{additional:rosenbrock_vector}
+\end{figure}
+
+The vector parameter study example problem is executed using the command
+\begin{small}
+\begin{verbatim}
+    dakota dakota_rosenbrock_vector.in > vector.out
+\end{verbatim}
+\end{small}
+
+Figure~\ref{additional:rosenbrock_vector_graphics}(a) shows the
+graphics output created by DAKOTA.  For this study, the simple DAKOTA
+graphics are more useful for visualizing the
+results. Figure~\ref{additional:rosenbrock_vector_graphics}(b)
+shows the locations of the 11 sample points generated in this study.
+It is evident from these figures that the parameter study starts
+within the banana-shaped valley, marches up the side of the hill, and
+then returns to the valley. The output file \texttt{vector.out.sav} is
+provided in the \texttt{Dakota/examples/tutorial} directory.
+
+In addition to the vector and multidimensional examples shown, DAKOTA
+also supports list and centered parameter study methods. Refer to
+Chapter~\ref{ps} for additional information.
+
+\begin{figure}[htp!]
+  \centering
+  \begin{tabular}{c}
+  \includegraphics[width=\textwidth]{images/dak_graphics_vector}\\
+  (a)\\
+  \qquad\\
+  \includegraphics[height=2.5in]{images/rosen_vect_pts} \\
+  (b)
+  \end{tabular}
+  \caption{Rosenbrock vector parameter study example: (a) screen
+    capture of the DAKOTA graphics and (b) location of the design
+    points (dots) evaluated.}
+  \label{additional:rosenbrock_vector_graphics}
+\end{figure}
+
+\subsubsection{Nonlinear Least Squares Methods for Optimization}\label{tutorial:example:nonlinear}
+
+Least squares methods are often used for calibration or parameter
+estimation, that is, to seek parameters maximizing agreement of models
+with experimental data.  Both the Rosenbrock and textbook example
+problems can be formulated as least-squares minimization problems (see
+Section~\ref{additional:textbook} and
+Section~\ref{additional:rosenbrock}). For example, the Rosenbrock
+problem can be cast as:
+\begin{equation}
+\texttt{minimize } (f_1)^2 + (f_2)^2
+\end{equation}
+
+where $f_1 = 10(x_2-x_1^2)$ and $f_2 = (1-x_1)$. When
+using a least-squares approach to minimize a function, each of the
+least-squares terms $f_1, f_2,\ldots$ is driven toward zero. This
+formulation permits the use of specialized algorithms that can be more
+efficient than general purpose optimization algorithms. See
+Chapter~\ref{nls} for more detail on the algorithms used for least-squares
+minimization, as well as a discussion on the types of
+engineering design problems (e.g., parameter estimation) that can make
+use of the least-squares approach.
+
+Figure~\ref{additional:rosenbrock_nls} is a listing of the DAKOTA input
+file \texttt{dakota\_rosenbrock\_ls.in}. This differs from the input
+file shown in Figure~\ref{additional:rosenbrock_grad} in several key
+areas. The responses section of the input file uses the keyword
+\texttt{calibration\_terms = 2} instead of
+\texttt{objective\_functions = 1}.
+%The keywords in the interface section show that the Unix fork method
+%is used to run the C++ analysis code named \texttt{rosenbrock}.
+The method section of the input file shows that the NL2SOL
+algorithm~\cite{Den81} (\texttt{nl2sol}) is used in this example.  (The
+Gauss-Newton, NL2SOL, and NLSSOL SQP algorithms are currently
+available for exploiting the special mathematical structure of least
+squares minimization problems).
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock_ls.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Rosenbrock nonlinear least squares example: the DAKOTA input file.}
+  \label{additional:rosenbrock_nls}
+\end{figure}
+
+The input file listed in Figure~\ref{additional:rosenbrock_nls} is
+executed using the command:
+\begin{small}
+\begin{verbatim}
+    dakota dakota_rosenbrock_ls.in > leastsquares.out
+\end{verbatim}
+\end{small}
+
+The file \texttt{leastsquares.out.sav} is included
+\texttt{Dakota/examples/tutorial} for comparison purposes. The
+optimization results at the end of this file show that the least
+squares minimization approach has found the same optimum design point,
+$(x1,x2) = (1.0,1.0)$, as was found using the conventional
+gradient-based optimization approach. The iteration history of the
+least squares minimization is given in
+Figure~\ref{additional:rosenbrock_nls_graphics}, and shows that 14
+function evaluations were needed for convergence. In this example the
+least squares approach required about half the number of function
+evaluations as did conventional gradient-based optimization.
+In many cases a good least squares algorithm will converge more rapidly
+in the vicinity of the solution.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[height=4in]{images/nonlin_paramest_hist}
+  \caption{Rosenbrock nonlinear least squares example: iteration
+    history for least squares terms $f_1$ and $f_2$.}
+  \label{additional:rosenbrock_nls_graphics}
+\end{figure}
+
+\subsubsection {Least Squares Optimization}\label{additional:rosenbrock:methods:lsq}
 
 In the \texttt{Dakota/test} directory, the \texttt{rosenbrock}
 executable (compiled from \texttt{rosenbrock.C}) checks the number of
@@ -232,6 +492,240 @@ Dakota/examples/methods/dakota\_addtnl\_rosen\_ls.in}:
     \end{bigbox}
   \end{small}
 \end{center}
+
+\subsubsection{Nongradient-based Optimization via Pattern Search}\label{tutorial:example:optimization:nongradient1}
+
+In addition to gradient-based optimization algorithms, DAKOTA also
+contains a variety of nongradient-based algorithms. One particular
+nongradient-based algorithm for local optimization is known as pattern
+search (see Chapter~\ref{introduction} for a discussion of local
+versus global optimization). The DAKOTA input file shown in
+Figure~\ref{additional:rosenbrock_patternsearch} applies a pattern
+search method to minimize the Rosenbrock function.  While this
+provides for an interesting comparison to the previous example
+problems in this chapter, the Rosenbrock function is not the best test
+case for a pattern search method. That is, pattern search methods are
+better suited to problems where the gradients are too expensive to
+evaluate, inaccurate, or nonexistent --- situations common among many
+engineering optimization problems. It also should be noted that
+nongradient-based algorithms generally are applicable only to
+unconstrained or bound-constrained optimization problems, although the
+inclusion of general linear and nonlinear constraints in
+nongradient-based algorithms is an active area of research in the
+optimization community. For most users who wish to use
+nongradient-based algorithms on constrained optimization problems, the
+easiest route is to create a penalty function, i.e., a composite
+function that contains the objective function and the constraints,
+external to DAKOTA and then optimize on this penalty function. Most
+optimization textbooks will provide guidance on selecting and using
+penalty functions.
+
+The DAKOTA input file shown in
+Figure~\ref{additional:rosenbrock_patternsearch} is similar to the
+input file for the gradient-based optimization, except it has a
+different set of keywords in the method section of the input file, and
+the gradient specification in the responses section has been changed
+to \texttt{no\_gradients}. The pattern search optimization algorithm
+used is part of the SCOLIB library~\cite{Har06}.  See the DAKOTA
+Reference Manual~\cite{RefMan} for more information on the
+\emph{methods} section commands that can be used with SCOLIB
+algorithms.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock_ps_opt.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Rosenbrock pattern search optimization example: the DAKOTA input file.}
+  \label{additional:rosenbrock_patternsearch}
+\end{figure}
+
+This DAKOTA input file is executed using the following command:
+\begin{small}
+\begin{verbatim}
+    dakota dakota_rosenbrock_ps_opt.in > ps_opt.out
+\end{verbatim}
+\end{small}
+
+The file \texttt{ps\_opt.out.sav} is included in the
+\texttt{Dakota/examples/tutorial} directory. For this run, the
+optimizer was given an initial design point of $(x_1,x_2)
+  = (0.0,0.0)$ and was limited to 2000 function evaluations. In this
+case, the pattern search algorithm stopped short of the optimum at
+$(x_1,x_2) = (1.0,1,0)$, although it was making progress
+in that direction when it was terminated.  (It would have
+reached the minimum point eventually.)
+
+The iteration history is provided in Figures~
+\ref{additional:rosenbrock_patternsearch_graphics}(a) and (b), which show
+the locations of the function evaluations used in the pattern search
+algorithm.
+Figure~\ref{additional:rosenbrock_patternsearch_graphics}(c)
+provides a close-up view of the pattern search function evaluations
+used at the start of the algorithm. The coordinate pattern is clearly
+visible at the start of the iteration history, and the decreasing size
+of the coordinate pattern is evident at the design points move toward
+$(x_1,x_2) = (1.0,1.0)$.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{tabular}{cc}
+  \multicolumn{2}{c}
+	      {\includegraphics[width=\textwidth]{images/dak_graphics_ps_opt}}\\
+  \multicolumn{2}{c}{(a)}\\
+  \qquad\\
+  \includegraphics[height=2.5in]{images/rosen_ps_opt_pts} &
+  \includegraphics[height=2.5in]{images/rosen_ps_opt_pts2} \\
+  (b) & (c)
+  \end{tabular}
+  \caption{Rosenbrock pattern search optimization example: (a) screen
+    capture of the DAKOTA graphics, (b) sequence of design points
+    (dots) evaluated and (c) close-up view illustrating the shape of
+    the coordinate pattern used. }
+  \label{additional:rosenbrock_patternsearch_graphics}
+\end{figure}
+
+While pattern search algorithms are useful in many optimization
+problems, this example shows some of the drawbacks to this algorithm.
+While a pattern search method may make good initial progress towards
+an optimum, it is often slow to converge. On a smooth, differentiable
+function such as Rosenbrock's function, a nongradient-based method
+will not be as efficient as a gradient-based method. However, there
+are many engineering design applications where gradient information is
+inaccurate or unavailable, which renders gradient-based optimizers
+ineffective. Thus, pattern search algorithms (and other
+nongradient-based algorithms such as genetic algorithms as discussed in the
+next section) are often good choices in complex engineering applications
+when the quality of gradient data is suspect.
+
+\subsubsection{Nongradient-based Optimization via Evolutionary Algorithm}\label{tutorial:example:optimization:nongradient2}
+
+In contrast to pattern search algorithms, which are local optimization
+methods, evolutionary algorithms (EA) are global optimization
+methods. As was described above for the pattern search algorithm, the
+Rosenbrock function is not an ideal test problem for showcasing the
+capabilities of evolutionary algorithms. Rather, EAs are best suited
+to optimization problems that have multiple local optima, and where
+gradients are either too expensive to compute or are not readily available.
+
+Evolutionary algorithms are based on Darwin's theory of survival of
+the fittest. The EA algorithm starts with a randomly selected
+population of design points in the parameter space, where the values
+of the design parameters form a ``genetic string,'' analogous
+to DNA in a biological system, that uniquely represents each design
+point in the population. The EA then follows a sequence of
+generations, where the best design points in the population (i.e.,
+those having low objective function values) are considered to be the
+most ``fit'' and are allowed to survive and reproduce. The EA
+simulates the evolutionary process by employing the mathematical
+analogs of processes such as natural selection, breeding, and
+mutation. Ultimately, the EA identifies a design point (or a family of
+design points) that minimizes the objective function of the
+optimization problem. An extensive discussion of EAs is beyond the
+scope of this text, but may be found in a variety of sources (cf.,
+~\cite{Haf92} pp. 149-158;~\cite{Gol89}). Currently, the EAs available
+in DAKOTA include a genetic algorithm for problems involving discrete
+variables and an evolution strategy with self-adaptation for problems
+with continuous variables. Details of these algorithms are given in
+the DAKOTA Reference Manual~\cite{RefMan}. The SCOLIB library, which
+provides the EA software that has been linked into DAKOTA, is
+described in~\cite{Har06}.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock_ea_opt.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Rosenbrock evolutionary algorithm optimization example: the
+  DAKOTA input file.}
+  \label{additional:rosenbrock_ea}
+\end{figure}
+
+Figure~\ref{additional:rosenbrock_ea} shows a DAKOTA input file that
+uses an EA to minimize the Rosenbrock function. For this
+example the EA has a population size of 50. At the start of the first
+generation, a random number generator is used to select 50 design
+points that will comprise the initial population. \emph{[A specific
+  seed value is used in this example to generate repeatable results,
+  although, in general, one should use the default setting which
+  allows the EA to choose a random seed.]} A two-point crossover
+technique is used to exchange genetic string values between the
+members of the population during the EA breeding process. The result
+of the breeding process is a population comprised of the 10 best
+``parent'' design points (elitist strategy) plus 40 new ``child''
+design points. The EA optimization process will be terminated after
+either 100 iterations (generations of the EA) or 2,000 function
+evaluations. The EA software available in DAKOTA provides the user
+with much flexibility in choosing the settings used in the
+optimization process. See~\cite{RefMan} and~\cite{Har06} for details on these
+settings.
+
+The following command runs DAKOTA on the input file:
+\begin{small}
+\begin{verbatim}
+    dakota dakota_rosenbrock_ea_opt.in > ea_opt.out
+\end{verbatim}
+\end{small}
+
+A corresponding output file named \texttt{ea\_opt.out.sav} appears in
+\texttt{Dakota/examples/tutorial}. The EA optimization results
+printed at the end of this file show that the best design point found
+was $(x_1,x_2) = (0.98,0.95)$. The file
+\texttt{ea\_tabular.dat.sav} provides a listing of the design
+parameter values and objective function values for all 2,000 design
+points evaluated during the running of the EA.  Figure~
+\ref{additional:rosenbrock_ea_graphics}(a) shows the population of
+50 randomly selected design points that comprise the first generation
+of the EA, and Figure~\ref{additional:rosenbrock_ea_graphics}(b)
+shows the final population of 50 design points, where most of the 50
+points are clustered near $(x_1,x_2) = (0.98,0.95)$.
+
+\begin{figure}[hbt!]
+  \centering
+  \begin{tabular}{cc}
+  \includegraphics[height=2.5in]{images/rosen_ea_init} &
+  \includegraphics[height=2.5in]{images/rosen_ea_final} \\
+  (a) & (b)
+  \end{tabular}
+  \caption{Rosenbrock evolutionary algorithm optimization example: 50
+    design points in the (a) initial and (b) final populations
+    selected by the evolutionary algorithm. }
+  \label{additional:rosenbrock_ea_graphics}
+\end{figure}
+
+As described above, an EA is not well-suited to an optimization
+problem involving a smooth, differentiable objective such as the
+Rosenbrock function. Rather, EAs are better suited to optimization
+problems where conventional gradient-based optimization fails, such as
+situations where there are multiple local optima and/or gradients are
+not available. In such cases, the computational expense of an EA is
+warranted since other optimization methods are not applicable or
+impractical. In many optimization problems, EAs often quickly identify
+promising regions of the design space where the global minimum may be
+located. However, an EA can be slow to converge to the optimum. For
+this reason, it can be an effective approach to combine the global
+search capabilities of a EA with the efficient local search of a
+gradient-based algorithm in a \emph{hybrid optimization} strategy.  In
+this approach, the optimization starts by using a few iterations of a
+EA to provide the initial search for a good region of the parameter
+space (low objective function and/or feasible constraints), and then
+it switches to a gradient-based algorithm (using the best design point
+found by the EA as its starting point) to perform an efficient local
+search for an optimum design point. More information on this hybrid
+approach is provided in Chapter~\ref{strat}.
+
+In addition to the evolutionary algorithm capabilities in the
+\texttt{coliny\_ea} method, there is a single-objective genetic algorithm
+method called \texttt{soga}.
+%The major differences are that
+%\texttt{soga} allows a warm start (e.g., you can read in starting
+%solutions from a file), and it allows one to specify a mix of
+%continuous and discrete design variables.
+For more information on \texttt{soga}, see Chapter~\ref{opt}.
 
 \subsection{Results}\label{additional:rosenbrock:results}
 
@@ -373,6 +867,251 @@ DAKOTA execution time in seconds:
   Total wall clock =  0.0672231
 \end{verbatim}
 \end{small}
+
+\section{Uncertainty Quantification Methods}
+
+\subsection{Polynomial Chaos}\label{tutorial:example:uncert_quant:poly_chaos}
+The term ``Polynomial Chaos'' refers to the representation of a stochastic 
+process as a polynomial expansion in random (or stochastic) variables. This 
+representation acts as a response surface that maps stochastic inputs to 
+stochastic outputs.  Desired statistics can then be obtained from the 
+response surface either analytically or by re-sampling the fast surrogate.
+Exponential convergence of the error with increasing polynomial order can 
+be obtained by using (an) orthogonal polynomial series whose weighting 
+function(s) is/are the probability density functions of the stochastic 
+inputs. Coefficients in the Chaos expansion are determined through
+orthogonal projection. For non-intrusive implementations, such as in DAKOTA,
+numerical integration via quadrature or cubature is used to evaluate the 
+orthogonal projections.  Additional details regarding the method are 
+provided in Section~\ref{uq:expansion}.
+
+A typical DAKOTA input file for performing an uncertainty
+quantification using polynomial chaos expansions is shown in
+Figure~\ref{additional:pce}, \texttt{dakota\_pce.in}.
+In this example, we compute CDF
+probabilities for six response levels of Rosenbrock's function.  Since
+Rosenbrock is a fourth order polynomial and we employ a fourth-order
+expansion using an optimal basis (Legendre for uniform random
+variables), we can readily obtain a polynomial expansion which exactly
+matches the Rosenbrock function.  In this example, we select Gaussian
+quadratures using an anisotropic approach (fifth-order quadrature in
+$x_1$ and third-order quadrature in $x_2$), resulting in a total of
+15 function evaluations to compute the PCE coefficients.
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_pce.in}
+    \end{small}
+  \end{bigbox}
+\caption{DAKOTA input file for performing UQ using polynomial chaos expansions.}
+\label{additional:pce}
+\end{figure}
+
+The tensor product quadature points upon which the expansion is calculated 
+are shown in Figure~\ref{additional:rosen_pce_points}.  
+The tensor product generates
+all combinations of values from each individual dimension: it is an 
+all-way pairing of points.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[height=2.5in]{images/rosen_pce_pts}
+  \caption{Rosenbrock polynomial chaos example: tensor product quadrature points.}
+  \label{additional:rosen_pce_points}
+\end{figure}
+
+Once the expansion coefficients have been calculated, some statistics
+are available analytically and others must be evaluated numerically.
+For the numerical portion, the input file specifies the use of 10000
+samples, which will be evaluated on the expansion to compute the CDF
+probabilities.  In Figure~\ref{additional:pce_out}, excerpts from the results
+summary are presented, where we first see a summary of the PCE
+coefficients which exactly reproduce Rosenbrock for a Legendre
+polynomial basis.  The analytic statistics for mean, standard
+deviation, and COV are then presented.  For example, the mean is 455.66 
+and the standard deviation is 606.56.  The moments are followed 
+by global sensitivity indices (Sobol indices).This example shows that variable 
+x1 has the largest main effect (0.497) as compared with variable 
+x2 (0.296) or the interaction between x1 and x2 (0.206). 
+After the global sensitivity indices, the local, analytic random 
+variable sensitivities are presented, evaluated at the mean values.
+Finally, we see the numerical results for the CDF probabilities based
+on 10000 samples performed on the expansion. For example, 
+the probability that the Rosenbrock function is less than 100 
+over these two uncertain variables is 0.342. Note that this is a very similar 
+estimate to what was obtained using 200 Monte Carlo samples, with 
+fewer function evaluations.
+\begin{figure}
+\centering
+\begin{bigbox}
+%\begin{footnotesize}
+\begin{scriptsize}
+\begin{verbatim}
+Polynomial Chaos coefficients for response_fn_1:
+        coefficient   u1   u2
+        ----------- ---- ----
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -9.9475983006e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -5.3333333333e+02   P0   P1
+  -3.9968028887e-14   P1   P1
+  -1.0666666667e+03   P2   P1
+  -3.3573144265e-13   P3   P1
+   1.2829737273e-12   P4   P1
+   2.6666666667e+02   P0   P2
+   2.2648549702e-13   P1   P2
+   4.8849813084e-13   P2   P2
+   2.8754776338e-13   P3   P2
+  -2.8477220582e-13   P4   P2
+-------------------------------------------------------------------
+Statistics derived analytically from polynomial expansion:
+
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+response_fn_1
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
+
+Covariance among response functions:
+[[  3.6791532698e+05 ]] 
+
+Local sensitivities for each response function evaluated at uncertain variable means:
+response_fn_1:
+ [ -2.0000000000e+00  2.4055757386e-13 ] 
+
+Global sensitivity indices for each response function:
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                           Interaction
+                      2.0616659946e-01 x1 x2 
+
+Statistics based on 10000 samples performed on polynomial expansion:
+
+Probability Density Function (PDF) histograms for each response function:
+PDF for response_fn_1:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   6.8311107124e-03   1.0000000000e-01   2.0393073423e-02
+   1.0000000000e-01   1.0000000000e+00   1.3000000000e-02
+   1.0000000000e+00   5.0000000000e+01   4.7000000000e-03
+   5.0000000000e+01   1.0000000000e+02   1.9680000000e-03
+   1.0000000000e+02   5.0000000000e+02   9.2150000000e-04
+   5.0000000000e+02   1.0000000000e+03   2.8300000000e-04
+   1.0000000000e+03   3.5755437782e+03   5.7308286215e-05
+
+Level mappings for each response function:
+Cumulative Distribution Function (CDF) for response_fn_1:
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9000000000e-03
+   1.0000000000e+00   1.3600000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4230000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
+-------------------------------------------------------------------
+\end{verbatim}
+\end{scriptsize}
+%\end{footnotesize}
+\end{bigbox}
+\caption{Excerpt of UQ output for polynomial chaos example.}
+\label{additional:pce_out}
+\end{figure}
+
+
+\subsection{Reliability Methods - via the Mean Value Method}\label{tutorial:example:uncert_quant:reliability}
+
+Reliability methods provide an alternative approach to uncertainty
+quantification which can be less computationally demanding than
+sampling techniques.  Reliability methods for uncertainty
+quantification are based on probabilistic approaches that compute
+approximate response function distribution statistics based on
+specified uncertain variable distributions.  These response statistics
+include response mean, response standard deviation, and cumulative or
+complementary cumulative distribution functions (CDF/CCDF).  These
+methods are often more efficient at computing statistics in the tails
+of the response distributions (events with low probability) than
+sampling based approaches since the number of samples required to
+resolve a low probability can be prohibitive.
+
+Figure~\ref{additional:textbook_mv} shows the DAKOTA input file for an
+example problem that demonstrates the simplest reliability method,
+called the mean value method (also referred to as the Mean Value First
+Order Second Moment method).  It is specified with method keyword
+\texttt{local\_reliability}.  This method calculates the mean and
+variance of the response function based on information about the mean
+and variance of the inputs and gradient information at the mean of the
+inputs. The mean value method is extremely cheap computationally (only
+five runs were required for the textbook function), but can be quite
+inaccurate, especially for nonlinear problems and/or problems with
+uncertain inputs that are significantly non-normal. More detail on the
+mean value method can be found in the Local Reliability Methods
+section of the DAKOTA Theory Manual~\cite{TheoMan}, and more detail on
+reliability methods in general (including the more advanced methods)
+is found in Section~\ref{uq:reliability}.
+
+Example output from the mean value method is displayed in 
+Figure~\ref{additional:results_mv}. Note that since the mean of both inputs
+is 1, the mean value of the output for response 1 is zero. 
+However, the mean values of the constraints are both 0.5. 
+The mean value results indicate that variable x1 is more 
+important in constraint 1 while x2 is more important in constraint 2, 
+which is the case based on Equation~\ref{additional:textbook_f}.
+
+This DAKOTA input file is executed using the following command:
+\begin{small}
+\begin{verbatim}
+         dakota dakota_mv.in > mv.out
+\end{verbatim}
+\end{small}
+See the file \texttt{mv.out.sav} in \texttt{Dakota/examples/tutorial} 
+for comparison with results from DAKOTA. 
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_mv.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Mean Value Reliability Method: the DAKOTA input file.}
+  \label{additional:textbook_mv}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+-----------------------------------------------------------------
+MV Statistics for response_fn_1:
+  Approximate Mean Response                  =  0.0000000000e+00
+  Approximate Standard Deviation of Response =  0.0000000000e+00
+  Importance Factors not available.
+MV Statistics for response_fn_2:
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for variable TF1ln       =  9.4117647059e-01
+  Importance Factor for variable TF2ln       =  5.8823529412e-02
+MV Statistics for response_fn_3:
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for variable TF1ln       =  5.8823529412e-02
+  Importance Factor for variable TF2ln       =  9.4117647059e-01
+-----------------------------------------------------------------
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{Results of the Mean Value Method on the Textbook Function}
+\label{additional:results_mv}
+\end{figure}
+
 
 \section{Herbie, Smooth Herbie, and Shubert Example}
 % need to update citation from ToAppear to a date when it does appear 
@@ -969,6 +1708,68 @@ which the solution is $(w,t)=(2.45,3.88)$ with an objective function
 of $9.52$.  This demonstrates that a more conservative design is
 needed to satisfy the probabilistic constraints.
 
+\subsection{Interval Analysis}\label{tutorial:example:uncert_quant:interval}
+
+Interval analysis is often used to model epistemic uncertainty. 
+In interval analysis, one assumes that nothing is known about 
+an epistemic uncertain variable except that its value lies 
+somewhere within an interval.  In this situation, it is NOT 
+assumed that the value has a uniform probability of occuring 
+within the interval.  Instead, the interpretation is that 
+any value within the interval is a possible value or a potential 
+realization of that variable.  In interval analysis, the 
+uncertainty quantification problem is one of determining the 
+resulting bounds on the output (defining the output interval) 
+given interval bounds on the inputs. Again, any output response 
+that falls within the output interval is a possible output 
+with no frequency information assigned to it.
+
+We can do interval analysis using either
+\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.
+In the global approach, one uses either a global optimization 
+method or a sampling method to assess the bounds, whereas the 
+local method uses gradient information in a derivative-based 
+optimization approach. 
+ 
+An example of interval estimation 
+is found in the test file \texttt{dakota\_uq\_interval.in}, 
+and also in Figure~\ref{additional:interval}, with example results in 
+Figure~\ref{additional:interval_out}. This example is a demonstration 
+of calculating interval bounds for three outputs of the cantilever beam 
+problem. The cantilever beam problem is described in detail in 
+Section~\ref{additional:cantilever}. Given input intervals of [1,10] on 
+beam width and beam thickness, we can see that the interval estimate of 
+beam weight is approximately [1,100].
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_uq_interval.in}
+    \end{small}
+  \end{bigbox}
+\caption{DAKOTA input file for performing UQ using interval analysis.}
+\label{additional:interval}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+------------------------------------------------------------------
+Min and Max estimated values for each response function:
+weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
+-----------------------------------------------------------------
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{Excerpt of UQ output for interval example.}
+\label{additional:interval_out}
+\end{figure}
+
 \section{Steel Column Example}\label{additional:steel_column}
 
 This test problem involves the trade-off between cost and
@@ -1043,6 +1844,119 @@ The values calculated for the Pareto set and the Pareto front using
 the moga method are close to but not always exactly the true values,
 depending on the number of generations the moga is run, the various
 settings governing the GA, and the complexity of the Pareto set.
+
+\subsection{Multiobjective Optimization}\label{tutorial:example:optimization:multiobjective}
+
+Multiobjective optimization means that there are two or more
+objective functions that you wish to optimize simultaneously.  Often
+these are conflicting objectives, such as cost and performance.  The
+answer to a multi-objective problem is usually not a single point.
+Rather, it is a set of points called the Pareto front.  Each point
+on the Pareto front satisfies the Pareto optimality criterion, i.e.,
+locally there exists no other feasible vector that would improve some
+objective without causing a simultaneous worsening in at least one
+other objective.  Thus a feasible point $X^\prime$ from which
+small moves improve one or more objectives without worsening
+any others is not Pareto optimal: it is said to be ``dominated''
+and the points along the Pareto front are said to be
+``non-dominated''.
+
+Often multi-objective problems are addressed by simply assigning
+weights to the individual objectives, summing the weighted
+objectives, and turning the problem into a single-objective one
+which can be solved with a variety of optimization techniques. While
+this approach provides a useful ``first cut'' analysis (and is
+supported within DAKOTA---see Section~\ref{opt:additional}), this
+approach has many limitations.  The major limitation is that a
+local solver with a weighted sum objective will only find one
+% optimal solutions if the true Pareto front is nonconvex. %Hogwash!
+point on the Pareto front; if one wants to understand
+the effects of changing weights, this method can be computationally
+expensive.  Since each optimization of a single weighted objective
+will find only one point on the Pareto front, many
+optimizations must be performed to get a good parametric
+understanding of the influence of the weights and to achieve a good
+sampling of the entire Pareto frontier.
+
+Starting with version 3.2 of DAKOTA, a capability to perform
+multi-objective optimization based on a genetic algorithm method has
+been available.  This method is called \texttt{moga}.  It is based on
+the idea that as the population evolves in a GA, solutions that are
+non-dominated are chosen to remain in the population.  Until version
+4.0 of DAKOTA, there was a selection\_type choice of domination\_count
+that performed a custom fitness assessment and selection operation
+together.  As of version 4.0 of DAKOTA, that functionality has been
+broken into separate, more generally usable fitness assessment and
+selection operators called the domination\_count fitness assessor and
+below\_limit selector respectively.  The effect of using these two
+operators is the same as the previous behavior of the
+domination\_count selector.  This means of selection works especially
+well on multi-objective problems because it has been specifically
+designed to avoid problems with aggregating and scaling objective
+function values and transforming them into a single
+objective. Instead, the fitness assessor works by ranking population
+members such that their resulting fitness is a function of the number
+of other designs that dominate them.  The below\_limit selector then
+chooses designs by considering the fitness of each. If the fitness of
+a design is above a certain limit, which in this case corresponds to a
+design being dominated by more than a specified number of other
+designs, then it is discarded. Otherwise it is kept and selected to go
+to the next generation. The one catch is that this selector will
+require that a minimum number of selections take
+place. The \texttt{shrinkage\_percentage} determines the minimum number of
+selections that will take place if enough designs are available. It is
+interpreted as a percentage of the population size that must go on to
+the subsequent generation. To enforce this, the below\_limit selector
+makes all the selections it would make anyway and if that is not
+enough, it relaxes its limit and makes selections from the remaining
+designs.  It continues to do this until it has made enough selections.
+The moga method has many other important features.  Complete
+descriptions can be found in the DAKOTA Reference Manual~\cite{RefMan}.
+
+Figure~\ref{additional:moga} shows an example input file that
+demonstrates some of the multi-objective capabilities available with
+the moga method.
+\begin{figure}[htp!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_mogatest1.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Multiple objective genetic algorithm (MOGA) example: the
+    DAKOTA input file.}
+  \label{additional:moga}
+\end{figure}
+
+This example has three input variables and two objectives.
+The example uses objectives different from the Rosenbrock
+function because we wanted to demonstrate the capability on a problem
+with two conflicting objectives.  This example is taken from a testbed
+of multi-objective problems~\cite{Coe02}. In this example, the three best 
+solutions (as specified by \texttt{final\_solutions} =3) are written to the 
+output.  Additionally, final results from moga
+are output to a file called \texttt{finaldata1.dat} in the directory in
+which you are running. This \texttt{finaldata1.dat} file is simply a
+list of inputs and outputs. Plotting the output columns against each
+other allows one to see the Pareto front generated by \texttt{moga}.
+Figure~\ref{additional:moga_pareto} shows an example of the Pareto
+front for this problem. Note that a Pareto front easily shows the
+tradeoffs between Pareto optimal solutions.  For example, look at the
+point with f1 and f2 values equal to (0.9, 0.23). One cannot improve
+(minimize) the value of objective function f1 without increasing the
+value of f2: another point on the Pareto front, (0.63, 0.63) represents
+a better value of objective f1 but a worse value of objective f2.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.75]{images/dakota_mogatest1_pareto_front}
+  \caption{Multiple objective genetic algorithm (MOGA) example: Pareto
+  front showing tradeoffs between functions f1 and f2.}
+  \label{additional:moga_pareto}
+\end{figure}
+
+Sections~\ref{opt:software} and~\ref{opt:additional} provide more
+information on multiobjective optimization.  There are three detailed
+examples provided in Section~\ref{additional:multiobjective}.
 
 \subsection{Multiobjective Test Problem 1}\label{additional:multiobjective:problem1}
 
@@ -1316,3 +2230,4 @@ inputs. Red circles 1--7 correspond to inputs having interactions or
 nonlinear effects, blue squares 8--10 indicate those with mainly
 linear effects, and black Xs denote insignificant inputs.}
 \end{figure}
+
