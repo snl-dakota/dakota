@@ -19,15 +19,15 @@ institutions, contact your system administrator about DAKOTA
 availability.  If not available for your target platform, you may
 still download DAKOTA as described below.
 
-\subsection {Quickstart}\label{tutorial:installation:quickstart}
-\subsubsection {Check DAKOTA Binary}\label{tutorial:installation:quickstart:binary}
+\section {Quickstart}\label{tutorial:installation:quickstart}
+%\subsubsection {Check DAKOTA Binary}\label{tutorial:installation:quickstart:binary}
 %Dena:  can you take this section? Also determine where/how we want to 
 %present the installation information
 
-\subsubsection {Running DAKOTA with simple input file}\label{tutorial:installation:quickstart:running}
+\subsection {Running DAKOTA with simple input file}\label{tutorial:installation:quickstart:running}
 This section is intended for users who are new to DAKOTA.
 
-\paragraph{First Steps}
+{\bf First Steps}
 \begin{enumerate}
   \item Make sure DAKOTA runs - see Section~\ref{tutorial:installation:quickstart:binary}
   \item Create a working directory 
@@ -36,7 +36,7 @@ This section is intended for users who are new to DAKOTA.
 \end{enumerate}
 
 
-\paragraph{What should happen}
+{\bf What should happen} \\
 DAKOTA outputs a large amount of information to help users track the progress. Four files should have been created:
 \begin{enumerate}
   \item The screen output has been redirected to the file \texttt{Dakota\_textbook.stdout}. \\
@@ -49,7 +49,7 @@ In addition to the files, some plots are created due to the specification of \te
 
 Dakota has some data processing capabilities built in. The output file will contain the relevant results. For more advanced or customized data processing or visualization, the tabular data file can be imported into another analysis tool. In this case, the output file indicates that an optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
 
-\paragraph{What now?}
+{\bf What now?}
 \begin{itemize}
   \item Assuming DAKOTA ran successfully, skim the three text files (restart files are in a binary format). These are described further in Section~\ref{tutorial:installation:quickstart:output}.
   \item This analysis used a gradient-based optimization method, and the \texttt{textbook} example problem. More details about the analysis are in Section~\ref{tutorial:example:gradient2} and the example problem is described in Sections~\ref{additional:textbook} and~\ref{tutorial:rosenbrock}.
@@ -59,10 +59,13 @@ Dakota has some data processing capabilities built in. The output file will cont
 \end{itemize}
 
 
-\subsubsection {Examples of DAKOTA output}\label{tutorial:installation:quickstart:output}
+\subsection {Examples of DAKOTA output}\label{tutorial:installation:quickstart:output}
 %Lara:  Can you take this section?  I would discuss screen output, 
 %tabular output, output file (-o outfile) output, and hopefully 
 %the new results database output. 
+
+\subsection {OLD Getting Started section} 
+** We need to determine how much of this to put somewhere else, what to delete
 
 Getting started with DAKOTA typically involves the following steps:
 \begin{itemize}
