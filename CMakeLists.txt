@@ -19,6 +19,8 @@ set(Dakota_VERSION_MINOR 2)
 # Set this to append to the version number
 set(Dakota_VERSION_APPEND_STABLE "+")
 #set(Dakota_VERSION_APPEND_STABLE "")
+set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
+
 
 # Manage developer convenience options (experimental)
 if(DevDebug)
@@ -326,13 +328,12 @@ set(DAKOTA_DISTRO ${DAKOTA_InternalFull})
 # CPack Settings
 set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
 
-set(local_version "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
 set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
 
 # TODO: insert distribution type into package names, i.e., instead of 
-# ${local_version} use ${local_version}.int_web, based on DAKOTA_DISTRO
-set(CPACK_PACKAGE_FILE_NAME "dakota-${local_version}.${local_arch}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${local_version}.src")
+# ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
+set(CPACK_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.${local_arch}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.src")
 
 # Always omit .svn directories, duplicate TPLs, and GPL packages
 # TODO: review whether want to include FFTW

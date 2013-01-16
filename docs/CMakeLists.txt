@@ -165,6 +165,25 @@ add_dependencies(docs-pdf docs-pdf-dev docs-pdf-ref docs-pdf-theory docs-pdf-use
 add_custom_target(docs-sand)
 add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory docs-sand-user)
 
+# Package docs for nightly builds (HTML for dev, ref; PDF for theory, users)
+# TODO: Rework this into custom command(s) and bind into target
+add_custom_target(package_docs
+  COMMAND ${CMAKE_COMMAND} -E 
+    tar czf html-ref-${Dakota_VERSION_STRING}.tar.gz html-ref
+  COMMAND ${CMAKE_COMMAND} -E
+    tar czf html-dev-${Dakota_VERSION_STRING}.tar.gz html-dev
+  COMMAND ${CMAKE_COMMAND} -E copy
+    latex-user/Users_Main.pdf latex-user/Users-${Dakota_VERSION_STRING}.pdf
+  COMMAND ${CMAKE_COMMAND} -E copy
+    latex-theory/Theory_Main.pdf latex-theory/Theory-${Dakota_VERSION_STRING}.pdf
+  COMMAND ${CMAKE_COMMAND} -E
+    tar czf dakota-${Dakota_VERSION_STRING}.docs.tar.gz
+      html-ref html-ref-${Dakota_VERSION_STRING}.tar.gz
+      html-dev html-dev-${Dakota_VERSION_STRING}.tar.gz
+      latex-user/Users-${Dakota_VERSION_STRING}.pdf
+      latex-theory/Theory-${Dakota_VERSION_STRING}.pdf
+  )
+add_dependencies(package_docs docs)
 
 # Remove Doxygen-generated directories on make clean
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
