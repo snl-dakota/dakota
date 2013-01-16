@@ -1,0 +1,297 @@
+Running MPI executable in serial mode.
+DAKOTA version 5.2 released 11/30/2011.
+Subversion revision 873 built Dec 21 2011 12:31:37.
+Constructing Single Method Strategy...
+
+>>>>> Running Single Method Strategy.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
+  Total wall clock =   0.053477
+1
+
+
+
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+            *                                                   *
+            *                    C O N M I N                    *
+            *                                                   *
+            *                FORTRAN PROGRAM FOR                *
+            *                                                   *
+            *         CONSTRAINED FUNCTION MINIMIZATION         *
+            *                                                   *
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+
+
+
+     CONSTRAINED FUNCTION MINIMIZATION
+
+     CONTROL PARAMETERS
+
+     IPRINT  NDV    ITMAX    NCON    NSIDE  ICNDIR   NSCAL   NFDG
+       2       2     100       0       1       3       0       1
+
+     LINOBJ  ITRM     N1      N2      N3      N4      N5
+       0       3       4       4       3       3       6
+
+         CT              CTMIN           CTL             CTLMIN
+     -0.10000E+00     0.10000E-02    -0.10000E-01     0.10000E-02
+
+         THETA           PHI             DELFUN          DABFUN
+      0.10000E+01     0.50000E+01     0.10000E-03     0.10000E-03
+
+         FDCH            FDCHM           ALPHAX          ABOBJ1
+      0.10000E-04     0.10000E-04     0.10000E+00     0.10000E+00
+
+     LOWER BOUNDS ON DECISION VARIABLES (VLB)
+       1)   -0.20000E+01 -0.20000E+01
+
+     UPPER BOUNDS ON DECISION VARIABLES (VUB)
+       1)    0.20000E+01  0.20000E+01
+
+
+     INITIAL FUNCTION INFORMATION
+
+     OBJ =   0.242000E+02
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.12000E+01  0.10000E+01
+ 
+
+
+
+
+     ITER =    1     OBJ =   0.41310E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.10279E+01  0.10702E+01
+
+
+
+
+     ITER =    2     OBJ =   0.41240E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.10301E+01  0.10663E+01
+
+
+
+
+     ITER =    3     OBJ =   0.34402E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.84688E+00  0.70011E+00
+
+
+
+
+     ITER =    4     OBJ =   0.33720E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.83408E+00  0.70473E+00
+
+
+
+
+     ITER =    5     OBJ =   0.27891E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.63883E+00  0.37596E+00
+
+
+
+
+     ITER =    6     OBJ =   0.24584E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.48353E+00  0.18305E+00
+
+
+
+
+     ITER =    7     OBJ =   0.21074E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.44917E+00  0.21032E+00
+
+
+
+
+     ITER =    8     OBJ =   0.17494E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.30403E+00  0.70321E-01
+
+
+
+
+     ITER =    9     OBJ =   0.14042E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.12713E+00 -0.20418E-01
+
+
+
+
+     ITER =   10     OBJ =   0.12267E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.10618E+00  0.16833E-01
+
+
+
+
+     ITER =   11     OBJ =   0.97754E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.27585E-01 -0.17114E-01
+
+
+
+
+     ITER =   12     OBJ =   0.68657E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.26177E+00  0.30897E-01
+
+
+
+
+     ITER =   13     OBJ =   0.56022E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.25182E+00  0.61310E-01
+
+
+
+
+     ITER =   14     OBJ =   0.41097E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.37536E+00  0.12647E+00
+
+
+
+
+     ITER =   15     OBJ =   0.31526E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.45435E+00  0.21967E+00
+
+
+
+
+     ITER =   16     OBJ =   0.28815E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.46414E+00  0.21225E+00
+
+
+
+
+     ITER =   17     OBJ =   0.20872E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.56907E+00  0.30867E+00
+
+
+
+
+     ITER =   18     OBJ =   0.79442E-01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.72287E+00  0.51740E+00
+
+
+
+
+     ITER =   19     OBJ =   0.77805E-01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.72128E+00  0.51915E+00
+
+
+
+
+     ITER =   20     OBJ =   0.40638E-01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.82067E+00  0.66429E+00
+
+
+
+
+     ITER =   21     OBJ =   0.88906E-02
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.90705E+00  0.82115E+00
+
+
+
+
+     ITER =   22     OBJ =   0.87398E-02
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.90658E+00  0.82153E+00
+
+
+
+
+     ITER =   23     OBJ =   0.50342E-02
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.94912E+00  0.90577E+00
+
+
+
+
+     ITER =   24     OBJ =   0.14978E-03
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.98897E+00  0.97752E+00
+
+
+
+
+     ITER =   25     OBJ =   0.12622E-03
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.98878E+00  0.97763E+00
+
+
+
+
+     ITER =   26     OBJ =   0.12609E-03
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.98877E+00  0.97765E+00
+
+
+
+
+     ITER =   27     OBJ =   0.74944E-04
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.99342E+00  0.98744E+00
+1
+
+
+
+    FINAL OPTIMIZATION INFORMATION
+
+     OBJ =   0.749435E-04
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.99342E+00  0.98744E+00
+
+     THERE ARE    0 ACTIVE SIDE CONSTRAINTS
+
+     TERMINATION CRITERION
+          ABS(OBJ(I)-OBJ(I-1))   LESS THAN DABFUN FOR  3 ITERATIONS
+
+     NUMBER OF ITERATIONS =   27
+
+     OBJECTIVE FUNCTION WAS EVALUATED           82  TIMES
+
+     GRADIENT OF OBJECTIVE WAS CALCULATED       27  TIMES
