@@ -60,10 +60,11 @@ endif()
 
 add_definitions("-DHAVE_CONFIG_H")
 
+# This no longer works as Trilinos CMake rejects custom CMAKE_BUILD_TYPE
 # Add CMAKE_BUILD_TYPE for DISTRIBUTION to match historical tests / releases
-set(CMAKE_C_FLAGS_DISTRIBUTION "-O2")
-set(CMAKE_CXX_FLAGS_DISTRIBUTION "-O2")
-set(CMAKE_Fortran_FLAGS_DISTRIBUTION "-O2")
+#set(CMAKE_C_FLAGS_DISTRIBUTION "-O2")
+#set(CMAKE_CXX_FLAGS_DISTRIBUTION "-O2")
+#set(CMAKE_Fortran_FLAGS_DISTRIBUTION "-O2")
 
 option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
 
