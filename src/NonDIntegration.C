@@ -132,20 +132,25 @@ void NonDIntegration::check_variables(const Pecos::ShortArray& x_types)
 
 void NonDIntegration::print_points_weights(const String& tabular_name)
 {
-  std::ofstream pts_wts_file(tabular_name);
   size_t i, num_pts = allSamples.numCols(), num_vars = allSamples.numRows();
-  const RealVector& t1_wts = numIntDriver.type1_weight_sets();
-  pts_wts_file << std::setprecision(write_precision) 
-	       << std::resetiosflags(std::ios::floatfield) << "%   id "
-	       << std::setw(write_precision+6) << "weight ";
-  write_data_tabular(pts_wts_file,
-		     iteratedModel.continuous_variable_labels());
-  pts_wts_file << '\n';
-  for (i=0; i<num_pts; ++i) {
-    pts_wts_file << std::setw(6) << i+1 << ' '
-		 << std::setw(write_precision+5) << t1_wts[i] << ' ';
-    write_data_tabular(pts_wts_file, allSamples[i], num_vars);
+  if (num_pts && num_vars) {
+    std::ofstream pts_wts_file(tabular_name);
+    const RealVector& t1_wts = numIntDriver.type1_weight_sets();
+    bool weights = (t1_wts.length() > 0);
+    pts_wts_file << std::setprecision(write_precision) 
+		 << std::resetiosflags(std::ios::floatfield) << "%   id ";
+    if (weights)
+      pts_wts_file << std::setw(write_precision+6) << "weight ";
+    write_data_tabular(pts_wts_file,
+		       iteratedModel.continuous_variable_labels());
     pts_wts_file << '\n';
+    for (i=0; i<num_pts; ++i) {
+      pts_wts_file << std::setw(6) << i+1 << ' ';
+      if (weights)
+	pts_wts_file << std::setw(write_precision+5) << t1_wts[i] << ' ';
+      write_data_tabular(pts_wts_file, allSamples[i], num_vars);
+      pts_wts_file << '\n';
+    }
   }
 }
 

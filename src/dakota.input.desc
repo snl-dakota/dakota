@@ -866,17 +866,27 @@ TAG "method/gpais/response_levels/compute/system/series"
 TAG "method/gpais/response_levels/compute/system/parallel"
 TAG "method/adaptive_sampling"
 TAG "method/adaptive_sampling/emulator_samples"
+	DESC "{Number of samples on the emulator to generate a new true sample each iteration} MethodCommands.html#MethodNonDAdaptive"
+
 TAG "method/adaptive_sampling/fitness_metric"
+	DESC "{Fitness metric} MethodCommands.html#MethodNonDAdaptive"
+
 TAG "method/adaptive_sampling/fitness_metric/predicted_variance"
 TAG "method/adaptive_sampling/fitness_metric/distance"
 TAG "method/adaptive_sampling/fitness_metric/gradient"
 TAG "method/adaptive_sampling/batch_selection"
+	DESC "{Batch selection strategy} MethodCommands.html#MethodNonDAdaptive"
+
 TAG "method/adaptive_sampling/batch_selection/naive"
 TAG "method/adaptive_sampling/batch_selection/distance_penalty"
 TAG "method/adaptive_sampling/batch_selection/topology"
 TAG "method/adaptive_sampling/batch_selection/constant_liar"
 TAG "method/adaptive_sampling/batch_size"
+	DESC "{Batch size (number of points added each iteration)} MethodCommands.html#MethodNonDAdaptive"
+
 TAG "method/adaptive_sampling/points_file"
+	DESC "{File name for previously generated points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDAdaptive"
+
 TAG "method/adaptive_sampling/points_file/annotated"
 TAG "method/adaptive_sampling/points_file/freeform"
 TAG "method/adaptive_sampling/response_levels"
@@ -1953,8 +1963,14 @@ TAG "interface/analysis_drivers/direct/processors_per_analysis"
 	DESC "{Number of processors per analysis} InterfCommands.html#InterfApplicDF"
 
 TAG "interface/analysis_drivers/matlab"
+	DESC "{Matlab interface } InterfCommands.html#InterfaceApplicMSP"
+
 TAG "interface/analysis_drivers/python"
+	DESC "{Python interface } InterfCommands.html#InterfaceApplicMSP"
+
 TAG "interface/analysis_drivers/scilab"
+	DESC "{Scilab interface } InterfCommands.html#InterfaceApplicMSP"
+
 TAG "interface/analysis_drivers/grid"
 	DESC "{Grid interface } InterfCommands.html#InterfApplicG"
 

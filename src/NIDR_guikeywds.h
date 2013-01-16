@@ -49,10 +49,10 @@ static GuiKeyWord
 		{"fork",8,8,4,1,1881,kw_6,0.,0.,0.,0,"@"},
 		{"grid",8,0,4,1,1923,0,0.,0.,0.,0,"{Grid interface } InterfCommands.html#InterfApplicG"},
 		{"input_filter",11,0,2,0,1875,0,0.,0.,0.,0,"{Input filter} InterfCommands.html#InterfApplic"},
-		{"matlab",8,0,4,1,1917},
+		{"matlab",8,0,4,1,1917,0,0.,0.,0.,0,"{Matlab interface } InterfCommands.html#InterfaceApplicMSP"},
 		{"output_filter",11,0,3,0,1877,0,0.,0.,0.,0,"{Output filter} InterfCommands.html#InterfApplic"},
-		{"python",8,0,4,1,1919},
-		{"scilab",8,0,4,1,1921},
+		{"python",8,0,4,1,1919,0,0.,0.,0.,0,"{Python interface } InterfCommands.html#InterfaceApplicMSP"},
+		{"scilab",8,0,4,1,1921,0,0.,0.,0.,0,"{Scilab interface } InterfCommands.html#InterfaceApplicMSP"},
 		{"system",8,8,4,1,1879,kw_6,0.,0.,0.,0,"{System call interface } InterfCommands.html#InterfApplicSC"}
 		},
 	kw_8[4] = {
@@ -116,14 +116,14 @@ static GuiKeyWord
 		{"num_response_levels",13,0,1,0,929}
 		},
 	kw_20[13] = {
-		{"batch_selection",8,4,3,0,909,kw_14},
-		{"batch_size",9,0,4,0,919},
+		{"batch_selection",8,4,3,0,909,kw_14,0.,0.,0.,0,"{Batch selection strategy} MethodCommands.html#MethodNonDAdaptive"},
+		{"batch_size",9,0,4,0,919,0,0.,0.,0.,0,"{Batch size (number of points added each iteration)} MethodCommands.html#MethodNonDAdaptive"},
 		{"distribution",8,2,10,0,985,kw_10,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
-		{"emulator_samples",9,0,1,0,899},
-		{"fitness_metric",8,3,2,0,901,kw_15},
+		{"emulator_samples",9,0,1,0,899,0,0.,0.,0.,0,"{Number of samples on the emulator to generate a new true sample each iteration} MethodCommands.html#MethodNonDAdaptive"},
+		{"fitness_metric",8,3,2,0,901,kw_15,0.,0.,0.,0,"{Fitness metric} MethodCommands.html#MethodNonDAdaptive"},
 		{"gen_reliability_levels",14,1,12,0,995,kw_11,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
 		{"misc_options",15,0,7,0,943},
-		{"points_file",11,2,5,0,921,kw_16},
+		{"points_file",11,2,5,0,921,kw_16,0.,0.,0.,0,"{File name for previously generated points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDAdaptive"},
 		{"probability_levels",14,1,11,0,991,kw_12,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
 		{"response_levels",14,2,6,0,927,kw_19},
 		{"rng",8,2,13,0,999,kw_13,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},

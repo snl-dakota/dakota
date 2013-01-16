@@ -144,10 +144,6 @@ private:
 					     const RealVector& dim_pref_spec,
 					     UShortArray& dim_quad_order);
 
-  /// update Pecos::TensorProductDriver::quadOrder from dimQuadOrderRef
-  /// to account for nested rule constraints
-  void nested_quadrature_order(const UShortArray& quad_order_ref);
-
   /// increment each dim_quad_order entry by 1
   void increment_dimension_quadrature_order(UShortArray& dim_quad_order);
   /// increment the dim_quad_order entry with maximum preference by 1

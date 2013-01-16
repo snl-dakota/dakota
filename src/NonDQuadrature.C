@@ -134,7 +134,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 	  colloc_rule == Pecos::GAUSS_PATTERSON) //||
 	// don't need to enforce a growth pattern for these;
 	// also SLOW_RESTRICTED_GROWTH is not currently supported
-	// in nested_quadrature_order()
+	// in tpqDriver->nested_quadrature_order()
 	//colloc_rule == Pecos::NEWTON_COTES    ||
 	//colloc_rule == Pecos::CLENSHAW_CURTIS ||
 	//colloc_rule == Pecos::FEJER2)
@@ -175,8 +175,8 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
   //dimPrefRef = dimPrefSpec; // not currently necessary
 
   // Update Pecos::TensorProductDriver::quadOrder from dim_quad_order
-  if (nestedRules) nested_quadrature_order(dim_quad_order);
-  else         tpqDriver->quadrature_order(dim_quad_order);
+  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
+  else             tpqDriver->quadrature_order(dim_quad_order);
 }
 
 
@@ -325,79 +325,13 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
     for (size_t i=0; i<numContinuousVars; ++i)
       new_dqo[i] = std::max(dqo_l_bnd[i], dimQuadOrderRef[i]);
     // update tpqDriver
-    if (nestedRules) nested_quadrature_order(new_dqo);
-    else         tpqDriver->quadrature_order(new_dqo);
+    if (nestedRules) tpqDriver->nested_quadrature_order(new_dqo);
+    else             tpqDriver->quadrature_order(new_dqo);
   }
 
   // not currently used by this class:
   //allDataFlag = all_data_flag;
   //statsFlag   = stats_flag;
-}
-
-
-/* This function selects the smallest nested rule order that meets the
-   integrand precision of a corresponding Gauss rule.  It is similar to
-   the moderate exponential growth option in sparse grids. */
-void NonDQuadrature::nested_quadrature_order(const UShortArray& quad_order_ref)
-{
-  const Pecos::ShortArray&  rules    = tpqDriver->collocation_rules();
-  const Pecos::UShortArray& gk_order = tpqDriver->genz_keister_order();
-  const Pecos::UShortArray& gk_prec  = tpqDriver->genz_keister_precision();
-  for (size_t i=0; i<numContinuousVars; ++i)
-    switch (rules[i]) {
-    case Pecos::CLENSHAW_CURTIS: case Pecos::NEWTON_COTES: { // closed rules
-      unsigned short int_goal = 2*quad_order_ref[i] - 1, level = 0, order,
-	int_actual = 1;
-      while (int_actual < int_goal) {
-	++level;
-	order = (level) ? (unsigned short)std::pow(2., (int)level) + 1 : 1;
-	int_actual = (order % 2) ? order : order - 1;// for CC; also used for NC
-      }
-      tpqDriver->quadrature_order(order, i);             break;
-    }
-    case Pecos::FEJER2: { // open rule
-      unsigned short int_goal = 2*quad_order_ref[i] - 1, level = 0, order,
-	int_actual = 1;
-      while (int_actual < int_goal) {
-	++level;
-	order = (unsigned short)std::pow(2., (int)level+1) - 1;
-	int_actual = (order % 2) ? order : order - 1;// for CC; also used for F2
-      }
-      tpqDriver->quadrature_order(order, i);             break;
-    }
-    case Pecos::GAUSS_PATTERSON: { // open rule
-      unsigned short int_goal = 2*quad_order_ref[i] - 1, level = 0, order = 1,
-	int_actual = 1, previous = order;
-      while (int_actual < int_goal) {
-	++level;
-	order = (unsigned short)std::pow(2., (int)level+1) - 1; // exp growth
-	int_actual = 2*order - previous; // 2m-1 - constraints + 1
-	previous = order;
-      }
-      tpqDriver->quadrature_order(order, i);             break;
-    }
-    case Pecos::GENZ_KEISTER: { // open rule with lookup
-      unsigned short int_goal = 2*quad_order_ref[i] - 1,
-	level = 0, max_level = 5;
-      while (level <= max_level && gk_prec[level] < int_goal)
-	++level;
-      tpqDriver->quadrature_order(gk_order[level], i); break;
-      /*
-      unsigned short int_goal = 2*quad_order_ref[i] - 1, level = 0, order = 1,
-	int_actual = 1, previous = order, i_rule = Pecos::GENZ_KEISTER,
-	g_rule = Pecos::FULL_EXPONENTIAL; // map l->o without restriction
-      while (int_actual < int_goal) {
-	++level;
-	webbur::level_growth_to_order_new(1, &level, &i_rule, &g_rule, order);
-	int_actual = 2*order - previous; // 2m-1 - constraints + 1
-	previous = order;
-      }
-      tpqDriver->quadrature_order(order, i);             break;
-      */
-    }
-    default:
-      tpqDriver->quadrature_order(quad_order_ref[i], i); break;
-    }
 }
 
 
@@ -425,8 +359,8 @@ increment_dimension_quadrature_order(UShortArray& dim_quad_order)
   for (size_t i=0; i<numContinuousVars; ++i)
     dim_quad_order[i] += 1;
 
-  if (nestedRules) nested_quadrature_order(dim_quad_order);
-  else         tpqDriver->quadrature_order(dim_quad_order);
+  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
+  else             tpqDriver->quadrature_order(dim_quad_order);
 }
 
 
@@ -467,8 +401,8 @@ increment_dimension_quadrature_order(const RealVector& dim_pref,
   // previous resolution
   anisotropic_preference(dim_pref, dim_quad_order);
 
-  if (nestedRules) nested_quadrature_order(dim_quad_order);
-  else         tpqDriver->quadrature_order(dim_quad_order);
+  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
+  else             tpqDriver->quadrature_order(dim_quad_order);
 }
 
 
@@ -519,10 +453,8 @@ anisotropic_preference(const RealVector& dim_pref, UShortArray& quad_order_ref)
 	(unsigned short)(max_quad_ref*dim_pref[i]/max_dim_pref)); // truncate
 
   /* When used as a stand-alone update:
-  if (nestedRules)
-    nested_quadrature_order(quad_order_ref);
-  else
-    tpqDriver->quadrature_order(quad_order_ref);
+  if (nestedRules) tpqDriver->nested_quadrature_order(quad_order_ref);
+  else             tpqDriver->quadrature_order(quad_order_ref);
   */
 }
 
