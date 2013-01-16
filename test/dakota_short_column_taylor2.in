@@ -21,7 +21,7 @@
 # probability_levels back to the original response_levels for MVSOSM,
 # x-/u-space AMV^2, x-/u-space AMV^2+, x-/u-space TANA, and SORM.
 
-# timeout overrides: 7=TA1500
+# timeout overrides: 7=TA2100
 
 strategy,
 	single_method graphics
