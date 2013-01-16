@@ -153,7 +153,7 @@ implementation of the LHS algorithm, see Reference~\cite{Swi04}.
 \subsection{Uncertainty Quantification Example using Sampling Methods}\label{uq:uncertainty1}
 
 The two-variable Textbook example problem (see
-Equation~\ref{tutorial:textbook_f}) will be used to demonstrate
+Equation~\ref{additional:textbook_f}) will be used to demonstrate
 the application of sampling methods for uncertainty quantification
 where it is assumed that $x_1$ and $x_2$ are uniform uncertain
 variables on the interval $[0,1]$. The DAKOTA input file for this
@@ -969,7 +969,7 @@ details for the PCE and SC methods.
 
 A typical DAKOTA input file for performing an uncertainty
 quantification using polynomial chaos expansions is shown in 
-Section~\ref{tutorial:example:uncert_quant:poly_chaos}.  The example
+Section~\ref{additional:rosenbrock:examples:pce}.  The example
 in illustrates PCE built on anisotropic tensor
 product quadrature.  The uncertain variables are uniforms, so the
 expansion is built using classical Legendre polynomials. This section
@@ -1034,7 +1034,7 @@ Finally, we see the numerical results for the CDF probabilities based
 on 10000 samples performed on the expansion.  For example, the probability 
 that the Rosenbrock function is less than 100 is 0.7233.  Note that these 
 results are significantly different than the ones presented in 
-Section~\ref{tutorial:example:uncert_quant:poly_chaos} because of 
+Section~\ref{additional:rosenbrock:examples:pce} because of 
 the different assumptions about the inputs: uniform[-2,2] versus
 lognormals with means of 1.0 and standard deviations of 0.5. 
 \begin{figure}

@@ -31,29 +31,52 @@ This section is intended for users who are new to DAKOTA.
 \begin{enumerate}
   \item Make sure DAKOTA runs - see Section~\ref{tutorial:installation:quickstart:binary}
   \item Create a working directory 
-  \item Copy \texttt{dakota\_rosenbrock\_2d.in} from the \texttt{Dakota/examples/tutorial/} directory to the working directory
-  \item From the working directory, run \texttt{dakota -i dakota\_rosenbrock\_2d.in -o Dakota\_rosenbrock\_2d.out > Dakota\_rosenbrock\_2d.stdout}
+  \item Copy \texttt{dakota\_rosenbrock\_2d.in} from the \texttt{Dakota/examples/tutorial/}
+ directory to the working directory
+  \item From the working directory, run \texttt{dakota -i 
+dakota\_rosenbrock\_2d.in -o Dakota\_rosenbrock\_2d.out > Dakota\_rosenbrock\_2d.stdout}
 \end{enumerate}
 
 {\bf What should happen} \\
-DAKOTA outputs a large amount of information to help users track the progress. Four files should have been created:
+DAKOTA outputs a large amount of information to help users track the progress. 
+Four files should have been created:
 \begin{enumerate}
-  \item The screen output has been redirected to the file \texttt{Dakota\_rosenbrock\_2d.stdout}. \\
-  The contents are messages from DAKOTA and notes about the progress of the iterator (i.e. method/algorithm).
-  \item The output file \texttt{Dakota\_rosenbrock\_2d.out} contains information about the function evaluations.
-  \item \texttt{dakota\_tabular.dat} is created due to the specification of \texttt{tabular\_graphics\_data}. This summarizes the variables and responses for each function evaluation.
-  \item \texttt{dakota.rst} is a restart file. If a DAKOTA analysis is interrupted, it can be often be restarted without losing all progress.
+  \item The screen output has been redirected to the file 
+\texttt{Dakota\_rosenbrock\_2d.stdout}. \\
+  The contents are messages from DAKOTA and notes about the 
+progress of the iterator (i.e. method/algorithm).
+  \item The output file \texttt{Dakota\_rosenbrock\_2d.out} 
+contains information about the function evaluations.
+  \item \texttt{dakota\_tabular.dat} is created due to the 
+specification of \texttt{tabular\_graphics\_data}. This summarizes 
+the variables and responses for each function evaluation.
+  \item \texttt{dakota.rst} is a restart file. If a DAKOTA 
+analysis is interrupted, it can be often be restarted without 
+losing all progress.
 \end{enumerate}
-In addition to the files, some plots are created due to the specification of \texttt{graphics}. These can be helpful when processing the data or diagnosing unexpected results.
+In addition to the files, some plots are created due to the specification 
+of \texttt{graphics}. These can be helpful when processing the 
+data or diagnosing unexpected results.
 
-Dakota has some data processing capabilities built in. The output file will contain the relevant results. For more advanced or customized data processing or visualization, the tabular data file can be imported into another analysis tool. In this case, the output file indicates that an optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
+Dakota has some data processing capabilities built in. The output file 
+will contain the relevant results. For more advanced or customized data 
+processing or visualization, the tabular data file can be imported into 
+another analysis tool. In this case, the output file indicates that an 
+optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
 
 {\bf What now?}
 \begin{itemize}
-  \item Assuming DAKOTA ran successfully, skim the three text files (restart files are in a binary format). These are described further in Section~\ref{tutorial:installation:quickstart:output}.
-  \item This analysis used a gradient-based optimization method, and the \texttt{Rosenbrock} test problem. More details about the analysis are in Section~\ref{tutorial:example:gradient2} and the example problem is described in Sections~\ref{tutorial:rosenbrock} and~\ref{additional:rosenbrock}.
+  \item Assuming DAKOTA ran successfully, skim the three text files 
+(restart files are in a binary format). These are described further in 
+Section~\ref{tutorial:installation:quickstart:output}.
+  \item This example used a gradient-based optimization method, and the 
+\texttt{Rosenbrock} test problem. More details about the example are in 
+Section~\ref{tutorial:examples:optimization} and the test problem is 
+described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:rosenbrock}.
   \item Explore the many methods available in DAKOTA in Chapter~\ref{capabilities}.
-  \item Learn the syntax needed to use these methods. For running DAKOTA - Section~\ref{tutorial:installation:running} and for input file info - Section~\ref{tutorial:dakota}. 
+  \item Learn the syntax needed to use these methods. For running DAKOTA 
+see Section~\ref{tutorial:installation:running} and for input file 
+information see Section~\ref{tutorial:dakota}. 
   \item Learn how to use your own analysis code with DAKOTA in Chapter~\ref{advint}.
 \end{itemize}
 
@@ -306,7 +329,7 @@ for a two-dimensional parameter study on Rosenbrock's
 function is shown in Figure~\ref{tutorial:rosenbrock_2d}.
 This input file will be used to
 describe the basic format and syntax used in all DAKOTA input files.
-The results are shown later, in Section~\ref{tutorial:example:param_study}.
+The results are shown later, in Section~\ref{tutorial:examples:param_study}.
 
 \begin{figure}[ht!]
   \centering
@@ -417,7 +440,7 @@ In this example, the keyword \texttt{direct} is used to indicate the
 use of a function linked directly into DAKOTA.
 Alternatively, \texttt{fork} or \texttt{system} executions can be used
 to invoke instances of a simulation code that is external to DAKOTA,
-as explained in Section \ref{tutorial:example:user_supply:optimization2} 
+as explained in Section \ref{tutorial:examples:user_supply:optimization2} 
 and Chapter~\ref{advint}.
 The \texttt{analysis\_driver} keyword indicates the name of the test
 function. With \texttt{fork} or \texttt{system}, default file names
@@ -435,7 +458,7 @@ constraint specifications are omitted. The keywords
 derivatives will be provided to the method; none are needed for
 a parameter study.
 
-\section{Examples}\label{tutorial:example}
+\section{Examples}\label{tutorial:examples}
 
 This section serves to familiarize users about how to perform parameter 
 studies, optimization, and uncertainty quantification through their common
@@ -446,7 +469,7 @@ are intended to show the simplest use of DAKOTA for methods of
 each type. More advanced examples of using DAKOTA for specific purposes 
 are provided in subsequent, topic-based, chapters.
 
-\subsection{Rosenbrock Test Problem}\label{tutorial:example:rosenbrock}
+\subsection{Rosenbrock Test Problem}\label{tutorial:examples:rosenbrock}
 
 The examples shown later in this chapter use the Rosenbrock
 function \cite{Rosenbrock60} (also described in \cite{Gil81}, among
@@ -492,7 +515,7 @@ Chapter~\ref{additional} for a description of these test problems
 as well as further discussion of the Rosenbrock test problem.
 
 
-\subsection{Two-Dimensional Grid Parameter Study}\label{tutorial:example:param_study}
+\subsection{Two-Dimensional Grid Parameter Study}\label{tutorial:examples:param_study}
 
 Parameter study methods in the DAKOTA toolkit involve the computation 
 of response data sets at a selection of points in the parameter space. 
@@ -548,7 +571,7 @@ products.)
 \end{figure}
 
 
-\subsection{Gradient-based Unconstrained Optimization}\label{tutorial:example:optimization}
+\subsection{Gradient-based Unconstrained Optimization}\label{tutorial:examples:optimization}
 
 DAKOTA's optimization capabilities include a variety of gradient-based 
 and nongradient-based optimization methods. This subsection demonstrates
@@ -643,7 +666,7 @@ constraint function values (if any), plus the number of function
 evaluations that occurred and the amount of time that elapsed during
 the optimization study.
 
-\subsection{Uncertainty Quantification with Monte Carlo Sampling}\label{tutorial:example:uncert_quant}
+\subsection{Uncertainty Quantification with Monte Carlo Sampling}\label{tutorial:examples:uncert_quant}
 
 Uncertainty quantification (UQ) is the process of determining the
 effect of input uncertainties on response metrics of interest. These
@@ -671,7 +694,7 @@ the keyword \texttt{uniform\_uncertain}.
 % Not true: For comparison, the keywords
 % from the previous examples are retained, but have been commented out.
 Another change from earlier input files, such as
-Figure~\ref{tutorial:rosenbrock_vector},
+Figure~\ref{tutorial:rosenbrock_2d},
 occurs in the responses block, where
 the keyword \texttt{num\_response\_functions} is used in place of
 \texttt{num\_objective\_functions}. The final changes to the input
@@ -822,11 +845,11 @@ Partial Rank Correlation Matrix between input and output:
   \label{tutorial:rosenbrock_mc_points}
 \end{figure}
 
-\subsection{User Supplied Simulation Code Examples}\label{tutorial:example:user_supply}
+\subsection{User Supplied Simulation Code Examples}\label{tutorial:examples:user_supply}
 This subsection provides examples of how to use DAKOTA to drive user 
 supplied black box code.
 
-\subsubsection{Optimization with a User-Supplied Simulation Code - Case 1}\label{tutorial:example:user_supply:optimization1}
+\subsubsection{Optimization with a User-Supplied Simulation Code - Case 1}\label{tutorial:examples:user_supply:optimization1}
 
 Many of the previous examples made use of the direct interface to
 access the Rosenbrock and textbook test functions that are compiled
@@ -954,7 +977,7 @@ When the system call has completed, DAKOTA reads in the data from the
 continues with additional executions of the rosenbrock program until
 the optimization process is complete.
 
-\subsubsection{Optimization with a User-Supplied Simulation Code - Case 2}\label{tutorial:example:user_supply:optimization2}
+\subsubsection{Optimization with a User-Supplied Simulation Code - Case 2}\label{tutorial:examples:user_supply:optimization2}
 
 In many situations the user-supplied simulation code cannot be
 modified to read and write the \texttt{params.in.X file} and the
