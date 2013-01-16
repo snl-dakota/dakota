@@ -745,7 +745,8 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
         " )
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C)
-    message(STATUS "DakotaBuildInfo.C found in the source tree; please remove!")
+    message(STATUS
+      "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C in the source tree; please remove!")
   endif() # incorrect location DakotaBuildInfo.C
 
 else() # source tree NOT an SVN checkout
