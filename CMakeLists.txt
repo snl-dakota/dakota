@@ -313,14 +313,14 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
 
 
 # More widely distributed packages exclude more content
-#  * ideally use an enumeration
-#  * consider reversing the ordering
-set(DAKOTA_InternalFull 0)
-set(DAKOTA_InternalSupervised 1)
-set(DAKOTA_InternalWeb 2)
-set(DAKOTA_ExternalWeb 3)
+# So smaller number implies less content
+set(DAKOTA_InternalFull 3)       # Complete checkout
+set(DAKOTA_InternalSupervised 2) # Less some of local/
+set(DAKOTA_InternalWeb 1)        # Also less DOT
+set(DAKOTA_ExternalWeb 0)        # Also less NPSOL, NLPQL
 
 # The permission level of the distribution (to be made an option)
+# TODO: change default to DAKOTA_ExternalWed?
 set(DAKOTA_DISTRO ${DAKOTA_InternalFull})
 
 # CPack Settings
@@ -334,14 +334,16 @@ set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_PACKAGE_FILE_NAME "dakota-${local_version}.${local_arch}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${local_version}.src")
 
-set(CPACK_SOURCE_IGNORE_FILES "Makefile\\\\.am$" ".*\\\\.svn/"
+# Always omit .svn directories, duplicate TPLs, and GPL packages
+# TODO: review whether want to include FFTW
+set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/"
     "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
     "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"
     "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/CONMIN/"
     "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/NCSUOpt/"
 )
 
-if(DAKOTA_DISTRO GREATER DAKOTA_InternalFull)
+if(DAKOTA_DISTRO LESS DAKOTA_InternalFull)
   list(APPEND CPACK_SOURCE_IGNORE_FILES
     "^${Dakota_SOURCE_DIR}/local/buildscripts/"
     "^${Dakota_SOURCE_DIR}/local/examples/"
@@ -351,11 +353,25 @@ if(DAKOTA_DISTRO GREATER DAKOTA_InternalFull)
   )
 endif()
 
-if(DAKOTA_DISTRO GREATER DAKOTA_InternalSupervised)
+if(DAKOTA_DISTRO LESS DAKOTA_InternalSupervised)
+  # When building InternalWeb, don't want DOT in the binaries
+  # Be aggressive and remove from source tree
+  execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory
+    ${Dakota_SOURCE_DIR}/packages/DOT/)
+  # This is now redundant, leave until verified
   list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/packages/DOT/")
 endif()
 
-if(DAKOTA_DISTRO GREATER DAKOTA_InternalWeb)
+if(DAKOTA_DISTRO LESS DAKOTA_InternalWeb)
+  # When building InternalWeb, don't want NLPQL, NPSOL in the binaries
+  # Be aggressive and remove from source tree
+  execute_process(
+    COMMAND "${CMAKE_COMMAND}" -E remove_directory
+      "${Dakota_SOURCE_DIR}/packages/NLPQL"
+    COMMAND "${CMAKE_COMMAND}" -E remove_directory
+      "${Dakota_SOURCE_DIR}/packages/NPSOL"
+    )
+  # This is now redundant, leave until verified
   list(APPEND CPACK_SOURCE_IGNORE_FILES
     "^${Dakota_SOURCE_DIR}/packages/NPSOL/"
     "^${Dakota_SOURCE_DIR}/packages/NLPQL/"
