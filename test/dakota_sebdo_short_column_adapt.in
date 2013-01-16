@@ -3,6 +3,8 @@
 # nested OUU strategy.  The test problem is the "short_column" problem from
 # Kuschel and Rackwitz, 1997.
 
+# timeout overrides: 6=TD480
+
 strategy,
 #	graphics
 	single_method
