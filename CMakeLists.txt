@@ -122,7 +122,7 @@ endif()
 # the standalone executable
 # Would like to have serialization be optional, unless building standalone?
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
-option(SURFPACK_HAVE_BOOST_SERIALIZATION "Use Boost serialization library" ON)
+option(SURFPACK_HAVE_BOOST_SERIALIZATION "Use Boost serialization library" OFF)
 if(HAVE_SURFPACK AND SURFPACK_HAVE_BOOST_SERIALIZATION)
   list(APPEND dakota_boost_components "serialization")
 endif()
