@@ -1,4 +1,4 @@
-# DAKOTA INPUT FILE - dakota_rosenbrock_multidim_paramstudy.in #0
+# DAKOTA INPUT FILE - dakota_rosenbrock_multidim.in #0
 ## DAKOTA INPUT FILE - dakota_rosenbrock_vector.in #1
 ## DAKOTA INPUT FILE - dakota_rosenbrock_grad_opt.in #2
 ## DAKOTA INPUT FILE - dakota_rosenbrock_ps_opt.in #4
@@ -8,19 +8,23 @@
 ## DAKOTA INPUT FILE - dakota_rosenbrock_ls.in #8
 # Included DAKOTA example using the rosenbrock analysis code  #0,#2,#6,#7
 # in a multidimensional parameter study  #0
-# usage dakota -i dakota_rosenbrock_multidim_paramstudy.in -o Rosenbrock_multidim_paramstudy.out > Rosenbrock_multidim_paramstudy.stdout #0
+# usage dakota -i dakota_rosenbrock_multidim.in \\ #0
+# -o Rosenbrock_multidim.out > Rosenbrock_multidim.stdout #0
 ## with gradient-based optimization, in which the design variables are bounded #2
-## usage dakota -i dakota_rosenbrock_grad_opt.in -o Rosenbrock_grad_opt.out > Rosenbrock_grad_opt.stdout #2
+## usage dakota -i dakota_rosenbrock_grad_opt.in \\ #2
+## -o Rosenbrock_grad_opt.out > Rosenbrock_grad_opt.stdout #2
 ## with a random sampling Uncertainty Quantification method #6
-## usage dakota -i dakota_rosenbrock_sampling.in -o Rosenbrock_sampling.out > Rosenbrock_sampling.stdout #6
+## usage dakota -i dakota_rosenbrock_sampling.in \\ #6 
+## -o Rosenbrock_sampling.out > Rosenbrock_sampling.stdout #6
 ## with gradient-based optimization, in which the design variables are bounded #7
 ## and the analysis code is called with fork #7
-## usage dakota -i dakota_rosenbrock_syscall.in -o Rosenbrock_syscall.out > Rosenbrock_syscall.stdout #7
+## usage dakota -i dakota_rosenbrock_syscall.in \\ #7
+## -o Rosenbrock_syscall.out > Rosenbrock_syscall.stdout #7
 
 strategy
   graphics
   tabular_graphics_data
-    tabular_graphics_file = 'Rosenbrock_multidim_paramstudy.dat' #0
+    tabular_graphics_file = 'Rosenbrock_multidim.dat' #0
 #    tabular_graphics_file = 'Rosenbrock_grad_opt.dat' #2
 #    tabular_graphics_file = 'Rosenbrock_sampling.dat' #6
 #    tabular_graphics_file = 'Rosenbrock_syscall.dat' #7
@@ -90,7 +94,6 @@ interface
 #    fork                             #7
 #    parameters_file = 'params.in'    #7
 #    results_file    = 'results.out'  #7
-#    file_save                        #7
 
 responses
 #  objective_functions = 1             #1,#2,#4,#5,#7,#9
