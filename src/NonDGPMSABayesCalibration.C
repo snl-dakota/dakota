@@ -50,7 +50,7 @@ NonDGPMSABayesCalibration::NonDGPMSABayesCalibration(Model& model):
   metropolisType(probDescDB.get_string("method.metropolis")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  proposalCovScale(probDescDB.get_real("method.proposal_covariance_scale")),
+  proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
 {   
@@ -95,6 +95,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
   envOptionsValues->m_displayVerbosity     = 2;
   envOptionsValues->m_seed = -1;
+  envOptionsValues->m_identifyingString="towerExampleToMatchGPMSA";
   //if (randomSeed) 
   //  envOptionsValues->m_seed                 = randomSeed;
   //else
@@ -589,7 +590,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     //   Normalize 'DsimMat' and all 'DobsMats'
     //***********************************************************************
   uqGslMatrixClass DsimMatTranspose(*env,delta_space.map(),num_eta);
-  DsimMatTranspose.fillWithTranspose(DsimMat);
+  DsimMatTranspose.fillWithTranspose(0,0,DsimMat,true,true);
   double Dmax = (DsimMat * DsimMatTranspose).max();
   if (env->subDisplayFile()) {
     *env->subDisplayFile() << "In compute()"
@@ -684,7 +685,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   gcmVarOptions->m_dataOutputFileName = ".";
   gcmVarOptions->m_dataOutputAllowAll = 0;
   gcmVarOptions->m_dataOutputAllowedSet.insert(0);
-  gcmVarOptions->m_priorSeqNumSamples = 20000;
+  gcmVarOptions->m_dataOutputAllowedSet.insert(1);
+  gcmVarOptions->m_priorSeqNumSamples = 24000;
   gcmVarOptions->m_priorSeqDataOutputFileName = "outputData_m1/priorSeq";
   gcmVarOptions->m_priorSeqDataOutputFileType = "m";
   gcmVarOptions->m_priorSeqDataOutputAllowAll = 0;
@@ -699,6 +701,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   gcmVarOptions->m_predWsBySamplingRVs = 0;
   gcmVarOptions->m_predWsBySummingRVs = 1;
   gcmVarOptions->m_predWsAtKeyPoints = 0;
+  gcmVarOptions->m_predLag = 15;
 
   gcm = new uqGpmsaComputerModelClass<uqGslVectorClass,uqGslMatrixClass,
                                       uqGslVectorClass,uqGslMatrixClass,
@@ -771,7 +774,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   mhVarOptions->m_initialProposalCovMatrixDataInputFileType = "m";
   mhVarOptions->m_rawChainDataInputFileName = ".";
   mhVarOptions->m_rawChainDataInputFileType = "m";
-  mhVarOptions->m_rawChainSize = 1000;                                  
+  mhVarOptions->m_rawChainSize = 132000;                                  
    // IMPORTANT
   mhVarOptions->m_rawChainGenerateExtra = 0;
   mhVarOptions->m_rawChainDisplayPeriod = 10;
@@ -787,9 +790,9 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
    // IMPORTANT
   mhVarOptions->m_filteredChainGenerate = 1;                            
    // IMPORTANT
-  mhVarOptions->m_filteredChainDiscardedPortion = 0.15;                 
+  mhVarOptions->m_filteredChainDiscardedPortion = 0.1;                 
    // IMPORTANT
-  mhVarOptions->m_filteredChainLag = 4;                                 \
+  mhVarOptions->m_filteredChainLag = 12;                                 \
    // IMPORTANT
    mhVarOptions->m_filteredChainDataOutputFileName = "outputData_m1/filtChain_mh";
    mhVarOptions->m_filteredChainDataOutputFileType = "m";                
