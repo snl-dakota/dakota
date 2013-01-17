@@ -992,8 +992,8 @@ for $p=2$, all two-way interactions.
 
 \section{Linear regression} \label{uq:expansion:regress}
 
-The linear regression approach uses a
-single linear least squares solution of the form:
+Regression based approaches attempt to find requalarized or exact solutions of the linear
+system:
 \begin{equation}
 \boldsymbol{\Psi} \boldsymbol{\alpha} = \boldsymbol{R} \label{eq:regression}
 \end{equation}
@@ -1031,6 +1031,138 @@ collocation point, which can aid in scaling with respect to the number
 of random variables, particularly for adjoint-based derivative
 approaches.
 
+Various methods can be employed to solve \eqref{eq:regression}.
+The relative accuracy of each method is problem dependent. Traditionally,
+ the most frequently used method has been least squares regression. However 
+when $\boldsymbol{\Psi}$ is over-determined minimizing the residual with respect to
+the $\ell_2$ norm typically produces poor solutions. Compressed sensing methods have been
+successfully used to address this limitation~\cite{Blatman2011,Doostan2011}. 
+Such methods attempt to only identify the 
+elements of the coefficient vector $\boldsymbol{\alpha}$ with the largest magnitude 
+and enforce as many elements as possible to be zero. Such solutions are often called 
+sparse solutions. Dakota provides algorithms that solve the following formulations:
+\begin{itemize}
+ \item Basis Pursuit (BP)~\cite{Chen2001}
+\begin{equation}
+\label{eq:bp}
+\boldsymbol{\alpha} = \text{arg min} \; \|\boldsymbol{\alpha}\|_{\ell_1}\quad \text{such that}\quad \boldsymbol{\Psi}\boldsymbol{\alpha} = \boldsymbol{R}
+\end{equation}
+The BP solution is obtained in Dakota, by transforming~\eqref{eq:bp} to a 
+linear program which is then solved using the primal-dual
+interior-point method~\cite{Boyd2004,Chen2001}.
+\item Basis Pursuit DeNoising (BPDN)~\cite{Chen2001}. 
+\begin{equation}
+\label{eq:bpdn}
+\boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\alpha}\|_{\ell_1}\quad \text{such that}\quad \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2} \le \varepsilon
+\end{equation}
+The BPDN solution is computed in Dakota by transforming~\eqref{eq:bpdn} 
+to a quadratic cone problem which is solved using the log-barrier Newton 
+method~\cite{Boyd2004,Chen2001}. 
+
+
+When the matrix $\boldsymbol{\Psi}$ is not over-determined the BP and BPDN solvers used in Dakota
+will not return a solution. In such situations these methods simply return the least squares solution.
+\item Orthogonal Matching Pursuit (OMP)~\cite{Davis1997},
+\begin{equation}
+\label{eq:omp}
+\boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\alpha}\|_{\ell_0}\quad \text{such that}\quad \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2} \le \varepsilon
+\end{equation}
+OMP is a heuristic method which greedily finds an approximation to~\eqref{eq:omp}. In contrast to the aforementioned techniques for solving BP and BPDN, 
+which minimize an objective function,OMP constructs a sparse solution by iteratively 
+building up an approximation of the solution vector $\boldsymbol{\alpha}$. 
+The vector is approximated as a linear combination of a subset of active columns of 
+$\boldsymbol{\Psi}$. The active set of columns is built column by column, in
+a greedy fashion, such that at each iteration the inactive column with the highest correlation
+(inner product) with the current residual is added.
+
+\item Least Absolute Shrinkage and Selection Operator (LASSO)~\cite{Tibshirani1996}
+\begin{equation}
+\label{eq:lasso}
+ \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2}^2 \quad \text{such that}\|\boldsymbol{\alpha}\|_{\ell_1} \le \tau
+\end{equation}
+A greedy solution can be found using the Least Angle Regression (LARS) algorithm~\cite{Efron2004}.
+However with only a small modification LARS can also be used to rigorously solve the 
+global optimization problem~\eqref{eq:lasso}. Such an approach is identical to the homotopy algorithm of
+Osborne et al~\cite{Osborne2000}. It is interesting to note that 
+Efron~\cite{Efron2004} experimentally observed that the basic, faster LARS 
+procedure is often identical to the LASSO solution.
+
+The LARS algorithm is similar to OMP. LARS again maintains an active set of columns and again builds
+this set by adding the column with the largest correlation with the residual to the current residual.
+However unlike OMP LARS solves a penalized least squares problem at each step taking a step along an equiangular direction, that is, a direction
+having equal angles with the vectors in the active set. LARS and OMP do not allow a column (PCE basis)
+to leave the active set. However if this restriction is removed from LARS (it cannot be from OMP)
+the resulting algorithm can provably solve ~\eqref{eq:lasso}.
+
+\item Elastic net~\cite{Zou2005}
+\begin{equation}
+\label{eq:elastic-net}
+ \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2}^2 \quad \text{such that}\quad (1-\lambda)\|\boldsymbol{\alpha}\|_{\ell_1} + 
+\lambda\|\boldsymbol{\alpha}\|_{\ell_2}^2 \le \tau
+\end{equation}
+The elastic net was developed to overcome some of the limitations of the lasso formulation. 
+Specifically: if the ($M\times N$) Vandermonde matrix $\boldsymbol{\Psi}$ is over-determined ($M>N$), 
+the lasso selects at most $N$ variables before it saturates, because of the
+nature of the convex optimization problem; if there is a group of variables among which the pairwise correlations are very high, then
+the lasso tends to select only one variable from the group and does not care which one is
+selected; and finally if there are high correlations between predictors, it has been
+empirically observed that the prediction performance of the lasso is dominated by ridge
+regression~\cite{Tibshirani1996}. Here we note that it is hard to estimate the $\lambda$ 
+penalty in practice and the aforementioned issues typically do not arise very often when 
+solving~\eqref{eq:regression}. The elastic net formulation can be solved with a minor modification of
+the LARS algorithm.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{images/compressed-sensing-hierarchy.png}
+\caption{Bridging provably convergent $\ell_1$ minimization algorithms and greedy 
+algorithms such as OMP. (1) Homotopy provably solves $\ell_1$ minimization 
+problems~\cite{Efron2004}. (2) LARS is obtained from homotopy by removing
+the sign constraint check. (3) OMP and LARS are similar in structure, 
+the only difference being that OMP solves a least-squares problem at each iteration,
+whereas LARS solves a linearly penalized least-squares problem. 
+Figure and caption based upon Figure 1 in~\cite{Donoho2008}}. 
+\label{fig:compressed-sensing-method-heirarchy}
+\end{figure}
+
+OMP, and LARS add a PCE basis one step at a time. If $\boldsymbol{\alpha}$ contains
+ only $k$ non-zero terms then these methods will only take $k$-steps. 
+The homotopy version of LARS also adds only basis at each step, however 
+it can also remove bases, and thus can take more than $k$ steps. For some problems 
+the LARS and homotopy solutions with coincide. Each step of these algorithm provides a possible
+estimation of the PCE coefficients. However without knowledge of the target function there is no
+easy way to estimate which coefficient vector is best. However with some additional computational 
+effort (which will likely be minor to the cost of obtaining model simulations) cross validation 
+can be used to choose an appropriate coefficient vector.
+
+\subsection{Cross validation}
+Cross validation can be used to find a coefficient vector $\boldsymbol{\alpha}$ 
+that approximately minimizes $\| \hat{f}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$, where
+$f$ is the target function and $\hat{f}$ is the PCE approximation using $\boldsymbol{\alpha}$. 
+Given training data $\mathbf{X}$ and a set of algorithm parameters $\boldsymbol{\beta}$ (which can be step number in an 
+algorithm such as OMP, or PCE maximum degree), $K$-folds cross validation divides 
+$\mathbf{X}$ into $K$ sets (folds) $\mathbf{X}_k$, $k=1,\ldots,K$ of equal size. 
+A PCE $\hat{f}^{-k}_{\boldsymbol{\beta}}(\mathbf{X})$, is built on the training data 
+$\mathbf{X}_{\mathrm{tr}}=\mathbf{X} \setminus \mathbf{X}_k$ 
+with the $k$-th fold removed, using the tuning parameters $\boldsymbol{\beta}$. 
+The remaining data $\mathbf{X}_k$ is then used to estimate the prediction error.
+The prediction error is typically approximated by
+$e(\hat{f})=\lVert \hat{f}(\mathbf{x})-f(\mathbf{x})\rVert_{\ell_2}$, 
+$\mathbf{x}\in\mathbf{X}_{k}$~\cite{hastie2001}. This process is then repeated $K$-times removing a 
+different fold from the training set each time. 
+
+The cross validation error is taken to be the average of the prediction errors for the $K$-experiments
+\[
+CV(\hat{f}_{\boldsymbol{\beta}}) = \mathrm{E}[e(\hat{f}_{\boldsymbol{\beta}}^{-k})] = \frac{1}{K}\sum_{k=1}^K e(\hat{f}_{\boldsymbol{\beta}}^{-k})
+\]
+We minimize $CV(\hat{f}_{\boldsymbol{\beta}})$ as a surrogate for minimizing
+$\| \hat{f}_{\boldsymbol{\beta}}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$ and choose the tuning parameters 
+\begin{equation}
+\label{eq:optimal_tuning-parameters}
+\boldsymbol{\beta}^\star = \text{arg min}\, CV(\hat{f}_{\boldsymbol{\beta}})\mathrm{Var}[e(\hat{f}_{\boldsymbol{\beta}}^{-k})]
+\end{equation}
+to construct the final, 'best',  PCE approximation of $f$ that the training data can produce. 
 
 \section{Analytic moments} \label{uq:expansion:moment}
 

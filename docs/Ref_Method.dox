@@ -5511,7 +5511,7 @@ polynomial relationship between the statistics and the remaining
 design/state/epistemic variables.
 
 \ref T5d38 "Table 5.38" shows these general PCE controls and it, along
-with Tables \ref T5d39 "5.39", \ref T5d40 "5.40", and \ref T5d41 "5.41" 
+with Tables \ref T5d39 "5.39", \ref T5d40 "5.40", and \ref T5d42 "5.42" 
 to follow, provide the details of the polynomial chaos expansion 
 specifications beyond those of \ref T5d28 "Table 5.28".
 
@@ -5844,6 +5844,94 @@ sampling, regression, and expansion import options.
 <td>Required
 <td>N/A
 </table>
+
+If expansion_samples, collocation_points or collocation_ratio is specified,
+the PCE coefficients will be determined by regression. \ref T5d41 "Table 5.41"
+list the various regression specifications which are all are optional. 
+If no specifications are made appropriate defaults are in place. Technical 
+information on the various methods listed below can be found in the Linear
+regression section of the Theory Manual. Some of the regression 
+methods (OMP, LASSO, and LARS) are able to 
+produce a set of possible PCE coefficient vectors ( See the Linear regression 
+section in the Theory Manual). If cross validation is off 
+then only the solution, consistent with noise_tolerance will be returned. If
+cross validation is on Dakota will choose between all possible coefficient
+vectors found internally by the regression method for all expansion orders 
+1,...,expansion_order) and return the one with the lowest cross validation error
+indicator.
+
+\anchor T5d41
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.41
+\endhtmlonly
+Specification detail for polynomial chaos expansion method: expansion 
+sampling, regression, and expansion import options.
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Least squares regression
+<td>\c least_squares
+<td>svd | equality_constrained
+<td>Optional
+<td>svd
+<tr>
+<td>L1 minimization via Basis Purusit (BP)
+<td>\c basis_pursuit
+<td>none
+<td>Optional
+<td>N/A
+<tr>
+<td>L1 minimization via Basis Purusit DeNoising (BPDN)
+<td>\c basis_pursuit_denoising
+<td>none
+<td>Optional
+<td>N/A
+<tr>
+<td>L1 minimization via Orthogonal Matching Pursuit (OMP)
+<td>\c orthogonal_matching_pursuit
+<td>real
+<td>Optional
+<td>N/A
+<tr>
+<td>L1 minimization via Least Absolute Shrinkage Operator (LASSO)
+<td>\c least_absolute_shrinkage
+<td>none
+<td>Optional
+<td>N/A
+<tr>
+<td>L1 minimization via Least Angle Regression (LARS)
+<td>\c least_angle_regression
+<td>none
+<td>Optional
+<td>N/A
+<tr>
+<td>Noise tolerance used in conjuction with BPDN, OMP, LARS, LASSO 
+as an exit condition 
+<td>\c noise_tolerance
+<td>list of reals
+<td>Optional
+<td>1e-3 for BPDN 0. otherwise (algorithms run until termination)
+<tr>
+<td>l2_penalty used for elastic net modification of LASSO
+<td>\c l2_penalty
+<td>real
+<td>Optional
+<td>0. (reverts to standard lasso formualtion)
+<tr>
+<td>Specify whether to use cross validation
+<td>\c cross_validation
+<td>none
+<td>Optional
+<td>N/A
+<tr>
+</table>
 </ol>
 
 If \e n is small (e.g., two or three), then tensor-product Gaussian
@@ -5899,14 +5987,14 @@ the number of refinement samples is not under the user's control
 (these evaluations are approximation-based, so management of this
 expense is less critical).  This option allows for refinement of
 probability and generalized reliability results using importance
-sampling. \ref T5d41 "Table 5.41" provide the details of these
+sampling. \ref T5d42 "Table 5.42" provide the details of these
 sampling specifications for polynomial chaos.
 
-\anchor T5d41
+\anchor T5d42
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.41
+Table 5.42
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: sampling controls.
 </caption>
@@ -6102,16 +6190,16 @@ integrals are evaluated, only the aleatory random variable domain is
 integrated, leaving behind a polynomial relationship between the
 statistics and the remaining design/state/epistemic variables.
 
-\ref T5d42 "Table 5.42" shows these general SC controls, and it along
-with \ref T5d43 "Table 5.43" to follow provide the details of the
+\ref T5d43 "Table 5.43" shows these general SC controls, and it along
+with \ref T5d44 "Table 5.44" to follow provide the details of the
 SC specifications beyond those of Tables \ref T5d28 "5.28" and 
-\ref T5d39 "5.41".
+\ref T5d39 "5.42".
 
-\anchor T5d42
+\anchor T5d43
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.42
+Table 5.43
 \endhtmlonly
 Specification detail for stochastic collocation method: general controls.
 </caption>
@@ -6185,7 +6273,7 @@ Specification detail for stochastic collocation method: general controls.
 
 To form the multidimensional interpolants \f$L_i\f$ of the expansion,
 two options are provided and the specification details for these options
-are provided in \ref T5d43 "Table 5.43".
+are provided in \ref T5d44 "Table 5.44".
 
 <ol>
 <li> interpolation on a tensor-product of Gaussian quadrature points
@@ -6204,11 +6292,11 @@ are provided in \ref T5d43 "Table 5.43".
      \c non_nested option, and the growth rules are restricted unless
      overridden by the \c unrestricted keyword.
 
-\anchor T5d43
+\anchor T5d44
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.43
+Table 5.44
 \endhtmlonly
 Specification detail for stochastic collocation method: grid controls.
 </caption>
@@ -6266,7 +6354,7 @@ MethodNonD, the \c sample_type, \c samples, \c seed, \c fixed_seed,
 and \c rng specifications described in \ref MethodNonDMC, and the \c
 sample_refinement specification described in \ref MethodNonDPCE.  Each
 of the sampling specifications is identical to those for PCE shown in
-\ref T5d41 "Table 5.41" and refer to sampling on the interpolant for
+\ref T5d42 "Table 5.42" and refer to sampling on the interpolant for
 the purposes of generating approximate statistics, which should not be
 confused with collocation evaluations used for forming the
 interpolant.  Finally, the process for multifidelity UQ is identical
@@ -6351,15 +6439,15 @@ methods to calculate these bounds.  \c local_interval_est
 allows the user to specify either \c sqp which is sequential
 quadratic programming, or \c nip which is a nonlinear interior point
 method.  
-\ref T5d44 "Table 5.44" provides the specification for the 
+\ref T5d45 "Table 5.45" provides the specification for the 
 local interval method. 
 
 
-\anchor T5d44
+\anchor T5d45
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.44
+Table 5.45
 \endhtmlonly
 Specification detail for local interval estimation used in epistemic uncertainty
 </caption>
@@ -6408,14 +6496,14 @@ implementation may be selected instead.  If \c use_derivatives is
 specified the GP model will be built using available derivative data
 (Surfpack GP only). When using \c lhs or \c ego,
 one can specify a seed for the number of LHS samples, the random
-number generator, and the number of samples.  \ref T5d45 "Table 5.45"
+number generator, and the number of samples.  \ref T5d46 "Table 5.46"
 provides the specification for the global interval methods.
 
-\anchor T5d45
+\anchor T5d46
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.45
+Table 5.46
 \endhtmlonly
 Specification detail for global interval estimation used in epistemic uncertainty
 </caption>
@@ -6525,16 +6613,16 @@ gen_reliability_levels) or outputs (\c response_levels with \c compute
 probability levels and the same probability-based mappings described
 above are performed.
 
-\ref T5d46 "Table 5.46" provides the specification for the \c
+\ref T5d47 "Table 5.47" provides the specification for the \c
 local_evidence method. Note that two local optimization methods 
 are available:  \c sqp (sequential quadratic programming or \c nip
 (nonlinear interior point method). 
 
-\anchor T5d46
+\anchor T5d47
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.46
+Table 5.47
 \endhtmlonly
 Specification detail for local evidence theory method for epistemic uncertainty
 </caption>
@@ -6570,7 +6658,7 @@ and maximum function value must be calculated for each "interval cell
 combination."  These bounds are aggregated into belief and
 plausibility.
 
-\ref T5d47 "Table 5.47" provides the specification for the \c
+\ref T5d48 "Table 5.48" provides the specification for the \c
 global_evidence method.  \c global_evidence allows the user to specify
 either \c lhs or \c ego.  \c lhs performs Latin Hypercube Sampling and
 takes the minimum and maximum of the samples as the bounds per
@@ -6600,11 +6688,11 @@ uses optimization methods instead to find the minimum and maximum
 sample values within each cell, this can also be computationally
 expensive.
 
-\anchor T5d47
+\anchor T5d48
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.47
+Table 5.48
 \endhtmlonly
 Specification detail for global evidence theory method for epistemic uncertainty
 </caption>
@@ -6739,14 +6827,14 @@ samples).   Note that the QUESO and GPMSA methods
 are under active development.  Contact dakota-users@software.sandia.gov 
 if you are interested in obtaining these capabilities. 
 
-\ref T5d48 "Table 5.48" provides the specification 
+\ref T5d49 "Table 5.49" provides the specification 
 details for the \c bayes_calibration methods.
 
-\anchor T5d48
+\anchor T5d49
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.48
+Table 5.49
 \endhtmlonly
 Specification detail for the Bayesian calibration methods
 </caption>
@@ -6859,14 +6947,14 @@ In each of these cases, convergence order for a response quantity of
 interest (QOI) is estimated from
 \f[p = ln(\frac{QOI_3 - QOI_2}{QOI_2 - QOI_1})/ln(r)\f]
 where \f$r\f$ is the uniform refinement rate specified by \c 
-refinement_rate.  \ref T5d49 "Table 5.49" provides the specification 
+refinement_rate.  \ref T5d50 "Table 5.50" provides the specification 
 details for the \c richardson_extrap method.
 
-\anchor T5d49
+\anchor T5d50
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.49
+Table 5.50
 \endhtmlonly
 Specification detail for Richardson extrapolation method for solution verification
 </caption>
@@ -6959,13 +7047,13 @@ indices which indicate how important the uncertainty in each input
 variable is in contributing to the output variance.  More details 
 on variance based decomposition are given in \ref MethodNonDMC.
 Design of experiments specification detail is
-given in \ref T5d50 "Table 5.50".
+given in \ref T5d51 "Table 5.51".
 
-\anchor T5d50
+\anchor T5d51
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.50
+Table 5.51
 \endhtmlonly
 Specification detail for design of experiments methods
 </caption>
@@ -7091,7 +7179,7 @@ these sequences, see [\ref Halton1960 "Halton, 1960",
 \ref Kocis1997 "Kocis and Whiten, 1997"].
  
 The specification for specifying quasi-Monte Carlo (\c fsu_quasi_mc) 
-is given below in \ref T5d51 "Table 5.51".  
+is given below in \ref T5d52 "Table 5.52".  
 The user must specify if the sequence is 
 (\c halton) or (\c hammersley).  The user must also specify the number 
 of samples to generate for each variable (\c samples). 
@@ -7152,11 +7240,11 @@ distribution).  Complete explanation of these measures can be found in
 [\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 
 <!-- dakota subcat fsu_quasi_mc -->
-\anchor T5d51
+\anchor T5d52
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.51
+Table 5.52
 \endhtmlonly
 Specification detail for FSU Quasi-Monte Carlo sequences 
 </caption>
@@ -7289,14 +7377,14 @@ More details on the quality measures are given under the description of the
 QMC methods. 
 
 The specification detail for the FSU CVT method is given in 
-\ref T5d52 "Table 5.52".
+\ref T5d53 "Table 5.53".
 
 <!-- dakota subcat fsu_cvt -->
-\anchor T5d52
+\anchor T5d53
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.52
+Table 5.53
 \endhtmlonly
 Specification detail for FSU Centroidal Voronoi Tesselation sampling
 </caption>
@@ -7390,13 +7478,13 @@ partitions) applies to each variable being studied and must be odd
 also be adjusted at runtime as necessary.  For information on
 practical use of this method, see 
 [\ref Saltelli2004 "Saltelli, et al., 2004"].  The specification detail
-for the PSUADE MOAT method is given in \ref T5d53 "Table 5.53".
+for the PSUADE MOAT method is given in \ref T5d54 "Table 5.54".
 
-\anchor T5d53
+\anchor T5d54
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.53
+Table 5.54
 \endhtmlonly
 Specification detail for PSUADE methods
 </caption>
@@ -7490,14 +7578,14 @@ appropriate steps with any discrete range and discrete set variables.
 A \c num_steps specification must result in discrete range and set
 index steps that are integral: no remainder is currently permitted in
 the integer step calculation and no rounding to integer steps will
-occur.  The \c final_point specification detail is given in \ref T5d54
-"Table 5.54".
+occur.  The \c final_point specification detail is given in \ref T5d55
+"Table 5.55".
 
-\anchor T5d54
+\anchor T5d55
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.54
+Table 5.55
 \endhtmlonly
 final_point specification detail for the vector parameter study
 </caption>
@@ -7535,13 +7623,13 @@ state; real or integer), the steps are set index offsets, not steps
 between the actual set values.  This increment process is performed \c
 num_steps times, and since the initial values are included, the total
 number of simulations is again equal to \c num_steps+1. The \c
-step_vector specification detail is given in \ref T5d55 "Table 5.55".
+step_vector specification detail is given in \ref T5d56 "Table 5.56".
 
-\anchor T5d55
+\anchor T5d56
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.55
+Table 5.56
 \endhtmlonly
 step_vector specification detail for the vector parameter study
 </caption>
@@ -7590,13 +7678,13 @@ specification will not be used, they need not be specified. For
 discrete set types, the actual values should be specified, not the set
 indices, although the values will be validated for membership within
 the set value specifications.  The list parameter study specification
-detail is given in \ref T5d56 "Table 5.56".
+detail is given in \ref T5d57 "Table 5.57".
 
-\anchor T5d56
+\anchor T5d57
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.56
+Table 5.57
 \endhtmlonly
 Specification detail for the list parameter study
 </caption>
@@ -7638,14 +7726,14 @@ MethodPSVPS) in either actual values (continuous and discrete range)
 or index offsets (discrete set). The \c steps_per_variable
 specification provides the number of increments per variable (again,
 employed sequentially) in each of the plus and minus directions. The
-centered parameter study specification detail is given in \ref T5d57
-"Table 5.57".
+centered parameter study specification detail is given in \ref T5d58
+"Table 5.58".
 
-\anchor T5d57
+\anchor T5d58
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.57
+Table 5.58
 \endhtmlonly
 Specification detail for the centered parameter study
 </caption>
@@ -7697,13 +7785,13 @@ occurs, so the partitions specification must be carefully selected in
 the presence of these types.  Since the initial values from the
 variables specification will not be used, they need not be
 specified. The multidimensional parameter study specification detail
-is given in \ref T5d58 "Table 5.58".
+is given in \ref T5d59 "Table 5.59".
 
-\anchor T5d58
+\anchor T5d59
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.58
+Table 5.59
 \endhtmlonly
 Specification detail for the multidimensional parameter study
 </caption>
