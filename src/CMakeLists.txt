@@ -468,6 +468,12 @@ if(HAVE_ADAPTIVE_SAMPLING)
   endif()
 endif()
 
+option(HAVE_ESM "Whether to enable efficient subspace method" OFF)
+if(HAVE_ESM)
+  add_definitions("-DHAVE_ESM")
+  list(APPEND iterator_src EfficientSubspaceMethod.C)
+endif()
+
 CheckPackage(QUESO)
 if(HAVE_QUESO)
   list(APPEND iterator_src NonDQUESOBayesCalibration.C)

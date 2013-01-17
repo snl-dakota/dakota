@@ -387,7 +387,7 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
     }
     else if (method_name.ends("_evidence") || method_name.ends("_interval_est"))
       return EPISTEMIC_UNCERTAIN_VIEW;
-    else // stoch exp and reliability methods
+    else // stoch exp, reliability, and efficient subspace methods
       return ALEATORY_UNCERTAIN_VIEW;
   }
   else if (method_name == "richardson_extrap") return STATE_VIEW;

@@ -5053,6 +5053,7 @@ static Method_mp_lit
 	MP2(methodName,nlssol_sqp),
         MP2(methodName,nond_adaptive_sampling),
 	MP2(methodName,nond_bayes_calibration),
+	MP2(methodName,nond_efficient_subspace),
         MP2(methodName,nond_gpais),
 	MP2(methodName,nond_global_evidence),
         MP2(methodName,nond_global_interval_est),

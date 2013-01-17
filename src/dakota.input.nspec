@@ -649,7 +649,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    ]
 		  ]
 		[ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-                ) 
+                )
+              | 
+	      ( efficient_subspace ALIAS nond_efficient_subspace {N_mdm(lit,methodName_nond_efficient_subspace)}
+	        [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
+	        [ batch_size INTEGER {N_mdm(int,batchSize)} ]
+ 	        )
 	      |
 	      ( global_evidence ALIAS nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
 	        [ ( sbo {N_mdm(lit,nondOptAlgorithm_sbo)}

@@ -979,6 +979,27 @@ KEYWORD12 method
 	  [ seed INTEGER > 0 ]
 	  )
 	|
+	( efficient_subspace ALIAS nond_efficient_subspace
+	  [ emulator_samples INTEGER ]
+	  [ batch_size INTEGER ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  )
+	|
 	( global_evidence ALIAS nond_global_evidence
 	  [ sbo
 	    | ego
