@@ -1,0 +1,43 @@
+# Experimental input for efficient subspace method (ESM)
+# Uses test driver from Abdel-Khalik and Proctor (NCSU)
+
+strategy,
+	single_method
+
+method,
+	efficient_subspace					#0
+	  # controls on the initial build
+  	  max_iterations = 10					#0
+	  max_function_evaluations = 10000			#0
+	  # tolerance on the singular value ratio 
+	  # and reconstruction error
+	  convergence_tolerance = 1.0e-8			#0
+	  # initial samples
+	  samples = 5						#0
+	  # samples to add in each iteration
+	  batch_size = 2					#0
+	  # samples to perform in the reduced space
+	  emulator_samples = 20					#0
+	output verbose
+#	output debug
+#	sampling						#1
+#	  sample_type random					#1
+#	  samples 1000						#1
+#	  seed 18463						#1
+
+variables,
+	normal_uncertain = 100
+	  means		   100*0.0
+	  std_deviations   100*3.0
+
+interface,
+	system 
+	  parameters_file = 'params.in'
+	  results_file = 'results.out'
+#         asynchronous evaluation_concurrency = 5
+	  analysis_driver = '/projects/esm/driver.complex'
+
+responses,
+	num_response_functions = 1
+	analytic_gradients
+	no_hessians
