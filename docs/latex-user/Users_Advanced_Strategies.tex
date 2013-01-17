@@ -2,7 +2,7 @@
 
 \section{Overview}\label{strat:overview}
 
-DAKOTA's strategy capabilities were developed in order to provide a
+Dakota's strategy capabilities were developed in order to provide a
 control layer for managing multiple iterators and models. It was
 driven by the observed need for ``meta-optimization'' and other high
 level systems analysis procedures in real-world engineering design
@@ -42,7 +42,7 @@ The specification for hybrid minimization involves a list of
 method identifier strings, and each of the corresponding method
 specifications has the responsibility for identifying the model
 specification (which may in turn identify variables, interface, and
-responses specifications) that each method will use (see the DAKOTA
+responses specifications) that each method will use (see the Dakota
 Reference Manual~\cite{RefMan} and the example discussed below).
 Currently, only the sequential hybrid approach is available. The
 \texttt{embedded} and \texttt{collaborative} approaches are
@@ -50,7 +50,7 @@ not fully functional at this time.
 
 In the \texttt{sequential} hybrid minimization approach, a sequence
 of minimization methods is invoked in the order specified in the
-DAKOTA input file. After each method completes execution, 
+Dakota input file. After each method completes execution, 
 the best solution or solutions from that method are used as the
 starting point(s) for the following method. 
 The number of solutions transferred 
@@ -88,7 +88,7 @@ determined by convergence criteria (e.g.,
 %method switch, but rather repeatedly apply a local algorithm within
 %the context of the global algorithm.
 
-Figure~\ref{strat:figure01} shows a DAKOTA input file that specifies
+Figure~\ref{strat:figure01} shows a Dakota input file that specifies
 a sequential hybrid optimization strategy to solve the
 ``textbook'' optimization test problem. This input file is named
 \texttt{dakota\_hybrid.in} in the \texttt{Dakota/test} directory.
@@ -128,7 +128,7 @@ Hessian data to perform its search.
       \verbatimtabinput[8]{dakota_hybrid.in}
     \end{tiny}
   \end{bigbox}
-  \caption{DAKOTA input file for a hybrid optimization strategy.}
+  \caption{Dakota input file for a hybrid optimization strategy.}
   \label{strat:figure01}
 \end{figure}
 
@@ -143,7 +143,7 @@ space. However, there is no theoretical guarantee that the global
 optimum will be found. This approach combines the efficiency of local
 minimization methods with a user-specified global stratification
 (using a specified \texttt{starting\_points} list, a number of
-specified \texttt{random\_starts}, or both; see the DAKOTA Reference
+specified \texttt{random\_starts}, or both; see the Dakota Reference
 Manual~\cite{RefMan} for additional specification details). Since
 solutions for different starting points are independent, parallel
 computing may be used to concurrently run the local minimizations.
@@ -164,7 +164,7 @@ a single optimization run.
       \verbatimtabinput[8]{dakota_multistart.in}
     \end{small}
   \end{bigbox}
-  \caption{DAKOTA input file for a multistart local optimization strategy.}
+  \caption{Dakota input file for a multistart local optimization strategy.}
   \label{strat:figure02}
 \end{figure}
 
@@ -197,7 +197,7 @@ optimizations finds the global minimum.
 \end{verbatim}
 \end{footnotesize}
 \end{bigbox}
-\caption{DAKOTA results summary for a multistart local optimization strategy.}
+\caption{Dakota results summary for a multistart local optimization strategy.}
 \label{strat:figure03}
 \end{figure}
 
@@ -209,12 +209,12 @@ Section~\ref{opt:additional:multiobjective}. In the Pareto
 optimization strategy, multiple sets of multiobjective weightings are
 evaluated. The user can specify these weighting sets in the strategy
 keyword block using a \texttt{multi\_objective\_weight\_sets} list, a
-number of \texttt{random\_weight\_sets}, or both (see the DAKOTA
+number of \texttt{random\_weight\_sets}, or both (see the Dakota
 Reference Manual~\cite{RefMan} for additional specification details).
 Figure~\ref{strat:figure04} shows the input commands from the file
 \texttt{dakota\_pareto.in} in the \texttt{Dakota/test} directory.
 
-DAKOTA performs one multiobjective optimization problem for each set
+Dakota performs one multiobjective optimization problem for each set
 of multiobjective weights. The collection of computed optimal
 solutions form a Pareto set, which can be useful in making trade-off
 decisions in engineering design. Since solutions for different
@@ -244,7 +244,7 @@ competing objectives.
       \verbatimtabinput[8]{dakota_pareto.in}
     \end{small}
   \end{bigbox}
-  \caption{DAKOTA input file for the Pareto optimization strategy.}
+  \caption{Dakota input file for the Pareto optimization strategy.}
   \label{strat:figure04}
 \end{figure}
 
@@ -262,14 +262,14 @@ competing objectives.
 \end{verbatim}
 \end{scriptsize}
 \end{bigbox}
-\caption{DAKOTA results summary for the Pareto-set optimization
+\caption{Dakota results summary for the Pareto-set optimization
   strategy.}
 \label{strat:figure05}
 \end{figure}
 
 %\section{Mixed Integer Nonlinear Programming (MINLP)}\label{strat:minlp}
 
-%\emph{For DAKOTA 5.2, branch and bound is currently inoperative due to 
+%\emph{For Dakota 5.2, branch and bound is currently inoperative due to 
 %ongoing restructuring of PICO and its incorporation into COLINY.
 %This will be supported again in future releases.}
 
@@ -300,13 +300,13 @@ competing objectives.
 %of this process, an optimal solution that is feasible with respect to
 %the integrality conditions is computed.
 
-%DAKOTA's branch and bound strategy (keyword:
+%Dakota's branch and bound strategy (keyword:
 %\texttt{branch\_and\_bound}) can solve optimization problems having
 %either discrete or mixed continuous/discrete variables. This strategy
 %uses the parallel branch-and-bound algorithm from the PICO software
 %package~\cite{Eck97,Eck01} to generate a series of optimization
 %subproblems (``branches''). These subproblems are solved as continuous
-%variable problems using any of DAKOTA's nonlinear optimization
+%variable problems using any of Dakota's nonlinear optimization
 %algorithms (e.g., DOT, NPSOL). When a solution to a branch is feasible
 %with respect to the integrality constraints, it provides an upper
 %bound on the optimal objective function, which can be used to prune
@@ -316,7 +316,7 @@ competing objectives.
 %optimization subproblems.
 
 %PICO, by itself, targets the solution of mixed integer linear
-%programming (MILP) problems, and through coupling with DAKOTA's
+%programming (MILP) problems, and through coupling with Dakota's
 %nonlinear optimizers, is extended to solution of MINLP problems. In
 %the case of MILP problems, the upper bound obtained with a feasible
 %solution is an exact bound and the branch and bound process is
@@ -358,7 +358,7 @@ competing objectives.
 %Section~\ref{additional:textbook}. In addition to the introduction of
 %two integer variables, a modified value of $1.4$ is used inside the
 %quartic sum to render the continuous solution a non-integral solution.
-%Figure~\ref{strat:figure06} shows a DAKOTA input file for solving this
+%Figure~\ref{strat:figure06} shows a Dakota input file for solving this
 %problem. This input file is named \texttt{dakota\_bandb.in} in the
 %\texttt{Dakota/test} directory. Note the specification for the
 %discrete variables, where lower and upper bounds are given. The
@@ -371,7 +371,7 @@ competing objectives.
 %      \verbatimtabinput[8]{dakota_bandb.in}
 %    \end{small}
 %  \end{bigbox}
-%  \caption{DAKOTA input file for the branch-and-bound strategy for
+%  \caption{Dakota input file for the branch-and-bound strategy for
 %    solving MINLP optimization problems.}
 %  \label{strat:figure06}
 %\end{figure}
@@ -411,10 +411,10 @@ competing objectives.
 %\in \{0.0,0.5,1.0,1.5,2.0\}$.  The branch-and-bound algorithm is
 %restricted to work with integer values. Therefore, it is up to the
 %user to perform a transformation between the discrete integer values
-%from DAKOTA and the discrete real values that are passed to the
+%from Dakota and the discrete real values that are passed to the
 %simulation code (see Section~\ref{variables:design:ddv}).  When
 %integrality is not being relaxed, a common mapping is to use the
-%integer value from DAKOTA as the index into a vector of discrete real
+%integer value from Dakota as the index into a vector of discrete real
 %values.  However, when integrality is relaxed, additional logic for
 %interpolating between the discrete real values is needed.
 % Note: it should be straightforward to extend MINLP to support

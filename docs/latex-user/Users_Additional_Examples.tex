@@ -1,6 +1,6 @@
 \chapter{Additional Examples}\label{additional}
 
-This chapter contains additional examples of DAKOTA methods and
+This chapter contains additional examples of Dakota methods and
 verification test problems. While the test problems and binary
 analysis drivers are principally managed in {\tt Dakota/test}, many
 extracted input files are also included in {\tt Dakota/examples/methods} 
@@ -106,7 +106,7 @@ increase in the optimal objective function is observed.
 
 This example demonstrates the use of a gradient-based optimization
 algorithm on a nonlinearly constrained problem. The 
-DAKOTA input file for this example problem is
+Dakota input file for this example problem is
 shown in Figure~\ref{additional:textbook_grad_constr}. This
 input file is similar to the input file for the unconstrained
 gradient-based optimization example problem involving the Rosenbrock
@@ -115,7 +115,7 @@ Note the addition of commands in the responses block of
 the input file that identify the number and type of constraints, along
 with the upper bounds on these constraints. The commands
 \texttt{direct} and \texttt{analysis\_driver = 'text\_book'} specify
-that DAKOTA will use its internal version of the textbook problem.
+that Dakota will use its internal version of the textbook problem.
 
 \begin{figure}[ht!]
   \centering
@@ -125,7 +125,7 @@ that DAKOTA will use its internal version of the textbook problem.
     \end{small}
   \end{bigbox}
   \caption{Textbook gradient-based constrained optimization example:
-    the DAKOTA input file.}
+    the Dakota input file.}
   \label{additional:textbook_grad_constr}
 \end{figure}
 
@@ -137,14 +137,14 @@ The following command runs this example problem:
 \end{small}
 
 The \texttt{conmin\_mfd} keyword in Figure~\ref{additional:textbook_grad_constr} 
-tells DAKOTA to use the CONMIN package's implementation of the
+tells Dakota to use the CONMIN package's implementation of the
 Method of Feasible Directions (see Section~\ref{opt:software:conmin} 
 for more details). 
 % A significantly faster alternative is the DOT package's 
 % Modified Method of Feasible Directions, i.e. \texttt{dot\_mmfd} (see 
 % Section~\ref{opt:software:dot} for more details). However, DOT is 
 % licensed software that may not be available on a particular system. If it 
-% is installed on your system and DAKOTA has been compiled without the 
+% is installed on your system and Dakota has been compiled without the 
 % \texttt{--without-dot} flag, you may use it by commenting out the line with
 % \texttt{conmin\_mfd} and uncommenting the line with \texttt{dot\_mmfd}.
 
@@ -174,7 +174,7 @@ Figure~\ref{additional:textbook_grad_constr_graphics}(b).
   (b)
   \end{tabular}
   \caption{Textbook gradient-based constrained optimization example:
-    (a) screen capture of the DAKOTA graphics shows how the objective
+    (a) screen capture of the Dakota graphics shows how the objective
     function was reduced during the search for a feasible design point
     and (b) iteration history (iterations marked by solid dots).}
   \label{additional:textbook_grad_constr_graphics}
@@ -272,7 +272,7 @@ of the response distributions (events with low probability) than
 sampling based approaches since the number of samples required to
 resolve a low probability can be prohibitive.
 
-Figure~\ref{additional:textbook_mv} shows the DAKOTA input file for an
+Figure~\ref{additional:textbook_mv} shows the Dakota input file for an
 example problem that demonstrates the simplest reliability method,
 called the mean value method (also referred to as the Mean Value First
 Order Second Moment method). It is specified with method keyword
@@ -284,7 +284,7 @@ five runs were required for the textbook function), but can be quite
 inaccurate, especially for nonlinear problems and/or problems with
 uncertain inputs that are significantly non-normal. More detail on the
 mean value method can be found in the Local Reliability Methods
-section of the DAKOTA Theory Manual~\cite{TheoMan}, and more detail on
+section of the Dakota Theory Manual~\cite{TheoMan}, and more detail on
 reliability methods in general (including the more advanced methods)
 is found in Section~\ref{uq:reliability}.
 
@@ -296,14 +296,14 @@ The mean value results indicate that variable x1 is more
 important in constraint 1 while x2 is more important in constraint 2, 
 which is the case based on Equation~\ref{additional:textbook_f}.
 
-This DAKOTA input file is executed using the following command:
+This Dakota input file is executed using the following command:
 \begin{small}
 \begin{verbatim}
          dakota dakota_mv.in > mv.out
 \end{verbatim}
 \end{small}
 See the file \texttt{mv.out.sav} in \texttt{Dakota/examples/tutorial} 
-for comparison with results from DAKOTA. 
+for comparison with results from Dakota. 
 
 \begin{figure}[ht!]
   \centering
@@ -312,7 +312,7 @@ for comparison with results from DAKOTA.
       \verbatimtabinput[8]{dakota_mv.in}
     \end{small}
   \end{bigbox}
-  \caption{Mean Value Reliability Method: the DAKOTA input file.}
+  \caption{Mean Value Reliability Method: the Dakota input file.}
   \label{additional:textbook_mv}
 \end{figure}
 
@@ -365,7 +365,7 @@ Second, \cite{Sch87} formulates a ``generalized Rosenbrock'' as:
 f = \sum_{i=1}^{n-1} \left[ 100 (x_{i+1}-x_i^2)^2+(1-x_i)^2 \right]
 \label{additional:rosengen}
 \end{equation}
-These formulations are not currently supported in DAKOTA's
+These formulations are not currently supported in Dakota's
 system/fork interfaces, but are supported in the direct interface.
 
 %\begin{equation}
@@ -400,7 +400,7 @@ formulations are equivalent and have identical solutions.
 
 \subsubsection{Vector Parameter Study}\label{additional:rosenbrock:examples:vector}
 
-In addition to the multidimensional parameter study, DAKOTA can
+In addition to the multidimensional parameter study, Dakota can
 perform a vector parameter study, i.e., a parameter study between any
 two design points in an \emph{n}-dimensional parameter space.
 
@@ -423,7 +423,7 @@ taken between the initial and final points in the parameter study.
       \verbatimtabinput[8]{dakota_rosenbrock_vector.in}
     \end{small}
   \end{bigbox}
-  \caption{Rosenbrock vector parameter study example: the DAKOTA input
+  \caption{Rosenbrock vector parameter study example: the Dakota input
   file.}
   \label{additional:rosenbrock_vector}
 \end{figure}
@@ -436,7 +436,7 @@ The vector parameter study example problem is executed using the command
 \end{small}
 
 Figure~\ref{additional:rosenbrock_vector_graphics}(a) shows the
-graphics output created by DAKOTA. For this study, the simple DAKOTA
+graphics output created by Dakota. For this study, the simple Dakota
 graphics are more useful for visualizing the
 results. Figure~\ref{additional:rosenbrock_vector_graphics}(b)
 shows the locations of the 11 sample points generated in this study.
@@ -445,7 +445,7 @@ within the banana-shaped valley, marches up the side of the hill, and
 then returns to the valley. The output file \texttt{vector.out.sav} is
 provided in the \texttt{Dakota/examples/tutorial} directory.
 
-In addition to the vector and multidimensional examples shown, DAKOTA
+In addition to the vector and multidimensional examples shown, Dakota
 also supports list and centered parameter study methods. Refer to
 Chapter~\ref{ps} for additional information.
 
@@ -459,7 +459,7 @@ Chapter~\ref{ps} for additional information.
   (b)
   \end{tabular}
   \caption{Rosenbrock vector parameter study example: (a) screen
-    capture of the DAKOTA graphics and (b) location of the design
+    capture of the Dakota graphics and (b) location of the design
     points (dots) evaluated.}
   \label{additional:rosenbrock_vector_graphics}
 \end{figure}
@@ -487,7 +487,7 @@ minimization, as well as a discussion on the types of
 engineering design problems (e.g., parameter estimation) that can make
 use of the least-squares approach.
 
-Figure~\ref{additional:rosenbrock_nls} is a listing of the DAKOTA input
+Figure~\ref{additional:rosenbrock_nls} is a listing of the Dakota input
 file \texttt{dakota\_rosenbrock\_ls.in}. This differs from the input
 file shown in Figure~\ref{tutorial:rosenbrock_grad} in several key
 areas. The responses block of the input file uses the keyword
@@ -508,7 +508,7 @@ squares minimization problems).
       \verbatimtabinput[8]{dakota_rosenbrock_ls.in}
     \end{small}
   \end{bigbox}
-  \caption{Rosenbrock nonlinear least squares example: the DAKOTA input file.}
+  \caption{Rosenbrock nonlinear least squares example: the Dakota input file.}
   \label{additional:rosenbrock_nls}
 \end{figure}
 
@@ -583,11 +583,11 @@ Dakota/examples/methods/dakota\_addtnl\_rosen\_ls.in}:
 
 \subsubsection{Nongradient-based Optimization via Pattern Search}\label{additional:rosenbrock:examples:nongradient1}
 
-In addition to gradient-based optimization algorithms, DAKOTA also
+In addition to gradient-based optimization algorithms, Dakota also
 contains a variety of nongradient-based algorithms. One particular
 nongradient-based algorithm for local optimization is known as pattern
 search (see Chapter~\ref{introduction} for a discussion of local
-versus global optimization). The DAKOTA input file shown in
+versus global optimization). The Dakota input file shown in
 Figure~\ref{additional:rosenbrock_patternsearch} applies a pattern
 search method to minimize the Rosenbrock function. While this
 provides for an interesting comparison to the previous example
@@ -604,17 +604,17 @@ optimization community. For most users who wish to use
 nongradient-based algorithms on constrained optimization problems, the
 easiest route is to create a penalty function, i.e., a composite
 function that contains the objective function and the constraints,
-external to DAKOTA and then optimize on this penalty function. Most
+external to Dakota and then optimize on this penalty function. Most
 optimization textbooks will provide guidance on selecting and using
 penalty functions.
 
-The DAKOTA input file shown in
+The Dakota input file shown in
 Figure~\ref{additional:rosenbrock_patternsearch} is similar to the
 input file for the gradient-based optimization, except it has a
 different set of keywords in the method block of the input file, and
 the gradient specification in the responses block has been changed
 to \texttt{no\_gradients}. The pattern search optimization algorithm
-used is part of the SCOLIB library~\cite{Har06}. See the DAKOTA
+used is part of the SCOLIB library~\cite{Har06}. See the Dakota
 Reference Manual~\cite{RefMan} for more information on the
 \emph{methods} block commands that can be used with SCOLIB
 algorithms.
@@ -626,11 +626,11 @@ algorithms.
       \verbatimtabinput[8]{dakota_rosenbrock_ps_opt.in}
     \end{small}
   \end{bigbox}
-  \caption{Rosenbrock pattern search optimization example: the DAKOTA input file.}
+  \caption{Rosenbrock pattern search optimization example: the Dakota input file.}
   \label{additional:rosenbrock_patternsearch}
 \end{figure}
 
-This DAKOTA input file is executed using the following command:
+This Dakota input file is executed using the following command:
 \begin{small}
 \begin{verbatim}
     dakota dakota_rosenbrock_ps_opt.in > ps_opt.out
@@ -669,7 +669,7 @@ $(x_1,x_2) = (1.0,1.0)$.
   (b) & (c)
   \end{tabular}
   \caption{Rosenbrock pattern search optimization example: (a) screen
-    capture of the DAKOTA graphics, (b) sequence of design points
+    capture of the Dakota graphics, (b) sequence of design points
     (dots) evaluated and (c) close-up view illustrating the shape of
     the coordinate pattern used. }
   \label{additional:rosenbrock_patternsearch_graphics}
@@ -714,11 +714,11 @@ design points) that minimizes the objective function of the
 optimization problem. An extensive discussion of EAs is beyond the
 scope of this text, but may be found in a variety of sources (cf.,
 ~\cite{Haf92} pp. 149-158;~\cite{Gol89}). Currently, the EAs available
-in DAKOTA include a genetic algorithm for problems involving discrete
+in Dakota include a genetic algorithm for problems involving discrete
 variables and an evolution strategy with self-adaptation for problems
 with continuous variables. Details of these algorithms are given in
-the DAKOTA Reference Manual~\cite{RefMan}. The SCOLIB library, which
-provides the EA software that has been linked into DAKOTA, is
+the Dakota Reference Manual~\cite{RefMan}. The SCOLIB library, which
+provides the EA software that has been linked into Dakota, is
 described in~\cite{Har06}.
 
 \begin{figure}[ht!]
@@ -729,11 +729,11 @@ described in~\cite{Har06}.
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock evolutionary algorithm optimization example: the
-  DAKOTA input file.}
+  Dakota input file.}
   \label{additional:rosenbrock_ea}
 \end{figure}
 
-Figure~\ref{additional:rosenbrock_ea} shows a DAKOTA input file that
+Figure~\ref{additional:rosenbrock_ea} shows a Dakota input file that
 uses an EA to minimize the Rosenbrock function. For this
 example the EA has a population size of 50. At the start of the first
 generation, a random number generator is used to select 50 design
@@ -747,12 +747,12 @@ of the breeding process is a population comprised of the 10 best
 ``parent'' design points (elitist strategy) plus 40 new ``child''
 design points. The EA optimization process will be terminated after
 either 100 iterations (generations of the EA) or 2,000 function
-evaluations. The EA software available in DAKOTA provides the user
+evaluations. The EA software available in Dakota provides the user
 with much flexibility in choosing the settings used in the
 optimization process. See~\cite{RefMan} and~\cite{Har06} for details on these
 settings.
 
-The following command runs DAKOTA on the input file:
+The following command runs Dakota on the input file:
 \begin{small}
 \begin{verbatim}
     dakota dakota_rosenbrock_ea_opt.in > ea_opt.out
@@ -825,12 +825,12 @@ Exponential convergence of the error with increasing polynomial order can
 be obtained by using (an) orthogonal polynomial series whose weighting 
 function(s) is/are the probability density functions of the stochastic 
 inputs. Coefficients in the Chaos expansion are determined through
-orthogonal projection. For non-intrusive implementations, such as in DAKOTA,
+orthogonal projection. For non-intrusive implementations, such as in Dakota,
 numerical integration via quadrature or cubature is used to evaluate the 
 orthogonal projections. Additional details regarding the method are 
 provided in Section~\ref{uq:expansion}.
 
-A typical DAKOTA input file for performing an uncertainty
+A typical Dakota input file for performing an uncertainty
 quantification using polynomial chaos expansions is shown in
 Figure~\ref{additional:pce}, \texttt{dakota\_pce.in}.
 In this example, we compute CDF
@@ -850,7 +850,7 @@ $x_1$ and third-order quadrature in $x_2$), resulting in a total of
       \verbatimtabinput[8]{dakota_pce.in}
     \end{small}
   \end{bigbox}
-\caption{DAKOTA input file for performing UQ using polynomial chaos expansions.}
+\caption{Dakota input file for performing UQ using polynomial chaos expansions.}
 \label{additional:pce}
 \end{figure}
 
@@ -1002,13 +1002,13 @@ evaluations = 45 for \texttt{optpp\_q\_newton} and 29 for
 the Hessian approximation becomes accurate, convergence is much more
 rapid with the Gauss-Newton approach.
 
-Shown below is the complete DAKOTA output for the
+Shown below is the complete Dakota output for the
 \texttt{optpp\_g\_newton} method starting from\\
 \texttt{cdv\_initial\_point = 0.8, 0.7}:
 \begin{small}
 \begin{verbatim}
 Running MPI executable in serial mode.
-DAKOTA version 5.0+ developmental release.
+Dakota version 5.0+ developmental release.
 Subversion revision 172 built Dec  8 2010 17:35:13.
 Constructing Single Method Strategy...
 Writing new restart file dakota.rst
@@ -1106,7 +1106,7 @@ Confidence Interval for x2 is [  9.9997372187e-01,  1.0000224436e+00 ]
 
 <<<<< Iterator optpp_g_newton completed.
 <<<<< Single Method Strategy completed.
-DAKOTA execution time in seconds:
+Dakota execution time in seconds:
   Total CPU        =       0.01 [parent =   0.017997, child =  -0.007997]
   Total wall clock =  0.0672231
 \end{verbatim}
@@ -1165,12 +1165,12 @@ w_{shu}\left(x_k\right)=\sum_{i=1}^5 i\cos((i+1)x_k+i)
 The 2D version of the \texttt{shubert} function is shown in 
 Figure~\ref{fig:2D_shubert}. 
 
-The DAKOTA input file \texttt{dakota\_separable\_ego\_5D.in} shows how
+The Dakota input file \texttt{dakota\_separable\_ego\_5D.in} shows how
 to use efficient global optimization (ego) to minimize the 5D version
 of any of these 3 separable functions. Note that in the variables
 section the \texttt{5*} preceding the values -2.0 and 2.0 for the
 \texttt{lower\_bounds} and \texttt{upper\_bounds}, respectively, tells
-DAKOTA to repeat them 5 times. The ``interesting'' region for each 
+Dakota to repeat them 5 times. The ``interesting'' region for each 
 of these functions is $-2\le x_k \le 2$ for all dimensions.
 \begin{center}
   \begin{small}
@@ -1288,7 +1288,7 @@ which corresponds to the following optimal response quantities:
     \mathrm{max\_stress}     &=& 1500
 \end{eqnarray*}
 
-The final report from the DAKOTA output is as follows:
+The final report from the Dakota output is as follows:
 \begin{small}
 \begin{verbatim}
     <<<<< Iterator npsol_sqp completed.					 
@@ -1304,7 +1304,7 @@ The final report from the DAKOTA output is as follows:
                           0.0000000000e+00
     <<<<< Best data captured at function evaluation 51
     <<<<< Single Method Strategy completed.
-    DAKOTA execution time in seconds:					 
+    Dakota execution time in seconds:					 
       Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
       Total wall clock =   0.232134
 \end{verbatim}
@@ -1440,7 +1440,7 @@ The input file for this test problem is named
 problem is $(H,D)=(4.99,4.03)$, with a minimum area of 98.43
 $\mathtt{in}^2$ .
 
-The final report from the DAKOTA output is as follows:
+The final report from the Dakota output is as follows:
 \begin{small}
 \begin{verbatim}
     <<<<< Iterator npsol_sqp completed.
@@ -1454,7 +1454,7 @@ The final report from the DAKOTA output is as follows:
                          -9.6301439045e-12
     <<<<< Best data captured at function evaluation 36
     <<<<< Single Method Strategy completed.
-    DAKOTA execution time in seconds:
+    Dakota execution time in seconds:
       Total CPU        =      0.18 [parent =      0.18, child =         0]
       Total wall clock =  0.809126
 \end{verbatim}
@@ -1498,7 +1498,7 @@ Hypercube reference solution of $10^6$ samples.
 
 This test problem is used extensively in~\cite{Hal00}. It involves a
 W16x31 steel block of A36 steel that must carry an applied
-deterministic bending moment of 1140 kip-in. For DAKOTA, it has been
+deterministic bending moment of 1140 kip-in. For Dakota, it has been
 used as a verification test for second-order integrations in
 reliability methods. The limit state function is defined as:
 \begin{equation}
@@ -1511,8 +1511,8 @@ The \texttt{Dakota/test/dakota\_steel\_section.in} input file computes
 a first-order CDF probability of $p(g \leq 0.)$ = 1.297e-07 and a
 second-order CDF probability of $p(g \leq 0.)$ = 1.375e-07. This
 second-order result differs from that reported in~\cite{Hal00}, since
-DAKOTA uses the Nataf nonlinear transformation to u-space (see MPP
-Search Methods block in Reliability Methods chapter of DAKOTA Theory
+Dakota uses the Nataf nonlinear transformation to u-space (see MPP
+Search Methods block in Reliability Methods chapter of Dakota Theory
 Manual~\cite{TheoMan}) and \cite{Hal00} uses a linearized
 transformation.
 
@@ -1662,7 +1662,7 @@ shown below \\
 \end{center}
 
 The deterministic solution is $(w,t)=(2.35,3.33)$ with an objective
-function of $7.82$. The final report from the DAKOTA output is as
+function of $7.82$. The final report from the Dakota output is as
 follows:
 \begin{small}
 \begin{verbatim}
@@ -1682,7 +1682,7 @@ follows:
                          -3.7083558446e-11
     <<<<< Best data captured at function evaluation 31
     <<<<< Single Method Strategy completed.
-    DAKOTA execution time in seconds:
+    Dakota execution time in seconds:
       Total CPU        =       0.03 [parent =   0.027995, child =   0.002005]
       Total wall clock =   0.281375
 \end{verbatim}
@@ -1747,7 +1747,7 @@ beam weight is approximately [1,100].
       \verbatimtabinput[8]{dakota_uq_interval.in}
     \end{small}
   \end{bigbox}
-\caption{DAKOTA input file for performing UQ using interval analysis.}
+\caption{Dakota input file for performing UQ using interval analysis.}
 \label{additional:interval}
 \end{figure}
 
@@ -1836,7 +1836,7 @@ weights to the individual objectives, summing the weighted
 objectives, and turning the problem into a single-objective one
 which can be solved with a variety of optimization techniques. While
 this approach provides a useful ``first cut'' analysis (and is
-supported within DAKOTA---see Section~\ref{opt:additional}), this
+supported within Dakota---see Section~\ref{opt:additional}), this
 approach has many limitations. The major limitation is that a
 local solver with a weighted sum objective will only find one
 % optimal solutions if the true Pareto front is nonconvex. %Hogwash!
@@ -1848,14 +1848,14 @@ optimizations must be performed to get a good parametric
 understanding of the influence of the weights and to achieve a good
 sampling of the entire Pareto frontier.
 
-Starting with version 3.2 of DAKOTA, a capability to perform
+Starting with version 3.2 of Dakota, a capability to perform
 multi-objective optimization based on a genetic algorithm method has
 been available. This method is called \texttt{moga}. It is based on
 the idea that as the population evolves in a GA, solutions that are
 non-dominated are chosen to remain in the population. Until version
-4.0 of DAKOTA, there was a selection\_type choice of domination\_count
+4.0 of Dakota, there was a selection\_type choice of domination\_count
 that performed a custom fitness assessment and selection operation
-together. As of version 4.0 of DAKOTA, that functionality has been
+together. As of version 4.0 of Dakota, that functionality has been
 broken into separate, more generally usable fitness assessment and
 selection operators called the domination\_count fitness assessor and
 below\_limit selector respectively. The effect of using these two
@@ -1881,7 +1881,7 @@ makes all the selections it would make anyway and if that is not
 enough, it relaxes its limit and makes selections from the remaining
 designs. It continues to do this until it has made enough selections.
 The moga method has many other important features. Complete
-descriptions can be found in the DAKOTA Reference Manual~\cite{RefMan}.
+descriptions can be found in the Dakota Reference Manual~\cite{RefMan}.
 
 
 There are three examples %in the test directory ({\tt
@@ -1890,7 +1890,7 @@ that are taken from a multiobjective %there are no examples in test dir. they ar
 evolutionary algorithm (MOEA) test suite described by Van Veldhuizen
 et. al. in~\cite{Coe02}. These three examples 
 illustrate the different forms that the Pareto set may take. For each
-problem, we describe the DAKOTA input and show a graph of the Pareto
+problem, we describe the Dakota input and show a graph of the Pareto
 front. These problems are all solved with the \texttt{moga} method.
 In Van Veldhuizen's notation, the set of all Pareto optimal design
 configurations (design variable values only) is denoted $\mathtt{P^*}$
@@ -1934,7 +1934,7 @@ the moga method.
     \end{small}
   \end{bigbox}
   \caption{Multiple objective genetic algorithm (MOGA) example: the
-    DAKOTA input file.}
+    Dakota input file.}
   \label{additional:moga1inp}
 \end{figure}
 
@@ -1997,7 +1997,7 @@ the front in this example.
       \verbatimtabinput[8]{dakota_mogatest2.in}
     \end{small}
   \end{bigbox}
-  \caption{DAKOTA input file specifying the use of MOGA on mogatest2}
+  \caption{Dakota input file specifying the use of MOGA on mogatest2}
   \label{additional:moga2inp}
 \end{figure}
 
@@ -2050,7 +2050,7 @@ shown in Figure~\ref{additional:moga3front}.
       \verbatimtabinput[8]{dakota_mogatest3.in}
     \end{small}
   \end{bigbox}
-  \caption{DAKOTA input file specifying the use of MOGA on mogatest3}
+  \caption{Dakota input file specifying the use of MOGA on mogatest3}
   \label{additional:moga3inp}
 \end{figure}
 
@@ -2106,7 +2106,7 @@ in~\cite{Sal04}) for this test problem:
 
 The dakota test input {\tt Dakota/test/dakota\_psuade.in} exercises
 the MOAT algorithm described in Section~\ref{dace:psuade} on the
-Morris problem. The DAKOTA output obtained is shown in
+Morris problem. The Dakota output obtained is shown in
 Figures~\ref{FIG:moat:out_preamble} and~\ref{FIG:moat:out_results}.
 \begin{figure}[ht!]
 \centering
@@ -2114,7 +2114,7 @@ Figures~\ref{FIG:moat:out_preamble} and~\ref{FIG:moat:out_results}.
 \begin{small}
 \begin{verbatim}
 Running MPI executable in serial mode.
-DAKOTA version 5.0+ developmental release.
+Dakota version 5.0+ developmental release.
 Subversion revision 172 built Dec  8 2010 17:35:13.
 Constructing Single Method Strategy...
 Writing new restart file dakota.rst
@@ -2131,8 +2131,8 @@ PSUADE DACE method = psuade_moat Samples = 84 Seed (user-specified) = 500
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption[DAKOTA initialization output for PSUADE
-MOAT.]{\label{FIG:moat:out_preamble} DAKOTA initialization output for
+\caption[Dakota initialization output for PSUADE
+MOAT.]{\label{FIG:moat:out_preamble} Dakota initialization output for
 the PSUADE MOAT method on the Morris test problem showing the study
 parameters.}
 \end{figure}
@@ -2170,8 +2170,8 @@ Input  20 (mod. mean & std) =   5.8234e+00   7.2403e+00
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption[DAKOTA analysis output for PSUADE
-MOAT.]{\label{FIG:moat:out_results} DAKOTA analysis output for the
+\caption[Dakota analysis output for PSUADE
+MOAT.]{\label{FIG:moat:out_results} Dakota analysis output for the
 PSUADE MOAT method on the Morris problem showing the modified
 mean and standard deviation of the elementary effect corresponding to
 each input factor.}

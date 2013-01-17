@@ -2,7 +2,7 @@
 
 \section{Overview}\label{interfaces:overview}
 
-The \texttt{interface} specification in a DAKOTA input file controls
+The \texttt{interface} specification in a Dakota input file controls
 details of function evaluations. The mechanisms currently
 in place for function evaluations involve interfacing with
 one or more computational simulation codes, computing algebraic
@@ -11,7 +11,7 @@ mappings, or a combination of the two.
 %In the case of use of an approximation in place of an expensive
 %simulation code, an \texttt{approximation} interface can be selected
 %to make use of surrogate modeling capabilities available within
-%DAKOTA.  Surrogate models are discussed further in Chapter~\ref{models}.
+%Dakota.  Surrogate models are discussed further in Chapter~\ref{models}.
 
 This chapter will describe algebraic mappings in
 Section~\ref{interfaces:algebraic}, followed by discussion of a
@@ -21,7 +21,7 @@ simulation interface components, covers issues relating to file
 management and presents a number of example data mappings.
 
 For a detailed description of interface specification syntax, refer to
-the interface commands chapter in the DAKOTA Reference Manual~\cite{RefMan}.
+the interface commands chapter in the Dakota Reference Manual~\cite{RefMan}.
 
 \section{Algebraic Mappings}\label{interfaces:algebraic}
 
@@ -29,10 +29,10 @@ If desired, one can define algebraic input-output mappings using the
 AMPL code~\cite{Fou03} and save these mappings in 3 files:
 \texttt{stub.nl}, \texttt{stub.col}, and \texttt{stub.row}, where
 \texttt{stub} is a particular root name describing a particular
-problem.  These files names can be communicated to DAKOTA using the
+problem.  These files names can be communicated to Dakota using the
 \texttt{algebraic\_mappings} input.
 
-DAKOTA will use \texttt{stub.col} and \texttt{stub.row} to obtain
+Dakota will use \texttt{stub.col} and \texttt{stub.row} to obtain
 input and output identifier strings, respectively, and will use the
 AMPL solver library~\cite{Gay97} to evaluate expressions conveyed
 in \texttt{stub.nl}, and, if needed, their first and second
@@ -83,9 +83,9 @@ strings:
 
 The variable and objective function names declared within AMPL should
 be a subset of the variable descriptors and response descriptors used
-by DAKOTA (see the DAKOTA Reference Manual~\cite{RefMan} for information
-on DAKOTA variable and response descriptors).  Ordering of the inputs
-and outputs within the AMPL declaration is not important, as DAKOTA
+by Dakota (see the Dakota Reference Manual~\cite{RefMan} for information
+on Dakota variable and response descriptors).  Ordering of the inputs
+and outputs within the AMPL declaration is not important, as Dakota
 will reorder data as needed.  The following listing shows an excerpt
 from \texttt{Dakota/test/dakota\_ampl.in}, which demonstrates a
 combined algebraic/simulation-based mapping in which algebraic
@@ -123,7 +123,7 @@ responses,
 \end{bigbox}
 \end{center}
 Note that the algebraic inputs and outputs are a subset of the total
-inputs and outputs and that DAKOTA will track the algebraic
+inputs and outputs and that Dakota will track the algebraic
 contributions to the total response set using the order of the
 descriptor strings.  In the case where both the algebraic and
 simulation-based components contribute to the same function, they are
@@ -140,20 +140,20 @@ following AMPL model file could be used
 \end{bigbox}
 \end{center}
 Note that the nonlinear constraints should not currently be declared
-as constraints within AMPL.  Since the DAKOTA variable bounds and
+as constraints within AMPL.  Since the Dakota variable bounds and
 constraint bounds/targets currently take precedence over any AMPL
 specification, the current approach is to declare all AMPL outputs as
 objective functions and then map them into the appropriate response
 function type (objectives, least squares terms, nonlinear
 inequality/equality constraints, or generic response functions) within
-the DAKOTA input specification.
+the Dakota input specification.
 
 \section{Simulation Interfaces}\label{interfaces:sim}
 
 The invocation of a simulation code is performed using either system
 calls, forks, or direct function invocations. In the system call and
 fork cases, a separate process is created for the simulation and
-communication between DAKOTA and the simulation occurs through
+communication between Dakota and the simulation occurs through
 parameter and response files. For system call and fork interfaces,
 the interface section must specify the details of this data
 transfer.  In the direct function case, a separate process is not
@@ -165,7 +165,7 @@ interfacing approaches.
 \subsection{The Direct Function Simulation Interface}\label{interfaces:direct}
 
 The direct function interface may be used to invoke
-simulations that are linked into the DAKOTA executable. This
+simulations that are linked into the Dakota executable. This
 interface eliminates overhead from process creation and file I/O and
 can simplify operations on massively parallel computers. These
 advantages are balanced with the practicality of converting an
@@ -178,8 +178,8 @@ interface to Sandia's SIERRA multiphysics framework is under
 development. In the latter case, the additional effort is particularly
 justified since SIERRA unifies an entire suite of physics codes.
 [\emph{Note: the ``sandwich implementation'' of combining a direct
-interface plug-in with DAKOTA's library mode is discussed in the
-DAKOTA Developers Manual~\cite{DevMan}}].
+interface plug-in with Dakota's library mode is discussed in the
+Dakota Developers Manual~\cite{DevMan}}].
 
 In addition to direct linking with simulation codes, the direct
 interface also provides access to internal polynomial test functions
@@ -219,7 +219,7 @@ Section~\ref{advint:direct}.
 call approach invokes a simulation code or simulation driver by using
 the \texttt{system} function from the standard C
 library~\cite{Ker88}. In this approach, the system call creates a new
-process that communicates with DAKOTA through parameter and response
+process that communicates with Dakota through parameter and response
 files.  The system call approach allows the simulation to be initiated
 via its standard invocation procedure (as a ``black box'') and then
 coordinated with a variety of tools for pre- and post-processing.
@@ -247,14 +247,14 @@ Section~\ref{parallel:SLP:local:system}.
 
 The fork simulation interface uses the \texttt{fork}, \texttt{exec},
 and \texttt{wait} families of functions to manage simulation codes or
-simulation drivers. (In a native MS Windows version of DAKOTA, similar
+simulation drivers. (In a native MS Windows version of Dakota, similar
 Win32 functions, such as \texttt{\_spawnvp()}, are used instead.)
 Calls to \texttt{fork} or \texttt{vfork} create a
-copy of the DAKOTA process, \texttt{execvp} replaces this copy with
-the simulation code or driver process, and then DAKOTA uses the
+copy of the Dakota process, \texttt{execvp} replaces this copy with
+the simulation code or driver process, and then Dakota uses the
 \texttt{wait} or \texttt{waitpid} functions to wait for completion of
 the new process. Transfer of variables and response data between
-DAKOTA and the simulator code or driver occurs through the file system
+Dakota and the simulator code or driver occurs through the file system
 in exactly the same manner as for the system call interface. An
 example of a fork interface specification follows:
 \begin{small}
@@ -369,7 +369,7 @@ call, fork, and direct).  These components include an
 \texttt{output\_filter} (``OFilter''). The input and output filters
 provide optional facilities for managing simulation pre- and
 post-processing, respectively. More specifically, the input filter can
-be used to insert the DAKOTA parameters into the input files required
+be used to insert the Dakota parameters into the input files required
 by the simulator program, and the output filter can be used to recover
 the raw data from the simulation results and compute the desired
 response data set. If there is a single analysis code, it is often
@@ -391,7 +391,7 @@ analyses can be performed within the input and output filters.
   \label{interfaces:bbinterfacecomp}
 \end{figure}
 
-When spawning function evaluations using system calls or forks, DAKOTA
+When spawning function evaluations using system calls or forks, Dakota
 must communicate parameter and response data with the analysis drivers
 and filters through use of the file system. This is accomplished by
 passing the names of the parameters and results files on the command
@@ -399,7 +399,7 @@ line when executing an analysis driver or filter. The input filter or
 analysis driver read data from the parameters file and the output
 filter or analysis driver write the appropriate data to the responses
 file. While not essential when the file names are fixed, the file
-names must be retrieved from the command line when DAKOTA is changing
+names must be retrieved from the command line when Dakota is changing
 the file names from one function evaluation to the next (i.e., using
 temporary files or root names tagged with numerical identifiers).
 In the case of a UNIX C-shell script, the two command line arguments
@@ -453,7 +453,7 @@ results in an echo of the following syntax:
 \end{small}
 
 where this analysis driver must be linked as a function within
-DAKOTA's direct interface (see Section~\ref{advint:direct}). Note that
+Dakota's direct interface (see Section~\ref{advint:direct}). Note that
 no parameter or response files are involved, since such values
 are passed directly through the function argument lists.
 
@@ -484,7 +484,7 @@ performed synchronously since multithreading is not yet supported
 
 \subsection{Single analysis driver with filters}\label{interfaces:components:single2}
 
-When filters are used, the syntax of the system call that DAKOTA
+When filters are used, the syntax of the system call that Dakota
 performs is:
 \begin{small}
 \begin{verbatim}
@@ -521,7 +521,7 @@ results in an echo of the following syntax:
 \end{small}
 
 where each of the three components must be linked as a function within
-DAKOTA's direct interface. Since asynchronous operations are not yet
+Dakota's direct interface. Since asynchronous operations are not yet
 supported, execution simply involves invocation of each of the three
 linked functions in succession. Again, no files are involved since
 parameter and response data are passed directly through the function
@@ -603,7 +603,7 @@ results in an echo of the following syntax:
 \end{verbatim}
 \end{small}
 
-where, again, each of these components must be linked within DAKOTA's
+where, again, each of these components must be linked within Dakota's
 direct interface and no files are involved for parameter and response
 data transfer.
 
@@ -636,7 +636,7 @@ of the analysis drivers.
 \subsection{Multiple analysis drivers with filters}\label{interfaces:components:multiple2}
 
 Finally, when combining filters with multiple
-\texttt{analysis\_drivers}, the syntax of the system call that DAKOTA
+\texttt{analysis\_drivers}, the syntax of the system call that Dakota
 performs is:
 \begin{small}
 \begin{verbatim}
@@ -681,7 +681,7 @@ results in an echo of the following syntax:
 \end{small}
 
 where each of these components must be linked as a function within
-DAKOTA's direct interface. Since asynchronous operations are not
+Dakota's direct interface. Since asynchronous operations are not
 supported, execution simply involves invocation of each of the five
 linked functions in succession. Again, no files are involved for
 parameter and response data transfer since this data is passed
@@ -720,25 +720,25 @@ output filter.
 \section{Simulation File Management}\label{interfaces:file}
 
 This section describes some management features used for files that
-transfer data between DAKOTA and simulation codes
+transfer data between Dakota and simulation codes
 (i.e., when the system call or fork interfaces are used). These
 features can generate unique filenames when
-DAKOTA executes programs in parallel and can help one debug
-the interface between DAKOTA and a simulation code.
+Dakota executes programs in parallel and can help one debug
+the interface between Dakota and a simulation code.
 
 \subsection{File Saving}\label{interfaces:file:saving}
 
-{\bf Before driver execution:} In DAKOTA 5.0 and newer, an existing
+{\bf Before driver execution:} In Dakota 5.0 and newer, an existing
 results file will be removed immediately prior to executing the
 analysis driver.  This new behavior addresses a common user problem
-resulting from starting DAKOTA with stale results files in the run
+resulting from starting Dakota with stale results files in the run
 directory.  To override this default behavior and preserve any
 existing results files, specify \texttt{allow\_existing\_results}.
 
 {\bf After driver execution:} The \texttt{file\_save} option in the
 interface specification allows the user to control whether parameters
 and results files are retained or removed from the working directory
-after the analysis completes. DAKOTA's default behavior is to remove
+after the analysis completes. Dakota's default behavior is to remove
 files once their use is complete to reduce clutter. If the method
 output setting is verbose, a file remove notification will follow the
 function evaluation echo, e.g.,
@@ -751,7 +751,7 @@ function evaluation echo, e.g.,
 
 However, if \texttt{file\_save} appears in the interface
 specification, these files will not be removed. This latter behavior
-is often useful for debugging communication between DAKOTA and
+is often useful for debugging communication between Dakota and
 simulator programs. An example of a \texttt{file\_save} specification
 is shown in the file tagging example below.
 
@@ -759,7 +759,7 @@ is shown in the file tagging example below.
 
 When a user provides \texttt{parameters\_file} and
 \texttt{results\_file} specifications, the \texttt{file\_tag} option
-in the interface specification causes DAKOTA to make the names of
+in the interface specification causes Dakota to make the names of
 these files unique by appending the function
 evaluation number to the root file names. Default behavior is to not
 tag these files, which has the advantage of allowing the user to
@@ -876,7 +876,7 @@ and, for the fork interface, similar to:
 Tagging of results files with an analysis identifier is needed
 since each analysis driver must contribute a
 user-defined subset of the total response results for the evaluation.
-If an output filter is not supplied, DAKOTA will combine these
+If an output filter is not supplied, Dakota will combine these
 portions through a simple overlaying of the individual contributions
 (i.e., summing the results in \texttt{/var/tmp/baaxkaOKZ.1},
 \texttt{/var/tmp/baaxkaOKZ.2}, and \texttt{/var/tmp/baaxkaOKZ.3}). If
@@ -886,12 +886,12 @@ results file for the output filter does not use analysis tagging; it
 is responsible for the results combination (i.e., combining
 \texttt{/var/tmp/baaxkaOKZ.1}, \texttt{/var/tmp/baaxkaOKZ.2}, and
 \texttt{/var/tmp/baaxkaOKZ.3} into \texttt{/var/tmp/baaxkaOKZ}). In
-this case, DAKOTA will read only the results file from the output
+this case, Dakota will read only the results file from the output
 filter (i.e., \texttt{/var/tmp/baaxkaOKZ}) and interpret it as the
 total response set for the evaluation.
 
 Parameters files are not currently tagged with an analysis identifier.
-This reflects the fact that DAKOTA does not attempt to subdivide the
+This reflects the fact that Dakota does not attempt to subdivide the
 requests in the active set vector for different analysis portions.
 Rather, the total active set vector is passed to each analysis driver
 and the appropriate subdivision of work \emph{must be defined by the
@@ -909,15 +909,15 @@ used as placeholders.
 \subsection{Work Directories}\label{interfaces:workdir}
 
 Sometimes it is convenient for simulators and filters to run in a
-directory different from the one where DAKOTA is invoked.  For instance,
+directory different from the one where Dakota is invoked.  For instance,
 when performing concurrent evaluations and/or analyses, it is often
 necessary to cloister input and output files in separate directories to
 avoid conflicts.  A simulator script used as an \texttt{analysis\_driver}
 can of course include commands to change to a different directory if
 desired (while still arranging to write a results file in the original
-directory), but DAKOTA has facilities that may simplify the creation of
+directory), but Dakota has facilities that may simplify the creation of
 simulator scripts.  When the \texttt{work\_directory} feature is enabled,
-DAKOTA will create a directory for each evaluation/analysis (with
+Dakota will create a directory for each evaluation/analysis (with
 optional tagging and saving as with files).  To enable the
 \texttt{work\_directory} feature an interface specification includes
 the keyword
@@ -926,31 +926,31 @@ the keyword
        work_directory
 \end{verbatim}
 \end{small}
-then DAKOTA will arrange for the simulator and any filters to
+then Dakota will arrange for the simulator and any filters to
 wake up in the work directory, with \$PATH adjusted (if necessary)
 so programs that could be invoked without a relative
 path to them (i.e., by a name not involving any slashes) from
-DAKOTA's directory can also be invoked from the simulator's (and filter's)
+Dakota's directory can also be invoked from the simulator's (and filter's)
 directory.  On occasion, it is convenient for the simulator to have
 various files, e.g., data files, available in the directory where it
 runs.  If, say, \texttt{my/special/directory} is such a directory
-(as seen from DAKOTA's directory), the interface specification
+(as seen from Dakota's directory), the interface specification
 \begin{small}
 \begin{verbatim}
        work_directory named 'my/special/directory'
 \end{verbatim}
 \end{small}
-would cause DAKOTA to start the simulator and any filters in that directory.
-If the directory did not already exist, DAKOTA would create it
+would cause Dakota to start the simulator and any filters in that directory.
+If the directory did not already exist, Dakota would create it
 and would remove it after the simulator (or output filter, if specifed)
 finished, unless instructed not to do so
 by the appearance of \texttt{directory\_save} or its synonym \texttt{dir\_save}
 in the interface specification.  If \texttt{named '$...$'} does not
 appear, then \texttt{directory\_save} cannot appear either, and
-DAKOTA creates a temporary directory (using the \texttt{tmpnam}
+Dakota creates a temporary directory (using the \texttt{tmpnam}
 function to determine its name) for use by the simulator and any filters.
 If you specify \texttt{directory\_tag} (or \texttt{dir\_tag}),
-DAKOTA causes each invocation of the simulator and any filters to start in a
+Dakota causes each invocation of the simulator and any filters to start in a
 a subdirectory of the work directory with a name composed
 of the work directory's name followed by a period and the
 invocation number (1, 2, $...$); this might be useful in debugging.
@@ -1040,7 +1040,7 @@ The DVV defines a subset of the variables used for computing
 derivatives.  Its identifiers are 1-based and correspond to the full
 set of variables listed in the first array.  Finally, the analysis
 components pass additional strings from the user's
-\texttt{analysis\_components} specification in a DAKOTA input file
+\texttt{analysis\_components} specification in a Dakota input file
 through to the simulator.  They allow the development of simulation
 drivers that are more flexible, by allowing them to be passed
 additional specifics at run time, e.g., the names of model files such

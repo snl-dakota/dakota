@@ -1,8 +1,8 @@
-\chapter{DAKOTA Capability Overview}\label{capabilities}
+\chapter{Dakota Capability Overview}\label{capabilities}
 
 \section{Purpose}\label{capabilities:purpose}
 
-This chapter provides a brief overview of DAKOTA's capabilities.
+This chapter provides a brief overview of Dakota's capabilities.
 Emerging capabilities in solution verification and Bayesian
 calibration/uncertainty quantification are not yet documented here.
 Additional details and example problems are provided in subsequent
@@ -11,7 +11,7 @@ chapters in this manual.
 \section{Parameter Study Methods}\label{capabilities:parameter}
 
 Parameter studies are often performed to explore the effect of
-parametric changes within simulation models. DAKOTA users may select
+parametric changes within simulation models. Dakota users may select
 from four parameter study methods.
 
 \textbf{Multidimensional}: Forms a regular lattice or grid in an
@@ -28,7 +28,7 @@ parameter space. The user selects the number of steps and the step
 size.
 
 \textbf{List}: The user supplies a list of points in an n-dimensional
-space where DAKOTA will evaluate response data from the simulation
+space where Dakota will evaluate response data from the simulation
 code.
 
 Additional information on these methods is provided in Chapter~\ref{ps}.
@@ -55,7 +55,7 @@ response.  We typically use the Latin Hypercube Sampling software
 (also developed at Sandia) for generating samples on input
 distributions used in uncertainty quantification.  LHS is explained in
 more detail in the subsequent section ~\ref{capabilities:uncertainty}.
-Two software packages are available in DAKOTA for design of computer
+Two software packages are available in Dakota for design of computer
 experiments, DDACE (developed at Sandia Labs) and FSUDACE (developed
 at Florida State University).
 
@@ -67,11 +67,11 @@ orthogonal array sampling, and orthogonal array-latin hypercube
 sampling. The orthogonal array sampling allows for the calculation
 of main effects. The DDACE package currently supports variables that have
 either normal or uniform distributions.  However, only the uniform
-distribution is available in the DAKOTA interface to DDACE. The
+distribution is available in the Dakota interface to DDACE. The
 classical design of experiments methods in DDACE are central composite
 design (CCD) and Box-Behnken (BB) sampling. A grid-based sampling
 method also is available. DDACE is available under a GNU Lesser
-General Public License and is distributed with DAKOTA.
+General Public License and is distributed with Dakota.
 
 \textbf{FSUDace (Florida State University Design and Analysis of
 Computer Experiments)}: The FSUDace package provides quasi-Monte Carlo
@@ -88,7 +88,7 @@ the points fairly equally throughout the space, so that the points
 cover the region and are isotropically distributed with no directional
 bias in the point placement.
 FSUDace is available under a GNU Lesser General Public
-License and is distributed with DAKOTA.
+License and is distributed with Dakota.
 
 \textbf{PSUADE (Problem Solving Environment for Uncertainty Analysis
 and Design Exploration)}: PSUADE is a Lawrence Livermore National
@@ -98,7 +98,7 @@ and parallel function evaluations, sampling and analysis methods, an
 integrated design and analysis framework, global optimization,
 numerical integration, response surfaces (MARS and higher order
 regressions), graphical output with Pgplot or Matlab, and fault
-tolerance~\cite{Ton05}. DAKOTA includes a prototype interface to its MOAT
+tolerance~\cite{Ton05}. Dakota includes a prototype interface to its MOAT
 sampling method, a valuable tool for global sensitivity analysis.
 
 Additional information on these methods is provided in Chapter~\ref{dace}.
@@ -124,7 +124,7 @@ on input probability distribution specifications.  Conversely, for
 epistemic uncertainties, data is generally sparse, making the use of
 probability theory questionable and leading to non-probabilistic
 methods based on interval specifications.
-The aleatory UQ methods in DAKOTA include various
+The aleatory UQ methods in Dakota include various
 sampling-based approaches (e.g., Monte Carlo and Latin Hypercube
 sampling), local and global reliability methods, and stochastic expansion
 approaches.  The epistemic UQ methods include interval 
@@ -132,7 +132,7 @@ analysis and Dempster-Shafer evidence theory.
 
 \textbf{LHS (Latin Hypercube Sampling)}: This package provides both
 Monte Carlo (random) sampling and Latin Hypercube sampling methods,
-which can be used with probabilistic variables in DAKOTA that have the
+which can be used with probabilistic variables in Dakota that have the
 following distributions: normal, lognormal, uniform, loguniform,
 triangular, exponential, beta, gamma, gumbel, frechet, weibull, poisson, 
 binomial, negative binomial, geometric, hypergeometric, and
@@ -144,19 +144,19 @@ two purposes: (1) it can be used for uncertainty quantification by
 sampling over uncertain variables characterized by probability
 distributions, or (2) it can be used in a DACE mode in which any
 design and state variables are treated as having uniform distributions
-(see the \texttt{all\_variables} flag in the DAKOTA Reference
+(see the \texttt{all\_variables} flag in the Dakota Reference
 Manual~\cite{RefMan}). The LHS package historically came in two
 versions: ``old'' (circa 1980) and ``new'' (circa 1998), but presently
-only the latter is supported in DAKOTA, requiring a Fortran 90
+only the latter is supported in Dakota, requiring a Fortran 90
 compiler.  This ``new'' LHS is available under a separate GNU Lesser
-General Public License and is distributed with DAKOTA.  In addition 
+General Public License and is distributed with Dakota.  In addition 
 to a standard sampling study, we support the capability to perform 
 ``incremental'' LHS, where a user can specify an initial LHS study 
 of N samples, and then re-run an additional incremental study which 
 will double the number of samples (to 2N, with the first N being 
 carried from the initial study).  The full incremental sample of 
 size 2N is also a Latin Hypercube, with proper stratification and 
-correlation.  Finally, DAKOTA offers preliminary support for 
+correlation.  Finally, Dakota offers preliminary support for 
 importance sampling using LHS, specified with \texttt{importance}.
 
 \textbf{Reliability Methods}: This suite of methods includes both
@@ -258,11 +258,11 @@ Additional information on these methods is provided in Chapter~\ref{uq}.
 \section{Optimization}\label{capabilities:optimization1}
 
 Several optimization software packages have been integrated with
-DAKOTA. These include freely-available software packages developed by
+Dakota. These include freely-available software packages developed by
 research groups external to Sandia Labs, Sandia-developed software
 that has been released to the public under GNU licenses, and
 commercially-developed software. These optimization software packages
-provide the DAKOTA user with access to well-tested, proven methods for
+provide the Dakota user with access to well-tested, proven methods for
 use in engineering design applications, as well as access to some of
 the newest developments in optimization algorithm research.
 
@@ -273,10 +273,10 @@ set search known as asynchronous parallel pattern search
 (APPS)~\cite{GrKo06}.  It can handle unconstrained problems as well as
 those with bound constraints, linear constraints~\cite{GrKoLe08}, and
 general nonlinear constraints~\cite{GrKo07}.  APPS was previously
-integrated with DAKOTA via the APPSPACK software, but is now
+integrated with Dakota via the APPSPACK software, but is now
 integrated through it's successor (HOPSPACK).  HOPSPACK is available
 to the public under the GNU LGPL and the source code is included with
-DAKOTA (web page: \url{https://software.sandia.gov/trac/hopspack}).
+Dakota (web page: \url{https://software.sandia.gov/trac/hopspack}).
 
 \textbf{SCOLIB}: Methods for nongradient-based local and global
 optimization which utilize the Common Optimization Library INterface
@@ -288,7 +288,7 @@ Search), simple pattern search, Monte Carlo sampling, and the DIRECT
 and Solis-Wets algorithms. SCOLIB also include interfaces to
 third-party optimizer COBYLA2.  This software is available to the
 public under a BSD license through ACRO (A Common Repository for
-Optimizers) and the source code for SCOLIB is included with DAKOTA
+Optimizers) and the source code for SCOLIB is included with Dakota
 (web page: \url{http://software.sandia.gov/trac/acro}).
 
 \textbf{CONMIN (CONstrained MINimization)}: Methods for gradient-based
@@ -297,7 +297,7 @@ optimization algorithm is the method of feasible directions (MFD) and
 the unconstrained optimization algorithm is the Fletcher-Reeves
 conjugate gradient (CG) method. This software is freely available to
 the public from NASA, and the CONMIN source code is included with
-DAKOTA.
+Dakota.
 
 \textbf{DOT (Design Optimization Tools)}: Methods for gradient-based
 optimization for constrained and unconstrained optimization problems
@@ -309,7 +309,7 @@ Fletcher-Reeves CG method and the Broyden-Fletcher-Goldfarb-Shanno
 Vanderplaats Research and Development, Inc. (web page:
 \url{http://www.vrand.com}). Sandia National Laboratories and Los
 Alamos National Laboratory have limited seats for DOT. \emph{Other
-users may obtain their own copy of DOT and compile it with the DAKOTA
+users may obtain their own copy of DOT and compile it with the Dakota
 source code by following the steps given in the file {\tt Dakota/INSTALL}.}
 
 \textbf{JEGA}: provides SOGA and MOGA (single- and multi-objective
@@ -337,7 +337,7 @@ conventional multiobjective optimization using weight factors.
 %general-purpose gradient-based algorithms for nested analysis and
 %design (NAND) and large-scale gradient-based optimization algorithms
 %for simultaneous analysis and design (SAND). This software is not yet
-%distributed with DAKOTA.
+%distributed with Dakota.
 
 \textbf{NCSUOpt}: Nongradient-based optimizers from North Carolina
 State University, including DIRECT and, eventually, impicit filtering
@@ -346,7 +346,7 @@ currently incorporate only an implementation of the DIRECT (DIviding
 RECTangles) algorithm~\cite{Gab01}.  While this is somewhat redundant
 with DIRECT supplied by SCOLIB, we have found that NCCSU DIRECT
 performs better in some cases, and presently we maintain both versions
-in DAKOTA.
+in Dakota.
 
 \textbf{NLPQLP}: Methods for gradient-based constrained and
 unconstrained optimization problems using a sequential quadratic
@@ -354,7 +354,7 @@ programming (SQP) algorithm~\cite{Sch04}.  NLPQLP is a commercial
 software product of Prof. Klaus Schittkowski (web site:
 \url{http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp20.htm}).
 \emph{Users may obtain their own copy of NLPQLP and compile it with the
-DAKOTA source code by following the steps given in the file {\tt Dakota/INSTALL}.}
+Dakota source code by following the steps given in the file {\tt Dakota/INSTALL}.}
 
 \textbf{NPSOL}: Methods for gradient-based constrained and
 unconstrained optimization problems using a sequential quadratic
@@ -363,7 +363,7 @@ product of Stanford University (web site: www.sbsi-sol-optimize.com).
 Sandia National Laboratories, Lawrence Livermore National Laboratory,
 and Los Alamos National Laboratory all have site licenses for NPSOL.
 \emph{Other users may obtain their own copy of NPSOL and compile it
-with the DAKOTA source code by following the steps given in the file
+with the Dakota source code by following the steps given in the file
 {\tt Dakota/INSTALL}.}
 
 \textbf{OPT++}: Methods for gradient-based and nongradient-based
@@ -374,7 +374,7 @@ Newton, Gauss-Newton, and full-Newton), as well as the Polak-Ribeire
 CG method and the parallel direct search (PDS) method. OPT++ now
 contains a nonlinear interior point algorithm for handling general
 constraints.  OPT++ is available to the public under the GNU LGPL and
-the source code is included with DAKOTA (web page:
+the source code is included with Dakota (web page:
 \url{http://csmr.ca.sandia.gov/opt++}).
 
 %\textbf{PICO (Parallel Integer Combinatorial Optimization)}: PICO's
@@ -384,16 +384,16 @@ the source code is included with DAKOTA (web page:
 %noncategorical (see Section~\ref{variables:design:ddv}).  PICO is
 %available to the public under the GNU LGPL (web page:
 %\url{http://software.sandia.gov/trac/acro/wiki/Packages}) and the
-%source code is included with DAKOTA as part of the Acro package.
+%source code is included with Dakota as part of the Acro package.
 %\emph{Notes: (1) PICO's linear programming solvers are not included
-%  with DAKOTA, (2) PICO is not currently active in DAKOTA.}
+%  with Dakota, (2) PICO is not currently active in Dakota.}
 
 %\textbf{SGOPT (Stochastic Global OPTimization)}: Access to this
-%library within DAKOTA has been deprecated; the methods have been
+%library within Dakota has been deprecated; the methods have been
 %migrated to the COLINY library.
 
 Additional information on these methods is provided in Chapter~\ref{opt},
-as is a facility for using other solvers made available to DAKOTA
+as is a facility for using other solvers made available to Dakota
 via shared libraries.
 
 \section{Additional Optimization Capabilities}\label{capabilities:additional}
@@ -403,15 +403,15 @@ to handle a wide variety of optimization problems. This includes
 algorithms for constrained and unconstrained optimization, as well as
 algorithms for gradient-based and nongradient-based
 optimization. Listed below are additional optimization capabilities
-that are available in DAKOTA.
+that are available in Dakota.
 
 \textbf{Multiobjective Optimization}:
 There are three capabilities for multiobjective optimization in
-DAKOTA.  First, there is the MOGA capability described previously in
+Dakota.  First, there is the MOGA capability described previously in
 Section~\ref{capabilities:optimization1}.  This is a specialized
 algorithm capability.  The second capability involves the use of
 response data transformations to recast a multiobjective problem as a
-single-objective problem.  Currently, DAKOTA supports the weighting
+single-objective problem.  Currently, Dakota supports the weighting
 factor approach for this transformation, in which a composite
 objective function is constructed from a set of individual objective
 functions using a user-specified set of weighting factors.  This
@@ -420,7 +420,7 @@ any of the optimization methods listed in
 Section~\ref{capabilities:optimization1}.  Constraints are not
 affected by the weighting factor mapping; therefore, both constrained
 and unconstrained multiobjective optimization problems can be
-formulated and solved with DAKOTA, assuming selection of an
+formulated and solved with Dakota, assuming selection of an
 appropriate constrained or unconstrained single-objective optimization
 algorithm.  Future multiobjective response data transformations for
 goal programming, normal boundary intersection, etc. are planned.  The
@@ -438,7 +438,7 @@ trade-off surface.
 %equations) is posed as a set of equality constraints in the
 %optimization problem and these equality constraints are only satisfied
 %by the optimizer in the limit. This formulation necessitates a close
-%coupling between DAKOTA and the simulation code so that the internal
+%coupling between Dakota and the simulation code so that the internal
 %vectors and matrices from the simulation code (in particular, the
 %residual vector and its state and design Jacobian matrices) are
 %available to the SAND optimizer. This approach has the potential to
@@ -448,7 +448,7 @@ trade-off surface.
 %software modifications to the simulation code; something that can be
 %impractical in some cases and impossible in others. A new SAND
 %capability employing the MOOCHO library is under development that will
-%intrusively couple DAKOTA with multiphysics simulation frameworks
+%intrusively couple Dakota with multiphysics simulation frameworks
 %under development at Sandia.
 
 \textbf{User-Specified or Automatic Scaling}: Some optimization
@@ -480,7 +480,7 @@ algorithm to solve least-squares problems. In practice, it is more
 robust to nonlinear functions and nonzero residuals than conventional
 Gauss-Newton algorithms.
 
-\textbf{Gauss-Newton}: DAKOTA's Gauss-Newton algorithm utilizes the
+\textbf{Gauss-Newton}: Dakota's Gauss-Newton algorithm utilizes the
 Hessian approximation described in
 Section~\ref{introduction:background:nonlinear}. The exact objective
 function value, exact objective function gradient, and the approximate
@@ -505,7 +505,7 @@ information for the least squares terms and nonlinear constraints.
 Sandia National Laboratories, Lawrence Livermore National Laboratory,
 and Los Alamos National Laboratory all have site licenses for NLSSOL.
 \emph{Other users may obtain their own copy of NLSSOL and compile it with
-the DAKOTA source code by following the NPSOL installation steps given
+the Dakota source code by following the NPSOL installation steps given
 in the file {\tt Dakota/INSTALL}.}
 
 Additional information on these methods is provided in Chapter~\ref{nls}.
@@ -514,7 +514,7 @@ Additional information on these methods is provided in Chapter~\ref{nls}.
 
 \textbf{Surrogate-Based Local Minimization}: This method combines
 the design of experiments methods, surrogate models, and optimization
-capabilities of DAKOTA.
+capabilities of Dakota.
 %The SBO strategy is particularly effective on
 %real-world engineering design problems that contain nonsmooth features
 %(e.g., slope discontinuities, multiple local minima) where
@@ -527,10 +527,10 @@ of the computational model, or from a mathematically-generated
 reduced-order model (see Section~\ref{capabilities:surrogate}). For
 each of these surrogate model types, the SBO algorithm periodically
 validates the progress using the surrogate model against the original
-high-fidelity model.  The SBO strategy in DAKOTA can be configured to
+high-fidelity model.  The SBO strategy in Dakota can be configured to
 employ heuristic rules (less expensive) or to be provably convergent
 to the optimum of the original model (more expensive). The development
-of SBO strategies is an area of active research in the DAKOTA project.
+of SBO strategies is an area of active research in the Dakota project.
 
 \textbf{Surrogate-Based Global Minimization}: Similar to surrogate-based
 local minimization, this method combines design of experiments and
@@ -552,8 +552,8 @@ Additional information on these methods is provided in Chapter~\ref{sbm}.
 
 \section{Optimization Strategies}\label{capabilities:optimization2}
 
-Due to the flexibility of DAKOTA's object-oriented design, it is
-relatively easy to create algorithms that combine several of DAKOTA's
+Due to the flexibility of Dakota's object-oriented design, it is
+relatively easy to create algorithms that combine several of Dakota's
 capabilities. These algorithms are referred to as \emph{strategies}:
 
 \textbf{Multilevel Hybrid Optimization}: This strategy allows the user to
@@ -577,7 +577,7 @@ the parameter space coverage of a global stratification technique.
 \textbf{Pareto-Set Optimization}: The Pareto-set optimization strategy
 allows the user to specify different sets of weights for the
 individual objective functions in a multiobjective optimization
-problem. DAKOTA executes each of these weighting sets as a separate
+problem. Dakota executes each of these weighting sets as a separate
 optimization problem, serially or in parallel, and then outputs the
 set of optimal designs which define the Pareto set. Pareto set
 information can be useful in making trade-off decisions in engineering
@@ -588,11 +588,11 @@ additional information on multiobjective optimization methods.]}
 %uses the branch and bound capabilities of the PICO package to perform
 %optimization on problems that have both discrete and continuous design
 %variables. PICO provides a branch and bound engine targeted at mixed
-%integer linear programs (MILP), which when combined with DAKOTA's
+%integer linear programs (MILP), which when combined with Dakota's
 %nonlinear optimization methods, results in a MINLP capability. In
 %addition, the multiple NLPs solved within MINLP provide an opportunity
 %for concurrent execution of multiple optimizations.  \emph{Branch and
-%  bound is inoperative in DAKOTA since its incorporation into COLINY.
+%  bound is inoperative in Dakota since its incorporation into COLINY.
 %  This will be supported again in future releases.}
 
 These strategies are covered in more detail in Chapter~\ref{strat}.
@@ -606,7 +606,7 @@ regions of the parameter space, or they can serve as inexpensive
 stand-ins for optimization or uncertainty quantification studies (see,
 for example, the surrogate-based optimization strategy in
 Section~\ref{capabilities:optimization2}).  The surrogate models
-supported in DAKOTA can be categorized into three types: data fits,
+supported in Dakota can be categorized into three types: data fits,
 multifidelity, and reduced-order model surrogates.
 
 Data fitting methods involve construction of an approximation or
@@ -642,17 +642,17 @@ currently no use of forward- or backward-stepping regression methods
 to eliminate unnecessary terms from the polynomial model.
 
 \textbf{Gaussian Process (GP) or Kriging Interpolation}
-DAKOTA contains two implementations of Gaussian process, also known as 
+Dakota contains two implementations of Gaussian process, also known as 
 Kriging ~\cite{Giu98}, spatial interpolation.  One of these resides in 
-the Surfpack sub-package of DAKOTA, the other resides in DAKOTA itself.
+the Surfpack sub-package of Dakota, the other resides in Dakota itself.
 Both versions use the Gaussian correlation function with parameters that
 are selected by Maximum Likelihood Estimation (MLE). This correlation 
 function results in a response surface that is $C^\infty$-continuous.
-Prior to DAKOTA 5.2, the Surfpack GP was referred to as the ``Kriging'' 
-model and the DAKOTA version was labeled as the ``Gaussian Process.''  
-These terms are now used interchangeably.  As of DAKOTA 5.2,the 
+Prior to Dakota 5.2, the Surfpack GP was referred to as the ``Kriging'' 
+model and the Dakota version was labeled as the ``Gaussian Process.''  
+These terms are now used interchangeably.  As of Dakota 5.2,the 
 Surfpack GP is used by default.  For now the user still has the option 
-to select the DAKOTA GP, but the DAKOTA GP is deprecated and will be 
+to select the Dakota GP, but the Dakota GP is deprecated and will be 
 removed in a future release.
 \begin{itemize}
 \item \textbf{Surfpack GP}: Ill-conditioning due to a poorly spaced sample 
@@ -662,9 +662,9 @@ removed in a future release.
       resulting surface will exactly interpolate the data values at the 
       retained points but is not guaranteed to interpolate the discarded 
       points.
-\item \textbf{DAKOTA GP}: Ill-conditioning is handled by adding a jitter 
+\item \textbf{Dakota GP}: Ill-conditioning is handled by adding a jitter 
       term or ``nugget'' to diagonal elements of the correlation matrix. 
-      When this happens, the DAKOTA GP may not exactly interpolate the 
+      When this happens, the Dakota GP may not exactly interpolate the 
       data values.
 \end{itemize}
 
@@ -702,7 +702,7 @@ a prediction is desired.~\cite{Nea04}
 %uncertainty quantification, and in particular, polynomial chaos
 %expansions.
 
-In addition to data fit surrogates, DAKOTA supports multifidelity 
+In addition to data fit surrogates, Dakota supports multifidelity 
 and reduced-order model approximations:
 
 \textbf{Multifidelity Surrogates}: Multifidelity modeling involves the
@@ -763,7 +763,7 @@ also generates sets of realizations, from sampling from distributions
 on the epistemic variables.  These outer loop values then define
 values for distribution parameters used in the inner level UQ.  The
 term ``second-order'' derives from this use of distributions on
-distributions and the generation of statistics on statistics.  DAKOTA
+distributions and the generation of statistics on statistics.  Dakota
 includes capability to use interval analysis to perform the outer loop
 calculations (e.g. find intervals on inner loop statistics).  Interval
 analysis can use efficient optimization methods to obtain interval
@@ -778,7 +778,7 @@ in~\cite{Eld09b} and ~\cite{Eld11}.
 \textbf{Optimization Under Uncertainty (OUU)}: Many real-world
 engineering design problems contain stochastic features and must be
 treated using OUU methods such as robust design and reliability-based
-design. For OUU, the uncertainty quantification methods of DAKOTA are
+design. For OUU, the uncertainty quantification methods of Dakota are
 combined with optimization algorithms. This allows the user to
 formulate problems where one or more of the objective and constraints
 are stochastic. Due to the computational expense of both optimization
@@ -809,16 +809,16 @@ Section~\ref{models:nested} and Chapter~\ref{adv_models}.
 
 \section{Parallel Computing}\label{capabilities:parallel}
 
-The methods and strategies in DAKOTA are designed to exploit parallel
+The methods and strategies in Dakota are designed to exploit parallel
 computing resources such as those found in a desktop multiprocessor
 workstation, a network of workstations, or a massively parallel
 computing platform. This parallel computing capability is a critical
 technology for rendering real-world engineering design problems
-computationally tractable. DAKOTA employs the concept of
+computationally tractable. Dakota employs the concept of
 \emph{multilevel parallelism}, which takes simultaneous advantage of
 opportunities for parallel execution from multiple sources:
 
-\textbf{Parallel Simulation Codes}: DAKOTA works equally well with both
+\textbf{Parallel Simulation Codes}: Dakota works equally well with both
 serial and parallel simulation codes.
 
 \textbf{Concurrent Execution of Analyses within a Function Evaluation}:
@@ -828,7 +828,7 @@ code for different load cases or environments, etc.) in order to
 evaluate a single response data set (e.g., objective functions and
 constraints) for a single set of parameters. If these simulation code
 executions are independent (or if coupling is enforced at a higher
-level), DAKOTA can perform them in parallel.
+level), Dakota can perform them in parallel.
 
 \textbf{Concurrent Execution of Function Evaluations within an Iterator}:
 With very few exceptions, the iterative algorithms described in
@@ -836,44 +836,44 @@ Section~\ref{capabilities:parameter} through
 Section~\ref{capabilities:nonlinear} all provide opportunities for the
 concurrent evaluation of response data sets for different parameter
 sets. Whenever there exists a set of design point evaluations that are
-independent, DAKOTA can perform them in parallel.
+independent, Dakota can perform them in parallel.
 
 \textbf{Concurrent Execution of Iterators within a Strategy}: Some of
-the DAKOTA strategies described in
+the Dakota strategies described in
 Section~\ref{capabilities:optimization2} generate a sequence of
 iterator subproblems. For example, the Pareto-set and
 multi-start strategies generate sets of optimization subproblems, and
 the optimization under uncertainty strategy generates sets of
 uncertainty quantification subproblems. Whenever these subproblems are
-independent, DAKOTA can perform them in parallel.
+independent, Dakota can perform them in parallel.
 
 It is important to recognize that these four parallelism levels are
 nested, in that a strategy can schedule and manage concurrent
 iterators, each of which may manage concurrent function evaluations,
 each of which may manage concurrent analyses, each of which may
 execute on multiple processors. Additional information on parallel
-computing with DAKOTA is provided in Chapter~\ref{parallel}.
+computing with Dakota is provided in Chapter~\ref{parallel}.
 
 \section{Summary}\label{capabilities:summary}
 
-DAKOTA is both a production tool for engineering design and analysis
+Dakota is both a production tool for engineering design and analysis
 activities and a research tool for the development of new algorithms
 in optimization, uncertainty quantification, and related areas.
-Because of the extensible, object-oriented design of DAKOTA, it is
+Because of the extensible, object-oriented design of Dakota, it is
 relatively easy to add new iterative algorithms, strategies,
 simulation interfacing approaches, surface fitting methods, etc. In
-addition, DAKOTA can serve as a rapid prototyping tool for algorithm
+addition, Dakota can serve as a rapid prototyping tool for algorithm
 development. That is, by having a broad range of building blocks
 available (i.e., parallel computing, surrogate models, simulation
 interfaces, fundamental algorithms, etc.), new capabilities can be
 assembled rapidly which leverage the previous software investments.
 For additional discussion on framework extensibility, refer to the
-DAKOTA Developers Manual~\cite{DevMan}.
+Dakota Developers Manual~\cite{DevMan}.
 
-The capabilities of DAKOTA have been used to solve engineering design
+The capabilities of Dakota have been used to solve engineering design
 and optimization problems at Sandia Labs, at other Department of
 Energy labs, and by our industrial and academic collaborators. Often,
 this real-world experience has provided motivation for research into
-new areas of optimization. The DAKOTA development team welcomes
+new areas of optimization. The Dakota development team welcomes
 feedback on the capabilities of this software toolkit, as well as
 suggestions for new areas of research.

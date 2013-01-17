@@ -2,7 +2,7 @@
 
 \section{Overview}\label{dace:overview}
 
-DAKOTA contains several software packages for sampling and design of
+Dakota contains several software packages for sampling and design of
 experiments: LHS (Latin hypercube sampling), DDACE (distributed design
 and analysis for computer experiments), FSUDace (Florida State
 University's Design and Analysis of Computer Experiments package), and
@@ -17,7 +17,7 @@ random designs.  The FSUDace package provides the following sampling
 techniques: quasi-Monte Carlo sampling based on Halton or Hammersley
 sequences, and Centroidal Voronoi Tessellation.  Lawrence Livermore
 National Lab's PSUADE~\cite{Ton05} includes several methods for model
-exploration, but only the Morris screening method is exposed in DAKOTA.
+exploration, but only the Morris screening method is exposed in Dakota.
 
 This chapter describes DDACE, FSUDace, and PSUADE, with the primary
 goal of designing computer experiments. Latin Hypercube Sampling, also
@@ -127,7 +127,7 @@ greater than 10?   What is the 99th percentile of the output?
 Note that sampling-based uncertainty quantification and design of
 computer experiments are very similar.  \emph{There is significant
 overlap} in the purpose and methods used for UQ and for DACE.  We have
-attempted to delineate the differences within DAKOTA as follows: we
+attempted to delineate the differences within Dakota as follows: we
 use the methods DDACE, FSUDACE, and PSUADE primarily for design of
 experiments, where we are interested in understanding the main effects
 of parameters and where we want to sample over an input domain to
@@ -156,7 +156,7 @@ design of experiments methods in DDACE are central composite design
 is available. The stochastic methods are orthogonal array
 sampling~\cite{Koe96}, Monte Carlo (random) sampling, and Latin
 hypercube sampling.  Note that the DDACE version of LHS available through the
-DAKOTA interface only supports uniform distributions.  DDACE does not
+Dakota interface only supports uniform distributions.  DDACE does not
 currently support enforcement of user-specified correlation structure
 among the variables.
 
@@ -164,7 +164,7 @@ The sampling methods in DDACE can be used alone or in conjunction with
 other methods. For example, DDACE sampling can be used with both the
 surrogate-based optimization strategy and the optimization under
 uncertainty strategy. See Figure~\ref{adv_models:figure09} for an
-example of how the DDACE settings are used in DAKOTA.
+example of how the DDACE settings are used in Dakota.
 
 More information on DDACE is available on the web at:
 \url{http://csmr.ca.sandia.gov/projects/ddace}
@@ -182,7 +182,7 @@ from the center of the design space to a factorial point is $\pm$1
 unit for each factor, the distance from the center of the design space
 to a star point is $\pm\alpha$ with $\mid\alpha\mid > 1$. The precise
 value of $\alpha$ depends on certain properties desired for the design and on
-the number of factors involved.  The CCD design is specified in DAKOTA
+the number of factors involved.  The CCD design is specified in Dakota
 with the method command \texttt{dace central\_composite}.
 
 As an example, with two input variables or factors, each having two 
@@ -245,7 +245,7 @@ near rotatable) and require 3 levels of each factor. The designs have
 limited capability for orthogonal blocking compared to the central
 composite designs.  Box-Behnken requires fewer runs than CCD for 3
 factors, but this advantage goes away as the number of factors
-increases.  The Box-Behnken design is specified in DAKOTA with the
+increases.  The Box-Behnken design is specified in Dakota with the
 method command \texttt{dace box\_behnken}.
 
 Note that the number of sample points specified in a Box-Behnken design,
@@ -301,7 +301,7 @@ fixed value (0 or 1 in the above example).  Instead, once a level
 for a variable is determined in the array,  DDACE 
 samples a random variable from within that level.
 The orthogonal array design is specified in 
-DAKOTA with the method command \texttt{dace oas}. 
+Dakota with the method command \texttt{dace oas}. 
 
 The orthogonal array method in DDACE is the only method that 
 allows for the calculation of main effects, specified with the 
@@ -353,7 +353,7 @@ to the number of variables.  For example, if there are 2 variables, each
 with 5 partitions, the number of samples would be $5^2$.  In this 
 case, doubling the number of variables squares the sample size. 
 The grid design is specified in 
-DAKOTA with the method command \texttt{dace grid}.
+Dakota with the method command \texttt{dace grid}.
 
 \subsection{Monte Carlo Design}\label{dace:mc}
 
@@ -407,7 +407,7 @@ discrepancy.
 
 The quasi-Monte Carlo sequences of Halton and Hammersley are
 deterministic sequences determined by a set of prime bases.
-A Halton design is specified in DAKOTA with the method command 
+A Halton design is specified in Dakota with the method command 
 \texttt{fsu\_quasi\_mc halton}, and the Hammersley design is 
 specified with the command \texttt{fsu\_quasi\_mc hammersley}.
 For more details about the input specification, see the Reference Manual.
@@ -417,7 +417,7 @@ points, an almost arbitrary set of initial points is chosen, and then
 an internal set of iterations is carried out. These iterations
 repeatedly replace the current set of sample points by an estimate of
 the centroids of the corresponding Voronoi subregions~\cite{Du99}.
-A CVT design is specified in DAKOTA with the method command
+A CVT design is specified in Dakota with the method command
 \texttt{fsu\_cvt}.
 
 The methods in FSUDace are useful for design of experiments because 
@@ -428,7 +428,7 @@ sensitivity analysis.
 
 This section describes the Morris One-At-A-Time (MOAT) screening
 method as implemented in LLNL's PSUADE (Problem Solving Environment
-for Uncertainty Analysis and Design Exploration)~\cite{Ton05}.  DAKOTA
+for Uncertainty Analysis and Design Exploration)~\cite{Ton05}.  Dakota
 includes a prototype interface to this DACE method, which is useful
 for global sensitivity analysis, including interaction studies. 
 
@@ -476,13 +476,13 @@ deviation indicates nonlinear effects or interactions, since it is an
 indicator of elementary effects varying throughout the input space.
 
 The MOAT method is selected with method keyword {\tt psuade\_moat} as
-shown in the sample DAKOTA input deck in Figure~\ref{FIG:moat_input}.
+shown in the sample Dakota input deck in Figure~\ref{FIG:moat_input}.
 The number of samples ({\tt samples}) must be a positive integer
 multiple of (number of continuous design variables $k$ + 1) and will
 be automatically adjusted if misspecified.  The number of partitions
 ({\tt partitions}) applies to each variable being studied and must be
 odd (the number of MOAT levels $p$ per variable is partitions + 1,
-similar to DAKOTA multidimensional parameter studies).  This will also
+similar to Dakota multidimensional parameter studies).  This will also
 be adjusted at runtime as necessary.  Finite user-specified lower and
 upper bounds are required and will be scaled as needed by the method.
 For more information on use of MOAT sampling, see the Morris example
@@ -524,8 +524,8 @@ responses,
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption[DAKOTA input file for PSUADE
-MOAT.]{\label{FIG:moat_input}DAKOTA input file {\tt dakota\_psuade.in}
+\caption[Dakota input file for PSUADE
+MOAT.]{\label{FIG:moat_input}Dakota input file {\tt dakota\_psuade.in}
 to invoke the PSUADE MOAT method on the Morris test problem described in
 Section~\ref{additional:morris}.}
 \end{figure}
@@ -549,7 +549,7 @@ significant. Related techniques include analysis of variance
 (ANOVA)~\cite{Mye95} and main effects analysis, in which the parameters
 which have the greatest influence on the results are identified from
 sampling results. Scatter plots and ANOVA may be accessed through
-import of DAKOTA tabular results (see Section~\ref{output:tabular})
+import of Dakota tabular results (see Section~\ref{output:tabular})
 into external statistical analysis programs such as S-plus, Minitab,
 etc.
 
@@ -563,7 +563,7 @@ We take the definition of uncertainty analysis from~\cite{Sal04}:
 ``The study of how uncertainty in the output of a model can be 
 apportioned to different sources of uncertainty in the model input.''
 
-As a default, DAKOTA provides correlation analyses when running LHS.
+As a default, Dakota provides correlation analyses when running LHS.
 Correlation tables are printed with the simple, partial, and rank
 correlations between inputs and outputs. These can be useful to get a
 quick sense of how correlated the inputs are to each other, and how
@@ -601,7 +601,7 @@ The calculation of $S_{i}$ and $T_{i}$ requires the evaluation of
 m-dimensional integrals which are typically approximated by Monte-Carlo 
 sampling. More details on the
 calculations and interpretation of the sensitivity indices can be
-found in~\cite{Sal04}. In DAKOTA version 5.1, we have 
+found in~\cite{Sal04}. In Dakota version 5.1, we have 
 improved calculations for the calculation of the $S_{i}$ and $T_{i}$ 
 indices when using sampling.  The implementation details of these 
 calculatiosn are provided in~\cite{Weirs10}. 
@@ -636,7 +636,7 @@ order interactions that contribute significantly to the variance.
 There is no requirement that the sum of the total effect indices 
 is one:  in most cases, the sum of the total effect indices will be 
 greater than one.  An example of the Main and Total effects 
-indices as calculated by DAKOTA using sampling is shown 
+indices as calculated by Dakota using sampling is shown 
 in Figure~\ref{fig:dace:vbd}
 
 \begin{figure}[ht!]
@@ -652,7 +652,7 @@ response_fn_1 Sobol indices:
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption{DAKOTA output for Variance-based Decomposition} 
+\caption{Dakota output for Variance-based Decomposition} 
 \label{fig:dace:vbd}
 \end{figure}
 

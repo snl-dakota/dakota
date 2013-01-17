@@ -3,7 +3,7 @@
 \section{Overview}\label{models:overview}
 
 Chapters~\ref{ps} through~\ref{nls} have presented the different
-``iterators'' available in DAKOTA.  An iterator iterates on a model in
+``iterators'' available in Dakota.  An iterator iterates on a model in
 order to map a set of variables into a set of responses.  This model
 may involve a simple mapping involving a single interface, or it may
 involve recursions using sub-iterator and sub-models.  These recursion
@@ -22,7 +22,7 @@ these cases, the sub-model is of arbitrary type, such that model
 recursions can be chained together in as long of a sequence as needed
 (e.g., layered containing nested contained layered containing single
 in Section~\ref{adv_models:ouu:sb}).  Figure~\ref{model:hier} displays
-the model class hierarchy from the DAKOTA Developers
+the model class hierarchy from the Dakota Developers
 Manual~\cite{DevMan}, with derived classes for single models, nested
 models, recast models, and two types of surrogate models: data fit and
 hierarchical/multifidelity.  A third type of derived surrogate model
@@ -30,7 +30,7 @@ supporting reduced-order models (ROM) is planned for future releases.
 
 \begin{figure}
   \centering \includegraphics[scale=0.65]{images/classDakota_1_1Model}
-  \caption{The DAKOTA model class hierarchy.}  \label{model:hier}
+  \caption{The Dakota model class hierarchy.}  \label{model:hier}
 \end{figure}
 
 Section~\ref{models:single} describes single models;
@@ -46,7 +46,7 @@ The single model is the simplest model type.  It uses a single
 interface instance (see Chapter~\ref{interfaces}) to map variables
 (see Chapter~\ref{variables}) into responses (see
 Chapter~\ref{responses}).  There is no recursion in this case.  Refer
-to the Models chapter in the DAKOTA Reference Manual~\cite{RefMan} for
+to the Models chapter in the Dakota Reference Manual~\cite{RefMan} for
 additional information on the single model specification.
 
 \section{Recast Models}\label{models:recast}
@@ -62,7 +62,7 @@ Sections~\ref{uq:reliability} and~\ref{uq:expansion}), multiobjective
 optimization (see Section~\ref{opt:additional:multiobjective}), merit
 functions (see Section~\ref{sbm:sblm}), and expected
 improvement/feasibility (see Sections~\ref{sbm:egm}
-and~\ref{uq:reliability:global}).  Refer to the DAKOTA Developers
+and~\ref{uq:reliability:global}).  Refer to the Dakota Developers
 Manual~\cite{DevMan} for additional details on the mechanics of
 recasting problem formulations.
 
@@ -77,7 +77,7 @@ Each of the surrogate model types supports the use of correction
 factors that improve the local accuracy of the surrogate models. The
 correction factors force the surrogate models to match the true
 function values and possibly true function derivatives at the center
-point of each trust region. Currently, DAKOTA supports either zeroth-,
+point of each trust region. Currently, Dakota supports either zeroth-,
 first-, or second-order accurate correction methods, each of which can
 be applied using either an additive, multiplicative, or combined
 correction function. For each of these correction approaches, the
@@ -199,7 +199,7 @@ functions, splines)
 uses a set of data points distributed over the domain of interest,
 often generated using a design of computer experiments.
 
-DAKOTA contains several types of surface fitting methods that can be
+Dakota contains several types of surface fitting methods that can be
 used with optimization and uncertainty quantification methods and
 strategies such as surrogate-based optimization and optimization under
 uncertainty. These are: polynomial models (linear, quadratic, and
@@ -207,7 +207,7 @@ cubic), first-order Taylor series expansion, kriging spatial
 interpolation, artificial neural networks, multivariate adaptive
 regression splines, radial basis functions, and moving least squares. 
 With the exception of Taylor series methods, all of the above methods 
-listed in the previous sentence are accessed in DAKOTA through the 
+listed in the previous sentence are accessed in Dakota through the 
 Surfpack library.  All of these surface fitting methods can be
 applied to problems having an arbitrary number of design parameters.
 However, surface fitting methods usually are practical only for
@@ -218,7 +218,7 @@ of names in the engineering community. These include surrogate models,
 meta-models, approximation models, and response surfaces. For this
 manual, the terms surface fit model and surrogate model are used.
 
-The data fitting methods in DAKOTA include software developed by
+The data fitting methods in Dakota include software developed by
 Sandia researchers and by various researchers in the academic
 community.
 
@@ -242,7 +242,7 @@ singular value decomposition to compute the polynomial coefficients,
 whereas the kriging surface uses Maximum Likelihood Estimation to
 compute its correlation coefficients. More information on the
 numerical methods used in the surface fitting codes is provided in the
-DAKOTA Developers Manual~\cite{DevMan}.
+Dakota Developers Manual~\cite{DevMan}.
 
 The set of design points that is used to construct a surface fit model
 is generated using either the DDACE software package~\cite{TonXX} or the
@@ -323,7 +323,7 @@ first-order Taylor series is used.
 \subsubsection{Linear, Quadratic, and Cubic Polynomial Models}\label{models:surf:polynomial}
 
 Linear, quadratic, and cubic polynomial models are available in
-DAKOTA. The form of the linear polynomial model is
+Dakota. The form of the linear polynomial model is
 
 \begin{equation}
   \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
@@ -377,7 +377,7 @@ and for the cubic polynomial:
 
 There must be at least $n_{c}$ data samples in order to form a fully
 determined linear system and solve for the polynomial coefficients. In
-DAKOTA, a least-squares approach involving a singular value
+Dakota, a least-squares approach involving a singular value
 decomposition numerical method is applied to solve the linear system.
 
 The utility of the polynomial models stems from two sources: (1) over
@@ -394,12 +394,12 @@ information on polynomial models.
 
 \subsubsection{Kriging/Gaussian-Process Spatial Interpolation Models}
 \label{models:surf:kriging}
-In DAKOTA 5.2, we have 2 versions of spatial interpolation models.
-One is located in DAKOTA itself and the other in the Surfpack subpackage 
-of DAKOTA which can be compiled in a stand alone mode.  These models
+In Dakota 5.2, we have 2 versions of spatial interpolation models.
+One is located in Dakota itself and the other in the Surfpack subpackage 
+of Dakota which can be compiled in a stand alone mode.  These models
 are denoted as \texttt{kriging dakota} and \texttt{kriging surfpack} or 
 as \texttt{gaussian\_process dakota} and 
-\texttt{gaussian\_process surfpack}.  In prior DAKOTA releases, the 
+\texttt{gaussian\_process surfpack}.  In prior Dakota releases, the 
 \texttt{dakota} version was referred to as the \texttt{gaussian\_process} 
 model while the \texttt{surfpack} version was referred to as the 
 \texttt{kriging} model.  As of DAKTOA 5.2, specifying only 
@@ -416,7 +416,7 @@ developed in the geostatistics and spatial statistics communities
 response values from a set of data points.  The number of times the 
 fitted surface is differentiable will depend on the correlation function 
 that is used.  Currently, the Gaussian correlation function is the only 
-option for either version included in DAKOTA; this makes the GP model 
+option for either version included in Dakota; this makes the GP model 
 $C^{\infty}$-continuous.  The form of the GP model is
 
 \begin{equation}
@@ -438,7 +438,7 @@ functions evaluated at all data points.  The terms in the correlation
 vector and matrix are computed using a Gaussian correlation function 
 and are dependent on an $n$-dimensional vector of correlation parameters,
 $\underline{\theta} = \{\theta_{1},\ldots,\theta_{n}\}^T$. By default, 
-DAKOTA determines the value of $\underline{\theta}$ using a Maximum
+Dakota determines the value of $\underline{\theta}$ using a Maximum
 Likelihood Estimation (MLE) procedure.  However, the user can also opt 
 to manually set them in the \texttt{gaussian\_process surfpack}
 model by specifying a vector of correlation lengths, 
@@ -477,7 +477,7 @@ is far from any of the data points from which the GP model was
 constructed (i.e., when the model is used for extrapolation). 
 
 As mentioned above, there are two \texttt{gaussian\_process} models 
-in DAKOTA 5.2, the \texttt{surfpack} version and the \texttt{dakota}
+in Dakota 5.2, the \texttt{surfpack} version and the \texttt{dakota}
 version.  More details on the \texttt{gaussian\_process dakota}
 model can be found in~\cite{McF08}. The differences between these 
 models are as follows: 
@@ -489,7 +489,7 @@ models are as follows:
       reduced quadratic (main effects only, no interaction terms) 
       polynomial.  This is specified by the keyword \texttt{trend}
       followed by one of \texttt{constant}, \texttt{linear}, or 
-      \texttt{reduced\_quadratic} (in DAKOTA 5.0 and earlier, the reduced 
+      \texttt{reduced\_quadratic} (in Dakota 5.0 and earlier, the reduced 
       quadratic option for the \texttt{dakota} version was selected using 
       the keyword, \texttt{quadratic}). The \\
       \texttt{gaussian\_process surfpack} model has the additional option 
@@ -532,7 +532,7 @@ models are as follows:
       predictive capability and should be avoided. The 
       \texttt{gaussian\_process surfpack} model defines a small feasible 
       search region for correlation lengths, which should (almost) always 
-      contain some well conditioned correlation matrices. In DAKOTA 5.1, 
+      contain some well conditioned correlation matrices. In Dakota 5.1, 
       the \texttt{kriging} (now \texttt{gaussian\_process surfpack} or
       \texttt{kriging surfpack}) model avoided 
       ill-conditioning by explicitly excluding poorly conditioned 
@@ -552,7 +552,7 @@ models are as follows:
       predictive capability on the remaining unchosen points) using a 
       greedy heuristic. This option is specified with the keyword 
       \texttt{point\_selection} in the input file.\\ \\
-      As of DAKOTA 5.2, the \texttt{gaussian\_process surfpack} model has 
+      As of Dakota 5.2, the \texttt{gaussian\_process surfpack} model has 
       a similar capability. Points are {\bf not} discarded prior to the 
       construction of the model.  Instead, within the maximum likelihood 
       optimization loop, when the correlation matrix  violates the 
@@ -588,7 +588,7 @@ models are as follows:
       more accurate and/or require fewer evaluations of the true function 
       than the \texttt{gaussian\_process dakota}.  For this reason, the
       \texttt{gaussian\_process surfpack} version is the default 
-      option as of DAKOTA 5.2. 
+      option as of Dakota 5.2. 
 \item Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the 
       \texttt{use\_derivatives}  keyword will cause the 
       \texttt{gaussian\_process surfpack} model to be built from a 
@@ -627,7 +627,7 @@ models are as follows:
 
 \subsubsection{Artificial Neural Network (ANN) Models}\label{models:surf:ann}
 
-The ANN surface fitting method in DAKOTA employs a stochastic layered
+The ANN surface fitting method in Dakota employs a stochastic layered
 perceptron (SLP) artificial neural network based on the direct
 training approach of Zimmerman~\cite{Zim96}. The SLP ANN method is
 designed to have a lower training cost than traditional ANNs. This is

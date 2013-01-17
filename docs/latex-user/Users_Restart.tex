@@ -2,20 +2,20 @@
 
 \section{Restart Management}\label{restart:management}
 
-DAKOTA was developed for solving problems that require multiple calls
+Dakota was developed for solving problems that require multiple calls
 to computationally expensive simulation codes. In some cases you may
 want to conduct the same optimization, but to a tighter final
 convergence tolerance. This would be costly if the entire optimization
 analysis had to be repeated. Interruptions imposed by computer usage
 policies, power outages, and system failures could also result in
-costly delays. However, DAKOTA automatically records the variable and
+costly delays. However, Dakota automatically records the variable and
 response data from all function evaluations so that new executions of
-DAKOTA can pick up where previous executions left off.
+Dakota can pick up where previous executions left off.
 
-The DAKOTA restart file (e.g., \texttt{dakota.rst}) is written in a
+The Dakota restart file (e.g., \texttt{dakota.rst}) is written in a
 portable binary format. The portability derives from use of the XDR
 standard.  As shown in Section~\ref{tutorial:installation:running}, 
-the primary restart commands for DAKOTA are \texttt{-read\_restart}, 
+the primary restart commands for Dakota are \texttt{-read\_restart}, 
 \texttt{-write\_restart}, and \texttt{-stop\_restart}.
 
 To write a restart file using a particular name, the
@@ -26,12 +26,12 @@ To write a restart file using a particular name, the
     dakota -i dakota.in -write_restart my_restart_file
 \end{verbatim}
 \end{small}
-If no \texttt{-write\_restart} specification is used, then DAKOTA will
+If no \texttt{-write\_restart} specification is used, then Dakota will
 still write a restart file, but using the default name
 \texttt{dakota.rst} instead of a user-specified name.  To turn restart
 recording off, the user may select \texttt{deactivate restart\_file}
 in the \texttt{interface} specification (refer to the Interface
-Commands chapter in the DAKOTA Reference Manual~\cite{RefMan} for
+Commands chapter in the Dakota Reference Manual~\cite{RefMan} for
 additional information).  This can increase execution speed and reduce
 disk storage requirements, but at the expense of a loss in the ability
 to recover and continue a run that terminates prematurely.  Obviously,
@@ -40,7 +40,7 @@ prone to failure. Please note that using the \texttt{deactivate restart\_file}
 specification will result in a zero length restart file
 with the default name dakota.rst.
 
-To restart DAKOTA from a restart file, the \texttt{-read\_restart}
+To restart Dakota from a restart file, the \texttt{-read\_restart}
 command line input (may be abbreviated as \texttt{-r}) is used:
 \begin{small}
 \begin{verbatim}
@@ -48,7 +48,7 @@ command line input (may be abbreviated as \texttt{-r}) is used:
 \end{verbatim}
 \end{small}
 
-If no \texttt{-read\_restart} specification is used, then DAKOTA will
+If no \texttt{-read\_restart} specification is used, then Dakota will
 not read restart information from any file (i.e., the default is no
 restart processing).
 
@@ -90,7 +90,7 @@ evaluations from \texttt{dakota.rst} as well as any new evaluations.
 All evaluations following the 50$^{\mathrm{th}}$ in \texttt{dakota.rst}
 have been removed from the latest restart record.
 
-DAKOTA's restart algorithm relies on its duplicate detection
+Dakota's restart algorithm relies on its duplicate detection
 capabilities. Processing a restart file populates the list of function
 evaluations that have been performed. Then, when the study is
 restarted, it is started from the beginning (not a ``warm'' start) and
@@ -104,10 +104,10 @@ numerical round-off error to cause a divergence between the
 evaluations performed in the previous and restarted studies. This has
 been extremely rare to date.
 
-\section{The DAKOTA Restart Utility}\label{restart:utility}
+\section{The Dakota Restart Utility}\label{restart:utility}
 
-The DAKOTA restart utility program provides a variety of facilities
-for managing restart files from DAKOTA executions. The executable
+The Dakota restart utility program provides a variety of facilities
+for managing restart files from Dakota executions. The executable
 program name is \texttt{dakota\_restart\_util} and it has the
 following options, as shown by the usage message returned when
 executing the utility without any options:
@@ -197,7 +197,7 @@ results in output similar to the following (from the
 
 \subsection{To/From Neutral File Format}\label{restart:utility:neutral}
 
-A DAKOTA restart file can be converted to a neutral file format using
+A Dakota restart file can be converted to a neutral file format using
 a command like the following:
 \begin{small}
 \begin{verbatim}
@@ -261,14 +261,14 @@ were insufficient).
 Conversion of a binary restart file to a tabular format enables
 convenient import of this data into 3rd-party post-processing tools
 such as Matlab, TECplot, Excel, etc. This facility is nearly identical
-to the \texttt{tabular\_graphics\_data} option in the DAKOTA input
+to the \texttt{tabular\_graphics\_data} option in the Dakota input
 file specification (described in Section~\ref{output:tabular}), but
 with two important differences:
 \begin{enumerate}
 \item No function evaluations are suppressed as they are with
   \texttt{tabular\_graphics\_data} (i.e., any internal finite
   difference evaluations are included).
-\item The conversion can be performed posthumously, i.e., for DAKOTA
+\item The conversion can be performed posthumously, i.e., for Dakota
   runs executed previously.
 \end{enumerate}
 
@@ -326,14 +326,14 @@ which results in a report similar to the following:
 \end{verbatim}
 
 The \texttt{dakota.rst.all} database now contains 185 evaluations and
-can be read in for use in a subsequent DAKOTA study using the
+can be read in for use in a subsequent Dakota study using the
 \texttt{-read\_restart} option to the \texttt{dakota} executable (see
 Section~\ref{restart:management}).
 
 \subsection{Removal of Corrupted Data}\label{restart:utility:removal}
 
 On occasion, a simulation or computer system failure may cause a
-corruption of the DAKOTA restart file. For example, a simulation crash
+corruption of the Dakota restart file. For example, a simulation crash
 may result in failure of a post-processor to retrieve meaningful data.
 If 0's (or other erroneous data) are returned from the user's
 \texttt{analysis\_driver}, then this bad data will get recorded in the

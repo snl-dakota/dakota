@@ -3,7 +3,7 @@
 \section{Overview}\label{sbm:overview}
 
 Surrogate models approximate an original, high fidelity ``truth''
-model, typically at reduced computational cost.  In DAKOTA, several
+model, typically at reduced computational cost.  In Dakota, several
 surrogate model selections are possible, which are categorized as data
 fits, multifidelity models, and reduced-order models, as described in
 Section~\ref{models:surrogate}.  In the context of minimization
@@ -25,7 +25,7 @@ original simulation model and adaptively manages the extent of the
 approximate optimization cycles using a trust region approach.
 
 %The surrogate-based local method in
-%DAKOTA can be implemented using heuristic rules (less expensive) or
+%Dakota can be implemented using heuristic rules (less expensive) or
 %provably-convergent rules (more expensive). The heuristic approach
 %is particularly effective on real-world engineering design problems
 %that contain nonsmooth features (e.g., slope discontinuities,
@@ -33,7 +33,7 @@ approximate optimization cycles using a trust region approach.
 %trouble, and where the computational expense of the simulation
 %precludes the use of nongradient-based methods.
 
-Refer to the DAKOTA Theory Manual~\cite{TheoMan} for algorithmic
+Refer to the Dakota Theory Manual~\cite{TheoMan} for algorithmic
 details on iterate acceptance, merit function formulations,
 convergence assessment, and constraint relaxation.
 
@@ -110,7 +110,7 @@ regions.
 %In SBO with surface fit functions, a sequence of optimization
 %subproblems are evaluated, each of which is confined to a subset of
 %the parameter space known as a ``trust region.'' Inside each trust
-%region, DAKOTA's data sampling methods are used to evaluate the
+%region, Dakota's data sampling methods are used to evaluate the
 %response quantities at a small number (order $10^{1}$ to $10^{2}$) of
 %design points. Next, multidimensional surface fitting is performed to
 %create a surrogate function for each of the response quantities.
@@ -128,7 +128,7 @@ More information on the design of experiments methods is available in
 Chapter~\ref{dace}, and the data fit surrogates are described in
 Section~\ref{models:surrogate:datafit}.
 
-Figure~\ref{sbm:sblm_rosen} shows a DAKOTA input file that implements
+Figure~\ref{sbm:sblm_rosen} shows a Dakota input file that implements
 surrogate-based optimization on Rosenbrock's function. This input file
 is named \texttt{dakota\_sbo\_rosen.in} in the \texttt{Dakota/test}
 directory.  The first method keyword block contains the SBO 
@@ -158,12 +158,12 @@ bounds) from this point in the $x_1$ and $x_2$ coordinate directions.
       \verbatimtabinput[8]{dakota_sbo_rosen.in}
     \end{tiny}
   \end{bigbox}
-  \caption{DAKOTA input file for the surrogate-based local optimization
+  \caption{Dakota input file for the surrogate-based local optimization
     example.}
   \label{sbm:sblm_rosen}
 \end{figure}
 
-If this input file is executed in DAKOTA, it will converge to the
+If this input file is executed in Dakota, it will converge to the
 optimal design point at $(x_{1},x_{2})=(1,1)$ in approximately 800
 function evaluations. While this solution is correct, it is obtained
 at a much higher cost than a traditional gradient-based optimizer
@@ -363,7 +363,7 @@ running one optimization on a single surrogate model. That is, set
 \texttt{max\_iterations} to 1.  This will allow one to get a sense of
 where the optima are located and also what surrogate types are the
 most accurate to use for the problem.  Note that by fixing the seed of
-the sample on which the surrogate is built, one can take a DAKOTA
+the sample on which the surrogate is built, one can take a Dakota
 input file, change the surrogate type, and re-run the problem without
 any additional function evaluations by specifying the use of the
 dakota restart file which will pick up the existing function
@@ -389,7 +389,7 @@ optimization is evolving as the surrogate gets updated globally.  If
 it appears to be changing significantly, then a larger number (used in
 combination with restart) may be needed.
 
-Figure~\ref{sbm:sbgm_moga} shows a DAKOTA input file that implements
+Figure~\ref{sbm:sbgm_moga} shows a Dakota input file that implements
 surrogate-based global optimization on a multi-objective test function. 
 This input file
 is named \texttt{dakota\_su\_mogatest1.in} in the \texttt{Dakota/test}
@@ -412,7 +412,7 @@ as objective functions from that driver.
       \verbatimtabinput[8]{dakota_su_mogatest1.in}
     \end{tiny}
   \end{bigbox}
-  \caption{DAKOTA input file for the surrogate-based global optimization
+  \caption{Dakota input file for the surrogate-based global optimization
     example.}
   \label{sbm:sbgm_moga}
 \end{figure}
@@ -453,7 +453,7 @@ which maximize the EIF.  Rather, we use the DIRECT algorithm.  Second,
 we allow for multiobjective optimization and nonlinear least squares
 including general nonlinear constraints.  Constraints are handled
 through an augmented Lagrangian merit function approach (see
-Surrogate-Based Minimization chapter in DAKOTA Theory
+Surrogate-Based Minimization chapter in Dakota Theory
 Manual~\cite{TheoMan}).
 
 The method is specified as \texttt{efficient\_global}.  Currently we
@@ -473,7 +473,7 @@ Figure~\ref{sbm:egm_rosen}.  This can be found in the
       \verbatimtabinput[8]{dakota_rosenbrock_ego.in}
     \end{small}
   \end{bigbox}
-  \caption{DAKOTA input file for the efficient global optimization example.}
+  \caption{Dakota input file for the efficient global optimization example.}
   \label{sbm:egm_rosen}
 \end{figure}
 

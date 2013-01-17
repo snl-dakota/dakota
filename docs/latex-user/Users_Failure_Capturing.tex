@@ -1,6 +1,6 @@
 \chapter{Simulation Failure Capturing}\label{failure}
 
-DAKOTA provides the capability to manage failures in simulation codes
+Dakota provides the capability to manage failures in simulation codes
 within its system call, fork, and direct simulation interfaces (see
 Section~\ref{interfaces:sim} for simulation interface descriptions).
 Failure capturing consists of three operations: failure detection,
@@ -25,7 +25,7 @@ following simple C shell script excerpt
 \end{verbatim}
 
 will pass the \texttt{if} test and communicate simulation failure to
-DAKOTA if the \texttt{grep} command finds the string \texttt{ERROR}
+Dakota if the \texttt{grep} command finds the string \texttt{ERROR}
 anywhere in the \texttt{analysis.out} file. The \texttt{/dev/null}
 device file is called the ``bit bucket'' and the \texttt{grep} command
 output is discarded by redirecting it to this destination. The
@@ -44,26 +44,26 @@ direct error diagnostic information, then failure detection may
 require monitoring of simulation results for sanity (e.g., is the mesh
 distorting excessively?) or potentially monitoring for continued
 process existence to detect a simulation segmentation fault or core
-dump. While this can get complicated, the flexibility of DAKOTA's
+dump. While this can get complicated, the flexibility of Dakota's
 interfaces allows for a wide variety of user-defined monitoring
 approaches.
 
 \section{Failure communication}\label{failure:communication}
 
-Once a failure is detected, it must be communicated so that DAKOTA can
+Once a failure is detected, it must be communicated so that Dakota can
 take the appropriate corrective action. The form of this communication
 depends on the type of simulation interface in use.
 
 In the system call and fork simulation interfaces, a detected
-simulation failure is communicated to DAKOTA through the results file.
+simulation failure is communicated to Dakota through the results file.
 Instead of returning the standard results file data, the string
 ``\texttt{fail}'' should appear at the beginning of the results file.
 Any data appearing after the fail string will be ignored. Also,
-DAKOTA's detection of this string is case insensitive, so
+Dakota's detection of this string is case insensitive, so
 ``\texttt{FAIL}'', ``\texttt{Fail}'', etc., are equally valid.
 
 In the direct simulation interface case, a detected simulation
-failure is communicated to DAKOTA through the return code provided by
+failure is communicated to Dakota through the return code provided by
 the user's \texttt{analysis\_driver},
 \texttt{input\_filter}, or \texttt{output\_filter}. As shown in
 Section~\ref{advint:direct:extension}, the prototype for simulations
@@ -74,24 +74,24 @@ simulation failure).
 
 \section{Failure mitigation}\label{failure:mitigation}
 
-Once the analysis failure has been communicated, DAKOTA will attempt
+Once the analysis failure has been communicated, Dakota will attempt
 to recover from the failure using one of the following four
 mechanisms, as governed by the interface specification in the user's
-input file (see the Interface Commands chapter in the DAKOTA Reference
+input file (see the Interface Commands chapter in the Dakota Reference
 Manual~\cite{RefMan} for additional information).
 
 \subsection{Abort (default)}\label{failure:mitigation:abort}
 
-If the \texttt{abort} option is active (the default), then DAKOTA will
+If the \texttt{abort} option is active (the default), then Dakota will
 terminate upon detecting a failure. Note that if the problem causing
-the failure can be corrected, DAKOTA's restart capability (see
+the failure can be corrected, Dakota's restart capability (see
 Chapter~\ref{restart}) can be used to continue the study.
 
 \subsection{Retry}\label{failure:mitigation:retry}
 
-If the \texttt{retry} option is specified, then DAKOTA will re-invoke
+If the \texttt{retry} option is specified, then Dakota will re-invoke
 the failed simulation up to the specified number of retries. If the
-simulation continues to fail on each of these retries, DAKOTA will
+simulation continues to fail on each of these retries, Dakota will
 terminate. The retry option is appropriate for those cases in which
 simulation failures may be resulting from transient computing
 environment issues, such as shared disk space, software license
@@ -99,7 +99,7 @@ access, or networking problems.
 
 \subsection{Recover}\label{failure:mitigation:recover}
 
-If the \texttt{recover} option is specified, then DAKOTA will not
+If the \texttt{recover} option is specified, then Dakota will not
 attempt the failed simulation again. Rather, it will return a ``dummy''
 set of function values as the results of the function evaluation. The
 dummy function values to be returned are specified by the user. Any
@@ -112,7 +112,7 @@ investigating the region.
 
 \subsection{Continuation}\label{failure:mitigation:continuation}
 
-If the \texttt{continuation} option is specified, then DAKOTA will
+If the \texttt{continuation} option is specified, then Dakota will
 attempt to step towards the failing ``target'' simulation from a nearby
 ``source'' simulation through the use of a continuation algorithm. This
 option is appropriate for those cases in which a failed simulation may
@@ -131,9 +131,9 @@ target point using the last interval as a step size. If a failure
 occurs while marching forward, the interval will be halved again. Each
 invocation of the continuation algorithm is allowed a total of ten
 failures (ten halvings result in up to 1024 evaluations from source to
-target) prior to aborting the DAKOTA process.
+target) prior to aborting the Dakota process.
 
-While DAKOTA manages the interval halving and function evaluation
+While Dakota manages the interval halving and function evaluation
 invocations, the user is responsible for managing the initial guess
 for the simulation program. For example, in a GOMA input
 file~\cite{Sch95}, the user specifies the files to be used for reading
@@ -150,10 +150,10 @@ methods (e.g., genetic algorithms) in which the last successful
 evaluation may not necessarily be in the vicinity of the current
 evaluation. This approach will require the user to save and manipulate
 previous solutions (likely tagged with evaluation number) so that the
-results from a particular simulation (specified by DAKOTA after
+results from a particular simulation (specified by Dakota after
 internal identification of the closest point) can be used as the
 current simulation's initial guess.  This more general approach is not
-yet supported in DAKOTA.
+yet supported in Dakota.
 
 \section{Special values} \label{failure:special}
 

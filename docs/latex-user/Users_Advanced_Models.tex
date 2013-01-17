@@ -29,7 +29,7 @@ each realization of the epistemic parameters.  %This ensemble is then
 %interpreted in different ways according to the outer loop methodology
 %that is employed.
 
-In DAKOTA, we support interval-valued probability (IVP), second-order
+In Dakota, we support interval-valued probability (IVP), second-order
 probability (SOP), and Dempster-Shafer theory of evidence (DSTE)
 approaches to mixed uncertainty.  These three approaches differ by how
 they treat the epistemic variables in the outer loop: they are treated
@@ -131,7 +131,7 @@ in the problem.
       \verbatimtabinput[8]{dakota_uq_cantilever_sop_rel.in}
     \end{tiny}
   \end{bigbox}
-  \caption{DAKOTA input file for the interval-valued probability example.}
+  \caption{Dakota input file for the interval-valued probability example.}
   \label{adv_models:2ndprob}
 \end{figure}
 
@@ -195,7 +195,7 @@ in SOP, we can instead rely on the same probabilistic methods for
 aleatory propagation employed for the inner loop.  In certain special
 cases, expected values of expected values can be computed in closed
 form (selected statistics for combined variable stochastic expansions,
-refer to the DAKOTA Theory Manual~\cite{TheoMan}), without need for a
+refer to the Dakota Theory Manual~\cite{TheoMan}), without need for a
 separate outer loop method.
 
 The previous example in Figure~\ref{adv_models:2ndprob} can be
@@ -237,7 +237,7 @@ functions provide a more finely resolved epistemic characterization
 than a basic output interval.
 
 The single-level DSTE approach for propagating epistemic uncertainties
-is described in Section~\ref{uq:dempshaf} and in the DAKOTA Theory
+is described in Section~\ref{uq:dempshaf} and in the Dakota Theory
 Manual~\cite{TheoMan}.  Examples of nested DSTE for propagating mixed
 uncertainties can be seen in \texttt{dakota/test} in the input file
 \texttt{dakota\_uq\_ishigami\_dste\_exp.in}.
@@ -317,7 +317,7 @@ response functions.
   \label{adv_models:figure08}
 \end{figure}
 
-Figure~\ref{adv_models:figure09} shows a DAKOTA input file for a nested
+Figure~\ref{adv_models:figure09} shows a Dakota input file for a nested
 OUU example problem that is based on the textbook test problem. This
 input file is named \texttt{dakota\_ouu1\_tb.in} in the
 \texttt{dakota/test} directory.  In this example, the objective
@@ -331,10 +331,10 @@ optimization specification, consisting of the optimization method, the
 continuous design variables, and the response quantities that will be
 used by the optimizer. The mapping matrices used for incorporating UQ
 statistics into the optimization response data are described in the
-DAKOTA Reference Manual~\cite{RefMan}. The uncertainty quantification
+Dakota Reference Manual~\cite{RefMan}. The uncertainty quantification
 specification includes the UQ method, the uncertain variable
 probability distributions, the interface to the simulation code, and
-the UQ response attributes. As with other complex DAKOTA input files,
+the UQ response attributes. As with other complex Dakota input files,
 the identification tags given in each keyword block can be used to
 follow the relationships among the different keyword blocks.
 
@@ -345,7 +345,7 @@ follow the relationships among the different keyword blocks.
       \verbatimtabinput[8]{dakota_ouu1_tb.in}
     \end{tiny}
   \end{bigbox}
-  \caption{DAKOTA input file for the nested OUU example.}
+  \caption{Dakota input file for the nested OUU example.}
   \label{adv_models:figure09}
 \end{figure}
 
@@ -431,7 +431,7 @@ in~\cite{Eld02}.
 Bi-level and sequential approaches to reliability-based design
 optimization (RBDO) and their associated sensitivity analysis
 requirements are described in the Optimization Under Uncertainty
-chapter of the DAKOTA Theory Manual~\cite{TheoMan}.
+chapter of the Dakota Theory Manual~\cite{TheoMan}.
 
 A number of bi-level RBDO examples are provided in \texttt{dakota/test}.
 The \texttt{dakota\_rbdo\_cantilever.in},
@@ -471,7 +471,7 @@ with respect to design variables.
 For stochastic expansion-based approaches to optimization under
 uncertainty, bi-level, sequential, and multifidelity approaches and
 their associated sensitivity analysis requirements are described in
-the Optimization Under Uncertainty chapter of the DAKOTA Theory
+the Optimization Under Uncertainty chapter of the Dakota Theory
 Manual~\cite{TheoMan}.
 
 In \texttt{dakota/test}, the \texttt{dakota\_pcbdo\_cantilever.in},
@@ -483,7 +483,7 @@ In \texttt{dakota/test}, the \texttt{dakota\_pcbdo\_cantilever.in},
 Section~\ref{additional:steel_column}) OUU problems using a bi-level
 polynomial chaos-based approach, where the statistical design metrics
 are reliability indices based on moment projection (see Mean Value
-section in Reliability Methods Chapter of DAKOTA Theory
+section in Reliability Methods Chapter of Dakota Theory
 Manual~\cite{TheoMan}).  The test matrix in the former three input
 files evaluate design gradients of these reliability indices using
 several different approaches: analytic design gradients based on a PCE
@@ -503,7 +503,7 @@ distribution parameters for the random variables) must be
 %where $\frac{dR}{ds}$ is calculated as $\frac{dR}{dx} \frac{dx}{ds}$.
 computed using $\frac{dR}{dx} \frac{dx}{ds}$ (refer to Stochastic
 Sensitivity Analysis section in Optimization Under Uncertainty chapter
-of DAKOTA Theory Manual~\cite{TheoMan}).  Additional test input files
+of Dakota Theory Manual~\cite{TheoMan}).  Additional test input files
 include:
 \begin{itemize}
 \item \texttt{dakota\_scbdo\_cantilever.in}, 
@@ -580,7 +580,7 @@ thousands or millions of samples) on the approximation to obtain estimates
 of the mean, variance, and percentiles of the response. 
 
 This approach, called ``surrogate-based uncertainty quantification'' 
-is easy to do in DAKOTA, and one can set up input files to compare the 
+is easy to do in Dakota, and one can set up input files to compare the 
 results using no approximation (e.g. determine the mean, variance, and 
 percentiles of the output directly based on the initial sample values) 
 with the results obtained by sampling a variety of surrogate approximations.  

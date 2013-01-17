@@ -1,28 +1,28 @@
-\chapter{Output from DAKOTA}\label{output}
+\chapter{Output from Dakota}\label{output}
 
 \section{Overview of Output Formats}\label{output:overview}
 
 Given an emphasis on complex numerical simulation codes that run on
-massively parallel supercomputers, DAKOTA's output has been designed
+massively parallel supercomputers, Dakota's output has been designed
 to provide a succinct, text-based reporting of the progress of the
 iterations and function evaluations performed by an algorithm. In
-addition, DAKOTA provides a tabular output format that is useful for
+addition, Dakota provides a tabular output format that is useful for
 data visualization with external tools and a basic graphical output
-capability that is useful as a monitoring tool. The JAGUAR DAKOTA GUI
+capability that is useful as a monitoring tool. The JAGUAR Dakota GUI
 is an emerging capability that will provide more advanced
 visualization facilities in time.
 
 \section{Standard Output}\label{output:standard}
 
-DAKOTA outputs basic information to ``standard out'' (i.e., the
+Dakota outputs basic information to ``standard out'' (i.e., the
 screen) for each function evaluation, consisting of an evaluation
 number, parameter values, execution syntax, the active set vector, and
-the response data set. To describe the standard output of DAKOTA,
+the response data set. To describe the standard output of Dakota,
 optimization of the ``container'' problem (see
 Chapter~\ref{additional} for problem formulation) is used as an
 example. The input file for this example is shown in
 Figure~\ref{output:incont}. In this example, there is one equality
-constraint, and DAKOTA's finite difference algorithm is used to
+constraint, and Dakota's finite difference algorithm is used to
 provide central difference numerical gradients to the NPSOL optimizer.
 \begin{figure}
   \begin{small}
@@ -30,18 +30,18 @@ provide central difference numerical gradients to the NPSOL optimizer.
       \verbatimtabinput[8]{dakota_container.in}
     \end{bigbox}
   \end{small}
-  \caption{DAKOTA input file for the ``container'' example problem.}
+  \caption{Dakota input file for the ``container'' example problem.}
   \label{output:incont}
 \end{figure}
 
 \clearpage
 
-A partial listing of the DAKOTA output for the container optimization
+A partial listing of the Dakota output for the container optimization
 example follows:
 \begin{small}
 \begin{verbatim}
 Running MPI executable in serial mode.
-DAKOTA version 5.0 released 12/21/2009.
+Dakota version 5.0 released 12/21/2009.
 Subversion revision 5635M built Dec 18 2009 17:19:56.
 Constructing Single Method Strategy...
 Writing new restart file dakota.rst
@@ -215,18 +215,18 @@ NOTE: see Fortran device 9 file (fort.9 or ftn09)
 
 <<<<< Iterator npsol_sqp completed.
 <<<<< Single Method Strategy completed.
-DAKOTA execution time in seconds:
+Dakota execution time in seconds:
   Total CPU        =       0.09 [parent =   0.082988, child =   0.007012]
   Total wall clock =    0.34364
-Exit graphics window to terminate DAKOTA.
+Exit graphics window to terminate Dakota.
 \end{verbatim}
 \end{small}
 
-The first block of lines provide a report on the DAKOTA configuration
+The first block of lines provide a report on the Dakota configuration
 and settings. The lines that follow, down to the line 
 ``\texttt{Exit  NPSOL - Optimal solution found}'', contain information
 about the function evaluations that have been requested by NPSOL and
-performed by DAKOTA. Evaluations 6 through 39 have been omitted from
+performed by Dakota. Evaluations 6 through 39 have been omitted from
 the listing for brevity.
 
 Following the line ``\texttt{Begin Function Evaluation 1}'', the
@@ -256,7 +256,7 @@ of ``\texttt{1}'' indicate that the simulator must return values for
 these functions (gradient and Hessian data are not required). For more
 information on the active set vector, see Section~\ref{variables:asv}.
 
-Since finite difference gradients have been specified, DAKOTA computes
+Since finite difference gradients have been specified, Dakota computes
 their values by making additional function evaluation requests to the
 simulator at perturbed parameter values. Examples of the
 gradient-related function evaluations have been included in the sample
@@ -264,12 +264,12 @@ output, beginning with the line that reads ``\texttt{>>>>> Dakota
   finite difference evaluation for x[1] + h:}''. The resulting finite
 difference gradients are listed after function evaluation 5 beginning
 with the line ``\texttt{>>>>> Total response returned to iterator:}''.
-Here, another active set vector is displayed in the DAKOTA output
+Here, another active set vector is displayed in the Dakota output
 file. The line ``\texttt{Active set vector = \{ 3 3 \}}'' indicates
 that the total response resulting from the finite differencing
 contains function values and gradients.
 
-The final lines of the DAKOTA output, beginning with the line
+The final lines of the Dakota output, beginning with the line
 ``\texttt{<<<<< Function evaluation summary:}'', summarize the
 results of the optimization study. The best values of the optimization
 parameters, objective function, and volume constraint are presented
@@ -278,30 +278,30 @@ function evaluation counts, and a timing summary. In the end, the
 objective function has been minimized and the equality constraint has
 been satisfied (driven to zero within the constraint tolerance).
 
-The DAKOTA results are intermixed with iteration information from the
+The Dakota results are intermixed with iteration information from the
 NPSOL library. The lines with the heading ``\texttt{Majr Minr Step Fun
   Merit function Norm gZ Violtn nZ Penalty Conv}'' come from Fortran
-write statements within NPSOL. The output is mixed since both DAKOTA
+write statements within NPSOL. The output is mixed since both Dakota
 and NPSOL are writing to the same standard output stream. The relative
 locations of these output contributions can vary depending on the
 specifics of output buffering and flushing on a particular platform
 and depending on whether or not the standard output is being
 redirected to a file. In some cases, output from the optimization
 library may appear on each iteration (as in this example), and in
-other cases, it may appear at the end of the DAKOTA output. Finally, a
+other cases, it may appear at the end of the Dakota output. Finally, a
 more detailed summary of the NPSOL iterations is written to the
 Fortran device 9 file (e.g., \texttt{fort.9} or \texttt{ftn09}).
 
 \section{Tabular Output Data}\label{output:tabular}
 
-DAKOTA has the capability to print the iteration history in tabular
+Dakota has the capability to print the iteration history in tabular
 form to a file. The keyword\\
 \texttt{tabular\_graphics\_data} needs to be included in the strategy 
 specification (see Figure~\ref{output:incont}). The primary intent
-of this capability is to facilitate the transfer of DAKOTA's iteration
+of this capability is to facilitate the transfer of Dakota's iteration
 history data to an external mathematical analysis and/or graphics
 plotting package (e.g., MATLAB, TECplot, Excel, S-plus, Minitab). Any
-evaluations from DAKOTA's internal finite differencing are suppressed,
+evaluations from Dakota's internal finite differencing are suppressed,
 which leads to better data visualizations. This suppression of lower
 level data is consistent with the data that is sent to the graphics
 windows, as described in Section~\ref{output:graphics}. If this data
@@ -338,7 +338,7 @@ fifth column is the nonlinear equality constraint (labeled
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption{DAKOTA's tabular output file showing the iteration history of
+\caption{Dakota's tabular output file showing the iteration history of
 the ``container'' optimization problem.} \label{output:tabcont}
 \end{figure}
 
@@ -346,7 +346,7 @@ the ``container'' optimization problem.} \label{output:tabcont}
 
 Graphics capabilities are available for monitoring the progress of an
 iterative study. The graphics option is invoked by adding the
-\texttt{graphics} flag in the strategy specification of the DAKOTA
+\texttt{graphics} flag in the strategy specification of the Dakota
 input file (see Figure~\ref{output:incont}). The graphics display
 the values of each response function (e.g., objective and constraint
 functions) and each parameter for the function evaluations in the
@@ -356,14 +356,14 @@ are suppressed in order to omit this clutter from the graphics.
 Figure~\ref{output:2dcont} shows the optimization iteration history
 for the container example.
 
-If DAKOTA is executed on a remote machine, the DISPLAY variable in the
+If Dakota is executed on a remote machine, the DISPLAY variable in the
 user's UNIX environment~\cite{Gil92} may need to be set to the local
 machine in order to display the graphics window. 
 
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{images/container_graphic}
-\caption{DAKOTA 2D graphics for ``container'' problem showing history of
+\caption{Dakota 2D graphics for ``container'' problem showing history of
 an objective function, an equality constraint, and two variables.}
 \label{output:2dcont}
 \end{figure}
@@ -383,17 +383,17 @@ window number, can be created using the ``Print'' button.
 \begin{figure}
 \centering
 \includegraphics[scale=0.6]{images/container_graphic_options}
-\caption{Options for DAKOTA 2D graphics.}
+\caption{Options for Dakota 2D graphics.}
 \label{output:2dcontoptions}
 \end{figure}
 
 
 \section{Error Messages Output}\label{output:error}
 
-A variety of error messages are printed by DAKOTA in the event that an
+A variety of error messages are printed by Dakota in the event that an
 error is detected in the input specification. Some of the more common
 input errors, and the associated error messages, are described below.
-See also the Common Specification Mistakes section in the DAKOTA
+See also the Common Specification Mistakes section in the Dakota
 Reference Manual~\cite{RefMan}.
 
 Incorrectly spelled specifications, such as 
@@ -416,7 +416,7 @@ line of listing):
 \begin{small}
 \begin{verbatim}
     Running MPI executable in serial mode.
-    DAKOTA version 4.0 released 05/12/2006.
+    Dakota version 4.0 released 05/12/2006.
     Writing new restart file dakota.rst
     Constructing Single Method Strategy...
     methodName = npsol_sqp
@@ -432,7 +432,7 @@ expected on a function evaluation and the data returned by the user's
 simulation code or driver. The available response data is specified in
 the responses keyword block, and the subset of this data needed for a
 particular evaluation is managed by the active set vector. For
-example, if DAKOTA expects function values and gradients to be
+example, if Dakota expects function values and gradients to be
 returned (as indicated by an active set vector containing 3's), but
 the user's simulation code only returns function values, then the
 following error message is generated:
@@ -443,15 +443,15 @@ following error message is generated:
 \end{small}
 
 Unfortunately, descriptive error messages are not available for all
-possible failure modes of DAKOTA. If you encounter core dumps,
+possible failure modes of Dakota. If you encounter core dumps,
 segmentation faults, or other failures, please request help using the
 support mechanisms described on the
-\href{http://dakota.sandia.gov/}{DAKOTA website}.
+\href{http://dakota.sandia.gov/}{Dakota website}.
 
 \section{Variables Output from Pre-run}
 
 The pre-run mode (supported only for select methods) permits
-specification of an output file to which DAKOTA will write parameter
+specification of an output file to which Dakota will write parameter
 (variables) data in annotated format (see
 Section~\ref{input:tabularformat}) with data columns corresponding to
 each variable.  This file can be generated with sampling, parameter

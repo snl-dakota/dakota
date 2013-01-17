@@ -22,7 +22,7 @@ set(test_path    "${Dakota_SOURCE_DIR}/test")
 
 # Users_Tutorial.tex
 set(users_test_inputs
-  "${test_path}/dakota_rosenbrock_users.in 0 dakota_rosenbrock_2d.in"
+  "${test_path}/dakota_rosenbrock_users.in 0 dakota_rosenbrock_multidim_paramstudy.in"
   "${test_path}/dakota_rosenbrock_users.in 1 dakota_rosenbrock_vector.in"
   "${test_path}/dakota_rosenbrock_users.in 2 dakota_rosenbrock_grad_opt.in"
   "${test_path}/dakota_textbook.in 9 dakota_textbook.in"
@@ -30,7 +30,7 @@ set(users_test_inputs
   "${test_path}/dakota_rosenbrock_users.in 4 dakota_rosenbrock_ps_opt.in"
   "${test_path}/dakota_rosenbrock_users.in 5 dakota_rosenbrock_ea_opt.in"
   "${test_path}/dakota_mogatest.in 0 dakota_mogatest1.in"
-  "${test_path}/dakota_rosenbrock_users.in 6 dakota_rosenbrock_nond.in"
+  "${test_path}/dakota_rosenbrock_users.in 6 dakota_rosenbrock_sampling.in"
   "${test_path}/dakota_mv.in 0 dakota_mv.in"
   "${test_path}/dakota_uq_rosenbrock_pce.in 1 dakota_pce.in"
   "${test_path}/dakota_uq_cantilever_interval.in 0 dakota_uq_interval.in"

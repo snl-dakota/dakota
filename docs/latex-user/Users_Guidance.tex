@@ -1,4 +1,4 @@
-\chapter{DAKOTA Usage Guidelines}\label{usage}
+\chapter{Dakota Usage Guidelines}\label{usage}
 
 \section{Problem Exploration}\label{usage:exploration}
 
@@ -22,7 +22,7 @@ statistical results?
 If there is not sufficient information from the problem description to
 answer these questions, then additional problem characterization
 activities may be warranted. One particularly useful characterization
-activity that DAKOTA enables is parameter space exploration through
+activity that Dakota enables is parameter space exploration through
 the use of parameter studies and design of experiments methods. The
 parameter space can be systematically interrogated to create
 sufficient information to evaluate the trends in the response
@@ -66,7 +66,7 @@ Thus, for gradient-based optimization, a critical factor is the
 gradient accuracy. Analytic gradients are ideal, but are often
 unavailable. For many engineering applications, a finite difference
 method will be used by the optimization algorithm to estimate gradient
-values. DAKOTA allows the user to select the step size for these
+values. Dakota allows the user to select the step size for these
 calculations, as well as choose between forward-difference and
 central-difference algorithms. The finite difference step size should
 be selected as small as possible, to allow for local accuracy and
@@ -88,7 +88,7 @@ for nongradient optimization studies, the computational cost of the
 function evaluation must be relatively small in order to obtain an
 optimal solution in a reasonable amount of time. In addition,
 nonlinear constraint support in nongradient methods is an open area of
-research and, while supported by many nongradient methods in DAKOTA,
+research and, while supported by many nongradient methods in Dakota,
 is not as refined as constraint support in gradient-based
 methods. However, nongradient methods can be more robust and more
 inherently parallel than gradient-based approaches. They can be
@@ -273,7 +273,7 @@ exhaustive sampling.  While extremely promising, this method is still
 relatively new and is the subject of ongoing refinements as we deploy
 it to additional applications.
 
-The next class of UQ methods available in DAKOTA is comprised of
+The next class of UQ methods available in Dakota is comprised of
 stochastic expansion methods (polynomial chaos and stochastic
 collocation), which are general purpose techniques provided that the
 response functions possess finite second order moments. Further, these
@@ -292,12 +292,12 @@ global surrogate-based methods, is effective scaling for large numbers
 of random variables.  Recent advances in adaptive sparse grid methods 
 address some of the scaling issues for stochastic expansion.
 
-The final class of UQ methods available in DAKOTA are focused on
+The final class of UQ methods available in Dakota are focused on
 epistemic uncertainties, or uncertainties resulting from a lack of
 knowledge.  In these problems, the assignment of input probability
 distributions when data is sparse can be somewhat suspect.  One
 approach to handling epistemic uncertainties is Dempster-Shafer theory
-of evidence (DAKOTA methods \texttt{local\_evidence} and 
+of evidence (Dakota methods \texttt{local\_evidence} and 
 \texttt{global\_evidence}). Another method is pure interval 
 analysis (\texttt{local\_interval\_est} and 
 \texttt{global\_interval\_est}), where intervals on inputs are 
@@ -385,11 +385,11 @@ parameter vertices), whereas the latter are intended for repeatable
 computer experiments and are more space-filling in nature. The
 distinction between DOE/DACE and sampling is drawn based on the
 distributions of the parameters.  DOE/DACE methods typically assume
-uniform distributions, whereas the sampling approaches in DAKOTA
+uniform distributions, whereas the sampling approaches in Dakota
 support a broad range of probability distributions. To use
 \texttt{sampling} in a design of experiments mode (as opposed to
 an uncertainty quantification mode), the \texttt{all\_variables} flag
-should be included in the method specification of the DAKOTA input
+should be included in the method specification of the Dakota input
 file.
 
 These method selection recommendations are summarized in
@@ -490,7 +490,7 @@ when to choose which model.
       \texttt{gaussian\_process} \texttt{surfpack} model is not 
       recommended is that it can take a considerable amount of time
       to construct when the number of data points is very large.  Use 
-      of the third party MARS package included in DAKOTA is generally 
+      of the third party MARS package included in Dakota is generally 
       discouraged.
 \item In other situations that call for a global surrogate, the 
       \texttt{gaussian\_process} \texttt{surfpack} is generally 

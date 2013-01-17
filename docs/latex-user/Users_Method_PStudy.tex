@@ -2,7 +2,7 @@
 
 \section{Overview}\label{ps:overview}
 
-Parameter study methods in the DAKOTA toolkit involve the computation
+Parameter study methods in the Dakota toolkit involve the computation
 of response data sets at a selection of points in the parameter space.
 These response data sets are not linked to any specific
 interpretation, so they may consist of any allowable specification
@@ -51,7 +51,7 @@ that derivative components will be computed with respect to all of the
 and continuous state variables) specified, since derivatives with
 respect to discrete variables are assumed to be undefined.
 
-DAKOTA currently supports four types of parameter studies.  Vector
+Dakota currently supports four types of parameter studies.  Vector
 parameter studies compute response data sets at selected intervals
 along an $n$-dimensional vector in parameter space.  List parameter
 studies compute response data sets at a list of points in parameter
@@ -69,7 +69,7 @@ the variables from the \texttt{variables} keyword block as the
 starting point and the central point of the parameter studies,
 respectively. In the case of design variables, the
 \texttt{initial\_point} is used, and in the case of state variables, 
-the \texttt{initial\_state} is used (see the DAKOTA Reference
+the \texttt{initial\_state} is used (see the Dakota Reference
 Manual~\cite{RefMan} for default values when \texttt{initial\_point} or
 \texttt{initial\_state} are unspecified). In the case of uncertain
 variables, initial values are inferred from the distribution
@@ -88,7 +88,7 @@ The multidimensional parameter study uses the bounds of the variables
 from the \texttt{variables} keyword block to define the range of
 parameter values to study. In the case of design and state variables,
 the \texttt{lower\_bounds} and \texttt{upper\_bounds} specifications
-are used (see the DAKOTA Reference Manual~\cite{RefMan} for default
+are used (see the Dakota Reference Manual~\cite{RefMan} for default
 values when \texttt{lower\_bounds} or \texttt{upper\_bounds} are
 unspecified). In the case of uncertain variables, these values are
 either drawn or inferred from the distribution specification.
@@ -119,7 +119,7 @@ multiple coordinate vector studies (to investigate the response
 variations along some arbitrary vector; e.g., to investigate a
 search direction failure).
 
-DAKOTA's vector parameter study includes two possible specification
+Dakota's vector parameter study includes two possible specification
 formulations which are used in conjunction with the Initial Values
 (see Section~\ref{ps:overview:initial}) to define the vector and steps
 of the parameter study:
@@ -207,6 +207,8 @@ value of 10., \texttt{num\_steps} = 4, and either \texttt{final\_point}
 \end{verbatim}
 \end{small}
 
+An example using a vector parameter study is described in 
+Section~\ref{additional:rosenbrock:examples:vector}.
 
 \section{List Parameter Study}\label{ps:list}
 
@@ -384,3 +386,6 @@ result in the following twelve function evaluations:
                           3.0000000000e+00 d2
 \end{verbatim}
 \end{small}
+
+The first example shown in this User's Manual is a multi-dimensional
+parameter study. See Section~\ref{tutorial:examples:param_study}.

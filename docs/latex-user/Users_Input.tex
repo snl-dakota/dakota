@@ -1,32 +1,32 @@
-\chapter{Inputs to DAKOTA}\label{input}
+\chapter{Inputs to Dakota}\label{input}
 
 \section{Overview of Inputs}\label{input:overview}
 
-DAKOTA supports a number of command-line arguments, as described in
+Dakota supports a number of command-line arguments, as described in
 Section~\ref{tutorial:installation:running}.  Among these are
-specifications for the DAKOTA input file and, optionally, a restart
-file.  The syntax of the DAKOTA input file is described in detail in
-the DAKOTA Reference Manual~\cite{RefMan}, and the restart file is
+specifications for the Dakota input file and, optionally, a restart
+file.  The syntax of the Dakota input file is described in detail in
+the Dakota Reference Manual~\cite{RefMan}, and the restart file is
 described in Chapter~\ref{restart}.
 
-A DAKOTA input file may be prepared manually with a text editor such
-as Emacs, Vi, or WordPad, or it may be defined with the JAGUAR DAKOTA
-graphical user interface.  The JAGUAR DAKOTA GUI is built on the
-Java-based Eclipse Framework \cite{Eclipse} and presents the DAKOTA
+A Dakota input file may be prepared manually with a text editor such
+as Emacs, Vi, or WordPad, or it may be defined with the JAGUAR Dakota
+graphical user interface.  The JAGUAR Dakota GUI is built on the
+Java-based Eclipse Framework \cite{Eclipse} and presents the Dakota
 input specification options in synchronized text-editing and graphical
 views.  JAGUAR includes templates and wizards for helping create
-DAKOTA studies and can invoke DAKOTA to run an analysis.  The DAKOTA
+Dakota studies and can invoke Dakota to run an analysis.  The Dakota
 GUI for Linux, Windows, and Mac, is available for download from the
-DAKOTA website \url{http://dakota.sandia.gov/}, along with licensing
+Dakota website \url{http://dakota.sandia.gov/}, along with licensing
 information, separate GUI documentation, and installation tips.
 
 \subsection{Tabular Data Formats}\label{input:tabularformat}
 
-The DAKOTA input file and/or command line may identify additional
+The Dakota input file and/or command line may identify additional
 files for data import as described in Section~\ref{input:import}.
 Some of these files are in tabular data format.
 
-DAKOTA versions 5.1+ (October 2011) and newer use two formats for
+Dakota versions 5.1+ (October 2011) and newer use two formats for
 tabular data file input and output.  Tabular data refer to numeric
 data in text form related to, e.g., tabular graphics data, least
 squares and Bayesian calibration data, samples/points files for
@@ -65,14 +65,14 @@ the free-form option.
 
 \section{Data Imports}\label{input:import}
 
-The DAKOTA input file and/or command line may identify additional
-files used to import data into DAKOTA.
+The Dakota input file and/or command line may identify additional
+files used to import data into Dakota.
 
 \subsection{AMPL algebraic mappings: stub.nl, stub.row, and stub.col}
 
 As described in Section~\ref{interfaces:algebraic}, an AMPL
 specification of algebraic input-to-output relationships may be
-imported into DAKOTA and used to define or augment the mappings of a
+imported into Dakota and used to define or augment the mappings of a
 particular interface.
 
 \subsection{Genetic algorithm population import}
@@ -81,7 +81,7 @@ Genetic algorithms (GAs) from the JEGA and SCOLIB packages support a
 population import feature using the keywords
 \texttt{initialization\_type flat\_file = \emph{STRING}}.  This is
 useful for warm starting GAs from available data or previous runs.
-Refer to the Method Specification chapter in the DAKOTA Reference
+Refer to the Method Specification chapter in the Dakota Reference
 Manual~\cite{RefMan} for additional information on this specification.
 The flat file must be in free-form format as described in
 Section~\ref{input:tabularformat}.
@@ -106,7 +106,7 @@ one row per experiment.   The columns of the data file contain, in sequence
   errors (standard deviations) associated with the data; length 1
   (same value for each model response) or num\_responses.
 \end{itemize}
-See~\ref{nls:examples} and the DAKOTA Reference Manual Responses
+See~\ref{nls:examples} and the Dakota Reference Manual Responses
 section for further details.
 
 \subsection{PCE coefficient import}
@@ -116,12 +116,12 @@ response expansions which employ a basis of multivariate orthogonal
 polynomials.  Normally, the \texttt{polynomial\_chaos} method
 calculates these coefficients based either on a spectral projection or
 a linear regression (see Section~\ref{uq:expansion}).  However,
-DAKOTA also supports the option of importing a set of response PCE
+Dakota also supports the option of importing a set of response PCE
 coefficients based on the specification \\
 \texttt{expansion\_import\_file = \emph{STRING}}.  This is useful for
 evaluating moments analytically or computing probabilities numerically
 from a known response expansion.  Refer to the Method Specification
-chapter in the DAKOTA Reference Manual~\cite{RefMan} for additional
+chapter in the Dakota Reference Manual~\cite{RefMan} for additional
 information on this specification.
 
 \subsection{Surrogate construction from data files}
@@ -131,7 +131,7 @@ sources.  One of these sources is an auxiliary data file, as specified
 by the keywords \texttt{reuse\_samples points\_file = \emph{STRING}}.
 The file may be in annotated (default) or free-form format with
 columns corresponding to variables and responses.  Refer to the Model
-Specification chapter in the DAKOTA Reference Manual~\cite{RefMan} for
+Specification chapter in the Dakota Reference Manual~\cite{RefMan} for
 additional information on this specification.
 
 \subsection{Variables/responses import to post-run}

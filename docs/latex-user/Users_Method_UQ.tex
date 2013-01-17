@@ -15,23 +15,23 @@ epistemic uncertainties, data is generally sparse, making the use of
 probability distribution assertions questionable and typically leading
 to nonprobabilistic methods based on interval specifications.
 
-DAKOTA contains capabilities for performing nondeterministic analysis.
-The methods for uncertainty quantification in DAKOTA have been
+Dakota contains capabilities for performing nondeterministic analysis.
+The methods for uncertainty quantification in Dakota have been
 developed by a group of researchers at Sandia Labs, in conjunction
 with collaborators in academia~\cite{Gha99,Gha91,Eld05,Tang10a}.
 %In addition, future extensions to the DDACE package will make it 
-%applicable to general UQ problems, which will augment the DAKOTA/UQ 
+%applicable to general UQ problems, which will augment the Dakota/UQ 
 %capabilities.
 %Uncertainty quantification methods (also referred to as
-%nondeterministic analysis methods) in the DAKOTA/UQ system involve the
+%nondeterministic analysis methods) in the Dakota/UQ system involve the
 %computation of probabilistic information about response functions
 %based on sets of simulations taken from the specified probability
 %distributions for uncertain parameters. That is, 
 These methods perform a forward uncertainty propagation in which
 probability or interval information for input parameters is mapped to
 probability or interval information for output response functions. The
-$m$ functions in the DAKOTA response data set are interpreted as $m$
-general response functions by the DAKOTA methods (with no specific
+$m$ functions in the Dakota response data set are interpreted as $m$
+general response functions by the Dakota methods (with no specific
 interpretation of the functions as for optimization and least squares).
 
 Within the variables specification, uncertain variable descriptions
@@ -62,11 +62,11 @@ Probabilities and reliabilities may be computed for
 \texttt{response\_levels} specifications, and response levels may be
 computed for either \texttt{probability\_levels} or
 \texttt{reliability\_levels} specifications (refer to the Method
-Commands chapter in the DAKOTA Reference Manual~\cite{RefMan} for
+Commands chapter in the Dakota Reference Manual~\cite{RefMan} for
 additional information).
 
 Currently, traditional Monte Carlo (MC) and Latin hypercube sampling
-(LHS) are supported by DAKOTA and are chosen by specifying
+(LHS) are supported by Dakota and are chosen by specifying
 \texttt{sample\_type} as \texttt{random} or \texttt{lhs}. In Monte
 Carlo sampling, the samples are selected randomly according to the
 user-specified probability distributions. Latin hypercube sampling is
@@ -156,7 +156,7 @@ The two-variable Textbook example problem (see
 Equation~\ref{additional:textbook_f}) will be used to demonstrate
 the application of sampling methods for uncertainty quantification
 where it is assumed that $x_1$ and $x_2$ are uniform uncertain
-variables on the interval $[0,1]$. The DAKOTA input file for this
+variables on the interval $[0,1]$. The Dakota input file for this
 problem is shown in Figure~\ref{uq:figure01}. This input 
 file is \texttt{dakota\_uq\_sampling.in} in the 
 \texttt{Dakota/examples/methods} directory.  The number of samples to
@@ -174,7 +174,7 @@ Figure~\ref{uq:figure02} for the case where \texttt{samples} = 5 and
 \begin{figure}
   \centering \begin{bigbox} \begin{small}
   \verbatimtabinput[8]{dakota_uq_sampling.in} \end{small} \end{bigbox}
-\caption{DAKOTA input file for UQ example using LHS sampling.}
+\caption{Dakota input file for UQ example using LHS sampling.}
 \label{uq:figure01}
 \end{figure}
 
@@ -196,7 +196,7 @@ and the regions $x_1 < 0.3$ and $0.6 < x_1 < 0.9$ are completely
 missed. For the case where \texttt{samples = 10}, some clustering in
 the Monte Carlo samples is again evident with \texttt{4} samples in
 the range $0.5 < x_1 < 0.55$. In both cases, the stratification with
-LHS is superior.  The response function statistics returned by DAKOTA
+LHS is superior.  The response function statistics returned by Dakota
 are shown in Figure~\ref{uq:figure03}.  The first two blocks of output
 specify the response sample means and sample standard deviations and
 confidence intervals for these statistics, as well as coefficients of
@@ -205,7 +205,7 @@ variation.  The last section of the output defines CDF pairs
 functions by presenting the probability levels corresponding to the
 specified response levels (\texttt{response\_levels} were set and the
 default \texttt{compute probabilities} was used).  Alternatively,
-DAKOTA could have provided CCDF pairings, reliability levels
+Dakota could have provided CCDF pairings, reliability levels
 corresponding to prescribed response levels, or response levels
 corresponding to prescribed probability or reliability levels.
 
@@ -254,7 +254,7 @@ Cumulative Distribution Function (CDF) for response_fn_3:
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption{DAKOTA response function statistics from UQ sampling example.}
+\caption{Dakota response function statistics from UQ sampling example.}
 \label{uq:figure03}
 \end{figure}
 
@@ -288,12 +288,12 @@ variables.  For example, say one has a problem with two inputs and one
 output; and the two inputs are highly correlated.  Then the
 correlation of the second input and the output may be very low after
 accounting for the effect of the first input.  The rank correlations
-in DAKOTA are obtained using Spearman's rank correlation.  Spearman's
+in Dakota are obtained using Spearman's rank correlation.  Spearman's
 rank is the same as the Pearson correlation coefficient except that it
 is calculated on the rank data.
 
 Figure~\ref{uq:figure04} shows an example of the correlation output
-provided by DAKOTA for the input file in Figure~\ref{uq:figure01}.
+provided by Dakota for the input file in Figure~\ref{uq:figure01}.
 Note that these correlations are presently only available when one
 specifies \texttt{lhs} as the sampling method under \texttt{sampling}.
 Also note that the simple and partial correlations should be similar in most
@@ -342,7 +342,7 @@ Partial Rank Correlation Matrix between input and output:
 Finally, note that the LHS package can be used for design of
 experiments over design and state variables by including the
 \texttt{all\_variables} flag in the method specification section of
-the DAKOTA input file. Then, instead of iterating on only the
+the Dakota input file. Then, instead of iterating on only the
 uncertain variables, the LHS package will sample over all of the
 variables.  In \texttt{all\_variables} mode, continuous design and
 continuous state variables are treated as having uniform probability
@@ -356,11 +356,11 @@ In many situations, one may run an initial sample set and then need to
 perform further sampling to get better estimates of the mean,
 variance, and percentiles, and to obtain more comprehensive sample
 coverage.  We call this capability incremental sampling. Currently,
-the LHS incremental sampling capability we have in DAKOTA requires that
+the LHS incremental sampling capability we have in Dakota requires that
 the incremental samples are double the sample size of the previous
 sample.  That is, if one starts with a very small sample size of 10,
 then one can use the incremental sampling capability to generate
-sample sizes of 20, 40, 80, etc. Also, a DAKOTA restart file
+sample sizes of 20, 40, 80, etc. Also, a Dakota restart file
 (dakota.rst) must be available from the original sample. There are two
 cases, random incremental and Latin Hypercube incremental sampling.
 We assume that LHS incremental will be most frequently used.  One
@@ -381,7 +381,7 @@ of incremental sampling diminishes.
 \item Incremental Random Sampling.  With incremental random sampling, 
 the original sample set with N samples must be 
 generated using \texttt{sample\_type} as \texttt{random}.
-Then, the user can create a new DAKOTA input file that is very similar to the 
+Then, the user can create a new Dakota input file that is very similar to the 
 original one except the \texttt{sample\_type} should be defined to be 
 \texttt{incremental\_random}.  Random incremental sampling does not 
 require a doubling of samples each time.  Thus, the user 
@@ -389,7 +389,7 @@ can specify the number of samples (\texttt{samples}) to be a desired
 number (it can range from an additional one sample to a large integer), 
 and the \texttt{previous\_samples} should be specified as N.  For example, if
 the first sample has 50 samples, and 10 more samples are desired, 
-in the second DAKOTA run, the number
+in the second Dakota run, the number
 of samples should be set to 60 and the number of previous samples set
 to 50.  In this situation, only 10 new samples will be generated and
 the final statistics will be reported on the full sample of 60. The
@@ -402,12 +402,12 @@ correct restart file name should be used.
 \item Incremental Latin Hypercube Sampling. With incremental LHS sampling, 
 the original sample set with N samples must be 
 generated using \texttt{sample\_type} as \texttt{lhs}.
-Then, the user can create a new DAKOTA input file that is very similar to the 
+Then, the user can create a new Dakota input file that is very similar to the 
 original one except the \texttt{sample\_type} should be defined to be 
 \texttt{incremental\_lhs}, the number of samples (\texttt{samples}) should 
 be 2N (twice the number of original samples), and
 \texttt{previous\_samples} should be specified as N.  For example, if
-the first sample has 50 samples, in the second DAKOTA run, the number
+the first sample has 50 samples, in the second Dakota run, the number
 of samples should be set to 100 and the number of previous samples set
 to 50.  In this situation, only 50 new samples will be generated and
 the final statistics will be reported on the full sample of 100. The
@@ -457,7 +457,7 @@ interest, $\mathbf{D}$, is also mapped to the transformed space to
 yield, $\mathbf{D_{u}}$ , where $g(\mathbf{U}) < z$ as shown in
 Figure~\ref{uq:figure06}.  The Nataf transformation~\cite{Der86},
 which is identical to the Rosenblatt transformation~\cite{Ros52} in
-the case of independent random variables, is used in DAKOTA to
+the case of independent random variables, is used in Dakota to
 accomplish this mapping. This transformation is performed to make the
 probability calculation more tractable. In the transformed space,
 probability contours are circular in nature as shown in
@@ -494,7 +494,7 @@ can find multiple MPPs if they exist.
 
 \subsection{Local Reliability Methods}\label{uq:reliability:local}
 
-The DAKOTA Theory Manual~\cite{TheoMan} provides the algorithmic
+The Dakota Theory Manual~\cite{TheoMan} provides the algorithmic
 details for the local reliability methods, including the Mean Value
 method and the family of most probable point (MPP) search methods.
 
@@ -510,7 +510,7 @@ literature, where blue indicates the most well-known combinations and
 gray indicates other supported combinations.
 \begin{table}
 \centering
-\caption{Mapping from DAKOTA options to standard reliability methods.}
+\caption{Mapping from Dakota options to standard reliability methods.}
 \label{tab:rel_meth_map}
 \begin{tabular}{|c|c|c|}
 \hline
@@ -537,7 +537,7 @@ no\_approx      & \cellcolor{blue}\textcolor{white}{FORM}
 \end{tabular}
 \end{table}
 
-Within the DAKOTA specification (refer to the Method Commands chapter
+Within the Dakota specification (refer to the Method Commands chapter
 within the Reference Manual), the MPP search and integration order
 selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response
@@ -555,7 +555,7 @@ on Gaussian process models. They accurately resolve a particular
 contour of a response function and then estimate probabilities using
 multimodal adaptive importance sampling.
 
-The global reliability method in DAKOTA is called 
+The global reliability method in Dakota is called 
 Efficient Global Reliability Analysis (EGRA) ~\cite{Bic07}.  
 The name is due to its 
 roots in efficient global optimization (EGO) ~\cite{Jon98,Hua06}.
@@ -706,7 +706,7 @@ where $X_1$ and $X_2$ are identically distributed lognormal random
 variables with means of \texttt{1}, standard deviations of
 \texttt{0.5}, and correlation coefficient of \texttt{0.3}.
 
-A DAKOTA input file showing RIA using FORM (option 7 in limit state
+A Dakota input file showing RIA using FORM (option 7 in limit state
 approximations combined with first-order integration) is listed in
 Figure~\ref{uq:rel_input_form}.  This input file is
 \texttt{dakota\_uq\_reliability.in} in the {Dakota/examples/methods}
@@ -733,7 +733,7 @@ when using a Mean Value method, which will be discussed next.
       \verbatimtabinput[8]{dakota_uq_reliability.in}
     \end{small}
   \end{bigbox}
-\caption{DAKOTA input file for Reliability UQ example using FORM.}
+\caption{Dakota input file for Reliability UQ example using FORM.}
 \label{uq:rel_input_form}
 \end{figure}
 
@@ -792,7 +792,7 @@ and standard deviation of the response, the importance factors for
 each uncertain variable, and approximate probability/reliability
 levels for the prescribed response levels that have been inferred from
 the approximate mean and standard deviation (see Mean Value section in
-Reliability Methods Chapter of DAKOTA Theory
+Reliability Methods Chapter of Dakota Theory
 Manual~\cite{TheoMan}). It is evident that the statistics are
 considerably different from the fully converged FORM results; however,
 these rough approximations are also much less expensive to
@@ -850,7 +850,7 @@ Cumulative Distribution Function (CDF) for response_fn_1:
 
 Additional reliability analysis and design results are provided in 
 Sections~\ref{additional:logratio}-\ref{additional:steel_column}.
-
+An example using the mean value method is included in Section~\ref{additional:textbook:examples:reliability}.
 
 \section{Stochastic Expansion Methods}\label{uq:expansion}
 
@@ -875,7 +875,7 @@ al.~\cite{Gha99},~\cite{Gha91}.  For smooth functions (i.e., analytic,
 infinitely-differentiable) in $L^2$ (i.e., possessing finite
 variance), exponential convergence rates can be obtained under order
 refinement for integrated statistical quantities of interest such as
-mean, variance, and probability.  DAKOTA implements the generalized
+mean, variance, and probability.  Dakota implements the generalized
 polynomial chaos approach using the Wiener-Askey
 scheme~\cite{XiuKarn02}, in which Hermite, Legendre, Laguerre, Jacobi,
 and generalized Laguerre orthogonal polynomials are used for modeling
@@ -883,7 +883,7 @@ the effect of continuous random variables described by normal,
 uniform, exponential, beta, and gamma probability distributions,
 respectively\footnote{Orthogonal polynomial selections also exist for
 discrete probability distributions, but are not yet supported in
-DAKOTA.}.  These orthogonal polynomial selections are optimal for
+Dakota.}.  These orthogonal polynomial selections are optimal for
 these distribution types since the inner product weighting function
 corresponds\footnote{Identical support range; weight
 differs by at most a constant factor.} to the probability
@@ -961,13 +961,13 @@ generated~\cite{ConstTPQ}.  Moreover, this equivalence can be extended
 to sparse grids based on standard Gauss rules, provided that a sparse
 PCE is formed based on a weighted sum of tensor expansions~\cite{ConstSSG}.
 
-The DAKOTA Theory Manual~\cite{TheoMan} provides full algorithmic
+The Dakota Theory Manual~\cite{TheoMan} provides full algorithmic
 details for the PCE and SC methods.
 
 
 \subsection{Uncertainty Quantification Example using Stochastic Collocation}\label{uq:uncertainty2}
 
-A typical DAKOTA input file for performing an uncertainty
+A typical Dakota input file for performing an uncertainty
 quantification using polynomial chaos expansions is shown in 
 Section~\ref{additional:rosenbrock:examples:pce}.  The example
 in illustrates PCE built on anisotropic tensor
@@ -985,7 +985,7 @@ directory.  Note that the dimension preference of $(2,1)$ is inverted
 to define a $\gamma$ weighting vector of $(0.5,1)$ (and
 $\underline{\gamma}$ of $0.5$) for use in the anisotropic Smolyak
 index set constraint (see Smolyak sparse grids section in Stochastic
-Expansion Methods chapter in DAKOTA Theory Manual~\cite{TheoMan}).  In
+Expansion Methods chapter in Dakota Theory Manual~\cite{TheoMan}).  In
 this example, we compute CDF probabilities for six response levels of
 Rosenbrock's function.  This example requires 19 function evaluations
 to calculate the interpolating polynomials in stochastic collocation
@@ -1000,7 +1000,7 @@ Figure~\ref{uq:figure11b}.
       \verbatimtabinput[8]{dakota_sc.in}
     \end{small}
   \end{bigbox}
-\caption{DAKOTA input file for performing UQ using stochastic collocation.}
+\caption{Dakota input file for performing UQ using stochastic collocation.}
 \label{uq:figure11}
 \end{figure}
 
@@ -1019,7 +1019,7 @@ probabilities.  In Figure~\ref{uq:figure12}, excerpts from the results
 summary are presented.  We first see the moment statistics for mean,
 standard deviation, skewness, and kurtosis computed by numerical
 integration (see Analytic moments section in Stochastic Expansion
-Methods chapter in DAKOTA Theory Manual~\cite{TheoMan}), where the
+Methods chapter in Dakota Theory Manual~\cite{TheoMan}), where the
 numerical row corresponds to integration using the original response
 values and the expansion row corresponds to integration using values
 from the interpolant.  The response covariance (collapsing to a single
@@ -1095,7 +1095,7 @@ In importance sampling, the samples are generated from a density which is
 called the importance density:  it is not the original probability density
 of the input distributions.  The importance density should be centered near the
 failure region of interest.  For black-box simulations such as those commonly
-interfaced with DAKOTA, it is difficult to specify the importance density a priori:
+interfaced with Dakota, it is difficult to specify the importance density a priori:
 the user often does not know where the failure region lies, especially in a high-dimensional
 space.~\cite{Swiler2010}
 
@@ -1184,7 +1184,7 @@ search for ``representative'' points. Once these are located, the multimodal sam
 adaptive method (sample until convergence).
  
 \subsection{Gaussian Process Adaptive Importance Sampling Method}\label{uq:gpais}
-The second importance sampling method in DAKOTA is the one we recommend,
+The second importance sampling method in Dakota is the one we recommend,
 at least for problems that have a relatively small number of input variables (e.g.
 less than 10).  This method, Gaussian Process Adaptive Importance Sampling,
 is outlined in the paper ~\cite{Dalbey2012}.
@@ -1233,7 +1233,7 @@ initial sample points
 \item Select a candidate point to evaluate the true model and Repeat 2-4
 \end{enumerate}
 
-In terms of the DAKOTA implementation, the adaptive sampling method 
+In terms of the Dakota implementation, the adaptive sampling method 
 currently uses Latin Hypercube sampling (LHS) to generate the initial 
 points in Step 1 above.  For Step 2, we use a Gaussian process model. 
 The user can specify the scoring metric used to select the 
@@ -1246,7 +1246,7 @@ points that are space-fillinlg.  We have investigated several
 methods that involve interesting topological features of the 
 space (e.g. points that are near saddle points).  These are 
 an area of active investigation but are not currently included 
-in DAKOTA.  The fitness metrics for scoring 
+in Dakota.  The fitness metrics for scoring 
 candidate points currently include: 
 \begin{description}
 \item[Predicted Variance]
@@ -1338,7 +1338,7 @@ candidates (\texttt{fitness\_metric}), and the number of iterations
 to perform the adaptive sampling (\texttt{max\_iterations}). 
 For batch selection of points, one specifies a \texttt{batch\_selection} 
 strategy and a \texttt{batch\_size}. 
-The details of the specification are provided in the DAKOTA 
+The details of the specification are provided in the Dakota 
 reference manual.  
 
 \section{Epistemic Nondeterministic Methods}\label{uq:epistemic}
@@ -1353,7 +1353,7 @@ to chance. Examples of aleatory uncertainty include the height of
 individuals in a population, or the temperature in a processing
 environment.  Aleatory uncertainty is usually modeled with probability
 distributions, and sampling methods such as Latin Hypercube sampling
-in DAKOTA can be used to model aleatory uncertainty. In contrast,
+in Dakota can be used to model aleatory uncertainty. In contrast,
 epistemic uncertainty refers to lack of knowledge or lack of
 information about a particular aspect of the simulation model,
 including the system and environment being modeled. An increase in
@@ -1414,7 +1414,7 @@ Dempster-Shafer evidence theory, where an input can have several
 possible intervals.  Interval analysis can be considered a special
 case of Dempster-Shafer evidence theory where each input is defined by
 one input interval with a basic probability assignment of one.  In
-DAKOTA, however, the methods are separate and semantic differences
+Dakota, however, the methods are separate and semantic differences
 exist in the output presentation.  If you are performing a pure
 interval analysis, we recommend using either
 \texttt{global\_interval\_est} or \texttt{local\_interval\_est}
@@ -1485,9 +1485,9 @@ modeled as sets of intervals.  The user assigns a basic probability
 assignment (BPA) to each interval, indicating how likely it is that
 the uncertain input falls within the interval.  The BPAs for a
 particular uncertain input variable must sum to one.  The intervals
-may be overlapping, contiguous, or have gaps. In DAKOTA, an interval
+may be overlapping, contiguous, or have gaps. In Dakota, an interval
 uncertain variable is specified as \texttt{interval\_uncertain}.  When
-one defines an interval type variable in DAKOTA, it is also necessary
+one defines an interval type variable in Dakota, it is also necessary
 to specify the number of intervals defined for each variable with
 \texttt{iuv\_num\_intervals} as well the basic probability assignments
 per interval, \texttt{iuv\_interval\_probs}, and the associated bounds
@@ -1515,14 +1515,14 @@ are 0.1 to 0.5, etc.
       \verbatimtabinput[8]{dakota_uq_textbook_dste.in}
     \end{small}
   \end{bigbox}
-\caption{DAKOTA input file for UQ example using Evidence Theory.}
+\caption{Dakota input file for UQ example using Evidence Theory.}
 \label{uq:figure16}
 \end{figure}
 
 Once the intervals, the BPAs, and the interval bounds are defined, 
 the user can run an epistemic analysis by specifying the method as 
 either \texttt{global\_evidence} or 
-\texttt{local\_evidence} in the DAKOTA input file.  
+\texttt{local\_evidence} in the Dakota input file.  
 Both of these methods perform Dempster-Shafer calculations:  
 the difference is that the local method uses a local optimization 
 algorithm to calculate the interval bounds and the global 
@@ -1642,7 +1642,7 @@ Dempster-Shafer calculations, as well as comparisons on test problems.
 
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
 We have two preliminary implementations of Bayesian calibration methods 
-in DAKOTA, where a ``prior distribution'' on a parameter is 
+in Dakota, where a ``prior distribution'' on a parameter is 
 updated through a Bayesian framework involving experimental data and 
 a likelihood function. 
 The theory behind Bayesian methods is best described in other sources 
@@ -1705,7 +1705,7 @@ Markov Chain Monte Carlo (MCMC) is the standard method used to compute
 posterior parameter densities, given the observational data 
 and the priors. There are many references that 
 describe the basic algorithm~\cite{Gilks}, and in addition, the algorithms 
-are an active research area. The variation used in DAKOTA is DRAM: 
+are an active research area. The variation used in Dakota is DRAM: 
 Delayed Rejection and Adaptive Metropolis~\cite{Haario}. Note that 
 MCMC algorithms take tens or hundreds of thousands of steps to converge. 
 Since each iteration involves an evaluation of the model 
@@ -1762,25 +1762,25 @@ by the Los Alamos group is provided in~\cite{Hig08}. GPMSA uses
 Gaussian process models in the emulation, but the emulator is 
 actually a set of basis functions (e.g. from a singular value 
 decomposition) which have GPs as the coefficients.  One major 
-difference between GPMSA and the QUESO implementation in DAKOTA 
+difference between GPMSA and the QUESO implementation in Dakota 
 is that the QUESO implementation does not have an explicit 
 ``discrepancy'' function $\delta$ which models the difference between 
 the simulation and the observational data results in addition 
 to the error term $\epsilon$, but GPMSA has a sophisticated 
 model for the discrepancy term. 
-At this point, the GPMSA implementation in DAKOTA is an early 
+At this point, the GPMSA implementation in Dakota is an early 
 prototype. 
  
 %At this point, the GPMSA library is a standalone C++ library which has 
 %its own methods to create Gaussian process models, perform MCMC updating, 
 %etc. The GPMSA C++ library is an alpha-version and undergoing development, 
 %so a user is cautioned to obtain the latest version (e.g. Version-of-the-Day)
-%to have the latest updates.  We expect that future DAKOTA-GPMSA integration 
+%to have the latest updates.  We expect that future Dakota-GPMSA integration 
 %will involve more interoperability and sharing of optimization 
-%algorithms and surrogate models between DAKOTA and GPMSA, for example. 
+%algorithms and surrogate models between Dakota and GPMSA, for example. 
 
-We briefly describe the process of running QUESO from DAKOTA.
-The user will create a DAKOTA input file such as the one shown 
+We briefly describe the process of running QUESO from Dakota.
+The user will create a Dakota input file such as the one shown 
 in~\ref{uq:figure18}.  
 Note that the method is \texttt{bayes\_calibration queso}, 
 specifying the QUESO algorithm. The number of 
@@ -1845,16 +1845,16 @@ responses,
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption{DAKOTA input file for UQ example using Bayesian Calibration}
+\caption{Dakota input file for UQ example using Bayesian Calibration}
 \label{uq:figure18}
 \end{figure}
 
 When the input file shown in~\ref{uq:figure18} is run, 
-DAKOTA will run the MCMC algorithm and generate a posterior sample of 
+Dakota will run the MCMC algorithm and generate a posterior sample of 
 $\theta$ in accordance with Bayes Theorem~\ref{eqn:BayesThm} and 
 the likelihood function~\ref{eqn:Likelihood}. The MCMC sample output 
 is put into a directory called \texttt{outputData} in the directory 
-from which DAKOTA is run.  In addition, the MCMC sample chain is 
+from which Dakota is run.  In addition, the MCMC sample chain is 
 written to a file in the run directory called QuesoOutput.txt. 
 The first columns of this file are the sample inputs, the next columns 
 are the responses, and the final column is the  log of the 
@@ -1867,7 +1867,7 @@ so check for updates to this capability.
 \section{Future Nondeterministic Methods}\label{uq:future}
 
 Uncertainty analysis methods under investigation for future inclusion
-into the DAKOTA framework include extensions to the stochastic
+into the Dakota framework include extensions to the stochastic
 expansion methods and sampling capabilities currently supported.
 Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
 and Markov chain Monte Carlo simulation (McMC) are being considered.
@@ -1883,5 +1883,5 @@ involving experimental data and a likelihood function.
 %Finally, the tractability and efficacy of the more intrusive
 %variant of stochastic finite element/polynomial chaos expansion
 %methods, previously mentioned, is being assessed for possible
-%implementation in DAKOTA.
+%implementation in Dakota.
 \end{comment}

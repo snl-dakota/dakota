@@ -2,9 +2,9 @@
 
 \section{Overview}\label{responses:overview}
 
-The \texttt{responses} specification in a DAKOTA input file controls
+The \texttt{responses} specification in a Dakota input file controls
 the types of data that can be returned from an interface during
-DAKOTA's execution. The specification includes the number and type of
+Dakota's execution. The specification includes the number and type of
 response functions (objective functions, nonlinear constraints, calibration 
 terms, etc.) as well as availability of first and second
 derivatives (gradient vectors and Hessian matrices) for these response
@@ -14,7 +14,7 @@ This chapter will present a brief overview of the response data sets
 and their uses, as well as cover some user issues relating to file
 formats and derivative vector and matrix sizing. For a detailed
 description of responses section syntax and example specifications,
-refer to the Responses Commands chapter in the DAKOTA Reference
+refer to the Responses Commands chapter in the Dakota Reference
 Manual~\cite{RefMan}.
 
 \subsection{Response function types}\label{responses:overview:types}
@@ -61,10 +61,10 @@ Gradient availability for these response functions may be described by:
   be approximated by finite differences.
 
 \item \texttt{analytic\_gradients}: gradients are needed and will be supplied
-  by the simulation code (without any finite differencing by DAKOTA).
+  by the simulation code (without any finite differencing by Dakota).
 
 \item \texttt{mixed\_gradients}: the simulation will supply some gradient
-  components and DAKOTA will approximate the others by finite
+  components and Dakota will approximate the others by finite
   differences.
 
 \end{itemize}
@@ -108,12 +108,12 @@ optimization by full Newton methods or in reliability analysis
 with second-order limit state approximations or second-order
 probability integrations.
 
-\section{DAKOTA Results File Data Format}\label{responses:results}
+\section{Dakota Results File Data Format}\label{responses:results}
 
 Simulation interfaces using system calls and forks to create
 separate simulation processes must communicate with the simulation
 through the file system. This is done by reading and
-writing files of parameters and results. DAKOTA uses its own format
+writing files of parameters and results. Dakota uses its own format
 for this data input/output. For the results file, only one format is
 supported (versus the two parameter-file formats described in
 Section~\ref{variables:parameters}). Ordering of response functions is
@@ -121,7 +121,7 @@ as listed in Section~\ref{responses:overview:types} (e.g., objective
 functions or calibration terms are first, followed by nonlinear
 inequality constraints, followed by nonlinear equality constraints).
 
-After a simulation, DAKOTA expects to read a file
+After a simulation, Dakota expects to read a file
 containing responses reflecting the current parameters and
 corresponding to the function requests in the active
 set vector. The response data must be in the format
@@ -153,12 +153,12 @@ The first block of data (shown in black) conveys the requested function values
 and is followed by a block of requested gradients
 (shown in blue), followed by a block of requested Hessians (shown
 in red). If the amount of data in the file does not match the function
-request vector, DAKOTA will abort execution with an error message.
+request vector, Dakota will abort execution with an error message.
 
 Function values have no bracket delimiters and \emph{optionally} one
 character-string tag per function can be supplied.  These tags are not
 used by
-DAKOTA and are only included as an optional field for consistency with
+Dakota and are only included as an optional field for consistency with
 the parameters file format and for backwards compatibility.  If
 tags are used, they must be separated from
 numeric function values by white space (one or more blanks, tabs, or newline

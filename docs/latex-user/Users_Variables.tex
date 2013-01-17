@@ -2,7 +2,7 @@
 
 \section{Overview}\label{variables:overview}
 
-The \texttt{variables} specification in a DAKOTA input file specifies
+The \texttt{variables} specification in a Dakota input file specifies
 the parameter set to be iterated by a particular method. In the case
 of an optimization study, these variables are adjusted in order to
 locate an optimal design; in the case of parameter studies/sensitivity
@@ -11,7 +11,7 @@ explore the parameter space; and in the case of uncertainty analysis,
 the variables are associated with distribution/interval
 characterizations which are used to compute corresponding
 distribution/interval characterizations for response functions. To
-accommodate these and other types of studies, DAKOTA supports design,
+accommodate these and other types of studies, Dakota supports design,
 uncertain, and state variable types for continuous and discrete
 variable domains, where uncertain types can be further categorized as
 either aleatory or epistemic and discrete domains can be further
@@ -22,7 +22,7 @@ This chapter will present a brief overview of the types of variables
 and their uses, as well as cover some user issues relating to file
 formats and the active set vector.  For a detailed description of
 variables section syntax and example specifications, refer to the
-Variables Commands chapter in the DAKOTA Reference Manual~\cite{RefMan}.
+Variables Commands chapter in the Dakota Reference Manual~\cite{RefMan}.
 
 
 \section{Design Variables}\label{variables:design}
@@ -41,7 +41,7 @@ The most common type of design variables encountered in engineering
 applications are of the continuous type. These variables may assume
 any real value (e.g., \texttt{12.34}, \texttt{-1.735e+07}) within
 their bounds. All but a handful of the optimization algorithms in
-DAKOTA support continuous design variables exclusively.
+Dakota support continuous design variables exclusively.
 
 \subsection{Discrete Design Variables}\label{variables:design:ddv}
 
@@ -95,7 +95,7 @@ decomposition and meshing.
 \subsubsection{Discrete Design Integer Variables}\label{variables:design:ddiv}
 
 There are two types of discrete design integer variables supported by
-DAKOTA.
+Dakota.
 \begin{itemize}
 
 \item  The \texttt{discrete\_design\_range} specification supports a
@@ -119,7 +119,7 @@ step and partition control specifications (see Chapter~\ref{ps}).
 \subsubsection{Discrete Design Real Variables}\label{variables:design:ddrv}
 
 There is one type of discrete design real variable supported by
-DAKOTA.
+Dakota.
 \begin{itemize}
 
 \item The \texttt{discrete\_design\_set\_real} specification
@@ -156,15 +156,15 @@ data as to allow modeling using probability distributions, and
 probabilistic methods are commonly used for propagating nput aleatory
 uncertainties described by probability distribution specifications.
 The two following sections describe the continuous and discrete
-aleatory uncertain variables supported by DAKOTA.
+aleatory uncertain variables supported by Dakota.
 
-For aleatory random variables, DAKOTA supports a user-supplied
+For aleatory random variables, Dakota supports a user-supplied
 correlation matrix to provide correlations among the input
 variables. By default, the correlation matrix is set to the identity
 matrix, i.e., no correlation among the uncertain variables.
 
 For additional information on random variable probability
-distributions, refer to~\cite{Hal00} and~\cite{Swi04}. Refer to the DAKOTA
+distributions, refer to~\cite{Hal00} and~\cite{Swi04}. Refer to the Dakota
 Reference Manual~\cite{RefMan} for more detail on the uncertain variable
 specifications and to Chapter~\ref{uq} for a description of methods
 available to quantify the uncertainty in the response.
@@ -252,7 +252,7 @@ The following types of discrete aleatory uncertain variables are available:
 Epistemic uncertainties are reducible uncertainties resulting from a
 lack of knowledge.  For epistemic uncertainties, data is generally
 sparse, making the use of probability theory questionable and leading
-to nonprobabilistic methods based on interval specifications  DAKOTA
+to nonprobabilistic methods based on interval specifications  Dakota
 currently supports one epistemic uncertain variable type.
 
 \subsubsection{Continuous Epistemic Uncertain Variables}\label{variables:uncertain:ceuv}
@@ -281,7 +281,7 @@ solver convergence tolerances, time step controls, or mesh fidelity
 parameters. For additional model parameterizations involving strings
 (e.g., ``mesh1.exo''), refer to the analysis components specification
 described in Section~\ref{variables:parameters:standard} and in the
-Interface Commands chapter of the DAKOTA Reference
+Interface Commands chapter of the Dakota Reference
 Manual~\cite{RefMan}.  Similar to the design variables discussed in
 Section~\ref{variables:design}, state variables can be a continuous
 range (real-valued between bounds), a discrete range (integer-valued
@@ -293,7 +293,7 @@ differently depending on the method in use. Since these variables are
 neither design nor uncertain variables, algorithms for optimization,
 least squares, and uncertainty quantification do not iterate on these
 variables; i.e., they are not active and are hidden from the
-algorithm. However, DAKOTA still maps these variables through the
+algorithm. However, Dakota still maps these variables through the
 user's interface where they affect the computational model in use.
 This allows optimization, least squares, and uncertainty
 quantification studies to be executed under different simulation
@@ -315,10 +315,10 @@ refinement as the algorithm nears the optimal solution.
 \section{Management of Mixed Variables by Iterator}\label{variables:mixed}
 \subsection{View}\label{variables:mixedview}
 As alluded to in the previous section, the iterative method selected
-for use in DAKOTA determines what subset, or view, of the variables
+for use in Dakota determines what subset, or view, of the variables
 data is active in the iteration. The general case of having a mixture
 of various different types of variables is supported within all of the
-DAKOTA methods even though certain methods will only modify certain
+Dakota methods even though certain methods will only modify certain
 types of variables (e.g., optimizers and least squares methods only
 modify design variables, and uncertainty quantification methods 
 typically only utilize uncertain variables).  
@@ -328,19 +328,19 @@ interface in an unmodified state. This allows for a variety of
 parameterizations within the model in addition to those which are
 being used by a particular iterator, which can provide the convenience
 of consolidating the control over various modeling parameters in a
-single file (the DAKOTA input file). An important related point is
+single file (the Dakota input file). An important related point is
 that the variable set that is active with a particular iterator is the
 same variable set for which derivatives are typically computed (see
 Section~\ref{responses:active}).
 
 There are certain situations where the user may want to explicitly 
 control the subset of variables that is considered active for a 
-certain DAKOTA method.  This is done by specifying the keyword 
+certain Dakota method.  This is done by specifying the keyword 
 \texttt{active} in the variables specification block, followed by 
 one of the following:  \texttt{all}, \texttt{design}, \texttt{uncertain},
 \texttt{aleatory}, \texttt{epistemic}, or \texttt{state}.  
 Specifying one of these subsets of variables will allow the 
-DAKOTA method to operate on the specified variable types and override 
+Dakota method to operate on the specified variable types and override 
 the defaults.  For example, the default behavior for a 
 nondeterministic sampling method is to sample the uncertain 
 variables.  However, if the user specifed \texttt{active}  \texttt{all} 
@@ -370,21 +370,21 @@ the discrete variables are relaxed and treated as continuous variables.
 This may be useful in optimization problems involving both 
 continuous and discrete variables when a user would like 
 to use an optimization method that is designed for continuous variable 
-optimization.  All DAKOTA methods have a default value of mixed for the 
+optimization.  All Dakota methods have a default value of mixed for the 
 domain type except for the branch-and-bound method which has a default 
 domain type of relaxed.  Note that the branch-and-bound method is 
 under development at this time. 
 
 \subsection{Precedence}\label{variables:precedence}
 If the user does not specify any explicit override of the active view 
-of the variables, DAKOTA then considers the response function 
+of the variables, Dakota then considers the response function 
 specification.  If the user specifies objective functions or calibration 
 terms in the response specification block, the active variables will 
 be the design variables.  If the user specifies the more generic 
 response type, \texttt{response\_functions}, general response 
 functions do not have a specific interpretation the way 
 \texttt{objective\_functions} or \texttt{calibration\_terms} do. 
-In the case of generic response functions, DAKOTA then tries to 
+In the case of generic response functions, Dakota then tries to 
 infer the active view from the method.  If the method is a parameter 
 study, or any of the methods available under dace, psuade, or fsu methods, 
 the active view is set to all variables.  For uncertainty quantification 
@@ -406,19 +406,19 @@ otherwise specified (e.g. state variables will not be sampled
 for surrogate construction). 
 
 With respect to domain type, if the user does not specify an 
-explicit override of \texttt{mixed} or \texttt{relaxed}, DAKOTA infers
+explicit override of \texttt{mixed} or \texttt{relaxed}, Dakota infers
 the domain type from the method.  As mentioned above, 
 all methods currently use a mixed domain as a default, except 
 the branch-and-bound method which is under development.
   
-\section{DAKOTA Parameters File Data Format}\label{variables:parameters}
+\section{Dakota Parameters File Data Format}\label{variables:parameters}
 
 Simulation interfaces which employ system calls and forks to create
 separate simulation processes must communicate with the simulation
 code through the file system. This is accomplished through the reading
-and writing of parameters and results files. DAKOTA uses a particular
+and writing of parameters and results files. Dakota uses a particular
 format for this data input/output. Depending on the user's interface
-specification, DAKOTA will write the parameters file in either
+specification, Dakota will write the parameters file in either
 standard or APREPRO format (future XML formats are planned). The
 former option uses a simple ``\texttt{value tag}'' format, whereas the
 latter option uses a ``\texttt{\{ tag = value \}}'' format for
@@ -427,7 +427,7 @@ DPrePro, BPREPRO, and JPrePost variants).
 
 \subsection{Parameters file format (standard)}\label{variables:parameters:standard}
 
-Prior to invoking a simulation, DAKOTA creates a parameters file which
+Prior to invoking a simulation, Dakota creates a parameters file which
 contains the current parameter values and a set of function requests.
 The standard format for this parameters file is shown in
 Figure~\ref{variables:figure01}.
@@ -494,7 +494,7 @@ n_{ddrv} + n_{cauv} + n_{dauiv} + n_{daurv} + n_{ceuv} + n_{deuiv} +
 n_{deurv} + n_{csv} + n_{dsiv} + n_{dsrv}$).  If any of the variable
 types are not present in the problem, then its block is omitted
 entirely from the parameters file.  The tags are the variable
-descriptors specified in the user's DAKOTA input file, or if no
+descriptors specified in the user's Dakota input file, or if no
 descriptors have been specified, default descriptors are used.
 
 The second array for the active set vector (ASV) begins with the total
@@ -548,16 +548,16 @@ parameters files by the APREPRO utility, which is a file pre-processor
 that can significantly simplify model parameterization.  Similar
 pre-processors include DPrePro, BPREPRO, and JPrePost.  \emph{[Note:
 APREPRO is a Sandia-developed pre-processor that is not currently
-distributed with DAKOTA.  DPrePro is a Perl script distributed with
-DAKOTA that performs many of the same functions as APREPRO, and is
-optimized for use with DAKOTA parameters files in either format.
+distributed with Dakota.  DPrePro is a Perl script distributed with
+Dakota that performs many of the same functions as APREPRO, and is
+optimized for use with Dakota parameters files in either format.
 BPREPRO and JPrePost are additional Perl and JAVA tools, respectively,
 in use at other sites.]}  When a parameters file in APREPRO format is
 included within a template file (using an include directive), the
 APREPRO utility recognizes these constructs as variable definitions
 which can then be used to populate targets throughout the template
 file~\cite{Sja92}.  DPrePro, conversely, does not require the use of
-includes since it processes the DAKOTA parameters file and template
+includes since it processes the Dakota parameters file and template
 simulation file separately to create a simulation input file populated
 with the variables data.
 
@@ -621,7 +621,7 @@ specific translations are shown in Table~\ref{variables:table01}.
   \end{tabular}
 \end{table}
 
-The active set vector in DAKOTA gets its name from managing the active
+The active set vector in Dakota gets its name from managing the active
 set, i.e., the set of functions that are active on a particular
 function evaluation. However, it also manages the type of data that is
 needed for functions that are active, and in that sense, has an
@@ -633,7 +633,7 @@ literature.
 Active set vector control may be turned off to allow the user to
 simplify the supplied interface by removing the need to check the
 content of the active set vector on each evaluation. The Interface
-Commands chapter in the DAKOTA Reference Manual~\cite{RefMan} provides
+Commands chapter in the Dakota Reference Manual~\cite{RefMan} provides
 additional information on this option (\texttt{deactivate
 active\_set\_vector}).  Of course, this option trades some efficiency
 for simplicity and is most appropriate for those cases in which only a

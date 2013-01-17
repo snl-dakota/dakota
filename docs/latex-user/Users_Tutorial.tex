@@ -1,4 +1,4 @@
-\chapter{DAKOTA Tutorial}\label{tutorial}
+\chapter{Dakota Tutorial}\label{tutorial}
 
 \section {Quickstart}\label{tutorial:installation:quickstart}
 \subsection {Acquiring and Installing Dakota}\label{tutorial:quickstart:installation}
@@ -112,10 +112,11 @@ This section is intended for users who are new to Dakota.
 \begin{enumerate}
   \item Make sure Dakota runs - see Section~\ref{tutorial:installation:quickstart:binary}
   \item Create a working directory 
-  \item Copy \texttt{dakota\_rosenbrock\_2d.in} from the \texttt{Dakota/examples/tutorial/}
+  \item Copy \texttt{dakota\_rosenbrock\_multidim.in} from the \texttt{Dakota/examples/tutorial/}
  directory to the working directory
   \item From the working directory, run \texttt{dakota -i 
-dakota\_rosenbrock\_2d.in -o Dakota\_rosenbrock\_2d.out > Dakota\_rosenbrock\_2d.stdout}
+dakota\_rosenbrock\_multidim.in \textbackslash \\
+-o Dakota\_rosenbrock\_multidim.out > Dakota\_rosenbrock\_multidim.stdout}
 \end{enumerate}
 
 {\bf What should happen} \\
@@ -123,10 +124,10 @@ Dakota outputs a large amount of information to help users track the progress.
 Four files should have been created:
 \begin{enumerate}
   \item The screen output has been redirected to the file 
-\texttt{Dakota\_rosenbrock\_2d.stdout}. \\
+\texttt{Dakota\_rosenbrock\_multidim.stdout}. \\
   The contents are messages from Dakota and notes about the 
 progress of the iterator (i.e. method/algorithm).
-  \item The output file \texttt{Dakota\_rosenbrock\_2d.out} 
+  \item The output file \texttt{Dakota\_rosenbrock\_multidim.out} 
 contains information about the function evaluations.
   \item \texttt{dakota\_tabular.dat} is created due to the 
 specification of \texttt{tabular\_graphics\_data}. This summarizes 
@@ -173,9 +174,9 @@ presented here are included in the distribution tar files within
 directory \texttt{Dakota/examples/tutorial}. 
 
 A simple Dakota
-input file (that is named \texttt{dakota\_rosenbrock\_2d.in})
+input file (that is named \texttt{dakota\_rosenbrock\_multidim.in})
 for a two-dimensional parameter study on Rosenbrock's
-function is shown in Figure~\ref{tutorial:rosenbrock_2d}.
+function is shown in Figure~\ref{tutorial:rosenbrock_multidim}.
 This input file will be used to
 describe the basic format and syntax used in all Dakota input files.
 The results are shown later, in Section~\ref{tutorial:examples:param_study}.
@@ -184,12 +185,12 @@ The results are shown later, in Section~\ref{tutorial:examples:param_study}.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_rosenbrock_2d.in}
+      \verbatimtabinput[8]{dakota_rosenbrock_multidim.in}
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock 2-D parameter study example: the Dakota input
     file.}
-  \label{tutorial:rosenbrock_2d}
+  \label{tutorial:rosenbrock_multidim}
 \end{figure}
 
 There are six specification blocks that may appear in Dakota input
@@ -199,7 +200,7 @@ keyword blocks can appear in any order in a Dakota input file. At
 least one \emph{variables}, \emph{interface}, \emph{responses}, and
 \emph{method} specification must appear, and no more than one
 \emph{strategy} specification should appear. In Figure~
-\ref{tutorial:rosenbrock_2d}, one of each of the keyword blocks is
+\ref{tutorial:rosenbrock_multidim}, one of each of the keyword blocks is
 used. Additional syntax features include use of the \#
 symbol to indicate a comment, use of single or double quotes for string inputs
 (e.g., \texttt{'x1'}), the use of commas and/or white space for separation of
@@ -221,7 +222,7 @@ control a single method, the more advanced cases are discussed in Chapter~\ref{s
 \end{figure}
 
 The first block of the input file shown in
-Figure~\ref{tutorial:rosenbrock_2d} is the \emph{strategy} block.
+Figure~\ref{tutorial:rosenbrock_multidim} is the \emph{strategy} block.
 This keyword block is used to specify some of Dakota's advanced
 meta-procedures such as hybrid optimization, 
 multi-start optimization, and Pareto optimization.
@@ -235,7 +236,7 @@ The \emph{method} block of the input file specifies the iterative
 technique that Dakota will employ, such as a parameter study,
 optimization method, data sampling technique, etc.
 The keyword \texttt{multidim\_parameter\_study}
-in Figure~\ref{tutorial:rosenbrock_2d} calls for a multidimensional
+in Figure~\ref{tutorial:rosenbrock_multidim} calls for a multidimensional
 parameter study, while the keyword \texttt{partitions} specifies the
 number of intervals per variable. In this case, there will be eight
 intervals (nine data points) evaluated between the lower and upper
@@ -262,7 +263,7 @@ are not required, then it is not necessary to specify the
 \texttt{model} keyword at all, since the default behavior is the use
 of a ``single'' model constructed with the last set of responses,
 variables, and interface specified. In
-Figure~\ref{tutorial:rosenbrock_2d}, the keyword \texttt{single}
+Figure~\ref{tutorial:rosenbrock_multidim}, the keyword \texttt{single}
 explicitly specifies the use of a single model in the parameter study,
 even though this is the default.
 
@@ -272,7 +273,7 @@ formulation. The variables can be continuous or discrete, and can be
 classified as design variables, uncertain variables, or state
 variables. See Chapter~\ref{variables} for more information on the
 types of variables supported by Dakota. The \emph{variables} section
-shown in Figure~\ref{tutorial:rosenbrock_2d} specifies that there are
+shown in Figure~\ref{tutorial:rosenbrock_multidim} specifies that there are
 two continuous design variables. The sub-specifications for
 continuous design variables
 % use the abbreviation ``cdv'' in the input file and
@@ -297,7 +298,7 @@ would be used for passing data between Dakota and the simulation code.
 
 The \emph{responses} block of the input file specifies the types of
 data that the interface will return to Dakota. For the example shown
-in Figure~\ref{tutorial:rosenbrock_2d}, the assignment
+in Figure~\ref{tutorial:rosenbrock_multidim}, the assignment
 \texttt{num\_objective\_functions = 1}
 indicates that there is only one objective
 function. Since there are no constraints
@@ -377,22 +378,27 @@ squares, and uncertainty quantification studies without significant
 modification to the input file. 
 
 An example of a parameter study is the 2-D parameter study example problem 
-listed in Figure~\ref{tutorial:rosenbrock_2d}. This is executed by Dakota using the
-following command:
+listed in Figure~\ref{tutorial:rosenbrock_multidim}. This is 
+executed by Dakota using the command noted in the comments:
 \begin{small}
 \begin{verbatim}
-    dakota dakota_rosenbrock_2d.in > 2d.out
+    dakota -i dakota_rosenbrock_multidim.in \\
+      -o Rosenbrock_multidim.out > Rosenbrock_multidim.stdout
 \end{verbatim}
 \end{small}
 
-The output of the Dakota run is directed to the file named
-\texttt{2d.out}. For comparison, a file named \texttt{2d.out.sav} is
+The output of the Dakota run is written to the file named
+\texttt{Rosenbrock\_multidim.out} while the screen output, 
+or standard output, is redirect to \texttt{Rosenbrock\_multidim}.
+ For comparison, files named 
+\texttt{Rosenbrock\_multidim.out.sav} and
+\texttt{Rosenbrock\_multidim.stdout.sav} are
 included in the \texttt{Dakota/examples/tutorial} directory. As
 for many of the examples, Dakota provides a report on the best design
 point located during the study at the end of these output files.
 
 This 2-D parameter study produces the grid of data samples shown in
-Figure~\ref{tutorial:rosenbrock_2d_graphics}. In general, a multidimensional 
+Figure~\ref{tutorial:rosenbrock_multidim_graphics}. In general, a multidimensional 
 parameter study lets one generate a grid in multiple dimensions. 
 The keyword \texttt{multidim\_parameter\_study} indicates that 
 a grid will be generated over all variables. The keyword 
@@ -416,7 +422,7 @@ products.)
   \includegraphics[height=2.5in]{images/rosen_2d_pts}
   \caption{Rosenbrock 2-D parameter study example:
   location of the design points (dots) evaluated.}
-  \label{tutorial:rosenbrock_2d_graphics}
+  \label{tutorial:rosenbrock_multidim_graphics}
 \end{figure}
 
 
@@ -466,15 +472,9 @@ the convergence tolerance for three successive iterations).
   \label{tutorial:rosenbrock_grad}
 \end{figure}
 
-This Dakota input file is executed using the following command:
-\begin{small}
-\begin{verbatim}
-    dakota dakota_rosenbrock_grad_opt.in > grad_opt.out
-\end{verbatim}
-\end{small}
-
-The sample file \texttt{grad\_opt.out.sav} is included in
-\texttt{Dakota/examples/tutorial} for comparison. When this
+The Dakota command is noted in the file, and copies of the outputs
+are in the \texttt{Dakota/examples/tutorial} directory, with \texttt{.sav} 
+appended to the name.  When this
 example problem is executed, Dakota creates some iteration history
 graphics similar to the screen capture shown in Figure~
 \ref{tutorial:rosenbrock_grad_graphics}(a). These plots show
@@ -542,14 +542,14 @@ specified in the variables block of the input file, beginning with
 the keyword \texttt{uniform\_uncertain}.
 % Not true: For comparison, the keywords
 % from the previous examples are retained, but have been commented out.
-Another change from earlier input files, such as
-Figure~\ref{tutorial:rosenbrock_2d},
+Another difference from earlier input files such as
+Figure~\ref{tutorial:rosenbrock_grad}
 occurs in the responses block, where
-the keyword \texttt{num\_response\_functions} is used in place of
-\texttt{num\_objective\_functions}. The final changes to the input
+the keyword \texttt{response\_functions} is used in place of
+\texttt{objective\_functions}. The final changes to the input
 file occur in the method block, where the keyword
-\texttt{sampling} is used; ``nond'' is an abbreviation for 
-nondeterministic.
+\texttt{sampling} is used.
+
 The other keywords in the methods block of the input file
 specify the number of samples (200), the seed for the random number
 generator (17), the sampling method (random), and the response
@@ -567,20 +567,14 @@ parameter space, evaluate the value of Rosenbrock's function at all
 200 points, and then perform some basic statistical calculations on
 the 200 response values.
 
-This Dakota input file is executed using the following command:
-\begin{small}
-\begin{verbatim}
-         dakota dakota_rosenbrock_nond.in > nond.out
-\end{verbatim}
-\end{small}
-
+The Dakota command is noted in the file, and copies of the outputs
+are in the \texttt{Dakota/examples/tutorial} directory, with \texttt{.sav} 
+appended to the name.  
 Figure~\ref{tutorial:results_mc} shows example results from this 
-sampling method. See the \texttt{nond.out.sav} file in directory
-\texttt{Dakota/examples/tutorial} for comparison with results
-produced by Dakota. Note that your results will differ from those in
+sampling method. 
+Note that your results will differ from those in
 this file if your \texttt{seed} value differs or if no \texttt{seed}
 is specified.
-
 
 As shown in Figure~\ref{tutorial:results_mc}, 
 the statistical data on the 200 Monte Carlo samples is printed at the
@@ -726,21 +720,15 @@ the names for Dakota's parameters and results file are specified using
 the \texttt{analysis\_driver}, \texttt{parameters\_file}, and
 \texttt{results\_file} keywords, respectively.
 
-This example problem is executed using the command:
-\begin{small}
-\begin{verbatim}
-    dakota dakota_rosenbrock_syscall.in > syscall.out
-\end{verbatim}
-\end{small}
+The Dakota command is noted in the file, and copies of the outputs
+are in the \texttt{Dakota/examples/tutorial} directory, with \texttt{.sav} 
+appended to the name.  
 
 This run of Dakota takes longer to complete than the previous
 gradient-based optimization example since the \texttt{system}
 interface method has additional process creation and file I/O
 overhead, as compared to the internal communication that occurs when
-the \texttt{direct} interface method is used. File
-\texttt{syscall.out.sav} in the
-\texttt{Dakota/examples/tutorial} directory permits comparison with
-output results you get by executing the command given above.
+the \texttt{direct} interface method is used. 
 
 To gain a better understanding of what exactly Dakota is doing with
 the \texttt{system} interface approach, add the keywords

@@ -2,27 +2,27 @@
 
 \section{Overview}\label{opt:overview}
 
-DAKOTA's optimization capabilities include a variety of gradient-based
+Dakota's optimization capabilities include a variety of gradient-based
 and nongradient-based optimization methods. Numerous packages are
 available, some of which are commercial packages, some of which are
 developed internally to Sandia, and some of which are free software
 packages from the open source community. The downloaded version of
-DAKOTA excludes the commercially developed packages but includes
+Dakota excludes the commercially developed packages but includes
 HOPSPACK, SCOLIB (formerly known as COLINY), CONMIN, JEGA, NCSUOpt,
 and OPT++. Interfaces to DOT, NPSOL, and NLPQL are provided with
-DAKOTA, but to use these commercial optimizers, the user must obtain a
+Dakota, but to use these commercial optimizers, the user must obtain a
 software license and the source code for these packages
-separately. The commercial software can then be compiled into DAKOTA
-by following DAKOTA's installation procedures (see notes in
+separately. The commercial software can then be compiled into Dakota
+by following Dakota's installation procedures (see notes in
 \texttt{Dakota/INSTALL}).
 
-DAKOTA's input commands permit the user to specify two-sided nonlinear
+Dakota's input commands permit the user to specify two-sided nonlinear
 inequality constraints of the form $g_{L_{i}} \leq g_{i}(\mathbf{x})
 \leq g_{U_{i}}$, as well as nonlinear equality constraints of the form
 $h_{j}(\mathbf{x}) = h_{t_{j}}$ (see also
 Section~\ref{introduction:background:optimization}). Some optimizers
 (e.g., NPSOL, OPT++, JEGA) can handle these constraint forms directly,
-whereas other optimizers (e.g., HOPSPACK, DOT, CONMIN) require DAKOTA
+whereas other optimizers (e.g., HOPSPACK, DOT, CONMIN) require Dakota
 to perform an internal conversion of all constraints to one-sided
 inequality constraints of the form $g_{i}(\mathbf{x}) \leq 0$. In the
 latter case, the two-sided inequality constraints are treated as
@@ -89,7 +89,7 @@ An example specification for APPS with nonlinear constraints is:
 \end{verbatim}
 \end{small} % Could instead extract dakota_apps.in:5 to get most of this.
 
-See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on
+See the Dakota Reference Manual~\cite{RefMan} for additional detail on
 the APPS commands and sample input specifications in {\tt
 Dakota/test/dakota\_apps.in}.
 
@@ -97,7 +97,7 @@ Dakota/test/dakota\_apps.in}.
 
 The SCOLIB library~\cite{Har06} contains a variety of
 nongradient-based optimization algorithms. The suite of SCOLIB
-optimizers available in DAKOTA currently include the following:
+optimizers available in Dakota currently include the following:
 
 \begin{itemize}
 
@@ -133,7 +133,7 @@ support bound constraints and nonlinear constraints, but not linear
 constraints.  The nonlinear constraints in SCOLIB are currently
 satisfied using penalty function formulations~\cite{Pon96}. Support
 for methods which manage constraints internally is currently being
-developed and will be incorporated into future versions of DAKOTA.
+developed and will be incorporated into future versions of Dakota.
 \emph{Note that one observed drawback to \texttt{coliny\_solis\_wets}
 is that it does a poor job solving problems with nonlinear
 constraints}.  Refer to Table 17.1 for additional method
@@ -155,16 +155,18 @@ from SCOLIB is:
 \end{verbatim}
 \end{small}
 
-The DAKOTA Reference Manual~\cite{RefMan} contains additional information
-on the SCOLIB options and settings.
+The Dakota Reference Manual~\cite{RefMan} contains additional information
+on the SCOLIB options and settings and examples are shown in 
+Section~\ref{additional:rosenbrock:examples:nongradient1} (pattern search) and
+Section~\ref{additional:rosenbrock:examples:nongradient2} (evolutionary algorithm).
 
 \subsection{Constrained Minimization (CONMIN) Library}\label{opt:software:conmin}
 
 The CONMIN library~\cite{Van78} contains two methods for gradient-based
 nonlinear optimization. For constrained optimization, the Method of
-Feasible Directions (DAKOTA's \texttt{conmin\_mfd} method selection)
+Feasible Directions (Dakota's \texttt{conmin\_mfd} method selection)
 is available, while for unconstrained optimization, the
-Fletcher-Reeves conjugate gradient method (DAKOTA's
+Fletcher-Reeves conjugate gradient method (Dakota's
 \texttt{conmin\_frcg} method selection) is available. Both of these
 methods are most efficient at finding a local minimum in the vicinity
 of the starting point. The methods in CONMIN can be applied to global
@@ -192,19 +194,20 @@ algorithm is:
 \end{verbatim}
 \end{small}
 
-Refer to the DAKOTA Reference Manual~\cite{RefMan} for more information on
-the settings that can be used with CONMIN methods.
+Refer to the Dakota Reference Manual~\cite{RefMan} for more information on
+the settings that can be used with CONMIN methods. An example using this method
+is included in Section~\ref{additional:textbook:examples:gradient2}.
 
 \subsection{Design Optimization Tools (DOT) Library}\label{opt:software:dot}
 
 The DOT library~\cite{Van95} contains nonlinear programming optimizers,
-specifically the Broyden-Fletcher-Goldfarb-Shanno (DAKOTA's
+specifically the Broyden-Fletcher-Goldfarb-Shanno (Dakota's
 \texttt{dot\_bfgs} method selection) and Fletcher-Reeves conjugate
-gradient (DAKOTA's \texttt{dot\_frcg} method selection) methods for
+gradient (Dakota's \texttt{dot\_frcg} method selection) methods for
 unconstrained optimization, and the modified method of feasible
-directions (DAKOTA's \texttt{dot\_mmfd} method selection), sequential
-linear programming (DAKOTA's \texttt{dot\_slp} method selection), and
-sequential quadratic programming (DAKOTA's \texttt{dot\_sqp} method
+directions (Dakota's \texttt{dot\_mmfd} method selection), sequential
+linear programming (Dakota's \texttt{dot\_slp} method selection), and
+sequential quadratic programming (Dakota's \texttt{dot\_sqp} method
 selection) methods for constrained optimization.
 
 All DOT methods are local gradient-based optimizers which are best
@@ -236,12 +239,12 @@ Version 4.20, we have noticed inconsistent behavior of this algorithm
 across different versions of Linux.  Our best assessment is that it is
 due to different treatments of uninitialized variables.  As we do not
 know the intention of the code authors and maintaining DOT source code
-is outside of the DAKOTA project scope, we have not made nor are we
+is outside of the Dakota project scope, we have not made nor are we
 recommending any code changes to address this.  However, all users who
 use \texttt{dot\_frcg} in DOT Version 4.20 should be aware that
 results may not be reliable.}
 
-See the DAKOTA
+See the Dakota
 Reference Manual~\cite{RefMan} for additional detail on the DOT
 commands. More information on DOT can be obtained by contacting
 Vanderplaats Research and Development at \url{http://www.vrand.com}.
@@ -249,10 +252,10 @@ Vanderplaats Research and Development at \url{http://www.vrand.com}.
 \subsection{dl\_solver --- Solvers via Shared Libraries}\label{opt:software:dlsolver}
 
 On computer systems that permit use of shared libraries (most modern systems),
-DAKOTA can avail itself of optimization solvers contained in shared libraries.
-This is a first step toward allowing optional parts of DAKOTA, such as
+Dakota can avail itself of optimization solvers contained in shared libraries.
+This is a first step toward allowing optional parts of Dakota, such as
 proprietary solvers, to be accessed from shared libraries.  For example,
-the DAKOTA source distributions illustrate making
+the Dakota source distributions illustrate making
 a sample shared-library interface to SNOPT~\cite{GilMS05},
 whose use would be specified by
 \begin{small}
@@ -278,7 +281,7 @@ optimization methods. The first is a Multi-objective Genetic Algorithm
 (MOGA) which performs Pareto optimization. The second is a
 Single-objective Genetic Algorithm (SOGA) which performs optimization
 on a single objective function.  These functions are accessed as
-(\texttt{moga} and \texttt{soga}) within DAKOTA.
+(\texttt{moga} and \texttt{soga}) within Dakota.
 
 The \texttt{moga} algorithm directly creates a population of Pareto
 optimal solutions.  Over time, the selection operators of a genetic
@@ -291,7 +294,7 @@ that one can obtain an entire Pareto set at the end of one genetic
 algorithm run, as compared with having to run the ``weighted sum''
 single objective problem multiple times with different weights.
 
-The DAKOTA Reference Manual~\cite{RefMan} contains additional
+The Dakota Reference Manual~\cite{RefMan} contains additional
 information on the JEGA options and settings.
 Section~\ref{opt:additional} discusses additional multiobjective
 optimization capabilities, and there are MOGA examples in
@@ -301,7 +304,7 @@ Chapters~\ref{tutorial} and~\ref{additional}.
 
 %The MOOCHO (Multifunctional Object-Oriented arCHitecture for
 %Optimization) library, formerly known as rSQP++, is a new addition to
-%DAKOTA that is not yet publicly available. It provides both
+%Dakota that is not yet publicly available. It provides both
 %general-purpose sequential quadratic programming (SQP) algorithms for
 %nested analysis and design (NAND) as well as reduced-space SQP
 %algorithms for simultaneous analysis and design (SAND). Additional
@@ -336,13 +339,13 @@ An example specification is given below:
 \end{verbatim}
 \end{small}
 
-The DAKOTA Reference Manual~\cite{RefMan} contains additional
+The Dakota Reference Manual~\cite{RefMan} contains additional
 information on the NCSU DIRECT options and settings.
 
 \subsection{NLPQL Library}\label{opt:software:nlpql}
 
 The NLPQL library contains a sequential quadratic programming (SQP)
-implementation (DAKOTA's \texttt{nlpql\_sqp} method selection).  The
+implementation (Dakota's \texttt{nlpql\_sqp} method selection).  The
 particular implementation used is NLPQLP~\cite{Sch04}, a variant with
 distributed and non-monotone line search.  SQP is a nonlinear
 programming approach for constrained minimization which solves a
@@ -362,7 +365,7 @@ Global optima in nonconvex design spaces may be missed. Other gradient
 based optimizers for constrained optimization include the DOT, CONMIN,
 NPSOL, and OPT++ libraries.
 
-See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on
+See the Dakota Reference Manual~\cite{RefMan} for additional detail on
 the NLPQL commands. More information on NLPQL can be obtained from
 Prof. Klaus Schittkowski at
 \url{http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp20.htm}.
@@ -370,13 +373,13 @@ Prof. Klaus Schittkowski at
 \subsection{NPSOL Library}\label{opt:software:npsol}
 
 The NPSOL library~\cite{Gil86} contains a sequential quadratic
-programming (SQP) implementation (DAKOTA's \texttt{npsol\_sqp} method
+programming (SQP) implementation (Dakota's \texttt{npsol\_sqp} method
 selection).  Like NLPQL, it solves a series of QP subproblems, uses an
 augmented Lagrangian merit function and a BFGS approximation to the
 Hessian of the Lagrangian, and will not necessarily satisfy the
 constraints until the final solution.  It uses a sufficient-decrease
 line search approach, which is a gradient-based line search for
-analytic, mixed, or DAKOTA-supplied numerical gradients and is a
+analytic, mixed, or Dakota-supplied numerical gradients and is a
 value-based line search in the vendor numerical case.
 
 NPSOL's gradient-based approach is best suited for efficient
@@ -397,12 +400,12 @@ An example of an NPSOL specification is:
 \end{verbatim}
 \end{small}
 
-See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
+See the Dakota Reference Manual~\cite{RefMan} for additional detail on the
 NPSOL commands. More information on NPSOL can be obtained by
 contacting Stanford Business Software at \url{http://www.sbsi-sol-optimize.com}.
 
 The NPSOL library generates diagnostics in addition to those appearing
-in the DAKOTA output stream. These diagnostics are written to the
+in the Dakota output stream. These diagnostics are written to the
 default FORTRAN device 9 file (e.g., \texttt{ftn09} or \texttt{fort.9},
 depending on the architecture) in the working directory.
 
@@ -410,13 +413,13 @@ depending on the architecture) in the working directory.
 
 The OPT++ library~\cite{MeOlHoWi07} contains primarily nonlinear programming
 optimizers for unconstrained, bound constrained, and nonlinearly
-constrained minimization: Polak-Ribiere conjugate gradient (DAKOTA's
-\texttt{optpp\_cg} method selection), quasi-Newton (DAKOTA's
+constrained minimization: Polak-Ribiere conjugate gradient (Dakota's
+\texttt{optpp\_cg} method selection), quasi-Newton (Dakota's
 \texttt{optpp\_q\_newton} method selection), finite difference Newton
-(DAKOTA's \texttt{optpp\_fd\_newton} method selection), and full
-Newton (DAKOTA's \texttt{optpp\_newton} method selection). The library
+(Dakota's \texttt{optpp\_fd\_newton} method selection), and full
+Newton (Dakota's \texttt{optpp\_newton} method selection). The library
 also contains the parallel direct search nongradient-based
-method~\cite{Den94b} (specified as DAKOTA's \texttt{optpp\_pds} method
+method~\cite{Den94b} (specified as Dakota's \texttt{optpp\_pds} method
 selection).
 
 OPT++'s gradient-based optimizers are best suited for efficient
@@ -446,28 +449,28 @@ An example specification for the OPT++ quasi-Newton algorithm is:
 \end{verbatim}
 \end{small}
 
-See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
+See the Dakota Reference Manual~\cite{RefMan} for additional detail on the
 OPT++ commands.
 
 The OPT++ library generates diagnostics in addition to those appearing
-in the DAKOTA output stream. These diagnostics are written to the file
+in the Dakota output stream. These diagnostics are written to the file
 \texttt{OPT\_DEFAULT.out} in the working directory.
 
 %\subsection{Parallel Integer Combinatorial Optimization (PICO)}\label{opt:software:pico}
 
-%\emph{Branch and bound is inoperative in DAKOTA since its
+%\emph{Branch and bound is inoperative in Dakota since its
 %  incorporation into COLINY.  This will be supported again in future
 %  releases.}
 
-%DAKOTA employs the branch and bound capabilities of the PICO library
+%Dakota employs the branch and bound capabilities of the PICO library
 %for solving discrete and mixed continuous/discrete constrained
 %nonlinear optimization problems. This capability is implemented in
-%DAKOTA as a strategy and is discussed further in
+%Dakota as a strategy and is discussed further in
 %Section~\ref{strat:minlp}.
 
 \section{Additional Optimization Capabilities}\label{opt:additional}
 
-DAKOTA provides several capabilities which extend the services
+Dakota provides several capabilities which extend the services
 provided by the optimization software packages described in
 Section~\ref{opt:software}. First, any of the optimization algorithms
 can be used for multiobjective optimization problems through the use
@@ -498,11 +501,11 @@ Pareto optimal: it is said to be ``dominated'' and the points along
 the Pareto front are said to be ``non-dominated.''
 
 There are three capabilities for multiobjective optimization in
-DAKOTA.  First, there is the MOGA capability described previously in
+Dakota.  First, there is the MOGA capability described previously in
 Section~\ref{opt:software:jega}.  This is a specialized algorithm
 capability.  The second capability involves the use of response data
 transformations to recast a multiobjective problem as a
-single-objective problem.  Currently, DAKOTA supports the simple
+single-objective problem.  Currently, Dakota supports the simple
 weighted sum approach for this transformation, in which a composite
 objective function is constructed from a set of individual objective
 functions using a user-specified set of weighting factors.  This
@@ -546,12 +549,12 @@ weighting factor, the more dominant a particular objective function
 will be in the optimization process.  Constraints are not affected by
 the weighting factor mapping; therefore, both constrained and
 unconstrained multiobjective optimization problems can be formulated
-and solved with DAKOTA, assuming selection of an appropriate
+and solved with Dakota, assuming selection of an appropriate
 constrained or unconstrained single-objective optimization algorithm.
 Future multiobjective response data transformations for goal
 programming, normal boundary intersection, etc. are planned.
 
-Figure~\ref{opt:figure01} shows a DAKOTA input file for a
+Figure~\ref{opt:figure01} shows a Dakota input file for a
 multiobjective optimization problem based on the ``textbook'' test
 problem. This input file is named \texttt{dakota\_multiobj1.in} in the
 \texttt{Dakota/test} directory. In the standard textbook formulation,
@@ -570,7 +573,7 @@ number of constraints, although none are included in this example.
 \verbatimtabinput[8]{dakota_multiobj1.in}
 \end{small}
 \end{bigbox}
-\caption{Example DAKOTA input file for multiobjective optimization.}
+\caption{Example Dakota input file for multiobjective optimization.}
 \label{opt:figure01}
 \end{figure}
 
@@ -578,7 +581,7 @@ Figure~\ref{opt:figure02} shows an excerpt of the results for this
 multiobjective optimization problem, with output in verbose mode. The
 data for function evaluation 9 show that the simulator is returning
 the values and gradients of the three objective functions and that
-this data is being combined by DAKOTA into the value and gradient of
+this data is being combined by Dakota into the value and gradient of
 the composite objective function, as identified by the header
 ``\texttt{Multiobjective transformation:}''. This combination of value
 and gradient data from the individual objective functions employs the
@@ -628,7 +631,7 @@ function going to zero (no constraints are active).
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption{DAKOTA results for the multiobjective optimization example.}
+\caption{Dakota results for the multiobjective optimization example.}
 \label{opt:figure02}
 \end{figure}
 
@@ -642,17 +645,17 @@ trade-offs in multiobjective optimization problems.
 
 %\subsection{Simultaneous Analysis and Design (SAND) Optimization}\label{opt:additional:sand}
 
-%DAKOTA was originally developed as a ``black box'' optimization tool
+%Dakota was originally developed as a ``black box'' optimization tool
 %that employs non-intrusive interfaces with simulation codes. While
 %this approach is useful for many engineering design applications, it
 %can become prohibitively expensive when there is a large design space
 %(i.e., $O(10^{2}-10^{6})$ design parameters) and when the
 %computational simulation is highly nonlinear. Current research and
 %development activities are investigating simultaneous analysis and
-%design (SAND) methods, and these algorithms may be supported in DAKOTA
+%design (SAND) methods, and these algorithms may be supported in Dakota
 %in future releases. These ``all at once'' approaches are considerably
 %more intrusive to a simulation code than any current interfacing
-%capability in DAKOTA. But in some large-scale applications, the SAND
+%capability in Dakota. But in some large-scale applications, the SAND
 %method may be the only viable alternative for optimization.
 
 %The basic idea behind SAND is to converge a nonlinear simulation code
@@ -685,7 +688,7 @@ trade-offs in multiobjective optimization problems.
 
 %Details on SAND-type optimization approaches may be found
 %in~\cite{Bar01a,Bir00}.  Additional details on the SAND implementation
-%in DAKOTA will appear in future releases of this Users Manual.
+%in Dakota will appear in future releases of this Users Manual.
 
 \subsection{Optimization with User-specified or Automatic Scaling}\label{opt:additional:scaling}
 
@@ -708,7 +711,7 @@ formulation.  Discrete variable scaling is not supported.
 
 Scaling is enabled on a per-method basis for optimizers and least
 squares minimizers by including the {\tt scaling} keyword in the
-relevant {\tt method} specification in the DAKOTA input deck.  When
+relevant {\tt method} specification in the Dakota input deck.  When
 scaling is enabled, variables, functions, gradients, Hessians, etc.,
 are transformed such that the optimizer iterates in scaled variable
 space, whereas evaluations of the computational model as specified in
@@ -829,6 +832,6 @@ scaled.
 \verbatimtabinput[8]{dakota_rosenbrock_scaled.in}
 \end{small}
 \end{bigbox}
-\caption{Sample usage of scaling keywords in DAKOTA input specification.}
+\caption{Sample usage of scaling keywords in Dakota input specification.}
 \label{opt:additional:scaling:figure01}
 \end{figure}

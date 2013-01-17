@@ -11,7 +11,7 @@ in the response data than is required for a typical optimization
 problem.  That is, rather than using the sum-of-squares objective
 function and its gradient, least-squares iterators require each term
 used in the sum-of-squares formulation along with its gradient. This
-means that the $m$ functions in the DAKOTA response data set consist
+means that the $m$ functions in the Dakota response data set consist
 of the individual least-squares terms along with any nonlinear
 inequality and equality constraints. These individual terms are often
 called \emph{residuals} when they denote differences of
@@ -42,11 +42,11 @@ solvers may experience difficulty when the residuals at the solution
 are significant.
 
 In order to specify a least-squares problem, the responses section of
-the DAKOTA input should be configured using
+the Dakota input should be configured using
 \texttt{calibration\_terms} (as opposed to
 \texttt{num\_objective\_functions} in the case of optimization). 
 The calibration terms refer to the residuals (e.g. typically the differences between 
-the simulation model and the data).  Note that DAKOTA expects the residuals and 
+the simulation model and the data).  Note that Dakota expects the residuals and 
 not the square of the residuals.  Any
 linear or nonlinear constraints are handled in an identical way to
 that of optimization (see Section~\ref{opt:overview}; note that
@@ -57,7 +57,7 @@ required and should be specified using either
 \texttt{numerical\_gradients}, \texttt{analytic\_gradients}, or
 \texttt{mixed\_gradients}. Since explicit second derivatives
 are not used by the least-squares methods,
-the \texttt{no\_hessians} specification should be used.  DAKOTA's
+the \texttt{no\_hessians} specification should be used.  Dakota's
 scaling options, described in Section~\ref{opt:additional:scaling} can
 be used on least-squares problems, using the
 \texttt{calibration\_term\_scales} keyword to scale least-squares
@@ -73,7 +73,7 @@ provided below.
 
 \subsection{Gauss-Newton}\label{nls:solution:gauss}
 
-DAKOTA's Gauss-Newton algorithm consists of combining an
+Dakota's Gauss-Newton algorithm consists of combining an
 implementation of the Gauss-Newton Hessian approximation (see
 Section~\ref{introduction:background:nonlinear}) with full Newton
 optimization algorithms from the OPT++ package~\cite{MeOlHoWi07} (see
@@ -90,7 +90,7 @@ specification follows:
 \end{verbatim}
 \end{small}
 
-Refer to the DAKOTA Reference Manual~\cite{RefMan} for more detail on the
+Refer to the Dakota Reference Manual~\cite{RefMan} for more detail on the
 input commands for the Gauss-Newton algorithm.
 
 The Gauss-Newton algorithm is gradient-based and is best suited for
@@ -124,7 +124,7 @@ specification follows:
 \end{verbatim}
 \end{small}
 
-Refer to the DAKOTA Reference Manual~\cite{RefMan} for more detail on the
+Refer to the Dakota Reference Manual~\cite{RefMan} for more detail on the
 input commands for NLSSOL.
 
 \subsection{NL2SOL}\label{nls:solution:nl2sol}
@@ -139,7 +139,7 @@ which the residuals do not tend towards zero at the solution.
 
 \subsection{Additional Features and Future plans}\label{nls:solution:future}
 
-DAKOTA can calculate confidence intervals on estimated parameters.
+Dakota can calculate confidence intervals on estimated parameters.
 These are determined for individual parameters; they are not joint
 confidence intervals.  The intervals reported are 95\% intervals
 around the estimated parameters, and are calculated as the optimal
@@ -160,18 +160,18 @@ calculated when scaling is used, when the number of least-squares
 terms is less than the number of parameters to be estimated, or when
 using numerical gradients.
 
-DAKOTA also allows a form of weighted least squares.  The user can
+Dakota also allows a form of weighted least squares.  The user can
 specify a set of weights that are used to weight each residual term
 using the keyword \texttt{calibration\_weights}.  Note that these
-weights must be pre-determined by the user and entered in the DAKOTA
+weights must be pre-determined by the user and entered in the Dakota
 input file: they are not calculated on-the-fly.  The user can also
 specify scaling for the least-squares terms.  Scaling is applied
 before weighting; usually one or the other would be applied but not
-both.  The Responses section in the DAKOTA Reference
+both.  The Responses section in the Dakota Reference
 Manual~\cite{RefMan} has more detail about weighting and scaling of
 the residual terms.
 
-The least-squares branch in DAKOTA is an area of continuing
+The least-squares branch in Dakota is an area of continuing
 enhancements, particularly through the addition of new least-squares
 algorithms. One potential future addition is the orthogonal distance
 regression (ODR) algorithms which estimate values for both independent
@@ -245,25 +245,25 @@ Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
 \label{nls:figure02}
 \end{figure}
 
-The analysis driver script (the script being driven by DAKOTA) 
+The analysis driver script (the script being driven by Dakota) 
 has to perform several tasks in the case of parameter estimation 
 using nonlinear least-squares methods.  The analysis driver script 
-must: (1) read in the values of the parameters supplied by DAKOTA;
+must: (1) read in the values of the parameters supplied by Dakota;
 (2) run the computer simulation with these parameter values;
 (3) retrieve the results from the computer simulation;
 (4) compute the difference between each computed simulation value
 and the corresponding experimental or measured value; and 
 (5) write these residuals (differences)
-to an external file that gets passed back to DAKOTA.  Note there 
+to an external file that gets passed back to Dakota.  Note there 
 will be one line per residual term, specified with 
 \texttt{num\_least\_squares\_terms}
-in the DAKOTA input file.   It is the last two steps which are different from 
-most other DAKOTA applications.  
+in the Dakota input file.   It is the last two steps which are different from 
+most other Dakota applications.  
 
 To simplify specifying a least squares problem, a user may specify a
 data file containing experimental results or other calibration data.
 This file may be specified with \texttt{calibration\_data\_file}. 
-In this case, DAKOTA will calculate the residuals (that is, the
+In this case, Dakota will calculate the residuals (that is, the
 simulation model results minus the experimental results), and the
 user-provided script can omit this step: the script can just return
 the simulation outputs of interest.  An example of this can be found
