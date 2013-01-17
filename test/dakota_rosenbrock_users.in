@@ -8,17 +8,17 @@
 ## DAKOTA INPUT FILE - dakota_rosenbrock_ls.in #8
 # Included DAKOTA example using the rosenbrock analysis code  #0,#2,#6,#7
 # in a multidimensional parameter study  #0
-# usage dakota -i dakota_rosenbrock_multidim.in \\ #0
+# usage dakota -i dakota_rosenbrock_multidim.in \ #0
 # -o Rosenbrock_multidim.out > Rosenbrock_multidim.stdout #0
 ## with gradient-based optimization, in which the design variables are bounded #2
-## usage dakota -i dakota_rosenbrock_grad_opt.in \\ #2
+## usage dakota -i dakota_rosenbrock_grad_opt.in \ #2
 ## -o Rosenbrock_grad_opt.out > Rosenbrock_grad_opt.stdout #2
 ## with a random sampling Uncertainty Quantification method #6
-## usage dakota -i dakota_rosenbrock_sampling.in \\ #6 
+## usage dakota -i dakota_rosenbrock_sampling.in \ #6 
 ## -o Rosenbrock_sampling.out > Rosenbrock_sampling.stdout #6
 ## with gradient-based optimization, in which the design variables are bounded #7
 ## and the analysis code is called with fork #7
-## usage dakota -i dakota_rosenbrock_syscall.in \\ #7
+## usage dakota -i dakota_rosenbrock_syscall.in \ #7
 ## -o Rosenbrock_syscall.out > Rosenbrock_syscall.stdout #7
 
 strategy
