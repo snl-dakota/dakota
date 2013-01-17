@@ -687,7 +687,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   gcmVarOptions->m_dataOutputAllowedSet.insert(0);
   gcmVarOptions->m_dataOutputAllowedSet.insert(1);
   gcmVarOptions->m_priorSeqNumSamples = 24000;
-  gcmVarOptions->m_priorSeqDataOutputFileName = "outputData_m1/priorSeq";
+  gcmVarOptions->m_priorSeqDataOutputFileName = "outputData/priorSeq";
   gcmVarOptions->m_priorSeqDataOutputFileType = "m";
   gcmVarOptions->m_priorSeqDataOutputAllowAll = 0;
   gcmVarOptions->m_priorSeqDataOutputAllowedSet.insert(0);
@@ -780,7 +780,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   mhVarOptions->m_rawChainDisplayPeriod = 10;
   mhVarOptions->m_rawChainMeasureRunTimes = 1;
   mhVarOptions->m_rawChainDataOutputPeriod = 10;
-  mhVarOptions->m_rawChainDataOutputFileName = "outputData_m1/rawChain_mh";
+  mhVarOptions->m_rawChainDataOutputFileName = "outputData/rawChain_mh";
    // IMPORTANT
   mhVarOptions->m_rawChainDataOutputFileType = "m";                     
    // IMPORTANT
@@ -794,7 +794,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
    // IMPORTANT
   mhVarOptions->m_filteredChainLag = 12;                                 \
    // IMPORTANT
-   mhVarOptions->m_filteredChainDataOutputFileName = "outputData_m1/filtChain_mh";
+   mhVarOptions->m_filteredChainDataOutputFileName = "outputData/filtChain_mh";
    mhVarOptions->m_filteredChainDataOutputFileType = "m";                
   mhVarOptions->m_filteredChainDataOutputAllowAll = 0;                  
   mhVarOptions->m_filteredChainDataOutputAllowedSet.insert(0);          
