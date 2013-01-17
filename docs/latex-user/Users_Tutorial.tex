@@ -1,97 +1,29 @@
 \chapter{DAKOTA Tutorial}\label{tutorial}
 
-\section{Getting Started}\label{tutorial:installation}
-
-DAKOTA operates on most systems running Unix or Linux operating
-systems as well as on Windows with the help of a Cygwin emulation
-layer. DAKOTA is developed and most extensively tested on Redhat
-Enterprise Linux with GNU compilers, but additional operating systems
-/ compiler combinations are tested nightly as well. See the DAKOTA
-website for more information on supported platforms for particular
-DAKOTA versions.
-
-Department of Energy users: DAKOTA may already be available on your
-target system. Sandia users should visit
-\url{http://dakota.sandia.gov/sandia_only/} for information on
-supported DAKOTA installations on engineering networks and cluster
-computers, as well as for Sandia-specific downloads. At other DOE
-institutions, contact your system administrator about DAKOTA
-availability. If not available for your target platform, you may
-still download DAKOTA as described below.
-
 \section {Quickstart}\label{tutorial:installation:quickstart}
-%\subsubsection {Check DAKOTA Binary}\label{tutorial:installation:quickstart:binary}
+\subsection {Acquiring and Installing Dakota}\label{tutorial:quickstart:installation}
 %Dena:  can you take this section? Also determine where/how we want to 
 %present the installation information
+Dakota operates on most systems running Unix or Linux operating
+systems as well as on Windows with the help of a Cygwin emulation
+layer. Dakota is developed and most extensively tested on Redhat
+Enterprise Linux with GNU compilers, but additional operating systems
+/ compiler combinations are tested nightly as well. See the Dakota
+website for more information on supported platforms for particular
+Dakota versions.
 
-\subsection{Running DAKOTA with simple input file}\label{tutorial:installation:quickstart:running}
-This section is intended for users who are new to DAKOTA.
+Department of Energy users: Dakota may already be available on your
+target system. Sandia users should visit
+\url{http://dakota.sandia.gov/sandia_only/} for information on
+supported Dakota installations on engineering networks and cluster
+computers, as well as for Sandia-specific downloads. At other DOE
+institutions, contact your system administrator about Dakota
+availability. If not available for your target platform, you may
+still download Dakota as described below. 
 
-{\bf First Steps}
-\begin{enumerate}
-  \item Make sure DAKOTA runs - see Section~\ref{tutorial:installation:quickstart:binary}
-  \item Create a working directory 
-  \item Copy \texttt{dakota\_rosenbrock\_2d.in} from the \texttt{Dakota/examples/tutorial/}
- directory to the working directory
-  \item From the working directory, run \texttt{dakota -i 
-dakota\_rosenbrock\_2d.in -o Dakota\_rosenbrock\_2d.out > Dakota\_rosenbrock\_2d.stdout}
-\end{enumerate}
-
-{\bf What should happen} \\
-DAKOTA outputs a large amount of information to help users track the progress. 
-Four files should have been created:
-\begin{enumerate}
-  \item The screen output has been redirected to the file 
-\texttt{Dakota\_rosenbrock\_2d.stdout}. \\
-  The contents are messages from DAKOTA and notes about the 
-progress of the iterator (i.e. method/algorithm).
-  \item The output file \texttt{Dakota\_rosenbrock\_2d.out} 
-contains information about the function evaluations.
-  \item \texttt{dakota\_tabular.dat} is created due to the 
-specification of \texttt{tabular\_graphics\_data}. This summarizes 
-the variables and responses for each function evaluation.
-  \item \texttt{dakota.rst} is a restart file. If a DAKOTA 
-analysis is interrupted, it can be often be restarted without 
-losing all progress.
-\end{enumerate}
-In addition to the files, some plots are created due to the specification 
-of \texttt{graphics}. These can be helpful when processing the 
-data or diagnosing unexpected results.
-
-Dakota has some data processing capabilities built in. The output file 
-will contain the relevant results. For more advanced or customized data 
-processing or visualization, the tabular data file can be imported into 
-another analysis tool. In this case, the output file indicates that an 
-optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
-
-{\bf What now?}
+Getting started with Dakota typically involves the following steps:
 \begin{itemize}
-  \item Assuming DAKOTA ran successfully, skim the three text files 
-(restart files are in a binary format). These are described further in 
-Section~\ref{tutorial:installation:quickstart:output}.
-  \item This example used a gradient-based optimization method, and the 
-\texttt{Rosenbrock} test problem. More details about the example are in 
-Section~\ref{tutorial:examples:optimization} and the test problem is 
-described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:rosenbrock}.
-  \item Explore the many methods available in DAKOTA in Chapter~\ref{capabilities}.
-  \item Learn the syntax needed to use these methods. For running DAKOTA 
-see Section~\ref{tutorial:installation:running} and for input file 
-information see Section~\ref{tutorial:dakota}. 
-  \item Learn how to use your own analysis code with DAKOTA in Chapter~\ref{advint}.
-\end{itemize}
-
-
-\subsection {Examples of DAKOTA output}\label{tutorial:installation:quickstart:output}
-%Lara:  Can you take this section?  I would discuss screen output, 
-%tabular output, output file (-o outfile) output, and hopefully 
-%the new results database output. 
-
-\subsection {OLD Getting Started section} 
-** We need to determine how much of this to put somewhere else, what to delete
-
-Getting started with DAKOTA typically involves the following steps:
-\begin{itemize}
-  \item Download DAKOTA: binary executables and source code are
+  \item Download Dakota: binary executables and source code are
     available from\\
     \url{http://dakota.sandia.gov/}.
 
@@ -119,7 +51,7 @@ Getting started with DAKOTA typically involves the following steps:
     \texttt{Dakota/examples} (see \texttt{Dakota/examples/README}) and
     \texttt{Dakota/test}. To get started, open a terminal shell or
     Command Prompt and set your PATH to include {\tt Dakota/bin} (and
-    optionally DAKOTA's test or example directories). On Linux:
+    optionally Dakota's test or example directories). On Linux:
     \begin{small}
 \begin{verbatim}
     export PATH=/path/to/Dakota/bin:$PATH
@@ -154,18 +86,18 @@ Getting started with DAKOTA typically involves the following steps:
     make install  # optional
 \end{verbatim}
     \end{small}
-    Detailed configuration options are available on the DAKOTA
+    Detailed configuration options are available on the Dakota
     website, including the Developer Portal
     \url{http://dakota.sandia.gov/developer/}.
     
-  \item Verify that DAKOTA runs; see
+  \item Verify that Dakota runs; see
     Section~\ref{tutorial:installation:running}
 
   \item Joining mailing lists and get help: the most up to date
     guidance for downloading, compiling, installing, or running
-    DAKOTA, or seeking help is available on the DAKOTA website \\
+    Dakota, or seeking help is available on the Dakota website \\
     (\url{http://dakota.sandia.gov/resources.html}). In addition,
-    guidance is also included in files included with DAKOTA, including
+    guidance is also included in files included with Dakota, including
     \texttt{Dakota/INSTALL}. Further platform/operating
     system-specific guidance can be found in {\tt
     Dakota/examples/platforms}. For getting started on Windows, see
@@ -173,162 +105,79 @@ Getting started with DAKOTA typically involves the following steps:
     \texttt{Dakota/examples/platforms}.
 \end{itemize}
 
+\subsection{Running Dakota with simple input file}\label{tutorial:quickstart:running}
+This section is intended for users who are new to Dakota.
 
-\subsection{Running DAKOTA}\label{tutorial:installation:running}
+{\bf First Steps}
+\begin{enumerate}
+  \item Make sure Dakota runs - see Section~\ref{tutorial:installation:quickstart:binary}
+  \item Create a working directory 
+  \item Copy \texttt{dakota\_rosenbrock\_2d.in} from the \texttt{Dakota/examples/tutorial/}
+ directory to the working directory
+  \item From the working directory, run \texttt{dakota -i 
+dakota\_rosenbrock\_2d.in -o Dakota\_rosenbrock\_2d.out > Dakota\_rosenbrock\_2d.stdout}
+\end{enumerate}
 
-The DAKOTA executable file is named {\tt dakota} ({\tt dakota.exe} on
-Windows). If this command is entered at the command prompt without any
-arguments, a usage message similar to the following appears:
-\begin{small}
-\begin{verbatim}
-usage: dakota [options and <args>]
-        -help (Print this summary)
-        -version (Print DAKOTA version number)
-        -input <$val> (REQUIRED DAKOTA input file $val)
-        -output <$val> (Redirect DAKOTA standard output to file $val)
-        -error <$val> (Redirect DAKOTA standard error to file $val)
-        -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
-	-no_input_echo (Do not echo DAKOTA input file)
-	-check (Perform input checks)
-        -pre_run [$val] (Perform pre-run (variables generation) phase)
-        -run [$val] (Perform run (model evaluation) phase)
-        -post_run [$val] (Perform post-run (final results) phase)
-        -read_restart [$val] (Read an existing DAKOTA restart file $val)
-        -stop_restart <$val> (Stop restart file processing at evaluation $val)
-        -write_restart [$val] (Write a new DAKOTA restart file $val)
-\end{verbatim}
-\end{small}
-%$ this comment is here to trick xemacs into highlighting syntax correctly
+{\bf What should happen} \\
+Dakota outputs a large amount of information to help users track the progress. 
+Four files should have been created:
+\begin{enumerate}
+  \item The screen output has been redirected to the file 
+\texttt{Dakota\_rosenbrock\_2d.stdout}. \\
+  The contents are messages from Dakota and notes about the 
+progress of the iterator (i.e. method/algorithm).
+  \item The output file \texttt{Dakota\_rosenbrock\_2d.out} 
+contains information about the function evaluations.
+  \item \texttt{dakota\_tabular.dat} is created due to the 
+specification of \texttt{tabular\_graphics\_data}. This summarizes 
+the variables and responses for each function evaluation.
+  \item \texttt{dakota.rst} is a restart file. If a Dakota 
+analysis is interrupted, it can be often be restarted without 
+losing all progress.
+\end{enumerate}
+In addition to the files, some plots are created due to the specification 
+of \texttt{graphics}. These can be helpful when processing the 
+data or diagnosing unexpected results.
 
-Of these available command line inputs, only the ``\texttt{-input}''
-option is required, and ``\texttt{-input}'' can be omitted if the
-input file name is the final item on the command line; all other
-command-line inputs are optional. The ``\texttt{-help}'' option prints
-the usage message above. The ``\texttt{-version}'' option prints the
-version number of the executable. The ``\texttt{-check}'' option
-invokes a dry-run mode in which the input file is processed and
-checked for errors, but the study is not performed. The
-``\texttt{-input}'' option provides the name of the DAKOTA input file.
-The ``\texttt{-output}'' and ``\texttt{-error}'' options provide file
-names for redirection of the DAKOTA standard output (stdout) and
-standard error (stderr), respectively. By default, DAKOTA will echo
-the input file to the output stream, but ``\texttt{-no\_input\_echo}''
-can override this behavior.
+Dakota has some data processing capabilities built in. The output file 
+will contain the relevant results. For more advanced or customized data 
+processing or visualization, the tabular data file can be imported into 
+another analysis tool. In this case, the output file indicates that an 
+optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
 
-The ``\texttt{-parser}'' input
-is for debugging and will not be further described here. The
-``\texttt{-read\_restart}'' and ``\texttt{-write\_restart}'' command
-line inputs provide the names of restart databases to read from and
-write to, respectively. The ``\texttt{-stop\_restart}'' command line
-input limits the number of function evaluations read from the restart
-database (the default is all the evaluations) for those cases in which
-some evaluations were erroneous or corrupted. Restart management is an
-important technique for retaining data from expensive engineering
-applications. This advanced topic is discussed in detail in
-Chapter~\ref{usage}. Note that these command line inputs can be
-abbreviated so long as the abbreviation is unique, so the following
-are valid, unambiguous specifications: ``\texttt{-h}'',
-``\texttt{-v}'', ``\texttt{-c}'', ``\texttt{-i}'', ``\texttt{-o}'',
-``\texttt{-e}'', ``\texttt{-re}'', ``\texttt{-s}'', ``\texttt{-w}'',
-``\texttt{-pr}'', ``\texttt{-ru}'', and ``\texttt{-po}'' and can be
-used in place of the longer forms of the command line inputs.
+{\bf What now?}
+\begin{itemize}
+  \item Assuming Dakota ran successfully, skim the three text files (restart files are in a binary format). These are described further in 
+Section~\ref{tutorial:installation:quickstart:output}.
+  \item This example used a gradient-based optimization method, and the 
+\texttt{Rosenbrock} test problem. More details about the example are in 
+Section~\ref{tutorial:examples:optimization} and the test problem is 
+described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:rosenbrock}.
+  \item Explore the many methods available in Dakota in Chapter~\ref{capabilities}.
+  \item Learn the syntax needed to use these methods. For running Dakota 
+see Section~\ref{tutorial:installation:running} and for input file 
+information see Section~\ref{tutorial:dakota}. 
+  \item Learn how to use your own analysis code with Dakota in Chapter~\ref{advint}.
+\end{itemize}
 
-To run DAKOTA with a particular input file, the following syntax can
-be used:
-\begin{small}
-\begin{verbatim}
-    dakota -i dakota.in
-\end{verbatim}
-\end{small}
-or more simply
-\begin{small}
-\begin{verbatim}
-    dakota dakota.in
-\end{verbatim}
-\end{small}
 
-This will echo the standard output (stdout) and standard error
-(stderr) messages to the terminal. To redirect stdout and stderr to
-separate files, the \texttt{-o} and \texttt{-e} command line options
-may be used:
-\begin{small}
-\begin{verbatim}
-    dakota -i dakota.in -o dakota.out -e dakota.err
-\end{verbatim}
-\end{small}
-or
-\begin{small}
-\begin{verbatim}
-    dakota -o dakota.out -e dakota.err dakota.in
-\end{verbatim}
-\end{small}
+\subsection {Examples of Dakota output}\label{tutorial:quickstart:output}
+%Lara:  Can you take this section?  I would discuss screen output, 
+%tabular output, output file (-o outfile) output, and hopefully 
+%the new results database output. 
 
-Alternatively, any of a variety of Unix redirection variants can be
-used. The simplest of these redirects stdout to another file:
-\begin{small}
-\begin{verbatim}
-    dakota dakota.in > dakota.out
-\end{verbatim}
-\end{small}
+\section{Dakota Input File Format}\label{tutorial:dakota}
 
-% this is not a linux tutorial.
-% To append to a file rather than overwrite it, ``\texttt{>>}'' is used
-% in place of ``\texttt{>}''. The syntax to redirect stderr as well as stdout
-% to the same file depends on the shell you are using. With csh, simply append
-% ``\texttt{\&}'' with no embedded space, i.e.,
-% ``\texttt{>\&}'' or ``\texttt{>>\&}''. With the Bourne shell (sh or bash) use
-% ``\texttt{>dakota.out 2>\&1}'' or ``\texttt{>>dakota.out 2>\&1}''.
-% With csh, if you have the noclobber environment variable set but
-% wish either to overwrite an existing output file or to append to a file that
-% does not yet exist, append ``\texttt{!}'' to the redirection operators
-% (with no intervening spaces), i.e.,
-% ``\texttt{>!}'', ``\texttt{>\&!}'', ``\texttt{>>!}'', or
-% ``\texttt{>>\&!}''.
-
-To run the dakota process in the background, append an ampersand
-symbol (\&) to the command with an embedded space, e.g.,
-\begin{small}
-\begin{verbatim}
-    dakota dakota.in > dakota.out &
-\end{verbatim}
-\end{small}
-
-Refer to~\cite{And86} for more information on Unix redirection and
-background commands.
-
-The ``\texttt{-pre\_run}'', ``\texttt{-run}'', and
-``\texttt{-post\_run}'' switches instruct DAKOTA to run one or more
-execution phases, excluding others. For example pre-run might
-generate variable sets, run (core run) invoke the simulation to
-evaluate variables, producing responses, and post-run accepts
-variable/response sets and analyzes the results (for example,
-calculate correlations from a set of samples). Currently only two
-modes are supported and only for sampling, parameter study, and DACE
-methods: (1) pre-run only with optional tabular output of variables:
-\begin{small}
-\begin{verbatim}
-    dakota -i dakota.in -pre_run [::myvariables.dat]
-\end{verbatim}
-\end{small}
-and (2) post-run only with required tabular input of variables/responses:
-\begin{small}
-\begin{verbatim}
-    dakota -i dakota.in -post_run myvarsresponses.dat::
-\end{verbatim}
-\end{small}
-
-\section{DAKOTA Input File Format}\label{tutorial:dakota}
-
-All of the DAKOTA input files for the simple example problems
+All of the Dakota input files for the simple example problems
 presented here are included in the distribution tar files within
 directory \texttt{Dakota/examples/tutorial}. 
 
-A simple DAKOTA
+A simple Dakota
 input file (that is named \texttt{dakota\_rosenbrock\_2d.in})
 for a two-dimensional parameter study on Rosenbrock's
 function is shown in Figure~\ref{tutorial:rosenbrock_2d}.
 This input file will be used to
-describe the basic format and syntax used in all DAKOTA input files.
+describe the basic format and syntax used in all Dakota input files.
 The results are shown later, in Section~\ref{tutorial:examples:param_study}.
 
 \begin{figure}[ht!]
@@ -338,15 +187,15 @@ The results are shown later, in Section~\ref{tutorial:examples:param_study}.
       \verbatimtabinput[8]{dakota_rosenbrock_2d.in}
     \end{small}
   \end{bigbox}
-  \caption{Rosenbrock 2-D parameter study example: the DAKOTA input
+  \caption{Rosenbrock 2-D parameter study example: the Dakota input
     file.}
   \label{tutorial:rosenbrock_2d}
 \end{figure}
 
-There are six specification blocks that may appear in DAKOTA input
+There are six specification blocks that may appear in Dakota input
 files. These are identified in the input file using the following
 keywords: variables, interface, responses, model, method, and strategy. These
-keyword blocks can appear in any order in a DAKOTA input file. At
+keyword blocks can appear in any order in a Dakota input file. At
 least one \emph{variables}, \emph{interface}, \emph{responses}, and
 \emph{method} specification must appear, and no more than one
 \emph{strategy} specification should appear. In Figure~
@@ -355,13 +204,13 @@ used. Additional syntax features include use of the \#
 symbol to indicate a comment, use of single or double quotes for string inputs
 (e.g., \texttt{'x1'}), the use of commas and/or white space for separation of
 specifications, and the optional use of ``='' symbols to indicate
-supplied data. See the DAKOTA Reference
+supplied data. See the Dakota Reference
 Manual~\cite{RefMan} for additional details on this input file syntax.
 
 Figure~\ref{tutorial:inputfile_block_layout} shows the relationships between 
 the six keyword blocks. Strategies are used to coordinate between methods. 
 Methods run models. Models blocks define the connections between variables, 
-the interface, and responses. Most DAKOTA analyses apply strategies that 
+the interface, and responses. Most Dakota analyses apply strategies that 
 control a single method, the more advanced cases are discussed in Chapter~\ref{strat}.
 
 \begin{figure}[ht!]
@@ -373,17 +222,17 @@ control a single method, the more advanced cases are discussed in Chapter~\ref{s
 
 The first block of the input file shown in
 Figure~\ref{tutorial:rosenbrock_2d} is the \emph{strategy} block.
-This keyword block is used to specify some of DAKOTA's advanced
+This keyword block is used to specify some of Dakota's advanced
 meta-procedures such as hybrid optimization, 
 multi-start optimization, and Pareto optimization.
 See Chapter~\ref{strat} for more information on these
 meta-procedures. The \emph{strategy} block also contains the
-settings for DAKOTA's graphical output (via the \texttt{graphics}
+settings for Dakota's graphical output (via the \texttt{graphics}
 flag) and the tabular data output (via the
 \texttt{tabular\_graphics\_data} keyword).
 
 The \emph{method} block of the input file specifies the iterative
-technique that DAKOTA will employ, such as a parameter study,
+technique that Dakota will employ, such as a parameter study,
 optimization method, data sampling technique, etc.
 The keyword \texttt{multidim\_parameter\_study}
 in Figure~\ref{tutorial:rosenbrock_2d} calls for a multidimensional
@@ -395,7 +244,7 @@ bounds of both variables (bounds provided subsequently in the
 evaluations.
 
 The \emph{model} block of the input file specifies the model that
-DAKOTA will use. A model provides the logical unit for determining
+Dakota will use. A model provides the logical unit for determining
 how a set of variables is mapped into a set of responses in support of
 an iterative method. The model allows one to specify a single
 interface, or to manage more sophisticated mappings involving
@@ -422,7 +271,7 @@ characteristics of the parameters that will be used in the problem
 formulation. The variables can be continuous or discrete, and can be
 classified as design variables, uncertain variables, or state
 variables. See Chapter~\ref{variables} for more information on the
-types of variables supported by DAKOTA. The \emph{variables} section
+types of variables supported by Dakota. The \emph{variables} section
 shown in Figure~\ref{tutorial:rosenbrock_2d} specifies that there are
 two continuous design variables. The sub-specifications for
 continuous design variables
@@ -435,19 +284,19 @@ bound of 2.0.
 
 The \emph{interface} block of the input file specifies what approach
 will be used to map variables into responses as well as details on how
-DAKOTA will pass data to and from a simulation code.
+Dakota will pass data to and from a simulation code.
 In this example, the keyword \texttt{direct} is used to indicate the
-use of a function linked directly into DAKOTA.
+use of a function linked directly into Dakota.
 Alternatively, \texttt{fork} or \texttt{system} executions can be used
-to invoke instances of a simulation code that is external to DAKOTA,
+to invoke instances of a simulation code that is external to Dakota,
 as explained in Section \ref{tutorial:examples:user_supply:optimization2} 
 and Chapter~\ref{advint}.
 The \texttt{analysis\_driver} keyword indicates the name of the test
 function. With \texttt{fork} or \texttt{system}, default file names
-would be used for passing data between DAKOTA and the simulation code.
+would be used for passing data between Dakota and the simulation code.
 
 The \emph{responses} block of the input file specifies the types of
-data that the interface will return to DAKOTA. For the example shown
+data that the interface will return to Dakota. For the example shown
 in Figure~\ref{tutorial:rosenbrock_2d}, the assignment
 \texttt{num\_objective\_functions = 1}
 indicates that there is only one objective
@@ -462,11 +311,11 @@ a parameter study.
 
 This section serves to familiarize users about how to perform parameter 
 studies, optimization, and uncertainty quantification through their common
-DAKOTA interface. The initial examples utilize simple built in driver 
-functions; later we show how to utilize DAKOTA to drive the evaluation of 
+Dakota interface. The initial examples utilize simple built in driver 
+functions; later we show how to utilize Dakota to drive the evaluation of 
 user supplied black box code. The examples presented in this chapter 
-are intended to show the simplest use of DAKOTA for methods of 
-each type. More advanced examples of using DAKOTA for specific purposes 
+are intended to show the simplest use of Dakota for methods of 
+each type. More advanced examples of using Dakota for specific purposes 
 are provided in subsequent, topic-based, chapters.
 
 \subsection{Rosenbrock Test Problem}\label{tutorial:examples:rosenbrock}
@@ -517,7 +366,7 @@ as well as further discussion of the Rosenbrock test problem.
 
 \subsection{Two-Dimensional Grid Parameter Study}\label{tutorial:examples:param_study}
 
-Parameter study methods in the DAKOTA toolkit involve the computation 
+Parameter study methods in the Dakota toolkit involve the computation 
 of response data sets at a selection of points in the parameter space. 
 These response data sets are not linked to any specific interpretation,
 so they may consist of any allowable specification from the responses 
@@ -528,7 +377,7 @@ squares, and uncertainty quantification studies without significant
 modification to the input file. 
 
 An example of a parameter study is the 2-D parameter study example problem 
-listed in Figure~\ref{tutorial:rosenbrock_2d}. This is executed by DAKOTA using the
+listed in Figure~\ref{tutorial:rosenbrock_2d}. This is executed by Dakota using the
 following command:
 \begin{small}
 \begin{verbatim}
@@ -536,10 +385,10 @@ following command:
 \end{verbatim}
 \end{small}
 
-The output of the DAKOTA run is directed to the file named
+The output of the Dakota run is directed to the file named
 \texttt{2d.out}. For comparison, a file named \texttt{2d.out.sav} is
 included in the \texttt{Dakota/examples/tutorial} directory. As
-for many of the examples, DAKOTA provides a report on the best design
+for many of the examples, Dakota provides a report on the best design
 point located during the study at the end of these output files.
 
 This 2-D parameter study produces the grid of data samples shown in
@@ -554,12 +403,12 @@ to specify (partitions = 8 2), and have only two partitions
 over the second input variable.  Note that the
 \texttt{graphics} flag in the \emph{strategy} block of the input
 file could be commented out since, for this example, the iteration
-history plots created by DAKOTA are not particularly instructive. More
-interesting visualizations can be created by importing DAKOTA's
+history plots created by Dakota are not particularly instructive. More
+interesting visualizations can be created by importing Dakota's
 tabular data into an external graphics/plotting package. Common
 graphics and plotting packages include Mathematica, Matlab, Microsoft
 Excel, Origin, Tecplot, and many others. (Sandia National Laboratories
-and the DAKOTA developers do not endorse any of these commercial
+and the Dakota developers do not endorse any of these commercial
 products.)
 
 \begin{figure}[htb!]
@@ -573,11 +422,11 @@ products.)
 
 \subsection{Gradient-based Unconstrained Optimization}\label{tutorial:examples:optimization}
 
-DAKOTA's optimization capabilities include a variety of gradient-based 
+Dakota's optimization capabilities include a variety of gradient-based 
 and nongradient-based optimization methods. This subsection demonstrates
-the use of one such method through the DAKOTA interface.
+the use of one such method through the Dakota interface.
 
-A DAKOTA input file for a gradient-based optimization of Rosenbrock's
+A Dakota input file for a gradient-based optimization of Rosenbrock's
 function is listed in Figure~\ref{tutorial:rosenbrock_grad}. The
 format of the input file is similar to that used for the parameter
 studies, but there are some new keywords in the responses and method
@@ -585,7 +434,7 @@ sections. First, in the responses block of the input file, the
 keyword block starting with \texttt{numerical\_gradients} specifies
 that a finite difference method will be used to compute gradients for
 the optimization algorithm. Note that the Rosenbrock function
-evaluation code inside DAKOTA has the ability to give analytical
+evaluation code inside Dakota has the ability to give analytical
 gradient values. (To switch from finite difference gradient estimates
 to analytic gradients, uncomment the \texttt{analytic\_gradients}
 keyword and comment out the four lines associated with the
@@ -613,11 +462,11 @@ the convergence tolerance for three successive iterations).
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock gradient-based unconstrained optimization
-  example: the DAKOTA input file.}
+  example: the Dakota input file.}
   \label{tutorial:rosenbrock_grad}
 \end{figure}
 
-This DAKOTA input file is executed using the following command:
+This Dakota input file is executed using the following command:
 \begin{small}
 \begin{verbatim}
     dakota dakota_rosenbrock_grad_opt.in > grad_opt.out
@@ -626,7 +475,7 @@ This DAKOTA input file is executed using the following command:
 
 The sample file \texttt{grad\_opt.out.sav} is included in
 \texttt{Dakota/examples/tutorial} for comparison. When this
-example problem is executed, DAKOTA creates some iteration history
+example problem is executed, Dakota creates some iteration history
 graphics similar to the screen capture shown in Figure~
 \ref{tutorial:rosenbrock_grad_graphics}(a). These plots show
 how the objective function and design parameters change in value
@@ -646,7 +495,7 @@ the values on the vertical axis are strictly greater than zero.
   (b)
   \end{tabular}
   \caption{Rosenbrock gradient-based unconstrained optimization
-    example: (a) screen capture of the DAKOTA graphics and (b)
+    example: (a) screen capture of the Dakota graphics and (b)
     sequence of design points (dots) evaluated (line search points
     omitted).}
   \label{tutorial:rosenbrock_grad_graphics}
@@ -655,11 +504,11 @@ the values on the vertical axis are strictly greater than zero.
 Figure~\ref{tutorial:rosenbrock_grad_graphics}(b) shows the
 iteration history of the optimization algorithm. The optimization
 starts at the point $(x_1,x_2) = (-1.2,1.0)$ as given in the
-DAKOTA input file. Subsequent iterations follow the banana-shaped
+Dakota input file. Subsequent iterations follow the banana-shaped
 valley that curves around toward the minimum point at $(x_1,x_2) =
 (1.0,1.0)$. Note that the function evaluations associated with the
 line search phase of each CONMIN iteration are not shown on the plot.
-At the end of the DAKOTA run, information is written to the output
+At the end of the Dakota run, information is written to the output
 file to provide data on the optimal design point. These data include
 the optimum design point parameter values, the optimum objective and
 constraint function values (if any), plus the number of function
@@ -684,9 +533,9 @@ methods based on interval specifications.
 The subsection demonstrates the use of Monte Carlo random sampling
 for Uncertainty Quantification.
 
-Figure~\ref{tutorial:rosenbrock_mc} shows the DAKOTA input file for
+Figure~\ref{tutorial:rosenbrock_mc} shows the Dakota input file for
 an example problem that demonstrates some of the random sampling
-capabilities available in DAKOTA. In this example, the design
+capabilities available in Dakota. In this example, the design
 parameters, x1 and x2, will be treated as uncertain parameters that
 have uniform distributions over the interval [-2, 2]. This is
 specified in the variables block of the input file, beginning with
@@ -706,19 +555,19 @@ specify the number of samples (200), the seed for the random number
 generator (17), the sampling method (random), and the response
 threshold (100.0). The \texttt{seed} specification allows a user to
 obtain repeatable results from multiple runs. If a seed value is not
-specified, then DAKOTA's sampling methods are designed to generate
+specified, then Dakota's sampling methods are designed to generate
 nonrepeatable behavior (by initializing the seed using a system
 clock). The keyword \texttt{response\_thresholds} allows the user to
-specify threshold values for which DAKOTA will compute statistics on
+specify threshold values for which Dakota will compute statistics on
 the response function output. Note that a unique threshold value can
 be specified for each response function.
 
-In this example, DAKOTA will select 200 design points from within the
+In this example, Dakota will select 200 design points from within the
 parameter space, evaluate the value of Rosenbrock's function at all
 200 points, and then perform some basic statistical calculations on
 the 200 response values.
 
-This DAKOTA input file is executed using the following command:
+This Dakota input file is executed using the following command:
 \begin{small}
 \begin{verbatim}
          dakota dakota_rosenbrock_nond.in > nond.out
@@ -728,7 +577,7 @@ This DAKOTA input file is executed using the following command:
 Figure~\ref{tutorial:results_mc} shows example results from this 
 sampling method. See the \texttt{nond.out.sav} file in directory
 \texttt{Dakota/examples/tutorial} for comparison with results
-produced by DAKOTA. Note that your results will differ from those in
+produced by Dakota. Note that your results will differ from those in
 this file if your \texttt{seed} value differs or if no \texttt{seed}
 is specified.
 
@@ -737,7 +586,7 @@ As shown in Figure~\ref{tutorial:results_mc},
 the statistical data on the 200 Monte Carlo samples is printed at the
 end of the output file in the section that starts with ``Statistics
 based on 200 samples.'' In this section summarizing 
-moment-based statistics, DAKOTA outputs the
+moment-based statistics, Dakota outputs the
 mean, standard deviation, skewness, and kurtosis estimates 
 for each of the response functions. For example, 
 the mean of the Rosenbrock function given uniform input uncertainties 
@@ -775,7 +624,7 @@ function for this example.
       \verbatimtabinput[8]{dakota_rosenbrock_nond.in}
     \end{small}
   \end{bigbox}
-  \caption{Monte Carlo sampling example: the DAKOTA input file.}
+  \caption{Monte Carlo sampling example: the Dakota input file.}
   \label{tutorial:rosenbrock_mc}
 \end{figure}
 
@@ -846,34 +695,34 @@ Partial Rank Correlation Matrix between input and output:
 \end{figure}
 
 \subsection{User Supplied Simulation Code Examples}\label{tutorial:examples:user_supply}
-This subsection provides examples of how to use DAKOTA to drive user 
+This subsection provides examples of how to use Dakota to drive user 
 supplied black box code.
 
 \subsubsection{Optimization with a User-Supplied Simulation Code - Case 1}\label{tutorial:examples:user_supply:optimization1}
 
 Many of the previous examples made use of the direct interface to
 access the Rosenbrock and textbook test functions that are compiled
-into DAKOTA. In engineering applications, it is much more common to
+into Dakota. In engineering applications, it is much more common to
 use the \texttt{system} or \texttt{fork} interface approaches within
-DAKOTA to manage external simulation codes. In both of these cases,
-the communication between DAKOTA and the external code is conducted
+Dakota to manage external simulation codes. In both of these cases,
+the communication between Dakota and the external code is conducted
 through the reading and writing of short text files. For this example,
 the C++ program \texttt{rosenbrock.C} in \texttt{Dakota/test} is used
 as the simulation code. This file is compiled to create the
 stand-alone \texttt{rosenbrock} executable that is referenced as the
 \texttt{analysis\_driver} in Figure~\ref{tutorial:rosenbrock_user}.
 This stand-alone program performs the same function evaluations as
-DAKOTA's internal Rosenbrock test function.
+Dakota's internal Rosenbrock test function.
 
-Figure~\ref{tutorial:rosenbrock_user} shows the text of the DAKOTA
+Figure~\ref{tutorial:rosenbrock_user} shows the text of the Dakota
 input file named \texttt{dakota\_rosenbrock\_syscall.in} that is
 provided in the directory \texttt{Dakota/examples/tutorial}.
 The only differences between this input file and the one in Figure~
 \ref{tutorial:rosenbrock_grad} occur in the \emph{interface} keyword
-section. The keyword \texttt{system} indicates that DAKOTA will use
+section. The keyword \texttt{system} indicates that Dakota will use
 fork calls to create separate Unix processes for executions of the
 user-supplied simulation code. The name of the simulation code, and
-the names for DAKOTA's parameters and results file are specified using
+the names for Dakota's parameters and results file are specified using
 the \texttt{analysis\_driver}, \texttt{parameters\_file}, and
 \texttt{results\_file} keywords, respectively.
 
@@ -884,7 +733,7 @@ This example problem is executed using the command:
 \end{verbatim}
 \end{small}
 
-This run of DAKOTA takes longer to complete than the previous
+This run of Dakota takes longer to complete than the previous
 gradient-based optimization example since the \texttt{system}
 interface method has additional process creation and file I/O
 overhead, as compared to the internal communication that occurs when
@@ -893,15 +742,15 @@ the \texttt{direct} interface method is used. File
 \texttt{Dakota/examples/tutorial} directory permits comparison with
 output results you get by executing the command given above.
 
-To gain a better understanding of what exactly DAKOTA is doing with
+To gain a better understanding of what exactly Dakota is doing with
 the \texttt{system} interface approach, add the keywords
 \texttt{file\_tag} and \texttt{file\_save} to the interface
-specification and re-run DAKOTA. Check the listing of the local
+specification and re-run Dakota. Check the listing of the local
 directory and you will see many new files with names such as
 \texttt{params.in.1}, \texttt{params.in.2}, etc., and
 \texttt{results.out.1}, \texttt{results.out.2}, etc. There is one
 \texttt{params.in.X} file and one \texttt{results.out.X} file for each
-of the function evaluations performed by DAKOTA. This is the file
+of the function evaluations performed by Dakota. This is the file
 listing for \texttt{params.in.1}:
 %\newpage
 \begin{small}
@@ -924,7 +773,7 @@ listing for \texttt{params.in.1}:
       \verbatimtabinput[8]{dakota_rosenbrock_syscall.in}
     \end{small}
   \end{bigbox}
-  \caption{DAKOTA input file for gradient-based optimization using the
+  \caption{Dakota input file for gradient-based optimization using the
     system call interface to an external rosenbrock simulator.}
   \label{tutorial:rosenbrock_user}
 \end{figure}
@@ -936,12 +785,12 @@ vector (DVV), and the analysis components (AC). For the variables
 array, the first line gives the total number of variables (2) and the
 ``variables'' string identifier, and the subsequent two lines provide
 the array listing for the two variable values (-1.2 and 1.0) and
-descriptor tags (``x1'' and ``x2'' from the DAKOTA input file). The
+descriptor tags (``x1'' and ``x2'' from the Dakota input file). The
 next array conveys the ASV, which indicates what
 simulator outputs are needed. The first line of the array gives the total number
 of response functions (1) and the ``functions'' string identifier,
 followed by one ASV code and descriptor tag
-(``ASV\_1'') for each function. In this case, the ASV value of 1 indicates that DAKOTA
+(``ASV\_1'') for each function. In this case, the ASV value of 1 indicates that Dakota
 is requesting that the simulation code return the response function
 value in the file \texttt{results.out.X}. (Possible ASV values: 1 = value of
 response function value, 2 = response function gradient, 4 = response
@@ -972,8 +821,8 @@ is the listing for the file \texttt{results.out.1}:
 
 The value shown above is the value of the objective function, and the
 descriptor `f' is an optional tag returned by the simulation code.
-When the system call has completed, DAKOTA reads in the data from the
-\texttt{results.in.X} file and processes the results. DAKOTA then
+When the system call has completed, Dakota reads in the data from the
+\texttt{results.in.X} file and processes the results. Dakota then
 continues with additional executions of the rosenbrock program until
 the optimization process is complete.
 
@@ -985,7 +834,7 @@ modified to read and write the \texttt{params.in.X file} and the
 occurs when the simulation code is a commercial or proprietary
 software product that has specific input file and output file formats.
 In such cases, it is common to replace the executable program name in
-the DAKOTA input file with the name of a Unix shell script containing
+the Dakota input file with the name of a Unix shell script containing
 a sequence of commands that read and write the necessary files and run
 the simulation code. For example, the executable program named
 \texttt{rosenbrock} listed in Figure~\ref{tutorial:rosenbrock_user}
@@ -995,18 +844,161 @@ commands to perform the following steps: insert the data from the
 \texttt{parameters.in.X} file into the input file of the simulation
 code, execute the simulation code, post-process the files generated by
 the simulation code to compute response data, and return the response
-data to DAKOTA in the \texttt{results.out.X} file. The steps that are
+data to Dakota in the \texttt{results.out.X} file. The steps that are
 typically used in constructing and using a Unix shell script are
 described in Section~\ref{advint:building}.
+
+\section{Dakota Command-Line Options}\label{tutorial:installation:running}
+
+The Dakota executable file is named {\tt dakota} ({\tt dakota.exe} on
+Windows). If this command is entered at the command prompt without any
+arguments, a usage message similar to the following appears:
+\begin{small}
+\begin{verbatim}
+usage: dakota [options and <args>]
+        -help (Print this summary)
+        -version (Print Dakota version number)
+        -input <$val> (REQUIRED Dakota input file $val)
+        -output <$val> (Redirect Dakota standard output to file $val)
+        -error <$val> (Redirect Dakota standard error to file $val)
+        -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
+	-no_input_echo (Do not echo Dakota input file)
+	-check (Perform input checks)
+        -pre_run [$val] (Perform pre-run (variables generation) phase)
+        -run [$val] (Perform run (model evaluation) phase)
+        -post_run [$val] (Perform post-run (final results) phase)
+        -read_restart [$val] (Read an existing Dakota restart file $val)
+        -stop_restart <$val> (Stop restart file processing at evaluation $val)
+        -write_restart [$val] (Write a new Dakota restart file $val)
+\end{verbatim}
+\end{small}
+%$ this comment is here to trick xemacs into highlighting syntax correctly
+
+Of these available command line inputs, only the ``\texttt{-input}''
+option is required, and ``\texttt{-input}'' can be omitted if the
+input file name is the final item on the command line; all other
+command-line inputs are optional. The ``\texttt{-help}'' option prints
+the usage message above. The ``\texttt{-version}'' option prints the
+version number of the executable. The ``\texttt{-check}'' option
+invokes a dry-run mode in which the input file is processed and
+checked for errors, but the study is not performed. The
+``\texttt{-input}'' option provides the name of the Dakota input file.
+The ``\texttt{-output}'' and ``\texttt{-error}'' options provide file
+names for redirection of the Dakota standard output (stdout) and
+standard error (stderr), respectively. By default, Dakota will echo
+the input file to the output stream, but ``\texttt{-no\_input\_echo}''
+can override this behavior.
+
+The ``\texttt{-parser}'' input
+is for debugging and will not be further described here. The
+``\texttt{-read\_restart}'' and ``\texttt{-write\_restart}'' command
+line inputs provide the names of restart databases to read from and
+write to, respectively. The ``\texttt{-stop\_restart}'' command line
+input limits the number of function evaluations read from the restart
+database (the default is all the evaluations) for those cases in which
+some evaluations were erroneous or corrupted. Restart management is an
+important technique for retaining data from expensive engineering
+applications. This advanced topic is discussed in detail in
+Chapter~\ref{usage}. Note that these command line inputs can be
+abbreviated so long as the abbreviation is unique, so the following
+are valid, unambiguous specifications: ``\texttt{-h}'',
+``\texttt{-v}'', ``\texttt{-c}'', ``\texttt{-i}'', ``\texttt{-o}'',
+``\texttt{-e}'', ``\texttt{-re}'', ``\texttt{-s}'', ``\texttt{-w}'',
+``\texttt{-pr}'', ``\texttt{-ru}'', and ``\texttt{-po}'' and can be
+used in place of the longer forms of the command line inputs.
+
+To run Dakota with a particular input file, the following syntax can
+be used:
+\begin{small}
+\begin{verbatim}
+    dakota -i dakota.in
+\end{verbatim}
+\end{small}
+or more simply
+\begin{small}
+\begin{verbatim}
+    dakota dakota.in
+\end{verbatim}
+\end{small}
+
+This will echo the standard output (stdout) and standard error
+(stderr) messages to the terminal. To redirect stdout and stderr to
+separate files, the \texttt{-o} and \texttt{-e} command line options
+may be used:
+\begin{small}
+\begin{verbatim}
+    dakota -i dakota.in -o dakota.out -e dakota.err
+\end{verbatim}
+\end{small}
+or
+\begin{small}
+\begin{verbatim}
+    dakota -o dakota.out -e dakota.err dakota.in
+\end{verbatim}
+\end{small}
+
+Alternatively, any of a variety of Unix redirection variants can be
+used. The simplest of these redirects stdout to another file:
+\begin{small}
+\begin{verbatim}
+    dakota dakota.in > dakota.out
+\end{verbatim}
+\end{small}
+
+% this is not a linux tutorial.
+% To append to a file rather than overwrite it, ``\texttt{>>}'' is used
+% in place of ``\texttt{>}''. The syntax to redirect stderr as well as stdout
+% to the same file depends on the shell you are using. With csh, simply append
+% ``\texttt{\&}'' with no embedded space, i.e.,
+% ``\texttt{>\&}'' or ``\texttt{>>\&}''. With the Bourne shell (sh or bash) use
+% ``\texttt{>dakota.out 2>\&1}'' or ``\texttt{>>dakota.out 2>\&1}''.
+% With csh, if you have the noclobber environment variable set but
+% wish either to overwrite an existing output file or to append to a file that
+% does not yet exist, append ``\texttt{!}'' to the redirection operators
+% (with no intervening spaces), i.e.,
+% ``\texttt{>!}'', ``\texttt{>\&!}'', ``\texttt{>>!}'', or
+% ``\texttt{>>\&!}''.
+
+To run the dakota process in the background, append an ampersand
+symbol (\&) to the command with an embedded space, e.g.,
+\begin{small}
+\begin{verbatim}
+    dakota dakota.in > dakota.out &
+\end{verbatim}
+\end{small}
+
+Refer to~\cite{And86} for more information on Unix redirection and
+background commands.
+
+The ``\texttt{-pre\_run}'', ``\texttt{-run}'', and
+``\texttt{-post\_run}'' switches instruct Dakota to run one or more
+execution phases, excluding others. For example pre-run might
+generate variable sets, run (core run) invoke the simulation to
+evaluate variables, producing responses, and post-run accepts
+variable/response sets and analyzes the results (for example,
+calculate correlations from a set of samples). Currently only two
+modes are supported and only for sampling, parameter study, and DACE
+methods: (1) pre-run only with optional tabular output of variables:
+\begin{small}
+\begin{verbatim}
+    dakota -i dakota.in -pre_run [::myvariables.dat]
+\end{verbatim}
+\end{small}
+and (2) post-run only with required tabular input of variables/responses:
+\begin{small}
+\begin{verbatim}
+    dakota -i dakota.in -post_run myvarsresponses.dat::
+\end{verbatim}
+\end{small}
 
 \section{Where to Go from Here}\label{tutorial:where}
 
 This chapter has provided an introduction to the basic capabilities of
-DAKOTA including parameter studies, various types of optimization, and
-uncertainty quantification sampling. More information on the DAKOTA
+Dakota including parameter studies, various types of optimization, and
+uncertainty quantification sampling. More information on the Dakota
 input file syntax is provided in the remaining chapters in this manual
-and in the DAKOTA Reference Manual~\cite{RefMan}. Additional example
-problems that demonstrate some of DAKOTA's advanced capabilities are
+and in the Dakota Reference Manual~\cite{RefMan}. Additional example
+problems that demonstrate some of Dakota's advanced capabilities are
 provided in Chapter~\ref{uq}, Chapter~\ref{sbm}, Chapter~\ref{strat},
 Chapter~\ref{advint}, and Chapter~\ref{additional}.
 
@@ -1014,14 +1006,14 @@ Here are a few pointers to sections of this manual that many new users
 find useful:
 
 \begin{itemize}
-\item Chapter~\ref{output} describes the different DAKOTA output file
+\item Chapter~\ref{output} describes the different Dakota output file
   formats, including commonly encountered error messages.
-\item Chapter~\ref{advint} demonstrates how to employ DAKOTA with a
+\item Chapter~\ref{advint} demonstrates how to employ Dakota with a
   user-supplied simulation code.\\
-  \emph{Most DAKOTA users will follow the approach described in Chapter~\ref{advint}.}
+  \emph{Most Dakota users will follow the approach described in Chapter~\ref{advint}.}
 \item Chapter~\ref{usage} provides guidelines on how to choose an
   appropriate optimization, uncertainty quantification, or parameter
   study method based on the characteristics of your application.
 \item Chapter~\ref{restart} describes the file restart and data re-use
-  capabilities of DAKOTA.
+  capabilities of Dakota.
 \end{itemize}
