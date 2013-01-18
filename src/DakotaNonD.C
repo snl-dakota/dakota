@@ -2012,4 +2012,153 @@ void NonD::print_system_mappings(std::ostream& s) const
   }
 }
 
+void NonD::archive_allocate_mappings()
+{
+  if (!resultsDB.active())  return;
+
+  bool req_resp = false, req_prob = false, req_rel = false, req_gen = false;
+  for (size_t i=0; i<numFunctions; ++i) {
+    if (requestedRespLevels[i].length() > 0)   req_resp = true;
+    if (requestedProbLevels[i].length() > 0)   req_prob = true;
+    if (requestedRelLevels[i].length() > 0)    req_rel  = true;
+    if (requestedGenRelLevels[i].length() > 0) req_gen  = true;
+  }
+
+  if (req_resp) {
+    std::string resp_target, data_name;
+    switch (respLevelTarget) { 
+    case PROBABILITIES:
+      resp_target = "Probability";
+      data_name = resultsNames.map_resp_prob;
+      break;
+    case RELIABILITIES:
+      resp_target = "Reliability";
+      data_name = resultsNames.map_resp_rel;
+      break;
+    case GEN_RELIABILITIES: 
+      resp_target = "Generalized Reliability";
+      data_name = resultsNames.map_resp_genrel;
+      break;
+    }
+
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Response Level", resp_target + " Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), data_name, numFunctions, md);
+  }
+  if (req_prob) {
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Probability Level", "Response Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), resultsNames.map_prob_resp, numFunctions, md);
+  }
+  if (req_rel) {
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Reliability Level", "Response Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), resultsNames.map_rel_resp, numFunctions, md);
+  }
+  if (req_gen) {
+    // mapping per function, possibly empty
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Response Functions");
+    md["Column Labels"] = 
+      make_metadatavalue("Generalized Reliability Level", "Response Level");
+    resultsDB.array_allocate<RealMatrix>
+      (run_identifier(), resultsNames.map_genrel_resp, numFunctions, md);
+  }
+}
+
+// archive the mappings from response levels
+void NonD::archive_from_resp(size_t i)
+{
+  if (!resultsDB.active())  return;
+
+  size_t j, num_resp_levels = requestedRespLevels[i].length(); 
+  std::string data_name;
+
+  RealMatrix mapping(num_resp_levels, 2);
+  
+  // TODO: could use SetCol?
+  switch (respLevelTarget) { 
+  case PROBABILITIES:
+    data_name = resultsNames.map_resp_prob;
+    for (j=0; j<num_resp_levels; ++j) {
+      mapping(j, 0) = requestedRespLevels[i][j];
+      mapping(j, 1) = computedProbLevels[i][j];
+    }
+    break;
+  case RELIABILITIES:
+    data_name = resultsNames.map_resp_rel;
+    for (j=0; j<num_resp_levels; ++j) {
+      mapping(j, 0) = requestedRespLevels[i][j];
+      mapping(j, 1) = computedRelLevels[i][j];
+    }
+    break;
+  case GEN_RELIABILITIES: 
+    data_name = resultsNames.map_resp_genrel;
+    for (j=0; j<num_resp_levels; ++j) {
+      mapping(j, 0) = requestedRespLevels[i][j];
+      mapping(j, 1) = computedGenRelLevels[i][j];
+    }
+    break;
+  }
+
+  resultsDB.array_insert<RealMatrix>(run_identifier(), data_name, i, mapping);
+}
+
+
+// archive the mappings to response levels
+void NonD::archive_to_resp(size_t i)
+{
+  if (!resultsDB.active())  return;
+
+  size_t j;
+  size_t num_prob_levels = requestedProbLevels[i].length();
+  if (num_prob_levels > 0) {
+    RealMatrix mapping(num_prob_levels, 2);
+    for (j=0; j<num_prob_levels; j++) {
+      mapping(j, 0) = requestedProbLevels[i][j];
+      mapping(j, 1) = computedRespLevels[i][j];
+    }
+    resultsDB.
+      array_insert<RealMatrix>(run_identifier(), 
+			       resultsNames.map_prob_resp, i, mapping);
+  } 
+  size_t num_rel_levels = requestedRelLevels[i].length();
+  size_t offset = num_prob_levels; 
+  if (num_rel_levels > 0) {
+    RealMatrix mapping(num_rel_levels, 2);
+    for (j=0; j<num_rel_levels; j++) {
+      mapping(j, 0) = requestedRelLevels[i][j];
+      mapping(j, 1) = computedRespLevels[i][j+offset];
+    }
+    resultsDB.
+      array_insert<RealMatrix>(run_identifier(), 
+			       resultsNames.map_rel_resp, i, mapping);
+  } 
+  size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
+  offset += num_rel_levels; 
+  if (num_gen_rel_levels > 0) {
+    RealMatrix mapping(num_gen_rel_levels, 2);
+    for (j=0; j<num_gen_rel_levels; j++) {
+      mapping(j, 0) = requestedGenRelLevels[i][j];
+      mapping(j, 1) = computedRespLevels[i][j+offset];
+    }
+    resultsDB.
+      array_insert<RealMatrix>(run_identifier(), 
+			       resultsNames.map_genrel_resp, i, mapping);
+  } 
+}
+
+
 } // namespace Dakota

@@ -510,4 +510,36 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
   }
 }
 
+
+// BMA: demonstrate crude output of coefficients to get user feedback.
+void NonDPolynomialChaos::archive_coefficients()
+{
+  if (!resultsDB.active())
+    return;
+
+  // TODO: variable labels
+  MetaDataType md;
+  md["Array Spans"] = make_metadatavalue("Response Functions");
+  resultsDB.array_allocate<RealVector>
+    (run_identifier(), resultsNames.pce_coeffs, numFunctions, md);
+  resultsDB.array_allocate<std::vector<std::string> >
+    (run_identifier(), resultsNames.pce_coeff_labels, numFunctions, md);
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+
+  for (size_t i=0; i<numFunctions; i++) {
+ 
+    const RealVector& coeffs = poly_approxs[i].approximation_coefficients();
+    resultsDB.array_insert<RealVector>
+      (run_identifier(), resultsNames.pce_coeffs, i, coeffs);
+
+    std::vector<std::string> coeff_labels;
+    poly_approxs[i].coefficient_labels(coeff_labels);
+    resultsDB.array_insert<std::vector<std::string> >
+      (run_identifier(), resultsNames.pce_coeff_labels, i, coeff_labels);
+
+  }
+}
+
+
 } // namespace Dakota

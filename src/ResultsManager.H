@@ -130,6 +130,10 @@ public:
     correl_simple_rank_io("Simple Rank Correlations (I/O)"),	
     correl_partial_rank_io("Partial Rank Correlations (I/O)"),
 
+    // approximations
+    pce_coeffs("PCE Coefficients: Standardized"),
+    pce_coeff_labels("PCE Coefficient Labels"),
+
     // labels for variables/resposes
     cv_labels("Continuous Variable Labels"),
     div_labels("Discrete Integer Variable Labels"),
@@ -171,6 +175,10 @@ public:
   std::string correl_simple_rank_all;
   std::string correl_simple_rank_io;
   std::string correl_partial_rank_io;
+
+  // approximations (all used)
+  std::string pce_coeffs;
+  std::string pce_coeff_labels;
 
   // labels for variables/resposes (all used)
   std::string cv_labels;

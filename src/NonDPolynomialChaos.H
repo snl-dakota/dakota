@@ -62,6 +62,11 @@ public:
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
 
+protected:
+
+  /// archive the PCE coefficient array for the orthogonal basis
+  void archive_coefficients();
+
 private:
 
   /// convert number of expansion terms and collocation ratio to a

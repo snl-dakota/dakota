@@ -262,6 +262,7 @@ protected:
   void combine(short corr_type);
 
   void print_coefficients(std::ostream& s) const;
+  void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
   const RealVector& approximation_coefficients() const;
   void approximation_coefficients(const RealVector& approx_coeffs);
@@ -702,6 +703,11 @@ inline const RealVector& PecosApproximation::approximation_coefficients() const
 inline void PecosApproximation::
 approximation_coefficients(const RealVector& approx_coeffs)
 { pecosBasisApprox.approximation_coefficients(approx_coeffs); }
+
+
+inline void PecosApproximation::
+coefficient_labels(std::vector<std::string>& coeff_labels) const
+{ pecosBasisApprox.coefficient_labels(coeff_labels); }
 
 } // namespace Dakota
 

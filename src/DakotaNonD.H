@@ -180,6 +180,13 @@ protected:
 				  const Response& x_response,
 				  Response& u_response);
 
+  /// allocate results array storage for distribution mappings
+  void archive_allocate_mappings();
+  /// archive the mappings from specified response levels for specified fn
+  void archive_from_resp(size_t fn_index);
+  /// archive the mappings to computed response levels for specified fn
+  void archive_to_resp(size_t fn_index);
+
   //
   //- Heading: Data members
   //

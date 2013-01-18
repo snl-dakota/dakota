@@ -1711,6 +1711,7 @@ void NonDExpansion::compute_statistics()
     // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
     // are not recomputed since empty level arrays are passed in construct_
     // expansion_sampler() and these levels are omitting from sampler_cntr.
+    archive_allocate_mappings();
     cntr = sampler_cntr = 0;
     for (i=0; i<numFunctions; ++i) {
       cntr += 2; sampler_cntr += 2;
@@ -1774,10 +1775,75 @@ void NonDExpansion::compute_statistics()
 	  abort_handler(-1);
 	}
       }
+      
+      // archive the mappings from response levels
+      archive_from_resp(i); 
+      // archive the mappings to response levels
+      archive_to_resp(i); 
+ 
     }
   }
+
+  // archive the active variables with the results
+  if (resultsDB.active()) {
+    resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
+		     iteratedModel.continuous_variable_labels());
+    resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
+		     iteratedModel.response_labels());
+  }
+  archive_moments();
+  archive_coefficients();
 }
 
+
+void NonDExpansion::archive_moments()
+{
+  if (!resultsDB.active())
+    return;
+
+  // for now, archive only central moments to avoid duplicating all above logic
+  // insert NaN for missing data
+  bool exp_active = false, num_active = false;
+  RealMatrix exp_matrix(4, numFunctions), num_matrix(4, numFunctions);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep;
+  for (size_t i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
+      // Pecos provides central moments
+      const RealVector& exp_moments = poly_approx_rep->expansion_moments();
+      const RealVector& num_moments = poly_approx_rep->numerical_moments();
+      size_t exp_mom = exp_moments.length(), num_mom = num_moments.length();
+      if (exp_mom)  exp_active = true;
+      if (num_mom)  num_active = true;
+      for (size_t j=0; j<exp_mom; ++j)
+	exp_matrix(j,i) = exp_moments[j];
+      for (size_t j=exp_mom; j<4; ++j)
+	exp_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
+      for (size_t j=0; j<num_mom; ++j)
+	num_matrix(j,i) = num_moments[j];
+      for (size_t j=num_mom; j<4; ++j)
+	num_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
+    }
+  }
+
+  if (exp_active) {
+    MetaDataType md_moments; 
+    md_moments["Row Labels"] = 
+      make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral"); 
+    md_moments["Column Labels"] = make_metadatavalue(iteratedModel.response_labels()); 
+    resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, 
+		     exp_matrix, md_moments); 
+  }
+  if (num_active) {
+    MetaDataType md_moments; 
+    md_moments["Row Labels"] = 
+      make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral"); 
+    md_moments["Column Labels"] = make_metadatavalue(iteratedModel.response_labels()); 
+    resultsDB.insert(run_identifier(), resultsNames.moments_central_num, 
+		     num_matrix, md_moments); 
+  }
+}
 
 void NonDExpansion::update_final_statistics_gradients()
 {

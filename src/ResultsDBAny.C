@@ -157,6 +157,8 @@ void ResultsDBAny::print_data(std::ostream& os)
 */
 void ResultsDBAny::extract_data(const boost::any& dataholder, std::ostream& os)
 { 
+  // TODO: how to distinguish "array" insert from storing a vector of something
+
   // if (dataholder.type() == typeid(int)) {
   //   output_data(boost::any_cast<int>(dataholder), os);
   // }
@@ -169,6 +171,10 @@ void ResultsDBAny::extract_data(const boost::any& dataholder, std::ostream& os)
   else if (dataholder.type() == typeid(std::vector<std::string>)) {
     output_data(boost::any_cast<std::vector<std::string> >(dataholder), os);
   }
+  // array insert version
+  else if (dataholder.type() == typeid(std::vector<std::vector<std::string> >)) {
+    output_data(boost::any_cast<std::vector<std::vector<std::string> > >(dataholder), os);
+  }
   else if (dataholder.type() == typeid(std::vector<RealVector>)) {
     output_data(boost::any_cast<std::vector<RealVector> >(dataholder), os);
   }
@@ -179,8 +185,8 @@ void ResultsDBAny::extract_data(const boost::any& dataholder, std::ostream& os)
     output_data(boost::any_cast<RealMatrix>(dataholder), os);
   }
   else
-    Cout << "Warning: unknown type of any: " << dataholder.type().name() 
-	 << std::endl;
+    os << "Warning: unknown type of any: " << dataholder.type().name() 
+       << std::endl;
 
 }
 
@@ -270,6 +276,20 @@ void ResultsDBAny::output_data(const std::vector<std::string>& data,
     os << '"' << data[i] << '"';
   }
   os << '\n';
+}
+
+// array of vector<string>
+void ResultsDBAny::
+output_data(const std::vector<std::vector<std::string> >& data,
+	    std::ostream& os)
+{
+  os << "  Data (vector<vector<string>>):\n";
+  for (size_t i=0; i<data.size(); ++i) {
+    os << "      Array Entry " << i+1 << ":\n";
+    for (size_t j=0; j<data[i].size(); ++j)
+      os << "      \"" << data[i][j] << "\"\n";
+    os << '\n';
+  }
 }
 
 } // namespace Dakota

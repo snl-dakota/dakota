@@ -692,19 +692,35 @@ TAG "method/polynomial_chaos/collocation_points/ratio_order"
 	DESC "{Order of collocation oversampling relationship} MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_points/least_squares"
+	DESC "{Least squares regression} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/least_squares/svd"
 TAG "method/polynomial_chaos/collocation_points/least_squares/equality_constrained"
 TAG "method/polynomial_chaos/collocation_points/orthogonal_matching_pursuit"
+	DESC "{L1 minimization via Orthogonal Matching Pursuit (OMP)} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/orthogonal_matching_pursuit/noise_tolerance"
 TAG "method/polynomial_chaos/collocation_points/basis_pursuit"
+	DESC "{L1 minimization via Basis Purusit (BP)} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/basis_pursuit_denoising"
+	DESC "{L1 minimization via Basis Purusit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/basis_pursuit_denoising/noise_tolerance"
 TAG "method/polynomial_chaos/collocation_points/least_angle_regression"
+	DESC "{L1 minimization via Least Angle Regression (LARS)} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/least_angle_regression/noise_tolerance"
 TAG "method/polynomial_chaos/collocation_points/least_absolute_shrinkage"
+	DESC "{L1 minimization via Least Absolute Shrinkage Operator (LASSO)} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/least_absolute_shrinkage/noise_tolerance"
 TAG "method/polynomial_chaos/collocation_points/least_absolute_shrinkage/l2_penalty"
+	DESC "{l2_penalty used for elastic net modification of LASSO} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/cross_validation"
+	DESC "{Specify whether to use cross validation} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/collocation_points/use_derivatives"
 TAG "method/polynomial_chaos/collocation_points/tensor_grid"
 TAG "method/polynomial_chaos/collocation_points/reuse_points"

@@ -852,7 +852,7 @@ static GuiKeyWord
 		{"noise_tolerance",14,0,1,0,669}
 		},
 	kw_138[2] = {
-		{"l2_penalty",10,0,2,0,675},
+		{"l2_penalty",10,0,2,0,675,0,0.,0.,0.,0,"{l2_penalty used for elastic net modification of LASSO} MethodCommands.html#MethodNonDPCE"},
 		{"noise_tolerance",14,0,1,0,673}
 		},
 	kw_139[2] = {
@@ -863,19 +863,19 @@ static GuiKeyWord
 		{"noise_tolerance",14,0,1,0,659}
 		},
 	kw_141[19] = {
-		{"basis_pursuit",8,0,2,0,661},
-		{"basis_pursuit_denoising",8,1,2,0,663,kw_136},
+		{"basis_pursuit",8,0,2,0,661,0,0.,0.,0.,0,"{L1 minimization via Basis Purusit (BP)} MethodCommands.html#MethodNonDPCE"},
+		{"basis_pursuit_denoising",8,1,2,0,663,kw_136,0.,0.,0.,0,"{L1 minimization via Basis Purusit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"},
 		{"bp",0,0,2,0,660},
 		{"bpdn",0,1,2,0,662,kw_136},
-		{"cross_validation",8,0,3,0,677},
+		{"cross_validation",8,0,3,0,677,0,0.,0.,0.,0,"{Specify whether to use cross validation} MethodCommands.html#MethodNonDPCE"},
 		{"expansion_order",13,0,7,1,699,0,0.,0.,0.,0,"{Expansion order} MethodCommands.html#MethodNonDPCE"},
 		{"lars",0,1,2,0,666,kw_137},
 		{"lasso",0,2,2,0,670,kw_138},
-		{"least_absolute_shrinkage",8,2,2,0,671,kw_138},
-		{"least_angle_regression",8,1,2,0,667,kw_137},
-		{"least_squares",8,2,2,0,651,kw_139},
+		{"least_absolute_shrinkage",8,2,2,0,671,kw_138,0.,0.,0.,0,"{L1 minimization via Least Absolute Shrinkage Operator (LASSO)} MethodCommands.html#MethodNonDPCE"},
+		{"least_angle_regression",8,1,2,0,667,kw_137,0.,0.,0.,0,"{L1 minimization via Least Angle Regression (LARS)} MethodCommands.html#MethodNonDPCE"},
+		{"least_squares",8,2,2,0,651,kw_139,0.,0.,0.,0,"{Least squares regression} MethodCommands.html#MethodNonDPCE"},
 		{"omp",0,1,2,0,656,kw_140},
-		{"orthogonal_matching_pursuit",8,1,2,0,657,kw_140},
+		{"orthogonal_matching_pursuit",8,1,2,0,657,kw_140,0.,0.,0.,0,"{L1 minimization via Orthogonal Matching Pursuit (OMP)} MethodCommands.html#MethodNonDPCE"},
 		{"points_file",11,2,8,0,691,kw_135},
 		{"ratio_order",10,0,1,0,649,0,0.,0.,0.,0,"{Order of collocation oversampling relationship} MethodCommands.html#MethodNonDPCE"},
 		{"reuse_points",8,0,6,0,683},

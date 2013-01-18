@@ -73,6 +73,8 @@ protected:
   virtual void update_expansion();
   /// print expansion coefficients, as supported by derived instance
   virtual void print_coefficients(std::ostream& s);
+  /// archive expansion coefficients, as supported by derived instance
+  virtual void archive_coefficients();
 
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric();
@@ -135,6 +137,9 @@ protected:
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
+
+  /// archive the central moments (numerical and expansion) to ResultsDB
+  void archive_moments();
 
   //
   //- Heading: Data
@@ -280,6 +285,9 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 
 
 inline void NonDExpansion::print_coefficients(std::ostream& s)
+{ /* default is no-op */ }
+
+inline void NonDExpansion::archive_coefficients()
 { /* default is no-op */ }
 
 } // namespace Dakota

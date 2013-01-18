@@ -510,6 +510,19 @@ void Approximation::approximation_coefficients(const RealVector& approx_coeffs)
 }
 
 
+void Approximation::
+coefficient_labels(std::vector<std::string>& coeff_labels) const
+{
+  if (approxRep)
+    approxRep->coefficient_labels(coeff_labels);
+  else {
+    Cerr << "Error: coefficient_labels() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 void Approximation::print_coefficients(std::ostream& s) const
 {
   if (approxRep)
