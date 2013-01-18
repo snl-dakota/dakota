@@ -59,7 +59,7 @@ public:
 
   /// performs a function evaluation at APPS-provided x_in
   bool submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
-	      HOPSPACK::EvalRequestType apps_request);
+	      const HOPSPACK::EvalRequestType apps_request);
 
   /// returns a function value to APPS
   int recv(int& apps_tag, HOPSPACK::Vector& apps_f,

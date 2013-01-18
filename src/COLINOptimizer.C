@@ -522,7 +522,7 @@ void COLINOptimizer::solver_setup(const String& method_name, Model& model)
     const String& beta_solver
       = probDescDB.get_string("method.coliny.beta_solver_name");
     solverType = BETA;
-    solverstr = string("sco:") + beta_solver;
+    solverstr = beta_solver;
   }
   else {
     Cerr << "Error (COLINOptimizer): unknown method " << method_name << endl;
@@ -681,7 +681,7 @@ void COLINOptimizer::set_solver_parameters()
     const String& selection_type =
       probDescDB.get_string("method.fitness_type");
     if (colinSolver->has_property("selection_type")) {
-      if (selection_type == "merit_function") 
+      if (selection_type == "proportional")
 	colinSolver->property("selection_type") = string("proportional");
       else // default selection_type = "linear_rank"
 	colinSolver->property("selection_type") = string("linear_rank");
@@ -876,7 +876,8 @@ void COLINOptimizer::set_solver_parameters()
       else {
 	string option(thisOption.substr(0, equalPos));
 	string value(thisOption.substr(equalPos+1, thisOption.size()-1));
-        colinSolver->property(option) = colin::parse_data(value);
+	if (colinSolver->has_property(option))
+	  colinSolver->property(option) = colin::parse_data(value);
       }
     }
   }

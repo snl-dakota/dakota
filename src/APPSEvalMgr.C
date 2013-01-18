@@ -52,7 +52,7 @@ bool APPSEvalMgr::isReadyForWork() const
     dakota id to the APPS tag.  If evaluation is synchronous, map the
     responses to the APPS tag. */
 bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
-			 HOPSPACK::EvalRequestType apps_request)
+			 const HOPSPACK::EvalRequestType apps_request)
 {
   if (numWorkersUsed < numWorkersTotal) {
     for (int i=0; i<xTrial.length(); i++)
