@@ -70,6 +70,7 @@ if ( NOT CTEST_SITE )
 
   elseif( DEFINED ENV{NODE_NAME} )
     set( hostname "$ENV{NODE_NAME}" )
+    string( REGEX REPLACE "~dakota_" "" hostname "${hostname}" )
 
   else()
     # fall-through to previous implementation (does NOT rely on ENV hashing)
