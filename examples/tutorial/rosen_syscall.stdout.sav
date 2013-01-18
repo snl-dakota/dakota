@@ -1,13 +1,3 @@
-Running MPI executable in serial mode.
-DAKOTA version 5.2 released 11/30/2011.
-Subversion revision 873 built Dec 21 2011 12:31:37.
-Constructing Single Method Strategy...
-
->>>>> Running Single Method Strategy.
-<<<<< Single Method Strategy completed.
-DAKOTA execution time in seconds:
-  Total CPU        =       0.08 [parent =   0.078987, child =   0.001013]
-  Total wall clock =    1.16558
 1
 
 

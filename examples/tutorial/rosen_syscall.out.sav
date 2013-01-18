@@ -1,9 +1,66 @@
+DAKOTA version 5.2+ developmental release.
+Subversion revision 1367 built Jan 17 2013 19:55:45.
+Running MPI executable in serial mode.
+Start time: Fri Jan 18 09:55:41 2013
+
+-----------------------
+Begin DAKOTA input file
+rosen_syscall.tmp
+-----------------------
+# Dakota INPUT FILE - rosen_syscall.in 
+# Included Dakota example using the rosenbrock analysis code 
+# with gradient-based optimization, bounded design variables, and 	    
+# analysis code called with fork.  Usage:				    
+#   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout 
+
+strategy
+  graphics
+  tabular_graphics_data
+    tabular_graphics_file = 'rosen_syscall.dat' 
+  single_method
+
+method
+  max_iterations = 100      
+  convergence_tolerance = 1e-4    
+  conmin_frcg        
+
+model
+  single
+
+variables
+  continuous_design = 2                
+    initial_point    -1.2      1.0    
+    lower_bounds     -2.0     -2.0     
+    upper_bounds      2.0      2.0     
+    descriptors       'x1'     "x2"    
+
+interface
+  analysis_driver = 'rosenbrock'
+    fork                             
+    parameters_file = 'params.in'    
+    results_file    = 'results.out'  
+
+responses
+  objective_functions = 1             
+  numerical_gradients      
+    method_source dakota      
+    interval_type forward      
+    fd_gradient_step_size = 1.e-5    
+  no_hessians
+
+---------------------
+End DAKOTA input file
+---------------------
+
+Constructing Single Method Strategy...
 Writing new restart file dakota.rst
 methodName = conmin_frcg
 gradientType = numerical
 Numerical gradients using forward differences
 to be calculated by the dakota finite difference routine.
 hessianType = none
+
+>>>>> Running Single Method Strategy.
 
 >>>>> Running conmin_frcg iterator.
 
@@ -2461,3 +2518,7 @@ Active set vector = { 1 }
 
 
 <<<<< Iterator conmin_frcg completed.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.05 [parent =   0.035994, child =   0.014006]
+  Total wall clock =   0.206514

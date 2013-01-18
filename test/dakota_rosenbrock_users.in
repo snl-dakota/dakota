@@ -1,33 +1,29 @@
-# DAKOTA INPUT FILE - dakota_rosenbrock_multidim.in #0
-## DAKOTA INPUT FILE - dakota_rosenbrock_vector.in #1
-## DAKOTA INPUT FILE - dakota_rosenbrock_grad_opt.in #2
-## DAKOTA INPUT FILE - dakota_rosenbrock_ps_opt.in #4
-## DAKOTA INPUT FILE - dakota_rosenbrock_ea_opt.in #5
-## DAKOTA INPUT FILE - dakota_rosenbrock_sampling.in #6
-## DAKOTA INPUT FILE - dakota_rosenbrock_syscall.in #7
-## DAKOTA INPUT FILE - dakota_rosenbrock_ls.in #8
-# Included DAKOTA example using the rosenbrock analysis code  #0,#2,#6,#7
-# in a multidimensional parameter study  #0
-# usage dakota -i dakota_rosenbrock_multidim.in \ #0
-# -o Rosenbrock_multidim.out > Rosenbrock_multidim.stdout #0
-## with gradient-based optimization, in which the design variables are bounded #2
-## usage dakota -i dakota_rosenbrock_grad_opt.in \ #2
-## -o Rosenbrock_grad_opt.out > Rosenbrock_grad_opt.stdout #2
-## with a random sampling Uncertainty Quantification method #6
-## usage dakota -i dakota_rosenbrock_sampling.in \ #6 
-## -o Rosenbrock_sampling.out > Rosenbrock_sampling.stdout #6
-## with gradient-based optimization, in which the design variables are bounded #7
-## and the analysis code is called with fork #7
-## usage dakota -i dakota_rosenbrock_syscall.in \ #7
-## -o Rosenbrock_syscall.out > Rosenbrock_syscall.stdout #7
+# Dakota INPUT FILE - rosen_multidim.in #0
+## Dakota INPUT FILE - dakota_rosenbrock_vector.in #1
+## Dakota INPUT FILE - rosen_grad_opt.in #2
+## Dakota INPUT FILE - dakota_rosenbrock_ps_opt.in #4
+## Dakota INPUT FILE - dakota_rosenbrock_ea_opt.in #5
+## Dakota INPUT FILE - rosen_sampling.in #6
+## Dakota INPUT FILE - rosen_syscall.in #7
+## Dakota INPUT FILE - dakota_rosenbrock_ls.in #8
+# Included Dakota example using the rosenbrock analysis code #0,#2,#6,#7
+# in a multidimensional parameter study.  Usage:			      #0
+#   dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout #0
+## with gradient-based optimization, bounded design variables.  Usage: 	       #2
+##   dakota -i rosen_grad_opt.in -o rosen_grad_opt.out > rosen_grad_opt.stdout #2
+## with a random sampling uncertainty quantification method.  Usage: 	       #6
+##   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout #6
+## with gradient-based optimization, bounded design variables, and 	    #7
+## analysis code called with fork.  Usage:				    #7
+##   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout #7
 
 strategy
   graphics
   tabular_graphics_data
-    tabular_graphics_file = 'Rosenbrock_multidim.dat' #0
-#    tabular_graphics_file = 'Rosenbrock_grad_opt.dat' #2
-#    tabular_graphics_file = 'Rosenbrock_sampling.dat' #6
-#    tabular_graphics_file = 'Rosenbrock_syscall.dat' #7
+    tabular_graphics_file = 'rosen_multidim.dat' #0
+#    tabular_graphics_file = 'rosen_grad_opt.dat' #2
+#    tabular_graphics_file = 'rosen_sampling.dat' #6
+#    tabular_graphics_file = 'rosen_syscall.dat' #7
   single_method
 
 method
