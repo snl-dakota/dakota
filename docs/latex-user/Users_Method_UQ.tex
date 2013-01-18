@@ -903,7 +903,7 @@ In non-intrusive PCE, simulations are used as black boxes and the
 calculation of chaos expansion coefficients for response metrics of
 interest is based on a set of simulation response evaluations.  To
 calculate these response PCE coefficients, two primary classes of
-approaches have been proposed: spectral projection and linear
+approaches have been proposed: spectral projection and 
 regression.  The spectral projection approach projects the response
 against each basis function using inner products and employs the
 polynomial orthogonality properties to extract each coefficient.  Each
@@ -911,12 +911,16 @@ inner product involves a multidimensional integral over the support
 range of the weighting function, which can be evaluated numerically
 using sampling, tensor-product quadrature, Smolyak sparse
 grid~\cite{Smolyak_63}, or cubature~\cite{stroud} approaches.  The
-linear regression approach uses a single linear least squares solution
-to solve for the set of PCE coefficients which best match a set of
+regression approach finds a set of PCE coefficients which best match a set of
 response values obtained from either a design of computer experiments
 (``point collocation''~\cite{pt_colloc1}) or from the subset of tensor
 Gauss points with highest product weight (``probabilistic
-collocation''~\cite{Tat95}).
+collocation''~\cite{Tat95}). Various methods can be used to solve the resulting linear
+system. The methods available in Dakota include least squares and a number of 
+compressed sensing methods. Details of these methods are documented in the
+Linear regression section of the Dakota Theory Manual~\cite{TheoMan} and 
+the necessary specifications needed to activate these techniques are listed 
+in Section 5 of the Dakota Reference Manual~\cite{RefMan}.
 
 Stochastic collocation (SC) is another stochastic expansion technique
 for UQ that is closely related to PCE.  As for PCE, exponential
