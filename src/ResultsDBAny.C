@@ -67,7 +67,7 @@ ResultsDBAny::lookup_data(const StrStrSizet& iterator_id,
     iteratorData.find(key);
     
   if (data_it == iteratorData.end()) {
-    Cerr << "\Error (ResultsDBAny): Could not find requested data"
+    Cerr << "\nError (ResultsDBAny): Could not find requested data"
 	 << "\n  Iterator ID: " << iterator_id
 	 << "\n  Data name: " << data_name
 	 << std::endl;
