@@ -327,13 +327,13 @@ endif(HAVE_PECOS)
 
 
 ## DAKOTA library sources.
-set(Dakota_src DakotaBuildInfo.C)
+set(Dakota_src DakotaBuildInfo.cpp)
 
 ## UTIL sources.
-set(util_src ParallelLibrary.C MPIPackBuffer.C
-    data_util.C tabular_io.C global_defs.C CommandLineHandler.C DakotaGraphics.C
-    DakotaString.C DakotaBinStream.C SensAnalysisGlobal.C WorkdirHelper.C
-    ResultsManager.C ResultsDBAny.C
+set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
+    data_util.cpp tabular_io.cpp global_defs.cpp CommandLineHandler.cpp DakotaGraphics.cpp
+    DakotaString.cpp DakotaBinStream.cpp SensAnalysisGlobal.cpp WorkdirHelper.cpp
+    ResultsManager.cpp ResultsDBAny.cpp
     )
 
 if(HAVE_RPC_XDR_H)
@@ -341,84 +341,84 @@ if(HAVE_RPC_XDR_H)
 endif(HAVE_RPC_XDR_H)
 
 if(DAKOTA_DL_SOLVER)
-  list(APPEND util_src DLSolver.C)
+  list(APPEND util_src DLSolver.cpp)
 endif(DAKOTA_DL_SOLVER)
 
 if(DAKOTA_USAGE_TRACKING)
-  list(APPEND util_src TrackerHTTP.C)
+  list(APPEND util_src TrackerHTTP.cpp)
 endif(DAKOTA_USAGE_TRACKING)
 
 ## EVALDATA sources.
-set(evaldata_src DakotaVariables.C MixedVariables.C RelaxedVariables.C
-    SharedVariablesData.C DakotaActiveSet.C DakotaResponse.C ParamResponsePair.C)
+set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
+    SharedVariablesData.cpp DakotaActiveSet.cpp DakotaResponse.cpp ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.C NIDRProblemDescDB.C DataStrategy.C DataMethod.C
-    DataModel.C DataVariables.C DataInterface.C DataResponses.C 
-    filesystem_utils.C)
+set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataStrategy.cpp DataMethod.cpp
+    DataModel.cpp DataVariables.cpp DataInterface.cpp DataResponses.cpp 
+    filesystem_utils.cpp)
 
 ## Model sources.
-set(model_src DakotaModel.C SingleModel.C RecastModel.C NestedModel.C
-    SurrogateModel.C DataFitSurrModel.C HierarchSurrModel.C
-    DiscrepancyCorrection.C)
+set(model_src DakotaModel.cpp SingleModel.cpp RecastModel.cpp NestedModel.cpp
+    SurrogateModel.cpp DataFitSurrModel.cpp HierarchSurrModel.cpp
+    DiscrepancyCorrection.cpp)
 
 ## Constraint sources.
-set(constraint_src DakotaConstraints.C MixedVarConstraints.C
-    RelaxedVarConstraints.C)
+set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
+    RelaxedVarConstraints.cpp)
 
 ## Interface sources.
-set(interface_src DakotaInterface.C ApproximationInterface.C
-    DakotaApproximation.C TaylorApproximation.C TANA3Approximation.C
-    GaussProcApproximation.C PecosApproximation.C ApplicationInterface.C
-    SysCallApplicInterface.C DirectApplicInterface.C TestDriverInterface.C
-    AnalysisCode.C SysCallAnalysisCode.C CommandShell.C)
+set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
+    DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp
+    GaussProcApproximation.cpp PecosApproximation.cpp ApplicationInterface.cpp
+    SysCallApplicInterface.cpp DirectApplicInterface.cpp TestDriverInterface.cpp
+    AnalysisCode.cpp SysCallAnalysisCode.cpp CommandShell.cpp)
 if(NOT MSVC)
-  list(APPEND interface_src ForkApplicInterface.C ForkAnalysisCode.C)
+  list(APPEND interface_src ForkApplicInterface.cpp ForkAnalysisCode.cpp)
 endif()
 
 CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
-  list(APPEND interface_src SurfpackApproximation.C)
+  list(APPEND interface_src SurfpackApproximation.cpp)
   include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src)
   list(APPEND TPL_LIBS surfpack surfpack_fortran)
 endif(HAVE_SURFPACK)
 
 if(DAKOTA_MATLAB)
-  list(APPEND interface_src MatlabInterface.C)
+  list(APPEND interface_src MatlabInterface.cpp)
 endif()
 
 if(DAKOTA_PYTHON)
-  list(APPEND interface_src PythonInterface.C)
+  list(APPEND interface_src PythonInterface.cpp)
 endif()
 
 if(DAKOTA_PLUGIN)
-  set(interface_src ${interface_src} PluginSerialDirectApplicInterface.C
-      PluginParallelDirectApplicInterface.C)
+  set(interface_src ${interface_src} PluginSerialDirectApplicInterface.cpp
+      PluginParallelDirectApplicInterface.cpp)
 endif(DAKOTA_PLUGIN)
 
 if(DAKOTA_SCILAB)
-  list(APPEND interface_src ScilabInterface.C)
+  list(APPEND interface_src ScilabInterface.cpp)
 endif()
 
 ## Strategy sources.
-set(strategy_src DakotaStrategy.C SingleMethodStrategy.C HybridStrategy.C
-    SequentialHybridStrategy.C EmbeddedHybridStrategy.C
-    CollaborativeHybridStrategy.C ConcurrentStrategy.C)
+set(strategy_src DakotaStrategy.cpp SingleMethodStrategy.cpp HybridStrategy.cpp
+    SequentialHybridStrategy.cpp EmbeddedHybridStrategy.cpp
+    CollaborativeHybridStrategy.cpp ConcurrentStrategy.cpp)
 
 ## Iterator sources.
-set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
-    ParamStudy.C DakotaVerification.C RichExtrapVerification.C DakotaNonD.C
-    NonDReliability.C NonDLocalReliability.C NonDGlobalReliability.C
-    NonDInterval.C NonDLHSInterval.C NonDLHSEvidence.C NonDLHSSingleInterval.C
-    NonDLocalInterval.C NonDLocalEvidence.C NonDLocalSingleInterval.C
-    NonDGlobalInterval.C NonDGlobalEvidence.C NonDGlobalSingleInterval.C
-    NonDIntegration.C NonDCubature.C NonDQuadrature.C NonDSparseGrid.C
-    NonDExpansion.C NonDPolynomialChaos.C NonDStochCollocation.C
-    NonDCalibration.C NonDBayesCalibration.C NonDSampling.C NonDLHSSampling.C
-    NonDAdaptImpSampling.C NonDGPImpSampling.C NonDIncremLHSSampling.C
-    DakotaMinimizer.C DakotaOptimizer.C DakotaLeastSq.C NonlinearCGOptimizer.C 
-    SurrBasedMinimizer.C SurrBasedLocalMinimizer.C SurrBasedGlobalMinimizer.C
-    EffGlobalMinimizer.C
+set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
+    ParamStudy.cpp DakotaVerification.cpp RichExtrapVerification.cpp DakotaNonD.cpp
+    NonDReliability.cpp NonDLocalReliability.cpp NonDGlobalReliability.cpp
+    NonDInterval.cpp NonDLHSInterval.cpp NonDLHSEvidence.cpp NonDLHSSingleInterval.cpp
+    NonDLocalInterval.cpp NonDLocalEvidence.cpp NonDLocalSingleInterval.cpp
+    NonDGlobalInterval.cpp NonDGlobalEvidence.cpp NonDGlobalSingleInterval.cpp
+    NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
+    NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
+    NonDCalibration.cpp NonDBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
+    NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp NonDIncremLHSSampling.cpp
+    DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
+    SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp SurrBasedGlobalMinimizer.cpp
+    EffGlobalMinimizer.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)
@@ -437,8 +437,8 @@ if(HAVE_ACRO)
                       ${Acro_SOURCE_DIR}/packages/colin/src
                       ${Acro_SOURCE_DIR}/tpl/tinyxml)
 
-  list(APPEND interface_src COLINApplication.C)
-  list(APPEND iterator_src COLINOptimizer.C)
+  list(APPEND interface_src COLINApplication.cpp)
+  list(APPEND iterator_src COLINOptimizer.cpp)
 
   foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
     string(TOUPPER "${acro_dep}" ACRODEP)
@@ -451,10 +451,10 @@ endif(HAVE_ACRO)
 
 if(HAVE_ADAPTIVE_SAMPLING)
   add_definitions("-DHAVE_ADAPTIVE_SAMPLING")
-  list(APPEND iterator_src NonDAdaptiveSampling.C)
+  list(APPEND iterator_src NonDAdaptiveSampling.cpp)
   if(HAVE_MORSE_SMALE)
     add_definitions("-DHAVE_MORSE_SMALE")
-    list(APPEND iterator_src MorseSmaleComplex.C)
+    list(APPEND iterator_src MorseSmaleComplex.cpp)
 
     # ANN does approximate k-nearest neighbor search
     include_directories(
@@ -472,12 +472,12 @@ endif()
 option(HAVE_ESM "Whether to enable efficient subspace method" OFF)
 if(HAVE_ESM)
   add_definitions("-DHAVE_ESM")
-  list(APPEND iterator_src EfficientSubspaceMethod.C)
+  list(APPEND iterator_src EfficientSubspaceMethod.cpp)
 endif()
 
 CheckPackage(QUESO)
 if(HAVE_QUESO)
-  list(APPEND iterator_src NonDQUESOBayesCalibration.C)
+  list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
   add_definitions("-DDAKOTA_QUESO")
 
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
@@ -503,13 +503,13 @@ endif()
 CheckPackage(CONMIN)
 if(HAVE_CONMIN)
   link_directories ( ${link_directories} ${CONMIN_LIB_DIRS} )
-  set(iterator_src ${iterator_src} CONMINOptimizer.C)
+  set(iterator_src ${iterator_src} CONMINOptimizer.cpp)
 endif(HAVE_CONMIN)
 
 if(HAVE_DDACE)
   add_definitions("-DDAKOTA_DDACE")
   include_directories(${ddace_BINARY_DIR} ${ddace_SOURCE_DIR}/include)
-  set(iterator_src ${iterator_src} DDACEDesignCompExp.C)
+  set(iterator_src ${iterator_src} DDACEDesignCompExp.cpp)
   #link_directories(${Dakota_BINARY_DIR}/methods/DDACE)
   set(TPL_LIBS ${TPL_LIBS} dace analyzer random sampling bose)
   list(APPEND EXPORT_TARGETS dace analyzer random sampling bose)
@@ -517,19 +517,19 @@ endif(HAVE_DDACE)
 
 CheckPackage(DOT)
 if(HAVE_DOT)
-  set(iterator_src ${iterator_src} DOTOptimizer.C)
+  set(iterator_src ${iterator_src} DOTOptimizer.cpp)
 endif(HAVE_DOT)
 
 CheckPackage(FSUDACE)
 if(HAVE_FSUDACE)
   include_directories(${FSUDace_BINARY_DIR} ${FSUDace_SOURCE_DIR})
-  set(iterator_src ${iterator_src} FSUDesignCompExp.C)
+  set(iterator_src ${iterator_src} FSUDesignCompExp.cpp)
 endif(HAVE_FSUDACE)
 
 if(HAVE_GPMSA)
   add_definitions("-DDAKOTA_GPMSA")
   add_dependencies(queso_ext grvy_ext)
-  list(APPEND iterator_src NonDGPMSABayesCalibration.C)
+  list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
   include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
                       ${Dakota_BINARY_DIR}/packages/grvy_ext/include
@@ -555,7 +555,7 @@ if(HAVE_HOPSPACK)
                       ${HOPSPACK_SOURCE_DIR}/src/src-executor
                       ${HOPSPACK_SOURCE_DIR}/src/src-framework
                       ${HOPSPACK_SOURCE_DIR}/src/src-main)
-  list(APPEND iterator_src APPSOptimizer.C APPSEvalMgr.C)
+  list(APPEND iterator_src APPSOptimizer.cpp APPSEvalMgr.cpp)
   #link_directories(${Dakota_BINARY_DIR}/packages/hopspack)
   list(APPEND TPL_LIBS hopspack)
   list(APPEND EXPORT_TARGETS hopspack)
@@ -565,14 +565,14 @@ if(HAVE_JEGA)
   add_definitions("-DHAVE_JEGA")
   include_directories(${JEGA_BINARY_DIR} ${JEGA_BINARY_DIR}/eddy
                       ${JEGA_SOURCE_DIR}/eddy ${JEGA_SOURCE_DIR}/include)
-  list(APPEND iterator_src JEGAOptimizer.C)
+  list(APPEND iterator_src JEGAOptimizer.cpp)
   list(APPEND TPL_LIBS jega jega_fe moga soga eutils utilities)
   list(APPEND EXPORT_TARGETS jega jega_fe moga soga eutils utilities)
 endif(HAVE_JEGA)
 
 if(HAVE_NCSUOPT)
   add_definitions("-DHAVE_NCSU")
-  set(iterator_src ${iterator_src} NCSUOptimizer.C)
+  set(iterator_src ${iterator_src} NCSUOptimizer.cpp)
   #link_directories(${Dakota_BINARY_DIR}/packages/NCSUOpt)
   list(APPEND TPL_LIBS ncsuopt)
   list(APPEND EXPORT_TARGETS ncsuopt)
@@ -580,12 +580,12 @@ endif(HAVE_NCSUOPT)
 
 CheckPackage(NLPQL)
 if(HAVE_NLPQL)
-  set(iterator_src ${iterator_src} NLPQLPOptimizer.C)
+  set(iterator_src ${iterator_src} NLPQLPOptimizer.cpp)
 endif(HAVE_NLPQL)
 
 if(HAVE_NL2SOL)
   add_definitions("-DHAVE_NL2SOL")
-  set(iterator_src ${iterator_src} NL2SOLLeastSq.C)
+  set(iterator_src ${iterator_src} NL2SOLLeastSq.cpp)
   include_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
   #link_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
   list(APPEND TPL_LIBS cport)
@@ -594,7 +594,7 @@ endif(HAVE_NL2SOL)
 
 CheckPackage(NPSOL)
 if(HAVE_NPSOL)
-  list(APPEND iterator_src SOLBase.C NPSOLOptimizer.C NLSSOLLeastSq.C)
+  list(APPEND iterator_src SOLBase.cpp NPSOLOptimizer.cpp NLSSOLLeastSq.cpp)
 
   if(NOT APPLE)
     list(APPEND Dakota_src_fortran npoptn_wrapper.f)
@@ -615,14 +615,14 @@ if(HAVE_OPTPP)
   # Therefore, define as many build macros as necessary to get a desirable exec.
   add_definitions("-DDAKOTA_OPTPP")
 
-  set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
+  set(iterator_src ${iterator_src} SNLLBase.cpp SNLLOptimizer.cpp SNLLLeastSq.cpp)
   set(TPL_LIBS ${TPL_LIBS} optpp)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
 
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
-  list(APPEND interface_src PSUADEDesignCompExp.C)
+  list(APPEND interface_src PSUADEDesignCompExp.cpp)
   include_directories(${PSUADE_SOURCE_DIR})
 endif(HAVE_PSUADE)
 
@@ -630,7 +630,7 @@ if(HAVE_X_GRAPHICS)
   add_definitions("-DHAVE_X_GRAPHICS")
   include_directories(${DakotaMotif_SOURCE_DIR}/include ${X11_INCLUDE_DIR} 
     ${MOTIF_INCLUDE_DIR})
-  #set(iterator_src ${iterator_src} PSUADEDesignCompExp.C)
+  #set(iterator_src ${iterator_src} PSUADEDesignCompExp.cpp)
   link_directories(${DakotaMotif_BINARY_DIR})
   list(APPEND TPL_LIBS DGraphics)
   list(APPEND EXPORT_TARGETS DGraphics)
@@ -743,23 +743,23 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
   message("Trunk Dakota_SVN_REV is currently at: ${Dakota_SVN_REV}")
 
-  file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
+  file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.cpp
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
-        #include \"DakotaBuildInfo.H\"
+        #include \"DakotaBuildInfo.hpp\"
         std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_SVN_REV}\"; 
         // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
         //       Lower priority - a post-5.3 release task
         " )
 
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)
     message(STATUS
-      "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.C in the source tree; please remove!")
-  endif() # incorrect location DakotaBuildInfo.C
+      "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
+  endif() # incorrect location DakotaBuildInfo.cpp
 
 else() # source tree NOT an SVN checkout
 
-  # Higher-level Jenkins/PACKAGING job COPIES DakotaBuildInfo.C into source tree
-  message(STATUS "EXPECTED - DakotaBuildInfo.C found in the src tree.")
+  # Higher-level Jenkins/PACKAGING job COPIES DakotaBuildInfo.cpp into source tree
+  message(STATUS "EXPECTED - DakotaBuildInfo.cpp found in the src tree.")
 
 endif() # .svn directory conditional
 
@@ -776,9 +776,9 @@ if(MSVC)
 endif()
 
 ## DAKOTA executables.
-add_executable(dakota main.C)
-add_executable(dakota_restart_util restart_util.C)
-add_executable(dakota_library_mode library_mode.C)
+add_executable(dakota main.cpp)
+add_executable(dakota_restart_util restart_util.cpp)
+add_executable(dakota_library_mode library_mode.cpp)
   
 list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
 
@@ -800,13 +800,13 @@ install(TARGETS dakota_src_fortran EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
-file(GLOB Dakota_hdr *.H *.h)
+file(GLOB Dakota_hdr *.hpp *.h)
 install(FILES ${Dakota_hdr} DESTINATION include)
 file(GLOB Dakota_spec_files dakota.input.*)
 install(FILES ${Dakota_spec_files} DESTINATION bin)
 
 if (DAKOTA_HAVE_MPI)
-  add_executable(dakota_library_split library_split.C)
+  add_executable(dakota_library_split library_split.cpp)
   target_link_libraries(dakota_library_split
     dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
   install(TARGETS dakota_library_split DESTINATION bin)

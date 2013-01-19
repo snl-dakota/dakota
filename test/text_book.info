@@ -2,15 +2,15 @@
 //This is an ascii file used to give new Dakota developers a quick
 // tutorial on how the text_book example works.
 
-	Pre-Introduction:  To verify to yourself that text_book.C does something.
+	Pre-Introduction:  To verify to yourself that text_book.cpp does something.
 Please follow the following steps:
-	1. copy the file text_book.C from /home/dakota/Dakota/test directory
+	1. copy the file text_book.cpp from /home/dakota/Dakota/test directory
 to your personal /Dakota/test directory.
 	2.  copy the file text_book.in.1 from the /home/dakota directory to
 your personal /Dakota/test directory.
 	3.  Within your personal /Dakota/test directory, type the following 
 compile/link commands at the unix prompt;
-		CC -c text_book.C -Aa
+		CC -c text_book.cpp -Aa
 			(creates text_book.o)
 		CC -o text_book text_book.o -Aa -lm
 			(creates executable text_book)
@@ -19,7 +19,7 @@ Remove the file text_book.out, if it exists.  Execute the following at the unix 
 	%text_book text_book.in.1 text_book.out
 Then, view the file text_book.out.
 
-	Introduction:  text_book.C has been compiled to produce the executable file
+	Introduction:  text_book.cpp has been compiled to produce the executable file
 text_book.  This executable uses two command-line arguments.  The first is an
 input file (text_book.in.1) and the second an output file (text_book.out).  
 The input file must contain the 
@@ -120,7 +120,7 @@ For the following input file (text_book.in.1),
 The reader can extrapolate what the output files will be for other 
 active set vectors.
 
-	Inspection of the file text_book.C will reveal that the objective
+	Inspection of the file text_book.cpp will reveal that the objective
 function used in this demonstration is:
 	
 	f = (x1 - 1)^4  + (x2 - 1)^4
@@ -149,7 +149,7 @@ obtain text_book.out.1, text_book.out.2, text_book.out.3, ...)  This allows
 the user to view these files and observe the sequence of function/gradient evaluations
 produced during the Dakota iterative optimization process.   
 	Note on using the text_book file as an example to solve other
-optimization problems:  the variable num_fg at the top of text_book.C 
+optimization problems:  the variable num_fg at the top of text_book.cpp 
 must be set to equal n + 1.
 
 	

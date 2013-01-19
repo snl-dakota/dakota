@@ -447,7 +447,7 @@ processed in \ref Dakota::CommandLineHandler "CommandLineHandler"
 and parsing occurs in 
 \ref 
 Dakota::ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" 
-called from main.C.  NIDR uses the keyword handlers in the
+called from main.cpp.  NIDR uses the keyword handlers in the
 \ref Dakota::NIDRProblemDescDB "NIDRProblemDescDB" derived class to populate 
 data within the \ref Dakota::ProblemDescDB "ProblemDescDB" base class, 
 which maintains a \ref Dakota::DataStrategy "DataStrategy"
@@ -470,7 +470,7 @@ Dakota::CommandLineHandler "CommandLineHandler" and retrieved in
 restart file management occurs in \ref
 Dakota::ParallelLibrary::manage_outputs_restart "ParallelLibrary::manage_outputs_restart()", and restart file insertions occur in \ref
 Dakota::ApplicationInterface "ApplicationInterface".  The \c 
-dakota_restart_util executable, built from restart_util.C, provides 
+dakota_restart_util executable, built from restart_util.cpp, provides 
 a variety of services for interrogating, converting, repairing, 
 concatenating, and post-processing restart files.
 

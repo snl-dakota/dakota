@@ -8,7 +8,7 @@ namespace Dakota {
 <li> <a href="DakLibrary.html#DakLibraryIntro">Introduction</a> 
 <li> <a href="DakLibrary.html#DakLibraryExampleTest">Quick start: 
 examples and test code</a>
-<li> <a href="DakLibrary.html#DakLibraryRelMainC">Comparison to main.C</a>
+<li> <a href="DakLibrary.html#DakLibraryRelMainC">Comparison to main.cpp</a>
 <li> <a href="DakLibrary.html#DakLibraryDB">Problem database population</a>
      <ul>
      <li> <a href="DakLibrary.html#DakLibraryDBParse">Input file parsing</a> 
@@ -42,8 +42,8 @@ As part of the normal DAKOTA build process, where \c Dakota/configure
 \c --prefix=PREFIX has been run prior to \c make and \c make \c
 install, a \c libdakota.a is created and a copy of it is placed in \c
 PREFIX/lib (PREFIX defaults to /usr/local/Dakota).  This library
-contains all source files from \c Dakota/src excepting the main.C,
-restart_util.C, and library_mode.C main programs.  This library may be
+contains all source files from \c Dakota/src excepting the main.cpp,
+restart_util.cpp, and library_mode.cpp main programs.  This library may be
 linked with another application through inclusion of \c -ldakota on
 the link line.  Library and header paths may also be specified using
 the \c -L and \c -I compiler options (using \c PREFIX/lib and \c
@@ -79,7 +79,7 @@ To learn by example, refer to the files
 PluginSerialDirectApplicInterface.[CH] and
 PluginParallelDirectApplicInterface.[CH] in Dakota/src for simple
 examples of serial and parallel plug-in interfaces.  The file
-library_mode.C in Dakota/src provides example usage of these plug-ins
+library_mode.cpp in Dakota/src provides example usage of these plug-ins
 within a mock simulator program that demonstrates the required object
 instantiation syntax in combination with the three problem database
 population approaches (input file parsing, data node insertion, and
@@ -87,13 +87,13 @@ mixed mode).  All of this code may be compiled and tested by
 configuring DAKOTA using the \c --with-plugin option.
 
 
-\section DakLibraryRelMainC Comparison to main.C
+\section DakLibraryRelMainC Comparison to main.cpp
 
 
 The procedure for utilizing DAKOTA as a library within another
 application involves a number of steps that are similar to those used
 in the stand-alone DAKOTA application.  The stand-alone procedure can
-be viewed in the file main.C, and the differences for the library
+be viewed in the file main.cpp, and the differences for the library
 approach are most easily explained with reference to that file.  The
 basic steps of executing DAKOTA include instantiating the
 ParallelLibrary, CommandLineHandler, and ProblemDescDB objects;
@@ -106,7 +106,7 @@ and instantiating the Strategy and running it
 DAKOTA as an algorithm library, the operations are quite similar, 
 although command line information (argc, argv, and therefore
 CommandLineHandler) will not in general be accessible.  In particular,
-main.C can pass argc and argv into the ParallelLibrary and 
+main.cpp can pass argc and argv into the ParallelLibrary and 
 CommandLineHandler constructors and then pass the 
 CommandLineHandler object into 
 \ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" and 
@@ -181,7 +181,7 @@ input file.  The disadvantage to this approach is the requirement for
 an additional input file beyond those already required by the parent
 application.
 
-In this approach, the main.C call to 
+In this approach, the main.cpp call to 
 \code
   problem_db.manage_inputs(cmd_line_handler);
 \endcode
@@ -196,7 +196,7 @@ parameter list rather than read from the command line of the main
 DAKOTA program.  Again, the definition of the DAKOTA input file name
 is performed elsewhere in the parent application (e.g., specified in
 the parent application input file or GUI).  Refer to
-run_dakota_parse() in library_mode.C for a complete example listing.
+run_dakota_parse() in library_mode.cpp for a complete example listing.
 
 \ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()"
 invokes \ref ProblemDescDB::parse_inputs "ProblemDescDB::parse_inputs()" 
@@ -271,7 +271,7 @@ processors should participate in
 \ref ProblemDescDB::post_process "ProblemDescDB::post_process()".
 Moreover, preserving the order shown assures that large default
 vectors are not transmitted by MPI.  Refer to run_dakota_data() in 
-library_mode.C for a complete example listing.
+library_mode.cpp for a complete example listing.
 
 <!-- \attention The use of the insert_node() approach bypasses a
 considerable amount of data consistency enforcement within the keyword
@@ -323,7 +323,7 @@ family of overloaded functions, e.g.
 \endcode
 where the string identifiers are the same identifiers used when pulling
 information from the database using one of the get_<datatype>() 
-functions (refer to the source code of ProblemDescDB.C for a full list).  
+functions (refer to the source code of ProblemDescDB.cpp for a full list).  
 However, the supported \ref ProblemDescDB::set "ProblemDescDB::set()" 
 options are a restricted subset of the database attributes, focused on 
 vector inputs that can be large scale.
@@ -386,7 +386,7 @@ to other processors, and the latter will post-process specification
 data to fill in any vector defaults that have not yet been provided
 through either file parsing or direct updates (Note: scalar defaults
 are handled in the Data class constructors).  Refer to 
-run_dakota_mixed() in library_mode.C for a complete example listing.
+run_dakota_mixed() in library_mode.cpp for a complete example listing.
 
 
 \section DakLibraryStrat Instantiating the strategy
@@ -694,7 +694,7 @@ properly propagated.
 \section DakLibrarySummary Summary
 
 To utilize the DAKOTA library within a parent software application,
-the basic steps of main.C and the order of invocation of these steps
+the basic steps of main.cpp and the order of invocation of these steps
 should be mimicked from within the parent application.  Of these
 steps, ParallelLibrary instantiation, 
 \ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" and 
@@ -702,7 +702,7 @@ steps, ParallelLibrary instantiation,
 require the use of overloaded forms in order to function in an
 environment without direct command line access and, potentially,
 without file parsing.  Additional optional steps not performed in
-main.C include the extension/derivation of the direct interface and 
+main.cpp include the extension/derivation of the direct interface and 
 the retrieval of strategy results after a run.
 
 DAKOTA's library mode is now in production use within several Sandia

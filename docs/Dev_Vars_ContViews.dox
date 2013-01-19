@@ -116,7 +116,7 @@ among different Variables instances.
 One of the purposes of this shared information is to support mappings
 between variable types, IDs, and indices into the storage arrays.
 Variable "types" refer to the fine-grained variable types a user would
-specify in an input file, as enumerated in DataVariables.H, e.g,
+specify in an input file, as enumerated in DataVariables.hpp, e.g,
 CONTINUOUS_DESIGN, WEIBULL_UNCERTAIN, DISCRETE_STATE_RANGE, etc.  \ref
 Dakota::SharedVariablesDataRep::variablesComponents
 "variablesComponents" is a map from these variable types to counts of
@@ -165,7 +165,7 @@ NestedModel constructor.
 The pair 
 \ref Dakota::SharedVariablesDataRep::variablesView "SharedVariablesDataRep::variablesView"
 tracks the active and inactive views of the data, with values taken
-from the enum in DataVariables.H.  The valid values include EMPTY and
+from the enum in DataVariables.hpp.  The valid values include EMPTY and
 the combinations {merged, mixed} x {all, design, aleatory uncertain,
 epistemic uncertain, uncertain, state}.  The ALL cases indicate
 aggregation of the design, aleatory uncertain, epistemic uncertain,

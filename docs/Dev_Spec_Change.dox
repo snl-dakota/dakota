@@ -8,9 +8,9 @@ namespace Dakota {
 <li> <a href="SpecChange.html#ModSpec">Modify dakota.input.nspec</a>
 <li> <a href="SpecChange.html#Rebuild">Rebuild generated files</a>
 <li> <a href="SpecChange.html#UpdateIDRPDDB">
-     Update NIDRProblemDescDB.C in Dakota/src</a>
+     Update NIDRProblemDescDB.cpp in Dakota/src</a>
 <li> <a href="SpecChange.html#UpdatePDDB">
-     Update ProblemDescDB.C in Dakota/src</a>
+     Update ProblemDescDB.cpp in Dakota/src</a>
   <ul>
   <li> <a href="SpecChange.html#UpdatePDDBp1">
        Augment/update get_&lt;data_type&gt;() functions</a>
@@ -20,7 +20,7 @@ namespace Dakota {
   <ul>
   <li> <a href="SpecChange.html#UpdateDatap1">
        Update the Data class header file</a>
-  <li> <a href="SpecChange.html#UpdateDatap2">Update the .C file</a>
+  <li> <a href="SpecChange.html#UpdateDatap2">Update the .cpp file</a>
   </ul>
 <li> <a href="SpecChange.html#UseFns">
      Use get_&lt;data_type&gt;() Functions</a>
@@ -54,7 +54,7 @@ before attempting to add new ones.
 
 \warning 
 \li Do \e not skip this step.  Attempts to modify the 
-NIDR_keywds.H file in Dakota/src without
+NIDR_keywds.hpp file in Dakota/src without
 using the NIDR table generator are very error-prone.
 Moreover, the input specification provides a reference to the
 allowable inputs of a particular executable and should be kept in
@@ -86,15 +86,15 @@ and \c ddv_initial_point: so older input files can be used with no or fewer chan
 
 When configured with \c -DENABLE_SPEC_MAINT,
 performing a make in Dakota/src will regenerate all files which derive
-from dakota.input.nspec, including NIDR_keywds.H,
-dakota.input.summary, NIDR_guikywds.H, and dakota.input.desc.  If you
+from dakota.input.nspec, including NIDR_keywds.hpp,
+dakota.input.summary, NIDR_guikywds.h, and dakota.input.desc.  If you
 commit changes to a source repository, be sure to commit any
 automatically generated files in addition to any modified in the
 following steps.  It is not strictly necessary to run make at this
 point in the sequence, and in fact may generate errors if necessary
 handlers aren't yet available.  
 
-\section UpdateIDRPDDB Update NIDRProblemDescDB.C in Dakota/src
+\section UpdateIDRPDDB Update NIDRProblemDescDB.cpp in Dakota/src
 
 Many keywords have data associated with them:  an integer,
 a floating-point number, a string, or arrays of such entities.
@@ -123,15 +123,15 @@ begin groups (such as "approx_problem" within the top-level "strategy" keyword)
 have no need of either a startfcn or a stopfcn; this is indicated by "{0}".
 
 Most of the things within braces in dakota.input.nspec are invocations
-of macros defined in NIDRProblemDescDB.C.  The macros simplify
+of macros defined in NIDRProblemDescDB.cpp.  The macros simplify
 writing dakota.input.nspec and make it more readable.
 Most macro invocations refer to little structures defined in
-NIDRProblemDescDB.C, usually with the help of other macros,
+NIDRProblemDescDB.cpp, usually with the help of other macros,
 some of which have different definitions in different parts
-of NIDRProblemDescDB.C.
+of NIDRProblemDescDB.cpp.
 When adding a keyword to dakota.input.nspec, you may need to
 add a structure definition or even introduce a new data type.
-NIDRProblemDescDB.C has sections corresponding to each top-level
+NIDRProblemDescDB.cpp has sections corresponding to each top-level
 keyword.  The top-level keywords are in alphabetical order, and
 most entities in the section for a top-level keyword are also
 in alphabetical order.  While not required, it is probably good
@@ -152,7 +152,7 @@ you would provide a function
     method_setting_start(const char *keyname, Values *val, void **g, void *v)
     { ... }
 \endcode
-in NIDRProblemDescDB.C.  In this example, argument \c &method_setting_details
+in NIDRProblemDescDB.cpp.  In this example, argument \c &method_setting_details
 would be passed as \c v, \c val->n (the number of values) would be 1 and \c *val->r
 would be the REAL value given for the \c method_setting keyword.  The
 \c method_setting_start function would suitably store this value with the
@@ -196,22 +196,22 @@ and cleans up.
 \verbatim
     [method_setting REALLIST {{N_mdm(RealL,methodCoeffs)}
 \endverbatim
-then method_RealL (defined in NIDRProblemDescDB.C) would be called
+then method_RealL (defined in NIDRProblemDescDB.cpp) would be called
 as the startfcn, and methodCoeffs would be the name of a
 (currently nonexistent) component of DataMethod.  The N_mdm macro
-is defined in NIDRProblemDescDB.C; among other things, it turns
+is defined in NIDRProblemDescDB.cpp; among other things, it turns
 \c RealL into \c NIDRProblemDescDB::method_RealL.  This function is
 used to process lists of REAL values for several keywords.  By looking
 at the source, you can see that the list values are val->r[i]
 for 0 <= \c i < val->n.
 
-\section UpdatePDDB Update ProblemDescDB.C in Dakota/src
+\section UpdatePDDB Update ProblemDescDB.cpp in Dakota/src
 
 
 \subsection UpdatePDDBp1 Augment/update get_<data_type>() functions
 
 The next update step involves extending the database retrieval
-functions in ProblemDescDB.C.  These retrieval functions accept an
+functions in ProblemDescDB.cpp.  These retrieval functions accept an
 identifier string and return a database attribute of a particular
 type, e.g., a RealVector:
 \code
@@ -302,7 +302,7 @@ specifications.  Follow the style guide for class attribute naming
 conventions (or mimic the existing code).
 
 
-\subsection UpdateDatap2 Update the .C file
+\subsection UpdateDatap2 Update the .cpp file
 
 Define defaults for the new attributes in the constructor
 initialization list.  Add the new attributes to the assign() function

@@ -44,15 +44,15 @@ function(DakotaEnableSpecMaint)
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
   
-    # generate NIDR_keywds.H
+    # generate NIDR_keywds.hpp
     add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.H"
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp"
       DEPENDS nidrgen 
               ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
   	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
   	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_initdefs.h
       COMMAND ${NIDR_BINARY_DIR}/nidrgen
-      ARGS    dakota.input.nspec dakota.input.desc NIDR_initdefs.h NIDR_keywds.H
+      ARGS    dakota.input.nspec dakota.input.desc NIDR_initdefs.h NIDR_keywds.hpp
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
   
@@ -63,7 +63,7 @@ function(DakotaEnableSpecMaint)
               ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
   	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
   	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h
-  	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.H
+  	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp
       VERBATIM
       )
   
@@ -122,7 +122,7 @@ function(DakotaEnableSpecMaint)
       COMPILE_DEFINITIONS NO_NIDR_keywds0)
     target_link_libraries(dakreord ${dakreorder_libs})
   
-    # TODO: Ensure DAKOTA sources depend on NIDR_keywds.H
+    # TODO: Ensure DAKOTA sources depend on NIDR_keywds.hpp
   
   endif()
 

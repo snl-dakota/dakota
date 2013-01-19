@@ -198,10 +198,10 @@ previously utilized prepended %Dakota identifiers can now safely omit
 the identifiers.  However, since file names do not have namespace
 protection from name collisions, they retain the prepended %Dakota
 identifier.  For example, a class previously named DakotaModel which
-resided in DakotaModel.[CH], is now Dakota::Model (class Model in
+resided in DakotaModel.cpp/hpp, is now Dakota::Model (class Model in
 namespace %Dakota) residing in the same filenames.  The retention of
 the previous filenames reduces the possibility of multiple instances
-of a Model.H causing problems.  Derived classes (e.g., NestedModel) do
+of a Model.hpp causing problems.  Derived classes (e.g., NestedModel) do
 not require a prepended %Dakota identifier for either the class or file
 names.
 <li> in a few cases, it is convenient to maintain several closely
@@ -215,13 +215,13 @@ the Dakota::BiStream and Dakota::BoStream classes).
 The type of file is determined by one of the four file name extensions
 listed below:
 <ul>
-<li> <b>.H</b> A class header file ends in the suffix .H. The header
+<li> <b>.hpp</b> A class header file ends in the suffix .hpp. The header
 file provides the class declaration. This file does not contain code
 for implementing the methods, except for the case of inline
 functions. Inline functions are to be placed at the bottom of the file
 with the keyword inline preceding the function name.
 
-<li> <b>.C</b> A class implementation file ends in the suffix .C. An
+<li> <b>.cpp</b> A class implementation file ends in the suffix .cpp. An
 implementation file contains the definitions of the members of the
 class.
 
@@ -242,7 +242,7 @@ Class documentation uses the doxygen tool available from
 http://www.doxygen.org and employs the JAVA-doc comment style.  Brief
 comments appear in header files next to the attribute or function
 declaration.  Detailed descriptions for functions should appear
-alongside their implementations (i.e., in the .C files for
+alongside their implementations (i.e., in the .cpp files for
 non-inlined, or in the headers next to the function definition for
 inlined).  Detailed comments for a class or a class attribute must go
 in the header file as this is the only option.

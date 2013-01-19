@@ -465,7 +465,7 @@ DOT source modifications: In dot1.f, modify the parameter list of
 SUBROUTINE DOT to pass the parameter NGOTOZ as its second parameter.
 This allows DAKOTA to monitor when DOT is performing finite
 differencing, versus when DOT is performing the line search.  If this
-modification to DOT cannot be performed, then Dakota/src/DOTOptimizer.C 
+modification to DOT cannot be performed, then Dakota/src/DOTOptimizer.cpp 
 must be modified to be consistent with the unmodified DOT parameter list.
 
 NPSOL _required_ source modifications: 
