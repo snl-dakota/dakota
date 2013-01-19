@@ -657,10 +657,6 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${iterator_src})
 
 if(MSVC)
-  # WJB - ToDo: Investigate further whether forcing C++ compilation is needed
-  #set_source_files_properties(${Dakota_src} PROPERTIES LANGUAGE "CXX")
-
-  # May need to treat dirent.c separately from the ${Dakota_src} list of sources
   list(APPEND Dakota_src dirent.h dirent.c)
 endif()
 
