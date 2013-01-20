@@ -1,6 +1,6 @@
 # DAKOTA directory structure assumption:
 # {Dakota-source}
-# |- config                        (directory-to be renamed to cmake)
+# |- cmake                         (directory)
 # |  |- compilers                  (directory)
 # |  |- platforms                  (directory)
 # |  |- utilities                  (directory)
@@ -24,11 +24,11 @@ if ( NOT DAKOTA_PATHS_SET )
     set( DAKOTA_LOCAL_CONFIG_DIR ${CTEST_SCRIPT_DIRECTORY} )
     get_filename_component( scriptParent ${CTEST_SCRIPT_DIRECTORY} PATH ) 
     get_filename_component( dakotaSrc ${scriptParent} PATH )
-    set( DAKOTA_CONFIG_DIR ${dakotaSrc}/config )
+    set( DAKOTA_CONFIG_DIR ${dakotaSrc}/cmake )
   else()
     set( DAKOTA_CONFIG_DIR ${CTEST_SCRIPT_DIRECTORY} )
     get_filename_component( dakotaSrc ${CTEST_SCRIPT_DIRECTORY} PATH )
-    set( DAKOTA_LOCAL_CONFIG_DIR ${dakotaSrc}/local/config )
+    set( DAKOTA_LOCAL_CONFIG_DIR ${dakotaSrc}/local/cmake )
   endif()
 
   foreach( i
