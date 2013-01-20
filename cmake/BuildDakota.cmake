@@ -2,9 +2,9 @@
 # Set DAKOTA directories
 ##############################################################################
 set( CMAKE_MODULE_PATH
-  ${Dakota_SOURCE_DIR}/config
-  ${Dakota_SOURCE_DIR}/config/platforms
-  ${Dakota_SOURCE_DIR}/config/compilers
+  ${Dakota_SOURCE_DIR}/cmake
+  ${Dakota_SOURCE_DIR}/cmake/platforms
+  ${Dakota_SOURCE_DIR}/cmake/compilers
   ${CMAKE_MODULE_PATH} )
 message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
@@ -34,7 +34,7 @@ include( RHEL6 )
 #                       *******************************
 # For parallel builds, uncomment lines below and define appropriate paths.
 # If MPI include and lib directories do not have common base directory,
-# see note in Dakota/config/DakotaHaveMPI.cmake.
+# see note in Dakota/cmake/DakotaHaveMPI.cmake.
 #                       *******************************
 #set( DAKOTA_HAVE_MPI ON 
 #     CACHE BOOL "Always build with MPI enabled" FORCE)

@@ -104,7 +104,7 @@ function(DakotaEnableSpecMaint)
         -Dinfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp
         -Ddatefile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/date.txt
         -Doutfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h
-        -P ${Dakota_SOURCE_DIR}/config/finish_keywds0.cmake
+        -P ${Dakota_SOURCE_DIR}/cmake/finish_keywds0.cmake
       VERBATIM)
   
     # TODO: make -ldl optional if possible
