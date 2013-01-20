@@ -764,10 +764,10 @@ if(MSVC)
   # Create "Native Windows dirent" source files in the binary tree so they
   # will only be seen by Native Windows builds.
 
-  configure_file(${Dakota_SOURCE_DIR}/config/win_dirent.c.in
+  configure_file(${Dakota_SOURCE_DIR}/cmake/win_dirent.c.in
                  ${Dakota_BINARY_DIR}/src/dirent.c COPYONLY)
 
-  configure_file(${Dakota_SOURCE_DIR}/config/win_dirent.h.in
+  configure_file(${Dakota_SOURCE_DIR}/cmake/win_dirent.h.in
                  ${Dakota_BINARY_DIR}/src/dirent.h COPYONLY)
 endif()
 
@@ -815,12 +815,12 @@ option(DAKOTA_INSTALL_DYNAMIC_DEPS
   "Install Dakota's dynamic dependencies to CMAKE_INSTALL_PREFIX/bin/" ON)
 if (DAKOTA_INSTALL_DYNAMIC_DEPS)
   if (CYGWIN)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallCygwinDLLs.cmake")
+    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallCygwinDLLs.cmake")
   elseif (APPLE)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallDarwinDylibs.cmake")
+    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallDarwinDylibs.cmake")
   elseif (UNIX)
 #    include(InstallRequiredSystemLibraries)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/config/InstallUnixSOs.cmake")
+    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake")
   endif()
 endif()
   
