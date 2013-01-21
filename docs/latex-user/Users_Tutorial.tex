@@ -154,7 +154,8 @@ Section~\ref{tutorial:installation:quickstart:output}.
 \texttt{Rosenbrock} test problem. More details about the example are in 
 Section~\ref{tutorial:examples:optimization} and the test problem is 
 described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:rosenbrock}.
-  \item Explore the many methods available in Dakota in Chapter~\ref{capabilities}.
+  \item Explore the many methods available in Dakota in
+    Chapters~\ref{ps}--~\ref{sbm}.
   \item Learn the syntax needed to use these methods. For running Dakota 
 see Section~\ref{tutorial:installation:running} and for input file 
 information see Section~\ref{tutorial:dakota}. 
@@ -886,7 +887,7 @@ database (the default is all the evaluations) for those cases in which
 some evaluations were erroneous or corrupted. Restart management is an
 important technique for retaining data from expensive engineering
 applications. This advanced topic is discussed in detail in
-Chapter~\ref{usage}. Note that these command line inputs can be
+Chapter~\ref{restart}. Note that these command line inputs can be
 abbreviated so long as the abbreviation is unique, so the following
 are valid, unambiguous specifications: ``\texttt{-h}'',
 ``\texttt{-v}'', ``\texttt{-c}'', ``\texttt{-i}'', ``\texttt{-o}'',
@@ -978,29 +979,81 @@ and (2) post-run only with required tabular input of variables/responses:
 \end{verbatim}
 \end{small}
 
-\section{Where to Go from Here}\label{tutorial:where}
 
-This chapter has provided an introduction to the basic capabilities of
-Dakota including parameter studies, various types of optimization, and
-uncertainty quantification sampling. More information on the Dakota
-input file syntax is provided in the remaining chapters in this manual
-and in the Dakota Reference Manual~\cite{RefMan}. Additional example
-problems that demonstrate some of Dakota's advanced capabilities are
-provided in Chapter~\ref{uq}, Chapter~\ref{sbm}, Chapter~\ref{strat},
-Chapter~\ref{advint}, and Chapter~\ref{additional}.
+\section{Next Steps}\label{tutorial:nextsteps}
 
-Here are a few pointers to sections of this manual that many new users
-find useful:
+After reading this chapter, you should understand the mechanics of
+acquiring, installing, and excuting Dakota to perform simple studies.
+You should have a high-level appreciation for what inputs Dakota
+requires, how it behaves during interfacing and operation for a few
+kinds of studies, and what representative output results.  To
+effectively use Dakota, you will need to understand the character of
+your problem, select a Dakota method to help you meet your analysis
+goals, and develop an interface to your computational model.
 
+\subsection{Problem Exploration and Method Selection}\label{tutorial:exploration}
+
+Section~\ref{intro:capabilities} provides a high-level overview of the
+analysis techniques available in Dakota, with references to more
+details and usage guidelines in the following chapters.  Selecting an
+appropriate method to meet your analysis goals requires understanding
+problem characteristics.  For example, in optimization, typical
+questions that should be addressed include: Are the design variables
+continuous, discrete, or mixed? Is the problem constrained or
+unconstrained? How expensive are the response functions to evaluate?
+Will the response functions behave smoothly as the design variables
+change or will there be nonsmoothness and/or discontinuities? Are the
+response functions likely to be multimodal, such that global
+optimization may be warranted? Is analytic gradient data available,
+and if not, can I calculate gradients accurately and cheaply?
+Questions pertinent for uncertainty quantification may include: Can I
+accurately model the probabilistic distributions of my uncertain
+variables? Are the response functions relatively linear? Am I
+interested in a full random process characterization of the response
+functions, or just statistical results?
+
+If there is not sufficient information from the problem description
+and prior knowledge to answer these questions, then additional problem
+characterization activities may be warranted. Dakota parameter studies
+and design of experiments methods can help answer these questions by
+systematically interrogating the model.  The resulting trends in the
+response functions can be evaluated to determine if these trends are
+noisy or smooth, unimodal or multimodal, relatively linear or highly
+nonlinear, etc. In addition, the parameter studies may reveal that one
+or more of the parameters do not significantly affect the results and
+can be omitted from the problem formulation. This can yield a
+potentially large savings in computational expense for the subsequent
+studies. Refer to Chapters~\ref{ps} and~\ref{dace} for additional
+information on parameter studies and design of experiments methods.
+
+\subsection{Key Getting Started References}\label{tutorial:keyrefs}
+
+The following references address many of the most common questions
+raised by new Dakota users:
 \begin{itemize}
+\item Dakota documentation and training materials are available from
+  the Dakota website \url{http://dakota.sandia.gov}.
+
+\item Dakota input file syntax (valid keywords and settings) is
+  described in the Dakota Reference Manual~\cite{RefMan}.
+
+\item Example input files are included throughout this manual, and
+  also in {\tt Dakota/examples/tutorial}, {\tt
+    Dakota/examples/methods}, and {\tt Dakota/test} in Dakota
+  distributions/installations.
+
+\item Detailed method descriptions appear in the Method Tour in
+  Chapters~\ref{ps} through~\ref{sbm}.
+
+\item Building an interface to a simulation code:
+  Section~\ref{advint:building}, and related information on parameters
+  file formats (Section~\ref{variables:parameters}) and results file
+  format (Section~\ref{responses:results}).
+
 \item Chapter~\ref{output} describes the different Dakota output file
   formats, including commonly encountered error messages.
-\item Chapter~\ref{advint} demonstrates how to employ Dakota with a
-  user-supplied simulation code.\\
-  \emph{Most Dakota users will follow the approach described in Chapter~\ref{advint}.}
-\item Chapter~\ref{usage} provides guidelines on how to choose an
-  appropriate optimization, uncertainty quantification, or parameter
-  study method based on the characteristics of your application.
+
 \item Chapter~\ref{restart} describes the file restart and data re-use
   capabilities of Dakota.
+
 \end{itemize}

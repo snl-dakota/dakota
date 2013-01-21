@@ -61,19 +61,21 @@ see the referenced chapters.
 \begin{itemize}
 \item {\bf Parameter Studies} (Chapter~\ref{ps}): Parameter studies
   employ deterministic designs to explore the effect of parametric
-  changes within simulation models.  They can help assess simulation
-  characteristics such as smoothness, robustness, and nonlinearity,
-  which affect the choice of algorithms and controls in follow-on
+  changes within simulation models, yielding one form of sensitivity
+  analysis.  They can help assess simulation characteristics such as
+  smoothness, multi-modality, robustness, and nonlinearity, which
+  affect the choice of algorithms and controls in follow-on
   optimization and UQ studies.  Typical examples include centered,
   one-at-a-time variations or joint variation on a grid.
 
 \item {\bf Design of Experiments} (Chapter~\ref{dace}): Design and
   analysis of computer experiments (DACE) techniques are often used to
   explore the parameter space of an engineering design problem, for
-  example to perform global sensitivity analysis.  The primary goal of
-  these methods is to generate good coverage of the input parameter
-  space.  Representative methods include Latin hypercube sampling,
-  orthogonal arrays, and Box-Behnken designs.
+  example to perform global sensitivity analysis.  DACE methods can
+  help reach conclusions similar to parameter studies, but the primary
+  goal of these methods is to generate good coverage of the input
+  parameter space.  Representative methods include Latin hypercube
+  sampling, orthogonal arrays, and Box-Behnken designs.
 
 \item {\bf Uncertainty Quantification} (Chapter~\ref{uq}): Uncertainty
   quantification methods (also referred to as nondeterministic
@@ -128,6 +130,10 @@ multiprocessor workstation, a network of workstations, or a massively
 parallel computing platform. This parallel computing capability is a
 critical technology for rendering real-world engineering design
 problems computationally tractable.  See Chapter~\ref{parallel}.
+
+Dakota also has emerging capabilities in solution verification and
+Bayesian calibration/UQ, which are documented briefly in the Dakota
+Reference Manual, and in later sections of this manual.
 
 \section{Coupling Dakota to a Simulation}\label{intro:coupling}
 
@@ -250,6 +256,31 @@ and build an interface to your code.
   Supplemental example analysis problems and discussion.
 
 \end{itemize}
+
+
+\section{Summary}\label{intro:summary}
+
+Dakota is both a production tool for engineering design and analysis
+activities and a research tool for the development of new algorithms
+in optimization, uncertainty quantification, and related areas.
+Because of the extensible, object-oriented design of Dakota, it is
+relatively easy to add new iterative algorithms, strategies,
+simulation interfacing approaches, surface fitting methods, etc. In
+addition, Dakota can serve as a rapid prototyping tool for algorithm
+development. That is, by having a broad range of building blocks
+available (i.e., parallel computing, surrogate models, simulation
+interfaces, fundamental algorithms, etc.), new capabilities can be
+assembled rapidly which leverage the previous software investments.
+For additional discussion on framework extensibility, refer to the
+Dakota Developers Manual~\cite{DevMan}.
+
+The capabilities of Dakota have been used to solve engineering design
+and optimization problems at Sandia Labs, at other Department of
+Energy labs, and by our industrial and academic collaborators. Often,
+this real-world experience has provided motivation for research into
+new areas of optimization. The Dakota development team welcomes
+feedback on the capabilities of this software toolkit, as well as
+suggestions for new areas of research.
 
 % LocalWords:  UQ nondeterministic epistemic nonlinearity hypercube Behnken
 % LocalWords:  multi multifidelity Jacobian
