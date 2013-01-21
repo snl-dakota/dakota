@@ -5848,9 +5848,15 @@ sampling, regression, and expansion import options.
 If expansion_samples, collocation_points or collocation_ratio is specified,
 the PCE coefficients will be determined by regression. \ref T5d41 "Table 5.41"
 list the various regression specifications which are all are optional. 
-If no specifications are made appropriate defaults are in place. Technical 
-information on the various methods listed below can be found in the Linear
-regression section of the Theory Manual. Some of the regression 
+If no specifications are provided appropriate defaults are in place. 
+Specifically SVD based least-squares will be used for solving over-determined 
+systems and under-determined systems will be solved using LASSO. For the
+situation when the number of function values is smaller than the number 
+of terms in a PCE, but the total number of samples including gradient 
+values is greater than the number of terms, the resulting 
+over-determined system will be solved using equality constrained least squares. 
+Technical information on the various methods listed below can be found in the 
+Linear regression section of the Theory Manual. Some of the regression 
 methods (OMP, LASSO, and LARS) are able to 
 produce a set of possible PCE coefficient vectors ( See the Linear regression 
 section in the Theory Manual). If cross validation is off 
@@ -5882,13 +5888,13 @@ sampling, regression, and expansion import options.
 <td>Optional
 <td>svd
 <tr>
-<td>L1 minimization via Basis Purusit (BP)
+<td>L1 minimization via Basis Pursuit (BP)
 <td>\c basis_pursuit
 <td>none
 <td>Optional
 <td>N/A
 <tr>
-<td>L1 minimization via Basis Purusit DeNoising (BPDN)
+<td>L1 minimization via Basis Pursuit DeNoising (BPDN)
 <td>\c basis_pursuit_denoising
 <td>none
 <td>Optional
