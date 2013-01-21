@@ -1,4 +1,6 @@
 
+# timeout overrides: 4=TD300
+
 strategy,
 	single_method #graphics
 #	output_precision = 16
