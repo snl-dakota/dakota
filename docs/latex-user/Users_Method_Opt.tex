@@ -1,26 +1,164 @@
 \chapter{Optimization Capabilities}\label{opt}
 
-\section{Overview}\label{opt:overview}
+Optimization algorithms work to minimize (or maximize) an objective
+function, typically calculated by the user simulation code, subject to
+constraints on design variables and responses.  Available approaches
+in Dakota include well-tested, proven gradient-based, derivative-free
+local, and global methods, for use in science and engineering design
+applications.  Dakota also offers more advanced algorithm, e.g., to
+manage multi-objective optimization or perform surrogate-based minimization.
+This chapter summarizes optimization problem formulation, standard
+algorithms available in Dakota (mostly through included third-party
+libraries), some advanced capabilities, and offers usage guidelines.
 
-Dakota's optimization capabilities include a variety of gradient-based
-and nongradient-based optimization methods. Numerous packages are
-available, some of which are commercial packages, some of which are
-developed internally to Sandia, and some of which are free software
-packages from the open source community. The downloaded version of
-Dakota excludes the commercially developed packages but includes
-HOPSPACK, SCOLIB (formerly known as COLINY), CONMIN, JEGA, NCSUOpt,
-and OPT++. Interfaces to DOT, NPSOL, and NLPQL are provided with
-Dakota, but to use these commercial optimizers, the user must obtain a
-software license and the source code for these packages
-separately. The commercial software can then be compiled into Dakota
-by following Dakota's installation procedures (see notes in
-\texttt{Dakota/INSTALL}).
+\section{Optimization Formulations}\label{opt:formulations}
+
+This section provides a basic introduction to the mathematical
+formulation of optimization, nonlinear least squares, sensitivity
+analysis, design of experiments, and uncertainty quantification
+problems. The primary goal of this section is to introduce terms
+relating to these topics, and is not intended to be a description of
+theory or numerical algorithms. For further details,
+consult~\cite{Aro89},~\cite{Gil81},~\cite{Haf92},~\cite{Noc99}, and
+~\cite{Van84}.
+
+A general optimization problem is formulated as follows:
+
+\begin{eqnarray}
+  \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
+  & & \mathbf{x} \in \Re^{n}\nonumber\\
+  \hbox{subject to:} & &
+  \mathbf{g}_{L} \leq \mathbf{g(x)} \leq \mathbf{g}_U\nonumber\\
+  & & \mathbf{h(x)}=\mathbf{h}_{t}\label{opt:equation01}\\
+  & & \mathbf{a}_{L} \leq \mathbf{A}_i\mathbf{x} \leq
+  \mathbf{a}_U\nonumber\\
+  & & \mathbf{A}_{e}\mathbf{x}=\mathbf{a}_{t}\nonumber\\
+  & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U\nonumber
+\end{eqnarray}
+
+where vector and matrix terms are marked in bold typeface. In this
+formulation, $\mathbf{x}=[x_{1},x_{2},\ldots,x_{n}]$ is an
+n-dimensional vector of real-valued \emph{design variables} or
+\emph{design parameters}. The n-dimensional vectors, $\mathbf{x}_{L}$
+and $\mathbf{x}_U$, are the lower and upper bounds, respectively, on
+the design parameters. These bounds define the allowable values for
+the elements of $\mathbf{x}$, and the set of all allowable values is
+termed the \emph{design space} or the \emph{parameter space}. A
+\emph{design point} or a \emph{sample point} is a particular set of 
+values within the parameter space.
+
+The optimization goal is to minimize the \emph{objective function},
+$f(\mathbf{x})$, while satisfying the constraints.  Constraints can be
+categorized as either linear or nonlinear and as either inequality or
+equality. The \emph{nonlinear inequality constraints},
+$\mathbf{g(x)}$, are ``2-sided,'' in that they have both lower and
+upper bounds, $\mathbf{g}_L$ and $\mathbf{g}_U$, respectively. The
+\emph{nonlinear equality constraints}, $\mathbf{h(x)}$, have target
+values specified by $\mathbf{h}_{t}$.  The linear inequality
+constraints create a linear system $\mathbf{A}_i\mathbf{x}$, where
+$\mathbf{A}_i$ is the coefficient matrix for the linear system.  These
+constraints are also 2-sided as they have lower and upper bounds,
+$\mathbf{a}_L$ and $\mathbf{a}_U$, respectively. The linear equality
+constraints create a linear system $\mathbf{A}_e\mathbf{x}$, where
+$\mathbf{A}_e$ is the coefficient matrix for the linear system and
+$\mathbf{a}_{t}$ are the target values.  The constraints partition the
+parameter space into feasible and infeasible regions. A design point
+is said to be \emph{feasible} if and only if it satisfies all of the
+constraints. Correspondingly, a design point is said to be
+\emph{infeasible} if it violates one or more of the constraints.
+
+Many different methods exist to solve the optimization problem given
+by Equation~\ref{opt:equation01}, all of which iterate on
+$\mathbf{x}$ in some manner.  That is, an initial value for each
+parameter in $\mathbf{x}$ is chosen, the \emph{response quantities},
+$f(\mathbf{x})$, $\mathbf{g(x)}$, $\mathbf{h(x)}$, are computed, often
+by running a simulation, and some algorithm is applied to generate a
+new $\mathbf{x}$ that will either reduce the objective function,
+reduce the amount of infeasibility, or both.  To facilitate a general
+presentation of these methods, three criteria will be used in the
+following discussion to differentiate them: optimization problem type,
+search goal, and search method.
+
+The {\bf optimization problem type} can be characterized both by
+the types of constraints present in the problem and by the linearity
+or nonlinearity of the objective and constraint functions. For
+constraint categorization, a hierarchy of complexity exists for
+optimization algorithms, ranging from simple bound constraints,
+through linear constraints, to full nonlinear constraints. By the
+nature of this increasing complexity, optimization problem
+categorizations are inclusive of all constraint types up to a
+particular level of complexity. That is, an \emph{unconstrained
+  problem} has no constraints, a \emph{bound-constrained problem} has
+only lower and upper bounds on the design parameters, a
+\emph{linearly-constrained problem} has both linear and bound
+constraints, and a \emph{nonlinearly-constrained problem} may contain
+the full range of nonlinear, linear, and bound constraints. If all of
+the linear and nonlinear constraints are equality constraints, then
+this is referred to as an \emph{equality-constrained problem}, and if
+all of the linear and nonlinear constraints are inequality
+constraints, then this is referred to as an
+\emph{inequality-constrained problem}. Further categorizations can be
+made based on the linearity of the objective and constraint functions.
+A problem where the objective function and all constraints are linear
+is called a \emph{linear programming (LP) problem}. These types of
+problems commonly arise in scheduling, logistics, and resource
+allocation applications. Likewise, a problem where at least some of
+the objective and constraint functions are nonlinear is called a
+\emph{nonlinear programming (NLP) problem}. These NLP problems
+predominate in engineering applications and are the primary focus of
+Dakota.
+
+The {\bf search goal} refers to the ultimate objective of the
+optimization algorithm, i.e., either global or local optimization. In
+\emph{global optimization}, the goal is to find the design point that
+gives the lowest feasible objective function value over the entire
+parameter space. In contrast, in \emph{local optimization}, the goal
+is to find a design point that is lowest relative to a ``nearby''
+region of the parameter space. In almost all cases, global
+optimization will be more computationally expensive than local
+optimization. Thus, the user must choose an optimization algorithm
+with an appropriate search scope that best fits the problem goals and
+the computational budget.
+
+The {\bf search method} refers to the approach taken in the
+optimization algorithm to locate a new design point that has a lower
+objective function or is more feasible than the current design point.
+The search method can be classified as either \emph{gradient-based} or
+\emph{nongradient-based}. In a gradient-based algorithm, gradients of
+the response functions are computed to find the direction of
+improvement.  Gradient-based optimization is the search method that
+underlies many efficient local optimization methods. However, a
+drawback to this approach is that gradients can be computationally
+expensive, inaccurate, or even nonexistent. In such situations,
+nongradient-based search methods may be useful. There are numerous
+approaches to nongradient-based optimization. Some of the more well
+known of these include pattern search methods (nongradient-based local
+techniques) and genetic algorithms (nongradient-based global
+techniques).  Because of the computational cost of running simulation
+models, surrogate-based optimization (SBO) methods are often used to
+reduce the number of actual simulation runs. In SBO, a surrogate or
+approximate model is constructed based on a limited number of
+simulation runs.  The optimization is then performed on the surrogate
+model.  Dakota has an extensive framework for managing a variety of
+local, multipoint, global, and hierarchical surrogates for use in
+optimization.
+
+This overview of optimization approaches underscores that no single
+optimization method or algorithm works best for all types of
+optimization problems. Section~\ref{opt:usage} offers guidelines for
+choosing a Dakota optimization algorithm best matched to your specific
+optimization problem.
+
+TODO: Consider discussing multi-objective here at a high level, then
+the algorithms later?
+
+\section{Optimizing with Dakota}\label{opt:dakota}
 
 Dakota's input commands permit the user to specify two-sided nonlinear
 inequality constraints of the form $g_{L_{i}} \leq g_{i}(\mathbf{x})
 \leq g_{U_{i}}$, as well as nonlinear equality constraints of the form
 $h_{j}(\mathbf{x}) = h_{t_{j}}$ (see also
-Section~\ref{introduction:background:optimization}). Some optimizers
+Section~\ref{opt:formulations}). Some optimizers
 (e.g., NPSOL, OPT++, JEGA) can handle these constraint forms directly,
 whereas other optimizers (e.g., HOPSPACK, DOT, CONMIN) require Dakota
 to perform an internal conversion of all constraints to one-sided
@@ -62,19 +200,35 @@ information on derivative components and active continuous variables.
 
 \section{Optimization Software Packages}\label{opt:software}
 
-\subsection{HOPSPACK Library}\label{opt:software:apps}
+This section summarizes the optimization packages available in Dakota,
+which offers gradient-based local as well as derivative-free
+approaches.  For guidance selecting from the available packages, see
+Section~\ref{opt:usage}.  {\em Note that the DOT, NLPQL, and NPSOL
+  packages are commercially licensed and not included in the open
+  source version of Dakota.  However a user of open source Dakota may
+  obtain a software license and source code for them separately and
+  then compile them into Dakota.}  The remainder of the packages
+discussed here have licenses compatible with Dakota's and are
+distributed in all Dakota releases.
 
-The HOPSPACK library~\cite{Plantenga2009} provides access to
-Asynchronous Parallel Pattern Search (APPS)~\cite{GrKo06}, which is
-available as method \texttt{asynch\_pattern\_search}.  It is an
-asynchronous implementation of generating set search.  APPS can handle
-unconstrained problems as well as those with bound constraints, linear
+\subsection{HOPSPACK}\label{opt:software:hopspack}
+
+\textbf{HOPSPACK}: is a library that enables the implementation of
+hybrid optimization algorithms~\cite{Plantenga2009}.  Currently the
+only method exposed is an asynchronous implementation of generating
+set search known as asynchronous parallel pattern search
+(APPS)~\cite{GrKo06}, available as method
+\texttt{asynch\_pattern\_search}.  APPS can handle unconstrained
+problems as well as those with bound constraints, linear
 constraints~\cite{GrKoLe08}, and general nonlinear
 constraints~\cite{GrKo07}.  APPS is best suited for simulation-based
 problems with less than 100 variables.  It has significant advantages
 over gradient-based methods when the function is noisy and/or
 discontinuous.  APPS and HOPSPACK leverage the cddlib
-software~\cite{Fu05} to handle degeneracy in linear constraints.
+software~\cite{Fu05} to handle degeneracy in linear constraints.  {\em
+  APPS was previously integrated with Dakota via the APPSPACK
+  software, but is now integrated through it's HOPSPACK successor.}
+License: LGPL; web page: \url{https://software.sandia.gov/trac/hopspack}.
 
 An example specification for APPS with nonlinear constraints is:
 \begin{small}
@@ -93,33 +247,38 @@ See the Dakota Reference Manual~\cite{RefMan} for additional detail on
 the APPS commands and sample input specifications in {\tt
 Dakota/test/dakota\_apps.in}.
 
-\subsection{SCOLIB Library}\label{opt:software:coliny}
+\subsection{SCOLIB}\label{opt:software:coliny}
 
-The SCOLIB library~\cite{Har06} contains a variety of
-nongradient-based optimization algorithms. The suite of SCOLIB
-optimizers available in Dakota currently include the following:
+\textbf{SCOLIB}: The SCOLIB (formerly COLINY) library~\cite{Har06}
+includes methods for derivative-free local and global optimization
+which utilize the Common Optimization Library INterface (COLIN) of
+ACRO (A Common Repository for Optimizers).  License: BSD; web page:
+\url{http://software.sandia.gov/trac/acro}.
 
+SCOLIB optimizers currently available in Dakota include:
 \begin{itemize}
 
 \item {\bf Global Optimization Methods}
-\begin{itemize}
-\item Several evolutionary algorithms, including genetic algorithms
-      (\texttt{coliny\_ea})
-\item DIRECT~\cite{Per93} (\texttt{coliny\_direct})
-\end{itemize}
+  \begin{itemize}
+  \item Several evolutionary algorithms, including genetic algorithms
+    (\texttt{coliny\_ea})
+  \item DIRECT~\cite{Per93} (\texttt{coliny\_direct})
+  \end{itemize}
 
 \item {\bf Local Optimization Methods}
-\begin{itemize}
-\item Solis-Wets (\texttt{coliny\_solis\_wets})
-\item Pattern Search (\texttt{coliny\_pattern\_search})
-\end{itemize}
+  \begin{itemize}
+  \item Solis-Wets (\texttt{coliny\_solis\_wets})
+  \item Pattern Search (\texttt{coliny\_pattern\_search})
+  \end{itemize}
 
 \item {\bf Interfaces to Third-Party Local Optimization Methods}
-\begin{itemize}
-\item COBYLA2 (\texttt{coliny\_cobyla})
-\end{itemize}
+  \begin{itemize}
+  \item COBYLA2 (\texttt{coliny\_cobyla})
+  \end{itemize}
 
 \end{itemize}
+In addition, SCOLIB has capabilities for evolutionary pattern search
+and Monte Carlo sampling, which are not available through Dakota.
 
 For expensive optimization problems, SCOLIB's global optimizers are
 best suited for identifying promising regions in the global design
@@ -160,18 +319,18 @@ on the SCOLIB options and settings and examples are shown in
 Section~\ref{additional:rosenbrock:examples:nongradient1} (pattern search) and
 Section~\ref{additional:rosenbrock:examples:nongradient2} (evolutionary algorithm).
 
-\subsection{Constrained Minimization (CONMIN) Library}\label{opt:software:conmin}
+\subsection{Constrained Minimization (CONMIN)}\label{opt:software:conmin}
 
-The CONMIN library~\cite{Van78} contains two methods for gradient-based
-nonlinear optimization. For constrained optimization, the Method of
-Feasible Directions (Dakota's \texttt{conmin\_mfd} method selection)
-is available, while for unconstrained optimization, the
-Fletcher-Reeves conjugate gradient method (Dakota's
-\texttt{conmin\_frcg} method selection) is available. Both of these
-methods are most efficient at finding a local minimum in the vicinity
-of the starting point. The methods in CONMIN can be applied to global
-optimization problems, but there is no guarantee that they will find
-the globally optimal design point.
+CONMIN~\cite{Van78} contains two methods for gradient-based nonlinear
+optimization. For constrained optimization, the Method of Feasible
+Directions (Dakota's \texttt{conmin\_mfd} method selection) is
+available, while for unconstrained optimization, the Fletcher-Reeves
+conjugate gradient method (Dakota's \texttt{conmin\_frcg} method
+selection) is available. Both of these methods are most efficient at
+finding a local minimum in the vicinity of the starting point. The
+methods in CONMIN can be applied to global optimization problems, but
+there is no guarantee that they will find the globally optimal design
+point.  License: Public Domain (NASA).
 
 \emph{One observed drawback to CONMIN's Method of Feasible Directions
 is that it does a poor job handling equality constraints}. This is the
@@ -198,17 +357,23 @@ Refer to the Dakota Reference Manual~\cite{RefMan} for more information on
 the settings that can be used with CONMIN methods. An example using this method
 is included in Section~\ref{additional:textbook:examples:gradient2}.
 
-\subsection{Design Optimization Tools (DOT) Library}\label{opt:software:dot}
+\subsection{Design Optimization Tools (DOT)}\label{opt:software:dot}
 
-The DOT library~\cite{Van95} contains nonlinear programming optimizers,
-specifically the Broyden-Fletcher-Goldfarb-Shanno (Dakota's
-\texttt{dot\_bfgs} method selection) and Fletcher-Reeves conjugate
-gradient (Dakota's \texttt{dot\_frcg} method selection) methods for
-unconstrained optimization, and the modified method of feasible
-directions (Dakota's \texttt{dot\_mmfd} method selection), sequential
-linear programming (Dakota's \texttt{dot\_slp} method selection), and
+DOT has methods for gradient-based optimization for constrained and
+unconstrained nonlinear optimization problems ~\cite{Van95}.  For
+unconstrained optimization, Dakota exposes the
+Broyden-Fletcher-Goldfarb-Shanno (Dakota's \texttt{dot\_bfgs} method
+selection) and Fletcher-Reeves conjugate gradient (Dakota's
+\texttt{dot\_frcg} method selection) method.  For constrained
+optimization, we have the modified method of feasible directions
+(Dakota's \texttt{dot\_mmfd} method selection), sequential linear
+programming (Dakota's \texttt{dot\_slp} method selection), and
 sequential quadratic programming (Dakota's \texttt{dot\_sqp} method
-selection) methods for constrained optimization.
+selection).  License: commercial; website: Vanderplaats Research and
+Development, \url{http://www.vrand.com}.  {\em Sandia National
+  Laboratories and Los Alamos National Laboratory have limited seats
+  for DOT. Other users may obtain their own copy of DOT and compile it
+  with the Dakota source code.}
 
 All DOT methods are local gradient-based optimizers which are best
 suited for efficient navigation to a local minimum in the vicinity of
@@ -246,8 +411,7 @@ results may not be reliable.}
 
 See the Dakota
 Reference Manual~\cite{RefMan} for additional detail on the DOT
-commands. More information on DOT can be obtained by contacting
-Vanderplaats Research and Development at \url{http://www.vrand.com}.
+commands. 
 
 \subsection{dl\_solver --- Solvers via Shared Libraries}\label{opt:software:dlsolver}
 
@@ -276,23 +440,41 @@ which would turn on some diagnostic printing in the SNOPT example.
 
 \subsection{JEGA}\label{opt:software:jega}
 
+% BMA: Text to consider integrating with below
+
+% The MOGA package allows for the formulation of multiobjective
+% optimization problems without the need to specify weights on the
+% various objective function values. The MOGA method directly identifies
+% non-dominated design points that lie on the Pareto front through
+% tailoring of its genetic search operators.  The advantage of the MOGA
+% method versus conventional multiobjective optimization with weight
+% factors, is that MOGA finds points along the entire Pareto front
+% whereas the multiobjective optimization method produces only a single
+% point on the Pareto front. The advantage of the MOGA method versus the
+% Pareto-set optimization strategy is that MOGA is better able to find
+% points on the Pareto front when the Pareto front is
+% nonconvex. However, the use of a GA search method in MOGA causes the
+% MOGA method to be much more computationally expensive than
+% conventional multiobjective optimization using weight factors.
+
 The JEGA (John Eddy's Genetic Algorithms) library contains two global
 optimization methods. The first is a Multi-objective Genetic Algorithm
 (MOGA) which performs Pareto optimization. The second is a
-Single-objective Genetic Algorithm (SOGA) which performs optimization
-on a single objective function.  These functions are accessed as
-(\texttt{moga} and \texttt{soga}) within Dakota.
+Single-objective Genetic Algorithm (SOGA, Dakota method \texttt{soga})
+which performs optimization on a single objective function, using many
+of the same software features as MOGA .  License: LGPL.
 
-The \texttt{moga} algorithm directly creates a population of Pareto
-optimal solutions.  Over time, the selection operators of a genetic
-algorithm act to efficiently select non-dominated solutions along the
-Pareto front.  Because a GA involves a population of solutions, many
-points along the Pareto front can be computed in a single study. Thus,
-although GAs are computationally expensive when compared to
-gradient-based methods, the advantage in the multiobjective setting is
-that one can obtain an entire Pareto set at the end of one genetic
-algorithm run, as compared with having to run the ``weighted sum''
-single objective problem multiple times with different weights.
+The Dakota \texttt{moga} algorithm directly creates a population of
+Pareto optimal solutions.  Over time, the selection operators of a
+genetic algorithm act to efficiently select non-dominated solutions
+along the Pareto front.  Because a GA involves a population of
+solutions, many points along the Pareto front can be computed in a
+single study. Thus, although GAs are computationally expensive when
+compared to gradient-based methods, the advantage in the
+multiobjective setting is that one can obtain an entire Pareto set at
+the end of one genetic algorithm run, as compared with having to run
+the ``weighted sum'' single objective problem multiple times with
+different weights (Section~\ref{opt:additional:multiobjective}).
 
 The Dakota Reference Manual~\cite{RefMan} contains additional
 information on the JEGA options and settings.
@@ -301,6 +483,13 @@ optimization capabilities, and there are MOGA examples in
 Chapters~\ref{tutorial} and~\ref{additional}.
 
 %\subsection{MOOCHO Library}\label{opt:software:moocho}
+
+%\textbf{MOOCHO (Multifunctional Object-Oriented arCHitecture for
+%Optimization)}: formerly known as rSQP++, MOOCHO provides both
+%general-purpose gradient-based algorithms for nested analysis and
+%design (NAND) and large-scale gradient-based optimization algorithms
+%for simultaneous analysis and design (SAND). This software is not yet
+%distributed with Dakota.
 
 %The MOOCHO (Multifunctional Object-Oriented arCHitecture for
 %Optimization) library, formerly known as rSQP++, is a new addition to
@@ -314,15 +503,17 @@ Chapters~\ref{tutorial} and~\ref{additional}.
 
 \subsection{NCSU DIRECT}\label{opt:software:ncsu}
 
-We have an implementation of the global optimization method called
-DIRECT (DIviding RECTangles algorithm) that is detailed in
-~\cite{Gab01}. DIRECT is a derivative free global optimization method
-that balances local search in promising regions of the design space
-with global search in unexplored regions.  DIRECT adaptively
-subdivides the space of feasible design points to guarantee that
-iterates are generated in the neighborhood of a global minimum in
+Dakota includes an NCSU implementation of the derivative-free global
+optimization method called DIRECT (DIviding RECTangles algorithm),
+detailed in~\cite{Gab01}. DIRECT is a derivative free global
+optimization method that balances local search in promising regions of
+the design space with global search in unexplored regions.  DIRECT
+adaptively subdivides the space of feasible design points to guarantee
+that iterates are generated in the neighborhood of a global minimum in
 finitely many iterations.  In practice, DIRECT has proven an effective
-heuristic for many applications.
+heuristic for many applications, and for some problems, the NCSU
+implementation has outperformed the SCOLIB version.  License: MIT;
+website: \url{http://www4.ncsu.edu/~ctk/matlab_darts.html}
 
 NCSU DIRECT is specified with \texttt{ncsu\_direct}. One of the
 controls is \texttt{volume\_boxsize\_limit}, which terminates the
@@ -342,9 +533,10 @@ An example specification is given below:
 The Dakota Reference Manual~\cite{RefMan} contains additional
 information on the NCSU DIRECT options and settings.
 
-\subsection{NLPQL Library}\label{opt:software:nlpql}
+\subsection{NLPQL}\label{opt:software:nlpql}
 
-The NLPQL library contains a sequential quadratic programming (SQP)
+The NLPQL library for gradient-based constrained and unconstrained
+optimization contains a sequential quadratic programming (SQP)
 implementation (Dakota's \texttt{nlpql\_sqp} method selection).  The
 particular implementation used is NLPQLP~\cite{Sch04}, a variant with
 distributed and non-monotone line search.  SQP is a nonlinear
@@ -357,7 +549,11 @@ infeasible method in that constraints will be satisfied at the final
 solution, but not necessarily during the solution process.  The
 non-monotone line search used in NLPQLP is designed to be more robust
 in the presence of inaccurate or noisy gradients common in many
-engineering applications.
+engineering applications.  License: commercial; website: Prof. Klaus
+Schittkowski,
+\url{http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp20.htm}).
+\emph{Users may obtain their own copy of NLPQLP and compile it with
+  the Dakota source code.}
 
 NLPQL's gradient-based approach is best suited for efficient
 navigation to a local minimum in the vicinity of the initial point.
@@ -366,21 +562,26 @@ based optimizers for constrained optimization include the DOT, CONMIN,
 NPSOL, and OPT++ libraries.
 
 See the Dakota Reference Manual~\cite{RefMan} for additional detail on
-the NLPQL commands. More information on NLPQL can be obtained from
-Prof. Klaus Schittkowski at
-\url{http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp20.htm}.
+the NLPQL commands. 
 
-\subsection{NPSOL Library}\label{opt:software:npsol}
+\subsection{NPSOL}\label{opt:software:npsol}
 
-The NPSOL library~\cite{Gil86} contains a sequential quadratic
-programming (SQP) implementation (Dakota's \texttt{npsol\_sqp} method
-selection).  Like NLPQL, it solves a series of QP subproblems, uses an
-augmented Lagrangian merit function and a BFGS approximation to the
-Hessian of the Lagrangian, and will not necessarily satisfy the
-constraints until the final solution.  It uses a sufficient-decrease
-line search approach, which is a gradient-based line search for
-analytic, mixed, or Dakota-supplied numerical gradients and is a
-value-based line search in the vendor numerical case.
+The NPSOL library~\cite{Gil86} for gradient-based constrained and
+unconstrained optimization problems also contains a sequential
+quadratic programming (SQP) implementation (Dakota's
+\texttt{npsol\_sqp} method selection).  Like NLPQL, it solves a series
+of QP subproblems, uses an augmented Lagrangian merit function and a
+BFGS approximation to the Hessian of the Lagrangian, and will not
+necessarily satisfy the constraints until the final solution.  It uses
+a sufficient-decrease line search approach, which is a gradient-based
+line search for analytic, mixed, or Dakota-supplied numerical
+gradients and is a value-based line search in the vendor numerical
+case.  License: commercial; website: Stanford Business Software
+\url{http://www.sbsi-sol-optimize.com}.  {\em Sandia National
+  Laboratories, Lawrence Livermore National Laboratory, and Los Alamos
+  National Laboratory all have site licenses for NPSOL. Other users
+  may obtain their own copy of NPSOL and compile it with the Dakota
+  source code.}
 
 NPSOL's gradient-based approach is best suited for efficient
 navigation to a local minimum in the vicinity of the initial point.
@@ -401,8 +602,7 @@ An example of an NPSOL specification is:
 \end{small}
 
 See the Dakota Reference Manual~\cite{RefMan} for additional detail on the
-NPSOL commands. More information on NPSOL can be obtained by
-contacting Stanford Business Software at \url{http://www.sbsi-sol-optimize.com}.
+NPSOL commands. 
 
 The NPSOL library generates diagnostics in addition to those appearing
 in the Dakota output stream. These diagnostics are written to the
@@ -411,16 +611,19 @@ depending on the architecture) in the working directory.
 
 \subsection{OPT++ Library}\label{opt:software:optpp}
 
-The OPT++ library~\cite{MeOlHoWi07} contains primarily nonlinear programming
-optimizers for unconstrained, bound constrained, and nonlinearly
-constrained minimization: Polak-Ribiere conjugate gradient (Dakota's
-\texttt{optpp\_cg} method selection), quasi-Newton (Dakota's
-\texttt{optpp\_q\_newton} method selection), finite difference Newton
-(Dakota's \texttt{optpp\_fd\_newton} method selection), and full
-Newton (Dakota's \texttt{optpp\_newton} method selection). The library
-also contains the parallel direct search nongradient-based
+The OPT++ library~\cite{MeOlHoWi07} contains primarily gradient-based
+nonlinear programming optimizers for unconstrained, bound constrained,
+and nonlinearly constrained minimization.  OPT++ contains a nonlinear
+interior point algorithm for handling general constraints.  Dakota
+includes Polak-Ribiere conjugate gradient (Dakota's \texttt{optpp\_cg}
+method selection), quasi-Newton (Dakota's \texttt{optpp\_q\_newton}
+method selection), finite difference Newton (Dakota's
+\texttt{optpp\_fd\_newton} method selection), and full Newton
+(Dakota's \texttt{optpp\_newton} method selection). The library also
+contains the parallel direct search nongradient-based
 method~\cite{Den94b} (specified as Dakota's \texttt{optpp\_pds} method
-selection).
+selection).  License: LGPL; website:
+\url{http://csmr.ca.sandia.gov/opt++}.
 
 OPT++'s gradient-based optimizers are best suited for efficient
 navigation to a local minimum in the vicinity of the initial point.
@@ -456,6 +659,17 @@ The OPT++ library generates diagnostics in addition to those appearing
 in the Dakota output stream. These diagnostics are written to the file
 \texttt{OPT\_DEFAULT.out} in the working directory.
 
+%\textbf{PICO (Parallel Integer Combinatorial Optimization)}: PICO's
+%branch-and-bound algorithm can be applied to nonlinear optimization
+%problems involving discrete variables or a combination of continuous
+%and discrete variables~\cite{Eck01}. The discrete variables must be
+%noncategorical (see Section~\ref{variables:design:ddv}).  PICO is
+%available to the public under the GNU LGPL (web page:
+%\url{http://software.sandia.gov/trac/acro/wiki/Packages}) and the
+%source code is included with Dakota as part of the Acro package.
+%\emph{Notes: (1) PICO's linear programming solvers are not included
+%  with Dakota, (2) PICO is not currently active in Dakota.}
+
 %\subsection{Parallel Integer Combinatorial Optimization (PICO)}\label{opt:software:pico}
 
 %\emph{Branch and bound is inoperative in Dakota since its
@@ -472,17 +686,95 @@ in the Dakota output stream. These diagnostics are written to the file
 
 Dakota provides several capabilities which extend the services
 provided by the optimization software packages described in
-Section~\ref{opt:software}. First, any of the optimization algorithms
-can be used for multiobjective optimization problems through the use
-of multiobjective transformation techniques (e.g., weighted sums). 
-%Second, large-scale optimization algorithms (e.g., MOOCHO) can be
-%used for simultaneous analysis and design through the use of a
-%fully-intrusive interface to internal simulation residual vectors 
-%and Jacobian matrices.  
-Finally, with any optimizer (or least squares solver described in
-Section~\ref{nls:solution}), user-specified (and in some cases
-automatic or logarithmic) scaling may be applied to continuous design
-variables, objective functions (or least squares terms), and constraints.
+Section~\ref{opt:software}. Those described in this section include:
+\begin{itemize}
+\item {\bf Multiobjective optimization}: There are three capabilities
+  for multiobjective optimization in Dakota.  The first is MOGA,
+  described above in Section~\ref{opt:software:jega}.  The second is
+  the Pareto-set strategy, described in Chapter~\ref{strat}.  The
+  third is a weighting factor approach for multiobjective reduction,
+  in which a composite objective function is constructed from a set of
+  individual objective functions using a user-specified set of
+  weighting factors.  These latter two approaches work with any of the
+  above single objective algorithms.  Future multiobjective response
+  data transformations for goal programming, normal boundary
+  intersection, etc. are planned.
+  % \item Second, large-scale optimization algorithms (e.g., MOOCHO)
+  %   can be used for simultaneous analysis and design through the use
+  %   of a fully-intrusive interface to internal simulation residual
+  %   vectors and Jacobian matrices.
+\item {\bf Scaling,} where any optimizer (or least squares solver
+  described in Section~\ref{nls:solution}), can accept user-specified
+  (and in some cases automatic or logarithmic) scaling of continuous
+  design variables, objective functions (or least squares terms), and
+  constraints.  Some optimization algorithms are sensitive to the
+  relative scaling of problem inputs and outputs, and this feature can
+  help.
+\end{itemize}
+The Strategy Chapter~\ref{strat} offers details on the following
+approaches:
+\begin{itemize}
+\item \textbf{Multilevel Hybrid Optimization}: This strategy allows
+  the user to specify a sequence of optimization methods, with the
+  results from one method providing the starting point for the next
+  method in the sequence. An example which is useful in many
+  engineering design problems involves the use of a nongradient-based
+  global optimization method (e.g., genetic algorithm) to identify a
+  promising region of the parameter space, which feeds its results
+  into a gradient-based method (quasi-Newton, SQP, etc.) to perform an
+  efficient local search for the optimum point.
+
+\item \textbf{Multistart Local Optimization}: This strategy uses many
+  local optimization runs (often gradient-based), each of which is
+  started from a different initial point in the parameter space. This
+  is an attractive strategy in situations where multiple local optima
+  are known to exist or may potentially exist in the parameter
+  space. This approach combines the efficiency of local optimization
+  methods with the parameter space coverage of a global stratification
+  technique.
+
+\item \textbf{Pareto-Set Optimization}: The Pareto-set optimization
+  strategy allows the user to specify different sets of weights for
+  the individual objective functions in a multiobjective optimization
+  problem. Dakota executes each of these weighting sets as a separate
+  optimization problem, serially or in parallel, and then outputs the
+  set of optimal designs which define the Pareto set. Pareto set
+  information can be useful in making trade-off decisions in
+  engineering design problems.
+\end{itemize}
+
+% Additional Opt:
+%\textbf{Simultaneous Analysis and Design (SAND)}: In SAND, one
+%converges the optimization process at the same time as converging a
+%nonlinear simulation code. In this approach, the solution of the
+%simulation code (often a system of ordinary or partial differential
+%equations) is posed as a set of equality constraints in the
+%optimization problem and these equality constraints are only satisfied
+%by the optimizer in the limit. This formulation necessitates a close
+%coupling between Dakota and the simulation code so that the internal
+%vectors and matrices from the simulation code (in particular, the
+%residual vector and its state and design Jacobian matrices) are
+%available to the SAND optimizer. This approach has the potential to
+%reduce the cost of optimization significantly since the nonlinear
+%simulation is only converged once, instead of on every function
+%evaluation. The drawback is that this approach requires substantial
+%software modifications to the simulation code; something that can be
+%impractical in some cases and impossible in others. A new SAND
+%capability employing the MOOCHO library is under development that will
+%intrusively couple Dakota with multiphysics simulation frameworks
+%under development at Sandia.
+
+% Additional Strategy
+%\textbf{Mixed Integer Nonlinear Programming (MINLP)}: This strategy
+%uses the branch and bound capabilities of the PICO package to perform
+%optimization on problems that have both discrete and continuous design
+%variables. PICO provides a branch and bound engine targeted at mixed
+%integer linear programs (MILP), which when combined with Dakota's
+%nonlinear optimization methods, results in a MINLP capability. In
+%addition, the multiple NLPs solved within MINLP provide an opportunity
+%for concurrent execution of multiple optimizations.  \emph{Branch and
+%  bound is inoperative in Dakota since its incorporation into COLINY.
+%  This will be supported again in future releases.}
 
 \subsection{Multiobjective Optimization}\label{opt:additional:multiobjective}
 
@@ -835,3 +1127,178 @@ scaled.
 \caption{Sample usage of scaling keywords in Dakota input specification.}
 \label{opt:additional:scaling:figure01}
 \end{figure}
+
+
+\section{Optimization Method Selection}\label{opt:usage}
+
+In selecting an optimization method, important considerations include
+the type of variables in the problem (continuous, discrete, mixed),
+whether a global search is needed or a local search is sufficient, and
+the required constraint support (unconstrained, bound constrained,
+or generally constrained). Less obvious, but equally important,
+considerations include the efficiency of convergence to an optimum
+(i.e., convergence rate) and the robustness of the method in the
+presence of challenging design space features (e.g., nonsmoothness).
+
+Gradient-based optimization methods are highly efficient, with the
+best convergence rates of all of the optimization methods. If analytic
+gradient and Hessian information can be provided by an application
+code, a full Newton method will provide quadratic convergence rates
+near the solution. More commonly, only gradient information is
+available and a quasi-Newton method is chosen in which the Hessian
+information is approximated from an accumulation of gradient data. In
+this case, superlinear convergence rates can be obtained. These
+characteristics make gradient-based optimization methods the methods
+of choice when the problem is smooth, unimodal, and
+well-behaved. However, when the problem exhibits nonsmooth,
+discontinuous, or multimodal behavior, these methods can also be the
+least robust since inaccurate gradients will lead to bad search
+directions, failed line searches, and early termination, and the
+presence of multiple minima will be missed.
+
+Thus, for gradient-based optimization, a critical factor is the
+gradient accuracy. Analytic gradients are ideal, but are often
+unavailable. For many engineering applications, a finite difference
+method will be used by the optimization algorithm to estimate gradient
+values. Dakota allows the user to select the step size for these
+calculations, as well as choose between forward-difference and
+central-difference algorithms. The finite difference step size should
+be selected as small as possible, to allow for local accuracy and
+convergence, but not so small that the steps are ``in the noise.'' 
+This requires an assessment of the local smoothness of the response
+functions using, for example, a parameter study method.  Central
+differencing, in general, will produce more reliable gradients than
+forward differencing, but at roughly twice the expense.
+
+Nongradient-based methods exhibit much slower convergence rates for
+finding an optimum, and as a result, tend to be much more
+computationally demanding than gradient-based methods. Nongradient
+local optimization methods, such as pattern search algorithms, often
+require from several hundred to a thousand or more function
+evaluations, depending on the number of variables, and nongradient
+global optimization methods such as genetic algorithms may require
+from thousands to tens-of-thousands of function evaluations. Clearly,
+for nongradient optimization studies, the computational cost of the
+function evaluation must be relatively small in order to obtain an
+optimal solution in a reasonable amount of time. In addition,
+nonlinear constraint support in nongradient methods is an open area of
+research and, while supported by many nongradient methods in Dakota,
+is not as refined as constraint support in gradient-based
+methods. However, nongradient methods can be more robust and more
+inherently parallel than gradient-based approaches. They can be
+applied in situations were gradient calculations are too expensive or
+unreliable. In addition, some nongradient-based methods can be used
+for global optimization which gradient-based techniques, by
+themselves, cannot. For these reasons, nongradient-based methods
+deserve consideration when the problem may be nonsmooth, multimodal,
+or poorly behaved.
+
+Approaches that seek to improve the effectiveness or efficiency of
+optimizers and least squares methods through the use of surrogate
+models include the surrogate-based local, surrogate-based global, and
+efficient global methods.  Chapter~\ref{sbm} provides further
+information on these approaches.  The surrogate-based local approach
+(see Section~\ref{sbm:sblm}) brings the efficiency of gradient-based
+optimization/least squares methods to nonsmooth or poorly behaved
+problems by smoothing noisy or discontinuous response results with a
+data fit surrogate model (e.g., a quadratic polynomial) and then
+minimizing on the smooth surrogate using efficient gradient-based
+techniques.  The surrogate-based global approach (see
+Section~\ref{sbm:sbgm}) similarly employs optimizers/least squares
+methods with surrogate models, but rather than localizing through the
+use of trust regions, seeks global solutions using global methods.
+And the efficient global approach (see Section~\ref{sbm:egm}) uses the
+specific combination of Gaussian process surrogate models in
+combination with the DIRECT global optimizer.  Similar to these
+surrogate-based approaches, the hybrid and multistart optimization
+strategies seek to bring the efficiency of gradient-based optimization
+methods to global optimization problems.  In the former case, a global
+optimization method can be used for a few cycles to locate promising
+regions and then local gradient-based optimization is used to
+efficiently converge on one or more optima. In the latter case, a
+stratification technique is used to disperse a series of local
+gradient-based optimization runs through parameter space.  Without
+surrogate data smoothing, however, these strategies are best for
+smooth multimodal problems. Section~\ref{strat:hybrid} and
+Section~\ref{strat:multistart} provide more information on these
+approaches.
+
+Table~\ref{usage:guideopt} provides a convenient reference for
+choosing an optimization method or strategy to match the
+characteristics of the user's problem, where blank fields inherit the
+value from above. With respect to constraint support, it should be
+understood that the methods with more advanced constraint support are
+also applicable to the lower constraint support levels; they are
+listed only at their highest level of constraint support for brevity.
+
+\begin{table}
+\centering
+\caption{Guidelines for optimization method selection.}
+\label{usage:guideopt}\vspace{2mm}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Variable} & \textbf{Function} & \textbf{Solution} &
+\textbf{Constraints} & \textbf{Applicable Methods} \\
+\textbf{Type} & \textbf{Surface} & \textbf{Type} & & \\
+
+\hline
+continuous & smooth & local opt & none & optpp\_cg \\
+\hline
+      & & & bounds   & dot\_bfgs, dot\_frcg, conmin\_frcg \\
+\hline
+      & & & general  & npsol\_sqp, nlpql\_sqp, dot\_mmfd, dot\_slp, \\
+      & & &          & dot\_sqp, conmin\_mfd, optpp\_newton, \\
+      & & &          & optpp\_q\_newton, optpp\_fd\_newton \\
+\hline
+      & & local least sq & bounds  & nl2sol \\
+\hline
+      & &                & general & nlssol\_sqp, optpp\_g\_newton \\
+\hline
+      & & local multiobjective & general & weighted sums (one soln), \\
+      & &                      &      & pareto\_set strategy (multiple solns) \\
+%\hline
+%     & & local large- & general & (planned: reduced\_sqp) \\
+%     & & scale opt    &         &                         \\
+\hline
+      & & global opt      & general & hybrid strategy, multi\_start strategy \\
+\hline
+      & & global least sq & general & hybrid strategy, multi\_start strategy \\
+%\hline
+%      & nonsmooth & local opt & none & \\
+\hline
+      & nonsmooth & local opt & bounds & optpp\_pds \\
+\hline
+      & & & general & asynch\_pattern\_search, coliny\_cobyla, \\
+      & & &         & coliny\_pattern\_search, coliny\_solis\_wets \\
+\hline
+      & & local/global opt      & general & surrogate\_based\_local \\
+\hline
+      & & local/global least sq & general & surrogate\_based\_local \\
+\hline
+      & & global opt            & bounds  & ncsu\_direct \\
+\hline
+      & &          & general & coliny\_ea, coliny\_direct, efficient\_global, \\
+      & &          &         & soga, surrogate\_based\_global \\
+\hline
+  & & global least sq & general & efficient\_global, surrogate\_based\_global \\
+\hline
+      & & global multiobjective & general & moga (multiple solns) \\
+\hline
+discrete       & n/a & global opt & general  & soga, coliny\_ea \\
+categorical    &     &            &          & \\
+\hline
+               &     & global multiobjective & general & moga (multiple solns)\\
+\hline
+discrete       & n/a & local opt  & general  & branch\_and\_bound strategy \\
+noncategorical &     &            &          & \\
+\hline
+mixed          & nonsmooth & global opt & general & soga, coliny\_ea\\
+categorical    &           &            &         & \\
+\hline
+               & & global multiobjective & general & moga (multiple solns) \\
+\hline
+mixed          & smooth  & local opt & general & branch\_and\_bound strategy \\
+noncategorical &         &           &         & \\
+\hline
+\end{tabular}
+\end{table}
