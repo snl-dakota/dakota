@@ -2,27 +2,53 @@
 
 \section{Overview}\label{ps:overview}
 
-Parameter study methods in the Dakota toolkit involve the computation
-of response data sets at a selection of points in the parameter space.
-These response data sets are not linked to any specific
-interpretation, so they may consist of any allowable specification
-from the responses keyword block, i.e., objective and constraint
-functions, least squares terms and constraints, or generic response
-functions. This allows the use of parameter studies in direct
-coordination with optimization, least squares, and uncertainty
-quantification studies without significant modification to the input
-file. In addition, response data sets are not restricted to function
-values only; gradients and Hessians of the response functions can also
-be catalogued by the parameter study. This allows for several
-different approaches to ``sensitivity analysis'': (1) the variation of
-function values over parameter ranges provides a global assessment as
-to the sensitivity of the functions to the parameters, (2) derivative
-information can be computed numerically, provided analytically by the
-simulator, or both (mixed gradients) in directly determining local
-sensitivity information at a point in parameter space, and (3) the
-global and local assessments can be combined to investigate the
-variation of derivative quantities through the parameter space by
-computing sensitivity information at multiple points.
+Dakota parameter studies explore the effect of parametric changes
+within simulation models by computing response data sets at a
+selection of points in the parameter space, yielding one type of
+sensitivity analysis. (For a comparison with DACE-based sensitivity
+analysis, see Section~\ref{dace:sa}.) The selection of points is
+deterministic and structured, or user-specified, in each of the four
+available parameter study methods:
+\begin{itemize}
+\item \textbf{Vector}: Performs a parameter study along a line between
+  any two points in an $n$-dimensional parameter space, where the user
+  specifies the number of steps used in the study.
+
+\item \textbf{List}: The user supplies a list of points in an
+  $n$-dimensional space where Dakota will evaluate response data from
+  the simulation code.
+
+\item \textbf{Centered}: Given a point in an $n$-dimensional parameter
+  space, this method evaluates nearby points along the coordinate axes
+  of the parameter space. The user selects the number of steps and the
+  step size.
+
+\item \textbf{Multidimensional}: Forms a regular lattice or hypergrid
+  in an $n$-dimensional parameter space, where the user specifies the
+  number of intervals used for each parameter.
+\end{itemize}
+More detail on these parameter studies is found in
+Sections~\ref{ps:vector} through~\ref{ps:multidimensional} below.
+
+When used in parameter studies, the response data sets are not linked
+to any specific interpretation, so they may consist of any allowable
+specification from the responses keyword block, i.e., objective and
+constraint functions, least squares terms and constraints, or generic
+response functions. This allows the use of parameter studies in
+alternation with optimization, least squares, and uncertainty
+quantification studies with only minor modification to the input
+file. In addition, the response data sets may include gradients and
+Hessians of the response functions, which will be catalogued by the
+parameter study.  This allows for several different approaches to
+``sensitivity analysis'': (1) the variation of function values over
+parameter ranges provides a global assessment as to the sensitivity of
+the functions to the parameters, (2) derivative information can be
+computed numerically, provided analytically by the simulator, or both
+(mixed gradients) in directly determining local sensitivity
+information at a point in parameter space, and (3) the global and
+local assessments can be combined to investigate the variation of
+derivative quantities through the parameter space by computing
+sensitivity information at multiple points.
 
 In addition to sensitivity analysis applications, parameter studies
 can be used for investigating nonsmoothness in simulation response
@@ -47,20 +73,11 @@ responses specification. As described in
 Section~\ref{responses:active}, when gradient and/or Hessian
 information is being catalogued in the parameter study, it is assumed
 that derivative components will be computed with respect to all of the
-\emph{continuous} variables (continuous design, continuous uncertain, 
+\emph{continuous} variables (continuous design, continuous uncertain,
 and continuous state variables) specified, since derivatives with
-respect to discrete variables are assumed to be undefined.
-
-Dakota currently supports four types of parameter studies.  Vector
-parameter studies compute response data sets at selected intervals
-along an $n$-dimensional vector in parameter space.  List parameter
-studies compute response data sets at a list of points in parameter
-space, defined by the user.  A centered parameter study computes
-multiple coordinate-based parameter studies, one per parameter,
-centered about the initial parameter values.  A multidimensional
-parameter study computes response data sets for an $n$-dimensional
-hypergrid of points.  More detail on these parameter studies is found
-in Sections~\ref{ps:vector} through~\ref{ps:multidimensional} below.
+respect to discrete variables are assumed to be undefined.  The
+specification of initial values or bounds is important for parameter
+studies.
 
 \subsection{Initial Values}\label{ps:overview:initial}
 
@@ -304,7 +321,7 @@ negative deltas and two positive deltas) per variable:
 This set of points in parameter space is depicted in Figure~\ref{ps:figure01}.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.75]{images/centered_pstudy}
+  \includegraphics[scale=0.5]{images/centered_pstudy}
   \caption{Example centered parameter study.}
   \label{ps:figure01}
 \end{figure}
@@ -341,7 +358,7 @@ This two-dimensional grid, shown in Figure~\ref{ps:figure02}, would
 result in the following twelve function evaluations:
 \begin{figure}
   \centering
-  \includegraphics[scale=0.75]{images/multi_d_pstudy}
+  \includegraphics[scale=0.5]{images/multi_d_pstudy}
   \caption{Example multidimensional parameter study}
   \label{ps:figure02}
 \end{figure}
@@ -389,3 +406,16 @@ result in the following twelve function evaluations:
 
 The first example shown in this User's Manual is a multi-dimensional
 parameter study. See Section~\ref{tutorial:examples:param_study}.
+
+\section{Usage Guidelines}\label{ps:usage}
+
+Parameter studies, classical design of experiments (DOE),
+design/analysis of computer experiments (DACE), and sampling methods
+share the purpose of exploring the parameter space.  If directed
+studies with a defined structure are desired, then parameter study
+methods are recommended. For example, a quick assessment of the
+smoothness of a response function is best addressed with a vector or
+centered parameter study. Also, performing local sensitivity analysis
+is best addressed with these methods.  For guidance on DACE and
+sampling methods, in contrast to parameter studies,
+see Section~\ref{dace:usage}.

@@ -2,49 +2,79 @@
 
 \section{Overview}\label{dace:overview}
 
-Dakota contains several software packages for sampling and design of
-experiments: LHS (Latin hypercube sampling), DDACE (distributed design
-and analysis for computer experiments), FSUDace (Florida State
-University's Design and Analysis of Computer Experiments package), and
-PSUADE (Problem Solving Environment for Uncertainty Analysis and
-Design Exploration).  LHS~\cite{Swi04} is a general-purpose sampling
+Classical design of experiments (DoE) methods and the more modern
+design and analysis of computer experiments (DACE) methods are both
+techniques which seek to extract as much trend data from a parameter
+space as possible using a limited number of sample points. Classical
+DoE techniques arose from technical disciplines that assumed some
+randomness and nonrepeatability in field experiments (e.g.,
+agricultural yield, experimental chemistry). DoE approaches such as
+central composite design, Box-Behnken design, and full and fractional
+factorial design generally put sample points at the extremes of the
+parameter space, since these designs offer more reliable trend
+extraction in the presence of nonrepeatability. DACE methods are
+distinguished from DoE methods in that the nonrepeatability component
+can be omitted since computer simulations are involved. In these
+cases, space filling designs such as orthogonal array sampling and
+Latin hypercube sampling are more commonly employed in order to
+accurately extract trend information. Quasi-Monte Carlo sampling
+techniques which are constructed to fill the unit hypercube with good
+uniformity of coverage can also be used for DACE.
+
+Dakota supports both DoE and DACE techniques. In common usage, only
+parameter bounds are used in selecting the samples within the
+parameter space. Thus, DoE and DACE can be viewed as special cases of
+the more general probabilistic sampling for uncertainty quantification
+(see following section), in which the DoE/DACE parameters are treated
+as having uniform probability distributions. The DoE/DACE techniques
+are commonly used for investigation of global response trends,
+identification of significant parameters (e.g., main effects), and as
+data generation methods for building response surface approximations.
+
+Dakota includes several approaches sampling and design of experiments,
+all implemented in included third-party software libraries.  LHS
+(Latin hypercube sampling)~\cite{Swi04} is a general-purpose sampling
 package developed at Sandia that has been used by the DOE national
-labs for several decades. DDACE is a more recent package for computer
-experiments that is under development by staff at Sandia
-Labs~\cite{TonXX}. DDACE provides the capability for generating
-orthogonal arrays, Box-Behnken designs, Central Composite designs, and
-random designs.  The FSUDace package provides the following sampling
-techniques: quasi-Monte Carlo sampling based on Halton or Hammersley
-sequences, and Centroidal Voronoi Tessellation.  Lawrence Livermore
-National Lab's PSUADE~\cite{Ton05} includes several methods for model
-exploration, but only the Morris screening method is exposed in Dakota.
+labs for several decades. DDACE (distributed design and analysis for
+computer experiments) is a more recent package for computer
+experiments developed at Sandia Labs~\cite{TonXX}. DDACE provides the
+capability for generating orthogonal arrays, Box-Behnken designs,
+Central Composite designs, and random designs.  The FSUDace (Florida
+State University's Design and Analysis of Computer Experiments)
+package provides the following sampling techniques: quasi-Monte Carlo
+sampling based on Halton or Hammersley sequences, and Centroidal
+Voronoi Tessellation.  Lawrence Livermore National Lab's PSUADE
+(Problem Solving Environment for Uncertainty Analysis and Design
+Exploration)~\cite{Ton05} includes several methods for model
+exploration, but only the Morris screening method is exposed in
+Dakota.
 
-This chapter describes DDACE, FSUDace, and PSUADE, with the primary
-goal of designing computer experiments. Latin Hypercube Sampling, also
-used in uncertainty quantification, is discussed in
-Section~\ref{uq:sampling}.  The differences between sampling used in
-design of experiments and sampling used in uncertainty quantification
-is discussed in more detail in the following paragraphs. In brief, we
-consider design of experiment methods to generate sets of uniform
-random variables on the interval $[0,1]$. These sets are mapped to the
-lower/upper bounds of the problem variables and then the response
-functions are evaluated at the sample input points with the goal of
-characterizing the behavior of the response functions over the input
-parameter ranges of interest. Uncertainty quantification via LHS
-sampling, in contrast, involves characterizing the uncertain input
-variables with probability distributions such as normal, Weibull,
-triangular, etc., sampling from the input distributions, and
-propagating the input uncertainties to obtain a cumulative
-distribution function on the output. There is significant overlap
-between design of experiments and sampling. Often, both techniques can
-be used to obtain similar results about the behavior of the response
-functions and about the relative importance of the input variables.
-
+This chapter describes DDACE, FSUDace, and PSUADE, with a focus on
+designing computer experiments. Latin Hypercube Sampling, also used in
+uncertainty quantification, is discussed in Section~\ref{uq:sampling}.
+The differences between sampling used in design of experiments and
+sampling used in uncertainty quantification is discussed in more
+detail in the following paragraphs. In brief, we consider design of
+experiment methods to generate sets of uniform random variables on the
+interval $[0,1]$. These sets are mapped to the lower/upper bounds of
+the problem variables and then the response functions are evaluated at
+the sample input points with the goal of characterizing the behavior
+of the response functions over the input parameter ranges of
+interest. Uncertainty quantification via LHS sampling, in contrast,
+involves characterizing the uncertain input variables with probability
+distributions such as normal, Weibull, triangular, etc., sampling from
+the input distributions, and propagating the input uncertainties to
+obtain a cumulative distribution function on the output. There is
+significant overlap between design of experiments and sampling. Often,
+both techniques can be used to obtain similar results about the
+behavior of the response functions and about the relative importance
+of the input variables.
 
 \section{Design of Computer Experiments}\label{dace:background}
 
-Computer experiments are often different from physical experiments,
-such as those performed in agriculture, manufacturing, or biology.  In
+What distinguishes design of {\em computer} experiments?  Computer
+experiments are often different from physical experiments, such as
+those performed in agriculture, manufacturing, or biology.  In
 physical experiments, one often applies the same \emph{treatment} or
 \emph{factor level} in an experiment several times to get an
 understanding of the variability of the output when that treatment is
@@ -147,18 +177,27 @@ between UQ and DACE is somewhat arbitrary: both approaches often can
 yield insight about important parameters and both can determine sample
 points for response surface approximations.
 
-\section{DDACE Background}\label{dace:ddace}
+Three DACE packages are included with Dakota.
 
-The DACE package includes both classical design of experiments
+Three software packages are available in Dakota for design of computer
+experiments, DDACE (developed at Sandia Labs), FSUDACE (developed at
+Florida State University), and PSUADE (LLNL).
+
+\section{DDACE}\label{dace:ddace}
+
+The Distributed Design and Analysis of Computer Experiments (DDACE)
+package includes both classical design of experiments
 methods~\cite{TonXX} and stochastic sampling methods. The classical
 design of experiments methods in DDACE are central composite design
-(CCD) and Box-Behnken (BB) sampling. A grid-based sampling method also
-is available. The stochastic methods are orthogonal array
-sampling~\cite{Koe96}, Monte Carlo (random) sampling, and Latin
-hypercube sampling.  Note that the DDACE version of LHS available through the
-Dakota interface only supports uniform distributions.  DDACE does not
-currently support enforcement of user-specified correlation structure
-among the variables.
+(CCD) and Box-Behnken (BB) sampling. A grid-based sampling
+(full-factorial) method is also available. The stochastic methods are
+orthogonal array sampling~\cite{Koe96} (which permits main effects
+calculations), Monte Carlo (random) sampling, Latin hypercube
+sampling, and orthogonal array-Latin hypercube sampling.  While DDACE
+LHS supports variables with normal or uniform distributions, only
+uniform are supported through Dakota.  Also DDACE does not allow
+enforcement of user-specified correlation structure among the
+variables.
 
 The sampling methods in DDACE can be used alone or in conjunction with
 other methods. For example, DDACE sampling can be used with both the
@@ -382,28 +421,31 @@ method command \texttt{dace oa\_lhs}.  This design has the advantages
 of both orthogonality of the inputs as well as stratification of the
 samples (see~\cite{Owe92}).
 
-\section{FSUDace Background}\label{dace:fsudace}
+\section{FSUDace}\label{dace:fsudace}
 
-The FSUDace package includes quasi-Monte Carlo sampling methods
-(Halton and Hammersley sequences) and Centroidal Voronoi Tesselation
-sampling.  All three methods generate sets of uniform random variables
-on the interval $[0,1]$.  The quasi-Monte Carlo and CVT methods are
-designed with the goal of low discrepancy. Discrepancy refers to the
-nonuniformity of the sample points within the unit hypercube. Low
-discrepancy sequences tend to cover the unit hypercube reasonably
-uniformly. Quasi-Monte Carlo methods produce low discrepancy
-sequences, especially if one is interested in the uniformity of
-projections of the point sets onto lower dimensional faces of the
-hypercube (usually 1-D: how well do the marginal distributions
-approximate a uniform?) CVT does very well volumetrically: it spaces
-the points fairly equally throughout the space, so that the points
-cover the region and are isotropically distributed with no directional
-bias in the point placement. There are various measures of volumetric
-uniformity which take into account the distances between pairs of
-points, regularity measures, etc. Note that CVT does not produce
-low-discrepancy sequences in lower dimensions, however: the
-lower-dimension (such as 1-D) projections of CVT can have high
-discrepancy.
+The Florida State University Design and Analysis of Computer
+Experiments (FSUDace) package provides quasi-Monte Carlo sampling
+(Halton and Hammersley) and Centroidal Voronoi Tessellation (CVT)
+methods.  All three methods natively generate sets of uniform random
+variables on the interval $[0,1]$ (or in Dakota, on user-specified
+uniform intervals).
+
+The quasi-Monte Carlo and CVT methods are designed with the goal of
+low discrepancy. Discrepancy refers to the nonuniformity of the sample
+points within the unit hypercube. Low discrepancy sequences tend to
+cover the unit hypercube reasonably uniformly. Quasi-Monte Carlo
+methods produce low discrepancy sequences, especially if one is
+interested in the uniformity of projections of the point sets onto
+lower dimensional faces of the hypercube (usually 1-D: how well do the
+marginal distributions approximate a uniform?) CVT does very well
+volumetrically: it spaces the points fairly equally throughout the
+space, so that the points cover the region and are isotropically
+distributed with no directional bias in the point placement. There are
+various measures of volumetric uniformity which take into account the
+distances between pairs of points, regularity measures, etc. Note that
+CVT does not produce low-discrepancy sequences in lower dimensions,
+however: the lower-dimension (such as 1-D) projections of CVT can have
+high discrepancy.
 
 The quasi-Monte Carlo sequences of Halton and Hammersley are
 deterministic sequences determined by a set of prime bases.
@@ -424,13 +466,19 @@ The methods in FSUDace are useful for design of experiments because
 they provide good coverage of the input space, thus allowing global 
 sensitivity analysis.  
 
-\section{PSUADE MOAT Background}\label{dace:psuade}
+\section{PSUADE MOAT}\label{dace:psuade}
 
-This section describes the Morris One-At-A-Time (MOAT) screening
-method as implemented in LLNL's PSUADE (Problem Solving Environment
-for Uncertainty Analysis and Design Exploration)~\cite{Ton05}.  Dakota
-includes a prototype interface to this DACE method, which is useful
-for global sensitivity analysis, including interaction studies. 
+PSUADE (Problem Solving Environment for Uncertainty Analysis and
+Design Exploration) is a Lawrence Livermore National Laboratory tool
+for metamodeling, sensitivity analysis, uncertainty quantification,
+and optimization.  Its features include non-intrusive and parallel
+function evaluations, sampling and analysis methods, an integrated
+design and analysis framework, global optimization, numerical
+integration, response surfaces (MARS and higher order regressions),
+graphical output with Pgplot or Matlab, and fault
+tolerance~\cite{Ton05}. Dakota includes a prototype interface to its
+Morris One-At-A-Time (MOAT) screening method, a valuable tool for
+global sensitivity (including interaction) analysis.
 
 The Morris One-At-A-Time method, originally proposed by
 M.~D. Morris~\cite{Mor91}, is a screening method, designed to explore
@@ -531,7 +579,62 @@ Section~\ref{additional:morris}.}
 \end{figure}
 
 
-\section{Sensitivity Analysis}\label{dace:sensitivity}
+\section{Sensitivity Analysis}\label{dace:sa}
+
+\subsection{Sensitivity Analysis Overview}\label{dace:sa:overview}
+
+In many engineering design applications, sensitivity analysis
+techniques and parameter study methods are useful in identifying which
+of the design parameters have the most influence on the response
+quantities. This information is helpful prior to an optimization study
+as it can be used to remove design parameters that do not strongly
+influence the responses. In addition, these techniques can provide
+assessments as to the behavior of the response functions (smooth or
+nonsmooth, unimodal or multimodal) which can be invaluable in
+algorithm selection for optimization, uncertainty quantification, and
+related methods. In a post-optimization role, sensitivity information
+is useful is determining whether or not the response functions are
+robust with respect to small changes in the optimum design point.
+
+In some instances, the term sensitivity analysis is used in a local
+sense to denote the computation of response derivatives at a point.
+These derivatives are then used in a simple analysis to make design
+decisions. Dakota supports this type of study through numerical
+finite-differencing or retrieval of analytic gradients computed within
+the analysis code. The desired gradient data is specified in the
+responses section of the Dakota input file and the collection of this
+data at a single point is accomplished through a parameter study
+method with no steps. This approach to sensitivity analysis should be
+distinguished from the activity of augmenting analysis codes to
+internally compute derivatives using techniques such as direct or
+adjoint differentiation, automatic differentiation (e.g., ADIFOR), or
+complex step modifications. These sensitivity augmentation activities
+are completely separate from Dakota and are outside the scope of this
+manual. However, once completed, Dakota can utilize these analytic
+gradients to perform optimization, uncertainty quantification, and
+related studies more reliably and efficiently.
+
+In other instances, the term sensitivity analysis is used in a more
+global sense to denote the investigation of variability in the
+response functions. Dakota supports this type of study through
+computation of response data sets (typically function values only, but
+all data sets are supported) at a series of points in the parameter
+space. The series of points is defined using either a vector, list,
+centered, or multidimensional parameter study method. For example, a
+set of closely-spaced points in a vector parameter study could be used
+to assess the smoothness of the response functions in order to select
+a finite difference step size, and a set of more widely-spaced points
+in a centered or multidimensional parameter study could be used to
+determine whether the response function variation is likely to be
+unimodal or multimodal. See Chapter~\ref{ps} for additional
+information on these methods. These more global approaches to
+sensitivity analysis can be used to obtain trend data even in
+situations when gradients are unavailable or unreliable, and they are
+conceptually similar to the design of experiments methods and sampling
+approaches to uncertainty quantification described in the following
+sections.
+
+\subsection{Assessing Sensitivity with DACE}\label{dace:sa:assessing}
 
 Like parameter studies (see Chapter~\ref{ps}), the DACE techniques are
 useful for characterizing the behavior of the response functions of
@@ -663,6 +766,62 @@ are the points equally spaced, do they cover the region, are they
 isotropically distributed, do they have directional bias, etc.? 
 The quality metrics are explained in more detail in the Reference Manual.
 
+\section{DOE Usage Guidelines}\label{dace:usage}
 
+Parameter studies, classical design of experiments (DOE),
+design/analysis of computer experiments (DACE), and sampling methods
+share the purpose of exploring the parameter space.  When a global
+space-filling set of samples is desired, then the DOE, DACE, and
+sampling methods are recommended.  These techniques are useful for
+scatter plot and variance analysis as well as surrogate model
+construction. The distinction between DOE and DACE methods is that the
+former are intended for physical experiments containing an element of
+nonrepeatability (and therefore tend to place samples at the extreme
+parameter vertices), whereas the latter are intended for repeatable
+computer experiments and are more space-filling in nature. The
+distinction between DOE/DACE and sampling is drawn based on the
+distributions of the parameters.  DOE/DACE methods typically assume
+uniform distributions, whereas the sampling approaches in Dakota
+support a broad range of probability distributions. To use
+\texttt{sampling} in a design of experiments mode (as opposed to an
+uncertainty quantification mode), the \texttt{all\_variables} flag
+should be included in the method specification of the Dakota input
+file.
 
+Design of experiments method selection recommendations are summarized
+in Table~\ref{dace:usage:table}.
 
+\begin{table}
+\centering
+\caption{Guidelines for selection of parameter study, DOE, DACE, and
+sampling methods.}
+\label{dace:usage:table}\vspace{2mm}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Applications} & \textbf{Applicable Methods} \\
+\textbf{Classification} & & \\
+\hline
+parameter study & sensitivity analysis,    & centered\_parameter\_study, \\
+                & directed parameter space & list\_parameter\_study, \\
+                & investigations           & multidim\_parameter\_study, \\
+                &                          & vector\_parameter\_study \\
+\hline
+classical design & physical experiments    & dace (box\_behnken, \\
+of experiments   & (parameters are         & central\_composite) \\
+                 & uniformly distributed)  & \\
+                 &                         & \\
+\hline
+design of computer & variance analysis,     & dace (grid, random,
+                                              oas, lhs, oa\_lhs), \\
+experiments        & space filling designs  & fsu\_quasi\_mc (halton, 
+                                              hammersley), \\
+                   & (parameters are        & fsu\_cvt, psuade\_moat \\
+                   & uniformly distributed) & \\
+\hline
+sampling           & space filling designs      & sampling
+                                                  (Monte Carlo or LHS) \\
+                   & (parameters have general   & with all\_variables flag \\
+                   & probability distributions) & \\
+\hline
+\end{tabular}
+\end{table}
