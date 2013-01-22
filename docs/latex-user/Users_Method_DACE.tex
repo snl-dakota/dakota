@@ -52,6 +52,7 @@ Dakota.
 This chapter describes DDACE, FSUDace, and PSUADE, with a focus on
 designing computer experiments. Latin Hypercube Sampling, also used in
 uncertainty quantification, is discussed in Section~\ref{uq:sampling}.
+\begin{comment}
 The differences between sampling used in design of experiments and
 sampling used in uncertainty quantification is discussed in more
 detail in the following paragraphs. In brief, we consider design of
@@ -69,6 +70,7 @@ significant overlap between design of experiments and sampling. Often,
 both techniques can be used to obtain similar results about the
 behavior of the response functions and about the relative importance
 of the input variables.
+\end{comment}
 
 \section{Design of Computer Experiments}\label{dace:background}
 
@@ -106,17 +108,19 @@ dozens of parameters of interest.  Choosing the levels of these parameters
 so that the samples adequately explore the input space is a challenging 
 problem.  There are many experimental designs and sampling methods 
 which address the issue of adequate and representative sample selection. 
-Classical experimental designs which are often used in physical experiments 
-include Central Composite designs and Box-Behnken designs.
+%Classical experimental designs which are often used in physical experiments 
+%include Central Composite designs and Box-Behnken designs.
 
 There are many goals of running a computer experiment: one may want to 
 explore the input domain or the design space and get a better understanding 
 of the range in the outputs for a particular domain.  Another objective is 
 to determine which inputs have the most influence on the output, or how 
 changes in the inputs change the output.  This is usually called 
-\emph{sensitivity analysis}. Another goal is to compare the relative 
-importance of model input uncertainties on the uncertainty in the model 
-outputs, \emph{uncertainty analysis}.  Yet another goal is to use the 
+\emph{sensitivity analysis}. 
+%Another goal is to compare the relative 
+%importance of model input uncertainties on the uncertainty in the model 
+%outputs, \emph{uncertainty analysis}.  
+Another goal is to use the 
 sampled input points and their corresponding output to create a 
 \emph{response surface approximation} for the computer code.  The response 
 surface approximation (e.g., a polynomial regression model, a 
@@ -138,7 +142,7 @@ good solutions (e.g. for problems with multiple local minima).  Under these
 circumstances, a good design of computer experiment framework coupled with 
 response surface approximations can offer great advantages. 
 
-In addition to the sensitivity analysis, uncertainty analysis, and response 
+In addition to the sensitivity analysis and response 
 surface modeling mentioned above, we also may want to do 
 \emph{uncertainty quantification} on a computer model.  
 Uncertainty quantification (UQ) refers to taking a particular set of 
@@ -176,8 +180,6 @@ capability to sample from many distributional types.  The distinction
 between UQ and DACE is somewhat arbitrary: both approaches often can
 yield insight about important parameters and both can determine sample
 points for response surface approximations.
-
-Three DACE packages are included with Dakota.
 
 Three software packages are available in Dakota for design of computer
 experiments, DDACE (developed at Sandia Labs), FSUDACE (developed at

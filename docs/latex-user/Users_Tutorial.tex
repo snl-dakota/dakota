@@ -1,6 +1,11 @@
 \chapter{Dakota Tutorial}\label{tutorial}
 
 \section {Quickstart}\label{tutorial:installation:quickstart}
+This section provides an overview of acquiring and installing Dakota, 
+running a simple example, and looking at the basic output available. 
+More detailed information about installation can be found 
+on the Dakota website and wiki pages ****.
+
 \subsection {Acquiring and Installing Dakota}\label{tutorial:quickstart:installation}
 %Dena:  can you take this section? Also determine where/how we want to 
 %present the installation information
@@ -106,11 +111,15 @@ Getting started with Dakota typically involves the following steps:
 \end{itemize}
 
 \subsection{Running Dakota with simple input file}\label{tutorial:quickstart:running}
-This section is intended for users who are new to Dakota.
+This section is intended for users who are new to Dakota, to demonstrate the basics 
+of running a simple example. 
 
 {\bf First Steps}
 \begin{enumerate}
-  \item Make sure Dakota runs - see Section~\ref{tutorial:installation:quickstart:binary}
+  \item Make sure Dakota runs.  To perform a quick check, one can enter
+ \texttt{dakota -v} to make sure a Dakota executable is present in the directory being 
+run.  This command will print the Dakota version.  For more detailed command line 
+options, see Section~\ref{tutorial:installation:running}.
   \item Create a working directory 
   \item Copy \texttt{rosen\_multidim.in} from the \texttt{Dakota/examples/tutorial/}
  directory to the working directory
@@ -850,8 +859,8 @@ usage: dakota [options and <args>]
         -output <$val> (Redirect Dakota standard output to file $val)
         -error <$val> (Redirect Dakota standard error to file $val)
         -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
-	-no_input_echo (Do not echo Dakota input file)
-	-check (Perform input checks)
+        -no_input_echo (Do not echo Dakota input file)
+        -check (Perform input checks)
         -pre_run [$val] (Perform pre-run (variables generation) phase)
         -run [$val] (Perform run (model evaluation) phase)
         -post_run [$val] (Perform post-run (final results) phase)
