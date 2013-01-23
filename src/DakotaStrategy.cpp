@@ -27,8 +27,8 @@ using namespace std;
 
 namespace Dakota {
 
-extern ProblemDescDB   dummy_db;  // defined in global_defs.cpp
-extern ParallelLibrary dummy_lib; // defined in global_defs.cpp
+extern ProblemDescDB   dummy_db;  // defined in dakota_global_defs.cpp
+extern ParallelLibrary dummy_lib; // defined in dakota_global_defs.cpp
 
 
 /** This constructor is the one which must build the base class data for all

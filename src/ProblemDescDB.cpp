@@ -33,8 +33,8 @@ static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z
 
 namespace Dakota {
 
-extern ParallelLibrary dummy_lib; // defined in global_defs.cpp
-extern ProblemDescDB *Dak_pddb;	  // defined in global_defs.cpp
+extern ParallelLibrary dummy_lib; // defined in dakota_global_defs.cpp
+extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
 
 
 /** This constructor is the one which must build the base class data for all

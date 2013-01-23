@@ -22,7 +22,7 @@
 #include "ProblemDescDB.hpp"
 #include "ResultsManager.hpp"
 
-static const char rcsId[]="@(#) $Id: global_defs.cpp 6716 2010-04-03 18:35:08Z wjbohnh $";
+static const char rcsId[]="@(#) $Id: dakota_global_defs.cpp 6716 2010-04-03 18:35:08Z wjbohnh $";
 
 
 namespace Dakota {

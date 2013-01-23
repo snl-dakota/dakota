@@ -28,11 +28,11 @@ static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z m
 namespace Dakota 
 {
 extern PRPCache data_pairs;
-extern ParallelLibrary dummy_lib;       // defined in global_defs.cpp
-extern ProblemDescDB   dummy_db;        // defined in global_defs.cpp
-extern Graphics        dakota_graphics; // defined in global_defs.cpp
+extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
+extern Graphics        dakota_graphics; // defined in dakota_global_defs.cpp
 
-// These globals defined here rather than in global_defs.cpp in order to minimize
+// These globals defined here rather than in dakota_global_defs.cpp in order to minimize
 // dakota_restart_util object file dependencies
 Interface dummy_interface; ///< dummy Interface object used for mandatory
                            ///< reference initialization or default virtual

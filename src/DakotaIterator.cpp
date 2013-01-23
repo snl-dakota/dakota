@@ -103,7 +103,7 @@ static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02
 namespace Dakota {
 
 extern Graphics dakota_graphics; // defined in ParallelLibrary.cpp
-extern ProblemDescDB dummy_db;    // defined in global_defs.cpp
+extern ProblemDescDB dummy_db;    // defined in dakota_global_defs.cpp
 extern ResultsManager iterator_results_db;
 
 /** This constructor builds the base class data for all inherited

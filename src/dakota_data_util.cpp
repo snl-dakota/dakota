@@ -10,7 +10,7 @@
 //-               be compiled, rather than inlined in data_util.hpp.
 //-
 //- Owner:        Mike Eldred
-//- Version: $Id: data_util.cpp 7024 2010-10-16 01:24:42Z mseldre $
+//- Version: $Id: dakota_data_util.cpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #include "dakota_data_util.hpp"
 

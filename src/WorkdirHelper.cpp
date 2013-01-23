@@ -13,7 +13,7 @@
 #include "WorkdirHelper.hpp"
 #include "dakota_global_defs.hpp"
 #include "dakota_filesystem_utils.hpp" // undesirable dependency for workdir_adjust
-                              // WJB: wd_adjust has a MAJOR dependency on statics in filesystem_utils.cpp
+                              // WJB: wd_adjust has a MAJOR dependency on statics in dakota_filesystem_utils.cpp
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>

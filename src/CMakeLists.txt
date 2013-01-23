@@ -331,7 +331,7 @@ set(Dakota_src DakotaBuildInfo.cpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
-    data_util.cpp tabular_io.cpp global_defs.cpp CommandLineHandler.cpp DakotaGraphics.cpp
+    dakota_data_util.cpp dakota_tabular_io.cpp dakota_global_defs.cpp CommandLineHandler.cpp DakotaGraphics.cpp
     DakotaString.cpp DakotaBinStream.cpp SensAnalysisGlobal.cpp WorkdirHelper.cpp
     ResultsManager.cpp ResultsDBAny.cpp
     )
@@ -355,7 +355,7 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
 ## DB sources.
 set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataStrategy.cpp DataMethod.cpp
     DataModel.cpp DataVariables.cpp DataInterface.cpp DataResponses.cpp 
-    filesystem_utils.cpp)
+    dakota_filesystem_utils.cpp)
 
 ## Model sources.
 set(model_src DakotaModel.cpp SingleModel.cpp RecastModel.cpp NestedModel.cpp
@@ -809,7 +809,7 @@ if (DAKOTA_HAVE_MPI)
 endif()
 
 if (DAKOTA_DLL_API)
-  add_library(dll_api dll_api.cpp)
+  add_library(dll_api "akota_dll_api.cpp)
   target_link_libraries(dll_api dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
   install(TARGETS dll_api DESTINATION lib)
 endif()
