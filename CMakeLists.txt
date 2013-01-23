@@ -291,6 +291,8 @@ if(ENABLE_DAKOTA_DOCS)
   endif()
 endif()
 
+option(DAKOTA_DLL_API "Enable DAKOTA DLL API." OFF)
+
 add_subdirectory(examples)
 
 # Top-level install rules from source (binary rules are in subdirs)

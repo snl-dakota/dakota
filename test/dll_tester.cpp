@@ -14,6 +14,7 @@
 /** \file dll_tester.cpp
     \brief Test the DLL with a DAKOTA input file */
 
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include "dakota_dll_api.h"

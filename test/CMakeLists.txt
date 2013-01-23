@@ -242,10 +242,13 @@ if(DAKOTA_ENABLE_UNIT_TESTS)
 
   add_executable(container_unit_tests container_unit_tests.cpp)
 
-  # dll_tester needs to include Dakota/src/dll_api.h
-  include_directories(${PROJECT_SOURCE_DIR}/src)
-  add_executable(dll_tester dll_tester.cpp)
+endif()
 
+if(DAKOTA_DLL_API)
+  # dll_tester needs to include Dakota/src/dll_api.h
+  include_directories(${Dakota_SOURCE_DIR}/src)
+  add_executable(dll_tester dll_tester.cpp)
+  target_link_libraries(dll_tester dll_api)
 endif()
 
 # TODO: install to bin/?

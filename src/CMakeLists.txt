@@ -808,6 +808,12 @@ if (DAKOTA_HAVE_MPI)
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
+if (DAKOTA_DLL_API)
+  add_library(dll_api dll_api.cpp)
+  target_link_libraries(dll_api dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+  install(TARGETS dll_api DESTINATION lib)
+endif()
+
 # Install dyanamic deps, omitting standard system libs
 # CMake variables aren't passed to the script, so we have to invoke
 # separate scripts for each platform
