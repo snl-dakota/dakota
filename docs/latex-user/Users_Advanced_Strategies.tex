@@ -24,6 +24,19 @@ approaches will remain.
 
 \section{Hybrid Minimization}\label{strat:hybrid}
 
+BEGIN TEXT TO REVIEW FOR POTENTIAL INCLUSION
+
+A hybrid optimization strategy can also be demonstrated on the
+\texttt{text\_book} problem. The \texttt{dakota\_hybrid.in} file
+provided in {\tt Dakota/examples/methods} starts with a
+\texttt{coliny\_ea} solution which feeds its best point into a
+\texttt{coliny\_pattern\_search} optimization which feeds its best
+point into \texttt{optpp\_newton}. While this approach is overkill for
+such a simple problem, it is useful for demonstrating the coordination
+between multiple methods in the hybrid strategy.
+
+END TEXT TO REVIEW
+
 In the hybrid minimization strategy (keyword: \texttt{hybrid}), a
 sequence of minimization methods are applied to find an optimal design
 point. The goal of this strategy is to exploit the strengths of

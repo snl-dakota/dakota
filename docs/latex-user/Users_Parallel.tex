@@ -28,20 +28,19 @@ level), Dakota can perform them in parallel.
 
 \textbf{Concurrent Execution of Function Evaluations within an Iterator}:
 With very few exceptions, the iterative algorithms described in
-Section~\ref{capabilities:parameter} through
-Section~\ref{capabilities:nonlinear} all provide opportunities for the
+Section~\ref{ps} through
+Section~\ref{nls} all provide opportunities for the
 concurrent evaluation of response data sets for different parameter
 sets. Whenever there exists a set of design point evaluations that are
 independent, Dakota can perform them in parallel.
 
 \textbf{Concurrent Execution of Iterators within a Strategy}: Some of
-the Dakota strategies described in
-Section~\ref{capabilities:optimization2} generate a sequence of
-iterator subproblems. For example, the Pareto-set and
-multi-start strategies generate sets of optimization subproblems, and
-the optimization under uncertainty strategy generates sets of
-uncertainty quantification subproblems. Whenever these subproblems are
-independent, Dakota can perform them in parallel.
+the Dakota strategies described in Section~\ref{opt:additional}
+generate a sequence of iterator subproblems. For example, the
+Pareto-set and multi-start strategies generate sets of optimization
+subproblems, and the optimization under uncertainty strategy generates
+sets of uncertainty quantification subproblems. Whenever these
+subproblems are independent, Dakota can perform them in parallel.
 
 It is important to recognize that these four parallelism levels are
 nested, in that a strategy can schedule and manage concurrent

@@ -106,7 +106,7 @@ Global methods, often referred to as \emph{response surface methods},
 involve many points spread over the parameter ranges of interest.
 These surface fitting methods work in conjunction with the sampling
 methods and design of experiments methods described in
-Section~\ref{capabilities:sampling}.
+Sections~\ref{uq:sampling} and ~\ref{dace:background}.
 
 \textbf{Polynomial Regression}: First-order (linear), second-order
 (quadratic), and third-order (cubic) polynomial response surfaces
@@ -994,86 +994,16 @@ results to define the outer level response set.  These nested data
 results may be combined with non-nested data through use of the 
 ``optional interface'' component within nested models.
 
-Several examples of nested model usage are provided in Chapter~\ref{adv_models}.
-
-\section{Nested Models}\label{capabilities:nested}
-Nested models utilize a sub-iterator and a sub-model to perform a
-complete iterative study as part of every evaluation of the model.
-This sub-iteration accepts variables from the outer level, performs
-the sub-level analysis, and computes a set of sub-level responses
-which are passed back up to the outer level.  The nested model
-constructs admit a wide variety of multi-iterator, multi-model
-solution approaches.  For example, optimization within optimization
-(for hierarchical multidisciplinary optimization), uncertainty
-quantification within uncertainty quantification (for second-order
-probability), uncertainty quantification within optimization (for
-optimization under uncertainty), and optimization within uncertainty
-quantification (for uncertainty of optima) are all supported, with and
-without surrogate model indirection.  Three important examples are
-highlighted: mixed epistemic-aleatory uncertainty quantification, 
-optimization under uncertainty, and surrogate-based uncertainty quantification.
-
-\textbf{Mixed Epistemic-Aleatory Uncertainty Quantification}: Mixed
-uncertainty quantification (UQ) refers to capabilities for performing
-UQ calculations on both epistemic uncertainties (also known as
-reducible uncertainties resulting from a lack of knowledge) and
-aleatory uncertainties (also known as irreducible uncertainties that
-are inherent variabilities).  Mixed UQ approaches employ nested models
-to embed one uncertainty quantification within another.  The outer
-level UQ is commonly linked to epistemic uncertainties, and the inner
-UQ is commonly linked to aleatory uncertainties.  We have three main
-approaches: interval-valued probability, second-order probability, and
-nested Dempster-Shafer.  In interval-valued probability, the outer
-level generates sets of realizations, typically from sampling within
-interval distributions.  These realizations define values for the
-epistemic variables used in a probabilistic analysis for the inner
-level UQ (e.g. which may involve sampling over aleatory variables).
-In interval-valued probability, we generate intervals on statistics
-from the inner loop.  In second-order probability, the outer level
-also generates sets of realizations, from sampling from distributions
-on the epistemic variables.  These outer loop values then define
-values for distribution parameters used in the inner level UQ.  The
-term ``second-order'' derives from this use of distributions on
-distributions and the generation of statistics on statistics.  Dakota
-includes capability to use interval analysis to perform the outer loop
-calculations (e.g. find intervals on inner loop statistics).  Interval
-analysis can use efficient optimization methods to obtain interval
-bound estimates.  Nested Dempster-Shafer refers to using
-Dempster-Shafer evidence theory on the outer loop, and an aleatory UQ
-method such as sampling or stochastic expansions on the inner loop.
-Evidence theory results in measures of belief and plausibility, so in a
-nested context, this produces belief and plausibility bounds on inner
-loop statistics.  More on mixed UQ approaches can be found
-in~\cite{Eld09b} and ~\cite{Eld11}.
-
-\textbf{Optimization Under Uncertainty (OUU)}: Many real-world
-engineering design problems contain stochastic features and must be
-treated using OUU methods such as robust design and reliability-based
-design. For OUU, the uncertainty quantification methods of Dakota are
-combined with optimization algorithms. This allows the user to
-formulate problems where one or more of the objective and constraints
-are stochastic. Due to the computational expense of both optimization
-and UQ, the simple nesting of these methods in OUU can be
-computationally prohibitive for real-world design problems. For this
-reason, surrogate-based optimization under uncertainty (SBOUU),
-reliability-based design optimization (RBDO), polynomial chaos-based
-design optimization (PCBDO), and stochastic collocation-based design
-optimization (SCBDO) methods have been developed which can reduce the
-overall expense by orders of magnitude. OUU methods are an active
-research area.
-
-\textbf{Surrogate-Based Uncertainty Quantification (SBUQ)}: 
-Since many uncertainty quantification (UQ) methods are computationally
-costly, requiring many function evaluations to obtain accurate
-estimates of moments or percentile values of an output distribution,
-one may wish to embed surrogate models within the UQ process in order
-to reduce expense.  By evaluating the true function on a fixed, small
-set of samples and using these sample evaluations to create a response
-surface approximation (e.g. a surrogate model or meta-model) of the
-underlying ``true'' function, the subsequent evaluation of the UQ
-results (using thousands or millions of samples) based on the
-approximation can obtain estimates of the mean, variance, and
-percentiles of the response at much lower overall cost.
-
-Additional information on these nested approaches is provided in
-Section~\ref{models:nested} and Chapter~\ref{adv_models}.
+The nested model constructs admit a wide variety of multi-iterator,
+multi-model solution approaches.  For example, optimization within
+optimization (for hierarchical multidisciplinary optimization),
+uncertainty quantification within uncertainty quantification (for
+second-order probability), uncertainty quantification within
+optimization (for optimization under uncertainty), and optimization
+within uncertainty quantification (for uncertainty of optima) are all
+supported, with and without surrogate model indirection.  Several
+examples of nested model usage are provided in
+Chapter~\ref{adv_models}, most notably mixed epistemic-aleatory UQ in
+Section~\ref{adv_models:mixed_uq}, optimization under uncertainty
+(OUU) in Section~\ref{adv_models:ouu}, and surrogate-based UQ in
+Section~\ref{adv_models:sbuq}.

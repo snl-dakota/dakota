@@ -420,3 +420,73 @@ is best addressed with these methods. A multi-dimensional parameter
 study may be used to generate grid points for plotting response surfaces.
 For guidance on DACE and sampling methods, in contrast to parameter 
 studies, see Section~\ref{dace:usage}.
+ 
+\section{Example: Vector Parameter Study with Rosenbrock}
+
+This section demonstrates vector on the Rosenbrcok test function
+described in Additional Examples.  An example of multidim is in
+tutorial.
+
+In addition to the multidimensional parameter study, Dakota can
+perform a vector parameter study, i.e., a parameter study between any
+two design points in an \emph{n}-dimensional parameter space.
+
+An input file for the vector parameter study is shown in Figure~
+\ref{additional:rosenbrock_vector}. The primary differences
+between this input file and the previous input file are found in the
+\emph{variables} and \emph{method} sections. In the variables section,
+the keywords for the bounds are removed and replaced with the keyword
+\texttt{initial\_point} that specifies the starting point for the
+parameter study. In the method section, the
+\texttt{vector\_parameter\_study} keyword is used. The
+\texttt{final\_point} keyword indicates the stopping point for the
+parameter study, and \texttt{num\_steps} specifies the number of steps
+taken between the initial and final points in the parameter study.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock_vector.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Rosenbrock vector parameter study example: the Dakota input
+  file.}
+  \label{additional:rosenbrock_vector}
+\end{figure}
+
+The vector parameter study example problem is executed using the command
+\begin{small}
+\begin{verbatim}
+    dakota dakota_rosenbrock_vector.in > vector.out
+\end{verbatim}
+\end{small}
+
+Figure~\ref{additional:rosenbrock_vector_graphics}(a) shows the
+graphics output created by Dakota. For this study, the simple Dakota
+graphics are more useful for visualizing the
+results. Figure~\ref{additional:rosenbrock_vector_graphics}(b)
+shows the locations of the 11 sample points generated in this study.
+It is evident from these figures that the parameter study starts
+within the banana-shaped valley, marches up the side of the hill, and
+then returns to the valley. The output file \texttt{vector.out.sav} is
+provided in the \texttt{Dakota/examples/tutorial} directory.
+
+In addition to the vector and multidimensional examples shown, Dakota
+also supports list and centered parameter study methods. Refer to
+Chapter~\ref{ps} for additional information.
+
+\begin{figure}[htp!]
+  \centering
+  \begin{tabular}{c}
+  \includegraphics[width=\textwidth]{images/dak_graphics_vector}\\
+  (a)\\
+  \qquad\\
+  \includegraphics[height=2.5in]{images/rosen_vect_pts} \\
+  (b)
+  \end{tabular}
+  \caption{Rosenbrock vector parameter study example: (a) screen
+    capture of the Dakota graphics and (b) location of the design
+    points (dots) evaluated.}
+  \label{additional:rosenbrock_vector_graphics}
+\end{figure}

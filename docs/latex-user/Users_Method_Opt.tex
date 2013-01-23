@@ -316,8 +316,8 @@ from SCOLIB is:
 
 The Dakota Reference Manual~\cite{RefMan} contains additional information
 on the SCOLIB options and settings and examples are shown in 
-Section~\ref{additional:rosenbrock:examples:nongradient1} (pattern search) and
-Section~\ref{additional:rosenbrock:examples:nongradient2} (evolutionary algorithm).
+Section~\ref{opt:examples:ps} (pattern search) and
+Section~\ref{opt:examples:ea} (evolutionary algorithm).
 
 \subsection{Constrained Minimization (CONMIN)}\label{opt:software:conmin}
 
@@ -1302,3 +1302,237 @@ noncategorical &         &           &         & \\
 \hline
 \end{tabular}
 \end{table}
+
+\section{Additional Examples}\label{opt:examples}
+
+\subsection{Nongradient-based Optimization via Pattern Search}\label{opt:examples:ps}
+
+In addition to gradient-based optimization algorithms, Dakota also
+contains a variety of nongradient-based algorithms. One particular
+nongradient-based algorithm for local optimization is known as pattern
+search (see Chapter~\ref{intro} for a discussion of local
+versus global optimization). The Dakota input file shown in
+Figure~\ref{opt:examples:psfig} applies a pattern
+search method to minimize the Rosenbrock function. While this
+provides for an interesting comparison to the previous example
+problems in this chapter, the Rosenbrock function is not the best test
+case for a pattern search method. That is, pattern search methods are
+better suited to problems where the gradients are too expensive to
+evaluate, inaccurate, or nonexistent --- situations common among many
+engineering optimization problems. It also should be noted that
+nongradient-based algorithms generally are applicable only to
+unconstrained or bound-constrained optimization problems, although the
+inclusion of general linear and nonlinear constraints in
+nongradient-based algorithms is an active area of research in the
+optimization community. For most users who wish to use
+nongradient-based algorithms on constrained optimization problems, the
+easiest route is to create a penalty function, i.e., a composite
+function that contains the objective function and the constraints,
+external to Dakota and then optimize on this penalty function. Most
+optimization textbooks will provide guidance on selecting and using
+penalty functions.
+
+The Dakota input file shown in Figure~\ref{opt:examples:ps} is similar
+to the input file for the gradient-based optimization, except it has a
+different set of keywords in the method block of the input file, and
+the gradient specification in the responses block has been changed to
+\texttt{no\_gradients}. The pattern search optimization algorithm used
+is part of the SCOLIB library~\cite{Har06}. See the Dakota Reference
+Manual~\cite{RefMan} for more information on the \emph{methods} block
+commands that can be used with SCOLIB algorithms.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock_ps_opt.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Rosenbrock pattern search optimization example: the Dakota input file.}
+  \label{opt:examples:psfig}
+\end{figure}
+
+This Dakota input file is executed using the following command:
+\begin{small}
+\begin{verbatim}
+    dakota dakota_rosenbrock_ps_opt.in > ps_opt.out
+\end{verbatim}
+\end{small}
+
+The file \texttt{ps\_opt.out.sav} is included in the
+\texttt{Dakota/examples/tutorial} directory. For this run, the
+optimizer was given an initial design point of $(x_1,x_2)
+  = (0.0,0.0)$ and was limited to 2000 function evaluations. In this
+case, the pattern search algorithm stopped short of the optimum at
+$(x_1,x_2) = (1.0,1,0)$, although it was making progress
+in that direction when it was terminated. (It would have
+reached the minimum point eventually.)
+
+The iteration history is provided in Figures~
+\ref{opt:examples:ps_graphics}(a) and (b), which show
+the locations of the function evaluations used in the pattern search
+algorithm.
+Figure~\ref{opt:examples:ps_graphics}(c)
+provides a close-up view of the pattern search function evaluations
+used at the start of the algorithm. The coordinate pattern is clearly
+visible at the start of the iteration history, and the decreasing size
+of the coordinate pattern is evident at the design points move toward
+$(x_1,x_2) = (1.0,1.0)$.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{tabular}{cc}
+  \multicolumn{2}{c}
+	      {\includegraphics[width=\textwidth]{images/dak_graphics_ps_opt}}\\
+  \multicolumn{2}{c}{(a)}\\
+  \qquad\\
+  \includegraphics[height=2.5in]{images/rosen_ps_opt_pts} &
+  \includegraphics[height=2.5in]{images/rosen_ps_opt_pts2} \\
+  (b) & (c)
+  \end{tabular}
+  \caption{Rosenbrock pattern search optimization example: (a) screen
+    capture of the Dakota graphics, (b) sequence of design points
+    (dots) evaluated and (c) close-up view illustrating the shape of
+    the coordinate pattern used. }
+  \label{opt:examples:ps_graphics}
+\end{figure}
+
+While pattern search algorithms are useful in many optimization
+problems, this example shows some of the drawbacks to this algorithm.
+While a pattern search method may make good initial progress towards
+an optimum, it is often slow to converge. On a smooth, differentiable
+function such as Rosenbrock's function, a nongradient-based method
+will not be as efficient as a gradient-based method. However, there
+are many engineering design applications where gradient information is
+inaccurate or unavailable, which renders gradient-based optimizers
+ineffective. Thus, pattern search algorithms (and other
+nongradient-based algorithms such as genetic algorithms as discussed in the
+next section) are often good choices in complex engineering applications
+when the quality of gradient data is suspect.
+
+\subsection{Nongradient-based Optimization via Evolutionary Algorithm}\label{opt:examples:ea}
+
+In contrast to pattern search algorithms, which are local optimization
+methods, evolutionary algorithms (EA) are global optimization
+methods. As was described above for the pattern search algorithm, the
+Rosenbrock function is not an ideal test problem for showcasing the
+capabilities of evolutionary algorithms. Rather, EAs are best suited
+to optimization problems that have multiple local optima, and where
+gradients are either too expensive to compute or are not readily available.
+
+Evolutionary algorithms are based on Darwin's theory of survival of
+the fittest. The EA algorithm starts with a randomly selected
+population of design points in the parameter space, where the values
+of the design parameters form a ``genetic string,'' analogous
+to DNA in a biological system, that uniquely represents each design
+point in the population. The EA then follows a sequence of
+generations, where the best design points in the population (i.e.,
+those having low objective function values) are considered to be the
+most ``fit'' and are allowed to survive and reproduce. The EA
+simulates the evolutionary process by employing the mathematical
+analogs of processes such as natural selection, breeding, and
+mutation. Ultimately, the EA identifies a design point (or a family of
+design points) that minimizes the objective function of the
+optimization problem. An extensive discussion of EAs is beyond the
+scope of this text, but may be found in a variety of sources (cf.,
+~\cite{Haf92} pp. 149-158;~\cite{Gol89}). Currently, the EAs available
+in Dakota include a genetic algorithm for problems involving discrete
+variables and an evolution strategy with self-adaptation for problems
+with continuous variables. Details of these algorithms are given in
+the Dakota Reference Manual~\cite{RefMan}. The SCOLIB library, which
+provides the EA software that has been linked into Dakota, is
+described in~\cite{Har06}.
+
+\begin{figure}[ht!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock_ea_opt.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Rosenbrock evolutionary algorithm optimization example: the
+  Dakota input file.}
+  \label{opt:examples:rosenbrock_ea}
+\end{figure}
+
+Figure~\ref{opt:examples:rosenbrock_ea} shows a Dakota input file that
+uses an EA to minimize the Rosenbrock function. For this
+example the EA has a population size of 50. At the start of the first
+generation, a random number generator is used to select 50 design
+points that will comprise the initial population. \emph{[A specific
+  seed value is used in this example to generate repeatable results,
+  although, in general, one should use the default setting which
+  allows the EA to choose a random seed.]} A two-point crossover
+technique is used to exchange genetic string values between the
+members of the population during the EA breeding process. The result
+of the breeding process is a population comprised of the 10 best
+``parent'' design points (elitist strategy) plus 40 new ``child''
+design points. The EA optimization process will be terminated after
+either 100 iterations (generations of the EA) or 2,000 function
+evaluations. The EA software available in Dakota provides the user
+with much flexibility in choosing the settings used in the
+optimization process. See~\cite{RefMan} and~\cite{Har06} for details on these
+settings.
+
+The following command runs Dakota on the input file:
+\begin{small}
+\begin{verbatim}
+    dakota dakota_rosenbrock_ea_opt.in > ea_opt.out
+\end{verbatim}
+\end{small}
+
+A corresponding output file named \texttt{ea\_opt.out.sav} appears in
+\texttt{Dakota/examples/tutorial}. The EA optimization results
+printed at the end of this file show that the best design point found
+was $(x_1,x_2) = (0.98,0.95)$. The file
+\texttt{ea\_tabular.dat.sav} provides a listing of the design
+parameter values and objective function values for all 2,000 design
+points evaluated during the running of the EA. Figure~
+\ref{opt:examples:rosenbrock_ea_graphics}(a) shows the population of
+50 randomly selected design points that comprise the first generation
+of the EA, and Figure~\ref{opt:examples:rosenbrock_ea_graphics}(b)
+shows the final population of 50 design points, where most of the 50
+points are clustered near $(x_1,x_2) = (0.98,0.95)$.
+
+\begin{figure}[hbt!]
+  \centering
+  \begin{tabular}{cc}
+  \includegraphics[height=2.5in]{images/rosen_ea_init} &
+  \includegraphics[height=2.5in]{images/rosen_ea_final} \\
+  (a) & (b)
+  \end{tabular}
+  \caption{Rosenbrock evolutionary algorithm optimization example: 50
+    design points in the (a) initial and (b) final populations
+    selected by the evolutionary algorithm. }
+  \label{opt:examples:rosenbrock_ea_graphics}
+\end{figure}
+
+As described above, an EA is not well-suited to an optimization
+problem involving a smooth, differentiable objective such as the
+Rosenbrock function. Rather, EAs are better suited to optimization
+problems where conventional gradient-based optimization fails, such as
+situations where there are multiple local optima and/or gradients are
+not available. In such cases, the computational expense of an EA is
+warranted since other optimization methods are not applicable or
+impractical. In many optimization problems, EAs often quickly identify
+promising regions of the design space where the global minimum may be
+located. However, an EA can be slow to converge to the optimum. For
+this reason, it can be an effective approach to combine the global
+search capabilities of a EA with the efficient local search of a
+gradient-based algorithm in a \emph{hybrid optimization} strategy. In
+this approach, the optimization starts by using a few iterations of a
+EA to provide the initial search for a good region of the parameter
+space (low objective function and/or feasible constraints), and then
+it switches to a gradient-based algorithm (using the best design point
+found by the EA as its starting point) to perform an efficient local
+search for an optimum design point. More information on this hybrid
+approach is provided in Chapter~\ref{strat}.
+
+In addition to the evolutionary algorithm capabilities in the
+\texttt{coliny\_ea} method, there is a single-objective genetic algorithm
+method called \texttt{soga}.
+%The major differences are that
+%\texttt{soga} allows a warm start (e.g., you can read in starting
+%solutions from a file), and it allows one to specify a mix of
+%continuous and discrete design variables.
+For more information on \texttt{soga}, see Chapter~\ref{opt}.
