@@ -520,7 +520,7 @@ assess_reconstruction(bool& recon_tol_met)
 
   // TODO: Relies on normal distribution for now
   const RealVector& nominal_vars = 
-    iteratedModel.distribution_parameters().normal_means();
+    iteratedModel.aleatory_distribution_parameters().normal_means();
 
   // Find vectors orthogonal to each initial perturbation
   // for test problem, nominal is 0.5 for all x
@@ -723,8 +723,8 @@ void EfficientSubspaceMethod::
 uncertain_vars_to_subspace(Model& native_model, 
 			   Model& vars_transform_model)
 {
-  const Pecos::DistributionParams& native_params = 
-    native_model.distribution_parameters();
+  const Pecos::AleatoryDistParams& native_params = 
+    native_model.aleatory_distribution_parameters();
 
   // native space characterization
   const RealVector& mu_x = native_params.normal_means();
@@ -796,8 +796,8 @@ uncertain_vars_to_subspace(Model& native_model,
     sd_xi = std::sqrt(V_xi(i,i));
 
   // update the reduced space model
-  Pecos::DistributionParams& reduced_dist_params = 
-    vars_transform_model.distribution_parameters();
+  Pecos::AleatoryDistParams& reduced_dist_params = 
+    vars_transform_model.aleatory_distribution_parameters();
   
   reduced_dist_params.normal_means(mu_xi); 
   reduced_dist_params.normal_std_deviations(sd_xi); 

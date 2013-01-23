@@ -94,7 +94,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     problem_db.get_isa("variables.discrete_state_set_int.values")),
   discreteStateSetRealValues(
     problem_db.get_rsa("variables.discrete_state_set_real.values")),
-  distParams(problem_db.get_rv("variables.normal_uncertain.means"),
+  aleatDistParams(problem_db.get_rv("variables.normal_uncertain.means"),
     problem_db.get_rv("variables.normal_uncertain.std_deviations"),
     problem_db.get_rv("variables.normal_uncertain.lower_bounds"),
     problem_db.get_rv("variables.normal_uncertain.upper_bounds"),
@@ -137,7 +137,8 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       "variables.hypergeometric_uncertain.selected_population"),
     problem_db.get_iv("variables.hypergeometric_uncertain.num_drawn"),
     problem_db.get_rva("variables.histogram_uncertain.point_pairs"),
-    problem_db.get_rsm("variables.uncertain.correlation_matrix"),
+    problem_db.get_rsm("variables.uncertain.correlation_matrix")),
+  epistDistParams(
     problem_db.get_rva("variables.continuous_interval_uncertain.basic_probs"),
     problem_db.get_rva("variables.continuous_interval_uncertain.lower_bounds"),
     problem_db.get_rva("variables.continuous_interval_uncertain.upper_bounds"),
@@ -2164,12 +2165,12 @@ finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
   case NORMAL_UNCERTAIN: {    // -infinity or user-specified
     size_t n_index = cv_index -
       find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
-    return distParams.normal_lower_bound(n_index);    break;
+    return aleatDistParams.normal_lower_bound(n_index);    break;
   }
   case LOGNORMAL_UNCERTAIN: { // 0 or user-specified
     size_t ln_index = cv_index -
       find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
-    return distParams.lognormal_lower_bound(ln_index); break;
+    return aleatDistParams.lognormal_lower_bound(ln_index); break;
   }
   case GUMBEL_UNCERTAIN:      // -infinity
     return -DBL_MAX;                                break;
@@ -2189,12 +2190,12 @@ finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
   case NORMAL_UNCERTAIN: {    // infinity or user-specified
     size_t n_index = cv_index -
       find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
-    return distParams.normal_upper_bound(n_index);    break;
+    return aleatDistParams.normal_upper_bound(n_index);    break;
   }
   case LOGNORMAL_UNCERTAIN: { // infinity or user-specified
     size_t ln_index = cv_index -
       find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
-    return distParams.lognormal_upper_bound(ln_index); break;
+    return aleatDistParams.lognormal_upper_bound(ln_index); break;
   }
   case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN: // infinity
   case GUMBEL_UNCERTAIN:      case FRECHET_UNCERTAIN: case WEIBULL_UNCERTAIN:
@@ -3239,7 +3240,7 @@ const BitArray& Model::discrete_int_sets()
   if (active_totals[7]) {
     di_cntr += svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
     size_t num_deusiv
-      = distParams.discrete_set_int_values_probabilities().size();
+      = epistDistParams.discrete_set_int_values_probabilities().size();
     for (i=0; i<num_deusiv; ++i, ++di_cntr)
       discreteIntSets.flip(di_cntr);
   }
@@ -3280,7 +3281,7 @@ const IntSetArray& Model::discrete_set_int_values()
   //  break;
   case MIXED_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN: {
     const IntRealMapArray& dusi_vals_probs
-      = distParams.discrete_set_int_values_probabilities();
+      = epistDistParams.discrete_set_int_values_probabilities();
     size_t i, num_deusiv = dusi_vals_probs.size();
     activeDiscSetIntValues.resize(num_deusiv);
     for (i=0; i<num_deusiv; ++i)
@@ -3291,7 +3292,7 @@ const IntSetArray& Model::discrete_set_int_values()
     return discreteStateSetIntValues; break;
   case MIXED_ALL: {
     const IntRealMapArray& dusi_vals_probs
-      = distParams.discrete_set_int_values_probabilities();
+      = epistDistParams.discrete_set_int_values_probabilities();
     size_t i, offset, num_ddsiv = discreteDesignSetIntValues.size(),
       num_deusiv = dusi_vals_probs.size(),
       num_dssiv  = discreteStateSetIntValues.size();
@@ -3323,7 +3324,7 @@ const RealSetArray& Model::discrete_set_real_values()
   case MIXED_DESIGN:
     return discreteDesignSetRealValues; break;
   case MIXED_ALEATORY_UNCERTAIN: {
-    const RealVectorArray& h_pt_prs = distParams.histogram_point_pairs();
+    const RealVectorArray& h_pt_prs = aleatDistParams.histogram_point_pairs();
     size_t i, num_dausrv = h_pt_prs.size();
     activeDiscSetRealValues.resize(num_dausrv);
     for (i=0; i<num_dausrv; ++i)
@@ -3332,7 +3333,7 @@ const RealSetArray& Model::discrete_set_real_values()
   }
   case MIXED_EPISTEMIC_UNCERTAIN: {
     const RealRealMapArray& dusr_vals_probs
-      = distParams.discrete_set_real_values_probabilities();
+      = epistDistParams.discrete_set_real_values_probabilities();
     size_t i, num_deusrv = dusr_vals_probs.size();
     activeDiscSetRealValues.resize(num_deusrv);
     for (i=0; i<num_deusrv; ++i)
@@ -3340,9 +3341,9 @@ const RealSetArray& Model::discrete_set_real_values()
     break;
   }
   case MIXED_UNCERTAIN: {
-    const RealVectorArray& h_pt_prs = distParams.histogram_point_pairs();
+    const RealVectorArray& h_pt_prs = aleatDistParams.histogram_point_pairs();
     const RealRealMapArray& dusr_vals_probs
-      = distParams.discrete_set_real_values_probabilities();
+      = epistDistParams.discrete_set_real_values_probabilities();
     size_t i, num_dausrv = h_pt_prs.size(), num_deusrv = dusr_vals_probs.size();
     activeDiscSetRealValues.resize(num_dausrv+num_deusrv);
     for (i=0; i<num_dausrv; ++i)
@@ -3354,9 +3355,9 @@ const RealSetArray& Model::discrete_set_real_values()
   case MIXED_STATE:
     return discreteStateSetRealValues; break;
   case MIXED_ALL: {
-    const RealVectorArray& h_pt_prs = distParams.histogram_point_pairs();
+    const RealVectorArray& h_pt_prs = aleatDistParams.histogram_point_pairs();
     const RealRealMapArray& dusr_vals_probs
-      = distParams.discrete_set_real_values_probabilities();
+      = epistDistParams.discrete_set_real_values_probabilities();
     size_t i, offset, num_ddsiv = discreteDesignSetRealValues.size(),
       num_dausrv = h_pt_prs.size(), num_deusrv = dusr_vals_probs.size(),
       num_dssiv = discreteStateSetRealValues.size();

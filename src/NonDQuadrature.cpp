@@ -201,7 +201,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // capture any distribution parameter insertions
   if (!numIntegrations || subIteratorFlag)
     tpqDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.distribution_parameters());
+      iteratedModel.aleatory_distribution_parameters());
 
   size_t i, j, num_quad_points = tpqDriver->grid_size();
   const Pecos::UShortArray& quad_order = tpqDriver->quadrature_order();

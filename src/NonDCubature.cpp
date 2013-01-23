@@ -39,7 +39,7 @@ NonDCubature::NonDCubature(Model& model): NonDIntegration(model),
   // NonDIntegration ctor
   const Pecos::ShortArray& u_types = natafTransform.u_types();
   check_variables(natafTransform.x_types());
-  check_integration(u_types, iteratedModel.distribution_parameters());
+  check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
   cubDriver->initialize_grid(u_types, cubIntOrderRef, cubIntRule);
@@ -63,7 +63,7 @@ NonDCubature(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-  check_integration(u_types, iteratedModel.distribution_parameters());
+  check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
 }
 
 
@@ -81,7 +81,7 @@ NonDCubature::~NonDCubature()
 
 void NonDCubature::
 check_integration(const Pecos::ShortArray& u_types,
-		  const Pecos::DistributionParams& dp)
+		  const Pecos::AleatoryDistParams& adp)
 {
   bool err_flag = false;
 
@@ -90,8 +90,8 @@ check_integration(const Pecos::ShortArray& u_types,
   short type0 = u_types[0];
   switch (type0) {
   case Pecos::STD_BETA: { // verify isotropy in u_type and dp
-    const RealVector& beuv_alphas = dp.beta_alphas();
-    const RealVector& beuv_betas  = dp.beta_betas();
+    const RealVector& beuv_alphas = adp.beta_alphas();
+    const RealVector& beuv_betas  = adp.beta_betas();
     const Real& alpha0 = beuv_alphas[0]; const Real& beta0 = beuv_betas[0];
     for (size_t i=1; i<numContinuousVars; ++i)
       if (u_types[i]    != type0 || beuv_alphas[i] != alpha0 ||
@@ -100,7 +100,7 @@ check_integration(const Pecos::ShortArray& u_types,
     break;
   }
   case Pecos::STD_GAMMA: { // verify isotropy in u_type and dp
-    const RealVector& gauv_alphas = dp.gamma_alphas();
+    const RealVector& gauv_alphas = adp.gamma_alphas();
     const Real& alpha0 = gauv_alphas[0];
     for (size_t i=1; i<numContinuousVars; ++i)
       if (u_types[i] != type0 || gauv_alphas[i] != alpha0)
@@ -145,7 +145,7 @@ void NonDCubature::get_parameter_sets(Model& model)
   // capture any distribution parameter insertions
   if (!numIntegrations || subIteratorFlag)
     cubDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.distribution_parameters());
+      iteratedModel.aleatory_distribution_parameters());
 
   size_t i, j, num_cub_points = cubDriver->grid_size();
   Cout << "\nCubature integrand order = " << cubDriver->integrand_order()

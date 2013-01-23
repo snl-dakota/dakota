@@ -693,7 +693,8 @@ void RecastModel::update_from_sub_model()
       discreteDesignSetRealValues = subModel.discrete_design_set_real_values();
 
     // uncertain variable distribution data
-    distParams.update(subModel.distribution_parameters());
+    aleatDistParams.update(subModel.aleatory_distribution_parameters());
+    epistDistParams.update(subModel.epistemic_distribution_parameters());
 
     if (!subModel.discrete_state_set_int_values().empty())
       discreteStateSetIntValues = subModel.discrete_state_set_int_values();

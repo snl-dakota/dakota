@@ -280,7 +280,8 @@ void NonDStochCollocation::initialize_u_space_model()
   Pecos::BasisConfigOptions bc_options(nestedRules, piecewiseBasis,
 				       true, useDerivs);
   Pecos::InterpPolyApproximation::construct_basis(natafTransform.u_types(),
-    iteratedModel.distribution_parameters(), bc_options, num_int_poly_basis);
+    iteratedModel.aleatory_distribution_parameters(), bc_options,
+    num_int_poly_basis);
 
   // set the polynomial basis within the NonDIntegration instance
   NonDIntegration* u_space_sampler_rep

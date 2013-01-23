@@ -481,7 +481,8 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
     = subModel.all_discrete_int_variable_types();
   UShortMultiArrayConstView submodel_a_dr_types
     = subModel.all_discrete_real_variable_types();
-  Pecos::DistributionParams& submodel_dp = subModel.distribution_parameters();
+  Pecos::AleatoryDistParams& submodel_adp
+    = subModel.aleatory_distribution_parameters();
 
   size_t ac_index1 = active1ACVarMapIndices[curr_index]
       = find_index(subModel.all_continuous_variable_labels(), map1),
@@ -543,7 +544,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       else if (type == LOGNORMAL_UNCERTAIN) {
 	// TO DO: 3 parameter lognormal adds a location parameter
 	if (map2 == "mean") {
-	  if (submodel_dp.lognormal_means().empty()) {
+	  if (submodel_adp.lognormal_means().empty()) {
 	    Cerr << "\nError: cannot insert mean without lognormal means "
 		 << "specification." << std::endl;
 	    abort_handler(-1);
@@ -552,7 +553,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_MEAN;
 	}
 	else if (map2 == "std_deviation") {
-	  if (submodel_dp.lognormal_std_deviations().empty()) {
+	  if (submodel_adp.lognormal_std_deviations().empty()) {
 	    Cerr << "\nError: cannot insert std_deviation without lognormal "
 		 << "std_deviations specification." << std::endl;
 	    abort_handler(-1);
@@ -561,7 +562,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_STD_DEV;
 	}
 	else if (map2 == "lambda") {
-	  if (submodel_dp.lognormal_lambdas().empty()) {
+	  if (submodel_adp.lognormal_lambdas().empty()) {
 	    Cerr << "\nError: cannot insert lambda without lognormal lambdas "
 		 << "specification." << std::endl;
 	    abort_handler(-1);
@@ -570,7 +571,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_LAMBDA;
 	}
 	else if (map2 == "zeta") {
-	  if (submodel_dp.lognormal_zetas().empty()) {
+	  if (submodel_adp.lognormal_zetas().empty()) {
 	    Cerr << "\nError: cannot insert zeta without lognormal zetas "
 		 << "specification." << std::endl;
 	    abort_handler(-1);
@@ -579,7 +580,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_ZETA;
 	}
 	else if (map2 == "error_factor") {
-	  if (submodel_dp.lognormal_error_factors().empty()) {
+	  if (submodel_adp.lognormal_error_factors().empty()) {
 	    Cerr << "\nError: cannot insert error_factor without lognormal "
 		 << "error_factors specification." << std::endl;
 	    abort_handler(-1);
@@ -2015,20 +2016,21 @@ size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
   else {
     UShortMultiArrayConstView acv_types
       = subModel.all_continuous_variable_types();
-    Pecos::DistributionParams& submodel_dp = subModel.distribution_parameters();
+    Pecos::AleatoryDistParams& submodel_adp
+      = subModel.aleatory_distribution_parameters();
     size_t num_cdv = std::count(acv_types.begin(), acv_types.end(),
 				(unsigned short)CONTINUOUS_DESIGN),
-      num_nuv   = submodel_dp.normal_means().length(),
-      num_lnuv  = std::max(submodel_dp.lognormal_means().length(),
-			   submodel_dp.lognormal_lambdas().length()),
-      num_uuv   = submodel_dp.uniform_lower_bounds().length(),
-      num_luuv  = submodel_dp.loguniform_lower_bounds().length(),
-      num_tuv   = submodel_dp.triangular_modes().length(),
-      num_euv   = submodel_dp.exponential_betas().length(),
-      num_beuv  = submodel_dp.beta_alphas().length(),
-      num_gauv  = submodel_dp.gamma_alphas().length(),
-      num_guuv  = submodel_dp.gumbel_alphas().length(),
-      num_fuv   = submodel_dp.frechet_alphas().length();
+      num_nuv   = submodel_adp.normal_means().length(),
+      num_lnuv  = std::max(submodel_adp.lognormal_means().length(),
+			   submodel_adp.lognormal_lambdas().length()),
+      num_uuv   = submodel_adp.uniform_lower_bounds().length(),
+      num_luuv  = submodel_adp.loguniform_lower_bounds().length(),
+      num_tuv   = submodel_adp.triangular_modes().length(),
+      num_euv   = submodel_adp.exponential_betas().length(),
+      num_beuv  = submodel_adp.beta_alphas().length(),
+      num_gauv  = submodel_adp.gamma_alphas().length(),
+      num_guuv  = submodel_adp.gumbel_alphas().length(),
+      num_fuv   = submodel_adp.frechet_alphas().length();
 
     size_t dist_index = pacvm_index - num_cdv;
     switch (sacvm_target) {
@@ -2083,16 +2085,17 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
   else {
     UShortMultiArrayConstView adiv_types
       = subModel.all_discrete_int_variable_types();
-    Pecos::DistributionParams& submodel_dp = subModel.distribution_parameters();
+    Pecos::AleatoryDistParams& submodel_adp
+      = subModel.aleatory_distribution_parameters();
     size_t num_ddriv = std::count(adiv_types.begin(), adiv_types.end(),
 				  (unsigned short)DISCRETE_DESIGN_RANGE),
       num_ddsiv = std::count(adiv_types.begin(), adiv_types.end(),
 			     (unsigned short)DISCRETE_DESIGN_SET_INT),
-      num_puv   = submodel_dp.poisson_lambdas().length(),
-      num_biuv  = submodel_dp.binomial_probability_per_trial().length(),
+      num_puv   = submodel_adp.poisson_lambdas().length(),
+      num_biuv  = submodel_adp.binomial_probability_per_trial().length(),
       num_nbiuv
-        = submodel_dp.negative_binomial_probability_per_trial().length(),
-      num_geuv  = submodel_dp.geometric_probability_per_trial().length();
+        = submodel_adp.negative_binomial_probability_per_trial().length(),
+      num_geuv  = submodel_adp.geometric_probability_per_trial().length();
 
     size_t dist_index = padivm_index - num_ddriv - num_ddsiv;
     switch (sadivm_target) {
@@ -2142,7 +2145,8 @@ size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
 void NestedModel::
 real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 {
-  Pecos::DistributionParams& submodel_dp = subModel.distribution_parameters();
+  Pecos::AleatoryDistParams& submodel_adp
+    = subModel.aleatory_distribution_parameters();
 
   switch (svm_target) {
   case Pecos::CDV_LWR_BND: case Pecos::CSV_LWR_BND:
@@ -2150,76 +2154,76 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   case Pecos::CDV_UPR_BND: case Pecos::CSV_UPR_BND:
     subModel.all_continuous_upper_bound(r_var, mapped_index); break;
   case Pecos::N_MEAN:
-    submodel_dp.normal_mean(r_var, mapped_index); break;
+    submodel_adp.normal_mean(r_var, mapped_index); break;
   case Pecos::N_STD_DEV:
-    submodel_dp.normal_std_deviation(r_var, mapped_index); break;
+    submodel_adp.normal_std_deviation(r_var, mapped_index); break;
   case Pecos::N_LWR_BND:
-    submodel_dp.normal_lower_bound(r_var, mapped_index); break;
+    submodel_adp.normal_lower_bound(r_var, mapped_index); break;
   case Pecos::N_UPR_BND:
-    submodel_dp.normal_upper_bound(r_var, mapped_index); break;
+    submodel_adp.normal_upper_bound(r_var, mapped_index); break;
   case Pecos::LN_MEAN:
-    submodel_dp.lognormal_mean(r_var, mapped_index); break;
+    submodel_adp.lognormal_mean(r_var, mapped_index); break;
   case Pecos::LN_STD_DEV:
-    submodel_dp.lognormal_std_deviation(r_var, mapped_index); break;
+    submodel_adp.lognormal_std_deviation(r_var, mapped_index); break;
   case Pecos::LN_LAMBDA:
-    submodel_dp.lognormal_lambda(r_var, mapped_index); break;
+    submodel_adp.lognormal_lambda(r_var, mapped_index); break;
   case Pecos::LN_ZETA:
-    submodel_dp.lognormal_zeta(r_var, mapped_index); break;
+    submodel_adp.lognormal_zeta(r_var, mapped_index); break;
   case Pecos::LN_ERR_FACT:
-    submodel_dp.lognormal_error_factor(r_var, mapped_index); break;
+    submodel_adp.lognormal_error_factor(r_var, mapped_index); break;
   case Pecos::LN_LWR_BND:
-    submodel_dp.lognormal_lower_bound(r_var, mapped_index); break;
+    submodel_adp.lognormal_lower_bound(r_var, mapped_index); break;
   case Pecos::LN_UPR_BND:
-    submodel_dp.lognormal_upper_bound(r_var, mapped_index); break;
+    submodel_adp.lognormal_upper_bound(r_var, mapped_index); break;
   case Pecos::U_LWR_BND:
-    submodel_dp.uniform_lower_bound(r_var, mapped_index); break;
+    submodel_adp.uniform_lower_bound(r_var, mapped_index); break;
   case Pecos::U_UPR_BND:
-    submodel_dp.uniform_upper_bound(r_var, mapped_index); break;
+    submodel_adp.uniform_upper_bound(r_var, mapped_index); break;
   case Pecos::LU_LWR_BND:
-    submodel_dp.loguniform_lower_bound(r_var, mapped_index); break;
+    submodel_adp.loguniform_lower_bound(r_var, mapped_index); break;
   case Pecos::LU_UPR_BND:
-    submodel_dp.loguniform_upper_bound(r_var, mapped_index); break;
+    submodel_adp.loguniform_upper_bound(r_var, mapped_index); break;
   case Pecos::T_MODE:
-    submodel_dp.triangular_mode(r_var, mapped_index); break;
+    submodel_adp.triangular_mode(r_var, mapped_index); break;
   case Pecos::T_LWR_BND:
-    submodel_dp.triangular_lower_bound(r_var, mapped_index); break;
+    submodel_adp.triangular_lower_bound(r_var, mapped_index); break;
   case Pecos::T_UPR_BND:
-    submodel_dp.triangular_upper_bound(r_var, mapped_index); break;
+    submodel_adp.triangular_upper_bound(r_var, mapped_index); break;
   case Pecos::E_BETA:
-    submodel_dp.exponential_beta(r_var, mapped_index); break;
+    submodel_adp.exponential_beta(r_var, mapped_index); break;
   case Pecos::BE_ALPHA:
-    submodel_dp.beta_alpha(r_var, mapped_index); break;
+    submodel_adp.beta_alpha(r_var, mapped_index); break;
   case Pecos::BE_BETA:
-    submodel_dp.beta_beta(r_var, mapped_index); break;
+    submodel_adp.beta_beta(r_var, mapped_index); break;
   case Pecos::BE_LWR_BND:
-    submodel_dp.beta_lower_bound(r_var, mapped_index); break;
+    submodel_adp.beta_lower_bound(r_var, mapped_index); break;
   case Pecos::BE_UPR_BND:
-    submodel_dp.beta_upper_bound(r_var, mapped_index); break;
+    submodel_adp.beta_upper_bound(r_var, mapped_index); break;
   case Pecos::GA_ALPHA:
-    submodel_dp.gamma_alpha(r_var, mapped_index); break;
+    submodel_adp.gamma_alpha(r_var, mapped_index); break;
   case Pecos::GA_BETA:
-    submodel_dp.gamma_beta(r_var, mapped_index); break;
+    submodel_adp.gamma_beta(r_var, mapped_index); break;
   case Pecos::GU_ALPHA:
-    submodel_dp.gumbel_alpha(r_var, mapped_index); break;
+    submodel_adp.gumbel_alpha(r_var, mapped_index); break;
   case Pecos::GU_BETA:
-    submodel_dp.gumbel_beta(r_var, mapped_index); break;
+    submodel_adp.gumbel_beta(r_var, mapped_index); break;
   case Pecos::F_ALPHA:
-    submodel_dp.frechet_alpha(r_var, mapped_index); break;
+    submodel_adp.frechet_alpha(r_var, mapped_index); break;
   case Pecos::F_BETA:
-    submodel_dp.frechet_beta(r_var, mapped_index); break;
+    submodel_adp.frechet_beta(r_var, mapped_index); break;
   case Pecos::W_ALPHA:
-    submodel_dp.weibull_alpha(r_var, mapped_index); break;
+    submodel_adp.weibull_alpha(r_var, mapped_index); break;
   case Pecos::W_BETA:
-    submodel_dp.weibull_beta(r_var, mapped_index); break;
+    submodel_adp.weibull_beta(r_var, mapped_index); break;
   case Pecos::P_LAMBDA:
-    submodel_dp.poisson_lambda(r_var, mapped_index); break;
+    submodel_adp.poisson_lambda(r_var, mapped_index); break;
   case Pecos::BI_P_PER_TRIAL:
-    submodel_dp.binomial_probability_per_trial(r_var, mapped_index); break;
+    submodel_adp.binomial_probability_per_trial(r_var, mapped_index); break;
   case Pecos::NBI_P_PER_TRIAL:
-    submodel_dp.negative_binomial_probability_per_trial(r_var, mapped_index);
+    submodel_adp.negative_binomial_probability_per_trial(r_var, mapped_index);
     break;
   case Pecos::GE_P_PER_TRIAL:
-    submodel_dp.geometric_probability_per_trial(r_var, mapped_index); break;
+    submodel_adp.geometric_probability_per_trial(r_var, mapped_index); break;
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for real value "
 	 << "insertion in NestedModel::real_variable_mapping()." << std::endl;
@@ -2232,7 +2236,8 @@ void NestedModel::
 integer_variable_mapping(const int& i_var, size_t mapped_index,
 			 short svm_target)
 {
-  Pecos::DistributionParams& submodel_dp = subModel.distribution_parameters();
+  Pecos::AleatoryDistParams& submodel_adp
+    = subModel.aleatory_distribution_parameters();
 
   switch (svm_target) {
   case Pecos::DDRIV_LWR_BND: case Pecos::DSRIV_LWR_BND:
@@ -2240,15 +2245,15 @@ integer_variable_mapping(const int& i_var, size_t mapped_index,
   case Pecos::DDRIV_UPR_BND: case Pecos::DSRIV_UPR_BND:
     subModel.all_discrete_int_upper_bound(i_var, mapped_index); break;
   case Pecos::BI_TRIALS:
-    submodel_dp.binomial_num_trials(i_var, mapped_index); break;
+    submodel_adp.binomial_num_trials(i_var, mapped_index); break;
   case Pecos::NBI_TRIALS:
-    submodel_dp.negative_binomial_num_trials(i_var, mapped_index); break;
+    submodel_adp.negative_binomial_num_trials(i_var, mapped_index); break;
   case Pecos::HGE_TOT_POP:
-    submodel_dp.hypergeometric_total_population(i_var, mapped_index); break;
+    submodel_adp.hypergeometric_total_population(i_var, mapped_index); break;
   case Pecos::HGE_SEL_POP:
-    submodel_dp.hypergeometric_selected_population(i_var, mapped_index); break;
+    submodel_adp.hypergeometric_selected_population(i_var, mapped_index); break;
   case Pecos::HGE_FAILED:
-    submodel_dp.hypergeometric_num_drawn(i_var, mapped_index); break;
+    submodel_adp.hypergeometric_num_drawn(i_var, mapped_index); break;
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for integer value "
 	 << "insertion in NestedModel::integer_variable_mapping()" << std::endl;

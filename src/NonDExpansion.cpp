@@ -560,11 +560,12 @@ void NonDExpansion::initialize_expansion()
   // we handle that special case here prior to the general recursion.  The
   // alternative would be to supply another function pointer to RecastModel
   // to support partial distribution parameter mappings.
-  Pecos::DistributionParams& dp_u
-    = uSpaceModel.subordinate_model().distribution_parameters();
-  const Pecos::DistributionParams& dp_x
-    = iteratedModel.distribution_parameters();
-  dp_u.update_partial(dp_x, natafTransform.x_types(), natafTransform.u_types());
+  Pecos::AleatoryDistParams& adp_u
+    = uSpaceModel.subordinate_model().aleatory_distribution_parameters();
+  const Pecos::AleatoryDistParams& adp_x
+    = iteratedModel.aleatory_distribution_parameters();
+  adp_u.update_partial(adp_x, natafTransform.x_types(),
+		       natafTransform.u_types());
   // now perform the general recursion
   uSpaceModel.update_from_subordinate_model(); // recurse_flag = true
 

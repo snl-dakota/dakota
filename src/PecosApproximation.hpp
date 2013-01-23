@@ -117,7 +117,7 @@ public:
 
   /// invoke Pecos::OrthogPolyApproximation::construct_basis()
   void construct_basis(const Pecos::ShortArray& u_types,
-		       const Pecos::DistributionParams& dp,
+		       const Pecos::AleatoryDistParams& adp,
 		       const Pecos::BasisConfigOptions& bc_options);
 
   /// set Pecos::OrthogPolyApproximation::basisTypes
@@ -402,11 +402,11 @@ random_variables_key(const Pecos::BitArray& random_vars_key)
 
 inline void PecosApproximation::
 construct_basis(const Pecos::ShortArray& u_types,
-		const Pecos::DistributionParams& dp,
+		const Pecos::AleatoryDistParams& adp,
 		const Pecos::BasisConfigOptions& bc_options)
 {
   ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
-    construct_basis(u_types, dp, bc_options);
+    construct_basis(u_types, adp, bc_options);
 }
 
 

@@ -133,6 +133,14 @@ protected:
 			  size_t& num_didv,   size_t& num_drdv) const;
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
+  void view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
+				    size_t& num_diauv, size_t& num_drauv) const;
+  /// compute sampled subsets (all, active, uncertain) within all
+  /// variables (acv/adiv/adrv) from samplingVarsMode and model
+  void view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
+				    size_t& num_dieuv, size_t& num_dreuv) const;
+  /// compute sampled subsets (all, active, uncertain) within all
+  /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_uncertain_counts(const Model& model, size_t& num_cuv,
 			     size_t& num_diuv,   size_t& num_druv) const;
   /// compute sampled subsets (all, active, uncertain) within all

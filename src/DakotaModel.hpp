@@ -399,23 +399,6 @@ public:
   /// design set real variables
   void discrete_design_set_real_values(const RealSetArray& rsa);
 
-  /// return the sets of values and probabilities available for each
-  /// of the discrete uncertain set integer variables
-  const IntRealMapArray&
-    discrete_uncertain_set_int_values_probabilities() const;
-  /// define the sets of values and probabilities available for each
-  /// of the discrete uncertain set integer variables
-  void discrete_uncertain_set_int_values_probabilities(
-    const IntRealMapArray& irma);
-  /// return the sets of values and probabilities available for each
-  /// of the discrete uncertain set real variables
-  const RealRealMapArray&
-    discrete_uncertain_set_real_values_probabilities() const;
-  /// define the sets of values and probabilities available for each
-  /// of the discrete uncertain set real variables
-  void discrete_uncertain_set_real_values_probabilities(
-    const RealRealMapArray& rrma);
-
   /// return the sets of values available for each of the discrete
   /// state set integer variables
   const IntSetArray& discrete_state_set_int_values() const;
@@ -441,12 +424,18 @@ public:
   /// discrete set real variables (aggregated in activeDiscSetRealValues)
   const RealSetArray& discrete_set_real_values();
 
-  /// return distribParams
-  Pecos::DistributionParams& distribution_parameters();
-  /// return distribParams
-  const Pecos::DistributionParams& distribution_parameters() const;
-  /// set distribParams
-  void distribution_parameters(const Pecos::DistributionParams& dp);
+  /// return aleatDistParams
+  Pecos::AleatoryDistParams& aleatory_distribution_parameters();
+  /// return aleatDistParams
+  const Pecos::AleatoryDistParams& aleatory_distribution_parameters() const;
+  /// set aleatDistParams
+  void aleatory_distribution_parameters(const Pecos::AleatoryDistParams& adp);
+  /// return epistDistParams
+  Pecos::EpistemicDistParams& epistemic_distribution_parameters();
+  /// return epistDistParams
+  const Pecos::EpistemicDistParams& epistemic_distribution_parameters() const;
+  /// set epistDistParams
+  void epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp);
 
   // LABELS and TAGS
 
@@ -941,8 +930,10 @@ protected:
   /// values corresponding to a discrete state real set variable
   RealSetArray discreteStateSetRealValues;
 
-  /// container for random variable distribution parameters
-  Pecos::DistributionParams distParams;
+  /// container for aleatory random variable distribution parameters
+  Pecos::AleatoryDistParams aleatDistParams;
+  /// container for epistemic random variable distribution parameters
+  Pecos::EpistemicDistParams epistDistParams;
 
   /// array of flags (one per primary function) for switching the
   /// sense to maximize the primary function (default is minimize)
@@ -1463,44 +1454,6 @@ inline void Model::discrete_design_set_real_values(const RealSetArray& rsa)
 }
 
 
-inline const IntRealMapArray& Model::
-discrete_uncertain_set_int_values_probabilities() const
-{
-  return (modelRep) ?
-    modelRep->distParams.discrete_set_int_values_probabilities() :
-    distParams.discrete_set_int_values_probabilities();
-}
-
-
-inline void Model::
-discrete_uncertain_set_int_values_probabilities(const IntRealMapArray& irma)
-{
-  if (modelRep)
-    modelRep->distParams.discrete_set_int_values_probabilities(irma);
-  else
-    distParams.discrete_set_int_values_probabilities(irma);
-}
-
-
-inline const RealRealMapArray& Model::
-discrete_uncertain_set_real_values_probabilities() const
-{
-  return (modelRep) ?
-    modelRep->distParams.discrete_set_real_values_probabilities() :
-    distParams.discrete_set_real_values_probabilities();
-}
-
-
-inline void Model::
-discrete_uncertain_set_real_values_probabilities(const RealRealMapArray& rrma)
-{
-  if (modelRep)
-    modelRep->distParams.discrete_set_real_values_probabilities(rrma);
-  else
-    distParams.discrete_set_real_values_probabilities(rrma);
-}
-
-
 inline const IntSetArray& Model::discrete_state_set_int_values() const
 {
   return (modelRep) ? modelRep->discreteStateSetIntValues
@@ -1529,18 +1482,37 @@ inline void Model::discrete_state_set_real_values(const RealSetArray& rsa)
 }
 
 
-inline Pecos::DistributionParams& Model::distribution_parameters()
-{ return (modelRep) ? modelRep->distParams : distParams; }
+inline Pecos::AleatoryDistParams& Model::aleatory_distribution_parameters()
+{ return (modelRep) ? modelRep->aleatDistParams : aleatDistParams; }
 
 
-inline const Pecos::DistributionParams& Model::distribution_parameters() const
-{ return (modelRep) ? modelRep->distParams : distParams; }
+inline const Pecos::AleatoryDistParams& Model::
+aleatory_distribution_parameters() const
+{ return (modelRep) ? modelRep->aleatDistParams : aleatDistParams; }
 
 
-inline void Model::distribution_parameters(const Pecos::DistributionParams& dp)
+inline void Model::
+aleatory_distribution_parameters(const Pecos::AleatoryDistParams& adp)
 {
-  if (modelRep) modelRep->distParams = dp;
-  else          distParams = dp;
+  if (modelRep) modelRep->aleatDistParams = adp;
+  else          aleatDistParams = adp;
+}
+
+
+inline Pecos::EpistemicDistParams& Model::epistemic_distribution_parameters()
+{ return (modelRep) ? modelRep->epistDistParams : epistDistParams; }
+
+
+inline const Pecos::EpistemicDistParams& Model::
+epistemic_distribution_parameters() const
+{ return (modelRep) ? modelRep->epistDistParams : epistDistParams; }
+
+
+inline void Model::
+epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp)
+{
+  if (modelRep) modelRep->epistDistParams = edp;
+  else          epistDistParams = edp;
 }
 
 

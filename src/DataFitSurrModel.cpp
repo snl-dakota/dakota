@@ -1685,7 +1685,8 @@ void DataFitSurrModel::update_actual_model()
     actualModel.discrete_design_set_real_values(discreteDesignSetRealValues);
 
   // uncertain variable distribution data
-  actualModel.distribution_parameters().update(distParams);
+  actualModel.aleatory_distribution_parameters().update(aleatDistParams);
+  actualModel.epistemic_distribution_parameters().update(epistDistParams);
 
   if (!discreteStateSetIntValues.empty())
     actualModel.discrete_state_set_int_values(discreteStateSetIntValues);
@@ -1737,7 +1738,8 @@ void DataFitSurrModel::update_from_actual_model()
     discreteDesignSetRealValues = actualModel.discrete_design_set_real_values();
 
   // uncertain variable distribution data
-  distParams.update(actualModel.distribution_parameters());
+  aleatDistParams.update(actualModel.aleatory_distribution_parameters());
+  epistDistParams.update(actualModel.epistemic_distribution_parameters());
 
   if (!actualModel.discrete_state_set_int_values().empty())
     discreteStateSetIntValues = actualModel.discrete_state_set_int_values();

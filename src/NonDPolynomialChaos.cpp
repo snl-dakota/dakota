@@ -374,7 +374,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
       if (first) {
 	poly_approx_rep->construct_basis(u_types,
-	  iteratedModel.distribution_parameters(), bc_options);
+	  iteratedModel.aleatory_distribution_parameters(), bc_options);
 	if (num_int || tensorRegression)
 	  u_space_sampler_rep->
 	    initialize_grid(poly_approx_rep->polynomial_basis());

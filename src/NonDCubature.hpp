@@ -83,7 +83,7 @@ private:
 
   /// verify self-consistency of integration specification
   void check_integration(const Pecos::ShortArray& u_types,
-			 const Pecos::DistributionParams& dp);
+			 const Pecos::AleatoryDistParams& adp);
 
   /// increment each cubIntOrderRef entry by 1
   void increment_reference();

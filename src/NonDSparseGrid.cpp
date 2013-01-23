@@ -84,7 +84,7 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
     dimPrefSpec, bc_options, growth_rate, /*refine_type,*/ refine_control,
     store_colloc, track_uniq_prod_wts, track_colloc_indices);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
-    iteratedModel.distribution_parameters());
+    iteratedModel.aleatory_distribution_parameters());
 
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
 }
@@ -140,7 +140,7 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
   // capture any run-time updates to distribution parameters
   if (subIteratorFlag)
     ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.distribution_parameters());
+      iteratedModel.aleatory_distribution_parameters());
 
   // compute grid and retrieve point/weight sets
   ssgDriver->compute_grid(allSamples);

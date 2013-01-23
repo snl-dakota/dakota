@@ -136,34 +136,35 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
     // distribution specific calculations to get rank values of samples 
     double temp_x, mean_x, sigma_x, x, scaled_x, lwr, mode, upr, alpha, beta;
-    Pecos::DistributionParams& dp = iteratedModel.distribution_parameters();
-    const Pecos::RealVector& n_means    = dp.normal_means();
-    const Pecos::RealVector& n_std_devs = dp.normal_std_deviations();
-    const Pecos::RealVector& n_l_bnds   = dp.normal_lower_bounds();
-    const Pecos::RealVector& n_u_bnds   = dp.normal_upper_bounds();
-    const Pecos::RealVector& ln_means   = dp.lognormal_means();
-    const Pecos::RealVector& ln_std_devs  = dp.lognormal_std_deviations();
-    const Pecos::RealVector& ln_lambdas   = dp.lognormal_means();
-    const Pecos::RealVector& ln_zetas     = dp.lognormal_zetas();
-    const Pecos::RealVector& ln_err_facts = dp.lognormal_error_factors();
-    const Pecos::RealVector& ln_l_bnds  = dp.lognormal_lower_bounds();
-    const Pecos::RealVector& ln_u_bnds  = dp.lognormal_upper_bounds();
-    const Pecos::RealVector& u_low      = dp.uniform_lower_bounds();
-    const Pecos::RealVector& u_up       = dp.uniform_upper_bounds();
-    const Pecos::RealVector& lu_low     = dp.loguniform_lower_bounds();
-    const Pecos::RealVector& lu_up      = dp.loguniform_upper_bounds();
-    const Pecos::RealVector& tri_low    = dp.triangular_lower_bounds();
-    const Pecos::RealVector& tri_mode   = dp.triangular_modes();
-    const Pecos::RealVector& tri_up     = dp.triangular_upper_bounds();
-    const Pecos::RealVector& exp_beta   = dp.exponential_betas();
-    const Pecos::RealVector& beta_alpha = dp.beta_alphas();
-    const Pecos::RealVector& beta_beta  = dp.beta_betas();
-    const Pecos::RealVector& beta_low   = dp.beta_lower_bounds();
-    const Pecos::RealVector& beta_up    = dp.beta_upper_bounds();
-    const Pecos::RealVector& gamma_alpha   = dp.gamma_alphas();
-    const Pecos::RealVector& gamma_beta    = dp.gamma_betas();
-    const Pecos::RealVector& weibull_alpha = dp.weibull_alphas();
-    const Pecos::RealVector& weibull_beta  = dp.weibull_betas();
+    Pecos::AleatoryDistParams& adp
+      = iteratedModel.aleatory_distribution_parameters();
+    const Pecos::RealVector& n_means    = adp.normal_means();
+    const Pecos::RealVector& n_std_devs = adp.normal_std_deviations();
+    const Pecos::RealVector& n_l_bnds   = adp.normal_lower_bounds();
+    const Pecos::RealVector& n_u_bnds   = adp.normal_upper_bounds();
+    const Pecos::RealVector& ln_means   = adp.lognormal_means();
+    const Pecos::RealVector& ln_std_devs  = adp.lognormal_std_deviations();
+    const Pecos::RealVector& ln_lambdas   = adp.lognormal_means();
+    const Pecos::RealVector& ln_zetas     = adp.lognormal_zetas();
+    const Pecos::RealVector& ln_err_facts = adp.lognormal_error_factors();
+    const Pecos::RealVector& ln_l_bnds  = adp.lognormal_lower_bounds();
+    const Pecos::RealVector& ln_u_bnds  = adp.lognormal_upper_bounds();
+    const Pecos::RealVector& u_low      = adp.uniform_lower_bounds();
+    const Pecos::RealVector& u_up       = adp.uniform_upper_bounds();
+    const Pecos::RealVector& lu_low     = adp.loguniform_lower_bounds();
+    const Pecos::RealVector& lu_up      = adp.loguniform_upper_bounds();
+    const Pecos::RealVector& tri_low    = adp.triangular_lower_bounds();
+    const Pecos::RealVector& tri_mode   = adp.triangular_modes();
+    const Pecos::RealVector& tri_up     = adp.triangular_upper_bounds();
+    const Pecos::RealVector& exp_beta   = adp.exponential_betas();
+    const Pecos::RealVector& beta_alpha = adp.beta_alphas();
+    const Pecos::RealVector& beta_beta  = adp.beta_betas();
+    const Pecos::RealVector& beta_low   = adp.beta_lower_bounds();
+    const Pecos::RealVector& beta_up    = adp.beta_upper_bounds();
+    const Pecos::RealVector& gamma_alpha   = adp.gamma_alphas();
+    const Pecos::RealVector& gamma_beta    = adp.gamma_betas();
+    const Pecos::RealVector& weibull_alpha = adp.weibull_alphas();
+    const Pecos::RealVector& weibull_beta  = adp.weibull_betas();
 
     // initialize the matrix which identifies whether the sample 2 rank should
     // be switched or not

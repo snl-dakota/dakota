@@ -70,15 +70,20 @@ enum { NO_EMULATOR, POLYNOMIAL_CHAOS, STOCHASTIC_COLLOCATION,
 // LHS rank array processing modes:
 enum { IGNORE_RANKS, SET_RANKS, GET_RANKS, SET_GET_RANKS };
 // sampling modes (combinations of Uncertain/Active/All and Native/Uniform):
-enum { UNCERTAIN, UNCERTAIN_UNIFORM, ACTIVE, ACTIVE_UNIFORM, ALL, ALL_UNIFORM };
-// (1) UNCERTAIN: sample only over the uncertain variables, ignoring
-//     design/state, using the native distributions.
-// (2) UNCERTAIN_UNIFORM: sample only over the uncertain variables, ignoring
-//     design/state, using uniform distributions.
+enum { UNCERTAIN,           UNCERTAIN_UNIFORM,
+       ALEATORY_UNCERTAIN,  ALEATORY_UNCERTAIN_UNIFORM,
+       EPISTEMIC_UNCERTAIN, EPISTEMIC_UNCERTAIN_UNIFORM,
+       ACTIVE,              ACTIVE_UNIFORM,
+       ALL,                 ALL_UNIFORM };
+// (1) {,A,E}UNCERTAIN: sample only over the {,A,E} uncertain variables,
+//     ignoring design/state, using the native distributions.
+// (2) {,A,E}UNCERTAIN_UNIFORM: sample only over the {,A,E}uncertain variables,
+//     ignoring design/state, using uniform distributions within native/inferred
+//     bounds.
 // (3) ACTIVE: sample only over the active variables, ignoring inactive, using
 //     the native distributions (assumes uniform for design/state).
 // (4) ACTIVE_UNIFORM: sample only over the active variables, ignoring inactive,
-//     using uniform distributions.
+//     using uniform distributions within native/inferred bounds.
 // (5) ALL: sample over All variables using native distributions (assumes
 //     uniform for design/state).
 // (6) ALL_UNIFORM: sample over All variables using uniform distributions.

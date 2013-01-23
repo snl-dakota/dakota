@@ -134,20 +134,21 @@ void NonDInterval::initialize_final_statistics()
 
 void NonDInterval::calculate_cells_and_bpas()
 {
-  Pecos::DistributionParams& dp = iteratedModel.distribution_parameters();
+  Pecos::EpistemicDistParams& edp
+    = iteratedModel.epistemic_distribution_parameters();
   // Information we want: for each hyper cube i, give the bpa, and bounds on i.
   // ci_bpa[i][j] gives jth bpa of jth interval of ith variable
   // ci_{l,u}_bnds[i][j] gives jth {lower,upper} bound for the ith variable
-  const RealVectorArray& ci_bpa    = dp.continuous_interval_probabilities();
-  const RealVectorArray& ci_l_bnds = dp.continuous_interval_lower_bounds();
-  const RealVectorArray& ci_u_bnds = dp.continuous_interval_upper_bounds();
-  const RealVectorArray& di_bpa    = dp.discrete_interval_probabilities();
-  const IntVectorArray&  di_l_bnds = dp.discrete_interval_lower_bounds();
-  const IntVectorArray&  di_u_bnds = dp.discrete_interval_upper_bounds();
+  const RealVectorArray& ci_bpa    = edp.continuous_interval_probabilities();
+  const RealVectorArray& ci_l_bnds = edp.continuous_interval_lower_bounds();
+  const RealVectorArray& ci_u_bnds = edp.continuous_interval_upper_bounds();
+  const RealVectorArray& di_bpa    = edp.discrete_interval_probabilities();
+  const IntVectorArray&  di_l_bnds = edp.discrete_interval_lower_bounds();
+  const IntVectorArray&  di_u_bnds = edp.discrete_interval_upper_bounds();
   const IntRealMapArray& dsi_vals_probs
-    = dp.discrete_set_int_values_probabilities();
+    = edp.discrete_set_int_values_probabilities();
   const RealRealMapArray& dsr_vals_probs
-    = dp.discrete_set_real_values_probabilities();
+    = edp.discrete_set_real_values_probabilities();
 
   size_t i, j, k, var_cntr, cell_cntr, prev_bpa_len;
   int num_total_vars = numContIntervalVars  + numDiscIntervalVars
