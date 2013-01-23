@@ -179,6 +179,29 @@ tensor-product quadrature grids or Smolyak sparse grids.  Both methods
 provide analytic response moments; however, CDF/CCDF probabilities are
 evaluated by sampling on the expansion.
 
+\textbf{Importance Sampling}: Importance sampling is a method that 
+allows one to estimate statistical quantities such as failure 
+probabilities in a way that is more efficient than Monte Carlo 
+sampling. The core idea in importance sampling is that one generates 
+samples that are preferentially placed in important regions of the 
+space (e.g. in or near the failure region or user-defined region
+of interest), then appropriately weights the samples to obtain an 
+unbiased estimate of the failure probability.
+
+\textbf{Adaptive Sampling}: The goal in performing adaptive 
+sampling is to construct a surrogate
+model that can be used as an accurate predictor of an expensive 
+simulation.  The aim is to build a surrogate that minimizes the error
+over the entire domain of interest using as little data as possible 
+from the expensive simulation. The adaptive sampling methods start
+with an initial LHS sample, and then adaptively choose samples that 
+optimize a particular criteria.  For example, if a set of additional 
+possible sample points are generated, one criteria is to pick the
+next sample point as the point which maximizes the minimum distance 
+to the existing points (maximin).  Another criteria is to pick the 
+sample point where the surrogate indicates the most uncertainty 
+in its prediction. 
+
 \textbf{Interval Analysis}: Interval analysis is often used to model 
 epistemic uncertainty. In interval analysis, one assumes that nothing 
 is known about an epistemic uncertain variable except that its value lies 
@@ -223,6 +246,14 @@ interval analysis (e.g. what is the interval on the output given
 intervals on the input) using either global or local optimization methods. 
 Interval analysis is often used to model epistemic variables in 
 nested analyses, where probability theory is used to model aleatory variables.
+
+\textbf{Bayesian Calibration}:  In Bayesian calibration, uncertain 
+input parameters are descrbied by a ``prior'' distribution.  The priors
+are updated with experimental data, in a Bayesian framework that 
+involves the experimental data and a likelihood function which describes 
+how well each parameter value is supported by the data.  After the process
+of Bayesian calibration, the prior distribution becomes a posterior 
+distribution. 
 
 \subsection{Variables and Responses for UQ}\label{uq:overview:varsresp}
 
