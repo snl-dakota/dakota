@@ -9,7 +9,7 @@
 #ifndef DAKOTA_TABULAR_IO_H
 #define DAKOTA_TABULAR_IO_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 
 /// Utility functions for reading and writing tabular data files
 /**

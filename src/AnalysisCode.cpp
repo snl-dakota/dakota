@@ -16,7 +16,7 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
-#include "filesystem_utils.hpp"
+#include "dakota_filesystem_utils.hpp"
 #include <boost/lexical_cast.hpp>
 #include <string>
 #include <sys/types.h>

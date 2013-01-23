@@ -12,7 +12,7 @@
 
 #include "CommandShell.hpp"
 #include "WorkdirHelper.hpp"
-#include "global_defs.hpp"
+#include "dakota_global_defs.hpp"
 
 static const char rcsId[]="@(#) $Id: CommandShell.cpp 7021 2010-10-12 22:19:01Z wjbohnh $";
 

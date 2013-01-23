@@ -14,8 +14,8 @@
 #ifndef PRP_MULTI_INDEX_H
 #define PRP_MULTI_INDEX_H
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 #include "ParamResponsePair.hpp"
 
 #include <boost/multi_index_container.hpp>

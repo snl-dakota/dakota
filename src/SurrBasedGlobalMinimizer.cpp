@@ -16,7 +16,7 @@
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "DakotaGraphics.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaApproximation.hpp"
 #include <boost/lexical_cast.hpp>

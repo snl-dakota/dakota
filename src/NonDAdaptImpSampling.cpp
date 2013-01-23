@@ -13,8 +13,8 @@
 //- Version:
 
 #include "NonDAdaptImpSampling.hpp"
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 #include "RecastModel.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"

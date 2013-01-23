@@ -15,8 +15,8 @@
 #ifndef ANALYSIS_CODE_H
 #define ANALYSIS_CODE_H
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 
 
 namespace Dakota {

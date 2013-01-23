@@ -23,7 +23,7 @@
 #include "HOPSPACK_Vector.hpp"
 
 #include "DakotaModel.hpp"
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 

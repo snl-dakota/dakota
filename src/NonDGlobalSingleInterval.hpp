@@ -16,7 +16,7 @@
 #define NOND_GLOBAL_SINGLE_INTERVAL_H
 
 #include "NonDGlobalInterval.hpp"
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 

@@ -14,7 +14,7 @@
 #ifndef DAKOTA_APPROXIMATION_H
 #define DAKOTA_APPROXIMATION_H
 
-#include "data_util.hpp"
+#include "dakota_data_util.hpp"
 #include "SurrogateData.hpp"
 
 namespace Dakota {

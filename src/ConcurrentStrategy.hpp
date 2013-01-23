@@ -19,7 +19,7 @@
 #include "DakotaStrategy.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaIterator.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 
 namespace Dakota {

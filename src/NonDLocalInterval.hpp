@@ -16,7 +16,7 @@
 #define NOND_LOCAL_INTERVAL_H
 
 #include "NonDInterval.hpp"
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 

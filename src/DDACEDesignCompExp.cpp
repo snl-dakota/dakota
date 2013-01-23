@@ -11,7 +11,7 @@
 //- Owner:       Tony Giunta, Sandia National Laboratories
 
 #include "DDACEDesignCompExp.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 #include "DDaceRandomSampler.h"
 #include "DDaceOASampler.h"

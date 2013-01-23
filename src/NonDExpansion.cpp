@@ -10,8 +10,8 @@
 //- Description: Implementation code for NonDExpansion class
 //- Owner:       Mike Eldred
 
-#include "system_defs.hpp"
-#include "data_io.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
 #include "NonDExpansion.hpp"
 #include "NonDCubature.hpp"
 #include "NonDQuadrature.hpp"

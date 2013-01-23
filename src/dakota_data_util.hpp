@@ -9,9 +9,9 @@
 #ifndef DATA_UTIL_H
 #define DATA_UTIL_H
 
-#include "system_defs.hpp"
-#include "global_defs.hpp"  // for Cerr
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"  // for Cerr
+#include "dakota_data_types.hpp"
 #include "DakotaString.hpp"
 #include "pecos_data_types.hpp"
 #include <boost/functional/hash/hash.hpp>

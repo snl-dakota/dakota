@@ -16,9 +16,9 @@
 #ifndef PARALLEL_LIBRARY_H
 #define PARALLEL_LIBRARY_H
 
-#include "system_defs.hpp"
-#include "global_defs.hpp"  // for Cout
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"  // for Cout
+#include "dakota_data_types.hpp"
 #include "MPIPackBuffer.hpp"
 #ifdef DAKOTA_HAVE_MPI
 #include <mpi.h>

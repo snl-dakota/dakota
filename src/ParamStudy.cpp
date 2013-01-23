@@ -10,7 +10,7 @@
 //- Description: Implementation code for the ParamStudy class
 //- Owner:       Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ParamStudy.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"

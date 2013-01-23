@@ -16,7 +16,7 @@
 /** \file main.cpp
     \brief file containing the main program for DAKOTA */
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 
 // eventually use only _WIN32 here
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)

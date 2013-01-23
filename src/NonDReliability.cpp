@@ -12,7 +12,7 @@
 //- Checked by:
 //- Version:
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDReliability.hpp"
 #include "DakotaGraphics.hpp"

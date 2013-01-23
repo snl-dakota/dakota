@@ -15,7 +15,7 @@
 #ifndef NOND_INTERVAL_H
 #define NOND_INTERVAL_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaNonD.hpp"
 
 namespace Dakota {

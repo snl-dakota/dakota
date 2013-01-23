@@ -15,7 +15,7 @@
 #ifndef SHARED_VARIABLES_DATA_H
 #define SHARED_VARIABLES_DATA_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaString.hpp"
 
 

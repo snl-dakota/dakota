@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "tabular_io.hpp"
+#include "dakota_tabular_io.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
 

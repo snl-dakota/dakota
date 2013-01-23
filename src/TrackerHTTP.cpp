@@ -11,11 +11,11 @@
 //-               
 //- Owner:        Brian Adams, Sandia National Laboratories
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include <unistd.h>
 // for uname
 #include <sys/utsname.h>
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "TrackerHTTP.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaBuildInfo.hpp"

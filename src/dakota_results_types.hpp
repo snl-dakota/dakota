@@ -14,7 +14,7 @@
 #define RESULTS_TYPES_H
 
 #include <boost/tuple/tuple.hpp>
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaString.hpp"
 
 

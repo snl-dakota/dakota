@@ -15,8 +15,8 @@
 #ifndef SOL_BASE_H
 #define SOL_BASE_H
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 

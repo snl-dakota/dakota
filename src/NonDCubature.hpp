@@ -15,7 +15,7 @@
 #ifndef NOND_CUBATURE_H
 #define NOND_CUBATURE_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "NonDIntegration.hpp"
 #include "CubatureDriver.hpp"
 

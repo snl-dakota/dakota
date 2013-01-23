@@ -11,7 +11,7 @@
 //- Owner:       Mike Eldred
 //- Checked by:
 
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
 #include "ParamStudy.hpp"
 #include "RichExtrapVerification.hpp"

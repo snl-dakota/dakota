@@ -17,7 +17,7 @@
 #define PARAM_STUDY_H
 
 #include "DakotaPStudyDACE.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 
 namespace Dakota {

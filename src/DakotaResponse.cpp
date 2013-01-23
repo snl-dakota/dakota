@@ -14,7 +14,7 @@
 #include "DakotaBinStream.hpp"
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 #include <algorithm>
 #include <boost/regex.hpp>
 

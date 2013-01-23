@@ -22,8 +22,8 @@
 // typedefs/functions/"iterator" prototypes should be re-designed and 
 // implemented in a new component for DAKOTA (e.g. DynLoadLib Manager?).
 
-#include "system_defs.hpp"
-#include "global_defs.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"
 
 /* WJB: re-enable dependencies class-wrappers only if necessary
 #ifdef HAVE_DOT

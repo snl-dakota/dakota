@@ -15,12 +15,12 @@
 #ifndef SENS_ANALYSIS_GLOBAL
 #define SENS_ANALYSIS_GLOBAL
 
-#include "data_types.hpp"
-#include "system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
-#include "global_defs.hpp"
-#include "results_types.hpp"
+#include "dakota_global_defs.hpp"
+#include "dakota_results_types.hpp"
 
 namespace Dakota {
 

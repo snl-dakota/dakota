@@ -10,7 +10,7 @@
 //- Description:  Implementation of base class for approximation interfaces
 //- Owner:        Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ApproximationInterface.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"

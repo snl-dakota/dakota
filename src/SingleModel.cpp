@@ -11,7 +11,7 @@
 //- Owner:       Mike Eldred
 //- Checked by:
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "SingleModel.hpp"
 #include "ProblemDescDB.hpp"
 

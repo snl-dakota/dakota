@@ -15,7 +15,7 @@
 #ifndef DAKOTA_STRATEGY_H
 #define DAKOTA_STRATEGY_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "ParamResponsePair.hpp"
 
 

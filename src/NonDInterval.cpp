@@ -13,8 +13,8 @@
 //- Version:
 
 #include "NonDInterval.hpp"
-#include "data_types.hpp"
-#include "system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "dakota_system_defs.hpp"
 //#include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDLHSSampling.hpp"

@@ -11,7 +11,7 @@
 //- Owner:        Mike Eldred
 
 #include "DataMethod.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 #include "pecos_global_defs.hpp"
 #ifdef HAVE_OPTPP
 #include "globals.h"

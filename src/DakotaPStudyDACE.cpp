@@ -10,10 +10,10 @@
 //- Description: Implementation code for the PStudyDACE class
 //- Owner:       Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaPStudyDACE.hpp"
 #include "ProblemDescDB.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 #ifdef DAKOTA_FSUDACE
 #include "fsu.H"
 #endif

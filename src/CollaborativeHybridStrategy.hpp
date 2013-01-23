@@ -15,7 +15,7 @@
 #ifndef COLLABORATIVE_HYBRID_STRATEGY_H
 #define COLLABORATIVE_HYBRID_STRATEGY_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "HybridStrategy.hpp"
 
 

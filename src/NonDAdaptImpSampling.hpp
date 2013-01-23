@@ -15,7 +15,7 @@
 #ifndef NOND_ADAPT_IMP_SAMPLING_H
 #define NOND_ADAPT_IMP_SAMPLING_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "NonDSampling.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaIterator.hpp"

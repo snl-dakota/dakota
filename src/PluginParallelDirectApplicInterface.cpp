@@ -13,7 +13,7 @@
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
 #include "PluginParallelDirectApplicInterface.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include <algorithm>

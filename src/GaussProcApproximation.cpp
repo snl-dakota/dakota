@@ -13,7 +13,7 @@
 //- Version:
 
 #include "GaussProcApproximation.hpp"
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
 //#include "NPSOLOptimizer.hpp"

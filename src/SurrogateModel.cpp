@@ -11,13 +11,13 @@
 //- Owner:       Mike Eldred
 //- Checked by:
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "SurrogateModel.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 #include "SurrogateData.hpp"
 
 static const char rcsId[]="@(#) $Id: SurrogateModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";

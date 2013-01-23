@@ -15,7 +15,7 @@
 #ifndef GLOBAL_DEFS_H
 #define GLOBAL_DEFS_H
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 
 
 namespace Dakota {

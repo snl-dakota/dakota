@@ -15,8 +15,8 @@
 #ifndef DAKOTA_RESPONSE_H
 #define DAKOTA_RESPONSE_H
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaActiveSet.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include <boost/regex.hpp>

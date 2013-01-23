@@ -15,7 +15,7 @@
 #ifndef NOND_LHS_SINGLE_INTERVAL_H
 #define NOND_LHS_SINGLE_INTERVAL_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "NonDLHSInterval.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaIterator.hpp"

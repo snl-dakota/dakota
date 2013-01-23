@@ -18,7 +18,7 @@
 #ifndef DAKOTA_BINSTREAM_H
 #define DAKOTA_BINSTREAM_H
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #ifndef NO_XDR
 #include "dak_xdr_interface.h"
 #endif

@@ -15,10 +15,10 @@
 #ifndef DAKOTA_ACTIVE_SET_H
 #define DAKOTA_ACTIVE_SET_H
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
-#include "data_io.hpp"
-#include "data_util.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "dakota_data_io.hpp"
+#include "dakota_data_util.hpp"
 #include "DakotaBinStream.hpp"
 #include "MPIPackBuffer.hpp"
 

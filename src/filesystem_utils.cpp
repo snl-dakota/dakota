@@ -10,8 +10,8 @@
 //-
 //- Version: $Id$
 
-#include "filesystem_utils.hpp"
-#include "global_defs.hpp"
+#include "dakota_filesystem_utils.hpp"
+#include "dakota_global_defs.hpp"
 #include "WorkdirHelper.hpp" // for WorkdirHelper::dakPreferredEnvPath
 #include <boost/array.hpp>
 

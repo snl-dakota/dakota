@@ -28,8 +28,8 @@
 #ifndef GETLONGOPT_H
 #define GETLONGOPT_H
 
-#include "system_defs.hpp"
-#include "global_defs.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"
 
 
 namespace Dakota {

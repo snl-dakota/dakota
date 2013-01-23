@@ -12,8 +12,8 @@
 //- Revised by:  
 //- Version:
 
-#include "data_io.hpp"
-#include "system_defs.hpp"
+#include "dakota_data_io.hpp"
+#include "dakota_system_defs.hpp"
 #include "NonDSparseGrid.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"

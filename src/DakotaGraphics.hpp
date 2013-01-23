@@ -13,8 +13,8 @@
 #ifndef DAKOTA_GRAPHICS_H
 #define DAKOTA_GRAPHICS_H
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 
 #ifdef HAVE_X_GRAPHICS
 class Graphics2D;

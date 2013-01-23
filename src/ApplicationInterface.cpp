@@ -10,7 +10,7 @@
 //- Description:  Implementation of base class for application interfaces
 //- Owner:        Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaBinStream.hpp"
 #include "ApplicationInterface.hpp"
 #include "ParamResponsePair.hpp"

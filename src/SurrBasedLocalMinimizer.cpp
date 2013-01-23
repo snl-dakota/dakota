@@ -11,8 +11,8 @@
 //- Owner:       Mike Eldred, Sandia National Laboratories
 //- Checked by:
 
-#include "system_defs.hpp"
-#include "data_io.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
 #include "SurrBasedLocalMinimizer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"

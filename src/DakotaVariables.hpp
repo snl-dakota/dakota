@@ -14,10 +14,10 @@
 #ifndef DAKOTA_VARIABLES_H
 #define DAKOTA_VARIABLES_H
 
-#include "data_types.hpp"
-#include "global_defs.hpp"  // for BaseConstructor
+#include "dakota_data_types.hpp"
+#include "dakota_global_defs.hpp"  // for BaseConstructor
 #include "SharedVariablesData.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 
 namespace Dakota {

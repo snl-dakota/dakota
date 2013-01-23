@@ -15,7 +15,7 @@
 #ifdef HAVE_X_GRAPHICS
 #include "Graphics.H"
 #endif // HAVE_X_GRAPHICS
-#include "tabular_io.hpp"
+#include "dakota_tabular_io.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 

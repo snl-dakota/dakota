@@ -10,7 +10,7 @@
 #ifndef MPI_PACK_BUFFER_H
 #define MPI_PACK_BUFFER_H
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include <boost/foreach.hpp>
 
 

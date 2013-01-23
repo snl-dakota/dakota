@@ -13,8 +13,8 @@
 //- Version:
 
 #include "NonDGlobalInterval.hpp"
-#include "system_defs.hpp"
-#include "data_io.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
 #include "NonDLHSSampling.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaIterator.hpp"

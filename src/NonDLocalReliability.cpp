@@ -12,7 +12,7 @@
 //- Checked by:
 //- Version:
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
@@ -34,7 +34,7 @@ using OPTPP::NLPGradient;
 #include "Teuchos_LAPACK.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include <algorithm>
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 //#define MPP_CONVERGE_RATE
 //#define DEBUG

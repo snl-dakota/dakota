@@ -14,8 +14,8 @@
 /** \file restart_util.cpp
     \brief file containing the DAKOTA restart utility main program */
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaBinStream.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"

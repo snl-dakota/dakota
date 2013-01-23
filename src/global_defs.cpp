@@ -11,7 +11,7 @@
 //-               implementations
 //- Owner:        Mike Eldred
 
-#include "global_defs.hpp"
+#include "dakota_global_defs.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "DakotaBinStream.hpp"

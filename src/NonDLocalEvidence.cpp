@@ -12,10 +12,10 @@
 //- Checked by:
 //- Version:
 
-#include "system_defs.hpp"
-#include "data_io.hpp"           
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"           
 #include "NonDLocalEvidence.hpp"
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "ProblemDescDB.hpp"
 
 //#define DEBUG

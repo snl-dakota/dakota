@@ -16,7 +16,7 @@
 #include "ProblemDescDB.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 static const char rcsId[]="@(#) $Id: SurrBasedMinimizer.cpp 4718 2007-11-15 21:44:58Z wjbohnh $";
 

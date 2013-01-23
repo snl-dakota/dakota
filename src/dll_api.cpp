@@ -19,7 +19,7 @@
 #define BUILDING_DAKOTA_DLL
 #include <windows.h>
 #endif
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ParallelLibrary.hpp"
 #include "CommandLineHandler.hpp"
 #include "ProblemDescDB.hpp"
@@ -30,8 +30,8 @@
 #include "DakotaInterface.hpp"
 #include "PluginSerialDirectApplicInterface.hpp"
 #endif
-#include "global_defs.hpp"
-#include "dll_api.h"
+#include "dakota_global_defs.hpp"
+#include "dakota_dll_api.h"
 #include <string>
 
 namespace Dakota {

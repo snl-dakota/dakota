@@ -16,7 +16,7 @@
 
 #include <cstring>
 #include <iostream>
-#include "dll_api.h"
+#include "dakota_dll_api.h"
 
 /// The main program for exercising the DLL API with a simple command-line
 

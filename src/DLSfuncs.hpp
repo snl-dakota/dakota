@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 

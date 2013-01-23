@@ -15,7 +15,7 @@
 #include "NonDQUESOBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "tabular_io.hpp"
+#include "dakota_tabular_io.hpp"
 #include "uqStatisticalInverseProblem.h"
 #include "uqStatisticalInverseProblemOptions.h"
 #include "uqMetropolisHastingsSGOptions.h"

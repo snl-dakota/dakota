@@ -12,7 +12,7 @@
 //- Owner:        Mike Eldred
 //- Version: $Id: data_util.cpp 7024 2010-10-16 01:24:42Z mseldre $
 
-#include "data_util.hpp"
+#include "dakota_data_util.hpp"
 
 
 namespace Dakota {

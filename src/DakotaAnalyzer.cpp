@@ -12,9 +12,9 @@
 //- Checked by:
 
 #include <stdexcept>
-#include "system_defs.hpp"
-#include "data_io.hpp"
-#include "tabular_io.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
+#include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaAnalyzer.hpp"
 #include "ProblemDescDB.hpp"

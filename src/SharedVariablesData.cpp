@@ -12,7 +12,7 @@
 
 #include "SharedVariablesData.hpp"
 #include "ProblemDescDB.hpp"
-#include "data_util.hpp"
+#include "dakota_data_util.hpp"
 
 //#define REFCOUNT_DEBUG
 

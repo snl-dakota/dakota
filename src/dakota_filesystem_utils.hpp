@@ -13,8 +13,8 @@
 #ifndef FILESYSTEM_UTILS_H
 #define FILESYSTEM_UTILS_H
 
-#include "system_defs.hpp"
-#include "global_defs.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"
 #include <boost/algorithm/string.hpp> 
 #include <string>
 #include <vector>

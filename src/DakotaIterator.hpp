@@ -15,7 +15,7 @@
 #ifndef DAKOTA_ITERATOR_H
 #define DAKOTA_ITERATOR_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
 #include "ResultsManager.hpp"
 

@@ -11,8 +11,8 @@
 //- Owner:        Bill Bohnhoff
 
 #include "WorkdirHelper.hpp"
-#include "global_defs.hpp"
-#include "filesystem_utils.hpp" // undesirable dependency for workdir_adjust
+#include "dakota_global_defs.hpp"
+#include "dakota_filesystem_utils.hpp" // undesirable dependency for workdir_adjust
                               // WJB: wd_adjust has a MAJOR dependency on statics in filesystem_utils.cpp
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>

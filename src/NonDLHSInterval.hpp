@@ -15,7 +15,7 @@
 #ifndef NOND_LHS_INTERVAL_H
 #define NOND_LHS_INTERVAL_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "NonDInterval.hpp"
 #include "DakotaModel.hpp"
 

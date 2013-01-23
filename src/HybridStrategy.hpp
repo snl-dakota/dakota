@@ -15,7 +15,7 @@
 #ifndef HYBRID_STRATEGY_H
 #define HYBRID_STRATEGY_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaStrategy.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"

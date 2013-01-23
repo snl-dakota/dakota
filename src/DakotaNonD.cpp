@@ -17,7 +17,7 @@
 #include "DakotaNonD.hpp"
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
-#include "tabular_io.hpp"
+#include "dakota_tabular_io.hpp"
 #include "pecos_stat_util.hpp"
 #ifdef DAKOTA_DDACE
 #include "Distribution.h"

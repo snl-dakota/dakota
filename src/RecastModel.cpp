@@ -11,7 +11,7 @@
 //- Owner:       Mike Eldred
 //- Checked by:
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "RecastModel.hpp"
 
 static const char rcsId[]="@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";

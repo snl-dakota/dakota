@@ -17,7 +17,7 @@
 //- Version: $Id: COLINApplication.cpp 6829 2010-06-18 23:10:23Z pdhough $
 //
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
 
 #include <utilib/TypeManager.h>

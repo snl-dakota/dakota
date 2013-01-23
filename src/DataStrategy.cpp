@@ -11,7 +11,7 @@
 //- Owner:        Mike Eldred
 
 #include "DataStrategy.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 
 using namespace std;

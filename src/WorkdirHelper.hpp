@@ -13,7 +13,7 @@
 #ifndef WORKDIR_HELPER_H
 #define WORKDIR_HELPER_H
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 //#include <boost/shared_array.hpp>   WJB - ToDo: look into improved mem mgmt
 //                                    e.g. use of malloc w/o free is undesirable
 

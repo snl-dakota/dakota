@@ -15,9 +15,9 @@
 #include "RelaxedVariables.hpp"
 #include "MixedVariables.hpp"
 #include "DakotaBinStream.hpp"
-#include "data_io.hpp"
-#include "data_util.hpp"
-#include "system_defs.hpp"
+#include "dakota_data_io.hpp"
+#include "dakota_data_util.hpp"
+#include "dakota_system_defs.hpp"
 #include "boost/functional/hash/hash.hpp"
 
 //#define REFCOUNT_DEBUG

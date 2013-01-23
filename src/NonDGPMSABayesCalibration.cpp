@@ -15,7 +15,7 @@
 #include "NonDGPMSABayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "tabular_io.hpp"
+#include "dakota_tabular_io.hpp"
 #include "uqStatisticalInverseProblem.h"
 #include "uqStatisticalInverseProblemOptions.h"
 #include "uqGslVector.h"
@@ -30,7 +30,7 @@
 #include "uqGpmsaComputerModel.h"
 #include "uqSimulationModelOptions.h"
 #include "NonDLHSSampling.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 

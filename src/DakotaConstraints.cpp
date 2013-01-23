@@ -10,12 +10,12 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaConstraints.hpp"
 #include "RelaxedVarConstraints.hpp"
 #include "MixedVarConstraints.hpp"
-#include "data_util.hpp"
+#include "dakota_data_util.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaConstraints.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 

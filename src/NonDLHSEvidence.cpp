@@ -13,8 +13,8 @@
 //- Version:
 
 #include "NonDLHSEvidence.hpp"
-#include "data_types.hpp"
-#include "system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "dakota_system_defs.hpp"
 
 //#define DEBUG
 

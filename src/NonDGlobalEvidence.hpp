@@ -15,7 +15,7 @@
 #ifndef NOND_GLOBAL_EVIDENCE_H
 #define NOND_GLOBAL_EVIDENCE_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "NonDGlobalInterval.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaIterator.hpp"

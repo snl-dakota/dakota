@@ -16,7 +16,7 @@
 
 #include <string>
 #include <curl/curl.h>
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 
 namespace Dakota {

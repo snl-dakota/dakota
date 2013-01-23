@@ -11,7 +11,7 @@
 //- Owner:       Brian M. Adams, Sandia National Laboratories
 
 #include "PSUADEDesignCompExp.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 #ifdef DAKOTA_DDACE
 #include "Distribution.h"

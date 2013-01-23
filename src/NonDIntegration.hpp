@@ -16,7 +16,7 @@
 #ifndef NOND_INTEGRATION_H
 #define NOND_INTEGRATION_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaNonD.hpp"
 #include "IntegrationDriver.hpp"
 

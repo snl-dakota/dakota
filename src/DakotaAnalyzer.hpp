@@ -15,7 +15,7 @@
 #ifndef DAKOTA_ANALYZER_H
 #define DAKOTA_ANALYZER_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
 #include "ParamResponsePair.hpp"
 //#include "DakotaResponse.hpp"

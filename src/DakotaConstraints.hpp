@@ -16,8 +16,8 @@
 #ifndef DAKOTA_CONSTRAINTS_H
 #define DAKOTA_CONSTRAINTS_H
 
-#include "data_types.hpp"
-#include "global_defs.hpp"  // for BaseConstructor
+#include "dakota_data_types.hpp"
+#include "dakota_global_defs.hpp"  // for BaseConstructor
 #include "SharedVariablesData.hpp"
 
 

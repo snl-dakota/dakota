@@ -10,7 +10,7 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"

@@ -15,7 +15,7 @@
 #ifndef NOND_SAMPLING_H
 #define NOND_SAMPLING_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaNonD.hpp"
 #include "LHSDriver.hpp"
 #include "SensAnalysisGlobal.hpp"

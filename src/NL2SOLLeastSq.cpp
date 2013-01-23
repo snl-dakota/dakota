@@ -11,7 +11,7 @@
 //- Owner:       David Gay
 //- Checked by:
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "NL2SOLLeastSq.hpp"
 #include "ProblemDescDB.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>

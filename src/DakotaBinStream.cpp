@@ -16,7 +16,7 @@
 //- Version: $Id: 
 
 #include "DakotaBinStream.hpp"
-#include "global_defs.hpp"
+#include "dakota_global_defs.hpp"
 
 
 namespace Dakota {

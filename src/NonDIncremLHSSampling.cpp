@@ -13,7 +13,7 @@
 //- Version:
 
 #include "NonDIncremLHSSampling.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"

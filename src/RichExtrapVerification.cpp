@@ -10,7 +10,7 @@
 //- Description: Implementation code for the RichExtrapVerification class
 //- Owner:       Mike Eldred/Ben Pax
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "RichExtrapVerification.hpp"
 #include "ProblemDescDB.hpp"
 

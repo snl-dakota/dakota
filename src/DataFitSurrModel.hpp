@@ -17,7 +17,7 @@
 #ifndef DATA_FIT_SURR_MODEL_H
 #define DATA_FIT_SURR_MODEL_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "SurrogateModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"

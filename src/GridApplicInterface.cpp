@@ -22,7 +22,7 @@
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
 #include "GridApplicInterface.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 
 //#define TESTING_GRID

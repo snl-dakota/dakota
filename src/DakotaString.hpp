@@ -15,7 +15,7 @@
 #ifndef DAKOTA_STRING_H
 #define DAKOTA_STRING_H
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include <string>
 
 namespace Dakota {

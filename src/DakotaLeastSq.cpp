@@ -11,8 +11,8 @@
 //- Owner:       Mike Eldred
 //- Checked by:
 
-#include "system_defs.hpp"
-#include "data_io.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaLeastSq.hpp"
 #include "ParamResponsePair.hpp"

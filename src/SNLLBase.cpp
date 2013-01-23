@@ -27,7 +27,7 @@
 #include "NonLinearEquation.h"
 #include "NonLinearInequality.h"
 #include "OptppArray.h"
-#include "data_util.hpp"
+#include "dakota_data_util.hpp"
 
 static const char rcsId[]="@(#) $Id: SNLLBase.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 

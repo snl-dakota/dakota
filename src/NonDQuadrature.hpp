@@ -15,7 +15,7 @@
 #ifndef NOND_QUADRATURE_H
 #define NOND_QUADRATURE_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "NonDIntegration.hpp"
 #include "TensorProductDriver.hpp"
 

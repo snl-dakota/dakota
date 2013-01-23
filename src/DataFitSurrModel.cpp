@@ -17,8 +17,8 @@
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "PRPMultiIndex.hpp"
-#include "data_io.hpp"
-#include "tabular_io.hpp"
+#include "dakota_data_io.hpp"
+#include "dakota_tabular_io.hpp"
 
 static const char rcsId[]="@(#) $Id: DataFitSurrModel.cpp 7034 2010-10-22 20:16:32Z mseldre $";
 

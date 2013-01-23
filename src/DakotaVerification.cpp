@@ -10,10 +10,10 @@
 //- Description: Implementation code for the Verification class
 //- Owner:       Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "DakotaVerification.hpp"
 #include "ProblemDescDB.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaVerification.cpp 6886 2010-08-02 19:13:01Z mseldre $";
 

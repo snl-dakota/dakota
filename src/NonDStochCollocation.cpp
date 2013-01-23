@@ -10,7 +10,7 @@
 //- Description: Implementation code for NonDStochCollocation class
 //- Owner:       Mike Eldred
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "NonDStochCollocation.hpp"
 #include "NonDSparseGrid.hpp"
 #include "DakotaModel.hpp"

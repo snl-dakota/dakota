@@ -15,7 +15,7 @@
 #ifndef DAKOTA_MODEL_H
 #define DAKOTA_MODEL_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaConstraints.hpp"
 //#include "DakotaInterface.hpp"

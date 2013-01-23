@@ -11,7 +11,7 @@
 //- Owner:       Laura Swiler, Sandia National Laboratories
 
 #include "FSUDesignCompExp.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "fsu.H"
 #include "ProblemDescDB.hpp"
 #ifdef DAKOTA_DDACE

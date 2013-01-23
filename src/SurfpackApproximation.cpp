@@ -17,7 +17,7 @@
 #include "SurfpackApproximation.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 // Headers from Surfpack
 #include "SurfData.h"

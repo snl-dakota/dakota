@@ -13,7 +13,7 @@
 
 #include "NestedModel.hpp"
 #include "ProblemDescDB.hpp"
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "pecos_global_defs.hpp"
 #include "DistributionParams.hpp"
 

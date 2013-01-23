@@ -14,7 +14,7 @@
 #include "SequentialHybridStrategy.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
-#include "data_io.hpp"
+#include "dakota_data_io.hpp"
 
 static const char rcsId[]="@(#) $Id: SequentialHybridStrategy.cpp 6972 2010-09-17 22:18:50Z briadam $";
 

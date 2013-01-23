@@ -15,7 +15,7 @@
 #ifndef NOND_LHS_EVIDENCE_H
 #define NOND_LHS_EVIDENCE_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "NonDLHSInterval.hpp"
 
 namespace Dakota {

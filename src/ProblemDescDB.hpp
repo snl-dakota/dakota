@@ -14,8 +14,8 @@
 #ifndef PROBLEM_DESC_DB_H
 #define PROBLEM_DESC_DB_H
 
-#include "system_defs.hpp"
-#include "data_types.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 #include "DataStrategy.hpp"
 #include "DataMethod.hpp"
 #include "DataModel.hpp"

@@ -21,8 +21,8 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/any.hpp>
-#include "global_defs.hpp"
-#include "results_types.hpp"
+#include "dakota_global_defs.hpp"
+#include "dakota_results_types.hpp"
 
 // TODO: try/catch around any_cast
 

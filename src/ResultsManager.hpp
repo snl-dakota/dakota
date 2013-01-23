@@ -15,7 +15,7 @@
 #ifndef RESULTS_MANAGER_H
 #define RESULTS_MANAGER_H
 
-#include "results_types.hpp"
+#include "dakota_results_types.hpp"
 #include "ResultsDBAny.hpp"
 
 // Design notes (BMA, Fall 2012)

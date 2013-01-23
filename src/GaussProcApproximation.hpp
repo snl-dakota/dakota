@@ -15,7 +15,7 @@
 #ifndef GAUSS_PROC_APPROXIMATION_H
 #define GAUSS_PROC_APPROXIMATION_H
 
-#include "data_types.hpp"
+#include "dakota_data_types.hpp"
 #include "DakotaApproximation.hpp"
 //#include "SNLLOptimizer.hpp"
 //#include "DakotaNonD.hpp"

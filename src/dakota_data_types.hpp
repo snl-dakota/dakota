@@ -9,7 +9,7 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
-#include "system_defs.hpp"
+#include "dakota_system_defs.hpp"
 #include "Teuchos_SerialDenseVector.hpp"
 #include <boost/multi_array.hpp>
 #include "boost/dynamic_bitset.hpp"
