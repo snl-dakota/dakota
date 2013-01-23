@@ -1154,7 +1154,7 @@ int TestDriverInterface::scalable_gerstner()
       for (size_t i=0; i<numVars; ++i)
 	if (i%2)
 	  fnVals[0] +=  odd_coeff*std::exp(xC[i])
-	            + inter_coeff*std::exp(xC[i]*xC[i-1]);
+	    + inter_coeff*std::exp(xC[i]*xC[i-1]);
 	else
 	  fnVals[0] += even_coeff*std::exp(xC[i]);
       break;
@@ -1178,11 +1178,17 @@ int TestDriverInterface::scalable_gerstner()
       break;
     case 2:
       for (size_t i=0; i<numVars; ++i)
-	fnGrads[0][i] = (i%2) ?
-	  odd_coeff*std::exp(xC[i])
-	  + inter_coeff*xC[i-1]*std::exp(xC[i]*xC[i-1]) :
-	  even_coeff*std::exp(xC[i])
-	  + inter_coeff*xC[i+1]*std::exp(xC[i]*xC[i+1]);
+	{
+	  if (i%2) 
+	    fnGrads[0][i] = odd_coeff*std::exp(xC[i])
+	      + inter_coeff*xC[i-1]*std::exp(xC[i]*xC[i-1]);
+	  else 
+	    {
+	      fnGrads[0][i] = even_coeff*std::exp(xC[i]);
+	      if ( i+1 < numVars )
+		fnGrads[0][i] += inter_coeff*xC[i+1]*std::exp(xC[i]*xC[i+1]);
+	    }
+	}
       break;
     case 3:
       if (directFnASV[0] & 1)
