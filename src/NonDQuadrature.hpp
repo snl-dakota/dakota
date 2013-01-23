@@ -245,6 +245,7 @@ inline int NonDQuadrature::num_samples() const
   case FULL_TENSOR:             return tpqDriver->grid_size(); break;
   case FILTERED_TENSOR: case RANDOM_TENSOR: return numSamples; break;
   }
+  return 0;
 }
 
 

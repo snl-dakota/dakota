@@ -126,7 +126,7 @@ public:
   virtual void clear_current();
 
   /// check if diagnostics are available for this approximation type
-  virtual const bool diagnostics_available();
+  virtual bool diagnostics_available();
 
   //
   //- Heading: Member functions

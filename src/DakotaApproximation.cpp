@@ -465,7 +465,7 @@ Real Approximation::prediction_variance(const Variables& vars)
 }
 
 
-const bool Approximation::diagnostics_available()
+bool Approximation::diagnostics_available()
 {
   if (approxRep) // envelope fwd to letter
     return approxRep->diagnostics_available();

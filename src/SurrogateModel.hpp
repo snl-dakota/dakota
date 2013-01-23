@@ -57,7 +57,7 @@ protected:
   Model& subordinate_model();
 
   /// return responseMode
-  short surrogate_response_mode();
+  short surrogate_response_mode() const;
 
   /// return deltaCorr
   DiscrepancyCorrection& discrepancy_correction();
@@ -187,7 +187,7 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
-inline short SurrogateModel::surrogate_response_mode()
+inline short SurrogateModel::surrogate_response_mode() const
 { return responseMode; }
 
 

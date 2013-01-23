@@ -488,9 +488,10 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
 
-  size_t i, j, width = write_precision+7,
+  size_t i, width = write_precision+7,
     num_cuv = numContAleatUncVars+numContEpistUncVars;
   char tag[10];
+  int j; // for sprintf %i
 
   s << "-------------------------------------------------------------------\n";
   for (i=0; i<numFunctions; i++) {

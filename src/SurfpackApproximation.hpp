@@ -88,7 +88,7 @@ protected:
   /// retrieve the diagnostic metric for the diagnostic type specified
   Real diagnostic(const String& metric_type);
   /// check if the diagnostics are available (true for the Surfpack types)
-  const bool diagnostics_available();
+  bool diagnostics_available();
 
 private:
 
@@ -147,6 +147,10 @@ private:
 inline SurfpackApproximation::SurfpackApproximation():
   surfData(NULL), model(NULL), factory(NULL)
 { }
+
+
+inline bool SurfpackApproximation::diagnostics_available()
+{ return true; }
 
 
 /* The value returned from this function is currently meaningless.

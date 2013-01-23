@@ -82,7 +82,7 @@ protected:
   Interface& interface();
 
   /// pass a bypass request on to the subModel for any lower-level surrogates
-  void surrogate_response_mode(bool mode);
+  void surrogate_response_mode(short mode);
 
   /// update component parallel mode for supporting parallelism in
   /// optionalInterface and subModel
@@ -339,7 +339,7 @@ inline Interface& NestedModel::interface()
 { return optionalInterface; }
 
 
-inline void NestedModel::surrogate_response_mode(bool mode)
+inline void NestedModel::surrogate_response_mode(short mode)
 { if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
 
 

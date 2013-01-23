@@ -183,7 +183,7 @@ protected:
 
   /// update the subModel's surrogate response mode
   /// (SurrogateModel::responseMode)
-  void surrogate_response_mode(bool mode);
+  void surrogate_response_mode(short mode);
 
   /// builds the subModel approximation
   void build_approximation();
@@ -446,7 +446,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-inline void RecastModel::surrogate_response_mode(bool mode)
+inline void RecastModel::surrogate_response_mode(short mode)
 { if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
 
 

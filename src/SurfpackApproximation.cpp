@@ -616,10 +616,6 @@ Real SurfpackApproximation::prediction_variance(const Variables& vars)
 }
 
 
-const bool SurfpackApproximation::diagnostics_available()
-{ return true; }
-
-
 Real SurfpackApproximation::diagnostic(const String& metric_type)
 { 
   if (!model) { 

@@ -1209,6 +1209,9 @@ Real NonDExpansion::compute_covariance_metric()
     return delta_resp_covar.normFrobenius();
     break;
   }
+  default: // NO_COVARIANCE or failure to redefine DEFAULT_COVARIANCE
+    return 0.;
+    break;
   }
 }
 
