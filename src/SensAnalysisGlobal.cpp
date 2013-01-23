@@ -527,9 +527,9 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
   size_t i, j, num_cv = cv_labels.size(), num_div = div_labels.size(),
     num_drv = drv_labels.size();
   if (num_cv+num_div+num_drv != numVars) {
-    Cerr << "Error: Number of variable labels passed to print_correlations not "
-	 << "equal to number of input variables in compute_correlations()."
-	 << std::endl;
+    Cerr << "Error: Number of variable labels (" << num_cv+num_div+num_drv
+	 << ") passed to print_correlations not equal to number of input "
+	 << "variables (" << numVars << ") in compute_correlations()." << std::endl;
     abort_handler(-1);
   }
 
