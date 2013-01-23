@@ -15900,15 +15900,15 @@ Test Number 20 succeeded
 Test Number 21 succeeded
 <<<<< Function evaluation summary: 217 total (217 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.0439782390e+00 intake_dia
-                      1.7786922725e+00 flatness
+                      2.0424564683e+00 intake_dia
+                      1.7778793883e+00 flatness
 <<<<< Best objective functions =
-                     -2.4252761325e+00
-                     -3.3391911927e-01
-                     -3.3319615912e-01
+                     -2.4247338990e+00
+                     -3.3675644528e-01
+                     -3.3331809175e-01
 <<<<< Best constraint values   =
-                     -1.7013521512e-03
-<<<<< Best data captured at function evaluation 205
+                     -7.8252145431e-03
+<<<<< Best data captured at function evaluation 203
 dakota_scbdo_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 891 total (891 new, 0 duplicate)
