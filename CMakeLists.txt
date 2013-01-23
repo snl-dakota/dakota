@@ -192,14 +192,15 @@ if (NOT BUILD_IN_TRILINOS)
       message("in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR is: ${Teuchos_DIR}")
     endif() # NOT Teuchos_DIR
 
+    # This shouldn't get triggered with our change to Teuchos in tpl r2686
     if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/TrilinosConfig.cmake )
       # Move the "TriBITS" config file to teuchos subdir (not the BuildRoot)
       file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/TrilinosConfig.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/TrilinosConfig.cmake)
-
-      # Additional setting to prevent multiple targets with the same name
-      set(Trilinos_TARGETS_IMPORTED 1)
     endif()
+
+    # Additional setting to prevent multiple targets with the same name
+    set(Trilinos_TARGETS_IMPORTED 1)
 
     find_package( Teuchos NO_MODULE REQUIRED )
 
