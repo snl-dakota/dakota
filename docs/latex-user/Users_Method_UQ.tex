@@ -2,9 +2,30 @@
 
 \section{Overview}\label{uq:overview}
 
-Uncertainty quantification (UQ) is the process of determining the
-effect of input uncertainties on response metrics of interest.  These
-input uncertainties may be characterized as either aleatory
+At a high level, uncertainty quantification (UQ) or nondeterministic
+analysis is the process of characterizing input uncertainties, forward
+propagating these uncertainties through a computational model, and
+performing statistical or interval assessments on the resulting
+responses.  This process determines the effect of uncertainties and
+assumptions on model outputs or results.  In Dakota, uncertainty
+quantification methods specifically focus on the forward propagation
+part of the process, where probabilistic or interval information on
+parametric inputs are mapped through the computational model to assess
+statistics or intervals on outputs.  For an overview of these
+approaches for engineering applications, consult~\cite{Hal00}.
+
+UQ is related to sensitivity analysis in that the common goal is to
+gain an understanding of how variations in the parameters affect the
+response functions of the engineering design problem. However, for UQ,
+some or all of the components of the parameter vector, are considered
+to be uncertain as specified by particular probability distributions
+(e.g., normal, exponential, extreme value), or other uncertainty
+structures.  By assigning specific distributional structure to the
+inputs, distributional structure for the outputs (i.e, response
+statistics) can be inferred.
+
+UQ methods are often distinguished by their ability to propagate
+aleatory or epistemic input uncertainty characterizations.  Aleatory
 uncertainties, which are irreducible variabilities inherent in nature,
 or epistemic uncertainties, which are reducible uncertainties
 resulting from a lack of knowledge.  Since sufficient data is
@@ -15,10 +36,24 @@ epistemic uncertainties, data is generally sparse, making the use of
 probability distribution assertions questionable and typically leading
 to nonprobabilistic methods based on interval specifications.
 
-Dakota contains capabilities for performing nondeterministic analysis.
-The methods for uncertainty quantification in Dakota have been
-developed by a group of researchers at Sandia Labs, in conjunction
-with collaborators in academia~\cite{Gha99,Gha91,Eld05,Tang10a}.
+\subsection{Summary of Dakota UQ Methods}\label{uq:overview:methods}
+
+Dakota contains capabilities for performing nondeterministic analysis
+with both types of input uncertainty.  These UQ methods have been
+developed by Sandia Labs, in conjunction with collaborators in
+academia~\cite{Gha99,Gha91,Eld05,Tang10a}.
+
+The aleatory UQ methods in Dakota include various sampling-based
+approaches (e.g., Monte Carlo and Latin Hypercube sampling), local and
+global reliability methods, and stochastic expansion (polynomial chaos
+expansions and stochastic collocation) approaches.  The epistemic UQ
+methods include local and global interval analysis and Dempster-Shafer
+evidence theory.  These are all described briefly in this section and
+in depth throughout this Chapter. Dakota additionally supports mixed
+aleatory/epistemic UQ via interval-valued probability, second-order
+probability, and Dempster-Shafer theory of evidence, as described in
+Section~\ref{adv_models:mixed_uq}.
+
 %In addition, future extensions to the DDACE package will make it 
 %applicable to general UQ problems, which will augment the Dakota/UQ 
 %capabilities.
@@ -27,12 +62,177 @@ with collaborators in academia~\cite{Gha99,Gha91,Eld05,Tang10a}.
 %computation of probabilistic information about response functions
 %based on sets of simulations taken from the specified probability
 %distributions for uncertain parameters. That is, 
-These methods perform a forward uncertainty propagation in which
+
+%The impact on the response functions due to the probabilistic nature
+%of the parameters is often estimated using a sampling-based approach
+%such as Monte Carlo sampling or one of its variants (latin hypercube,
+%quasi-Monte Carlo, Markov-chain Monte Carlo, etc.). In these sampling
+%approaches, a random number generator is used to select different
+%values of the parameters with probability specified by their
+%probability distributions. This is the point that distinguishes UQ
+%sampling from DoE/DACE sampling, in that the former supports general
+%probabilistic descriptions of the parameter set and the latter
+%generally supports only a bounded parameter space description.  A
+%particular set of parameter values is often called a \emph{sample
+%point}, or simply a \emph{sample}. With Monte Carlo and Latin
+%Hypercube sampling, the user may specify correlations among the input
+%sample points. After a user-selected number of sample points has been
+%generated, the response functions for each sample are evaluated. Then,
+%a statistical analysis is performed on the response function values to
+%yield information on their characteristics. While this approach is
+%straightforward, and readily amenable to parallel computing, it can be
+%computationally expensive depending on the accuracy requirements of
+%the statistical information (which links directly to the number of
+%sample points).
+
+%Finally, when the input uncertainties are poorly characterized, then
+%epistemic uncertainty methods, such as second-order probability or
+%Dempster-Shafer theory of evidence, can be used to compute intervals
+%of potential probability values.  The second-order probability
+%approach performs an ensemble of aleatory UQ analyses, one for each
+%realization of the epistemic parameter set.  The ensemble of CDF/CCDF
+%curves generates what is known as a ``horse-tail'' plot.
+%Dempster-Shafer, on the other hand, directly generates probability
+%bounds, known as the belief and plausibility functions.
+
+This chapter has extensive details on various Dakota UQ methods, but here is a
+high-level summary of available capabilities:
+
+% BMA TODO: Considerably shorten the following descriptions, moving
+% text to later sections if needed.
+
+\textbf{LHS (Latin Hypercube Sampling)}: This package provides both
+Monte Carlo (random) sampling and Latin Hypercube sampling methods,
+which can be used with probabilistic variables in Dakota that have the
+following distributions: normal, lognormal, uniform, loguniform,
+triangular, exponential, beta, gamma, gumbel, frechet, weibull, poisson, 
+binomial, negative binomial, geometric, hypergeometric, and
+user-supplied histograms. In addition, LHS accounts for correlations
+among the variables~\cite{Ima84}, which can be used to accommodate a
+user-supplied correlation matrix or to minimize correlation when a
+correlation matrix is not supplied. The LHS package currently serves
+two purposes: (1) it can be used for uncertainty quantification by
+sampling over uncertain variables characterized by probability
+distributions, or (2) it can be used in a DACE mode in which any
+design and state variables are treated as having uniform distributions
+(see the \texttt{all\_variables} flag in the Dakota Reference
+Manual~\cite{RefMan}). The LHS package historically came in two
+versions: ``old'' (circa 1980) and ``new'' (circa 1998), but presently
+only the latter is supported in Dakota, requiring a Fortran 90
+compiler.  This ``new'' LHS is available under a separate GNU Lesser
+General Public License and is distributed with Dakota.  In addition 
+to a standard sampling study, we support the capability to perform 
+``incremental'' LHS, where a user can specify an initial LHS study 
+of N samples, and then re-run an additional incremental study which 
+will double the number of samples (to 2N, with the first N being 
+carried from the initial study).  The full incremental sample of 
+size 2N is also a Latin Hypercube, with proper stratification and 
+correlation.  Finally, Dakota offers preliminary support for 
+importance sampling using LHS, specified with \texttt{importance}.
+
+\textbf{Reliability Methods}: This suite of methods includes both
+local and global reliability methods.  Local methods include first-
+and second-order versions of the Mean Value method (MVFOSM and MVSOSM)
+and a variety of most probable point (MPP) search methods, including
+the Advanced Mean Value method (AMV and AMV$^2$), the iterated
+Advanced Mean Value method (AMV+ and AMV$^2$+), the Two-point Adaptive
+Nonlinearity Approximation method (TANA-3), and the traditional First
+Order and Second Order Reliability Methods (FORM and
+SORM)~\cite{Hal00}.  Each of the MPP search techniques solve local
+optimization problems in order to locate the MPP, which is then used
+as the point about which approximate probabilities are integrated
+(using first- or second-order integrations in combination with
+refinements based on importance sampling). Reliability mappings may
+involve computing reliability and probability levels for prescribed
+response levels (forward reliability analysis, commonly known as the
+reliability index approach or RIA) or computing response levels for
+prescribed reliability and probability levels (inverse reliability
+analysis, commonly known as the performance measure approach or PMA).
+Approximation-based MPP search methods (AMV, AMV$^2$, AMV+, AMV$^2$+,
+and TANA) may be applied in either x-space or u-space, and mappings
+may involve either cumulative or complementary cumulative distribution
+functions.  Global reliability methods are designed to handle
+nonsmooth and multimodal failure surfaces, by creating global
+approximations based on Gaussian process models.  They accurately
+resolve a particular contour of a response function and then estimate
+probabilities using multimodal adaptive importance sampling.
+
+\textbf{Stochastic Expansion Methods}: The objective of these
+techniques is to characterize the response of systems whose governing
+equations involve stochastic coefficients. The development of these
+techniques mirrors that of deterministic finite element analysis
+utilizing the notions of projection, orthogonality, and weak
+convergence~\cite{Gha99},~\cite{Gha91}.  Rather than estimating point
+probabilities, they form an approximation to the functional
+relationship between response functions and their random inputs, which
+provides a more complete uncertainty representation for use in
+multi-code simulations.  Expansion methods include the Wiener-Askey
+generalized polynomial chaos expansion (PCE), which employs a family
+of multivariate orthogonal polynomials that are well matched to
+particular input probability distributions, and stochastic collocation
+(SC), which employs multivariate Lagrange interpolation polynomials.
+For PCE, expansion coefficients may be evaluated using a spectral
+projection approach (based on sampling, quadrature, or sparse grid
+methods for integration) or a point collocation approach (based on
+linear regression).  For SC, interpolants may be formed over
+tensor-product quadrature grids or Smolyak sparse grids.  Both methods
+provide analytic response moments; however, CDF/CCDF probabilities are
+evaluated by sampling on the expansion.
+
+\textbf{Interval Analysis}: Interval analysis is often used to model 
+epistemic uncertainty. In interval analysis, one assumes that nothing 
+is known about an epistemic uncertain variable except that its value lies 
+somewhere within an interval.  In this situation, it is NOT 
+assumed that the value has a uniform probability of occurring 
+within the interval.  Instead, the interpretation is that 
+any value within the interval is a possible value or a potential 
+realization of that variable.  In interval analysis, the 
+uncertainty quantification problem is one of determining the 
+resulting bounds on the output (defining the output interval) 
+given interval bounds on the inputs. Again, any output response 
+that falls within the output interval is a possible output 
+with no frequency information assigned to it.
+
+We have the capability to perform interval analysis using either
+global or local methods. In the global approach, one uses either a 
+global optimization method (based on a Gaussian process surrogate model)
+or a sampling method to assess the bounds. The
+local method uses gradient information in a derivative-based 
+optimization approach, using either SQP (sequential quadratic 
+programming) or a NIP (nonlinear interior point) method to obtain bounds. 
+ 
+\textbf{Dempster-Shafer Theory of Evidence}: The objective of Evidence
+theory is to model the effects of epistemic uncertainties.  Epistemic
+uncertainty refers to the situation where one does not know enough
+to specify a probability distribution on a variable.  Sometimes epistemic
+uncertainty is referred to as subjective, reducible, or lack of knowledge
+uncertainty.  In contrast, aleatory uncertainty refers to the situation
+where one does have enough information to specify a probability distribution.
+In Dempster-Shafer theory of evidence, the uncertain input variables
+are modeled as sets of intervals.  The user assigns a basic probability
+assignment (BPA) to each interval, indicating how likely it is that the
+uncertain input falls within the interval.  The intervals may be
+overlapping, contiguous, or have gaps.  The intervals and their associated
+BPAs are then propagated through the simulation to obtain cumulative
+distribution functions on belief and plausibility.  Belief is the lower
+bound on a probability estimate that is consistent with the evidence, and
+plausibility is the upper bound on a probability estimate that is consistent
+with the evidence. In addition to the full evidence theory structure, 
+we have a simplified capability for users wanting to perform pure 
+interval analysis (e.g. what is the interval on the output given 
+intervals on the input) using either global or local optimization methods. 
+Interval analysis is often used to model epistemic variables in 
+nested analyses, where probability theory is used to model aleatory variables.
+
+\subsection{Variables and Responses for UQ}\label{uq:overview:varsresp}
+
+All the UQ methods perform a forward uncertainty propagation in which
 probability or interval information for input parameters is mapped to
 probability or interval information for output response functions. The
 $m$ functions in the Dakota response data set are interpreted as $m$
 general response functions by the Dakota methods (with no specific
-interpretation of the functions as for optimization and least squares).
+interpretation of the functions as for optimization and least
+squares).
 
 Within the variables specification, uncertain variable descriptions
 are employed to define the parameter probability distributions (see
@@ -1866,6 +2066,161 @@ likelihood.
 
 We expect to continue development of Bayesian calibration methods, 
 so check for updates to this capability.  
+
+\section{UQ Method Selection}\label{usage:uq}
+
+The need for computationally efficient methods is further amplified in
+the case of the quantification of uncertainty in computational
+simulations. Sampling-based methods are the most robust uncertainty
+techniques available, are applicable to almost all simulations, and
+possess rigorous error bounds; consequently, they should be used
+whenever the function is relatively inexpensive to compute. However,
+in the case of terascale computational simulations, the number of
+function evaluations required by traditional techniques such as Monte
+Carlo and Latin hypercube sampling (LHS) quickly becomes prohibitive,
+especially if tail statistics are needed.  Additional sampling options
+include quasi-Monte Carlo (QMC) sampling and importance sampling (IS), 
+%or Markov Chain Monte Carlo (MCMC) sampling
+and incremental sampling may also be used to incrementally add samples 
+to an existing sample set.
+
+Alternatively, one can apply the traditional sampling techniques to a
+surrogate function approximating the expensive computational
+simulation (see Section~\ref{adv_models:sbuq}). However, if this
+approach is selected, the user should be aware that it is very
+difficult to assess the accuracy of the results obtained. Unlike
+the case of surrogate-based local minimization (see
+Section~\ref{sbm:sblm}), there is no simple pointwise calculation to
+verify the accuracy of the approximate results. This is due to the
+functional nature of uncertainty quantification, i.e. the accuracy of
+the surrogate over the entire parameter space needs to be considered,
+not just around a candidate optimum as in the case of surrogate-based
+local. This issue especially manifests itself when trying to estimate
+low probability events such as the catastrophic failure of a system.
+
+Another class of UQ methods known as local reliability methods (e.g.,
+MV, AMV/AMV$^2$, AMV+/AMV$^2$+, TANA, and FORM/SORM) are more
+computationally efficient in general than the sampling methods and are
+effective when applied to reasonably well-behaved response functions;
+i.e., functions that are smooth, unimodal, and linear or mildly
+nonlinear. They can be used to provide qualitative sensitivity
+information concerning which uncertain variables are important (with
+relatively few function evaluations), or compute full cumulative or
+complementary cumulative response functions (with additional
+computational effort).  Since they rely on gradient calculations to
+compute local optima (most probable points of failure), they scale
+well for increasing numbers of random variables, but issues with
+nonsmooth, discontinuous, and multimodal response functions are
+relevant concerns. In addition, even if there is a single MPP and it
+is calculated accurately, first-order and second-order integrations
+may fail to accurately capture the shape of the failure domain.  In
+these cases, adaptive importance sampling around the MPP can be
+helpful.  Overall, local reliability methods should be used with some
+care and their accuracy should be verified whenever possible.
+
+An effective alternative to local reliability analysis when confronted
+with nonsmooth, multimodal, and/or highly nonlinear response functions
+is efficient global reliability analysis (EGRA).  This technique
+employs Gaussian process global surrogate models to accurately resolve
+the failure domain and then employs multimodal adaptive importance
+sampling to resolve the probabilities.  For relatively low dimensional
+problems (i.e, on the order of 10 variables), this method displays the
+efficiency of local reliability analysis with the accuracy of
+exhaustive sampling.  While extremely promising, this method is still
+relatively new and is the subject of ongoing refinements as we deploy
+it to additional applications.
+
+The next class of UQ methods available in Dakota is comprised of
+stochastic expansion methods (polynomial chaos and stochastic
+collocation), which are general purpose techniques provided that the
+response functions possess finite second order moments. Further, these
+methods approximate the full random process/field and capture the
+underlying functional relationship between a key response metric and
+its random variables, rather than just approximating statistics such
+as mean and standard deviation. This class of methods parallels
+traditional variational methods in mechanics; in that vein, efforts
+are underway to compute rigorous error bounds of the approximations
+produced by the methods. Another strength of these methods is their
+potential use in a multiphysics environment as a means to propagate
+the uncertainty through a series of simulations while retaining as
+much information as possible at each stage of the analysis.  The
+current challenge in the development of these methods, as for other
+global surrogate-based methods, is effective scaling for large numbers
+of random variables.  Recent advances in adaptive sparse grid methods 
+address some of the scaling issues for stochastic expansion.
+
+The final class of UQ methods available in Dakota are focused on
+epistemic uncertainties, or uncertainties resulting from a lack of
+knowledge.  In these problems, the assignment of input probability
+distributions when data is sparse can be somewhat suspect.  One
+approach to handling epistemic uncertainties is Dempster-Shafer theory
+of evidence (Dakota methods \texttt{local\_evidence} and 
+\texttt{global\_evidence}). Another method is pure interval 
+analysis (\texttt{local\_interval\_est} and 
+\texttt{global\_interval\_est}), where intervals on inputs are 
+mapped to intervals on outputs using optimization methods 
+
+For problems with a mixture of epistemic and aleatoric uncertainties, 
+it is desirable to segregate the two uncertainty types within a nested 
+analysis, allowing stronger probabilistic inferences for the portion
+of the problem where they are appropriate.  In this nested approach, an outer 
+epistemic level selects realizations of epistemic parameters (augmented
+variables) and/or realizations of random variable distribution
+parameters (inserted variables) from intervals.  These realizations
+define the probability distributions for an inner aleatoric level
+performing probabilistic analyses.  In the case where the outer loop
+is an interval propagation approach (\texttt{local\_interval\_est} or 
+\texttt{global\_interval\_est}), the nested approach is
+known as second-order probability (see also Section~\ref{models:nested})
+and the study generates a family of CDF/CCDF respresentations known as a 
+``horse tail'' plot.  In the case where the outer loop is an 
+evidence-based approach (\texttt{local\_evidence} or 
+\texttt{global\_evidence}), the approach generates epistemic belief 
+and plausibility bounds on aleatory statistics.
+
+The recommendations for UQ methods are summarized in Table~\ref{usage:guideuq}.
+
+\begin{table}
+\centering
+\caption{Guidelines for UQ method selection.} \label{usage:guideuq}\vspace{2mm}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Desired Problem} & \textbf{Applicable Methods} \\
+\textbf{Classification} & \textbf{Characteristics} & \\
+\hline
+Sampling & nonsmooth, multimodal response functions;       & sampling 
+(Monte Carlo or LHS) \\
+         & response evaluations are relatively inexpensive & \\
+\hline
+Local       & smooth, unimodal response functions; & local\_reliability
+(MV, AMV/AMV$^2$,\\
+reliability & larger sets of random variables & AMV+/AMV$^2$+, TANA, 
+FORM/SORM) \\
+\hline
+Global      & nonsmooth, multimodal response functions; & 
+global\_reliability \\
+reliability & low dimensional     & \\
+\hline
+Stochastic & nonsmooth, multimodal response functions; & 
+polynomial\_chaos, \\
+expansions & low dimensional; capture of functional    & 
+stoch\_collocation\\
+           & form useful for subsequent analyses       & \\
+\hline
+Epistemic & uncertainties are poorly characterized &
+interval: local\_interval\_est, \\
+ & & global\_interval\_est, sampling; \\
+ & & BPA: local\_evidence, \\
+ & & global\_evidence \\
+\hline
+Mixed UQ  & some uncertainties are poorly characterized &
+nested UQ (second-order probability, \\
+ & & mixed evidence) with epistemic outer loop \\
+ & & and aleatory inner loop, sampling \\
+\hline
+\end{tabular}
+\end{table}
+
 
 \begin{comment}
 \section{Future Nondeterministic Methods}\label{uq:future}
