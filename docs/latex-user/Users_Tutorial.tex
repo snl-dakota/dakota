@@ -27,92 +27,41 @@ availability. If not available for your target platform, you may
 still download Dakota as described below. 
 
 Getting started with Dakota typically involves the following steps:
-\begin{itemize}
-  \item Download Dakota: binary executables and source code are
-    available from\\
-    \url{http://dakota.sandia.gov/}.
-
-  \item After downloading, unpack the files, yielding a {\tt Dakota/}
-    directory. For tar.gz or .tgz files, e.g.,\\
-    \texttt{Dakota\_5\_x.OSversion.tar.gz} either invoke
-    \begin{small}
-\begin{verbatim}
-    gunzip Dakota_5_x.OSversion.tar.gz
-    tar -xvf Dakota_5_x.OSversion.tar
-\end{verbatim}
-    \end{small}
-    or (slightly faster and less demanding of disk space) invoke
-    \begin{small}
-\begin{verbatim}
-    gzip -dc Dakota_5_x.OSversion.tar.gz | tar xf -
-\end{verbatim}
-    \end{small}
-    A similar process applies to windows distributions which are
-    packaged as .zip files. These can be extracted with the Windows
-    extractor or WinZIP, for example.
-
-  \item For binary packages, {\tt Dakota/bin} contains executable
-    files. Example input files and interfaces are in
-    \texttt{Dakota/examples} (see \texttt{Dakota/examples/README}) and
-    \texttt{Dakota/test}. To get started, open a terminal shell or
-    Command Prompt and set your PATH to include {\tt Dakota/bin} (and
-    optionally Dakota's test or example directories). On Linux:
-    \begin{small}
-\begin{verbatim}
-    export PATH=/path/to/Dakota/bin:$PATH
-\end{verbatim} %$
-    \end{small}
-    or on Windows:
-    \begin{small}
-\begin{verbatim}
-    set PATH=C:\path\to\Dakota\bin:%PATH%
-\end{verbatim}
-    \end{small}
-    then proceed with running as described below in 
-    Section~\ref{tutorial:quickstart:running}.
-
-  \item For source packages, configure and compile using either GNU
-    configure/make or CMake/make. For example, for configure:
-    \begin{small}
-\begin{verbatim}
-    cd Dakota/
-    configure
-    make
-    make install  # optional
-\end{verbatim}
-    \end{small}
-    or for CMake
-    \begin{small}
-\begin{verbatim}
-    cd Dakota/
-    mkdir build && cd build/
-    cmake ..
-    make
-    make install  # optional
-\end{verbatim}
-    \end{small}
-    Detailed configuration options are available on the Dakota
-    website, including the Developer Portal
-    \url{http://dakota.sandia.gov/developer/}.
+\begin{enumerate}
+  \item Download Dakota. \\
+    You may download binary executables for your preferred platforms or 
+    you can compile Dakota from source code. Downloads are available from 
+    \url{http://dakota.sandia.gov/download.html}.
     
-  \item Verify that Dakota runs; see
-    Section~\ref{tutorial:installation:running}
+  \item Install Dakota. \\
+    Instructions are available from 
+    \url{http://dakota.sandia.gov/install.html}. Guidance is also 
+    included in files included with Dakota, including
+    \texttt{Dakota/INSTALL}. Further platform/operating system-specific
+    guidance can be found in {\tt Dakota/examples/platforms}.
 
-  \item Joining mailing lists and get help: the most up to date
-    guidance for downloading, compiling, installing, or running
-    Dakota, or seeking help is available on the Dakota website \\
-    (\url{http://dakota.sandia.gov/resources.html}). In addition,
-    guidance is also included in files included with Dakota, including
-    \texttt{Dakota/INSTALL}. Further platform/operating
-    system-specific guidance can be found in {\tt
-    Dakota/examples/platforms}. For getting started on Windows, see
-    the files \texttt{INSTALL.cygwin} and \texttt{INSTALL.mingw} in
-    \texttt{Dakota/examples/platforms}.
-\end{itemize}
+  \item Verify that Dakota runs. \\
+    To perform a quick check that your Dakota executable runs, open a 
+    terminal window (in Windows, cmd.exe), and type: \\
+    \vspace{-2em}
+    \begin{verbatim}
+    dakota -v
+    \end{verbatim}
+    \vspace{-2em}
+    Dakota version infomation should display in your terminal window.
+    For a more detailed description of Dakota command line options, see
+    Section~\ref{tutorial:installation:running}.
+
+  \item Participate in Dakota user communities. \\
+    Join Dakota mail lists to get the most up-to-date guidance for
+    downloading, compiling, installing, or running. For information about
+    mail lists, getting help, and other available help resources, see \\
+    \url{http://dakota.sandia.gov/resources.html}.
+
+\end{enumerate}
 
 \subsection{Running Dakota with simple input file}\label{tutorial:quickstart:running}
-This section is intended for users who are new to Dakota, to demonstrate the basics 
-of running a simple example. 
+This section is intended for users who are new to Dakota, to demonstrate the basics of running a simple example. 
 
 {\bf First Steps}
 \begin{enumerate}
