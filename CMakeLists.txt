@@ -192,13 +192,6 @@ if (NOT BUILD_IN_TRILINOS)
       message("in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR is: ${Teuchos_DIR}")
     endif() # NOT Teuchos_DIR
 
-    # This shouldn't get triggered with our change to Teuchos in tpl r2686
-    if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/TrilinosConfig.cmake )
-      # Move the "TriBITS" config file to teuchos subdir (not the BuildRoot)
-      file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/TrilinosConfig.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/TrilinosConfig.cmake)
-    endif()
-
     # Additional setting to prevent multiple targets with the same name
     set(Trilinos_TARGETS_IMPORTED 1)
 
@@ -206,9 +199,9 @@ if (NOT BUILD_IN_TRILINOS)
 
   else()
     message( "Using system trilinos in ${Trilinos_DIR}" )
-  endif()
+  endif() # NOT Trilinos_DIR
 
-endif()
+endif() # NOT BUILD_IN_TRILINOS
 
 
 # Manage option for graphics (default ON if possible)
