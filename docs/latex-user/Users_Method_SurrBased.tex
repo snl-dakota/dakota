@@ -9,20 +9,34 @@ fits, multifidelity models, and reduced-order models, as described in
 Section~\ref{models:surrogate}.  In the context of minimization
 (optimization or calibration), surrogate models can speed convergence
 by reducing function evaluation cost or smoothing noisy response
-functions.
+functions.  Three categories of surrogate-based minimization are
+discussed in this chapter:
+\begin{itemize}
+\item Trust region-managed surrogate-based local minimization, with
+  data fit surrogate, multifidelity models, or reduced-order models.
+
+\item Surrogate-based global minimization, where a single surrogate is
+  built (and optionally iteratively updated) over the whole design
+  space.
+
+\item Efficient global minimization: nongradient-based constrained and
+  unconstrained optimization and nonlinear least squares based on
+  Gaussian process models, guided by an expected improvement function.
+\end{itemize}
 
 \section{Surrogate-Based Local Minimization}\label{sbm:sblm}
 
 In the surrogate-based local minimization method (keyword:
-\texttt{surrogate\_based\_local}) the minimization algorithm operates on
-a surrogate model instead of directly operating on the computationally
-expensive simulation model. The surrogate model can be based on data
-fits, multifidelity models, or reduced-order models, as described in
-Section~\ref{models:surrogate}. Since the surrogate will generally
-have a limited range of accuracy, the surrogate-based local algorithm
-periodically checks the accuracy of the surrogate model against the
-original simulation model and adaptively manages the extent of the
-approximate optimization cycles using a trust region approach.
+\texttt{surrogate\_based\_local}) the minimization algorithm operates
+on a surrogate model instead of directly operating on the
+computationally expensive simulation model. The surrogate model can be
+based on data fits, multifidelity models, or reduced-order models, as
+described in Section~\ref{models:surrogate}. Since the surrogate will
+generally have a limited range of accuracy, the surrogate-based local
+algorithm periodically checks the accuracy of the surrogate model
+against the original simulation model and adaptively manages the
+extent of the approximate optimization cycles using a trust region
+approach.
 
 %The surrogate-based local method in
 %Dakota can be implemented using heuristic rules (less expensive) or
@@ -297,12 +311,13 @@ the reduced basis.
 
 \section{Surrogate-Based Global Minimization}\label{sbm:sbgm}
 
-Surrogate-based global minimization differs from the surrogate-based 
-local minimization approach discussed in the previous section in several ways: 
-it is not a trust-region approach; initially there is one surrogate 
-constructed over a set of sample points and the optimizer operates on that 
-surrogate (as opposed to adaptively selecting points and re-building a 
-surrogate in each trust region); and there is no guarantee of convergence. 
+Surrogate-based global minimization differs from the surrogate-based
+local minimization approach discussed in the previous section in
+several ways: it is not a trust-region approach; initially there is
+one global surrogate constructed over a set of sample points and the
+optimizer operates on that surrogate (as opposed to adaptively
+selecting points and re-building a surrogate in each trust region);
+and there is no guarantee of convergence.
 
 The \texttt{surrogate\_based\_global} method was developed to address
 two needs.  The first is the case where a user wishes to use existing

@@ -2,21 +2,21 @@
 
 \section{Overview}\label{models:overview}
 
-Chapters~\ref{ps} through~\ref{nls} have presented the different
-``iterators'' available in Dakota.  An iterator iterates on a model in
-order to map a set of variables into a set of responses.  This model
-may involve a simple mapping involving a single interface, or it may
-involve recursions using sub-iterator and sub-models.  These recursion
-capabilities were developed in order to provide mechanisms for
-``nesting,'' ``layering,'' and ``recasting'' of software components,
-which allows the use of these components as building blocks to
-accomplish more sophisticated studies, such as surrogate-based
-optimization or optimization under uncertainty.  In a nested
-relationship, a sub-iterator is executed using its sub-model for every
-evaluation of the nested model.  In a layered relationship, on the
-other hand, sub-iterators and sub-models are used only for periodic
-updates and verifications.  And in a recast relationship, the input
-variable and output response definitions in a sub-model are
+Chapters~\ref{ps} through~\ref{nls} presented the different
+``iterators'' (or methods) available in Dakota.  An iterator iterates
+on a model in order to map a set of variables into a set of responses.
+This model may involve a simple mapping involving a single interface,
+or it may involve recursions using sub-iterator and sub-models.  These
+recursion capabilities were developed in order to provide mechanisms
+for ``nesting,'' ``layering,'' and ``recasting'' of software
+components, which allows the use of these components as building
+blocks to accomplish more sophisticated studies, such as
+surrogate-based optimization or optimization under uncertainty.  In a
+nested relationship, a sub-iterator is executed using its sub-model
+for every evaluation of the nested model.  In a layered relationship,
+on the other hand, sub-iterators and sub-models are used only for
+periodic updates and verifications.  And in a recast relationship, the
+input variable and output response definitions in a sub-model are
 reformulated in order to support new problem definitions.  In each of
 these cases, the sub-model is of arbitrary type, such that model
 recursions can be chained together in as long of a sequence as needed
@@ -68,10 +68,134 @@ recasting problem formulations.
 
 \section{Surrogate Models}\label{models:surrogate}
 
-Surrogate models provide an approximation to an original, high
-fidelity ``truth'' model.  A number of surrogate model selections are
-possible, which are categorized as data fits, multifidelity models,
-and reduced-order models.
+Surrogate models are inexpensive approximate models that are intended
+to capture the salient features of an expensive high-fidelity model.
+They can be used to explore the variations in response quantities over
+regions of the parameter space, or they can serve as inexpensive
+stand-ins for optimization or uncertainty quantification studies (see,
+for example, the surrogate-based optimization strategy in
+Section~\ref{sbm}).  Surrogate models supported in Dakota can be
+categorized into three types: data fits, multifidelity, and
+reduced-order model surrogates.  An overview and discussion of
+surrogate correction is provided here, with details following.
+
+\subsection{Overview of Surrogate Types}
+
+
+Data fitting methods involve construction of an approximation or
+surrogate model using data (response values, gradients, and Hessians)
+generated from the original truth model.  Data fit methods can be
+further categorized as local, multipoint, and global approximation
+techniques, based on the number of points used in generating the data
+fit.  Local methods involve response data from a single point in
+parameter space.  Available local techniques currently include:
+
+\textbf{Taylor Series Expansion}: This is a local first-order or
+second-order expansion centered at a single point in the parameter space.
+
+Multipoint approximations involve response data from two or more
+points in parameter space, often involving the current and previous
+iterates of a minimization algorithm.  Available techniques currently
+include:
+
+\textbf{TANA-3}: This multipoint approximation uses a two-point
+exponential approximation~\cite{Xu98,Fad90} built with response value
+and gradient information from the current and previous iterates.
+
+Global methods, often referred to as \emph{response surface methods},
+involve many points spread over the parameter ranges of interest.
+These surface fitting methods work in conjunction with the sampling
+methods and design of experiments methods described in
+Section~\ref{capabilities:sampling}.
+
+\textbf{Polynomial Regression}: First-order (linear), second-order
+(quadratic), and third-order (cubic) polynomial response surfaces
+computed using linear least squares regression methods. Note: there is
+currently no use of forward- or backward-stepping regression methods
+to eliminate unnecessary terms from the polynomial model.
+
+\textbf{Gaussian Process (GP) or Kriging Interpolation}
+Dakota contains two implementations of Gaussian process, also known as 
+Kriging ~\cite{Giu98}, spatial interpolation.  One of these resides in 
+the Surfpack sub-package of Dakota, the other resides in Dakota itself.
+Both versions use the Gaussian correlation function with parameters that
+are selected by Maximum Likelihood Estimation (MLE). This correlation 
+function results in a response surface that is $C^\infty$-continuous.
+Prior to Dakota 5.2, the Surfpack GP was referred to as the ``Kriging'' 
+model and the Dakota version was labeled as the ``Gaussian Process.''  
+These terms are now used interchangeably.  As of Dakota 5.2,the 
+Surfpack GP is used by default.  For now the user still has the option 
+to select the Dakota GP, but the Dakota GP is deprecated and will be 
+removed in a future release.
+\begin{itemize}
+\item \textbf{Surfpack GP}: Ill-conditioning due to a poorly spaced sample 
+      design is handled by discarding points that contribute the least 
+      unique information to the correlation matrix.  Therefore, the points 
+      that are discarded are the ones that are easiest to predict.  The 
+      resulting surface will exactly interpolate the data values at the 
+      retained points but is not guaranteed to interpolate the discarded 
+      points.
+\item \textbf{Dakota GP}: Ill-conditioning is handled by adding a jitter 
+      term or ``nugget'' to diagonal elements of the correlation matrix. 
+      When this happens, the Dakota GP may not exactly interpolate the 
+      data values.
+\end{itemize}
+
+\textbf{Artificial Neural Networks}: An implementation of the
+stochastic layered perceptron neural network developed by Prof. D. C.
+Zimmerman of the University of Houston~\cite{Zim96}. This neural network
+method is intended to have a lower training (fitting) cost than
+typical back-propagation neural networks.
+
+\textbf{Multivariate Adaptive Regression Splines (MARS)}: Software
+developed by Prof. J. H. Friedman of Stanford University~\cite{Fri91}.
+The MARS method creates a $C^2$-continuous patchwork of splines in the
+parameter space.
+
+\textbf{Radial Basis Functions (RBF)}:  Radial basis functions are 
+functions whose value typically depends on the distance from a center point, 
+called the centroid.  The surrogate model approximation is constructed
+as the weighted sum of individual radial basis functions. 
+
+\textbf{Moving Least Squares (MLS)}: Moving Least Squares can be 
+considered a more specialized version of linear regression models.
+MLS is a weighted least squares approach where the weighting is 
+``moved'' or recalculated for every new point where 
+a prediction is desired.~\cite{Nea04} 
+
+%\textbf{Orthogonal Polynomials}: This technique involves the use of
+%multivariate orthogonal polynomials as a global basis for surrogate
+%modeling.  These multivariate polynomials are constructed as a product
+%of particular univariate orthogonal polynomials, including Hermite,
+%Legendre, Laguerre, Jacobi, and generalized Laguerre polynomials,
+%which are defined as functions of standard normal, standard uniform,
+%standard exponential, standard beta, and standard gamma random
+%variables, respectively.  Given the probabilistic interpretation of
+%the approximation variables, this data fit is primarily used for
+%uncertainty quantification, and in particular, polynomial chaos
+%expansions.
+
+In addition to data fit surrogates, Dakota supports multifidelity 
+and reduced-order model approximations:
+
+\textbf{Multifidelity Surrogates}: Multifidelity modeling involves the
+use of a low-fidelity physics-based model as a surrogate for the
+original high-fidelity model.  The low-fidelity model typically
+involves a coarser mesh, looser convergence tolerances, reduced
+element order, or omitted physics.  It is a separate model in its own
+right and does not require data from the high-fidelity model for
+construction.  Rather, the primary need for high-fidelity evaluations
+is for defining correction functions that are applied to the
+low-fidelity results.
+
+\textbf{Reduced Order Models}: A reduced-order model (ROM) is
+mathematically derived from a high-fidelity model using the technique
+of Galerkin projection.  By computing a set of basis functions (e.g.,
+eigenmodes, left singular vectors) that capture the principal dynamics
+of a system, the original high-order system can be projected to a much
+smaller system, of the size of the number of retained basis functions.
+
+\subsection{Correction Approaches}
 
 Each of the surrogate model types supports the use of correction
 factors that improve the local accuracy of the surrogate models. The
@@ -771,6 +895,75 @@ therefore have better predictive qualities than data fits), but do not
 require multiple system models of varying fidelity (as required for
 model hierarchy surrogates).
 
+\subsection{Surrogate Model Selection}
+
+This section offers some guidance on choosing from among the available
+surrogate model types.
+
+\begin{itemize}
+\item For Surrogate Based Local Optimization, i.e. the 
+      \texttt{surrogate\_based\_local} method, with a trust region, either
+      \texttt{surrogate} \texttt{local} \texttt{taylor\_series} or
+      \texttt{surrogate} \texttt{multipoint} \texttt{tana} will probably 
+      work best.  If for some reason you wish or need to use a global 
+      surrogate (not recommended) then the best of these options is likely 
+      to be either 
+      \texttt{surrogate} \texttt{global} 
+      \texttt{gaussian\_process} \texttt{surfpack} or
+      \texttt{surrogate} \texttt{global} \texttt{moving\_least\_squares}.
+\item For Efficient Global Optimization (EGO), i.e. the 
+      \texttt{efficient\_global} method, the default\\
+      \texttt{gaussian\_process} \texttt{surfpack}  
+      is likely to find a more optimal value and/or use fewer true 
+      function evaluations than the alternative,
+      \texttt{gaussian\_process} \texttt{dakota}.  However, the 
+      \texttt{surfpack} version will likely take more time to build 
+      than the \texttt{dakota} version.  Note that currently the 
+      \texttt{use\_derivatives} keyword is not recommended for use with
+      EGO based methods.
+\item For EGO based global interval estimation (EGIE), i.e. the 
+      \texttt{global\_interval\_est} \texttt{ego} method, 
+      the default \texttt{gaussian\_process} \texttt{surfpack} will
+      likely work better than the alternative \texttt{gaussian\_process} 
+      \texttt{dakota}.
+\item For Efficient Global Reliability Analysis (EGRA), i.e. the 
+      \texttt{global\_reliability} method the \texttt{surfpack} and 
+      \texttt{dakota} versions of the gaussian process tend to give 
+      similar answers with the \texttt{dakota} version tending to use
+      fewer true function evaluations.  Since this is based on EGO, it
+      is likely that the default \texttt{surfpack} version is more 
+      accurate, although this has not been rigorously demonstrated.
+\item For EGO based Dempster-Shafer Theory of Evidence, i.e. the 
+      \texttt{global\_evidence} \texttt{ego} method, the default
+      \texttt{gaussian\_process} \texttt{surfpack} will often use
+      significantly fewer true function evaluations than the 
+      alternative \texttt{gaussian\_process} \texttt{dakota}.
+\item When using a global surrogate to extrapolate, either the
+      \texttt{gaussian\_process} \texttt{surfpack} or 
+      \texttt{polynomial} \texttt{quadratic} or 
+      \texttt{polynomial} \texttt{cubic} is recommended.
+\item When there is over roughly two or three thousand data points 
+      and you wish to interpolate (or approximately interpolate) then 
+      a Taylor series, Radial Basis Function Network, or Moving Least
+      Squares fit is recommended.  The only reason that the 
+      \texttt{gaussian\_process} \texttt{surfpack} model is not 
+      recommended is that it can take a considerable amount of time
+      to construct when the number of data points is very large.  Use 
+      of the third party MARS package included in Dakota is generally 
+      discouraged.
+\item In other situations that call for a global surrogate, the 
+      \texttt{gaussian\_process} \texttt{surfpack} is generally 
+      recommended.  The \texttt{use\_derivatives} keyword will 
+      only be useful if accurate and an inexpensive derivatives 
+      are available. Finite difference derivatives are disqualified 
+      on both counts.  However, derivatives generated by analytical,
+      automatic differentiation, or continuous adjoint techniques
+      can be appropriate.  Currently, first order derivatives, i.e.
+      gradients, are the highest order derivatives that can be used
+      to construct the \texttt{gaussian\_process} \texttt{surfpack}
+      model; Hessians will not be used even if they are available.
+\end{itemize}
+
 \section{Nested Models} \label{models:nested}
 
 Nested models utilize a sub-iterator and a sub-model to perform a
@@ -802,3 +995,85 @@ results may be combined with non-nested data through use of the
 ``optional interface'' component within nested models.
 
 Several examples of nested model usage are provided in Chapter~\ref{adv_models}.
+
+\section{Nested Models}\label{capabilities:nested}
+Nested models utilize a sub-iterator and a sub-model to perform a
+complete iterative study as part of every evaluation of the model.
+This sub-iteration accepts variables from the outer level, performs
+the sub-level analysis, and computes a set of sub-level responses
+which are passed back up to the outer level.  The nested model
+constructs admit a wide variety of multi-iterator, multi-model
+solution approaches.  For example, optimization within optimization
+(for hierarchical multidisciplinary optimization), uncertainty
+quantification within uncertainty quantification (for second-order
+probability), uncertainty quantification within optimization (for
+optimization under uncertainty), and optimization within uncertainty
+quantification (for uncertainty of optima) are all supported, with and
+without surrogate model indirection.  Three important examples are
+highlighted: mixed epistemic-aleatory uncertainty quantification, 
+optimization under uncertainty, and surrogate-based uncertainty quantification.
+
+\textbf{Mixed Epistemic-Aleatory Uncertainty Quantification}: Mixed
+uncertainty quantification (UQ) refers to capabilities for performing
+UQ calculations on both epistemic uncertainties (also known as
+reducible uncertainties resulting from a lack of knowledge) and
+aleatory uncertainties (also known as irreducible uncertainties that
+are inherent variabilities).  Mixed UQ approaches employ nested models
+to embed one uncertainty quantification within another.  The outer
+level UQ is commonly linked to epistemic uncertainties, and the inner
+UQ is commonly linked to aleatory uncertainties.  We have three main
+approaches: interval-valued probability, second-order probability, and
+nested Dempster-Shafer.  In interval-valued probability, the outer
+level generates sets of realizations, typically from sampling within
+interval distributions.  These realizations define values for the
+epistemic variables used in a probabilistic analysis for the inner
+level UQ (e.g. which may involve sampling over aleatory variables).
+In interval-valued probability, we generate intervals on statistics
+from the inner loop.  In second-order probability, the outer level
+also generates sets of realizations, from sampling from distributions
+on the epistemic variables.  These outer loop values then define
+values for distribution parameters used in the inner level UQ.  The
+term ``second-order'' derives from this use of distributions on
+distributions and the generation of statistics on statistics.  Dakota
+includes capability to use interval analysis to perform the outer loop
+calculations (e.g. find intervals on inner loop statistics).  Interval
+analysis can use efficient optimization methods to obtain interval
+bound estimates.  Nested Dempster-Shafer refers to using
+Dempster-Shafer evidence theory on the outer loop, and an aleatory UQ
+method such as sampling or stochastic expansions on the inner loop.
+Evidence theory results in measures of belief and plausibility, so in a
+nested context, this produces belief and plausibility bounds on inner
+loop statistics.  More on mixed UQ approaches can be found
+in~\cite{Eld09b} and ~\cite{Eld11}.
+
+\textbf{Optimization Under Uncertainty (OUU)}: Many real-world
+engineering design problems contain stochastic features and must be
+treated using OUU methods such as robust design and reliability-based
+design. For OUU, the uncertainty quantification methods of Dakota are
+combined with optimization algorithms. This allows the user to
+formulate problems where one or more of the objective and constraints
+are stochastic. Due to the computational expense of both optimization
+and UQ, the simple nesting of these methods in OUU can be
+computationally prohibitive for real-world design problems. For this
+reason, surrogate-based optimization under uncertainty (SBOUU),
+reliability-based design optimization (RBDO), polynomial chaos-based
+design optimization (PCBDO), and stochastic collocation-based design
+optimization (SCBDO) methods have been developed which can reduce the
+overall expense by orders of magnitude. OUU methods are an active
+research area.
+
+\textbf{Surrogate-Based Uncertainty Quantification (SBUQ)}: 
+Since many uncertainty quantification (UQ) methods are computationally
+costly, requiring many function evaluations to obtain accurate
+estimates of moments or percentile values of an output distribution,
+one may wish to embed surrogate models within the UQ process in order
+to reduce expense.  By evaluating the true function on a fixed, small
+set of samples and using these sample evaluations to create a response
+surface approximation (e.g. a surrogate model or meta-model) of the
+underlying ``true'' function, the subsequent evaluation of the UQ
+results (using thousands or millions of samples) based on the
+approximation can obtain estimates of the mean, variance, and
+percentiles of the response at much lower overall cost.
+
+Additional information on these nested approaches is provided in
+Section~\ref{models:nested} and Chapter~\ref{adv_models}.

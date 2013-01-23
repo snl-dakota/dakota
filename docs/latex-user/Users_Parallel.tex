@@ -1,28 +1,75 @@
 \chapter{Parallel Computing}\label{parallel}
 
-
 \section{Overview}\label{parallel:overview}
 
 This chapter describes the various parallel computing capabilities
-provided by Dakota.  The range of capabilities is extensive and can be
-daunting at first; therefore, this chapter takes an incremental
-approach in first describing the simplest single-level parallel
-computing models (Section~\ref{parallel:SLP}) using asynchronous
-local, message passing, and hybrid approaches.  More advanced uses of
-Dakota can build on this foundation to exploit multiple levels of
-parallelism, as described in Section~\ref{parallel:MLP}.  The chapter
-concludes with a discussion of using Dakota with applications that run
-as independent MPI processes (parallel application tiling, for example
-on a large compute cluster).  This last section is a good quick start
-for interfacing Dakota to your parallel (or serial) application on a
-cluster.
+provided by Dakota.  We begin with a high-level summary.
 
-%In the following sections, the parallel algorithms available in this
-%Dakota release are listed followed by descriptions of the software
-%components that enable parallelism, approaches for utilizing these
-%components, and input specification and execution details for running
-%parallel Dakota studies.
+The methods and strategies in Dakota are designed to exploit parallel
+computing resources such as those found in a desktop multiprocessor
+workstation, a network of workstations, or a massively parallel
+computing platform. This parallel computing capability is a critical
+technology for rendering real-world engineering design problems
+computationally tractable. Dakota employs the concept of
+\emph{multilevel parallelism}, which takes simultaneous advantage of
+opportunities for parallel execution from multiple sources:
 
+\textbf{Parallel Simulation Codes}: Dakota works equally well with both
+serial and parallel simulation codes.
+
+\textbf{Concurrent Execution of Analyses within a Function Evaluation}:
+Some engineering design applications call for the use of multiple
+simulation code executions (different disciplinary codes, the same
+code for different load cases or environments, etc.) in order to
+evaluate a single response data set (e.g., objective functions and
+constraints) for a single set of parameters. If these simulation code
+executions are independent (or if coupling is enforced at a higher
+level), Dakota can perform them in parallel.
+
+\textbf{Concurrent Execution of Function Evaluations within an Iterator}:
+With very few exceptions, the iterative algorithms described in
+Section~\ref{capabilities:parameter} through
+Section~\ref{capabilities:nonlinear} all provide opportunities for the
+concurrent evaluation of response data sets for different parameter
+sets. Whenever there exists a set of design point evaluations that are
+independent, Dakota can perform them in parallel.
+
+\textbf{Concurrent Execution of Iterators within a Strategy}: Some of
+the Dakota strategies described in
+Section~\ref{capabilities:optimization2} generate a sequence of
+iterator subproblems. For example, the Pareto-set and
+multi-start strategies generate sets of optimization subproblems, and
+the optimization under uncertainty strategy generates sets of
+uncertainty quantification subproblems. Whenever these subproblems are
+independent, Dakota can perform them in parallel.
+
+It is important to recognize that these four parallelism levels are
+nested, in that a strategy can schedule and manage concurrent
+iterators, each of which may manage concurrent function evaluations,
+each of which may manage concurrent analyses, each of which may
+execute on multiple processors. 
+
+Navigating the body of this chapter: The range of capabilities is
+extensive and can be daunting at first; therefore, this chapter takes
+an incremental approach in first describing the simplest single-level
+parallel computing models (Section~\ref{parallel:SLP}) using
+asynchronous local, message passing, and hybrid approaches.  More
+advanced uses of Dakota can build on this foundation to exploit
+multiple levels of parallelism, as described in
+Section~\ref{parallel:MLP}.
+
+The chapter concludes with a discussion of using Dakota with
+applications that run as independent MPI processes (parallel
+application tiling, for example on a large compute cluster).  This
+last section is a good quick start for interfacing Dakota to your
+parallel (or serial) application on a cluster.
+
+
+% In the following sections, the parallel algorithms available in this
+% Dakota release are listed followed by descriptions of the software
+% components that enable parallelism, approaches for utilizing these
+% components, and input specification and execution details for
+% running parallel Dakota studies.
 
 \subsection{Categorization of parallelism}\label{parallel:overview:cat}
 
