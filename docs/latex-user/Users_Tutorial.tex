@@ -7,8 +7,7 @@ More detailed information about installation can be found
 on the Dakota website and wiki pages ****.
 
 \subsection {Acquiring and Installing Dakota}\label{tutorial:quickstart:installation}
-%Dena:  can you take this section? Also determine where/how we want to 
-%present the installation information
+
 Dakota operates on most systems running Unix or Linux operating
 systems as well as on Windows with the help of a Cygwin emulation
 layer. Dakota is developed and most extensively tested on Redhat
@@ -44,9 +43,11 @@ Getting started with Dakota typically involves the following steps:
     To perform a quick check that your Dakota executable runs, open a 
     terminal window (in Windows, cmd.exe), and type: \\
     \vspace{-2em}
+    \begin{small}
     \begin{verbatim}
     dakota -v
     \end{verbatim}
+      \end{small}
     \vspace{-2em}
     Dakota version infomation should display in your terminal window.
     For a more detailed description of Dakota command line options, see
@@ -60,24 +61,23 @@ Getting started with Dakota typically involves the following steps:
 
 \end{enumerate}
 
-\subsection{Running Dakota with simple input file}\label{tutorial:quickstart:running}
-This section is intended for users who are new to Dakota, to demonstrate the basics of running a simple example. 
+\subsection{Running Dakota with a simple input file}\label{tutorial:quickstart:running}
+This section is intended for users who are new to Dakota, to demonstrate the basics 
+of running a simple example. 
 
 {\bf First Steps}
 \begin{enumerate}
-  \item Make sure Dakota runs.  To perform a quick check, one can enter
- \texttt{dakota -v} to make sure a Dakota executable is present in the directory being 
-run.  This command will print the Dakota version.  For more detailed command line 
-options, see Section~\ref{tutorial:installation:running}.
+  \item Make sure Dakota runs. You should see Dakota version information
+   when you type: \texttt{dakota -v}
   \item Create a working directory 
   \item Copy \texttt{rosen\_multidim.in} from the \texttt{Dakota/examples/tutorial/}
- directory to the working directory
+    directory to the working directory
   \item From the working directory, run \texttt{dakota -i 
-rosen\_multidim.in -o rosen\_multidim.out > rosen\_multidim.stdout}
+    rosen\_multidim.in -o rosen\_multidim.out > rosen\_multidim.stdout}
 \end{enumerate}
 
 {\bf What should happen} \\
-Dakota outputs a large amount of information to help users track the progress. 
+Dakota outputs a large amount of information to help users track  progress. 
 Four files should have been created:
 \begin{enumerate}
   \item The screen output has been redirected to the file 
@@ -107,9 +107,9 @@ optimum value was found at the point $x_1 = 0.5, x_2 = 0.5$.
 {\bf What now?}
 \begin{itemize}
   \item Assuming Dakota ran successfully, skim the three text files (restart files are in a binary format). These are described further in 
-Section~\ref{tutorial:installation:quickstart:output}.
+Section~\ref{tutorial:quickstart:output}.
   \item This example used a gradient-based optimization method, and the 
-\texttt{Rosenbrock} test problem. More details about the example are in 
+\texttt{Rosenbrock} test problem. More details about the example are in
 Section~\ref{tutorial:examples:optimization} and the test problem is 
 described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:rosenbrock}.
   \item Explore the many methods available in Dakota in
@@ -125,6 +125,133 @@ information see Section~\ref{tutorial:dakota}.
 %Lara:  Can you take this section?  I would discuss screen output, 
 %tabular output, output file (-o outfile) output, and hopefully 
 %the new results database output. 
+Beyond numerical results, all output files provide information that
+allows the user to check that the actual analysis was the intended
+analysis. More details on all outputs can be found in Chapter \ref{output}.
+
+{\textbf{Screen output saved to a file}}
+
+Whenever an output file is specified for a Dakota run, the screen output
+itself becomes quite minimal 
+consisting of version statements, strategy statements
+and execution times.
+
+{\textbf{Output file}}
+
+The output file is much more extensive, because it
+contains information on every function evaluation (figure
+\ref{tutorial:quickstart:rosenbrock_multidim:output}) . It is 
+organized into three basic parts:
+\begin{enumerate}
+\item information on the problem
+\begin{quote}
+For this example, we see that a new restart file is being created
+and Dakota has carried out a multidim\_parameter\_study with
+8 partitions for each of two variables.
+\end{quote}
+\item information on each function evaluation 
+\begin{quote}
+Each function evaluation is numbered. Details for function evaluation
+1 show that variable $x1= -2.0$ and $x2=-2.0$, the direct rosenbrock
+function is being evaluated and there is one response 3.609e+03.
+\end{quote}
+\item summary statistics
+\begin{quote}
+The function evaluation summary is preceeded by $<<<<<$. For this
+example 81 total evaluations were assessed; all were new, none were
+read in from the restart file. Correlation matrices complete the statistics
+and output for this problem. Successful runs will finish with
+$<<<<<$ Iterator {\it study\_type} completed.
+\end{quote}
+\end{enumerate}
+
+{\textbf{Tabular output file}}
+
+For this example, the default name for the tabular output file 
+\texttt{dakota\_tabular.dat} was changed in the input file to
+\texttt{rosen\_multidim.dat}. This tab-delimited text file
+(figure \ref{tutorial:quickstart:rosenbrock_multidim:dat})
+summarizes the inputs and outputs to the function evaluator.
+The first line contains the names of the variables and responses:
+\begin{tabular}{llll}
+\%eval\_id           &  x1  &           x2&  response\_fn\_1 \\
+\end{tabular}
+The number of function evaluations will match the number of 
+evaluations listed in the summary part of the output file for
+single method strategies; the
+names of inputs and outputs will match the descriptors 
+specified in the input file. This file is ideal for import into
+other data analysis packages.
+
+
+\begin{figure}[ht!]
+\label{tutorial:quickstart:rosenbrock_multidim:output}
+\caption{Rosenbrock 2-D parameter study example: excerpt from output file}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \begin{verbatim}
+{Writing new restart file dakota.rst
+methodName = multidim_parameter_study
+gradientType = none
+hessianType = none
+
+>>>>> Running multidim_parameter_study iterator.
+
+Multidimensional parameter study for variable partitions of
+                                     8
+                                     8
+
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                     -2.0000000000e+00 x1
+                     -2.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 1:
+Active set vector = { 1 }
+                      3.6090000000e+03 response_fn_1
+.
+.
+.
+<<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
+
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  1.73472e-17  1.00000e+00 
+response_fn_1 -3.00705e-03 -5.01176e-01  1.00000e+00 
+. 
+.
+.
+<<<<< Iterator multidim_parameter_study completed.}
+\end{verbatim}
+    \end{small}
+  \end{bigbox}
+\end{figure}
+
+
+\begin{figure}[ht!]
+\label{tutorial:quickstart:rosenbrock_multidim:dat}
+\caption{Rosenbrock 2-D parameter study example: excerpt from tabular data file}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \begin{verbatim}
+%eval_id             x1             x2  response_fn_1 
+       1             -2             -2           3609 
+       2           -1.5             -2         1812.5 
+       3             -1             -2            904 
+       4           -0.5             -2          508.5 
+\end{verbatim}
+    \end{small}
+  \end{bigbox}
+\end{figure}
+
 
 \section{Dakota Input File Format}\label{tutorial:dakota}
 
