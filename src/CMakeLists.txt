@@ -331,9 +331,10 @@ set(Dakota_src DakotaBuildInfo.cpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
-    dakota_data_util.cpp dakota_tabular_io.cpp dakota_global_defs.cpp CommandLineHandler.cpp DakotaGraphics.cpp
-    DakotaString.cpp DakotaBinStream.cpp SensAnalysisGlobal.cpp WorkdirHelper.cpp
-    ResultsManager.cpp ResultsDBAny.cpp
+    dakota_data_util.cpp dakota_tabular_io.cpp dakota_global_defs.cpp 
+    CommandLineHandler.cpp DakotaGraphics.cpp
+    DakotaString.cpp DakotaBinStream.cpp SensAnalysisGlobal.cpp 
+    WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     )
 
 if(HAVE_RPC_XDR_H)
@@ -350,12 +351,13 @@ endif(DAKOTA_USAGE_TRACKING)
 
 ## EVALDATA sources.
 set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
-    SharedVariablesData.cpp DakotaActiveSet.cpp DakotaResponse.cpp ParamResponsePair.cpp)
+    SharedVariablesData.cpp DakotaActiveSet.cpp DakotaResponse.cpp 
+    ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataStrategy.cpp DataMethod.cpp
-    DataModel.cpp DataVariables.cpp DataInterface.cpp DataResponses.cpp 
-    dakota_filesystem_utils.cpp)
+set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataStrategy.cpp
+  DataMethod.cpp DataModel.cpp DataVariables.cpp DataInterface.cpp 
+  DataResponses.cpp dakota_filesystem_utils.cpp)
 
 ## Model sources.
 set(model_src DakotaModel.cpp SingleModel.cpp RecastModel.cpp NestedModel.cpp
@@ -407,17 +409,22 @@ set(strategy_src DakotaStrategy.cpp SingleMethodStrategy.cpp HybridStrategy.cpp
 
 ## Iterator sources.
 set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
-    ParamStudy.cpp DakotaVerification.cpp RichExtrapVerification.cpp DakotaNonD.cpp
+    ParamStudy.cpp DakotaVerification.cpp RichExtrapVerification.cpp 
+    DakotaNonD.cpp
     NonDReliability.cpp NonDLocalReliability.cpp NonDGlobalReliability.cpp
-    NonDInterval.cpp NonDLHSInterval.cpp NonDLHSEvidence.cpp NonDLHSSingleInterval.cpp
+    NonDInterval.cpp NonDLHSInterval.cpp NonDLHSEvidence.cpp 
+    NonDLHSSingleInterval.cpp
     NonDLocalInterval.cpp NonDLocalEvidence.cpp NonDLocalSingleInterval.cpp
     NonDGlobalInterval.cpp NonDGlobalEvidence.cpp NonDGlobalSingleInterval.cpp
     NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
-    NonDCalibration.cpp NonDBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
+    NonDCalibration.cpp NonDBayesCalibration.cpp NonDSampling.cpp
+    NonDLHSSampling.cpp
     NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp NonDIncremLHSSampling.cpp
-    DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
-    SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp SurrBasedGlobalMinimizer.cpp
+    DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp
+    NonlinearCGOptimizer.cpp 
+    SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp 
+    SurrBasedGlobalMinimizer.cpp
     EffGlobalMinimizer.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
@@ -809,7 +816,7 @@ if (DAKOTA_HAVE_MPI)
 endif()
 
 if (DAKOTA_DLL_API)
-  add_library(dll_api "akota_dll_api.cpp)
+  add_library(dll_api dakota_dll_api.cpp)
   target_link_libraries(dll_api dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
   install(TARGETS dll_api DESTINATION lib)
 endif()

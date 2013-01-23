@@ -11,7 +11,7 @@
 //- Checked by:
 //- Version: $Id$
 
-/** \file "akota_dll_api.cpp
+/** \file dakota_dll_api.cpp
     \brief This file contains a DakotaRunner class, which launches DAKOTA. */
 
 // eventually use only _WIN32 here
