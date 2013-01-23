@@ -8,7 +8,7 @@
 
 //- Class:	 NonDGlobalReliability
 //- Description: Implementation code for NonDGlobalReliability class
-//- Owner:       Mike Eldred
+//- Owner:       Barron Bichon, Mike Eldred
 //- Checked by:
 //- Version:
 
@@ -528,7 +528,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  = uSpaceModel.current_response().function_values();
 
 	// Re-evaluate the expected improvement/feasibility at vars_star
-	Real beta_star, exp_fns_star = (ria_flag) ?
+	Real beta_star = 0.,/* TO DO */  exp_fns_star = (ria_flag) ?
 	  expected_feasibility(g_hat_fns, vars_star) :
 	  expected_improvement(g_hat_fns, vars_star);
     

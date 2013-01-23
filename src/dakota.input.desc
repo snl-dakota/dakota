@@ -701,10 +701,10 @@ TAG "method/polynomial_chaos/collocation_points/orthogonal_matching_pursuit"
 
 TAG "method/polynomial_chaos/collocation_points/orthogonal_matching_pursuit/noise_tolerance"
 TAG "method/polynomial_chaos/collocation_points/basis_pursuit"
-	DESC "{L1 minimization via Basis Purusit (BP)} MethodCommands.html#MethodNonDPCE"
+	DESC "{L1 minimization via Basis Pursuit (BP)} MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_points/basis_pursuit_denoising"
-	DESC "{L1 minimization via Basis Purusit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"
+	DESC "{L1 minimization via Basis Pursuit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_points/basis_pursuit_denoising/noise_tolerance"
 TAG "method/polynomial_chaos/collocation_points/least_angle_regression"

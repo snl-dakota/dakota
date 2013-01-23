@@ -863,8 +863,8 @@ static GuiKeyWord
 		{"noise_tolerance",14,0,1,0,659}
 		},
 	kw_141[19] = {
-		{"basis_pursuit",8,0,2,0,661,0,0.,0.,0.,0,"{L1 minimization via Basis Purusit (BP)} MethodCommands.html#MethodNonDPCE"},
-		{"basis_pursuit_denoising",8,1,2,0,663,kw_136,0.,0.,0.,0,"{L1 minimization via Basis Purusit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"},
+		{"basis_pursuit",8,0,2,0,661,0,0.,0.,0.,0,"{L1 minimization via Basis Pursuit (BP)} MethodCommands.html#MethodNonDPCE"},
+		{"basis_pursuit_denoising",8,1,2,0,663,kw_136,0.,0.,0.,0,"{L1 minimization via Basis Pursuit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"},
 		{"bp",0,0,2,0,660},
 		{"bpdn",0,1,2,0,662,kw_136},
 		{"cross_validation",8,0,3,0,677,0,0.,0.,0.,0,"{Specify whether to use cross validation} MethodCommands.html#MethodNonDPCE"},
