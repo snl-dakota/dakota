@@ -43,8 +43,17 @@ set(methods_test_inputs ${methods_test_inputs}
   "${test_path}/dakota_addtnl_users.in 1 dakota_addtnl_rosen_ls.in"
   "${test_path}/dakota_addtnl_users.in 4 dakota_addtnl_cylhead.in"
   "${test_path}/dakota_addtnl_users.in 5 dakota_addtnl_cantilever.in"
+  "${test_path}/dakota_mogatest.in 0 dakota_mogatest1.in"
   "${test_path}/dakota_mogatest.in 1 dakota_mogatest2.in"
   "${test_path}/dakota_mogatest.in 2 dakota_mogatest3.in"
+  "${test_path}/dakota_textbook.in 9 dakota_textbook.in"
+  "${test_path}/dakota_rosenbrock_users.in 1 dakota_rosenbrock_vector.in"
+  "${test_path}/dakota_rosenbrock_users.in 4 dakota_rosenbrock_ps_opt.in"
+  "${test_path}/dakota_rosenbrock_users.in 5 dakota_rosenbrock_ea_opt.in"
+  "${test_path}/dakota_rosenbrock_users.in 8 dakota_rosenbrock_ls.in"
+  "${test_path}/dakota_mv.in 0 dakota_mv.in"
+  "${test_path}/dakota_uq_rosenbrock_pce.in 1 dakota_pce.in"
+  "${test_path}/dakota_uq_cantilever_interval.in 0 dakota_uq_interval.in"
 )
 
 # Not in User's manual
@@ -79,4 +88,5 @@ add_custom_target(examples-methods-inputs ALL DEPENDS ${all_generated_inputs})
 install(FILES ${all_generated_inputs} 
   ${test_path}/dakota_textbook_nips.lsq.dat 
   ${test_path}/dakota_separable_ego_5D.in
+  ${test_path}/dakota_psuade.in
   DESTINATION "${DAKOTA_EXAMPLES_INSTALL}/examples/methods")
