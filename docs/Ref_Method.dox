@@ -6786,7 +6786,7 @@ one called QUESO and one called GPMSA.  They are specified with the
 \c bayes_calibration \c queso or \c bayes_calibration \c gpmsa, respectively. 
 The QUESO method is using components from the QUESO library 
 (Quantification of Uncertainty for Estimation, Simulation, and 
-Optimization) developed at the University of Texas. 
+Optimization) developed at The University of Texas at Austin. 
 We are using a DRAM (Delayed Rejected Adaptive Metropolis) algorithm 
 for the MCMC sampling from the QUESO library. 
 GPMSA (Gaussian Process Models for Simulation Analysis) is 
@@ -6829,9 +6829,14 @@ in construction of the emulator, \c emulator_samples.  The emulator
 involves Gaussian processes in GPMSA, so the user does not specify anything 
 about emulator type. At this point, the only controls active for GPMSA 
 are \c emulator_samples, \c seed and \c rng, and \c samples (the number of MCMC
-samples).   Note that the QUESO and GPMSA methods 
-are under active development.  Contact dakota-users@software.sandia.gov 
-if you are interested in obtaining these capabilities. 
+samples).   
+
+As mentioned above, the Bayesian capability in Dakota currently relies 
+on the QUESO library developed by The University of Texas at Austin.  
+This integrated capability is still in prototype form and available to 
+close collaborators of the Dakota team.
+If you are interested in this capability, contact the Dakota developers 
+at dakota-developers@development.sandia.gov.
 
 \ref T5d49 "Table 5.49" provides the specification 
 details for the \c bayes_calibration methods.

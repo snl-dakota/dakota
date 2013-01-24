@@ -423,17 +423,17 @@ which clarifies the different purposes of the method types.
  
 \section{Example: Vector Parameter Study with Rosenbrock}
 
-This section demonstrates vector on the Rosenbrcok test function
-described in Additional Examples.  An example of multidim is in
-tutorial.
+This section demonstrates a vector parameter study on the Rosenbrock 
+test function described in Section~\ref{tutorial:examples:rosenbrock}.  
+An example of multidimensional parameter study is shown in 
+Section~\ref{tutorial:examples:param_study}.
 
-In addition to the multidimensional parameter study, Dakota can
-perform a vector parameter study, i.e., a parameter study between any
+A vector parameter study is a study between any 
 two design points in an \emph{n}-dimensional parameter space.
-
 An input file for the vector parameter study is shown in Figure~
 \ref{additional:rosenbrock_vector}. The primary differences
-between this input file and the previous input file are found in the
+between this input file and the input file for the multidimensional
+parameter study are found in the
 \emph{variables} and \emph{method} sections. In the variables section,
 the keywords for the bounds are removed and replaced with the keyword
 \texttt{initial\_point} that specifies the starting point for the
@@ -471,10 +471,6 @@ It is evident from these figures that the parameter study starts
 within the banana-shaped valley, marches up the side of the hill, and
 then returns to the valley. The output file \texttt{vector.out.sav} is
 provided in the \texttt{Dakota/examples/tutorial} directory.
-
-In addition to the vector and multidimensional examples shown, Dakota
-also supports list and centered parameter study methods. Refer to
-Chapter~\ref{ps} for additional information.
 
 \begin{figure}[htp!]
   \centering

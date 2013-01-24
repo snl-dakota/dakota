@@ -122,9 +122,6 @@ information see Section~\ref{tutorial:dakota}.
 
 
 \subsection {Examples of Dakota output}\label{tutorial:quickstart:output}
-%Lara:  Can you take this section?  I would discuss screen output, 
-%tabular output, output file (-o outfile) output, and hopefully 
-%the new results database output. 
 Beyond numerical results, all output files provide information that
 allows the user to check that the actual analysis was the intended
 analysis. More details on all outputs can be found in Chapter \ref{output}.
@@ -139,23 +136,24 @@ and execution times.
 {\textbf{Output file}}
 
 The output file is much more extensive, because it
-contains information on every function evaluation (figure
-\ref{tutorial:quickstart:rosenbrock_multidim:output}) . It is 
+contains information on every function evaluation (See Figure
+\ref{tutorial:quickstart:rosenbrock_multidim:output}). It is 
 organized into three basic parts:
 \begin{enumerate}
-\item information on the problem
+\item Information on the problem
 \begin{quote}
 For this example, we see that a new restart file is being created
 and Dakota has carried out a multidim\_parameter\_study with
 8 partitions for each of two variables.
 \end{quote}
-\item information on each function evaluation 
+\item Information on each function evaluation 
 \begin{quote}
 Each function evaluation is numbered. Details for function evaluation
-1 show that variable $x1= -2.0$ and $x2=-2.0$, the direct rosenbrock
-function is being evaluated and there is one response 3.609e+03.
+1 show that at input variable values $x1= -2.0$ and $x2=-2.0$, 
+the direct rosenbrock function is being evaluated.  There is one response
+with a value of 3.609e+03.
 \end{quote}
-\item summary statistics
+\item Summary statistics
 \begin{quote}
 The function evaluation summary is preceeded by $<<<<<$. For this
 example 81 total evaluations were assessed; all were new, none were
@@ -170,7 +168,7 @@ $<<<<<$ Iterator {\it study\_type} completed.
 For this example, the default name for the tabular output file 
 \texttt{dakota\_tabular.dat} was changed in the input file to
 \texttt{rosen\_multidim.dat}. This tab-delimited text file
-(figure \ref{tutorial:quickstart:rosenbrock_multidim:dat})
+(Figure \ref{tutorial:quickstart:rosenbrock_multidim:dat})
 summarizes the inputs and outputs to the function evaluator.
 The first line contains the names of the variables and responses:
 \begin{tabular}{llll}

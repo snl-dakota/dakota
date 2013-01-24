@@ -110,25 +110,25 @@ binomial, negative binomial, geometric, hypergeometric, and
 user-supplied histograms. In addition, LHS accounts for correlations
 among the variables~\cite{Ima84}, which can be used to accommodate a
 user-supplied correlation matrix or to minimize correlation when a
-correlation matrix is not supplied. The LHS package currently serves
-two purposes: (1) it can be used for uncertainty quantification by
-sampling over uncertain variables characterized by probability
-distributions, or (2) it can be used in a DACE mode in which any
-design and state variables are treated as having uniform distributions
-(see the \texttt{all\_variables} flag in the Dakota Reference
-Manual~\cite{RefMan}). The LHS package historically came in two
-versions: ``old'' (circa 1980) and ``new'' (circa 1998), but presently
-only the latter is supported in Dakota, requiring a Fortran 90
-compiler.  This ``new'' LHS is available under a separate GNU Lesser
-General Public License and is distributed with Dakota.  In addition 
-to a standard sampling study, we support the capability to perform 
+correlation matrix is not supplied. 
+%The LHS package currently serves
+%two purposes: (1) it can be used for uncertainty quantification by
+%sampling over uncertain variables characterized by probability
+%distributions, or (2) it can be used in a DACE mode in which any
+%design and state variables are treated as having uniform distributions
+%(see the \texttt{all\_variables} flag in the Dakota Reference
+%Manual~\cite{RefMan}). The LHS package historically came in two
+%versions: ``old'' (circa 1980) and ``new'' (circa 1998), but presently
+%only the latter is supported in Dakota, requiring a Fortran 90
+%compiler.  This ``new'' LHS is available under a separate GNU Lesser
+%General Public License and is distributed with Dakota.  
+In addition to a standard sampling study, we support the capability to perform 
 ``incremental'' LHS, where a user can specify an initial LHS study 
 of N samples, and then re-run an additional incremental study which 
 will double the number of samples (to 2N, with the first N being 
 carried from the initial study).  The full incremental sample of 
 size 2N is also a Latin Hypercube, with proper stratification and 
-correlation.  Finally, Dakota offers preliminary support for 
-importance sampling using LHS, specified with \texttt{importance}.
+correlation.  
 
 \textbf{Reliability Methods}: This suite of methods includes both
 local and global reliability methods.  Local methods include first-
@@ -142,16 +142,17 @@ SORM)~\cite{Hal00}.  Each of the MPP search techniques solve local
 optimization problems in order to locate the MPP, which is then used
 as the point about which approximate probabilities are integrated
 (using first- or second-order integrations in combination with
-refinements based on importance sampling). Reliability mappings may
-involve computing reliability and probability levels for prescribed
-response levels (forward reliability analysis, commonly known as the
-reliability index approach or RIA) or computing response levels for
-prescribed reliability and probability levels (inverse reliability
-analysis, commonly known as the performance measure approach or PMA).
-Approximation-based MPP search methods (AMV, AMV$^2$, AMV+, AMV$^2$+,
-and TANA) may be applied in either x-space or u-space, and mappings
-may involve either cumulative or complementary cumulative distribution
-functions.  Global reliability methods are designed to handle
+refinements based on importance sampling). 
+%Reliability mappings may
+%involve computing reliability and probability levels for prescribed
+%response levels (forward reliability analysis, commonly known as the
+%reliability index approach or RIA) or computing response levels for
+%prescribed reliability and probability levels (inverse reliability
+%analysis, commonly known as the performance measure approach or PMA).
+%Approximation-based MPP search methods (AMV, AMV$^2$, AMV+, AMV$^2$+,
+%and TANA) may be applied in either x-space or u-space, and mappings
+%may involve either cumulative or complementary cumulative distribution functions.  
+Global reliability methods are designed to handle
 nonsmooth and multimodal failure surfaces, by creating global
 approximations based on Gaussian process models.  They accurately
 resolve a particular contour of a response function and then estimate
@@ -248,7 +249,7 @@ Interval analysis is often used to model epistemic variables in
 nested analyses, where probability theory is used to model aleatory variables.
 
 \textbf{Bayesian Calibration}:  In Bayesian calibration, uncertain 
-input parameters are descrbied by a ``prior'' distribution.  The priors
+input parameters are described by a ``prior'' distribution.  The priors
 are updated with experimental data, in a Bayesian framework that 
 involves the experimental data and a likelihood function which describes 
 how well each parameter value is supported by the data.  After the process
@@ -1962,7 +1963,7 @@ They are specified with the \texttt{bayes\_calibration} \texttt{queso}
 or \texttt{bayes\_calibration} \texttt{gpmsa}, respectively.
 The QUESO method uses components from the QUESO library
 (Quantification of Uncertainty for Estimation, Simulation, and
-Optimization) developed at the University of Texas.
+Optimization) developed at The University of Texas at Austin.
 The GPMSA calibration capability uses the GPMSA code developed at 
 Los Alamos National Laboratory.
 
@@ -2105,8 +2106,13 @@ are the responses, and the final column is the  log of the
 likelihood.
 
 We expect to continue development of Bayesian calibration methods, 
-so check for updates to this capability.  
-
+so check for updates to this capability.  The Bayesian capability 
+in Dakota currently relies on the QUESO library developed by The University of 
+Texas at Austin.  This integrated capability is still in prototype form and 
+available to close collaborators of the Dakota team.
+If you are interested in this capability, contact the Dakota developers at  
+dakota-developers@development.sandia.gov.
+  
 \section{Uncertainty Quantification Usage Guidelines }\label{usage:uq}
 
 The choice of uncertainty quantification method depends on how the 
@@ -2271,22 +2277,15 @@ evidence-based approach (\texttt{local\_evidence} or
 and plausibility bounds on aleatory statistics.
 
 \section{UQ Examples}
-
+This section provides three additional examples of UQ methods: 
+an example of the Mean-value method, an example of a polynomial
+chaos expansion, and an example of interval analysis. 
+ 
 \subsection{Mean-value Reliability with Textbook}\label{uq:examples:mv}
 
 Reliability methods provide an alternative approach to uncertainty
 quantification which can be less computationally demanding than
-sampling techniques. Reliability methods for uncertainty
-quantification are based on probabilistic approaches that compute
-approximate response function distribution statistics based on
-specified uncertain variable distributions. These response statistics
-include response mean, response standard deviation, and cumulative or
-complementary cumulative distribution functions (CDF/CCDF). These
-methods are often more efficient at computing statistics in the tails
-of the response distributions (events with low probability) than
-sampling based approaches since the number of samples required to
-resolve a low probability can be prohibitive.
-
+sampling techniques. 
 Figure~\ref{uq:examples:mv_input} shows the Dakota input file for an
 example problem that demonstrates the simplest reliability method,
 called the mean value method (also referred to as the Mean Value First
@@ -2367,13 +2366,7 @@ process as a polynomial expansion in random (or stochastic) variables. This
 representation acts as a response surface that maps stochastic inputs to 
 stochastic outputs. Desired statistics can then be obtained from the 
 response surface either analytically or by re-sampling the fast surrogate.
-Exponential convergence of the error with increasing polynomial order can 
-be obtained by using (an) orthogonal polynomial series whose weighting 
-function(s) is/are the probability density functions of the stochastic 
-inputs. Coefficients in the Chaos expansion are determined through
-orthogonal projection. For non-intrusive implementations, such as in Dakota,
-numerical integration via quadrature or cubature is used to evaluate the 
-orthogonal projections. Additional details regarding the method are 
+Additional details regarding the method are 
 provided in Section~\ref{uq:expansion}.
 
 A typical Dakota input file for performing an uncertainty
@@ -2519,18 +2512,10 @@ Cumulative Distribution Function (CDF) for response_fn_1:
 \subsection{Interval Analysis for Cantilever}\label{uq:examples:interval}
 
 Interval analysis is often used to model epistemic uncertainty. 
-In interval analysis, one assumes that nothing is known about 
-an epistemic uncertain variable except that its value lies 
-somewhere within an interval. In this situation, it is NOT 
-assumed that the value has a uniform probability of occuring 
-within the interval. Instead, the interpretation is that 
-any value within the interval is a possible value or a potential 
-realization of that variable. In interval analysis, the 
+In interval analysis, the 
 uncertainty quantification problem is one of determining the 
 resulting bounds on the output (defining the output interval) 
-given interval bounds on the inputs. Again, any output response 
-that falls within the output interval is a possible output 
-with no frequency information assigned to it.
+given interval bounds on the inputs. 
 
 We can do interval analysis using either
 \texttt{global\_interval\_est} or \texttt{local\_interval\_est}.
