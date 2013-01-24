@@ -2107,120 +2107,16 @@ likelihood.
 We expect to continue development of Bayesian calibration methods, 
 so check for updates to this capability.  
 
-\section{UQ Method Selection}\label{usage:uq}
+\section{Uncertainty Quantification Usage Guidelines }\label{usage:uq}
 
-The need for computationally efficient methods is further amplified in
-the case of the quantification of uncertainty in computational
-simulations. Sampling-based methods are the most robust uncertainty
-techniques available, are applicable to almost all simulations, and
-possess rigorous error bounds; consequently, they should be used
-whenever the function is relatively inexpensive to compute. However,
-in the case of terascale computational simulations, the number of
-function evaluations required by traditional techniques such as Monte
-Carlo and Latin hypercube sampling (LHS) quickly becomes prohibitive,
-especially if tail statistics are needed.  Additional sampling options
-include quasi-Monte Carlo (QMC) sampling and importance sampling (IS), 
-%or Markov Chain Monte Carlo (MCMC) sampling
-and incremental sampling may also be used to incrementally add samples 
-to an existing sample set.
+The choice of uncertainty quantification method depends on how the 
+input uncertainty is characterized, the computational budget, and 
+the desired output accuracy.
 
-Alternatively, one can apply the traditional sampling techniques to a
-surrogate function approximating the expensive computational
-simulation (see Section~\ref{adv_models:sbuq}). However, if this
-approach is selected, the user should be aware that it is very
-difficult to assess the accuracy of the results obtained. Unlike
-the case of surrogate-based local minimization (see
-Section~\ref{sbm:sblm}), there is no simple pointwise calculation to
-verify the accuracy of the approximate results. This is due to the
-functional nature of uncertainty quantification, i.e. the accuracy of
-the surrogate over the entire parameter space needs to be considered,
-not just around a candidate optimum as in the case of surrogate-based
-local. This issue especially manifests itself when trying to estimate
-low probability events such as the catastrophic failure of a system.
+The recommendations for UQ methods are summarized in Table~\ref{usage:guideuq}
+and are discussed in the remainder of the section.
 
-Another class of UQ methods known as local reliability methods (e.g.,
-MV, AMV/AMV$^2$, AMV+/AMV$^2$+, TANA, and FORM/SORM) are more
-computationally efficient in general than the sampling methods and are
-effective when applied to reasonably well-behaved response functions;
-i.e., functions that are smooth, unimodal, and linear or mildly
-nonlinear. They can be used to provide qualitative sensitivity
-information concerning which uncertain variables are important (with
-relatively few function evaluations), or compute full cumulative or
-complementary cumulative response functions (with additional
-computational effort).  Since they rely on gradient calculations to
-compute local optima (most probable points of failure), they scale
-well for increasing numbers of random variables, but issues with
-nonsmooth, discontinuous, and multimodal response functions are
-relevant concerns. In addition, even if there is a single MPP and it
-is calculated accurately, first-order and second-order integrations
-may fail to accurately capture the shape of the failure domain.  In
-these cases, adaptive importance sampling around the MPP can be
-helpful.  Overall, local reliability methods should be used with some
-care and their accuracy should be verified whenever possible.
-
-An effective alternative to local reliability analysis when confronted
-with nonsmooth, multimodal, and/or highly nonlinear response functions
-is efficient global reliability analysis (EGRA).  This technique
-employs Gaussian process global surrogate models to accurately resolve
-the failure domain and then employs multimodal adaptive importance
-sampling to resolve the probabilities.  For relatively low dimensional
-problems (i.e, on the order of 10 variables), this method displays the
-efficiency of local reliability analysis with the accuracy of
-exhaustive sampling.  While extremely promising, this method is still
-relatively new and is the subject of ongoing refinements as we deploy
-it to additional applications.
-
-The next class of UQ methods available in Dakota is comprised of
-stochastic expansion methods (polynomial chaos and stochastic
-collocation), which are general purpose techniques provided that the
-response functions possess finite second order moments. Further, these
-methods approximate the full random process/field and capture the
-underlying functional relationship between a key response metric and
-its random variables, rather than just approximating statistics such
-as mean and standard deviation. This class of methods parallels
-traditional variational methods in mechanics; in that vein, efforts
-are underway to compute rigorous error bounds of the approximations
-produced by the methods. Another strength of these methods is their
-potential use in a multiphysics environment as a means to propagate
-the uncertainty through a series of simulations while retaining as
-much information as possible at each stage of the analysis.  The
-current challenge in the development of these methods, as for other
-global surrogate-based methods, is effective scaling for large numbers
-of random variables.  Recent advances in adaptive sparse grid methods 
-address some of the scaling issues for stochastic expansion.
-
-The final class of UQ methods available in Dakota are focused on
-epistemic uncertainties, or uncertainties resulting from a lack of
-knowledge.  In these problems, the assignment of input probability
-distributions when data is sparse can be somewhat suspect.  One
-approach to handling epistemic uncertainties is Dempster-Shafer theory
-of evidence (Dakota methods \texttt{local\_evidence} and 
-\texttt{global\_evidence}). Another method is pure interval 
-analysis (\texttt{local\_interval\_est} and 
-\texttt{global\_interval\_est}), where intervals on inputs are 
-mapped to intervals on outputs using optimization methods 
-
-For problems with a mixture of epistemic and aleatoric uncertainties, 
-it is desirable to segregate the two uncertainty types within a nested 
-analysis, allowing stronger probabilistic inferences for the portion
-of the problem where they are appropriate.  In this nested approach, an outer 
-epistemic level selects realizations of epistemic parameters (augmented
-variables) and/or realizations of random variable distribution
-parameters (inserted variables) from intervals.  These realizations
-define the probability distributions for an inner aleatoric level
-performing probabilistic analyses.  In the case where the outer loop
-is an interval propagation approach (\texttt{local\_interval\_est} or 
-\texttt{global\_interval\_est}), the nested approach is
-known as second-order probability (see also Section~\ref{models:nested})
-and the study generates a family of CDF/CCDF respresentations known as a 
-``horse tail'' plot.  In the case where the outer loop is an 
-evidence-based approach (\texttt{local\_evidence} or 
-\texttt{global\_evidence}), the approach generates epistemic belief 
-and plausibility bounds on aleatory statistics.
-
-The recommendations for UQ methods are summarized in Table~\ref{usage:guideuq}.
-
-\begin{table}
+\begin{table}[hbp]
 \centering
 \caption{Guidelines for UQ method selection.} \label{usage:guideuq}\vspace{2mm}
 \begin{tabular}{|c|c|c|}
@@ -2261,6 +2157,118 @@ nested UQ (second-order probability, \\
 \end{tabular}
 \end{table}
 
+
+{\bf Sampling Methods} \\
+Sampling-based methods are the most robust uncertainty
+techniques available, are applicable to almost all simulations, and
+possess rigorous error bounds; consequently, they should be used
+whenever the function is relatively inexpensive to compute. However,
+in the case of terascale computational simulations, the number of
+function evaluations required by traditional techniques such as Monte
+Carlo and Latin hypercube sampling (LHS) quickly becomes prohibitive,
+especially if tail statistics are needed.  Additional sampling options
+include quasi-Monte Carlo (QMC) sampling and importance sampling (IS), 
+%or Markov Chain Monte Carlo (MCMC) sampling
+and incremental sampling may also be used to incrementally add samples 
+to an existing sample set.
+
+Alternatively, one can apply the traditional sampling techniques to a
+surrogate function approximating the expensive computational
+simulation (see Section~\ref{adv_models:sbuq}). However, if this
+approach is selected, the user should be aware that it is very
+difficult to assess the accuracy of the results obtained. Unlike
+the case of surrogate-based local minimization (see
+Section~\ref{sbm:sblm}), there is no simple pointwise calculation to
+verify the accuracy of the approximate results. This is due to the
+functional nature of uncertainty quantification, i.e. the accuracy of
+the surrogate over the entire parameter space needs to be considered,
+not just around a candidate optimum as in the case of surrogate-based
+local. This issue especially manifests itself when trying to estimate
+low probability events such as the catastrophic failure of a system.
+
+{\bf Reliability Methods} \\
+Another class of UQ methods known as local reliability methods (e.g.,
+MV, AMV/AMV$^2$, AMV+/AMV$^2$+, TANA, and FORM/SORM) are more
+computationally efficient in general than the sampling methods and are
+effective when applied to reasonably well-behaved response functions;
+i.e., functions that are smooth, unimodal, and linear or mildly
+nonlinear. They can be used to provide qualitative sensitivity
+information concerning which uncertain variables are important (with
+relatively few function evaluations), or compute full cumulative or
+complementary cumulative response functions (with additional
+computational effort).  Since they rely on gradient calculations to
+compute local optima (most probable points of failure), they scale
+well for increasing numbers of random variables, but issues with
+nonsmooth, discontinuous, and multimodal response functions are
+relevant concerns. In addition, even if there is a single MPP and it
+is calculated accurately, first-order and second-order integrations
+may fail to accurately capture the shape of the failure domain.  In
+these cases, adaptive importance sampling around the MPP can be
+helpful.  Overall, local reliability methods should be used with some
+care and their accuracy should be verified whenever possible.
+
+An effective alternative to local reliability analysis when confronted
+with nonsmooth, multimodal, and/or highly nonlinear response functions
+is efficient global reliability analysis (EGRA).  This technique
+employs Gaussian process global surrogate models to accurately resolve
+the failure domain and then employs multimodal adaptive importance
+sampling to resolve the probabilities.  For relatively low dimensional
+problems (i.e, on the order of 10 variables), this method displays the
+efficiency of local reliability analysis with the accuracy of
+exhaustive sampling.  While extremely promising, this method is still
+relatively new and is the subject of ongoing refinements as we deploy
+it to additional applications.
+
+{\bf Stochastic Expansions Methods} \\
+The next class of UQ methods available in Dakota is comprised of
+stochastic expansion methods (polynomial chaos and stochastic
+collocation), which are general purpose techniques provided that the
+response functions possess finite second order moments. Further, these
+methods approximate the full random process/field and capture the
+underlying functional relationship between a key response metric and
+its random variables, rather than just approximating statistics such
+as mean and standard deviation. This class of methods parallels
+traditional variational methods in mechanics; in that vein, efforts
+are underway to compute rigorous error bounds of the approximations
+produced by the methods. Another strength of these methods is their
+potential use in a multiphysics environment as a means to propagate
+the uncertainty through a series of simulations while retaining as
+much information as possible at each stage of the analysis.  The
+current challenge in the development of these methods, as for other
+global surrogate-based methods, is effective scaling for large numbers
+of random variables.  Recent advances in adaptive sparse grid methods 
+address some of the scaling issues for stochastic expansion.
+
+{\bf Epistemic Uncertainty Quantification Methods} \\
+The final class of UQ methods available in Dakota are focused on
+epistemic uncertainties, or uncertainties resulting from a lack of
+knowledge.  In these problems, the assignment of input probability
+distributions when data is sparse can be somewhat suspect.  One
+approach to handling epistemic uncertainties is Dempster-Shafer theory
+of evidence (Dakota methods \texttt{local\_evidence} and 
+\texttt{global\_evidence}). Another method is pure interval 
+analysis (\texttt{local\_interval\_est} and 
+\texttt{global\_interval\_est}), where intervals on inputs are 
+mapped to intervals on outputs using optimization methods 
+
+{\bf Mixed Aleatoric and Epistemic Methods} \\
+For problems with a mixture of epistemic and aleatoric uncertainties, 
+it is desirable to segregate the two uncertainty types within a nested 
+analysis, allowing stronger probabilistic inferences for the portion
+of the problem where they are appropriate.  In this nested approach, an outer 
+epistemic level selects realizations of epistemic parameters (augmented
+variables) and/or realizations of random variable distribution
+parameters (inserted variables) from intervals.  These realizations
+define the probability distributions for an inner aleatoric level
+performing probabilistic analyses.  In the case where the outer loop
+is an interval propagation approach (\texttt{local\_interval\_est} or 
+\texttt{global\_interval\_est}), the nested approach is
+known as second-order probability (see also Section~\ref{models:nested})
+and the study generates a family of CDF/CCDF respresentations known as a 
+``horse tail'' plot.  In the case where the outer loop is an 
+evidence-based approach (\texttt{local\_evidence} or 
+\texttt{global\_evidence}), the approach generates epistemic belief 
+and plausibility bounds on aleatory statistics.
 
 \section{UQ Examples}
 

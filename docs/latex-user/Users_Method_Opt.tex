@@ -1129,7 +1129,7 @@ scaled.
 \end{figure}
 
 
-\section{Optimization Method Selection}\label{opt:usage}
+\section{Optimization Usage Guidelines}\label{opt:usage}
 
 In selecting an optimization method, important considerations include
 the type of variables in the problem (continuous, discrete, mixed),
@@ -1140,89 +1140,6 @@ considerations include the efficiency of convergence to an optimum
 (i.e., convergence rate) and the robustness of the method in the
 presence of challenging design space features (e.g., nonsmoothness).
 
-Gradient-based optimization methods are highly efficient, with the
-best convergence rates of all of the optimization methods. If analytic
-gradient and Hessian information can be provided by an application
-code, a full Newton method will provide quadratic convergence rates
-near the solution. More commonly, only gradient information is
-available and a quasi-Newton method is chosen in which the Hessian
-information is approximated from an accumulation of gradient data. In
-this case, superlinear convergence rates can be obtained. These
-characteristics make gradient-based optimization methods the methods
-of choice when the problem is smooth, unimodal, and
-well-behaved. However, when the problem exhibits nonsmooth,
-discontinuous, or multimodal behavior, these methods can also be the
-least robust since inaccurate gradients will lead to bad search
-directions, failed line searches, and early termination, and the
-presence of multiple minima will be missed.
-
-Thus, for gradient-based optimization, a critical factor is the
-gradient accuracy. Analytic gradients are ideal, but are often
-unavailable. For many engineering applications, a finite difference
-method will be used by the optimization algorithm to estimate gradient
-values. Dakota allows the user to select the step size for these
-calculations, as well as choose between forward-difference and
-central-difference algorithms. The finite difference step size should
-be selected as small as possible, to allow for local accuracy and
-convergence, but not so small that the steps are ``in the noise.'' 
-This requires an assessment of the local smoothness of the response
-functions using, for example, a parameter study method.  Central
-differencing, in general, will produce more reliable gradients than
-forward differencing, but at roughly twice the expense.
-
-Nongradient-based methods exhibit much slower convergence rates for
-finding an optimum, and as a result, tend to be much more
-computationally demanding than gradient-based methods. Nongradient
-local optimization methods, such as pattern search algorithms, often
-require from several hundred to a thousand or more function
-evaluations, depending on the number of variables, and nongradient
-global optimization methods such as genetic algorithms may require
-from thousands to tens-of-thousands of function evaluations. Clearly,
-for nongradient optimization studies, the computational cost of the
-function evaluation must be relatively small in order to obtain an
-optimal solution in a reasonable amount of time. In addition,
-nonlinear constraint support in nongradient methods is an open area of
-research and, while supported by many nongradient methods in Dakota,
-is not as refined as constraint support in gradient-based
-methods. However, nongradient methods can be more robust and more
-inherently parallel than gradient-based approaches. They can be
-applied in situations were gradient calculations are too expensive or
-unreliable. In addition, some nongradient-based methods can be used
-for global optimization which gradient-based techniques, by
-themselves, cannot. For these reasons, nongradient-based methods
-deserve consideration when the problem may be nonsmooth, multimodal,
-or poorly behaved.
-
-Approaches that seek to improve the effectiveness or efficiency of
-optimizers and least squares methods through the use of surrogate
-models include the surrogate-based local, surrogate-based global, and
-efficient global methods.  Chapter~\ref{sbm} provides further
-information on these approaches.  The surrogate-based local approach
-(see Section~\ref{sbm:sblm}) brings the efficiency of gradient-based
-optimization/least squares methods to nonsmooth or poorly behaved
-problems by smoothing noisy or discontinuous response results with a
-data fit surrogate model (e.g., a quadratic polynomial) and then
-minimizing on the smooth surrogate using efficient gradient-based
-techniques.  The surrogate-based global approach (see
-Section~\ref{sbm:sbgm}) similarly employs optimizers/least squares
-methods with surrogate models, but rather than localizing through the
-use of trust regions, seeks global solutions using global methods.
-And the efficient global approach (see Section~\ref{sbm:egm}) uses the
-specific combination of Gaussian process surrogate models in
-combination with the DIRECT global optimizer.  Similar to these
-surrogate-based approaches, the hybrid and multistart optimization
-strategies seek to bring the efficiency of gradient-based optimization
-methods to global optimization problems.  In the former case, a global
-optimization method can be used for a few cycles to locate promising
-regions and then local gradient-based optimization is used to
-efficiently converge on one or more optima. In the latter case, a
-stratification technique is used to disperse a series of local
-gradient-based optimization runs through parameter space.  Without
-surrogate data smoothing, however, these strategies are best for
-smooth multimodal problems. Section~\ref{strat:hybrid} and
-Section~\ref{strat:multistart} provide more information on these
-approaches.
-
 Table~\ref{usage:guideopt} provides a convenient reference for
 choosing an optimization method or strategy to match the
 characteristics of the user's problem, where blank fields inherit the
@@ -1231,7 +1148,7 @@ understood that the methods with more advanced constraint support are
 also applicable to the lower constraint support levels; they are
 listed only at their highest level of constraint support for brevity.
 
-\begin{table}
+\begin{table}[hbp]
 \centering
 \caption{Guidelines for optimization method selection.}
 \label{usage:guideopt}\vspace{2mm}
@@ -1302,6 +1219,92 @@ noncategorical &         &           &         & \\
 \hline
 \end{tabular}
 \end{table}
+
+{\bf Gradient-based Methods} \\
+Gradient-based optimization methods are highly efficient, with the
+best convergence rates of all of the optimization methods. If analytic
+gradient and Hessian information can be provided by an application
+code, a full Newton method will provide quadratic convergence rates
+near the solution. More commonly, only gradient information is
+available and a quasi-Newton method is chosen in which the Hessian
+information is approximated from an accumulation of gradient data. In
+this case, superlinear convergence rates can be obtained. These
+characteristics make gradient-based optimization methods the methods
+of choice when the problem is smooth, unimodal, and
+well-behaved. However, when the problem exhibits nonsmooth,
+discontinuous, or multimodal behavior, these methods can also be the
+least robust since inaccurate gradients will lead to bad search
+directions, failed line searches, and early termination, and the
+presence of multiple minima will be missed.
+
+Thus, for gradient-based optimization, a critical factor is the
+gradient accuracy. Analytic gradients are ideal, but are often
+unavailable. For many engineering applications, a finite difference
+method will be used by the optimization algorithm to estimate gradient
+values. Dakota allows the user to select the step size for these
+calculations, as well as choose between forward-difference and
+central-difference algorithms. The finite difference step size should
+be selected as small as possible, to allow for local accuracy and
+convergence, but not so small that the steps are ``in the noise.'' 
+This requires an assessment of the local smoothness of the response
+functions using, for example, a parameter study method.  Central
+differencing, in general, will produce more reliable gradients than
+forward differencing, but at roughly twice the expense.
+
+{\bf Non-gradient-based Methods} \\
+Nongradient-based methods exhibit much slower convergence rates for
+finding an optimum, and as a result, tend to be much more
+computationally demanding than gradient-based methods. Nongradient
+local optimization methods, such as pattern search algorithms, often
+require from several hundred to a thousand or more function
+evaluations, depending on the number of variables, and nongradient
+global optimization methods such as genetic algorithms may require
+from thousands to tens-of-thousands of function evaluations. Clearly,
+for nongradient optimization studies, the computational cost of the
+function evaluation must be relatively small in order to obtain an
+optimal solution in a reasonable amount of time. In addition,
+nonlinear constraint support in nongradient methods is an open area of
+research and, while supported by many nongradient methods in Dakota,
+is not as refined as constraint support in gradient-based
+methods. However, nongradient methods can be more robust and more
+inherently parallel than gradient-based approaches. They can be
+applied in situations were gradient calculations are too expensive or
+unreliable. In addition, some nongradient-based methods can be used
+for global optimization which gradient-based techniques, by
+themselves, cannot. For these reasons, nongradient-based methods
+deserve consideration when the problem may be nonsmooth, multimodal,
+or poorly behaved.
+
+{\bf Surrogate-based Methods} \\
+Approaches that seek to improve the effectiveness or efficiency of
+optimizers and least squares methods through the use of surrogate
+models include the surrogate-based local, surrogate-based global, and
+efficient global methods.  Chapter~\ref{sbm} provides further
+information on these approaches.  The surrogate-based local approach
+(see Section~\ref{sbm:sblm}) brings the efficiency of gradient-based
+optimization/least squares methods to nonsmooth or poorly behaved
+problems by smoothing noisy or discontinuous response results with a
+data fit surrogate model (e.g., a quadratic polynomial) and then
+minimizing on the smooth surrogate using efficient gradient-based
+techniques.  The surrogate-based global approach (see
+Section~\ref{sbm:sbgm}) similarly employs optimizers/least squares
+methods with surrogate models, but rather than localizing through the
+use of trust regions, seeks global solutions using global methods.
+And the efficient global approach (see Section~\ref{sbm:egm}) uses the
+specific combination of Gaussian process surrogate models in
+combination with the DIRECT global optimizer.  Similar to these
+surrogate-based approaches, the hybrid and multistart optimization
+strategies seek to bring the efficiency of gradient-based optimization
+methods to global optimization problems.  In the former case, a global
+optimization method can be used for a few cycles to locate promising
+regions and then local gradient-based optimization is used to
+efficiently converge on one or more optima. In the latter case, a
+stratification technique is used to disperse a series of local
+gradient-based optimization runs through parameter space.  Without
+surrogate data smoothing, however, these strategies are best for
+smooth multimodal problems. Section~\ref{strat:hybrid} and
+Section~\ref{strat:multistart} provide more information on these
+approaches.
 
 \section{Additional Examples}\label{opt:examples}
 

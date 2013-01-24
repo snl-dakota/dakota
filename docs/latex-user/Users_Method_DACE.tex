@@ -776,16 +776,20 @@ share the purpose of exploring the parameter space.  When a global
 space-filling set of samples is desired, then the DOE, DACE, and
 sampling methods are recommended.  These techniques are useful for
 scatter plot and variance analysis as well as surrogate model
-construction. The distinction between DOE and DACE methods is that the
+construction. 
+
+The distinction between DOE and DACE methods is that the
 former are intended for physical experiments containing an element of
 nonrepeatability (and therefore tend to place samples at the extreme
 parameter vertices), whereas the latter are intended for repeatable
-computer experiments and are more space-filling in nature. The
-distinction between DOE/DACE and sampling is drawn based on the
+computer experiments and are more space-filling in nature. 
+
+The distinction between DOE/DACE and sampling is drawn based on the
 distributions of the parameters.  DOE/DACE methods typically assume
 uniform distributions, whereas the sampling approaches in Dakota
-support a broad range of probability distributions. To use
-\texttt{sampling} in a design of experiments mode (as opposed to an
+support a broad range of probability distributions. 
+
+To use \texttt{sampling} in design of experiments mode (as opposed to 
 uncertainty quantification mode), the \texttt{all\_variables} flag
 should be included in the method specification of the Dakota input
 file.
@@ -793,7 +797,7 @@ file.
 Design of experiments method selection recommendations are summarized
 in Table~\ref{dace:usage:table}.
 
-\begin{table}
+\begin{table}[hbp]
 \centering
 \caption{Guidelines for selection of parameter study, DOE, DACE, and
 sampling methods.}
@@ -803,27 +807,26 @@ sampling methods.}
 \textbf{Method} & \textbf{Applications} & \textbf{Applicable Methods} \\
 \textbf{Classification} & & \\
 \hline
-parameter study & sensitivity analysis,    & centered\_parameter\_study, \\
-                & directed parameter space & list\_parameter\_study, \\
-                & investigations           & multidim\_parameter\_study, \\
-                &                          & vector\_parameter\_study \\
+parameter study & sensitivity analysis,                       & centered\_parameter\_study, \\
+                & directed parameter space investigations     & list\_parameter\_study, \\
+                &                                             & multidim\_parameter\_study, \\
+                &                                             & vector\_parameter\_study \\
+                   &                                             & \\
 \hline
-classical design & physical experiments    & dace (box\_behnken, \\
-of experiments   & (parameters are         & central\_composite) \\
-                 & uniformly distributed)  & \\
-                 &                         & \\
+classical design & physical experiments                       & dace (box\_behnken, \\
+of experiments   & (parameters are uniformly distributed)     & central\_composite) \\
+                   &                                             & \\
 \hline
-design of computer & variance analysis,     & dace (grid, random,
-                                              oas, lhs, oa\_lhs), \\
-experiments        & space filling designs  & fsu\_quasi\_mc (halton, 
-                                              hammersley), \\
-                   & (parameters are        & fsu\_cvt, psuade\_moat \\
-                   & uniformly distributed) & \\
+design of computer & variance analysis,                       & dace (grid, random,
+                                                                oas, lhs, oa\_lhs), \\
+experiments        & space filling designs                    & fsu\_quasi\_mc (halton, 
+                                                                hammersley), \\
+                   & (parameters are uniformly distributed)   & fsu\_cvt, psuade\_moat \\
+                   &                                             & \\
 \hline
-sampling           & space filling designs      & sampling
-                                                  (Monte Carlo or LHS) \\
-                   & (parameters have general   & with all\_variables flag \\
-                   & probability distributions) & \\
+sampling           & space filling designs                    & sampling (Monte Carlo or LHS) \\
+                   & (parameters have general probability distributions) & with all\_variables flag \\
+                   &                                             & \\
 \hline
 \end{tabular}
 \end{table}
