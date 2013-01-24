@@ -267,14 +267,12 @@ specifications.
 \subsection RespFnOpt Objective and constraint functions (optimization data set)
 
 An optimization data set is specified using \c objective_functions
-and optionally \c sense, \c objective_function_scale_types, \c
-objective_function_scales, \c multi_objective_weights, \c
+and optionally \c sense, \c primary_scale_types, \c
+primary_scales, \c weights, \c
 nonlinear_inequality_constraints, \c
-nonlinear_inequality_lower_bounds, \c
-nonlinear_inequality_upper_bounds, \c
-nonlinear_inequality_scale_types, \c nonlinear_inequality_scales, \c
-nonlinear_equality_constraints, \c nonlinear_equality_targets, \c
-nonlinear_equality_scale_types, and \c nonlinear_equality_scales.  The
+lower_bounds, \c upper_bounds,
+\c nonlinear_equality_constraints, \c targets, \c
+scale_types, and \c scales.  The
 \c objective_functions, \c nonlinear_inequality_constraints,
 and \c nonlinear_equality_constraints inputs specify the number of
 objective functions, nonlinear inequality constraints, and nonlinear
@@ -285,30 +283,30 @@ strings for declaring "minimization" or "maximization" (can be shortened
 to "min" or "max"; not case sensitive) for each of the objective 
 functions, indicating the goal for each objective within an optimization.  
 If a single string is specified it will apply to each objective function.  
-The \c objective_function_scale_types specification includes strings
+The \c primary_scale_types specification includes strings
 specifying the scaling type for each objective function value in
 methods that support scaling, when scaling is enabled (see 
 \ref MethodIndControl for details). Each entry in \c
-objective_function_scale_types may be selected from <tt>'none'</tt>,
+primary_scale_types may be selected from <tt>'none'</tt>,
 <tt>'value'</tt>, or <tt>'log'</tt>, to select no, characteristic
 value, or logarithmic scaling, respectively.  Automatic scaling is not
 available for objective functions.  If a single string is specified it
 will apply to each objective function.  Each entry in \c
-objective_function_scales may be a user-specified nonzero
+primary_scales may be a user-specified nonzero
 characteristic value to be used in scaling each objective function.
 These values are ignored for scaling type <tt>'none'</tt>, required
 for <tt>'value'</tt>, and optional for <tt>'log'</tt>.  If a single
 real value is specified it will apply to each function.  If the number
 of objective functions is greater than 1, then a \c
-multi_objective_weights specification provides a simple weighted-sum
+weights specification provides a simple weighted-sum
 approach to combining multiple objectives: 
 \f[f = \sum_{i=1}^{n} w_{i}f_{i}\f] If this is not specified, then 
 each objective function is given equal weighting: 
 \f[f = \sum_{i=1}^{n} \frac{f_i}{n}\f] If scaling is specified, it is 
 applied before multi-objective weighted sums are formed.
 
-The \c nonlinear_inequality_lower_bounds and \c
-nonlinear_inequality_upper_bounds specifications provide the lower and
+The \c lower_bounds and \c upper_bounds 
+specifications provide the lower and
 upper bounds for 2-sided nonlinear inequalities of the form
 \f[g_l \leq g(x) \leq g_u\f]
 The defaults for the inequality constraint bounds are selected so that 
@@ -326,24 +324,23 @@ used to drop one of the bounds in order to specify a 1-sided constraint
 inequality bounds as described in \ref MethodIndControl and for 
 nonexistent design variable bounds as described in \ref VarDV.
 
-The \c nonlinear_equality_targets specification provides the targets 
+The \c targets specification provides the targets 
 for nonlinear equalities of the form
 \f[g(x) = g_t\f]
 and the defaults for the equality targets enforce a value of \c 0. 
 for each constraint
 \f[g(x) = 0.0\f]
 
-The \c nonlinear_inequality_scale_types and \c
-nonlinear_equality_scale_types specifications include strings
+The \c scale_types
+specifications include strings
 specifying the scaling type for each nonlinear inequality or equality
 constraint, respectively, in methods that support scaling, when scaling
 is enabled (see \ref MethodIndControl for details). Each entry in \c
-objective_function_scale_types may be selected from <tt>'none'</tt>,
+scale_types may be selected from <tt>'none'</tt>,
 <tt>'value'</tt>, <tt>'auto'</tt>, or <tt>'log'</tt>, to select no,
 characteristic value, automatic, or logarithmic scaling, respectively.
 If a single string is specified it will apply to all components of the
-relevant nonlinear constraint vector.  Each entry in \c
-nonlinear_inequality_scales and \c nonlinear_equality_scales may be a
+relevant nonlinear constraint vector.  Each entry in \c scales may be a
 user-specified nonzero characteristic value to be used in scaling each
 constraint component.  These values are ignored for scaling type
 <tt>'none'</tt>, required for <tt>'value'</tt>, and optional for
@@ -384,19 +381,19 @@ Specification detail for optimization data sets
 <td>vector values = <tt>'minimize'</tt>
 <tr>
 <td>Objective function scaling types
-<td>\c objective_function_scale_types
+<td>\c primary_scale_types
 <td>list of strings
 <td>Optional
 <td>vector values = <tt>'none'</tt>
 <tr>
 <td>Objective function scales
-<td>\c objective_function_scales
+<td>\c primary_scales
 <td>list of reals
 <td>Optional
 <td>vector values = \c 1. (no scaling)
 <tr>
-<td>Multiobjective weightings
-<td>\c multi_objective_weights
+<td>Multi-objective weightings
+<td>\c weights
 <td>list of reals
 <td>Optional
 <td>equal weightings
@@ -408,28 +405,16 @@ Specification detail for optimization data sets
 <td>\c 0
 <tr>
 <td>Nonlinear inequality constraint lower bounds
-<td>\c nonlinear_inequality_lower_bounds
+<td>\c lower_bounds
 <td>list of reals
 <td>Optional
 <td>vector values = \c -DBL_MAX
 <tr>
 <td>Nonlinear inequality constraint upper bounds
-<td>\c nonlinear_inequality_upper_bounds
+<td>\c upper_bounds
 <td>list of reals
 <td>Optional
 <td>vector values = \c 0.
-<tr>
-<td>Nonlinear inequality constraint scaling types
-<td>\c nonlinear_inequality_scale_types
-<td>list of strings
-<td>Optional
-<td>vector values = <tt>'none'</tt>
-<tr>
-<td>Nonlinear inequality constraint scales
-<td>\c nonlinear_inequality_scales
-<td>list of reals
-<td>Optional
-<td>vector values = \c 1. (no scaling)
 <tr>
 <td>Number of nonlinear equality constraints
 <td>\c nonlinear_equality_constraints
@@ -438,19 +423,19 @@ Specification detail for optimization data sets
 <td>\c 0
 <tr>
 <td>Nonlinear equality constraint targets
-<td>\c nonlinear_equality_targets
+<td>\c targets
 <td>list of reals
 <td>Optional
 <td>vector values = \c 0.
 <tr>
-<td>Nonlinear equality constraint scaling types
-<td>\c nonlinear_equality_scale_types
+<td>Nonlinear constraint scaling types (for inequalities or equalities)
+<td>\c scale_types
 <td>list of strings
 <td>Optional
 <td>vector values = <tt>'none'</tt>
 <tr>
-<td>Nonlinear equality constraint scales
-<td>\c nonlinear_equality_scales
+<td>Nonlinear constraint scales (for inequalities or equalities)
+<td>\c scales
 <td>list of reals
 <td>Optional
 <td>vector values = \c 1. (no scaling)
@@ -503,10 +488,10 @@ the residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and
 return the actual model response, as DAKOTA will compute the residual
 internally using the supplied data.
 
-The \c calibration_term_scale_types specification includes strings
+The \c primary_scale_types specification includes strings
 specifying the scaling type for each residual term in methods that
 support scaling, when scaling is enabled (see \ref MethodIndControl
-for details). Each entry in \c calibration_term_scale_types may be
+for details). Each entry in \c primary_scale_types may be
 selected from <tt>'none'</tt>, <tt>'value'</tt>, or <tt>'log'</tt>, to
 select no, characteristic value, or logarithmic scaling, respectively.
 Automatic scaling is not available for calibration terms.  If a single
@@ -516,7 +501,7 @@ characteristic value to be used in scaling each term.  These values
 are ignored for scaling type <tt>'none'</tt>, required for
 <tt>'value'</tt>, and optional for <tt>'log'</tt>.  If a single real
 value is specified it will apply to each term.  The \c
-calibration_weights specification provides a means to specify a
+weights specification provides a means to specify a
 relative emphasis among the vector of squared residuals through
 multiplication of these squared residuals by a vector of weights: \f[f
 = \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^M_i - y^O_i)^2\f]
@@ -585,19 +570,19 @@ Specification detail for nonlinear least squares data sets (calibration terms)
 <td>0
 <tr>
 <td>Calibration scaling types
-<td>\c calibration_term_scale_types
+<td>\c primary_scale_types
 <td>list of strings
 <td>Optional
 <td>vector values = <tt>'none'</tt>
 <tr>
 <td>Calibration scales
-<td>\c calibration_term_scales
+<td>\c primary_scales
 <td>list of reals
 <td>Optional
 <td>no scaling (vector values = \c 1.)
 <tr>
 <td>Calibration term weights
-<td>\c calibration_weights
+<td>\c weights
 <td>list of reals
 <td>Optional
 <td>equal weighting
@@ -625,28 +610,16 @@ Specification detail for nonlinear least squares data sets (constraints)
 <td>\c 0
 <tr>
 <td>Nonlinear inequality lower bounds
-<td>\c nonlinear_inequality_lower_bounds
+<td>\c lower_bounds
 <td>list of reals
 <td>Optional
 <td>vector values = \c -DBL_MAX
 <tr>
 <td>Nonlinear inequality upper bounds
-<td>\c nonlinear_inequality_upper_bounds
+<td>\c upper_bounds
 <td>list of reals
 <td>Optional
 <td>vector values = \c 0.
-<tr>
-<td>Nonlinear inequality scaling types
-<td>\c nonlinear_inequality_scale_types
-<td>list of strings
-<td>Optional
-<td>vector values = <tt>'none'</tt>
-<tr>
-<td>Nonlinear inequality scales
-<td>\c nonlinear_inequality_scales
-<td>list of reals
-<td>Optional
-<td>no scaling (vector values = \c 1.)
 <tr>
 <td>Number of nonlinear equality constraints
 <td>\c nonlinear_equality_constraints
@@ -655,19 +628,19 @@ Specification detail for nonlinear least squares data sets (constraints)
 <td>\c 0
 <tr>
 <td>Nonlinear equality targets
-<td>\c nonlinear_equality_targets
+<td>\c targets
 <td>list of reals
 <td>Optional
 <td>vector values = \c 0.
 <tr>
-<td>Nonlinear equality scaling types
-<td>\c nonlinear_equality_scale_types
+<td>Nonlinear scaling types (for inequalities or equalities)
+<td>\c scale_types
 <td>list of strings
 <td>Optional
 <td>vector values = <tt>'none'</tt>
 <tr>
-<td>Nonlinear equality scales
-<td>\c nonlinear_equality_scales
+<td>Nonlinear scales (for inequalities or equalities)
+<td>\c scales
 <td>list of reals
 <td>Optional
 <td>no scaling (vector values = \c 1.)
