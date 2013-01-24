@@ -808,6 +808,19 @@ install(FILES ${Dakota_hdr} DESTINATION include)
 file(GLOB Dakota_spec_files dakota.input.*)
 install(FILES ${Dakota_spec_files} DESTINATION bin)
 
+if (MSVC)
+  # WJB - ToDo: evaluate executable permission for .bat files on Windows
+  install( FILES ${Dakota_SOURCE_DIR}/scripts/dakota.bat
+    DESTINATION "bin" PERMISSIONS
+    OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+  )
+else()
+  install( FILES ${Dakota_SOURCE_DIR}/scripts/dakota.sh
+    DESTINATION "bin" PERMISSIONS
+    OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+  )
+endif()
+
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.cpp)
   target_link_libraries(dakota_library_split
@@ -837,9 +850,9 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
   endif()
 endif()
   
-if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
-  message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")
-endif()
+#if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
+#  message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")
+#endif()
 
 message(STATUS "TPL LIBS: ${TPL_LIBS}")
 message(STATUS "EXTRA TPL LIBS: ${EXTRA_TPL_LIBS}")
