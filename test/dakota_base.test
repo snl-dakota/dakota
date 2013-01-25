@@ -12793,15 +12793,15 @@ Test Number 3 succeeded
                       3.3186106982e-06
 <<<<< Best data captured at function evaluation 29
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 2000 total (1827 new, 173 duplicate)
+<<<<< Function evaluation summary: 2001 total (2001 new, 0 duplicate)
 <<<<< Best parameters          =
-                      8.8649575408e-01 x1
-                      7.8467061171e-01 x2
+                      8.8555638100e-01 x1
+                      7.8331926736e-01 x2
 <<<<< Best objective function  =
-                      1.3028202001e-02
-<<<<< Best data captured at function evaluation 2000
+                      1.3176700909e-02
+<<<<< Best data captured at function evaluation 1999
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 2010 total (2005 new, 5 duplicate)
+<<<<< Function evaluation summary: 2005 total (2005 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.1817540107e+00 x1
                       1.4035612403e+00 x2
