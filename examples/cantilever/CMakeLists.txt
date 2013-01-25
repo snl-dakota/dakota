@@ -36,7 +36,7 @@ foreach(generated_input ${cantilever_test_inputs})
 
 endforeach()
 
-add_custom_target(examples-cantilever-inputs ALL 
+add_custom_target(examples-cantilever ALL 
   DEPENDS ${all_generated_inputs})
 
 install(FILES ${all_generated_inputs} 

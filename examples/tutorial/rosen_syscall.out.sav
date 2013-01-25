@@ -1,11 +1,11 @@
-DAKOTA version 5.2+ developmental release.
-Subversion revision 1367 built Jan 17 2013 19:55:45.
+DAKOTA version 5.3 released 01/31/2013.
+Subversion revision 1431 built Jan 25 2013 09:59:15.
 Running MPI executable in serial mode.
-Start time: Fri Jan 18 09:55:41 2013
+Start time: Fri Jan 25 10:02:13 2013
 
 -----------------------
 Begin DAKOTA input file
-rosen_syscall.tmp
+rosen_syscall.in
 -----------------------
 # Dakota INPUT FILE - rosen_syscall.in 
 # Included Dakota example using the rosenbrock analysis code 
@@ -2520,5 +2520,5 @@ Active set vector = { 1 }
 <<<<< Iterator conmin_frcg completed.
 <<<<< Single Method Strategy completed.
 DAKOTA execution time in seconds:
-  Total CPU        =       0.05 [parent =   0.035994, child =   0.014006]
-  Total wall clock =   0.206514
+  Total CPU        =       0.04 [parent =   0.043994, child =  -0.003994]
+  Total wall clock =   0.221166

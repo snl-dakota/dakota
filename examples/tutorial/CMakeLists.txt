@@ -2,6 +2,7 @@
 
 set(test_path ${Dakota_SOURCE_DIR}/test)
 
+# Users_Tutorial.tex
 set(tutorial_test_inputs
   "${test_path}/dakota_rosenbrock_users.in 0 rosen_multidim"
   "${test_path}/dakota_rosenbrock_users.in 2 rosen_grad_opt"
@@ -30,16 +31,24 @@ foreach(generated_input ${tutorial_test_inputs})
   )
 
   # Copy all .sav files from source to binary tree, avoid glob to get deps
-  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.out.sav
-    ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.out.sav)
-  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.stdout.sav
-    ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.stdout.sav)
-  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.dat.sav
-    ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.dat.sav)
-
-  list(APPEND all_copied_files ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.out.sav)
-  list(APPEND all_copied_files ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.stdout.sav)
-  list(APPEND all_copied_files ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.dat.sav)
+  if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.out.sav")
+    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.out.sav
+      ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.out.sav)
+    list(APPEND all_copied_files 
+      ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.out.sav)
+  endif()
+  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.stdout.sav)
+    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.stdout.sav
+      ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.stdout.sav)
+    list(APPEND all_copied_files 
+      ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.stdout.sav)
+  endif()
+  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.dat.sav)
+    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${test_output}.dat.sav
+      ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.dat.sav)
+    list(APPEND all_copied_files 
+      ${CMAKE_CURRENT_BINARY_DIR}/${test_output}.dat.sav)
+  endif()
 
 endforeach()
 

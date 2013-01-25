@@ -59,6 +59,11 @@ set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_rosenbrock_ego.in 0 dakota_rosenbrock_ego.in"
 )
 
+# Users_Output.tex
+set(users_test_inputs ${users_test_inputs}
+  "${test_path}/dakota_container.in 0 dakota_container.in"
+)
+
 # Users_Advanced_Strategies.tex
 set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_hybrid.in 0 dakota_hybrid.in"
@@ -71,11 +76,6 @@ set(users_test_inputs ${users_test_inputs}
 set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_uq_cantilever_sop_rel.in 0 dakota_uq_cantilever_sop_rel.in"
   "${test_path}/dakota_ouu1_tb.in 0 dakota_ouu1_tb.in"
-)
-
-# Users_Output.tex
-set(users_test_inputs ${users_test_inputs}
-  "${test_path}/dakota_container.in 0 dakota_container.in"
 )
 
 # Users_Advanced_Interfaces.tex

@@ -1,11 +1,11 @@
-DAKOTA version 5.2+ developmental release.
-Subversion revision 1367 built Jan 17 2013 19:55:45.
+DAKOTA version 5.3 released 01/31/2013.
+Subversion revision 1431 built Jan 25 2013 09:59:15.
 Running MPI executable in serial mode.
-Start time: Fri Jan 18 09:55:07 2013
+Start time: Fri Jan 25 10:02:05 2013
 
 -----------------------
 Begin DAKOTA input file
-rosen_multidim.tmp
+rosen_multidim.in
 -----------------------
 # Dakota INPUT FILE - rosen_multidim.in 
 # Included Dakota example using the rosenbrock analysis code 
@@ -1300,5 +1300,5 @@ Partial Rank Correlation Matrix between input and output:
 <<<<< Iterator multidim_parameter_study completed.
 <<<<< Single Method Strategy completed.
 DAKOTA execution time in seconds:
-  Total CPU        =       0.02 [parent =   0.004999, child =   0.015001]
-  Total wall clock = 0.00513482
+  Total CPU        =       0.01 [parent =   0.014998, child =  -0.004998]
+  Total wall clock =  0.0223851
