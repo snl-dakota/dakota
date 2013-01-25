@@ -1,0 +1,61 @@
+## DAKOTA INPUT FILE - dakota_var_views_opt.in
+
+# This file contains tests of the variable views override capability
+# in the context of optimization methods.  It covers continuous
+# variables (discrete are covered in another test set) and considers
+# only default and 'active all' views to catch the most egregious
+# problems.  Mix-and-match tests will be captured separately.
+
+method,
+	dot_mmfd		#0,#9
+#	npsol_sqp		#1,#10
+#	nlpql_sqp		#2,#11
+#	conmin_mfd		#3,#12
+#	optpp_q_newton		#4,#13
+#	asynch_pattern_search	#5,#14
+#	coliny_direct		#6,#15
+#	soga			#7,#16
+#	  seed = 34785		#7,#16
+#	ncsu_direct		#8,#17
+	max_function_evaluations = 5000
+
+variables,
+#	active all			#9,#10,#11,#12,#13,#14,#15,#16,#17
+	continuous_design = 2
+	  initial_point  0.   0.
+	  upper_bounds   2.   2.
+	  lower_bounds  -2.  -2.
+	  descriptors   'x1' 'x2'
+	uniform_uncertain = 2
+	  upper_bounds   3.   3.	#0,#1,#2,#3,#4,#5,#6,#7,#8
+#	  upper_bounds   2.   2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  lower_bounds  -1.  -1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
+#	  lower_bounds  -2.  -2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  descriptors   'x3' 'x4'
+	interval_uncertain = 2
+	  num_intervals    1      1
+	  upper_bounds     3.     3.	#0,#1,#2,#3,#4,#5,#6,#7,#8
+#	  upper_bounds     2.     2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  lower_bounds    -1.    -1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
+#	  lower_bounds    -2.    -2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  descriptors     'x5'   'x6'
+	continuous_state = 2
+	  initial_state  1.   1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
+#	  initial_state  0.   0.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  upper_bounds   3.   3.	#0,#1,#2,#3,#4,#5,#6,#7,#8
+#	  upper_bounds   2.   2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  lower_bounds  -1.  -1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
+#	  lower_bounds  -2.  -2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  descriptors   'x7' 'x8'
+
+interface,
+	fork
+	  analysis_driver = 'text_book'
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2	#0,#1,#2,#3,#4,#5,#6,#7
+#	nonlinear_inequality_constraints = 2	#9,#10,#11,#12,#13,#14,#15,#16
+	numerical_gradients
+	  method_source dakota
+	no_hessians
