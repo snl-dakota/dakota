@@ -1,0 +1,31 @@
+# Dakota INPUT FILE - dakota_rosenbrock_ls.in 
+
+strategy
+  graphics
+  tabular_graphics_data
+  single_method
+
+method
+  max_iterations = 100      
+  convergence_tolerance = 1e-4    
+  nl2sol          
+
+model
+  single
+
+variables
+  continuous_design = 2                
+    initial_point    -1.2      1.0    
+    lower_bounds     -2.0     -2.0     
+    upper_bounds      2.0      2.0     
+    descriptors       'x1'     "x2"    
+
+interface
+  analysis_driver = 'rosenbrock'
+    direct          
+
+responses
+  calibration_terms = 2    
+  analytic_gradients      
+  no_hessians
+

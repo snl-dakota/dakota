@@ -1,0 +1,78 @@
+
+
+
+strategy,
+	single_method
+	tabular_graphics_data
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'
+	max_iterations = 500
+	trust_region
+	  initial_size = 0.10
+	  minimum_size = 1.0e-6
+	  contract_threshold = 0.25
+	  expand_threshold   = 0.75
+	  contraction_factor = 0.50
+	  expansion_factor   = 1.50
+
+method,
+	id_method = 'NLP'
+	conmin_frcg,
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-8
+
+model,
+	id_model = 'SURROGATE'
+	surrogate global		      	
+	  responses_pointer = 'SURROGATE_RESP'
+	  dace_method_pointer = 'SAMPLING' 	
+	  correction additive zeroth_order 	
+	  polynomial quadratic 			
+
+variables,
+	continuous_design = 2
+	  initial_point   -1.2	1.0
+	  lower_bounds    -2.0 -2.0
+	  upper_bounds     2.0 	2.0
+	  descriptors      'x1' 'x2'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	objective_functions = 1
+  	numerical_gradients			
+  	  method_source dakota			
+  	  interval_type central			
+ 	  fd_gradient_step_size = 1.e-6		
+	no_hessians
+
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+	sampling
+	  samples = 10		
+	  seed = 531 rng rnum2
+	  sample_type lhs
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+interface,
+	direct
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'TRUE_RESP'
+	objective_functions = 1
+	no_gradients		
+	no_hessians		
+

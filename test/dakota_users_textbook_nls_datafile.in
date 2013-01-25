@@ -1,0 +1,29 @@
+
+
+method,
+       nl2sol                          
+	  max_iterations = 50
+	  convergence_tolerance = 1e-8
+
+variables,
+	continuous_design = 2
+	  initial_point    0.9    1.1
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	system
+	  analysis_driver = 'text_book'
+	  parameters_file = 'text_book.in'
+	  results_file    = 'text_book.out'
+	  file_tag #file_save
+
+responses,
+ 	calibration_terms = 3			
+         calibration_data_file = 'dakota_textbook_nips.lsq.dat' 
+ 	    freeform  
+	analytic_gradients	 			
+	no_hessians					
+
+

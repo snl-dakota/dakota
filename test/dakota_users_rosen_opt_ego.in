@@ -1,0 +1,24 @@
+
+strategy,
+	single_method
+	  tabular_graphics_data
+
+method,
+	efficient_global
+	  seed = 123456
+
+variables,
+	continuous_design = 2
+	  lower_bounds   -2.0 -2.0
+	  upper_bounds    2.0  2.0
+	  descriptors     'x1' 'x2'
+
+interface,
+	system
+	  analysis_driver = 'rosenbrock'
+
+responses,
+	objective_functions = 1
+	no_gradients
+	no_hessians
+
