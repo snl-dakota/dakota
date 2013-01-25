@@ -61,14 +61,27 @@ Getting started with Dakota typically involves the following steps:
 
 \end{enumerate}
 
+  \item Joining mailing lists and getting help: the most up to date
+    guidance for downloading, compiling, installing, or running
+    Dakota, or seeking help is available on the Dakota website \\
+    (\url{http://dakota.sandia.gov/resources.html}). In addition,
+    your newly installed Dakota packages includes many useful 
+    files, such as
+    \texttt{Dakota/INSTALL} or  platform/operating
+    system-specific guidance  in {\tt
+    Dakota/examples/platforms}. For getting started on Windows, see
+    the files \texttt{INSTALL.cygwin} and \texttt{INSTALL.mingw} in
+    \texttt{Dakota/examples/platforms}.
+\end{itemize}
+
 \subsection{Running Dakota with a simple input file}\label{tutorial:quickstart:running}
 This section is intended for users who are new to Dakota, to demonstrate the basics 
 of running a simple example. 
 
 {\bf First Steps}
 \begin{enumerate}
-  \item Make sure Dakota runs. You should see Dakota version information
-   when you type: \texttt{dakota -v}
+#  \item Make sure Dakota runs - see Section~\ref{tutorial:installation:quickstart:binary}
+ \item Make sure Dakota runs - type dakota --version
   \item Create a working directory 
   \item Copy \texttt{rosen\_multidim.in} from the \texttt{Dakota/examples/tutorial/}
     directory to the working directory
@@ -166,7 +179,7 @@ $<<<<<$ Iterator {\it study\_type} completed.
 {\textbf{Tabular output file}}
 
 For this example, the default name for the tabular output file 
-\texttt{dakota\_tabular.dat} was changed in the input file to
+\textt{dakota\_tabular.dat} was changed in the input file to
 \texttt{rosen\_multidim.dat}. This tab-delimited text file
 (Figure \ref{tutorial:quickstart:rosenbrock_multidim:dat})
 summarizes the inputs and outputs to the function evaluator.
