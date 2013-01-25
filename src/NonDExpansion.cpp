@@ -46,6 +46,10 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   expSampling(false), impSampling(false),
   covarianceControl(probDescDB.get_short("method.nond.covariance_control"))
 {
+  // override default definition in NonD ctor.  If there are any aleatory
+  // variables, then we will sample on that subset for probabilistic stats.
+  epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
+
   if (probDescDB.get_bool("method.variance_based_decomp")) {
     vbdControl = probDescDB.get_short("method.nond.vbd_control");
     vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
@@ -74,6 +78,10 @@ NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
   impSampling(false), vbdControl(Pecos::NO_VBD),
   covarianceControl(DEFAULT_COVARIANCE)
 {
+  // override default definition in NonD ctor.  If there are any aleatory
+  // variables, then we will sample on that subset for probabilistic stats.
+  epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
+
   // level mappings not yet available
   // (defer initialize_response_covariance() and initialize_final_statistics())
 }
