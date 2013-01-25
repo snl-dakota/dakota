@@ -23,18 +23,14 @@ set(test_path    "${Dakota_SOURCE_DIR}/test")
 # Users_Tutorial.tex
 set(users_test_inputs
   "${test_path}/dakota_rosenbrock_users.in 0 rosen_multidim.in"
-  "${test_path}/dakota_rosenbrock_users.in 1 dakota_rosenbrock_vector.in"
   "${test_path}/dakota_rosenbrock_users.in 2 rosen_grad_opt.in"
-  "${test_path}/dakota_textbook.in 9 dakota_textbook.in"
-  "${test_path}/dakota_rosenbrock_users.in 8 dakota_rosenbrock_ls.in"
-  "${test_path}/dakota_rosenbrock_users.in 4 dakota_rosenbrock_ps_opt.in"
-  "${test_path}/dakota_rosenbrock_users.in 5 dakota_rosenbrock_ea_opt.in"
-  "${test_path}/dakota_mogatest.in 0 dakota_mogatest1.in"
   "${test_path}/dakota_rosenbrock_users.in 6 rosen_sampling.in"
-  "${test_path}/dakota_mv.in 0 dakota_mv.in"
-  "${test_path}/dakota_uq_rosenbrock_pce.in 1 dakota_pce.in"
-  "${test_path}/dakota_uq_cantilever_interval.in 0 dakota_uq_interval.in"
   "${test_path}/dakota_rosenbrock_users.in 7 rosen_syscall.in"
+)
+
+# Users_Method_PStudy.tex
+set(users_test_inputs ${users_test_inputs}
+  "${test_path}/dakota_rosenbrock_users.in 1 dakota_rosenbrock_vector.in"
 )
 
 # Users_Method_UQ.tex
@@ -43,26 +39,36 @@ set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_logratio.in 5 dakota_uq_reliability.in"
   "${test_path}/dakota_uq_rosenbrock_sc.in 36 dakota_sc.in"
   "${test_path}/dakota_uq_textbook_dste.in 0 dakota_uq_textbook_dste.in"
+  "${test_path}/dakota_mv.in 0 dakota_mv.in"
+  "${test_path}/dakota_uq_rosenbrock_pce.in 1 dakota_pce.in"
+  "${test_path}/dakota_uq_cantilever_interval.in 0 dakota_uq_interval.in"
 )
 
 # Users_Method_Opt.tex
 set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_multiobj1.in 0 dakota_multiobj1.in"
   "${test_path}/dakota_rosenbrock_users.in 9 dakota_rosenbrock_scaled.in"
+  "${test_path}/dakota_rosenbrock_users.in 4 dakota_rosenbrock_ps_opt.in"
+  "${test_path}/dakota_rosenbrock_users.in 5 dakota_rosenbrock_ea_opt.in"
 )
 
-# Users_Models.tex
+# Users_Method_SurrBased.tex
 set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_sbo_rosen.in 0 dakota_sbo_rosen.in"
   "${test_path}/dakota_su_mogatest1.in 0 dakota_su_mogatest1.in"
   "${test_path}/dakota_rosenbrock_ego.in 0 dakota_rosenbrock_ego.in"
 )
 
-# Users_Strategy.tex
+# Users_Advanced_Strategies.tex
 set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_hybrid.in 0 dakota_hybrid.in"
   "${test_path}/dakota_multistart.in 0 dakota_multistart.in"
   "${test_path}/dakota_pareto.in 0 dakota_pareto.in"
+
+)
+
+# Users_Advanced_Models.txt
+set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_uq_cantilever_sop_rel.in 0 dakota_uq_cantilever_sop_rel.in"
   "${test_path}/dakota_ouu1_tb.in 0 dakota_ouu1_tb.in"
 )
@@ -101,6 +107,9 @@ set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_addtnl_users.in 5 dakota_addtnl_cantilever.in"
   "${test_path}/dakota_mogatest.in 1 dakota_mogatest2.in"
   "${test_path}/dakota_mogatest.in 2 dakota_mogatest3.in"
+  "${test_path}/dakota_textbook.in 9 dakota_textbook.in"
+  "${test_path}/dakota_rosenbrock_users.in 8 dakota_rosenbrock_ls.in"
+  "${test_path}/dakota_mogatest.in 0 dakota_mogatest1.in"
 )
 add_file_copy_command("${test_path}/dakota_separable_ego_5D.in"
   "${CMAKE_CURRENT_BINARY_DIR}/dakota_separable_ego_5D.in")
