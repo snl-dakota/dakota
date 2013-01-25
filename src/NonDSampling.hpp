@@ -66,7 +66,8 @@ protected:
 
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
-	       int samples, int seed, const String& rng, bool vary_pattern);
+	       int samples, int seed, const String& rng, bool vary_pattern,
+	       short sampling_vars_mode);
 
   /// alternate constructor for sample generation "on the fly"
   NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
@@ -171,7 +172,11 @@ protected:
   bool allDataFlag; ///< flags update of allResponses
                     ///< (allVariables or allSamples already defined)
 
-  /// the sampling mode: ACTIVE, ACTIVE_UNIFORM, ALL, or ALL_UNIFORM
+  /// the sampling mode: ALEATORY_UNCERTAIN{,_UNIFORM},
+  /// EPISTEMIC_UNCERTAIN{,_UNIFORM}, UNCERTAIN{,_UNIFORM},
+  /// ACTIVE{,_UNIFORM}, or ALL{,_UNIFORM}.  This is a secondary control
+  /// on top of the variables view that allows sampling over subsets of
+  /// variables that may differ from the view.
   short samplingVarsMode;
   /// mode for input/output of LHS sample ranks: IGNORE_RANKS, GET_RANKS,
   /// SET_RANKS, or SET_GET_RANKS

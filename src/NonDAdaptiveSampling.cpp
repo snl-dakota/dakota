@@ -93,7 +93,6 @@ namespace Dakota
                   parse_options();
 
                 Cout << "misc options size " << misc_options.size()  << '\n';
-		samplingVarsMode = ACTIVE_UNIFORM;
 		String sample_reuse;
 		UShortArray approx_order; // not used by GP/kriging
 		short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;

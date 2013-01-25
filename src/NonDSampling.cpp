@@ -40,10 +40,11 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
   numSamples(samplesSpec),
   rngName(probDescDB.get_string("method.random_number_generator")),
   sampleType(probDescDB.get_string("method.sample_type")),
-  statsFlag(true), allDataFlag(false), sampleRanksMode(IGNORE_RANKS),
+  statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
+  sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), numLHSRuns(0)
 {
-  if (numEpistemicUncVars && totalLevelRequests) {
+  if (epistemicStats && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
     abort_handler(-1);
@@ -68,13 +69,20 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
     of on-the-fly sample sets. */
 NonDSampling::
 NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
-	     int samples, int seed, const String& rng, bool vary_pattern):
+	     int samples, int seed, const String& rng, bool vary_pattern,
+	     short sampling_vars_mode):
   NonD(NoDBBaseConstructor(), model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), statsFlag(false), allDataFlag(true),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern), numLHSRuns(0)
+  samplingVarsMode(sampling_vars_mode), sampleRanksMode(IGNORE_RANKS),
+  varyPattern(vary_pattern), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
+
+  // override default epistemicStats setting from NonD ctor
+  bool aleatory_mode = (samplingVarsMode == ALEATORY_UNCERTAIN ||
+			samplingVarsMode == ALEATORY_UNCERTAIN_UNIFORM);
+  epistemicStats = (numEpistemicUncVars && !aleatory_mode);
 
   // enforce LHS as default sample type
   if (sampleType.empty())
@@ -95,8 +103,8 @@ NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
   NonD(NoDBBaseConstructor(), lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), statsFlag(false),
-  allDataFlag(true), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
-  numLHSRuns(0)
+  allDataFlag(true), samplingVarsMode(ACTIVE_UNIFORM),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(true), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -682,7 +690,7 @@ compute_statistics(const RealMatrix&     vars_samples,
 		     iteratedModel.response_labels());
   }
 
-  if (numEpistemicUncVars) // Epistemic/mixed
+  if (epistemicStats) // Epistemic/mixed
     compute_intervals(resp_samples); // compute min/max response intervals
   else { // Aleatory
     // compute means and std deviations with confidence intervals
@@ -1145,7 +1153,7 @@ void NonDSampling::update_final_statistics()
   //if (finalStatistics.is_null())
   //  initialize_final_statistics();
 
-  if (numEpistemicUncVars) {
+  if (epistemicStats) {
     size_t i, cntr = 0;
     for (i=0; i<numFunctions; ++i) {
       finalStatistics.function_value(extremeValues(0, i), cntr++);
@@ -1159,7 +1167,7 @@ void NonDSampling::update_final_statistics()
 
 void NonDSampling::print_statistics(std::ostream& s) const
 {
-  if (numEpistemicUncVars) // output only min & max values in the epistemic case
+  if (epistemicStats) // output only min & max values in the epistemic case
     print_intervals(s);
   else {
     print_moments(s);

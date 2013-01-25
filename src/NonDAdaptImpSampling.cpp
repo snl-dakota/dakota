@@ -42,7 +42,6 @@ NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
   useModelBounds(false)
 { 
   statsFlag=true;
-  samplingVarsMode = ACTIVE;
   initialize_random_variables(STD_NORMAL_U);
   const String& integration_refine
     = probDescDB.get_string("method.nond.integration_refinement");
@@ -65,7 +64,7 @@ NonDAdaptImpSampling(Model& model, const String& sample_type, int samples,
 		     short is_type, bool cdf_flag, bool x_space_data,
 		     bool x_space_model, bool bounded_model):
   NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng,
-	       vary_pattern),
+	       vary_pattern, ALEATORY_UNCERTAIN), // only sample aleatory vars
   initLHS(false), importanceSamplingType(is_type),
   // if initial points in x-space, they must be transformed because method
   //   expects all points in u-space
@@ -75,10 +74,7 @@ NonDAdaptImpSampling(Model& model, const String& sample_type, int samples,
   transPoints(x_space_model),
   // should the model bounds be respected?
   useModelBounds(bounded_model)
-{
-  samplingVarsMode = ACTIVE;
-  cdfFlag          = cdf_flag;
-}
+{ cdfFlag = cdf_flag; }
 
 
 /** Initializes data using a set of starting points. */

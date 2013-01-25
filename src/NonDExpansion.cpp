@@ -429,14 +429,15 @@ void NonDExpansion::construct_expansion_sampler()
       abort_handler(-1);
     }
 
-    // could use construct_lhs() except for non-default UNCERTAIN sampling mode.
-    // Don't vary sampling pattern since we want to reuse same sampling stencil
-    // for different design/epistemic vars or for (goal-oriented) adaptivity.
+    // could use construct_lhs() except for non-default ALEATORY_UNCERTAIN
+    // sampling mode.  Don't vary sampling pattern since we want to reuse
+    // same sampling stencil for different design/epistemic vars or for
+    // (goal-oriented) adaptivity.
     const String& sample_type = probDescDB.get_string("method.sample_type");
     int orig_seed = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
     expansionSampler.assign_rep(new NonDLHSSampling(uSpaceModel, sample_type,
-      numSamplesOnExpansion, orig_seed, rng, false, UNCERTAIN), false);
+      numSamplesOnExpansion, orig_seed, rng, false, ALEATORY_UNCERTAIN), false);
 
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
     NonD* exp_sampler_rep = (NonD*)expansionSampler.iterator_rep();
@@ -1615,8 +1616,8 @@ void NonDExpansion::compute_statistics()
 
     // pass x-space data so that u-space Models can perform inverse transforms
     exp_sampler_rep->initialize_random_variables(natafTransform);
-    // since expansionSampler uses an UNCERTAIN sampling mode, we must set the
-    // unsampled variables to their u-space values.
+    // since expansionSampler uses an ALEATORY_UNCERTAIN sampling mode,
+    // we must set the unsampled variables to their u-space values.
     if (numContDesVars || numContEpistUncVars || numContStateVars)
       uSpaceModel.continuous_variables(initialPtU);
 
@@ -1661,8 +1662,8 @@ void NonDExpansion::compute_statistics()
 	= (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
 
       //imp_sampler_rep->initialize_random_variables(natafTransform);
-      // since importanceSampler uses an UNCERTAIN sampling mode, we must set
-      // the unsampled variables to their u-space values.
+      // since importanceSampler uses an ALEATORY_UNCERTAIN sampling mode,
+      // we must set the unsampled variables to their u-space values.
       //if (numContDesVars || numContEpistUncVars || numContStateVars)
       //  uSpaceModel.continuous_variables(initialPtU);
       // response fn is active for z->p, z->beta*, p->z, or beta*->z

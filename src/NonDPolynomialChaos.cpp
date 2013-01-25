@@ -115,13 +115,15 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 
 	// reuse type/seed/rng settings intended for the expansion_sampler.
 	// Unlike expansion_sampler, allow sampling pattern to vary under
-	// unstructured grid refinement/replacement/augmentation.
+	// unstructured grid refinement/replacement/augmentation.  Also unlike
+	// expansion_sampler, we use an ACTIVE sampler mode for estimating the
+	// coefficients over all active variables.
 	if (numSamplesOnModel)
 	  construct_lhs(u_space_sampler, g_u_model,
 	    probDescDB.get_string("method.sample_type"), numSamplesOnModel,
 	    probDescDB.get_int("method.random_seed"),
 	    probDescDB.get_string("method.random_number_generator"),
-	    vary_pattern);
+	    vary_pattern, ACTIVE);
 
 	if (!pt_reuse_file.empty())
 	  annotated_file = probDescDB.get_bool("method.point_file_annotated");
@@ -193,13 +195,15 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  vary_pattern = (refineType && !pt_reuse.empty());
 	  // reuse type/seed/rng settings intended for the expansion_sampler.
 	  // Unlike expansion_sampler, allow sampling pattern to vary under
-	  // unstructured grid refinement/replacement/augmentation.
+	  // unstructured grid refinement/replacement/augmentation.  Also
+	  // unlike expansion_sampler, we use an ACTIVE sampler mode for
+	  // forming the PCE over all active variables.
 	  if (numSamplesOnModel)
 	    construct_lhs(u_space_sampler, g_u_model,
 	      probDescDB.get_string("method.sample_type"), numSamplesOnModel,
 	      probDescDB.get_int("method.random_seed"),
 	      probDescDB.get_string("method.random_number_generator"),
-	      vary_pattern);
+	      vary_pattern, ACTIVE);
 
 	  if (!pt_reuse_file.empty())
 	    annotated_file = probDescDB.get_bool("method.point_file_annotated");

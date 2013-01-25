@@ -48,8 +48,6 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   numContAleatUncVars(0), numDiscIntAleatUncVars(0), numDiscRealAleatUncVars(0),
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
-  //numResponseFunctions(
-  //  probDescDB.get_sizet("responses.num_response_functions")),
   respLevelTarget(probDescDB.get_short("method.nond.response_level_target")),
   respLevelTargetReduce(
     probDescDB.get_short("method.nond.response_level_target_reduce")),
@@ -141,6 +139,10 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
       numDiscRealEpistUncVars;
   }
 
+  // default mode definition (can be overridden in derived classes, e.g.,
+  // based on NonDSampling::samplingVarsMode):
+  epistemicStats = (numEpistemicUncVars > 0);
+
   // initialize total uncertain variables
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
 
@@ -188,8 +190,10 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   }
   if (numContinuousVars + numDiscreteIntVars + numDiscreteRealVars !=
       numDesignVars     + numUncertainVars   + numStateVars) {
-    Cerr << "\nError: bad number of active variables in Dakota::NonD."
-	 << std::endl;
+    Cerr << "\nError: inconsistent active variable counts ("
+	 << numContinuousVars + numDiscreteIntVars + numDiscreteRealVars << ", "
+	 << numDesignVars + numUncertainVars + numStateVars << ") in Dakota::"
+	 << "NonD(Model&) for method " << methodName << '.' << std::endl;
     err_flag = true;
   }
 
@@ -233,9 +237,8 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   numDiscIntervalVars(0), numDiscSetIntUncVars(0), numDiscSetRealUncVars(0),
   numContAleatUncVars(0), numDiscIntAleatUncVars(0), numDiscRealAleatUncVars(0),
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
-  numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
-  //numResponseFunctions(numFunctions),
-  totalLevelRequests(0), cdfFlag(true), pdfOutput(false), distParamDerivs(false)
+  numDiscRealEpistUncVars(0), numEpistemicUncVars(0), totalLevelRequests(0),
+  cdfFlag(true), pdfOutput(false), distParamDerivs(false)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -313,6 +316,10 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
       numDiscRealEpistUncVars;
   }
 
+  // default mode definition (can be overridden in derived classes, e.g.,
+  // based on NonDSampling::samplingVarsMode):
+  epistemicStats = (numEpistemicUncVars > 0);
+
   // initialize total uncertain variables
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
 
@@ -376,20 +383,18 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
     numStateVars
       = numContStateVars + numDiscIntStateVars + numDiscRealStateVars;
   }
-  else if (!numUncertainVars) {// || !numResponseFunctions) {
-    // if !all_variables, then response function type should be generic
-    // (numResponseFunctions implies UQ usage; numFunctions has a broader
-    // interpretation, e.g., general DACE usage of NonDLHSSampling iterator).
-    Cerr << "\nError: number of uncertain variables "
-       //<< "and number of response functions "
-	 << "must be nonzero in Dakota::NonD." << std::endl;
+  else if (!numUncertainVars) {
+    Cerr << "\nError: number of uncertain variables must be nonzero in "
+	 << "Dakota::NonD." << std::endl;
     err_flag = true;
   }
 
   if (numContinuousVars + numDiscreteIntVars + numDiscreteRealVars !=
       numDesignVars     + numUncertainVars   + numStateVars) {
-    Cerr << "\nError: bad number of active variables in Dakota::NonD."
-	 << std::endl;
+    Cout << "\nError: inconsistent active variable counts ("
+	 << numContinuousVars + numDiscreteIntVars + numDiscreteRealVars << ", "
+	 << numDesignVars     + numUncertainVars   + numStateVars
+	 << ") in Dakota::NonD(NoDBBaseConstructor, Model&)." << std::endl;
     err_flag = true;
   }
 
@@ -419,8 +424,8 @@ NonD::NonD(NoDBBaseConstructor, const RealVector& lower_bnds,
   numDiscRealAleatUncVars(0), numAleatoryUncVars(numUniformVars),
   numContEpistUncVars(0), numDiscIntEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), numUncertainVars(numUniformVars),
-  //numResponseFunctions(0),
-  totalLevelRequests(0), cdfFlag(true), pdfOutput(false), distParamDerivs(false)
+  epistemicStats(false), totalLevelRequests(0), cdfFlag(true), pdfOutput(false),
+  distParamDerivs(false)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
@@ -562,7 +567,7 @@ void NonD::distribute_levels(RealVectorArray& levels, bool ascending)
 void NonD::
 transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 {
-  size_t i;
+  size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
   SizetArray recast_vars_comps_total; // default: no change in size
   vars_map.resize(numContinuousVars);
@@ -580,7 +585,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
   const Pecos::ShortArray& x_types = natafTransform.x_types();
   const Pecos::ShortArray& u_types = natafTransform.u_types();
   bool nonlinear_vars_map = false;
-  for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i)
+  for (i=numContDesVars; i<num_cdv_cauv; ++i)
     if ( x_types[i] != u_types[i] &&
 	 !( x_types[i] == Pecos::NORMAL && u_types[i] == Pecos::STD_NORMAL ) &&
 	 !( ( x_types[i] == Pecos::UNIFORM ||
@@ -605,7 +610,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
   // transformation is sufficient for this purpose.
   recast_model->inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
 
-  // Populate random variable distribution parameters for transformed u-space.
+  // Populate aleatory random var distribution params for transformed u-space.
   // *** Note ***: For use with REGRESSION approaches, variable ordering in
   // get_parameter_sets() does not use x_types/u_types as in NonDQuadrature/
   // NonDSparseGrid and thus a possibility for future ordering errors exists.
@@ -617,7 +622,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
     num_u_uuv = 0, num_u_luuv = 0, num_u_tuv = 0, num_u_euv = 0,
     num_u_buv = 0, num_u_gauv = 0, num_u_guuv = 0, num_u_fuv = 0,
     num_u_wuv = 0, num_u_hbuv = 0;
-  for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i)
+  for (i=numContDesVars; i<num_cdv_cauv; ++i)
     switch (u_types[i]) {
     case Pecos::STD_NORMAL:        ++num_u_nuv;   break;
     case Pecos::BOUNDED_NORMAL:    ++num_u_bnuv;  break;
@@ -649,7 +654,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
       const Pecos::RealVector& x_nuv_l_bnds   = x_adp.normal_lower_bounds();
       const Pecos::RealVector& x_nuv_u_bnds   = x_adp.normal_upper_bounds();
       size_t n_cntr = 0, x_n_cntr = 0;;
-      for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i) {
+      for (i=numContDesVars; i<num_cdv_cauv; ++i) {
 	if (u_types[i] == Pecos::BOUNDED_NORMAL) {
 	  nuv_means[n_cntr]    = x_nuv_means[x_n_cntr];
 	  nuv_std_devs[n_cntr] = x_nuv_std_devs[x_n_cntr];
@@ -733,6 +738,26 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
   if (num_u_hbuv)
     u_adp.histogram_bin_pairs(x_adp.histogram_bin_pairs());
 
+  // Populate epistemic random var distribution params for transformed u-space
+  const Pecos::EpistemicDistParams& x_edp
+    = x_model.epistemic_distribution_parameters();
+  size_t num_ciuv = x_edp.ceuv();
+  if (num_ciuv) {
+    RealVectorArray ciuv_probs(num_ciuv);
+    RealVectorArray ciuv_l_bnds(num_ciuv);
+    RealVectorArray ciuv_u_bnds(num_ciuv);
+    for (i=0; i<num_ciuv; ++i) { // one standard cell per variable in u-space
+      ciuv_probs[i].sizeUninitialized(1);  ciuv_probs[i][0]  =  1.;
+      ciuv_l_bnds[i].sizeUninitialized(1); ciuv_l_bnds[i][0] = -1.;
+      ciuv_u_bnds[i].sizeUninitialized(1); ciuv_u_bnds[i][0] =  1.;
+    }
+    Pecos::EpistemicDistParams& u_edp
+      = u_model.epistemic_distribution_parameters();
+    u_edp.continuous_interval_probabilities(ciuv_probs);
+    u_edp.continuous_interval_lower_bounds(ciuv_l_bnds);
+    u_edp.continuous_interval_upper_bounds(ciuv_u_bnds);
+  }
+
   if (global_bounds) {
     // [-1,1] are standard bounds for design, state, epistemic, uniform, & beta
     RealVector c_l_bnds(numContinuousVars, false); c_l_bnds = -1.;
@@ -754,7 +779,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
     const RealVector& wuv_betas   = x_adp.weibull_betas();
     size_t i, lnuv_cntr = 0, gauv_cntr = 0, guuv_cntr = 0, fuv_cntr = 0,
       wuv_cntr = 0;
-    for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i) {
+    for (i=numContDesVars; i<num_cdv_cauv; ++i) {
       switch (u_types[i]) {
       case Pecos::STD_NORMAL:      // mean +/- bound std devs
 	c_l_bnds[i] = -bound; c_u_bnds[i] =    bound; break;
@@ -812,7 +837,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 void NonD::
 construct_lhs(Iterator& u_space_sampler, Model& u_model,
 	      const String& sample_type, int num_samples, int seed,
-	      const String& rng, bool vary_pattern)
+	      const String& rng, bool vary_pattern, short sampling_vars_mode)
 {
   // sanity checks
   if (num_samples <= 0) {
@@ -823,7 +848,7 @@ construct_lhs(Iterator& u_space_sampler, Model& u_model,
 
   // construct NonDLHSSampling with default sampling_vars_mode (ACTIVE)
   u_space_sampler.assign_rep(new NonDLHSSampling(u_model, sample_type,
-    num_samples, seed, rng, vary_pattern), false);
+    num_samples, seed, rng, vary_pattern, sampling_vars_mode), false);
 }
 
 
@@ -1603,14 +1628,14 @@ void NonD::verify_correlation_support()
     bool err_flag = false;
     const Pecos::ShortArray&    x_types = natafTransform.x_types();
     const Pecos::RealSymMatrix& x_corr  = natafTransform.x_correlation_matrix();
-    size_t i, j;
-    for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i) {
+    size_t i, j, num_cdv_cauv = numContDesVars+numContAleatUncVars;
+    for (i=numContDesVars; i<num_cdv_cauv; ++i) {
       bool distribution_error = false;
       if ( x_types[i] == Pecos::BOUNDED_NORMAL    ||
 	   x_types[i] == Pecos::BOUNDED_LOGNORMAL ||
 	   x_types[i] == Pecos::LOGUNIFORM || x_types[i] == Pecos::TRIANGULAR ||
 	   x_types[i] == Pecos::BETA || x_types[i] == Pecos::HISTOGRAM_BIN )
-	for (j=numContDesVars; j<numContDesVars+numContAleatUncVars; ++j)
+	for (j=numContDesVars; j<num_cdv_cauv; ++j)
 	  if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER)
 	    { distribution_error = true; break; }
       if (distribution_error) {
@@ -1639,7 +1664,7 @@ void NonD::initialize_final_statistics()
 {
   size_t i, j, num_levels, cntr = 0, rl_len = 0,
     num_final_stats = 2*numFunctions, num_active_vars = iteratedModel.cv();
-  if (!numEpistemicUncVars) { // aleatory UQ
+  if (!epistemicStats) { // aleatory UQ
     num_final_stats += totalLevelRequests;
     if (respLevelTargetReduce) {
       rl_len = requestedRespLevels[0].length();
@@ -1662,7 +1687,7 @@ void NonD::initialize_final_statistics()
   // Assign meaningful labels to finalStatistics (appear in NestedModel output)
   char resp_tag[10];
   StringArray stats_labels(num_final_stats);
-  if (numEpistemicUncVars) { // epistemic & mixed aleatory/epistemic
+  if (epistemicStats) { // epistemic & mixed aleatory/epistemic
     for (i=0; i<numFunctions; ++i) {
       std::sprintf(resp_tag, "_r%i", i+1);
       stats_labels[cntr++] = String("z_lo") + String(resp_tag);

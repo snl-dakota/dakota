@@ -17,6 +17,7 @@
 
 #include "DakotaAnalyzer.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "DataMethod.hpp"
 
 //#define DERIV_DEBUG
 
@@ -159,7 +160,8 @@ protected:
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
 		     const String& sample_type, int num_samples, int seed,
-		     const String& rng, bool vary_pattern);
+		     const String& rng, bool vary_pattern,
+		     short sampling_vars_mode = ACTIVE);
 
   /// static function for RecastModels used for forward mapping of u-space
   /// variables from NonD Iterators to x-space variables for Model evaluations
@@ -292,7 +294,10 @@ protected:
   /// total number of uncertain variables (native space)
   size_t numUncertainVars;
 
-  //size_t numResponseFunctions; // number of response functions
+  /// flag for computing interval-type metrics instead of integrated
+  /// metrics If any epistemic variables are active in a metric
+  /// evaluation, then this flag is set.
+  bool epistemicStats;
 
   /// moments of response functions (mean, std deviation, skewness, and
   /// kurtosis calculated in compute_moments()), indexed as (moment,fn)

@@ -31,7 +31,7 @@ NonDLHSSampling::NonDLHSSampling(Model& model): NonDSampling(model),
   numResponseFunctions(
     probDescDB.get_sizet("responses.num_response_functions")),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
-{ samplingVarsMode = ACTIVE; }
+{ }
 
 
 /** This alternate constructor is used for generation and evaluation
@@ -44,9 +44,9 @@ NonDLHSSampling(Model& model, const String& sample_type, int samples,
 		int seed, const String& rng, bool vary_pattern,
 		short sampling_vars_mode): 
   NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng,
-	       vary_pattern),
+	       vary_pattern, sampling_vars_mode),
   numResponseFunctions(numFunctions), varBasedDecompFlag(false)
-{ samplingVarsMode = sampling_vars_mode; }
+{ }
 
 
 /** This alternate constructor is used by ConcurrentStrategy for
@@ -66,8 +66,6 @@ NonDLHSSampling(const String& sample_type, int samples, int seed,
 	       lower_bnds, upper_bnds),
   numResponseFunctions(0), varBasedDecompFlag(false)
 {
-  samplingVarsMode = ACTIVE_UNIFORM; // not used but included for completeness
-
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
   get_parameter_sets(lower_bnds, upper_bnds);

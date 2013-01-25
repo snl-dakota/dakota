@@ -46,7 +46,7 @@ RealArray NonDIncremLHSSampling::rawData;
 NonDIncremLHSSampling::NonDIncremLHSSampling(Model& model): NonDSampling(model),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
   previousSamples(probDescDB.get_int("method.previous_samples"))
-{ samplingVarsMode = ACTIVE; }
+{ }
 
 
 NonDIncremLHSSampling::~NonDIncremLHSSampling()
