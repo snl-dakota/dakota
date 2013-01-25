@@ -1,5 +1,12 @@
 /** \page Bibliography Bibliography
 
+\li \anchor UsersMan Adams, B.M., Bauman, L.E., Bohnhoff, W.J.,
+Dalbey, K.R., Eddy, J.P., Ebeida, M.S., Eldred, M. S., Hough, P. D.,
+Hu, K.T., Jakeman, J.D., Swiler, L. P., and Vigil, D. M., 2013.
+"DAKOTA: A Multilevel Parallel Object-Oriented Framework for Design
+Optimization, Parameter Estimation, Uncertainty Quantification, and
+Sensitivity Analysis.  Version 5.3 Users Manual," Sandia Technical
+Report SAND2010-2183, updated Jan. 2013.
 
 \li \anchor Anderson1986 Anderson, G., and Anderson, P., 1986 <i>The
 UNIX C Shell Field Guide</i>, Prentice-Hall, Englewood Cliffs, NJ.
@@ -74,13 +81,6 @@ AIAA-2006-1828 in <i>Proceedings of the 47th AIAA/ASME/ASCE/AHS/ASC
 Structures, Structural Dynamics, and Materials Conference (8th AIAA
 Non-Deterministic Approaches Conference)</i>, Newport, Rhode Island,
 May 1 - 4.
-
-\li \anchor UsersMan Adams, B. M., Bohnhoff, W. J., Dalbey, K. R.,
-Eddy, J. P., Eldred, M. S., Hough, P. D., Lefantzi, S., Swiler, L.~P.,
-and Vigil, D.~M., 2011.  "DAKOTA: A Multilevel Parallel Object-Oriented
-Framework for Design Optimization, Parameter Estimation, Uncertainty
-Quantification, and Sensitivity Analysis.  Version 5.2 Users Manual,"
-Sandia Technical Report SAND2010-2183, updated Nov. 2011.
 
 \li \anchor Eldred2004a Eldred, M. S., Giunta, A. A., and Collis,
 S. S., 2004. "Second-Order Corrections for Surrogate-Based
