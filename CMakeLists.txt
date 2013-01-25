@@ -16,6 +16,7 @@ project("Dakota" NONE)
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 5)
 set(Dakota_VERSION_MINOR 3)
+set(Dakota_VERSION_PATCH 0)
 # Set this to append to the version number
 #set(Dakota_VERSION_APPEND_STABLE "+")
 set(Dakota_VERSION_APPEND_STABLE "")
@@ -330,6 +331,10 @@ set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
 # ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
 set(CPACK_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.${local_arch}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.src")
+set(CPACK_PACKAGE_VERSION_MAJOR "${Dakota_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${Dakota_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${Dakota_VERSION_PATCH}")
+set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 
 # Always omit .svn directories, duplicate TPLs, and GPL packages
 # TODO: review whether want to include FFTW
