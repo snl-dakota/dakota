@@ -49,14 +49,13 @@ add_file_copy_command(${test_path}/dakota_textbook_nips.lsq.dat
 
 set(all_copied_files ${CMAKE_CURRENT_BINARY_DIR}/dakota_textbook_nips.lsq.dat)
 
-# Now iterate over the list, parsing and extracting with dakota_test.perl.
+# Now iterate over the list, copying to build tree
 # Also create all_generated_inputs to use in dependency management
-set(all_generated_inputs)
-foreach(generated_input ${users_test_inputs})
+foreach(copied_input ${users_test_inputs})
 
   # generated a semicolon-separated list from the arguments so we can
   # treat as a list and extract the sub-elements
-  separate_arguments(geninput_as_args UNIX_COMMAND ${generated_input})
+  separate_arguments(geninput_as_args UNIX_COMMAND ${copied_input})
   list(GET geninput_as_args 0 test_output)
   list(GET geninput_as_args 1 test_num)
   list(GET geninput_as_args 2 test_input)
@@ -90,8 +89,7 @@ foreach(generated_input ${users_test_inputs})
 
 endforeach()
 
-add_custom_target(examples-users ALL 
-  DEPENDS ${all_copied_files})
+add_custom_target(examples-users ALL DEPENDS ${all_copied_files})
 
 install(FILES ${all_copied_files}
   DESTINATION "${DAKOTA_EXAMPLES_INSTALL}/examples/users")
