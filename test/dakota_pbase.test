@@ -354,7 +354,7 @@ Test Number 8 succeeded
                       7.0228576660e-03
 <<<<< Best data captured at function evaluation 435
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 174 total (137 new, 37 duplicate)
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.5507812500e-01 x1
                       6.5507812500e-01 x2
@@ -364,9 +364,9 @@ Test Number 9 succeeded
 <<<<< Best constraint values   =
                       1.0158828735e-01
                       1.0158828735e-01
-<<<<< Best data captured at function evaluation 166
+<<<<< Best data captured at function evaluation 132
 Test Number 10 succeeded
-<<<<< Function evaluation summary: 174 total (137 new, 37 duplicate)
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.5507812500e-01 x1
                       6.5507812500e-01 x2
@@ -376,7 +376,7 @@ Test Number 10 succeeded
 <<<<< Best constraint values   =
                       1.0158828735e-01
                       1.0158828735e-01
-<<<<< Best data captured at function evaluation 166
+<<<<< Best data captured at function evaluation 132
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 451 total (389 new, 62 duplicate)
 <<<<< Best parameters          =
@@ -402,7 +402,7 @@ Test Number 12 succeeded
                       7.0228576660e-03
 <<<<< Best data captured at function evaluation 435
 Test Number 13 succeeded
-<<<<< Function evaluation summary: 174 total (137 new, 37 duplicate)
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.5507812500e-01 x1
                       6.5507812500e-01 x2
@@ -412,9 +412,9 @@ Test Number 13 succeeded
 <<<<< Best constraint values   =
                       1.0158828735e-01
                       1.0158828735e-01
-<<<<< Best data captured at function evaluation 166
+<<<<< Best data captured at function evaluation 132
 Test Number 14 succeeded
-<<<<< Function evaluation summary: 174 total (137 new, 37 duplicate)
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.5507812500e-01 x1
                       6.5507812500e-01 x2
@@ -424,7 +424,7 @@ Test Number 14 succeeded
 <<<<< Best constraint values   =
                       1.0158828735e-01
                       1.0158828735e-01
-<<<<< Best data captured at function evaluation 166
+<<<<< Best data captured at function evaluation 132
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 451 total (389 new, 62 duplicate)
 <<<<< Best parameters          =
@@ -450,7 +450,7 @@ Test Number 16 succeeded
                       7.0228576660e-03
 <<<<< Best data captured at function evaluation 435
 Test Number 17 succeeded
-<<<<< Function evaluation summary: 174 total (137 new, 37 duplicate)
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.5507812500e-01 x1
                       6.5507812500e-01 x2
@@ -460,9 +460,9 @@ Test Number 17 succeeded
 <<<<< Best constraint values   =
                       1.0158828735e-01
                       1.0158828735e-01
-<<<<< Best data captured at function evaluation 166
+<<<<< Best data captured at function evaluation 132
 Test Number 18 succeeded
-<<<<< Function evaluation summary: 174 total (137 new, 37 duplicate)
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.5507812500e-01 x1
                       6.5507812500e-01 x2
@@ -472,7 +472,7 @@ Test Number 18 succeeded
 <<<<< Best constraint values   =
                       1.0158828735e-01
                       1.0158828735e-01
-<<<<< Best data captured at function evaluation 166
+<<<<< Best data captured at function evaluation 132
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 451 total (389 new, 62 duplicate)
 <<<<< Best parameters          =
