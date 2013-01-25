@@ -6491,18 +6491,37 @@ given interval bounds on the inputs.
 In the global approach, one uses either a global optimization
 method or a sampling method to assess the bounds.
 \c global_interval_est
-allows the user to specify either \c lhs, which performs
+allows the user to specify several approaches to calculate 
+interval bounds on the output responses. \c lhs performs
 Latin Hypercube Sampling and takes the minimum and maximum of
 the samples as the bounds (no optimization is
-performed) or \c ego.  In the case of \c ego,
+performed).  In the \c ego approach,
 the efficient global optimization (EGO) method is used to calculate
 bounds (see the EGO method on this page for more explanation).  By
 default, the Surfpack GP (Kriging) model is used, but the DAKOTA
 implementation may be selected instead.  If \c use_derivatives is
 specified the GP model will be built using available derivative data
-(Surfpack GP only). When using \c lhs or \c ego,
+(Surfpack GP only). If using \c sbo, a surrogate-based optimization
+method will be used to find the interval bounds.  The surrogate used 
+in \c sbo is a Gaussian process 
+surrogate.  The main difference between \c ego and the 
+\c sbo approach is the objective function that is used in the 
+optimization. 
+\c ego relies on an expected improvement function, while in 
+\c sbo, the optimization proceeds using an evolutionary 
+algorithm (\c coliny_ea described above) on the 
+Gaussian process surrogate:  it is a standard surrogate-based
+optimization.  Also note that the \c sbo option can support 
+optimization over discrete variables (the discrete variables 
+are relaxed) while \c ego cannot.  Finally, there is the 
+\c ea approach.  In this approach, the evolutionary algorithm 
+from Coliny (\c coliny_ea) is used to perform the interval optimization 
+with no surrogate model involved. Again, this option of \c ea
+can support interval optimization over discrete variables. 
+When using \c lhs, \c ego, or \c sbo,
 one can specify a seed for the number of LHS samples, the random
-number generator, and the number of samples.  \ref T5d46 "Table 5.46"
+number generator, and the number of samples. The \c ea
+option allows the seed to be specified.  \ref T5d46 "Table 5.46"
 provides the specification for the global interval methods.
 
 \anchor T5d46
@@ -6527,7 +6546,7 @@ Specification detail for global interval estimation used in epistemic uncertaint
 <td>N/A
 <tr>
 <td>Estimation method
-<td>\c lhs | \c ego
+<td>\c lhs | \c ego | \c sbo | \c ea
 <td>none
 <td>Required group
 <td>N/A
@@ -6666,7 +6685,9 @@ plausibility.
 
 \ref T5d48 "Table 5.48" provides the specification for the \c
 global_evidence method.  \c global_evidence allows the user to specify
-either \c lhs or \c ego.  \c lhs performs Latin Hypercube Sampling and
+several approaches for calculating the belief and plausibility functions: 
+\c lhs, \c ego, \c sbo, and \c ea.  
+\c lhs performs Latin Hypercube Sampling and
 takes the minimum and maximum of the samples as the bounds per
 "interval cell combination."  In the case of \c ego, the efficient
 global optimization (EGO) method is used to calculate bounds (see the
@@ -6674,9 +6695,26 @@ EGO method on this page for more explanation).  By default, the
 Surfpack GP (Kriging) model is used, but the DAKOTA implementation may
 be selected instead.   If \c use_derivatives is
 specified the GP model will be built using available derivative data
-(Surfpack GP only).  When using \c lhs or \c ego, one can specify a
+(Surfpack GP only).  
+If using \c sbo, a surrogate-based optimization
+method will be used to find the interval cell bounds. 
+The surrogate employed in \c sbo is a Gaussian process 
+surrogate.  However, the main difference between \c ego and the 
+\c sbo approach is the objective function being optimized. 
+\c ego relies on an expected improvement function, while in 
+\c sbo, the optimization proceeds using an evolutionary 
+algorithm (\c coliny_ea described above) on the 
+Gaussian process surrogate:  it is a standard surrogate-based
+optimization.  Also note that the \c sbo option can support 
+optimization over discrete variables (the discrete variables 
+are relaxed) while \c ego cannot.  Finally, there is the 
+\c ea approach.  In this approach, the evolutionary algorithm 
+from Coliny is used to perform the interval optimization 
+with no surrogate model involved. Again, this option of \c ea
+can support interval optimization over discrete variables. 
+When using \c lhs, \c ego, or \c sbo, one can specify the
 seed for the number of LHS samples, the random number generator, and
-the number of samples.
+the number of samples. \c ea will use the seed specification also.
 
 Note that to calculate the plausibility and belief cumulative
 distribution functions, one has to look at all combinations of
@@ -6716,7 +6754,7 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td>N/A
 <tr>
 <td>Estimation method
-<td>\c lhs | \c ego
+<td>\c lhs | \c ego | \c sbo | \c ea
 <td>none
 <td>Required group
 <td>N/A
