@@ -399,8 +399,8 @@ the application of sampling methods for uncertainty quantification
 where it is assumed that $x_1$ and $x_2$ are uniform uncertain
 variables on the interval $[0,1]$. The Dakota input file for this
 problem is shown in Figure~\ref{uq:figure01}. This input 
-file is \texttt{dakota\_uq\_sampling.in} in the 
-\texttt{Dakota/examples/methods} directory.  The number of samples to
+file is \texttt{textbook\_uq\_sampling.in} in the 
+\texttt{Dakota/examples/users} directory.  The number of samples to
 perform is controlled with the \texttt{samples} specification, the
 type of sampling algorithm to use is controlled with the
 \texttt{sample\_type} specification, the levels used for computing
@@ -950,7 +950,7 @@ variables with means of \texttt{1}, standard deviations of
 A Dakota input file showing RIA using FORM (option 7 in limit state
 approximations combined with first-order integration) is listed in
 Figure~\ref{uq:rel_input_form}.  This input file is
-\texttt{dakota\_uq\_reliability.in} in the {Dakota/examples/methods}
+\texttt{logratio\_uq\_reliability.in} in the {Dakota/examples/users}
 directory.  The user first specifies the \texttt{local\_reliability}
 method, followed by the MPP search approach and integration order.  In
 this example, we specify \texttt{mpp\_search no\_approx} and utilize
@@ -971,7 +971,7 @@ when using a Mean Value method, which will be discussed next.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_uq_reliability.in}
+      \verbatimtabinput[8]{logratio_uq_reliability.in}
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for Reliability UQ example using FORM.}
@@ -1225,7 +1225,7 @@ are lognormal in this example and the orthogonal polynomials are
 generated from Gauss-Wigert recursion coefficients~\cite{simpson_gw}
 in combination with the Golub-Welsch procedure~\cite{GolubWelsch69}.
 The input file is shown in Figure~\ref{uq:figure11}. This input file
-is \texttt{dakota\_sc.in} in the \texttt{Dakota/examples/methods}
+is \texttt{rosen\_uq\_sc.in} in the \texttt{Dakota/examples/users}
 directory.  Note that the dimension preference of $(2,1)$ is inverted
 to define a $\gamma$ weighting vector of $(0.5,1)$ (and
 $\underline{\gamma}$ of $0.5$) for use in the anisotropic Smolyak
@@ -1242,7 +1242,7 @@ Figure~\ref{uq:figure11b}.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_sc.in}
+      \verbatimtabinput[8]{rosen_uq_sc.in}
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for performing UQ using stochastic collocation.}
@@ -1665,7 +1665,7 @@ interval analysis, we recommend using either
 \texttt{global\_interval\_est} or \texttt{local\_interval\_est}
 instead of \texttt{global\_evidence} or \texttt{local\_evidence}, for
 reasons of simplicity.  An example of interval estimation is found in
-the test file \texttt{dakota\_uq\_cantilever\_interval.in}, and also
+the test file \texttt{cantilever\_uq\_global\_interval.in}, and also
 in Section~\ref{uq:examples:interval}.
 %Note that we have kept separate implementations of interval analysis and
 %Dempster-Shafer evidence theory because our users often want to couple
@@ -1738,7 +1738,7 @@ to specify the number of intervals defined for each variable with
 per interval, \texttt{iuv\_interval\_probs}, and the associated bounds
 per each interval, \texttt{iuv\_interval\_bounds}. 
 Figure~\ref{uq:figure16} shows the input specification for interval
-uncertain variables. This input file is \texttt{dakota\_uq\_textbook\_dste.in}, found in the \texttt{Dakota/examples/methods} 
+uncertain variables. This input file is \texttt{textbook\_uq\_glob\_evidence.in}, found in the \texttt{Dakota/examples/users} 
 directory.   The example shown in Figure~\ref{uq:figure16}
 has two epistemic uncertain interval variables.  
 The first uncertain
@@ -1757,7 +1757,7 @@ are 0.1 to 0.5, etc.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_uq_textbook_dste.in}
+      \verbatimtabinput[8]{textbook_uq_glob_evidence.in}
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for UQ example using Evidence Theory.}
@@ -2313,17 +2313,17 @@ which is the case based on Equation~\ref{additional:textbook_f}.
 This Dakota input file is executed using the following command:
 \begin{small}
 \begin{verbatim}
-         dakota dakota_mv.in > mv.out
+         dakota textbook_uq_meanvalue.in > mv.out
 \end{verbatim}
 \end{small}
-See the file \texttt{mv.out.sav} in \texttt{Dakota/examples/tutorial} 
+See the file \texttt{mv.out.sav} in \texttt{Dakota/examples/users} 
 for comparison with results from Dakota. 
 
 \begin{figure}[ht!]
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_mv.in}
+      \verbatimtabinput[8]{textbook_uq_meanvalue.in}
     \end{small}
   \end{bigbox}
   \caption{Mean Value Reliability Method: the Dakota input file.}
@@ -2371,7 +2371,7 @@ provided in Section~\ref{uq:expansion}.
 
 A typical Dakota input file for performing an uncertainty
 quantification using polynomial chaos expansions is shown in
-Figure~\ref{uq:examples:pce_input}, \texttt{dakota\_pce.in}.
+Figure~\ref{uq:examples:pce_input}, \texttt{rosen\_uq\_pce.in}.
 In this example, we compute CDF
 probabilities for six response levels of Rosenbrock's function. Since
 Rosenbrock is a fourth order polynomial and we employ a fourth-order
@@ -2386,7 +2386,7 @@ $x_1$ and third-order quadrature in $x_2$), resulting in a total of
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_pce.in}
+      \verbatimtabinput[8]{rosen_uq_pce.in}
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for performing UQ using polynomial chaos expansions.}
@@ -2525,7 +2525,7 @@ local method uses gradient information in a derivative-based
 optimization approach. 
  
 An example of interval estimation 
-is found in the test file \texttt{dakota\_uq\_interval.in}, 
+is found in the test file \texttt{cantilever\_uq\_global\_interval.in}, 
 and also in Figure~\ref{uq:examples:interval_input}, with example results in 
 Figure~\ref{uq:examples:interval_out}. This example is a demonstration 
 of calculating interval bounds for three outputs of the cantilever beam 
@@ -2538,7 +2538,7 @@ beam weight is approximately [1,100].
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_uq_interval.in}
+      \verbatimtabinput[8]{cantilever_uq_global_interval.in}
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for performing UQ using interval analysis.}

@@ -144,7 +144,7 @@ Section~\ref{models:surrogate:datafit}.
 
 Figure~\ref{sbm:sblm_rosen} shows a Dakota input file that implements
 surrogate-based optimization on Rosenbrock's function. This input file
-is named \texttt{dakota\_sbo\_rosen.in} in the \texttt{Dakota/test}
+is named \texttt{rosen\_opt\_sbo.in} in the \texttt{Dakota/test}
 directory.  The first method keyword block contains the SBO 
 keyword \texttt{surrogate\_based\_local}, plus the commands for
 specifying the trust region size and scaling factors. The optimization
@@ -169,7 +169,7 @@ bounds) from this point in the $x_1$ and $x_2$ coordinate directions.
 \begin{figure}
   \begin{bigbox}
     \begin{tiny}
-      \verbatimtabinput[8]{dakota_sbo_rosen.in}
+      \verbatimtabinput[8]{rosen\_opt\_sbo.in}
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for the surrogate-based local optimization
@@ -181,7 +181,7 @@ If this input file is executed in Dakota, it will converge to the
 optimal design point at $(x_{1},x_{2})=(1,1)$ in approximately 800
 function evaluations. While this solution is correct, it is obtained
 at a much higher cost than a traditional gradient-based optimizer
-(e.g., see the results obtained from \texttt{dakota\_rosenbrock.in}).
+(e.g., see the results obtained in Section~\ref{tutorial:examples:optimization}).
 This demonstrates that the SBO method with global data fits is not
 really intended for use with smooth continuous optimization problems;
 direct gradient-based optimization can be more efficient for such
@@ -407,7 +407,7 @@ combination with restart) may be needed.
 Figure~\ref{sbm:sbgm_moga} shows a Dakota input file that implements
 surrogate-based global optimization on a multi-objective test function. 
 This input file
-is named \texttt{dakota\_su\_mogatest1.in} in the \texttt{Dakota/test}
+is named \texttt{mogatest1\_opt\_sbo.in} in the \texttt{Dakota/test}
 directory.  The first method keyword block contains the
 keyword \texttt{surrogate\_based\_global}, plus the commands for
 specifying five as the maximum iterations and the option to replace 
@@ -424,7 +424,7 @@ as objective functions from that driver.
 \begin{figure}
   \begin{bigbox}
     \begin{tiny}
-      \verbatimtabinput[8]{dakota_su_mogatest1.in}
+      \verbatimtabinput[8]{mogatest1_opt_sbo.in}
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for the surrogate-based global optimization
@@ -480,12 +480,12 @@ used in the Latin Hypercube Sampling to generate the initial
 set of points which is used to construct the initial Gaussian process. 
 An example specification for the EGO algorithm is shown in
 Figure~\ref{sbm:egm_rosen}.  This can be found in the 
-\texttt{dakota\_rosenbrock\_ego.in} file in the 
+\texttt{rosen\_opt\_ego.in} file in the 
 \texttt{Dakota/test} directory.
 \begin{figure}
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_rosenbrock_ego.in}
+      \verbatimtabinput[8]{rosen_opt_ego.in}
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for the efficient global optimization example.}

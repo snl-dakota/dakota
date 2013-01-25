@@ -848,8 +848,8 @@ programming, normal boundary intersection, etc. are planned.
 
 Figure~\ref{opt:figure01} shows a Dakota input file for a
 multiobjective optimization problem based on the ``textbook'' test
-problem. This input file is named \texttt{dakota\_multiobj1.in} in the
-\texttt{Dakota/test} directory. In the standard textbook formulation,
+problem. This input file is named \texttt{textbook\_opt\_multiobj1.in} in the
+\texttt{Dakota/examples/users} directory. In the standard textbook formulation,
 there is one objective function and two constraints. In the
 multiobjective textbook formulation, all three of these functions are
 treated as objective functions (\texttt{num\_objective\_functions =
@@ -862,7 +862,7 @@ number of constraints, although none are included in this example.
 \centering
 \begin{bigbox}
 \begin{small}
-\verbatimtabinput[8]{dakota_multiobj1.in}
+\verbatimtabinput[8]{textbook_opt_multiobj1.in}
 \end{small}
 \end{bigbox}
 \caption{Example Dakota input file for multiobjective optimization.}
@@ -1108,8 +1108,9 @@ for linear constraints they are linearly scaled by characteristic
 values only, not affinely scaled into the interval $[0,1]$.
 
 Figure~\ref{opt:additional:scaling:figure01} demonstrates the use of
-several scaling keywords for the textbook optimization problem.This input file is \texttt{dakota\_rosenbrock\_scaled.in} 
-in the \texttt{Dakota/examples/methods} directory.  The
+several scaling keywords for the textbook optimization problem.
+This input file is \texttt{rosen\_opt\_scaled.in} 
+in the \texttt{Dakota/examples/users} directory.  The
 continuous design variable {\tt x1} is scaled by a characteristic
 value of 4.0, whereas {\tt x2} is scaled automatically into $[0,1]$
 based on its bounds.  The objective function will be scaled by a
@@ -1121,7 +1122,7 @@ scaled.
 \centering
 \begin{bigbox}
 \begin{small}
-\verbatimtabinput[8]{dakota_rosenbrock_scaled.in}
+\verbatimtabinput[8]{rosen_opt_scaled.in}
 \end{small}
 \end{bigbox}
 \caption{Sample usage of scaling keywords in Dakota input specification.}
@@ -1348,7 +1349,7 @@ commands that can be used with SCOLIB algorithms.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_rosenbrock_ps_opt.in}
+      \verbatimtabinput[8]{rosen_opt_scaled.in}
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock pattern search optimization example: the Dakota input file.}
@@ -1358,12 +1359,12 @@ commands that can be used with SCOLIB algorithms.
 This Dakota input file is executed using the following command:
 \begin{small}
 \begin{verbatim}
-    dakota dakota_rosenbrock_ps_opt.in > ps_opt.out
+    dakota rosen_opt_scaled.in > ps_opt.out
 \end{verbatim}
 \end{small}
 
 The file \texttt{ps\_opt.out.sav} is included in the
-\texttt{Dakota/examples/tutorial} directory. For this run, the
+\texttt{Dakota/examples/users} directory. For this run, the
 optimizer was given an initial design point of $(x_1,x_2)
   = (0.0,0.0)$ and was limited to 2000 function evaluations. In this
 case, the pattern search algorithm stopped short of the optimum at
@@ -1450,7 +1451,7 @@ described in~\cite{Har06}.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_rosenbrock_ea_opt.in}
+      \verbatimtabinput[8]{rosen_opt_ea.in}
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock evolutionary algorithm optimization example: the
@@ -1480,12 +1481,12 @@ settings.
 The following command runs Dakota on the input file:
 \begin{small}
 \begin{verbatim}
-    dakota dakota_rosenbrock_ea_opt.in > ea_opt.out
+    dakota rosen_opt_ea.in > ea_opt.out
 \end{verbatim}
 \end{small}
 
 A corresponding output file named \texttt{ea\_opt.out.sav} appears in
-\texttt{Dakota/examples/tutorial}. The EA optimization results
+\texttt{Dakota/examples/users}. The EA optimization results
 printed at the end of this file show that the best design point found
 was $(x_1,x_2) = (0.98,0.95)$. The file
 \texttt{ea\_tabular.dat.sav} provides a listing of the design

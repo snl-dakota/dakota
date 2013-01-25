@@ -3,7 +3,7 @@
 This chapter contains additional examples of available methods being applied 
 to several test problems. The examples are organized by the test problem
 being used. {\bf The Dakota input and the analysis drivers 
-for each example can be found in the {\tt Dakota/examples/methods} directory.}
+for each example can be found in the {\tt Dakota/examples/users} directory.}
 In addition, some examples have outputs files in the same directory for
 comparison purposes.
 
@@ -318,7 +318,9 @@ or two least squares terms (as computed from
 Equations~\ref{additional:rosenr1}-\ref{additional:rosenr2}) for use
 with least squares methods. Both cases support analytic gradients of
 the function set with respect to the design variables.
-
+See Figure~\ref{tutorial:rosenbrock_grad} (std formulation) 
+and Figure~\ref{additional:rosenbrock_nls} (least squares formulation)
+for examples of each usage.
 
 
 % \subsection{Optimization Results}\label{additional:rosenbrock:results}
@@ -502,7 +504,7 @@ executed using the command:
 \end{small}
 
 The file \texttt{leastsquares.out.sav} is included in the
-\texttt{Dakota/examples/methods} directory for comparison purposes. The
+\texttt{Dakota/examples/users} directory for comparison purposes. The
 optimization results at the end of this file show that the least
 squares minimization approach has found the same optimum design point,
 $(x1,x2) = (1.0,1.0)$, as was found using the conventional
@@ -522,34 +524,6 @@ in the vicinity of the solution.
     history for least squares terms $f_1$ and $f_2$.}
   \label{additional:rosenbrock_nls_graphics}
 \end{figure}
-
-The
-\texttt{dakota\_rosenbrock.in} input file can be used to solve both
-problems by toggling settings in the method and responses
-specifications. To run the optimization solution, select
-\texttt{objective\_functions = 1} in the responses specification,
-and select an optimizer (e.g., \texttt{optpp\_q\_newton}) in the
-method specification, e.g., as shown in 
-{\tt dakota\_addtnl\_rosen\_opt.in}:
-\begin{center}
-  \begin{small}
-    \begin{bigbox}
-      \verbatimtabinput[8]{dakota_addtnl_rosen_opt.in}
-    \end{bigbox}
-  \end{small}
-\end{center}
-
-To run the least squares solution, the responses specification is
-changed to \texttt{least\_squares\_terms = 2} and the method
-specification is changed to a least squares method, e.g.,
-\texttt{optpp\_g\_newton}, as shown in {\tt dakota\_addtnl\_rosen\_ls.in}:
-\begin{center}
-  \begin{small}
-    \begin{bigbox}
-      \verbatimtabinput[8]{dakota_addtnl_rosen_ls.in}
-    \end{bigbox}
-  \end{small}
-\end{center}
 
 \clearpage
 \section{Herbie, Smooth Herbie, and Shubert}
@@ -1388,7 +1362,7 @@ linear effects, and black Xs denote insignificant inputs.}
 \clearpage
 \section{Test Problems for Reliability Analyses}\label{additional:reliabilityproblems}
 This section includes several test problems and examples related to 
-reliability analyses. {\bf These are NOT included in the {\tt Dakota/examples/methods} 
+reliability analyses. {\bf These are NOT included in the {\tt Dakota/examples/users} 
 directory, but are in {\tt Dakota/test}.}
 
 

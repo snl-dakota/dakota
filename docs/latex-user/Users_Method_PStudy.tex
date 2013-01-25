@@ -447,7 +447,7 @@ taken between the initial and final points in the parameter study.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_rosenbrock_vector.in}
+      \verbatimtabinput[8]{rosen_ps_vector.in}
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock vector parameter study example: the Dakota input
@@ -458,7 +458,7 @@ taken between the initial and final points in the parameter study.
 The vector parameter study example problem is executed using the command
 \begin{small}
 \begin{verbatim}
-    dakota dakota_rosenbrock_vector.in > vector.out
+    dakota rosen_ps_vector.in > vector.out
 \end{verbatim}
 \end{small}
 
@@ -470,7 +470,7 @@ shows the locations of the 11 sample points generated in this study.
 It is evident from these figures that the parameter study starts
 within the banana-shaped valley, marches up the side of the hill, and
 then returns to the valley. The output file \texttt{vector.out.sav} is
-provided in the \texttt{Dakota/examples/tutorial} directory.
+provided in the \texttt{Dakota/examples/users} directory.
 
 \begin{figure}[htp!]
   \centering
