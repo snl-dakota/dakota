@@ -496,7 +496,7 @@ sub gui_defaults {
 
     # direct/fork/system/grid (default to fork)                                                                                              
     kw_aug_desc("interface/analysis_drivers/direct", "[CHOOSE interface type]");
-    kw_add_desc("interface/analysis_drivers/fork", "$DEFAULT");
+    kw_aug_desc("interface/analysis_drivers/fork", "$DEFAULT");
 
     kw_add_desc("interface/analysis_drivers/failure_capture/abort", "${DEFAULT}[CHOOSE failure mitigation]");
 
