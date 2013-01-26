@@ -1,36 +1,34 @@
-# Dakota INPUT FILE - rosen_sampling.in 
-# Included Dakota example using the rosenbrock analysis code 
-# with a random sampling uncertainty quantification method.  Usage: 	       
-#   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout 
+# Dakota Input File: rosen_sampling.in
+# Usage:
+#   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout
 
 strategy
   graphics
   tabular_graphics_data
-    tabular_graphics_file = 'rosen_sampling.dat' 
+    tabular_graphics_file = 'rosen_sampling.dat'
   single_method
 
 method
-  sampling                     
-    sample_type random         
-    samples = 200              
-    seed = 17                  
-    response_levels = 100.0    
+  sampling
+    sample_type random
+    samples = 200
+    seed = 17
+    response_levels = 100.0
 
 model
   single
 
 variables
-  uniform_uncertain = 2      
-    lower_bounds       -2.0  -2.0  
-    upper_bounds        2.0   2.0  
-    descriptors         'x1'  'x2'  
+  uniform_uncertain = 2
+    lower_bounds       -2.0  -2.0
+    upper_bounds        2.0   2.0
+    descriptors         'x1'  'x2'
 
 interface
   analysis_driver = 'rosenbrock'
-    direct          
+    direct
 
 responses
-  response_functions = 1    
-  no_gradients        
+  response_functions = 1
+  no_gradients
   no_hessians
-

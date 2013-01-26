@@ -1,20 +1,20 @@
-
-
-strategy,
+# Dakota Input File: mogatest1_opt_sbo.in
+strategy
     single_method
     tabular_graphics_data
+      tabular_graphics_file = 'mogatest1_opt_sbo.dat'
     method_pointer = 'SBGO'
 
-method,
+method
     id_method = 'SBGO'
     surrogate_based_global
     model_pointer = 'SURROGATE'
     approx_method_pointer = 'MOGA'
     max_iterations = 5
     replace_points
-    output verbose
+    #output verbose
 
-method,
+method
     id_method = 'MOGA'
     moga
     output silent
@@ -36,40 +36,36 @@ method,
     convergence_type metric_tracker
         percent_change = 0.05 num_generations = 10
 
-model,
+model
     id_model = 'SURROGATE'
     surrogate global
         dace_method_pointer = 'SAMPLING'
         correction additive zeroth_order
         gaussian_process dakota
 
-method,
+method
     id_method = 'SAMPLING'
     model_pointer = 'TRUTH'
     sampling
-      samples = 100
-      seed = 531
+      samples = 100      seed = 531
       sample_type lhs
 
-model,
+model
     id_model = 'TRUTH'
     single
-      interface_pointer = 'TRUE_FN'
 
-variables,
+variables
     continuous_design = 3
         initial_point      0     0     0
         upper_bounds       4     4     4
         lower_bounds      -4    -4    -4
         descriptors      'x1'  'x2'  'x3'
 
-interface,
-    id_interface = 'TRUE_FN'
-    system
+interface
+    fork
       analysis_driver = 'mogatest1'
 
-responses,
+responses
     objective_functions = 2
     no_gradients
     no_hessians
-

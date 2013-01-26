@@ -1,36 +1,35 @@
-# Dakota INPUT FILE - dakota_rosenbrock_ps_opt.in 
-
+# Dakota Input File: rosen_opt_patternsearch.in
 strategy
   graphics
   tabular_graphics_data
+    tabular_graphics_file = 'rosen_opt_patternsearch.dat'
   single_method
 
 method
-  max_iterations = 1000      
-  max_function_evaluations = 2000  
-  coliny_pattern_search                   
-    solution_accuracy = 1e-4    
-    initial_delta = 0.5      
-    threshold_delta = 1e-4    
-    exploratory_moves basic_pattern  
-    contraction_factor = 0.75    
+  max_iterations = 1000
+  max_function_evaluations = 2000
+  coliny_pattern_search
+    solution_accuracy = 1e-4
+    initial_delta = 0.5
+    threshold_delta = 1e-4
+    exploratory_moves basic_pattern
+    contraction_factor = 0.75
 
 model
   single
 
 variables
-  continuous_design = 2                
-    initial_point     0.0      0.0    
-    lower_bounds     -2.0     -2.0     
-    upper_bounds      2.0      2.0     
-    descriptors       'x1'     "x2"    
+  continuous_design = 2
+    initial_point     0.0      0.0
+    lower_bounds     -2.0     -2.0
+    upper_bounds      2.0      2.0
+    descriptors       'x1'     "x2"
 
 interface
   analysis_driver = 'rosenbrock'
-    direct          
+    direct
 
 responses
-  objective_functions = 1             
-  no_gradients        
+  objective_functions = 1
+  no_gradients
   no_hessians
-

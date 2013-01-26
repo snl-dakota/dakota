@@ -3,7 +3,7 @@
 \section{Overview}\label{nls:overview}
 Any Dakota optimization algorithm can be applied to calibration
 problems arising in parameter estimation, system identification, and
-test/analysis reconciliation.  However, nonlinear least-squares
+test/analysis reconciliation. However, nonlinear least-squares
 methods are optimization algorithms that exploit the special structure
 of a sum of the squares objective function~\cite{Gil81}.
 
@@ -38,7 +38,7 @@ towards zero at the solution. Specifically, they can exhibit the
 quadratic convergence rates of full Newton methods, even though only
 first-order information is used. Gauss-Newton-based least-squares
 solvers may experience difficulty when the residuals at the solution
-are significant.  Dakota has three solvers customized to take
+are significant. Dakota has three solvers customized to take
 advantage of the sum of squared residuals structure in this problem
 formulation. Least squares solvers may experience difficulty when the
 residuals at the solution are significant, although experience has
@@ -67,17 +67,17 @@ the form:
 where $f(\mathbf{x})$ is the objective function to be minimized and
 $T_i(\mathbf{x})$ is the i$^{\mathrm{th}}$ least squares term. The
 bound, linear, and nonlinear constraints are the same as described
-previously for (\ref{opt:equation01}).  Specialized least
+previously for (\ref{opt:equation01}). Specialized least
 squares algorithms are generally based on the Gauss-Newton
 approximation. When differentiating $f(\mathbf{x})$ twice, terms of
 $T_i(\mathbf{x})T''_i(\mathbf{x})$ and $[T'_i(\mathbf{x})]^{2}$
 result. By assuming that the former term tends toward zero near the
 solution since $T_i(\mathbf{x})$ tends toward zero, then the Hessian
 matrix of second derivatives of $f(\mathbf{x})$ can be approximated
-using only first derivatives of $T_i(\mathbf{x})$.  As a result,
+using only first derivatives of $T_i(\mathbf{x})$. As a result,
 Gauss-Newton algorithms exhibit quadratic convergence rates near the
 solution for those cases when the Hessian approximation is accurate,
-i.e. the residuals tend towards zero at the solution.  Thus, by
+i.e. the residuals tend towards zero at the solution. Thus, by
 exploiting the structure of the problem, the second order convergence
 characteristics of a full Newton algorithm can be obtained using only
 first order information from the least squares terms.
@@ -104,10 +104,10 @@ reconciliation, etc.
 In order to specify a least-squares problem, the responses section of
 the Dakota input should be configured using
 \texttt{calibration\_terms} (as opposed to
-\texttt{num\_objective\_functions} in the case of optimization).  The
+\texttt{num\_objective\_functions} in the case of optimization). The
 calibration terms refer to the residuals (e.g. typically the
-differences between the simulation model and the data).  Note that
-Dakota expects the residuals and not the square of the residuals.  Any
+differences between the simulation model and the data). Note that
+Dakota expects the residuals and not the square of the residuals. Any
 linear or nonlinear constraints are handled in an identical way to
 that of optimization (see Section~\ref{opt:formulations}; note that
 neither Gauss-Newton nor NLSSOL require any constraint augmentation
@@ -117,7 +117,7 @@ required and should be specified using either
 \texttt{numerical\_gradients}, \texttt{analytic\_gradients}, or
 \texttt{mixed\_gradients}. Since explicit second derivatives are not
 used by the least-squares methods, the \texttt{no\_hessians}
-specification should be used.  Dakota's scaling options, described in
+specification should be used. Dakota's scaling options, described in
 Section~\ref{opt:additional:scaling} can be used on least-squares
 problems, using the \texttt{calibration\_term\_scales} keyword to
 scale least-squares residuals, if desired.
@@ -136,7 +136,7 @@ Dakota's Gauss-Newton algorithm consists of combining an
 implementation of the Gauss-Newton Hessian approximation (see
 Section~\ref{nls:formulations}) with full Newton optimization
 algorithms from the OPT++ package~\cite{MeOlHoWi07} (see
-Section~\ref{opt:software:optpp}).  The exact objective function
+Section~\ref{opt:software:optpp}). The exact objective function
 value, exact objective function gradient, and the approximate
 objective function Hessian are defined from the least squares term
 values and gradients and are passed to the full-Newton optimizer from
@@ -147,7 +147,7 @@ generally-constrained case, a derivative order mismatch exists in that
 the nonlinear interior point full Newton algorithm will require
 second-order information for the nonlinear constraints whereas the
 Gauss-Newton approximation only requires first order information for
-the least squares terms.  License: LGPL.
+the least squares terms. License: LGPL.
 
 This approach can be selected using
 the \texttt{optpp\_g\_newton} method specification. An example
@@ -171,19 +171,19 @@ of the initial point. Global optima in multimodal design spaces may be
 missed. Gauss-Newton supports bound, linear, and nonlinear
 constraints. For the nonlinearly-constrained case, constraint Hessians
 (required for full-Newton nonlinear interior point optimization
-algorithms) are approximated using quasi-Newton secant updates.  Thus,
+algorithms) are approximated using quasi-Newton secant updates. Thus,
 both the objective and constraint Hessians are approximated using
 first-order information.
 
 \subsection{NLSSOL}\label{nls:solution:nlssol}
 
-The NLSSOL algorithm is bundled with NPSOL.  It uses an SQP-based
+The NLSSOL algorithm is bundled with NPSOL. It uses an SQP-based
 approach to solve generally-constrained nonlinear least-squares
 problems. It periodically employs the Gauss-Newton Hessian
 approximation to accelerate the search. Like the Gauss-Newton
 algorithm of Section~\ref{nls:solution:gauss}, its derivative order is
 balanced in that it requires only first-order information for the
-least-squares terms and nonlinear constraints.  License: commercial;
+least-squares terms and nonlinear constraints. License: commercial;
 see NPSOL~\ref{opt:software:npsol}.
 
 This approach can be selected using the \texttt{nlssol\_sqp} method
@@ -202,27 +202,27 @@ input commands for NLSSOL.
 \subsection{NL2SOL}\label{nls:solution:nl2sol}
 
 The NL2SOL algorithm~\cite{Den81} is a secant-based least-squares
-algorithm that is $q$-superlinearly convergent.  It adaptively chooses
+algorithm that is $q$-superlinearly convergent. It adaptively chooses
 between the Gauss-Newton Hessian approximation and this approximation
-augmented by a correction term from a secant update.  NL2SOL tends to
+augmented by a correction term from a secant update. NL2SOL tends to
 be more robust (than conventional Gauss-Newton approaches) for
 nonlinear functions and ``large residual'' problems, i.e.,
 least-squares problems for which the residuals do not tend towards
-zero at the solution.  License: publicly available.
+zero at the solution. License: publicly available.
 
 \subsection{Additional Features and Future plans}\label{nls:solution:future}
 
 Dakota can calculate confidence intervals on estimated parameters.
 These are determined for individual parameters; they are not joint
-confidence intervals.  The intervals reported are 95\% intervals
+confidence intervals. The intervals reported are 95\% intervals
 around the estimated parameters, and are calculated as the optimal
 value of the estimated parameters $+/-$ a t-test statistic times the
-standard error (SE) of the estimated parameter vector.  The SE is
+standard error (SE) of the estimated parameter vector. The SE is
 based on a linearization approximation involving the matrix of the
 derivatives of the model with respect to the derivatives of the
-estimated parameters.  In the case where these gradients are extremely
+estimated parameters. In the case where these gradients are extremely
 inaccurate or the model is very nonlinear, the confidence intervals
-reported are likely to be inaccurate as well.  Future work on
+reported are likely to be inaccurate as well. Future work on
 generating confidence intervals on the estimated parameters for
 nonlinear least-squares methods will involve adding Bonferroni
 confidence intervals and one or two methods for calculating joint
@@ -233,14 +233,14 @@ calculated when scaling is used, when the number of least-squares
 terms is less than the number of parameters to be estimated, or when
 using numerical gradients.
 
-Dakota also allows a form of weighted least squares.  The user can
+Dakota also allows a form of weighted least squares. The user can
 specify a set of weights that are used to weight each residual term
-using the keyword \texttt{calibration\_weights}.  Note that these
+using the keyword \texttt{calibration\_weights}. Note that these
 weights must be pre-determined by the user and entered in the Dakota
-input file: they are not calculated on-the-fly.  The user can also
-specify scaling for the least-squares terms.  Scaling is applied
+input file: they are not calculated on-the-fly. The user can also
+specify scaling for the least-squares terms. Scaling is applied
 before weighting; usually one or the other would be applied but not
-both.  The Responses section in the Dakota Reference
+both. The Responses section in the Dakota Reference
 Manual~\cite{RefMan} has more detail about weighting and scaling of
 the residual terms.
 
@@ -278,8 +278,6 @@ for more information on these formulations.
 
 Figure~\ref{nls:figure02} shows an excerpt from the output 
 obtained when running NL2SOL on a five-dimensional problem. 
-This input file is named \texttt{dakota\_nl2test.in} found 
-in the \texttt{Dakota/test} directory. 
 Note that the optimal parameter estimates are printed, 
 followed by the residual norm and values of the individual 
 residual terms, followed by the confidence intervals on the parameters. 
@@ -320,18 +318,18 @@ Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
 
 The analysis driver script (the script being driven by Dakota) 
 has to perform several tasks in the case of parameter estimation 
-using nonlinear least-squares methods.  The analysis driver script 
+using nonlinear least-squares methods. The analysis driver script 
 must: (1) read in the values of the parameters supplied by Dakota;
 (2) run the computer simulation with these parameter values;
 (3) retrieve the results from the computer simulation;
 (4) compute the difference between each computed simulation value
 and the corresponding experimental or measured value; and 
 (5) write these residuals (differences)
-to an external file that gets passed back to Dakota.  Note there 
+to an external file that gets passed back to Dakota. Note there 
 will be one line per residual term, specified with 
 \texttt{num\_least\_squares\_terms}
-in the Dakota input file.   It is the last two steps which are different from 
-most other Dakota applications.  
+in the Dakota input file. It is the last two steps which are different from 
+most other Dakota applications. 
 
 To simplify specifying a least squares problem, a user may specify a
 data file containing experimental results or other calibration data.
@@ -339,31 +337,33 @@ This file may be specified with \texttt{calibration\_data\_file}.
 In this case, Dakota will calculate the residuals (that is, the
 simulation model results minus the experimental results), and the
 user-provided script can omit this step: the script can just return
-the simulation outputs of interest.  An example of this can be found
-in the file named \texttt{textbook\_nls\_datafile.in} in the
-\texttt{Dakota/examples/users} directory.  In this example, there
-are 3 residual terms.  The data file of experimental results
-associated with this example is \texttt{least\_squares\_test.dat}.
+the simulation outputs of interest. An example of this can be found
+in the file named \texttt{textbook\_nls\_datafile.in}. 
+In this example, there
+are 3 residual terms. The data file of experimental results
+associated with this example is \texttt{textbook\_nls\_datafile.lsq.dat}.
 These three values are subtracted from the least-squares terms to
 produce residuals for the nonlinear least-squares problem.
 Note that the file may be annotated (specified by \texttt{annotated}) or 
 freeform (specified by \texttt{freeform}). The number of experiments in the 
 calibration data file may be specified with \texttt{num\_experiments}, 
 with one row of data per experiment.
-Finally, this data file may contain additional information than just the observed 
-experimental responses.  If the observed data has measurement error associated with it, 
-this can be specified in columns of such error data after the response data. 
-The number of calibration terms which have associated error in the data 
-set is given by \texttt{num\_std\_deviations}.  Additionally, there is sometimes the 
-need to specify configuration variables.  These are often used in Bayesian calibration 
-analysis.  These are specified as \texttt{num\_config\_variables}.  If the user 
-specifies a positive number of configuration variables, it is expected that they will 
-occur in the text file before the responses. 
+Finally, this data file may contain additional information than 
+just the observed experimental responses. If the observed data 
+has measurement error associated with it, this can be specified in 
+columns of such error data after the response data. 
+The number of calibration terms which have associated error in 
+the data set is given by \texttt{num\_std\_deviations}. Additionally, 
+there is sometimes the need to specify configuration variables. 
+These are often used in Bayesian calibration analysis. These are 
+specified as \texttt{num\_config\_variables}. If the user 
+specifies a positive number of configuration variables, it is 
+expected that they will occur in the text file before the responses. 
 
 \section{Usage Guidelines}\label{nls:usage}
 
 % TODO: borrow from and refer to opt.
 
 When applying an general optimization solver to a calibration problem,
-the guidelines in Table~\ref{opt:usage} still apply.  For selecting
+the guidelines in Table~\ref{opt:usage} still apply. For selecting
 among least sqaures solvers, here is some more guidance...

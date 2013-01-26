@@ -1,33 +1,29 @@
-
-
-
-
-strategy,
+# Dakota Input File: qsf_multistart_strat.in
+strategy
         multi_start graphics
           method_pointer = 'NLP'
-	  random_starts = 3 seed = 123
-	  starting_points = -.8  -.8
-			    -.8   .8
-			     .8  -.8
-			     .8   .8
-			      0.   0.
+    random_starts = 3 seed = 123
+    starting_points = -.8  -.8
+          -.8   .8
+           .8  -.8
+           .8   .8
+            0.   0.
 
-method,
-	id_method = 'NLP'
-	dot_bfgs
+method
+  id_method = 'NLP'
+  dot_bfgs
 
-variables,
-	continuous_design = 2
-	  lower_bounds    -1.0     -1.0
-	  upper_bounds     1.0 	1.0
-	  descriptors      'x1'     'x2'
+variables
+  continuous_design = 2
+    lower_bounds    -1.0     -1.0
+    upper_bounds     1.0   1.0
+    descriptors      'x1'     'x2'
 
-interface,
-	system #asynchronous
- 	  analysis_driver = 'quasi_sine_fcn'
+interface
+  fork #asynchronous
+     analysis_driver = 'quasi_sine_fcn'
 
-responses,
-	objective_functions = 1
- 	analytic_gradients
-	no_hessians
-
+responses
+  objective_functions = 1
+   analytic_gradients
+  no_hessians

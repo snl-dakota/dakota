@@ -1,34 +1,34 @@
-
+# Dakota Input File: rosen_opt_scaled.in
 strategy
   graphics
   tabular_graphics_data
+    tabular_graphics_file = 'rosen_opt_scaled.dat'
   single_method
 
 method
-  conmin_frcg        
-    scaling        
-    output verbose      
+  conmin_frcg
+    scaling
+    #output verbose
 
 model
   single
 
 variables
-  continuous_design = 2                
-    initial_point    -1.2      1.0    
-    lower_bounds     -2.0      0.001  
-    upper_bounds      2.0      2.0     
-    descriptors       'x1'     "x2"    
-    scale_types = 'value' 'log'       
-    scales = 4.0 0.1      
+  continuous_design = 2
+    initial_point    -1.2      1.0
+    lower_bounds     -2.0      0.001
+    upper_bounds      2.0      2.0
+    descriptors       'x1'     "x2"
+    scale_types = 'value' 'log'
+    scales = 4.0 0.1
 
 interface
   analysis_driver = 'rosenbrock'
-    direct          
+    direct
 
 responses
-  objective_functions = 1             
-    objective_function_scale_types = 'value' 
-    objective_function_scales = 50.0  
-  analytic_gradients      
+  objective_functions = 1
+    objective_function_scale_types = 'value'
+    objective_function_scales = 50.0
+  analytic_gradients
   no_hessians
-

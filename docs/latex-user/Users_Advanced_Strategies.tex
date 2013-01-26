@@ -27,7 +27,7 @@ approaches will remain.
 BEGIN TEXT TO REVIEW FOR POTENTIAL INCLUSION
 
 A hybrid optimization strategy can also be demonstrated on the
-\texttt{text\_book} problem. The \texttt{dakota\_hybrid.in} file
+\texttt{text\_book} problem. The \texttt{textbook\_hybrid\_strat.in} file
 provided in {\tt Dakota/examples/users} starts with a
 \texttt{coliny\_ea} solution which feeds its best point into a
 \texttt{coliny\_pattern\_search} optimization which feeds its best
@@ -103,8 +103,7 @@ determined by convergence criteria (e.g.,
 
 Figure~\ref{strat:figure01} shows a Dakota input file that specifies
 a sequential hybrid optimization strategy to solve the
-``textbook'' optimization test problem. This input file is named
-\texttt{dakota\_hybrid.in} in the \texttt{Dakota/test} directory.
+``textbook'' optimization test problem.
 The three optimization methods are identified using the
 \texttt{method\_list} specification in the strategy section of the
 input file. The identifier strings listed in the specification are
@@ -138,10 +137,10 @@ Hessian data to perform its search.
   \centering
   \begin{bigbox}
     \begin{tiny}
-      \verbatimtabinput[8]{dakota_hybrid.in}
+      \verbatimtabinput[8]{textbook_hybrid_strat.in}
     \end{tiny}
   \end{bigbox}
-  \caption{Dakota input file for a hybrid optimization strategy.}
+  \caption{Dakota input file for a hybrid optimization strategy}
   \label{strat:figure01}
 \end{figure}
 
@@ -174,10 +173,10 @@ a single optimization run.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_multistart.in}
+      \verbatimtabinput[8]{qsf_multistart_strat.in}
     \end{small}
   \end{bigbox}
-  \caption{Dakota input file for a multistart local optimization strategy.}
+  \caption{Dakota input file for a multistart local optimization strategy}
   \label{strat:figure02}
 \end{figure}
 
@@ -225,7 +224,7 @@ keyword block using a \texttt{multi\_objective\_weight\_sets} list, a
 number of \texttt{random\_weight\_sets}, or both (see the Dakota
 Reference Manual~\cite{RefMan} for additional specification details).
 Figure~\ref{strat:figure04} shows the input commands from the file
-\texttt{dakota\_pareto.in} in the \texttt{Dakota/test} directory.
+\texttt{textbook\_pareto\_strat.in}.
 
 Dakota performs one multiobjective optimization problem for each set
 of multiobjective weights. The collection of computed optimal
@@ -254,7 +253,7 @@ competing objectives.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_pareto.in}
+      \verbatimtabinput[8]{textbook_pareto_strat.in}
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for the Pareto optimization strategy.}

@@ -143,9 +143,8 @@ Chapter~\ref{dace}, and the data fit surrogates are described in
 Section~\ref{models:surrogate:datafit}.
 
 Figure~\ref{sbm:sblm_rosen} shows a Dakota input file that implements
-surrogate-based optimization on Rosenbrock's function. This input file
-is named \texttt{rosen\_opt\_sbo.in} in the \texttt{Dakota/test}
-directory.  The first method keyword block contains the SBO 
+surrogate-based optimization on Rosenbrock's function.
+The first method keyword block contains the SBO 
 keyword \texttt{surrogate\_based\_local}, plus the commands for
 specifying the trust region size and scaling factors. The optimization
 portion of SBO, using the CONMIN Fletcher-Reeves conjugate gradient method,
@@ -274,7 +273,7 @@ A multifidelity test problem named
 problem uses the Rosenbrock function as the high fidelity model and a
 function named ``lf\_rosenbrock'' as the low fidelity model. Here,
 lf\_rosenbrock is a variant of the Rosenbrock function (see
-\texttt{Dakota/test/lf\_rosenbrock.C} for formulation) with the
+\texttt{Dakota\_Source/test/lf\_rosenbrock.C} for formulation) with the
 minimum point at $(x_1,x_2)=(0.80,0.44)$, whereas the minimum of the
 original Rosenbrock function is $(x_1,x_2)=(1,1)$. Multifidelity SBO
 locates the high-fidelity minimum in 11 high fidelity evaluations for
@@ -406,9 +405,7 @@ combination with restart) may be needed.
 
 Figure~\ref{sbm:sbgm_moga} shows a Dakota input file that implements
 surrogate-based global optimization on a multi-objective test function. 
-This input file
-is named \texttt{mogatest1\_opt\_sbo.in} in the \texttt{Dakota/test}
-directory.  The first method keyword block contains the
+The first method keyword block contains the
 keyword \texttt{surrogate\_based\_global}, plus the commands for
 specifying five as the maximum iterations and the option to replace 
 points in the global surrogate construction. The method block identified 
@@ -423,12 +420,12 @@ as objective functions from that driver.
 
 \begin{figure}
   \begin{bigbox}
-    \begin{tiny}
+    \begin{scriptsize}
       \verbatimtabinput[8]{mogatest1_opt_sbo.in}
-    \end{tiny}
+    \end{scriptsize}
   \end{bigbox}
   \caption{Dakota input file for the surrogate-based global optimization
-    example.}
+    example}
   \label{sbm:sbgm_moga}
 \end{figure}
  
@@ -479,9 +476,7 @@ algorithm. The only item the user can specify is a seed which is
 used in the Latin Hypercube Sampling to generate the initial 
 set of points which is used to construct the initial Gaussian process. 
 An example specification for the EGO algorithm is shown in
-Figure~\ref{sbm:egm_rosen}.  This can be found in the 
-\texttt{rosen\_opt\_ego.in} file in the 
-\texttt{Dakota/test} directory.
+Figure~\ref{sbm:egm_rosen}.
 \begin{figure}
   \begin{bigbox}
     \begin{small}

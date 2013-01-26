@@ -1,28 +1,25 @@
+# Dakota Input File: morris_ps_moat.in
+strategy
+  single_method
 
-# test file with a specific test.  The  is used to designate lines
+method
+  psuade_moat
+    samples = 84
+    partitions = 3
+    seed = 500
 
-strategy,
-	single_method
+variables
+  continuous_design = 20
+    lower_bounds =  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+        0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+    upper_bounds =     1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+        1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
 
-method,
-	psuade_moat
-	  samples = 84
-	  partitions = 3
-	  seed = 500
+interface
+  fork asynchronous evaluation_concurrency = 5
+    analysis_driver = 'morris'
 
-variables,
-	continuous_design = 20
-	  lower_bounds =	0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-				0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-	  upper_bounds =   	1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
-				1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
-
-interface,
-	system asynchronous evaluation_concurrency = 5
-	  analysis_driver = 'morris'
-
-responses,
-	objective_functions = 1
-	no_gradients
-	no_hessians
-
+responses
+  objective_functions = 1
+  no_gradients
+  no_hessians

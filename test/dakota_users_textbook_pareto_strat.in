@@ -1,38 +1,33 @@
+# Dakota Input File: textbook_pareto_strat.in
+strategy
+  pareto_set
+  graphics
+    opt_method_pointer = 'NLP'
+    multi_objective_weight_sets =
+        1.   0.   0.
+        0.   1.   0.
+        0.   0.   1.
+        .333 .333 .333
 
+method
+  id_method = 'NLP'
+  dot_bfgs
 
-strategy,
-        pareto_set
-	  graphics				
-	  opt_method_pointer = 'NLP'		
-	  multi_objective_weight_sets = 	
-				1.   0.   0.	
-				0.   1.   0.	
-				0.   0.   1.	
-			      .333 .333 .333	
+model
+  single
 
+variables
+  continuous_design = 2
+    initial_point     0.9    1.1
+    upper_bounds      5.8    2.9
+    lower_bounds      0.5   -2.9
+    descriptors       'x1'   'x2'
 
-method,
-	id_method = 'NLP'
-	dot_bfgs
+interface
+  fork #asynchronous
+     analysis_driver = 'text_book'
 
-
-
-model,
-        single
-
-variables,
-	continuous_design = 2
-	  initial_point     0.9    1.1
-	  upper_bounds      5.8    2.9
-	  lower_bounds      0.5   -2.9
-	  descriptors       'x1'   'x2'
-
-interface,
-	system #asynchronous
- 	  analysis_driver = 'text_book'
-
-responses,
-	objective_functions = 3
- 	analytic_gradients
-	no_hessians
-
+responses
+  objective_functions = 3
+   analytic_gradients
+  no_hessians

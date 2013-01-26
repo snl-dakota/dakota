@@ -6,12 +6,12 @@ At a high level, uncertainty quantification (UQ) or nondeterministic
 analysis is the process of characterizing input uncertainties, forward
 propagating these uncertainties through a computational model, and
 performing statistical or interval assessments on the resulting
-responses.  This process determines the effect of uncertainties and
-assumptions on model outputs or results.  In Dakota, uncertainty
+responses. This process determines the effect of uncertainties and
+assumptions on model outputs or results. In Dakota, uncertainty
 quantification methods specifically focus on the forward propagation
 part of the process, where probabilistic or interval information on
 parametric inputs are mapped through the computational model to assess
-statistics or intervals on outputs.  For an overview of these
+statistics or intervals on outputs. For an overview of these
 approaches for engineering applications, consult~\cite{Hal00}.
 
 UQ is related to sensitivity analysis in that the common goal is to
@@ -20,18 +20,18 @@ response functions of the engineering design problem. However, for UQ,
 some or all of the components of the parameter vector, are considered
 to be uncertain as specified by particular probability distributions
 (e.g., normal, exponential, extreme value), or other uncertainty
-structures.  By assigning specific distributional structure to the
+structures. By assigning specific distributional structure to the
 inputs, distributional structure for the outputs (i.e, response
 statistics) can be inferred.
 
 UQ methods are often distinguished by their ability to propagate
-aleatory or epistemic input uncertainty characterizations.  Aleatory
+aleatory or epistemic input uncertainty characterizations. Aleatory
 uncertainties, which are irreducible variabilities inherent in nature,
 or epistemic uncertainties, which are reducible uncertainties
-resulting from a lack of knowledge.  Since sufficient data is
+resulting from a lack of knowledge. Since sufficient data is
 generally available for aleatory uncertainties, probabilistic methods
 are commonly used for computing response distribution statistics based
-on input probability distribution specifications.  Conversely, for
+on input probability distribution specifications. Conversely, for
 epistemic uncertainties, data is generally sparse, making the use of
 probability distribution assertions questionable and typically leading
 to nonprobabilistic methods based on interval specifications.
@@ -39,16 +39,16 @@ to nonprobabilistic methods based on interval specifications.
 \subsection{Summary of Dakota UQ Methods}\label{uq:overview:methods}
 
 Dakota contains capabilities for performing nondeterministic analysis
-with both types of input uncertainty.  These UQ methods have been
+with both types of input uncertainty. These UQ methods have been
 developed by Sandia Labs, in conjunction with collaborators in
 academia~\cite{Gha99,Gha91,Eld05,Tang10a}.
 
 The aleatory UQ methods in Dakota include various sampling-based
 approaches (e.g., Monte Carlo and Latin Hypercube sampling), local and
 global reliability methods, and stochastic expansion (polynomial chaos
-expansions and stochastic collocation) approaches.  The epistemic UQ
+expansions and stochastic collocation) approaches. The epistemic UQ
 methods include local and global interval analysis and Dempster-Shafer
-evidence theory.  These are all described briefly in this section and
+evidence theory. These are all described briefly in this section and
 in depth throughout this Chapter. Dakota additionally supports mixed
 aleatory/epistemic UQ via interval-valued probability, second-order
 probability, and Dempster-Shafer theory of evidence, as described in
@@ -72,7 +72,7 @@ Section~\ref{adv_models:mixed_uq}.
 %probability distributions. This is the point that distinguishes UQ
 %sampling from DoE/DACE sampling, in that the former supports general
 %probabilistic descriptions of the parameter set and the latter
-%generally supports only a bounded parameter space description.  A
+%generally supports only a bounded parameter space description. A
 %particular set of parameter values is often called a \emph{sample
 %point}, or simply a \emph{sample}. With Monte Carlo and Latin
 %Hypercube sampling, the user may specify correlations among the input
@@ -88,9 +88,9 @@ Section~\ref{adv_models:mixed_uq}.
 %Finally, when the input uncertainties are poorly characterized, then
 %epistemic uncertainty methods, such as second-order probability or
 %Dempster-Shafer theory of evidence, can be used to compute intervals
-%of potential probability values.  The second-order probability
+%of potential probability values. The second-order probability
 %approach performs an ensemble of aleatory UQ analyses, one for each
-%realization of the epistemic parameter set.  The ensemble of CDF/CCDF
+%realization of the epistemic parameter set. The ensemble of CDF/CCDF
 %curves generates what is known as a ``horse-tail'' plot.
 %Dempster-Shafer, on the other hand, directly generates probability
 %bounds, known as the belief and plausibility functions.
@@ -120,25 +120,25 @@ correlation matrix is not supplied.
 %Manual~\cite{RefMan}). The LHS package historically came in two
 %versions: ``old'' (circa 1980) and ``new'' (circa 1998), but presently
 %only the latter is supported in Dakota, requiring a Fortran 90
-%compiler.  This ``new'' LHS is available under a separate GNU Lesser
-%General Public License and is distributed with Dakota.  
+%compiler. This ``new'' LHS is available under a separate GNU Lesser
+%General Public License and is distributed with Dakota. 
 In addition to a standard sampling study, we support the capability to perform 
 ``incremental'' LHS, where a user can specify an initial LHS study 
 of N samples, and then re-run an additional incremental study which 
 will double the number of samples (to 2N, with the first N being 
-carried from the initial study).  The full incremental sample of 
+carried from the initial study). The full incremental sample of 
 size 2N is also a Latin Hypercube, with proper stratification and 
-correlation.  
+correlation. 
 
 \textbf{Reliability Methods}: This suite of methods includes both
-local and global reliability methods.  Local methods include first-
+local and global reliability methods. Local methods include first-
 and second-order versions of the Mean Value method (MVFOSM and MVSOSM)
 and a variety of most probable point (MPP) search methods, including
 the Advanced Mean Value method (AMV and AMV$^2$), the iterated
 Advanced Mean Value method (AMV+ and AMV$^2$+), the Two-point Adaptive
 Nonlinearity Approximation method (TANA-3), and the traditional First
 Order and Second Order Reliability Methods (FORM and
-SORM)~\cite{Hal00}.  Each of the MPP search techniques solve local
+SORM)~\cite{Hal00}. Each of the MPP search techniques solve local
 optimization problems in order to locate the MPP, which is then used
 as the point about which approximate probabilities are integrated
 (using first- or second-order integrations in combination with
@@ -151,10 +151,10 @@ refinements based on importance sampling).
 %analysis, commonly known as the performance measure approach or PMA).
 %Approximation-based MPP search methods (AMV, AMV$^2$, AMV+, AMV$^2$+,
 %and TANA) may be applied in either x-space or u-space, and mappings
-%may involve either cumulative or complementary cumulative distribution functions.  
+%may involve either cumulative or complementary cumulative distribution functions. 
 Global reliability methods are designed to handle
 nonsmooth and multimodal failure surfaces, by creating global
-approximations based on Gaussian process models.  They accurately
+approximations based on Gaussian process models. They accurately
 resolve a particular contour of a response function and then estimate
 probabilities using multimodal adaptive importance sampling.
 
@@ -163,11 +163,11 @@ techniques is to characterize the response of systems whose governing
 equations involve stochastic coefficients. The development of these
 techniques mirrors that of deterministic finite element analysis
 utilizing the notions of projection, orthogonality, and weak
-convergence~\cite{Gha99},~\cite{Gha91}.  Rather than estimating point
+convergence~\cite{Gha99},~\cite{Gha91}. Rather than estimating point
 probabilities, they form an approximation to the functional
 relationship between response functions and their random inputs, which
 provides a more complete uncertainty representation for use in
-multi-code simulations.  Expansion methods include the Wiener-Askey
+multi-code simulations. Expansion methods include the Wiener-Askey
 generalized polynomial chaos expansion (PCE), which employs a family
 of multivariate orthogonal polynomials that are well matched to
 particular input probability distributions, and stochastic collocation
@@ -175,8 +175,8 @@ particular input probability distributions, and stochastic collocation
 For PCE, expansion coefficients may be evaluated using a spectral
 projection approach (based on sampling, quadrature, or sparse grid
 methods for integration) or a point collocation approach (based on
-linear regression).  For SC, interpolants may be formed over
-tensor-product quadrature grids or Smolyak sparse grids.  Both methods
+linear regression). For SC, interpolants may be formed over
+tensor-product quadrature grids or Smolyak sparse grids. Both methods
 provide analytic response moments; however, CDF/CCDF probabilities are
 evaluated by sampling on the expansion.
 
@@ -192,25 +192,25 @@ unbiased estimate of the failure probability.
 \textbf{Adaptive Sampling}: The goal in performing adaptive 
 sampling is to construct a surrogate
 model that can be used as an accurate predictor of an expensive 
-simulation.  The aim is to build a surrogate that minimizes the error
+simulation. The aim is to build a surrogate that minimizes the error
 over the entire domain of interest using as little data as possible 
 from the expensive simulation. The adaptive sampling methods start
 with an initial LHS sample, and then adaptively choose samples that 
-optimize a particular criteria.  For example, if a set of additional 
+optimize a particular criteria. For example, if a set of additional 
 possible sample points are generated, one criteria is to pick the
 next sample point as the point which maximizes the minimum distance 
-to the existing points (maximin).  Another criteria is to pick the 
+to the existing points (maximin). Another criteria is to pick the 
 sample point where the surrogate indicates the most uncertainty 
 in its prediction. 
 
 \textbf{Interval Analysis}: Interval analysis is often used to model 
 epistemic uncertainty. In interval analysis, one assumes that nothing 
 is known about an epistemic uncertain variable except that its value lies 
-somewhere within an interval.  In this situation, it is NOT 
+somewhere within an interval. In this situation, it is NOT 
 assumed that the value has a uniform probability of occurring 
-within the interval.  Instead, the interpretation is that 
+within the interval. Instead, the interpretation is that 
 any value within the interval is a possible value or a potential 
-realization of that variable.  In interval analysis, the 
+realization of that variable. In interval analysis, the 
 uncertainty quantification problem is one of determining the 
 resulting bounds on the output (defining the output interval) 
 given interval bounds on the inputs. Again, any output response 
@@ -226,19 +226,19 @@ optimization approach, using either SQP (sequential quadratic
 programming) or a NIP (nonlinear interior point) method to obtain bounds. 
  
 \textbf{Dempster-Shafer Theory of Evidence}: The objective of Evidence
-theory is to model the effects of epistemic uncertainties.  Epistemic
+theory is to model the effects of epistemic uncertainties. Epistemic
 uncertainty refers to the situation where one does not know enough
-to specify a probability distribution on a variable.  Sometimes epistemic
+to specify a probability distribution on a variable. Sometimes epistemic
 uncertainty is referred to as subjective, reducible, or lack of knowledge
-uncertainty.  In contrast, aleatory uncertainty refers to the situation
+uncertainty. In contrast, aleatory uncertainty refers to the situation
 where one does have enough information to specify a probability distribution.
 In Dempster-Shafer theory of evidence, the uncertain input variables
-are modeled as sets of intervals.  The user assigns a basic probability
+are modeled as sets of intervals. The user assigns a basic probability
 assignment (BPA) to each interval, indicating how likely it is that the
-uncertain input falls within the interval.  The intervals may be
-overlapping, contiguous, or have gaps.  The intervals and their associated
+uncertain input falls within the interval. The intervals may be
+overlapping, contiguous, or have gaps. The intervals and their associated
 BPAs are then propagated through the simulation to obtain cumulative
-distribution functions on belief and plausibility.  Belief is the lower
+distribution functions on belief and plausibility. Belief is the lower
 bound on a probability estimate that is consistent with the evidence, and
 plausibility is the upper bound on a probability estimate that is consistent
 with the evidence. In addition to the full evidence theory structure, 
@@ -249,10 +249,10 @@ Interval analysis is often used to model epistemic variables in
 nested analyses, where probability theory is used to model aleatory variables.
 
 \textbf{Bayesian Calibration}:  In Bayesian calibration, uncertain 
-input parameters are described by a ``prior'' distribution.  The priors
+input parameters are described by a ``prior'' distribution. The priors
 are updated with experimental data, in a Bayesian framework that 
 involves the experimental data and a likelihood function which describes 
-how well each parameter value is supported by the data.  After the process
+how well each parameter value is supported by the data. After the process
 of Bayesian calibration, the prior distribution becomes a posterior 
 distribution. 
 
@@ -271,10 +271,10 @@ are employed to define the parameter probability distributions (see
 Section~\ref{variables:uncertain}). The continuous aleatory
 distribution types include: normal (Gaussian), lognormal, uniform,
 loguniform, triangular, exponential, beta, gamma, gumbel, frechet,
-weibull, and histogram bin.  The discrete aleatory distribution types
+weibull, and histogram bin. The discrete aleatory distribution types
 include: poisson, binomial, negative binomial, geometric,
-hypergeometric, and histogram point.  The epistemic distribution type
-is interval.  When gradient and/or Hessian information is used in an
+hypergeometric, and histogram point. The epistemic distribution type
+is interval. When gradient and/or Hessian information is used in an
 uncertainty assessment, derivative components are normally computed
 with respect to the active continuous variables, or in this case, the
 \emph{continuous uncertain variables} (aleatory, epistemic, 
@@ -309,7 +309,7 @@ the segments are determined by the nature of the specified probability
 distribution (e.g., uniform has segments of equal width, normal has
 small segments near the mean and larger segments in the tails). For
 each of the uncertain variables, a sample is selected randomly from
-each of these equal probability segments.  These $N_{s}$ values for
+each of these equal probability segments. These $N_{s}$ values for
 each of the individual parameters are then combined in a shuffling
 operation to create a set of $N_{s}$ parameter vectors with a
 specified correlation structure. A feature of the resulting sample set
@@ -345,24 +345,24 @@ mean value obtained through random sampling.
 Figure~\ref{dace:figure01} demonstrates Latin hypercube sampling on a
 two-variable parameter space. Here, the range of both parameters,
 $x_1$ and $x_2$, is $[0,1]$. Also, for this example both $x_1$
-and $x_2$ have uniform statistical distributions.  For Latin
+and $x_2$ have uniform statistical distributions. For Latin
 hypercube sampling, the range of each parameter is divided into $p$
 ``bins'' of equal probability. For parameters with uniform
 distributions, this corresponds to partitions of equal size. For $n$
 design parameters, this partitioning yields a total of $p^{n}$ bins in
-the parameter space.  Next, $p$ samples are randomly selected in the
+the parameter space. Next, $p$ samples are randomly selected in the
 parameter space, with the following restrictions: (a) each sample is
 randomly placed inside a bin, and (b) for all one-dimensional
 projections of the $p$ samples and bins, there will be one and only
-one sample in each bin.  In a two-dimensional example such as that
+one sample in each bin. In a two-dimensional example such as that
 shown in Figure~\ref{dace:figure01}, these LHS rules guarantee that
 only one bin can be selected in each row and column. For $p=4$, there
 are four partitions in both $x_1$ and $x_2$. This gives a total of
 16 bins, of which four will be chosen according to the criteria
 described above. Note that there is more than one possible arrangement
-of bins that meet the LHS criteria.  The dots in
+of bins that meet the LHS criteria. The dots in
 Figure~\ref{dace:figure01} represent the four sample sites in this
-example, where each sample is randomly located in its bin.  There is
+example, where each sample is randomly located in its bin. There is
 no restriction on the number of bins in the range of each parameter,
 however, all parameters must have the same number of bins.
 
@@ -398,9 +398,8 @@ Equation~\ref{additional:textbook_f}) will be used to demonstrate
 the application of sampling methods for uncertainty quantification
 where it is assumed that $x_1$ and $x_2$ are uniform uncertain
 variables on the interval $[0,1]$. The Dakota input file for this
-problem is shown in Figure~\ref{uq:figure01}. This input 
-file is \texttt{textbook\_uq\_sampling.in} in the 
-\texttt{Dakota/examples/users} directory.  The number of samples to
+problem is shown in Figure~\ref{uq:figure01}. 
+The number of samples to
 perform is controlled with the \texttt{samples} specification, the
 type of sampling algorithm to use is controlled with the
 \texttt{sample\_type} specification, the levels used for computing
@@ -414,8 +413,8 @@ Figure~\ref{uq:figure02} for the case where \texttt{samples} = 5 and
 
 \begin{figure}
   \centering \begin{bigbox} \begin{small}
-  \verbatimtabinput[8]{dakota_uq_sampling.in} \end{small} \end{bigbox}
-\caption{Dakota input file for UQ example using LHS sampling.}
+  \verbatimtabinput[8]{textbook_uq_sampling.in} \end{small} \end{bigbox}
+\caption{Dakota input file for UQ example using LHS.}
 \label{uq:figure01}
 \end{figure}
 
@@ -437,15 +436,15 @@ and the regions $x_1 < 0.3$ and $0.6 < x_1 < 0.9$ are completely
 missed. For the case where \texttt{samples = 10}, some clustering in
 the Monte Carlo samples is again evident with \texttt{4} samples in
 the range $0.5 < x_1 < 0.55$. In both cases, the stratification with
-LHS is superior.  The response function statistics returned by Dakota
-are shown in Figure~\ref{uq:figure03}.  The first two blocks of output
+LHS is superior. The response function statistics returned by Dakota
+are shown in Figure~\ref{uq:figure03}. The first two blocks of output
 specify the response sample means and sample standard deviations and
 confidence intervals for these statistics, as well as coefficients of
-variation.  The last section of the output defines CDF pairs
+variation. The last section of the output defines CDF pairs
 (\texttt{distribution cumulative} was specified) for the response
 functions by presenting the probability levels corresponding to the
 specified response levels (\texttt{response\_levels} were set and the
-default \texttt{compute probabilities} was used).  Alternatively,
+default \texttt{compute probabilities} was used). Alternatively,
 Dakota could have provided CCDF pairings, reliability levels
 corresponding to prescribed response levels, or response levels
 corresponding to prescribed probability or reliability levels.
@@ -501,15 +500,15 @@ Cumulative Distribution Function (CDF) for response_fn_3:
 
 In addition to obtaining statistical summary information of the type
 shown in Figure~\ref{uq:figure03}, the results of LHS sampling also
-include correlations.  Four types of correlations are returned in the
+include correlations. Four types of correlations are returned in the
 output: simple and partial ``raw'' correlations, and simple and
-partial ``rank'' correlations.  The raw correlations refer to
-correlations performed on the actual input and output data.  Rank
+partial ``rank'' correlations. The raw correlations refer to
+correlations performed on the actual input and output data. Rank
 correlations refer to correlations performed on the ranks of the data.
 Ranks are obtained by replacing the actual data by the ranked values,
-which are obtained by ordering the data in ascending order.  For
+which are obtained by ordering the data in ascending order. For
 example, the smallest value in a set of input samples would be given a
-rank 1, the next smallest value a rank 2, etc.  Rank correlations are
+rank 1, the next smallest value a rank 2, etc. Rank correlations are
 useful when some of the inputs and outputs differ greatly in
 magnitude: then it is easier to compare if the smallest ranked input
 sample is correlated with the smallest ranked output, for example.
@@ -517,7 +516,7 @@ sample is correlated with the smallest ranked output, for example.
 Correlations are always calculated between two sets of sample data.
 One can calculate correlation coefficients between two input
 variables, between an input and an output variable (probably the most
-useful), or between two output variables.  The simple correlation
+useful), or between two output variables. The simple correlation
 coefficients presented in the output tables are Pearson's correlation
 coefficient, which is defined for two variables $x$ and $y$ as:
 $\mathtt{Corr}(x,y) = \frac{\sum_{i}(x_{i}-\bar{x})(y_{i}-\bar{y})}
@@ -525,11 +524,11 @@ $\mathtt{Corr}(x,y) = \frac{\sum_{i}(x_{i}-\bar{x})(y_{i}-\bar{y})}
 Partial correlation coefficients are similar to simple correlations,
 but a partial correlation coefficient between two variables measures
 their correlation while adjusting for the effects of the other
-variables.  For example, say one has a problem with two inputs and one
-output; and the two inputs are highly correlated.  Then the
+variables. For example, say one has a problem with two inputs and one
+output; and the two inputs are highly correlated. Then the
 correlation of the second input and the output may be very low after
-accounting for the effect of the first input.  The rank correlations
-in Dakota are obtained using Spearman's rank correlation.  Spearman's
+accounting for the effect of the first input. The rank correlations
+in Dakota are obtained using Spearman's rank correlation. Spearman's
 rank is the same as the Pearson correlation coefficient except that it
 is calculated on the rank data.
 
@@ -538,7 +537,7 @@ provided by Dakota for the input file in Figure~\ref{uq:figure01}.
 Note that these correlations are presently only available when one
 specifies \texttt{lhs} as the sampling method under \texttt{sampling}.
 Also note that the simple and partial correlations should be similar in most
-cases (in terms of values of correlation coefficients).  This is
+cases (in terms of values of correlation coefficients). This is
 because we use a default ``restricted pairing'' method in the LHS
 routine which forces near-zero correlation amongst uncorrelated
 inputs.
@@ -585,7 +584,7 @@ experiments over design and state variables by including the
 \texttt{all\_variables} flag in the method specification section of
 the Dakota input file. Then, instead of iterating on only the
 uncertain variables, the LHS package will sample over all of the
-variables.  In \texttt{all\_variables} mode, continuous design and
+variables. In \texttt{all\_variables} mode, continuous design and
 continuous state variables are treated as having uniform probability
 distributions within their upper and lower bounds, discrete values are
 sampled uniformly from within their sets or ranges, and any uncertain
@@ -596,43 +595,43 @@ variables are sampled within their specified probability distributions.
 In many situations, one may run an initial sample set and then need to
 perform further sampling to get better estimates of the mean,
 variance, and percentiles, and to obtain more comprehensive sample
-coverage.  We call this capability incremental sampling. Currently,
+coverage. We call this capability incremental sampling. Currently,
 the LHS incremental sampling capability we have in Dakota requires that
 the incremental samples are double the sample size of the previous
-sample.  That is, if one starts with a very small sample size of 10,
+sample. That is, if one starts with a very small sample size of 10,
 then one can use the incremental sampling capability to generate
 sample sizes of 20, 40, 80, etc. Also, a Dakota restart file
 (dakota.rst) must be available from the original sample. There are two
 cases, random incremental and Latin Hypercube incremental sampling.
-We assume that LHS incremental will be most frequently used.  One
+We assume that LHS incremental will be most frequently used. One
 major advantage of LHS incremental sampling is that it maintains the
 stratification and correlation structure of the original LHS sample.
 That is, if one generated 2 independent LHS samples and just merged
 them, the calculation of the accuracy of statistical measures such as
-the mean and the variance would be slightly incorrect.  However, in
+the mean and the variance would be slightly incorrect. However, in
 the incremental case, the full sample (double the original size) is a
 Latin Hypercube sample itself and statistical measures and their
-accuracy can be properly calculated.  The incremental sampling
+accuracy can be properly calculated. The incremental sampling
 capability is most useful when one is starting off with very small
 samples. Once the sample size is more than a few hundred, the benefit
 of incremental sampling diminishes.
 
 \begin{enumerate}
 
-\item Incremental Random Sampling.  With incremental random sampling, 
+\item Incremental Random Sampling. With incremental random sampling, 
 the original sample set with N samples must be 
 generated using \texttt{sample\_type} as \texttt{random}.
 Then, the user can create a new Dakota input file that is very similar to the 
 original one except the \texttt{sample\_type} should be defined to be 
-\texttt{incremental\_random}.  Random incremental sampling does not 
-require a doubling of samples each time.  Thus, the user 
+\texttt{incremental\_random}. Random incremental sampling does not 
+require a doubling of samples each time. Thus, the user 
 can specify the number of samples (\texttt{samples}) to be a desired 
 number (it can range from an additional one sample to a large integer), 
-and the \texttt{previous\_samples} should be specified as N.  For example, if
+and the \texttt{previous\_samples} should be specified as N. For example, if
 the first sample has 50 samples, and 10 more samples are desired, 
 in the second Dakota run, the number
 of samples should be set to 60 and the number of previous samples set
-to 50.  In this situation, only 10 new samples will be generated and
+to 50. In this situation, only 10 new samples will be generated and
 the final statistics will be reported on the full sample of 60. The
 command line syntax for running the second sample is \texttt{dakota -i
 input2.in -r dakota.rst} where input2.in is the input file with the
@@ -647,10 +646,10 @@ Then, the user can create a new Dakota input file that is very similar to the
 original one except the \texttt{sample\_type} should be defined to be 
 \texttt{incremental\_lhs}, the number of samples (\texttt{samples}) should 
 be 2N (twice the number of original samples), and
-\texttt{previous\_samples} should be specified as N.  For example, if
+\texttt{previous\_samples} should be specified as N. For example, if
 the first sample has 50 samples, in the second Dakota run, the number
 of samples should be set to 100 and the number of previous samples set
-to 50.  In this situation, only 50 new samples will be generated and
+to 50. In this situation, only 50 new samples will be generated and
 the final statistics will be reported on the full sample of 100. The
 command line syntax for running the second sample is \texttt{dakota -i
 input2.in -r dakota.rst}, where input2.in is the input file with the
@@ -664,12 +663,12 @@ correct restart file name should be used.
 
 Reliability methods provide an alternative approach to uncertainty
 quantification which can be less computationally demanding than
-sampling techniques.  Reliability methods for uncertainty
+sampling techniques. Reliability methods for uncertainty
 quantification are based on probabilistic approaches that compute
 approximate response function distribution statistics based on
-specified uncertain variable distributions.  These response statistics
+specified uncertain variable distributions. These response statistics
 include response mean, response standard deviation, and cumulative or
-complementary cumulative distribution functions (CDF/CCDF).  These
+complementary cumulative distribution functions (CDF/CCDF). These
 methods are often more efficient at computing statistics in the tails
 of the response distributions (events with low probability) than
 sampling based approaches since the number of samples required to
@@ -682,13 +681,13 @@ below or above a certain level, $\bar{z}$?'' The former can be written
 as $P[g(\mathbf{X}) \le \bar{z}] = \mathit{F}_{g}(\bar{z})$ where
 $\mathit{F}_{g}(\bar{z})$ is the cumulative distribution function
 (CDF) of the uncertain response $g(\mathbf{X})$ over a set of response
-levels.  The latter can be written as $P[g(\mathbf{X}) > \bar{z}]$ and
+levels. The latter can be written as $P[g(\mathbf{X}) > \bar{z}]$ and
 defines the complementary cumulative distribution function (CCDF).
 
 This probability calculation involves a multi-dimensional integral
 over an irregularly shaped domain of interest, $\mathbf{D}$, where
 $g(\mathbf{X}) < z$ as displayed in Figure~\ref{uq:figure05} for the
-case of two variables.  The reliability methods all involve the
+case of two variables. The reliability methods all involve the
 transformation of the user-specified uncertain variables,
 $\mathbf{X}$, with probability density function, $p(x_1,x_2)$, which
 can be non-normal and correlated, to a space of independent Gaussian
@@ -696,7 +695,7 @@ random variables, $\mathbf{u}$, possessing a mean value of zero and
 unit variance (i.e., standard normal variables). The region of
 interest, $\mathbf{D}$, is also mapped to the transformed space to
 yield, $\mathbf{D_{u}}$ , where $g(\mathbf{U}) < z$ as shown in
-Figure~\ref{uq:figure06}.  The Nataf transformation~\cite{Der86},
+Figure~\ref{uq:figure06}. The Nataf transformation~\cite{Der86},
 which is identical to the Rosenblatt transformation~\cite{Ros52} in
 the case of independent random variables, is used in Dakota to
 accomplish this mapping. This transformation is performed to make the
@@ -705,16 +704,16 @@ probability contours are circular in nature as shown in
 Figure~\ref{uq:figure06} unlike in the original uncertain variable
 space, Figure~\ref{uq:figure05}. Also, the multi-dimensional integrals
 can be approximated by simple functions of a single parameter,
-$\beta$, called the reliability index.  $\beta$ is the minimum
+$\beta$, called the reliability index. $\beta$ is the minimum
 Euclidean distance from the origin in the transformed space to the
 response surface. This point is also known as the most probable point
 (MPP) of failure. Note, however, the methodology is equally applicable
 for generic functions, not simply those corresponding to failure
 criteria; this nomenclature is due to the origin of these methods
 within the disciplines of structural safety and reliability.
-Note that there are local and global reliability methods.  The majority 
+Note that there are local and global reliability methods. The majority 
 of the methods available are local, meaning that a local optimization 
-formulation is used to locate one MPP.  In contrast, global methods
+formulation is used to locate one MPP. In contrast, global methods
 can find multiple MPPs if they exist.
 \begin{figure}
   \centering
@@ -783,7 +782,7 @@ within the Reference Manual), the MPP search and integration order
 selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response
 specification (as is done with local taylor series approximations
-described in Section~\ref{models:surf:taylor}).  Thus, reliability
+described in Section~\ref{models:surf:taylor}). Thus, reliability
 methods do not have to be synchronized in order as shown in the table;
 however, it is often desirable to do so.
 
@@ -797,11 +796,11 @@ contour of a response function and then estimate probabilities using
 multimodal adaptive importance sampling.
 
 The global reliability method in Dakota is called 
-Efficient Global Reliability Analysis (EGRA) ~\cite{Bic07}.  
+Efficient Global Reliability Analysis (EGRA) ~\cite{Bic07}. 
 The name is due to its 
 roots in efficient global optimization (EGO) ~\cite{Jon98,Hua06}.
 The main idea in EGO-type optimization methods is that a global 
-approximation is made of the underlying function.  This approximation, 
+approximation is made of the underlying function. This approximation, 
 which is a Gaussian process model, is used to guide the search by finding 
 points which maximize the expected improvement function (EIF). 
 The EIF is used to select the location at which a new training point should be
@@ -844,7 +843,7 @@ The EIF is defined as the expectation that any point in the search
 space will provide a better solution than the current best solution
 based on the expected values and variances predicted by the GP model.
 It is important to understand how the use of this EIF leads to optimal
-solutions.  The EIF indicates how much the objective function value at 
+solutions. The EIF indicates how much the objective function value at 
 a new potential location 
 is expected to be less than the predicted value at the current best solution.
 Because the GP model provides a Gaussian distribution at each predicted
@@ -857,27 +856,27 @@ variance (exploration).
 The application of EGO to reliability analysis, however, is made more
 complicated due to the inclusion of equality constraints.
 In forward reliability analysis, the response function appears as a 
-constraint rather than the objective.  That is, we want to satisfy 
+constraint rather than the objective. That is, we want to satisfy 
 the constraint that the response equals a threshold value 
 and is on the limit state:  $G({\bf u})\!=\!\bar{z}$.
 Therefore, the EIF function was modified to focus on feasibility, 
 and instead of using an expected improvement function, we use an 
 expected feasibility function (EFF) ~\cite{Bic07}. 
 The EFF provides an indication of how well the response is expected 
-to satisfy the equality constraint.  
+to satisfy the equality constraint. 
 Points where the expected value is close to the threshold
 ($\mu_G\!\approx\!\bar{z}$) and points with a large uncertainty in the
 prediction will have large expected feasibility values.
 
 The general outline of the EGRA algorithm is as follows:  LHS sampling 
 is used to generate a small number of samples from the true response 
-function.  Then, an initial Gaussian process model is constructed. 
+function. Then, an initial Gaussian process model is constructed. 
 Based on the EFF, the point with maximum EFF is found using 
-the global optimizer DIRECT.  The true response function is then 
+the global optimizer DIRECT. The true response function is then 
 evaluated at this new point, and this point is added to the sample set 
 and the process of building a new GP model and maximizing the EFF is 
-repeated until the maximum EFF is small.  At this stage, the GP model 
-is accurate in the vicinity of the limit state.  The GP model 
+repeated until the maximum EFF is small. At this stage, the GP model 
+is accurate in the vicinity of the limit state. The GP model 
 is then used to calculate the probability of failure 
 using multimodal importance sampling, which is explained below. 
 
@@ -909,14 +908,14 @@ The EGRA algorithm described above does
 not depend on the availability of accurate gradient information, making
 convergence more reliable for nonsmooth response functions.
 Moreover, EGRA has the ability to locate multiple failure points, which 
-can provide multiple starting points and thus a good multimodal sampling density for the initial steps of multimodal AIS.  The probability assessment 
+can provide multiple starting points and thus a good multimodal sampling density for the initial steps of multimodal AIS. The probability assessment 
 using multimodal AIS thus incorporates probability of failure at 
 multiple points.
 
 \subsection{Uncertainty Quantification Example using Reliability Analysis} \label{uq:reliability:ex}
 
 In summary, the user can choose to perform either forward (RIA) or
-inverse (PMA) mappings when performing a reliability analysis.  With
+inverse (PMA) mappings when performing a reliability analysis. With
 either approach, there are a variety of methods from which to choose
 in terms of limit state approximations (MVFOSM, MVSOSM, x-/u-space
 AMV, x-/u-space AMV$^2$, x-/u-space AMV+, x-/u-space AMV$^2$+,
@@ -927,7 +926,7 @@ algorithm (SQP or NIP) selections.
 
 All reliability methods output approximate values of the CDF/CCDF
 response-probability-reliability levels for prescribed response levels
-(RIA) or prescribed probability or reliability levels (PMA).  In
+(RIA) or prescribed probability or reliability levels (PMA). In
 addition, the MV methods additionally output estimates of the mean and
 standard deviation of the response functions along with importance
 factors for each of the uncertain variables in the case of independent
@@ -949,21 +948,20 @@ variables with means of \texttt{1}, standard deviations of
 
 A Dakota input file showing RIA using FORM (option 7 in limit state
 approximations combined with first-order integration) is listed in
-Figure~\ref{uq:rel_input_form}.  This input file is
-\texttt{logratio\_uq\_reliability.in} in the {Dakota/examples/users}
-directory.  The user first specifies the \texttt{local\_reliability}
-method, followed by the MPP search approach and integration order.  In
+Figure~\ref{uq:rel_input_form}.
+The user first specifies the \texttt{local\_reliability}
+method, followed by the MPP search approach and integration order. In
 this example, we specify \texttt{mpp\_search no\_approx} and utilize
-the default first-order integration to select FORM.  Finally, the user
+the default first-order integration to select FORM. Finally, the user
 specifies response levels or probability/reliability levels to
 determine if the problem will be solved using an RIA approach or a PMA
-approach.  In the example figure of~\ref{uq:rel_input_form}, we use
+approach. In the example figure of~\ref{uq:rel_input_form}, we use
 RIA by specifying a range of \texttt{response\_levels} for the
-problem.  The resulting output for this input is shown in
+problem. The resulting output for this input is shown in
 Figure~\ref{uq:rel_output_form}, with probability and reliability
-levels listed for each response level.  Figure~\ref{uq:rel_form_compare} 
+levels listed for each response level. Figure~\ref{uq:rel_form_compare} 
 shows that FORM compares favorably to an exact analytic solution for
-this problem.  Also note that FORM does have some error in the
+this problem. Also note that FORM does have some error in the
 calculation of CDF values for this problem, but it is a very small
 error (on the order of e-11), much smaller than the error obtained
 when using a Mean Value method, which will be discussed next.
@@ -1027,7 +1025,7 @@ FORM, the Mean Value method, and the exact CDF for $g(x_1,x_2)=\frac{x_1}{x_2}$}
 
 If the user specifies \texttt{local\_reliability} as a method with no
 additional specification on how to do the MPP search, then no MPP
-search is done: the Mean Value method is used.  The MV results are
+search is done: the Mean Value method is used. The MV results are
 shown in Figure~\ref{uq:rel_output_mv} and consist of approximate mean
 and standard deviation of the response, the importance factors for
 each uncertain variable, and approximate probability/reliability
@@ -1041,9 +1039,9 @@ calculate. The importance factors are a measure of the sensitivity of
 the response function(s) to the uncertain input variables, but in this
 case, are not separable due to the presence of input correlation
 coefficients. A comparison of the mean value results with the FORM
-results is shown in Figure~\ref{uq:rel_form_compare}.  The mean value
+results is shown in Figure~\ref{uq:rel_form_compare}. The mean value
 results are not accurate near the tail values of the CDF, and can
-differ from the exact solution by as much as 0.11 in CDF estimates.  A
+differ from the exact solution by as much as 0.11 in CDF estimates. A
 comprehensive comparison of various reliability methods applied to the
 logratio problem is provided in ~\cite{Eld06a}.
 
@@ -1104,7 +1102,7 @@ projection, orthogonality, and weak convergence. The polynomial chaos
 expansion is based on a multidimensional orthogonal polynomial
 approximation in standardized random variables, and the stochastic
 collocation approach is based on a multidimensional interpolation
-polynomial approximation in standardized random variables.  A
+polynomial approximation in standardized random variables. A
 distinguishing feature of these two methodologies is that the final
 solution is expressed as a random process, and not merely as a set of
 statistics as is the case for many nondeterministic methodologies.
@@ -1112,11 +1110,11 @@ This makes these techniques particularly attractive for use in
 multi-physics applications which link different analysis packages.
 The first stochastic expansion method is the polynomial chaos
 expansion (PCE) described in Ghanem, et
-al.~\cite{Gha99},~\cite{Gha91}.  For smooth functions (i.e., analytic,
+al.~\cite{Gha99},~\cite{Gha91}. For smooth functions (i.e., analytic,
 infinitely-differentiable) in $L^2$ (i.e., possessing finite
 variance), exponential convergence rates can be obtained under order
 refinement for integrated statistical quantities of interest such as
-mean, variance, and probability.  Dakota implements the generalized
+mean, variance, and probability. Dakota implements the generalized
 polynomial chaos approach using the Wiener-Askey
 scheme~\cite{XiuKarn02}, in which Hermite, Legendre, Laguerre, Jacobi,
 and generalized Laguerre orthogonal polynomials are used for modeling
@@ -1124,11 +1122,11 @@ the effect of continuous random variables described by normal,
 uniform, exponential, beta, and gamma probability distributions,
 respectively\footnote{Orthogonal polynomial selections also exist for
 discrete probability distributions, but are not yet supported in
-Dakota.}.  These orthogonal polynomial selections are optimal for
+Dakota.}. These orthogonal polynomial selections are optimal for
 these distribution types since the inner product weighting function
 corresponds\footnote{Identical support range; weight
 differs by at most a constant factor.} to the probability
-density functions for these continuous distributions.  Orthogonal polynomials
+density functions for these continuous distributions. Orthogonal polynomials
 can be computed for any positive weight function, so these five
 classical orthogonal polynomials may be augmented with
 numerically-generated polynomials for other probability distributions
@@ -1136,22 +1134,22 @@ numerically-generated polynomials for other probability distributions
 When independent standard random variables are used (or computed
 through transformation), the variable expansions are uncoupled,
 allowing the polynomial orthogonality properties to be applied on a
-per-dimension basis.  This allows one to mix and match the polynomial
+per-dimension basis. This allows one to mix and match the polynomial
 basis used for each variable without interference with the spectral
-projection scheme for the response.  
+projection scheme for the response. 
 
 In non-intrusive PCE, simulations are used as black boxes and the
 calculation of chaos expansion coefficients for response metrics of
-interest is based on a set of simulation response evaluations.  To
+interest is based on a set of simulation response evaluations. To
 calculate these response PCE coefficients, two primary classes of
 approaches have been proposed: spectral projection and 
-regression.  The spectral projection approach projects the response
+regression. The spectral projection approach projects the response
 against each basis function using inner products and employs the
-polynomial orthogonality properties to extract each coefficient.  Each
+polynomial orthogonality properties to extract each coefficient. Each
 inner product involves a multidimensional integral over the support
 range of the weighting function, which can be evaluated numerically
 using sampling, tensor-product quadrature, Smolyak sparse
-grid~\cite{Smolyak_63}, or cubature~\cite{stroud} approaches.  The
+grid~\cite{Smolyak_63}, or cubature~\cite{stroud} approaches. The
 regression approach finds a set of PCE coefficients which best match a set of
 response values obtained from either a design of computer experiments
 (``point collocation''~\cite{pt_colloc1}) or from the subset of tensor
@@ -1164,10 +1162,10 @@ the necessary specifications needed to activate these techniques are listed
 in Section 5 of the Dakota Reference Manual~\cite{RefMan}.
 
 Stochastic collocation (SC) is another stochastic expansion technique
-for UQ that is closely related to PCE.  As for PCE, exponential
+for UQ that is closely related to PCE. As for PCE, exponential
 convergence rates can be obtained under order refinement for
 integrated statistical quantities of interest, provided that the
-response functions are smooth with finite variance.  The primary
+response functions are smooth with finite variance. The primary
 distinction is that, whereas PCE estimates coefficients for known
 multivariate orthogonal polynomial basis functions, SC forms
 multivariate interpolation polynomial bases for known coefficients.
@@ -1177,19 +1175,19 @@ combinations currently supported: Lagrange (global value-based),
 Hermite (global gradient-enhanced), piecewise linear spline (local
 value-based) in nodal and hierarchical formulations, and piecewise
 cubic spline (local gradient-enhanced) in nodal and hierarchical
-formulations.  Interpolation is performed on structured grids such as
-tensor-product or sparse grids.  Starting from a tensor-product
+formulations. Interpolation is performed on structured grids such as
+tensor-product or sparse grids. Starting from a tensor-product
 multidimensional interpolation polynomial in the value-based case
 (Lagrange or piecewise linear spline), we have the feature that the
 $i^{th}$ interpolation polynomial has a value of 1 at collocation
 point $i$ and a value of 0 for all other collocation points, leading
 to the use of expansion coefficients that are just the response values
-at each of the collocation points.  In the gradient-enhanced case
+at each of the collocation points. In the gradient-enhanced case
 (Hermite or piecewise cubic spline), SC includes both type 1 and type
 2 interpolation polynomials, where the former interpolate the values
 while producing zero gradients and the latter interpolate the
 gradients while producing zero values (refer to~\cite{TheoMan} for
-additional details).  Sparse interpolants are weighted sums of these
+additional details). Sparse interpolants are weighted sums of these
 tensor interpolants;
 %and retain the use of response values as expansion coefficients;
 however, they are only interpolatory for sparse grids based on fully 
@@ -1197,12 +1195,12 @@ nested rules and will exhibit some interpolation error at the
 collocation points for sparse grids based on non-nested rules.
 A key to maximizing performance with SC is performing collocation
 using the Gauss points and weights from the same optimal orthogonal
-polynomials used in PCE.  
+polynomials used in PCE. 
 For use of standard Gauss integration rules (not nested variants such
 as Gauss-Patterson or Genz-Keister) within tensor-product quadrature,
 tensor PCE expansions and tensor SC interpolants are equivalent in
 that identical polynomial approximations are
-generated~\cite{ConstTPQ}.  Moreover, this equivalence can be extended
+generated~\cite{ConstTPQ}. Moreover, this equivalence can be extended
 to sparse grids based on standard Gauss rules, provided that a sparse
 PCE is formed based on a weighted sum of tensor expansions~\cite{ConstSSG}.
 
@@ -1214,25 +1212,24 @@ details for the PCE and SC methods.
 
 A typical Dakota input file for performing an uncertainty
 quantification using polynomial chaos expansions is shown in 
-Section~\ref{uq:examples:pce}.  The example
+Section~\ref{uq:examples:pce}. The example
 in illustrates PCE built on anisotropic tensor
-product quadrature.  The uncertain variables are uniforms, so the
+product quadrature. The uncertain variables are uniforms, so the
 expansion is built using classical Legendre polynomials. This section
 presents a more sophisticated example, where we use stochastic
 collocation built on an anisotropic sparse grid defined from
-numerically-generated orthogonal polynomials.  The uncertain variables
+numerically-generated orthogonal polynomials. The uncertain variables
 are lognormal in this example and the orthogonal polynomials are
 generated from Gauss-Wigert recursion coefficients~\cite{simpson_gw}
 in combination with the Golub-Welsch procedure~\cite{GolubWelsch69}.
-The input file is shown in Figure~\ref{uq:figure11}. This input file
-is \texttt{rosen\_uq\_sc.in} in the \texttt{Dakota/examples/users}
-directory.  Note that the dimension preference of $(2,1)$ is inverted
+The input file is shown in Figure~\ref{uq:figure11}. 
+Note that the dimension preference of $(2,1)$ is inverted
 to define a $\gamma$ weighting vector of $(0.5,1)$ (and
 $\underline{\gamma}$ of $0.5$) for use in the anisotropic Smolyak
 index set constraint (see Smolyak sparse grids section in Stochastic
-Expansion Methods chapter in Dakota Theory Manual~\cite{TheoMan}).  In
+Expansion Methods chapter in Dakota Theory Manual~\cite{TheoMan}). In
 this example, we compute CDF probabilities for six response levels of
-Rosenbrock's function.  This example requires 19 function evaluations
+Rosenbrock's function. This example requires 19 function evaluations
 to calculate the interpolating polynomials in stochastic collocation
 and the resulting expansion exactly reproduces Rosenbrock's function.
 The placement of the points generated by the sparse grid is shown in
@@ -1260,14 +1257,14 @@ Once the expansion coefficients have been calculated, some statistics
 are available analytically and others must be evaluated numerically.
 For the numerical portion, the input file specifies the use of 10000
 samples, which will be evaluated on the expansion to compute the CDF
-probabilities.  In Figure~\ref{uq:figure12}, excerpts from the results
-summary are presented.  We first see the moment statistics for mean,
+probabilities. In Figure~\ref{uq:figure12}, excerpts from the results
+summary are presented. We first see the moment statistics for mean,
 standard deviation, skewness, and kurtosis computed by numerical
 integration (see Analytic moments section in Stochastic Expansion
 Methods chapter in Dakota Theory Manual~\cite{TheoMan}), where the
 numerical row corresponds to integration using the original response
 values and the expansion row corresponds to integration using values
-from the interpolant.  The response covariance (collapsing to a single
+from the interpolant. The response covariance (collapsing to a single
 variance value for one response function) and global sensitivity
 indices (Sobol' indices) are presented next. This example shows that
 variable x1 has the largest main effect (0.99) as compared with
@@ -1276,8 +1273,8 @@ variable x2 (0.0007) or the interaction between x1 and x2 (0.005).
 %variable sensitivities are presented, as computed from
 %Eqs.~\ref{eq:dR_dx}-\ref{eq:dR_dxi_sc}, evaluated at the mean values.
 Finally, we see the numerical results for the CDF probabilities based
-on 10000 samples performed on the expansion.  For example, the probability 
-that the Rosenbrock function is less than 100 is 0.7233.  Note that these 
+on 10000 samples performed on the expansion. For example, the probability 
+that the Rosenbrock function is less than 100 is 0.7233. Note that these 
 results are significantly different than the ones presented in 
 Section~\ref{uq:examples:pce} because of 
 the different assumptions about the inputs: uniform[-2,2] versus
@@ -1330,7 +1327,7 @@ Cumulative Distribution Function (CDF) for response_fn_1:
 Importance sampling is a method that allows one to estimate statistical
 quantities such as failure probabilities (e.g. the probability that
 a response quantity will exceed a threshold or fall below a threshold value)
-in a way that is more efficient than Monte Carlo sampling.  The core idea
+in a way that is more efficient than Monte Carlo sampling. The core idea
 in importance sampling is that one generates samples that preferentially
 samples important regions in the space (e.g. in or near the failure region
 or user-defined region of interest), and then appropriately weights
@@ -1338,21 +1335,21 @@ the samples to obtain an unbiased estimate of the failure probability
 ~\cite{Srinivasan2002}.
 In importance sampling, the samples are generated from a density which is
 called the importance density:  it is not the original probability density
-of the input distributions.  The importance density should be centered near the
-failure region of interest.  For black-box simulations such as those commonly
+of the input distributions. The importance density should be centered near the
+failure region of interest. For black-box simulations such as those commonly
 interfaced with Dakota, it is difficult to specify the importance density a priori:
 the user often does not know where the failure region lies, especially in a high-dimensional
 space.~\cite{Swiler2010}
 
-More formally, we define the objective of importance sampling as calculating the probability, $P$, that the output will exceed a threshold level.  This is a failure 
+More formally, we define the objective of importance sampling as calculating the probability, $P$, that the output will exceed a threshold level. This is a failure 
 probability, where the failure probability is defined as some scalar function, 
 $y\left(\textbf{X}\right)$, exceeding a threshold, $T$, 
-where the inputs, $\textbf{X}$, are randomly distributed with density, $\rho\left(\textbf{X}\right)$.  
+where the inputs, $\textbf{X}$, are randomly distributed with density, $\rho\left(\textbf{X}\right)$. 
 When evaluating $y\left(\textbf{X}\right)$ is sufficiently expensive or $P$ is sufficiently small, Monte Carlo (MC) sampling methods to estimate $P$ will be infeasible due to the large number of function evaluations required
 for a specified accuracy. 
 
 The probability of failure can be thought of as the mean rate of occurrence
-of failure.  The Monte Carlo (MC) estimate of $P$ is therefore the sample
+of failure. The Monte Carlo (MC) estimate of $P$ is therefore the sample
 mean of the indicator function, $I\left(\textbf{X}\right)$,
 \begin{equation}
 P_{MC}=\frac{1}{N}\sum_{i=1}^{N}I\left(\mathbf{X_i}\right)\ \ \textbf{X}\sim \rho\left(\textbf{X}\right),
@@ -1385,19 +1382,19 @@ $\rho^*\left(\textbf{X}\right)$,
 \rho^*\left(\textbf{X}\right)=\frac{I\left(\textbf{X}\right)\rho\left(\textbf{X}\right)}{P}.\end{equation}
  
 However, $\rho^*\left(\textbf{X}\right)$ is unknown a priori because
-$I\left(\textbf{X}\right)$ is only known where it has been evaluated.  
+$I\left(\textbf{X}\right)$ is only known where it has been evaluated. 
 Therefore, the required $P$ in the denominator is also unknown:  this is what we are trying to estimate.
  
 If importance sampling is to be effective, the practitioner must be able to
 choose a good $\rho'\left(\textbf{X}\right)$ without already knowing
-$I\left(\textbf{X}\right)$ everywhere.  
+$I\left(\textbf{X}\right)$ everywhere. 
 There is a danger: a poor choice for $\rho'\left(\textbf{X}\right)$ can put most of the samples in
 unimportant regions and make $\sigma_{err_{IS}}^2$ much greater than
 $\sigma_{err_{MC}}^2$.
 In particular, importance sampling can be challenging for very low probability events in high-dimensional spaces where
-the output $y$ is calculated by a simulation.  In these cases, usually one
+the output $y$ is calculated by a simulation. In these cases, usually one
 does not know anything a priori about where the failure region exists
-in input space.  
+in input space. 
 We have developed two importance sampling approaches which do not
 rely on the user explicitly specifying an importance density.
 
@@ -1407,7 +1404,7 @@ An initial Latin Hypercube sampling is performed to generate an initial set of s
 These initial samples are augmented with samples from an importance density as follows:
 The variables are transformed to standard normal space. In the transformed space,
 the importance density is a set of normal densities centered around points which
-are in the failure region.  Note that this is similar in spirit to the reliability
+are in the failure region. Note that this is similar in spirit to the reliability
 methods, in which importance sampling is centered around a Most Probable Point (MPP).
 In the case of the LHS samples, the importance sampling density will simply by
 a mixture of normal distributions centered around points in the failure region.
@@ -1422,7 +1419,7 @@ given the original density, and calculates the required probability (CDF or CCDF
 failure probability estimate converges.
 \texttt{mm\_adapt\_import} starts with all of the samples located in the failure region
 to build a multimodal sampling density. First, it uses a small number of samples around
-each of the initial samples in the failure region.  Note that these samples
+each of the initial samples in the failure region. Note that these samples
 are allocated to the different points based on their relative probabilities of occurrence:
 more probable points get more samples. This early part of the approach is done to 
 search for ``representative'' points. Once these are located, the multimodal sampling density is set and then the multi-modal adaptive method proceeds similarly to the 
@@ -1431,31 +1428,31 @@ adaptive method (sample until convergence).
 \subsection{Gaussian Process Adaptive Importance Sampling Method}\label{uq:gpais}
 The second importance sampling method in Dakota is the one we recommend,
 at least for problems that have a relatively small number of input variables (e.g.
-less than 10).  This method, Gaussian Process Adaptive Importance Sampling,
+less than 10). This method, Gaussian Process Adaptive Importance Sampling,
 is outlined in the paper ~\cite{Dalbey2012}.
 This method  starts with an initial set of LHS samples and adds samples one at a time, 
 with the goal of adaptively improving the estimate of the ideal importance density
-during the process.  The approach uses a mixture of component densities.  An
+during the process. The approach uses a mixture of component densities. An
 iterative process is used
 to construct the sequence of improving component densities. At each
 iteration, a Gaussian process (GP) surrogate is used to help identify areas
-in the space where failure is likely to occur.  The GPs are not used to
+in the space where failure is likely to occur. The GPs are not used to
 directly calculate the failure probability; they are only used to approximate
 the importance density. Thus, the Gaussian process adaptive importance
 sampling algorithm overcomes limitations involving using a potentially
 inaccurate surrogate model directly in importance sampling calculations.
 
-This method is specified with the keyword \texttt{gpais}.  There are three 
+This method is specified with the keyword \texttt{gpais}. There are three 
 main controls which govern the behavior of the algorithm. 
 \texttt{samples} specifies the initial number of Latin Hypercube samples 
 which are used to create the initial Gaussian process surrogate. 
 \texttt{emulator\_samples} specifies the number of samples taken on the 
 latest Gaussian process model each iteration of the algorithm. 
 These samples are used in the construction of the next importance 
-sampling density.  The default is 10,000 samples.  The third control 
+sampling density. The default is 10,000 samples. The third control 
 is \texttt{max\_iterations}, which controls the number of iterations 
-of the algorithm.  Each iteration, one additional sample of the ``true'' 
-simulation is taken.  Thus, if \texttt{samples} were set at 100 and 
+of the algorithm. Each iteration, one additional sample of the ``true'' 
+simulation is taken. Thus, if \texttt{samples} were set at 100 and 
 \texttt{max\_iterations} were set to 200, there would be a total of 
 300 function evaluations of the simulator model taken. 
 
@@ -1464,7 +1461,7 @@ The goal in performing adaptive sampling is to construct a surrogate model that
 can be used as an accurate predictor to some expensive simulation, thus it is
 to one's advantage to build a surrogate that minimizes the error over the entire
 domain of interest using as little data as possible from the expensive
-simulation.  The adaptive part alludes to the fact that the surrogate will be
+simulation. The adaptive part alludes to the fact that the surrogate will be
 refined by focusing samples of the expensive simulation on particular areas of
 interest rather than rely on random selection or standard space-filling
 techniques. 
@@ -1480,18 +1477,18 @@ initial sample points
 
 In terms of the Dakota implementation, the adaptive sampling method 
 currently uses Latin Hypercube sampling (LHS) to generate the initial 
-points in Step 1 above.  For Step 2, we use a Gaussian process model. 
+points in Step 1 above. For Step 2, we use a Gaussian process model. 
 The user can specify the scoring metric used to select the 
-next point (or points) to evaluate and add to the set.  
+next point (or points) to evaluate and add to the set. 
 We have investigated several scoring metrics with which to evaluate 
-candidate points for Step 3.  There are some classical ones such as distance 
+candidate points for Step 3. There are some classical ones such as distance 
 (e.g. add a point which maximizes the minimum distance to all of 
-the existing points).  This distance metric tends to generate 
-points that are space-fillinlg.  We have investigated several 
+the existing points). This distance metric tends to generate 
+points that are space-fillinlg. We have investigated several 
 methods that involve interesting topological features of the 
-space (e.g. points that are near saddle points).  These are 
+space (e.g. points that are near saddle points). These are 
 an area of active investigation but are not currently included 
-in Dakota.  The fitness metrics for scoring 
+in Dakota. The fitness metrics for scoring 
 candidate points currently include: 
 \begin{description}
 \item[Predicted Variance]
@@ -1512,7 +1509,7 @@ space-filling in an equivalent context.
 %DPM: PROBABLY WANT TO CHANGE THE NAME OF THIS METRIC
 Similar to the above metric, a candidate's nearest neighbor is determined as in
 the distance metric, only now the score is the absolute value of the difference
-in range space of the two points.  The range space values used are predicted
+in range space of the two points. The range space values used are predicted
 from the surrogate model. Though this method is called the gradient metric, it
 actually does not take into account how close the candidate and its neighbor are
 in domain space. This method attempts to evenly fill the range space of the
@@ -1521,8 +1518,8 @@ surrogate.
 
 Note that in our approach, a Latin Hypercube sample is generated (a new one, 
 different from the initial sample) and the surrogate model is evaluated 
-at this points.  These are the ``candidate points'' that are then evaluated 
-according to the fitness metric outlined above.  The number of candidates used 
+at this points. These are the ``candidate points'' that are then evaluated 
+according to the fitness metric outlined above. The number of candidates used 
 in practice should be high enough to fill most
 of the input domain: we recommend at least hundreds of points for a low-
 dimensional problem. 
@@ -1547,11 +1544,11 @@ position. This tends to group an entire round of points in the same area.
 In this strategy, the highest 
 scoring candidate is selected and then all
 remaining candidates are re-scored with a distance penalization factor added in
-to the score.  Only points selected within a round are used for the distance
-penalization.  The factor is the same as used in the distance penalization
- scoring metrics from \cite{Maljovec}.  First, compute all of the minimum
-distances from each remaining candidate to the selected candidates.  Then,
-determine the median value of these distances.  If the smallest distance, $d$,
+to the score. Only points selected within a round are used for the distance
+penalization. The factor is the same as used in the distance penalization
+ scoring metrics from \cite{Maljovec}. First, compute all of the minimum
+distances from each remaining candidate to the selected candidates. Then,
+determine the median value of these distances. If the smallest distance, $d$,
 between a point and the selected set is less than the computed median distance
 its score is unaltered, otherwise the score is multiplied by a value $\rho$
 determined by the following equation:
@@ -1562,13 +1559,13 @@ determined by the following equation:
 In this strategy we look at the topology of the scoring function and select the
 $n$ highest maxima in the topology. To determine local maxima, we construct the
 approximate Morse-Smale complex. If the number of local maxima is less than $n$,
- we revert to the distance strategy above.  As a further extension, one may
+ we revert to the distance strategy above. As a further extension, one may
 want to filter low-persistence maxima, but to keep the framework general, we
 chose to omit this feature as defining a threshold for what deems a critical
 point as "low persistence" can vary drastically from problem to problem.
 \item[\bf Constant Liar]  
 We adapt the constant liar strategy presented in \cite{Ginsbourger} with the
-scoring metrics.  The strategy first selects
+scoring metrics. The strategy first selects
 the highest scoring candidate, and then refits the surrogate using a ``lie'' value
 at the point selected and repeating until $n$ points have been selected
 whereupon the lie values are removed from the surrogate and the selected points
@@ -1576,7 +1573,7 @@ are evaluated on the true model and the surrogate is refit with these values.
 \end{description}
 
 The adaptive sampling method is specified by the method keyword 
-\texttt{adaptive\_sampling}.  There are many controls, including 
+\texttt{adaptive\_sampling}. There are many controls, including 
 the number of candidate samples to investigate each iteration 
 (\texttt{emulator\_samples}), the fitness metric used in scoring 
 candidates (\texttt{fitness\_metric}), and the number of iterations 
@@ -1584,19 +1581,19 @@ to perform the adaptive sampling (\texttt{max\_iterations}).
 For batch selection of points, one specifies a \texttt{batch\_selection} 
 strategy and a \texttt{batch\_size}. 
 The details of the specification are provided in the Dakota 
-reference manual.  
+reference manual. 
 
 \section{Epistemic Nondeterministic Methods}\label{uq:epistemic}
 
 Uncertainty quantification is often used as part of the risk
 assessment of performance, reliability, and safety of engineered
-systems.  Increasingly, uncertainty is separated into two categories
+systems. Increasingly, uncertainty is separated into two categories
 for analysis purposes: aleatory and epistemic
 uncertainty~\cite{Obe03,Hel07}. Aleatory uncertainty is also referred to as
 variability, irreducible or inherent uncertainty, or uncertainty due
 to chance. Examples of aleatory uncertainty include the height of
 individuals in a population, or the temperature in a processing
-environment.  Aleatory uncertainty is usually modeled with probability
+environment. Aleatory uncertainty is usually modeled with probability
 distributions, and sampling methods such as Latin Hypercube sampling
 in Dakota can be used to model aleatory uncertainty. In contrast,
 epistemic uncertainty refers to lack of knowledge or lack of
@@ -1615,17 +1612,17 @@ uncertainty about the correct model form to use, etc.
 There are many approaches which have been developed to model epistemic
 uncertainty, including fuzzy set theory, possibility theory, and
 evidence theory. It is also possible to use simple interval analysis in 
-an epistemic context.  Interval analysis and evidence theory are 
+an epistemic context. Interval analysis and evidence theory are 
 described in more detail below.
 
 \subsection{Interval Methods for Epistemic Analysis}\label{uq:interval}
 In interval analysis, one assumes that nothing is known about 
 an epistemic uncertain variable except that its value lies 
-somewhere within an interval.  In this situation, it is NOT 
+somewhere within an interval. In this situation, it is NOT 
 assumed that the value has a uniform probability of occuring 
-within the interval.  Instead, the interpretation is that 
+within the interval. Instead, the interpretation is that 
 any value within the interval is a possible value or a potential 
-realization of that variable.  In interval analysis, the 
+realization of that variable. In interval analysis, the 
 uncertainty quantification problem is one of determining the 
 resulting bounds on the output (defining the output interval) 
 given interval bounds on the inputs. Again, any output response 
@@ -1640,38 +1637,38 @@ method or a sampling method to assess the bounds.
 allows the user to specify either \texttt{lhs}, which performs 
 Latin Hypercube Sampling and takes the minimum and maximum of 
 the samples as the bounds (no optimization is 
-performed) or \texttt{ego}.  In the case of \texttt{ego}, 
+performed) or \texttt{ego}. In the case of \texttt{ego}, 
 the efficient global optimization method is used to calculate 
-bounds.  The ego method is described in Section~\ref{sbm:egm}.
+bounds. The ego method is described in Section~\ref{sbm:egm}.
 If the problem is amenable to local optimization 
 methods (e.g. can provide derivatives or use finite difference 
 method to calculate derivatives), then one can use local
-methods to calculate these bounds.  \texttt{local\_interval\_est}
+methods to calculate these bounds. \texttt{local\_interval\_est}
 allows the user to specify either \texttt{sqp} which is sequential 
 quadratic programming, or \texttt{nip} which is a nonlinear interior point 
 method. 
 
 Note that when performing interval analysis, it is necessary to define
 interval uncertain variables as described in
-Section~\ref{variables:uncertain}.  For interval analysis, one must
+Section~\ref{variables:uncertain}. For interval analysis, one must
 define only one interval per input variable, in contrast with
 Dempster-Shafer evidence theory, where an input can have several
-possible intervals.  Interval analysis can be considered a special
+possible intervals. Interval analysis can be considered a special
 case of Dempster-Shafer evidence theory where each input is defined by
-one input interval with a basic probability assignment of one.  In
+one input interval with a basic probability assignment of one. In
 Dakota, however, the methods are separate and semantic differences
-exist in the output presentation.  If you are performing a pure
+exist in the output presentation. If you are performing a pure
 interval analysis, we recommend using either
 \texttt{global\_interval\_est} or \texttt{local\_interval\_est}
 instead of \texttt{global\_evidence} or \texttt{local\_evidence}, for
-reasons of simplicity.  An example of interval estimation is found in
-the test file \texttt{cantilever\_uq\_global\_interval.in}, and also
+reasons of simplicity. An example of interval estimation is found in
+the \texttt{cantilever\_uq\_global\_interval.in}, and also
 in Section~\ref{uq:examples:interval}.
 %Note that we have kept separate implementations of interval analysis and
 %Dempster-Shafer evidence theory because our users often want to couple
 %interval analysis on an ``outer loop'' with an aleatory, probabilistic
 %analysis on an ``inner loop'' for nested, second-order probability
-%calculations.  See Section~\ref{adv_models:mixed_uq} for additional
+%calculations. See Section~\ref{adv_models:mixed_uq} for additional
 %details on these nested approaches.
 These interval methods can also be used as the outer loop within an
 interval-valued probability analysis for propagating mixed aleatory
@@ -1681,36 +1678,36 @@ Section~\ref{adv_models:mixed_uq:ivp} for additional details.
 \subsection{Dempster-Shafer Theory of Evidence}\label{uq:dempshaf}
 We have chosen to pursue evidence theory at Sandia as a way to model
 epistemic uncertainty, in part because evidence theory is a
-generalization of probability theory.  Evidence theory is also
+generalization of probability theory. Evidence theory is also
 referred to as Dempster-Shafer theory or the theory of random
-sets~\cite{Obe03}.  This section focuses on the use of Dempster-Shafer
-evidence theory for propagating epistemic uncertainties.  When
+sets~\cite{Obe03}. This section focuses on the use of Dempster-Shafer
+evidence theory for propagating epistemic uncertainties. When
 aleatory uncertainties are also present, we may choose either to
 discretize the aleatory probability distributions into sets of
 intervals and treat them as well-characterized epistemic variables, or
 we may choose to segregate the aleatory uncertainties and treat them
-within an inner loop.  A nested Dempster-Shafer approach for
+within an inner loop. A nested Dempster-Shafer approach for
 propagating mixed aleatory and epistemic uncertainty is described in
 Section~\ref{adv_models:mixed_uq:dste}.
 %We also use a technique called second-order probability to perform
 %uncertainty quantification when there is both epistemic and aleatory
-%uncertainty present.  Second-order probability is a nested technique
-%with two levels of uncertainty quantification.  The outer level UQ is
+%uncertainty present. Second-order probability is a nested technique
+%with two levels of uncertainty quantification. The outer level UQ is
 %typically linked to epistemic uncertainties and the inner level UQ is
-%commonly associated with aleatory uncertainties.  A common approach
+%commonly associated with aleatory uncertainties. A common approach
 %used is to sample possible realizations of epistemic variables in the
 %outer loop, then send these to the inner loop for additional sampling
-%over the aleatory variables.  In this way one generates ``families''
+%over the aleatory variables. In this way one generates ``families''
 %or ensembles of cumulative distribution functions, where each
 %individual CDF is based on aleatory uncertainty, and the ensemble is
-%based on epistemic uncertainty.  See Section~\ref{adv_models:mixed_uq}
+%based on epistemic uncertainty. See Section~\ref{adv_models:mixed_uq}
 %for more details.
 
 In evidence theory, there are two complementary measures of
-uncertainty: belief and plausibility.  Together, belief and
+uncertainty: belief and plausibility. Together, belief and
 plausibility can be thought of as defining lower and upper bounds,
-respectively, on probabilities.  Belief and plausibility define the
-lower and upper limits or intervals on probability values.  Typical
+respectively, on probabilities. Belief and plausibility define the
+lower and upper limits or intervals on probability values. Typical
 plots of cumulative and complementary cumulative belief and
 plausibility functions are shown in Figure~\ref{uq:figure15}~\cite{Hel07}.
 \begin{figure}
@@ -1726,29 +1723,28 @@ plausibility. Note that no statement or claim is made about one value
 within an interval being more or less likely than any other value.
 
 In Dempster-Shafer evidence theory, the uncertain input variables are
-modeled as sets of intervals.  The user assigns a basic probability
+modeled as sets of intervals. The user assigns a basic probability
 assignment (BPA) to each interval, indicating how likely it is that
-the uncertain input falls within the interval.  The BPAs for a
-particular uncertain input variable must sum to one.  The intervals
+the uncertain input falls within the interval. The BPAs for a
+particular uncertain input variable must sum to one. The intervals
 may be overlapping, contiguous, or have gaps. In Dakota, an interval
-uncertain variable is specified as \texttt{interval\_uncertain}.  When
+uncertain variable is specified as \texttt{interval\_uncertain}. When
 one defines an interval type variable in Dakota, it is also necessary
 to specify the number of intervals defined for each variable with
 \texttt{iuv\_num\_intervals} as well the basic probability assignments
 per interval, \texttt{iuv\_interval\_probs}, and the associated bounds
 per each interval, \texttt{iuv\_interval\_bounds}. 
 Figure~\ref{uq:figure16} shows the input specification for interval
-uncertain variables. This input file is \texttt{textbook\_uq\_glob\_evidence.in}, found in the \texttt{Dakota/examples/users} 
-directory.   The example shown in Figure~\ref{uq:figure16}
-has two epistemic uncertain interval variables.  
+uncertain variables. 
+The example has two epistemic uncertain interval variables. 
 The first uncertain
 variable has three intervals and the second has two. The basic
 probability assignments for the first variable are 0.5, 0.1, and 0.4,
 while the BPAs for the second variable are 0.7 and 0.3. Note that it
 is possible (and often the case) to define an interval uncertain
-variable with only ONE interval.  This means that you only know that
+variable with only ONE interval. This means that you only know that
 the possible value of that variable falls within the interval, and the
-BPA for that interval would be 1.0.  In the case we have shown, the
+BPA for that interval would be 1.0. In the case we have shown, the
 interval bounds on the first interval for the first variable are 0.6
 and 0.9, and the bounds for the second interval for the first variable
 are 0.1 to 0.5, etc.
@@ -1767,35 +1763,35 @@ are 0.1 to 0.5, etc.
 Once the intervals, the BPAs, and the interval bounds are defined, 
 the user can run an epistemic analysis by specifying the method as 
 either \texttt{global\_evidence} or 
-\texttt{local\_evidence} in the Dakota input file.  
+\texttt{local\_evidence} in the Dakota input file. 
 Both of these methods perform Dempster-Shafer calculations:  
 the difference is that the local method uses a local optimization 
 algorithm to calculate the interval bounds and the global 
 method uses either sampling or a global optimization approach to 
-calculate an interval bound.  These differences are discussed in 
+calculate an interval bound. These differences are discussed in 
 more detail below. 
 The intervals and their associated BPAs are then propagated through
 the simulation to obtain cumulative distribution functions on belief
-and plausibility.  As mentioned above, belief is the lower bound on a
+and plausibility. As mentioned above, belief is the lower bound on a
 probability estimate that is consistent with the evidence, and
 plausibility is the upper bound on a probability estimate that is
-consistent with the evidence.  
+consistent with the evidence. 
 
 Figure~\ref{uq:figure17} shows
 results for the first response function obtained when running the
-example in Figure~\ref{uq:figure16}.  In this example, there are 6
+example in Figure~\ref{uq:figure16}. In this example, there are 6
 output intervals (as a result of the 2 interval input variables with 3
 and 2 intervals, respectively). 
 The output intervals are ordered to obtain cumulative
-bound functions for both belief and plausibility.  The
+bound functions for both belief and plausibility. The
 cumulative distribution function is presented for both belief (CBF) and
-plausibility (CPF).  The CBF value is the cumulative belief
-corresponding to a certain output value.  For example, the belief that
+plausibility (CPF). The CBF value is the cumulative belief
+corresponding to a certain output value. For example, the belief that
 the output value is less than or equal to 0.2 for response 1 is 0.27, 
 and the plausibility that the output is less than
-or equal to 0.2 is 1 for response 1.  The belief that the 
+or equal to 0.2 is 1 for response 1. The belief that the 
 output value is less than 0.6217 is 0.75, while the plausbility that 
-the output is less than  0.0806 is 0.75.  
+the output is less than  0.0806 is 0.75. 
 The CBF and CPF may be plotted on a graph and
 interpreted as bounding the cumulative distribution
 function (CDF), which is the probability that the output is less than or equal
@@ -1836,14 +1832,14 @@ one can specify probability levels and response levels.
 If response levels are specified, the belief and plausibility 
 function values corresponding to those response levels are calculated 
 (see Belief Prob Level and Plaus Prob Level in the tables shown in 
-Figure~\ref{uq:figure17}).  Similarly, if probability levels are 
+Figure~\ref{uq:figure17}). Similarly, if probability levels are 
 specified, these are first interpreted to be belief values, and the 
 corresponding response levels are calculated (see Belief Resp Level); 
 then they are interpreted to be plausibility values and the 
 corresponding response levels are calculated (see Plaus Resp Level in 
-the table in Figure~\ref{uq:figure17}).  We have recently added the 
+the table in Figure~\ref{uq:figure17}). We have recently added the 
 capability to support generalized reliability mappings in 
-the evidence methods.  If the user specifies a generalized 
+the evidence methods. If the user specifies a generalized 
 reliability level, it will be first converted to a probability, 
 then interpreted as a belief and plausibility and the corresponding 
 response levels will be calculated. Likewise, if response levels 
@@ -1862,20 +1858,20 @@ problem, if the first variable had three intervals and associated BPAs
 assigned and the second variable had two intervals and associated 
 BPAs assigned, there would be 6 interval cells in total. 
 In each of these six cells, one needs to identify a minimum and 
-maximum value of the response function.  This is easy to do if 
+maximum value of the response function. This is easy to do if 
 the function is monotonic in both variables, but in general 
-it is not.  We offer the capability to use local optimization 
+it is not. We offer the capability to use local optimization 
 methods to calculate these bounds: \texttt{local\_evidence}
 allows the user to specify either \texttt{sqp} which is sequential 
 quadratic programming, or \texttt{nip} which is a nonlinear interior point 
-method.  We also offer the capability to use global methods to 
+method. We also offer the capability to use global methods to 
 assess these interval cell bounds. \texttt{global\_evidence}
 allows the user to specify either \texttt{lhs}, which performs 
 Latin Hypercube Sampling and takes the minimum and maximum of 
 the samples within each cell as the bounds (no optimization is 
-performed) or \texttt{ego}.  In the case of \texttt{ego}, 
+performed) or \texttt{ego}. In the case of \texttt{ego}, 
 the efficient global optimization method is used to calculate 
-bounds.  The ego method is described in Section~\ref{sbm:egm}.
+bounds. The ego method is described in Section~\ref{sbm:egm}.
 Note that for a situation with many uncertain variables, 
 each with a fairly complicated Dempster-Shafer structure 
 described by many intervals, there will be a huge number 
@@ -1904,7 +1900,7 @@ When data is available, the likelihood function describes how well
 each parameter value is supported by the data. Bayes Theorem~\cite{Jaynes}, 
 shown in Equation~\ref{eqn:BayesThm}, is used for inference:  to 
 derive the plausible parameter values, based on the prior probability 
-density and the data $d$.  The result is the posterior parameter density 
+density and the data $d$. The result is the posterior parameter density 
 of the parameters $f_{\Theta |D}\left( {\theta |d} \right)$. It is 
 interpreted the same way as the prior, but includes the information 
 derived from the data.
@@ -1923,7 +1919,7 @@ The likelihood function can be written generally as:
 where $\theta$ are the parameters of model $\mathcal{M}$. 
 The function $f$ can greatly influence the results. 
 The specific likelihood functions used in this example were based on 
-Gaussian probability density functions.  This means that we assume 
+Gaussian probability density functions. This means that we assume 
 the difference between the model (e.g. computer simulation)
 and the experimental observations are Gaussian: 
 
@@ -1932,7 +1928,7 @@ d_i = \mathcal{M}(\theta) + \epsilon_i,
 \end{equation}
 where $\epsilon_i$ is a random variable that can encompass both
 measurement errors on $d_i$ and modeling errors associated with the
-simulation $\mathcal{M}(\theta)$.   We further 
+simulation $\mathcal{M}(\theta)$. We further 
 assume that all experiments and observations are independent. 
 If we have $n$ observations,  
 the probabilistic model defined by Eq.~(\ref{eq:model}) results in a
@@ -1958,7 +1954,7 @@ $\mathcal{M}(\theta)$, often surrogate models of the simulation
 model are employed.
  
 As mentioned above, we have two implementations of a Bayesian 
-calibration:  one called QUESO and one called GPMSA.  
+calibration:  one called QUESO and one called GPMSA. 
 They are specified with the \texttt{bayes\_calibration} \texttt{queso}
 or \texttt{bayes\_calibration} \texttt{gpmsa}, respectively.
 The QUESO method uses components from the QUESO library
@@ -1968,28 +1964,28 @@ The GPMSA calibration capability uses the GPMSA code developed at
 Los Alamos National Laboratory.
 
 In the QUESO method, the user can run the MCMC sampling with 
-the simulation model $\mathcal{M}(\theta)$ directly.  However, 
+the simulation model $\mathcal{M}(\theta)$ directly. However, 
 if the model is expensive, we recommend that the user employs 
 a surrogate model (an emulator) because the Monte Carlo Markov Chain 
 will be much faster:  the MCMC can generate thousands of samples 
-on the emulator more quickly.  One can specify a Gaussian process,
+on the emulator more quickly. One can specify a Gaussian process,
 a polynomial chaos expansion or a stochastic collocation 
-as the emulator for the \texttt{queso} method.  The specification 
+as the emulator for the \texttt{queso} method. The specification 
 details for these are listed in the Reference Manual. 
 One can also specify various settings for the MCMC DRAM sampling: 
 the sampling can use a standard Metropolis-Hastings algorithm 
 or the adaptive Metropolis in which the covariance of the proposal 
-density is updated adaptively.  There is also a setting to control 
-the delayed rejection.  Finally, there are two scale factors 
-which control the scaling of the problem.  The 
-\texttt{likelihood\_scale} is a number which multiplies the likelihood.  
+density is updated adaptively. There is also a setting to control 
+the delayed rejection. Finally, there are two scale factors 
+which control the scaling of the problem. The 
+\texttt{likelihood\_scale} is a number which multiplies the likelihood. 
 This is useful for situations with very small likelihoods 
 (e.g. the model is either very far away from the data or 
 there is a lot of data so the likelihood function 
 involves multiplying many likelihoods together and becomes very small).
 The second factor is a \texttt{proposal\_covariance\_scale} 
 which is a vector that controls the scaling of the proposal covariance
-in the different input directions.  This may be useful when the 
+in the different input directions. This may be useful when the 
 input variables being calibrated are of different magnitudes:  
 one may want to take a larger step in a direction
 with a larger magnitude, for example.
@@ -1997,7 +1993,7 @@ with a larger magnitude, for example.
 GPMSA is another code that provides the capability for Bayesian 
 calibration.
 A key part of GPMSA is the construction of an emulator from simulation runs 
-collected at various settings of input parameters.  The emulator is a 
+collected at various settings of input parameters. The emulator is a 
 statistical model of the system response, and it is used to incorporate 
 the observational data to improve system predictions and constrain or 
 calibrate the unknown parameters. The GPMSA code draws heavily 
@@ -2006,7 +2002,7 @@ by Kennedy and O'Hagan~\cite{Kenn01}. The particular approach developed
 by the Los Alamos group is provided in~\cite{Hig08}. GPMSA uses 
 Gaussian process models in the emulation, but the emulator is 
 actually a set of basis functions (e.g. from a singular value 
-decomposition) which have GPs as the coefficients.  One major 
+decomposition) which have GPs as the coefficients. One major 
 difference between GPMSA and the QUESO implementation in Dakota 
 is that the QUESO implementation does not have an explicit 
 ``discrepancy'' function $\delta$ which models the difference between 
@@ -2020,13 +2016,13 @@ prototype.
 %its own methods to create Gaussian process models, perform MCMC updating, 
 %etc. The GPMSA C++ library is an alpha-version and undergoing development, 
 %so a user is cautioned to obtain the latest version (e.g. Version-of-the-Day)
-%to have the latest updates.  We expect that future Dakota-GPMSA integration 
+%to have the latest updates. We expect that future Dakota-GPMSA integration 
 %will involve more interoperability and sharing of optimization 
 %algorithms and surrogate models between Dakota and GPMSA, for example. 
 
 We briefly describe the process of running QUESO from Dakota.
 The user will create a Dakota input file such as the one shown 
-in~\ref{uq:figure18}.  
+in~\ref{uq:figure18}. 
 Note that the method is \texttt{bayes\_calibration queso}, 
 specifying the QUESO algorithm. The number of 
 samples indicates the number of samples that the MCMC algorithm 
@@ -2034,14 +2030,14 @@ will take, in this case 5000 (this usually will need to be larger).
 For this example, we are using the \texttt{text\_book} analytic 
 example, so we do not need to specify an emulator, but the lines 
 commented out give an idea of the options if the user wanted to 
-specify an emulator.  This example is using the full DRAM (delayed
-rejection adaptive metropolis).  The likelihood is scaled, but the 
-proposal covariance is not unless the user uncomments that line.  
+specify an emulator. This example is using the full DRAM (delayed
+rejection adaptive metropolis). The likelihood is scaled, but the 
+proposal covariance is not unless the user uncomments that line. 
 The calibration terms in the responses section refers to the 
 number of outputs that will be used in the calibration process:  
-in this case, it is just one.  The calibration data file 
+in this case, it is just one. The calibration data file 
 has the observational data:  in this case, it is a freeform file 
-(e.g. no header or annotation) with ten experiments.  For each 
+(e.g. no header or annotation) with ten experiments. For each 
 experiment, there is one standard deviation value indicating the 
 error associated with that experiment. 
 
@@ -2099,16 +2095,16 @@ Dakota will run the MCMC algorithm and generate a posterior sample of
 $\theta$ in accordance with Bayes Theorem~\ref{eqn:BayesThm} and 
 the likelihood function~\ref{eqn:Likelihood}. The MCMC sample output 
 is put into a directory called \texttt{outputData} in the directory 
-from which Dakota is run.  In addition, the MCMC sample chain is 
+from which Dakota is run. In addition, the MCMC sample chain is 
 written to a file in the run directory called QuesoOutput.txt. 
 The first columns of this file are the sample inputs, the next columns 
 are the responses, and the final column is the  log of the 
 likelihood.
 
 We expect to continue development of Bayesian calibration methods, 
-so check for updates to this capability.  The Bayesian capability 
+so check for updates to this capability. The Bayesian capability 
 in Dakota currently relies on the QUESO library developed by The University of 
-Texas at Austin.  This integrated capability is still in prototype form and 
+Texas at Austin. This integrated capability is still in prototype form and 
 available to close collaborators of the Dakota team.
 If you are interested in this capability, contact the Dakota developers at  
 dakota-developers@development.sandia.gov.
@@ -2172,7 +2168,7 @@ whenever the function is relatively inexpensive to compute. However,
 in the case of terascale computational simulations, the number of
 function evaluations required by traditional techniques such as Monte
 Carlo and Latin hypercube sampling (LHS) quickly becomes prohibitive,
-especially if tail statistics are needed.  Additional sampling options
+especially if tail statistics are needed. Additional sampling options
 include quasi-Monte Carlo (QMC) sampling and importance sampling (IS), 
 %or Markov Chain Monte Carlo (MCMC) sampling
 and incremental sampling may also be used to incrementally add samples 
@@ -2202,26 +2198,26 @@ nonlinear. They can be used to provide qualitative sensitivity
 information concerning which uncertain variables are important (with
 relatively few function evaluations), or compute full cumulative or
 complementary cumulative response functions (with additional
-computational effort).  Since they rely on gradient calculations to
+computational effort). Since they rely on gradient calculations to
 compute local optima (most probable points of failure), they scale
 well for increasing numbers of random variables, but issues with
 nonsmooth, discontinuous, and multimodal response functions are
 relevant concerns. In addition, even if there is a single MPP and it
 is calculated accurately, first-order and second-order integrations
-may fail to accurately capture the shape of the failure domain.  In
+may fail to accurately capture the shape of the failure domain. In
 these cases, adaptive importance sampling around the MPP can be
-helpful.  Overall, local reliability methods should be used with some
+helpful. Overall, local reliability methods should be used with some
 care and their accuracy should be verified whenever possible.
 
 An effective alternative to local reliability analysis when confronted
 with nonsmooth, multimodal, and/or highly nonlinear response functions
-is efficient global reliability analysis (EGRA).  This technique
+is efficient global reliability analysis (EGRA). This technique
 employs Gaussian process global surrogate models to accurately resolve
 the failure domain and then employs multimodal adaptive importance
-sampling to resolve the probabilities.  For relatively low dimensional
+sampling to resolve the probabilities. For relatively low dimensional
 problems (i.e, on the order of 10 variables), this method displays the
 efficiency of local reliability analysis with the accuracy of
-exhaustive sampling.  While extremely promising, this method is still
+exhaustive sampling. While extremely promising, this method is still
 relatively new and is the subject of ongoing refinements as we deploy
 it to additional applications.
 
@@ -2239,17 +2235,17 @@ are underway to compute rigorous error bounds of the approximations
 produced by the methods. Another strength of these methods is their
 potential use in a multiphysics environment as a means to propagate
 the uncertainty through a series of simulations while retaining as
-much information as possible at each stage of the analysis.  The
+much information as possible at each stage of the analysis. The
 current challenge in the development of these methods, as for other
 global surrogate-based methods, is effective scaling for large numbers
-of random variables.  Recent advances in adaptive sparse grid methods 
+of random variables. Recent advances in adaptive sparse grid methods 
 address some of the scaling issues for stochastic expansion.
 
 {\bf Epistemic Uncertainty Quantification Methods} \\
 The final class of UQ methods available in Dakota are focused on
 epistemic uncertainties, or uncertainties resulting from a lack of
-knowledge.  In these problems, the assignment of input probability
-distributions when data is sparse can be somewhat suspect.  One
+knowledge. In these problems, the assignment of input probability
+distributions when data is sparse can be somewhat suspect. One
 approach to handling epistemic uncertainties is Dempster-Shafer theory
 of evidence (Dakota methods \texttt{local\_evidence} and 
 \texttt{global\_evidence}). Another method is pure interval 
@@ -2261,17 +2257,17 @@ mapped to intervals on outputs using optimization methods
 For problems with a mixture of epistemic and aleatoric uncertainties, 
 it is desirable to segregate the two uncertainty types within a nested 
 analysis, allowing stronger probabilistic inferences for the portion
-of the problem where they are appropriate.  In this nested approach, an outer 
+of the problem where they are appropriate. In this nested approach, an outer 
 epistemic level selects realizations of epistemic parameters (augmented
 variables) and/or realizations of random variable distribution
-parameters (inserted variables) from intervals.  These realizations
+parameters (inserted variables) from intervals. These realizations
 define the probability distributions for an inner aleatoric level
-performing probabilistic analyses.  In the case where the outer loop
+performing probabilistic analyses. In the case where the outer loop
 is an interval propagation approach (\texttt{local\_interval\_est} or 
 \texttt{global\_interval\_est}), the nested approach is
 known as second-order probability (see also Section~\ref{models:nested})
 and the study generates a family of CDF/CCDF respresentations known as a 
-``horse tail'' plot.  In the case where the outer loop is an 
+``horse tail'' plot. In the case where the outer loop is an 
 evidence-based approach (\texttt{local\_evidence} or 
 \texttt{global\_evidence}), the approach generates epistemic belief 
 and plausibility bounds on aleatory statistics.
@@ -2309,15 +2305,6 @@ However, the mean values of the constraints are both 0.5.
 The mean value results indicate that variable x1 is more 
 important in constraint 1 while x2 is more important in constraint 2, 
 which is the case based on Equation~\ref{additional:textbook_f}.
-
-This Dakota input file is executed using the following command:
-\begin{small}
-\begin{verbatim}
-         dakota textbook_uq_meanvalue.in > mv.out
-\end{verbatim}
-\end{small}
-See the file \texttt{mv.out.sav} in \texttt{Dakota/examples/users} 
-for comparison with results from Dakota. 
 
 \begin{figure}[ht!]
   \centering
@@ -2371,7 +2358,7 @@ provided in Section~\ref{uq:expansion}.
 
 A typical Dakota input file for performing an uncertainty
 quantification using polynomial chaos expansions is shown in
-Figure~\ref{uq:examples:pce_input}, \texttt{rosen\_uq\_pce.in}.
+Figure~\ref{uq:examples:pce_input}.
 In this example, we compute CDF
 probabilities for six response levels of Rosenbrock's function. Since
 Rosenbrock is a fourth order polynomial and we employ a fourth-order
@@ -2525,8 +2512,7 @@ local method uses gradient information in a derivative-based
 optimization approach. 
  
 An example of interval estimation 
-is found in the test file \texttt{cantilever\_uq\_global\_interval.in}, 
-and also in Figure~\ref{uq:examples:interval_input}, with example results in 
+is shown in Figure~\ref{uq:examples:interval_input}, with example results in 
 Figure~\ref{uq:examples:interval_out}. This example is a demonstration 
 of calculating interval bounds for three outputs of the cantilever beam 
 problem. The cantilever beam problem is described in detail in 
@@ -2573,10 +2559,10 @@ expansion methods and sampling capabilities currently supported.
 Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
 and Markov chain Monte Carlo simulation (McMC) are being considered.
 We also have an active research focus on adaptive sparse grid methods,
-to more efficiently construct stochastic expansions.  
+to more efficiently construct stochastic expansions. 
 %Efforts have been initiated to allow for non-traditional
-%representations of uncertainty.  We have implemented Dempster-Shafer
-%theory of evidence, and other non-traditional approaches may follow.  
+%representations of uncertainty. We have implemented Dempster-Shafer
+%theory of evidence, and other non-traditional approaches may follow. 
 We are currently pursuing Bayesian methods,
 specifically focusing on Bayesian calibration, where a ``prior
 distribution'' on a parameter is updated through a Bayesian framework

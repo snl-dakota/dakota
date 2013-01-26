@@ -126,20 +126,13 @@ that Dakota will use its internal version of the textbook problem.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_textbook.in}
+      \verbatimtabinput[8]{textbook_opt_conmin.in}
     \end{small}
   \end{bigbox}
   \caption{Textbook gradient-based constrained optimization example:
     the Dakota input file.}
   \label{additional:textbook_grad_constr}
 \end{figure}
-
-The following command runs this example:
-\begin{small}
-\begin{verbatim}
-    dakota dakota_textbook.in > textbook.out
-\end{verbatim}
-\end{small}
 
 The \texttt{conmin\_mfd} keyword in Figure~\ref{additional:textbook_grad_constr} 
 tells Dakota to use the CONMIN package's implementation of the
@@ -154,10 +147,9 @@ is installed on your system and Dakota has been compiled without the
 \texttt{--without-dot} flag, you may use it by commenting out the line with
 \texttt{conmin\_mfd} and uncommenting the line with \texttt{dot\_mmfd}.
 
-The file \texttt{textbook.out.sav} is included in
-\texttt{Dakota/examples/methdos} for comparison purposes. The
-results of the optimization example are listed at the end of
-the \texttt{textbook.out} file. This information shows that the
+The results of the optimization example are listed at the end of
+the output file (see Section~\ref{tutorial:quickstart:output}.
+This information shows that the
 optimizer stopped at the point $(x_1,x_2) = (0.5,0.5)$, where both
 constraints are approximately satisfied, and where the objective function value is
 $0.128$. The progress of the optimization algorithm is shown in
@@ -471,7 +463,7 @@ engineering design problems (e.g., parameter estimation) that can make
 use of the least-squares approach.
 
 Figure~\ref{additional:rosenbrock_nls} is a listing of the Dakota input
-file \texttt{dakota\_rosenbrock\_ls.in}. This differs from the input
+file \texttt{rosen\_opt\_nls.in}. This differs from the input
 file shown in Figure~\ref{tutorial:rosenbrock_grad} in several key
 areas. The responses block of the input file uses the keyword
 \texttt{calibration\_terms = 2} instead of
@@ -488,24 +480,14 @@ squares minimization problems).
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_rosenbrock_ls.in}
+      \verbatimtabinput[8]{rosen_opt_nls.in}
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock nonlinear least squares example: the Dakota input file.}
   \label{additional:rosenbrock_nls}
 \end{figure}
 
-The input file listed in Figure~\ref{additional:rosenbrock_nls} is
-executed using the command:
-\begin{small}
-\begin{verbatim}
-    dakota dakota_rosenbrock_ls.in > leastsquares.out
-\end{verbatim}
-\end{small}
-
-The file \texttt{leastsquares.out.sav} is included in the
-\texttt{Dakota/examples/users} directory for comparison purposes. The
-optimization results at the end of this file show that the least
+The optimization results at the end of the output file show that the least
 squares minimization approach has found the same optimum design point,
 $(x1,x2) = (1.0,1.0)$, as was found using the conventional
 gradient-based optimization approach. The iteration history of the
@@ -578,7 +560,7 @@ Figure~\ref{fig:2D_shubert}.
 
 \subsection{Efficient Global Optimization}
 
-The Dakota input file \texttt{dakota\_separable\_ego\_5D.in} shows how
+The Dakota input file \texttt{herbie\_shubert\_opt\_ego.in} shows how
 to use efficient global optimization (ego) to minimize the 5D version
 of any of these 3 separable functions. Note that in the variables
 section the \texttt{5*} preceding the values -2.0 and 2.0 for the
@@ -588,7 +570,7 @@ of these functions is $-2\le x_k \le 2$ for all dimensions.
 \begin{center}
   \begin{small}
     \begin{bigbox}
-      \verbatimtabinput[8]{dakota_separable_ego_5D.in}
+      \verbatimtabinput[8]{herbie_shubert_opt_ego.in}
     \end{bigbox}
   \end{small}
 \end{center}
@@ -655,12 +637,11 @@ $\mathtt{offset_{exhaust}}=1.34$, and $\mathtt{d_{exhaust}}=1.556$.
 
 \subsection{Constrained Gradient Based Optimization}
 
-An example using the cylinder head test problem is shown below in
-{\tt dakota\_addtnl\_cylhead.in}:
+An example using the cylinder head test problem is shown below:
 \begin{center}
   \begin{small}
     \begin{bigbox}
-      \verbatimtabinput[8]{dakota_addtnl_cylhead.in}
+      \verbatimtabinput[8]{cylhead_opt_npsol.in}
     \end{bigbox}
   \end{small}
 \end{center}
@@ -848,7 +829,7 @@ optimal values for diameter and height of the final product.
 \subsection{Constrained Gradient Based Optimization}
 
 The input file for this example is named
-\texttt{dakota\_container.in}. The solution to this example
+\texttt{container\_opt\_npsol.in}. The solution to this example
 problem is $(H,D)=(4.99,4.03)$, with a minimum area of 98.43
 $\mathtt{in}^2$ .
 
@@ -935,11 +916,11 @@ responses are normally-distributed) is being sought on the scaled
 constraints.
 
 \subsection{Constrained Gradient Based Optimization}
-The test problem is solved using {\tt dakota\_addtnl\_cantilever.in}:
+The test problem is solved using {\tt cantilever\_opt\_npsol.in}:
 \begin{center}
   \begin{small}
     \begin{bigbox}
-      \verbatimtabinput[8]{dakota_addtnl_cantilever.in}
+      \verbatimtabinput[8]{cantilever_opt_npsol.in}
     \end{bigbox}
   \end{small}
 \end{center}
@@ -1090,7 +1071,7 @@ the moga method.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_mogatest1.in}
+      \verbatimtabinput[8]{mogatest1.in}
     \end{small}
   \end{bigbox}
   \caption{Multiple objective genetic algorithm (MOGA) example: the
@@ -1140,7 +1121,7 @@ f_2(x) &=& (1+10x_2) \times \left[1-\bigg(\frac{x_1}{1+10x_2}\bigg)^2-
 \end{eqnarray*}
 
 The input file for this example is shown in
-Figure~\ref{additional:moga2inp} and provided in {\tt dakota\_mogatest2.in} . It differs from
+Figure~\ref{additional:moga2inp}.
 Figure~\ref{additional:moga1inp} in the variables specification, in
 the use of the \texttt{mogatest2} executable (compiled from
 \texttt{Dakota\_Source/test/mogatest2.C}) as the simulator, and in the
@@ -1153,7 +1134,7 @@ the front in this example.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_mogatest2.in}
+      \verbatimtabinput[8]{mogatest2.in}
     \end{small}
   \end{bigbox}
   \caption{Dakota input file specifying the use of MOGA on mogatest2}
@@ -1189,10 +1170,10 @@ The constraints are:
 \end{eqnarray*}
 
 The input file for this example is shown in
-Figure~\ref{additional:moga3inp} and provided in {\tt dakota\_mogatest3.in}. It differs from
+Figure~\ref{additional:moga3inp}. It differs from
 Figure~\ref{additional:moga2inp} in the variables and responses
 specifications, in the use of the \texttt{mogatest3} executable
-(compiled from \texttt{Dakota/test/mogatest3.C}) as the simulator, and
+(compiled from \texttt{Dakota\_Source/test/mogatest3.C}) as the simulator, and
 in the \texttt{max\_function\_evaluations} and \texttt{mutation\_type}
 MOGA controls. The Pareto set is shown in
 Figure~\ref{additional:moga3set}. Note the discontinuous nature of the
@@ -1206,7 +1187,7 @@ shown in Figure~\ref{additional:moga3front}.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{dakota_mogatest3.in}
+      \verbatimtabinput[8]{mogatest3.in}
     \end{small}
   \end{bigbox}
   \caption{Dakota input file specifying the use of MOGA on mogatest3}
@@ -1266,7 +1247,7 @@ in~\cite{Sal04}) for this test problem:
 
 \subsection{Morris One-at-a-Time Sensitivity Study}
 
-The dakota input {\tt dakota\_psuade.in} exercises
+The dakota input {\tt morris\_ps\_moat.in} exercises
 the MOAT algorithm described in Section~\ref{dace:psuade} on the
 Morris problem. The Dakota output obtained is shown in
 Figures~\ref{FIG:moat:out_preamble} and~\ref{FIG:moat:out_results}.
@@ -1380,8 +1361,8 @@ a correlation coefficient between the two variables of 0.3.
 {\bf Reliability Analyses} \\
 
 First-order and second-order reliability analysis (FORM and SORM) are performed in the
-\texttt{dakota\_logratio.in} and \\
-\texttt{dakota\_logratio\_taylor2.in} input files in directory 
+\texttt{logratio\_uq\_reliability.in} in the {\tt Dakota/examples/users}
+ directory and \texttt{dakota\_logratio\_taylor2.in} in directory 
 {\tt Dakota/test/}. 
 
 For the reliability index approach (RIA),

@@ -1,35 +1,30 @@
+# Dakota Input File: textbook_uq_sampling.in
 strategy
-	single_method
-	  tabular_graphics_data
-          method_pointer = 'UQ'
+  single_method
+    tabular_graphics_data
+      tabular_graphics_file = 'textbook_uq_sampling.dat'
 
-method,
-	id_method = 'UQ'
-	sampling,
-	  samples = 10				
-	  seed = 98765 rng rnum2
-	  response_levels = 0.1 0.2 0.6
-			    0.1 0.2 0.6
-			    0.1 0.2 0.6
-	  sample_type lhs			
-	  distribution cumulative
+method
+  sampling
+    samples = 10
+    seed = 98765 rng rnum2
+    response_levels = 0.1 0.2 0.6
+          0.1 0.2 0.6
+          0.1 0.2 0.6
+    sample_type lhs
+    distribution cumulative
 
+variables
+  uniform_uncertain = 2
+    lower_bounds =  0.   0.
+    upper_bounds =  1.   1.
+    descriptors  = 'x1' 'x2'
 
+interface
+  fork asynch evaluation_concurrency = 5
+    analysis_driver = 'text_book'
 
-
-variables,
-	uniform_uncertain = 2
-	  lower_bounds =  0.   0.
-	  upper_bounds =  1.   1.
-	  descriptors  = 'x1' 'x2'
-
-interface,
-        id_interface = 'I1'
-	system asynch evaluation_concurrency = 5
-	  analysis_driver = 'text_book'
-
-responses,
-	response_functions = 3
-	no_gradients
-	no_hessians
-
+responses
+  response_functions = 3
+  no_gradients
+  no_hessians

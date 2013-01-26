@@ -2,10 +2,10 @@
 
 Optimization algorithms work to minimize (or maximize) an objective
 function, typically calculated by the user simulation code, subject to
-constraints on design variables and responses.  Available approaches
+constraints on design variables and responses. Available approaches
 in Dakota include well-tested, proven gradient-based, derivative-free
 local, and global methods, for use in science and engineering design
-applications.  Dakota also offers more advanced algorithm, e.g., to
+applications. Dakota also offers more advanced algorithm, e.g., to
 manage multi-objective optimization or perform surrogate-based minimization.
 This chapter summarizes optimization problem formulation, standard
 algorithms available in Dakota (mostly through included third-party
@@ -48,20 +48,20 @@ termed the \emph{design space} or the \emph{parameter space}. A
 values within the parameter space.
 
 The optimization goal is to minimize the \emph{objective function},
-$f(\mathbf{x})$, while satisfying the constraints.  Constraints can be
+$f(\mathbf{x})$, while satisfying the constraints. Constraints can be
 categorized as either linear or nonlinear and as either inequality or
 equality. The \emph{nonlinear inequality constraints},
 $\mathbf{g(x)}$, are ``2-sided,'' in that they have both lower and
 upper bounds, $\mathbf{g}_L$ and $\mathbf{g}_U$, respectively. The
 \emph{nonlinear equality constraints}, $\mathbf{h(x)}$, have target
-values specified by $\mathbf{h}_{t}$.  The linear inequality
+values specified by $\mathbf{h}_{t}$. The linear inequality
 constraints create a linear system $\mathbf{A}_i\mathbf{x}$, where
-$\mathbf{A}_i$ is the coefficient matrix for the linear system.  These
+$\mathbf{A}_i$ is the coefficient matrix for the linear system. These
 constraints are also 2-sided as they have lower and upper bounds,
 $\mathbf{a}_L$ and $\mathbf{a}_U$, respectively. The linear equality
 constraints create a linear system $\mathbf{A}_e\mathbf{x}$, where
 $\mathbf{A}_e$ is the coefficient matrix for the linear system and
-$\mathbf{a}_{t}$ are the target values.  The constraints partition the
+$\mathbf{a}_{t}$ are the target values. The constraints partition the
 parameter space into feasible and infeasible regions. A design point
 is said to be \emph{feasible} if and only if it satisfies all of the
 constraints. Correspondingly, a design point is said to be
@@ -69,12 +69,12 @@ constraints. Correspondingly, a design point is said to be
 
 Many different methods exist to solve the optimization problem given
 by Equation~\ref{opt:equation01}, all of which iterate on
-$\mathbf{x}$ in some manner.  That is, an initial value for each
+$\mathbf{x}$ in some manner. That is, an initial value for each
 parameter in $\mathbf{x}$ is chosen, the \emph{response quantities},
 $f(\mathbf{x})$, $\mathbf{g(x)}$, $\mathbf{h(x)}$, are computed, often
 by running a simulation, and some algorithm is applied to generate a
 new $\mathbf{x}$ that will either reduce the objective function,
-reduce the amount of infeasibility, or both.  To facilitate a general
+reduce the amount of infeasibility, or both. To facilitate a general
 presentation of these methods, three criteria will be used in the
 following discussion to differentiate them: optimization problem type,
 search goal, and search method.
@@ -126,7 +126,7 @@ objective function or is more feasible than the current design point.
 The search method can be classified as either \emph{gradient-based} or
 \emph{nongradient-based}. In a gradient-based algorithm, gradients of
 the response functions are computed to find the direction of
-improvement.  Gradient-based optimization is the search method that
+improvement. Gradient-based optimization is the search method that
 underlies many efficient local optimization methods. However, a
 drawback to this approach is that gradients can be computationally
 expensive, inaccurate, or even nonexistent. In such situations,
@@ -134,12 +134,12 @@ nongradient-based search methods may be useful. There are numerous
 approaches to nongradient-based optimization. Some of the more well
 known of these include pattern search methods (nongradient-based local
 techniques) and genetic algorithms (nongradient-based global
-techniques).  Because of the computational cost of running simulation
+techniques). Because of the computational cost of running simulation
 models, surrogate-based optimization (SBO) methods are often used to
 reduce the number of actual simulation runs. In SBO, a surrogate or
 approximate model is constructed based on a limited number of
-simulation runs.  The optimization is then performed on the surrogate
-model.  Dakota has an extensive framework for managing a variety of
+simulation runs. The optimization is then performed on the surrogate
+model. Dakota has an extensive framework for managing a variety of
 local, multipoint, global, and hierarchical surrogates for use in
 optimization.
 
@@ -169,7 +169,7 @@ g_{i}(\mathbf{x}) \leq 0$ and the equality constraints are treated as
 $h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0$ and $h_{t_{j}} -
 h_{j}(\mathbf{x}) \leq 0$. The situation is similar for linear
 constraints: HOPSPACK, NPSOL, OPT++, and JEGA support them directly,
-whereas DOT and CONMIN do not.  For linear inequalities of the form
+whereas DOT and CONMIN do not. For linear inequalities of the form
 $a_{L_{i}} \leq \mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}$ and
 linear equalities of the form $\mathbf{a}_{i}^{T}\mathbf{x} =
 a_{t_{j}}$, the nonlinear constraint arrays in DOT and CONMIN are
@@ -179,14 +179,14 @@ inequality case and $\mathbf{a}_{i}^{T}\mathbf{x} - a_{t_{j}} \leq 0$
 and $a_{t_{j}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the equality
 case. Awareness of these constraint augmentation procedures can be
 important for understanding the diagnostic data returned from the DOT
-and CONMIN algorithms.  Other optimizers fall somewhere in between.
+and CONMIN algorithms. Other optimizers fall somewhere in between.
 NLPQL supports nonlinear equality constraints $h_{j}(\mathbf{x}) = 0$
 and nonlinear one-sided inequalities $g_{i}(\mathbf{x}) \geq 0$, but
-does not natively support linear constraints.  Constraint mappings are
-used with NLPQL for both linear and nonlinear cases.  Most SCOLIB
+does not natively support linear constraints. Constraint mappings are
+used with NLPQL for both linear and nonlinear cases. Most SCOLIB
 methods now support two-sided nonlinear inequality constraints and
 nonlinear constraints with targets, but do not natively support linear
-constraints.  Constraint augmentation is not currently used with
+constraints. Constraint augmentation is not currently used with
 SCOLIB since linear constraints will soon be supported natively.
 
 When gradient and Hessian information is used in the optimization,
@@ -195,17 +195,17 @@ active continuous variables, which in this case are the
 \emph{continuous design variables}. This differs from parameter study
 methods (for which all continuous variables are active) and from
 nondeterministic analysis methods (for which the uncertain variables
-are active).  Refer to Section~\ref{responses:active} for additional
+are active). Refer to Section~\ref{responses:active} for additional
 information on derivative components and active continuous variables.
 
 \section{Optimization Software Packages}\label{opt:software}
 
 This section summarizes the optimization packages available in Dakota,
 which offers gradient-based local as well as derivative-free
-approaches.  For guidance selecting from the available packages, see
-Section~\ref{opt:usage}.  {\em Note that the DOT, NLPQL, and NPSOL
+approaches. For guidance selecting from the available packages, see
+Section~\ref{opt:usage}. {\em Note that the DOT, NLPQL, and NPSOL
   packages are commercially licensed and not included in the open
-  source version of Dakota.  However a user of open source Dakota may
+  source version of Dakota. However a user of open source Dakota may
   obtain a software license and source code for them separately and
   then compile them into Dakota.}  The remainder of the packages
 discussed here have licenses compatible with Dakota's and are
@@ -214,18 +214,18 @@ distributed in all Dakota releases.
 \subsection{HOPSPACK}\label{opt:software:hopspack}
 
 \textbf{HOPSPACK}: is a library that enables the implementation of
-hybrid optimization algorithms~\cite{Plantenga2009}.  Currently the
+hybrid optimization algorithms~\cite{Plantenga2009}. Currently the
 only method exposed is an asynchronous implementation of generating
 set search known as asynchronous parallel pattern search
 (APPS)~\cite{GrKo06}, available as method
-\texttt{asynch\_pattern\_search}.  APPS can handle unconstrained
+\texttt{asynch\_pattern\_search}. APPS can handle unconstrained
 problems as well as those with bound constraints, linear
 constraints~\cite{GrKoLe08}, and general nonlinear
-constraints~\cite{GrKo07}.  APPS is best suited for simulation-based
-problems with less than 100 variables.  It has significant advantages
+constraints~\cite{GrKo07}. APPS is best suited for simulation-based
+problems with less than 100 variables. It has significant advantages
 over gradient-based methods when the function is noisy and/or
-discontinuous.  APPS and HOPSPACK leverage the cddlib
-software~\cite{Fu05} to handle degeneracy in linear constraints.  {\em
+discontinuous. APPS and HOPSPACK leverage the cddlib
+software~\cite{Fu05} to handle degeneracy in linear constraints. {\em
   APPS was previously integrated with Dakota via the APPSPACK
   software, but is now integrated through it's HOPSPACK successor.}
 License: LGPL; web page: \url{https://software.sandia.gov/trac/hopspack}.
@@ -252,7 +252,7 @@ Dakota/test/dakota\_apps.in}.
 \textbf{SCOLIB}: The SCOLIB (formerly COLINY) library~\cite{Har06}
 includes methods for derivative-free local and global optimization
 which utilize the Common Optimization Library INterface (COLIN) of
-ACRO (A Common Repository for Optimizers).  License: BSD; web page:
+ACRO (A Common Repository for Optimizers). License: BSD; web page:
 \url{http://software.sandia.gov/trac/acro}.
 
 SCOLIB optimizers currently available in Dakota include:
@@ -289,13 +289,13 @@ the SCOLIB methods are gradient-based, which makes them appropriate
 for problems for which gradient information is unavailable or is of
 questionable accuracy due to numerical noise. The SCOLIB methods
 support bound constraints and nonlinear constraints, but not linear
-constraints.  The nonlinear constraints in SCOLIB are currently
+constraints. The nonlinear constraints in SCOLIB are currently
 satisfied using penalty function formulations~\cite{Pon96}. Support
 for methods which manage constraints internally is currently being
 developed and will be incorporated into future versions of Dakota.
 \emph{Note that one observed drawback to \texttt{coliny\_solis\_wets}
 is that it does a poor job solving problems with nonlinear
-constraints}.  Refer to Table 17.1 for additional method
+constraints}. Refer to Table 17.1 for additional method
 classification information.
 
 An example specification for a simplex-based pattern search algorithm
@@ -330,7 +330,7 @@ selection) is available. Both of these methods are most efficient at
 finding a local minimum in the vicinity of the starting point. The
 methods in CONMIN can be applied to global optimization problems, but
 there is no guarantee that they will find the globally optimal design
-point.  License: Public Domain (NASA).
+point. License: Public Domain (NASA).
 
 \emph{One observed drawback to CONMIN's Method of Feasible Directions
 is that it does a poor job handling equality constraints}. This is the
@@ -360,17 +360,17 @@ is included in Section~\ref{additional:textbook:examples:gradient2}.
 \subsection{Design Optimization Tools (DOT)}\label{opt:software:dot}
 
 DOT has methods for gradient-based optimization for constrained and
-unconstrained nonlinear optimization problems ~\cite{Van95}.  For
+unconstrained nonlinear optimization problems ~\cite{Van95}. For
 unconstrained optimization, Dakota exposes the
 Broyden-Fletcher-Goldfarb-Shanno (Dakota's \texttt{dot\_bfgs} method
 selection) and Fletcher-Reeves conjugate gradient (Dakota's
-\texttt{dot\_frcg} method selection) method.  For constrained
+\texttt{dot\_frcg} method selection) method. For constrained
 optimization, we have the modified method of feasible directions
 (Dakota's \texttt{dot\_mmfd} method selection), sequential linear
 programming (Dakota's \texttt{dot\_slp} method selection), and
 sequential quadratic programming (Dakota's \texttt{dot\_sqp} method
-selection).  License: commercial; website: Vanderplaats Research and
-Development, \url{http://www.vrand.com}.  {\em Sandia National
+selection). License: commercial; website: Vanderplaats Research and
+Development, \url{http://www.vrand.com}. {\em Sandia National
   Laboratories and Los Alamos National Laboratory have limited seats
   for DOT. Other users may obtain their own copy of DOT and compile it
   with the Dakota source code.}
@@ -399,13 +399,13 @@ algorithm is:
 \end{verbatim}
 \end{small}
 
-\emph{We here provide a caution regarding \texttt{dot\_frcg}.  In DOT
+\emph{We here provide a caution regarding \texttt{dot\_frcg}. In DOT
 Version 4.20, we have noticed inconsistent behavior of this algorithm
-across different versions of Linux.  Our best assessment is that it is
-due to different treatments of uninitialized variables.  As we do not
+across different versions of Linux. Our best assessment is that it is
+due to different treatments of uninitialized variables. As we do not
 know the intention of the code authors and maintaining DOT source code
 is outside of the Dakota project scope, we have not made nor are we
-recommending any code changes to address this.  However, all users who
+recommending any code changes to address this. However, all users who
 use \texttt{dot\_frcg} in DOT Version 4.20 should be aware that
 results may not be reliable.}
 
@@ -418,7 +418,7 @@ commands.
 On computer systems that permit use of shared libraries (most modern systems),
 Dakota can avail itself of optimization solvers contained in shared libraries.
 This is a first step toward allowing optional parts of Dakota, such as
-proprietary solvers, to be accessed from shared libraries.  For example,
+proprietary solvers, to be accessed from shared libraries. For example,
 the Dakota source distributions illustrate making
 a sample shared-library interface to SNOPT~\cite{GilMS05},
 whose use would be specified by
@@ -446,7 +446,7 @@ which would turn on some diagnostic printing in the SNOPT example.
 % optimization problems without the need to specify weights on the
 % various objective function values. The MOGA method directly identifies
 % non-dominated design points that lie on the Pareto front through
-% tailoring of its genetic search operators.  The advantage of the MOGA
+% tailoring of its genetic search operators. The advantage of the MOGA
 % method versus conventional multiobjective optimization with weight
 % factors, is that MOGA finds points along the entire Pareto front
 % whereas the multiobjective optimization method produces only a single
@@ -462,12 +462,12 @@ optimization methods. The first is a Multi-objective Genetic Algorithm
 (MOGA) which performs Pareto optimization. The second is a
 Single-objective Genetic Algorithm (SOGA, Dakota method \texttt{soga})
 which performs optimization on a single objective function, using many
-of the same software features as MOGA .  License: LGPL.
+of the same software features as MOGA . License: LGPL.
 
 The Dakota \texttt{moga} algorithm directly creates a population of
-Pareto optimal solutions.  Over time, the selection operators of a
+Pareto optimal solutions. Over time, the selection operators of a
 genetic algorithm act to efficiently select non-dominated solutions
-along the Pareto front.  Because a GA involves a population of
+along the Pareto front. Because a GA involves a population of
 solutions, many points along the Pareto front can be computed in a
 single study. Thus, although GAs are computationally expensive when
 compared to gradient-based methods, the advantage in the
@@ -507,12 +507,12 @@ Dakota includes an NCSU implementation of the derivative-free global
 optimization method called DIRECT (DIviding RECTangles algorithm),
 detailed in~\cite{Gab01}. DIRECT is a derivative free global
 optimization method that balances local search in promising regions of
-the design space with global search in unexplored regions.  DIRECT
+the design space with global search in unexplored regions. DIRECT
 adaptively subdivides the space of feasible design points to guarantee
 that iterates are generated in the neighborhood of a global minimum in
-finitely many iterations.  In practice, DIRECT has proven an effective
+finitely many iterations. In practice, DIRECT has proven an effective
 heuristic for many applications, and for some problems, the NCSU
-implementation has outperformed the SCOLIB version.  License: MIT;
+implementation has outperformed the SCOLIB version. License: MIT;
 website: \url{http://www4.ncsu.edu/~ctk/matlab_darts.html}
 
 NCSU DIRECT is specified with \texttt{ncsu\_direct}. One of the
@@ -537,19 +537,19 @@ information on the NCSU DIRECT options and settings.
 
 The NLPQL library for gradient-based constrained and unconstrained
 optimization contains a sequential quadratic programming (SQP)
-implementation (Dakota's \texttt{nlpql\_sqp} method selection).  The
+implementation (Dakota's \texttt{nlpql\_sqp} method selection). The
 particular implementation used is NLPQLP~\cite{Sch04}, a variant with
-distributed and non-monotone line search.  SQP is a nonlinear
+distributed and non-monotone line search. SQP is a nonlinear
 programming approach for constrained minimization which solves a
 series of quadratic programming (QP) subproblems, where each QP
 minimizes a quadratic approximation to the Lagrangian subject to
 linearized constraints. It uses an augmented Lagrangian merit function
 and a BFGS approximation to the Hessian of the Lagrangian. It is an
 infeasible method in that constraints will be satisfied at the final
-solution, but not necessarily during the solution process.  The
+solution, but not necessarily during the solution process. The
 non-monotone line search used in NLPQLP is designed to be more robust
 in the presence of inaccurate or noisy gradients common in many
-engineering applications.  License: commercial; website: Prof. Klaus
+engineering applications. License: commercial; website: Prof. Klaus
 Schittkowski,
 \url{http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp20.htm}).
 \emph{Users may obtain their own copy of NLPQLP and compile it with
@@ -569,15 +569,15 @@ the NLPQL commands.
 The NPSOL library~\cite{Gil86} for gradient-based constrained and
 unconstrained optimization problems also contains a sequential
 quadratic programming (SQP) implementation (Dakota's
-\texttt{npsol\_sqp} method selection).  Like NLPQL, it solves a series
+\texttt{npsol\_sqp} method selection). Like NLPQL, it solves a series
 of QP subproblems, uses an augmented Lagrangian merit function and a
 BFGS approximation to the Hessian of the Lagrangian, and will not
-necessarily satisfy the constraints until the final solution.  It uses
+necessarily satisfy the constraints until the final solution. It uses
 a sufficient-decrease line search approach, which is a gradient-based
 line search for analytic, mixed, or Dakota-supplied numerical
 gradients and is a value-based line search in the vendor numerical
-case.  License: commercial; website: Stanford Business Software
-\url{http://www.sbsi-sol-optimize.com}.  {\em Sandia National
+case. License: commercial; website: Stanford Business Software
+\url{http://www.sbsi-sol-optimize.com}. {\em Sandia National
   Laboratories, Lawrence Livermore National Laboratory, and Los Alamos
   National Laboratory all have site licenses for NPSOL. Other users
   may obtain their own copy of NPSOL and compile it with the Dakota
@@ -613,8 +613,8 @@ depending on the architecture) in the working directory.
 
 The OPT++ library~\cite{MeOlHoWi07} contains primarily gradient-based
 nonlinear programming optimizers for unconstrained, bound constrained,
-and nonlinearly constrained minimization.  OPT++ contains a nonlinear
-interior point algorithm for handling general constraints.  Dakota
+and nonlinearly constrained minimization. OPT++ contains a nonlinear
+interior point algorithm for handling general constraints. Dakota
 includes Polak-Ribiere conjugate gradient (Dakota's \texttt{optpp\_cg}
 method selection), quasi-Newton (Dakota's \texttt{optpp\_q\_newton}
 method selection), finite difference Newton (Dakota's
@@ -622,7 +622,7 @@ method selection), finite difference Newton (Dakota's
 (Dakota's \texttt{optpp\_newton} method selection). The library also
 contains the parallel direct search nongradient-based
 method~\cite{Den94b} (specified as Dakota's \texttt{optpp\_pds} method
-selection).  License: LGPL; website:
+selection). License: LGPL; website:
 \url{http://csmr.ca.sandia.gov/opt++}.
 
 OPT++'s gradient-based optimizers are best suited for efficient
@@ -663,7 +663,7 @@ in the Dakota output stream. These diagnostics are written to the file
 %branch-and-bound algorithm can be applied to nonlinear optimization
 %problems involving discrete variables or a combination of continuous
 %and discrete variables~\cite{Eck01}. The discrete variables must be
-%noncategorical (see Section~\ref{variables:design:ddv}).  PICO is
+%noncategorical (see Section~\ref{variables:design:ddv}). PICO is
 %available to the public under the GNU LGPL (web page:
 %\url{http://software.sandia.gov/trac/acro/wiki/Packages}) and the
 %source code is included with Dakota as part of the Acro package.
@@ -673,7 +673,7 @@ in the Dakota output stream. These diagnostics are written to the file
 %\subsection{Parallel Integer Combinatorial Optimization (PICO)}\label{opt:software:pico}
 
 %\emph{Branch and bound is inoperative in Dakota since its
-%  incorporation into COLINY.  This will be supported again in future
+%  incorporation into COLINY. This will be supported again in future
 %  releases.}
 
 %Dakota employs the branch and bound capabilities of the PICO library
@@ -689,14 +689,14 @@ provided by the optimization software packages described in
 Section~\ref{opt:software}. Those described in this section include:
 \begin{itemize}
 \item {\bf Multiobjective optimization}: There are three capabilities
-  for multiobjective optimization in Dakota.  The first is MOGA,
-  described above in Section~\ref{opt:software:jega}.  The second is
-  the Pareto-set strategy, described in Chapter~\ref{strat}.  The
+  for multiobjective optimization in Dakota. The first is MOGA,
+  described above in Section~\ref{opt:software:jega}. The second is
+  the Pareto-set strategy, described in Chapter~\ref{strat}. The
   third is a weighting factor approach for multiobjective reduction,
   in which a composite objective function is constructed from a set of
   individual objective functions using a user-specified set of
-  weighting factors.  These latter two approaches work with any of the
-  above single objective algorithms.  Future multiobjective response
+  weighting factors. These latter two approaches work with any of the
+  above single objective algorithms. Future multiobjective response
   data transformations for goal programming, normal boundary
   intersection, etc. are planned.
   % \item Second, large-scale optimization algorithms (e.g., MOOCHO)
@@ -707,7 +707,7 @@ Section~\ref{opt:software}. Those described in this section include:
   described in Section~\ref{nls:solution}), can accept user-specified
   (and in some cases automatic or logarithmic) scaling of continuous
   design variables, objective functions (or least squares terms), and
-  constraints.  Some optimization algorithms are sensitive to the
+  constraints. Some optimization algorithms are sensitive to the
   relative scaling of problem inputs and outputs, and this feature can
   help.
 \end{itemize}
@@ -772,39 +772,39 @@ approaches:
 %integer linear programs (MILP), which when combined with Dakota's
 %nonlinear optimization methods, results in a MINLP capability. In
 %addition, the multiple NLPs solved within MINLP provide an opportunity
-%for concurrent execution of multiple optimizations.  \emph{Branch and
+%for concurrent execution of multiple optimizations. \emph{Branch and
 %  bound is inoperative in Dakota since its incorporation into COLINY.
 %  This will be supported again in future releases.}
 
 \subsection{Multiobjective Optimization}\label{opt:additional:multiobjective}
 
 Multiobjective optimization means that there are two or more objective
-functions that you wish to optimize simultaneously.  Often these are
-conflicting objectives, such as cost and performance.  The answer to a
-multi-objective problem is usually not a single point.  Rather, it is
-a set of points called the Pareto front.  Each point on the Pareto
+functions that you wish to optimize simultaneously. Often these are
+conflicting objectives, such as cost and performance. The answer to a
+multi-objective problem is usually not a single point. Rather, it is
+a set of points called the Pareto front. Each point on the Pareto
 front satisfies the Pareto optimality criterion, which is stated as
 follows: a feasible vector $X^{*}$ is Pareto optimal if there
 exists no other feasible vector $X$ which would improve some
 objective without causing a simultaneous worsening in at least one
-other objective.  Thus, if a feasible point $X'$ exists that
+other objective. Thus, if a feasible point $X'$ exists that
 CAN be improved on one or more objectives simultaneously, it is not
 Pareto optimal: it is said to be ``dominated'' and the points along
 the Pareto front are said to be ``non-dominated.''
 
 There are three capabilities for multiobjective optimization in
-Dakota.  First, there is the MOGA capability described previously in
-Section~\ref{opt:software:jega}.  This is a specialized algorithm
-capability.  The second capability involves the use of response data
+Dakota. First, there is the MOGA capability described previously in
+Section~\ref{opt:software:jega}. This is a specialized algorithm
+capability. The second capability involves the use of response data
 transformations to recast a multiobjective problem as a
-single-objective problem.  Currently, Dakota supports the simple
+single-objective problem. Currently, Dakota supports the simple
 weighted sum approach for this transformation, in which a composite
 objective function is constructed from a set of individual objective
-functions using a user-specified set of weighting factors.  This
+functions using a user-specified set of weighting factors. This
 approach is optimization algorithm independent, in that it works with
 any of the optimization methods listed previously in this chapter.
 The third capability is the Pareto-set optimization strategy described
-in Section~\ref{strat:pareto}.  This capability also utilizes the
+in Section~\ref{strat:pareto}. This capability also utilizes the
 multiobjective response data transformations to allow optimization
 algorithm independence; however, it builds upon the basic approach by
 computing sets of optima in order to generate a Pareto trade-off
@@ -812,14 +812,14 @@ surface.
 
 In the multiobjective transformation approach in which multiple
 objectives are combined into one, an appropriate single-objective
-optimization technique is used to solve the problem.  The advantage of
+optimization technique is used to solve the problem. The advantage of
 this approach is that one can use any number of optimization methods
 that are especially suited for the particular problem class. One
 disadvantage of the weighted sum transformation approach is that a
 linear weighted sum objective cannot locate all optimal solutions in
-the Pareto set if the Pareto front is nonconvex.  Also, if one wants
+the Pareto set if the Pareto front is nonconvex. Also, if one wants
 to understand the effects of changing weights, this method can become
-computationally expensive.  Since each optimization of a single
+computationally expensive. Since each optimization of a single
 weighted objective will find only one point near or on the Pareto
 front, many optimizations need to be performed to get a good
 parametric understanding of the influence of the weights.
@@ -838,7 +838,7 @@ weights, and $R$ is the number of objective functions. The weighting
 factors stipulate the relative importance of the design concerns
 represented by the individual objective functions; the higher the
 weighting factor, the more dominant a particular objective function
-will be in the optimization process.  Constraints are not affected by
+will be in the optimization process. Constraints are not affected by
 the weighting factor mapping; therefore, both constrained and
 unconstrained multiobjective optimization problems can be formulated
 and solved with Dakota, assuming selection of an appropriate
@@ -848,14 +848,14 @@ programming, normal boundary intersection, etc. are planned.
 
 Figure~\ref{opt:figure01} shows a Dakota input file for a
 multiobjective optimization problem based on the ``textbook'' test
-problem. This input file is named \texttt{textbook\_opt\_multiobj1.in} in the
-\texttt{Dakota/examples/users} directory. In the standard textbook formulation,
+problem. 
+In the standard textbook formulation,
 there is one objective function and two constraints. In the
 multiobjective textbook formulation, all three of these functions are
 treated as objective functions (\texttt{num\_objective\_functions =
   3}), with weights given by the \texttt{multi\_objective\_weights}
-keyword.  Note that it is not required that the weights sum to a value
-of one.  The multiobjective optimization capability also allows any
+keyword. Note that it is not required that the weights sum to a value
+of one. The multiobjective optimization capability also allows any
 number of constraints, although none are included in this example.
 
 \begin{figure}
@@ -979,7 +979,7 @@ trade-offs in multiobjective optimization problems.
 %modifications are often needed to make SAND feasible in these cases.
 
 %Details on SAND-type optimization approaches may be found
-%in~\cite{Bar01a,Bir00}.  Additional details on the SAND implementation
+%in~\cite{Bar01a,Bir00}. Additional details on the SAND implementation
 %in Dakota will appear in future releases of this Users Manual.
 
 \subsection{Optimization with User-specified or Automatic Scaling}\label{opt:additional:scaling}
@@ -987,29 +987,29 @@ trade-offs in multiobjective optimization problems.
 Some optimization problems involving design variables, objective
 functions, or constraints on vastly different scales may be solved
 more efficiently if these quantities are adjusted to a common scale
-(typically on the order of unity).  With any optimizer (or least
+(typically on the order of unity). With any optimizer (or least
 squares solver described in Section~\ref{nls:solution}),
 user-specified characteristic value scaling may be applied to any of
 continuous design variables, functions/residuals, nonlinear inequality
 and equality constraints, and linear inequality and equality
-constraints.  Automatic scaling is available for variables or
+constraints. Automatic scaling is available for variables or
 responses with one- or two-sided bounds or equalities and may be
-combined with user-specified scaling values.  Logarithmic
+combined with user-specified scaling values. Logarithmic
 ($\log_{10}$) scaling is available and may also be combined with
-characteristic values.  Log scaling is not available for linear
-constraints.  Moreover, when continuous design variables are log
+characteristic values. Log scaling is not available for linear
+constraints. Moreover, when continuous design variables are log
 scaled, linear constraints are not permitted in the problem
-formulation.  Discrete variable scaling is not supported.
+formulation. Discrete variable scaling is not supported.
 
 Scaling is enabled on a per-method basis for optimizers and least
 squares minimizers by including the {\tt scaling} keyword in the
-relevant {\tt method} specification in the Dakota input deck.  When
+relevant {\tt method} specification in the Dakota input deck. When
 scaling is enabled, variables, functions, gradients, Hessians, etc.,
 are transformed such that the optimizer iterates in scaled variable
 space, whereas evaluations of the computational model as specified in
-the interface are performed on the original problem scale.  Therefore
+the interface are performed on the original problem scale. Therefore
 using scaling does not require rewriting the interface to the
-simulation code.  When the {\tt scaling} keyword is omitted, all {\tt
+simulation code. When the {\tt scaling} keyword is omitted, all {\tt
 *\_scale\_types} and {\tt *\_scales} specifications described below
 are ignored in the corresponding method, variables, and responses
 sections. When the method {\tt output\_level} is set above normal,
@@ -1018,11 +1018,11 @@ scaling initialization and diagnostic information will be printed.
 Scaling for a particular variable or response type is enabled through
 the {\tt *\_scale\_types} specification (see the Reference Manual
 method section and references contained therein for a complete keyword
-list).  Valid options for this string specification include {\tt
+list). Valid options for this string specification include {\tt
 'none'} (default), {\tt 'value'}, {\tt 'auto'}, or {\tt 'log'}, for
 no, characteristic value, automatic, or logarithmic scaling,
 respectively (although not all types are valid for scaling all
-entities).  If a single string is specified with any of these keywords
+entities). If a single string is specified with any of these keywords
 it will apply to each component of the relevant vector, e.g., {\tt
 cdv\_scale\_types = 'value'} will enable characteristic value scaling
 for each continuous design variable.
@@ -1089,7 +1089,7 @@ log scaled, linear constraints are not allowed.
 Scaling for linear constraints specified through {\tt
 linear\_inequality\_scales} or {\tt linear\_equality\_scales} is
 applied {\em after} any (user-specified or automatic) continuous
-variable scaling.  For example, for scaling mapping unscaled
+variable scaling. For example, for scaling mapping unscaled
 continuous design variables $x$ to scaled variables $\tilde{x}$:
 \[ \tilde{x}^j = \frac{x^j - x^j_O}{x^j_M}, \]
 where $x^j_M$ is the final component multiplier and $x^j_O$ the
@@ -1103,17 +1103,15 @@ constraints
 \end{eqnarray*}
 and user-specified or automatically computed scaling multipliers are
 applied to this final transformed system, which accounts for any
-continuous design variable scaling.  When automatic scaling is in use
+continuous design variable scaling. When automatic scaling is in use
 for linear constraints they are linearly scaled by characteristic
 values only, not affinely scaled into the interval $[0,1]$.
 
 Figure~\ref{opt:additional:scaling:figure01} demonstrates the use of
 several scaling keywords for the textbook optimization problem.
-This input file is \texttt{rosen\_opt\_scaled.in} 
-in the \texttt{Dakota/examples/users} directory.  The
-continuous design variable {\tt x1} is scaled by a characteristic
+The continuous design variable {\tt x1} is scaled by a characteristic
 value of 4.0, whereas {\tt x2} is scaled automatically into $[0,1]$
-based on its bounds.  The objective function will be scaled by a
+based on its bounds. The objective function will be scaled by a
 factor of 50.0, then logarithmically, the first nonlinear constraint
 by a factor of 15.0, and the second nonlinear constraint is not
 scaled.
@@ -1248,7 +1246,7 @@ central-difference algorithms. The finite difference step size should
 be selected as small as possible, to allow for local accuracy and
 convergence, but not so small that the steps are ``in the noise.'' 
 This requires an assessment of the local smoothness of the response
-functions using, for example, a parameter study method.  Central
+functions using, for example, a parameter study method. Central
 differencing, in general, will produce more reliable gradients than
 forward differencing, but at roughly twice the expense.
 
@@ -1280,28 +1278,28 @@ or poorly behaved.
 Approaches that seek to improve the effectiveness or efficiency of
 optimizers and least squares methods through the use of surrogate
 models include the surrogate-based local, surrogate-based global, and
-efficient global methods.  Chapter~\ref{sbm} provides further
-information on these approaches.  The surrogate-based local approach
+efficient global methods. Chapter~\ref{sbm} provides further
+information on these approaches. The surrogate-based local approach
 (see Section~\ref{sbm:sblm}) brings the efficiency of gradient-based
 optimization/least squares methods to nonsmooth or poorly behaved
 problems by smoothing noisy or discontinuous response results with a
 data fit surrogate model (e.g., a quadratic polynomial) and then
 minimizing on the smooth surrogate using efficient gradient-based
-techniques.  The surrogate-based global approach (see
+techniques. The surrogate-based global approach (see
 Section~\ref{sbm:sbgm}) similarly employs optimizers/least squares
 methods with surrogate models, but rather than localizing through the
 use of trust regions, seeks global solutions using global methods.
 And the efficient global approach (see Section~\ref{sbm:egm}) uses the
 specific combination of Gaussian process surrogate models in
-combination with the DIRECT global optimizer.  Similar to these
+combination with the DIRECT global optimizer. Similar to these
 surrogate-based approaches, the hybrid and multistart optimization
 strategies seek to bring the efficiency of gradient-based optimization
-methods to global optimization problems.  In the former case, a global
+methods to global optimization problems. In the former case, a global
 optimization method can be used for a few cycles to locate promising
 regions and then local gradient-based optimization is used to
 efficiently converge on one or more optima. In the latter case, a
 stratification technique is used to disperse a series of local
-gradient-based optimization runs through parameter space.  Without
+gradient-based optimization runs through parameter space. Without
 surrogate data smoothing, however, these strategies are best for
 smooth multimodal problems. Section~\ref{strat:hybrid} and
 Section~\ref{strat:multistart} provide more information on these
@@ -1349,22 +1347,14 @@ commands that can be used with SCOLIB algorithms.
   \centering
   \begin{bigbox}
     \begin{small}
-      \verbatimtabinput[8]{rosen_opt_scaled.in}
+      \verbatimtabinput[8]{rosen_opt_patternsearch.in}
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock pattern search optimization example: the Dakota input file.}
   \label{opt:examples:psfig}
 \end{figure}
 
-This Dakota input file is executed using the following command:
-\begin{small}
-\begin{verbatim}
-    dakota rosen_opt_scaled.in > ps_opt.out
-\end{verbatim}
-\end{small}
-
-The file \texttt{ps\_opt.out.sav} is included in the
-\texttt{Dakota/examples/users} directory. For this run, the
+For this run, the
 optimizer was given an initial design point of $(x_1,x_2)
   = (0.0,0.0)$ and was limited to 2000 function evaluations. In this
 case, the pattern search algorithm stopped short of the optimum at
@@ -1478,15 +1468,7 @@ with much flexibility in choosing the settings used in the
 optimization process. See~\cite{RefMan} and~\cite{Har06} for details on these
 settings.
 
-The following command runs Dakota on the input file:
-\begin{small}
-\begin{verbatim}
-    dakota rosen_opt_ea.in > ea_opt.out
-\end{verbatim}
-\end{small}
-
-A corresponding output file named \texttt{ea\_opt.out.sav} appears in
-\texttt{Dakota/examples/users}. The EA optimization results
+The EA optimization results
 printed at the end of this file show that the best design point found
 was $(x_1,x_2) = (0.98,0.95)$. The file
 \texttt{ea\_tabular.dat.sav} provides a listing of the design
