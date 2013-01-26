@@ -214,7 +214,7 @@ DAKOTA. Several examples follow.
 The following sample input file shows single-method optimization of
 the Textbook Example using DOT's modified method of feasible
 directions. A similar file is available as \c
-Dakota/examples/tutorial/dakota_textbook.in.
+Dakota/examples/users/textbook_opt_conmin.in.
 
 <!-- \include dakota_textbook.in -->
 
@@ -256,7 +256,7 @@ responses,
 The following sample input file shows a nonlinear least squares
 (calibration) solution of the Rosenbrock Example using the NL2SOL
 method. A similar file is available as \c
-Dakota/examples/tutorial/dakota_rosenbrock_ls.in.
+Dakota/examples/users/rosen_opt_nls.in
 
 <!-- \include dakota_rosenbrock_ls.in -->
 
@@ -352,7 +352,7 @@ The following sample input file shows a 1-D vector parameter study
 using the Textbook Example. It makes use of the default strategy and
 model specifications (\c single_method and \c single, respectively),
 so they can be omitted.  A similar file is available in the test
-directory as \c Dakota/examples/tutorial/dakota_rosenbrock_vector.in.
+directory as \c Dakota/examples/users/rosen_ps_vector.in.
 
 <!-- \include dakota_pstudy.in -->
 
@@ -390,7 +390,7 @@ The following sample input file shows a hybrid strategy using three
 methods. It employs a genetic algorithm, pattern search, and full
 Newton gradient-based optimization in succession to solve the Textbook
 Example. A similar file is available as \c
-Dakota/examples/methods/dakota_hybrid.in.
+Dakota/examples/users/textbook_hybrid_strat.in.
 
 <!-- \include dakota_hybrid.in -->
 
@@ -488,7 +488,7 @@ and graphics, are provided in the Tutorial chapter of the Users Manual
 
 
 In the following discussion of keyword specifications, tabular formats
-(Tables \ref T4d1 "4.1" through \ref T9d10 "9.10") are used to present
+(Tables \ref T4d1 "4.1" through \ref T9d11 "9.11") are used to present
 a short description of the specification, the keyword used in the
 specification, the type of data associated with the keyword, the
 status of the specification (required, optional, required group, or
@@ -514,7 +514,7 @@ is to present the outermost specification groups first (e.g., \c single,
 by lower levels of group specifications (e.g., \c global, \c multipoint,
 \c local, or \c hierarchical surrogates in Table \ref T6d3 "6.3"),
 followed by the components of each group (e.g., Tables \ref T6d4 "6.4"
-through \ref T6d8 "6.8") in succession.
+through \ref T6d9 "6.9") in succession.
 
 \htmlonly
 <hr>

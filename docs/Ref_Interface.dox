@@ -12,8 +12,8 @@ namespace Dakota {
 <li> <a href="InterfCommands.html#InterfAlgebraic">Algebraic mappings</a>
 <li> <a href="InterfCommands.html#InterfApplic">Simulation interfaces</a>
   <ul>
-  <li> <a href="InterfCommands.html#InterfApplicSC">System call interface</a>
   <li> <a href="InterfCommands.html#InterfApplicF">Fork interface</a>
+  <li> <a href="InterfCommands.html#InterfApplicSC">System call interface</a>
   <li> <a href="InterfCommands.html#InterfApplicDF">Direct function 
        interface</a>
   <li> <a href="InterfCommands.html#InterfApplicMSP">Matlab, Scilab, and 
@@ -565,39 +565,39 @@ interface involves a selection between \c system, \c fork, \c direct,
 or \c grid required group specifications. The following sections
 describe these group specifications in detail.
 
-\subsection InterfApplicSC System call interface
 
-<b>Users are strongly encouraged to use the \ref InterfApplicF
-"fork interface" if possible, though the system interface is still
-supported for portability and backward compatibility.</b> For system
-call interfaces, the \c system keyword anchors the group specification
-and the \c parameters_file, \c results_file, \c verbatim, \c aprepro,
-\c file_tag, and \c file_save are additional settings within the group
-specification. The parameters and results file names are supplied as
-strings using the \c parameters_file and \c results_file
-specifications. Both specifications are optional with the default data
-transfer files being Unix temporary files with system-generated names
-(e.g., \c /usr/tmp/aaaa08861). The parameters and results file names
-are passed on the command line to the analysis driver(s) and any
-specified input/output filters, unless the \c verbatim option is
-invoked, in which case the driver/filter invocation syntax is used
-verbatim without command line argument augmentation.  For additional
-information on invocation syntax, see the Interfaces chapter of the
-Users Manual [\ref UsersMan "Adams et al., 2010"].  The format of data
-in the parameters files can be modified for direct usage
- with the APREPRO pre-processing tool [\ref Sjaar1992 "Sjaardema, 1992"] 
-using the \c aprepro specification (NOTE: the DPrePro pre-processing
-utility does not require this special formatting). File tagging
-(appending parameters and results files with the function evaluation
-number) and file saving (leaving parameters and results files in
-existence after their use is complete) are controlled with the \c
-file_tag and \c file_save flags. If these specifications are omitted,
-the default is no file tagging (no appended function evaluation
-number) and no file saving (files will be removed after a function
-evaluation). File tagging is most useful when multiple function
-evaluations are running simultaneously using files in a shared disk
-space, and file saving is most useful when debugging the data
-communication between DAKOTA and the simulation.  
+\subsection InterfApplicF Fork interface
+
+The fork interface is the most common means by which DAKOTA launches a
+separate application analysis process.  The \c fork keyword anchors
+the group specification and the \c parameters_file, \c results_file,
+\c verbatim, \c aprepro, \c file_tag, and \c file_save are additional
+settings within the group specification. The parameters and results
+file names are supplied as strings using the \c parameters_file and \c
+results_file specifications. Both specifications are optional with the
+default data transfer files being Unix temporary files with
+system-generated names (e.g., \c /usr/tmp/aaaa08861). The parameters
+and results file names are passed on the command line to the analysis
+driver(s) and any specified input/output filters, unless the \c
+verbatim option is invoked, in which case the driver/filter invocation
+syntax is used verbatim without command line argument augmentation.
+For additional information on invocation syntax, see the Interfaces
+chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"].  The
+format of data in the parameters files can be modified for direct
+usage with the APREPRO pre-processing tool 
+[\ref Sjaar1992 "Sjaardema, 1992"] 
+using the \c aprepro specification (NOTE: the DPrePro
+pre-processing utility does not require this special formatting). File
+tagging (appending parameters and results files with the function
+evaluation number) and file saving (leaving parameters and results
+files in existence after their use is complete) are controlled with
+the \c file_tag and \c file_save flags. If these specifications are
+omitted, the default is no file tagging (no appended function
+evaluation number) and no file saving (files will be removed after a
+function evaluation). File tagging is most useful when multiple
+function evaluations are running simultaneously using files in a
+shared disk space, and file saving is most useful when debugging the
+data communication between DAKOTA and the simulation.
 
 By default DAKOTA will remove existing results files before invoking
 the \c analysis_driver to avoid problems created by stale files in the
@@ -612,8 +612,8 @@ optional tagging and saving as with files), and execute the analysis
 driver from that working directory.  If an optional \c
 template_directory and/or list of \c template_files is specified,
 DAKOTA will link (or copy) those files into each working
-directory. The specifications for system call interfaces are
-summarized in \ref T8d5 "Table 8.5".
+directory. The specifications for fork and \ref InterfApplicSC 
+"system call" interfaces are summarized in \ref T8d5 "Table 8.5".
   
 \anchor T8d5
 <table>
@@ -621,7 +621,7 @@ summarized in \ref T8d5 "Table 8.5".
 \htmlonly
 Table 8.5
 \endhtmlonly
-Additional specifications for system call interfaces
+Additional specifications for fork (and system call) interfaces
 </caption>
 <tr>
 <td><b>Description</b>
@@ -630,8 +630,8 @@ Additional specifications for system call interfaces
 <td><b>Status</b>
 <td><b>Default</b>
 <tr>
-<td>System call interface 
-<td>\c system
+<td>Fork interface 
+<td>\c fork
 <td>none
 <td>Required group (1 of 7 selections)
 <td>N/A
@@ -727,15 +727,15 @@ Additional specifications for system call interfaces
 <td>do not overwrite files
 </table>
 
+\subsection InterfApplicSC System call interface
 
-\subsection InterfApplicF Fork interface
-
-For fork interfaces, the \c fork keyword anchors a group specification. 
-The \c parameters_file, \c results_file, \c verbatim, \c aprepro, \c 
-file_tag, and \c file_save are additional settings within this group 
-specification and have identical meanings to those for the system call 
-interface as summarized previously in \ref T8d5 "Table 8.5".
-
+The system call interface is included in DAKOTA for portability and
+backward compatibility.  Users are strongly encouraged to use the \ref
+InterfApplicF "fork interface" if possible, reverting to system only
+when necessary.  To enable the system call interface, replace the \c fork
+keyword with \c system.  All other keywords have identical meanings to
+those for the fork interface as summarized previously in \ref T8d5
+"Table 8.5".
 
 \subsection InterfApplicDF Direct function interface
 
@@ -803,7 +803,7 @@ structural dynamics code, Sandia's SIERRA multiphysics framework, and
 Sandia's SAGE computational fluid dynamics code, which are available
 within Sandia and supported to varying degrees.  
 
-\subsection InterfaceApplicMSP Matlab, Scilab, and Python interfaces
+\subsection InterfApplicMSP Matlab, Scilab, and Python interfaces
 
 DAKOTA supports library-linked interfaces to Matlab, Scilab, and
 Python scientific computation software, but they must be explicitly

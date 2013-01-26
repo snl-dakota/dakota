@@ -243,6 +243,18 @@ Specification detail for strategy independent controls
 <td>Optional
 <td>10 (for most output)
 <tr>
+<td>Enable results output
+<td>\c results_output
+<td>none
+<td>Optional
+<td>no output DB
+<tr>
+<td>File name for results output
+<td>\c results_output_file
+<td>string
+<td>Optional
+<td>\c dakota_results.txt
+<tr>
 <td>Number of iterator servers
 <td>\c iterator_servers
 <td>integer

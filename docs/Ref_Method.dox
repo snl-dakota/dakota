@@ -1411,7 +1411,7 @@ function evaluations in the pattern, and these patterns may only
 contract.  The \c synchronization specification can be used to specify
 the use of either \c blocking or \c nonblocking schedulers for APPS.
 The \c blocking option causes APPS to behave as a synchronous
-algorithm.  The \c nonblocking option is not available when Dakota is
+algorithm.  The \c nonblocking option is not available when DAKOTA is
 used in message-passing mode.
 
 APPS solves nonlinearly constrained problems by solving a sequence of
@@ -5260,7 +5260,7 @@ points in Step 1 above.  For Step 2, we use a Gaussian process model.
 The user can specify the \c fitness_metric used to select the
 next point (or points) to evaluate and add to the set. 
 The fitness metrics used for scoring candidate points include: 
-\c predicted_variance, \c distance, and \gradient.  
+\c predicted_variance, \c distance, and \c gradient.  
 The predicted variance metric uses the predicted
 variance of the Gaussian process surrogate as the score of a candidate
 point. Thus, the adaptively chosen points will be in areas of highest
@@ -5861,7 +5861,7 @@ methods (OMP, LASSO, and LARS) are able to
 produce a set of possible PCE coefficient vectors ( See the Linear regression 
 section in the Theory Manual). If cross validation is off 
 then only the solution, consistent with noise_tolerance will be returned. If
-cross validation is on Dakota will choose between all possible coefficient
+cross validation is on DAKOTA will choose between all possible coefficient
 vectors found internally by the regression method for all expansion orders 
 1,...,expansion_order) and return the one with the lowest cross validation error
 indicator.
@@ -5936,7 +5936,6 @@ as an exit condition
 <td>none
 <td>Optional
 <td>N/A
-<tr>
 </table>
 </ol>
 
@@ -6869,11 +6868,11 @@ about emulator type. At this point, the only controls active for GPMSA
 are \c emulator_samples, \c seed and \c rng, and \c samples (the number of MCMC
 samples).   
 
-As mentioned above, the Bayesian capability in Dakota currently relies 
+As mentioned above, the Bayesian capability in DAKOTA currently relies 
 on the QUESO library developed by The University of Texas at Austin.  
 This integrated capability is still in prototype form and available to 
-close collaborators of the Dakota team.
-If you are interested in this capability, contact the Dakota developers 
+close collaborators of the DAKOTA team.
+If you are interested in this capability, contact the DAKOTA developers 
 at dakota-developers@development.sandia.gov.
 
 \ref T5d49 "Table 5.49" provides the specification 
