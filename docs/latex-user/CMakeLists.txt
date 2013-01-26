@@ -57,6 +57,15 @@ set(users_test_inputs
   "textbook_uq_surrogate dakota_uq_users.in 4"
   )
 
+# Users_Interface.tex
+set(ampl_files dakota_ampl_fma.mod dakota_ampl_fma.nl dakota_ampl_fma.col
+  dakota_ampl_fma.row dakota_ampl_tb.mod)
+foreach (file ${ampl_files})
+  add_file_copy_command(${test_path}/${file}
+    ${CMAKE_CURRENT_BINARY_DIR}/${file})
+  list(APPEND users_inputs_abs ${CMAKE_CURRENT_BINARY_DIR}/${file})
+endforeach()
+
 # Users_Advanced_Interfaces.tex
 # Directories in which inputs are found
 set(generic_path "${Dakota_SOURCE_DIR}/examples/script_interfaces/generic")

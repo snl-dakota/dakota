@@ -38,45 +38,45 @@ AMPL solver library~\cite{Gay97} to evaluate expressions conveyed
 in \texttt{stub.nl}, and, if needed, their first and second
 derivatives.
 
-As a simple example (from \texttt{Dakota/test/ampl/fma}), consider
+As a simple example (from \texttt{Dakota/test/dakota\_ampl*}), consider
 algebraic mappings based on Newton's law $F = m a$.  The
 following is an AMPL input file of variable and expression
 declarations and output commands:
 \begin{center}
 \begin{bigbox}
 \begin{small}
-\verbatimtabinput[8]{../../test/ampl/fma}
+\verbatimtabinput[8]{dakota_ampl_fma.mod}
 \end{small}
 \end{bigbox}
 \end{center}
 
 When processed by an AMPL processor, three files are created (as
-requested by the ``option auxfiles" command).  The first is the \texttt{fma.nl}
+requested by the ``option auxfiles" command).  The first is the \texttt{dakota\_ampl\_fma.nl}
 file containing problem statistics, expression graphs, bounds, etc.:
 \begin{center}
 \begin{bigbox}
 \begin{small}
-\verbatimtabinput[8]{../../test/ampl/fma.nl}
+\verbatimtabinput[8]{dakota_ampl_fma.nl}
 \end{small}
 \end{bigbox}
 \end{center}
 
-Next, the \texttt{fma.col} file contains the set of variable
+Next, the \texttt{dakota\_ampl\_fma.col} file contains the set of variable
 descriptor strings:
 \begin{center}
 \begin{bigbox}
 \begin{small}
-\verbatimtabinput[8]{../../test/ampl/fma.col}
+\verbatimtabinput[8]{dakota_ampl_fma.col}
 \end{small}
 \end{bigbox}
 \end{center}
 
-and the \texttt{fma.row} file contains the set of response descriptor
+and the \texttt{dakota\_ampl\_fma.row} file contains the set of response descriptor
 strings:
 \begin{center}
 \begin{bigbox}
 \begin{small}
-\verbatimtabinput[8]{../../test/ampl/fma.row}
+\verbatimtabinput[8]{dakota_ampl_fma.row}
 \end{small}
 \end{bigbox}
 \end{center}
@@ -87,7 +87,7 @@ by Dakota (see the Dakota Reference Manual~\cite{RefMan} for information
 on Dakota variable and response descriptors).  Ordering of the inputs
 and outputs within the AMPL declaration is not important, as Dakota
 will reorder data as needed.  The following listing shows an excerpt
-from \texttt{Dakota/test/dakota\_ampl.in}, which demonstrates a
+from \texttt{Dakota/test/dakota\_ampl\_fma.in}, which demonstrates a
 combined algebraic/simulation-based mapping in which algebraic
 mappings from the \texttt{fma} definition are overlaid with
 simulation-based mappings from \texttt{text\_book}:
@@ -103,7 +103,7 @@ variables,
           upper_bounds   3.0 10.0  5.0  3.0  5.0
 
 interface,
-        algebraic_mappings = 'ampl/fma.nl'
+        algebraic_mappings = 'dakota_ampl_fma.nl'
         system
           analysis_driver = 'text_book'
           parameters_file = 'tb.in'
@@ -135,7 +135,7 @@ following AMPL model file could be used
 \begin{center}
 \begin{bigbox}
 \begin{small}
-\verbatimtabinput[8]{../../test/ampl/text_book.mod}
+\verbatimtabinput[8]{dakota_ampl_tb.mod}
 \end{small}
 \end{bigbox}
 \end{center}
