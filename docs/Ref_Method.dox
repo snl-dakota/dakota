@@ -4190,9 +4190,14 @@ that are available for use by the different methods, where a "-"
 indicates that the distribution is not supported by the method, a "U"
 means the uncertain input variables of this type must be uncorrelated,
 a "C" denotes that correlations are supported involving uncertain
-input variables of this type, and an "A" means the method must be in
-\c all_variables mode to support the given variable type.  Additional
-notes include:
+input variables of this type, and an "A" means the appropriate 
+variables must be specified as active in the variables 
+specification block.  For example, if one wants to support 
+sampling or a stochastic expansion method over both 
+continuous uncertain and continuous state variables, the 
+specification \c active \c all must be listed in the variables 
+specification block. 
+Additional notes include:
 - we have four variants for stochastic expansions (SE), listed as
   Wiener, Askey, Extended, and Piecewise which draw from different sets 
   of basis polynomials.  The term stochastic expansion indicates polynomial 
@@ -4695,12 +4700,18 @@ set MUST currently be 2 times the number of previous samples, although
 incremental sampling based on any power of two may be supported in
 future releases.
 
-The nondeterministic sampling method also supports a design of
-experiments mode through the \c all_variables flag.  Normally, \c
-sampling generates samples only for the uncertain variables, and
-treats any design or state variables as constants.  The \c
-all_variables flag alters this behavior by instructing the sampling
-algorithm to treat any continuous design or continuous state variables
+The nondeterministic sampling method also supports sampling 
+over different types of variables, depending on what is 
+specified as \c active in the variables block of the input 
+specification.  
+Normally, \c sampling generates samples only for the 
+uncertain variables, and
+treats any design or state variables as constants.  
+However, if \c active \c all is specified in the variables block, 
+sampling will be performed over all variables, including 
+uncertain, design, and state.  
+In this case, the sampling 
+algorithm will treat any continuous design or continuous state variables
 as parameters with uniform probability distributions between their
 upper and lower bounds.  Samples are then generated over all of the
 continuous variables (design, uncertain, and state) in the variables
@@ -4711,7 +4722,14 @@ variables in the variables specification.  However, the design of
 experiments methods will treat all variables as being uniformly
 distributed between their upper and lower bounds, whereas the \c
 sampling method will sample the uncertain variables within
-their specified probability distributions.  
+their specified probability distributions.  If further 
+granularity of sampling is necessary for uncertain variables, 
+one can specify \c active \c epistemic or \c active \c aleatory 
+to specify sampling over only epistemic uncertain or 
+only aleatory uncertain variables, respectively.   
+In the case where one wants to generate samples only over 
+state variables, one would specify \c active \c state in the 
+variables specification block. 
 
 Finally, the nondeterministic sampling method supports two types of
 sensitivity analysis.  In this context of sampling, we take
@@ -4803,12 +4821,6 @@ Specification detail for nondeterministic sampling method
 <td>\c mt19937 | \c rnum2
 <td>Optional
 <td>Mersenne twister (\c mt19937)
-<tr>
-<td>All variables flag
-<td>\c all_variables
-<td>none
-<td>Optional
-<td>sampling only over uncertain variables
 <tr>
 <td>Variance based decomposition (VBD)
 <td>\c variance_based_decomp
@@ -5006,7 +5018,9 @@ analysis (mapping probability or generalized reliability levels into
 response levels) is not yet operational.  The Gaussian process model
 approximation to the limit state is formed over the uncertain
 variables by default, but may be extended to also capture the effect
-of design and state variables via the \c all_variables flag. By
+of design and state variables.  If this is desired, one must 
+use the appropriate controls to specify the active variables in the 
+variables specification block. By
 default, the Surfpack GP (Kriging) model is used, but the DAKOTA
 implementation may be selected instead. If \c use_derivatives is
 specified the GP model will be built using available derivative data
@@ -5053,12 +5067,6 @@ Specification detail for global reliability methods
 <td>none
 <td>Optional
 <td>Use function values only
-<tr>
-<td>All variables flag
-<td>\c all_variables
-<td>none
-<td>Optional
-<td>Contour estimation only over uncertain variables
 <tr>
 <td>Random seed for initial GP construction
 <td>\c seed
@@ -5497,11 +5505,14 @@ option has been added to allow suppression of the interaction effects
 since the output volume of these results can be prohibitive for high
 dimensional problems.
 
-As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, the \c
-all_variables flag can be used to form expansions over all continuous
-variables, rather than just the default aleatory uncertain continuous
-variables.  For continuous design, continuous state, and continuous
-epistemic uncertain variables included in \c all_variables mode,
+As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, 
+The default behavior is to form expansions over aleatory 
+uncertain continuous variables.  To form expansions 
+over a broader set of variables, one needs to specify 
+\c active followed by \c state, \c epistemic, \c design, or \c all 
+in the variables specification block. 
+For continuous design, continuous state, and continuous
+epistemic uncertain variables included in the expansion,
 Legendre chaos bases are used to model the bounded intervals for these
 variables.  However, these variables are not assumed to have any
 particular probability distribution, only that they are independent
@@ -5571,12 +5582,6 @@ Specification detail for polynomial chaos expansion method: general controls.
 <td>real
 <td>Optional
 <td>All VBD indices displayed
-<tr>
-<td>All variables flag
-<td>\c all_variables
-<td>none
-<td>Optional
-<td>Expansion only over uncertain variables
 </table>
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
@@ -6183,11 +6188,14 @@ releases, the \c hierarchical approach for \c piecewise bases will
 enable local \c h_refinement in addition to the current \c uniform and
 \c dimension_adaptive options.
 
-The \c variance_based_decomp and \c all_variables specifications are
-identical to those described in \ref MethodNonDPCE.  The \c
-all_variables flag expands the dimensionality of the interpolation to
+The \c variance_based_decomp is 
+identical to that described in \ref MethodNonDPCE.  
+As a default, the interpolation will be performed over 
+continuous aleatory uncertain variables.  
+To expand the dimensionality of the interpolation to
 include continuous design, state, and epistemic uncertain variables,
-in addition to the default continuous aleatory uncertain variables.
+it is necessary to specify which variables are active in the 
+variables specification block. 
 Interpolation points for these dimensions are based on Gauss-Legendre
 rules if non-nested, Gauss-Patterson rules if nested, and Newton-Cotes
 points in the case of piecewise bases.  Again, when probability
@@ -6268,12 +6276,6 @@ Specification detail for stochastic collocation method: general controls.
 <td>real
 <td>Optional
 <td>All VBD indices displayed
-<tr>
-<td>All variables flag
-<td>\c all_variables
-<td>none
-<td>Optional
-<td>Expansion only over uncertain variables
 </table>
 
 To form the multidimensional interpolants \f$L_i\f$ of the expansion,
@@ -7064,7 +7066,8 @@ but are not currently suited for assessing the effect of
 uncertainties. If a design of experiments over both design/state
 variables (treated as uniform) and uncertain variables (with
 probability distributions) is desired, then \c sampling can
-support this with its \c all_variables option (see \ref MethodNonDMC).
+support this with \c active \c all specified in the Variables 
+specification block.
 DAKOTA provides access to the DDACE library through the
 DDACEDesignCompExp class.
 
