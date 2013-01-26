@@ -21,7 +21,7 @@ respectively, and any other variable types are carried along invisible
 to the iterative algorithm being employed.  For parameter studies and
 design of experiments, however, a variable subset view is not imposed
 and all variables are active.  Selected UQ methods can also be toggled
-into an "All" view using the \c all_variables input specification.
+into an "All" view using the \c active \c all variables input specification.
 When not in an All view, finer gradations within the uncertain
 variable sets are also relevant: probabilistic methods (reliability,
 stochastic expansion) view aleatory uncertain variables as active,
@@ -39,8 +39,9 @@ for each of the domain types (continuous, discrete integer, and
 discrete real), but active and inactive views into them permit
 selecting subsets in a given context.  This management is encapsulated
 into the Variables and SharedVariablesData classes.  This page
-clarifies concepts of merged vs. mixed, fine-grained vs. aggregated
-types, domain types, and views into contiguous arrays.
+clarifies concepts of relaxed (formerly merged) vs. mixed,
+fine-grained vs. aggregated types, domain types, and views into
+contiguous arrays.
 
 We begin with an overview of the storage and management concept, for
 which the following two sections describe the storage of variable
@@ -58,14 +59,14 @@ epistemic uncertain, and state) and domain types (continuous, discrete
 integer, and discrete real) and supports different approaches to
 either distinguishing among these types or aggregating them.  Two
 techniques are used in cooperation to accomplish this management: (1)
-class specialization (MergedVariables or MixedVariables) and (2) views
+class specialization (RelaxedVariables or MixedVariables) and (2) views
 into contiguous variable arrays.  The latter technique is used
 whenever it can satisfy the requirement, with fallback to class
 specialization when it cannot.  In particular, aggregation or
 separation of variable types can be accomplished with views, but for
 aggregation or separation of variable domains, we must resort to class
 specialization in order to relax discrete domain types.  In this class
-specialization, a MergedVariables object combines continuous and
+specialization, a RelaxedVariables object combines continuous and
 discrete types (relaxing integers to reals) whereas a MixedVariables
 object maintains the integer/real distinction throughout.  
 
@@ -149,8 +150,8 @@ Finally
 stores the 1-based IDs of the variables stored in the
 allContinuousVars array, i.e., the variable number of all the problem
 variables considered as a single contiguous set, in aggregate type
-order.  For merged (relaxed) views,
-\ref Dakota::SharedVariablesDataRep::mergedDiscreteIds "mergedDiscreteIds"
+order.  For relaxed (formerly merged) views,
+\ref Dakota::SharedVariablesDataRep::relaxedDiscreteIds "relaxedDiscreteIds"
 stores the 1-based IDs of the variables which have been relaxed into
 the continuous array.
 
@@ -166,7 +167,7 @@ The pair
 \ref Dakota::SharedVariablesDataRep::variablesView "SharedVariablesDataRep::variablesView"
 tracks the active and inactive views of the data, with values taken
 from the enum in DataVariables.hpp.  The valid values include EMPTY and
-the combinations {merged, mixed} x {all, design, aleatory uncertain,
+the combinations {relaxed, mixed} x {all, design, aleatory uncertain,
 epistemic uncertain, uncertain, state}.  The ALL cases indicate
 aggregation of the design, aleatory uncertain, epistemic uncertain,
 and state types, whereas the DISTINCT cases indicate either no
@@ -198,7 +199,7 @@ underlying data using either Teuchos::View (for numerical vectors) or
 Boost.MultiArray (for book-keeping arrays) views. 
 
 When a Variables envelope is constructed, its letter is initialized to
-either a MergedVariables or MixedVariables object depending on the
+either a RelaxedVariables or MixedVariables object depending on the
 active view.  The derived classes size the contiguous storage arrays
 to accomodate all the problem variables, and then initialize active
 views into them, which could involve either subsets (DISTINCT active

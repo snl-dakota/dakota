@@ -18,8 +18,8 @@ namespace Dakota {
 
 <li> <a href="StyleConventions.html#StyleConventionsCMake">CMake Style Guidelines</a>
   <ul>
-  <li> <a href="StyleConventions.html#StyleConventionsCMakeFormat">Cmake Code Formatting</a>
-  <li> <a href="StyleConventions.html#StyleConventionsCMakeVars">Cmake Variable Naming Conventions</a>
+  <li> <a href="StyleConventions.html#StyleConventionsCMakeFormat">CMake Code Formatting</a>
+  <li> <a href="StyleConventions.html#StyleConventionsCMakeVars">CMake Variable Naming Conventions</a>
   </ul>
 </ul>
 \endhtmlonly

@@ -619,39 +619,47 @@ case of uncertainty quantification, the final statistics are returned.
 
 \section DakLibraryLinking Linking against the DAKOTA library
 
+This section presumes DAKOTA has been configured with CMake, compiled,
+and installed to a \c CMAKE_INSTALL_PREFIX using 'make install' or
+equivalent.  The DAKOTA libraries against which you must link will
+install to \c CMAKE_INSTALL_PREFIX/bin and \c
+CMAKE_INSTALL_PREFIX/lib.  When running CMake, DAKOTA and
+DAKOTA-included third-party libraries will be output as \c TPL \c
+LIBS, e.g.,
 
-This section presumes DAKOTA has been compiled with configure/make and
-installed to \c PREFIX using 'make install'.  While the DAKOTA build
-system offers the most up-to-date guidance for what libraries are
-needed to link against a particular version of DAKOTA, a typical case
-is presented here.  Note that depending on how you configured DAKOTA,
-some of the following libraries may not be available (for example
-NPSOL, DOT, NLPQL) -- check which appear in \c $PREFIX/lib.
+\code
+-- TPL LIBS: nidr;teuchos;pecos;pecos_src;lhs;mods;mod;dfftpack;sparsegrid;
+surfpack;surfpack;surfpack_fortran;utilib;colin;interfaces;scolib;3po;pebbl;
+tinyxml;conmin;dace;analyzer;random;sampling;bose;dot;fsudace;hopspack;jega;
+jega_fe;moga;soga;eutils;utilities;ncsuopt;nlpql;cport;npsol;optpp;psuade;
+DGraphics;amplsolver
+\endcode
 
-As of DAKOTA 5.0, \c -levidence is no longer required and \c -lgsl is
-optional (discouraged due to GPL), depending on how DAKOTA was configured.
+While external dependencies will be output as \c EXTRA \c TPL \c LIBS:
 
-Post DAKOTA 5.0, \c -lquadrature has been renamed to \c -lsparsegrid.
-Also the DFFTPACK library should be integrated into libpecos, so 
-\c -ldfftpack should not be needed and NKM should be integrated into
-libsurfpack, so \c -lnkm should not be needed.
+\code
+-- EXTRA TPL LIBS: /usr/lib64/openmpi/lib/libmpi_cxx.so;optimized;
+/usr/lib64/libboost_regex-mt.so;debug;/usr/lib64/libboost_regex-mt.so;
+optimized;/usr/lib64/libboost_filesystem-mt.so;debug;
+/usr/lib64/libboost_filesystem-mt.so;optimized;/usr/lib64/libboost_system-mt.so;
+debug;/usr/lib64/libboost_system-mt.so;optimized;
+/usr/lib64/libboost_signals-mt.so;debug;/usr/lib64/libboost_signals-mt.so;
+/usr/lib64/libSM.so;/usr/lib64/libICE.so;/usr/lib64/libX11.so;
+/usr/lib64/libXext.so;/usr/lib64/libXm.so;/usr/lib64/libXpm.so;
+/usr/lib64/libXmu.so;/usr/lib64/libXt.so;-lpthread;/usr/lib64/liblapack.so;
+/usr/lib64/libblas.so
+\endcode
+
+Note that depending on how you configured DAKOTA, some of the
+libraries may not be included (for example NPSOL, DOT, NLPQL).
+Optional libraries like GSL (discouraged due to GPL license) may also
+be needed if DAKOTA was configured with them.  Check which appear in
+\c CMAKE_INSTALL_PREFIX/bin \c CMAKE_INSTALL_PREFIX/lib.
 
 Note that as of DAKOTA 5.2, \c -lnewmat is no longer required but additional
 Boost libraries are needed (\c -lboost_regex \c -lboost_filesystem
 \c -lboost_system) as a result of migration from legacy DAKOTA utilities to
-more modern Boost components.  It should also be noted that DAKOTA relies on
-VERSION 2 of Boost.Filesystem which is provided in the source distribution
-under packages/boost (Boost.Filesystem VERSION 3 is NOT supported at this time).
-
-\code
-DAKOTA_LIBS = -L${PREFIX}/lib -ldakota -lteuchos -lpecos -llhs         \
-              -lsparsegrid -lsurfpack -lconmin -lddace -ldot -lfsudace \
-	      -ljega -lcport -lnlpql -lnpsol -loptpp -lpsuade          \
-              -lncsuopt -lcolin -linterfaces -lmomh -lscolib -lpebbl   \
-              -ltinyxml -lutilib -l3po -lhopspack -lnidr -lamplsolver  \
-              -lboost_signals -lboost_regex -lboost_filesystem         \
-              -lboost_system -llapack -lblas
-\endcode
+more modern Boost components.  
 
 You may also need \c funcadd0.o, \c -lfl, \c -lexpat, and, if linking
 with system-provided GSL, \c -lgslcblas. The AMPL solver library may
@@ -662,33 +670,15 @@ be included.  If configuring with graphics, you will need to add \c
 -lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
 \endcode
 
-CMake support for library users is experimental.  At present library
-names and inclusion requirements differ slightly when using CMake,
-e.g, libpecos_src and libdakota_src instead of libpecos and libdakota,
-respectively.  A representative (non-authoritative) set of necessary
-link libraries is shown here for illustration purposes only:
-\code
--ldakota_src -lteuchos -lnidr -lpecos -lpecos_src -llhs -lmods -lmod
--ldfftpack -lsparsegrid -lsurfpack -lsurfpack -lutilib -lcolin -linterfaces
--lscolib -l3po -lpebbl -ltinyxml -lconmin -ldace -lanalyzer -lrandom
--lsampling -lbose -ldot -lfsudace -lhopspack -ljega -ljega_fe -lmoga
--lsoga -leutils -lutilities -lncsuopt -lnlpql -lcport -lnpsol -loptpp
--lpsuade -lDGraphics -lamplsolver -lboost_regex -lboost_signals
--lboost_filesystem -lboost_system -lSM -lICE -lX11 -lXext -lXm -lXpm
--lXmu -lpthread -llapack -lcurl -ldl -lutilib -ltinyxml -lm -lboost_regex
--lboost_filesystem -lboost_system -lexpat -lboost_signals -ljega -lteuchos
--lblas -llapack
-\endcode
-
 We have experienced problems with the creation of \c libamplsolver.a
 on some platforms.  Please use the DAKOTA mailing lists for help with
 any problems.
 
 Finally, it is important to use the same C++ compiler (possibly an MPI
-wrapper) for compiling DAKOTA and your application and declare the
-compiler define \c -DHAVE_CONFIG_H when including header files from
-DAKOTA.  This ensures that the platform configuration settings are
-properly propagated.
+wrapper) for compiling DAKOTA and your application and potentially
+include DAKOTA-related preprocessor defines as emitted by CMake during
+compilation of DAKOTA.  This ensures that the platform configuration
+settings are properly propagated.
 
 
 \section DakLibrarySummary Summary

@@ -183,8 +183,11 @@ base class for non-deterministic methods \ref Dakota::NonDSampling
 (reliability analysis), \ref Dakota::NonDExpansion "NonDExpansion"
 (stochastic expansion methods), and \ref Dakota::NonDInterval
 "NonDInterval" (interval-based epistemic methods).  Bayesian
-calibration methods are prototyped in \ref
-Dakota::NonDBayesCalibration "NonDBayesCalibration".
+calibration methods are prototyped in \ref Dakota::NonDCalibration
+"NonDCalibration" and \ref Dakota::NonDBayesCalibration
+"NonDBayesCalibration".  An input-space dimension reduction method for
+UQ is prototyped in \ref Dakota::EfficientSubspaceMethod
+"EfficientSubspaceMethod".
 
 <ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
@@ -236,7 +239,7 @@ and \ref Dakota::DDACEDesignCompExp "DDACEDesignCompExp" and
 for parameter space exploration through design and analysis of 
 computer experiments.  \ref Dakota::NonDLHSSampling "NonDLHSSampling" 
 from the uncertainty quantification branch also supports design of 
-experiments when in \c all_variables mode.
+experiments when in \c active \c all variables mode.
 
 <li> Solution verification studies: 
 \ref Dakota::Verification "Verification" provides a base class for
@@ -311,7 +314,7 @@ integer, and discrete real domain types are managed.  This is the
 default Variable perspective, and draws its name from "mixed
 continuous-discrete" optimization.
 
-<li> \ref Dakota::MergedVariables "MergedVariables": domain types are
+<li> \ref Dakota::RelaxedVariables "RelaxedVariables": domain types are
 combined through relaxation of discrete constraints; i.e., continuous
 and discrete variables are merged into continuous arrays through
 relaxation of integrality (for discrete integer ranges) or set
