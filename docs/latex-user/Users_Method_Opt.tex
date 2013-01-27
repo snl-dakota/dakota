@@ -134,23 +134,25 @@ nongradient-based search methods may be useful. There are numerous
 approaches to nongradient-based optimization. Some of the more well
 known of these include pattern search methods (nongradient-based local
 techniques) and genetic algorithms (nongradient-based global
-techniques). Because of the computational cost of running simulation
+techniques). 
+
+Because of the computational cost of running simulation
 models, surrogate-based optimization (SBO) methods are often used to
 reduce the number of actual simulation runs. In SBO, a surrogate or
 approximate model is constructed based on a limited number of
 simulation runs. The optimization is then performed on the surrogate
 model. Dakota has an extensive framework for managing a variety of
 local, multipoint, global, and hierarchical surrogates for use in
-optimization.
+optimization. Finally, sometimes there are multiple objectives that 
+one may want to optimize simultaneously instead of a single scalar 
+objective.  In this case, one may employ multi-objective methods 
+that are described in Section~\ref{opt:additional:multiobjective}.
 
 This overview of optimization approaches underscores that no single
 optimization method or algorithm works best for all types of
 optimization problems. Section~\ref{opt:usage} offers guidelines for
 choosing a Dakota optimization algorithm best matched to your specific
 optimization problem.
-
-TODO: Consider discussing multi-objective here at a high level, then
-the algorithms later?
 
 \section{Optimizing with Dakota}\label{opt:dakota}
 
@@ -462,7 +464,7 @@ optimization methods. The first is a Multi-objective Genetic Algorithm
 (MOGA) which performs Pareto optimization. The second is a
 Single-objective Genetic Algorithm (SOGA, Dakota method \texttt{soga})
 which performs optimization on a single objective function, using many
-of the same software features as MOGA . License: LGPL.
+of the same software features as MOGA. The license for JEGA is LGPL.
 
 The Dakota \texttt{moga} algorithm directly creates a population of
 Pareto optimal solutions. Over time, the selection operators of a
@@ -816,17 +818,17 @@ optimization technique is used to solve the problem. The advantage of
 this approach is that one can use any number of optimization methods
 that are especially suited for the particular problem class. One
 disadvantage of the weighted sum transformation approach is that a
-linear weighted sum objective cannot locate all optimal solutions in
-the Pareto set if the Pareto front is nonconvex. Also, if one wants
-to understand the effects of changing weights, this method can become
-computationally expensive. Since each optimization of a single
+linear weighted sum objective will only find one solution on 
+the Pareto front.  
+Since each optimization of a single
 weighted objective will find only one point near or on the Pareto
 front, many optimizations need to be performed to get a good
 parametric understanding of the influence of the weights.
+Thus, this approach can become computationally expensive. 
 
 The selection of a multiobjective optimization problem is made through
 the specification of multiple objective functions in the responses
-keyword block (i.e., the \texttt{num\_objective\_functions}
+keyword block (i.e., the \texttt{objective\_functions}
 specification is greater than \texttt{1}). The weighting factors on
 these objective functions can be optionally specified using the
 \texttt{multi\_objective\_weights} keyword (the default is equal
@@ -852,7 +854,7 @@ problem.
 In the standard textbook formulation,
 there is one objective function and two constraints. In the
 multiobjective textbook formulation, all three of these functions are
-treated as objective functions (\texttt{num\_objective\_functions =
+treated as objective functions (\texttt{objective\_functions =
   3}), with weights given by the \texttt{multi\_objective\_weights}
 keyword. Note that it is not required that the weights sum to a value
 of one. The multiobjective optimization capability also allows any
@@ -934,6 +936,127 @@ set of solutions is referred to as the Pareto set.
 Section~\ref{strat:pareto} describes a solution strategy used for
 directly generating the Pareto set in order to investigate the
 trade-offs in multiobjective optimization problems.
+
+Starting with version 3.2 of Dakota, a capability to perform
+multi-objective optimization based on a genetic algorithm method has
+been available. This method is called \texttt{moga}. It is based on
+the idea that as the population evolves in a GA, solutions that are
+non-dominated are chosen to remain in the population. 
+%Until version 4.0 of Dakota, there was a \texttt{selection\_type} choice of
+%\texttt{domination\_count}
+%that performed a custom fitness assessment and selection operation
+%together. As of version 4.0 of Dakota, that functionality has been
+%broken into 
+The MOGA algorithm has separate fitness assessment and
+selection operators called the \texttt{domination\_count} 
+fitness assessor and
+\texttt{below\_limit} selector respectively. 
+%The effect of using these two operators is the same as the 
+%previous behavior of the \textttdomination\_count selector. 
+This approach of selection works especially
+well on multi-objective problems because it has been specifically
+designed to avoid problems with aggregating and scaling objective
+function values and transforming them into a single
+objective. Instead, the fitness assessor works by ranking population
+members such that their resulting fitness is a function of the number
+of other designs that dominate them. The \texttt{below\_limit} selector then
+chooses designs by considering the fitness of each. If the fitness of
+a design is above a certain limit, which in this case corresponds to a
+design being dominated by more than a specified number of other
+designs, then it is discarded. Otherwise it is kept and selected to go
+to the next generation. The one catch is that this selector will
+require that a minimum number of selections take
+place. The \texttt{shrinkage\_percentage} determines the minimum number of
+selections that will take place if enough designs are available. It is
+interpreted as a percentage of the population size that must go on to
+the subsequent generation. To enforce this, the \texttt{below\_limit} selector
+makes all the selections it would make anyway and if that is not
+enough, it relaxes its limit and makes selections from the remaining
+designs. It continues to do this until it has made enough selections.
+The moga method has many other important features. Complete
+descriptions can be found in the Dakota Reference Manual~\cite{RefMan}.
+ 
+We demonstrate the MOGA algorithm on three examples that are taken 
+from a multiobjective
+evolutionary algorithm (MOEA) test suite described by Van Veldhuizen
+et. al. in~\cite{Coe02}. These three examples
+illustrate the different forms that the Pareto set may take. For each
+problem, we describe the Dakota input and show a graph of the Pareto
+front. These problems are all solved with the \texttt{moga} method.
+The first example is presented below, the other two examples are 
+presented in the additional examples chapter ~\ref{additional:multiobjective:problem2}
+and ~\ref{additional:multiobjective:problem3}.
+
+In Van Veldhuizen's notation, the set of all Pareto optimal design
+configurations (design variable values only) is denoted $\mathtt{P^*}$
+or $\mathtt{P_{true}}$ and is defined as:
+\begin{eqnarray*}
+  P^*:=\{x\in\Omega\,|\,\neg\exists\,\,
+  x^\prime\in\Omega\quad\bar{f}(x^\prime)\preceq\bar{f}(x)\}
+\end{eqnarray*}
+ 
+The Pareto front, which is the set of objective function values
+associated with the Pareto optimal design configurations, is denoted
+$\mathtt{PF^*}$ or $\mathtt{PF_{true}}$ and is defined as:
+\begin{eqnarray*}
+  PF^*:=\{\bar{u}=\bar{f}=(f_1(x),\ldots,f_k(x))\,|\, x\in P^*\}
+\end{eqnarray*}
+ 
+The values calculated for the Pareto set and the Pareto front using
+the moga method are close to but not always exactly the true values,
+depending on the number of generations the moga is run, the various
+settings governing the GA, and the complexity of the Pareto set.
+
+\subsubsection{Multiobjective Test Problem 1}\label{additional:multiobjective:problem1}
+ 
+The first test problem is a case where $P_{true}$ is connected and
+$PF_{true}$ is concave. The problem is to simultaneously optimize
+$f_1$ and $f_2$ given three input variables, $x_1$, $x_2$, and
+$x_3$, where the inputs are bounded by $-4 \leq x_{i} \leq 4$:
+ 
+Figure~\ref{additional:moga1inp} shows an input file that
+demonstrates some of the multi-objective capabilities available with
+the moga method.
+\begin{figure}[htp!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{mogatest1.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Multiple objective genetic algorithm (MOGA) example: the
+    Dakota input file.}
+  \label{additional:moga1inp}
+\end{figure}
+ 
+%This example has three input variables and two objectives.
+% The example uses objectives different from the Rosenbrock
+% function because we wanted to demonstrate the capability on a problem
+% with two conflicting objectives.
+%This example is taken from a testbed
+%of multi-objective problems~\cite{Coe02}.
+In this example, the three best
+solutions (as specified by \texttt{final\_solutions} =3) are written to the
+output. Additionally, final results from moga
+are output to a file called \texttt{finaldata1.dat} in the directory in
+which you are running. This \texttt{finaldata1.dat} file is simply a
+list of inputs and outputs. Plotting the output columns against each
+other allows one to see the Pareto front generated by \texttt{moga}.
+Figure~\ref{additional:moga_pareto} shows an example of the Pareto
+front for this problem. Note that a Pareto front easily shows the
+tradeoffs between Pareto optimal solutions. For instance, look at the
+point with f1 and f2 values equal to (0.9, 0.23). One cannot improve
+(minimize) the value of objective function f1 without increasing the
+value of f2: another point on the Pareto front, (0.63, 0.63) represents
+a better value of objective f1 but a worse value of objective f2.
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.75]{images/dakota_mogatest1_pareto_front}
+  \caption{Multiple objective genetic algorithm (MOGA) example: Pareto
+  front showing tradeoffs between functions f1 and f2.}
+  \label{additional:moga_pareto}
+\end{figure}
+
 
 %\subsection{Simultaneous Analysis and Design (SAND) Optimization}\label{opt:additional:sand}
 

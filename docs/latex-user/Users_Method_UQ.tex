@@ -274,11 +274,13 @@ loguniform, triangular, exponential, beta, gamma, gumbel, frechet,
 weibull, and histogram bin. The discrete aleatory distribution types
 include: poisson, binomial, negative binomial, geometric,
 hypergeometric, and histogram point. The epistemic distribution type
-is interval. When gradient and/or Hessian information is used in an
+is interval for continuous variables. For epistemic discrete variables, 
+there are three types:  integer set, real set, and interval range. 
+When gradient and/or Hessian information is used in an
 uncertainty assessment, derivative components are normally computed
 with respect to the active continuous variables, or in this case, the
 \emph{continuous uncertain variables} (aleatory, epistemic, 
-or both, excluding \texttt{all\_variables} mode; see 
+or both, depending on the active variables; see 
 Section~\ref{responses:active}).
 
 \section{Sampling Methods}\label{uq:sampling}
@@ -384,16 +386,10 @@ implementation of the LHS algorithm, see Reference~\cite{Swi04}.
 
 \subsection{Uncertainty Quantification Example using Sampling Methods}\label{uq:uncertainty1}
 
-TO DO
-
-and \texttt{Dakota/test/dakota\_textbook\_lhs.in}
+The input file \texttt{Dakota/examples/users/textbook\_uq\_sampling.in}
 demonstrates the use of Latin hypercube Monte Carlo sampling for
 assessing probability of failure as measured by specified response
-levels.
-
-TODO
-
-The two-variable Textbook example problem (see
+levels.  The two-variable Textbook example problem (see
 Equation~\ref{additional:textbook_f}) will be used to demonstrate
 the application of sampling methods for uncertainty quantification
 where it is assumed that $x_1$ and $x_2$ are uniform uncertain

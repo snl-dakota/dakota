@@ -992,120 +992,16 @@ optimizations must be performed to get a good parametric
 understanding of the influence of the weights and to achieve a good
 sampling of the entire Pareto frontier.
 
-Starting with version 3.2 of Dakota, a capability to perform
-multi-objective optimization based on a genetic algorithm method has
-been available. This method is called \texttt{moga}. It is based on
-the idea that as the population evolves in a GA, solutions that are
-non-dominated are chosen to remain in the population. Until version
-4.0 of Dakota, there was a selection\_type choice of domination\_count
-that performed a custom fitness assessment and selection operation
-together. As of version 4.0 of Dakota, that functionality has been
-broken into separate, more generally usable fitness assessment and
-selection operators called the domination\_count fitness assessor and
-below\_limit selector respectively. The effect of using these two
-operators is the same as the previous behavior of the
-domination\_count selector. This means of selection works especially
-well on multi-objective problems because it has been specifically
-designed to avoid problems with aggregating and scaling objective
-function values and transforming them into a single
-objective. Instead, the fitness assessor works by ranking population
-members such that their resulting fitness is a function of the number
-of other designs that dominate them. The below\_limit selector then
-chooses designs by considering the fitness of each. If the fitness of
-a design is above a certain limit, which in this case corresponds to a
-design being dominated by more than a specified number of other
-designs, then it is discarded. Otherwise it is kept and selected to go
-to the next generation. The one catch is that this selector will
-require that a minimum number of selections take
-place. The \texttt{shrinkage\_percentage} determines the minimum number of
-selections that will take place if enough designs are available. It is
-interpreted as a percentage of the population size that must go on to
-the subsequent generation. To enforce this, the below\_limit selector
-makes all the selections it would make anyway and if that is not
-enough, it relaxes its limit and makes selections from the remaining
-designs. It continues to do this until it has made enough selections.
-The moga method has many other important features. Complete
-descriptions can be found in the Dakota Reference Manual~\cite{RefMan}.
-
 There are three examples that are taken from a multiobjective 
 evolutionary algorithm (MOEA) test suite described by Van Veldhuizen
 et. al. in~\cite{Coe02}. These three examples 
 illustrate the different forms that the Pareto set may take. For each
 problem, we describe the Dakota input and show a graph of the Pareto
 front. These problems are all solved with the \texttt{moga} method.
-In Van Veldhuizen's notation, the set of all Pareto optimal design
-configurations (design variable values only) is denoted $\mathtt{P^*}$
-or $\mathtt{P_{true}}$ and is defined as:
-\begin{eqnarray*}
-  P^*:=\{x\in\Omega\,|\,\neg\exists\,\,
-  x^\prime\in\Omega\quad\bar{f}(x^\prime)\preceq\bar{f}(x)\}
-\end{eqnarray*}
-
-The Pareto front, which is the set of objective function values
-associated with the Pareto optimal design configurations, is denoted
-$\mathtt{PF^*}$ or $\mathtt{PF_{true}}$ and is defined as:
-\begin{eqnarray*}
-  PF^*:=\{\bar{u}=\bar{f}=(f_1(x),\ldots,f_k(x))\,|\, x\in P^*\}
-\end{eqnarray*}
-
-The values calculated for the Pareto set and the Pareto front using
-the moga method are close to but not always exactly the true values,
-depending on the number of generations the moga is run, the various
-settings governing the GA, and the complexity of the Pareto set.
-
+The first example is discussed in Section~\ref{opt:additional:multiobjective}. 
+The next two are discussed below. 
 Sections~\ref{opt:software} and~\ref{opt:additional} provide more
 information on multiobjective optimization.
-
-
-\subsection{Multiobjective Test Problem 1}\label{additional:multiobjective:problem1}
-
-The first test problem is a case where $P_{true}$ is connected and
-$PF_{true}$ is concave. The problem is to simultaneously optimize
-$f_1$ and $f_2$ given three input variables, $x_1$, $x_2$, and
-$x_3$, where the inputs are bounded by $-4 \leq x_{i} \leq 4$:
-
-Figure~\ref{additional:moga1inp} shows an input file that
-demonstrates some of the multi-objective capabilities available with
-the moga method.
-\begin{figure}[htp!]
-  \centering
-  \begin{bigbox}
-    \begin{small}
-      \verbatimtabinput[8]{mogatest1.in}
-    \end{small}
-  \end{bigbox}
-  \caption{Multiple objective genetic algorithm (MOGA) example: the
-    Dakota input file.}
-  \label{additional:moga1inp}
-\end{figure}
-
-%This example has three input variables and two objectives.
-% The example uses objectives different from the Rosenbrock
-% function because we wanted to demonstrate the capability on a problem
-% with two conflicting objectives. 
-%This example is taken from a testbed
-%of multi-objective problems~\cite{Coe02}. 
-In this example, the three best 
-solutions (as specified by \texttt{final\_solutions} =3) are written to the 
-output. Additionally, final results from moga
-are output to a file called \texttt{finaldata1.dat} in the directory in
-which you are running. This \texttt{finaldata1.dat} file is simply a
-list of inputs and outputs. Plotting the output columns against each
-other allows one to see the Pareto front generated by \texttt{moga}.
-Figure~\ref{additional:moga_pareto} shows an example of the Pareto
-front for this problem. Note that a Pareto front easily shows the
-tradeoffs between Pareto optimal solutions. For instance, look at the
-point with f1 and f2 values equal to (0.9, 0.23). One cannot improve
-(minimize) the value of objective function f1 without increasing the
-value of f2: another point on the Pareto front, (0.63, 0.63) represents
-a better value of objective f1 but a worse value of objective f2.
-\begin{figure}[ht!]
-  \centering
-  \includegraphics[scale=0.75]{images/dakota_mogatest1_pareto_front}
-  \caption{Multiple objective genetic algorithm (MOGA) example: Pareto
-  front showing tradeoffs between functions f1 and f2.}
-  \label{additional:moga_pareto}
-\end{figure}
 
 \subsection{Multiobjective Test Problem 2}\label{additional:multiobjective:problem2}
 
