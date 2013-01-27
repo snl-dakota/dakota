@@ -94,24 +94,25 @@ the type of approximation must be specified with either a global OR
 multipoint OR local OR hierarchical required group specification.  The
 structure of the variables keyword is that of optional group
 specifications for continuous and discrete design variables, a number
-of different uncertain variable distribution types, and continuous and
-discrete state variables. Each of these specifications can either
-appear or not appear as a group. Next, the interface keyword allows
-the specification of either algebraic mappings, simulation-based
-analysis driver mappings, or both.  Within the analysis drivers
-specification, a system OR fork OR direct OR grid group specification
-must be selected.  Finally, within the responses keyword, the primary
-structure is the required specification of the function set (either
-optimization functions OR calibration functions OR generic response
-functions), followed by the required specification of the gradients
-(either none OR numerical OR analytic OR mixed) and the required
-specification of the Hessians (either none OR numerical OR quasi OR
-analytic OR mixed).  Refer to \ref StratCommands, \ref MethodCommands,
-\ref ModelCommands, \ref VarCommands, \ref InterfCommands, and \ref
-RespCommands for detailed information on the keywords and their
-various optional and required specifications. And for additional
-details on NIDR specification logic and rules, refer to [\ref Gay2008
-"Gay, 2008"].
+of different uncertain variable distribution types (continuous and
+discrete, aleatory and epistemic), and continuous and discrete state
+variables. Each of these specifications can either appear or not
+appear as a group. Next, the interface keyword allows the
+specification of either algebraic mappings, simulation-based analysis
+driver mappings, or both.  Within the analysis drivers specification,
+a system OR fork OR direct OR third-party (Matlab, Python, Scilab,
+etc.) group specification must be selected.  Finally, within the
+responses keyword, the primary structure is the required specification
+of the function set (either optimization functions OR calibration
+functions OR generic response functions), followed by the required
+specification of the gradients (either none OR numerical OR analytic
+OR mixed) and the required specification of the Hessians (either none
+OR numerical OR quasi OR analytic OR mixed).  Refer to \ref
+StratCommands, \ref MethodCommands, \ref ModelCommands, \ref
+VarCommands, \ref InterfCommands, and \ref RespCommands for detailed
+information on the keywords and their various optional and required
+specifications. And for additional details on NIDR specification logic
+and rules, refer to [\ref Gay2008 "Gay, 2008"].
 
 Some keywords, such as those providing bounds on variables, have an
 associated list of values.  When the same value should be repeated
