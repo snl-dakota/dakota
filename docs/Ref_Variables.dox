@@ -8,6 +8,8 @@ namespace Dakota {
 <li> <a href="VarCommands.html#VarDescr">Variables Description</a>
 <li> <a href="VarCommands.html#VarSpec">Variables Specification</a>
 <li> <a href="VarCommands.html#VarSetId">Variables Set Identifier</a>
+<li> <a href="VarCommands.html#VarActive">Variables Active</a>
+<li> <a href="VarCommands.html#VarDomain">Variables Domain</a>
 <li> <a href="VarCommands.html#VarDV">Design Variables</a>
   <ul>
   <li> <a href="VarCommands.html#VarCDV">Continuous</a>
@@ -263,7 +265,10 @@ variables,
 
 Refer to the DAKOTA Users Manual [\ref UsersMan "Adams et al., 2010"]
 for discussion on how different iterators view these mixed variable sets.
-
+Further control over how variables are treated may be specified with the 
+keyword \c active, which controls which types of variables are active 
+for a particular iterative method, and domain, which specifies how 
+discrete vs. continuous variables are handled. 
 
 \section VarSpec Variables Specification
 
@@ -273,6 +278,8 @@ The variables specification has the following structure:
 \verbatim
 variables,
 	<set identifier>
+        <active variable specification>
+        <variable domain specification>
 	<continuous design variables specification>
 	<discrete design range variables specification>
 	<discrete design set integer variables specification>
@@ -304,7 +311,8 @@ variables,
 \endverbatim
 
 Referring to dakota.input.summary, it is evident from the enclosing
-brackets that the set identifier specification, the uncertain
+brackets that the set identifier specification, the active 
+variable and domain specification, the uncertain
 correlation specification, and each of the variables specifications
 are all optional. The set identifier and uncertain correlation are
 stand-alone optional specifications, whereas the variables
@@ -363,6 +371,97 @@ Specification detail for set identifier
 <td>Optional
 <td>use of last variables parsed
 </table>
+
+\section VarActive Variables Active
+
+There are certain situations where the user may want to explicitly 
+control the subset of variables that is considered active for a 
+certain Dakota method. This is done by specifying the keyword 
+\c active in the variables specification block, followed by one 
+of the following: \c all, \c design, \c uncertain, \c aleatory, 
+\c epistemic, or \c state.  Specifying one of these subsets of 
+variables will allow the Dakota method to operate on the specified 
+variable types and override the defaults. For example, the default 
+behavior for a nondeterministic sampling method is to sample the 
+uncertain variables. However, if the user specifed \c active \c all 
+in the variables specification block, the sampling would be performed 
+over all variables (e.g. design and state variables as well as 
+uncertain variables). This may be desired in situations such as 
+surrogate-based optimization under uncertainty, where a surrogate 
+may be built over both design and uncertain variables. Another 
+situation where one may want the fine-grained control available by 
+specifying one of these variable types is when one has state variables 
+but only wants to sample over the design variables when constructing 
+a surrogate model. Finally, more sophisticated uncertainty studies may
+involve various combinations of epistemic vs. aleatory variables being 
+active in nested models.
+
+If the user does not specify any explicit override of the active view 
+of the variables, Dakota then considers the response function specification. 
+If the user specifies objective functions or calibration terms in the response
+specification block, the active variables will be the design variables (e.g. 
+design variables are active for optimization and least squares methods). 
+If the user specifies the more generic response type, response functions, 
+Dakota tries to infer the active view from the method. If the method is a 
+parameter study, or any of the methods available under dace, psuade, or fsu methods, 
+the active view is set to all variables. For uncertainty quantification
+methods, if the method is sampling, then the view is set to aleatory if 
+only aleatory variables are present, epistemic if only epistemic variables 
+are present, or uncertain (covering both aleatory and epistemic) if both are 
+present. If the uncertainty method involves interval estimation or 
+evidence calculations, the view is set to epistemic. For other
+uncertainty quantification methods not mentioned in the previous sentences 
+(e.g., reliability methods or stochastic expansion methods), the default 
+view is set to aleatory. Finally, for verification studies using the Richardson 
+extrapolation method, the active view is set to state. 
+\ref T7d111 "Table 7.111" summarizes the way to specify the active variables.
+It also describes the way to specify the domain, as outlined in the 
+section \ref VarDomain following.
+
+\anchor T7d111
+<table>
+<caption align = "top">
+\htmlonly
+Table 7.111
+\endhtmlonly
+Specification detail for active and domain settings 
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Active variables
+<td>\c active
+<td>\c all | \c design | \c uncertain | \c aleatory | \c epistemic | \c state
+<td>Optional
+<td>Depends on method and response specification
+<tr>
+<td>Domain of variables
+<td>\c mixed | \c relaxed
+<td>N/A
+<td>Optional 
+<td>mixed
+</table>
+
+
+\section VarDomain Variables Domain
+
+The variables domain specifies how the discrete variables are treated. 
+If the user specifies \c mixed in the variable specification
+block, the continuous and discrete variables are treated separately. 
+If the user specifies \c relaxed in the variable
+specification block, the discrete variables are relaxed and treated 
+as continuous variables. This may be useful in optimization problems 
+involving both continuous and discrete variables when a user would like 
+to use an optimization method that is designed for continuous variable 
+optimization. All Dakota methods have a default value of mixed for the 
+domain type except for the branch-and-bound method which has a default 
+domain type of relaxed. Note that the branch-and-bound method is under 
+development at this time. Finally, note that both domain types can have
+design, uncertain, and state variables. 
 
 
 \section VarDV Design Variables
