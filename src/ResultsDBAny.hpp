@@ -127,7 +127,7 @@ private:
   void output_data(const std::vector<RealVector>& data, std::ostream& os);
   /// output data to ostream
   void output_data(const std::vector<std::string>& data, std::ostream& os);
-
+  /// output data to ostream
   void output_data(const std::vector<std::vector<std::string> >& data,
 		   std::ostream& os);
 

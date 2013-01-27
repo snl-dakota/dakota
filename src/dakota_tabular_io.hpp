@@ -11,23 +11,23 @@
 
 #include "dakota_data_types.hpp"
 
-/// Utility functions for reading and writing tabular data files
-/**
-   Emerging utilities for tabular file I/O.  For now, just extraction
-   of capability from separate contexts to faciliate rework.  These
-   augment (and leverage) those in data_util.h
+/** \file dakota_tabular_io.hpp
+    \brief Utility functions for reading and writing tabular data files
+    Emerging utilities for tabular file I/O.  For now, just extraction
+    of capability from separate contexts to faciliate rework.  These
+    augment (and leverage) those in data_util.h
 
-   Design/capability goals:
-   * Ability to read / write data with row/col headers or in free-form 
-   * Detect premature end of file, report if extra data
-   * More consistent and reliable checks for file open errors
-   * Require right number of cols in header mode; only total data
-     checking in free-form (likely)
-   * Allow comment character for header rows or even in data?
-   * variables vs. variables/responses for both read and write
-   * Should we support CSV? delimiter = ','; other?
-   * Verify treatment of trailing newline without reading a zero
-   * Allow reading into the transpose of the data structure
+    Design/capability goals:
+    * Ability to read / write data with row/col headers or in free-form 
+    * Detect premature end of file, report if extra data
+    * More consistent and reliable checks for file open errors
+    * Require right number of cols in header mode; only total data
+      checking in free-form (likely)
+    * Allow comment character for header rows or even in data?
+    * variables vs. variables/responses for both read and write
+    * Should we support CSV? delimiter = ','; other?
+    * Verify treatment of trailing newline without reading a zero
+    * Allow reading into the transpose of the data structure
 */
 
 /* 

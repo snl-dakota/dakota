@@ -26,6 +26,8 @@ typedef _object PyObject;
 
 namespace Dakota {
 
+/** Specialization of DirectApplicInterface to link to Python analysis 
+    drivers.  Includes convenience functions to map data to/from Python */
 class PythonInterface: public DirectApplicInterface
 {
 
@@ -38,8 +40,6 @@ protected:
 
   /// execute an analysis code portion of a direct evaluation invocation
   virtual int derived_map_ac(const String& ac_name);
-
-private:
 
   /// direct interface to Python via API, BMA 07/02/07
   int python_run(const String& ac_name);

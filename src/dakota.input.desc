@@ -1475,6 +1475,8 @@ TAG "variables/id_variables"
 	DESC "{Variables set identifier} VarCommands.html#VarSetId"
 
 TAG "variables/active"
+	DESC "{Active variables} VarCommands.html#VarActive"
+
 TAG "variables/active/all"
 TAG "variables/active/design"
 TAG "variables/active/uncertain"

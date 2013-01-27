@@ -333,8 +333,8 @@ see \ref VarContainersViews.
 The \ref Dakota::Constraints "Constraints" hierarchy manages bound,
 linear, and nonlinear constraints and utilizes the same
 specializations for managing bounds on the variables (see \ref
-Dakota::MixedConstraints "MixedConstraints" and \ref
-Dakota::MergedConstraints "MergedConstraints").
+Dakota::MixedVarConstraints "MixedVarConstraints" and \ref
+Dakota::RelaxedVarConstraints "RelaxedVarConstraints").
 
 
 \subsection DevInterfaces Interfaces

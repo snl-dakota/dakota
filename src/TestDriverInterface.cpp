@@ -20,7 +20,7 @@
 
 namespace Dakota {
 
-// text_book: 1.0 is nominal, 1.4 used for B&B testing
+/// offset used text_book exponent: 1.0 is nominal, 1.4 used for B&B testing
 const double POW_VAL = 1.0 ;
 
 #ifdef DAKOTA_SALINAS

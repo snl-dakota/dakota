@@ -215,7 +215,7 @@ functions in ProblemDescDB.cpp.  These retrieval functions accept an
 identifier string and return a database attribute of a particular
 type, e.g., a RealVector:
 \code
-    const RealVector& get_rdv(const String& entry_name);
+    const RealVector& get_rv(const String& entry_name);
 \endcode
 The implementation of each of these functions contains tables of
 possible entry_name values and associated pointer-to-member values.
@@ -245,7 +245,7 @@ must be kept in alphabetical order of its entry names.  For example,
   }
 \endcode
 is the "model" portion of \ref 
-ProblemDescDB::get_rdv "ProblemDescDB::get_rdv()".  Based on
+ProblemDescDB::get_rv "ProblemDescDB::get_rv()".  Based on
 entry_name, it returns the relevant attribute
 from a \ref DataModel "DataModel" object.  
 Since there may be multiple model

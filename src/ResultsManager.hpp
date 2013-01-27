@@ -62,6 +62,7 @@ namespace Dakota {
 class ResultsID {
 
 public:
+  /// get the single unique instance of ResultsID
   static ResultsID& instance() {
     static ResultsID resultsIDInstance;
     return resultsIDInstance;
@@ -78,9 +79,13 @@ public:
 		const std::string& method_id) const;
 
 private:
+  /// Private constructor for ResultsID
   ResultsID() { /* empty */ }
+  /// Private destructor for ResultsID
   ~ResultsID() { /* empty */ }
+  /// Private copy constructor for ResultsID
   ResultsID(ResultsID const&);
+  /// Private assignment operator for ResultsID
   ResultsID& operator=(ResultsID const&);
 
   /// storage for the results IDs
@@ -142,7 +147,7 @@ public:
 
   { /* no-op */}
 
-  size_t namesVersion;
+  size_t namesVersion; //< Revision number Version of the results names
 
 
   // optimization (all used)

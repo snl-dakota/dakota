@@ -22,6 +22,8 @@
 
 namespace Dakota {
 
+/** Specialization of DirectApplicInterface to link to Scilab analysis 
+    drivers.  Includes convenience functions to map data to/from Scilab */
 class ScilabInterface: public DirectApplicInterface
 {
 public:
@@ -37,11 +39,11 @@ protected:
   /// execute an analysis code portion of a direct evaluation invocation
   virtual int derived_map_ac(const String& ac_name);
 
-private:
-
+  /// identifier for the running Scilab enginer
   int scilabEngine;
 
   // TODO: Scilab send, execute, retreive
+  /// principal Scilab execute function
   int scilab_engine_run(const String& ac_name);
 
 }; // class ScilabInterface

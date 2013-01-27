@@ -11,7 +11,7 @@
 //- Checked by:
 //- Version: $Id$
 
-/** \file dll_api.h
+/** \file dakota_dll_api.h
     \brief API for DLL interactions */
 
 #ifdef __MINGW32__

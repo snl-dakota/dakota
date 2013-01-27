@@ -88,12 +88,13 @@ one of the following modes:
 \ref ApplicationInterface::static_schedule_evaluations "ApplicationInterface::static_schedule_evaluations()"
   on the iterator master and 
 \ref ApplicationInterface::serve_evaluations_synch "ApplicationInterface::serve_evaluations_synch()" or 
-\ref ApplicationInterface::serve_evaluations_peer "ApplicationInterface::serve_evaluations_peer()" on the servers)
+\ref ApplicationInterface::serve_evaluations_synch_peer "ApplicationInterface::serve_evaluations_synch_peer()" on the servers)
   <li> hybrid mode (using 
 \ref ApplicationInterface::self_schedule_evaluations "ApplicationInterface::self_schedule_evaluations()" or 
 \ref ApplicationInterface::static_schedule_evaluations "ApplicationInterface::static_schedule_evaluations()"
   on the iterator master and 
-\ref ApplicationInterface::serve_evaluations_asynch "ApplicationInterface::serve_evaluations_asynch()"
+\ref ApplicationInterface::serve_evaluations_asynch "ApplicationInterface::serve_evaluations_asynch()" or 
+\ref ApplicationInterface::serve_evaluations_asynch_peer "ApplicationInterface::serve_evaluations_asynch_peer()" or 
   on the servers)
   </ul>
 <li> These scheduling functions utilize

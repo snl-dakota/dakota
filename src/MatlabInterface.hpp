@@ -27,6 +27,8 @@
 
 namespace Dakota {
 
+/** Specialization of DirectApplicInterface to link to Matlab analysis 
+    drivers.  Includes convenience functions to map data to/from Matlab */
 class MatlabInterface: public DirectApplicInterface
 {
 
@@ -42,8 +44,6 @@ protected:
 
   /// execute an analysis code portion of a direct evaluation invocation
   virtual int derived_map_ac(const String& ac_name);
-
-private:
 
   /// pointer to the MATLAB engine used for direct evaluations
   engine *matlabEngine;

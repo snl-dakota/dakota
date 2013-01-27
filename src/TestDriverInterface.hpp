@@ -19,6 +19,8 @@
 
 namespace Dakota {
 
+/** Specialization of DirectApplicInterface to embed algebraic test function 
+    drivers directly in Dakota */
 class TestDriverInterface: public DirectApplicInterface
 {
 public:

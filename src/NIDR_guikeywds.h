@@ -1963,7 +1963,7 @@ static GuiKeyWord
 		{"wuv_descriptors",7,0,3,0,1722,0,0.,0.,0.,0,0,0,"weibull_uncertain"}
 		},
 	kw_279[37] = {
-		{"active",8,6,2,0,1557,kw_246},
+		{"active",8,6,2,0,1557,kw_246,0.,0.,0.,0,"{Active variables} VarCommands.html#VarActive"},
 		{"beta_uncertain",0x19,10,14,0,1681,kw_247,0.,0.,0.,0,"{beta uncertain variables} VarCommands.html#VarCAUV_Beta","Continuous Aleatory Uncertain"},
 		{"binomial_uncertain",0x19,4,21,0,1743,kw_248,0.,0.,0.,0,"{binomial uncertain variables} VarCommands.html#VarDAUV_Binomial","Discrete Aleatory Uncertain"},
 		{"continuous_design",0x19,12,4,0,1575,kw_249,0.,0.,0.,0,"{Continuous design variables} VarCommands.html#VarCDV","Design Variables"},
