@@ -152,7 +152,7 @@ namespace Dakota {
 \section MethodDescr Method Description
 
 
-The method section in a DAKOTA input file specifies the name and
+The method section in a %Dakota input file specifies the name and
 controls of an iterator. The terms "method" and "iterator" can be used
 interchangeably, although method often refers to an input
 specification whereas iterator usually refers to an object within the
@@ -184,7 +184,6 @@ method,
 	  max_iterations = 50
 	  convergence_tolerance = 1e-4
 	  output verbose
-	  optimization_type minimize
 \endverbatim
 This example demonstrates the use of identifiers and pointers (see
 \ref MethodIndControl) as well as some method independent and method
@@ -192,9 +191,7 @@ dependent controls for the sequential quadratic programming (SQP)
 algorithm from the DOT library.  The \c max_iterations, \c
 convergence_tolerance, and \c output settings are method independent
 controls, in that they are defined for a variety of methods (see \ref
-MethodDOTIC for DOT usage of these controls). The \c optimization_type
-control is a method dependent control, in that it is only meaningful
-for DOT methods (see \ref MethodDOTDC).
+MethodDOTIC for DOT usage of these controls). 
 
 The next example shows a specification for a least squares method.
 \verbatim
@@ -205,9 +202,9 @@ method,
 	  search_method trust_region
 	  gradient_tolerance = 1.e-6
 \endverbatim
-Some of the same method independent controls are present along with a
-new set of method dependent controls (\c search_method and \c
-gradient_tolerance) which are only meaningful for OPT++ methods (see 
+Some of the same method independent controls are present along with
+several method dependent controls (\c search_method and \c
+gradient_tolerance) which are only meaningful for OPT++ methods (see
 \ref MethodOPTPPDC).
 
 The next example shows a specification for a nondeterministic method
@@ -243,23 +240,21 @@ method,
 	  <method dependent controls>
 \endverbatim
 
-where <tt>\<method selection\></tt> is for example one of the
-following: \c dot_frcg, \c dot_mmfd, \c dot_bfgs, \c dot_slp, \c
-dot_sqp, \c conmin_frcg, \c conmin_mfd, \c npsol_sqp, \c nlssol_sqp,
-\c nlpql_sqp, \c nl2sol, \c nonlinear_cg, \c optpp_cg, \c
-optpp_q_newton, \c optpp_fd_newton, \c optpp_g_newton, \c
-optpp_newton, \c optpp_pds, \c asynch_pattern_search, \c
-coliny_cobyla, \c coliny_direct, \c coliny_pattern_search, \c
-coliny_solis_wets, \c coliny_ea, \c moga, \c soga, \c ncsu_direct, \c
-dl_solver, \c surrogate_based_local, \c surrogate_based_global, \c
-efficient_global, \c polynomial_chaos, \c stoch_collocation,
-\c sampling, \c importance, \c local_reliability, \c
-global_reliability, \c local_evidence, \c
-global_evidence, \c local_interval_est, \c
-global_interval_est, \c bayes_calibration, \c dace, \c
-fsu_quasi_mc, \c fsu_cvt, \c psuade_moat, \c vector_parameter_study,
-\c list_parameter_study, \c centered_parameter_study, or \c
-multidim_parameter_study.
+where <tt>\<method selection\></tt> is one of the following: \c
+dot_frcg, \c dot_mmfd, \c dot_bfgs, \c dot_slp, \c dot_sqp, \c
+conmin_frcg, \c conmin_mfd, \c npsol_sqp, \c nlssol_sqp, \c nlpql_sqp,
+\c nl2sol, \c nonlinear_cg, \c optpp_cg, \c optpp_q_newton, \c
+optpp_fd_newton, \c optpp_g_newton, \c optpp_newton, \c optpp_pds, \c
+asynch_pattern_search, \c coliny_cobyla, \c coliny_direct, \c
+coliny_pattern_search, \c coliny_solis_wets, \c coliny_ea, \c moga, \c
+soga, \c ncsu_direct, \c dl_solver, \c surrogate_based_local, \c
+surrogate_based_global, \c efficient_global, \c polynomial_chaos, \c
+stoch_collocation, \c sampling, \c importance, \c local_reliability,
+\c global_reliability, \c local_evidence, \c global_evidence, \c
+local_interval_est, \c global_interval_est, \c bayes_calibration, \c
+dace, \c fsu_quasi_mc, \c fsu_cvt, \c psuade_moat, \c
+vector_parameter_study, \c list_parameter_study, \c
+centered_parameter_study, or \c multidim_parameter_study.
 
 The <tt>\<method independent controls\></tt> are those controls which
 are valid for a variety of methods. In some cases, these controls are
@@ -302,7 +297,7 @@ method to use is unambiguous in this case.
 The model pointer string is specified with \c model_pointer and is
 used to identify the model used to perform function evaluations for
 the method.  If a model pointer string is specified and no
-corresponding id is available, DAKOTA will exit with an error message.
+corresponding id is available, %Dakota will exit with an error message.
 If no model pointer string is specified, then the last model
 specification parsed will be used.  If no model pointer string is
 specified and no model specification is provided by the user, then a
@@ -652,7 +647,7 @@ default linear inequality constraint bounds are selected so that
 one-sided inequalities of the form
 \f[Ax \leq 0.0\f]
 result when there are no user bounds specifications (this provides
-backwards compatibility with previous DAKOTA versions). In a user
+backwards compatibility with previous %Dakota versions). In a user
 bounds specification, any upper bound values greater than \c
 +bigRealBoundSize (1.e+30, as defined in Minimizer) are treated as
 +infinity and any lower bound values less than \c -bigRealBoundSize
@@ -669,7 +664,7 @@ of \c 0. for each constraint
 
 Currently, APPS, CONMIN, DOT, JEGA, NLSSOL, NLPQL, NPSOL, OPT++, and 
 SCOLIB all support specialized handling of linear constraints (either
-directly through the algorithm itself or indirectly through the DAKOTA
+directly through the algorithm itself or indirectly through the %Dakota
 wrapper).  Linear constraints need not be computed by the user's
 interface on every function evaluation; rather the coefficients,
 bounds, and targets of the linear constraints can be provided at start
@@ -806,7 +801,7 @@ inequality and equality constraints
 \section MethodOpt Optimization Methods
 
 
-The DAKOTA project started as an toolbox for optimization methods, and 
+The %Dakota project started as an toolbox for optimization methods, and 
 has accumulated a broad variety of gradient-based and nongradient-based
 optimizers from the DOT, NPSOL, NLPQL, CONMIN, OPT++, APPS, SCOLIB, 
 NCSU, and JEGA packages.  These capabilities are described below.
@@ -818,13 +813,13 @@ NCSU, and JEGA packages.  These capabilities are described below.
 The DOT library 
 [\ref Vrand1995 "Vanderplaats Research and Development, 1995"] 
 contains nonlinear programming optimizers, specifically the
-Broyden-Fletcher-Goldfarb-Shanno (DAKOTA's \c dot_bfgs method) and
-Fletcher-Reeves conjugate gradient (DAKOTA's \c dot_frcg method)
+Broyden-Fletcher-Goldfarb-Shanno (%Dakota's \c dot_bfgs method) and
+Fletcher-Reeves conjugate gradient (%Dakota's \c dot_frcg method)
 methods for unconstrained optimization, and the modified method of
-feasible directions (DAKOTA's \c dot_mmfd method), sequential linear
-programming (DAKOTA's \c dot_slp method), and sequential quadratic
-programming (DAKOTA's \c dot_sqp method) methods for constrained
-optimization. DAKOTA provides access to the DOT library through the
+feasible directions (%Dakota's \c dot_mmfd method), sequential linear
+programming (%Dakota's \c dot_slp method), and sequential quadratic
+programming (%Dakota's \c dot_sqp method) methods for constrained
+optimization. %Dakota provides access to the DOT library through the
 DOTOptimizer class.
 
 We here provide a caution regarding \c dot_frcg.  In DOT
@@ -832,7 +827,7 @@ Version 4.20, we have noticed inconsistent behavior of this algorithm
 across different versions of Linux.  Our best assessment is that it is
 due to different treatments of uninitialized variables.  As we do not
 know the intention of the code authors and maintaining DOT source code
-is outside of the DAKOTA project scope, we have not made nor are we
+is outside of the %Dakota project scope, we have not made nor are we
 recommending any code changes to address this.  However, all users who
 use \c dot_frcg in DOT Version 4.20 should be aware that
 results may not be reliable.
@@ -883,7 +878,7 @@ DOT does not currently support any method dependent controls.
 The NPSOL library [\ref Gill1986 "Gill et al., 1986"] contains a
 sequential quadratic programming (SQP) implementation (the \c
 npsol_sqp method). SQP is a nonlinear programming optimizer for
-constrained minimization. DAKOTA provides access to the NPSOL library
+constrained minimization. %Dakota provides access to the NPSOL library
 through the NPSOLOptimizer class.
 
 
@@ -1006,10 +1001,10 @@ Specification detail for the NPSOL SQP method
 
 The NLPQL library is a commercially-licensed library containing a
 sequential quadratic programming (SQP) optimizer, specified as
-DAKOTA's \c nlpql_sqp method, for constrained optimization. The
+%Dakota's \c nlpql_sqp method, for constrained optimization. The
 particular implementation used is NLPQLP 
 [\ref Schitt2004 "Schittkowski, 2004"], a variant with distributed 
-and non-monotone line search.  DAKOTA provides access to the NLPQL 
+and non-monotone line search.  %Dakota provides access to the NLPQL 
 library through the NLPQLPOptimizer class.
 
 
@@ -1031,11 +1026,11 @@ NLPQL does not currently support any method dependent controls.
 
 The CONMIN library [\ref Van1973 "Vanderplaats, 1973"] is a public
 domain library of nonlinear programming optimizers, specifically the
-Fletcher-Reeves conjugate gradient (DAKOTA's \c conmin_frcg method)
+Fletcher-Reeves conjugate gradient (%Dakota's \c conmin_frcg method)
 method for unconstrained optimization, and the method of feasible
-directions (DAKOTA's \c conmin_mfd method) for constrained
+directions (%Dakota's \c conmin_mfd method) for constrained
 optimization. As CONMIN was a predecessor to the DOT commercial
-library, the algorithm controls are very similar.  DAKOTA provides
+library, the algorithm controls are very similar.  %Dakota provides
 access to the CONMIN library through the CONMINOptimizer class.
 
 
@@ -1057,9 +1052,9 @@ CONMIN does not currently support any method dependent controls.
 The OPT++ library [\ref MeOlHoWi07 "Meza et al., 2007"] contains primarily
 gradient-based nonlinear programming optimizers for unconstrained,
 bound-constrained, and nonlinearly constrained minimization:
-Polak-Ribiere conjugate gradient (DAKOTA's \c optpp_cg method),
-quasi-Newton (DAKOTA's \c optpp_q_newton method), finite difference
-Newton (DAKOTA's \c optpp_fd_newton method), and full Newton (DAKOTA's
+Polak-Ribiere conjugate gradient (%Dakota's \c optpp_cg method),
+quasi-Newton (%Dakota's \c optpp_q_newton method), finite difference
+Newton (%Dakota's \c optpp_fd_newton method), and full Newton (%Dakota's
 \c optpp_newton method).  The conjugate gradient method is strictly
 unconstrained, and each of the Newton-based methods are automatically
 bound to the appropriate OPT++ algorithm based on the user constraint
@@ -1067,8 +1062,8 @@ specification (unconstrained, bound-constrained, or
 generally-constrained).  In the generally-constrained case, the Newton
 methods use a nonlinear interior-point approach to manage the
 constraints.  The library also contains a direct search algorithm, PDS
-(parallel direct search, DAKOTA's \c optpp_pds method), which supports
-bound constraints. DAKOTA provides access to the OPT++ library through
+(parallel direct search, %Dakota's \c optpp_pds method), which supports
+bound constraints. %Dakota provides access to the OPT++ library through
 the SNLLOptimizer class, where "SNLL" denotes Sandia National
 Laboratories - Livermore.
 
@@ -1084,11 +1079,11 @@ threshold value on relative change in the objective function that
 indicates convergence. The \c output verbosity specification controls
 the amount of information generated from OPT++ executions: the \c debug
 setting turns on OPT++'s internal debug mode and also generates
-additional debugging information from DAKOTA's SNLLOptimizer wrapper
+additional debugging information from %Dakota's SNLLOptimizer wrapper
 class. OPT++'s gradient-based methods are not parallel algorithms and
 cannot directly take advantage of concurrent function
 evaluations. However, if \c numerical_gradients with \c method_source
-\c dakota is specified, a parallel DAKOTA configuration can utilize
+\c dakota is specified, a parallel %Dakota configuration can utilize
 concurrent evaluations for the finite difference gradient
 computations. OPT++'s nongradient-based PDS method can directly
 exploit asynchronous evaluations; however, this capability has not yet
@@ -1103,7 +1098,7 @@ function evaluation.  While some of these computations will be wasted,
 the positive effects are a consistent parallel load balance and
 usually shorter wall clock time.  The \c speculative specification is
 applicable only when parallelism in the gradient calculations can be
-exploited by DAKOTA (it will be ignored for \c vendor \c numerical
+exploited by %Dakota (it will be ignored for \c vendor \c numerical
 gradients).
 
 Lastly, linear constraint specifications are supported by each of the
@@ -1350,11 +1345,11 @@ The asynchronous parallel pattern search (APPS) algorithm [\ref GrKo06
 "Gray and Kolda, 2006"] is a fully asynchronous pattern search
 technique in that the search along each offset direction continues
 without waiting for searches along other directions to finish.  It is
-now made available in DAKOTA through the HOPSPACK software [\ref
+now made available in %Dakota through the HOPSPACK software [\ref
 Plantenga2009 "Plantenga, 2009"].  It can handle unconstrained
 problems as well as those with bound constraints, linear constraints,
 and general nonlinear constraints.  HOPSPACK is available to the
-public under the GNU LGPL and the source code is included with DAKOTA.
+public under the GNU LGPL and the source code is included with %Dakota.
 HOPSPACK-specific software documentation is available from
 https://software.sandia.gov/trac/hopspack.
 
@@ -1366,20 +1361,20 @@ output verbosity control.  We note that while APPS treats the
 constraint tolerance separately for linear and nonlinear constraints,
 we apply the same value to both if the user specifies \c
 constraint_tolerance.  The APPS internal "display" level is mapped to
-the DAKOTA \c debug, \c verbose, \c normal, \c quiet, and \c silent
+the %Dakota \c debug, \c verbose, \c normal, \c quiet, and \c silent
 settings as follows:
 
-\li DAKOTA "debug":   display final solution, all input parameters,
+\li %Dakota "debug":   display final solution, all input parameters,
 variable and constraint info, trial points, search directions, and
 execution details
-\li DAKOTA "verbose": display final solution, all input parameters,
+\li %Dakota "verbose": display final solution, all input parameters,
 variable and constraint info, and trial points
-\li DAKOTA "normal":  display final solution, all input parameters,
+\li %Dakota "normal":  display final solution, all input parameters,
 variable and constraint summaries, and new best points
-\li DAKOTA "quiet":   display final solution and all input parameters
-\li DAKOTA ""silent": display final solution
+\li %Dakota "quiet":   display final solution and all input parameters
+\li %Dakota ""silent": display final solution
 
-APPS exploits parallelism through the use of DAKOTA's concurrent
+APPS exploits parallelism through the use of %Dakota's concurrent
 function evaluations.  The variant of the algorithm that is currently
 exposed, however, limits the amount of concurrency that can be
 exploited.  In particular, APPS can leverage an evaluation concurrency
@@ -1411,7 +1406,7 @@ function evaluations in the pattern, and these patterns may only
 contract.  The \c synchronization specification can be used to specify
 the use of either \c blocking or \c nonblocking schedulers for APPS.
 The \c blocking option causes APPS to behave as a synchronous
-algorithm.  The \c nonblocking option is not available when DAKOTA is
+algorithm.  The \c nonblocking option is not available when %Dakota is
 used in message-passing mode.
 
 APPS solves nonlinearly constrained problems by solving a sequence of
@@ -1545,17 +1540,17 @@ reporting from SCOLIB, whereas the \c verbose setting corresponds to a
 higher level of information, and \c debug outputs method
 initialization and a variety of internal SCOLIB diagnostics.  The
 majority of SCOLIB's methods perform independent function evaluations
-that can directly take advantage of DAKOTA's parallel
+that can directly take advantage of %Dakota's parallel
 capabilities. Only \c coliny_solis_wets, \c coliny_cobyla, and certain
 configurations of \c coliny_pattern_search are inherently serial (see
 \ref MethodSCOLIBPS). The parallel methods automatically utilize
-parallel logic when the DAKOTA configuration supports
+parallel logic when the %Dakota configuration supports
 parallelism. Lastly, neither \c speculative gradients nor linear
 constraints are currently supported with SCOLIB.  Specification detail
 for method independent controls is provided in Tables \ref T5d1 "5.1"
 through \ref T5d3 "5.3".
 
-Some SCOLIB methods exploit parallelism through the use of DAKOTA's
+Some SCOLIB methods exploit parallelism through the use of %Dakota's
 concurrent function evaluations.  The nature of the algorithms,
 however, limits the amount of concurrency that can be exploited.  The
 maximum amount of evaluation concurrency that can be leveraged by the
@@ -1573,15 +1568,15 @@ All SCOLIB methods support the \c show_misc_options optional
 specification which results in a dump of all the allowable method
 inputs.  Note that the information provided by this command refers to
 optimizer parameters that are internal to SCOLIB, and which may differ
-from corresponding parameters used by the DAKOTA interface.  The \c
+from corresponding parameters used by the %Dakota interface.  The \c
 misc_options optional specification provides a means for inputing
 additional settings supported by the SCOLIB methods but which are not
-currently mapped through the DAKOTA input specification. Care must be
+currently mapped through the %Dakota input specification. Care must be
 taken in using this specification; they should only be employed by
 users familiar with the full range of parameter specifications
 available directly from SCOLIB and understand any differences that
 exist between those specifications and the ones available through
-DAKOTA.
+%Dakota.
 
 Each of the SCOLIB methods supports the \c solution_target control,
 which defines a convergence criterion in which the optimizer will
@@ -1800,7 +1795,7 @@ Specification detail for the DIRECT method
 \subsubsection MethodSCOLIBEA Evolutionary Algorithms
 <!-- dakota subcat coliny_ea -->
 
-DAKOTA currently provides several variants of evolutionary algorithms,
+%Dakota currently provides several variants of evolutionary algorithms,
 invoked through the \c coliny_ea group specification.
 
 The basic steps of an evolutionary algorithm are depicted in Figure
@@ -1972,7 +1967,7 @@ however, the default \c new_solutions_generated value is set such that
 the entire set of newly generated individuals will be selected for
 replacement.
 
-Note that \c new_solutions_generated is not recognized by DAKOTA as a
+Note that \c new_solutions_generated is not recognized by %Dakota as a
 valid keyword unless \c replacement_type has been specified.
 
 \ref T5d13 "Table 5.13" show the controls in the EA method associated
@@ -2087,7 +2082,7 @@ for a coordinate using a uniformly distributed value over the total
 range for that coordinate.
 
 Note that \c mutation_scale and \c mutation_range are not recognized
-by DAKOTA as valid keywords unless \c mutation_type has been
+by %Dakota as valid keywords unless \c mutation_type has been
 specified and the type is an "offset" mutations.
 
 The SCOLIB EA method uses self-adaptive mutation, which modifies the mutation
@@ -2095,7 +2090,7 @@ scale dynamically.  This mechanism is borrowed from EAs like
 evolution strategies.  The \c non_adaptive flag can be used to deactivate
 the self-adaptation, which may facilitate a more global search.  
 
-Note that \c non_adaptive is not recognized by DAKOTA as a valid
+Note that \c non_adaptive is not recognized by %Dakota as a valid
 keyword unless \c mutation_type has been specified.
 
 
@@ -2340,7 +2335,7 @@ Specification detail for the SCOLIB pattern search method: pattern controls
 
 \subsubsection MethodSCOLIBSW Solis-Wets
 
-DAKOTA's implementation of SCOLIB also contains the Solis-Wets
+%Dakota's implementation of SCOLIB also contains the Solis-Wets
 algorithm. The Solis-Wets method is a simple greedy local search
 heuristic for continuous parameter spaces.  Solis-Wets generates trial
 points using a multivariate normal distribution, and unsuccessful
@@ -2442,7 +2437,7 @@ the SCOLIB method section above).  This version is documented in [\ref
 Gablonsky2001 "Gablonsky, 2001".]  We have found that the NCSU DIRECT
 implementation works better and is more robust for some problems than
 \c coliny_direct.  Currently, we maintain both versions of DIRECT in
-DAKOTA; in the future, we may deprecate one.  The NCSU DIRECT method
+%Dakota; in the future, we may deprecate one.  The NCSU DIRECT method
 is selected with \c ncsu_direct.  We have tried to maintain
 consistency between the keywords in SCOLIB and NCSU implementation of
 DIRECT, but the algorithms have different parameters, so the keywords
@@ -2529,7 +2524,7 @@ mixture of real and discrete variables.  The JEGA library was written
 by John Eddy, currently a member of the technical staff in the
 System Readiness and Sustainment Technologies department at Sandia National
 Laboratories in Albuquerque.  These algorithms are accessed as \c moga and
-\c soga within DAKOTA.  DAKOTA provides access to the JEGA library through the 
+\c soga within %Dakota.  %Dakota provides access to the JEGA library through the 
 JEGAOptimizer class.
 
 
@@ -2538,7 +2533,7 @@ JEGAOptimizer class.
 JEGA utilizes the \c max_iterations and \c max_function_evaluations
 method independent controls to provide integer limits for the maximum
 number of generations and function evaluations, respectively.  Note that 
-currently, the DAKOTA default for \c max_iterations is 100 and for 
+currently, the %Dakota default for \c max_iterations is 100 and for 
 \c max_function_evaluations is 1000.  These are the default settings 
 that will be used to "stop" the JEGA algorithms, unless some specific
 convergence criteria are set (see Tables \ref T5d20 "5.20" and
@@ -3113,7 +3108,7 @@ optimization strategy (which requires one optimal solution from each
 individual optimization method to be passed to the subsequent
 optimization method as its starting point), the solution in the Pareto
 set closest to the "utopia" point is given as the best solution. This
-solution is also reported in the DAKOTA output.  This "best" solution
+solution is also reported in the %Dakota output.  This "best" solution
 in the Pareto set has minimum distance from the utopia point.  The
 utopia point is defined as the point of extreme (best) values for each
 objective function.  For example, if the Pareto front is bounded by
@@ -3298,7 +3293,7 @@ Specification detail for SOGA method controls
 \section MethodLS Least Squares Methods
 
 
-DAKOTA's least squares branch currently contains three methods for
+%Dakota's least squares branch currently contains three methods for
 solving nonlinear least squares problems: NL2SOL, a trust-region
 method that adaptively chooses between two Hessian approximations
 (Gauss-Newton and Gauss-Newton plus a quasi-Newton approximation to
@@ -3334,13 +3329,13 @@ usually exhibits fast convergence.
 
 NL2SOL has a variety of internal controls as described in AT&T Bell
 Labs CS TR 153 (http://cm.bell-labs.com/cm/cs/cstr/153.ps.gz).  A
-number of existing DAKOTA controls (method independent controls and
+number of existing %Dakota controls (method independent controls and
 responses controls) are mapped into these NL2SOL internal controls.
-In particular, DAKOTA's \c convergence_tolerance, \c max_iterations,
+In particular, %Dakota's \c convergence_tolerance, \c max_iterations,
 \c max_function_evaluations, and \c fd_gradient_step_size are mapped
 directly into NL2SOL's \c rfctol, \c mxiter, \c mxfcal, and \c dltfdj
-controls, respectively.  In addition, DAKOTA's \c fd_hessian_step_size
-is mapped into both \c delta0 and \c dltfdc, and DAKOTA's \c output
+controls, respectively.  In addition, %Dakota's \c fd_hessian_step_size
+is mapped into both \c delta0 and \c dltfdc, and %Dakota's \c output
 verbosity is mapped into NL2SOL's \c auxprt and \c outlev (for \c
 normal/\c verbose/\c debug \c output, NL2SOL prints initial guess,
 final solution, solution statistics, nondefault values, and changes to
@@ -3480,7 +3475,7 @@ NLSSOL is available as \c nlssol_sqp and supports unconstrained,
 bound-constrained, and generally-constrained problems.  It exploits
 the structure of a least squares objective function through the
 periodic use of Gauss-Newton Hessian approximations to accelerate the
-SQP algorithm.  DAKOTA provides access to the NLSSOL library through
+SQP algorithm.  %Dakota provides access to the NLSSOL library through
 the NLSSOLLeastSq class.  The method independent and method dependent
 controls are identical to those of NPSOL as described in \ref
 MethodNPSOLIC and \ref MethodNPSOLDC.
@@ -3743,7 +3738,7 @@ command \c constraint_relax followed by a method name specifies the
 type of relaxation to be used. Currently, \c homotopy [\ref Perez2004
 "Perez et al., 2004"] is the only available method for constraint
 relaxation, and this method is dependent on the presence of the NPSOL
-library within the DAKOTA executable. Table \ref T5d25 "5.25"
+library within the %Dakota executable. Table \ref T5d25 "5.25"
 summarizes these constraint management inputs.
 
 \anchor T5d25
@@ -3949,7 +3944,7 @@ function (which is currently performed by the NCSU DIRECT algorithm
 using its internal defaults).  The efficient global algorithm is
 specified by the keyword \c efficient_global along with an optional \c
 seed specification, as shown in in Table \ref T5d27 "5.27" below.  By
-default, EGO uses the Surfpack GP (Kriging) model, but the DAKOTA
+default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
 implementation may be selected instead.  If \c use_derivatives is
 specified the GP model will be built using available derivative data
 (Surfpack GP only).
@@ -3998,7 +3993,7 @@ Specification detail for the efficient global method
 \section MethodNonD Uncertainty Quantification Methods
 
 
-DAKOTA provides a variety of methods for propagating uncertainty.
+%Dakota provides a variety of methods for propagating uncertainty.
 Aleatory uncertainty refers to inherent variability, irreducible
 uncertainty, or randomness, and is addressed with the probabilistic
 methods described in \ref MethodNonDAleat.  Epistemic uncertainty
@@ -4006,12 +4001,12 @@ refers to subjective uncertainty, reducible uncertainty, model form
 uncertainty, or uncertainty due to lack of knowledge, and is addressed
 using the non-probabilistic approaches described in \ref
 MethodNonDEpist.  In general, we refer to both classes of uncertainty
-quantification methods in DAKOTA as nondeterministic methods.  In the
+quantification methods in %Dakota as nondeterministic methods.  In the
 descriptions below, we described the issues and specification controls
 that are common to both aleatory and epistemic uncertainty
 quantification.
 
-DAKOTA's nondeterministic methods make use of a few method independent
+%Dakota's nondeterministic methods make use of a few method independent
 controls.  \c max_iterations and \c convergence_tolerance are used by
 iterated local and global reliability, stochastic expansions undergoing
 automated refinement, and optimization-based epistemic methods.  \c
@@ -4625,7 +4620,7 @@ uncertainty is typically modeled using probabilistic approaches
 through the specification of probability distributions to represent
 the uncertain input variables and the propagation of this uncertainty
 using probability theory.  The probabilistic approaches supported in
-DAKOTA include sampling, local and global reliability, polynomial
+%Dakota include sampling, local and global reliability, polynomial
 chaos, and stochastic collocation, which may be used to propagate
 random variables described by \ref VarCAUV_Normal, \ref VarCAUV_Lognormal,
 \ref VarCAUV_Uniform, \ref VarCAUV_Loguniform, \ref VarCAUV_Triangular, \ref
@@ -4642,7 +4637,7 @@ The nondeterministic sampling method is selected using the \c
 sampling specification. This method draws samples from the
 specified uncertain variable probability distributions and propagates
 them through the model to obtain statistics on the output response
-functions of interest.  DAKOTA provides access to nondeterministic
+functions of interest.  %Dakota provides access to nondeterministic
 sampling methods through the combination of the NonDSampling base
 class and the NonDLHSSampling derived class.
 
@@ -4738,7 +4733,7 @@ derivatives of output variables with respect to input variables.  Our
 definition is similar to that of [\ref Saltelli2004 "Saltelli et al., 2004"]: 
 "The study of how uncertainty in the output of a model can be 
 apportioned to different sources of uncertainty in the model input."
-As a default, DAKOTA provides correlation analyses when running LHS.
+As a default, %Dakota provides correlation analyses when running LHS.
 Correlation tables are printed with the simple, partial, and rank
 correlations between inputs and outputs.  These can be useful to get a
 quick sense of how correlated the inputs are to each other, and how
@@ -5010,21 +5005,21 @@ they use a Gaussian process model to form an approximation to the
 limit state (based either in x-space via the \c x_gaussian_process
 specification or in u-space via the \c u_gaussian_process
 specification), followed by probability estimation based on multimodal
-adaptive importance sampling (see [\ref Bichon2007 "Bichon et al.,
-2007"]) and [\ref Bichon2008 "Bichon et al., 2008"]).  These
+adaptive importance sampling (see 
+[\ref Bichon2007 "Bichon et al., 2007"]) and 
+[\ref Bichon2008 "Bichon et al., 2008"]).  These
 probability estimates may then be transformed into generalized
 reliability levels if desired.  At this time, inverse reliability
 analysis (mapping probability or generalized reliability levels into
-response levels) is not yet operational.  The Gaussian process model
-approximation to the limit state is formed over the uncertain
+response levels) is not implemented.  The Gaussian process model
+approximation to the limit state is formed over the aleatory uncertain
 variables by default, but may be extended to also capture the effect
-of design and state variables.  If this is desired, one must 
-use the appropriate controls to specify the active variables in the 
-variables specification block. By
-default, the Surfpack GP (Kriging) model is used, but the DAKOTA
-implementation may be selected instead. If \c use_derivatives is
-specified the GP model will be built using available derivative data
-(Surfpack GP only).
+of design, epistemic uncertain, and state variables.  If this is
+desired, one must use the appropriate controls to specify the active
+variables in the variables specification block. By default, the
+Surfpack GP (Kriging) model is used, but the %Dakota implementation may
+be selected instead. If \c use_derivatives is specified the GP model
+will be built using available derivative data (Surfpack GP only).
 
 \ref T5d34 "Table 5.34" provides details of the global reliability method
 specifications beyond those of \ref T5d28 "Table 5.28".
@@ -5092,7 +5087,7 @@ In importance sampling, the samples are generated from a density which is
 called the importance density:  it is not the original probability density 
 of the input distributions.  The importance density should be centered near the 
 failure region of interest.  For black-box simulations such as those commonly 
-interfaced with DAKOTA, it is difficult to specify the importance density a priori: 
+interfaced with %Dakota, it is difficult to specify the importance density a priori: 
 the user often does not know where the failure region lies, especially in a high-dimensional 
 space.[\ref Swiler2010 "Swiler and West, 2010"].  
 We have developed two importance sampling approaches which do not 
@@ -5170,7 +5165,7 @@ Specification detail for the LHS-based importance sampling method
 <td>N/A
 </table>
 
-The second importance sampling method in DAKOTA, \c gpais, is the one we recommend, 
+The second importance sampling method in %Dakota, \c gpais, is the one we recommend, 
 at least for problems that have a relatively small number of input variables (e.g. 
 less than 10-20).  This method, Gaussian Process Adaptive Importance Sampling, 
 is outlined in the paper [\ref Dalbey2012 "Dalbey and Swiler, 2012"].  
@@ -5262,7 +5257,7 @@ initial sample point
 <li> Select a candidate point to evaluate the true model and Repeat 2-4
 </ol>
  
-In terms of the DAKOTA implementation, the adaptive sampling method
+In terms of the %Dakota implementation, the adaptive sampling method
 currently uses Latin Hypercube sampling (LHS) to generate the initial
 points in Step 1 above.  For Step 2, we use a Gaussian process model.
 The user can specify the \c fitness_metric used to select the
@@ -5415,7 +5410,7 @@ multidimensional orthogonal polynomial and \f$\xi\f$ is a vector of
 standardized random variables.  An important distinguishing feature of
 the methodology is that the functional relationship between random
 inputs and outputs is captured, not merely the output statistics as in
-the case of many nondeterministic methodologies. DAKOTA provides
+the case of many nondeterministic methodologies. %Dakota provides
 access to PCE methods through the NonDPolynomialChaos class.  Refer to
 the Uncertainty Quantification Capabilities chapter of the Users
 Manual [\ref UsersMan "Adams et al., 2010"] for additional information
@@ -5444,7 +5439,7 @@ restriction to the use of Askey bases only or by supplying the keyword
 bases.  If needed to support prescribed correlations (not under user
 control), the Extended and Askey options will fall back to the Wiener
 option <EM>on a per variable basis</EM>.  If the prescribed
-correlations are also unsupported by Wiener expansions, then DAKOTA
+correlations are also unsupported by Wiener expansions, then %Dakota
 will exit with an error.  Additional details include:
 - Askey polynomial selections include Hermite for normal (optimal) as 
   well as bounded normal, lognormal, bounded lognormal, gumbel, frechet, 
@@ -5491,19 +5486,23 @@ while the oversampling ratio (either defined by \c collocation_ratio
 or inferred from \c collocation_points based on the initial expansion) 
 is held fixed.  Finally, the \c generalized \c dimension_adaptive case 
 is the default adaptive approach; it refers to the generalized sparse
-grid algorithm, in which candidate index sets are evaluated for their
-impact on the statistical QOI, the most influential sets are selected
-and used to generate additional candidates, and the index set frontier
-of a sparse grid is evolved in an unstructured and goal-oriented
-manner (refer to User's Manual PCE descriptions for additional
-specifics).
+grid algorithm, a greedy approach in which candidate index sets are 
+evaluated for their impact on the statistical QOI, the most
+influential sets are selected and used to generate additional
+candidates, and the index set frontier of a sparse grid is evolved in
+an unstructured and goal-oriented manner (refer to User's Manual PCE
+descriptions for additional specifics).
 
 The \c variance_based_decomp and \c drop_tolerance are also the same
 as those described in \ref MethodNonDMC, but since PCE outputs main,
 interaction, and total effects by default, the \c univariate_effects
 option has been added to allow suppression of the interaction effects
 since the output volume of these results can be prohibitive for high
-dimensional problems.
+dimensional problems.  Similar to suppression of these interactions is
+the covariance control, which can be selected to be \c
+diagonal_covariance or \c full_covariance, with the former supporting
+suppression of the off-diagonal covariance terms (to save compute and
+memory resources and reduce output volume).
 
 As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, 
 The default behavior is to form expansions over aleatory 
@@ -5582,6 +5581,12 @@ Specification detail for polynomial chaos expansion method: general controls.
 <td>real
 <td>Optional
 <td>All VBD indices displayed
+<tr>
+<td>Covariance control
+<td>\c diagonal_covariance | \c full_covariance
+<td>none
+<td>Optional
+<td>\c diagonal_covariance for response vector > 10; else \c full_covariance
 </table>
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
@@ -5736,12 +5741,13 @@ cubature, and sparse grid approaches.
 <li> linear regression (specified with either \c collocation_points or
      \c collocation_ratio).  A total-order expansion is used and must
      be specified using \c expansion_order as described in the
-     previous option.  Given \e p or \e N, the total number of
+     previous option.  <!-- Given \e p or \e N, the total number of
      collocation points (including any sample reuse) must be at least
      \e N, and an oversampling is generally advisable.  To more easily
      satisfy this requirement (i.e., to avoid requiring the user to
-     calculate \e N from \e n and \e p), \c collocation_ratio allows
-     for specification of a constant oversampling factor applied to \e
+     calculate \e N from \e n and \e p), --> To avoid requiring the 
+     user to calculate \e N from \e n and \e p), the \c collocation_ratio 
+     allows for specification of a constant factor applied to \e
      N (e.g., \c collocation_ratio = \c 2. produces samples = \e 2N).
      In addition, the default linear relationship with \e N can be
      overridden using a real-valued exponent specified using \c
@@ -5760,15 +5766,18 @@ cubature, and sparse grid approaches.
      alternate approach of "probabilistic collocation" is also
      available through inclusion of the \c tensor_grid keyword.  In
      this alternate case, the collocation grid is defined using a
-     subset of tensor-product quadrature points: the order of an
-     isotropic tensor-product quadrature grid is selected as the
-     minimum required to meet or exceed the point requirement, and
-     then this set of points is filtered down to the requirement based
-     on the subset of points having highest product integration
-     weight.  In our experience, the alternate probabilistic
-     collocation approach using a structured grid tends to suffer from
-     ill-conditioning more quickly than the default point collocation
-     approach using an unstructured grid.
+     subset of tensor-product quadrature points: the order of the 
+     tensor-product grid is selected as one more than the expansion
+     order in each dimension (to avoid sampling at roots of the basis 
+     polynomials) and then the tensor multi-index is uniformly sampled
+     to generate a non-repeated subset of tensor quadrature points.
+     <!-- the order of the tensor-product grid is the minimum required
+     to meet or exceed the point requirement, and then this set of
+     points is filtered down to the requirement based on the subset of
+     points having highest product integration weight.  In our experience,
+     the alternate probabilistic collocation approach using a structured
+     grid tends to suffer from ill-conditioning more quickly than the
+     default point collocation approach using an unstructured grid. -->
 <li> coefficient import from a file (specified with \c
      expansion_import_file).  A total-order expansion is assumed and
      must be specified using \c expansion_order.
@@ -5788,6 +5797,12 @@ sampling, regression, and expansion import options.
 <td><b>Associated Data</b>
 <td><b>Status</b>
 <td><b>Default</b>
+<tr>
+<td>Expansion order
+<td>\c expansion_order
+<td>list of integers (scalar input accepted for isotropic)
+<td>Required
+<td>N/A
 <tr>
 <td>Number simulation samples to estimate coeffs
 <td>\c expansion_samples
@@ -5831,7 +5846,7 @@ sampling, regression, and expansion import options.
 <td>Optional
 <td>no sample reuse in coefficient estimation
 <tr>
-<td>Tensor grid flag with \c collocation__{points or \c ratio}
+<td>Tensor grid flag with \c collocation_{points or \c ratio}
 <td>\c tensor_grid
 <td>none
 <td>Optional
@@ -5842,34 +5857,29 @@ sampling, regression, and expansion import options.
 <td>string
 <td>Required (1 of 7 selections)
 <td>N/A
-<tr>
-<td>Expansion order
-<td>\c expansion_order
-<td>list of integers (scalar input accepted for isotropic)
-<td>Required
-<td>N/A
 </table>
 
-If expansion_samples, collocation_points or collocation_ratio is specified,
-the PCE coefficients will be determined by regression. \ref T5d41 "Table 5.41"
-list the various regression specifications which are all are optional. 
-If no specifications are provided appropriate defaults are in place. 
-Specifically SVD based least-squares will be used for solving over-determined 
-systems and under-determined systems will be solved using LASSO. For the
-situation when the number of function values is smaller than the number 
-of terms in a PCE, but the total number of samples including gradient 
-values is greater than the number of terms, the resulting 
-over-determined system will be solved using equality constrained least squares. 
-Technical information on the various methods listed below can be found in the 
-Linear regression section of the Theory Manual. Some of the regression 
-methods (OMP, LASSO, and LARS) are able to 
-produce a set of possible PCE coefficient vectors ( See the Linear regression 
-section in the Theory Manual). If cross validation is off 
-then only the solution, consistent with noise_tolerance will be returned. If
-cross validation is on DAKOTA will choose between all possible coefficient
-vectors found internally by the regression method for all expansion orders 
-1,...,expansion_order) and return the one with the lowest cross validation error
-indicator.
+If \c collocation_points or \c collocation_ratio is specified, the PCE
+coefficients will be determined by regression. \ref T5d41 "Table 5.41"
+lists a set of optional regression specifications.  If no regression
+specification is provided, appropriate defaults are defined.
+Specifically SVD-based least-squares will be used for solving
+over-determined systems and under-determined systems will be solved
+using LASSO. For the situation when the number of function values is
+smaller than the number of terms in a PCE, but the total number of
+samples including gradient values is greater than the number of terms,
+the resulting over-determined system will be solved using equality
+constrained least squares.  Technical information on the various
+methods listed below can be found in the Linear regression section of
+the Theory Manual. Some of the regression methods (OMP, LASSO, and
+LARS) are able to produce a set of possible PCE coefficient vectors
+(see the Linear regression section in the Theory Manual). If cross
+validation is inactive, then only one solution, consistent with the \c
+noise_tolerance, will be returned. If cross validation is active,
+%Dakota will choose between possible coefficient vectors found
+internally by the regression method across the set of expansion orders
+(1,...,expansion_order) and the set of specified noise tolerances and
+return the one with the lowest cross validation error indicator.
 
 \anchor T5d41
 <table>
@@ -5923,18 +5933,18 @@ sampling, regression, and expansion import options.
 <td>Optional
 <td>N/A
 <tr>
-<td>Noise tolerance used in conjuction with BPDN, OMP, LARS, LASSO 
+<td>Noise tolerance(s) used in conjuction with BPDN, OMP, LARS, LASSO 
 as an exit condition 
 <td>\c noise_tolerance
 <td>list of reals
 <td>Optional
-<td>1e-3 for BPDN 0. otherwise (algorithms run until termination)
+<td>1e-3 for BPDN, 0. otherwise (algorithms run until termination)
 <tr>
 <td>l2_penalty used for elastic net modification of LASSO
 <td>\c l2_penalty
 <td>real
 <td>Optional
-<td>0. (reverts to standard lasso formualtion)
+<td>0. (reverts to standard LASSO formulation)
 <tr>
 <td>Specify whether to use cross validation
 <td>\c cross_validation
@@ -5946,19 +5956,19 @@ as an exit condition
 
 If \e n is small (e.g., two or three), then tensor-product Gaussian
 quadrature is quite effective and can be the preferred choice.  For
-moderate \e n (e.g., five), tensor-product quadrature quickly becomes
-too expensive and the sparse grid and point collocation approaches are
-preferred.  For large \e n (e.g., more than ten), point collocation
-may begin to suffer from ill-conditioning and sparse grids are
-generally recommended.  Random sampling for coefficient estimation is
-generally not recommended due to its slow convergence rate, although
-it does hold the advantage that the simulation budget is more flexible
-than that required by the other approaches.  For incremental studies,
-approaches 4 and 5 support reuse of previous samples through the 
-\c incremental_lhs (refer to \ref MethodNonDMC for description of
-incremental LHS) and \c reuse_samples (refer to \ref ModelSurrG for
-description of the "all" option of sample reuse) specifications,
-respectively.
+moderate to large \e n (e.g., five or more), tensor-product quadrature
+quickly becomes too expensive and the sparse grid and regression
+approaches are preferred.  <!-- For large \e n (e.g., more than ten),
+point collocation may begin to suffer from ill-conditioning and sparse
+grids are generally recommended. --> Random sampling for coefficient
+estimation is generally not recommended due to its slow convergence
+rate.  <!--, although it does hold the advantage that the simulation
+budget is more flexible than that required by the other approaches.-->
+For incremental studies, approaches 4 and 5 support reuse of previous
+samples through the \c incremental_lhs (refer to \ref MethodNonDMC for
+description of incremental LHS) and \c reuse_samples (refer to \ref
+ModelSurrG for description of the "all" option of sample reuse)
+specifications, respectively.
 
 In the quadrature and sparse grid cases, growth rates for nested and
 non-nested rules can be synchronized for consistency.  For a
@@ -6123,7 +6133,7 @@ due to numerical stability.
 
 Thus, in PCE, one forms coefficients for known orthogonal polynomial
 basis functions, whereas SC forms multidimensional interpolation
-functions for known coefficients.  DAKOTA provides access to SC
+functions for known coefficients.  %Dakota provides access to SC
 methods through the NonDStochCollocation class.  Refer to the
 Uncertainty Quantification Capabilities chapter of the Users Manual
 [\ref UsersMan "Adams et al., 2010"] for additional information on the
@@ -6157,21 +6167,41 @@ or within each of the tensor grids underlying a sparse grid), which
 exchanges the fast convergence of global bases for smooth functions
 for robustness in the representation of nonsmooth response functions
 (that can induce Gibbs oscillations when using high-order global basis
-functions).  Piecewise bases can be formulated using either a \c nodal
-basis approach or a \c hierarchical basis approach, where the latter
-enables local error estimation via hierarchical surpluses (currently
-under development).  When local basis
-functions are used, the usage of nonequidistant collocation points
-(e.g., the Gauss point selections described above) are not well
-motivated, so equidistant Newton-Cotes points are employed in this
-case, and all random variable types are transformed to standard
-uniform probability space (refer to Tables \ref T5d29 "5.29", \ref
-T5d30 "5.30", and \ref T5d31 "5.31" for variable types for which this
-transformation is supported).  The global gradient-enhanced
-interpolants (Hermite inteprolation polynomials) are also restricted
-to uniform or transformed uniform random variables (due to the need to
-compute collocation weights by integration of the basis polynomials)
-and share the variable support shown in these tables for Piecewise SE.
+functions).  When local basis functions are used, the usage of
+nonequidistant collocation points (e.g., the Gauss point selections
+described above) is not well motivated, so equidistant Newton-Cotes
+points are employed in this case, and all random variable types are
+transformed to standard uniform probability space (refer to Tables
+\ref T5d29 "5.29", \ref T5d30 "5.30", and \ref T5d31 "5.31" for
+variable types for which this transformation is supported).  The
+global gradient-enhanced interpolants (Hermite interpolation
+polynomials) are also restricted to uniform or transformed uniform
+random variables (due to the need to compute collocation weights by
+integration of the basis polynomials) and share the variable support
+shown in these tables for Piecewise SE.  Due to numerical instability
+in these high-order basis polynomials, they are deactivated by default
+but can be activated by developers using a compile-time switch.
+
+Another distinguishing characteristic of stochastic collocation
+relative to polynomial chaos is the ability to reformulate the
+interpolation problem from a \c nodal interpolation approach into a \c
+hierarchical formulation in which each new level of interpolation
+defines a set of incremental refinements (known as hierarchical
+surpluses) layered on top of the interpolants from previous levels.
+This formulation lends itself naturally to uniform or adaptive
+refinement strategies, since the hierarchical surpluses can be
+interpreted as error estimates for the interpolant.  Either global or
+local/piecewise interpolants in either value-based or
+gradient-enhanced approaches can be reformulated using \c hierarchical
+interpolation.  The primary restriction for the hierarchical case is
+that it currently requires a sparse grid approach using nested
+quadrature rules (Genz-Keister, Gauss-Patterson, or Newton-Cotes),
+although this restriction can be relaxed in the future.  A selection
+of \c hierarchical interpolation will provide greater precision in the
+increments to mean, standard deviation, covariance, and
+reliability-based level mappings induced by a grid change within
+uniform or goal-oriented adaptive refinement approaches (see following
+section).
 
 Automated expansion refinement can be selected as either \c
 p_refinement or \c h_refinement, and either refinement specification
@@ -6184,24 +6214,22 @@ The \c h_refinement specification involves use of the same piecewise
 interpolants (linear or cubic Hermite splines) described above for the
 \c piecewise specification option (it is not necessary to redundantly
 specify \c piecewise in the case of \c h_refinement).  In future
-releases, the \c hierarchical approach for \c piecewise bases will
-enable local \c h_refinement in addition to the current \c uniform and
-\c dimension_adaptive options.
+releases, the \c hierarchical interpolation approach will enable local
+refinement in addition to the current \c uniform and \c
+dimension_adaptive options.
 
-The \c variance_based_decomp is 
-identical to that described in \ref MethodNonDPCE.  
-As a default, the interpolation will be performed over 
-continuous aleatory uncertain variables.  
-To expand the dimensionality of the interpolation to
-include continuous design, state, and epistemic uncertain variables,
-it is necessary to specify which variables are active in the 
-variables specification block. 
-Interpolation points for these dimensions are based on Gauss-Legendre
-rules if non-nested, Gauss-Patterson rules if nested, and Newton-Cotes
-points in the case of piecewise bases.  Again, when probability
-integrals are evaluated, only the aleatory random variable domain is
-integrated, leaving behind a polynomial relationship between the
-statistics and the remaining design/state/epistemic variables.
+The \c variance_based_decomp and covariance controls are identical to
+that described in \ref MethodNonDPCE.  As a default, the interpolation
+will be performed over continuous aleatory uncertain variables.  To
+expand the dimensionality of the interpolation to include continuous
+design, state, and epistemic uncertain variables, it is necessary to
+specify which variables are active in the variables specification
+block.  Interpolation points for these dimensions are based on
+Gauss-Legendre rules if non-nested, Gauss-Patterson rules if nested,
+and Newton-Cotes points in the case of piecewise bases.  Again, when
+probability integrals are evaluated, only the aleatory random variable
+domain is integrated, leaving behind a polynomial relationship between
+the statistics and the remaining design/state/epistemic variables.
 
 \ref T5d43 "Table 5.43" shows these general SC controls, and it along
 with \ref T5d44 "Table 5.44" to follow provide the details of the
@@ -6235,11 +6263,17 @@ Specification detail for stochastic collocation method: general controls.
 <td>Optional
 <td>Gauss points/weights from extended set of global orthogonal polynomials (Askey + numerically generated)
 <tr>
-<td>Piecewise basis formulation
+<td>Basis formulation
 <td>\c nodal | \c hierarchical
 <td>none
 <td>Optional
 <td>\c nodal
+<tr>
+<td>Derivative enhancement flag
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>interpolation based on function values alone
 <tr>
 <td>Automated expansion refinement
 <td>\c p_refinement | \c h_refinement
@@ -6252,12 +6286,6 @@ Specification detail for stochastic collocation method: general controls.
 <td>none
 <td>Optional group
 <td>\c generalized
-<tr>
-<td>Derivative usage flag
-<td>\c use_derivatives
-<td>none
-<td>Optional
-<td>interpolation based on function values alone
 <tr>
 <td>Variance-based decomposition (VBD)
 <td>\c variance_based_decomp
@@ -6276,6 +6304,12 @@ Specification detail for stochastic collocation method: general controls.
 <td>real
 <td>Optional
 <td>All VBD indices displayed
+<tr>
+<td>Covariance control
+<td>\c diagonal_covariance | \c full_covariance
+<td>none
+<td>Optional
+<td>\c diagonal_covariance for response vector > 10; else \c full_covariance
 </table>
 
 To form the multidimensional interpolants \f$L_i\f$ of the expansion,
@@ -6381,7 +6415,7 @@ of complex physics or behavior that is not included in the simulation
 model of a system. Epistemic uncertainty can be modeled
 probabilistically but is often modeled using non-probabilistic
 approaches such as interval propagation, evidence theory, possibility
-theory, information gap theory, etc.  In DAKOTA, epistemic uncertainty
+theory, information gap theory, etc.  In %Dakota, epistemic uncertainty
 analysis is performed using interval analysis or Dempster-Shafer
 theory of evidence.  Epistemic (or mixed aleatory-epistemic)
 uncertainty may also be propagated through the use of the \ref
@@ -6499,7 +6533,7 @@ the samples as the bounds (no optimization is
 performed).  In the \c ego approach,
 the efficient global optimization (EGO) method is used to calculate
 bounds (see the EGO method on this page for more explanation).  By
-default, the Surfpack GP (Kriging) model is used, but the DAKOTA
+default, the Surfpack GP (Kriging) model is used, but the %Dakota
 implementation may be selected instead.  If \c use_derivatives is
 specified the GP model will be built using available derivative data
 (Surfpack GP only). If using \c sbo, a surrogate-based optimization
@@ -6693,7 +6727,7 @@ takes the minimum and maximum of the samples as the bounds per
 "interval cell combination."  In the case of \c ego, the efficient
 global optimization (EGO) method is used to calculate bounds (see the
 EGO method on this page for more explanation).  By default, the
-Surfpack GP (Kriging) model is used, but the DAKOTA implementation may
+Surfpack GP (Kriging) model is used, but the %Dakota implementation may
 be selected instead.   If \c use_derivatives is
 specified the GP model will be built using available derivative data
 (Surfpack GP only).  
@@ -6727,7 +6761,7 @@ do this, one needs to set the number of samples relatively high: the
 default is 10,000 and we recommend at least that number.  If the model
 you are running is a simulation that is computationally quite
 expensive, we recommend that you set up a surrogate model within the
-DAKOTA input file so that \c global_evidence performs its sampling and
+%Dakota input file so that \c global_evidence performs its sampling and
 calculations on the surrogate and not on the original model. If one
 uses optimization methods instead to find the minimum and maximum
 sample values within each cell, this can also be computationally
@@ -6803,7 +6837,7 @@ for a variety of current and emerging mission areas.
 \subsection MethodNonDBayesCalib Bayesian Calibration Methods
 
 Currently, we are in the process of incorporating Bayesian calibration 
-methods in DAKOTA.  These methods take prior information on parameter 
+methods in %Dakota.  These methods take prior information on parameter 
 values (in the form of prior distributions) and observational data 
 (e.g. from experiments) and produce posterior distributions on the 
 parameter values.  When the computational simulation is then executed
@@ -6818,9 +6852,9 @@ the posterior distributions on model parameters are Monte Carlo Markov
 Chain (MCMC) sampling algorithms.  MCMC methods require many samples, often 
 tens of thousands, so in the case of model calibration, often emulators 
 of the computational simulation are used. For more details on the algorithms
-underlying the methods, see the DAKOTA User's manual.  
+underlying the methods, see the %Dakota User's manual.  
 
-We have two Bayesian calibration methods under development in DAKOTA: 
+We have two Bayesian calibration methods under development in %Dakota: 
 one called QUESO and one called GPMSA.  They are specified with the
 \c bayes_calibration \c queso or \c bayes_calibration \c gpmsa, respectively. 
 The QUESO method is using components from the QUESO library 
@@ -6870,11 +6904,11 @@ about emulator type. At this point, the only controls active for GPMSA
 are \c emulator_samples, \c seed and \c rng, and \c samples (the number of MCMC
 samples).   
 
-As mentioned above, the Bayesian capability in DAKOTA currently relies 
+As mentioned above, the Bayesian capability in %Dakota currently relies 
 on the QUESO library developed by The University of Texas at Austin.  
 This integrated capability is still in prototype form and available to 
-close collaborators of the DAKOTA team.
-If you are interested in this capability, contact the DAKOTA developers 
+close collaborators of the %Dakota team.
+If you are interested in this capability, contact the %Dakota developers 
 at dakota-developers@development.sandia.gov.
 
 \ref T5d49 "Table 5.49" provides the specification 
@@ -6949,8 +6983,6 @@ Specification detail for the Bayesian calibration methods
 <td>Optional
 <td>none
 </table>
-
-\section MethodDACE Design of Computer Experiments Methods
 
 
 \section MethodSoln Solution Verification Methods
@@ -7068,7 +7100,7 @@ variables (treated as uniform) and uncertain variables (with
 probability distributions) is desired, then \c sampling can
 support this with \c active \c all specified in the Variables 
 specification block.
-DAKOTA provides access to the DDACE library through the
+%Dakota provides access to the DDACE library through the
 DDACEDesignCompExp class.
 
 In terms of method dependent controls, the specification structure is
@@ -7575,16 +7607,16 @@ Specification detail for PSUADE methods
 \section MethodPS Parameter Study Methods
 
 
-DAKOTA's parameter study methods compute response data sets at a
+%Dakota's parameter study methods compute response data sets at a
 selection of points in the parameter space. These points may be
 specified as a vector, a list, a set of centered vectors, or a
 multi-dimensional grid. Capability overviews and examples of the
 different types of parameter studies are provided in the Users Manual
-[\ref UsersMan "Adams et al., 2010"]. DAKOTA implements all of the
+[\ref UsersMan "Adams et al., 2010"]. %Dakota implements all of the
 parameter study methods within the ParamStudy class.
 
 With the exception of output verbosity (a setting of \c silent will
-suppress some parameter study diagnostic output), DAKOTA's parameter
+suppress some parameter study diagnostic output), %Dakota's parameter
 study methods do not make use of the method independent
 controls. Therefore, the parameter study documentation which follows
 is limited to the method dependent controls for the vector, list,
@@ -7593,7 +7625,7 @@ centered, and multidimensional parameter study methods.
 
 \subsection MethodPSVPS Vector parameter study
 
-DAKOTA's vector parameter study computes response data sets at
+%Dakota's vector parameter study computes response data sets at
 selected intervals along a vector in parameter space. It is often used
 for single-coordinate parameter studies (to study the effect of a
 single variable on a response set), but it can be used more generally
@@ -7713,7 +7745,7 @@ step_vector specification detail for the vector parameter study
 
 \subsection MethodPSLPS List parameter study
 
-DAKOTA's list parameter study allows for evaluations at user selected
+%Dakota's list parameter study allows for evaluations at user selected
 points of interest which need not follow any particular
 structure. This study is selected using the \c list_parameter_study
 method specification followed by a \c list_of_points specification.
@@ -7762,7 +7794,7 @@ Specification detail for the list parameter study
 
 \subsection MethodPSCPS Centered parameter study
 
-DAKOTA's centered parameter study computes response data sets along
+%Dakota's centered parameter study computes response data sets along
 multiple coordinate-based vectors, one per parameter, centered about
 the initial values from the variables specification. This is useful
 for investigation of function contours with respect to each parameter
@@ -7817,7 +7849,7 @@ Specification detail for the centered parameter study
 
 \subsection MethodPSMPS Multidimensional parameter study
 
-DAKOTA's multidimensional parameter study computes response data sets
+%Dakota's multidimensional parameter study computes response data sets
 for an n-dimensional grid of points. Each continuous and discrete
 range variable is partitioned into equally spaced intervals between
 its upper and lower bounds, each discrete set variable is partitioned
