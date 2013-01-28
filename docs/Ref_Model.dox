@@ -50,7 +50,7 @@ methods.  It uses a pointer to a design of experiments method for
 generating the data needed for building the global approximation, reuses
 any old data available for the current approximation region, and
 employs the first-order multiplicative approach to correcting the
-approximation at the center of the current approximation region.
+approximation each time correction is requested.
 
 \verbatim
 model,
@@ -130,8 +130,8 @@ id_model and is used to provide a unique identifier string for use
 within method specifications (refer to \c model_pointer in \ref
 MethodIndControl).
 
-The type of model can be \c single, \c nested, or \c surrogate.  Each of
-these model specifications supports \c variables_pointer and \c
+The type of model can be \c single, \c nested, or \c surrogate.  Each
+of these model specifications supports \c variables_pointer and \c
 responses_pointer strings for identifying the variables and responses
 specifications used in constructing the model (by cross-referencing
 with \c id_variables and \c id_responses strings from particular
@@ -142,8 +142,8 @@ mapping differ.  Additional pointers are used for each model type for
 constructing the components of the variable to response mapping.  As a
 strategy specification identifies one or more methods and a method
 specification identifies a model, a model specification identifies
-variables, interface, and responses specifications.  This top-down
-flow specifies all of the object interrelationships.
+variables, responses, and (for some types) interface specifications.
+This top-down flow specifies all of the object interrelationships.
 
 For each of these pointer specifications, if a pointer string is
 specified and no corresponding id string is available, DAKOTA will
@@ -300,17 +300,17 @@ and \c hierarchical specification groups in further detail.
 \subsection ModelSurrG Global approximations
 
 The global surrogate model requires specification of one of the
-following approximation types: \c polynomial, \c gaussian_process
-(Kriging), \c neural_network, \c mars, \c moving_least_squares, <!--
-\c orthogonal_polynomial, --> or \c radial_basis.  These
-specifications will create a polynomial, a Gaussian process (Kriging
-interpolation), layered perceptron artificial neural network
-approximation, multivariate adaptive regression spline, moving least
-squares, <!-- an orthogonal polynomial (Hermite, Legendre, Laguerre,
-Jacobi, and/or generalized Laguerre) approximation, --> or radial
-basis function approximation, respectively.  All these approximations
-are implemented in \ref Giunta2006 "SurfPack" except an alternate
-Gaussian process model, which is implemented directly in DAKOTA.
+following approximation types: \c polynomial, \c gaussian_process, \c
+neural_network, \c mars, \c moving_least_squares, <!-- \c
+orthogonal_polynomial, --> or \c radial_basis.  These specifications
+will create a polynomial, a Gaussian process (Kriging interpolation),
+layered perceptron artificial neural network approximation,
+multivariate adaptive regression spline, moving least squares, <!-- an
+orthogonal polynomial (Hermite, Legendre, Laguerre, Jacobi, and/or
+generalized Laguerre) approximation, --> or radial basis function
+approximation, respectively.  All these approximations are implemented
+in \ref Giunta2006 "SurfPack" except an alternate Gaussian process
+model, which is implemented directly in DAKOTA.
 
 In the polynomial case, the order of the polynomial (linear,
 quadratic, or cubic) must be specified. 
@@ -334,9 +334,9 @@ The trend function of both GP models is selected using the \c trend
 keyword, with options \c constant, \c linear, or \c reduced_quadratic
 (default).  The Surfpack GP has the additional option of (a full) \c
 quadratic.  The \c reduced_quadratic trend function includes the main
-effects, but not mixed/interaction terms.  NOTE: prior to DAKOTA 5.1,
+effects, but not mixed/interaction terms.  <!-- NOTE: prior to DAKOTA 5.1,
 \c reduced_quadratic was selected for the DAKOTA GP via the \c
-quadratic option.
+quadratic option. -->
 
 The DAKOTA GP always determines its correlation parameters via maximum
 likelihood estimate (MLE) using a global optimization procedure.
@@ -387,20 +387,20 @@ comparable to a function value only.  This rules out gradients
 computed by finite differences (which also tend to be insufficiently
 accurate).  However, the accurate and inexpensive derivatives
 calculated by analytical, automatic differentiation, or continuous
-adjoint techniques can be cost effective and beneficial provided that
-they are not infinite or nearly so.  Although a function value plus
-gradient can be often be obtained more cheaply than two function value
-only evaluations, each scalar derivative equation costs as much as a
-scalar function value equation during the construction of the
-emulator.  Since the cost to build a GP is cubic in the number of
-equations, the cost to build a gradient-enhanced GP/Kriging model will
-be roughly (N+1)^3 times greater than one that is not
-gradient-enhanced, where N is the number of input dimensions.  Also, a
-poorly spaced sample design has a greater adverse affect on the
-conditioning of the correlation matrix when derivative information is
-included. This can result in significantly more points being discarded
-and hence providing no benefit to the derivative enhanced GP/Kriging
-model's accuracy.
+adjoint techniques can be cost effective and beneficial.  <!--
+provided that they are not infinite or nearly so.--> Although a
+function value plus gradient can be often be obtained more cheaply
+than two function value-only evaluations, each scalar derivative
+equation costs as much as a scalar function value equation during the
+construction of the emulator.  Since the cost to build a GP is cubic
+in the number of equations, the cost to build a gradient-enhanced
+GP/Kriging model will be roughly (N+1)^3 times greater than one that
+is not gradient-enhanced, where N is the number of input dimensions.
+Also, a poorly spaced sample design has a greater adverse affect on
+the conditioning of the correlation matrix when derivative information
+is included. This can result in significantly more points being
+discarded and hence providing little benefit to the derivative
+enhanced GP/Kriging model's accuracy.
 
 <!-- TODO: document MARS, ANN, and RBF controls -->
 Tables \ref T6d4 "6.4" and \ref T6d5 "6.5" summarize the global 
@@ -488,6 +488,23 @@ approximation type, Part I
 <td>none
 <td>Optional
 <td>no gradient enhancement
+</table>
+
+\anchor T6d5
+<table>
+<caption align = "top">
+\htmlonly
+Table 6.5
+\endhtmlonly
+Specification detail for global approximations: global 
+approximation type, Part II
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
 <tr>
 <td>Artificial neural network
 <td>\c neural_network
@@ -512,23 +529,6 @@ approximation type, Part I
 <td>integer
 <td>Optional
 <td>
-</table>
-
-\anchor T6d5
-<table>
-<caption align = "top">
-\htmlonly
-Table 6.5
-\endhtmlonly
-Specification detail for global approximations: global 
-approximation type, Part II
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
 <tr>
 <td>Multivariate adaptive regression splines
 <td>\c mars
@@ -659,12 +659,13 @@ default format for a samples data file has changed in DAKOTA 5.2 (see
 User's Manual).
 
 The \c use_derivatives flag specifies that any available derivative
-information should be used in global approximation builds. This
-capability is currently supported in SurrBasedLocalMinimizer,
-Pecos::SurrogateDataPoint, \ref Approximation::build
-"Approximation::build()", and \c
-global_kriging models, but is not yet supported in any global
-approximation derived class redefinitions of build().
+information should be used in global approximation builds, for those
+global surrogate types that support it (currently, polynomial
+regression and the Surfpack GP). <!-- This capability is currently
+supported in SurrBasedLocalMinimizer, Pecos::SurrogateDataPoint, \ref
+Approximation::build "Approximation::build()", and \c global_kriging
+models, but is not yet supported in any global approximation derived
+class redefinitions of build(). -->
 
 To assess the goodness of fit of a global surrogate, a variety of 
 diagnostics are available for the following global approximation methods: 
@@ -780,7 +781,7 @@ Specification detail for global approximations: build and correction controls
 <tr>
 <td>Surrogate correction approach
 <td>\c correction
-<td>\c additive or \c multiplicative or \c combined, \c zeroth_order or \c first_order or \c second_order
+<td>\c additive | \c multiplicative | \c combined; \c zeroth_order | \c first_order | \c second_order
 <td>Optional group
 <td>no surrogate correction
 </table>
@@ -954,7 +955,7 @@ Specification detail for hierarchical approximations
 <tr>
 <td>Surrogate correction approach
 <td>\c correction
-<td>\c additive or \c multiplicative or \c combined, \c zeroth_order or \c first_order or \c second_order
+<td>\c additive | \c multiplicative | \c combined; \c zeroth_order | \c first_order | \c second_order
 <td>Required group
 <td>N/A
 </table>
@@ -965,8 +966,8 @@ Specification detail for hierarchical approximations
 Instead of appealing directly to a primary interface, a nested model
 maps parameters to responses by executing a sub-iterator for each
 evaluation of the nested model; the sub-iterator in turn operates on a
-sub-model.  The sub-iterator responses may be combined with those from
-an optional interface specification.
+sub-model.  The sub-iterator responses may be combined with non-nested
+contributions from an optional interface specification.
 
 In the \c nested model case, a \c sub_method_pointer must be provided
 in order to specify the nested iterator, and \c
@@ -1025,16 +1026,17 @@ secondary_variable_mapping specifications are used to map from the
 active top-level variables into the sub-model variables, and in the
 latter case, the \c primary_response_mapping and \c
 secondary_response_mapping specifications are used to compute the
-sub-model response contributions to the top-level responses.  For the
-variable mappings, the primary and secondary specifications provide
-lists of strings which are used to target specific sub-model variables
-and their sub-parameters, respectively.  The primary strings are
-matched to continuous or discrete variable labels such as \c 'cdv_1'
-(either user-supplied or default labels), and the secondary strings
-are matched to either real or integer random variable distribution
-parameters such as \c 'mean' or \c 'num_trials' (the form of the
-uncertain distribution parameter keyword that is appropriate for a
-single variable instance) or continuous or discrete design/state
+sub-model response contributions to the top-level responses.  
+
+For the variable mappings, the primary and secondary specifications
+provide lists of strings which are used to target specific sub-model
+variables and their sub-parameters, respectively.  The primary strings
+are matched to continuous or discrete variable labels such as \c
+'cdv_1' (either user-supplied or default labels), and the secondary
+strings are matched to either real or integer random variable
+distribution parameters such as \c 'mean' or \c 'num_trials' (the form
+of the uncertain distribution parameter keyword that is appropriate
+for a single variable instance) or continuous or discrete design/state
 variable sub-parameters such as \c 'lower_bound' or \c 'upper_bound'
 (again, keyword form appropriate for a single variable instance).  No
 coercion of types is supported, so real-valued top-level variables
@@ -1092,12 +1094,25 @@ space to receive the outer loop values, and the leading subset within
 this inner loop allocation is updated.  This capability is important
 for allowing nesting beyond two levels, since an active variable at the
 outer-most loop may become inactive at the next lower level, but still
-need to be further propagated down the recursion.
+needs to be further propagated down to lower levels in the recursion.
 
 For the response mappings, the primary and secondary specifications
 provide real-valued multipliers to be applied to sub-iterator response
-results. The idea is that the responses from the inner loop are mapped to the outer loop.  For example, if the nested model is an uncertainty quantification, aleatory statistics from the inner loop such as the mean inner loop response are mapped to the outer level, where they are treated epistemically, so that intervals on the mean (for example) are calculated. The response mapping defines a vector which multiplies the values from the inner loop to the outer loop.  Each row of the mapping corresponds to one outer loop response, where each column of the mapping corresponds to a value from the inner loop.  Depending on the number of responses and the particular attributes calculated on the inner loop, there will be a vector of inner loop response values that need to be accounted for in the mapping.   The sub-iterator response results are defined as follows for
-different sub-iterator types:
+results so that the responses from the inner loop can be mapped into a
+new set of responses at the outer loop.  For example, if the nested
+model is being employed within a mixed aleatory-epistemic uncertainty
+quantification, then aleatory statistics from the inner loop (such as
+moments of the response) are mapped to the outer level, where minima
+and maxima of these aleatory statistics are computed as functions of
+the epistemic parameters. The response mapping defines a matrix which
+scales the values from the inner loop and determines their position in
+the outer loop response vector.  Each row of the mapping corresponds
+to one outer loop response, where each column of the mapping
+corresponds to a value from the inner loop.  Depending on the number
+of responses and the particular attributes calculated on the inner
+loop, there will be a vector of inner loop response values that need
+to be accounted for in the mapping.  This vector of inner loop
+response results is defined as follows for different sub-iterator types:
 
 - optimization: the final objective function(s) and nonlinear constraints
 - nonlinear least squares: the final least squares terms and nonlinear 
@@ -1119,7 +1134,7 @@ different sub-iterator types:
   least squares response data sets, the best solution found (lowest
   constraint violation if infeasible, lowest composite objective function
   if feasible). For generic response data sets, a best solution metric is 
-  not defined, so sub-iterator response results are not defined in this case.
+  not defined, so the sub-iterator response vector is empty in this case.
 
 The primary values map sub-iterator response results into top-level
 objective functions, least squares terms, or generic response
@@ -1137,25 +1152,42 @@ primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0. 0.
 secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
                              0. 0. 0. 0. 0. 0. 1. 3. 0.
 \endverbatim
+
 The variable mappings correspond to 4 top-level variables, the first
 two of which employ the default mappings from active top-level
 variables to sub-model variables of the same type (option 3 above) and
 the latter two of which are inserted into the mean distribution
 parameters of sub-model variables \c 'X' and \c 'Y' (option 1 above).
-In this particular example, there are 9 inner loop response attributes and 3 outer loop response functions (one primary response function and 2 secondary functions, such as one objective and two constraints).  Each row of the response mapping is a vector which is multiplied (e.g. dot-product) against the 9 sub-iterator values to determine the outer loop function.  For example, the primary response mapping only picks up the first value from the inner loop.  This first value is the mean of the first response function on the inner loop. 
-The response mappings correspond to 9 sub-iterator response functions
-(e.g., there are 3 response functions, each with a set of UQ final statistics:  each has a mean, a standard deviation, and a level mapping in this example.  If no probability or reliability levels are specified, the responses would only have a mean and standard deviation).  The primary
-response mapping maps the first sub-iterator response function (mean)
-into a single objective function, least squares term, or generic
-response function (as dictated by the top-level response
-specification), and the secondary response mapping maps the fourth
-sub-iterator response function plus 3 times the fifth sub-iterator
-response function (mean plus 3 standard deviations) into one top-level
-nonlinear constraint and the seventh sub-iterator response function
-plus 3 times the eighth sub-iterator response function (mean plus 3
-standard deviations) into another top-level nonlinear constraint
-(these top-level nonlinear constraints may be inequality or equality,
-as dictated by the top-level response specification). Note that in many cases, each particular sub-iterator response will be mapped to a unique outer loop response (for example, in the nested UQ case where one wants to determine an interval on each inner loop statistic).  In these cases, the response mapping will be the identity matrix.  That is, the primary response mapping will have N rows and N columns corresponding to the N sub-iterator response values, and the mapping matrix will have a value of one along the diagonal and zeros elsewhere.
+The response mappings define a 3 by 9 matrix corresponding to 9 inner
+loop response attributes and 3 outer loop response functions (one
+primary response function and 2 secondary functions, such as one
+objective and two constraints).  Each row of the response mapping is a
+vector which is multiplied (i.e, with a dot-product) against the 9
+sub-iterator values to determine the outer loop function.  Consider a
+UQ example with 3 response functions, each providing a mean, a
+standard deviation, and one level mapping (if no level mappings are
+specified, the responses would only have a mean and standard
+deviation).  The primary response mapping can be seen to extract the
+first value from the inner loop, which would correspond to the mean of
+the first response function.  This mapped sub-iterator response
+becomes a single objective function, least squares term, or generic
+response function at the outer level, as dictated by the top-level
+response specification.  The secondary response mapping maps the
+fourth sub-iterator response function plus 3 times the fifth
+sub-iterator response function (mean plus 3 standard deviations) into
+one top-level nonlinear constraint and the seventh sub-iterator
+response function plus 3 times the eighth sub-iterator response
+function (mean plus 3 standard deviations) into another top-level
+nonlinear constraint, where these top-level nonlinear constraints may
+be inequality or equality, as dictated by the top-level response
+specification.  Note that a common case is for each sub-iterator
+response to be mapped to a unique outer loop response (for example, in
+the nested UQ case where one wants to determine an interval on each
+inner loop statistic).  In these simple cases, the response mapping
+would define an identity matrix.  <!-- That is, the primary response
+mapping will have N rows and N columns corresponding to the N
+sub-iterator response values, and the mapping matrix will have a value
+of one along the diagonal and zeros elsewhere. -->
 
 Table \ref T6d11 "6.11" provides the specification detail for the model
 independent controls involving nested model mappings.
