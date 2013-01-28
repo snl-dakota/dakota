@@ -6225,12 +6225,14 @@ This formulation lends itself naturally to uniform or adaptive
 refinement strategies, since the hierarchical surpluses can be
 interpreted as error estimates for the interpolant.  Either global or
 local/piecewise interpolants in either value-based or
-gradient-enhanced approaches can be reformulated using \c hierarchical
+gradient-enhanced approaches can be formulated using \c hierarchical
 interpolation.  The primary restriction for the hierarchical case is
 that it currently requires a sparse grid approach using nested
-quadrature rules (Genz-Keister, Gauss-Patterson, or Newton-Cotes),
-although this restriction can be relaxed in the future.  A selection
-of \c hierarchical interpolation will provide greater precision in the
+quadrature rules (Genz-Keister, Gauss-Patterson, or Newton-Cotes for
+standard normals and standard uniforms in a transformed space: Askey,
+Wiener, or Piecewise settings may be required), although this
+restriction can be relaxed in the future.  A selection of \c
+hierarchical interpolation will provide greater precision in the
 increments to mean, standard deviation, covariance, and
 reliability-based level mappings induced by a grid change within
 uniform or goal-oriented adaptive refinement approaches (see following
