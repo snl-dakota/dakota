@@ -8,7 +8,7 @@ namespace Dakota {
 <li> <a href="VarCommands.html#VarDescr">Variables Description</a>
 <li> <a href="VarCommands.html#VarSpec">Variables Specification</a>
 <li> <a href="VarCommands.html#VarSetId">Variables Set Identifier</a>
-<li> <a href="VarCommands.html#VarActive">Variables Active</a>
+<li> <a href="VarCommands.html#VarActive">Active Variables</a>
 <li> <a href="VarCommands.html#VarDomain">Variables Domain</a>
 <li> <a href="VarCommands.html#VarDV">Design Variables</a>
   <ul>
@@ -78,7 +78,7 @@ namespace Dakota {
 \section VarDescr Variables Description
 
 
-The variables section in a DAKOTA input file specifies the parameter
+The variables section in a %Dakota input file specifies the parameter
 set to be iterated by a particular method. This parameter set is made
 up of design, uncertain, and state variables. Design variables can be
 continuous or discrete and consist of those variables which an
@@ -94,15 +94,18 @@ exponential, beta, gamma, gumbel, frechet, weibull, and histogram bin
 distributions.  Discrete aleatory uncertain variables include poisson,
 binomial, negative binomial, geometric, hypergeometric, and histogram
 point distributions. In addition to aleatory uncertain variables
-defined by probability distributions, DAKOTA also supports epistemic
-uncertain variables that are non-probabilistic.  The interval type
-specification is a continuous epistemic type that supports both simple
-bounded intervals as well as basic probability assignment (BPA) belief
-structures, where a BPA defines the uncertainty in a variable through
-providing one or more intervals in which the variable may lie along
-with varying levels of belief for each interval.  <!-- The interval
-uncertain variable type is used in epistemic uncertainty calculations,
-specifically Dempster-Shafer theory of evidence. -->
+defined by probability distributions, %Dakota also supports epistemic
+uncertain variables that are non-probabilistic.  These epistemic types
+involve continuous or discrete interval or discrete set
+specifications.  For the interval cases, one defines either a single
+bounded interval per epistemic variable or a set of basic probability
+assignments (BPAs) that define belief structures, where each BPA
+defines the level of belief that the value of a particular variable
+lies within a particular interval.  For discrete epistemic sets, the
+basic probability assignments are provided for each set value as
+opposed to each interval.  <!-- The interval uncertain variable type
+is used in epistemic uncertainty calculations, specifically
+Dempster-Shafer theory of evidence. -->
 
 Each uncertain variable specification contains descriptive tags and
 most contain, either explicitly or implicitly, distribution lower and
@@ -156,7 +159,7 @@ simulation convergence tolerances and time step controls, and can be
 used to enact model adaptivity in future strategy developments.
 
 The ordering of variables is important, and a consistent ordering is
-employed throughout the DAKOTA software.  It is the same ordering as
+employed throughout the %Dakota software.  It is the same ordering as
 shown in dakota.input.summary and as presented in the outline of this
 chapter.  That ordering can be summarized as continuous followed by
 discrete integer followed by discrete real within each of the
@@ -263,7 +266,7 @@ variables,
 	  descriptors   = 'load_case'
 \endverbatim
 
-Refer to the DAKOTA Users Manual [\ref UsersMan "Adams et al., 2010"]
+Refer to the %Dakota Users Manual [\ref UsersMan "Adams et al., 2010"]
 for discussion on how different iterators view these mixed variable sets.
 Further control over how variables are treated may be specified with the 
 keyword \c active, which controls which types of variables are active 
@@ -303,7 +306,10 @@ variables,
 	<hypergeometric uncertain variables specification>
 	<histogram point uncertain variables specification>
 	<uncertain correlation specification>
-	<interval uncertain variables specification>
+	<continuous interval uncertain variables specification>
+	<discrete interval uncertain range variables specification>
+	<discrete uncertain set integer variables specification>
+	<discrete uncertain set real variables specification>
 	<continuous state variables specification>
 	<discrete state range variables specification>
 	<discrete state set integer variables specification>
@@ -372,51 +378,78 @@ Specification detail for set identifier
 <td>use of last variables parsed
 </table>
 
-\section VarActive Variables Active
+\section VarActive Active Variables
 
-There are certain situations where the user may want to explicitly 
-control the subset of variables that is considered active for a 
-certain Dakota method. This is done by specifying the keyword 
-\c active in the variables specification block, followed by one 
-of the following: \c all, \c design, \c uncertain, \c aleatory, 
-\c epistemic, or \c state.  Specifying one of these subsets of 
-variables will allow the Dakota method to operate on the specified 
-variable types and override the defaults. For example, the default 
-behavior for a nondeterministic sampling method is to sample the 
-uncertain variables. However, if the user specifed \c active \c all 
-in the variables specification block, the sampling would be performed 
-over all variables (e.g. design and state variables as well as 
-uncertain variables). This may be desired in situations such as 
-surrogate-based optimization under uncertainty, where a surrogate 
-may be built over both design and uncertain variables. Another 
-situation where one may want the fine-grained control available by 
-specifying one of these variable types is when one has state variables 
-but only wants to sample over the design variables when constructing 
-a surrogate model. Finally, more sophisticated uncertainty studies may
-involve various combinations of epistemic vs. aleatory variables being 
-active in nested models.
+There are certain situations where the user may want to explicitly
+control the subset of variables that is considered active for a
+certain %Dakota method. This is done by specifying the keyword \c
+active in the variables specification block, followed by one of the
+following: \c all, \c design, \c uncertain, \c aleatory, \c epistemic,
+or \c state.  Specifying one of these subsets of variables will allow
+the %Dakota method to operate on the specified variable types and
+override the default active subset. For example, the default behavior
+for a nondeterministic sampling method is to sample the uncertain
+variables. However, if the user specifed \c active \c all in the
+variables specification block, the sampling would be performed over
+all variables (e.g. design and state variables in addition to the
+uncertain variables). This may be desired in situations such as
+surrogate-based optimization under uncertainty, where a surrogate may
+be constructed to span both design and uncertain variables.  This is
+an example where we expand the active subset beyond the default, but
+in other situations, we may wish to restrict from the default.  An
+example of this would be performing design of experiments in the
+presence of multiple variable types (for which all types are active by
+default), but only wanting to sample over the design variables for
+purposes of constructing a surrogate model for optimization. <!--
+Another (automated) example would be forming a polynomial chaos
+expansion over design, aleatory, and epistemic variables, but for
+which probabilities are evaluated only over an aleatory subset.
+Finally, more sophisticated uncertainty studies may involve various
+combinations of epistemic vs. aleatory variables being active in
+nested models. -->
 
-If the user does not specify any explicit override of the active view 
-of the variables, Dakota then considers the response function specification. 
-If the user specifies objective functions or calibration terms in the response
-specification block, the active variables will be the design variables (e.g. 
-design variables are active for optimization and least squares methods). 
-If the user specifies the more generic response type, response functions, 
-Dakota tries to infer the active view from the method. If the method is a 
-parameter study, or any of the methods available under dace, psuade, or fsu methods, 
-the active view is set to all variables. For uncertainty quantification
-methods, if the method is sampling, then the view is set to aleatory if 
-only aleatory variables are present, epistemic if only epistemic variables 
-are present, or uncertain (covering both aleatory and epistemic) if both are 
-present. If the uncertainty method involves interval estimation or 
+If the user does not specify any explicit override of the active view
+of the variables, %Dakota first considers the response function
+specification (refer to \ref RespFn).  If the user specifies objective
+functions or calibration terms in the response specification block,
+then we can infer that the active variables should be the design
+variables (since design variables are used within optimization and
+least squares methods).  If the user instead specifies the generic
+response type of \c response_functions (see \ref RespFnGen), then
+%Dakota cannot infer the active variable subset from the response
+specification and will instead infer it from the method selection. If
+the method is a parameter study, or any of the methods available under
+dace, psuade, or fsu methods, the active view is set to all
+variables. For uncertainty quantification methods, if the method is
+sampling, then the view is set to aleatory if only aleatory variables
+are present, epistemic if only epistemic variables are present, or
+uncertain (covering both aleatory and epistemic) if both are
+present. If the uncertainty method involves interval estimation or
 evidence calculations, the view is set to epistemic. For other
-uncertainty quantification methods not mentioned in the previous sentences 
-(e.g., reliability methods or stochastic expansion methods), the default 
-view is set to aleatory. Finally, for verification studies using the Richardson 
-extrapolation method, the active view is set to state. 
-\ref T7d111 "Table 7.111" summarizes the way to specify the active variables.
-It also describes the way to specify the domain, as outlined in the 
-section \ref VarDomain following.
+uncertainty quantification methods not mentioned in the previous
+sentences (e.g., reliability methods or stochastic expansion methods),
+the default view is set to aleatory. Finally, for verification studies
+using the Richardson extrapolation method, the active view is set to
+state.  \ref T7d111 "Table 7.111" summarizes the way to specify the
+active variables. 
+
+\section VarDomain Variables Domain
+
+The variables domain specifies how the discrete variables are treated.
+If the user specifies \c mixed in the variable specification block,
+the continuous and discrete variables are treated separately.  If the
+user specifies \c relaxed in the variable specification block, the
+discrete variables are relaxed and treated as continuous
+variables. This may be useful in optimization problems involving both
+continuous and discrete variables when a user would like to use an
+optimization method that is designed for continuous variable
+optimization. All %Dakota methods have a default value of mixed for
+the domain type except for the branch-and-bound method which has a
+default domain type of relaxed. Note that the branch-and-bound method
+is under development at this time. Finally, note that the domain
+selection applies to all variable types: design, aleatory uncertain,
+epistemic uncertain, and state.  \ref T7d111 "Table 7.111" describes
+the domain specification.
 
 \anchor T7d111
 <table>
@@ -437,32 +470,14 @@ Specification detail for active and domain settings
 <td>\c active
 <td>\c all | \c design | \c uncertain | \c aleatory | \c epistemic | \c state
 <td>Optional
-<td>Depends on method and response specification
+<td>Infer from response or method specification
 <tr>
 <td>Domain of variables
 <td>\c mixed | \c relaxed
 <td>N/A
 <td>Optional 
-<td>mixed
+<td>\c relaxed (branch and bound), \c mixed (all other methods)
 </table>
-
-
-\section VarDomain Variables Domain
-
-The variables domain specifies how the discrete variables are treated. 
-If the user specifies \c mixed in the variable specification
-block, the continuous and discrete variables are treated separately. 
-If the user specifies \c relaxed in the variable
-specification block, the discrete variables are relaxed and treated 
-as continuous variables. This may be useful in optimization problems 
-involving both continuous and discrete variables when a user would like 
-to use an optimization method that is designed for continuous variable 
-optimization. All Dakota methods have a default value of mixed for the 
-domain type except for the branch-and-bound method which has a default 
-domain type of relaxed. Note that the branch-and-bound method is under 
-development at this time. Finally, note that both domain types can have
-design, uncertain, and state variables. 
-
 
 \section VarDV Design Variables
 
@@ -476,7 +491,7 @@ design variable subtype.  The \c initial_point specifications provide
 the point in design space from which an iterator is started and
 default to either zeros (continuous and discrete range) or middle 
 values (discrete sets). The \c descriptors specifications supply strings
-which will be replicated through the DAKOTA output to identify the
+which will be replicated through the %Dakota output to identify the
 numerical values for these parameters; these default to numbered
 strings.
 
@@ -746,7 +761,7 @@ function evaluations (i.e., design of experiments and some parameter
 study methods).  Each distribution also provides optional uncertain
 variable descriptors (default values are numbered strings) that supply
 identifiers that help associate the numerical values with the
-uncertain parameters as they appear within the DAKOTA output.  Tables
+uncertain parameters as they appear within the %Dakota output.  Tables
 \ref T7d6 "7.6" through \ref T7d23 "7.23" summarize the details of the
 aleatory uncertain variable specifications.
 
@@ -2009,56 +2024,55 @@ Specification detail for aleatory uncertain correlations
 
 
 In addition to continuous and discrete aleatory probability
-distributions, DAKOTA provides support for epistemic uncertainties
-through its interval variable specifications for both continuous and 
-discrete variables. Interval-based variables do not represent probability
-distributions.  In the case of continuous intervals, they can specify a 
-single interval per variable which may be used in interval analysis, where 
-the goal is to determine the interval bounds on the output corresponding to 
-the interval bounds on the input. More detailed continuous interval 
-representations can specify a set of belief structures based on
-intervals that may be contiguous, overlapping, or disjoint.  This is
-used in specifying the inputs necessary for an epistemic uncertainty
-analysis using Dempster-Shafer theory of evidence. 
-In the discrete case, interval variables may be used to specify 
-categorical choices which are epistemic.  For example, 
-if we have three possible forms for a physics model (model 1, 2, or 3) and 
-there is epistemic uncertainty about which one is correct, a discrete 
-uncertain interval or a discrete set may be used to represent 
-this type of uncertainty.
+distributions, %Dakota provides support for continuous and discrete
+epistemic uncertainties through its continuous interval, discrete
+interval, and discrete set specifications. Interval-based variables do
+not represent probability distributions.  In the case of continuous
+intervals, they can specify a single interval per variable which may
+be used in interval analysis, where the goal is to determine the
+interval bounds on the output corresponding to the interval bounds on
+the input. More detailed continuous interval representations can
+specify a set of belief structures based on intervals that may be
+contiguous, overlapping, or disjoint.  This is used in specifying the
+inputs necessary for an epistemic uncertainty analysis using
+Dempster-Shafer theory of evidence.  In the discrete case, interval
+variables may be used to specify categorical choices which are
+epistemic.  For example, if we have three possible forms for a physics
+model (model 1, 2, or 3) and there is epistemic uncertainty about
+which one is correct, a discrete uncertain interval or a discrete set
+may be used to represent this type of uncertainty.
 
 
-\subsection VarCEUV_Interval Interval Uncertain Variable
+\subsection VarCEUV_Interval Continuous Interval Uncertain Variable
 
-The interval uncertain variable is NOT a probability distribution. 
-Although it may seem similar to a histogram, the interpretation 
-of this uncertain variable is different. It is used in 
-epistemic uncertainty analysis, where one is trying to 
-model uncertainty due to lack of knowledge.  In DAKOTA, 
-epistemic uncertainty analysis is performed using 
-Dempster-Shafer theory of evidence.  In this approach, 
-one does not assign a probability distribution 
-to each uncertain input variable.  Rather, one divides each uncertain 
-input variable into one or more intervals. The input parameters 
-are only known to occur within intervals:  nothing more is assumed.   
-Each interval is defined by its upper and lower bounds, 
-and a Basic Probability Assignment (BPA) 
-associated with that interval.  The BPA represents a probability of 
-that uncertain variable being located within that interval.  
-The intervals and BPAs are used to construct uncertainty measures on 
-the outputs called "belief" and "plausibility."  Belief 
-represents the smallest possible probability that is consistent 
-with the evidence, while plausibility represents the largest 
-possible probability that is consistent with the evidence.  
-For more information about the Dempster-Shafer approach, 
-see the nondeterministic evidence method, \c evidence, 
-in the Methods section of this Reference manual. 
-As an example, in the following specification:
+The continuous interval uncertain variable is NOT a probability
+distribution.  Although it may seem similar to a histogram, the
+interpretation of this uncertain variable is different. It is used in
+epistemic uncertainty analysis, where one is trying to model
+uncertainty due to lack of knowledge.  In %Dakota, epistemic
+uncertainty analysis is performed using either interval estimation or
+Dempster-Shafer theory of evidence.  In these approaches, one does not
+assign a probability distribution to each uncertain input variable.
+Rather, one divides each uncertain input variable into one or more
+intervals. The input parameters are only known to occur within
+intervals; nothing more is assumed.  Each interval is defined by its
+upper and lower bounds, and a Basic Probability Assignment (BPA)
+associated with that interval.  The BPA represents a probability of
+that uncertain variable being located within that interval.  The
+intervals and BPAs are used to construct uncertainty measures on the
+outputs called "belief" and "plausibility."  Belief represents the
+smallest possible probability that is consistent with the evidence,
+while plausibility represents the largest possible probability that is
+consistent with the evidence.  For more information about these
+approaches, refer to \ref MethodNonDEpist.  As an example, in the
+following specification:
+
 \verbatim
-interval_uncertain = 2
-  num_intervals   =                       3               2
-  interval_probs  =     0.2     0.5     0.3     0.4     0.6
-  interval_bounds = 2.0 2.5 4.0 5.0 4.5 6.0 1.0 5.0 3.0 5.0
+continuous_interval_uncertain = 2
+  num_intervals  =           3       2
+  interval_probs = 0.2 0.5 0.3 0.4 0.6
+  lower_bounds   = 2.0 4.0 4.5 1.0 3.0
+  upper_bounds   = 2.5 5.0 6.0 5.0 5.0
 \endverbatim
 
 there are 2 interval uncertain variables.  The first one is defined by
@@ -2069,9 +2083,7 @@ two intervals for the second variable are 0.4 and 0.6. The basic
 probability assignments for each interval variable must sum to one.
 The interval bounds for the first variable are [2, 2.5], [4, 5], and
 [4.5, 6], and the interval bounds for the second variable are [1.0, 5.0]
-and [3.0, 5.0].
-<!-- Note that the lower bound must always come first in the bound pair. -->
-Note that the intervals can be overlapping or disjoint.  
+and [3.0, 5.0].  Note that the intervals can be overlapping or disjoint.  
 \ref T7d25 "Table 7.25" summarizes the specification details for the 
 \c interval_uncertain variable.
 
@@ -2090,55 +2102,64 @@ Specification detail for interval uncertain variables
 <td><b>Status</b>
 <td><b>Default</b>
 <tr>
-<td>interval uncertain variables
-<td>\c interval_uncertain
+<td>continuous interval uncertain variables
+<td>\c continuous_interval_uncertain
 <td>integer
 <td>Optional group
-<td>no interval uncertain variables
+<td>no continuous interval uncertain variables
 <tr>
-<td>number of intervals defined for each interval variable
+<td>number of intervals defined for each continuous interval variable
 <td>\c num_intervals
 <td>list of integers
-<td>Required group
+<td>Optional
+<td>Equal apportionment of intervals among variables
+<tr>
+<td>basic probability assignments per continuous interval
+<td>\c interval_probabilities
+<td>list of reals
+<td>Optional
+<td>Equal probability assignments for each interval (1/num_intervals[i])
+<tr>
+<td>lower bounds of continuous intervals
+<td>\c lower_bounds
+<td>list of reals
+<td>Required
 <td>None
 <tr>
-<td>basic probability assignments per interval
-<td>\c interval_probs
+<td>upper bounds of continuous intervals
+<td>\c upper_bounds
 <td>list of reals
-<td>Required group.  Note that the probabilities per variable must sum to one.
-<td>None
-<tr>
-<td>bounds per interval
-<td>\c interval_bounds
-<td>list of reals
-<td>Required group.  Specify bounds as (lower, upper) per interval, per variable
+<td>Required
 <td>None
 <tr>
 <td>Descriptors
 <td>\c descriptors
 <td>list of strings
 <td>Optional
-<td>vector of <tt>'iuv_i'</tt> where <tt>i = 1,2,3,...</tt>
+<td>vector of <tt>'ciuv_i'</tt> where <tt>i = 1,2,3,...</tt>
 </table>
 
-\subsection VarDIUV Discrete Interval Uncertain Variables 
-Discrete variables may be used to represent things like epistemic model form 
-uncertainty, as mentioned above. For example, if one wants to analyze the 
-effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis 
-(either an interval analysis or a Dempster-Shafer evidence theory analysis), 
-one can use a discrete interval variable to represent the uncertainty in the 
-model form.  There are three types of discrete uncertain variables:  a 
-discrete interval variable in which a discrete variable may take any integer 
-value within a range such as 1 to 4 (allowing values of 1, 2, 3, or 4); 
-a discrete uncertain set of integers, in which the discrete value may take any value within the integer set (for example, the set may be defined as 1, 2, and 4); and a discrete uncertain set of reals, in which the discrete variable may
-take any value defined within the real set (for example, a parameter 
-may have two allowable real values, 3.285 or 4.79).
-The following Tables \ref T7d26 "7.26" through
-\ref T7d28 "7.28" summarize the required and optional specifications
-for each discrete uncertain variable subtype. 
-Note these specifications are analogous to those for \ref VarDV but they 
-have the additional concept of defining probabilities per interval 
-or probabilities per set value. 
+\subsection VarDIUV Discrete Interval Uncertain Variables Discrete
+variables may be used to represent things like epistemic model form
+uncertainty, as mentioned above. For example, if one wants to analyze
+the effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis
+(either an interval analysis or a Dempster-Shafer evidence theory
+analysis), one can use a discrete epistemic variable to represent the
+uncertainty in the model form.  There are three types of discrete
+epistemic variables, similar to discrete design and discrete state
+types: a discrete interval variable that may take any integer value
+within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4); a
+discrete uncertain set of integers, in which the discrete value may
+take any value within the integer set (for example, the set may be
+defined as 1, 2, and 4); and a discrete uncertain set of reals, in
+which the discrete variable may take any value defined within the real
+set (for example, a parameter may have two allowable real values,
+3.285 or 4.79).  The following Tables \ref T7d26 "7.26" through \ref
+T7d28 "7.28" summarize the required and optional specifications for
+each discrete epistemic variable subtype.  Note that, relative to the
+discrete design and discrete state specifications, discrete epistemic
+specifications add interval or set probabilities while removing the
+notion of an initial value.
 
 \anchor T7d26
 <table>
@@ -2164,26 +2185,26 @@ Specification detail for discrete interval uncertain variables
 <td>Number of intervals defined for each interval variable
 <td>\c num_intervals
 <td>list of integers
-<td>Required group
-<td>None (typically one interval is defined for each interval variable)
+<td>Optional
+<td>Equal apportionment of intervals among variables
 <tr>
 <td>Basic probability assignments per interval
-<td>\c interval_probs
+<td>\c interval_probabilities
 <td>list of reals
-<td>Required group.  Note that the probabilities per variable must sum to one.
-<td>None (if only one interval is defined, this probability should be 1.0).
+<td>Optional
+<td>Equal probability assignments for each interval (1/num_intervals[i])
 <tr>
 <td>Lower bounds
 <td>\c lower_bounds
 <td>list of integers
-<td>Optional
-<td>vector values = \c INT_MIN
+<td>Required
+<td>None
 <tr>
 <td>Upper bounds
 <td>\c upper_bounds
 <td>list of integers
-<td>Optional
-<td>vector values = \c INT_MAX
+<td>Required
+<td>None
 <tr>
 <td>Descriptors
 <td>\c descriptors
@@ -2200,7 +2221,7 @@ Specification detail for discrete interval uncertain variables
 \htmlonly
 Table 7.27
 \endhtmlonly
-Specification detail for discrete uncertain set of integer variables
+Specification detail for discrete uncertain set integer variables
 </caption>
 <tr>
 <td><b>Description</b>
@@ -2213,25 +2234,25 @@ Specification detail for discrete uncertain set of integer variables
 <td>\c discrete_uncertain_set_integer
 <td>integer
 <td>Optional group
-<td>no discrete uncertain set of integer variables
+<td>no discrete uncertain set integer variables
 <tr>
 <td>Number of values for each variable
 <td>\c num_set_values
 <td>list of integers
 <td>Optional
-<td>equal distribution
+<td>Equal apportionment of set values among variables
 <tr>
 <td>Set values
 <td>\c set_values
 <td>list of integers
 <td>Required
-<td>N/A
-<tr>
-<td>Probabilities per each member of the set
-<td>\c set_probs
-<td>list of reals
-<td>Required group.  Note that the probabilities across all set values for a particular variable must sum to one.
 <td>None
+<tr>
+<td>Probabilities for each set member
+<td>\c set_probabilities
+<td>list of reals
+<td>Optional
+<td>Equal probability assignments for each set member (1/num_set_values[i])
 <tr>
 <td>Descriptors
 <td>\c descriptors
@@ -2248,7 +2269,7 @@ Specification detail for discrete uncertain set of integer variables
 \htmlonly
 Table 7.28
 \endhtmlonly
-Specification detail for discrete uncertain set of real variables
+Specification detail for discrete uncertain set real variables
 </caption>
 <tr>
 <td><b>Description</b>
@@ -2261,25 +2282,25 @@ Specification detail for discrete uncertain set of real variables
 <td>\c discrete_uncertain_set_real
 <td>integer
 <td>Optional group
-<td>no discrete uncertain set of real variables
+<td>no discrete uncertain set real variables
 <tr>
 <td>Number of values for each variable
 <td>\c num_set_values
 <td>list of integers
 <td>Optional
-<td>equal distribution
+<td>Equal apportionment of set values among variables
 <tr>
 <td>Set values
 <td>\c set_values
 <td>list of reals
 <td>Required
-<td>N/A
-<tr>
-<td>Probabilities per each member of the set
-<td>\c set_probs
-<td>list of reals
-<td>Required group.  Note that the probabilities across all set values for a particular variable must sum to one.
 <td>None
+<tr>
+<td>Probabilities for each set member
+<td>\c set_probabilities
+<td>list of reals
+<td>Optional
+<td>Equal probability assignments for each set member (1/num_set_values[i])
 <tr>
 <td>Descriptors
 <td>\c descriptors
