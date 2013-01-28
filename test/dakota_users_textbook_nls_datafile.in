@@ -20,7 +20,7 @@ interface
 
 responses
    calibration_terms = 3
-     calibration_data_file = 'textbook_nls_datafile.lsq.dat'
+     calibration_data_file = 'dakota_users_textbook_nls_datafile.lsq.dat'
        freeform
   analytic_gradients
   no_hessians

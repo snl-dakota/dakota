@@ -43,10 +43,11 @@ set(users_test_inputs
   )
 
 # Supplementary data files needed and copied files below
-add_file_copy_command(${test_path}/textbook_nls_datafile.lsq.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/textbook_nls_datafile.lsq.dat)
+add_file_copy_command(${test_path}/dakota_users_textbook_nls_datafile.lsq.dat
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota_users_textbook_nls_datafile.lsq.dat)
 
-set(all_copied_files ${CMAKE_CURRENT_BINARY_DIR}/textbook_nls_datafile.lsq.dat)
+set(all_copied_files 
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota_users_textbook_nls_datafile.lsq.dat)
 
 # Now iterate over the list, copying to build tree
 # Also create all_generated_inputs to use in dependency management
