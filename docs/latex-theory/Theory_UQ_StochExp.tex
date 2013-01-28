@@ -547,7 +547,7 @@ paragraph.  We then have the following choices:
   at least partially mitigated.
   % Note: no secondary warping since no correlation.
 \end{enumerate}
-DAKOTA currently supports single transformations for dependent
+Dakota currently supports single transformations for dependent
 variables in combination with an Askey basis for independent variables.
 
 The transformation from correlated non-normal distributions to
@@ -923,7 +923,7 @@ In~\cite{Eld09a}, it is demonstrated that the synchronization of
 total-order PCE with the monomial resolution of a sparse grid is
 imperfect, and that sparse grid SC consistently outperforms sparse
 grid PCE when employing the sparse grid to directly evaluate the
-integrals in Eq.~\ref{eq:coeff_extract}.  In our DAKOTA implementation, we 
+integrals in Eq.~\ref{eq:coeff_extract}.  In our Dakota implementation, we 
 depart from the use of sparse integration of total-order expansions, and 
 instead employ a linear combination of tensor expansions~\cite{ConstSSG}.
 %That is, instead of employing the sparse grid as a separate numerical
@@ -1207,7 +1207,7 @@ exists at the collocation points, such that these final equalities
 hold only approximately.  In this case, we have the choice of
 computing the moments based on sparse numerical integration or based
 on the moments of the (imperfect) sparse interpolant, where small
-differences may exist prior to numerical convergence.  In DAKOTA, we
+differences may exist prior to numerical convergence.  In Dakota, we
 employ the former approach; i.e., the right-most expressions in
 Eqs.~\ref{eq:mean_sc}--\ref{eq:covar_sc} are employed for all tensor
 and sparse cases irregardless of nesting.  Skewness and kurtosis
@@ -1312,7 +1312,7 @@ obtain the sensitivity indices as analytic functions of the
 coefficients in the stochastic expansion.  The derivation 
 of these results is presented in ~\cite{Tang10b}. The sensitivity 
 indices are printed as a default when running either 
-polynomial chaos or stochastic collocation in DAKOTA. 
+polynomial chaos or stochastic collocation in Dakota. 
 Note that in addition to the first-order main effects, $S_{i}$, 
 we are able to calculate the sensitivity indices for higher order 
 interactions such as the two-way interaction  $S_{i,j}$.   
@@ -1372,7 +1372,7 @@ h-refinement approach reduces the approximation range of fixed order
 local basis polynomials (Sections~\ref{uq:expansion:interp:linear}
 and~\ref{uq:expansion:interp:cubic}).  And in the case of uniform
 p-refinement with PCE regression, the collocation oversampling ratio
-(refer to Methods specification within DAKOTA Reference
+(refer to Methods specification within Dakota Reference
 Manual~\cite{RefMan}) is held fixed, such that an increment in
 isotropic expansion order is matched with a corresponding increment in
 the number of structured (probabilistic collocation) or unstructured
@@ -1382,13 +1382,13 @@ For uniform refinement, anisotropic dimension preferences are not
 computed, and the only algorithmic requirements are:
 \begin{itemize}
 \item With the usage of nested integration rules with restricted
-  exponential growth, DAKOTA must ensure that a change in level
+  exponential growth, Dakota must ensure that a change in level
   results in a sufficient change in the grid; otherwise premature
   convergence could occur within the refinement process.  If no change
-  is initially detected, DAKOTA continues incrementing the order/level
+  is initially detected, Dakota continues incrementing the order/level
   (without grid evaluation) until the number of grid points increases.
 \item A convergence criterion is required.  For uniform refinement,
-  DAKOTA employs the $L^2$ norm of the change in the response
+  Dakota employs the $L^2$ norm of the change in the response
   covariance matrix as a general-purpose convergence metric.
 \end{itemize}
 

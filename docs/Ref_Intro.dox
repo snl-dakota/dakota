@@ -31,21 +31,21 @@ namespace Dakota {
 \section IntroCmdsOverview Overview
 
 
-In DAKOTA, a \e strategy creates and manages \e iterators and \e
+In %Dakota, a \e strategy creates and manages \e iterators and \e
 models. A model, generally speaking, contains a set of \e variables,
 an \e interface, and a set of \e responses.  An iterator repeatedly
 operates on the model to map the variables into responses using the
 interface. Each of these six pieces (strategy, method, model,
 variables, interface, and responses) are separate specifications in
 the user's input file, and as a whole, determine the study to be
-performed during an execution of the DAKOTA software. A DAKOTA
+performed during an execution of the %Dakota software. A %Dakota
 execution is limited to a single strategy, which may invoke multiple
 methods. Furthermore, each method may have its own model, consisting
 of (generally speaking) its own variables, interface, and set of
 responses. Thus, there may be multiple specifications of the method,
 model, variables, interface, and responses sections.
 
-DAKOTA input is most commonly specified through a text file, whose
+%Dakota input is most commonly specified through a text file, whose
 syntax is governed by the New Input Deck Reader (NIDR) parsing system
 [\ref Gay2008 "Gay, 2008"], in conjunction with the dakota.input.nspec
 file which describes allowable inputs.  A more concise version of the
@@ -56,7 +56,7 @@ shortened form omits implementation details not needed in a quick
 reference.
 
 This Reference Manual focuses on the details of allowable
-specifications in a file input to the DAKOTA program.  Related details
+specifications in a file input to the %Dakota program.  Related details
 on the name and location of the \c dakota program, command line
 inputs, and execution syntax are provided in the Users Manual [\ref
 UsersMan "Adams et al., 2010"].
@@ -65,13 +65,13 @@ UsersMan "Adams et al., 2010"].
 \section IntroCmdsInpSpec NIDR Input Specification File
 
 
-DAKOTA input is governed by the NIDR input specification file. This
+%Dakota input is governed by the NIDR input specification file. This
 file (dakota.input.nspec) is used by a code generator to create
-parsing system components that are compiled into the DAKOTA executable
+parsing system components that are compiled into the %Dakota executable
 (refer to \ref SpecChange for additional information). Therefore,
 dakota.input.nspec and its derived summary, dakota.input.summary, are
 the definitive source for input syntax, capability options, and
-optional and required capability sub-parameters for any given DAKOTA
+optional and required capability sub-parameters for any given %Dakota
 version. Beginning users may find dakota.input.summary overwhelming or
 confusing and will likely derive more benefit from adapting example
 input files to a particular problem. However, advanced users can
@@ -132,7 +132,7 @@ could also be written
 is for sequences:  L:S:U (with optional spaces around the : )
 is expanded to L L+S L+2*S ... U, and L:U (with no second colon) is
 treated as L:1:U.  For example, in one of the test examples distributed
-with DAKOTA (test case 2 of \c test/dakota_uq_textbook_sop_lhs.in ),
+with %Dakota (test case 2 of \c test/dakota_uq_textbook_sop_lhs.in ),
 \verbatim
         histogram_point = 2                             
           abscissas     = 50. 60. 70. 80. 90.           
@@ -174,9 +174,9 @@ particular input specification used in building the executable, which
 is installed alongside the executable, will often resolve the errors.
 
 \li If you want to compare results with those obtained using
-an earlier version of DAKOTA (prior to 4.1), your input file
+an earlier version of %Dakota (prior to 4.1), your input file
 for the earlier version must use backslashes to indicate
-continuation lines for DAKOTA keywords.  For example, rather than
+continuation lines for %Dakota keywords.  For example, rather than
 \verbatim
 # Comment about the following "responses" keyword...
 responses,
@@ -199,15 +199,15 @@ responses,                                              \
 with no white space (blanks or tabs) after the \ character.
 
 In most cases, the NIDR system provides error messages that
-help the user isolate errors in DAKOTA input files.
+help the user isolate errors in %Dakota input files.
 
 
 \section IntroCmdsSamples Sample dakota.in Files
 
 
-A DAKOTA input file is a collection of fields from the
+A %Dakota input file is a collection of fields from the
 dakota.input.summary file that describe the problem to be solved by
-DAKOTA. Several examples follow.
+%Dakota. Several examples follow.
 
 
 \subsection IntroCmdsSampleOpt Sample 1: Optimization
@@ -525,11 +525,11 @@ through \ref T6d9 "6.9") in succession.
 */
 
 /** \file dakota.input.summary
-    \brief File containing the input specification for DAKOTA
+    \brief File containing the input specification for %Dakota
 
 This file is derived automatically from dakota.input.nspec, which is
 used in the generation of parser system files that are compiled into
-the DAKOTA executable. Therefore, these files are the definitive
+the %Dakota executable. Therefore, these files are the definitive
 source for input syntax, capability options, and associated data
 inputs. Refer to \ref SpecChange for information on how to modify the
 input specification and propagate the changes through the parsing
@@ -550,7 +550,7 @@ variables, \c interface, and \c responses) begin with the keyword
 possibly preceded by white space (blanks, tabs, and newlines)
 both in the input specifications and in user input
 files.  For readability, keyword specifications may be spread across
-several lines.  Earlier versions of DAKOTA (prior to 4.1) required
+several lines.  Earlier versions of %Dakota (prior to 4.1) required
 a backslash character (\\) at the ends of intermediate lines of
 a keyword.  While such backslashes are still accepted, they are
 no longer required.
@@ -561,7 +561,7 @@ no longer required.
 <KEYWORD = name>, <FUNCTION = handler_name>
 \endverbatim
 header which names the keyword and provides the binding to the keyword
-handler within DAKOTA's problem description database. In a user
+handler within %Dakota's problem description database. In a user
 input file, only the name of the keyword appears (e.g., \c variables).
 -->
 
@@ -589,7 +589,7 @@ would be ambiguous with other DOT method specifications.
 \li In both the input specification and user input files, comments are
 preceded by \c #.
 
-The dakota.input.summary file for DAKOTA version 5.1 is:
+The dakota.input.summary file for %Dakota version 5.1 is:
 
 \include dakota.input.summary
 

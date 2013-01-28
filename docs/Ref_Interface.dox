@@ -27,7 +27,7 @@ namespace Dakota {
 \section InterfDescr Interface Description
 
 
-The interface section in a DAKOTA input file specifies how function
+The interface section in a %Dakota input file specifies how function
 evaluations will be performed in order to map a set of parameters into
 a set of responses.  Function evaluations are performed using either
 algebraic mappings, interfaces to simulation codes, or a combination
@@ -41,19 +41,19 @@ required to declare the string identifiers of the subset of inputs and
 outputs, respectively, that will be used in the algebraic mappings.
 
 When employing mappings with simulation codes, the simulations may be
-available internally or externally to DAKOTA.  The interface invokes
+available internally or externally to %Dakota.  The interface invokes
 the simulation using either system calls, forks, direct function
 invocations, or computational grid invocations. In the system call and
-fork cases, the simulation is external to DAKOTA and communication
-between DAKOTA and the simulation occurs through parameter and
+fork cases, the simulation is external to %Dakota and communication
+between %Dakota and the simulation occurs through parameter and
 response files.  In the direct function case, the simulation is
-internal to DAKOTA and communication occurs through the function
+internal to %Dakota and communication occurs through the function
 parameter list.  The direct case can involve linked simulation codes
-or test functions which are compiled into the DAKOTA executable.  The
+or test functions which are compiled into the %Dakota executable.  The
 test functions allow for rapid testing of algorithms without process
 creation overhead or engineering simulation expense.  The grid case is
 experimental and under development, but is intended to support
-simulations which are external to DAKOTA and geographically
+simulations which are external to %Dakota and geographically
 distributed.
 
 Several examples follow. The first example shows a fork interface
@@ -266,14 +266,14 @@ threads) when evaluations or analyses are invoked.  The \c
 evaluation_concurrency and \c analysis_concurrency specifications
 serve a dual purpose:
 
-\li when running DAKOTA on a single processor in \c asynchronous
+\li when running %Dakota on a single processor in \c asynchronous
 mode, the default concurrency of evaluations and analyses is all
 concurrency that is available.  The \c evaluation_concurrency and \c
 analysis_concurrency specifications can be used to limit this
 concurrency in order to avoid machine overload or usage policy
 violation.
 
-\li when running DAKOTA on multiple processors in message passing
+\li when running %Dakota on multiple processors in message passing
 mode, the default concurrency of evaluations and analyses on each of
 the servers is one (i.e., the parallelism is exclusively that of the
 message passing).  With the \c evaluation_concurrency and \c
@@ -317,17 +317,17 @@ AMPL code [\ref Ampl2003 "Fourer et al., 2003"] and save these
 mappings in 3 files: <tt>stub.nl</tt>, <tt>stub.col</tt>, and
 <tt>stub.row</tt>, where <tt>stub</tt> is a particular root name
 describing a particular problem.  These files names can be
-communicated to DAKOTA using the \c algebraic_mappings input.  This
+communicated to %Dakota using the \c algebraic_mappings input.  This
 string may either specify the <tt>stub.nl</tt> filename, or
 alternatively, just the <tt>stub</tt> itself.
 
-DAKOTA then uses <tt>stub.col</tt> and <tt>stub.row</tt> to extract
+%Dakota then uses <tt>stub.col</tt> and <tt>stub.row</tt> to extract
 the input and output identifier strings and employs the AMPL solver
 library [\ref Gay1997 "Gay, 1997"] to process the DAG specification in
 <tt>stub.nl</tt>.  The variable and objective function names declared
 within AMPL should be a subset of the variable descriptors and
-response descriptors used by DAKOTA (see \ref VarCommands and \ref
-RespLabels).  Ordering is not important, as DAKOTA will reorder data
+response descriptors used by %Dakota (see \ref VarCommands and \ref
+RespLabels).  Ordering is not important, as %Dakota will reorder data
 as needed.
 
 Table \ref T8d3 "8.3" summarizes the algebraic mappings specification.
@@ -364,12 +364,12 @@ simulator and filter programs are invoked with system calls, forks,
 direct function calls, or computational grid invocations. In the
 system call and fork cases, a separate process is created for the
 simulator program and files are used for transfer of parameter and
-response data between DAKOTA and the simulator program. This approach
+response data between %Dakota and the simulator program. This approach
 is simple and reliable and does not require any modification to
 simulator programs.  In the direct function case, subroutine parameter
 lists are used to pass the parameter and response data. This approach
 requires modification to simulator programs so that they can be linked
-into DAKOTA; however it can be more efficient through the elimination
+into %Dakota; however it can be more efficient through the elimination
 of process creation overhead and deactivation of unnecessary simulator
 functions (e.g., output), can be less prone to loss of precision in
 that data can be passed directly rather than written to and read from
@@ -447,7 +447,7 @@ on Syntax for Filter and Driver Strings in the Interfaces chapter of
 the Users Manual [\ref UsersMan "Adams et al., 2010"].
 The common case of a single analysis driver is simply accommodated by
 specifying a list of one driver (this also provides backward
-compatibility with previous DAKOTA versions).  The optional
+compatibility with previous %Dakota versions).  The optional
 \c analysis_components specification allows the user to provide
 additional identifiers (e.g., mesh file names) for use by the analysis
 drivers.  This is particularly useful when the same analysis driver is
@@ -459,8 +459,8 @@ of the number of drivers \f$n_d\f$, and the first \f$n_c/n_d\f$
 component strings will be passed to the first driver, etc.  The
 optional \c input_filter and \c output_filter specifications provide
 the names of separate pre- and post-processing programs or scripts
-which assist in mapping DAKOTA parameters files into analysis input
-files and mapping analysis output files into DAKOTA results files,
+which assist in mapping %Dakota parameters files into analysis input
+files and mapping analysis output files into %Dakota results files,
 respectively.  If there is only a single analysis driver, then it is
 usually most convenient to combine pre- and post-processing
 requirements into a single analysis driver script and omit the
@@ -488,7 +488,7 @@ for additional information.
 <!-- internal failure mitigation strategies (currently NL2SOL and MOOCHO), -->
 <!-- the default is to transfer the failure information from the interface -->
 <!-- back to the algorithm for mitigation, with no specific action taken by -->
-<!-- DAKOTA.  For all other algorithms, the default is to abort. -->
+<!-- %Dakota.  For all other algorithms, the default is to abort. -->
 
 The optional \c deactivate specification block includes three features
 which a user may deactivate in order to simplify interface development, 
@@ -504,7 +504,7 @@ an algorithm at any given time, which implies that the ASV values may
 vary from one function evaluation to the next.  Since the user's
 interface must return the data set requested by the ASV values, this
 interface must contain additional logic to account for any variations
-in ASV content. Deactivating this ASV control causes DAKOTA to always
+in ASV content. Deactivating this ASV control causes %Dakota to always
 request a "full" data set (the full function, gradient, and Hessian
 data that is available from the interface as specified in the
 responses specification) on each function evaluation.  For example, if
@@ -522,12 +522,12 @@ the ASV requests and perform the appropriate logic in conditionally
 returning only the data requested.  In general, the default ASV
 behavior is recommended for the sake of computational efficiency,
 unless interface development time is a critical concern.  Note that in
-both cases, the data returned to DAKOTA from the user's interface must
+both cases, the data returned to %Dakota from the user's interface must
 match the ASV passed in, or else a response recovery error will
 result. However, when the ASV control is deactivated, the ASV values
 are invariant and need not be checked on every evaluation.  \e Note:
 Deactivating the ASV control can have a positive effect on load
-balancing for parallel DAKOTA executions. Thus, there is significant
+balancing for parallel %Dakota executions. Thus, there is significant
 overlap in this ASV control option with speculative gradients (see
 \ref MethodIndControl). There is also overlap with the mode override
 approach used with certain optimizers (see SNLLOptimizer and 
@@ -546,7 +546,7 @@ performing timing studies).  However, the downside is that unnecessary
 computations may be performed since duplication in function evaluation
 requests may not be detected.  For this reason, this option is not
 recommended when function evaluations are costly.  \e Note:
-duplication detection within DAKOTA can be deactivated, but duplication
+duplication detection within %Dakota can be deactivated, but duplication
 detection features within specific optimizers may still be active.
 
 \li Restart file: deactivation of this feature using a \c deactivate
@@ -568,7 +568,7 @@ describe these group specifications in detail.
 
 \subsection InterfApplicF Fork interface
 
-The fork interface is the most common means by which DAKOTA launches a
+The fork interface is the most common means by which %Dakota launches a
 separate application analysis process.  The \c fork keyword anchors
 the group specification and the \c parameters_file, \c results_file,
 \c verbatim, \c aprepro, \c file_tag, and \c file_save are additional
@@ -597,9 +597,9 @@ evaluation number) and no file saving (files will be removed after a
 function evaluation). File tagging is most useful when multiple
 function evaluations are running simultaneously using files in a
 shared disk space, and file saving is most useful when debugging the
-data communication between DAKOTA and the simulation.
+data communication between %Dakota and the simulation.
 
-By default DAKOTA will remove existing results files before invoking
+By default %Dakota will remove existing results files before invoking
 the \c analysis_driver to avoid problems created by stale files in the
 current directory.  To override this behavior and not delete existing
 files, specify \c allow_existing_results. 
@@ -607,11 +607,11 @@ files, specify \c allow_existing_results.
 When performing concurrent evaluations and/or analyses, it is often
 necessary to cloister input and output files in separate directories
 to avoid conflicts.  When the \c work_directory feature is enabled,
-DAKOTA will create a directory for each evaluation/analysis (with
+%Dakota will create a directory for each evaluation/analysis (with
 optional tagging and saving as with files), and execute the analysis
 driver from that working directory.  If an optional \c
 template_directory and/or list of \c template_files is specified,
-DAKOTA will link (or copy) those files into each working
+%Dakota will link (or copy) those files into each working
 directory. The specifications for fork and \ref InterfApplicSC 
 "system call" interfaces are summarized in \ref T8d5 "Table 8.5".
   
@@ -729,7 +729,7 @@ Additional specifications for fork (and system call) interfaces
 
 \subsection InterfApplicSC System call interface
 
-The system call interface is included in DAKOTA for portability and
+The system call interface is included in %Dakota for portability and
 backward compatibility.  Users are strongly encouraged to use the \ref
 InterfApplicF "fork interface" if possible, reverting to system only
 when necessary.  To enable the system call interface, replace the \c fork
@@ -786,17 +786,17 @@ Additional specifications for direct function interfaces
 The primary use of the direct interface is to invoke internal test
 functions that perform parameter to response mappings for simple
 functions as inexpensively as possible. These problems are compiled
-directly into the DAKOTA executable as part of the direct function
+directly into the %Dakota executable as part of the direct function
 interface class and are used for algorithm testing.  Refer to
 DirectApplicInterface for currently available testers.
 
-DAKOTA supports direct interfaces to a few select simulation codes.
+%Dakota supports direct interfaces to a few select simulation codes.
 One example is ModelCenter, a commercial simulation management
 framework from Phoenix Integration.  To utilize this interface, a user
 must first define the simulation specifics within a ModelCenter
 session and then save these definitions to a ModelCenter configuration
 file.  The \c analysis_components specification provides the means to
-communicate this configuration file to DAKOTA's ModelCenter interface.
+communicate this configuration file to %Dakota's ModelCenter interface.
 
 Other direct interfaces to simulation codes include Sandia's SALINAS
 structural dynamics code, Sandia's SIERRA multiphysics framework, and
@@ -805,12 +805,12 @@ within Sandia and supported to varying degrees.
 
 \subsection InterfApplicMSP Matlab, Scilab, and Python interfaces
 
-DAKOTA supports library-linked interfaces to Matlab, Scilab, and
+%Dakota supports library-linked interfaces to Matlab, Scilab, and
 Python scientific computation software, but they must be explicitly
-enabled when compiling DAKOTA from source.  First consult the Users
+enabled when compiling %Dakota from source.  First consult the Users
 Manual [\ref UsersMan "Adams et al., 2010"] for discussion and
-examples.  Contact the DAKOTA users mailing list for assistance
-building and using DAKOTA with these interfaces.  To enable, specify
+examples.  Contact the %Dakota users mailing list for assistance
+building and using %Dakota with these interfaces.  To enable, specify
 one of the interfaces in \ref T8d7 "Table 8.7".  In all these
 interfaces, the \c analysis_driver is used to specify a Matlab,
 Scilab, or Python file which implements the parameter to response

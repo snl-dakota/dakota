@@ -4,24 +4,24 @@
 \section{Overview}\label{parallel:overview}
 
 This chapter describes the various parallel computing capabilities
-provided by DAKOTA.  The range of capabilities is extensive and can be
+provided by Dakota.  The range of capabilities is extensive and can be
 daunting at first; therefore, this chapter takes an incremental
 approach in first describing the simplest single-level parallel
 computing models (Section~\ref{parallel:SLP}) using asynchronous
 local, message passing, and hybrid approaches.  More advanced uses of
-DAKOTA can build on this foundation to exploit multiple levels of
+Dakota can build on this foundation to exploit multiple levels of
 parallelism, as described in Section~\ref{parallel:MLP}.  The chapter
-concludes with a discussion of using DAKOTA with applications that run
+concludes with a discussion of using Dakota with applications that run
 as independent MPI processes (parallel application tiling, for example
 on a large compute cluster).  This last section is a good quick start
-for interfacing DAKOTA to your parallel (or serial) application on a
+for interfacing Dakota to your parallel (or serial) application on a
 cluster.
 
 %In the following sections, the parallel algorithms available in this
-%DAKOTA release are listed followed by descriptions of the software
+%Dakota release are listed followed by descriptions of the software
 %components that enable parallelism, approaches for utilizing these
 %components, and input specification and execution details for running
-%parallel DAKOTA studies.
+%parallel Dakota studies.
 
 
 \subsection{Categorization of parallelism}\label{parallel:overview:cat}
@@ -132,13 +132,13 @@ determined by the aspects of a particular systems analysis
 application, and is therefore highly application-dependent.
 Algorithmic parallelism, on the other hand, is largely determined by
 the selection and configuration of a particular algorithm.  These
-selection possibilities within DAKOTA are outlined in the following
+selection possibilities within Dakota are outlined in the following
 section.
 
 
-\subsection{Parallel DAKOTA algorithms} \label{parallel:algorithms}
+\subsection{Parallel Dakota algorithms} \label{parallel:algorithms}
 
-In DAKOTA, the following parallel algorithms, comprised of iterators
+In Dakota, the following parallel algorithms, comprised of iterators
 and strategies, provide support for coarse-grained algorithmic
 parallelism.  Note that, even if a particular algorithm is serial in
 terms of its data request concurrency, other concurrency sources
@@ -149,7 +149,7 @@ parallelism) may still be available.
 
 \begin{itemize}
 \item Gradient-based optimizers: CONMIN, DOT, NLPQL, NPSOL, and OPT++
-  can all exploit parallelism through the use of DAKOTA's native finite
+  can all exploit parallelism through the use of Dakota's native finite
   differencing routine (selected with \texttt{method\_source dakota}
   in the responses specification), which will perform concurrent
   evaluations for each of the parameter offsets. For \texttt{n}
@@ -168,23 +168,23 @@ parallelism) may still be available.
 
 \item Nongradient-based optimizers: HOPSPACK, JEGA methods, and most
   COLINY methods support parallelism.  HOPSPACK and COLINY methods
-  exploit parallelism through the use of DAKOTA's concurrent function
+  exploit parallelism through the use of Dakota's concurrent function
   evaluations; however, there are some limitations on the levels of
   concurrency and asynchrony that can be exploited.  These are detailed
-  in the DAKOTA Reference Manual. Serial COLINY methods include
+  in the Dakota Reference Manual. Serial COLINY methods include
   Solis-Wets (\texttt{coliny\_solis\_wets}) and certain
   \texttt{exploratory\_moves} options (\texttt{adaptive\_pattern} and
   \texttt{multi\_step}) in pattern search
   (\texttt{coliny\_pattern\_search}).  OPT++ PDS (\texttt{optpp\_pds})
   and NCSU DIRECT (\texttt{ncsu\_direct}) are also currently serial
-  due to incompatibilities in DAKOTA and OPT++/NCSU parallelism
+  due to incompatibilities in Dakota and OPT++/NCSU parallelism
   models.  Finally, \texttt{coliny\_pattern\_search} and
   \texttt{asynch\_pattern\_search} support dynamic job queues managed
   with nonblocking synchronization.
 
 \item Least squares methods: in an identical manner to the
   gradient-based optimizers, NL2SOL, NLSSOL, and Gauss-Newton can
-  exploit parallelism through the use of DAKOTA's native finite
+  exploit parallelism through the use of Dakota's native finite
   differencing routine. In addition, NL2SOL and Gauss-Newton can use
   speculative gradient techniques to obtain better parallel load
   balancing. NLSSOL does not use speculative gradients since this
@@ -226,7 +226,7 @@ parallelism) may still be available.
   support parallelism. In the case of
   \texttt{local\_reliability}, gradient-based optimization is
   involved and parallelism can be exploited through the use of
-  DAKOTA's native finite differencing routine.  In the case of
+  Dakota's native finite differencing routine.  In the case of
   \texttt{global\_reliability}, EGRA methods support parallelism
   in the initial surrogate construction, but subsequently only
   generate a single point for evaluation per cycle.
@@ -314,7 +314,7 @@ concurrent iterator parallelism.
 \section{Single-level parallelism} \label{parallel:SLP}
 
 
-DAKOTA's parallel facilities support a broad range of computing
+Dakota's parallel facilities support a broad range of computing
 hardware, from custom massively parallel supercomputers on the high
 end, to clusters and networks of workstations (NOWs) in the middle
 range, to desktop multiprocessors on the low end. Given the reduced
@@ -331,16 +331,16 @@ in Figure~\ref{parallel:figure03}:
 \end{wrapfigure}
 
 \begin{itemize}
-\item \emph{asynchronous local}: DAKOTA executes on a single processor,
+\item \emph{asynchronous local}: Dakota executes on a single processor,
 but launches multiple jobs concurrently using asynchronous job launching
 techniques.
 
-\item \emph{message passing}: DAKOTA executes in parallel using message
+\item \emph{message passing}: Dakota executes in parallel using message
 passing to communicate between processors.  A single job is launched
 per processor using synchronous job launching techniques.
 
 \item \emph{hybrid}: a combination of message passing and asynchronous
-local.  DAKOTA executes in parallel across multiple processors and
+local.  Dakota executes in parallel across multiple processors and
 launches concurrent jobs on each processor.
 \end{itemize}
 
@@ -378,23 +378,23 @@ This section describes software components which manage simulation
 invocations local to a processor. These invocations may be either
 synchronous (i.e., blocking) or asynchronous (i.e., nonblocking).
 Synchronous evaluations proceed one at a time with the evaluation
-running to completion before control is returned to DAKOTA.
+running to completion before control is returned to Dakota.
 Asynchronous evaluations are initiated such that control is returned
-to DAKOTA immediately, prior to evaluation completion, thereby
+to Dakota immediately, prior to evaluation completion, thereby
 allowing the initiation of additional evaluations which will execute
 concurrently.
 
 The synchronous local invocation capabilities are used in two
 contexts: (1) by themselves to provide serial execution on a single
-processor, and (2) in combination with DAKOTA's message-passing
+processor, and (2) in combination with Dakota's message-passing
 schedulers to provide function evaluations local to each
 processor. Similarly, the asynchronous local invocation capabilities
 are used in two contexts: (1) by themselves to launch concurrent jobs
 from a single processor that rely on external means (e.g., operating
 system, job queues) for assignment to other processors, and (2) in
-combination with DAKOTA's message-passing schedulers to provide a
+combination with Dakota's message-passing schedulers to provide a
 hybrid parallelism (see Section~\ref{parallel:SLP:hybrid}).  Thus,
-DAKOTA supports any of the four combinations of synchronous or
+Dakota supports any of the four combinations of synchronous or
 asynchronous local combined with message passing or without.
 
 Asynchronous local schedulers may be used for managing concurrent
@@ -410,7 +410,7 @@ latter evaluation/analysis concurrency is restricted to blocking
 synchronization.  The ``Asynchronous Local'' column in
 Table~\ref{parallel:table01} summarizes these capabilities.
 
-DAKOTA supports three local simulation invocation approaches based on
+Dakota supports three local simulation invocation approaches based on
 the direct function, system call, and fork simulation interfaces.  For
 each of these cases, an input filter, one or more analysis drivers,
 and an output filter make up the interface, as described in
@@ -425,7 +425,7 @@ calls to one or more simulations, followed by a call to the output
 filter, if present (refer to
 Sections~\ref{interfaces:sim}-\ref{interfaces:components} for
 additional details and examples). Each of these components must be
-linked as functions within DAKOTA. Control does not return to the
+linked as functions within Dakota. Control does not return to the
 calling code until the evaluation is completed and the response object
 has been populated.
 
@@ -449,7 +449,7 @@ semi-colons) in the foreground. Control does not return to the calling
 code until the simulation is completed and the response file has been
 written. In this case, the possibility of a race condition (see below)
 does not exist and any errors during response recovery will cause an
-immediate abort of the DAKOTA process (note: detection of the string
+immediate abort of the Dakota process (note: detection of the string
 ``fail'' is not a response recovery error; see Chapter~\ref{failure}).
 
 Asynchronous operation involves spawning the system call in the
@@ -464,9 +464,9 @@ using the \texttt{stat} utility~\cite{Ker88}. Care must be taken when
 using asynchronous system calls since they are prone to the race
 condition in which the results file passes the existence test but the
 recording of the function evaluation results in the file is
-incomplete. In this case, the read operation performed by DAKOTA will
+incomplete. In this case, the read operation performed by Dakota will
 result in an error due to an incomplete data set. In order to address
-this problem, DAKOTA contains exception handling which allows for a
+this problem, Dakota contains exception handling which allows for a
 fixed number of response read failures per asynchronous system call
 evaluation. The number of allowed failures must have a limit, so that
 an actual response format error (unrelated to the race condition) will
@@ -484,7 +484,7 @@ directory where its existence is being queried.
 If concurrent simulations are executing in a shared disk space, then
 care must be taken to maintain independence of the simulations. In
 particular, the parameters and results files used to communicate
-between DAKOTA and the simulation, as well as any other files used by
+between Dakota and the simulation, as well as any other files used by
 this simulation, must be protected from other files of the same name
 used by the other concurrent simulations. With respect to the
 parameters and results files, these files may be made unique through
@@ -537,7 +537,7 @@ concurrent analyses.
 
 The test file \texttt{Dakota/test/dakota\_dace.in} computes 49
 orthogonal array samples, which may be evaluated concurrently using
-parallel computing.  When executing DAKOTA with this input file on a
+parallel computing.  When executing Dakota with this input file on a
 single processor, the following execution syntax may be used:
 \begin{small}
 \begin{verbatim}
@@ -584,8 +584,8 @@ which results in function evaluation output similar to the following
 where it is evident that each function evaluation is being performed
 sequentially.
 
-For parallel execution using asynchronous local approaches, the DAKOTA
-execution syntax is unchanged as DAKOTA is still launched on a single
+For parallel execution using asynchronous local approaches, the Dakota
+execution syntax is unchanged as Dakota is still launched on a single
 processor.  However, the interface specification is augmented to
 include the \texttt{asynchronous} keyword with optional concurrency
 limiter to indicate that multiple \texttt{analysis\_driver} instances
@@ -669,14 +669,14 @@ Specifying greater concurrency than that supported by the hardware
 will result in additional context switching within a multitasking
 operating system and will generally degrade performance.  Note however
 that, in this example, there are a total of 5 processes running, one
-for DAKOTA and four for the concurrent function evaluations.  Since
-the DAKOTA process checks periodically for job completion and sleeps
+for Dakota and four for the concurrent function evaluations.  Since
+the Dakota process checks periodically for job completion and sleeps
 in between checks, it is relatively lightweight and does not require a
 dedicated processor.
 
 \subsubsection{Local evaluation scheduling options}\label{parallel:SLP:local:sched}
 
-The default behavior for asynchronous local parallelism is for DAKOTA
+The default behavior for asynchronous local parallelism is for Dakota
 to dispatch the next evaluation the local queue when one completes
 (and can optionally be specified by
 \texttt{local\_evaluation\_self\_scheduling}.  In some cases, the
@@ -695,13 +695,13 @@ can be seen in \texttt{Dakota/examples/parallelism}.
 %\subsection{Message Passing Components}\label{parallel:SLP:message}
 \subsection{Message Passing Parallelism}\label{parallel:SLP:message}
 
-DAKOTA uses a ``single program-multiple data'' (SPMD) parallel
+Dakota uses a ``single program-multiple data'' (SPMD) parallel
 programming model. It uses message-passing routines from the Message
 Passing Interface (MPI) standard~\cite{Gro94},~\cite{Sni96} to
 communicate data between processors. The SPMD designation simply
-denotes that the same DAKOTA executable is loaded on all processors
+denotes that the same Dakota executable is loaded on all processors
 during the parallel invocation. This differs from the MPMD model
-(``multiple program-multiple data'') which would have the DAKOTA
+(``multiple program-multiple data'') which would have the Dakota
 executable on one or more processors communicating directly with
 simulator executables on other processors. The MPMD model has some
 advantages, but heterogeneous executable loads are not supported by
@@ -802,16 +802,16 @@ of fully asynchronous algorithms which do not contain synchronization
 points (e.g., \texttt{asynch\_pattern\_search} and
 \texttt{coliny\_pattern\_search}).  Message passing is also used within
 a fine-grained parallel analysis code, although this does not involve
-the use of DAKOTA schedulers (DAKOTA may, at most, pass a communicator
+the use of Dakota schedulers (Dakota may, at most, pass a communicator
 partition to the simulation).  The ``Message Passing'' column in
 Table~\ref{parallel:table01} summarizes these capabilities.
 
 \subsubsection{Message Passing Example}\label{parallel:SLP:message:ex}
 
-Revisiting the test file \texttt{dakota\_dace.in}, DAKOTA will now
+Revisiting the test file \texttt{dakota\_dace.in}, Dakota will now
 compute the 49 orthogonal array samples using a message passing
 approach.  In this case, a parallel launch utility is used to execute
-DAKOTA across multiple processors using syntax similar to the following:
+Dakota across multiple processors using syntax similar to the following:
 \begin{small}
 \begin{verbatim}
     mpirun -np 5 -machinefile machines dakota -i dakota_dace.in
@@ -829,7 +829,7 @@ keyword and would appear similar to:
 \end{verbatim}
 \end{small}
 
-The relevant excerpts from the DAKOTA output for a dedicated master
+The relevant excerpts from the Dakota output for a dedicated master
 partition and self-schedule, the default when the maximum concurrency
 (49) exceeds the available capacity (5), would appear similar to the
 following:
@@ -913,9 +913,9 @@ approaches described in Section~\ref{parallel:SLP:message} rely on
 \emph{internal} scheduling mechanisms to distribute work among
 processors. These two approaches provide building blocks which can be
 combined in a variety of ways to manage parallelism at multiple
-levels. At one extreme, DAKOTA can execute on a single processor and
+levels. At one extreme, Dakota can execute on a single processor and
 rely completely on external means to map all jobs to processors (i.e.,
-using asynchronous local approaches). At the other extreme, DAKOTA can
+using asynchronous local approaches). At the other extreme, Dakota can
 execute on many processors and manage all levels of parallelism,
 including the parallel simulations, using completely internal
 approaches (i.e., using message passing at all levels as in
@@ -949,7 +949,7 @@ that involve clusters of symmetric multiprocessors (SMPs). In the
 service/compute node case, concurrent multiprocessor simulations are
 launched into the compute nodes from the service node partition. While
 an asynchronous local approach from a single service node would be
-sufficient, spreading the application load by running DAKOTA in
+sufficient, spreading the application load by running Dakota in
 parallel across multiple service nodes results in better
 performance~\cite{Eld00}. If the number of concurrent jobs to be
 managed in the compute partition exceeds the number of available
@@ -958,7 +958,7 @@ the case of a cluster of SMPs (or network of multiprocessor
 workstations), message-passing can be used to communicate between
 SMPs, and asynchronous local approaches can be used within an
 SMP. Hybrid parallelism can again result in improved performance,
-since the total number of DAKOTA MPI processes is reduced in
+since the total number of Dakota MPI processes is reduced in
 comparison to a pure message-passing approach over all processors.
 
 Hybrid schedulers may be used for managing concurrent evaluations
@@ -972,10 +972,10 @@ capabilities.
 
 \subsubsection{Hybrid Example}\label{parallel:SLP:hybrid:ex}
 
-Revisiting the test file \texttt{dakota\_dace.in}, DAKOTA will now
+Revisiting the test file \texttt{dakota\_dace.in}, Dakota will now
 compute the 49 orthogonal array samples using a hybrid approach.  As
 for the message passing case, a parallel launch utility is used to
-execute DAKOTA across multiple processors:
+execute Dakota across multiple processors:
 \begin{small}
 \begin{verbatim}
     mpirun -np 5 -machinefile machines dakota -i dakota_dace.in
@@ -998,7 +998,7 @@ is for asynchronous local parallelism).  Rather the default is to employ
 message passing parallelism, and hybrid parallelism is only available
 through the specification of asynchronous concurrency greater than one.
 
-The relevant excerpts of the DAKOTA output for a dedicated master
+The relevant excerpts of the Dakota output for a dedicated master
 partition and self schedule, the default when the maximum concurrency
 (49) exceeds the maximum available capacity (10), would appear similar
 to the following:
@@ -1083,18 +1083,18 @@ the power of these machines for performing design, uncertainty
 quantification, and other systems analyses, parallel algorithms are
 needed which are scalable to thousands of processors.
 
-DAKOTA supports a total of three tiers of scheduling and four levels
+Dakota supports a total of three tiers of scheduling and four levels
 of parallelism which, in combination, can minimize efficiency losses
 and achieve near linear scaling on MP computers. The four levels are:
 \begin{enumerate}
 \item concurrent iterators within a strategy (scheduling performed by
-  DAKOTA)
+  Dakota)
 
 \item concurrent function evaluations within each iterator (scheduling
-  performed by DAKOTA)
+  performed by Dakota)
 
 \item concurrent analyses within each function evaluation (scheduling
-  performed by DAKOTA)
+  performed by Dakota)
 
 \item multiprocessor analyses (work distributed by a parallel
   analysis code)
@@ -1108,14 +1108,14 @@ development of large-scale parallel SAND techniques is a current
 research direction~\cite{Bar01b}.
 
 A particular application may support one or more of these parallelism
-types, and DAKOTA provides for convenient selection and combination of
+types, and Dakota provides for convenient selection and combination of
 each of the supported levels. If multiple types of parallelism can be
 exploited, then the question may arise as to how the amount of
 parallelism at each level should be selected so as to maximize the
 overall parallel efficiency of the study. For performance analysis of
 multilevel parallelism formulations and detailed discussion of these
 issues, refer to~\cite{Eld00}.  In many cases, \emph{the user may
-simply employ DAKOTA's automatic parallelism configuration facilities,}
+simply employ Dakota's automatic parallelism configuration facilities,}
 which implement the recommendations from the aforementioned paper.
 
 Figure~\ref{fig:mlp_scaling} shows typical fixed-size scaling
@@ -1134,7 +1134,7 @@ minimal scheduler idleness (by, e.g., managing all concurrency in as
 few scheduling levels as possible).  Note that speedup and efficiency
 are measured relative to the case of a single instance of a
 multiprocessor analysis, since it was desired to investigate the
-effectiveness of the DAKOTA schedulers independent from the efficiency
+effectiveness of the Dakota schedulers independent from the efficiency
 of the parallel analysis.
 \begin{figure}
   \centering
@@ -1171,9 +1171,9 @@ system (see Section~\ref{interfaces:which}).
 %   Lowest level supports single-level options above
 \subsubsection{Partitioning of levels}\label{parallel:MLP:message:partitioning}
 
-DAKOTA uses MPI communicators to identify groups of processors. The
+Dakota uses MPI communicators to identify groups of processors. The
 global \texttt{MPI\_COMM\_WORLD} communicator provides the total set
-of processors allocated to the DAKOTA run. \texttt{MPI\_COMM\_WORLD}
+of processors allocated to the Dakota run. \texttt{MPI\_COMM\_WORLD}
 can be partitioned into new intra-communicators which each define a
 set of processors to be used for a multiprocessor server. Each of
 these servers may be further partitioned to nest one level of
@@ -1185,7 +1185,7 @@ been designed, or can be modified, to be modular on a communicator
 intra-communicators are created with the \texttt{MPI\_Comm\_split}
 routine, and in order to send messages between these
 intra-communicators, new inter-communicators are created with calls to
-\texttt{MPI\_Intercomm\_create}. To minimize overhead, DAKOTA creates
+\texttt{MPI\_Intercomm\_create}. To minimize overhead, Dakota creates
 new intra- and inter-communicators only when the parent communicator
 provides insufficient context for the scheduling at a particular
 level. In addition, multiple parallel configurations (containing a set
@@ -1195,9 +1195,9 @@ could be used for iteration on a lower fidelity model, followed by two
 servers of 512 processors each for subsequent iteration on a higher
 fidelity model).  Each of the parallel configurations are allocated
 at object construction time and are reported at the beginning of the
-DAKOTA output.
+Dakota output.
 
-Each tier within DAKOTA's nested parallelism hierarchy can use the
+Each tier within Dakota's nested parallelism hierarchy can use the
 dedicated master and peer partition approaches described in
 Section~\ref{parallel:SLP:message:part}. To recursively partition the
 subcommunicators of Figure~\ref{parallel:figure01},
@@ -1214,7 +1214,7 @@ for the next lower level of parallelism.
   \label{parallel:figure02}
 \end{wrapfigure}
 
-DAKOTA is designed to allow the freedom to configure each parallelism
+Dakota is designed to allow the freedom to configure each parallelism
 level with either the dedicated master partition/self-scheduling
 combination or the peer partition/static scheduling combination. In
 addition, certain external libraries may provide additional options
@@ -1260,7 +1260,7 @@ managed by the next lower level of parallelism, and each server is
 responsible for executing these sub-components concurrently using an
 asynchronous local approach.
 
-For example, consider a multiprocessor DAKOTA run which involves an
+For example, consider a multiprocessor Dakota run which involves an
 iterator scheduling a set of concurrent function evaluations across a
 cluster of SMPs. A hybrid parallelism approach will be applied in
 which message-passing parallelism is used between SMPs and
@@ -1292,10 +1292,10 @@ separate process or thread for an iterator is not currently supported.
 The latter case reflects a finer point on the definition of external
 parallelism management. While a multiprocessor analysis can most
 certainly be launched (e.g., using \texttt{mpirun}/\texttt{yod}) from
-one of DAKOTA's analysis drivers, resulting in a parallel analysis
-external to DAKOTA (which is consistent with asynchronous local and
-hybrid approaches), this parallelism is not visible to DAKOTA and
-therefore does not qualify as parallelism that DAKOTA manages (and
+one of Dakota's analysis drivers, resulting in a parallel analysis
+external to Dakota (which is consistent with asynchronous local and
+hybrid approaches), this parallelism is not visible to Dakota and
+therefore does not qualify as parallelism that Dakota manages (and
 therefore is not included in Table~\ref{parallel:table01}). The
 concurrent evaluation and analysis levels can be managed either with
 message-passing, asynchronous local, or hybrid techniques, with the
@@ -1342,11 +1342,11 @@ synchronization at this level.
 \end{table}
 
 
-\section{Running a Parallel DAKOTA Job}\label{parallel:running}
+\section{Running a Parallel Dakota Job}\label{parallel:running}
 
 
 Section~\ref{parallel:SLP} provides a few examples of serial and
-parallel execution of DAKOTA using asynchronous local, message
+parallel execution of Dakota using asynchronous local, message
 passing, and hybrid approaches to single-level parallelism.  The
 following sections provides a more complete discussion of the parallel
 execution syntax and available specification controls.
@@ -1354,8 +1354,8 @@ execution syntax and available specification controls.
 
 \subsection{Single-processor execution}\label{parallel:running:single}
 
-The command for running DAKOTA on a single-processor and exploiting
-asynchronous local parallelism is the same as for running DAKOTA on a
+The command for running Dakota on a single-processor and exploiting
+asynchronous local parallelism is the same as for running Dakota on a
 single-processor for a serial study, e.g.:
 \begin{small}
 \begin{verbatim}
@@ -1368,10 +1368,10 @@ information on single-processor command syntax.
 
 \subsection{Multiprocessor execution}\label{parallel:running:multiprocessor}
 
-Running a DAKOTA job on multiple processors requires the use of an
+Running a Dakota job on multiple processors requires the use of an
 executable loading facility such as \texttt{mpirun}, \texttt{mpiexec},
 \texttt{poe}, or \texttt{yod}.  On a network of workstations, the
-\texttt{mpirun} script is commonly used to initiate a parallel DAKOTA
+\texttt{mpirun} script is commonly used to initiate a parallel Dakota
 job, e.g.:
 \begin{small}
 \begin{verbatim}
@@ -1394,8 +1394,8 @@ executable loading facility:
 \end{small}
 
 In each of these cases, MPI command line arguments are used by MPI
-(extracted first in the call to \texttt{MPI\_Init}) and DAKOTA command
-line arguments are used by DAKOTA (extracted second by DAKOTA's
+(extracted first in the call to \texttt{MPI\_Init}) and Dakota command
+line arguments are used by Dakota (extracted second by Dakota's
 command line handler). An issue that can arise with these command line
 arguments is that the mpirun script distributed with MPICH has been
 observed to have problems with certain file path specifications (e.g.,
@@ -1425,19 +1425,19 @@ NQS syntax is similar:
 
 These commands allocate 512 compute nodes for the study, and execute
 the \texttt{run\_dakota} script on a service node. If this script
-contains a single-processor \texttt{dakota} command, then DAKOTA will
+contains a single-processor \texttt{dakota} command, then Dakota will
 execute on a single service node from which it can launch parallel
 simulations into the compute nodes using analysis drivers that contain
 \texttt{yod} commands (any \texttt{yod} executions occurring at any
 level underneath the \texttt{run\_dakota} script are mapped to the 512
 compute node allocation). If the script submitted to \texttt{qsub}
-contains a multiprocessor \texttt{mpirun} command, then DAKOTA will
+contains a multiprocessor \texttt{mpirun} command, then Dakota will
 execute across multiple service nodes so that it can spread the
 application load in either a message-passing or hybrid parallelism
 approach. Again, analysis drivers containing \texttt{yod} commands
 would be responsible for utilizing the 512 compute nodes. And,
 finally, if the script submitted to \texttt{qsub} contains a
-\texttt{yod} of the \texttt{dakota} executable, then DAKOTA will
+\texttt{yod} of the \texttt{dakota} executable, then Dakota will
 execute directly on the compute nodes and manage all of the
 parallelism internally (note that a \texttt{yod} of this type without
 a \texttt{qsub} would be mapped to the interactive partition, rather
@@ -1454,7 +1454,7 @@ machine idiosyncrasies.
 
 \section{Specifying Parallelism}\label{parallel:spec}
 
-Given an allotment of processors, DAKOTA contains logic based on the
+Given an allotment of processors, Dakota contains logic based on the
 theoretical work in~\cite{Eld00} to automatically determine an efficient
 parallel configuration, consisting of partitioning and scheduling
 selections for each of the parallelism levels. This logic accounts for
@@ -1497,7 +1497,7 @@ in selecting configuration overrides:
 
 In the following sections, the user inputs and overrides are
 described, followed by specification examples for single and
-multi-processor DAKOTA executions.
+multi-processor Dakota executions.
 
 \subsection{The interface specification}\label{parallel:spec:interface}
 
@@ -1508,7 +1508,7 @@ to a processor (i.e., asynchronous local parallelism). This
 \texttt{asynchronous} specification has dual uses:
 
 \begin{itemize}
-\item When running DAKOTA on a single-processor, the
+\item When running Dakota on a single-processor, the
   \texttt{asynchronous} keyword specifies the use of asynchronous
   invocations local to the processor (these jobs then rely on external
   means to be allocated to other processors). The default behavior is
@@ -1520,7 +1520,7 @@ to a processor (i.e., asynchronous local parallelism). This
   \texttt{evaluation\_concurrency} and \texttt{analysis\_concurrency}
   specifications.
 
-\item When executing DAKOTA across multiple processors and managing
+\item When executing Dakota across multiple processors and managing
   jobs with a message-passing scheduler, the \texttt{asynchronous}
   keyword specifies the use of asynchronous invocations local to each
   server processor, resulting in a hybrid parallelism approach (see
@@ -1545,7 +1545,7 @@ the \texttt{processors\_per\_analysis} keyword can be used to override
 the automatic parallelism configuration for the size of multiprocessor
 analyses used in a direct function simulation interface. Each of these
 keywords appears as part of the interface commands specification in
-the DAKOTA Reference Manual~\cite{RefMan}.
+the Dakota Reference Manual~\cite{RefMan}.
 
 \subsection{The strategy specification}\label{parallel:spec:strategy}
 
@@ -1553,16 +1553,16 @@ To specify concurrency in iterator executions, the
 \texttt{iterator\_servers}, \texttt{iterator\_self\_scheduling}, and
 \texttt{iterator\_static\_scheduling} keywords are used to override
 the automatic parallelism configuration. See the strategy commands
-specification in the DAKOTA Reference Manual~\cite{RefMan} for additional
+specification in the Dakota Reference Manual~\cite{RefMan} for additional
 information.
 
-\subsection{Single-processor DAKOTA specification}\label{parallel:spec:single}
+\subsection{Single-processor Dakota specification}\label{parallel:spec:single}
 
-Specifying a single-processor DAKOTA job that exploits parallelism
+Specifying a single-processor Dakota job that exploits parallelism
 through asynchronous local approaches (see
 Figure~\ref{parallel:figure03}a) requires inclusion of the
 \texttt{asynchronous} keyword in the interface specification. Once the
-input file is defined, single-processor DAKOTA jobs are executed using
+input file is defined, single-processor Dakota jobs are executed using
 the command syntax described previously in
 Section~\ref{parallel:running:single}.
 
@@ -1597,7 +1597,7 @@ which will perform asynchronous finite differencing:
 \end{verbatim}
 \end{small}
 
-Note that \texttt{method\_source} \texttt{dakota} selects DAKOTA's
+Note that \texttt{method\_source} \texttt{dakota} selects Dakota's
 internal finite differencing routine so that the concurrency in finite
 difference offsets can be exploited. In this case, central
 differencing has been selected and 11 function evaluations (one at the
@@ -1663,13 +1663,13 @@ the default in this case and could be omitted). Changing the input to
 evaluations, and changing the input to \texttt{analysis\_concurrency = 1}
 would serialize the analyses.
 
-\subsection{Multiprocessor DAKOTA specification}\label{parallel:spec:multi}
+\subsection{Multiprocessor Dakota specification}\label{parallel:spec:multi}
 
 In multiprocessor executions, server evaluations are synchronous
 (Figure~\ref{parallel:figure03}b) by default and the
 \texttt{asynchronous} keyword is only used if a hybrid parallelism
 approach (Figure~\ref{parallel:figure03}c) is desired. Multiprocessor
-DAKOTA jobs are executed using the command syntax described previously
+Dakota jobs are executed using the command syntax described previously
 in Section~\ref{parallel:running:multiprocessor}.
 
 \subsubsection{Example 3}\label{parallel:spec:multi:example3}
@@ -1686,9 +1686,9 @@ interface specification:
 \end{verbatim}
 \end{small}
 
-Running DAKOTA on 4 processors (syntax: \texttt{mpirun -np 4 dakota -i
+Running Dakota on 4 processors (syntax: \texttt{mpirun -np 4 dakota -i
   dakota.in}) would result in the following parallel configuration
-report from the DAKOTA output:
+report from the Dakota output:
 \begin{small}
 \begin{verbatim}
     -----------------------------------------------------------------------------
@@ -1725,7 +1725,7 @@ overridden to use a static schedule through use of the
 \end{verbatim}
 \end{small}
 
-Running DAKOTA again on 4 processors (syntax: \texttt{mpirun -np 4
+Running Dakota again on 4 processors (syntax: \texttt{mpirun -np 4
   dakota -i dakota.in}) would now result in this parallel
 configuration report:
 \begin{small}
@@ -1769,7 +1769,7 @@ specification as was used for the single-processor examples, e.g.:
 \end{small}
 
 With 3 function evaluations concurrent on each server, the capacity of
-a 4 processor DAKOTA execution (syntax: \texttt{mpirun -np 4 dakota -i
+a 4 processor Dakota execution (syntax: \texttt{mpirun -np 4 dakota -i
   dakota.in}) has increased to 12 evaluations. Since all 11 jobs can
 now be scheduled in a single pass, a static schedule is automatically
 selected (without any override request):
@@ -1880,7 +1880,7 @@ internally:
 \end{small}
 
 This results in the following parallel configuration for a 12
-processor DAKOTA run \\
+processor Dakota run \\
 (syntax: \texttt{mpirun -np 12 dakota -i dakota.in}):
 \begin{small}
 \begin{verbatim}
@@ -1903,7 +1903,7 @@ An important point to recognize is that, since each of the parallel
 configuration inputs has been tied to the interface specification up
 to this point, these parallel configurations can be reallocated for
 each interface in a multi-iterator/multi-model strategy. For example,
-a DAKOTA execution on 40 processors might involve the following two
+a Dakota execution on 40 processors might involve the following two
 interface specifications:
 \begin{small}
 \begin{verbatim}
@@ -1941,7 +1941,7 @@ requests are included in the strategy specification:
 
 Adding this strategy specification to the input file from the previous
 12 processor example results in the following parallel configuration
-for a 24 processor DAKOTA run \\
+for a 24 processor Dakota run \\
 (syntax: \texttt{mpirun -np 24 dakota -i dakota.in}):
 \begin{small}
 \begin{verbatim}
@@ -2026,23 +2026,23 @@ as in this example, the concurrency per level is relatively low.
 
 \section{Application Parallelism Use Cases}\label{parallel:application}
 
-This section describes several common use cases for running DAKOTA on
-parallel computing clusters with various combinations of DAKOTA and
+This section describes several common use cases for running Dakota on
+parallel computing clusters with various combinations of Dakota and
 application parallelism.  In three of the four cases addressed, the
-application launched by DAKOTA is assumed MPI-enabled and run as an
+application launched by Dakota is assumed MPI-enabled and run as an
 independent parallel process.  For demonstration purposes, the
 following characteristics are shared among the usage examples:
 \begin{itemize}
-\item DAKOTA performs a vector parameter study requiring 20 model
+\item Dakota performs a vector parameter study requiring 20 model
 evaluations (application runs).
 
-\item For each evaluation, DAKOTA uses a fork simulation interface to
+\item For each evaluation, Dakota uses a fork simulation interface to
 call a shell script {\tt text\_book\_par\_driver} or {\tt
 text\_book\_driver} to launch the application.  This script is a
-stand-in for a typical DAKOTA-application black box interface (as
+stand-in for a typical Dakota-application black box interface (as
 described in Chapter~\ref{advint:building}), and includes mock
 application input preparation, execution, and postprocessing to return
-necessary metrics to DAKOTA.
+necessary metrics to Dakota.
 
 \item The application executed is a modified version of the text book
 example driver, {\tt text\_book\_simple\_par}, capable of parallel
@@ -2050,26 +2050,26 @@ execution, or the standard {\tt text\_book} driver for serial
 demonstration.
 \end{itemize}
 
-The combinations of DAKOTA and application parallelism are summarized
+The combinations of Dakota and application parallelism are summarized
 in Table~\ref{parallel:application:table01}.  In each case, $M$
 denotes the total number of processors allocated and $N$ denotes the
 number of processors used by a single application analysis.  For most
-scenarios, Cases 1--3, where DAKOTA and the application jobs run
+scenarios, Cases 1--3, where Dakota and the application jobs run
 within a single cluster processor allocation (queued job), are
 preferred.  However for particularly long-running or large jobs, or
 platforms that not supporting the first scheduling modes, Case 4 may
 be most appropriate.
 \begin{table}
   \centering
-  \caption{Cases for DAKOTA and application-level parallelism with $M$
+  \caption{Cases for Dakota and application-level parallelism with $M$
   available processors and each application job requiring $N$
-  processors.  Cases 1--3 assume that DAKOTA and any application runs
+  processors.  Cases 1--3 assume that Dakota and any application runs
   will execute wholly within a single scheduled job, whereas Case 4 is
   relevant when analysis jobs must be individually submitted to a
   scheduler.}
   \label{parallel:application:table01}\vspace{2mm}
   \begin{tabular}{c|c|c|l}
-    {\bf Case} & {\bf DAKOTA} & {\bf Application} & {\bf Notes} \\
+    {\bf Case} & {\bf Dakota} & {\bf Application} & {\bf Notes} \\
     \hline 1 & parallel & serial & $M-1$ (or $M$) simultaneous
     application instances each $N=1$ processor \\ 2 & serial &
     parallel & 1 simultaneous application instance on $N$ processors
@@ -2081,18 +2081,18 @@ be most appropriate.
 \end{table}
 
 Relevant example files for each case are included in directories {\tt
-Dakota/examples/parallelism/Case*} with the DAKOTA distribution.
+Dakota/examples/parallelism/Case*} with the Dakota distribution.
 These typically include a PBS or SLURM job submission script to launch
-the DAKOTA study, a DAKOTA input file, and a driver script.
+the Dakota study, a Dakota input file, and a driver script.
 
 \subsection{Case 1: Multiple serial analysis jobs}
 
-In this case, DAKOTA will launch multiple simultaneous single
+In this case, Dakota will launch multiple simultaneous single
 processor application runs (massively serial analysis code execution,
-an embarrassingly parallel model).  DAKOTA is run in parallel, making
+an embarrassingly parallel model).  Dakota is run in parallel, making
 this example an elaboration of the message-passing single-level
 parallel mode described in Section~\ref{parallel:SLP}.  Specifically
-in this example, DAKOTA is run in parallel with $M=6$ processors
+in this example, Dakota is run in parallel with $M=6$ processors
 ({\tt pbs\_submission}):
 \begin{verbatim}
     mpiexec -n 6 dakota dakota_pstudy.in
@@ -2103,23 +2103,23 @@ until all jobs are complete.  Several options are possible in this
 case:
 \begin{itemize}
 
-\item If the possible DAKOTA application concurrency equals $M$,
-DAKOTA will use a peer-to-peer scheduler, and run the $M$ jobs
+\item If the possible Dakota application concurrency equals $M$,
+Dakota will use a peer-to-peer scheduler, and run the $M$ jobs
 concurrently.  When the possible concurrency is greater than $M$,
-DAKOTA will by default launch $M-1$ jobs with a master-slave model.
-Specifying {\tt static\_schedule} in the DAKOTA input, will override
-the default master-slave scheduler and DAKOTA will launch M jobs, but
+Dakota will by default launch $M-1$ jobs with a master-slave model.
+Specifying {\tt static\_schedule} in the Dakota input, will override
+the default master-slave scheduler and Dakota will launch M jobs, but
 jobs will be launched blocking, so all M will complete, then another M
 will be scheduled.
 
 \item If the analysis is extremely inexpensive, performance may be
-improved by launching multiple evaluation jobs local to each DAKOTA
+improved by launching multiple evaluation jobs local to each Dakota
 MPI process, specifying
 \begin{verbatim}
   asynchronous evaluation_concurrency = [2 or more]
 \end{verbatim}
 
-\item It is also possible to launch only one DAKOTA process per node,
+\item It is also possible to launch only one Dakota process per node,
 and then use either asynchronous local as above, or launch the
 application in parallel using only the local processors (shared-memory
 MPI parallelism):
@@ -2134,7 +2134,7 @@ MPI parallelism):
 serial execution (does not call MPI\_Init), which on some platforms or
 MPI implementations is not equivalent to {\tt mpiexec -n 1}.  Some
 MPI/scheduler combinations will not permit another MPI process to run
-on a resource assigned to the DAKOTA processes.
+on a resource assigned to the Dakota processes.
 
 \subsection{Case 2: One simultaneous parallel analysis job}
 
@@ -2144,7 +2144,7 @@ processors are not available to run more than one simultaneous
 analysis).  Note that for extremely long-running parallel jobs, Case 4
 below may be more appropriate.
 
-In this case, DAKOTA runs in serial
+In this case, Dakota runs in serial
 \begin{verbatim}
     dakota dakota_pstudy.in
 \end{verbatim}
@@ -2176,7 +2176,7 @@ both are typically aliases for {\tt orterun}.)  See the example in
 \texttt{Case3\_MPICH}.
 
 In this case, an {\tt mpiexec} server process is started and
-backgrounded to service application requests for processors; DAKOTA
+backgrounded to service application requests for processors; Dakota
 runs in serial ({\tt pbs\_submission}):
 \begin{verbatim}
 mpiexec -server &
@@ -2203,7 +2203,7 @@ proposed.
 \subsubsection{Relative node scheduling}
 
 This Case 3 variant uses OpenMPI 1.3.3 or newer or SLURM srun relative
-node scheduling capability.  It leverages DAKOTA's
+node scheduling capability.  It leverages Dakota's
 \texttt{local\_evaluation\_static\_scheduling} option together with
 integer arithmetic to schedule each evaluation on the right subset of
 the processor allocation.  For examples, see \texttt{Case3\_MPICH}
@@ -2228,31 +2228,31 @@ however work with OpenMPI 1.3 and newer.  See the example in
 In this case the {\tt pbs\_submission} script defines variables
 specifying how to create a separate node file for each job and sets up
 a set of nodefiles for use by each evaluation. Similarly to Case 3a,
-DAKOTA runs in serial and uses asynchronous evaluation concurrency to
+Dakota runs in serial and uses asynchronous evaluation concurrency to
 launch the jobs.  The {\tt text\_book\_par\_driver} now contains logic
 to lock a node file for the application run and return it when
 complete.  As each job completes, the next is scheduled.
 
 \subsection{Case 4: Parallel analysis jobs submitted to a queue}
 
-This case describes running DAKOTA to submit parallel jobs to a batch
+This case describes running Dakota to submit parallel jobs to a batch
 queue.  This option is likely only useful when the cost of an
 individual analysis evaluation is high (such that the job requires far
 too many processors or hours to run all the evaluations) and there is
-no feedback to DAKOTA required to generate subsequent evaluation
+no feedback to Dakota required to generate subsequent evaluation
 points.  So this scenario is likely more relevant for sensitivity
 analysis and uncertainty quantification than optimization.
 
-In the first pass, DAKOTA runs (likely interactively) in serial on a
+In the first pass, Dakota runs (likely interactively) in serial on a
 login node or other node capable of job submission:
 \begin{verbatim}
 dakota dakota_pstudy.in
 \end{verbatim}
 For each evaluation, the simulator script ({\tt
 text\_book\_par\_driver}) will generate a {\tt pbs\_submission} script
-and submit it to the scheduler.  Dummy results are returned to DAKOTA
+and submit it to the scheduler.  Dummy results are returned to Dakota
 which will exit when all jobs have been scheduled.
 
 In the second pass, when analysis is complete, the analysis driver is
-changed to {\tt post\_process} and DAKOTA is executed on a login node
+changed to {\tt post\_process} and Dakota is executed on a login node
 to collect the results of the study.

@@ -1,5 +1,5 @@
 \chapter{Surrogate Models}\label{Chap:SurMod}
-This chapter deals with the theory behind DAKOTA's surrogate models, which 
+This chapter deals with the theory behind Dakota's surrogate models, which 
 are also known as response surfaces and meta-models.
 
 \section{Kriging and Gaussian Process Models}\label{Sec:KrigGP}
@@ -132,7 +132,7 @@ Dagum family \cite{Ber08} and cubic splines.\newline
 
 The squared exponential or Gaussian correlation function (Equation 
 \ref{Eqn:PowExpCorrFunc} with $\gamma=2$) was selected to be the 
-first correlation function implemented in DAKOTA on the basis that 
+first correlation function implemented in Dakota on the basis that 
 its infinite smoothness or differentiability should aid in leveraging 
 the anticipated and hopefully sparse data.
 For the Gaussian correlation function, the correlation parameters, 
@@ -182,8 +182,8 @@ optimization to address ill-conditioning of $\underline{\underline{R}}$.
 Rennen \cite{Ren09} advocated that ill-conditioning
 be handled by building Kriging models from a uniform subset of 
 available sample points.  That option has been available in
-DAKOTA's ``Gaussian process'' model (a separate implementation 
-from DAKOTA's ``Kriging'' model) since version 4.1~\cite{UserMan4_1}. 
+Dakota's ``Gaussian process'' model (a separate implementation 
+from Dakota's ``Kriging'' model) since version 4.1~\cite{UserMan4_1}. 
 Note that Kriging/Gaussian-Process models 
 will not exactly interpolate the discarded points.  The implicit 
 justification for this type of approach is that the row or columns of 
@@ -191,7 +191,7 @@ an ill-conditioned matrix contain a significant amount of duplicate
 information, and that when discarded, duplicate information should be 
 easy to predict.\newline  
 
-As of version 5.2, DAKOTA's \texttt{kriging} model has a similar 
+As of version 5.2, Dakota's \texttt{kriging} model has a similar 
 ``discard near duplicate points'' capability.  However, it explicitly
 addresses the issue of unique information content.  Points are {\bf not} 
 discarded prior to the construction of the Kriging model.  Instead,
@@ -273,7 +273,7 @@ of $\underline{\theta}$ vectors.\newline
 The other, more common, approach to constructing a Kriging model 
 involves using optimization to find the set of correlation parameters 
 $\underline{\theta}$ that maximizes the likelihood of the model given 
-the data.  DAKOTA's \texttt{gaussian\_process} and \texttt{kriging} models
+the data.  Dakota's \texttt{gaussian\_process} and \texttt{kriging} models
 use the maximum likelihood approach.  It is equivalent, and more
 convenient to maximize the natural logarithm of the likelihood, which 
 assuming a vague prior is,
@@ -311,7 +311,7 @@ emulator incapable of reproducing the data from which it was built.
 This is because a singular $\underline{\underline{R}}$ makes  
 $\log\left(\det\left(\underline{\underline{R}}\right)\right)=-\infty$
 and the {\it estimate} of likelihood infinite.  Constraints are therefore 
-required.  Two types of constraints are used in DAKOTA's \texttt{kriging}
+required.  Two types of constraints are used in Dakota's \texttt{kriging}
 models.\newline
 
 The first of these is an explicit constraint on LAPACK's fast
@@ -320,16 +320,16 @@ $2^{-40}<{\rm rcond}\left(\underline{\underline{R}}\right)$.  The value $2^{-40}
 precision arithmetic is used.  Double precision numbers have 52 bits of 
 precision. Therefore the  
 $2^{-40}<{\rm rcond}\left(\det\left(\underline{\underline{R}}\right)\right)$ implies that at least the leading three significant figures should be 
-uncorrupted by round off error.  In DAKOTA 5.2, this constraint is used
+uncorrupted by round off error.  In Dakota 5.2, this constraint is used
 to determine how many points can be retained in the pivoted Cholesky 
 approach to subset selection described above.\newline
 
 The second, is a box constraint defining a small ``feasible'' region in
 correlation length space to search during the maximum likelihood 
 optimization.  Many global optimizers, such as the DIRECT (DIvision of 
-RECTangles) used by DAKOTA's Gaussian Process (as the only option) and 
+RECTangles) used by Dakota's Gaussian Process (as the only option) and 
 Kriging (as the default option) models, require a box constraint definition for
-the range of acceptable parameters.  By default, DAKOTA's \texttt{kriging} 
+the range of acceptable parameters.  By default, Dakota's \texttt{kriging} 
 model defines the input space to be the smallest hyper-rectangle that 
 contains the sample design. The user has the option to define a larger 
 input space that includes a region where they wish to extrapolate.  Note 
@@ -341,7 +341,7 @@ distance between nearest neighboring points is then
 \begin{displaymath}
 d=\left(\frac{1}{N}\right)^{1/M}.
 \end{displaymath}
-DAKOTA's ``feasible'' range of correlation lengths, $\underline{L}$, for 
+Dakota's ``feasible'' range of correlation lengths, $\underline{L}$, for 
 the Gaussian correlation function is
 \begin{displaymath}
 \frac{d}{4}\le L_k \le 8d.
@@ -360,7 +360,7 @@ in what points 8 neighbors away have to say and $5\%$ trust in what points
 lengths are larger than $8d$; but if so, then either almost all of the same 
 information will be contained in more nearby neighbors, or it was not 
 appropriate to use the squared-exponential/Gaussian correlation function.  
-When other correlation functions are added to the DAKOTA Kriging 
+When other correlation functions are added to the Dakota Kriging 
 implementation, each will be associated with its own range of appropriate 
 correlation lengths chosen by similar reasoning.  A different definition of 
 $d$ could be used for non-hypercube input domains.
@@ -392,7 +392,7 @@ information into Kriging. These are
       \end{equation}
 \end{enumerate}
 
-DAKOTA 5.2 and later includes an implementation of the direct approach,
+Dakota 5.2 and later includes an implementation of the direct approach,
 herein referred to simply as Gradient Enhanced (universal) Kriging (GEK).  
 The equations for GEK can be derived by assuming Equation 
 \ref{Eqn:GEKCovAssume} and then taking the same steps used to derive 
@@ -539,7 +539,7 @@ than, but are not as reliable as, function value equations.\newline
 \label{fig:SubsetSelectAlgorithm}
 \end{figure}
 
-To address computational efficiency and robustness, DAKOTA's pivoted
+To address computational efficiency and robustness, Dakota's pivoted
 Cholesky approach for GEK was modified to: 
 \begin{itemize}
 \item Equilibrate $\underline{\underline{R_{\nabla}}}$ to improve 

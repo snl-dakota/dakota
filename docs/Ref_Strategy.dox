@@ -22,7 +22,7 @@ namespace Dakota {
 \section StratDescr Strategy Description
 
 
-The strategy section in a DAKOTA input file specifies the top level
+The strategy section in a %Dakota input file specifies the top level
 technique which will govern the management of iterators and models in
 the solution of the problem of interest. Four strategies currently
 exist: \c hybrid, \c multi_start, \c pareto_set, and \c single_method.
@@ -180,14 +180,14 @@ flag.  The \c tabular_graphics_file specification optionally specifies
 a name to use for this file (\c dakota_tabular.dat is the default).
 Within the file, the variables and response functions appear as
 columns and each function evaluation provides a new table row.  This
-capability is most useful for post-processing of DAKOTA results with
+capability is most useful for post-processing of %Dakota results with
 third-party graphics tools such as MATLAB, Tecplot, etc.  There is no
 dependence between the \c graphics flag and the \c
 tabular_graphics_data flag; they may be used independently or
 concurrently.  Numeric output precision (as passed to the C++ control
 std::setprecision) can be controlled with \c output_precision with an
 upper limit of 16 enforced at run-time.  When this control is not
-specified, most DAKOTA output will default to a precision of 10,
+specified, most %Dakota output will default to a precision of 10,
 though filesystem interfaces and pre-run output use higher precision
 for accuracy and better results reproducibility.
 

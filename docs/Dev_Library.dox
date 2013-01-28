@@ -1,9 +1,9 @@
 namespace Dakota {
 
-/** \page DakLibrary Interfacing with DAKOTA as a Library
+/** \page DakLibrary Interfacing with Dakota as a Library
 
 \htmlonly
-<b>DAKOTA Library Table of Contents</b>
+<b>Dakota Library Table of Contents</b>
 <ul>
 <li> <a href="DakLibrary.html#DakLibraryIntro">Introduction</a> 
 <li> <a href="DakLibrary.html#DakLibraryExampleTest">Quick start: 
@@ -25,7 +25,7 @@ examples and test code</a>
 <li> <a href="DakLibrary.html#DakLibraryAddtlUpdates">Additional updates</a>
 <li> <a href="DakLibrary.html#DakLibraryStratRun">Executing the strategy</a>
 <li> <a href="DakLibrary.html#DakLibraryPostRun">Retrieving data after a run</a>
-<li> <a href="DakLibrary.html#DakLibraryLinking">Linking against the DAKOTA library</a>
+<li> <a href="DakLibrary.html#DakLibraryLinking">Linking against the Dakota library</a>
 <li> <a href="DakLibrary.html#DakLibrarySummary">Summary</a>
 </ul>
 \endhtmlonly
@@ -34,11 +34,11 @@ examples and test code</a>
 \section DakLibraryIntro Introduction
 
 
-It is possible to link the DAKOTA toolkit into another application for
+It is possible to link the %Dakota toolkit into another application for
 use as an algorithm library.  This section describes facilities which
 permit this type of integration.
 
-As part of the normal DAKOTA build process, where \c Dakota/configure
+As part of the normal %Dakota build process, where \c Dakota/configure
 \c --prefix=PREFIX has been run prior to \c make and \c make \c
 install, a \c libdakota.a is created and a copy of it is placed in \c
 PREFIX/lib (PREFIX defaults to /usr/local/Dakota).  This library
@@ -49,27 +49,27 @@ the link line.  Library and header paths may also be specified using
 the \c -L and \c -I compiler options (using \c PREFIX/lib and \c
 PREFIX/include, respectively).  Depending on the configuration used
 when building this library, other libraries for the vendor optimizers
-and vendor packages will also be needed to resolve DAKOTA symbols for
+and vendor packages will also be needed to resolve %Dakota symbols for
 DOT, NPSOL, OPT++, NCSUOpt, LHS, Teuchos, etc.  Copies of these libraries
 are also placed in \c Dakota/lib.  Refer to \ref DakLibraryLinking for 
 additional information. <!-- A sample XML specification of
 library names and paths is also available in \c
 Dakota/examples/linked_interfaces/linkage_spec. -->
 
-\warning Users may interface to DAKOTA as a library within other 
+\warning Users may interface to %Dakota as a library within other 
 software applications provided that they abide by the terms of the 
 GNU Lesser General Public License (LGPL).  Refer to
-http://www.gnu.org/licenses/lgpl.html or contact the DAKOTA team for
+http://www.gnu.org/licenses/lgpl.html or contact the %Dakota team for
 additional information.
 
-\attention The use of DAKOTA as an algorithm library should be
-distinguished from the linking of simulations within DAKOTA using the
+\attention The use of %Dakota as an algorithm library should be
+distinguished from the linking of simulations within %Dakota using the
 direct application interface (see DirectApplicInterface).  In the
-former, DAKOTA is providing algorithm services to another software
+former, %Dakota is providing algorithm services to another software
 application, and in the latter, a linked simulation is providing
-analysis services to DAKOTA.  It is not uncommon for these two
+analysis services to %Dakota.  It is not uncommon for these two
 capabilities to be used in combination, where a simulation framework
-provides both the "front end" and the "back end" for DAKOTA.
+provides both the "front end" and the "back end" for %Dakota.
 
 
 \section DakLibraryExampleTest Quick start: examples and test code
@@ -84,26 +84,26 @@ within a mock simulator program that demonstrates the required object
 instantiation syntax in combination with the three problem database
 population approaches (input file parsing, data node insertion, and
 mixed mode).  All of this code may be compiled and tested by
-configuring DAKOTA using the \c --with-plugin option.
+configuring %Dakota using the \c --with-plugin option.
 
 
 \section DakLibraryRelMainC Comparison to main.cpp
 
 
-The procedure for utilizing DAKOTA as a library within another
+The procedure for utilizing %Dakota as a library within another
 application involves a number of steps that are similar to those used
-in the stand-alone DAKOTA application.  The stand-alone procedure can
+in the stand-alone %Dakota application.  The stand-alone procedure can
 be viewed in the file main.cpp, and the differences for the library
 approach are most easily explained with reference to that file.  The
-basic steps of executing DAKOTA include instantiating the
+basic steps of executing %Dakota include instantiating the
 ParallelLibrary, CommandLineHandler, and ProblemDescDB objects;
-managing the DAKOTA input file
+managing the %Dakota input file
 (\ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()");
 specifying restart files and output streams 
 (\ref ParallelLibrary::specify_outputs_restart "ParallelLibrary::specify_outputs_restart()");
 and instantiating the Strategy and running it 
 (\ref Strategy::run_strategy "Strategy::run_strategy()").  When using 
-DAKOTA as an algorithm library, the operations are quite similar, 
+%Dakota as an algorithm library, the operations are quite similar, 
 although command line information (argc, argv, and therefore
 CommandLineHandler) will not in general be accessible.  In particular,
 main.cpp can pass argc and argv into the ParallelLibrary and 
@@ -120,7 +120,7 @@ The overloaded forms of these functions are as follows.  For
 instantiation of the ParallelLibrary object, the default constructor
 may be used.  This constructor assumes that MPI is administered by the
 parent application such that the MPI configuration will be detected
-rather than explicitly created (i.e., DAKOTA will not call MPI_Init or
+rather than explicitly created (i.e., %Dakota will not call MPI_Init or
 MPI_Finalize).  In code, the instantiation
 \code
   ParallelLibrary parallel_lib(argc, argv);
@@ -146,7 +146,7 @@ required information through the parameter list
 where file names for standard output and error and restart read and
 write as well as the integer number of restart evaluations are passed
 through the parameter list rather than read from the command line of
-the main DAKOTA program.  The definition of these attributes is
+the main %Dakota program.  The definition of these attributes is
 performed elsewhere in the parent application (e.g., specified in the
 parent application input file or GUI).  In this function call, specify
 \c NULL for any files not in use, which will elicit the desired subset
@@ -159,8 +159,8 @@ intended, the call to \c specify_outputs_restart() may be omitted entirely.
 
 With respect to alternate forms of \ref ProblemDescDB::manage_inputs
 "ProblemDescDB::manage_inputs()", the following section describes
-different approaches to populating data within DAKOTA's problem
-description database.  It is this database from which all DAKOTA
+different approaches to populating data within %Dakota's problem
+description database.  It is this database from which all %Dakota
 objects draw data upon instantiation.
 
 
@@ -174,9 +174,9 @@ insertion, or a mixed approach, as described in the following sections.
 
 \subsection DakLibraryDBParse Input file parsing
 
-The simplest approach to linking an application with the DAKOTA
-library is to rely on DAKOTA's normal parsing system to populate
-DAKOTA's problem database (ProblemDescDB) through the reading of an
+The simplest approach to linking an application with the %Dakota
+library is to rely on %Dakota's normal parsing system to populate
+%Dakota's problem database (ProblemDescDB) through the reading of an
 input file.  The disadvantage to this approach is the requirement for
 an additional input file beyond those already required by the parent
 application.
@@ -191,9 +191,9 @@ would be replaced with its overloaded form
   problem_db.manage_inputs(dakota_input_file);
 \endcode
 
-where the file name for the DAKOTA input is passed through the
+where the file name for the %Dakota input is passed through the
 parameter list rather than read from the command line of the main
-DAKOTA program.  Again, the definition of the DAKOTA input file name
+%Dakota program.  Again, the definition of the %Dakota input file name
 is performed elsewhere in the parent application (e.g., specified in
 the parent application input file or GUI).  Refer to
 run_dakota_parse() in library_mode.cpp for a complete example listing.
@@ -214,9 +214,9 @@ use lower level functions to accomplish a finer grain of control.
 \subsection DakLibraryDBNoParse Data node insertion
 
 This approach is more involved than the previous approach, but it
-allows the application to publish all needed data to DAKOTA's database
+allows the application to publish all needed data to %Dakota's database
 directly, thereby eliminating the need for the parsing of a separate
-DAKOTA input file.  In this case, 
+%Dakota input file.  In this case, 
 \ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" is
 not called.  Rather, DataStrategy, DataMethod, DataModel, DataVariables, 
 DataInterface, and DataResponses objects are instantiated and
@@ -248,7 +248,7 @@ necessary to instantiate and publish a DataStrategy or DataModel
 object if advanced multi-component capabilities are not required.
 Rather, instantiation and insertion of a single DataMethod,
 DataVariables, DataInterface, and DataResponses object is sufficient
-for basic DAKOTA capabilities.
+for basic %Dakota capabilities.
 
 Once the data objects have been published to the ProblemDescDB object,
 calls to
@@ -284,10 +284,10 @@ level will simplify this process in the future. -->
 
 \subsection DakLibraryDBMixed Mixed mode
 
-In this case, we will combine the parsing of a DAKOTA input file with
+In this case, we will combine the parsing of a %Dakota input file with
 some direct database updates.  The motivation for this approach arises
 in large-scale applications where large vectors can be awkward to
-specify in a DAKOTA input file.  The first step is to parse the input
+specify in a %Dakota input file.  The first step is to parse the input
 file, but rather than using
 \code
   problem_db.manage_inputs(dakota_input_file);
@@ -402,7 +402,7 @@ instantiate the strategy.
 Following strategy construction, all MPI communicator partitioning has
 been performed and the ParallelLibrary instance may be interrogated
 for parallel configuration data.  For example, the lowest level
-communicators in DAKOTA's multilevel parallel partitioning are the
+communicators in %Dakota's multilevel parallel partitioning are the
 analysis communicators, which can be retrieved using:
 \code
   // retrieve the set of analysis communicators for simulation initialization:
@@ -420,8 +420,8 @@ instances per Model. -->
 \section DakLibraryDirectAppInt Defining the direct application interface
 
 
-When employing a library interface to DAKOTA, it is frequently
-desirable to also use a direct interface between DAKOTA and the
+When employing a library interface to %Dakota, it is frequently
+desirable to also use a direct interface between %Dakota and the
 simulation.  There are two approaches to defining this direct interface.
 
 \subsection DakLibraryExtendDirectAppInt Extension
@@ -452,9 +452,9 @@ can be extended to perform pre- and post-processing tasks if desired,
 but this is not required.
 
 While this approach is the simplest, it has the disadvantage that the
-DAKOTA library may need to be recompiled when the simulation or its
+%Dakota library may need to be recompiled when the simulation or its
 direct interface is modified.  If it is desirable to maintain the
-independence of the DAKOTA library from the host application, then the
+independence of the %Dakota library from the host application, then the
 following derivation approach should be employed.
 
 \subsection DakLibraryDeriveDirectAppInt Derivation
@@ -617,14 +617,14 @@ In the case of optimization, the final design is returned, and in the
 case of uncertainty quantification, the final statistics are returned.
 
 
-\section DakLibraryLinking Linking against the DAKOTA library
+\section DakLibraryLinking Linking against the Dakota library
 
-This section presumes DAKOTA has been configured with CMake, compiled,
+This section presumes %Dakota has been configured with CMake, compiled,
 and installed to a \c CMAKE_INSTALL_PREFIX using 'make install' or
-equivalent.  The DAKOTA libraries against which you must link will
+equivalent.  The %Dakota libraries against which you must link will
 install to \c CMAKE_INSTALL_PREFIX/bin and \c
-CMAKE_INSTALL_PREFIX/lib.  When running CMake, DAKOTA and
-DAKOTA-included third-party libraries will be output as \c TPL \c
+CMAKE_INSTALL_PREFIX/lib.  When running CMake, %Dakota and
+%Dakota-included third-party libraries will be output as \c TPL \c
 LIBS, e.g.,
 
 \code
@@ -650,15 +650,15 @@ debug;/usr/lib64/libboost_system-mt.so;optimized;
 /usr/lib64/libblas.so
 \endcode
 
-Note that depending on how you configured DAKOTA, some of the
+Note that depending on how you configured %Dakota, some of the
 libraries may not be included (for example NPSOL, DOT, NLPQL).
 Optional libraries like GSL (discouraged due to GPL license) may also
-be needed if DAKOTA was configured with them.  Check which appear in
+be needed if %Dakota was configured with them.  Check which appear in
 \c CMAKE_INSTALL_PREFIX/bin \c CMAKE_INSTALL_PREFIX/lib.
 
-Note that as of DAKOTA 5.2, \c -lnewmat is no longer required but additional
+Note that as of %Dakota 5.2, \c -lnewmat is no longer required but additional
 Boost libraries are needed (\c -lboost_regex \c -lboost_filesystem
-\c -lboost_system) as a result of migration from legacy DAKOTA utilities to
+\c -lboost_system) as a result of migration from legacy %Dakota utilities to
 more modern Boost components.  
 
 You may also need \c funcadd0.o, \c -lfl, \c -lexpat, and, if linking
@@ -671,19 +671,19 @@ be included.  If configuring with graphics, you will need to add \c
 \endcode
 
 We have experienced problems with the creation of \c libamplsolver.a
-on some platforms.  Please use the DAKOTA mailing lists for help with
+on some platforms.  Please use the %Dakota mailing lists for help with
 any problems.
 
 Finally, it is important to use the same C++ compiler (possibly an MPI
-wrapper) for compiling DAKOTA and your application and potentially
-include DAKOTA-related preprocessor defines as emitted by CMake during
-compilation of DAKOTA.  This ensures that the platform configuration
+wrapper) for compiling %Dakota and your application and potentially
+include %Dakota-related preprocessor defines as emitted by CMake during
+compilation of %Dakota.  This ensures that the platform configuration
 settings are properly propagated.
 
 
 \section DakLibrarySummary Summary
 
-To utilize the DAKOTA library within a parent software application,
+To utilize the %Dakota library within a parent software application,
 the basic steps of main.cpp and the order of invocation of these steps
 should be mimicked from within the parent application.  Of these
 steps, ParallelLibrary instantiation, 
@@ -695,7 +695,7 @@ without file parsing.  Additional optional steps not performed in
 main.cpp include the extension/derivation of the direct interface and 
 the retrieval of strategy results after a run.
 
-DAKOTA's library mode is now in production use within several Sandia
+%Dakota's library mode is now in production use within several Sandia
 and external simulation codes/frameworks.
 
 */

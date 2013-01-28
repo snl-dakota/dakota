@@ -1,6 +1,6 @@
 namespace Dakota { // for some reason, this doesn't work with mainpage
 
-/** \mainpage DAKOTA Reference Manual
+/** \mainpage %Dakota Reference Manual
 
 \image html logo_3d_halfsize.jpg
 
@@ -22,9 +22,9 @@ Dena M. Vigil
 \section RefOverview Overview
 
 
-The DAKOTA (Design Analysis Kit for Optimization and Terascale
+The %Dakota (Design Analysis Kit for Optimization and Terascale
 Applications) toolkit provides a flexible, extensible interface
-between analysis codes and iteration methods.  DAKOTA contains
+between analysis codes and iteration methods.  %Dakota contains
 algorithms for optimization with gradient and nongradient-based
 methods, uncertainty quantification with sampling, reliability,
 stochastic expansion, and interval estimation methods, parameter
@@ -37,26 +37,26 @@ optimization, mixed integer nonlinear programming, mixed
 aleatory-epistemic uncertainty quantification, or optimization under
 uncertainty. By employing object-oriented design to implement
 abstractions of the key components required for iterative systems
-analyses, the DAKOTA toolkit provides a flexible problem-solving
+analyses, the %Dakota toolkit provides a flexible problem-solving
 environment for design and performance analysis of computational
 models on high performance computers.
 
 The Reference Manual focuses on documentation of the various input
-commands for DAKOTA.  It follows closely the structure of
+commands for %Dakota.  It follows closely the structure of
 dakota.input.summary, the master input specification summary.  For
 information on software structure, refer to the <a
 href="../html-dev/index.html">Developers Manual</a>, and for a tour of
-DAKOTA features and capabilities, refer to the Users Manual [\ref
+%Dakota features and capabilities, refer to the Users Manual [\ref
 UsersMan "Adams et al., 2010"].
 
 
 \section RefSpec Input Specification Reference
 
 
-In DAKOTA, the \e strategy creates and manages \e iterators and \e
+In %Dakota, the \e strategy creates and manages \e iterators and \e
 models.  A model contains a set of \e variables, an \e interface, and
 a set of \e responses, and the iterator operates on the model to map
-the variables into responses using the interface.  In a DAKOTA input
+the variables into responses using the interface.  In a %Dakota input
 file, the user specifies these components through strategy, method,
 model, variables, interface, and responses keyword specifications.
 The Reference Manual closely follows this structure, with introductory

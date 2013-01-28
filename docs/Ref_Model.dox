@@ -24,7 +24,7 @@ namespace Dakota {
 \section ModelDescr Model Description
 
 
-A DAKOTA model specifies how variables are mapped into a set of
+A %Dakota model specifies how variables are mapped into a set of
 responses in support of an iterative method and the model
 specification in an input file dictates the components to be used in
 constructing a particular model instance. This specification selects a
@@ -146,7 +146,7 @@ variables, responses, and (for some types) interface specifications.
 This top-down flow specifies all of the object interrelationships.
 
 For each of these pointer specifications, if a pointer string is
-specified and no corresponding id string is available, DAKOTA will
+specified and no corresponding id string is available, %Dakota will
 exit with an error message. If the pointer is optional and no pointer
 string is specified, then the last specification parsed will be
 used. It is appropriate to omit optional cross-referencing whenever
@@ -310,38 +310,38 @@ orthogonal polynomial (Hermite, Legendre, Laguerre, Jacobi, and/or
 generalized Laguerre) approximation, --> or radial basis function
 approximation, respectively.  All these approximations are implemented
 in \ref Giunta2006 "SurfPack" except an alternate Gaussian process
-model, which is implemented directly in DAKOTA.
+model, which is implemented directly in %Dakota.
 
 In the polynomial case, the order of the polynomial (linear,
 quadratic, or cubic) must be specified. 
 
-DAKOTA has two Gaussian process (GP) or Kriging models, one that
-resides in DAKOTA proper and the other in DAKOTA's Surfpack
+%Dakota has two Gaussian process (GP) or Kriging models, one that
+resides in %Dakota proper and the other in %Dakota's Surfpack
 subpackage.  Choice of the GP implmentation is made by specifying \c
 gaussian_process (alternately \c kriging) followed by either \c dakota
 or \c surfpack.  Historically these models were drastically different,
-but in DAKOTA 5.1, they became quite similar.  They now differ in that
+but in %Dakota 5.1, they became quite similar.  They now differ in that
 the Surfpack GP has a richer set of features/options and tends to be
-more accurate than the DAKOTA version.  Due to how the Surfpack GP
+more accurate than the %Dakota version.  Due to how the Surfpack GP
 handles ill-conditioned correlation matrices (which significantly
 contributes to its greater accuracy), the \c Surfpack GP can be a
-factor of two or three slower than DAKOTA's.  As of DAKOTA 5.2, the
+factor of two or three slower than %Dakota's.  As of %Dakota 5.2, the
 Surfpack implementation is the default in all contexts except Bayesian
-calibration.  The DAKOTA GP is provided for continuity, but may be
+calibration.  The %Dakota GP is provided for continuity, but may be
 deprecated in the future.
 
 The trend function of both GP models is selected using the \c trend
 keyword, with options \c constant, \c linear, or \c reduced_quadratic
 (default).  The Surfpack GP has the additional option of (a full) \c
 quadratic.  The \c reduced_quadratic trend function includes the main
-effects, but not mixed/interaction terms.  <!-- NOTE: prior to DAKOTA 5.1,
-\c reduced_quadratic was selected for the DAKOTA GP via the \c
+effects, but not mixed/interaction terms.  <!-- NOTE: prior to %Dakota 5.1,
+\c reduced_quadratic was selected for the %Dakota GP via the \c
 quadratic option. -->
 
-The DAKOTA GP always determines its correlation parameters via maximum
+The %Dakota GP always determines its correlation parameters via maximum
 likelihood estimate (MLE) using a global optimization procedure.
 Ill-conditioning induced by poorly spaced sample points is a common
-challenge in the construction of Gaussian process models.  DAKOTA's GP
+challenge in the construction of Gaussian process models.  %Dakota's GP
 deals with ill-conditioning in two ways.  First, when it encounters a
 non-invertible correlation matrix it iteratively increases the size of
 a "nugget," but in such cases the resulting approximation smooths
@@ -365,7 +365,7 @@ optimization_method followed by any of \c 'global', \c 'local', \c
 the local search default to the center of the small feasible region of
 correlation lengths.  However, one may also directly specify \c
 correlation_lengths as a list of N real numbers where N is the number
-of input dimensions.  As of DAKOTA 5.2, the Surfpack GP handles
+of input dimensions.  As of %Dakota 5.2, the Surfpack GP handles
 ill-conditioning by selecting the subset of points that tightly meets
 a constraint on the condition number and provides the maximum amount
 of useful information for the correlation lengths chosen by MLE. For
@@ -373,10 +373,10 @@ each set of correlation lengths examined during the MLE optimization,
 the optimal subset of points for those correlation lengths is used.
 The subset of points used to build the Surfpack GP is the one
 associated with the most likely set of correlation lengths.  This
-differs from the \c point_selection option of the DAKOTA GP which
+differs from the \c point_selection option of the %Dakota GP which
 initially chooses a well-spaced subset of points and finds the
 correlation parameters that are most likely for that one subset.  It
-is similar to the DAKOTA GP's point selection in that the Surfpack GP
+is similar to the %Dakota GP's point selection in that the Surfpack GP
 will only interpolate the selected subset of points.
 
 The \c use_derivatives keyword will cause the Surfpack GP to be
@@ -434,7 +434,7 @@ approximation type, Part I
 <td>Required group (1 of 7 selections)
 <td>N/A
 <tr>
-<td>DAKOTA Gaussian process
+<td>%Dakota Gaussian process
 <td>\c gaussian_process
 <td>dakota
 <td>Required (1 of 7 selections)
@@ -655,7 +655,7 @@ reuse of all data from a specified text file, respectively.  Both \c
 dace_method_pointer and \c reuse_samples are optional specifications,
 which gives the user maximum flexibility in using design of
 experiments data, restart/text file data, or both.  Note that the
-default format for a samples data file has changed in DAKOTA 5.2 (see
+default format for a samples data file has changed in %Dakota 5.2 (see
 User's Manual).
 
 The \c use_derivatives flag specifies that any available derivative

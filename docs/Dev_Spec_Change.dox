@@ -1,6 +1,6 @@
 namespace Dakota {
 
-/** \page SpecChange Instructions for Modifying DAKOTA's Input Specification
+/** \page SpecChange Instructions for Modifying Dakota's Input Specification
 
 \htmlonly
 <b>Specification Change Table of Contents</b>
@@ -28,13 +28,13 @@ namespace Dakota {
 </ul>
 \endhtmlonly
 
-To modify DAKOTA's input specification (for maintenance or addition of
+To modify %Dakota's input specification (for maintenance or addition of
 new input syntax), specification maintenance mode must be enabled at
-DAKOTA configure time with the \c -DENABLE_SPEC_MAINT option, e.g.,
+%Dakota configure time with the \c -DENABLE_SPEC_MAINT option, e.g.,
 \code
   ./cmake -DENABLE_SPEC_MAINT:BOOL=ON ..
 \endcode
-This will enable regeneration of NIDR and DAKOTA components which must
+This will enable regeneration of NIDR and %Dakota components which must
 be updated following a spec change.
 
 \section ModSpec Modify dakota.input.nspec

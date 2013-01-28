@@ -71,7 +71,7 @@ p(g \le z)  & = & 1 - p(g > z)             \label{eq:p_cdf_ccdf}
 where $\Phi()$ is the standard normal cumulative distribution
 function.  A common convention in the literature is to define $g$ in
 such a way that the CDF probability for a response level $z$ of zero
-(i.e., $p(g \le 0)$) is the response metric of interest.  DAKOTA is
+(i.e., $p(g \le 0)$) is the response metric of interest.  Dakota is
 not restricted to this convention and is designed to support CDF or
 CCDF mappings for general response, probability, and reliability level
 sequences.
@@ -110,7 +110,7 @@ Box-Cox~\cite{Box64} transformations.  The nonlinear transformations
 may also be linearized, and common approaches for this include the
 Rackwitz-Fiessler~\cite{Rac78} two-parameter equivalent normal and the
 Chen-Lind~\cite{Che83} and Wu-Wirsching~\cite{Wu87} three-parameter
-equivalent normals.  DAKOTA employs the Nataf nonlinear transformation
+equivalent normals.  Dakota employs the Nataf nonlinear transformation
 which is suitable for the common case when marginal distributions and
 a correlation matrix are provided, but full joint distributions are
 not known\footnote{If joint distributions are known, then the
@@ -323,11 +323,11 @@ more accurate, since this will result in more accurate MPP estimates
 (AMV, AMV$^2$) or faster convergence (AMV+, AMV$^2$+, TANA).  Since
 this relative accuracy depends on the forms of the limit state $g(x)$
 and the transformation $T(x)$ and is therefore application dependent
-in general, DAKOTA supports both options.  A concern with
+in general, Dakota supports both options.  A concern with
 approximation-based iterative search methods (i.e., AMV+, AMV$^2$+ and
 TANA) is the robustness of their convergence to the MPP.  It is
 possible for the MPP iterates to oscillate or even diverge.  However,
-to date, this occurrence has been relatively rare, and DAKOTA contains
+to date, this occurrence has been relatively rare, and Dakota contains
 checks that monitor for this behavior.  Another concern with TANA is
 numerical safeguarding (e.g., the possibility of raising negative
 $x_i$ or $u_i$ values to nonintegral $p_i$ exponents in
@@ -443,7 +443,7 @@ Hasofer-Lind Rackwitz-Fissler (HL-RF) algorithm~\cite{Hal00} is a
 classical approach that has been broadly applied.  It is a
 Newton-based approach lacking line search/trust region globalization,
 and is generally regarded as computationally efficient but
-occasionally unreliable.  DAKOTA takes the approach of employing
+occasionally unreliable.  Dakota takes the approach of employing
 robust, general-purpose optimization algorithms with provable
 convergence properties.  In particular, we employ the sequential
 quadratic programming (SQP) and nonlinear interior-point (NIP)
@@ -463,7 +463,7 @@ values and the MPP optimizer initial guess.  Projections are used when
 an increment in $z/p/\beta$ level or design variables occurs.  Warm
 starts were consistently effective in \cite{Eld05}, with greater
 effectiveness for smaller parameter changes, and are used by default
-in DAKOTA. %for all computational experiments presented in this paper.
+in Dakota. %for all computational experiments presented in this paper.
 
 
 \section{Global Reliability Methods}\label{uq:reliability:global}
@@ -757,7 +757,7 @@ Because the EIF is often highly multimodal~\cite{Jon98} it is expected that
 Nelder-Mead may fail to converge to the true global optimum.
 In Ref.~\cite{Jon98}, a branch-and-bound technique for maximizing the EIF
 is used, but was found to often be too expensive to run to convergence.
-In DAKOTA, an implementation of the DIRECT global optimization algorithm is 
+In Dakota, an implementation of the DIRECT global optimization algorithm is 
 used~\cite{Gab01}.
 
 It is important to understand how the use of this EIF leads to optimal

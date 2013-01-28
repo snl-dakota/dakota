@@ -14,7 +14,7 @@ evaluation</a>
 
 
 Performing function evaluations is one of the most critical functions
-of the DAKOTA software.  It can also be one of the most complicated,
+of the %Dakota software.  It can also be one of the most complicated,
 as a variety of scheduling approaches and parallelism levels are
 supported.  This complexity manifests itself in the code through a
 series of cascaded member functions, from the top level model

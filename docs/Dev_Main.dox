@@ -1,6 +1,6 @@
 namespace Dakota { // for some reason, this doesn't work with mainpage
 
-/** \mainpage DAKOTA Developers Manual
+/** \mainpage %Dakota Developers Manual
 
 \image html logo_3d_halfsize.jpg
 
@@ -13,7 +13,7 @@ Dena M. Vigil
 <b>Main Page Table of Contents</b>
 <ul>
 <li> <a href="index.html#DevIntro">Introduction</a> 
-<li> <a href="index.html#DevOverview">Overview of DAKOTA</a> 
+<li> <a href="index.html#DevOverview">Overview of Dakota</a> 
   <ul>
   <li> <a href="index.html#DevStrategies">Strategies</a>
   <li> <a href="index.html#DevIterators">Iterators</a>
@@ -32,9 +32,9 @@ Dena M. Vigil
 \section DevIntro Introduction
 
 
-The DAKOTA (Design Analysis Kit for Optimization and Terascale
+The %Dakota (Design Analysis Kit for Optimization and Terascale
 Applications) toolkit provides a flexible, extensible interface
-between analysis codes and iteration methods.  DAKOTA contains
+between analysis codes and iteration methods.  %Dakota contains
 algorithms for optimization with gradient and nongradient-based
 methods, uncertainty quantification with sampling, reliability,
 stochastic expansion, and interval estimation methods, parameter
@@ -47,21 +47,21 @@ optimization, mixed integer nonlinear programming, mixed
 aleatory-epistemic uncertainty quantification, or optimization under
 uncertainty. By employing object-oriented design to implement
 abstractions of the key components required for iterative systems
-analyses, the DAKOTA toolkit provides a flexible problem-solving
+analyses, the %Dakota toolkit provides a flexible problem-solving
 environment for design and performance analysis of computational
 models on high performance computers.
 
-The Developers Manual focuses on documentation of DAKOTA design
+The Developers Manual focuses on documentation of %Dakota design
 principles and class structures; it derives principally from annotated
 source code.  For information on input command syntax, refer to the <a
 href="../html-ref/index.html">Reference Manual</a>, and for more
-details on DAKOTA features and capabilities, refer to the Users
+details on %Dakota features and capabilities, refer to the Users
 Manual.
 
 
-\section DevOverview Overview of DAKOTA
+\section DevOverview Overview of Dakota
 
-In DAKOTA, the \e strategy creates and manages \e iterators and 
+In %Dakota, the \e strategy creates and manages \e iterators and 
 \e models.  In the simplest case, the strategy creates a single iterator
 and a single model and executes the iterator on the model to perform a
 single study.  In a more advanced case, a hybrid optimization strategy
@@ -78,19 +78,19 @@ A model contains a set of \e variables, an \e interface, and a set of
 \e responses, and the iterator operates on the model to map the
 variables into responses using the interface.  Each of these
 components is a flexible abstraction with a variety of specializations
-for supporting different types of iterative studies.  In a DAKOTA
+for supporting different types of iterative studies.  In a %Dakota
 input file, the user specifies these components through strategy,
 method, model, variables, interface, and responses keyword
 specifications.
 
 The use of class hierarchies provides a mechanism for extensibility in
-DAKOTA components.  In each of the various class hierarchies, adding a
+%Dakota components.  In each of the various class hierarchies, adding a
 new capability typically involves deriving a new class and providing a
 set of virtual function redefinitions.  These redefinitions define the
 coding portions specific to the new derived class, with the common
 portions already defined at the base class.  Thus, with a small amount
 of new code, the existing facilities can be extended, reused, and
-leveraged for new purposes.  The following sections tour DAKOTA's
+leveraged for new purposes.  The following sections tour %Dakota's
 class organization.
 
 
@@ -373,7 +373,7 @@ and the following semi-intrusive approach
 
 <ul>
 <li> \ref Dakota::DirectApplicInterface "DirectApplicInterface":
-the simulation is linked into the DAKOTA executable and is invoked
+the simulation is linked into the %Dakota executable and is invoked
 using a procedure call.  Asynchronous invocations will utilize
 nonblocking threads (capability not yet available).
 </ul>
@@ -429,13 +429,13 @@ not required specialization.
 \section DevServices Services
 
 
-A variety of services are provided in DAKOTA for parallel computing,
+A variety of services are provided in %Dakota for parallel computing,
 failure capturing, restart, graphics, etc.  An overview of the classes
 and member functions involved in performing these services is included
 below.
 
 <ul> 
-<li> Multilevel parallel computing: DAKOTA supports multiple levels of
+<li> Multilevel parallel computing: %Dakota supports multiple levels of
 nested parallelism.  A strategy can manage concurrent iterators, each
 of which manages concurrent function evaluations, each of which
 manages concurrent analyses executing on multiple processors.
@@ -445,7 +445,7 @@ routines for the levels are part of \ref Dakota::Strategy "Strategy",
 \ref Dakota::ApplicationInterface "ApplicationInterface", and 
 \ref Dakota::ForkApplicInterface "ForkApplicInterface".
 
-<li> Parsing: DAKOTA employs the NIDR parser (New Input Deck Reader) to
+<li> Parsing: %Dakota employs the NIDR parser (New Input Deck Reader) to
 retrieve information from user input files.  Parsing options are
 processed in \ref Dakota::CommandLineHandler "CommandLineHandler" 
 and parsing occurs in 
@@ -466,7 +466,7 @@ using exception handling in
 \ref Dakota::ApplicationInterface "ApplicationInterface" and its 
 derived classes.
 
-<li> Restart: DAKOTA maintains a record of all function evaluations
+<li> Restart: %Dakota maintains a record of all function evaluations
 both in memory (for capturing any duplication) and on the file system
 (for restarting runs).  Restart options are processed in \ref
 Dakota::CommandLineHandler "CommandLineHandler" and retrieved in
@@ -478,7 +478,7 @@ dakota_restart_util executable, built from restart_util.cpp, provides
 a variety of services for interrogating, converting, repairing, 
 concatenating, and post-processing restart files.
 
-<li> Memory management: DAKOTA employs the techniques of reference
+<li> Memory management: %Dakota employs the techniques of reference
 counting and representation sharing through the use of letter-envelope
 and handle-body idioms (Coplien, "Advanced C++").  The former idiom
 provides for memory efficiency and enhanced polymorphism in the
@@ -501,7 +501,7 @@ objects), it is important to properly manage shallow and deep copies,
 to allow for both efficiency and data independence as needed in a
 particular context.
 
-<li> Graphics: DAKOTA provides 2D iteration history graphics using
+<li> Graphics: %Dakota provides 2D iteration history graphics using
 Motif widgets. Graphics data can also be cataloged in a tabular data
 file for post-processing with 3rd party tools such as Matlab, Tecplot,
 etc.  These capabilities are encapsulated within the 
@@ -514,11 +514,11 @@ etc.  These capabilities are encapsulated within the
 The following links provide guidance for core software components or 
 specific development activities:
 
-\li \ref StyleConventions - coding practices used by the DAKOTA 
+\li \ref StyleConventions - coding practices used by the %Dakota 
     development team.
-\li \ref SpecChange - how to interact with NIDR and the associated DAKOTA
+\li \ref SpecChange - how to interact with NIDR and the associated %Dakota
     classes.
-\li \ref DakLibrary - embed DAKOTA as a service within your application.
+\li \ref DakLibrary - embed %Dakota as a service within your application.
 \li \ref IteratorFlow - explanation of the full granularity of steps in 
     Iterator execution.
 \li \ref FnEvals - an overview of the classes and member functions involved
@@ -531,7 +531,7 @@ specific development activities:
 
 Additional development resources include:
 
-\li The DAKOTA Developer Portal linked from
+\li The %Dakota Developer Portal linked from
     http://dakota.sandia.gov/developer/ includes information on getting 
     started as a developer and links to project management resources.
 \li Project web pages are maintained at http://dakota.sandia.gov/ including

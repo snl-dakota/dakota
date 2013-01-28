@@ -71,7 +71,7 @@ Gradient specification types include none, numerical, analytic, and
 mixed.  The \c no_gradients selection indicates that gradient
 information is not needed in the study. The \c numerical_gradients
 selection means that gradient information is needed and will be
-computed with finite differences by DAKOTA or the optimization
+computed with finite differences by %Dakota or the optimization
 algorithm in use.  The \c analytic_gradients selection means that
 gradient information is available directly from the simulation (finite
 differencing is not required). And the \c mixed_gradients selection
@@ -93,7 +93,7 @@ analytic, numerical, and quasi Hessian response data.
 
 Responses specify the \e total data set that is available for use by
 the method over the course of iteration. This is distinguished from
-the data \e subset described by an active set vector (see DAKOTA File
+the data \e subset described by an active set vector (see %Dakota File
 Data Formats in the Users Manual [\ref UsersMan "Adams et al., 2010"])
 indicating the particular subset of the response data needed for a
 particular function evaluation. Thus, the responses specification is a
@@ -219,7 +219,7 @@ Specification detail for set identifier
 \section RespLabels Response Labels
 
 The optional response labels specification \c response_descriptors is
-a list of strings which will be printed in DAKOTA output to identify
+a list of strings which will be printed in %Dakota output to identify
 the values for particular response functions.  The default descriptor
 strings use a root string plus a numeric identifier.  This root string
 is \c "obj_fn" for objective functions, \c "least_sq_term" for least
@@ -315,7 +315,7 @@ The defaults for the inequality constraint bounds are selected so that
 one-sided inequalities of the form
 \f[g(x) \leq 0.0\f]
 result when there are no user constraint bounds specifications (this
-provides backwards compatibility with previous DAKOTA versions). In a
+provides backwards compatibility with previous %Dakota versions). In a
 user bounds specification, any upper bound values greater than \c
 +bigRealBoundSize (1.e+30, as defined in Minimizer)
 are treated as +infinity and any lower bound values less than \c 
@@ -459,7 +459,7 @@ problems are most efficiently solved using special-purpose least
 squares solvers such as Gauss-Newton or Levenberg-Marquardt; however,
 they may also be solved using general-purpose optimization algorithms.
 
-While DAKOTA can solve these problems with either least squares or
+While %Dakota can solve these problems with either least squares or
 optimization algorithms, the response data sets to be returned from
 the simulator are different. Least squares calibration involves a set
 of residual
@@ -475,7 +475,7 @@ in the least squares calibration case, the user must return each of
 separately as a separate calibration term.   Switching
 between the two approaches sometimes requires different simulation
 interfaces capable of returning the different granularity of response
-data required, although DAKOTA supports automatic recasting of
+data required, although %Dakota supports automatic recasting of
 residuals into a sum of squares for presentation to an optimization
 method.  Typically, the user must compute the difference between the 
 model results and the observations when computing the residuals.  
@@ -483,11 +483,11 @@ However, the user has the option of specifying the observational data
 (e.g. from physical experiments or other sources) in a file. 
 The specification \c calibration_data_file may be used to
 specify a text file containing \c calibration_terms observed data
-values (in a supported DAKOTA tabular format; default formats change
-in DAKOTA 5.2 -- see User's Manual) to be used in computing
+values (in a supported %Dakota tabular format; default formats change
+in %Dakota 5.2 -- see User's Manual) to be used in computing
 the residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and
 \e O, observation from the file.  In this case the simulator should
-return the actual model response, as DAKOTA will compute the residual
+return the actual model response, as %Dakota will compute the residual
 internally using the supplied data.
 
 The \c primary_scale_types specification includes strings
@@ -714,7 +714,7 @@ routines.
 
 The \c method_source setting specifies the source of the finite
 differencing routine that will be used to compute the numerical
-gradients: \c dakota denotes DAKOTA's internal finite differencing
+gradients: \c dakota denotes %Dakota's internal finite differencing
 algorithm and \c vendor denotes the finite differencing algorithm
 supplied by the iterator package in use (DOT, CONMIN, NPSOL, NL2SOL, NLSSOL,
 and OPT++ each have their own internal finite differencing
@@ -765,16 +765,16 @@ Lastly, \c fd_gradient_step_size specifies the relative finite difference step
 size to be used in the computations.  Either a single value may be
 entered for use with all parameters, or a list of step sizes may be
 entered, one for each parameter.  The latter option of a list of step
-sizes is only valid for use with the DAKOTA finite differencing
-routine.  For DAKOTA, DOT, CONMIN, and OPT++, the differencing
+sizes is only valid for use with the %Dakota finite differencing
+routine.  For %Dakota, DOT, CONMIN, and OPT++, the differencing
 intervals are computed by multiplying the \c fd_gradient_step_size with the
 current parameter value.  In this case, a minimum absolute
 differencing interval is needed when the current parameter value is
 close to zero.  This prevents finite difference intervals for the
 parameter which are too small to distinguish differences in the
-response quantities being computed. DAKOTA, DOT, CONMIN, and OPT++ all
+response quantities being computed. %Dakota, DOT, CONMIN, and OPT++ all
 use <tt>.01*fd_gradient_step_size</tt> as their minimum absolute differencing
-interval.  With a <tt>fd_gradient_step_size = .001</tt>, for example, DAKOTA,
+interval.  With a <tt>fd_gradient_step_size = .001</tt>, for example, %Dakota,
 DOT, CONMIN, and OPT++ will use intervals of .001*current value with a
 minimum interval of 1.e-5.  NPSOL and NLSSOL use a different formula
 for their finite difference intervals: <tt>fd_gradient_step_size*(1+|current
@@ -783,17 +783,17 @@ eliminating the need for a minimum absolute differencing interval
 since the interval no longer goes to zero as the current parameter
 value goes to zero.
 
-When DAKOTA computes gradients or Hessians by finite differences and the
+When %Dakota computes gradients or Hessians by finite differences and the
 variables in question have bounds, it by default chooses finite-differencing
 steps that keep the variables within their specified bounds.  Older versions
-of DAKOTA generally ignored bounds when computing finite differences.
+of %Dakota generally ignored bounds when computing finite differences.
 To restore the older behavior, one can add keyword <tt>ignore_bounds</tt>
 to the <tt>response</tt> specification when <tt>method_source dakota</tt>
 (or just <tt>dakota</tt>) is also specified.
 In forward difference or backward difference computations, honoring
 bounds is straightforward.
 To honor bounds when approximating \f$\partial f / \partial x_i\f$, i.e., component \f$i\f$
-of the gradient of \f$f\f$, by central differences, DAKOTA chooses two steps
+of the gradient of \f$f\f$, by central differences, %Dakota chooses two steps
 \f$h_1\f$ and \f$h_2\f$ with \f$h_1 \ne h_2\f$, such that \f$x + h_1 e_i\f$
 and \f$x + h_2 e_i\f$ both satisfy the bounds, and then computes
 \f[
@@ -858,7 +858,7 @@ Specification detail for numerical gradients
 The \c analytic_gradients specification means that gradient
 information is available directly from the simulation (finite
 differencing is not required). The simulation must return the gradient
-data in the DAKOTA format (enclosed in single brackets; see DAKOTA
+data in the %Dakota format (enclosed in single brackets; see %Dakota
 File Data Formats in the Users Manual [\ref UsersMan "Adams et al., 2010"]) 
 for the case of file transfer of data. The \c analytic_gradients keyword 
 is a complete specification for this case.
@@ -956,13 +956,13 @@ mixed_hessians.
 \subsection RespHessNone No Hessians
 
 The \c no_hessians specification means that the method does not
-require DAKOTA to manage the computation of any Hessian
+require %Dakota to manage the computation of any Hessian
 information. Therefore, it will neither be retrieved from the
-simulation nor computed by DAKOTA. The \c no_hessians keyword is a
+simulation nor computed by %Dakota. The \c no_hessians keyword is a
 complete specification for this case.  Note that, in some cases,
 Hessian information may still be being approximated internal to an
 algorithm (e.g., within a quasi-Newton optimizer such as \c
-optpp_q_newton); however, DAKOTA has no direct involvement in this
+optpp_q_newton); however, %Dakota has no direct involvement in this
 process and the responses specification need not include it.
 
 
@@ -995,12 +995,12 @@ f({\bf x} - h {\bf e}_i + h {\bf e}_j) +
 f({\bf x} - h {\bf e}_i - h {\bf e}_j)}{4h^2}
 \f]
 provide first- and second-order estimates of the \f$ij^{th}\f$ Hessian term.
-Prior to DAKOTA 5.0, DAKOTA always used second-order estimates.
-In DAKOTA 5.0 and newer, the default is to use first-order estimates
+Prior to %Dakota 5.0, %Dakota always used second-order estimates.
+In %Dakota 5.0 and newer, the default is to use first-order estimates
 (which honor bounds on the variables and
 require only about a quarter as many function evaluations
 as do the second-order estimates), but specifying <tt>central</tt>
-after <tt>numerical_hessians</tt> causes DAKOTA to use the old second-order
+after <tt>numerical_hessians</tt> causes %Dakota to use the old second-order
 estimates, which do not honor bounds.  In optimization algorithms that
 use Hessians, there is little reason to use second-order differences in
 computing Hessian approximations.
@@ -1125,8 +1125,8 @@ Specification detail for quasi Hessians
 
 The \c analytic_hessians specification means that Hessian information
 is available directly from the simulation. The simulation must return
-the Hessian data in the DAKOTA format (enclosed in double brackets; see
-DAKOTA File Data Formats in Users Manual 
+the Hessian data in the %Dakota format (enclosed in double brackets; see
+%Dakota File Data Formats in Users Manual 
 [\ref UsersMan "Adams et al., 2010"]) for the case of file transfer of 
 data. The \c analytic_hessians keyword is a complete specification for 
 this case.
