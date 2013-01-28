@@ -742,6 +742,13 @@ summary, then, the \c dakota routine is preferred for parallel
 optimization, and the \c vendor routine may be preferred for serial
 optimization in special cases.
 
+When the \c method_source is \c dakota, the user may also specify the
+type of scaling desired when determining the finite difference step
+size.  The choices are \c absolute, \c bounds, and \c relative.  For
+\c absolute, the step size will be applied as is.  For \c bounds, it
+will be scaled by the range of each parameter.  For \c relative, it
+will be scaled by the parameter value.
+
 The \c interval_type setting is used to select between \c forward and
 \c central differences in the numerical gradient calculations. The \c
 dakota, DOT \c vendor, and OPT++ \c vendor routines have both forward
@@ -761,27 +768,33 @@ and the following central difference expression
 \f]
 are used to estimate the \f$i^{th}\f$ component of the gradient vector.  
 
-Lastly, \c fd_gradient_step_size specifies the relative finite difference step
-size to be used in the computations.  Either a single value may be
-entered for use with all parameters, or a list of step sizes may be
-entered, one for each parameter.  The latter option of a list of step
-sizes is only valid for use with the %Dakota finite differencing
-routine.  For %Dakota, DOT, CONMIN, and OPT++, the differencing
-intervals are computed by multiplying the \c fd_gradient_step_size with the
-current parameter value.  In this case, a minimum absolute
-differencing interval is needed when the current parameter value is
-close to zero.  This prevents finite difference intervals for the
-parameter which are too small to distinguish differences in the
-response quantities being computed. %Dakota, DOT, CONMIN, and OPT++ all
-use <tt>.01*fd_gradient_step_size</tt> as their minimum absolute differencing
-interval.  With a <tt>fd_gradient_step_size = .001</tt>, for example, %Dakota,
-DOT, CONMIN, and OPT++ will use intervals of .001*current value with a
+Lastly, \c fd_gradient_step_size specifies the relative finite
+difference step size to be used in the computations.  Either a single
+value may be entered for use with all parameters, or a list of step
+sizes may be entered, one for each parameter.  The latter option of a
+list of step sizes is only valid for use with the %Dakota finite
+differencing routine.  For %Dakota with an interval scaling type of \c
+absolute, the differencing interval will be \c fd_gradient_step_size.
+For %Dakota with and interval scaling type of \c bounds, the
+differencing intervals are computed by multiplying \c
+fd_gradient_step_size with the range of the parameter. For %Dakota
+(with an interval scaling type of \c relative), DOT, CONMIN, and
+OPT++, the differencing intervals are computed by multiplying the \c
+fd_gradient_step_size with the current parameter value.  In this case,
+a minimum absolute differencing interval is needed when the current
+parameter value is close to zero.  This prevents finite difference
+intervals for the parameter which are too small to distinguish
+differences in the response quantities being computed. %Dakota, DOT,
+CONMIN, and OPT++ all use <tt>.01*fd_gradient_step_size</tt> as their
+minimum absolute differencing interval.  With a
+<tt>fd_gradient_step_size = .001</tt>, for example, %Dakota, DOT,
+CONMIN, and OPT++ will use intervals of .001*current value with a
 minimum interval of 1.e-5.  NPSOL and NLSSOL use a different formula
-for their finite difference intervals: <tt>fd_gradient_step_size*(1+|current
-parameter value|)</tt>.  This definition has the advantage of
-eliminating the need for a minimum absolute differencing interval
-since the interval no longer goes to zero as the current parameter
-value goes to zero.
+for their finite difference intervals:
+<tt>fd_gradient_step_size*(1+|current parameter value|)</tt>.  This
+definition has the advantage of eliminating the need for a minimum
+absolute differencing interval since the interval no longer goes to
+zero as the current parameter value goes to zero.
 
 When %Dakota computes gradients or Hessians by finite differences and the
 variables in question have bounds, it by default chooses finite-differencing
@@ -832,6 +845,12 @@ Specification detail for numerical gradients
 <td>\c dakota | \c vendor
 <td>Optional group
 <td>\c dakota
+<tr>
+<td>Interval scaling type
+<td>\c dakota
+<td>\c absolute | \c bounds | \c relative
+<td>Optional group
+<td>\c relative
 <tr>
 <td>Interval type
 <td>\c interval_type
@@ -925,6 +944,12 @@ Specification detail for mixed gradients
 <td>Optional group
 <td>\c dakota
 <tr>
+<td>Interval scaling type
+<td>\c dakota
+<td>\c absolute | \c bounds | \c relative
+<td>Optional group
+<td>\c relative
+<tr>
 <td>Interval type
 <td>\c interval_type
 <td>\c forward | \c central
@@ -1008,12 +1033,16 @@ computing Hessian approximations.
 The \c fd_hessian_step_size specifies the relative finite difference
 step size to be used in these differences.  Either a single value may
 be entered for use with all parameters, or a list of step sizes may be
-entered, one for each parameter.  The differencing intervals are
-computed by multiplying the \c fd_hessian_step_size with the current
-parameter value.  A minimum absolute differencing interval of
-<tt>.01*fd_hessian_step_size</tt> is used when the current parameter
-value is close to zero.  \ref T9d9 "Table 9.9" summarizes the
-numerical Hessian specification.
+entered, one for each parameter.  When the interval scaling type is \c
+absolute, the differencing intervals are \c fd_hessian_step_size.
+When the interval scaling type is \c bounds, the differencing
+intervals are computed by multiplying the \c fd_hessian_step_size with
+the range of the parameter.  When the interval scaling type is \c
+relative, the differencing intervals are computed by multiplying the
+\c fd_hessian_step_size with the current parameter value.  A minimum
+absolute differencing interval of <tt>.01*fd_hessian_step_size</tt> is
+used when the current parameter value is close to zero.  \ref T9d9
+"Table 9.9" summarizes the numerical Hessian specification.
 
 \anchor T9d9
 <table>
@@ -1036,6 +1065,12 @@ Specification detail for numerical Hessians
 <td>Required group
 <td>N/A
 <tr>
+<td>Interval scaling type
+<td>\c absolute | \c bounds | \c relative
+<td>\c none
+<td>Optional
+<td>\c relative
+<tr>
 <td>Finite difference step size
 <td>\c fd_step_size
 <td>list of reals
@@ -1054,7 +1089,7 @@ Specification detail for numerical Hessians
 
 The \c quasi_hessians specification means that Hessian information is
 needed and will be approximated using secant updates (sometimes called
-``quasi-Newton updates", though any algorithm that approximates
+"quasi-Newton updates", though any algorithm that approximates
 Newton's method is a quasi-Newton method).
 Compared to finite difference numerical Hessians, secant
 approximations do not expend additional function evaluations in
@@ -1187,6 +1222,12 @@ Specification detail for mixed Hessians
 <td>list of integers
 <td>Required
 <td>N/A
+<tr>
+<td>Interval scaling type
+<td>\c absolute | \c bounds | \c relative
+<td>\c none
+<td>Optional
+<td>\c relative
 <tr>
 <td>Finite difference step size
 <td>\c fd_step_size
