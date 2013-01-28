@@ -364,6 +364,46 @@ expected that they will occur in the text file before the responses.
 
 % TODO: borrow from and refer to opt.
 
-When applying an general optimization solver to a calibration problem,
-the guidelines in Table~\ref{opt:usage} still apply. For selecting
-among least sqaures solvers, here is some more guidance...
+Calibration problems can be transformed to general optimization problems 
+where the objective is some type of aggregated error metric.  For 
+example, the objective could be the sum of squared error terms. 
+However, it also could be the mean of the absolute value of the error 
+terms, the maximum difference between the simulation results and 
+observational results, etc. In all of these cases, one can 
+pose the calibration problem as an optimization problem that can be 
+solved by any of Dakota's optimizers.  In this situation, when 
+applying an general optimization solver to a calibration problem,
+the guidelines in Table~\ref{opt:usage} still apply. 
+
+In some cases, it will be better to use a nonlinear least-squares
+method instead of a general optimizer to determine optimal parameter 
+values which result in simulation responses that ``best fit'' the 
+observational data.  Nonlinear least squares methods exploit the 
+special structure of a sum of the squares objective function. They 
+can be much more efficient than general optimizers.  However, 
+these methods require the gradients of the function with 
+respect to the parameters being calibrated.  If the model 
+is not able to produce gradients, one can use finite differencing 
+to obtain gradients.  However, the gradients must be reasonably 
+accurate for the method to proceed. Note that the nonlinear 
+least-squares methods only operate on a sum of squared errors 
+as the objective. Also, the user must return each residual term 
+separately to Dakota, whereas the user can return an aggregated 
+error measure in the case of general optimizers.
+
+The three nonlinear least-squares methods are the Gauss-Newton method in 
+OPT++, NLSSOL, and NL2SOL.  Any of these may be tried;  
+they give similar performance on many problems. 
+NL2SOL tends to be more robust than Gauss-Newton, especially for nonlinear 
+functions and large-residual problems where one is not able to drive 
+the residuals to zero at the solution.  NLSSOL does require 
+that the user has the NPSOL library.   
+Note that all of these methods are local in the sense that they are 
+gradient-based and depend on an initial starting point.  Often they 
+are used in conjunction with a multi-start strategy, to perform 
+several repetitions of the optimization at different starting 
+points in the parameter space.  Another approach is to use 
+a general global optimizer such as a genetic algorithm or 
+DIRECT as mentioned above.  This can be 
+much more expensive, however, in terms of the number of function 
+evaluations required. 

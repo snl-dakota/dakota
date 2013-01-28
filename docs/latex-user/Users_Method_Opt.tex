@@ -831,7 +831,7 @@ the specification of multiple objective functions in the responses
 keyword block (i.e., the \texttt{objective\_functions}
 specification is greater than \texttt{1}). The weighting factors on
 these objective functions can be optionally specified using the
-\texttt{multi\_objective\_weights} keyword (the default is equal
+\texttt{weights} keyword (the default is equal
 weightings). The composite objective function for this optimization
 problem, $F$, is formed using these weights as follows:
 $F=\sum_{k=1}^{R}w_{k}f_{k}$, where the $f_{k}$ terms are the
@@ -855,7 +855,7 @@ In the standard textbook formulation,
 there is one objective function and two constraints. In the
 multiobjective textbook formulation, all three of these functions are
 treated as objective functions (\texttt{objective\_functions =
-  3}), with weights given by the \texttt{multi\_objective\_weights}
+  3}), with weights given by the \texttt{weights}
 keyword. Note that it is not required that the weights sum to a value
 of one. The multiobjective optimization capability also allows any
 number of constraints, although none are included in this example.

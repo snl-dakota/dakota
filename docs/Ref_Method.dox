@@ -249,10 +249,11 @@ asynch_pattern_search, \c coliny_cobyla, \c coliny_direct, \c
 coliny_pattern_search, \c coliny_solis_wets, \c coliny_ea, \c moga, \c
 soga, \c ncsu_direct, \c dl_solver, \c surrogate_based_local, \c
 surrogate_based_global, \c efficient_global, \c polynomial_chaos, \c
-stoch_collocation, \c sampling, \c importance, \c local_reliability,
-\c global_reliability, \c local_evidence, \c global_evidence, \c
-local_interval_est, \c global_interval_est, \c bayes_calibration, \c
-dace, \c fsu_quasi_mc, \c fsu_cvt, \c psuade_moat, \c
+stoch_collocation, \c sampling, \c importance_sampling, 
+\c adaptive_sampling, \c local_reliability, \c global_reliability, 
+\c local_evidence, \c global_evidence, \c local_interval_est, 
+\c global_interval_est, \c bayes_calibration, \c dace, 
+\c fsu_quasi_mc, \c fsu_cvt, \c psuade_moat, \c
 vector_parameter_study, \c list_parameter_study, \c
 centered_parameter_study, or \c multidim_parameter_study.
 
