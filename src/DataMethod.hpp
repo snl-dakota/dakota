@@ -385,96 +385,96 @@ public:
   // COLINY
 
   /// the \c synchronization setting for parallel pattern search
-  /// methods in \ref MethodCOLINYPS and \ref MethodAPPS
+  /// methods in \ref MethodSCOLIBPS and \ref MethodAPPS
   String evalSynchronization;
   /// the initial \c constraint_penalty for COLINY methods in
-  /// \ref MethodAPPS, \ref MethodCOLINYDIR, \ref MethodCOLINYPS,
-  /// \ref MethodCOLINYSW and \ref MethodCOLINYEA
+  /// \ref MethodAPPS, \ref MethodSCOLIBDIR, \ref MethodSCOLIBPS,
+  /// \ref MethodSCOLIBSW and \ref MethodSCOLIBEA
   Real constraintPenalty;
   /// the \c constant_penalty flag for COLINY methods in
-  /// \ref MethodCOLINYPS and \ref MethodCOLINYSW
+  /// \ref MethodSCOLIBPS and \ref MethodSCOLIBSW
   bool constantPenalty;
   /// the \c global_balance_parameter for the DIRECT method in
-  /// \ref MethodCOLINYDIR
+  /// \ref MethodSCOLIBDIR
   Real globalBalanceParam;
   /// the \c local_balance_parameter for the DIRECT method in
-  /// \ref MethodCOLINYDIR
+  /// \ref MethodSCOLIBDIR
   Real localBalanceParam;
-  /// the \c max_boxsize_limit for the DIRECT method in \ref MethodCOLINYDIR
+  /// the \c max_boxsize_limit for the DIRECT method in \ref MethodSCOLIBDIR
   Real maxBoxSize;
-  /// the \c min_boxsize_limit for the DIRECT method in \ref MethodCOLINYDIR
+  /// the \c min_boxsize_limit for the DIRECT method in \ref MethodSCOLIBDIR
   /// and \ref MethodNCSUDC
   Real minBoxSize;
   /// the \c division setting (\c major_dimension or \c all_dimensions) for
-  /// the DIRECT method in \ref MethodCOLINYDIR
+  /// the DIRECT method in \ref MethodSCOLIBDIR
   String boxDivision;
   /// the \c non_adaptive specification for the coliny_ea method in
-  /// \ref MethodCOLINYEA
+  /// \ref MethodSCOLIBEA
   bool mutationAdaptive;
-  /// the \c show_misc_options specification in \ref MethodCOLINYDC
+  /// the \c show_misc_options specification in \ref MethodSCOLIBDC
   bool showMiscOptions;
-  /// the \c misc_options specification in \ref MethodCOLINYDC
+  /// the \c misc_options specification in \ref MethodSCOLIBDC
   StringArray miscOptions;
-  /// the \c solution_target specification in \ref MethodCOLINYDC
+  /// the \c solution_target specification in \ref MethodSCOLIBDC
   Real solnTarget;
-  /// the \c crossover_rate specification for EA methods in \ref MethodCOLINYEA
+  /// the \c crossover_rate specification for EA methods in \ref MethodSCOLIBEA
   Real crossoverRate;
-  /// the \c mutation_rate specification for EA methods in \ref  MethodCOLINYEA
+  /// the \c mutation_rate specification for EA methods in \ref  MethodSCOLIBEA
   Real mutationRate;
-  /// the \c mutation_scale specification for EA methods in \ref  MethodCOLINYEA
+  /// the \c mutation_scale specification for EA methods in \ref  MethodSCOLIBEA
   Real mutationScale;
   /// the \c min_scale specification for mutation in EA methods in
-  /// \ref MethodCOLINYEA
+  /// \ref MethodSCOLIBEA
   Real mutationMinScale;
   /// the \c initial_delta specification for APPS/COBYLA/PS/SW methods in 
-  /// \ref MethodAPPS, \ref MethodCOLINYCOB, \ref MethodCOLINYPS, and
-  /// \ref MethodCOLINYSW
+  /// \ref MethodAPPS, \ref MethodSCOLIBCOB, \ref MethodSCOLIBPS, and
+  /// \ref MethodSCOLIBSW
   Real initDelta;
   /// the \c threshold_delta specification for APPS/COBYLA/PS/SW methods
-  /// in \ref MethodAPPS, \ref MethodCOLINYCOB, \ref MethodCOLINYPS, and
-  /// \ref MethodCOLINYSW
+  /// in \ref MethodAPPS, \ref MethodSCOLIBCOB, \ref MethodSCOLIBPS, and
+  /// \ref MethodSCOLIBSW
   Real threshDelta;
   /// the \c contraction_factor specification for APPS/PS/SW methods in
-  /// \ref MethodAPPS, \ref MethodCOLINYPS, and \ref MethodCOLINYSW
+  /// \ref MethodAPPS, \ref MethodSCOLIBPS, and \ref MethodSCOLIBSW
   Real contractFactor;
   /// the \c new_solutions_generated specification for GA/EPSA methods
-  /// in \ref MethodCOLINYEA
+  /// in \ref MethodSCOLIBEA
   int newSolnsGenerated;
   /// the integer assignment to random, chc, or elitist in the \c
   /// replacement_type specification for GA/EPSA methods in \ref
-  /// MethodCOLINYEA
+  /// MethodSCOLIBEA
   int numberRetained;
   /// the \c no_expansion specification for APPS/PS/SW methods in
-  /// \ref MethodAPPS, \ref MethodCOLINYPS, and \ref MethodCOLINYSW
+  /// \ref MethodAPPS, \ref MethodSCOLIBPS, and \ref MethodSCOLIBSW
   bool expansionFlag;
   /// the \c expand_after_success specification for PS/SW methods in
-  /// \ref MethodCOLINYPS and \ref MethodCOLINYSW
+  /// \ref MethodSCOLIBPS and \ref MethodSCOLIBSW
   int expandAfterSuccess;
   /// the \c contract_after_failure specification for the SW method in
-  /// \ref MethodCOLINYSW
+  /// \ref MethodSCOLIBSW
   int contractAfterFail;
   /// the \c mutation_range specification for the pga_int method in
-  /// \ref MethodCOLINYEA
+  /// \ref MethodSCOLIBEA
   int mutationRange;
   /// the \c total_pattern_size specification for PS methods in
-  /// \ref MethodCOLINYPS
+  /// \ref MethodSCOLIBPS
   int totalPatternSize;
-  /// the \c stochastic specification for the PS method in \ref MethodCOLINYPS
+  /// the \c stochastic specification for the PS method in \ref MethodSCOLIBPS
   bool randomizeOrderFlag;
-  /// the \c fitness_type specification for EA methods in \ref MethodCOLINYEA
+  /// the \c fitness_type specification for EA methods in \ref MethodSCOLIBEA
   String selectionPressure;
   /// the \c replacement_type specification for EA methods in
-  /// \ref MethodCOLINYEA
+  /// \ref MethodSCOLIBEA
   String replacementType;
-  /// the \c crossover_type specification for EA methods in \ref MethodCOLINYEA
+  /// the \c crossover_type specification for EA methods in \ref MethodSCOLIBEA
   String crossoverType;
-  /// the \c mutation_type specification for EA methods in \ref MethodCOLINYEA
+  /// the \c mutation_type specification for EA methods in \ref MethodSCOLIBEA
   String mutationType;
   /// the \c exploratory_moves specification for the PS method in
-  /// \ref MethodCOLINYPS
+  /// \ref MethodSCOLIBPS
   String exploratoryMoves;
   /// the \c pattern_basis specification for APPS/PS methods in
-  /// \ref MethodAPPS and \ref MethodCOLINYPS
+  /// \ref MethodAPPS and \ref MethodSCOLIBPS
   String patternBasis;
   /// beta solvers don't need documentation
   String betaSolverName;
@@ -559,7 +559,7 @@ public:
   /// The filename to use for logging
   String logFile;
   /// the \c population_size specification for GA methods in \ref
-  /// MethodCOLINYEA
+  /// MethodSCOLIBEA
   int populationSize;
   /// The \c print_each_pop flag to set the printing of the population 
   /// at each generation
@@ -760,10 +760,10 @@ public:
   /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
   Real likelihoodScale;
   /// the \c fitness metric type specification in \ref
-  /// MethodNonDAdaptiveSampling
+  /// MethodNonDAdaptive
   String fitnessMetricType;
   /// the \c batch selection type specification in \ref
-  /// MethodNonDAdaptiveSampling
+  /// MethodNonDAdaptive
   String batchSelectionType;
   /// The size of the batch (e.g. number of supplemental points added) to be
   /// added to be added to the build points for an emulator at each iteration

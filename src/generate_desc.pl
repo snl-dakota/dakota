@@ -518,7 +518,7 @@ sub gui_defaults {
     kw_add_desc("responses/no_gradients", "$DEFAULT");
 
     # default to dakota as gradient source                                                                                                   
-    kw_add_desc("responses/mixed_gradients/dakota", "${DEFAULT}[CHOOSE gradient source]");
+    kw_aug_desc("responses/mixed_gradients/dakota", "${DEFAULT}[CHOOSE gradient source]");
     kw_add_desc("responses/mixed_gradients/central", "[CHOOSE difference interval]");
     kw_add_desc("responses/mixed_gradients/forward", "$DEFAULT");
 

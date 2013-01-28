@@ -29,6 +29,7 @@ enum CG_LINESEARCHTYPE {CG_FIXED_STEP, CG_LS_SIMPLE, CG_LS_BRENT,
 			CG_LS_WOLFE};
 
 
+/** Experimental implementation of nonlinear CG optimization */
 class NonlinearCGOptimizer: public Optimizer
 {
 

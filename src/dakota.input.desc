@@ -326,6 +326,8 @@ TAG "method/moga/niching_type/radial"
 TAG "method/moga/niching_type/distance"
 TAG "method/moga/niching_type/max_designs"
 TAG "method/moga/niching_type/max_designs/num_designs"
+	DESC "{Number designs to keep for max_designs nicher} MethodCommands.html#MethodJEGAMOGA"
+
 TAG "method/moga/convergence_type"
 TAG "method/moga/convergence_type/metric_tracker"
 	DESC "{Convergence type} MethodCommands.html#MethodJEGAMOGA"
@@ -795,7 +797,7 @@ TAG "method/stoch_collocation/dimension_preference"
 	DESC "{Dimension preference for anisotropic tensor and sparse grids} MethodCommands.html#MethodNonDSC"
 
 TAG "method/stoch_collocation/use_derivatives"
-	DESC "{Derivative usage flag} MethodCommands.html#MethodNonDSC"
+	DESC "{Derivative enhancement flag} MethodCommands.html#MethodNonDSC"
 
 TAG "method/stoch_collocation/nested"
 TAG "method/stoch_collocation/non_nested"
@@ -1289,7 +1291,7 @@ TAG "model/surrogate/global"
 	DESC "[CHOOSE surrogate category]{Global approximations } ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process"
-	DESC "[CHOOSE surrogate type]{DAKOTA Gaussian process} ModelCommands.html#ModelSurrG"
+	DESC "[CHOOSE surrogate type]{Dakota Gaussian process} ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process/dakota"
 TAG "model/surrogate/global/gaussian_process/dakota/point_selection"
@@ -1475,7 +1477,7 @@ TAG "variables/id_variables"
 	DESC "{Variables set identifier} VarCommands.html#VarSetId"
 
 TAG "variables/active"
-	DESC "{Active variables} VarCommands.html#VarActive"
+	DESC "{Active variables} VarCommands.html#VarDomain"
 
 TAG "variables/active/all"
 TAG "variables/active/design"
@@ -1798,15 +1800,19 @@ TAG "variables/uncertain_correlation_matrix" GROUP "Aleatory Uncertain Correlati
 	DESC "{correlations in aleatory uncertain variables} VarCommands.html#VarAUV_Correlations"
 
 TAG "variables/continuous_interval_uncertain" GROUP "Epistemic Uncertain"
+	DESC "{continuous interval uncertain variables} VarCommands.html#VarCEUV_Interval"
+
 TAG "variables/continuous_interval_uncertain/num_intervals"
-	DESC "{number of intervals defined for each interval variable} VarCommands.html#VarCEUV_Interval"
+	DESC "{number of intervals defined for each continuous interval variable} VarCommands.html#VarCEUV_Interval"
 
 TAG "variables/continuous_interval_uncertain/interval_probabilities"
+	DESC "{basic probability assignments per continuous interval} VarCommands.html#VarCEUV_Interval"
+
 TAG "variables/continuous_interval_uncertain/lower_bounds"
-	DESC "{Lower bounds} VarCommands.html#VarDIUV"
+	DESC "{lower bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"
 
 TAG "variables/continuous_interval_uncertain/upper_bounds"
-	DESC "{Upper bounds} VarCommands.html#VarDIUV"
+	DESC "{upper bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"
 
 TAG "variables/continuous_interval_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCEUV_Interval"
@@ -1818,11 +1824,13 @@ TAG "variables/discrete_interval_uncertain/num_intervals"
 	DESC "{Number of intervals defined for each interval variable} VarCommands.html#VarDIUV"
 
 TAG "variables/discrete_interval_uncertain/interval_probabilities"
+	DESC "{Basic probability assignments per interval} VarCommands.html#VarDIUV"
+
 TAG "variables/discrete_interval_uncertain/lower_bounds"
-	DESC "{Lower bounds} VarCommands.html#VarCSV"
+	DESC "{Lower bounds} VarCommands.html#VarDIUV"
 
 TAG "variables/discrete_interval_uncertain/upper_bounds"
-	DESC "{Upper bounds} VarCommands.html#VarCSV"
+	DESC "{Upper bounds} VarCommands.html#VarDIUV"
 
 TAG "variables/discrete_interval_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDIUV"
@@ -1837,6 +1845,8 @@ TAG "variables/discrete_uncertain_set_integer/set_values"
 	DESC "{Set values} VarCommands.html#VarDUSIV"
 
 TAG "variables/discrete_uncertain_set_integer/set_probabilities"
+	DESC "{Probabilities for each set member} VarCommands.html#VarDUSIV"
+
 TAG "variables/discrete_uncertain_set_integer/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDUSIV"
 
@@ -1850,6 +1860,8 @@ TAG "variables/discrete_uncertain_set_real/set_values"
 	DESC "{Set values} VarCommands.html#VarDUSRV"
 
 TAG "variables/discrete_uncertain_set_real/set_probabilities"
+	DESC "{Probabilities for each set member} VarCommands.html#VarDUSRV"
+
 TAG "variables/discrete_uncertain_set_real/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDUSRV"
 
@@ -1860,10 +1872,10 @@ TAG "variables/continuous_state/initial_state"
 	DESC "{Initial states} VarCommands.html#VarCSV"
 
 TAG "variables/continuous_state/lower_bounds"
-	DESC "{Lower bounds} VarCommands.html#VarDSRIV"
+	DESC "{Lower bounds} VarCommands.html#VarCSV"
 
 TAG "variables/continuous_state/upper_bounds"
-	DESC "{Upper bounds} VarCommands.html#VarDSRIV"
+	DESC "{Upper bounds} VarCommands.html#VarCSV"
 
 TAG "variables/continuous_state/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCSV"
@@ -1875,7 +1887,11 @@ TAG "variables/discrete_state_range/initial_state"
 	DESC "{Initial states} VarCommands.html#VarDSRIV"
 
 TAG "variables/discrete_state_range/lower_bounds"
+	DESC "{Lower bounds} VarCommands.html#VarDSRIV"
+
 TAG "variables/discrete_state_range/upper_bounds"
+	DESC "{Upper bounds} VarCommands.html#VarDSRIV"
+
 TAG "variables/discrete_state_range/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDSRIV"
 
@@ -2170,7 +2186,7 @@ TAG "responses/mixed_gradients/method_source"
 	DESC "{Method source} RespCommands.html#RespGradNum"
 
 TAG "responses/mixed_gradients/dakota"
-	DESC "@[CHOOSE gradient source]"
+	DESC "@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"
 
 TAG "responses/mixed_gradients/dakota/ignore_bounds"
 	DESC "{Ignore variable bounds} RespCommands.html#RespGradMixed"

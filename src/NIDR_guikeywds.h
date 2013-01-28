@@ -761,7 +761,7 @@ static GuiKeyWord
 		{"layer_rank",8,0,1,1,287}
 		},
 	kw_122[1] = {
-		{"num_designs",0x29,0,1,0,311,0,2.}
+		{"num_designs",0x29,0,1,0,311,0,2.,0.,0.,0,"{Number designs to keep for max_designs nicher} MethodCommands.html#MethodJEGAMOGA"}
 		},
 	kw_123[3] = {
 		{"distance",14,0,1,1,307},
@@ -1037,7 +1037,7 @@ static GuiKeyWord
 		{"samples",9,0,12,0,1147,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
 		{"seed",0x19,0,11,0,1149,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"},
 		{"sparse_grid_level",13,4,3,1,757,kw_162,0.,0.,0.,0,"{Sparse grid level for collocation points} MethodCommands.html#MethodNonDSC"},
-		{"use_derivatives",8,0,5,0,769,0,0.,0.,0.,0,"{Derivative usage flag} MethodCommands.html#MethodNonDSC"},
+		{"use_derivatives",8,0,5,0,769,0,0.,0.,0.,0,"{Derivative enhancement flag} MethodCommands.html#MethodNonDSC"},
 		{"variance_based_decomp",8,2,7,0,775,kw_163,0.,0.,0.,0,"{Variance-based decomposition (VBD)} MethodCommands.html#MethodNonDSC"},
 		{"wiener",8,0,2,0,753}
 		},
@@ -1423,7 +1423,7 @@ static GuiKeyWord
 		{"correction",8,6,7,0,1491,kw_195,0.,0.,0.,0,"{Surrogate correction approach} ModelCommands.html#ModelSurrG"},
 		{"dace_method_pointer",11,0,3,0,1473,0,0.,0.,0.,0,"{Design of experiments method pointer} ModelCommands.html#ModelSurrG"},
 		{"diagnostics",15,0,8,0,1505,0,0.,0.,0.,0,"{Print diagnostic metrics about the surrogate goodness of fit} ModelCommands.html#ModelSurrG"},
-		{"gaussian_process",8,2,1,1,1393,kw_200,0.,0.,0.,0,"[CHOOSE surrogate type]{DAKOTA Gaussian process} ModelCommands.html#ModelSurrG"},
+		{"gaussian_process",8,2,1,1,1393,kw_200,0.,0.,0.,0,"[CHOOSE surrogate type]{Dakota Gaussian process} ModelCommands.html#ModelSurrG"},
 		{"kriging",0,2,1,1,1392,kw_200},
 		{"mars",8,2,1,1,1425,kw_202,0.,0.,0.,0,"{Multivariate adaptive regression splines} ModelCommands.html#ModelSurrG"},
 		{"minimum_points",8,0,2,0,1469},
@@ -1525,7 +1525,7 @@ static GuiKeyWord
 		},
 	kw_221[10] = {
 		{"central",8,0,6,0,2075,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,4,4,0,2059,kw_220,0.,0.,0.,0,"@[CHOOSE gradient source]"},
+		{"dakota",8,4,4,0,2059,kw_220,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
 		{"fd_gradient_step_size",0x406,0,7,0,2076,0,0.,0.,0.001},
 		{"fd_step_size",0x40e,0,7,0,2077,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
 		{"forward",8,0,6,0,2073,0,0.,0.,0.,0,"@"},
@@ -1589,7 +1589,7 @@ static GuiKeyWord
 		},
 	kw_229[8] = {
 		{"central",8,0,6,0,2075,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,4,4,0,2059,kw_220,0.,0.,0.,0,"@[CHOOSE gradient source]"},
+		{"dakota",8,4,4,0,2059,kw_220,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
 		{"fd_gradient_step_size",0x406,0,7,0,2076,0,0.,0.,0.001},
 		{"fd_step_size",0x40e,0,7,0,2077,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
 		{"forward",8,0,6,0,2073,0,0.,0.,0.,0,"@"},
@@ -1734,14 +1734,14 @@ static GuiKeyWord
 		},
 	kw_250[9] = {
 		{"descriptors",15,0,5,0,1797,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCEUV_Interval",0,"continuous_interval_uncertain"},
-		{"interval_probabilities",14,0,2,0,1791},
+		{"interval_probabilities",14,0,2,0,1791,0,0.,0.,0.,0,"{basic probability assignments per continuous interval} VarCommands.html#VarCEUV_Interval"},
 		{"interval_probs",6,0,2,0,1790},
 		{"iuv_descriptors",7,0,5,0,1796,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
 		{"iuv_interval_probs",6,0,2,0,1790},
 		{"iuv_num_intervals",5,0,1,0,1788,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
-		{"lower_bounds",14,0,3,1,1793,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDIUV"},
-		{"num_intervals",13,0,1,0,1789,0,0.,0.,0.,0,"{number of intervals defined for each interval variable} VarCommands.html#VarCEUV_Interval",0,"continuous_interval_uncertain"},
-		{"upper_bounds",14,0,4,2,1795,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDIUV"}
+		{"lower_bounds",14,0,3,1,1793,0,0.,0.,0.,0,"{lower bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"},
+		{"num_intervals",13,0,1,0,1789,0,0.,0.,0.,0,"{number of intervals defined for each continuous interval variable} VarCommands.html#VarCEUV_Interval",0,"continuous_interval_uncertain"},
+		{"upper_bounds",14,0,4,2,1795,0,0.,0.,0.,0,"{upper bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"}
 		},
 	kw_251[8] = {
 		{"csv_descriptors",7,0,4,0,1838,0,0.,0.,0.,0,0,0,"continuous_state"},
@@ -1750,8 +1750,8 @@ static GuiKeyWord
 		{"csv_upper_bounds",6,0,3,0,1836,0,0.,0.,0.,0,0,0,"continuous_state"},
 		{"descriptors",15,0,4,0,1839,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCSV",0,"continuous_state"},
 		{"initial_state",14,0,1,0,1833,0,0.,0.,0.,0,"{Initial states} VarCommands.html#VarCSV",0,"continuous_state"},
-		{"lower_bounds",14,0,2,0,1835,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDSRIV",0,"continuous_state"},
-		{"upper_bounds",14,0,3,0,1837,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDSRIV",0,"continuous_state"}
+		{"lower_bounds",14,0,2,0,1835,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarCSV",0,"continuous_state"},
+		{"upper_bounds",14,0,3,0,1837,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarCSV",0,"continuous_state"}
 		},
 	kw_252[8] = {
 		{"ddv_descriptors",7,0,4,0,1596,0,0.,0.,0.,0,0,0,"discrete_design_range"},
@@ -1777,13 +1777,13 @@ static GuiKeyWord
 		},
 	kw_255[8] = {
 		{"descriptors",15,0,5,0,1809,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDIUV",0,"discrete_interval_uncertain"},
-		{"interval_probabilities",14,0,2,0,1803},
+		{"interval_probabilities",14,0,2,0,1803,0,0.,0.,0.,0,"{Basic probability assignments per interval} VarCommands.html#VarDIUV"},
 		{"interval_probs",6,0,2,0,1802},
-		{"lower_bounds",13,0,3,1,1805,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarCSV"},
+		{"lower_bounds",13,0,3,1,1805,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDIUV"},
 		{"num_intervals",13,0,1,0,1801,0,0.,0.,0.,0,"{Number of intervals defined for each interval variable} VarCommands.html#VarDIUV",0,"discrete_interval_uncertain"},
 		{"range_probabilities",6,0,2,0,1802},
 		{"range_probs",6,0,2,0,1802},
-		{"upper_bounds",13,0,4,2,1807,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarCSV"}
+		{"upper_bounds",13,0,4,2,1807,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDIUV"}
 		},
 	kw_256[8] = {
 		{"descriptors",15,0,4,0,1849,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSRIV",0,"discrete_state_range"},
@@ -1792,8 +1792,8 @@ static GuiKeyWord
 		{"dsv_lower_bounds",5,0,2,0,1844,0,0.,0.,0.,0,0,0,"discrete_state_range"},
 		{"dsv_upper_bounds",5,0,3,0,1846,0,0.,0.,0.,0,0,0,"discrete_state_range"},
 		{"initial_state",13,0,1,0,1843,0,0.,0.,0.,0,"{Initial states} VarCommands.html#VarDSRIV",0,"discrete_state_range"},
-		{"lower_bounds",13,0,2,0,1845,0,0.,0.,0.,0,0,0,"discrete_state_range"},
-		{"upper_bounds",13,0,3,0,1847,0,0.,0.,0.,0,0,0,"discrete_state_range"}
+		{"lower_bounds",13,0,2,0,1845,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDSRIV",0,"discrete_state_range"},
+		{"upper_bounds",13,0,3,0,1847,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDSRIV",0,"discrete_state_range"}
 		},
 	kw_257[4] = {
 		{"descriptors",15,0,4,0,1859,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSSIV",0,"discrete_state_set_integer"},
@@ -1810,14 +1810,14 @@ static GuiKeyWord
 	kw_259[5] = {
 		{"descriptors",15,0,4,0,1819,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDUSIV",0,"discrete_uncertain_set_integer"},
 		{"num_set_values",13,0,1,0,1813,0,0.,0.,0.,0,"{Number of values for each variable} VarCommands.html#VarDUSIV",0,"discrete_uncertain_set_integer"},
-		{"set_probabilities",14,0,3,0,1817},
+		{"set_probabilities",14,0,3,0,1817,0,0.,0.,0.,0,"{Probabilities for each set member} VarCommands.html#VarDUSIV"},
 		{"set_probs",6,0,3,0,1816},
 		{"set_values",13,0,2,1,1815,0,0.,0.,0.,0,"{Set values} VarCommands.html#VarDUSIV"}
 		},
 	kw_260[5] = {
 		{"descriptors",15,0,4,0,1829,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDUSRV",0,"discrete_uncertain_set_real"},
 		{"num_set_values",13,0,1,0,1823,0,0.,0.,0.,0,"{Number of values for each variable} VarCommands.html#VarDUSRV",0,"discrete_uncertain_set_real"},
-		{"set_probabilities",14,0,3,0,1827},
+		{"set_probabilities",14,0,3,0,1827,0,0.,0.,0.,0,"{Probabilities for each set member} VarCommands.html#VarDUSRV"},
 		{"set_probs",6,0,3,0,1826},
 		{"set_values",14,0,2,1,1825,0,0.,0.,0.,0,"{Set values} VarCommands.html#VarDUSRV"}
 		},
@@ -1963,11 +1963,11 @@ static GuiKeyWord
 		{"wuv_descriptors",7,0,3,0,1722,0,0.,0.,0.,0,0,0,"weibull_uncertain"}
 		},
 	kw_279[37] = {
-		{"active",8,6,2,0,1557,kw_246,0.,0.,0.,0,"{Active variables} VarCommands.html#VarActive"},
+		{"active",8,6,2,0,1557,kw_246,0.,0.,0.,0,"{Active variables} VarCommands.html#VarDomain"},
 		{"beta_uncertain",0x19,10,14,0,1681,kw_247,0.,0.,0.,0,"{beta uncertain variables} VarCommands.html#VarCAUV_Beta","Continuous Aleatory Uncertain"},
 		{"binomial_uncertain",0x19,4,21,0,1743,kw_248,0.,0.,0.,0,"{binomial uncertain variables} VarCommands.html#VarDAUV_Binomial","Discrete Aleatory Uncertain"},
 		{"continuous_design",0x19,12,4,0,1575,kw_249,0.,0.,0.,0,"{Continuous design variables} VarCommands.html#VarCDV","Design Variables"},
-		{"continuous_interval_uncertain",0x19,9,27,0,1787,kw_250,0.,0.,0.,0,0,"Epistemic Uncertain"},
+		{"continuous_interval_uncertain",0x19,9,27,0,1787,kw_250,0.,0.,0.,0,"{continuous interval uncertain variables} VarCommands.html#VarCEUV_Interval","Epistemic Uncertain"},
 		{"continuous_state",0x19,8,31,0,1831,kw_251,0.,0.,0.,0,"{Continuous state variables} VarCommands.html#VarCSV","State Variables"},
 		{"discrete_design_range",0x19,8,5,0,1589,kw_252,0.,0.,0.,0,"{Discrete design range variables} VarCommands.html#VarDDRIV","Design Variables"},
 		{"discrete_design_set_integer",0x19,4,6,0,1599,kw_253,0.,0.,0.,0,"{Discrete design set of integer variables} VarCommands.html#VarDDSIV","Design Variables"},
