@@ -92,6 +92,13 @@ if ( NOT CTEST_SITE )
 endif()
 
 #*****************************************************************
+# Set DAKOTA_CMAKE_EXTRA_ARGS
+# Assumes extra args are in format
+# -D CMAKE_ARG1=value1 -D CMAKE_ARG2=value2
+
+set( DAKOTA_CMAKE_EXTRA_ARGS $ENV{DAKOTA_CMAKE_EXTRA_ARGS} )
+
+#*****************************************************************
 # Set DAKOTA_CTEST_PROJECT_TAG
 
 if ( NOT DAKOTA_CTEST_PROJECT_TAG )
@@ -146,6 +153,11 @@ set_configure_command( ${DAKOTA_CMAKE_BUILD_TYPE} REQUIRED )
 
 if ( DAKOTA_CMAKE_HOSTFILE )
   set_configure_command( ${DAKOTA_CMAKE_HOSTFILE} SUBDIR platforms )
+endif()
+
+if ( DAKOTA_CMAKE_EXTRA_ARGS )
+  set( CTEST_CONFIGURE_COMMAND
+       "${CTEST_CONFIGURE_COMMAND} \"${DAKOTA_CMAKE_EXTRA_ARGS}\"")
 endif()
 
 set(CTEST_CONFIGURE_COMMAND
