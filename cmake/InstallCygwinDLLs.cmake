@@ -19,6 +19,10 @@ function(dakota_install_dll dakota_dll)
   endif()
 endfunction()
 
+if ( NOT CMAKE_CURRENT_BINARY_DIR )
+   set( CMAKE_CURRENT_BINARY_DIR $ENV{%CD%} )
+endif()
+
 # Get the DLLs only in cygwin\bin or cygwin\lib as a semicolon-separated list
 execute_process(
   COMMAND cygcheck.exe "${CMAKE_CURRENT_BINARY_DIR}/src/dakota.exe"

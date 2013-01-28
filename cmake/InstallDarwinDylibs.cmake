@@ -20,6 +20,10 @@ function(dakota_install_dll dakota_dll)
 endfunction()
 
 
+if ( NOT CMAKE_CURRENT_BINARY_DIR )
+   set( CMAKE_CURRENT_BINARY_DIR $ENV{PWD} )
+endif()
+
 # Get the dylibs excluding system libraries and anything in the build
 # tree (as will be installed to lib/) as a semicolon-separated list
 execute_process(
