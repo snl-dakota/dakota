@@ -22,6 +22,83 @@ set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_APPEND_STABLE "")
 set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
 
+# More widely distributed packages exclude more content
+# So smaller number implies less content
+set(DAKOTA_InternalFull 3)       # Complete checkout
+set(DAKOTA_InternalSupervised 2) # Less some of local/
+set(DAKOTA_InternalWeb 1)        # Also less DOT
+set(DAKOTA_ExternalWeb 0)        # Also less NPSOL, NLPQL
+
+# The permission level of the distribution (to be made an option)
+# TODO: change default to DAKOTA_ExternalWed?
+set(DAKOTA_DISTRO ${DAKOTA_InternalFull} CACHE STRING
+  "Dakota Distribution Type")
+
+# Initial CPack Settings.  Done here as affects configuration in packages/
+# (DOT, NPSOL, NLPQL)
+set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
+
+set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
+
+# TODO: insert distribution type into package names, i.e., instead of 
+# ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
+set(CPACK_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.${local_arch}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.src")
+set(CPACK_PACKAGE_VERSION_MAJOR "${Dakota_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${Dakota_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${Dakota_VERSION_PATCH}")
+set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
+
+# Always omit .svn directories, duplicate TPLs, and GPL packages
+# TODO: review whether want to include FFTW
+set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/"
+    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
+    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"
+    "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/CONMIN/"
+    "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/NCSUOpt/"
+)
+
+# Only internal full (developer version) has these things
+if(DAKOTA_DISTRO LESS ${DAKOTA_InternalFull})
+  list(APPEND CPACK_SOURCE_IGNORE_FILES
+    "^${Dakota_SOURCE_DIR}/local/buildscripts/"
+    "^${Dakota_SOURCE_DIR}/local/examples/"
+    "^${Dakota_SOURCE_DIR}/local/miscscripts/"
+    "^${Dakota_SOURCE_DIR}/local/sqa/"
+    "^${Dakota_SOURCE_DIR}/local/www.sandia.gov/"
+  )
+endif()
+
+if(DAKOTA_DISTRO LESS ${DAKOTA_InternalSupervised})
+  message(STATUS "Removing DOT for less than InternalSupervised build")
+  # When building InternalWeb, don't want DOT in the binaries
+  # Be aggressive and remove from source tree
+  execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory
+    ${Dakota_SOURCE_DIR}/packages/DOT/)
+  # This is now redundant, leave until verified
+  #list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/packages/DOT/")
+endif()
+
+if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
+  # Don't distribute cmake files outside SNL
+  list(APPEND CPACK_SOURCE_IGNORE_FILES
+    "^${Dakota_SOURCE_DIR}/local/cmake/")
+  message(STATUS "Removing NPSOL, NLPQL for less than InternalWeb build")
+  # When building InternalWeb, don't want NLPQL, NPSOL in the binaries
+  # Be aggressive and remove from source tree
+  execute_process(
+    COMMAND "${CMAKE_COMMAND}" -E remove_directory
+      "${Dakota_SOURCE_DIR}/packages/NLPQL"
+    COMMAND "${CMAKE_COMMAND}" -E remove_directory
+      "${Dakota_SOURCE_DIR}/packages/NPSOL"
+    )
+  # This is now redundant, leave until verified
+  #list(APPEND CPACK_SOURCE_IGNORE_FILES
+  #  "^${Dakota_SOURCE_DIR}/packages/NPSOL/"
+  #  "^${Dakota_SOURCE_DIR}/packages/NLPQL/"
+  #)
+endif()
+
 
 # Manage developer convenience options (experimental)
 if(DevDebug)
@@ -314,75 +391,7 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   )
 
 
-# More widely distributed packages exclude more content
-# So smaller number implies less content
-set(DAKOTA_InternalFull 3)       # Complete checkout
-set(DAKOTA_InternalSupervised 2) # Less some of local/
-set(DAKOTA_InternalWeb 1)        # Also less DOT
-set(DAKOTA_ExternalWeb 0)        # Also less NPSOL, NLPQL
-
-# The permission level of the distribution (to be made an option)
-# TODO: change default to DAKOTA_ExternalWed?
-set(DAKOTA_DISTRO ${DAKOTA_InternalFull})
-
-# CPack Settings
-set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
-
-set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
-
-# TODO: insert distribution type into package names, i.e., instead of 
-# ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
-set(CPACK_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.${local_arch}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${Dakota_VERSION_STRING}.src")
-set(CPACK_PACKAGE_VERSION_MAJOR "${Dakota_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${Dakota_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${Dakota_VERSION_PATCH}")
-set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
-
-# Always omit .svn directories, duplicate TPLs, and GPL packages
-# TODO: review whether want to include FFTW
-set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/"
-    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
-    "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"
-    "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/CONMIN/"
-    "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/NCSUOpt/"
-)
-
-if(DAKOTA_DISTRO LESS DAKOTA_InternalFull)
-  list(APPEND CPACK_SOURCE_IGNORE_FILES
-    "^${Dakota_SOURCE_DIR}/local/buildscripts/"
-    "^${Dakota_SOURCE_DIR}/local/examples/"
-    "^${Dakota_SOURCE_DIR}/local/miscscripts/"
-    "^${Dakota_SOURCE_DIR}/local/sqa/"
-    "^${Dakota_SOURCE_DIR}/local/www.sandia.gov/"
-  )
-endif()
-
-if(DAKOTA_DISTRO LESS DAKOTA_InternalSupervised)
-  # When building InternalWeb, don't want DOT in the binaries
-  # Be aggressive and remove from source tree
-  execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory
-    ${Dakota_SOURCE_DIR}/packages/DOT/)
-  # This is now redundant, leave until verified
-  list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/packages/DOT/")
-endif()
-
-if(DAKOTA_DISTRO LESS DAKOTA_InternalWeb)
-  # When building InternalWeb, don't want NLPQL, NPSOL in the binaries
-  # Be aggressive and remove from source tree
-  execute_process(
-    COMMAND "${CMAKE_COMMAND}" -E remove_directory
-      "${Dakota_SOURCE_DIR}/packages/NLPQL"
-    COMMAND "${CMAKE_COMMAND}" -E remove_directory
-      "${Dakota_SOURCE_DIR}/packages/NPSOL"
-    )
-  # This is now redundant, leave until verified
-  list(APPEND CPACK_SOURCE_IGNORE_FILES
-    "^${Dakota_SOURCE_DIR}/packages/NPSOL/"
-    "^${Dakota_SOURCE_DIR}/packages/NLPQL/"
-  )
-endif()
-
+# Final CPack settings
 if(NOT WIN32)
 
   # if(APPLE)
