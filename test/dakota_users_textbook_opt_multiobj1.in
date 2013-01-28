@@ -21,6 +21,6 @@ interface
 
 responses
   objective_functions = 3
-  multi_objective_weights = .7 .2 .1
+  weights = .7 .2 .1
   analytic_gradients
   no_hessians

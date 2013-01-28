@@ -37,8 +37,8 @@ interface,
 responses,
 	objective_functions = 3
 #	sense = "min" "max" "max"	#5,#6,#7,#8,#9
-	multi_objective_weights = .7 .2 .1
-#	multi_objective_weights = .333 .333 .333
+	weights = .7 .2 .1
+#	weights = .333 .333 .333
 	analytic_gradients
 #	numerical_gradients
 #	  method_source vendor
