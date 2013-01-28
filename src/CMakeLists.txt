@@ -279,9 +279,13 @@ if(DAKOTA_PYTHON)
   endif(PYTHONLIBS_FOUND)
 endif(DAKOTA_PYTHON)
 
-option(DAKOTA_MODELCENTER "Toggle ModelCenter support, default is disabled" OFF)
 if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
+  include_directories(
+    "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/include")
+  link_directories(
+    "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/lib/i686-cygwin-cygwinNT")
+  list(APPEND EXTRA_TPL_LIBS PHXCppApi)
 endif(DAKOTA_MODELCENTER)
 
 if(DAKOTA_HAVE_GSL)
@@ -676,7 +680,6 @@ add_library(dakota_src ${Dakota_src})
 target_link_libraries(dakota_src dakota_src_fortran)
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
-
 if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
 endif()
@@ -706,6 +709,11 @@ if(HAVE_AMPL)
   set(TPL_LIBS ${TPL_LIBS} amplsolver)
   list(APPEND EXPORT_TARGETS amplsolver)
 endif(HAVE_AMPL)
+
+# EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
+if (DAKOTA_MODELCENTER)
+  target_link_libraries(dakota_src PHXCppApi)
+endif()
 
 #if(DAKOTA_RESULTS_DB)
 #  set(HAVE_YAML-CPP ON CACHE BOOL 

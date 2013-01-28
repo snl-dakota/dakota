@@ -1,4 +1,3 @@
-#
 cmake_minimum_required(VERSION 2.8.4)
 
 set(CMAKE_MODULE_PATH
@@ -133,6 +132,9 @@ endif()
 option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" ON)
 option(HAVE_MORSE_SMALE 
   "Use Morse-Smale; requires ANN and Dionysus libraries" OFF)
+
+# Options that affect both src/ and test/
+option(DAKOTA_MODELCENTER "Toggle ModelCenter support, default is disabled" OFF)
 
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
