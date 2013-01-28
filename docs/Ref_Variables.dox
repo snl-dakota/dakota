@@ -430,7 +430,7 @@ uncertainty quantification methods not mentioned in the previous
 sentences (e.g., reliability methods or stochastic expansion methods),
 the default view is set to aleatory. Finally, for verification studies
 using the Richardson extrapolation method, the active view is set to
-state.  \ref T7d111 "Table 7.111" summarizes the way to specify the
+state.  \ref T7d2 "Table 7.2" summarizes the way to specify the
 active variables. 
 
 \section VarDomain Variables Domain
@@ -448,14 +448,14 @@ the domain type except for the branch-and-bound method which has a
 default domain type of relaxed. Note that the branch-and-bound method
 is under development at this time. Finally, note that the domain
 selection applies to all variable types: design, aleatory uncertain,
-epistemic uncertain, and state.  \ref T7d111 "Table 7.111" describes
+epistemic uncertain, and state.  \ref T7d2 "Table 7.2" describes
 the domain specification.
 
-\anchor T7d111
+\anchor T7d2
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.111
+Table 7.2
 \endhtmlonly
 Specification detail for active and domain settings 
 </caption>
@@ -485,8 +485,8 @@ Design variable types include continuous real, discrete range of
 integer values (contiguous integers), discrete set of integer values,
 and discrete set of real values.  Within each optional design
 variables specification group, the number of variables is always
-required.  The following Tables \ref T7d2 "7.2" through \ref T7d5
-"7.5" summarize the required and optional specifications for each
+required.  The following Tables \ref T7d3 "7.3" through \ref T7d6
+"7.6" summarize the required and optional specifications for each
 design variable subtype.  The \c initial_point specifications provide
 the point in design space from which an iterator is started and
 default to either zeros (continuous and discrete range) or middle 
@@ -513,11 +513,11 @@ this should not be problematic in practice).
 
 \subsection VarCDV Continuous Design Variables
 
-\anchor T7d2
+\anchor T7d3
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.2
+Table 7.3
 \endhtmlonly
 Specification detail for continuous design variables
 </caption>
@@ -589,11 +589,11 @@ variables vector.
 
 \subsection VarDDRIV Discrete Design Range Variables
 
-\anchor T7d3
+\anchor T7d4
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.3
+Table 7.4
 \endhtmlonly
 Specification detail for discrete design range variables
 </caption>
@@ -639,15 +639,15 @@ Specification detail for discrete design range variables
 
 Discrete set variables are specified with an integer list specifying
 how many set members there are for each variable and a list of integer
-or real set values for \c discrete_design_set_integer (\ref T7d4
-"Table 7.4") and \c discrete_design_set_real (\ref T7d5 "Table 7.5"),
+or real set values for \c discrete_design_set_integer (\ref T7d5
+"Table 7.5") and \c discrete_design_set_real (\ref T7d6 "Table 7.6"),
 respectively.
 
-\anchor T7d4
+\anchor T7d5
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.4
+Table 7.5
 \endhtmlonly
 Specification detail for discrete design set of integer variables
 </caption>
@@ -691,11 +691,11 @@ Specification detail for discrete design set of integer variables
 
 \subsection VarDDSRV Discrete Design Real Set Variables
 
-\anchor T7d5
+\anchor T7d6
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.5
+Table 7.6
 \endhtmlonly
 Specification detail for discrete design set of real variables
 </caption>
@@ -762,7 +762,7 @@ study methods).  Each distribution also provides optional uncertain
 variable descriptors (default values are numbered strings) that supply
 identifiers that help associate the numerical values with the
 uncertain parameters as they appear within the %Dakota output.  Tables
-\ref T7d6 "7.6" through \ref T7d23 "7.23" summarize the details of the
+\ref T7d7 "7.7" through \ref T7d24 "7.24" summarize the details of the
 aleatory uncertain variable specifications.
 
 \subsection VarCAUV_Normal Normal Distribution
@@ -797,11 +797,11 @@ resulting standard deviation will be around 1.6.  This is because you
 have bounded the original distribution significantly, and
 asymetrically, since 7 is closer to the original mean than 1.
  
-\anchor T7d6
+\anchor T7d7
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.6
+Table 7.7
 \endhtmlonly
 Specification detail for normal uncertain variables
 </caption>
@@ -900,11 +900,11 @@ The density function for the lognormal distribution is:
 \f[f(x) = \frac{1}{\sqrt{2\pi}\zeta x}
 e^{-\frac{1}{2}\left(\frac{ln x-\lambda}{\zeta}\right)^2}\f]
 
-\anchor T7d7
+\anchor T7d8
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.7
+Table 7.8
 \endhtmlonly
 Specification detail for lognormal uncertain variables
 </caption>
@@ -983,11 +983,11 @@ is \f$\frac{U_U+L_U}{2}\f$ and the variance is \f$\frac{(U_U-L_U)^2}{12}\f$.
 Note that this distribution is a special case of the more general beta 
 distribution.
 
-\anchor T7d8
+\anchor T7d9
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.8
+Table 7.9
 \endhtmlonly
 Specification detail for uniform uncertain variables
 </caption>
@@ -1034,11 +1034,11 @@ required specifications, and variable descriptors is an optional
 specification. The loguniform distribution has the density function:
 \f[f(x) = \frac{1}{x(ln U_{LU} - ln {L_{LU}})}\f]
 
-\anchor T7d9
+\anchor T7d10
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.9
+Table 7.10
 \endhtmlonly
 Specification detail for loguniform uncertain variables
 </caption>
@@ -1092,11 +1092,11 @@ if \f$M_T\leq x \leq U_T\f$, and 0 elsewhere.  In these equations,
 \f$L_T\f$ is the lower bound, \f$U_T\f$ is the upper bound, 
 and \f$M_T\f$ is the mode of the triangular distribution.  
 
-\anchor T7d10
+\anchor T7d11
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.10
+Table 7.11
 \endhtmlonly
 Specification detail for triangular uncertain variables
 </caption>
@@ -1151,11 +1151,11 @@ The density function for the exponential distribution is given by:
 \f$\mu_{E} = \beta\f$ and \f$\sigma^2_{E} = \beta^2\f$.  Note that 
 this distribution is a special case of the more general gamma distribution.
 
-\anchor T7d11
+\anchor T7d12
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.11
+Table 7.12
 \endhtmlonly
 Specification detail for exponential uncertain variables
 </caption>
@@ -1211,11 +1211,11 @@ Solving these for \f$\alpha\f$ and \f$\beta\f$ gives:
 Note that the uniform distribution is a special case of this distribution
 for parameters \f$\alpha = \beta = 1\f$.
 
-\anchor T7d12
+\anchor T7d13
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.12
+Table 7.13
 \endhtmlonly
 Specification detail for beta uncertain variables
 </caption>
@@ -1278,11 +1278,11 @@ where \f$\mu_{GA} = \alpha\beta\f$ and \f$\sigma^2_{GA} =
 \alpha\beta^2\f$.  Note that the exponential distribution is a special
 case of this distribution for parameter \f$\alpha = 1\f$.
 
-\anchor T7d13
+\anchor T7d14
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.13
+Table 7.14
 \endhtmlonly
 Specification detail for gamma uncertain variables
 </caption>
@@ -1333,11 +1333,11 @@ The density function for the Gumbel distribution is given by:
 where \f$\mu_{GU} = \beta + \frac{0.5772}{\alpha}\f$ and 
 \f$\sigma_{GU} = \frac{\pi}{\sqrt{6}\alpha}\f$.
 
-\anchor T7d14
+\anchor T7d15
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.14
+Table 7.15
 \endhtmlonly
 Specification detail for gumbel uncertain variables
 </caption>
@@ -1388,11 +1388,11 @@ The density function for the frechet distribution is:
 where \f$\mu_F = \beta\Gamma(1-\frac{1}{\alpha})\f$ and 
 \f$\sigma_F^2 = \beta^2[\Gamma(1-\frac{2}{\alpha})-\Gamma^2(1-\frac{1}{\alpha})]\f$
 
-\anchor T7d15
+\anchor T7d16
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.15
+Table 7.16
 \endhtmlonly
 Specification detail for frechet uncertain variables
 </caption>
@@ -1443,11 +1443,11 @@ The density function for the weibull distribution is given by:
 where \f$\mu_W = \beta \Gamma(1+\frac{1}{\alpha})\f$ and 
 \f$\sigma_W = \sqrt{\frac{\Gamma(1+\frac{2}{\alpha})}{\Gamma^2(1+\frac{1}{\alpha})} - 1} \mu_W\f$
 
-\anchor T7d16
+\anchor T7d17
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.16
+Table 7.17
 \endhtmlonly
 Specification detail for weibull uncertain variables
 </caption>
@@ -1563,11 +1563,11 @@ count of 21.  The following set of 4 \c (x,c) pairs \c
 variable containing three equal-width bins with counts 12, 24, and 12
 (middle bin is twice as probable as the other two). 
 
-\anchor T7d17
+\anchor T7d18
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.17
+Table 7.18
 \endhtmlonly
 Specification detail for histogram bin uncertain variables
 </caption>
@@ -1632,11 +1632,11 @@ frequency of events happening, and \c x is the number of events that occur.
 The poisson distribution returns samples representing number of 
 occurrences in the time period of interest.
 
-\anchor T7d18
+\anchor T7d19
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.18
+Table 7.19
 \endhtmlonly
 Specification detail for poisson uncertain variables
 </caption>
@@ -1678,11 +1678,11 @@ The density function for the binomial distribution is given by:
 \f[f(x) = \left(\begin{array}{c}n\\x\end{array}\right){p^x}{(1-p)^{(n-x)}}\f] where \c p is the 
 probability of failure per trial and \c n is the number of trials.
 
-\anchor T7d19
+\anchor T7d20
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.19
+Table 7.20
 \endhtmlonly
 Specification detail for binomial uncertain variables
 </caption>
@@ -1729,11 +1729,11 @@ The density function for the negative binomial distribution is given by:
 probability of success per trial and \c n is the number of successful 
 trials.
 
-\anchor T7d20
+\anchor T7d21
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.20
+Table 7.21
 \endhtmlonly
 Specification detail for negative binomial uncertain variables
 </caption>
@@ -1778,11 +1778,11 @@ The density function for the geometric distribution is given by:
 \f[f(x) = {p}{(1-p)^{x}}\f] where \c p is the 
 probability of failure per trial.
 
-\anchor T7d21
+\anchor T7d22
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.21
+Table 7.22
 \endhtmlonly
 Specification detail for geometric uncertain variables
 </caption>
@@ -1831,11 +1831,11 @@ selected population (e.g. the number of white balls in the full urn
 of N items), and n is the number of balls drawn.
 
 
-\anchor T7d22
+\anchor T7d23
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.22
+Table 7.23
 \endhtmlonly
 Specification detail for hypergeometric uncertain variables
 </caption>
@@ -1928,11 +1928,11 @@ probable) and associates the \c (x,c) pairs ((100,1),(200,2),(300,1))
 with a second point-based histogram variable (where the value 200 is
 twice as probable as either 100 or 300).
 
-\anchor T7d23
+\anchor T7d24
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.23
+Table 7.24
 \endhtmlonly
 Specification detail for histogram point uncertain variables
 </caption>
@@ -1995,13 +1995,13 @@ total number of aleatory uncertain variables (all normal, lognormal,
 uniform, loguniform, triangular, exponential, beta, gamma, gumbel,
 frechet, weibull, histogram bin, poisson, binomial, negative binomial, 
 geometric, hypergeometric, and histogram point specifications, in that 
-order).  \ref T7d24 "Table 7.24" summarizes the specification details:
+order).  \ref T7d25 "Table 7.25" summarizes the specification details:
 
-\anchor T7d24
+\anchor T7d25
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.24
+Table 7.25
 \endhtmlonly
 Specification detail for aleatory uncertain correlations
 </caption>
@@ -2084,14 +2084,14 @@ probability assignments for each interval variable must sum to one.
 The interval bounds for the first variable are [2, 2.5], [4, 5], and
 [4.5, 6], and the interval bounds for the second variable are [1.0, 5.0]
 and [3.0, 5.0].  Note that the intervals can be overlapping or disjoint.  
-\ref T7d25 "Table 7.25" summarizes the specification details for the 
+\ref T7d26 "Table 7.26" summarizes the specification details for the 
 \c interval_uncertain variable.
 
-\anchor T7d25
+\anchor T7d26
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.25
+Table 7.26
 \endhtmlonly
 Specification detail for interval uncertain variables
 </caption>
@@ -2139,8 +2139,8 @@ Specification detail for interval uncertain variables
 <td>vector of <tt>'ciuv_i'</tt> where <tt>i = 1,2,3,...</tt>
 </table>
 
-\subsection VarDIUV Discrete Interval Uncertain Variables Discrete
-variables may be used to represent things like epistemic model form
+\subsection VarDIUV Discrete Interval Uncertain Variables 
+Discrete variables may be used to represent things like epistemic model form
 uncertainty, as mentioned above. For example, if one wants to analyze
 the effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis
 (either an interval analysis or a Dempster-Shafer evidence theory
@@ -2154,18 +2154,18 @@ take any value within the integer set (for example, the set may be
 defined as 1, 2, and 4); and a discrete uncertain set of reals, in
 which the discrete variable may take any value defined within the real
 set (for example, a parameter may have two allowable real values,
-3.285 or 4.79).  The following Tables \ref T7d26 "7.26" through \ref
-T7d28 "7.28" summarize the required and optional specifications for
+3.285 or 4.79).  The following Tables \ref T7d27 "7.27" through \ref
+T7d29 "7.29" summarize the required and optional specifications for
 each discrete epistemic variable subtype.  Note that, relative to the
 discrete design and discrete state specifications, discrete epistemic
 specifications add interval or set probabilities while removing the
 notion of an initial value.
 
-\anchor T7d26
+\anchor T7d27
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.26
+Table 7.27
 \endhtmlonly
 Specification detail for discrete interval uncertain variables
 </caption>
@@ -2215,11 +2215,11 @@ Specification detail for discrete interval uncertain variables
 
 \subsection VarDUSIV Discrete Uncertain Integer Set Variables 
 
-\anchor T7d27
+\anchor T7d28
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.27
+Table 7.28
 \endhtmlonly
 Specification detail for discrete uncertain set integer variables
 </caption>
@@ -2263,11 +2263,11 @@ Specification detail for discrete uncertain set integer variables
 
 \subsection VarDUSRV Discrete Uncertain Real Set Variables 
 
-\anchor T7d28
+\anchor T7d29
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.28
+Table 7.29
 \endhtmlonly
 Specification detail for discrete uncertain set real variables
 </caption>
@@ -2317,8 +2317,8 @@ tolerances, and time step controls.  Types include continuous real,
 discrete range of integer values (contiguous integers), discrete set
 of integer values, and discrete set of real values.  Within each
 optional state variables specification group, the number of variables
-is always required.  The following Tables \ref T7d29 "7.29" through
-\ref T7d32 "7.32" summarize the required and optional specifications
+is always required.  The following Tables \ref T7d30 "7.30" through
+\ref T7d33 "7.33" summarize the required and optional specifications
 for each state variable subtype.  The \c initial_state specifications
 provide the initial values for the state variables which will be
 passed through to the simulator (e.g., in order to define
@@ -2327,11 +2327,11 @@ analagous to those for \ref VarDV.
 
 \subsection VarCSV Continuous State Variables
 
-\anchor T7d29
+\anchor T7d30
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.29
+Table 7.30
 \endhtmlonly
 Specification detail for continuous state variables
 </caption>
@@ -2375,11 +2375,11 @@ Specification detail for continuous state variables
 
 \subsection VarDSRIV Discrete State Range Variables
 
-\anchor T7d30
+\anchor T7d31
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.30
+Table 7.31
 \endhtmlonly
 Specification detail for discrete state range variables
 </caption>
@@ -2423,11 +2423,11 @@ Specification detail for discrete state range variables
 
 \subsection VarDSSIV Discrete State Integer Set Variables
 
-\anchor T7d31
+\anchor T7d32
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.31
+Table 7.32
 \endhtmlonly
 Specification detail for discrete state set of integer variables
 </caption>
@@ -2471,11 +2471,11 @@ Specification detail for discrete state set of integer variables
 
 \subsection VarDSSRV Discrete State Real Set Variables
 
-\anchor T7d32
+\anchor T7d33
 <table>
 <caption align = "top">
 \htmlonly
-Table 7.32
+Table 7.33
 \endhtmlonly
 Specification detail for discrete state set of real variables
 </caption>
