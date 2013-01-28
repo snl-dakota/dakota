@@ -1,6 +1,6 @@
 namespace Dakota { // for some reason, this doesn't work with mainpage
 
-/** \mainpage %Dakota Reference Manual
+/** \mainpage Dakota Reference Manual
 
 \image html logo_3d_halfsize.jpg
 

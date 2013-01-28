@@ -20,7 +20,9 @@ print "Processing $texfile\n";
 
 # read input file until EOF
 while (<INPUT>) { # read each line of file
-  if (/^\\(chapter{Dakota Directory Hierarchy}|input{dirs}|chapter{Dakota Hierarchical Index}|input\{hierarchy}|chapter{Dakota File Index}|input\{files}|chapter{Dakota Page Index}|input\{pages}|chapter{Dakota Directory Documentation}|input{dir_000000}|chapter{Dakota Page Documentation}|printindex)/) {
+# These no longer match, so comment out
+#  if (/^\\(chapter{Dakota Directory Hierarchy}|input{dirs}|chapter{Dakota Hierarchical Index}|input\{hierarchy}|chapter{Dakota File Index}|input\{files}|chapter{Dakota Page Index}|input\{pages}|chapter{Dakota Directory Documentation}|input{dir_000000}|chapter{Dakota Page Documentation}|printindex)/) {
+  if (/^\\(chapter{File Index}|input\{files}|printindex)/) {
     print OUTPUT "%$_";
   }
   elsif (/^\\include\{(\w*Commands|Bibliography)}/) {
@@ -67,9 +69,10 @@ foreach $texfile (@texfiles) {
       # \subsection    -> \section
       # \subsubsection -> \subsection
 
-      s/\\section/\\chapter/go;
-      s/\\subsection/\\section/go;
-      s/\\subsubsection/\\subsection/go;
+      # With Doxygen-1.6.1 (maybe 1.5.1) and newer, no longer need
+      #s/\\section/\\chapter/go;
+      #s/\\subsection/\\section/go;
+      #s/\\subsubsection/\\subsection/go;
 
       # Change table declarations
       s/table\}\[h\]/table}[htp!]/g;
@@ -97,7 +100,7 @@ print "Processing $texfile\n";
 
 # read input file until EOF
 while (<INPUT>) { # read each line of file
-  if (/^\\(chapter{Dakota Page Documentation}|include{todo})/) {
+  if (/^\\(chapter{Todo List}|label{todo}|hypertarget{todo}{}|include{todo})/) {
     print OUTPUT "%$_";
   }
   elsif (/^\\include\{(DakLibrary|FnEvals|IteratorFlow|StyleConventions|SpecChange|VarContainersViews)}/) {
@@ -147,9 +150,10 @@ foreach $texfile (@texfiles) {
       # \subsection    -> \section
       # \subsubsection -> \subsection
 
-      s/\\section/\\chapter/go;
-      s/\\subsection/\\section/go;
-      s/\\subsubsection/\\subsection/go;
+      # With Doxygen-1.6.1 (maybe 1.5.1) and newer, no longer need
+      #s/\\section/\\chapter/go;
+      #s/\\subsection/\\section/go;
+      #s/\\subsubsection/\\subsection/go;
 
       print OUTPUT;
     }

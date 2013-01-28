@@ -1,6 +1,6 @@
 namespace Dakota { // for some reason, this doesn't work with mainpage
 
-/** \mainpage %Dakota Developers Manual
+/** \mainpage Dakota Developers Manual
 
 \image html logo_3d_halfsize.jpg
 
@@ -142,11 +142,14 @@ class for the
 \ref Dakota::DOTOptimizer "DOTOptimizer", 
 \ref Dakota::CONMINOptimizer "CONMINOptimizer", 
 \ref Dakota::NPSOLOptimizer "NPSOLOptimizer", 
-\ref Dakota::NLPQLPOptimizer "NLPQLPOptimizer", and 
+\ref Dakota::NLPQLPOptimizer "NLPQLPOptimizer",
+\ref Dakota::NonlinearCGOptimizer "NonlinearCGOptimizer", and 
 \ref Dakota::SNLLOptimizer "SNLLOptimizer" gradient-based optimization
 libraries and the
-\ref Dakota::APPSOptimizer "APPSOptimizer", 
-\ref Dakota::COLINOptimizer "COLINOptimizer", 
+\ref Dakota::APPSOptimizer "APPSOptimizer" (supported by 
+\ref Dakota::APPSEvalMgr "APPSEvalMgr" for function evaluations), 
+\ref Dakota::COLINOptimizer "COLINOptimizer" (supported by 
+\ref Dakota::COLINApplication "COLINApplication" for function evaluations), 
 \ref Dakota::JEGAOptimizer "JEGAOptimizer", and
 \ref Dakota::NCSUOptimizer "NCSUOptimizer" nongradient-based 
 optimization methods and libraries.
@@ -185,7 +188,12 @@ base class for non-deterministic methods \ref Dakota::NonDSampling
 "NonDInterval" (interval-based epistemic methods).  Bayesian
 calibration methods are prototyped in \ref Dakota::NonDCalibration
 "NonDCalibration" and \ref Dakota::NonDBayesCalibration
-"NonDBayesCalibration".  An input-space dimension reduction method for
+"NonDBayesCalibration".  Experimental Bayesian specializations exist in
+\ref Dakota::NonDGPMSABayesCalibration "NonDGPMSABayesCalibration" and
+\ref Dakota::NonDQUESOBayesCalibration "NonDQUESOBayesCalibration".
+
+
+  An input-space dimension reduction method for
 UQ is prototyped in \ref Dakota::EfficientSubspaceMethod
 "EfficientSubspaceMethod".
 
@@ -193,9 +201,11 @@ UQ is prototyped in \ref Dakota::EfficientSubspaceMethod
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
 class for Latin hypercube and Monte Carlo sampling, the \ref
 Dakota::NonDIncremLHSSampling "NonDIncremLHSSampling" class for
-incremental Latin hypercube sampling, and \ref
+incremental Latin hypercube sampling, \ref
 Dakota::NonDAdaptImpSampling "NonDAdaptImpSampling" for multimodal
-adaptive importance sampling.
+adaptive importance sampling, and 
+\ref Dakota::NonDGPImpSampling "NonDGPImpSampling" for Gaussian process-based
+importance sampling.
 
 <li> \ref Dakota::NonDReliability "NonDReliability" is further specialized 
 with local and global methods 
@@ -327,8 +337,10 @@ at present.
 Whereas domain types are controlled through the derived class
 selection, selection of active variable types are handled within each
 of these derived classes using variable views. These permit different
-algorithms to work on different subsets of variables.  For details,
-see \ref VarContainersViews.
+algorithms to work on different subsets of variables.  Data shared among 
+Variables instances is stored in \ref Dakota::SharedVariablesData 
+"SharedVariablesData".  For details on managing variables, see 
+\ref VarContainersViews.
 
 The \ref Dakota::Constraints "Constraints" hierarchy manages bound,
 linear, and nonlinear constraints and utilizes the same
@@ -346,7 +358,7 @@ approximations based on simulation code data.  In the simulation case,
 an \ref Dakota::ApplicationInterface "ApplicationInterface" is used.  
 \ref Dakota::ApplicationInterface "ApplicationInterface" is specialized
 according to the simulation invocation mechanism, for which 
-the following nonintrusive approaches
+the following nonintrusive approaches are supported:
 
 <ul>
 <li> \ref Dakota::SysCallApplicInterface "SysCallApplicInterface": the
@@ -369,18 +381,29 @@ capability is experimental and still under development.  The design is
 evolving into the use of Condor and/or Globus tools. -->
 </ul>
 
-and the following semi-intrusive approach
+A semi-intrusive approach is also supported by:
 
 <ul>
-<li> \ref Dakota::DirectApplicInterface "DirectApplicInterface":
-the simulation is linked into the %Dakota executable and is invoked
-using a procedure call.  Asynchronous invocations will utilize
-nonblocking threads (capability not yet available).
+
+<li> \ref Dakota::DirectApplicInterface "DirectApplicInterface": the
+simulation is linked into the %Dakota executable and is invoked using
+a procedure call.  Asynchronous invocations will utilize nonblocking
+threads (capability not yet available).  Specializations of the direct
+interface are implemented in 
+\ref Dakota::MatlabInterface "MatlabInterface",
+\ref Dakota::PythonInterface "PythonInterface",
+\ref Dakota::ScilabInterface "ScilabInterface", and (for built-in testers)
+\ref Dakota::TestDriverInterface "TestDriverInterface",
+while examples of plugin interfaces for library mode in serial and parallel,
+respectively, are included in \ref SIM::SerialDirectApplicInterface 
+"SerialDirectApplicInterface" and 
+\ref SIM::ParallelDirectApplicInterface 
+"ParallelDirectApplicInterface"
 </ul>
 
-are supported.  Scheduling of jobs for asynchronous local, message
-passing, and hybrid parallelism approaches is performed in the \ref
-Dakota::ApplicationInterface "ApplicationInterface" class, with job
+Scheduling of jobs for asynchronous local, message passing, and hybrid
+parallelism approaches is performed in the 
+\ref Dakota::ApplicationInterface "ApplicationInterface" class, with job
 initiation and job capture specifics implemented in the derived
 classes.
 
@@ -501,11 +524,13 @@ objects), it is important to properly manage shallow and deep copies,
 to allow for both efficiency and data independence as needed in a
 particular context.
 
-<li> Graphics: %Dakota provides 2D iteration history graphics using
-Motif widgets. Graphics data can also be cataloged in a tabular data
+<li> %Graphics and Output: %Dakota provides 2D iteration history graphics using
+Motif widgets. %Graphics data can also be cataloged in a tabular data
 file for post-processing with 3rd party tools such as Matlab, Tecplot,
 etc.  These capabilities are encapsulated within the 
-\ref Dakota::Graphics "Graphics" class.
+\ref Dakota::Graphics "Graphics" class.  An experimental results database 
+is implemented in \ref Dakota::ResultsManager "ResultsManager" and 
+\ref Dakota::ResultsDBAny "ResultsDBAny".
 </ul>
 
 

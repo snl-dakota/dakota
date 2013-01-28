@@ -1231,9 +1231,9 @@ the design parameters this value should be less than 1.  Default
 values are .8, .99995, and .95 for the \c el_bakry, \c argaez_tapia,
 and \c van_shanno merit functions, respectively.  The \c
 centering_parameter specification is a parameter (between 0 and 1)
-that controls how closely the algorithm should follow the "central
-path". See [\ref Wright1 "Wright"] for the definition of central path.
-The larger the value, the more closely the algorithm follows the
+that controls how closely the algorithm should follow the 
+"central path". See [\ref Wright1 "Wright"] for the definition of central 
+path. The larger the value, the more closely the algorithm follows the
 central path, which results in small steps. A value of 0 indicates
 that the algorithm will take a pure Newton step. Default values are
 .2, .2, and .1 for the \c el_bakry, \c argaez_tapia, and \c van_shanno
@@ -1372,7 +1372,7 @@ variable and constraint info, and trial points
 \li %Dakota "normal":  display final solution, all input parameters,
 variable and constraint summaries, and new best points
 \li %Dakota "quiet":   display final solution and all input parameters
-\li %Dakota ""silent": display final solution
+\li %Dakota "silent": display final solution
 
 APPS exploits parallelism through the use of %Dakota's concurrent
 function evaluations.  The variant of the algorithm that is currently
@@ -5690,8 +5690,9 @@ are provided in Tables \ref T5d39 "5.39" and \ref T5d40 "5.40":
      enabling specification of multiple grid resolutions used by certain
      advanced solution methodologies.
 <li> multidimensional integration by Stroud cubature rules [\ref
-     Stroud1971 "Stroud, 1971"] and extensions [\ref Xiu2008 "Xiu,
-     2008"], as specified with \c cubature_integrand.  A total-order
+     Stroud1971 "Stroud, 1971"] and extensions 
+     [\ref Xiu2008 "Xiu, 2008"], as specified with \c cubature_integrand.  
+     A total-order
      expansion is used, where the isotropic order \e p of the
      expansion is half of the integrand order, rounded down.  The
      total number of terms \e N for an isotropic total-order expansion

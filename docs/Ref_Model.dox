@@ -463,7 +463,6 @@ approximation type, Part I
 <td>\c constant | \c linear | \c reduced_quadratic | \c quadratic
 <td>Optional
 <td>\c reduced_quadratic trend
-<td>
 <tr>
 <td>Surfpack GP correlation lengths
 <td>\c correlation_lengths

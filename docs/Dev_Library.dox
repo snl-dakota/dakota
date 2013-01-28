@@ -38,22 +38,19 @@ It is possible to link the %Dakota toolkit into another application for
 use as an algorithm library.  This section describes facilities which
 permit this type of integration.
 
-As part of the normal %Dakota build process, where \c Dakota/configure
-\c --prefix=PREFIX has been run prior to \c make and \c make \c
-install, a \c libdakota.a is created and a copy of it is placed in \c
-PREFIX/lib (PREFIX defaults to /usr/local/Dakota).  This library
-contains all source files from \c Dakota/src excepting the main.cpp,
-restart_util.cpp, and library_mode.cpp main programs.  This library may be
-linked with another application through inclusion of \c -ldakota on
-the link line.  Library and header paths may also be specified using
-the \c -L and \c -I compiler options (using \c PREFIX/lib and \c
-PREFIX/include, respectively).  Depending on the configuration used
-when building this library, other libraries for the vendor optimizers
-and vendor packages will also be needed to resolve %Dakota symbols for
-DOT, NPSOL, OPT++, NCSUOpt, LHS, Teuchos, etc.  Copies of these libraries
-are also placed in \c Dakota/lib.  Refer to \ref DakLibraryLinking for 
-additional information. <!-- A sample XML specification of
-library names and paths is also available in \c
+When compiling %Dakota with CMake, files in \c Dakota/src (excepting
+the main.cpp, restart_util.cpp, and library_mode.cpp main programs)
+are compiled into libraries that get installed to
+\c CMAKE_INSTALL_PREFIX/lib.  C/C++ code is in the library \c dakota_src,
+while Fortran code lives in the \c dakota_src_fortran library.
+Applications may link against these %Dakota libraries by specifying
+appropriate include and link directives.  Depending on the
+configuration used when building this library, other libraries for the
+vendor optimizers and vendor packages will also be needed to resolve
+%Dakota symbols for DOT, NPSOL, OPT++, NCSUOpt, LHS, Teuchos, etc.
+Copies of these libraries are also placed in \c Dakota/lib.  Refer to
+\ref DakLibraryLinking for additional information. <!-- A sample XML
+specification of library names and paths is also available in \c
 Dakota/examples/linked_interfaces/linkage_spec. -->
 
 \warning Users may interface to %Dakota as a library within other 
@@ -701,3 +698,4 @@ and external simulation codes/frameworks.
 */
 
 } // namespace Dakota
+

@@ -3,10 +3,8 @@
 \li \anchor UsersMan Adams, B.M., Bauman, L.E., Bohnhoff, W.J.,
 Dalbey, K.R., Eddy, J.P., Ebeida, M.S., Eldred, M. S., Hough, P. D.,
 Hu, K.T., Jakeman, J.D., Swiler, L. P., and Vigil, D. M., 2013.
-"Dakota: A Multilevel Parallel Object-Oriented Framework for Design
-Optimization, Parameter Estimation, Uncertainty Quantification, and
-Sensitivity Analysis.  Version 5.3 Users Manual," Sandia Technical
-Report SAND2010-2183, updated Jan. 2013.
+"Dakota: A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis.  Version 5.3 Users Manual," 
+Sandia Technical Report SAND2010-2183, updated Jan. 2013.
 
 \li \anchor Anderson1986 Anderson, G., and Anderson, P., 1986 <i>The
 UNIX C Shell Field Guide</i>, Prentice-Hall, Englewood Cliffs, NJ.
@@ -58,10 +56,8 @@ Analysis for Nonlinear Implicit Performance Functions,"
 <i>AIAA Journal</i>, Vol. 46, No. 10, pp. 2459-2468. 
 
 \li \anchor Eldred2009 Eldred, M.S. and Swiler, L.P., 2009.
-"Efficient Algorithms for Mixed Aleatory-Epistemic Uncertainty 
-Quantification with Application to Radiation-Hardened Electronics. 
-Part 1:  Algorithms and Benchmark Results," Sandia
-Technical report SAND2009-5805.
+"Efficient Algorithms for Mixed Aleatory-Epistemic Uncertainty Quantification with Application to Radiation-Hardened Electronics. Part 1:  Algorithms and Benchmark Results," 
+Sandia Technical report SAND2009-5805.
 
 \li \anchor Eldred2011 Eldred, M.S. and Swiler, L.P. and Tang, G., 2011.
 "Mixed Aleatory-Epistemic Uncertainty Quantification with 
@@ -117,9 +113,9 @@ Package for Nonlinear Programming," System Optimization Laboratory
 Technical Report SOL-86-2, Stanford University, Stanford, CA.
 
 \li \anchor Giunta2006 Giunta, A. A., Swiler, L.P., Brown, S.L,
-Eldred, M.S., Richards, M.D., and Cyr, E.C., 2006. "The Surfpack
-Software Library for Surrogate Modeling of Sparse, Irregularly Spaced
-Multidimensional Data," paper AIAA-2006-7049 in <i>Proceedings of the
+Eldred, M.S., Richards, M.D., and Cyr, E.C., 2006. 
+"The Surfpack Software Library for Surrogate Modeling of Sparse, Irregularly Spaced Multidimensional Data," 
+paper AIAA-2006-7049 in <i>Proceedings of the
 11th AIAA/ISSMO Multidisciplinary Analysis and Optimization
 Conference</i>, Portsmouth, VA.
 
@@ -149,10 +145,9 @@ abstract in <i>Proceedings of the McMaster Optimization Conference:
 Theory and Applications</i>, McMaster University, Hamilton, Ontario,
 Canada.
 
-\li \anchor Hart1999 Hart, W. E., and Hunter, K. O., 1999.  "A
-Performance Analysis of Evolutionary Pattern Search with Generalized
-Mutation Steps," <i>Proc Conf Evolutionary Computation</i>,
-pp. 672-679.
+\li \anchor Hart1999 Hart, W. E., and Hunter, K. O., 1999.  
+"A Performance Analysis of Evolutionary Pattern Search with Generalized Mutation Steps,"
+<i>Proc Conf Evolutionary Computation</i>, pp. 672-679.
 
 \li \anchor Helton2004 Helton, J.C. and W.L. Oberkampf, 2004. 
 Special Issue of Reliability Engineering and System Safety: 
@@ -167,15 +162,15 @@ Journal of Engineering Mechanics</i>, Vol. 114, No. 12, 1988, pp. 2195-2199.
 Second-Order Reliability Estimates," <i>ASCE Journal of Engineering
 Mechanics</i>, Vol. 125, No. 5, 1999, pp. 592-595.
 
-\li \anchor GrKo06 Gray, G. A. and Kolda, T. G., 2006.  "Algorithm
-856: APPSPACK 4.0: Asynchronous Parallel Pattern Search for
-Derivative-Free Optimization," <i>ACM Transactions on Mathematical
-Software</i>, Vol. 32, No. 3, pp. 485-507.
+\li \anchor GrKo06 Gray, G. A. and Kolda, T. G., 2006.  
+"Algorithm 856: APPSPACK 4.0: Asynchronous Parallel Pattern Search for Derivative-Free Optimization,"
+<i>ACM Transactions on Mathematical Software</i>, Vol. 32, No. 3,
+pp. 485-507.
 
-\li \anchor Iman1982 Iman, R. L., and Conover, W. J., 1982.  "A
-Distribution-Free Approach to Inducing Rank Correlation Among Input
-Variables," <i>Communications in Statistics: Simulation and
-Computation</i>, Vol. B11, no. 3, pp. 311-334.
+\li \anchor Iman1982 Iman, R. L., and Conover, W. J., 1982.  
+"A Distribution-Free Approach to Inducing Rank Correlation Among Input Variables,"
+<i>Communications in Statistics: Simulation and Computation</i>,
+Vol. B11, no. 3, pp. 311-334.
 
 \li \anchor Jones1998  Jones, D., Schonlau, M., and W. Welch, 1998. 
 "Efficient Global Optimization of Expensive Black-Box Functions,"
@@ -186,11 +181,11 @@ Computation</i>, Vol. B11, no. 3, pp. 311-334.
 <i> ACM Transactions on Mathematical Software</i>, Volume 23, Number 2, 
 1997, pages 266-294.
 
-\li \anchor Lewis2000 Lewis, R. M., and Nash, S. G., 2000.  "A
-Multigrid Approach to the Optimization of Systems Governed by
-Differential Equations," paper AIAA-2000-4890 in <i>Proceedings
-of the 8th AIAA/USAF/NASA/ISSMO Symposium on Multidisciplinary
-Analysis and Optimization</i>, Long Beach, CA, Sept. 6-8.
+\li \anchor Lewis2000 Lewis, R. M., and Nash, S. G., 2000.  
+"A Multigrid Approach to the Optimization of Systems Governed by Differential Equations," 
+paper AIAA-2000-4890 in <i>Proceedings of the 8th AIAA/USAF/NASA/ISSMO
+Symposium on Multidisciplinary Analysis and Optimization</i>, Long
+Beach, CA, Sept. 6-8.
 
 \li \anchor MeOlHoWi07 Meza, J. C., Oliva, R. A., Hough, P. D., and
 Williams, P. J., 2007. "OPT++: An Object-Oriented Toolkit for
@@ -226,10 +221,9 @@ Probabilistic Methods Conference</i>, St. Louis MO, AIAA99-1589.
 and M. Ratto, 2004. "Sensitivity Analysis in Practice:  A Guide to Assessing 
 Scientific Models."  John Wiley & Sons. 
 
-\li \anchor Schitt2004 Schittkowski, K., 2004. "NLPQLP: A Fortran
-Implementation of a Sequential Quadratic Programming Algorithm with
-Distributed and Non-Monotone Line Search -- User's Guide," Technical
-Report, Department of Mathematics, University of Bayreuth, Bayreuth,
+\li \anchor Schitt2004 Schittkowski, K., 2004. 
+"NLPQLP: A Fortran Implementation of a Sequential Quadratic Programming Algorithm with Distributed and Non-Monotone Line Search -- User's Guide,"
+Technical Report, Department of Mathematics, University of Bayreuth, Bayreuth,
 Germany.
 
 \li \anchor Sjaar1992 Sjaardema, G. D., 1992. "APREPRO: An Algebraic 
@@ -247,10 +241,9 @@ Multiple Integrals," Prentice Hall.
 <i>Proceedings of the 12th AIAA Non-Deterministic Approaches Conference
 </i>, Orlando, FL.  Paper AIAA-2010-2850. 
 
-\li \anchor Tapia1 Tapia, R. A., and Argaez, M., "Global Convergence
-of a Primal-Dual Interior-Point Newton Method for Nonlinear
-Programming Using a Modified Augmented Lagrangian Function". (In 
-Preparation).
+\li \anchor Tapia1 Tapia, R. A., and Argaez, M., 
+"Global Convergence of a Primal-Dual Interior-Point Newton Method for Nonlinear Programming Using a Modified Augmented Lagrangian Function".
+(In Preparation).
 
 \li \anchor Tong2005 Tong, C. H., 2005. "The PSUADE Software Library."
 Lawrence Livermore National Laboratories UCRL UCRL-WEB-211742. Web
