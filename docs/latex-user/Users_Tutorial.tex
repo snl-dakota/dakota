@@ -1113,7 +1113,8 @@ studies. Refer to Chapters~\ref{ps} and~\ref{dace} for additional
 information on parameter studies and design of experiments methods.
 
 For a list of all the example Dakota input files, see 
-Table~\ref{tutorial:examples:table}. 
+Table~\ref{tutorial:examples:table}. All of these input files 
+can be found in \texttt{Dakota/examples/users}. 
 
 \begin{table}[hbp]
 \centering
@@ -1125,19 +1126,40 @@ Table~\ref{tutorial:examples:table}.
 \textbf{Input File Name} & \textbf{Reference}\\
 \hline
 parameter study & multidimensional parameter study & rosen\_multidim.in &~\ref{tutorial:rosenbrock_multidim} \\
-parameter study & vector parameter study & in PS chapter &  \\
-uncertainty quantification & LHS sampling & in tutorial chapter & \\
-uncertainty quantification & LHS sampling & in UQ chapter &    \\
-uncertainty quantification & Polynomial Chaos Expansion & in UQ chapter & \\
-uncertainty quantification & Stochastic Collocation & in UQ chapter &  \\
-uncertainty quantification & Stochastic Collocation & in UQ chapter &  \\
-uncertainty quantification & Stochastic Collocation & in UQ chapter &  \\
-uncertainty quantification & Reliability Mean Value & in UQ chapter &  \\
-uncertainty quantification & Reliability FORM & in UQ chapter &  \\
-optimization & gradient-based & rosen\_grad\_opt.in in this chapter &  \\
-optimization & evolutionary algorithm & opt chapter &   \\
-optimization & pattern search  & in opt chapter  &\\
-etc & &  & \\
+parameter study & vector parameter study & rosen\_ps\_vector.in & ~\ref{additional:rosenbrock_vector} \\
+parameter study & moat (Morris) & morris\_ps\_moat.in & ~\ref{additional:FIG:moat:out_preamble} \\
+uncertainty quantification & random sampling & rosen\_sampling.in & ~\ref{tutorial:rosenbrock_mc}\\
+uncertainty quantification & LHS sampling & textbook\_uq\_sampling.in & ~\ref{uq:figure01}\\
+uncertainty quantification & polynomial chaos expansion & rosen\_uq\_pce.in & ~\ref{uq:examples:pce_input} \\
+uncertainty quantification & stochastic collocation & rosen\_uq\_sc.in & ~\ref{uq:figure11} \\
+uncertainty quantification & reliability Mean Value & textbook\_uq\_meanvalue.in & ~\ref{uq:examples:mv_input} \\
+uncertainty quantification & reliability FORM & logratio\_uq\_reliability.in & ~\ref{uq:rel_input_form} \\
+uncertainty quantification & global interval analysis & cantilever\_uq\_global\_interval.in & ~\ref{uq:examples:interval_input} \\
+uncertainty quantification & global evidence analysis & textbook\_uq\_glob\_evidence.in & ~\ref{uq:figure16} \\
+uncertainty quantification & sampling on a surrogate model & textbook\_uq\_surrogate.in & \\
+uncertainty quantification & second order probability & cantilever\_uq\_sop\_rel.in & ~\ref{adv_models:2ndprob} \\
+optimization & gradient-based, unconstrained & rosen\_grad\_opt.in & ~\ref{tutorial:rosenbrock_grad} \\
+optimization & gradient-based, constrained & textbook\_opt\_conmin.in & ~\ref{additional:textbook_grad_constr} \\
+optimization & gradient-based, constrained & cantilever\_opt\_npsol.in & ~\ref{additional:cant_opt_npsol} \\
+optimization & gradient-based, constrained & container\_opt\_npsol.in &  \\
+optimization & evolutionary algorithm & rosen\_opt\_ea.in  & ~\ref{opt:examples:rosenbrock_ea} \\
+optimization & pattern search & rosen\_opt\_patternsearch.in  & ~\ref{opt:examples:psfig} \\
+optimization & efficient global optimization (EGO)  & rosen\_opt\_ego.in  & ~\ref{sbm:egm_rosen}\\
+optimization & efficient global optimization (EGO)  & herbie\_shubert\_opt\_ego.in  & ~\ref{additional:herbie_shubert_ego}\\
+optimization & multiobjective  & textbook\_opt\_multiobj1.in  & ~\ref{opt:figure01}\\
+optimization & Pareto opt., moga  & mogatest1.in  & ~\ref{additional:moga1inp}\\
+optimization & Pareto opt., moga  & mogatest2.in  & ~\ref{additional:moga2inp}\\
+optimization & Pareto opt., moga  & mogatest3.in  & ~\ref{additional:moga3inp}\\
+optimization & Pareto opt., moga, surrogate  & mogatest1\_opt\_sbo.in  & ~\ref{sbm:sbgm_moga}\\
+optimization & surrogate based (SBO)  & rosen\_opt\_sbo.in  & ~\ref{sbm:sblm_rosen}\\
+optimization & opt. under uncertainty (OUU)  & textbook\_opt\_ouu1.in  & ~\ref{adv_models:figure09}\\
+optimization & optimization with scaling  & rosen\_opt\_scaled.in  & ~\ref{opt:additional:scaling:figure01}\\
+calibration & nonlinear least squares  & rosen\_opt\_nls.in  & ~\ref{additional:rosenbrock_nls}\\
+calibration & NLS with datafile  & textbook\_nls\_datafile.in  & \\
+hybrid strategy & three opt. methods  & textbook\_hybrid\_strat.in  & ~\ref{strat:figure01}\\
+Pareto strategy & Pareto strategy  & textbook\_pareto\_strat.in  & ~\ref{strat:figure04}\\
+Multistart strategy & opt. from multiple starting points  & qsf\_multistart\_strat.in  & ~\ref{strat:figure02}\\
+system call &  & rosen\_syscall.in  & ~\ref{tutorial:rosenbrock_user} \\
 \hline
 \end{tabular}
 \end{table}
