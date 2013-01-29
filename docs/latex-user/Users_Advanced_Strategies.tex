@@ -135,7 +135,8 @@ Hessian data to perform its search.
       \verbatimtabinput[8]{textbook_hybrid_strat.in}
     \end{tiny}
   \end{bigbox}
-  \caption{Dakota input file for a hybrid optimization strategy}
+  \caption{Dakota input file for a hybrid optimization strategy --
+see \texttt{Dakota/examples/users/textbook\_hybrid\_strat.in} }
   \label{strat:figure01}
 \end{figure}
 
@@ -157,7 +158,7 @@ computing may be used to concurrently run the local minimizations.
 
 An example input file for multistart local optimization on the
 ``quasi\_sine'' test function (see \texttt{quasi\_sine\_fcn.C} in
-\texttt{Dakota/test}) is shown in Figure~\ref{strat:figure02}. The
+\texttt{Dakota\_Source/test}) is shown in Figure~\ref{strat:figure02}. The
 strategy keyword block in the input file contains the keyword
 \texttt{multi\_start}, along with the set of starting points (3 random 
 and 5 listed) that will be used for the optimization runs. The other
@@ -171,7 +172,8 @@ a single optimization run.
       \verbatimtabinput[8]{qsf_multistart_strat.in}
     \end{small}
   \end{bigbox}
-  \caption{Dakota input file for a multistart local optimization strategy}
+  \caption{Dakota input file for a multistart local optimization strategy --
+see \texttt{Dakota/examples/users/qsf\_multistart\_strat.in} }
   \label{strat:figure02}
 \end{figure}
 
@@ -218,8 +220,6 @@ evaluated. The user can specify these weighting sets in the strategy
 keyword block using a \texttt{multi\_objective\_weight\_sets} list, a
 number of \texttt{random\_weight\_sets}, or both (see the Dakota
 Reference Manual~\cite{RefMan} for additional specification details).
-Figure~\ref{strat:figure04} shows the input commands from the file
-\texttt{textbook\_pareto\_strat.in}.
 
 Dakota performs one multiobjective optimization problem for each set
 of multiobjective weights. The collection of computed optimal
@@ -251,7 +251,8 @@ competing objectives.
       \verbatimtabinput[8]{textbook_pareto_strat.in}
     \end{small}
   \end{bigbox}
-  \caption{Dakota input file for the Pareto optimization strategy.}
+  \caption{Dakota input file for the Pareto optimization strategy --
+see \texttt{Dakota/examples/users/textbook\_pareto\_strat.in} }
   \label{strat:figure04}
 \end{figure}
 

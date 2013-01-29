@@ -172,7 +172,8 @@ bounds) from this point in the $x_1$ and $x_2$ coordinate directions.
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for the surrogate-based local optimization
-    example.}
+    example --
+see \texttt{Dakota/examples/users/rosen\_opt\_sbo.in} }
   \label{sbm:sblm_rosen}
 \end{figure}
 
@@ -191,7 +192,7 @@ optima~\cite{Giu02}. In these types of engineering design problems,
 traditional gradient-based optimizers often are ineffective, whereas
 global data fits can extract the global trends of interest despite the
 presence of local nonsmoothness (for an example problem with multiple
-local optima, look in \texttt{Dakota/test} for the file
+local optima, look in \texttt{Dakota/test/dakota\_sbo\_sine\_fcn} for the file
 \texttt{dakota\_sbo\_sine\_fcn.in}~\cite{Giu00}).
 
 The surrogate-based local minimizer is only mathematically
@@ -269,7 +270,7 @@ model~\cite{Eld04}.
 
 A multifidelity test problem named
 \texttt{dakota\_sbo\_hierarchical.in} is available in
-\texttt{Dakota/test} to demonstrate this SBO approach. This test
+\texttt{Dakota/test/dakota\_sbo\_hierarchical} to demonstrate this SBO approach. This test
 problem uses the Rosenbrock function as the high fidelity model and a
 function named ``lf\_rosenbrock'' as the low fidelity model. Here,
 lf\_rosenbrock is a variant of the Rosenbrock function (see
@@ -424,8 +425,8 @@ as objective functions from that driver.
       \verbatimtabinput[8]{mogatest1_opt_sbo.in}
     \end{scriptsize}
   \end{bigbox}
-  \caption{Dakota input file for the surrogate-based global optimization
-    example}
+  \caption{MOGA example -- 
+see \texttt{Dakota/examples/users/mogatest1\_opt\_sbo.in} }
   \label{sbm:sbgm_moga}
 \end{figure}
  
@@ -483,7 +484,8 @@ Figure~\ref{sbm:egm_rosen}.
       \verbatimtabinput[8]{rosen_opt_ego.in}
     \end{small}
   \end{bigbox}
-  \caption{Dakota input file for the efficient global optimization example.}
+  \caption{Dakota input file for the efficient global optimization example --
+see \texttt{Dakota/examples/users/rosen\_opt\_ego.in} }
   \label{sbm:egm_rosen}
 \end{figure}
 

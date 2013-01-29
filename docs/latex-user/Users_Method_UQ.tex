@@ -386,15 +386,15 @@ implementation of the LHS algorithm, see Reference~\cite{Swi04}.
 
 \subsection{Uncertainty Quantification Example using Sampling Methods}\label{uq:uncertainty1}
 
-The input file \texttt{Dakota/examples/users/textbook\_uq\_sampling.in}
+The input file in Figure~\ref{uq:figure01} 
 demonstrates the use of Latin hypercube Monte Carlo sampling for
 assessing probability of failure as measured by specified response
 levels.  The two-variable Textbook example problem (see
 Equation~\ref{additional:textbook_f}) will be used to demonstrate
 the application of sampling methods for uncertainty quantification
 where it is assumed that $x_1$ and $x_2$ are uniform uncertain
-variables on the interval $[0,1]$. The Dakota input file for this
-problem is shown in Figure~\ref{uq:figure01}. 
+variables on the interval $[0,1]$. 
+
 The number of samples to
 perform is controlled with the \texttt{samples} specification, the
 type of sampling algorithm to use is controlled with the
@@ -410,7 +410,8 @@ Figure~\ref{uq:figure02} for the case where \texttt{samples} = 5 and
 \begin{figure}
   \centering \begin{bigbox} \begin{small}
   \verbatimtabinput[8]{textbook_uq_sampling.in} \end{small} \end{bigbox}
-\caption{Dakota input file for UQ example using LHS.}
+\caption{Dakota input file for UQ example using LHS --
+see \texttt{Dakota/examples/users/textbook\_uq\_sampling.in} }
 \label{uq:figure01}
 \end{figure}
 
@@ -968,7 +969,8 @@ when using a Mean Value method, which will be discussed next.
       \verbatimtabinput[8]{logratio_uq_reliability.in}
     \end{small}
   \end{bigbox}
-\caption{Dakota input file for Reliability UQ example using FORM.}
+\caption{Dakota input file for Reliability UQ example using FORM --
+see \texttt{Dakota/examples/users/logratio\_uq\_reliability.in} }
 \label{uq:rel_input_form}
 \end{figure}
 
@@ -1238,7 +1240,8 @@ Figure~\ref{uq:figure11b}.
       \verbatimtabinput[8]{rosen_uq_sc.in}
     \end{small}
   \end{bigbox}
-\caption{Dakota input file for performing UQ using stochastic collocation.}
+\caption{Dakota input file for performing UQ using stochastic collocation --
+see \texttt{Dakota/examples/users/rosen\_uq\_sc.in} }
 \label{uq:figure11}
 \end{figure}
 
@@ -1658,7 +1661,7 @@ interval analysis, we recommend using either
 \texttt{global\_interval\_est} or \texttt{local\_interval\_est}
 instead of \texttt{global\_evidence} or \texttt{local\_evidence}, for
 reasons of simplicity. An example of interval estimation is found in
-the \texttt{cantilever\_uq\_global\_interval.in}, and also
+the \texttt{Dakota/examples/users/cantilever\_uq\_global\_interval.in}, and also
 in Section~\ref{uq:examples:interval}.
 %Note that we have kept separate implementations of interval analysis and
 %Dempster-Shafer evidence theory because our users often want to couple
@@ -1752,7 +1755,8 @@ are 0.1 to 0.5, etc.
       \verbatimtabinput[8]{textbook_uq_glob_evidence.in}
     \end{small}
   \end{bigbox}
-\caption{Dakota input file for UQ example using Evidence Theory.}
+\caption{Dakota input file for UQ example using Evidence Theory --
+see \texttt{Dakota/examples/users/textbook\_uq\_glob\_evidence.in} }
 \label{uq:figure16}
 \end{figure}
 
@@ -2309,7 +2313,8 @@ which is the case based on Equation~\ref{additional:textbook_f}.
       \verbatimtabinput[8]{textbook_uq_meanvalue.in}
     \end{small}
   \end{bigbox}
-  \caption{Mean Value Reliability Method: the Dakota input file.}
+  \caption{Mean Value Reliability Method: the Dakota input file --
+see \texttt{Dakota/examples/users/textbook\_uq\_meanvalue.in} }
   \label{uq:examples:mv_input}
 \end{figure}
 
@@ -2372,7 +2377,8 @@ $x_1$ and third-order quadrature in $x_2$), resulting in a total of
       \verbatimtabinput[8]{rosen_uq_pce.in}
     \end{small}
   \end{bigbox}
-\caption{Dakota input file for performing UQ using polynomial chaos expansions.}
+\caption{Dakota input file for performing UQ using polynomial chaos expansions --
+see \texttt{Dakota/examples/users/rosen\_uq\_pce.in} }
 \label{uq:examples:pce_input}
 \end{figure}
 
@@ -2523,7 +2529,8 @@ beam weight is approximately [1,100].
       \verbatimtabinput[8]{cantilever_uq_global_interval.in}
     \end{small}
   \end{bigbox}
-\caption{Dakota input file for performing UQ using interval analysis.}
+\caption{Dakota input file for performing UQ using interval analysis --
+see \texttt{Dakota/examples/users/cantilever\_uq\_global\_interval.in} }
 \label{uq:examples:interval_input}
 \end{figure}
 

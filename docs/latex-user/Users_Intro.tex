@@ -19,11 +19,11 @@ system parameters in an iterative, automated, and directed way. System
 performance objectives can be formulated, for example, to minimize
 weight, cost, or defects; to limit a critical temperature, stress, or
 vibration response; or to maximize performance, reliability,
-throughput, agility, or design robustness.  In addition, one would
+throughput, agility, or design robustness. In addition, one would
 often like to design computer experiments, run parameter studies, or
 perform uncertainty quantification (UQ). These approaches reveal how
 system performance changes as a design or uncertain input variable
-changes.  Sampling strategies are often used in uncertainty
+changes. Sampling strategies are often used in uncertainty
 quantification to calculate a distribution on system performance
 measures, and to understand which uncertain inputs contribute most to
 the variance of the outputs.
@@ -43,7 +43,7 @@ customized methods and strategies~\cite{Eld98b}.
 \section{Dakota Capabilities}\label{intro:capabilities}
 
 Dakota delivers a variety of iterative methods and strategies, and the
-ability to flexibly interface them to your simulation code.  While
+ability to flexibly interface them to your simulation code. While
 Dakota was originally conceived to more readily interface simulation
 codes and optimization algorithms, recent versions go beyond
 optimization to include other iterative analysis methods such as
@@ -53,74 +53,74 @@ and sensitivity/variance analysis with general-purpose design of
 experiments and parameter study capabilities. These capabilities may
 be used on their own or as building blocks within more sophisticated
 strategies such as hybrid optimization, surrogate-based optimization,
-optimization under uncertainty, or mixed aleatory/epistemic UQ.  
+optimization under uncertainty, or mixed aleatory/epistemic UQ. 
 
 The principal classes of Dakota algorithms, with brief descriptions,
-are summarized here.  For details, formulations, and usage guidelines,
+are summarized here. For details, formulations, and usage guidelines,
 see the referenced chapters.
 \begin{itemize}
 \item {\bf Parameter Studies} (Chapter~\ref{ps}): Parameter studies
   employ deterministic designs to explore the effect of parametric
   changes within simulation models, yielding one form of sensitivity
-  analysis.  They can help assess simulation characteristics such as
+  analysis. They can help assess simulation characteristics such as
   smoothness, multi-modality, robustness, and nonlinearity, which
   affect the choice of algorithms and controls in follow-on
-  optimization and UQ studies.  Typical examples include centered,
+  optimization and UQ studies. Typical examples include centered,
   one-at-a-time variations or joint variation on a grid.
 
 \item {\bf Design of Experiments} (Chapter~\ref{dace}): Design and
   analysis of computer experiments (DACE) techniques are often used to
   explore the parameter space of an engineering design problem, for
-  example to perform global sensitivity analysis.  DACE methods can
+  example to perform global sensitivity analysis. DACE methods can
   help reach conclusions similar to parameter studies, but the primary
   goal of these methods is to generate good coverage of the input
-  parameter space.  Representative methods include Latin hypercube
+  parameter space. Representative methods include Latin hypercube
   sampling, orthogonal arrays, and Box-Behnken designs.
 
 \item {\bf Uncertainty Quantification} (Chapter~\ref{uq}): Uncertainty
   quantification methods (also referred to as nondeterministic
   analysis methods) compute probabilistic information about response
   functions based on simulations performed according to specified
-  input parameter probability distributions.  Put another way, these
+  input parameter probability distributions. Put another way, these
   methods perform a forward uncertainty propagation in which
   probability information for input parameters is mapped to
-  probability information for output response functions.  Common
+  probability information for output response functions. Common
   approaches include Monte Carlo sampling, reliability methods, and
   polynomial chaos expansions.
 
 \item {\bf Optimization} (Chapter~\ref{opt}): Optimization solvers
   seek to minimize cost or maximize system performance, as predicted
   by the simulation model, subject to constraints on input variables
-  or secondary simulation responses.  Categories of algorithms
+  or secondary simulation responses. Categories of algorithms
   include gradient-based, derivative-free, and global optimization.
   Dakota also includes capabilities for multi-objective trade-off
-  optimization and automatic scaling of problem formulations.  Advanced
+  optimization and automatic scaling of problem formulations. Advanced
   Dakota approaches include hybrid (multi-method), multi-start local,
   and Pareto-set optimization.
 
 \item {\bf Calibration} (Chapter~\ref{nls}): Calibration algorithms
   seek to maximize agreement between simulation outputs and
-  experimental data (or desired outputs).  They are used solve inverse
+  experimental data (or desired outputs). They are used solve inverse
   problems (often referred to as parameter estimation or least-squares
-  problems).  Dakota approaches include nonlinear least squares and
+  problems). Dakota approaches include nonlinear least squares and
   Bayesian calibration.
 
 \end{itemize}
 
-Dakota includes a number of related advanced capabilities.  {\bf
+Dakota includes a number of related advanced capabilities. {\bf
   Surrogate models} are inexpensive approximate models that are
 intended to capture the salient features of an expensive high-fidelity
 model and include data fits, multifidelity, and reduced-order model
-surrogates.  They can be used to explore the variations in response
+surrogates. They can be used to explore the variations in response
 quantities over regions of the parameter space, or they can serve as
 inexpensive stand-ins for optimization or uncertainty quantification
-studies.  Section~\ref{models:surrogate} summarizes surrogate model
+studies. Section~\ref{models:surrogate} summarizes surrogate model
 mechanics in Dakota, while optimization methods tailored to particular
 surrogate approaches are surveyed in Chapter~\ref{sbm}.
 
 {\bf Nested models} permit layering one Dakota method over another,
 enabling algorithms like mixed epistemic-aleatory or second-order UQ,
-optimization under uncertainty, or surrogate-based UQ.  Additional
+optimization under uncertainty, or surrogate-based UQ. Additional
 information on these nested approaches is provided in
 Section~\ref{models:nested} and Chapter~\ref{adv_models}.
 
@@ -129,7 +129,7 @@ The methods and strategies in Dakota are designed to exploit {\bf
 multiprocessor workstation, a network of workstations, or a massively
 parallel computing platform. This parallel computing capability is a
 critical technology for rendering real-world engineering design
-problems computationally tractable.  See Chapter~\ref{parallel}.
+problems computationally tractable. See Chapter~\ref{parallel}.
 
 Dakota also has emerging capabilities in solution verification and
 Bayesian calibration/UQ, which are documented briefly in the Dakota
@@ -141,7 +141,7 @@ A key Dakota advantage is access to a broad range of iterative
 capabilities through a single, relatively simple, interface between
 Dakota and your simulator. Trying a different iterative method or
 strategy typically requires changing only a few commands in the Dakota
-text input file, and starting the new analysis.  It does not require
+text input file, and starting the new analysis. It does not require
 intimate knowledge of the underlying software package integrated in
 Dakota, with its unique command syntax and interfacing requirements.
 In addition, Dakota will manage concurrent executions of your
@@ -149,10 +149,10 @@ computational model in parallel, whether on a desktop or
 high-performance cluster computer.
 
 Figure~\ref{intro:bbinterface} depicts a typical loosely-coupled
-relationship between Dakota and the simulation code(s).  Such coupling
+relationship between Dakota and the simulation code(s). Such coupling
 is often referred to as ``black-box,'' as Dakota has no (or little)
 awareness of the internal details of the computational model,
-obviating any need for its source code.  Such loose coupling is the
+obviating any need for its source code. Such loose coupling is the
 simplest and most common interfacing approach Dakota users
 employ. Dakota and the simulation code exchange data by reading and
 writing short data files. Dakota is executed with commands that the
@@ -193,7 +193,7 @@ considered to be ``semi-intrusive'' in that it requires relatively
 minor modifications to the simulation code. Its major advantage is the
 elimination of the overhead resulting from file I/O and process
 creation. It can also be a useful tool for parallel processing, by
-encapsulating all computation in a single executable.  For details on
+encapsulating all computation in a single executable. For details on
 direct interfacing, see Section~\ref{advint:direct}. A SAND interface
 approach is ``fully intrusive'' in that it requires further
 modifications to the simulation code so that an optimizer has access
@@ -203,20 +203,15 @@ a nonlinear simulation code are converged simultaneously. While this
 approach can greatly reduce the computational expense of optimization,
 considerable software development effort must be expended to achieve
 this intrusive coupling between SAND optimization methods and the
-simulation code.  SAND may be supported in future Dakota releases.
+simulation code. SAND may be supported in future Dakota releases.
 
 
 \section{User's Manual Organization}\label{intro:organization}
 
 The Dakota User's Manual is organized into the following major
-categories.  New users should consult the Tutorial to get started,
+categories. New users should consult the Tutorial to get started,
 then likely the Method Tour and Interfacing to select a Dakota method
-and build an interface to your code. Dakota input files are referenced or shown
-in figures throughout the Manual. The filename is specified in the comments
-and unless specified otherwise, these
-files are available in the {\tt Dakota/examples/users} directory. Some
-of the files have associated files, such as output or tabular data,
-with the same base filename, and {\tt .sav} appended to the names.
+and build an interface to your code. 
 
 \begin{itemize}
 
@@ -263,6 +258,20 @@ with the same base filename, and {\tt .sav} appended to the names.
 
 \end{itemize}
 
+\section{Files Referenced in this Manual}\label{intro:files}
+Dakota input files are shown in figures throughout the Manual. 
+The filename is specified in the comments
+and unless specified otherwise, these
+files are available in the {\tt Dakota/examples/users} directory,
+where {\tt Dakota} refers to the build or install directory. Some
+of the input files have associated files, such as output or tabular data,
+with the same base filename, and {\tt .sav} appended to the names.
+
+Additional files are referenced, and if the location differs then it will
+be specified in the text.
+A small number of examples refer to files included only in the source
+directory, which is labeled {\tt Dakota\_Source}. You will need a copy of
+the source to view these files - see Section~\ref{tutorial:quickstart:installation}.
 
 \section{Summary}\label{intro:summary}
 

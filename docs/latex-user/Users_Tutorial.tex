@@ -186,8 +186,6 @@ other data analysis packages.
 
 
 \begin{figure}[ht!]
-\label{tutorial:quickstart:rosenbrock_multidim:output}
-\caption{Rosenbrock 2-D parameter study example: excerpt from output file}
   \centering
   \begin{bigbox}
     \begin{small}
@@ -233,12 +231,12 @@ response_fn_1 -3.00705e-03 -5.01176e-01  1.00000e+00
 \end{verbatim}
     \end{small}
   \end{bigbox}
+\caption{Rosenbrock 2-D parameter study example: excerpt from output file}
+\label{tutorial:quickstart:rosenbrock_multidim:output}
 \end{figure}
 
 
 \begin{figure}[ht!]
-\label{tutorial:quickstart:rosenbrock_multidim:dat}
-\caption{Rosenbrock 2-D parameter study example: excerpt from tabular data file}
   \centering
   \begin{bigbox}
     \begin{small}
@@ -251,17 +249,18 @@ response_fn_1 -3.00705e-03 -5.01176e-01  1.00000e+00
 \end{verbatim}
     \end{small}
   \end{bigbox}
+\label{tutorial:quickstart:rosenbrock_multidim:dat}
+\caption{Rosenbrock 2-D parameter study example: excerpt from tabular data file}
 \end{figure}
 
 
 \section{Dakota Input File Format}\label{tutorial:dakota}
 
-All of the Dakota input files for the simple example problems
-presented here are included in the 
-directory \texttt{Dakota/examples/users}. 
+See Section~\ref{intro:files} for location of all files referenced in this
+manual.
 
 A simple Dakota
-input file (that is named \texttt{rosen\_multidim.in})
+input file, \texttt{rosen\_multidim.in},
 for a two-dimensional parameter study on Rosenbrock's
 function is shown in Figure~\ref{tutorial:rosenbrock_multidim}.
 This input file will be used to
@@ -787,7 +786,7 @@ use the \texttt{fork} interface approach within
 Dakota to manage external simulation codes. In both of these cases,
 the communication between Dakota and the external code is conducted
 through the reading and writing of short text files. For this example,
-the C++ program \texttt{rosenbrock.C} in \texttt{Dakota/test} is used
+the C++ program \texttt{rosenbrock.C} in \texttt{Dakota\_Source/test} is used
 as the simulation code. This file is compiled to create the
 stand-alone \texttt{rosenbrock} executable that is referenced as the
 \texttt{analysis\_driver} in Figure~\ref{tutorial:rosenbrock_user}.
@@ -1178,8 +1177,8 @@ raised by new Dakota users:
   described in the Dakota Reference Manual~\cite{RefMan}.
 
 \item Example input files are included throughout this manual, and
-  also in {\tt Dakota/examples/users}, 
-  \newline and {\tt Dakota/test} in Dakota distributions/installations.
+  are included in Dakota distributions and installations. See
+  Section~\ref{intro:files} for help finding these files.
 
 \item Detailed method descriptions appear in the Method Tour in
   Chapters~\ref{ps} through~\ref{sbm}.
