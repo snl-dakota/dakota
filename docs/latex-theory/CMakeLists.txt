@@ -1,3 +1,4 @@
+include(AddFileCopyCommand)
 
 # Build a list of absolute paths of latex inputs for use in dependencies
 set(theory_inputs_abs "") 
