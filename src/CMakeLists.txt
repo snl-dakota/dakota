@@ -752,7 +752,7 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
     endif(Subversion_FOUND) # Subversion_FOUND
   endif()
 
-  message("Trunk Dakota_SVN_REV is currently at: ${Dakota_SVN_REV}")
+  message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
 
   file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.cpp
         "// -- AUTO GENERATED FILE; DO NOT EDIT --

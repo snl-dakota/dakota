@@ -261,8 +261,10 @@ if (NOT BUILD_IN_TRILINOS)
         set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
         set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
 
-        set(Trilinos_ENABLE_INSTALL_CMAKE_CONFIG_FILES OFF CACHE BOOL
-	  "Dakota is the top-level package; don't write Trilinos config files")
+# This doesn't do as name implies; setting OFF doesn't generate Config.cmake 
+# at all; doesn't just control whether installed!  Want Config.cmake in build
+#        set(Trilinos_ENABLE_INSTALL_CMAKE_CONFIG_FILES OFF CACHE BOOL
+#	  "Dakota is the top-level package; don't write Trilinos config files")
 
       else()
         # Use "historical" directory hierarchy, before TriBITS
