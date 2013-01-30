@@ -1112,7 +1112,12 @@ studies. Refer to Chapters~\ref{ps} and~\ref{dace} for additional
 information on parameter studies and design of experiments methods.
 
 For a list of all the example Dakota input files, see 
-Table~\ref{tutorial:examples:table}. All of these input files 
+Table~\ref{tutorial:examples:table}. This table provides a  quick
+overview of the method category (e.g. parameter study, 
+uncertainty quantification, optimization), specific method 
+where applicable, the name of the input file, and a hyperlink. 
+Clicking on the hyperlink will take you to the actual input file 
+and the associated discussion.  All of these input files 
 can be found in \texttt{Dakota/examples/users}. 
 
 \begin{table}[hbp]
@@ -1126,7 +1131,7 @@ can be found in \texttt{Dakota/examples/users}.
 \hline
 parameter study & multidimensional parameter study & rosen\_multidim.in &~\ref{tutorial:rosenbrock_multidim} \\
 parameter study & vector parameter study & rosen\_ps\_vector.in & ~\ref{additional:rosenbrock_vector} \\
-parameter study & moat (Morris) & morris\_ps\_moat.in & ~\ref{additional:FIG:moat:out_preamble} \\
+parameter study & moat (Morris) & morris\_ps\_moat.in & ~\ref{FIG:moat:out_preamble} \\
 uncertainty quantification & random sampling & rosen\_sampling.in & ~\ref{tutorial:rosenbrock_mc}\\
 uncertainty quantification & LHS sampling & textbook\_uq\_sampling.in & ~\ref{uq:figure01}\\
 uncertainty quantification & polynomial chaos expansion & rosen\_uq\_pce.in & ~\ref{uq:examples:pce_input} \\
@@ -1135,12 +1140,12 @@ uncertainty quantification & reliability Mean Value & textbook\_uq\_meanvalue.in
 uncertainty quantification & reliability FORM & logratio\_uq\_reliability.in & ~\ref{uq:rel_input_form} \\
 uncertainty quantification & global interval analysis & cantilever\_uq\_global\_interval.in & ~\ref{uq:examples:interval_input} \\
 uncertainty quantification & global evidence analysis & textbook\_uq\_glob\_evidence.in & ~\ref{uq:figure16} \\
-uncertainty quantification & sampling on a surrogate model & textbook\_uq\_surrogate.in & \\
+uncertainty quantification & sampling on a surrogate model & textbook\_uq\_surrogate.in & ~\ref{adv_models:sbuq} \\
 uncertainty quantification & second order probability & cantilever\_uq\_sop\_rel.in & ~\ref{adv_models:2ndprob} \\
 optimization & gradient-based, unconstrained & rosen\_grad\_opt.in & ~\ref{tutorial:rosenbrock_grad} \\
 optimization & gradient-based, constrained & textbook\_opt\_conmin.in & ~\ref{additional:textbook_grad_constr} \\
 optimization & gradient-based, constrained & cantilever\_opt\_npsol.in & ~\ref{additional:cant_opt_npsol} \\
-optimization & gradient-based, constrained & container\_opt\_npsol.in &  \\
+optimization & gradient-based, constrained & container\_opt\_npsol.in & ~\ref{output:incont}\\
 optimization & evolutionary algorithm & rosen\_opt\_ea.in  & ~\ref{opt:examples:rosenbrock_ea} \\
 optimization & pattern search & rosen\_opt\_patternsearch.in  & ~\ref{opt:examples:psfig} \\
 optimization & efficient global optimization (EGO)  & rosen\_opt\_ego.in  & ~\ref{sbm:egm_rosen}\\
@@ -1154,7 +1159,7 @@ optimization & surrogate based (SBO)  & rosen\_opt\_sbo.in  & ~\ref{sbm:sblm_ros
 optimization & opt. under uncertainty (OUU)  & textbook\_opt\_ouu1.in  & ~\ref{adv_models:figure09}\\
 optimization & optimization with scaling  & rosen\_opt\_scaled.in  & ~\ref{opt:additional:scaling:figure01}\\
 calibration & nonlinear least squares  & rosen\_opt\_nls.in  & ~\ref{additional:rosenbrock_nls}\\
-calibration & NLS with datafile  & textbook\_nls\_datafile.in  & \\
+%calibration & NLS with datafile  & textbook\_nls\_datafile.in  & \\
 hybrid strategy & three opt. methods  & textbook\_hybrid\_strat.in  & ~\ref{strat:figure01}\\
 Pareto strategy & Pareto strategy  & textbook\_pareto\_strat.in  & ~\ref{strat:figure04}\\
 Multistart strategy & opt. from multiple starting points  & qsf\_multistart\_strat.in  & ~\ref{strat:figure02}\\
