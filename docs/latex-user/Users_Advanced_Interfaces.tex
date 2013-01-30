@@ -30,7 +30,7 @@ applications.
 
 \subsection{Generic Script Interface Files} 
 
-The {\tt Dakota/generic} directory contains four important files:
+The {\tt Dakota/examples/script\_interfaces/generic} directory contains four important files:
 \texttt{dakota\_rosenbrock.in} (the Dakota input file),
 \texttt{simulator\_script} (the simulation driver script),
 \texttt{dprepro} (a pre-processing utility), and \\
@@ -99,10 +99,10 @@ available, the DPrePro utility mentioned above is an alternative with
 many of the capabilities of APREPRO that is specifically tailored for
 use with Dakota and is distributed with it (in
 \\ \texttt{Dakota/examples/script\_interfaces/generic/dprepro}, or {\tt
-Dakota/bin} in a binary distribution).  Additionally, the BPREPRO
+Dakota/bin} in a binary distribution). Additionally, the BPREPRO
 utility is another alternative to APREPRO (see~\cite{WalXX}), and at
 Lockheed Martin sites, the JPrePost utility is available as a JAVA
-pre- and post-processor~\cite{Fla}.  The \texttt{dprepro} script
+pre- and post-processor~\cite{Fla}. The \texttt{dprepro} script
 (usage shown in Figure~\ref{advint:figure03}) will be used here for
 simplicity of discussion. It can use either Dakota's \texttt{aprepro}
 parameters file format (see
@@ -112,7 +112,7 @@ option may be selected in the interface section of the Dakota input
 file. The \texttt{ros.template} file listed in
 Figure~\ref{advint:figure04} is a template simulation input file which
 contains targets for the incoming variable values, identified by the
-strings ``\texttt{\{x1\}}'' and ``\texttt{\{x2\}}''.  These
+strings ``\texttt{\{x1\}}'' and ``\texttt{\{x2\}}''. These
 identifiers match the variable descriptors specified in
 \texttt{dakota\_rosenbrock.in}. The template input file is contrived
 as Rosenbrock has nothing to do with finite element analysis; it only
@@ -121,7 +121,7 @@ template process. The \texttt{dprepro} script will search the
 simulator template input file for fields marked with curly
 brackets and then create a new file (\texttt{ros.in}) by replacing
 these targets with the corresponding numerical values for the
-variables.  As noted in the usage information for \texttt{dprepro} and
+variables. As noted in the usage information for \texttt{dprepro} and
 shown in \texttt{simulator\_script}, the names for the Dakota
 parameters file (\texttt{\$argv[1]}), template file
 (\texttt{ros.template}), and generated input file (\texttt{ros.in})
@@ -178,15 +178,15 @@ Because the Dakota input file \texttt{dakota\_rosenbrock.in}
 \texttt{work\_directory} and \texttt{directory\_tag} in its interface
 section, each invocation of \texttt{simulator\_script} wakes up in
 its own temporary directory, which Dakota has populated with the
-contents of directory \texttt{templatedir}.  Having a separate directory
+contents of directory \texttt{templatedir}. Having a separate directory
 for each invocation of \texttt{simulator\_script} simplifies the script
 when the Dakota input file specifies \texttt{asynchronous} (so
 several instances of \texttt{simulator\_script} might run simultaneously),
 as fixed names such as \texttt{ros.in}, \texttt{ros.out}, and \texttt{results.tmp}
-can be used for intermediate files.  If neither \texttt{asynchronous} nor
+can be used for intermediate files. If neither \texttt{asynchronous} nor
 \texttt{file\_tag} is specified, and if there is no need (e.g., for debugging)
 to retain intermediate files having fixed names, then \texttt{directory\_tag}
-offers no benefit and can be omitted.  An alternative to \texttt{directory\_tag}
+offers no benefit and can be omitted. An alternative to \texttt{directory\_tag}
 is to proceed as earlier versions of this chapter --- prior to Dakota 5.0's
 introduction of \texttt{work\_directory} --- recommended:  add two more
 steps to the \texttt{simulator\_script},
@@ -234,7 +234,7 @@ followed by new values for variables \texttt{x1} and \texttt{x2}, and
 one response function (an objective function), followed by an active
 set vector (ASV) value of \texttt{1}. The ASV indicates the need to
 return the value of the objective function for these parameters (see
-Section~\ref{variables:asv}).  The \texttt{dprepro} script reads the
+Section~\ref{variables:asv}). The \texttt{dprepro} script reads the
 variable values from this file, namely \texttt{1.638247697999295e-01}
 and \texttt{2.197298209103481e-02} for \texttt{x1} and \texttt{x2}
 respectively, and substitutes them in the \texttt{\{x1\}} and
@@ -409,7 +409,7 @@ of the new subroutine.
 The first approach to using the direct function capability with a new
 simulation (or new internal test function) involves \emph{extension}
 of the existing \textbf{DirectFnApplicInterface} class to include new
-simulation member functions.  In this case, the following steps are
+simulation member functions. In this case, the following steps are
 performed:
 \begin{enumerate}
 \item The functions to be invoked (analysis programs, input and
@@ -466,7 +466,7 @@ Developers Manual~\cite{DevMan} for additional information on the
 As described in ``Interfacing with Dakota as a Library'' in the Dakota
 Developers Manual~\cite{DevMan}, a derivation approach can be employed
 to further increase the level of independence between Dakota and the
-host application.  In this case, rather than \emph{adding} a new
+host application. In this case, rather than \emph{adding} a new
 function to the existing \textbf{DirectFnApplicInterface} class, a new
 interface class is derived from \textbf{DirectFnApplicInterface} which
 \emph{redefines} the \textbf{derived\_map\_if()},
@@ -487,7 +487,7 @@ interacting with the user (the front end), links Dakota in as a
 library (refer to ``Interfacing with Dakota as a Library'' in the
 Dakota Developers Manual~\cite{DevMan}), and plugs in a derived direct
 interface class to provide a closely-coupled mechanism for performing
-function evaluations (the back end).  This approach makes Dakota
+function evaluations (the back end). This approach makes Dakota
 services available to other codes and frameworks and is currently used
 by Sandia codes such as Xyce (electrical simulation), Sage (CFD), and
 SIERRA (multiphysics).
@@ -500,10 +500,10 @@ Section~\ref{interfaces:direct}, Dakota includes direct interfaces to
 Sandia's Salinas code for structural dynamics, Phoenix Integration's
 ModelCenter framework, The Mathworks' Matlab scientific computing
 environment, Scilab (as described in Section~\ref{scilab}), and
-Python.  While these can be interfaced to with a script-based
+Python. While these can be interfaced to with a script-based
 approach, some usability and efficiency gains may be realized by
-re-compiling Dakota with these direct interfaces enabled.  Some
-details on Matlab and Python interfaces are provided here.  Note that
+re-compiling Dakota with these direct interfaces enabled. Some
+details on Matlab and Python interfaces are provided here. Note that
 these capabilities permit using Matlab or Python to evaluate a
 parameter to response mapping; they do not make Dakota algorithms
 available as a service, i.e., as a Matlab toolbox or Python module.
@@ -511,7 +511,7 @@ available as a service, i.e., as a Matlab toolbox or Python module.
 \subsection{Matlab}\label{advint:existingdirect:matlab} 
 
 Dakota's direct function interface includes the capability to invoke
-Matlab for function evaluations, using the Matlab engine API.  When
+Matlab for function evaluations, using the Matlab engine API. When
 using this close-coupling, the Matlab engine is started once when
 Dakota initializes, and then during analysis function evaluations are
 performed exchanging parameters and results through the Matlab C API.
@@ -521,13 +521,13 @@ initializing the Matlab engine for each function evaluation.
 The Dakota/Matlab interface has been built and tested on 32-bit Linux
 with Matlab 7.0 (R14) and on 64-bit Linux with Matlab 7.1 (R14SP3).
 Configuration support for other platforms is included, but is
-untested.  Builds on other platforms or with other versions of Matlab
+untested. Builds on other platforms or with other versions of Matlab
 may require modifications to Dakota including its build system
 
 To use the Dakota/Matlab interface, Dakota must be configured and
-compiled with the Matlab feature enabled.  The Mathworks only provides
+compiled with the Matlab feature enabled. The Mathworks only provides
 shared object libraries for its engine API, so Dakota must be
-dynamically linked to at least the Matlab libraries.  To compile
+dynamically linked to at least the Matlab libraries. To compile
 Dakota with the Matlab interface enabled, set the CMake variable {\tt
   DAKOTA\_MATLAB:BOOL=ON}, possibly with {\tt
   MATLAB\_DIR:FILEPATH=/path/to/matlab}, where \\ {\tt MATLAB\_DIR} is the
@@ -537,12 +537,12 @@ directories bin/YOURPLATFORM and extern/include).
 Since the Matlab libraries are linked dynamically, they must be
 accessible at compile time and at run time. Make sure the path to the
 appropriate Matlab shared object libraries is on your 
-{\tt LD\_LIBRARY\_PATH}.  For example to accomplish this in BASH on
+{\tt LD\_LIBRARY\_PATH}. For example to accomplish this in BASH on
 32-bit Linux, one might type
 \begin{verbatim}
 export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
 \end{verbatim} %$
-or add such a command to the .bashrc file.  Then proceed with
+or add such a command to the .bashrc file. Then proceed with
 compiling as usual.
 
 Example files corresponding to the following tutorial are available in \\ 
@@ -551,9 +551,9 @@ Example files corresponding to the following tutorial are available in \\
 \subsubsection{Dakota/Matlab input file specification}
 
 The Matlab direct interface is specified with {\tt direct, matlab}
-keywords in an interface specification.  The Matlab m-file which
+keywords in an interface specification. The Matlab m-file which
 performs the analysis is specified through the {\tt analysis\_drivers}
-keyword.  Here is a sample Dakota {\tt interface} specification:
+keyword. Here is a sample Dakota {\tt interface} specification:
 \begin{small}
 \begin{verbatim}
   interface,
@@ -562,11 +562,11 @@ keyword.  Here is a sample Dakota {\tt interface} specification:
 \end{verbatim} 
 \end{small}
 
-Multiple Matlab analysis drivers are supported.  Multiple analysis
+Multiple Matlab analysis drivers are supported. Multiple analysis
 components are supported as for other interfaces as described in
-Section~\ref{interfaces:components}.  The {\tt .m} extension in the
+Section~\ref{interfaces:components}. The {\tt .m} extension in the
 {\tt analysis\_drivers} specification is optional and will be stripped
-by the interface before invoking the function.  So {\tt myanalysis}
+by the interface before invoking the function. So {\tt myanalysis}
 and {\tt myanalysis.m} will both cause the interface to attempt to
 execute a Matlab function {\tt myanalysis} for the evaluation.
 
@@ -574,7 +574,7 @@ execute a Matlab function {\tt myanalysis} for the evaluation.
 
 The Matlab analysis file {\tt myanalysis.m} must define a Matlab
 function that accepts a Matlab structure as its sole argument and
-returns the same structure in a variable called {\tt Dakota}.  A
+returns the same structure in a variable called {\tt Dakota}. A
 manual execution of the call to the analysis in Matlab should
 therefore look like:
 \begin{small}
@@ -583,7 +583,7 @@ therefore look like:
 \end{verbatim} 
 \end{small}
 Note that the structure named Dakota will be pushed into the Matlab
-workspace before the analysis function is called.  The structure
+workspace before the analysis function is called. The structure
 passed from Dakota to the analysis m-function contains essentially the
 same information that would be passed to a Dakota direct function
 included in {\tt DirectApplicInterface.C}, with fields shown in
@@ -622,7 +622,7 @@ structure.\label{advint:figure:matlabparams}}
 
 The structure {\tt Dakota} returned from the analysis must contain a
 subset of the fields shown in
-Figure~\ref{advint:figure:matlabresponse}.  It may contain additional
+Figure~\ref{advint:figure:matlabresponse}. It may contain additional
 fields and in fact is permitted to be the structure passed in,
 augmented with any required outputs.
 \begin{figure} \centering
@@ -750,7 +750,7 @@ for the Dakota/Matlab interface.\label{advint:figure:matlabrosen}}
 \subsection{Python}\label{advint:existingdirect:python} 
 
 Dakota's Python direct interface has been tested on Linux with Python
-2.x.  When enabled, it allows Dakota to make function evaluation calls
+2.x. When enabled, it allows Dakota to make function evaluation calls
 directly to an analysis function in a user-provided Python module.
 Data may flow between Dakota and Python either in multiply-subscripted
 lists or NumPy arrays.
@@ -758,12 +758,12 @@ lists or NumPy arrays.
 The Python direct interface must be enabled when compiling Dakota.
 Set the CMake variable \\ {\tt DAKOTA\_PYTHON:BOOL=ON}, and optionally
 {\tt Dakota\_PYTHON\_NUMPY:BOOL=ON} to use Dakota's NumPy array
-interface (requires arrayobject.h).  If NumPy is not enabled, Dakota
+interface (requires arrayobject.h). If NumPy is not enabled, Dakota
 will use multiply-subscripted lists for data flow.
 
 An example of using the Python direct interface with both lists and
 arrays is included in \\
-{\tt examples/linked\_interfaces/Python}.  The Python direct driver is
+{\tt Dakota/examples/linked\_interfaces/Python}. The Python direct driver is
 selected with, for example,
 \begin{verbatim}
   interface,
@@ -773,19 +773,19 @@ selected with, for example,
 where {\tt python\_module} denotes the module (file {\tt
 python\_module.py}) Dakota will attempt to import into the Python
 environment and {\tt analysis\_function} denotes the function to call
-when evaluating a parameter set.  It is likely necessary to set the
+when evaluating a parameter set. It is likely necessary to set the
 {\tt PYTHONPATH} environment variable to include the location of the
 Python module you wish to load.
 
 Whether using the list or array interface, data from Dakota is passed
 (via kwargs) into the user function in a dictionary containing the
-entries shown in Table~\ref{advint:table:pythonparams}.  The {\tt
+entries shown in Table~\ref{advint:table:pythonparams}. The {\tt
 analysis\_function} must return a dictionary containing the data
 specified by the active set vector with fields ``fns'', ``fnGrads'',
 and ``fnHessians'', corresponding to function values, gradients, and
-Hessians, respectively.  The function may optionally include a failure
+Hessians, respectively. The function may optionally include a failure
 code in ``failure'' (zero indicates success, nonzero failure) and
-function labels in ``fnLabels''.  See the linked interfaces example
+function labels in ``fnLabels''. See the linked interfaces example
 referenced above for more details.
 
 \begin{table}
@@ -817,18 +817,18 @@ currEvalId & current evaluation ID number \\
 
 Scilab is open source computation software which can be used to
 perform function evaluations during Dakota studies, for example to
-calculate the objective function in optimization.  Dakota includes
-three Scilab interface variants: scripted, linked, and compiled.  In
+calculate the objective function in optimization. Dakota includes
+three Scilab interface variants: scripted, linked, and compiled. In
 each mode, Dakota calls Scilab to perform a function evaluation and
-then retrieves the Scilab results.  Dakota's Scilab interface was
-contributed in 2011 by Yann Collette and Yann Chapalain.  The
+then retrieves the Scilab results. Dakota's Scilab interface was
+contributed in 2011 by Yann Collette and Yann Chapalain. The
 Dakota/Scilab interface variants are described next.
 
 \subsection{Scilab Script Interface} 
 
 Dakota distributions include a directory
-\texttt{examples/script\_interfaces/Scilab} which demonstrates
-script-based interfacing to Scilab.  The {\tt Rosenbrock} subdirectory
+\texttt{Dakota/examples/script\_interfaces/Scilab} which demonstrates
+script-based interfacing to Scilab. The {\tt Rosenbrock} subdirectory
 contains four notable files:
 \begin{itemize}
   \item \texttt{dakota\_scilab\_rosenbrock.in} (the Dakota input file),
@@ -838,7 +838,7 @@ contains four notable files:
 \end{itemize}
 
 The \texttt{dakota\_scilab\_rosenbrock.in} file specifies the Dakota
-study to perform.  The interface type is external ({\tt fork}) and the
+study to perform. The interface type is external ({\tt fork}) and the
 shell script \texttt{scilab\_rosen\_bb\_simulator.sh} is the analysis
 driver used to perform function evaluations.
 
@@ -858,7 +858,7 @@ In the analysis portion, the \texttt{scilab\_rosen\_bb\_simulator.sh}
 uses \texttt{scilab\_rosen\_wrapper.sci} to extract the current
 variable values from the input parameters file (\texttt{\$argv[1]})
 and communicate them to the computation code in
-\texttt{rosenbrock.sci}.  The resulting objective function is
+\texttt{rosenbrock.sci}. The resulting objective function is
 transmitted to Dakota via the output result file (\texttt{\$argv[1]}),
 and the driver script cleans up any temporary files.
 
@@ -870,9 +870,9 @@ in a similar way.
 The Dakota/Scilab linked interface allows Dakota to communicate
 directly with Scilab through in-memory data structures, typically
 resulting in faster communication, as it does not rely on files or
-pipes.  In this mode, Dakota publishes a data structure into the
+pipes. In this mode, Dakota publishes a data structure into the
 Scilab workspace, and then invokes the specified Scilab
-analysis\_driver directly.  In Scilab, this structure is an mlist
+analysis\_driver directly. In Scilab, this structure is an mlist
 (\url{http://help.scilab.org/docs/5.3.2/en\_US/mlist.html}), with the same
 fields as in the Matlab interface~\ref{advint:figure:matlabparams},
 with the addition of a field {\tt dakota\_type}, which is used to validate
@@ -883,10 +883,10 @@ The linked interface is implemented in source files {\tt
 time when building Dakota from source by setting {\tt
   DAKOTA\_SCILAB:BOOL=ON}, and setting appropriate environment
 variables at compile and run time as described in {\tt README.Scilab}
-in \\ {\tt examples/linked\_interfaces/Scilab/}.  This directory also
+in \\ {\tt Dakota/examples/linked\_interfaces/Scilab/}. This directory also
 contains examples for the Rosenbrock and PID problems.
 
-These examples are similar to those in {\tt script\_interfaces}, with
+These examples are similar to those in {\tt Dakota/examples/script\_interfaces}, with
 a few notable exceptions:
 \begin{enumerate}
 \item There is no shell driver script
@@ -907,13 +907,13 @@ interface,
 
 In ``compiled interface'' mode, the Dakota analysis driver is a
 lightweight shim, which communicates with the running application code
-such as Scilab via named pipes.  It is similar to that for Matlab in
-\texttt{examples/compiled\_interfaces/Matlab}, whose README is likely
-instructive.  An example of a Scilab compiled interface is included in \\
-\texttt{examples/compiled\_interfaces/Scilab/Rosenbrock}.
+such as Scilab via named pipes. It is similar to that for Matlab in
+\texttt{Dakota/examples/compiled\_interfaces/Matlab}, whose README is likely
+instructive. An example of a Scilab compiled interface is included in \\
+\texttt{Dakota/examples/compiled\_interfaces/Scilab/Rosenbrock}.
 
 As with the other Scilab examples, there are computation code and
-Dakota input files.  Note the difference in the Dakota input file
+Dakota input files. Note the difference in the Dakota input file
 \texttt{rosenbrock.in}, where the analysis driver starts the dakscilab
 shim program and always evaluates functions, gradients, and Hessians.
 
@@ -929,8 +929,8 @@ interface,
 \end{small}
 
 The dakscilab executable results from compiling \texttt{dakscilab.c}
-and has the following behavior and options.  The driver dakscilab
-launches a server.  This server then facilitates communication between
+and has the following behavior and options. The driver dakscilab
+launches a server. This server then facilitates communication between
 Dakota and Scilab via named pipes communication. The user can also use
 the first named pipe (\texttt{\$\{DAKSCILAB\_PIPE\}1}) to communicate
 with the server:
@@ -941,7 +941,7 @@ with the server:
 \end{verbatim} 
 \end{small}
 The first command, with the keyword 'dbg', launches the script
-scilab\_script.sci for evaluation in Scilab.  It permits to give
+scilab\_script.sci for evaluation in Scilab. It permits to give
 instructions to Scilab. The second command 'quit' stops the server.
 
 The dakscilab shim supports the following options for the driver call:
@@ -963,7 +963,7 @@ For the included PID example, the driver call is
 
 Here there is an initialization script
 (\texttt{init\_test\_automatic.sce;}) which is launched before the
-main computation.  It initializes a specific Scilab module called
+main computation. It initializes a specific Scilab module called
 xcos. A finalization script to visualize the xcos solution is also
 specified (\texttt{visualize\_solution.sce}). Finally, the objective
 function is given with the computation code called
