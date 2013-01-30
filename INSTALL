@@ -11,10 +11,10 @@ simplest routes to access DAKOTA.
 For more experienced users, building DAKOTA from source (either
 downloaded or checked out) allows customization with additional
 packages and porting to additional platforms or operating systems.
-This INSTALL file, in conjunction with platform-specific INSTALL.*
-files in Dakota/examples/platforms, describe how to install pre-built
-binaries and setup the environment, as well as how to compile from
-source code.
+This INSTALL file, in conjunction with platform-specific 
+BuildSetup<platform>.cmake files in Dakota/examples/platforms, 
+describe how to install pre-built binaries and setup the environment, 
+as well as how to compile from source code.
 
 NOTE: The most up to date installation guidance and tips can be found
 alongside the downloads on the DAKOTA website.
@@ -26,56 +26,56 @@ Table of Contents
 
 Distribution Contents
 Binary Quick Start
+ I.   Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX
+ II.  Install Windows Executable
+ III. Test Binary Distribution installation.
 Source Quick Start
-Source Access via Checkout
-Source Installation Dependencies
-Source Installation Options
-Useful Environment Settings
-Installing Commercial Libraries
-Generating Local Documentation
-Library Notes
-
+Other Resources
 
 =====================
 Distribution Contents
 =====================
 
-The directories contained in DAKOTA distributions include (bin denotes
-binary distributions, src denotes source or checkout distributions):
+The directories contained in DAKOTA distributions include:
+  * bin-dist denotes binary distributions 
+    	     (Dakota.release.platform.tar.gz, Dakota.release.platform.zip)
+  * src-dist denotes source or checkout distributions
+    	     (Dakota.release.src.tar.gz, Dakota.release.src.zip)
 
-bin		    Binary files for DAKOTA, restart utility, dprepro, and 
-(bin)		    various third-party libraries (TPLs).
+Distribution  Directory	 Description
+Type
+------------  ---------  --------------------------------------------------  
+bin-dist      bin	 Binary files for Dakota, restart utility, dprepo
+	      		 and various third-part libraries (TPLs).
 
-examples            Example problems from the Users Manual, examples of
-(bin/src)           interfacing with other codes using script-based or direct
-		    linkage-based interfaces, parallel computing examples, and
-		    platform installation examples.
+bin-dist      examples	 Example problems from the Users Manual, examples of
+	      		 interfacing with other codes using script-based or
+			 direct linkage-based interfaces, parallel computing
+			 examples, and platform installation examples.
 
-test                Files for regression and unit testing of the DAKOTA system.
-(bin/src)           Test simulator programs and DAKOTA input files are
-                    provided for testing different capabilities.
+bin-dist      test	 Files for regression and unit testing of the
+src-dist      		 Dakota system. Test simulator programs and Dakota
+			 input files are provided for testing different
+			 capabilities. 
 
-include (bin)	    Include files for DAKOTA and it's associated TPLs.
+bin-dist      include	 Include files for DAKOTA and it's associated TPLs.
 
-lib (bin)	    Library files for DAKOTA and it's associated TPLs.
+bin-dist      lib	 Library files for DAKOTA and it's associated TPLs.
 
-share (bin)	    Miscellaneous files installed by DAKOTA TPLs.
+src-dist      packages	 Libraries of iterative algorithms provided by
+	      		 commercial vendors and related Sandia projects.
+			 Additionally, libraries for parsing (nidr),
+			 vector/matrix utilities (Trilinos Teuchos), Boost C++
+			 libraries, stochastic utilities (Pecos), algebraic
+			 interface (AMPL), surface fitting (Surfpack), etc.
 
-packages            Libraries of iterative algorithms provided by commercial
-(src)               vendors and related Sandia projects.  Additionally,
-                    libraries for parsing (nidr), vector/matrix utilities
-                    (Trilinos Teuchos), Boost C++ libraries, stochastic 
-		    utilities (Pecos), algebraic interface (AMPL),
-		    surface fitting (Surfpack), etc.
+src-dist     cmake	 Scripts supporting CMake builds.	 
 
-config (src)        macros supporting autoconf and CMake builds.
+src-dist     docs	 The Users, Reference, and Developers Manuals are 
+	     		 maintained here.  Other references are available from
+			 the Dakota Web site (http://dakota.sandia.gov).
 
-docs                The Users, Reference, and Developers Manuals are 
-(src)               maintained here.  Other references are available from
-                    the DAKOTA Web site (http://dakota.sandia.gov).
-
-src (src)           The main source code repository for DAKOTA core.
-
+src-dist     src	 The main source code repository for Dakota core.
 
 ==================
 Binary Quick Start
@@ -83,31 +83,128 @@ Binary Quick Start
 
 Most users will install from a binary distribution, if available for
 the target platform.  This typically involves unpacking the archive
-and setting appropriate PATH additions.  DAKOTA binary distributions
-are provided in archive format (either tar.gz or zip).  To get
-started, unpack the archive into a suitable install location, e.g.,
-/home/user/Dakota or C:\Dakota.  For example:
+and setting appropriate PATH variables, if required.
 
-   1) gunzip Dakota_releasename.tar.gz
-   2) tar xvf Dakota_releasename.tar
+Dakota binary distributions are provided in archive format (either tar.gz 
+or zip). 
+ * See Section I below to install tar.gz archive on Unix-like platform.
+ * See Section II below to install zip archive on Windows platform.
+ * See Section III below to test binary installion.
 
-(or extract a zip file with an appropriate Windows utility).  This
-will create a directory with the name Dakota.  As described above, the
-executables are in Dakota/bin.  If you have root or Administrator
-privilege, you may want to post these to a shared location (e.g.,
-/usr/local/dakota/bin).
+--------------------------------------------------------------------
+I. Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX
+--------------------------------------------------------------------
 
-Make sure the dakota executable (and optionally test files and current
-directory) are available on the PATH, e.g.:
+1. Extract archive file into suitable install location, e.g. /home/username.
+   If you have root access, you may extract archive file in a shared directory,
+   e.g. /usr/local. In the instructions below, $INSTALL_DIR refers to the
+   Dakota installation directory of your choice.
+       $ cd /path/to/Dakota/install/directory
+       $ tar xzvf /path/to/Dakota-release.src.tar.gz
+   
+   Rename the extracted Dakota binary executable directory:
+       $ ls
+       dakota-<release>.<platform>
+       $ mv dakota-<release>.<platform> Dakota
 
-  export PATH=/usr/local/Dakota/bin:/usr/local/Dakota/test:$PATH:.:
+   In the instructions below, $INSTALL_DIR refers to the path to this new
+   directory,
+	/path/to/Dakota/install/directory/Dakota
 
-or for Windows Command Prompt:
-  set PATH=C:\path\to\Dakota\bin:%PATH%
+2. Make sure Dakota executables (and optionally test files and current
+   directory) are available on the PATH by typing 'which dakota' at command
+   line prompt. 
 
-Refer to the "Tutorial" section of the Users Manual for instructions
-on using the dakota executables.
+   If your PATH variable is set correctly, the path to the dakota binary
+   should be displayed. 
+        $ which dakota
+        $INSTALL_DIR/bin/dakota
+   where $INSTALL_DIR will be an absolute path. Go to Section III to test
+   the binary installation.
 
+   If your PATH variable is NOT set correctly, you will get a message like
+   the following:
+        $ which dakota
+        /usr/bin/which: no dakota in (/usr/local/bin:/usr/local/sbin)
+   Continue with step #3 to set your PATH variable.
+
+3. If your PATH is not set correctly, make the following change to your
+   appropriate shell login script:
+
+   Bash shell
+   ----------
+   a. Edit the startup file ~/.bashrc in your favorite text editor
+   b. Modify and export PATH variable. Type the following line, replacing
+      $INSTALL_DIR with the absolute path to your installation directory,
+      e.g. /home/username.
+
+      	   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/test:$PATH
+
+   c. Save and close file.
+   d. Update changes in your terminal window. At
+      
+      $ source ~/.bashrc
+
+   C shell
+   -------
+   a. Edit the startup file ~/.cshrc in your favorite text editor
+   b. Set path variable. Type the following line, replacing
+      $INSTALL_DIR with the absolute path to your installation directory,
+      e.g. /home/username.
+
+      	   setenv path=($INSTALL_DIR/bin $INSTALL_DIR/test $path)
+
+   c. Save and close file.
+   d. Update changes in your terminal window. At
+      
+      $ source ~/.cshrc
+
+--------------------------------------------------------------------
+II.  Install Windows Executable
+--------------------------------------------------------------------
+
+1. Extract archive file into suitable install location, e.g. C:\Dakota using
+   the Windows extract utility. 
+       a. In Windows Explorer window, highight Dakota.<release>.<platform>.zip
+          file.
+       b. Right click and select "Extract All"
+       c. Select a destination, e.g. C:\Dakta, and click the Extract button.
+          In the instructions below, $DEST_DIR refers to this destination
+	  directory.
+
+   Rename the extracted Dakota executable directory folder:
+       a. Right click the dakota-<release>.<platform> file, and select
+          'Rename'.
+       b. Rename file to 'Dakota'
+
+   In the instructions below, $INSTALL_DIR refers to the path to this new
+   directory, $DEST_DIR\Dakota.
+
+2. Set path to your executable.
+   a. Click the Start button and type 'cmd' in the 'Search program and files'
+      text box to open cmd.exe.
+   b. At the command prompt, type the following command, replacing $INSTALL_DIR
+      with the path to your Dakota installation:
+
+      C:\Users\name> path=%path%;$INSTALL_DIR\bin;$INSTALL_DIR\test
+
+--------------------------------------------------------------------
+III. Test Binary Distribution installation.
+--------------------------------------------------------------------
+1. At a terminal prompt ( on Windows, cmd.exe), type 'dakota -v'. You should see
+   Dakota version information displayed.
+
+   > dakota -v
+   Running serial executable in serial mode.
+   DAKOTA released <release date>.
+   Subversion revision ### build <build data & time>.
+   DAKOTA execution time in seconds;
+   Total CPU = ...
+   Total wall clock = ...
+
+2. Refer to the "Tutorial" section of the User's Manual for instructions
+   on using the dakota executables or see the Quick Start page on the Dakota
+   web site.
 
 ==================
 Source Quick Start
@@ -118,23 +215,65 @@ tree for the target platform with generated Makefiles, and then
 execute 'make'.  Given the large number of supported packages,
 specifying a few 'cmake' options and environment variables may be
 required.  Building the software with all packages may take from 15
-minutes to over an hour.  A typical process is:
+minutes to over an hour. 
 
-  0) Install CMake 2.8.4 (or later) and ensure it is in your $PATH
-  1) gunzip Dakota_releasename.src.tar.gz
-  2) tar xvf Dakota_releasename.src.tar
-  3) mkdir BuildDakota; cd BuildDakota
-  4) export PATH=$PATH:.
-  5) cmake [cmake options] ../Dakota
-     * generate platform-specific Makefiles with cmake
-     * see NOTE below regarding specifying location of Boost
-  6) make [-j#]
-     * DAKOTA supports concurrent build processes
-  7) make install
-     * optional: requires write privilege in CMAKE_INSTALL_PREFIX
-       (see "Source Installation Options" below).
+The following are instructions for building Dakota on a Unix-like platform
+in a Bash shell. You may need to use appropriate commands to work for your
+particular platform or shell.
 
-NOTES: 
+1. Install CMake 2.8.4 (or later) and ensure it is in your $PATH.
+
+2. Extract Dakota source archive file. In the example below, Dakota will
+   be extracted into the user's home directory, /home/username. 
+
+   $ cd $HOME
+   $ tar xzvf /path/to/Dakota-release.src.tar.gz
+
+   You will see a new directory, /home/username/dakota-<release>.<platform>. In
+   the instructions below, $DAK_SRC refers to this directory.
+
+   $ export DAK_SRC=$HOME/dakota-<release>.<platform>
+
+3. Create separate build directory, e.g. $HOME/dakota-build. In the
+   instructions below, $DAK_BUILD refers to the directory that you create
+   for CMake to configure and build Dakota. 
+
+   $ mkdir -p /path/to/Dakota/build/directory
+   $ export DAK_BUILD=/path/to/Dakota/build/directory
+   
+4. Make a copy of the template BuildDakotaTemplate.cmake to customize a CMake
+   Dakota build for our platform. Keep file in the $DAK_SRC/cmake directory 
+   to use for subsequent Dakota CMake builds.
+
+   $ cp $DAK_SRC/cmake/BuildDakotaTemplate.cmake \
+        $DAK_SRC/cmake/BuildDakotaCustom.cmake
+
+5. Update $DAK_SRC/cmake/BuildDakotaCustom.cmake file to reflect your platform
+   configuration. Instructions are provided in this file.
+
+6. Configure and build Dakota. 
+
+   $ cd $DAK_BUILD
+   $ cmake -C $DAK_SRC/cmake/BuildDakotaCustom.cmake $DAK_SRC
+   $ make [-j#]
+   $ make install
+
+7. Set paths and library paths. In the instructions below, $DAK_INSTALL
+   refers to the Dakota installation path you specified for the variable
+   CMAKE_INSTALL_PREFIX in your BuildCustom.cmake file.
+
+   $ export PATH=$DAK_INSTALL/bin:$PATH
+   $ export LD_LIBRARY_PATH=$DAK_INSTALL/lib:$LD_LIBRARY_PATH
+
+   NOTE: For Mac OS X, you need to set DYLD_LIBRARY_PATH instead.
+
+   $ export DYLD_LIBRARY_PATH=$DAK_INSTALL/lib:$DYLD_LIBRARY_PATH
+
+Miscellaneous Notes:
+ * 'make [-j#]': Dakota supports concurrent build processes
+
+ * 'make install' requires write privileges in CMAKE_INSTALL_PREFIX.
+
  * Executing cmake without any options will result in an attempt to
    build with as many vendor algorithms and packages as are available
    in the distribution.  Options below and on the DAKOTA website
@@ -142,411 +281,24 @@ NOTES:
 
  * Once make has successfully completed, the generated DAKOTA
    executables (dakota and dakota_restart_util) will reside in
-   Dakota/src.  If 'make install' is invoked, copies of the
+   $DAK_BUILD/src.  If 'make install' is invoked, copies of the
    executables will be placed in CMAKE_INSTALL_PREFIX/bin and copies
    of the libraries (libdakota.a, etc.) are placed in
-   CMAKE_INSTALL_PREFIX/lib, where CMAKE_INSTALL_PREFIX is specified
-   as a path argument to the -DCMAKE_INSTALL_PREFIX=<path> 'cmake'
-   option (see "Source Installation Options" below).
-
-  * Note that support for the message-passing interface (MPI) and
-    Fortran90 compilation may not be available on all platforms.  If
-    your platform does NOT have a Fortran90 compiler, you must build
-    DAKOTA using the deprecated, autotools technique (see additional
-    notes below regarding "disable-f90").  If your platform has the
-    GNU Fortran90 compiler installed, please set the following
-    environment variable prior to building dakota to ensure compatible
-    system, shared-object libs, e.g.
-
-      export F77=gfortran    # SH/BASH
-
-
-==========================
-Source Access via Checkout
-==========================
-
-For accessing DAKOTA via Subversion repository checkout, please visit
-the Developer Portal at http://dakota.sandia.gov/developer/.  CMake
-is preferred when compiling DAKOTA from source.  However, if
-configure/make must be used, e.g. cmake does not work on a particular
-platform, or perhaps, no Fortran90 compiler is available, it is
-necessary to run 'autoreconf -i' in the checked out DAKOTA tree before
-proceeding with configure/make.  For further information on installing
-the recommended versions of tools used to configure DAKOTA, visit the
-Developer Portal.
-
-
-================================
-Source Installation Dependencies
-================================
-
-To build DAKOTA with all possible packages, some platform-dependent
-software dependencies exist.  These include
- * Boost (required)
- * Message Passing Interface (MPI) library (optional)
- * Basic Linear Algebra Subprograms (BLAS) (required)
- * Linear Algebra PACKage (LAPACK) libraries (required)
- * X11 and Motif graphics libraries (optional)
- * Fortran90 compiler (optional)
-
-Of these, support for MPI and X11/Motif graphics are not strict
-requirements since they can be optionally omitted from the build using
-CMake's configuration options, i.e., cmake variables that can be
-toggled off when running CMake.  However, Boost and BLAS/LAPACK
-support are currently required.  Additionally, the default CMake build
-REQUIRES a Fortran90 compiler.  If building DAKOTA on a platform that
-does not have a Fortran90 compiler, users must fallback to the legacy
-autotools build system (see additional notes below regarding
-"disable-f90").
-
-To the extent possible, CMake will automatically locate the required
-software for the build; however, in some cases, it will need some
-assistance to supplement or override the automatic detection
-capabilities.  See BuildSetup*.cmake files in the directory
-Dakota/examples/platforms for examples of this.  Additionally, for
-help installing and running DAKOTA on specific operating systems or
-platforms, refer to the DAKOTA website, or possibly appropriate
-INSTALL.* files (also in the platforms directory).
-
-
---- MPI ---
-
-MPI installation directories will vary from platform to platform.  To
-utilize message-passing parallelism within DAKOTA, it may be necessary
-to locate an MPI installation or download and build your own.  When
-DAKOTA_HAVE_MPI (CMake) is set to true, DAKOTA will look for C++
-wrapper scripts provided by the MPI installation (such as mpicxx,
-mpiCC, or mpCC) to build sources requiring MPI headers and to link
-executables requiring MPI libraries.  In some cases (e.g., Solaris,
-AIX, Cray), a platform-optimized implementation of MPI is provided in
-the environment.  If the MPI libraries and header files are in
-standard locations searched by the compilers (e.g., /usr/lib and
-/usr/include), then no additional setup is typically needed.
-
-If the MPI installation is not in a default search location, then one
-of the CMake cache variables MPI_CXX_COMPILER or CMAKE_CXX_COMPILER
-must be initialized with the location of the C++ MPI wrapper script.
-Alternately, one may set MPI_INCLUDE_PATH, MPI_LIBRARY, etc., as
-expected by the CMake module FindMPI.
-
-
---- Linear Algebra ---
-
-With respect to BLAS and LAPACK, these libraries are often optimized
-for performance on particular chip architectures and are usually
-provided as part of the environment.  In a few instances (Cygwin for
-Windows, older Red Hat Linux, and some other Linux vendors), it may be
-necessary to download and install BLAS/LAPACK (see
-http://www.netlib.org/blas and http://www.netlib.org/lapack).  If
-these libraries are not installed in a location normally searched by
-the compilers (e.g., /usr/lib), or have non-standard library names (e.g.,
-Intel MKL, AMD Core Math Library, or Sun Performance Library) then 
-the path to these must be added to the $BLAS_LIBS and $LAPACK_LIBS 
-environment variables (or to the -DBLAS_LIBS=<path_to_blas> and
--DLAPACK_LIBS=<path_to_lapack> 'cmake' options; see "Installation Details"
-below for information about environment variables and Cygwin (PC Windows)
-for an example).
-
-
---- X11 Graphics ---
-
-Most Unix platforms provide the X11 graphics libraries needed to
-compile and link DAKOTA with graphics.  In some cases, it may be
-necessary to download and install free implementations of X11 and
-Motif such as XFree86 (http://www.xfree86.org/) or OpenMOTIF
-(http://www.opengroup.org/openmotif/).
-
-
---- Fortran 90 ---
-
-Finally, use of Lawson/Hanson methods and the LHS package require a
-Fortran90 compiler.  If the compiler is in a nonstandard location, it
-may be necessary to specify it at configure time, e.g., for the
-Portland Group compilers:
-
-  cmake -DCMAKE_Fortran_COMPILER=pgf90 <path/to/source>
-
-(or via the full path if it's not on your current path).
-DAKOTA has been successfully built with the Intel, Portland Group, IBM/xlf90,
-g95, and gfortran Fortran90 compilers.  gfortran is preferred to g95 at this
-time.  If no Fortran90 compiler is available, DAKOTA features that
-require it can ONLY be disabled with a (deprecated) autotools build, i.e.
-
-  configure --disable-f90    # please consider this only a last resort
-
-
-===========================
-Source Installation Options
-===========================
-
-This section summarizes some of the most common options for compiling
-DAKOTA with CMake (and a few for autotools).  For the most
-comprehensive and up-to-date guidance, please visit the DAKOTA website
-at http://dakota.sandia.gov and the Developer Portal in particular
-(http://dakota.sandia.gov/developer/).
-
-For both the source distribution archive and version control checkout
-cases, the Dakota directory created will contain the source code and
-CMakeLists.txt files needed to enable builds.  Also provided are
-legacy autoconf-generated scripts for configure/make, but these are
-deprecated as of DAKOTA 5.2 and should only be used as a last resort.
-Several external TPLS reside in Dakota/packages.
-
-The CMake utility attempts to guess correct values for various
-system-dependent variables used during compilation.  It uses those
-values to create a 'Makefile' in each directory of the package.  It
-may also create one or more *.h header files containing
-system-dependent definitions.  Finally, it caches the variables in a
-'CMakeCache.txt' file that can be examined to verify the current
-configuration (and can also be useful for debugging 'cmake').
-
-The simplest way to compile a package is:
-
-  1. 'mkdir' and 'cd' to the newly created build directory which will contain
-     the package's binary targets and type 'cmake' to generate the packages
-     Makefiles for your system.
-
-  2. Type 'make' to compile the package.
-
-  3. Type 'make install' to install the programs and any data files and
-     documentation.
-
-     The executables will be installed in the bin/ subdirectory of the
-     CMAKE_INSTALL_PREFIX directory specified. (Default CMAKE_INSTALL_PREFIX
-     is /usr/local; see "Installation Names" below.)
-
-  4. The program binaries and object files can be removed from the
-     build directory by typing 'make clean'.
-
-
---- Compilers and Options ---
-
-Initial values for configuration parameters can be passed to 'cmake' 
-by setting variables in the command line or in the environment.  Here
-is a command-line example:
-
-  CFLAGS=-O2 cmake -DCMAKE_C_COMPILER=c89
-
-See also Dakota/examples/platforms/BuildSetup*.cmake for examples of
-configuration files that can be passed to CMake's -C option.  Run
-'cmake --help' for additional options.
-
-
---- Multiple Architectures ---
-
-The DAKOTA package can be compiled from a single source directory for
-more than one kind of computer at the same time, by placing the object
-files for each architecture in their own build directory.  When
-configuring from each build directory, simply point CMake to the
-common source tree.
-
-
---- Boost Location ---
-
-Prior to building DAKOTA in an empty build directory, the location of
-the Boost libraries must be identified if not installed in a system
-area.  If Boost is already installed on the system, then it is
-generally easy for CMake to determine and set the proper paths in the
-generated Makefiles.
-
-If Boost has NOT been installed in a typical system area, it MUST be
-built and installed by the user prior to building DAKOTA.  Please
-ensure that a binary compatible version of the Boost libraries are
-available PRIOR to building DAKOTA.
-
-DAKOTA uses a subset of Boost (and for convenience provides Boost 1.45
-source files in Dakota/packages/boost) consisting of several
-header-only Boost components PLUS the following set of library
-components: Boost.Signals, Boost.Regex, Boost.Filesystem, and
-Boost.System.
-
-In addition to the Boost source files, the DAKOTA "snapshot" also
-contains autotools and CMake build-harnesses for the four libraries
-that must be installed prior to initiating a DAKOTA build.  If users
-prefer BJAM for building Boost components, they should follow the
-guidelines for download, build, install provided at the boost.org
-website.
-
-Please note that many system Boost installations DO NOT meet the
-minimum minimum version requirement for DAKOTA (Boost 1.37 or higher);
-these will result in an error.
-
-Having determined the location of the Boost installation, 'cd' to the build
-directory where you want the object files and executables to go and run
-'cmake'.  Since DAKOTA does not support in-source build trees, the directory
-containing the source tree must be specified as an argument to 'cmake'.  One
-technique for providing the location of Boost is via command line argument to
-'cmake', e.g.
-
-  cmake -DBoost_INCLUDE_DIR=<dirpath_to_boost_inc> <dirpath_to_dakota_src>
-
-
---- Installation Locations ---
-
-By default, 'make install' will try to install the package's files in
-'CMAKE_INSTALL_PREFIX/bin', 'CMAKE_INSTALL_PREFIX/man', etc.  Please
-note the default CMAKE_INSTALL_PREFIX is /usr/local.  An alternate
-installation directory can be specified by giving 'cmake' the option
-'-DCMAKE_INSTALL_PREFIX=<dir>'.
-
-Separate installation directories for architecture-specific files and
-architecture-independent files can be specified.  If you give 'cmake'
-the option '-DCMAKE_INSTALL_EXEC_PREFIX=<dir>', the package will use
-<dir> as the directory for installing programs and libraries.
-Documentation and other data files will still be installed using the
-regular CMAKE_INSTALL_PREFIX.
-
-
---- Defining Variables ---
-
-Some key variables, such as compiler and compiler flags, can be set in the
-environment passed to 'cmake'.  For example:
-
-  CC=/usr/local2/bin/gcc cmake <path/to/source>
-or
-  cmake -DCMAKE_C_COMPILER=/usr/local2/bin/gcc <path/to/source>
-
-will cause the specified gcc to be used as the C compiler.
-
-
-===========================
-Useful Environment Settings
-===========================
-
-Add man page paths for MPI and DAKOTA Manuals:
-  export MANPATH=<your_default_man_paths>:<path_to_mpi_installation>/man:<path_to_your_dakota>/docs/man-dev:<path_to_your_dakota>/docs/man-ref
-
-If you encounter difficulties with missing shared object libraries
-when trying to run a dakota executable, additions to your
-$LD_LIBRARY_PATH environment variable can instruct the run-time linker
-where to find the missing libraries, e.g.,
-
-  export LD_LIBRARY_PATH=/usr/local/X11R5/lib:$LD_LIBRARY_PATH
-
-though note that library incompatibilities can exist between system
-and DAKOTA versions of libraries, even with minor version differences.
-
-===============================
-Installing Commercial Libraries
-===============================
-
-Some packages are optional commercial extensions to DAKOTA which can
-be licensed separately and are not included with the downloadable
-distributions.  These are disabled by default.
-
-DOT, NPSOL, and NLPQL are such commercial optimization library
-extensions to the DAKOTA toolkit.  DOT is licensed by Vanderplaats
-Research and Development (http://www.vrand.com/dot.htm); NPSOL is
-licensed by Stanford Business Software
-(http://www.sbsi-sol-optimize.com/NPSOL.htm); and NLPQL is licensed by
-Prof. Klaus Schittkowski
-(http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp.htm).
-Refer to these sites for licensing fees and policies.
-
-It is preferable to license the source code, although target platform
-object libraries may also be workable with configuration modifications.  
-These distributions should be installed in the Dakota/packages/DOT,
-Dakota/packages/NPSOL, and Dakota/packages/NLPQL directories prior to 
-building DAKOTA.  
-
-In a DOT source distribution, the files of interest are DDOT1.FOR through 
-DDOT6.FOR, which should be renamed dot1.f through dot6.f and placed in the 
-Dakota/packages/DOT/dbl_prec directory.  
-
-In NPSOL 5.0 source distributions, the required Fortran files are 
-npUnix/src/*.f and npUnix/examples/*.f.  These files should be copied to the 
-Dakota/packages/NPSOL directory.  For older NPSOL versions, refer to 
-the comments in Dakota/packages/NPSOL/Makefile.in for the required 
-Fortran files.  In a NLPQL distribution, the required Fortran files are
-NLPQLP20.FOR and QL.FOR, which should be renamed to NLPQLP20.f and QL.f and 
-placed in the Dakota/packages/NLPQL directory.
-
-DOT source modifications: In dot1.f, modify the parameter list of
-SUBROUTINE DOT to pass the parameter NGOTOZ as its second parameter.
-This allows DAKOTA to monitor when DOT is performing finite
-differencing, versus when DOT is performing the line search.  If this
-modification to DOT cannot be performed, then Dakota/src/DOTOptimizer.cpp 
-must be modified to be consistent with the unmodified DOT parameter list.
-
-NPSOL _required_ source modifications: 
-Version 4: In f06subs.f, comment out the "ENTRY" statements which alias the
-           supplied NAG F06 routines to BLAS level 1 and level 2 routines
-           (the ENTRY statements with names DAXPY, DCOPY, DDOT, DNRM2,
-           DSCAL, DSWAP, IDAMAX, DROT, DGEMV, DGER, DSYMV, DSYR, DTRMV, and
-           DTRSV, as listed in the f06subs.f header).  This modification 
-           prevents use of BLAS routines elsewhere in DAKOTA from picking
-           up the NAG f06 routines (which allows consistent usage of the 
-           latest platform-optimized BLAS).  In addition, replace the 
-           NPSRC, NPOBJ, MAINSRC, MAINOBJ, and PGMS Makefile macros as 
-           documented in Dakota/packages/NPSOL/Makefile.in.
-Version 5: No modifications necessary.
-
-NPSOL _optional_ source modifications: 
-Versions 4 and 5 (line numbers are for Version 5):
-           In lssolsubs.f, subroutine lscrsh, change line #1979 to
-              if(wx(j) .le. b1) then is = 1
-           and change line #1982 to
-              if(wx(j) .ge. b2) then is = 2
-           This source code modification alleviates a problem in which 
-           NPSOL evaluates a different initial point than is specified 
-           by the user in the DAKOTA input file.
-
-
-==============================
-Generating Local Documentation
-==============================
-
-The DAKOTA Users, Theory, Developers, and Reference Manuals are
-maintained in Dakota/docs.  Documentation creation is only supported
-on Linux platforms and specific doxygen and LaTeX versions may be
-required to get good results.  To build a local copy of the manuals,
-include the '-DENABLE_DAKOTA_DOCS=on' command line argument to 'cmake'
-or otherwise add to the cache when configuring.
-
-Then make the Theory or Users documentation with one or both of
-
-  cd docs/latex-user
-  make docs-pdf-user
-  cd docs/latex-theory
-  make docs-pdf-theory
-
-To build a local copy of the Developers and Reference manuals in HTML,
-LaTeX, and man page formats, you will need the doxygen tool available
-for download from http://www.doxygen.org.  To only run the doxygen
-generation phase (producing HTML, man pages and raw LaTeX source), run
-
-  cd docs
-  make docs-doxygen
-
-To further generate PDF files, run one or both of
-
-  cd docs
-  make docs-pdf-dev
-  make docs-pdf-ref
-
-A shortcut to make all PDF docs (though will take some time) is
-  
-  cd docs
-  make docs-pdf
-
-For the highest quality Postscript or PDF manual,
-Dakota/docs/README.latex provides instructions for fine-tuning of
-chapter numbering and Dakota/docs/latex_modify.perl provides a Perl
-utility for automating these modifications.
-
-To access the man pages with the man command, add the <DAK_BUILD_DIR>/docs/man
-and <DAK_BUILD_DIR>/docs/man-ref directories to your $MANPATH.
-
-
-=============
-Library Notes
-=============
-
-Library (package) versions distributed with DAKOTA have been tested
-for that particular DAKOTA release.  A summary of these libraries can
-be found at http://dakota.sandia.gov/packages.html.  When upgrading to
-the latest libraries, modifications to the supporting DAKOTA code
-(e.g., the wrapper class) may be required. Sharing such improvements
-with the development team is greatly appreciated.  See the DAKOTA
-Developer Portal at http://dakota.sandia.gov/developer/ for more
-information on contributing.
+   CMAKE_INSTALL_PREFIX/lib. You may set CMAKE_INSTALL_PREFIX in 
+   BuildDakotaCustom.cmake.
+
+===============
+Other Resources
+===============
+
+For additional help with installing Dakota from source, please
+visit Dakota Developer portal at http://dakota.sandia.gov/developer/. 
+
+Topic include:
+* accessing Dakota via Subversion repository checkout
+* source installation dependencies
+* source installation options
+* Dakota CMake hints
+* generating local documentation
+* summary of distributed Dakota libraries
+* installing commercial libraries, such as DOT, NPSOL, and NLPQL 

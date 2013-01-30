@@ -13,13 +13,15 @@ Michael S. Eldred   (Research Lead)           	         _/_/
 James R. Stewart    (Business Manager)	 	    _/_/_/_/_/_/ 
 William J. Bohnhoff (Support Manager)        	   _/  _/_/  _/  
 Keith R. Dalbey                                   _/  _/_/  _/   
-John P. Eddy                                  	    _/_/_/       
-Laura P. Swiler
-Dena M. Vigil			        P.O. Box 5800, Mail Stop 1318
-					Albuquerque, NM 87185-1318   
+John P. Eddy	                               	    _/_/_/       
+Mohamed S.Ebeida
+Kenneth T. Hu
+John D. Jakeman
+Laura P. Swiler			        P.O. Box 5800, Mail Stop 1318
+Dena M. Vigil				Albuquerque, NM 87185-1318   
 
 Patricia D. Hough			P.O. Box 969, MS 9217
-Sophia Lefantzi				Livermore, CA 94551-0969
+Lara E. Bauman				Livermore, CA 94551-0969
 
 ------------------------------------------------------------------------------
 License
@@ -55,7 +57,7 @@ surrogate-based optimization, mixed integer nonlinear programming, or
 optimization under uncertainty.
 
 Refer to http://dakota.sandia.gov/ for additional information,
-including support contacts..
+including support contacts.
 
 ------------------------------------------------------------------------------
 Distributions
@@ -82,6 +84,7 @@ Versions
 
 Versions of the DAKOTA software have been tagged as follows:
 
+5.3                01/31/12 (refer to svn externals for TPL tags)
 5.2                11/30/11 (refer to svn externals for TPL tags)
 5.1                12/21/10 (refer to svn externals for TPL tags)
 Version_5_0        12/21/09 (refer to svn externals for TPL tags)
