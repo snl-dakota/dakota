@@ -1,17 +1,18 @@
 The directory Dakota/examples is designed to help users get started
 using DAKOTA.  The examples are grouped into the following directories:
 
-examples/tutorial: Introductory examples corresponding to Chapter 2 in
-the DAKOTA User's Manual (DAKOTA Tutorial).  These input files
-demonstrate application of various DAKOTA methods to simple analytic
-functions via both direct and system/fork interfaces to simulators.
+examples/users: Examples found in the Dakota User's Manual. The
+examples in the Tutorial chapter demonstrate application of various
+DAKOTA methods to simple analytic functions via both direct and
+system/fork interfaces to simulators.  More in-depth examples of
+performing specific studies with various DAKOTA methods, including
+uncertainty quantification, least squares (calibration), and
+optimization appear throughout the manual.  Also advanced examples
+such as optimization under uncertainty, second-order probability, and
+surrogate-based optimization.  
 
-examples/methods: More in-depth examples of performing specific
-studies with various DAKOTA methods, including uncertainty
-quantification, least squares (calibration), and optimization.  Also
-advanced examples such as optimization under uncertainty, second-order
-probability, and surrogate-based optimization.  Most User's Manual
-examples from Chapter 3 onward are included here.
+examples/cantilever: Examples which all use the cantilever beam
+example problem which are often used in training.
 
 examples/script_interfaces: Examples of linking DAKOTA to various
 applications.  Of particular note is script_interfaces/generic/ which

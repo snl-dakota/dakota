@@ -1,4 +1,4 @@
-# Extract files for examples/methods
+# Extract files for examples/users
 include(AddFileCopyCommand)
 
 set(test_path ${Dakota_SOURCE_DIR}/test)

@@ -1,4 +1,5 @@
 # Extract files for examples/cantilever
+include(AddFileCopyCommand)
 
 set(test_path ${Dakota_SOURCE_DIR}/test)
 
@@ -13,6 +14,16 @@ set(cantilever_test_inputs
   "${test_path}/dakota_cantilever_examples.in 7 cantilever_optimization.in"
   "${test_path}/dakota_cantilever_examples.in 8 cantilever_calibration.in"
 )
+
+add_file_copy_command(${test_path}/dakota_cantilever_examples.clean.dat
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota_cantilever_examples.clean.dat)
+add_file_copy_command(${test_path}/dakota_cantilever_examples.error.dat
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota_cantilever_examples.error.dat)
+
+set(all_copied_files 
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota_cantilever_examples.clean.dat
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota_cantilever_examples.error.dat)
+
 
 # Now iterate over the list, parsing and extracting with dakota_test.perl.
 # Also create all_generated_inputs to use in dependency management
@@ -37,7 +48,7 @@ foreach(generated_input ${cantilever_test_inputs})
 endforeach()
 
 add_custom_target(examples-cantilever ALL 
-  DEPENDS ${all_generated_inputs})
+  DEPENDS ${all_generated_inputs} ${all_copied_files}) 
 
-install(FILES ${all_generated_inputs} 
-  DESTINATION "${DAKOTA_EXAMPLES_INSTALL}/examples/methods")
+install(FILES ${all_generated_inputs} ${all_copied_files}
+  DESTINATION "${DAKOTA_EXAMPLES_INSTALL}/examples/cantilever")
