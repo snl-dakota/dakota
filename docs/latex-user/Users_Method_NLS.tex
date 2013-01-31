@@ -67,7 +67,7 @@ the form:
 where $f(\mathbf{x})$ is the objective function to be minimized and
 $T_i(\mathbf{x})$ is the i$^{\mathrm{th}}$ least squares term. The
 bound, linear, and nonlinear constraints are the same as described
-previously for (\ref{opt:equation01}). Specialized least
+previously for (\ref{opt:formulations:equation01}). Specialized least
 squares algorithms are generally based on the Gauss-Newton
 approximation. When differentiating $f(\mathbf{x})$ twice, terms of
 $T_i(\mathbf{x})T''_i(\mathbf{x})$ and $[T'_i(\mathbf{x})]^{2}$
@@ -136,8 +136,8 @@ Dakota's Gauss-Newton algorithm consists of combining an
 implementation of the Gauss-Newton Hessian approximation (see
 Section~\ref{nls:formulations}) with full Newton optimization
 algorithms from the OPT++ package~\cite{MeOlHoWi07} (see
-Section~\ref{opt:software:optpp}). The exact objective function
-value, exact objective function gradient, and the approximate
+Section~\ref{opt:methods:gradient:descriptions}). The exact objective
+function value, exact objective function gradient, and the approximate
 objective function Hessian are defined from the least squares term
 values and gradients and are passed to the full-Newton optimizer from
 the OPT++ software package. As for all of the Newton-based
@@ -184,7 +184,7 @@ approximation to accelerate the search. Like the Gauss-Newton
 algorithm of Section~\ref{nls:solution:gauss}, its derivative order is
 balanced in that it requires only first-order information for the
 least-squares terms and nonlinear constraints. License: commercial;
-see NPSOL~\ref{opt:software:npsol}.
+see NPSOL~\ref{opt:methods:gradient:descriptions}.
 
 This approach can be selected using the \texttt{nlssol\_sqp} method
 specification. An example specification follows:

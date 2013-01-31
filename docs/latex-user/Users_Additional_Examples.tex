@@ -133,18 +133,20 @@ see \texttt{Dakota/examples/users/textbook\_opt\_conmin.in} }
   \label{additional:textbook_grad_constr}
 \end{figure}
 
-The \texttt{conmin\_mfd} keyword in Figure~\ref{additional:textbook_grad_constr} 
-tells Dakota to use the CONMIN package's implementation of the
-Method of Feasible Directions (see Section~\ref{opt:software:conmin} 
-for more details). 
+The \texttt{conmin\_mfd} keyword in
+Figure~\ref{additional:textbook_grad_constr} tells Dakota to use the
+CONMIN package's implementation of the Method of Feasible Directions
+(see Section~\ref{opt:methods:gradient:descriptions} for more
+details).
 
-A significantly faster alternative is the DOT package's 
-Modified Method of Feasible Directions, i.e. \texttt{dot\_mmfd} (see 
-Section~\ref{opt:software:dot} for more details). However, DOT is 
-licensed software that may not be available on a particular system. If it 
-is installed on your system and Dakota has been compiled without the 
-\texttt{--without-dot} flag, you may use it by commenting out the line with
-\texttt{conmin\_mfd} and uncommenting the line with \texttt{dot\_mmfd}.
+A significantly faster alternative is the DOT package's Modified
+Method of Feasible Directions, i.e. \texttt{dot\_mmfd} (see
+Section~\ref{opt:methods:gradient:descriptions} for more
+details). However, DOT is licensed software that may not be available
+on a particular system. If it is installed on your system and Dakota
+has been compiled without the \texttt{--without-dot} flag, you may use
+it by commenting out the line with \texttt{conmin\_mfd} and
+uncommenting the line with \texttt{dot\_mmfd}.
 
 The results of the optimization example are listed at the end of
 the output file (see Section~\ref{tutorial:quickstart:output}.
@@ -991,13 +993,13 @@ and the points along the Pareto front are said to be
 ``non-dominated''.
 
 Often multi-objective problems are addressed by simply assigning
-weights to the individual objectives, summing the weighted
-objectives, and turning the problem into a single-objective one
-which can be solved with a variety of optimization techniques. While
-this approach provides a useful ``first cut'' analysis (and is
-supported within Dakota---see Section~\ref{opt:additional}), this
-approach has many limitations. The major limitation is that a
-local solver with a weighted sum objective will only find one
+weights to the individual objectives, summing the weighted objectives,
+and turning the problem into a single-objective one which can be
+solved with a variety of optimization techniques. While this approach
+provides a useful ``first cut'' analysis (and is supported within
+Dakota---see Section~\ref{opt:additional:multiobjective}), this
+approach has many limitations. The major limitation is that a local
+solver with a weighted sum objective will only find one
 % optimal solutions if the true Pareto front is nonconvex. %Hogwash!
 point on the Pareto front; if one wants to understand
 the effects of changing weights, this method can be computationally
@@ -1007,16 +1009,15 @@ optimizations must be performed to get a good parametric
 understanding of the influence of the weights and to achieve a good
 sampling of the entire Pareto frontier.
 
-There are three examples that are taken from a multiobjective 
+There are three examples that are taken from a multiobjective
 evolutionary algorithm (MOEA) test suite described by Van Veldhuizen
-et. al. in~\cite{Coe02}. These three examples 
-illustrate the different forms that the Pareto set may take. For each
-problem, we describe the Dakota input and show a graph of the Pareto
-front. These problems are all solved with the \texttt{moga} method.
-The first example is discussed in Section~\ref{opt:additional:multiobjective}. 
-The next two are discussed below. 
-Sections~\ref{opt:software} and~\ref{opt:additional} provide more
-information on multiobjective optimization.
+et. al. in~\cite{Coe02}. These three examples illustrate the different
+forms that the Pareto set may take. For each problem, we describe the
+Dakota input and show a graph of the Pareto front. These problems are
+all solved with the \texttt{moga} method.  The first example is
+discussed in Section~\ref{opt:additional:multiobjective}.  The next
+two are discussed below.  Section~\ref{opt:additional:multiobjective}
+provide more information on multiobjective optimization.
 
 \subsection{Multiobjective Test Problem 2}\label{additional:multiobjective:problem2}
 
