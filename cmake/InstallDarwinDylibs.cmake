@@ -20,7 +20,7 @@ function(dakota_install_dll dakota_dll)
 endfunction()
 
 
-if ( NOT CMAKE_CURRENT_BINARY_DIR )
+if ( NOT CMAKE_CURRENT_BINARY_DIR AND NOT DAKOTA_JENKINS_BUILD )
    set( CMAKE_CURRENT_BINARY_DIR $ENV{PWD} )
 endif()
 

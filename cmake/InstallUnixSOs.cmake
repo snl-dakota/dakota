@@ -19,9 +19,11 @@ function(dakota_install_dll dakota_dll)
   endif()
 endfunction()
 
-if ( NOT CMAKE_CURRENT_BINARY_DIR )
+message( "CMAKE_CURRENT_BINARY_DIR (1): ${CMAKE_CURRENT_BINARY_DIR}" ) 
+if ( NOT CMAKE_CURRENT_BINARY_DIR AND NOT DAKOTA_JENKINS_BUILD )
    set( CMAKE_CURRENT_BINARY_DIR  $ENV{PWD} )
 endif()
+message( "CMAKE_CURRENT_BINARY_DIR (2): ${CMAKE_CURRENT_BINARY_DIR}" ) 
 
 
 # Get the shared objects excluding system libraries and anything in
