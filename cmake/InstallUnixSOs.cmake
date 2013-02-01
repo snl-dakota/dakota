@@ -20,8 +20,12 @@ function(dakota_install_dll dakota_dll)
 endfunction()
 
 message( "CMAKE_CURRENT_BINARY_DIR (1): ${CMAKE_CURRENT_BINARY_DIR}" ) 
-if ( NOT CMAKE_CURRENT_BINARY_DIR AND NOT DAKOTA_JENKINS_BUILD )
-   set( CMAKE_CURRENT_BINARY_DIR  $ENV{PWD} )
+if ( DAKOTA_JENKINS_BUILD OR DEFINED ENV{WORKSPACE} )
+  # By convention, all Dakota, jenkins-driven build jobs use a 'build'
+  # subdir for clear separation of source and build trees in the WORKSPACE
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{WORKSPACE}/build )
+elseif ( NOT CMAKE_CURRENT_BINARY_DIR )
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{PWD} )
 endif()
 message( "CMAKE_CURRENT_BINARY_DIR (2): ${CMAKE_CURRENT_BINARY_DIR}" ) 
 
