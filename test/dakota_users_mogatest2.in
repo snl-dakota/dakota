@@ -1,6 +1,6 @@
 # Dakota Input File: mogatest2.in
 
-# timeout overrides: 0=TD300
+# timeout overrides: 0=TD480
 
 strategy
   single
