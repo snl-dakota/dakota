@@ -1,0 +1,33 @@
+strategy,
+	single_method
+
+method,
+	stoch_collocation				
+	  dimension_adaptive p_refinement generalized
+	    convergence_tol = 1.e-5
+	  sparse_grid_level = 0
+	  num_response_levels = 0 1 1			
+	  response_levels = 0.0 0.0			
+	  compute reliabilities				
+	  complementary distribution			
+	  output silent
+
+variables,
+        continuous_design = 2
+	  initial_point = 2.4459894523 3.8921865176
+	  descriptors 'w' 't'
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
+
+interface,
+        direct
+          analysis_driver = 'mod_cantilever'
+	  deactivate restart_file #evaluation_cache
+
+responses,
+	response_functions = 3
+        no_gradients
+        no_hessians
+
