@@ -32990,6 +32990,22 @@ Moment-based statistics for each response function:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                     -3.5638648799e-02
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 65 total (65 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    9.5202471684e+00  2.4306710000e-15 -3.7318309243e-01  5.7866464587e+00
+  numerical:    9.5202471684e+00  1.7763568394e-15  1.0000000000e+00 -2.0000000000e+00
+  expansion:   -1.0924625803e+04  3.6415419344e+03 -1.4710966402e-14  0.0000000000e+00
+  numerical:   -1.0924625803e+04  3.6415419344e+03 -7.2369123213e-15  1.7763568394e-15
+  expansion:   -6.9728465548e-01  2.1278373569e-01  2.3230467297e-01  6.8061646734e-02
+  numerical:   -6.9728465548e-01  2.1278373569e-01  2.3230467297e-01  6.8061646734e-02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      2.9999999999e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      3.2769640651e+00
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 86 total (86 new, 0 duplicate)
