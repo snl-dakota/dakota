@@ -158,17 +158,19 @@ distance from the origin in u-space:
 {\rm minimize}     & \pm G({\bf u}) \nonumber \\
 {\rm subject \ to} & {\bf u}^T {\bf u} = \bar{\beta}^2 \label{eq:pma_opt}
 \end{eqnarray}
-where $\bar{\beta}$ is computed from $\bar{p}$ using 
-Eq.~\ref{eq:beta_cdf} or~\ref{eq:beta_ccdf} in the latter case.
-For a specified generalized reliability level $\bar{\beta^*}$ or
-second-order probability level $\bar{p}$, the equality constraint is 
-reformulated in terms of the generalized reliability index:
+where $\bar{\beta}$ is computed from $\bar{p}$ using
+Eq.~\ref{eq:beta_cdf} or~\ref{eq:beta_ccdf} in the latter case of a
+prescribed first-order probability level.  For a specified generalized
+reliability level $\bar{\beta^*}$ or second-order probability level
+$\bar{p}$, the equality constraint is reformulated in terms of the
+generalized reliability index:
 \begin{eqnarray}
 {\rm minimize}     & \pm G({\bf u}) \nonumber \\
-{\rm subject \ to} & \beta^* = \bar{\beta^*} \label{eq:pma2_opt}
+{\rm subject \ to} & \beta^*({\bf u}) = \bar{\beta^*} \label{eq:pma2_opt}
 \end{eqnarray}
-where $\bar{\beta^*}$ is computed from $\bar{p}$ using 
-Eq.~\ref{eq:gen_beta} or its complement in the latter case.
+where $\bar{\beta^*}$ is computed from $\bar{p}$ using
+Eq.~\ref{eq:gen_beta} (or its CCDF complement) in the latter case of a
+prescribed second-order probability level.
 
 In the RIA case, the optimal MPP solution ${\bf u}^*$ defines the
 reliability index from $\beta = \pm \|{\bf u}^*\|_2$, which in turn
@@ -187,10 +189,12 @@ can be used to determine the orientation of the optimal response with
 respect to the median response.} (where $\beta_{\rm CDF}$ = $\beta_{\rm CCDF}$ = 0 
 and first-order $p(g \le z)$ = $p(g > z)$ = 0.5).  In the PMA case, the 
 sign applied to $G({\bf u})$ (equivalent to minimizing or maximizing 
-$G({\bf u})$) is similarly defined by either $\bar{\beta}$ (specified 
+$G({\bf u})$) is similarly defined by either $\bar{\beta}$ (for a specified 
 reliability or first-order probability level) or from a $\bar{\beta}$ 
-computed from $\bar{\beta^*}$ (specified generalized reliability or 
-second-order probability level)
+estimate\footnote{computed by inverting the second-order probability 
+relationships described in Section~\ref{uq:reliability:local:mpp:int} at 
+the current ${\bf u}^*$ iterate.} computed from $\bar{\beta^*}$ (for a 
+specified generalized reliability or second-order probability level)
 \begin{eqnarray}
 \bar{\beta}_{\rm CDF} < 0, \bar{\beta}_{\rm CCDF} > 0: {\rm maximize \ } G({\bf u}) \\
 \bar{\beta}_{\rm CDF} > 0, \bar{\beta}_{\rm CCDF} < 0: {\rm minimize \ } G({\bf u})

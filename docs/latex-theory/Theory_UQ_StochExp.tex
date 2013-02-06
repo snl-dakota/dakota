@@ -998,49 +998,64 @@ system:
 \boldsymbol{\Psi} \boldsymbol{\alpha} = \boldsymbol{R} \label{eq:regression}
 \end{equation}
 to solve for the complete set of PCE coefficients
-$\boldsymbol{\alpha}$ that best match a set of response values
-$\boldsymbol{R}$.  The set of response values is obtained either by
-performing a design of computer experiments within the density
-function of $\boldsymbol{\xi}$ (point
-collocation~\cite{pt_colloc1,pt_colloc2}) or from a subset of tensor
-quadrature points with highest product weight (probabilistic
-collocation~\cite{Tat95}).  In either case, each row of the matrix
+$\boldsymbol{\alpha}$ that best reproduce a set of response values
+$\boldsymbol{R}$.  The set of response values can be defined on an
+unstructured grid obtained from sampling within the density function
+of $\boldsymbol{\xi}$ (point collocation~\cite{pt_colloc1,pt_colloc2})
+or on a structured grid defined from uniform random sampling on the
+multi-index\footnote{Due to the discrete nature of index sampling, we
+  enforce unique index samples by sorting and resampling as required.}
+of a tensor-product quadrature grid (probabilistic
+collocation~\cite{Tat95}), where the quadrature is of sufficient order
+to avoid sampling at roots of the basis polynomials\footnote{Generally
+  speaking, dimension quadrature order $m_i$ greater than dimension
+  expansion order $p_i$.}.  In either case, each row of the matrix
 $\boldsymbol{\Psi}$ contains the $N_t$ multivariate polynomial terms
 $\Psi_j$ evaluated at a particular $\boldsymbol{\xi}$ sample.  An
-over-sampling is recommended in the case of random samples
-(\cite{pt_colloc2} recommends $2N_t$ samples), resulting in a least
-squares solution for the over-determined system.  As for
-sampling-based coefficient estimation, this approach is only valid for
-PCE and does not require synchronization with monomial coverage; thus
-it is common to combine this coefficient estimation approach with a
-traditional total-order chaos expansion in order to keep sampling
-requirements low.  In this case, simulation requirements for this
-approach scale as $\frac{r(n+p)!}{n!p!}$ ($r$ is an over-sampling
-factor with typical values $1 \leq r \leq 2$), which can be
-significantly more affordable than isotropic tensor-product quadrature
-(scales as $(p+1)^n$ for standard Gauss rules) for larger problems.
+over-sampling is most commonly used (\cite{pt_colloc2} recommends
+$2N_t$ samples), resulting in a least squares solution for the
+over-determined system, although unique determination ($N_t$ samples)
+and under-determination (fewer than $N_t$ samples) are also supported.
+As for sampling-based coefficient estimation, this approach is only
+valid for PCE and does not require synchronization with monomial
+coverage; thus it is common to combine this coefficient estimation
+approach with a traditional total-order chaos expansion in order to
+keep sampling requirements low.  In this case, simulation requirements
+for this approach scale as $\frac{r(n+p)!}{n!p!}$ ($r$ is an
+over-sampling factor with typical values $0.1 \leq r \leq 2$), which
+can be significantly more affordable than isotropic tensor-product
+quadrature (scales as $(p+1)^n$ for standard Gauss rules) for larger
+problems.
 %A closely related technique is known as the ``probabilistic
 %collocation'' approach.  Rather than employing random over-sampling,
 %this technique uses a selected subset of $N_t$ Gaussian quadrature
 %points (those with highest tensor-product weighting), which provides
 %more optimal collocation locations and preserves interpolation
 %properties.
-Finally, additional regression equations can be obtained through the
-use of derivative information (gradients and Hessians) from each
-collocation point, which can aid in scaling with respect to the number
-of random variables, particularly for adjoint-based derivative
-approaches.
+Additional regression equations can be obtained through the use of
+derivative information (gradients and Hessians) from each collocation
+point (refer to {\tt use\_derivatives} in the PCE regression
+specification details in the Dakota Reference Manual~\cite{RefMan}),
+which can aid in scaling with respect to the number of random
+variables, particularly for adjoint-based derivative approaches.
+Finally, one can additionally modify the exponentiation order applied
+to $N_t$ in the over-sampling ratio calculation (refer to {\tt
+  ratio\_order} in the PCE regression specification details in the
+Dakota Reference Manual~\cite{RefMan}).
 
-Various methods can be employed to solve \eqref{eq:regression}.
-The relative accuracy of each method is problem dependent. Traditionally,
- the most frequently used method has been least squares regression. However 
-when $\boldsymbol{\Psi}$ is over-determined minimizing the residual with respect to
-the $\ell_2$ norm typically produces poor solutions. Compressed sensing methods have been
-successfully used to address this limitation~\cite{Blatman2011,Doostan2011}. 
-Such methods attempt to only identify the 
-elements of the coefficient vector $\boldsymbol{\alpha}$ with the largest magnitude 
-and enforce as many elements as possible to be zero. Such solutions are often called 
-sparse solutions. Dakota provides algorithms that solve the following formulations:
+Various methods can be employed to solve \eqref{eq:regression}.  The
+relative accuracy of each method is problem dependent. Traditionally,
+the most frequently used method has been least squares
+regression. However when $\boldsymbol{\Psi}$ is under-determined,
+minimizing the residual with respect to the $\ell_2$ norm typically
+produces poor solutions. Compressed sensing methods have been
+successfully used to address this
+limitation~\cite{Blatman2011,Doostan2011}.  Such methods attempt to
+only identify the elements of the coefficient vector
+$\boldsymbol{\alpha}$ with the largest magnitude and enforce as many
+elements as possible to be zero. Such solutions are often called
+sparse solutions. Dakota provides algorithms that solve the following
+formulations:
 \begin{itemize}
  \item Basis Pursuit (BP)~\cite{Chen2001}
 \begin{equation}
