@@ -1038,9 +1038,9 @@ point (refer to {\tt use\_derivatives} in the PCE regression
 specification details in the Dakota Reference Manual~\cite{RefMan}),
 which can aid in scaling with respect to the number of random
 variables, particularly for adjoint-based derivative approaches.
-Finally, one can additionally modify the exponentiation order applied
-to $N_t$ in the over-sampling ratio calculation (refer to {\tt
-  ratio\_order} in the PCE regression specification details in the
+Finally, one can additionally modify the order of the exponent 
+applied to $N_t$ in the over-sampling ratio calculation (refer to 
+{\tt ratio\_order} in the PCE regression specification details in the
 Dakota Reference Manual~\cite{RefMan}).
 
 Various methods can be employed to solve \eqref{eq:regression}.  The
@@ -1083,31 +1083,30 @@ will not return a solution. In such situations these methods simply return the l
 \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\alpha}\|_{\ell_0}\quad \text{such that}\quad \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2} \le \varepsilon
 \end{equation}
 OMP is a heuristic method which greedily finds an approximation to~\eqref{eq:omp}. In contrast to the aforementioned techniques for solving BP and BPDN, 
-which minimize an objective function,OMP constructs a sparse solution by iteratively 
+which minimize an objective function, OMP constructs a sparse solution by iteratively 
 building up an approximation of the solution vector $\boldsymbol{\alpha}$. 
 The vector is approximated as a linear combination of a subset of active columns of 
 $\boldsymbol{\Psi}$. The active set of columns is built column by column, in
 a greedy fashion, such that at each iteration the inactive column with the highest correlation
 (inner product) with the current residual is added.
 
-\item Least Absolute Shrinkage and Selection Operator (LASSO)~\cite{Tibshirani1996}
+\item Least Angle Regression (LARS)~\cite{Efron2004} and Least Absolute Shrinkage and Selection Operator (LASSO)~\cite{Tibshirani1996}
 \begin{equation}
 \label{eq:lasso}
  \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2}^2 \quad \text{such that}\|\boldsymbol{\alpha}\|_{\ell_1} \le \tau
 \end{equation}
-A greedy solution can be found using the Least Angle Regression (LARS) algorithm~\cite{Efron2004}.
-However with only a small modification LARS can also be used to rigorously solve the 
-global optimization problem~\eqref{eq:lasso}. Such an approach is identical to the homotopy algorithm of
+A greedy solution can be found to~\eqref{eq:lasso} using the LARS algorithm.
+Alternatively, with only a small modification, one can provide a rigorous solution to this global optimization problem, which we refer to as the LASSO solution. Such an approach is identical to the homotopy algorithm of
 Osborne et al~\cite{Osborne2000}. It is interesting to note that 
 Efron~\cite{Efron2004} experimentally observed that the basic, faster LARS 
 procedure is often identical to the LASSO solution.
 
 The LARS algorithm is similar to OMP. LARS again maintains an active set of columns and again builds
 this set by adding the column with the largest correlation with the residual to the current residual.
-However unlike OMP LARS solves a penalized least squares problem at each step taking a step along an equiangular direction, that is, a direction
+However, unlike OMP, LARS solves a penalized least squares problem at each step taking a step along an equiangular direction, that is, a direction
 having equal angles with the vectors in the active set. LARS and OMP do not allow a column (PCE basis)
 to leave the active set. However if this restriction is removed from LARS (it cannot be from OMP)
-the resulting algorithm can provably solve ~\eqref{eq:lasso}.
+the resulting algorithm can provably solve~\eqref{eq:lasso} and generates the LASSO solution.
 
 \item Elastic net~\cite{Zou2005}
 \begin{equation}
@@ -1115,13 +1114,13 @@ the resulting algorithm can provably solve ~\eqref{eq:lasso}.
  \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2}^2 \quad \text{such that}\quad (1-\lambda)\|\boldsymbol{\alpha}\|_{\ell_1} + 
 \lambda\|\boldsymbol{\alpha}\|_{\ell_2}^2 \le \tau
 \end{equation}
-The elastic net was developed to overcome some of the limitations of the lasso formulation. 
+The elastic net was developed to overcome some of the limitations of the LASSO formulation. 
 Specifically: if the ($M\times N$) Vandermonde matrix $\boldsymbol{\Psi}$ is over-determined ($M>N$), 
-the lasso selects at most $N$ variables before it saturates, because of the
+the LASSO selects at most $N$ variables before it saturates, because of the
 nature of the convex optimization problem; if there is a group of variables among which the pairwise correlations are very high, then
-the lasso tends to select only one variable from the group and does not care which one is
+the LASSO tends to select only one variable from the group and does not care which one is
 selected; and finally if there are high correlations between predictors, it has been
-empirically observed that the prediction performance of the lasso is dominated by ridge
+empirically observed that the prediction performance of the LASSO is dominated by ridge
 regression~\cite{Tibshirani1996}. Here we note that it is hard to estimate the $\lambda$ 
 penalty in practice and the aforementioned issues typically do not arise very often when 
 solving~\eqref{eq:regression}. The elastic net formulation can be solved with a minor modification of
@@ -1141,17 +1140,18 @@ Figure and caption based upon Figure 1 in~\cite{Donoho2008}}.
 \label{fig:compressed-sensing-method-heirarchy}
 \end{figure}
 
-OMP, and LARS add a PCE basis one step at a time. If $\boldsymbol{\alpha}$ contains
+OMP and LARS add a PCE basis one step at a time. If $\boldsymbol{\alpha}$ contains
  only $k$ non-zero terms then these methods will only take $k$-steps. 
 The homotopy version of LARS also adds only basis at each step, however 
-it can also remove bases, and thus can take more than $k$ steps. For some problems 
-the LARS and homotopy solutions with coincide. Each step of these algorithm provides a possible
-estimation of the PCE coefficients. However without knowledge of the target function there is no
-easy way to estimate which coefficient vector is best. However with some additional computational 
-effort (which will likely be minor to the cost of obtaining model simulations) cross validation 
+it can also remove bases, and thus can take more than $k$ steps. For some problems, 
+the LARS and homotopy solutions will coincide. Each step of these algorithm provides a possible
+estimation of the PCE coefficients. However, without knowledge of the target function, there is no
+easy way to estimate which coefficient vector is best. With some additional computational 
+effort (which will likely be minor to the cost of obtaining model simulations), cross validation 
 can be used to choose an appropriate coefficient vector.
 
 \subsection{Cross validation}
+
 Cross validation can be used to find a coefficient vector $\boldsymbol{\alpha}$ 
 that approximately minimizes $\| \hat{f}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$, where
 $f$ is the target function and $\hat{f}$ is the PCE approximation using $\boldsymbol{\alpha}$. 
@@ -1164,7 +1164,7 @@ with the $k$-th fold removed, using the tuning parameters $\boldsymbol{\beta}$.
 The remaining data $\mathbf{X}_k$ is then used to estimate the prediction error.
 The prediction error is typically approximated by
 $e(\hat{f})=\lVert \hat{f}(\mathbf{x})-f(\mathbf{x})\rVert_{\ell_2}$, 
-$\mathbf{x}\in\mathbf{X}_{k}$~\cite{hastie2001}. This process is then repeated $K$-times removing a 
+$\mathbf{x}\in\mathbf{X}_{k}$~\cite{hastie2001}. This process is then repeated $K$ times, removing a 
 different fold from the training set each time. 
 
 The cross validation error is taken to be the average of the prediction errors for the $K$-experiments
@@ -1177,7 +1177,7 @@ $\| \hat{f}_{\boldsymbol{\beta}}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$ and ch
 \label{eq:optimal_tuning-parameters}
 \boldsymbol{\beta}^\star = \text{arg min}\, CV(\hat{f}_{\boldsymbol{\beta}})\mathrm{Var}[e(\hat{f}_{\boldsymbol{\beta}}^{-k})]
 \end{equation}
-to construct the final, 'best',  PCE approximation of $f$ that the training data can produce. 
+to construct the final ``best'' PCE approximation of $f$ that the training data can produce. 
 
 \section{Analytic moments} \label{uq:expansion:moment}
 
