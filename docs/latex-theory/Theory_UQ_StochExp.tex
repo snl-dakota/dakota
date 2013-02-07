@@ -83,19 +83,46 @@ Section~\ref{uq:expansion:trans} for additional details).
 
 \section{Interpolation polynomials} \label{uq:expansion:interp}
 
-Interpolation polynomials may be local or global, value-based or
-gradient-enhanced, and nodal or hierarchical, with a total of six
-combinations currently implemented: Lagrange (global value-based),
+Interpolation polynomials may be either local or global and either
+value-based or gradient-enhanced: Lagrange (global value-based),
 Hermite (global gradient-enhanced), piecewise linear spline (local
-value-based) in nodal and hierarchical formulations, and piecewise
-cubic spline (local gradient-enhanced) in nodal and hierarchical
-formulations\footnote{hierarchical formulations, while implemented,
-  are not yet active in release 5.2}.  The subsections that follow
-describe the one-dimensional interpolation polynomials for these cases
-and Section~\ref{uq:expansion:sc} describes their use for multivariate
+value-based), and piecewise cubic spline (local gradient-enhanced).
+Each of these combinations can be used within nodal or hierarchical
+interpolation formulations.  The subsections that follow describe the
+one-dimensional interpolation polynomials for these cases and
+Section~\ref{uq:expansion:sc} describes their use for multivariate
 interpolation within the stochastic collocation algorithm.
 
-\subsection{Global value-based} \label{uq:expansion:interp:Lagrange}
+\subsection{Nodal interpolation} \label{uq:expansion:interp:nodal}
+
+For value-based interpolation of a response function $R$ in one
+dimension at an interpolation level $l$ containing $m^l$ points, the
+expression
+\begin{equation}
+R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} r(\xi_j)\,L_j(\xi) \label{eq:lagrange_interp_1d}
+\end{equation}
+reproduces the response values $r(\xi_j)$ at the interpolation points
+and smoothly interpolates between these values at other points.  As we
+refine the interpolation level, we increase the number of collocation 
+points in the rule and the number of interpolated response values.
+
+For the case of gradient-enhancement, interpolation of a 
+one-dimensional function
+involves both type 1 and type 2 interpolation polynomials,
+\begin{equation}
+R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} \left[ r(\xi_j) H_j^{(1)}(\xi) + 
+  \frac{dr}{d\xi}(\xi_j) H_j^{(2)}(\xi) \right] \label{eq:hermite_interp_1d}
+\end{equation}
+where the former interpolate a particular value while producing a zero
+gradient ($i^{th}$ type 1 interpolant produces a value of 1 for the
+$i^{th}$ collocation point, zero values for all other points, and zero
+gradients for all points) and the latter interpolate a particular
+gradient while producing a zero value ($i^{th}$ type 2 interpolant
+produces a gradient of 1 for the $i^{th}$ collocation point, zero
+gradients for all other points, and zero values for all points).
+
+
+\subsubsection{Global value-based} \label{uq:expansion:interp:Lagrange}
 
 Lagrange polynomials interpolate a set of points in a single dimension
 using the functional form
@@ -106,38 +133,17 @@ L_j = \prod_{\stackrel{\scriptstyle k=1}{k \ne j}}^m
 where it is evident that $L_j$ is 1 at $\xi = \xi_j$, is 0 for each of
 the points $\xi = \xi_k$, and has order $m - 1$.
 
-For interpolation of a response function $R$ in one dimension over $m$
-points, the expression
-\begin{equation}
-R(\xi) \cong \sum_{j=1}^m r(\xi_j)\,L_j(\xi) \label{eq:lagrange_interp_1d}
-\end{equation}
-reproduces the response values $r(\xi_j)$ at the interpolation points
-and smoothly interpolates between these values at other points.
-
-\subsection{Global gradient-enhanced} \label{uq:expansion:interp:Hermite}
+\subsubsection{Global gradient-enhanced} \label{uq:expansion:interp:Hermite}
 
 Hermite interpolation polynomials (not to be confused with Hermite
 orthogonal polynomials shown in Table~\ref{TAB:askey}) interpolate
 both values and derivatives.  In our case, we are interested in
-interpolating values and first derivatives, i.e, gradients.  In the
-gradient-enhanced case, interpolation of a one-dimensional function
-involves both type 1 and type 2 interpolation polynomials,
-\begin{equation}
-R(\xi) \cong \sum_{j=1}^{m} \left[ r(\xi_j) H_j^{(1)}(\xi) + 
-  \frac{dr}{d\xi}(\xi_j) H_j^{(2)}(\xi) \right]
-\end{equation}
-where the former interpolate a particular value while producing a zero
-gradient ($i^{th}$ type 1 interpolant produces a value of 1 for the
-$i^{th}$ collocation point, zero values for all other points, and zero
-gradients for all points) and the latter interpolate a particular
-gradient while producing a zero value ($i^{th}$ type 2 interpolant
-produces a gradient of 1 for the $i^{th}$ collocation point, zero
-gradients for all other points, and zero values for all points).
-One-dimensional polynomials satisfying these constraints for general
-point sets are generated using divided differences as described
-in~\cite{Burk11}.
+interpolating values and first derivatives, i.e, gradients.
+One-dimensional polynomials satisfying the interpolation constraints
+for general point sets are generated using divided differences as
+described in~\cite{Burk11}.
 
-\subsection{Local value-based} \label{uq:expansion:interp:linear}
+\subsubsection{Local value-based} \label{uq:expansion:interp:linear}
 
 Linear spline basis polynomials define a ``hat function,'' 
 which produces the value of one at its collocation point and decays 
@@ -172,7 +178,7 @@ function $L_j$ over the range $\xi \in [a, b]$.  For the special case
 of $m = 1$ point, $L_1(\xi) = 1$ for $\xi_1 = \frac{b+a}{2}$ in both 
 cases above.
 
-\subsection{Local gradient-enhanced} \label{uq:expansion:interp:cubic}
+\subsubsection{Local gradient-enhanced} \label{uq:expansion:interp:cubic}
 
 Type 1 cubic spline interpolants are formulated as follows:
 \begin{equation}
@@ -204,6 +210,49 @@ the special case of $m = 1$ point over the range $\xi \in [a, b]$,
 $H_1^{(1)}(\xi) = 1$ and $H_1^{(2)}(\xi) = \xi$ for $\xi_1 = \frac{b+a}{2}$.
 
 % TO DO: could add discussion of collocation weights
+
+\subsection{Hierarchical interpolation} \label{uq:expansion:interp:hierarch}
+
+In a hierarchical formulation, we reformulate the interpolation in
+terms of differences between interpolation levels:
+\begin{equation}
+\Delta^l(R) = I^l(R) - I^{l-1}(R), ~~l \geq 1
+\end{equation}
+where $I^l(R)$ is as defined in 
+Eqs.~\ref{eq:lagrange_interp_1d}--\ref{eq:hermite_interp_1d} and 
+$I^{l-1}(R)$ is defined as $I^l(I^{l-1}(R))$, indicating evaluation of
+the lower level interpolant on the higher level point set.
+
+We can represent this difference as
+\begin{equation}
+\Delta^l(R) = 
+\sum_{j=1}^{m_l} \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,L_j(\xi)
+\end{equation}
+
+%For simplicity, we demonstrate this for the value-based interpolants without loss of generality.
+For the case where we used nested point sets among the interpolation
+levels, the differences at points contained in set $m_{l-1}$ are zero,
+allowing us to restrict the summation to
+\begin{equation}
+\Delta^l(R) = 
+\sum_{j=1}^{m_{\Delta_l}} \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,L_j(\xi)
+\end{equation}
+where we define $m_{\Delta_l} = m_l \setminus m_{l-1}$.  We then
+define the hierarchical surplus $s$ at a point $\xi_j$ as $r(\xi_j) -
+I^{l-1}(R)(\xi_j)$, which can be interpreted as a local interpolation
+error estimate since it captures the difference between the true value
+and the value predicted by the previous interpolant.  $\Delta^l(R)$
+then becomes
+\begin{equation}
+\Delta^l(R) = \sum_{j=1}^{m_{\Delta_l}} s(\xi_j)\,L_j(\xi)
+\end{equation}
+The original interpolant $I^l(R)$ can be represented as a summation
+of these differences
+\begin{equation}
+I^l(R) = \Delta^l(R) + I^{l-1}(R) = \sum_{i=1}^{l} \Delta^l(R)
+\end{equation}
+We will employ these hierarchical definitions within stochastic
+collocation on sparse grids in Section~\ref{uq:expansion:sc}.
 
 
 \section{Generalized Polynomial Chaos} \label{uq:expansion:pce}
@@ -340,10 +389,10 @@ the total-order bound
 %(potentially defined from the maximum of the per-dimension bounds)
 but violate individual per-dimension bounds (the number of these
 pruned polynomials would then be subtracted from
-Eq.~\ref{eq:num_to_terms}).  Finally, custom tailoring of the
-expansion form can also be explored, e.g. to closely synchronize with
-monomial coverage in sparse grids through use of a summation of tensor
-expansions (see Section~\ref{uq:expansion:spectral_sparse}).
+Eq.~\ref{eq:num_to_terms}).  Finally, additional tailoring of the
+expansion form is used in the case of sparse grids (see
+Section~\ref{uq:expansion:spectral_sparse}) through the use of a
+summation of anisotropic tensor expansions.
 %Of particular interest is the tailoring of expansion form to target
 %specific monomial coverage as motivated by the integration process
 %employed for evaluating chaos coefficients.  If the specific monomial
