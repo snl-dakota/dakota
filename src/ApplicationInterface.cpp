@@ -444,7 +444,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       //    on: asv seen by user's interface may change on each eval (default)
       //   off: asv seen by user's interface is constant for all evals
       if (!asvControlFlag) { // set ASV's to defaultASV for the mapping
-	core_set.request_vector(defaultASV);
+	core_set.request_vector(defaultASV); // DVV assigned above
 	core_resp.active_set(core_set);
       }
 
@@ -1402,6 +1402,13 @@ broadcast_evaluation(int fn_eval_id, const Variables& vars,
   parallelLib.bcast_e(fn_eval_id);
   MPIPackBuffer send_buffer(lenVarsActSetMessage);
   send_buffer << vars << set;
+
+#ifdef MPI_DEBUG
+  Cout << "broadcast_evaluation() for eval " << fn_eval_id
+       << " with send_buffer size = " << send_buffer.size()
+       << " and ActiveSet:\n" << set << std::endl;
+#endif // MPI_DEBUG
+
   parallelLib.bcast_e(send_buffer);
 }
 
@@ -1466,15 +1473,17 @@ void ApplicationInterface::serve_evaluations_synch()
 
     if (currEvalId) { // currEvalId = 0 is the termination signal
 
-      Variables vars; // could slave's Model::currentVariables be 
-      // used instead? (would remove need to pass vars flags in MPI buffers)
-      ActiveSet set;
+      // could slave's Model::currentVariables be used instead?
+      // (would remove need to pass vars flags in MPI buffers)
+      Variables vars; ActiveSet set;
       recv_buffer >> vars >> set;
 
 #ifdef MPI_DEBUG
       Cout << "Slave receives vars/set buffer which unpacks to:\n" << vars 
            << "Active set vector = { ";
-      set.request_vector().write_annotated(s, false);
+      array_write_annotated(Cout, set.request_vector(), false);
+      Cout << "} Deriv values vector = { ";
+      array_write_annotated(Cout, set.derivative_vector(), false);
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
@@ -1529,14 +1538,15 @@ void ApplicationInterface::serve_evaluations_synch_peer()
       MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
       parallelLib.bcast_e(recv_buffer); // incoming from iterator
 
-      Variables vars;
-      ActiveSet set;
+      Variables vars; ActiveSet set;
       recv_buffer >> vars >> set;
 
 #ifdef MPI_DEBUG
       Cout << "Peer receives vars/set buffer which unpacks to:\n" << vars 
            << "Active set vector = { ";
-      set.request_vector().write_annotated(s, false);
+      array_write_annotated(Cout, set.request_vector(), false);
+      Cout << "} Deriv values vector = { ";
+      array_write_annotated(Cout, set.derivative_vector(), false);
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
