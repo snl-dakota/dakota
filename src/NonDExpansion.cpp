@@ -780,8 +780,7 @@ void NonDExpansion::compute_expansion()
 	}
 	sampler_set.derivative_vector(filtered_final_dvv);
       }
-      else if (!final_dvv.empty()) // sampler_grad alone or placeholder default:
-                                   // assign final_dvv if it has been defined
+      else if (sampler_grad)
 	sampler_set.derivative_vector(final_dvv);
       else // derivs not needed, but correct DVV len needed for MPI buffers
 	sampler_set.derivative_vector(iteratedModel.continuous_variable_ids());
