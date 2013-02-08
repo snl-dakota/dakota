@@ -22,19 +22,22 @@ to be uncertain as specified by particular probability distributions
 (e.g., normal, exponential, extreme value), or other uncertainty
 structures. By assigning specific distributional structure to the
 inputs, distributional structure for the outputs (i.e, response
-statistics) can be inferred.
+statistics) can be inferred.  This migrates from an analysis that is
+more {\em qualitative} in nature, in the case of sensitivity analysis,
+to an analysis that is more rigorously {\em quantitative}.
 
 UQ methods are often distinguished by their ability to propagate
-aleatory or epistemic input uncertainty characterizations. Aleatory
-uncertainties, which are irreducible variabilities inherent in nature,
-or epistemic uncertainties, which are reducible uncertainties
-resulting from a lack of knowledge. Since sufficient data is
-generally available for aleatory uncertainties, probabilistic methods
-are commonly used for computing response distribution statistics based
-on input probability distribution specifications. Conversely, for
-epistemic uncertainties, data is generally sparse, making the use of
-probability distribution assertions questionable and typically leading
-to nonprobabilistic methods based on interval specifications.
+aleatory or epistemic input uncertainty characterizations, where
+aleatory uncertainties are irreducible variabilities inherent in
+nature and epistemic uncertainties are reducible uncertainties
+resulting from a lack of knowledge. Since sufficient data is generally
+available for aleatory uncertainties, probabilistic methods are
+commonly used for computing response distribution statistics based on
+input probability distribution specifications. Conversely, for
+epistemic uncertainties, any use of probability distributions is based
+on subjective knowledge rather than objective data, and we may
+alternatively explore nonprobabilistic methods based on interval
+specifications.
 
 \subsection{Summary of Dakota UQ Methods}\label{uq:overview:methods}
 
@@ -48,10 +51,11 @@ approaches (e.g., Monte Carlo and Latin Hypercube sampling), local and
 global reliability methods, and stochastic expansion (polynomial chaos
 expansions and stochastic collocation) approaches. The epistemic UQ
 methods include local and global interval analysis and Dempster-Shafer
-evidence theory. These are all described briefly in this section and
-in depth throughout this Chapter. Dakota additionally supports mixed
-aleatory/epistemic UQ via interval-valued probability, second-order
-probability, and Dempster-Shafer theory of evidence, as described in
+evidence theory. These are summarized below and then described in more
+depth in subsequent sections of this chapter. Dakota additionally
+supports mixed aleatory/epistemic UQ via interval-valued probability,
+second-order probability, and Dempster-Shafer theory of
+evidence. These involve advanced model recursions and are described in
 Section~\ref{adv_models:mixed_uq}.
 
 %In addition, future extensions to the DDACE package will make it 
@@ -95,8 +99,8 @@ Section~\ref{adv_models:mixed_uq}.
 %Dempster-Shafer, on the other hand, directly generates probability
 %bounds, known as the belief and plausibility functions.
 
-This chapter has extensive details on various Dakota UQ methods, but here is a
-high-level summary of available capabilities:
+%This chapter has extensive details on various Dakota UQ methods, but
+%here is a high-level summary of available capabilities:
 
 % BMA TODO: Considerably shorten the following descriptions, moving
 % text to later sections if needed.
@@ -131,54 +135,60 @@ size 2N is also a Latin Hypercube, with proper stratification and
 correlation. 
 
 \textbf{Reliability Methods}: This suite of methods includes both
-local and global reliability methods. Local methods include first-
-and second-order versions of the Mean Value method (MVFOSM and MVSOSM)
-and a variety of most probable point (MPP) search methods, including
-the Advanced Mean Value method (AMV and AMV$^2$), the iterated
-Advanced Mean Value method (AMV+ and AMV$^2$+), the Two-point Adaptive
+local and global reliability methods. Local methods include first- and
+second-order versions of the Mean Value method (MVFOSM and MVSOSM) and
+a variety of most probable point (MPP) search methods, including the
+Advanced Mean Value method (AMV and AMV$^2$), the iterated Advanced
+Mean Value method (AMV+ and AMV$^2$+), the Two-point Adaptive
 Nonlinearity Approximation method (TANA-3), and the traditional First
 Order and Second Order Reliability Methods (FORM and
-SORM)~\cite{Hal00}. Each of the MPP search techniques solve local
-optimization problems in order to locate the MPP, which is then used
-as the point about which approximate probabilities are integrated
-(using first- or second-order integrations in combination with
-refinements based on importance sampling). 
-%Reliability mappings may
-%involve computing reliability and probability levels for prescribed
-%response levels (forward reliability analysis, commonly known as the
-%reliability index approach or RIA) or computing response levels for
-%prescribed reliability and probability levels (inverse reliability
-%analysis, commonly known as the performance measure approach or PMA).
-%Approximation-based MPP search methods (AMV, AMV$^2$, AMV+, AMV$^2$+,
-%and TANA) may be applied in either x-space or u-space, and mappings
-%may involve either cumulative or complementary cumulative distribution functions. 
+SORM)~\cite{Hal00}. The MPP search methods may be used in forward
+(Reliability Index Approach (RIA)) or inverse (Performance Measure
+Approach (PMA)) modes, as dictated by the type of level mappings. Each
+of the MPP search techniques solve local optimization problems in
+order to locate the MPP, which is then used as the point about which
+approximate probabilities are integrated (using first- or second-order
+integrations in combination with refinements based on importance
+sampling).
+% Reliability mappings may involve computing reliability and
+% probability levels for prescribed response levels (forward
+% reliability analysis, commonly known as the reliability index
+% approach or RIA) or computing response levels for prescribed
+% reliability and probability levels (inverse reliability analysis,
+% commonly known as the performance measure approach or PMA).
+% Approximation-based MPP search methods (AMV, AMV$^2$, AMV+,
+% AMV$^2$+, and TANA) may be applied in either x-space or u-space, and
+% mappings may involve either cumulative or complementary cumulative
+% distribution functions.
 Global reliability methods are designed to handle
 nonsmooth and multimodal failure surfaces, by creating global
 approximations based on Gaussian process models. They accurately
 resolve a particular contour of a response function and then estimate
 probabilities using multimodal adaptive importance sampling.
 
-\textbf{Stochastic Expansion Methods}: The objective of these
-techniques is to characterize the response of systems whose governing
-equations involve stochastic coefficients. The development of these
-techniques mirrors that of deterministic finite element analysis
-utilizing the notions of projection, orthogonality, and weak
-convergence~\cite{Gha99},~\cite{Gha91}. Rather than estimating point
-probabilities, they form an approximation to the functional
-relationship between response functions and their random inputs, which
-provides a more complete uncertainty representation for use in
-multi-code simulations. Expansion methods include the Wiener-Askey
-generalized polynomial chaos expansion (PCE), which employs a family
-of multivariate orthogonal polynomials that are well matched to
-particular input probability distributions, and stochastic collocation
-(SC), which employs multivariate Lagrange interpolation polynomials.
-For PCE, expansion coefficients may be evaluated using a spectral
-projection approach (based on sampling, quadrature, or sparse grid
-methods for integration) or a point collocation approach (based on
-linear regression). For SC, interpolants may be formed over
-tensor-product quadrature grids or Smolyak sparse grids. Both methods
-provide analytic response moments; however, CDF/CCDF probabilities are
-evaluated by sampling on the expansion.
+\textbf{Stochastic Expansion Methods}: %The objective of these
+%techniques is to characterize the response of systems whose governing
+%equations involve stochastic coefficients. 
+The development of these techniques mirrors that of deterministic
+finite element analysis utilizing the notions of projection,
+orthogonality, and weak convergence~\cite{Gha99},~\cite{Gha91}. Rather
+than estimating point probabilities, they form an approximation to the
+functional relationship between response functions and their random
+inputs, which provides a more complete uncertainty representation for
+use in multi-code simulations. Expansion methods include polynomial
+chaos expansions (PCE), which employ multivariate orthogonal
+polynomials that are tailored to representing particular input
+probability distributions, and stochastic collocation (SC), which
+employs multivariate interpolation polynomials.  For PCE, expansion
+coefficients may be evaluated using a spectral projection approach
+(based on sampling, tensor-product quadrature, Smolyak sparse grid, or
+cubature methods for numerical integration) or a regression approach
+(least squares or compressive sensing). For SC, interpolants are
+formed over tensor-product or sparse grids and may be local or global,
+value-based or gradient-enhanced, and nodal or hierarchical. Both sets
+of methods provide analytic response moments and variance-based
+metrics; however, CDF/CCDF probabilities are evaluated numerically by
+sampling on the expansion.
 
 \textbf{Importance Sampling}: Importance sampling is a method that 
 allows one to estimate statistical quantities such as failure 
@@ -274,14 +284,14 @@ loguniform, triangular, exponential, beta, gamma, gumbel, frechet,
 weibull, and histogram bin. The discrete aleatory distribution types
 include: poisson, binomial, negative binomial, geometric,
 hypergeometric, and histogram point. The epistemic distribution type
-is interval for continuous variables. For epistemic discrete variables, 
-there are three types:  integer set, real set, and interval range. 
-When gradient and/or Hessian information is used in an
+is interval for continuous variables. For epistemic discrete
+variables, there are three types: integer range, integer set, and real
+set.  When gradient and/or Hessian information is used in an
 uncertainty assessment, derivative components are normally computed
-with respect to the active continuous variables, or in this case, the
-\emph{continuous uncertain variables} (aleatory, epistemic, 
-or both, depending on the active variables; see 
-Section~\ref{responses:active}).
+with respect to the active continuous variables, which could be
+aleatory uncertain, epistemic uncertain, aleatory and epistemic
+uncertain, or all continuous variables, depending on the active view
+(see Section~\ref{variables:mixed}).
 
 \section{Sampling Methods}\label{uq:sampling}
 
@@ -781,8 +791,9 @@ selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response
 specification (as is done with local taylor series approximations
 described in Section~\ref{models:surf:taylor}). Thus, reliability
-methods do not have to be synchronized in order as shown in the table;
-however, it is often desirable to do so.
+methods do not have to be synchronized in approximation and
+integration order as shown in the table; however, it is often
+desirable to do so.
 
 
 \subsection{Global Reliability Methods}\label{uq:reliability:global}
@@ -1093,72 +1104,72 @@ An example using the mean value method is included in Section~\ref{uq:examples:m
 \section{Stochastic Expansion Methods}\label{uq:expansion}
 
 
-The objective of these techniques is to characterize the response of
-systems whose governing equations involve stochastic coefficients. The
-development of these techniques mirrors that of deterministic finite
-element analysis through the utilization of the concepts of
+%The objective of these techniques is to characterize the response of
+%systems whose governing equations involve stochastic coefficients. 
+The development of these techniques mirrors that of deterministic
+finite element analysis through the utilization of the concepts of
 projection, orthogonality, and weak convergence. The polynomial chaos
 expansion is based on a multidimensional orthogonal polynomial
-approximation in standardized random variables, and the stochastic
-collocation approach is based on a multidimensional interpolation
-polynomial approximation in standardized random variables. A
-distinguishing feature of these two methodologies is that the final
-solution is expressed as a random process, and not merely as a set of
-statistics as is the case for many nondeterministic methodologies.
-This makes these techniques particularly attractive for use in
-multi-physics applications which link different analysis packages.
-The first stochastic expansion method is the polynomial chaos
-expansion (PCE) described in Ghanem, et
-al.~\cite{Gha99},~\cite{Gha91}. For smooth functions (i.e., analytic,
-infinitely-differentiable) in $L^2$ (i.e., possessing finite
+approximation and the stochastic collocation approach is based on a
+multidimensional interpolation polynomial approximation, both formed
+in terms of standardized random variables. A distinguishing feature of
+these two methodologies is that the final solution is expressed as a
+functional mapping, and not merely as a set of statistics as is the
+case for many nondeterministic methodologies.  This makes these
+techniques particularly attractive for use in multi-physics
+applications which link different analysis packages.  The first
+stochastic expansion method is the polynomial chaos expansion
+(PCE)~\cite{Gha99,Gha91}. For smooth functions (i.e.,
+analytic, infinitely-differentiable) in $L^2$ (i.e., possessing finite
 variance), exponential convergence rates can be obtained under order
 refinement for integrated statistical quantities of interest such as
 mean, variance, and probability. Dakota implements the generalized
-polynomial chaos approach using the Wiener-Askey
+PCE approach using the Wiener-Askey
 scheme~\cite{XiuKarn02}, in which Hermite, Legendre, Laguerre, Jacobi,
 and generalized Laguerre orthogonal polynomials are used for modeling
 the effect of continuous random variables described by normal,
 uniform, exponential, beta, and gamma probability distributions,
 respectively\footnote{Orthogonal polynomial selections also exist for
-discrete probability distributions, but are not yet supported in
-Dakota.}. These orthogonal polynomial selections are optimal for
+  discrete probability distributions, but are not yet supported in
+  Dakota.}. These orthogonal polynomial selections are optimal for
 these distribution types since the inner product weighting function
-corresponds\footnote{Identical support range; weight
-differs by at most a constant factor.} to the probability
-density functions for these continuous distributions. Orthogonal polynomials
-can be computed for any positive weight function, so these five
-classical orthogonal polynomials may be augmented with
-numerically-generated polynomials for other probability distributions
-(e.g., for lognormal, extreme value, and histogram distributions).
-When independent standard random variables are used (or computed
-through transformation), the variable expansions are uncoupled,
-allowing the polynomial orthogonality properties to be applied on a
-per-dimension basis. This allows one to mix and match the polynomial
-basis used for each variable without interference with the spectral
-projection scheme for the response. 
+corresponds\footnote{Identical support range; weight differs by at
+  most a constant factor.} to the probability density functions for
+these continuous distributions. Orthogonal polynomials can be computed
+for any positive weight function, so these five classical orthogonal
+polynomials may be augmented with numerically-generated polynomials
+for other probability distributions (e.g., for lognormal, extreme
+value, and histogram distributions).  When independent standard random
+variables are used (or computed through transformation), the variable
+expansions are uncoupled, allowing the polynomial orthogonality
+properties to be applied on a per-dimension basis. This allows one to
+mix and match the polynomial basis used for each variable without
+interference with the spectral projection scheme for the response.
 
 In non-intrusive PCE, simulations are used as black boxes and the
 calculation of chaos expansion coefficients for response metrics of
 interest is based on a set of simulation response evaluations. To
 calculate these response PCE coefficients, two primary classes of
-approaches have been proposed: spectral projection and 
-regression. The spectral projection approach projects the response
-against each basis function using inner products and employs the
-polynomial orthogonality properties to extract each coefficient. Each
-inner product involves a multidimensional integral over the support
-range of the weighting function, which can be evaluated numerically
-using sampling, tensor-product quadrature, Smolyak sparse
-grid~\cite{Smolyak_63}, or cubature~\cite{stroud} approaches. The
-regression approach finds a set of PCE coefficients which best match a set of
-response values obtained from either a design of computer experiments
-(``point collocation''~\cite{pt_colloc1}) or from the subset of tensor
-Gauss points with highest product weight (``probabilistic
-collocation''~\cite{Tat95}). Various methods can be used to solve the resulting linear
-system. The methods available in Dakota include least squares and a number of 
-compressed sensing methods. Details of these methods are documented in the
-Linear regression section of the Dakota Theory Manual~\cite{TheoMan} and 
-the necessary specifications needed to activate these techniques are listed 
-in Section 5 of the Dakota Reference Manual~\cite{RefMan}.
+approaches have been proposed: spectral projection and regression. The
+spectral projection approach projects the response against each basis
+function using inner products and employs the polynomial orthogonality
+properties to extract each coefficient. Each inner product involves a
+multidimensional integral over the support range of the weighting
+function, which can be evaluated numerically using sampling,
+tensor-product quadrature, Smolyak sparse grid~\cite{Smolyak_63}, or
+cubature~\cite{stroud} approaches. The regression approach finds a set
+of PCE coefficients which best match a set of response values obtained
+from either a design of computer experiments (``point
+collocation''~\cite{pt_colloc1}) or from a randomly selected subset of
+tensor Gauss points (``probabilistic
+collocation''~\cite{Tat95}). Various methods can be used to solve the
+resulting linear system, including least squares methods for
+over-determined systems and compressed sensing methods for
+under-determined systems. Details of these methods are documented in
+the Linear regression section of the Dakota Theory
+Manual~\cite{TheoMan} and the necessary specifications needed to
+activate these techniques are listed in the Methods chapter of the
+Dakota Reference Manual~\cite{RefMan}.
 
 Stochastic collocation (SC) is another stochastic expansion technique
 for UQ that is closely related to PCE. As for PCE, exponential
@@ -1168,12 +1179,10 @@ response functions are smooth with finite variance. The primary
 distinction is that, whereas PCE estimates coefficients for known
 multivariate orthogonal polynomial basis functions, SC forms
 multivariate interpolation polynomial bases for known coefficients.
-The interpolation polynomials may be local or global, value-based or
-gradient-enhanced, and nodal or hierarchical, with a total of six
-combinations currently supported: Lagrange (global value-based),
-Hermite (global gradient-enhanced), piecewise linear spline (local
-value-based) in nodal and hierarchical formulations, and piecewise
-cubic spline (local gradient-enhanced) in nodal and hierarchical
+The interpolation polynomials may be either local or global and either
+value-based or gradient-enhanced (four combinations: Lagrange,
+Hermite, piecewise linear spline, and piecewise cubic spline), and may
+be used within nodal or hierarchical interpolation
 formulations. Interpolation is performed on structured grids such as
 tensor-product or sparse grids. Starting from a tensor-product
 multidimensional interpolation polynomial in the value-based case
@@ -1210,21 +1219,20 @@ details for the PCE and SC methods.
 \subsection{Uncertainty Quantification Example using Stochastic Collocation}\label{uq:uncertainty2}
 
 A typical Dakota input file for performing an uncertainty
-quantification using polynomial chaos expansions is shown in 
-Section~\ref{uq:examples:pce}. The example
-in illustrates PCE built on anisotropic tensor
-product quadrature. The uncertain variables are uniforms, so the
-expansion is built using classical Legendre polynomials. This section
-presents a more sophisticated example, where we use stochastic
-collocation built on an anisotropic sparse grid defined from
-numerically-generated orthogonal polynomials. The uncertain variables
-are lognormal in this example and the orthogonal polynomials are
-generated from Gauss-Wigert recursion coefficients~\cite{simpson_gw}
-in combination with the Golub-Welsch procedure~\cite{GolubWelsch69}.
-The input file is shown in Figure~\ref{uq:figure11}. 
-Note that the dimension preference of $(2,1)$ is inverted
-to define a $\gamma$ weighting vector of $(0.5,1)$ (and
-$\underline{\gamma}$ of $0.5$) for use in the anisotropic Smolyak
+quantification using polynomial chaos expansions is shown in
+Section~\ref{uq:examples:pce}, which illustrates PCE defined from an
+anisotropic tensor-product quadrature grid. The uncertain variables
+are uniforms, so the expansion is built using classical Legendre
+polynomials. This section presents a more sophisticated example, where
+we use stochastic collocation built on an anisotropic sparse grid
+defined from numerically-generated orthogonal polynomials. The
+uncertain variables are lognormal in this example and the orthogonal
+polynomials are generated from Gauss-Wigert recursion
+coefficients~\cite{simpson_gw} in combination with the Golub-Welsch
+procedure~\cite{GolubWelsch69}.  The input file is shown in
+Figure~\ref{uq:figure11}.  Note that the dimension preference of
+$(2,1)$ is inverted to define a $\gamma$ weighting vector of $(0.5,1)$
+(and $\underline{\gamma}$ of $0.5$) for use in the anisotropic Smolyak
 index set constraint (see Smolyak sparse grids section in Stochastic
 Expansion Methods chapter in Dakota Theory Manual~\cite{TheoMan}). In
 this example, we compute CDF probabilities for six response levels of
@@ -2133,29 +2141,26 @@ Sampling & nonsmooth, multimodal response functions;       & sampling
 \hline
 Local       & smooth, unimodal response functions; & local\_reliability
 (MV, AMV/AMV$^2$,\\
-reliability & larger sets of random variables & AMV+/AMV$^2$+, TANA, 
+reliability & larger sets of random variables;     & AMV+/AMV$^2$+, TANA, 
 FORM/SORM) \\
+            & estimation of tail probabilities     & \\
 \hline
-Global      & nonsmooth, multimodal response functions; & 
-global\_reliability \\
-reliability & low dimensional     & \\
+Global      & smooth or limited nonsmooth response; & global\_reliability \\
+reliability & multimodal response; low dimensional; & \\
+            & estimation of tail probabilities      & \\
 \hline
-Stochastic & nonsmooth, multimodal response functions; & 
-polynomial\_chaos, \\
-expansions & low dimensional; capture of functional    & 
-stoch\_collocation\\
-           & form useful for subsequent analyses       & \\
+Stochastic & smooth or limited nonsmooth response; & polynomial\_chaos, \\
+expansions & multimodal response; low dimensional; & stoch\_collocation\\
+           & estimation of moments or moment-based metrics & \\
 \hline
 Epistemic & uncertainties are poorly characterized &
 interval: local\_interval\_est, \\
  & & global\_interval\_est, sampling; \\
- & & BPA: local\_evidence, \\
- & & global\_evidence \\
+ & & BPA: local\_evidence, global\_evidence \\
 \hline
 Mixed UQ  & some uncertainties are poorly characterized &
-nested UQ (second-order probability, \\
- & & mixed evidence) with epistemic outer loop \\
- & & and aleatory inner loop, sampling \\
+nested UQ (IVP, SOP, DSTE) with epistemic \\
+ & & outer loop and aleatory inner loop, sampling \\
 \hline
 \end{tabular}
 \end{table}
@@ -2273,7 +2278,8 @@ evidence-based approach (\texttt{local\_evidence} or
 \texttt{global\_evidence}), the approach generates epistemic belief 
 and plausibility bounds on aleatory statistics.
 
-\section{UQ Examples}
+\section{Additional UQ Examples}
+
 This section provides three additional examples of UQ methods: 
 an example of the Mean-value method, an example of a polynomial
 chaos expansion, and an example of interval analysis. 
@@ -2350,26 +2356,27 @@ MV Statistics for response_fn_3:
 
 \subsection{Polynomial Chaos Expansion for Rosenbrock}\label{uq:examples:pce}
 
-The term ``Polynomial Chaos'' refers to the representation of a stochastic 
-process as a polynomial expansion in random (or stochastic) variables. This 
-representation acts as a response surface that maps stochastic inputs to 
-stochastic outputs. Desired statistics can then be obtained from the 
-response surface either analytically or by re-sampling the fast surrogate.
-Additional details regarding the method are 
-provided in Section~\ref{uq:expansion}.
+%The term ``Polynomial Chaos'' refers to the representation of a stochastic 
+%process as a polynomial expansion in random (or stochastic) variables. This 
+%representation acts as a response surface that maps stochastic inputs to 
+%stochastic outputs. Desired statistics can then be obtained from the 
+%response surface either analytically or by re-sampling the fast surrogate.
+%Additional details regarding the method are provided in
+The PCE and SC methods have been described in Section~\ref{uq:expansion},
+with an SC example provided in Section~\ref{uq:uncertainty2}.  This section
+provides an additional PCE example.
 
 A typical Dakota input file for performing an uncertainty
-quantification using polynomial chaos expansions is shown in
-Figure~\ref{uq:examples:pce_input}.
-In this example, we compute CDF
+quantification using PCE is shown in
+Figure~\ref{uq:examples:pce_input}.  In this example, we compute CDF
 probabilities for six response levels of Rosenbrock's function. Since
 Rosenbrock is a fourth order polynomial and we employ a fourth-order
 expansion using an optimal basis (Legendre for uniform random
 variables), we can readily obtain a polynomial expansion which exactly
 matches the Rosenbrock function. In this example, we select Gaussian
 quadratures using an anisotropic approach (fifth-order quadrature in
-$x_1$ and third-order quadrature in $x_2$), resulting in a total of
-15 function evaluations to compute the PCE coefficients.
+$x_1$ and third-order quadrature in $x_2$), resulting in a total of 15
+function evaluations to compute the PCE coefficients.
 
 \begin{figure}
   \centering
@@ -2400,23 +2407,23 @@ Once the expansion coefficients have been calculated, some statistics
 are available analytically and others must be evaluated numerically.
 For the numerical portion, the input file specifies the use of 10000
 samples, which will be evaluated on the expansion to compute the CDF
-probabilities. In Figure~\ref{uq:examples:pce_out}, excerpts from the results
-summary are presented, where we first see a summary of the PCE
+probabilities. In Figure~\ref{uq:examples:pce_out}, excerpts from the
+results summary are presented, where we first see a summary of the PCE
 coefficients which exactly reproduce Rosenbrock for a Legendre
 polynomial basis. The analytic statistics for mean, standard
-deviation, and COV are then presented. For example, the mean is 455.66 
-and the standard deviation is 606.56. The moments are followed 
-by global sensitivity indices (Sobol indices).This example shows that variable 
-x1 has the largest main effect (0.497) as compared with variable 
-x2 (0.296) or the interaction between x1 and x2 (0.206). 
-After the global sensitivity indices, the local, analytic random 
-variable sensitivities are presented, evaluated at the mean values.
-Finally, we see the numerical results for the CDF probabilities based
-on 10000 samples performed on the expansion. For example, 
-the probability that the Rosenbrock function is less than 100 
-over these two uncertain variables is 0.342. Note that this is a very similar 
-estimate to what was obtained using 200 Monte Carlo samples, with 
-fewer function evaluations.
+deviation, and COV are then presented. For example, the mean is 455.66
+and the standard deviation is 606.56. The moments are followed by
+global sensitivity indices (Sobol' indices).This example shows that
+variable x1 has the largest main effect (0.497) as compared with
+variable x2 (0.296) or the interaction between x1 and x2 (0.206).
+After the global sensitivity indices, the local sensitivities are
+presented, evaluated at the mean values.  Finally, we see the
+numerical results for the CDF probabilities based on 10000 samples
+performed on the expansion. For example, the probability that the
+Rosenbrock function is less than 100 over these two uncertain
+variables is 0.342. Note that this is a very similar estimate to what
+was obtained using 200 Monte Carlo samples, with fewer true function
+evaluations.
 \begin{figure}
 \centering
 \begin{bigbox}
@@ -2560,17 +2567,27 @@ displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
 Uncertainty analysis methods under investigation for future inclusion
 into the Dakota framework include extensions to the stochastic
 expansion methods and sampling capabilities currently supported.
-Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
-and Markov chain Monte Carlo simulation (McMC) are being considered.
-We also have an active research focus on adaptive sparse grid methods,
-to more efficiently construct stochastic expansions. 
+In particular, smart adaptive methods that can mitigate the curse
+of dimensionality are a research emphasis.
+%
+%Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
+%and Markov chain Monte Carlo simulation (McMC) are being considered.
+%We also have an active research focus on adaptive sparse grid methods,
+%to more efficiently construct stochastic expansions. 
+%
 %Efforts have been initiated to allow for non-traditional
 %representations of uncertainty. We have implemented Dempster-Shafer
 %theory of evidence, and other non-traditional approaches may follow. 
-We are currently pursuing Bayesian methods,
-specifically focusing on Bayesian calibration, where a ``prior
-distribution'' on a parameter is updated through a Bayesian framework
-involving experimental data and a likelihood function.
+%
+We are also currently emphasizing the development of Bayesian methods,
+specifically focusing on surrogate-modeling, discrepancy, 
+post-processing, and multi-model extensions to the Bayesian
+calibration capabilities.
+%
+%, where a ``prior
+%distribution'' on a parameter is updated through a Bayesian framework
+%involving experimental data and a likelihood function.
+%
 %Finally, the tractability and efficacy of the more intrusive
 %variant of stochastic finite element/polynomial chaos expansion
 %methods, previously mentioned, is being assessed for possible
