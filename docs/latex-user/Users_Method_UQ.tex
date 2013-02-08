@@ -116,7 +116,7 @@ correlation matrix is not supplied.
 %sampling over uncertain variables characterized by probability
 %distributions, or (2) it can be used in a DACE mode in which any
 %design and state variables are treated as having uniform distributions
-%(see the \texttt{all\_variables} flag in the Dakota Reference
+%(see the \texttt{active all} view override in the Dakota Reference
 %Manual~\cite{RefMan}). The LHS package historically came in two
 %versions: ``old'' (circa 1980) and ``new'' (circa 1998), but presently
 %only the latter is supported in Dakota, requiring a Fortran 90
@@ -577,15 +577,16 @@ Partial Rank Correlation Matrix between input and output:
 \end{figure}
 
 Finally, note that the LHS package can be used for design of
-experiments over design and state variables by including the
-\texttt{all\_variables} flag in the method specification section of
-the Dakota input file. Then, instead of iterating on only the
-uncertain variables, the LHS package will sample over all of the
-variables. In \texttt{all\_variables} mode, continuous design and
-continuous state variables are treated as having uniform probability
-distributions within their upper and lower bounds, discrete values are
-sampled uniformly from within their sets or ranges, and any uncertain
-variables are sampled within their specified probability distributions.
+experiments over design and state variables by including an active
+view override in the variables specification section of the Dakota
+input file (see Section~\ref{variables:mixedview}). Then, instead of
+iterating on only the uncertain variables, the LHS package will sample
+over all of the active variables. In the \texttt{active all} view,
+continuous design and continuous state variables are treated as having
+uniform probability distributions within their upper and lower bounds,
+discrete design and state variables are sampled uniformly from within
+their sets or ranges, and any uncertain variables are sampled within
+their specified probability distributions.
 
 \subsection{Incremental Sampling}\label{uq:incremental}
 

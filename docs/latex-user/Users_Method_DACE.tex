@@ -754,10 +754,10 @@ distributions of the parameters. DOE/DACE methods typically assume
 uniform distributions, whereas the sampling approaches in Dakota
 support a broad range of probability distributions. 
 
-To use \texttt{sampling} in design of experiments mode (as opposed to 
-uncertainty quantification mode), the \texttt{all\_variables} flag
-should be included in the method specification of the Dakota input
-file.
+To use \texttt{sampling} in design of experiments mode (as opposed to
+uncertainty quantification mode), an active view override (e.g.,
+\texttt{active all}) can be included in the variables specification
+(see Section~\ref{variables:mixedview}) of the Dakota input file.
 
 Design of experiments method selection recommendations are summarized
 in Table~\ref{dace:usage:table}.
@@ -790,7 +790,7 @@ experiments        & space filling designs                    & fsu\_quasi\_mc (
                    &                                             & \\
 \hline
 sampling           & space filling designs                    & sampling (Monte Carlo or LHS) \\
-                   & (parameters have general probability distributions) & with all\_variables flag \\
+                   & (parameters have general probability distributions) & with optional active view override \\
                    &                                             & \\
 \hline
 \end{tabular}
