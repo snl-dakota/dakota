@@ -31,14 +31,18 @@ endif()
 message( "CMAKE_SHARED_LIBRARY_SUFFIX: ${CMAKE_SHARED_LIBRARY_SUFFIX}" )
 #message( "... If NOT .dylib, then CMake cache is not respected" )
 
+# otool may resolve symlinks, do the same for the build tree location
+get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
+
 # Get the dylibs excluding system libraries and anything in the build
 # tree (as will be installed to lib/) as a semicolon-separated list
 execute_process(
   COMMAND otool -L "${CMAKE_CURRENT_BINARY_DIR}/src/dakota"
   # Omit the header and get the library only
   COMMAND awk "FNR > 1 {print $1}"
-  # Omit libs in the build tree
+  # Omit libs in the build tree, following symlinks
   COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/.+.dylib"
+  COMMAND egrep -v "${resolved_build_dir}/.+.dylib"
   # Omit system libraries
   COMMAND egrep -v "(^/System|^/usr/lib|^/usr/X11)"
   COMMAND tr "\\n" ";"
