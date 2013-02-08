@@ -216,43 +216,58 @@ $H_1^{(1)}(\xi) = 1$ and $H_1^{(2)}(\xi) = \xi$ for $\xi_1 = \frac{b+a}{2}$.
 In a hierarchical formulation, we reformulate the interpolation in
 terms of differences between interpolation levels:
 \begin{equation}
-\Delta^l(R) = I^l(R) - I^{l-1}(R), ~~l \geq 1
+\Delta^l(R) = I^l(R) - I^{l-1}(R), ~~l \geq 1 \label{eq:interp_diff}
 \end{equation}
-where $I^l(R)$ is as defined in 
-Eqs.~\ref{eq:lagrange_interp_1d}--\ref{eq:hermite_interp_1d} and 
-$I^{l-1}(R)$ is defined as $I^l(I^{l-1}(R))$, indicating evaluation of
-the lower level interpolant on the higher level point set.
+where $I^l(R)$ is as defined in
+Eqs.~\ref{eq:lagrange_interp_1d}--\ref{eq:hermite_interp_1d} using the 
+same local or global definitions for $L_j(\xi)$, $H_j^{(1)}(\xi)$, and 
+$H_j^{(2)}(\xi)$, and $I^{l-1}(R)$ is evaluated as $I^l(I^{l-1}(R))$, 
+indicating reinterpolation of the lower level interpolant across the 
+higher level point set~\cite{spinterp,AgaAlu09}.
 
-We can represent this difference as
+Utilizing Eqs.~\ref{eq:lagrange_interp_1d}--\ref{eq:hermite_interp_1d},
+we can represent this difference interpolant as
 \begin{equation}
 \Delta^l(R) = 
-\sum_{j=1}^{m_l} \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,L_j(\xi)
+\begin{cases}
+\sum_{j=1}^{m_l} \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,L_j(\xi) & 
+\text{value-based}\\
+\sum_{j=1}^{m_l} \left( \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,H^{(1)}_j(\xi)
++ \left[ \frac{dr}{d\xi}(\xi_j) - \frac{dI^{l-1}(R)}{d\xi}(\xi_j) \right] 
+\,H^{(2)}_j(\xi) \right) & \text{gradient-enhanced}
+\end{cases}
+\label{eq:interp_diff_detail}
 \end{equation}
+where $I^{l-1}(R)(\xi_j)$ and $\frac{dI^{l-1}(R)}{d\xi}(\xi_j)$ are
+the value and gradient, respectively, of the lower level interpolant
+evaluated at the higher level points.  We then define hierarchical
+surpluses ${s, s^{(1)}, s^{(2)}}$ at a point $\xi_j$ as the bracketed
+terms in Eq~\ref{eq:interp_diff_detail}.  These surpluses can be
+interpreted as local interpolation error estimates since they capture
+the difference between the true values and the values predicted by the
+previous interpolant.
 
-%For simplicity, we demonstrate this for the value-based interpolants without loss of generality.
-For the case where we used nested point sets among the interpolation
-levels, the differences at points contained in set $m_{l-1}$ are zero,
-allowing us to restrict the summation to
+For the case where we use nested point sets among the interpolation
+levels, the interpolant differences for points contained in both sets
+are zero, allowing us to restrict the summations above to
+$\sum_{j=1}^{m_{\Delta_l}}$ where we define the set $\Xi_{\Delta_l} =
+\Xi_l \setminus \Xi_{l-1}$ that contains $m_{\Delta_l} = m_l - m_{l-1}$ 
+points.  $\Delta^l(R)$ then becomes
 \begin{equation}
 \Delta^l(R) = 
-\sum_{j=1}^{m_{\Delta_l}} \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,L_j(\xi)
-\end{equation}
-where we define $m_{\Delta_l} = m_l \setminus m_{l-1}$.  We then
-define the hierarchical surplus $s$ at a point $\xi_j$ as $r(\xi_j) -
-I^{l-1}(R)(\xi_j)$, which can be interpreted as a local interpolation
-error estimate since it captures the difference between the true value
-and the value predicted by the previous interpolant.  $\Delta^l(R)$
-then becomes
-\begin{equation}
-\Delta^l(R) = \sum_{j=1}^{m_{\Delta_l}} s(\xi_j)\,L_j(\xi)
+\begin{cases}
+\sum_{j=1}^{m_{\Delta_l}} s(\xi_j)\,L_j(\xi)  & \text{value-based}\\
+\sum_{j=1}^{m_{\Delta_l}} \left( s^{(1)}(\xi_j) \,H^{(1)}_j(\xi) 
++ s^{(2)}(\xi_j) \,H^{(2)}_j(\xi) \right) & \text{gradient-enhanced}
+\end{cases}
 \end{equation}
 The original interpolant $I^l(R)$ can be represented as a summation
-of these differences
+of these difference interpolants
 \begin{equation}
 I^l(R) = \Delta^l(R) + I^{l-1}(R) = \sum_{i=1}^{l} \Delta^l(R)
 \end{equation}
 We will employ these hierarchical definitions within stochastic
-collocation on sparse grids in Section~\ref{uq:expansion:sc}.
+collocation on sparse grids in Section~\ref{uq:expansion:sc:hierarch}.
 
 
 \section{Generalized Polynomial Chaos} \label{uq:expansion:pce}
@@ -422,7 +437,7 @@ interpolation polynomials, one polynomial per interpolated response
 quantity (one response value and potentially multiple response
 gradient components) per unique collocation point.  
 
-\subsection{Value-based} \label{uq:expansion:sc:value}
+\subsection{Value-Based Nodal} \label{uq:expansion:sc:value}
 
 For value-based interpolation in multiple dimensions, a tensor-product
 of the one-dimensional polynomials described in
@@ -465,7 +480,7 @@ Multivariate interpolation on Smolyak sparse grids involves a weighted
 sum of the tensor products in Eq.~\ref{eq:lagrange_tensor} with
 varying $\boldsymbol{i}$ levels.  For sparse interpolants based on
 nested quadrature rules (e.g., Clenshaw-Curtis, Gauss-Patterson,
-Genz-Keister), the inteprolation property is preserved, but sparse
+Genz-Keister), the interpolation property is preserved, but sparse
 interpolants based on non-nested rules may exhibit some interpolation
 error at the collocation points.
 
@@ -478,7 +493,7 @@ error at the collocation points.
 %interpolation grid and the polynomial orders of the basis are adapted
 %implicitly.
 
-\subsection{Gradient-enhanced} \label{uq:expansion:sc:gradient}
+\subsection{Gradient-Enhanced Nodal} \label{uq:expansion:sc:gradient}
 
 For gradient-enhanced interpolation in multiple dimensions, we extend
 the formulation in Eq~\ref{eq:lagrange_interp_nd} to use a
@@ -511,6 +526,38 @@ except $k$:
 As for the value-based case, multivariate interpolation on Smolyak
 sparse grids involves a weighted sum of the tensor products in
 Eq.~\ref{eq:hermite_interp_nd} with varying $\boldsymbol{i}$ levels.
+
+\subsection{Hierarchical} \label{uq:expansion:sc:hierarch}
+
+In the case of multivariate hierarchical interpolation on nested grids, 
+we are interested in tensor products of the one-dimensional difference
+interpolants described in Section~\ref{uq:expansion:interp:hierarch},
+with
+\begin{equation}
+\Delta^l(R) = \sum_{j_1=1}^{m_{\Delta_1}}\cdots\sum_{j_n=1}^{m_{\Delta_n}}
+s\left(\xi^{\Delta_1}_{j_1},\dots , \xi^{\Delta_n}_{j_n}\right)\,
+\left(L^{\Delta_1}_{j_1}\otimes\cdots\otimes L^{\Delta_n}_{j_n}\right)
+\label{eq:hierarch_interp_nd_L}
+\end{equation}
+for value-based, and
+\begin{eqnarray}
+& \Delta^l(R) & =
+\sum_{j_1=1}^{m_{\Delta_1}} \cdots \sum_{j_n=1}^{m_{\Delta_n}} \nonumber \\
+& & \left[ 
+s^{(1)} \left( \xi^{\Delta_1}_{j_1}, \dots, \xi^{\Delta_n}_{j_n} \right)
+\left( H^{(1)~\Delta_1}_{~~~~~j_1} \otimes \cdots \otimes H^{(1)~\Delta_n}_{~~~~~j_n}
+\right) + \sum_{k=1}^n s_k^{(2)} \left(\xi^{\Delta_1}_{j_1}, \dots, \xi^{\Delta_n}_{j_n}\right)
+\left(H^{(2)~\Delta_1}_{k~~~~j_1}\otimes\cdots\otimes H^{(2)~\Delta_n}_{k~~~~j_n}\right) 
+\right] \nonumber \\
+& & 
+\label{eq:hierarch_interp_nd_H}
+\end{eqnarray}
+for gradient-enhanced, where $k$ indicates the gradient component being
+interpolated.
+
+These difference interpolants are particularly useful within sparse
+grid interpolation, for which the $\Delta^l$ can be employed directly 
+within Eq.~\ref{eq:smolyak1}.
 
 
 \section{Transformations to uncorrelated standard variables} \label{uq:expansion:trans}
@@ -843,7 +890,12 @@ Then the isotropic Smolyak quadrature formula is given by
 \mathscr{A}({\rm w},n) = \sum_{|\mathbf{i}| \leq {\rm w}+n}\left(\Delta^{i_1}\otimes\cdots\otimes\Delta^{i_n}\right).
 \end{equation}
 %
-Equivalently, formula Eq.~\ref{eq:smolyak1} can be written as~\cite{was_woz}
+This form is preferred for use in forming hierarchical interpolants
+as described in Sections~\ref{uq:expansion:interp:hierarch} 
+and~\ref{uq:expansion:sc:hierarch}.  For nodal interpolants and 
+polynomial chaos in sparse grids, the following equivalent 
+form~\cite{was_woz} is often more convenient since it collapses 
+repeated index sets
 %
 \begin{equation}\label{eq:smolyak2}
 \mathscr{A}({\rm w},n) = \sum_{{\rm w}+1 \leq |\mathbf{i}| \leq {\rm w}+n}(-1)^{{\rm w}+n-|\mathbf{i}|}
