@@ -378,7 +378,7 @@ example, where each sample is randomly located in its bin. There is
 no restriction on the number of bins in the range of each parameter,
 however, all parameters must have the same number of bins.
 
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \includegraphics[scale=0.35]{images/lhs_graphic}
   \caption{An example of Latin hypercube sampling with four bins in
@@ -417,7 +417,7 @@ Figure~\ref{uq:figure02} for the case where \texttt{samples} = 5 and
 \texttt{samples} = 10 for both \texttt{random} ($\circ$) and 
 \texttt{lhs} ($+$) sample types.
 
-\begin{figure}
+\begin{figure}[htbp!]
   \centering \begin{bigbox} \begin{small}
   \verbatimtabinput[8]{textbook_uq_sampling.in} \end{small} \end{bigbox}
 \caption{Dakota input file for UQ example using LHS --
@@ -425,7 +425,7 @@ see \texttt{Dakota/examples/users/textbook\_uq\_sampling.in} }
 \label{uq:figure01}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \subfigure{\includegraphics[scale=0.35]{images/input_samples5}}
   \subfigure{\includegraphics[scale=0.35]{images/input_samples10}}
@@ -456,7 +456,7 @@ Dakota could have provided CCDF pairings, reliability levels
 corresponding to prescribed response levels, or response levels
 corresponding to prescribed probability or reliability levels.
 
-\begin{figure}
+\begin{figure}[htbp!]
 \centering
 \begin{bigbox}
 \begin{small}
@@ -549,7 +549,7 @@ because we use a default ``restricted pairing'' method in the LHS
 routine which forces near-zero correlation amongst uncorrelated
 inputs.
 
-\begin{figure}
+\begin{figure}[htbp!]
 \centering
 \begin{bigbox}
 \begin{small}
@@ -723,7 +723,7 @@ Note that there are local and global reliability methods. The majority
 of the methods available are local, meaning that a local optimization 
 formulation is used to locate one MPP. In contrast, global methods
 can find multiple MPPs if they exist.
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \includegraphics[scale=0.75]{images/cdf_orig_graphic}
   \caption{Graphical depiction of calculation of cumulative
@@ -731,7 +731,7 @@ can find multiple MPPs if they exist.
   \label{uq:figure05}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \includegraphics[scale=0.75]{images/cdf_tran_graphic}
   \caption{Graphical depiction of integration for the calculation of
@@ -921,7 +921,11 @@ can provide multiple starting points and thus a good multimodal sampling density
 using multimodal AIS thus incorporates probability of failure at 
 multiple points.
 
-\subsection{Uncertainty Quantification Example using Reliability Analysis} \label{uq:reliability:ex}
+\subsection{Uncertainty Quantification Examples using Reliability Analysis} \label{uq:reliability:ex}
+
+%Reliability methods provide an alternative approach to uncertainty
+%quantification which can be less computationally demanding than
+%sampling techniques. 
 
 In summary, the user can choose to perform either forward (RIA) or
 inverse (PMA) mappings when performing a reliability analysis. With
@@ -940,6 +944,75 @@ addition, the MV methods additionally output estimates of the mean and
 standard deviation of the response functions along with importance
 factors for each of the uncertain variables in the case of independent
 random variables.
+
+\subsubsection{Mean-value Reliability with Textbook}
+\label{uq:examples:mv}
+
+Figure~\ref{uq:examples:mv_input} shows the Dakota input file for an
+example problem that demonstrates the simplest reliability method,
+called the mean value method (also referred to as the Mean Value First
+Order Second Moment method). It is specified with method keyword
+\texttt{local\_reliability}. This method calculates the mean and
+variance of the response function based on information about the mean
+and variance of the inputs and gradient information at the mean of the
+inputs. The mean value method is extremely cheap computationally (only
+five runs were required for the textbook function), but can be quite
+inaccurate, especially for nonlinear problems and/or problems with
+uncertain inputs that are significantly non-normal. More detail on the
+mean value method can be found in the Local Reliability Methods
+section of the Dakota Theory Manual~\cite{TheoMan}, and more detail on
+reliability methods in general (including the more advanced methods)
+is found in Section~\ref{uq:reliability}.
+
+Example output from the mean value method is displayed in 
+Figure~\ref{uq:examples:mv_results}. Note that since the mean of both inputs
+is 1, the mean value of the output for response 1 is zero. 
+However, the mean values of the constraints are both 0.5. 
+The mean value results indicate that variable x1 is more 
+important in constraint 1 while x2 is more important in constraint 2, 
+which is the case based on Equation~\ref{additional:textbook_f}.
+
+\begin{figure}[htbp!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{textbook_uq_meanvalue.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Mean Value Reliability Method: the Dakota input file --
+see \texttt{Dakota/examples/users/textbook\_uq\_meanvalue.in} }
+  \label{uq:examples:mv_input}
+\end{figure}
+
+\begin{figure}[htbp!]
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+-----------------------------------------------------------------
+MV Statistics for response_fn_1:
+  Approximate Mean Response                  =  0.0000000000e+00
+  Approximate Standard Deviation of Response =  0.0000000000e+00
+  Importance Factors not available.
+MV Statistics for response_fn_2:
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for variable TF1ln       =  9.4117647059e-01
+  Importance Factor for variable TF2ln       =  5.8823529412e-02
+MV Statistics for response_fn_3:
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for variable TF1ln       =  5.8823529412e-02
+  Importance Factor for variable TF2ln       =  9.4117647059e-01
+-----------------------------------------------------------------
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{Results of the Mean Value Method on the Textbook Function}
+\label{uq:examples:mv_results}
+\end{figure}
+
+\subsubsection{FORM Reliability with Lognormal Ratio}
 
 This example quantifies the uncertainty in the ``log ratio'' response
 function:
@@ -974,7 +1047,7 @@ this problem. Also note that FORM does have some error in the
 calculation of CDF values for this problem, but it is a very small
 error (on the order of e-11), much smaller than the error obtained
 when using a Mean Value method, which will be discussed next.
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \begin{bigbox}
     \begin{small}
@@ -986,7 +1059,7 @@ see \texttt{Dakota/examples/users/logratio\_uq\_reliability.in} }
 \label{uq:rel_input_form}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htbp!]
 \centering
 \begin{bigbox}
 \begin{small}
@@ -1025,7 +1098,7 @@ Cumulative Distribution Function (CDF) for response_fn_1:
 \label{uq:rel_output_form}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \includegraphics[scale=0.5]{images/cdf_form}
 \caption{Comparison of the cumulative distribution function (CDF) computed by
@@ -1055,7 +1128,7 @@ differ from the exact solution by as much as 0.11 in CDF estimates. A
 comprehensive comparison of various reliability methods applied to the
 logratio problem is provided in ~\cite{Eld06a}.
 
-\begin{figure} % Imp factors only if uncorrelated
+\begin{figure}[htbp!] % Imp factors only if uncorrelated
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
@@ -1099,7 +1172,7 @@ Cumulative Distribution Function (CDF) for response_fn_1:
 
 Additional reliability analysis and design results are provided in 
 Sections~\ref{additional:logratio}-\ref{additional:steel_column}.
-An example using the mean value method is included in Section~\ref{uq:examples:mv}.
+
 
 \section{Stochastic Expansion Methods}\label{uq:expansion}
 
@@ -1216,18 +1289,172 @@ The Dakota Theory Manual~\cite{TheoMan} provides full algorithmic
 details for the PCE and SC methods.
 
 
-\subsection{Uncertainty Quantification Example using Stochastic Collocation}\label{uq:uncertainty2}
+\subsection{Uncertainty Quantification Examples using Stochastic Expansions} \label{uq:stoch_exp:ex}
+
+\subsubsection{Polynomial Chaos Expansion for Rosenbrock}
+\label{uq:stoch_exp:ex:pce}
+
+%The term ``Polynomial Chaos'' refers to the representation of a stochastic 
+%process as a polynomial expansion in random (or stochastic) variables. This 
+%representation acts as a response surface that maps stochastic inputs to 
+%stochastic outputs. Desired statistics can then be obtained from the 
+%response surface either analytically or by re-sampling the fast surrogate.
+%Additional details regarding the method are provided in
 
 A typical Dakota input file for performing an uncertainty
-quantification using polynomial chaos expansions is shown in
-Section~\ref{uq:examples:pce}, which illustrates PCE defined from an
-anisotropic tensor-product quadrature grid. The uncertain variables
-are uniforms, so the expansion is built using classical Legendre
-polynomials. This section presents a more sophisticated example, where
-we use stochastic collocation built on an anisotropic sparse grid
-defined from numerically-generated orthogonal polynomials. The
-uncertain variables are lognormal in this example and the orthogonal
-polynomials are generated from Gauss-Wigert recursion
+quantification using PCE is shown in
+Figure~\ref{uq:examples:pce_input}.  In this example, we compute CDF
+probabilities for six response levels of Rosenbrock's function. Since
+Rosenbrock is a fourth order polynomial and we employ a fourth-order
+expansion using an optimal basis (Legendre for uniform random
+variables), we can readily obtain a polynomial expansion which exactly
+matches the Rosenbrock function. In this example, we select Gaussian
+quadratures using an anisotropic approach (fifth-order quadrature in
+$x_1$ and third-order quadrature in $x_2$), resulting in a total of 15
+function evaluations to compute the PCE coefficients.
+
+\begin{figure}[htbp!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{rosen_uq_pce.in}
+    \end{small}
+  \end{bigbox}
+\caption{Dakota input file for performing UQ using polynomial chaos expansions --
+see \texttt{Dakota/examples/users/rosen\_uq\_pce.in} }
+\label{uq:examples:pce_input}
+\end{figure}
+
+The tensor product quadature points upon which the expansion is calculated 
+are shown in Figure~\ref{uq:examples:rosen_pce_points}. 
+The tensor product generates
+all combinations of values from each individual dimension: it is an 
+all-way pairing of points.
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[height=2.5in]{images/rosen_pce_pts}
+  \caption{Rosenbrock polynomial chaos example: tensor product quadrature points.}
+  \label{uq:examples:rosen_pce_points}
+\end{figure}
+
+Once the expansion coefficients have been calculated, some statistics
+are available analytically and others must be evaluated numerically.
+For the numerical portion, the input file specifies the use of 10000
+samples, which will be evaluated on the expansion to compute the CDF
+probabilities. In Figure~\ref{uq:examples:pce_out}, excerpts from the
+results summary are presented, where we first see a summary of the PCE
+coefficients which exactly reproduce Rosenbrock for a Legendre
+polynomial basis. The analytic statistics for mean, standard
+deviation, and COV are then presented. For example, the mean is 455.66
+and the standard deviation is 606.56. The moments are followed by
+global sensitivity indices (Sobol' indices).This example shows that
+variable x1 has the largest main effect (0.497) as compared with
+variable x2 (0.296) or the interaction between x1 and x2 (0.206).
+After the global sensitivity indices, the local sensitivities are
+presented, evaluated at the mean values.  Finally, we see the
+numerical results for the CDF probabilities based on 10000 samples
+performed on the expansion. For example, the probability that the
+Rosenbrock function is less than 100 over these two uncertain
+variables is 0.342. Note that this is a very similar estimate to what
+was obtained using 200 Monte Carlo samples, with fewer true function
+evaluations.
+\begin{figure}[htbp!]
+\centering
+\begin{bigbox}
+%\begin{footnotesize}
+\begin{scriptsize}
+\begin{verbatim}
+Polynomial Chaos coefficients for response_fn_1:
+        coefficient   u1   u2
+        ----------- ---- ----
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -9.9475983006e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -5.3333333333e+02   P0   P1
+  -3.9968028887e-14   P1   P1
+  -1.0666666667e+03   P2   P1
+  -3.3573144265e-13   P3   P1
+   1.2829737273e-12   P4   P1
+   2.6666666667e+02   P0   P2
+   2.2648549702e-13   P1   P2
+   4.8849813084e-13   P2   P2
+   2.8754776338e-13   P3   P2
+  -2.8477220582e-13   P4   P2
+-------------------------------------------------------------------
+Statistics derived analytically from polynomial expansion:
+
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+response_fn_1
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
+
+Covariance among response functions:
+[[  3.6791532698e+05 ]] 
+
+Local sensitivities for each response function evaluated at uncertain variable means:
+response_fn_1:
+ [ -2.0000000000e+00  2.4055757386e-13 ] 
+
+Global sensitivity indices for each response function:
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                           Interaction
+                      2.0616659946e-01 x1 x2 
+
+Statistics based on 10000 samples performed on polynomial expansion:
+
+Probability Density Function (PDF) histograms for each response function:
+PDF for response_fn_1:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   6.8311107124e-03   1.0000000000e-01   2.0393073423e-02
+   1.0000000000e-01   1.0000000000e+00   1.3000000000e-02
+   1.0000000000e+00   5.0000000000e+01   4.7000000000e-03
+   5.0000000000e+01   1.0000000000e+02   1.9680000000e-03
+   1.0000000000e+02   5.0000000000e+02   9.2150000000e-04
+   5.0000000000e+02   1.0000000000e+03   2.8300000000e-04
+   1.0000000000e+03   3.5755437782e+03   5.7308286215e-05
+
+Level mappings for each response function:
+Cumulative Distribution Function (CDF) for response_fn_1:
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9000000000e-03
+   1.0000000000e+00   1.3600000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4230000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
+-------------------------------------------------------------------
+\end{verbatim}
+\end{scriptsize}
+%\end{footnotesize}
+\end{bigbox}
+\caption{Excerpt of UQ output for polynomial chaos example.}
+\label{uq:examples:pce_out}
+\end{figure}
+
+\subsubsection{Uncertainty Quantification Example using Stochastic Collocation}
+\label{uq:stoch_exp:ex:sc}
+
+%A typical Dakota input file for performing an uncertainty
+%quantification using polynomial chaos expansions is shown in
+%Section~\ref{uq:stoch_exp:ex:pce}, which illustrates PCE defined from an
+%anisotropic tensor-product quadrature grid. The uncertain variables
+%are uniforms, so the expansion is built using classical Legendre
+%polynomials. 
+
+Compared to the previous PCE example, this section presents a more
+sophisticated example, where we use stochastic collocation built on an
+anisotropic sparse grid defined from numerically-generated orthogonal
+polynomials. The uncertain variables are lognormal in this example and
+the orthogonal polynomials are generated from Gauss-Wigert recursion
 coefficients~\cite{simpson_gw} in combination with the Golub-Welsch
 procedure~\cite{GolubWelsch69}.  The input file is shown in
 Figure~\ref{uq:figure11}.  Note that the dimension preference of
@@ -1242,7 +1469,7 @@ and the resulting expansion exactly reproduces Rosenbrock's function.
 The placement of the points generated by the sparse grid is shown in
 Figure~\ref{uq:figure11b}.
 
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \begin{bigbox}
     \begin{small}
@@ -1254,7 +1481,7 @@ see \texttt{Dakota/examples/users/rosen\_uq\_sc.in} }
 \label{uq:figure11}
 \end{figure}
 
-\begin{figure}[ht!]
+\begin{figure}[htbp!]
   \centering
   \includegraphics[height=2.5in]{images/rosen_sc_pts}
   \caption{Rosenbrock stochastic collocation example: sparse grid points.}
@@ -1284,10 +1511,10 @@ Finally, we see the numerical results for the CDF probabilities based
 on 10000 samples performed on the expansion. For example, the probability 
 that the Rosenbrock function is less than 100 is 0.7233. Note that these 
 results are significantly different than the ones presented in 
-Section~\ref{uq:examples:pce} because of 
+Section~\ref{uq:stoch_exp:ex:pce} because of 
 the different assumptions about the inputs: uniform[-2,2] versus
 lognormals with means of 1.0 and standard deviations of 0.5. 
-\begin{figure}
+\begin{figure}[htbp!]
 \centering
 \begin{bigbox}
 \begin{footnotesize}
@@ -1624,6 +1851,7 @@ an epistemic context. Interval analysis and evidence theory are
 described in more detail below.
 
 \subsection{Interval Methods for Epistemic Analysis}\label{uq:interval}
+
 In interval analysis, one assumes that nothing is known about 
 an epistemic uncertain variable except that its value lies 
 somewhere within an interval. In this situation, it is NOT 
@@ -1669,9 +1897,10 @@ exist in the output presentation. If you are performing a pure
 interval analysis, we recommend using either
 \texttt{global\_interval\_est} or \texttt{local\_interval\_est}
 instead of \texttt{global\_evidence} or \texttt{local\_evidence}, for
-reasons of simplicity. An example of interval estimation is found in
-the \texttt{Dakota/examples/users/cantilever\_uq\_global\_interval.in}, and also
-in Section~\ref{uq:examples:interval}.
+reasons of simplicity. %An example of interval estimation is found in
+%the \texttt{Dakota/examples/users/cantilever\_uq\_global\_interval.in}, 
+%and also in Section~\ref{uq:examples:interval}.
+
 %Note that we have kept separate implementations of interval analysis and
 %Dempster-Shafer evidence theory because our users often want to couple
 %interval analysis on an ``outer loop'' with an aleatory, probabilistic
@@ -1683,7 +1912,63 @@ interval-valued probability analysis for propagating mixed aleatory
 and epistemic uncertainty -- refer to
 Section~\ref{adv_models:mixed_uq:ivp} for additional details.
 
+%\subsubsection{Interval Analysis for Cantilever}\label{uq:examples:interval}
+
+%Interval analysis is often used to model epistemic uncertainty. 
+%In interval analysis, the 
+%uncertainty quantification problem is one of determining the 
+%resulting bounds on the output (defining the output interval) 
+%given interval bounds on the inputs. 
+
+%We can do interval analysis using either
+%\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.
+%In the global approach, one uses either a global optimization 
+%method or a sampling method to assess the bounds, whereas the 
+%local method uses gradient information in a derivative-based 
+%optimization approach. 
+ 
+An example of interval estimation 
+is shown in Figure~\ref{uq:examples:interval_input}, with example results in 
+Figure~\ref{uq:examples:interval_out}. This example is a demonstration 
+of calculating interval bounds for three outputs of the cantilever beam 
+problem. The cantilever beam problem is described in detail in 
+Section~\ref{additional:cantilever}. Given input intervals of [1,10] on 
+beam width and beam thickness, we can see that the interval estimate of 
+beam weight is approximately [1,100].
+
+\begin{figure}[htbp!]
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{cantilever_uq_global_interval.in}
+    \end{small}
+  \end{bigbox}
+\caption{Dakota input file for performing UQ using interval analysis --
+see \texttt{Dakota/examples/users/cantilever\_uq\_global\_interval.in} }
+\label{uq:examples:interval_input}
+\end{figure}
+
+\begin{figure}[htbp!]
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+------------------------------------------------------------------
+Min and Max estimated values for each response function:
+weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
+-----------------------------------------------------------------
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{Excerpt of UQ output for interval example.}
+\label{uq:examples:interval_out}
+\end{figure}
+
+
 \subsection{Dempster-Shafer Theory of Evidence}\label{uq:dempshaf}
+
 We have chosen to pursue evidence theory at Sandia as a way to model
 epistemic uncertainty, in part because evidence theory is a
 generalization of probability theory. Evidence theory is also
@@ -1718,7 +2003,7 @@ respectively, on probabilities. Belief and plausibility define the
 lower and upper limits or intervals on probability values. Typical
 plots of cumulative and complementary cumulative belief and
 plausibility functions are shown in Figure~\ref{uq:figure15}~\cite{Hel07}.
-\begin{figure}
+\begin{figure}[htbp!]
   \centering 
   \includegraphics[scale=0.8]{images/belief_plaus} 
   \caption{Example cumulative belief and plausibility distribution functions on left; complementary cumulative belief and plausibility distribution functions on right}
@@ -1757,7 +2042,7 @@ interval bounds on the first interval for the first variable are 0.6
 and 0.9, and the bounds for the second interval for the first variable
 are 0.1 to 0.5, etc.
 
-\begin{figure}
+\begin{figure}[htbp!]
   \centering
   \begin{bigbox}
     \begin{small}
@@ -1810,7 +2095,7 @@ much larger than expected, giving one a truer picture of the total
 output uncertainty caused by lack of knowledge or information about
 the epistemic input quantities.
 
-\begin{figure}
+\begin{figure}[htbp!]
 \centering
 \begin{bigbox}
 \begin{small}
@@ -1891,6 +2176,7 @@ the implementation of the optimization methods to perform
 Dempster-Shafer calculations, as well as comparisons on test problems.
 
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
+
 We have two preliminary implementations of Bayesian calibration methods 
 in Dakota, where a ``prior distribution'' on a parameter is 
 updated through a Bayesian framework involving experimental data and 
@@ -2050,7 +2336,7 @@ has the observational data:  in this case, it is a freeform file
 experiment, there is one standard deviation value indicating the 
 error associated with that experiment. 
 
-\begin{figure}
+\begin{figure}[htbp!]
 \centering
 \begin{bigbox}
 \begin{small}
@@ -2076,7 +2362,7 @@ method,
  
 variables,
        continuous_design = 2
-         lower_bounds = 0. 0.
+grep '         lower_bounds = 0. 0.
          upper_bounds = 3. 3.
          initial_point = 1. 1.
 
@@ -2277,288 +2563,6 @@ and the study generates a family of CDF/CCDF respresentations known as a
 evidence-based approach (\texttt{local\_evidence} or 
 \texttt{global\_evidence}), the approach generates epistemic belief 
 and plausibility bounds on aleatory statistics.
-
-\section{Additional UQ Examples}
-
-This section provides three additional examples of UQ methods: 
-an example of the Mean-value method, an example of a polynomial
-chaos expansion, and an example of interval analysis. 
- 
-\subsection{Mean-value Reliability with Textbook}\label{uq:examples:mv}
-
-Reliability methods provide an alternative approach to uncertainty
-quantification which can be less computationally demanding than
-sampling techniques. 
-Figure~\ref{uq:examples:mv_input} shows the Dakota input file for an
-example problem that demonstrates the simplest reliability method,
-called the mean value method (also referred to as the Mean Value First
-Order Second Moment method). It is specified with method keyword
-\texttt{local\_reliability}. This method calculates the mean and
-variance of the response function based on information about the mean
-and variance of the inputs and gradient information at the mean of the
-inputs. The mean value method is extremely cheap computationally (only
-five runs were required for the textbook function), but can be quite
-inaccurate, especially for nonlinear problems and/or problems with
-uncertain inputs that are significantly non-normal. More detail on the
-mean value method can be found in the Local Reliability Methods
-section of the Dakota Theory Manual~\cite{TheoMan}, and more detail on
-reliability methods in general (including the more advanced methods)
-is found in Section~\ref{uq:reliability}.
-
-Example output from the mean value method is displayed in 
-Figure~\ref{uq:examples:mv_results}. Note that since the mean of both inputs
-is 1, the mean value of the output for response 1 is zero. 
-However, the mean values of the constraints are both 0.5. 
-The mean value results indicate that variable x1 is more 
-important in constraint 1 while x2 is more important in constraint 2, 
-which is the case based on Equation~\ref{additional:textbook_f}.
-
-\begin{figure}[ht!]
-  \centering
-  \begin{bigbox}
-    \begin{small}
-      \verbatimtabinput[8]{textbook_uq_meanvalue.in}
-    \end{small}
-  \end{bigbox}
-  \caption{Mean Value Reliability Method: the Dakota input file --
-see \texttt{Dakota/examples/users/textbook\_uq\_meanvalue.in} }
-  \label{uq:examples:mv_input}
-\end{figure}
-
-\begin{figure}
-\centering
-\begin{bigbox}
-\begin{small}
-\begin{verbatim}
------------------------------------------------------------------
-MV Statistics for response_fn_1:
-  Approximate Mean Response                  =  0.0000000000e+00
-  Approximate Standard Deviation of Response =  0.0000000000e+00
-  Importance Factors not available.
-MV Statistics for response_fn_2:
-  Approximate Mean Response                  =  5.0000000000e-01
-  Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  9.4117647059e-01
-  Importance Factor for variable TF2ln       =  5.8823529412e-02
-MV Statistics for response_fn_3:
-  Approximate Mean Response                  =  5.0000000000e-01
-  Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  5.8823529412e-02
-  Importance Factor for variable TF2ln       =  9.4117647059e-01
------------------------------------------------------------------
-\end{verbatim}
-\end{small}
-\end{bigbox}
-\caption{Results of the Mean Value Method on the Textbook Function}
-\label{uq:examples:mv_results}
-\end{figure}
-
-
-\subsection{Polynomial Chaos Expansion for Rosenbrock}\label{uq:examples:pce}
-
-%The term ``Polynomial Chaos'' refers to the representation of a stochastic 
-%process as a polynomial expansion in random (or stochastic) variables. This 
-%representation acts as a response surface that maps stochastic inputs to 
-%stochastic outputs. Desired statistics can then be obtained from the 
-%response surface either analytically or by re-sampling the fast surrogate.
-%Additional details regarding the method are provided in
-The PCE and SC methods have been described in Section~\ref{uq:expansion},
-with an SC example provided in Section~\ref{uq:uncertainty2}.  This section
-provides an additional PCE example.
-
-A typical Dakota input file for performing an uncertainty
-quantification using PCE is shown in
-Figure~\ref{uq:examples:pce_input}.  In this example, we compute CDF
-probabilities for six response levels of Rosenbrock's function. Since
-Rosenbrock is a fourth order polynomial and we employ a fourth-order
-expansion using an optimal basis (Legendre for uniform random
-variables), we can readily obtain a polynomial expansion which exactly
-matches the Rosenbrock function. In this example, we select Gaussian
-quadratures using an anisotropic approach (fifth-order quadrature in
-$x_1$ and third-order quadrature in $x_2$), resulting in a total of 15
-function evaluations to compute the PCE coefficients.
-
-\begin{figure}
-  \centering
-  \begin{bigbox}
-    \begin{small}
-      \verbatimtabinput[8]{rosen_uq_pce.in}
-    \end{small}
-  \end{bigbox}
-\caption{Dakota input file for performing UQ using polynomial chaos expansions --
-see \texttt{Dakota/examples/users/rosen\_uq\_pce.in} }
-\label{uq:examples:pce_input}
-\end{figure}
-
-The tensor product quadature points upon which the expansion is calculated 
-are shown in Figure~\ref{uq:examples:rosen_pce_points}. 
-The tensor product generates
-all combinations of values from each individual dimension: it is an 
-all-way pairing of points.
-
-\begin{figure}[ht!]
-  \centering
-  \includegraphics[height=2.5in]{images/rosen_pce_pts}
-  \caption{Rosenbrock polynomial chaos example: tensor product quadrature points.}
-  \label{uq:examples:rosen_pce_points}
-\end{figure}
-
-Once the expansion coefficients have been calculated, some statistics
-are available analytically and others must be evaluated numerically.
-For the numerical portion, the input file specifies the use of 10000
-samples, which will be evaluated on the expansion to compute the CDF
-probabilities. In Figure~\ref{uq:examples:pce_out}, excerpts from the
-results summary are presented, where we first see a summary of the PCE
-coefficients which exactly reproduce Rosenbrock for a Legendre
-polynomial basis. The analytic statistics for mean, standard
-deviation, and COV are then presented. For example, the mean is 455.66
-and the standard deviation is 606.56. The moments are followed by
-global sensitivity indices (Sobol' indices).This example shows that
-variable x1 has the largest main effect (0.497) as compared with
-variable x2 (0.296) or the interaction between x1 and x2 (0.206).
-After the global sensitivity indices, the local sensitivities are
-presented, evaluated at the mean values.  Finally, we see the
-numerical results for the CDF probabilities based on 10000 samples
-performed on the expansion. For example, the probability that the
-Rosenbrock function is less than 100 over these two uncertain
-variables is 0.342. Note that this is a very similar estimate to what
-was obtained using 200 Monte Carlo samples, with fewer true function
-evaluations.
-\begin{figure}
-\centering
-\begin{bigbox}
-%\begin{footnotesize}
-\begin{scriptsize}
-\begin{verbatim}
-Polynomial Chaos coefficients for response_fn_1:
-        coefficient   u1   u2
-        ----------- ---- ----
-   4.5566666667e+02   P0   P0
-  -4.0000000000e+00   P1   P0
-   9.1695238095e+02   P2   P0
-  -9.9475983006e-14   P3   P0
-   3.6571428571e+02   P4   P0
-  -5.3333333333e+02   P0   P1
-  -3.9968028887e-14   P1   P1
-  -1.0666666667e+03   P2   P1
-  -3.3573144265e-13   P3   P1
-   1.2829737273e-12   P4   P1
-   2.6666666667e+02   P0   P2
-   2.2648549702e-13   P1   P2
-   4.8849813084e-13   P2   P2
-   2.8754776338e-13   P3   P2
-  -2.8477220582e-13   P4   P2
--------------------------------------------------------------------
-Statistics derived analytically from polynomial expansion:
-
-Moment-based statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
-response_fn_1
-  expansion:    4.5566666667e+02  6.0656024184e+02
-  numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
-
-Covariance among response functions:
-[[  3.6791532698e+05 ]] 
-
-Local sensitivities for each response function evaluated at uncertain variable means:
-response_fn_1:
- [ -2.0000000000e+00  2.4055757386e-13 ] 
-
-Global sensitivity indices for each response function:
-response_fn_1 Sobol indices:
-                                  Main             Total
-                      4.9746891383e-01  7.0363551328e-01 x1
-                      2.9636448672e-01  5.0253108617e-01 x2
-                           Interaction
-                      2.0616659946e-01 x1 x2 
-
-Statistics based on 10000 samples performed on polynomial expansion:
-
-Probability Density Function (PDF) histograms for each response function:
-PDF for response_fn_1:
-          Bin Lower          Bin Upper      Density Value
-          ---------          ---------      -------------
-   6.8311107124e-03   1.0000000000e-01   2.0393073423e-02
-   1.0000000000e-01   1.0000000000e+00   1.3000000000e-02
-   1.0000000000e+00   5.0000000000e+01   4.7000000000e-03
-   5.0000000000e+01   1.0000000000e+02   1.9680000000e-03
-   1.0000000000e+02   5.0000000000e+02   9.2150000000e-04
-   5.0000000000e+02   1.0000000000e+03   2.8300000000e-04
-   1.0000000000e+03   3.5755437782e+03   5.7308286215e-05
-
-Level mappings for each response function:
-Cumulative Distribution Function (CDF) for response_fn_1:
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   1.0000000000e-01   1.9000000000e-03
-   1.0000000000e+00   1.3600000000e-02
-   5.0000000000e+01   2.4390000000e-01
-   1.0000000000e+02   3.4230000000e-01
-   5.0000000000e+02   7.1090000000e-01
-   1.0000000000e+03   8.5240000000e-01
--------------------------------------------------------------------
-\end{verbatim}
-\end{scriptsize}
-%\end{footnotesize}
-\end{bigbox}
-\caption{Excerpt of UQ output for polynomial chaos example.}
-\label{uq:examples:pce_out}
-\end{figure}
-
-
-\subsection{Interval Analysis for Cantilever}\label{uq:examples:interval}
-
-Interval analysis is often used to model epistemic uncertainty. 
-In interval analysis, the 
-uncertainty quantification problem is one of determining the 
-resulting bounds on the output (defining the output interval) 
-given interval bounds on the inputs. 
-
-We can do interval analysis using either
-\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.
-In the global approach, one uses either a global optimization 
-method or a sampling method to assess the bounds, whereas the 
-local method uses gradient information in a derivative-based 
-optimization approach. 
- 
-An example of interval estimation 
-is shown in Figure~\ref{uq:examples:interval_input}, with example results in 
-Figure~\ref{uq:examples:interval_out}. This example is a demonstration 
-of calculating interval bounds for three outputs of the cantilever beam 
-problem. The cantilever beam problem is described in detail in 
-Section~\ref{additional:cantilever}. Given input intervals of [1,10] on 
-beam width and beam thickness, we can see that the interval estimate of 
-beam weight is approximately [1,100].
-
-\begin{figure}
-  \centering
-  \begin{bigbox}
-    \begin{small}
-      \verbatimtabinput[8]{cantilever_uq_global_interval.in}
-    \end{small}
-  \end{bigbox}
-\caption{Dakota input file for performing UQ using interval analysis --
-see \texttt{Dakota/examples/users/cantilever\_uq\_global\_interval.in} }
-\label{uq:examples:interval_input}
-\end{figure}
-
-\begin{figure}
-\centering
-\begin{bigbox}
-\begin{small}
-\begin{verbatim}
-------------------------------------------------------------------
-Min and Max estimated values for each response function:
-weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
-stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
-displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
------------------------------------------------------------------
-\end{verbatim}
-\end{small}
-\end{bigbox}
-\caption{Excerpt of UQ output for interval example.}
-\label{uq:examples:interval_out}
-\end{figure}
 
 
 \begin{comment}
