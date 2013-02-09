@@ -407,6 +407,11 @@ Dakota/examples/users/textbook_hybrid_strat.in.
 <!-- \include dakota_hybrid.in -->
 
 \verbatim
+strategy
+  graphics
+  hybrid sequential
+    method_list = 'PS' 'PS2' 'NLP'
+
 method
   id_method = 'PS'
   model_pointer = 'M1'
