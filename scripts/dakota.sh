@@ -39,6 +39,14 @@ else
   export LD_LIBRARY_PATH
 fi
 
+# Workaround for 
+#terminate called after throwing an instance of 'std::runtime_error'
+#  what():  locale::facet::_S_create_c_locale name not valid
+#/dakota/install.cygwin/bin/dakota.sh: line 47:  9824 Aborted                 (core dumped) "${execpath}/dakota" "$@"
+if [ `uname | grep -c -i "cygwin"` -gt 0 ]; then
+  export LC_ALL="C"
+fi
+
 #echo "Appending PATH with ${execpath}:${execpath}/../test:."
 PATH="$PATH:${execpath}:${execpath}/../test:."
 export PATH

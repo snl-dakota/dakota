@@ -20,9 +20,19 @@ function(dakota_install_dll dakota_dll)
 endfunction()
 
 
-if ( NOT CMAKE_CURRENT_BINARY_DIR )
-   set( CMAKE_CURRENT_BINARY_DIR $ENV{PWD} )
+if ( DAKOTA_JENKINS_BUILD OR DEFINED ENV{WORKSPACE} )
+  # By convention, all Dakota, jenkins-driven build jobs use a 'build'
+  # subdir for clear separation of source and build trees in the WORKSPACE
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{WORKSPACE}/build )
+elseif ( NOT CMAKE_CURRENT_BINARY_DIR )
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{PWD} )
 endif()
+
+message( "CMAKE_SHARED_LIBRARY_SUFFIX: ${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+#message( "... If NOT .dylib, then CMake cache is not respected" )
+
+# otool may resolve symlinks, do the same for the build tree location
+get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
 
 # Get the dylibs excluding system libraries and anything in the build
 # tree (as will be installed to lib/) as a semicolon-separated list
@@ -30,13 +40,44 @@ execute_process(
   COMMAND otool -L "${CMAKE_CURRENT_BINARY_DIR}/src/dakota"
   # Omit the header and get the library only
   COMMAND awk "FNR > 1 {print $1}"
-  # Omit libs in the build tree
-  COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_SUFFIX}"
+  # Omit libs in the build tree, following symlinks
+  COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/.+.dylib"
+  COMMAND egrep -v "${resolved_build_dir}/.+.dylib"
   # Omit system libraries
   COMMAND egrep -v "(^/System|^/usr/lib|^/usr/X11)"
   COMMAND tr "\\n" ";"
   OUTPUT_VARIABLE dakota_darwin_dylibs
   )
+
+# Probe the CMakeCache.txt for location of the known Boost dynlib dependency
+
+file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
+      Boost_LIBRARY_DIRS_PAIR REGEX "^Boost_LIBRARY_DIRS:FILEPATH=(.*)$" )
+string( REGEX REPLACE "^Boost_LIBRARY_DIRS:FILEPATH=(.*)$" "\\1"
+        Cached_Boost_LIBRARY_DIRS "${Boost_LIBRARY_DIRS_PAIR}" )
+
+message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
+
+# Modify dakota_darwin_dylibs for "special case" of Boost
+#   otool DOES NOT return absolute path to Boost libs, so workaround the issue
+
+set(dakota_boost_dylibs "")
+
+# Ignore empty list elements:
+cmake_policy(PUSH)
+cmake_policy(SET CMP0007 OLD)
+
+foreach(pri_lib ${dakota_darwin_dylibs})
+  string(REGEX REPLACE "^libboost_(.*)$"
+    "${Cached_Boost_LIBRARY_DIRS}/libboost_\\1"
+    boost_dylib_fullpath "${pri_lib}")
+
+  if( ${pri_lib} MATCHES libboost_ )
+    # REMOVE boost entries if NOT absolute path
+    list(REMOVE_ITEM dakota_darwin_dylibs ${pri_lib})
+    list(APPEND dakota_boost_dylibs ${boost_dylib_fullpath})
+  endif()
+endforeach()
 
 # Get the secondary dylibs of the dylibs
 foreach(pri_lib ${dakota_darwin_dylibs})
@@ -51,9 +92,12 @@ foreach(pri_lib ${dakota_darwin_dylibs})
   list(APPEND dakota_darwin_dylibs ${dakota_secondary_dylibs})
 endforeach()
 
-# Ignore empty list elements:
-cmake_policy(PUSH)
-cmake_policy(SET CMP0007 OLD)
+# otool finished proccessing dylibs -
+# OK to "re-insert" Boost dylibs into the list (ABSOLUTE PATH!)
+
+message("Boost dylibs=${dakota_boost_dylibs}")
+list(APPEND dakota_darwin_dylibs ${dakota_boost_dylibs})
+
 list(REMOVE_DUPLICATES dakota_darwin_dylibs)
 cmake_policy(POP)
 
@@ -61,3 +105,4 @@ cmake_policy(POP)
 foreach(dakota_dll ${dakota_darwin_dylibs})
   dakota_install_dll("${dakota_dll}")
 endforeach()
+

@@ -83,19 +83,46 @@ Section~\ref{uq:expansion:trans} for additional details).
 
 \section{Interpolation polynomials} \label{uq:expansion:interp}
 
-Interpolation polynomials may be local or global, value-based or
-gradient-enhanced, and nodal or hierarchical, with a total of six
-combinations currently implemented: Lagrange (global value-based),
+Interpolation polynomials may be either local or global and either
+value-based or gradient-enhanced: Lagrange (global value-based),
 Hermite (global gradient-enhanced), piecewise linear spline (local
-value-based) in nodal and hierarchical formulations, and piecewise
-cubic spline (local gradient-enhanced) in nodal and hierarchical
-formulations\footnote{hierarchical formulations, while implemented,
-  are not yet active in release 5.2}.  The subsections that follow
-describe the one-dimensional interpolation polynomials for these cases
-and Section~\ref{uq:expansion:sc} describes their use for multivariate
+value-based), and piecewise cubic spline (local gradient-enhanced).
+Each of these combinations can be used within nodal or hierarchical
+interpolation formulations.  The subsections that follow describe the
+one-dimensional interpolation polynomials for these cases and
+Section~\ref{uq:expansion:sc} describes their use for multivariate
 interpolation within the stochastic collocation algorithm.
 
-\subsection{Global value-based} \label{uq:expansion:interp:Lagrange}
+\subsection{Nodal interpolation} \label{uq:expansion:interp:nodal}
+
+For value-based interpolation of a response function $R$ in one
+dimension at an interpolation level $l$ containing $m^l$ points, the
+expression
+\begin{equation}
+R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} r(\xi_j)\,L_j(\xi) \label{eq:lagrange_interp_1d}
+\end{equation}
+reproduces the response values $r(\xi_j)$ at the interpolation points
+and smoothly interpolates between these values at other points.  As we
+refine the interpolation level, we increase the number of collocation 
+points in the rule and the number of interpolated response values.
+
+For the case of gradient-enhancement, interpolation of a 
+one-dimensional function
+involves both type 1 and type 2 interpolation polynomials,
+\begin{equation}
+R(\xi) \cong I^l(R) = \sum_{j=1}^{m_l} \left[ r(\xi_j) H_j^{(1)}(\xi) + 
+  \frac{dr}{d\xi}(\xi_j) H_j^{(2)}(\xi) \right] \label{eq:hermite_interp_1d}
+\end{equation}
+where the former interpolate a particular value while producing a zero
+gradient ($i^{th}$ type 1 interpolant produces a value of 1 for the
+$i^{th}$ collocation point, zero values for all other points, and zero
+gradients for all points) and the latter interpolate a particular
+gradient while producing a zero value ($i^{th}$ type 2 interpolant
+produces a gradient of 1 for the $i^{th}$ collocation point, zero
+gradients for all other points, and zero values for all points).
+
+
+\subsubsection{Global value-based} \label{uq:expansion:interp:Lagrange}
 
 Lagrange polynomials interpolate a set of points in a single dimension
 using the functional form
@@ -106,38 +133,17 @@ L_j = \prod_{\stackrel{\scriptstyle k=1}{k \ne j}}^m
 where it is evident that $L_j$ is 1 at $\xi = \xi_j$, is 0 for each of
 the points $\xi = \xi_k$, and has order $m - 1$.
 
-For interpolation of a response function $R$ in one dimension over $m$
-points, the expression
-\begin{equation}
-R(\xi) \cong \sum_{j=1}^m r(\xi_j)\,L_j(\xi) \label{eq:lagrange_interp_1d}
-\end{equation}
-reproduces the response values $r(\xi_j)$ at the interpolation points
-and smoothly interpolates between these values at other points.
-
-\subsection{Global gradient-enhanced} \label{uq:expansion:interp:Hermite}
+\subsubsection{Global gradient-enhanced} \label{uq:expansion:interp:Hermite}
 
 Hermite interpolation polynomials (not to be confused with Hermite
 orthogonal polynomials shown in Table~\ref{TAB:askey}) interpolate
 both values and derivatives.  In our case, we are interested in
-interpolating values and first derivatives, i.e, gradients.  In the
-gradient-enhanced case, interpolation of a one-dimensional function
-involves both type 1 and type 2 interpolation polynomials,
-\begin{equation}
-R(\xi) \cong \sum_{j=1}^{m} \left[ r(\xi_j) H_j^{(1)}(\xi) + 
-  \frac{dr}{d\xi}(\xi_j) H_j^{(2)}(\xi) \right]
-\end{equation}
-where the former interpolate a particular value while producing a zero
-gradient ($i^{th}$ type 1 interpolant produces a value of 1 for the
-$i^{th}$ collocation point, zero values for all other points, and zero
-gradients for all points) and the latter interpolate a particular
-gradient while producing a zero value ($i^{th}$ type 2 interpolant
-produces a gradient of 1 for the $i^{th}$ collocation point, zero
-gradients for all other points, and zero values for all points).
-One-dimensional polynomials satisfying these constraints for general
-point sets are generated using divided differences as described
-in~\cite{Burk11}.
+interpolating values and first derivatives, i.e, gradients.
+One-dimensional polynomials satisfying the interpolation constraints
+for general point sets are generated using divided differences as
+described in~\cite{Burk11}.
 
-\subsection{Local value-based} \label{uq:expansion:interp:linear}
+\subsubsection{Local value-based} \label{uq:expansion:interp:linear}
 
 Linear spline basis polynomials define a ``hat function,'' 
 which produces the value of one at its collocation point and decays 
@@ -172,7 +178,7 @@ function $L_j$ over the range $\xi \in [a, b]$.  For the special case
 of $m = 1$ point, $L_1(\xi) = 1$ for $\xi_1 = \frac{b+a}{2}$ in both 
 cases above.
 
-\subsection{Local gradient-enhanced} \label{uq:expansion:interp:cubic}
+\subsubsection{Local gradient-enhanced} \label{uq:expansion:interp:cubic}
 
 Type 1 cubic spline interpolants are formulated as follows:
 \begin{equation}
@@ -204,6 +210,64 @@ the special case of $m = 1$ point over the range $\xi \in [a, b]$,
 $H_1^{(1)}(\xi) = 1$ and $H_1^{(2)}(\xi) = \xi$ for $\xi_1 = \frac{b+a}{2}$.
 
 % TO DO: could add discussion of collocation weights
+
+\subsection{Hierarchical interpolation} \label{uq:expansion:interp:hierarch}
+
+In a hierarchical formulation, we reformulate the interpolation in
+terms of differences between interpolation levels:
+\begin{equation}
+\Delta^l(R) = I^l(R) - I^{l-1}(R), ~~l \geq 1 \label{eq:interp_diff}
+\end{equation}
+where $I^l(R)$ is as defined in
+Eqs.~\ref{eq:lagrange_interp_1d}--\ref{eq:hermite_interp_1d} using the 
+same local or global definitions for $L_j(\xi)$, $H_j^{(1)}(\xi)$, and 
+$H_j^{(2)}(\xi)$, and $I^{l-1}(R)$ is evaluated as $I^l(I^{l-1}(R))$, 
+indicating reinterpolation of the lower level interpolant across the 
+higher level point set~\cite{spinterp,AgaAlu09}.
+
+Utilizing Eqs.~\ref{eq:lagrange_interp_1d}--\ref{eq:hermite_interp_1d},
+we can represent this difference interpolant as
+\begin{equation}
+\Delta^l(R) = 
+\begin{cases}
+\sum_{j=1}^{m_l} \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,L_j(\xi) & 
+\text{value-based}\\
+\sum_{j=1}^{m_l} \left( \left[ r(\xi_j) - I^{l-1}(R)(\xi_j) \right] \,H^{(1)}_j(\xi)
++ \left[ \frac{dr}{d\xi}(\xi_j) - \frac{dI^{l-1}(R)}{d\xi}(\xi_j) \right] 
+\,H^{(2)}_j(\xi) \right) & \text{gradient-enhanced}
+\end{cases}
+\label{eq:interp_diff_detail}
+\end{equation}
+where $I^{l-1}(R)(\xi_j)$ and $\frac{dI^{l-1}(R)}{d\xi}(\xi_j)$ are
+the value and gradient, respectively, of the lower level interpolant
+evaluated at the higher level points.  We then define hierarchical
+surpluses ${s, s^{(1)}, s^{(2)}}$ at a point $\xi_j$ as the bracketed
+terms in Eq~\ref{eq:interp_diff_detail}.  These surpluses can be
+interpreted as local interpolation error estimates since they capture
+the difference between the true values and the values predicted by the
+previous interpolant.
+
+For the case where we use nested point sets among the interpolation
+levels, the interpolant differences for points contained in both sets
+are zero, allowing us to restrict the summations above to
+$\sum_{j=1}^{m_{\Delta_l}}$ where we define the set $\Xi_{\Delta_l} =
+\Xi_l \setminus \Xi_{l-1}$ that contains $m_{\Delta_l} = m_l - m_{l-1}$ 
+points.  $\Delta^l(R)$ then becomes
+\begin{equation}
+\Delta^l(R) = 
+\begin{cases}
+\sum_{j=1}^{m_{\Delta_l}} s(\xi_j)\,L_j(\xi)  & \text{value-based}\\
+\sum_{j=1}^{m_{\Delta_l}} \left( s^{(1)}(\xi_j) \,H^{(1)}_j(\xi) 
++ s^{(2)}(\xi_j) \,H^{(2)}_j(\xi) \right) & \text{gradient-enhanced}
+\end{cases}
+\end{equation}
+The original interpolant $I^l(R)$ can be represented as a summation
+of these difference interpolants
+\begin{equation}
+I^l(R) = \Delta^l(R) + I^{l-1}(R) = \sum_{i=1}^{l} \Delta^l(R)
+\end{equation}
+We will employ these hierarchical definitions within stochastic
+collocation on sparse grids in Section~\ref{uq:expansion:sc:hierarch}.
 
 
 \section{Generalized Polynomial Chaos} \label{uq:expansion:pce}
@@ -340,10 +404,10 @@ the total-order bound
 %(potentially defined from the maximum of the per-dimension bounds)
 but violate individual per-dimension bounds (the number of these
 pruned polynomials would then be subtracted from
-Eq.~\ref{eq:num_to_terms}).  Finally, custom tailoring of the
-expansion form can also be explored, e.g. to closely synchronize with
-monomial coverage in sparse grids through use of a summation of tensor
-expansions (see Section~\ref{uq:expansion:spectral_sparse}).
+Eq.~\ref{eq:num_to_terms}).  Finally, additional tailoring of the
+expansion form is used in the case of sparse grids (see
+Section~\ref{uq:expansion:spectral_sparse}) through the use of a
+summation of anisotropic tensor expansions.
 %Of particular interest is the tailoring of expansion form to target
 %specific monomial coverage as motivated by the integration process
 %employed for evaluating chaos coefficients.  If the specific monomial
@@ -373,7 +437,7 @@ interpolation polynomials, one polynomial per interpolated response
 quantity (one response value and potentially multiple response
 gradient components) per unique collocation point.  
 
-\subsection{Value-based} \label{uq:expansion:sc:value}
+\subsection{Value-Based Nodal} \label{uq:expansion:sc:value}
 
 For value-based interpolation in multiple dimensions, a tensor-product
 of the one-dimensional polynomials described in
@@ -416,7 +480,7 @@ Multivariate interpolation on Smolyak sparse grids involves a weighted
 sum of the tensor products in Eq.~\ref{eq:lagrange_tensor} with
 varying $\boldsymbol{i}$ levels.  For sparse interpolants based on
 nested quadrature rules (e.g., Clenshaw-Curtis, Gauss-Patterson,
-Genz-Keister), the inteprolation property is preserved, but sparse
+Genz-Keister), the interpolation property is preserved, but sparse
 interpolants based on non-nested rules may exhibit some interpolation
 error at the collocation points.
 
@@ -429,7 +493,7 @@ error at the collocation points.
 %interpolation grid and the polynomial orders of the basis are adapted
 %implicitly.
 
-\subsection{Gradient-enhanced} \label{uq:expansion:sc:gradient}
+\subsection{Gradient-Enhanced Nodal} \label{uq:expansion:sc:gradient}
 
 For gradient-enhanced interpolation in multiple dimensions, we extend
 the formulation in Eq~\ref{eq:lagrange_interp_nd} to use a
@@ -462,6 +526,38 @@ except $k$:
 As for the value-based case, multivariate interpolation on Smolyak
 sparse grids involves a weighted sum of the tensor products in
 Eq.~\ref{eq:hermite_interp_nd} with varying $\boldsymbol{i}$ levels.
+
+\subsection{Hierarchical} \label{uq:expansion:sc:hierarch}
+
+In the case of multivariate hierarchical interpolation on nested grids, 
+we are interested in tensor products of the one-dimensional difference
+interpolants described in Section~\ref{uq:expansion:interp:hierarch},
+with
+\begin{equation}
+\Delta^l(R) = \sum_{j_1=1}^{m_{\Delta_1}}\cdots\sum_{j_n=1}^{m_{\Delta_n}}
+s\left(\xi^{\Delta_1}_{j_1},\dots , \xi^{\Delta_n}_{j_n}\right)\,
+\left(L^{\Delta_1}_{j_1}\otimes\cdots\otimes L^{\Delta_n}_{j_n}\right)
+\label{eq:hierarch_interp_nd_L}
+\end{equation}
+for value-based, and
+\begin{eqnarray}
+& \Delta^l(R) & =
+\sum_{j_1=1}^{m_{\Delta_1}} \cdots \sum_{j_n=1}^{m_{\Delta_n}} \nonumber \\
+& & \left[ 
+s^{(1)} \left( \xi^{\Delta_1}_{j_1}, \dots, \xi^{\Delta_n}_{j_n} \right)
+\left( H^{(1)~\Delta_1}_{~~~~~j_1} \otimes \cdots \otimes H^{(1)~\Delta_n}_{~~~~~j_n}
+\right) + \sum_{k=1}^n s_k^{(2)} \left(\xi^{\Delta_1}_{j_1}, \dots, \xi^{\Delta_n}_{j_n}\right)
+\left(H^{(2)~\Delta_1}_{k~~~~j_1}\otimes\cdots\otimes H^{(2)~\Delta_n}_{k~~~~j_n}\right) 
+\right] \nonumber \\
+& & 
+\label{eq:hierarch_interp_nd_H}
+\end{eqnarray}
+for gradient-enhanced, where $k$ indicates the gradient component being
+interpolated.
+
+These difference interpolants are particularly useful within sparse
+grid interpolation, for which the $\Delta^l$ can be employed directly 
+within Eq.~\ref{eq:smolyak1}.
 
 
 \section{Transformations to uncorrelated standard variables} \label{uq:expansion:trans}
@@ -794,7 +890,12 @@ Then the isotropic Smolyak quadrature formula is given by
 \mathscr{A}({\rm w},n) = \sum_{|\mathbf{i}| \leq {\rm w}+n}\left(\Delta^{i_1}\otimes\cdots\otimes\Delta^{i_n}\right).
 \end{equation}
 %
-Equivalently, formula Eq.~\ref{eq:smolyak1} can be written as~\cite{was_woz}
+This form is preferred for use in forming hierarchical interpolants
+as described in Sections~\ref{uq:expansion:interp:hierarch} 
+and~\ref{uq:expansion:sc:hierarch}.  For nodal interpolants and 
+polynomial chaos in sparse grids, the following equivalent 
+form~\cite{was_woz} is often more convenient since it collapses 
+repeated index sets
 %
 \begin{equation}\label{eq:smolyak2}
 \mathscr{A}({\rm w},n) = \sum_{{\rm w}+1 \leq |\mathbf{i}| \leq {\rm w}+n}(-1)^{{\rm w}+n-|\mathbf{i}|}
@@ -998,49 +1099,64 @@ system:
 \boldsymbol{\Psi} \boldsymbol{\alpha} = \boldsymbol{R} \label{eq:regression}
 \end{equation}
 to solve for the complete set of PCE coefficients
-$\boldsymbol{\alpha}$ that best match a set of response values
-$\boldsymbol{R}$.  The set of response values is obtained either by
-performing a design of computer experiments within the density
-function of $\boldsymbol{\xi}$ (point
-collocation~\cite{pt_colloc1,pt_colloc2}) or from a subset of tensor
-quadrature points with highest product weight (probabilistic
-collocation~\cite{Tat95}).  In either case, each row of the matrix
+$\boldsymbol{\alpha}$ that best reproduce a set of response values
+$\boldsymbol{R}$.  The set of response values can be defined on an
+unstructured grid obtained from sampling within the density function
+of $\boldsymbol{\xi}$ (point collocation~\cite{pt_colloc1,pt_colloc2})
+or on a structured grid defined from uniform random sampling on the
+multi-index\footnote{Due to the discrete nature of index sampling, we
+  enforce unique index samples by sorting and resampling as required.}
+of a tensor-product quadrature grid (probabilistic
+collocation~\cite{Tat95}), where the quadrature is of sufficient order
+to avoid sampling at roots of the basis polynomials\footnote{Generally
+  speaking, dimension quadrature order $m_i$ greater than dimension
+  expansion order $p_i$.}.  In either case, each row of the matrix
 $\boldsymbol{\Psi}$ contains the $N_t$ multivariate polynomial terms
 $\Psi_j$ evaluated at a particular $\boldsymbol{\xi}$ sample.  An
-over-sampling is recommended in the case of random samples
-(\cite{pt_colloc2} recommends $2N_t$ samples), resulting in a least
-squares solution for the over-determined system.  As for
-sampling-based coefficient estimation, this approach is only valid for
-PCE and does not require synchronization with monomial coverage; thus
-it is common to combine this coefficient estimation approach with a
-traditional total-order chaos expansion in order to keep sampling
-requirements low.  In this case, simulation requirements for this
-approach scale as $\frac{r(n+p)!}{n!p!}$ ($r$ is an over-sampling
-factor with typical values $1 \leq r \leq 2$), which can be
-significantly more affordable than isotropic tensor-product quadrature
-(scales as $(p+1)^n$ for standard Gauss rules) for larger problems.
+over-sampling is most commonly used (\cite{pt_colloc2} recommends
+$2N_t$ samples), resulting in a least squares solution for the
+over-determined system, although unique determination ($N_t$ samples)
+and under-determination (fewer than $N_t$ samples) are also supported.
+As for sampling-based coefficient estimation, this approach is only
+valid for PCE and does not require synchronization with monomial
+coverage; thus it is common to combine this coefficient estimation
+approach with a traditional total-order chaos expansion in order to
+keep sampling requirements low.  In this case, simulation requirements
+for this approach scale as $\frac{r(n+p)!}{n!p!}$ ($r$ is an
+over-sampling factor with typical values $0.1 \leq r \leq 2$), which
+can be significantly more affordable than isotropic tensor-product
+quadrature (scales as $(p+1)^n$ for standard Gauss rules) for larger
+problems.
 %A closely related technique is known as the ``probabilistic
 %collocation'' approach.  Rather than employing random over-sampling,
 %this technique uses a selected subset of $N_t$ Gaussian quadrature
 %points (those with highest tensor-product weighting), which provides
 %more optimal collocation locations and preserves interpolation
 %properties.
-Finally, additional regression equations can be obtained through the
-use of derivative information (gradients and Hessians) from each
-collocation point, which can aid in scaling with respect to the number
-of random variables, particularly for adjoint-based derivative
-approaches.
+Additional regression equations can be obtained through the use of
+derivative information (gradients and Hessians) from each collocation
+point (refer to {\tt use\_derivatives} in the PCE regression
+specification details in the Dakota Reference Manual~\cite{RefMan}),
+which can aid in scaling with respect to the number of random
+variables, particularly for adjoint-based derivative approaches.
+Finally, one can additionally modify the order of the exponent 
+applied to $N_t$ in the over-sampling ratio calculation (refer to 
+{\tt ratio\_order} in the PCE regression specification details in the
+Dakota Reference Manual~\cite{RefMan}).
 
-Various methods can be employed to solve \eqref{eq:regression}.
-The relative accuracy of each method is problem dependent. Traditionally,
- the most frequently used method has been least squares regression. However 
-when $\boldsymbol{\Psi}$ is over-determined minimizing the residual with respect to
-the $\ell_2$ norm typically produces poor solutions. Compressed sensing methods have been
-successfully used to address this limitation~\cite{Blatman2011,Doostan2011}. 
-Such methods attempt to only identify the 
-elements of the coefficient vector $\boldsymbol{\alpha}$ with the largest magnitude 
-and enforce as many elements as possible to be zero. Such solutions are often called 
-sparse solutions. Dakota provides algorithms that solve the following formulations:
+Various methods can be employed to solve \eqref{eq:regression}.  The
+relative accuracy of each method is problem dependent. Traditionally,
+the most frequently used method has been least squares
+regression. However when $\boldsymbol{\Psi}$ is under-determined,
+minimizing the residual with respect to the $\ell_2$ norm typically
+produces poor solutions. Compressed sensing methods have been
+successfully used to address this
+limitation~\cite{Blatman2011,Doostan2011}.  Such methods attempt to
+only identify the elements of the coefficient vector
+$\boldsymbol{\alpha}$ with the largest magnitude and enforce as many
+elements as possible to be zero. Such solutions are often called
+sparse solutions. Dakota provides algorithms that solve the following
+formulations:
 \begin{itemize}
  \item Basis Pursuit (BP)~\cite{Chen2001}
 \begin{equation}
@@ -1068,31 +1184,30 @@ will not return a solution. In such situations these methods simply return the l
 \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\alpha}\|_{\ell_0}\quad \text{such that}\quad \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2} \le \varepsilon
 \end{equation}
 OMP is a heuristic method which greedily finds an approximation to~\eqref{eq:omp}. In contrast to the aforementioned techniques for solving BP and BPDN, 
-which minimize an objective function,OMP constructs a sparse solution by iteratively 
+which minimize an objective function, OMP constructs a sparse solution by iteratively 
 building up an approximation of the solution vector $\boldsymbol{\alpha}$. 
 The vector is approximated as a linear combination of a subset of active columns of 
 $\boldsymbol{\Psi}$. The active set of columns is built column by column, in
 a greedy fashion, such that at each iteration the inactive column with the highest correlation
 (inner product) with the current residual is added.
 
-\item Least Absolute Shrinkage and Selection Operator (LASSO)~\cite{Tibshirani1996}
+\item Least Angle Regression (LARS)~\cite{Efron2004} and Least Absolute Shrinkage and Selection Operator (LASSO)~\cite{Tibshirani1996}
 \begin{equation}
 \label{eq:lasso}
  \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2}^2 \quad \text{such that}\|\boldsymbol{\alpha}\|_{\ell_1} \le \tau
 \end{equation}
-A greedy solution can be found using the Least Angle Regression (LARS) algorithm~\cite{Efron2004}.
-However with only a small modification LARS can also be used to rigorously solve the 
-global optimization problem~\eqref{eq:lasso}. Such an approach is identical to the homotopy algorithm of
+A greedy solution can be found to~\eqref{eq:lasso} using the LARS algorithm.
+Alternatively, with only a small modification, one can provide a rigorous solution to this global optimization problem, which we refer to as the LASSO solution. Such an approach is identical to the homotopy algorithm of
 Osborne et al~\cite{Osborne2000}. It is interesting to note that 
 Efron~\cite{Efron2004} experimentally observed that the basic, faster LARS 
 procedure is often identical to the LASSO solution.
 
 The LARS algorithm is similar to OMP. LARS again maintains an active set of columns and again builds
 this set by adding the column with the largest correlation with the residual to the current residual.
-However unlike OMP LARS solves a penalized least squares problem at each step taking a step along an equiangular direction, that is, a direction
+However, unlike OMP, LARS solves a penalized least squares problem at each step taking a step along an equiangular direction, that is, a direction
 having equal angles with the vectors in the active set. LARS and OMP do not allow a column (PCE basis)
 to leave the active set. However if this restriction is removed from LARS (it cannot be from OMP)
-the resulting algorithm can provably solve ~\eqref{eq:lasso}.
+the resulting algorithm can provably solve~\eqref{eq:lasso} and generates the LASSO solution.
 
 \item Elastic net~\cite{Zou2005}
 \begin{equation}
@@ -1100,13 +1215,13 @@ the resulting algorithm can provably solve ~\eqref{eq:lasso}.
  \boldsymbol{\alpha} = \text{arg min}\; \|\boldsymbol{\Psi}\boldsymbol{\alpha} - \boldsymbol{R}\|_{\ell_2}^2 \quad \text{such that}\quad (1-\lambda)\|\boldsymbol{\alpha}\|_{\ell_1} + 
 \lambda\|\boldsymbol{\alpha}\|_{\ell_2}^2 \le \tau
 \end{equation}
-The elastic net was developed to overcome some of the limitations of the lasso formulation. 
+The elastic net was developed to overcome some of the limitations of the LASSO formulation. 
 Specifically: if the ($M\times N$) Vandermonde matrix $\boldsymbol{\Psi}$ is over-determined ($M>N$), 
-the lasso selects at most $N$ variables before it saturates, because of the
+the LASSO selects at most $N$ variables before it saturates, because of the
 nature of the convex optimization problem; if there is a group of variables among which the pairwise correlations are very high, then
-the lasso tends to select only one variable from the group and does not care which one is
+the LASSO tends to select only one variable from the group and does not care which one is
 selected; and finally if there are high correlations between predictors, it has been
-empirically observed that the prediction performance of the lasso is dominated by ridge
+empirically observed that the prediction performance of the LASSO is dominated by ridge
 regression~\cite{Tibshirani1996}. Here we note that it is hard to estimate the $\lambda$ 
 penalty in practice and the aforementioned issues typically do not arise very often when 
 solving~\eqref{eq:regression}. The elastic net formulation can be solved with a minor modification of
@@ -1126,17 +1241,18 @@ Figure and caption based upon Figure 1 in~\cite{Donoho2008}}.
 \label{fig:compressed-sensing-method-heirarchy}
 \end{figure}
 
-OMP, and LARS add a PCE basis one step at a time. If $\boldsymbol{\alpha}$ contains
+OMP and LARS add a PCE basis one step at a time. If $\boldsymbol{\alpha}$ contains
  only $k$ non-zero terms then these methods will only take $k$-steps. 
 The homotopy version of LARS also adds only basis at each step, however 
-it can also remove bases, and thus can take more than $k$ steps. For some problems 
-the LARS and homotopy solutions with coincide. Each step of these algorithm provides a possible
-estimation of the PCE coefficients. However without knowledge of the target function there is no
-easy way to estimate which coefficient vector is best. However with some additional computational 
-effort (which will likely be minor to the cost of obtaining model simulations) cross validation 
+it can also remove bases, and thus can take more than $k$ steps. For some problems, 
+the LARS and homotopy solutions will coincide. Each step of these algorithm provides a possible
+estimation of the PCE coefficients. However, without knowledge of the target function, there is no
+easy way to estimate which coefficient vector is best. With some additional computational 
+effort (which will likely be minor to the cost of obtaining model simulations), cross validation 
 can be used to choose an appropriate coefficient vector.
 
 \subsection{Cross validation}
+
 Cross validation can be used to find a coefficient vector $\boldsymbol{\alpha}$ 
 that approximately minimizes $\| \hat{f}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$, where
 $f$ is the target function and $\hat{f}$ is the PCE approximation using $\boldsymbol{\alpha}$. 
@@ -1149,7 +1265,7 @@ with the $k$-th fold removed, using the tuning parameters $\boldsymbol{\beta}$.
 The remaining data $\mathbf{X}_k$ is then used to estimate the prediction error.
 The prediction error is typically approximated by
 $e(\hat{f})=\lVert \hat{f}(\mathbf{x})-f(\mathbf{x})\rVert_{\ell_2}$, 
-$\mathbf{x}\in\mathbf{X}_{k}$~\cite{hastie2001}. This process is then repeated $K$-times removing a 
+$\mathbf{x}\in\mathbf{X}_{k}$~\cite{hastie2001}. This process is then repeated $K$ times, removing a 
 different fold from the training set each time. 
 
 The cross validation error is taken to be the average of the prediction errors for the $K$-experiments
@@ -1162,7 +1278,7 @@ $\| \hat{f}_{\boldsymbol{\beta}}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$ and ch
 \label{eq:optimal_tuning-parameters}
 \boldsymbol{\beta}^\star = \text{arg min}\, CV(\hat{f}_{\boldsymbol{\beta}})\mathrm{Var}[e(\hat{f}_{\boldsymbol{\beta}}^{-k})]
 \end{equation}
-to construct the final, 'best',  PCE approximation of $f$ that the training data can produce. 
+to construct the final ``best'' PCE approximation of $f$ that the training data can produce. 
 
 \section{Analytic moments} \label{uq:expansion:moment}
 

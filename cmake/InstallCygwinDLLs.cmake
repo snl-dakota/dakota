@@ -19,8 +19,13 @@ function(dakota_install_dll dakota_dll)
   endif()
 endfunction()
 
-if ( NOT CMAKE_CURRENT_BINARY_DIR )
-   set( CMAKE_CURRENT_BINARY_DIR $ENV{%CD%} )
+if ( DAKOTA_JENKINS_BUILD OR DEFINED ENV{WORKSPACE} )
+  # By convention, all Dakota, jenkins-driven build jobs use a 'build'
+  # subdir for clear separation of source and build trees in the WORKSPACE
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{WORKSPACE}/build ) 
+elseif ( NOT CMAKE_CURRENT_BINARY_DIR )
+  # Assume build takes place in Cygwin, so use PWD, not CD
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{PWD} )
 endif()
 
 # Get the DLLs only in cygwin\bin or cygwin\lib as a semicolon-separated list

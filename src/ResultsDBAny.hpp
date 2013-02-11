@@ -105,7 +105,7 @@ private:
 
   /// attempt to find the requested data, erroring if not found
   const ResultsValueType& lookup_data(const StrStrSizet& iterator_id,
-				      const std::string& data_name);
+				      const std::string& data_name) const;
 
   /// cast the reference to the any data to the requested type
   template<typename StoredType>

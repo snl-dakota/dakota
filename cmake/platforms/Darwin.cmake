@@ -4,13 +4,9 @@
 #
 ############################################################################
 
-# ToDo - discuss with DMV regarding ictinus specific Boost out of "Darwin"
-# BELONGS in ictinus specific file NOT general Darwin file
-# Boost base directory
-
-set(Boost_INCLUDE_DIR
-  "/Users/dakota/local/boost.gnu-4.3.2/include"
-  CACHE PATH "Always use pre-installed Boost1.45 subset" FORCE)
+#set(Boost_INCLUDE_DIR
+#  "/Users/dakota/local/boost.gnu-4.3.2/include"
+#  CACHE PATH "Always use pre-installed Boost1.45 subset" FORCE)
 
 ############################################################################
 # All Unix platforms build DAKOTA with MPI enabled

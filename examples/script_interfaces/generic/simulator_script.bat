@@ -35,6 +35,6 @@ rem grep 'Function value' ros.out | c:\msys\1.0\bin\sed s/^.................// >
 rem grep -i "Function g" ros.out | c:\msys\1.0\bin\sed s/^....................//  >> results.tmp
 
 perl -n -e "if (/Function value = (.*)/) { print $1 }" ros.out > results.tmp
-perl -n -e "if (/Function gradient = (.*)/) { print $1 }" ros.out > results.tmp
+perl -n -e "if (/Function gradient = (.*)/) { print $1 }" ros.out >> results.tmp
 
 ren results.tmp %2%

@@ -59,7 +59,7 @@ add_data(const StrStrSizet& iterator_id,
 
 const ResultsValueType& 
 ResultsDBAny::lookup_data(const StrStrSizet& iterator_id,
-			  const std::string& data_name)
+			  const std::string& data_name) const
 {
   ResultsKeyType key = make_key(iterator_id, data_name);
 

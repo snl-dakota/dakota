@@ -1,4 +1,7 @@
 # Dakota Input File: mogatest1.in
+
+# timeout overrides: 0=TD300
+
 strategy
   single
   graphics

@@ -780,8 +780,10 @@ void NonDExpansion::compute_expansion()
 	}
 	sampler_set.derivative_vector(filtered_final_dvv);
       }
-      else // sampler_grad alone or placeholder default: assign final_dvv
+      else if (sampler_grad)
 	sampler_set.derivative_vector(final_dvv);
+      else // derivs not needed, but correct DVV len needed for MPI buffers
+	sampler_set.derivative_vector(iteratedModel.continuous_variable_ids());
 
       // Build the orthogonal/interpolation polynomial approximations:
       u_space_sampler.active_set(sampler_set);

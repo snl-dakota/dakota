@@ -184,18 +184,11 @@ The \ref Dakota::Analyzer "Analyzer" classes are grouped into:
 base class for non-deterministic methods \ref Dakota::NonDSampling
 "NonDSampling", \ref Dakota::NonDReliability "NonDReliability"
 (reliability analysis), \ref Dakota::NonDExpansion "NonDExpansion"
-(stochastic expansion methods), and \ref Dakota::NonDInterval
-"NonDInterval" (interval-based epistemic methods).  Bayesian
-calibration methods are prototyped in \ref Dakota::NonDCalibration
-"NonDCalibration" and \ref Dakota::NonDBayesCalibration
-"NonDBayesCalibration".  Experimental Bayesian specializations exist in
-\ref Dakota::NonDGPMSABayesCalibration "NonDGPMSABayesCalibration" and
-\ref Dakota::NonDQUESOBayesCalibration "NonDQUESOBayesCalibration".
-
-
-  An input-space dimension reduction method for
-UQ is prototyped in \ref Dakota::EfficientSubspaceMethod
-"EfficientSubspaceMethod".
+(stochastic expansion methods), \ref Dakota::NonDInterval "NonDInterval" 
+(interval-based epistemic methods), \ref Dakota::NonDCalibration
+"NonDCalibration" (nondeterministic calibration), and 
+\ref Dakota::EfficientSubspaceMethod "EfficientSubspaceMethod" (prototype
+input-space dimension reduction method for UQ).
 
 <ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
@@ -221,6 +214,13 @@ helper class, which supplies cubature, tensor-product quadrature and
 Smolyak sparse grid methods (\ref Dakota::NonDCubature "NonDCubature",
 \ref Dakota::NonDQuadrature "NonDQuadrature", and \ref
 Dakota::NonDSparseGrid "NonDSparseGrid").
+
+<li> \ref Dakota::NonDCalibration "NonDCalibration" provides a base 
+class for nondeterministic calibration methods with specialization to
+Bayesian calibration in \ref Dakota::NonDBayesCalibration 
+"NonDBayesCalibration".  Specific Bayesian calibration implementations 
+exist in \ref Dakota::NonDGPMSABayesCalibration "NonDGPMSABayesCalibration" 
+and \ref Dakota::NonDQUESOBayesCalibration "NonDQUESOBayesCalibration".
 
 <li> \ref Dakota::NonDInterval "NonDInterval" provides a base class
 for epistemic interval-based UQ methods.  Three interval analysis
@@ -334,8 +334,8 @@ at present.
 
 </ul>
 
-Whereas domain types are controlled through the derived class
-selection, selection of active variable types are handled within each
+Whereas domain types are defined based on the derived Variables class
+selection, the selection of active variable types is handled within each
 of these derived classes using variable views. These permit different
 algorithms to work on different subsets of variables.  Data shared among 
 Variables instances is stored in \ref Dakota::SharedVariablesData 

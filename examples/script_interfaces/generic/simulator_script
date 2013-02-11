@@ -1,9 +1,9 @@
-#!/bin/csh -f
+#!/bin/sh
 # Sample simulator to Dakota system call script
 # See Advanced Simulation Code Interfaces chapter in Users Manual
 
-# $argv[1] is params.in FROM Dakota
-# $argv[2] is results.out returned to Dakota
+# $1 is params.in FROM Dakota
+# $2 is results.out returned to Dakota
 
 # --------------
 # PRE-PROCESSING
@@ -12,7 +12,7 @@
 # Use the following line if SNL's APREPRO utility is used instead of DPrePro.
 # ../aprepro -c '*' -q --nowarning ros.template ros.in
 
-dprepro $argv[1] ros.template ros.in
+dprepro $1 ros.template ros.in
 
 # --------
 # ANALYSIS
@@ -25,8 +25,8 @@ rosenbrock_bb
 # ---------------
 
 # extract function value from the simulation output
-grep 'Function value' ros.out | cut -c 18- >! results.tmp
+grep 'Function value' ros.out | cut -c 18- > results.tmp
 # extract gradients from the simulation output (in this case will be ignored
 # by DAKOTA if not needed)
 grep -i 'Function g' ros.out | cut -c 21- >> results.tmp
-mv results.tmp $argv[2]
+mv results.tmp $2

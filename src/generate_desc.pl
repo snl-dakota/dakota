@@ -344,6 +344,8 @@ sub gui_groups {
     $desc =~ s/(uncertain_correlation_matrix")/$1 GROUP "Aleatory Uncertain Correlations"/g;                                                 
                                                                                                                                              
     $desc =~ s/(interval_uncertain")/$1 GROUP "Epistemic Uncertain"/g;
+    $desc =~ s/(uncertain_set_integer")/$1 GROUP "Epistemic Uncertain"/g;
+    $desc =~ s/(uncertain_set_real")/$1 GROUP "Epistemic Uncertain"/g;
 
     $desc =~ s/(continuous_state")/$1 GROUP "State Variables"/g;                                                                             
     $desc =~ s/(discrete_state_range")/$1 GROUP "State Variables"/g;
@@ -354,6 +356,9 @@ sub gui_groups {
     # Group methods                                                                                                                          
     #                                                                                                                                        
     my @methods;
+
+    # verification
+    $desc =~ s/(richardson_extrap")/$1 GROUP "Verification Studies"/g;
 
     # parameter study                                                                                                                        
     $desc =~ s/(_parameter_study")/$1 GROUP "Parameter Studies"/g;                                                                           
@@ -367,7 +372,7 @@ sub gui_groups {
     # NLLS"
     @methods = ("nl2sol", "nlssol_sqp", "nond_bayes_calib", "optpp_g_newton");
     foreach (@methods) {
-        $desc =~ s/($_")/$1 GROUP "Nonlinear Least Squares"/g;                                                                               
+        $desc =~ s/($_")/$1 GROUP "Calibration"/g;                                                                               
         }                                                                                                                                    
     #                                                                                                                                        
     # Optimization                                                                                                                           
@@ -396,8 +401,11 @@ sub gui_groups {
     foreach (@methods) {
         $desc =~ s/(method\/$_")/$1 GROUP "Optimization: Global"/g;                                                                          
         }                                                                                                                                    
-                                                                                                                                             
-    $desc =~ s/(method\/dl_solver")/$1 GROUP "Optimization: Plug-in"/g;
+
+    @methods = ("dl_solver", "coliny_beta");
+    foreach (@methods) {
+        $desc =~ s/(method\/$_")/$1 GROUP "Optimization: Other"/g;                                                                          
+        }                                                                                                                                    
 
     # Surrogate-based methods"                                                                                                               
     @methods = ("surrogate_based_local", "surrogate_based_global", "efficient_global");
@@ -406,15 +414,15 @@ sub gui_groups {
     }                                                                                                                                        
                                                                                                                                              
     # UQ methods (omit bayes_cal)"
-    @methods = ("global_evidence", "global_interval_est", "global_reliability", "importance_sampling", "local_evidence", "local_interval_est", "local_reliability", "polynomial_chaos", "sampling", "stoch_collocation" );
+    @methods = ("global_evidence", "global_interval_est", "global_reliability", "importance_sampling", "local_evidence", "local_interval_est", "local_reliability", "polynomial_chaos", "sampling", "stoch_collocation", "gpais", "adaptive_sampling", "efficient_subspace" );
     foreach (@methods) {
 	$desc =~ s/(method\/$_")/$1 GROUP "Uncertainty Quantification"/g;                                                                    
     }                                                                                                                                     
                                                                                                                                              
     # Add response data set groups                                                                                                           
-    kw_nest_desc("responses/num_objective_functions", "{Optimization} ");                                                                    
-    kw_nest_desc("responses/num_least_squares_terms", "{Least squares (calibration)} ");                                                     
-    kw_nest_desc("responses/num_response_functions", "{Generic responses} ");                                                                
+    kw_nest_desc("responses/objective_functions", "{Optimization} ");                                                                    
+    kw_nest_desc("responses/calibration_terms", "{Calibration (Least squares)} ");                                                     
+    kw_nest_desc("responses/response_functions", "{Generic responses} ");                                                                
                                             
     # Add top-level keyword help text"
     $url = "StratCommands.html";

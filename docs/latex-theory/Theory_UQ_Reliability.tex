@@ -148,22 +148,35 @@ $\bar{z}$ contour of the limit state response function:
 {\rm minimize}     & {\bf u}^T {\bf u} \nonumber \\
 {\rm subject \ to} & G({\bf u}) = \bar{z} \label{eq:ria_opt}
 \end{eqnarray}
-
-and for PMA, the MPP search for achieving the specified
-reliability/probability level $\bar{\beta},\bar{p}$ is formulated as
-computing the minimum/maximum response function value corresponding
-to a prescribed distance from the origin in u-space:
+where ${\bf u}$ is a vector centered at the origin in u-space and
+$g({\bf x}) \equiv G({\bf u})$ by definition.  For PMA, the MPP search
+for achieving the specified reliability level $\bar{\beta}$ or
+first-order probability level $\bar{p}$ is formulated as computing the
+minimum/maximum response function value corresponding to a prescribed
+distance from the origin in u-space:
 \begin{eqnarray}
 {\rm minimize}     & \pm G({\bf u}) \nonumber \\
 {\rm subject \ to} & {\bf u}^T {\bf u} = \bar{\beta}^2 \label{eq:pma_opt}
 \end{eqnarray}
+where $\bar{\beta}$ is computed from $\bar{p}$ using
+Eq.~\ref{eq:beta_cdf} or~\ref{eq:beta_ccdf} in the latter case of a
+prescribed first-order probability level.  For a specified generalized
+reliability level $\bar{\beta^*}$ or second-order probability level
+$\bar{p}$, the equality constraint is reformulated in terms of the
+generalized reliability index:
+\begin{eqnarray}
+{\rm minimize}     & \pm G({\bf u}) \nonumber \\
+{\rm subject \ to} & \beta^*({\bf u}) = \bar{\beta^*} \label{eq:pma2_opt}
+\end{eqnarray}
+where $\bar{\beta^*}$ is computed from $\bar{p}$ using
+Eq.~\ref{eq:gen_beta} (or its CCDF complement) in the latter case of a
+prescribed second-order probability level.
 
-where ${\bf u}$ is a vector centered at the origin in 
-u-space and $g({\bf x}) \equiv G({\bf u})$ by definition.  In the RIA
-case, the optimal MPP solution ${\bf u}^*$ defines the reliability 
-index from $\beta = \pm \|{\bf u}^*\|_2$, which in turn defines the 
-CDF/CCDF probabilities (using Equations~\ref{eq:p_cdf}-\ref{eq:p_ccdf} in 
-the case of first-order integration).  The sign of $\beta$ is defined by
+In the RIA case, the optimal MPP solution ${\bf u}^*$ defines the
+reliability index from $\beta = \pm \|{\bf u}^*\|_2$, which in turn
+defines the CDF/CCDF probabilities (using
+Equations~\ref{eq:p_cdf}-\ref{eq:p_ccdf} in the case of first-order
+integration).  The sign of $\beta$ is defined by
 \begin{eqnarray}
 G({\bf u}^*) > G({\bf 0}): \beta_{\rm CDF} < 0, \beta_{\rm CCDF} > 0 \\
 G({\bf u}^*) < G({\bf 0}): \beta_{\rm CDF} > 0, \beta_{\rm CCDF} < 0
@@ -176,12 +189,17 @@ can be used to determine the orientation of the optimal response with
 respect to the median response.} (where $\beta_{\rm CDF}$ = $\beta_{\rm CCDF}$ = 0 
 and first-order $p(g \le z)$ = $p(g > z)$ = 0.5).  In the PMA case, the 
 sign applied to $G({\bf u})$ (equivalent to minimizing or maximizing 
-$G({\bf u})$) is similarly defined by $\bar{\beta}$
+$G({\bf u})$) is similarly defined by either $\bar{\beta}$ (for a specified 
+reliability or first-order probability level) or from a $\bar{\beta}$ 
+estimate\footnote{computed by inverting the second-order probability 
+relationships described in Section~\ref{uq:reliability:local:mpp:int} at 
+the current ${\bf u}^*$ iterate.} computed from $\bar{\beta^*}$ (for a 
+specified generalized reliability or second-order probability level)
 \begin{eqnarray}
 \bar{\beta}_{\rm CDF} < 0, \bar{\beta}_{\rm CCDF} > 0: {\rm maximize \ } G({\bf u}) \\
 \bar{\beta}_{\rm CDF} > 0, \bar{\beta}_{\rm CCDF} < 0: {\rm minimize \ } G({\bf u})
 \end{eqnarray}
-and the limit state at the MPP ($G({\bf u}^*)$) defines the desired
+where the limit state at the MPP ($G({\bf u}^*)$) defines the desired
 response level result.
 
 \subsubsection{Limit state approximations} \label{uq:reliability:local:mpp:approx}

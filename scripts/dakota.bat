@@ -19,19 +19,23 @@ rem get the path (drive letter and path) to this wrapper script
 rem assume DAKOTA lives in same directory
 set execpath=%~dp0
 
-if not exist %execpath%\dakota.exe (
+if not exist "%execpath%\dakota.exe" (
   echo Error in %script_name%
   echo   Could not find dakota binary in %execpath%
   exit /B 1
 ) 
 
-set libpaths=%execpath%;%execpath%\lib
+rem Getting the quotes correct here is really tricky
+rem Seems better to minimally quote, though might break with 
+rem spaces in PATH or Dakota location...
 
-rem echo "Prepending library path with %libpaths%"
-set PATH=%libpaths%;%PATH%
+set libpaths=%execpath%;%execpath%\..\lib
 
-rem echo "Appending PATH with %execpath%;%execpath%\..\test"
-set PATH=%PATH%;%execpath%;%execpath%\..\test
+rem Append PATH if not already done (not reliably though)
+rem Do in a single statement without quotes due to possible
+rem existence of both parens and space in PATH
+
+echo %PATH% | find "%libpaths%" > NUL || set PATH=%libpaths%;%PATH%;%execpath%\..\test 
 
 rem echo "Launching %execpath%\dakota.exe with args: %*"
-%execpath%\dakota.exe %*
+"%execpath%\dakota.exe" %*

@@ -410,7 +410,7 @@ if(NOT WIN32)
 
     # Workaround for surprising error with Source TGZ creation on Cygwin
     #set(CPACK_GENERATOR CygwinBinary)
-    set(CPACK_GENERATOR TGZ)
+    set(CPACK_GENERATOR ZIP)
 
     #message("BROKEN!  Will NOT create a custom, Cygwin SOURCE archive")
     # Unfortunately, FAILS too -- set(CPACK_SOURCE_GENERATOR CygwinSource)

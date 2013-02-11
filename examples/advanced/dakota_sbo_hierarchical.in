@@ -1,0 +1,64 @@
+strategy,
+	single_method
+	graphics tabular_graphics_data
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'
+	trust_region
+	  initial_size = 0.10
+	  contract_threshold = 0.25
+	  expand_threshold = 0.75
+	  contraction_factor = 0.50
+	  expansion_factor   = 1.50
+
+method,
+	id_method = 'NLP'
+	npsol_sqp
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-10
+
+model,
+	id_model = 'SURROGATE'
+	surrogate hierarchical
+	  low_fidelity_model  = 'LOFI'
+	  high_fidelity_model = 'HIFI'
+	  correction additive       second_order	
+
+variables,
+	continuous_design = 2
+	  initial_point   -1.2      1.0
+	  lower_bounds    -2.0     -2.0
+	  upper_bounds     2.0 	2.0
+	  descriptors      'x1'     'x2'
+
+responses,
+	objective_functions = 1
+ 	analytic_gradients
+	analytic_hessians			
+
+model,
+	id_model = 'LOFI'
+	single
+	  interface_pointer = 'LOFI_FN'
+
+interface,
+	id_interface = 'LOFI_FN'
+	system #asynchronous
+ 	  analysis_driver = 'lf_rosenbrock'
+	  deactivate restart_file
+
+model,
+	id_model = 'HIFI'
+	single
+	  interface_pointer = 'HIFI_FN'
+
+interface,
+	id_interface = 'HIFI_FN'
+	system
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate restart_file
+

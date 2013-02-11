@@ -97,12 +97,13 @@ I. Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX
 
 1. Extract archive file into suitable install location, e.g. /home/username.
    If you have root access, you may extract archive file in a shared directory,
-   e.g. /usr/local. In the instructions below, $INSTALL_DIR refers to the
-   Dakota installation directory of your choice.
+   e.g. /usr/local. 
+
        $ cd /path/to/Dakota/install/directory
        $ tar xzvf /path/to/Dakota-release.src.tar.gz
    
    Rename the extracted Dakota binary executable directory:
+
        $ ls
        dakota-<release>.<platform>
        $ mv dakota-<release>.<platform> Dakota
@@ -119,8 +120,8 @@ I. Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX
    should be displayed. 
         $ which dakota
         $INSTALL_DIR/bin/dakota
-   where $INSTALL_DIR will be an absolute path. Go to Section III to test
-   the binary installation.
+   where $INSTALL_DIR will be the absolute path specified in step #1 above.
+   Go to Section III to test the binary installation.
 
    If your PATH variable is NOT set correctly, you will get a message like
    the following:
@@ -191,7 +192,7 @@ II.  Install Windows Executable
 --------------------------------------------------------------------
 III. Test Binary Distribution installation.
 --------------------------------------------------------------------
-1. At a terminal prompt ( on Windows, cmd.exe), type 'dakota -v'. You should see
+1. At a terminal prompt (on Windows, cmd.exe), type 'dakota -v'. You should see
    Dakota version information displayed.
 
    > dakota -v
@@ -227,7 +228,7 @@ particular platform or shell.
    be extracted into the user's home directory, /home/username. 
 
    $ cd $HOME
-   $ tar xzvf /path/to/Dakota-release.src.tar.gz
+   $ tar xzvf /path/to/dakota-<release>.src.tar.gz
 
    You will see a new directory, /home/username/dakota-<release>.<platform>. In
    the instructions below, $DAK_SRC refers to this directory.

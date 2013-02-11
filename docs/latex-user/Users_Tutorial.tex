@@ -99,8 +99,9 @@ In addition to the files, some plots are created due to the specification
 of \texttt{graphics}. These can be helpful when processing the 
 data or diagnosing unexpected results.
 
-Dakota has some data processing capabilities built in. The output file 
-will contain the relevant results. In this case, the output file has details
+Dakota has some data processing capabilities for output analysis. 
+The output file will contain the relevant results. 
+In this case, the output file has details
 about each of the 81 function evaluations. 
 For more advanced or customized data 
 processing or visualization, the tabular data file can be imported into 
@@ -119,9 +120,9 @@ described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:ros
   \item Try running the other examples in the same directory. These are mentioned
     throughout the manual, and listed in Table~\ref{tutorial:examples:table} 
     for convenience.
-  \item Learn the syntax needed to use these methods. For running Dakota 
+  \item Learn the syntax needed to use these methods. For help running Dakota, 
 see Section~\ref{tutorial:installation:running} and for input file 
-information see Section~\ref{tutorial:dakota}. 
+information, see Section~\ref{tutorial:dakota}. 
   \item Learn how to use your own analysis code with Dakota in Chapter~\ref{advint}.
 \end{itemize}
 
@@ -301,7 +302,9 @@ Manual~\cite{RefMan} for additional details on this input file syntax.
 Figure~\ref{tutorial:inputfile_block_layout} shows the relationships between 
 the six keyword blocks. Strategies are used to coordinate between methods. 
 Methods run models. Models blocks define the connections between variables, 
-the interface, and responses. Most Dakota analyses apply strategies that 
+the interface, and responses. Figure~\ref{tutorial:inputfile_block_layout} shows 
+the most common relationships between blocks but others are possible.  
+Most Dakota analyses apply strategies that 
 control a single method, the more advanced cases are discussed in Chapter~\ref{strat}.
 
 \begin{figure}[ht!]
@@ -915,7 +918,7 @@ the Dakota input file with the name of a Unix shell script containing
 a sequence of commands that read and write the necessary files and run
 the simulation code. For example, the executable program named
 \texttt{rosenbrock} listed in Figure~\ref{tutorial:rosenbrock_user}
-could be replaced by a Unix C-shell script named
+could be replaced by a Unix Bourne or C-shell script named
 \texttt{simulator\_script}, with the script containing a sequence of
 commands to perform the following steps: insert the data from the
 \texttt{parameters.in.X} file into the input file of the simulation
@@ -1094,7 +1097,7 @@ Will the response functions behave smoothly as the design variables
 change or will there be nonsmoothness and/or discontinuities? Are the
 response functions likely to be multimodal, such that global
 optimization may be warranted? Is analytic gradient data available,
-and if not, can I calculate gradients accurately and cheaply?
+and if not, can gradients be calculated accurately and cheaply?
 Questions pertinent for uncertainty quantification may include: Can I
 accurately model the probabilistic distributions of my uncertain
 variables? Are the response functions relatively linear? Am I
@@ -1130,7 +1133,7 @@ can be found in \texttt{Dakota/examples/users}.
 \hline
 parameter study & multidimensional parameter study & rosen\_multidim.in &~\ref{tutorial:rosenbrock_multidim} \\
 parameter study & vector parameter study & rosen\_ps\_vector.in & ~\ref{additional:rosenbrock_vector} \\
-parameter study & moat (Morris) & morris\_ps\_moat.in & ~\ref{additional:FIG:moat:out_preamble} \\
+parameter study & moat (Morris) & morris\_ps\_moat.in & ~\ref{FIG:moat:out_preamble} \\
 uncertainty quantification & random sampling & rosen\_sampling.in & ~\ref{tutorial:rosenbrock_mc}\\
 uncertainty quantification & LHS sampling & textbook\_uq\_sampling.in & ~\ref{uq:figure01}\\
 uncertainty quantification & polynomial chaos expansion & rosen\_uq\_pce.in & ~\ref{uq:examples:pce_input} \\
@@ -1144,13 +1147,13 @@ uncertainty quantification & second order probability & cantilever\_uq\_sop\_rel
 optimization & gradient-based, unconstrained & rosen\_grad\_opt.in & ~\ref{tutorial:rosenbrock_grad} \\
 optimization & gradient-based, constrained & textbook\_opt\_conmin.in & ~\ref{additional:textbook_grad_constr} \\
 optimization & gradient-based, constrained & cantilever\_opt\_npsol.in & ~\ref{additional:cant_opt_npsol} \\
-optimization & gradient-based, constrained & container\_opt\_npsol.in &  \\
+optimization & gradient-based, constrained & container\_opt\_npsol.in & ~\ref{output:incont} \\
 optimization & evolutionary algorithm & rosen\_opt\_ea.in  & ~\ref{opt:methods:gradientfree:global:example:rosenbrock_ea} \\
 optimization & pattern search & rosen\_opt\_patternsearch.in  & ~\ref{opt:methods:gradientfree:local:example:ps} \\
 optimization & efficient global optimization (EGO)  & rosen\_opt\_ego.in  & ~\ref{sbm:egm_rosen}\\
 optimization & efficient global optimization (EGO)  & herbie\_shubert\_opt\_ego.in  & ~\ref{additional:herbie_shubert_ego}\\
 optimization & multiobjective  & textbook\_opt\_multiobj1.in  & ~\ref{opt:additional:multiobjective:example1:figure01}\\
-optimization & Pareto opt., moga  & mogatest1.in  & ~\ref{additional:moga1inp}\\
+optimization & Pareto opt., moga  & mogatest1.in  & ~\ref{opt:additional:multiobjective:example2:moga1inp}\\
 optimization & Pareto opt., moga  & mogatest2.in  & ~\ref{additional:moga2inp}\\
 optimization & Pareto opt., moga  & mogatest3.in  & ~\ref{additional:moga3inp}\\
 optimization & Pareto opt., moga, surrogate  & mogatest1\_opt\_sbo.in  & ~\ref{sbm:sbgm_moga}\\

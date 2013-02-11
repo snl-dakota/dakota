@@ -19,10 +19,18 @@ function(dakota_install_dll dakota_dll)
   endif()
 endfunction()
 
-if ( NOT CMAKE_CURRENT_BINARY_DIR )
-   set( CMAKE_CURRENT_BINARY_DIR  $ENV{PWD} )
+message( "CMAKE_CURRENT_BINARY_DIR (1): ${CMAKE_CURRENT_BINARY_DIR}" ) 
+if ( DAKOTA_JENKINS_BUILD OR DEFINED ENV{WORKSPACE} )
+  # By convention, all Dakota, jenkins-driven build jobs use a 'build'
+  # subdir for clear separation of source and build trees in the WORKSPACE
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{WORKSPACE}/build )
+elseif ( NOT CMAKE_CURRENT_BINARY_DIR )
+  set( CMAKE_CURRENT_BINARY_DIR $ENV{PWD} )
 endif()
+message( "CMAKE_CURRENT_BINARY_DIR (2): ${CMAKE_CURRENT_BINARY_DIR}" ) 
 
+# ldd may resolve symlinks, do the same for the build tree location
+get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
 
 # Get the shared objects excluding system libraries and anything in
 # the build tree (as will be installed to lib/) as a
@@ -34,6 +42,7 @@ execute_process(
   COMMAND grep ".so"
   # Omit libs in the build tree
   COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/.+.so"
+  COMMAND egrep -v "${resolved_build_dir}/.+.so"
   # Omit other system libraries
   COMMAND egrep -v "(^/lib|^/usr/lib)"
   COMMAND tr "\\n" ";"

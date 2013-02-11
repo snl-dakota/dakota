@@ -274,6 +274,18 @@ if ( DAKOTA_DO_PACK )
       )
   endif() # CPackSourceConfig.cmake exists
 
+  # Create the documentation pkg (only if ENABLE_DAKOTA_DOCS is TRUE in cache)
+
+  file( STRINGS ${CTEST_BINARY_DIRECTORY}/CMakeCache.txt
+        ENABLE_DAKOTA_DOCS_KV_PAIR REGEX "^ENABLE_DAKOTA_DOCS:BOOL=(.*)$" )
+  string( REGEX REPLACE "^ENABLE_DAKOTA_DOCS:BOOL=(.*)$" "\\1"
+          DAKOTA_BUILD_DOCS "${ENABLE_DAKOTA_DOCS_KV_PAIR}" )
+
+  if ( DAKOTA_BUILD_DOCS )
+    #message( "ctest_build - Building: ${CMAKE_COMMAND} --target package_docs" )
+    execute_process( COMMAND ${CMAKE_COMMAND} --build ${CTEST_BINARY_DIRECTORY}
+                     --target package_docs )
+  endif() # DAKOTA_BUILD_DOCS
 endif() # DAKOTA_DO_PACK
 
 # Packing complete - OK to remove the BuildInfo file from the source tree
@@ -354,6 +366,7 @@ foreach(v
     DAKOTA_DO_TEST
     DAKOTA_TEST_SBATCH
     DAKOTA_DO_PACK
+    DAKOTA_BUILD_DOCS
     DAKOTA_CONFIG_DIR
     DAKOTA_LOCAL_CONFIG_DIR
     dakotaCtestResultsFile
