@@ -34,15 +34,11 @@ message( "CMAKE_SHARED_LIBRARY_SUFFIX: ${CMAKE_SHARED_LIBRARY_SUFFIX}" )
 # otool may resolve symlinks, do the same for the build tree location
 get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
 
-# Get the dylibs excluding system libraries and anything in the build
-# tree (as will be installed to lib/) as a semicolon-separated list
+# Get the dylibs excluding system libraries as a semicolon-separated list
 execute_process(
   COMMAND otool -L "${CMAKE_CURRENT_BINARY_DIR}/src/dakota"
   # Omit the header and get the library only
   COMMAND awk "FNR > 1 {print $1}"
-  # Omit libs in the build tree, following symlinks
-  COMMAND egrep -v "${CMAKE_CURRENT_BINARY_DIR}/.+.dylib"
-  COMMAND egrep -v "${resolved_build_dir}/.+.dylib"
   # Omit system libraries
   COMMAND egrep -v "(^/System|^/usr/lib|^/usr/X11)"
   COMMAND tr "\\n" ";"
@@ -56,7 +52,7 @@ file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
 string( REGEX REPLACE "^Boost_LIBRARY_DIRS:FILEPATH=(.*)$" "\\1"
         Cached_Boost_LIBRARY_DIRS "${Boost_LIBRARY_DIRS_PAIR}" )
 
-message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
+#message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
 
 # Modify dakota_darwin_dylibs for "special case" of Boost
 #   otool DOES NOT return absolute path to Boost libs, so workaround the issue
@@ -95,14 +91,31 @@ endforeach()
 # otool finished proccessing dylibs -
 # OK to "re-insert" Boost dylibs into the list (ABSOLUTE PATH!)
 
-message("Boost dylibs=${dakota_boost_dylibs}")
+#message("Boost dylibs=${dakota_boost_dylibs}")
 list(APPEND dakota_darwin_dylibs ${dakota_boost_dylibs})
 
 list(REMOVE_DUPLICATES dakota_darwin_dylibs)
 cmake_policy(POP)
 
-# Process each DLL and install
+# Process each DLL and install, excluding anything in the build tree OR
+# any boost dylibs without a full path
 foreach(dakota_dll ${dakota_darwin_dylibs})
-  dakota_install_dll("${dakota_dll}")
+  string(REGEX REPLACE "^${CMAKE_CURRENT_BINARY_DIR}(.*)$"
+    "dak_omit/\\1" omit_btree_dll "${dakota_dll}")
+  string(REGEX REPLACE "^${resolved_build_dir}(.*)$"
+    "dak_omit/\\1" omit_resolved_btree_dll "${dakota_dll}")
+  string(REGEX REPLACE "^libboost_(.*)$"
+    "dak_omit/\\1" omit_no_abs_boost_dll "${dakota_dll}")
+
+  if( ${omit_btree_dll} MATCHES dak_omit )
+    #message("-- EXCLUDE: ${omit_btree_dll} - OK, already installed in lib")
+    message("-- EXCLUDE: ${dakota_dll} - OK, already installed in lib")
+  elseif( ${omit_resolved_btree_dll} MATCHES dak_omit )
+    message("-- EXCLUDE: ${dakota_dll} - OK, already installed in lib")
+  elseif( ${omit_no_abs_boost_dll} MATCHES dak_omit )
+    message("-- EXCLUDE: ${dakota_dll} - OK, copying from full path instead")
+  else()
+    dakota_install_dll("${dakota_dll}")
+  endif()
 endforeach()
 
