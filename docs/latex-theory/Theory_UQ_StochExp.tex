@@ -563,11 +563,12 @@ within Eq.~\ref{eq:smolyak1}.
 \section{Transformations to uncorrelated standard variables} \label{uq:expansion:trans}
 
 Polynomial chaos and stochastic collocation are expanded using
-polynomials that are functions of independent standard random
-variables $\boldsymbol{\xi}$.  Thus, a key component of either
-approach is performing a transformation of variables from the original
-random variables $\boldsymbol{x}$ to independent standard random
-variables $\boldsymbol{\xi}$ and then applying the stochastic
+polynomials that are functions of independent random variables
+$\boldsymbol{\xi}$, which are often standardized forms of common
+distributions.  Thus, a key component of stochastic expansion
+approaches is performing a transformation of variables from the
+original random variables $\boldsymbol{x}$ to independent (standard)
+random variables $\boldsymbol{\xi}$ and then applying the stochastic
 expansion in the transformed space.  %The dimension of
 %$\boldsymbol{\xi}$ is typically chosen to correspond to the dimension
 %of $\boldsymbol{x}$, although this is not required.  In fact, the
@@ -577,8 +578,8 @@ expansion in the transformed space.  %The dimension of
 %$\boldsymbol{\xi}$ can be expanded to accommodate~\cite{ghanem_private}.
 %For simplicity, all subsequent discussion will assume a one-to-one 
 %correspondence between $\boldsymbol{\xi}$ and $\boldsymbol{x}$.
-This notion of independent standard space is extended over the notion
-of ``u-space'' used in reliability methods (see
+This notion of independent standard space is extended over the 
+notion of ``u-space'' used in reliability methods (see
 Section~\ref{uq:reliability:local:mpp}) 
 in that it extends the standardized set beyond standard normals.
 %includes not just independent standard normals, but also independent 
@@ -605,13 +606,17 @@ approaches are of interest:
   the corresponding Askey basis (Table~\ref{TAB:askey}).  For
   non-Askey types, numerically generate an optimal polynomial basis
   for each independent distribution as described in
-  Section~\ref{uq:expansion:orth:beyond_askey}.
+  Section~\ref{uq:expansion:orth:beyond_askey}.  These
+  numerically-generated basis polynomials are not coerced into any
+  standardized form, but rather employ the actual distribution
+  parameters of the individual random variables.  Thus, not even a
+  linear variable transformation is employed for these variables.
   % text below moved downstream from Intro:
   With usage of the optimal basis corresponding to each of the random
-  variable types, we can exploit basis orthogonality under expectation
-  (e.g., Eq.~\ref{eq:coeff_extract}) without requiring a transformation
-  of variables, thereby avoiding inducing additional nonlinearity that
-  could slow convergence.
+  variable types, we %can exploit basis orthogonality under expectation
+  %(e.g., Eq.~\ref{eq:coeff_extract}) without requiring a transformation
+  %of variables, thereby avoiding 
+  avoid inducing additional nonlinearity that can slow convergence.
 \item {\it Askey basis:} For non-Askey types, perform a nonlinear
   variable transformation from a given input distribution to the most
   similar Askey basis.  For example, lognormal distributions might
@@ -621,9 +626,9 @@ approaches are of interest:
   distributions then employ the Askey orthogonal polynomials and
   their associated Gauss points/weights.
 \item {\it Wiener basis:} For non-normal distributions, employ a
-  nonlinear variable transformation to standard normal distributions. All
-  distributions then employ the Hermite orthogonal polynomials and
-  their associated Gauss points/weights.
+  nonlinear variable transformation to standard normal distributions. 
+  All distributions then employ the Hermite orthogonal polynomials 
+  and their associated Gauss points/weights.
 \end{enumerate}
 For dependent distributions, we must first perform a nonlinear
 variable transformation to uncorrelated standard normal distributions,
@@ -643,8 +648,8 @@ paragraph.  We then have the following choices:
   at least partially mitigated.
   % Note: no secondary warping since no correlation.
 \end{enumerate}
-Dakota currently supports single transformations for dependent
-variables in combination with an Askey basis for independent variables.
+Dakota does not yet implement the double transformation concept, such
+that each correlated variable will employ a Wiener basis approach.
 
 The transformation from correlated non-normal distributions to
 uncorrelated standard normal distributions is denoted as
@@ -656,15 +661,14 @@ Nataf~\cite{Der86}, and Box-Cox~\cite{Box64} transformations.
 %approaches for this include the Rackwitz-Fiessler~\cite{rf}
 %two-parameter equivalent normal and the Chen-Lind~\cite{cl} and
 %Wu-Wirsching~\cite{ww} three-parameter equivalent normals.
-The results in this paper employ the Nataf transformation,
-which is suitable for the common case when marginal distributions and
-a correlation matrix are provided, but full joint distributions are
-not known\footnote{If joint distributions are known, then the
-Rosenblatt transformation is preferred.}.  The Nataf transformation
-occurs in the following two steps.  To transform between the original
-correlated x-space variables and correlated standard normals
-(``z-space''), a CDF matching condition is applied for each of the
-marginal distributions:
+Dakota employs the Nataf transformation, which is suitable for the
+common case when marginal distributions and a correlation matrix are
+provided, but full joint distributions are not known\footnote{If joint
+  distributions are known, then the Rosenblatt transformation is
+  preferred.}.  The Nataf transformation occurs in the following two
+steps.  To transform between the original correlated x-space variables
+and correlated standard normals (``z-space''), a CDF matching
+condition is applied for each of the marginal distributions:
 \begin{equation}
 \Phi(z_i) = F(x_i) %\label{eq:trans_zx}
 \end{equation}
