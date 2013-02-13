@@ -425,6 +425,7 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDCalibration.cpp NonDBayesCalibration.cpp NonDSampling.cpp
     NonDLHSSampling.cpp
     NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp NonDIncremLHSSampling.cpp
+    NonDPOFDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp
     NonlinearCGOptimizer.cpp 
     SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp 

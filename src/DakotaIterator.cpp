@@ -29,6 +29,7 @@
 #include "NonDGlobalSingleInterval.hpp"
 #include "NonDLocalSingleInterval.hpp"
 #include "NonDLHSSingleInterval.hpp"
+#include "NonDPOFDarts.hpp"
 #include "SurrBasedLocalMinimizer.hpp"
 #include "SurrBasedGlobalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
@@ -354,6 +355,8 @@ Iterator* Iterator::get_iterator(Model& model)
     return new NonDGlobalReliability(model);
   else if (method_name == "nond_local_reliability")
     return new NonDLocalReliability(model);
+  else if (method_name == "nond_pof_darts")
+    return new NonDPOFDarts(model);
   else if (method_name == "nond_global_evidence"){
     const String& nond_opt_alg
       = probDescDB.get_string("method.nond.optimization_algorithm");
