@@ -459,7 +459,7 @@ void ResponseRep::write(std::ostream& s) const
 void ResponseRep::read_annotated(std::istream& s)
 {
   // Read sizing data
-  size_t i, num_fns(0), num_params(0);
+  size_t i, num_fns, num_params;
   bool grad_flag, hess_flag;
   s >> num_fns >> num_params >> grad_flag >> hess_flag;
 
@@ -586,7 +586,7 @@ void ResponseRep::write_tabular(std::ostream& s) const
         all of the arrays. */
 void ResponseRep::read(BiStream& s)
 {
-  size_t i, num_fns(0), num_params(0);
+  size_t i, num_fns, num_params;
   bool grad_flag, hess_flag;
 
   // Read sizing data, responseActiveSet, and functionLabels
@@ -655,7 +655,7 @@ void ResponseRep::write(BoStream& s) const
     and communicates asv and response data only with slaves. */
 void ResponseRep::read(MPIUnpackBuffer& s)
 {
-  size_t i, num_fns(0), num_params(0);
+  size_t i, num_fns, num_params;
   bool grad_flag, hess_flag;
 
   // Read sizing data and responseActiveSet (reshape not needed)

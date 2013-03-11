@@ -182,7 +182,7 @@ private:
 template <class ArrayT>
 inline void array_read(BiStream& s, ArrayT& v)
 {
-  typename ArrayT::size_type len(0);
+  typename ArrayT::size_type len;
   s >> len;
   v.resize(len);
   for (register typename ArrayT::size_type i=0; i<len; ++i)
