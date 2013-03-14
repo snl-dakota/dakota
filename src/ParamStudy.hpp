@@ -620,8 +620,13 @@ centered_header(const String& type, size_t var_index, int step,
   h_string.clear();
   if (asynchFlag)
     h_string += "\n\n";
-  h_string += ">>>>> Centered parameter study evaluation for " + type + "[" +
-              boost::lexical_cast<std::string>(var_index+1) + "]";
+  // This code expanded due to MSVC issue with Dakota::String operator +/+=
+  // Can be combined once using std::string everywhere
+  h_string += ">>>>> Centered parameter study evaluation for ";
+  h_string += type; 
+  h_string += "[";
+  h_string += boost::lexical_cast<std::string>(var_index+1); 
+  h_string += "]";
   if (step < 0) h_string += " - " + boost::lexical_cast<std::string>(-step);
   else          h_string += " + " + boost::lexical_cast<std::string>( step);
   h_string += "delta:\n";
