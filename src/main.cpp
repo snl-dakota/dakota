@@ -65,12 +65,11 @@ int main(int argc, char* argv[])
 		// eliminate some cross-platform differences.
 #endif
 #if defined(__MINGW32__) || defined(_MSC_VER)
-  std::signal(WM_QUIT, abort_handler);
-  std::signal(WM_CHAR, abort_handler);
+  std::signal(SIGBREAK, abort_handler);
 #else
   std::signal(SIGKILL, abort_handler);
-  std::signal(SIGTERM, abort_handler);
 #endif
+  std::signal(SIGTERM, abort_handler);
   std::signal(SIGINT,  abort_handler);
 
 #ifdef MPI_DEBUG
