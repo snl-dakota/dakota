@@ -20,6 +20,7 @@
 
 // eventually use only _WIN32 here
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
+#define NOMINMAX
 #include <windows.h>
 #endif
 #include "ParallelLibrary.hpp"

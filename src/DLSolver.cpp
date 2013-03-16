@@ -1,4 +1,5 @@
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #define dlopen(x,y) LoadLibrary(x)
 #define find_dlsym(a,b,c) (a = (dl_constructor_t)GetProcAddress((HINSTANCE)(b),c))

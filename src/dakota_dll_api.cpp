@@ -17,6 +17,7 @@
 // eventually use only _WIN32 here
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
 #define BUILDING_DAKOTA_DLL
+#define NOMINMAX
 #include <windows.h>
 #endif
 #include "dakota_system_defs.hpp"

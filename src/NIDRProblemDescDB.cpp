@@ -29,6 +29,7 @@
 
 #ifdef DAKOTA_DL_SOLVER
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #define dlopen(x,y) LoadLibrary(x)
 #else

@@ -38,9 +38,13 @@ static const char rcsId[]="@(#) $Id: ParallelLibrary.cpp 7013 2010-10-08 01:03:3
 
 
 namespace Dakota {
+
+// Note: MSVC requires these defined outside any function
 extern PRPCache data_pairs;
 extern BoStream write_restart;
 extern Graphics dakota_graphics;
+extern ResultsManager iterator_results_db;
+
 /** Heartbeat function provided by not_executable.C; pass output
     interval in seconds, or -1 to use $DAKOTA_HEARTBEAT */
 void start_dakota_heartbeat(int);
@@ -1359,10 +1363,8 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   }
 
   // Manage iterator results output to database
-  if (results_output) {
-    extern ResultsManager iterator_results_db;
+  if (results_output)
     iterator_results_db.initialize(results_filename);
-  }
 
   // ------------
   // Read restart

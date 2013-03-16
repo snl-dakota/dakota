@@ -11,6 +11,13 @@
 #include "DakotaInterface.hpp"
 #include "PluginParallelDirectApplicInterface.hpp"
 
+// for Sleep or sleep
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 /// Split MPI_COMM_WORLD, returning the comm and color
 void manage_mpi(MPI_Comm& my_comm, int& color);
@@ -49,7 +56,11 @@ int main(int argc, char* argv[])
   std::remove("dakota.e.1");
   std::remove("dakota.e.2");
   //remove("dakota.e");
-  sleep(1);
+#ifdef _WIN32
+  Sleep(1000); // milliseconds
+#else
+  sleep(1);    // seconds
+#endif
 
   // colors 1 and 2 run DAKOTA
   if (color != 0) {
@@ -216,13 +227,13 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   Dakota::ModelLIter ml_iter = models.begin();
   Dakota::ModelLIter ml_end = models.end();
   for ( ; ml_iter != ml_end; ++ml_iter) {
-    Dakota::Interface& interface = ml_iter->interface();
+    Dakota::Interface& model_iface = ml_iter->interface();
     const Dakota::ParallelLevel& ea_level
       = ml_iter->parallel_configuration_iterator()->ea_parallel_level();
     const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
-    interface.assign_rep(new SIM::ParallelDirectApplicInterface(problem_db, 
-								analysis_comm), 
-			 false);
+    model_iface.assign_rep(new SIM::ParallelDirectApplicInterface(problem_db, 
+								  analysis_comm), 
+			   false);
   }
 
   // Execute the strategy
@@ -235,7 +246,12 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
 
 void collect_results()
 {
-  sleep(1);  // avoid file race condition
+  // avoid file race condition
+#ifdef _WIN32
+  Sleep(1000); // milliseconds
+#else
+  sleep(1);    // seconds
+#endif
   // for dakota_test.perl benefit; no easy way to sequence output and error
   std::system("cat dakota.o.1");
   std::system("cat dakota.o.2");

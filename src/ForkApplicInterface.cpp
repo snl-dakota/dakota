@@ -18,6 +18,7 @@
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #elif defined(_WIN32)
+#define NOMINMAX
 #include <process.h>
 #include <windows.h>
 #endif
