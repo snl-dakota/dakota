@@ -25,7 +25,11 @@ namespace Dakota {
 CommandShell& CommandShell::flush()
 {
   if (asynchFlag)
+#if !defined(_MSC_VER)
     sysCommand += " &";
+#else
+    sysCommand = "start \"SystemInterface-Evaluation\" " + sysCommand;
+#endif
 
   if (!suppressOutputFlag)
     Cout << sysCommand << std::endl;  // output the cmd string for verification
