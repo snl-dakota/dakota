@@ -4966,7 +4966,11 @@ static int
 #define MP_(x) DataMethodRep::* method_mp_##x = &DataMethodRep::x
 #define MP2(x,y) method_mp_##x##_##y = {&DataMethodRep::x,#y}
 #define MP2s(x,y) method_mp_##x##_##y = {&DataMethodRep::x,y}
-#define MP2o(x,y) method_mp_##x##_##y = {&DataMethodRep::x,OPTPP::y}
+#if HAVE_OPTPP
+#  define MP2o(x,y) method_mp_##x##_##y = {&DataMethodRep::x,OPTPP::y}
+#else
+#  define MP2o(x,y) method_mp_##x##_##y = {NULL, NULL}
+#endif
 #define MP2p(x,y) method_mp_##x##_##y = {&DataMethodRep::x,Pecos::y}
 #define MP3(x,y,z) method_mp_3##x##_##z = {&DataMethodRep::x,&DataMethodRep::y,#z}
 #define MP4(w,x,y,z) method_mp_##w##_##y = {&DataMethodRep::w,&DataMethodRep::x,#y,z}
