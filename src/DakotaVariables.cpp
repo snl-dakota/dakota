@@ -692,7 +692,7 @@ void Variables::read(MPIUnpackBuffer& s)
     // empty variables envelope sent across buffer; make this one match
     if (--variablesRep->referenceCount == 0)
       delete variablesRep;
-    variablesRep == NULL;
+    variablesRep = NULL;
   }
 }
 

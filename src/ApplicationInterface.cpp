@@ -1306,11 +1306,11 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
     else {
       if (evalCacheFlag)   data_pairs.insert(*prp_iter);
       if (restartFileFlag) write_restart << *prp_iter;
+      // move job from active to completed status and update bookkeeping
+      rawResponseMap[fn_eval_id] = prp_iter->prp_response();
+      runningSet.erase(fn_eval_id);
       active_prp_queue.erase(prp_iter);
     }
-    // move job from active to completed status and update bookkeeping
-    rawResponseMap[fn_eval_id] = prp_iter->prp_response();
-    runningSet.erase(fn_eval_id);
 
     // free this local server
     if (asynchLocalEvalConcurrency && asynchLocalEvalStatic) {
