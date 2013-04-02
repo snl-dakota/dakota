@@ -19,8 +19,11 @@ endif()
 include(DakotaEnableSpecMaint)
 DakotaEnableSpecMaint()
 
+# Use TPL_LIBS for libraries built as part of this project
 set(TPL_LIBS nidr)
+# Use EXTRA_TPL_LIBS for additional libraries from the system or ExternalProject
 set(EXTRA_TPL_LIBS "")
+
 # WJB - ToDo:  convince myself that dakota_src_fortran should have a
 #              better name and be specified in the initial EXPORTS_TARGETS set
 set(EXPORT_TARGETS dakota_src nidr)
@@ -487,7 +490,10 @@ if(HAVE_ESM)
   list(APPEND iterator_src EfficientSubspaceMethod.cpp)
 endif()
 
-CheckPackage(QUESO)
+# Can't do CheckPackage because queso isn't built in CMake and
+# therefore can't be in EXPORT_TARGETS. (Also, we don't use
+# -DHAVE_QUESO anyway.)
+#CheckPackage(QUESO)
 if(HAVE_QUESO)
   list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
   add_definitions("-DDAKOTA_QUESO")
@@ -501,8 +507,10 @@ if(HAVE_QUESO)
   list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib
        ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
 
-  list(APPEND TPL_LIBS grvy)
-  list(APPEND EXPORT_TARGETS queso grvy)
+  # Can't put these in TPL_LIBS because Trilinos will try to export them:
+  list(APPEND EXTRA_TPL_LIBS queso grvy)
+  # Can't export these as they aren't executables or library targets
+  #list(APPEND EXPORT_TARGETS queso_ext grvy_ext)
 endif(HAVE_QUESO)
 
 
@@ -525,6 +533,9 @@ if(HAVE_DDACE)
   #link_directories(${Dakota_BINARY_DIR}/methods/DDACE)
   set(TPL_LIBS ${TPL_LIBS} dace analyzer random sampling bose)
   list(APPEND EXPORT_TARGETS dace analyzer random sampling bose)
+  if(DDACE_ENABLE_STANDALONE)
+    list(APPEND EXPORT_TARGETS fatools)
+  endif()
 endif(HAVE_DDACE)
 
 CheckPackage(DOT)
@@ -540,6 +551,7 @@ endif(HAVE_FSUDACE)
 
 if(HAVE_GPMSA)
   add_definitions("-DDAKOTA_GPMSA")
+  # This dependency is valid: GPMSA requires first building these
   add_dependencies(queso_ext grvy_ext)
   list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
@@ -553,8 +565,12 @@ if(HAVE_GPMSA)
        ${Dakota_BINARY_DIR}/packages/grvy_ext/lib
        ~/dakota/packages/queso_tarballs/code/libs/gpmsa/lib)
   #link_directories(${Dakota_BINARY_DIR}/packages/gpmsa)
-  list(APPEND TPL_LIBS queso grvy gpmsa_any)
-  list(APPEND EXPORT_TARGETS queso grvy gpmsa_any)
+
+  # Can't put these in TPL_LIBS because Trilinos will try to export them:
+  list(APPEND EXTRA_TPL_LIBS queso grvy gpmsa_any)
+  # Can't export these as they aren't built in this project, except maybe 
+  # gpmsa_any?
+  #list(APPEND EXPORT_TARGETS queso grvy gpmsa_any)
 endif(HAVE_GPMSA)
 
 if(HAVE_HOPSPACK)
@@ -872,20 +888,31 @@ message(STATUS "EXTRA TPL LIBS: ${EXTRA_TPL_LIBS}")
 
 # Pass some data back to Trilinos
 if (BUILD_IN_TRILINOS)
+
+  # All include directories needed for Dakota
   get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
   set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
     "Dakota include directories")
+
+  # Link directories needed for queso, grvy, GSL
+  get_directory_property(Dakota_LDIRS LINK_DIRECTORIES)
+  set(Dakota_LINK_DIRS ${Dakota_LDIRS} CACHE INTERNAL "Dakota link directories")
+
+  # Libraries built in Dakota CMake
   set(Dakota_LIBS dakota_src dakota_src_fortran ${TPL_LIBS})
   # Only remove the Teuchos libraries from the Dakota_LIBS variable
   list(REMOVE_ITEM Dakota_LIBS ${Teuchos_LIBRARIES})
   set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
     "Dakota libraries")
+
+  # Libraries built outside of Dakota CMake
   set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
     "Dakota extra libraries")
   message(STATUS 
     "Export targets to <export-name> = ${ExportTarget}: ${EXPORT_TARGETS}"
     )
-  export(TARGETS ${EXPORT_TARGETS} FILE
-    "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
 endif()
 
+# Unconditionally export targets so we detect problems before Trilinos does
+export(TARGETS ${EXPORT_TARGETS} FILE
+  "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")

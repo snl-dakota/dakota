@@ -70,6 +70,10 @@ else()
       CONFIGURE_COMMAND "${grvy_config_cmd}"
     )
 
+    #add_library(grvy UNKNOWN IMPORTED GLOBAL)
+    #set_target_properties(grvy PROPERTIES 
+    #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
+
     ############################################################################
     # Queso
     #
@@ -112,6 +116,10 @@ else()
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND "${queso_config_cmd}"
     )
+
+    #add_library(queso UNKNOWN IMPORTED GLOBAL)
+    #set_target_properties(queso PROPERTIES 
+    #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
 
     add_dependencies(queso_ext grvy_ext)
   endif(HAVE_QUESO)
