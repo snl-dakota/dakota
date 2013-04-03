@@ -12,6 +12,7 @@
 
 #include "PythonInterface.hpp"
 #include "DataMethod.hpp"
+#include "ProblemDescDB.hpp"
 
 #include <Python.h>
 #ifdef DAKOTA_PYTHON_NUMPY
@@ -21,7 +22,8 @@
 namespace Dakota {
 
 PythonInterface::PythonInterface(const ProblemDescDB& problem_db)
-  : DirectApplicInterface(problem_db)
+  : DirectApplicInterface(problem_db),
+    userNumpyFlag(problem_db.get_bool("interface.python.numpy"))
 {
   Py_Initialize();
   if (Py_IsInitialized()) {
@@ -34,17 +36,16 @@ PythonInterface::PythonInterface(const ProblemDescDB& problem_db)
 	 << "evaluation." << std::endl;
     abort_handler(-1);
   }
+
+  if (userNumpyFlag) {
 #ifdef DAKOTA_PYTHON_NUMPY
-  import_array();
-  //      userNumpyFlag = problem_db.get_bool("python_numpy");
-  userNumpyFlag = true;
+    import_array();
 #else
-  //      if (problem_db.get_bool("python_numpy")) {
-  Cout << "Warning: Python numpy not available, ignoring user request."
-       << std::endl;
-  userNumpyFlag = false;
-  //}
+    Cerr << "\nError: Direct Python interface 'numpy' option requested, but "
+	 << "not available." << std::endl;
+    abort_handler(-1);
 #endif
+  }
 }
 
 

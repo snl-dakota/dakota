@@ -43,7 +43,7 @@ protected:
 
   /// direct interface to Python via API, BMA 07/02/07
   int python_run(const String& ac_name);
-  /// whether the user requested numpy data structures
+  /// whether the user requested numpy data structures in the input file
   bool userNumpyFlag;
   /// convert arrays of integer types to Python list or numpy array
   template<class ArrayT, class Size>

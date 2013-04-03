@@ -177,6 +177,8 @@ public:
   bool templateCopy;
   /// whether to replace existing files
   bool templateReplace;
+  /// Python interface: use NumPy data structures (default is list data)
+  bool numpyFlag;
 
 private:
 

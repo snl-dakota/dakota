@@ -2396,6 +2396,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"dirSave", P dirSave},
 	{"dirTag", P dirTag},
 	{"evaluation_cache", P evalCacheFlag},
+	{"python.numpy", P numpyFlag},
 	{"restart_file", P restartFileFlag},
 	{"templateCopy", P templateCopy},
 	{"templateReplace", P templateReplace},

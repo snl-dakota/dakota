@@ -24,7 +24,7 @@ DataInterfaceRep::DataInterfaceRep():
   failAction("abort"), retryLimit(1), activeSetVectorFlag(true),
   evalCacheFlag(true), restartFileFlag(true), referenceCount(1),
   useWorkdir(false), dirTag(false), dirSave(false), templateCopy(false),
-  templateReplace(false)
+  templateReplace(false), numpyFlag(false)
 { }
 
 
@@ -41,7 +41,8 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
     << analysisServers << analysisScheduling << failAction << retryLimit
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << restartFileFlag << useWorkdir << workDir << dirTag << dirSave
-    << templateDir << templateFiles << templateCopy << templateReplace;
+    << templateDir << templateFiles << templateCopy << templateReplace
+    << numpyFlag;
 }
 
 
@@ -58,7 +59,8 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
     >> analysisServers >> analysisScheduling >> failAction >> retryLimit
     >> recoveryFnVals >> activeSetVectorFlag >> evalCacheFlag
     >> restartFileFlag >> useWorkdir >> workDir >> dirTag >> dirSave
-    >> templateDir >> templateFiles >> templateCopy >> templateReplace;
+    >> templateDir >> templateFiles >> templateCopy >> templateReplace
+    >> numpyFlag;
 }
 
 
@@ -75,7 +77,8 @@ void DataInterfaceRep::write(std::ostream& s) const
     << analysisServers << analysisScheduling << failAction << retryLimit
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << restartFileFlag << useWorkdir << workDir << dirTag << dirSave
-    << templateDir << templateFiles << templateCopy << templateReplace;
+    << templateDir << templateFiles << templateCopy << templateReplace
+    << numpyFlag;
 }
 
 

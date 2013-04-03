@@ -4943,6 +4943,7 @@ static bool
 	MP_(evalCacheFlag),
 	MP_(fileSaveFlag),
 	MP_(fileTagFlag),
+	MP_(numpyFlag),
 	MP_(restartFileFlag),
 	MP_(templateCopy),
 	MP_(templateReplace),

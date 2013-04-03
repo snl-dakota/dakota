@@ -247,11 +247,7 @@ endif() #DAKOTA_SCILAB
 
 option(DAKOTA_PYTHON "Toggle Python interface, default is disabled" OFF)
 option(DAKOTA_PYTHON_NUMPY
-  "Use Python NumPy for data structures, default is disabled" OFF
-  )
-if(DAKOTA_PYTHON_NUMPY AND NOT DAKOTA_PYTHON)
-  message(FATAL_ERROR "DAKOTA_PYTHON_NUMPY option requires DAKOTA_PYTHON")
-endif()
+  "Attempt to link to Python NumPy interface? Default: yes." ON)
 if(DAKOTA_PYTHON)
   include(FindPythonInterp)
   include(FindPythonLibs)
@@ -272,14 +268,19 @@ if(DAKOTA_PYTHON)
 	include_directories(${PYTHON_NUMARRAY_INCLUDE_DIR})
 	add_definitions("-DDAKOTA_PYTHON_NUMPY")
       else()
-	message(SEND_ERROR
-	  "Python NumPy requested, but headers/libaries not found")
-	set(DAKOTA_PYTHON_NUMPY OFF)
+	message("Python NumPy requested, but headers/libaries not found; "
+	  "disabling NumPy")
       endif(PYTHON_NUMARRAY_FOUND)
+    else()
+      message(STATUS "Disabling NumPy interface due to DAKOTA_PYTHON_NUMPY = "
+	"${DAKOTA_PYTHON_NUMPY}")
     endif()
   else()
-    message(SEND_ERROR "Python requested, but Python headers/libraries associated with Python installed in ${PYTHON_EXECUTABLE} not found")
-  endif(PYTHONLIBS_FOUND)
+    message(SEND_ERROR 
+      "Python requested via DAKOTA_PYTHON, but Python headers/libraries "
+      "associated with Python installed with ${PYTHON_EXECUTABLE} not found"
+      )
+  endif()
 endif(DAKOTA_PYTHON)
 
 if(DAKOTA_MODELCENTER)

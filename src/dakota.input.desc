@@ -2007,6 +2007,7 @@ TAG "interface/analysis_drivers/matlab"
 TAG "interface/analysis_drivers/python"
 	DESC "{Python interface } InterfCommands.html#InterfApplicMSP"
 
+TAG "interface/analysis_drivers/python/numpy"
 TAG "interface/analysis_drivers/scilab"
 	DESC "{Scilab interface } InterfCommands.html#InterfApplicMSP"
 
