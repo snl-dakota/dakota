@@ -46,6 +46,12 @@ PythonInterface::PythonInterface(const ProblemDescDB& problem_db)
     abort_handler(-1);
 #endif
   }
+
+  // prepend sys.path (env PYTHONPATH) with empty string to find module in pwd
+  // This assumes any directory changing in the driver is reversed
+  // between function evaluations
+  PyRun_SimpleString("import sys\nsys.path.insert(0,\"\")");
+
 }
 
 
