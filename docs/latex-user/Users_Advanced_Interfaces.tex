@@ -757,9 +757,10 @@ lists or NumPy arrays.
 
 The Python direct interface must be enabled when compiling Dakota.
 Set the CMake variable \\ {\tt DAKOTA\_PYTHON:BOOL=ON}, and optionally
-{\tt Dakota\_PYTHON\_NUMPY:BOOL=ON} to use Dakota's NumPy array
-interface (requires arrayobject.h). If NumPy is not enabled, Dakota
-will use multiply-subscripted lists for data flow.
+{\tt DAKOTA\_PYTHON\_NUMPY:BOOL=ON} to use Dakota's NumPy array
+interface (requires NumPy installation providing arrayobject.h). If
+NumPy is not enabled, Dakota will use multiply-subscripted lists for
+data flow.
 
 An example of using the Python direct interface with both lists and
 arrays is included in \\
@@ -768,14 +769,18 @@ selected with, for example,
 \begin{verbatim}
   interface,
     python
+      # numpy
       analysis_drivers = 'python_module:analysis_function'
 \end{verbatim}
 where {\tt python\_module} denotes the module (file {\tt
-python\_module.py}) Dakota will attempt to import into the Python
+  python\_module.py}) Dakota will attempt to import into the Python
 environment and {\tt analysis\_function} denotes the function to call
-when evaluating a parameter set. It is likely necessary to set the
-{\tt PYTHONPATH} environment variable to include the location of the
-Python module you wish to load.
+when evaluating a parameter set. If the Python module is not in the
+directory from which Dakota is started, setting the {\tt PYTHONPATH}
+environment variable to include its location can help the Python
+engine find it.  The optional {\tt numpy} keyword indicates Dakota
+will communicate with the Python analysis function using numarray data
+structures instead of the default lists.
 
 Whether using the list or array interface, data from Dakota is passed
 (via kwargs) into the user function in a dictionary containing the

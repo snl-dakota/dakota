@@ -848,6 +848,12 @@ Specification for scientific computing interfaces (specify one)
 <td>none
 <td>Required group (1 of 7 selections)
 <td>N/A
+<tr>
+<td>Python NumPy dataflow
+<td>\c numpy
+<td>none
+<td>Optional
+<td>Python list dataflow
 </table>
 
 
