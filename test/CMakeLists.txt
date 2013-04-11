@@ -94,6 +94,121 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   file(GLOB dakota_test_input_files 
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in"
     )
+
+  # Agressively omit tests for partial distributions to internal and
+  # external web.  Initial set is aggressive, omitting any test that
+  # induces FAIL due to DOT, NPSOL, or NLPQL.  Later will want to do
+  # on a per test number basis.  These are conditional on TPL
+  # presence, not distribution type to make it easier for
+  # non-developers to run the tests.  Could also consider use of
+  # WILL_FAIL property on individual tests.
+
+  # Tests that fail due to missing DOT TPL
+  if(NOT HAVE_DOT)
+    list(REMOVE_ITEM dakota_test_input_files
+      dakota_3pc.in # SHOULD BE ABLE TO FIX
+      dakota_cantilever.in  # REVIEW
+      dakota_cyl_head.in # REVIEW
+      dakota_illum.in # REVIEW
+      dakota_multiobj1.in # REVIEW
+      dakota_multistart.in # REVIEW
+      dakota_ouu1_cantilever.in
+      dakota_ouu1_tbch.in 
+      dakota_pareto.in # REVIEW
+      dakota_pcbdo_cantilever_mixed.in
+      dakota_rbdo_cantilever.in
+      dakota_rbdo_cantilever_analytic.in
+      dakota_rbdo_cantilever_analytic2.in
+      dakota_rbdo_cantilever_mixed.in
+      dakota_rbdo_cantilever_trsb2.in
+      dakota_rbdo_short_column.in
+      dakota_rbdo_short_column_analytic.in
+      dakota_rbdo_short_column_analytic2.in
+      dakota_rbdo_short_column_trsb.in
+      dakota_rbdo_short_column_trsb2.in
+      dakota_rbdo_steel_column.in
+      dakota_rbdo_steel_column_analytic2.in
+      dakota_rosenbrock.in # REVIEW
+      dakota_sbnls_rosen.in # REVIEW
+      dakota_sbouu3_cantilever.in
+      dakota_sbouu3_tbch.in
+      dakota_scaling.in  # SHOULD BE ABLE TO FIX
+      dakota_scbdo_cantilever_mixed.in
+      dakota_textbook.in # REVIEW
+      dakota_users_qsf_multistart_strat.in # REVIEW
+      dakota_users_textbook_pareto_strat.in # REVIEW
+      dakota_var_views_opt.in      # SHOULD fix
+      )
+  endif()
+  # Tests that fail due to missing NPSOL or NLPQL TPL
+  if (NOT HAVE_NPSOL OR NOT HAVE_NLPQL)
+    list(REMOVE_ITEM dakota_test_input_files
+      dakota_addtnl_users.in
+      dakota_ampl_fma.in
+      dakota_container.in
+      dakota_drivers.in
+      dakota_logratio_taylor2.in
+      dakota_multiobj2.in
+      dakota_ouu1_tb.in
+      dakota_pcbdo_cantilever.in
+      dakota_pcbdo_cantilever_mf.in
+      dakota_pcbdo_cantilever_trsb.in
+      dakota_pcbdo_rosenbrock.in
+      dakota_pcbdo_rosenbrock_mf.in
+      dakota_pcbdo_rosenbrock_trsb.in
+      dakota_pcbdo_short_column.in
+      dakota_pcbdo_short_column_mf.in
+      dakota_pcbdo_short_column_trsb.in
+      dakota_pcbdo_steel_column.in
+      dakota_pcbdo_steel_column_mf.in
+      dakota_pcbdo_steel_column_trsb.in
+      dakota_rbdo_cantilever_analytic2_verify.in
+      dakota_rbdo_cantilever_trsb.in
+      dakota_rbdo_side_impact.in
+      dakota_rbdo_steel_column_trsb2.in
+      dakota_rosenbrock_fail.in
+      dakota_sbo_barnes.in
+      dakota_sbo_barnes_mf.in
+      dakota_sbo_hier_poly_prod.in
+      dakota_sbo_hierarchical.in
+      dakota_sbouu2_cantilever.in
+      dakota_sbouu2_tbch.in
+      dakota_sbouu4_cantilever.in
+      dakota_sbouu4_tbch.in
+      dakota_scbdo_cantilever.in
+      dakota_scbdo_cantilever_mf.in
+      dakota_scbdo_cantilever_trsb.in
+      dakota_scbdo_rosenbrock.in
+      dakota_scbdo_rosenbrock_mf.in
+      dakota_scbdo_rosenbrock_trsb.in
+      dakota_scbdo_short_column.in
+      dakota_scbdo_short_column_mf.in
+      dakota_scbdo_short_column_trsb.in
+      dakota_scbdo_steel_column.in
+      dakota_scbdo_steel_column_mf.in
+      dakota_scbdo_steel_column_trsb.in
+      dakota_sebdo_short_column_adapt.in
+      dakota_textbook_nips.in
+      dakota_trsbouu2_cantilever.in
+      dakota_trsbouu2_tbch.in
+      dakota_trsbouu4_cantilever.in
+      dakota_trsbouu4_tbch.in
+      dakota_uq_cantilever_interval.in
+      dakota_uq_cantilever_taylor2.in
+      dakota_uq_textbook_dste.in
+      dakota_users_cantilever_opt_npsol.in
+      dakota_users_container_opt_npsol.in
+      dakota_users_cylhead_opt_npsol.in
+      dakota_users_textbook_opt_multiobj1.in
+      dakota_users_textbook_opt_ouu1.in
+      dakota_var_views_uq.in
+      )
+  endif()
+  # Remove tests that fail on Windows
+  if (WIN32)
+    # TODO
+  endif()
+
   foreach(test_input_file ${dakota_test_input_files})
 
     # Glob up all files associated with this test input file
