@@ -8,6 +8,7 @@
 use Getopt::Long;
 use Pod::Usage;
 use File::Basename;
+use File::Path 'rmtree';
 use POSIX "sys_wait_h";
 use Cwd 'abs_path';
 
@@ -211,6 +212,14 @@ foreach my $file (@test_inputs) {
 
       print "Test Number $cnt ";
 
+      # For workdir tests, need to remove trydir*
+      if ( $file eq "dakota_workdir.in" ) {
+	my @trydirlist = glob("trydir*");
+	for my $tdir (@trydirlist) {
+	  rmtree $tdir;
+	}
+      }
+
       my $test_command = 
         form_test_command($num_proc, $dakota_command, $restart_command, 
 			  $dakota_input, $output, $error);
@@ -257,6 +266,15 @@ foreach my $file (@test_inputs) {
 	print TEST_OUT "Test Number $cnt failed with exit code $exit_value";
 	append_error_message($exit_value);
       }
+
+      # For workdir tests, need to remove trydir*
+      if ( $file eq "dakota_workdir.in" ) {
+	my @trydirlist = glob("trydir*");
+	for my $tdir (@trydirlist) {
+	  rmtree $tdir;
+	}
+      }
+
     }
 
     # TODO: error if a specified test not found

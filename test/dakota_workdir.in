@@ -1,0 +1,59 @@
+# Tests: all used workdir named trydir
+# 0	no extra options (script in inputdir, tmpnamed files)
+# 1	tag the workdir
+# 2	tag and save the workdir
+# 3	template_files linked from trydir (check data file existence)
+# 4	template_directory contents linked from trydir
+# 5	template_files copied from trydir
+# 6	template_directory contents copied from trydir
+# 7	analysis driver located in template_directory
+# 8	basic work_directory, but with named parameters file
+# 9	tagged and saved work_directory, with named and saved parameters file
+
+# TODO: Add tests for:
+# * driver lives on PATH, but not in inputdir
+# * driver is a template file (not sure how to test since . should be a valid location)
+# * named vs. anonymous work_directory
+# * put a junk file and use replace to replace
+# * put a good file and verify junk doesn't replace
+# * system vs. fork
+# * asynch vs. synch
+
+method
+  multidim_parameter_study		
+    partitions = 2 2			
+
+variables
+  continuous_design = 2			
+    lower_bounds    -2.0     -2.0	
+    upper_bounds     2.0      2.0	
+    descriptors      'x1'     'x2'	
+
+interface
+  fork
+    analysis_driver = 'dakota_workdir.sh'			#0
+#    analysis_driver = 'dakota_workdir.sh tag'			#1
+#    analysis_driver = 'dakota_workdir.sh tag_save' 		#2
+#    analysis_driver = 'dakota_workdir.sh templatefiles' 	#3
+#    analysis_driver = 'dakota_workdir.sh templatedir' 		#OMIT 4
+#    analysis_driver = 'dakota_workdir.sh templatefiles_copy' 	#5
+#    analysis_driver = 'dakota_workdir.sh templatedir_copy' 	#6
+#    analysis_driver = 'templatedir_rosenbrock.sh' 		#OMIT 7
+#    analysis_driver = 'dakota_workdir.sh named_params' 	#8
+#    analysis_driver = 'dakota_workdir.sh saved_params' 	#9
+
+    work_directory
+      named 'trydir'
+#	directory_tag						#1,#2,#9
+#	directory_save  					#2,#9
+# 	template_files = 'dakota_workdir.root.dat' 		#3,#5
+# 	template_directory = 'dakota_workdir.templatedir'	#4,#6
+#         copy							#5,#6
+# 	template_directory = 'dakota_workdir.templatedir'	#7
+#	parameters_file = 'params.in'				#8,#9
+#	  file_save						#9
+
+responses
+  num_objective_functions = 1             
+  no_gradients				
+  no_hessians
