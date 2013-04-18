@@ -126,7 +126,7 @@ DataMethodRep::DataMethodRep():
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), likelihoodScale(1.0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
-  batchSize(0),
+  batchSize(0),calibrateSigmaFlag(false),
   // Parameter Study
   numSteps(0),
   // Verification
@@ -229,7 +229,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
     << emulatorSamples << emulatorType << rejectionType << metropolisType
     << proposalCovScale << likelihoodScale << fitnessMetricType
-    << batchSelectionType << batchSize;
+    << batchSelectionType << batchSize << calibrateSigmaFlag;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -335,7 +335,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
     >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType
     >> proposalCovScale >> likelihoodScale >> fitnessMetricType
-    >> batchSelectionType >> batchSize;
+    >> batchSelectionType >> batchSize >> calibrateSigmaFlag;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -441,7 +441,7 @@ void DataMethodRep::write(std::ostream& s) const
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
     << emulatorSamples << emulatorType << rejectionType << metropolisType
     << proposalCovScale << likelihoodScale << fitnessMetricType
-    << batchSelectionType << batchSize;
+    << batchSelectionType << batchSize << calibrateSigmaFlag;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

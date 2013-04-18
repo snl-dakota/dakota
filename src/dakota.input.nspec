@@ -719,7 +719,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(lit,methodName_nond_bayes_calibration)}
               ( (queso {N_mdm(lit,subMethodName_queso)}
                 [ emulator {0}
-	        ( gaussian_process ALIAS gp {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
+	        ( gaussian_process ALIAS kriging {0} 
+                    surfpack {N_mdm(type,emulatorType_KRIGING)}
+                    | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)} 
 		  [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]  
 	          [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                     [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
@@ -745,6 +747,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
               [ proposal_covariance_scale REALLIST {N_mdm(RealDL,proposalCovScale)} ]
               [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
+	      [ calibrate_sigma {N_mdm(true,calibrateSigmaFlag)} ] 
 	      )
 	    |
 	    ( dace {N_mdm(lit,methodName_dace)}

@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1066 distinct keywords (plus 161 aliases) **/
+/** 1069 distinct keywords (plus 161 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -189,9 +189,11 @@ static KeyWord
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxPointFileAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxPointFileAnnotated)}
 		},
-	kw_32[2] = {
-		{"emulator_samples",9,0,1,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
-		{"points_file",11,2,2,0,kw_31,0.,0.,0,N_mdm(str,approxPointReuseFile)}
+	kw_32[4] = {
+		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
+		{"emulator_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
+		{"points_file",11,2,3,0,kw_31,0.,0.,0,N_mdm(str,approxPointReuseFile)},
+		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING)}
 		},
 	kw_33[1] = {
 		{"sparse_grid_level",13,0,1,0,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
@@ -200,8 +202,8 @@ static KeyWord
 		{"sparse_grid_level",13,0,1,0,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_35[4] = {
-		{"gaussian_process",8,2,1,1,kw_32,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
-		{"gp",0,2,1,1,kw_32,0.,0.,-1,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
+		{"gaussian_process",8,4,1,1,kw_32},
+		{"kriging",0,4,1,1,kw_32,0.,0.,-1},
 		{"pce",8,1,1,1,kw_33,0.,0.,0,N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)},
 		{"sc",8,1,1,1,kw_34,0.,0.,0,N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
 		},
@@ -216,9 +218,10 @@ static KeyWord
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_39[10] = {
+	kw_39[11] = {
 		{0,0,1,0,0,kw_11},
 		{0,0,1,0,0,kw_12},
+		{"calibrate_sigma",8,0,8,0,0,0.,0.,0,N_mdm(true,calibrateSigmaFlag)},
 		{"gpmsa",8,1,1,1,kw_29,0.,0.,0,N_mdm(lit,subMethodName_gpmsa)},
 		{"likelihood_scale",10,0,7,0,0,0.,0.,0,N_mdm(Real,likelihoodScale)},
 		{"metropolis",8,2,3,0,kw_30},
@@ -1149,7 +1152,7 @@ static KeyWord
 	kw_204[83] = {
 		{"adaptive_sampling",8,7,11,1,kw_24,0.,0.,0,N_mdm(lit,methodName_nond_adaptive_sampling)},
 		{"asynch_pattern_search",8,9,11,1,kw_28,0.,0.,0,N_mdm(lit,methodName_asynch_pattern_search)},
-		{"bayes_calibration",8,8,11,1,kw_39,0.,0.,0,N_mdm(lit,methodName_nond_bayes_calibration)},
+		{"bayes_calibration",8,9,11,1,kw_39,0.,0.,0,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"centered_parameter_study",8,3,11,1,kw_40,0.,0.,0,N_mdm(lit,methodName_centered_parameter_study)},
 		{"coliny_apps",0,9,11,1,kw_28,0.,0.,-3,N_mdm(lit,methodName_asynch_pattern_search)},
 		{"coliny_beta",8,1,11,1,kw_42,0.,0.,0,N_mdm(lit,methodName_coliny_beta)},
@@ -1197,7 +1200,7 @@ static KeyWord
 		{"nlpql_sqp",8,9,11,1,kw_25,0.,0.,0,N_mdm(lit,methodName_nlpql_sqp)},
 		{"nlssol_sqp",8,0,11,1,kw_179,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
 		{"nond_adaptive_sampling",0,7,11,1,kw_24,0.,0.,-49,N_mdm(lit,methodName_nond_adaptive_sampling)},
-		{"nond_bayes_calibration",0,8,11,1,kw_39,0.,0.,-48,N_mdm(lit,methodName_nond_bayes_calibration)},
+		{"nond_bayes_calibration",0,9,11,1,kw_39,0.,0.,-48,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"nond_efficient_subspace",0,2,11,1,kw_67,0.,0.,-26,N_mdm(lit,methodName_nond_efficient_subspace)},
 		{"nond_global_evidence",0,6,11,1,kw_84,0.,0.,-22,N_mdm(lit,methodName_nond_global_evidence)},
 		{"nond_global_interval_est",0,6,11,1,kw_89,0.,0.,-22,N_mdm(lit,methodName_nond_global_interval_est)},

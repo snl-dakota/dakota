@@ -2345,6 +2345,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"main_effects", P mainEffectsFlag},
 	{"mutation_adaptive", P mutationAdaptive},
 	{"nl2sol.regression_diagnostics", P regressDiag},
+	{"nond.calibrate_sigma", P calibrateSigmaFlag},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.tensor_grid", P probCollocFlag},

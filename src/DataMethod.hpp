@@ -768,7 +768,9 @@ public:
   /// The size of the batch (e.g. number of supplemental points added) to be
   /// added to be added to the build points for an emulator at each iteration
   int batchSize;
-
+  /// flag to indicate if the sigma terms should be calibrated in 
+  /// \ref MethodNonDBayesCalib
+  bool calibrateSigmaFlag;
   // Parameter Study
 
   /// the \c final_point specification in \ref MethodPSVPS

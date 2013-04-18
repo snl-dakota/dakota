@@ -5262,6 +5262,7 @@ static StringArray
 
 static bool
 	MP_(approxPointFileAnnotated),
+	MP_(calibrateSigmaFlag),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(expansionFlag),

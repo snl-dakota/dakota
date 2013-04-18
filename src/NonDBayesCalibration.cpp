@@ -34,7 +34,7 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
   switch (emulatorType) {
   case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION:
     standardizedSpace = true; break;
-  case GAUSSIAN_PROCESS: case NO_EMULATOR:
+  case GAUSSIAN_PROCESS: case KRIGING: case NO_EMULATOR:
     // TO DO: add to spec
     //standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     if (standardizedSpace) {
@@ -74,8 +74,11 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     emulatorModel.init_communicators(mcmc_concurrency);
     break;
   }
-  case GAUSSIAN_PROCESS: {
-    String sample_reuse, approx_type("global_gaussian");/*("global_kriging");*/
+  case GAUSSIAN_PROCESS: case KRIGING: {
+    String sample_reuse;
+    String approx_type =
+     (probDescDB.get_short("method.nond.emulator") == GAUSSIAN_PROCESS) ?
+      "global_gaussian" : "global_kriging";
     UShortArray approx_order; // not used by GP/kriging
     short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
     if (probDescDB.get_bool("method.derivative_usage")) {
@@ -140,7 +143,7 @@ void NonDBayesCalibration::quantify_uncertainty()
   switch (emulatorType) {
   case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION:
     stochExpIterator.run_iterator(Cout); break;
-  case GAUSSIAN_PROCESS:
+  case GAUSSIAN_PROCESS: case KRIGING:
     if (standardizedSpace) {
       initialize_random_variable_parameters();
       //initialize_final_statistics_gradients(); // not required

@@ -1070,7 +1070,9 @@ KEYWORD12 method
 	( bayes_calibration ALIAS nond_bayes_calibration
 	  ( queso
 	    [ emulator
-	      ( gaussian_process ALIAS gp
+	      ( gaussian_process ALIAS kriging
+		surfpack
+		| dakota
 		[ emulator_samples INTEGER ]
 		[ points_file STRING
 		  [ annotated
@@ -1106,6 +1108,7 @@ KEYWORD12 method
 	    ]
 	  [ proposal_covariance_scale REALLIST ]
 	  [ likelihood_scale REAL ]
+	  [ calibrate_sigma ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  )

@@ -47,7 +47,8 @@ NonDQUESOBayesCalibration::NonDQUESOBayesCalibration(Model& model):
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   randomSeed(probDescDB.get_int("method.random_seed")),
   proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
-  likelihoodScale(probDescDB.get_real("method.likelihood_scale"))
+  likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
+  calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma"))
 { }
 
 
@@ -67,9 +68,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   Cout << "Rejection type  "<< rejectionType << '\n';
   Cout << "Metropolis type " << metropolisType << '\n';
   Cout << "Num Samples " << numSamples << '\n';
+  Cout << "Calibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
-  calibrateSigmaFlag = true;
-
+  //calibrateSigmaFlag = true;
+ 
   ////////////////////////////////////////////////////////
   // Step 1 of 5: Instantiate the QUESO environment 
   ////////////////////////////////////////////////////////
@@ -101,7 +103,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms
-  if (num_sigma_read > 0)
+  if ((num_sigma_read > 0) && !(calibrateSigmaFlag))
     calibrateSigmaFlag = false;
 
   TabularIO::read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
@@ -192,7 +194,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   const RealVector& init_point = emulatorModel.continuous_variables();
   Cout << "Initial Points " << init_point << '\n';
 
-  if (emulatorType == GAUSSIAN_PROCESS || emulatorType == NO_EMULATOR) {
+  if (emulatorType == GAUSSIAN_PROCESS || emulatorType == KRIGING || emulatorType == NO_EMULATOR) {
     for (size_t i=0;i<numContinuousVars;i++) {
       paramMins[i]=lower_bounds[i];
       paramMaxs[i]=upper_bounds[i];
@@ -393,7 +395,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // searching and will stop if it is too small (e.g. if one input is 
   // of small magnitude, searching in the original space will not be viable).
   // 
-  if (NonDQUESOInstance->emulatorType == GAUSSIAN_PROCESS || NonDQUESOInstance->emulatorType == NO_EMULATOR) {
+  if (NonDQUESOInstance->emulatorType == GAUSSIAN_PROCESS || NonDQUESOInstance->emulatorType == KRIGING
+      || NonDQUESOInstance->emulatorType == NO_EMULATOR) {
     //const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
     //const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
     //Cout << "Queso X" << x << '\n';
