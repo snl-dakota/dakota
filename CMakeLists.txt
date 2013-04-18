@@ -2,13 +2,9 @@ cmake_minimum_required(VERSION 2.8.4)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share/utils
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share/package_arch
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share/config_tests
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/semsCMake
   ${CMAKE_MODULE_PATH}
-)
+  )
 
 # Check for compilers after initializing MPI
 project("Dakota" NONE)
