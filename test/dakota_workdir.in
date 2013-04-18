@@ -35,10 +35,10 @@ interface
 #    analysis_driver = 'dakota_workdir.sh tag'			#1
 #    analysis_driver = 'dakota_workdir.sh tag_save' 		#2
 #    analysis_driver = 'dakota_workdir.sh templatefiles' 	#3
-#    analysis_driver = 'dakota_workdir.sh templatedir' 		#OMIT 4
+#    analysis_driver = 'dakota_workdir.sh templatedir' 		#4
 #    analysis_driver = 'dakota_workdir.sh templatefiles_copy' 	#5
 #    analysis_driver = 'dakota_workdir.sh templatedir_copy' 	#6
-#    analysis_driver = 'templatedir_rosenbrock.sh' 		#OMIT 7
+#    analysis_driver = 'templatedir_rosenbrock.sh' 		#7
 #    analysis_driver = 'dakota_workdir.sh named_params' 	#8
 #    analysis_driver = 'dakota_workdir.sh saved_params' 	#9
 
