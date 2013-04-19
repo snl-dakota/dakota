@@ -156,6 +156,14 @@ void AnalysisCode::define_filenames(const int id)
       // mkstemp, since multiple applications could potentially generate the
       // same temp filename prior to creating the file.
       paramsFileName = std::tmpnam(NULL);
+
+#ifdef _MSC_VER
+      // Add the temporary directory in front. Windows always puts a backslash
+      // in front of the filename, which would place the file in the current
+      // working directory.
+      paramsFileName = (boost::filesystem::temp_directory_path()
+                        /= paramsFileName.substr(1)).string();
+#endif
 //#endif
     }
     else {
@@ -180,6 +188,14 @@ void AnalysisCode::define_filenames(const int id)
       // mkstemp, since multiple applications could potentially generate the
       // same temp filename prior to creating the file.
       resultsFileName = std::tmpnam(NULL);
+
+#ifdef _MSC_VER
+      // Add the temporary directory in front. Windows always puts a backslash
+      // in front of the filename, which would place the file in the current
+      // working directory.
+      resultsFileName = (boost::filesystem::temp_directory_path()
+                         /= resultsFileName.substr(1)).string();
+#endif
 //#endif
     }
     else {
@@ -189,9 +205,17 @@ void AnalysisCode::define_filenames(const int id)
     }
     if (useWorkdir) {
 	if (!workDir.length()) {
-		workDir = std::tmpnam(NULL);
-		dirDel = true;
-		dirSave = false;
+          workDir = std::tmpnam(NULL);
+
+#ifdef _MSC_VER
+          // Add the temporary directory in front. Windows always puts a backslash
+          // in front of the filename, which would place the file in the current
+          // working directory.
+          workDir = (boost::filesystem::temp_directory_path()
+                     /= workDir.substr(1)).string();
+#endif
+          dirDel = true;
+          dirSave = false;
 	}
 
 	std::string wd = workDir;
