@@ -157,11 +157,11 @@ void AnalysisCode::define_filenames(const int id)
       // same temp filename prior to creating the file.
       paramsFileName = std::tmpnam(NULL);
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !(BOOST_FILESYSTEM_VERSION < 3)
       // Add the temporary directory in front. Windows always puts a backslash
       // in front of the filename, which would place the file in the current
       // working directory.
-      paramsFileName = (boost::filesystem::temp_directory_path()
+      paramsFileName = (bfs::temp_directory_path()
                         /= paramsFileName.substr(1)).string();
 #endif
 //#endif
@@ -189,11 +189,11 @@ void AnalysisCode::define_filenames(const int id)
       // same temp filename prior to creating the file.
       resultsFileName = std::tmpnam(NULL);
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !(BOOST_FILESYSTEM_VERSION < 3)
       // Add the temporary directory in front. Windows always puts a backslash
       // in front of the filename, which would place the file in the current
       // working directory.
-      resultsFileName = (boost::filesystem::temp_directory_path()
+      resultsFileName = (bfs::temp_directory_path()
                          /= resultsFileName.substr(1)).string();
 #endif
 //#endif
@@ -207,12 +207,11 @@ void AnalysisCode::define_filenames(const int id)
 	if (!workDir.length()) {
           workDir = std::tmpnam(NULL);
 
-#ifdef _MSC_VER
-          // Add the temporary directory in front. Windows always puts a backslash
+#if defined(_MSC_VER) && !(BOOST_FILESYSTEM_VERSION < 3)
+          // Add the temp directory in front. Windows always puts a backslash
           // in front of the filename, which would place the file in the current
           // working directory.
-          workDir = (boost::filesystem::temp_directory_path()
-                     /= workDir.substr(1)).string();
+          workDir = (bfs::temp_directory_path() /= workDir.substr(1)).string();
 #endif
           dirDel = true;
           dirSave = false;
