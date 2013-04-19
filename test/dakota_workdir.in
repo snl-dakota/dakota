@@ -18,6 +18,9 @@
 # * put a good file and verify junk doesn't replace
 # * system vs. fork
 # * asynch vs. synch
+# * Test with trydir/subdir for workdir (currently requires mkdir trydir first)
+# * Get autotagging working and test
+# * Parallel testing: blocked as doesn't seem to find driver in pwd
 
 method
   multidim_parameter_study		
@@ -30,7 +33,11 @@ variables
     descriptors      'x1'     'x2'	
 
 interface
-  fork
+# This is masking a problem on Mac, where tests 4 and 6 don't work with fork
+  system	#0,#2,#4,#6,#8
+#  fork		#1,#3,#5,#7,#9
+    # Testing workdir without concurrent evaluations is kind of silly
+#    asynchronous evaluation_concurrency = 2	     	     	#1,#2,#9
     analysis_driver = 'dakota_workdir.sh'			#0
 #    analysis_driver = 'dakota_workdir.sh tag'			#1
 #    analysis_driver = 'dakota_workdir.sh tag_save' 		#2

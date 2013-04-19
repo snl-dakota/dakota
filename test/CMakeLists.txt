@@ -209,9 +209,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     # TODO
   endif()
 
-  # dakota_workdir tests 4 and 6 don't work on Darwin: needs work
   # No dakota_workdir tests work on Windows for now
-  if (APPLE OR WIN32)
+  if (WIN32)
     list(REMOVE_ITEM dakota_test_input_files dakota_workdir.in)
   endif()
 
