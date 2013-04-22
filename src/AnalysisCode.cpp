@@ -87,29 +87,6 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
 }
 
 
-// WJB: C++ code; WHY use a C interface? (consider Boost.Filesystem instead)
-/// return name of s, stripped of any leading path information
-static const char*
-basename(const char *s)
-{
-	const char *b = s;
-
-#ifdef _WIN32
-	if (s[0] && s[1] == ':')
-		b = s += 2;
-#endif
-	while(*s)
-		switch(*s++) {
-		  case '/':
-#ifdef _WIN32
-		  case '\\':
-#endif
-			b = s;
-		  }
-	return b;
-	}
-
-
 void AnalysisCode::define_filenames(const int id)
 {
   // Define modified file names by handling Unix temp file and tagging options.
@@ -288,8 +265,17 @@ void AnalysisCode::define_filenames(const int id)
 	}
 
 	curWorkdir = wd;
-	paramsFileName  = wd + std::string(1,DAK_SLASH) + basename(paramsFileName.c_str());
-	resultsFileName = wd + std::string(1,DAK_SLASH) + basename(resultsFileName.c_str());
+
+	boost::filesystem::path wd_path(wd);
+	boost::filesystem::path pfile_path(paramsFileName);
+	paramsFileName  = (wd_path / pfile_path.filename()).file_string();
+	boost::filesystem::path rfile_path(resultsFileName);
+	resultsFileName  = (wd_path / rfile_path.filename()).file_string();
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "\nAdjusting parameters_file to " << paramsFileName 
+	       << " due to work_directory usage.\nAdjusting results_file to "
+	       << resultsFileName << " due to work_directory usage." 
+	       << std::endl;
     }
   }
 
