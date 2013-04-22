@@ -153,9 +153,7 @@ int PythonInterface::python_run(const String& ac_name)
     abort_handler(-1);
   }
 
-  char fn[function_name.size()+1];
-  strcpy(fn, function_name.c_str());
-  PyObject *pFunc = PyObject_GetAttrString(pModule, fn);
+  PyObject *pFunc = PyObject_GetAttrString(pModule, function_name.c_str());
   if (!pFunc || !PyCallable_Check(pFunc)) {
     Cerr << "Error (PythonInterface): Function '" << function_name  
 	 << "' not found or not callable" << std::endl;
