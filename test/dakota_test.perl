@@ -11,10 +11,12 @@ use File::Basename;
 use File::Path 'rmtree';
 use POSIX "sys_wait_h";
 use Cwd 'abs_path';
+use Config;
 
 # set default options (global to this script)
 my $baseline_filename = "";  # default is dakota_[p]base.test.new
 my $bin_dir = "";            # default binary location is pwd (none)
+my $bin_ext = "";            # default extension is empty
 my $extract_filename = "";   # default is dakota_*.in_
 my $input_dir = "";          # default test file source is pwd
 my $mode = "run";            # modes are run, base, extract
@@ -24,6 +26,11 @@ my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $using_qsub = 0;
 my $using_slurm = 0;
+
+# Use default extension .exe on Windows and Cygwin
+if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
+  $bin_ext = ".exe";
+}
 
 # exit code summarizing worst test condition found
 #   0 PASS
@@ -363,6 +370,7 @@ sub process_command_line {
   # Process long options
   GetOptions('base'           => \$opt_base,
   	     'bin-dir=s'      => \$bin_dir,
+	     'bin-ext=s'      => \$bin_ext,
   	     'extract'        => \$opt_extract,
   	     'file-base=s'    => \$baseline_filename,
   	     'file-extract=s' => \$extract_filename,
@@ -398,6 +406,11 @@ sub process_command_line {
         $baseline_filename = "dakota.base.test.new";
       }
     }
+  }
+
+  # executable extension must have leading dot
+  if ( length($bin_ext) > 0 && substr($bin_ext, 0, 1) ne ".") {
+    $bin_ext = ".${bin_ext}"
   }
 
   # directory options
@@ -652,7 +665,7 @@ sub form_test_command {
   my ($num_proc, $dakota_command, $restart_command, $dakota_input, 
       $output, $error) = @_;
 
-  my $fulldakota = "${bin_dir}${dakota_command} $restart_command $dakota_input";
+  my $fulldakota = "${bin_dir}${dakota_command}${bin_ext} $restart_command $dakota_input";
   my $redir = "> $output 2> $error";     
 
   # default serial command
@@ -1085,6 +1098,11 @@ options
 
 extract test specified by test_number (required) from specified single
 test to specified filename; cannot be specified with base options
+
+=item B<--bin-ext=extension> 
+
+specify the extension to append to any executable names (default .exe
+on Windows and Cygwin, empty on all other platforms)
 
 =item B<--bin-dir=filepath>
 
