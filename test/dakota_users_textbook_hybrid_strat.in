@@ -11,7 +11,7 @@ method
           final_solutions = 1
     seed = 1234
     population_size = 5
-    #verbose output
+    verbose output
 
 method
   id_method = 'PS'
@@ -22,7 +22,7 @@ method
     threshold_delta = 1.e-4
     solution_accuracy = 1.e-10
     exploratory_moves basic_pattern
-    #verbose output
+    verbose output
 
 method
   id_method = 'PS2'
@@ -34,7 +34,7 @@ method
     threshold_delta = 1.e-4
     solution_accuracy = 1.e-10
     exploratory_moves basic_pattern
-    #verbose output
+    verbose output
 
 method
   id_method = 'NLP'
@@ -42,7 +42,7 @@ method
         optpp_newton
     gradient_tolerance = 1.e-12
     convergence_tolerance = 1.e-15
-    #verbose output
+    verbose output
 
 model
   id_model = 'M1'
