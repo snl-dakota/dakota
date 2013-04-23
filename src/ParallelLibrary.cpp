@@ -1470,22 +1470,39 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
     and terminate any additional services that may be active. */
 void ParallelLibrary::close_streams()
 {
-  ParallelLevel& pl = *currPCIter->siPLIter; // temp hack
+  // In the case of -help or -version, this code is reached before the
+  // Strategy is constructed, and therefore before any Model
+  // constructors call increment_parallel_configuration().  In this
+  // scenario, currPCIter->siPLIter points to parallelLevels.end() and
+  // can't be dereferenced:
+  //   ParallelLevel& pl = *currPCIter->siPLIter; // temp hack
+
+  // The code here does not have to worry about redirection in
+  // CommandLineHandler, as it resets when done, closing streams.
+
+  // Therefore only need to close streams if we have a valid
+  // parallelLevel and there is a file write occuring; test for end.
+
+  bool server_master_flag = false;  // assume we're not a server master
+  if (currPCIter->siPLIter != parallelLevels.end()) {
+    ParallelLevel& pl = *currPCIter->siPLIter; // temp hack
+    server_master_flag = pl.serverMasterFlag;
+  }
 
   // clean up data from manage_outputs:
   // close ofstreams and reassign pointers for Cout/Cerr so that any subsequent
   // output (e.g., timings in ParallelLibrary destructor) is handled properly.
-  if (stdOutputToFile && pl.serverMasterFlag) {
+  if (stdOutputToFile && server_master_flag) {
     output_ofstream.close();
     dakota_cout = &std::cout;
   }
-  if (stdErrorToFile && pl.serverMasterFlag) {
+  if (stdErrorToFile && server_master_flag) {
     error_ofstream.close();
     dakota_cerr = &std::cerr;
   }
 
   // clean up data from manage_restart
-  if (pl.serverMasterFlag) // && !deactivateRestartFlag)
+  if (server_master_flag) // && !deactivateRestartFlag)
     write_restart.close();
 
   // terminate any additional services that may be active

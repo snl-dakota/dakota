@@ -853,6 +853,8 @@ inline void ParallelLibrary::increment_parallel_configuration()
   // Approach 2 is more bullet proof, but also less flexible:
   ParLevLIter pl_iter = parallelLevels.begin();
   pc.wPLIter  =   pl_iter;
+  // In the first call from the ParallelLibrary ctor, this sets the siPLIter
+  // to parallelLevels.end() as there's only one ParallelLevel in the list:
   pc.siPLIter = ++pl_iter;
   pc.iePLIter = pc.eaPLIter = parallelLevels.end();
 
