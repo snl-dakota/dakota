@@ -7,8 +7,7 @@
 set( CTEST_BUILD_NAME "dakota_win_msvc_ifort" )
 
 set( DAKOTA_CMAKE_PLATFORM "msvc_ifort_ia32.cmake")
-# WJB: still debugging, so temporarily disable DakotaDistro settings
-#set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
+set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
 
 set( CTEST_DASHBOARD_ROOT 
      $ENV{WORKSPACE} )
