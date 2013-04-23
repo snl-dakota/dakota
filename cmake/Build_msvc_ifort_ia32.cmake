@@ -7,7 +7,8 @@
 set( CTEST_BUILD_NAME "dakota_win_msvc_ifort" )
 
 set( DAKOTA_CMAKE_PLATFORM "msvc_ifort_ia32.cmake")
-set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
+# WJB: still debugging, so temporarily disable DakotaDistro settings
+#set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
 
 set( CTEST_DASHBOARD_ROOT 
      $ENV{WORKSPACE} )
@@ -17,7 +18,7 @@ set( CTEST_SOURCE_DIRECTORY
 set( CTEST_CMAKE_GENERATOR "NMake Makefiles" )
 
 set( DAKOTA_CTEST_PROJECT_TAG "Continuous" )
-set( CTEST_BUILD_CONFIGURATION Release )
+set( CTEST_BUILD_CONFIGURATION Debug )
 
 set( DAKOTA_CTEST_REGEXP "dakota_*" )
 set( DAKOTA_DEBUG ON )
