@@ -268,9 +268,17 @@ void AnalysisCode::define_filenames(const int id)
 
 	boost::filesystem::path wd_path(wd);
 	boost::filesystem::path pfile_path(paramsFileName);
-	paramsFileName  = (wd_path / pfile_path.filename()).file_string();
 	boost::filesystem::path rfile_path(resultsFileName);
+	// want the platform-dependent (native) string format here...
+#if BOOST_FILESYSTEM_VERSION < 3
+	paramsFileName  = (wd_path / pfile_path.filename()).file_string();
 	resultsFileName  = (wd_path / rfile_path.filename()).file_string();
+#else
+	// consider native_string? Table in BFS V3 doc is confusing or wrong.
+	paramsFileName  = (wd_path / pfile_path.filename()).string();
+	resultsFileName  = (wd_path / rfile_path.filename()).string();
+#endif
+
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "\nAdjusting parameters_file to " << paramsFileName 
 	       << " due to work_directory usage.\nAdjusting results_file to "
