@@ -49,7 +49,7 @@ variables,
 	  descriptors   'x7' 'x8'
 
 interface,
-	fork
+	direct
 	  analysis_driver = 'text_book'
 
 responses,
