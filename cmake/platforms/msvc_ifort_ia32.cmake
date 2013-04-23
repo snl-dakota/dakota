@@ -22,6 +22,10 @@ set( LAPACK_DIR "C:/Dashboards/Support/lapack-3.3.1"
 
 ############################################################################
 
+# WJB - ToDo:  come up with a better way ("custom" flags are undesirable)
+set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE"
+     CACHE STRING "Linker FORCE flag needed on Aday" FORCE )
+
 # DO NOT use shared libraries on Windows (yet)
 set(BUILD_STATIC_LIBS ON  CACHE BOOL "Build static libs")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "DO NOT Build shared libs!")
