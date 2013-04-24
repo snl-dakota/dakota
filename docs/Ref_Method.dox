@@ -6914,10 +6914,13 @@ However, in the case of fast running evaluations, we recommend the use of
 no emulator.  An emulator may be specified with the keyword \c emulator, 
 followed by a \c gaussian_process emulator, a \c pce emulator (polynomial chaos
 expansion), or a \c sc emulator (stochastic collocation).  For the 
-\c gaussian_process emulator, the user can define the number of samples 
+\c gaussian_process emulator, the user must specify whether to use the 
+\c surfpack or \c dakota version of the Gaussian process. 
+The user can define the number of samples 
 \c emulator_samples from which the emulator should be built.  It is also 
 possible to build the Gaussian process from points read in from the 
 \c points_file.  For \c pce or \c sc, the user can define a \c sparse_grid_level. 
+
 In terms of the MCMC sampling, one can specify the following for the QUESO method: 
 With the \c metropolis type, we have the options \c hastings for a standard 
 Metropolis-Hastings algorithm, or \c adaptive for the adaptive Metropolis 
@@ -6932,7 +6935,18 @@ involves multiplying many likelihoods together and becomes very small).
 The second factor is a \c proposal_covariance_scale which scales the proposal 
 covariance.  This may be useful when the input variables being calibrated 
 are of different magnitudes:  one may want to take a larger step in a direction 
-with a larger magnitude, for example.  
+with a larger magnitude, for example.  Finally, we offer the option 
+to calibrate the sigma terms with the \c calibrate_sigma flag. 
+The sigma terms refer to the error associated 
+with the Gaussian process:  sigma is used in the likelihood calculation. 
+If experimental measurement error is available to inform sigma, that is 
+very useful, but often measurement uncertainty is not available.  Note that 
+if \c calibrate_sigma is specified, a separate sigma term will be calibrated 
+for each calibration term.  Thus, if there are 50 calibration terms (e.g. 
+experimental points against which we are trying to match the model), 
+50 sigma values will be added to the calibration process.  Calibration 
+of the sigma values is turned off by default:  only the design parameters are 
+calibrated in default mode.    
 
 For the GPMSA method, one can define the number of samples which will be used 
 in construction of the emulator, \c emulator_samples.  The emulator 
@@ -6973,7 +6987,7 @@ Specification detail for the Bayesian calibration methods
 <td>N/A
 <tr>
 <td>Emulator type
-<td>\c emulator  \c gaussian_process | \c pce | \c sc
+<td>\c emulator  \c gaussian_process (\c surfpack | \c dakota) | \c pce | \c sc
 <td>\c emulator_samples (for gaussian process), \c sparse_grid_level (for pce or sc)
 <td>Optional
 <td>N/A
@@ -7019,6 +7033,12 @@ Specification detail for the Bayesian calibration methods
 <td>list of reals
 <td>Optional
 <td>none
+<tr>
+<td>Calibrate sigma flag
+<td>\c calibrate_sigma
+<td>none
+<td>Optional
+<td>The sigma terms are not calibrated
 </table>
 
 
