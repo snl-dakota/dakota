@@ -131,7 +131,9 @@ L_j = \prod_{\stackrel{\scriptstyle k=1}{k \ne j}}^m
 \frac{\xi - \xi_k}{\xi_j - \xi_k} \label{eq:lagrange_poly_1d}
 \end{equation}
 where it is evident that $L_j$ is 1 at $\xi = \xi_j$, is 0 for each of
-the points $\xi = \xi_k$, and has order $m - 1$.
+the points $\xi = \xi_k$, and has order $m - 1$.  To improve numerical
+efficiency and stability, a barycentric Lagrange formulation (second
+form)~\cite{BerTref04,Higham04} is used in practice.
 
 \subsubsection{Global gradient-enhanced} \label{uq:expansion:interp:Hermite}
 
@@ -474,7 +476,13 @@ desired interpolation properties where the $j^{th}$ multivariate
 interpolation polynomial assumes the value of 1 at the $j^{th}$ point
 and assumes the value of 0 at all other points, thereby reproducing
 the response values at each of the collocation points and smoothly
-interpolating between these values at other unsampled points.
+interpolating between these values at other unsampled points.  When
+the one-dimensional interpolation polynomials are defined using a
+barycentric formulation as described in
+Section~\ref{uq:expansion:interp:Lagrange}, additional efficiency in
+evaluating a tensor interpolant is achieved using the procedure
+in~\cite{Klimke05}, which amounts to a multi-dimensional extension to
+Horner's rule for tensor-product polynomial evaluation.
 
 Multivariate interpolation on Smolyak sparse grids involves a weighted
 sum of the tensor products in Eq.~\ref{eq:lagrange_tensor} with

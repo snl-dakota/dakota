@@ -6160,11 +6160,11 @@ collocation points, and when differentiated, also reproduces each
 component of the gradient at each of the collocation points.  Since
 this technique includes the derivative interpolation explicitly, it
 eliminates issues with matrix ill-conditioning that can occur in the
-gradient-enhanced PCE approach based on least squares regression.
-However, the calculation of high-order global polynomials with the
-desired interpolation properties can be similarly numerically
-challenging such that the use of local cubic splines is recommended 
-due to numerical stability.
+gradient-enhanced PCE approach based on regression.  However, the
+calculation of high-order global polynomials with the desired
+interpolation properties can be similarly numerically challenging such
+that the use of local cubic splines is recommended due to numerical
+stability.
 
 Thus, in PCE, one forms coefficients for known orthogonal polynomial
 basis functions, whereas SC forms multidimensional interpolation
