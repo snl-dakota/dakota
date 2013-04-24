@@ -1515,7 +1515,7 @@ void NonDLocalReliability::update_level_data()
   else {
     computedProbLevels[respFnCount][levelCount] = computed_prob_level =
       probability(computedRelLevel, cdfFlag, mostProbPointU, fnGradU, fnHessU);
-    computedGenRelLevels[respFnCount][levelCount] =
+    computedGenRelLevels[respFnCount][levelCount] = computedGenRelLevel =
       reliability(computed_prob_level);
   }
 
@@ -2221,8 +2221,16 @@ Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
     case BREITUNG:
       kterm = beta_corr; break;
     case HOHENRACK:
+      // Psi(beta) = phi(beta) / Phi(beta)
+      // dPsi/dbeta = (Phi dphi/dbeta - phi^2)/Phi^2
+      //   where dphi/dbeta = -beta phi
+      // dPsi/dbeta = -phi (beta Phi + phi) / Phi^2
+      //            = -Psi (beta + Psi)
+      // --> dPsi/dbeta(-beta_corr)
+      //       = -Psi(-beta_corr) (-beta_corr + Psi(-beta_corr) )
+      //       =  Psi(-beta_corr) ( beta_corr - Psi(-beta_corr) )
       kterm = Pecos::phi(-beta_corr) / Pecos::Phi(-beta_corr); // psi_m_beta
-      dpsi_m_beta_dbeta = kterm*(kterm - beta_corr); // orig (kterm + beta_corr)
+      dpsi_m_beta_dbeta = kterm*(beta_corr - kterm); // orig (kterm + beta_corr)
       break;
     }
 
