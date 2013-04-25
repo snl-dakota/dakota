@@ -10,6 +10,7 @@ use Pod::Usage;
 use File::Basename;
 use File::Path 'rmtree';
 use POSIX "sys_wait_h";
+use POSIX "uname";
 use Cwd 'abs_path';
 use Config;
 
@@ -302,13 +303,14 @@ foreach my $file (@test_inputs) {
 	my $diff_path = abs_path($0);
 	$diff_path = dirname($diff_path);
     # diff the test output against the base output and save to a file
+    my $perlexe = $Config{perlpath};
     if ($parallelism eq "parallel") {
-      system("$diff_path/dakota_diff.perl $base_filename $input_dir" . 
+      system("${perlexe} $diff_path/dakota_diff.perl $base_filename $input_dir" . 
 	     "dakota_pbase.test $test >> $output_dir" . 
 	     "dakota_pdiffs.out");
     }
     else {
-      system("$diff_path/dakota_diff.perl $base_filename $input_dir" . 
+      system("${perlexe} $diff_path/dakota_diff.perl $base_filename $input_dir" . 
 	     "dakota_base.test $test >> $output_dir" .
 	     "dakota_diffs.out");
     }
@@ -355,12 +357,12 @@ sub process_command_line {
 
   # Was Cmake used to substitute the source directory name? Can't just use
   # the literal as it will be replaced.  Allow user override by long opt.
-  my $cmake_source_dir = "\@CMAKE_CURRENT_SOURCE_DIR@";
-  if ($cmake_source_dir !~ /^\@/ && 
+  my $cmake_source_dir = "@CMAKE_CURRENT_SOURCE_DIR@";
+  if ($cmake_source_dir !~ /^@/ && 
       $cmake_source_dir !~ /CMAKE_CURRENT_SOURCE_DIR@$/) {
     $input_dir = ${cmake_source_dir};
   } 
-  
+
   my $opt_base = 0;
   my $opt_extract = 0;
   my $opt_help = 0;
@@ -489,17 +491,16 @@ sub manage_parallelism {
   
   # Create a machines file for platforms where this is needed.
   # (always on AIX; if parallel on others)
-  my $uname = `uname`;
-  if ( $uname =~ /AIX/ ||
+  my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
+  if ( $sysname =~ /AIX/ ||
        ( $parallelism eq "parallel" &&
-         ($uname =~ /Darwin/ || $uname =~ /Linux/ || $uname =~ /SunOS/) ) ) {
-    my $nodename = `uname -n`;
+         ($sysname =~ /Darwin/ || $sysname =~ /Linux/ || $sysname =~ /SunOS/) ) ) {
     open (MACHINEFILE, ">machines") || die "cannot open machines\n$!";
     for (my $count = 0; $count < 10; $count++) {
       print MACHINEFILE "$nodename";
     }
     close (MACHINEFILE);
-    if ( $uname =~ /AIX/ ) {
+    if ( $sysname =~ /AIX/ ) {
       # Setting environment variables for POE (for serial and parallel runs).
       $ENV{MP_EUILIB} = "ip";
       $ENV{MP_INFOLEVEL} = "0";
@@ -672,16 +673,16 @@ sub form_test_command {
   my $test_command = "$fulldakota $redir";
  
   if ($parallelism eq "parallel") {
-    my $uname = `uname`;
+    my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
     # parallel test
     if ( $using_qsub == 1 || $using_slurm == 1 ) {
       $test_command = "mpiexec -np $num_proc $fulldakota $redir\n";
     }
-    elsif ($uname =~ /AIX/) {
+    elsif ($sysname =~ /AIX/) {
       # TODO: perform poekill after specified time
       $test_command = "poe $fulldakota -procs $num_proc $redir";
     }
-    elsif ($uname =~ /SunOS/) {
+    elsif ($sysname =~ /SunOS/) {
       $test_command = "mprun -np $num_proc $fulldakota $redir";
     }
     else { 
@@ -793,7 +794,9 @@ sub fork_dakota
       return $pid;
     }
     elsif (defined $pid) {
-      setpgrp(0,0); # This sets process group so I can kill this + children
+      if ( $Config{osname} !~ /MSWin/ ) {
+        setpgrp(0,0); # This sets process group so I can kill this + children
+      }
       exec "$test_command";
       exit 0; # this is for when exec fails
     }
