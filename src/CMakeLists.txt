@@ -877,6 +877,8 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
   elseif (UNIX)
 #    include(InstallRequiredSystemLibraries)
     install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake")
+  elseif (WIN32)
+    include(InstallWinDLLs)
   endif()
 endif()
   
