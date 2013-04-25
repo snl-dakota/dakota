@@ -497,7 +497,7 @@ sub manage_parallelism {
          ($sysname =~ /Darwin/ || $sysname =~ /Linux/ || $sysname =~ /SunOS/) ) ) {
     open (MACHINEFILE, ">machines") || die "cannot open machines\n$!";
     for (my $count = 0; $count < 10; $count++) {
-      print MACHINEFILE "$nodename";
+      print MACHINEFILE "$nodename\n";
     }
     close (MACHINEFILE);
     if ( $sysname =~ /AIX/ ) {
