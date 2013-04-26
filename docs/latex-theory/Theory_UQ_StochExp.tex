@@ -134,27 +134,42 @@ where it is evident that $L_j$ is 1 at $\xi = \xi_j$, is 0 for each of
 the points $\xi = \xi_k$, and has order $m - 1$.  
 
 To improve numerical efficiency and stability, a barycentric Lagrange
-formulation~\cite{BerTref04,Higham04} is used.  Defining
+formulation~\cite{BerTref04,Higham04} is used.  We define
 the barycentric weights $w_j$ as
 \begin{equation}
 w_j = \prod_{\stackrel{\scriptstyle k=1}{k \ne j}}^m 
 \frac{1}{\xi_j - \xi_k} \label{eq:barycentric_weights}
 \end{equation}
-and defining the quantity $l(x)$ as 
+and we precompute them for a given interpolation point set 
+$\xi_j, j \in 1, ..., m$.  Then, defining the quantity $l(\xi)$ as
 \begin{equation}
 l(\xi) = \prod_{k=1}^m (\xi - \xi_k) \label{eq:barycentric_prod}
 \end{equation}
-we can pull out the common term and rewrite Eq.~\ref{eq:lagrange_interp_1d} as
+which will be computed for each new interpolated point $\xi$, we can rewrite
+Eq.~\ref{eq:lagrange_interp_1d} as
 \begin{equation}
-R(\xi) = l(\xi) \sum_{j=1}^m \frac{w_j}{x-x_j} r(\xi_j) \label{eq:barycentric_lagrange1_1d}
+R(\xi) = l(\xi) \sum_{j=1}^m \frac{w_j}{x-x_j} r(\xi_j) 
+\label{eq:barycentric_lagrange1_1d}
 \end{equation}
-which is the first form of barycentric interpolation.  Utilizing an
-identity for the interpolation of unity to eliminate $l(x)$, we arrive
-at the second form of the barycentric interpolation formula as
+where the bulk of the computational work now resides outside the
+summation.  Eq.~\ref{eq:barycentric_lagrange1_1d} is the first form of
+barycentric interpolation.  By utilizing an identity from the
+interpolation of unity (for which each $r(\xi_j) = 1$) to eliminate
+$l(x)$, we arrive at the second form of the barycentric interpolation
+formula:
 \begin{equation}
-R(\xi) = \frac{\sum_{j=1}^m \frac{w_j}{x-x_j} r(\xi_j)}{\sum_{j=1}^m \frac{w_j}{x-x_j}}
+R(\xi) = 
+\frac{\sum_{j=1}^m \frac{w_j}{x-x_j} r(\xi_j)}{\sum_{j=1}^m \frac{w_j}{x-x_j}}
 \label{eq:barycentric_lagrange2_1d}
 \end{equation}
+For both formulations, we reduce the computational effort for
+evaluating the interpolant from $O(m^2)$ to $O(m)$ operations per
+interpolated point, with the penalty of requiring additional care
+to avoid division by zero when $\xi$ matches one of the $\xi_j$.
+Barycentric formulations can also be used for hierarchical
+interpolation (Section~\ref{uq:expansion:interp:hierarch}) with
+Lagrange interpolation polynomials, but they are not applicable to
+local spline or gradient-enhanced Hermite interpolants.
 
 
 \subsubsection{Global gradient-enhanced} \label{uq:expansion:interp:Hermite}
@@ -501,7 +516,8 @@ the response values at each of the collocation points and smoothly
 interpolating between these values at other unsampled points.  When
 the one-dimensional interpolation polynomials are defined using a
 barycentric formulation as described in
-Section~\ref{uq:expansion:interp:Lagrange}, additional efficiency in
+Section~\ref{uq:expansion:interp:Lagrange} (i.e., 
+Eq.~\ref{eq:barycentric_lagrange2_1d}), additional efficiency in
 evaluating a tensor interpolant is achieved using the procedure
 in~\cite{Klimke05}, which amounts to a multi-dimensional extension to
 Horner's rule for tensor-product polynomial evaluation.
