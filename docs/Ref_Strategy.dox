@@ -191,6 +191,15 @@ specified, most %Dakota output will default to a precision of 10,
 though filesystem interfaces and pre-run output use higher precision
 for accuracy and better results reproducibility.
 
+Experimental capability: Final results from a %Dakota study can be
+output to dakota_results.txt by specifying \c results_output
+(optionally specifying an alternate file name with \c
+results_output_filename).  The current experimental text file format
+is hierarchical and a precursor to planned output to structured text
+formats such as XML or YAML and binary formats such as HDF5.  The
+contents, organization, and format of results files are all under
+active development and are subject to change.
+
 The \c iterator_servers, \c iterator_self_scheduling,
 and \c iterator_static_scheduling specifications provide manual
 overrides for the number of concurrent iterator partitions and the
