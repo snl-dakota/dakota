@@ -92,7 +92,7 @@ or zip).
  * See Section III below to test binary installion.
 
 --------------------------------------------------------------------
-I. Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX
+I. Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX)
 --------------------------------------------------------------------
 
 1. Extract archive file into suitable install location, e.g. /home/username.
@@ -187,13 +187,13 @@ II.  Install Windows Executable
    b. At the command prompt, type the following command, replacing $INSTALL_DIR
       with the path to your Dakota installation:
 
-      C:\Users\name> path=%path%;$INSTALL_DIR\bin;$INSTALL_DIR\test
+      C:\Users\name> path=%path%;$INSTALL_DIR\bin;$INSTALL_DIR\test;$INSTALL_DIR\lib
 
 --------------------------------------------------------------------
 III. Test Binary Distribution installation.
 --------------------------------------------------------------------
-1. At a terminal prompt (on Windows, cmd.exe), type 'dakota -v'. You should see
-   Dakota version information displayed.
+1. At a terminal prompt (on Windows, dakota.exe), type 'dakota -v'. You should
+   see Dakota version information displayed.
 
    > dakota -v
    Running serial executable in serial mode.
@@ -202,6 +202,15 @@ III. Test Binary Distribution installation.
    DAKOTA execution time in seconds;
    Total CPU = ...
    Total wall clock = ...
+
+   If you do not get the expected version information, you may use the
+   following Dakota wrapper script for your platform. This wrapper script sets
+   expected environment variables and can be used instead of the executable
+   name. To test the Dakota installation use the following command:
+
+	Windows Command Terminal: dakota.bat -v
+	Linux:			  dakota.sh -v
+	Mac OS X:		  dakota.sh -v
 
 2. Refer to the "Tutorial" section of the User's Manual for instructions
    on using the dakota executables or see the Quick Start page on the Dakota
@@ -263,12 +272,12 @@ particular platform or shell.
    refers to the Dakota installation path you specified for the variable
    CMAKE_INSTALL_PREFIX in your BuildCustom.cmake file.
 
-   $ export PATH=$DAK_INSTALL/bin:$PATH
-   $ export LD_LIBRARY_PATH=$DAK_INSTALL/lib:$LD_LIBRARY_PATH
+   $ export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/test:$PATH
+   $ export LD_LIBRARY_PATH=$DAK_INSTALL/lib:$DAK_INSTALL/bin:$LD_LIBRARY_PATH
 
    NOTE: For Mac OS X, you need to set DYLD_LIBRARY_PATH instead.
 
-   $ export DYLD_LIBRARY_PATH=$DAK_INSTALL/lib:$DYLD_LIBRARY_PATH
+   $ export DYLD_LIBRARY_PATH=$DAK_INSTALL/lib:$DAK_INSTALL/bin:$DYLD_LIBRARY_PATH
 
 Miscellaneous Notes:
  * 'make [-j#]': Dakota supports concurrent build processes
