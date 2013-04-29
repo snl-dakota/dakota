@@ -207,7 +207,7 @@ static GuiKeyWord
 		{"rnum2",8,0,1,1,1091}
 		},
 	kw_35[11] = {
-		{"calibrate_sigma",8,0,8,0,1097},
+		{"calibrate_sigma",8,0,8,0,1097,0,0.,0.,0.,0,"{Calibrate sigma flag} MethodCommands.html#MethodNonDBayesCalib"},
 		{"gpmsa",8,1,1,1,1069,kw_25},
 		{"likelihood_scale",10,0,7,0,1095,0,0.,0.,0.,0,"{Likelihood scale factor} MethodCommands.html#MethodNonDBayesCalib"},
 		{"metropolis",8,2,3,0,1079,kw_26,0.,0.,0.,0,"{Metropolis type for the MCMC algorithm } MethodCommands.html#MethodNonDBayesCalib"},

@@ -1027,6 +1027,8 @@ TAG "method/bayes_calibration/likelihood_scale"
 	DESC "{Likelihood scale factor} MethodCommands.html#MethodNonDBayesCalib"
 
 TAG "method/bayes_calibration/calibrate_sigma"
+	DESC "{Calibrate sigma flag} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/dace" GROUP "[CHOOSE method category]DACE"
 TAG "method/dace/grid"
 TAG "method/dace/random"
