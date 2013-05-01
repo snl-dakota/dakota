@@ -517,7 +517,7 @@ void Optimizer::post_run(std::ostream& s)
     // transform primary responses back to user space via lookup for
     // local obj recast or simply via scaling transform
     
-    // retreive the user space primary functions via lookup and
+    // retrieve the user space primary functions via lookup and
     // unscale constraints if needed
     if (localObjectiveRecast) {
       local_objective_recast_retrieve(best_vars, best_resp);
@@ -534,7 +534,7 @@ void Optimizer::post_run(std::ostream& s)
     // just unscale if needed
     else if (primaryRespScaleFlag || secondaryRespScaleFlag ||
 	     need_resp_trans_byvars(best_resp.active_set_request_vector(), 0,
-				    numUserPrimaryFns+numNonlinearConstraints)) {
+				    numUserPrimaryFns+numNonlinearConstraints)){
       Response tmp_response = best_resp.copy();
       if (primaryRespScaleFlag || 
 	  need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
