@@ -30,7 +30,14 @@ set(EXPORT_TARGETS dakota_src nidr)
 
 link_directories(${Teuchos_LIBRARY_DIRS})
 list(APPEND TPL_LIBS ${Teuchos_LIBRARIES})
-list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
+# We don't want to export Teuchos libs unless we're building in our
+# tree.  However, when building under Trilinos, targets like pecos_src
+# and dakota_src need to see these libraries in the exports list at
+# this point as Trilinos hasn't exported them yet.
+if (BUILD_IN_TRILINOS OR 
+    Teuchos_DIR MATCHES "${Dakota_BINARY_DIR}/packages/teuchos")
+  list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
+endif()
 
 option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
 if(DAKOTA_PLUGIN)
