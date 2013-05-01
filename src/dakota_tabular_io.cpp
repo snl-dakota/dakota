@@ -51,8 +51,8 @@ void open_file(std::ofstream& data_file, const std::string& output_filename,
 //
 
 void write_header_tabular(std::ostream& tabular_ostream, 
-  const std::string& counter_label, const Variables& vars, 
-  const Response& response, bool active_only, bool response_labels)
+  const Variables& vars, const Response& response,
+  const std::string& counter_label, bool active_only, bool response_labels)
 {
   tabular_ostream << '%' << counter_label << ' '; // matlab comment syntax
   if (active_only) {
@@ -76,19 +76,18 @@ void write_header_tabular(std::ostream& tabular_ostream,
 
 
 void write_data_tabular(std::ostream& tabular_ostream, 
-  size_t counter, const Variables& vars, 
-  const Response& response, bool active_only, bool annotated,
-  bool write_responses)
+  const Variables& vars, const Response& response, size_t counter, 
+  bool active_only, bool write_responses)
 {
   if (active_only) {
-    if (annotated)
+    if (counter != _NPOS)
       tabular_ostream << std::setw(8) << counter << ' ';
     Dakota::write_data_tabular(tabular_ostream, vars.continuous_variables());
     Dakota::write_data_tabular(tabular_ostream, vars.discrete_int_variables());
     Dakota::write_data_tabular(tabular_ostream, vars.discrete_real_variables());
   }
   else {
-    if (annotated)
+    if (counter != _NPOS)
       tabular_ostream << std::setw(8) << counter << ' ';
     vars.write_tabular(tabular_ostream);
   }

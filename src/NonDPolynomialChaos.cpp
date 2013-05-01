@@ -50,8 +50,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // Data import settings
   // --------------------
   String pt_reuse = probDescDB.get_string("method.nond.point_reuse"),
-    pt_reuse_file = probDescDB.get_string("method.point_reuse_file");
-  if (!pt_reuse_file.empty() && pt_reuse.empty())
+    import_pts_file = probDescDB.get_string("method.import_points_file");
+  if (!import_pts_file.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
 
   // -------------------
@@ -61,7 +61,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // For data import, global bounds needed for DataFitSurrModel::inside()
   bool global_bnds
     = ( numContDesVars || numContEpistUncVars || numContStateVars ||
-	( !pt_reuse_file.empty() && pt_reuse == "region" ) );
+	( !import_pts_file.empty() && pt_reuse == "region" ) );
   transform_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
@@ -77,7 +77,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     exp_order.resize(numContinuousVars);
     exp_order.assign(numContinuousVars, order);
   }
-  bool annotated_file = false;
+  bool import_annotated = false;
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_seq_spec
       = probDescDB.get_usa("method.nond.quadrature_order");
@@ -125,8 +125,9 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	    probDescDB.get_string("method.random_number_generator"),
 	    vary_pattern, ACTIVE);
 
-	if (!pt_reuse_file.empty())
-	  annotated_file = probDescDB.get_bool("method.point_file_annotated");
+	if (!import_pts_file.empty())
+	  import_annotated
+	    = probDescDB.get_bool("method.import_points_file_annotated");
       }
       else { // regression
 	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
@@ -186,7 +187,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 			       probDescDB.get_int("method.random_seed"),
 			       quad_order_seq, dim_pref);
 	  // don't allow data import (currently permissible in input spec)
-	  pt_reuse.clear(); pt_reuse_file.clear();
+	  pt_reuse.clear(); import_pts_file.clear();
 	}
 	else { // "point collocation": unstructured grid with LHS samples
 	  // if reusing samples within a refinement strategy, ensure different
@@ -205,8 +206,9 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	      probDescDB.get_string("method.random_number_generator"),
 	      vary_pattern, ACTIVE);
 
-	  if (!pt_reuse_file.empty())
-	    annotated_file = probDescDB.get_bool("method.point_file_annotated");
+	  if (!import_pts_file.empty())
+	    import_annotated
+	      = probDescDB.get_bool("method.import_points_file_annotated");
 	}
 	// TO DO:
 	//if (probDescDB.get_string("method.nond.expansion_sample_type")
@@ -236,7 +238,9 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
     approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
-    pt_reuse, pt_reuse_file, annotated_file), false);
+    pt_reuse, probDescDB.get_string("method.export_points_file"),
+    probDescDB.get_bool("method.export_points_file_annotated"),
+    import_pts_file, import_annotated), false);
   initialize_u_space_model();
 
   // -------------------------------------

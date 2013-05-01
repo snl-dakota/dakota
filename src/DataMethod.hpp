@@ -791,12 +791,16 @@ public:
   /// rate of mesh refinement in Richardson extrapolation
   Real refinementRate;
  
-  // File read for GP surrogates
+  // File read for surrogates
 
-  /// whether the point reuse file is annotated (default true)
-  bool approxPointFileAnnotated;
-  /// the file name for the points file in methods such as GP based surrogates
-  String approxPointReuseFile;
+  /// the file name for point import in surrogate-based methods
+  String approxImportFile;
+  /// whether the point import file is annotated (default true)
+  bool approxImportAnnotated;
+  /// the file name for point export in surrogate-based methods
+  String approxExportFile;
+  /// whether the point export file is annotated (default true)
+  bool approxExportAnnotated;
 
 private:
 

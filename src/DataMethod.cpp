@@ -132,8 +132,8 @@ DataMethodRep::DataMethodRep():
   // Verification
   refinementRate(2.),
   referenceCount(1),
-  // Point reuse file
-  approxPointFileAnnotated(true)
+  // Point import/export files
+  approxImportAnnotated(true), approxExportAnnotated(true)
 { }
 
 
@@ -238,8 +238,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // Verification
   s << refinementRate;
  
-  // Point file reuse
-  s << approxPointFileAnnotated << approxPointReuseFile;
+  // Point import/export files
+  s << approxImportFile << approxImportAnnotated
+    << approxExportFile << approxExportAnnotated;
 }
 
 
@@ -344,8 +345,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // Verification
   s >> refinementRate;
 
-  // Point file reuse
-  s >> approxPointFileAnnotated >>  approxPointReuseFile;
+  // Point import/export files
+  s >> approxImportFile >> approxImportAnnotated
+    >> approxExportFile >> approxExportAnnotated;
 }
 
 
@@ -450,8 +452,9 @@ void DataMethodRep::write(std::ostream& s) const
   // Verification
   s << refinementRate;
 
-  // Point file reuse
-  s << approxPointFileAnnotated << approxPointReuseFile;
+  // Point import/export files
+  s << approxImportFile << approxImportAnnotated
+    << approxExportFile << approxExportAnnotated;
 }
 
 

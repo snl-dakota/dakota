@@ -415,10 +415,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
               ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-	    [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-              [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+	    [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+              [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                freeform  {N_mdm(false,approxImportAnnotated)} ] 
               ] 
+	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                freeform  {N_mdm(false,approxExportAnnotated)} ]
+              ]
 	    )
 	  |
 	  ( ( ( ( ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}
@@ -470,9 +474,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
 		            [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
 		          )
-	        	  [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-                   	    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                     	      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+	        	  [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                   	    [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                     	      freeform  {N_mdm(false,approxImportAnnotated)} ] 
                    	    ]
 			)
 		    	| expansion_import_file STRING {N_mdm(str,expansionImportFile)}
@@ -485,14 +489,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    [ diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
 		      | full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
 		    ]
+		    [ sample_type {0}
+		      lhs {N_mdm(lit,sampleType_lhs)}
+		      | random {N_mdm(lit,sampleType_random)}
+		    ]
 		    [ sample_refinement {0}
 		      import {N_mdm(lit,integrationRefine_is)}
 		      | adapt_import {N_mdm(lit,integrationRefine_ais)}
 		      | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
 		    ]
-		    [ sample_type {0}
-		      lhs {N_mdm(lit,sampleType_lhs)}
-		      | random {N_mdm(lit,sampleType_random)}
+	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                	freeform  {N_mdm(false,approxExportAnnotated)} ]
 		    ]
 		    )
 		  |
@@ -536,15 +544,19 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    [ diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
 		      | full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
 		    ]
+		    [ sample_type {0}
+		      lhs {N_mdm(lit,sampleType_lhs)}
+		      | random {N_mdm(lit,sampleType_random)}
+		    ]
 	      	    [ sample_refinement {0}
 		      import {N_mdm(lit,integrationRefine_is)}
 		      | adapt_import {N_mdm(lit,integrationRefine_ais)}
 		      | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
 		    ]
-		    [ sample_type {0}
-		      lhs {N_mdm(lit,sampleType_lhs)}
-		      | random {N_mdm(lit,sampleType_random)}
-		      ]
+	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                	freeform  {N_mdm(false,approxExportAnnotated)} ]
+		    ]
 		    )
 		  |
 		  ( sampling ALIAS nond_sampling {N_mdm(lit,methodName_nond_sampling)}
@@ -585,10 +597,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      | adapt_import {N_mdm(lit,integrationRefine_ais)}
 		      | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
 		   ]
-	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
-                   ] 
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -604,10 +612,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               |
 	      ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(lit,methodName_nond_gpais)}
 	        [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
-	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+	        [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                   [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                     freeform  {N_mdm(false,approxImportAnnotated)} ] 
                    ] 
+	    	[ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	  [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                    freeform  {N_mdm(false,approxExportAnnotated)} ]
+              	  ]
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -633,10 +645,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                   | topology {N_mdm(lit,batchSelectionType_topology)} 
                   | constant_liar {N_mdm(lit,batchSelectionType_constant_liar)} ]
 	        [ batch_size INTEGER {N_mdm(int,batchSize)} ]
-		[ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+		[ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                   [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                     freeform  {N_mdm(false,approxImportAnnotated)} ] 
                    ] 
+	    	[ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	  [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                    freeform  {N_mdm(false,approxExportAnnotated)} ]
+              	  ]
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -663,13 +679,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	              surfpack {N_mdm(type,emulatorType_KRIGING)}
 	              | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
                       ]
-		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
+		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+	            [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                      [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                      	freeform  {N_mdm(false,approxImportAnnotated)} ] 
+                      ]
+	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                      	freeform  {N_mdm(false,approxExportAnnotated)} ]
+              	      ]
+		    )
 		    | ea {N_mdm(lit,nondOptAlgorithm_ea)}
 		    | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
-	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
-                   ]
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -704,37 +725,49 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	            surfpack {N_mdm(type,emulatorType_KRIGING)}
 	            | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
                     ]
-		  [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
+		  [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+	          [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                    [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                      freeform  {N_mdm(false,approxImportAnnotated)} ] 
+                    ]
+	    	  [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	    [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                      freeform  {N_mdm(false,approxExportAnnotated)} ]
+              	    ]
+		  )
 		  | ea {N_mdm(lit,nondOptAlgorithm_ea)}
 		  | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
-	          [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
-                    ]
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
 	      )
 	    |
             ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(lit,methodName_nond_bayes_calibration)}
-              ( (queso {N_mdm(lit,subMethodName_queso)}
-                [ emulator {0}
-	        ( gaussian_process ALIAS kriging {0} 
+              ( ( queso {N_mdm(lit,subMethodName_queso)}
+                  [ emulator {0}
+	          ( gaussian_process ALIAS kriging {0} 
                     surfpack {N_mdm(type,emulatorType_KRIGING)}
                     | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)} 
-		  [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]  
-	          [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
-                    ]
-                ) |
-		( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
-		  [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) |
-		( sc {N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
-		  [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) ] )
-	        | ( gpmsa {N_mdm(lit,subMethodName_gpmsa)} 
-	            emulator_samples INTEGER {N_mdm(int,emulatorSamples)} )
-              )  
+		    [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]  
+	            [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                      [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                      	freeform  {N_mdm(false,approxImportAnnotated)} ] 
+                      ]
+	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                      	freeform  {N_mdm(false,approxExportAnnotated)} ]
+              	      ]
+                  ) |
+		  ( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
+		    [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) |
+		  ( sc {N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
+		    [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) ]
+		)
+	        |
+		( gpmsa {N_mdm(lit,subMethodName_gpmsa)} 
+	          emulator_samples INTEGER {N_mdm(int,emulatorSamples)}
+		)
+              )
               [ rejection {0}
 	        standard {N_mdm(lit,rejectionType_standard)}
 		| delayed {N_mdm(lit,rejectionType_delayed)} ]
@@ -874,9 +907,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	        | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
                 ]
               )
-	    [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-              [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+	    [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+              [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                freeform  {N_mdm(false,approxImportAnnotated)} ] 
+              ]
+	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                freeform  {N_mdm(false,approxExportAnnotated)} ]
               ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
@@ -1027,9 +1064,13 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      | region {N_mom(lit,approxPointReuse_region)}
 	      | none {N_mom(lit,approxPointReuse_none)}
 	      ]
-	    [ points_file ALIAS samples_file STRING {N_mom(str,approxPointReuseFile)} 
-              [ annotated {N_mom(true,approxPointFileAnnotated)} | 
-                freeform  {N_mom(false,approxPointFileAnnotated)} ]
+	    [ import_points_file ALIAS samples_file STRING {N_mom(str,approxImportFile)} 
+              [ annotated {N_mom(true,approxImportAnnotated)} | 
+                freeform  {N_mom(false,approxImportAnnotated)} ]
+              ]
+	    [ export_points_file STRING {N_mom(str,approxExportFile)} 
+              [ annotated {N_mom(true,approxExportAnnotated)} | 
+                freeform  {N_mom(false,approxExportAnnotated)} ]
               ]
 	    [ use_derivatives {N_mom(true,modelUseDerivsFlag)} ]
 	    [ correction {0}

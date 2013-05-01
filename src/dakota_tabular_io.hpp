@@ -10,6 +10,7 @@
 #define DAKOTA_TABULAR_IO_H
 
 #include "dakota_data_types.hpp"
+#include "dakota_global_defs.hpp"
 
 /** \file dakota_tabular_io.hpp
     \brief Utility functions for reading and writing tabular data files
@@ -85,8 +86,9 @@ void open_file(std::ofstream& data_file, const std::string& output_filename,
 /// output the header row (labels) for a tabular data file
 /// used by Analyzer and Graphics
 void write_header_tabular(std::ostream& tabular_ostream, 
-  const std::string& counter_label, const Variables& vars, 
-  const Response& response, bool active_only, bool response_labels);
+  const Variables& vars, const Response& response,
+  const std::string& counter_label, bool active_only = false,
+  bool response_labels = true);
 
 
 // TODO: counter doesn't make sense when not annotated!
@@ -98,9 +100,8 @@ void write_header_tabular(std::ostream& tabular_ostream,
 /// output a row of tabular data from variables and response object
 /// used by graphics to append to tabular file during iteration
 void write_data_tabular(std::ostream& tabular_ostream, 
-  size_t counter, const Variables& vars, 
-  const Response& response, bool active_only, bool annotated,
-  bool write_responses);
+  const Variables& vars, const Response& response, size_t counter = _NPOS,
+  bool active_only = false, bool write_responses = true);
 
 
 //

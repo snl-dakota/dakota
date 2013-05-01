@@ -36,7 +36,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
-  pointReuseFile(problem_db.get_string("model.surrogate.point_reuse_file"))
+  importPointsFile(problem_db.get_string("model.surrogate.import_points_file")),
+  exportPointsFile(problem_db.get_string("model.surrogate.export_points_file")),
+  exportAnnotated(
+    problem_db.get_bool("model.surrogate.export_points_file_annotated"))
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -47,7 +50,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     pointsManagement = (pointsTotal > 0) ? TOTAL_POINTS : RECOMMENDED_POINTS;
 
   if (pointReuse.empty()) // assign default
-    pointReuse = (pointReuseFile.empty()) ? "none" : "all";
+    pointReuse = (importPointsFile.empty()) ? "none" : "all";
 
   // DataFitSurrModel is allowed to set the db list nodes, so long as it 
   // restores the list nodes to their previous setting.  This removes the need
@@ -121,8 +124,16 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
       problem_db.get_short("model.surrogate.correction_order"));
 
-  bool annotated = problem_db.get_bool("model.surrogate.point_file_annotated");
-  import_points(annotated);
+  import_points(
+    problem_db.get_bool("model.surrogate.import_points_file_annotated"));
+
+  if (!exportPointsFile.empty()) {
+    TabularIO::open_file(exportFileStream, exportPointsFile,
+			 "DataFitSurrModel export");
+    if (exportAnnotated)
+      TabularIO::write_header_tabular(exportFileStream, currentVariables,
+				      currentResponse, "eval id");
+  }
 }
 
 
@@ -132,13 +143,15 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 const String& approx_type, const UShortArray& approx_order,
 		 short corr_type, short corr_order, short data_order,
 		 short output_level, const String& point_reuse,
-		 const String& point_reuse_file, bool point_file_annotated):
+		 const String& export_points_file, bool export_annotated,
+		 const String& import_points_file, bool import_annotated):
   SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),
 		 actual_model.current_response().active_set(), output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
-  pointReuseFile(point_reuse_file)
+  exportPointsFile(export_points_file), exportAnnotated(export_annotated),
+  importPointsFile(import_points_file)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -151,7 +164,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   surrogateType = approx_type;
 
   if (pointReuse.empty()) // assign default
-    pointReuse = (pointReuseFile.empty()) ? "none" : "all";
+    pointReuse = (importPointsFile.empty()) ? "none" : "all";
 
   // update constraint counts in userDefinedConstraints.
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
@@ -224,7 +237,15 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     }
   }
 
-  import_points(point_file_annotated);
+  import_points(import_annotated);
+
+  if (!exportPointsFile.empty()) {
+    TabularIO::open_file(exportFileStream, exportPointsFile,
+			 "DataFitSurrModel export");
+    if (exportAnnotated)
+      TabularIO::write_header_tabular(exportFileStream, currentVariables,
+				      currentResponse, "eval id");
+  }
 }
 
 
@@ -704,7 +725,7 @@ void DataFitSurrModel::build_global()
   // conversions and allow pass-by-reference.
 
   // **************************************************************************
-  // Check data_pairs and pointReuseFile for any existing evaluations to reuse
+  // Check data_pairs and importPointsFile for any existing evaluations to reuse
   // **************************************************************************
   size_t i, j, reuse_points = 0;
   if (pointReuse == "all" || pointReuse == "region") {
@@ -761,7 +782,7 @@ void DataFitSurrModel::build_global()
     // Reused file-read responses go backward, so insert them separately,
     // ordering variables and responses appropriately.  Negative eval IDs mean
     // DB lookups will appropriately fail on these which aren't in the cache.
-    if (!pointReuseFile.empty()) {
+    if (!importPointsFile.empty()) {
       // Test for any recasting or nesting within actualModel: we assume that
       // user data import is post-nesting, but pre-recast.
       // (1) data is imported at the user-space level but then must be applied
@@ -1054,6 +1075,13 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
       approxInterface.map(currentVariables, set, approx_response);        break;
     }
 
+    // export data (optional)
+    if (!exportPointsFile.empty()) {
+      size_t export_id = (exportAnnotated) ? surrModelEvalCntr : _NPOS;
+      TabularIO::write_data_tabular(exportFileStream, currentVariables,
+				    approx_response, export_id);
+    }
+
     // post-process
     switch (responseMode) {
     case AUTO_CORRECTED_SURROGATE:
@@ -1161,6 +1189,10 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     switch (responseMode) {
     case AUTO_CORRECTED_SURROGATE:
       rawVarsMap[surrModelEvalCntr] = currentVariables.copy(); break;
+    default:
+      if (!exportPointsFile.empty())
+	rawVarsMap[surrModelEvalCntr] = currentVariables.copy();
+      break;
     }
     // store map from approxInterface eval id to DataFitSurrModel id
     surrIdMap[approxInterface.evaluation_id()] = surrModelEvalCntr;
@@ -1205,10 +1237,11 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
-    const IntResponseMap& approx_resp_map = approxInterface.synch();
+
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
-    derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+    derived_synchronize_approx(approxInterface.synch(), approx_resp_map_rekey);
+
     surrIdMap.clear();
     if (!actual_evals)        // return ref to non-temporary
       return surrResponseMap; // rekeyed and corrected by proxy
@@ -1302,10 +1335,12 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
-    const IntResponseMap& approx_resp_map = approxInterface.synch_nowait();
+
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
-    derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+    derived_synchronize_approx(approxInterface.synch_nowait(),
+			       approx_resp_map_rekey);
+
     if (!actual_evals) {      // return ref to non-temporary
       surrIdMap.clear();      // approx_resp_map is complete
       return surrResponseMap; // rekeyed and corrected by proxy
@@ -1396,7 +1431,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     then reuse its data as appropriate within build_global() */
 void DataFitSurrModel::import_points(bool annotated)
 {
-  if (pointReuseFile.empty())
+  if (importPointsFile.empty())
     return;
 
   // Data needed to reconstruct the variables and responses
@@ -1416,9 +1451,9 @@ void DataFitSurrModel::import_points(bool annotated)
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieving points with " << num_c_vars 
 	 << " continuous variables and " << numFns 
-	 << " response functions from file " << pointReuseFile << '\n';
+	 << " response functions from file " << importPointsFile << '\n';
   bool verbose = (outputLevel > NORMAL_OUTPUT);
-  TabularIO::read_data_tabular(pointReuseFile, 
+  TabularIO::read_data_tabular(importPointsFile, 
 			       "DataFitSurrModel samples file", 
 			       reuseFileVars, reuseFileResponses, svd, 
 			       num_c_vars, temp_set, annotated, verbose);
@@ -1433,7 +1468,8 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
 			   IntResponseMap& approx_resp_map_rekey)
 {
   // update map keys to use surrModelEvalCntr
-  bool actual_evals = !truthIdMap.empty();
+  bool actual_evals = !truthIdMap.empty(),
+       export_pts   = !exportPointsFile.empty();
   IntResponseMap& approx_resp_map_proxy
     = (actual_evals) ? approx_resp_map_rekey : surrResponseMap;
   for (IntRespMCIter r_cit = approx_resp_map.begin();
@@ -1453,9 +1489,25 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
     //                    approx_resp_map_proxy.begin()->second, quiet_flag);
     IntVarsMIter v_it; IntRespMIter r_it;
     for (r_it  = approx_resp_map_proxy.begin(), v_it = rawVarsMap.begin();
-	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it)
-      deltaCorr.apply(v_it->second, r_it->second, quiet_flag);//rawVarsMap
-                                                              //[r_it->first]
+	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it) {
+      deltaCorr.apply(v_it->second,//rawVarsMap[r_it->first],
+		      r_it->second, quiet_flag);
+      if (export_pts) { // decided to export auto-corrected approx response
+	size_t export_id = (exportAnnotated) ? r_it->first : _NPOS;
+	TabularIO::write_data_tabular(exportFileStream, v_it->second,
+				      r_it->second, export_id);
+      }
+    }
+    rawVarsMap.clear();
+  }
+  else if (export_pts) {
+    IntVarsMIter v_it; IntRespMIter r_it;
+    for (r_it  = approx_resp_map_proxy.begin(), v_it = rawVarsMap.begin();
+	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it) {
+      size_t export_id = (exportAnnotated) ? r_it->first : _NPOS;
+      TabularIO::write_data_tabular(exportFileStream, v_it->second,
+				    r_it->second, export_id);
+    }
     rawVarsMap.clear();
   }
 
@@ -1466,6 +1518,11 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
        r_cit != cachedApproxRespMap.end(); r_cit++)
     approx_resp_map_proxy[r_cit->first] = r_cit->second;
   cachedApproxRespMap.clear();
+
+  /*
+  // export approximate evaluations if requested
+  if (!exportPointsFile.empty())
+  */
 }
 
 

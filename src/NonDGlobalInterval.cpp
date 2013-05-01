@@ -94,11 +94,9 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
       if (hessianType  != "none") dataOrder |= 4;
     }
     // get point samples file
-    const String& sample_reuse_file
-      = probDescDB.get_string("method.point_reuse_file");
-    bool sample_file_annotated
-      = probDescDB.get_bool("method.point_file_annotated");
-    if (!sample_reuse_file.empty())
+    const String& import_pts_file
+      = probDescDB.get_string("method.import_points_file");
+    if (!import_pts_file.empty())
       { numSamples = 0; sample_reuse = "all"; }
  
     // instantiate the Gaussian Process Model/Iterator recursions
@@ -125,7 +123,10 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, dataOrder, outputLevel,
-      sample_reuse, sample_reuse_file, sample_file_annotated), false);
+      sample_reuse, probDescDB.get_string("method.export_points_file"),
+      probDescDB.get_bool("method.export_points_file_annotated"),
+      import_pts_file,
+      probDescDB.get_bool("method.import_points_file_annotated")), false);
 
     // intervalOptModel.init_communicators() recursion is currently sufficient
     // for fHatModel.  An additional fHatModel.init_communicators() call would

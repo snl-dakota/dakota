@@ -48,15 +48,11 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
   statsFlag = true; //print computed probability levels at end
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
-  const String& sample_reuse_file
-    = probDescDB.get_string("method.point_reuse_file");
-  bool sample_file_annotated
-    = probDescDB.get_bool("method.point_file_annotated");
+  const String& import_pts_file
+    = probDescDB.get_string("method.import_points_file");
   int samples = numSamples;
-  if (!sample_reuse_file.empty()){
-    samples = 0;
-    sample_reuse = "all";
-  }
+  if (!import_pts_file.empty())
+    { samples = 0; sample_reuse = "all"; }
 
   gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
      samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM), false);
@@ -68,7 +64,9 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
 
   gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel, approx_type,
     approx_order, corr_type, corr_order, data_order, outputLevel, sample_reuse, 
-    sample_reuse_file, sample_file_annotated), false);
+    probDescDB.get_string("method.export_points_file"),
+    probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
+    probDescDB.get_bool("method.import_points_file_annotated")), false);
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
   numEmulEval = probDescDB.get_int("method.nond.emulator_samples");

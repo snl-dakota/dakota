@@ -119,7 +119,9 @@ NonDStochCollocation::NonDStochCollocation(Model& model):
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
     approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse), false);
+    outputLevel, pt_reuse, probDescDB.get_string("method.export_points_file"),
+    probDescDB.get_bool("method.export_points_file_annotated")), false);
+    // point import not supported for structured grids
   initialize_u_space_model();
 
   // -------------------------------

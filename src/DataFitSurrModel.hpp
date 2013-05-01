@@ -58,8 +58,10 @@ public:
 		   const String& approx_type, const UShortArray& approx_order,
 		   short corr_type, short corr_order, short data_order,
 		   short output_level, const String& point_reuse,
-		   const String& point_reuse_file = String(),
-		   bool point_file_annotated = true);
+		   const String& export_points_file = String(),
+		   bool export_annotated = true,
+		   const String& import_points_file = String(),
+		   bool import_annotated = true);
   /// destructor
   ~DataFitSurrModel();
 
@@ -273,11 +275,17 @@ private:
   /// type of point reuse for approximation builds: \c all, \c region
   /// (default if points file), or \c none (default if no points file)
   String pointReuse;
-  /// file name for \c points_file specification
-  String pointReuseFile;
-  /// array of variables sets read from the \c points_file
+  /// file name from \c import_points_file specification
+  String importPointsFile;
+  /// file name from \c export_points_file specification
+  String exportPointsFile;
+  /// annotation setting for file export of variables and approximate responses
+  bool exportAnnotated;
+  /// file name for \c export_points_file specification
+  std::ofstream exportFileStream;
+  /// array of variables sets read from the \c import_points_file
   VariablesList reuseFileVars;
-  /// array of response sets read from the \c points_file
+  /// array of response sets read from the \c import_points_file
   ResponseList reuseFileResponses;
 
   /// manages the building and subsequent evaluation of the approximations
@@ -296,8 +304,12 @@ private:
 };
 
 
+/** Virtual destructor handles referenceCount at Strategy level. */
 inline DataFitSurrModel::~DataFitSurrModel()
-{ } // Virtual destructor handles referenceCount at Strategy level.
+{
+  if (!exportPointsFile.empty())
+    exportFileStream.close();
+}
 
 
 inline void DataFitSurrModel::total_points(int points)

@@ -391,12 +391,12 @@ void ProblemDescDB::check_input(const char* dakota_input_file, bool echo_input)
 	if ( dm_iter->dataModelRep->surrogateType.begins("global_") && 
 	     ( ( !dm_iter->dataModelRep->approxPointReuse.empty() &&
 		  dm_iter->dataModelRep->approxPointReuse != "none" ) ||
-	       !dm_iter->dataModelRep->approxPointReuseFile.empty() ) )
+	       !dm_iter->dataModelRep->approxImportFile.empty() ) )
 	  interface_reqd = false;
       if (interface_reqd)
 	for (std::list<DataMethod>::iterator dm_iter = dataMethodList.begin();
 	     dm_iter != dataMethodList.end(); ++dm_iter)
-	  if (!dm_iter->dataMethodRep->approxPointReuseFile.empty())
+	  if (!dm_iter->dataMethodRep->approxImportFile.empty())
 	    interface_reqd = false;
       if (interface_reqd) {
 	Cerr << "No interface specification found in input file.\n";
@@ -1814,10 +1814,12 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"coliny.synchronization", P evalSynchronization},
 	{"crossover_type", P crossoverType},
 	{"dl_solver.dlDetails", P dlDetails},
+	{"export_points_file", P approxExportFile},
 	{"fitness_metric", P fitnessMetricType},
 	{"fitness_type", P fitnessType},
 	{"flat_file", P flatFile},
 	{"id", P idMethod},
+	{"import_points_file", P approxImportFile},
 	{"initialization_type", P initializationType},
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
@@ -1834,7 +1836,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nond.reliability_integration", P reliabilityIntegration},
 	{"nond.reliability_search_type", P reliabilitySearchType},
 	{"optpp.search_method", P searchMethod},
-	{"point_reuse_file", P approxPointReuseFile},
 	{"random_number_generator", P rngName},
 	{"rejection", P rejectionType},
 	{"replacement_type", P replacementType},
@@ -1859,12 +1860,13 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
 	{"surrogate.actual_model_pointer", P truthModelPointer},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
+	{"surrogate.export_points_file", P approxExportFile},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
+	{"surrogate.import_points_file", P approxImportFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.low_fidelity_model_pointer", P lowFidelityModelPointer},
 	{"surrogate.mars_interpolation", P marsInterpolation},
 	{"surrogate.point_reuse", P approxPointReuse},
-	{"surrogate.point_reuse_file", P approxPointReuseFile},
         {"surrogate.trend_order", P trendOrder},
 	{"surrogate.type", P surrogateType},
 	{"type", P modelType}};
@@ -2339,8 +2341,10 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"coliny.randomize", P randomizeOrderFlag},
 	{"coliny.show_misc_options", P showMiscOptions},
 	{"derivative_usage", P methodUseDerivsFlag},
+	{"export_points_file_annotated", P approxExportAnnotated},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
+	{"import_points_file_annotated", P approxImportAnnotated},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
 	{"mutation_adaptive", P mutationAdaptive},
@@ -2349,7 +2353,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.cross_validation", P crossValidation},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.tensor_grid", P probCollocFlag},
-	{"point_file_annotated", P approxPointFileAnnotated},
 	{"print_each_pop", P printPopFlag},
 	{"quality_metrics", P volQualityFlag},
 	{"sbg.replace_points", P surrBasedGlobalReplacePts},
@@ -2369,7 +2372,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
 	{"derivative_usage", P modelUseDerivsFlag},
-	{"point_file_annotated", P approxPointFileAnnotated},
+	{"export_points_file_annotated", P approxExportAnnotated},
+	{"import_points_file_annotated", P approxImportAnnotated},
 	{"point_selection", P pointSelection}};
     #undef P
 

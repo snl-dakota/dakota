@@ -597,7 +597,11 @@ KEYWORD12 method
 	    | dakota
 	    ]
 	  [ use_derivatives ]
-	  [ points_file STRING
+	  [ import_points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
+	  [ export_points_file STRING
 	    [ annotated
 	    | freeform ]
 	    ]
@@ -660,7 +664,7 @@ KEYWORD12 method
 	    [ use_derivatives ]
 	    [ tensor_grid ]
 	    [ reuse_points ALIAS reuse_samples ]
-	    [ points_file STRING
+	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
 	      ]
@@ -670,7 +674,7 @@ KEYWORD12 method
 	  ( expansion_samples INTEGER >= 0
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ incremental_lhs ]
-	    [ points_file STRING
+	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
 	      ]
@@ -686,14 +690,18 @@ KEYWORD12 method
 	    ]
 	  [ diagonal_covariance
 	  | full_covariance ]
+	  [ sample_type
+	    lhs
+	    | random
+	    ]
 	  [ sample_refinement
 	    import
 	    | adapt_import
 	    | mm_adapt_import
 	    ]
-	  [ sample_type
-	    lhs
-	    | random
+	  [ export_points_file STRING
+	    [ annotated
+	    | freeform ]
 	    ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
@@ -769,14 +777,18 @@ KEYWORD12 method
 	    ]
 	  [ diagonal_covariance
 	  | full_covariance ]
+	  [ sample_type
+	    lhs
+	    | random
+	    ]
 	  [ sample_refinement
 	    import
 	    | adapt_import
 	    | mm_adapt_import
 	    ]
-	  [ sample_type
-	    lhs
-	    | random
+	  [ export_points_file STRING
+	    [ annotated
+	    | freeform ]
 	    ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
@@ -863,10 +875,6 @@ KEYWORD12 method
 	  [ import
 	  | adapt_import
 	  | mm_adapt_import ]
-	  [ points_file STRING
-	    [ annotated
-	    | freeform ]
-	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -898,7 +906,11 @@ KEYWORD12 method
 	|
 	( gpais ALIAS gaussian_process_adaptive_importance_sampling
 	  [ emulator_samples INTEGER ]
-	  [ points_file STRING
+	  [ import_points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
+	  [ export_points_file STRING
 	    [ annotated
 	    | freeform ]
 	    ]
@@ -945,7 +957,11 @@ KEYWORD12 method
 	    | constant_liar
 	    ]
 	  [ batch_size INTEGER ]
-	  [ points_file STRING
+	  [ import_points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
+	  [ export_points_file STRING
 	    [ annotated
 	    | freeform ]
 	    ]
@@ -1008,13 +1024,17 @@ KEYWORD12 method
 	      | dakota
 	      ]
 	    [ use_derivatives ]
+	    [ import_points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
+	    [ export_points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
 	    ]
 	  | ea
 	  | lhs ]
-	  [ points_file STRING
-	    [ annotated
-	    | freeform ]
-	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -1052,13 +1072,17 @@ KEYWORD12 method
 	      | dakota
 	      ]
 	    [ use_derivatives ]
+	    [ import_points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
+	    [ export_points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
 	    ]
 	  | ea
 	  | lhs ]
-	  [ points_file STRING
-	    [ annotated
-	    | freeform ]
-	    ]
 	  [ rng
 	    mt19937
 	    | rnum2
@@ -1074,7 +1098,11 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		[ points_file STRING
+		[ import_points_file STRING
+		  [ annotated
+		  | freeform ]
+		  ]
+		[ export_points_file STRING
 		  [ annotated
 		  | freeform ]
 		  ]
@@ -1248,7 +1276,11 @@ KEYWORD12 method
 	    [ surfpack
 	    | dakota ]
 	    )
-	  [ points_file STRING
+	  [ import_points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
+	  [ export_points_file STRING
 	    [ annotated
 	    | freeform ]
 	    ]
@@ -1396,7 +1428,11 @@ KEYWORD model
 	      | region
 	      | none
 	      ]
-	    [ points_file ALIAS samples_file STRING
+	    [ import_points_file ALIAS samples_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
+	    [ export_points_file STRING
 	      [ annotated
 	      | freeform ]
 	      ]

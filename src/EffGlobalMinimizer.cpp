@@ -82,11 +82,9 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   //int symbols = samples; // symbols needed for DDACE
   bool vary_pattern = false;// for consistency across any outer loop invocations
   // get point samples file
-  const String& sample_reuse_file
-    = probDescDB.get_string("method.point_reuse_file");
-  bool sample_file_annotated
-    = probDescDB.get_bool("method.point_file_annotated");
-  if (!sample_reuse_file.empty())
+  const String& import_pts_file
+    = probDescDB.get_string("method.import_points_file");
+  if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
   Iterator dace_iterator;
@@ -106,7 +104,9 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
     //curr_vars.view(), curr_vars.variables_components(),
     //iteratedModel.current_response().active_set(),
     approx_type, approx_order, corr_type, corr_order, dataOrder, outputLevel,
-    sample_reuse, sample_reuse_file, sample_file_annotated), false);
+    sample_reuse, probDescDB.get_string("method.export_points_file"),
+    probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
+    probDescDB.get_bool("method.import_points_file_annotated")), false);
 
   // *** TO DO: support scaling and other forced Recasts. ***
   //if (minimizerRecast)

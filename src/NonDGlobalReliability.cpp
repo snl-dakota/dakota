@@ -156,10 +156,9 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   const String& rng = probDescDB.get_string("method.random_number_generator");
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
-  const String& pt_reuse_file
-    = probDescDB.get_string("method.point_reuse_file");
-  bool pt_file_annotated = probDescDB.get_bool("method.point_file_annotated");
-  if (!pt_reuse_file.empty())
+  const String& import_pts_file
+    = probDescDB.get_string("method.import_points_file");
+  if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
   //int symbols = samples; // symbols needed for DDACE
@@ -196,7 +195,10 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, dataOrder, outputLevel,
-      sample_reuse, pt_reuse_file, pt_file_annotated), false);
+      sample_reuse, probDescDB.get_string("method.export_points_file"),
+      probDescDB.get_bool("method.export_points_file_annotated"),
+      import_pts_file,
+      probDescDB.get_bool("method.import_points_file_annotated")), false);
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     // Recast g-hat(x) to G-hat(u)
@@ -238,7 +240,10 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, dataOrder, outputLevel,
-      sample_reuse, pt_reuse_file, pt_file_annotated), false);
+      sample_reuse, probDescDB.get_string("method.export_points_file"),
+      probDescDB.get_bool("method.export_points_file_annotated"),
+      import_pts_file,
+      probDescDB.get_bool("method.import_points_file_annotated")), false);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
   }
 

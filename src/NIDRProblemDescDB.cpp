@@ -5246,7 +5246,8 @@ static UShortArray
 	MP_(varPartitions);
 
 static String
-	MP_(approxPointReuseFile),
+	MP_(approxExportFile),
+	MP_(approxImportFile),
         MP_(betaSolverName),
 	MP_(expansionImportFile),
 	MP_(idMethod),
@@ -5261,7 +5262,8 @@ static StringArray
         MP_(miscOptions);
 
 static bool
-	MP_(approxPointFileAnnotated),
+	MP_(approxExportAnnotated),
+	MP_(approxImportAnnotated),
 	MP_(calibrateSigmaFlag),
 	MP_(constantPenalty),
 	MP_(crossValidation),
@@ -5449,7 +5451,8 @@ static RealVector
 	MP_(secondaryRespCoeffs);
 
 static String
-	MP_(approxPointReuseFile),
+	MP_(approxExportFile),
+	MP_(approxImportFile),
 	MP_(idModel),
 	MP_(interfacePointer),
 	MP_(krigingOptMethod),
@@ -5466,7 +5469,8 @@ static StringArray
         MP_(diagMetrics);
 
 static bool
-	MP_(approxPointFileAnnotated),
+	MP_(approxExportAnnotated),
+	MP_(approxImportAnnotated),
 	MP_(modelUseDerivsFlag),
 	MP_(pointSelection);
 

@@ -111,11 +111,16 @@ public:
   /// region, or file (from the \c reuse_samples specification in
   /// \ref ModelSurrG)
   String approxPointReuse;
-  /// the file name for the "file" setting for the \c reuse_samples
-  /// specification in \ref ModelSurrG
-  String approxPointReuseFile;
-  /// whether the point reuse file is annotated (default true)
-  bool approxPointFileAnnotated;
+  /// the file name from the \c import_points_file specification in
+  /// \ref ModelSurrG
+  String approxImportFile;
+  /// whether the point import file is annotated (default true)
+  bool approxImportAnnotated;
+  /// the file name from the \c export_points_file specification in
+  /// \ref ModelSurrG
+  String approxExportFile;
+  /// whether the point export file is annotated (default true)
+  bool approxExportAnnotated;
   /// correction type for global and hierarchical approximations:
   /// NO_CORRECTION, ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
   /// or COMBINED_CORRECTION (from the \c correction specification in

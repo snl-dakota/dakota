@@ -543,10 +543,10 @@ void Analyzer::pre_output()
   bool response_labels = true;     // write response labels for user
   bool annotated = true;           // pre/post only supports annotated
   if (annotated)
-    TabularIO::write_header_tabular(tabular_file, "eval_id", 
+    TabularIO::write_header_tabular(tabular_file,
 				    iteratedModel.current_variables(), 
 				    iteratedModel.current_response(),
-				    active_only,
+				    "eval_id", active_only,
 				    response_labels);
   tabular_file << std::setprecision(write_precision) 
 	       << std::resetiosflags(std::ios::floatfield);
@@ -554,7 +554,7 @@ void Analyzer::pre_output()
   // TODO: consider helper to output allSamples or allVariables directly
   // TODO: consider supplementing compactMode with inactive vars from model
   for (size_t eval_index = 0; eval_index < num_evals; eval_index++) {
-    if(annotated)
+    if (annotated)
       tabular_file << std::setw(8) << eval_index + 1 << ' ';
     if (compactMode) {
       // allSamples num_vars x num_evals, so each col becomes tabular file row
