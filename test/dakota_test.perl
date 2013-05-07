@@ -127,6 +127,7 @@ foreach my $file (@test_inputs) {
 
     # per-test defaults for dakota command, input, restart, and timeout
     my $dakota_command = "dakota";
+    my $dakota_args = "";
     my $dakota_input = $input;
     # Default is to write a unique restart per test, named for the test input
     my $restart = "";
@@ -146,7 +147,7 @@ foreach my $file (@test_inputs) {
 
       # parse out dakota command line arguments
       parse_dakota_command($_, $pq_cnt, $restart_file,
-                           \$dakota_command, \$dakota_input, 
+                           \$dakota_command, \$dakota_args, \$dakota_input, 
 			   \$restart, \$restart_command);
 
       # parse out timeout and delay options
@@ -229,8 +230,8 @@ foreach my $file (@test_inputs) {
       }
 
       my $test_command = 
-        form_test_command($num_proc, $dakota_command, $restart_command, 
-			  $dakota_input, $output, $error);
+        form_test_command($num_proc, $dakota_command, $dakota_args,
+			  $restart_command, $dakota_input, $output, $error);
 
       my $pt_code = protected_test($test_command, $output, $delay, $timeout);
       $output_generated = 1;
@@ -582,14 +583,21 @@ sub parse_num_proc {
 sub parse_dakota_command {
 
 
-  my ($line, $pq_cnt, $restart_file, $ref_dakota_command, $ref_dakota_input, 
-      $ref_restart, $ref_restart_command) = @_;
+  my ($line, $pq_cnt, $restart_file, $ref_dakota_command, ,$ref_dakota_args,
+      $ref_dakota_input, $ref_restart, $ref_restart_command) = @_;
 
   # allow override of the default DAKOTA command with
   # D='alternate_command -with_args'
-  if ( $line =~ /(#|\s+)$pq_cnt=D\'([\w\- ]*)\'/ ) {
+  if ( $line =~ /(#|\s+)$pq_cnt=D\'([\w\-]*)\'/ ) {
     ${$ref_dakota_command} = $2;
     print "Using alternate dakota command \'${$ref_dakota_command}\'\n";
+  }
+
+  # allow optional dakota command arguments with 
+  # DA='-with_args'
+  if ( $line =~ /(#|\s+)$pq_cnt=DA\'([\w\-]*)\'/ ) {
+    ${$ref_dakota_args} = $2;
+    print "Using alternate dakota args \'${$ref_dakota_args}\'\n";
   }
 
   # allow override of the default test input file name with
@@ -663,10 +671,10 @@ sub parse_timeout {
 # relies on global $parallelism 
 sub form_test_command {
 
-  my ($num_proc, $dakota_command, $restart_command, $dakota_input, 
-      $output, $error) = @_;
+  my ($num_proc, $dakota_command, $dakota_args, $restart_command,
+      $dakota_input, $output, $error) = @_;
 
-  my $fulldakota = "${bin_dir}${dakota_command}${bin_ext} $restart_command $dakota_input";
+  my $fulldakota = "${bin_dir}${dakota_command}${bin_ext} ${dakota_args} $restart_command $dakota_input";
   my $redir = "> $output 2> $error";     
 
   # default serial command
