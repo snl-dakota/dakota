@@ -315,18 +315,14 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // since both employ PolynomialApproximation::compute_numerical_moments(4).
   // Neither PCE nor SC require product wts for all_vars mode, since moment
   // calculations must employ gauss_wts_1d.
-  // Exception 1: all PCE SPARSE_INT_* expansion modes require wts for
-  //              integrate_expansion()).  These modes are inactive.
-  // Exception 2: all_vars Nodal SC requires weights for total covariance()
+  // Exception 1: all_vars Nodal SC requires weights for total covariance()
   //              evaluation in VBD.
-  // Exception 3: NonDIntegration::print_points_weights() needs weights for
+  // Exception 2: NonDIntegration::print_points_weights() needs weights for
   //              outputLevel > NORMAL_OUTPUT.
   bool all_vars  = (numContDesVars || numContEpistUncVars || numContStateVars);
   bool nodal_vbd = (methodName == "nond_stoch_collocation" &&
     expansionCoeffsApproach != Pecos::HIERARCHICAL_SPARSE_GRID && vbdControl);
   bool track_wts = (!all_vars || nodal_vbd || outputLevel > NORMAL_OUTPUT);
-  // || pa_rep0->sparse_grid_expansion() >= Pecos::SPARSE_INT_TOTAL_ORD_EXP;
-  // uSpaceModel not yet available! (no approxs until bottom of derived ctor)
 
   // tracking of collocation indices within the SparseGridDriver
   bool track_colloc = (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID

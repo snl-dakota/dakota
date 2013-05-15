@@ -16,7 +16,7 @@
 
 #include "DakotaApproximation.hpp"
 #include "DakotaVariables.hpp"
-#include "OrthogPolyApproximation.hpp"
+#include "RegressOrthogPolyApproximation.hpp"
 
 namespace Dakota {
 
@@ -433,7 +433,10 @@ polynomial_basis() const
 
 
 inline void PecosApproximation::cross_validation(bool flag)
-{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->cross_validation(flag); }
+{
+  ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
+    cross_validation(flag);
+}
 
 
 inline void PecosApproximation::coefficients_norms_flag(bool flag)
@@ -449,12 +452,13 @@ inline size_t PecosApproximation::expansion_terms() const
 
 inline void PecosApproximation::noise_tolerance(const RealVector& noise_tol)
 {
-  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->noise_tolerance(noise_tol);
+  ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
+    noise_tolerance(noise_tol);
 }
 
 
 inline void PecosApproximation::l2_penalty(Real l2_pen)
-{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->l2_penalty(l2_pen); }
+{ ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->l2_penalty(l2_pen); }
 
 
 inline void PecosApproximation::allocate_arrays()
