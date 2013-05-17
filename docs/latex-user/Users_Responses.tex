@@ -30,14 +30,18 @@ iterative technique called for in the method specification:
   \texttt{num\_nonlinear\_inequality\_constraints}, and
   \texttt{num\_nonlinear\_equality\_constraints}.  This data set is
   appropriate for use with optimization methods (e.g., the methods in
-  Chapter~\ref{opt}).
+  Chapter~\ref{opt}).  When using results files
+  (\ref{responses:results}), the responses must be ordered:
+  objectives, inequalities, then equalities.
   
 \item a calibration data set comprised of 
   \texttt{calibration\_terms},\\
   \texttt{num\_nonlinear\_inequality\_constraints}, and
   \texttt{num\_nonlinear\_equality\_constraints}.  This data set is
   appropriate for use with nonlinear least squares algorithms
-  (e.g., the methods in Chapter~\ref{nls}).
+  (e.g., the methods in Chapter~\ref{nls}).  When using results files
+  (\ref{responses:results}), the responses must be ordered:
+  calibration terms, inequalities, then equalities.
   
 \item a generic data set comprised of \texttt{num\_response\_functions}.  
   This data set is appropriate for use with uncertainty quantification
