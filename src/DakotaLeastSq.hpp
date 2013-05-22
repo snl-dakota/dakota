@@ -108,7 +108,7 @@ inline LeastSq::LeastSq(): weightFlag(false)
 
 inline LeastSq::~LeastSq()
 { 
-  if (minimizerRecast) 
+  if (minimizerRecasts) 
     iteratedModel.free_communicators(maxConcurrency);
 }
 

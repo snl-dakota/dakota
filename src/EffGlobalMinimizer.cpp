@@ -109,7 +109,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
     probDescDB.get_bool("method.import_points_file_annotated")), false);
 
   // *** TO DO: support scaling and other forced Recasts. ***
-  //if (minimizerRecast)
+  //if (minimizerRecasts)
   //  iteratedModel.init_communicators(maxConcurrency);
 
   // eifModel.init_communicators() recursion is currently sufficient for

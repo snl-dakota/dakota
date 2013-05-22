@@ -148,6 +148,15 @@ protected:
   void archive_best(size_t index, 
 		    const Variables& best_vars, const Response& best_resp);
  
+  /// Safely resize the best variables array to newsize taking into
+  /// account the envelope-letter design pattern and any recasting.
+  void resize_best_vars_array(size_t newsize);
+
+  /// Safely resize the best response array to newsize taking into
+  /// account the envelope-letter design pattern and any recasting.
+  void resize_best_resp_array(size_t newsize);
+
+
   //
   //- Heading: Data
   //
@@ -176,8 +185,9 @@ protected:
   /// total number of linear and nonlinear constraints
   int numConstraints;
 
-  /// whether any Minimizer or derived Recasts are locally active
-  bool minimizerRecast;
+  /// number of RecastModels locally (in Minimizer or derived classes)
+  /// layered over the initially passed in Model
+  unsigned short minimizerRecasts;
   /// flag for use where optimization and NLS must be distinguished
   bool optimizationFlag;
   /// number of objective functions or least squares terms in the user's model
@@ -320,7 +330,7 @@ private:
 
 
 inline Minimizer::Minimizer(): 
-  minimizerRecast(false), obsDataFlag(false), scaleFlag(false)
+  minimizerRecasts(0), obsDataFlag(false), scaleFlag(false)
 { }
 
 

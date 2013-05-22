@@ -83,7 +83,7 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
     // The following is not performed in the Optimizer constructor since
     // maxConcurrency is updated above. The matching free_communicators()
     // appears in the Optimizer destructor.
-    if (minimizerRecast)
+    if (minimizerRecasts)
       iteratedModel.init_communicators(maxConcurrency);
     optpds->setSSS(search_scheme_size); 
     theOptimizer = optpds;

@@ -231,7 +231,7 @@ COLINOptimizer::COLINOptimizer(Model& model):
   // maxConcurrency is updated within set_method_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
-  if (minimizerRecast)
+  if (minimizerRecasts)
     iteratedModel.init_communicators(maxConcurrency);
 }
 
@@ -1073,11 +1073,9 @@ void COLINOptimizer::post_run(std::ostream& s)
     Cerr << "Warning: Lookup of some COLIN final points failed.\n         If you"
 	 << " have constraints, some points returned may be infeasible." << endl;
 
-  // Make sure bestVariablesArray and bestResponseArray are the right
-  // size.
-
-  resize_final_points(numFinalSolutions);
-  resize_final_responses(numFinalSolutions);
+  // Make sure bestVariablesArray and bestResponseArray are the right size.
+  resize_best_vars_array(numFinalSolutions);
+  resize_best_resp_array(numFinalSolutions);
 
   // Iterate through the map and populate bestVariablesArray and
   // bestResponseArray with sorted points and corresponding responses.
@@ -1172,40 +1170,6 @@ double COLINOptimizer::constraint_violation(const Response& tmpResponseHolder)
   }
 
   return cons_violation;
-}
-
-
-void COLINOptimizer::resize_final_points(size_t newsize)
-{
-  // If there is no change in size, we needn't continue.
-  if(newsize == bestVariablesArray.size()) return;
-
-  // If this is a reduction in size, we can use the standard resize method
-  if(newsize < bestVariablesArray.size())
-  { bestVariablesArray.resize(newsize); return; }
-
-  // Otherwise, we have to do the iteration ourselves so that we make use
-  // of the model's current variables for envelope-letter requirements.
-  bestVariablesArray.reserve(newsize);
-  for(std::size_t i=bestVariablesArray.size(); i<newsize; ++i)
-    bestVariablesArray.push_back(iteratedModel.current_variables().copy());
-}
-
-
-void COLINOptimizer::resize_final_responses(size_t newsize)
-{
-  // If there is no change in size, we needn't continue.
-  if(newsize == bestResponseArray.size()) return;
-
-  // If this is a reduction in size, we can use the standard resize method
-  if(newsize < bestResponseArray.size())
-  { bestResponseArray.resize(newsize); return; }
-
-  // Otherwise, we have to do the iteration ourselves so that we make use
-  // of the model's current variables for envelope-letter requirements.
-  bestResponseArray.reserve(newsize);
-  for(std::size_t i=bestResponseArray.size(); i<newsize; ++i)
-    bestResponseArray.push_back(iteratedModel.current_response().copy());
 }
 
 

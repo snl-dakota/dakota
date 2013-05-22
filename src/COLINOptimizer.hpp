@@ -125,12 +125,6 @@ protected:
   /// iteratedModel and provided Response data
   double constraint_violation(const Response& tmpResponseHolder);
 
-  /// resize bestVariablesArray
-  void resize_final_points(size_t newsize);
-
-  /// resize bestResponseArray
-  void resize_final_responses(size_t newsize);
-
   //
   //- Heading: Data
   //

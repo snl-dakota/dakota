@@ -289,9 +289,13 @@ protected:
   /// tracks the response data requirements on each function evaluation
   ActiveSet activeSet;
 
-  /// collection of N best solution variables found during the study
+  /// collection of N best solution variables found during the study;
+  /// always in context of Model originally passed to the Iterator
+  /// (any in-flight Recasts must be undone)
   VariablesArray bestVariablesArray;
-  /// collection of N best solution responses found during the study
+  /// collection of N best solution responses found during the study;
+  /// always in context of Model originally passed to the Iterator
+  /// (any in-flight Recasts must be undone)
   ResponseArray bestResponseArray;
 
   /// flag indicating if this Iterator is a sub-iterator

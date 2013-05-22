@@ -123,7 +123,7 @@ inline Optimizer::Optimizer(): localObjectiveRecast(false)
 
 inline Optimizer::~Optimizer()
 { 
-  if (minimizerRecast)
+  if (minimizerRecasts)
     iteratedModel.free_communicators(maxConcurrency);
 }
 

@@ -55,18 +55,21 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
   // Wrap the iteratedModel, which initially is the userDefinedModel,
   // in 0 -- 3 RecastModels, potentially resulting in weight(scale(data(model)))
 
-  if (obsDataFlag) 
+  if (obsDataFlag) {
     // this might set weights based on exp std deviations
     weightFlag = data_transform_model(weightFlag);
-  if (scaleFlag)
+    ++minimizerRecasts;
+  }
+  if (scaleFlag) {
     scale_model();
-  if (weightFlag)
+    ++minimizerRecasts;
+  }
+  if (weightFlag) {
     weight_model();
+    ++minimizerRecasts;
+  }
 
-  // register whether a Recast is active within Minimizer
-  minimizerRecast = (obsDataFlag || scaleFlag || weightFlag);
-
-  if  (minimizerRecast) {
+  if  (minimizerRecasts) {
     // since all LeastSq iterators are currently gradient-based, maxConcurrency
     // has already been defined in the Iterator initializer list, so init here:
     bool recurse_flag = true;  // explicit default: recurse down models

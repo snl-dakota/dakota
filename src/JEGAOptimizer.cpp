@@ -852,8 +852,8 @@ JEGAOptimizer::find_optimum(
         )
 
     // load the map into the DAKOTA vectors
-    resize_response_results_array(designSortMap.size());
-    resize_variables_results_array(designSortMap.size());
+    resize_best_resp_array(designSortMap.size());
+    resize_best_vars_array(designSortMap.size());
     
     std::multimap<RealRealPair, Design*>::const_iterator best_it = 
         designSortMap.begin(); 
@@ -917,51 +917,6 @@ JEGAOptimizer::initial_points(
 Subclass Visible Methods
 ===============================================================================
 */
-
-void
-JEGAOptimizer::resize_variables_results_array(
-    std::size_t newsize
-    )
-{
-    size_t curr_size = this->bestVariablesArray.size();
-    
-    // if reduction in size, use the standard resize
-    if(newsize < curr_size)
-        this->bestVariablesArray.resize(newsize);
-    else if(newsize > curr_size)
-    {
-        // Otherwise, we have to do the iteration ourselves so that we make use
-        // of the model's current variables for envelope-letter requirements.
-        this->bestVariablesArray.reserve(newsize);
-
-        for(size_t i=curr_size; i<newsize; ++i)
-            this->bestVariablesArray.push_back(
-                this->iteratedModel.current_variables().copy()
-                );
-    }
-}
-
-void
-JEGAOptimizer::resize_response_results_array(
-    std::size_t newsize
-    )
-{
-    size_t curr_size = this->bestResponseArray.size();
-
-    if(newsize < curr_size) // if reduction in size, use the standard resize
-        this->bestResponseArray.resize(newsize);
-    else if(newsize > curr_size)
-    {
-        // Otherwise, we have to do the iteration ourselves so that we make use
-        // of the model's current response for envelope-letter requirements.
-        this->bestResponseArray.reserve(newsize);
-
-        for(size_t i=curr_size; i<newsize; ++i)
-            this->bestResponseArray.push_back(
-                this->iteratedModel.current_response().copy()
-                );
-    }
-}
 
 void
 JEGAOptimizer::LoadDakotaResponses(
@@ -1902,7 +1857,7 @@ JEGAOptimizer::JEGAOptimizer(
     // The following is not performed in the Optimizer constructor since
     // maxConcurrency is updated above. The matching free_communicators()
     // appears in the Optimizer destructor.
-    if(this->minimizerRecast)
+    if(this->minimizerRecasts)
       this->iteratedModel.init_communicators(this->maxConcurrency);
 }
 

@@ -49,7 +49,7 @@ Minimizer::Minimizer(Model& model):
   numIterPrimaryFns(numFunctions - numNonlinearConstraints),
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
-  minimizerRecast(false),
+  minimizerRecasts(0),
   obsDataFilename(probDescDB.get_string("responses.exp_data_filename")),
   obsDataFlag(!obsDataFilename.empty()),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
@@ -172,7 +172,10 @@ Minimizer::Minimizer(Model& model):
   vendorNumericalGradFlag = 
     (gradientType == "numerical" && methodSource == "vendor") ? true : false;
 
+  // bestResponseArray should be in calling context; so initialized
+  // before any recasts
   Response best_resp = model.current_response().copy();
+
   // Set bestResponse ASV to vector of 1's since only fnValues are used.
   // NOTE: bestResponse initialization above may allocate space for gradients
   // or Hessians (which wastes space in current usage).
@@ -195,7 +198,7 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(numFunctions - numNonlinearConstraints),
   numIterPrimaryFns(numFunctions - numNonlinearConstraints),
-  boundConstraintFlag(false), speculativeFlag(false), minimizerRecast(false), 
+  boundConstraintFlag(false), speculativeFlag(false), minimizerRecasts(0), 
   obsDataFlag(false), scaleFlag(false), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
@@ -255,7 +258,7 @@ Minimizer(NoDBBaseConstructor, size_t num_lin_ineq, size_t num_lin_eq,
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
-  speculativeFlag(false), minimizerRecast(false), obsDataFlag(false),
+  speculativeFlag(false), minimizerRecasts(0), obsDataFlag(false),
   scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false), 
   secondaryRespScaleFlag(false)
 { }
@@ -273,13 +276,27 @@ void Minimizer::initialize_run()
   prevMinInstance   = minimizerInstance;
   minimizerInstance = this;
 
-  if (subIteratorFlag) { // catch any updates to all inactive vars
+  if (subIteratorFlag) { 
+
+    // Catch any updates to all inactive vars.  For now, do this in
+    // initialize because derived classes may elect to reimplement
+    // post_run.  Needs to happen before derived solvers update their
+    // best points, so it doesn't trample their active variables data.
+
+    // Dive into the originally passed model (could keep a shallow copy of it)
+    // Don't use a reference here as want a shallow copy, not the instance
+    Model usermodel(iteratedModel);
+    for (unsigned short i=1; i<=minimizerRecasts; ++i) {
+      usermodel = usermodel.subordinate_model();
+    }
+    
+    // Could be lighter weight, but don't have a way to update only inactive
     bestVariablesArray.front().all_continuous_variables(
-      iteratedModel.all_continuous_variables());
+      usermodel.all_continuous_variables());
     bestVariablesArray.front().all_discrete_int_variables(
-      iteratedModel.all_discrete_int_variables());
+      usermodel.all_discrete_int_variables());
     bestVariablesArray.front().all_discrete_real_variables(
-      iteratedModel.all_discrete_real_variables());
+      usermodel.all_discrete_real_variables());
   }
 }
 
@@ -1920,6 +1937,75 @@ archive_best(size_t point_index,
      best_resp.function_values());
 } 
 
+
+
+/** Uses data from the innermost model, should any Minimizer recasts be active.
+    Called by multipoint return solvers. Do not directly call resize on the 
+    bestVariablesArray object unless you intend to share the internal content 
+    (letter) with other objects after assignment. */
+void Minimizer::resize_best_vars_array(size_t newsize) 
+{
+  size_t curr_size = bestVariablesArray.size();
+
+  if(newsize < curr_size) {
+    // If reduction in size, use the standard resize
+    bestVariablesArray.resize(newsize);
+  }
+  else if(newsize > curr_size) {
+
+    // Otherwise, we have to do the iteration ourselves so that we make use
+    // of the model's current variables for envelope-letter requirements.
+
+    // Best point arrays have be sized and scaled in the original user space.  
+
+    // Dive into the originally passed model (could keep a shallow copy of it)
+    // Don't use a reference here as want a shallow copy, not the instance
+    Model usermodel(iteratedModel);
+    for (unsigned short i=1; i<=minimizerRecasts; ++i) {
+      usermodel = usermodel.subordinate_model();
+    }
+
+    bestVariablesArray.reserve(newsize);
+    for(size_t i=curr_size; i<newsize; ++i)
+      bestVariablesArray.push_back(usermodel.current_variables().copy());
+  }
+  // else no size change
+
+}
+
+/** Uses data from the innermost model, should any Minimizer recasts be active.
+    Called by multipoint return solvers. Do not directly call resize on the 
+    bestResponseArray object unless you intend to share the internal content 
+    (letter) with other objects after assignment. */
+void Minimizer::resize_best_resp_array(size_t newsize) 
+{
+  size_t curr_size = bestResponseArray.size();
+
+  if(newsize < curr_size) {
+    // If reduction in size, use the standard resize
+    bestResponseArray.resize(newsize);
+  }
+  else if(newsize > curr_size) {
+
+    // Otherwise, we have to do the iteration ourselves so that we make use
+    // of the model's current response for envelope-letter requirements.
+
+    // Best point arrays have be sized and scaled in the original user space.  
+
+    // Dive into the originally passed model (could keep a shallow copy of it)
+    // Don't use a reference here as want a shallow copy, not the instance
+    Model usermodel(iteratedModel);
+    for (unsigned short i=1; i<=minimizerRecasts; ++i) {
+      usermodel = usermodel.subordinate_model();
+    }
+
+    bestResponseArray.reserve(newsize);
+    for(size_t i=curr_size; i<newsize; ++i)
+      bestResponseArray.push_back(usermodel.current_response().copy());
+  }
+  // else no size change
+
+}
 
 
 } // namespace Dakota

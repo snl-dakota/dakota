@@ -461,38 +461,6 @@ class JEGAOptimizer :
             const VariablesArray& variables
             ) const;
             
-        /**
-         * \brief Safely resizes the best variables array taking into account
-         *        the requirements put forth by the envelope-letter design
-         *        pattern.
-         *
-         * Do not directly call resize on the bestVariablesArray object unless
-         * you intend to share the internal content (letter) with other objects
-         * after assignment.
-         *
-         * \param newsize The new size for the variables array.
-         */
-        void
-        resize_variables_results_array(
-            std::size_t newsize
-            );
-      
-        /**
-         * \brief Safely resizes the best response array taking into account
-         *        the requirements put forth by the envelope-letter design
-         *        pattern.
-         *
-         * Do not directly call resize on the bestResponseArray object unless
-         * you intend to share the internal content (letter) with other objects
-         * after assignment.
-         *
-         * \param newsize The new size for the responses array.
-         */
-        void
-        resize_response_results_array(
-            std::size_t newsize
-            );
-
 
     /*
     ===========================================================================

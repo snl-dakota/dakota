@@ -46,9 +46,10 @@ SurrBasedGlobalMinimizer::SurrBasedGlobalMinimizer(Model& model):
     abort_handler(-1);
   }
 
-  // Deferred until best update, since this copy would be replaced
-  //bestVariablesArray.push_back(
-  //  iteratedModel.truth_model().current_variables().copy());
+  // While this copy will be replaced in best update, initialize here
+  // since relied on in Minimizer::initialize_run when a sub-iterator
+  bestVariablesArray.push_back(
+    iteratedModel.truth_model().current_variables().copy());
 
   // Instantiate the approximate sub-problem minimizer
   const String& approx_method_ptr
@@ -244,7 +245,7 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
 	copy_data(truth_resp_results, bestResponseArray);
       }
       else {
-	bestVariablesArray.push_back(vars_results.front());
+	bestVariablesArray.front().active_variables(vars_results.front());
 	bestResponseArray.front().function_values(
 	  approxSubProbMinimizer.response_results().function_values());
       }

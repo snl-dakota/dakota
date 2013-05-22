@@ -51,7 +51,7 @@ APPSOptimizer::APPSOptimizer(Model& model): Optimizer(model)
   // maxConcurrency is updated within set_apps_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
-  if (minimizerRecast)
+  if (minimizerRecasts)
     iteratedModel.init_communicators(maxConcurrency);
 }
 
@@ -67,7 +67,7 @@ APPSOptimizer::APPSOptimizer(NoDBBaseConstructor, Model& model):
   // maxConcurrency is updated within set_apps_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
-  if (minimizerRecast)
+  if (minimizerRecasts)
     iteratedModel.init_communicators(maxConcurrency);
 }
 

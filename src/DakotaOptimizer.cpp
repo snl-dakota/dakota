@@ -127,18 +127,20 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
   // in 0 -- 3 RecastModels, potentially resulting in reduce(scale(data(model)))
 
   // this might set weights based on exp std deviations!
-  if (local_nls_recast && obsDataFlag)
+  if (local_nls_recast && obsDataFlag) {
     data_transform_model(!iteratedModel.primary_response_fn_weights().empty());
-  if (scaleFlag)
+    ++minimizerRecasts;
+  }
+  if (scaleFlag) {
     scale_model();
-  if (localObjectiveRecast)
+    ++minimizerRecasts;
+  }
+  if (localObjectiveRecast) {
     reduce_model(local_nls_recast, require_hessians);
+    ++minimizerRecasts;
+  }
 
-  // register whether a Recast is active within Minimizer
-  minimizerRecast = (local_nls_recast && obsDataFlag) || scaleFlag || 
-    localObjectiveRecast;
-
-  if (minimizerRecast) {
+  if (minimizerRecasts) {
     // for gradient-based Optimizers, maxConcurrency has already been determined
     // from derivative concurrency in the Iterator initializer, so initialize
     // communicators in the RecastModel.  For nongradient methods (many COLINY
@@ -151,7 +153,8 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     }
   }
 
-  // Initialize a best variables instance
+  // Initialize a best variables instance; bestVariablesArray should
+  // be in calling context; so initialized before any recasts
   bestVariablesArray.push_back(model.current_variables().copy());
 }
 
@@ -187,6 +190,8 @@ Optimizer(NoDBBaseConstructor, size_t num_cv, size_t num_div, size_t num_drv,
   numFunctions        = numUserPrimaryFns + numNonlinearConstraints;
   optimizationFlag    = true;
 
+  // The following "best" initializations are done here instead of in
+  // Minimizer for this lightweight case
   std::pair<short,short> view(MIXED_DESIGN, EMPTY);
   SizetArray vc_totals(12, 0);
   vc_totals[0] = num_cv; vc_totals[1] = num_div; vc_totals[2] = num_drv;
@@ -466,8 +471,13 @@ void Optimizer::initialize_run()
 {
   Minimizer::initialize_run();
 
+  // TODO: This predates the multi-recast, so only goes down zero or
+  // one levels.  Further recursion and possible transformations are
+  // needed in the multi-recast case.  Can we make this update
+  // sufficiently flexible to catch the subIterator and inactive case?
+
   // pull any late updates into the RecastModel
-  if (minimizerRecast)
+  if (minimizerRecasts)
     iteratedModel.update_from_subordinate_model(false); // recursion not reqd
 
   // Track any previous object instance in case of recursion.  Note that
