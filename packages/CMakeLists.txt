@@ -15,6 +15,8 @@ option(HAVE_PECOS "Build the Pecos package." ON)
 option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
 option(HAVE_QUESO "Build the QUESO package." OFF)
+option(HAVE_QUESO_GRVY "Use the optional QUESO GRVY package; not recommended." 
+  OFF)
 
 if(HAVE_CONMIN)
   if ( NOT CONMIN_DIR )
@@ -51,28 +53,33 @@ if(${SH} MATCHES "sh-NOTFOUND")
           "Cannot build queso as an external project without sh")
 else()
   if(HAVE_QUESO)
-    ############################################################################
-    # GRVY
+
+    ############################################
+    # GRVY: As of queso-0.46.0, GRVY is optional
     #
-    set(GRVY_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext)
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${GRVY_EXT_BINARY_DIR} )
+    if (HAVE_QUESO_GRVY)
 
-    set(grvy_config_cmd
-      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext-prefix/src/grvy_ext/configure
-      "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
-      "--without-hdf5" "--with-boost=${Boost_INCLUDE_DIR}/.."
-      "--prefix" "${GRVY_EXT_BINARY_DIR}"
-    )
-    externalproject_add(grvy_ext
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/grvy-0.32.0.tar.gz
-      BUILD_IN_SOURCE 1
-      CONFIGURE_COMMAND "${grvy_config_cmd}"
-    )
+      set(GRVY_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext)
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${GRVY_EXT_BINARY_DIR} )
+      
+      set(grvy_config_cmd
+        ${SH} ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext-prefix/src/grvy_ext/configure
+        "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
+        "--without-hdf5" "--with-boost=${Boost_INCLUDE_DIR}/.."
+        "--prefix" "${GRVY_EXT_BINARY_DIR}"
+	)
+      externalproject_add(grvy_ext
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/grvy-0.32.0.tar.gz
+        BUILD_IN_SOURCE 1
+        CONFIGURE_COMMAND "${grvy_config_cmd}"
+	)
 
-    #add_library(grvy UNKNOWN IMPORTED GLOBAL)
-    #set_target_properties(grvy PROPERTIES 
-    #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
+      #add_library(grvy UNKNOWN IMPORTED GLOBAL)
+      #set_target_properties(grvy PROPERTIES 
+      #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
+
+    endif()
 
     ############################################################################
     # Queso
@@ -83,10 +90,12 @@ else()
       message(FATAL_ERROR "Enabling QUESO without GSL is not allowed.")
     endif()
 
+    # TODO: try to find this automatically
     if(NOT DEFINED ENV{GSL_CONFIG})
       message(FATAL_ERROR "QUESO currently requires GSL_CONFIG set as an envVar.")
     endif()
 
+    # This may not be necessary for system-installed Boost
     if(NOT DEFINED ENV{BOOST_ROOT})
       message(FATAL_ERROR "QUESO currently requires BOOST_ROOT set as an envVar.")
     endif()
@@ -105,14 +114,19 @@ else()
       ${SH} ${CMAKE_CURRENT_BINARY_DIR}/queso_ext-prefix/src/queso_ext/configure
       "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
       "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
-      "--without-hdf5" "--without-glpk" "--with-grvy=${GRVY_EXT_BINARY_DIR}"
+      "--without-hdf5" "--without-glpk"
       "--with-boost=${Boost_INCLUDE_DIR}/.."
       "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Boost_LIBRARY_DIRS}:${GSL_LIBRARY_DIRS}"
       "CXXFLAGS=${CMAKE_CXX_FLAGS}"
       "--prefix" "${QUESO_EXT_BINARY_DIR}"
-    )
+      )
+    if (HAVE_QUESO_GRVY)
+      set(queso_config_cmd ${queso_config_cmd} 
+	"--with-grvy=${GRVY_EXT_BINARY_DIR}")
+    endif()
+
     externalproject_add(queso_ext
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso-0.45.3.tar.gz
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso-0.46.0.tar.gz
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND "${queso_config_cmd}"
     )
@@ -121,7 +135,10 @@ else()
     #set_target_properties(queso PROPERTIES 
     #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
 
-    add_dependencies(queso_ext grvy_ext)
+    if (HAVE_QUESO_GRVY)
+      add_dependencies(queso_ext grvy_ext)
+    endif()
+
   endif(HAVE_QUESO)
 endif() #sh
 
