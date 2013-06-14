@@ -1116,25 +1116,69 @@ KEYWORD12 method
 		[ sparse_grid_level INTEGERLIST ]
 		)
 	      ]
+	    [ rejection
+	      standard
+	      | delayed
+	      ]
+	    [ metropolis
+	      hastings
+	      | adaptive
+	      ]
+	    [ rng
+	      mt19937
+	      | rnum2
+	      ]
+	    [ proposal_covariance_scale REALLIST ]
 	    )
 	  |
 	  ( gpmsa
 	    emulator_samples INTEGER
+	    [ rejection
+	      standard
+	      | delayed
+	      ]
+	    [ metropolis
+	      hastings
+	      | adaptive
+	      ]
+	    [ rng
+	      mt19937
+	      | rnum2
+	      ]
+	    [ proposal_covariance_scale REALLIST ]
 	    )
-	  [ rejection
-	    standard
-	    | delayed
-	    ]
-	  [ metropolis
-	    hastings
-	    | adaptive
-	    ]
+	  |
+	  ( dream
+	    [ chains INTEGER >= 3 ]
+	    [ num_cr INTEGER >= 1 ]
+	    [ crossover_chain_pairs INTEGER >= 0 ]
+	    [ gr_threshold REAL > 0.0 ]
+	    [ jump_step INTEGER >= 0 ]
+	    [ emulator
+	      ( gaussian_process ALIAS kriging
+		surfpack
+		| dakota
+		[ emulator_samples INTEGER ]
+		[ import_points_file STRING
+		  [ annotated
+		  | freeform ]
+		  ]
+		[ export_points_file STRING
+		  [ annotated
+		  | freeform ]
+		  ]
+		)
+	      |
+	      ( pce
+		[ sparse_grid_level INTEGERLIST ]
+		)
+	      |
+	      ( sc
+		[ sparse_grid_level INTEGERLIST ]
+		)
+	      ]
+	    )
 	  [ use_derivatives ]
-	  [ rng
-	    mt19937
-	    | rnum2
-	    ]
-	  [ proposal_covariance_scale REALLIST ]
 	  [ likelihood_scale REAL ]
 	  [ calibrate_sigma ]
 	  [ samples INTEGER ]

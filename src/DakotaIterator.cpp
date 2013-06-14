@@ -88,6 +88,9 @@
 #ifdef DAKOTA_QUESO
 #include "NonDQUESOBayesCalibration.hpp"
 #endif
+#ifdef HAVE_DREAM
+#include "NonDDREAMBayesCalibration.hpp"
+#endif
 #ifdef HAVE_ADAPTIVE_SAMPLING 
 #include "NonDAdaptiveSampling.hpp"
 #endif
@@ -394,6 +397,10 @@ Iterator* Iterator::get_iterator(Model& model)
 #ifdef DAKOTA_QUESO
     if (sub_method_name == "queso")
       return new NonDQUESOBayesCalibration(model);
+#endif
+#ifdef HAVE_DREAM
+    if (sub_method_name == "dream")
+      return new NonDDREAMBayesCalibration(model);
 #endif
     return NULL;
   }

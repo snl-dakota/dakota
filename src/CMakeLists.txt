@@ -559,6 +559,12 @@ if(HAVE_DOT)
   set(iterator_src ${iterator_src} DOTOptimizer.cpp)
 endif(HAVE_DOT)
 
+CheckPackage(DREAM)
+if(HAVE_DREAM)
+  include_directories(${Dream_SOURCE_DIR})
+  set(iterator_src ${iterator_src} NonDDREAMBayesCalibration.cpp)
+endif(HAVE_DREAM)
+
 CheckPackage(FSUDACE)
 if(HAVE_FSUDACE)
   include_directories(${FSUDace_BINARY_DIR} ${FSUDace_SOURCE_DIR})

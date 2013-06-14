@@ -745,40 +745,72 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(lit,methodName_nond_bayes_calibration)}
               ( ( queso {N_mdm(lit,subMethodName_queso)}
                   [ emulator {0}
+	            ( gaussian_process ALIAS kriging {0} 
+                      surfpack {N_mdm(type,emulatorType_KRIGING)}
+                      | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)} 
+		      [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]  
+	              [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                        [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                      	  freeform  {N_mdm(false,approxImportAnnotated)} ] 
+                        ]
+	    	      [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	        [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                      	  freeform  {N_mdm(false,approxExportAnnotated)} ]
+              	        ]
+                      ) 
+		    |
+		    ( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
+		      [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] )
+		    |
+		    ( sc {N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
+		      [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) 
+		    ]
+		  )
+	        |
+		( gpmsa {N_mdm(lit,subMethodName_gpmsa)} 
+	          emulator_samples INTEGER {N_mdm(int,emulatorSamples)}
+		  )
+                [ rejection {0}
+	          standard {N_mdm(lit,rejectionType_standard)}
+		  | delayed {N_mdm(lit,rejectionType_delayed)} ]
+                [ metropolis {0}
+	          hastings {N_mdm(lit,metropolisType_hastings)}
+		  | adaptive {N_mdm(lit,metropolisType_adaptive)} ]
+	        [ rng {0}
+		  mt19937 {N_mdm(lit,rngName_mt19937)}
+		  | rnum2 {N_mdm(lit,rngName_rnum2)} ]
+		[ proposal_covariance_scale REALLIST {N_mdm(RealDL,proposalCovScale)} ]
+              )
+	      |
+	      ( dream {N_mdm(lit,subMethodName_dream)}
+		[ chains INTEGER >= 3 {N_mdm(int,numChains)} ]
+		[ num_cr INTEGER >= 1 {N_mdm(int,numCR)} ]
+		[ crossover_chain_pairs INTEGER >= 0 {N_mdm(int,crossoverChainPairs)} ]
+		[ gr_threshold REAL > 0.0 {N_mdm(Real,grThreshold)} ]
+		[ jump_step INTEGER >= 0 {N_mdm(int,jumpStep)} ]
+                [ emulator {0}
 	          ( gaussian_process ALIAS kriging {0} 
                     surfpack {N_mdm(type,emulatorType_KRIGING)}
                     | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)} 
 		    [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]  
 	            [ import_points_file STRING {N_mdm(str,approxImportFile)} 
                       [ annotated {N_mdm(true,approxImportAnnotated)} | 
-                      	freeform  {N_mdm(false,approxImportAnnotated)} ] 
+                        freeform  {N_mdm(false,approxImportAnnotated)} ] 
                       ]
 	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
-              	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
-                      	freeform  {N_mdm(false,approxExportAnnotated)} ]
-              	      ]
-                  ) |
+            	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                        freeform  {N_mdm(false,approxExportAnnotated)} ]
+            	      ]
+                    ) 
+		  |
 		  ( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
-		    [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) |
+		    [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] )
+		  |
 		  ( sc {N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
-		    [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) ]
+		    [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) 
+		  ]
 		)
-	        |
-		( gpmsa {N_mdm(lit,subMethodName_gpmsa)} 
-	          emulator_samples INTEGER {N_mdm(int,emulatorSamples)}
-		)
-              )
-              [ rejection {0}
-	        standard {N_mdm(lit,rejectionType_standard)}
-		| delayed {N_mdm(lit,rejectionType_delayed)} ]
-              [ metropolis {0}
-	        hastings {N_mdm(lit,metropolisType_hastings)}
-		| adaptive {N_mdm(lit,metropolisType_adaptive)} ]
 	      [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-	      [ rng {0}
-		mt19937 {N_mdm(lit,rngName_mt19937)}
-		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
-              [ proposal_covariance_scale REALLIST {N_mdm(RealDL,proposalCovScale)} ]
               [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
 	      [ calibrate_sigma {N_mdm(true,calibrateSigmaFlag)} ] 
 	      )

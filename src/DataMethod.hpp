@@ -771,6 +771,20 @@ public:
   /// flag to indicate if the sigma terms should be calibrated in 
   /// \ref MethodNonDBayesCalib
   bool calibrateSigmaFlag;
+
+  // DREAM sub-specification
+
+  /// number of concurrent chains
+  int numChains;
+  /// number of CR-factors
+  int numCR;
+  /// number of crossover chain pairs
+  int crossoverChainPairs;
+  /// threshold for the Gelmin-Rubin statistic
+  Real grThreshold;
+  /// how often to perform a long jump in generations
+  int jumpStep; 
+
   // Parameter Study
 
   /// the \c final_point specification in \ref MethodPSVPS
