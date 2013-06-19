@@ -116,7 +116,8 @@ Strategy* Strategy::get_strategy()
       return new CollaborativeHybridStrategy(probDescDB);
     else if (hybrid_type == "embedded")
       return new EmbeddedHybridStrategy(probDescDB);
-    else if (hybrid_type.begins("sequential")) // sequential,sequential_adaptive
+    else if (strbegins(hybrid_type, "sequential")) 
+      // sequential,sequential_adaptive
       return new SequentialHybridStrategy(probDescDB);
     else {
       Cerr << "Invalid hybrid strategy type: " << hybrid_type << endl;

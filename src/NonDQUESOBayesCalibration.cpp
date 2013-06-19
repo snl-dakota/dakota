@@ -282,15 +282,15 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   calIpMhOptionsValues->m_putOutOfBoundsInChain       = true;
   //calIpMhOptionsValues->m_tkUseLocalHessian         = false;
   //calIpMhOptionsValues->m_tkUseNewtonComponent      = true;
-  if (rejectionType.ends("standard"))
+  if (strends(rejectionType, "standard"))
     calIpMhOptionsValues->m_drMaxNumExtraStages = 0;
-  else if (rejectionType.ends("delayed"))
+  else if (strends(rejectionType, "delayed"))
     calIpMhOptionsValues->m_drMaxNumExtraStages = 1;
   calIpMhOptionsValues->m_drScalesForExtraStages.resize(1);
   calIpMhOptionsValues->m_drScalesForExtraStages[0] = 6;
-  if (metropolisType.ends("hastings"))
+  if (strends(metropolisType, "hastings"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
-  else if (metropolisType.ends("adaptive"))
+  else if (strends(metropolisType, "adaptive"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 1;
   calIpMhOptionsValues->m_amAdaptInterval           = 100;
   //calIpMhOptionsValues->m_amEta                     = 1.92;

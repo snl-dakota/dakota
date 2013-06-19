@@ -13,7 +13,6 @@
 #include "dakota_global_defs.hpp"  // for Cerr, write_precision
 #include "dakota_data_types.hpp"
 #include "DakotaBinStream.hpp"
-#include "DakotaString.hpp"
 #include "MPIPackBuffer.hpp"
 #include <boost/foreach.hpp>
 

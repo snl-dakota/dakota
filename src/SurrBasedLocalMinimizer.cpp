@@ -245,9 +245,9 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
   const String& approx_type = probDescDB.get_string("model.surrogate.type");
   short correction_order
     = probDescDB.get_short("model.surrogate.correction_order");
-  globalApproxFlag   = (approx_type.begins("global_"));
-  multiptApproxFlag  = (approx_type.begins("multipoint_"));
-  localApproxFlag    = (approx_type.begins("local_"));
+  globalApproxFlag   = (strbegins(approx_type, "global_"));
+  multiptApproxFlag  = (strbegins(approx_type, "multipoint_"));
+  localApproxFlag    = (strbegins(approx_type, "local_"));
   hierarchApproxFlag = (approx_type == "hierarchical");
   truthGradientFlag  = ( localApproxFlag || multiptApproxFlag || 
 			 ( globalApproxFlag && useDerivsFlag ) ||

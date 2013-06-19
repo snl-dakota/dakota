@@ -90,16 +90,16 @@ void NLPQLPOptimizer::initialize()
   // sub-models and test each sub-iterator for NLPQL presence.
   Iterator sub_iterator = iteratedModel.subordinate_iterator();
   if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name().begins("nlpql") ||
-	 sub_iterator.uses_method().begins("nlpql") ) )
+       ( strbegins(sub_iterator.method_name(), "nlpql") ||
+	 strbegins(sub_iterator.uses_method(), "nlpql") ) )
     sub_iterator.method_recourse();
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name().begins("nlpql") ||
-	   sub_iterator.uses_method().begins("nlpql") ) )
+	 ( strbegins(sub_iterator.method_name(), "nlpql") ||
+	   strbegins(sub_iterator.uses_method(), "nlpql") ) )
       sub_iterator.method_recourse();
   }
 

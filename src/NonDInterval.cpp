@@ -27,7 +27,7 @@ static const char rcsId[] = "@(#) $Id: NonDInterval.cpp 6080 2009-09-08 19:03:20
 namespace Dakota {
 
 NonDInterval::NonDInterval(Model& model): NonD(model),
-  singleIntervalFlag(methodName.ends("_interval_est"))
+  singleIntervalFlag(strends(methodName, "_interval_est"))
 {
   bool err_flag = false;
 

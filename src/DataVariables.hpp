@@ -19,7 +19,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr
 #include "dakota_data_types.hpp"
-#include "DakotaString.hpp"
+#include "MPIPackBuffer.hpp"
 
 namespace Dakota {
 

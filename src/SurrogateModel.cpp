@@ -145,12 +145,13 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
   }
 
   /*
-  if ( ( ( surrogateType.begins("local_") || surrogateType.begins("multipoint_")
+  if ( ( ( strbegins(surrogateType, "local_") || 
+           strbegins(surrogateType, "multipoint_")
 	|| surrogateType == "hierarchical" ) &&
 	 ( sub_model.cv() != currentVariables.cv() ||
            sub_model.div() != currentVariables.div() ||
            sub_model.drv() != currentVariables.drv() ) ) ||
-       ( surrogateType.begins("global_") &&
+       ( strbegins(surrogateType, "global_") &&
 	 ( sub_model.cv() != currentVariables.acv() ||
 	   sub_model.div() != currentVariables.adiv() ||
 	   sub_model.drv() != currentVariables.adrv() ) ) ) {
@@ -190,7 +191,7 @@ bool SurrogateModel::force_rebuild()
 	 currentVariables.inactive_discrete_real_variables() )
       return true;
 
-    if ( surrogateType.begins("global_") &&
+    if ( strbegins(surrogateType, "global_") &&
 	 // compare reference bounds against current active top-level data
 	 ( referenceCLBnds != userDefinedConstraints.continuous_lower_bounds()||
 	   referenceCUBnds != userDefinedConstraints.continuous_upper_bounds()||
@@ -250,7 +251,7 @@ bool SurrogateModel::force_rebuild()
     */
 
     // compare reference bounds against current active top-level data
-    if ( surrogateType.begins("global_") ) {
+    if ( strbegins(surrogateType, "global_") ) {
 
       if (actual_model.model_type() == "recast") {
 	// check for internal changes within subModel definition since the

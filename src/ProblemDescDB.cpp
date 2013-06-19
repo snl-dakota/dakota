@@ -388,7 +388,7 @@ void ProblemDescDB::check_input(const char* dakota_input_file, bool echo_input)
       // global surrogate with data reuse from either restart or points_file
       for (std::list<DataModel>::iterator dm_iter = dataModelList.begin();
 	   dm_iter!=dataModelList.end(); ++dm_iter)
-	if ( dm_iter->dataModelRep->surrogateType.begins("global_") && 
+	if ( strbegins(dm_iter->dataModelRep->surrogateType, "global_") && 
 	     ( ( !dm_iter->dataModelRep->approxPointReuse.empty() &&
 		  dm_iter->dataModelRep->approxPointReuse != "none" ) ||
 	       !dm_iter->dataModelRep->approxImportFile.empty() ) )
@@ -434,12 +434,12 @@ void ProblemDescDB::check_input(const char* dakota_input_file, bool echo_input)
 	  // TODO: Test for iterator concurrency
 	  std::list<DataMethod>::iterator dm = dataMethodList.begin();
 	  String& method_name = dm->dataMethodRep->methodName;
-	  if ( ! ( method_name.ends("_parameter_study")  || 
+	  if ( ! ( strends(method_name, "_parameter_study")  || 
 		   (method_name == "nond_sampling" && 
-		    !dm->dataMethodRep->sampleType.begins("incremental") ) ||
+		    !strbegins(dm->dataMethodRep->sampleType, "incremental") ) ||
 		   method_name == "dace"                 ||
-		   method_name.begins("fsu_")            ||
-		   method_name.begins("psuade_")            ) ) {
+		   strbegins(method_name, "fsu_")            ||
+		   strbegins(method_name, "psuade_")            ) ) {
 	    Cerr << "Error: pre-run output not supported for method "
 		 << method_name << "\n       (supported for LHS, "
 		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
@@ -464,12 +464,12 @@ void ProblemDescDB::check_input(const char* dakota_input_file, bool echo_input)
 	  // TODO: Test for iterator concurrency
 	  std::list<DataMethod>::iterator dm = dataMethodList.begin();
 	  String& method_name = dm->dataMethodRep->methodName;
-	  if ( ! ( method_name.ends("_parameter_study")  || 
+	  if ( ! ( strends(method_name, "_parameter_study")  || 
 		   (method_name == "nond_sampling" && 
-		    !dm->dataMethodRep->sampleType.begins("incremental") ) ||
+		    !strbegins(dm->dataMethodRep->sampleType, "incremental") ) ||
 		   method_name == "dace"                 ||
-		   method_name.begins("fsu_")            ||
-		   method_name.begins("psuade_")            ) ) {
+		   strbegins(method_name,"fsu_")            ||
+		   strbegins(method_name,"psuade_")            ) ) {
 	    Cerr << "Error: post-run input not supported for method "
 		 << method_name << "\n       (supported for LHS, "
 		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
@@ -1435,7 +1435,7 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 {
   if (!dbRep)
 	Null_rep("get_rsm");
-  if (entry_name.begins("variables.")) {
+  if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
     if (entry_name == "variables.uncertain.correlation_matrix")
@@ -1553,7 +1553,7 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
   if (!dbRep)
 	Null_rep("get_is");
-  if (entry_name.begins("model.")) {
+  if (strbegins(entry_name, "model.")) {
     if (dbRep->modelDBLocked)
 	Locked_db();
     if (entry_name == "model.surrogate.function_indices")
@@ -1764,7 +1764,7 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 {
   if (!dbRep)
 	Null_rep("get_2sa");
-  if (entry_name.begins("interface.")) {
+  if (strbegins(entry_name, "interface.")) {
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     if (entry_name == "interface.application.analysis_components")
@@ -1876,7 +1876,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     if ((kw = (KW<String, DataModelRep>*)Binsearch(Sdmo, L)))
 	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
-  else if (entry_name.begins("variables.")) {
+  else if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
     if (entry_name == "variables.id")
@@ -1939,7 +1939,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 
   if (!dbRep)
 	Null_rep("get_real");
-  if (entry_name.begins("strategy.")) {
+  if (strbegins(entry_name, "strategy.")) {
     if (entry_name == "strategy.hybrid.local_search_probability")
       return dbRep->strategySpec.dataStratRep->hybridLSProb;
   }
@@ -2190,11 +2190,11 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 {
   if (!dbRep)
 	Null_rep("get_ushort");
-  if (entry_name.begins("method.")) {
+  if (strbegins(entry_name, "method.")) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     DataMethodRep *MeRep = dbRep->dataMethodIter->dataMethodRep;
-    if (entry_name.ends("nond.cubature_integrand"))
+    if (strends(entry_name, "nond.cubature_integrand"))
       return MeRep->cubIntOrder;
   }
   Bad_name(entry_name, "get_ushort");
@@ -2387,7 +2387,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
   /*
-  else if (entry_name.begins("variables.")) {
+  else if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
   }
@@ -2648,7 +2648,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 {
   if (!dbRep)
 	Null_rep1("set(RealSymMatrix&)");
-  if (entry_name.begins("variables.")) {
+  if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
     if (entry_name == "variables.uncertain.correlation_matrix") {

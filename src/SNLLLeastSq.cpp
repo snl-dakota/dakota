@@ -525,7 +525,10 @@ void SNLLLeastSq::minimize_residuals()
 /// and directly invokes Iterator::post_run when complete
 void SNLLLeastSq::post_run(std::ostream& s)
 {
-  theOptimizer->printStatus(String("Solution from Opt++").data());
+  // BMA NOTE: casting away the constness as done historically in DakotaString  
+  String status("Solution from Opt++");
+  char* nonconst_status = (char *) status.c_str();
+  theOptimizer->printStatus(nonconst_status);
 
   // Retrieve the best design point and corresponding response data for use at
   // the strategy level.

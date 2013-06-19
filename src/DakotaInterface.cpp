@@ -87,11 +87,13 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
       = (problem_db.get_string("responses.hessian_type") == "analytic");
     asl = (hess_flag) ? ASL_alloc(ASL_read_pfgh) : ASL_alloc(ASL_read_fg);
     // allow user input of either stub or stub.nl
-    String stub = (ampl_file_name.ends(".nl")) ? 
+    String stub = (strends(ampl_file_name, ".nl")) ? 
       String(ampl_file_name, 0, ampl_file_name.size() - 3) : ampl_file_name;
     //std::ifstream ampl_nl(ampl_file_name);
     fint stub_str_len = stub.size();
-    FILE* ampl_nl = jac0dim(stub.data(), stub_str_len);
+    // BMA NOTE: casting away the constness as done historically in DakotaString
+    char* nonconst_stub = (char*) stub.c_str();
+    FILE* ampl_nl = jac0dim(nonconst_stub, stub_str_len);
     if (!ampl_nl) {
       Cerr << "\nError: failure opening " << ampl_file_name << std::endl;
       abort_handler(-1);
@@ -106,7 +108,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
     // extract input/output tag lists
     String row = stub + ".row", col = stub + ".col";
-    std::ifstream ampl_col(col);
+    std::ifstream ampl_col(col.c_str());
     if (!ampl_col) {
       Cerr << "\nError: failure opening " << ampl_col << std::endl;
       abort_handler(-1);
@@ -115,7 +117,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     for (size_t i=0; i<n_var; i++)
       ampl_col >> algebraicVarTags[i];
 
-    std::ifstream ampl_row(row);
+    std::ifstream ampl_row(row.c_str());
     if (!ampl_row) {
       Cerr << "\nError: failure opening " << ampl_row << std::endl;
       abort_handler(-1);
@@ -803,10 +805,10 @@ int Interface::algebraic_function_type(String functionTag)
 #ifdef HAVE_AMPL
   size_t i;
   for (i=0; i<n_obj; i++)
-    if (functionTag.contains(obj_name(i)))
+    if (strcontains(functionTag, obj_name(i)))
       return i+1;
   for (i=0; i<n_con; i++)
-    if (functionTag.contains(con_name(i)))
+    if (strcontains(functionTag, con_name(i)))
       return -(i+1);
 
   Cerr << "Error: No function type available for \'" << functionTag << "\' " 

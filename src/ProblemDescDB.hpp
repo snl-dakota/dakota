@@ -27,7 +27,6 @@ namespace Dakota {
 
 class ParallelLibrary;
 class CommandLineHandler;
-class String;
 
 
 /// The database containing information parsed from the DAKOTA input file.

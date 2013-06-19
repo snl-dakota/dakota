@@ -88,12 +88,12 @@ Minimizer::Minimizer(Model& model):
   }
 
   // Check for linear constraint support in method selection
-  if ( ( numLinearIneqConstraints || numLinearEqConstraints )       &&
-       !methodName.begins("surrogate_based_")                       &&
-       !methodName.ends("_sqp")      && !methodName.begins("dot_")  &&
-       !methodName.begins("conmin_") && !methodName.ends("_newton") &&
-        methodName != "moga"         &&  methodName != "soga"       &&
-        methodName != "asynch_pattern_search" ) {
+  if ( ( numLinearIneqConstraints || numLinearEqConstraints )               &&
+       !strbegins(methodName, "surrogate_based_")                           &&
+       !strends(methodName, "_sqp")      && !strbegins(methodName, "dot_")  &&
+       !strbegins(methodName, "conmin_") && !strends(methodName, "_newton") &&
+       methodName != "moga"             &&  methodName != "soga"            &&
+       methodName != "asynch_pattern_search" ) {
     Cerr << "\nError: linear constraints not currently supported by "
 	 << methodName << ".\n       Please select a different method for "
          << "generally constrained problems." << std::endl;
@@ -102,13 +102,14 @@ Minimizer::Minimizer(Model& model):
 
   // Check for nonlinear constraint support in method selection.  Note that
   // CONMIN and DOT swap method selections as needed for constraint support.
-  if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints )       &&
-       !methodName.begins("surrogate_based_")                             &&
-       !methodName.ends("_sqp")      && !methodName.begins("dot_")        &&
-       !methodName.begins("conmin_") && !methodName.ends("_newton")       &&
-        methodName != "moga"         &&  methodName != "soga"             &&
-	methodName != "dl_solver"    &&  methodName != "efficient_global" &&
-       !methodName.begins("coliny_") &&  methodName != "asynch_pattern_search"){
+  if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints )          &&
+       !strbegins(methodName, "surrogate_based_")                            &&
+       !strends(methodName, "_sqp")      && !strbegins(methodName, "dot_")   &&
+       !strbegins(methodName, "conmin_") && !strends(methodName, "_newton")  &&
+       methodName != "moga"             &&  methodName != "soga"             &&
+       methodName != "dl_solver"        &&  methodName != "efficient_global" &&
+       !strbegins(methodName, "coliny_") &&  
+       methodName != "asynch_pattern_search") {
     Cerr << "\nError: nonlinear constraints not currently supported by "
 	 << methodName << ".\n       Please select a different method for "
 	 << "generally constrained problems." << std::endl;
@@ -121,9 +122,9 @@ Minimizer::Minimizer(Model& model):
   // derivative data is specified than is needed --> for example, don't enforce
   // that analytic Hessians require full Newton methods).
   if ( gradientType == "none" &&
-       ( methodName.ends("_sqp")      || methodName.begins("dot_") || 
-	 methodName.begins("conmin_") || methodName == "optpp_cg"  || 
-	 methodName.ends("_newton")   || methodName == "nl2sol"	      ) ) {
+       ( strends(methodName, "_sqp")      || strbegins(methodName, "dot_") || 
+	 strbegins(methodName, "conmin_") || methodName == "optpp_cg"  || 
+	 strends(methodName, "_newton")   || methodName == "nl2sol"	      ) ) {
     Cerr << "\nError: gradient-based optimizers require a gradient "
          << "specification." << std::endl;
     err_flag = true;
@@ -131,8 +132,9 @@ Minimizer::Minimizer(Model& model):
   if ( hessianType != "none" && methodName != "optpp_newton" )
     Cerr << "\nWarning: Hessians are only utilized by full Newton methods.\n\n";
   if ( ( gradientType != "none"     || hessianType != "none")      &&
-       ( methodName == "optpp_pds"  || methodName.begins("coliny_") || 
-         methodName.begins("ncsu_") || methodName == "asynch_pattern_search" ||
+       ( methodName == "optpp_pds"  || strbegins(methodName, "coliny_") || 
+         strbegins(methodName, "ncsu_")        || 
+	 methodName == "asynch_pattern_search" ||
 	 methodName == "moga"       || methodName == "soga" ) )
     Cerr << "\nWarning: Gradient/Hessian specification for a nongradient-based "
 	 << "optimizer is ignored.\n\n";

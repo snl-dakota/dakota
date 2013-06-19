@@ -36,13 +36,13 @@ ParamStudy::ParamStudy(Model& model): PStudyDACE(model), pStudyType(0)
   // Set pStudyType
   const RealVector& step_vector
     = probDescDB.get_rv("method.parameter_study.step_vector");
-  if (methodName.begins("list_"))
+  if (strbegins(methodName, "list_"))
     pStudyType = LIST;
-  else if (methodName.begins("vector_"))
+  else if (strbegins(methodName, "vector_"))
     pStudyType = (step_vector.empty()) ? VECTOR_FP : VECTOR_SV;
-  else if (methodName.begins("centered_"))
+  else if (strbegins(methodName, "centered_"))
     pStudyType = CENTERED;
-  else if (methodName.begins("multidim_"))
+  else if (strbegins(methodName, "multidim_"))
     pStudyType = MULTIDIM;
 
   // Extract specification from ProblemDescDB, perform sanity checking, and

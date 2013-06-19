@@ -456,7 +456,7 @@ void repair_restart(int argc, char** argv, String identifier_type)
     exit(-1);
   }
 
-  BiStream read_restart(read_restart_filename);
+  BiStream read_restart(read_restart_filename.c_str());
   if (!read_restart) {
     Cerr << "Error: failed to open restart file "
          << read_restart_filename << endl;
@@ -464,7 +464,7 @@ void repair_restart(int argc, char** argv, String identifier_type)
   }
 
   extern BoStream write_restart;
-  write_restart.open(write_restart_filename);
+  write_restart.open(write_restart_filename.c_str());
 
   cout << "Writing new restart file " << write_restart_filename << '\n';
 

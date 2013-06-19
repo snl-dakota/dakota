@@ -42,16 +42,16 @@ SOLBase::SOLBase(Model& model)
   //       user-functions mode (since there is no model in this case).
   Iterator sub_iterator = model.subordinate_iterator();
   if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name().ends("sol_sqp") ||
-	 sub_iterator.uses_method().ends("sol_sqp") ) )
+      ( strends(sub_iterator.method_name(), "sol_sqp") ||
+	 strends(sub_iterator.uses_method(), "sol_sqp") ) )
     sub_iterator.method_recourse();
   ModelList& sub_models = model.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name().ends("sol_sqp") ||
-	   sub_iterator.uses_method().ends("sol_sqp") ) )
+	 ( strends(sub_iterator.method_name(), "sol_sqp") ||
+	   strends(sub_iterator.uses_method(), "sol_sqp") ) )
       sub_iterator.method_recourse();
   }
 

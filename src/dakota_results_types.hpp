@@ -15,7 +15,6 @@
 
 #include <boost/tuple/tuple.hpp>
 #include "dakota_data_types.hpp"
-#include "DakotaString.hpp"
 
 
 namespace Dakota {

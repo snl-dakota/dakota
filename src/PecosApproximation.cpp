@@ -63,28 +63,28 @@ void PecosApproximation::
 approx_type_to_basis_type(const String& approx_type, short& basis_type)
 {
   basis_type = Pecos::NO_BASIS;
-  if (approx_type.ends("orthogonal_polynomial")) {
-    if (approx_type.begins("global_regression"))
+  if (strends(approx_type, "orthogonal_polynomial")) {
+    if (strbegins(approx_type, "global_regression"))
       basis_type = Pecos::GLOBAL_REGRESSION_ORTHOGONAL_POLYNOMIAL;
-    else if (approx_type.begins("global_projection"))
+    else if (strbegins(approx_type, "global_projection"))
       basis_type = Pecos::GLOBAL_PROJECTION_ORTHOGONAL_POLYNOMIAL;
-    else if (approx_type.begins("global"))
+    else if (strbegins(approx_type, "global"))
       basis_type = Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL;
-    //else if (approx_type.begins("piecewise_regression"))
+    //else if (strbegins(approx_type, "piecewise_regression"))
     //  basis_type = Pecos::PIECEWISE_REGRESSION_ORTHOGONAL_POLYNOMIAL;
-    //else if (approx_type.begins("piecewise_projection"))
+    //else if (strbegins(approx_type, "piecewise_projection"))
     //  basis_type = Pecos::PIECEWISE_PROJECTION_ORTHOGONAL_POLYNOMIAL;
-    //else if (approx_type.begins("piecewise"))
+    //else if (strbegins(approx_type, "piecewise"))
     //  basis_type = Pecos::PIECEWISE_ORTHOGONAL_POLYNOMIAL;
   }
-  else if (approx_type.ends("interpolation_polynomial")) {
-    if (approx_type.begins("global_nodal"))
+  else if (strends(approx_type, "interpolation_polynomial")) {
+    if (strbegins(approx_type, "global_nodal"))
       basis_type = Pecos::GLOBAL_NODAL_INTERPOLATION_POLYNOMIAL;
-    else if (approx_type.begins("global_hierarchical"))
+    else if (strbegins(approx_type, "global_hierarchical"))
       basis_type = Pecos::GLOBAL_HIERARCHICAL_INTERPOLATION_POLYNOMIAL;
-    else if (approx_type.begins("piecewise_nodal"))
+    else if (strbegins(approx_type, "piecewise_nodal"))
       basis_type = Pecos::PIECEWISE_NODAL_INTERPOLATION_POLYNOMIAL;
-    else if (approx_type.begins("piecewise_hierarchical"))
+    else if (strbegins(approx_type, "piecewise_hierarchical"))
       basis_type = Pecos::PIECEWISE_HIERARCHICAL_INTERPOLATION_POLYNOMIAL;
   }
 }

@@ -18,7 +18,6 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp" // for BaseConstructor
 #include "dakota_data_types.hpp"
-#include "DakotaString.hpp"
 
 #ifdef HAVE_AMPL
 struct ASL; // forward declaration

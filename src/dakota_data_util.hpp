@@ -12,8 +12,9 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr
 #include "dakota_data_types.hpp"
-#include "DakotaString.hpp"
 #include "pecos_data_types.hpp"
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/foreach.hpp>
 #include <algorithm>
@@ -32,6 +33,7 @@ size_t hash_value(const SerialDenseVector<OrdinalType, ScalarType>& sdv)
 
 
 namespace Dakota {
+
 
 // --------------------------------------------
 // Equality operator definitions for data types
@@ -80,6 +82,27 @@ Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv);
 Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 		   const IntVector&  curr_iv,  const IntVector&  prev_iv,
 		   const RealVector& curr_rv2, const RealVector& prev_rv2);
+
+
+// -----
+// Utility functions for manipulating or searching strings
+// -----
+
+/// Return lowercase copy of string s
+inline std::string strtolower(const std::string& s)
+{ return boost::to_lower_copy(s); }
+
+/// Return true if input string begins with string test
+inline bool strbegins(const std::string& input, const std::string& test)
+{ return(boost::starts_with(input, test)); }
+
+/// Return true if input string ends with string test
+inline bool strends(const std::string& input, const std::string& test)
+{ return(boost::ends_with(input, test)); }
+
+/// Return true if input string contains string test
+inline bool strcontains(const std::string& input, const std::string& test)
+{ return(boost::contains(input, test)); }
 
 
 // --------------------------------------------
@@ -179,9 +202,9 @@ void copy_data(
   ScalarType* ptr, const OrdinalType ptr_len, const String& ptr_type)
 {
   bool c_type;
-  if (toLower(ptr_type) == "c") // case insensitive
+  if (strtolower(ptr_type) == "c") // case insensitive
     c_type = true;
-  else if (toLower(ptr_type) == "fortran") // case insensitive
+  else if (strtolower(ptr_type) == "fortran") // case insensitive
     c_type = false;
   else {
     Cerr << "Error: invalid ptr_type in copy_data(Dakota::Array<SDV<OT,ST> >, "
@@ -957,6 +980,7 @@ inline bool contains(const DakContainerType& v,
 {
   return ( std::find(v.begin(), v.end(), val) != v.end() ) ? true : false;
 }
+
 
 } // namespace Dakota
 

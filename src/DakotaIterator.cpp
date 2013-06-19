@@ -329,7 +329,7 @@ Iterator* Iterator::get_iterator(Model& model)
   // constructor due to the use of BaseConstructor.
 
   const String& method_name = probDescDB.get_string("method.algorithm");
-  if (method_name.ends("_parameter_study"))
+  if (strends(method_name, "_parameter_study"))
     return new ParamStudy(model);
   else if (method_name == "richardson_extrap")
     return new RichExtrapVerification(model);
@@ -339,7 +339,7 @@ Iterator* Iterator::get_iterator(Model& model)
     return new NonDStochCollocation(model);
   else if (method_name == "nond_sampling") {
     const String& sample_type = probDescDB.get_string("method.sample_type");
-    if (sample_type.begins("incremental"))
+    if (strbegins(sample_type, "incremental"))
       return new NonDIncremLHSSampling(model);
     else
       return new NonDLHSSampling(model);
@@ -407,8 +407,8 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name == "nonlinear_cg")
     return new NonlinearCGOptimizer(model);
 #ifdef HAVE_OPTPP
-  else if (method_name.begins("optpp_")) {
-    if (method_name.ends("_g_newton")) return new SNLLLeastSq(model);
+  else if (strbegins(method_name, "optpp_")) {
+    if (strends(method_name, "_g_newton")) return new SNLLLeastSq(model);
     else                               return new SNLLOptimizer(model);
   }
 #endif
@@ -417,7 +417,7 @@ Iterator* Iterator::get_iterator(Model& model)
     return new APPSOptimizer(model);
 #endif
 #ifdef DAKOTA_COLINY
-  else if (method_name.begins("coliny_"))
+  else if (strbegins(method_name, "coliny_"))
     return new COLINOptimizer(model);
 #endif
 #ifdef HAVE_JEGA
@@ -447,11 +447,11 @@ Iterator* Iterator::get_iterator(Model& model)
 //    return new rSQPOptimizer(model);
 //#endif
 #ifdef HAVE_DOT
-  else if (method_name.begins("dot_"))
+  else if (strbegins(method_name, "dot_"))
     return new DOTOptimizer(model);
 #endif
 #ifdef HAVE_CONMIN
-  else if (method_name.begins("conmin_"))
+  else if (strbegins(method_name, "conmin_"))
     return new CONMINOptimizer(model);
 #endif
 #ifdef DAKOTA_DDACE
@@ -459,11 +459,11 @@ Iterator* Iterator::get_iterator(Model& model)
     return new DDACEDesignCompExp(model);
 #endif
 #ifdef HAVE_FSUDACE
-  else if (method_name.begins("fsu_"))
+  else if (strbegins(method_name, "fsu_"))
     return new FSUDesignCompExp(model);
 #endif
 #ifdef HAVE_PSUADE
-  else if (method_name.begins("psuade_"))
+  else if (strbegins(method_name, "psuade_"))
     return new PSUADEDesignCompExp(model);
 #endif
 #ifdef HAVE_NCSU
@@ -528,8 +528,8 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
 
   if (false) { } // dummy anchor for else blocks to avoid issues with #ifdef's
 #ifdef HAVE_OPTPP
-  else if (method_name.begins("optpp_")) {
-    if (method_name.ends("_g_newton"))
+  else if (strbegins(method_name, "optpp_")) {
+    if (strends(method_name, "_g_newton"))
       return new SNLLLeastSq(method_name, model);
     else
       return new SNLLOptimizer(method_name, model);
@@ -540,7 +540,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
     return new APPSOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef DAKOTA_COLINY
-  else if (method_name.begins("coliny_"))
+  else if (strbegins(method_name, "coliny_"))
     return new COLINOptimizer(method_name, model);
 #endif
 #ifdef HAVE_JEGA
@@ -566,11 +566,11 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
     return new NL2SOLLeastSq(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_DOT
-  else if (method_name.begins("dot_"))
+  else if (strbegins(method_name, "dot_"))
     return new DOTOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_CONMIN
-  else if (method_name.begins("conmin_"))
+  else if (strbegins(method_name, "conmin_"))
     return new CONMINOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_NCSU

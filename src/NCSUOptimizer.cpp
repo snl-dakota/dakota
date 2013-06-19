@@ -116,16 +116,16 @@ void NCSUOptimizer::initialize()
   // sub-models and test each sub-iterator for NCSU presence.
   Iterator sub_iterator = iteratedModel.subordinate_iterator();
   if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name().begins("ncsu_") ||
-	 sub_iterator.uses_method().begins("ncsu_") ) )
+       ( strbegins(sub_iterator.method_name(), "ncsu_") ||
+	 strbegins(sub_iterator.uses_method(), "ncsu_") ) )
     sub_iterator.method_recourse();
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name().begins("ncsu_") ||
-	   sub_iterator.uses_method().begins("ncsu_") ) )
+	 ( strbegins(sub_iterator.method_name(), "ncsu_") ||
+	   strbegins(sub_iterator.uses_method(), "ncsu_") ) )
       sub_iterator.method_recourse();
   }
 }
@@ -182,8 +182,8 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
   bool max_flag = (!max_sense.empty() && max_sense[0]);
 
   // loop over trial points, lift internal DIRECT scaling (mimics
-  // DIRinfcn), and either submit for asynch evaluation or compute
-  // synchronously
+  // DIRinfcn in DIRsubrout.f), and either submit for asynch
+  // evaluation or compute synchronously
   RealVector local_des_vars(nx, false);
   int  pos = *start-1; // only used for second eval and beyond
   for (int j=0; j<np; j++) {
@@ -277,6 +277,7 @@ void NCSUOptimizer::find_optimum()
   double* ddata = NULL;
   char*   cdata = NULL;
 
+  // Here local_des_vars is in the space of the original model
   RealVector local_des_vars;
   if (setUpType == SETUP_MODEL) {
     // initialize local_des_vars with DB initial point.  Variables are updated 

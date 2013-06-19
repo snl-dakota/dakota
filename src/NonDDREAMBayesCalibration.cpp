@@ -409,6 +409,10 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   int num_exp = NonDDREAMInstance->numExperiments;
   int num_funcs = NonDDREAMInstance->numFunctions;
   int num_cont = NonDDREAMInstance->numContinuousVars; 
+
+  // BMA TODO:
+  // Bug: if calibrating sigma, this would be bigger
+  //  RealVector x(Teuchos::View, zp, par_num);
   RealVector x(Teuchos::View, zp, num_cont);
   // using a view; don't need copy for DREAM
   // for (i=0; i<num_cont; i++) 

@@ -99,6 +99,17 @@ void AnalysisCode::define_filenames(const int id)
   // proc can define the same names without need for interproc communication.
   // However, if temporary file names are used, then evalCommRank 0 must define
   // the names and broadcast them to other evalComm procs.
+
+  // BMA NOTE: the file and/or directory names might also be adjusted
+  // by workdir, so may need to broadcast in that case too!
+
+  // BMA TODO: Current behavior is tagged parameters OR tagged
+  // directory.  The input spec should enforce this!  Or support what
+  // the spec expresses...
+
+  // BMA NOTE: We allow run without tag, but then tag at cleanup when
+  // saving
+
   const ParallelConfiguration& pc = parallelLib.parallel_configuration();
   int eval_comm_rank   = parallelLib.ie_parallel_level_defined()
 	? pc.ie_parallel_level().server_communicator_rank() : 0;
@@ -255,7 +266,7 @@ void AnalysisCode::define_filenames(const int id)
 			}
 		}
 		else for(n = templateFiles.size(), i = 0; i < n; ++i) {
-			if ((k = rec_cp(templateFiles[i], wd.c_str(), templateCopy, 0, templateReplace))) {
+		        if ((k = rec_cp(templateFiles[i].c_str(), wd.c_str(), templateCopy, 0, templateReplace))) {
 				Cerr << "Error in rec_cp(\""
 					<< templateFiles[i] << "\", \""
 					<< wd << "\")." << std::endl;
@@ -501,7 +512,7 @@ void AnalysisCode::read_results_files(Response& response, const int id)
     response.reset();
     Response partial_response = response.copy();
     for (i=0; i<numPrograms; ++i) {
-      std::ifstream recovery_stream(results_filenames[i]);
+      std::ifstream recovery_stream(results_filenames[i].c_str());
       if (!recovery_stream)
 	cleanup_and_abort(results_filenames[i]);
       recovery_stream >> partial_response;
@@ -546,7 +557,7 @@ void AnalysisCode::read_results_files(Response& response, const int id)
 
     if (numPrograms > 1)
       for (i=0; i<numPrograms; ++i)
-	std::remove(results_filenames[i]);
+	std::remove(results_filenames[i].c_str());
 
     if (useWorkdir && !dirSave && dirTag) {
 	const std::string wd = workDir

@@ -134,7 +134,7 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
 {
   size_t i, num_pts = allSamples.numCols(), num_vars = allSamples.numRows();
   if (num_pts && num_vars) {
-    std::ofstream pts_wts_file(tabular_name);
+    std::ofstream pts_wts_file(tabular_name.c_str());
     const RealVector& t1_wts = numIntDriver.type1_weight_sets();
     bool weights = (t1_wts.length() > 0);
     pts_wts_file << std::setprecision(write_precision) 

@@ -99,16 +99,16 @@ void DOTOptimizer::initialize()
   //       for LHS since it is only active in pre-processing.
   Iterator sub_iterator = iteratedModel.subordinate_iterator();
   if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name().begins("dot_") ||
-	 sub_iterator.uses_method().begins("dot_") ) )
+       ( strbegins(sub_iterator.method_name(), "dot_") ||
+	 strbegins(sub_iterator.uses_method(), "dot_") ) )
     sub_iterator.method_recourse();
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name().begins("dot_") ||
-	   sub_iterator.uses_method().begins("dot_") ) )
+	 ( strbegins(sub_iterator.method_name(), "dot_") ||
+	   strbegins(sub_iterator.uses_method(), "dot_") ) )
       sub_iterator.method_recourse();
   }
 

@@ -438,7 +438,7 @@ void NonDPolynomialChaos::compute_expansion()
     // ---------------------------
     // Import the PCE coefficients
     // ---------------------------
-    std::ifstream import_stream(expansionImportFile);
+    std::ifstream import_stream(expansionImportFile.c_str());
     if (!import_stream) {
       Cerr << "\nError: cannot open polynomial chaos expansion import file "
 	   << expansionImportFile << std::endl;

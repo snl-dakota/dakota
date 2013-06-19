@@ -29,7 +29,7 @@ PStudyDACE::PStudyDACE(Model& model): Analyzer(model),
 {
   // Check for discrete variable types
   if ( (numDiscreteIntVars || numDiscreteRealVars) &&
-       !methodName.ends("_parameter_study") )
+       !strends(methodName, "_parameter_study") )
     Cerr << "\nWarning: discrete variables are ignored by " << methodName
        << std::endl;
 

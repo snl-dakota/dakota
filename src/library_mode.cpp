@@ -262,7 +262,7 @@ static void my_callback_function(void *ptr)
     return;
   const Dakota::StringArray& drivers
     = db->get_sa("interface.application.analysis_drivers");
-  if (contains(drivers, "plugin_rosenbrock")) {
+  if (Dakota::contains(drivers, "plugin_rosenbrock")) {
     // Rosenbrock
     Dakota::RealVector rv(2);
     rv[0] = -1.2;
@@ -275,7 +275,7 @@ static void my_callback_function(void *ptr)
     rv[1] =  2.;
     db->set("variables.continuous_design.upper_bounds", rv);
   }
-  else if (contains(drivers, "plugin_text_book")) {
+  else if (Dakota::contains(drivers, "plugin_text_book")) {
     // text_book
     Dakota::RealVector rv(2);
     rv[0] =  0.2;
@@ -442,9 +442,9 @@ void model_interface_plugins(Dakota::ProblemDescDB& problem_db)
   for (ml_iter = models.begin(); ml_iter != models.end(); ml_iter++) {
     Dakota::Interface& interface = ml_iter->interface();
     bool rosen_plugin   = interface.interface_type() == "direct" &&
-      contains(interface.analysis_drivers(), "plugin_rosenbrock");
+      Dakota::contains(interface.analysis_drivers(), "plugin_rosenbrock");
     bool textbook_plugin = interface.interface_type() == "direct" &&
-      contains(interface.analysis_drivers(), "plugin_text_book");
+      Dakota::contains(interface.analysis_drivers(), "plugin_text_book");
     bool serial_plugin   = !initialized && rosen_plugin;
     bool parallel_plugin =  initialized && textbook_plugin;
     // Either case: set DB nodes to the existing Model specification

@@ -16,7 +16,6 @@
 #define SHARED_VARIABLES_DATA_H
 
 #include "dakota_data_types.hpp"
-#include "DakotaString.hpp"
 
 
 namespace Dakota {

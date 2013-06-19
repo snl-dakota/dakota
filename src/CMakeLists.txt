@@ -348,7 +348,7 @@ set(Dakota_src DakotaBuildInfo.cpp)
 set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_tabular_io.cpp dakota_global_defs.cpp 
     CommandLineHandler.cpp DakotaGraphics.cpp
-    DakotaString.cpp DakotaBinStream.cpp SensAnalysisGlobal.cpp 
+    DakotaBinStream.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     )
 

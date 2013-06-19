@@ -409,7 +409,7 @@ approximation_coefficients(const RealVectorArray& approx_coeffs)
   // Surrogate data is being imported.  Update state to suppress automatic
   // surrogate construction.
   approxBuilds++;
-  if (surrogateType.begins("global_"))
+  if (strbegins(surrogateType, "global_"))
     update_global();
   else
     update_local_multipoint();

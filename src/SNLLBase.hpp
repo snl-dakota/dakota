@@ -17,7 +17,6 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-#include "DakotaString.hpp"
 #include "globals.h"
 
 namespace OPTPP {

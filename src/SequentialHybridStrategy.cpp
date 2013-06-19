@@ -34,7 +34,7 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
     Cerr << "Error: method_list must have a least one entry." << std::endl;
     abort_handler(-1);
   }
-  if (hybridType.ends("_adaptive") && worldRank == 0) {
+  if (strends(hybridType, "_adaptive") && worldRank == 0) {
     progressThreshold
       = problem_db.get_real("strategy.hybrid.progress_threshold");
     if (progressThreshold > 1.) {
@@ -89,7 +89,7 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   init_iterator_parallelism();
   // verify settings: adaptive hybrid does not support iterator concurrency
   if ( ( stratIterDedMaster || numIteratorServers > 1 ) && 
-       hybridType.ends("_adaptive") ) {
+       strends(hybridType, "_adaptive") ) {
     Cerr << "Error: adaptive Sequential Hybrid Strategy does not support "
 	      << "concurrent iterator parallelism." << std::endl;
     abort_handler(-1);
@@ -118,7 +118,7 @@ SequentialHybridStrategy::~SequentialHybridStrategy()
 
 void SequentialHybridStrategy::run_strategy()
 {
-  if (hybridType.ends("_adaptive"))
+  if (strends(hybridType, "_adaptive"))
     run_sequential_adaptive();
   else
     run_sequential();

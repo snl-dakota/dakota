@@ -6,13 +6,17 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
 
 namespace Dakota {
 
+// BMA TODO: Consider removing this namespace if not helpful in
+// protecting certain components
 namespace TabularIO {
+
 
 //
 //- Utilities for opening tabular files
@@ -57,20 +61,24 @@ void write_header_tabular(std::ostream& tabular_ostream,
   tabular_ostream << '%' << counter_label << ' '; // matlab comment syntax
   if (active_only) {
     // output active variable labels
-    write_data_tabular(tabular_ostream, vars.continuous_variable_labels());
-    write_data_tabular(tabular_ostream, vars.discrete_int_variable_labels());
-    write_data_tabular(tabular_ostream, vars.discrete_real_variable_labels());
+    Dakota::write_data_tabular(tabular_ostream, 
+			       vars.continuous_variable_labels());
+    Dakota::write_data_tabular(tabular_ostream, 
+			       vars.discrete_int_variable_labels());
+    Dakota::write_data_tabular(tabular_ostream, 
+			       vars.discrete_real_variable_labels());
   }
   else {
     // output all variable labels
-    write_data_tabular(tabular_ostream, vars.all_continuous_variable_labels());
-    write_data_tabular(tabular_ostream, 
+    Dakota::write_data_tabular(tabular_ostream, 
+			       vars.all_continuous_variable_labels());
+    Dakota::write_data_tabular(tabular_ostream, 
 		       vars.all_discrete_int_variable_labels());
-    write_data_tabular(tabular_ostream, 
+    Dakota::write_data_tabular(tabular_ostream, 
 		       vars.all_discrete_real_variable_labels());
   }
   if (response_labels)
-    write_data_tabular(tabular_ostream, response.function_labels());
+    Dakota::write_data_tabular(tabular_ostream, response.function_labels());
   tabular_ostream << std::endl;
 }
 

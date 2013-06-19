@@ -46,7 +46,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
  
   // Check for nongradient method with speculative flag set
   if ( speculativeFlag && ( methodName == "optpp_pds" ||
-       methodName.begins("coliny_") || methodName.begins("ncsu_") ||
+       strbegins(methodName, "coliny_") || strbegins(methodName, "ncsu_") ||
        methodName == "moga" || methodName == "soga" ) ) {
     Cerr << "\nWarning: Speculative specification for a nongradient-based "
 	 << "optimizer is ignored.\n";
@@ -146,7 +146,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     // communicators in the RecastModel.  For nongradient methods (many COLINY
     // methods, OPT++ PDS, eventually JEGA), maxConcurrency is defined in the
     // derived constructors, so init_communicators() is invoked there.
-    if ( !( methodName == "optpp_pds" || methodName.begins("coliny_") ||
+    if ( !( methodName == "optpp_pds" || strbegins(methodName, "coliny_") ||
 	    methodName == "moga"      || methodName == "soga" ) ) {
       bool recurse_flag = true;  // explicit default: recurse down models
       iteratedModel.init_communicators(maxConcurrency, recurse_flag);

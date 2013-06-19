@@ -68,7 +68,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   Cout << "lhs1 test sample type " << sampleType << '\n';
 #endif //DEBUG
 
-  if (sampleType.ends("lhs") && (previousSamples*2 != numSamples)) {
+  if (strends(sampleType, "lhs") && (previousSamples*2 != numSamples)) {
     Cout << "Error: For incremental LHS sampling, the number of samples "
  	 << "must double each time.  The number of samples must be 2 times " 
          << "the number of previous samples." << std::endl;
@@ -104,13 +104,13 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   Cout << "\nsample1\n" << sample_values_first << '\n';
 #endif
 
-  if (sampleType.ends("random")) {
+  if (strends(sampleType, "random")) {
     // for random sampling, obtain a new set of samples of the full size
     numSamples = samplesRef;
     varyPattern = true; 
     get_parameter_sets(iteratedModel);
   }
-  else if (sampleType.ends("lhs")) {
+  else if (strends(sampleType, "lhs")) {
     // for LHS, determine rank of current sample, rank of second "fill in" 
     // sample, and ranks of combined sample
     IntArray rank_col(numSamples), final_rank(numSamples);

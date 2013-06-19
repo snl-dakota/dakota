@@ -369,10 +369,10 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
   // last resort: active view if no user spec and no responses inference
 
   const String& method_name = problem_db.get_string("method.algorithm");
-  if ( method_name.ends("_parameter_study") || method_name == "dace" ||
-       method_name.begins("fsu_") || method_name.begins("psuade_") )
+  if ( strends(method_name, "_parameter_study") || method_name == "dace" ||
+       strbegins(method_name, "fsu_") || strbegins(method_name, "psuade_") )
     return ALL_VIEW;
-  else if (method_name.begins("nond_")) {
+  else if (strbegins(method_name, "nond_")) {
     if (method_name == "nond_sampling") { // MC/LHS, Incremental MC/LHS
       size_t num_auv = problem_db.get_sizet("variables.aleatory_uncertain"),
 	     num_euv = problem_db.get_sizet("variables.epistemic_uncertain");
@@ -385,7 +385,8 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
 	abort_handler(-1);    return DEFAULT_VIEW;
       }
     }
-    else if (method_name.ends("_evidence") || method_name.ends("_interval_est"))
+    else if (strends(method_name, "_evidence") || 
+	     strends(method_name, "_interval_est"))
       return EPISTEMIC_UNCERTAIN_VIEW;
     else // stoch exp, reliability, and efficient subspace methods
       return ALEATORY_UNCERTAIN_VIEW;

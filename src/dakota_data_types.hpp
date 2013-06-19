@@ -27,14 +27,13 @@ class ActiveSet;
 class ParamResponsePair;
 class ParallelLevel;
 class ParallelConfiguration;
-class String;
 
 
 // -----------------------------------
 // Aliases for fundamental data types:
 // -----------------------------------
 typedef double Real;
-
+typedef std::string String;
 
 // -----------------------------------
 // Numerical arrays (serial/parallel):

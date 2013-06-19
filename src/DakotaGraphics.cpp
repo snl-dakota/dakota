@@ -99,7 +99,7 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
       graphics2D->change_line_color2d(i, 0, 192, 0); // green
     }
     else { // user-defined response descriptor
-      std::strcpy(title, fn_labels[i]);
+      std::strcpy(title, fn_labels[i].c_str());
       graphics2D->change_line_color2d(i, 0, 0, 192); // blue
     }
     graphics2D->set_y_label2d(i, label.data());

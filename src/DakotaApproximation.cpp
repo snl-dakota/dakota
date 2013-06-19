@@ -50,8 +50,8 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
       approxType != "global_polynomial"                        &&
       approxType != "global_kriging"                           &&
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
-      !approxType.ends("_interpolation_polynomial") &&
-      !approxType.ends("_orthogonal_polynomial"))
+      !strends(approxType, "_interpolation_polynomial") &&
+      !strends(approxType, "_orthogonal_polynomial"))
 #else
       approxType != "global_orthogonal_polynomial"             &&
       approxType != "piecewise_nodal_interpolation_polynomial" &&
@@ -134,8 +134,8 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
     return new TaylorApproximation(problem_db, num_vars);
   else if (approx_type == "multipoint_tana")
     return new TANA3Approximation(problem_db, num_vars);
-  else if (approx_type.ends("_orthogonal_polynomial") ||
-	   approx_type.ends("_interpolation_polynomial"))
+  else if (strends(approx_type, "_orthogonal_polynomial") ||
+	   strends(approx_type, "_interpolation_polynomial"))
     return new PecosApproximation(problem_db, num_vars);
   else if (approx_type == "global_gaussian")
     return new GaussProcApproximation(problem_db, num_vars);
@@ -194,8 +194,8 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
     approx = new TaylorApproximation(num_vars, data_order);
   else if (approx_type == "multipoint_tana")
     approx = new TANA3Approximation(num_vars, data_order);
-  else if (approx_type.ends("_orthogonal_polynomial") ||
-	   approx_type.ends("_interpolation_polynomial"))
+  else if (strends(approx_type, "_orthogonal_polynomial") ||
+	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(approx_type, approx_order,
 				    num_vars,    data_order);
   else if (approx_type == "global_gaussian")

@@ -163,10 +163,10 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     primaryRespFnSense.resize(num_primary);
     if (num_sense == num_primary)
       for (i=0; i<num_primary; ++i)
-	primaryRespFnSense[i] = db_sense[i].toLower().begins("max");
+	primaryRespFnSense[i] = strbegins(strtolower(db_sense[i]), "max");
     else if (num_sense == 1)
       primaryRespFnSense.assign(num_primary, 
-				db_sense[0].toLower().begins("max"));
+				strbegins(strtolower(db_sense[0]), "max"));
     else {
       Cerr << "Error: wrong length in sense array.  Expected 0, 1, or "
 	   << num_primary << " but saw " << num_sense << "." << std::endl;

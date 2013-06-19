@@ -207,15 +207,15 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     gradType = "none";
   else
     gradType = (approx_type == "global_polynomial" ||
-		approx_type.ends("_orthogonal_polynomial") ||
-		approx_type.ends("_interplation_polynomial") ||
-		approx_type.begins("local_") ||
-		approx_type.begins("multipoint_")) ? "analytic" : "numerical";
+		strends(approx_type, "_orthogonal_polynomial") ||
+		strends(approx_type, "_interplation_polynomial") ||
+		strbegins(approx_type, "local_") ||
+		strbegins(approx_type, "multipoint_")) ? "analytic" : "numerical";
   if (actual_model.hessian_type() == "none")
     hessType = "none";
   else
     hessType = (approx_type == "global_polynomial" ||
-		approx_type.begins("local_"))      ? "analytic" : "numerical";
+		strbegins(approx_type, "local_"))      ? "analytic" : "numerical";
 
   // Promote fdGradSS/fdHessByFnSS/fdHessByGradSS to defaults if needed.
   if (gradType == "numerical") { // mixed not supported for this Model
@@ -263,7 +263,7 @@ void DataFitSurrModel::build_approximation()
   update_actual_model();
 
   // build a local, multipoint, or global data fit approximation.
-  if (surrogateType.begins("local_") || surrogateType.begins("multipoint_")) {
+  if (strbegins(surrogateType, "local_") || strbegins(surrogateType, "multipoint_")) {
     // NOTE: branch used by SBO
     update_local_multipoint();
     build_local_multipoint();
@@ -321,7 +321,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   // > used by NonDLocal *without* persistent vars,response
 
   // build a local, multipoint, or global data fit approximation.
-  if (surrogateType.begins("local_") || surrogateType.begins("multipoint_"))
+  if (strbegins(surrogateType, "local_") || strbegins(surrogateType, "multipoint_"))
     // NOTE: branch not used by SBO
     update_local_multipoint();
   else { // global approximation.  NOTE: branch used by SBO.
@@ -355,7 +355,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   // return a bool indicating whether the incoming data defines an embedded
   // correction (hard constraint) or just another data point.  It would be
   // preferable to flow this up from the surrogate, but keep it simple for now.
-  return (surrogateType.begins("local_") || surrogateType.begins("multipoint_")
+  return (strbegins(surrogateType, "local_") || strbegins(surrogateType, "multipoint_")
 	  || surrogateType == "global_polynomial");
 }
 
@@ -696,7 +696,7 @@ void DataFitSurrModel::build_local_multipoint()
 
   // Define the data requests
   short asv_value = 3;
-  if (surrogateType.begins("local_") && actualModel.hessian_type() != "none")
+  if (strbegins(surrogateType, "local_") && actualModel.hessian_type() != "none")
     asv_value += 4;
   ShortArray orig_asv(numFns, asv_value), actual_asv, approx_asv;
   asv_mapping(orig_asv, actual_asv, approx_asv, true);

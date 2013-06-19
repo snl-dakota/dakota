@@ -122,7 +122,7 @@ initialize_graphics(bool graph_2d, bool tabular_data,
   // Customizations must follow 2D plot initialization (setting axis labels
   // calls SciPlotUpdate) and must precede tabular data file initialization
   // (so that the file header includes any updates to tabularCntrLabel).
-  Model& truth_model = (methodName.begins("surrogate_based_")) ?
+  Model& truth_model = (strbegins(methodName, "surrogate_based_")) ?
     iteratedModel.truth_model() : iteratedModel;
   if (graph_2d) {     // initialize the 2D plots
     dakota_graphics.create_plots_2d(truth_model.current_variables(),
@@ -709,7 +709,7 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
   // initialize the results archive for this dataset
   archive_allocate_best(num_best);
 
-  const String& interface_id = (methodName.begins("surrogate_based_")) ?
+  const String& interface_id = (strbegins(methodName, "surrogate_based_")) ?
     iteratedModel.truth_model().interface_id() : iteratedModel.interface_id();
   int eval_id;
   activeSet.request_values(1);

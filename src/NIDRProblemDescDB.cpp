@@ -165,7 +165,7 @@ derived_parse_inputs(const char* dakota_input_file, const char* parser_options)
 
       for(; Ifl != Ifle; Ifl++) {
 	Ir = Ifl->dataIfaceRep;
-	if ((s = Ir->workDir) && *s && stat(s,&sb))
+	if ((s = (Ir->workDir).c_str()) && *s && stat(s,&sb))
 	  DAK_MKDIR(s, 0700);
       }
     }

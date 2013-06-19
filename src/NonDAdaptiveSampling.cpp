@@ -1364,11 +1364,11 @@ Real NonDAdaptiveSampling::compute_rmspe()
 						abort_handler(-1);
 					}
 				}
-				else if(opt = "validation_data") 
+				else if(opt == "validation_data") 
 				{
 					outputValidationData =boost::lexical_cast<int,const char*>(val.c_str());
 				}
-				else if(opt = "knn") 
+				else if(opt == "knn") 
 				{
 					numKneighbors = boost::lexical_cast<int,const char*>(val.c_str());
 				}
