@@ -61,7 +61,7 @@
 # Recommended practice is to set DAKOTA_HAVE_MPI and set CMAKE_CXX_COMPILER 
 # to a compiler wrapper.
 ##############################################################################
-#set( DAKOTA_HAVE MPI ON
+#set( DAKOTA_HAVE_MPI ON
 #     CACHE BOOL "Build with MPI enabled" FORCE)
 #set( CMAKE_CXX_COMPILER "path/to/mpicxx"
 #     CACHE FILEPATH "Use MPI compiler wrapper" FORCE)
