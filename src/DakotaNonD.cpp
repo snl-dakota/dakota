@@ -2110,9 +2110,11 @@ void NonD::archive_allocate_mappings()
 // archive the mappings from response levels
 void NonD::archive_from_resp(size_t i)
 {
-  if (!resultsDB.active())  return;
+  // only insert if active and response levels specified
+  size_t num_resp_levels = requestedRespLevels[i].length(); 
+  if (!resultsDB.active() || num_resp_levels == 0)  return;
 
-  size_t j, num_resp_levels = requestedRespLevels[i].length(); 
+  size_t j;
   std::string data_name;
 
   RealMatrix mapping(num_resp_levels, 2);
