@@ -201,7 +201,8 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   }
 
   extern PRPCache data_pairs;
-  size_t num_evals = 0;
+  size_t records_read = 0;  // counter for restart records read
+  size_t num_evals = 0;     // unique insertions to data_pairs
   while (!read_restart.eof()) {
 
     ParamResponsePair current_pair;
@@ -212,10 +213,16 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
       break; // out of while loop
     }
 
-    data_pairs.insert(current_pair);
-
-    num_evals++; // more efficient than evaluating data_pairs.entries()
+    ++records_read;
+    std::pair<PRPCacheCIter, bool> insert_result;
+    insert_result = data_pairs.insert(current_pair);
+    if (insert_result.second == false)
+      Cout << "Warning: Restart record " << records_read << " (evaluation id " 
+	   << current_pair.eval_id() << ") is a duplicate; ignoring." << std::endl;
+    else
+      ++num_evals; // more efficient than evaluating data_pairs.size()?
   }
+  // size_t num_evals = data_pairs.size();
 
   size_t i, j;
   if (print_dest == "pdb_file") {
