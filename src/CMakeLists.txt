@@ -575,25 +575,25 @@ if(HAVE_GPMSA)
   add_definitions("-DDAKOTA_GPMSA")
   list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
-  include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
-                      ~/dakota/packages/queso_tarballs/code/libs/gpmsa/inc
-                      ${GSL_INCLUDE_DIRS})
+  #include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
+  #                    ~/dakota/packages/queso_tarballs/code/libs/gpmsa/inc
+  #                    ${GSL_INCLUDE_DIRS})
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
-  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib
-    ~/dakota/packages/queso_tarballs/code/libs/gpmsa/lib)
+  #list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib
+  #  ~/dakota/packages/queso_tarballs/code/libs/gpmsa/lib)
   #link_directories(${Dakota_BINARY_DIR}/packages/gpmsa)
 
   # Can't put these in TPL_LIBS because Trilinos will try to export them:
-  list(APPEND EXTRA_TPL_LIBS queso gpmsa_any)
+  # list(APPEND EXTRA_TPL_LIBS queso gpmsa_any)
 
-  if (HAVE_QUESO_GRVY)
+  #if (HAVE_QUESO_GRVY)
     # This dependency is valid: GPMSA requires first building these
-    add_dependencies(queso_ext grvy_ext)
-    include_directories(${Dakota_BINARY_DIR}/packages/grvy_ext/include)
-    list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
-    list(APPEND EXTRA_TPL_LIBS grvy)
-  endif()
+    #add_dependencies(queso_ext grvy_ext)
+    #include_directories(${Dakota_BINARY_DIR}/packages/grvy_ext/include)
+    #list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
+    #list(APPEND EXTRA_TPL_LIBS grvy)
+  #endif()
 
   # Can't export these as they aren't built in this project, except maybe 
   # gpmsa_any?
