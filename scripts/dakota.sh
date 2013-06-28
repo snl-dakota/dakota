@@ -11,12 +11,18 @@
 # Wrapper script dakota.sh to help manage binary and library paths
 # when running dakota.  Assume dakota is installed alongside this
 # script and libraries are in the same directory and/or ../lib.
-
 script_name=`basename ${0}`
 
 # get the path to this wrapper script
 # assume DAKOTA lives in same directory
-execpath=`dirname ${0}`
+
+if [ $(uname) == 'Darwin' ]; then
+  execpath=`dirname ${0}`
+else
+  # readlink reliably takes care of the case when dakota.sh is called via a
+  # symlink, but doesn't work on Darwin.
+  execpath=$( dirname $( readlink -f "${0}" ) )  
+fi
 
 if [ ! -e "${execpath}/dakota" ]; then
   echo "Error in ${script_name}"
@@ -27,7 +33,6 @@ elif [ ! -x "${execpath}/dakota" ]; then
   echo "  dakota binary in ${execpath} is not executable."
   exit 1
 fi
-
 libpaths="${execpath}:${execpath}/../lib"
 
 #echo "Prepending library path with ${libpaths}"
@@ -38,6 +43,7 @@ else
   LD_LIBRARY_PATH="${libpaths}:${LD_LIBRARY_PATH}"
   export LD_LIBRARY_PATH
 fi
+
 
 # Workaround for 
 #terminate called after throwing an instance of 'std::runtime_error'
@@ -50,6 +56,5 @@ fi
 #echo "Appending PATH with ${execpath}:${execpath}/../test:."
 PATH="$PATH:${execpath}:${execpath}/../test:."
 export PATH
-
 #echo "Launching ${execpath}/dakota with args: $@"
 "${execpath}/dakota" "$@"
