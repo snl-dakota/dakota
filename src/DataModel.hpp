@@ -121,6 +121,11 @@ public:
   String approxExportFile;
   /// whether the point export file is annotated (default true)
   bool approxExportAnnotated;
+
+  /// the file name from the \c export_model_file specification in
+  /// \ref ModelSurrG
+  String approxExportModelFile;
+
   /// correction type for global and hierarchical approximations:
   /// NO_CORRECTION, ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
   /// or COMBINED_CORRECTION (from the \c correction specification in

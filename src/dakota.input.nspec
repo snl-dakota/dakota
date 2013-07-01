@@ -1051,6 +1051,7 @@ KEYWORD model {N_mom3(start,0,stop)}
 	        [ correlation_lengths REALLIST {N_mom(RealDL,krigingCorrelations)} ]
 #	        [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
 #	        [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
+	        [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
 	        )
               )
 	    |
@@ -1060,17 +1061,20 @@ KEYWORD model {N_mom3(start,0,stop)}
 		linear {N_mom(lit,marsInterpolation_linear)}
 		| cubic {N_mom(lit,marsInterpolation_cubic)}
 		]
+	      [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
 	      )
 	    |
 	    ( moving_least_squares {N_mom(lit,surrogateType_global_moving_least_squares)}
 	      [ poly_order INTEGER {N_mom(shint,mlsPolyOrder)} ]
 	      [ weight_function INTEGER {N_mom(shint,mlsWeightFunction)} ]
+	      [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
 	      )
 	    |
 	    ( neural_network {N_mom(lit,surrogateType_global_neural_network)}
 	      [ nodes INTEGER {N_mom(shint,annNodes)} ]
 	      [ range REAL {N_mom(Real,annRange)} ]
 	      [ random_weight INTEGER {N_mom(shint,annRandomWeight)} ]
+	      [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
 	      )
 #	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
 #	    | interpolation_polynomial {N_mom(lit,surrogateType_global_interpolation_polynomial)}
@@ -1080,12 +1084,14 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      [ max_pts INTEGER {N_mom(shint,rbfMaxPts)} ]
 	      [ min_partition INTEGER {N_mom(shint,rbfMinPartition)} ]
 	      [ max_subsets INTEGER {N_mom(shint,rbfMaxSubsets)} ]
+	      [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
 	      )
 	    |
 	    ( polynomial {N_mom(lit,surrogateType_global_polynomial)}
 	      linear {N_mom(order,polynomialOrder_1)}
 	      | quadratic {N_mom(order,polynomialOrder_2)}
 	      | cubic {N_mom(order,polynomialOrder_3)}
+	      [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
 	      )
             [ total_points INTEGER {N_mom(int,pointsTotal)} | 
               minimum_points {N_mom(type,pointsManagement_MINIMUM_POINTS)} | 

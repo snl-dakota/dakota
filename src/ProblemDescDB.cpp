@@ -1860,6 +1860,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
 	{"surrogate.actual_model_pointer", P truthModelPointer},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
+	{"surrogate.export_model_file", P approxExportModelFile},
 	{"surrogate.export_points_file", P approxExportFile},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
 	{"surrogate.import_points_file", P approxImportFile},

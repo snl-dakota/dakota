@@ -141,6 +141,10 @@ private:
   SurfpackModelFactory* factory;
   /// The data used to build the approximation, in Surfpack format
   SurfData* surfData;
+
+  /// A Surfpack model name for saving the surrogate model
+  String exportModelName;
+  
 };
 
 

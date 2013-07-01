@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1117 distinct keywords (plus 162 aliases) **/
+/** 1123 distinct keywords (plus 162 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1357,15 +1357,16 @@ static KeyWord
 		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_quadratic)},
 		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
-	kw_230[4] = {
+	kw_230[5] = {
 		{"correlation_lengths",14,0,4,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
+		{"export_model_file",11,0,5,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"max_trials",0x19,0,3,0,0,0.,0.,0,N_mom(shint,krigingMaxTrials)},
 		{"optimization_method",11,0,2,0,0,0.,0.,0,N_mom(str,krigingOptMethod)},
 		{"trend",8,4,1,0,kw_229}
 		},
 	kw_231[2] = {
 		{"dakota",8,2,1,1,kw_228,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
-		{"surfpack",8,4,1,1,kw_230,0.,0.,0,N_mom(lit,surrogateType_global_kriging)}
+		{"surfpack",8,5,1,1,kw_230,0.,0.,0,N_mom(lit,surrogateType_global_kriging)}
 		},
 	kw_232[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(true,approxImportAnnotated)},
@@ -1375,26 +1376,31 @@ static KeyWord
 		{"cubic",8,0,1,1,0,0.,0.,0,N_mom(lit,marsInterpolation_cubic)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,marsInterpolation_linear)}
 		},
-	kw_234[2] = {
+	kw_234[3] = {
+		{"export_model_file",11,0,3,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"interpolation",8,2,2,0,kw_233},
 		{"max_bases",9,0,1,0,0,0.,0.,0,N_mom(shint,marsMaxBases)}
 		},
-	kw_235[2] = {
+	kw_235[3] = {
+		{"export_model_file",11,0,3,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"poly_order",9,0,1,0,0,0.,0.,0,N_mom(shint,mlsPolyOrder)},
 		{"weight_function",9,0,2,0,0,0.,0.,0,N_mom(shint,mlsWeightFunction)}
 		},
-	kw_236[3] = {
+	kw_236[4] = {
+		{"export_model_file",11,0,4,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"nodes",9,0,1,0,0,0.,0.,0,N_mom(shint,annNodes)},
 		{"random_weight",9,0,3,0,0,0.,0.,0,N_mom(shint,annRandomWeight)},
 		{"range",10,0,2,0,0,0.,0.,0,N_mom(Real,annRange)}
 		},
-	kw_237[3] = {
+	kw_237[4] = {
 		{"cubic",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_3)},
+		{"export_model_file",11,0,2,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_1)},
 		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_2)}
 		},
-	kw_238[4] = {
+	kw_238[5] = {
 		{"bases",9,0,1,0,0,0.,0.,0,N_mom(shint,rbfBases)},
+		{"export_model_file",11,0,5,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"max_pts",9,0,2,0,0,0.,0.,0,N_mom(shint,rbfMaxPts)},
 		{"max_subsets",9,0,4,0,0,0.,0.,0,N_mom(shint,rbfMaxSubsets)},
 		{"min_partition",9,0,3,0,0,0.,0.,0,N_mom(shint,rbfMinPartition)}
@@ -1412,12 +1418,12 @@ static KeyWord
 		{"gaussian_process",8,2,1,1,kw_231},
 		{"import_points_file",11,2,5,0,kw_232,0.,0.,0,N_mom(str,approxImportFile)},
 		{"kriging",0,2,1,1,kw_231,0.,0.,-2},
-		{"mars",8,2,1,1,kw_234,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
+		{"mars",8,3,1,1,kw_234,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
 		{"minimum_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_MINIMUM_POINTS)},
-		{"moving_least_squares",8,2,1,1,kw_235,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
-		{"neural_network",8,3,1,1,kw_236,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
-		{"polynomial",8,3,1,1,kw_237,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
-		{"radial_basis",8,4,1,1,kw_238,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
+		{"moving_least_squares",8,3,1,1,kw_235,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
+		{"neural_network",8,4,1,1,kw_236,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
+		{"polynomial",8,4,1,1,kw_237,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
+		{"radial_basis",8,5,1,1,kw_238,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
 		{"recommended_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_RECOMMENDED_POINTS)},
 		{"reuse_points",8,3,4,0,kw_239},
 		{"reuse_samples",0,3,4,0,kw_239,0.,0.,-1},

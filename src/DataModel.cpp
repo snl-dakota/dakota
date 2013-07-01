@@ -36,6 +36,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
     << approxImportAnnotated << approxExportFile << approxExportAnnotated
+    << approxExportModelFile 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
@@ -54,6 +55,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> surrogateType >> truthModelPointer >> lowFidelityModelPointer
     >> pointsTotal >> pointsManagement >> approxPointReuse >> approxImportFile
     >> approxImportAnnotated >> approxExportFile >> approxExportAnnotated
+    >> approxExportModelFile 
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
     >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
@@ -72,6 +74,7 @@ void DataModelRep::write(std::ostream& s) const
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
     << approxImportAnnotated << approxExportFile << approxExportAnnotated
+    << approxExportModelFile
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations

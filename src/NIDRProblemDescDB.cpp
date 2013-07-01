@@ -5459,6 +5459,7 @@ static RealVector
 static String
 	MP_(approxExportFile),
 	MP_(approxImportFile),
+	MP_(approxExportModelFile),
 	MP_(idModel),
 	MP_(interfacePointer),
 	MP_(krigingOptMethod),

@@ -1366,6 +1366,7 @@ TAG "model/surrogate/global/gaussian_process/surfpack/max_trials"
 TAG "model/surrogate/global/gaussian_process/surfpack/correlation_lengths"
 	DESC "{Surfpack GP correlation lengths} ModelCommands.html#ModelSurrG"
 
+TAG "model/surrogate/global/gaussian_process/surfpack/export_model_file"
 TAG "model/surrogate/global/mars"
 	DESC "{Multivariate adaptive regression splines} ModelCommands.html#ModelSurrG"
 
@@ -1377,6 +1378,7 @@ TAG "model/surrogate/global/mars/interpolation"
 
 TAG "model/surrogate/global/mars/interpolation/linear"
 TAG "model/surrogate/global/mars/interpolation/cubic"
+TAG "model/surrogate/global/mars/export_model_file"
 TAG "model/surrogate/global/moving_least_squares"
 	DESC "{Moving least squares} ModelCommands.html#ModelSurrG"
 
@@ -1386,6 +1388,7 @@ TAG "model/surrogate/global/moving_least_squares/poly_order"
 TAG "model/surrogate/global/moving_least_squares/weight_function"
 	DESC "{MLS weight function} ModelCommands.html#ModelSurrG"
 
+TAG "model/surrogate/global/moving_least_squares/export_model_file"
 TAG "model/surrogate/global/neural_network"
 	DESC "{Artificial neural network} ModelCommands.html#ModelSurrG"
 
@@ -1398,6 +1401,7 @@ TAG "model/surrogate/global/neural_network/range"
 TAG "model/surrogate/global/neural_network/random_weight"
 	DESC "{ANN random weight} ModelCommands.html#ModelSurrG"
 
+TAG "model/surrogate/global/neural_network/export_model_file"
 TAG "model/surrogate/global/radial_basis"
 TAG "model/surrogate/global/radial_basis/bases"
 	DESC "{RBF number of bases} ModelCommands.html#ModelSurrG"
@@ -1409,6 +1413,7 @@ TAG "model/surrogate/global/radial_basis/min_partition"
 	DESC "{RBF minimum partitions} ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/radial_basis/max_subsets"
+TAG "model/surrogate/global/radial_basis/export_model_file"
 TAG "model/surrogate/global/polynomial"
 	DESC "{Polynomial} ModelCommands.html#ModelSurrG"
 
@@ -1417,6 +1422,7 @@ TAG "model/surrogate/global/polynomial/quadratic"
 TAG "model/surrogate/global/polynomial/cubic"
 	DESC "[CHOOSE polynomial order]"
 
+TAG "model/surrogate/global/polynomial/export_model_file"
 TAG "model/surrogate/global/total_points"
 TAG "model/surrogate/global/minimum_points"
 TAG "model/surrogate/global/recommended_points"

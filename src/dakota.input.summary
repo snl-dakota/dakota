@@ -1429,6 +1429,7 @@ KEYWORD model
 		[ optimization_method STRING ]
 		[ max_trials INTEGER > 0 ]
 		[ correlation_lengths REALLIST ]
+		[ export_model_file STRING ]
 		)
 	      )
 	    |
@@ -1438,17 +1439,20 @@ KEYWORD model
 		linear
 		| cubic
 		]
+	      [ export_model_file STRING ]
 	      )
 	    |
 	    ( moving_least_squares
 	      [ poly_order INTEGER ]
 	      [ weight_function INTEGER ]
+	      [ export_model_file STRING ]
 	      )
 	    |
 	    ( neural_network
 	      [ nodes INTEGER ]
 	      [ range REAL ]
 	      [ random_weight INTEGER ]
+	      [ export_model_file STRING ]
 	      )
 	    |
 	    ( radial_basis
@@ -1456,12 +1460,14 @@ KEYWORD model
 	      [ max_pts INTEGER ]
 	      [ min_partition INTEGER ]
 	      [ max_subsets INTEGER ]
+	      [ export_model_file STRING ]
 	      )
 	    |
 	    ( polynomial
 	      linear
 	      | quadratic
 	      | cubic
+	      [ export_model_file STRING ]
 	      )
 	    [ total_points INTEGER
 	    | minimum_points
