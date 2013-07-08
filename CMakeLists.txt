@@ -193,12 +193,12 @@ if(HAVE_ACRO)
   list(APPEND dakota_boost_components "signals")
 endif()
 
-# Surfpack requires the serialization library in addition, if building
-# the standalone executable
-# Would like to have serialization be optional, unless building standalone?
+# Surfpack can optionally use the serialization library.  If enabled,
+# the Surfpack standalone executable will be built.
+# TODO: default this to ON
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
-option(SURFPACK_HAVE_BOOST_SERIALIZATION "Use Boost serialization library" OFF)
-if(HAVE_SURFPACK AND SURFPACK_HAVE_BOOST_SERIALIZATION)
+option(HAVE_BOOST_SERIALIZATION "Use Boost serialization library" OFF)
+if(HAVE_SURFPACK AND HAVE_BOOST_SERIALIZATION)
   list(APPEND dakota_boost_components "serialization")
 endif()
 

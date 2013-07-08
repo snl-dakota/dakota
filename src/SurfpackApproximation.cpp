@@ -26,11 +26,8 @@
 #include "ModelFactory.h"
 #include "ModelFitness.h"
 #include "surfaces/SurfpackModel.h"
-
-#ifdef SURFPACK_STANDALONE
-#include "interpreter/SurfpackInterpreter.h"
-#endif
-
+#include "SurfpackInterface.h"
+ 
 #include <algorithm>
 
 
@@ -296,23 +293,21 @@ SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
   //  abort_handler(-1);
   //}
 
-#if !defined(SURFPACK_HAVE_BOOST_SERIALIZATION) || !defined(SURFPACK_STANDALONE)
     if (!exportModelName.empty()) {
-      Cerr << "\nError: export_model_file requires compilation with options\n"
-	   <<"       SURFPACK_HAVE_BOOST_SERIALIZATION and SURFPACK_STANDALONE."
-	   << std::endl;
-      abort_handler(-1);
-    }
-#else
-    if (!exportModelName.empty()) {
-      if (!strends(exportModelName, ".sps") && 
-	  !strends(exportModelName, ".bsps")) {
-	Cerr << "\nError: export_model_file name must end in .sps or .bsps."
-	     << std::endl;
+      if (SurfpackInterface::HasFeature("model_save")) {
+	if (!strends(exportModelName, ".sps") && 
+	    !strends(exportModelName, ".bsps")) {
+	  Cerr << "\nError: export_model_file name must end in .sps or .bsps."
+	       << std::endl;
+	  abort_handler(-1);
+	}
+      }
+      else {
+	Cerr << "\nError: export_model_file requires compilation with option\n"
+	     <<"       HAVE_BOOST_SERIALIZATION." << std::endl;
 	abort_handler(-1);
       }
     }
-#endif
 
 }
 
@@ -512,13 +507,12 @@ void SurfpackApproximation::build()
     abort_handler(-1);
   }
 
-#if defined(SURFPACK_HAVE_BOOST_SERIALIZATION) && defined(SURFPACK_STANDALONE)
-  if (!exportModelName.empty() ) {
-    SurfpackInterpreter interp;
-    interp.execSaveSurface(model, exportModelName);
+  if (!exportModelName.empty() && SurfpackInterface::HasFeature("model_save")) {
+    if (outputLevel >= VERBOSE_OUTPUT)
+      Cout << "\nSaving surrogate model to file " << exportModelName 
+	   << std::endl;
+    SurfpackInterface::Save(model, exportModelName);
   }
-#endif
-
 }
 
 
