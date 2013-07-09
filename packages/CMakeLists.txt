@@ -149,6 +149,9 @@ if(HAVE_QUESO)
     add_dependencies(queso_ext grvy_ext)
   endif()
   
+  # Install QUESO (and possibly GRVY) libs
+  install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallQuesoLibs.cmake")
+
 endif(HAVE_QUESO)
 
 

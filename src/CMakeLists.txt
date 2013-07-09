@@ -516,6 +516,10 @@ if(HAVE_QUESO)
                       ${GSL_INCLUDE_DIRS})
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
+  # Would prefer to detect 32 vs. 64-bit, but the location is
+  # operating system-specific; should be harmless to add the extra
+  # directory, but put 64-bit first
+  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib64)
   list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
 
   # Can't put these in TPL_LIBS because Trilinos will try to export them:
@@ -523,6 +527,7 @@ if(HAVE_QUESO)
 
   if (HAVE_QUESO_GRVY)
     include_directories(${Dakota_BINARY_DIR}/packages/grvy_ext/include)
+    list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/grvy_ext/lib64)
     list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
     # Can't put these in TPL_LIBS because Trilinos will try to export them:
     list(APPEND EXTRA_TPL_LIBS grvy)
