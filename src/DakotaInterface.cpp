@@ -107,15 +107,24 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     }
 
     // extract input/output tag lists
-    String row = stub + ".row", col = stub + ".col";
+    String row = stub + ".row", col = stub + ".col", ampl_tag;
+
     std::ifstream ampl_col(col.c_str());
     if (!ampl_col) {
       Cerr << "\nError: failure opening " << ampl_col << std::endl;
       abort_handler(-1);
     }
     algebraicVarTags.resize(n_var);
-    for (size_t i=0; i<n_var; i++)
-      ampl_col >> algebraicVarTags[i];
+    for (size_t i=0; i<n_var; i++) {
+      std::getline(ampl_col, ampl_tag);
+      if (ampl_col.good())
+	algebraicVarTags[i] = ampl_tag;
+      else {
+	Cerr << "\nError: failure reading AMPL col file " << ampl_col 
+	     << std::endl;
+	abort_handler(-1);
+      }
+    }
 
     std::ifstream ampl_row(row.c_str());
     if (!ampl_row) {
@@ -126,9 +135,16 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     algebraicFnTypes.resize(n_obj+n_con);
     algebraicConstraintWeights.resize(n_con);
     for (size_t i=0; i<n_obj+n_con; i++) {
-      String& tag = algebraicFnTags[i];
-      ampl_row >> tag;
-      algebraicFnTypes[i] = algebraic_function_type(tag);
+      getline(ampl_row, ampl_tag);
+      if (ampl_row.good()) {
+	algebraicFnTags[i] = ampl_tag;
+	algebraicFnTypes[i] = algebraic_function_type(ampl_tag);
+      }
+      else {
+	Cerr << "\nError: failure reading AMPL row file " << ampl_row 
+	     << std::endl;
+	abort_handler(-1);
+      }
     }
 
 #ifdef DEBUG
@@ -552,8 +568,9 @@ init_algebraic_mappings(const Variables& vars, const Response& response)
     size_t acv_index = find_index(acv_labels, algebraicVarTags[i]);
     //size_t adv_index = find_index(adv_labels, algebraicVarTags[i]);
     if (acv_index == _NPOS) { // && adv_index == _NPOS) {
-      Cerr << "\nError: AMPL column label does not exist in DAKOTA "
-	   << "continuous variable descriptors.\n" << std::endl;
+      Cerr << "\nError: AMPL column label " << algebraicVarTags[i] << " does "
+	   <<"not exist in DAKOTA continuous variable descriptors.\n"
+	   << std::endl;
       abort_handler(-1);
     }
     else {
@@ -568,8 +585,8 @@ init_algebraic_mappings(const Variables& vars, const Response& response)
   for (size_t i=0; i<num_alg_fns; ++i) {
     size_t fn_index = Pecos::find_index(fn_labels, algebraicFnTags[i]);
     if (fn_index == _NPOS) {
-      Cerr << "\nError: AMPL row label does not exist in DAKOTA response "
-	   << "descriptors.\n" << std::endl;
+      Cerr << "\nError: AMPL row label " << algebraicFnTags[i] << " does not "
+	   <<"exist in DAKOTA response descriptors.\n" << std::endl;
       abort_handler(-1);
     }
     else
@@ -608,6 +625,16 @@ asv_mapping(const ActiveSet& total_set, ActiveSet& algebraic_set,
   // definition (for which core_asv requests could be turned off).
   core_set.request_vector(total_asv);
   core_set.derivative_vector(total_dvv);
+}
+
+
+void Interface::
+asv_mapping(const ActiveSet& algebraic_set, ActiveSet& total_set)
+{
+  const ShortArray& algebraic_asv = algebraic_set.request_vector();
+  size_t i, num_alg_fns = algebraicFnTags.size();
+  for (i=0; i<num_alg_fns; i++) // map algebraic_asv to total_asv
+    total_set.request_value(algebraic_asv[i], algebraicFnIndices[i]);
 }
 
 
@@ -695,6 +722,10 @@ algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
 }
 
 
+/** This function will get invoked even when only algebraic mappings are 
+    active (no core mappings from derived_map), since the AMPL 
+    algebraic_response may be ordered differently from the total_response.
+    In this case, the core_response object is unused. */
 void Interface::
 response_mapping(const Response& algebraic_response,
 		 const Response& core_response, Response& total_response)
@@ -713,8 +744,8 @@ response_mapping(const Response& algebraic_response,
 
   // core_response contributions to total_response:
 
-  total_response.reset_inactive();
   if (coreMappings) {
+    total_response.reset_inactive();
     const ShortArray& core_asv = core_response.active_set_request_vector();
     size_t num_core_fns = core_asv.size();
     for (i=0; i<num_core_fns; ++i) {
@@ -726,6 +757,10 @@ response_mapping(const Response& algebraic_response,
       if (core_asv[i] & 4)
 	total_response.function_hessian(core_response.function_hessian(i), i);
     }
+  }
+  else {
+    // zero all response data before adding algebraic data to it
+    total_response.reset();
   }
 
   // algebraic_response contributions to total_response:
@@ -803,7 +838,7 @@ response_mapping(const Response& algebraic_response,
 int Interface::algebraic_function_type(String functionTag) 
 {
 #ifdef HAVE_AMPL
-  size_t i;
+  int i;
   for (i=0; i<n_obj; i++)
     if (strcontains(functionTag, obj_name(i)))
       return i+1;

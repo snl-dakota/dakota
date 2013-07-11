@@ -393,28 +393,25 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
   if (algebraicMappings) {
     if (evalIdCntr == 1)
       init_algebraic_mappings(vars, response);
-    if (coreMappings) { // both mappings
-      ActiveSet algebraic_set;
-      asv_mapping(set, algebraic_set, core_set);
-      algebraic_resp = Response(algebraic_set);
-      if (asynch_flag) {
-	ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
-	beforeSynchAlgPRPQueue.insert(prp);
-      }
-      else
-	algebraic_mappings(vars, algebraic_set, algebraic_resp);
+
+    // Always allocate a separate algebraic_resp, even if no coreMappings.  
+    // Cannot share a rep with the incoming response, because even if only 
+    // algebraic mappings are present, they may need reordering to form the 
+    // requested set and response.
+    ActiveSet algebraic_set;
+    asv_mapping(set, algebraic_set, core_set);
+    algebraic_resp = Response(algebraic_set);
+    if (asynch_flag) {
+      ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
+      beforeSynchAlgPRPQueue.insert(prp);
+    }
+    else
+      algebraic_mappings(vars, algebraic_set, algebraic_resp);
+ 
+    if (coreMappings) { // both core and algebraic mappings active
       // separate core_resp from response
       core_resp = response.copy();
       core_resp.active_set(core_set);
-    }
-    else { // algebraic mappings only
-      // algebraic_set = incoming set and algebraic_resp = incoming response
-      if (asynch_flag) {
-	ParamResponsePair prp(vars, interfaceId, response, evalIdCntr);
-	beforeSynchAlgPRPQueue.insert(prp);
-      }
-      else
-	algebraic_mappings(vars, set, response);
     }
   }
   else if (coreMappings) { // analysis_driver mappings only
@@ -503,7 +500,9 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       Cout << "(Asynchronous job " << evalIdCntr << " added to queue)\n";
   }
   else {
-    if (algebraicMappings && coreMappings)
+    // call response_mapping even when no coreMapping, as even with
+    // algebraic only, the functions may have to be reordered
+    if (algebraicMappings)
       response_mapping(algebraic_resp, core_resp, response);
 
     if (outputLevel > QUIET_OUTPUT) {
@@ -622,8 +621,19 @@ const IntResponseMap& ApplicationInterface::synch()
 	Response& response = rawResponseMap[alg_prp_it->eval_id()];
 	response_mapping(alg_response, response, response);
       }
-      else
-	rawResponseMap[alg_prp_it->eval_id()] = alg_response;
+      else {
+	// call response_mapping even when no coreMapping, as even with
+	// algebraic only, the functions may have to be reordered
+
+	// Recreate total_response with the correct (possibly
+	// reordered) ASV since when no CoreMapping, rawResponseMap
+	// doesn't have a valid Response to update
+	ActiveSet total_set(alg_prp_it->active_set());
+	asv_mapping(alg_prp_it->active_set(), total_set);
+	Response total_response = Response(total_set);
+	response_mapping(alg_response, total_response, total_response);
+	rawResponseMap[alg_prp_it->eval_id()] = total_response;
+      }
     }
   }
   beforeSynchAlgPRPQueue.clear();
@@ -711,10 +721,21 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
   else if (algebraicMappings) { // complete all algebraic jobs
     for (PRPQueueIter alg_prp_it = beforeSynchAlgPRPQueue.begin();
 	 alg_prp_it != beforeSynchAlgPRPQueue.end(); alg_prp_it++) {
-      Response raw_response = rawResponseMap[alg_prp_it->eval_id()]
-	= alg_prp_it->prp_response();                             // shared rep
+
+      Response algebraic_resp = alg_prp_it->prp_response();     // shared rep
       algebraic_mappings(alg_prp_it->prp_parameters(),
-			 alg_prp_it->active_set(), raw_response); // update rep
+			 alg_prp_it->active_set(), algebraic_resp); // update rep
+      // call response_mapping even when no coreMapping, as even with
+      // algebraic only, the functions may have to be reordered
+
+      // Recreate total_response with the correct (possibly reordered)
+      // ASV since when no CoreMapping, rawResponseMap doesn't have a
+      // valid Response to update
+      ActiveSet total_set(alg_prp_it->active_set());
+      asv_mapping(alg_prp_it->active_set(), total_set);
+      Response total_response = Response(total_set);
+      response_mapping(algebraic_resp, total_response, total_response);
+      rawResponseMap[alg_prp_it->eval_id()] = total_response;
     }
     beforeSynchAlgPRPQueue.clear();
   }
@@ -990,7 +1011,8 @@ void ApplicationInterface::
 asynchronous_local_evaluations(PRPQueue& local_prp_queue)
 {
   PRPQueue active_prp_queue; PRPQueueIter prp_iter;
-  size_t i, num_sends; int fn_eval_id, num_jobs = local_prp_queue.size();
+  size_t i, num_sends; 
+  int fn_eval_id, num_jobs = local_prp_queue.size();
   if (multiProcEvalFlag)
     parallelLib.bcast_e(num_jobs);
   if (asynchLocalEvalConcurrency) // concurrency limited by user spec.
@@ -1095,7 +1117,7 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
   localServerJobMap.assign(asynchLocalEvalConcurrency, 0);
 
   PRPQueue active_prp_queue; PRPQueueIter prp_iter;
-  size_t i, num_sends;
+  size_t num_sends;
   int fn_eval_id, num_jobs = local_prp_queue.size(), num_active = 0;
   if (multiProcEvalFlag)
     parallelLib.bcast_e(num_jobs);

@@ -274,6 +274,9 @@ protected:
   void asv_mapping(const ActiveSet& total_set, ActiveSet& algebraic_set,
 		   ActiveSet& core_set);
 
+  /// map an algebraic ASV back to original total ordering for asynch recovery
+  void asv_mapping(const ActiveSet& algebraic_set, ActiveSet& total_set);
+
   /// evaluate the algebraic_response using the AMPL solver library
   /// and the data extracted from the algebraic_mappings file
   void algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,

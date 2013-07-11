@@ -2651,6 +2651,26 @@ Test Number 5 succeeded
                      -1.6009000260e-02
                      -3.7081115956e-11
 <<<<< Best data captured at function evaluation 31
+dakota_ampl_diet.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 Buy[Sausage McMuffin]
+                      0.0000000000e+00 Buy[Orange Juice]
+                      1.2814718545e-15 Buy[Big Mac]
+                      1.0000000000e+00 Buy[Filet-O-Fish]
+                     -1.3092274301e-15 Buy[Quarter Pounder w Cheese]
+                      1.0000000000e+00 Buy[1% Lowfat Milk]
+                      1.0000000000e+00 Buy[Fries, small]
+                      0.0000000000e+00 Buy[McGrilled Chicken]
+                      0.0000000000e+00 Buy[McLean Deluxe w Cheese]
+<<<<< Best objective function  =
+                      2.8100000000e+00
+<<<<< Best constraint values   =
+                      1.0000000000e+00
+                      1.0000000000e+00
+                      1.0000000000e+00
+<<<<< Best data not found in evaluation cache
 dakota_ampl_fma.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
