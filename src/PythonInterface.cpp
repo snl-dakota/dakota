@@ -109,7 +109,7 @@ int PythonInterface::python_run(const String& ac_name)
   python_convert(xC, xDI, xDR, &av);
   python_convert(xCLabels, xDILabels, xDRLabels, &av_labels);
   python_convert_int(directFnASV, directFnASV.size(), &asv);
-  python_convert_int(directFnDVV, directFnASV.size(), &dvv);
+  python_convert_int(directFnDVV, directFnDVV.size(), &dvv);
   // TO DO: analysis components
 
   // assemble everything into a dictionary to pass to user function
