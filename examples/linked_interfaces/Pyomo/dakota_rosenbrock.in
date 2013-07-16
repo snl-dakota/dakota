@@ -1,0 +1,27 @@
+method,
+	optpp_q_newton			
+	  max_iterations = 50           
+	  convergence_tolerance = 1e-4  
+
+#--- Dakota variables block ---#
+variables
+  continuous_design 2
+    descriptors
+      'x'
+      'y'
+    lower_bounds -inf -inf
+    upper_bounds inf inf
+    initial_point 1.5 1.5
+
+#--- Dakota interface block ---#
+interface
+  algebraic_mappings = 'rosenbrock.nl'
+
+#--- Dakota responses block ---#
+responses
+  objective_functions 1
+    descriptors
+      'obj'
+  analytic_gradients
+  no_hessians
+
