@@ -7,13 +7,16 @@ This example uses the rosenbrock algebraic test problem.
 
 2. Obtain and install Dakota; see http://dakota.sandia.gov/
 
-2. Run pyomo2dakota on model.py, resulting in model.nl, model.col,
+3. Run pyomo2dakota on model.py, resulting in model.nl, model.col,
 model.row, and model.dak, for example:
 
   pyomo2dakota rosenbrock.py
+
+or
+
   pyomo2dakota diet1.py diet.dat
 
-3. Dakota input file variable and response fragments will be written
+4. Dakota input file variable and response fragments will be written
 to model.dak.  These need to be reviewed and integrated into a Dakota
 optimization input file.  This example includes dakota_rosenbrock.in
 and dakota_diet1.in as examples of complete input files that integrate
