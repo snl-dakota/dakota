@@ -253,7 +253,7 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
   // the following assignments are not overridden in Model::set_communicators()
   // since HierarchSurrModels do not define the ie_parallel_level
   asynchEvalFlag = ( lowFidelityModel.asynch_flag() &&
-		     highFidelityModel.asynch_flag() ); // require both for now
+		    highFidelityModel.asynch_flag() ); // require both for now
   // TO DO: more rigorous approach would utilize use responseMode
   evaluationCapacity = std::max( lowFidelityModel.evaluation_capacity(),
 				highFidelityModel.evaluation_capacity() );
