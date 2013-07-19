@@ -299,7 +299,6 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
 }
 
 
-
 /** Reduce model for least-squares or multi-objective transformation.
     Doesn't map variables, or secondary responses.  Maps active set
     for Gauss-Newton.  Maps primary responses to single objective so

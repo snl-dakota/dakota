@@ -487,6 +487,9 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 
   if (recurse_flag && !actualModel.is_null())
     actualModel.set_communicators(daceIterator.maximum_concurrency());
+
+  // asynchEvalFlag and evaluationCapacity updates not required for DFS
+  // (refer to {Recast,HierarchSurr}Model::derived_set_communicators())
 }
 
 
