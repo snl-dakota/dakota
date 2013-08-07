@@ -304,44 +304,55 @@ endif() # BUILD_TESTING AND DAKOTA_ENABLE_TESTS
 
 
 # Executables needed for DAKOTA testing, but NOT unit tests
+set(dakota_test_executables
+  barnes
+  barnes_lf
+  cantilever
+  container
+  cyl_head
+  herbie
+  illumination
+  lf_rosenbrock
+  lf_poly_prod
+  log_ratio
+  mod_cantilever
+  mogatest1
+  mogatest2
+  mogatest3
+  morris
+  poly_prod
+  portal_frame
+  quasi_sine_fcn
+  rosenbrock
+  rosenbrock_fail
+  short_column
+  shubert
+  smooth_herbie
+  sobol_g_function
+  sobol_ishigami
+  sobol_rational
+  steel_column_cost
+  steel_column_perf
+  steel_section
+  text_book
+  text_book1
+  text_book2
+  text_book3
+  text_book_ouu
+  )
 
-add_executable(barnes barnes.cpp)
-add_executable(barnes_lf barnes_lf.cpp)
-add_executable(cantilever cantilever.cpp)
-add_executable(container container.cpp)
-add_executable(cyl_head cyl_head.cpp)
-add_executable(herbie herbie.cpp)
-add_executable(illumination illumination.cpp)
-add_executable(lf_rosenbrock lf_rosenbrock.cpp)
-add_executable(lf_poly_prod lf_poly_prod.cpp)
-add_executable(log_ratio log_ratio.cpp)
-add_executable(mod_cantilever mod_cantilever.cpp)
-add_executable(mogatest1 mogatest1.cpp)
-add_executable(mogatest2 mogatest2.cpp)
-add_executable(mogatest3 mogatest3.cpp)
-add_executable(morris morris.cpp)
+foreach(dte ${dakota_test_executables})
+  add_executable(${dte} ${dte}.cpp)
+endforeach()
+
+# nl2func has two source files
+list(APPEND dakota_test_executables nl2func)
 add_executable(nl2func nl2func.cpp nl2test.cpp)
-add_executable(poly_prod poly_prod.cpp)
-add_executable(portal_frame portal_frame.cpp)
-add_executable(quasi_sine_fcn quasi_sine_fcn.cpp)
-add_executable(rosenbrock rosenbrock.cpp)
-add_executable(rosenbrock_fail rosenbrock_fail.cpp)
-add_executable(short_column short_column.cpp)
-add_executable(shubert shubert.cpp)
-add_executable(smooth_herbie smooth_herbie.cpp)
-add_executable(sobol_g_function sobol_g_function.cpp)
-add_executable(sobol_ishigami sobol_ishigami.cpp)
-add_executable(sobol_rational sobol_rational.cpp)
-add_executable(steel_column_cost steel_column_cost.cpp)
-add_executable(steel_column_perf steel_column_perf.cpp)
-add_executable(steel_section steel_section.cpp)
-add_executable(text_book text_book.cpp)
-add_executable(text_book1 text_book1.cpp)
-add_executable(text_book2 text_book2.cpp)
-add_executable(text_book3 text_book3.cpp)
-add_executable(text_book_ouu text_book_ouu.cpp)
+
+# parallel tester
 if(DAKOTA_HAVE_MPI)
   add_executable(text_book_par text_book_par.cpp)
+  list(APPEND dakota_test_executables text_book_par)
 endif()
 
 # Enforce an "imaginary" dependency
@@ -373,7 +384,9 @@ if(DAKOTA_DLL_API)
     link_directories(
       "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/lib/i686-cygwin-cygwinNT")
   endif()
+  list(APPEND dakota_test_executables dll_tester)
   add_executable(dll_tester dll_tester.cpp)
+  
   target_link_libraries(dll_tester dll_api)
   if (DAKOTA_MODELCENTER)
     # likely not needed due to CMake dependency managemane of dll_api library
@@ -381,15 +394,30 @@ if(DAKOTA_DLL_API)
   endif()
 endif()
 
+# If needed, copy files from test/Debug or test/Release into test/.
+# Also temporary workaround until Dakota can properly detect .exe as
+# analysis driver: copy the .exe to a file with no extension. These
+# files will be generated to the build tree, but not installed.
+if (WIN32)
+  set(dte_abs "")
+  foreach(dte ${dakota_test_executables})
+    get_target_property(EXE_LOC ${dte} LOCATION)
+    get_filename_component(EXE_NAME ${EXE_LOC} NAME)
+    get_filename_component(EXE_NAME_WE ${EXE_LOC} NAME_WE)
+    add_file_copy_command(${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME})
+    add_file_copy_command(${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME_WE})
+    list(APPEND dte_abs ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}
+      ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME_WE})
+  endforeach()
+
+  add_custom_target(dakota_test_executable_copies ALL 
+    DEPENDS ${dte_abs}
+    COMMENT "Copy DAKOTA test executables to test directory"
+  )
+endif()
+
 # TODO: install to bin/?
-install(TARGETS 
-  barnes barnes_lf cantilever container cyl_head herbie illumination 
-  lf_rosenbrock lf_poly_prod log_ratio mod_cantilever 
-  mogatest1 mogatest2 mogatest3 morris nl2func poly_prod portal_frame 
-  quasi_sine_fcn rosenbrock rosenbrock_fail short_column shubert smooth_herbie
-  sobol_g_function sobol_ishigami sobol_rational 
-  steel_column_cost steel_column_perf steel_section 
-  text_book text_book1 text_book2 text_book3 text_book_ouu
+install(TARGETS ${dakota_test_executables} 
   DESTINATION "${DAKOTA_TEST_INSTALL}/test")
 
 install(FILES dakota_test.perl
@@ -400,8 +428,3 @@ install(FILES dakota_test.perl
 install(FILES ${test_support_files}
   DESTINATION "${DAKOTA_TEST_INSTALL}/test" PERMISSIONS
   OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
-if(DAKOTA_HAVE_MPI)
-  install(TARGETS text_book_par DESTINATION "${DAKOTA_TEST_INSTALL}/test")
-endif()
-

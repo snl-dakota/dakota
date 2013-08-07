@@ -9,6 +9,7 @@ use Getopt::Long;
 use Pod::Usage;
 use File::Basename;
 use File::Path 'rmtree';
+use File::Spec;
 use POSIX "sys_wait_h";
 use POSIX "uname";
 use Cwd 'abs_path';
@@ -301,17 +302,18 @@ foreach my $file (@test_inputs) {
   if ($mode eq "run" && $output_generated == 1) { 
     # if normal mode, generate diffs
     close(TEST_OUT);
-	my $diff_path = abs_path($0);
-	$diff_path = dirname($diff_path);
+    my $diff_path = abs_path($0);
+    $diff_path = dirname($diff_path);
+    my $diff_script = File::Spec->catfile($diff_path, "dakota_diff.perl");
     # diff the test output against the base output and save to a file
     my $perlexe = $Config{perlpath};
     if ($parallelism eq "parallel") {
-      system("${perlexe} $diff_path/dakota_diff.perl $base_filename $input_dir" . 
+      system("${perlexe} ${diff_script} $base_filename $input_dir" . 
 	     "dakota_pbase.test $test >> $output_dir" . 
 	     "dakota_pdiffs.out");
     }
     else {
-      system("${perlexe} $diff_path/dakota_diff.perl $base_filename $input_dir" . 
+      system("${perlexe} ${diff_script} $base_filename $input_dir" . 
 	     "dakota_base.test $test >> $output_dir" .
 	     "dakota_diffs.out");
     }
