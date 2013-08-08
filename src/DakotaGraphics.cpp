@@ -170,6 +170,10 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
     graphics2D->go();
     win2dOn = true;
   }
+#else
+  Cerr << "\nWarning: Dakota not compiled with X Windows support; consider "
+       << "removing\n       \"graphics\" keyword from input file." 
+       << std::endl;
 #endif // HAVE_X_GRAPHICS
 }
 
