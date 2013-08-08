@@ -832,6 +832,9 @@ void DataFitSurrModel::build_global()
 	  // typically used with data import, this is not necessary.
 	  if (inside(vars.continuous_variables(), vars.discrete_int_variables(),
 		     vars.discrete_real_variables())) {
+	    if (outputLevel >= DEBUG_OUTPUT)
+	      Cout << "Transformed data for imported eval " << -cntr << ":\n"
+		   << vars << resp;
 	    // dummy eval id < 0 for file imports
 	    approxInterface.append_approximation(vars,
 						 std::make_pair(cntr, resp));
@@ -842,6 +845,9 @@ void DataFitSurrModel::build_global()
 	else if (inside(v_it->continuous_variables(),
 			v_it->discrete_int_variables(),
 			v_it->discrete_real_variables())) {
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "Untransformed data for imported eval " << -cntr << ":\n"
+		 << *v_it << *r_it;
 	  // dummy eval id < 0 for file imports
 	  approxInterface.append_approximation(*v_it,
 					       std::make_pair(cntr, *r_it));

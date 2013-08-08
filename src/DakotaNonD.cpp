@@ -860,7 +860,7 @@ void NonD::vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 }
 
 
-/** Map the variables from iterator space (u) to simulation space (x). */
+/** Map the variables from simulation space (x) to iterator space (u). */
 void NonD::vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 {
   RealVector u = u_vars.continuous_variables_view();
