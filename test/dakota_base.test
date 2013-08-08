@@ -7117,7 +7117,7 @@ Partial Rank Correlation Matrix between input and output:
        TF1ln  9.41109e-01 
        TF2ln -9.41111e-01 
 dakota_mogatest.in
- Test Number 0 succeeded
+Test Number 0 succeeded
 <<<<< Function evaluation summary: 2500 total (2500 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =
                       1.1940041563e-02 x1
