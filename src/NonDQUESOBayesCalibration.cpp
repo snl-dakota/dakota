@@ -15,7 +15,7 @@
 #include "NonDQUESOBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "dakota_tabular_io.hpp"
+#include "ExperimentData.hpp"
 #include "uqStatisticalInverseProblem.h"
 #include "uqStatisticalInverseProblemOptions.h"
 #include "uqMetropolisHastingsSGOptions.h"
@@ -94,87 +94,25 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
  
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
+  bool calc_sigma_from_data = true; // calculate sigma if not provided
+  read_historical_data(expDataFileName, "QUESO Bayes Calibration",
+		       numExperiments, 
+		       numExpConfigVars, numFunctions, numExpStdDeviationsRead,
+		       expDataFileAnnotated, expStdDeviations, 
+		       calc_sigma_from_data,
+		       xObsData, yObsData, yStdData);
+  
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "xobs_data" << xObsData << '\n';
+    Cout << "yobs_data" << yObsData << '\n';
+    Cout << "ystd_data" << yStdData << '\n';
+  }
 
-  // Read from a matrix with numExperiments rows and a number of cols
-  // columns:  numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
-  RealMatrix experimental_data;
-
-  size_t num_sigma_read = numExpStdDeviationsRead;
-  size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms
-  if ((num_sigma_read > 0) && !(calibrateSigmaFlag))
+  if ((numExpStdDeviationsRead > 0) && !(calibrateSigmaFlag))
     calibrateSigmaFlag = false;
-
-  TabularIO::read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
-			       experimental_data, numExperiments,  num_cols, 
-			       expDataFileAnnotated);
-
-  // Get views of the data in 3 matrices for convenience
-  size_t start_row, start_col;
-  if (numExpConfigVars > 0) {
-    start_row = 0;
-    start_col = 0;
-    RealMatrix x_obs_data(Teuchos::View, experimental_data,
-			numExperiments, numExpConfigVars,
-			start_row, start_col);
-    xObsData.reshape(x_obs_data.numRows(),x_obs_data.numCols());
-    for (int i=0; i<x_obs_data.numRows(); i++)
-      for (int j=0; j<x_obs_data.numCols(); j++)
-        xObsData(i,j)=x_obs_data(i,j);
-  }
-  Cout << "xobs_data" << xObsData << '\n';
   
-  start_row = 0;
-  start_col = numExpConfigVars;
-  RealMatrix y_obs_data(Teuchos::View, experimental_data,
-			numExperiments, numFunctions,
-			start_row, start_col);
-  yObsData.reshape(y_obs_data.numRows(),y_obs_data.numCols());
-  for (int i=0; i<y_obs_data.numRows(); i++)
-    for (int j=0; j<y_obs_data.numCols(); j++)
-      yObsData(i,j)=y_obs_data(i,j);
-
-  Cout << "yobs_data" << yObsData << '\n';
-
-  yStdData.reshape(numExperiments,numFunctions);
-  if (num_sigma_read > 0) {
-    start_row = 0;
-    start_col = numExpConfigVars + numFunctions;
-    RealMatrix y_std_data(Teuchos::View, experimental_data,
-			numExperiments, numFunctions,
-			start_row, start_col);
-    for (int i=0; i<y_std_data.numRows(); i++)
-      for (int j=0; j<y_std_data.numCols(); j++)
-        yStdData(i,j)=y_std_data(i,j);
-    if (expStdDeviations.length()==1) {
-      for (int i=0; i<numExperiments; i++)
-        for (int j=0; j<numFunctions; j++)
-          yStdData(i,j)=expStdDeviations(0);
-    }
-    else if (expStdDeviations.length()==numFunctions) {
-      for (int i=0; i<numExperiments; i++)
-        for (int j=0; j<numFunctions; j++)
-          yStdData(i,j)=expStdDeviations(j);
-    }
-  }
-  else {
-    // calculate sigma terms
-    Real mean_est, var_est;
-    for (int j=0; j<numFunctions; j++){
-      mean_est = 0;
-      for (int i=0; i<numExperiments; i++)
-        mean_est += yObsData(i,j);
-      mean_est = mean_est/((Real)numExperiments);
-      var_est = 0;
-      for (int i=0; i<numExperiments; i++)
-        var_est += (yObsData(i,j)-mean_est)*(yObsData(i,j)-mean_est); 
-      for (int i=0; i<numExperiments; i++)
-        yStdData(i,j)=(numExperiments > 1) ? std::sqrt(var_est/(Real)(numExperiments-1)) : 1.0;
-    }
-  }
-  Cout << "ystd_data" << yStdData << '\n';
-
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
   ////////////////////////////////////////////////////////
