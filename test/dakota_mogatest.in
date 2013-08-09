@@ -64,7 +64,7 @@ variables,
 #          set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#4,#5,#6,#7
 
 interface,
-	system                                  #0,#1,#2,#4,#5,#6,#7
+	fork                                    #0,#1,#2,#4,#5,#6,#7
 #	direct                                  #3
 	  analysis_driver = 'mogatest1'			#0,#4,#5,#6,#7
 #	  analysis_driver = 'mogatest2'			#1
