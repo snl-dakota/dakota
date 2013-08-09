@@ -38,6 +38,13 @@ public:
   //
 
   SingleExperiment();                                ///< constructor
+
+  /// construct a single experiment from passed data
+  // BMA TODO: Ask Laura about sigma
+  SingleExperiment(int num_repl, const RealVector& real_config_vars,
+		   const RealVector& scalar_data);
+
+
   SingleExperiment(const SingleExperiment&);         ///< copy constructor
   ~SingleExperiment();                               ///< destructor
  
@@ -238,9 +245,9 @@ read_historical_data(const std::string& expDataFileName,
     RealMatrix x_obs_data(Teuchos::View, experimental_data,
 			  numExperiments, numExpConfigVars,
 			  start_row, start_col);
-    xObsData.reshape(x_obs_data.numRows(), x_obs_data.numCols());
-    for (int i=0; i<x_obs_data.numRows(); i++)
-      for (int j=0; j<x_obs_data.numCols(); j++)
+    xObsData.reshape(numExperiments, numExpConfigVars);
+    for (int i=0; i<numExperiments; i++)
+      for (int j=0; j<numExpConfigVars; j++)
         xObsData(i,j) = x_obs_data(i,j);
   }
  
@@ -249,33 +256,41 @@ read_historical_data(const std::string& expDataFileName,
   RealMatrix y_obs_data(Teuchos::View, experimental_data,
 			numExperiments, numFunctions,
 			start_row, start_col);
-  yObsData.reshape(y_obs_data.numRows(), y_obs_data.numCols());
-  for (int i=0; i<y_obs_data.numRows(); i++)
-    for (int j=0; j<y_obs_data.numCols(); j++)
+  yObsData.reshape(numExperiments, numFunctions);
+  for (int i=0; i<numExperiments; i++)
+    for (int j=0; j<numFunctions; j++)
       yObsData(i,j) = y_obs_data(i,j);
 
+  // BMA TODO: The number of experimental functions may not match the
+  // user functions, so can't assume numFunctions
   yStdData.reshape(numExperiments, numFunctions);
   if (numExpStdDeviationsRead > 0) {
     start_row = 0;
     start_col = numExpConfigVars + numFunctions;
     RealMatrix y_std_data(Teuchos::View, experimental_data,
-			  numExperiments, numFunctions,
+			  numExperiments, numExpStdDeviationsRead,
 			  start_row, start_col);
-    for (int i=0; i<y_std_data.numRows(); i++)
-      for (int j=0; j<y_std_data.numCols(); j++)
-        yStdData(i,j) = y_std_data(i,j);
-    // BMA TODO: This is odd to me -- we overwrite the read values
-    // with user values?
-    if (expStdDeviations.length()==1) {
-      for (int i=0; i<numExperiments; i++)
-        for (int j=0; j<numFunctions; j++)
-          yStdData(i,j) = expStdDeviations(0);
-    }
-    else if (expStdDeviations.length()==numFunctions) {
-      for (int i=0; i<numExperiments; i++)
-        for (int j=0; j<numFunctions; j++)
-          yStdData(i,j) = expStdDeviations(j);
-    }
+    // We allow 1 or numFunctions sigmas
+    for (int i=0; i<numExperiments; i++)
+      for (int j=0; j<numFunctions; j++) {
+	if (numExpStdDeviationsRead == 1)
+	  yStdData(i,j) = y_std_data(i,0);
+	else
+	  yStdData(i,j) = y_std_data(i,j);
+      }
+    // BMA: This is odd to me -- we overwrite the read values with
+    // user values?  Commenting out as we don't currently support
+    // input file-specified errors.
+    // if (expStdDeviations.length()==1) {
+    //   for (int i=0; i<numExperiments; i++)
+    //     for (int j=0; j<numFunctions; j++)
+    //       yStdData(i,j) = expStdDeviations(0);
+    // }
+    // else if (expStdDeviations.length()==numFunctions) {
+    //   for (int i=0; i<numExperiments; i++)
+    //     for (int j=0; j<numFunctions; j++)
+    //       yStdData(i,j) = expStdDeviations(j);
+    // }
   }
   else if (calc_sigma_from_data) {
     // calculate sigma terms
@@ -288,12 +303,16 @@ read_historical_data(const std::string& expDataFileName,
       var_est = 0;
       for (int i=0; i<numExperiments; i++)
         var_est += (yObsData(i,j)-mean_est)*(yObsData(i,j)-mean_est); 
+      // BMA TODO: Is this correct in the 1 experiment case (sigma <- 1.0)?
       for (int i=0; i<numExperiments; i++)
         yStdData(i,j) = (numExperiments > 1) ? 
 	  std::sqrt(var_est/(Real)(numExperiments-1)) : 1.0;
     }
   }
-  // else leave empty
+  else {
+    yStdData = 0.0;
+  }
+
 }
 
 } // namespace Dakota
