@@ -398,7 +398,7 @@ endif()
 # Also temporary workaround until Dakota can properly detect .exe as
 # analysis driver: copy the .exe to a file with no extension. These
 # files will be generated to the build tree, but not installed.
-if (WIN32)
+if (WIN32 AND ${CMAKE_GENERATOR} MATCHES "Visual Studio")
   set(dte_abs "")
   foreach(dte ${dakota_test_executables})
     get_target_property(EXE_LOC ${dte} LOCATION)
