@@ -350,6 +350,7 @@ set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
     CommandLineHandler.cpp DakotaGraphics.cpp
     DakotaBinStream.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
+    ExperimentData.cpp
     )
 
 if(HAVE_RPC_XDR_H)
