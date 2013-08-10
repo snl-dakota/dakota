@@ -99,13 +99,6 @@ protected:
   /// flag to indicate if the sigma terms should be calibrated (default true)
   bool calibrateSigmaFlag;
 
-  /// Matrix that holds the experimental realizations of state variables x
-  RealMatrix xObsData;
-  /// Matrix that holds the experimental realizations of responses y 
-  RealMatrix yObsData;
-  /// Matrix that holds the experimental realizations of std deviations 
-  /// of responses y 
-  RealMatrix yStdData;
   /// random seed to pass to QUESO
   int randomSeed;
 

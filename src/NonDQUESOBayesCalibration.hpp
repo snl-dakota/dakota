@@ -16,6 +16,7 @@
 #define NOND_QUESO_BAYES_CALIBRATION_H
 
 #include "NonDBayesCalibration.hpp"
+#include "ExperimentData.hpp"
 //#include "uqGenericScalarFunctionClass.H"
 #include "uqGslVector.h"
 #include "uqGslMatrix.h"
@@ -83,13 +84,7 @@ protected:
   //
   //- Heading: Data
   //
-  /// Matrix that holds the experimental realizations of state variables x
-  RealMatrix xObsData;
-  /// Matrix that holds the experimental realizations of responses y 
-  RealMatrix yObsData;
-  /// Matrix that holds the experimental realizations of std deviations 
-  /// of responses y 
-  RealMatrix yStdData;
+
   /// random seed to pass to QUESO
   int randomSeed;
 

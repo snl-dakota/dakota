@@ -15,7 +15,6 @@
 #include "NonDGPMSABayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "ExperimentData.hpp"
 #include "uqStatisticalInverseProblem.h"
 #include "uqStatisticalInverseProblemOptions.h"
 #include "uqGslVector.h"
@@ -108,18 +107,11 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  read_historical_data(expDataFileName, "QUESO/GPMSA Bayes Calibration",
-		       numExperiments, 
-		       numExpConfigVars, numFunctions, numExpStdDeviationsRead,
-		       expDataFileAnnotated, expStdDeviations,
-		       calc_sigma_from_data,
-		       xObsData, yObsData, yStdData);
-
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "xobs_data" << xObsData << '\n';
-    Cout << "yobs_data" << yObsData << '\n';
-    Cout << "ystd_data" << yStdData << '\n';
-  }
+  expData.load_scalar(expDataFileName, "QUESO/GPMSA Bayes Calibration",
+		      numExperiments, 
+		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
+		      expDataFileAnnotated, calc_sigma_from_data,
+		      outputLevel);
 
   //***********************************************************************
   //  Step 01 of 09: Instantiate parameter space, parameter domain, and prior Rv
@@ -388,8 +380,11 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // Populate information regarding experiment '0'
   //***********************************************************************
   for (unsigned int i = 0; i < numExperiments; ++i) {
+    // config vars are same for all functions for now
+    size_t fn_ind = 0;
+    const RealVector& xobs_i = expData.config_vars(fn_ind, i);
     for (unsigned int j = 0; j < num_config_vars; ++j) 
-      (*(experimentScenarios_original[i]))[j] = xObsData(i,j);
+      (*(experimentScenarios_original[i]))[j] = xobs_i[j];
     Cout << *(experimentScenarios_original[i]) << '\n';
   }
   
@@ -470,7 +465,9 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
 
   for (unsigned int i = 0; i < numExperiments; ++i) {
     for (unsigned int j = 0; j < experimentDims[i]; ++j) { 
-      (*(experimentVecs_original[i]))[j] = yObsData(i,j);
+      size_t replicate = 0;
+      Real yobs = expData.scalar_data(j, i, replicate);
+      (*(experimentVecs_original[i]))[j] = yobs;
     }
     Cout << *(experimentVecs_original[i]) << '\n';
     //Cout << *(extraExperimentGridVecs[i]) << '\n';

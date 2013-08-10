@@ -16,7 +16,7 @@
 #define NOND_CALIBRATION_H
 
 #include "DakotaNonD.hpp"
-
+#include "ExperimentData.hpp"
 
 namespace Dakota {
 
@@ -64,6 +64,9 @@ protected:
   size_t numExpConfigVars;
   /// how many sigmas to read from the data file (1 or numFunctions)
   size_t numExpStdDeviationsRead;
+
+  /// Container for experimental data to which to calibrate model
+  ExperimentData expData;
 
 private:
 

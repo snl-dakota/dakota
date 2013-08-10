@@ -89,13 +89,7 @@ protected:
   //void print_results(std::ostream& s);
   //
   //  //- Heading: Data
-  /// Matrix that holds the experimental realizations of state variables x
-  RealMatrix xObsData;
-  /// Matrix that holds the experimental realizations of responses y
-  RealMatrix yObsData;
-  /// Matrix that holds the experimental realizations of std deviations
-  /// of responses y
-  RealMatrix yStdData;
+
   /// random seed to pass to QUESO
   int randomSeed;
   

@@ -15,7 +15,6 @@
 #include "NonDDREAMBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "ExperimentData.hpp"
 #include "ProbabilityTransformation.hpp"
 
 // BMA TODO: remove this header
@@ -190,18 +189,12 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  read_historical_data(expDataFileName, "DREAM Bayes Calibration",
-		       numExperiments, 
-		       numExpConfigVars, numFunctions, numExpStdDeviationsRead,
-		       expDataFileAnnotated, expStdDeviations,
-		       calc_sigma_from_data,
-		       xObsData, yObsData, yStdData);
-  
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "xobs_data" << xObsData << '\n';
-    Cout << "yobs_data" << yObsData << '\n';
-    Cout << "ystd_data" << yStdData << '\n';
-  }
+  expData.load_scalar(expDataFileName, "DREAM Bayes Calibration",
+		      numExperiments, 
+		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
+		      expDataFileAnnotated, calc_sigma_from_data,
+		      outputLevel);
+
 
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
@@ -246,8 +239,10 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // calibrateSigmaFlag is true
   if (calibrateSigmaFlag) {
     for (int j=0; j<numFunctions; j++){
-      paramMins[numContinuousVars+j]=0.01*yStdData(0,j);
-      paramMaxs[numContinuousVars+j]=2.0*yStdData(0,j);
+      int replicate = 0;
+      Real std_0_j = expData.scalar_sigma(j, 0, replicate);
+      paramMins[numContinuousVars+j]=0.01*std_0_j;
+      paramMaxs[numContinuousVars+j]=2.0*std_0_j;
     }
   }
  
@@ -398,14 +393,20 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   // calculate the likelihood. 
   if (NonDDREAMInstance->calibrateSigmaFlag) {
     for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++){
-         result = result+pow((fn_vals(j)-NonDDREAMInstance->yObsData(i,j))/zp[num_cont+j],2.0);
+      for (j=0; j<num_funcs; j++) {
+	size_t replicate = 0;
+	Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i, replicate);
+	result = result+pow((fn_vals(j)-data_i_j)/zp[num_cont+j],2.0);
       }
   }
   else {	
     for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++)
-        result = result+pow((fn_vals(j)-NonDDREAMInstance->yObsData(i,j))/NonDDREAMInstance->yStdData(i,j),2.0);
+      for (j=0; j<num_funcs; j++) {
+	size_t replicate = 0;
+	Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i, replicate);
+	Real std_i_j = NonDDREAMInstance->expData.scalar_sigma(j, i, replicate);
+        result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
+      }
   }
 
   result = (result*(NonDDREAMInstance->likelihoodScale));

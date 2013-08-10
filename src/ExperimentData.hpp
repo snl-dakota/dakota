@@ -22,6 +22,20 @@
 
 namespace Dakota {
 
+// free function for now; to be encapsulated
+/// Read data in historical format into x, y, sigma matrices
+void read_historical_data(const std::string& expDataFileName,
+			  const std::string& context_message,
+			  size_t numExperiments,
+			  size_t numExpConfigVars,
+			  size_t numFunctions,
+			  size_t numExpStdDeviationsRead,
+			  bool expDataFileAnnotated,
+			  bool calc_sigma_from_data,
+			  RealMatrix& xObsData,
+			  RealMatrix& yObsData,
+			  RealMatrix& yStdData);
+  
 // special values for sigma_type 
 enum sigtype { NO_SIGMA, SCALAR_SIGMA, COVARIANCE_MATRIX };
 // special values for experimental data type 
@@ -37,18 +51,19 @@ public:
   //- Heading: Constructors, destructor, operators
   //
 
-  SingleExperiment();                                ///< constructor
+  SingleExperiment()
+  { /* empty ctor */ }                                ///< constructor
 
   /// construct a single experiment from passed data
-  // BMA TODO: Ask Laura about sigma
   SingleExperiment(int num_repl, const RealVector& real_config_vars,
+		   int sigma_type, const RealVector& sigma_scalar,
 		   const RealVector& scalar_data);
 
 
-  SingleExperiment(const SingleExperiment&);         ///< copy constructor
-  ~SingleExperiment();                               ///< destructor
+  //SingleExperiment(const SingleExperiment&);         ///< copy constructor
+  //~SingleExperiment();                               ///< destructor
  
-  SingleExperiment& operator=(const SingleExperiment&);   ///< assignment operator
+  //SingleExperiment& operator=(const SingleExperiment&);   ///< assignment operator
 
   //
   //- Heading: Member methods
@@ -120,12 +135,18 @@ public:
   //- Heading: Constructors, destructor, operators
   //
 
-  ExpDataPerResponse();                                ///< constructor
+  ExpDataPerResponse()
+  { /* empty ctor */ } ;                                ///< constructor
+
+  /// Constructor for legacy data, where each experiment has the same
+  /// number of replicates = 1, same sigma type, etc.
   ExpDataPerResponse(int num_exp, int exp_type);
-  ExpDataPerResponse(const ExpDataPerResponse&);         ///< copy constructor
-  ~ExpDataPerResponse();                               ///< destructor
+
+
+  //ExpDataPerResponse(const ExpDataPerResponse&);         ///< copy constructor
+  //~ExpDataPerResponse();                               ///< destructor
  
-  ExpDataPerResponse& operator=(const ExpDataPerResponse&);   ///< assignment operator
+  //ExpDataPerResponse& operator=(const ExpDataPerResponse&);   ///< assignment operator
 
   //
   //- Heading: Member methods
@@ -169,16 +190,34 @@ public:
   //- Heading: Constructors, destructor, operators
   //
 
-  ExperimentData();                                ///< constructor
-  ExperimentData(const ExperimentData&);            ///< copy constructor
-  ~ExperimentData();                               ///< destructor
+  ExperimentData()
+  { /* empty ctor */ } ;                                ///< constructor
+
+  /// Constructor from legacy file format
+  void load_scalar(const std::string& expDataFilename,
+		   const std::string& context_message,
+		   size_t numExperiments,
+		   size_t numExpConfigVars,
+		   size_t numFunctions,
+		   size_t numExpStdDeviationsRead,
+		   bool expDataFileAnnotated,
+		   bool calc_sigma_from_data,
+		   short verbosity);
+
+  //ExperimentData(const ExperimentData&);            ///< copy constructor
+  //~ExperimentData();                               ///< destructor
  
-  ExperimentData& operator=(const ExperimentData&);   ///< assignment operator
+  //ExperimentData& operator=(const ExperimentData&);   ///< assignment operator
 
   //
   //- Heading: Member methods
   //
 
+  const RealVector& config_vars(size_t response, size_t experiment);
+
+  Real scalar_data(size_t response, size_t experiment, size_t replicate);
+
+  Real scalar_sigma(size_t response, size_t experiment, size_t replicate);
 
   /// At the outer level, ExperimentData will just be a vector of ExpDataPerResponse;
   std::vector<ExpDataPerResponse> allExperiments;
@@ -194,126 +233,6 @@ private:
 
 
 };
-
-
-// free function for now; to be encapsulated
-/// Read data in historical format into x, y, sigma matrices
-void read_historical_data(const std::string& expDataFilename,
-			  const std::string& context_message,
-			  size_t numExperiments,
-			  size_t numExpConfigVars,
-			  size_t numFunctions,
-			  size_t numExpStdDeviationsRead,
-			  bool expDataFileAnnotated,
-			  const RealVector& expStdDeviations,
-			  bool calc_sigma_from_data,
-			  RealMatrix& xObsData,
-			  RealMatrix& yObsData,
-			  RealMatrix& yStdData);
-  
-inline void
-read_historical_data(const std::string& expDataFileName,
-		     const std::string& context_message,
-		     size_t numExperiments,
-		     size_t numExpConfigVars,
-		     size_t numFunctions,
-		     size_t numExpStdDeviationsRead,
-		     bool expDataFileAnnotated,
-		     const RealVector& expStdDeviations,
-		     bool calc_sigma_from_data,
-		     RealMatrix& xObsData,
-		     RealMatrix& yObsData,
-		     RealMatrix& yStdData)
-{
-
-  // Read from a matrix with numExperiments rows and a number of cols
-  // columns:  numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
-  RealMatrix experimental_data;
-
-  size_t num_cols = numExpConfigVars + numFunctions + numExpStdDeviationsRead;
-
-  TabularIO::read_data_tabular(expDataFileName, context_message, 
-			       experimental_data, numExperiments,  num_cols, 
-			       expDataFileAnnotated);
-
-  // Get views of the data in 3 matrices for convenience
-
-  size_t start_row, start_col;
-  if (numExpConfigVars > 0) {
-    start_row = 0;
-    start_col = 0;
-    RealMatrix x_obs_data(Teuchos::View, experimental_data,
-			  numExperiments, numExpConfigVars,
-			  start_row, start_col);
-    xObsData.reshape(numExperiments, numExpConfigVars);
-    for (int i=0; i<numExperiments; i++)
-      for (int j=0; j<numExpConfigVars; j++)
-        xObsData(i,j) = x_obs_data(i,j);
-  }
- 
-  start_row = 0;
-  start_col = numExpConfigVars;
-  RealMatrix y_obs_data(Teuchos::View, experimental_data,
-			numExperiments, numFunctions,
-			start_row, start_col);
-  yObsData.reshape(numExperiments, numFunctions);
-  for (int i=0; i<numExperiments; i++)
-    for (int j=0; j<numFunctions; j++)
-      yObsData(i,j) = y_obs_data(i,j);
-
-  // BMA TODO: The number of experimental functions may not match the
-  // user functions, so can't assume numFunctions
-  yStdData.reshape(numExperiments, numFunctions);
-  if (numExpStdDeviationsRead > 0) {
-    start_row = 0;
-    start_col = numExpConfigVars + numFunctions;
-    RealMatrix y_std_data(Teuchos::View, experimental_data,
-			  numExperiments, numExpStdDeviationsRead,
-			  start_row, start_col);
-    // We allow 1 or numFunctions sigmas
-    for (int i=0; i<numExperiments; i++)
-      for (int j=0; j<numFunctions; j++) {
-	if (numExpStdDeviationsRead == 1)
-	  yStdData(i,j) = y_std_data(i,0);
-	else
-	  yStdData(i,j) = y_std_data(i,j);
-      }
-    // BMA: This is odd to me -- we overwrite the read values with
-    // user values?  Commenting out as we don't currently support
-    // input file-specified errors.
-    // if (expStdDeviations.length()==1) {
-    //   for (int i=0; i<numExperiments; i++)
-    //     for (int j=0; j<numFunctions; j++)
-    //       yStdData(i,j) = expStdDeviations(0);
-    // }
-    // else if (expStdDeviations.length()==numFunctions) {
-    //   for (int i=0; i<numExperiments; i++)
-    //     for (int j=0; j<numFunctions; j++)
-    //       yStdData(i,j) = expStdDeviations(j);
-    // }
-  }
-  else if (calc_sigma_from_data) {
-    // calculate sigma terms
-    Real mean_est, var_est;
-    for (int j=0; j<numFunctions; j++){
-      mean_est = 0;
-      for (int i=0; i<numExperiments; i++)
-        mean_est += yObsData(i,j);
-      mean_est = mean_est / ((Real)numExperiments);
-      var_est = 0;
-      for (int i=0; i<numExperiments; i++)
-        var_est += (yObsData(i,j)-mean_est)*(yObsData(i,j)-mean_est); 
-      // BMA TODO: Is this correct in the 1 experiment case (sigma <- 1.0)?
-      for (int i=0; i<numExperiments; i++)
-        yStdData(i,j) = (numExperiments > 1) ? 
-	  std::sqrt(var_est/(Real)(numExperiments-1)) : 1.0;
-    }
-  }
-  else {
-    yStdData = 0.0;
-  }
-
-}
 
 } // namespace Dakota
 

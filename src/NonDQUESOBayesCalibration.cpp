@@ -15,7 +15,6 @@
 #include "NonDQUESOBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "ExperimentData.hpp"
 #include "uqStatisticalInverseProblem.h"
 #include "uqStatisticalInverseProblemOptions.h"
 #include "uqMetropolisHastingsSGOptions.h"
@@ -95,19 +94,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  read_historical_data(expDataFileName, "QUESO Bayes Calibration",
-		       numExperiments, 
-		       numExpConfigVars, numFunctions, numExpStdDeviationsRead,
-		       expDataFileAnnotated, expStdDeviations, 
-		       calc_sigma_from_data,
-		       xObsData, yObsData, yStdData);
+  expData.load_scalar(expDataFileName, "QUESO Bayes Calibration",
+		      numExperiments, 
+		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
+		      expDataFileAnnotated, calc_sigma_from_data,
+		      outputLevel);
   
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "xobs_data" << xObsData << '\n';
-    Cout << "yobs_data" << yObsData << '\n';
-    Cout << "ystd_data" << yStdData << '\n';
-  }
-
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms
   if ((numExpStdDeviationsRead > 0) && !(calibrateSigmaFlag))
@@ -155,8 +147,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // calibrateSigmaFlag is true
   if (calibrateSigmaFlag) {
     for (int j=0; j<numFunctions; j++){
-      paramMins[numContinuousVars+j]=0.01*yStdData(0,j);
-      paramMaxs[numContinuousVars+j]=2.0*yStdData(0,j);
+      int replicate = 0;
+      Real std_0_j = expData.scalar_sigma(j, 0, replicate);
+      paramMins[numContinuousVars+j]=0.01*std_0_j;
+      paramMaxs[numContinuousVars+j]=2.0*std_0_j;
     }
   }
  
@@ -365,16 +359,22 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // placed depending if there is zero, one, num_funcs, or a full num_exp*num_func 
   // matrix of standard deviations.  Thus, we just have to iterate over this to 
   // calculate the likelihood. 
+  size_t replicate = 0;
   if (NonDQUESOInstance->calibrateSigmaFlag) {
     for (i=0; i<num_exp; i++) 
       for (j=0; j<num_funcs; j++){
-         result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/paramValues[num_cont+j],2.0);
+	size_t replicate = 0;
+	Real data_i_j = NonDQUESOInstance->expData.scalar_data(j, i, replicate);
+	result = result+pow((fn_vals(j)-data_i_j)/paramValues[num_cont+j],2.0);
       }
   }
   else {	
     for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++)
-        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
+      for (j=0; j<num_funcs; j++) {
+	Real data_i_j = NonDQUESOInstance->expData.scalar_data(j, i, replicate);
+	Real std_i_j = NonDQUESOInstance->expData.scalar_sigma(j, i, replicate);
+        result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
+      }
   }
 
   result = (result*(NonDQUESOInstance->likelihoodScale));
