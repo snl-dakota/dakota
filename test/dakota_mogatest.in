@@ -5,7 +5,7 @@
 #  Institute of Technology, titled "Multiobjective Evolutionary
 #  Algorithms: Classifications, Analyses, and New Innovations.
  
-# timeout overrides: 0=TD300, 1=TD300, 2=TD300, 3=TD360
+# timeout overrides: 0=TD360, 1=TD360, 2=TD360, 3=TD360
 
 strategy,
 	single
