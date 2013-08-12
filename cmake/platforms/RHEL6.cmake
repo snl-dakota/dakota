@@ -6,7 +6,7 @@
 
 
 ############################################################################
-# Make 2.8.6 has problems with RHEL6/Boost -- the following is a workaround
+# CMake 2.8.6 has problems with RHEL6/Boost -- the following is a workaround
 #
 set( Boost_NO_BOOST_CMAKE ON 
      CACHE BOOL "Obtain desired behavior on RHEL6" FORCE)
@@ -16,6 +16,9 @@ set( Boost_NO_BOOST_CMAKE ON
 #     for a regular boost install. This will avoid finding boost-cmake
 #     installs. Defaults to OFF.                 [Since CMake 2.8.6]
 ############################################################################
+
+set( Boost_NO_SYSTEM_PATHS ON
+     CACHE BOOL "DO NOT fallback to Boost-1.41 installed on RHEL6" FORCE)
 
 ############################################################################
 # BLAS, LAPACK libraries assumed to be installed in /usr/lib64 on RHEL6
