@@ -15,6 +15,12 @@
 
 namespace Dakota {
 
+ResultsID& ResultsID::instance()
+{
+  static ResultsID resultsIDInstance;
+  return resultsIDInstance;
+}
+
 // TODO for ResultsID: 
 // * problem with this design is might need to use non-const
 //   version in print_results, which should be const...

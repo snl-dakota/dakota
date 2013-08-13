@@ -63,10 +63,7 @@ class ResultsID {
 
 public:
   /// get the single unique instance of ResultsID
-  static ResultsID& instance() {
-    static ResultsID resultsIDInstance;
-    return resultsIDInstance;
-  }
+  static ResultsID& instance();
   /// explicitly increment the iterator results ID, init to 1 if needed
   size_t increment_id(const std::string& method_name, 
 		      const std::string& method_id);
