@@ -17,6 +17,7 @@
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "SurrogateData.hpp"
+#include "DataMethod.hpp"
 
 static const char rcsId[]="@(#) $Id: DiscrepancyCorrection.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -77,13 +78,13 @@ void DiscrepancyCorrection::initialize_corrections()
     addCorrections.resize(numFns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
       addCorrections[*it] = Approximation("local_taylor", approx_order, 
-					   numVars, dataOrder);
+					  numVars, dataOrder, NORMAL_OUTPUT);
   }
   if (computeMultiplicative) {
     multCorrections.resize(numFns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
       multCorrections[*it] = Approximation("local_taylor", approx_order, 
-					   numVars, dataOrder);
+					   numVars, dataOrder, NORMAL_OUTPUT);
   }
   correctionPrevCenterPt = surrModel.current_variables().copy();
 }
@@ -145,7 +146,7 @@ compute(const Variables& vars, const Response& truth_response,
     UShortArray approx_order(numVars, correctionOrder);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
       addCorrections[*it] = Approximation("local_taylor", approx_order, 
-					  numVars, dataOrder);
+					  numVars, dataOrder, SILENT_OUTPUT);
   }
 
   Pecos::SurrogateDataVars sdv(vars.continuous_variables(),

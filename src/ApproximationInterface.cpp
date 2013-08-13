@@ -134,8 +134,8 @@ ApproximationInterface(const String& approx_type,
                   + actualModelVars.drv();
   for (int i=0; i<num_fns; i++) {
     approxFnIndices.insert(i);
-    functionSurfaces[i]
-      = Approximation(approx_type, approx_order, num_vars, data_order);
+    functionSurfaces[i] = Approximation(approx_type, approx_order, num_vars,
+					data_order, output_level);
   }
 }
 

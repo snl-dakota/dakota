@@ -51,7 +51,7 @@ public:
   Approximation(ProblemDescDB& problem_db, size_t num_vars);
    /// alternate constructor
   Approximation(const String& approx_type, const UShortArray& approx_order,
-		size_t num_vars, short data_order);
+		size_t num_vars, short data_order, short output_level);
   /// copy constructor
   Approximation(const Approximation& approx);
 
@@ -213,8 +213,8 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Approximation(BaseConstructor, const String& approx_type, size_t num_vars,
-		short data_order);
+  Approximation(NoDBBaseConstructor, size_t num_vars, short data_order,
+		short output_level);
 
   //
   //- Heading: Data
@@ -277,7 +277,7 @@ private:
   /// approxRep to the appropriate derived type.
   Approximation* get_approx(const String& approx_type,
 			    const UShortArray& approx_order, size_t num_vars,
-			    short data_order);
+			    short data_order, short output_level);
 
   //
   //- Heading: Data

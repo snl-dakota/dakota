@@ -53,7 +53,7 @@ public:
   /// default constructor
   GaussProcApproximation();
   /// alternate constructor
-  GaussProcApproximation(size_t num_vars, short data_order);
+  GaussProcApproximation(size_t num_vars, short data_order, short output_level);
   /// standard constructor
   GaussProcApproximation(const ProblemDescDB& problem_db, size_t num_vars);
   /// destructor
@@ -283,9 +283,10 @@ inline GaussProcApproximation::GaussProcApproximation():
 
 
 inline GaussProcApproximation::
-GaussProcApproximation(size_t num_vars, short data_order):
+GaussProcApproximation(size_t num_vars, short data_order, short output_level):
+  Approximation(NoDBBaseConstructor(), num_vars, data_order, output_level),
   trendOrder(2), usePointSelection(false)
-{ numVars = num_vars; buildDataOrder = data_order; }
+{ approxType = "global_gaussian"; }
 
 
 inline GaussProcApproximation::~GaussProcApproximation()

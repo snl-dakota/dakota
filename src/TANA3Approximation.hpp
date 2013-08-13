@@ -40,7 +40,7 @@ public:
   /// standard constructor
   TANA3Approximation(ProblemDescDB& problem_db, size_t num_vars);
   /// alternate constructor
-  TANA3Approximation(size_t num_vars, short data_order);
+  TANA3Approximation(size_t num_vars, short data_order, short output_level);
   /// destructor
   ~TANA3Approximation();
 
@@ -92,13 +92,12 @@ inline TANA3Approximation::TANA3Approximation()
 { }
 
 
-inline TANA3Approximation::TANA3Approximation(size_t num_vars, short data_order)
-{
-  numVars = num_vars;
+inline TANA3Approximation::
+TANA3Approximation(size_t num_vars, short data_order, short output_level):
   // as Hessian data cannot be used, do not accept 4 bit since it could
   // affect data requirement estimations in Approximation base class
-  buildDataOrder = (data_order & 3);
-}
+  Approximation(NoDBBaseConstructor(), num_vars, (data_order & 3), output_level)
+{ approxType = "multipoint_tana"; }
 
 
 inline TANA3Approximation::~TANA3Approximation()

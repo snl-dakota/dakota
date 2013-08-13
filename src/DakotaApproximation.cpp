@@ -74,14 +74,15 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     base class constructor calling get_approx() again).  Since the
     letter IS the representation, its rep pointer is set to NULL (an
     uninitialized pointer causes problems in ~Approximation). */
-Approximation::Approximation(BaseConstructor, const String& approx_type,
-			     size_t num_vars, short data_order):
-  outputLevel(NORMAL_OUTPUT), numVars(num_vars), approxType(approx_type),
-  buildDataOrder(data_order), approxRep(NULL), referenceCount(1)
+Approximation::
+Approximation(NoDBBaseConstructor, size_t num_vars, short data_order,
+	      short output_level):
+  outputLevel(output_level), numVars(num_vars), buildDataOrder(data_order),
+  approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
-  Cout << "Approximation::Approximation(BaseConstructor) called to build base "
-       << "class for letter." << std::endl;
+  Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
+       << "base class for letter." << std::endl;
 #endif
 }
 
@@ -157,14 +158,11 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
 
 
 /** This is the alternate envelope constructor for instantiations on
-    the fly.  Since it does not have access to problem_db, the letter
-    class is not fully populated.  This constructor executes
-    get_approx(type), which invokes the default constructor of the
-    derived letter class, which in turn invokes the default
-    constructor of the base class. */
+    the fly.  Since it does not have access to problem_db, it utilizes
+    the NoDBBaseConstructor constructor chain. */
 Approximation::
 Approximation(const String& approx_type, const UShortArray& approx_order,
-	      size_t num_vars, short data_order):
+	      size_t num_vars, short data_order, short output_level):
   referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -173,7 +171,8 @@ Approximation(const String& approx_type, const UShortArray& approx_order,
 #endif
 
   // Set the rep pointer to the appropriate derived type
-  approxRep = get_approx(approx_type, approx_order, num_vars, data_order);
+  approxRep =
+    get_approx(approx_type, approx_order, num_vars, data_order, output_level);
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -183,7 +182,7 @@ Approximation(const String& approx_type, const UShortArray& approx_order,
     appropriate derived type. */
 Approximation* Approximation::
 get_approx(const String& approx_type, const UShortArray& approx_order, 
-	   size_t num_vars, short data_order)
+	   size_t num_vars, short data_order, short output_level)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_approx(String&)." << std::endl;
@@ -191,15 +190,15 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
 
   Approximation* approx;
   if (approx_type == "local_taylor")
-    approx = new TaylorApproximation(num_vars, data_order);
+    approx = new TaylorApproximation(num_vars, data_order, output_level);
   else if (approx_type == "multipoint_tana")
-    approx = new TANA3Approximation(num_vars, data_order);
+    approx = new TANA3Approximation(num_vars, data_order, output_level);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
-    approx = new PecosApproximation(approx_type, approx_order,
-				    num_vars,    data_order);
+    approx = new PecosApproximation(approx_type, approx_order, num_vars,
+				    data_order, output_level);
   else if (approx_type == "global_gaussian")
-    approx = new GaussProcApproximation(num_vars, data_order);
+    approx = new GaussProcApproximation(num_vars, data_order, output_level);
 #ifdef HAVE_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
@@ -207,8 +206,8 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
 	   approx_type == "global_moving_least_squares")
-    approx = new SurfpackApproximation(approx_type, approx_order,
-				       num_vars,    data_order);
+    approx = new SurfpackApproximation(approx_type, approx_order, num_vars,
+				       data_order, output_level);
 #endif // HAVE_SURFPACK
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."

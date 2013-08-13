@@ -40,7 +40,7 @@ public:
   PecosApproximation();
   /// alternate constructor
   PecosApproximation(const String& approx_type, const UShortArray& approx_order,
-		     size_t num_vars, short data_order);
+		     size_t num_vars, short data_order, short output_level);
   /// standard ProblemDescDB-driven constructor
   PecosApproximation(ProblemDescDB& problem_db, size_t num_vars);
   /// destructor

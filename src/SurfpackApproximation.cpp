@@ -316,10 +316,11 @@ SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
 SurfpackApproximation::
 SurfpackApproximation(const String& approx_type,
 		      const UShortArray& approx_order, size_t num_vars,
-		      short data_order):
-  Approximation(BaseConstructor(), approx_type, num_vars, data_order),
+		      short data_order, short output_level):
+  Approximation(NoDBBaseConstructor(), num_vars, data_order, output_level),
   surfData(NULL), model(NULL), factory(NULL)
 {
+  approxType = approx_type;
   if (approx_order.empty())
     approxOrder = 2;
   else {
@@ -341,7 +342,7 @@ SurfpackApproximation(const String& approx_type,
 
   ParamMap args;
 
-  args["verbosity"] = toString<short>(QUIET_OUTPUT);
+  args["verbosity"] = toString<short>(outputLevel);//(QUIET_OUTPUT);
   args["ndims"] = toString<size_t>(num_vars);
   args["seed"] = "8147";
 

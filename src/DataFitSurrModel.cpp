@@ -206,16 +206,17 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (actual_model.gradient_type() == "none")
     gradType = "none";
   else
-    gradType = (approx_type == "global_polynomial" ||
-		strends(approx_type, "_orthogonal_polynomial") ||
-		strends(approx_type, "_interplation_polynomial") ||
-		strbegins(approx_type, "local_") ||
-		strbegins(approx_type, "multipoint_")) ? "analytic" : "numerical";
+    gradType =
+      (approx_type == "global_polynomial" ||
+       strends(approx_type, "_orthogonal_polynomial") ||
+       strends(approx_type, "_interplation_polynomial") ||
+       strbegins(approx_type, "local_") ||
+       strbegins(approx_type, "multipoint_")) ? "analytic" : "numerical";
   if (actual_model.hessian_type() == "none")
     hessType = "none";
   else
     hessType = (approx_type == "global_polynomial" ||
-		strbegins(approx_type, "local_"))      ? "analytic" : "numerical";
+		strbegins(approx_type, "local_")) ? "analytic" : "numerical";
 
   // Promote fdGradSS/fdHessByFnSS/fdHessByGradSS to defaults if needed.
   if (gradType == "numerical") { // mixed not supported for this Model

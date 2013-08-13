@@ -22,13 +22,15 @@ namespace Dakota {
 
 PecosApproximation::
 PecosApproximation(const String& approx_type, const UShortArray& approx_order, 
-		   size_t num_vars, short data_order):
-  Approximation(BaseConstructor(), approx_type, num_vars, data_order)
+		   size_t num_vars, short data_order, short output_level):
+  Approximation(NoDBBaseConstructor(), num_vars, data_order, output_level)
 {
+  approxType = approx_type;
   short basis_type;  approx_type_to_basis_type(approxType, basis_type);
   bool  use_derivs = (data_order > 1);
-  pecosBasisApprox = Pecos::BasisApproximation(basis_type, approx_order,
-					       num_vars,   use_derivs);
+  pecosBasisApprox =
+    Pecos::BasisApproximation(basis_type, approx_order, numVars, use_derivs,
+			      outputLevel);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
   polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
@@ -51,8 +53,9 @@ PecosApproximation(ProblemDescDB& problem_db, size_t num_vars):
     if (problem_db.get_string("responses.hessian_type")  != "none")
       buildDataOrder |= 4;
   }
-  pecosBasisApprox = Pecos::BasisApproximation(basis_type, approx_order,
-					       numVars,    use_derivs);
+  pecosBasisApprox =
+    Pecos::BasisApproximation(basis_type, approx_order, numVars, use_derivs,
+			      outputLevel);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
   polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep

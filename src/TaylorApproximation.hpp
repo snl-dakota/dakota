@@ -42,7 +42,7 @@ public:
   /// standard constructor
   TaylorApproximation(ProblemDescDB& problem_db, size_t num_vars);
   /// alternate constructor
-  TaylorApproximation(size_t num_vars, short data_order);
+  TaylorApproximation(size_t num_vars, short data_order, short output_level);
   /// destructor
   ~TaylorApproximation();
 
@@ -78,8 +78,9 @@ inline TaylorApproximation::TaylorApproximation()
 
 
 inline TaylorApproximation::
-TaylorApproximation(size_t num_vars, short data_order)
-{ numVars = num_vars; buildDataOrder = data_order; }
+TaylorApproximation(size_t num_vars, short data_order, short output_level):
+  Approximation(NoDBBaseConstructor(), num_vars, data_order, output_level)
+{ approxType = "local_taylor"; }
 
 
 inline TaylorApproximation::~TaylorApproximation()
