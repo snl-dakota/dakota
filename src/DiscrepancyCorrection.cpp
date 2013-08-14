@@ -146,7 +146,7 @@ compute(const Variables& vars, const Response& truth_response,
     UShortArray approx_order(numVars, correctionOrder);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
       addCorrections[*it] = Approximation("local_taylor", approx_order, 
-					  numVars, dataOrder, SILENT_OUTPUT);
+					  numVars, dataOrder, NORMAL_OUTPUT);
   }
 
   Pecos::SurrogateDataVars sdv(vars.continuous_variables(),

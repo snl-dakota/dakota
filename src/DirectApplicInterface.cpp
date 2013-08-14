@@ -137,8 +137,8 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 	 << " numAnalysisServers = " << numAnalysisServers << std::endl;
 #endif // MPI_DEBUG
 
-    // if executing a local job on a dedicated master (e.g., for a value
-    // computation amongst parallel numerical gradient computations), then
+    // For execution of local jobs on a dedicated master (e.g., for a serial
+    // value computation amongst parallel numerical gradient computations),
     // ApplicationInterface::init_serial_analyses() updates numAnalysisServers
     // from its default (0) to a serial setting (1).
     for (analysisDriverIndex =  analysisServerId-1;
