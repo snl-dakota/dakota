@@ -302,6 +302,12 @@ private:
   /// following ParallelLibrary::init_analysis_communicators().
   void set_analysis_communicators();
 
+  /// set concurrent evaluation configuration for serial operations
+  void init_serial_evaluations();
+  /// set concurrent analysis configuration for serial operations
+  /// (e.g., for local executions on a dedicated master)
+  void init_serial_analyses();
+
   // Routines employed by manage_failure():
 
   /// convenience function for the continuation approach in
@@ -448,10 +454,15 @@ private:
     This is the reason for this function: to reset certain defaults for
     interface objects that are used serially. */
 inline void ApplicationInterface::init_serial()
-{
-  // defaults of all other attributes are OK for serial operations
-  numEvalServers = numAnalysisServers = 1;
-}
+{ init_serial_evaluations(); init_serial_analyses(); }
+
+
+inline void ApplicationInterface::init_serial_evaluations()
+{ numEvalServers = 1; } // other evaluation defaults OK for serial operations
+
+
+inline void ApplicationInterface::init_serial_analyses()
+{ numAnalysisServers = 1; } // other analysis defaults OK for serial operations
 
 
 inline int ApplicationInterface::asynch_local_evaluation_concurrency() const

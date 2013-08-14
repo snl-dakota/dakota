@@ -130,12 +130,23 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     else
       serve_analyses_synch();
   }
-  else // simple static schedule (all peer cases including single analysis)
+  else { // simple static schedule (all peer cases including single analysis)
+#ifdef MPI_DEBUG
+    Cout << "analysisServerId = "    << analysisServerId
+	 << " numAnalysisDrivers = " << numAnalysisDrivers
+	 << " numAnalysisServers = " << numAnalysisServers << std::endl;
+#endif // MPI_DEBUG
+
+    // if executing a local job on a dedicated master (e.g., for a value
+    // computation amongst parallel numerical gradient computations), then
+    // ApplicationInterface::init_serial_analyses() updates numAnalysisServers
+    // from its default (0) to a serial setting (1).
     for (analysisDriverIndex =  analysisServerId-1;
 	 analysisDriverIndex <  numAnalysisDrivers;
 	 analysisDriverIndex += numAnalysisServers)
       derived_map_ac(analysisDrivers[analysisDriverIndex]);
-  // NOTE: no synchronization enforced in static case (some processors may lag)
+    // NOTE: no synchronization enforced in static case (some procs may lag)
+  }
 
   // ---------------------
   // Output filter portion

@@ -128,6 +128,8 @@ init_communicators(const IntArray& message_lengths,
 
     set_analysis_communicators();
   }
+  else
+    init_serial_analyses();
 
   // print parallel configuration (prior to configuration checking
   // so that error messages can be more readily debugged)
@@ -150,6 +152,8 @@ set_communicators(const IntArray& message_lengths, int max_iterator_concurrency)
   // ParallelLibrary::resolve_inputs).
   if ( !ieDedMasterFlag || iteratorCommRank )
     set_analysis_communicators();
+  else
+    init_serial_analyses();
 
   // check for configuration errors
   set_communicators_checks(max_iterator_concurrency);

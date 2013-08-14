@@ -25,6 +25,8 @@ DataInterfaceRep::DataInterfaceRep():
   evalCacheFlag(true), restartFileFlag(true), referenceCount(1),
   useWorkdir(false), dirTag(false), dirSave(false), templateCopy(false),
   templateReplace(false), numpyFlag(false)
+  // procsPerAnalysis, evalServers, and analysisServers default to zero
+  // in order to allow detection of user override > 0
 { }
 
 

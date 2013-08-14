@@ -427,14 +427,16 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
 {
 /*
 #ifdef MPI_DEBUG
-  Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
-       << num_servers << " procs_per_server = " << procs_per_server
-       << " avail_procs = " << avail_procs << " max_concurrency = "
-       << max_concurrency << " capacity_multiplier = " << capacity_multiplier
-       << " default_config = " << default_config << " scheduling_override = "
-       << scheduling_override << std::endl;
+  if (print_rank)
+    Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
+	 << num_servers << " procs_per_server = " << procs_per_server
+	 << " avail_procs = " << avail_procs << " max_concurrency = "
+	 << max_concurrency << " capacity_multiplier = " << capacity_multiplier
+	 << " default_config = " << default_config << " scheduling_override = "
+	 << scheduling_override << std::endl;
 #endif
 */
+
   const bool self_scheduling_override
     = (scheduling_override == "self")   ? true : false;
   const bool static_scheduling_override
@@ -654,14 +656,17 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
       }
     }
   }
+
 /*
 #ifdef MPI_DEBUG
-  Cout << "ParallelLibrary::resolve_inputs() returns num_servers = "
-       << num_servers << " procs_per_server = " << procs_per_server
-       << " proc_remainder = " << proc_remainder << " dedicated master = "
-       << ded_master << std::endl;
+  if (print_rank)
+    Cout << "ParallelLibrary::resolve_inputs() returns num_servers = "
+	 << num_servers << " procs_per_server = " << procs_per_server
+	 << " proc_remainder = " << proc_remainder << " dedicated master = "
+	 << ded_master << std::endl;
 #endif
 */
+
   return ded_master;
 }
 
