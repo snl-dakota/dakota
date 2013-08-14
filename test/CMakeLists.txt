@@ -145,6 +145,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   if (NOT HAVE_NPSOL OR NOT HAVE_NLPQL)
     list(REMOVE_ITEM dakota_test_input_files
       dakota_addtnl_users.in
+      dakota_ampl_diet.in
       dakota_ampl_fma.in
       dakota_container.in
       dakota_drivers.in
