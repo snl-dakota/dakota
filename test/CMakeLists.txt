@@ -377,6 +377,16 @@ if(DAKOTA_ENABLE_UNIT_TESTS)
 
 endif()
 
+if(DAKOTA_HAVE_HDF5 
+    #AND DAKOTA_ENABLE_UNIT_TESTS
+    )
+  # HDF5 tester depends on HDF5 and NetCDF
+  include_directories(${NETCDF_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+  add_executable(binary_io_test binary_io_test.cpp)
+  target_link_libraries(binary_io_test ${NETCDF_LIBRARIES} ${HDF5_LIBRARIES})
+  link_directories(binary_io_test ${NETCDF_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
+endif()
+
 if(DAKOTA_DLL_API)
   # dll_tester needs to include Dakota/src/dll_api.h
   include_directories(${Dakota_SOURCE_DIR}/src)

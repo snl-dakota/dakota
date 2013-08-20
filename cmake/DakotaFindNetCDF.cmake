@@ -27,7 +27,7 @@
 #include "netcdf.h"
 
 if (UNIX AND NOT NETCDF_FOUND)
-    message (WARNING "NetCDF-4 probe for CONFIG not be working properly. Sorry - please staytuned.")
+#    message (WARNING "NetCDF-4 probe for CONFIG not be working properly. Sorry - please staytuned.")
 	# Use nc-config to obtain the libraries
 	find_program (NETCDF_CONFIG nc-config
 		HINTS
