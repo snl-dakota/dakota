@@ -31,7 +31,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   Interface(BaseConstructor(), problem_db), 
   approxFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   //graph3DFlag(problem_db.get_bool("strategy.graphics")),
-  diagnosticSet(problem_db.get_sa("model.diagnostics")),
+  diagnosticSet(problem_db.get_sa("model.metrics")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
   actualModelInterfaceId(am_interface_id)
 {

@@ -57,7 +57,7 @@ SurfpackApproximation::
 SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
   Approximation(BaseConstructor(), problem_db, num_vars), //surface(NULL),
   surfData(NULL), model(NULL), factory(NULL), 
-  exportModelName(problem_db.get_string("model.surrogate.export_model_file")),
+  exportModelName(problem_db.get_string("model.surrogate.export_model_file"))
 {
     ParamMap args;
 

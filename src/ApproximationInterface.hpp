@@ -179,7 +179,7 @@ private:
   /// contain multiple responses)
   String challengeFilename;
   /// whether the points file is annotated
-  bool challengeAnnotated
+  bool challengeAnnotated;
 
   /// copy of the actualModel variables object used to simplify conversion 
   /// among differing variable views
