@@ -124,7 +124,7 @@ public:
   /// the file name from the \c challenge_points_file specification in
   /// \ref ModelSurrG
   String approxChallengeFile;
-  /// whether the point export file is annotated (default true)
+  /// whether the challenge data file is annotated (default true)
   bool approxChallengeAnnotated;
 
 

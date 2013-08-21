@@ -57,7 +57,7 @@ SurfpackApproximation::
 SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
   Approximation(BaseConstructor(), problem_db, num_vars), //surface(NULL),
   surfData(NULL), model(NULL), factory(NULL), 
-  exportModelName(problem_db.get_string("model.surrogate.export_model_file"))
+  exportModelName(problem_db.get_string("model.surrogate.export_model_file")),
 {
     ParamMap args;
 
@@ -318,7 +318,8 @@ SurfpackApproximation(const String& approx_type,
 		      const UShortArray& approx_order, size_t num_vars,
 		      short data_order, short output_level):
   Approximation(NoDBBaseConstructor(), num_vars, data_order, output_level),
-  surfData(NULL), model(NULL), factory(NULL)
+  surfData(NULL), model(NULL), factory(NULL),
+  crossValidate(false), numFolds(10), percentFold(0.1), pressFlag(false)
 {
   approxType = approx_type;
   if (approx_order.empty())

@@ -175,6 +175,12 @@ private:
   /// set of diagnostic metrics
   StringArray diagnosticSet;
 
+  /// data file for user-supplied challenge data (per interface, since may
+  /// contain multiple responses)
+  String challengeFilename;
+  /// whether the points file is annotated
+  bool challengeAnnotated
+
   /// copy of the actualModel variables object used to simplify conversion 
   /// among differing variable views
   Variables actualModelVars;

@@ -144,7 +144,16 @@ private:
 
   /// A Surfpack model name for saving the surrogate model
   String exportModelName;
-  
+    
+  /// whether to perform cross validation
+  bool crossValidate;
+  /// number of folds for CV
+  unsigned numFolds;
+  /// percentage of data for CV
+  Real percentFold;
+  /// whether to perform PRESS
+  bool pressFlag;
+
 };
 
 

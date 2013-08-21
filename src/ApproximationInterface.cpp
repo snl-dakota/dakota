@@ -122,6 +122,7 @@ ApproximationInterface(const String& approx_type,
 		       const String& am_interface_id, size_t num_fns,
 		       short data_order, short output_level):
   Interface(NoDBBaseConstructor(), num_fns, output_level), //graph3DFlag(false),
+  challengeAnnotated(true),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
   actualModelInterfaceId(am_interface_id)
 {
