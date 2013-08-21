@@ -5255,6 +5255,7 @@ static String
 	MP_(idMethod),
 	MP_(logFile),
 	MP_(modelPointer),
+	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer);
 
@@ -5279,6 +5280,7 @@ static bool
 	MP_(mutationAdaptive),
 	MP_(printPopFlag),
 	MP_(probCollocFlag),
+	MP_(pstudyFileAnnotated),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
 	MP_(showMiscOptions),

@@ -32,7 +32,9 @@ void open_file(std::ifstream& data_file, const std::string& input_filename,
 	 << input_filename << " for reading tabular data." << std::endl;
     abort_handler(-1);
   }
-  data_file.exceptions(std::fstream::failbit | std::fstream::badbit);
+  // TODO (fix): can't except on failbit when trying to read to EOF
+  //  data_file.exceptions(std::fstream::failbit | std::fstream::badbit);
+  data_file.exceptions(std::fstream::badbit);
 }
 
 
@@ -188,6 +190,64 @@ void read_data_tabular(const std::string& input_filename,
   }
 
 }
+
+
+
+  // BMA TODO: use a helper to read each line.
+void read_data_tabular(const std::string& input_filename, 
+		       const std::string& context_message,
+		       RealArray& input_vector, bool annotated,
+		       size_t num_vars)
+{
+  std::ifstream input_stream;
+  open_file(input_stream, input_filename, context_message);
+
+  //  input_vector.resize(num_rows);
+  try {
+
+    if (annotated)
+      read_header_tabular(input_stream);
+
+    while (input_stream.good() && !input_stream.eof()) {
+      if (annotated) {
+	// discard the row label (typically eval or data ID)
+	size_t discard_row_label;
+	if (!(input_stream >> discard_row_label))
+	  break;
+	Cout << discard_row_label << " ";
+      }
+      for (size_t vi = 0; vi < num_vars; ++vi) {
+	double read_value;
+	if (!(input_stream >> read_value))
+	  break;
+	input_vector.push_back(read_value);
+	Cout << read_value << " ";
+      }
+      Cout << "\n";
+    }
+  }
+  catch (const std::ios_base::failure& failorbad_except) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << ".";
+    if (annotated) {
+      Cout << "\nExpected header-annotated tabular file:"
+	   << "\n  * header row with labels "
+	   << "\n  * leading column with counter and " << num_vars << " data columns";
+    }
+    else {
+      Cout << "\nExpected free-form tabular file: no leading row nor column; "
+	   << num_vars << " columns of whitespace-separated numeric data.";
+    }
+    Cout << std::endl;
+    abort_handler(-1);
+  }
+  catch(...) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << " (unknown error).";
+    abort_handler(-1);
+  }
+}
+
 
 
 void read_data_tabular(const std::string& input_filename, 

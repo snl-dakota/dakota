@@ -998,7 +998,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  )
 	|
 	( list_parameter_study {N_mdm(lit,methodName_list_parameter_study)}
-	  list_of_points REALLIST {N_mdm(RealDL,listOfPoints)}
+	  list_of_points REALLIST {N_mdm(RealDL,listOfPoints)} |
+	  ( import_points_file STRING {N_mdm(str,pstudyFilename)} 
+              [ annotated {N_mdm(true,pstudyFileAnnotated)} | 
+                freeform  {N_mdm(false,pstudyFileAnnotated)} ] 
+            )
 	  )
 	|
 	( centered_parameter_study {N_mdm(lit,methodName_centered_parameter_study)}

@@ -1287,6 +1287,9 @@ TAG "method/list_parameter_study" GROUP "Parameter Studies"
 TAG "method/list_parameter_study/list_of_points"
 	DESC "{List of points to evaluate} MethodCommands.html#MethodPSLPS"
 
+TAG "method/list_parameter_study/import_points_file"
+TAG "method/list_parameter_study/import_points_file/annotated"
+TAG "method/list_parameter_study/import_points_file/freeform"
 TAG "method/centered_parameter_study" GROUP "Parameter Studies"
 	DESC "[CHOOSE PSTUDY method]{Centered parameter study} MethodCommands.html#MethodPSCPS"
 

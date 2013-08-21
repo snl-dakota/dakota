@@ -11,6 +11,7 @@
 //- Owner:       Mike Eldred
 
 #include "dakota_system_defs.hpp"
+#include "dakota_tabular_io.hpp"
 #include "ParamStudy.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -50,9 +51,20 @@ ParamStudy::ParamStudy(Model& model): PStudyDACE(model), pStudyType(0)
   bool err_flag = false;
   switch (pStudyType) {
   case LIST: // list_parameter_study
-    if (distribute_list_of_points(
-	probDescDB.get_rv("method.parameter_study.list_of_points")))
-      err_flag = true;
+    { // need braces due to variable initializations inside case 
+      const RealVector& pt_list = 
+	probDescDB.get_rv("method.parameter_study.list_of_points");
+      if (pt_list.empty()) {
+	const String& pt_fname = probDescDB.get_string("method.pstudy.filename");
+	bool annotated = probDescDB.get_bool("method.pstudy.file_annotated");
+	if (load_distribute_points(pt_fname, annotated))
+	  err_flag = true;
+      }
+      else {
+	if (distribute_list_of_points(pt_list))
+	  err_flag = true;
+      }
+    }
     break;
   case VECTOR_FP: // vector_parameter_study (final_point & num_steps spec.)
     if (check_final_point(
@@ -412,6 +424,20 @@ void ParamStudy::multidim_loop()
   }
 }
 
+/** Load from file and distribute points; using this function to
+    manage construction of the temporary array */
+bool ParamStudy::
+load_distribute_points(const String& points_filename, bool annotated)
+{
+  // don't know the size until the file is read, so use dynamic container
+  RealArray point_list;
+  size_t num_vars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  TabularIO::read_data_tabular(points_filename, "List Parameter Study",
+			       point_list, annotated, num_vars);
+  // now get a view of it
+  RealVector list_of_pts(Teuchos::View, &point_list[0], point_list.size());
+  return distribute_list_of_points(list_of_pts);
+}
 
 bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
 {

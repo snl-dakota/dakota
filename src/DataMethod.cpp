@@ -132,6 +132,7 @@ DataMethodRep::DataMethodRep():
 
   // Parameter Study
   numSteps(0),
+  pstudyFileAnnotated(true),
   // Verification
   refinementRate(2.),
   referenceCount(1),
@@ -237,7 +238,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << varPartitions;
+    << pstudyFilename << pstudyFileAnnotated << varPartitions;
 
   // Verification
   s << refinementRate;
@@ -345,7 +346,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
-    >> varPartitions;
+    >> pstudyFilename >> pstudyFileAnnotated >> varPartitions;
 
   // Verification
   s >> refinementRate;
@@ -453,7 +454,7 @@ void DataMethodRep::write(std::ostream& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << varPartitions;
+    << pstudyFilename << pstudyFileAnnotated << varPartitions;
 
   // Verification
   s << refinementRate;

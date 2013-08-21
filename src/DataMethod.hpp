@@ -796,6 +796,10 @@ public:
   IntVector stepsPerVariable;
   /// the \c list_of_points specification in \ref MethodPSLPS
   RealVector listOfPoints;
+  /// the \c import_points_file spec for a file-based parameter study
+  String pstudyFilename;
+  /// whether the parameter study points file is annotated
+  bool pstudyFileAnnotated;
   /// the \c partitions specification for PStudy method in \ref MethodPSMPS
   UShortArray varPartitions;
 

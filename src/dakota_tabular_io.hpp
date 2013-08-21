@@ -129,6 +129,13 @@ void read_data_tabular(const std::string& input_filename,
 		       RealVector& input_data, size_t num_entries,
 		       bool annotated);
 
+/// read possibly header-annotated whitespace-separated data into a
+/// dynamic vector with minimal error checking 
+void read_data_tabular(const std::string& input_filename, 
+		       const std::string& context_message,
+		       RealArray& input_vector, bool annotated,
+		       size_t num_vars);
+
 //
 // Uses: DataFitSurrModel (highly specialized)
 //

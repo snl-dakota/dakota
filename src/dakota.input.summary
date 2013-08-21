@@ -1380,6 +1380,11 @@ KEYWORD12 method
 	|
 	( list_parameter_study
 	  list_of_points REALLIST
+	  |
+	  ( import_points_file STRING
+	    [ annotated
+	    | freeform ]
+	    )
 	  )
 	|
 	( centered_parameter_study

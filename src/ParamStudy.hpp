@@ -76,6 +76,8 @@ private:
   /// defined by a set of multidimensional partitions
   void multidim_loop();
 
+  bool load_distribute_points(const String& points_filename, bool annotated);
+
   /// distributes incoming all vector in standard variable ordering among
   /// continuous, discrete int, and discrete real vectors
   template <typename OrdinalType,  typename ScalarTypeA, typename ScalarTypeC,
