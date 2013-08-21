@@ -9568,6 +9568,33 @@ Partial Rank Correlation Matrix between input and output:
      ddriv_1  5.52542e-02 -2.55709e-02 -2.23819e-02
      ddsiv_1  2.37692e-01 -3.15190e-02 -2.84485e-02
      ddsrv_1  1.31557e-01 -8.28551e-02 -7.81596e-02
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1000000000e+00 cdv_1
+                      1.2000000000e+00 cdv_2
+                      1.3000000000e+00 cdv_3
+<<<<< Best objective function  =
+                      9.8000000000e-03
+<<<<< Best constraint values   =
+                      6.1000000000e-01
+                      8.9000000000e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1000000000e+00 cdv_1
+                      1.2000000000e+00 cdv_2
+                      1.3000000000e+00 cdv_3
+                                     1 ddriv_1
+                                     2 ddsiv_1
+                      3.0000000000e+00 ddsrv_1
+<<<<< Best objective function  =
+                      1.7009800000e+01
+<<<<< Best constraint values   =
+                      6.1000000000e-01
+                      8.9000000000e-01
+<<<<< Best data captured at function evaluation 1
 dakota_pstudy_allvars.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
