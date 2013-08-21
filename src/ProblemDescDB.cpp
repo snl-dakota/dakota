@@ -2006,17 +2006,17 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     if ((kw = (KW<Real, DataMethodRep>*)Binsearch(Rdme, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
   }
-  else if (Begins(entry_name, "model.")) {
+  else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<Real, DataModelRep> Rdme[] = {	// must be sorted
-      {"model.surrogate.neural_network_range", P annRange},
-      {"model.surrogate.percent", P percentFold}};
+    static KW<Real, DataModelRep> Rdmo[] = {	// must be sorted
+      {"surrogate.neural_network_range", P annRange},
+      {"surrogate.percent", P percentFold}};
     #undef P
 
     KW<Real, DataModelRep> *kw;
-    if ((kw = (KW<Real, DataModelRep>*)Binsearch(Rdme, L)))
+    if ((kw = (KW<Real, DataModelRep>*)Binsearch(Rdmo, L)))
 	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
   Bad_name(entry_name, "get_real");
@@ -2393,8 +2393,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"derivative_usage", P modelUseDerivsFlag},
 	{"export_points_file_annotated", P approxExportAnnotated},
 	{"import_points_file_annotated", P approxImportAnnotated},
-	{"press", P pressFlag},
-	{"point_selection", P pointSelection}};
+	{"point_selection", P pointSelection},
+	{"press", P pressFlag}};
     #undef P
 
     KW<bool, DataModelRep> *kw;

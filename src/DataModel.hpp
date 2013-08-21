@@ -121,12 +121,6 @@ public:
   String approxExportFile;
   /// whether the point export file is annotated (default true)
   bool approxExportAnnotated;
-  /// the file name from the \c challenge_points_file specification in
-  /// \ref ModelSurrG
-  String approxChallengeFile;
-  /// whether the challenge data file is annotated (default true)
-  bool approxChallengeAnnotated;
-
 
   /// the file name from the \c export_model_file specification in
   /// \ref ModelSurrG
@@ -188,17 +182,23 @@ public:
   String trendOrder;
   /// flag indicating the use of point selection in the Gaussian process
   bool pointSelection;
+  /// List of diagnostic metrics the user requests to assess the 
+  /// goodness of fit for a surrogate model.
+  StringArray diagMetrics;
   /// flag indicating the use of cross validation on the metrics specified
   bool crossValidateFlag;
-  /// flag indicating the use of PRESS on the metrics specified
-  bool pressFlag;
   /// number of folds to perform in cross validation
   int numFolds;
   /// percentage of data to withhold for cross validation process
   Real percentFold;
-  /// List of diagnostic metrics the user requests to assess the 
-  /// goodness of fit for a surrogate model.
-  StringArray diagMetrics;
+  /// flag indicating the use of PRESS on the metrics specified
+  bool pressFlag;
+  /// the file name from the \c challenge_points_file specification in
+  /// \ref ModelSurrG
+  String approxChallengeFile;
+  /// whether the challenge data file is annotated (default true)
+  bool approxChallengeAnnotated;
+
 
   // nested models
 
