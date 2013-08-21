@@ -214,16 +214,13 @@ void read_data_tabular(const std::string& input_filename,
 	size_t discard_row_label;
 	if (!(input_stream >> discard_row_label))
 	  break;
-	Cout << discard_row_label << " ";
       }
       for (size_t vi = 0; vi < num_vars; ++vi) {
 	double read_value;
 	if (!(input_stream >> read_value))
 	  break;
 	input_vector.push_back(read_value);
-	Cout << read_value << " ";
       }
-      Cout << "\n";
     }
   }
   catch (const std::ios_base::failure& failorbad_except) {

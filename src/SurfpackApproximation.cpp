@@ -29,6 +29,7 @@
 #include "SurfpackInterface.h"
  
 #include <algorithm>
+#include <boost/math/special_functions/round.hpp>
 
 
 namespace Dakota {
@@ -57,7 +58,12 @@ SurfpackApproximation::
 SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
   Approximation(BaseConstructor(), problem_db, num_vars), //surface(NULL),
   surfData(NULL), model(NULL), factory(NULL), 
-  exportModelName(problem_db.get_string("model.surrogate.export_model_file"))
+  exportModelName(problem_db.get_string("model.surrogate.export_model_file")),
+  diagnosticSet(problem_db.get_sa("model.metrics")),
+  crossValidateFlag(problem_db.get_bool("model.surrogate.cross_validate")),
+  numFolds(problem_db.get_int("model.surrogate.folds")),
+  percentFold(problem_db.get_real("model.surrogate.percent")),
+  pressFlag(problem_db.get_bool("model.surrogate.press"))
 {
     ParamMap args;
 
@@ -309,6 +315,48 @@ SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
       }
     }
 
+    // validate diagnostic settings (preliminary); TODO: do more at
+    // run time and move to both ctors
+    bool err_found = false;
+    if (!diagnosticSet.empty()) {
+      std::set<std::string> valid_metrics;
+      valid_metrics.insert("sum_squared");
+      valid_metrics.insert("mean_squared");
+      valid_metrics.insert("root_mean_squared");
+      valid_metrics.insert("sum_abs");
+      valid_metrics.insert("mean_abs");
+      valid_metrics.insert("max_abs");
+      valid_metrics.insert("rsquared");
+
+      int num_diag = diagnosticSet.size();
+      for (int j = 0; j < num_diag; ++j)
+	if (valid_metrics.find(diagnosticSet[j]) == valid_metrics.end()) {
+	  Cerr << "Error: surrogate metric '" << diagnosticSet[j] 
+	       << "' is not available in Dakota.\n";
+	  err_found = true;
+	}	
+      if (err_found) {
+	Cerr << "Valid surrogate metrics include:\n  ";
+	std::copy(valid_metrics.begin(), valid_metrics.end(), 
+		  std::ostream_iterator<std::string>(Cerr, " "));
+	Cerr << std::endl;
+      }
+    }
+    if (crossValidateFlag) {
+      if (numFolds > 0 && numFolds < 2) {
+	Cerr << "Error: cross_validation folds must be 2 or greater."
+	     << std::endl;
+	err_found = true;
+      }
+      if (percentFold < 0.0 || percentFold > 0.5) {
+	Cerr << "Error: cross_validation percent must be between 0.0 and 0.5"
+	     << std::endl;
+	err_found = true;
+      }
+    }
+    if (err_found)
+      abort_handler(-1);
+
 }
 
 
@@ -319,7 +367,7 @@ SurfpackApproximation(const String& approx_type,
 		      short data_order, short output_level):
   Approximation(NoDBBaseConstructor(), num_vars, data_order, output_level),
   surfData(NULL), model(NULL), factory(NULL),
-  crossValidate(false), numFolds(10), percentFold(0.1), pressFlag(false)
+  crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false)
 {
   approxType = approx_type;
   if (approx_order.empty())
@@ -652,13 +700,128 @@ Real SurfpackApproximation::diagnostic(const String& metric_type)
     abort_handler(-1);
   }
 
-  ModelFitness* SS_fitness = ModelFitness::Create(metric_type);
-  Real approx_diag = (*SS_fitness)(*model,*surfData);
-  delete SS_fitness;
+  diagnostic(metric_type, *model, *surfData);
+}
 
-  Cout << "The " << metric_type << " goodness of fit = " << approx_diag << '\n';
+
+Real SurfpackApproximation::diagnostic(const String& metric_type,
+				       const SurfpackModel& sp_model,
+				       const SurfData& s_data)
+{ 
+  Real approx_diag;
+  try {
+    ModelFitness* SS_fitness = ModelFitness::Create(metric_type);
+    approx_diag = (*SS_fitness)(sp_model, s_data);
+    delete SS_fitness;
+  }
+  catch (const std::string& msg) {
+    Cerr << "Error evaluating surrogate metric: " << msg << std::endl;
+    abort_handler(-1);
+  }
+
+  Cout << metric_type << " goodness of fit: " << approx_diag << '\n';
   return approx_diag;
 }
+
+void SurfpackApproximation::primary_diagnostics()
+{
+  if (diagnosticSet.empty()) {
+    // conditionally print default diagnostics
+    if (outputLevel > NORMAL_OUTPUT) {
+      Cout << "--- Default surrogate metrics" << std::endl;
+      diagnostic("rsquared");
+      diagnostic("root_mean_squared");	
+      diagnostic("mean_abs");
+    }
+  }
+  else {
+    Cout << "--- User-requested surrogate metrics" << std::endl;
+    int num_diag = diagnosticSet.size();
+    for (int j = 0; j < num_diag; ++j)
+      diagnostic(diagnosticSet[j]);
+
+    // BMA TODO: at runtime verify (though Surfpack will too) 
+    //  * 1/N <= percentFold <= 0.5
+    //  * 2 <= numFolds <= N
+    if (crossValidateFlag) {
+      int num_folds = numFolds;
+      // if no folds, try percent, otherwise set default = 10
+      if (num_folds == 0) {
+	if (percentFold > 0.0) {
+	  num_folds = boost::math::iround(1.0/percentFold);
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "Info: cross_validate num_folds = " << num_folds 
+		 << " calculated from specified percent = " << percentFold 
+		 << "." << std::endl;
+	}
+	else {
+	  num_folds = 10;
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "Info: default num_folds = " << num_folds 
+		 << " used." << percentFold << std::endl;
+	}
+      }
+
+      Cout << "--- Cross validation (" << num_folds << " folds) of user-"
+	   << "specified surrogate metrics" << std::endl;
+
+      CrossValidationFitness CV_fitness(num_folds);
+      VecDbl cv_metrics;
+      CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diagnosticSet);
+      
+      for (int j = 0; j < num_diag; ++j) {
+	const String& metric_type = diagnosticSet[j];
+	Cout << metric_type << " goodness of fit: " << cv_metrics[j] << '\n';
+      }
+
+    }
+    if (pressFlag) {
+      Cout << "--- Leave one out cross validation of user-specified "
+	   << "surrogate metrics" << std::endl;
+
+      // perform press as CV with N folds
+      CrossValidationFitness CV_fitness(surfData->size());
+      VecDbl cv_metrics;
+      CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diagnosticSet);
+     
+      for (int j = 0; j < num_diag; ++j) {
+	const String& metric_type = diagnosticSet[j];
+	Cout << metric_type << " goodness of fit: " << cv_metrics[j] << '\n';
+      }
+
+    }
+  }
+}
+
+
+void SurfpackApproximation::
+challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
+{
+  if (!model) { 
+    Cerr << "Error: surface is null in SurfpackApproximation::diagnostic()"
+	 << std::endl;  
+    abort_handler(-1);
+  }
+
+  Cout << "--- Surrogate metrics with respect to user challenge data."
+       << std::endl;
+
+  // BMA TODO: later don't recopy every time, just copy once and setDefaultIndex
+  SurfData chal_data;
+
+  for (size_t row=0; row<challenge_points.numRows(); ++row) {
+      RealArray x(numVars);
+      for (size_t col=0; col<numVars; ++col)
+	x[col] = challenge_points[col][row];
+      Real f = challenge_points[numVars + fn_index][row];
+      chal_data.addPoint(SurfPoint(x, f));
+    }
+
+  int num_diag = diagnosticSet.size();
+  for (int j = 0; j < num_diag; ++j)
+    diagnostic(diagnosticSet[j], *model, chal_data);
+}
+
 
 
 /** Copy the data stored in Dakota-style SurrogateData into

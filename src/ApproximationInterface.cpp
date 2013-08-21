@@ -11,6 +11,7 @@
 //- Owner:        Mike Eldred
 
 #include "dakota_system_defs.hpp"
+#include "dakota_tabular_io.hpp"
 #include "ApproximationInterface.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
@@ -31,7 +32,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   Interface(BaseConstructor(), problem_db), 
   approxFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   //graph3DFlag(problem_db.get_bool("strategy.graphics")),
-  diagnosticSet(problem_db.get_sa("model.metrics")),
+  challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
+  challengeAnnotated(problem_db.get_bool("model.surrogate.challenge_points_file_annotated")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
   actualModelInterfaceId(am_interface_id)
 {
@@ -525,17 +527,20 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 				       dr_l_bnds, dr_u_bnds);
     // construct the approximation
     functionSurfaces[index].build();
+
     // manage diagnostics
     if (functionSurfaces[index].diagnostics_available()) {
-      if (!diagnosticSet.empty()) {
-	int num_diag = diagnosticSet.size();
-	for (int j = 0; j < num_diag; ++j)
-	  functionSurfaces[index].diagnostic(diagnosticSet[j]);
-      }
-      if (outputLevel > NORMAL_OUTPUT) {
-	functionSurfaces[index].diagnostic("rsquared");
-	functionSurfaces[index].diagnostic("root_mean_squared");	
-	functionSurfaces[index].diagnostic("mean_abs");
+      // BMA TODO: make conditional
+      Cout << "--- Surrogate metrics for function " << (index + 1) << std::endl;
+      // print default or user-requested metrics and cross-validation
+      functionSurfaces[index].primary_diagnostics();
+      // for user-provided challenge data, we assume there are
+      // function values for all functions in the analysis, not just
+      // the indices for which surrogates are being built
+      if (!challengeFile.empty()) {
+	if (challengePoints.empty())
+	  read_challenge_points();
+	functionSurfaces[index].challenge_diagnostics(challengePoints, index);
       }
     }
   }
@@ -762,6 +767,22 @@ approximation_variances(const Variables& vars)
       = functionSurfaces[index].prediction_variance(vars);
   }
   return functionSurfaceVariances;
+}
+
+void ApproximationInterface::read_challenge_points()
+{
+  size_t num_vars = actualModelVars.cv() + actualModelVars.div()
+    + actualModelVars.drv();
+  size_t num_fns = functionSurfaces.size();
+  size_t num_cols = num_vars+num_fns;
+
+  RealArray pts_array;
+  TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
+			       pts_array, challengeAnnotated, num_cols);
+  size_t num_points = pts_array.size()/num_cols;
+  // use a real vector for convenience
+  RealVector pts_vec(Teuchos::View, &pts_array[0], pts_array.size());
+  copy_data<int, Real>(pts_vec, challengePoints, num_points, num_cols);
 }
 
 } // namespace Dakota

@@ -1353,8 +1353,8 @@ static KeyWord
 		},
 	kw_229[3] = {
 		{"challenge_points_file",11,2,3,0,kw_227,0.,0.,0,N_mom(str,approxChallengeFile)},
-		{"cross_validate",8,2,1,0,kw_228,0.,0.,0,N_mom(false,crossValidateFlag)},
-		{"press",8,0,2,0,0,0.,0.,0,N_mom(false,pressFlag)}
+		{"cross_validate",8,2,1,0,kw_228,0.,0.,0,N_mom(true,crossValidateFlag)},
+		{"press",8,0,2,0,0,0.,0.,0,N_mom(true,pressFlag)}
 		},
 	kw_230[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(true,approxExportAnnotated)},

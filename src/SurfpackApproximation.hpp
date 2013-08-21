@@ -85,10 +85,22 @@ protected:
   /// retrieve the variance of the predicted value for a given parameter set x
   /// (KrigingModel only)
   Real prediction_variance(const Variables& vars);
-  /// retrieve the diagnostic metric for the diagnostic type specified
-  Real diagnostic(const String& metric_type);
+
   /// check if the diagnostics are available (true for the Surfpack types)
   bool diagnostics_available();
+  /// retrieve a single diagnostic metric for the diagnostic type specified
+  /// on the primary model and data
+  Real diagnostic(const String& metric_type);
+  /// retrieve a single diagnostic metric for the diagnostic type specified
+  /// on the given model and data
+  Real diagnostic(const String& metric_type, const SurfpackModel& model,
+		  const SurfData& data);
+
+  /// compute and print all requested diagnostics and cross-validation 
+  void primary_diagnostics();
+  /// compute and print all requested diagnostics for user provided
+  /// challenge pts
+  void challenge_diagnostics(const RealMatrix& challenge_points, int fn_index);
 
 private:
 
@@ -145,8 +157,11 @@ private:
   /// A Surfpack model name for saving the surrogate model
   String exportModelName;
     
+  /// set of diagnostic metrics
+  StringArray diagnosticSet;
+
   /// whether to perform cross validation
-  bool crossValidate;
+  bool crossValidateFlag;
   /// number of folds for CV
   unsigned numFolds;
   /// percentage of data for CV

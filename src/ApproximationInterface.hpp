@@ -142,6 +142,9 @@ private:
   /// based on the active set definitions within resp_map
   void update_pop_counts(const IntResponseMap& resp_map);
 
+  /// Load approximation test points from user challenge points file
+  void read_challenge_points();
+
   //
   //- Heading: Data
   //
@@ -172,14 +175,13 @@ private:
 
   //bool graph3DFlag; // controls 3D graphics of approximation surfaces
 
-  /// set of diagnostic metrics
-  StringArray diagnosticSet;
-
   /// data file for user-supplied challenge data (per interface, since may
   /// contain multiple responses)
-  String challengeFilename;
+  String challengeFile;
   /// whether the points file is annotated
   bool challengeAnnotated;
+  /// container for the challenge points data
+  RealMatrix challengePoints;
 
   /// copy of the actualModel variables object used to simplify conversion 
   /// among differing variable views

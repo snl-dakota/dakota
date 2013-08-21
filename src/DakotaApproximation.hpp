@@ -96,8 +96,17 @@ public:
   virtual const RealSymMatrix& hessian(const Variables& vars);
   /// retrieve the variance of the predicted value for a given parameter vector
   virtual Real prediction_variance(const Variables& vars);
-  /// retrieve the diagnostic metric for the diagnostic type specified
+
+  /// check if diagnostics are available for this approximation type
+  virtual bool diagnostics_available();
+  /// retrieve a single diagnostic metric for the diagnostic type specified
   virtual Real diagnostic(const String& metric_type);
+  /// compute and print all requested diagnostics and cross-validation 
+  virtual void primary_diagnostics();
+  /// compute and print all requested diagnostics for user provided
+  /// challenge pts
+  virtual void challenge_diagnostics(const RealMatrix& challenge_points, 
+				     int fn_index);
 
   /// return the coefficient array computed by build()/rebuild()
   virtual const RealVector& approximation_coefficients() const;
@@ -124,9 +133,6 @@ public:
 
   /// clear current build data in preparation for next build
   virtual void clear_current();
-
-  /// check if diagnostics are available for this approximation type
-  virtual bool diagnostics_available();
 
   //
   //- Heading: Member functions

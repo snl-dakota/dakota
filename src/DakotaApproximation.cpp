@@ -484,6 +484,17 @@ Real Approximation::diagnostic(const String& metric_type)
   return approxRep->diagnostic(metric_type);
 }
 
+void Approximation::primary_diagnostics()
+{
+  approxRep->primary_diagnostics();
+}
+
+void Approximation::
+challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
+{
+  approxRep->challenge_diagnostics(challenge_points, fn_index);
+}
+
 
 const RealVector& Approximation::approximation_coefficients() const
 {

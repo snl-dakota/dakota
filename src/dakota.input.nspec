@@ -1124,11 +1124,11 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      | combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
 	      ]
 	    [ metrics ALIAS diagnostics STRINGLIST {N_mom(strL,diagMetrics)} 
-              [ cross_validate {N_mom(false,crossValidateFlag)} 
+              [ cross_validate {N_mom(true,crossValidateFlag)} 
                 [ folds INTEGER {N_mom(int,numFolds)} | 
                   percent REAL {N_mom(Real,percentFold)} ] 
                ]
-              [ press {N_mom(false,pressFlag)} ]
+              [ press {N_mom(true,pressFlag)} ]
 	      [ challenge_points_file STRING {N_mom(str,approxChallengeFile)} 
                 [ annotated {N_mom(true,approxChallengeAnnotated)} | 
                   freeform  {N_mom(false,approxChallengeAnnotated)} ]
