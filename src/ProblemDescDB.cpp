@@ -1689,7 +1689,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	Locked_db();
     #define P &DataModelRep::
     static KW<StringArray, DataModelRep> SAdmo[] = {	// must be sorted
-	{"diagnostics", P diagMetrics},
+	{"metrics", P diagMetrics},
 	{"nested.primary_variable_mapping", P primaryVarMaps},
 	{"nested.secondary_variable_mapping", P secondaryVarMaps}};
     #undef P
@@ -1859,6 +1859,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
 	{"surrogate.actual_model_pointer", P truthModelPointer},
+	{"surrogate.challenge_points_file", P approxChallengeFile},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.export_model_file", P approxExportModelFile},
 	{"surrogate.export_points_file", P approxExportFile},
@@ -2007,8 +2008,15 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
   else if (Begins(entry_name, "model.")) {
     if (dbRep->modelDBLocked)
 	Locked_db();
-    if (entry_name == "model.surrogate.neural_network_range")
-      return dbRep->dataModelIter->dataModelRep->annRange;
+    #define P &DataModelRep::
+    static KW<Real, DataModelRep> Rdme[] = {	// must be sorted
+      {"model.surrogate.neural_network_range", P annRange},
+      {"model.surrogate.percent", P percentFold}};
+    #undef P
+
+    KW<Real, DataModelRep> *kw;
+    if ((kw = (KW<Real, DataModelRep>*)Binsearch(Rdme, L)))
+	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
   Bad_name(entry_name, "get_real");
   return abort_handler_t<const Real&>(-1);
@@ -2077,6 +2085,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	Locked_db();
     #define P &DataModelRep::
     static KW<int, DataModelRep> Idmo[] = {	// must be sorted
+        {"folds", P numFolds},
         {"points_total", P pointsTotal}};
     #undef P
 
@@ -2377,9 +2386,12 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	Locked_db();
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
+	{"challenge_points_file_annotated", P approxChallengeAnnotated},
+	{"cross_validate", P crossValidateFlag},
 	{"derivative_usage", P modelUseDerivsFlag},
 	{"export_points_file_annotated", P approxExportAnnotated},
 	{"import_points_file_annotated", P approxImportAnnotated},
+	{"press", P pressFlag},
 	{"point_selection", P pointSelection}};
     #undef P
 

@@ -1495,7 +1495,17 @@ KEYWORD model
 	      | multiplicative
 	      | combined
 	      ]
-	    [ diagnostics STRINGLIST ]
+	    [ metrics ALIAS diagnostics STRINGLIST
+	      [ cross_validate
+		[ folds INTEGER
+		| percent REAL ]
+		]
+	      [ press ]
+	      [ challenge_points_file STRING
+		[ annotated
+		| freeform ]
+		]
+	      ]
 	    )
 	  |
 	  ( multipoint

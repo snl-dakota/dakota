@@ -1119,7 +1119,17 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      | multiplicative {N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}
 	      | combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
 	      ]
-	    [ diagnostics STRINGLIST {N_mom(strL,diagMetrics)} ]
+	    [ metrics ALIAS diagnostics STRINGLIST {N_mom(strL,diagMetrics)} 
+              [ cross_validate {N_mom(false,crossValidateFlag)} 
+                [ folds INTEGER {N_mom(int,numFolds)} | 
+                  percent REAL {N_mom(Real,percentFold)} ] 
+               ]
+              [ press {N_mom(false,pressFlag)} ]
+	      [ challenge_points_file STRING {N_mom(str,approxChallengeFile)} 
+                [ annotated {N_mom(true,approxChallengeAnnotated)} | 
+                  freeform  {N_mom(false,approxChallengeAnnotated)} ]
+                ]
+              ]
 	    )
 	  |
 	  ( ( multipoint {N_mom(lit,surrogateType_multipoint_tana)}

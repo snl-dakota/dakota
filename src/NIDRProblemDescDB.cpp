@@ -5447,7 +5447,8 @@ static Model_mp_type
         MP2s(pointsManagement,RECOMMENDED_POINTS);
 
 static Real
-	MP_(annRange);
+	MP_(annRange),
+	MP_(percentFold);
 
 static RealVector
 	MP_(krigingCorrelations),
@@ -5457,6 +5458,7 @@ static RealVector
 	MP_(secondaryRespCoeffs);
 
 static String
+	MP_(approxChallengeFile),
 	MP_(approxExportFile),
 	MP_(approxImportFile),
 	MP_(approxExportModelFile),
@@ -5476,9 +5478,12 @@ static StringArray
         MP_(diagMetrics);
 
 static bool
+	MP_(approxChallengeAnnotated),
 	MP_(approxExportAnnotated),
 	MP_(approxImportAnnotated),
+	MP_(crossValidateFlag),
 	MP_(modelUseDerivsFlag),
+	MP_(pressFlag),
 	MP_(pointSelection);
 
 static short
@@ -5494,6 +5499,7 @@ static short
 	MP_(rbfMinPartition);
 
 static int
+	MP_(numFolds),
         MP_(pointsTotal);
 
 #undef MP2s

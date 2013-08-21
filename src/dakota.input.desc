@@ -1459,9 +1459,14 @@ TAG "model/surrogate/global/correction/additive"
 
 TAG "model/surrogate/global/correction/multiplicative"
 TAG "model/surrogate/global/correction/combined"
-TAG "model/surrogate/global/diagnostics"
-	DESC "{Print diagnostic metrics about the surrogate goodness of fit} ModelCommands.html#ModelSurrG"
-
+TAG "model/surrogate/global/metrics"
+TAG "model/surrogate/global/metrics/cross_validate"
+TAG "model/surrogate/global/metrics/cross_validate/folds"
+TAG "model/surrogate/global/metrics/cross_validate/percent"
+TAG "model/surrogate/global/metrics/press"
+TAG "model/surrogate/global/metrics/challenge_points_file"
+TAG "model/surrogate/global/metrics/challenge_points_file/annotated"
+TAG "model/surrogate/global/metrics/challenge_points_file/freeform"
 TAG "model/surrogate/multipoint"
 	DESC "{Multipoint approximation} ModelCommands.html#ModelSurrMP"
 

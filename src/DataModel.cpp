@@ -43,7 +43,9 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << mlsPolyOrder << mlsWeightFunction << rbfBases << rbfMaxPts
     << rbfMaxSubsets << rbfMinPartition << marsMaxBases << marsInterpolation
     << annRandomWeight << annNodes << annRange << trendOrder << pointSelection
-    << diagMetrics << optionalInterfRespPointer << primaryVarMaps
+    << diagMetrics << approxChallengeFile << approxChallengeAnnotated 
+    << crossValidateFlag << numFolds << percentFold << pressFlag 
+    << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs;
 }
 
@@ -62,7 +64,9 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> mlsPolyOrder >> mlsWeightFunction >> rbfBases >> rbfMaxPts
     >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases >> marsInterpolation
     >> annRandomWeight >> annNodes >> annRange >> trendOrder >> pointSelection
-    >> diagMetrics >> optionalInterfRespPointer >> primaryVarMaps
+    >> diagMetrics >> approxChallengeFile >> approxChallengeAnnotated  
+    >> crossValidateFlag >> numFolds >> percentFold >> pressFlag  
+    >> optionalInterfRespPointer >> primaryVarMaps
     >> secondaryVarMaps >> primaryRespCoeffs >> secondaryRespCoeffs;
 }
 
@@ -81,7 +85,9 @@ void DataModelRep::write(std::ostream& s) const
     << mlsPolyOrder << mlsWeightFunction << rbfBases << rbfMaxPts
     << rbfMaxSubsets << rbfMinPartition << marsMaxBases << marsInterpolation
     << annRandomWeight << annNodes << annRange << trendOrder << pointSelection
-    << diagMetrics << optionalInterfRespPointer << primaryVarMaps
+    << diagMetrics << approxChallengeFile << approxChallengeAnnotated  
+    << crossValidateFlag << numFolds << percentFold << pressFlag  
+    << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs;
 }
 
