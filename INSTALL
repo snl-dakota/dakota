@@ -169,8 +169,8 @@ II.  Install Windows Executable
        a. In Windows Explorer window, highight Dakota.<release>.<platform>.zip
           file.
        b. Right click and select "Extract All"
-       c. Select a destination, e.g. C:\Dakta, and click the Extract button.
-          In the instructions below, $DEST_DIR refers to this destination
+       c. Select a destination, e.g. C:\Dakota, and click the Extract button.
+          In the instructions below, %dest_dir% refers to this destination
 	  directory.
 
    Rename the extracted Dakota executable directory folder:
@@ -178,16 +178,16 @@ II.  Install Windows Executable
           'Rename'.
        b. Rename file to 'Dakota'
 
-   In the instructions below, $INSTALL_DIR refers to the path to this new
-   directory, $DEST_DIR\Dakota.
+   In the instructions below, %install_dir% refers to the path to this new
+   directory, %dest_dir%\Dakota.
 
 2. Set path to your executable.
    a. Click the Start button and type 'cmd' in the 'Search program and files'
       text box to open cmd.exe.
-   b. At the command prompt, type the following command, replacing $INSTALL_DIR
+   b. At the command prompt, type the following command, replacing %install_dir%
       with the path to your Dakota installation:
 
-      C:\Users\name> path=%path%;$INSTALL_DIR\bin;$INSTALL_DIR\test;$INSTALL_DIR\lib
+      C:\Users\name> path=%path%;%install_dir%\bin;%install_dir%\test;%install_dir%\lib
 
 --------------------------------------------------------------------
 III. Test Binary Distribution installation.
