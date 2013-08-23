@@ -1129,10 +1129,10 @@ KEYWORD model {N_mom3(start,0,stop)}
                   percent REAL {N_mom(Real,percentFold)} ] 
                ]
               [ press {N_mom(true,pressFlag)} ]
-	      [ challenge_points_file STRING {N_mom(str,approxChallengeFile)} 
-                [ annotated {N_mom(true,approxChallengeAnnotated)} | 
-                  freeform  {N_mom(false,approxChallengeAnnotated)} ]
-                ]
+              ]
+	    [ challenge_points_file STRING {N_mom(str,approxChallengeFile)} 
+              [ annotated {N_mom(true,approxChallengeAnnotated)} | 
+                freeform  {N_mom(false,approxChallengeAnnotated)} ]
               ]
 	    )
 	  |

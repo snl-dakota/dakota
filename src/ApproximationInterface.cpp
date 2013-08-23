@@ -530,10 +530,8 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 
     // manage diagnostics
     if (functionSurfaces[index].diagnostics_available()) {
-      // BMA TODO: make conditional
-      Cout << "--- Surrogate metrics for function " << (index + 1) << std::endl;
       // print default or user-requested metrics and cross-validation
-      functionSurfaces[index].primary_diagnostics();
+      functionSurfaces[index].primary_diagnostics(index);
       // for user-provided challenge data, we assume there are
       // function values for all functions in the analysis, not just
       // the indices for which surrogates are being built

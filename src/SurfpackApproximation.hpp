@@ -97,7 +97,7 @@ protected:
 		  const SurfData& data);
 
   /// compute and print all requested diagnostics and cross-validation 
-  void primary_diagnostics();
+  void primary_diagnostics(int fn_index);
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
   void challenge_diagnostics(const RealMatrix& challenge_points, int fn_index);

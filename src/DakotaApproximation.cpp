@@ -484,9 +484,9 @@ Real Approximation::diagnostic(const String& metric_type)
   return approxRep->diagnostic(metric_type);
 }
 
-void Approximation::primary_diagnostics()
+void Approximation::primary_diagnostics(int fn_index)
 {
-  approxRep->primary_diagnostics();
+  approxRep->primary_diagnostics(fn_index);
 }
 
 void Approximation::

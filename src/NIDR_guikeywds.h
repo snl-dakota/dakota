@@ -1440,7 +1440,11 @@ static GuiKeyWord
 	kw_211[1] = {
 		{"interface_pointer",11,0,1,0,1487,0,0.,0.,0.,0,"{Interface set pointer} ModelCommands.html#ModelSingle"}
 		},
-	kw_212[6] = {
+	kw_212[2] = {
+		{"annotated",8,0,1,0,1637},
+		{"freeform",8,0,1,0,1639}
+		},
+	kw_213[6] = {
 		{"additive",8,0,2,2,1619,0,0.,0.,0.,0,"[CHOOSE correction type]"},
 		{"combined",8,0,2,2,1623},
 		{"first_order",8,0,1,1,1615,0,0.,0.,0.,0,"[CHOOSE correction order]"},
@@ -1448,16 +1452,11 @@ static GuiKeyWord
 		{"second_order",8,0,1,1,1617},
 		{"zeroth_order",8,0,1,1,1613}
 		},
-	kw_213[2] = {
-		{"annotated",8,0,1,0,1637},
-		{"freeform",8,0,1,0,1639}
-		},
 	kw_214[2] = {
 		{"folds",9,0,1,0,1629},
 		{"percent",10,0,1,0,1631}
 		},
-	kw_215[3] = {
-		{"challenge_points_file",11,2,3,0,1635,kw_213},
+	kw_215[2] = {
 		{"cross_validate",8,2,1,0,1627,kw_214},
 		{"press",8,0,2,0,1633}
 		},
@@ -1533,16 +1532,17 @@ static GuiKeyWord
 		{"none",8,0,1,1,1595},
 		{"region",8,0,1,1,1593}
 		},
-	kw_230[20] = {
-		{"correction",8,6,8,0,1611,kw_212,0.,0.,0.,0,"{Surrogate correction approach} ModelCommands.html#ModelSurrG"},
+	kw_230[21] = {
+		{"challenge_points_file",11,2,10,0,1635,kw_212},
+		{"correction",8,6,8,0,1611,kw_213,0.,0.,0.,0,"{Surrogate correction approach} ModelCommands.html#ModelSurrG"},
 		{"dace_method_pointer",11,0,3,0,1587,0,0.,0.,0.,0,"{Design of experiments method pointer} ModelCommands.html#ModelSurrG"},
-		{"diagnostics",7,3,9,0,1624,kw_215},
+		{"diagnostics",7,2,9,0,1624,kw_215},
 		{"export_points_file",11,2,6,0,1603,kw_216},
 		{"gaussian_process",8,2,1,1,1495,kw_221,0.,0.,0.,0,"[CHOOSE surrogate type]{Dakota Gaussian process} ModelCommands.html#ModelSurrG"},
 		{"import_points_file",11,2,5,0,1597,kw_222},
 		{"kriging",0,2,1,1,1494,kw_221},
 		{"mars",8,3,1,1,1529,kw_224,0.,0.,0.,0,"{Multivariate adaptive regression splines} ModelCommands.html#ModelSurrG"},
-		{"metrics",15,3,9,0,1625,kw_215},
+		{"metrics",15,2,9,0,1625,kw_215},
 		{"minimum_points",8,0,2,0,1583},
 		{"moving_least_squares",8,3,1,1,1541,kw_225,0.,0.,0.,0,"{Moving least squares} ModelCommands.html#ModelSurrG"},
 		{"neural_network",8,4,1,1,1549,kw_226,0.,0.,0.,0,"{Artificial neural network} ModelCommands.html#ModelSurrG"},
@@ -1577,7 +1577,7 @@ static GuiKeyWord
 		{"tana",8,0,1,1,1643,0,0.,0.,0.,0,"{Two-point adaptive nonlinear approximation } ModelCommands.html#ModelSurrMP"}
 		},
 	kw_235[5] = {
-		{"global",8,20,2,1,1493,kw_230,0.,0.,0.,0,"[CHOOSE surrogate category]{Global approximations } ModelCommands.html#ModelSurrG"},
+		{"global",8,21,2,1,1493,kw_230,0.,0.,0.,0,"[CHOOSE surrogate category]{Global approximations } ModelCommands.html#ModelSurrG"},
 		{"hierarchical",8,3,2,1,1651,kw_232,0.,0.,0.,0,"{Hierarchical approximation } ModelCommands.html#ModelSurrH"},
 		{"id_surrogates",13,0,1,0,1491,0,0.,0.,0.,0,"{Surrogate response ids} ModelCommands.html#ModelSurrogate"},
 		{"local",8,2,2,1,1645,kw_233,0.,0.,0.,0,"{Local approximation} ModelCommands.html#ModelSurrL"},

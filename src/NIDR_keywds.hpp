@@ -1335,7 +1335,11 @@ static KeyWord
 	kw_225[1] = {
 		{"interface_pointer",11,0,1,0,0,0.,0.,0,N_mom(str,interfacePointer)}
 		},
-	kw_226[6] = {
+	kw_226[2] = {
+		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(true,approxChallengeAnnotated)},
+		{"freeform",8,0,1,0,0,0.,0.,0,N_mom(false,approxChallengeAnnotated)}
+		},
+	kw_227[6] = {
 		{"additive",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)},
 		{"combined",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_COMBINED_CORRECTION)},
 		{"first_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_1)},
@@ -1343,16 +1347,11 @@ static KeyWord
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_2)},
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},
-	kw_227[2] = {
-		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(true,approxChallengeAnnotated)},
-		{"freeform",8,0,1,0,0,0.,0.,0,N_mom(false,approxChallengeAnnotated)}
-		},
 	kw_228[2] = {
 		{"folds",9,0,1,0,0,0.,0.,0,N_mom(int,numFolds)},
 		{"percent",10,0,1,0,0,0.,0.,0,N_mom(Real,percentFold)}
 		},
-	kw_229[3] = {
-		{"challenge_points_file",11,2,3,0,kw_227,0.,0.,0,N_mom(str,approxChallengeFile)},
+	kw_229[2] = {
 		{"cross_validate",8,2,1,0,kw_228,0.,0.,0,N_mom(true,crossValidateFlag)},
 		{"press",8,0,2,0,0,0.,0.,0,N_mom(true,pressFlag)}
 		},
@@ -1428,16 +1427,17 @@ static KeyWord
 		{"none",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_none)},
 		{"region",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_region)}
 		},
-	kw_244[20] = {
-		{"correction",8,6,8,0,kw_226},
+	kw_244[21] = {
+		{"challenge_points_file",11,2,10,0,kw_226,0.,0.,0,N_mom(str,approxChallengeFile)},
+		{"correction",8,6,8,0,kw_227},
 		{"dace_method_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,subMethodPointer)},
-		{"diagnostics",7,3,9,0,kw_229,0.,0.,6,N_mom(strL,diagMetrics)},
+		{"diagnostics",7,2,9,0,kw_229,0.,0.,6,N_mom(strL,diagMetrics)},
 		{"export_points_file",11,2,6,0,kw_230,0.,0.,0,N_mom(str,approxExportFile)},
 		{"gaussian_process",8,2,1,1,kw_235},
 		{"import_points_file",11,2,5,0,kw_236,0.,0.,0,N_mom(str,approxImportFile)},
 		{"kriging",0,2,1,1,kw_235,0.,0.,-2},
 		{"mars",8,3,1,1,kw_238,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
-		{"metrics",15,3,9,0,kw_229,0.,0.,0,N_mom(strL,diagMetrics)},
+		{"metrics",15,2,9,0,kw_229,0.,0.,0,N_mom(strL,diagMetrics)},
 		{"minimum_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_MINIMUM_POINTS)},
 		{"moving_least_squares",8,3,1,1,kw_239,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
 		{"neural_network",8,4,1,1,kw_240,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
@@ -1475,7 +1475,7 @@ static KeyWord
 		{"tana",8,0,1,1}
 		},
 	kw_250[5] = {
-		{"global",8,20,2,1,kw_244},
+		{"global",8,21,2,1,kw_244},
 		{"hierarchical",8,3,2,1,kw_246,0.,0.,0,N_mom(lit,surrogateType_hierarchical)},
 		{"id_surrogates",13,0,1,0,0,0.,0.,0,N_mom(intset,surrogateFnIndices)},
 		{"local",8,1,2,1,kw_248,0.,0.,0,N_mom(lit,surrogateType_local_taylor)},

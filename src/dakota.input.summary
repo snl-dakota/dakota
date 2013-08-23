@@ -1506,10 +1506,10 @@ KEYWORD model
 		| percent REAL ]
 		]
 	      [ press ]
-	      [ challenge_points_file STRING
-		[ annotated
-		| freeform ]
-		]
+	      ]
+	    [ challenge_points_file STRING
+	      [ annotated
+	      | freeform ]
 	      ]
 	    )
 	  |

@@ -700,7 +700,7 @@ Real SurfpackApproximation::diagnostic(const String& metric_type)
     abort_handler(-1);
   }
 
-  diagnostic(metric_type, *model, *surfData);
+  return diagnostic(metric_type, *model, *surfData);
 }
 
 
@@ -723,23 +723,27 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
   return approx_diag;
 }
 
-void SurfpackApproximation::primary_diagnostics()
+
+void SurfpackApproximation::primary_diagnostics(int fn_index)
 {
   if (diagnosticSet.empty()) {
     // conditionally print default diagnostics
     if (outputLevel > NORMAL_OUTPUT) {
-      Cout << "--- Default surrogate metrics" << std::endl;
-      diagnostic("rsquared");
+      Cout << "\n--- Default surrogate metrics; function " << (fn_index + 1)
+	   << std::endl;
       diagnostic("root_mean_squared");	
       diagnostic("mean_abs");
+      diagnostic("rsquared");
     }
   }
   else {
-    Cout << "--- User-requested surrogate metrics" << std::endl;
+    Cout << "\n--- User-requested surrogate metrics; function " 
+	 << (fn_index + 1) << std::endl;
     int num_diag = diagnosticSet.size();
     for (int j = 0; j < num_diag; ++j)
       diagnostic(diagnosticSet[j]);
 
+   
     // BMA TODO: at runtime verify (though Surfpack will too) 
     //  * 1/N <= percentFold <= 0.5
     //  * 2 <= numFolds <= N
@@ -762,8 +766,9 @@ void SurfpackApproximation::primary_diagnostics()
 	}
       }
 
-      Cout << "--- Cross validation (" << num_folds << " folds) of user-"
-	   << "specified surrogate metrics" << std::endl;
+      Cout << "\n--- Cross validation (" << num_folds << " folds) of user-"
+	   << "requested surrogate metrics; function " << (fn_index + 1) 
+	   << std::endl;
 
       CrossValidationFitness CV_fitness(num_folds);
       VecDbl cv_metrics;
@@ -771,13 +776,20 @@ void SurfpackApproximation::primary_diagnostics()
       
       for (int j = 0; j < num_diag; ++j) {
 	const String& metric_type = diagnosticSet[j];
-	Cout << metric_type << " goodness of fit: " << cv_metrics[j] << '\n';
+	if (metric_type == "rsquared")
+	  Cout << metric_type << " goodness of fit: " 
+	       << std::numeric_limits<Real>::quiet_NaN()
+	       << " (n/a for cross-validation)" 
+	       << std::endl;
+	else
+	  Cout << metric_type << " goodness of fit: " << cv_metrics[j] 
+	       << std::endl;
       }
 
     }
     if (pressFlag) {
-      Cout << "--- Leave one out cross validation of user-specified "
-	   << "surrogate metrics" << std::endl;
+      Cout << "\n--- PRESS (leave one out CV) of user-requested "
+	   << "surrogate metrics; function " << (fn_index + 1) << std::endl;
 
       // perform press as CV with N folds
       CrossValidationFitness CV_fitness(surfData->size());
@@ -786,7 +798,14 @@ void SurfpackApproximation::primary_diagnostics()
      
       for (int j = 0; j < num_diag; ++j) {
 	const String& metric_type = diagnosticSet[j];
-	Cout << metric_type << " goodness of fit: " << cv_metrics[j] << '\n';
+	if (metric_type == "rsquared")
+	  Cout << metric_type << " goodness of fit: " 
+	       << std::numeric_limits<Real>::quiet_NaN()
+	       << " (n/a for PRESS)" 
+	       << std::endl;
+	else
+	  Cout << metric_type << " goodness of fit: " << cv_metrics[j] 
+	       << std::endl;
       }
 
     }
@@ -803,23 +822,35 @@ challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
     abort_handler(-1);
   }
 
-  Cout << "--- Surrogate metrics with respect to user challenge data."
-       << std::endl;
-
   // BMA TODO: later don't recopy every time, just copy once and setDefaultIndex
   SurfData chal_data;
 
   for (size_t row=0; row<challenge_points.numRows(); ++row) {
-      RealArray x(numVars);
-      for (size_t col=0; col<numVars; ++col)
-	x[col] = challenge_points[col][row];
-      Real f = challenge_points[numVars + fn_index][row];
-      chal_data.addPoint(SurfPoint(x, f));
-    }
+    RealArray x(numVars);
+    for (size_t col=0; col<numVars; ++col)
+      x[col] = challenge_points[col][row];
+    Real f = challenge_points[numVars + fn_index][row];
+    chal_data.addPoint(SurfPoint(x, f));
+  }
 
-  int num_diag = diagnosticSet.size();
-  for (int j = 0; j < num_diag; ++j)
-    diagnostic(diagnosticSet[j], *model, chal_data);
+  if (diagnosticSet.empty()) {
+    // conditionally print default diagnostics
+    if (outputLevel > NORMAL_OUTPUT) {
+      Cout << "\n--- Default surrogate metrics for user challenge "
+	   << "data; function " << (fn_index + 1) << std::endl;
+      diagnostic("root_mean_squared");	
+      diagnostic("mean_abs");
+      diagnostic("rsquared");
+    }
+  }
+  else {
+    Cout << "\n--- User-requested surrogate metrics for user " 
+	 << "challenge data; function " << (fn_index+1) << std::endl;
+    int num_diag = diagnosticSet.size();
+    for (int j = 0; j < num_diag; ++j)
+      diagnostic(diagnosticSet[j], *model, chal_data);
+  }
+
 }
 
 

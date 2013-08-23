@@ -102,7 +102,7 @@ public:
   /// retrieve a single diagnostic metric for the diagnostic type specified
   virtual Real diagnostic(const String& metric_type);
   /// compute and print all requested diagnostics and cross-validation 
-  virtual void primary_diagnostics();
+  virtual void primary_diagnostics(int fn_index);
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
   virtual void challenge_diagnostics(const RealMatrix& challenge_points, 
