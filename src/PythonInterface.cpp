@@ -14,7 +14,15 @@
 #include "DataMethod.hpp"
 #include "ProblemDescDB.hpp"
 
+// This hacks around lack of a packaged Python debug lib by default on Windows.
+#if defined(_DEBUG) && defined(_MSC_VER)
+#undef _DEBUG
 #include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
+
 #ifdef DAKOTA_PYTHON_NUMPY
 #include <arrayobject.h>
 #endif
