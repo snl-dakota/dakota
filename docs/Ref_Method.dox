@@ -7805,20 +7805,24 @@ step_vector specification detail for the vector parameter study
 %Dakota's list parameter study allows for evaluations at user selected
 points of interest which need not follow any particular
 structure. This study is selected using the \c list_parameter_study
-method specification followed by a \c list_of_points specification.
+method specification followed by either a \c list_of_points or \c
+import_points_file specification.  The imported points file may be in
+annotated for free-form tabular format as described in the User's
+manual.
 
-The number of real values in the \c list_of_points specification must
-be a multiple of the total number of variables (including continuous
-and discrete types) contained in the variables specification. This
-parameter study simply performs simulations for the first parameter
-set (the first \c n entries in the list), followed by the next
-parameter set (the next \c n entries), and so on, until the list of
-points has been exhausted. Since the initial values from the variables
-specification will not be used, they need not be specified. For
-discrete set types, the actual values should be specified, not the set
-indices, although the values will be validated for membership within
-the set value specifications.  The list parameter study specification
-detail is given in \ref T5d57 "Table 5.57".
+The number of real values in the \c list_of_points specification or
+file referenced by \c import_points_file must be a multiple of the
+total number of variables (including continuous and discrete types)
+contained in the variables specification. This parameter study simply
+performs simulations for the first parameter set (the first \c n
+entries in the list), followed by the next parameter set (the next \c
+n entries), and so on, until the list of points has been
+exhausted. Since the initial values from the variables specification
+will not be used, they need not be specified. For discrete set types,
+the actual values should be specified, not the set indices, although
+the values will be validated for membership within the set value
+specifications.  The list parameter study specification detail is
+given in \ref T5d57 "Table 5.57".
 
 \anchor T5d57
 <table>
@@ -7844,8 +7848,26 @@ Specification detail for the list parameter study
 <td>%List of points to evaluate
 <td>\c list_of_points
 <td>list of reals (actual values; no set indices)
-<td>Required
+<td>Required Group
 <td>N/A
+<tr>
+<td>File containing points to evaluate
+<td>\c import_points_file
+<td>string
+<td>Required Group
+<td>N/A
+<tr>
+<td>Points file in annotated format
+<td>\c annotated 
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>Points file in freeform format
+<td>\c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 
