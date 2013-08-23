@@ -20,13 +20,13 @@ endforeach()
 if ( NOT DAKOTA_JENKINS_BUILD AND NOT CTEST_BUILD_NAME )
   message( FATAL_ERROR "ERROR: CTEST_BUILD_NAME must be defined" )
 endif()
-message( "CTEST_BUILD_NAME defined, value = ${CTEST_BUILD_NAME}" )
+message( "CTEST_BUILD_NAME defined, value = ${CTEST_BUILD_NAME}" ) 
 
 # CTEST_DASHBOARD_ROOT is required for all non-Jenkins builds
 if ( NOT DAKOTA_JENKINS_BUILD AND NOT CTEST_DASHBOARD_ROOT )
   message( FATAL_ERROR "ERROR: CTEST_DASHBORAD_ROOT must be defined" )
 endif()
-message( "CTEST_DASHBOARD_ROOT defined, value = ${CTEST_DASHBOARD_ROOT}" )
+message( "CTEST_DASHBOARD_ROOT defined, value = ${CTEST_DASHBOARD_ROOT}" ) 
 
 #*****************************************************************
 # Error checking on required variables
@@ -35,15 +35,15 @@ message( "CTEST_DASHBOARD_ROOT defined, value = ${CTEST_DASHBOARD_ROOT}" )
 #   (default: ${CTEST_DASHBOARD_ROOT}/[source|build])
 
 if ( DAKOTA_JENKINS_BUILD )
-  include( DakotaJenkins )
+  include( DakotaJenkins ) 
 else ()
   if ( NOT CTEST_BINARY_DIRECTORY )
     set( CTEST_BINARY_DIRECTORY
-       "${CTEST_DASHBOARD_ROOT}/build")
+    	 "${CTEST_DASHBOARD_ROOT}/build")
   endif()
   if ( NOT CTEST_SOURCE_DIRECTORY )
     set( CTEST_SOURCE_DIRECTORY
-         "${CTEST_DASHBOARD_ROOT}/source" )
+       	 "${CTEST_DASHBOARD_ROOT}/source" )
   endif()
 
 endif()
@@ -61,7 +61,7 @@ if ( NOT DAKOTA_DO_PACK )
 endif()
 
 #*****************************************************************
-# Set CTEST_SITE and DAKOTA_CMAKE_HOSTFILE
+# Set CTEST_SITE and DAKOTA_CMAKE_HOSTFILE 
 #    (default: hostname and hostname.cmake )
 
 if ( NOT CTEST_SITE )
@@ -111,7 +111,7 @@ endif()
 if ( NOT CTEST_CMAKE_GENERATOR )
   set( CTEST_CMAKE_GENERATOR "Unix Makefiles" )
 endif()
-message( "CTEST_CMAKE_GENERATOR = ${CTEST_CMAKE_GENERATOR}" )
+message( "CTEST_CMAKE_GENERATOR = ${CTEST_CMAKE_GENERATOR}" ) 
 
 #*****************************************************************
 # Set CTEST_BUILD_COMMAND and CTEST_TEST_COMMAND
@@ -125,8 +125,8 @@ if ( NOT DAKOTA_CTEST_PARALLEL_LEVEL )
     list( LENGTH cpuInfo processorCount )
     if ( processorCount GREATER 1)
        math(EXPR DAKOTA_CTEST_PARALLEL_LEVEL
-           "${processorCount}*3/4")
-    endif()
+       		 "${processorCount}*3/4")
+    endif()     
   endif()
 endif()
 
@@ -138,14 +138,14 @@ endif()
 # Set CTest Configure command
 
 set(CTEST_CONFIGURE_COMMAND
-  "${CMAKE_COMMAND}
+  "${CMAKE_COMMAND} 
   -DCMAKE_BUILD_TYPE:STRING=${CTEST_BUILD_CONFIGURATION}")
 set(CTEST_CONFIGURE_COMMAND
   "${CTEST_CONFIGURE_COMMAND} \"-G${CTEST_CMAKE_GENERATOR}\"")
 
 set_configure_command( ${DAKOTA_CMAKE_PLATFORM} SUBDIR platforms REQUIRED )
 
-if ( DAKOTA_CMAKE_COMPILER )
+if ( DAKOTA_CMAKE_COMPILER ) 
   set_configure_command( ${DAKOTA_CMAKE_COMPILER} SUBDIR compilers )
 endif()
 
@@ -166,7 +166,7 @@ set(CTEST_CONFIGURE_COMMAND
 #*****************************************************************
 # Since this is the filename used by the email notification, this
 # cannot be overridden by the user. Change filename here.
-set( dakotaCtestResultsFile
+set( dakotaCtestResultsFile 
      "${CTEST_BINARY_DIRECTORY}/dakota_ctest_results.log" )
 
 ##############################################################################
@@ -188,9 +188,9 @@ if ( ${ConfigStatus} EQUAL 0 )
     NUMBER_ERRORS NumErr
     NUMBER_WARNINGS NumWarn)
   message("ctest_build: Build return code: ${BuildStatus}; errors: ${NumErr}, warnings: ${NumWarn}")
-  file( APPEND ${dakotaCtestResultsFile} "ctest_build: ${BuildStatus}\n" )
-  file( APPEND ${dakotaCtestResultsFile} "ctest_build errors: ${NumErr}\n" )
-  file( APPEND ${dakotaCtestResultsFile} "ctest_build warnings: ${NumWarn}\n" )
+  file( APPEND ${dakotaCtestResultsFile} "ctest_build: ${BuildStatus}\n" ) 
+  file( APPEND ${dakotaCtestResultsFile} "ctest_build errors: ${NumErr}\n" ) 
+  file( APPEND ${dakotaCtestResultsFile} "ctest_build warnings: ${NumWarn}\n" ) 
 
   # Perform tests if requested and build is successful
   if ( DAKOTA_DO_TEST AND ${BuildStatus} EQUAL 0 )
@@ -200,34 +200,34 @@ if ( ${ConfigStatus} EQUAL 0 )
       set( DAKOTA_CTEST_REGEXP "dakota_*" )
     endif()
     message("DAKOTA_CTESTREGEXP: ${DAKOTA_CTEST_REGEXP}")
-    message("DAKOTA_CTEST_PARALLEL_LEVEL: ${DAKOTA_CTEST_PARALLEL_LEVEL} ")
+    message("DAKOTA_CTEST_PARALLEL_LEVEL: ${DAKOTA_CTEST_PARALLEL_LEVEL} ")	
 
     if (DAKOTA_TEST_SBATCH)
       # Generate files needed to submit tests to queue
       configure_file(
-  ${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sh.in
-  ${CTEST_BINARY_DIRECTORY}/dakota_tests.sh @ONLY)
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sh.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.sh @ONLY)
       configure_file(
-  ${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sbatch.in
-  ${CTEST_BINARY_DIRECTORY}/dakota_tests.sbatch @ONLY)
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sbatch.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.sbatch @ONLY)
       configure_file(
-  ${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.cmake.in
-  ${CTEST_BINARY_DIRECTORY}/dakota_tests.cmake)
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.cmake.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.cmake)
       # TODO: Propagate the exit code
       message("Submitting tests to batch system.")
-      execute_process(COMMAND dakota_tests.sh
-  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
-  RESULT_VARIABLE CtestStatus)
+      execute_process(COMMAND dakota_tests.sh 
+	WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+	RESULT_VARIABLE CtestStatus)
     else()
       ctest_test(
-  INCLUDE ${DAKOTA_CTEST_REGEXP}
-  PARALLEL_LEVEL ${DAKOTA_CTEST_PARALLEL_LEVEL}
-  RETURN_VALUE CtestStatus
-  )
+	INCLUDE ${DAKOTA_CTEST_REGEXP}
+	PARALLEL_LEVEL ${DAKOTA_CTEST_PARALLEL_LEVEL}
+	RETURN_VALUE CtestStatus 
+	)
     endif()
-
+    
     message("ctest_test: Test return code: ${CtestStatus}")
-    file( APPEND ${dakotaCtestResultsFile} "ctest_test: ${CtestStatus}\n" )
+    file( APPEND ${dakotaCtestResultsFile} "ctest_test: ${CtestStatus}\n" ) 
 
   endif()  # perform tests
 
@@ -235,7 +235,7 @@ endif()  # configure successful
 
 if ( DAKOTA_CDASH_SUBMIT )
   ctest_submit(RETURN_VALUE SubmitStatus)
-  file( APPEND ${dakotaCtestResultsFile} "ctest_submit: ${SubmitStatus}\n" )
+  file( APPEND ${dakotaCtestResultsFile} "ctest_submit: ${SubmitStatus}\n" ) 
 endif()
 
 # Post-process dakota test results. Do this even if testing was not
@@ -317,7 +317,7 @@ create_cmake_system_file( ${CTEST_BINARY_DIRECTORY} )
 
 # Set TAG
 if ( EXISTS ${CTEST_BINARY_DIRECTORY}/Testing/TAG )
-  file( STRINGS ${CTEST_BINARY_DIRECTORY}/Testing/TAG taginfo
+  file( STRINGS ${CTEST_BINARY_DIRECTORY}/Testing/TAG taginfo 
     LIMIT_COUNT 1 )
   set( DAKOTA_CTEST_TAG ${taginfo} )
 endif()
