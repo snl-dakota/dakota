@@ -2039,20 +2039,25 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
     = iteratedModel.continuous_variable_labels();
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
-  size_t i, j, index, num_indices;
-  StringMultiArray sobol_labels;
+  StringArray sobol_labels; size_t i, j, num_indices;
   if (vbdControl == Pecos::ALL_VBD) {
-    // create aggregate interaction labels
+    // create aggregate interaction labels (once for all response fns)
     poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
     const Pecos::BitArrayULongMap& s_index_map
       = poly_approx_rep->sobol_index_map();
     num_indices = poly_approx_rep->sobol_indices().length();
-    sobol_labels.resize(boost::extents[num_indices]);
+    sobol_labels.resize(num_indices);
     for (Pecos::BAULMCIter map_cit=s_index_map.begin();
-	 map_cit!=s_index_map.end(); ++map_cit)
-      for (j=0; j<numContinuousVars; ++j)
-	if (map_cit->first[j])
-	  sobol_labels[map_cit->second] += cv_labels[j] + " ";
+	 map_cit!=s_index_map.end(); ++map_cit) { // loop in key sorted order
+      const BitArray& set = map_cit->first;
+      unsigned long index = map_cit->second;
+      if (index > numContinuousVars) {            // an interaction
+	String& label = sobol_labels[index];      // store in index order
+	for (j=0; j<numContinuousVars; ++j)
+	  if (set[j])
+	    label += cv_labels[j] + " ";
+      }
+    }
   }
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
@@ -2062,26 +2067,18 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
       const RealVector& total_indices = poly_approx_rep->total_sobol_indices();
       s << fn_labels[i] << " Sobol indices:\n" << std::setw(38) << "Main"
 	<< std::setw(19) << "Total\n";
-      index = 1;
-      for (j=0; j<numContinuousVars; ++j) {
-	if (std::abs(sobol_indices[index]) > vbdDropTol ||
-	    std::abs(total_indices[j])     > vbdDropTol)
-	  s << "                     " << std::setw(write_precision+7) 
-	    << sobol_indices[index] << ' ' << std::setw(write_precision+7)
-	    << total_indices[j] << ' ' << cv_labels[j] << '\n';
-	if (vbdControl == Pecos::ALL_VBD) index *= 2;
-	else                            ++index;
-      }
+      for (j=0; j<numContinuousVars; ++j)
+	if (std::abs(sobol_indices[j+1]) > vbdDropTol ||
+	    std::abs(total_indices[j])   > vbdDropTol)   // print main / total
+	  s << "                     "   << std::setw(write_precision+7) 
+	    << sobol_indices[j+1] << ' ' << std::setw(write_precision+7)
+	    << total_indices[j]   << ' ' << cv_labels[j] << '\n';
       if (vbdControl == Pecos::ALL_VBD) {
 	s << std::setw(39) << "Interaction\n";
-	size_t power_of_2 = 4;
-	for (j=3; j<num_indices; ++j) { // skip 0(not valid), 1(main), 2(main)
-	  if (j == power_of_2) // main effect: skip print, update next skip val
-	    power_of_2 *= 2;
-	  else if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
+	for (j=numContinuousVars+1; j<num_indices; ++j)
+	  if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
 	    s << "                     " << std::setw(write_precision+7) 
 	      << sobol_indices[j] << ' ' << sobol_labels[j] << '\n';
-	}
       }
     }
   }

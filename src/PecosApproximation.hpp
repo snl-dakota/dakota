@@ -370,11 +370,11 @@ inline Real PecosApproximation::convergence_tolerance() const
 
 
 inline void PecosApproximation::compute_component_effects()
-{ polyApproxRep->compute_component_effects(); }
+{ polyApproxRep->compute_component_sobol(); }
 
 
 inline void PecosApproximation::compute_total_effects()
-{ polyApproxRep->compute_total_effects(); }
+{ polyApproxRep->compute_total_sobol(); }
 
 
 inline const Pecos::BitArrayULongMap& PecosApproximation::
