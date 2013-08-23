@@ -47,4 +47,12 @@ void SingleModel::component_parallel_mode(short mode)
   //componentParallelMode = mode;
 }
 
+
+/** SingleModel doesn't need to change the tagging, so just forward to
+    Interface */
+void SingleModel::prepend_evalid(const String& eval_id_str)
+{
+  userDefinedInterface.eval_tag_prefix(eval_id_str);
+}
+
 } // namespace Dakota

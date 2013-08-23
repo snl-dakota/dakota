@@ -539,6 +539,18 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 }
 
 
+/// default implementation just sets the list of eval ID tags;
+/// derived classes containing additional models or interfaces should
+/// override (currently no use cases)
+void Interface::eval_tag_prefix(const String& eval_id_str)
+{
+  if (interfaceRep)
+    interfaceRep->eval_tag_prefix(eval_id_str);
+  else
+    evalTagPrefix = eval_id_str;
+}
+
+
 void Interface::map(const Variables& vars, const ActiveSet& set,
 		    Response& response, const bool asynch_flag)
 {

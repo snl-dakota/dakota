@@ -43,7 +43,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 {
   // This function may be executed by a multiprocessor evalComm.
 
-  sysCallSimulator.define_filenames(fn_eval_id); // all of evalComm
+  sysCallSimulator.define_filenames(fn_eval_id, evalTagPrefix); // all of evalComm
   if (evalCommRank == 0)
     sysCallSimulator.write_parameters_files(vars, set, response, fn_eval_id);
 
@@ -51,7 +51,8 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 
   try { 
     if (evalCommRank == 0)
-      sysCallSimulator.read_results_files(response, fn_eval_id);
+      sysCallSimulator.read_results_files(response, fn_eval_id,
+					  evalTagPrefix);
   }
 
   catch(std::string& err_msg) {
@@ -84,7 +85,7 @@ void SysCallApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   // This function may not be executed by a multiprocessor evalComm.
 
   int fn_eval_id = pair.eval_id();
-  sysCallSimulator.define_filenames(fn_eval_id);
+  sysCallSimulator.define_filenames(fn_eval_id, evalTagPrefix);
   sysCallSimulator.write_parameters_files(pair.prp_parameters(),
 					  pair.active_set(),
 					  pair.prp_response(), fn_eval_id);
@@ -216,7 +217,8 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
       }
       Response response = pr_pair.prp_response(); // shallow copy
 
-      try { sysCallSimulator.read_results_files(response, fn_eval_id); }
+      try { sysCallSimulator.read_results_files(response, fn_eval_id, 
+						evalTagPrefix); }
 
       // If a std::string exception (incomplete file) is caught, set 
       // err_msg_caught to true so that processing is not performed below.  

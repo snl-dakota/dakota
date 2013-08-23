@@ -937,6 +937,11 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
 	 << "------------------------------------------------------------------"
 	 << '\n';
     component_parallel_mode(OPTIONAL_INTERFACE);
+    if (hierarchicalTagging) {
+      String eval_tag = evalTagPrefix + '.' + 
+	boost::lexical_cast<String>(nestedModelEvalCntr+1);
+      optionalInterface.eval_tag_prefix(eval_tag);
+    }
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse);
   }
@@ -950,6 +955,11 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
     component_parallel_mode(SUB_MODEL);
     update_sub_model();
     subIterator.response_results_active_set(sub_iterator_set);
+    if (hierarchicalTagging) {
+      String eval_tag = evalTagPrefix + '.' + 
+	boost::lexical_cast<String>(nestedModelEvalCntr+1);
+      subIterator.prepend_evalid(eval_tag);
+    }
     // output suppressed by default, unless sub-iterator is verbose:
     subIterator.run_iterator(Cout);
     Cout << "\nActive response data from sub_iterator:\n"
@@ -2260,5 +2270,11 @@ integer_variable_mapping(const int& i_var, size_t mapped_index,
     abort_handler(-1);
   }
 }
+
+void NestedModel::prepend_evalid(const String& eval_id_str)
+{
+  evalTagPrefix = eval_id_str;
+}
+
 
 } // namespace Dakota

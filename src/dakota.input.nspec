@@ -1025,6 +1025,7 @@ KEYWORD model {N_mom3(start,0,stop)}
 	[ id_model STRING {N_mom(str,idModel)} ]
 	[ variables_pointer STRING {N_mom(str,variablesPointer)} ]
 	[ responses_pointer STRING {N_mom(str,responsesPointer)} ]
+	[ hierarchical_tagging {N_mom(true,hierarchicalTags)} ]
 	( single {N_mom(lit,modelType_single)}
 	  [ interface_pointer STRING {N_mom(str,interfacePointer)} ]
 	  )

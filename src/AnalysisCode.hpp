@@ -49,7 +49,7 @@ public:
 
   /// define modified filenames from user input by handling Unix temp
   /// file and tagging options
-  void define_filenames(const int id);
+  void define_filenames(const int id, const String& eval_tag_prefix);
 
   /// write the parameters data and response request data to one or
   /// more parameters files (using one or more invocations of
@@ -58,7 +58,8 @@ public:
 			      const Response&  response, const int id);
 
   /// read the response object from one or more results files
-  void read_results_files(Response& response, const int id);
+  void read_results_files(Response& response, const int id,
+			  const String& eval_tag_prefix);
 
   //
   //- Heading: Set and Inquire functions
@@ -147,6 +148,9 @@ protected:
   std::string specifiedResultsFileName;
   /// the results file name actually used (modified with tagging or temp files)
   std::string resultsFileName;
+  /// complete evalIdTag, possibly including hierarchical tagging and
+  /// final eval id, but not program numbers
+  std::string evalIdTag;
   /// by default analysis code interfaces delete results files if they
   /// exist; user may override with this flag and we'll try to gather
   /// and only fork if needed

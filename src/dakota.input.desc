@@ -659,8 +659,14 @@ TAG "method/efficient_global/use_derivatives"
 	DESC "{Derivative usage} MethodCommands.html#MethodEG"
 
 TAG "method/efficient_global/import_points_file"
+	DESC "{File containing points to evaluate} MethodCommands.html#MethodPSLPS"
+
 TAG "method/efficient_global/import_points_file/annotated"
+	DESC "{Points file in annotated format} MethodCommands.html#MethodPSLPS"
+
 TAG "method/efficient_global/import_points_file/freeform"
+	DESC "{Points file in freeform format} MethodCommands.html#MethodPSLPS"
+
 TAG "method/efficient_global/export_points_file"
 TAG "method/efficient_global/export_points_file/annotated"
 TAG "method/efficient_global/export_points_file/freeform"
@@ -1326,6 +1332,7 @@ TAG "model/variables_pointer"
 TAG "model/responses_pointer"
 	DESC "{Responses set pointer} ModelCommands.html#ModelIndControl"
 
+TAG "model/hierarchical_tagging"
 TAG "model/single"
 	DESC "@"
 
@@ -1445,7 +1452,11 @@ TAG "model/surrogate/global/import_points_file/freeform"
 
 TAG "model/surrogate/global/export_points_file"
 TAG "model/surrogate/global/export_points_file/annotated"
+	DESC "{Challenge file in annotated format} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/export_points_file/freeform"
+	DESC "{Challenge file in freeform format} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/use_derivatives"
 	DESC "{Surfpack GP gradient enhancement} ModelCommands.html#ModelSurrG"
 
@@ -1465,9 +1476,17 @@ TAG "model/surrogate/global/correction/combined"
 TAG "model/surrogate/global/metrics"
 TAG "model/surrogate/global/metrics/cross_validate"
 TAG "model/surrogate/global/metrics/cross_validate/folds"
+	DESC "{Number cross validation folds} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/metrics/cross_validate/percent"
+	DESC "{Percent points per CV fold} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/metrics/press"
+	DESC "{Perform PRESS cross validation} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/challenge_points_file"
+	DESC "{Challenge file for surrogate metrics} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/challenge_points_file/annotated"
 TAG "model/surrogate/global/challenge_points_file/freeform"
 TAG "model/surrogate/multipoint"

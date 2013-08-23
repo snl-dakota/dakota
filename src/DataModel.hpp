@@ -73,6 +73,9 @@ public:
   /// string pointer to the responses specification to be used by this model
   /// (from the \c responses_pointer specification in \ref ModelIndControl)
   String responsesPointer;
+  /// whether this model and its children will add hierarchy-based
+  /// tags to eval ids
+  bool hierarchicalTags;
   /// pointer to a sub-iterator used for global approximations (from the
   /// \c dace_method_pointer specification in \ref ModelSurrG) or by
   /// nested models (from the \c sub_method_pointer specification in

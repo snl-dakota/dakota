@@ -246,6 +246,9 @@ public:
   /// function to check interfaceRep (does this envelope contain a letter?)
   bool is_null() const;
 
+  /// set the evaluation tag prefix (does not recurse)
+  void eval_tag_prefix(const String& eval_id_str);
+
 protected:
 
   //
@@ -354,6 +357,9 @@ protected:
 
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
+
+  /// set of period-delimited evaluation ID tags to use in evaluation tagging
+  String evalTagPrefix;
 
 private:
 

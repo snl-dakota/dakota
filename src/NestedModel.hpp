@@ -133,6 +133,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// add an eval ID to the list for tagging
+  void prepend_evalid(const String& eval_id_str);
+
 private:
 
   //
@@ -311,6 +314,9 @@ private:
   /// functions.  For OUU, the matrix is applied to UQ statistics to create
   /// contributions to the top-level inequality and equality constraints.
   RealMatrix secondaryRespCoeffs;
+
+  /// cached evalTag Prefix from parents to use at compute_response time
+  String evalTagPrefix;
 };
 
 

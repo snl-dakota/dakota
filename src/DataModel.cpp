@@ -18,6 +18,7 @@ namespace Dakota {
 
 DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
+  hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), 
   approxImportAnnotated(true), approxExportAnnotated(true),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
@@ -33,7 +34,8 @@ DataModelRep::DataModelRep():
 void DataModelRep::write(MPIPackBuffer& s) const
 {
   s << idModel << modelType << variablesPointer << interfacePointer
-    << responsesPointer << subMethodPointer << surrogateFnIndices
+    << responsesPointer << hierarchicalTags << subMethodPointer 
+    << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
     << approxImportAnnotated << approxExportFile << approxExportAnnotated
@@ -54,7 +56,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
 void DataModelRep::read(MPIUnpackBuffer& s)
 {
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
-    >> responsesPointer >> subMethodPointer >> surrogateFnIndices
+    >> responsesPointer >> hierarchicalTags >> subMethodPointer 
+    >> surrogateFnIndices
     >> surrogateType >> truthModelPointer >> lowFidelityModelPointer
     >> pointsTotal >> pointsManagement >> approxPointReuse >> approxImportFile
     >> approxImportAnnotated >> approxExportFile >> approxExportAnnotated
@@ -75,7 +78,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
 void DataModelRep::write(std::ostream& s) const
 {
   s << idModel << modelType << variablesPointer << interfacePointer
-    << responsesPointer << subMethodPointer << surrogateFnIndices
+    << responsesPointer << hierarchicalTags << subMethodPointer 
+    << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
     << approxImportAnnotated << approxExportFile << approxExportAnnotated

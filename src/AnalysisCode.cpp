@@ -87,7 +87,7 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
 }
 
 
-void AnalysisCode::define_filenames(const int id)
+void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
 {
   // Define modified file names by handling Unix temp file and tagging options.
   // These names are used in writing the parameters file, in defining the
@@ -121,12 +121,12 @@ void AnalysisCode::define_filenames(const int id)
   size_t i, n;
 
   if (eval_comm_rank == 0 || !bcast_flag) {
-    std::string ctr_tag;
     bool fileTag = false;
-    if (fileTagFlag && !dirTag) {
+    if (fileTagFlag && !dirTag)
       fileTag = true;
-      ctr_tag = "." + boost::lexical_cast<std::string>(id);
-    }
+    if (fileTag || dirTag)
+      evalIdTag = eval_tag_prefix + "." + boost::lexical_cast<std::string>(id);
+
     if (specifiedParamsFileName.empty()) { // no user spec -> use temp files
 //#ifdef LINUX
       /*
@@ -157,7 +157,7 @@ void AnalysisCode::define_filenames(const int id)
     else {
       paramsFileName = specifiedParamsFileName;
       if (fileTag)
-	paramsFileName += ctr_tag;
+	paramsFileName += evalIdTag;
     }
     if (specifiedResultsFileName.empty()) { // no user spec -> use temp files
 //#ifdef LINUX
@@ -189,7 +189,7 @@ void AnalysisCode::define_filenames(const int id)
     else {
       resultsFileName = specifiedResultsFileName;
       if (fileTag)
-	resultsFileName += ctr_tag;
+	resultsFileName += evalIdTag;
     }
     if (useWorkdir) {
 	if (!workDir.length()) {
@@ -223,7 +223,7 @@ void AnalysisCode::define_filenames(const int id)
             }
             haveWorkdir = true;
 	  }
-          wd += '.' + boost::lexical_cast<std::string>(id);
+          wd += evalIdTag;
 	}
 
 	if (!haveTemplateDir) {
@@ -305,7 +305,7 @@ void AnalysisCode::define_filenames(const int id)
     if (eval_comm_rank == 0) {
       // pack the buffer with root file names for the evaluation
       MPIPackBuffer send_buffer;
-      send_buffer << paramsFileName << resultsFileName;
+      send_buffer << paramsFileName << resultsFileName << evalIdTag;
       // bcast buffer length so that other procs can allocate MPIUnpackBuffer
       //int buffer_len = send_buffer.len();
       //parallelLib.bcast_e(buffer_len);
@@ -318,9 +318,9 @@ void AnalysisCode::define_filenames(const int id)
       //parallelLib.bcast_e(buffer_len);
       // receive incoming buffer
       //MPIUnpackBuffer recv_buffer(buffer_len);
-      MPIUnpackBuffer recv_buffer(256); // 256 should be plenty for 2 filenames
+      MPIUnpackBuffer recv_buffer(512); // 512 should be plenty for 2 filenames
       parallelLib.bcast_e(recv_buffer);
-      recv_buffer >> paramsFileName >> resultsFileName;
+      recv_buffer >> paramsFileName >> resultsFileName >> evalIdTag;
     }
   }
 }
@@ -455,6 +455,9 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
     parameter_stream << sp20 << "{ DAKOTA_AN_COMPS = " << setw(w) << ac_len
 		     << " }\n";
     array_write_aprepro(parameter_stream, an_comps, ac_labels);
+    // write full eval ID tag, without leading period
+    parameter_stream << sp20 << "{ DAKOTA_EVAL_ID  = " << setw(w) 
+		     << evalIdTag.erase(0,1) << " }\n";
     //parameter_stream << resetiosflags(ios::adjustfield);
   }
   else {
@@ -467,6 +470,8 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
     array_write(parameter_stream, dvv, dvv_labels);
     parameter_stream << sp21 << setw(w) << ac_len  << " analysis_components\n";
     array_write(parameter_stream, an_comps, ac_labels);
+    // write full eval ID tag, without leading period
+    parameter_stream << sp21 << setw(w) << evalIdTag.erase(0,1) << " eval_id\n";
     //parameter_stream << resetiosflags(ios::adjustfield);
   }
   write_precision = prec; // restore
@@ -478,7 +483,8 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
 }
 
 
-void AnalysisCode::read_results_files(Response& response, const int id)
+void AnalysisCode::read_results_files(Response& response, const int id,
+				      const String& eval_tag_prefix)
 {
   // Retrieve parameters & results file names using fn. eval. id.  A map of
   // filenames is used because the names of tmp files must be available here
@@ -560,9 +566,10 @@ void AnalysisCode::read_results_files(Response& response, const int id)
 	std::remove(results_filenames[i].c_str());
 
     if (useWorkdir && !dirSave && dirTag) {
-	const std::string wd = workDir
-                               + '.' + boost::lexical_cast<std::string>(id);
-        rec_rmdir(wd.c_str());
+      // can't rely on class member due to split call to write/read 
+      const std::string wd = workDir + eval_tag_prefix +
+	'.' + boost::lexical_cast<std::string>(id);
+      rec_rmdir(wd.c_str());
     }
   }
 
@@ -575,7 +582,9 @@ void AnalysisCode::read_results_files(Response& response, const int id)
     if (!suppressOutputFlag && outputLevel > NORMAL_OUTPUT)
       Cout << "Files with nonunique names will be tagged for file_save:\n";
 
-    const std::string ctr_tag = "." + boost::lexical_cast<std::string>(id);
+    // can't rely on class member due to split call to write/read 
+    const std::string ctr_tag = 
+      eval_tag_prefix + "." + boost::lexical_cast<std::string>(id);
     if (!specifiedParamsFileName.empty()) {
       const std::string new_str = specifiedParamsFileName + ctr_tag;
       if (!multipleParamsFiles || !iFilterName.empty()) {

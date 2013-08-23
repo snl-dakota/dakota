@@ -232,6 +232,10 @@ public:
 					bool minimal_header = false,
 					bool relative_count = true) const;
 
+  /// add an eval ID to the list for tagging
+  virtual void prepend_evalid(const String& eval_id_str);
+
+
   //
   //- Heading: Member functions
   //
@@ -941,6 +945,9 @@ protected:
   /// primary response function weightings (either weights for
   /// multiobjective optimization or weighted least squares)
   RealVector primaryRespFnWts;
+
+  /// whether to perform hierarchical evalID tagging of params/results
+  bool hierarchicalTagging;
 
 private:
  

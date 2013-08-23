@@ -45,7 +45,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 {
   // This function may be executed by a multiprocessor evalComm.
 
-  forkSimulator.define_filenames(fn_eval_id); // all of evalComm
+  forkSimulator.define_filenames(fn_eval_id, evalTagPrefix); // all of evalComm
   if (evalCommRank == 0)
     forkSimulator.write_parameters_files(vars, set, response, fn_eval_id);
 
@@ -54,7 +54,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 
   try { 
     if (evalCommRank == 0)
-      forkSimulator.read_results_files(response, fn_eval_id);
+      forkSimulator.read_results_files(response, fn_eval_id, evalTagPrefix);
   }
 
   catch(std::string& err_msg) {
@@ -78,7 +78,7 @@ void ForkApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   // This function may not be executed by a multiprocessor evalComm.
 
   int fn_eval_id = pair.eval_id();
-  forkSimulator.define_filenames(fn_eval_id); // all of evalComm
+  forkSimulator.define_filenames(fn_eval_id, evalTagPrefix); // all of evalComm
   forkSimulator.write_parameters_files(pair.prp_parameters(), pair.active_set(),
 				       pair.prp_response(),   fn_eval_id);
  
@@ -291,7 +291,7 @@ derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid)
     abort_handler(-1);
   }
   Response response = pr_pair.prp_response(); // shallow copy
-  try { forkSimulator.read_results_files(response, fn_eval_id); }
+  try { forkSimulator.read_results_files(response, fn_eval_id, evalTagPrefix); }
 
   catch(std::string& err_msg) { // For forks, there is no potential for an 
     // file write race condition since the process has completed -> an 

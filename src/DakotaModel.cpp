@@ -148,6 +148,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     problem_db.get_irma("variables.discrete_uncertain_set_int.values_probs"),
     problem_db.get_rrma("variables.discrete_uncertain_set_real.values_probs")),
   primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
+  hierarchicalTagging(probDescDB.get_bool("model.hierarchical_tags")),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
@@ -218,7 +219,8 @@ Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
   probDescDB(dummy_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(output_level), modelId("NO_DB_MODEL"), modelEvalCntr(0), 
+  outputLevel(output_level), hierarchicalTagging(false),
+  modelId("NO_DB_MODEL"), modelEvalCntr(0), 
   estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
@@ -243,6 +245,7 @@ Model(RecastBaseConstructor, ProblemDescDB& problem_db,
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   modelType("recast"), supportsEstimDerivs(false),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
+  hierarchicalTagging(false),
   modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
@@ -3441,5 +3444,20 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
     abort_handler(-1);
   }
 }
+
+/// Derived classes containing additional models or interfaces should
+/// implement this function to pass along to their sub Models/Interfaces
+void Model::prepend_evalid(const String& eval_id_str)
+{
+  if (modelRep)
+    modelRep->prepend_evalid(eval_id_str);
+  // Models are not required to forward this as they may not have an Interface
+  // else { // letter lacking redefinition of virtual fn.
+  //   Cerr << "Error: Letter lacking redefinition of virtual prepend_evalid()"
+  // 	 << "function.\n" << std::endl;
+  //   abort_handler(-1);
+  // }
+}
+
 
 } // namespace Dakota

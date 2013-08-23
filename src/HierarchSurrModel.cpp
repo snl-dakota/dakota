@@ -83,6 +83,12 @@ void HierarchSurrModel::build_approximation()
   //lowFidelityModel.compute_response(temp_set);
   //const Response& lo_fi_response = lowFidelityModel.current_response();
 
+  if (hierarchicalTagging) {
+    String eval_tag = evalTagPrefix + '.' + 
+      boost::lexical_cast<String>(hierModelEvalCntr+1);
+    highFidelityModel.prepend_evalid(eval_tag);
+  }
+
   // set HierarchSurrModel parallelism mode to highFidelityModel
   component_parallel_mode(HF_MODEL);
 
@@ -174,6 +180,15 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     hi_fi_eval = true; lo_fi_eval = false;   break;
   case MODEL_DISCREPANCY:
     hi_fi_eval = lo_fi_eval = true;          break;
+  }
+
+  if (hierarchicalTagging) {
+    String eval_tag = evalTagPrefix + '.' + 
+      boost::lexical_cast<String>(hierModelEvalCntr+1);
+    if (hi_fi_eval)
+      highFidelityModel.prepend_evalid(eval_tag);
+    if (lo_fi_eval)
+      lowFidelityModel.prepend_evalid(eval_tag);
   }
 
   // ------------------------------
@@ -299,6 +314,15 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     hi_fi_eval = true; lo_fi_eval = false;                            break;
   case MODEL_DISCREPANCY:
     hi_fi_eval = lo_fi_eval = true;                                   break;
+  }
+
+  if (hierarchicalTagging) {
+    String eval_tag = evalTagPrefix + '.' + 
+      boost::lexical_cast<String>(hierModelEvalCntr+1);
+    if (hi_fi_eval)
+      highFidelityModel.prepend_evalid(eval_tag);
+    if (lo_fi_eval)
+      lowFidelityModel.prepend_evalid(eval_tag);
   }
 
   // ------------------------------
@@ -810,6 +834,12 @@ void HierarchSurrModel::update_model(Model& model)
         currentVariables.inactive_discrete_real_variable_labels());
     }
   }
+}
+
+
+void HierarchSurrModel::prepend_evalid(const String& eval_id_str)
+{
+  evalTagPrefix = eval_id_str;
 }
 
 } // namespace Dakota

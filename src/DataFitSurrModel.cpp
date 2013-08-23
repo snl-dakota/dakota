@@ -911,6 +911,12 @@ void DataFitSurrModel::build_global()
       asv_mapping(set.request_vector(), actual_asv, approx_asv, true);
       set.request_vector(actual_asv);
       daceIterator.active_set(set);
+      // prepend hierarchical tag before running
+      if (hierarchicalTagging) {
+	String eval_tag = evalTagPrefix + '.' + 
+	  boost::lexical_cast<String>(surrModelEvalCntr+1);
+	daceIterator.prepend_evalid(eval_tag);
+      }
       // run the iterator
       daceIterator.run_iterator(Cout);
 
@@ -1023,6 +1029,13 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     actual_eval = true; approx_eval = false;   break;
   case MODEL_DISCREPANCY:
     actual_eval = approx_eval = true;          break;
+  }
+
+  if (hierarchicalTagging) {
+    String eval_tag = evalTagPrefix + '.' + 
+      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    if (actual_eval)
+      actualModel.prepend_evalid(eval_tag);
   }
 
   // -----------------------------
@@ -1144,6 +1157,13 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     actual_eval = true; approx_eval = false;                              break;
   case MODEL_DISCREPANCY:
     actual_eval = approx_eval = true;                                     break;
+  }
+
+  if (hierarchicalTagging) {
+    String eval_tag = evalTagPrefix + '.' + 
+      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    if (actual_eval)
+      actualModel.prepend_evalid(eval_tag);
   }
 
   // -----------------------------
@@ -1867,6 +1887,12 @@ void DataFitSurrModel::update_from_actual_model()
   if (actualModel.num_nonlinear_eq_constraints())
     userDefinedConstraints.nonlinear_eq_constraint_targets(
       actualModel.nonlinear_eq_constraint_targets());
+}
+
+
+void DataFitSurrModel::prepend_evalid(const String& eval_id_str)
+{
+  evalTagPrefix = eval_id_str;
 }
 
 } // namespace Dakota

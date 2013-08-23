@@ -2383,18 +2383,19 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     if ((kw = (KW<bool, DataMethodRep>*)Binsearch(Bdme, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
   }
-  else if ((L = Begins(entry_name, "model.surrogate."))) {
+  else if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
-	{"challenge_points_file_annotated", P approxChallengeAnnotated},
-	{"cross_validate", P crossValidateFlag},
-	{"derivative_usage", P modelUseDerivsFlag},
-	{"export_points_file_annotated", P approxExportAnnotated},
-	{"import_points_file_annotated", P approxImportAnnotated},
-	{"point_selection", P pointSelection},
-	{"press", P pressFlag}};
+	{"hierarchical_tags", P hierarchicalTags},
+	{"surrogate.challenge_points_file_annotated", P approxChallengeAnnotated},
+	{"surrogate.cross_validate", P crossValidateFlag},
+	{"surrogate.derivative_usage", P modelUseDerivsFlag},
+	{"surrogate.export_points_file_annotated", P approxExportAnnotated},
+	{"surrogate.import_points_file_annotated", P approxImportAnnotated},
+	{"surrogate.point_selection", P pointSelection},
+	{"surrogate.press", P pressFlag}};
     #undef P
 
     KW<bool, DataModelRep> *kw;

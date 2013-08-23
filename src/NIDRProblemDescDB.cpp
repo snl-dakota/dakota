@@ -5486,6 +5486,7 @@ static bool
 	MP_(approxExportAnnotated),
 	MP_(approxImportAnnotated),
 	MP_(crossValidateFlag),
+	MP_(hierarchicalTags),
 	MP_(modelUseDerivsFlag),
 	MP_(pressFlag),
 	MP_(pointSelection);

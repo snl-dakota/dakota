@@ -281,6 +281,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// add an eval ID to the list for tagging
+  void prepend_evalid(const String& eval_id_str);
+
 private:
 
   //
@@ -635,6 +638,10 @@ inline void RecastModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 { subModel.print_evaluation_summary(s, minimal_header, relative_count); }
+
+/** RecastModel just forwards any tags to its subModel */
+inline void RecastModel::prepend_evalid(const String& eval_id_str)
+{ subModel.prepend_evalid(eval_id_str); }
 
 } // namespace Dakota
 
