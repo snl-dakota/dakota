@@ -4035,7 +4035,9 @@ static int VLR_aleatory[N_VLR] = { 1, 0, 1, 0 };
 static int VLI_aleatory[N_VLI] = { 1, 0 };
 
 #define Vchk_3(x,y) {#x,&DataVariablesRep::num##y##Vars,Vgen_##y}
-#define Vchk_5(x,y,z) {#x,&DataVariablesRep::num##y##Vars,Vgen_##y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds}
+// Some compilers in debug mode (MSVC) don't initialize the trailing
+// two entries to NULL, so be explicit:
+#define Vchk_5(x,y,z) {#x,&DataVariablesRep::num##y##Vars,Vgen_##y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,NULL,NULL}
 #define Vchk_7(x,y,z) {#x,&DataVariablesRep::num##y##Vars,Vgen_##y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,&DataVariablesRep::z##Vars,&DataVariablesRep::z##Labels}
 
 // Trailing pointers in these initialization lists will be NULL. From C++ 2003:
