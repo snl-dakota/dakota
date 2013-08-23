@@ -2051,6 +2051,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 	 map_cit!=s_index_map.end(); ++map_cit) { // loop in key sorted order
       const BitArray& set = map_cit->first;
       unsigned long index = map_cit->second;
+      // a 0-way interaction followed by numContinuousVars main effects
       if (index > numContinuousVars) {            // an interaction
 	String& label = sobol_labels[index];      // store in index order
 	for (j=0; j<numContinuousVars; ++j)
