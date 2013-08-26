@@ -635,54 +635,62 @@ KEYWORD12 method
 	    )
 	  | cubature_integrand INTEGER
 	  |
-	  ( collocation_points INTEGER >= 0
-	    | collocation_ratio REAL
-	    [ ratio_order REAL ]
-	    [ ( least_squares
-		[ svd
-		| equality_constrained ]
-		)
+	  ( expansion_order INTEGERLIST
+	    ( collocation_points INTEGER >= 0
+	      | collocation_ratio REAL
+	      [ ratio_order REAL ]
+	      [ ( least_squares
+		  [ svd
+		  | equality_constrained ]
+		  )
+	      |
+	      ( orthogonal_matching_pursuit ALIAS omp
+		[ noise_tolerance REALLIST ]
+		]
+	      | basis_pursuit ALIAS bp
+	      |
+	      ( basis_pursuit_denoising ALIAS bpdn
+		[ noise_tolerance REALLIST ]
+		]
+	      |
+	      ( least_angle_regression ALIAS lars
+		[ noise_tolerance REALLIST ]
+		]
+	      |
+	      ( least_absolute_shrinkage ALIAS lasso
+		[ noise_tolerance REALLIST ]
+		[ l2_penalty REAL ]
+		]
+	      [ cross_validation ]
+	      [ use_derivatives ]
+	      [ tensor_grid ]
+	      [ reuse_points ALIAS reuse_samples ]
+	      [ import_points_file STRING
+		[ annotated
+		| freeform ]
+		]
+	      )
 	    |
-	    ( orthogonal_matching_pursuit ALIAS omp
-	      [ noise_tolerance REALLIST ]
-	      ]
-	    | basis_pursuit ALIAS bp
-	    |
-	    ( basis_pursuit_denoising ALIAS bpdn
-	      [ noise_tolerance REALLIST ]
-	      ]
-	    |
-	    ( least_angle_regression ALIAS lars
-	      [ noise_tolerance REALLIST ]
-	      ]
-	    |
-	    ( least_absolute_shrinkage ALIAS lasso
-	      [ noise_tolerance REALLIST ]
-	      [ l2_penalty REAL ]
-	      ]
+	    ( expansion_samples INTEGER >= 0
+	      [ reuse_points ALIAS reuse_samples ]
+	      [ incremental_lhs ]
+	      [ import_points_file STRING
+		[ annotated
+		| freeform ]
+		]
+	      )
+	    | expansion_import_file STRING
+	    )
+	  |
+	  ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli
+	    collocation_points INTEGER >= 0
 	    [ cross_validation ]
-	    [ use_derivatives ]
 	    [ tensor_grid ]
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
 	      ]
-	    expansion_order INTEGERLIST
-	    )
-	  |
-	  ( expansion_samples INTEGER >= 0
-	    [ reuse_points ALIAS reuse_samples ]
-	    [ incremental_lhs ]
-	    [ import_points_file STRING
-	      [ annotated
-	      | freeform ]
-	      ]
-	    expansion_order INTEGERLIST
-	    )
-	  |
-	  ( expansion_import_file STRING
-	    expansion_order INTEGERLIST
 	    )
 	  [ variance_based_decomp
 	    [ univariate_effects ]

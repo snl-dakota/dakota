@@ -2368,7 +2368,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.calibrate_sigma", P calibrateSigmaFlag},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.piecewise_basis", P piecewiseBasis},
-	{"nond.tensor_grid", P probCollocFlag},
+	{"nond.tensor_grid", P structGridFlag},
 	{"print_each_pop", P printPopFlag},
 	{"pstudy.file_annotated", P pstudyFileAnnotated},
 	{"quality_metrics", P volQualityFlag},

@@ -5281,12 +5281,12 @@ static bool
 	MP_(methodUseDerivsFlag),
 	MP_(mutationAdaptive),
 	MP_(printPopFlag),
-	MP_(probCollocFlag),
 	MP_(pstudyFileAnnotated),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
+	MP_(structGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
 	MP_(vbdFlag),
@@ -5369,6 +5369,7 @@ static Method_mp_type
 	MP2p(regressionType,DEFAULT_LEAST_SQ_REGRESSION),  // Pecos enumeration
 	MP2p(regressionType,LASSO_REGRESSION),             // Pecos enumeration
 	MP2p(regressionType,LEAST_ANGLE_REGRESSION),       // Pecos enumeration
+	MP2p(regressionType,ORTHOG_LEAST_INTERPOLATION),   // Pecos enumeration
 	MP2p(regressionType,ORTHOG_MATCH_PURSUIT),         // Pecos enumeration
 	MP2s(responseLevelTarget,GEN_RELIABILITIES),
 	MP2s(responseLevelTarget,PROBABILITIES),

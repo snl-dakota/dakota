@@ -708,7 +708,7 @@ public:
   /// flag for usage of a filtered set of tensor-product grid points
   /// within regression PCE; based on the \c tensor_grid specification
   /// in \ref MethodNonDPCE
-  bool probCollocFlag;
+  bool structGridFlag;
   /// the \c expansion_import_file specification in \ref MethodNonDPCE
   String expansionImportFile;
   /// the \c sample_type specification in \ref MethodNonDMC, \ref

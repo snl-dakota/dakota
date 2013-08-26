@@ -119,7 +119,7 @@ DataMethodRep::DataMethodRep():
   expansionSamples(-1), cubIntOrder(USHRT_MAX), collocationPoints(-1),
   collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
-  regressionL2Penalty(0.), crossValidation(false), probCollocFlag(false),
+  regressionL2Penalty(0.), crossValidation(false), structGridFlag(false),
   //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
@@ -226,7 +226,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << pointReuse << probCollocFlag << expansionImportFile
+    << crossValidation << pointReuse << structGridFlag << expansionImportFile
     << sampleType << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << nondOptAlgorithm << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
@@ -334,7 +334,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> regressionType
     >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
-    >> crossValidation >> pointReuse >> probCollocFlag >> expansionImportFile
+    >> crossValidation >> pointReuse >> structGridFlag >> expansionImportFile
     >> sampleType >> reliabilitySearchType >> reliabilityIntegration
     >> integrationRefine >> nondOptAlgorithm >> distributionType
     >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
@@ -442,7 +442,7 @@ void DataMethodRep::write(std::ostream& s) const
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << pointReuse << probCollocFlag << expansionImportFile
+    << crossValidation << pointReuse << structGridFlag << expansionImportFile
     << sampleType << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << nondOptAlgorithm << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels

@@ -697,64 +697,72 @@ TAG "method/polynomial_chaos/sparse_grid_level/non_nested"
 TAG "method/polynomial_chaos/cubature_integrand"
 	DESC "{Cubature integrand order for PCE coefficient estimation} MethodCommands.html#MethodNonDPCE"
 
-TAG "method/polynomial_chaos/collocation_points"
-	DESC "{Number collocation points to estimate coeffs} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_ratio"
-	DESC "{Collocation point oversampling ratio to estimate coeffs} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/ratio_order"
-	DESC "{Order of collocation oversampling relationship} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/least_squares"
-	DESC "{Least squares regression} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/least_squares/svd"
-TAG "method/polynomial_chaos/collocation_points/least_squares/equality_constrained"
-TAG "method/polynomial_chaos/collocation_points/orthogonal_matching_pursuit"
-	DESC "{L1 minimization via Orthogonal Matching Pursuit (OMP)} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/orthogonal_matching_pursuit/noise_tolerance"
-TAG "method/polynomial_chaos/collocation_points/basis_pursuit"
-	DESC "{L1 minimization via Basis Pursuit (BP)} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/basis_pursuit_denoising"
-	DESC "{L1 minimization via Basis Pursuit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/basis_pursuit_denoising/noise_tolerance"
-TAG "method/polynomial_chaos/collocation_points/least_angle_regression"
-	DESC "{L1 minimization via Least Angle Regression (LARS)} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/least_angle_regression/noise_tolerance"
-TAG "method/polynomial_chaos/collocation_points/least_absolute_shrinkage"
-	DESC "{L1 minimization via Least Absolute Shrinkage Operator (LASSO)} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/least_absolute_shrinkage/noise_tolerance"
-TAG "method/polynomial_chaos/collocation_points/least_absolute_shrinkage/l2_penalty"
-	DESC "{l2_penalty used for elastic net modification of LASSO} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/cross_validation"
-	DESC "{Specify whether to use cross validation} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/use_derivatives"
-TAG "method/polynomial_chaos/collocation_points/tensor_grid"
-TAG "method/polynomial_chaos/collocation_points/reuse_points"
-TAG "method/polynomial_chaos/expansion_samples"
-	DESC "{Number simulation samples to estimate coeffs} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/expansion_samples/reuse_points"
-TAG "method/polynomial_chaos/expansion_samples/incremental_lhs"
-	DESC "{Use incremental LHS for expansion_samples} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/import_points_file"
-TAG "method/polynomial_chaos/collocation_points/import_points_file/annotated"
-TAG "method/polynomial_chaos/collocation_points/import_points_file/freeform"
-TAG "method/polynomial_chaos/expansion_import_file"
-	DESC "{PCE coeffs import file} MethodCommands.html#MethodNonDPCE"
-
-TAG "method/polynomial_chaos/collocation_points/expansion_order"
+TAG "method/polynomial_chaos/expansion_order"
 	DESC "{Expansion order} MethodCommands.html#MethodNonDPCE"
 
+TAG "method/polynomial_chaos/expansion_order/collocation_points"
+	DESC "{Number collocation points to estimate coeffs} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_ratio"
+	DESC "{Collocation point oversampling ratio to estimate coeffs} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/ratio_order"
+	DESC "{Order of collocation oversampling relationship} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_squares"
+	DESC "{Least squares regression} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_squares/svd"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_squares/equality_constrained"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/orthogonal_matching_pursuit"
+	DESC "{L1 minimization via Orthogonal Matching Pursuit (OMP)} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/orthogonal_matching_pursuit/noise_tolerance"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/basis_pursuit"
+	DESC "{L1 minimization via Basis Pursuit (BP)} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/basis_pursuit_denoising"
+	DESC "{L1 minimization via Basis Pursuit DeNoising (BPDN)} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/basis_pursuit_denoising/noise_tolerance"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_angle_regression"
+	DESC "{L1 minimization via Least Angle Regression (LARS)} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_angle_regression/noise_tolerance"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_absolute_shrinkage"
+	DESC "{L1 minimization via Least Absolute Shrinkage Operator (LASSO)} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_absolute_shrinkage/noise_tolerance"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/least_absolute_shrinkage/l2_penalty"
+	DESC "{l2_penalty used for elastic net modification of LASSO} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/cross_validation"
+	DESC "{Specify whether to use cross validation} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/use_derivatives"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/tensor_grid"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/reuse_points"
+TAG "method/polynomial_chaos/expansion_order/expansion_samples"
+	DESC "{Number simulation samples to estimate coeffs} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/expansion_samples/reuse_points"
+TAG "method/polynomial_chaos/expansion_order/expansion_samples/incremental_lhs"
+	DESC "{Use incremental LHS for expansion_samples} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/expansion_order/collocation_points/import_points_file"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/import_points_file/annotated"
+TAG "method/polynomial_chaos/expansion_order/collocation_points/import_points_file/freeform"
+TAG "method/polynomial_chaos/expansion_order/expansion_import_file"
+	DESC "{PCE coeffs import file} MethodCommands.html#MethodNonDPCE"
+
+TAG "method/polynomial_chaos/orthogonal_least_interpolation"
+TAG "method/polynomial_chaos/orthogonal_least_interpolation/collocation_points"
+TAG "method/polynomial_chaos/orthogonal_least_interpolation/cross_validation"
+TAG "method/polynomial_chaos/orthogonal_least_interpolation/tensor_grid"
+TAG "method/polynomial_chaos/orthogonal_least_interpolation/reuse_points"
+TAG "method/polynomial_chaos/orthogonal_least_interpolation/import_points_file"
+TAG "method/polynomial_chaos/orthogonal_least_interpolation/import_points_file/annotated"
+TAG "method/polynomial_chaos/orthogonal_least_interpolation/import_points_file/freeform"
 TAG "method/polynomial_chaos/variance_based_decomp"
 	DESC "{Variance based decomposition (VBD)} MethodCommands.html#MethodNonDMC"
 
