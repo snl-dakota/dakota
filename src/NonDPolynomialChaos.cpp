@@ -153,27 +153,43 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  }
 	}
 
-	size_t exp_terms
-	  = Pecos::PolynomialApproximation::total_order_terms(exp_order);
-	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
-	termsOrder
-	  = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
-	if (colloc_pts >= 0) {
+	int colloc_pts=probDescDB.get_int("method.nond.collocation_points");
+	if (colloc_pts >= 0)
 	  numSamplesOnModel = colloc_pts;
-	  // define collocRatio for use in uniform refinement
-	  collocRatio
-	    = terms_samples_to_ratio(exp_terms, colloc_pts, termsOrder);
-	}
-	else if (collocRatio > 0.)
-	  numSamplesOnModel
-	    = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+	
+	if ( expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION )
+	  {
+	    size_t exp_terms
+	      = Pecos::PolynomialApproximation::total_order_terms(exp_order);
+
+	    termsOrder
+	      = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
+	    if (colloc_pts >= 0) {
+	      // numSamplesOnModel = colloc_pts;
+	      // define collocRatio for use in uniform refinement
+	      collocRatio
+		= terms_samples_to_ratio(exp_terms, colloc_pts, termsOrder);
+	    }
+	    else if (collocRatio > 0.)
+	      numSamplesOnModel
+		= terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+	  }
 
 	if (tensorRegression) {// "probabilistic collocation": subset of TPQ pts
 	  // define nominal quadrature order as exp_order + 1
 	  // (m > p avoids most of the 0's in the Psi measurement matrix)
 	  UShortArray dim_quad_order(numContinuousVars);
-	  for (size_t i=0; i<numContinuousVars; ++i) // misses nested increment
-	    dim_quad_order[i] = exp_order[i] + 1;
+	  if ( expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION )
+	    {
+	      for (size_t i=0; i<numContinuousVars; ++i)//misses nested increment
+		dim_quad_order[i] = exp_order[i] + 1;
+	    }
+	  else
+	    {
+	      for (size_t i=0; i<numContinuousVars; ++i)//misses nested increment
+		dim_quad_order[i] = 1;
+	    }
+	  
 	  // define order sequence for input to NonDQuadrature
 	  UShortArray quad_order_seq(1); // one level of refinement
 	  // convert aniso vector to scalar + dim_pref.  If isotropic, dim_pref
