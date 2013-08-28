@@ -146,11 +146,9 @@ ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
     problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
     std::max(problem_db.get_sizet("responses.num_objective_functions"),
 	     problem_db.get_sizet("responses.num_least_squares_terms"));
-  if (num_fns == 0) {
-    Cerr << "Error: total number of response functions must be nonzero."
-	 << std::endl;
-    abort_handler(-1);
-  }
+  if (num_fns == 0)
+    Cerr << "Warning: total number of response functions is zero.  This is "
+	 << "admissible in rare cases (e.g., nested overlays)." << std::endl;
 
   // the derivative arrays must accomodate either active or inactive variables,
   // but the default is active variables.  Derivative arrays are resized if a
