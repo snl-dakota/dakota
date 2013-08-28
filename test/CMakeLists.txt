@@ -340,6 +340,8 @@ set(dakota_test_executables
   text_book2
   text_book3
   text_book_ouu
+  trajectory
+  trajectory_post
   )
 
 foreach(dte ${dakota_test_executables})
