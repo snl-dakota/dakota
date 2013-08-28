@@ -13,8 +13,8 @@ method,
 # 	  expansion_order   = 10	#2,#3
 	  cross_validation
 	  collocation_ratio = 4 	#0,#1
-#	  collocation_ratio = 1 	#2
-#	  collocation_ratio = 1.7 	#3
+#	  collocation_ratio = .9 	#2
+#	  collocation_ratio = 1.5	#3
 	  least_squares svd 		#0,#1,
 #	  least_angle_regression	#2,#3,
 	  seed = 1234567

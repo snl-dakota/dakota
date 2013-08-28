@@ -49,16 +49,19 @@
 # 40 fully over-determined BP
 # 41 fully over-determined BPDN
 # 42 fully over-determined LARS
-# 43 fully over-determined LASSO 
+# 43 fully over-determined LASSO
+
+# 44 least orthogonal interpolation
 
 strategy,
 	single_method #graphics
 	output_precision = 16
 
 method,
-	polynomial_chaos
- 	  expansion_order   = 4
+	polynomial_chaos 
+ 	  expansion_order   = 4		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#24,#25,#26,#27,#28,#29,#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43
 	  collocation_ratio = 3 	#0,#1,#26,#28,#33,#40,#41,#42,#43
+# 	  collocation_points = 15       #44
 #	  collocation_ratio = 0.7 	#2,#3,#4,#5,#6,#7,#10,#11,#12,#13,#14,#15,#24,#25,#29,#31,#34,#36,#38
 #	  collocation_ratio = 4 	#8,#9,#30,#35,#39
 #	  collocation_ratio = 2  	#16,#17,#18,#19,#20,#21,#22,#23,#27,#32,#37
@@ -71,7 +74,8 @@ method,
 #	  orthogonal_matching_pursuit	#4,#12,#20,#26,#27
 #	  least_absolute_shrinkage	#5,#13,#21,#1,#7,#9,#15,#23,#42
 #	  least_angle_regression	#6,#14,#22,#43
-#	  l2_penalty = 0.01		#1,#7,#9,#15,#23
+#	    l2_penalty = 0.01		#1,#7,#9,#15,#23
+#	  orthogonal_least_interpolation #44
 	  seed = 1234567
 #	  use_derivatives		#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#27,#30,#31,#32,#35,#36,#37,#38,#39
 	  output verbose
@@ -88,6 +92,6 @@ interface,
 
 responses,
 	response_functions = 1
-	no_gradients			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#24,#26,#28,#29,#33,#34,#40,#41,#42,#43
+	no_gradients			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#24,#26,#28,#29,#33,#34,#40,#41,#42,#43,#44
 #	analytic_gradients		#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#25,#27,#30,#31,#32,#35,#36,#37,#38,#39
 	no_hessians
