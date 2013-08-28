@@ -993,8 +993,6 @@ void ParallelLibrary::print_configuration()
   // worldRank == 0 prints configuration
   // -----------------------------------
   if (worldRank == 0) { // does all output
-    using std::setw;
-
     int  num_eval_srv = ie_pl.numServers, p_per_eval = ie_pl.procsPerServer;
     bool iterator_ded_master_flag = ie_pl.dedicatedMasterFlag;
     if (si_pl.dedicatedMasterFlag) {
@@ -1012,25 +1010,25 @@ void ParallelLibrary::print_configuration()
 	 << "--------------\nDAKOTA parallel configuration:\n\n"
 	 << "Level\t\t\tnum_servers    procs_per_server    partition/"
 	 << "schedule\n-----\t\t\t-----------    ----------------    "
-	 << "------------------\nconcurrent iterators\t  " << setw(4)
-         << si_pl.numServers << "\t\t   " << setw(4) << si_pl.procsPerServer
-	 << "\t\t     ";
+	 << "------------------\nconcurrent iterators\t  " << std::setw(4)
+         << si_pl.numServers << "\t\t   " << std::setw(4)
+	 << si_pl.procsPerServer << "\t\t     ";
     if (si_pl.dedicatedMasterFlag)
       Cout << "ded. master/self\n";
     else
       Cout << "peer/static\n";
 
     // Iterator diagnostics
-    Cout << "concurrent evaluations\t  " << setw(4) << num_eval_srv << "\t\t   "
-	 << setw(4) << p_per_eval << "\t\t     ";
+    Cout << "concurrent evaluations\t  " << std::setw(4) << num_eval_srv
+	 << "\t\t   " << std::setw(4) << p_per_eval << "\t\t     ";
     if (iterator_ded_master_flag)
       Cout << "ded. master/self\n";
     else
       Cout << "peer/static\n";
 
     // Evaluation diagnostics
-    Cout << "concurrent analyses\t  " << setw(4) << num_anal_srv << "\t\t   "
-	 << setw(4) << p_per_anal << "\t\t     ";
+    Cout << "concurrent analyses\t  " << std::setw(4) << num_anal_srv
+	 << "\t\t   " << std::setw(4) << p_per_anal << "\t\t     ";
     if (eval_ded_master_flag)
       Cout << "ded. master/self\n";
     else
@@ -1393,9 +1391,9 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
       Cout << "Stopping restart file processing at " << stopRestartEvals 
            << " evaluations." << std::endl;
 
-    int cntr = 1;
+    int cntr = 0;
     while ( !read_restart.eof() && 
-            (!stopRestartEvals || cntr <= stopRestartEvals) ) {
+            (!stopRestartEvals || cntr < stopRestartEvals) ) {
       // Use default constr. & rely on Variables::read(BiStream&)
       // & Response::read(BiStream&) to resize vars and response.
       ParamResponsePair current_pair;
@@ -1409,15 +1407,18 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
         break;
       }
 
-      data_pairs.insert(current_pair);
-      Cout << "\n-------------------------------------------\nFunction "
-           << "evaluation " << std::setw(4) << cntr << " from restart file:\n"
-           << "-------------------------------------------\n" << current_pair;
-      ++cntr;
+      data_pairs.insert(current_pair); ++cntr;
+      Cout << "\n------------------------------------------\nRestart record "
+	   << std::setw(4) << cntr << "  (evaluation id " << std::setw(4)
+	   << current_pair.eval_id() << "):"
+	   << "\n------------------------------------------\n" << current_pair;
+      // Note: interface id is printed in ParamResponsePair::write(ostream&)
+      // if present
     }
     read_restart.close();
-    Cout << "Restart file processing completed: " << data_pairs.size() 
-         << " evaluations retrieved.\n";
+    Cout << "Restart file processing completed: " << cntr
+	 << " evaluations retrieved and " << data_pairs.size()
+	 << " unique evaluations stored.\n";
   }
 
   // -------------
@@ -1628,8 +1629,6 @@ void ParallelLibrary::output_timers()
   if (!outputTimings)
     return;
 
-  using std::setw;
-
   // Compute elapsed times.
   // TODO: sometimes totalCPU is zero, but parent is zero;
   //       need to consistently use system or utilib for this computation
@@ -1647,16 +1646,16 @@ void ParallelLibrary::output_timers()
       Real runWC = parallel_time();
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
 	   << "DAKOTA master processor execution time in seconds:\n"
-	   << "  Total CPU        = " << setw(10) << totalCPU;
+	   << "  Total CPU        = " << std::setw(10) << totalCPU;
       
 #ifdef DAKOTA_UTILIB
       Real initWC = totalWC - runWC;
-      Cout << " [parent   = " << setw(10) << parentCPU << ", child = " 
-	   << setw(10) << childCPU << "]\n  Total wall clock = " << setw(10)
-	   << totalWC << " [MPI_Init = " << setw(10) << initWC 
-	   << ", run   = " << setw(10) << runWC << "]" << std::endl;
+      Cout << " [parent   = " << std::setw(10) << parentCPU << ", child = " 
+	   << std::setw(10) << childCPU << "]\n  Total wall clock = " << std::setw(10)
+	   << totalWC << " [MPI_Init = " << std::setw(10) << initWC 
+	   << ", run   = " << std::setw(10) << runWC << "]" << std::endl;
 #else
-      Cout << "\n  MPI wall clock = " << setw(10) << runWC << std::endl;
+      Cout << "\n  MPI wall clock = " << std::setw(10) << runWC << std::endl;
 #endif // DAKOTA_UTILIB
     }
 #endif // DAKOTA_HAVE_MPI
@@ -1664,11 +1663,11 @@ void ParallelLibrary::output_timers()
   else { // MPI functions are not available
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
 	   << "DAKOTA execution time in seconds:\n  Total CPU        = " 
-	   << setw(10) << totalCPU;
+	   << std::setw(10) << totalCPU;
 #ifdef DAKOTA_UTILIB
-      Cout << " [parent = " << setw(10) << parentCPU << ", child = "
-	   << setw(10) << childCPU << "]\n  Total wall clock = "
-	   << setw(10) << totalWC << std::endl;
+      Cout << " [parent = " << std::setw(10) << parentCPU << ", child = "
+	   << std::setw(10) << childCPU << "]\n  Total wall clock = "
+	   << std::setw(10) << totalWC << std::endl;
 #else
       Cout << std::endl;
 #endif // DAKOTA_UTILIB
