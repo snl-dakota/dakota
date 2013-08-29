@@ -60887,10 +60887,15 @@ Test Number 4 succeeded
 <<<<< Best data captured at function evaluation 4
 dakota_uq_timeseries_ivp_optinterf.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 121 total (121 new, 0 duplicate)
-<<<<< Function evaluation summary (ALEAT_I): 5445 total (5445 new, 0 duplicate)
-      DeltaTime: 5445 val (5445 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-PLOAS:  Min = 2.2600000000e-02  Max = 8.4830000000e-01
+<<<<< Function evaluation summary (OPTIONAL_I): 207 total (207 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 9315 total (9315 new, 0 duplicate)
+      DeltaTime: 9315 val (9315 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+PLOAS:  Min = 1.7900000000e-02  Max = 8.2350000000e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 100 total (100 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 4500 total (4500 new, 0 duplicate)
+      DeltaTime: 4500 val (4500 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+PLOAS:  Min = 1.7900000000e-02  Max = 7.6340000000e-01
 dakota_uq_users.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)

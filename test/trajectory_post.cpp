@@ -105,7 +105,8 @@ int main(int argc, char** argv)
     cerr << "Error: unsufficient hierarchical tag depth." << endl;
     exit(-1);
   }
-  string e_tag = tags[0] /* TEMPORARY HACK */ + '.' + tags[0];
+  string e_tag   = tags[0];                 // if file_tag is on
+  //string e_tag = tags[0] + '.' + tags[0]; // if file_tag is off (hack)
   for (i=1; i<num_tags-1; ++i)
     e_tag += '.' + tags[i]; // up one level from last tag
 

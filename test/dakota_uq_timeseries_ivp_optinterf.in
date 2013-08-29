@@ -13,7 +13,9 @@ method,
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
 	global_interval_est
-	  seed = 1234567 rng rnum2
+	  ego						#0
+#	  lhs						#1
+	  samples = 100 seed = 1234567 rng rnum2
 	  output verbose
 
 model,
@@ -54,7 +56,8 @@ interface,
 	fork
 	  analysis_driver = 'trajectory'
 	  work_directory named 'epistemic_simulation'
-	  directory_tag directory_save file_save
+# Note: file tagging affects the directory tag that's employed
+	  directory_tag directory_save file_tag #file_save
 	  parameters_file = 'epist_params.in'
 	  results_file    = 'epist_results.out'
 
@@ -104,7 +107,7 @@ interface,
 	fork asynchronous evaluation_concurrency = 6
 	  analysis_driver = 'trajectory_post'
 	  work_directory named 'aleatory_processing'
-	  directory_tag #directory_save file_save
+	  directory_tag directory_save file_tag file_save
 	  parameters_file = 'aleat_params.in'
 	  results_file    = 'aleat_results.out'
 	deactivate evaluation_cache
