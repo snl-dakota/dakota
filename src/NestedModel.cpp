@@ -1106,7 +1106,7 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
   if (sub_iterator_map) {
     sub_iterator_set.request_vector(sub_iterator_asv);
 
-  // sub_iterator_dvv:
+    // sub_iterator_dvv:
 
     SizetMultiArrayConstView cv_ids
       = currentVariables.continuous_variable_ids();
@@ -1165,7 +1165,7 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
   // this allows usage of the optional interface to generate data used only
   // by the sub-iterator.  Put another way, the optional interface is active
   // unless functions are present and all functions are inactive.
-  if (num_opt_interf_fns == 0)
+  if (!optInterfacePointer.empty() && num_opt_interf_fns == 0)
     opt_interface_map = sub_iterator_map;
   else // normal case of mapping optional interface fns
     for (i=0; i<num_opt_interf_fns; ++i)
@@ -1174,7 +1174,7 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
   if (opt_interface_map) {
     opt_interface_set.request_vector(opt_interface_asv);
 
-  // opt_interface_dvv:
+    // opt_interface_dvv:
 
     opt_interface_set.derivative_vector(mapped_dvv);
   }
