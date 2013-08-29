@@ -55,6 +55,8 @@ interface,
 	  analysis_driver = 'trajectory'
 	  work_directory named 'epistemic_simulation'
 	  directory_tag directory_save file_save
+	  parameters_file = 'epist_params.in'
+	  results_file    = 'epist_results.out'
 
 responses,
 	id_responses = 'OPTIONAL_I_R'
@@ -74,7 +76,7 @@ method,
           num_response_levels = 1 1
           response_levels = 0.0 0.0
           compute probabilities
-	  samples = 50000 seed = 12347
+	  samples = 10000 seed = 12347
           cumulative distribution
 
 model,
@@ -91,8 +93,8 @@ variables,
       	  lower_bounds    = 10.   0.1   10.   0.1  -0.2   5.   -0.03  0.05
 	  upper_bounds    = 20.   0.2   15.   0.3  -0.1   8.   -0.01  0.10
 	normal_uncertain = 2
-	  means          =  500.0   2000.0
-	  std_deviations =  100.0    400.0
+	  means          =  50.0   200.0
+	  std_deviations =  10.0    40.0
 	  descriptors    = 'FailThresh1' 'FailThresh2'
 
 interface,
@@ -101,6 +103,8 @@ interface,
 	  analysis_driver = 'trajectory_post'
 	  work_directory named 'aleatory_processing'
 	  directory_tag directory_save file_save
+	  parameters_file = 'aleat_params.in'
+	  results_file    = 'aleat_results.out'
 
 responses,
         id_responses = 'ALEAT_R'

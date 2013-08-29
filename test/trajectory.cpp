@@ -21,11 +21,6 @@ enum var_t { E1, E2, E3, E4, E5, E6, E7, E8, E9, E10 };
 
 int main(int argc, char** argv)
 {
-  // The Rosenbrock function may be solved as either a general minimization
-  // problem with Objective function = 100.*(x1-x0^2)^2 + (1-x0)^2
-  // or a least squares problem with Term1 = 10.*(x1-x0^2) and Term2 = (1-x0).
-  // See p. 95 in Practical Optimization by Gill, Murray, and Wright. 
-
   // This application program reads and writes parameter and response data 
   // directly so no input/output filters are needed.
   ifstream fin(argv[1]);
@@ -46,7 +41,7 @@ int main(int argc, char** argv)
   // Get the parameter vector and ignore the labels
   fin >> num_vars >> vars_text;
   map<var_t, double> vars;
-  vector<var_t> labels(num_vars);
+  //vector<var_t> labels(num_vars);
   double var_i; string label_i; var_t v_i;
   map<string, var_t>::iterator v_iter;
   for (i=0; i<num_vars; i++) {
@@ -62,7 +57,7 @@ int main(int argc, char** argv)
     else
       v_i = v_iter->second;
     vars[v_i] = var_i;
-    labels[i] = v_i;
+    //labels[i] = v_i;
   }
 
   // Get the ASV vector and ignore the labels
@@ -75,48 +70,58 @@ int main(int argc, char** argv)
 
   // Get the DVV vector and ignore the labels
   fin >> num_deriv_vars >> dvv_text;
-  vector<var_t> DVV(num_deriv_vars);
+  //vector<var_t> DVV(num_deriv_vars);
   unsigned int dvv_i;
   for (i=0; i<num_deriv_vars; i++) {
     fin >> dvv_i;
     fin.ignore(256, '\n');
-    DVV[i] = labels[dvv_i-1];
+    //DVV[i] = labels[dvv_i-1];
   }
 
-  if (num_vars != 10) {
-    cerr << "Wrong number of variables for the rosenbrock problem\n";
+  if (num_vars != 8) {
+    cerr << "Wrong number of variables for the trajectory problem\n";
     exit(-1);
   }
   // ignore num_fns
   // if (num_fns < 1 || num_fns > 2) { // 1 fn -> opt, 2 fns -> least sq
-  //   cerr << "Wrong number of functions in rosenbrock problem\n";
+  //   cerr << "Wrong number of functions in trajectory problem\n";
   //   exit(-1);
   // }
 
-  ofstream fout("time_history.dat");
-  if (!fout) {
+  ofstream hist_out("time_history.dat");
+  if (!hist_out) {
     cerr << "\nError: failure creating time history output file." << endl;
     exit(-1);
   }
-  fout.precision(15); // 16 total digits
-  fout.setf(ios::scientific);
-  fout.setf(ios::right);
+  hist_out.precision(15); // 16 total digits
+  hist_out.setf(ios::scientific);
+  hist_out.setf(ios::right);
 
   // Compute and output time step data
   size_t num_delta = 1000;
   double t0 = 0., tf = 10., delta_t = (tf - t0) / num_delta, f1, f2;
-  fout << num_delta << std::endl;
+  hist_out << num_delta << std::endl;
 
   // Compute and output time histories
   double t = t0;
   for (i=0; i<num_delta; ++i) {
     f1 = vars[E1] + t * (vars[E3] + t * (vars[E5] + t * vars[E7]));
     f2 = vars[E2] + t * (vars[E4] + t * (vars[E6] + t * vars[E8]));
-    fout << '\t' << f1 << '\t' << f2 << '\n';
+    hist_out << t << '\t' << f1 << '\t' << f2 << '\n';
     t += delta_t;
   }
 
+  hist_out.flush();
+  hist_out.close();
+
+  // create empty results file
+  ofstream fout(argv[2]);
+  if (!fout) {
+    cerr << "\nError: failure creating " << argv[2] << endl;
+    exit(-1);
+  }
   fout.flush();
   fout.close();
+
   return 0;
 }

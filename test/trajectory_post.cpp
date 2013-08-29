@@ -14,6 +14,7 @@
 #include <map>
 #include <algorithm>
 #include <cctype>
+#include <boost/algorithm/string.hpp>
 using namespace std;
 
 enum var_t { FT1,  FT2 };
@@ -21,11 +22,6 @@ enum var_t { FT1,  FT2 };
 
 int main(int argc, char** argv)
 {
-  // The Rosenbrock function may be solved as either a general minimization
-  // problem with Objective function = 100.*(x1-x0^2)^2 + (1-x0)^2
-  // or a least squares problem with Term1 = 10.*(x1-x0^2) and Term2 = (1-x0).
-  // See p. 95 in Practical Optimization by Gill, Murray, and Wright. 
-
   // This application program reads and writes parameter and response data 
   // directly so no input/output filters are needed.
   ifstream fin(argv[1]);
@@ -102,11 +98,19 @@ int main(int argc, char** argv)
 
   // Extract the hierarchical fn eval tags (required to link to opt interface)
   fin >> hier_tag; fin.ignore(256, '\n');
-
+  vector<string> tags;
+  boost::split(tags, hier_tag, boost::is_any_of(".: "));
+  size_t num_tags = tags.size();
+  if (num_tags < 2) {
+    cerr << "Error: unsufficient hierarchical tag depth." << endl;
+    exit(-1);
+  }
+  string e_tag = tags[0] /* TEMPORARY HACK */ + '.' + tags[0];
+  for (i=1; i<num_tags-1; ++i)
+    e_tag += '.' + tags[i]; // up one level from last tag
 
   // Compute and output responses
-  string h_tag_1 = hier_tag; // *** TO DO ***
-  string history = "../epistemic_simulation." + h_tag_1 + "/time_history.dat";
+  string history = "../epistemic_simulation." + e_tag + "/time_history.dat";
   ifstream hist_in(history.c_str());
   if (!fin) {
     cerr << "\nError: failure opening " << history << endl;
@@ -125,11 +129,12 @@ int main(int argc, char** argv)
   hist_in >> num_delta;
   double delta_t, t, t_prev = 0., f1, f2, f1_prev, f2_prev,
     fail_thresh1 = vars[FT1], fail_thresh2 = vars[FT2],
-    time_fail1, time_fail2;
+    time_fail1 = 0., time_fail2 = 0.;
   bool failed1 = false, failed2 = false;
 
   for (i=0; i<num_delta; ++i) {
     hist_in >> t >> f1 >> f2;
+    //cout << "Post proc: " << t << ' ' << f1 << ' ' << f2 << std::endl;
     if (ASV[0] & 1 && !failed1) {
       // check if f1 has reached failure threshold 1;
       // if yes, then linearly interpolate for failure time
@@ -158,8 +163,10 @@ int main(int argc, char** argv)
       break;
     t_prev = t;
   }
+  if (!failed1) time_fail1 = 1.e+50;
+  if (!failed2) time_fail2 = 1.e+50;
 
-  fout << time_fail1 << "failtime1\n" << time_fail2 << "failtime2\n";
+  fout << time_fail1 << " failtime1\n" << time_fail2 << " failtime2\n";
   fout.flush();
   fout.close();
   return 0;

@@ -921,14 +921,14 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
     responses, and map these to the total model response. */
 void NestedModel::derived_compute_response(const ActiveSet& set)
 {
-  // Set currentResponse asv and extract opt_interface_asv/sub_iterator_asv
+  // Set currentResponse asv and extract opt_interface_set/sub_iterator_set
   currentResponse.active_set(set);
   ActiveSet opt_interface_set, sub_iterator_set;
   bool      opt_interface_map, sub_iterator_map;
   set_mapping(set, opt_interface_set, opt_interface_map,
 	           sub_iterator_set,  sub_iterator_map);
 
-  // Perform optionalInterface map (opt_interface_asv is updated within
+  // Perform optionalInterface map (opt_interface_set is updated within
   // optInterfaceResponse by map):
   if (opt_interface_map) {
     Cout << "\n----------------------------------------------------------------"
@@ -982,14 +982,14 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
        << "NestedModel." << std::endl;
   abort_handler(-1);
 
-  // Set currentResponse asv and extract opt_interface_asv/sub_iterator_asv
+  // Set currentResponse asv and extract opt_interface_set/sub_iterator_set
   currentResponse.active_set(set);
   ActiveSet opt_interface_set, sub_iterator_set;
   bool      opt_interface_map, sub_iterator_map;
   set_mapping(set, opt_interface_set, opt_interface_map,
 	           sub_iterator_set,  sub_iterator_map);
 
-  // Perform optionalInterface map (opt_interface_asv is updated within
+  // Perform optionalInterface map (opt_interface_set is updated within
   // optInterfaceResponse by map):
   if (opt_interface_map) {
     Cout << "\n----------------------------------------------------------------"
@@ -1079,24 +1079,6 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
     abort_handler(-1);
   }
 
-  // opt_interface_asv:
-
-  // num_mapped_primary >= numOptInterfPrimary with 1-to-1 correspondence
-  // up to the cut off
-  opt_interface_map = false;
-  size_t num_opt_interf_fns = numOptInterfPrimary+num_opt_interf_con;
-  ShortArray opt_interface_asv(num_opt_interf_fns);
-  for (i=0; i<numOptInterfPrimary; ++i)
-    opt_interface_asv[i] = mapped_asv[i];
-  // num_opt_interf_con has 1-to-1 correspondence with different offsets
-  for (i=0; i<num_opt_interf_con; ++i)
-    opt_interface_asv[i+numOptInterfPrimary] = mapped_asv[i+num_mapped_primary];
-  for (i=0; i<num_opt_interf_fns; ++i)
-    if (opt_interface_asv[i])
-      { opt_interface_map = true; break; }
-  if (opt_interface_map)
-    opt_interface_set.request_vector(opt_interface_asv);
-
   // sub_iterator_asv:
 
   sub_iterator_map = false;
@@ -1121,17 +1103,11 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
       sub_iterator_map = true;
     }
   }
-  if (sub_iterator_map)
+  if (sub_iterator_map) {
     sub_iterator_set.request_vector(sub_iterator_asv);
-
-  // opt_interface_dvv:
-
-  if (opt_interface_map)
-    opt_interface_set.derivative_vector(mapped_dvv);
 
   // sub_iterator_dvv:
 
-  if (sub_iterator_map) {
     SizetMultiArrayConstView cv_ids
       = currentVariables.continuous_variable_ids();
     SizetMultiArrayConstView sm_acv_ids
@@ -1171,6 +1147,36 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
     sub_iterator_set.derivative_vector(sub_iterator_dvv);
     //Cout << "\nmapped_dvv:\n" << mapped_dvv << "\nsub_iterator_dvv:\n"
     //     << sub_iterator_dvv << '\n';
+  }
+
+  // opt_interface_asv:
+
+  // num_mapped_primary >= numOptInterfPrimary with 1-to-1 correspondence
+  // up to the cut off
+  opt_interface_map = false;
+  size_t num_opt_interf_fns = numOptInterfPrimary+num_opt_interf_con;
+  ShortArray opt_interface_asv(num_opt_interf_fns);
+  for (i=0; i<numOptInterfPrimary; ++i)
+    opt_interface_asv[i] = mapped_asv[i];
+  // num_opt_interf_con has 1-to-1 correspondence with different offsets
+  for (i=0; i<num_opt_interf_con; ++i)
+    opt_interface_asv[i+numOptInterfPrimary] = mapped_asv[i+num_mapped_primary];
+  // Special case of forcing an optional interface execution that lacks fns:
+  // this allows usage of the optional interface to generate data used only
+  // by the sub-iterator.  Put another way, the optional interface is active
+  // unless functions are present and all functions are inactive.
+  if (num_opt_interf_fns == 0)
+    opt_interface_map = sub_iterator_map;
+  else // normal case of mapping optional interface fns
+    for (i=0; i<num_opt_interf_fns; ++i)
+      if (opt_interface_asv[i])
+	{ opt_interface_map = true; break; }
+  if (opt_interface_map) {
+    opt_interface_set.request_vector(opt_interface_asv);
+
+  // opt_interface_dvv:
+
+    opt_interface_set.derivative_vector(mapped_dvv);
   }
 }
 
