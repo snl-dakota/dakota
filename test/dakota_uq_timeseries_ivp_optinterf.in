@@ -107,7 +107,8 @@ interface,
 	fork asynchronous evaluation_concurrency = 6
 	  analysis_driver = 'trajectory_post'
 	  work_directory named 'aleatory_processing'
-	  directory_tag directory_save file_tag file_save
+# Note: file tagging affects the directory tag that's employed
+	  directory_tag directory_save file_save
 	  parameters_file = 'aleat_params.in'
 	  results_file    = 'aleat_results.out'
 	deactivate evaluation_cache
