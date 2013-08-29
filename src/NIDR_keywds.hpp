@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1141 distinct keywords (plus 166 aliases) **/
+/** 1142 distinct keywords (plus 166 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1494,12 +1494,13 @@ static KeyWord
 		{"local",8,1,2,1,kw_250,0.,0.,0,N_mom(lit,surrogateType_local_taylor)},
 		{"multipoint",8,1,2,1,kw_251,0.,0.,0,N_mom(lit,surrogateType_multipoint_tana)}
 		},
-	kw_253[6] = {
+	kw_253[7] = {
+		{"hierarchical_tagging",8,0,4,0,0,0.,0.,0,N_mom(true,hierarchicalTags)},
 		{"id_model",11,0,1,0,0,0.,0.,0,N_mom(str,idModel)},
-		{"nested",8,2,4,1,kw_226,0.,0.,0,N_mom(lit,modelType_nested)},
+		{"nested",8,2,5,1,kw_226,0.,0.,0,N_mom(lit,modelType_nested)},
 		{"responses_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,responsesPointer)},
-		{"single",8,1,4,1,kw_227,0.,0.,0,N_mom(lit,modelType_single)},
-		{"surrogate",8,5,4,1,kw_252,0.,0.,0,N_mom(lit,modelType_surrogate)},
+		{"single",8,1,5,1,kw_227,0.,0.,0,N_mom(lit,modelType_single)},
+		{"surrogate",8,5,5,1,kw_252,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}
 		},
 	kw_254[5] = {
@@ -2024,7 +2025,7 @@ static KeyWord
 	kw_318[6] = {
 		{"interface",0x308,10,5,5,kw_10,0.,0.,0,N_ifm3(start,0,stop)},
 		{"method",0x308,83,2,2,kw_223,0.,0.,0,N_mdm3(start,0,stop)},
-		{"model",8,6,3,3,kw_253,0.,0.,0,N_mom3(start,0,stop)},
+		{"model",8,7,3,3,kw_253,0.,0.,0,N_mom3(start,0,stop)},
 		{"responses",0x308,19,6,6,kw_271,0.,0.,0,N_rem3(start,0,stop)},
 		{"strategy",0x108,11,1,1,kw_283,0.,0.,0,NIDRProblemDescDB::strategy_start},
 		{"variables",0x308,37,4,4,kw_317,0.,0.,0,N_vam3(start,0,stop)}

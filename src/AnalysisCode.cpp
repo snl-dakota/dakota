@@ -609,10 +609,13 @@ void AnalysisCode::read_results_files(Response& response, const int id,
       for (i=0; i<numPrograms; ++i)
 	std::remove(results_filenames[i].c_str());
 
-    // optionally remove the work_directory
-    if (useWorkdir && !dirSave) {
+    // optionally remove the work_directory 
+    // BMA: appears we only want to remove if tagged, since otherwise
+    // needs to be reused.  Later fix this.
+    //    if (useWorkdir && !dirSave) {
+    if (useWorkdir && !dirSave && dirTag) {
       std::string wd = workDir;
-      if (dirTag) {
+      //if (dirTag) {
 	// can't rely on class member due to split call to write/read 
 	String eval_id_tag = "." + boost::lexical_cast<std::string>(id);
 	if (eval_tag_prefix.empty()) {
@@ -626,7 +629,7 @@ void AnalysisCode::read_results_files(Response& response, const int id,
 	    wd += eval_id_tag;
 	}
 
-      }
+      //}
       rec_rmdir(wd.c_str());
     }
   }
