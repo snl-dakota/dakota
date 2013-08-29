@@ -149,8 +149,9 @@ protected:
   /// the results file name actually used (modified with tagging or temp files)
   std::string resultsFileName;
   /// complete evalIdTag, possibly including hierarchical tagging and
-  /// final eval id, but not program numbers
-  std::string evalIdTag;
+  /// final eval id, but not program numbers, for passing to
+  /// write_parameters_files
+  std::string fullEvalId;
   /// by default analysis code interfaces delete results files if they
   /// exist; user may override with this flag and we'll try to gather
   /// and only fork if needed

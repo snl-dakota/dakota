@@ -110,6 +110,16 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
   // BMA NOTE: We allow run without tag, but then tag at cleanup when
   // saving
 
+  // Classic behavior with no hierarchical tagging:
+  //   directory_tag: tag dirs .2  no tag files
+  //   both:          tag dirs .2  no tag files
+  //   file_tag:      no tag dirs  tag files .2
+
+  // Behavior for hierarchical tagging with eval_tag_prefix:
+  //   directory_tag: tag dirs .4.9.2  no tag files
+  //   both:          tag dirs .4.9    tag files .2
+  //   file_tag:      no tag dirs      tag files .4.9.2
+
   const ParallelConfiguration& pc = parallelLib.parallel_configuration();
   int eval_comm_rank   = parallelLib.ie_parallel_level_defined()
 	? pc.ie_parallel_level().server_communicator_rank() : 0;
@@ -121,11 +131,39 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
   size_t i, n;
 
   if (eval_comm_rank == 0 || !bcast_flag) {
-    bool fileTag = false;
-    if (fileTagFlag && !dirTag)
-      fileTag = true;
-    if (fileTag || dirTag)
-      evalIdTag = eval_tag_prefix + "." + boost::lexical_cast<std::string>(id);
+
+    // always define fullEvalId string for use in parameters files
+    String eval_id_tag = "." + boost::lexical_cast<std::string>(id);
+    fullEvalId = eval_tag_prefix + eval_id_tag;
+
+    // process options for classic or hierarchical tagging
+    String file_suffix, dir_suffix;  // endings for file and directory names
+    bool file_tag = false;
+    if (eval_tag_prefix.empty()) {
+      // classic behavior
+      if (dirTag) {
+	dir_suffix = eval_id_tag;
+      }
+      else if (fileTagFlag) {
+	file_tag = true;
+	file_suffix = eval_id_tag;
+      }
+    }
+    else {
+      // hierarchical tagging
+      if (dirTag && fileTagFlag) {
+	dir_suffix = eval_tag_prefix;
+	file_tag = true;
+	file_suffix = eval_id_tag;
+      }
+      else if (dirTag) {
+	dir_suffix = fullEvalId;
+      }
+      else if (fileTagFlag) {
+	file_tag = true;
+	file_suffix = fullEvalId;
+      }
+    }
 
     if (specifiedParamsFileName.empty()) { // no user spec -> use temp files
 //#ifdef LINUX
@@ -156,8 +194,8 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
     }
     else {
       paramsFileName = specifiedParamsFileName;
-      if (fileTag)
-	paramsFileName += evalIdTag;
+      if (file_tag)
+	paramsFileName += file_suffix;
     }
     if (specifiedResultsFileName.empty()) { // no user spec -> use temp files
 //#ifdef LINUX
@@ -188,8 +226,8 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
     }
     else {
       resultsFileName = specifiedResultsFileName;
-      if (fileTag)
-	resultsFileName += evalIdTag;
+      if (file_tag)
+	resultsFileName += file_suffix;
     }
     if (useWorkdir) {
 	if (!workDir.length()) {
@@ -223,7 +261,7 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
             }
             haveWorkdir = true;
 	  }
-          wd += evalIdTag;
+          wd += dir_suffix;
 	}
 
 	if (!haveTemplateDir) {
@@ -305,7 +343,7 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
     if (eval_comm_rank == 0) {
       // pack the buffer with root file names for the evaluation
       MPIPackBuffer send_buffer;
-      send_buffer << paramsFileName << resultsFileName << evalIdTag;
+      send_buffer << paramsFileName << resultsFileName << fullEvalId;
       // bcast buffer length so that other procs can allocate MPIUnpackBuffer
       //int buffer_len = send_buffer.len();
       //parallelLib.bcast_e(buffer_len);
@@ -320,7 +358,7 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
       //MPIUnpackBuffer recv_buffer(buffer_len);
       MPIUnpackBuffer recv_buffer(512); // 512 should be plenty for 2 filenames
       parallelLib.bcast_e(recv_buffer);
-      recv_buffer >> paramsFileName >> resultsFileName >> evalIdTag;
+      recv_buffer >> paramsFileName >> resultsFileName >> fullEvalId;
     }
   }
 }
@@ -455,9 +493,12 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
     parameter_stream << sp20 << "{ DAKOTA_AN_COMPS = " << setw(w) << ac_len
 		     << " }\n";
     array_write_aprepro(parameter_stream, an_comps, ac_labels);
-    // write full eval ID tag, without leading period
+    // write full eval ID tag, without leading period, converting . to :
+    String full_eval_id(fullEvalId);
+    full_eval_id.erase(0,1); 
+    boost::algorithm::replace_all(full_eval_id, String("."), String(":"));
     parameter_stream << sp20 << "{ DAKOTA_EVAL_ID  = " << setw(w) 
-		     << evalIdTag.erase(0,1) << " }\n";
+		     << full_eval_id << " }\n";
     //parameter_stream << resetiosflags(ios::adjustfield);
   }
   else {
@@ -471,7 +512,10 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
     parameter_stream << sp21 << setw(w) << ac_len  << " analysis_components\n";
     array_write(parameter_stream, an_comps, ac_labels);
     // write full eval ID tag, without leading period
-    parameter_stream << sp21 << setw(w) << evalIdTag.erase(0,1) << " eval_id\n";
+    String full_eval_id(fullEvalId);
+    full_eval_id.erase(0,1); 
+    boost::algorithm::replace_all(full_eval_id, String("."), String(":"));
+    parameter_stream << sp21 << setw(w) << full_eval_id << " eval_id\n";
     //parameter_stream << resetiosflags(ios::adjustfield);
   }
   write_precision = prec; // restore
@@ -565,10 +609,24 @@ void AnalysisCode::read_results_files(Response& response, const int id,
       for (i=0; i<numPrograms; ++i)
 	std::remove(results_filenames[i].c_str());
 
-    if (useWorkdir && !dirSave && dirTag) {
-      // can't rely on class member due to split call to write/read 
-      const std::string wd = workDir + eval_tag_prefix +
-	'.' + boost::lexical_cast<std::string>(id);
+    // optionally remove the work_directory
+    if (useWorkdir && !dirSave) {
+      std::string wd = workDir;
+      if (dirTag) {
+	// can't rely on class member due to split call to write/read 
+	String eval_id_tag = "." + boost::lexical_cast<std::string>(id);
+	if (eval_tag_prefix.empty()) {
+	  // classic behavior
+	  wd += eval_id_tag;   
+	}
+	else {
+	  // hierarchical tagging
+	  wd += eval_tag_prefix;
+	  if (!fileTagFlag)
+	    wd += eval_id_tag;
+	}
+
+      }
       rec_rmdir(wd.c_str());
     }
   }
@@ -583,10 +641,19 @@ void AnalysisCode::read_results_files(Response& response, const int id,
       Cout << "Files with nonunique names will be tagged for file_save:\n";
 
     // can't rely on class member due to split call to write/read 
-    const std::string ctr_tag = 
-      eval_tag_prefix + "." + boost::lexical_cast<std::string>(id);
+    String file_suffix;
+    if (eval_tag_prefix.empty()) {
+      // classic behavior
+      file_suffix = "." + boost::lexical_cast<std::string>(id);
+    }
+    else {
+      // hierarchical tagging (in this block dirTag is false, so all
+      // the tags are on the file name)
+      file_suffix = eval_tag_prefix + "." + boost::lexical_cast<std::string>(id);
+    }
+
     if (!specifiedParamsFileName.empty()) {
-      const std::string new_str = specifiedParamsFileName + ctr_tag;
+      const std::string new_str = specifiedParamsFileName + file_suffix;
       if (!multipleParamsFiles || !iFilterName.empty()) {
 	if (!suppressOutputFlag && outputLevel > NORMAL_OUTPUT)
 	  Cout << "Moving " << specifiedParamsFileName << " to " << new_str
@@ -606,7 +673,7 @@ void AnalysisCode::read_results_files(Response& response, const int id,
       }
     }
     if (!specifiedResultsFileName.empty()) {
-      const std::string new_str = specifiedResultsFileName + ctr_tag;
+      const std::string new_str = specifiedResultsFileName + file_suffix;
       if (numPrograms == 1 || !oFilterName.empty()) {
         if (!suppressOutputFlag && outputLevel > NORMAL_OUTPUT)
           Cout << "Moving " << specifiedResultsFileName << " to "
