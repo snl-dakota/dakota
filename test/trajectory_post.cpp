@@ -40,10 +40,10 @@ int main(int argc, char** argv)
   fin >> num_vars >> text;
   map<var_t, double> vars;
   //vector<var_t> labels(num_vars);
-  double var_i; string label_i; var_t v_i;
+  double value_i; string label_i; //var_t v_i;
   map<string, var_t>::iterator v_iter;
   for (i=0; i<num_vars; i++) {
-    fin >> var_i >> label_i;
+    fin >> value_i >> label_i;
     transform(label_i.begin(), label_i.end(), label_i.begin(),
 	      (int(*)(int))tolower);
     v_iter = var_t_map.find(label_i);
@@ -54,15 +54,15 @@ int main(int argc, char** argv)
     // }
     // else
     //   v_i = v_iter->second;
-    // vars[v_i] = var_i;
+    // vars[v_i] = value_i;
     // labels[i] = v_i;
 
     // ignore any epistemic variables; only need the failure thresholds
     if (v_iter != var_t_map.end())
-      { v_i = v_iter->second; vars[v_i] = var_i; }
+      vars[v_iter->second] = value_i;
   }
   if (vars.size() != 2) {
-    cerr << "Wrong number of variables for trajectory_post\n";
+    cerr << "Error: wrong number of variables for trajectory_post().\n";
     exit(-1);
   }
 
@@ -73,8 +73,8 @@ int main(int argc, char** argv)
     fin >> ASV[i];
     fin.ignore(256, '\n');
   }
-  if (num_fns < 1 || num_fns > 2) {
-    cerr << "Wrong number of functions in trajectory_post\n";
+  if (num_fns != 1) {
+    cerr << "Error: wrong number of functions in trajectory_post().\n";
     exit(-1);
   }
 
@@ -127,46 +127,53 @@ int main(int argc, char** argv)
 
   size_t num_delta;
   hist_in >> num_delta;
-  double delta_t, t, t_prev = 0., f1, f2, f1_prev, f2_prev,
-    fail_thresh1 = vars[FT1], fail_thresh2 = vars[FT2],
-    time_fail1 = 0., time_fail2 = 0.;
-  bool failed1 = false, failed2 = false;
+  double delta_t, t, t_prev, time_fail1, time_fail2, f1, f2, f1_prev, f2_prev,
+    fail_thresh1 = vars[FT1], fail_thresh2 = vars[FT2];
+  bool failed1 = false, failed2 = false, last_step;
 
-  for (i=0; i<num_delta; ++i) {
+  hist_in >> t_prev >> f1_prev >> f2_prev; // initial time step
+  //cout << "Init: " << t_prev << ' ' << f1_prev << ' ' << f2_prev << std::endl;
+
+  for (i=1; i<num_delta; ++i) {
     hist_in >> t >> f1 >> f2;
-    //cout << "Post proc: " << t << ' ' << f1 << ' ' << f2 << std::endl;
-    if (ASV[0] & 1 && !failed1) {
-      // check if f1 has reached failure threshold 1;
-      // if yes, then linearly interpolate for failure time
-      if (f1 >= fail_thresh1) {
+    //cout << "Step: " << t << ' ' << f1 << ' ' << f2 << std::endl;
+
+    last_step = (i == num_delta-1);
+    if (!failed1) {
+      // Check if f1 has reached failure threshold 1;
+      // if yes, then linearly interpolate for failure time.
+      // Or if last time step, linearly extrapolate for failure time.
+      if (f1 >= fail_thresh1 || last_step) {
 	time_fail1 = t_prev +
 	  (fail_thresh1 - f1_prev) / (f1 - f1_prev) * (t - t_prev);
 	failed1 = true;
+	//cout << "Fail 1: " <<  time_fail1 << std::endl;
       }
       else
 	f1_prev = f1;
     }
 
-    if (ASV[1] & 1) {
-      // check if f2 has reached failure threshold 2;
-      // if yes, then linearly interpolate for failure time
-      if (f2 >= fail_thresh2) {
+    if (!failed2) {
+      // Check if f2 has reached failure threshold 2;
+      // if yes, then linearly interpolate for failure time.
+      // Or if last time step, linearly extrapolate for failure time.
+      if (f2 >= fail_thresh2 || last_step) {
 	time_fail2 = t_prev +
 	  (fail_thresh2 - f2_prev) / (f2 - f2_prev) * (t - t_prev);
 	failed2 = true;
+	//cout << "Fail 2: " <<  time_fail2 << std::endl;
       }
       else
 	f2_prev = f2;
     }
+
     // break out if done
     if (failed1 && failed2)
       break;
     t_prev = t;
   }
-  if (!failed1) time_fail1 = 1.e+50;
-  if (!failed2) time_fail2 = 1.e+50;
 
-  fout << time_fail1 << " failtime1\n" << time_fail2 << " failtime2\n";
+  fout << time_fail2 - time_fail1 << " deltafailtime\n";
   fout.flush();
   fout.close();
   return 0;

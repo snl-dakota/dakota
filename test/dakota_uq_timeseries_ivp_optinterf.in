@@ -24,8 +24,7 @@ model,
 	  optional_interface_responses_pointer = 'OPTIONAL_I_R'
           sub_method_pointer = 'ALEATORY'
           responses_pointer  = 'EPIST_R'
-          primary_response_mapping   = 0. 0. 1. 0. 0. 0.
-                                       0. 0. 0. 0. 0. 1.
+          primary_response_mapping   = 0. 0. 1.
 	hierarchical_tagging
 
 variables,
@@ -41,8 +40,8 @@ variables,
 
 responses,
         id_responses = 'EPIST_R'
-        response_functions = 2
-        response_descriptors = 'pf_1' 'pf_2'
+        response_functions = 1
+        response_descriptors = 'PLOAS'
         no_gradients
         no_hessians
   
@@ -51,6 +50,7 @@ responses,
 ##########################################
 interface,
 	id_interface = 'OPTIONAL_I'
+# make this part synchronous
 	fork
 	  analysis_driver = 'trajectory'
 	  work_directory named 'epistemic_simulation'
@@ -73,10 +73,9 @@ method,
 	polynomial_chaos
 	  askey non_nested
 	  sparse_grid_level = 3
-          num_response_levels = 1 1
-          response_levels = 0.0 0.0
+          response_levels = 0.0
           compute probabilities
-	  samples = 10000 seed = 12347
+	  samples = 10000 seed = 12347 fixed_seed
           cumulative distribution
 
 model,
@@ -89,27 +88,31 @@ model,
 
 variables,
         id_variables = 'ALEAT_V'
+# inactive variables passed from outer epistemic loop (placeholder spec)
         continuous_interval_uncertain = 8
       	  lower_bounds    = 10.   0.1   10.   0.1  -0.2   5.   -0.03  0.05
 	  upper_bounds    = 20.   0.2   15.   0.3  -0.1   8.   -0.01  0.10
+# active variables on inner aleatory loop
 	normal_uncertain = 2
-	  means          =  50.0   200.0
-	  std_deviations =  10.0    40.0
+	  means          =   80.0   300.0
+	  std_deviations =   20.0    75.0
 	  descriptors    = 'FailThresh1' 'FailThresh2'
 
 interface,
 	id_interface = 'ALEAT_I'
-	fork
+# this part may execute asynchronously
+	fork asynchronous evaluation_concurrency = 6
 	  analysis_driver = 'trajectory_post'
 	  work_directory named 'aleatory_processing'
-	  directory_tag directory_save file_save
+	  directory_tag #directory_save file_save
 	  parameters_file = 'aleat_params.in'
 	  results_file    = 'aleat_results.out'
+	deactivate evaluation_cache
 
 responses,
         id_responses = 'ALEAT_R'
-        response_functions = 2
-        response_descriptors = 'FailTime1' 'FailTime2'
+        response_functions = 1
+        response_descriptors = 'DeltaTime'
         no_gradients
         no_hessians
 
