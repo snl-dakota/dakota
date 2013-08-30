@@ -175,9 +175,23 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 
 	if (tensorRegression) { // structured grid: uniform sub-sampling of TPQ
 	  UShortArray dim_quad_order;
-	  if ( expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION )
+	  if ( expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ) {
 	    dim_quad_order
 	      = probDescDB.get_usa("method.nond.tensor_grid_order");
+	    size_t ord_len = dim_quad_order.size();
+	    if (ord_len != numContinuousVars) {
+	      if (ord_len == 1) {
+		unsigned short ord0 = dim_quad_order[0];
+		dim_quad_order.assign(numContinuousVars, ord0);
+	      }
+	      else {
+		PCerr << "Error: tensor_grid specification length (" << ord_len
+		      << ") does not match number of active variables ("
+		      << numContinuousVars << ")."<< std::endl;
+		abort_handler(-1);
+	      }
+	    }
+	  }
 	  else {
 	    // define nominal quadrature order as exp_order + 1
 	    // (m > p avoids most of the 0's in the Psi measurement matrix)
