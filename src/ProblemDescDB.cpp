@@ -1418,6 +1418,7 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 	{"nond.expansion_order", P expansionOrder},
 	{"nond.quadrature_order", P quadratureOrder},
 	{"nond.sparse_grid_level", P sparseGridLevel},
+	{"nond.tensor_grid_order", P tensorGridOrder},
 	{"partitions", P varPartitions}};
     #undef P
 
@@ -2368,7 +2369,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.calibrate_sigma", P calibrateSigmaFlag},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.piecewise_basis", P piecewiseBasis},
-	{"nond.tensor_grid", P structGridFlag},
+	{"nond.tensor_grid", P tensorGridFlag},
 	{"print_each_pop", P printPopFlag},
 	{"pstudy.file_annotated", P pstudyFileAnnotated},
 	{"quality_metrics", P volQualityFlag},

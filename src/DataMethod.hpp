@@ -705,10 +705,14 @@ public:
   /// sets or data import using the \c reuse_points specification in
   /// \ref MethodNonDPCE
   String pointReuse;
-  /// flag for usage of a filtered set of tensor-product grid points
+  /// flag for usage of a sub-sampled set of tensor-product grid points
   /// within regression PCE; based on the \c tensor_grid specification
   /// in \ref MethodNonDPCE
-  bool structGridFlag;
+  bool tensorGridFlag;
+  /// order of tensor-product grid points that are sub-sampled within
+  /// orthogonal least interpolation PCE; based on the \c tensor_grid
+  /// specification in \ref MethodNonDPCE
+  UShortArray tensorGridOrder;
   /// the \c expansion_import_file specification in \ref MethodNonDPCE
   String expansionImportFile;
   /// the \c sample_type specification in \ref MethodNonDMC, \ref

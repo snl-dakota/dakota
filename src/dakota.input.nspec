@@ -467,7 +467,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			    ]
 			    [ cross_validation {N_mdm(true,crossValidation)} ]
 		            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-			    [ tensor_grid {N_mdm(true,structGridFlag)} ]
+			    [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
 		            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
 		          )
 		    	  |
@@ -486,7 +486,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      	collocation_points INTEGER >= 0 {N_mdm(nnint,collocationPoints)}
 			[ cross_validation {N_mdm(true,crossValidation)} ]
 #		        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-			[ tensor_grid {N_mdm(true,structGridFlag)} ]
+			[ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
 		        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
 	        	[ import_points_file STRING {N_mdm(str,approxImportFile)} 
                    	  [ annotated {N_mdm(true,approxImportAnnotated)} | 

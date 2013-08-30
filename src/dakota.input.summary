@@ -685,7 +685,7 @@ KEYWORD12 method
 	  ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli
 	    collocation_points INTEGER >= 0
 	    [ cross_validation ]
-	    [ tensor_grid ]
+	    [ tensor_grid INTEGERLIST ]
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ import_points_file STRING
 	      [ annotated

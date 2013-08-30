@@ -157,38 +157,34 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	if (colloc_pts >= 0)
 	  numSamplesOnModel = colloc_pts;
 	
-	if ( expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION )
-	  {
-	    size_t exp_terms
-	      = Pecos::PolynomialApproximation::total_order_terms(exp_order);
-
-	    termsOrder
-	      = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
-	    if (colloc_pts >= 0) {
-	      // numSamplesOnModel = colloc_pts;
-	      // define collocRatio for use in uniform refinement
-	      collocRatio
-		= terms_samples_to_ratio(exp_terms, colloc_pts, termsOrder);
-	    }
-	    else if (collocRatio > 0.)
-	      numSamplesOnModel
-		= terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+	if ( expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION ) {
+	  size_t exp_terms
+	    = Pecos::PolynomialApproximation::total_order_terms(exp_order);
+	  termsOrder
+	    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
+	  if (colloc_pts >= 0) {
+	    // numSamplesOnModel = colloc_pts;
+	    // define collocRatio for use in uniform refinement
+	    collocRatio
+	      = terms_samples_to_ratio(exp_terms, colloc_pts, termsOrder);
 	  }
+	  else if (collocRatio > 0.)
+	    numSamplesOnModel
+	      = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+	}
 
-	if (tensorRegression) {// "probabilistic collocation": subset of TPQ pts
-	  // define nominal quadrature order as exp_order + 1
-	  // (m > p avoids most of the 0's in the Psi measurement matrix)
-	  UShortArray dim_quad_order(numContinuousVars);
-	  if ( expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION )
-	    {
-	      for (size_t i=0; i<numContinuousVars; ++i)//misses nested increment
-		dim_quad_order[i] = exp_order[i] + 1;
-	    }
-	  else
-	    {
-	      for (size_t i=0; i<numContinuousVars; ++i)//misses nested increment
-		dim_quad_order[i] = 1;
-	    }
+	if (tensorRegression) { // structured grid: uniform sub-sampling of TPQ
+	  UShortArray dim_quad_order;
+	  if ( expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION )
+	    dim_quad_order
+	      = probDescDB.get_usa("method.nond.tensor_grid_order");
+	  else {
+	    // define nominal quadrature order as exp_order + 1
+	    // (m > p avoids most of the 0's in the Psi measurement matrix)
+	    dim_quad_order.resize(numContinuousVars);
+	    for (size_t i=0; i<numContinuousVars; ++i)//misses nested increment
+	      dim_quad_order[i] = exp_order[i] + 1;
+	  }
 	  
 	  // define order sequence for input to NonDQuadrature
 	  UShortArray quad_order_seq(1); // one level of refinement
@@ -207,7 +203,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  // don't allow data import (currently permissible in input spec)
 	  pt_reuse.clear(); import_pts_file.clear();
 	}
-	else { // "point collocation": unstructured grid with LHS samples
+	else { // unstructured grid: LHS samples
 	  // if reusing samples within a refinement strategy, ensure different
 	  // random numbers are generated for points within the grid (even if
 	  // the number of samples differs)

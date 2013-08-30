@@ -62,7 +62,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     { eifFlag = false; gpModelFlag = true; }
   else if (opt_alg == "ea")
     eifFlag = gpModelFlag = false;
-  else if (opt_alg.empty()) 
+  else if (opt_alg.empty())
     { gpModelFlag = true; eifFlag = (discrete) ? false : true; }
   else {
     Cerr << "Error: unsupported optimization algorithm selection in "

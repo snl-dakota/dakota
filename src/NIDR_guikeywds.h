@@ -989,7 +989,7 @@ static GuiKeyWord
 		{"import_points_file",11,2,5,0,717,kw_160},
 		{"reuse_points",8,0,4,0,715},
 		{"reuse_samples",0,0,4,0,714},
-		{"tensor_grid",8,0,3,0,713}
+		{"tensor_grid",13,0,3,0,713}
 		},
 	kw_162[3] = {
 		{"decay",8,0,1,1,627},

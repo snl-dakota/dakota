@@ -5247,6 +5247,7 @@ static UShortArray
         MP_(expansionOrder),
         MP_(quadratureOrder),
 	MP_(sparseGridLevel),
+        MP_(tensorGridOrder),
 	MP_(varPartitions);
 
 static String
@@ -5286,7 +5287,7 @@ static bool
 	MP_(regressDiag),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
-	MP_(structGridFlag),
+	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
 	MP_(vbdFlag),
