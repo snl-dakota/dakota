@@ -1141,6 +1141,14 @@ KEYWORD12 method
 	  |
 	  ( gpmsa
 	    emulator_samples INTEGER
+	    [ import_points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
+	    [ export_points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
 	    [ rejection
 	      standard
 	      | delayed

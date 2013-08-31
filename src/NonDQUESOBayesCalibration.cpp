@@ -276,6 +276,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues,
                                     paramInitials, proposalCovMatrix);
 
+  //ip.solveWithBayesMLSampling();
   // Return
   delete proposalCovMatrix;
   delete calIpMhOptionsValues;

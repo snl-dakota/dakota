@@ -51,6 +51,8 @@ NonDGPMSABayesCalibration::NonDGPMSABayesCalibration(Model& model):
   randomSeed(probDescDB.get_int("method.random_seed")),
   proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
+  approxImportFile(probDescDB.get_string("method.import_points_file")),
+  approxImportAnnotated(probDescDB.get_bool("method.import_points_file_annotated")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
 {   
   const String& rng = probDescDB.get_string("method.random_number_generator");
@@ -71,7 +73,10 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // construct emulatorModel, if needed
   //NonDBayesCalibration::quantify_uncertainty();
  
-  lhsIter.run_iterator(Cout);
+  Cout << "import points file "<< approxImportFile;
+  Cout << "import points annotated " << approxImportAnnotated;
+  if (approxImportFile.empty())
+    lhsIter.run_iterator(Cout);
   // instantiate QUESO objects and execute
   NonDGPMSAInstance=this;
   Cout << "Rejection type  "<< rejectionType << '\n';
@@ -209,31 +214,34 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "Extra Simulation Grid Vec1 " << extraSimulationGridVec_forUvel << '\n';
   Cout << "Extra Simulation Grid Vec2 " << extraSimulationGridVec_forVvel << '\n';
 
-  const RealMatrix&  all_samples = lhsIter.all_samples();
-  const IntResponseMap& all_resp = lhsIter.all_responses();
   RealVector temp_cvars;
-  int i,j,k;
   uqGslVectorClass gsl_cvars(paramSpace.zeroVector());
   uqGslVectorClass gsl_configvars(config_x_space.zeroVector());
-  for (i = 0; i < num_simulations; ++i) {
-    temp_cvars = Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(all_samples), i);
-    for (j=0; j<numUncertainVars;++j){
-      gsl_cvars[j]=temp_cvars[j];
-      Cout << "temp_cvars j" << temp_cvars[j] << '\n';
-    }
-    for (j=0; j<numUncertainVars;++j)
-      (*(paramVecs[i]))[j] = gsl_cvars[j];
-    Cout << *(paramVecs[i]) << '\n';
+  int i,j,k;
+  if (approxImportFile.empty())
+  { 
+    const RealMatrix&  all_samples = lhsIter.all_samples();
+    const IntResponseMap& all_resp = lhsIter.all_responses();
+    for (i = 0; i < num_simulations; ++i) {
+      temp_cvars = Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(all_samples), i);
+      for (j=0; j<numUncertainVars;++j){
+        gsl_cvars[j]=temp_cvars[j];
+        Cout << "temp_cvars j" << temp_cvars[j] << '\n';
+      }
+      for (j=0; j<numUncertainVars;++j)
+        (*(paramVecs[i]))[j] = gsl_cvars[j];
+      Cout << *(paramVecs[i]) << '\n';
     //for (j=0; j<numStateVars;++j) {
     //  gsl_configvars[j]=temp_cvars[j+numUncertainVars];
     //  Cout << "config_vars j" << temp_cvars[j+numUncertainVars] << '\n';
     //}
-    for (j=0; j<numStateVars;++j)
+     // for (j=0; j<numStateVars;++j)
     //  (*(simulationScenarios[i]))[j] = gsl_configvars[j];
     // Cout << *(simulationScenarios[i]) << '\n';
-      (*(simulationScenarios[i]))[0]=0.5;
-    Cout << *(simulationScenarios[i]) << '\n';
-  }
+        (*(simulationScenarios[i]))[0]=0.5;
+      Cout << *(simulationScenarios[i]) << '\n';
+    }
+
   //(*(paramVecs[0]))[0]=0.2105;
   //(*(paramVecs[1]))[0]=0.1795;
   //(*(paramVecs[2]))[0]=0.1167;
@@ -265,16 +273,42 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  // (*(simulationScenarios[2]))[0] = 0.5;
 
 
-  IntRespMCIter resp_it = all_resp.begin();
-  for (j=0, resp_it=all_resp.begin(); j<num_simulations; ++j, ++resp_it) {
-    RealVector temp_resp(numFunctions);
-    for (k=0; k<numFunctions; k++)
-      temp_resp(k) = resp_it->second.function_value(k);
-    for (k=0; k<numFunctions; k++)
-      (*(outputVecs[j]))[k]=temp_resp[k];
+    IntRespMCIter resp_it = all_resp.begin();
+    for (j=0, resp_it=all_resp.begin(); j<num_simulations; ++j, ++resp_it) {
+      RealVector temp_resp(numFunctions);
+      for (k=0; k<numFunctions; k++)
+        temp_resp(k) = resp_it->second.function_value(k);
+      for (k=0; k<numFunctions; k++)
+        (*(outputVecs[j]))[k]=temp_resp[k];
     //Cout << "temp_resp " << temp_resp << '\n';
-    Cout << *(outputVecs[j]) << '\n';
+      Cout << *(outputVecs[j]) << '\n';
+    }
   }
+  else {
+    bool verbose=(outputLevel>NORMAL_OUTPUT);
+    RealMatrix the_data;
+    TabularIO::read_data_tabular(approxImportFile,"GPMSA input points",the_data,num_simulations,(numUncertainVars+numFunctions),approxImportAnnotated,verbose); 
+    RealVector temp_resp(numFunctions);
+    for (i = 0; i < num_simulations; ++i) {
+      for (j=0; j<(numUncertainVars);++j){
+        //if (j<numUncertainVars) {
+         gsl_cvars[j]=the_data[j][i];
+         Cout << "gsl_cvars j" << gsl_cvars[j] << '\n';
+        //} 
+        //else
+        //temp_resp[j-3] = the_data[j][i];
+      }
+      for (j=0; j<numUncertainVars;++j)
+        (*(paramVecs[i]))[j] = gsl_cvars[j];
+      Cout << *(paramVecs[i]) << '\n';
+      for (k=0; k<numFunctions; k++)
+        (*(outputVecs[i]))[k]=the_data[numUncertainVars+k][i];
+      Cout << *(outputVecs[i]) << '\n';
+      (*(simulationScenarios[i]))[0]=0.5;
+      Cout << *(simulationScenarios[i]) << '\n';
+    }
+
+  } 
     //(*(simulationScenarios[i]))[0] = inputSimulScenarioVector [i];
     //(*(paramVecs          [i]))[0] = inputSimulParameterVector[i];
     //outputVecs[i] = ;
@@ -301,8 +335,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   smVarOptions->m_b_rho_w = 0.1;
   smVarOptions->m_a_eta = 5.;
   smVarOptions->m_b_eta = 0.005;
-  smVarOptions->m_a_s = 3.;
-  smVarOptions->m_b_s = 0.003;
+  smVarOptions->m_a_s = 1.;
+  smVarOptions->m_b_s = 0.0001;
 
   //simOptionsValues->m_ov.zeroRelativeSingularValue = 0.0;
   //simOptionsValues->m_ov.cdfThresholdForPEta = 0.95;
@@ -398,31 +432,31 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   //(*(experimentScenarios[0]))[0] = 0.1; // 'x_1' in paper; Radius in tower example
 
 	 (*(extraExperimentGridVecs_forUvel[0]))[0] = 0.00000E+0;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[1] = 5.47945E-3;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[2] = 8.21918E-3;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[3] = 1.64384E-2;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[4] = 3.01370E-2;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[5] = 4.65753E-2;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[6] = 6.30137E-2;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[7] = 9.86301E-2;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[8] = 1.36986E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[9] = 1.56164E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[10] = 1.97260E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[11] = 2.98630E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[12] = 4.00000E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[13] = 4.98630E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[14] = 6.02740E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[15] = 7.01370E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[16] = 7.97260E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[17] = 8.38356E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[18] = 8.68493E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[19] = 8.98630E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[20] = 9.34247E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[21] = 9.50685E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[22] = 9.64384E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[23] = 9.78082E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[24] = 9.89041E-1;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[25] = 9.91781E-1;   
+	 (*(extraExperimentGridVecs_forUvel[0]))[1] = 0.008219;   
+	 (*(extraExperimentGridVecs_forUvel[0]))[2] = 0.010959;   
+         (*(extraExperimentGridVecs_forUvel[0]))[3] = 0.021918;
+	 (*(extraExperimentGridVecs_forUvel[0]))[4] = 0.035616;
+ 	 (*(extraExperimentGridVecs_forUvel[0]))[5] = 0.049315;
+	 (*(extraExperimentGridVecs_forUvel[0]))[6] = 0.065753;
+	 (*(extraExperimentGridVecs_forUvel[0]))[7] = 0.10137;
+	 (*(extraExperimentGridVecs_forUvel[0]))[8] = 0.131507;
+ 	 (*(extraExperimentGridVecs_forUvel[0]))[9] = 0.161644;
+	 (*(extraExperimentGridVecs_forUvel[0]))[10] = 0.20274;
+	 (*(extraExperimentGridVecs_forUvel[0]))[11] = 0.29863;
+	 (*(extraExperimentGridVecs_forUvel[0]))[12] = 0.39726;
+	 (*(extraExperimentGridVecs_forUvel[0]))[13] = 0.50137;
+	 (*(extraExperimentGridVecs_forUvel[0]))[14] = 0.6;
+	 (*(extraExperimentGridVecs_forUvel[0]))[15] = 0.70137;
+	 (*(extraExperimentGridVecs_forUvel[0]))[16] = 0.80274;
+	 (*(extraExperimentGridVecs_forUvel[0]))[17] = 0.843836;
+	 (*(extraExperimentGridVecs_forUvel[0]))[18] = 0.863014;
+	 (*(extraExperimentGridVecs_forUvel[0]))[19] = 0.9013699;
+	 (*(extraExperimentGridVecs_forUvel[0]))[20] = 0.9369863;
+	 (*(extraExperimentGridVecs_forUvel[0]))[21] = 0.9534247;
+	 (*(extraExperimentGridVecs_forUvel[0]))[22] = 0.969863;
+	 (*(extraExperimentGridVecs_forUvel[0]))[23] =  0.9835616;
+	 (*(extraExperimentGridVecs_forUvel[0]))[24] = 0.99178082;
+	 (*(extraExperimentGridVecs_forUvel[0]))[25] = 0.99452055;
 	 (*(extraExperimentGridVecs_forUvel[0]))[26] = 1.00000E+0;  
  	 (*(extraExperimentGridVecs_forVvel[0]))[0] = 5.55112E-17;  
 	 (*(extraExperimentGridVecs_forVvel[0]))[1] = 8.06452E-3;   
@@ -517,12 +551,14 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "Got to line 367A " << '\n';
   for (unsigned int i = 0; i < numExperiments; ++i) {
     for (unsigned int j = 0; j < experimentDims[i] ; ++j) {
-      (*(experimentMats_original[i]))(j,j) = 1.;
+      (*(experimentMats_original[i]))(j,j) = 0.0001;
     }
   }
 
   for (unsigned int i = 0; i < numExperiments; ++i) {
-    *(experimentMats_transformed[i]) = *(experimentMats_original[i]);
+    for (unsigned int j = 0; j < experimentDims[i] ; ++j) {
+      (*(experimentMats_transformed[i]))(j,j) = (*(experimentMats_original[i]))(j,j)/simulationModel.etaSeq_allStd();
+    }
   }
 
   //***********************************************************************
@@ -550,8 +586,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // 'K_eta' is 'Ksim' in the GPMSA tower example document (page 9)
   //  'K_i' is 'Kobs' in the GPMSA tower example document (page 9)
   //***********************************************************************
-  unsigned int num_delta_bases_forUvel = 7;
-  unsigned int num_delta_bases_forVvel = 7;
+  unsigned int num_delta_bases_forUvel = 13;
+  unsigned int num_delta_bases_forVvel = 13;
   unsigned int num_delta_bases =  num_delta_bases_forUvel + num_delta_bases_forVvel; // number of experiment basis; 'p_delta' in paper; 13 in tower example
 
   double kernelSigma = 0.1;
@@ -568,19 +604,31 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   uqVectorSpaceClass<uqGslVectorClass,uqGslMatrixClass> delta_space(*env, "delta_space", num_delta_bases, NULL);
   uqGslVectorClass kernelCenters(delta_space.zeroVector());
   kernelCenters[ 0] = 0.0; // For 'u' velocity
-  kernelCenters[ 1] = 0.1;
-  kernelCenters[ 2] = 0.3;
-  kernelCenters[ 3] = 0.5;
-  kernelCenters[ 4] = 0.7;
-  kernelCenters[ 5] = 0.9;
-  kernelCenters[ 6] = 1.0;
-  kernelCenters[ 7] = 0.0; // For 'v' velocity
-  kernelCenters[ 8] = 0.1;
-  kernelCenters[ 9] = 0.3;
-  kernelCenters[10] = 0.5;
-  kernelCenters[11] = 0.7;
-  kernelCenters[12] = 0.9;
-  kernelCenters[13] = 1.0;
+  kernelCenters[ 1] = 0.02;
+  kernelCenters[ 2] = 0.04;
+  kernelCenters[ 3] = 0.07;
+  kernelCenters[ 4] = 0.1;
+  kernelCenters[ 5] = 0.2;
+  kernelCenters[ 6] = 0.3;
+  kernelCenters[ 7] = 0.5; // For 'v' velocity
+  kernelCenters[ 8] = 0.7;
+  kernelCenters[ 9] = 0.9;
+  kernelCenters[10] = 0.96;
+  kernelCenters[11] = 0.98;
+  kernelCenters[12] = 1.0;
+  kernelCenters[13] = 0.0; // For 'u' velocity
+  kernelCenters[14] = 0.02;
+  kernelCenters[15] = 0.04;
+  kernelCenters[16] = 0.07;
+  kernelCenters[17] = 0.1;
+  kernelCenters[18] = 0.2;
+  kernelCenters[19] = 0.3;
+  kernelCenters[20] = 0.5; // For 'v' velocity
+  kernelCenters[21] = 0.7;
+  kernelCenters[22] = 0.9;
+  kernelCenters[23] = 0.96;
+  kernelCenters[24] = 0.98;
+  kernelCenters[25] = 1.0;
 
   uqGslMatrixClass DsimMat(*env,n_eta_space.map(),num_delta_bases); // Important matrix (not mentioned on paper)
   uqGslVectorClass DsimCol(n_eta_space.zeroVector());
@@ -845,13 +893,13 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   uqEmOptionsValuesClass *emVarOptions = NULL;
   emVarOptions = new uqEmOptionsValuesClass();
   emVarOptions->m_Gvalues.resize(1,0.);
-  emVarOptions->m_Gvalues[0] = 14;
+  emVarOptions->m_Gvalues[0] = 26;
   emVarOptions->m_a_v = 1.;
   emVarOptions->m_b_v = 0.001;
   emVarOptions->m_a_rho_v = 1.;
   emVarOptions->m_b_rho_v = 0.1;
-  emVarOptions->m_a_y = 1.;
-  emVarOptions->m_b_y = 0.001;
+  emVarOptions->m_a_y = 1000.;
+  emVarOptions->m_b_y = 1000.;
 
 
   experimentModelPtr = new uqExperimentModelClass<uqGslVectorClass,uqGslMatrixClass,uqGslVectorClass,uqGslMatrixClass>("",   // prefix
@@ -913,46 +961,49 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
    // Step 08 of 09: Calibrate the computer model
    //***********************************************************************
   uqGslVectorClass totalInitialVec(gcm->totalSpace().zeroVector());
-  gcm->totalPriorRv().realizer().realization(totalInitialVec); // todo_r
- // totalInitialVec[ 0] = 2.9701e+04;          // lambda_eta = lamWOs
- // totalInitialVec[ 1] = 1.;                  // lambda_w_1 = lamUz
- // totalInitialVec[ 2] = 1.;                  // lambda_w_2 =
- // totalInitialVec[ 3] = std::exp(-0.1*0.25); // rho_w_1_1  = exp(-model.betaU.*(0.5^2));
- // totalInitialVec[ 4] = std::exp(-0.1*0.25); // rho_w_1_2  =
- // totalInitialVec[ 5] = std::exp(-0.1*0.25); // rho_w_2_1  =
- // totalInitialVec[ 6] = std::exp(-0.1*0.25); // rho_w_2_2  =
-//  totalInitialVec[ 7] = 1000.;               // lambda_s_1 = lamWs
- // totalInitialVec[ 8] = 1000.;               // lambda_s_2 =
- // totalInitialVec[ 9] = 999.999;             // lambda_y   = lamOs
- // totalInitialVec[10] = 20.;                 // lambda_v_1 = lamVz
- // totalInitialVec[11] = std::exp(-0.1*0.25); // rho_v_1_1  = betaV
- // totalInitialVec[12] = 0.0;                 // theta_1    = theta
- // totalInitialVec[13] = 0.0;                 // theta_2    = theta
- // totalInitialVec[14] = 0.0;                 // theta_3    = theta
- // totalInitialVec[15] = 0.0;                 // theta_4    = theta
+  //gcm->totalPriorRv().realizer().realization(totalInitialVec);
+  totalInitialVec[ 0] = 1000.;                  // lambda_w_1 = lamUz
+  totalInitialVec[ 1] = 1.;                  // lambda_w_1 = lamUz
+  totalInitialVec[ 2] = 1.;                  // lambda_w_2 =
+  totalInitialVec[ 3] = std::exp(-0.1*0.25); // rho_w_1_1  = exp(-model.betaU.*(0.5^2));
+  totalInitialVec[ 4] = std::exp(-0.1*0.25); // rho_w_1_2  =
+  totalInitialVec[ 5] = std::exp(-0.1*0.25); // rho_w_2_1  =
+  totalInitialVec[ 6] = std::exp(-0.1*0.25); // rho_w_2_2  =
+  totalInitialVec[ 7] = std::exp(-0.1*0.25); // rho_w_2_2  =
+  totalInitialVec[ 8] = std::exp(-0.1*0.25); // rho_w_2_2  =
+  totalInitialVec[ 9] = std::exp(-0.1*0.25); // rho_w_2_2  =
+  totalInitialVec[ 10] = std::exp(-0.1*0.25); // rho_w_2_2  =
+  totalInitialVec[ 11] = 1000.;               // lambda_s_1 = lamWs
+  totalInitialVec[ 12] = 1000.;               // lambda_s_2 =
+  totalInitialVec[ 13] = 1.0;             // lambda_y   = lamOs
+  totalInitialVec[ 14] = 20.;                 // lambda_v_1 = lamVz
+  totalInitialVec[15] = std::exp(-0.1*0.25);                  // rho_v_1_1  = betaV
+  totalInitialVec[16] = 0.18;                 // theta_1    = theta
+  totalInitialVec[17] = 0.9;                 // theta_2    = theta
+  totalInitialVec[18] = 1.0;                 // theta_3    = theta
  
 
   uqGslVectorClass diagVec(gcm->totalSpace().zeroVector());
   diagVec.cwSet(0.25);
-  diagVec[0] = 2500.; // lambda_eta = lamWOs
-  diagVec[1] = 0.09;  // lambda_w_1 = lamUz
-  diagVec[2] = 0.09;  // lambda_w_2 =
-  diagVec[3] = 0.01;  // rho_w_1_1  = betaU
-  diagVec[4] = 0.01;  // rho_w_1_2  =
-  diagVec[5] = 0.01;  // rho_w_2_1  =
-  diagVec[6] = 0.01;  // rho_w_2_2  =
-  diagVec[7] = 0.01;  // rho_w_2_2  =
-  diagVec[8] = 0.01;  // rho_w_2_2  =
-  diagVec[9] = 0.01;  // rho_w_2_2  =
-  diagVec[10] = 0.01;  // rho_w_2_2  =
-  diagVec[11] = 2500.; // lambda_s_1 = lamWs
-  diagVec[12] = 2500;  // lambda_s_2 = 
-  diagVec[13] = 2500;  // lambda_y   = lamOs
-  diagVec[14] = 2500;  // lambda_v_1 = lamVz
-  diagVec[15] = 0.01;  // rho_v_1_1  = betaV
-  diagVec[16] = 0.1;  // theta_1    = theta
-  diagVec[17] = 0.1;  // theta_2    = theta
-  diagVec[18] = 0.1;  // theta_3    = theta
+  diagVec[0] = 2500.; // lambda_eta = lamWOs (gamma(5,0.005)?)
+  diagVec[1] = 0.01;  // lambda_w_1 = lamUz (gamma(5,5))
+  diagVec[2] = 0.0001;  // lambda_w_2 =
+  diagVec[3] = 0.0001;  // rho_w_1_1  = betaU
+  diagVec[4] = 0.0001;  // rho_w_1_2  =
+  diagVec[5] = 0.0001;  // rho_w_2_1  =
+  diagVec[6] = 0.0001;  // rho_w_2_2  =
+  diagVec[7] = 0.0001;  // rho_w_2_2  =
+  diagVec[8] = 0.0001;  // rho_w_2_2  =
+  diagVec[9] = 0.0001;  // rho_w_2_2  =
+  diagVec[10] = 0.0001;  // rho_w_2_2  =
+  diagVec[11] = 25.; // lambda_s_1 = lamWs (gamma(3,0.003)?)
+  diagVec[12] = 25.;  // lambda_s_2 = 
+  diagVec[13] = 0.00000001;  // lambda_y   = lamOs gamma(1000,1000))
+  diagVec[14] = 25.;  // lambda_v_1 = lamVz (gamma(1,0.0001))
+  diagVec[15] = 0.0001;  // rho_v_1_1  = betaV (beta(1,0.1)
+  diagVec[16] = 0.0001;  // theta_1    = theta
+  diagVec[17] = 0.0001;  // theta_2    = theta
+  diagVec[18] = 0.0001;  // theta_3    = theta
 
   uqGslMatrixClass totalInitialProposalCovMatrix(diagVec); // todo_r
   Cout << "Got to line 597 \n"; 
@@ -1001,6 +1052,9 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   mhVarOptions->m_drMaxNumExtraStages = 1;          // IMPORTANT
   mhVarOptions->m_drScalesForExtraStages.resize(1);
   mhVarOptions->m_drScalesForExtraStages[0] = 5; // IMPORTANT
+ // mhVarOptions->m_drScalesForExtraStages[1] = 7; // IMPORTANT
+ // mhVarOptions->m_drScalesForExtraStages[2] = 10; // IMPORTANT
+ // mhVarOptions->m_drScalesForExtraStages[3] = 20; // IMPORTANT
   mhVarOptions->m_drDuringAmNonAdaptiveInt = 1;     // IMPORTANT
   mhVarOptions->m_amKeepInitialMatrix = 0;          // IMPORTANT
   mhVarOptions->m_amInitialNonAdaptInterval = 100;  // IMPORTANT

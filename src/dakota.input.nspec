@@ -780,7 +780,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	        |
 		( gpmsa {N_mdm(lit,subMethodName_gpmsa)} 
 	          emulator_samples INTEGER {N_mdm(int,emulatorSamples)}
-		  )
+	          [ import_points_file STRING {N_mdm(str,approxImportFile)} 
+                    [ annotated {N_mdm(true,approxImportAnnotated)} | 
+                      freeform  {N_mdm(false,approxImportAnnotated)} ] 
+                    ]
+	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
+              	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
+                      	freeform  {N_mdm(false,approxExportAnnotated)} ]
+              	    ]
+                  )
                 [ rejection {0}
 	          standard {N_mdm(lit,rejectionType_standard)}
 		  | delayed {N_mdm(lit,rejectionType_delayed)} ]
