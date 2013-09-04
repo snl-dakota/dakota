@@ -62,6 +62,7 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalFull})
     "^${Dakota_SOURCE_DIR}/local/examples/"
     "^${Dakota_SOURCE_DIR}/local/miscscripts/"
     "^${Dakota_SOURCE_DIR}/local/sqa/"
+    "^${Dakota_SOURCE_DIR}/local/tracking/"
     "^${Dakota_SOURCE_DIR}/local/www.sandia.gov/"
   )
 endif()
@@ -77,9 +78,9 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalSupervised})
 endif()
 
 if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
-  # Don't distribute cmake files outside SNL
-  list(APPEND CPACK_SOURCE_IGNORE_FILES
-    "^${Dakota_SOURCE_DIR}/local/cmake/")
+  # Be aggressive and don't distribute any localfiles outside SNL
+  # External integrators may need to change this
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/local")
   message(STATUS "Removing NPSOL, NLPQL for less than InternalWeb build")
   # When building InternalWeb, don't want NLPQL, NPSOL in the binaries
   # Be aggressive and remove from source tree
