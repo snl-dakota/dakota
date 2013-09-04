@@ -59,6 +59,7 @@ method,
 #	expansion_order = 4   		#8,#9,#10,#11,#12,#13,#14,#15
 #	collocation_ratio = 2.		#8,#10,#12,#14
 #	collocation_ratio = 0.5		#9,#11,#13,#15
+#	  seed = 12479	    		#8,#9,#10,#11,#12,#13,#14,#15
           num_response_levels = 0 1
           response_levels = 0.0
           compute reliabilities
