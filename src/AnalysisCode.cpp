@@ -183,7 +183,7 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
       // same temp filename prior to creating the file.
       paramsFileName = std::tmpnam(NULL);
 
-#if defined(_MSC_VER) && !(BOOST_FILESYSTEM_VERSION < 3)
+#if defined(_MSC_VER)
       // Add the temporary directory in front. Windows always puts a backslash
       // in front of the filename, which would place the file in the current
       // working directory.
@@ -215,7 +215,7 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
       // same temp filename prior to creating the file.
       resultsFileName = std::tmpnam(NULL);
 
-#if defined(_MSC_VER) && !(BOOST_FILESYSTEM_VERSION < 3)
+#if defined(_MSC_VER)
       // Add the temporary directory in front. Windows always puts a backslash
       // in front of the filename, which would place the file in the current
       // working directory.
@@ -233,7 +233,7 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
 	if (!workDir.length()) {
           workDir = std::tmpnam(NULL);
 
-#if defined(_MSC_VER) && !(BOOST_FILESYSTEM_VERSION < 3)
+#if defined(_MSC_VER)
           // Add the temp directory in front. Windows always puts a backslash
           // in front of the filename, which would place the file in the current
           // working directory.
@@ -319,14 +319,9 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
 	boost::filesystem::path pfile_path(paramsFileName);
 	boost::filesystem::path rfile_path(resultsFileName);
 	// want the platform-dependent (native) string format here...
-#if BOOST_FILESYSTEM_VERSION < 3
-	paramsFileName  = (wd_path / pfile_path.filename()).file_string();
-	resultsFileName  = (wd_path / rfile_path.filename()).file_string();
-#else
 	// consider native_string? Table in BFS V3 doc is confusing or wrong.
 	paramsFileName  = (wd_path / pfile_path.filename()).string();
 	resultsFileName  = (wd_path / rfile_path.filename()).string();
-#endif
 
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "\nAdjusting parameters_file to " << paramsFileName 
