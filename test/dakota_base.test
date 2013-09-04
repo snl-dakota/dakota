@@ -56961,26 +56961,26 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
            area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
-cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
            area: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
-cdf_beta:  Min = -2.3690080817e+00  Max = 1.2735527997e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.3689974578e+00  Max = 1.2735594396e+01
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
            area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
-cdf_beta:  Min = -2.1873457070e+00  Max = 1.1590048509e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873394681e+00  Max = 1.1590048509e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
            area: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
-cdf_beta:  Min = -2.4650300554e+00  Max = 2.1005723356e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.4650175066e+00  Max = 2.1006253040e+01
 Test Number 4 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
            area: 124 val (93 n, 31 d), 124 grad (93 n, 31 d), 0 Hess (0 n, 0 d)
@@ -57005,6 +57005,54 @@ Test Number 7 succeeded
     limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
 cdf_beta:  Min = -2.4650363298e+00  Max = 2.1006517895e+01
+Test Number 8 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 252 total (252 new, 0 duplicate)
+           area: 252 val (252 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 252 val (252 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.3019952601e+00  Max = 1.2028474782e+01
+Test Number 9 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 63 total (63 new, 0 duplicate)
+           area: 63 val (63 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 63 val (63 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.6740639229e+00  Max = 8.2928530246e+00
+Test Number 10 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 1050 total (1050 new, 0 duplicate)
+           area: 700 val (700 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 770 val (770 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873132825e+00  Max = 1.1590444342e+01
+Test Number 11 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 270 total (270 new, 0 duplicate)
+           area: 180 val (180 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 198 val (198 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.2235278466e+00  Max = 1.2406970615e+01
+Test Number 12 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 504 total (504 new, 0 duplicate)
+           area: 252 val (252 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 252 val (252 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.2306043105e+00  Max = 7.9178017585e+00
+Test Number 13 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 126 total (126 new, 0 duplicate)
+           area: 63 val (63 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 63 val (63 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -3.2728245345e+00  Max = 7.5930106106e+00
+Test Number 14 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 1120 total (980 new, 140 duplicate)
+           area: 280 val (210 n, 70 d), 280 grad (210 n, 70 d), 0 Hess (0 n, 0 d)
+    limit_state: 840 val (770 n, 70 d), 840 grad (770 n, 70 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.1874194650e+00  Max = 1.1590372416e+01
+Test Number 15 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 288 total (252 new, 36 duplicate)
+           area: 72 val (54 n, 18 d), 72 grad (54 n, 18 d), 0 Hess (0 n, 0 d)
+    limit_state: 216 val (198 n, 18 d), 216 grad (198 n, 18 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.3044459579e+00  Max = 1.2253739363e+01
 dakota_uq_short_column_sop_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (INNER_I): 7425 total (7425 new, 0 duplicate)
