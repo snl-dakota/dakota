@@ -50457,6 +50457,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666822e+02  6.0656024184257808e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737707e-01  7.0363551328281204e-01 x1
+                      2.9636448671718785e-01  5.0253108617262288e-01 x2
+                      2.0616659945543503e-01 x1 x2 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50479,6 +50484,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.4821864223022874e+02  5.9262138312662842e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.0722234785171350e-01  7.1087391249413845e-01 x1
+                      2.8912608750586161e-01  4.9277765214828656e-01 x2
+                      2.0365156464242495e-01 x1 x2 
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50501,6 +50511,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566663725741500e+02  6.0656020927637155e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746881775777979e-01  7.0363545760632973e-01 x1
+                      2.9636454239367022e-01  5.0253118224222015e-01 x2
+                      2.0616663984854997e-01 x1 x2 
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50523,6 +50538,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566641527405432e+02  6.0655999711893571e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746852325904256e-01  7.0363543728546629e-01 x1
+                      2.9636456271453399e-01  5.0253147674095766e-01 x2
+                      2.0616691402642368e-01 x1 x2 
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50541,6 +50561,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666660933e+02  6.0656024184241164e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382733133e-01  7.0363551328266771e-01 x1
+                      2.9636448671733218e-01  5.0253108617266862e-01 x2
+                      2.0616659945533639e-01 x1 x2 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50556,6 +50581,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666640e+02  6.0656024184257819e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737690e-01  7.0363551328281271e-01 x1
+                      2.9636448671718724e-01  5.0253108617262310e-01 x2
+                      2.0616659945543581e-01 x1 x2 
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50573,6 +50603,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666652e+02  6.0656024184257842e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737723e-01  7.0363551328281293e-01 x1
+                      2.9636448671718701e-01  5.0253108617262265e-01 x2
+                      2.0616659945543567e-01 x1 x2 
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50595,6 +50630,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  3.5015303251915049e+02  5.3145958585041149e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      3.0912725543151698e-01  5.8052662858065418e-01 x1
+                      4.1947337141934593e-01  6.9087274456848313e-01 x2
+                      2.7139937314913720e-01 x1 x2 
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50617,6 +50657,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666680e+02  6.0656024184257842e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737818e-01  7.0363551328281293e-01 x1
+                      2.9636448671718696e-01  5.0253108617262165e-01 x2
+                      2.0616659945543472e-01 x1 x2 
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50639,6 +50684,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5130568529251690e+02  5.9042975179035523e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.0457771742513036e-01  7.0258170404904630e-01 x1
+                      2.9741829595095381e-01  4.9542228257486981e-01 x2
+                      1.9800398662391600e-01 x1 x2 
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50661,6 +50711,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566580905690665e+02  6.0655994640068354e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746825141317708e-01  7.0363558323971365e-01 x1
+                      2.9636441676028641e-01  5.0253174858682303e-01 x2
+                      2.0616733182653660e-01 x1 x2 
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50683,6 +50738,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566617963823353e+02  6.0656019253754039e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746873451788054e-01  7.0363596444522158e-01 x1
+                      2.9636403555477842e-01  5.0253126548211946e-01 x2
+                      2.0616722992734102e-01 x1 x2 
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50701,6 +50761,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666667015e+02  6.0656024184257785e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737973e-01  7.0363551328280871e-01 x1
+                      2.9636448671719129e-01  5.0253108617262032e-01 x2
+                      2.0616659945542903e-01 x1 x2 
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50717,6 +50782,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666742e+02  6.0656024184257728e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737957e-01  7.0363551328281226e-01 x1
+                      2.9636448671718768e-01  5.0253108617262043e-01 x2
+                      2.0616659945543275e-01 x1 x2 
 Test Number 14 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50733,6 +50803,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666828e+02  6.0656024184257706e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737951e-01  7.0363551328280971e-01 x1
+                      2.9636448671719029e-01  5.0253108617262054e-01 x2
+                      2.0616659945543023e-01 x1 x2 
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50755,6 +50830,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.0264814708374735e+02  5.3826413719926200e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9001416836774642e-01  7.2983624434313477e-01 x1
+                      2.7016375565686501e-01  5.0998583163225331e-01 x2
+                      2.3982207597538829e-01 x1 x2 
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50777,6 +50857,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666663e+02  6.0656024184257819e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737751e-01  7.0363551328281237e-01 x1
+                      2.9636448671718746e-01  5.0253108617262232e-01 x2
+                      2.0616659945543489e-01 x1 x2 
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50799,6 +50884,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666680e+02  6.0656024184257888e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737729e-01  7.0363551328281237e-01 x1
+                      2.9636448671718751e-01  5.0253108617262265e-01 x2
+                      2.0616659945543511e-01 x1 x2 
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50821,6 +50911,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666680e+02  6.0656024184257888e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737729e-01  7.0363551328281237e-01 x1
+                      2.9636448671718751e-01  5.0253108617262265e-01 x2
+                      2.0616659945543511e-01 x1 x2 
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50843,6 +50938,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666680e+02  6.0656024184257888e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737729e-01  7.0363551328281237e-01 x1
+                      2.9636448671718751e-01  5.0253108617262265e-01 x2
+                      2.0616659945543511e-01 x1 x2 
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50865,6 +50965,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666777e+02  6.0656024184257910e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737723e-01  7.0363551328281249e-01 x1
+                      2.9636448671718763e-01  5.0253108617262288e-01 x2
+                      2.0616659945543528e-01 x1 x2 
 Test Number 21 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50887,6 +50992,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666669e+02  6.0656024184257808e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737773e-01  7.0363551328281249e-01 x1
+                      2.9636448671718763e-01  5.0253108617262243e-01 x2
+                      2.0616659945543481e-01 x1 x2 
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50909,6 +51019,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666720e+02  6.0656024184257876e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737735e-01  7.0363551328281237e-01 x1
+                      2.9636448671718757e-01  5.0253108617262265e-01 x2
+                      2.0616659945543506e-01 x1 x2 
 Test Number 23 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50931,6 +51046,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.3406090534410930e+02  5.8461545783205179e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.0717895997273588e-01  7.0335249607314521e-01 x1
+                      2.9664750392685468e-01  4.9282104002726401e-01 x2
+                      1.9617353610040936e-01 x1 x2 
 Test Number 24 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50953,6 +51073,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  3.9710392746678298e+02  5.2557127903465164e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.0379377355406465e-01  5.2484328849234663e-01 x1
+                      4.7515671150765332e-01  5.9620622644593524e-01 x2
+                      1.2104951493828195e-01 x1 x2 
 Test Number 25 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50975,6 +51100,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  3.9710392746678298e+02  5.2557127903465164e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.0379377355406465e-01  5.2484328849234663e-01 x1
+                      4.7515671150765332e-01  5.9620622644593524e-01 x2
+                      1.2104951493828195e-01 x1 x2 
 Test Number 26 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50997,6 +51127,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666674e+02  6.0656024184257853e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737735e-01  7.0363551328281204e-01 x1
+                      2.9636448671718796e-01  5.0253108617262265e-01 x2
+                      2.0616659945543475e-01 x1 x2 
 Test Number 27 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51019,6 +51154,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666777e+02  6.0656024184257910e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737723e-01  7.0363551328281249e-01 x1
+                      2.9636448671718763e-01  5.0253108617262288e-01 x2
+                      2.0616659945543528e-01 x1 x2 
 Test Number 28 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51041,6 +51181,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666822e+02  6.0656024184257808e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737707e-01  7.0363551328281204e-01 x1
+                      2.9636448671718785e-01  5.0253108617262288e-01 x2
+                      2.0616659945543503e-01 x1 x2 
 Test Number 29 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51063,6 +51208,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  3.9710392746678298e+02  5.2557127903465164e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.0379377355406465e-01  5.2484328849234663e-01 x1
+                      4.7515671150765332e-01  5.9620622644593524e-01 x2
+                      1.2104951493828195e-01 x1 x2 
 Test Number 30 succeeded
 <<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51085,6 +51235,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666703e+02  6.0656024184257842e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737962e-01  7.0363551328281382e-01 x1
+                      2.9636448671718618e-01  5.0253108617262043e-01 x2
+                      2.0616659945543425e-01 x1 x2 
 Test Number 31 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51107,6 +51262,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.2917506358787830e+02  5.9167428698947208e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.5372966557206371e-01  7.7240079690407193e-01 x1
+                      2.2759920309592832e-01  4.4627033442793651e-01 x2
+                      2.1867113133200822e-01 x1 x2 
 Test Number 32 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51129,6 +51289,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666663e+02  6.0656024184257819e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737751e-01  7.0363551328281237e-01 x1
+                      2.9636448671718746e-01  5.0253108617262232e-01 x2
+                      2.0616659945543489e-01 x1 x2 
 Test Number 33 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51151,6 +51316,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666822e+02  6.0656024184257808e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737707e-01  7.0363551328281204e-01 x1
+                      2.9636448671718785e-01  5.0253108617262288e-01 x2
+                      2.0616659945543503e-01 x1 x2 
 Test Number 34 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51166,6 +51336,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666640e+02  6.0656024184257819e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737690e-01  7.0363551328281271e-01 x1
+                      2.9636448671718724e-01  5.0253108617262310e-01 x2
+                      2.0616659945543581e-01 x1 x2 
 Test Number 35 succeeded
 <<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51188,6 +51363,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666703e+02  6.0656024184257842e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737962e-01  7.0363551328281382e-01 x1
+                      2.9636448671718618e-01  5.0253108617262043e-01 x2
+                      2.0616659945543425e-01 x1 x2 
 Test Number 36 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51204,6 +51384,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666742e+02  6.0656024184257728e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737957e-01  7.0363551328281226e-01 x1
+                      2.9636448671718768e-01  5.0253108617262043e-01 x2
+                      2.0616659945543275e-01 x1 x2 
 Test Number 37 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51226,6 +51411,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666663e+02  6.0656024184257819e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737751e-01  7.0363551328281237e-01 x1
+                      2.9636448671718746e-01  5.0253108617262232e-01 x2
+                      2.0616659945543489e-01 x1 x2 
 Test Number 38 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51242,6 +51432,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666742e+02  6.0656024184257728e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737957e-01  7.0363551328281226e-01 x1
+                      2.9636448671718768e-01  5.0253108617262043e-01 x2
+                      2.0616659945543275e-01 x1 x2 
 Test Number 39 succeeded
 <<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51264,6 +51459,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666703e+02  6.0656024184257842e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737962e-01  7.0363551328281382e-01 x1
+                      2.9636448671718618e-01  5.0253108617262043e-01 x2
+                      2.0616659945543425e-01 x1 x2 
 Test Number 40 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51286,6 +51486,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666822e+02  6.0656024184257808e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737707e-01  7.0363551328281204e-01 x1
+                      2.9636448671718785e-01  5.0253108617262288e-01 x2
+                      2.0616659945543503e-01 x1 x2 
 Test Number 41 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51308,6 +51513,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666822e+02  6.0656024184257808e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737707e-01  7.0363551328281204e-01 x1
+                      2.9636448671718785e-01  5.0253108617262288e-01 x2
+                      2.0616659945543503e-01 x1 x2 
 Test Number 42 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51330,6 +51540,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666652e+02  6.0656024184257819e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737790e-01  7.0363551328281260e-01 x1
+                      2.9636448671718746e-01  5.0253108617262221e-01 x2
+                      2.0616659945543470e-01 x1 x2 
 Test Number 43 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51352,6 +51567,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666652e+02  6.0656024184257819e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737790e-01  7.0363551328281260e-01 x1
+                      2.9636448671718746e-01  5.0253108617262221e-01 x2
+                      2.0616659945543470e-01 x1 x2 
 Test Number 44 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
   response_fn_1: 15 val (15 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51374,6 +51594,11 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666657e+02  6.0656024184257797e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891382737718e-01  7.0363551328281171e-01 x1
+                      2.9636448671718812e-01  5.0253108617262265e-01 x2
+                      2.0616659945543453e-01 x1 x2 
 dakota_uq_rosenbrock_pce_lls_cv.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
