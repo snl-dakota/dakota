@@ -1980,8 +1980,7 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 	//  quasiHessians[i][j][j] = 1.; // initialize to identity
       }
     }
-    numQuasiUpdates.resize(numFns);
-    numQuasiUpdates.assign(numQuasiUpdates.size(), 0);
+    numQuasiUpdates.assign(numFns, 0);
   }
 
   for (i=0; i<numFns; ++i) {
@@ -3102,8 +3101,7 @@ void Model::estimate_message_lengths()
     modelRep->estimate_message_lengths();
   else { // not a virtual function: base class definition for all letters
     // currently, every processor does this estimation (no Bcast needed)
-    messageLengths.resize(4);
-    messageLengths.assign(messageLengths.size(), 0);
+    messageLengths.assign(4, 0);
 
     if (parallelLib.world_size() > 1) {
       MPIPackBuffer buff;

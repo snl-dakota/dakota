@@ -442,7 +442,7 @@ asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
 {
   if (surrogateFnIndices.size() != numFns) { // mixed response set
     if (build_flag) { // construct mode: define actual_asv
-      actual_asv.resize(numFns); actual_asv.assign(actual_asv.size(), 0);
+      actual_asv.assign(numFns, 0);
       for (ISIter it=surrogateFnIndices.begin();
 	   it!=surrogateFnIndices.end(); ++it)
 	actual_asv[*it] = orig_asv[*it];
@@ -453,12 +453,12 @@ asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
 	if (orig_asv_val) {
 	  if (surrogateFnIndices.count(i)) {
 	    if (approx_asv.empty()) // keep empty if no active requests
-	      { approx_asv.resize(numFns); approx_asv.assign(numFns, 0); }
+	      approx_asv.assign(numFns, 0);
 	    approx_asv[i] = orig_asv_val;
 	  }
 	  else {
 	    if (actual_asv.empty()) // keep empty if no active requests
-	      { actual_asv.resize(numFns); actual_asv.assign(numFns, 0); }
+	      actual_asv.assign(numFns, 0);
 	    actual_asv[i] = orig_asv_val;
 	  }
 	}

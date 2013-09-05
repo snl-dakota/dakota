@@ -445,18 +445,12 @@ void Interface::init_evaluation_counters(size_t num_fns)
     //  build_labels(fnLabels, "response_fn_"); // generic resp fn labels
     //}
     if (fnValCounter.empty()) {
-      fnValCounter.resize(num_fns);     fnValCounter.assign(num_fns, 0);
-      fnGradCounter.resize(num_fns);    fnGradCounter.assign(num_fns, 0);
-      fnHessCounter.resize(num_fns);    fnHessCounter.assign(num_fns, 0);
-      newFnValCounter.resize(num_fns);  newFnValCounter.assign(num_fns, 0);
-      newFnGradCounter.resize(num_fns); newFnGradCounter.assign(num_fns, 0);
-      newFnHessCounter.resize(num_fns); newFnHessCounter.assign(num_fns, 0);
-      fnValRefPt.resize(num_fns);       fnValRefPt.assign(num_fns, 0);
-      fnGradRefPt.resize(num_fns);      fnGradRefPt.assign(num_fns, 0);
-      fnHessRefPt.resize(num_fns);      fnHessRefPt.assign(num_fns, 0);
-      newFnValRefPt.resize(num_fns);    newFnValRefPt.assign(num_fns, 0);
-      newFnGradRefPt.resize(num_fns);   newFnGradRefPt.assign(num_fns, 0);
-      newFnHessRefPt.resize(num_fns);   newFnHessRefPt.assign(num_fns, 0);
+      fnValCounter.assign(num_fns, 0);     fnGradCounter.assign(num_fns, 0);
+      fnHessCounter.assign(num_fns, 0);    newFnValCounter.assign(num_fns, 0);
+      newFnGradCounter.assign(num_fns, 0); newFnHessCounter.assign(num_fns, 0);
+      fnValRefPt.assign(num_fns, 0);       fnGradRefPt.assign(num_fns, 0);
+      fnHessRefPt.assign(num_fns, 0);      newFnValRefPt.assign(num_fns, 0);
+      newFnGradRefPt.assign(num_fns, 0);   newFnHessRefPt.assign(num_fns, 0);
     }
   }
 }

@@ -1570,7 +1570,7 @@ make_response_defaults(std::list<DataResponses>* drl)
     ni = (int)nf;
     if (dr->gradientType == "mixed") {
       iv = new IntArray;
-      iv->resize(nf);
+      //iv->resize(nf);
       iv->assign(nf, 0);
       if (!(flist_check(&dr->idAnalyticGrads, ni, iv, "id_analytic_gradients")
 	    + flist_check(&dr->idNumericalGrads, ni, iv, "id_numerical_gradients")))
@@ -1595,7 +1595,7 @@ make_response_defaults(std::list<DataResponses>* drl)
     }
     if (dr->hessianType == "mixed") {
       iv = new IntArray;
-      iv->resize(nf);
+      //iv->resize(nf);
       iv->assign(nf, 0);
       if (!(flist_check(&dr->idAnalyticHessians, ni, iv, "id_analytic_hessians")
 	    + flist_check(&dr->idNumericalHessians, ni, iv, "id_numerical_hessians")

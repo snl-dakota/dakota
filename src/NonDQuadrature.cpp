@@ -166,10 +166,8 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
 				      UShortArray& dim_quad_order)
 {
   // Update dimQuadOrderRef from quad_order_spec and dimPrefSpec
-  if (dim_pref_spec.empty()) { // iso tensor grid
-    dim_quad_order.reserve(numContinuousVars);
+  if (dim_pref_spec.empty()) //   iso tensor grid
     dim_quad_order.assign(numContinuousVars, quad_order_spec);
-  }
   else                       // aniso tensor grid
     anisotropic_preference(quad_order_spec, dim_pref_spec, dim_quad_order);
   //dimPrefRef = dimPrefSpec; // not currently necessary
@@ -184,7 +182,6 @@ void NonDQuadrature::
 compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref,
 				 UShortArray& dim_quad_order)
 {
-  dim_quad_order.reserve(numContinuousVars);
   dim_quad_order.assign(numContinuousVars, 1);
   // compute minimal order tensor grid with at least numSamples points
   if (dim_pref.empty()) // isotropic tensor grid

@@ -433,11 +433,8 @@ inline bool ParamStudy::check_variable_partitions(const UShortArray& partitions)
 	       discRealVarPartitions);
   else if (vp_len == 1) {
     unsigned short part = partitions[0];
-    contVarPartitions.resize(numContinuousVars);
     contVarPartitions.assign(numContinuousVars, part);
-    discIntVarPartitions.resize(numDiscreteIntVars);
     discIntVarPartitions.assign(numDiscreteIntVars, part);
-    discRealVarPartitions.resize(numDiscreteRealVars);
     discRealVarPartitions.assign(numDiscreteRealVars, part);
   }
   else {

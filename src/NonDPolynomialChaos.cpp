@@ -72,11 +72,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   Iterator u_space_sampler;
   // expansion_order defined for expansion_samples/collocation_pts
   UShortArray exp_order = probDescDB.get_usa("method.nond.expansion_order");
-  if (exp_order.size() == 1) {
-    unsigned short order = exp_order[0];
-    exp_order.resize(numContinuousVars);
-    exp_order.assign(numContinuousVars, order);
-  }
+  if (!exp_order.empty())
+    Pecos::inflate_scalar(exp_order, numContinuousVars);
   bool import_annotated = false;
   String approx_type; bool regression_flag = false;
   if (expansionImportFile.empty()) {
@@ -178,19 +175,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  if ( expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ) {
 	    dim_quad_order
 	      = probDescDB.get_usa("method.nond.tensor_grid_order");
-	    size_t ord_len = dim_quad_order.size();
-	    if (ord_len != numContinuousVars) {
-	      if (ord_len == 1) {
-		unsigned short ord0 = dim_quad_order[0];
-		dim_quad_order.assign(numContinuousVars, ord0);
-	      }
-	      else {
-		PCerr << "Error: tensor_grid specification length (" << ord_len
-		      << ") does not match number of active variables ("
-		      << numContinuousVars << ")."<< std::endl;
-		abort_handler(-1);
-	      }
-	    }
+	    Pecos::inflate_scalar(dim_quad_order, numContinuousVars);
 	  }
 	  else {
 	    // define nominal quadrature order as exp_order + 1

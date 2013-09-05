@@ -72,7 +72,6 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   if (!asvControlFlag) {
     size_t num_fns = (outputLevel > NORMAL_OUTPUT) ? fnLabels.size() :
       problem_db.get_sa("responses.labels").size();
-    defaultASV.resize(num_fns);
     short asv_value = 1;
     const std::string& grad_type
       = problem_db.get_string("responses.gradient_type");
@@ -82,7 +81,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
       asv_value += 2;
     if (hess_type == "analytic")
       asv_value += 4;
-    defaultASV.assign(defaultASV.size(), asv_value);
+    defaultASV.assign(num_fns, asv_value);
     if (grad_type == "mixed") {
       const IntList& id_anal_grad
 	= problem_db.get_il("responses.gradients.mixed.id_analytic");
@@ -1116,8 +1115,6 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
   // need to track all completed evaluations, unlike nowait
   IntSet allCompleted;
   // in the wait case, always reset the job map to zero
-  if (localServerJobMap.size() != asynchLocalEvalConcurrency)
-    localServerJobMap.resize(asynchLocalEvalConcurrency);
   localServerJobMap.assign(asynchLocalEvalConcurrency, 0);
 
   PRPQueue active_prp_queue; PRPQueueIter prp_iter;
@@ -1259,10 +1256,8 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
   // special data for static scheduling case; only reset job map on first call
   int server_num;
   if (asynchLocalEvalStatic && 
-      localServerJobMap.size() != asynchLocalEvalConcurrency) {
-    localServerJobMap.resize(asynchLocalEvalConcurrency);
+      localServerJobMap.size() != asynchLocalEvalConcurrency)
     localServerJobMap.assign(asynchLocalEvalConcurrency, 0);
-  }
 
   // Step 1: launch any new jobs up to asynchLocalEvalConcurrency limit (if 
   // specified.

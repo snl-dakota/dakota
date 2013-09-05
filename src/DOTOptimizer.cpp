@@ -317,13 +317,10 @@ void DOTOptimizer::allocate_workspace()
   //Cout << "dot510 sizing: realWorkSpaceSize = " << realWorkSpaceSize
   //     << " intWorkSpaceSize = " << intWorkSpaceSize << std::endl;
   
-  realWorkSpace.resize(realWorkSpaceSize); // wk[nrwk]
-  intWorkSpace.resize(intWorkSpaceSize);   // iwk[nriwk]
+  // Size workspace (and initialize to be a good citizen)
 
-  // Initialize workspace to be a good citizen.
-
-  realWorkSpace.assign(realWorkSpaceSize, 0.);
-  intWorkSpace.assign(intWorkSpaceSize, 0);
+  realWorkSpace.assign(realWorkSpaceSize, 0.); // wk[nrwk]
+  intWorkSpace.assign(intWorkSpaceSize, 0);    // iwk[nriwk]
 }
 
 

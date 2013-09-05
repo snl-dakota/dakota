@@ -454,7 +454,7 @@ void NonDLocalReliability::initial_taylor_series()
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   switch (mppSearchType) {
   case MV:
-    asrv.assign(asrv.size(), mode);
+    asrv.assign(numFunctions, mode);
     break;
   case AMV_X:      case AMV_U:
   case AMV_PLUS_X: case AMV_PLUS_U:
@@ -946,7 +946,6 @@ void NonDLocalReliability::initialize_class_data()
     size_t num_final_grad_vars
       = finalStatistics.active_set_derivative_vector().size();
     prevMPPULev0.resize(numFunctions);
-    prevCumASVLev0.resize(numFunctions);
     prevCumASVLev0.assign(numFunctions, 0);
     prevFnGradDLev0.shape(num_final_grad_vars, numFunctions);
     prevFnGradULev0.shape(numUncertainVars, numFunctions);
