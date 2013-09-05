@@ -159,8 +159,8 @@ compute(const Variables& vars, const Response& truth_response,
       RealVector    discrep_grad = sdr.response_gradient_view();
       RealSymMatrix discrep_hess = sdr.response_hessian_view();
       compute_additive(truth_response, approx_response, index,
-		       sdr.response_function_view(),
-		       discrep_grad, discrep_hess);
+		       sdr.response_function_view(), discrep_grad,
+		       discrep_hess);
       if (!quiet_flag)
 	Cout << "\nAdditive correction computed:\n" << sdr;
 
@@ -177,8 +177,8 @@ compute(const Variables& vars, const Response& truth_response,
       RealVector    discrep_grad = sdr.response_gradient_view();
       RealSymMatrix discrep_hess = sdr.response_hessian_view();
       compute_multiplicative(truth_response, approx_response, index,
-			     sdr.response_function_view(),
-			     discrep_grad, discrep_hess);
+			     sdr.response_function_view(), discrep_grad,
+			     discrep_hess);
       if (!quiet_flag)
 	Cout << "\nMultiplicative correction computed:\n" << sdr;
 
@@ -292,36 +292,35 @@ compute(//const Variables& vars,
       discrep_response.function_gradient_view(index) : empty_rv;
     discrep_hess     = ( (dataOrder & 4) && (discrep_asv[index] & 4) ) ?
       discrep_response.function_hessian_view(index) : empty_rsm;
-    // for a single discrep_response, only a single correction type can be
-    // applied (corrections can be combined when applying but must be stored
-    // separately when computing)
-    if (correctionType == COMBINED_CORRECTION && correctionComputed &&
-	!badScalingFlag) {
+
+    if (computeAdditive || badScalingFlag)
+      compute_additive(truth_response, approx_response, index,
+		       discrep_fn, discrep_grad, discrep_hess);
+    else if (correctionType == COMBINED_CORRECTION) {
+      // for a single discrep_response, only a single correction type can be
+      // applied (corrections can be combined when applying but must be stored
+      // separately when computing)
       Cerr << "Error: combined corrections not currently supported for compute"
 	   << "() applied to a single response discrepancy." << std::endl;
       abort_handler(-1);
-      /*
-      compute_additive(truth_response, approx_response, index,
-		       add_discrep_response.function_value_view(index),
-		       add_discrep_grad, add_discrep_hess);
-      compute_multiplicative(truth_response, approx_response, index,
-			     mult_discrep_response.function_value_view(index),
-			     mult_discrep_grad, mult_discrep_hess);
-      */
+      //compute_additive(truth_response, approx_response, index,
+      //	         add_discrep_fn, add_discrep_grad, add_discrep_hess);
+      //compute_multiplicative(truth_response, approx_response, index,
+      //		       mult_discrep_fn, mult_discrep_grad,
+      // 		       mult_discrep_hess);
     }
-    else if (computeAdditive || badScalingFlag) {
-      compute_additive(truth_response, approx_response, index,
-		       discrep_fn, discrep_grad, discrep_hess);
-      if (!quiet_flag)
-        Cout << "\nAdditive correction computed:\n" << discrep_response;
-    }
-    else if (computeMultiplicative && !badScalingFlag) {
+    else if (computeMultiplicative)
       compute_multiplicative(truth_response, approx_response, index,
 			     discrep_fn, discrep_grad, discrep_hess);
-      if (!quiet_flag)
-        Cout << "\nMultiplicative correction computed:\n" << discrep_response;
-    }
   }
+
+  if (!quiet_flag) {
+    if (computeAdditive || badScalingFlag)
+      Cout << "\nAdditive correction computed:\n" << discrep_response;
+    else if (computeMultiplicative)
+      Cout << "\nMultiplicative correction computed:\n" << discrep_response;
+  }
+
   //if (correctionType == COMBINED_CORRECTION && correctionComputed &&
   //    !badScalingFlag)
   //  compute_combine_factors(add_discrep_response, mult_discrep_response);
