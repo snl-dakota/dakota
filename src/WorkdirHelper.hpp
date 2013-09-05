@@ -17,13 +17,9 @@
 //#include <boost/shared_array.hpp>   WJB - ToDo: look into improved mem mgmt
 //                                    e.g. use of malloc w/o free is undesirable
 
-// WJB:  eventually (before Dak rel 5.2) #define BOOST_FILESYSTEM_NO_DEPRECATED
-
-#ifdef DAKOTA_HAVE_BOOST_FS
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 namespace bfs = boost::filesystem;
-#endif
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -147,44 +143,6 @@ private:
 /// Utility function from legacy, "not_executable" module -- DO NOT TOUCH!
 const char** arg_list_adjust(const char **, void **);
 
-
-#ifdef DAKOTA_HAVE_BOOST_FS
-/// Utilities to manage API differences in BFS_VERSION_2 vs BFS_VERSION_3
-
-/// Same as path.is_absolute() in latest boost::filesystem
-inline bool path_is_absolute(const bfs::path& p)
-{
-#if BOOST_FILESYSTEM_VERSION < 3
-  #if defined(_WIN32) || defined(_WIN64)
-    return ( p.has_root_name() && p.has_root_directory() );
-  #else
-    return p.has_root_directory();
-  #endif // _WIN 32 or 64
-#else
-  return p.is_absolute();
-#endif // BOOST_FILESYSTEM_VERSION
-}
-
-/// Same as file_path.filename() in latest boost::filesystem
-inline std::string filename(const bfs::path& file_path)
-{
-#if BOOST_FILESYSTEM_VERSION < 3
-  return file_path.empty() ? std::string() : *--file_path.end();
-#else
-  return file_path.empty() ? std::string() : (*--file_path.end()).string();
-#endif
-}
-
-/// Should be same as fp.parent_path() in latest boost::filesystem
-inline bfs::path parent_path(const bfs::path& fp)
-{
-  std::string fn = filename(fp);
-  std::string fpath_str = fp.string();
-
-  return fpath_str.substr(0, fpath_str.length() - fn.length() - 1);
-}
-
-
 /// Helper for "which" - sets complete_filepath from dir_path/file_name combo
 inline bool contains(const bfs::path& dir_path, const std::string& file_name,
                      boost::filesystem::path& complete_filepath)
@@ -192,8 +150,8 @@ inline bool contains(const bfs::path& dir_path, const std::string& file_name,
   complete_filepath = dir_path; complete_filepath /= file_name;
   return boost::filesystem::is_regular_file(complete_filepath);
 }
-#endif // DAKOTA_HAVE_BOOST_FS
 
 } // namespace Dakota
 
 #endif // WORKDIR_HELPER_H
+

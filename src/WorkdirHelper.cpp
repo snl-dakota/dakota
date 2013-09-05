@@ -51,13 +51,7 @@ void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
 {
   // Assume a relative extra_path arg is relative to dakota's startupPWD
 
-#ifdef DAKOTA_HAVE_BOOST_FS
-  bool extra_path_is_abs = path_is_absolute( bfs::path(extra_path) );
-#else
-  bool extra_path_is_abs = (extra_path[0] == DAK_SLASH);
-#endif
-
-  std::string abs_extra_path = !extra_path_is_abs ?
+  std::string abs_extra_path = !bfs::path(extra_path).is_absolute() ?
                                startupPWD+std::string(1,DAK_SLASH)+extra_path :
                                extra_path;
 
@@ -109,7 +103,7 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
     std::string dir_path = *tok_iter;
     dirs.push_back(dir_path);
 
-#if defined(DAKOTA_HAVE_BOOST_FS) && defined(DEBUG)
+#if defined(DEBUG)
     if( !bfs::is_directory(dir_path) )
       Cout << "Warning - DAKOTA analysis driver resolution detects issue with: "
            << dir_path << " on the environment path.\n\t"
@@ -134,11 +128,9 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 std::string WorkdirHelper::which(const std::string& driver_name)
 {
   std::string driver_path_str;
-
-#ifdef DAKOTA_HAVE_BOOST_FS
   bfs::path driver_path(driver_name);
 
-  if( !path_is_absolute(driver_path) ) {
+  if( !driver_path.is_absolute() ) {
     //Cout << "RELATIVE path to driver case" << '\n';
     std::vector<std::string> search_dirs =
       tokenize_env_path(dakPreferredEnvPath);
@@ -159,13 +151,6 @@ std::string WorkdirHelper::which(const std::string& driver_name)
     //Cout << "ABSOLUTE path to driver was specified" << std::endl;
     driver_path_str = driver_name;
   }
-
-#else
-
-  // WJB - NO BoostFS case: should I invoke the venerable "not_executable" func?
-  driver_path_str = dakPreferredEnvPath;
-
-#endif // DAKOTA_HAVE_BOOST_FS
 
   return driver_path_str;
 }
