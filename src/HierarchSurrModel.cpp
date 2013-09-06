@@ -331,6 +331,14 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
   if (hi_fi_eval) {
     // don't need to set component parallel mode since this only queues the job
     update_model(highFidelityModel);
+
+    // *** TO DO: change HierarchSurrModel's asynchEvalFlag to (low || high)
+    //if (highFidelityModel.asynch_flag())
+    //  highFidelityModel.asynch_compute_response(set);
+    //else
+    //  highFidelityModel.compute_response(set);
+    // + alt bookkeeping for trivial synchronize; consider completion caches?
+
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet hi_fi_set = set; hi_fi_set.request_vector(hi_fi_asv);
@@ -359,6 +367,14 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     // compute the LF response
     // don't need to set component parallel mode since this only queues the job
     update_model(lowFidelityModel);
+
+    // *** TO DO: change HierarchSurrModel's asynchEvalFlag to (low || high)
+    //if (lowFidelityModel.asynch_flag())
+    //  lowFidelityModel.asynch_compute_response(set);
+    //else
+    //  lowFidelityModel.compute_response(set);
+    // + alt bookkeeping for trivial synchronize; consider completion caches?
+
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet lo_fi_set = set; lo_fi_set.request_vector(lo_fi_asv);
@@ -389,6 +405,19 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
 {
   surrResponseMap.clear();
   bool hi_fi_evals = !truthIdMap.empty(), lo_fi_evals = !surrIdMap.empty();
+
+  if (hi_fi_evals && lo_fi_evals) {//&& asynch_hi_fi && asynch_lo_fi ? *** TO DO
+    // in this case, we don't want to starve either LF or HF scheduling by
+    // blocking on one or the other --> leverage derived_synchronize_nowait()
+    IntResponseMap aggregated_map; // accumulate surrResponseMap returns
+    while (!truthIdMap.empty() || !surrIdMap.empty()) {
+      const IntResponseMap& partial_map // reference to surrResponseMap
+	= derived_synchronize_nowait();
+      aggregated_map.insert(partial_map.begin(), partial_map.end());
+    }
+    surrResponseMap = aggregated_map; // now replace surrResponseMap for return
+    return surrResponseMap;
+  }
 
   // -----------------------------------
   // synchronize highFidelityModel evals
