@@ -50,9 +50,11 @@ void SingleModel::component_parallel_mode(short mode)
 
 /** SingleModel doesn't need to change the tagging, so just forward to
     Interface */
-void SingleModel::prepend_evalid(const String& eval_id_str)
+void SingleModel::eval_tag_prefix(const String& eval_id_str)
 {
-  userDefinedInterface.eval_tag_prefix(eval_id_str);
+  // Single model uses the counter from the interface
+  bool append_iface_id = true;
+  userDefinedInterface.eval_tag_prefix(eval_id_str, append_iface_id);
 }
 
 } // namespace Dakota

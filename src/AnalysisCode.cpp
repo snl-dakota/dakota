@@ -87,7 +87,7 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
 }
 
 
-void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
+void AnalysisCode::define_filenames(const String& eval_id_tag)
 {
   // Define modified file names by handling Unix temp file and tagging options.
   // These names are used in writing the parameters file, in defining the
@@ -103,22 +103,13 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
   // BMA NOTE: the file and/or directory names might also be adjusted
   // by workdir, so may need to broadcast in that case too!
 
-  // BMA TODO: Current behavior is tagged parameters OR tagged
-  // directory.  The input spec should enforce this!  Or support what
-  // the spec expresses...
-
   // BMA NOTE: We allow run without tag, but then tag at cleanup when
   // saving
 
-  // Classic behavior with no hierarchical tagging:
-  //   directory_tag: tag dirs .2  no tag files
-  //   both:          tag dirs .2  no tag files
-  //   file_tag:      no tag dirs  tag files .2
-
-  // Behavior for hierarchical tagging with eval_tag_prefix:
-  //   directory_tag: tag dirs .4.9.2  no tag files
-  //   both:          tag dirs .4.9    tag files .2
-  //   file_tag:      no tag dirs      tag files .4.9.2
+  // Behavior has been simplified to tag with either hierarchical tag,
+  // e.g. 4.9.2, or just eval id tag, .2.  If directory_tag, workdirs
+  // are tagged, if file_tag, directories are tagged, or both if both
+  // specified.
 
   const ParallelConfiguration& pc = parallelLib.parallel_configuration();
   int eval_comm_rank   = parallelLib.ie_parallel_level_defined()
@@ -132,38 +123,8 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
 
   if (eval_comm_rank == 0 || !bcast_flag) {
 
-    // always define fullEvalId string for use in parameters files
-    String eval_id_tag = "." + boost::lexical_cast<std::string>(id);
-    fullEvalId = eval_tag_prefix + eval_id_tag;
-
-    // process options for classic or hierarchical tagging
-    String file_suffix, dir_suffix;  // endings for file and directory names
-    bool file_tag = false;
-    if (eval_tag_prefix.empty()) {
-      // classic behavior
-      if (dirTag) {
-	dir_suffix = eval_id_tag;
-      }
-      else if (fileTagFlag) {
-	file_tag = true;
-	file_suffix = eval_id_tag;
-      }
-    }
-    else {
-      // hierarchical tagging
-      if (dirTag && fileTagFlag) {
-	dir_suffix = eval_tag_prefix;
-	file_tag = true;
-	file_suffix = eval_id_tag;
-      }
-      else if (dirTag) {
-	dir_suffix = fullEvalId;
-      }
-      else if (fileTagFlag) {
-	file_tag = true;
-	file_suffix = fullEvalId;
-      }
-    }
+    // eval_tag_prefix will be empty if no hierarchical tagging
+    fullEvalId = eval_id_tag;
 
     if (specifiedParamsFileName.empty()) { // no user spec -> use temp files
 //#ifdef LINUX
@@ -194,8 +155,8 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
     }
     else {
       paramsFileName = specifiedParamsFileName;
-      if (file_tag)
-	paramsFileName += file_suffix;
+      if (fileTagFlag)
+	paramsFileName += fullEvalId;
     }
     if (specifiedResultsFileName.empty()) { // no user spec -> use temp files
 //#ifdef LINUX
@@ -226,8 +187,8 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
     }
     else {
       resultsFileName = specifiedResultsFileName;
-      if (file_tag)
-	resultsFileName += file_suffix;
+      if (fileTagFlag)
+	resultsFileName += fullEvalId;
     }
     if (useWorkdir) {
 	if (!workDir.length()) {
@@ -261,7 +222,7 @@ void AnalysisCode::define_filenames(const int id, const String& eval_tag_prefix)
             }
             haveWorkdir = true;
 	  }
-          wd += dir_suffix;
+          wd += fullEvalId;
 	}
 
 	if (!haveTemplateDir) {
@@ -523,7 +484,7 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
 
 
 void AnalysisCode::read_results_files(Response& response, const int id,
-				      const String& eval_tag_prefix)
+				      const String& eval_id_tag)
 {
   // Retrieve parameters & results file names using fn. eval. id.  A map of
   // filenames is used because the names of tmp files must be available here
@@ -611,19 +572,8 @@ void AnalysisCode::read_results_files(Response& response, const int id,
     if (useWorkdir && !dirSave && dirTag) {
       std::string wd = workDir;
       //if (dirTag) {
-	// can't rely on class member due to split call to write/read 
-	String eval_id_tag = "." + boost::lexical_cast<std::string>(id);
-	if (eval_tag_prefix.empty()) {
-	  // classic behavior
-	  wd += eval_id_tag;   
-	}
-	else {
-	  // hierarchical tagging
-	  wd += eval_tag_prefix;
-	  if (!fileTagFlag)
-	    wd += eval_id_tag;
-	}
-
+      // can't rely on class member due to split call to write/read 
+      wd += eval_id_tag;   
       //}
       rec_rmdir(wd.c_str());
     }
@@ -631,6 +581,7 @@ void AnalysisCode::read_results_files(Response& response, const int id,
 
   // Prevent overwriting of files with reused names for which a file_save
   // request has been given.
+  // BMA TODO: remove confounding with dirTag
   if ( fileSaveFlag && !fileTagFlag && !dirTag &&
        ( !specifiedParamsFileName.empty() ||
 	 !specifiedResultsFileName.empty() ) ) {
@@ -638,20 +589,8 @@ void AnalysisCode::read_results_files(Response& response, const int id,
     if (!suppressOutputFlag && outputLevel > NORMAL_OUTPUT)
       Cout << "Files with nonunique names will be tagged for file_save:\n";
 
-    // can't rely on class member due to split call to write/read 
-    String file_suffix;
-    if (eval_tag_prefix.empty()) {
-      // classic behavior
-      file_suffix = "." + boost::lexical_cast<std::string>(id);
-    }
-    else {
-      // hierarchical tagging (in this block dirTag is false, so all
-      // the tags are on the file name)
-      file_suffix = eval_tag_prefix + "." + boost::lexical_cast<std::string>(id);
-    }
-
     if (!specifiedParamsFileName.empty()) {
-      const std::string new_str = specifiedParamsFileName + file_suffix;
+      const std::string new_str = specifiedParamsFileName + eval_id_tag;
       if (!multipleParamsFiles || !iFilterName.empty()) {
 	if (!suppressOutputFlag && outputLevel > NORMAL_OUTPUT)
 	  Cout << "Moving " << specifiedParamsFileName << " to " << new_str
@@ -671,7 +610,7 @@ void AnalysisCode::read_results_files(Response& response, const int id,
       }
     }
     if (!specifiedResultsFileName.empty()) {
-      const std::string new_str = specifiedResultsFileName + file_suffix;
+      const std::string new_str = specifiedResultsFileName + eval_id_tag;
       if (numPrograms == 1 || !oFilterName.empty()) {
         if (!suppressOutputFlag && outputLevel > NORMAL_OUTPUT)
           Cout << "Moving " << specifiedResultsFileName << " to "

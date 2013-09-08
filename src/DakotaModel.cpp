@@ -3445,13 +3445,13 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 
 /// Derived classes containing additional models or interfaces should
 /// implement this function to pass along to their sub Models/Interfaces
-void Model::prepend_evalid(const String& eval_id_str)
+void Model::eval_tag_prefix(const String& eval_id_str)
 {
   if (modelRep)
-    modelRep->prepend_evalid(eval_id_str);
+    modelRep->eval_tag_prefix(eval_id_str);
   // Models are not required to forward this as they may not have an Interface
   // else { // letter lacking redefinition of virtual fn.
-  //   Cerr << "Error: Letter lacking redefinition of virtual prepend_evalid()"
+  //   Cerr << "Error: Letter lacking redefinition of virtual eval_tag_prefix()"
   // 	 << "function.\n" << std::endl;
   //   abort_handler(-1);
   // }

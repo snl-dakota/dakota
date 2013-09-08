@@ -62,7 +62,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
   multiProcEvalFlag(false), ieDedMasterFlag(false),
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  Interfaces support the full granularity in verbosity.
-  outputLevel(problem_db.get_short("method.output")),
+  outputLevel(problem_db.get_short("method.output")), appendIfaceId(true),
   interfaceRep(NULL), referenceCount(1)
 {
 #ifdef DEBUG
@@ -171,8 +171,8 @@ Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
   interfaceId("NO_DB_INTERFACE"), algebraicMappings(false), coreMappings(true),
   currEvalId(0), fineGrainEvalCounters(false), evalIdCntr(0), newEvalIdCntr(0),
   evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
-  ieDedMasterFlag(false), outputLevel(output_level), interfaceRep(NULL),
-  referenceCount(1)
+  ieDedMasterFlag(false), outputLevel(output_level), appendIfaceId(true),
+  interfaceRep(NULL), referenceCount(1)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
@@ -536,12 +536,15 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 /// default implementation just sets the list of eval ID tags;
 /// derived classes containing additional models or interfaces should
 /// override (currently no use cases)
-void Interface::eval_tag_prefix(const String& eval_id_str)
+void Interface::
+eval_tag_prefix(const String& eval_id_str, bool append_iface_id)
 {
   if (interfaceRep)
-    interfaceRep->eval_tag_prefix(eval_id_str);
-  else
+    interfaceRep->eval_tag_prefix(eval_id_str, append_iface_id);
+  else {
     evalTagPrefix = eval_id_str;
+    appendIfaceId = append_iface_id;
+  }
 }
 
 
@@ -838,6 +841,17 @@ response_mapping(const Response& algebraic_response,
     Cout << "algebraic_response:\n" << algebraic_response
 	 << "total_response:\n"     << total_response << '\n';
   }
+}
+
+
+String Interface::final_eval_id_tag(int iface_eval_id)
+{
+  if (interfaceRep)
+    return interfaceRep->final_eval_id_tag(iface_eval_id);
+
+  if (appendIfaceId)
+    return evalTagPrefix + "." + boost::lexical_cast<std::string>(iface_eval_id);
+  return evalTagPrefix;
 }
 
 

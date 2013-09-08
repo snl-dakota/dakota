@@ -232,8 +232,8 @@ public:
 					bool minimal_header = false,
 					bool relative_count = true) const;
 
-  /// add an eval ID to the list for tagging
-  virtual void prepend_evalid(const String& eval_id_str);
+  /// set the hierarchical eval ID tag prefix
+  virtual void eval_tag_prefix(const String& eval_id_str);
 
 
   //

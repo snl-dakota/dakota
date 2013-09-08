@@ -915,7 +915,7 @@ void DataFitSurrModel::build_global()
       if (hierarchicalTagging) {
 	String eval_tag = evalTagPrefix + '.' + 
 	  boost::lexical_cast<String>(surrModelEvalCntr+1);
-	daceIterator.prepend_evalid(eval_tag);
+	daceIterator.eval_tag_prefix(eval_tag);
       }
       // run the iterator
       daceIterator.run_iterator(Cout);
@@ -1035,7 +1035,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     String eval_tag = evalTagPrefix + '.' + 
       boost::lexical_cast<String>(surrModelEvalCntr+1);
     if (actual_eval)
-      actualModel.prepend_evalid(eval_tag);
+      actualModel.eval_tag_prefix(eval_tag);
   }
 
   // -----------------------------
@@ -1163,7 +1163,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     String eval_tag = evalTagPrefix + '.' + 
       boost::lexical_cast<String>(surrModelEvalCntr+1);
     if (actual_eval)
-      actualModel.prepend_evalid(eval_tag);
+      actualModel.eval_tag_prefix(eval_tag);
   }
 
   // -----------------------------
@@ -1890,7 +1890,7 @@ void DataFitSurrModel::update_from_actual_model()
 }
 
 
-void DataFitSurrModel::prepend_evalid(const String& eval_id_str)
+void DataFitSurrModel::eval_tag_prefix(const String& eval_id_str)
 {
   evalTagPrefix = eval_id_str;
 }

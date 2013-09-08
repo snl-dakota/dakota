@@ -57,7 +57,7 @@ interface,
 	  analysis_driver = 'trajectory'
 	  work_directory named 'epistemic_simulation'
 # Note: file tagging affects the directory tag that's employed
-	  directory_tag directory_save file_tag #file_save
+	  directory_tag directory_save   #file_tag file_save
 	  parameters_file = 'epist_params.in'
 	  results_file    = 'epist_results.out'
 

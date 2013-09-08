@@ -133,8 +133,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
-  /// add an eval ID to the list for tagging
-  void prepend_evalid(const String& eval_id_str);
+  /// set the hierarchical eval ID tag prefix
+  virtual void eval_tag_prefix(const String& eval_id_str);
+
 
 private:
 

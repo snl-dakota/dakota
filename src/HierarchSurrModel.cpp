@@ -86,7 +86,7 @@ void HierarchSurrModel::build_approximation()
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + 
       boost::lexical_cast<String>(hierModelEvalCntr+1);
-    highFidelityModel.prepend_evalid(eval_tag);
+    highFidelityModel.eval_tag_prefix(eval_tag);
   }
 
   // set HierarchSurrModel parallelism mode to highFidelityModel
@@ -186,9 +186,9 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     String eval_tag = evalTagPrefix + '.' + 
       boost::lexical_cast<String>(hierModelEvalCntr+1);
     if (hi_fi_eval)
-      highFidelityModel.prepend_evalid(eval_tag);
+      highFidelityModel.eval_tag_prefix(eval_tag);
     if (lo_fi_eval)
-      lowFidelityModel.prepend_evalid(eval_tag);
+      lowFidelityModel.eval_tag_prefix(eval_tag);
   }
 
   // ------------------------------
@@ -320,9 +320,9 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     String eval_tag = evalTagPrefix + '.' + 
       boost::lexical_cast<String>(hierModelEvalCntr+1);
     if (hi_fi_eval)
-      highFidelityModel.prepend_evalid(eval_tag);
+      highFidelityModel.eval_tag_prefix(eval_tag);
     if (lo_fi_eval)
-      lowFidelityModel.prepend_evalid(eval_tag);
+      lowFidelityModel.eval_tag_prefix(eval_tag);
   }
 
   // ------------------------------
@@ -866,7 +866,7 @@ void HierarchSurrModel::update_model(Model& model)
 }
 
 
-void HierarchSurrModel::prepend_evalid(const String& eval_id_str)
+void HierarchSurrModel::eval_tag_prefix(const String& eval_id_str)
 {
   evalTagPrefix = eval_id_str;
 }

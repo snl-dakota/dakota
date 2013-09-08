@@ -940,7 +940,9 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' + 
 	boost::lexical_cast<String>(nestedModelEvalCntr+1);
-      optionalInterface.eval_tag_prefix(eval_tag);
+      // don't apply a redundant interface eval id
+      bool append_iface_tag = false;
+      optionalInterface.eval_tag_prefix(eval_tag, append_iface_tag);
     }
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse);
@@ -958,7 +960,7 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' + 
 	boost::lexical_cast<String>(nestedModelEvalCntr+1);
-      subIterator.prepend_evalid(eval_tag);
+      subIterator.eval_tag_prefix(eval_tag);
     }
     // output suppressed by default, unless sub-iterator is verbose:
     subIterator.run_iterator(Cout);
@@ -2277,7 +2279,7 @@ integer_variable_mapping(const int& i_var, size_t mapped_index,
   }
 }
 
-void NestedModel::prepend_evalid(const String& eval_id_str)
+void NestedModel::eval_tag_prefix(const String& eval_id_str)
 {
   evalTagPrefix = eval_id_str;
 }

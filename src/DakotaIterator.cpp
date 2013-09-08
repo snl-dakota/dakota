@@ -1176,12 +1176,12 @@ void Iterator::post_input()
 /** This prepend may need to become a virtual function if the tagging
     should propagate to other subModels or helper Iterators an
     Iterator may contain. */
-void Iterator::prepend_evalid(const String& eval_id_str)
+void Iterator::eval_tag_prefix(const String& eval_id_str)
 {
   if (iteratorRep)
-    iteratorRep->prepend_evalid(eval_id_str);
+    iteratorRep->eval_tag_prefix(eval_id_str);
   else
-    iteratedModel.prepend_evalid(eval_id_str);
+    iteratedModel.eval_tag_prefix(eval_id_str);
 }
 
 } // namespace Dakota

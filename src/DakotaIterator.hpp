@@ -219,8 +219,8 @@ public:
   /// that are not mapped to the top Iterator level
   Iterator* iterator_rep() const;
 
-  /// recursively add an eval ID to the list for tagging
-  void prepend_evalid(const String& eval_id_str);
+  /// set the hierarchical eval ID tag prefix
+  virtual void eval_tag_prefix(const String& eval_id_str);
 
   //
   //- Heading: Operator overloaded functions

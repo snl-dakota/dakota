@@ -247,7 +247,7 @@ public:
   bool is_null() const;
 
   /// set the evaluation tag prefix (does not recurse)
-  void eval_tag_prefix(const String& eval_id_str);
+  void eval_tag_prefix(const String& eval_id_str, bool append_iface_id = true);
 
 protected:
 
@@ -290,6 +290,9 @@ protected:
   void response_mapping(const Response& algebraic_response,
 			const Response& core_response,
 			Response& total_response);
+
+  /// form and return the final evaluation ID tag, appending iface ID if needed
+  String final_eval_id_tag(int fn_eval_id);
 
   //
   //- Heading: Data
@@ -360,6 +363,8 @@ protected:
 
   /// set of period-delimited evaluation ID tags to use in evaluation tagging
   String evalTagPrefix;
+  /// whether to append the interface ID to the prefix during map (default true)
+  bool appendIfaceId;
 
 private:
 
