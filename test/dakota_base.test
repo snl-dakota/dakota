@@ -7116,6 +7116,42 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        TF1ln  9.41109e-01 
        TF2ln -9.41111e-01 
+dakota_lps_pce_rosenbrock_fail.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 5 total (5 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 25 total (25 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 45 total (45 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 135 total (135 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 40 total (40 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+<<<<< Best objective function  =
+                     -7.2366524362e-01
+<<<<< Best data captured at function evaluation 1
 dakota_mogatest.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 2500 total (2500 new, 0 duplicate)
@@ -8469,6 +8505,34 @@ Test Number 11 succeeded
 <<<<< Best constraint values   =
                       2.9999999986e+00
                       5.3265448686e+00
+<<<<< Best data not found in evaluation cache
+Test Number 12 succeeded
+<<<<< Function evaluation summary (UQ_I): 70 total (70 new, 0 duplicate)
+  response_fn_1: 70 val (70 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 70 val (70 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 70 val (70 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      1.0000000000e+01 w
+                      9.5428753027e+00 t
+<<<<< Best objective function  =
+                      9.5428753027e+01
+<<<<< Best constraint values   =
+                      8.7990039829e-01
+                      6.0433634238e-01
+<<<<< Best data not found in evaluation cache
+Test Number 13 succeeded
+<<<<< Function evaluation summary (UQ_I): 1650 total (1650 new, 0 duplicate)
+  response_fn_1: 1650 val (1650 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1650 val (1650 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1650 val (1650 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.4459894326e+00 w
+                      3.8921865489e+00 t
+<<<<< Best objective function  =
+                      9.5202471684e+00
+<<<<< Best constraint values   =
+                      2.9999999998e+00
+                      3.2768531820e+00
 <<<<< Best data not found in evaluation cache
 dakota_pcbdo_cantilever_mf.in
 Test Number 0 succeeded
@@ -51692,76 +51756,94 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.8119737502471122e+02   P0   P0
-  -3.8027322283165944e+01   P1   P0
-  -5.7444516088097384e+02   P0   P1
-  8.6466617712116863e+02   P2   P0
-  2.9099686018560948e+02   P1   P1
-  3.3517874711097124e+02   P0   P2
-  -1.1124563695108041e+03   P2   P1
+  4.5566666666666674e+02   P0   P0
+  -3.9999999999998637e+00   P1   P0
+  -5.3333333333333326e+02   P0   P1
+  9.1695238095238096e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666666657e+02   P0   P2
+  0.0000000000000000e+00   P3   P0
+  -1.0666666666666667e+03   P2   P1
+  0.0000000000000000e+00   P1   P2
+  0.0000000000000000e+00   P0   P3
+  3.6571428571428550e+02   P4   P0
+  0.0000000000000000e+00   P3   P1
+  0.0000000000000000e+00   P2   P2
+  0.0000000000000000e+00   P1   P3
+  0.0000000000000000e+00   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.8119737502471122e+02  6.1187334746532088e+02
+ response_fn_1  4.5566666666666674e+02  6.0656024184257819e+02
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666666566e+02   P0   P0
-  -3.9999999999992251e+00   P1   P0
-  -5.3333333333333110e+02   P0   P1
-  9.1695238095237789e+02   P2   P0
-  2.6666666666666299e+02   P0   P2
-  -7.0406513484310765e-13   P3   P0
-  -1.0666666666666599e+03   P2   P1
-  3.6571428571428356e+02   P4   P0
-  2.3488191969528947e-13   P3   P1
-  -7.3048637890848783e-12   P1   P3
+  4.5566666666666657e+02   P0   P0
+  -3.9999999999996163e+00   P1   P0
+  -5.3333333333333223e+02   P0   P1
+  9.1695238095238039e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666666646e+02   P0   P2
+  -9.5335629781712729e-13   P3   P0
+  -1.0666666666666656e+03   P2   P1
+  2.4667189164713798e-13   P1   P2
+  0.0000000000000000e+00   P0   P3
+  3.6571428571428567e+02   P4   P0
+  0.0000000000000000e+00   P3   P1
+  -5.5589052993701695e-13   P2   P2
+  0.0000000000000000e+00   P1   P3
+  1.1510488149191438e-12   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666566e+02  6.0656024184257535e+02
+ response_fn_1  4.5566666666666657e+02  6.0656024184257751e+02
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666666652e+02   P0   P0
-  -3.9999999999996048e+00   P1   P0
-  -5.3333333333333246e+02   P0   P1
-  9.1695238095238017e+02   P2   P0
-  2.6666666666666583e+02   P0   P2
-  -2.8384358192100087e-13   P3   P0
-  -1.0666666666666652e+03   P2   P1
-  -1.2927160329213227e-13   P1   P2
-  3.6571428571428510e+02   P4   P0
-  -8.4102880923152033e-13   P3   P1
-  -1.5951576971478693e-12   P1   P3
+  4.5566666666666663e+02   P0   P0
+  -3.9999999999995892e+00   P1   P0
+  -5.3333333333333212e+02   P0   P1
+  9.1695238095238051e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666666674e+02   P0   P2
+  -1.1304741670128835e-12   P3   P0
+  -1.0666666666666658e+03   P2   P1
+  4.3802947344952330e-13   P1   P2
+  0.0000000000000000e+00   P0   P3
+  3.6571428571428612e+02   P4   P0
+  -3.7395096803921834e-13   P3   P1
+  -8.7636795411778633e-13   P2   P2
+  4.8005619298785394e-13   P1   P3
+  1.4941083401091918e-12   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666652e+02  6.0656024184257740e+02
+ response_fn_1  4.5566666666666663e+02  6.0656024184257774e+02
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  3.1314402425932326e+02   P0   P0
-  -2.4087425584393650e+01   P1   P0
-  -2.0388587820147296e+02   P0   P1
-  5.1179176835230140e+02   P2   P0
-  -3.3943078337864705e+01   P0   P2
-  -2.6455028592678963e+02   P3   P0
-  -1.0224331554345397e+02   P2   P1
-  4.1373581220103733e+02   P1   P2
-  1.9431448606210003e+02   P4   P0
-  4.8090455274925057e+02   P3   P1
-  -5.0776392954713816e+02   P2   P2
-  -5.3824460183133453e+02   P1   P3
-  1.0931525226725562e+02   P0   P4
-  -1.0823736073376180e+02   P5   P0
-  1.0187754831818120e+01   P3   P2
-  2.6334954991358978e+02   P2   P3
-  6.5610591197312112e+02   P1   P4
-  -9.3792651765910733e+01   P0   P5
+  3.0623259646704236e+02   P0   P0
+  -3.0652372783211664e+01   P1   P0
+  -2.1066671951563916e+02   P0   P1
+  5.0379793539972280e+02   P2   P0
+  -5.5743808144224900e+01   P0   P2
+  -2.6591027983269993e+02   P3   P0
+  -8.7279245320845007e+01   P2   P1
+  3.9611288658484420e+02   P1   P2
+  -2.7758929516251872e+01   P0   P3
+  1.8664688282962314e+02   P4   P0
+  5.1800787448761400e+02   P3   P1
+  -5.1809988249010416e+02   P2   P2
+  -5.6645006756667442e+02   P1   P3
+  1.0246919409901051e+02   P0   P4
+  -1.0773528216391966e+02   P5   P0
+  3.5682389193768600e+01   P3   P2
+  2.5108751341142954e+02   P2   P3
+  6.4945577851379744e+02   P1   P4
+  -1.0249367266966529e+02   P0   P5
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.1314402425932326e+02  3.8627783426756855e+02
+ response_fn_1  3.0623259646704236e+02  3.8855046165286757e+02
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
   response_fn_1: 112 val (112 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -51855,21 +51937,21 @@ Test Number 12 succeeded
   response_fn_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
   4.5566666666666680e+02   P0   P0
-  -4.0000000000000604e+00   P1   P0
+  -4.0000000000004050e+00   P1   P0
   -5.3333333333333303e+02   P0   P1
-  9.1695238095238005e+02   P2   P0
+  9.1695238095238017e+02   P2   P0
   0.0000000000000000e+00   P1   P1
   2.6666666666666669e+02   P0   P2
   0.0000000000000000e+00   P3   P0
-  -1.0666666666666667e+03   P2   P1
+  -1.0666666666666677e+03   P2   P1
   0.0000000000000000e+00   P1   P2
   0.0000000000000000e+00   P0   P3
-  3.6571428571428629e+02   P4   P0
-  -5.5351689242200542e-13   P3   P1
+  3.6571428571428635e+02   P4   P0
+  -5.6151126697816865e-13   P3   P1
   0.0000000000000000e+00   P2   P2
   0.0000000000000000e+00   P1   P3
   0.0000000000000000e+00   P0   P4
-  0.0000000000000000e+00   P5   P0
+  3.0771810521609264e-13   P5   P0
   0.0000000000000000e+00   P4   P1
   0.0000000000000000e+00   P3   P2
   0.0000000000000000e+00   P2   P3
@@ -51877,85 +51959,73 @@ Polynomial Chaos coefficients for response_fn_1:
   0.0000000000000000e+00   P0   P5
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666680e+02  6.0656024184257797e+02
+ response_fn_1  4.5566666666666680e+02  6.0656024184257808e+02
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666666652e+02   P0   P0
-  -3.9999999999997327e+00   P1   P0
-  -5.3333333333333280e+02   P0   P1
-  9.1695238095237994e+02   P2   P0
+  4.5566666666666640e+02   P0   P0
+  -3.9999999999997535e+00   P1   P0
+  -5.3333333333333292e+02   P0   P1
+  9.1695238095238005e+02   P2   P0
   0.0000000000000000e+00   P1   P1
-  2.6666666666666657e+02   P0   P2
+  2.6666666666666663e+02   P0   P2
+  5.3353117752914068e-15   P3   P0
+  -1.0666666666666665e+03   P2   P1
+  0.0000000000000000e+00   P1   P2
+  0.0000000000000000e+00   P0   P3
+  3.6571428571428618e+02   P4   P0
+  -4.9858846055414851e-13   P3   P1
+  0.0000000000000000e+00   P2   P2
+  0.0000000000000000e+00   P1   P3
+  0.0000000000000000e+00   P0   P4
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666640e+02  6.0656024184257785e+02
+Test Number 14 succeeded
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
+Polynomial Chaos coefficients for response_fn_1:
+  4.5566666666666640e+02   P0   P0
+  -3.9999999999997433e+00   P1   P0
+  -5.3333333333333292e+02   P0   P1
+  9.1695238095238005e+02   P2   P0
+  5.1898077332499723e-15   P1   P1
+  2.6666666666666663e+02   P0   P2
   0.0000000000000000e+00   P3   P0
   -1.0666666666666665e+03   P2   P1
   0.0000000000000000e+00   P1   P2
   0.0000000000000000e+00   P0   P3
   3.6571428571428618e+02   P4   P0
-  -4.5192155965962238e-13   P3   P1
+  -4.9163954092565607e-13   P3   P1
   0.0000000000000000e+00   P2   P2
   0.0000000000000000e+00   P1   P3
   0.0000000000000000e+00   P0   P4
-  1.7783550380164581e-14   P5   P0
-  0.0000000000000000e+00   P4   P1
-  0.0000000000000000e+00   P3   P2
-  0.0000000000000000e+00   P2   P3
-  0.0000000000000000e+00   P1   P4
-  0.0000000000000000e+00   P0   P5
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666652e+02  6.0656024184257774e+02
-Test Number 14 succeeded
-<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
-  response_fn_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
-Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666666646e+02   P0   P0
-  -3.9999999999999227e+00   P1   P0
-  -5.3333333333333292e+02   P0   P1
-  9.1695238095237994e+02   P2   P0
-  0.0000000000000000e+00   P1   P1
-  2.6666666666666657e+02   P0   P2
-  0.0000000000000000e+00   P3   P0
-  -1.0666666666666667e+03   P2   P1
-  0.0000000000000000e+00   P1   P2
-  0.0000000000000000e+00   P0   P3
-  3.6571428571428618e+02   P4   P0
-  -4.6611895351892441e-13   P3   P1
-  0.0000000000000000e+00   P2   P2
-  0.0000000000000000e+00   P1   P3
-  0.0000000000000000e+00   P0   P4
-  2.7479571150932631e-13   P5   P0
-  -1.8303090906173137e-13   P4   P1
-  0.0000000000000000e+00   P3   P2
-  1.8223333163319621e-14   P2   P3
-  0.0000000000000000e+00   P1   P4
-  0.0000000000000000e+00   P0   P5
-Moment-based statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666646e+02  6.0656024184257785e+02
+ response_fn_1  4.5566666666666640e+02  6.0656024184257785e+02
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5309879854104059e+02   P0   P0
-  0.0000000000000000e+00   P1   P0
-  -5.2944764857205848e+02   P0   P1
-  9.1655358037324027e+02   P2   P0
-  -2.9147154085594290e-01   P1   P1
-  2.6291031609603317e+02   P0   P2
-  -1.7766667083073544e+00   P3   P0
-  -1.0611232548134649e+03   P2   P1
-  4.3781940023649417e+00   P1   P2
+  4.5398179738358107e+02   P0   P0
+  -9.9354942830752480e-01   P1   P0
+  -5.3024485635124438e+02   P0   P1
+  9.1679439108221925e+02   P2   P0
+  -1.5967264000804724e+00   P1   P1
+  2.6325041282325964e+02   P0   P2
+  -1.8015789897073577e+00   P3   P0
+  -1.0624922009483173e+03   P2   P1
+  5.1705813898616588e+00   P1   P2
   0.0000000000000000e+00   P0   P3
-  3.6739287594479993e+02   P4   P0
-  9.2408918016544628e-01   P3   P1
-  -9.9714924545183503e-01   P2   P2
-  -5.9273040570887447e+00   P1   P3
+  3.6749746460537142e+02   P4   P0
+  1.9015320365390962e+00   P3   P1
+  -1.7976352531920226e+00   P2   P2
+  -6.0248997867907397e+00   P1   P3
   0.0000000000000000e+00   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5309879854104059e+02  6.0443629069652116e+02
+ response_fn_1  4.5398179738358107e+02  6.0494021139516997e+02
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
@@ -52076,58 +52146,46 @@ Test Number 21 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666666646e+02   P0   P0
-  -3.9999999999995084e+00   P1   P0
-  -5.3333333333333269e+02   P0   P1
-  9.1695238095238096e+02   P2   P0
+  4.5566666666666674e+02   P0   P0
+  -3.9999999999998024e+00   P1   P0
+  -5.3333333333333292e+02   P0   P1
+  9.1695238095238085e+02   P2   P0
   0.0000000000000000e+00   P1   P1
-  2.6666666666666640e+02   P0   P2
+  2.6666666666666663e+02   P0   P2
   0.0000000000000000e+00   P3   P0
-  -1.0666666666666661e+03   P2   P1
+  -1.0666666666666667e+03   P2   P1
   0.0000000000000000e+00   P1   P2
   0.0000000000000000e+00   P0   P3
-  3.6571428571428544e+02   P4   P0
-  -2.5594704647083240e-13   P3   P1
-  0.0000000000000000e+00   P2   P2
+  3.6571428571428561e+02   P4   P0
+  -2.8383257907201435e-13   P3   P1
+  -1.1771894981184072e-13   P2   P2
   0.0000000000000000e+00   P1   P3
   0.0000000000000000e+00   P0   P4
-  0.0000000000000000e+00   P5   P0
-  -4.8192260256606140e-13   P4   P1
-  0.0000000000000000e+00   P3   P2
-  0.0000000000000000e+00   P2   P3
-  0.0000000000000000e+00   P1   P4
-  0.0000000000000000e+00   P0   P5
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666646e+02  6.0656024184257785e+02
+ response_fn_1  4.5566666666666674e+02  6.0656024184257808e+02
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666666646e+02   P0   P0
-  -3.9999999999995635e+00   P1   P0
-  -5.3333333333333269e+02   P0   P1
-  9.1695238095238130e+02   P2   P0
+  4.5566666666666674e+02   P0   P0
+  -3.9999999999998024e+00   P1   P0
+  -5.3333333333333292e+02   P0   P1
+  9.1695238095238085e+02   P2   P0
   0.0000000000000000e+00   P1   P1
-  2.6666666666666646e+02   P0   P2
+  2.6666666666666663e+02   P0   P2
   0.0000000000000000e+00   P3   P0
-  -1.0666666666666661e+03   P2   P1
+  -1.0666666666666667e+03   P2   P1
   0.0000000000000000e+00   P1   P2
   0.0000000000000000e+00   P0   P3
-  3.6571428571428532e+02   P4   P0
-  -3.3833585186780652e-13   P3   P1
-  0.0000000000000000e+00   P2   P2
+  3.6571428571428561e+02   P4   P0
+  -2.8383257907201435e-13   P3   P1
+  -1.1771894981184072e-13   P2   P2
   0.0000000000000000e+00   P1   P3
   0.0000000000000000e+00   P0   P4
-  0.0000000000000000e+00   P5   P0
-  -5.8136371846962514e-13   P4   P1
-  2.6442844848923325e-13   P3   P2
-  0.0000000000000000e+00   P2   P3
-  0.0000000000000000e+00   P1   P4
-  -7.0349545555771240e-15   P0   P5
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666646e+02  6.0656024184257808e+02
+ response_fn_1  4.5566666666666674e+02  6.0656024184257808e+02
 Test Number 23 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
@@ -52386,19 +52444,24 @@ Test Number 34 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666666566e+02   P0   P0
-  -3.9999999999992251e+00   P1   P0
-  -5.3333333333333110e+02   P0   P1
-  9.1695238095237789e+02   P2   P0
-  2.6666666666666299e+02   P0   P2
-  -7.0406513484310765e-13   P3   P0
-  -1.0666666666666599e+03   P2   P1
-  3.6571428571428356e+02   P4   P0
-  2.3488191969528947e-13   P3   P1
-  -7.3048637890848783e-12   P1   P3
+  4.5566666666666657e+02   P0   P0
+  -3.9999999999996163e+00   P1   P0
+  -5.3333333333333223e+02   P0   P1
+  9.1695238095238039e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666666646e+02   P0   P2
+  -9.5335629781712729e-13   P3   P0
+  -1.0666666666666656e+03   P2   P1
+  2.4667189164713798e-13   P1   P2
+  0.0000000000000000e+00   P0   P3
+  3.6571428571428567e+02   P4   P0
+  0.0000000000000000e+00   P3   P1
+  -5.5589052993701695e-13   P2   P2
+  0.0000000000000000e+00   P1   P3
+  1.1510488149191438e-12   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666566e+02  6.0656024184257535e+02
+ response_fn_1  4.5566666666666657e+02  6.0656024184257751e+02
 Test Number 35 succeeded
 <<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
   response_fn_1: 37 val (37 n, 0 d), 37 grad (37 n, 0 d), 0 Hess (0 n, 0 d)
@@ -52558,45 +52621,45 @@ Test Number 42 succeeded
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
   4.5566666666666742e+02   P0   P0
-  -3.9999999999998743e+00   P1   P0
-  -5.3333333333333326e+02   P0   P1
-  9.1695238095238096e+02   P2   P0
-  0.0000000000000000e+00   P1   P1
-  2.6666666666666646e+02   P0   P2
-  4.1867961601821508e-14   P3   P0
-  -1.0666666666666677e+03   P2   P1
-  -3.7296169603729710e-13   P1   P2
-  0.0000000000000000e+00   P0   P3
+  -4.0000000000000044e+00   P1   P0
+  -5.3333333333333337e+02   P0   P1
+  9.1695238095238108e+02   P2   P0
+  3.1958150902813587e-13   P1   P1
+  2.6666666666666657e+02   P0   P2
+  1.1476967892773409e-13   P3   P0
+  -1.0666666666666679e+03   P2   P1
+  -7.4574207762229795e-13   P1   P2
+  -3.0699067142975721e-14   P0   P3
   3.6571428571428532e+02   P4   P0
-  0.0000000000000000e+00   P3   P1
-  0.0000000000000000e+00   P2   P2
-  4.4520785080961973e-13   P1   P3
-  0.0000000000000000e+00   P0   P4
+  1.8467051352027544e-13   P3   P1
+  5.7208567212683607e-13   P2   P2
+  8.1238790140531941e-13   P1   P3
+  3.0766872174355715e-14   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666742e+02  6.0656024184257831e+02
+ response_fn_1  4.5566666666666742e+02  6.0656024184257842e+02
 Test Number 43 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
   4.5566666666666742e+02   P0   P0
-  -3.9999999999998743e+00   P1   P0
-  -5.3333333333333326e+02   P0   P1
-  9.1695238095238096e+02   P2   P0
-  0.0000000000000000e+00   P1   P1
-  2.6666666666666646e+02   P0   P2
-  4.1867961601821508e-14   P3   P0
-  -1.0666666666666677e+03   P2   P1
-  -3.7296169603729710e-13   P1   P2
-  0.0000000000000000e+00   P0   P3
+  -4.0000000000000044e+00   P1   P0
+  -5.3333333333333337e+02   P0   P1
+  9.1695238095238108e+02   P2   P0
+  3.1958150902813587e-13   P1   P1
+  2.6666666666666657e+02   P0   P2
+  1.1476967892773409e-13   P3   P0
+  -1.0666666666666679e+03   P2   P1
+  -7.4574207762229795e-13   P1   P2
+  -3.0699067142975721e-14   P0   P3
   3.6571428571428532e+02   P4   P0
-  0.0000000000000000e+00   P3   P1
-  0.0000000000000000e+00   P2   P2
-  4.4520785080961973e-13   P1   P3
-  0.0000000000000000e+00   P0   P4
+  1.8467051352027544e-13   P3   P1
+  5.7208567212683607e-13   P2   P2
+  8.1238790140531941e-13   P1   P3
+  3.0766872174355715e-14   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666742e+02  6.0656024184257831e+02
+ response_fn_1  4.5566666666666742e+02  6.0656024184257842e+02
 Test Number 44 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
@@ -52690,61 +52753,162 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
   response_fn_1: 59 val (59 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  4.5566666666616368e+02   P0   P0
-  -4.0000000012032055e+00   P1   P0
-  -5.3333333333235817e+02   P0   P1
-  9.1695238095173738e+02   P2   P0
-  1.5473855237564396e-09   P1   P1
-  2.6666666666590680e+02   P0   P2
-  -1.4397415971836565e-09   P3   P0
-  -1.0666666666658750e+03   P2   P1
-  4.3259348570201972e-10   P0   P3
-  3.6571428571420756e+02   P4   P0
-  2.2948497899109969e-09   P3   P1
-  -1.9640686178824903e-10   P2   P2
-  -1.2165906473297367e-09   P1   P3
-  -3.0711161363217057e-10   P0   P4
-  -8.1420109558241235e-11   P5   P0
-  4.7242872136343457e-11   P4   P1
-  -1.3891253677891538e-09   P3   P2
-  -4.1700121836797608e-10   P2   P3
-  5.7639762500328625e-10   P1   P4
-  1.6595343054025695e-10   P0   P5
+  4.5566666666662962e+02   P0   P0
+  -4.0000000000671836e+00   P1   P0
+  -5.3333333333326516e+02   P0   P1
+  9.1695238095231525e+02   P2   P0
+  1.0594955217071177e-10   P1   P1
+  2.6666666666662769e+02   P0   P2
+  -4.1503739272038939e-11   P3   P0
+  -1.0666666666665506e+03   P2   P1
+  0.0000000000000000e+00   P1   P2
+  1.7057547040842563e-11   P0   P3
+  3.6571428571428510e+02   P4   P0
+  7.6872527163076338e-11   P3   P1
+  -3.5816181143428689e-11   P2   P2
+  -2.0036208113463526e-11   P1   P3
+  -1.1853163767901567e-11   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666616368e+02  6.0656024184193564e+02
+ response_fn_1  4.5566666666662962e+02  6.0656024184252146e+02
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
-  response_fn_1: 33 val (33 n, 0 d), 33 grad (33 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
+  response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 Polynomial Chaos coefficients for response_fn_1:
-  2.3634504296529337e+02   P0   P0
-  4.5846962783419578e+01   P1   P0
-  -1.6664904222272341e+02   P0   P1
-  2.4551023032162408e+02   P2   P0
-  4.0694007317032712e+00   P0   P2
-  5.1325858804334722e+01   P3   P0
-  4.8379345515173977e+00   P1   P2
-  5.7332158269186557e+01   P0   P3
-  3.3920570375948202e+01   P3   P1
-  -7.2152703486713028e+02   P2   P2
-  -2.1155738811517296e+01   P1   P3
-  -3.1344090098068675e+00   P0   P4
-  1.6494672705808469e+01   P5   P0
-  4.5661364749270211e+02   P4   P1
-  -2.6369690353066552e+01   P3   P2
-  1.0733338345959042e+02   P2   P3
-  3.3407663258538726e+01   P1   P4
-  2.6668347438800049e+00   P0   P5
-  -5.9479076469453169e+01   P6   P0
-  1.3933239134721406e+01   P5   P1
-  -2.8628164947017336e+02   P4   P2
-  1.7050611023366748e+01   P2   P4
-  -1.8656048759672490e+01   P1   P5
-  -6.6653618198141329e+00   P0   P6
+  4.5566666666666549e+02   P0   P0
+  -3.9999999999993849e+00   P1   P0
+  -5.3333333333333144e+02   P0   P1
+  9.1695238095237846e+02   P2   P0
+  -1.2295333231466318e-12   P1   P1
+  2.6666666666666555e+02   P0   P2
+  1.7480257619434108e-13   P3   P0
+  -1.0666666666666626e+03   P2   P1
+  9.3549046704394135e-13   P1   P2
+  2.3916846705079700e-13   P0   P3
+  3.6571428571428521e+02   P4   P0
+  -8.7980231257917149e-14   P3   P1
+  -2.0477499285284657e-12   P2   P2
+  -2.3343835293428713e-13   P1   P3
+  1.0925196867461141e-13   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.3634504296529337e+02  2.3242752240479857e+02
-
+ response_fn_1  4.5566666666666549e+02  6.0656024184257626e+02
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
+  response_fn_1: 59 val (59 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Polynomial Chaos coefficients for response_fn_1:
+  4.5566666666666862e+02   P0   P0
+  -3.9999999999975677e+00   P1   P0
+  -5.3333333333333087e+02   P0   P1
+  9.1695238095241189e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666665253e+02   P0   P2
+  -2.7240193135189782e-12   P3   P0
+  -1.0666666666667172e+03   P2   P1
+  0.0000000000000000e+00   P1   P2
+  1.9635546911510148e-11   P0   P3
+  3.6571428571428828e+02   P4   P0
+  9.1654733385459655e-12   P3   P1
+  4.1747171951286811e-11   P2   P2
+  6.9674715168792453e-12   P1   P3
+  -1.3742268125470132e-11   P0   P4
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666862e+02  6.0656024184259172e+02
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
+  response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
+Polynomial Chaos coefficients for response_fn_1:
+  4.5566666666666657e+02   P0   P0
+  -4.0000000000001039e+00   P1   P0
+  -5.3333333333333348e+02   P0   P1
+  9.1695238095238130e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666666674e+02   P0   P2
+  0.0000000000000000e+00   P3   P0
+  -1.0666666666666677e+03   P2   P1
+  0.0000000000000000e+00   P1   P2
+  2.7612702959234315e-15   P0   P3
+  3.6571428571428567e+02   P4   P0
+  0.0000000000000000e+00   P3   P1
+  2.6943119761219466e-13   P2   P2
+  0.0000000000000000e+00   P1   P3
+  0.0000000000000000e+00   P0   P4
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666657e+02  6.0656024184257853e+02
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
+  response_fn_1: 59 val (59 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Polynomial Chaos coefficients for response_fn_1:
+  4.5566666666667066e+02   P0   P0
+  -4.0000000000024345e+00   P1   P0
+  -5.3333333333333303e+02   P0   P1
+  9.1695238095242178e+02   P2   P0
+  -5.3903686469840516e-12   P1   P1
+  2.6666666666665816e+02   P0   P2
+  -1.5777497419133129e-11   P3   P0
+  -1.0666666666667227e+03   P2   P1
+  3.7449823108867817e-11   P1   P2
+  1.8568066084352339e-11   P0   P3
+  3.6571428571429675e+02   P4   P0
+  3.2150544991572844e-11   P3   P1
+  5.3239547921217980e-11   P2   P2
+  -1.7436626953479444e-11   P1   P3
+  -1.4036122432073796e-11   P0   P4
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666667066e+02  6.0656024184259707e+02
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
+  response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
+Polynomial Chaos coefficients for response_fn_1:
+  4.5566666666666515e+02   P0   P0
+  -3.9999999999996554e+00   P1   P0
+  -5.3333333333333087e+02   P0   P1
+  9.1695238095237789e+02   P2   P0
+  -7.3390453937929278e-13   P1   P1
+  2.6666666666666515e+02   P0   P2
+  -3.0494074848013700e-14   P3   P0
+  -1.0666666666666611e+03   P2   P1
+  5.3466602996691263e-13   P1   P2
+  3.0430483593417814e-13   P0   P3
+  3.6571428571428493e+02   P4   P0
+  3.0515922578717513e-13   P3   P1
+  -2.7535437054702970e-12   P2   P2
+  -9.7681263318822918e-14   P1   P3
+  1.4309968261092876e-13   P0   P4
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666515e+02  6.0656024184257569e+02
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+  response_fn_1: 30 val (30 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Polynomial Chaos coefficients for response_fn_1:
+  4.5566666666666646e+02   P0   P0
+  -3.9999999999954525e+00   P1   P0
+  -5.3333333333333030e+02   P0   P1
+  9.1695238095238233e+02   P2   P0
+  3.5811353882309049e-12   P1   P1
+  2.6666666666666634e+02   P0   P2
+  1.1425527191022411e-11   P3   P0
+  -1.0666666666666588e+03   P2   P1
+  -3.4958702599396929e-12   P1   P2
+  -7.6738615462090820e-13   P0   P3
+  3.6571428571428714e+02   P4   P0
+  8.1001871876651421e-13   P3   P1
+  -3.4106051316484809e-12   P2   P2
+  2.0605739337042905e-13   P1   P3
+  4.3343106881366111e-13   P0   P4
+  3.5811353882309049e-12   P5   P0
+  2.5437429940211587e-12   P4   P1
+  1.0942358130705543e-12   P3   P2
+  4.5830006456526462e-13   P2   P3
+  -9.0238927441532724e-13   P1   P4
+  -4.2144066014770942e-13   P0   P5
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666646e+02  6.0656024184257694e+02
 dakota_uq_rosenbrock_sc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
@@ -57183,29 +57347,29 @@ mean_limit:  Min = -1.1807930097e+01  Max = 9.1037752388e+00
 std_dev_limit:  Min = 2.1475320873e-01  Max = 1.1201081379e+01
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
-           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
+<<<<< Function evaluation summary (ALEAT_I): 6386 total (6386 new, 0 duplicate)
+           area: 3286 val (3286 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 3286 val (3286 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.1873364230e+00  Max = 1.1589838101e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
            area: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.3689974578e+00  Max = 1.2735594396e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.3689974578e+00  Max = 1.2735328797e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
-           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.1873394681e+00  Max = 1.1590048509e+01
+<<<<< Function evaluation summary (ALEAT_I): 6386 total (6386 new, 0 duplicate)
+           area: 3286 val (3286 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 3286 val (3286 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.1873394681e+00  Max = 1.1589845689e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
            area: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.4650175066e+00  Max = 2.1006253040e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.4650175066e+00  Max = 2.1004134516e+01
 Test Number 4 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
            area: 124 val (93 n, 31 d), 124 grad (93 n, 31 d), 0 Hess (0 n, 0 d)
@@ -57234,26 +57398,26 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 252 total (252 new, 0 duplicate)
            area: 252 val (252 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 252 val (252 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.3168922355e+00  Max = 1.3404670055e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.3168834731e+00  Max = 1.3404670055e+01
 Test Number 9 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 63 total (63 new, 0 duplicate)
            area: 63 val (63 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
     limit_state: 63 val (63 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.8559186082e+00  Max = 5.9033328079e+00
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.8559186082e+00  Max = 5.8547352556e+00
 Test Number 10 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 1050 total (1050 new, 0 duplicate)
-           area: 700 val (700 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 770 val (770 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.1873500363e+00  Max = 1.1589746237e+01
+<<<<< Function evaluation summary (ALEAT_I): 14420 total (14420 new, 0 duplicate)
+           area: 7420 val (7420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 7420 val (7420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.1873500363e+00  Max = 1.1589543419e+01
 Test Number 11 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 270 total (270 new, 0 duplicate)
-           area: 180 val (180 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 198 val (198 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.1998224461e+00  Max = 1.1646369895e+01
+<<<<< Function evaluation summary (ALEAT_I): 3708 total (3708 new, 0 duplicate)
+           area: 1908 val (1908 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 1908 val (1908 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.1998224461e+00  Max = 1.1646166198e+01
 Test Number 12 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 504 total (504 new, 0 duplicate)
            area: 252 val (252 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -57278,6 +57442,18 @@ Test Number 15 succeeded
     limit_state: 216 val (198 n, 18 d), 216 grad (198 n, 18 d), 0 Hess (0 n, 0 d)
 mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
 cdf_beta:  Min = -2.1998320837e+00  Max = 1.1646395357e+01
+Test Number 16 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 14420 total (14420 new, 0 duplicate)
+           area: 7420 val (7420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 7420 val (7420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499661299e+02
+cdf_beta:  Min = -2.1873086699e+00  Max = 1.1589766013e+01
+Test Number 17 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 140 total (140 new, 0 duplicate)
+           area: 70 val (70 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 70 val (70 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.3783111662e+00  Max = 4.4423465629e+00
 dakota_uq_short_column_sop_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (INNER_I): 7425 total (7425 new, 0 duplicate)

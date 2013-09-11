@@ -2,6 +2,7 @@
 # 1 fully over-determined SVD_LEAST_SQ with derivatives
 # 2 fully under-determined LARS
 # 3 fully under-determined LARS with derivatives
+# 4 least interpolation with failure but no cross validation
 
 strategy,
 	single_method #graphics
@@ -9,16 +10,20 @@ strategy,
 
 method,
 	polynomial_chaos
- 	  expansion_order   = 6		#0,#1
-# 	  expansion_order   = 10	#2,#3
-	  cross_validation
-	  collocation_ratio = 4 	#0,#1
-#	  collocation_ratio = .9 	#2
-#	  collocation_ratio = 1.5	#3
-	  least_squares svd 		#0,#1,
-#	  least_angle_regression	#2,#3,
+ 	  expansion_order   = 6			#0,#1
+# 	  expansion_order   = 10		#2,#3,#4,#5,#6,#7
+	  cross_validation    			#0,#1,#2,#3,#4,#5,#6,#7
+	  collocation_ratio = 4 		#0,#1
+#	  collocation_ratio = .9 		#2,#4,#6
+#	  collocation_ratio = 3			#3,#5,#7
+	  least_squares svd			#0,#1
+#	  lasso					#2,#3
+#	  omp					#4,#5
+#	  lars					#6,#7
+#	  orthogonal_least_interpolation 	#8
+#	  collocation_points = 30		#8
 	  seed = 1234567
-#	  use_derivatives		#1,#3
+#	  use_derivatives		#1,#3,#5,#7
 	  output verbose
 
 variables,
@@ -35,8 +40,7 @@ interface,
 
 responses,
 	response_functions = 1
-	no_gradients			#0,#2
-#	analytic_gradients		#1,#3
+	no_gradients			#0,#2,#4,#6,#8
+#	analytic_gradients		#1,#3,#5,#7
 	no_hessians
 
-# test 1 if collocation_ratio = 3 cross validation will produce a fold with no tolerant fn evals and only some tolerant gradient values. This will cause an error with a stament of the cause. But until ctest allows for expected failures this test is not implemented here

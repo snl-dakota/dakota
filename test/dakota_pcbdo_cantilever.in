@@ -47,11 +47,11 @@ responses,
 	nonlinear_inequality_constraints = 2
 	nonlinear_inequality_lower_bounds = 3. 3.
 	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50
-	analytic_gradients			#0,#1,#4,#5,#8,#9
-#	numerical_gradients			#2,#3,#6,#7,#10,#11
-#	  method_source dakota			#2,#3,#6,#7,#10,#11
-#	  interval_type central			#2,#3,#6,#7,#10,#11
-#	  fd_gradient_step_size = 1.e-6		#2,#3,#6,#7,#10,#11
+	analytic_gradients			#0,#1,#4,#5,#8,#9,#12
+#	numerical_gradients			#2,#3,#6,#7,#10,#11,#13
+#	  method_source dakota			#2,#3,#6,#7,#10,#11,#13
+#	  interval_type central			#2,#3,#6,#7,#10,#11,#13
+#	  fd_gradient_step_size = 1.e-6		#2,#3,#6,#7,#10,#11,#13
 	no_hessians
 
 ##########################
@@ -65,6 +65,9 @@ method,
 # 	  expansion_order = 4					#1,#3,#5,#7
 	  collocation_ratio = 2 seed = 12347 rng rnum2		#0,#1,#2,#3
 #	  collocation_ratio = 0.5 seed = 12347 rng rnum2	#4,#5,#6,#7
+#	  collocation_points = 70 seed = 12347 rng rnum2	#12
+#	  collocation_points = 30 seed = 12347 rng rnum2	#13
+#	  orthogonal_least_interpolation       	   		#12,#13
 #	  sparse_grid_level = 2 non_nested			#8,#10
 #	  sparse_grid_level = 4 non_nested			#9,#11
 	  num_response_levels = 0 1 1
@@ -81,7 +84,7 @@ model,
 
 variables,
 	id_variables = 'UQ_V'
-#	active all					#1,#3,#5,#7,#9,#11
+#	active all					#1,#3,#5,#7,#9,#11,#12
 	continuous_design = 2
 	normal_uncertain = 4
 	  means             =  40000. 29.E+6 500. 1000.
@@ -98,5 +101,5 @@ responses,
 	id_responses = 'UQ_R'
 	response_functions = 3
 	analytic_gradients			#0,#4,#8
-#	no_gradients				#1,#2,#3,#5,#6,#7,#9,#10,#11
+#	no_gradients				#1,#2,#3,#5,#6,#7,#9,#10,#11,#12,#13
 	no_hessians
