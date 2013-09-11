@@ -20,9 +20,16 @@ mkdir KeywordContentFiles/
 ln -s $SourceDir/MetaDataFiles $WorkDir/
 
 cd $WorkDir/KeywordSpecFiles
-for f in *
+for f in *  # the KeywordSpecFiles dir does not have the DUPLICATE files
 do
-  cat $f $WorkDir/MetaDataFiles/$f > $WorkDir/KeywordContentFiles/$f
+  if [ -n "$(grep DUPLICATE- $WorkDir/MetaDataFiles/$f)" ]
+  then #deal with duplicate files
+    SourceFile=$(sed -n 1p < $WorkDir/MetaDataFiles/$f)
+    cat $f $WorkDir/MetaDataFiles/$SourceFile > $WorkDir/KeywordContentFiles/$f
+  else #not a duplicate file
+    cat $f $WorkDir/MetaDataFiles/$f > $WorkDir/KeywordContentFiles/$f
+  fi
+
 done
 cd $WorkDir
 

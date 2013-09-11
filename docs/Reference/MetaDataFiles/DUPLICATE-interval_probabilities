@@ -1,0 +1,10 @@
+Blurb::
+Assign probability mass to each interval
+Description::
+The basic probability assignments for each interval variable must sum to one.
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

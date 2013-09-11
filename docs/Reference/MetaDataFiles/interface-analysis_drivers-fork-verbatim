@@ -1,15 +1,1 @@
-Blurb::
-Change how Dakota launches the analysis driver
-Description::
-The parameters
-and results file names are passed on the command line to the analysis
-driver(s) and any specified input/output filters, unless the \c
-verbatim option is invoked, in which case the driver/filter invocation
-syntax is used verbatim without command line argument augmentation.
-For additional information on invocation syntax, see the Interfaces
-chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"]. 
-Topics::	not_yet_reviewed
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-verbatim

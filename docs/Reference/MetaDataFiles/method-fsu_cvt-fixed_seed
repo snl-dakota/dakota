@@ -1,11 +1,1 @@
-Blurb::
-Specify the seed of the random number generator
-Description::
-The random \c seed control provides a mechanism for making a
-stochastic optimization repeatable. That is, the use of the same
-random seed in identical studies will generate identical results.
-Topics::	not_yet_reviewed
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-fixed_seed

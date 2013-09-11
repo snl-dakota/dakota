@@ -11,7 +11,7 @@
 WorkDir=$PWD
 SourceDir=$(readlink -f $1 )
 
-cp $SourceDir/Scripts/Working* ./
+ln -sf $SourceDir/Scripts/Working* ./
 
 sh Working_InputSpec.sh $SourceDir $SourceDir/InputSpec_5_3.modified
 sh Working_TopicSpecFiles.sh $SourceDir

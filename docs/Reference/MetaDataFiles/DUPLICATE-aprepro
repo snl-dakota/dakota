@@ -1,0 +1,14 @@
+Blurb::
+Write input files in APREPRO syntax
+Description::
+The
+format of data in the parameters files can be modified for direct
+usage with the APREPRO pre-processing tool 
+[\ref Sjaar1992 "Sjaardema, 1992"] 
+using the \c aprepro specification (NOTE: the DPrePro
+pre-processing utility does not require this special formatting). 
+Topics::	file_formats, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	
