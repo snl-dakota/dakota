@@ -1,0 +1,12 @@
+Blurb::
+Interface block pointer for the single model type
+Description::
+In the \c single model case, a single interface is used to map the variables into responses. 
+The optional \c interface_pointer specification identifies this interface by cross-referencing with the \c id_interface string input from a particular interface keyword specification.
+
+
+Topics::	block_pointer, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

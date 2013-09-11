@@ -1,0 +1,132 @@
+Blurb::
+Description::
+The nondeterministic sampling method is selected using the \c
+sampling specification. This method draws samples from the
+specified uncertain variable probability distributions and propagates
+them through the model to obtain statistics on the output response
+functions of interest.  %Dakota provides access to nondeterministic
+sampling methods through the combination of the NonDSampling base
+class and the NonDLHSSampling derived class.
+
+CDF/CCDF probabilities are calculated for specified response levels
+using a simple binning approach.  %Response levels are calculated for
+specified CDF/CCDF probabilities and generalized reliabilities by
+indexing into a sorted samples array (the response levels computed are
+not interpolated and will correspond to one of the sampled values).
+CDF/CCDF reliabilities are calculated for specified response levels by
+computing the number of sample standard deviations separating the
+sample mean from the response level.  %Response levels are calculated
+for specified CDF/CCDF reliabilities by projecting out the prescribed
+number of sample standard deviations from the sample mean.
+
+The \c seed integer specification specifies the seed for the random
+number generator which is used to make sampling studies repeatable,
+and \c rng specifies which random number generator is used.  The \c
+fixed_seed flag is relevant if multiple sampling sets will be
+generated during the course of a strategy (e.g., surrogate-based
+optimization, optimization under uncertainty).  Specifying this flag
+results in the reuse of the same seed value for each of these multiple
+sampling sets, which can be important for reducing variability in the
+sampling results.  However, this behavior is not the default as the
+repetition of the same sampling pattern can result in a modeling
+weakness that an optimizer could potentially exploit (resulting in
+actual reliabilities that are lower than the estimated reliabilities).
+In either case (\c fixed_seed or not), the study is repeatable if the
+user specifies a \c seed and the study is random is the user omits a
+\c seed specification.
+
+The number of samples to be evaluated is selected with the
+\c samples integer specification. The algorithm used to generate the
+samples can be specified using \c sample_type followed by either \c
+random, for pure random Monte Carlo sampling, or \c lhs, for Latin
+Hypercube sampling.
+
+If the user wants to increment a particular set of samples with more
+samples to get better estimates of mean, variance, and percentiles,
+one can select \c incremental_random or \c incremental_lhs as the \c
+sample_type.  Note that a preliminary sample of size N must have
+already been performed, and a \c dakota.rst restart file must be
+available from this original sample. For example, say a user performs
+an initial study using \c lhs as the \c sample_type, and generates 50
+samples.  If the user creates a new input file where \c samples is now
+specified to be 100, the \c sample_type is defined to be \c
+incremental_lhs or \c incremental_random, and \c previous_samples is
+specified to be 50, the user will get 50 new LHS samples which
+maintain both the correlation and stratification of the original LHS
+sample.  The N new samples will be combined with the N original
+samples to generate a combined sample of size 2N.  The syntax for
+running the second sample set is: \c dakota \c -i \c input2.in \c -r
+\c dakota.rst, where \c input2.in is the file which specifies
+incremental sampling.  Note that the number of samples in the second
+set MUST currently be 2 times the number of previous samples, although
+incremental sampling based on any power of two may be supported in
+future releases.
+
+The nondeterministic sampling method also supports sampling 
+over different types of variables, depending on what is 
+specified as \c active in the variables block of the input 
+specification.  
+Normally, \c sampling generates samples only for the 
+uncertain variables, and
+treats any design or state variables as constants.  
+However, if \c active \c all is specified in the variables block, 
+sampling will be performed over all variables, including 
+uncertain, design, and state.  
+In this case, the sampling 
+algorithm will treat any continuous design or continuous state variables
+as parameters with uniform probability distributions between their
+upper and lower bounds.  Samples are then generated over all of the
+continuous variables (design, uncertain, and state) in the variables
+specification.  This is similar to the behavior of the design of
+experiments methods described in \ref MethodDACE, since they will also
+generate samples over all continuous design, uncertain, and state
+variables in the variables specification.  However, the design of
+experiments methods will treat all variables as being uniformly
+distributed between their upper and lower bounds, whereas the \c
+sampling method will sample the uncertain variables within
+their specified probability distributions.  If further 
+granularity of sampling is necessary for uncertain variables, 
+one can specify \c active \c epistemic or \c active \c aleatory 
+to specify sampling over only epistemic uncertain or 
+only aleatory uncertain variables, respectively.   
+In the case where one wants to generate samples only over 
+state variables, one would specify \c active \c state in the 
+variables specification block. 
+
+Finally, the nondeterministic sampling method supports two types of
+sensitivity analysis.  In this context of sampling, we take
+sensitivity analysis to be global, not local as when calculating
+derivatives of output variables with respect to input variables.  Our
+definition is similar to that of [\ref Saltelli2004 "Saltelli et al., 2004"]: 
+"The study of how uncertainty in the output of a model can be 
+apportioned to different sources of uncertainty in the model input."
+As a default, %Dakota provides correlation analyses when running LHS.
+Correlation tables are printed with the simple, partial, and rank
+correlations between inputs and outputs.  These can be useful to get a
+quick sense of how correlated the inputs are to each other, and how
+correlated various outputs are to inputs.  In addition, we have the
+capability to calculate sensitivity indices through variance based
+decomposition using the keyword \c variance_based_decomp.  Variance 
+based decomposition is a way of using sets of samples to understand
+how the variance of the output behaves, with respect to each input
+variable. A larger value of the sensitivity index, \f$S_i\f$, means 
+that the uncertainty in the input variable i has a larger effect on 
+the variance of the output.  More details on the calculations and
+interpretation of the sensitivity indices can be found in [\ref
+Saltelli2004 "Saltelli et al., 2004"] and 
+[\ref Weirs2010 "Weirs et al., 2010"].  Note that \c
+variance_based_decomp is extremely computationally intensive since
+replicated sets of sample values are evaluated. If the user specified
+a number of samples, N, and a number of nondeterministic variables, M,
+variance-based decomposition requires the evaluation of N*(M+2)
+samples.  To obtain sensitivity indices that are reasonably accurate,
+we recommend that N, the number of samples, be at least one hundred
+and preferably several hundred or thousands. Because of the
+computational cost, \c variance_based_decomp is turned off as a
+default
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-importance_sampling, method-polynomial_chaos, method-stoch_collocation

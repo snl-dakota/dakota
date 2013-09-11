@@ -1,0 +1,11 @@
+Blurb::
+Option 1 for specifying initial values of variables
+Description::
+Starting points can be specified as follows: (1) using \c random_starts, for which the specified number of starting points are selected randomly within the variable bounds, (2) using \c starting_points, in which the starting values are provided in a list, or (3) using both \c random_starts and \c starting_points, for which the combined set of points will be used.
+In aggregate, at least one starting point must be specified.
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -1,0 +1,92 @@
+Blurb::
+Build a GP surrogate and refine it adaptively
+Description::
+The goal in performing adaptive sampling is to construct a surrogate model that
+can be used as an accurate predictor to some expensive simulation, thus it is
+to one's advantage to build a surrogate that minimizes the error over the entire
+domain of interest using as little data as possible from the expensive
+simulation. The adaptive part alludes to the fact that the surrogate will be
+refined by focusing samples of the expensive simulation on particular areas of
+interest rather than rely on random selection or standard space-filling
+techniques.
+ 
+At a high-level, the adaptive sampling pipeline is a four-step process:
+<ol>
+<li> Evaluate the expensive simulation (referred to as the true model) at
+initial sample point
+<li> Fit/refit a surrogate model
+<li> Create a candidate set and score based on information from surrogate
+<li> Select a candidate point to evaluate the true model and Repeat 2-4
+</ol>
+ 
+In terms of the %Dakota implementation, the adaptive sampling method
+currently uses Latin Hypercube sampling (LHS) to generate the initial
+points in Step 1 above. For Step 2, we use a Gaussian process model.
+The user can specify the \c fitness_metric used to select the
+next point (or points) to evaluate and add to the set. 
+The fitness metrics used for scoring candidate points include: 
+\c predicted_variance, \c distance, and \c gradient. 
+The predicted variance metric uses the predicted
+variance of the Gaussian process surrogate as the score of a candidate
+point. Thus, the adaptively chosen points will be in areas of highest
+uncertainty according to the Gaussian process model.
+The distance metric calculates the Euclidean distance in domain space between the
+candidate and its nearest neighbor in the set of points already evaluated on the
+true model. Therefore, the most undersampled area of the domain will always be
+selected. Note that this is a space-filling metric. 
+The gradient metric calculates the score as the absolute value of the difference 
+in range space (the outputs) of the two points. The output values used are 
+predicted from the surrogate model. 
+This method attempts to evenly fill the range space of the surrogate.
+
+At each iteration (e.g. each loop of Steps 2-4 above), a Latin Hypercube 
+sample is generated (a new one, different from the initial sample) and 
+the surrogate model is evaluated at this points. 
+These are the candidate points that are then evaluated
+according to the fitness metric. The number of candidates used
+in practice should be high enough to fill most
+of the input domain: we recommend at least hundreds of points 
+for a low-dimensional problem.
+All of the candidates (samples on the emulator) are
+given a score and then the highest-scoring candidate is selected to be evaluated
+on the true model.
+ 
+The adaptive sampling method also can generate batches of points
+to add at a time. With batch or multi-point
+selection, the true model can be evaluated in parallel and thus
+increase throughput before refitting our surrogate model. This proposes a new
+challenge as the problem of choosing a single point and choosing multiple points
+off a surrogate are fundamentally different. Selecting the \c n best scoring
+candidates is more than likely to generate a set of points clustered in one
+area which will not be conducive to adapting the surrogate.
+
+We have implemented several strategies for batch selection of points. 
+These are described in the User's manual and are the subject of 
+active research. The number of points to add in each batch is specified 
+with \c batch_size. Briefly, the \c batch_selection strategies include: 
+<ol>
+<li> \c naive: 
+This strategy will select the \c n highest scoring candidates regardless of their
+position. This tends to group an entire round of points in the same area.
+<li> \c distance_penalty
+In this strategy, the highest scoring candidate is selected and then all 
+remaining candidates are re-scored with a distance penalization factor 
+added in to the score. 
+<li> \c topology
+In this strategy we look at the topology of the scoring function and select the
+\c n highest maxima in the topology. To determine local maxima, we construct the
+approximate Morse-Smale complex. This strategy does require the user to have the 
+Morse-Smale package.
+<li> \c constant_liar
+The strategy first selects
+the highest scoring candidate, and then refits the surrogate using a ''lie'' value
+at the point selected and repeats until \c n points have been selected
+whereupon the lie values are removed from the surrogate and the selected points
+are evaluated on the true model and the surrogate is refit with these values.
+</ol>
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-polynomial_chaos, method-stoch_collocation

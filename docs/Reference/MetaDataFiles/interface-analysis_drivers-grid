@@ -1,0 +1,18 @@
+Blurb::
+Description::
+For grid interfaces, no additional specifications are used at this time.
+<!-- \c hostnames and \c processors_per_host are
+additional settings within the required group.  The \c hostnames
+specification provides a list of machines for use in distributing
+evaluations, and the \c processors_per_host specification provides the
+number of processors to use from each host. -->
+This capability has been used for interfaces with IDEA and JAVASpaces
+in the past and is currently a placeholder for future work with Condor
+and/or Globus services.  It is not currently operational.  
+
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

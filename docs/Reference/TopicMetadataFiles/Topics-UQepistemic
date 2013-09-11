@@ -1,0 +1,44 @@
+Epistemic uncertainty is also referred to as subjective uncertainty,
+reducible uncertainty, model form uncertainty, or uncertainty due to
+lack of knowledge.  Examples of epistemic uncertainty are little or no
+experimental data for an unknown physical parameter, or the existence
+of complex physics or behavior that is not included in the simulation
+model of a system. Epistemic uncertainty can be modeled
+probabilistically but is often modeled using non-probabilistic
+approaches such as interval propagation, evidence theory, possibility
+theory, information gap theory, etc.  In %Dakota, epistemic uncertainty
+analysis is performed using interval analysis or Dempster-Shafer
+theory of evidence.  Epistemic (or mixed aleatory-epistemic)
+uncertainty may also be propagated through the use of the \ref
+MethodNonDMC, although in this case, the output statistics are limited
+to response intervals (any epistemic component suppresses all
+probabilistic results).  Mixed uncertainty can also be addressed
+through use of nested UQ (refer to the Users Manual 
+[\ref UsersMan "Adams et al., 2010"] for %NestedModel
+discussion and examples); in this case, epistemic and aleatory
+analyses can be segregated and intervals on probabilistic results can
+be reported.  A subtle distinction exists between \c sampling for
+epistemic intervals and the \c lhs option of \c
+global_interval_est: the former allows mixed aleatory-epistemic
+uncertainty within a single level, whereas the latter supports only
+epistemic variables and relies on nesting to address mixed
+uncertainty.  In each of these cases, the \ref VarCEUV_Interval
+specification is used to describe the epistemic uncertainty using
+either simple intervals or basic probability assignments.
+Note that for mixed UQ problems with both aleatory and epistemic 
+variables, if the user defines the epistemic variables as intervals 
+and aleatory variables as probability distribution types, 
+the method \c sampling (in a simple, single-level study) will 
+result in intervals only on the output.  Although the aleatory variables 
+will be sampled according to their distributions, the output will only be 
+reported as an interval given the presence of interval variables.  
+There is also the option to perform nested sampling, where one 
+separates the epistemic and aleatory uncertain variables, samples 
+over epistemic variables in the outer loop and then samples the 
+aleatory variables in the inner llop, resulting in intervals on statistics. 
+The calculation of intervals on statistics can also be performed 
+by using nested approaches with interval estimation or evidence methods 
+in the outer loop and aleatory UQ methods on the 
+inner loop such as stochastic expansion or reliability methods. 
+More detail about these "intervals on statistics" approaches 
+can be found in [\ref Eldred2009 "Eldred and Swiler, 2009"] 

@@ -1,0 +1,104 @@
+Blurb::
+Denotes a data request from an iterator that is mapped through an interface in a single pass.
+Description::
+The \c responses specification in a Dakota input file controls
+the types of data that can be returned from an interface during
+Dakota's execution. The specification includes three groups and two
+optional keywords.
+
+\b Group1 is related to the number and type of responses expected by Dakota
+
+The function specification must be one of three types: 
+-# a group
+containing objective and constraint functions, 
+-# a group containing
+calibration (least squares) terms and constraint functions, or 
+-# a generic response functions specification. These function sets
+correspond to optimization, least squares, and uncertainty
+quantification iterators, respectively.
+
+The types of response functions chosen from Group 1
+should be consistent with the
+iterative technique called for in the method specification.
+Certain general-purpose iterative techniques, such as parameter
+studies and design of experiments methods, can be used with any of
+these data sets.
+
+Each type of response has additional required and optional 
+keywords.
+
+\b Group2 is related to the availability of first 
+derivatives (gradient vectors) for the response
+functions.
+
+The gradient specification also links back to the iterative method
+used. Gradients commonly are needed when the iterative
+study involves gradient-based optimization, reliability analysis for
+uncertainty quantification, or local sensitivity analysis.
+
+
+\b Group3 is related to the availability of second
+derivatives (Hessian matrices) for the response
+functions.
+
+Hessian availability for the response functions is similar to the
+gradient availability specifications, with the addition of support
+for ``quasi-Hessians":
+
+The Hessian specification also links back to the iterative method in
+use; Hessians commonly would be used in gradient-based
+optimization by full Newton methods or in reliability analysis
+with second-order limit state approximations or second-order
+probability integrations.
+
+Topics:: block, not_yet_reviewed
+Examples::
+Several examples follow. The first example shows an optimization data
+set containing an objective function and two nonlinear inequality
+constraints. These three functions have analytic gradient availability
+and no Hessian availability.
+
+\verbatim
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	analytic_gradients
+	no_hessians
+\endverbatim
+
+The next example shows a typical specification for a calibration data
+set. The six residual functions will have numerical gradients computed
+using the dakota finite differencing routine with central differences
+of 0.1% (plus/minus delta value = .001*value).
+
+\verbatim
+responses,
+	calibration_terms = 6
+	numerical_gradients
+	  method_source dakota
+	  interval_type central
+	  fd_gradient_step_size = .001
+	no_hessians
+\endverbatim
+
+The last example shows a specification that could be used with a
+nondeterministic sampling iterator. The three response functions have no
+gradient or Hessian availability; therefore, only function values will
+be used by the iterator.
+
+\verbatim
+responses,
+	response_functions = 3
+	no_gradients
+	no_hessians
+\endverbatim
+
+Parameter study and design of experiments iterators are not restricted
+in terms of the response data sets which may be catalogued; they may
+be used with any of the function specification examples shown above.
+
+
+Theory::
+Responses specify the total data set that is available for use by the method over the course of iteration. This is distinguished from the data subset described by an active set vector (see Dakota File Data Formats in the Users Manual [Adams et al., 2010]) indicating the particular subset of the response data needed for a particular function evaluation. Thus, the responses specification is a broad description of the data to be used during a study whereas the active set vector indicates the subset currently needed.
+Faq::
+See_Also::	

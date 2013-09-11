@@ -1,0 +1,39 @@
+Blurb::
+Parameter study specified by a list of variable values
+Description::
+Dakota's list parameter study allows for evaluations at user selected
+points of interest which need not follow any particular
+structure. This study is selected using the \c list_parameter_study
+method specification followed by either a \c list_of_points or \c
+import_points_file specification. The imported points file may be in
+annotated for free-form tabular format as described in the User's
+manual.
+
+
+Topics::	parameter_study, not_yet_reviewed
+Examples::
+This shows the method and variables block of a Dakota input file
+that runs a list_parameter_study.
+
+\verbatim
+method
+  list_parameter_study
+    list_of_points =
+                         3.1e6    0.0029    0.31  
+                         3.2e6    0.0028    0.32 
+                         3.3e6    0.0027    0.34 
+                         3.3e6    0.0026    0.36  
+                         3.9e6    0.0025    0.32  
+                         3.3e6    0.0024    0.34  
+                         3.3e6    0.0023    0.35  
+                         3.3e6    0.0022    0.34  
+
+variables
+  continuous_design = 3
+    descriptors = 'E'  'MASS'   'DENSITY'
+
+\endverbatim
+
+
+Theory::
+Faq::

@@ -1,0 +1,121 @@
+Blurb::
+Gradients are needed and will be approximated by finite differences
+Description::
+The gradient specification must be one of four types: 1) no gradients,
+2) numerical gradients, 3) analytic gradients, or 4) mixed gradients.
+
+The \c numerical_gradients specification means that gradient
+information is needed and will be computed with finite differences
+using either the native or one of the vendor finite differencing
+routines.
+
+The \c method_source setting specifies the source of the finite
+differencing routine that will be used to compute the numerical
+gradients: \c dakota denotes %Dakota's internal finite differencing
+algorithm and \c vendor denotes the finite differencing algorithm
+supplied by the iterator package in use (DOT, CONMIN, NPSOL, NL2SOL, NLSSOL,
+and OPT++ each have their own internal finite differencing
+routines). The \c dakota routine is the default since it can execute
+in parallel and exploit the concurrency in finite difference
+evaluations (see Exploiting Parallelism in the Users Manual 
+[\ref UsersMan "Adams et al., 2010"]).
+However, the \c vendor setting can be desirable in some cases since
+certain libraries will modify their algorithm when the finite
+differencing is performed internally. Since the selection of the \c
+dakota routine hides the use of finite differencing from the
+optimizers (the optimizers are configured to accept user-supplied
+gradients, which some algorithms assume to be of analytic accuracy),
+the potential exists for the \c vendor setting to trigger the use of
+an algorithm more optimized for the higher expense and/or lower
+accuracy of finite-differencing.  For example, NPSOL uses gradients in
+its line search when in user-supplied gradient mode (since it assumes
+they are inexpensive), but uses a value-based line search procedure
+when internally finite differencing.  The use of a value-based line
+search will often reduce total expense in serial operations. However,
+in parallel operations, the use of gradients in the NPSOL line search
+(user-supplied gradient mode) provides excellent load balancing
+without need to resort to speculative optimization approaches.  In
+summary, then, the \c dakota routine is preferred for parallel
+optimization, and the \c vendor routine may be preferred for serial
+optimization in special cases.
+
+When the \c method_source is \c dakota, the user may also specify the
+type of scaling desired when determining the finite difference step
+size.  The choices are \c absolute, \c bounds, and \c relative.  For
+\c absolute, the step size will be applied as is.  For \c bounds, it
+will be scaled by the range of each parameter.  For \c relative, it
+will be scaled by the parameter value.
+
+The \c interval_type setting is used to select between \c forward and
+\c central differences in the numerical gradient calculations. The \c
+dakota, DOT \c vendor, and OPT++ \c vendor routines have both forward
+and central differences available, the CONMIN and NL2SOL \c vendor routines
+support forward differences only, and the NPSOL and NLSSOL \c vendor
+routines start with forward differences and automatically switch to
+central differences as the iteration progresses (the user has no
+control over this).  The following forward difference expression
+\f[
+\nabla f ({\bf x}) \cong 
+\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x})}{h}
+\f]
+and the following central difference expression
+\f[
+\nabla f ({\bf x}) \cong 
+\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x} - h {\bf e}_i)}{2h}
+\f]
+are used to estimate the \f$i^{th}\f$ component of the gradient vector.  
+
+Lastly, \c fd_gradient_step_size specifies the relative finite
+difference step size to be used in the computations.  Either a single
+value may be entered for use with all parameters, or a list of step
+sizes may be entered, one for each parameter.  The latter option of a
+list of step sizes is only valid for use with the %Dakota finite
+differencing routine.  For %Dakota with an interval scaling type of \c
+absolute, the differencing interval will be \c fd_gradient_step_size.
+For %Dakota with and interval scaling type of \c bounds, the
+differencing intervals are computed by multiplying \c
+fd_gradient_step_size with the range of the parameter. For %Dakota
+(with an interval scaling type of \c relative), DOT, CONMIN, and
+OPT++, the differencing intervals are computed by multiplying the \c
+fd_gradient_step_size with the current parameter value.  In this case,
+a minimum absolute differencing interval is needed when the current
+parameter value is close to zero.  This prevents finite difference
+intervals for the parameter which are too small to distinguish
+differences in the response quantities being computed. %Dakota, DOT,
+CONMIN, and OPT++ all use <tt>.01*fd_gradient_step_size</tt> as their
+minimum absolute differencing interval.  With a
+<tt>fd_gradient_step_size = .001</tt>, for example, %Dakota, DOT,
+CONMIN, and OPT++ will use intervals of .001*current value with a
+minimum interval of 1.e-5.  NPSOL and NLSSOL use a different formula
+for their finite difference intervals:
+<tt>fd_gradient_step_size*(1+|current parameter value|)</tt>.  This
+definition has the advantage of eliminating the need for a minimum
+absolute differencing interval since the interval no longer goes to
+zero as the current parameter value goes to zero.
+
+When %Dakota computes gradients or Hessians by finite differences and the
+variables in question have bounds, it by default chooses finite-differencing
+steps that keep the variables within their specified bounds.  Older versions
+of %Dakota generally ignored bounds when computing finite differences.
+To restore the older behavior, one can add keyword <tt>ignore_bounds</tt>
+to the <tt>response</tt> specification when <tt>method_source dakota</tt>
+(or just <tt>dakota</tt>) is also specified.
+In forward difference or backward difference computations, honoring
+bounds is straightforward.
+To honor bounds when approximating \f$\partial f / \partial x_i\f$, i.e., component \f$i\f$
+of the gradient of \f$f\f$, by central differences, %Dakota chooses two steps
+\f$h_1\f$ and \f$h_2\f$ with \f$h_1 \ne h_2\f$, such that \f$x + h_1 e_i\f$
+and \f$x + h_2 e_i\f$ both satisfy the bounds, and then computes
+\f[
+\frac{\partial f}{\partial x_i} \cong
+\frac{h_2^2(f_1 - f_0) - h_1^2(f_2 - f_0)}{h_1 h_2 (h_2 - h_1)} ,
+\f]
+with \f$f_0 = f(x)\f$, \f$f_1 = f(x + h_1 e_i)\f$, and
+\f$f_2 = f(x + h_2 e_i)\f$.
+
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	responses-no_gradients, responses-analytic_gradients, responses-mixed_gradients 

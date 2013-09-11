@@ -1,0 +1,24 @@
+Blurb::
+Give the block a name, in case of multiple interface blocks
+Description::
+The optional set identifier specification uses the keyword \c
+id_interface to input a string for use in identifying a particular
+interface specification.  A model can then identify the use of this
+interface by specifying the same string in its \c interface_pointer
+specification (see \ref ModelCommands). For example, a model whose
+specification contains <tt>interface_pointer = 'I1'</tt> will use an
+interface specification with <tt>id_interface = 'I1'</tt>.  If the \c
+id_interface specification is omitted, a particular interface
+specification will be used by a model only if that model omits
+specifying a \c interface_pointer and if the interface set was the
+last set parsed (or is the only set parsed). In common practice, if
+only one interface set exists, then \c id_interface can be safely
+omitted from the interface specification and \c interface_pointer can
+be omitted from the model specification(s), since there is no
+potential for ambiguity in this case.
+
+Topics::	block_identifier, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

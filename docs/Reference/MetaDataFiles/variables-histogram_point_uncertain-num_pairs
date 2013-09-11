@@ -1,0 +1,10 @@
+Blurb::
+Distribution parameter
+Description::
+Within the histogram point uncertain optional group specification, the number of histogram point uncertain variables is a required specification, the number of pairs is an optional key for apportionment of abscissas and counts, the sets of abscissas and counts are required, and the variable descriptors are optional.
+The \c num_pairs specification provides for the proper association of multiple sets of \c (x,c) or \c (x,y) pairs with individual histogram variables.
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

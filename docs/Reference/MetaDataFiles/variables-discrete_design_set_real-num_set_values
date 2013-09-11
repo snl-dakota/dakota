@@ -1,0 +1,9 @@
+Blurb::
+The size of each design variables' set of permissible values
+Description::
+The number of integers in the set must be specified for each of these sets.
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -1,0 +1,468 @@
+Blurb::
+Evolutionary Algorithm
+Description::
+The JEGA library [\ref JEddy2001 "Eddy and Lewis, 2001"] contains two global
+optimization methods. The first is a Multi-objective Genetic Algorithm (MOGA)
+which performs Pareto optimization. The second is a Single-objective
+Genetic Algorithm (SOGA) which performs optimization on a single
+objective function. Both methods support general constraints and a
+mixture of real and discrete variables. The JEGA library was written 
+by John Eddy, currently a member of the technical staff in the
+System Readiness and Sustainment Technologies department at Sandia National
+Laboratories in Albuquerque. These algorithms are accessed as \c moga and
+\c soga within %Dakota. %Dakota provides access to the JEGA library through the 
+JEGAOptimizer class.
+
+JEGA utilizes the \c max_iterations and \c max_function_evaluations
+method independent controls to provide integer limits for the maximum
+number of generations and function evaluations, respectively. Note that 
+currently, the %Dakota default for \c max_iterations is 100 and for 
+\c max_function_evaluations is 1000. These are the default settings 
+that will be used to "stop" the JEGA algorithms, unless some specific
+convergence criteria are set.
+
+Beginning with v2.0, JEGA also utilizes the \c output method independent control
+to vary the amount of information presented to the user during execution.
+
+
+The JEGA library currently provides two types of genetic algorithms
+(GAs): a multi-objective genetic algorithm (\c moga), and a single-
+objective genetic algorithm (\c soga). Both of these GAs can take
+real-valued inputs, integer-valued inputs, or a mixture of real and
+integer-valued inputs. "Real-valued" and "integer-valued" refer to
+the use of continuous or discrete variable domains, respectively (the
+response data are real-valued in all cases).
+
+The basic steps of the genetic algorithm are as follows: 
+<ol> 
+
+<li> Initialize the population (by randomly generating population members
+with or without duplicates allowed, or by flat-file initialization)
+
+<li> Evaluate the initial population members (calculate the values 
+of the objective function(s) and constraints for each population member)
+
+<li> Perform crossover (several crossover types are available) 
+
+<li> Perform mutation (several mutation types are available)
+
+<li> Evaluate the new population members.
+
+<li> Assess the fitness of each member in the population. There are a number
+of ways to evaluate the fitness of the members of the population. Choice
+of fitness assessor operators is strongly related to the type of replacement 
+algorithm being used and can have a profound effect on the
+solutions selected for the next generation. For
+example, if using \c MOGA, the available assessors are the \c layer_rank
+and \c domination_count fitness assessors. If using either of these, it is
+strongly recommended that you use the \c replacement_type called the
+\c below_limit selector as well (although
+the roulette wheel selectors can also be used). The functionality of the
+domination_count selector of JEGA v1.0 can now be achieved using the
+\c domination_count fitness assessor and \c below_limit replacement 
+selector together. If using \c SOGA, there are a number of possible
+combinations of fitness assessors and selectors.
+
+<li> Replace the population with members selected to continue 
+in the next generation. The pool of potential members is the current
+population and the current set of offspring. The \c replacement_type of
+\c roulette_wheel or \c unique_roulette_wheel may be used either with MOGA or
+SOGA problems however they are not recommended for use with MOGA. Given that
+the only two fitness assessors for MOGA are the \c layer_rank and
+\c domination_count, the recommended selector is the \c below_limit selector.
+The \c below_limit replacement will only keep designs that are 
+dominated by fewer than a limiting number of other designs.
+The \c replacement_type of \c favor_feasible is specific to a SOGA.
+This replacement operator will always prefer a more feasible design to a less
+feasible one. Beyond that, it favors solutions based on an assigned
+fitness value which must have been installed by the weighted sum only fitness
+assessor (see the discussion below).
+
+<li> Apply niche pressure to the population. This step is specific to
+the MOGA and is new as of JEGA v2.0. Technically, the step is carried out
+during runs of the SOGA but only the \c null_niching operator is available
+for use with SOGA. In MOGA, the \c radial or \c distance operators 
+can be used.
+The purpose of niching is to encourage differentiation along the Pareto
+frontier and thus a more even and uniform sampling. The radial nicher
+takes information input from the user to compute a minimum allowable distance
+between designs in the performance space and acts as a secondary selection
+operator whereby it enforces this minimum distance. The distance nicher 
+requires that solutions must be separated from other solutions by a 
+minimum distance in each dimension (vs. Euclidean distance for the 
+radial niching). After niching is complete, all designs in the population will
+be at least the minimum distance from one another in all directions.
+
+<li> Test for convergence. There are two aspects to convergence that must be
+considered. The first is stopping criteria. A stopping criteria dictates some
+sort of limit on the algorithm that is independent of its performance. Examples
+of stopping criteria available for use with JEGA are the \c max_iterations and
+\c max_function_evaluations inputs. All JEGA convergers respect these stopping
+criteria in addition to anything else that they do.
+
+The second aspect to convergence involves repeated assessment of the algorithms
+progress in solving the problem. In JEGA v1.0, the SOGA fitness tracker
+convergers (\c best_fitness_tracker and \c average_fitness_tracker) performed
+this function by asserting that the fitness values (either best or average) of
+the population continue to improve. There was no such operator for the MOGA. 
+As of JEGA v2.0, the same fitness tracker convergers exist for use with SOGA and
+there is now a converger available for use with the MOGA. The MOGA converger
+(\c metric_tracker) operates by tracking various changes in the non-dominated
+frontier from generation to generation. When the changes occurring over a user
+specified number of generations fall below a user specified threshold, the
+algorithm stops.
+
+<li> Perform post processing. This step is new as of JEGA v2.1.
+The purpose of this operation is to perform any needed data manipulations on the
+final solution deemed necessary. Currently the \c distance_postprocessor
+is the only one other than the \c null_postprocessor. The
+\c distance_postprocessor is specifically for use with the MOGA and reduces the
+final solution set size such that a minimum distance in each direction exists
+between any two designs.
+
+</ol>
+
+There are many controls which can be used for both MOGA and SOGA
+methods. These include among others the random seed, initialization types,
+crossover and mutation types, and some replacement types.
+These are described in Tables \ref T5d18 "5.18" and \ref T5d19 "5.19" below.
+
+The \c seed control defines the starting seed for the random number
+generator. The algorithm uses random numbers heavily but a specification
+of a random seed will cause the algorithm to run identically from one trial
+to the next so long as all other input specifications remain the same. New as
+of JEGA v2.0 is the introduction of the \c log_file specification. JEGA now
+uses a logging library to output messages and status to the user. JEGA can be
+configured at build time to log to both the console window and a text file, one
+or the other, or neither. The \c log_file input is a string name of a file
+into which to log. If the build was configured without file logging in JEGA,
+this input is ignored. If file logging is enabled and no \c log_file is
+specified, the default file name of JEGAGlobal.log is used. Also new to JEGA
+v2.0 is the introduction of the \c print_each_pop specification. It serves as
+a flag and if supplied, the population at each generation will be printed to
+a file named "population<GEN#>.dat" where <GEN#> is the number of the current
+generation.
+
+The \c initialization_type defines the type of initialization
+for the GA. There are three types: \c simple_random, \c unique_random, and
+\c flat_file. \c simple_random creates initial solutions with random variable
+values according to a uniform random number distribution. It gives no
+consideration to any previously generated designs. The number of
+designs is specified by the \c population_size. \c unique_random is
+the same as \c simple_random, except that when a new solution is generated,
+it is checked against the rest of the solutions. If it duplicates any
+of them, it is rejected. \c flat_file allows the initial population
+to be read from a flat file. If \c flat_file is specified, a file
+name must be given. %Variables can be delimited in the flat file in any
+way you see fit with a few exceptions. The delimiter must be the same on
+any given line of input with the exception of leading and trailing whitespace.
+So a line could look like: 1.1, 2.2 ,3.3 for example but could not look like:
+1.1, 2.2 3.3. The delimiter can vary from line to line within the file which
+can be useful if data from multiple sources is pasted into the same input file.
+The delimiter can be any string that does not contain any of the characters
+.+-dDeE or any of the digits 0-9. The input will be read until the end of the
+file. The algorithm will discard any configurations for which it was unable to
+retrieve at least the number of design variables. The objective and constraint
+entries are not required but if ALL are present, they will be recorded and the
+design will be tagged as evaluated so that evaluators may choose not to
+re-evaluate them. Setting the size for this initializer has the effect of
+requiring a minimum number of designs to create. If this minimum number has
+not been created once the files are all read, the rest are created using
+the \c unique_random initializer and then the \c simple_random initializer if
+necessary.
+
+Note that the \c population_size only sets the size of the initial population.
+The population size may vary in the JEGA methods according to the type of
+operators chosen for a particular optimization run.
+
+There are many crossover types available. \c multi_point_binary
+crossover requires an integer number, N, of crossover points. This
+crossover type performs a bit switching crossover at N crossover
+points in the binary encoded genome of two designs. Thus, crossover
+may occur at any point along a solution chromosome (in the middle of a
+gene representing a design variable, for example). \c
+multi_point_parameterized_binary crossover is similar in that it
+performs a bit switching crossover routine at N crossover points.
+However, this crossover type performs crossover on each design variable 
+individually. So the individual chromosomes are crossed at N locations.
+\c multi_point_real crossover performs a variable switching crossover routing at
+N crossover points in the real real valued genome of two designs. In this
+scheme, crossover only occurs between design variables (chromosomes). Note that
+the standard solution chromosome representation in the JEGA algorithm is real
+encoded and can handle integer or real design variables. For any crossover
+types that use a binary representation, real variables are converted to long
+integers by multiplying the real number by 10^6 and then truncating. Note that
+this assumes a precision of only six decimal places. Discrete variables are
+represented as integers (indices within a list of possible values) within the
+algorithm and thus require no special treatment by the binary operators.
+
+The final crossover type is \c shuffle_random. This crossover type
+performs crossover by choosing design variables at random from a
+specified number of parents enough times that the requested number of
+children are produced. For example, consider the case of 3 parents
+producing 2 children. This operator would go through and for each
+design variable, select one of the parents as the donor for the child.
+So it creates a random shuffle of the parent design variable values.
+The relative numbers of children and parents are controllable to allow
+for as much mixing as desired. The more parents involved, the less
+likely that the children will wind up exact duplicates of the parents.
+
+All crossover types take a \c crossover_rate. The crossover rate is
+used to calculate the number of crossover operations that take place.
+The number of crossovers is equal to the rate * population_size.
+
+There are five mutation types allowed. \c replace_uniform introduces
+random variation by first randomly choosing a design variable of a
+randomly selected design and reassigning it to a random valid value
+for that variable. No consideration of the current value is given
+when determining the new value. All mutation types have a \c
+mutation_rate. The number of mutations for the replace_uniform
+mutator is the product of the mutation_rate and the population_size.
+
+The \c bit_random mutator introduces random variation by first converting
+a randomly chosen variable of a randomly chosen design into a binary
+string. It then flips a randomly chosen bit in the string from a 1 to
+a 0 or visa versa. In this mutation scheme, the resulting value has more
+probability of being similar to the original value. The number of mutations
+performed is the product of the mutation_rate, the number of design variables,
+and the population size.
+
+The offset mutators all act by adding an "offset" random amount to a
+variable value. The random amount has a mean of zero in all cases. The \c
+offset_normal mutator introduces random variation by adding a Gaussian
+random amount to a variable value. The random amount has a standard
+deviation dependent on the \c mutation_scale. The \c mutation_scale
+is a fraction in the range [0, 1] and is
+meant to help control the amount of variation that takes place when a
+variable is mutated. \c mutation_scale is multiplied by the range of
+the variable being mutated to serve as standard deviation. \c
+offset_cauchy is similar to \c offset_normal, except that a Cauchy
+random variable is added to the variable being mutated. The
+\c mutation_scale also defines the standard deviation for this mutator.
+Finally, \c offset_uniform adds a uniform random amount to the
+variable value. For the \c offset_uniform mutator, the \c mutation_scale
+is interpreted as a fraction of the total range of the variable. The
+range of possible deviation amounts is +/- 1/2 * (\c mutation_scale * variable
+range). The number of mutations for all offset mutators is defined
+as the product of \c mutation_rate and \c population_size.
+
+As of JEGA v2.0, all replacement types are common to both MOGA and SOGA.
+They include the \c roulette_wheel, \c unique_roulette_wheel, \c elitist, and
+\c below_limit selectors. In roulette_wheel replacement, each design is
+conceptually allotted a portion of a wheel proportional to its fitness
+relative to the fitnesses of the other Designs. Then,
+portions of the wheel are chosen at random and the design occupying
+those portions are duplicated into the next population. Those Designs
+allotted larger portions of the wheel are more likely to be selected
+(potentially many times). \c unique_roulette_wheel replacement is the
+same as \c roulette_wheel replacement, with the exception that a design
+may only be selected once. The \c below_limit selector attempts to keep
+all designs for which the negated fitness is below a certain limit. The
+values are negated to keep with the convention that higher fitness is better.
+The inputs to the \c below_limit selector are the limit as a real value, and
+a \c shrinkage_percentage as a real value. The \c shrinkage_percentage 
+defines the minimum amount of selections that will take place if
+enough designs are available. It is interpreted as a percentage of
+the population size that must go on to the subsequent generation. To
+enforce this, \c below_limit makes all the selections it would
+make anyway and if that is not enough, it takes the remaining that it needs
+from the best of what is left (effectively raising its limit as far as it must
+to get the minimum number of selections). It continues until it has made
+enough selections. The \c shrinkage_percentage is designed to prevent extreme
+decreases in the population size at any given generation, and thus 
+prevent a big loss of genetic diversity in a very short time. Without 
+a shrinkage limit, a small group of "super" designs may appear and 
+quickly cull the population down to a size on the order of
+the limiting value. In this case, all the diversity of the population 
+is lost and it is expensive to re-diversify and spread the population. The
+\c elitist selector simply chooses the required number of designs taking the
+most fit. For example, if 100 selections are requested, then the top 100
+designs as ranked by fitness will be selected and the remaining will be
+discarded.
+
+The initialization, crossover, and mutation controls were all
+described in the preceding section. There are no MOGA specific
+aspects to these controls. The \c fitness_type for a MOGA may be
+\c domination_count or \c layer_rank. Both have been specifically designed
+to avoid problems with aggregating and scaling objective function values
+and transforming them into a single objective. Instead,
+the \c domination_count fitness assessor works by ordering population
+members by the negative of the number of designs that dominate them. The
+values are negated in keeping with the convention that higher fitness is
+better. The \c layer_rank fitness assessor works by assigning all
+non-dominated designs a layer of 0, then from what remains, assigning all
+the non-dominated a layer of 1, and so on until all designs have been
+assigned a layer. Again, the values are negated for the higher-is-better
+fitness convention. Use of the \c below_limit selector with the
+\c domination_count fitness assessor has the effect of keeping all designs
+that are dominated by fewer then a limiting number of other designs subject
+to the shrinkage limit. Using it with the \c layer_rank fitness assessor
+has the effect of keeping all those designs whose layer is below a certain
+threshold again subject to the shrinkage limit.
+
+New as of JEGA v2.0 is the introduction of niche pressure operators. These
+operators are meant primarily for use with the moga. The job of a niche
+pressure operator is to encourage diversity along the Pareto frontier as the
+algorithm runs. This is typically accomplished by discouraging clustering
+of design points in the performance space. In JEGA, the application of niche
+pressure occurs as a secondary selection operation. The nicher is given a
+chance to perform a pre-selection operation prior to the operation of the
+selection (replacement) operator, and is then called to perform niching on the
+set of designs that were selected by the selection operator.
+
+Currently, the only niche pressure operators available are the \c
+radial nicher, the \c distance nicher, and the \c max_designs nicher.
+The \c radial niche pressure applicator works by enforcing a minimum
+Euclidean distance between designs in the performance space at each
+generation. The algorithm proceeds by starting at the (or one of the)
+extreme designs along objective dimension 0 and marching through the
+population removing all designs that are too close to the current
+design. One exception to the rule is that the algorithm will never
+remove an extreme design which is defined as a design that is maximal
+or minimal in all but 1 objective dimension (for a classical 2
+objective problem, the extreme designs are those at the tips of the
+non-dominated frontier). The \c distance nicher enforces a minimimum
+distance in each dimension.
+
+The designs that are removed by the nicher are not discarded. They are
+buffered and re-inserted into the population during the next pre-selection
+operation. This way, the selector is still the only operator that discards
+designs and the algorithm will not waste time "re-filling" gaps created by the
+nicher.
+
+The \c radial nicher requires as input a vector of fractions with
+length equal to the number of objectives. The elements of the vector
+are interpreted as percentages of the non-dominated range for each
+objective defining a minimum distance to all other designs. All
+values should be in the range (0, 1). The minimum allowable distance
+between any two designs in the performance space is the Euclidian
+(simple square-root-sum-of-squares calculation) distance defined by
+these percentages. The \c distance nicher has a similar input vector
+requirement, only the distance is the minimum distance in each
+dimension.
+
+The \c max_designs niche pressure applicator is designed to choose a
+limited number of solutions to remain in the population. That number
+is specified by \c num_designs. It does so in order to balance the
+tendency for populations to grow very large and thus consuming too
+many computer resources. It operates by ranking designs according to
+their fitness standing and a computed count of how many other designs
+are too close to them. Too close is a function of the supplied
+niche_vector, which specifies the minimum distance between any two
+points in the performance space along each dimension individually.
+Once the designs are all ranked, the top c\ num_designs designs are
+kept in the population and the remaining ones are bufferred or
+discarded. Note that like other niching operators, this one will not
+discard an extreme design.
+
+Also new as of JEGA v2.0 is the introduction of the MOGA specific
+\c metric_tracker converger. This converger is conceptually similar to the
+best and average fitness tracker convergers in that it tracks the progress of
+the population over a certain number of generations and stops when the progress
+falls below a certain threshold. The implementation is quite different
+however. The \c metric_tracker converger tracks 3 metrics specific to the
+non-dominated frontier from generation to generation. All 3 of these metrics
+are computed as percent changes between the generations. In order to compute
+these metrics, the converger stores a duplicate of the non-dominated frontier
+at each generation for comparison to the non-dominated frontier of the next
+generation.
+
+The first metric is one that indicates how the expanse of the frontier is
+changing. The expanse along a given objective is defined by the range of
+values existing within the non-dominated set. The expansion metric is
+computed by tracking the extremes of the non-dominated frontier from one
+generation to the next. Any movement of the extreme values is noticed and
+the maximum percentage movement is computed as:
+\verbatim
+  Em = max over j of abs((range(j, i) - range(j, i-1)) / range(j, i-1)) j=1,nof
+\endverbatim
+where Em is the max expansion metric, j is the objective function index,
+i is the current generation number, and nof is the total number of
+objectives. The range is the difference between the largest value along
+an objective and the smallest when considering only non-dominated designs.
+
+The second metric monitors changes in the density of the non-dominated
+set. The density metric is computed as the number of non-dominated points
+divided by the hypervolume of the non-dominated region of space. Therefore,
+changes in the density can be caused by changes in the number of
+non-dominated points or by changes in size of the non-dominated space or
+both. The size of the non-dominated space is computed as:
+\verbatim
+  Vps(i) = product over j of range(j, i)  j=1,nof
+\endverbatim
+where Vps(i) is the hypervolume of the non-dominated space at generation i
+and all other terms have the same meanings as above.
+
+The density of the a given non-dominated space is then:
+\verbatim
+  Dps(i) = Pct(i) / Vps(i)
+\endverbatim
+where Pct(i) is the number of points on the non-dominated frontier at
+generation i.
+
+The percentage increase in density of the frontier is then calculated as
+\verbatim
+  Cd = abs((Dps(i) - Dps(i-1)) / Dps(i-1))
+\endverbatim
+where Cd is the change in density metric.
+
+The final metric is one that monitors the "goodness" of the non-dominated
+frontier. This metric is computed by considering each design in the previous
+population and determining if it is dominated by any designs in the
+current population. All that are determined to be dominated are counted.
+The metric is the ratio of the number that are dominated to the total number
+that exist in the previous population.
+
+As mentioned above, each of these metrics is a percentage. The tracker
+records the largest of these three at each generation. Once the recorded
+percentage is below the supplied percent change for the supplied number of
+generations consecutively, the algorithm is converged.
+
+The specification for convergence in a moga can either be \c metric_tracker
+or can be omitted all together. If omitted, no convergence algorithm will be
+used and the algorithm will rely on stopping criteria only. If
+\c metric_tracker is specified, then a \c percent_change and \c num_generations
+must be supplied as with the other metric tracker convergers (average and best
+fitness trackers). The \c percent_change is the threshold beneath which
+convergence is attained whereby it is compared to the metric value computed
+as described above. The \c num_generations is the number of generations
+over which the metric value should be tracked. Convergence will be attained if
+the recorded metric is below \c percent_change for \c num_generations
+consecutive generations.
+
+The MOGA specific controls are described in \ref T5d20 "Table 5.20"
+below. Note that MOGA and SOGA create additional output files during
+execution. "finaldata.dat" is a file that holds the final set of Pareto optimal
+solutions after any post-processing is complete. "discards.dat" holds
+solutions that were discarded from the population during the course of
+evolution. It can often be useful to plot objective function values
+from these files to visually see the Pareto front and ensure that
+finaldata.dat solutions dominate discards.dat solutions. The
+solutions are written to these output files in the format
+"Input1...InputN..Output1...OutputM". If MOGA is used in a hybrid
+optimization strategy (which requires one optimal solution from each
+individual optimization method to be passed to the subsequent
+optimization method as its starting point), the solution in the Pareto
+set closest to the "utopia" point is given as the best solution. This
+solution is also reported in the %Dakota output. This "best" solution
+in the Pareto set has minimum distance from the utopia point. The
+utopia point is defined as the point of extreme (best) values for each
+objective function. For example, if the Pareto front is bounded by
+(1,100) and (90,2), then (1,2) is the utopia point. There will be a
+point in the Pareto set that has minimum L2-norm distance to this
+point, for example (10,10) may be such a point. In SOGA, the solution
+that minimizes the single objective function is returned as the best
+solution. If moga is used in a strategy which may require passing
+multiple solutions to the next level (such as the \c
+surrogate_based_global method or \c hybrid strategy), the \c
+orthogonal_distance postprocessor type may be used to specify the
+distances between each solution value to winnow down the solutions in
+the full Pareto front to a subset which will be passed to the next
+iteration.
+
+
+Topics::	package_jega, evolutionary_algorithm, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	method-soga

@@ -1,0 +1,12 @@
+Blurb::
+Description::
+The optional \c deactivate specification block includes three features
+which a user may deactivate in order to simplify interface development, 
+increase execution speed, and/or reduce memory and disk requirements:
+
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

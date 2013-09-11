@@ -1,0 +1,11 @@
+Blurb::
+Specify the name of the tabular output file
+Description::
+The \c tabular_graphics_file specification optionally specifies
+a name to use for the tabular data file (\c dakota_tabular.dat is the default).
+
+Topics::	dakota_output, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

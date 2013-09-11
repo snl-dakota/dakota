@@ -1,0 +1,34 @@
+Blurb::
+Morris One-at-a-Time
+Description::
+The Problem Solving Environment for Uncertainty Analysis and Design
+Exploration (PSUADE) is a Lawrence Livermore National Laboratory tool
+for metamodeling, sensitivity analysis, uncertainty quantification,
+and optimization. Its features include non-intrusive and parallel
+function evaluations, sampling and analysis methods, an integrated
+design and analysis framework, global optimization, numerical
+integration, response surfaces (MARS and higher order regressions),
+graphical output with Pgplot or Matlab, and fault tolerance [\ref
+Tong2005 "C.H. Tong, 2005"].
+
+The Morris One-At-A-Time (MOAT) method, originally proposed by Morris
+[\ref Morris1991 "M.D. Morris, 1991"], is a screening method, designed
+to explore a computational model to distinguish between input
+variables that have negligible, linear and additive, or nonlinear or
+interaction effects on the output. The computer experiments performed
+consist of individually randomized designs which vary one input factor
+at a time to create a sample of its elementary effects. The PSUADE
+implementation of MOAT is selected with method keyword \c psuade_moat.
+The number of samples (\c samples) must be a positive integer multiple
+of (number of continuous design variable + 1) and will be
+automatically adjusted if misspecified. The number of partitions (\c
+partitions) applies to each variable being studied and must be odd
+(the number of MOAT levels per variable is partitions + 1). This will
+also be adjusted at runtime as necessary. For information on
+practical use of this method, see 
+[\ref Saltelli2004 "Saltelli, et al., 2004"]. 
+
+Topics::	package_psuade, dace, not_yet_reviewed
+Examples::
+Theory::
+Faq::

@@ -1,0 +1,19 @@
+Blurb::
+Keep the input/results files after the analysis driver completes
+Description::
+File
+tagging (appending parameters and results files with the function
+evaluation number) and file saving (leaving parameters and results
+files in existence after their use is complete) are controlled with
+the \c file_tag and \c file_save flags. If these specifications are
+omitted, the default is no file tagging (no appended function
+evaluation number) and no file saving (files will be removed after a
+function evaluation). File tagging is most useful when multiple
+function evaluations are running simultaneously using files in a
+shared disk space, and file saving is most useful when debugging the
+data communication between %Dakota and the simulation.
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

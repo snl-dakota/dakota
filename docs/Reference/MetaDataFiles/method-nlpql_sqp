@@ -1,0 +1,23 @@
+Blurb::
+Squential Quadratic Program
+Description::
+The NLPQL library is a commercially-licensed library containing a
+sequential quadratic programming (SQP) optimizer, specified as
+%Dakota's \c nlpql_sqp method, for constrained optimization. The
+particular implementation used is NLPQLP 
+[\ref Schitt2004 "Schittkowski, 2004"], a variant with distributed 
+and non-monotone line search.  %Dakota provides access to the NLPQL 
+library through the NLPQLPOptimizer class.
+
+The method independent controls for maximum iterations and output
+verbosity are mapped to NLPQL controls MAXIT and IPRINT, respectively.
+The maximum number of function evaluations is enforced within the
+NLPQLPOptimizer class.
+
+
+
+Topics::	package_nlpql, squential_quadratic_programming, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

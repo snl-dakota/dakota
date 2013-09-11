@@ -1,0 +1,920 @@
+Blurb::
+An empirical model that is created from data or the results of a submodel
+Description::
+Surrogate models are inexpensive approximate models that are intended
+to capture the salient features of an expensive high-fidelity model.
+They can be used to explore the variations in response quantities over
+regions of the parameter space, or they can serve as inexpensive
+stand-ins for optimization or uncertainty quantification studies (see,
+for example, the surrogate-based optimization strategy in
+Section~\ref{sbm}). Surrogate models supported in Dakota can be
+categorized into three types: data fits, multifidelity, and
+reduced-order model surrogates. An overview and discussion of
+surrogate correction is provided here, with details following.
+
+Each of these surrogate types provides an approximate representation
+of a "truth" model which is used to perform the parameter to response
+mappings. This approximation is built and updated using data from the
+truth model. This data is generated in some cases using a design of
+experiments iterator applied to the truth model (global approximations
+with a \c dace_method_pointer). In other cases, truth model data from
+a single point (local, hierarchical approximations), from a few
+previously evaluated points (multipoint approximations), or from the
+restart database (global approximations with \c reuse_samples) can be
+used. Surrogate models are used extensively in the surrogate-based
+optimization and least squares methods (see SurrBasedMinimizer and its
+derived classes and \ref MethodSB), in which the goals are to reduce
+expense by minimizing the number of truth function evaluations and to
+smooth out noisy data with a global data fit. However, the use of
+surrogate models is not restricted to optimization techniques;
+uncertainty quantification and optimization under uncertainty methods
+are other primary users.
+
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Data fitting methods involve construction of an approximation or
+surrogate model using data (response values, gradients, and Hessians)
+generated from the original truth model. Data fit methods can be
+further categorized as local, multipoint, and global approximation
+techniques, based on the number of points used in generating the data
+fit. Local methods involve response data from a single point in
+parameter space. Available local techniques currently include:
+
+<b> Taylor Series Expansion </b>: This is a local first-order or
+second-order expansion centered at a single point in the parameter space.
+
+Multipoint approximations involve response data from two or more
+points in parameter space, often involving the current and previous
+iterates of a minimization algorithm. Available techniques currently
+include:
+
+<b> TANA-3 </b>: This multipoint approximation uses a two-point
+exponential approximation~\cite{Xu98,Fad90} built with response value
+and gradient information from the current and previous iterates.
+
+Global methods, often referred to as \emph{response surface methods},
+involve many points spread over the parameter ranges of interest.
+These surface fitting methods work in conjunction with the sampling
+methods and design of experiments methods described in
+Sections~\ref{uq:sampling} and ~\ref{dace:background}.
+
+<b> Polynomial Regression </b>: First-order (linear), second-order
+(quadratic), and third-order (cubic) polynomial response surfaces
+computed using linear least squares regression methods. Note: there is
+currently no use of forward- or backward-stepping regression methods
+to eliminate unnecessary terms from the polynomial model.
+
+<b> Gaussian Process (GP) or Kriging Interpolation </b>
+Dakota contains two implementations of Gaussian process, also known as 
+Kriging ~\cite{Giu98}, spatial interpolation. One of these resides in 
+the Surfpack sub-package of Dakota, the other resides in Dakota itself.
+Both versions use the Gaussian correlation function with parameters that
+are selected by Maximum Likelihood Estimation (MLE). This correlation 
+function results in a response surface that is $C^\infty$-continuous.
+Prior to Dakota 5.2, the Surfpack GP was referred to as the ``Kriging'' 
+model and the Dakota version was labeled as the ``Gaussian Process.'' 
+These terms are now used interchangeably. As of Dakota 5.2,the 
+Surfpack GP is used by default. For now the user still has the option 
+to select the Dakota GP, but the Dakota GP is deprecated and will be 
+removed in a future release.
+\begin{itemize}
+\item <b> Surfpack GP </b>: Ill-conditioning due to a poorly spaced sample 
+   design is handled by discarding points that contribute the least 
+   unique information to the correlation matrix. Therefore, the points 
+   that are discarded are the ones that are easiest to predict. The 
+   resulting surface will exactly interpolate the data values at the 
+   retained points but is not guaranteed to interpolate the discarded 
+   points.
+\item <b> Dakota GP </b>: Ill-conditioning is handled by adding a jitter 
+   term or ``nugget'' to diagonal elements of the correlation matrix. 
+   When this happens, the Dakota GP may not exactly interpolate the 
+   data values.
+\end{itemize}
+
+<b> Artificial Neural Networks </b>: An implementation of the
+stochastic layered perceptron neural network developed by Prof. D. C.
+Zimmerman of the University of Houston~\cite{Zim96}. This neural network
+method is intended to have a lower training (fitting) cost than
+typical back-propagation neural networks.
+
+<b> Multivariate Adaptive Regression Splines (MARS) </b>: Software
+developed by Prof. J. H. Friedman of Stanford University~\cite{Fri91}.
+The MARS method creates a $C^2$-continuous patchwork of splines in the
+parameter space.
+
+<b> Radial Basis Functions (RBF) </b>: Radial basis functions are 
+functions whose value typically depends on the distance from a center point, 
+called the centroid. The surrogate model approximation is constructed
+as the weighted sum of individual radial basis functions. 
+
+<b> Moving Least Squares (MLS) </b>: Moving Least Squares can be 
+considered a more specialized version of linear regression models.
+MLS is a weighted least squares approach where the weighting is 
+``moved'' or recalculated for every new point where 
+a prediction is desired.~\cite{Nea04} 
+
+%<b> Orthogonal Polynomials </b>: This technique involves the use of
+%multivariate orthogonal polynomials as a global basis for surrogate
+%modeling. These multivariate polynomials are constructed as a product
+%of particular univariate orthogonal polynomials, including Hermite,
+%Legendre, Laguerre, Jacobi, and generalized Laguerre polynomials,
+%which are defined as functions of standard normal, standard uniform,
+%standard exponential, standard beta, and standard gamma random
+%variables, respectively. Given the probabilistic interpretation of
+%the approximation variables, this data fit is primarily used for
+%uncertainty quantification, and in particular, polynomial chaos
+%expansions.
+
+In addition to data fit surrogates, Dakota supports multifidelity 
+and reduced-order model approximations:
+
+<b> Multifidelity Surrogates </b>: Multifidelity modeling involves the
+use of a low-fidelity physics-based model as a surrogate for the
+original high-fidelity model. The low-fidelity model typically
+involves a coarser mesh, looser convergence tolerances, reduced
+element order, or omitted physics. It is a separate model in its own
+right and does not require data from the high-fidelity model for
+construction. Rather, the primary need for high-fidelity evaluations
+is for defining correction functions that are applied to the
+low-fidelity results.
+
+<b> Reduced Order Models </b>: A reduced-order model (ROM) is
+mathematically derived from a high-fidelity model using the technique
+of Galerkin projection. By computing a set of basis functions (e.g.,
+eigenmodes, left singular vectors) that capture the principal dynamics
+of a system, the original high-order system can be projected to a much
+smaller system, of the size of the number of retained basis functions.
+
+\subsection{Correction Approaches}
+
+Each of the surrogate model types supports the use of correction
+factors that improve the local accuracy of the surrogate models. The
+correction factors force the surrogate models to match the true
+function values and possibly true function derivatives at the center
+point of each trust region. Currently, Dakota supports either zeroth-,
+first-, or second-order accurate correction methods, each of which can
+be applied using either an additive, multiplicative, or combined
+correction function. For each of these correction approaches, the
+correction is applied to the surrogate model and the corrected model
+is then interfaced with whatever algorithm is being employed. The
+default behavior is that no correction factor is applied.
+
+The simplest correction approaches are those that enforce consistency
+in function values between the surrogate and original models at a
+single point in parameter space through use of a simple scalar offset
+or scaling applied to the surrogate model. First-order corrections
+such as the first-order multiplicative correction (also known as beta
+correction~\cite{Cha93}) and the first-order additive
+correction~\cite{Lew00} also enforce consistency in the gradients and
+provide a much more substantial correction capability that is
+sufficient for ensuring provable convergence in SBO algorithms (see
+Section~\ref{sbm:sblm}). SBO convergence rates can be further
+accelerated through the use of second-order corrections which also
+enforce consistency in the Hessians~\cite{Eld04}, where the
+second-order information may involve analytic, finite-difference, or
+quasi-Newton Hessians.
+
+Correcting surrogate models with additive corrections involves
+\begin{equation}
+\hat{f_{hi_{\alpha}}}({\bf x}) = f_{lo}({\bf x}) + \alpha({\bf x}) 
+\label{eq:correct_val_add}
+\end{equation}
+where multifidelity notation has been adopted for clarity. For
+multiplicative approaches, corrections take the form
+\begin{equation}
+\hat{f_{hi_{\beta}}}({\bf x}) = f_{lo}({\bf x}) \beta({\bf x})
+\label{eq:correct_val_mult}
+\end{equation}
+where, for local corrections, $\alpha({\bf x})$ and $\beta({\bf x})$
+are first or second-order Taylor series approximations to the exact
+correction functions:
+\begin{eqnarray}
+\alpha({\bf x}) & = & A({\bf x_c}) + \nabla A({\bf x_c})^T 
+({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T 
+\nabla^2 A({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_a} \\
+\beta({\bf x}) & = & B({\bf x_c}) + \nabla B({\bf x_c})^T 
+({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T \nabla^2 
+B({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_b}
+\end{eqnarray}
+where the exact correction functions are
+\begin{eqnarray}
+A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})    \label{eq:exact_A} \\
+B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} \label{eq:exact_B}
+\end{eqnarray}
+Refer to \cite{Eld04} for additional details on the derivations.
+
+A combination of additive and multiplicative corrections can provide
+for additional flexibility in minimizing the impact of the correction
+away from the trust region center. In other words, both additive and
+multiplicative corrections can satisfy local consistency, but through
+the combination, global accuracy can be addressed as well. This
+involves a convex combination of the additive and multiplicative
+corrections:
+\begin{equation}
+\hat{f_{hi_{\gamma}}}({\bf x}) = \gamma \hat{f_{hi_{\alpha}}}({\bf x}) +
+(1 - \gamma) \hat{f_{hi_{\beta}}}({\bf x}) \label{eq:combined_form}
+\end{equation}
+where $\gamma$ is calculated to satisfy an additional matching
+condition, such as matching values at the previous design iterate.
+
+%It should be noted that in both first order correction methods, the
+%function $\hat{f}(x)$ matches the function value and gradients of
+%$f_{t}(x)$ at $x=x_{c}$. This property is necessary in proving that
+%the first order-corrected SBO algorithms are provably convergent to a
+%local minimum of $f_{t}(x)$. However, the first order correction
+%methods are significantly more expensive than the zeroth order
+%correction methods, since the first order methods require computing
+%both $\nabla f_{t}(x_{c})$ and $\nabla f_{s}(x_{c})$. When the SBO
+%strategy is used with either of the zeroth order correction methods,
+%or with no correction method, convergence is not guaranteed to a local
+%minimum of $f_{t}(x)$. That is, the SBO strategy becomes a heuristic
+%optimization algorithm. From a mathematical point of view this is
+%undesirable, but as a practical matter, the heuristic variants of SBO
+%are often effective in finding local minima.
+
+%\emph{Usage guidelines:}
+%\begin{itemize}
+%\item Both the \c additive zeroth_order and
+% \c multiplicative zeroth_order correction methods are
+% ``free'' since they use values of $f_{t}(x_{c})$ that are normally
+% computed by the SBO strategy.
+%
+%\item The use of either the \c additive first_order method or
+% the \c multiplicative first_order method does not necessarily
+% improve the rate of convergence of the SBO algorithm.
+%
+%\item When using the first order correction methods, the
+% \c TRUE_FCN_GRAD response keywords must be modified (see
+% bottom of Figure~\ref{sbm:sblm_rosen}) to allow either analytic or
+% numerical gradients to be computed. This provides the gradient data
+% needed to compute the correction function.
+%
+%\item For many computationally expensive engineering optimization
+% problems, gradients often are too expensive to obtain or are
+% discontinuous (or may not exist at all). In such cases the heuristic
+% SBO algorithm has been an effective approach at identifying optimal
+% designs~\cite{Giu02}.
+%\end{itemize}
+
+\subsection{Data Fit Surrogate Models}\label{models:surrogate:datafit}
+
+A surrogate of the {\em data fit} type is a non-physics-based
+approximation typically involving interpolation or regression of a set
+of data generated from the original model. Data fit surrogates can be
+further characterized by the number of data points used in the fit,
+where a local approximation (e.g., first or second-order Taylor
+series) uses data from a single point, a multipoint approximation
+(e.g., two-point exponential approximations (TPEA) or two-point
+adaptive nonlinearity approximations (TANA)) uses a small number of
+data points often drawn from the previous iterates of a particular
+algorithm, and a global approximation (e.g., polynomial response
+surfaces, kriging/gaussian_process, neural networks, radial basis 
+functions, splines)
+uses a set of data points distributed over the domain of interest,
+often generated using a design of computer experiments.
+
+Dakota contains several types of surface fitting methods that can be
+used with optimization and uncertainty quantification methods and
+strategies such as surrogate-based optimization and optimization under
+uncertainty. These are: polynomial models (linear, quadratic, and
+cubic), first-order Taylor series expansion, kriging spatial
+interpolation, artificial neural networks, multivariate adaptive
+regression splines, radial basis functions, and moving least squares. 
+With the exception of Taylor series methods, all of the above methods 
+listed in the previous sentence are accessed in Dakota through the 
+Surfpack library. All of these surface fitting methods can be
+applied to problems having an arbitrary number of design parameters.
+However, surface fitting methods usually are practical only for
+problems where there are a small number of parameters (e.g., a maximum
+of somewhere in the range of 30-50 design parameters). The
+mathematical models created by surface fitting methods have a variety
+of names in the engineering community. These include surrogate models,
+meta-models, approximation models, and response surfaces. For this
+manual, the terms surface fit model and surrogate model are used.
+
+The data fitting methods in Dakota include software developed by
+Sandia researchers and by various researchers in the academic
+community.
+
+\subsubsection{Procedures for Surface Fitting}\label{models:surf:procedures}
+
+The surface fitting process consists of three steps: (1) selection of
+a set of design points, (2) evaluation of the true response quantities
+(e.g., from a user-supplied simulation code) at these design points,
+and (3) using the response data to solve for the unknown coefficients
+(e.g., polynomial coefficients, neural network weights, kriging
+correlation factors) in the surface fit model. In cases where there is
+more than one response quantity (e.g., an objective function plus one
+or more constraints), then a separate surface is built for each
+response quantity. Currently, the surface fit models are built using
+only 0$^{\mathrm{th}}$-order information (function values only), although
+extensions to using higher-order information (gradients and Hessians)
+are possible. Each surface fitting method employs a different
+numerical method for computing its internal coefficients. For example,
+the polynomial surface uses a least-squares approach that employs a
+singular value decomposition to compute the polynomial coefficients,
+whereas the kriging surface uses Maximum Likelihood Estimation to
+compute its correlation coefficients. More information on the
+numerical methods used in the surface fitting codes is provided in the
+Dakota Developers Manual~\cite{DevMan}.
+
+The set of design points that is used to construct a surface fit model
+is generated using either the DDACE software package~\cite{TonXX} or the
+LHS software package~\cite{Ima84}. These packages provide a variety of
+sampling methods including Monte Carlo (random) sampling, Latin
+hypercube sampling, orthogonal array sampling, central composite
+design sampling, and Box-Behnken sampling. More information on these
+software packages is provided in Chapter~\ref{dace}.
+
+\subsubsection{Taylor Series}\label{models:surf:taylor}
+
+The Taylor series model is purely a local approximation method. That
+is, it provides local trends in the vicinity of a single point in
+parameter space. The first-order Taylor series expansion is:
+\begin{equation}
+\hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
+({\bf x} - {\bf x}_0) \label{eq:taylor1}
+\end{equation}
+and the second-order expansion is:
+\begin{equation}
+\hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
+({\bf x} - {\bf x}_0) + \frac{1}{2} ({\bf x} - {\bf x}_0)^T 
+\nabla^2_{\bf x} f({\bf x}_0) ({\bf x} - {\bf x}_0) \label{eq:taylor2}
+\end{equation}
+
+where ${\bf x}_0$ is the expansion point in $n$-dimensional parameter
+space and $f({\bf x}_0)$, $\nabla_{\bf x} f({\bf x}_0)$, and
+$\nabla^2_{\bf x} f({\bf x}_0)$ are the computed response value,
+gradient, and Hessian at the expansion point, respectively. As
+dictated by the responses specification used in building the local
+surrogate, the gradient may be analytic or numerical and the Hessian
+may be analytic, numerical, or based on quasi-Newton secant updates.
+
+In general, the Taylor series model is accurate only in the region of
+parameter space that is close to ${\bf x}_0$ . While the accuracy is
+limited, the first-order Taylor series model reproduces the correct
+value and gradient at the point $\mathbf{x}_{0}$, and the second-order
+Taylor series model reproduces the correct value, gradient, and
+Hessian. This consistency is useful in provably-convergent
+surrogate-based optimization. The other surface fitting methods do not
+use gradient information directly in their models, and these methods
+rely on an external correction procedure in order to satisfy the
+consistency requirements of provably-convergent SBO.
+
+\subsubsection{Two Point Adaptive Nonlinearity Approximation}\label{models:surf:tana}
+
+The TANA-3 method~\cite{Xu98} is a multipoint approximation method
+based on the two point exponential approximation~\cite{Fad90}. This
+approach involves a Taylor series approximation in intermediate
+variables where the powers used for the intermediate variables are
+selected to match information at the current and previous expansion
+points. The form of the TANA model is:
+
+\begin{equation}
+\hat{f}({\bf x}) \approx f({\bf x}_2) + \sum_{i=1}^n 
+\frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
+(x_i^{p_i} - x_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf x}) \sum_{i=1}^n 
+(x_i^{p_i} - x_{i,2}^{p_i})^2 \label{eq:tana_f}
+\end{equation}
+
+where $n$ is the number of variables and:
+
+\begin{eqnarray}
+p_i & = & 1 + \ln \left[ \frac{\frac{\partial f}{\partial x_i}({\bf x}_1)}
+{\frac{\partial f}{\partial x_i}({\bf x}_2)} \right] \left/ 
+\ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. \label{eq:tana_pi} \\
+\epsilon({\bf x}) & = & \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
+\sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2} \label{eq:tana_eps} \\
+H & = & 2 \left[ f({\bf x}_1) - f({\bf x}_2) - \sum_{i=1}^n 
+\frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
+(x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] \label{eq:tana_H}
+\end{eqnarray}
+
+and ${\bf x}_2$ and ${\bf x}_1$ are the current and previous expansion
+points. Prior to the availability of two expansion points, a
+first-order Taylor series is used.
+
+\subsubsection{Linear, Quadratic, and Cubic Polynomial Models}\label{models:surf:polynomial}
+
+Linear, quadratic, and cubic polynomial models are available in
+Dakota. The form of the linear polynomial model is
+
+\begin{equation}
+ \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
+ \label{models:surf:equation01}
+\end{equation}
+
+the form of the quadratic polynomial model is:
+
+\begin{equation}
+ \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
+ +\sum_{i=1}^{n}\sum_{j \ge i}^{n}c_{ij}x_{i}x_{j}
+ \label{models:surf:equation02}
+\end{equation}
+
+and the form of the cubic polynomial model is:
+
+\begin{equation}
+ \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
+ +\sum_{i=1}^{n}\sum_{j \ge i}^{n}c_{ij}x_{i}x_{j}
+ +\sum_{i=1}^{n}\sum_{j \ge i}^{n}\sum_{k \ge j}^{n}
+ c_{ijk}x_{i}x_{j}x_{k}
+ \label{models:surf:equation03}
+\end{equation}
+
+In all of the polynomial models, $\hat{f}(\mathbf{x})$ is the response
+of the polynomial model; the $x_{i},x_{j},x_{k}$ terms are the
+components of the $n$-dimensional design parameter values; the $c_{0}$
+, $c_{i}$ , $c_{ij}$ , $c_{ijk} $ terms are the polynomial
+coefficients, and $n$ is the number of design parameters. The number
+of coefficients, $n_{c}$, depends on the order of polynomial model and
+the number of design parameters. For the linear polynomial:
+
+\begin{equation}
+ n_{c_{linear}}=n+1
+ \label{models:surf:equation04}
+\end{equation}
+
+for the quadratic polynomial:
+
+\begin{equation}
+ n_{c_{quad}}=\frac{(n+1)(n+2)}{2}
+ \label{models:surf:equation05}
+\end{equation}
+
+and for the cubic polynomial:
+
+\begin{equation}
+ n_{c_{cubic}}=\frac{(n^{3}+6 n^{2}+11 n+6)}{6}
+ \label{models:surf:equation06}
+\end{equation}
+
+There must be at least $n_{c}$ data samples in order to form a fully
+determined linear system and solve for the polynomial coefficients. In
+Dakota, a least-squares approach involving a singular value
+decomposition numerical method is applied to solve the linear system.
+
+The utility of the polynomial models stems from two sources: (1) over
+a small portion of the parameter space, a low-order polynomial model
+is often an accurate approximation to the true data trends, and (2)
+the least-squares procedure provides a surface fit that smooths out
+noise in the data. For this reason, the surrogate-based optimization
+strategy often is successful when using polynomial models,
+particularly quadratic models. However, a polynomial surface fit may
+not be the best choice for modeling data trends over the entire
+parameter space, unless it is known a priori that the true data trends
+are close to linear, quadratic, or cubic. See~\cite{Mye95} for more
+information on polynomial models.
+
+\subsubsection{Kriging/Gaussian-Process Spatial Interpolation Models}
+\label{models:surf:kriging}
+In Dakota 5.2, we have 2 versions of spatial interpolation models.
+One is located in Dakota itself and the other in the Surfpack subpackage 
+of Dakota which can be compiled in a stand alone mode. These models
+are denoted as \c kriging dakota and \c kriging surfpack or 
+as \c gaussian_process dakota and 
+\c gaussian_process surfpack. In prior Dakota releases, the 
+\c dakota version was referred to as the \c gaussian_process 
+model while the \c surfpack version was referred to as the 
+\c kriging model. As of DAKTOA 5.2, specifying only 
+\c gaussian_process or \c kriging will default to the
+\c surfpack version in all contexts except Bayesian calibration. 
+For now, both versions are supported but the \c dakota version is 
+deprecated and intended to be removed in a future release. The two 
+\c kriging or \c gaussian_process models are very similar: 
+the differences between them are explained in more detail below.
+
+The Kriging, also known as Gaussian process (GP), method uses techniques 
+developed in the geostatistics and spatial statistics communities 
+(~\cite{Cre91},~\cite{Koe96}) to produce smooth surface fit models of the 
+response values from a set of data points. The number of times the 
+fitted surface is differentiable will depend on the correlation function 
+that is used. Currently, the Gaussian correlation function is the only 
+option for either version included in Dakota; this makes the GP model 
+$C^{\infty}$-continuous. The form of the GP model is
+
+\begin{equation}
+ \hat{f}(\underline{x}) \approx \underline{g}(\underline{x})^T\underline{\beta} +
+ \underline{r}(\underline{x})^{T}\underline{\underline{R}}^{-1}(\underline{f}-\underline{\underline{G}}\ \underline{\beta})
+ \label{models:surf:equation08}
+\end{equation}
+
+where $\underline{x}$ is the current point in $n$-dimensional parameter
+space; $\underline{g}(\underline{x})$ is the vector of trend basis 
+functions evaluated at $\underline{x}$; $\underline{\beta}$ is a vector
+containing the generalized least squares estimates of the trend basis 
+function coefficients; $\underline{r}(\underline{x})$ is the correlation 
+vector of terms between $\underline{x}$ and the data points;
+$\underline{\underline{R}}$ is the correlation matrix for all of the 
+data points; $\underline{f}$ is the vector of response values; and 
+$\underline{\underline{G}}$ is the matrix containing the trend basis 
+functions evaluated at all data points. The terms in the correlation 
+vector and matrix are computed using a Gaussian correlation function 
+and are dependent on an $n$-dimensional vector of correlation parameters,
+$\underline{\theta} = \{\theta_{1},\ldots,\theta_{n}\}^T$. By default, 
+Dakota determines the value of $\underline{\theta}$ using a Maximum
+Likelihood Estimation (MLE) procedure. However, the user can also opt 
+to manually set them in the \c gaussian_process surfpack
+model by specifying a vector of correlation lengths, 
+$\underline{l}=\{\l_{1},\ldots,\l_{n}\}^T$ where 
+$\theta_i=1/(2 l_i^2)$. This definition of correlation lengths makes 
+their effect on the GP model's behavior directly analogous to the 
+role played by the standard deviation in a normal (a.k.a. Gaussian) 
+distribution. In the \c gaussian_process surpack model, we used 
+this analogy to define a small feasible region in which to search for 
+correlation lengths. This region should (almost) always contain some 
+correlation matrices that are well conditioned and some that are optimal, 
+or at least near optimal. More details on Kriging/GP models may be 
+found in~\cite{Giu98}.
+
+Since a GP has a hyper-parametric error model, it can be used 
+to model surfaces with slope discontinuities along with multiple 
+local minima and maxima. GP interpolation is useful for both 
+SBO and OUU, as well as for studying the global response value trends 
+in the parameter space. This surface fitting method needs a 
+minimum number of design points equal to the sum of the number of 
+basis functions and the number of dimensions, $n$, but it is 
+recommended to use at least double this amount.
+%$n_{c_{quad}}$ design points when possible (refer to
+%Section~\ref{models:surf:polynomial} for $n_{c}$ definitions).
+
+The GP model is guaranteed to pass through all of the response 
+data values that are used to construct the model. Generally, this is a
+desirable feature. However, if there is considerable numerical noise
+in the response data, then a surface fitting method that provides some
+data smoothing (e.g., quadratic polynomial, MARS) may be a better
+choice for SBO and OUU applications. Another feature of the GP
+model is that the predicted response values, $\hat{f}(\underline{x})$,
+decay to the trend function, 
+$\underline{g}(\underline{x})^T\underline{\beta}$, when $\underline{x}$ 
+is far from any of the data points from which the GP model was 
+constructed (i.e., when the model is used for extrapolation). 
+
+As mentioned above, there are two \c gaussian_process models 
+in Dakota 5.2, the \c surfpack version and the \c dakota
+version. More details on the \c gaussian_process dakota
+model can be found in~\cite{McF08}. The differences between these 
+models are as follows: 
+
+\begin{itemize}
+\item Trend Function: The GP models incorporate a parametric trend 
+   function whose purpose is to capture large-scale variations. In 
+   both models, the trend function can be a constant, linear,or 
+   reduced quadratic (main effects only, no interaction terms) 
+   polynomial. This is specified by the keyword \c trend
+   followed by one of \c constant, \c linear, or 
+   \c reduced_quadratic (in Dakota 5.0 and earlier, the reduced 
+   quadratic option for the \c dakota version was selected using 
+   the keyword, \c quadratic). The \\
+   \c gaussian_process surfpack model has the additional option 
+   of a full (i.e. it includes interaction terms) quadratic polynomial; 
+   this is accessed by following the \c trend keyword with 
+   \c quadratic.
+\item Correlation Parameter Determination: Both of the 
+   \c gaussian_process models use a Maximum Likelihood Estimation 
+   (MLE) approach to find the optimal values of the hyper-parameters 
+   governing the mean and correlation functions. By default both models 
+   use the global optimization method called DIRECT, although they search 
+   regions with different extents. For the 
+   \c gaussian_process dakota model, DIRECT is the only option. 
+   The \c gaussian_process surfpack model has several options for 
+   the optimization method used. These are specified by the 
+   \c optimization_method keyword followed by one of these strings:
+   \begin{itemize}
+   \item \c global which uses the default DIRECT optimizer,
+   \item \c local which uses the CONMIN optimizer,
+   \item \c sampling which generates several random guesses and 
+      picks the candidate with greatest likelihood, and
+   \item \c none 
+   \end{itemize} 
+   The \c none option, and the starting location of the 
+   \c local optimization, default to the center, in 
+   log(correlation length) scale, of the of small feasible region. 
+   However, these can also be user specified with the 
+   \c correlation_lengths keyword followed by a list of $n$ real 
+   numbers. The total number of evaluations of the 
+   \c gaussian_process surfpack model's likelihood function can 
+   be controlled using the \c max_trials keyword followed by a 
+   positive integer. Note that we have found the \c global 
+   optimization method to be the most robust.
+\item Ill-conditioning. One of the major problems in determining 
+   the governing values for a Gaussian process or Kriging model is 
+   the fact that the correlation matrix can easily become 
+   ill-conditioned when there are too many input points close together.
+   Since the predictions from the Gaussian process model involve 
+   inverting the correlation matrix, ill-conditioning can lead to poor 
+   predictive capability and should be avoided. The 
+   \c gaussian_process surfpack model defines a small feasible 
+   search region for correlation lengths, which should (almost) always 
+   contain some well conditioned correlation matrices. In Dakota 5.1, 
+   the \c kriging (now \c gaussian_process surfpack or
+   \c kriging surfpack) model avoided 
+   ill-conditioning by explicitly excluding poorly conditioned 
+   $\underline{\underline{R}}$ from consideration on the basis of their 
+   having a large (estimate of) condition number; this constraint acted 
+   to decrease the size of admissible correlation lengths. Note that a
+   sufficiently bad sample design could require correlation lengths to 
+   be so short that any interpolatory Kriging/GP model would become 
+   inept at extrapolation and interpolation. \\ \\
+   The \c gaussian_process dakota model has two features to 
+   overcome ill-conditioning. The first is that the algorithm will 
+   add a small amount of noise to the diagonal elements of the matrix 
+   (this is often referred to as a ``nugget'') and sometimes this is 
+   enough to improve the conditioning. The second is that the user 
+   can specify to build the GP based only on a subset of points. The 
+   algorithm chooses an ``optimal'' subset of points (with respect to 
+   predictive capability on the remaining unchosen points) using a 
+   greedy heuristic. This option is specified with the keyword 
+   \c point_selection in the input file.\\ \\
+   As of Dakota 5.2, the \c gaussian_process surfpack model has 
+   a similar capability. Points are {\bf not} discarded prior to the 
+   construction of the model. Instead, within the maximum likelihood 
+   optimization loop, when the correlation matrix violates the 
+   explicit (estimate of) condition number constraint, the 
+   \c gaussian_process surfpack model will perform a pivoted 
+   Cholesky factorization of the correlation matrix. A bisection search 
+   is then used to efficiently find the last point for which the 
+   reordered correlation matrix is not too ill-conditioned. Subsequent 
+   reordered points are excluded from the GP/Kriging model for the 
+   current set of correlation lengths, i.e. they are not used to 
+   construct this GP model or compute its likelihood. When necessary, 
+   the \c gaussian_process surfpack model will automatically 
+   decrease the order of the polynomial trend function. Once the 
+   maximum likelihood optimization has been completed, the subset of 
+   points that is retained will be the one associated with the most 
+   likely set of correlation lengths. Note that a matrix being 
+   ill-conditioned means that its rows or columns contain a significant 
+   amount of duplicate information. Since the points that were 
+   discarded were the ones that contained the least unique information, 
+   they should be the ones that are the easiest to predict and provide 
+   maximum improvement of the condition number. However, the 
+   \c gaussian_process surfpack model is not guaranteed to 
+   exactly interpolate the discarded points. Warning: when two very 
+   nearby points are on opposite sides of a discontinuity, it is 
+   possible for one of them to be discarded by this approach.\\ \\
+   Note that a pivoted Cholesky factorization can be significantly
+   slower than the highly optimized implementation of non-pivoted 
+   Cholesky factorization in typical LAPACK distributions. A 
+   consequence of this is that the \c gaussian_process surfpack
+   model can take significantly more time to build than the 
+   \c gaussian_process dakota version. However, tests indicate
+   that the \c gaussian_process surfpack version will often be
+   more accurate and/or require fewer evaluations of the true function 
+   than the \c gaussian_process dakota. For this reason, the
+   \c gaussian_process surfpack version is the default 
+   option as of Dakota 5.2. 
+\item Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the 
+   \c use_derivatives keyword will cause the 
+   \c gaussian_process surfpack model to be built from a 
+   combination of function value and gradient information. The 
+   \c gaussian_process dakota model does not have this 
+   capability. Incorporating gradient information will only be 
+   beneficial if accurate and inexpensive derivative information is 
+   available, and the derivatives are not infinite or nearly so. Here 
+   ``inexpensive'' means that the cost of evaluating a function value 
+   plus gradient is comparable to the cost of evaluating only the 
+   function value, for example gradients computed by analytical, 
+   automatic differentiation, or continuous adjoint techniques. It is 
+   not cost effective to use derivatives computed by finite differences.
+   In tests, GEK models built from finite difference derivatives were 
+   also significantly less accurate than those built from analytical 
+   derivatives. Note that GEK's correlation matrix tends to have a 
+   significantly worse condition number than Kriging for the same 
+   sample design.\\ \\
+   This issue was addressed by using a pivoted Cholesky 
+   factorization of Kriging's correlation matrix (which is a small 
+   sub-matrix within GEK's correlation matrix) to rank points by how 
+   much unique information they contain. This reordering is then 
+   applied to whole points (the function value at a point immediately 
+   followed by gradient information at the same point) in GEK's 
+   correlation matrix. A standard non-pivoted Cholesky is then 
+   applied to the reordered GEK correlation matrix and a bisection 
+   search is used to find the last equation that meets the constraint on 
+   the (estimate of) condition number. The cost of performing pivoted
+   Cholesky on Kriging's correlation matrix is usually negligible 
+   compared to the cost of the non-pivoted Cholesky factorization of 
+   GEK's correlation matrix. In tests, it also resulted in more
+   accurate GEK models than when pivoted Cholesky or 
+   whole-point-block pivoted Cholesky was performed on GEK's 
+   correlation matrix.
+\end{itemize}
+
+\subsubsection{Artificial Neural Network (ANN) Models}\label{models:surf:ann}
+
+The ANN surface fitting method in Dakota employs a stochastic layered
+perceptron (SLP) artificial neural network based on the direct
+training approach of Zimmerman~\cite{Zim96}. The SLP ANN method is
+designed to have a lower training cost than traditional ANNs. This is
+a useful feature for SBO and OUU where new ANNs are constructed many
+times during the optimization process (i.e., one ANN for each response
+function, and new ANNs for each optimization iteration). The form of
+the SLP ANN model is
+
+\begin{equation}
+ \hat{f}(\mathbf{x}) \approx
+ \tanh(\tanh((\mathbf{x A}_{0}+\theta_{0})\mathbf{A}_{1}+\theta_{1}))
+ \label{models:surf:equation09}
+\end{equation}
+
+where $\mathbf{x}$ is the current point in $n$-dimensional parameter
+space, and the terms
+$\mathbf{A}_{0},\theta_{0},\mathbf{A}_{1},\theta_{1}$ are the matrices
+and vectors that correspond to the neuron weights and offset values in
+the ANN model. These terms are computed during the ANN training
+process, and are analogous to the polynomial coefficients in a
+quadratic surface fit. A singular value decomposition method is used
+in the numerical methods that are employed to solve for the weights
+and offsets.
+
+The SLP ANN is a non parametric surface fitting method. Thus, along
+with kriging and MARS, it can be used to model data trends that have
+slope discontinuities as well as multiple maxima and minima. However,
+unlike kriging, the ANN surface is not guaranteed to exactly match the
+response values of the data points from which it was constructed. This
+ANN can be used with SBO and OUU strategies. As with kriging, this ANN
+can be constructed from fewer than $n_{c_{quad}}$ data points,
+however, it is a good rule of thumb to use at least $n_{c_{quad}}$
+data points when possible.
+
+\subsubsection{Multivariate Adaptive Regression Spline (MARS) Models}\label{models:surf:mars}
+
+This surface fitting method uses multivariate adaptive regression
+splines from the MARS3.5 package~\cite{Fri91} developed at Stanford
+University. 
+
+The form of the MARS model is based on the following expression:
+
+\begin{equation}
+ \hat{f}(\mathbf{x})=\sum_{m=1}^{M}a_{m}B_{m}(\mathbf{x})
+ \label{models:surf:equation10} 
+\end{equation}
+
+where the $a_{m}$ are the coefficients of the truncated power basis
+functions $B_{m}$, and $M$ is the number of basis functions. The MARS
+software partitions the parameter space into subregions, and then
+applies forward and backward regression methods to create a local
+surface model in each subregion. The result is that each subregion
+contains its own basis functions and coefficients, and the subregions
+are joined together to produce a smooth, $C^{2}$-continuous surface
+model.
+
+MARS is a nonparametric surface fitting method and can represent
+complex multimodal data trends. The regression component of MARS
+generates a surface model that is not guaranteed to pass through all
+of the response data values. Thus, like the quadratic polynomial
+model, it provides some smoothing of the data. The MARS reference
+material does not indicate the minimum number of data points that are
+needed to create a MARS surface model. However, in practice it has
+been found that at least $n_{c_{quad}}$, and sometimes as many as 2 to
+4 times $n_{c_{quad}}$, data points are needed to keep the MARS
+software from terminating. Provided that sufficient data samples can
+be obtained, MARS surface models can be useful in SBO and OUU
+applications, as well as in the prediction of global trends throughout
+the parameter space.
+
+\subsubsection{Radial Basis Functions}\label{models:surf:rbf}
+
+Radial basis functions are functions whose value typically depends on the 
+distance from a center point, called the centroid, ${\bf c}$. 
+The surrogate model approximation is then built up as the sum of K 
+weighted radial basis functions: 
+
+\begin{equation}
+ \hat{f}({\bf x})=\sum_{k=1}^{K}w_{k}\phi({\parallel {\bf x} - {\bf c_{k}} \parallel})
+ \label{models:surf:equation11} 
+\end{equation}
+
+where the $\phi$ are the individual radial basis functions. 
+These functions can be of any form, but often a Gaussian bell-shaped 
+function or splines are used. 
+Our implementation uses a Gaussian radial basis function. 
+The weights are determined via a linear least squares solution approach.
+See~\cite{Orr96} for more details.
+
+\subsubsection{Moving Least Squares}\label{models:surf:mls}
+
+Moving Least Squares can be considered a more specialized 
+version of linear regression models. In linear regression, 
+one usually attempts to minimize the sum of the squared residuals, 
+where the residual is defined as the difference between the 
+surrogate model and the true model at a fixed number of points. 
+In weighted least squares, the residual terms are weighted so the 
+determination of the optimal coefficients governing the polynomial 
+regression function, denoted by $\hat{f}({\bf x})$, are obtained by 
+minimizing the weighted sum of squares at N data points: 
+
+\begin{equation}
+ \sum_{n=1}^{N}w_{n}({\parallel \hat{f}({\bf x_{n}})-f({\bf x_{n}})\parallel})
+ \label{models:surf:equation12} 
+\end{equation}
+
+Moving least squares is a further generalization of weighted least squares
+where the weighting is ``moved'' or recalculated for every new point where 
+a prediction is desired.~\cite{Nea04} The implementation of 
+moving least squares 
+is still under development. We have found that it works well 
+in trust region methods where the surrogate model is constructed in 
+a constrained region over a few points. It does not appear to be working 
+as well globally, at least at this point in time.
+
+\subsection{Multifidelity Surrogate Models} \label{models:surrogate:multifid}
+
+A second type of surrogate is the {\em model hierarchy} type (also
+called multifidelity, variable fidelity, variable complexity, etc.).
+In this case, a model that is still physics-based but is of lower
+fidelity (e.g., coarser discretization, reduced element order, looser
+convergence tolerances, omitted physics) is used as the surrogate in
+place of the high-fidelity model. For example, an inviscid,
+incompressible Euler CFD model on a coarse discretization could be
+used as a low-fidelity surrogate for a high-fidelity Navier-Stokes
+model on a fine discretization.
+
+\subsection{Reduced Order Models} \label{models:surrogate:rom}
+
+A third type of surrogate model involves {\em reduced-order modeling}
+techniques such as proper orthogonal decomposition (POD) in
+computational fluid dynamics (also known as principal components
+analysis or Karhunen-Loeve in other fields) or spectral decomposition
+(also known as modal analysis) in structural dynamics. These
+surrogate models are generated directly from a high-fidelity model
+through the use of a reduced basis (e.g., eigenmodes for modal
+analysis or left singular vectors for POD) and projection of the
+original high-dimensional system down to a small number of generalized
+coordinates. These surrogates are still physics-based (and may
+therefore have better predictive qualities than data fits), but do not
+require multiple system models of varying fidelity (as required for
+model hierarchy surrogates).
+
+\subsection{Surrogate Model Selection}
+
+This section offers some guidance on choosing from among the available
+surrogate model types.
+
+\begin{itemize}
+\item For Surrogate Based Local Optimization, i.e. the 
+   \c surrogate_based_local method, with a trust region, either
+   \c surrogate \c local \c taylor_series or
+   \c surrogate \c multipoint \c tana will probably 
+   work best. If for some reason you wish or need to use a global 
+   surrogate (not recommended) then the best of these options is likely 
+   to be either 
+   \c surrogate \c global 
+   \c gaussian_process \c surfpack or
+   \c surrogate \c global \c moving_least_squares.
+\item For Efficient Global Optimization (EGO), i.e. the 
+   \c efficient_global method, the default\\
+   \c gaussian_process \c surfpack 
+   is likely to find a more optimal value and/or use fewer true 
+   function evaluations than the alternative,
+   \c gaussian_process \c dakota. However, the 
+   \c surfpack version will likely take more time to build 
+   than the \c dakota version. Note that currently the 
+   \c use_derivatives keyword is not recommended for use with
+   EGO based methods.
+\item For EGO based global interval estimation (EGIE), i.e. the 
+   \c global_interval_est \c ego method, 
+   the default \c gaussian_process \c surfpack will
+   likely work better than the alternative \c gaussian_process 
+   \c dakota.
+\item For Efficient Global Reliability Analysis (EGRA), i.e. the 
+   \c global_reliability method the \c surfpack and 
+   \c dakota versions of the gaussian process tend to give 
+   similar answers with the \c dakota version tending to use
+   fewer true function evaluations. Since this is based on EGO, it
+   is likely that the default \c surfpack version is more 
+   accurate, although this has not been rigorously demonstrated.
+\item For EGO based Dempster-Shafer Theory of Evidence, i.e. the 
+   \c global_evidence \c ego method, the default
+   \c gaussian_process \c surfpack will often use
+   significantly fewer true function evaluations than the 
+   alternative \c gaussian_process \c dakota.
+\item When using a global surrogate to extrapolate, either the
+   \c gaussian_process \c surfpack or 
+   \c polynomial \c quadratic or 
+   \c polynomial \c cubic is recommended.
+\item When there is over roughly two or three thousand data points 
+   and you wish to interpolate (or approximately interpolate) then 
+   a Taylor series, Radial Basis Function Network, or Moving Least
+   Squares fit is recommended. The only reason that the 
+   \c gaussian_process \c surfpack model is not 
+   recommended is that it can take a considerable amount of time
+   to construct when the number of data points is very large. Use 
+   of the third party MARS package included in Dakota is generally 
+   discouraged.
+\item In other situations that call for a global surrogate, the 
+   \c gaussian_process \c surfpack is generally 
+   recommended. The \c use_derivatives keyword will 
+   only be useful if accurate and an inexpensive derivatives 
+   are available. Finite difference derivatives are disqualified 
+   on both counts. However, derivatives generated by analytical,
+   automatic differentiation, or continuous adjoint techniques
+   can be appropriate. Currently, first order derivatives, i.e.
+   gradients, are the highest order derivatives that can be used
+   to construct the \c gaussian_process \c surfpack
+   model; Hessians will not be used even if they are available.
+\end{itemize}
+
+Faq::
+See_Also::	model-single, model-nested

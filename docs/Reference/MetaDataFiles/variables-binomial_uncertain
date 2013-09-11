@@ -1,0 +1,14 @@
+Blurb::
+Specify binomial, discrete random variables
+Description::
+The binomial distribution is typically used to predict the number of failures (or defective items or some type of event) in a total of \c n independent tests or trials, where each trial has the probability \c p of failing or being defective. Each particular test can be considered as a Bernoulli trial.
+ 
+The density function for the binomial distribution is given by: 
+\f[f(x) = \left(\begin{array}{c}n\\x\end{array}\right){p^x}{(1-p)^{(n-x)}}\f] where \c p is the 
+probability of failure per trial and \c n is the number of trials.
+
+Topics::	discrete_variable, uncertain_variable, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

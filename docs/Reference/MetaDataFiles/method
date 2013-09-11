@@ -1,0 +1,90 @@
+Blurb::
+Specifies the name and controls of an iterator.
+Description::
+The method section in a Dakota input file specifies the name and controls of an iterator. The terms "method" and "iterator" can be used interchangeably, although method often refers to an input specification whereas iterator usually refers to an object within the Iterator hierarchy. A method specification, then, is used to select an iterator from the iterator hierarchy, which includes optimization, uncertainty quantification, least squares, design of experiments, and parameter study iterators (see the Users Manual [Adams et al., 2010] for more information on these iterator branches). This iterator may be used alone or in combination with other iterators as dictated by the strategy specification (refer to Strategy Commands for strategy command syntax and to the Users Manual [Adams et al., 2010] for strategy algorithm descriptions).
+
+
+The method independent controls include a method identifier string, a model
+type specification with pointers to variables, interface, and responses
+specifications, a speculative gradient selection, an output verbosity control,
+maximum iteration and function evaluation limits, constraint and convergence
+tolerance specifications, a scaling selection, and a set of linear inequality
+and equality constraint specifications. While each of these controls is not
+valid for every method, the controls are valid for enough methods that it was
+reasonable to pull them out of the method dependent blocks and consolidate the
+specifications.
+
+The method identifier string is supplied with \c id_method and is used
+to provide a unique identifier string for use with strategy
+specifications (refer to \ref StratDescr). It is appropriate to omit a
+method identifier string if only one method is included in the input
+file and \c single_method is the selected strategy (all other
+strategies require one or more method pointers), since the single
+method to use is unambiguous in this case.
+
+
+Topics::	block, not_yet_reviewed
+Examples::
+Several examples follow. The first example shows a minimal
+specification for an optimization method.
+\verbatim
+method,
+	dot_sqp
+\endverbatim
+This example uses all of the defaults for this method.  
+
+A more sophisticated example would be
+\verbatim
+method,
+	id_method = 'NLP1'
+	model_pointer = 'M1'
+	dot_sqp
+	  max_iterations = 50
+	  convergence_tolerance = 1e-4
+	  output verbose
+\endverbatim
+This example demonstrates the use of identifiers and pointers (see
+\ref MethodIndControl) as well as some method independent and method
+dependent controls for the sequential quadratic programming (SQP)
+algorithm from the DOT library.  The \c max_iterations, \c
+convergence_tolerance, and \c output settings are method independent
+controls, in that they are defined for a variety of methods (see \ref
+MethodDOTIC for DOT usage of these controls). 
+
+The next example shows a specification for a least squares method.
+\verbatim
+method,
+	optpp_g_newton
+	  max_iterations = 10
+	  convergence_tolerance = 1.e-8
+	  search_method trust_region
+	  gradient_tolerance = 1.e-6
+\endverbatim
+Some of the same method independent controls are present along with
+several method dependent controls (\c search_method and \c
+gradient_tolerance) which are only meaningful for OPT++ methods (see
+\ref MethodOPTPPDC).
+
+The next example shows a specification for a nondeterministic method
+with several method dependent controls (refer to \ref MethodNonDMC).
+\verbatim
+method,
+	sampling
+	  samples = 100	seed = 12345
+	  sample_type lhs
+	  response_levels = 1000. 500.
+\endverbatim
+
+The last example shows a specification for a parameter study method
+where, again, each of the controls are method dependent (refer to \ref
+MethodPSVPS).
+\verbatim
+method,
+	vector_parameter_study
+	  step_vector = 1. 1. 1.
+	  num_steps = 10
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

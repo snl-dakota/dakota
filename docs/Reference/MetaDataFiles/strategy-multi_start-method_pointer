@@ -1,0 +1,10 @@
+Blurb::
+Identify the method block that will execute the multi-start strategy
+Description::
+The \c multi_start strategy must specify an iterator using \c method_pointer. This iterator is responsible for completing a series of iterative analyses from a set of different starting points.
+
+Topics::	block_pointer, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

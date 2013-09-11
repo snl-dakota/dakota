@@ -1,0 +1,16 @@
+Blurb::
+Specify a random variable with a geometric distribution
+Description::
+The geometric distribution represents the number of successful trials that might occur before a failure is observed. 
+ 
+The density function for the geometric distribution is given by: 
+\f[f(x) = {p}{(1-p)^{x}}\f] 
+where 
+\c p 
+is the probability of failure per trial.
+
+Topics::	discrete_variable, uncertain_variable , not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

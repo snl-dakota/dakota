@@ -1,0 +1,17 @@
+Blurb::
+Access to methods in the CONMIN library
+Description::
+The CONMIN library [\ref Van1973 "Vanderplaats, 1973"] is a public
+domain library of nonlinear programming optimizers, specifically the
+Fletcher-Reeves conjugate gradient (%Dakota's \c conmin_frcg method)
+method for unconstrained optimization, and the method of feasible
+directions (%Dakota's \c conmin_mfd method) for constrained
+optimization. As CONMIN was a predecessor to the DOT commercial
+library, the algorithm controls are very similar.  %Dakota provides
+access to the CONMIN library through the CONMINOptimizer class.
+
+Topics::	package_conmin, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

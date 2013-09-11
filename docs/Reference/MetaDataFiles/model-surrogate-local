@@ -1,0 +1,30 @@
+Blurb::
+Description::
+Local approximations use value, gradient, and possibly Hessian data
+from a single point to form a series expansion for approximating data
+in the vicinity of this point.  The currently available local
+approximation is the \c taylor_series selection.  The order of the
+Taylor series may be either first-order or second-order, which is
+automatically determined from the gradient and Hessian specifications
+in the responses specification (see \ref RespGrad and \ref RespHess)
+for the truth model.
+<!-- The first-order Taylor series expansion is known as the -->
+<!-- "linear approximation" in the optimization literature.  Other local -->
+<!-- approximations, such as the "reciprocal" and "conservative/convex" -->
+<!-- approximations, may become available in the future. -->
+The truth model to be used to generate the value/gradient/Hessian data
+used in the series expansion is identified through the required \c
+actual_model_pointer specification.  The use of a model pointer (as
+opposed to an interface pointer) allows additional flexibility in
+defining the approximation.  In particular, the derivative
+specification for the truth model may differ from the derivative
+specification for the approximation , and the truth model results
+being approximated may involve a model recursion (e.g., the
+values/gradients from a nested model).  \ref T6d8 "Table 6.8"
+summarizes the local approximation interface specifications.
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	model-surrogate-global, model-surrogate-hierarchical, model-surrogate-multipoint

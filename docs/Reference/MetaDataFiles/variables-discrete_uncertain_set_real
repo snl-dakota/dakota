@@ -1,0 +1,50 @@
+Blurb::
+Specify a variable that allows real numbers within a set
+Description::
+In addition to continuous and discrete aleatory probability
+distributions, %Dakota provides support for continuous and discrete
+epistemic uncertainties through its continuous interval, discrete
+interval, and discrete set specifications. Interval-based variables do
+not represent probability distributions. In the case of continuous
+intervals, they can specify a single interval per variable which may
+be used in interval analysis, where the goal is to determine the
+interval bounds on the output corresponding to the interval bounds on
+the input. More detailed continuous interval representations can
+specify a set of belief structures based on intervals that may be
+contiguous, overlapping, or disjoint. This is used in specifying the
+inputs necessary for an epistemic uncertainty analysis using
+Dempster-Shafer theory of evidence. In the discrete case, interval
+variables may be used to specify categorical choices which are
+epistemic. For example, if we have three possible forms for a physics
+model (model 1, 2, or 3) and there is epistemic uncertainty about
+which one is correct, a discrete uncertain interval or a discrete set
+may be used to represent this type of uncertainty.
+
+Discrete variables may be used to represent things like epistemic model form
+uncertainty, as mentioned above. For example, if one wants to analyze
+the effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis
+(either an interval analysis or a Dempster-Shafer evidence theory
+analysis), one can use a discrete epistemic variable to represent the
+uncertainty in the model form. There are three types of discrete
+epistemic variables, similar to discrete design and discrete state
+types: a discrete interval variable that may take any integer value
+within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4); a
+discrete uncertain set of integers, in which the discrete value may
+take any value within the integer set (for example, the set may be
+defined as 1, 2, and 4); and a discrete uncertain set of reals, in
+which the discrete variable may take any value defined within the real
+set (for example, a parameter may have two allowable real values,
+3.285 or 4.79). The following Tables \ref T7d27 "7.27" through \ref
+T7d29 "7.29" summarize the required and optional specifications for
+each discrete epistemic variable subtype. Note that, relative to the
+discrete design and discrete state specifications, discrete epistemic
+specifications add interval or set probabilities while removing the
+notion of an initial value.
+
+How is this different from a pmf histogram?
+
+Topics::	problem, discrete_variable, uncertain_variable, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

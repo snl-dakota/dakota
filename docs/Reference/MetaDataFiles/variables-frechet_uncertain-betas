@@ -1,0 +1,9 @@
+Blurb::
+Second parameter of the frechet distribution
+Description::
+Specifies the list of \f$\beta\f$ parameters to define the distributions of the beta random variables. Length must match the other parameters and the number of frechet random variables.
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

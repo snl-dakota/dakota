@@ -1,0 +1,38 @@
+Blurb::
+Description::
+The primary use of the direct interface is to invoke internal test
+functions that perform parameter to response mappings for simple
+functions as inexpensively as possible. These problems are compiled
+directly into the %Dakota executable as part of the direct function
+interface class and are used for algorithm testing.  Refer to
+DirectApplicInterface for currently available testers.
+
+%Dakota supports direct interfaces to a few select simulation codes.
+One example is ModelCenter, a commercial simulation management
+framework from Phoenix Integration.  To utilize this interface, a user
+must first define the simulation specifics within a ModelCenter
+session and then save these definitions to a ModelCenter configuration
+file.  The \c analysis_components specification provides the means to
+communicate this configuration file to %Dakota's ModelCenter interface.
+
+Other direct interfaces to simulation codes include Sandia's SALINAS
+structural dynamics code, Sandia's SIERRA multiphysics framework, and
+Sandia's SAGE computational fluid dynamics code, which are available
+within Sandia and supported to varying degrees.  
+
+Topics::	not_yet_reviewed
+Examples::
+an
+external \c rosenbrock executable has been replaced by use of the
+internal \c rosenbrock test function from the DirectApplicInterface
+class.  Refer to \ref InterfApplicDF for more information on this
+specification.
+\verbatim
+interface,
+	direct
+	  analysis_drivers = 'rosenbrock'
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

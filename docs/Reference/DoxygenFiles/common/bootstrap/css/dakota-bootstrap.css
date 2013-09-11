@@ -1,0 +1,55 @@
+/*add to main.css */
+
+.navbar .navbar-inner {
+  background-image: url(bg_content.png);
+  background-repeat: repeat-x;
+  background-color: #eee5d3;
+  border-color: #eee5d3;
+}
+
+.navbar .nav {
+  border: 0px;
+}
+
+.navbar .nav .active > a,
+.navbar .nav .active > a:hover,
+.navbar .nav .active > a:focus {
+  background-color: #cab590;
+}
+
+.navbar .navbar-search .search-query {
+  color: #ffffff;
+  background-color: #cab590;
+  border-color: #ffffff;
+}
+
+.well {
+  background-color: #ffffff;
+  border: 1px solid #ffffff;
+}
+
+.nav-list  {
+  background-color: #ffffff;
+}
+
+.breadcrumb {
+  background-color: #ffffff;
+  border-top: 1px solid #d7d7d7;
+  border-bottom: 1px solid #d7d7d7;
+}
+
+.breadcrumb > .active {
+  color: #1c4493;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}

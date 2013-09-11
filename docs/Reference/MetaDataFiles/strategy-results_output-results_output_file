@@ -1,0 +1,10 @@
+Blurb::
+Specify the file name of the results file
+Description::
+Default is \c dakota_results.txt
+
+Topics::	dakota_output, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

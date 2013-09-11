@@ -1,0 +1,21 @@
+Blurb::
+Analysis driver will return gradients
+Description::
+The gradient specification must be one of four types: 1) no gradients,
+2) numerical gradients, 3) analytic gradients, or 4) mixed gradients.
+
+The \c analytic_gradients specification means that gradient
+information is available directly from the simulation (finite
+differencing is not required). The simulation must return the gradient
+data in the %Dakota format (enclosed in single brackets; see %Dakota
+File Data Formats in the Users Manual [\ref UsersMan "Adams et al., 2010"]) 
+for the case of file transfer of data. The \c analytic_gradients keyword 
+is a complete specification for this case.
+
+
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	responses-numerical_gradients, responses-no_gradients, responses-mixed_gradients 

@@ -1,0 +1,18 @@
+Blurb::
+Description::
+Multipoint approximations use data from previous design points to
+improve the accuracy of local approximations.  Currently, the
+Two-point Adaptive Nonlinearity %Approximation (TANA-3) method of
+[\ref Xu1998 "Xu and Grandhi, 1998"] is supported. This method
+requires response value and gradient information from two points, and
+uses a first-order Taylor series if only one point is available.  The
+truth model to be used to generate the value/gradient data used in the
+approximation is identified through the required \c
+actual_model_pointer specification.  \ref T6d7 "Table 6.7" summarizes
+the multipoint approximation specifications.
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	model-surrogate-local, model-surrogate-global, model-surrogate-hierarchical

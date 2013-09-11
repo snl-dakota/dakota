@@ -1,0 +1,9 @@
+Blurb::
+First parameter of the alphas distribution
+Description::
+Specifies the list of \f$\beta\f$ parameters to define the distributions of the gamma random variables. Length must match the other parameters and the number of gamma random variables.
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -1,0 +1,57 @@
+Blurb::
+Launch analysis drivers using fork command
+Description::
+The fork interface is the most common means by which %Dakota launches a
+separate application analysis process. The \c fork keyword anchors
+the group specification and the \c parameters_file, \c results_file,
+\c verbatim, \c aprepro, \c file_tag, and \c file_save are additional
+settings within the group specification. 
+
+The parameters and results
+file names are supplied as strings using the \c parameters_file and \c
+results_file specifications. Both specifications are optional with the
+default data transfer files being Unix temporary files with
+system-generated names (e.g., \c /usr/tmp/aaaa08861). 
+
+The parameters
+and results file names are passed on the command line to the analysis
+driver(s) and any specified input/output filters, unless the \c
+verbatim option is invoked, in which case the driver/filter invocation
+syntax is used verbatim without command line argument augmentation.
+For additional information on invocation syntax, see the Interfaces
+chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"]. 
+
+File
+tagging (appending parameters and results files with the function
+evaluation number) and file saving (leaving parameters and results
+files in existence after their use is complete) are controlled with
+the \c file_tag and \c file_save flags. If these specifications are
+omitted, the default is no file tagging (no appended function
+evaluation number) and no file saving (files will be removed after a
+function evaluation). File tagging is most useful when multiple
+function evaluations are running simultaneously using files in a
+shared disk space, and file saving is most useful when debugging the
+data communication between %Dakota and the simulation.
+
+For details on the remaining keywords in the fork group, see the subpages.
+
+Topics::	not_yet_reviewed
+Examples::
+a fork interface
+specification which specifies the names of the analysis executable and
+the parameters and results files, and that parameters and responses
+files will be tagged and saved. Refer to \ref InterfApplicF for more
+information on the use of these options.
+\verbatim
+interface,
+	fork
+	 analysis_drivers = 'rosenbrock'
+	 parameters_file = 'params.in'
+	 results_file   = 'results.out'
+	 file_tag
+	 file_save
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

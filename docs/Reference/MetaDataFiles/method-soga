@@ -1,0 +1,321 @@
+Blurb::
+Evolutionary Algorithm
+Description::
+The JEGA library [\ref JEddy2001 "Eddy and Lewis, 2001"] contains two global
+optimization methods. The first is a Multi-objective Genetic Algorithm (MOGA)
+which performs Pareto optimization. The second is a Single-objective
+Genetic Algorithm (SOGA) which performs optimization on a single
+objective function. Both methods support general constraints and a
+mixture of real and discrete variables. The JEGA library was written 
+by John Eddy, currently a member of the technical staff in the
+System Readiness and Sustainment Technologies department at Sandia National
+Laboratories in Albuquerque. These algorithms are accessed as \c moga and
+\c soga within %Dakota. %Dakota provides access to the JEGA library through the 
+JEGAOptimizer class.
+
+JEGA utilizes the \c max_iterations and \c max_function_evaluations
+method independent controls to provide integer limits for the maximum
+number of generations and function evaluations, respectively. Note that 
+currently, the %Dakota default for \c max_iterations is 100 and for 
+\c max_function_evaluations is 1000. These are the default settings 
+that will be used to "stop" the JEGA algorithms, unless some specific
+convergence criteria are set.
+
+Beginning with v2.0, JEGA also utilizes the \c output method independent control
+to vary the amount of information presented to the user during execution.
+
+
+The JEGA library currently provides two types of genetic algorithms
+(GAs): a multi-objective genetic algorithm (\c moga), and a single-
+objective genetic algorithm (\c soga). Both of these GAs can take
+real-valued inputs, integer-valued inputs, or a mixture of real and
+integer-valued inputs. "Real-valued" and "integer-valued" refer to
+the use of continuous or discrete variable domains, respectively (the
+response data are real-valued in all cases).
+
+The basic steps of the genetic algorithm are as follows: 
+<ol> 
+
+<li> Initialize the population (by randomly generating population members
+with or without duplicates allowed, or by flat-file initialization)
+
+<li> Evaluate the initial population members (calculate the values 
+of the objective function(s) and constraints for each population member)
+
+<li> Perform crossover (several crossover types are available) 
+
+<li> Perform mutation (several mutation types are available)
+
+<li> Evaluate the new population members.
+
+<li> Assess the fitness of each member in the population. There are a number
+of ways to evaluate the fitness of the members of the population. Choice
+of fitness assessor operators is strongly related to the type of replacement 
+algorithm being used and can have a profound effect on the
+solutions selected for the next generation. For
+example, if using \c MOGA, the available assessors are the \c layer_rank
+and \c domination_count fitness assessors. If using either of these, it is
+strongly recommended that you use the \c replacement_type called the
+\c below_limit selector as well (although
+the roulette wheel selectors can also be used). The functionality of the
+domination_count selector of JEGA v1.0 can now be achieved using the
+\c domination_count fitness assessor and \c below_limit replacement 
+selector together. If using \c SOGA, there are a number of possible
+combinations of fitness assessors and selectors.
+
+<li> Replace the population with members selected to continue 
+in the next generation. The pool of potential members is the current
+population and the current set of offspring. The \c replacement_type of
+\c roulette_wheel or \c unique_roulette_wheel may be used either with MOGA or
+SOGA problems however they are not recommended for use with MOGA. Given that
+the only two fitness assessors for MOGA are the \c layer_rank and
+\c domination_count, the recommended selector is the \c below_limit selector.
+The \c below_limit replacement will only keep designs that are 
+dominated by fewer than a limiting number of other designs.
+The \c replacement_type of \c favor_feasible is specific to a SOGA.
+This replacement operator will always prefer a more feasible design to a less
+feasible one. Beyond that, it favors solutions based on an assigned
+fitness value which must have been installed by the weighted sum only fitness
+assessor (see the discussion below).
+
+<li> Apply niche pressure to the population. This step is specific to
+the MOGA and is new as of JEGA v2.0. Technically, the step is carried out
+during runs of the SOGA but only the \c null_niching operator is available
+for use with SOGA. In MOGA, the \c radial or \c distance operators 
+can be used.
+The purpose of niching is to encourage differentiation along the Pareto
+frontier and thus a more even and uniform sampling. The radial nicher
+takes information input from the user to compute a minimum allowable distance
+between designs in the performance space and acts as a secondary selection
+operator whereby it enforces this minimum distance. The distance nicher 
+requires that solutions must be separated from other solutions by a 
+minimum distance in each dimension (vs. Euclidean distance for the 
+radial niching). After niching is complete, all designs in the population will
+be at least the minimum distance from one another in all directions.
+
+<li> Test for convergence. There are two aspects to convergence that must be
+considered. The first is stopping criteria. A stopping criteria dictates some
+sort of limit on the algorithm that is independent of its performance. Examples
+of stopping criteria available for use with JEGA are the \c max_iterations and
+\c max_function_evaluations inputs. All JEGA convergers respect these stopping
+criteria in addition to anything else that they do.
+
+The second aspect to convergence involves repeated assessment of the algorithms
+progress in solving the problem. In JEGA v1.0, the SOGA fitness tracker
+convergers (\c best_fitness_tracker and \c average_fitness_tracker) performed
+this function by asserting that the fitness values (either best or average) of
+the population continue to improve. There was no such operator for the MOGA. 
+As of JEGA v2.0, the same fitness tracker convergers exist for use with SOGA and
+there is now a converger available for use with the MOGA. The MOGA converger
+(\c metric_tracker) operates by tracking various changes in the non-dominated
+frontier from generation to generation. When the changes occurring over a user
+specified number of generations fall below a user specified threshold, the
+algorithm stops.
+
+<li> Perform post processing. This step is new as of JEGA v2.1.
+The purpose of this operation is to perform any needed data manipulations on the
+final solution deemed necessary. Currently the \c distance_postprocessor
+is the only one other than the \c null_postprocessor. The
+\c distance_postprocessor is specifically for use with the MOGA and reduces the
+final solution set size such that a minimum distance in each direction exists
+between any two designs.
+
+</ol>
+
+There are many controls which can be used for both MOGA and SOGA
+methods. These include among others the random seed, initialization types,
+crossover and mutation types, and some replacement types.
+These are described in Tables \ref T5d18 "5.18" and \ref T5d19 "5.19" below.
+
+The \c seed control defines the starting seed for the random number
+generator. The algorithm uses random numbers heavily but a specification
+of a random seed will cause the algorithm to run identically from one trial
+to the next so long as all other input specifications remain the same. New as
+of JEGA v2.0 is the introduction of the \c log_file specification. JEGA now
+uses a logging library to output messages and status to the user. JEGA can be
+configured at build time to log to both the console window and a text file, one
+or the other, or neither. The \c log_file input is a string name of a file
+into which to log. If the build was configured without file logging in JEGA,
+this input is ignored. If file logging is enabled and no \c log_file is
+specified, the default file name of JEGAGlobal.log is used. Also new to JEGA
+v2.0 is the introduction of the \c print_each_pop specification. It serves as
+a flag and if supplied, the population at each generation will be printed to
+a file named "population<GEN#>.dat" where <GEN#> is the number of the current
+generation.
+
+The \c initialization_type defines the type of initialization
+for the GA. There are three types: \c simple_random, \c unique_random, and
+\c flat_file. \c simple_random creates initial solutions with random variable
+values according to a uniform random number distribution. It gives no
+consideration to any previously generated designs. The number of
+designs is specified by the \c population_size. \c unique_random is
+the same as \c simple_random, except that when a new solution is generated,
+it is checked against the rest of the solutions. If it duplicates any
+of them, it is rejected. \c flat_file allows the initial population
+to be read from a flat file. If \c flat_file is specified, a file
+name must be given. %Variables can be delimited in the flat file in any
+way you see fit with a few exceptions. The delimiter must be the same on
+any given line of input with the exception of leading and trailing whitespace.
+So a line could look like: 1.1, 2.2 ,3.3 for example but could not look like:
+1.1, 2.2 3.3. The delimiter can vary from line to line within the file which
+can be useful if data from multiple sources is pasted into the same input file.
+The delimiter can be any string that does not contain any of the characters
+.+-dDeE or any of the digits 0-9. The input will be read until the end of the
+file. The algorithm will discard any configurations for which it was unable to
+retrieve at least the number of design variables. The objective and constraint
+entries are not required but if ALL are present, they will be recorded and the
+design will be tagged as evaluated so that evaluators may choose not to
+re-evaluate them. Setting the size for this initializer has the effect of
+requiring a minimum number of designs to create. If this minimum number has
+not been created once the files are all read, the rest are created using
+the \c unique_random initializer and then the \c simple_random initializer if
+necessary.
+
+Note that the \c population_size only sets the size of the initial population.
+The population size may vary in the JEGA methods according to the type of
+operators chosen for a particular optimization run.
+
+There are many crossover types available. \c multi_point_binary
+crossover requires an integer number, N, of crossover points. This
+crossover type performs a bit switching crossover at N crossover
+points in the binary encoded genome of two designs. Thus, crossover
+may occur at any point along a solution chromosome (in the middle of a
+gene representing a design variable, for example). \c
+multi_point_parameterized_binary crossover is similar in that it
+performs a bit switching crossover routine at N crossover points.
+However, this crossover type performs crossover on each design variable 
+individually. So the individual chromosomes are crossed at N locations.
+\c multi_point_real crossover performs a variable switching crossover routing at
+N crossover points in the real real valued genome of two designs. In this
+scheme, crossover only occurs between design variables (chromosomes). Note that
+the standard solution chromosome representation in the JEGA algorithm is real
+encoded and can handle integer or real design variables. For any crossover
+types that use a binary representation, real variables are converted to long
+integers by multiplying the real number by 10^6 and then truncating. Note that
+this assumes a precision of only six decimal places. Discrete variables are
+represented as integers (indices within a list of possible values) within the
+algorithm and thus require no special treatment by the binary operators.
+
+The final crossover type is \c shuffle_random. This crossover type
+performs crossover by choosing design variables at random from a
+specified number of parents enough times that the requested number of
+children are produced. For example, consider the case of 3 parents
+producing 2 children. This operator would go through and for each
+design variable, select one of the parents as the donor for the child.
+So it creates a random shuffle of the parent design variable values.
+The relative numbers of children and parents are controllable to allow
+for as much mixing as desired. The more parents involved, the less
+likely that the children will wind up exact duplicates of the parents.
+
+All crossover types take a \c crossover_rate. The crossover rate is
+used to calculate the number of crossover operations that take place.
+The number of crossovers is equal to the rate * population_size.
+
+There are five mutation types allowed. \c replace_uniform introduces
+random variation by first randomly choosing a design variable of a
+randomly selected design and reassigning it to a random valid value
+for that variable. No consideration of the current value is given
+when determining the new value. All mutation types have a \c
+mutation_rate. The number of mutations for the replace_uniform
+mutator is the product of the mutation_rate and the population_size.
+
+The \c bit_random mutator introduces random variation by first converting
+a randomly chosen variable of a randomly chosen design into a binary
+string. It then flips a randomly chosen bit in the string from a 1 to
+a 0 or visa versa. In this mutation scheme, the resulting value has more
+probability of being similar to the original value. The number of mutations
+performed is the product of the mutation_rate, the number of design variables,
+and the population size.
+
+The offset mutators all act by adding an "offset" random amount to a
+variable value. The random amount has a mean of zero in all cases. The \c
+offset_normal mutator introduces random variation by adding a Gaussian
+random amount to a variable value. The random amount has a standard
+deviation dependent on the \c mutation_scale. The \c mutation_scale
+is a fraction in the range [0, 1] and is
+meant to help control the amount of variation that takes place when a
+variable is mutated. \c mutation_scale is multiplied by the range of
+the variable being mutated to serve as standard deviation. \c
+offset_cauchy is similar to \c offset_normal, except that a Cauchy
+random variable is added to the variable being mutated. The
+\c mutation_scale also defines the standard deviation for this mutator.
+Finally, \c offset_uniform adds a uniform random amount to the
+variable value. For the \c offset_uniform mutator, the \c mutation_scale
+is interpreted as a fraction of the total range of the variable. The
+range of possible deviation amounts is +/- 1/2 * (\c mutation_scale * variable
+range). The number of mutations for all offset mutators is defined
+as the product of \c mutation_rate and \c population_size.
+
+As of JEGA v2.0, all replacement types are common to both MOGA and SOGA.
+They include the \c roulette_wheel, \c unique_roulette_wheel, \c elitist, and
+\c below_limit selectors. In roulette_wheel replacement, each design is
+conceptually allotted a portion of a wheel proportional to its fitness
+relative to the fitnesses of the other Designs. Then,
+portions of the wheel are chosen at random and the design occupying
+those portions are duplicated into the next population. Those Designs
+allotted larger portions of the wheel are more likely to be selected
+(potentially many times). \c unique_roulette_wheel replacement is the
+same as \c roulette_wheel replacement, with the exception that a design
+may only be selected once. The \c below_limit selector attempts to keep
+all designs for which the negated fitness is below a certain limit. The
+values are negated to keep with the convention that higher fitness is better.
+The inputs to the \c below_limit selector are the limit as a real value, and
+a \c shrinkage_percentage as a real value. The \c shrinkage_percentage 
+defines the minimum amount of selections that will take place if
+enough designs are available. It is interpreted as a percentage of
+the population size that must go on to the subsequent generation. To
+enforce this, \c below_limit makes all the selections it would
+make anyway and if that is not enough, it takes the remaining that it needs
+from the best of what is left (effectively raising its limit as far as it must
+to get the minimum number of selections). It continues until it has made
+enough selections. The \c shrinkage_percentage is designed to prevent extreme
+decreases in the population size at any given generation, and thus 
+prevent a big loss of genetic diversity in a very short time. Without 
+a shrinkage limit, a small group of "super" designs may appear and 
+quickly cull the population down to a size on the order of
+the limiting value. In this case, all the diversity of the population 
+is lost and it is expensive to re-diversify and spread the population. The
+\c elitist selector simply chooses the required number of designs taking the
+most fit. For example, if 100 selections are requested, then the top 100
+designs as ranked by fitness will be selected and the remaining will be
+discarded.
+
+The initialization, crossover, and mutation controls were all
+described above. There are no SOGA specific aspects to these
+controls. The \c replacement_type for a SOGA may be \c roulette_wheel,
+\c unique_roulette_wheel, \c elitist, or \c favor_feasible. The
+\c favor_feasible replacement type first considers feasibility as a selection
+criteria. If that does not produce a "winner" then it moves on to considering
+fitness value. Because of this, any fitness assessor used with the
+\c favor_feasible selector must only account objectives in the creation of
+fitness. Therefore, there is such a fitness assessor and it's use is enforced
+when the \ favor_feasible selector is chosen. In that case, and if the output
+level is set high enough, a message will be presented indicating that the
+\c weighted_sum_only fitness assessor will be used. As of JEGA v2.0 and beyond,
+the fitness assessment operator must be specified with SOGA
+although the \c merit_function is currently the only one (note that the
+\c weighted_sum_only assessor exists but cannot be selected). The roulette
+wheel selectors no longer assume a fitness function. The \c merit_function
+fitness assessor uses an exterior penalty function formulation to penalize
+infeasible designs. The specification allows the input of a
+\c constraint_penalty which is the multiplier to use on the
+constraint violations.
+
+The SOGA controls allow two additional convergence types. The \c
+convergence_type called \c average_fitness_tracker keeps track of the
+average fitness in a population. If this average fitness does not
+change more than \c percent_change over some number of generations, \c
+num_generations, then the solution is reported as converged and the
+algorithm terminates. The \c best_fitness_tracker works in a similar
+manner, only it tracks the best fitness in the population. Convergence
+occurs after \c num_generations has passed and there has been less
+than \c percent_change in the best fitness value. The percent change can
+be as low as 0% in which case there must be no change at all over the number
+of generations. Both also respect the stopping criteria.
+
+
+Topics::	package_jega, evolutionary_algorithm, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	method-moga

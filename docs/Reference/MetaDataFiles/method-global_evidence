@@ -1,0 +1,67 @@
+Blurb::
+HOW DOES THIS DIFFER FROM LOCAL???????????
+Description::
+Evidence theory has been explained above in the Local Evidence Theory
+section. The basic idea is that one specifies an "evidence structure"
+on uncertain inputs and propagates that to obtain belief and
+plausibility functions on the response functions. The inputs are
+defined by sets of intervals and Basic Probability Assignments (BPAs).
+Evidence propagation is computationally expensive, since the minimum
+and maximum function value must be calculated for each "interval cell
+combination." These bounds are aggregated into belief and
+plausibility.
+
+\ref T5d48 "Table 5.48" provides the specification for the \c
+global_evidence method. \c global_evidence allows the user to specify
+several approaches for calculating the belief and plausibility functions: 
+\c lhs, \c ego, \c sbo, and \c ea. 
+\c lhs performs Latin Hypercube Sampling and
+takes the minimum and maximum of the samples as the bounds per
+"interval cell combination." In the case of \c ego, the efficient
+global optimization (EGO) method is used to calculate bounds (see the
+EGO method on this page for more explanation). By default, the
+Surfpack GP (Kriging) model is used, but the %Dakota implementation may
+be selected instead. If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only). 
+If using \c sbo, a surrogate-based optimization
+method will be used to find the interval cell bounds. 
+The surrogate employed in \c sbo is a Gaussian process 
+surrogate. However, the main difference between \c ego and the 
+\c sbo approach is the objective function being optimized. 
+\c ego relies on an expected improvement function, while in 
+\c sbo, the optimization proceeds using an evolutionary 
+algorithm (\c coliny_ea described above) on the 
+Gaussian process surrogate: it is a standard surrogate-based
+optimization. Also note that the \c sbo option can support 
+optimization over discrete variables (the discrete variables 
+are relaxed) while \c ego cannot. Finally, there is the 
+\c ea approach. In this approach, the evolutionary algorithm 
+from Coliny is used to perform the interval optimization 
+with no surrogate model involved. Again, this option of \c ea
+can support interval optimization over discrete variables. 
+When using \c lhs, \c ego, or \c sbo, one can specify the
+seed for the number of LHS samples, the random number generator, and
+the number of samples. \c ea will use the seed specification also.
+
+Note that to calculate the plausibility and belief cumulative
+distribution functions, one has to look at all combinations of
+intervals for the uncertain variables. In terms of implementation, if
+one is using LHS sampling as outlined above, this method creates a
+large sample over the response surface, then examines each cell to
+determine the minimum and maximum sample values within each cell. To
+do this, one needs to set the number of samples relatively high: the
+default is 10,000 and we recommend at least that number. If the model
+you are running is a simulation that is computationally quite
+expensive, we recommend that you set up a surrogate model within the
+%Dakota input file so that \c global_evidence performs its sampling and
+calculations on the surrogate and not on the original model. If one
+uses optimization methods instead to find the minimum and maximum
+sample values within each cell, this can also be computationally
+expensive.
+
+Topics::	problem, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	method-global_interval_est, method-local_evidence, method-local_interval_est

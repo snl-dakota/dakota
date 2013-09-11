@@ -1,0 +1,14 @@
+khu 130911
+
+This dir contains all the source required to build the reference manual.
+Edits should occur here, but the manual should be built somewhere else.
+
+There is a setup script in the Scripts dir. To use:
+Make a working dir,
+Run the script, it will copy everything over, and create the doxygen file.
+
+This is for the first time build, and takes 8~10 minutes.
+Later builds don't need all the steps.
+If you only change the keyword metadata, for example, it takes ~3 minutes to run the last two scripts.
+
+The doxygen file requires 1.8.4 to work correctly.

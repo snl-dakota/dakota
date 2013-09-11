@@ -1,0 +1,10 @@
+Blurb::
+Specify discrete design variables using lists of integers
+Description::
+These variables are specified with: 1) a list of positive integers specifying how many set members there are, and 2) a list of permissable integer values.
+
+Topics:: 	discrete_variable, design_variable, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

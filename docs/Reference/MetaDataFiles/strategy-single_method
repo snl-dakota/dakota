@@ -1,0 +1,25 @@
+Blurb::
+(Default) Run only a single method
+Description::
+The single method strategy is the default if no strategy
+specification is included in a user input file. It is
+specified using the \c single_method keyword within a strategy
+specification. 
+
+An optional \c method_pointer specification may be
+used to point to a particular method specification. If \c
+method_pointer is not used, then the last method specification parsed
+will be used as the iterator. 
+
+Topics::	not_yet_reviewed
+Examples::
+\verbatim
+strategy,
+	single_method
+	 method_pointer = 'NLP1'
+\endverbatim
+
+
+Theory::
+Faq::
+See_Also::	

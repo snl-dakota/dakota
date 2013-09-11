@@ -1,0 +1,27 @@
+Blurb::
+Parameter study
+Description::
+Dakota's multidimensional parameter study computes response data sets
+for an n-dimensional grid of points. Each continuous and discrete
+range variable is partitioned into equally spaced intervals between
+its upper and lower bounds, each discrete set variable is partitioned
+into equally spaced index intervals, and each combination of the
+values defined by the boundaries of these partitions is evaluated.
+
+This study is selected using the \c multidim_parameter_study method
+specification followed by a \c partitions specification, where the \c
+partitions list specifies the number of partitions for each
+variable. The number of entries in the partitions list must be equal
+to the total number of variables contained in the variables
+specification.  As for the vector and centered studies, remainders
+within the integer division of the step calculations are not permitted
+for discrete range or set types and therefore no integer rounding
+occurs, so the partitions specification must be carefully selected in
+the presence of these types.  Since the initial values from the
+variables specification will not be used, they need not be
+specified.
+
+Topics::	parameter_study, not_yet_reviewed
+Examples::
+Theory::
+Faq::

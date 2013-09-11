@@ -1,0 +1,52 @@
+Blurb::
+Hessians are needed and will be approximated by secant updates (BFGS or SR1) from a series of gradient evaluations
+Description::
+Hessian availability must be specified with either \c no_hessians, \c
+numerical_hessians, \c quasi_hessians, \c analytic_hessians, or \c
+mixed_hessians.
+
+The \c quasi_hessians specification means that Hessian information is
+needed and will be approximated using secant updates (sometimes called
+"quasi-Newton updates", though any algorithm that approximates
+Newton's method is a quasi-Newton method).
+Compared to finite difference numerical Hessians, secant
+approximations do not expend additional function evaluations in
+estimating all of the second-order information for every point of
+interest.  Rather, they accumulate approximate curvature information
+over time using the existing gradient evaluations.  The supported
+secant approximations include the
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) update (specified with the
+keyword \c bfgs)
+
+\f[
+B_{k+1} = B_{k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k s_k} + 
+\frac{y_k y_k^T}{y_k^T s_k}
+\f]
+
+and the Symmetric Rank 1 (SR1) update (specified with the keyword \c sr1)
+
+\f[
+B_{k+1} = B_k + \frac{(y_k - B_k s_k)(y_k - B_k s_k)^T}{(y_k - B_k s_k)^T s_k}
+\f]
+
+where \f$B_k\f$ is the \f$k^{th}\f$ approximation to the Hessian, 
+\f$s_k = x_{k+1} - x_k\f$ is the step and 
+\f$y_k = \nabla f_{k+1} - \nabla f_k\f$ is the corresponding yield 
+in the gradients.  In both cases, an initial scaling of 
+\f$\frac{y_k^T y_k}{y_k^T s_k} I\f$ is used for \f$B_0\f$ prior to the first 
+update.  In addition, both cases employ basic numerical safeguarding 
+to protect against numerically small denominators within the updates.  
+This safeguarding skips the update if 
+\f$|y_k^T s_k| < 10^{-6} s_k^T B_k s_k\f$ in the BFGS case or if 
+\f$|(y_k - B_k s_k)^T s_k| < 10^{-6} ||s_k||_2 ||y_k - B_k s_k||_2\f$ 
+in the SR1 case.  In the BFGS case, additional safeguarding can be 
+added using the \c damped option, which utilizes an alternative 
+damped BFGS update when the curvature condition \f$y_k^T s_k > 0\f$ 
+is nearly violated.  \ref T9d10 "Table 9.10" summarizes the quasi 
+Hessian specification.
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	responses-no_hessians, responses-numerical_hessians, responses-analytic_hessians, responses-mixed_hessians

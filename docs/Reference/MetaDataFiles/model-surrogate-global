@@ -1,0 +1,238 @@
+Blurb::
+Description::
+The global surrogate model requires specification of one of the
+following approximation types: \c polynomial, \c gaussian_process, \c
+neural_network, \c mars, \c moving_least_squares, <!-- \c
+orthogonal_polynomial, --> or \c radial_basis.  These specifications
+will create a polynomial, a Gaussian process (Kriging interpolation),
+layered perceptron artificial neural network approximation,
+multivariate adaptive regression spline, moving least squares, <!-- an
+orthogonal polynomial (Hermite, Legendre, Laguerre, Jacobi, and/or
+generalized Laguerre) approximation, --> or radial basis function
+approximation, respectively.  All these approximations are implemented
+in \ref Giunta2006 "SurfPack" except an alternate Gaussian process
+model, which is implemented directly in %Dakota.
+
+In the polynomial case, the order of the polynomial (linear,
+quadratic, or cubic) must be specified. 
+
+%Dakota has two Gaussian process (GP) or Kriging models, one that
+resides in %Dakota proper and the other in %Dakota's Surfpack
+subpackage.  Choice of the GP implmentation is made by specifying \c
+gaussian_process (alternately \c kriging) followed by either \c dakota
+or \c surfpack.  Historically these models were drastically different,
+but in %Dakota 5.1, they became quite similar.  They now differ in that
+the Surfpack GP has a richer set of features/options and tends to be
+more accurate than the %Dakota version.  Due to how the Surfpack GP
+handles ill-conditioned correlation matrices (which significantly
+contributes to its greater accuracy), the \c Surfpack GP can be a
+factor of two or three slower than %Dakota's.  As of %Dakota 5.2, the
+Surfpack implementation is the default in all contexts except Bayesian
+calibration.  The %Dakota GP is provided for continuity, but may be
+deprecated in the future.
+
+The trend function of both GP models is selected using the \c trend
+keyword, with options \c constant, \c linear, or \c reduced_quadratic
+(default).  The Surfpack GP has the additional option of (a full) \c
+quadratic.  The \c reduced_quadratic trend function includes the main
+effects, but not mixed/interaction terms.  <!-- NOTE: prior to %Dakota 5.1,
+\c reduced_quadratic was selected for the %Dakota GP via the \c
+quadratic option. -->
+
+The %Dakota GP always determines its correlation parameters via maximum
+likelihood estimate (MLE) using a global optimization procedure.
+Ill-conditioning induced by poorly spaced sample points is a common
+challenge in the construction of Gaussian process models.  %Dakota's GP
+deals with ill-conditioning in two ways.  First, when it encounters a
+non-invertible correlation matrix it iteratively increases the size of
+a "nugget," but in such cases the resulting approximation smooths
+rather than interpolates the data. Second, it has a \c point_selection
+option (default off) that uses a greedy algorithm to select a
+well-spaced subset of points prior to the construction of the GP.  In
+this case, the GP will only interpolate the selected
+subset. Typically, one should not need point selection in trust-region
+methods because a small number of points are used to develop a
+surrogate within each trust region.  Point selection is most
+beneficial when constructing with a large number of points, typically
+more than order one hundred, though this depends on the number of
+variables and spacing of the sample points.
+
+By default, the Surfpack GP also selects its correlation parameters
+using a global optimizer, but its search is concentrated in a smaller
+feasible region of correlation parameters. However, one may force the
+Surfpack GP to use a different search algorithm by specifying \c
+optimization_method followed by any of \c 'global', \c 'local', \c
+'sampling', or \c 'none'.  The none option and starting location of
+the local search default to the center of the small feasible region of
+correlation lengths.  However, one may also directly specify \c
+correlation_lengths as a list of N real numbers where N is the number
+of input dimensions.  As of %Dakota 5.2, the Surfpack GP handles
+ill-conditioning by selecting the subset of points that tightly meets
+a constraint on the condition number and provides the maximum amount
+of useful information for the correlation lengths chosen by MLE. For
+each set of correlation lengths examined during the MLE optimization,
+the optimal subset of points for those correlation lengths is used.
+The subset of points used to build the Surfpack GP is the one
+associated with the most likely set of correlation lengths.  This
+differs from the \c point_selection option of the %Dakota GP which
+initially chooses a well-spaced subset of points and finds the
+correlation parameters that are most likely for that one subset.  It
+is similar to the %Dakota GP's point selection in that the Surfpack GP
+will only interpolate the selected subset of points.
+
+The \c use_derivatives keyword will cause the Surfpack GP to be
+constructed from a combination of function value and gradient
+information (if available).  This is only beneficial when a function
+value plus a gradient can be computed at a computational cost
+comparable to a function value only.  This rules out gradients
+computed by finite differences (which also tend to be insufficiently
+accurate).  However, the accurate and inexpensive derivatives
+calculated by analytical, automatic differentiation, or continuous
+adjoint techniques can be cost effective and beneficial.  <!--
+provided that they are not infinite or nearly so.--> Although a
+function value plus gradient can be often be obtained more cheaply
+than two function value-only evaluations, each scalar derivative
+equation costs as much as a scalar function value equation during the
+construction of the emulator.  Since the cost to build a GP is cubic
+in the number of equations, the cost to build a gradient-enhanced
+GP/Kriging model will be roughly (N+1)^3 times greater than one that
+is not gradient-enhanced, where N is the number of input dimensions.
+Also, a poorly spaced sample design has a greater adverse affect on
+the conditioning of the correlation matrix when derivative information
+is included. This can result in significantly more points being
+discarded and hence providing little benefit to the derivative
+enhanced GP/Kriging model's accuracy.
+
+<!-- TODO: document MARS, ANN, and RBF controls -->
+
+Table \ref T6d6 "6.6" summarizes the remaining (optional) global
+approximation specifications, including controls for the number of
+points requested to build the surrogate, the source of the points (\c
+dace_method_pointer and \c reuse_samples), the use of derivative
+information in constructions (\c use_derivatives), calculation of
+fitness metrics, and the \c correction method.
+
+The number of points used in building a global approximation is
+determined by three point counts:
+
+\li %Model points: Each global surrogate type has an associated
+minimum reasonable and recommended number of build points, selected
+via \c minimum_points and \c recommended_points (default),
+respectively, within a global surrogate model specification.
+Alternately an integer \c total_points may be specified to request a
+specific number of points in each surrogate build (a lower bound of
+minimum points is enforced).  This count, then, can be summarized as
+%Model points = (minimum | recommended | max(minimum, total)).
+
+\li Reused points: any samples available for reuse via the \c
+reuse_samples keyword (described below) are always used to build.
+This count defaults to zero.
+
+\li %Iterator points: \c samples specified within the DACE method 
+specification (identified via \c dace_method_pointer) always
+provide a lower bound on the number of fresh DACE samples used to
+build the surrogate.  This count defaults to zero.
+
+The number of new points to be evaluated by the DACE method is defined
+by New points = max(%Model points - Reused points, %Iterator points),
+using the logic that the number of points needed is %Model points minus
+Reused points, but respecting a lower bound DACE samples specification
+when present.  The total number of points used in the surrogate build
+is then New points + Reused points.  The DACE iterator will only be
+invoked if it has new samples to perform, and if new samples are
+required and no DACE iterator has been provided, an error will result.
+
+The \c dace_method_pointer links to design of experiments iterator
+used to generate truth model data for building a global data fit.  The
+\c reuse_samples specification can be used to employ old data (either
+from previous function evaluations performed in the run or from
+function evaluations read from a restart database or text file) in the
+building of new global approximations.  The default is no reuse of old
+data (since this can induce directional bias), and the settings of \c
+all, \c region, and \c points_file result in reuse of all available
+data, reuse of all data available in the current trust region, and
+reuse of all data from a specified text file, respectively.  Both \c
+dace_method_pointer and \c reuse_samples are optional specifications,
+which gives the user maximum flexibility in using design of
+experiments data, restart/text file data, or both.  Note that the
+default format for a samples data file has changed in %Dakota 5.2 (see
+User's Manual).
+
+The \c use_derivatives flag specifies that any available derivative
+information should be used in global approximation builds, for those
+global surrogate types that support it (currently, polynomial
+regression and the Surfpack GP). <!-- This capability is currently
+supported in SurrBasedLocalMinimizer, Pecos::SurrogateDataPoint, \ref
+Approximation::build "Approximation::build()", and \c global_kriging
+models, but is not yet supported in any global approximation derived
+class redefinitions of build(). -->
+
+To assess the goodness of fit of a global surrogate, a variety of
+diagnostic metrics are available for the following global
+approximation methods: polynomial regressions, kriging, mars, moving
+least squares, neural networks, and radial basis functions.  The
+diagnostics are specified by the keyword \c metrics, followed by a
+list of strings specifying the metrics to compute.  The diagnostic
+metrics available are: \c sum_squared, \c mean_squared, \c
+root_mean_squared, \c sum_abs, \c mean_abs, \c max_abs, and \c
+rsquared. Most of these diagnostics refer to some operation on the
+residuals (the difference between the surrogate model and the truth
+model at the data points upon which the surrogate is built).  For
+example, \c sum_squared refers to the sum of the squared residuals,
+and \c mean_abs refers to the mean of the absolute value of the
+residuals.  \c rsquared refers to the R-squared value typically used
+in regression analysis (the proportion of the variability in the
+response that can be accounted for by the surrogate model).  Care
+should be taken when interpreting metrics, for example, errors may be
+near zero for interpolatory models or rsquared may not be applicable
+for non-polynomial models.
+
+General k-fold or leave-one-out (PRESS) cross validation may be
+performed by specifying \c cross_validation and/or \c press after the
+list of metrics.  The cross-validation statistics will be calculated
+for all metrics specified.  General cross validation may include
+either \c folds, the number of folds into which to divide the build
+data (between 2 and number of data points), or \c percent, the
+fraction of data (between 0 and 0.5) to use in each fold.  These will
+be adjusted as needed based on the number of available training
+points.
+
+In addition, metrics may be computed against a user-specified \c
+challenge_points_file, containing variables and function values of
+test data.  The requested metrics will be reported for the surrogate
+evaluated at the specified variables versus the function values from
+the challenge data file.  The imported points file may be in annotated
+for free-form tabular format as described in the User's manual.
+
+The \c correction specification specifies that the approximation will
+be corrected to match truth data, either matching truth values in the
+case of \c zeroth_order matching, matching truth values and gradients
+in the case of \c first_order matching, or matching truth values,
+gradients, and Hessians in the case of \c second_order matching.  For
+\c additive and \c multiplicative corrections, the correction is local
+in that the truth data is matched at a single point, typically the
+center of the approximation region.  The \c additive correction adds a
+scalar offset (\c zeroth_order), a linear function (\c first_order),
+or a quadratic function (\c second_order) to the approximation to
+match the truth data at the point, and the \c multiplicative
+correction multiplies the approximation by a scalar (\c zeroth_order),
+a linear function (\c first_order), or a quadratic function (\c
+second_order) to match the truth data at the point.  The \c additive
+\c first_order case is due to [\ref Lewis2000 "Lewis and Nash, 2000"]
+and the \c multiplicative \c first_order case is commonly known as
+beta correction [\ref Haftka1991 "Haftka, 1991"].  For the \c combined
+correction, the use of both additive and multiplicative corrections
+allows the satisfaction of an additional matching condition, typically
+the truth function values at the previous correction point (e.g., the
+center of the previous trust region).  The \c combined correction is
+then a multipoint correction, as opposed to the local \c additive and
+\c multiplicative corrections.  Each of these correction capabilities
+is described in detail in [\ref Eldred2004a "Eldred et al., 2004a"].
+
+
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	model-surrogate-local, model-surrogate-hierarchical, model-surrogate-multipoint

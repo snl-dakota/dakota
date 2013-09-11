@@ -1,0 +1,59 @@
+Blurb::
+Determine how Dakota handles analysis driver concurrency
+Description::
+The optional \c asynchronous flag specifies use of asynchronous
+protocols (i.e., background system calls, nonblocking forks, POSIX
+threads) when evaluations or analyses are invoked. The \c
+evaluation_concurrency and \c analysis_concurrency specifications
+serve a dual purpose:
+
+\li when running %Dakota on a single processor in \c asynchronous
+mode, the default concurrency of evaluations and analyses is all
+concurrency that is available. The \c evaluation_concurrency and \c
+analysis_concurrency specifications can be used to limit this
+concurrency in order to avoid machine overload or usage policy
+violation.
+
+\li when running %Dakota on multiple processors in message passing
+mode, the default concurrency of evaluations and analyses on each of
+the servers is one (i.e., the parallelism is exclusively that of the
+message passing). With the \c evaluation_concurrency and \c
+analysis_concurrency specifications, a hybrid parallelism can be
+selected through combination of message passing parallelism with
+asynchronous parallelism on each server.
+
+The optional \c evaluation_servers and \c analysis_servers
+specifications support user overrides of the automatic parallel
+configuration for the number of evaluation servers and the number of
+analysis servers. 
+Similarly, the optional \c
+evaluation_self_scheduling, \c evaluation_static_scheduling, \c
+analysis_self_scheduling, and \c analysis_static_scheduling
+specifications can be used to override the automatic parallel
+configuration of scheduling approach at the evaluation and analysis
+parallelism levels. That is, if the automatic configuration is
+undesirable for some reason, the user can enforce a desired number of
+partitions and a desired scheduling policy at these parallelism
+levels. Refer to ParallelLibrary and the Parallel Computing chapter of
+the Users Manual [\ref UsersMan "Adams et al., 2010"] for additional 
+information.
+
+When performing asynchronous local evaluations, the local evaluation
+scheduling keywords control how new evaluation jobs are dispatched
+when one completes. If \c local_evaluation_self_scheduling (default)
+is specified, each completed evaluation will be replaced by the next
+in the local evaluation queue. If \c
+local_evaluation_static_scheduling is specified, each completed
+evaluation will be replaced by an evaluation number congruent modulo
+the \c evaluation_concurrency. This is helpful for relative node
+scheduling as described in \c Dakota/examples/parallelism. For
+example, assuming only local concurrency (no MPI), if the local
+concurrency is 7 and job 2 completes, it will be replaced with job 9.
+This can result in idle processors if runtimes are non-uniform.
+
+
+Topics::	concurrency_and_parallelism, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

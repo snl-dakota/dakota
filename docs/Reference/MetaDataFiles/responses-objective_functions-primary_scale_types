@@ -1,0 +1,18 @@
+Blurb::
+Choose a scaling type for each objective function
+Description::
+The
+\c primary_scale_types specification includes strings specifying the
+scaling type for each objective function value in methods that support
+scaling, when scaling is enabled. 
+Each entry in \c primary_scale_types may be selected from
+\c none, \c value, or \c log, to select no,
+characteristic value, or logarithmic scaling, respectively. Automatic
+scaling is not available for objective functions. If a single string
+is specified it will apply to each objective function. 
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	responses-objective_functions-primary_scales

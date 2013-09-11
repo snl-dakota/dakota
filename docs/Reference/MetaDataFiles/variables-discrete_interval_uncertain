@@ -1,0 +1,20 @@
+Blurb::
+Specify a variable that allows integers within one or more intervals.
+Description::
+The discrete interval uncertain variable is NOT a discrete random variable. It acts like a discrete version of \c variables-continuous_interval_uncertain.
+
+Discrete uncertain variables may be used to represent things like epistemic model form
+uncertainty. For example, if one wants to analyze
+the effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis
+(either an interval analysis or a Dempster-Shafer evidence theory
+analysis), one can use a discrete epistemic variable to represent the
+uncertainty in the model form. 
+
+A discrete interval variable that may take any integer value
+within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4).
+
+Topics:: 	discrete_variable, uncertain_variable, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

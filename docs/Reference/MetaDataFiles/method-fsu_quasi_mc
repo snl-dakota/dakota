@@ -1,0 +1,185 @@
+Blurb::
+Quasi-Monte Carlo sampling
+Description::
+The Florida State University Design and Analysis of Computer
+Experiments (FSUDace) library provides the following DACE techniques:
+quasi-Monte Carlo sampling (\c fsu_quasi_mc) based on the Halton
+sequence (\c halton) or the Hammersley sequence (\c hammersley), 
+and Centroidal Voronoi Tessellation (\c fsu_cvt). 
+All three methods generate sets of uniform random variables on the 
+interval [0,1]. If the user specifies lower and upper bounds for a 
+variable, the [0,1] samples are mapped to the [lower, upper] interval.
+The quasi-Monte Carlo and CVT methods are designed with the goal of low discrepancy. 
+Discrepancy refers to the nonuniformity of the sample points 
+within the hypercube. Discrepancy is defined as the difference between 
+the actual number and the expected number of points one would expect 
+in a particular set B (such as a hyper-rectangle within the unit 
+hypercube), maximized over all such sets. 
+Low discrepancy sequences tend to cover the 
+unit hypercube reasonably uniformly. Quasi-Monte Carlo methods 
+produce low discrepancy sequences, especially if one is interested 
+in the uniformity of projections of the point sets onto 
+lower dimensional faces of the hypercube (usually 1-D: how well do
+the marginal distributions approximate a uniform?) CVT 
+does very well volumetrically: it spaces the points fairly 
+equally throughout the space, so that the points cover the region 
+and are isotropically distributed with no directional bias in the 
+point placement. There are various measures of volumetric 
+uniformity which take into account the distances between 
+pairs of points, regularity measures, etc. 
+Note that CVT does not produce low-discrepancy sequences 
+in lower dimensions, however: the lower-dimension (such as 1-D) 
+projections of CVT can have high discrepancy. 
+
+The quasi-Monte Carlo sequences of Halton and Hammersley are deterministic 
+sequences determined by a set of prime bases. 
+Generally, we recommend that the user leave the default 
+setting for the bases, which are the lowest primes. 
+Thus, if one wants to generate a sample set for 3 random variables, 
+the default bases used are 2, 3, and 5 in the Halton sequence.
+To give an example of how these sequences look, the Halton sequence 
+in base 2 starts with points 0.5, 0.25, 0.75, 0.125, 0.625, etc. 
+The first few points in a Halton base 3 sequence are 
+0.33333, 0.66667, 0.11111, 0.44444, 0.77777, etc.  Notice that the Halton 
+sequence tends to alternate back and forth, generating a point closer to zero 
+then a point closer to one. An individual sequence is based on a radix 
+inverse function defined on a prime base. The prime base determines 
+how quickly the [0,1] interval is filled in. Generally, the lowest 
+primes are recommended.
+
+The Hammersley sequence is the same as the Halton sequence, except the values 
+for the first random variable are equal to 1/N, where N is the number of 
+samples. Thus, if one wants to generate a sample set of 100 samples for 3 
+random variables, the first random variable has values 1/100, 2/100, 3/100, 
+etc. and the second and third variables are generated according to a Halton 
+sequence with bases 2 and 3, respectively. For more information about 
+these sequences, see [\ref Halton1960 "Halton, 1960",
+\ref Halton1964 "Halton and Smith, 1964", and 
+\ref Kocis1997 "Kocis and Whiten, 1997"].
+ 
+The specification for specifying quasi-Monte Carlo (\c fsu_quasi_mc) 
+is given below in \ref T5d52 "Table 5.52". 
+The user must specify if the sequence is 
+(\c halton) or (\c hammersley). The user must also specify the number 
+of samples to generate for each variable (\c samples). 
+Then, there are three optional lists the user may specify. 
+The first list determines where in the sequence the user wants to start. 
+For example, for the Halton sequence in base 2, if the user specifies 
+sequence_start = 2, the sequence would not include 0.5 and 0.25, but 
+instead would start at 0.75. The default \c sequence_start is a 
+vector with 0 for each variable, specifying that each sequence 
+start with the first term. 
+The \c sequence_leap control is similar but controls the "leaping" of 
+terms in the sequence. The default is 1 for each variable, 
+meaning that each term in the sequence be returned. If the user specifies 
+a sequence_leap of 2 for a variable, the points returned would be every other 
+term from the QMC sequence. The advantage to using a leap value greater than 
+one is mainly for high-dimensional sets of random deviates. In this case, 
+setting a leap value to the next prime number larger than the largest
+prime base can help maintain uniformity when generating sample sets for high
+dimensions. For more information about the efficacy of leaped 
+Halton sequences, see [\ref Robinson1999 "Robinson and Atcitty, 1999"]. 
+The final specification for the QMC sequences is the prime base. It 
+is recommended that the user not specify this and use the default values. 
+For the Halton sequence, the default bases are primes in increasing order, 
+starting with 2, 3, 5, etc. For the Hammersley sequence, the user specifies 
+(s-1) primes if one is generating an s-dimensional set of random variables. 
+
+The \c fixed_sequence control is similar to \c fixed_seed for other sampling 
+methods. If \c fixed_sequence is specified, the user will get the same 
+sequence (meaning the same set of samples) for subsequent calls of 
+the QMC sampling method (for example, this might be used in a surrogate 
+based optimization method or a parameter study where one wants to 
+fix the uncertain variables). 
+The \c latinize command takes the QMC sequence and "latinizes" it, meaning 
+that each original sample is moved so that it falls into one strata or 
+bin in each dimension as in Latin Hypercube sampling. The default setting 
+is NOT to latinize a QMC sample. However, one may 
+be interested in doing this in situations where one wants better discrepancy
+of the 1-dimensional projections (the marginal distributions). 
+The \c variance_based_decomp control is also 
+available. This control enables the calculation of sensitivity 
+indices which indicate how important the uncertainty in each input 
+variable is in contributing to the output variance. More details 
+on variance based decomposition are given in \ref MethodNonDMC.
+
+Finally, \c quality_metrics calculates four quality metrics relating to the
+volumetric spacing of the samples. The four quality metrics measure 
+different aspects relating to the uniformity of point samples in hypercubes. 
+Desirable properties of such point samples are: are the points equally
+spaced, do the points cover the region, and are they isotropically 
+distributed, with no directional bias in the spacing. The four quality
+metrics we report are h, chi, tau, and d. h is the point distribution norm, 
+which is a measure of uniformity of the point distribution. Chi is a 
+regularity measure, and provides a measure of local uniformity of a set of 
+points. Tau is the second moment trace measure, and d is the second moment 
+determinant measure. All of these values are scaled so that smaller is 
+better (the smaller the metric, the better the uniformity of the point 
+distribution). Complete explanation of these measures can be found in 
+[\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
+
+The FSU CVT method (\c fsu_cvt) produces a set of sample points that are 
+(approximately) a Centroidal Voronoi Tessellation. The primary feature of 
+such a set of points is that they have good volumetric spacing; the points 
+tend to arrange themselves in a pattern of cells that are roughly the 
+same shape. To produce this set of points, an almost arbitrary set of
+initial points is chosen, and then an internal set of 
+iterations is carried out. These iterations repeatedly replace 
+the current set of sample points by an estimate 
+of the centroids of the corresponding Voronoi subregions.
+[\ref Du1999 "Du, Faber, and Gunzburger, 1999"].
+
+The user may generally ignore the details of this internal iteration.  If 
+control is desired, however, there are a few variables with which the user
+can influence the iteration. The user may specify \c max_iterations, the
+number of iterations carried out; \c num_trials, 
+the number of secondary sample points generated to adjust the 
+location of the primary sample points; and \c trial_type, 
+which controls how these secondary sample points are
+generated. In general, the variable with the most influence 
+on the quality of the final sample set is \c num_trials, 
+which determines how well the Voronoi
+subregions are sampled. 
+Generally, \c num_trials should be "large", certainly much
+bigger than the number of sample points being requested; 
+a reasonable value might be 10,000, but values of 100,000 
+or 1 million are not unusual. 
+
+CVT has a seed specification 
+similar to that in DDACE: 
+there are optional specifications for the
+random seed to use in generating the sample set (\c seed), for fixing
+the seed (\c fixed_seed) among multiple sample sets (see \ref
+MethodNonDMC for discussion), and for the number of samples to perform (\c
+samples). The \c
+seed control is used to make sample sets repeatable. Finally, 
+the user has the option to specify the method by which the 
+trials are created to adjust the centroids. The \c trial_type
+can be one of three types: 
+\c random, where points are generated randomly;
+\c halton, where points are generated according to the Halton sequence; 
+and \c grid, where points are placed on a regular grid over the hyperspace. 
+
+Finally, latinization is available for CVT as with QMC. 
+The \c latinize control takes the CVT sequence and "latinizes" it, meaning 
+that each original sample is moved so that it falls into one strata or 
+bin in each dimension as in Latin Hypercube sampling. The default setting 
+is NOT to latinize a CVT sample. However, one may 
+be interested in doing this in situations where one wants better discrepancy
+of the 1-dimensional projections (the marginal distributions).
+The \c variance_based_decomp control is also 
+available. This control enables the calculation of sensitivity 
+indices which indicate how important the uncertainty in each input 
+variable is in contributing to the output variance. More details 
+on variance based decomposition are given in \ref MethodNonDMC.
+The \c quality_metrics control is available for CVT as with QMC. 
+This command turns on calculation of volumetric quality measures 
+which measure the "goodness" of the uniformity of the point samples. 
+More details on the quality measures are given under the description of the 
+QMC methods. 
+
+Topics::	package_fsudace, dace, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	method-dace, method-fsu_cvt, method-psuade_moat

@@ -1,0 +1,21 @@
+Blurb::
+Specify the list of points that the \c list_parameter_study will run
+Description::
+The number of real values in the \c list_of_points specification or
+file referenced by \c import_points_file must be a multiple of the
+total number of variables (including continuous and discrete types)
+contained in the variables specification. This parameter study simply
+performs simulations for the first parameter set (the first \c n
+entries in the list), followed by the next parameter set (the next \c
+n entries), and so on, until the list of points has been
+exhausted. Since the initial values from the variables specification
+will not be used, they need not be specified. For discrete set types,
+the actual values should be specified, not the set indices, although
+the values will be validated for membership within the set value
+specifications. 
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

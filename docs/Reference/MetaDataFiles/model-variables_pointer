@@ -1,0 +1,18 @@
+Blurb::
+Specify which variables block will be included with this model block
+Description::
+Each of these model specifications supports \c variables_pointer and \c responses_pointer strings for identifying the variables and responses specifications used in constructing the model (by cross-referencing with \c id_variables and \c id_responses strings from particular variables and responses keyword specifications). 
+These pointers are valid for each model type since each model contains a set of variables that is mapped into a set of responses -- only the specifics of the mapping differ. 
+Additional pointers are used for each model type for constructing the components of the variable to response mapping. 
+As a strategy specification identifies one or more methods and a method specification identifies a model, a model specification identifies variables, responses, and (for some types) interface specifications. This top-down flow specifies all of the object interrelationships.
+
+For each of these pointer specifications, if a pointer string is specified and no corresponding id string is available, %Dakota will exit with an error message. 
+If the pointer is optional and no pointer string is specified, then the last specification parsed will be used. 
+It is appropriate to omit optional cross-referencing whenever the relationships are unambiguous due to the presence of only one specification.
+
+
+Topics::	block_pointer, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

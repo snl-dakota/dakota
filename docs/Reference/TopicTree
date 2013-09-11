@@ -1,0 +1,78 @@
+hybrid_and_recursions_logic
+file_formats
+dakota_output
+concurrency_and_parallelism
+variables
+ variable_domain
+  continuous_variable
+  discrete_variable
+ variable_type
+  design_variable
+  uncertain_variable
+  state_variable
+methods
+ optimization
+  local
+   unconstrained
+    conjugate_gradient
+   constrained
+    sequential_linear_programming
+    sequential_quadratic_programming
+    newton_methods
+    method_of_feasible_directions
+    pattern_search
+    other
+  global
+   direct
+   evolutionary_algorithm
+  surrogate_based_optimization
+ uncertainty_quantification
+  aleatory
+   sampling
+  importance_sampling
+  gpais
+  adaptive_sampling
+   reliability_methods
+   stochastic_expansion_methods
+  epistemic
+   interval_estimation
+   evidence_theory_
+  bayesian_calibration
+ dace
+  design_and_analysis_of_computer_experiments
+  quasi_mc methods
+  cvt
+  morris_one-at-a_time
+ parameter_study
+packages
+ package_coliny
+ package_conmin
+ package_ddace
+ package_dot
+ package_fsudace
+ package_hopspack
+ package_jega
+ package_nlpql
+ package_npsol
+ package_optpp
+ package_psuade
+ package_queso
+ package_scolib
+refmantest
+ block
+  block_identifier
+  block_pointer
+ problem
+ topics
+  topic1
+  topic10
+  topic11
+  topic12
+  topic2
+  topic3
+  topic4
+  topic5
+  topic6
+  topic7
+  topic8
+  topic9
