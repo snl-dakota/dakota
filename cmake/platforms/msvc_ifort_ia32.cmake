@@ -10,10 +10,10 @@ set( DAKOTA_HAVE_MPI OFF
 
 # WJB - ToDo:  move these settings to a proper location
 
-set( Boost_INCLUDE_DIR "C:/Dashboards/Support/boost_1_42"
+set( Boost_INCLUDE_DIR "C:/Dashboards/Support/boost_1_49_0"
      CACHE PATH "Boost spec should be in host-specific file" FORCE )
 
-set( Boost_LIBRARY_DIRS "C:/Dashboards/Support/boost_1_42/lib"
+set( Boost_LIBRARY_DIRS "C:/Dashboards/Support/boost_1_49_0/libs"
      CACHE FILEPATH "Boost spec should be in host-specific file" FORCE )
 
 #set( LAPACK_DIR "C:/Dashboards/Support/lapack-3.4.2/build"
