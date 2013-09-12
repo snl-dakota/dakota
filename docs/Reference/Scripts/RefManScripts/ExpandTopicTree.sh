@@ -8,7 +8,7 @@
 
 rm -f TopicFile-* 
 
-sed -e "s: :+:g" < $1 > tempList.txt  #string starting w/ spaces don't echo well
+sed -e "s:[ ]*$::g" -e "s: :+:g" < $1 > tempList.txt  #string starting w/ spaces don't echo well
 
 NumLines=$(more tempList.txt | wc -l)
 

@@ -16,7 +16,7 @@ dakota_concepts
  command_line_options
  restarts
 models
- surrogate_models 
+ surrogate_models
   surrogate_based_optimization_methods
  recast_models
  multifidelity_models
