@@ -1,13 +1,1 @@
-Blurb::
-Specify the inital value for the variable
-Description::
-The \c initial_state specifications
-provide the initial values for the state variables which will be
-passed through to the simulator (e.g., in order to define
-parameterized modeling controls). 
-
-Topics::	not_yet_reviewed
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-initial_state

@@ -1,11 +1,1 @@
-Blurb::
-Minimum value of the variable
-Description::
-Minimum value of the variable
-For discrete range variables, the \c lower_bounds and \c upper_bounds restrict the size of the feasible design space and are frequently used to prevent nonphysical designs. 
-Default values are positive and negative machine limits for upper and lower bounds.
-Topics::	not_yet_reviewed
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-lower_bounds

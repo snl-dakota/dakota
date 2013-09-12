@@ -1,5 +1,5 @@
 Blurb::
-Specify an aribtrary continuous random variable
+Aleatory uncertain variable - an aribtrary continuous random variable
 Description::
 Histogram uncertain variables are typically used to model a set of
 empirical data. A bin histogram is a continuous aleatory distribution
@@ -79,7 +79,7 @@ count of 21. The following set of 4 \c (x,c) pairs \c
 variable containing three equal-width bins with counts 12, 24, and 12
 (middle bin is twice as probable as the other two). 
 
-Topics::	continuous_variable, uncertain_variable, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
 Faq::

@@ -4,46 +4,39 @@ Description::
 The asynchronous parallel pattern search (APPS) algorithm [\ref GrKo06
 "Gray and Kolda, 2006"] is a fully asynchronous pattern search
 technique in that the search along each offset direction continues
-without waiting for searches along other directions to finish.  It is
-now made available in %Dakota through the HOPSPACK software [\ref
-Plantenga2009 "Plantenga, 2009"].  It can handle unconstrained
-problems as well as those with bound constraints, linear constraints,
-and general nonlinear constraints.  HOPSPACK is available to the
-public under the GNU LGPL and the source code is included with %Dakota.
-HOPSPACK-specific software documentation is available from
-https://software.sandia.gov/trac/hopspack.
+without waiting for searches along other directions to finish.
 
 The only method independent controls that are currently mapped to APPS
 are \c max_function_evaluations, \c constraint_tolerance, and the \c
-output verbosity control.  We note that while APPS treats the
+output verbosity control. We note that while APPS treats the
 constraint tolerance separately for linear and nonlinear constraints,
 we apply the same value to both if the user specifies \c
-constraint_tolerance.  The APPS internal "display" level is mapped to
+constraint_tolerance. The APPS internal "display" level is mapped to
 the %Dakota \c debug, \c verbose, \c normal, \c quiet, and \c silent
 settings as follows:
 
-\li %Dakota "debug":   display final solution, all input parameters,
+\li %Dakota "debug":  display final solution, all input parameters,
 variable and constraint info, trial points, search directions, and
 execution details
 \li %Dakota "verbose": display final solution, all input parameters,
 variable and constraint info, and trial points
-\li %Dakota "normal":  display final solution, all input parameters,
+\li %Dakota "normal": display final solution, all input parameters,
 variable and constraint summaries, and new best points
-\li %Dakota "quiet":   display final solution and all input parameters
+\li %Dakota "quiet":  display final solution and all input parameters
 \li %Dakota "silent": display final solution
 
 APPS exploits parallelism through the use of %Dakota's concurrent
-function evaluations.  The variant of the algorithm that is currently
+function evaluations. The variant of the algorithm that is currently
 exposed, however, limits the amount of concurrency that can be
-exploited.  In particular, APPS can leverage an evaluation concurrency
-level of at most twice the number of variables.  More options that
+exploited. In particular, APPS can leverage an evaluation concurrency
+level of at most twice the number of variables. More options that
 allow for greater evaluation concurrency may be exposed in future
 releases.
 
 The APPS method is invoked using a \c asynch_pattern_search group
-specification.  Some of the method dependent controls are similar to
+specification. Some of the method dependent controls are similar to
 the SCOLIB controls for \c coliny_pattern_search described in \ref
-MethodSCOLIBPS.  In particular, APPS supports the following step
+MethodSCOLIBPS. In particular, APPS supports the following step
 length control parameters:
 
 \li \c initial_delta: the initial step length, must be positive
@@ -53,12 +46,12 @@ must be greater than or equal to 4.4e-16
 after unsuccesful iterates, must be strictly between 0 and 1
 
 If \c initial_delta is supplied by the user, it will be applied in an
-absolute sense in all coordinate directions.  APPS documentation
+absolute sense in all coordinate directions. APPS documentation
 advocates choosing \c initial_delta to be the approximate distance
-from the initial point to the solution.  If this is unknown, it is
+from the initial point to the solution. If this is unknown, it is
 advisable to err on the side of choosing an \c initial_delta that is
-too large or to not specify it.  In the latter case, APPS will take a
-full step to the boundary in each direction.  Relative application of
+too large or to not specify it. In the latter case, APPS will take a
+full step to the boundary in each direction. Relative application of
 \c initial_delta is not available unless the user scales the problem
 accordingly.
 
@@ -69,16 +62,16 @@ solution_target.
 
 Currently, APPS only supports coordinate bases with a total of \e 2n
 function evaluations in the pattern, and these patterns may only
-contract.  The \c synchronization specification can be used to specify
+contract. The \c synchronization specification can be used to specify
 the use of either \c blocking or \c nonblocking schedulers for APPS.
 The \c blocking option causes APPS to behave as a synchronous
-algorithm.  The \c nonblocking option is not available when %Dakota is
+algorithm. The \c nonblocking option is not available when %Dakota is
 used in message-passing mode.
 
 APPS solves nonlinearly constrained problems by solving a sequence of
-linearly constrained merit function-base subproblems.  There are
+linearly constrained merit function-base subproblems. There are
 several exact and smoothed exact penalty functions that can be
-specified with the \c merit_function control.  The options are as
+specified with the \c merit_function control. The options are as
 follows:
 
 \li \c merit_max: based on \f$ \ell_\infty\f$ norm

@@ -1,25 +1,6 @@
 Blurb::
 What does this do???????????????
 Description::
-SCOLIB (formerly known as COLINY) is a collection of nongradient-based
-optimizers that support the Common Optimization Library INterface
-(COLIN). SCOLIB optimizers currently include \c coliny_cobyla, \c
-coliny_direct, \c coliny_ea, \c coliny_pattern_search and \c
-coliny_solis_wets. (Yes, the input spec still has "coliny" prepended
-to the method name.) Additional SCOLIB information is available from
-https://software.sandia.gov/trac/acro.
-
-SCOLIB solvers now support bound constraints and general nonlinear
-constraints. Supported nonlinear constraints include both equality
-and two-sided inequality constraints. SCOLIB solvers do not yet
-support linear constraints. Most SCOLIB optimizers treat constraints
-with a simple penalty scheme that adds \c constraint_penalty times the
-sum of squares of the constraint violations to the objective function.
-Specific exceptions to this method for handling constraint violations
-are noted below. (The default value of \c constraint_penalty is
-1000.0, except for methods that dynamically adapt their constraint
-penalty, for which the default value is 1.0.)
-
 The method independent controls for \c max_iterations and \c
 max_function_evaluations limit the number of major iterations and the
 number of function evaluations that can be performed during a SCOLIB

@@ -1,11 +1,18 @@
 Blurb::
-Specify discrete design variable using a range of integers
+Discrete design variable - specified using a range of integers
 Description::
 For discrete range variables, the \c lower_bounds and \c upper_bounds restrict the size of the feasible design space and are frequently used to prevent nonphysical designs. 
 This is a discrete interval variable that may take any integer value within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4).
 
-Topics::	discrete_variable, design_variable, not_yet_reviewed
+Topics::	discrete_variables, design_variables, not_yet_reviewed
 Examples::
 Theory::
+Design variables are those variables which are modified for the
+purposes of computing an optimal design.
+
+Engineering design problems may contain discrete variables such as
+material types, feature counts, stock gauge selections, etc. These
+variables may assume only a fixed number of values.
+
 Faq::
 See_Also::	

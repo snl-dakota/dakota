@@ -30,7 +30,8 @@ variables_and_responses
   discrete_variables
  variable_type
   design_variables
-  uncertain_variables
+  aleatory_uncertain_variables
+  epistemic_uncertain_variables
   state_variables
  variables_management
  response_types

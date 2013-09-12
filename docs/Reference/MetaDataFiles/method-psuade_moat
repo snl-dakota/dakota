@@ -1,16 +1,6 @@
 Blurb::
 Morris One-at-a-Time
 Description::
-The Problem Solving Environment for Uncertainty Analysis and Design
-Exploration (PSUADE) is a Lawrence Livermore National Laboratory tool
-for metamodeling, sensitivity analysis, uncertainty quantification,
-and optimization. Its features include non-intrusive and parallel
-function evaluations, sampling and analysis methods, an integrated
-design and analysis framework, global optimization, numerical
-integration, response surfaces (MARS and higher order regressions),
-graphical output with Pgplot or Matlab, and fault tolerance [\ref
-Tong2005 "C.H. Tong, 2005"].
-
 The Morris One-At-A-Time (MOAT) method, originally proposed by Morris
 [\ref Morris1991 "M.D. Morris, 1991"], is a screening method, designed
 to explore a computational model to distinguish between input

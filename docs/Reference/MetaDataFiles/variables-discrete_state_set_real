@@ -6,11 +6,8 @@ provide the initial values for the state variables which will be
 passed through to the simulator (e.g., in order to define
 parameterized modeling controls). 
 
-Topics::	discrete_variable, state_variable, not_yet_reviewed
+Topics::	discrete_variables, state_variables, not_yet_reviewed
 Examples::
 Theory::
-State variables provide a convenient mechanism for managing additional
-model parameterizations such as mesh density, simulation convergence
-tolerances, and time step controls. 
 Faq::
 See_Also::	

@@ -1,0 +1,15 @@
+The OPT++ library [\ref MeOlHoWi07 "Meza et al., 2007"] contains primarily
+gradient-based nonlinear programming optimizers for unconstrained,
+bound-constrained, and nonlinearly constrained minimization:
+Polak-Ribiere conjugate gradient (%Dakota's \c optpp_cg method),
+quasi-Newton (%Dakota's \c optpp_q_newton method), finite difference
+Newton (%Dakota's \c optpp_fd_newton method), and full Newton (%Dakota's
+\c optpp_newton method).  The conjugate gradient method is strictly
+unconstrained, and each of the Newton-based methods are automatically
+bound to the appropriate OPT++ algorithm based on the user constraint
+specification (unconstrained, bound-constrained, or
+generally-constrained).  In the generally-constrained case, the Newton
+methods use a nonlinear interior-point approach to manage the
+constraints.  The library also contains a direct search algorithm, PDS
+(parallel direct search, %Dakota's \c optpp_pds method), which supports
+bound constraints.

@@ -9,11 +9,8 @@ parameterized modeling controls).
 When would this ever be used?
 
 
-Topics::	discrete_variable, state_variable, problem, not_yet_reviewed
+Topics::	discrete_variables, state_variables, problem, not_yet_reviewed
 Examples::
 Theory::
-State variables provide a convenient mechanism for managing additional
-model parameterizations such as mesh density, simulation convergence
-tolerances, and time step controls. 
 Faq::
 See_Also::	

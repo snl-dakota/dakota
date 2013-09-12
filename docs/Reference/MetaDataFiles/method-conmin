@@ -7,8 +7,7 @@ Fletcher-Reeves conjugate gradient (%Dakota's \c conmin_frcg method)
 method for unconstrained optimization, and the method of feasible
 directions (%Dakota's \c conmin_mfd method) for constrained
 optimization. As CONMIN was a predecessor to the DOT commercial
-library, the algorithm controls are very similar.  %Dakota provides
-access to the CONMIN library through the CONMINOptimizer class.
+library, the algorithm controls are very similar.
 
 Topics::	package_conmin, not_yet_reviewed
 Examples::

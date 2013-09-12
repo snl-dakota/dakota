@@ -1,4 +1,5 @@
 Blurb::
+Epistemic uncertain variable - integers within a set
 Description::
 In addition to continuous and discrete aleatory probability
 distributions, %Dakota provides support for continuous and discrete
@@ -42,7 +43,7 @@ notion of an initial value.
 
 How is this different from a pmf, histogram
 
-Topics::	problem, discrete_variable, uncertain_variable, not_yet_reviewed
+Topics::	problem, discrete_variables, epistemic_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
 Faq::

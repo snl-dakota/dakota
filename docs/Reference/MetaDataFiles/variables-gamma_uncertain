@@ -1,5 +1,5 @@
 Blurb::
-Specify a random variable with a gamma distribution
+Aleatory uncertain variable - gamma
 Description::
 The gamma distribution is sometimes used to model time to complete a task, such as a repair or service task. It is a very flexible distribution. Within the gamma uncertain optional group specification, the number of gamma uncertain variables and the alpha and beta parameters are required specifications, and variable descriptors is an optional specification.
 
@@ -10,8 +10,17 @@ where
 Note that the exponential distribution is a special
 case of this distribution for parameter \f$\alpha = 1\f$.
 
-Topics::	continuous_variable, uncertain_variable , not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
+When used with design of experiments and multidimensional parameter
+studies, distribution bounds are inferred.
+These bounds are [0, \f$\mu + 3 \sigma\f$].
+
+For vector and centered parameter studies, an inferred initial
+starting point is needed for the uncertain variables.
+These variables are initialized to their means for these studies.
+
+
 Faq::
 See_Also::	

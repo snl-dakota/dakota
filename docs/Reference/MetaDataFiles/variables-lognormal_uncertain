@@ -1,5 +1,5 @@
 Blurb::
-Specify a random variable with a lognormal distribution
+Aleatory uncertain variable - lognormal
 Description::
 If the logarithm of an uncertain variable X has a normal distribution, that is 
 \f$\log X \sim N(\mu,\sigma)\f$,
@@ -45,8 +45,16 @@ and \f$\epsilon\f$ or \f$\sigma\f$ are as follows:
 The density function for the lognormal distribution is: 
 \f[f(x) = \frac{1}{\sqrt{2\pi}\zeta x} e^{-\frac{1}{2}\left(\frac{ln x-\lambda}{\zeta}\right)^2}\f]
 
-Topics::	continuous_variable, uncertain_variable, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
+When used with design of experiments and multidimensional parameter
+studies, distribution bounds are inferred.
+These bounds are [0, \f$\mu + 3 \sigma\f$].
+
+For vector and centered parameter studies, an inferred initial
+starting point is needed for the uncertain variables.
+These variables are initialized to their means for these studies.
+
 Faq::
 See_Also::	

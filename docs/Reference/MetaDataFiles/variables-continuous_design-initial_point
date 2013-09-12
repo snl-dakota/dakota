@@ -1,9 +1,1 @@
-Blurb::
-Specify the initial value of the design variables
-Description::
-When does this matter, and when does it not? I have no idea...
-Topics::	not_yet_reviewed
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-initial_point

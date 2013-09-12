@@ -1,0 +1,15 @@
+Blurb::
+Choose how much each response is scaled
+Description::
+Each entry in
+\c primary_scales may be a user-specified nonzero characteristic value
+to be used in scaling each response. These values are
+ignored for scaling type \c none, required for
+\c value, and optional for \c log. If a single real
+value is specified it will apply to each function. 
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::

@@ -10,8 +10,7 @@ methods for unconstrained optimization, and the modified method of
 feasible directions (%Dakota's \c dot_mmfd method), sequential linear
 programming (%Dakota's \c dot_slp method), and sequential quadratic
 programming (%Dakota's \c dot_sqp method) methods for constrained
-optimization. %Dakota provides access to the DOT library through the
-DOTOptimizer class.
+optimization.
 
 Topics::	package_dot, not_yet_reviewed
 Examples::

@@ -1,12 +1,6 @@
 Blurb::
 Squential Quadratic Program
 Description::
-The NPSOL library [\ref Gill1986 "Gill et al., 1986"] contains a
-sequential quadratic programming (SQP) implementation (the \c
-npsol_sqp method). SQP is a nonlinear programming optimizer for
-constrained minimization. %Dakota provides access to the NPSOL library
-through the NPSOLOptimizer class.
-
 The method independent controls for \c max_iterations and \c
 max_function_evaluations limit the number of major SQP iterations and
 the number of function evaluations that can be performed during an

@@ -1,9 +1,1 @@
-Blurb::
-Initial values for the design variables
-Description::
-The \c initial_point specifications provide the point in design space from which an iterator is started and default middle values (discrete sets). 
-Topics::	not_yet_reviewed
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-initial_point

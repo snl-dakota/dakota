@@ -1,5 +1,5 @@
 Blurb::
-Specify a random variable with a beta distribution
+Aleatory uncertain variable - beta
 Description::
 Within the beta uncertain optional group specification, the number of beta uncertain variables, the alpha and beta parameters, and the distribution upper and lower bounds are required specifications, and the variable descriptors is an optional specification. 
 The beta distribution can be helpful when the actual distribution of an uncertain variable is unknown, but the user has a good idea of the bounds, the mean, and the standard deviation of the uncertain variable. 
@@ -19,8 +19,12 @@ Solving these for \f$\alpha\f$ and \f$\beta\f$ gives:
 \f[\alpha = (\mu_B-L_B)\frac{(\mu_B-L_B)(U_B-\mu_B)-\sigma_B^2}{\sigma_B^2(U_B-L_B)}\f]
 \f[\beta = (U_B-\mu_B)\frac{(\mu_B-L_B)(U_B-\mu_B)-\sigma_B^2}{\sigma_B^2(U_B-L_B)}\f]
 Note that the uniform distribution is a special case of this distribution for parameters \f$\alpha = \beta = 1\f$.
-Topics::	continuous_variable, uncertain_variable, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
+For vector and centered parameter studies, an inferred initial
+starting point is needed for the uncertain variables.
+These variables are initialized to their means for these studies.
+
 Faq::
 See_Also::	

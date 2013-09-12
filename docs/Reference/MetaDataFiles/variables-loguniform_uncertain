@@ -1,5 +1,5 @@
 Blurb::
-Specify loguniform random variables
+Aleatory uncertain variable - loguniform
 Description::
 If the logarithm of an uncertain variable X has a uniform distribution, that is 
 \f$\log X \sim U(L_{LU},U_{LU})\f$, 
@@ -7,8 +7,11 @@ then X is distributed with a loguniform distribution. Within the loguniform unce
 The loguniform distribution has the density function:
 \f[f(x) = \frac{1}{x(ln U_{LU} - ln {L_{LU}})}\f]
 
-Topics::	continuous_variable, uncertain_variable, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
+For vector and centered parameter studies, an inferred initial
+starting point is needed for the uncertain variables.
+These variables are initialized to their means for these studies.
 Faq::
 See_Also::	

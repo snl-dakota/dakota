@@ -1,0 +1,6 @@
+The Florida State University Design and Analysis of Computer
+Experiments (FSUDace) library provides the following DACE techniques:
+quasi-Monte Carlo sampling (\c fsu_quasi_mc) based on the Halton
+sequence (\c halton) or the Hammersley sequence (\c hammersley), 
+and Centroidal Voronoi Tessellation (\c fsu_cvt). 
+

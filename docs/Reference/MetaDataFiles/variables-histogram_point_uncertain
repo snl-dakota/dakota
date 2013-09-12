@@ -1,5 +1,5 @@
 Blurb::
-Specify an arbitrary discrete (real-valued) random variable
+Aleatory uncertain discrete variable - arbitrary discrete (real-valued) random variable
 Description::
 As mentioned above, histogram uncertain variables are typically used
 to model a set of empirical data.  A point histogram is a discrete
@@ -50,7 +50,7 @@ probable) and associates the \c (x,c) pairs ((100,1),(200,2),(300,1))
 with a second point-based histogram variable (where the value 200 is
 twice as probable as either 100 or 300).
 
-Topics::	discrete_variable , uncertain_variable, not_yet_reviewed
+Topics::	discrete_variables, aleatory_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
 Faq::

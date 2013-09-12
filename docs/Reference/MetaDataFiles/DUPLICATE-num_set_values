@@ -1,0 +1,9 @@
+Blurb::
+The size of each variables' set of permissible values
+Description::
+For each variable, the number of permissible values must be specified.
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

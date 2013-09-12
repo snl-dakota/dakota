@@ -1,65 +1,100 @@
 Blurb::
 Specifies the parameter set to be iterated by a particular method.
 Description::
-The \c variables specification in a Dakota input file specifies the parameter set to be iterated by a particular method. 
-In the case of an optimization study, these variables are adjusted in order to locate an optimal design; in the case of parameter studies/sensitivity analysis/design of experiments, these parameters are perturbed to explore the parameter space; and in the case of uncertainty analysis, the variables are associated with distribution/interval characterizations which are used to compute corresponding distribution/interval characterizations for response functions. 
-To accommodate these and other types of studies, Dakota supports design, uncertain, and state variable types for continuous and discrete variable domains, where uncertain types can be further categorized as either aleatory or epistemic and discrete domains can be further categorized as discrete range, discrete integer set, or discrete real set.
+The \c variables specification in a Dakota input file specifies the 
+parameter set to be iterated by a particular method. 
 
-The variables section in a Dakota input file specifies the parameter set to be iterated by a particular method. 
-This parameter set is made up of design, uncertain, and state variables. 
+In the case of 
+- An optimization study:
+ - These variables are adjusted in order to locate an optimal design.
+- Parameter studies/sensitivity analysis/design of experiments: 
+ - These parameters are perturbed to explore the parameter space
+- Uncertainty analysis: 
+ - The variables are associated with distribution/interval characterizations which are used to compute corresponding distribution/interval characterizations for response functions. 
 
-Design variables can be continuous or discrete and consist of those variables which an optimizer adjusts in order to locate an optimal design. Each of the design parameters can have an initial point and a descriptive tag. Continuous and discrete range types include lower and upper bounds, and discrete set types include the admissible set values.
+To accommodate these different studies, Dakota supports different:
+- Variable types
+ - design
+ - aleatory uncertain
+ - epistemic uncertain
+ - state
+- Variable domains
+ - continuous 
+ - discrete
+  - discrete range
+  - discrete integer set
+  - discrete real set
+Use the \ref topics-variables page to browse the available variables
+by type and domain.
 
-Uncertain variables may be categorized as either aleatory or epistemic and either continuous or discrete. 
-Continuous aleatory uncertain variables include normal, lognormal, uniform, loguniform, triangular, exponential, beta, gamma, gumbel, frechet, weibull, and histogram bin distributions. 
-Discrete aleatory uncertain variables include poisson, binomial, negative binomial, geometric, hypergeometric, and histogram point distributions. 
-In addition to aleatory uncertain variables defined by probability distributions, Dakota also supports epistemic uncertain variables that are non-probabilistic. 
-These epistemic types involve continuous or discrete interval or discrete set specifications. 
-For the interval cases, one defines either a single bounded interval per epistemic variable or a set of basic probability assignments (BPAs) that define belief structures, where each BPA defines the level of belief that the value of a particular variable lies within a particular interval. 
-For discrete epistemic sets, the basic probability assignments are provided for each set value as opposed to each interval.
 
-Each uncertain variable specification contains descriptive tags and most contain, either explicitly or implicitly, distribution lower and upper bounds. 
-Distribution lower and upper bounds are explicit portions of the normal, lognormal, uniform, loguniform, triangular, and beta specifications, whereas they are implicitly defined for histogram bin, histogram point, and interval variables (from the extreme values within the bin/point/interval specifications) as well as for binomial (0 to num_trials) and hypergeometric (0 to min(num_drawn, num_selected)) variables. 
-When used with design of experiments and multidimensional parameter studies, distribution bounds are also inferred for normal and lognormal (if optional bounds are unspecified) as well as for exponential, gamma, gumbel, frechet, weibull, poisson, negative binomial, and geometric (which have no bounds specifications); these bounds are [0, ] for exponential, gamma, frechet, weibull, poisson, negative binomial, geometric, and unspecified lognormal, and [, ] for gumbel and unspecified normal. 
-For other types of parameter studies (vector and centered), an inferred initial starting point is needed for the uncertain variables. 
-All uncertain variables are initialized to their means for these studies, where mean values for bounded normal and bounded lognormal may additionally be repaired to satisfy any specified distribution bounds, mean values for discrete integer range distributions are rounded down to the nearest integer, and mean values for discrete set distributions are rounded to the nearest set value. 
-In addition to tags and bounds specifications, normal variables include mean and standard deviation specifications, lognormal variables include lambda and zeta, mean and standard deviation, or mean and error factor specifications, triangular variables include mode specifications, exponential variables include beta specifications, beta, gamma, gumbel, frechet, and weibull variables include alpha and beta specifications, histogram bin variables include abscissa and either ordinate or count specifications, poisson variables include lambda specifications, binomial and negative binomial variables include probability per trial and number of trials specifications, geometric variables include probability per trial specifications, hypergeometric variables include the specification of the total population, selected population, and number drawn, histogram point variables include abscissa and count specifications, and interval variables include basic probability assignments per interval.
+<b> Design Variables </b>
 
-State variables can be continuous or discrete and consist of "other" variables which are to be mapped through the simulation interface. 
-Each state variable specification can have an initial state and descriptors. 
-Continuous and discrete range types include lower and upper bounds, and discrete set types include the admissible set values. 
-State variables provide a convenient mechanism for parameterizing additional model inputs, such as mesh density, simulation convergence tolerances and time step controls, and can be used to enact model adaptivity in future strategy developments.
+Design variables are those variables which are modified for the
+purposes of computing an optimal design.
 
-The ordering of variables is important, and a consistent ordering is employed throughout the Dakota software. It is the same ordering as shown in dakota.input.summary and as presented in the outline of this chapter. That ordering can be summarized as continuous followed by discrete integer followed by discrete real within each of the following types: design, aleatory uncertain, epistemic uncertain, and state. Ordering of variable types below this granularity (e.g., from normal to histogram bin within continuous aleatory uncertain) is defined somewhat arbitrarily, but is enforced consistently throughout the code.
-If the user does not specify any explicit override of the active view 
-of the variables, Dakota then considers the response function 
-specification.  If the user specifies objective functions or calibration 
-terms in the response specification block, the active variables will 
-be the design variables.  If the user specifies the more generic 
-response type, \c response_functions, general response 
-functions do not have a specific interpretation the way 
-\c objective_functions or \c calibration_terms do. 
-In the case of generic response functions, Dakota then tries to 
-infer the active view from the method.  If the method is a parameter 
-study, or any of the methods available under dace, psuade, or fsu methods, 
-the active view is set to all variables.  For uncertainty quantification 
-methods, if the method is sampling, 
-then the view is set to aleatory if only aleatory variables are present, 
-epistemic if only epistemic variables are present, or uncertain (covering
-both aleatory and epistemic) if both are present.  If the uncertainty method 
-involves interval estimation or evidence calculations, the view is set 
-to epistemic. For other uncertainty quantification methods not mentioned 
-in the previous sentences (e.g., reliability methods or stochastic 
-expansion methods), the view is set to aleatory. 
-Finally, for verification studies using the Richardson extrapolation 
-method, the active view is set to state.   
-Note that in surrogate-based optimization, where the surrogate 
-is built on points defined by the method defined by the 
-\c dace_method_pointer, the sampling used to generate the points 
-is performed only over the design variables as a default unless 
-otherwise specified (e.g. state variables will not be sampled 
-for surrogate construction). 
+The most common type of design variables encountered in engineering
+applications are of the continuous type. These variables may assume
+any real value within
+their bounds. All but a handful of the optimization algorithms in
+Dakota support continuous design variables exclusively.
 
+
+<b> Aleatory Uncertain Variables </b>
+
+Aleatory uncertainty is also known as inherent variability,
+irreducible uncertainty, or randomness.
+
+Aleatory uncertainty is predominantly charaterized using 
+probability theory. This is the only option implemented in Dakota.
+
+
+<b> Epistemic Uncertain Variables </b>
+
+Epistemic uncertainty is uncertainty due to lack of knowledge.
+
+In %Dakota, epistemic uncertainty is characterized by 
+interval analysis or the Dempster-Shafer theory of evidence.
+
+Note that epistemic uncertainty can also be modeled
+with probability density functions - similarly to aleatory uncertainty
+Dakota does not support this capability.
+
+
+<b> State Variables </b>
+
+State variables provide a convenient mechanism for managing additional
+model parameterizations such as mesh density, simulation convergence
+tolerances, and time step controls. 
+
+
+<b> Ordering of Variables </b>
+
+The ordering of variables is important, and a consistent ordering 
+is employed throughout the Dakota software. It is the same ordering 
+as shown in dakota.input.summary 
+That ordering can be summarized as 
+-# design
+ -# continuous 
+ -# discrete integer 
+ -# discrete real
+-# aleatory uncertain
+ -# continuous 
+ -# discrete integer 
+ -# discrete real
+-# epistemic uncertain
+ -# continuous 
+ -# discrete integer 
+ -# discrete real
+-# state
+ -# continuous 
+ -# discrete integer 
+ -# discrete real
+
+Ordering of variable types below this 
+granularity (e.g., from normal to histogram bin within 
+aleatory uncertain - continuous ) is defined somewhat arbitrarily, but is 
+enforced consistently throughout the code.
 
 Topics:: block, not_yet_reviewed
 Examples::

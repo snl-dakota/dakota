@@ -1,0 +1,18 @@
+Blurb::
+Initial values for the state variables
+Description::
+The \c initial_state specifications
+provide the values for the state variables which will be
+passed to the simulator.
+
+!!!!!!!!!!!!!!!!!!!!
+When does this matter, and when does it not? I have no idea...
+When does the method actually use this? when do state variables change? in that case, does the initial state matter? Does this have a default value?
+!!!!!!!!!!!!!!!!!!!!
+
+
+Topics::	not_yet_reviewed, problem
+Examples::
+Theory::
+Faq::
+See_Also::
