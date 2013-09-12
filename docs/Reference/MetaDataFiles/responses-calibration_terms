@@ -4,51 +4,18 @@ Description::
 A calibration data set is specified using \c calibration_terms and
 optional keywords for weighting/scaling, data, and
 constraints. Each of the calibration terms is a residual to
-be driven toward zero, and the nonlinear inequality and equality
-constraint specifications have identical meanings to those described
-in \ref RespFnOpt!!!!!!!!!!!. 
+be driven toward zero
 
-These types of problems are commonly encountered
-in parameter estimation, system identification, and model
-calibration. Least squares calibration problems are most efficiently
-solved using special-purpose least squares solvers such as
-Gauss-Newton or Levenberg-Marquardt; however, they may also be solved
-using general-purpose optimization algorithms.
+The keywords \c nonlinear_inequality_constraints, and \c nonlinear_equality_constraints 
+specify the number of nonlinear inequality
+constraints, and nonlinear equality constraints, respectively. 
+When interfacing to external applications, the responses must be returned
+to %Dakota in this order: calibration terms, nonlinear_inequality_constraints,
+then nonlinear_equality_constraints.
 
-While Dakota can solve these problems with either least squares or
-optimization algorithms, the response data sets to be returned from
-the simulator are different. Least squares calibration involves a set
-of residual
-functions whereas optimization involves a single objective function
-(sum of the squares of the residuals), i.e., \f[f = \sum_{i=1}^{n}
-R_i^2\f] where \e f is the objective function and the set of \f$R_i\f$
-are the residual functions. Therefore, function values and derivative
-data in the least squares case involve the values and derivatives of
-the residual functions, whereas the optimization case involves values
-and derivatives of the sum of squares objective function. This means that 
-in the least squares calibration case, the user must return each of 
-\c n residuals 
-separately as a separate calibration term. Switching
-between the two approaches sometimes requires different simulation
-interfaces capable of returning the different granularity of response
-data required, although %Dakota supports automatic recasting of
-residuals into a sum of squares for presentation to an optimization
-method. Typically, the user must compute the difference between the 
-model results and the observations when computing the residuals. 
-However, the user has the option of specifying the observational data 
-(e.g. from physical experiments or other sources) in a file. 
-
-
-The specification \c calibration_data_file may be used to
-specify a text file containing \c calibration_terms observed data
-values (in a supported %Dakota tabular format; default formats change
-in %Dakota 5.2 -- see User's Manual) to be used in computing
-the residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and
-\e O, observation from the file. In this case the simulator should
-return the actual model response, as %Dakota will compute the residual
-internally using the supplied data. When interfacing to external
-applications, the responses returned to %Dakota should be ordered
-calibration terms, inequality constraints, equality constraints.
+Any linear constraints present in an application need only be input to
+an optimizer at start up and do not need to be part of the data
+returned on every function evaluation. These are therefore specified in the method block.
 
 The \c primary_scale_types specification includes strings
 specifying the scaling type for each residual term in methods that
@@ -78,5 +45,34 @@ defined to be the inverse of the experimental variance: \f[f =
 Topics::	not_yet_reviewed
 Examples::
 Theory::
+These types of problems are commonly encountered
+in parameter estimation, system identification, and model
+calibration. Least squares calibration problems are most efficiently
+solved using special-purpose least squares solvers such as
+Gauss-Newton or Levenberg-Marquardt; however, they may also be solved
+using general-purpose optimization algorithms.
+
+While Dakota can solve these problems with either least squares or
+optimization algorithms, the response data sets to be returned from
+the simulator are different. Least squares calibration involves a set
+of residual
+functions whereas optimization involves a single objective function
+(sum of the squares of the residuals), i.e., \f[f = \sum_{i=1}^{n}
+R_i^2\f] where \e f is the objective function and the set of \f$R_i\f$
+are the residual functions. Therefore, function values and derivative
+data in the least squares case involve the values and derivatives of
+the residual functions, whereas the optimization case involves values
+and derivatives of the sum of squares objective function. This means that 
+in the least squares calibration case, the user must return each of 
+\c n residuals 
+separately as a separate calibration term. Switching
+between the two approaches sometimes requires different simulation
+interfaces capable of returning the different granularity of response
+data required, although %Dakota supports automatic recasting of
+residuals into a sum of squares for presentation to an optimization
+method. Typically, the user must compute the difference between the 
+model results and the observations when computing the residuals. 
+However, the user has the option of specifying the observational data 
+(e.g. from physical experiments or other sources) in a file. 
 Faq::
 See_Also::	responses-objective_functions, responses-response_functions

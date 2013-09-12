@@ -34,6 +34,28 @@ BCtext=$BCtext'
  </ul>
 </div>'
 
+###############
+## Blurb
+###############
+
+TargetLine=$(grep -n Blurb:: $1 | cut -d ':' -f1)
+for (( idx=1 ; idx <= $NumFields ; idx++ ))
+do
+  LineNum=$(echo $AllFieldLineNums | cut -d ' ' -f$idx)
+  if [ "$LineNum" == "$TargetLine" ]
+  then
+    StartLineNum=$(( $(echo $AllFieldLineNums | cut -d ' ' -f$idx ) + 1 ))
+    EndLineNum=$(( $(echo $AllFieldLineNums | cut -d ' ' -f$(( $idx + 1 )) ) - 1 ))
+    if [ "$StartLineNum" -le "$EndLineNum" ]
+    then
+      BlurbText=$(sed -n $StartLineNum,$EndLineNum"p" < $1 | tr -d '\t')
+    else
+      BlurbText="Need a Blurb"
+    fi
+  fi
+done
+
+
 
 ###############
 ## See Also
@@ -213,7 +235,7 @@ fi
 ###############
 ## Topics
 ###############
-
+# Must be run after the Blurb
 TargetLine=$(grep Topics:: $1 | cut -d ':' -f3 | tr -d "\t " )
 
 NumTopics=$(( ( $(echo $TargetLine | tr -dc ',' | wc -c ) ) + 1 ))
@@ -226,8 +248,14 @@ This keyword is related to the topics: '
   do
     Topic=$(echo $TargetLine | cut -d ',' -f$idx)
     TopicText=$TopicText"
-- \ref topic-"$Topic
-    echo "- \ref $KeyHier - Full keyword path: $(echo $KeyHier | tr '-' '/')" >> TopicFile-$Topic # !!! the Topic Files should already have been prepped, by parsing the topic tree
+- \ref topic-$Topic"  # may want to switch this to a horizontal layout, would look better.
+    if [ -e TopicFile-$Topic ]
+    then # !!! the Topic Files should already have been prepped, by parsing the topic tree
+      echo "- \ref $KeyHier
+ - Full keyword path: $(echo $KeyHier | tr '-' '/')
+ - $BlurbText
+" >> TopicFile-$Topic 
+    fi
   done
 fi  
 
@@ -314,28 +342,6 @@ do
       FaqText=$(sed -n $StartLineNum,$EndLineNum"p" < $1 | tr -d '\t')
       FaqText='<div style="font-size: 150%; font-weight: bold">FAQ</div>
 '"$FaqText"
-    fi
-  fi
-done
-
-
-###############
-## Blurb
-###############
-
-TargetLine=$(grep -n Blurb:: $1 | cut -d ':' -f1)
-for (( idx=1 ; idx <= $NumFields ; idx++ ))
-do
-  LineNum=$(echo $AllFieldLineNums | cut -d ' ' -f$idx)
-  if [ "$LineNum" == "$TargetLine" ]
-  then
-    StartLineNum=$(( $(echo $AllFieldLineNums | cut -d ' ' -f$idx ) + 1 ))
-    EndLineNum=$(( $(echo $AllFieldLineNums | cut -d ' ' -f$(( $idx + 1 )) ) - 1 ))
-    if [ "$StartLineNum" -le "$EndLineNum" ]
-    then
-      BlurbText=$(sed -n $StartLineNum,$EndLineNum"p" < $1 | tr -d '\t')
-    else
-      BlurbText="Need a Blurb"
     fi
   fi
 done

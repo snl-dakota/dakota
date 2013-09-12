@@ -19,24 +19,27 @@ do
   TopicName=$(echo $Line | tr -d '+')
   if [ "$LineLevel" -eq "0" ]
   then
-    echo "- \subpage topic-"$TopicName >> TopicFile-root  #Tracks the highest level of topics, parent node is the root
+    echo "- \subpage topic-"$TopicName >> TopicFile-Root  #Tracks the highest level of topics, parent node is the root
   fi
 #  echo $LineNum $TopicName   - level $LineLevel
-  echo "\page topic-"$TopicName" "$( echo $TopicName | tr '_' ' ')'
+  if [ ! -e "TopicFile-$TopicName" ]
+  then
+    echo "\page topic-"$TopicName" "$( echo $TopicName | tr '_' ' ')'
 
 <div style="font-size: 150%; font-weight: bold">Description</div>
-' >> TopicFile-$TopicName
+'   > TopicFile-$TopicName
 
-  if [ -e "$2/TopicMetadataFile-$TopicName" ]
-  then
-    more $2/TopicMetadataFile-$TopicName >> TopicFile-$TopicName
-  else
-    echo "THIS TOPICS NEEDS A TOPIC METADATA FILE" >> TopicFile-$TopicName
-  fi
+    if [ -e "$2/TopicMetadataFile-$TopicName" ]
+    then
+      more $2/TopicMetadataFile-$TopicName >> TopicFile-$TopicName
+    else
+      echo "THIS TOPICS NEEDS A TOPIC METADATA FILE" >> TopicFile-$TopicName
+    fi
 
-  echo '
+    echo '
 <div style="font-size: 150%; font-weight: bold">Topics related to this topic:</div>
-' >> TopicFile-$TopicName
+'   >> TopicFile-$TopicName
+  fi
   nextLineNum=$LineNum
   nextLevel=999
   HasSubTopics=0
@@ -60,15 +63,19 @@ do
       break
     fi
   done
-  if [ "$HasSubTopics" -eq 0 ]
-  then
-    echo "This topic has no relevant subtopics" >> TopicFile-$TopicName
-  fi
-echo '
-
-<div style="font-size: 150%; font-weight: bold">Keywords related to this topic:</div>
-
-' >> TopicFile-$TopicName 
+#  if [ "$HasSubTopics" -eq 0 ]
+#  then # this cannot handle the case where the topic appears multiple times in the tree, and has children in multiple spots...
+#    echo "This topic has no relevant subtopics" >> TopicFile-$TopicName
+#  fi
 done
 
 rm tempList.txt
+
+for f in TopicFile-[!R]*
+do
+  echo '
+
+<div style="font-size: 150%; font-weight: bold">Keywords related to this topic:</div>
+
+' >> $f
+done

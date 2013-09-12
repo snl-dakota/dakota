@@ -3,8 +3,7 @@ selection of points in the parameter space. These points may be
 specified as a vector, a list, a set of centered vectors, or a
 multi-dimensional grid. Capability overviews and examples of the
 different types of parameter studies are provided in the Users Manual
-[\ref UsersMan "Adams et al., 2010"]. %Dakota implements all of the
-parameter study methods within the ParamStudy class.
+[\ref UsersMan "Adams et al., 2010"]. 
 
 With the exception of output verbosity (a setting of \c silent will
 suppress some parameter study diagnostic output), %Dakota's parameter

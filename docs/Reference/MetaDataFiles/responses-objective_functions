@@ -14,9 +14,7 @@ then nonlinear_equality_constraints.
 
 Any linear constraints present in an application need only be input to
 an optimizer at start up and do not need to be part of the data
-returned on every function evaluation (see the linear constraints
-description in \ref MethodIndControl).
-
+returned on every function evaluation. These are therefore specified in the method block.
 
 Topics::	not_yet_reviewed
 Examples::

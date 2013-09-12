@@ -1,1 +1,5 @@
-Dummy File to test the machine 105
+%Dakota provides a variety of methods for propagating both
+aleatory and epistemic uncertainty.
+
+In general, we refer to both classes of uncertainty
+quantification methods in %Dakota as nondeterministic methods. 

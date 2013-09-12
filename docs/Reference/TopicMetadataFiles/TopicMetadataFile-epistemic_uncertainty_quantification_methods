@@ -1,0 +1,10 @@
+Epistemic uncertainty is uncertainty due to lack of knowledge.
+
+In %Dakota, epistemic uncertainty
+analysis is performed using interval analysis or Dempster-Shafer
+theory of evidence.
+
+Note that epistemic uncertainty can also be modeled
+probabilistically. It would be more accurate to call this class of 
+method, non-probabilistic uncertainty quantification, but the name
+persists for historical reasons.

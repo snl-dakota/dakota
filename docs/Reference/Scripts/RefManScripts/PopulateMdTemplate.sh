@@ -3,8 +3,8 @@
 here=$PWD
 ScriptDir=$(readlink -f $(dirname $0) )
 
-cat $ScriptDir/TopOfDoxygenFile.txt outputs/Topics/TopicFile-root > toppart
-mv outputs/Topics/TopicFile-root outputs/
+cat $ScriptDir/TopOfDoxygenFile.txt outputs/Topics/TopicFile-Root > toppart
+mv outputs/Topics/TopicFile-Root outputs/
 
 for f in $(ls outputs/Topics/*)
 do
@@ -48,5 +48,5 @@ done
 echo '*/' >> addkeywordspages
 
 cp addkeywordspages $1
-mv outputs/TopicFile-root outputs/Topics/
+mv outputs/TopicFile-Root outputs/Topics/
 rm toppart addkeywordspages topicpages 

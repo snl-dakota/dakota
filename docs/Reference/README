@@ -12,3 +12,5 @@ Later builds don't need all the steps.
 If you only change the keyword metadata, for example, it takes ~3 minutes to run the last two scripts.
 
 The doxygen file requires 1.8.4 to work correctly.
+
+You can optionally copy the setup script to the working dir. That is nice in case you want to use the script to rebuild the manual -you can comment out the steps you don't need.
