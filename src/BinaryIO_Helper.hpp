@@ -172,7 +172,7 @@ public:
 
   template <typename T>
   herr_t store_data(const std::string& dset_name,
-                    const T& val)
+                    const T& val) const
   {
     /* WJB: no time time to dig-deeper, think of the data as an array of len==1
     hsize_t dims[1]={1};    
@@ -194,7 +194,7 @@ public:
   template <typename T, size_t DIM>
   herr_t store_data(const std::string& dset_name,
                     const std::vector<hsize_t>& dims,
-                    const T* buf)
+                    const T* buf) const
   {
     if ( dims.size() != DIM && exitOnError )
       throw BinaryStream_StoreDataFailure();
@@ -213,62 +213,48 @@ public:
   template <typename T, size_t DIM>
   herr_t store_data(const std::string& dset_name,
                     const std::vector<hsize_t>& dims,
-                    const std::vector<T>& buf)
+                    const std::vector<T>& buf) const
   {
-#if 0
-    // WJB: temporarily keep old impl available till I am confident
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       DIM, dims.data(), BuiltinDataTypes<T>::datatype(),
-                       buf.data() );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    return ret_val;
-#endif
-    return store_data<T, DIM>(dset_name, dims, buf.data());
+    return store_data<T, DIM>( dset_name, dims, buf.data() );
   }
 
   // should parameterize on ScalarType -- template <typename T>
   // that way, same func for ints, doubles,...
   herr_t store_data(const std::string& dset_name,
-                    const RealMatrix& buf)
+                    const RealMatrix& buf) const
   {
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
     std::vector<hsize_t> dims; // Matrix is 2D
     dims += buf.numRows(), buf.numCols();
 
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       dims.size(), &dims[0],
-                       BuiltinDataTypes<double>::datatype(),
-                       &buf[0][0] );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    return ret_val;
+    return store_data<double,2>( dset_name, dims, buf.values() );
   }
 
   herr_t store_data(const std::string& dset_name,
-                    const RealVectorArray& buf)
+                    const RealVectorArray& buf) const
   {
+    if ( buf.size() == 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
     std::vector<hsize_t> dims; // VectorArray is 2D
     dims += buf.size(), buf[0].length();
 
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       dims.size(), &dims[0],
-                       BuiltinDataTypes<double>::datatype(),
-                       &buf[0] );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    return ret_val;
+    // WJB:  look into a Boost MultiArray here!
+    RealMatrix tmp( dims[0], dims[1] );
+    for(int i=0; i<dims[0]; ++i)
+      for(int j=0; j<dims[1]; ++j) {
+        // teuchos is a C++ library, but has fortran layout
+        tmp(j, i) = buf[i][j];
+    }
+    return store_data<double,2>( dset_name, dims, tmp.values() );
   }
 
 
   template <typename T, size_t DIM>
   herr_t read_data(const std::string& dset_name,
-                   std::vector<T>& buf)
+                   std::vector<T>& buf) const
   {
     //dbg_progress(binStreamId);
     // WJB: how to know what to size the dims vector??

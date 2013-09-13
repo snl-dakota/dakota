@@ -31,21 +31,38 @@ int main()
   std::vector<hsize_t> idims;
   idims += 3;
 
-  RealMatrix rmatrix_out(rdims[0], rdims[1]);
+  std::vector<double> rmatrix_row0;
+  rmatrix_row0 += rval_out, .23;
+
+  //RealMatrix rmatrix_out(rdims[0], rdims[1]);
+  /* RealVectorArray rmatrix_out( rdims[0],
+                               RealVector( Teuchos::View,
+                                           rmatrix_row0.data(),
+                                           rdims[1] ) ); */
+  RealVectorArray rmatrix_out;
+  rmatrix_out.push_back( RealVector( Teuchos::Copy, rmatrix_row0.data(),
+                                     rdims[1] ) );
+  rmatrix_out.push_back( RealVector( Teuchos::Copy, rmatrix_row0.data(),
+                                     rdims[1] ) );
+/*
   rmatrix_out(0, 0) = rval_out;
   rmatrix_out(0, 1) = 0.23;
   rmatrix_out(1, 0) = 0.23;
   rmatrix_out(1, 1) = rval_out;
+*/
+  rmatrix_out[1][0] = .23;
+  rmatrix_out[1][1] = rval_out;
 
   std::vector<int> ivec_out;
   ivec_out += ival_out, 23, 333;
   hsize_t isize = ivec_out.size();
 
   assert(rdims.size() == RANK);
-  assert(rmatrix_out.numRows() == 2);
-  assert(rmatrix_out.numCols() == 2);
-  assert(rval_out == rmatrix_out(0, 0));
-  assert(rval_out == rmatrix_out(1, 1));
+  //assert(rmatrix_out.numCols() == 2);
+  assert(rmatrix_out[0].length() == 2); // numCols
+  assert(rmatrix_out[1].length() == 2); // confirm square "matrix" in this test
+  assert(rval_out == rmatrix_out[0](0));
+  assert(rval_out == rmatrix_out[1](1));
   assert(ival_out == ivec_out[0]);
   assert(isize == 3);
 
@@ -82,7 +99,7 @@ int main()
     herr_t status = binary_file.store_data(pi_tag.c_str(), rval_out);
 #endif
 
-    // RealMatrix
+    // RealMatrix -- WJB: come back ASAP -- try RealVectorArray instead
     status = binary_file.store_data("/RealMatrixData", rmatrix_out);
     assert(status >= 0);
 
