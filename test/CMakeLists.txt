@@ -1,5 +1,11 @@
 # CMakeLists.txt for DAKOTA tests
 
+include_directories(
+  ${Dakota_SOURCE_DIR}/src
+  ${Boost_INCLUDE_DIRS}
+  ${Teuchos_INCLUDE_DIRS}
+)
+
 include(AddApplicationTest)
 include(AddFileCopyCommand)
 include(CheckIncludeFile)
@@ -10,9 +16,6 @@ check_include_file(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
   add_definitions("-DHAVE_UNISTD_H")
 endif(HAVE_UNISTD_H)
-
-# The 'morris' tester depends on Boost
-include_directories(${Boost_INCLUDE_DIRS})
 
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
