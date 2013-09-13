@@ -189,20 +189,44 @@ public:
 
     return store_data<T, 1>(dset_name, dims, buf);
   }
-	  
-  template <typename T, size_t N>
+
+
+  template <typename T, size_t DIM>
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<hsize_t>& dims,
+                    const T* buf)
+  {
+    if ( dims.size() != DIM && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       DIM, dims.data(), BuiltinDataTypes<T>::datatype(),
+                       buf );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    return ret_val;
+  }
+
+
+  template <typename T, size_t DIM>
   herr_t store_data(const std::string& dset_name,
                     const std::vector<hsize_t>& dims,
                     const std::vector<T>& buf)
   {
+#if 0
+    // WJB: temporarily keep old impl available till I am confident
     herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       N, dims.data(), BuiltinDataTypes<T>::datatype(),
+                       DIM, dims.data(), BuiltinDataTypes<T>::datatype(),
                        buf.data() );
 
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
     return ret_val;
+#endif
+    return store_data<T, DIM>(dset_name, dims, buf.data());
   }
 
   // should parameterize on ScalarType -- template <typename T>
@@ -224,8 +248,25 @@ public:
     return ret_val;
   }
 
+  herr_t store_data(const std::string& dset_name,
+                    const RealVectorArray& buf)
+  {
+    std::vector<hsize_t> dims; // VectorArray is 2D
+    dims += buf.size(), buf[0].length();
 
-  template <typename T, size_t N>
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       dims.size(), &dims[0],
+                       BuiltinDataTypes<double>::datatype(),
+                       &buf[0] );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    return ret_val;
+  }
+
+
+  template <typename T, size_t DIM>
   herr_t read_data(const std::string& dset_name,
                    std::vector<T>& buf)
   {
@@ -233,7 +274,7 @@ public:
     // WJB: how to know what to size the dims vector??
     // H5LTget_dataset_ndims
     //      hardwire to have some success for now
-    std::vector<hsize_t> dims(N);
+    std::vector<hsize_t> dims(DIM);
     
     herr_t ret_val = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
                        &dims[0], NULL, NULL );
