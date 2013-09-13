@@ -1,0 +1,283 @@
+/** \page Bibliography Bibliography
+
+\li \anchor UsersMan Adams, B.M., Bauman, L.E., Bohnhoff, W.J.,
+Dalbey, K.R., Eddy, J.P., Ebeida, M.S., Eldred, M. S., Hough, P. D.,
+Hu, K.T., Jakeman, J.D., Swiler, L. P., and Vigil, D. M., 2013.
+"Dakota: A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis.  Version 5.3.1+ Users Manual," 
+Sandia Technical Report SAND2010-2183, updated Jan. 2013.
+
+\li \anchor Anderson1986 Anderson, G., and Anderson, P., 1986 <i>The
+UNIX C Shell Field Guide</i>, Prentice-Hall, Englewood Cliffs, NJ.
+
+\li \anchor Argaez2002 Argaez, M., Tapia, R. A., and Velazquez, L., 2002.
+"Numerical Comparisons of Path-Following Strategies for a Primal-Dual
+Interior-Point Method for Nonlinear Programming", <i>Journal of 
+Optimization Theory and Applications</i>, Vol. 114 (2).
+
+\li \anchor Breit1984 Breitung, K., 1984.  "Asymptotic 
+approximation for multinormal integrals," <i>J. Eng. Mech., ASCE</i>,
+Vol. 110, No. 3, pp. 357-366.
+
+\li \anchor Byrd1988 Byrd, R. H., Schnabel, R. B., and Schultz, G. A.,
+1988.  "Parallel quasi-Newton Methods for Unconstrained Optimization,"
+<i>Mathematical Programming</i>, 42(1988), pp. 273-306.
+
+\li \anchor Conn2000 Conn, A. R. and Gould, N. I. M. and Toint, P. L.,
+2000.  <i>Trust-Region Methods</i>, SIAM-MPS, Philadelphia.
+
+\li \anchor Dalbey2012  Dalbey, K. and L. P. Swiler, 2012. 
+"Gaussian Process Adaptive Importance Sampling." 
+submitted to
+<i>International Journal for Uncertainty Quantification</i>.
+
+\li \anchor Du1999  Du,Q., V. Faber, and M. Gunzburger, 1999.
+"Centroidal Voronoi Tessellations: Applications and Algorithms,"
+<i>SIAM Review</i>, Volume 41, 1999, pages 637-676.
+
+\li \anchor JEddy2001 Eddy, J. E. and Lewis, K., 2001. "Effective
+Generation of Pareto Sets using Genetic Programming,"  Proceedings of
+ASME Design Engineering Technical Conference.
+
+\li \anchor ElBak1996 El-Bakry, A. S., Tapia, R. A., Tsuchiya, T., and 
+Zhang, Y., 1996. "On the Formulation and Theory of the Newton Interior-Point 
+Method for Nonlinear Programming," <i>Journal of Optimization Theory and
+Applications</i>, (89) pp. 507-541.
+
+\li \anchor Bichon2007 Bichon, B.J., Eldred, M.S., Swiler, L.P., 
+Mahadevan, S., and McFarland, J.M., 2007. "Multimodal Reliability Assessment 
+for Complex Engineering Applications using Efficient Global Optimization," 
+paper AIAA-2007-1946 in <i>Proceedings of the 48th AIAA/ASME/ASCE/AHS/ASC 
+Structures, Structural Dynamics, and Materials Conference (9th AIAA 
+Non-Deterministic Approaches Conference)</i>, Honolulu, HI, April 23-26.
+
+\li \anchor Bichon2008 Bichon, B.J., Eldred, M.S., Swiler, L.P., 
+Mahadevan, S., and McFarland, J.M., 2008. "Efficient Global Reliability 
+Analysis for Nonlinear Implicit Performance Functions," 
+<i>AIAA Journal</i>, Vol. 46, No. 10, pp. 2459-2468. 
+
+\li \anchor Eldred2009 Eldred, M.S. and Swiler, L.P., 2009.
+"Efficient Algorithms for Mixed Aleatory-Epistemic Uncertainty Quantification with Application to Radiation-Hardened Electronics. Part 1:  Algorithms and Benchmark Results," 
+Sandia Technical report SAND2009-5805.
+
+\li \anchor Eldred2011 Eldred, M.S. and Swiler, L.P. and Tang, G., 2011.
+"Mixed Aleatory-Epistemic Uncertainty Quantification with 
+Stochastic Expansions and Optimization-Based Interval Estimation." 
+<i>Reliability Engineering and System Safety</i>,
+Vol. 96, No. 9, pp. 1092-1113. 
+
+\li \anchor Eldred2006a Eldred, M.S. and Dunlavy, D.M., 2006. 
+"Formulations for Surrogate-Based Optimization with Data Fit,
+Multifidelity, and Reduced-Order Models," paper AIAA-2006-7117 in the
+<i>Proceedings of the 11th AIAA/ISSMO Multidisciplinary Analysis and
+Optimization Conference</i>, Portsmouth, VA, Sept. 6-8.
+
+\li \anchor Eldred2006b Eldred, M.S. and Bichon, B.J.,
+2006. "Second-Order Reliability Formulations in DAKOTA/UQ," paper
+AIAA-2006-1828 in <i>Proceedings of the 47th AIAA/ASME/ASCE/AHS/ASC
+Structures, Structural Dynamics, and Materials Conference (8th AIAA
+Non-Deterministic Approaches Conference)</i>, Newport, Rhode Island,
+May 1 - 4.
+
+\li \anchor Eldred2004a Eldred, M. S., Giunta, A. A., and Collis,
+S. S., 2004. "Second-Order Corrections for Surrogate-Based
+Optimization with Model Hierarchies," <i>Proceedings of the 10th
+AIAA/ISSMO Multidisciplinary Analysis and Optimization Conference</i>,
+Albany, NY, Aug. 30 - Sept. 1.
+
+\li \anchor Eldred2004b Eldred, M.S., Agarwal, H., Perez, V.M.,
+Wojtkiewicz, S.F., Jr., and Renaud, J.E., 2004. "Investigation of
+Reliability Method Formulations in DAKOTA/UQ," 
+<i>Proceedings of the 9th ASCE Joint Specialty Conference on
+Probabilistic Mechanics and Structural Reliability</i>, Albuquerque, NM,
+July 26-28.
+
+\li \anchor Gablonsky2001 Gablonsky, J., 2001.   
+"DIRECT version 2.0 Userguide Technical Report
+CRSC-TR01-08", Center for Research in Scientific Computation,
+North Carolina State University, Raleigh, NC.
+
+\li \anchor Ampl2003 Fourer, R., Gay, D. M., and Kernighan, B. W.,
+2003.  "AMPL: A Modeling Language for Mathematical Programming,"
+Duxbury Press/Brooks/Cole Publishing Co. 2nd ed.
+
+\li \anchor Gay1997 Gay, D. M., 1997.  "Hooking Your Solver to AMPL," 
+Technical Report 97-4-06, Bell Laboratories, Murray Hill, NJ.
+Available as http://www.ampl.com/REFS/hooking2.ps.gz .
+
+\li \anchor Gay2008 Gay, David M., 2008.  "Specifying and Reading Program Input with NIDR",
+Sandia Technical Report SAND2008-2261P.  Available as http://www.sandia.gov/~dmgay/nidr08.pdf .
+
+\li \anchor Gill1986 Gill, P. E., Murray, W., Saunders, M. A., and
+Wright, M. H., 1986.  "User's Guide for NPSOL (Version 4.0): A Fortran
+Package for Nonlinear Programming," System Optimization Laboratory
+Technical Report SOL-86-2, Stanford University, Stanford, CA.
+
+\li \anchor Giunta2006 Giunta, A. A., Swiler, L.P., Brown, S.L,
+Eldred, M.S., Richards, M.D., and Cyr, E.C., 2006. 
+"The Surfpack Software Library for Surrogate Modeling of Sparse, Irregularly Spaced Multidimensional Data," 
+paper AIAA-2006-7049 in <i>Proceedings of the
+11th AIAA/ISSMO Multidisciplinary Analysis and Optimization
+Conference</i>, Portsmouth, VA.
+
+\li \anchor Gunzburger2004 Gunburger, M. and J. Burkardt, 2004. "Uniformity 
+Measures for Point Samples in Hypercubes."  Available on John Burkardt's 
+web site:  http://www.csit.fsu.edu/~burkardt/
+
+\li \anchor Haftka1991 Haftka, R. T., 1991.  "Combining Global and 
+Local Approximations," <i>AIAA Journal</i>, Vol. 29, No. 9, pp. 1523-1525.
+
+\li \anchor Haldar2000 Haldar, A., and Mahadevan, S., 2000.
+<i>Probability, Reliability, and Statistical Methods in Engineering
+Design</i>, John Wiley and Sons, New York.
+
+\li \anchor Halton1960 Halton, J. H.  "On the efficiency of certain 
+quasi-random sequences of points in evaluating multi-dimensional integrals,"
+<i>Numerische Mathematik</i>,Volume 2 pages 84-90.
+
+\li \anchor Halton1964  Halton, J. H. and G. B. Smith, 1964. 
+Algorithm 247: Radical-Inverse Quasi-Random Point Sequence,  
+<i>Communications of the ACM</i>, Volume 7, pages 701-702.
+
+\li \anchor Hart2001c Hart, W. E., Giunta, A. A., Salinger, A. G., and
+van Bloemen Waanders, B. G., 2001. "An Overview of the Adaptive Pattern Search
+Algorithm and its Application to Engineering Optimization Problems,"
+abstract in <i>Proceedings of the McMaster Optimization Conference:
+Theory and Applications</i>, McMaster University, Hamilton, Ontario,
+Canada.
+
+\li \anchor Hart1999 Hart, W. E., and Hunter, K. O., 1999.  
+"A Performance Analysis of Evolutionary Pattern Search with Generalized Mutation Steps,"
+<i>Proc Conf Evolutionary Computation</i>, pp. 672-679.
+
+\li \anchor Helton2004 Helton, J.C. and W.L. Oberkampf, 2004. 
+Special Issue of Reliability Engineering and System Safety: 
+Issue on Alternative Representations of Epistemic Uncertainty. 
+Vol 85, Nos. 1-3, July-Sept. 2004. 
+
+\li \anchor HohenRack Hohenbichler, M. and Rackwitz, R. "Improvement of
+second-order reliability estimates by importance sampling," <i>ASCE
+Journal of Engineering Mechanics</i>, Vol. 114, No. 12, 1988, pp. 2195-2199.
+
+\li \anchor Hong Hong, H.P. "Simple Approximations for Improving 
+Second-Order Reliability Estimates," <i>ASCE Journal of Engineering
+Mechanics</i>, Vol. 125, No. 5, 1999, pp. 592-595.
+
+\li \anchor GrKo06 Gray, G. A. and Kolda, T. G., 2006.  
+"Algorithm 856: APPSPACK 4.0: Asynchronous Parallel Pattern Search for Derivative-Free Optimization,"
+<i>ACM Transactions on Mathematical Software</i>, Vol. 32, No. 3,
+pp. 485-507.
+
+\li \anchor Iman1982 Iman, R. L., and Conover, W. J., 1982.  
+"A Distribution-Free Approach to Inducing Rank Correlation Among Input Variables,"
+<i>Communications in Statistics: Simulation and Computation</i>,
+Vol. B11, no. 3, pp. 311-334.
+
+\li \anchor Jones1998  Jones, D., Schonlau, M., and W. Welch, 1998. 
+"Efficient Global Optimization of Expensive Black-Box Functions,"
+<i>Journal of Global Optimization</i>, Vol. 13, pp. 455-492.
+
+\li \anchor Kocis1997  Kocis, L. and W. Whiten, 1997.
+"Computational Investigations of Low-Discrepancy Sequences,"
+<i> ACM Transactions on Mathematical Software</i>, Volume 23, Number 2, 
+1997, pages 266-294.
+
+\li \anchor Lewis2000 Lewis, R. M., and Nash, S. G., 2000.  
+"A Multigrid Approach to the Optimization of Systems Governed by Differential Equations," 
+paper AIAA-2000-4890 in <i>Proceedings of the 8th AIAA/USAF/NASA/ISSMO
+Symposium on Multidisciplinary Analysis and Optimization</i>, Long
+Beach, CA, Sept. 6-8.
+
+\li \anchor MeOlHoWi07 Meza, J. C., Oliva, R. A., Hough, P. D., and
+Williams, P. J., 2007. "OPT++: An Object-Oriented Toolkit for
+Nonlinear Optimization," <i>ACM Transactions on Mathematical
+Software</i> 33(2).
+
+\li \anchor More1994 More, J., and Thuente, D., 1994. "Line Search
+Algorithms with Guaranteed Sufficient Decrease," <i>ACM Transactions on
+Mathematical Software</i> 20(3):286-307.
+
+\li \anchor Morris1991 Morris, M. D., "Factorial Sampling Plans for
+Preliminary Computational Experiments," <i>Technometrics</i> 33(2):
+161-174.
+
+\li \anchor Oberkampf2003 Oberkampf, W.L. and J.C. Helton, 2003. 
+"Evidence Theory for Engineering Applications."  Sandia National 
+Laboratories Technical Report SAND2003-3559P.
+
+\li \anchor Perez2004 Perez, V. M., J. E. Renaud, L. T. Watson, 2004.
+"An Interior-Point Sequetial Approximation Optimization Methodology",
+<i>Structural and Multidisciplinary Optimization</i>, 27(5):360-370.
+
+\li \anchor Plantenga2009 Plantenga, T. D., 2009. "HOPSPACK 2.0 User
+Manual", Sandia National Laboratories Technical Report Sandia National
+Laboratories Technical Report SAND2009-6265.
+
+\li \anchor Robinson1999 Robinson, D.G. and C. Atcitty, 1999. 
+"Comparison of Quasi- and Pseudo-Monte Carlo Sampling for 
+Reliability and Uncertainty Analysis."  <i>Proceedings of the AIAA
+Probabilistic Methods Conference</i>, St. Louis MO, AIAA99-1589. 
+
+\li \anchor Saltelli2004  Saltelli, A., S. Tarantola, F. Campolongo, 
+and M. Ratto, 2004. "Sensitivity Analysis in Practice:  A Guide to Assessing 
+Scientific Models."  John Wiley & Sons. 
+
+\li \anchor Schitt2004 Schittkowski, K., 2004. 
+"NLPQLP: A Fortran Implementation of a Sequential Quadratic Programming Algorithm with Distributed and Non-Monotone Line Search -- User's Guide,"
+Technical Report, Department of Mathematics, University of Bayreuth, Bayreuth,
+Germany.
+
+\li \anchor Sjaar1992 Sjaardema, G. D., 1992. "APREPRO: An Algebraic 
+Preprocessor for Parameterizing Finite Element Analyses," Sandia National
+Laboratories Technical Report SAND92-2291, Albuquerque, NM.
+
+\li \anchor Srinivasan Srinivasan, R.,2002.   "Importance Sampling."  
+Springer-Verlag. 
+
+\li \anchor Stroud1971 Stroud, A. H., 1971. "Approximate Calculation of
+Multiple Integrals," Prentice Hall.
+
+\li \anchor Swiler2010 Swiler, L. P. and N. J. West, 2010. 
+"Importance Sampling:  Promises and Limitations."   
+<i>Proceedings of the 12th AIAA Non-Deterministic Approaches Conference
+</i>, Orlando, FL.  Paper AIAA-2010-2850. 
+
+\li \anchor Tapia1 Tapia, R. A., and Argaez, M., 
+"Global Convergence of a Primal-Dual Interior-Point Newton Method for Nonlinear Programming Using a Modified Augmented Lagrangian Function".
+(In Preparation).
+
+\li \anchor Tong2005 Tong, C. H., 2005. "The PSUADE Software Library."
+Lawrence Livermore National Laboratories UCRL UCRL-WEB-211742. Web
+site: http://www.llnl.gov/CASC/uncertainty_quantification/#psuade.
+
+\li \anchor VanShanno1999 Vanderbei, R. J., and Shanno, D. F., 1999.
+"An interior-point algorithm for nonconvex nonlinear programming",
+<i>Computational Optimization and Applications</i>, 13:231-259.
+
+\li \anchor Van1973 Vanderplaats, G. N., 1973.  "CONMIN - A FORTRAN
+Program for Constrained Function Minimization," NASA TM X-62282.
+(see also: Addendum to Technical Memorandum, 1978).
+
+\li \anchor Vrand1995 Vanderplaats Research and Development, Inc.,
+1995.  "DOT Users Manual, Version 4.20," Colorado Springs.
+
+\li \anchor Weirs2010 Weirs, V. G. and Kamm, J. R. and Swiler, L. P. and 
+Ratto, M. and Tarantola, S. and Adams, B. M. and Rider, W. J. and 
+Eldred, M. S, 2010.  "Sensitivity Analysis Techniques Applied to a 
+System of Hyperbolic Conservation Laws."  Submitted to Reliability 
+Engineering and System Safety, Oct. 2010. 
+ 
+\li \anchor Wright1 Wright, S. J., 1997. "Primal-Dual Interior-Point 
+Methods", SIAM.
+
+\li \anchor Wyss1998 Wyss, G. D., and Jorgensen, K. H., 1998. "A User s
+Guide to LHS: Sandia's Latin Hypercube Sampling Software," Sandia
+National Laboratories Technical Report SAND98-0210, Albuquerque, NM.
+
+\li \anchor Xiu2008 Xiu, D., 2008.  "Numerical integration formulas of
+degree two," Applied Numerical Mathematics, Vol. 58, pp. 1515-1520.
+
+\li \anchor Xu1998 Xu, S. and Grandhi, R. V., 1998.  "Effective Two-Point 
+Function Approximation for Design Optimization," AIAA Journal, Vol. 36, 
+No. 12, December 1998.
+
+*/

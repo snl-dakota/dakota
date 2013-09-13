@@ -1,0 +1,3 @@
+Dakota variables can be grouped by their valid domains. 
+-# Continuous variables are defined by a single interval of real numbers
+-# Discrete variables are defined by a finite set of real numbers 

@@ -1,52 +1,50 @@
 #!/bin/bash -xv
 
-here=$PWD
+SourceDir=$1
 ScriptDir=$(readlink -f $(dirname $0) )
 
-cat $ScriptDir/TopOfDoxygenFile.txt outputs/Topics/TopicFile-Root > toppart
-mv outputs/Topics/TopicFile-Root outputs/
+## CLEAN UP
+rm -f outputs/inputspeccontent outputs/topicpages outputs/keywordspages outputs/doxgyenfile 
 
+## INPUT SPEC
+echo '\verbatim
+'"$(more $SourceDir/InputSpecSummary)"'
+\endverbatim' > outputs/inputspeccontent
+
+
+## TOPICS
+mv outputs/Topics/TopicFile-Root outputs/ # process the Root page differently
+ 
 for f in $(ls outputs/Topics/*)
 do
-  cat $f >> topicpages
   echo "
 
 
 <!-------------------------------------------->
-" >> topicpages
+" >> outputs/topicpages
+  more $f >> outputs/topicpages
 done
 
-echo "
-<!--------Topics Pages----------------------->  
-" >> toppart
 
-#cat the main toppart file and the topic pages file
-cat toppart topicpages > addkeywordspages
-
-echo '
-
-<!------Keywords Area------------------------->
-
-\page keywords Keywords Area
-This page lists the six blocks. From here, you can navigate to every keyword.
-
-- \subpage strategy
-- \subpage method
-- \subpage model
-- \subpage variables
-- \subpage interface
-- \subpage responses
-
-<!--------Keywords Pages----------------------->  
-'  >> addkeywordspages
-
+## KEYWORDS
 for f in outputs/Keys/*
 do
-  cat $f >> addkeywordspages
+  cat $f >> outputs/keywordspages
 done
 
-echo '*/' >> addkeywordspages
+## PASTE the files together 
+# Some are header files, in the Script/RefManScripts directory,
+# plus the collected topics and keyword pages, and the input spec summary
+cat $ScriptDir/DoxygenFile-main.txt \
+  $ScriptDir/DoxygenFile-input_file_examples.txt \
+  $ScriptDir/DoxygenFile-input_spec.txt \
+  $ScriptDir/DoxygenFile-input_spec_summary.txt outputs/inputspeccontent \
+  $ScriptDir/DoxygenFile-topics.txt outputs/TopicFile-Root outputs/topicpages \
+  $ScriptDir/DoxygenFile-keywords.txt outputs/keywordspages > outputs/doxgyenfile
 
-cp addkeywordspages $1
-mv outputs/TopicFile-Root outputs/Topics/
-rm toppart addkeywordspages topicpages 
+# mark the end of doxygen file
+echo '*/' >> outputs/doxgyenfile
+
+cp outputs/doxgyenfile $2
+
+mv outputs/TopicFile-Root outputs/Topics/ # move Root file back

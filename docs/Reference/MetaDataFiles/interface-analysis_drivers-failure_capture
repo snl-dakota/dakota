@@ -4,20 +4,20 @@ Description::
 Failure capturing in interfaces is governed by the
 optional \c failure_capture specification. Supported directives for
 mitigating captured failures are \c abort (the default), \c retry, \c
-recover, and \c continuation.  The \c retry selection supports an
+recover, and \c continuation. The \c retry selection supports an
 integer input for specifying a limit on retries, and the \c recover
 selection supports a list of reals for specifying the dummy function
 values (only zeroth order information is supported) to use for the
-failed function evaluation.  Refer to the Simulation Code Failure
+failed function evaluation. Refer to the Simulation Code Failure
 Capturing chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"] 
 for additional information.
 <!-- If no failure -->
 <!-- capturing specification is provided, then the default behavior is -->
-<!-- method dependent.  For those iterative algorithms that provide -->
+<!-- method dependent. For those iterative algorithms that provide -->
 <!-- internal failure mitigation strategies (currently NL2SOL and MOOCHO), -->
 <!-- the default is to transfer the failure information from the interface -->
 <!-- back to the algorithm for mitigation, with no specific action taken by -->
-<!-- %Dakota.  For all other algorithms, the default is to abort. -->
+<!-- %Dakota. For all other algorithms, the default is to abort. -->
 
 
 Topics::	not_yet_reviewed

@@ -1,0 +1,49 @@
+/**
+\mainpage
+
+\section main_welcome Welcome
+The \b Dakota (<b>D</b>esign <b>A</b>nalysis <b>K</b>it for <b>O</b>ptimization and <b>T</b>erascale
+<b>A</b>pplications) toolkit provides a flexible, extensible interface
+between analysis codes and iteration methods.
+<!-----
+ %Dakota contains algorithms for:
+\li optimization with gradient and nongradient-based
+methods
+\li uncertainty quantification with sampling, reliability,
+stochastic expansion, and interval estimation methods
+\li parameter estimation with nonlinear least squares methods
+\li sensitivity/variance analysis with design of experiments and parameter
+study capabilities
+\li Bayesian calibration approaches
+
+These capabilities may be used on their own
+or as components within advanced algorithms such as: 
+\li surrogate-based optimization
+\li mixed integer nonlinear programming
+\li mixed aleatory-epistemic uncertainty quantification
+\li or optimization under uncertainty
+
+----->
+
+The Reference Manual focuses on documentation of the various input
+commands for %Dakota. It follows closely the structure of
+dakota.input.summary. For more information see: \ref input_spec.
+
+For information on software structure, refer to the <a
+href="../html-dev/index.html">Developers Manual</a>, and for a tour of
+%Dakota features and capabilities, refer to the Users Manual [\ref
+UsersMan "Adams et al., 2010"].
+
+\section main-how_to How to Use this Manual
+To find more information about a specific keyword
+-# Use the search box
+-# Browse the Keywords tree on the left pane
+-# Browse the \subpage input_spec
+-# Navigate through the keyword pages, starting from the \subpage keywords
+
+To find more information about a Dakota related topic
+-# Browse the Topics tree on the left pane
+-# Navigate through the topics pages, starting from the \subpage topics
+
+A bibliography for the Reference Manual is provided in \ref Bibliography 
+

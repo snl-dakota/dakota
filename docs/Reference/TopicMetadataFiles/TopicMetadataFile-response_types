@@ -1,0 +1,3 @@
+Dakota responses are grouped by type or usage.
+Each type is intended to be used with a set of methods,
+i.e.: objective functions used with optimization methods.

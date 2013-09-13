@@ -1,0 +1,72 @@
+
+<!------Keywords Area------------------------->
+
+\page keywords Keywords Area
+This page lists the six blocks. From here, you can navigate to every keyword.
+
+- \subpage strategy
+- \subpage method
+- \subpage model
+- \subpage variables
+- \subpage interface
+- \subpage responses
+
+
+<b> Introduction to Dakota Keywords </b>
+
+In %Dakota, the \e strategy creates and manages \e methods (a.k.a. iterators) and \e
+models. A model, generally speaking, contains a set of \e variables,
+an \e interface, and a set of \e responses. An iterator repeatedly
+operates on the model to map the variables into responses using the
+interface. 
+
+Each of these six pieces (strategy, method, model,
+variables, interface, and responses) are specified in separate blocks of
+the input file, and as a whole, determine the study to be
+performed during an execution of the %Dakota software. 
+
+A %Dakota
+execution is limited to a single strategy, which may invoke multiple
+methods. Furthermore, each method may have its own model, consisting
+of (generally speaking) its own variables, interface, and set of
+responses. Thus, there may be multiple specifications of the method,
+model, variables, interface, and responses sections.
+
+
+<b> Keyword Pages </b>
+
+Every Dakota keyword has its own page in this manual. The page describes:
+- Whether the keyword takes <tt>ARGUMENTS</tt>, and the data type
+  Additional notes about <tt>ARGUMENTS</tt> can be found here: \ref input_spec-overview-arguments.
+- Whether it has an <tt>ALIAS</tt>
+- Which additional keywords can be specified to change its behavior
+- Which of these additional keywords are required or optional
+- Additional information about how to use the keyword in an input file
+
+<!----
+It can be difficult to capture the complex
+relationships that can occur when specifications are nested within
+multiple groupings. 
+For example, in the \c model block, the \c
+actual_model_pointer specification is a required specification within
+the \c multipoint and \c local required group specifications, which
+are separated from each other and from other required group
+specifications (\c global and \c hierarchical) by logical OR's. The
+selection between the \c global, \c multipoint, \c local, or \c
+hierarchical required groups is contained within another required
+group specification (\c surrogate), which is separated from the \c
+single and \c nested required group specifications by logical
+OR's. Rather than unnecessarily proliferate the number of tables in
+attempting to capture all of these inter-relationships, a balance is
+sought, since some inter-relationships are more easily discussed in
+the associated text. The general structure of the following sections
+is to present the outermost specification groups first (e.g., \c single,
+\c surrogate, or \c nested followed
+by lower levels of group specifications (e.g., \c global, \c multipoint,
+\c local, or \c hierarchical surrogates.
+---->
+
+
+<!--------Keywords Pages-----------------------> 
+
+

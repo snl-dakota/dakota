@@ -6,7 +6,7 @@ the types of data that can be returned from an interface during
 Dakota's execution. The specification includes three groups and two
 optional keywords.
 
-\b Group1 is related to the number and type of responses expected by Dakota
+<b> Group 1 </b> is related to the number and type of responses expected by Dakota
 
 The function specification must be one of three types: 
 -# a group
@@ -27,7 +27,7 @@ these data sets.
 Each type of response has additional required and optional 
 keywords.
 
-\b Group2 is related to the availability of first 
+<b> Group 2 </b> is related to the availability of first 
 derivatives (gradient vectors) for the response
 functions.
 
@@ -37,7 +37,7 @@ study involves gradient-based optimization, reliability analysis for
 uncertainty quantification, or local sensitivity analysis.
 
 
-\b Group3 is related to the availability of second
+<b> Group 3 </b> is related to the availability of second
 derivatives (Hessian matrices) for the response
 functions.
 

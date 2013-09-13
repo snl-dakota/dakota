@@ -1,23 +1,34 @@
 Blurb::
-Specifies how function evaluations will be performed in order to map a set of parameters into a set of responses.
+Specifies how function evaluations will be performed in order to map the variables into the responses.
 Description::
-The interface section in a Dakota input file specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. Function evaluations are performed using either algebraic mappings, interfaces to simulation codes, or a combination of the two.
+The interface section in a Dakota input file specifies how function evaluations will be performed in order to map the variables into the responses. 
+
+In this context, a "function evaluation" is the series of operations that takes the variables and computes the responses. This can be comprised of one or many codes, scripts, and glue, which are generically referred to as "analysis drivers".
+
+<b> Interface Group 1 </b>
+???
+
+<b> Interface Group 2 </b>
+???
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+No idea what the servers or scheduling do.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+Topics::	block, not_yet_reviewed, problem
+Examples::
+Theory::
+Function evaluations are performed using either interfaces to simulation codes, algebraic mappings, or a combination of the two.
+
+When employing mappings with simulation codes, the interface invokes the simulation using either forks, direct function invocations, or computational grid invocations.
+- In the fork case, Dakota will treat the simulation as a black-box and communication between Dakota and the simulation occurs through parameter and result files. This is the most common case.
+- In the direct function case, the simulation is internal to Dakota and communication occurs through the function parameter list. The direct case can involve linked simulation codes or test functions which are compiled into the Dakota executable. The test functions allow for rapid testing of algorithms without process creation overhead or engineering simulation expense. 
+- The grid case is experimental and under development, but is intended to support simulations which are external to Dakota and geographically distributed.
 
 When employing algebraic mappings, the AMPL solver library [Gay, 1997] is used to evaluate a directed acyclic graph (DAG) specification from a separate stub.nl file. Separate stub.col and stub.row files are also required to declare the string identifiers of the subset of inputs and outputs, respectively, that will be used in the algebraic mappings.
 
-When employing mappings with simulation codes, the simulations may be available internally or externally to Dakota. The interface invokes the simulation using either system calls, forks, direct function invocations, or computational grid invocations. In the system call and fork cases, the simulation is external to Dakota and communication between Dakota and the simulation occurs through parameter and response files. In the direct function case, the simulation is internal to Dakota and communication occurs through the function parameter list. The direct case can involve linked simulation codes or test functions which are compiled into the Dakota executable. The test functions allow for rapid testing of algorithms without process creation overhead or engineering simulation expense. The grid case is experimental and under development, but is intended to support simulations which are external to Dakota and geographically distributed.
-Topics:: block, not_yet_reviewed
-Examples::
-The interface specification has the following top-level structure:
-\verbatim
-interface,
-	<interface independent controls>
-	<algebraic mappings specification>
-	<simulation interface selection>
-	  <simulation interface dependent controls>
-\endverbatim
-
-
-Theory::
 Faq::
 See_Also::	

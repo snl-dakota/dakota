@@ -1,0 +1,4 @@
+State variables provide a convenient mechanism for managing additional
+model parameterizations such as mesh density, simulation convergence
+tolerances, and time step controls. 
+

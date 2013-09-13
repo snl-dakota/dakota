@@ -1,0 +1,10 @@
+Epistemic uncertainty is uncertainty due to lack of knowledge.
+
+In %Dakota, epistemic uncertainty is characterized by 
+interval analysis or the Dempster-Shafer theory of evidence.
+
+Note that epistemic uncertainty can also be modeled
+with probability density functions - similarly to aleatory uncertainty
+Dakota does not support this capability.
+
+

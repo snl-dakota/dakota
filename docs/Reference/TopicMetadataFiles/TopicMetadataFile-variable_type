@@ -1,0 +1,5 @@
+Dakota variables can be grouped by their type or usage.
+Each type is intended to be used with a set of methods,
+i.e.: design variables used with optimization methods.
+However, the user can also change how methods use the 
+different variable types - see \ref variables-active.
