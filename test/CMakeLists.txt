@@ -385,11 +385,12 @@ endif()
 if(DAKOTA_HAVE_HDF5 
     #AND DAKOTA_ENABLE_UNIT_TESTS
     )
-  # HDF5 tester depends on HDF5 and NetCDF
-  include_directories(${NETCDF_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+  # BinaryIO tester depends on Teuchos and HDF5
+  include_directories(${HDF5_INCLUDE_DIRS})
   add_executable(binary_io_test binary_io_test.cpp)
-  target_link_libraries(binary_io_test ${NETCDF_LIBRARIES} ${HDF5_LIBRARIES})
-  link_directories(binary_io_test ${NETCDF_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
+  target_link_libraries(binary_io_test ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
+    ${HDF5_LIBRARIES})
+  link_directories(binary_io_test ${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
 endif()
 
 if(DAKOTA_DLL_API)
