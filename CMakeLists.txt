@@ -190,23 +190,12 @@ option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 if(DAKOTA_HAVE_HDF5)
   find_package(HDF5 REQUIRED)
 
-  if(HDF5_FOUND)
-    set(NETCDF_FOUND 0)
-    #find_package(NETCDF REQUIRED)
-    include(DakotaFindNetCDF)
-
-    if(NOT NETCDF_FOUND)
-      message( SEND_ERROR "Dakota cannot currently build with HDF5 wo NetCDF4 -
-               ${HAVE_NETCDF4}" )
-    #else()
-    endif() # NETCDF_FOUND
-
-  else()
+  if(NOT HDF5_FOUND)
     message( SEND_ERROR "Dakota cannot write BINARY ResultsDB without HDF5 -
              ${HDF5_hdf5_FOUND}" )
   endif() # HDF5_FOUND
 
-  message( "Using pre-installed HDF5 in ${FIND_PACKAGE_MESSAGE_DETAILS_HDF5}" )
+  #message( "Using pre-installed HDF5 in ${FIND_PACKAGE_MESSAGE_DETAILS_HDF5}" )
 endif() # DAKOTA_HAVE_HDF5
 
 # Mandate a system or user-provided Boost, including some libraries
