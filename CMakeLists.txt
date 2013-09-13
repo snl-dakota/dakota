@@ -188,7 +188,7 @@ endif(DAKOTA_HAVE_GSL)
 # and test subdirectories
 option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 if(DAKOTA_HAVE_HDF5)
-  find_package(HDF5 REQUIRED)
+  find_package(HDF5 REQUIRED COMPONENTS "C;HL")
 
   if(NOT HDF5_FOUND)
     message( SEND_ERROR "Dakota cannot write BINARY ResultsDB without HDF5 -
@@ -199,7 +199,6 @@ if(DAKOTA_HAVE_HDF5)
 endif() # DAKOTA_HAVE_HDF5
 
 # Mandate a system or user-provided Boost, including some libraries
-# DAKOTA requires Boost 1.37 or newer; PGI may demand 1.40 or newer
 set(dakota_boost_components "regex;filesystem;system")
 
 # Acro requires the signals library in addition
@@ -228,7 +227,8 @@ option(DAKOTA_MODELCENTER "Toggle ModelCenter support, default is disabled" OFF)
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
 endif()
-find_package(Boost 1.37 REQUIRED COMPONENTS "${dakota_boost_components}")
+# DAKOTA requires Boost 1.44 or newer; IBM xlC compiler may demand 1.47 or newer
+find_package(Boost 1.44 REQUIRED COMPONENTS "${dakota_boost_components}")
 
 
 include(CTest)
