@@ -56,7 +56,8 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   failAction(problem_db.get_string("interface.failure_capture.action")),
   failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
-    problem_db.get_rv("interface.failure_capture.recovery_fn_vals"))
+    problem_db.get_rv("interface.failure_capture.recovery_fn_vals")),
+  sendBuffers(NULL), recvBuffers(NULL), recvRequests(NULL)
 {
   // set coreMappings flag based on presence of analysis_drivers specification
   coreMappings = (numAnalysisDrivers > 0);
@@ -586,17 +587,16 @@ const IntResponseMap& ApplicationInterface::synch()
   Cout << "\nBlocking synchronize of " << num_synch_jobs
        << " asynchronous evaluations" << std::endl; // disincludes duplicates
   if (core_prp_entries) {
-    if (ieMessagePass) {
-      if (ieDedMasterFlag)
-        self_schedule_evaluations();   // single or multi-processor servers
-      else 
-        static_schedule_evaluations(); // single or multi-processor servers
+    if (ieMessagePass) { // single or multi-processor servers
+      if (ieDedMasterFlag) self_schedule_evaluations();
+      else               static_schedule_evaluations();
     }
-    else // local to proc.
+    else { // local to processor
       if (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1)
 	asynchronous_local_evaluations_static(beforeSynchCorePRPQueue);
       else
 	asynchronous_local_evaluations(beforeSynchCorePRPQueue);
+    }
   }
 
   // Now that beforeSynchCorePRPQueue processing is complete, process duplicates
@@ -669,16 +669,11 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
          << " asynchronous evaluations" << std::endl; // disincludes duplicates
   }
   if (core_prp_entries) {
-    if (ieMessagePass) {
-      //if (ieDedMasterFlag)
-      //  self_schedule_evaluations_nowait();
-      //else 
-      //  static_schedule_evaluations_nowait();
-      Cerr << "Error: synch_nowait not yet available in message passing mode."
-           << std::endl;
-      abort_handler(-1);
+    if (ieMessagePass) { // single or multi-processor servers
+      if (ieDedMasterFlag) self_schedule_evaluations_nowait();
+      else               static_schedule_evaluations_nowait();
     }
-    else 
+    else // local to processor
       asynchronous_local_evaluations_nowait(beforeSynchCorePRPQueue);
   }
   headerFlag = !rawResponseMap.empty();
@@ -725,9 +720,9 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
     for (PRPQueueIter alg_prp_it = beforeSynchAlgPRPQueue.begin();
 	 alg_prp_it != beforeSynchAlgPRPQueue.end(); alg_prp_it++) {
 
-      Response algebraic_resp = alg_prp_it->prp_response();     // shared rep
+      Response algebraic_resp = alg_prp_it->prp_response();        // shared rep
       algebraic_mappings(alg_prp_it->prp_parameters(),
-			 alg_prp_it->active_set(), algebraic_resp); // update rep
+			 alg_prp_it->active_set(), algebraic_resp);// update rep
       // call response_mapping even when no coreMapping, as even with
       // algebraic only, the functions may have to be reordered
 
@@ -786,10 +781,10 @@ void ApplicationInterface::self_schedule_evaluations()
        << numEvalServers << " servers\n";
 
   // only need num_sends entries (not num_jobs) due to reuse
-  MPIPackBuffer*   send_buffers  = new MPIPackBuffer   [num_sends];
-  MPIUnpackBuffer* recv_buffers  = new MPIUnpackBuffer [num_sends];
-  MPI_Request      send_request; // only 1 needed since no test/wait on sends
-  MPI_Request*     recv_requests = new MPI_Request     [num_sends];
+  sendBuffers  = new MPIPackBuffer   [num_sends];
+  recvBuffers  = new MPIUnpackBuffer [num_sends];
+  recvRequests = new MPI_Request     [num_sends];
+  MPI_Request send_request; // only 1 needed since no test/wait on sends
 
   // send data & post receives for 1st set of jobs
   int i, server_id, fn_eval_id;
@@ -801,13 +796,13 @@ void ApplicationInterface::self_schedule_evaluations()
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Master assigning function evaluation " << fn_eval_id 
            << " to server " << server_id << '\n';
-    send_buffers[i] << prp_iter->prp_parameters() << prp_iter->active_set();
+    sendBuffers[i] << prp_iter->prp_parameters() << prp_iter->active_set();
     // pre-post nonblocking receives (to prevent any message buffering)
-    recv_buffers[i].resize(lenResponseMessage);
-    parallelLib.irecv_ie(recv_buffers[i], server_id, fn_eval_id,
-                         recv_requests[i]);
+    recvBuffers[i].resize(lenResponseMessage);
+    parallelLib.irecv_ie(recvBuffers[i], server_id, fn_eval_id,
+                         recvRequests[i]);
     // nonblocking sends: master quickly assigns first num_sends jobs.  
-    parallelLib.isend_ie(send_buffers[i], server_id, fn_eval_id, send_request);
+    parallelLib.isend_ie(sendBuffers[i], server_id, fn_eval_id, send_request);
     parallelLib.free(send_request); // no test/wait on send_request
   }
 
@@ -822,7 +817,7 @@ void ApplicationInterface::self_schedule_evaluations()
     while (recv_cntr < num_jobs) {
       if (outputLevel > SILENT_OUTPUT)
         Cout << "Waiting on completed jobs" << std::endl;
-      parallelLib.waitsome(num_sends, recv_requests, out_count, index_array, 
+      parallelLib.waitsome(num_sends, recvRequests, out_count, index_array, 
 			   status_array);
       recv_cntr += out_count;
       for (i=0; i<out_count; ++i) {
@@ -838,23 +833,23 @@ void ApplicationInterface::self_schedule_evaluations()
         q_it = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
 	Response raw_response
 	  = rawResponseMap[fn_eval_id] = q_it->prp_response(); // shared rep
-        recv_buffers[index] >> raw_response;                   // rep updated
+        recvBuffers[index] >> raw_response;                   // rep updated
         if (evalCacheFlag)   data_pairs.insert(*q_it);
         if (restartFileFlag) write_restart << *q_it;
 
         if (send_cntr < num_jobs) {
           fn_eval_id = prp_iter->eval_id();
-          send_buffers[index].reset(); // reuse send_buffers & recv_requests
-          send_buffers[index] << prp_iter->prp_parameters()
+          sendBuffers[index].reset(); // reuse sendBuffers & recvRequests
+          sendBuffers[index] << prp_iter->prp_parameters()
 			      << prp_iter->active_set();
           if (outputLevel > SILENT_OUTPUT)
             Cout << "Master assigning function evaluation " << fn_eval_id 
                  << " to server " << server_id << '\n';
 	  // pre-post receives
-          recv_buffers[index].reset();
-          parallelLib.irecv_ie(recv_buffers[index], server_id, fn_eval_id, 
-                               recv_requests[index]);
-          parallelLib.isend_ie(send_buffers[index], server_id, fn_eval_id,
+          recvBuffers[index].reset();
+          parallelLib.irecv_ie(recvBuffers[index], server_id, fn_eval_id, 
+                               recvRequests[index]);
+          parallelLib.isend_ie(sendBuffers[index], server_id, fn_eval_id,
                                send_request);
           parallelLib.free(send_request); // no test/wait on send_request
           ++send_cntr;
@@ -868,7 +863,7 @@ void ApplicationInterface::self_schedule_evaluations()
   else { // all jobs assigned in first pass
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Waiting on all jobs" << std::endl;
-    parallelLib.waitall(num_jobs, recv_requests);
+    parallelLib.waitall(num_jobs, recvRequests);
     // All buffers received, now generate rawResponseMap
     for (i=0, prp_iter = beforeSynchCorePRPQueue.begin(); i<num_jobs;
          ++i, ++prp_iter) {
@@ -877,16 +872,16 @@ void ApplicationInterface::self_schedule_evaluations()
       // handles) from the recv_buffer.
       Response raw_response = rawResponseMap[prp_iter->eval_id()]
 	= prp_iter->prp_response();    // shared rep
-      recv_buffers[i] >> raw_response; // rep updated
+      recvBuffers[i] >> raw_response; // rep updated
 
       if (evalCacheFlag)   data_pairs.insert(*prp_iter);
       if (restartFileFlag) write_restart << *prp_iter;
     }
   }
   // deallocate MPI & buffer arrays
-  delete [] send_buffers;
-  delete [] recv_buffers;
-  delete [] recv_requests;
+  delete [] sendBuffers;   sendBuffers = NULL;
+  delete [] recvBuffers;   recvBuffers = NULL;
+  delete [] recvRequests; recvRequests = NULL;
 }
 
 
@@ -916,10 +911,10 @@ void ApplicationInterface::static_schedule_evaluations()
       num_sends      = num_jobs - num_peer1_jobs;
   Cout << "Static schedule: assigning " << num_jobs << " jobs among " 
        << numEvalServers << " peers\n";
-  MPIPackBuffer*   send_buffers  = new MPIPackBuffer   [num_sends];
-  MPIUnpackBuffer* recv_buffers  = new MPIUnpackBuffer [num_sends];
-  MPI_Request      send_request; // only 1 needed since no test/wait on sends
-  MPI_Request*     recv_requests = new MPI_Request     [num_sends];
+  sendBuffers  = new MPIPackBuffer   [num_sends];
+  recvBuffers  = new MPIUnpackBuffer [num_sends];
+  recvRequests = new MPI_Request     [num_sends];
+  MPI_Request send_request; // only 1 needed since no test/wait on sends
   int i, server_id, fn_eval_id;
 
   // Peer 1 retains the first num_peer1_jobs and spreads the rest to
@@ -939,13 +934,13 @@ void ApplicationInterface::static_schedule_evaluations()
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Peer 1 assigning function evaluation " << fn_eval_id 
            << " to peer " << server_id+1 << '\n';
-    send_buffers[i] << prp_iter->prp_parameters() << prp_iter->active_set();
+    sendBuffers[i] << prp_iter->prp_parameters() << prp_iter->active_set();
     // pre-post nonblocking receives
-    recv_buffers[i].resize(lenResponseMessage);
-    parallelLib.irecv_ie(recv_buffers[i], server_id, fn_eval_id,
-                         recv_requests[i]);
+    recvBuffers[i].resize(lenResponseMessage);
+    parallelLib.irecv_ie(recvBuffers[i], server_id, fn_eval_id,
+                         recvRequests[i]);
     // post nonblocking sends
-    parallelLib.isend_ie(send_buffers[i], server_id, fn_eval_id, send_request);
+    parallelLib.isend_ie(sendBuffers[i], server_id, fn_eval_id, send_request);
     parallelLib.free(send_request); // no test/wait on send_request
   }
 
@@ -976,7 +971,7 @@ void ApplicationInterface::static_schedule_evaluations()
   if (num_sends) { // Retrieve results from peers
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Waiting on assigned jobs" << std::endl;
-    parallelLib.waitall(num_sends, recv_requests);
+    parallelLib.waitall(num_sends, recvRequests);
 
     // All buffers received, now generate rawResponseMap
     prp_iter = beforeSynchCorePRPQueue.begin();
@@ -986,7 +981,7 @@ void ApplicationInterface::static_schedule_evaluations()
       // handles by operator>>
       Response raw_response = rawResponseMap[prp_iter->eval_id()]
 	= prp_iter->prp_response();
-      recv_buffers[i] >> raw_response;
+      recvBuffers[i] >> raw_response;
 
       if (evalCacheFlag)   data_pairs.insert(*prp_iter);
       if (restartFileFlag) write_restart << *prp_iter;
@@ -994,9 +989,9 @@ void ApplicationInterface::static_schedule_evaluations()
   }
 
   // deallocate MPI & buffer arrays
-  delete [] send_buffers;
-  delete [] recv_buffers;
-  delete [] recv_requests;
+  delete [] sendBuffers;   sendBuffers = NULL;
+  delete [] recvBuffers;   recvBuffers = NULL;
+  delete [] recvRequests; recvRequests = NULL;
 }
 
 
@@ -1228,6 +1223,276 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
 }
 
 
+/** This code is called from synch_nowait() to provide the master 
+    portion of a nonblocking master-slave algorithm for the dynamic 
+    self-scheduling of evaluations among slave servers.  It performs 
+    no evaluations locally and matches either serve_evaluations_synch() 
+    or serve_evaluations_asynch() on the slave servers, depending on 
+    the value of asynchLocalEvalConcurrency.  Self-scheduling approach
+    assigns jobs in 2 passes.  The 1st pass gives each server the same
+    number of jobs (equal to asynchLocalEvalConcurrency).  The 2nd
+    pass assigns the remaining jobs to slave servers as previous jobs
+    are completed.  Single- and multilevel parallel use intra- and
+    inter-communicators, respectively, for send/receive.  Specific
+    syntax is encapsulated within ParallelLibrary. */
+void ApplicationInterface::self_schedule_evaluations_nowait()
+{
+  // beforeSynchCorePRPQueue includes running evaluations plus new requests;
+  // previous completions have been removed by synch_nowait().  Thus, the queue
+  // size could be larger or smaller than on the previous nowait invocation.
+  int num_jobs = beforeSynchCorePRPQueue.size(), capacity = numEvalServers;
+  if (asynchLocalEvalConcurrency > 1) capacity *= asynchLocalEvalConcurrency;
+  int fn_eval_id, server_id, num_running = msgPassRunningMap.size(),
+    run_target = std::min(capacity, num_jobs), mpi_test_flag;
+  size_t i, index, server_index;
+
+  // allocate capacity entries since this avoids need for dynamic resizing
+  if (!sendBuffers) {
+    sendBuffers  = new MPIPackBuffer   [capacity];
+    recvBuffers  = new MPIUnpackBuffer [capacity];
+    recvRequests = new MPI_Request     [capacity];
+  }
+  MPI_Request send_request; // only 1 needed since no test/wait on sends
+  MPI_Status  status;       // only 1 needed for parallelLib.test()
+
+  // Step 1: launch any new jobs up to capacity limit
+  PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin(), return_iter;
+  std::map<int, std::pair<int, int> >::iterator run_iter;
+  if (!num_running) { // simplest case
+    Cout << "First pass: assigning " << run_target << " jobs among " 
+	 << numEvalServers << " servers\n";
+    // send data & post receives for 1st set of jobs
+    for (i=0; i<run_target; ++i, ++assign_iter) {
+      //server_index = i%numEvalServers; // from 0 to numEvalServers-1
+      //server_id    = server_index + 1; // from 1 to numEvalServers
+      server_id  = i%numEvalServers + 1; // from 1 to numEvalServers
+      fn_eval_id = assign_iter->eval_id();
+      if (outputLevel > SILENT_OUTPUT)
+	Cout << "Master assigning function evaluation " << fn_eval_id 
+	     << " to server " << server_id << '\n';
+      sendBuffers[i] << assign_iter->prp_parameters()
+		     << assign_iter->active_set();
+      // pre-post nonblocking receives (to prevent any message buffering)
+      recvBuffers[i].resize(lenResponseMessage);
+      parallelLib.irecv_ie(recvBuffers[i], server_id, fn_eval_id,
+			   recvRequests[i]);
+      // nonblocking sends: master quickly assigns first num_running jobs.  
+      parallelLib.isend_ie(sendBuffers[i], server_id, fn_eval_id, send_request);
+      parallelLib.free(send_request); // no test/wait on send_request
+      // update bookkeeping
+      msgPassRunningMap[fn_eval_id] = std::pair<int, int>(server_id, i);
+      //++server_jobs[server_index];
+    }
+    num_running = run_target;
+  }
+  else if (num_running < run_target) { // fill in any gaps
+    UShortArray server_jobs(numEvalServers, 0);
+    for (run_iter  = msgPassRunningMap.begin();
+	 run_iter != msgPassRunningMap.end(); ++run_iter)
+      { server_id = run_iter->second.first; ++server_jobs[server_id - 1]; }
+    for (; assign_iter != beforeSynchCorePRPQueue.end(),
+	   num_running < run_target; ++assign_iter) {
+      fn_eval_id = assign_iter->eval_id();
+      if (msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end()) {
+	// find server to use and define index within buffers/requests
+	// Approach 1: grab first available slot
+	// for (index=0, server_index=0; server_index<numEvalServers;
+	//      ++server_index) {
+	//   index += server_jobs[server_index];
+	//   if (server_jobs[server_index] < asynchEvalConcurrency)
+	//     { ++server_jobs[server_index]; break; }
+	// }
+	// Approach 2: load balance by finding min within server_jobs
+	unsigned short min_load = server_jobs[0]; size_t min_index = 0;
+	for (server_index=1; server_index<numEvalServers; ++server_index)
+	  if (server_jobs[server_index] < min_load)
+	    { min_index = server_index; min_load = server_jobs[min_index]; }
+	index     = min_index * asynchLocalEvalConcurrency + min_load;
+	server_id = min_index + 1; // 1 to numEvalServers
+	++server_jobs[min_index];
+	// assign job
+	if (outputLevel > SILENT_OUTPUT)
+	  Cout << "Master assigning function evaluation " << fn_eval_id 
+	       << " to server " << server_id << '\n';
+	sendBuffers[index] << assign_iter->prp_parameters()
+			   << assign_iter->active_set();
+	// pre-post nonblocking receives (to prevent any message buffering)
+	recvBuffers[index].resize(lenResponseMessage);
+	parallelLib.irecv_ie(recvBuffers[index], server_id, fn_eval_id,
+			     recvRequests[index]);
+	// nonblocking sends: master assigns jobs to evaluation servers
+	parallelLib.isend_ie(sendBuffers[index], server_id, fn_eval_id,
+			     send_request);
+	parallelLib.free(send_request); // no test/wait on send_request
+	// update bookkeeping
+	msgPassRunningMap[fn_eval_id] = std::pair<int, int>(server_id, index);
+	++num_running;
+      }
+    }
+  }
+
+  // Step 2: check status of running jobs and backfill any completions
+  for (run_iter  = msgPassRunningMap.begin();
+       run_iter != msgPassRunningMap.end(); ++run_iter) {
+    index = run_iter->second.second;
+    parallelLib.test(recvRequests[index], mpi_test_flag, status);
+    if (mpi_test_flag) {
+      fn_eval_id = run_iter->first;        // or status.MPI_TAG;
+      server_id  = run_iter->second.first; // or status.???
+      if (outputLevel > SILENT_OUTPUT)
+	Cout << "job " << fn_eval_id << " has returned from slave server "
+	     << server_id << '\n';
+
+      // Process buffer and insert into restart file ASAP.  Avoid
+      // multiple key-value lookups.
+      return_iter = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
+      Response raw_response = rawResponseMap[fn_eval_id]
+	= return_iter->prp_response(); // shared rep
+      recvBuffers[index] >> raw_response; // shared rep is updated
+      if (evalCacheFlag)   data_pairs.insert(*return_iter);
+      if (restartFileFlag) write_restart << *return_iter;
+      msgPassRunningMap.erase(fn_eval_id); //--num_running;
+
+      // replace job if more are pending
+      bool new_job = false;
+      while (assign_iter != beforeSynchCorePRPQueue.end()) {
+	fn_eval_id = assign_iter->eval_id();
+	if (msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end())
+	  { new_job = true; break; }
+	++assign_iter;
+      }
+      if (new_job) {
+	// reuse sendBuffers & recvRequests
+	sendBuffers[index].reset(); recvBuffers[index].reset();
+	sendBuffers[index] << assign_iter->prp_parameters()
+			   << assign_iter->active_set();
+	if (outputLevel > SILENT_OUTPUT)
+	  Cout << "Master assigning function evaluation " << fn_eval_id 
+	       << " to server " << server_id << '\n';
+	parallelLib.irecv_ie(recvBuffers[index], server_id, fn_eval_id, 
+			     recvRequests[index]);
+	parallelLib.isend_ie(sendBuffers[index], server_id, fn_eval_id,
+			     send_request);
+	parallelLib.free(send_request); // no test/wait on send_request
+	// update bookkeeping
+	msgPassRunningMap[fn_eval_id] = std::pair<int, int>(server_id, index);
+	++assign_iter; //++num_running;
+      }
+    }
+  }
+
+  if (msgPassRunningMap.empty()) {
+    // deallocate MPI & buffer arrays
+    delete [] sendBuffers;   sendBuffers = NULL;
+    delete [] recvBuffers;   recvBuffers = NULL;
+    delete [] recvRequests; recvRequests = NULL;
+  }
+}
+
+
+/** This code runs on the iteratorCommRank 0 processor (the iterator)
+    and is called from synch_nowait() in order to manage a nonblocking
+    static schedule.  It matches serve_evaluations_{synch,asynch}()
+    for other evaluation partitions (depending on
+    asynchLocalEvalConcurrency).  It performs nonblocking local
+    function evaluations for its portion of the static schedule using
+    asynchronous_local_evaluations().  Single-level and multilevel
+    parallel use intra- and inter-communicators, respectively, for
+    send/receive.  Specific syntax is encapsulated within
+    ParallelLibrary.  The iteratorCommRank 0 processor assigns the
+    static schedule since it is the only processor with access to
+    beforeSynchCorePRPQueue (it runs the iterator and calls
+    synchronize).  The alternate design of each peer selecting its own
+    jobs using the modulus operator would be applicable if execution
+    of this function (and therefore the job list) were distributed. */
+void ApplicationInterface::static_schedule_evaluations_nowait()
+{
+  Cerr << "Error: ApplicationInterface::static_schedule_evaluations_nowait() "
+       << "is not yet operational." << std::endl;
+  abort_handler(-1);
+
+  // rounding down num_peer1_jobs offloads this processor (which has additional
+  // work relative to other peers), but results in a few more passed messages.
+  int num_jobs       = beforeSynchCorePRPQueue.size(), 
+      num_peer1_jobs = (int)std::floor((Real)num_jobs/numEvalServers),
+      num_sends      = num_jobs - num_peer1_jobs;
+  Cout << "Static schedule: assigning " << num_jobs << " jobs among " 
+       << numEvalServers << " peers\n";
+  sendBuffers  = new MPIPackBuffer   [num_sends];
+  recvBuffers  = new MPIUnpackBuffer [num_sends];
+  recvRequests = new MPI_Request     [num_sends];
+  MPI_Request send_request; // only 1 needed since no test/wait on sends
+  int i, server_id, fn_eval_id;
+
+  // Peer 1 retains the first num_peer1_jobs and spreads the rest to
+  // peers 2 through n in a round-robin assignment.  Since this is a
+  // static schedule, all nonretained jobs are assigned now.  This
+  // assignment is not dependent on the capacity of the other peers
+  // (i.e., on whether they run serve_evaluation_synch or
+  // serve_evaluation_asynch).
+
+  PRPQueueIter prp_iter = beforeSynchCorePRPQueue.begin();
+
+  std::advance(prp_iter, num_peer1_jobs); // offset PRP list by num_peer1_jobs
+  PRPQueueIter prp_iter_save = prp_iter;
+  for (i=0; i<num_sends; ++i, ++prp_iter) {
+    server_id = i%(numEvalServers-1) + 1; // 1 to numEvalServers-1
+    fn_eval_id = prp_iter->eval_id();
+    if (outputLevel > SILENT_OUTPUT)
+      Cout << "Peer 1 assigning function evaluation " << fn_eval_id 
+           << " to peer " << server_id+1 << '\n';
+    sendBuffers[i] << prp_iter->prp_parameters() << prp_iter->active_set();
+    // pre-post nonblocking receives
+    recvBuffers[i].resize(lenResponseMessage);
+    parallelLib.irecv_ie(recvBuffers[i], server_id, fn_eval_id,
+                         recvRequests[i]);
+    // post nonblocking sends
+    parallelLib.isend_ie(sendBuffers[i], server_id, fn_eval_id, send_request);
+    parallelLib.free(send_request); // no test/wait on send_request
+  }
+
+  // Perform computation for first num_peer1_jobs jobs on peer 1.  Default 
+  // behavior is synchronous evaluation of jobs on each peer since the message-
+  // passing parallelism is dominant.  Only if asynchLocalEvalConcurrency > 1
+  // do we get the hybrid parallelism of asynch jobs on each peer.
+  PRPQueue local_prp_queue(beforeSynchCorePRPQueue.begin(), prp_iter_save);
+  // TO DO: sanity check
+  //if (asynchLocalEvalConcurrency <= 1) { // multiple asynch jobs on each peer
+  //  Cerr << "Warning: " << std::endl;
+  Cout << "Peer 1 self-scheduling " << num_peer1_jobs << " local jobs\n";
+  if (asynchLocalEvalStatic && outputLevel > SILENT_OUTPUT)
+    Cout << "Warning: static scheduling within asynchronous local evaluation "
+	 << "not supported\n in hybrid MPI/local parallelism mode. Using "
+	 << "local self-scheduling." << std::endl;
+  asynchronous_local_evaluations_nowait(local_prp_queue);
+
+  if (num_sends) { // Retrieve results from peers
+    if (outputLevel > SILENT_OUTPUT)
+      Cout << "Waiting on assigned jobs" << std::endl;
+    parallelLib.waitall(num_sends, recvRequests);
+
+    // All buffers received, now generate rawResponseMap
+    prp_iter = beforeSynchCorePRPQueue.begin();
+    std::advance(prp_iter, num_peer1_jobs); // offset PRP list by num_peer1_jobs
+    for (i=0; i<num_sends; ++i, ++prp_iter) {
+      // operator= shares representation (body) which is updated for both
+      // handles by operator>>
+      Response raw_response = rawResponseMap[prp_iter->eval_id()]
+	= prp_iter->prp_response();
+      recvBuffers[i] >> raw_response;
+
+      if (evalCacheFlag)   data_pairs.insert(*prp_iter);
+      if (restartFileFlag) write_restart << *prp_iter;
+    }
+  }
+
+  // deallocate MPI & buffer arrays
+  delete [] sendBuffers;   sendBuffers = NULL;
+  delete [] recvBuffers;   recvBuffers = NULL;
+  delete [] recvRequests; recvRequests = NULL;
+}
+
+
 /** This function provides nonblocking synchronization for the local
     asynch case (background system call, nonblocking fork, or
     threads).  It is called from synch_nowait() and passed the
@@ -1252,25 +1517,21 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
 void ApplicationInterface::
 asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
 {
-  
   // special data for static scheduling case; only reset job map on first call
   int server_num;
   if (asynchLocalEvalStatic && 
       localServerJobMap.size() != asynchLocalEvalConcurrency)
     localServerJobMap.assign(asynchLocalEvalConcurrency, 0);
 
-  // Step 1: launch any new jobs up to asynchLocalEvalConcurrency limit (if 
-  // specified.
+  // Step 1: launch any new jobs up to asynch concurrency limit (if specified)
   int fn_eval_id, num_jobs = local_prp_queue.size();
   if (multiProcEvalFlag)
     parallelLib.bcast_e(num_jobs);
   PRPQueue active_prp_queue; PRPQueueIter prp_iter; ISCIter id_iter;
   // reconstruct active_prp_queue if jobs are running from previous _nowait()
-  if (!runningSet.empty()) {
-    for (id_iter = runningSet.begin(); id_iter != runningSet.end(); ++id_iter) {
-      prp_iter = lookup_by_eval_id(local_prp_queue, *id_iter);
-      active_prp_queue.insert(*prp_iter);
-    }
+  for (id_iter = runningSet.begin(); id_iter != runningSet.end(); ++id_iter) {
+    prp_iter = lookup_by_eval_id(local_prp_queue, *id_iter);
+    active_prp_queue.insert(*prp_iter);
   }
   for (prp_iter  = local_prp_queue.begin();
        prp_iter != local_prp_queue.end(); ++prp_iter) {
@@ -1292,7 +1553,6 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
 	  runningSet.insert(fn_eval_id);
 	  localServerJobMap[server_num] = fn_eval_id;
 	}
-
       }
       else {
 	if (outputLevel > SILENT_OUTPUT)
@@ -1687,7 +1947,7 @@ void ApplicationInterface::serve_evaluations_asynch()
 	  if (evalCommRank == 0) {
 	    // In this case, use a blocking send to avoid having to manage waits
 	    // on multiple send buffers (which would be a pain since the number
-	    // of send_buffers would vary with completionSet length).
+	    // of sendBuffers would vary with completionSet length).
 	    MPIPackBuffer send_buffer(lenResponseMessage);
 	    send_buffer << q_it->prp_response();
 	    parallelLib.send_ie(send_buffer, 0, completed_eval_id);

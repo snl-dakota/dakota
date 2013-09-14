@@ -17,6 +17,7 @@
 
 #include "DakotaInterface.hpp"
 #include "PRPMultiIndex.hpp"
+#include "ParallelLibrary.hpp"
 
 namespace Dakota {
 
@@ -24,7 +25,6 @@ namespace Dakota {
 #define BLOCK 1
 
 class ParamResponsePair;
-class ParallelLibrary;
 class ActiveSet;
 
 
@@ -264,8 +264,10 @@ private:
 
   // Scheduling routines employed by synch_nowait():
 
-  //void self_schedule_evals_message_passing_nowait();
-  //void static_schedule_evals_message_passing_nowait();
+  /// execute a nonblocking dynamic schedule in a master-slave partition
+  void self_schedule_evaluations_nowait();
+  /// execute a nonblocking static schedule in a peer partition
+  void static_schedule_evaluations_nowait();
   /// launch new jobs in prp_queue asynchronously (if capacity is
   /// available), perform nonblocking query of all running jobs, and
   /// process any completed jobs (handles both local self- and local
@@ -440,8 +442,18 @@ private:
   /// that is later evaluated in synch() or synch_nowait().
   PRPQueue beforeSynchAlgPRPQueue;
 
-  /// used by asynchronous_local_nowait to bookkeep which jobs are running
+  /// used by asynchronous_local_nowait() to bookkeep which jobs are running
   IntSet runningSet;
+  /// used by self_schedule_evaluations_nowait() to bookkeep which jobs are
+  /// running
+  std::map<int, std::pair<int, int> > msgPassRunningMap;
+
+  /// array of pack buffers for evaluation jobs queued to a server
+  MPIPackBuffer*   sendBuffers;
+  /// array of unpack buffers for evaluation jobs returned by a server
+  MPIUnpackBuffer* recvBuffers;
+  /// array of requests for nonblocking evaluation receives
+  MPI_Request*     recvRequests;
 };
 
 
