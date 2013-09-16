@@ -1,87 +1,40 @@
 Blurb::
 Specifies how variables are mapped into a set of responses
 Description::
-The type of model can be \c single, \c nested, or \c surrogate. 
+<b> Model Group 1 </b>
+The type of model can be:
+-# \c single
+-# \c nested
+-# \c surrogate 
+
+The input file must specify one of these types. If the type is not
+specified, Dakota will assume a single model.
+
+
+<b> Block Pointers and ID </b>
+
 Each
-of these model specifications supports \c variables_pointer and \c
+of these model types supports \c variables_pointer and \c
 responses_pointer strings for identifying the variables and responses
-specifications used in constructing the model (by cross-referencing
+specifications used in constructing the model by cross-referencing
 with \c id_variables and \c id_responses strings from particular
-variables and responses keyword specifications). 
+variables and responses keyword specifications. 
+
 These pointers are
 valid for each model type since each model contains a set of variables
 that is mapped into a set of responses -- only the specifics of the
 mapping differ. 
+
 Additional pointers are used for each model type for
 constructing the components of the variable to response mapping. As a
 strategy specification identifies one or more methods and a method
 specification identifies a model, a model specification identifies
 variables, responses, and (for some types) interface specifications.
-This top-down flow specifies all of the object interrelationships.
-
-A Dakota model specifies how variables are mapped into a set of responses in support of an iterative method and the model specification in an input file dictates the components to be used in constructing a particular model instance. This specification selects a Model from the model hierarchy, which includes SingleModel, DataFitSurrModel, HierarchSurrModel, and NestedModel derived classes. Depending on the type of derived model, different sub-specifications are needed to construct different components of the model.
-
-Chapters~\ref{ps} through~\ref{nls} presented the different
-``iterators'' (or methods) available in Dakota. An iterator iterates
-on a model in order to map a set of variables into a set of responses.
-This model may involve a simple mapping involving a single interface,
-or it may involve recursions using sub-iterator and sub-models. These
-recursion capabilities were developed in order to provide mechanisms
-for ``nesting,'' ``layering,'' and ``recasting'' of software
-components, which allows the use of these components as building
-blocks to accomplish more sophisticated studies, such as
-surrogate-based optimization or optimization under uncertainty. In a
-nested relationship, a sub-iterator is executed using its sub-model
-for every evaluation of the nested model. In a layered relationship,
-on the other hand, sub-iterators and sub-models are used only for
-periodic updates and verifications. And in a recast relationship, the
-input variable and output response definitions in a sub-model are
-reformulated in order to support new problem definitions. In each of
-these cases, the sub-model is of arbitrary type, such that model
-recursions can be chained together in as long of a sequence as needed
-(e.g., layered containing nested contained layered containing single
-in Section~\ref{adv_models:ouu:sb}). Figure~\ref{model:hier} displays
-the model class hierarchy from the Dakota Developers
-Manual~\cite{DevMan}, with derived classes for single models, nested
-models, recast models, and two types of surrogate models: data fit and
-hierarchical/multifidelity. A third type of derived surrogate model
-supporting reduced-order models (ROM) is planned for future releases.
-
-\begin{figure}
- \centering \includegraphics[scale=0.65]{images/classDakota_1_1Model}
- \caption{The Dakota model class hierarchy.} \label{model:hier}
-\end{figure}
-
-
-
-The recast model is not directly visible to the user within the input
-specification. Rather, it is used ``behind the scenes'' to recast the
-inputs and outputs of a sub-model for the purposes of reformulating
-the problem posed to an iterator. Examples include variable and
-response scaling (see Section~\ref{opt:additional:scaling}),
-transformations of uncertain variables and associated response
-derivatives to employ standardized random variables (see
-Sections~\ref{uq:reliability} and~\ref{uq:expansion}), multiobjective
-optimization (see Section~\ref{opt:additional:multiobjective}), merit
-functions (see Section~\ref{sbm:sblm}), and expected
-improvement/feasibility (see Sections~\ref{sbm:egm}
-and~\ref{uq:reliability:global}). Refer to the Dakota Developers
-Manual~\cite{DevMan} for additional details on the mechanics of
-recasting problem formulations.
+These are specific to a model type, and are therefore specified underneath
+the relevant keyword.
 
 Topics:: block, not_yet_reviewed
 Examples::
-Several examples follow. The first example shows a minimal
-specification for a single model, which is the default model when no
-models are specified by the user.
-\verbatim
-model,
-	single
-\endverbatim
-This example does not provide any pointer strings and therefore relies
-on the default behavior of constructing the model with the last
-variables, interface, and responses specifications parsed.
-
 The next example displays a surrogate model specification which
 selects a quadratic polynomial from among the global approximation
 methods. It uses a pointer to a design of experiments method for
@@ -92,14 +45,15 @@ approximation each time correction is requested.
 
 \verbatim
 model,
-	id_model = 'M1'
-	variables_pointer = 'V1'
-	responses_pointer = 'R1'
-	surrogate global
-	 polynomial quadratic
-	 dace_method_pointer = 'DACE'
-	 reuse_samples region
-	 correction multiplicative first_order
+  id_model = 'M1'
+  variables_pointer = 'V1'
+  responses_pointer = 'R1'
+  surrogate
+    global
+      polynomial quadratic
+      dace_method_pointer = 'DACE'
+      reuse_samples region
+      correction multiplicative first_order
 \endverbatim
 This example demonstrates the use of identifiers and pointers. It
 provides the optional model independent specifications for model

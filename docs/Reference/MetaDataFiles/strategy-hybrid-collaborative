@@ -1,6 +1,9 @@
 Blurb::
+Multiple methods run concurrently and share information
 Description::
-Topics::	not_yet_reviewed
+In the collaborative approach, multiple methods work together and share
+solutions while executing concurrently.
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

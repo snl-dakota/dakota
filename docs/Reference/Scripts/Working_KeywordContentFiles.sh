@@ -8,6 +8,15 @@
 # sh $SourceDir/Scripts/RefManScripts/RunAllKeyFiles.sh &
 
 # $1 is the path to the Reference manual directory with the source files
+# $2 is the concurrency of the keyword prep script. defaults to 1
+
+if [ "$2" -ge 1 ]
+then
+  NumConcScriptsMinus1=$(( $2 - 1 ))
+else
+  NumConcScriptsMinus1=0
+fi
+
 
 WorkDir=$PWD
 SourceDir=$(readlink -f $1 )
@@ -41,11 +50,13 @@ mkdir outputs/Topics
 
 cp TopicSpecFiles/TopicFile-* outputs/ #copy Topic template to outputs dir
 
-sh $SourceDir/Scripts/RefManScripts/RunAllKeyFiles.sh &
-sh $SourceDir/Scripts/RefManScripts/RunAllKeyFiles.sh &
-sh $SourceDir/Scripts/RefManScripts/RunAllKeyFiles.sh &
+counter=1
+while [ "$counter" -le "$NumConcScriptsMinus1" ]
+do
+  sh $SourceDir/Scripts/RefManScripts/RunAllKeyFiles.sh &
+  counter=$(( $counter + 1 ))
+done
 sh $SourceDir/Scripts/RefManScripts/RunAllKeyFiles.sh
-
 
 cd outputs
 mv TopicF* Topics/

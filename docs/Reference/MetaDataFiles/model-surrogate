@@ -7,7 +7,7 @@ They can be used to explore the variations in response quantities over
 regions of the parameter space, or they can serve as inexpensive
 stand-ins for optimization or uncertainty quantification studies (see,
 for example, the surrogate-based optimization strategy in
-Section~\ref{sbm}). Surrogate models supported in Dakota can be
+Section \ref{sbm}). Surrogate models supported in Dakota can be
 categorized into three types: data fits, multifidelity, and
 reduced-order model surrogates. An overview and discussion of
 surrogate correction is provided here, with details following.
@@ -51,14 +51,15 @@ iterates of a minimization algorithm. Available techniques currently
 include:
 
 <b> TANA-3 </b>: This multipoint approximation uses a two-point
-exponential approximation~\cite{Xu98,Fad90} built with response value
+exponential approximation 
+ef{Xu98,Fad90} built with response value
 and gradient information from the current and previous iterates.
 
 Global methods, often referred to as \emph{response surface methods},
 involve many points spread over the parameter ranges of interest.
 These surface fitting methods work in conjunction with the sampling
 methods and design of experiments methods described in
-Sections~\ref{uq:sampling} and ~\ref{dace:background}.
+Sections \ref{uq:sampling} and  \ref{dace:background}.
 
 <b> Polynomial Regression </b>: First-order (linear), second-order
 (quadratic), and third-order (cubic) polynomial response surfaces
@@ -68,7 +69,8 @@ to eliminate unnecessary terms from the polynomial model.
 
 <b> Gaussian Process (GP) or Kriging Interpolation </b>
 Dakota contains two implementations of Gaussian process, also known as 
-Kriging ~\cite{Giu98}, spatial interpolation. One of these resides in 
+Kriging  
+ef{Giu98}, spatial interpolation. One of these resides in 
 the Surfpack sub-package of Dakota, the other resides in Dakota itself.
 Both versions use the Gaussian correlation function with parameters that
 are selected by Maximum Likelihood Estimation (MLE). This correlation 
@@ -95,12 +97,12 @@ removed in a future release.
 
 <b> Artificial Neural Networks </b>: An implementation of the
 stochastic layered perceptron neural network developed by Prof. D. C.
-Zimmerman of the University of Houston~\cite{Zim96}. This neural network
+Zimmerman of the University of Houston \ref{Zim96}. This neural network
 method is intended to have a lower training (fitting) cost than
 typical back-propagation neural networks.
 
 <b> Multivariate Adaptive Regression Splines (MARS) </b>: Software
-developed by Prof. J. H. Friedman of Stanford University~\cite{Fri91}.
+developed by Prof. J. H. Friedman of Stanford University \ref{Fri91}.
 The MARS method creates a $C^2$-continuous patchwork of splines in the
 parameter space.
 
@@ -113,7 +115,7 @@ as the weighted sum of individual radial basis functions.
 considered a more specialized version of linear regression models.
 MLS is a weighted least squares approach where the weighting is 
 ``moved'' or recalculated for every new point where 
-a prediction is desired.~\cite{Nea04} 
+a prediction is desired. \ref{Nea04} 
 
 %<b> Orthogonal Polynomials </b>: This technique involves the use of
 %multivariate orthogonal polynomials as a global basis for surrogate
@@ -166,13 +168,13 @@ in function values between the surrogate and original models at a
 single point in parameter space through use of a simple scalar offset
 or scaling applied to the surrogate model. First-order corrections
 such as the first-order multiplicative correction (also known as beta
-correction~\cite{Cha93}) and the first-order additive
-correction~\cite{Lew00} also enforce consistency in the gradients and
+correction \ref{Cha93}) and the first-order additive
+correction \ref{Lew00} also enforce consistency in the gradients and
 provide a much more substantial correction capability that is
 sufficient for ensuring provable convergence in SBO algorithms (see
-Section~\ref{sbm:sblm}). SBO convergence rates can be further
+Section \ref{sbm:sblm}). SBO convergence rates can be further
 accelerated through the use of second-order corrections which also
-enforce consistency in the Hessians~\cite{Eld04}, where the
+enforce consistency in the Hessians \ref{Eld04}, where the
 second-order information may involve analytic, finite-difference, or
 quasi-Newton Hessians.
 
@@ -203,7 +205,7 @@ where the exact correction functions are
 A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})    \label{eq:exact_A} \\
 B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} \label{eq:exact_B}
 \end{eqnarray}
-Refer to \cite{Eld04} for additional details on the derivations.
+Refer to \ref{Eld04} for additional details on the derivations.
 
 A combination of additive and multiplicative corrections can provide
 for additional flexibility in minimizing the impact of the correction
@@ -247,7 +249,7 @@ condition, such as matching values at the previous design iterate.
 %
 %\item When using the first order correction methods, the
 % \c TRUE_FCN_GRAD response keywords must be modified (see
-% bottom of Figure~\ref{sbm:sblm_rosen}) to allow either analytic or
+% bottom of Figure \ref{sbm:sblm_rosen}) to allow either analytic or
 % numerical gradients to be computed. This provides the gradient data
 % needed to compute the correction function.
 %
@@ -255,7 +257,7 @@ condition, such as matching values at the previous design iterate.
 % problems, gradients often are too expensive to obtain or are
 % discontinuous (or may not exist at all). In such cases the heuristic
 % SBO algorithm has been an effective approach at identifying optimal
-% designs~\cite{Giu02}.
+% designs \ref{Giu02}.
 %\end{itemize}
 
 \subsection{Data Fit Surrogate Models}\label{models:surrogate:datafit}
@@ -318,15 +320,15 @@ singular value decomposition to compute the polynomial coefficients,
 whereas the kriging surface uses Maximum Likelihood Estimation to
 compute its correlation coefficients. More information on the
 numerical methods used in the surface fitting codes is provided in the
-Dakota Developers Manual~\cite{DevMan}.
+Dakota Developers Manual \ref{DevMan}.
 
 The set of design points that is used to construct a surface fit model
-is generated using either the DDACE software package~\cite{TonXX} or the
-LHS software package~\cite{Ima84}. These packages provide a variety of
+is generated using either the DDACE software package \ref{TonXX} or the
+LHS software package \ref{Ima84}. These packages provide a variety of
 sampling methods including Monte Carlo (random) sampling, Latin
 hypercube sampling, orthogonal array sampling, central composite
 design sampling, and Box-Behnken sampling. More information on these
-software packages is provided in Chapter~\ref{dace}.
+software packages is provided in Chapter \ref{dace}.
 
 \subsubsection{Taylor Series}\label{models:surf:taylor}
 
@@ -365,8 +367,8 @@ consistency requirements of provably-convergent SBO.
 
 \subsubsection{Two Point Adaptive Nonlinearity Approximation}\label{models:surf:tana}
 
-The TANA-3 method~\cite{Xu98} is a multipoint approximation method
-based on the two point exponential approximation~\cite{Fad90}. This
+The TANA-3 method \ref{Xu98} is a multipoint approximation method
+based on the two point exponential approximation \ref{Fad90}. This
 approach involves a Taylor series approximation in intermediate
 variables where the powers used for the intermediate variables are
 selected to match information at the current and previous expansion
@@ -465,7 +467,7 @@ strategy often is successful when using polynomial models,
 particularly quadratic models. However, a polynomial surface fit may
 not be the best choice for modeling data trends over the entire
 parameter space, unless it is known a priori that the true data trends
-are close to linear, quadratic, or cubic. See~\cite{Mye95} for more
+are close to linear, quadratic, or cubic. See \ref{Mye95} for more
 information on polynomial models.
 
 \subsubsection{Kriging/Gaussian-Process Spatial Interpolation Models}
@@ -488,7 +490,7 @@ the differences between them are explained in more detail below.
 
 The Kriging, also known as Gaussian process (GP), method uses techniques 
 developed in the geostatistics and spatial statistics communities 
-(~\cite{Cre91},~\cite{Koe96}) to produce smooth surface fit models of the 
+( \ref{Cre91}, \ref{Koe96}) to produce smooth surface fit models of the 
 response values from a set of data points. The number of times the 
 fitted surface is differentiable will depend on the correlation function 
 that is used. Currently, the Gaussian correlation function is the only 
@@ -527,7 +529,7 @@ this analogy to define a small feasible region in which to search for
 correlation lengths. This region should (almost) always contain some 
 correlation matrices that are well conditioned and some that are optimal, 
 or at least near optimal. More details on Kriging/GP models may be 
-found in~\cite{Giu98}.
+found in \ref{Giu98}.
 
 Since a GP has a hyper-parametric error model, it can be used 
 to model surfaces with slope discontinuities along with multiple 
@@ -538,7 +540,7 @@ minimum number of design points equal to the sum of the number of
 basis functions and the number of dimensions, $n$, but it is 
 recommended to use at least double this amount.
 %$n_{c_{quad}}$ design points when possible (refer to
-%Section~\ref{models:surf:polynomial} for $n_{c}$ definitions).
+%Section \ref{models:surf:polynomial} for $n_{c}$ definitions).
 
 The GP model is guaranteed to pass through all of the response 
 data values that are used to construct the model. Generally, this is a
@@ -555,7 +557,7 @@ constructed (i.e., when the model is used for extrapolation).
 As mentioned above, there are two \c gaussian_process models 
 in Dakota 5.2, the \c surfpack version and the \c dakota
 version. More details on the \c gaussian_process dakota
-model can be found in~\cite{McF08}. The differences between these 
+model can be found in \ref{McF08}. The differences between these 
 models are as follows: 
 
 \begin{itemize}
@@ -705,7 +707,7 @@ models are as follows:
 
 The ANN surface fitting method in Dakota employs a stochastic layered
 perceptron (SLP) artificial neural network based on the direct
-training approach of Zimmerman~\cite{Zim96}. The SLP ANN method is
+training approach of Zimmerman \ref{Zim96}. The SLP ANN method is
 designed to have a lower training cost than traditional ANNs. This is
 a useful feature for SBO and OUU where new ANNs are constructed many
 times during the optimization process (i.e., one ANN for each response
@@ -741,7 +743,7 @@ data points when possible.
 \subsubsection{Multivariate Adaptive Regression Spline (MARS) Models}\label{models:surf:mars}
 
 This surface fitting method uses multivariate adaptive regression
-splines from the MARS3.5 package~\cite{Fri91} developed at Stanford
+splines from the MARS3.5 package \ref{Fri91} developed at Stanford
 University. 
 
 The form of the MARS model is based on the following expression:
@@ -791,7 +793,7 @@ These functions can be of any form, but often a Gaussian bell-shaped
 function or splines are used. 
 Our implementation uses a Gaussian radial basis function. 
 The weights are determined via a linear least squares solution approach.
-See~\cite{Orr96} for more details.
+See \ref{Orr96} for more details.
 
 \subsubsection{Moving Least Squares}\label{models:surf:mls}
 
@@ -812,7 +814,7 @@ minimizing the weighted sum of squares at N data points:
 
 Moving least squares is a further generalization of weighted least squares
 where the weighting is ``moved'' or recalculated for every new point where 
-a prediction is desired.~\cite{Nea04} The implementation of 
+a prediction is desired. \ref{Nea04} The implementation of 
 moving least squares 
 is still under development. We have found that it works well 
 in trust region methods where the surrogate model is constructed in 

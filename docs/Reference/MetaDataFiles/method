@@ -1,7 +1,17 @@
 Blurb::
 Specifies the name and controls of an iterator.
 Description::
-The method section in a Dakota input file specifies the name and controls of an iterator. The terms "method" and "iterator" can be used interchangeably, although method often refers to an input specification whereas iterator usually refers to an object within the Iterator hierarchy. A method specification, then, is used to select an iterator from the iterator hierarchy, which includes optimization, uncertainty quantification, least squares, design of experiments, and parameter study iterators (see the Users Manual [Adams et al., 2010] for more information on these iterator branches). This iterator may be used alone or in combination with other iterators as dictated by the strategy specification (refer to Strategy Commands for strategy command syntax and to the Users Manual [Adams et al., 2010] for strategy algorithm descriptions).
+The method section in a Dakota input file specifies the name and 
+controls of an iterator. The terms "method" and "iterator" can be 
+used interchangeably. A method specification, then, is used to 
+select an iterator from the iterator hierarchy, which includes 
+optimization, uncertainty quantification, least squares, design 
+of experiments, and parameter study iterators (see the Users Manual 
+[Adams et al., 2010] for more information on these iterator branches). 
+This iterator may be used alone or in combination with other iterators 
+as dictated by the strategy specification (refer to Strategy Commands 
+for strategy command syntax and to the Users Manual 
+[Adams et al., 2010] for strategy algorithm descriptions).
 
 
 The method independent controls include a method identifier string, a model
@@ -13,14 +23,6 @@ and equality constraint specifications. While each of these controls is not
 valid for every method, the controls are valid for enough methods that it was
 reasonable to pull them out of the method dependent blocks and consolidate the
 specifications.
-
-The method identifier string is supplied with \c id_method and is used
-to provide a unique identifier string for use with strategy
-specifications (refer to \ref StratDescr). It is appropriate to omit a
-method identifier string if only one method is included in the input
-file and \c single_method is the selected strategy (all other
-strategies require one or more method pointers), since the single
-method to use is unambiguous in this case.
 
 
 Topics::	block, not_yet_reviewed

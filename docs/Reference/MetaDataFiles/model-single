@@ -12,6 +12,17 @@ In the \c single model case, a single interface is used to map the variables int
 
 Topics::	not_yet_reviewed
 Examples::
+The example shows a minimal
+specification for a single model, which is the default model when no
+models are specified by the user.
+\verbatim
+model
+  single
+\endverbatim
+This example does not provide any pointer strings and therefore relies
+on the default behavior of constructing the model with the last
+variables, interface, and responses specifications parsed.
+
 Theory::
 Faq::
 See_Also::	model-surrogate, model-nested

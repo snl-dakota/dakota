@@ -1,5 +1,18 @@
 Blurb::
+Define coefficients of the linear inequality constraints
 Description::
+In the inequality case, the
+constraint matrix \f[A\f] provides coefficients for the variables in the
+two-sided formulation:
+\f[a_l \leq Ax \leq a_u\f]
+
+Where the bounds are optionally specified by \c linear_inequality_lower_bounds, 
+and \c linear_inequality_upper_bounds.
+The bounds, if not specified, will default to -infinity, and 0, respectively,
+resulting in 
+one-sided inequalities of the form
+\f[Ax \leq 0.0\f].
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

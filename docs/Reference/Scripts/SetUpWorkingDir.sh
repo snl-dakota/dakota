@@ -21,7 +21,7 @@ ln -sf $SourceDir/Scripts/Working* ./
 
 sh Working_InputSpec.sh $SourceDir $SourceDir/InputSpecSummary
 sh Working_TopicSpecFiles.sh $SourceDir
-sh Working_KeywordContentFiles.sh $SourceDir
+sh Working_KeywordContentFiles.sh $SourceDir 1 #2nd arg is the concurrency. can be up to # of cpus.
 
 sh $SourceDir/Scripts/RefManScripts/PopulateMdTemplate.sh $SourceDir DakotaReferenceManual.dox
 

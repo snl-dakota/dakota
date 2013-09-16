@@ -1,73 +1,33 @@
 Blurb::
-Specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest.
+Specifies the top level technique which will govern the management of iterators and models
 Description::
 The strategy section in a %Dakota input file specifies the top level
 technique which will govern the management of iterators and models in
-the solution of the problem of interest. Four strategies currently
-exist: \c hybrid, \c multi_start, \c pareto_set, and \c single_method.
-These algorithms are implemented within the Strategy class hierarchy
-in the CollaborativeHybridStrategy, EmbeddedHybridStrategy,
-SequentialHybridStrategy, ConcurrentStrategy, and SingleMethodStrategy
-classes. For each of the strategies, a brief algorithm description is
-given below. Additional information on the algorithm logic is
+the solution of the problem of interest. 
+
+<b> Strategy Group 1 </b>
+
+Four strategies currently exist: 
+-# \c hybrid
+-# \c multi_start
+-# \c pareto_set
+-# \c single_method
+.
+\li Additional information on the algorithm logic is
 available in the Users Manual [\ref UsersMan "Adams et al., 2010"].
+\li One of these must be selected, however, if it not specified Dakota
+will default to the \c single_method strategy.
+\li More detail about these strategies and associated keywords are given
+on their individual pages.
 
-In a hybrid minimization strategy (\c hybrid), a set of methods
-synergistically seek an optimal design. The relationships among the
-methods are categorized as collaborative, embedded, or sequential.
-The goal in each case is to exploit the strengths of different
-optimization and nonlinear least squares algorithms through different
-stages of the minimization process. Global/local hybrids (e.g.,
-genetic algorithms combined with nonlinear programming) are a common
-example in which the desire for identification of a global optimum is
-balanced with the need for efficient navigation to a local optimum.
+<b> Optional Keywords </b>
+In addition to the strategy, additional keywords are used to modify
+the Dakota outputs - graphics and data, as well as how Dakota
+will handle methods that run concurrently.
 
-In the multi-start iteration strategy (\c multi_start), a series of
-iterator runs are performed for different values of parameters in the
-model. A common use is for multi-start optimization (i.e., different
-local optimization runs from different starting points for the design
-variables), but the concept and the code are more general. An
-important feature is that these iterator runs may be performed
-concurrently.
-
-In the pareto set optimization strategy (\c pareto_set), a series of
-optimization or least squares calibration runs are performed for
-different weightings applied to multiple objective functions. This
-set of optimal solutions defines a "Pareto set," which is useful for
-investigating design trade-offs between competing objectives. Again,
-these optimizations can be performed concurrently, similar to the
-multi-start strategy discussed above. The code is similar enough to
-the \c multi_start technique that both strategies are implemented in
-the same ConcurrentStrategy class.
-
-Lastly, the \c single_method strategy is the default strategy in that
-it does not provide control over multiple iterators or multiple
-models. Rather, it provides the means for simple execution of a
-single iterator on a single model. It is most commonly used when
-specifying other strategy-independent controls, e.g., tabular output,
-where the existence of the \c strategy block mandates selection of a
-strategy.
-
-Each of the strategy specifications identifies one or more method
-pointers (e.g., \c method_list, \c method_pointer) to identify the
-iterators that will be used in the strategy. These method pointers
-are strings that correspond to the \c id_method identifier strings
-from the method specifications (see \ref MethodIndControl). These
-string identifiers (e.g., 'NLP1') should \e not be confused with
-method selections (e.g., \c dot_mmfd). Each of the method
-specifications identified in this manner has the responsibility for
-identifying corresponding model specifications (using \c model_pointer
-from \ref MethodIndControl), which in turn identify the variables,
-interface, and responses specifications (using \c variables_pointer,
-\c interface_pointer, and \c responses_pointer from \ref
-ModelCommands) that are used to build the model used by the iterator.
-If one of these specifications does not provide an optional pointer,
-then that component will be constructed using the last specification
-parsed. In addition to method pointers, a variety of graphics options
-(e.g., \c tabular_graphics_data), iterator concurrency controls (e.g.,
-\c iterator_servers), and strategy data (e.g., \c starting_points) can
-be specified.
-
+Topics::	block, not_yet_reviewed
+Examples::
+Theory::
 Specification of a strategy block in an input file is optional, with
 \c single_method being the default strategy. If no strategy is
 specified or if \c single_method is specified without its optional \c
@@ -76,51 +36,5 @@ the last method, variables, interface, and responses specifications
 parsed. This default behavior is most appropriate if only one
 specification is present for method, variables, interface, and
 responses, since there is no ambiguity in this case.
-Topics::	block, not_yet_reviewed
-Examples::
-Example specifications for each of the strategies follow. A \c
-hybrid example is:
-\verbatim
-strategy,
-	hybrid sequential
-	 method_list = 'GA', 'PS', 'NLP'
-\endverbatim
-
-A \c multi_start example specification is:
-\verbatim
-strategy,
-	multi_start
-	 method_pointer = 'NLP1'
-	 random_starts = 10
-\endverbatim
-
-A \c pareto_set example specification is:
-\verbatim
-strategy,
-	pareto_set
-	 method_pointer = 'NLP1'
-     random_weight_sets = 10
-\endverbatim
-
-And finally, a \c single_method example specification is:
-\verbatim
-strategy,
-	single_method
-	 method_pointer = 'NLP1'
-\endverbatim
-
-The strategy specification has the following structure:
-\verbatim
-strategy,
-	<strategy independent controls>
-	<strategy selection>
-	 <strategy dependent controls>
-\endverbatim
-
-where <tt>\<strategy selection\></tt> is one of the following: \c
-hybrid, \c multi_start, \c pareto_set, or \c single_method.
-
-
-Theory::
 Faq::
 See_Also::	
