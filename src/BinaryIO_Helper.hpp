@@ -170,6 +170,24 @@ public:
 
   // WJB: will a client to to query? -- hid_t binary_stream_id() const { return binStreamId; }
 
+  herr_t store_h5t_string_data(const std::string& dset_name,
+                               const std::string& val) const
+  {
+    // Currently limited to H5T_C_S1 (one-byte string)
+    // ToDo:  create a derived type to support more typical Dakota string len
+    if ( val.size() > 8 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    herr_t ret_val = H5LTmake_dataset_string( binStreamId, dset_name.c_str(),
+                       val.c_str() );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    return ret_val;
+  }
+
+
   template <typename T>
   herr_t store_data(const std::string& dset_name,
                     const T& val) const
@@ -246,7 +264,7 @@ public:
     for(int i=0; i<dims[0]; ++i)
       for(int j=0; j<dims[1]; ++j) {
         // teuchos is a C++ library, but has fortran layout
-        tmp(j, i) = buf[i][j];
+        tmp(i, j) = buf[i][j];
     }
     return store_data<double,2>( dset_name, dims, tmp.values() );
   }

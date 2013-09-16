@@ -107,6 +107,12 @@ int main()
     status = binary_file.store_data<int, 1>("/IntVectorData", idims, ivec_out);
     assert(status >= 0);
 
+    // std::string
+    // currently limited to H5T_C_S1 (one-byte string)
+    std::string tst_str("StrDat7");
+    status = binary_file.store_h5t_string_data("/StdString7chars", tst_str);
+    assert(status >= 0);
+
     // binary stream goes out of scope... (file close)
   }
 
