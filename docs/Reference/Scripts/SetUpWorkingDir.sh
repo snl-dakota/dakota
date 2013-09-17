@@ -17,17 +17,28 @@ fi
 WorkDir=$PWD
 SourceDir=$(readlink -f $1 )
 
-ln -sf $SourceDir/Scripts/Working* ./
 
+## 1 Parse Input Spec Summary -> keyword spec files
+ln -sf $SourceDir/Scripts/Working_InputSpec.sh ./
 sh Working_InputSpec.sh $SourceDir $SourceDir/InputSpecSummary
+
+
+## 2 Parse Topic tree and topic metadatafiles
+ln -sf $SourceDir/Scripts/Working_TopicSpecFiles.sh ./
 sh Working_TopicSpecFiles.sh $SourceDir
+
+## 3 Parse Keyword specs, Generate Keyword content, and keyword topics (complete topic content files)
+ln -sf $SourceDir/Scripts/Working_KeywordContentFiles.sh ./
 sh Working_KeywordContentFiles.sh $SourceDir 1 #2nd arg is the concurrency. can be up to # of cpus.
 
+
+## 4 Take templates, topic and keyword content files and make a doxygen file
 sh $SourceDir/Scripts/RefManScripts/PopulateMdTemplate.sh $SourceDir DakotaReferenceManual.dox
 
+## 5 Build doxgyen files
 # requires doxygen 1.8.4 on the path.
 TestDox=$(doxygen -help | head -n1 | tr -dc [0-9])
-if [ "$TestDox" -eq "184" ] #not robust
+if [ "$TestDox" -ge "184" ] #not robust
 then
   rsync -av --exclude=".*" $SourceDir/DoxygenFiles/ ./Doxygen/ #copy without .svn dir
   cd Doxygen

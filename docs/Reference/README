@@ -1,16 +1,64 @@
-khu 130911
+khu 130917
 
 This dir contains all the source required to build the reference manual.
-Edits should occur here, but the manual should be built somewhere else.
+Edits should occur here, but the manual should be built somewhere else, 
+since the completed manual should not be in the svn repo.
 
-There is a setup script in the Scripts dir. To use:
-Make a working dir,
-Run the script, it will copy everything over, and create the doxygen file.
+####
+Quick Instructions:
+####
+This dir is called $REFERENCE
+cp $REFERENCE/Scripts/SetUpWorkingDir.sh Path/To/Build/Dir
 
-This is for the first time build, and takes 8~10 minutes.
-Later builds don't need all the steps.
-If you only change the keyword metadata, for example, it takes ~3 minutes to run the last two scripts.
+cd Path/To/Build/Dir
+# Make sure doxygen 1.8.4+ is on your path.
+sh SetUpWorkingDir.sh $REFERENCE/
 
-The doxygen file requires 1.8.4 to work correctly.
+# wait 10~15 minutes
+# the Ref Man should now be accessible on your local machine at
+#   Path/To/Build/Dir/Doxygen/html/index.html
 
-You can optionally copy the setup script to the working dir. That is nice in case you want to use the script to rebuild the manual -you can comment out the steps you don't need.
+
+####
+Directory Contents
+####
+This dir contains the Scripts dir - used to build the manual, as well as 5 
+types of content
+
+1 Input Spec Summary - describes relations between keywords (and more)
+2 TopicTree - describes relations between topics
+3 MetaDataFiles/ - contains files that describe each keyword
+4 TopicMetadataFiles/ - contains files that describe every topic
+5 DoxygenFiles/ - contains the doxygen "support" files, to help build the .dox file
+
+All edits should occur on the above content. The scripts will link to this 
+content and build the manual.
+
+
+####
+Script Details:
+####
+The setup script in the Scripts dir actually runs 5 steps:
+1 Parse Input Spec Summary -> keyword spec files
+2 Parse Topic tree and topic metadatafiles
+3 Parse Keyword specs, Generate Keyword content, and keyword topics (complete 
+  topic content files)
+4 Take templates, topic and keyword content files and make a doxygen file
+5 Build doxgyen files
+
+Steps 1 and 3 are the time consuming parts. Fortunately, you don't need to 
+run the entire sequence every time.
+- New builds or if you have changed the input spec, run everything.
+- Otherwise, just run the last four steps (only step 3 takes a significant 
+  amount of time anyways)
+-- Step 3 parallelism works very well, up to 6x or so before losing 
+   efficiency (will depend on your system).
+--- parallelism > # of cpus will not help, and will probably hurt.
+--- Edit SetUpWorkingDir.sh, see where Working_KeywordContentFiles.sh is run 
+    the 2nd argument is the parallelism/concurrecy
+
+
+Step 0 - copy the setup script to the build dir
+- is recommend so that you can edit the file outside the svn working dir
+- will require recopying IF the setup script changes (Should be fairly 
+  stable in the Sept-Oct '13 time frame).
