@@ -326,22 +326,18 @@ bool Minimizer::data_transform_model(bool weight_flag)
     Cout << "\nWarning (least squares): experimental_config_variables " 
 	 << "will be read from file, but ignored." << std::endl;
 
-  // a matrix with numExperiments rows and cols
-  // numExpConfigVars X, numFunctions Y, [1 or numFunctions Sigma]
-  RealMatrix experimental_data;
-    
-  size_t num_cols = num_config_vars_read + numUserPrimaryFns + num_sigma_read;
-
   bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
-
-  TabularIO::read_data_tabular(obsDataFilename, "Least Squares", 
-			       experimental_data, num_experiments, num_cols, 
-			       annotated);
+  bool calc_sigma_from_data = true; //calculate sigma if not provided 
+  expData.load_scalar(obsDataFilename, "Least Squares",
+                      num_experiments,
+                      num_config_vars_read, numFunctions, num_sigma_read,
+                      annotated, calc_sigma_from_data ,
+                      outputLevel);
 
   // copy the y portion of the data to obsData
   obsData.resize(numUserPrimaryFns);
   for (int y_ind = 0; y_ind < numUserPrimaryFns; ++y_ind)
-    obsData[y_ind] = experimental_data(0, num_config_vars_read + y_ind);
+    obsData[y_ind] = expData.scalar_data(y_ind,0,0);//need to handle replicates
   if (outputLevel >= VERBOSE_OUTPUT) {
     Cout << "\nUsing calibration data from " << obsDataFilename << ":\n";
     write_data(Cout, obsData);
@@ -361,13 +357,13 @@ bool Minimizer::data_transform_model(bool weight_flag)
     RealVector lsq_weights(numUserPrimaryFns);
     if (num_sigma_read == 1) {
       double sigma = 
-	experimental_data(0, num_config_vars_read + numUserPrimaryFns);
+	expData.scalar_sigma(0,0,0); 
       lsq_weights = std::pow(sigma, -2.);
     }
     else if (num_sigma_read == numUserPrimaryFns) {
       for (size_t i=0; i<numUserPrimaryFns; ++i) {
 	double sigma = 
-	  experimental_data(0, num_config_vars_read + numUserPrimaryFns + i);
+	  expData.scalar_sigma(i,0,0);
 	lsq_weights[i] = std::pow(sigma, -2.);
       }
     }

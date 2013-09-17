@@ -17,7 +17,7 @@
 
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
-
+#include "ExperimentData.hpp"
 
 namespace Dakota {
 
@@ -209,6 +209,9 @@ protected:
   bool obsDataFlag;
   /// storage for user-supplied data for computing residuals
   RealVector obsData;
+  /// Container for experimental data to which to calibrate model 
+  /// using least squares or other formulations which minimize SSE
+  ExperimentData expData;
 
   // scaling data follow 
   bool       scaleFlag;              ///< flag for overall scaling status
