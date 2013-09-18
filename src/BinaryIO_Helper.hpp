@@ -74,6 +74,8 @@ private:
     std::cout << "BinaryDF return ErrStat (POSITIVE_val) " << status << std::endl;
   }
 
+
+
   //
   //- Heading: Data
   //
@@ -170,15 +172,30 @@ public:
 
   // WJB: will a client to to query? -- hid_t binary_stream_id() const { return binStreamId; }
 
-  herr_t store_h5t_string_data(const std::string& dset_name,
-                               const std::string& val) const
+  //
+  //- Heading:  Data storage methods (write HDF5)
+  //
+  
+  /// Strings are weird in HDF5 -- may need to re-consider and use a
+  //                               std::vector<unsigned char> instead
+  herr_t store_data(const std::string& dset_name,
+                    const std::string& val) const
   {
-    // Currently limited to H5T_C_S1 (one-byte string)
+    // Currently limited to an "array" of H5T_C_S1 (one-byte strings) - I THINK
     // ToDo:  create a derived type to support more typical Dakota string len
-    if ( val.size() > 8 && exitOnError )
+    if ( val.size() > 128 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    herr_t ret_val = H5LTmake_dataset_string( binStreamId, dset_name.c_str(),
+    // WJB - ToDo:  like WCF, cache a class data member for max_str_len
+    hid_t derived_h5t_strsize = H5Tcopy(H5T_C_S1);
+    H5Tset_size(derived_h5t_strsize, 128);
+    //H5Tset_strpad(s128, H5T_STR_NULLPAD);
+
+    std::vector<hsize_t> dims;
+    dims += 1;  // string is a 1D object
+
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       1, dims.data(), derived_h5t_strsize,
                        val.c_str() );
 
     if ( ret_val < 0 && exitOnError )
@@ -187,14 +204,13 @@ public:
     return ret_val;
   }
 
-
   template <typename T>
   herr_t store_data(const std::string& dset_name,
                     const T& val) const
   {
     /* WJB: no time time to dig-deeper, think of the data as an array of len==1
     hsize_t dims[1]={1};    
-    herr_t ret_val = H5LTmake_dataset_double( binStreamId, dset_name.c_str(),
+    herr_t ret_val = H5LTmake_dataset_<TYPE>( binStreamId, dset_name.c_str(),
                        1, dims, &val );
 		  
     if ( ret_val < 0 && exitOnError )
@@ -202,9 +218,10 @@ public:
 		  
     return ret_val; */
 
-    std::vector<hsize_t> dims(1, 1); // wrong constructor??
-    std::vector<double>  buf(1, val);
+    std::vector<hsize_t> dims;
+    dims += 1;  // store value as the 0th entry in a 1D object
 
+    std::vector<T> buf(1, val);
     return store_data<T, 1>(dset_name, dims, buf);
   }
 
@@ -227,7 +244,6 @@ public:
     return ret_val;
   }
 
-
   template <typename T, size_t DIM>
   herr_t store_data(const std::string& dset_name,
                     const std::vector<hsize_t>& dims,
@@ -244,8 +260,8 @@ public:
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims; // Matrix is 2D
-    dims += buf.numRows(), buf.numCols();
+    std::vector<hsize_t> dims;
+    dims += buf.numRows(), buf.numCols(); // Matrix is 2D
 
     return store_data<double,2>( dset_name, dims, buf.values() );
   }
@@ -256,19 +272,23 @@ public:
     if ( buf.size() == 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims; // VectorArray is 2D
-    dims += buf.size(), buf[0].length();
+    std::vector<hsize_t> dims;
+    dims += buf.size(), buf[0].length(); // VectorArray is 2D
 
-    // WJB:  look into a Boost MultiArray here!
+    // RECALL:  teuchos is a C++ library, but has fortran layout
+    // WJB:     look into a Boost MultiArray here instead!
     RealMatrix tmp( dims[0], dims[1] );
     for(int i=0; i<dims[0]; ++i)
-      for(int j=0; j<dims[1]; ++j) {
-        // teuchos is a C++ library, but has fortran layout
+      for(int j=0; j<dims[1]; ++j)
         tmp(i, j) = buf[i][j];
-    }
+
     return store_data<double,2>( dset_name, dims, tmp.values() );
   }
 
+
+  //
+  //- Heading:  Data retrieval methods (read HDF5)
+  //
 
   template <typename T, size_t DIM>
   herr_t read_data(const std::string& dset_name,
@@ -278,10 +298,11 @@ public:
     // WJB: how to know what to size the dims vector??
     // H5LTget_dataset_ndims
     //      hardwire to have some success for now
-    std::vector<hsize_t> dims(DIM);
+    std::vector<hsize_t> dims( DIM, hsize_t(1) ); // see "accumulate" 6 lines down
     
     herr_t ret_val = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
                        &dims[0], NULL, NULL );
+
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_GetDataFailure();
 
@@ -292,6 +313,39 @@ public:
                 BuiltinDataTypes<T>::datatype(), &buf[0] );
 
     //output_status(ret_val);
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_GetDataFailure();
+
+    return ret_val;
+  }
+
+
+  template <typename T>
+  herr_t read_data(const std::string& dset_name, T* buf) const
+  {
+#if 0
+    // WJB - ToDo:  As with singleVal WRITE step, need to NOT resort to "hack"
+    //              of considering the val as the 0th entry in a std::vector
+
+    std::vector<T> tmp_buf( 1, T(0) );
+
+    herr_t ret_val = read_data<T,1>( dset_name.c_str(), tmp_buf );
+    *val = tmp_buf[0];
+    return ret_val;
+#else
+
+    // WJB: ONLY double (for now)
+    return H5LTread_dataset_double(binStreamId, dset_name.c_str(), buf);
+#endif
+  }
+
+
+  herr_t read_data(const std::string& dset_name, std::string& buf) const
+  {
+    buf.reserve(128);
+    herr_t ret_val = H5LTread_dataset_string( binStreamId, dset_name.c_str(),
+                       &buf[0] );
+
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_GetDataFailure();
 

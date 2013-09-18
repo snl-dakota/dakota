@@ -77,8 +77,6 @@ int main()
     // open/create file
     SimpleBinaryStream binary_file(file_name, file_exist, read_only);
     
-    //binary_File.addVar(pi_tag, rval_out);
-
     // write data 
     // single value
 #if 1
@@ -108,9 +106,9 @@ int main()
     assert(status >= 0);
 
     // std::string
-    // currently limited to H5T_C_S1 (one-byte string)
-    std::string tst_str("StrDat7");
-    status = binary_file.store_h5t_string_data("/StdString7chars", tst_str);
+    // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
+    std::string tst_str("StringsUsedInDakotaResultsDataCanBeUpTo128");
+    status = binary_file.store_data("/StdString_128chars", tst_str);
     assert(status >= 0);
 
     // binary stream goes out of scope... (file close)
@@ -124,10 +122,16 @@ int main()
     file_exist = true;
     read_only = true;
     SimpleBinaryStream binary_file(file_name, file_exist, read_only);
-  
+
     // read data 
     // WJB:  Easy via NetCDF4! binary_File.getVar(pi_tag.c_str(), rval_in);
 
+    // WJB: see hack (above) to make a single value look like an array of len==1
+    status = binary_file.read_data<double>(pi_tag.c_str(), &rval_in);
+    assert(status >= 0);
+    assert( rval_in == rval_out );
+  
+#if 0
     //RealMatrix rmatrix_in;
 
     //herr_t status = binary_file.read_data<double, RANK>("/RealMatrixData",
@@ -142,9 +146,21 @@ int main()
     assert( ivec_in.size()   == ivec_out.size() );
     assert( ivec_in[isize-1] == ivec_out[isize-1] );
     assert( ivec_in[0]       == ivec_out[0] );
-  }
+#endif 
 
-  //assert(rval_in == rval_out);
+    std::string tst_str_in;
+    status = binary_file.read_data("/StdString_128chars", tst_str_in);
+    assert(status >= 0);
+    assert( tst_str_in.size() <= 128 );
+
+    //std::cout << "WJB: verify string data: " << tst_str_in << std::endl;
+    std::string tst_str("S");
+    assert( tst_str_in[0] == tst_str[0] );
+
+    //std::cout << "Verify capacity128: " << tst_str_in.capacity()
+    //  << std::endl;
+    assert( tst_str_in.capacity() == 128 );
+  }
 
   return status;
 }
