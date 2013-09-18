@@ -1,6 +1,15 @@
 Blurb::
+Specify generalized relability levels at which to estimate the corresponding response value
 Description::
-Topics::	not_yet_reviewed
+This is used in many contexts, including:
+ -# ummm
+ -# err..
+Response levels are calculated for
+specified generalized reliabilities by
+indexing into a sorted samples array (the response levels computed are
+not interpolated and will correspond to one of the sampled values).
+
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

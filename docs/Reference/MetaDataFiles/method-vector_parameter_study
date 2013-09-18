@@ -1,5 +1,5 @@
 Blurb::
-Parameter study
+Parameter study - samples points along a vector
 Description::
 Dakota's vector parameter study computes response data sets at
 selected intervals along a vector in parameter space. It is often used
@@ -7,46 +7,22 @@ for single-coordinate parameter studies (to study the effect of a
 single variable on a response set), but it can be used more generally
 for multiple coordinate vector studies (to investigate the response
 variations along some n-dimensional vector such as an optimizer search
-direction). This study is selected using the \c vector_parameter_study
-specification followed by either a \c final_point or a \c step_vector
-specification.
+direction).
 
-The vector for the study can be defined in several ways (refer to
-dakota.input.summary). First, a \c final_point specification, when
-combined with the initial values from the variables specification (in
-\ref VarCommands, see \c initial_point and \c initial_state for design
-and state variables as well as inferred initial values for uncertain
-variables), uniquely defines an n-dimensional vector's direction and
-magnitude through its start and end points. The values included in the
-\c final_point specification are the actual variable values for
-discrete sets, not the underlying set index value.  The intervals
-along this vector are then specified with a \c num_steps
-specification, for which the distance between the initial values and
-the \c final_point is broken into \c num_steps intervals of equal
-length.  For continuous and discrete range variables, distance is
-measured in the actual values of the variables, but for discrete set
-variables (either integer or real sets for design, uncertain, or state
-types), distance is instead measured in index offsets.  Since discrete
-sets may have nonuniform offsets in their enumerated set values but
-have uniform offsets in their index values, defining steps in terms of
-set indices allows for meaningful parameter study specifications for
-these variable types.  This study performs function evaluations at
-both ends, making the total number of evaluations equal to \c
-num_steps+1.  The study has stringent requirements on performing
-appropriate steps with any discrete range and discrete set variables.
-A \c num_steps specification must result in discrete range and set
-index steps that are integral: no remainder is currently permitted in
-the integer step calculation and no rounding to integer steps will
-occur. 
+<b> Group 1 </b>
 
-The other technique for defining a vector in the study is the \c
-step_vector specification. This parameter study begins at the initial
-values and adds the increments specified in \c step_vector to obtain
-new simulation points. For discrete set types (design, uncertain, or
-state; real or integer), the steps are set index offsets, not steps
-between the actual set values.  This increment process is performed \c
-num_steps times, and since the initial values are included, the total
-number of simulations is again equal to \c num_steps+1. 
+Group 1 is used to define the vector along which the parameters are 
+varied. Both cases also rely on the variables specification of an
+initial value, through:
+\li the \ref variables-continuous_design-initial_point keyword
+\li the \ref variables-continuous_state-initial_state keyword 
+\li relying on the default initial value, based on the rest of the
+    variables specification
+From the initial value, the vector can be defined using one of the
+two choices.
+
+Once the vector is defined, the samples are then fully specifed
+by \ref method-vector_parameter_study-num_steps.
 
 Topics::	parameter_study, not_yet_reviewed
 Examples::

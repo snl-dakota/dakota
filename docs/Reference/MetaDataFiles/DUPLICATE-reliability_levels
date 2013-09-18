@@ -1,6 +1,11 @@
 Blurb::
+Specify reliability levels to estimate the response values at????
 Description::
-Topics::	not_yet_reviewed
+Response levels are calculated
+for specified CDF/CCDF reliabilities by projecting out the prescribed
+number of sample standard deviations from the sample mean.
+
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

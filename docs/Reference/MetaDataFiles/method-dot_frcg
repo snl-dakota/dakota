@@ -1,31 +1,19 @@
 Blurb::
 A conjugate gradient optimization method
 Description::
-The DOT library 
-[\ref Vrand1995 "Vanderplaats Research and Development, 1995"] 
-contains nonlinear programming optimizers, specifically the
-Broyden-Fletcher-Goldfarb-Shanno (%Dakota's \c dot_bfgs method) and
-Fletcher-Reeves conjugate gradient (%Dakota's \c dot_frcg method)
-methods for unconstrained optimization, and the modified method of
-feasible directions (%Dakota's \c dot_mmfd method), sequential linear
-programming (%Dakota's \c dot_slp method), and sequential quadratic
-programming (%Dakota's \c dot_sqp method) methods for constrained
-optimization. %Dakota provides access to the DOT library through the
-DOTOptimizer class.
+This is a duplicated keyword. Please use \ref method-dot instead.
 
-We here provide a caution regarding \c dot_frcg.  In DOT
+We here provide a caution regarding \c dot_frcg. In DOT
 Version 4.20, we have noticed inconsistent behavior of this algorithm
-across different versions of Linux.  Our best assessment is that it is
-due to different treatments of uninitialized variables.  As we do not
+across different versions of Linux. Our best assessment is that it is
+due to different treatments of uninitialized variables. As we do not
 know the intention of the code authors and maintaining DOT source code
 is outside of the %Dakota project scope, we have not made nor are we
-recommending any code changes to address this.  However, all users who
+recommending any code changes to address this. However, all users who
 use \c dot_frcg in DOT Version 4.20 should be aware that
 results may not be reliable.
 
-This is a duplicate. why is this here? see \ref method-dot-frcg
-
-Topics::	conjugate_gradient, not_yet_reviewed
+Topics::	conjugate_gradient, not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

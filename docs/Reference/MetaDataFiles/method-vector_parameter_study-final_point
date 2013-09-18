@@ -1,5 +1,12 @@
 Blurb::
+Define the vector by initial and final points
 Description::
+List the final values for each variable.
+The vector's direction and magnitude are determined by the initial value
+from the variables specification, and the \c final_point.
+
+The actual points are determined based on the this vector and the number of steps.
+of points chosen in \c num_points.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

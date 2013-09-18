@@ -12,6 +12,14 @@ programming (%Dakota's \c dot_slp method), and sequential quadratic
 programming (%Dakota's \c dot_sqp method) methods for constrained
 optimization.
 
+<b> Group 1 </b>
+
+One of the five available methods must be specified.
+
+<b> Optional Keywords </b>
+All these methods take the same optional keywords, dealing with
+linear equality and inequality constraints.
+
 Topics::	package_dot, not_yet_reviewed
 Examples::
 Theory::

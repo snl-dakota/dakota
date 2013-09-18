@@ -1,5 +1,10 @@
 Blurb::
+Choose cumulative functions
 Description::
+Applies to
+ -* CDF - cumulative distribution function
+ -* CBF - cumulative belief function
+ -* CPF - cumulative plausibility function
 Topics::	not_yet_reviewed
 Examples::
 Theory::

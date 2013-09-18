@@ -1,9 +1,23 @@
 Blurb::
-Specify the seed of the random number generator
+Reuse the same seed value for multiple sampling sets
 Description::
-The random \c seed control provides a mechanism for making a
-stochastic optimization repeatable. That is, the use of the same
-random seed in identical studies will generate identical results.
+The \c
+fixed_seed flag is relevant if multiple sampling sets will be
+generated during the course of a strategy (e.g., surrogate-based
+optimization, optimization under uncertainty). 
+
+Specifying this keyword
+results in the reuse of the same seed value for each of these multiple
+sampling sets, which can be important for reducing variability in the
+sampling results. 
+
+However, this behavior is not the default as the
+repetition of the same sampling pattern can result in a modeling
+weakness that an optimizer could potentially exploit (resulting in
+actual reliabilities that are lower than the estimated reliabilities).
+In either case (\c fixed_seed or not), the study is repeatable if the
+user specifies a \c seed and the study is random is the user omits a
+\c seed specification.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

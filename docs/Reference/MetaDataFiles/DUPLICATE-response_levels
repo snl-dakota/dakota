@@ -1,5 +1,17 @@
 Blurb::
+Specify the response values at which to estimate relevant statistics
 Description::
+The particular statistics depend on the method, and they include:
+ -# Reliabilities
+ -# CDF probabilities
+ -# CCDF probabilities
+
+CDF/CCDF probabilities are calculated for specified response levels
+using a simple binning approach. 
+
+CDF/CCDF reliabilities are calculated for specified response levels by
+computing the number of sample standard deviations separating the
+sample mean from the response level. 
 Topics::	not_yet_reviewed
 Examples::
 Theory::

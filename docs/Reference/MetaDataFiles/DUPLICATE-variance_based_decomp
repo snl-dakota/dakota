@@ -1,7 +1,40 @@
 Blurb::
+Global sensitivity analyis using variance-based decomposition
 Description::
+Dakota can calculate sensitivity indices through variance based
+decomposition using the keyword \c variance_based_decomp. 
+
+Because of the
+computational cost, \c variance_based_decomp is turned off as a
+default.
+
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::
+In this context, we take
+sensitivity analysis to be global, not local as when calculating
+derivatives of output variables with respect to input variables. Our
+definition is similar to that of [\ref Saltelli2004 "Saltelli et al., 2004"]: 
+"The study of how uncertainty in the output of a model can be 
+apportioned to different sources of uncertainty in the model input."
+
+Variance 
+based decomposition is a way of using sets of samples to understand
+how the variance of the output behaves, with respect to each input
+variable. A larger value of the sensitivity index, \f$S_i\f$, means 
+that the uncertainty in the input variable i has a larger effect on 
+the variance of the output. More details on the calculations and
+interpretation of the sensitivity indices can be found in [\ref
+Saltelli2004 "Saltelli et al., 2004"] and 
+[\ref Weirs2010 "Weirs et al., 2010"]. Note that \c
+variance_based_decomp is extremely computationally intensive since
+replicated sets of sample values are evaluated. If the user specified
+a number of samples, N, and a number of nondeterministic variables, M,
+variance-based decomposition requires the evaluation of N*(M+2)
+samples. To obtain sensitivity indices that are reasonably accurate,
+we recommend that N, the number of samples, be at least one hundred
+and preferably several hundred or thousands. 
+
 Faq::
 See_Also::	

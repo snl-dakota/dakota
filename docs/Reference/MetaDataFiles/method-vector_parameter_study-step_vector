@@ -1,1 +1,11 @@
-DUPLICATE-step_vector
+Blurb::
+Define the vector with the inital point plus direction and magnitude of each step
+Description::
+The step vector defines the change in value for every value, for a single step.
+
+The points are determined by this step, plus the number of points.
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -1,1 +1,22 @@
-DUPLICATE-partitions
+Blurb::
+Specify the grid of points in the study
+Description::
+The \c
+partitions list specifies the number of partitions for each
+variable. The number of grid points in each dimension is the
+number of partitions + 1.
+
+The number of entries in the partitions list must be equal
+to the total number of variables contained in the variables
+specification. 
+
+Remainders
+within the integer division of the step calculations are not permitted
+for discrete range or set types and therefore no integer rounding
+occurs, so the partitions specification must be carefully selected in
+the presence of these types. 
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
