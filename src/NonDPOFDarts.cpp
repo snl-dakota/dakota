@@ -24,10 +24,14 @@ static const char rcsId[] = "@(#) $Id: NonDPOFDart.cpp 6080 2009-09-08 19:03:20Z
 
 namespace Dakota {
 
-NonDPOFDarts::NonDPOFDarts(Model& model): NonD(model)
+NonDPOFDarts::NonDPOFDarts(Model& model): NonD(model),
+seed(probDescDB.get_int("method.random_seed")),
+samples(probDescDB.get_int("method.samples"))
 {
   // any initialization is done here.   For now, you should just specify 
   // the number of samples, but eventually we will get that from the input spec
+  Cout << "Hello World, POF Darts is coming! " << '\n';
+  Cout << "Number of samples " << samples << '\n';
 
 }
 

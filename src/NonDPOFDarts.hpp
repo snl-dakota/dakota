@@ -54,8 +54,6 @@ public:
   void quantify_uncertainty(); // called by run_iterator
 
 protected: 
-
-
   //
   //- Heading: Convenience functions
   //
@@ -63,6 +61,10 @@ protected:
   //
   //- Heading: Data
   //
+  // number of samples of true function
+  int samples; 
+  // user-specified seed 
+  int seed;
 
 };
 

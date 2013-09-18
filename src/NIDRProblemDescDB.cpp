@@ -5069,6 +5069,7 @@ static Method_mp_lit
         MP2(methodName,nond_importance_sampling),
  	MP2(methodName,nond_local_evidence),
         MP2(methodName,nond_local_interval_est),
+        MP2(methodName,nond_pof_darts),
 	MP2(methodName,nond_polynomial_chaos),
 	MP2(methodName,nond_sampling),
 	MP2(methodName,nond_stoch_collocation),

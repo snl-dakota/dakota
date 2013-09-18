@@ -677,7 +677,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		  ]
 		[ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
                 )
-              | 
+	      |
+	      ( pof_darts ALIAS nond_pof_darts {N_mdm(lit,methodName_nond_pof_darts)}
+		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+		  [ compute {0}
+		    probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		    | gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		    [ system {0}
+		      series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		      | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		      ]
+		    ]
+		  ]
+		)
+              |
 	      ( efficient_subspace ALIAS nond_efficient_subspace {N_mdm(lit,methodName_nond_efficient_subspace)}
 	        [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
 	        [ batch_size INTEGER {N_mdm(int,batchSize)} ]
