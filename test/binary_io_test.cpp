@@ -151,15 +151,12 @@ int main()
     std::string tst_str_in;
     status = binary_file.read_data("/StdString_128chars", tst_str_in);
     assert(status >= 0);
-    assert( tst_str_in.size() <= 128 );
+    assert( tst_str_in.capacity() == DerivedStringType128::length() );
+    assert( tst_str_in.size() <= DerivedStringType128::length() );
 
     //std::cout << "WJB: verify string data: " << tst_str_in << std::endl;
     std::string tst_str("S");
     assert( tst_str_in[0] == tst_str[0] );
-
-    //std::cout << "Verify capacity128: " << tst_str_in.capacity()
-    //  << std::endl;
-    assert( tst_str_in.capacity() == 128 );
   }
 
   return status;

@@ -46,19 +46,32 @@ class BinaryStream_InvalidDataSpace    {};
 
 	
 template <typename T>
-struct BuiltinDataTypes {};
+struct NativeDataTypes {};
 
 template <>
-struct BuiltinDataTypes<int>
+struct NativeDataTypes<int>
 {
-  //static hid_t h5_type() { return H5T_NATIVE_INT; }
   static hid_t datatype() { return H5T_NATIVE_INT; }
 };
 
 template <>
-struct BuiltinDataTypes<double>
+struct NativeDataTypes<double>
 {
   static hid_t datatype() { return H5T_NATIVE_DOUBLE; }
+};
+
+struct DerivedStringType128
+{
+  static const size_t length() { return 128; }
+
+  static hid_t datatype()
+  { 
+    // WJB:  is it a problem if the return val is incremented by each invocation?
+    hid_t hidStrExtraBytes = H5Tcopy(H5T_C_S1);
+    H5Tset_size(hidStrExtraBytes, 128);
+    //H5Tset_strpad(hidStrExtraBytes, H5T_STR_NULLPAD);
+    return hidStrExtraBytes;
+  }
 };
 
 
@@ -75,7 +88,6 @@ private:
   }
 
 
-
   //
   //- Heading: Data
   //
@@ -89,6 +101,9 @@ private:
   /// Toggle for storage - default is false - true means store data in-core
   bool streamIsIncore; // WJB: enforce an empty string for fileName in this case
 
+  /// Max string length for storing std::string as a type derived from H5T_C_S1
+  const size_t maxStringLength;
+
   /// Toggle for exit vs continue execution - default is true
   bool exitOnError;
 
@@ -98,13 +113,14 @@ private:
 public:
 
   /// File-based storage constructor
-  SimpleBinaryStream(const std::string& stream_file_name,
-                     bool file_stream_exist = true,
-                     bool read_only         = true,
-                     bool exit_on_error     = true) :
+  SimpleBinaryStream(const  std::string& stream_file_name,
+                     bool   file_stream_exist = true,
+                     bool   read_only         = true,
+                     size_t max_str_len       = DerivedStringType128::length(),
+                     bool   exit_on_error     = true) :
     fileName(stream_file_name), binStreamId(),
-    streamIsIncore(false), exitOnError(exit_on_error),
-    errorStatus()
+    streamIsIncore(false), maxStringLength(max_str_len),
+    exitOnError(exit_on_error), errorStatus()
   {
     // WJB - ToDo: split-out into .cpp file
     if ( file_stream_exist ) {
@@ -125,8 +141,8 @@ public:
       }
     }
     else {
-      binStreamId = H5Fcreate(fileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
-                              H5P_DEFAULT);
+      binStreamId = H5Fcreate( fileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
+                               H5P_DEFAULT );
       if ( binStreamId < 0 ) {
         if ( exitOnError )
           throw BinaryStream_CreateFailure();
@@ -135,18 +151,20 @@ public:
       }
     }
 
-    // WJB: may be needed when I start tackling string data in HDF5
-    //if ( !read_only && !errorStatus ) {
-        int ds_id;
-        /*
+    if ( !errorStatus ) {
+      // Create a derived type to support more typical Dakota string len
+      if ( maxStringLength != DerivedStringType128::length() && exitOnError )
+        throw BinaryStream_CreateFailure();
+    }
+
+    /* WJB: "Requirement" (BMA) to store the maxStrLen in the binary File?
+    if ( !read_only && !errorStatus ) {
+        //hid_t derivedH5T_StrSize; // store as a dataspace ??
+        //
         if ( !addDim("MaxStringLength", maxStringLength, ds_id) ) {
-          if ( exitOnError ) {
-            throw BinaryStream_CreateDataSpaceFailure();
-          }
-          else
-            errorStatus = status;
-        } */
-    //}
+          ;
+        }
+    } */
   }
 
 #if 0
@@ -155,9 +173,10 @@ public:
   SimpleBinaryStream(bool stream_is_incore    = true,
                      bool incore_stream_exist = true,
                      bool read_only           = true,
+                     size_t max_str_len       = DerivedStringType128::length(),
                      bool exit_on_error       = true) :
     fileName(std::string()), binStreamId(),
-    streamIsIncore(stream_is_incore), exitOnError(exit_on_error),
+    streamIsIncore(stream_is_incore), maxStringLength(max_str_len),
     errorStatus()
   { // WJB - ToDo: use a private method to "share" with file-based constructor }
 #endif
@@ -181,21 +200,11 @@ public:
   herr_t store_data(const std::string& dset_name,
                     const std::string& val) const
   {
-    // Currently limited to an "array" of H5T_C_S1 (one-byte strings) - I THINK
-    // ToDo:  create a derived type to support more typical Dakota string len
-    if ( val.size() > 128 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    // WJB - ToDo:  like WCF, cache a class data member for max_str_len
-    hid_t derived_h5t_strsize = H5Tcopy(H5T_C_S1);
-    H5Tset_size(derived_h5t_strsize, 128);
-    //H5Tset_strpad(s128, H5T_STR_NULLPAD);
-
     std::vector<hsize_t> dims;
     dims += 1;  // string is a 1D object
 
     herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       1, dims.data(), derived_h5t_strsize,
+                       1, dims.data(), DerivedStringType128::datatype(),
                        val.c_str() );
 
     if ( ret_val < 0 && exitOnError )
@@ -235,7 +244,7 @@ public:
       throw BinaryStream_StoreDataFailure();
 
     herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       DIM, dims.data(), BuiltinDataTypes<T>::datatype(),
+                       DIM, dims.data(), NativeDataTypes<T>::datatype(),
                        buf );
 
     if ( ret_val < 0 && exitOnError )
@@ -310,7 +319,7 @@ public:
     buf.resize( dims[0]*dims[1] );
 
     ret_val = H5LTread_dataset( binStreamId, dset_name.c_str(),
-                BuiltinDataTypes<T>::datatype(), &buf[0] );
+                NativeDataTypes<T>::datatype(), &buf[0] );
 
     //output_status(ret_val);
     if ( ret_val < 0 && exitOnError )
@@ -342,7 +351,7 @@ public:
 
   herr_t read_data(const std::string& dset_name, std::string& buf) const
   {
-    buf.reserve(128);
+    buf.reserve(maxStringLength);
     herr_t ret_val = H5LTread_dataset_string( binStreamId, dset_name.c_str(),
                        &buf[0] );
 
