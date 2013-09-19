@@ -40,6 +40,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # supplemental data
   list(APPEND test_support_files
     dakota_coliny.dat dakota_logratio_pce.txt 
+    dakota_pstudy.3.dat dakota_pstudy.7.dat
     dakota_textbook_nips.lsq.dat dakota_textbook_nips.lsq.ann
     dakota_uq_textbook_lhs_approx.annotated 
     dakota_uq_textbook_lhs_approx.freeform

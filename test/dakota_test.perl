@@ -34,11 +34,14 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
   $bin_ext = ".exe";
 }
 
-# exit code summarizing worst test condition found
+# exit code summarizing worst test condition found (higher is nominally "worse")
+# might need to change if we go back to baselines that permit failures
 #   0 PASS
-#  70 PASS, but baseline lookup failure
+#  70 PASS, but baseline lookup failure (unused)
 #  80 DIFF
 #  90 FAIL, consistent with baseline
+#  93 FAIL (ran, but missing baseline)
+#  96 FAIL (ran, but baseline says failure)
 # 100 killed due to timeout
 # 101 killed due to stale output
 # 102 killed due to no output

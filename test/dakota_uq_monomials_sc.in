@@ -1,5 +1,5 @@
 # One-dimensional integrals:
-# f(x) = x,   Mean = 0,   Variance = 1/3    (Std Dev = .57735)
+# f(x) = x,   mean = 0    variance = 1/3    (std dev = .57735)
 #      = x^2,      = 1/3,          = 4/45            = .29814
 #      = x^3,      = 0,            = 1/7             = .37796
 #      = x^4,      = 1/5,          = 16/225	     = .26667

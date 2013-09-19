@@ -2772,6 +2772,83 @@ Test Number 7 succeeded
                      -1.0000000000e+00
                       1.3000000000e+01
 <<<<< Best data captured at function evaluation 1
+dakota_ampl_tb.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9957491480e-01 x1
+                      1.0004250852e+00 x2
+<<<<< Best objective function  =
+                      6.5303118590e-14
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      3.0531133177e-15
+                      3.5527136788e-15
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 105 total (105 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9957491542e-01 x1
+                      1.0004250846e+00 x2
+<<<<< Best objective function  =
+                      6.5302733575e-14
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      2.9420910153e-15
+                      3.6082248300e-15
+<<<<< Best data not found in evaluation cache
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.7822593278e-01 x1
+                      1.0217740672e+00 x2
+<<<<< Best objective function  =
+                      4.4956059084e-07
+<<<<< Best data not found in evaluation cache
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 54 total (54 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.1893277286e-01 x1
+                      5.2613378418e-01 x2
+<<<<< Best objective function  =
+                      1.0398018294e-01
+<<<<< Best constraint values   =
+                      6.2243306565e-03
+                      1.7350372426e-02
+<<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 35 total (35 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.7822593279e-01 x1
+                      1.0217740672e+00 x2
+<<<<< Best objective function  =
+                      4.4956058991e-07
+<<<<< Best data not found in evaluation cache
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 270 total (270 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.1893277286e-01 x1
+                      5.2613378418e-01 x2
+<<<<< Best objective function  =
+                      1.0398018294e-01
+<<<<< Best constraint values   =
+                      6.2243306535e-03
+                      1.7350372428e-02
+<<<<< Best data not found in evaluation cache
 dakota_apps.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
@@ -4175,6 +4252,19 @@ Test Number 33 succeeded
                       4.9689435400e-04
                       4.9689435400e-04
 <<<<< Best data captured at function evaluation 208
+dakota_coliny_p.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.7893892864e-01 x1
+                      5.7495736388e-01 x2
+                      1.3050171516e+00 x3
+<<<<< Best objective function  =
+                      7.2726686137e-02
+<<<<< Best constraint values   =
+                      4.7691601150e-02
+                      4.1106505960e-02
+<<<<< Best data captured at function evaluation 68
 dakota_container.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
@@ -42440,6 +42530,55 @@ Test Number 3 succeeded
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
    5.0000000000e+00   0.0000000000e+00   7.5000000000e-01
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
+dakota_uq_monomials_sc.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    0.0000000000e+00  5.7735026919e-01  0.0000000000e+00 -1.2000000000e+00
+  numerical:    0.0000000000e+00  5.7735026919e-01  0.0000000000e+00 -1.2000000000e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.3333333333e-01  2.9814239700e-01  6.3887656500e-01 -8.5714285714e-01
+  numerical:    3.3333333333e-01  2.9814239700e-01  6.3887656500e-01 -8.5714285714e-01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 7 total (7 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:   -3.4694469520e-17  3.7796447301e-01 -7.7106068103e-16  7.6923076923e-01
+  numerical:   -3.4694469520e-17  3.7796447301e-01 -7.7106068103e-16  7.6923076923e-01
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e-01  2.6666666667e-01  1.3846153846e+00  7.8733031674e-01
+  numerical:    2.0000000000e-01  2.6666666667e-01  1.3846153846e+00  7.8733031674e-01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    0.0000000000e+00  8.1649658093e-01  0.0000000000e+00 -2.1000000000e+00
+  numerical:    0.0000000000e+00  8.1649658093e-01  0.0000000000e+00 -2.1000000000e+00
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    6.6666666667e-01  4.2163702136e-01  4.5175395145e-01 -4.2857142857e-01
+  numerical:    6.6666666667e-01  4.2163702136e-01  4.5175395145e-01 -4.2857142857e-01
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:   -2.7755575616e-17  5.3452248382e-01  2.7261111813e-16  3.4621538462e-01
+  numerical:   -7.6327832943e-17  5.3452248382e-01 -4.5435186355e-16  3.4621538462e-01
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 181 total (181 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0000000000e-01  3.7712361663e-01  9.7907092780e-01  3.9366515837e-01
+  numerical:    4.0000000000e-01  3.7712361663e-01  9.7907092780e-01  3.9366515837e-01
 dakota_uq_rosenbrock_adapt_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
@@ -61594,9 +61733,6 @@ Test Number 0 succeeded
 dakota_users_cantilever_uq_global_interval.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 86 total (86 new, 0 duplicate)
-         weight: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 29 val (29 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 58 val (58 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 weight:  Min = 1.0000508059e+00  Max = 9.9999830649e+01
 stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
 displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
@@ -62160,7 +62296,6 @@ Test Number 0 succeeded
 dakota_users_rosen_opt_scaled.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 109 total (109 new, 0 duplicate)
-         obj_fn: 82 val (82 n, 0 d), 27 grad (27 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       9.9200161373e-01 x1
                       9.8371783275e-01 x2
@@ -62389,8 +62524,6 @@ Test Number 0 succeeded
 dakota_users_textbook_uq_glob_evidence.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
-  response_fn_1: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   0.0000000000e+00   0.0000000000e+00
