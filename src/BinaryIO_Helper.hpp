@@ -284,27 +284,7 @@ public:
   }
 
 
-  template <typename T>
-  herr_t store_data(const std::string& dset_name,
-                    const T& val) const
-  {
-    /* WJB: no time time to dig-deeper, think of the data as an array of len==1
-    hsize_t dims[1]={1};    
-    herr_t ret_val = H5LTmake_dataset_<TYPE>( binStreamId, dset_name.c_str(),
-                       1, dims, &val );
-		  
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-		  
-    return ret_val; */
-
-    std::vector<hsize_t> dims;
-    dims += 1;  // store value as the 0th entry in a 1D dataspace
-
-    std::vector<T> buf(1, T(val));
-    return store_data<T, 1>(dset_name, dims, buf);
-  }
-
+private:
 
   template <typename T, size_t DIM>
   herr_t store_data(const std::string& dset_name,
@@ -324,13 +304,46 @@ public:
     return ret_val;
   }
 
-  template <typename T, size_t DIM>
+
+public:
+
+  template <typename T>
   herr_t store_data(const std::string& dset_name,
-                    const std::vector<hsize_t>& dims,
+                    const T& val) const
+  {
+    /* WJB: no time time to dig-deeper, think of the data as an array of len==1
+    hsize_t dims[1]={1};    
+    herr_t ret_val = H5LTmake_dataset_<TYPE>( binStreamId, dset_name.c_str(),
+                       1, dims, &val );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+		  
+    return ret_val; */
+
+    // tmp store value as the 0th entry in a vec prior to writing 1D dataspace
+    std::vector<T> buf; buf.reserve(1); buf.push_back(val);
+
+    std::vector<hsize_t> dims;
+    dims += buf.size();
+
+    return store_data<T,1>( dset_name, dims, buf.data() );
+  }
+
+
+  template <typename T>
+  herr_t store_data(const std::string& dset_name,
                     const std::vector<T>& buf) const
   {
-    return store_data<T, DIM>( dset_name, dims, buf.data() );
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    std::vector<hsize_t> dims;
+    dims += buf.size(); // std::vector<T> is 1D dataspace
+
+    return store_data<T,1>( dset_name, dims, buf.data() );
   }
+
 
   // should parameterize on ScalarType -- template <typename T>
   // that way, same func for ints, doubles,...
@@ -345,6 +358,7 @@ public:
 
     return store_data<double,2>( dset_name, dims, buf.values() );
   }
+
 
   herr_t store_data(const std::string& dset_name,
                     const RealVectorArray& buf) const

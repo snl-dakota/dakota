@@ -14,12 +14,57 @@
 #include <iostream>
 #include <string>
 
-using namespace boost::assign;
+using namespace boost::assign; // WJB: OK here in tester, but remove in Hlpr.hpp
 using namespace Dakota;
 
-#define RANK 2
+//#define RANK 2
 
-void test_write_read_string_vec(const std::string& file_name)
+void test_write_read_string(const std::string& file_name)
+{
+  bool file_exist = true;
+  bool read_only = false;
+  herr_t status;
+
+  // scope within which file write takes place
+  {
+    // open file
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+    // std::string
+    // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
+#if 0
+    std::string ja_str_out("AnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTestAnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTest");
+#endif
+    std::string tst_str("StringsUsedInDakotaResultsDataCanBeUpTo128");
+    status = binary_file.store_data("/StdString_128chars", tst_str);
+    assert(status >= 0);
+
+    // binary stream goes out of scope... (file close)
+  }
+
+  // scope within which file read takes place
+  {
+    // open/read file
+    file_exist = true;
+    read_only = true;
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+    std::string tst_str_in;
+    status = binary_file.read_data("/StdString_128chars", tst_str_in);
+    assert(status >= 0);
+    assert( tst_str_in.capacity() == DerivedStringType128::length() );
+    assert( tst_str_in.size() <= DerivedStringType128::length() );
+
+    //std::cout << "WJB-verify string data: " << tst_str_in.c_str() <<std::endl;
+    std::string tst_str("S");
+    assert( tst_str_in[0] == tst_str[0] );
+
+    // binary stream goes out of scope... (file close)
+  }
+}
+
+
+void test_write_read_string_array(const std::string& file_name)
 {
   bool file_exist = true;
   bool read_only = false;
@@ -72,11 +117,6 @@ int main()
   std::string pi_tag("/DakPi");
   std::string file_name("binary_io_test.h5");
 
-  std::vector<hsize_t> rdims;
-  rdims += 2, 2;
-  std::vector<hsize_t> idims;
-  idims += 3;
-
   std::vector<double> rmatrix_row0;
   rmatrix_row0 += rval_out, .23;
 
@@ -86,10 +126,8 @@ int main()
                                            rmatrix_row0.data(),
                                            rdims[1] ) ); */
   RealVectorArray rmatrix_out;
-  rmatrix_out.push_back( RealVector( Teuchos::Copy, rmatrix_row0.data(),
-                                     rdims[1] ) );
-  rmatrix_out.push_back( RealVector( Teuchos::Copy, rmatrix_row0.data(),
-                                     rdims[1] ) );
+  rmatrix_out.push_back( RealVector( Teuchos::View, rmatrix_row0.data(), 2 ) );
+  rmatrix_out.push_back( RealVector( Teuchos::View, rmatrix_row0.data(), 2 ) );
 /*
   rmatrix_out(0, 0) = rval_out;
   rmatrix_out(0, 1) = 0.23;
@@ -101,16 +139,14 @@ int main()
 
   std::vector<int> ivec_out;
   ivec_out += ival_out, 23, 333;
-  hsize_t isize = ivec_out.size();
 
-  assert(rdims.size() == RANK);
+  assert(ivec_out.size() == 3);
   //assert(rmatrix_out.numCols() == 2);
   assert(rmatrix_out[0].length() == 2); // numCols
   assert(rmatrix_out[1].length() == 2); // confirm square "matrix" in this test
   assert(rval_out == rmatrix_out[0](0));
   assert(rval_out == rmatrix_out[1](1));
   assert(ival_out == ivec_out[0]);
-  assert(isize == 3);
 
   bool file_exist = false;
   bool read_only = false;
@@ -126,21 +162,8 @@ int main()
     // write data 
     // single value
 #if 1
-    // WJB: hack to make a single value look like an array of len==1
-    std::vector<double> dummy_buf;
-    dummy_buf += rval_out;
-
-    std::vector<hsize_t> dummy_dims;
-    dummy_dims += 1;
-    // WJB: assertions should be replaced with "exceptions" in store_data
-    assert(dummy_dims.size() == 1);
-    assert(dummy_dims[0]     == 1);
-
-    status = binary_file.store_data<double,1>(pi_tag.c_str(), dummy_dims,
-               dummy_buf);
-    assert(status >= 0);
-#else
-    herr_t status = binary_file.store_data(pi_tag.c_str(), rval_out);
+    // WJB: NOTE hack to make a single value look like an array of len==1
+    herr_t status = binary_file.store_data(pi_tag, rval_out);
 #endif
 
     // RealMatrix -- WJB: come back ASAP -- try RealVectorArray instead
@@ -148,19 +171,14 @@ int main()
     assert(status >= 0);
 
     // std::vector<int>
-    status = binary_file.store_data<int, 1>("/IntVectorData", idims, ivec_out);
-    assert(status >= 0);
-
-    // std::string
-    // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
-    std::string tst_str("StringsUsedInDakotaResultsDataCanBeUpTo128");
-    status = binary_file.store_data("/StdString_128chars", tst_str);
+    status = binary_file.store_data("/IntVectorData", ivec_out);
     assert(status >= 0);
 
     // binary stream goes out of scope... (file close)
   }
 
-  test_write_read_string_vec(file_name);
+  test_write_read_string(file_name);
+  test_write_read_string_array(file_name);
 
 
   // WJB - ToDo: split out into functions
@@ -173,9 +191,8 @@ int main()
     SimpleBinaryStream binary_file(file_name, file_exist, read_only);
 
     // read data 
-    // WJB:  Easy via NetCDF4! binary_File.getVar(pi_tag.c_str(), rval_in);
 
-    // WJB: see hack (above) to make a single value look like an array of len==1
+    // WJB: see hack (hdr file) to make a single val look like a vec of len==1
     status = binary_file.read_data<double>(pi_tag.c_str(), rval_in);
     assert(status >= 0);
     assert( rval_in == rval_out );
@@ -195,19 +212,8 @@ int main()
     assert(status >= 0);
 
     assert( ivec_in.size()   == ivec_out.size() );
-    assert( ivec_in[isize-1] == ivec_out[isize-1] );
     assert( ivec_in[0]       == ivec_out[0] );
 #endif 
-
-    std::string tst_str_in;
-    status = binary_file.read_data("/StdString_128chars", tst_str_in);
-    assert(status >= 0);
-    assert( tst_str_in.capacity() == DerivedStringType128::length() );
-    assert( tst_str_in.size() <= DerivedStringType128::length() );
-
-    //std::cout << "WJB-verify string data: " << tst_str_in.c_str() <<std::endl;
-    std::string tst_str("S");
-    assert( tst_str_in[0] == tst_str[0] );
   }
 
   return status;
