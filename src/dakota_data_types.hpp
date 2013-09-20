@@ -105,6 +105,7 @@ typedef std::list<Iterator>            IteratorList;
 //typedef std::list<ParallelLevel>         ParLevList;
 //typedef std::list<ParallelConfiguration> ParConfigList;
 
+typedef std::pair<int, int>            IntIntPair;
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
 typedef std::pair<int, Response>       IntResponsePair;

@@ -3235,7 +3235,7 @@ const BitArray& Model::discrete_int_sets()
     di_cntr += svd.vc_lookup(DISCRETE_DESIGN_RANGE);
     size_t num_ddsiv = discreteDesignSetIntValues.size();
     for (i=0; i<num_ddsiv; ++i, ++di_cntr)
-      discreteIntSets.flip(di_cntr);
+      discreteIntSets.set(di_cntr);
   }
   di_cntr += active_totals[4];
   if (active_totals[7]) {
@@ -3243,13 +3243,13 @@ const BitArray& Model::discrete_int_sets()
     size_t num_deusiv
       = epistDistParams.discrete_set_int_values_probabilities().size();
     for (i=0; i<num_deusiv; ++i, ++di_cntr)
-      discreteIntSets.flip(di_cntr);
+      discreteIntSets.set(di_cntr);
   }
   if (active_totals[10]) {
     di_cntr += svd.vc_lookup(DISCRETE_STATE_RANGE);
     size_t num_dssiv = discreteStateSetIntValues.size();
     for (i=0; i<num_dssiv; ++i, ++di_cntr)
-      discreteIntSets.flip(di_cntr);
+      discreteIntSets.set(di_cntr);
   }
 
   return discreteIntSets;

@@ -156,7 +156,7 @@ void SysCallApplicInterface::spawn_application(const bool block_flag)
     if (eaDedMasterFlag) { // master-slave dynamic scheduling requires a
       // central pt of control & therefore needs separate schedule & serve fns.
       if (evalCommRank == 0)
-        self_schedule_analyses();
+        master_schedule_analyses();
       else
         serve_analyses_synch();
     }
@@ -217,8 +217,10 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
       }
       Response response = pr_pair.prp_response(); // shallow copy
 
-      try { sysCallSimulator.read_results_files(response, fn_eval_id, 
-						final_eval_id_tag(fn_eval_id)); }
+      try {
+	sysCallSimulator.read_results_files(response, fn_eval_id,
+					    final_eval_id_tag(fn_eval_id));
+      }
 
       // If a std::string exception (incomplete file) is caught, set 
       // err_msg_caught to true so that processing is not performed below.  
@@ -282,9 +284,9 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
   if (completionSet.empty()) { // no jobs completed in pass through entire set
     // Test for MinGW first, since there we have usleep as well
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-	Sleep(1);     // 1 millisecond
+    Sleep(1);     // 1 millisecond
 #elif defined(HAVE_USLEEP)
-        usleep(1000); // 1000 microseconds = 1 millisec
+    usleep(1000); // 1000 microseconds = 1 millisec
 #endif // SLEEP
   }
   // remove completed jobs from sysCallSet
