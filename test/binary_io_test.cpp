@@ -19,6 +19,52 @@ using namespace Dakota;
 
 #define RANK 2
 
+void test_write_read_string_vec(const std::string& file_name)
+{
+  bool file_exist = true;
+  bool read_only = false;
+  herr_t status;
+
+  // scope within which file write takes place
+  {
+    // open file
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+    // std::string
+    // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
+#if 0
+    std::string ja_str_out("AnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTestAnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTest");
+#endif
+    std::string ja_str_out("Taking_Four_Score_to_WriteRead_HDF5");
+
+    StringArray str_array_out;
+    assert(str_array_out.empty() == true);
+
+    str_array_out.push_back(ja_str_out);
+    str_array_out.push_back(file_name);
+    str_array_out.push_back(ja_str_out);
+    str_array_out.push_back(file_name);
+
+    status = binary_file.store_data("/StringArrayData", str_array_out);
+
+    assert(status >= 0);
+    // binary stream goes out of scope... (file close)
+  }
+
+  // scope within which file read takes place
+  {
+    // open/read file
+    file_exist = true;
+    read_only = true;
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+
+    // binary stream goes out of scope... (file close)
+  }
+
+}
+
+
 int main()
 {
   double rval_out = 3.14159, rval_in = 0.0;
@@ -114,6 +160,9 @@ int main()
     // binary stream goes out of scope... (file close)
   }
 
+  test_write_read_string_vec(file_name);
+
+
   // WJB - ToDo: split out into functions
 
   // scope within which file read takes place
@@ -127,11 +176,13 @@ int main()
     // WJB:  Easy via NetCDF4! binary_File.getVar(pi_tag.c_str(), rval_in);
 
     // WJB: see hack (above) to make a single value look like an array of len==1
-    status = binary_file.read_data<double>(pi_tag.c_str(), &rval_in);
+    status = binary_file.read_data<double>(pi_tag.c_str(), rval_in);
     assert(status >= 0);
     assert( rval_in == rval_out );
   
 #if 0
+    // WJB: enabling read of more sophisticated data types suggests a lack of
+    //      code quality, although the h5dumps appear to be "sane"
     //RealMatrix rmatrix_in;
 
     //herr_t status = binary_file.read_data<double, RANK>("/RealMatrixData",
@@ -154,7 +205,7 @@ int main()
     assert( tst_str_in.capacity() == DerivedStringType128::length() );
     assert( tst_str_in.size() <= DerivedStringType128::length() );
 
-    //std::cout << "WJB: verify string data: " << tst_str_in << std::endl;
+    //std::cout << "WJB-verify string data: " << tst_str_in.c_str() <<std::endl;
     std::string tst_str("S");
     assert( tst_str_in[0] == tst_str[0] );
   }

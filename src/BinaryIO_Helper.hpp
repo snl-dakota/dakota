@@ -18,7 +18,8 @@
 #include "dakota_data_types.hpp"
 
 //#include <boost/filesystem/operations.hpp>
-#include <boost//assign/std/vector.hpp>
+#include <boost/assign/std/vector.hpp>
+#include <boost/multi_array.hpp>
 
 #include "hdf5.h"
 #include "hdf5_hl.h"
@@ -27,6 +28,7 @@
 #include <vector>
 #include <string>
 
+// WJB - ToDo: eliminate using directives in header files
 using namespace boost::assign;
 
 
@@ -64,6 +66,7 @@ struct DerivedStringType128
 {
   static const size_t length() { return 128; }
 
+  //static hid_t datatype()      { return H5T_STRING; }
   static hid_t datatype()
   { 
     // WJB:  is it a problem if the return val is incremented by each invocation?
@@ -72,6 +75,8 @@ struct DerivedStringType128
     //H5Tset_strpad(hidStrExtraBytes, H5T_STR_NULLPAD);
     return hidStrExtraBytes;
   }
+
+  class ExceedsMaxLengthException {};
 };
 
 
@@ -152,7 +157,7 @@ public:
     }
 
     if ( !errorStatus ) {
-      // Create a derived type to support more typical Dakota string len
+      // Use a derived HDF data type to support more typical Dakota string len
       if ( maxStringLength != DerivedStringType128::length() && exitOnError )
         throw BinaryStream_CreateFailure();
     }
@@ -195,13 +200,16 @@ public:
   //- Heading:  Data storage methods (write HDF5)
   //
   
-  /// Strings are weird in HDF5 -- may need to re-consider and use a
-  //                               std::vector<unsigned char> instead
+  /// Strings are weird in HDF5
   herr_t store_data(const std::string& dset_name,
                     const std::string& val) const
   {
+    // Not really able to do std:;string, so leverage a DERIVED HDF5 string type
+    if ( val.length() >= DerivedStringType128::length() && exitOnError )
+      throw DerivedStringType128::ExceedsMaxLengthException();
+
     std::vector<hsize_t> dims;
-    dims += 1;  // string is a 1D object
+    dims += 1;  // string is a 1D dataspace
 
     herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
                        1, dims.data(), DerivedStringType128::datatype(),
@@ -212,6 +220,69 @@ public:
 
     return ret_val;
   }
+
+private:
+
+  template <size_t DIM>
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<hsize_t>& dims,
+                    const std::vector<std::string>& buf) const
+  {
+    if ( dims.size() != DIM && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+#if 0
+    // WJB: use a for loop and delegate each entry the to single string store?
+    boost::multi_array<std::string, 1> tmp_buf( boost::extents[num_strings] );
+    /* boost::multi_array<unsigned char, 2> tmp_buf(
+      boost::extents[num_strings][DerivedStringType128::length()] ); */
+
+    std::cout << "chk2ndString inArray: " << buf[1].c_str() << std::endl;
+
+    for(int i=0; i<num_strings; ++i)
+      tmp_buf[i] = buf[i];
+
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       dims.size(), dims.data(),
+                       DerivedStringType128::datatype(), tmp_buf[0].c_str() );
+                       //DerivedStringType128::datatype(), &buf[0] );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+#endif
+
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       DIM, dims.data(), DerivedStringType128::datatype(),
+                       buf.data()->c_str() );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    return ret_val;
+  }
+
+public:
+
+  /// ToDo: String2DArray
+
+  /// StringArray
+  herr_t store_data(const std::string& dset_name,
+                    const StringArray& buf) const
+  {
+    if ( (buf.empty() || buf[0].length() >= DerivedStringType128::length())
+          && exitOnError )
+      throw DerivedStringType128::ExceedsMaxLengthException();
+
+    const size_t num_strings = buf.size();
+    std::vector<hsize_t> dims;
+
+    // 1D since using a HDF5 derived Type within the container
+    dims += num_strings;
+
+    //return store_data<std::string, 1>( dset_name, dims, buf.data() );
+    return store_data<1>( dset_name, dims, buf );
+  }
+
 
   template <typename T>
   herr_t store_data(const std::string& dset_name,
@@ -228,9 +299,9 @@ public:
     return ret_val; */
 
     std::vector<hsize_t> dims;
-    dims += 1;  // store value as the 0th entry in a 1D object
+    dims += 1;  // store value as the 0th entry in a 1D dataspace
 
-    std::vector<T> buf(1, val);
+    std::vector<T> buf(1, T(val));
     return store_data<T, 1>(dset_name, dims, buf);
   }
 
@@ -330,9 +401,10 @@ public:
 
 
   template <typename T>
-  herr_t read_data(const std::string& dset_name, T* buf) const
+  herr_t read_data(const std::string& dset_name, T& val) const
   {
 #if 0
+  //herr_t read_data(const std::string& dset_name, T* buf) const
     // WJB - ToDo:  As with singleVal WRITE step, need to NOT resort to "hack"
     //              of considering the val as the 0th entry in a std::vector
 
@@ -344,7 +416,7 @@ public:
 #else
 
     // WJB: ONLY double (for now)
-    return H5LTread_dataset_double(binStreamId, dset_name.c_str(), buf);
+    return H5LTread_dataset_double(binStreamId, dset_name.c_str(), &val);
 #endif
   }
 
