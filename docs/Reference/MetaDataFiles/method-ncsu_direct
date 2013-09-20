@@ -1,46 +1,39 @@
 Blurb::
-DIviding RECTangles  method
+DIviding RECTangles method
 Description::
 North Carolina State University (NCSU) has an implementation of the
 DIRECT algorithm (DIviding RECTangles algorithm that is outlined in
-the SCOLIB method section above).  This version is documented in [\ref
-Gablonsky2001 "Gablonsky, 2001".]  We have found that the NCSU DIRECT
+the SCOLIB method section above). This version is documented in [\ref
+Gablonsky2001 "Gablonsky, 2001".] We have found that the NCSU DIRECT
 implementation works better and is more robust for some problems than
-\c coliny_direct.  Currently, we maintain both versions of DIRECT in
-%Dakota; in the future, we may deprecate one.  The NCSU DIRECT method
-is selected with \c ncsu_direct.  We have tried to maintain
+\c coliny_direct. Currently, we maintain both versions of DIRECT in
+%Dakota; in the future, we may deprecate one.
+
+The NCSU DIRECT method
+is selected with \c ncsu_direct. We have tried to maintain
 consistency between the keywords in SCOLIB and NCSU implementation of
 DIRECT, but the algorithms have different parameters, so the keywords
 sometimes have slightly different meaning.
 
-The method independent controls for \c max_iterations and \c
-max_function_evaluations limit the number of iterations and the number
-of function evaluations that can be performed during an NCSU DIRECT
-optimization.  This methods will always strictly respect the number of
+<b> Stopping Criteria </b>
+
+The algorithm stops based on:
+-# \ref method-max_iterations - number of iterations
+-# \ref method-max_function_evaluations - number of function evaluations
+-# \c solution_target and \ref method-convergence_tolerance
+-# \c min_boxsize_limit
+-# \c volume_boxsize_limit 
+
+This method will always strictly respect the number of
 iterations, but may slightly exceed the number of function
 evaluations, as it will always explore all sub-rectangles at the
 current level.
 
-There are four specification controls affecting NCSU DIRECT: \c
-solution_target, \c convergence_tolerance, \c min_boxsize_limit, and
-\c volume_boxsize_limit.  The solution target specifies a goal toward
-which the optimizer should track.  When \c solution_target is
-specified, \c convergence_tolerance specifies a percent error on the
-optimization.  This is used for test problems, when the true global
-minimum is known (call it \c solution_target := fglobal).  Then, the
-optimization terminates when 100(f_min-fglobal)/max(1,abs(fglobal) <
-convergence_tolerance.  The default for fglobal is -1.0e100 and the
-default for convergence tolerance is as given above.
-
+<!---
 \c min_boxsize_limit is a setting that terminates the optimization
 when the measure of a hyperrectangle S with f(c(S)) = fmin is less
-than min_boxsize_limit.  \c volume_boxsize_limit is a setting that
-terminates the optimization when the volume of a hyperrectangle S with
-f(c(S)) = fmin is less than volume_boxsize_limit percent of the
-original hyperrectangle.  Basically, volume_boxsize_limit stops the
-optimization when the volume of the particular rectangle which has
-fmin is less than a certain percentage of the whole volume.  \c
-min_boxsize_limit uses an arbitrary measure to stop the optimization.
+than min_boxsize_limit. 
+--->
 
 
 Topics::	direct, not_yet_reviewed

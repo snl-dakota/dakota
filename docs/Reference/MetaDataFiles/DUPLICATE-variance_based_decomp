@@ -3,6 +3,8 @@ Global sensitivity analyis using variance-based decomposition
 Description::
 Dakota can calculate sensitivity indices through variance based
 decomposition using the keyword \c variance_based_decomp. 
+These indicate how important the uncertainty in each input 
+variable is in contributing to the output variance.
 
 Because of the
 computational cost, \c variance_based_decomp is turned off as a

@@ -8,27 +8,26 @@ the responses.
 
 <b> Method Behavior </b>
 
-The keywords
- -* sample_type
- -* fixed_seed
- -* rng
- -* samples
- -* seed
- -* variance_based_decomp
-Change how the samples are selected. 
+The following keywords change how the samples are selected:
+\li sample_type
+\li fixed_seed
+\li rng
+\li samples
+\li seed
+\li variance_based_decomp
 
 !!!!!!!!!!!!!!!!!!!!!!!! Does variance_based_decomp change the samples?  if so, this is not mentioned at all.
 
 <b> Method Outputs </b>
 
-The keywords:
- -* variance_based_decomp
- -* reliability_levels
- -* response_levels
- -* distribution
- -* probability_levels     
- -* gen_reliability_levels 
-Change the method outputs.
+The keywords change the method outputs:
+\li variance_based_decomp
+\li reliability_levels
+\li response_levels
+\li distribution
+\li probability_levels     
+\li gen_reliability_levels 
+
 
 
 As a default, %Dakota provides correlation analyses when running LHS.

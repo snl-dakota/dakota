@@ -1,7 +1,7 @@
 Blurb::
-Level 2 of 5. 5 is max output
+Level 2 of 5 - less than normal
 Description::
-Level 2 of 5. 5 is max output
+This is described on \ref method-output
 Topics::	not_yet_reviewed
 Examples::
 Theory::

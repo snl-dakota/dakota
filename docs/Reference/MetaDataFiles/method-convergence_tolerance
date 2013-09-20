@@ -1,6 +1,23 @@
 Blurb::
-??
+Stopping criterion based on convergence of the objective function
 Description::
+The \c convergence_tolerance specification provides a real value for
+controlling the termination of iteration. In most cases, it is a
+relative convergence tolerance for the objective function; i.e., if
+the change in the objective function between successive iterations
+divided by the previous objective function is less than the amount
+specified by convergence_tolerance, then this convergence criterion is
+satisfied on the current iteration. Since no progress may be made on
+one iteration followed by significant progress on a subsequent
+iteration, some libraries require that the convergence tolerance be
+satisfied on two or more consecutive iterations prior to termination
+of iteration. This control is used with optimization and least squares
+iterators (DOT, CONMIN, NPSOL, NLSSOL, OPT++, and SCOLIB) and is not
+used within the uncertainty quantification, design of experiments, or
+parameter study iterator branches. Refer to \ref MethodDOTIC, 
+\ref MethodNPSOLIC, \ref MethodOPTPPIC, and \ref MethodSCOLIBIC for 
+specific interpretations of the \c convergence_tolerance specification.
+
 Topics::	problem, not_yet_reviewed
 Examples::
 Theory::

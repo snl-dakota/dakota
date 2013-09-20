@@ -14,6 +14,7 @@ library, the algorithm controls are very similar.
 One of the two available methods must be specified.
 
 <b> Optional Keywords </b>
+
 All these methods take the same optional keywords, dealing with
 linear equality and inequality constraints.
 

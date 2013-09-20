@@ -1,5 +1,10 @@
 Blurb::
+Use an arbitrary measure to stop the optimization
 Description::
+\c min_boxsize_limit is a setting that terminates the optimization
+when the measure of a hyperrectangle S with f(c(S)) = fmin is less
+than min_boxsize_limit. 
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

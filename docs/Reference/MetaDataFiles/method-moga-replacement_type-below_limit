@@ -1,6 +1,9 @@
 Blurb::
+???????
 Description::
-Topics::	not_yet_reviewed
+The \c below_limit replacement will only keep designs that are 
+dominated by fewer than a limiting number of other designs.
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

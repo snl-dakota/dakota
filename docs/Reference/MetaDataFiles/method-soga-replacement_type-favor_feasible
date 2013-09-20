@@ -1,6 +1,9 @@
 Blurb::
+????????
 Description::
-Topics::	not_yet_reviewed
+This replacement operator will always prefer a more feasible design to a less feasible one. Beyond that, it favors solutions based on an assigned fitness value which must have been installed by the weighted sum only fitness assessor (see the discussion below). 
+
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

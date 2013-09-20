@@ -1,7 +1,12 @@
 Blurb::
+Stopping criteria based on number of function evaluations
 Description::
-Topics::	not_yet_reviewed
+The maximum number of function evaluations.
+
+The default for \c max_function_evaluations is 1000. 
+
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also::	method-max_iterations 

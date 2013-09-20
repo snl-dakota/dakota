@@ -1,7 +1,13 @@
 Blurb::
+Stopping criteria based on number of iterations
 Description::
+The maximum number of iterations.
+
+The default for \c max_iterations is 100. 
+
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also::	method-max_function_evaluations

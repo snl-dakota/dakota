@@ -1,5 +1,10 @@
 Blurb::
+Initilization option for JEGA methods
 Description::
+\c simple_random creates initial solutions with random variable
+values according to a uniform random number distribution. It gives no
+consideration to any previously generated designs. 
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

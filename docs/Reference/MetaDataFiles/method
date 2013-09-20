@@ -1,9 +1,12 @@
 Blurb::
 Specifies the name and controls of an iterator.
 Description::
-The method section in a Dakota input file specifies the name and 
-controls of an iterator. The terms "method" and "iterator" can be 
-used interchangeably. A method specification, then, is used to 
+The method section in a Dakota input file specifies the method 
+and the various keywords to control its behavior.
+The terms "method" and "iterator" can be 
+used interchangeably.
+
+<!--- A method specification, then, is used to 
 select an iterator from the iterator hierarchy, which includes 
 optimization, uncertainty quantification, least squares, design 
 of experiments, and parameter study iterators (see the Users Manual 
@@ -12,17 +15,28 @@ This iterator may be used alone or in combination with other iterators
 as dictated by the strategy specification (refer to Strategy Commands 
 for strategy command syntax and to the Users Manual 
 [Adams et al., 2010] for strategy algorithm descriptions).
+--->
 
+<b> The Methods </b>
 
+Each \c method block must select one method from Group 1.
+
+<b> Method Independent Controls </b>
+
+In addition to the method, there are 10 optional keywords, which 
+are referred to as method independent controls. 
+These controls are valid for enough methods that it was
+reasonable to pull them out of the method dependent blocks and consolidate the
+specifications, however, they are NOT universally respected by all methods.
+
+<!---
 The method independent controls include a method identifier string, a model
 type specification with pointers to variables, interface, and responses
 specifications, a speculative gradient selection, an output verbosity control,
 maximum iteration and function evaluation limits, constraint and convergence
 tolerance specifications, a scaling selection, and a set of linear inequality
-and equality constraint specifications. While each of these controls is not
-valid for every method, the controls are valid for enough methods that it was
-reasonable to pull them out of the method dependent blocks and consolidate the
-specifications.
+and equality constraint specifications. 
+--->
 
 
 Topics::	block, not_yet_reviewed

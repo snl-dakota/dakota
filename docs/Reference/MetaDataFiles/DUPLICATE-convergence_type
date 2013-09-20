@@ -1,5 +1,12 @@
 Blurb::
+Select the convergence type for JEGA methods
 Description::
+The two JEGA methods use different convergence types, which are described on their
+respective pages.
+
+All the convergence types are modified by the optional keywords
+\c percent_change and \c num_generations.
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

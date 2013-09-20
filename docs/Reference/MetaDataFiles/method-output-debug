@@ -1,7 +1,8 @@
 Blurb::
-Level 5 of 5. 5 is max output
+Level 5 of 5 - maximum
 Description::
-Maximum verbosity
+This is described on \ref method-output
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

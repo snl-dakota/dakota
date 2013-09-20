@@ -1,7 +1,31 @@
 Blurb::
+Calculate metrics to assess the quality of the samples
 Description::
+\c quality_metrics calculates four quality metrics relating to the
+volumetric spacing of the samples. The four quality metrics measure 
+different aspects relating to the uniformity of point samples in hypercubes. 
+Desirable properties of such point samples are: 
+\li are the points equally spaced
+\li do the points cover the region
+\li and are they isotropically distributed
+\li with no directional bias in the spacing
+
+The four quality
+metrics we report are:
+\li h: the point distribution norm, which is a measure of uniformity of the point distribution
+\li chi: a regularity measure, and provides a measure of local uniformity of a set of points
+\li tau: the second moment trace measure
+\li d: the second moment determinant measure
+
+All of these values are scaled so that smaller is 
+better (the smaller the metric, the better the uniformity of the point 
+distribution). 
+
+
 Topics::	not_yet_reviewed
 Examples::
+Complete explanation of these measures can be found in 
+[\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 Theory::
 Faq::
 See_Also::	
