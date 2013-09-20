@@ -12,12 +12,61 @@
 
 #include <cassert>
 #include <iostream>
-#include <string>
 
 using namespace boost::assign; // WJB: OK here in tester, but remove in Hlpr.hpp
 using namespace Dakota;
 
 //#define RANK 2
+
+template <typename T>
+void test_write_read_std_vec(const std::string& file_name,
+                             const std::string& data_label,
+                             T val_out)
+{
+  std::vector<T> vec_out;
+  vec_out += val_out, 23, 333;
+
+  herr_t status;
+
+  assert(vec_out.size() == 3);
+  assert(val_out == vec_out[0]);
+
+  // scope within which file write takes place
+  {
+    bool file_exist = true;
+    bool read_only = false;
+
+    // open file
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+    // std::vector<int> -- ToDo: template function to support double too
+    status = binary_file.store_data(data_label, vec_out);
+    assert(status >= 0);
+
+    // binary stream goes out of scope... (file close)
+  }
+
+  // scope within which file read takes place
+  {
+    // open/read file
+    bool file_exist = true;
+    bool read_only = true;
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+#if 0
+    // WJB: enabling read of more sophisticated data types suggests a lack of
+    //      code quality, although the h5dumps appear to be "sane"
+    std::vector<int> ivec_in; // recall use of templates for built-in types
+    status = binary_file.read_data<int, 1>(data_label, ivec_in);
+    assert(status >= 0);
+
+    assert( ivec_in[0]     == ivec_out[0] );
+    assert( ivec_in.size() == ivec_out.size() );
+    assert( ivec_in[ivec_out.size()-1] == ivec_out[ivec_out.size()-1] );
+#endif
+  }
+}
+
 
 void test_write_read_string(const std::string& file_name)
 {
@@ -113,7 +162,6 @@ void test_write_read_string_array(const std::string& file_name)
 int main()
 {
   double rval_out = 3.14159, rval_in = 0.0;
-  int ival_out = 314159, ival_in = 0;
   std::string pi_tag("/DakPi");
   std::string file_name("binary_io_test.h5");
 
@@ -137,16 +185,11 @@ int main()
   rmatrix_out[1][0] = .23;
   rmatrix_out[1][1] = rval_out;
 
-  std::vector<int> ivec_out;
-  ivec_out += ival_out, 23, 333;
-
-  assert(ivec_out.size() == 3);
   //assert(rmatrix_out.numCols() == 2);
   assert(rmatrix_out[0].length() == 2); // numCols
   assert(rmatrix_out[1].length() == 2); // confirm square "matrix" in this test
   assert(rval_out == rmatrix_out[0](0));
   assert(rval_out == rmatrix_out[1](1));
-  assert(ival_out == ivec_out[0]);
 
   bool file_exist = false;
   bool read_only = false;
@@ -170,12 +213,10 @@ int main()
     status = binary_file.store_data("/RealMatrixData", rmatrix_out);
     assert(status >= 0);
 
-    // std::vector<int>
-    status = binary_file.store_data("/IntVectorData", ivec_out);
-    assert(status >= 0);
-
     // binary stream goes out of scope... (file close)
   }
+
+  test_write_read_std_vec(file_name, "/SomeIntVectorData", 314159);
 
   test_write_read_string(file_name);
   test_write_read_string_array(file_name);
@@ -206,13 +247,6 @@ int main()
                       //rmatrix_in);
     //assert(status >= 0);
     //assert(rmatrix_in(0, 0) == rmatrix_out(0, 0));
-
-    std::vector<int> ivec_in;
-    status = binary_file.read_data<int, 1>("/IntVectorData", ivec_in);
-    assert(status >= 0);
-
-    assert( ivec_in.size()   == ivec_out.size() );
-    assert( ivec_in[0]       == ivec_out[0] );
 #endif 
   }
 
