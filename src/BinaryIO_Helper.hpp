@@ -13,7 +13,6 @@
 #ifndef BINARY_IO_HELPER_HPP
 #define BINARY_IO_HELPER_HPP
 
-// WJB - ToDo: move this header file into Dakota source
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 
@@ -392,7 +391,7 @@ public:
     // WJB: how to know what to size the dims vector??
     // H5LTget_dataset_ndims
     //      hardwire to have some success for now
-    std::vector<hsize_t> dims( DIM, hsize_t(1) ); // see "accumulate" 6 lines down
+    std::vector<hsize_t> dims( DIM, hsize_t(1) ); // see "accumulate" 9 lines down
     
     herr_t ret_val = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
                        &dims[0], NULL, NULL );
@@ -429,8 +428,8 @@ public:
     return ret_val;
 #else
 
-    // WJB: ONLY double (for now)
-    return H5LTread_dataset_double(binStreamId, dset_name.c_str(), &val);
+    return H5LTread_dataset( binStreamId, dset_name.c_str(),
+             NativeDataTypes<T>::datatype(), &val);
 #endif
   }
 

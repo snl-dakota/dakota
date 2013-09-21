@@ -19,6 +19,44 @@ using namespace Dakota;
 //#define RANK 2
 
 template <typename T>
+void test_write_read_native_val(const std::string& file_name,
+                                const std::string& data_label,
+                                T val_out)
+{
+  herr_t status;
+
+  // scope within which file write takes place
+  {
+    bool file_exist = true;
+    bool read_only = false;
+
+    // open file
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+    status = binary_file.store_data(data_label, val_out);
+    assert(status >= 0);
+
+    // binary stream goes out of scope... (file close)
+  }
+
+  // scope within which file read takes place
+  {
+    // open/read file
+    bool file_exist = true;
+    bool read_only = true;
+    T val_in = 0;
+
+    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+
+    // WJB: see hack (hdr file) to make a single val look like a vec of len==1
+    status = binary_file.read_data(data_label, val_in);
+    assert(status >= 0);
+    assert(val_in == val_out);
+  }
+}
+
+
+template <typename T>
 void test_write_read_std_vec(const std::string& file_name,
                              const std::string& data_label,
                              T val_out)
@@ -39,7 +77,6 @@ void test_write_read_std_vec(const std::string& file_name,
     // open file
     SimpleBinaryStream binary_file(file_name, file_exist, read_only);
 
-    // std::vector<int> -- ToDo: template function to support double too
     status = binary_file.store_data(data_label, vec_out);
     assert(status >= 0);
 
@@ -161,8 +198,7 @@ void test_write_read_string_array(const std::string& file_name)
 
 int main()
 {
-  double rval_out = 3.14159, rval_in = 0.0;
-  std::string pi_tag("/DakPi");
+  double rval_out = 3.14159;
   std::string file_name("binary_io_test.h5");
 
   std::vector<double> rmatrix_row0;
@@ -195,20 +231,13 @@ int main()
   bool read_only = false;
   herr_t status;
 
-  // WJB - ToDo: split out into functions
+  // WJB - ToDo: CONTINUE to split-out into functions
 
   // scope within which file write takes place
   {
     // open/create file
     SimpleBinaryStream binary_file(file_name, file_exist, read_only);
     
-    // write data 
-    // single value
-#if 1
-    // WJB: NOTE hack to make a single value look like an array of len==1
-    herr_t status = binary_file.store_data(pi_tag, rval_out);
-#endif
-
     // RealMatrix -- WJB: come back ASAP -- try RealVectorArray instead
     status = binary_file.store_data("/RealMatrixData", rmatrix_out);
     assert(status >= 0);
@@ -216,6 +245,7 @@ int main()
     // binary stream goes out of scope... (file close)
   }
 
+  test_write_read_native_val(file_name, "/DakPi", 3.14159);
   test_write_read_std_vec(file_name, "/SomeIntVectorData", 314159);
 
   test_write_read_string(file_name);
@@ -232,18 +262,13 @@ int main()
     SimpleBinaryStream binary_file(file_name, file_exist, read_only);
 
     // read data 
-
-    // WJB: see hack (hdr file) to make a single val look like a vec of len==1
-    status = binary_file.read_data<double>(pi_tag.c_str(), rval_in);
-    assert(status >= 0);
-    assert( rval_in == rval_out );
   
 #if 0
     // WJB: enabling read of more sophisticated data types suggests a lack of
     //      code quality, although the h5dumps appear to be "sane"
     //RealMatrix rmatrix_in;
 
-    //herr_t status = binary_file.read_data<double, RANK>("/RealMatrixData",
+    //herr_t status = binary_file.read_data<double, 2>("/RealMatrixData",
                       //rmatrix_in);
     //assert(status >= 0);
     //assert(rmatrix_in(0, 0) == rmatrix_out(0, 0));
