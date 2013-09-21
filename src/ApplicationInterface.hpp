@@ -162,7 +162,7 @@ protected:
 
   /// blocking dynamic schedule of all analyses within a function
   /// evaluation using message passing
-  void master_schedule_analyses();
+  void master_dynamic_schedule_analyses();
   // manage asynchronous analysis jobs on local proc. (not currently
   // elevated to ApplicationInterface since only ForkApplicInterface
   // currently supports this)
@@ -246,11 +246,15 @@ private:
   // Scheduling routines employed by synch():
 
   /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
-  /// using message passing; executes on iteratorComm master
-  void master_schedule_evaluations();
+  /// using message passing on a dedicated master partition; executes on
+  /// iteratorComm master
+  void master_dynamic_schedule_evaluations();
   /// blocking static schedule of all evaluations in beforeSynchCorePRPQueue
-  /// using message passing; executes on iteratorComm master
-  void peer_schedule_evaluations();
+  /// using message passing on a peer partition; executes on iteratorComm master
+  void peer_static_schedule_evaluations();
+  /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
+  /// using message passing on a peer partition; executes on iteratorComm master
+  void peer_dynamic_schedule_evaluations();
   /// perform all jobs in prp_queue using asynchronous approaches on
   /// the local processor
   void asynchronous_local_evaluations(PRPQueue& prp_queue);
@@ -261,9 +265,9 @@ private:
   // Scheduling routines employed by synch_nowait():
 
   /// execute a nonblocking dynamic schedule in a master-slave partition
-  void master_schedule_evaluations_nowait();
+  void master_dynamic_schedule_evaluations_nowait();
   /// execute a nonblocking static/dynamic schedule in a peer partition
-  void peer_schedule_evaluations_nowait();
+  void peer_dynamic_schedule_evaluations_nowait();
   /// launch new jobs in prp_queue asynchronously (if capacity is
   /// available), perform nonblocking query of all running jobs, and
   /// process any completed jobs (handles both local master- and local
@@ -292,8 +296,22 @@ private:
   /// process a completed synchronous local evaluation
   void process_synch_local(PRPQueueIter& prp_it);
 
+  /// helper function for creating an initial active_prp_queue by launching
+  /// asynch local jobs from local_prp_queue, as limited by server capacity
+  void assign_asynch_local_queue(PRPQueue& local_prp_queue,
+				 PRPQueueIter& local_prp_iter,
+				 PRPQueue& active_prp_queue);
+  /// helper function for updating an active_prp_queue by backfilling
+  /// asynch local jobs from local_prp_queue, as limited by server capacity
+  void assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
+					PRPQueueIter& local_prp_iter,
+					PRPQueue& active_prp_queue);
+
+  /// helper function for testing active asynch local jobs and then backfilling
+  size_t test_local_backfill(PRPQueue& active_prp_queue, PRPQueue& assign_queue,
+			     PRPQueueIter& assign_iter);
   /// helper function for testing receive requests and then backfilling jobs
-  void test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag);
+  size_t test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag);
 
   // Server routines employed by serve_evaluations():
 
@@ -458,8 +476,8 @@ private:
 
   /// used by asynchronous_local_nowait() to bookkeep which jobs are running
   IntSet localRunningSet;
-  /// used by master_schedule_evaluations_nowait() to bookkeep which jobs are
-  /// running
+  /// used by master_dynamic_schedule_evaluations_nowait() to bookkeep which
+  /// jobs are running
   std::map<int, IntIntPair> msgPassRunningMap;
 
   /// array of pack buffers for evaluation jobs queued to a server
@@ -560,6 +578,12 @@ inline void ApplicationInterface::
 send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 		bool peer_flag, bool reuse_flag)
 {
+  if (reuse_flag)
+    { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
+  else
+    recvBuffers[buff_index].resize(lenResponseMessage);
+  sendBuffers[buff_index] << prp_it->prp_parameters() << prp_it->active_set();
+
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
     if (peer_flag)
@@ -570,12 +594,6 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 	   << " to server " << server_id << '\n';
   }
 
-  if (reuse_flag)
-    { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
-  else
-    recvBuffers[buff_index].resize(lenResponseMessage);
-
-  sendBuffers[buff_index] << prp_it->prp_parameters() << prp_it->active_set();
   // pre-post nonblocking receives (to prevent any message buffering)
   parallelLib.irecv_ie(recvBuffers[buff_index], server_id, fn_eval_id,
 		       recvRequests[buff_index]);
@@ -605,7 +623,7 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   // multiple key-value lookups.
   Response raw_response = rawResponseMap[fn_eval_id] = prp_it->prp_response();
   recvBuffers[buff_index] >> raw_response; // shared rep is updated
-  if (evalCacheFlag)   data_pairs.insert(*prp_it);
+  if (evalCacheFlag)  data_pairs.insert(*prp_it);
   if (restartFileFlag) write_restart << *prp_it;
 }
 
@@ -630,8 +648,8 @@ process_asynch_local(PRPQueue& active_prp_queue, int fn_eval_id)
   extern BoStream write_restart;
   extern PRPCache data_pairs;
 
-  PRPQueueIter q_it = lookup_by_eval_id(active_prp_queue, fn_eval_id);
-  if (q_it == active_prp_queue.end()) {
+  PRPQueueIter prp_it = lookup_by_eval_id(active_prp_queue, fn_eval_id);
+  if (prp_it == active_prp_queue.end()) {
     Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
 	 << "process_asynch_local()." << std::endl;
     abort_handler(-1);
@@ -640,11 +658,11 @@ process_asynch_local(PRPQueue& active_prp_queue, int fn_eval_id)
   if (outputLevel > SILENT_OUTPUT)
     Cout << "Function evaluation " << fn_eval_id << " has completed\n";
 
-  rawResponseMap[fn_eval_id] = q_it->prp_response();
-  if (evalCacheFlag)   data_pairs.insert(*q_it);
-  if (restartFileFlag) write_restart << *q_it;
+  rawResponseMap[fn_eval_id] = prp_it->prp_response();
+  if (evalCacheFlag)  data_pairs.insert(*prp_it);
+  if (restartFileFlag) write_restart << *prp_it;
 
-  active_prp_queue.erase(q_it);
+  active_prp_queue.erase(prp_it);
   if (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1) {// free "server"
     //all_completed.insert(fn_eval_id); // using rawResponseMap instead
     size_t server_index = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
@@ -663,7 +681,7 @@ inline void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
     Cout << "Evaluating function evaluation " << fn_eval_id << std::endl;
 
   rawResponseMap[fn_eval_id] = prp_it->prp_response();
-  if (evalCacheFlag)   data_pairs.insert(*prp_it);
+  if (evalCacheFlag)  data_pairs.insert(*prp_it);
   if (restartFileFlag) write_restart << *prp_it;
 }
 

@@ -416,7 +416,7 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
       // master-slave dynamic scheduling requires a central point of control 
       // and therefore needs separate schedule & serve functions.
       if (evalCommRank == 0)
-        master_schedule_analyses();
+        master_dynamic_schedule_analyses();
       else {
 	// in message passing mode, the user must explicitly specify analysis
 	// concurrency to get hybrid parallelism

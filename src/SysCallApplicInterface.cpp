@@ -156,7 +156,7 @@ void SysCallApplicInterface::spawn_application(const bool block_flag)
     if (eaDedMasterFlag) { // master-slave dynamic scheduling requires a
       // central pt of control & therefore needs separate schedule & serve fns.
       if (evalCommRank == 0)
-        master_schedule_analyses();
+        master_dynamic_schedule_analyses();
       else
         serve_analyses_synch();
     }

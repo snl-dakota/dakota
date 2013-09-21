@@ -126,7 +126,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   // ----------------
   if (eaDedMasterFlag) { // set up master-slave
     if (evalCommRank == 0)
-      master_schedule_analyses();
+      master_dynamic_schedule_analyses();
     else
       serve_analyses_synch();
   }
