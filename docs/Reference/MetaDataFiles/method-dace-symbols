@@ -1,5 +1,9 @@
 Blurb::
+Number of replications in the sample set
 Description::
+\c symbols is related to the number of replications in the sample
+set (a larger number of symbols equates to more stratification and
+fewer replications).
 Topics::	not_yet_reviewed
 Examples::
 Theory::

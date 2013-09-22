@@ -32,10 +32,25 @@ specification (refer to \ref RespGrad for information on these
 specifications). It should not be selected with vendor numerical
 gradients since vendor internal finite difference algorithms have not
 been modified for this purpose. In full-Newton approaches, the Hessian
-is also computed speculatively.  NPSOL and NLSSOL do not support
+is also computed speculatively. NPSOL and NLSSOL do not support
 speculative gradients, as their gradient-based line search in
 user-supplied gradient mode (dakota numerical or analytic gradients)
 is a superior approach for load-balanced parallel execution.
+
+
+The \c speculative specification enables speculative computation of
+gradient and/or Hessian information, where applicable, for parallel
+optimization studies. By speculating that the derivative information
+at the current point will be used later, the complete data set (all
+available gradient/Hessian information) can be computed on every
+function evaluation. While some of these computations will be wasted,
+the positive effects are a consistent parallel load balance and
+usually shorter wall clock time. The \c speculative specification is
+applicable only when parallelism in the gradient calculations can be
+exploited by %Dakota (it will be ignored for \c vendor \c numerical
+gradients).
+
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

@@ -1,5 +1,7 @@
 Blurb::
+(default) Longest edge of subregion is subdivided
 Description::
+Longest edge of subregion is subdivided
 Topics::	not_yet_reviewed
 Examples::
 Theory::

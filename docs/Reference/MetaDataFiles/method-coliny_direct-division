@@ -1,5 +1,14 @@
 Blurb::
+Determine how rectangles are subdivided
 Description::
+The \c division specification determines how DIRECT subdivides 
+each subregion of the search space. 
+
+If \c division is set to 
+\c major_dimension, then the dimension representing the longest edge
+of the subregion is subdivided (this is the default). If \c division
+is set to \c all_dimensions, then all dimensions are simultaneously 
+subdivided.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

@@ -1,29 +1,12 @@
 Blurb::
-Pattern search, derivative free optimization methoD
+Pattern search, derivative free optimization method
 Description::
 The asynchronous parallel pattern search (APPS) algorithm [\ref GrKo06
 "Gray and Kolda, 2006"] is a fully asynchronous pattern search
 technique in that the search along each offset direction continues
 without waiting for searches along other directions to finish.
 
-The only method independent controls that are currently mapped to APPS
-are \c max_function_evaluations, \c constraint_tolerance, and the \c
-output verbosity control. We note that while APPS treats the
-constraint tolerance separately for linear and nonlinear constraints,
-we apply the same value to both if the user specifies \c
-constraint_tolerance. The APPS internal "display" level is mapped to
-the %Dakota \c debug, \c verbose, \c normal, \c quiet, and \c silent
-settings as follows:
-
-\li %Dakota "debug":  display final solution, all input parameters,
-variable and constraint info, trial points, search directions, and
-execution details
-\li %Dakota "verbose": display final solution, all input parameters,
-variable and constraint info, and trial points
-\li %Dakota "normal": display final solution, all input parameters,
-variable and constraint summaries, and new best points
-\li %Dakota "quiet":  display final solution and all input parameters
-\li %Dakota "silent": display final solution
+<b> Concurrency </b>
 
 APPS exploits parallelism through the use of %Dakota's concurrent
 function evaluations. The variant of the algorithm that is currently
@@ -33,11 +16,7 @@ level of at most twice the number of variables. More options that
 allow for greater evaluation concurrency may be exposed in future
 releases.
 
-The APPS method is invoked using a \c asynch_pattern_search group
-specification. Some of the method dependent controls are similar to
-the SCOLIB controls for \c coliny_pattern_search described in \ref
-MethodSCOLIBPS. In particular, APPS supports the following step
-length control parameters:
+<b> Algorithm Behavior </b>
 
 \li \c initial_delta: the initial step length, must be positive
 \li \c threshold_delta: step length used to determine convergence,
@@ -45,20 +24,8 @@ must be greater than or equal to 4.4e-16
 \li \c contraction_factor: amount by which step length is rescaled
 after unsuccesful iterates, must be strictly between 0 and 1
 
-If \c initial_delta is supplied by the user, it will be applied in an
-absolute sense in all coordinate directions. APPS documentation
-advocates choosing \c initial_delta to be the approximate distance
-from the initial point to the solution. If this is unknown, it is
-advisable to err on the side of choosing an \c initial_delta that is
-too large or to not specify it. In the latter case, APPS will take a
-full step to the boundary in each direction. Relative application of
-\c initial_delta is not available unless the user scales the problem
-accordingly.
 
-When the solution to the optimization problem is known, the user may
-specify a value for \c solution_target as a termination criteria.
-APPS will terminate when the function value falls below \c
-solution_target.
+<b> Scheduling </b>
 
 Currently, APPS only supports coordinate bases with a total of \e 2n
 function evaluations in the pattern, and these patterns may only
@@ -67,6 +34,9 @@ the use of either \c blocking or \c nonblocking schedulers for APPS.
 The \c blocking option causes APPS to behave as a synchronous
 algorithm. The \c nonblocking option is not available when %Dakota is
 used in message-passing mode.
+
+
+<b> Merit Functions </b>
 
 APPS solves nonlinearly constrained problems by solving a sequence of
 linearly constrained merit function-base subproblems. There are
@@ -90,8 +60,34 @@ function, must be nonnegative
 penalty functions, must be between 0 and 1 (inclusive)
 
 
+<b> Method Independent Controls </b>
 
-Topics::	package_hopspack, pattern_search, pattern_search, not_yet_reviewed
+The only method independent controls that are currently mapped to APPS
+are:
+\li \ref method-max_function_evaluations
+\li \ref method-constraint_tolerance
+\li \ref method-output
+
+Note that while APPS treats the
+constraint tolerance separately for linear and nonlinear constraints,
+we apply the same value to both if the user specifies \c
+constraint_tolerance. 
+
+The APPS internal display level is mapped to
+the %Dakota \c output settings as follows:
+\li \c debug:  display final solution, all input parameters,
+variable and constraint info, trial points, search directions, and
+execution details
+\li \c verbose: display final solution, all input parameters,
+variable and constraint info, and trial points
+\li \c normal: display final solution, all input parameters,
+variable and constraint summaries, and new best points
+\li \c quiet:  display final solution and all input parameters
+\li \c silent: display final solution
+
+
+
+Topics::	package_hopspack, pattern_search, not_yet_reviewed
 Examples::
 Theory::
 Faq::

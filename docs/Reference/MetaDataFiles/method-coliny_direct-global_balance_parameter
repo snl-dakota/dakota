@@ -1,5 +1,7 @@
 Blurb::
+Tolerance for whether a subregion is worth dividing
 Description::
+See parent page.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

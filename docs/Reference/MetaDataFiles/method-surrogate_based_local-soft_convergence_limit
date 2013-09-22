@@ -1,5 +1,11 @@
 Blurb::
+Limit number of iterations w/ little improvement
 Description::
+\c soft_convergence_limit (a soft
+convergence control for the surrogate_based_local iterations which limits the number of
+consecutive iterations with improvement less than the convergence
+tolerance)
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

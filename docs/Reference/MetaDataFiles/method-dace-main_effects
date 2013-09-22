@@ -1,5 +1,11 @@
 Blurb::
+ANOVA
 Description::
+The \c main_effects control prints Analysis-of-Variance
+main effects results (e.g. ANOVA tables with p-values per variable). 
+The \c main_effects control is only operational with the 
+orthogonal arrays or Latin Hypercube designs, not for Box Behnken or 
+Central Composite designs. 
 Topics::	not_yet_reviewed
 Examples::
 Theory::

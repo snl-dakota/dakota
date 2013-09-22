@@ -1,59 +1,29 @@
 Blurb::
 Design and Analysis of Computer Experiments
 Description::
-Design and Analysis of Computer Experiments (DACE) methods compute
-response data sets at a selection of points in the parameter space.
-Three libraries are provided for performing these studies: DDACE, 
-FSUDace, and PSUADE. The design of experiments methods do not
-currently make use of any of the method independent controls.
-
 The Distributed Design and Analysis of Computer Experiments (DDACE)
-library provides the following DACE techniques: grid sampling (\c
-grid), pure random sampling (\c random), orthogonal array sampling (\c
-oas), latin hypercube sampling (\c lhs), orthogonal array latin
-hypercube sampling (\c oa_lhs), Box-Behnken (\c box_behnken), and
-central composite design (\c central_composite). It is worth noting
-that there is some overlap in sampling techniques with those available
-from the nondeterministic branch. The current distinction is that the
-nondeterministic branch methods are designed to sample within a
-variety of probability distributions for uncertain variables, whereas
-the design of experiments methods treat all variables as having
-uniform distributions. As such, the design of experiments methods are
-well-suited for performing parametric studies and for generating data
-sets used in building global approximations (see \ref ModelSurrG),
-but are not currently suited for assessing the effect of
-uncertainties. If a design of experiments over both design/state
-variables (treated as uniform) and uncertain variables (with
-probability distributions) is desired, then \c sampling can
-support this with \c active \c all specified in the Variables 
-specification block.
+library provides the following DACE techniques: 
+ -# grid sampling (\c grid)
+ -# pure random sampling (\c random)
+ -# orthogonal array sampling (\c oas)
+ -# latin hypercube sampling (\c lhs)
+ -# orthogonal array latin hypercube sampling (\c oa_lhs)
+ -# Box-Behnken (\c box_behnken)
+ -# central composite design (\c central_composite)
 
-In terms of method dependent controls, the specification structure is
-straightforward. First, there is a set of design of experiments
-algorithm selections separated by logical OR's (\c grid or \c random
-or \c oas or \c lhs or \c oa_lhs or \c box_behnken or \c
-central_composite). Second, there are optional specifications for the
-random seed to use in generating the sample set (\c seed), for fixing
-the seed (\c fixed_seed) among multiple sample sets (see \ref
-MethodNonDMC for discussion), for the number of samples to perform (\c
-samples), and for the number of symbols to use (\c symbols). The \c
-seed control is used to make sample sets repeatable, and the \c
-symbols control is related to the number of replications in the sample
-set (a larger number of symbols equates to more stratification and
-fewer replications). The \c main_effects control prints Analysis-of-Variance
-main effects results (e.g. ANOVA tables with p-values per variable). 
-The \c main_effects control is only operational with the 
-orthogonal arrays or Latin Hypercube designs, not for Box Behnken or 
-Central Composite designs. The \c quality_metrics control is available 
-for the DDACE library. 
-This control turns on calculation of volumetric quality measures 
-which measure the uniformity of the point samples. 
-More details on the quality measures are given under the description of the 
-FSU sampling methods. The \c variance_based_decomp control is also 
-available. This control enables the calculation of sensitivity 
-indices which indicate how important the uncertainty in each input 
-variable is in contributing to the output variance. More details 
-on variance based decomposition are given in \ref MethodNonDMC.
+In addition to the selection of the method, there are keywords
+that affect the method outputs: 
+ -# \ref method-dace-main_effects
+ -# \ref method-dace-quality_metrics
+ -# \ref method-dace-variance_based_decomp
+
+And keywords that affect the sampling:
+ -# \ref method-dace-fixed_seed
+ -# \ref method-dace-symbols
+ -# \ref method-dace-samples
+ -# \ref method-dace-seed
+
+
 
 Topics::	package_ddace, dace, not_yet_reviewed
 Examples::

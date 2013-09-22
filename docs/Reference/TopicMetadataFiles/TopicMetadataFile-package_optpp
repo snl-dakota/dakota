@@ -4,12 +4,46 @@ bound-constrained, and nonlinearly constrained minimization:
 Polak-Ribiere conjugate gradient (%Dakota's \c optpp_cg method),
 quasi-Newton (%Dakota's \c optpp_q_newton method), finite difference
 Newton (%Dakota's \c optpp_fd_newton method), and full Newton (%Dakota's
-\c optpp_newton method).  The conjugate gradient method is strictly
+\c optpp_newton method). 
+
+The conjugate gradient method is strictly
 unconstrained, and each of the Newton-based methods are automatically
 bound to the appropriate OPT++ algorithm based on the user constraint
 specification (unconstrained, bound-constrained, or
-generally-constrained).  In the generally-constrained case, the Newton
+generally-constrained). In the generally-constrained case, the Newton
 methods use a nonlinear interior-point approach to manage the
-constraints.  The library also contains a direct search algorithm, PDS
+constraints. 
+The library also contains a direct search algorithm, PDS
 (parallel direct search, %Dakota's \c optpp_pds method), which supports
 bound constraints.
+
+<b> Method Independent Controls </b>
+
+These are specified directly under the \c method block.
+ -# \ref method-max_iterations
+ -# \ref method-max_function_evaluations
+ -# \ref method-convergence_tolerance 
+ -# \ref method-output
+ -# \ref method-speculative
+
+
+
+<b> Concurrency </b>
+
+OPT++'s gradient-based methods are not parallel algorithms and
+cannot directly take advantage of concurrent function
+evaluations. However, if \c numerical_gradients with \c method_source
+\c dakota is specified, a parallel %Dakota configuration can utilize
+concurrent evaluations for the finite difference gradient
+computations. 
+
+<b> Constraints </b>
+
+Linear constraint specifications are supported by each of the
+Newton methods (\c optpp_newton, \c optpp_q_newton, \c optpp_fd_newton,
+and \c optpp_g_newton)
+
+\c optpp_cg must be unconstrained 
+
+\c optpp_pds can be, at most, bound-constrained. 
+

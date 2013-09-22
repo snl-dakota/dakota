@@ -1,20 +1,22 @@
 Blurb::
+Gaussian Process Adaptive Importance Sampling
 Description::
-The second importance sampling method in %Dakota, \c gpais, is the one we recommend, 
-at least for problems that have a relatively small number of input variables (e.g. 
-less than 10-20).  This method, Gaussian Process Adaptive Importance Sampling, 
-is outlined in the paper [\ref Dalbey2012 "Dalbey and Swiler, 2012"].  
-This method  starts with an initial set of LHS samples and adds samples one at a time, 
-with the goal of adaptively improving the estimate of the ideal importance density 
-during the process.  The approach uses a mixture of component densities.  An   
-itterative process is used
+\c gpais is recommended for problems that have a relatively small 
+number of input variables (e.g. less than 10-20). This method, Gaussian 
+Process Adaptive Importance Sampling, 
+is outlined in the paper [\ref Dalbey2012 "Dalbey and Swiler, 2012"]. 
+
+This method starts with an initial set of LHS samples and adds samples 
+one at a time, with the goal of adaptively improving the estimate of 
+the ideal importance density during the process. The approach uses a 
+mixture of component densities. An iterative process is used
 to construct the sequence of improving component densities. At each
 iteration, a Gaussian process (GP) surrogate is used to help identify areas
-in the space where failure is likely to occur.  The GPs are not used to
+in the space where failure is likely to occur. The GPs are not used to
 directly calculate the failure probability; they are only used to approximate
 the importance density. Thus, the Gaussian process adaptive importance
 sampling algorithm overcomes limitations involving using a potentially
-inaccurate surrogate model directly in importance sampling calculations.  
+inaccurate surrogate model directly in importance sampling calculations. 
 
 Topics::	not_yet_reviewed
 Examples::

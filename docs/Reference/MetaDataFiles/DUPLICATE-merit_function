@@ -1,5 +1,44 @@
 Blurb::
+Balance goals of reducing objective function and satisfying constraints
 Description::
+A \c merit_function is a
+function in constrained optimization that attempts to provide joint
+progress toward reducing the objective function and satisfying the
+constraints. Valid options are \c el_bakry, \c argaez_tapia, or \c
+van_shanno, where user input is not case sensitive in this case.
+Details for these selections are as follows:
+
+\li The "el_bakry" merit function is the L2-norm of the first order
+optimality conditions for the nonlinear programming problem. The cost
+per linesearch iteration is n+1 function evaluations. For more
+information, see [\ref ElBak1996 "El-Bakry et al., 1996"].
+ 
+\li The "argaez_tapia" merit function can be classified as a modified
+augmented Lagrangian function. The augmented Lagrangian is modified
+by adding to its penalty term a potential reduction function to handle
+the perturbed complementarity condition. The cost per linesearch
+iteration is one function evaluation. For more information, see
+[\ref Tapia1 "Tapia and Argaez"].
+
+\li The "van_shanno" merit function can be classified as a penalty
+function for the logarithmic barrier formulation of the nonlinear
+programming problem. The cost per linesearch iteration is one
+function evaluation. For more information see 
+[\ref VanShanno1999 "Vanderbei and Shanno, 1999"].
+
+If the function evaluation is expensive or noisy, set the \c
+merit_function to "argaez_tapia" or "van_shanno".
+
+<!-- MSE/PDH: option retired on 12/14/2012 as OPT++ hardwires this
+   	   internally to match merit_function.
+The \c central_path specification represents a measure of proximity to
+the central path and specifies an update strategy for the perturbation
+parameter mu. Refer to [\ref Argaez2002 "Argaez et al., 2002"] for a
+detailed discussion on proximity measures to the central region. Valid
+options are, again, \c el_bakry, \c argaez_tapia, or \c van_shanno.
+The default value for \c central_path is the value of \c
+merit_function (either user-selected or default). -->
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::
