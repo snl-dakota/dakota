@@ -1,5 +1,5 @@
 Blurb::
-Description::
+Description:: The use of an adaptive Metropolis algorithm in the Markov Chain Monte Carlo algorithm, involving adaptive updates to the covariance matrix.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

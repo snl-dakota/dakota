@@ -1,5 +1,5 @@
 Blurb::
-Description::
+Description:: Specification of the rejection type used in the Markov Chain Monte Carlo algorithm.  The rejection type has two options: \c standard or \c delayed.  Standard rejection involves no delayed rejection, while delayed involves a delay in rejecting samples in the MCMC chain.  Delayed rejection plus adaptive metropolis is the DRAM algorithm.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

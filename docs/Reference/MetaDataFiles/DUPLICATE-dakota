@@ -1,5 +1,5 @@
 Blurb::
-Description::
+Description:: This keyword specifies the use of the Gaussian process that is incorporated into Dakota.  The other option is to use the Gaussian process that is incorporated in our surface fitting library called Surfpack.  The differences between these two Gaussian process models are outlined in the User's manual, Chapter 9.4 on Surrogate Models.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

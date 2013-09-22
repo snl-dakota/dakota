@@ -1,5 +1,9 @@
 Blurb::
-Description::
+Description::  This specifies the use of a Gaussian process emulator (also called 
+surrogate or meta-model).  The Gaussian process (GP) will be constructed using a 
+limited number of expensive simulation runs.  There are two alternative Gaussian 
+processes currently available:  one that is in the surrogate library called surfpack, 
+and one that is in dakota.  The surfpack GP is often more accurate but is slower to build.
 Topics::	not_yet_reviewed
 Examples::
 Theory::
