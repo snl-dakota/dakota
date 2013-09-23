@@ -235,14 +235,45 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 inline void HierarchSurrModel::
 derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
-  if (recurse_flag) {
-    // initialize lowFidelityModel for parallel operations
-    lowFidelityModel.init_communicators(max_iterator_concurrency);
+  // responseMode is a run-time setting (in SBLMinimizer, it is switched among
+  // AUTO_CORRECTED_SURROGATE, BYPASS_SURROGATE, and UNCORRECTED_SURROGATE;
+  // in NonDExpansion, it is switching between MODEL_DISCREPANCY and
+  // UNCORRECTED_SURROGATE).  Since it is neither static nor generally
+  // available at construct/init time, take a conservative approach with init
+  // and free and a more aggressive approach with set.
 
-    // HF evals are for correction and validation:
-    // concurrency = one eval at a time * derivative concurrency per eval
+  if (recurse_flag) {
+    // superset of possible init calls (two configurations for HF)
+    lowFidelityModel.init_communicators(max_iterator_concurrency);
     highFidelityModel.init_communicators(
       highFidelityModel.derivative_concurrency());
+    highFidelityModel.init_communicators(max_iterator_concurrency);
+
+    /*
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:
+      // LF are used in iterator evals
+      lowFidelityModel.init_communicators(max_iterator_concurrency);
+      break;
+    case AUTO_CORRECTED_SURROGATE:
+      // LF are used in iterator evals
+      lowFidelityModel.init_communicators(max_iterator_concurrency);
+      // HF evals are for correction and validation:
+      // concurrency = one eval at a time * derivative concurrency per eval
+      highFidelityModel.init_communicators(
+	highFidelityModel.derivative_concurrency());
+      break;
+    case BYPASS_SURROGATE:
+      // HF are used in iterator evals
+      highFidelityModel.init_communicators(max_iterator_concurrency);
+      break;
+    case MODEL_DISCREPANCY:
+      // LF and HF are used in iterator evals
+      lowFidelityModel.init_communicators(max_iterator_concurrency);
+      highFidelityModel.init_communicators(max_iterator_concurrency);
+      break;
+    }
+    */
   }
 }
 
@@ -250,19 +281,47 @@ derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
 inline void HierarchSurrModel::
 derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
-  if (recurse_flag) {
-    lowFidelityModel.set_communicators(max_iterator_concurrency);
-    highFidelityModel.set_communicators(
-      highFidelityModel.derivative_concurrency());
-  }
+  // asynchEvalFlag & asynchEvalFlag assignments are not overridden in
+  // Model::set_communicators() since HierarchSurrModels do not define
+  // the ie_parallel_level
 
-  // the following assignments are not overridden in Model::set_communicators()
-  // since HierarchSurrModels do not define the ie_parallel_level
-  asynchEvalFlag = ( lowFidelityModel.asynch_flag() ||
-		    highFidelityModel.asynch_flag() ); // if either is asynch
-  // TO DO: more rigorous approach would utilize use responseMode
-  evaluationCapacity = std::max( lowFidelityModel.evaluation_capacity(),
-				highFidelityModel.evaluation_capacity() );
+  // This aggressive logic is appropriate for invocations of the Model via
+  // Iterator::run(), but is fragile w.r.t. invocations of the Model outside
+  // this scope (e.g., Model::compute_response() within SBLMinimizer).  The
+  // default responseMode value is AUTO_CORRECTED_SURROGATE, which mitigates
+  // the specific case of SBLMinimizer, but the general fragility remains.
+  if (recurse_flag) {
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:
+      lowFidelityModel.set_communicators(max_iterator_concurrency);
+      asynchEvalFlag     = lowFidelityModel.asynch_flag();
+      evaluationCapacity = lowFidelityModel.evaluation_capacity();
+      break;
+    case AUTO_CORRECTED_SURROGATE: {
+      lowFidelityModel.set_communicators(max_iterator_concurrency);
+      int hf_deriv_conc = highFidelityModel.derivative_concurrency();
+      highFidelityModel.set_communicators(hf_deriv_conc);
+      asynchEvalFlag = ( lowFidelityModel.asynch_flag() ||
+	( hf_deriv_conc > 1 && highFidelityModel.asynch_flag() ) );
+      evaluationCapacity = std::max( lowFidelityModel.evaluation_capacity(),
+				     highFidelityModel.evaluation_capacity() );
+      break;
+    }
+    case BYPASS_SURROGATE:
+      highFidelityModel.set_communicators(max_iterator_concurrency);
+      asynchEvalFlag     = highFidelityModel.asynch_flag();
+      evaluationCapacity = highFidelityModel.evaluation_capacity();
+      break;
+    case MODEL_DISCREPANCY:
+      lowFidelityModel.set_communicators(max_iterator_concurrency);
+      highFidelityModel.set_communicators(max_iterator_concurrency);
+      asynchEvalFlag = ( lowFidelityModel.asynch_flag() ||
+			 highFidelityModel.asynch_flag() );
+      evaluationCapacity = std::max( lowFidelityModel.evaluation_capacity(),
+				     highFidelityModel.evaluation_capacity() );
+      break;
+    }
+  }
 }
 
 
@@ -277,9 +336,31 @@ inline void HierarchSurrModel::
 derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (recurse_flag) {
+    // superset of possible free calls (two configurations for HF)
     lowFidelityModel.free_communicators(max_iterator_concurrency);
     highFidelityModel.free_communicators(
       highFidelityModel.derivative_concurrency());
+    highFidelityModel.free_communicators(max_iterator_concurrency);
+
+    /*
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:
+      lowFidelityModel.free_communicators(max_iterator_concurrency);
+      break;
+    case AUTO_CORRECTED_SURROGATE:
+      lowFidelityModel.free_communicators(max_iterator_concurrency);
+      highFidelityModel.free_communicators(
+	highFidelityModel.derivative_concurrency());
+      break;
+    case BYPASS_SURROGATE:
+      highFidelityModel.free_communicators(max_iterator_concurrency);
+      break;
+    case MODEL_DISCREPANCY:
+      lowFidelityModel.free_communicators(max_iterator_concurrency);
+      highFidelityModel.free_communicators(max_iterator_concurrency);
+      break;
+    }
+    */
   }
 }
 
