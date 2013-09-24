@@ -362,8 +362,7 @@ init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
   child_pl.numServers     = num_servers;      // request/default to be updated
   child_pl.procsPerServer = procs_per_server; // request/default to be updated
 
-  int capacity_multiplier = (asynch_local_concurrency > 1) ?
-                             asynch_local_concurrency : 1;
+  int capacity_multiplier = std::max(asynch_local_concurrency, 1);
   bool print_rank         = (parent_pl.serverCommRank == 0);
 
   // resolve_inputs can adaptively determine static vs. dynamic schedule,

@@ -572,8 +572,7 @@ asynchronous_local_analyses(const int& start, const int& end, const int& step)
   int analysis_id, num_jobs = 1 + (int)((end-start)/step);
 
   if (asynchLocalAnalysisConcurrency)  // concurrency limited by user
-    num_sends = (asynchLocalAnalysisConcurrency < num_jobs) ? 
-      asynchLocalAnalysisConcurrency : num_jobs;
+    num_sends = std::min(asynchLocalAnalysisConcurrency, num_jobs);
   else // default: no limit, launch all jobs in first pass
     num_sends = num_jobs; // don't need to limit num_sends to 1 in the message
     // passing case since this fn is only called by the message passing

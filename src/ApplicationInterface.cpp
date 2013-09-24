@@ -222,6 +222,14 @@ set_evaluation_communicators(const IntArray& message_lengths)
 //#endif
   else // split flag insufficient if 1 server (no split in peer case)
     multiProcEvalFlag = (evalCommSize > 1) ? true : false; // could vary
+
+  // simplify downstream logic by resetting default asynch local concurrency
+  // to 1 for the case of message passing.  This allows schedulers to more
+  // readily distinguish unlimited concurrency for asynch local parallelism
+  // (default is unlimited unless user spec) from message passing parallelism
+  // with synchronous local evals (default; hybrid mode requires user spec > 1).
+  if (ieMessagePass && asynchLocalEvalConcurrency == 0)
+    asynchLocalEvalConcurrency = 1;
 }
 
 
@@ -247,6 +255,14 @@ void ApplicationInterface::set_analysis_communicators()
 //#endif
   else // split flag insufficient if 1 server (no split in peer case)
     multiProcAnalysisFlag = (analysisCommSize > 1) ? true : false; // could vary
+
+  // simplify downstream logic by resetting default asynch local concurrency
+  // to 1 for the case of message passing.  This allows schedulers to more
+  // readily distinguish unlimited concurrency for asynch local parallelism
+  // (default is unlimited unless user spec) from message passing parallelism
+  // with synchronous local evals (default; hybrid mode requires user spec > 1).
+  if (eaMessagePass && asynchLocalAnalysisConcurrency == 0)
+    asynchLocalAnalysisConcurrency = 1;
 
   // Set flag for asynch local parallelism of analyses.  In the local asynch
   // case (no message passing), a concurrency specification is interpreted as
@@ -595,7 +611,7 @@ const IntResponseMap& ApplicationInterface::synch()
 	// (even if hybrid mode not specified) unless precluded by direct
 	// interface (includes multiProcEvalFlag cases), static scheduling
 	// override, or static asynch local specification.
-	if (true) //(asynchLocalEvalStatic || interfaceType == "direct")
+	if (asynchLocalEvalStatic || interfaceType == "direct")
 	  // || new_static_scheduling_override) *** TO DO
 	  peer_static_schedule_evaluations();
 	else // utilizes asynch local evals even if hybrid mode not specified
@@ -788,7 +804,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
   if (asynchLocalEvalConcurrency > 1) capacity *= asynchLocalEvalConcurrency;
   int num_jobs = beforeSynchCorePRPQueue.size(),
      num_sends = std::min(capacity, num_jobs);
-  Cout << "First pass: assigning " << num_sends << " jobs among " 
+  Cout << "First pass: master assigning " << num_sends << " jobs among " 
        << numEvalServers << " servers\n";
 
   // only need num_sends entries (not num_jobs) due to reuse
@@ -807,7 +823,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
 
   // schedule remaining jobs
   if (num_sends < num_jobs) {
-    Cout << "Second pass: scheduling " << num_jobs-num_sends 
+    Cout << "Second pass: master scheduling " << num_jobs-num_sends 
          << " remaining jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
     MPI_Status* status_array = new MPI_Status [num_sends];
@@ -876,7 +892,7 @@ void ApplicationInterface::peer_static_schedule_evaluations()
   int num_jobs       = beforeSynchCorePRPQueue.size(), 
       num_peer1_jobs = (int)std::floor((Real)num_jobs/numEvalServers),
       num_sends      = num_jobs - num_peer1_jobs;
-  Cout << "Static schedule: assigning " << num_jobs << " jobs among " 
+  Cout << "Static peer schedule: assigning " << num_jobs << " jobs among " 
        << numEvalServers << " peers\n";
   sendBuffers  = new MPIPackBuffer   [num_sends];
   recvBuffers  = new MPIUnpackBuffer [num_sends];
@@ -974,7 +990,7 @@ void ApplicationInterface::peer_static_schedule_evaluations()
     send/receive.  Specific syntax is encapsulated within ParallelLibrary. */
 void ApplicationInterface::peer_dynamic_schedule_evaluations()
 {
-  size_t num_jobs      = beforeSynchCorePRPQueue.size(),
+  size_t num_jobs   = beforeSynchCorePRPQueue.size(),
     server_capacity = std::max(1, asynchLocalEvalConcurrency),
     total_capacity  = numEvalServers * server_capacity,
     remote_capacity = total_capacity - server_capacity;
@@ -997,8 +1013,8 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
   recvRequests = new MPI_Request     [num_buff];
   int i, server_id, fn_eval_id;
 
-  Cout << "Dynamic schedule: assigning " << num_assign << " jobs among " 
-       << numEvalServers << " peers\n";
+  Cout << "Dynamic peer schedule: first pass assigning " << num_assign
+       << " jobs among " << numEvalServers << " peers\n";
 
   // Assign jobs locally + remotely using a round-robin assignment.  Since
   // this is a static schedule, all remote job assignments are sent now.  This
@@ -1029,8 +1045,12 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
   size_t recv_cntr = 0;
   while (recv_cntr < num_jobs) {
     // process completed message passing jobs and backfill
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Testing message receives\n";
     recv_cntr += test_receives_backfill(assign_iter, true); // peer
     // "Step 2" and "Step 3" of asynch_local_evaluations_nowait()
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Testing local completions\n";
     recv_cntr += test_local_backfill(active_prp_queue,
 				     beforeSynchCorePRPQueue, assign_iter);
   }
@@ -1602,8 +1622,8 @@ assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
     fn_eval_id = prp_iter->eval_id();
     if (localRunningSet.find(fn_eval_id) == localRunningSet.end()) {
       launch = false;
-      if (!asynchLocalEvalConcurrency || // unlimited; TO DO: verify hybrid case and/or peer_dynamic schedule --> may need to pass hybrid flag to properly interpret asynchLocalEvalConcurrency == 0
-	  num_running < asynchLocalEvalConcurrency) {
+      if (!asynchLocalEvalConcurrency ||              // unlimited local
+	  num_running < asynchLocalEvalConcurrency) { // local or hybrid
 	if (static_limited) { // only schedule if local "server" not busy
 	  server_index = (fn_eval_id - 1) % static_servers;
 	  if (!localServerAssigned[server_index])
@@ -2065,7 +2085,7 @@ void ApplicationInterface::stop_evaluation_servers()
     syntax is encapsulated within ParallelLibrary. */
 void ApplicationInterface::master_dynamic_schedule_analyses()
 {
-  int capacity  = (asynchLocalAnalysisConcurrency) ?
+  int capacity  = (asynchLocalAnalysisConcurrency > 1) ?
                    asynchLocalAnalysisConcurrency*numAnalysisServers : 
                    numAnalysisServers;
   int num_sends = (capacity < numAnalysisDrivers) ? 
