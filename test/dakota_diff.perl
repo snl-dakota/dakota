@@ -541,11 +541,14 @@ sub compare_output {
 
   }   # end while test content
 
-  # if there's unexpected additional data in the base file, mark this a DIFF
-  while ( scalar(@base_excerpt) > 0 ) { 
-    $test_diff = 1;
-    push @base_diffs, $base;
-    $base = shift @base_excerpt; # grab next line
+  # if we didn't already fail, and there's unexpected additional data
+  # in the base file, mark this a DIFF
+  if ($test_fail == 0) {
+    while ( scalar(@base_excerpt) > 0 ) { 
+      $test_diff = 1;
+      push @base_diffs, $base;
+      $base = shift @base_excerpt; # grab next line
+    }
   }
 
   # generate the test summary
