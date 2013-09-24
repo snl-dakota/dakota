@@ -1197,6 +1197,7 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
     if (launch) {
       launch_asynch_local(local_prp_iter);
       active_prp_queue.insert(*local_prp_iter);
+      localRunningSet.insert(fn_eval_id);
     }
     if (static_limited && num_active == asynchLocalEvalConcurrency)
       break;
@@ -1599,7 +1600,7 @@ assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
 				 PRPQueueIter& local_prp_iter,
 				 PRPQueue& active_prp_queue)
 {
-  // special data for static scheduling case; only reset job map
+  // special data for static scheduling case; only reset assigned map on 1st call
   bool static_limited
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   size_t static_servers;
@@ -1611,36 +1612,45 @@ assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
     }
   }
 
-  // Step 1: launch any new jobs up to asynch concurrency limit (if specified)
   int fn_eval_id, num_jobs = local_prp_queue.size();
   size_t server_index, num_running = localRunningSet.size();
-  bool launch, saved = false;
+  bool launch;
   if (multiProcEvalFlag)
     parallelLib.bcast_e(num_jobs);
-  for (PRPQueueIter prp_iter = local_prp_queue.begin();
-       prp_iter != local_prp_queue.end(); ++prp_iter) {
-    fn_eval_id = prp_iter->eval_id();
+
+  // Rebuild active_prp_queue from local_prp_queue & localRunningSet (if needed)
+  // Note: only adding to active_prp_queue, not removing any stale entries.
+  if (active_prp_queue.size() != num_running)
+    for (local_prp_iter  = local_prp_queue.begin();
+	 local_prp_iter != local_prp_queue.end(); ++local_prp_iter) {
+      fn_eval_id = local_prp_iter->eval_id();
+      if (localRunningSet.find(fn_eval_id) != localRunningSet.end() &&
+	  lookup_by_eval_id(active_prp_queue, fn_eval_id) ==
+	  active_prp_queue.end())
+	active_prp_queue.insert(*local_prp_iter);
+    }
+
+  // Step 1: launch any new jobs up to asynch concurrency limit (if specified)
+  for (local_prp_iter  = local_prp_queue.begin();
+       local_prp_iter != local_prp_queue.end(); ++local_prp_iter) {
+    if (asynchLocalEvalConcurrency && // not unlimited
+	num_running >= asynchLocalEvalConcurrency)
+      break;
+    fn_eval_id = local_prp_iter->eval_id();
     if (localRunningSet.find(fn_eval_id) == localRunningSet.end()) {
       launch = false;
-      if (!asynchLocalEvalConcurrency ||              // unlimited local
-	  num_running < asynchLocalEvalConcurrency) { // local or hybrid
-	if (static_limited) { // only schedule if local "server" not busy
-	  server_index = (fn_eval_id - 1) % static_servers;
-	  if (!localServerAssigned[server_index])
-	    { launch = true; localServerAssigned.set(server_index); }
-	}
-	else launch = true;
+      if (static_limited) { // only schedule if local "server" not busy
+	server_index = (fn_eval_id - 1) % static_servers;
+	if (!localServerAssigned[server_index])
+	  { launch = true; localServerAssigned.set(server_index); }
       }
-      else if (!saved)
-	{ local_prp_iter = prp_iter; saved = true; }
+      else launch = true;
       if (launch) {
-	launch_asynch_local(prp_iter);
-	active_prp_queue.insert(*prp_iter);
+	launch_asynch_local(local_prp_iter);
+	active_prp_queue.insert(*local_prp_iter);
 	localRunningSet.insert(fn_eval_id); ++num_running;
       }
     }
-    else // already running
-      active_prp_queue.insert(*prp_iter);
   }
 }
 
