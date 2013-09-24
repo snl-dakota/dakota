@@ -663,8 +663,8 @@ inline void ApplicationInterface::process_asynch_local(int fn_eval_id)
 
   asynchLocalActivePRPQueue.erase(prp_it);
   if (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1) {// free "server"
-    //all_completed.insert(fn_eval_id); // using rawResponseMap instead
-    size_t server_index = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
+    size_t static_servers = asynchLocalEvalConcurrency,//asynchLocalEvalConcurrency * numEvalServers,
+      server_index = (fn_eval_id - 1) % static_servers;
     localServerAssigned.reset(server_index);
   }
 }

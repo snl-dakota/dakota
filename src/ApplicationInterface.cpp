@@ -192,9 +192,9 @@ set_evaluation_communicators(const IntArray& message_lengths)
   //   flags can be set up once, but they will instead be set at eval time.
   iteratorCommSize = si_pl.server_communicator_size();
   iteratorCommRank = si_pl.server_communicator_rank();
-  if (iteratorCommRank // any processor other than rank 0 in iteratorComm
-  || (outputLevel == SILENT_OUTPUT && evalCommRank == 0
-      && !eaDedMasterFlag && numAnalysisServers < 2))
+  if ( iteratorCommRank // any processor other than rank 0 in iteratorComm
+       || ( outputLevel == SILENT_OUTPUT && evalCommRank == 0 &&
+	   !eaDedMasterFlag && numAnalysisServers < 2) )
     suppressOutput = true; // suppress output of fn. eval. echoes
 
   /* Additional output granularity:
@@ -221,7 +221,7 @@ set_evaluation_communicators(const IntArray& message_lengths)
     //multiProcEvalFlag = ie_pl.communicator_split_flag();
 //#endif
   else // split flag insufficient if 1 server (no split in peer case)
-    multiProcEvalFlag = (evalCommSize > 1) ? true : false; // could vary
+    multiProcEvalFlag = (evalCommSize > 1); // could vary
 
   // simplify downstream logic by resetting default asynch local concurrency
   // to 1 for the case of message passing.  This allows schedulers to more
@@ -247,14 +247,14 @@ void ApplicationInterface::set_analysis_communicators()
   analysisServerId   = ea_pl.server_id();
   if (eaDedMasterFlag)
 //#ifdef COMM_SPLIT_TO_SINGLE
-    multiProcEvalFlag = (ea_pl.processors_per_server() > 1 ||
-			 ea_pl.processor_remainder());
+    multiProcAnalysisFlag = (ea_pl.processors_per_server() > 1 ||
+			     ea_pl.processor_remainder());
 //#else
     // want multiProcAnalysisFlag=true on eval master when slave analysis size>1
     //multiProcAnalysisFlag = ea_pl.communicator_split_flag();
 //#endif
   else // split flag insufficient if 1 server (no split in peer case)
-    multiProcAnalysisFlag = (analysisCommSize > 1) ? true : false; // could vary
+    multiProcAnalysisFlag = (analysisCommSize > 1); // could vary
 
   // simplify downstream logic by resetting default asynch local concurrency
   // to 1 for the case of message passing.  This allows schedulers to more
@@ -609,10 +609,10 @@ const IntResponseMap& ApplicationInterface::synch()
       else {
 	// utilize asynch local evals to accomplish a dynamic peer schedule
 	// (even if hybrid mode not specified) unless precluded by direct
-	// interface (includes multiProcEvalFlag cases), static scheduling
-	// override, or static asynch local specification.
-	if (asynchLocalEvalStatic || interfaceType == "direct")
-	  // || new_static_scheduling_override) *** TO DO
+	// interface, multiProcEvalFlag (includes single proc analysis cases),
+	// static scheduling override, or static asynch local specification.
+	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
+	    interfaceType == "direct" || evalScheduling == "static")// *** TO DO
 	  peer_static_schedule_evaluations();
 	else // utilizes asynch local evals even if hybrid mode not specified
 	  peer_dynamic_schedule_evaluations();
