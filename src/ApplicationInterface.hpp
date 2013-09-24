@@ -292,24 +292,21 @@ private:
   /// launch an asynchronous local evaluation
   void launch_asynch_local(PRPQueueIter& prp_it);
   /// process a completed asynchronous local evaluation
-  void process_asynch_local(PRPQueue& active_prp_queue, int fn_eval_id);
+  void process_asynch_local(int fn_eval_id);
   /// process a completed synchronous local evaluation
   void process_synch_local(PRPQueueIter& prp_it);
 
-  /// helper function for creating an initial active_prp_queue by launching
+  /// helper function for creating an initial active local queue by launching
   /// asynch local jobs from local_prp_queue, as limited by server capacity
   void assign_asynch_local_queue(PRPQueue& local_prp_queue,
-				 PRPQueueIter& local_prp_iter,
-				 PRPQueue& active_prp_queue);
-  /// helper function for updating an active_prp_queue by backfilling
+				 PRPQueueIter& local_prp_iter);
+  /// helper function for updating an active local queue by backfilling
   /// asynch local jobs from local_prp_queue, as limited by server capacity
   void assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
-					PRPQueueIter& local_prp_iter,
-					PRPQueue& active_prp_queue);
+					PRPQueueIter& local_prp_iter);
 
   /// helper function for testing active asynch local jobs and then backfilling
-  size_t test_local_backfill(PRPQueue& active_prp_queue, PRPQueue& assign_queue,
-			     PRPQueueIter& assign_iter);
+  size_t test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter);
   /// helper function for testing receive requests and then backfilling jobs
   size_t test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag);
 
@@ -474,10 +471,11 @@ private:
   /// that is later evaluated in synch() or synch_nowait().
   PRPQueue beforeSynchAlgPRPQueue;
 
-  /// used by asynchronous_local_nowait() to bookkeep which jobs are running
-  IntSet localRunningSet;
-  /// used by master_dynamic_schedule_evaluations_nowait() to bookkeep which
-  /// jobs are running
+  /// used by nonblocking asynchronous local schedulers to bookkeep
+  /// active local jobs
+  PRPQueue asynchLocalActivePRPQueue;
+  /// used by nonblocking message passing schedulers to bookkeep which
+  /// jobs are running remotely
   std::map<int, IntIntPair> msgPassRunningMap;
 
   /// array of pack buffers for evaluation jobs queued to a server
@@ -638,18 +636,19 @@ inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
   if (multiProcEvalFlag)
     broadcast_evaluation(*prp_it);
 
-  derived_map_asynch(*prp_it);    
+  derived_map_asynch(*prp_it);
+  asynchLocalActivePRPQueue.insert(*prp_it);
 }
 
 
-inline void ApplicationInterface::
-process_asynch_local(PRPQueue& active_prp_queue, int fn_eval_id)
+inline void ApplicationInterface::process_asynch_local(int fn_eval_id)
 {
   extern BoStream write_restart;
   extern PRPCache data_pairs;
 
-  PRPQueueIter prp_it = lookup_by_eval_id(active_prp_queue, fn_eval_id);
-  if (prp_it == active_prp_queue.end()) {
+  PRPQueueIter prp_it
+    = lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id);
+  if (prp_it == asynchLocalActivePRPQueue.end()) {
     Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
 	 << "process_asynch_local()." << std::endl;
     abort_handler(-1);
@@ -662,7 +661,7 @@ process_asynch_local(PRPQueue& active_prp_queue, int fn_eval_id)
   if (evalCacheFlag)  data_pairs.insert(*prp_it);
   if (restartFileFlag) write_restart << *prp_it;
 
-  active_prp_queue.erase(prp_it);
+  asynchLocalActivePRPQueue.erase(prp_it);
   if (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1) {// free "server"
     //all_completed.insert(fn_eval_id); // using rawResponseMap instead
     size_t server_index = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
