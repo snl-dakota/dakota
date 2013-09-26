@@ -617,10 +617,17 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
     else           Cout << "slave server " << server_id << '\n';
   }
 
-  // Process buffer and insert into restart file ASAP.  Avoid
-  // multiple key-value lookups.
+  // Process incoming buffer from remote server.  Avoid multiple key-value
+  // lookups.  Incoming response is a lightweight constructed response
+  // corresponding to a particular ActiveSet.
+  Response remote_response;
+  recvBuffers[buff_index] >> remote_response; // lightweight response
+  // share the rep among between rawResponseMap and the processing queue, but
+  // don't trample raw response sizing with lightweight remote response
   Response raw_response = rawResponseMap[fn_eval_id] = prp_it->prp_response();
-  recvBuffers[buff_index] >> raw_response; // shared rep is updated
+  raw_response.update(remote_response);
+
+  // insert into restart and eval cache ASAP
   if (evalCacheFlag)  data_pairs.insert(*prp_it);
   if (restartFileFlag) write_restart << *prp_it;
 }

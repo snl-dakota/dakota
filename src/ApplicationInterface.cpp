@@ -1453,11 +1453,10 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
 size_t ApplicationInterface::
 test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 {
-  int mpi_test_flag, index, fn_eval_id, server_id;
+  int mpi_test_flag, index, fn_eval_id, new_eval_id, server_id;
   MPI_Status status; // only 1 needed for parallelLib.test()
-  std::map<int, IntIntPair>::iterator run_iter;
-  PRPQueueIter return_iter;
-  size_t receives = 0;
+  std::map<int, IntIntPair>::iterator run_iter; PRPQueueIter return_iter;
+  IntIntMap removals; size_t receives = 0;
 
   for (run_iter  = msgPassRunningMap.begin();
        run_iter != msgPassRunningMap.end(); ++run_iter) {
@@ -1469,15 +1468,14 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
       server_id   = id_index.first;
       return_iter = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
       receive_evaluation(return_iter, index, server_id, peer_flag);
-      msgPassRunningMap.erase(fn_eval_id);
       ++receives;
 
       // replace job if more are pending
       bool new_job = false;
       while (assign_iter != beforeSynchCorePRPQueue.end()) {
-	fn_eval_id = assign_iter->eval_id();
-	if (msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end() &&
-	    lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id) ==
+	new_eval_id = assign_iter->eval_id();
+	if (msgPassRunningMap.find(new_eval_id) == msgPassRunningMap.end() &&
+	    lookup_by_eval_id(asynchLocalActivePRPQueue, new_eval_id) ==
 	    asynchLocalActivePRPQueue.end())
 	  { new_job = true; break; }
 	++assign_iter;
@@ -1486,11 +1484,28 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 	// assign job (reuse)
 	send_evaluation(assign_iter, index, server_id, peer_flag, true);
 	// update bookkeeping
-	msgPassRunningMap[fn_eval_id] = IntIntPair(server_id, index);
+	removals[fn_eval_id] = new_eval_id; // replace old with new
 	++assign_iter;
       }
+      else
+	removals[fn_eval_id] = 0; // no replacement, just remove
     }
   }
+
+  // update msgPassRunningMap.  This is not done inside loop above to:
+  // (1) avoid any iterator invalidation, and
+  // (2) avoid testing of newly inserted jobs (violates scheduling fairness)
+  for (IntIntMIter it=removals.begin(); it!=removals.end(); ++it) {
+    int remove_id = it->first, replace_id = it->second;
+    if (replace_id) {
+      run_iter = msgPassRunningMap.find(remove_id);
+      msgPassRunningMap[replace_id] = run_iter->second; // does not invalidate
+      msgPassRunningMap.erase(run_iter); // run_iter still valid
+    }
+    else
+      msgPassRunningMap.erase(remove_id);
+  }
+
   return receives;
 }
 
@@ -1714,12 +1729,11 @@ void ApplicationInterface::serve_evaluations()
 }
 
 
-/** This code is invoked by serve_evaluations() to perform one
-    synchronous job at a time on each slave/peer server.  The servers
-    receive requests (blocking receive), do local synchronous maps,
-    and return results.  This is done continuously until a termination
-    signal is received from the master (sent via
-    stop_evaluation_servers()). */
+/** This code is invoked by serve_evaluations() to perform one synchronous
+    job at a time on each slave/peer server.  The servers receive requests
+    (blocking receive), do local synchronous maps, and return results.
+    This is done continuously until a termination signal is received from
+    the master (sent via stop_evaluation_servers()). */
 void ApplicationInterface::serve_evaluations_synch()
 {
   // update class member eval id for usage on iteratorCommRank!=0 processors
