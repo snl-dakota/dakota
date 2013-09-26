@@ -566,9 +566,11 @@ void Optimizer::post_run(std::ostream& s)
     // user will see final residuals
     if (/* local_nls_recast && (implicit in localObjectiveRecast) */ 
 	localObjectiveRecast && obsDataFlag) {
+      size_t num_experiments = obsData.numRows();
       const RealVector& fn_vals = best_resp.function_values();
       for (size_t i=0; i<numUserPrimaryFns; ++i)
-	best_resp.function_value(fn_vals[i] - obsData[i], i);
+        for (size_t j=0; j<num_experiments; ++j)
+	  best_resp.function_value(fn_vals[i] - obsData(j,i), i*num_experiments+j);
     }
  
   }

@@ -95,6 +95,11 @@ protected:
 				 const ActiveSet& recast_set,
 				 ActiveSet& sub_model_set);
 
+  /// conversion of request vector values for Least Squares
+  static void replicate_set_recast(const Variables& recast_vars,
+				  const ActiveSet& recast_set,
+				  ActiveSet& sub_model_set);
+
   /// copy the partial response for secondary functions when needed
   /// (data and reduction transforms)
   static void secondary_resp_copier(const Variables& input_vars,
@@ -208,7 +213,7 @@ protected:
   /// flag indicating whether user-supplied data is active
   bool obsDataFlag;
   /// storage for user-supplied data for computing residuals
-  RealVector obsData;
+  RealMatrix obsData;
   /// Container for experimental data to which to calibrate model 
   /// using least squares or other formulations which minimize SSE
   ExperimentData expData;

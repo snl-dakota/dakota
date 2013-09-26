@@ -333,17 +333,20 @@ bool Minimizer::data_transform_model(bool weight_flag)
                       num_config_vars_read, numFunctions, num_sigma_read,
                       annotated, calc_sigma_from_data ,
                       outputLevel);
-
   // copy the y portion of the data to obsData
-  obsData.resize(numUserPrimaryFns);
-  for (int y_ind = 0; y_ind < numUserPrimaryFns; ++y_ind)
-    obsData[y_ind] = expData.scalar_data(y_ind,0,0);//need to handle replicates
+  obsData.reshape(num_experiments, numUserPrimaryFns);
+  for (int j = 0; j < num_experiments; ++j) {
+    for (int y_ind = 0; y_ind < numUserPrimaryFns; ++y_ind) {
+      obsData(j,y_ind) = expData.scalar_data(y_ind,j,0);//need to handle replicates
+    }
+  }
   if (outputLevel >= VERBOSE_OUTPUT) {
     Cout << "\nUsing calibration data from " << obsDataFilename << ":\n";
-    write_data(Cout, obsData);
+    for (int j = 0; j < num_experiments; j++)
+      for (int y_ind = 0; y_ind < numUserPrimaryFns; y_ind++) 
+        Cout <<  obsData(j,y_ind) << '\n';
     Cout << std::endl;
   }
-
   // weight the terms with sigma from the file if active
   if (num_sigma_read > 0) {
     if (weight_flag) {
@@ -381,34 +384,44 @@ bool Minimizer::data_transform_model(bool weight_flag)
 
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
-
-  size_t i;
+  
+  size_t i,j,temp_counter;
+  int total_calib_terms = num_experiments * numUserPrimaryFns;
   Sizet2DArray var_map_indices(numContinuousVars), 
-    primary_resp_map_indices(numUserPrimaryFns), 
+    primary_resp_map_indices(total_calib_terms), 
     secondary_resp_map_indices(numNonlinearConstraints);
   bool nonlinear_vars_map = false;
-  size_t num_recast_fns = numUserPrimaryFns + numNonlinearConstraints;
+  size_t num_recast_fns = total_calib_terms + numNonlinearConstraints;
   BoolDequeArray nonlinear_resp_map(num_recast_fns);
-
+  // adjust active set vector to 1 + numNonlinearConstraints
+  ShortArray asv(total_calib_terms + numNonlinearConstraints, 1);
+    activeSet.request_vector(asv);
+  
   for (i=0; i<numContinuousVars; i++) {
     var_map_indices[i].resize(1);
     var_map_indices[i][0] = i;
   }
-  for (i=0; i<numUserPrimaryFns; i++) {
+  for (i=0; i<total_calib_terms; i++) {
     primary_resp_map_indices[i].resize(1);
-    primary_resp_map_indices[i][0] = i;
     nonlinear_resp_map[i].resize(1);
     nonlinear_resp_map[i][0] = false;
   }
+  for (i=0; i<numUserPrimaryFns; i++) {
+    for (j=0; j<num_experiments; j++) {
+      temp_counter = i*num_experiments+j;
+      primary_resp_map_indices[temp_counter][0] = i;
+    }
+  }
   for (i=0; i<numNonlinearConstraints; i++) {
     secondary_resp_map_indices[i].resize(1);
-    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
-    nonlinear_resp_map[numUserPrimaryFns+i].resize(1);
-    nonlinear_resp_map[numUserPrimaryFns+i][0] = false;
+    secondary_resp_map_indices[i][0] = total_calib_terms + i;
+    nonlinear_resp_map[total_calib_terms+i].resize(1);
+    nonlinear_resp_map[total_calib_terms+i][0] = false;
   }
 
   void (*vars_recast) (const Variables&, Variables&) = NULL;
-  void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+  void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = 
+    (num_experiments>1) ? replicate_set_recast : NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
 			   const Response&, Response&)
     = primary_resp_differencer;
@@ -430,14 +443,25 @@ bool Minimizer::data_transform_model(bool weight_flag)
   bool recurse_flag = false;
   const RealVector& submodel_weights = 
     iteratedModel.subordinate_model().primary_response_fn_weights();
-  iteratedModel.primary_response_fn_weights(submodel_weights);
-
+  if (num_experiments <= 1) {
+    iteratedModel.primary_response_fn_weights(submodel_weights);
+  } 
+  else { 
+    RealVector recast_weights(total_calib_terms);
+    for (i=0; i<numUserPrimaryFns; i++) {
+      for (j=0; j<num_experiments; j++) {
+        recast_weights(i*num_experiments+j)=submodel_weights(i);
+      }
+    }
+    iteratedModel.primary_response_fn_weights(recast_weights);
+  }
   // Preserve sense through data transformation
   const BoolDeque& submodel_sense = 
     iteratedModel.subordinate_model().primary_response_fn_sense();
   iteratedModel.primary_response_fn_sense(submodel_sense);
 
   return weight_flag;
+  Cout << "Got to end of data_transform " << '\n';
 }
 
 /** Wrap the iteratedModel in a scaling transformation, such that
@@ -962,13 +986,39 @@ data_difference_core(const Response& raw_response, Response& residual_response)
   const ShortArray& asv = residual_response.active_set_request_vector();
   bool functions_req = false; // toggle output on function transformation
   const RealVector& fn_vals = raw_response.function_values();
-
-  residual_response.update(raw_response);
+  RealVector current_fn_gradient(numContinuousVars);
+  RealSymMatrix current_fn_hessian(numContinuousVars);
+  size_t num_experiments = asv.size()/raw_response.active_set_request_vector().size();
+  //size_t num_experiments = probDescDB.get_sizet("responses.num_experiments");
+  //residual_response.update(raw_response);
   for (size_t i=0; i<minimizerInstance->numUserPrimaryFns; i++) {
-    if (asv[i] & 1) {
-      residual_response.function_value(fn_vals[i] - 
-				       minimizerInstance->obsData[i],i);
-      functions_req = true;
+    if (asv[i] & 1) 
+      for (size_t j = 0; j < num_experiments; ++j)
+        residual_response.function_value(fn_vals[i] - 
+				       minimizerInstance->obsData(j,i),i*num_experiments+j);
+    if (asv[i] & 2) {
+      current_fn_gradient=raw_response.function_gradient_copy(i);
+      Cout << "current_fn_gradient " << current_fn_gradient;
+      for (size_t j = 0; j < num_experiments; ++j)
+        residual_response.function_gradient(current_fn_gradient, i*num_experiments+j);
+    }
+    if (asv[i] & 4) {
+      current_fn_hessian=raw_response.function_hessian(i);
+      Cout << "current_fn_hessian " << current_fn_hessian;
+      for (size_t j = 0; j < num_experiments; ++j)
+        residual_response.function_hessian(current_fn_hessian, i*num_experiments+j); 
+    }
+    functions_req = true;
+  }
+
+  if (outputLevel > NORMAL_OUTPUT) {
+    for (size_t i=0; i<10; i++) {
+      if (asv[i] & 1) 
+        Cout << " residual_response function " << i << residual_response.function_value(i) << '\n';
+      if (asv[i] & 2) 
+        Cout << " residual_response gradient " << i << residual_response.function_gradient_view(i) << '\n';
+      if (asv[i] & 4) 
+        Cout << " residual_response hessian " << i << residual_response.function_hessian(i) << '\n';
     }
   }
   return functions_req;
@@ -1009,6 +1059,23 @@ gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
     }
 }
 
+
+void Minimizer::
+replicate_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
+		   ActiveSet& sub_model_set)
+{
+  // AUGMENT standard mappings in RecastModel::set_mapping()
+  const ShortArray& sub_model_asv = sub_model_set.request_vector();
+  size_t i,j, num_sm_fns = sub_model_asv.size();
+  size_t inner_size = recast_set.request_vector().size()/num_sm_fns;
+  ShortArray new_asv(num_sm_fns,0);
+  for (i=0; i<num_sm_fns; ++i) {
+    for (j=0; j<inner_size; ++j)  
+      new_asv[i] |= recast_set.request_vector()[i*inner_size+j];
+    sub_model_set.request_value(new_asv[i],i);
+  }
+  sub_model_set.derivative_vector(recast_set.derivative_vector());
+}
 
 void Minimizer::
 primary_resp_scaler(const Variables& native_vars, const Variables& scaled_vars,
