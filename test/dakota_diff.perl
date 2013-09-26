@@ -212,6 +212,13 @@ sub compare_output {
 	print "FAIL test $test_num (ran, but baseline indicates failure)\n";
 	$exitcode = 96 if $exitcode < 96;
       }
+      elsif (scalar(@tst_excerpt) == 0) {
+	# test ran, but  there's no output
+	$test_fail = 1;
+	print "FAIL test $test_num (no test output)\n";
+	$exitcode = 105 if $exitcode < 105;
+      }
+
     }
     
     ####################
