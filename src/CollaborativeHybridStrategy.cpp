@@ -27,7 +27,7 @@ CollaborativeHybridStrategy(ProblemDescDB& problem_db):
   //  problem_db.get_string("strategy.hybrid.collaborative_type"))
 {
   if (worldRank == 0)
-    Cout << "Constructing Collaborative Hybrid Optimizer Strategy...\n";
+    std::cout << "Constructing Collaborative Hybrid Optimizer Strategy...\n";
 
   methodList = problem_db.get_sa("strategy.hybrid.method_list");
   numIterators = methodList.size();
@@ -65,8 +65,8 @@ void CollaborativeHybridStrategy::run_strategy()
     Model&    curr_model    = userDefinedModels[i];
 
     if (worldRank == 0) {
-      Cout << "\n>>>>> Running Collaborative Hybrid Optimizer Strategy with "
-	   << "iterator " << methodList[i] << ".\n";
+      std::cout << "\n>>>>> Running Collaborative Hybrid Optimizer Strategy "
+		<< "with iterator " << methodList[i] << ".\n";
       // set up plots and tabular data file
       curr_iterator.initialize_graphics(graph2DFlag, tabularDataFlag,
 					tabularDataFile);
@@ -77,7 +77,7 @@ void CollaborativeHybridStrategy::run_strategy()
 
   // Output interesting iterator statistics...
   if (worldRank == 0)
-    Cout << "\n<<<<< CollaborativeHybrid Optimizer Strategy completed.\n";
+    std::cout << "\n<<<<< CollaborativeHybrid Optimizer Strategy completed.\n";
 }
 
 } // namespace Dakota

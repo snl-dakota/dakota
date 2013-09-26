@@ -19,6 +19,7 @@
 
 static const char rcsId[]="@(#) $Id: ConcurrentStrategy.cpp 7018 2010-10-12 02:25:22Z mseldre $";
 
+using std::cout;
 
 namespace Dakota {
 
@@ -26,7 +27,7 @@ ConcurrentStrategy::ConcurrentStrategy(ProblemDescDB& problem_db):
   Strategy(BaseConstructor(), problem_db)
 {
   if (worldRank==0)
-    Cout << "Constructing Concurrent Iterator Strategy...\n";
+    cout << "Constructing Concurrent Iterator Strategy...\n";
 
   multiStartFlag = (strategyName == "multi_start");
 
@@ -37,7 +38,7 @@ ConcurrentStrategy::ConcurrentStrategy(ProblemDescDB& problem_db):
   const String& concurrent_iterator
     = problem_db.get_string("strategy.method_pointer");
   if (worldRank==0)
-    Cout << "concurrent_iterator = " << concurrent_iterator << std::endl;
+    cout << "concurrent_iterator = " << concurrent_iterator << std::endl;
   problem_db.set_db_list_nodes(concurrent_iterator);
 
   int param_set_len;
@@ -198,7 +199,7 @@ ConcurrentStrategy::~ConcurrentStrategy()
 void ConcurrentStrategy::run_strategy()
 {
   if (worldRank == 0) {
-    Cout << "Running Concurrent Iterator Strategy..." << std::endl;
+    cout << "Running Concurrent Iterator Strategy..." << std::endl;
     if (!stratIterDedMaster) // first cut should work serially
       // set up plots and tabular data file
       selectedIterator.initialize_graphics(graph2DFlag, tabularDataFlag,
@@ -208,7 +209,7 @@ void ConcurrentStrategy::run_strategy()
   schedule_iterators(selectedIterator, userDefinedModel);
 
   if (worldRank == 0) {
-    Cout << "\n<<<<< Concurrent iteration completed.\n";
+    cout << "\n<<<<< Concurrent iteration completed.\n";
     print_results();
   }
 }
@@ -217,7 +218,7 @@ void ConcurrentStrategy::run_strategy()
 void ConcurrentStrategy::print_results() const
 {
   using std::setw;
-  Cout << "\n<<<<< Results summary:\n";
+  cout << "\n<<<<< Results summary:\n";
 
   // Table header:
   StringMultiArrayConstView cv_labels
@@ -230,50 +231,50 @@ void ConcurrentStrategy::print_results() const
   size_t i, param_set_len = parameterSets[0].length(),
     num_cv  = cv_labels.size(),  num_div = div_labels.size(),
     num_drv = drv_labels.size(), num_fns = fn_labels.size();
-  Cout << "   set_id "; // matlab comment syntax
+  cout << "   set_id "; // matlab comment syntax
   for (i=0; i<param_set_len; ++i) {
     if (multiStartFlag)
-      Cout << setw(14) << cv_labels[i].data() << ' ';
+      cout << setw(14) << cv_labels[i].data() << ' ';
     else {
       char string[10];
       std::sprintf(string, "w%i", (int)i + 1);
-      Cout << setw(14) << string << ' ';
+      cout << setw(14) << string << ' ';
     }
   }
   for (i=0; i<num_cv; i++) {
     String label = (multiStartFlag) ? cv_labels[i] + String("*") : cv_labels[i];
-    Cout << setw(14) << label.data() << ' ';
+    cout << setw(14) << label.data() << ' ';
   }
   for (i=0; i<num_div; i++) {
     String label = (multiStartFlag) ?
       div_labels[i] + String("*") : div_labels[i];
-    Cout << setw(14) << label.data() << ' ';
+    cout << setw(14) << label.data() << ' ';
   }
   for (i=0; i<num_drv; i++) {
     String label = (multiStartFlag) ?
       drv_labels[i] + String("*") : drv_labels[i];
-    Cout << setw(14) << label.data() << ' ';
+    cout << setw(14) << label.data() << ' ';
   }
   for (i=0; i<num_fns; i++)
-    Cout << setw(14) << fn_labels[i].data() << ' ';
-  Cout << '\n';
+    cout << setw(14) << fn_labels[i].data() << ' ';
+  cout << '\n';
 
   // Table data:
   size_t num_results = prpResults.size();
   for (i=0; i<num_results; ++i) {
     const ParamResponsePair& prp_result = prpResults[i];
-    Cout << std::setprecision(10) << std::resetiosflags(std::ios::floatfield)
+    cout << std::setprecision(10) << std::resetiosflags(std::ios::floatfield)
          << setw(9) << prp_result.eval_id() << ' ';
     for (size_t j=0; j<param_set_len; ++j)
-      Cout << setw(14) << parameterSets[i][j] << ' ';
+      cout << setw(14) << parameterSets[i][j] << ' ';
     const Variables& prp_vars = prp_result.prp_parameters();
-    //prp_vars.write_tabular(Cout) not used since active vars, not all vars
-    write_data_tabular(Cout, prp_vars.continuous_variables());
-    write_data_tabular(Cout, prp_vars.discrete_int_variables());
-    write_data_tabular(Cout, prp_vars.discrete_real_variables());
-    prp_result.prp_response().write_tabular(Cout);
+    //prp_vars.write_tabular(cout) not used since active vars, not all vars
+    write_data_tabular(cout, prp_vars.continuous_variables());
+    write_data_tabular(cout, prp_vars.discrete_int_variables());
+    write_data_tabular(cout, prp_vars.discrete_real_variables());
+    prp_result.prp_response().write_tabular(cout);
   }
-  Cout << '\n';
+  cout << '\n';
 }
 
 } // namespace Dakota

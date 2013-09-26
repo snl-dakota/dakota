@@ -28,7 +28,7 @@ EmbeddedHybridStrategy::EmbeddedHybridStrategy(ProblemDescDB& problem_db):
     problem_db.get_real("strategy.hybrid.local_search_probability"))
 {
   if (worldRank == 0)
-    Cout << "Constructing Embedded Hybrid Optimizer Strategy...\n";
+    cout << "Constructing Embedded Hybrid Optimizer Strategy...\n";
 
   numIterators = 2;
   methodList.resize(2);
@@ -56,7 +56,7 @@ void EmbeddedHybridStrategy::run_strategy()
   Model&    model1    = userDefinedModels[1];
 
   if (worldRank == 0) {
-    Cout << "\n>>>>> Running Embedded Hybrid Optimizer Strategy with global "
+    cout << "\n>>>>> Running Embedded Hybrid Optimizer Strategy with global "
          << "method = " << methodList[1] << " and local method = " 
 	 << methodList[0] << endl;
     // set up plots and tabular data file
@@ -69,7 +69,7 @@ void EmbeddedHybridStrategy::run_strategy()
 
   // Output interesting iterator progress metrics...
   if (worldRank == 0)
-    Cout << "\n<<<<< Embedded Hybrid Optimizer Strategy completed." << endl;
+    cout << "\n<<<<< Embedded Hybrid Optimizer Strategy completed." << endl;
 }
 
 } // namespace Dakota

@@ -42,7 +42,8 @@ void HybridStrategy::allocate_methods()
   // by the pointer strings in the method specification).
   for (size_t i=0; i<numIterators; ++i) {
     if (worldRank == 0)
-      Cout << "calling set_db_list_nodes with " << methodList[i] << std::endl;
+      std::cout << "calling set_db_list_nodes with " << methodList[i] 
+		<< std::endl;
     probDescDB.set_db_list_nodes(methodList[i]);
 
     // Instantiate the i-th userDefinedModel and selectedIterator

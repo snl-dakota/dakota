@@ -25,14 +25,14 @@ SingleMethodStrategy::SingleMethodStrategy(ProblemDescDB& problem_db):
   Strategy(BaseConstructor(), problem_db)
 {
   if (worldRank==0)
-    Cout << "Constructing Single Method Strategy...\n";
+    cout << "Constructing Single Method Strategy...\n";
 
   init_iterator_parallelism();
   // Since this strategy does not support any iterator concurrency, verify 
   // sanity of settings so that simple run_iterator() may be used below
   // (schedule_iterators() could be used, but this adds unnecessary overhead).
   if (stratIterDedMaster || numIteratorServers > 1) {
-    Cerr << "Error: Single Method Strategy does not support concurrent "
+    cerr << "Error: Single Method Strategy does not support concurrent "
 	 << "iterator parallelism." << endl;
     abort_handler(-1);
   }
@@ -72,7 +72,7 @@ void SingleMethodStrategy::
 run_strategy()
 {
   if (worldRank==0) {
-    Cout << "\n>>>>> Running Single Method Strategy.\n";
+    cout << "\n>>>>> Running Single Method Strategy.\n";
     // set up plots and tabular data file
     selectedIterator.initialize_graphics(graph2DFlag, tabularDataFlag,
 					 tabularDataFile);
@@ -81,7 +81,7 @@ run_strategy()
   run_iterator(selectedIterator, userDefinedModel);
 
   if (worldRank==0)
-    Cout << "<<<<< Single Method Strategy completed.\n";
+    cout << "<<<<< Single Method Strategy completed.\n";
 }
 
 } // namespace Dakota

@@ -52,15 +52,16 @@ Strategy::Strategy(BaseConstructor, ProblemDescDB& problem_db):
   int db_write_precision = probDescDB.get_int("strategy.output_precision");
   if (db_write_precision > 0) {
     if (db_write_precision > 16) {
-      Cout << "\nWarning: requested output_precision exceeds DAKOTA's internal "
-	   << "precision;\n         resetting to 16." << std::endl;
+      std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
+		<< "internal precision;\n         resetting to 16." 
+		<< std::endl;
       write_precision = 16;
     }
     else
       write_precision = db_write_precision;
   }
 #ifdef REFCOUNT_DEBUG
-  Cout << "Strategy::Strategy(BaseConstructor, ProblemDescDB) called to build "
+  cout << "Strategy::Strategy(BaseConstructor, ProblemDescDB) called to build "
        << "letter base class." << endl;
 #endif
 }
@@ -74,7 +75,7 @@ Strategy::Strategy(): probDescDB(dummy_db), parallelLib(dummy_lib),
   strategyRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
-  Cout << "Strategy::Strategy() called to build empty envelope base class "
+  cout << "Strategy::Strategy() called to build empty envelope base class "
        << "object." << endl;
 #endif
 }
@@ -89,7 +90,7 @@ Strategy::Strategy(ProblemDescDB& problem_db):
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
-  Cout << "Strategy::Strategy(ProblemDescDB&) called to instantiate envelope."
+  cout << "Strategy::Strategy(ProblemDescDB&) called to instantiate envelope."
        << endl;
 #endif
 
@@ -105,7 +106,7 @@ Strategy::Strategy(ProblemDescDB& problem_db):
 Strategy* Strategy::get_strategy()
 {
 #ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting strategy " << strategyName 
+  cout << "Envelope instantiating letter: Getting strategy " << strategyName 
        << endl;
 #endif
 
@@ -120,7 +121,7 @@ Strategy* Strategy::get_strategy()
       // sequential,sequential_adaptive
       return new SequentialHybridStrategy(probDescDB);
     else {
-      Cerr << "Invalid hybrid strategy type: " << hybrid_type << endl;
+      cerr << "Invalid hybrid strategy type: " << hybrid_type << endl;
       return NULL;
     }
   }
@@ -129,7 +130,7 @@ Strategy* Strategy::get_strategy()
   else if (strategy_type == "single_method")
     return new SingleMethodStrategy(probDescDB);
   else {
-    Cerr << "Invalid strategy type: " << strategy_type << endl;
+    cerr << "Invalid strategy type: " << strategy_type << endl;
     return NULL;
   }
 }
@@ -147,9 +148,9 @@ Strategy::Strategy(const Strategy& strat):
     strategyRep->referenceCount++;
 
 #ifdef REFCOUNT_DEBUG
-  Cout << "Strategy::Strategy(Strategy&)" << endl;
+  cout << "Strategy::Strategy(Strategy&)" << endl;
   if (strategyRep)
-    Cout << "strategyRep referenceCount = " << strategyRep->referenceCount
+    cout << "strategyRep referenceCount = " << strategyRep->referenceCount
 	 << endl;
 #endif
 }
@@ -172,9 +173,9 @@ Strategy Strategy::operator=(const Strategy& strat)
     strategyRep->referenceCount++;
 
 #ifdef REFCOUNT_DEBUG
-  Cout << "Strategy::operator=(Strategy&)" << endl;
+  cout << "Strategy::operator=(Strategy&)" << endl;
   if (strategyRep)
-    Cout << "strategyRep referenceCount = " << strategyRep->referenceCount
+    cout << "strategyRep referenceCount = " << strategyRep->referenceCount
 	 << endl;
 #endif
 
@@ -190,12 +191,12 @@ Strategy::~Strategy()
   if (strategyRep) { // envelope: manage referenceCount & delete strategyRep
     --strategyRep->referenceCount;
 #ifdef REFCOUNT_DEBUG
-    Cout << "strategyRep referenceCount decremented to " 
+    cout << "strategyRep referenceCount decremented to " 
 	 << strategyRep->referenceCount << endl;
 #endif
     if (strategyRep->referenceCount == 0) {
 #ifdef REFCOUNT_DEBUG
-      Cout << "deleting strategyRep" << endl;
+      cout << "deleting strategyRep" << endl;
 #endif
       delete strategyRep;
     }
@@ -210,7 +211,7 @@ void Strategy::run_strategy()
   if (strategyRep)
     strategyRep->run_strategy();
   else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual run_strategy() "
+    cerr << "Error: Letter lacking redefinition of virtual run_strategy() "
          << "function.\n       No default defined at base class." << endl;
     abort_handler(-1);
   }
@@ -220,7 +221,7 @@ void Strategy::run_strategy()
 const Variables& Strategy::variables_results() const
 {
   if (!strategyRep) { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual variables_results() "
+    cerr << "Error: Letter lacking redefinition of virtual variables_results() "
          << "function.\n       No default defined at base class." << endl;
     abort_handler(-1);
   }
@@ -232,7 +233,7 @@ const Variables& Strategy::variables_results() const
 const Response& Strategy::response_results() const
 {
   if (!strategyRep) { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual response_results() "
+    cerr << "Error: Letter lacking redefinition of virtual response_results() "
          << "function.\n       No default defined at base class." << endl;
     abort_handler(-1);
   }
@@ -477,7 +478,7 @@ void Strategy::self_schedule_iterators(Model& the_model)
   parallelLib.print_configuration(); // matches call within init_communicators()
 
   int i, num_sends = std::min(numIteratorServers, numIteratorJobs);
-  Cout << "First pass: assigning " << num_sends << " iterator jobs among " 
+  cout << "First pass: assigning " << num_sends << " iterator jobs among " 
        << numIteratorServers << " servers\n";
 
   MPIPackBuffer*   send_buffers  = new MPIPackBuffer   [num_sends];
@@ -500,7 +501,7 @@ void Strategy::self_schedule_iterators(Model& the_model)
 
   // self-schedule remaining jobs
   if (num_sends < numIteratorJobs) {
-    Cout << "Second pass: self-scheduling " << numIteratorJobs-num_sends 
+    cout << "Second pass: self-scheduling " << numIteratorJobs-num_sends 
          << " remaining iterator jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
     MPI_Status* status_array = new MPI_Status [num_sends];
@@ -534,7 +535,7 @@ void Strategy::self_schedule_iterators(Model& the_model)
     delete [] index_array;
   }
   else { // all jobs assigned in first pass
-    Cout << "Waiting on all iterator jobs." << endl;
+    cout << "Waiting on all iterator jobs." << endl;
     parallelLib.waitall(numIteratorJobs, recv_requests);
     // All buffers received, now generate rawResponseArray
     for (i=0; i<numIteratorJobs; i++)

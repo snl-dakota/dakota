@@ -805,20 +805,20 @@ Test Number 10 succeeded
 dakota_hybrid.in 
 Test Number 0 succeeded
 <<<<< Best parameters          (set 1) =
-                      1.0000853639e+00 x1
-                      1.0000774619e+00 x2
+                      1.0000934323e+00 x1
+                      1.0000906824e+00 x2
 <<<<< Best response functions  (set 1) =
-                      8.9104436231e-17
+                      1.4382822838e-16
 <<<<< Best parameters          (set 2) =
-                      1.0000853112e+00 x1
-                      1.0000802441e+00 x2
+                      1.0000727327e+00 x1
+                      1.0000696574e+00 x2
 <<<<< Best response functions  (set 2) =
-                      9.4431481106e-17
+                      5.1527961202e-17
 <<<<< Best parameters          (set 3) =
-                      1.0000017204e+00 x1
-                      1.0000901016e+00 x2
+                      9.9989470256e-01 x1
+                      1.0001011503e+00 x2
 <<<<< Best response functions  (set 3) =
-                      6.5906715132e-17
+                      2.2761478478e-16
 dakota_lib_mode.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
@@ -1339,3 +1339,56 @@ Partial Rank Correlation Matrix between input and output:
         TF1h -5.10906e-02  1.33132e-03 -1.69264e-02 
         TF2h  1.33902e-02 -7.36227e-03  3.62420e-03 
         TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
+dakota_workdir.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 x1
+                      0.0000000000e+00 x2
+<<<<< Best objective function  =
+                      1.0000000000e+00
+<<<<< Best data captured at function evaluation 5
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+      obj_fn -2.47233e-03 -6.59288e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.28815e-03 
+          x2 -6.59290e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  6.00000e-01  1.00000e+00 
+      obj_fn -2.66667e-01 -4.00000e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.63696e-02 
+          x2 -3.11272e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 x1
+                      0.0000000000e+00 x2
+<<<<< Best objective function  =
+                      1.0000000000e+00
+<<<<< Best data captured at function evaluation 5
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+      obj_fn -2.47233e-03 -6.59288e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.28815e-03 
+          x2 -6.59290e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  6.00000e-01  1.00000e+00 
+      obj_fn -2.66667e-01 -4.00000e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.63696e-02 
+          x2 -3.11272e-01 

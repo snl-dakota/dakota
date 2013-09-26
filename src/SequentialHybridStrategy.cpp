@@ -26,24 +26,24 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   hybridType(problem_db.get_string("strategy.hybrid.type"))
 {
   if (worldRank == 0)
-    Cout << "Constructing Sequential Hybrid Optimizer Strategy...\n";
+    std::cout << "Constructing Sequential Hybrid Optimizer Strategy...\n";
 
   methodList = problem_db.get_sa("strategy.hybrid.method_list");
   numIterators = methodList.size();
   if (!numIterators) { // verify at least one method in list
-    Cerr << "Error: method_list must have a least one entry." << std::endl;
+    std::cerr << "Error: method_list must have a least one entry." << std::endl;
     abort_handler(-1);
   }
   if (strends(hybridType, "_adaptive") && worldRank == 0) {
     progressThreshold
       = problem_db.get_real("strategy.hybrid.progress_threshold");
     if (progressThreshold > 1.) {
-      Cerr << "Warning: progress_threshold should be <= 1.  "
+      std::cerr << "Warning: progress_threshold should be <= 1.  "
 		<< "Setting to 1.\n";
       progressThreshold = 1.;
     }
     else if (progressThreshold < 0.) {
-      Cerr << "Warning: progress_threshold should be >= 0.  "
+      std::cerr << "Warning: progress_threshold should be >= 0.  "
 		<< "Setting to 0.\n";
       progressThreshold = 0.;
     }
@@ -84,13 +84,13 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
       curr_method = next_method;
     }
   }
-  Cout << "maxConcurrency = " << maxConcurrency << '\n';
+  std::cout << "maxConcurrency = " << maxConcurrency << '\n';
 
   init_iterator_parallelism();
   // verify settings: adaptive hybrid does not support iterator concurrency
   if ( ( stratIterDedMaster || numIteratorServers > 1 ) && 
        strends(hybridType, "_adaptive") ) {
-    Cerr << "Error: adaptive Sequential Hybrid Strategy does not support "
+    std::cerr << "Error: adaptive Sequential Hybrid Strategy does not support "
 	      << "concurrent iterator parallelism." << std::endl;
     abort_handler(-1);
   }
@@ -139,8 +139,8 @@ void SequentialHybridStrategy::run_sequential()
     bool      curr_returns_multi = curr_iterator.returns_multiple_points();
  
     if (worldRank == 0) {
-      Cout << "\n>>>>> Running Sequential Hybrid Optimizer Strategy with "
-	   << "iterator " << methodList[seqCount] << ".\n";
+      std::cout << "\n>>>>> Running Sequential Hybrid Optimizer Strategy with "
+		<< "iterator " << methodList[seqCount] << ".\n";
       // set up plots and tabular data file
       curr_iterator.initialize_graphics(graph2DFlag, tabularDataFlag,
 					tabularDataFile);
@@ -271,12 +271,12 @@ void SequentialHybridStrategy::run_sequential()
   // Sequence complete: output final results
   // ---------------------------------------
   if (worldRank == 0) {
-    Cout << "\n<<<<< Sequential Hybrid Optimizer Strategy completed.\n";
+    std::cout << "\n<<<<< Sequential Hybrid Optimizer Strategy completed.\n";
     // provide a final summary in cases where the default iterator output
     // is insufficient
     if (stratIterDedMaster || numIteratorServers > 1) {// || numIteratorJobs > 1
       size_t i, j, cntr = 0, num_prp_res = prpResults.size(), num_prp_i;
-      Cout << "\n<<<<< Sequential hybrid final solution sets:\n";
+      std::cout << "\n<<<<< Sequential hybrid final solution sets:\n";
       for (i=0; i<num_prp_res; ++i) {
 	const PRPArray& prp_i = prpResults[i];
 	num_prp_i = prp_i.size();
@@ -284,12 +284,12 @@ void SequentialHybridStrategy::run_sequential()
 	  const Variables& vars = prp_i[j].prp_parameters();
 	  const Response&  resp = prp_i[j].prp_response();
 	  if (!vars.is_null())
-	    Cout << "<<<<< Best parameters          (set " << cntr+1
+	    std::cout << "<<<<< Best parameters          (set " << cntr+1
 		      << ") =\n" << vars;
 	  if (!resp.is_null()) {
-	    Cout << "<<<<< Best response functions  (set " << cntr+1
+	    std::cout << "<<<<< Best response functions  (set " << cntr+1
 		      << ") =\n";
-	    write_data(Cout, resp.function_values());
+	    write_data(std::cout, resp.function_values());
 	  }
 	}
       }
@@ -315,7 +315,7 @@ void SequentialHybridStrategy::run_sequential_adaptive()
   for (seqCount=0; seqCount<numIterators; seqCount++) {
 
     if (worldRank == 0) {
-      Cout << "\n>>>>> Running adaptive Sequential Hybrid Optimizer "
+      std::cout << "\n>>>>> Running adaptive Sequential Hybrid Optimizer "
 		<< "Strategy with iterator " << methodList[seqCount] << '\n';
 
       // set up plots and tabular data file
@@ -330,7 +330,7 @@ void SequentialHybridStrategy::run_sequential_adaptive()
         //progressMetric = compute_progress(resp_star);
       }
       selectedIterators[seqCount].finalize_run();
-      Cout << "\n<<<<< Iterator " << methodList[seqCount] << " completed."
+      std::cout << "\n<<<<< Iterator " << methodList[seqCount] << " completed."
 		<< "  Progress metric has fallen below threshold.\n";
 
       // Set the starting point for the next iterator.
@@ -350,7 +350,7 @@ void SequentialHybridStrategy::run_sequential_adaptive()
 
   // Output interesting iterator statistics/progress metrics...
   if (worldRank == 0)
-    Cout << "\n<<<<< adaptive Sequential Hybrid Optimizer Strategy "
+    std::cout << "\n<<<<< adaptive Sequential Hybrid Optimizer Strategy "
 	      << "completed." << std::endl;
 }
 
