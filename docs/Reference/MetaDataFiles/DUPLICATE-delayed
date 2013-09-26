@@ -1,5 +1,7 @@
 Blurb::
-Description:: The use of a delayed approach in rejecting points in the Markov Chain Monte Carlo algorithm. 
+Select delayed rejection
+Description::
+The use of a delayed approach in rejecting points in the Markov Chain Monte Carlo algorithm. 
 Topics::	not_yet_reviewed
 Examples::
 Theory::

@@ -1,5 +1,7 @@
 Blurb::
-Description:: The use of the Metropolis-Hastings algorithm in the Markov Chain Monte Carlo algorithm. 
+Select the Metropolis-Hastings sampler
+Description::
+The use of the Metropolis-Hastings algorithm in the Markov Chain Monte Carlo algorithm. 
 Topics::	not_yet_reviewed
 Examples::
 Theory::

@@ -1,5 +1,7 @@
 Blurb::
-Description::  This keyword refers to the number of build points or training points used to construct a Gaussian process emulator.  If the user specifies a number of \c emulator_samples that is less than the minimum number of points required to build the GP surrogate, Dakota will augment the samples to obtain the minimum required. 
+Number of data points used to train the surrogate model or emulator
+Description:: 
+This keyword refers to the number of build points or training points used to construct a Gaussian process emulator. If the user specifies a number of \c emulator_samples that is less than the minimum number of points required to build the GP surrogate, Dakota will augment the samples to obtain the minimum required. 
 Topics::	not_yet_reviewed
 Examples::
 Theory::

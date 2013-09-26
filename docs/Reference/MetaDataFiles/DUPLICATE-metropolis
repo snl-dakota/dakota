@@ -1,5 +1,9 @@
 Blurb::
-Description:: The specification of the algorithm which governs the Markov Chain Monte Carlo (MCMC) algorithm used.  There currently are two options for metropolis:  the option \c hastings specifies a standard Metropolis-Hastings algorithm, while the option \c adaptive specifies the adaptive Metropolis in which the covariance of the proposal density is updated adaptively.
+Choose the sampler for Markov Chain Monte Carlo
+Description::
+The specification of the algorithm which governs the Markov Chain Monte Carlo (MCMC) algorithm used. There currently are two options for metropolis: 
+\li the option \c hastings specifies a standard Metropolis-Hastings algorithm
+\li the option \c adaptive specifies the adaptive Metropolis in which the covariance of the proposal density is updated adaptively.
 Topics::	not_yet_reviewed
 Examples::
 Theory::

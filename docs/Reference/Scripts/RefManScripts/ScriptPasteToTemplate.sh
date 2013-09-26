@@ -19,20 +19,17 @@ AllFieldLineNums="$AllFieldLineNums "$(( $(wc -l < $1) + 1 ))  #add the last lin
 ###############
 NumCrumbs=$(( ( $(echo $KeyHier | tr -dc '-' | wc -c ) ) + 1 ))
 
-BCtext='<div class="row-fluid">
+BCtext='
  <ul class="breadcrumb">
-  <li>\ref keywords <span class="divider">/</span></li> '
-for (( idx=1 ; idx < $NumCrumbs ; idx++ ))
+  <li>\ref keywords</li> '
+for (( idx=1 ; idx <= $NumCrumbs ; idx++ ))
 do
   Word=$(echo $KeyHier | cut -d '-' -f1-$idx)
   BCtext=$BCtext'
-  <li>\ref '$Word' <span class="divider">/</span></li>'
+  <li>\ref '$Word'</li>'
 done
-Word=$(echo $KeyHier  | cut -d '-' -f$NumCrumbs)
 BCtext=$BCtext'
-  <li class="active">'$Word'</li>
- </ul>
-</div>'
+ </ul>'
 
 ###############
 ## Blurb
@@ -98,7 +95,7 @@ then
 fi
 
 SpecText=$SpecText'
-<table border="1">
+<table class="keyword">
  <tr>
   <td class="kwtype">Alias</td>
   <td class="kwname">'$Alias'</td>
@@ -144,7 +141,7 @@ then
     SubKeyBlurb=$( sed -n $SubKeyBlurbLine"p" < $ContentDir/$KeyHier-$SubKey | tr -d '\t' )
     SpecText=$SpecText'
 
-<table border="1">
+<table class="keyword">
  <tr>
   <th> </th>
   <th class="kwtype" colspan="2">'$GroupType'</th>
@@ -178,7 +175,7 @@ then
   NumKeys=$(( $( echo $KeyLineNums | tr -dc ' ' | wc -c ) + 1 ))
     SpecText=$SpecText'
 
-<table border="1">
+<table class="keyword">
  <tr>
   <th> </th>
   <th class="kwtype" colspan="2">Required Keywords</th>
@@ -209,7 +206,7 @@ then
   NumKeys=$(( $( echo $KeyLineNums | tr -dc ' ' | wc -c ) + 1 ))
   SpecText=$SpecText'
 
-<table border="1">
+<table class="keyword">
  <tr>
   <th> </th>
   <th class="kwtype" colspan="2">Optional Keywords</th>

@@ -1,5 +1,5 @@
 Blurb::
-Bayesian calibration, using the QUESO package
+Bayesian calibration
 Description::
 Currently, we are in the process of incorporating Bayesian calibration 
 methods in %Dakota. These methods take prior information on parameter 

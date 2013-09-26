@@ -1,4 +1,5 @@
 Blurb::
+Markov Chain Monte Carlo algorithm with Gaussian Process Surrogate
 Description::
 Topics::	not_yet_reviewed
 Examples::

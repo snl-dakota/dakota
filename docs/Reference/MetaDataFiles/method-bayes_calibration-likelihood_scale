@@ -1,5 +1,7 @@
 Blurb::
+Scale the \b log-likelihood function
 Description::
+<b> Note that this changes the formulation of the calibration problem </b>
 Topics::	not_yet_reviewed
 Examples::
 Theory::

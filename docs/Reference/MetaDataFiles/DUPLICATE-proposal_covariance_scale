@@ -1,6 +1,10 @@
 Blurb::
-Description:: The use of a scaling factor in the proposal covariance.  This scales the proposal covariance and may be useful when the input variables being calibrated are of different magnitudes:  one may want to take a larger step in a direction with a larger magnitude, for example.  The proposal covariance is a list of reals, one for each variable. 
-Topics::	not_yet_reviewed
+Scale the proposal covariance matrix
+Description::
+The use of a scaling factor in the proposal covariance. The proposal jumps are sampled from a multivariate normal distribution !!!!!!!!!! HOW IS THE COV matrix formed??? !!!!!!!!!!!!!!!. 
+
+This scales the values on the diagonal of the proposal covariance and may be useful when the input variables being calibrated are of different magnitudes: one may want to take a larger step in a direction with a larger magnitude, for example. The proposal covariance is a list of reals, one for each variable. 
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

@@ -1,0 +1,112 @@
+
+/* Additional Dakota stylesheet */
+table.keyword  {
+   border: 1px solid black;
+   width:80%;
+   padding: 2em;
+   margin:1em;
+}
+
+th.keyword  {
+  width:100px;
+  padding: 2em;
+  margin-bottom: 1em;
+  border-right: 1px solid black;
+}
+td.keyword  {
+  padding:0.5em;
+  padding-left: 2em;
+}
+.keyword .kwtype {
+  color:#036;
+  font-size: 1.2em;
+  margin: 2em;
+}
+
+td.keyword  td.kwname {
+  width: 300 px;
+}
+
+
+/* breadcrumbs */
+.breadcrumb {
+  list-style: none;
+  overflow: hidden;
+  font: 14px Helvetica, Arial, Sans-Serif;
+  border: 1px solid black;
+}
+
+.breadcrumb li {
+  float: left;
+}
+
+.breadcrumb li a {
+  color: white;
+  text-decoration: none;
+  padding: 5px 0 5px 65px;
+  background: brown;                   /* fallback color */
+  background: #BA9F6E;
+  position: relative;
+  display: block;
+  float: left;
+}
+
+.breadcrumb li a:after {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 50px solid transparent;           /* Go big on the size, and let overflow hide */
+  border-bottom: 50px solid transparent;
+  border-left: 30px solid #BA9F6E;
+  position: absolute;
+  top: 50%;
+  margin-top: -50px;
+  left: 100%;
+  z-index: 2;
+}
+
+.breadcrumb li a:before {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 50px solid transparent;
+  border-bottom: 50px solid transparent;
+  border-left: 30px solid white;
+  position: absolute;
+  top: 50%;
+  margin-top: -50px;
+  margin-left: 1px;
+  left: 100%;
+  z-index: 1;
+}
+
+.breadcrumb li:first-child a {
+  padding-left: 10px;
+}
+
+.breadcrumb li:nth-child(2) a       { background:        #c2aa7f; }
+.breadcrumb li:nth-child(2) a:after { border-left-color: #c2aa7f; }
+.breadcrumb li:nth-child(3) a       { background:        #cbb691; }
+.breadcrumb li:nth-child(3) a:after { border-left-color: #cbb691; }
+.breadcrumb li:nth-child(4) a       { background:        #D3C1A2; }
+.breadcrumb li:nth-child(4) a:after { border-left-color: #D3C1A2; }
+.breadcrumb li:nth-child(5) a       { background:        #DBCCB3; }
+.breadcrumb li:nth-child(5) a:after { border-left-color: #dbccb3; }
+.breadcrumb li:last-child a {
+  background: transparent !important;
+  color: black;
+  pointer-events: none;
+  cursor: default;
+}
+.breadcrumb li:last-child a:after {
+  border-left-color: transparent !important;
+}
+.breadcrumb li a:hover { background: #B2935D; }
+.breadcrumb li a:hover:after { border-left-color: #B2935D; !important; }
+
+
+span.keyword {
+	color: #787ace;
+}

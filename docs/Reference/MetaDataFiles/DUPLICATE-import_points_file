@@ -1,5 +1,7 @@
 Blurb::
-Description:: File of points (inputs and responses) that will be used to construct the surrogate model.  These are often called build points or training data.  The results from the surrogate model predictions are saved in a different file called export_points_file. 
+Specify file containing points used to train the surrogate model or emulator
+Description::
+File of points (inputs and responses) that will be used to construct the surrogate model. These are often called build points or training data. The results from the surrogate model predictions are saved in a different file called export_points_file. 
 Topics::	not_yet_reviewed
 Examples::
 Theory::
