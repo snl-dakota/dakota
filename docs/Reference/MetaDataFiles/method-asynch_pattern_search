@@ -6,6 +6,10 @@ The asynchronous parallel pattern search (APPS) algorithm [\ref GrKo06
 technique in that the search along each offset direction continues
 without waiting for searches along other directions to finish.
 
+Currently, APPS only supports coordinate bases with a total of \e 2n
+function evaluations in the pattern, and these patterns may only
+contract.
+
 <b> Concurrency </b>
 
 APPS exploits parallelism through the use of %Dakota's concurrent
@@ -25,17 +29,6 @@ must be greater than or equal to 4.4e-16
 after unsuccesful iterates, must be strictly between 0 and 1
 
 
-<b> Scheduling </b>
-
-Currently, APPS only supports coordinate bases with a total of \e 2n
-function evaluations in the pattern, and these patterns may only
-contract. The \c synchronization specification can be used to specify
-the use of either \c blocking or \c nonblocking schedulers for APPS.
-The \c blocking option causes APPS to behave as a synchronous
-algorithm. The \c nonblocking option is not available when %Dakota is
-used in message-passing mode.
-
-
 <b> Merit Functions </b>
 
 APPS solves nonlinearly constrained problems by solving a sequence of
@@ -52,12 +45,9 @@ follows:
 \li \c merit2_smooth: based on smoothed \f$ \ell_2\f$ norm
 \li \c merit2_squared: based on \f$ \ell_2^2\f$ norm
 
-The user can also specify the following:
-
-\li \c constraint_penalty: the initial multiplier for the penalty
-function, must be nonnegative
-\li \c smoothing_parameter: initial smoothing value for smoothed
-penalty functions, must be between 0 and 1 (inclusive)
+The user can also specify the following to affect the merit functions:
+\li \c constraint_penalty
+\li \c smoothing_parameter
 
 
 <b> Method Independent Controls </b>
@@ -75,14 +65,14 @@ constraint_tolerance.
 
 The APPS internal display level is mapped to
 the %Dakota \c output settings as follows:
-\li \c debug:  display final solution, all input parameters,
+\li \c debug: display final solution, all input parameters,
 variable and constraint info, trial points, search directions, and
 execution details
 \li \c verbose: display final solution, all input parameters,
 variable and constraint info, and trial points
 \li \c normal: display final solution, all input parameters,
 variable and constraint summaries, and new best points
-\li \c quiet:  display final solution and all input parameters
+\li \c quiet: display final solution and all input parameters
 \li \c silent: display final solution
 
 

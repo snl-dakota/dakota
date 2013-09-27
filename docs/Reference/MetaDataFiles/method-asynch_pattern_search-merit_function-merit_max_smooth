@@ -1,5 +1,8 @@
 Blurb::
+Smoothed merit function
 Description::
+\c merit_max_smooth: based on smoothed \f$ \ell_\infty\f$ norm
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

@@ -1,5 +1,13 @@
 Blurb::
+Specify the \c fitness_metric used to select the next point 
 Description::
+The user can specify the \c fitness_metric used to select the
+next point (or points) to evaluate and add to the set. 
+The fitness metrics used for scoring candidate points include: 
+\li \c predicted_variance
+\li \c distance
+\li \c gradient
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

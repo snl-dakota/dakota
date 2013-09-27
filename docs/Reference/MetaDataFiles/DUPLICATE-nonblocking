@@ -1,5 +1,12 @@
 Blurb::
+The \c nonblocking option causes Dakota to run the algorithm in asynchronous mode
 Description::
+The \c nonblocking option causes Dakota to run the algorithm in asynchronous
+mode.
+
+The \c nonblocking option is not available when %Dakota is
+used in message-passing mode.
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

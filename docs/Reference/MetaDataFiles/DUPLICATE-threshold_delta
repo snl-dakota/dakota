@@ -1,5 +1,9 @@
 Blurb::
+Stopping criteria based on step length or pattern size
 Description::
+\c threshold_delta is the step length or pattern size used to 
+determine convergence.
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

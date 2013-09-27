@@ -1,0 +1,9 @@
+When performing interval analysis, 
+one assumes that nothing is known about
+an epistemic uncertain variable except that its value lies
+somewhere within an interval. The goal of uncertainty quantification 
+in this context is to determine the 
+resulting bounds on the output (defining the output interval)
+given interval bounds on the inputs. 
+
+

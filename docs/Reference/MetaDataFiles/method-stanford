@@ -1,6 +1,10 @@
 Blurb::
+Select methods from the Stanford package
 Description::
-Appears to be a duplicate of \ref method-nlssol_sqp and \ref method-npsol_sqp
+This is a duplicate. See the method pages here:
+\li \ref method-nlssol_sqp 
+\li \ref method-npsol_sqp
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

@@ -1,44 +1,47 @@
 Blurb::
+Trust-region method for nonlinear least squares
 Description::
-Dakota's least squares branch currently contains three methods for
-solving nonlinear least squares problems: NL2SOL, a trust-region
-method that adaptively chooses between two Hessian approximations
-(Gauss-Newton and Gauss-Newton plus a quasi-Newton approximation to
-the rest of the Hessian), NLSSOL, a sequential quadratic programming
-(SQP) approach that is from the same algorithm family as NPSOL, and
-Gauss-Newton, which supplies the Gauss-Newton Hessian approximation to
-the full-Newton optimizers from OPT++.
-
-The important difference of these algorithms from general-purpose
-optimization methods is that the response set is defined by calibration 
-terms (e.g. separate terms for each residual), 
-rather than an objective function.  Thus, a finer
-granularity of data is used by least squares solvers as compared to
-that used by optimizers.  This allows the exploitation of the special
-structure provided by a sum of squares objective function. Refer to
-\ref RespFnLS for additional information on the least squares response
-data set.
-
 NL2SOL is available as \c nl2sol and addresses unconstrained and
-bound-constrained problems.  It uses a trust-region method (and thus
+bound-constrained problems. It uses a trust-region method (and thus
 can be viewed as a generalization of the Levenberg-Marquardt
 algorithm) and adaptively chooses between two Hessian approximations,
 the Gauss-Newton approximation alone and the Gauss-Newton
 approximation plus a quasi-Newton approximation to the rest of the
-Hessian.  Even on small-residual problems, the latter Hessian
+Hessian. Even on small-residual problems, the latter Hessian
 approximation can be useful when the starting guess is far from the
-solution.  On problems that are not over-parameterized (i.e., that do
+solution. On problems that are not over-parameterized (i.e., that do
 not involve more optimization variables than the data support), NL2SOL
 usually exhibits fast convergence.
 
+Several internal NL2SOL convergence tolerances are adjusted in response to \c
+function_precision, which gives the relative precision to which
+responses are computed. 
+
+These tolerances may also be specified explicitly using: 
+\li \c convergence_tolerance   (NL2SOL's \c rfctol) 
+\li \c x_conv_tol              (NL2SOL's \c xctol) 
+\li \c absolute_conv_tol       (NL2SOL's \c afctol)
+\li \c singular_conv_tol       (NL2SOL's \c sctol)
+\li \c false_conv_tol          (NL2SOL's \c xftol)
+\li \c initial_trust_radius    (NL2SOL's \c lmax0)
+
+The internal NL2SOL defaults can be obtained for many of these
+controls by specifying the value -1. 
+
+the internal defaults are often functions of machine epsilon 
+(as limited by \c function_precision).
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
 NL2SOL has a variety of internal controls as described in AT&T Bell
-Labs CS TR 153 (http://cm.bell-labs.com/cm/cs/cstr/153.ps.gz).  A
+Labs CS TR 153 (http://cm.bell-labs.com/cm/cs/cstr/153.ps.gz). A
 number of existing %Dakota controls (method independent controls and
 responses controls) are mapped into these NL2SOL internal controls.
 In particular, %Dakota's \c convergence_tolerance, \c max_iterations,
 \c max_function_evaluations, and \c fd_gradient_step_size are mapped
 directly into NL2SOL's \c rfctol, \c mxiter, \c mxfcal, and \c dltfdj
-controls, respectively.  In addition, %Dakota's \c fd_hessian_step_size
+controls, respectively. In addition, %Dakota's \c fd_hessian_step_size
 is mapped into both \c delta0 and \c dltfdc, and %Dakota's \c output
 verbosity is mapped into NL2SOL's \c auxprt and \c outlev (for \c
 normal/\c verbose/\c debug \c output, NL2SOL prints initial guess,
@@ -47,61 +50,5 @@ the active bound constraint set on every iteration; for \c quiet \c
 output, NL2SOL prints only the initial guess and final solution; and
 for \c silent \c output, NL2SOL output is suppressed).
 
-Several NL2SOL convergence tolerances are adjusted in response to \c
-function_precision, which gives the relative precision to which
-responses are computed.  These tolerances may also be specified
-explicitly: \c convergence_tolerance (NL2SOL's \c rfctol, as mentioned
-previously) is the relative-function convergence tolerance (on the
-accuracy desired in the sum-of-squares function); \c x_conv_tol
-(NL2SOL's \c xctol) is the X-convergence tolerance (scaled relative
-accuracy of the solution variables); \c absolute_conv_tol (NL2SOL's \c
-afctol) is the absolute function convergence tolerance (stop when half
-the sum of squares is less than \c absolute_conv_tol, which is mainly
-of interest on zero-residual test problems); \c singular_conv_tol
-(NL2SOL's \c sctol) is the singular convergence tolerance, which works
-in conjunction with \c singular_radius (NL2SOL's \c lmaxs) to test for
-underdetermined least-squares problems (stop when the relative
-reduction yet possible in the sum of squares appears less then \c
-singular_conv_tol for steps of scaled length at most \c
-singular_radius); \c false_conv_tol (NL2SOL's \c xftol) is the
-false-convergence tolerance (stop with a suspicion of discontinuity
-when a more favorable stopping test is not satisfied and a step of
-scaled length at most \c false_conv_tol is not accepted).  Finally,
-the \c initial_trust_radius specification (NL2SOL's \c lmax0)
-specifies the initial trust region radius for the algorithm.
-
-The internal NL2SOL defaults can be obtained for many of these
-controls by specifying the value -1.  For both the \c
-singular_radius and the \c initial_trust_radius, this results
-in the internal use of steps of length 1.  For other controls,
-the internal defaults are often functions of machine epsilon 
-(as limited by \c function_precision).  Refer to CS TR 153 for 
-additional details on these formulations.
-
-Whether and how NL2SOL computes and prints a final covariance matrix and
-regression diagnostics is affected by several keywords.  \c covariance
-(NL2SOL's \c covreq) specifies the desired covariance approximation:
-\li 0 = default = none
-\li 1 or -1 ==> \f$\sigma^2 H^{-1} J^T J H^{-1}\f$
-\li 2 or -2 ==> \f$\sigma^2 H^{-1}\f$
-\li 3 or -3 ==> \f$\sigma^2 (J^T J)^{-1}\f$
-\li Negative values ==> estimate the final Hessian H by finite 
-differences of function values only (using \c fd_hessian_step_size)
-\li Positive values ==> differences of gradients (using 
-\c fd_hessian_step_size)
-
-When \c regression_diagnostics (NL2SOL's \c rdreq) is specified and a
-positive-definite final Hessian approximation H is computed, NL2SOL
-computes and prints a regression diagnostic vector RD such that if
-omitting the i-th observation would cause alpha times the change in
-the solution that omitting the j-th observation would cause, then
-RD[i] = |alpha| RD[j].  The finite-difference step-size tolerance
-affecting H is \c fd_hessian_step_size (NL2SOL's \c delta0 and \c
-dltfdc, as mentioned previously).
-
-
-Topics::	not_yet_reviewed
-Examples::
-Theory::
 Faq::
 See_Also::	method-nlssol_sqp, method-optpp_g_newton

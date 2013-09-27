@@ -1,6 +1,12 @@
 Blurb::
+Topology... Morse-Smale
 Description::
-Topics::	not_yet_reviewed
+In this strategy we look at the topology of the scoring function and select the
+\c n highest maxima in the topology. To determine local maxima, we construct the
+approximate Morse-Smale complex. This strategy does require the user to have the 
+Morse-Smale package.
+
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

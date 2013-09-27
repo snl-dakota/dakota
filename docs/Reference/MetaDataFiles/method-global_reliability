@@ -1,31 +1,29 @@
 Blurb::
+Global reliability methods
 Description::
-Global reliability methods are selected using the \c
-global_reliability specification and are implemented within the
-NonDGlobalReliability class.  These methods do not support
+These methods do not support
 forward/inverse mappings involving \c reliability_levels, since they
-never form a reliability index based on distance in u-space.  Rather
+never form a reliability index based on distance in u-space. Rather
 they use a Gaussian process model to form an approximation to the
 limit state (based either in x-space via the \c x_gaussian_process
 specification or in u-space via the \c u_gaussian_process
 specification), followed by probability estimation based on multimodal
 adaptive importance sampling (see 
 [\ref Bichon2007 "Bichon et al., 2007"]) and 
-[\ref Bichon2008 "Bichon et al., 2008"]).  These
+[\ref Bichon2008 "Bichon et al., 2008"]). These
 probability estimates may then be transformed into generalized
-reliability levels if desired.  At this time, inverse reliability
+reliability levels if desired. At this time, inverse reliability
 analysis (mapping probability or generalized reliability levels into
-response levels) is not implemented.  The Gaussian process model
+response levels) is not implemented. 
+
+The Gaussian process model
 approximation to the limit state is formed over the aleatory uncertain
 variables by default, but may be extended to also capture the effect
-of design, epistemic uncertain, and state variables.  If this is
+of design, epistemic uncertain, and state variables. If this is
 desired, one must use the appropriate controls to specify the active
-variables in the variables specification block. By default, the
-Surfpack GP (Kriging) model is used, but the %Dakota implementation may
-be selected instead. If \c use_derivatives is specified the GP model
-will be built using available derivative data (Surfpack GP only).
+variables in the variables specification block. 
 
-Topics::	not_yet_reviewed
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

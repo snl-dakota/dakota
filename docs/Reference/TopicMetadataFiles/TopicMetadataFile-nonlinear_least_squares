@@ -1,0 +1,18 @@
+Dakota's least squares branch currently contains three methods for
+solving nonlinear least squares problems: 
+\li NL2SOL, a trust-region
+method that adaptively chooses between two Hessian approximations
+(Gauss-Newton and Gauss-Newton plus a quasi-Newton approximation to
+the rest of the Hessian)
+\li NLSSOL, a sequential quadratic programming
+(SQP) approach that is from the same algorithm family as NPSOL
+\li Gauss-Newton, which supplies the Gauss-Newton Hessian approximation to
+the full-Newton optimizers from OPT++.
+
+The important difference of these algorithms from general-purpose
+optimization methods is that the response set is defined by calibration 
+terms (e.g. separate terms for each residual), 
+rather than an objective function. Thus, a finer
+granularity of data is used by least squares solvers as compared to
+that used by optimizers. This allows the exploitation of the special
+structure provided by a sum of squares objective function.

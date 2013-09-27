@@ -1,6 +1,11 @@
 Blurb::
+Verify the quality of analytic gradients
 Description::
-Topics::	not_yet_reviewed
+\c verify_level
+instructs the algorithm to perform finite difference verifications on
+analytic gradients.
+!!!!!!!!!!!  used to be: user-supplied gradient components. !!!!!!!!!
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

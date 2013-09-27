@@ -1,6 +1,9 @@
 Blurb::
 Squential Quadratic Program
 Description::
+
+<b> Stopping Criteria </b>
+
 The method independent controls for \c max_iterations and \c
 max_function_evaluations limit the number of major SQP iterations and
 the number of function evaluations that can be performed during an
@@ -24,12 +27,17 @@ whereas the \c verbose and \c debug settings add additional
 information on the objective function, constraints, and variables at
 each major iteration.
 
+
+<b> Concurrency </b>
+
 NPSOL is not a parallel algorithm and cannot directly take advantage
 of concurrent evaluations. However, if \c numerical_gradients with \c
 method_source \c dakota is specified, then the finite difference
 function evaluations can be performed concurrently (using any of the
 parallel modes described in the Users Manual 
-[\ref UsersMan "Adams et al., 2010"]). An important related
+[\ref UsersMan "Adams et al., 2010"]). 
+
+An important related
 observation is the fact that NPSOL uses two different line searches
 depending on how gradients are computed. For either \c
 analytic_gradients or \c numerical_gradients with \c method_source \c
@@ -51,27 +59,16 @@ with numerical gradients should select \c method_source \c dakota for
 load balanced parallel operation and \c method_source \c vendor for
 efficient serial operation.
 
+
+<b> Linear constraints </b>
+
 Lastly, NPSOL supports specialized handling of linear inequality and
 equality constraints. By specifying the coefficients and bounds of the
 linear inequality constraints and the coefficients and targets of the
 linear equality constraints, this information can be provided to NPSOL
 at initialization and tracked internally, removing the need for the
 user to provide the values of the linear constraints on every function
-evaluation. Refer to \ref MethodIndControl for additional information
-and to Tables \ref T5d1 "5.1" through \ref T5d3 "5.3" for method
-independent control specification detail.
-
-NPSOL's method dependent controls are \c verify_level, \c
-function_precision, and \c linesearch_tolerance. The \c verify_level
-control instructs NPSOL to perform finite difference verifications on
-user-supplied gradient components. The \c function_precision control
-provides NPSOL an estimate of the accuracy to which the problem
-functions can be computed. This is used to prevent NPSOL from trying
-to distinguish between function values that differ by less than the
-inherent error in the calculation. And the \c linesearch_tolerance
-setting controls the accuracy of the line search. The smaller the
-value (between 0 and 1), the more accurately NPSOL will attempt to
-compute a precise minimum along the search direction. 
+evaluation. 
 
 
 Topics::	package_npsol, squential_quadratic_programming, not_yet_reviewed

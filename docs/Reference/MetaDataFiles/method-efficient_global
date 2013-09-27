@@ -1,5 +1,5 @@
 Blurb::
-Global Surrogate Based Optimization
+Global Surrogate Based Optimization, a.k.a. EGO
 Description::
 The Efficient Global Optimization (EGO) method was first developed by
 Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"]. In

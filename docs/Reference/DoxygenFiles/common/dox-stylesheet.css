@@ -33,7 +33,6 @@ td.keyword  td.kwname {
   list-style: none;
   overflow: hidden;
   font: 14px Helvetica, Arial, Sans-Serif;
-  border: 1px solid black;
 }
 
 .breadcrumb li {

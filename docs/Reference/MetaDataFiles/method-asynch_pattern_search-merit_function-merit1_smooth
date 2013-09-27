@@ -1,5 +1,8 @@
 Blurb::
+Smoothed merit function
 Description::
+\c merit1_smooth: based on smoothed \f$ \ell_1\f$ norm
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

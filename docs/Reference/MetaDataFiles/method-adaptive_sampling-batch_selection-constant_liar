@@ -1,6 +1,13 @@
 Blurb::
+eh???
 Description::
-Topics::	not_yet_reviewed
+The strategy first selects
+the highest scoring candidate, and then refits the surrogate using a ''lie'' value
+at the point selected and repeats until \c n points have been selected
+whereupon the lie values are removed from the surrogate and the selected points
+are evaluated on the true model and the surrogate is refit with these values.
+
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

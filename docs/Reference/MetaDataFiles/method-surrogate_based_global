@@ -1,12 +1,9 @@
 Blurb::
 Global Surrogate Based Optimization
 Description::
-!!!!!!!!!!!!!!!!!!!!!
-what is this????
 The \c surrogate_based_global 
 specification must identify a sub-method using either \c
-approx_method_pointer or \c approx_method_name 
-!!!!!!!!!!!!!!!!!!
+approx_method_pointer or \c approx_method_name.
 
 \c
 surrogate_based_global works in an iterative scheme where optimization

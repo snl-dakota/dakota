@@ -1,5 +1,8 @@
 Blurb::
+Nonsmoothed merit function
 Description::
+\c merit2: based on \f$ \ell_2\f$ norm
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::
