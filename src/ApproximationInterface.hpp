@@ -62,7 +62,7 @@ protected:
   /// the function evaluator: provides an approximate "mapping" from
   /// the variables to the responses using functionSurfaces
   void map(const Variables& vars, const ActiveSet& set, Response& response,
-	   const bool asynch_flag = false);
+	   bool asynch_flag = false);
 
   /// returns the minimum number of samples required to build the
   /// functionSurfaces

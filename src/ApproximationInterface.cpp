@@ -145,7 +145,7 @@ ApproximationInterface(const String& approx_type,
 
 void ApproximationInterface::
 map(const Variables& vars, const ActiveSet& set, Response& response,
-    const bool asynch_flag)
+    bool asynch_flag)
 {
   ++evalIdCntr;    // all calls to map (used throughout as eval id)
   ++newEvalIdCntr; // nonduplicate evaluations (used ONLY in fn. eval. summary)

@@ -84,7 +84,7 @@ public:
   /// the function evaluator: provides a "mapping" from the
   /// variables to the responses.
   virtual void map(const Variables& vars, const ActiveSet& set,
-		   Response& response, const bool asynch_flag = false);
+		   Response& response, bool asynch_flag = false);
 
   /// recovers data from a series of asynchronous evaluations (blocking)
   virtual const IntResponseMap& synch(); 

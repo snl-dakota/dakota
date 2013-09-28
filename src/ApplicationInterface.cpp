@@ -378,7 +378,7 @@ void ApplicationInterface::free_communicators()
     scheduler routines in synch() or synch_nowait().  Duplicate function
     evaluations are detected with duplication_detect(). */
 void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
-			       Response& response, const bool asynch_flag)
+			       Response& response, bool asynch_flag)
 {
   ++evalIdCntr; // all calls to map for this interface instance
   if (fineGrainEvalCounters) { // detailed evaluation reporting
@@ -517,8 +517,12 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
   }
 
   if (asynch_flag) {
-    if (!duplicate && outputLevel > SILENT_OUTPUT)
-      Cout << "(Asynchronous job " << evalIdCntr << " added to queue)\n";
+    // Output appears here to support core | algebraic | both
+    if (!duplicate && outputLevel > SILENT_OUTPUT) {
+      Cout << "(Asynchronous job " << evalIdCntr;
+      if (interfaceId.empty()) Cout << " added to queue)\n";
+      else Cout << " added to " << interfaceId << " queue)\n";
+    }
   }
   else {
     // call response_mapping even when no coreMapping, as even with
@@ -550,8 +554,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     Since the intent of this request is to streamline operations, both
     list searches are bypassed. */
 bool ApplicationInterface::
-duplication_detect(const Variables& vars, Response& response,
-		   const bool asynch_flag)
+duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
 {
   // check data_pairs list
   Response desired_resp;
@@ -1107,7 +1110,7 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
     // Step 3: backfill completed jobs with the next pending jobs (if present)
     if (static_limited) // reset to start of local queue
       local_prp_iter = local_prp_queue.begin();
-    for (i=0; local_prp_iter != local_prp_queue.end(); +i, ++local_prp_iter) {
+    for (i=0; local_prp_iter != local_prp_queue.end(); ++i, ++local_prp_iter) {
       int fn_eval_id = local_prp_iter->eval_id();
       launch = false;
       if (static_limited) {

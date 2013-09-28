@@ -82,7 +82,7 @@ public:
   /** This code provides the derived function used by
    *  ApplicationInterface::serve_analyses_synch().
    */
-  int derived_synchronous_local_analysis(const int& analysis_id)
+  int derived_synchronous_local_analysis(int analysis_id)
 	{
 	///
 	/// TODO - allow local analyses?????

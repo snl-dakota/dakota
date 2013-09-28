@@ -96,7 +96,7 @@ void SysCallApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 }
 
 
-void SysCallApplicInterface::spawn_application(const bool block_flag)
+void SysCallApplicInterface::spawn_application(bool block_flag)
 {
   // if a slave processor or if output verbosity is "silent", suppress output
   // from the SysCallAnalysisCode instance.  Must be done at eval time rather

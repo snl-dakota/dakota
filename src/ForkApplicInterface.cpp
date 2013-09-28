@@ -45,12 +45,12 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 {
   // This function may be executed by a multiprocessor evalComm.
 
-  forkSimulator.define_filenames(final_eval_id_tag(fn_eval_id)); // all of evalComm
+  forkSimulator.define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
   if (evalCommRank == 0)
     forkSimulator.write_parameters_files(vars, set, response, fn_eval_id);
 
   // execute the simulator application -- blocking call
-  fork_application(BLOCK);
+  fork_evaluation(BLOCK);
 
   try { 
     if (evalCommRank == 0)
@@ -79,20 +79,21 @@ void ForkApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   // This function may not be executed by a multiprocessor evalComm.
 
   int fn_eval_id = pair.eval_id();
-  forkSimulator.define_filenames(final_eval_id_tag(fn_eval_id)); // all of evalComm
+  forkSimulator.define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
   forkSimulator.write_parameters_files(pair.prp_parameters(), pair.active_set(),
 				       pair.prp_response(),   fn_eval_id);
  
   // execute the simulator application -- nonblocking call
-  pid_t pid = fork_application(FALL_THROUGH);
+  pid_t pid = fork_evaluation(FALL_THROUGH);
 
   // store the process & eval ids in a map.  The correspondence in completed
   // process id and fn. eval. id is then mapped to the appropriate index of
-  // prp_queue in derived_synch_kernel.  Correspondence between processIdMap
-  // order and beforeSynchCorePRPQueue order can not be assumed due to the
+  // prp_queue in derived_synch_kernel.  Correspondence between evalProcessIdMap
+  // order and beforeSynchCorePRPQueue order cannot be assumed due to the
   // existence of hybrid parallelism, i.e. ApplicationInterface::serve_asynch().
-  processIdMap[pid] = fn_eval_id;
+  evalProcessIdMap[pid] = fn_eval_id;
 }
+
 
 #ifdef _WIN32
  static HANDLE*
@@ -120,6 +121,7 @@ wait_setup(std::map<pid_t, int> *M, size_t *pn)
 	*pn = n;
 	return h;
 	}
+
 
  static int
 wait_for_one(size_t n, HANDLE *h, int req1, size_t *pi)
@@ -158,15 +160,6 @@ wait_for_one(size_t n, HANDLE *h, int req1, size_t *pi)
 	}
 #endif
 
-#ifdef HAVE_SYS_WAIT_H
-static void pid_botch()
-{
-  Cerr << "\nError in fork retrieving child; error code " << errno << " (" 
-       << std::strerror(errno) << ")\n   Consider using system interface"
-       << std::endl;
-  abort_handler(1);
-}
-#endif
 
 void ForkApplicInterface::
 derived_synch(PRPQueue& prp_queue)
@@ -179,30 +172,25 @@ derived_synch(PRPQueue& prp_queue)
   // evals. - and starve some servers).
 
 #ifdef HAVE_SYS_WAIT_H
-  int status;
-  // wait for any (1st level) child process to finish.  No need for
-  // usleep in derived_synch since wait provides a system optimized
-  // test facility.
-  pid_t pid = wait(&status); 
-  if (pid == -1)
-    pid_botch();
+  // wait for any process within the process group to finish.  No need for
+  // usleep in derived_synch() since blocking wait is already system optimized.
+  pid_t pid = forkSimulator.wait_evaluation(true); // block for completion
   do { // Perform this loop at least once for the pid from wait.
-    forkSimulator.check_status(status); // check the exit status
     derived_synch_kernel(prp_queue, pid);
-  } while( (pid=waitpid((pid_t)-1, &status, WNOHANG)) > 0 ); // Check for any
-  // additional completed pid's.  This satisfies the fairness requirement & is 
-  // particularly useful in the case of inexpensive fn. evals.
+  } while ( !evalProcessIdMap.empty() &&
+	    (pid = forkSimulator.wait_evaluation(false)) > 0 );
+    // Check for any additional completions (scheduling fairness)
 #elif defined(_WIN32)
 	DWORD dw;
 	HANDLE *h;
 	int req;
 	size_t i, n;
 
-	if ((h = wait_setup(&processIdMap, &n))) {
+	if ((h = wait_setup(&evalProcessIdMap, &n))) {
 		req = 1;
-		while(wait_for_one(n,h,req,&i)) {
+		while (wait_for_one(n,h,req,&i)) {
 			GetExitCodeProcess(h[i], &dw);
-			forkSimulator.check_status((int)dw);
+			forkSimulator.check_wait((pid_t)h[i], (int)dw);
 			derived_synch_kernel(prp_queue, (pid_t)h[i]);
 			CloseHandle(h[i]);
 			if (i < --n)
@@ -224,21 +212,20 @@ derived_synch_nowait(PRPQueue& prp_queue)
   // Do not wait - complete all jobs that are immediately available.
 
 #ifdef HAVE_SYS_WAIT_H
-  int status;
   pid_t pid;
-  while( (pid=waitpid((pid_t)-1, &status, WNOHANG)) > 0 ) {
-    forkSimulator.check_status(status); // check the exit status
+  while ( !evalProcessIdMap.empty() &&
+	  (pid=forkSimulator.wait_evaluation(false)) > 0 )
     derived_synch_kernel(prp_queue, pid);
-  }
+
 #elif defined(_WIN32)
 	DWORD dw;
 	HANDLE *h;
 	size_t i, n;
 
-	if ((h = wait_setup(&processIdMap, &n))) {
-		while(wait_for_one(n,h,0,&i)) {
+	if ((h = wait_setup(&evalProcessIdMap, &n))) {
+		while (wait_for_one(n,h,0,&i)) {
 			GetExitCodeProcess(h[i], &dw);
-			forkSimulator.check_status((int)dw);
+			forkSimulator.check_wait((pid_t)h[i], (int)dw);
 			derived_synch_kernel(prp_queue, (pid_t)h[i]);
 			CloseHandle(h[i]);
 			if (i < --n)
@@ -272,13 +259,13 @@ derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid)
   // Convenience function for common code between derived_synch() &
   // derived_synch_nowait() cases
 
-  // Map pid to map_iter to fn_eval_id (using processIdMap[pid] does
-  // the wrong thing if the pid key is not found)
-  std::map<pid_t, int>::iterator map_iter = processIdMap.find(pid);
-  if (map_iter == processIdMap.end()) {
+  // Map pid to fn_eval_id (using evalProcessIdMap[pid] does the wrong thing
+  // if the pid key is not found)
+  std::map<pid_t, int>::iterator map_iter = evalProcessIdMap.find(pid);
+  if (map_iter == evalProcessIdMap.end()) {
     // should not happen so long as wait ignores any 2nd level child processes
     Cerr << "Error: pid returned from wait does not match any 1st level child "
-	 << "process." << std::endl;
+	 << "process for this interface." << std::endl;
     abort_handler(-1);
   }
   int fn_eval_id = map_iter->second;
@@ -316,7 +303,7 @@ derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid)
   //pr_pair.prp_response(response);                    // not needed for shallow
   //replace_by_eval_id(prp_queue, fn_eval_id, pr_pair);// not needed for shallow
   completionSet.insert(fn_eval_id);
-  processIdMap.erase(pid);
+  evalProcessIdMap.erase(pid);
 }
 
 
@@ -326,9 +313,9 @@ derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid)
     single fork is performed, while in other cases, an initial fork is
     reforked multiple times.  Called from derived_map() with
     block_flag == BLOCK and from derived_map_asynch() with block_flag
-    == FALL_THROUGH.  Uses ForkAnalysisCode::fork_program() to spawn
+    == FALL_THROUGH.  Uses ForkAnalysisCode::fork_analysis() to spawn
     individual program components within the function evaluation. */
-pid_t ForkApplicInterface::fork_application(const bool block_flag)
+pid_t ForkApplicInterface::fork_evaluation(bool block_flag)
 {
   // if a slave processor or if output verbosity is "silent", suppress output
   // from the ForkAnalysisCode instance.  Must be done at eval time rather
@@ -336,7 +323,6 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
   if (suppressOutput || outputLevel == SILENT_OUTPUT)
     forkSimulator.suppress_output_flag(true); // suppress fork echoes
 
-  pid_t pid = 0;
   const std::string& ifilter_name = forkSimulator.input_filter_name();
   const std::string& ofilter_name = forkSimulator.output_filter_name();
   const char *s;
@@ -344,7 +330,7 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
   if (evalCommRank == 0 && !suppressOutput) {
     if (block_flag) {
       if (eaDedMasterFlag)
-        Cout << "blocking fork self-schedule: ";
+        Cout << "blocking fork dynamic schedule: ";
       else if (numAnalysisServers > 1)
         Cout << "blocking fork static schedule: ";
       else
@@ -388,10 +374,15 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
   // this buffer and outputs the contents on the next buffer flush.
   Cout << std::flush;
 
+  pid_t pid = 0;
   if (ifilter_name.empty() && ofilter_name.empty() && numAnalysisDrivers == 1) {
     // fork the one-piece interface directly (no intermediate process required)
     forkSimulator.driver_argument_list(1);
-    pid = forkSimulator.fork_program(block_flag);
+    bool new_group = (!block_flag && evalProcessIdMap.empty());
+    pid = forkSimulator.fork_analysis(block_flag, new_group);
+    if (new_group) // collapse the 2 groups on behalf of wait_evaluation()
+      forkSimulator.evaluation_process_group_id(
+	forkSimulator.analysis_process_group_id());
   }
   else if (evalCommSize > 1) {
     // run a blocking schedule of single-proc. analyses over analysis servers.
@@ -402,13 +393,13 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
 
     if (!block_flag) {
       Cerr << "Error: multiprocessor evalComm does not support nonblocking "
-	   << "ForkApplicInterface::fork_application." << std::endl;
+	   << "ForkApplicInterface::fork_evaluation()." << std::endl;
       abort_handler(-1);
     }
 
     if (!ifilter_name.empty() && evalCommRank == 0) {
       forkSimulator.ifilter_argument_list();
-      forkSimulator.fork_program(BLOCK);
+      forkSimulator.fork_analysis(BLOCK, false);
     }
 
     // Schedule analyses using either master-slave/dynamic or peer/static
@@ -451,7 +442,7 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
 
     if (!ofilter_name.empty() && evalCommRank == 0) {
       forkSimulator.ofilter_argument_list();
-      forkSimulator.fork_program(BLOCK);
+      forkSimulator.fork_analysis(BLOCK, false);
     }
   }
   else { // schedule all analyses local to this processor
@@ -483,9 +474,14 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
     abort_handler(-1);
 #endif
 
-    if (pid == 0) { // if nonblocking, then this is the intermediate (1st level
-      // child) process.  If blocking, then no fork has yet been performed, and
-      // this is the parent (default pid == 0).
+    bool new_group = evalProcessIdMap.empty();
+    if (block_flag || pid == 0) {
+      // if nonblocking, then this is the intermediate (1st level child)
+      // process.  If blocking, then no fork has yet been performed, and
+      // this is the parent.
+
+      if (!block_flag) // child evaluation process from fork() above
+	forkSimulator.join_evaluation_process_group(new_group);
 
       // run the input filter by reforking the child process (2nd level child).
       // This refork is always blocking.  The ifilter is used just once per
@@ -494,7 +490,7 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
       // (see DirectApplicInterface::derived_map for additional info).
       if (!ifilter_name.empty()) {
         forkSimulator.ifilter_argument_list();
-        forkSimulator.fork_program(BLOCK);
+        forkSimulator.fork_analysis(BLOCK, false);
       }
 
       // run the simulator programs by reforking the child process again
@@ -517,7 +513,7 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
       // info).
       if (!ofilter_name.empty()) {
         forkSimulator.ofilter_argument_list();
-        forkSimulator.fork_program(BLOCK);
+        forkSimulator.fork_analysis(BLOCK, false);
       }
 
       // If nonblocking, then this is the 1st level child process.  Quit this
@@ -525,51 +521,35 @@ pid_t ForkApplicInterface::fork_application(const bool block_flag)
       if (!block_flag)
         _exit(1);
     }
+    else // parent process from fork() above
+      if (new_group)
+	forkSimulator.evaluation_process_group_id(pid);
   }
 
   return(pid);
 }
 
 
-// --------------------------------------------------------------
-// Begin analysis level schedulers (eventually derived
-// fns for ApplicationInterface analysis schedulers)
-//
-// A simple list utility function, removeAt(index) is useful here
-// --------------------------------------------------------------
-
-template <class ListT>
-void removeAt(ListT& l, typename ListT::size_type index)
-{
-  if (index >= l.size()) {
-    Cerr << "Error: index passed to removeAt(std::list,index) is out of bounds."
-         << std::endl;
-    abort_handler(-1);
-  }
-  typename ListT::iterator it = l.begin();
-  std::advance(it, index);
-  l.erase(it);
-}
-
-/** Schedule analyses asynchronously on the local processor using a
-    self-scheduling approach (start to end in step increments).
-    Concurrency is limited by asynchLocalAnalysisConcurrency.  Modeled
-    after ApplicationInterface::asynchronous_local_evaluations().
-    NOTE: This function should be elevated to ApplicationInterface if
-    and when another derived interface class supports asynchronous
-    local analyses. */
+/** Schedule analyses asynchronously on the local processor using a dynamic
+    scheduling approach (start to end in step increments).  Concurrency is
+    limited by asynchLocalAnalysisConcurrency.  Modeled after
+    ApplicationInterface::asynchronous_local_evaluations().  NOTE: This
+    function should be elevated to ApplicationInterface if and when another
+    derived interface class supports asynchronous local analyses. */
 void ForkApplicInterface::
-asynchronous_local_analyses(const int& start, const int& end, const int& step)
+asynchronous_local_analyses(int start, int end, int step)
 {
-  std::list<pid_t> pid_list;         // list of process id's for asynch jobs
-  std::list<int>   analysis_id_list; // list of analysis id's for asynch jobs
-  size_t i, num_sends;
   if (numAnalysisDrivers <= 1) {
     Cerr << "Error: ForkApplicInterface::asynchronous_local_analyses() should "
 	 << "only be called for multiple analysis_drivers." << std::endl;
     abort_handler(-1);
   }
+
+  // link process id's to analysis id's for asynch jobs
+  std::map<pid_t, int> proc_analysis_id_map;
+  size_t i, num_sends;
   int analysis_id, num_jobs = 1 + (int)((end-start)/step);
+  pid_t pid, proc_gp;
 
   if (asynchLocalAnalysisConcurrency)  // concurrency limited by user
     num_sends = std::min(asynchLocalAnalysisConcurrency, num_jobs);
@@ -581,23 +561,24 @@ asynchronous_local_analyses(const int& start, const int& end, const int& step)
 #ifdef MPI_DEBUG
   Cout << "First pass: initiating " << num_sends << " asynchronous analyses\n";
 #endif // MPI_DEBUG
+  bool new_group = true;
   for (i=0; i<num_sends; ++i) {
     analysis_id = start + i*step;
 #ifdef MPI_DEBUG
     Cout << "Initiating analysis " << analysis_id << std::endl; // flush buffer
 #endif // MPI_DEBUG
     forkSimulator.driver_argument_list(analysis_id);
-    pid_t pid = forkSimulator.fork_program(FALL_THROUGH);
-    pid_list.push_back(pid);
-    analysis_id_list.push_back(analysis_id);
+    pid = forkSimulator.fork_analysis(FALL_THROUGH, new_group);
+    proc_analysis_id_map[pid] = analysis_id;
+    new_group = false;
   }
 
 #ifdef MPI_DEBUG
   if (num_sends < num_jobs)
-    Cout << "Second pass: self-scheduling " << num_jobs-num_sends 
+    Cout << "Second pass: dynamic scheduling " << num_jobs-num_sends 
          << " remaining analyses\n";
 #endif // MPI_DEBUG
-  size_t send_cntr = num_sends, recv_cntr = 0;
+  size_t send_cntr = num_sends, num_running = num_sends, recv_cntr = 0;
   while (recv_cntr < num_jobs) {
 #ifdef MPI_DEBUG
     Cout << "Waiting on completed analyses" << std::endl;
@@ -605,41 +586,49 @@ asynchronous_local_analyses(const int& start, const int& end, const int& step)
 
 #ifdef HAVE_SYS_WAIT_H
     // Enforce scheduling fairness with a Waitsome design
-    int status, completed = 0;
-    pid_t pid = wait(&status); // wait for any analysis to finish
-    if (pid == -1)
-      pid_botch();
+    int completed = 0;
+    pid = forkSimulator.wait_analysis(true); // block for completion
     do { // perform this loop at least once for the pid from wait.
-      forkSimulator.check_status(status); // check the exit status
-      completed++;
-      size_t index = find_index(pid_list, pid);
+      ++completed;
+      std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find(pid);
+      if (an_it == proc_analysis_id_map.end()) {
+	Cerr << "Error: analysis completion does not match local process ids "
+	     << "within ForkApplicInterface::asynchronous_local_analyses()."
+	     << std::endl;
+	abort_handler(-1);
+      }
 #ifdef MPI_DEBUG
-      Cout << "Analysis " << analysis_id_list[index] << " has completed"
-	   << std::endl;
+      Cout << "Analysis " << an_it->second << " has completed" << std::endl;
 #endif // MPI_DEBUG
-      removeAt(pid_list, index);
-      removeAt(analysis_id_list, index);
-    } while( (pid=waitpid((pid_t)-1, &status, WNOHANG)) > 0 ); // any additional
+      proc_analysis_id_map.erase(an_it); --num_running;
+    } while ( num_running && (pid=forkSimulator.wait_analysis(false)) > 0 );
+      // process any additional completions
+
 #elif defined(_WIN32)
 	DWORD dw;
 	HANDLE *h;
 	int completed, req;
 	size_t i, j, n;
 
-	if ((h = wait_setup(&processIdMap, &n))) {
+	if ((h = wait_setup(&evalProcessIdMap, &n))) { // *** BUG?
 		req = 1;
 		completed = 0;
-		while(wait_for_one(n,h,req,&i)) {
+		while (wait_for_one(n,h,req,&i)) {
 			GetExitCodeProcess(h[i], &dw);
-			forkSimulator.check_status((int)dw);
+			forkSimulator.check_wait((pid_t)h[i], (int)dw);
 			++completed;
-			j = find_index(pid_list, (pid_t)h[i]);
+			std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find((pid_t)h[i]);
+			if (an_it == proc_analysis_id_map.end()) {
+			  Cerr << "Error: analysis completion does not match local process ids "
+			       << "within ForkApplicInterface::asynchronous_local_analyses()."
+			       << std::endl;
+			  abort_handler(-1);
+			}
 #ifdef MPI_DEBUG
-			Cout << "Analysis " << analysis_id_list[j] << " has completed"
+			Cout << "Analysis " << an_it->second << " has completed"
 			<< std::endl;
 #endif // MPI_DEBUG
-			removeAt(pid_list, j);
-			removeAt(analysis_id_list, j);
+			proc_analysis_id_map.erase(an_it); --num_running;
 			CloseHandle(h[i]);
 			if (i < --n)
 				h[i] = h[n];
@@ -652,6 +641,7 @@ asynchronous_local_analyses(const int& start, const int& end, const int& step)
 #endif
 #if defined(HAVE_SYS_WAIT_H) || defined(_WIN32)
     recv_cntr += completed;
+    new_group = proc_analysis_id_map.empty();
     for (i=0; i<completed; ++i) {
       if (send_cntr < num_jobs) {
         analysis_id = start + send_cntr*step;
@@ -659,22 +649,21 @@ asynchronous_local_analyses(const int& start, const int& end, const int& step)
         Cout << "Initiating analysis " << analysis_id << std::endl; // flush buf
 #endif // MPI_DEBUG
 	forkSimulator.driver_argument_list(analysis_id);
-        pid_t pid = forkSimulator.fork_program(FALL_THROUGH);
-        pid_list.push_back(pid);
-        analysis_id_list.push_back(analysis_id);
-        send_cntr++;
+        pid = forkSimulator.fork_analysis(FALL_THROUGH, new_group);
+        proc_analysis_id_map[pid] = analysis_id; ++num_running;
+        ++send_cntr; new_group = false;
       }
+      else break;
     }
 #endif // HAVE_SYS_WAIT_H
   }
 }
 
 
-/** This code runs multiple asynch analyses on each server.  It is
-    modeled after ApplicationInterface::serve_evaluations_asynch().
-    NOTE: This fn should be elevated to ApplicationInterface if and
-    when another derived interface class supports hybrid analysis
-    parallelism. */
+/** This code runs multiple asynch analyses on each server.  It is modeled
+    after ApplicationInterface::serve_evaluations_asynch().  NOTE: This fn
+    should be elevated to ApplicationInterface if and when another derived
+    interface class supports hybrid analysis parallelism. */
 void ForkApplicInterface::serve_analyses_asynch()
 {
   if (numAnalysisDrivers <= 1) {
@@ -682,12 +671,14 @@ void ForkApplicInterface::serve_analyses_asynch()
 	 << "called for multiple analysis_drivers." << std::endl;
     abort_handler(-1);
   }
-  pid_t pid;
-  int analysis_id;
-  std::list<pid_t> pid_list; // list of process id's for asynch jobs
-  std::list<int>   analysis_id_list; // corresponding list of analysis id's
+
+  // link process id's to analysis id's for asynch jobs
+  pid_t pid, proc_gp; int analysis_id;
+  std::map<pid_t, int> proc_analysis_id_map;
+
   MPI_Status  status; // holds MPI_SOURCE, MPI_TAG, & MPI_ERROR
   MPI_Request recv_request = MPI_REQUEST_NULL;
+  bool new_group = true; size_t num_running = 0;
 
   // ----------------------------------------------------------
   // Step 1: block on first message before entering while loops
@@ -705,7 +696,7 @@ void ForkApplicInterface::serve_analyses_asynch()
     // Leave it in for completeness even though static analysis scheduler
     // doesn't use serve fns.
     while (mpi_test_flag && analysis_id &&
-           pid_list.size() < asynchLocalAnalysisConcurrency) {
+	   num_running < asynchLocalAnalysisConcurrency) {
       // test for completion
       if (recv_request)
         parallelLib.test(recv_request, mpi_test_flag, status);
@@ -717,9 +708,9 @@ void ForkApplicInterface::serve_analyses_asynch()
         if (analysis_id) {
 	  // execute
 	  forkSimulator.driver_argument_list(analysis_id);
-          pid = forkSimulator.fork_program(FALL_THROUGH);
-          pid_list.push_back(pid);
-          analysis_id_list.push_back(analysis_id);
+          pid = forkSimulator.fork_analysis(FALL_THROUGH, new_group);
+	  proc_analysis_id_map[pid] = analysis_id; ++num_running;
+	  new_group = false;
 	  // repost
           parallelLib.irecv_ea(analysis_id, 0, MPI_ANY_TAG, recv_request);
 	}
@@ -730,41 +721,47 @@ void ForkApplicInterface::serve_analyses_asynch()
     // Step 3: check for any completed jobs and return results to master
     // -----------------------------------------------------------------
 #ifdef HAVE_SYS_WAIT_H
-    if (pid_list.size()) {
-      int wait_status, rtn_code = 0;
-      while( (pid=waitpid((pid_t)-1, &wait_status, WNOHANG)) > 0 ) {
-        forkSimulator.check_status(wait_status); // check the exit status
-        size_t index = find_index(pid_list, pid);
-        ILIter anal_iter = analysis_id_list.begin();
-        std::advance(anal_iter, index);
-        analysis_id = *anal_iter;
+    if (num_running) {
+      int rtn_code = 0;
+      while ( num_running && (pid=forkSimulator.wait_analysis(false)) > 0 ) {
+	std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find(pid);
+	if (an_it == proc_analysis_id_map.end()) {
+	  Cerr << "Error: analysis completion does not match local process ids "
+	       << "within ForkApplicInterface::serve_analyses_asynch()."
+	       << std::endl;
+	  abort_handler(-1);
+	}
+        analysis_id = an_it->second;
 #ifdef MPI_DEBUG
-        Cout << "Analysis " << analysis_id << " has completed"
-             << std::endl; // flush buffer
+	Cout << "Analysis " << analysis_id << " has completed" << std::endl;
 #endif // MPI_DEBUG
 	// In this case, use a blocking send to avoid having to manage waits on
 	// multiple send buffers (which would be a pain since the number of
 	// send_buffers would vary with num_completed).
         parallelLib.send_ea(rtn_code, 0, analysis_id);
-        removeAt(pid_list, index);
-        removeAt(analysis_id_list, index);
+	proc_analysis_id_map.erase(an_it); --num_running;
       }
     }
 #elif defined(_WIN32)
-    if (pid_list.size()) {
+    if (num_running) {
 	DWORD dw;
 	HANDLE *h;
 	int rtn_code = 0;
 	size_t i, j, n;
 
-	if ((h = wait_setup(&processIdMap, &n))) {
-		while(wait_for_one(n,h,0,&i)) {
+	if ((h = wait_setup(&evalProcessIdMap, &n))) { // *** BUG?
+		while (wait_for_one(n,h,0,&i)) {
 			GetExitCodeProcess(h[i], &dw);
-			forkSimulator.check_status((int)dw);
-			j = find_index(pid_list, (int) dw);
-			ILIter anal_iter = analysis_id_list.begin();
-			std::advance(anal_iter, j);
-			analysis_id = *anal_iter;
+			forkSimulator.check_wait((pid_t)h[i], (int)dw);
+
+			std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find((pid_t)h[i]);
+			if (an_it == proc_analysis_id_map.end()) {
+			  Cerr << "Error: analysis completion does not match local process ids "
+			       << "within ForkApplicInterface::asynchronous_local_analyses()."
+			       << std::endl;
+			  abort_handler(-1);
+			}
+			analysis_id = an_it->second;
 #ifdef MPI_DEBUG
 			Cout << "Analysis " << analysis_id << " has completed" << std::endl;
 #endif // MPI_DEBUG
@@ -772,8 +769,7 @@ void ForkApplicInterface::serve_analyses_asynch()
 			// multiple send buffers (which would be a pain since the number of
 			// send_buffers would vary with num_completed).
 			parallelLib.send_ea(rtn_code, 0, analysis_id);
-			removeAt(pid_list, j);
-			removeAt(analysis_id_list, j);
+			proc_analysis_id_map.erase(an_it); --num_running;
 			CloseHandle(h[i]);
 			if (i < --n)
 				h[i] = h[n];
@@ -785,7 +781,7 @@ void ForkApplicInterface::serve_analyses_asynch()
       }
 #endif // HAVE_SYS_WAIT_H
 
-  } while (analysis_id || pid_list.size());
+  } while (analysis_id || num_running);
 }
 
 } // namespace Dakota

@@ -52,7 +52,7 @@ public:
 
   void derived_synch_nowait(PRPQueue& prp_queue);
 
-  int  derived_synchronous_local_analysis(const int& analysis_id);
+  int  derived_synchronous_local_analysis(int analysis_id);
 
   const std::vector<String>& analysis_drivers() const;
 
@@ -68,7 +68,7 @@ private:
 
   /// Spawn the application by managing the input filter, analysis drivers,
   /// and output filter.  Called from derived_map() & derived_map_asynch().
-  void spawn_application(const bool block_flag);
+  void spawn_application(bool block_flag);
 
   /// Convenience function for common code between derived_synch() &
   /// derived_synch_nowait()
@@ -122,7 +122,7 @@ inline void SysCallApplicInterface::derived_synch_nowait(PRPQueue& prp_queue)
 /** This code provides the derived function used by 
     ApplicationInterface::serve_analyses_synch(). */
 inline int SysCallApplicInterface::
-derived_synchronous_local_analysis(const int& analysis_id)
+derived_synchronous_local_analysis(int analysis_id)
 {
   sysCallSimulator.spawn_analysis(analysis_id, BLOCK);
   return 0; // used for failure codes in DirectFn case

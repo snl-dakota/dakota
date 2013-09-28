@@ -88,7 +88,7 @@ public:
   void derived_synch(PRPQueue& prp_queue);
   void derived_synch_nowait(PRPQueue& prp_queue);
 
-  int  derived_synchronous_local_analysis(const int& analysis_id);
+  int  derived_synchronous_local_analysis(int analysis_id);
 
   const StringArray& analysis_drivers() const;
 
@@ -209,7 +209,7 @@ protected:
 /** This code provides the derived function used by 
     ApplicationInterface::serve_analyses_synch(). */
 inline int DirectApplicInterface::
-derived_synchronous_local_analysis(const int& analysis_id)
+derived_synchronous_local_analysis(int analysis_id)
 { 
   analysisDriverIndex = analysis_id-1;
   return derived_map_ac(analysisDrivers[analysisDriverIndex]);

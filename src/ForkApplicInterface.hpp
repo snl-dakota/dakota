@@ -53,7 +53,7 @@ public:
 
   void derived_synch_nowait(PRPQueue& prp_queue);
 
-  int  derived_synchronous_local_analysis(const int& analysis_id);
+  int  derived_synchronous_local_analysis(int analysis_id);
 
   const StringArray& analysis_drivers() const;
 
@@ -73,15 +73,13 @@ private:
 
   /// perform the complete function evaluation by managing the input
   /// filter, analysis programs, and output filter
-  pid_t fork_application(const bool block_flag);
+  pid_t fork_evaluation(bool block_flag);
 
   /// execute analyses asynchronously on the local processor
-  void asynchronous_local_analyses(const int& start, const int& end,
-				   const int& step);
+  void asynchronous_local_analyses(int start, int end, int step);
 
   /// execute analyses synchronously on the local processor
-  void synchronous_local_analyses(const int& start, const int& end,
-				  const int& step);
+  void synchronous_local_analyses(int start, int end, int step);
 
   /// serve the analysis scheduler and execute analysis jobs asynchronously
   void serve_analyses_asynch();
@@ -98,7 +96,7 @@ private:
 
   /// map of fork process id's to function evaluation id's for
   /// asynchronous evaluations
-  std::map<pid_t, int> processIdMap;
+  std::map<pid_t, int> evalProcessIdMap;
 };
 
 
@@ -110,13 +108,13 @@ inline ForkApplicInterface::~ForkApplicInterface()
     serve_analyses_synch() as well as a convenience function for
     ForkApplicInterface::synchronous_local_analyses() below. */
 inline int ForkApplicInterface::
-derived_synchronous_local_analysis(const int& analysis_id)
+derived_synchronous_local_analysis(int analysis_id)
 {
 #ifdef MPI_DEBUG
   Cout << "Blocking fork to analysis " << analysis_id << std::endl; // flush buf
 #endif // MPI_DEBUG
   forkSimulator.driver_argument_list(analysis_id);
-  forkSimulator.fork_program(BLOCK);
+  forkSimulator.fork_analysis(BLOCK, false);
   return 0; // used for failure codes in DirectFn case
 }
 
@@ -125,7 +123,7 @@ derived_synchronous_local_analysis(const int& analysis_id)
     processor (start to end in step increments).  Modeled after
     ApplicationInterface::synchronous_local_evaluations(). */
 inline void ForkApplicInterface::
-synchronous_local_analyses(const int& start, const int& end, const int& step)
+synchronous_local_analyses(int start, int end, int step)
 {
   for (int analysis_id=start; analysis_id<=end; analysis_id+=step)
     derived_synchronous_local_analysis(analysis_id);

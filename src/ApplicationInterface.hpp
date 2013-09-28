@@ -90,7 +90,7 @@ protected:
   /// Provides a "mapping" of variables to responses using a simulation.
   /// Protected due to Interface letter-envelope idiom.
   void map(const Variables& vars, const ActiveSet& set, Response& response,
-	   const bool asynch_flag = false);
+	   bool asynch_flag = false);
 
   /// manages a simulation failure using abort/retry/recover/continuation
   void manage_failure(const Variables& vars, const ActiveSet& set,
@@ -190,7 +190,7 @@ protected:
   /// Execute a particular analysis (identified by analysis_id) synchronously
   /// on the local processor.  Used for the derived class specifics within
   /// ApplicationInterface::serve_analyses_synch().
-  virtual int derived_synchronous_local_analysis(const int& analysis_id);
+  virtual int derived_synchronous_local_analysis(int analysis_id);
 
   //
   //- Heading: Data
@@ -241,7 +241,7 @@ private:
   /// checks data_pairs and beforeSynchCorePRPQueue to see if the current
   /// evaluation request has already been performed or queued
   bool duplication_detect(const Variables& vars, Response& response,
-			  const bool asynch_flag);
+			  bool asynch_flag);
 
   // Scheduling routines employed by synch():
 
@@ -555,7 +555,7 @@ inline void ApplicationInterface::derived_synch_nowait(PRPQueue& prp_queue)
 
 
 inline int ApplicationInterface::
-derived_synchronous_local_analysis(const int& analysis_id)
+derived_synchronous_local_analysis(int analysis_id)
 {
   Cerr << "\nError: no default definition of virtual derived_synchronous_local_"
        << "analysis() function defined in ApplicationInterface\n." << std::endl;

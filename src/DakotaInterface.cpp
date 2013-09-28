@@ -549,7 +549,7 @@ eval_tag_prefix(const String& eval_id_str, bool append_iface_id)
 
 
 void Interface::map(const Variables& vars, const ActiveSet& set,
-		    Response& response, const bool asynch_flag)
+		    Response& response, bool asynch_flag)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->map(vars, set, response, asynch_flag);
