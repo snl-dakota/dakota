@@ -2430,6 +2430,75 @@ continuation(const Variables& target_vars, const ActiveSet& set,
 }
 
 
+// NOTE:  The following 3 methods CANNOT be inlined due to linkage errors on
+//        native, Windows MSVC builds (strange handling of extern symbols
+//        BoStream write_restart and PRPCache data_pairs)
+
+void ApplicationInterface::
+receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
+                   bool peer_flag)
+{
+  int fn_eval_id = prp_it->eval_id();
+  if (outputLevel > SILENT_OUTPUT) {
+    Cout << "Evaluation " << fn_eval_id << " has returned from ";
+    if (peer_flag) Cout << "peer server " << server_id+1 << '\n';
+    else           Cout << "slave server " << server_id << '\n';
+  }
+
+  // Process incoming buffer from remote server.  Avoid multiple key-value
+  // lookups.  Incoming response is a lightweight constructed response
+  // corresponding to a particular ActiveSet.
+  Response remote_response;
+  recvBuffers[buff_index] >> remote_response; // lightweight response
+  // share the rep among between rawResponseMap and the processing queue, but
+  // don't trample raw response sizing with lightweight remote response
+  Response raw_response = rawResponseMap[fn_eval_id] = prp_it->prp_response();
+  raw_response.update(remote_response);
+
+  // insert into restart and eval cache ASAP
+  if (evalCacheFlag)  data_pairs.insert(*prp_it);
+  if (restartFileFlag) write_restart << *prp_it;
+}
+
+
+void ApplicationInterface::process_asynch_local(int fn_eval_id)
+{
+  PRPQueueIter prp_it
+    = lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id);
+  if (prp_it == asynchLocalActivePRPQueue.end()) {
+    Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
+         << "process_asynch_local()." << std::endl;
+    abort_handler(-1);
+  }
+
+  if (outputLevel > SILENT_OUTPUT)
+    Cout << "Function evaluation " << fn_eval_id << " has completed\n";
+
+  rawResponseMap[fn_eval_id] = prp_it->prp_response();
+  if (evalCacheFlag)  data_pairs.insert(*prp_it);
+  if (restartFileFlag) write_restart << *prp_it;
+
+  asynchLocalActivePRPQueue.erase(prp_it);
+  if (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1) {// free "server"
+    size_t static_servers = asynchLocalEvalConcurrency,//asynchLocalEvalConcurrency * numEvalServers,
+      server_index = (fn_eval_id - 1) % static_servers;
+    localServerAssigned.reset(server_index);
+  }
+}
+
+
+void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
+{
+  int fn_eval_id = prp_it->eval_id();
+  if (outputLevel > SILENT_OUTPUT)
+    Cout << "Evaluating function evaluation " << fn_eval_id << std::endl;
+
+  rawResponseMap[fn_eval_id] = prp_it->prp_response();
+  if (evalCacheFlag)  data_pairs.insert(*prp_it);
+  if (restartFileFlag) write_restart << *prp_it;
+}
+
+
 void ApplicationInterface::common_input_filtering(const Variables& vars)
 { } // empty for now
 
