@@ -1,5 +1,17 @@
 Blurb::
+Select the Askey basis polynomials that match the basis random variable
 Description::
+The Askey option employs an extended basis of Hermite,
+Legendre, Laguerre, Jacobi, and generalized Laguerre orthogonal
+polynomials. 
+
+- Askey polynomial selections include Hermite for normal (optimal) as 
+ well as bounded normal, lognormal, bounded lognormal, gumbel, frechet, 
+ and weibull (sub-optimal); Legendre for uniform (optimal) as well as
+ loguniform, triangular, and bin-based histogram (sub-optimal);
+ Laguerre for exponential (optimal); Jacobi for beta (optimal); and
+ generalized Laguerre for gamma (optimal).
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

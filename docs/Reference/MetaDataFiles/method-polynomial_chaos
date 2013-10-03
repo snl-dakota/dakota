@@ -1,5 +1,153 @@
 Blurb::
+Uncertainty quantification using polynomial chaos expansions
 Description::
+Groups 1 and 2, plus the optional keywords \c p_refinement and
+\c fixed_seed relate 
+to the specification of a PCE method. In addition, this method
+treats variables that are not aleatoric-uncertain different,
+despite the \ref method-active keyword.
+
+Group 3, and the remainder of the optional keywords relate 
+to the output of the method.
+ 
+<b> polynomial_chaos Group 1 </b>
+
+Group 1 keywords are used to select the type of basis,
+\f$\Psi_i\f$, of the expansion. Three approaches
+may be employed:
+\li Extended (default if no option is selected)
+\li Wiener
+\li Askey
+
+The selection of Wiener versus Askey versus
+Extended is partially automated and partially under the user's
+control. 
+- The Extended option is the default and supports only
+ Gaussian correlations. <!--- This default can
+ be overridden by the user by supplying the keyword \c askey to request
+ restriction to the use of Askey bases only or by supplying the keyword
+ \c wiener to request restriction to the use of exclusively Hermite
+ bases. --> 
+- If needed to support prescribed correlations (not under user
+ control), the Extended and Askey options will fall back to the Wiener
+ option <EM>on a per variable basis</EM>. If the prescribed
+ correlations are also unsupported by Wiener expansions, then %Dakota
+ will exit with an error. 
+- The Extended option avoids the use of any nonlinear
+ variable transformations by augmenting the Askey approach with
+ numerically-generated orthogonal polynomials for non-Askey probability
+ density functions. 
+- Extended polynomial selections replace each of the sub-optimal Askey 
+ basis selections with numerically-generated polynomials that are 
+ orthogonal to the prescribed probability density functions (for bounded 
+ normal, lognormal, bounded lognormal, loguniform, triangular, gumbel, 
+ frechet, weibull, and bin-based histogram).
+
+<b> polynomial_chaos Group 2 </b>
+
+!!!!!!!!!! These do not match the specification, making this very difficult to parse and use!!!!!!!!!!!!!!
+
+To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
+options are provided:
+
+<ul>
+ <li> multidimensional integration by a tensor-product of Gaussian
+    quadrature rules (specified with \c quadrature_order, and, 
+ <li> multidimensional integration by the Smolyak sparse grid method
+    (specified with \c sparse_grid_level and, optionally, \c
+ <li> multidimensional integration by Stroud cubature rules 
+ and extensions as specified with \c cubature_integrand. 
+ <li> multidimensional integration by Latin hypercube sampling
+    (specified with \c expansion_samples).
+ <ul>
+  <li> linear regression (specified with either \c collocation_points or
+     \c collocation_ratio).
+  <li> coefficient import from a file (specified with \c
+     expansion_import_file). A total-order expansion is assumed and
+     must be specified using \c expansion_order.
+ </ul>
+</ul>
+
+<b> Active Variables </b>
+
+The default behavior is to form expansions over aleatory 
+uncertain continuous variables. To form expansions 
+over a broader set of variables, one needs to specify 
+\c active followed by \c state, \c epistemic, \c design, or \c all 
+in the variables specification block. 
+
+For continuous design, continuous state, and continuous
+epistemic uncertain variables included in the expansion,
+Legendre chaos bases are used to model the bounded intervals for these
+variables. However, these variables are not assumed to have any
+particular probability distribution, only that they are independent
+variables. Moreover, when probability integrals are evaluated, only
+the aleatory random variable domain is integrated, leaving behind a
+polynomial relationship between the statistics and the remaining
+design/state/epistemic variables.
+
+
+
+<b> polynomial_chaos Group 3 </b>
+
+These two keywords are used to specify how this method outputs the
+covariance of the responses.
+
+
+<b> Optional Keywords regarding method outputs </b>
+
+Each of
+these sampling specifications refer to sampling on the PCE
+approximation for the purposes of generating approximate statistics.
+\li \c sample_type
+\li \c samples
+\li \c seed
+\li \c fixed_seed
+\li \c rng
+\li \c sample_refinement 
+\li \c reliability_levels
+\li \c response_levels
+\li \c probability_levels
+\li \c gen_reliability_levels
+
+which should be distinguished from simulation sampling for generating
+the PCE coefficients as described in options 4 and 5 above (although
+options 4 and 5 will share the \c sample_type, \c seed, and \c rng
+settings, if provided). 
+
+The \c sample_refinement specification is
+similar to that of \ref MethodNonDLocalRel, with the difference that
+the number of refinement samples is not under the user's control
+(these evaluations are approximation-based, so management of this
+expense is less critical). This option allows for refinement of
+probability and generalized reliability results using importance
+sampling.
+
+<b> Some extra stuff that probably doesn't belong here </b>
+
+The advanced use case of multifidelity UQ automatically becomes active
+if the model selected for iteration by the method specification is a
+multifidelity surrogate model (refer to \ref ModelSurrH). In this
+case, an expansion will first be formed for the model discrepancy (the
+difference between response results if \c additive \c correction or
+the ratio of results if \c multiplicative \c correction), using the
+first \c quadrature_order or \c sparse_grid_level value along with any
+specified refinement strategy. Second, an expansion will be formed
+for the low fidelity surrogate model, using the second \c
+quadrature_order or \c sparse_grid_level value (if present; the first
+is reused if not present) along with any specified refinement
+strategy. Then the two expansions are combined (added or multiplied)
+into an expansion that approximates the high fidelity model, from
+which the final set of statistics are generated. For polynomial chaos
+expansions, this high fidelity expansion can differ significantly in 
+form from the low fidelity and discrepancy expansions, particularly in
+the \c multiplicative case where it is expanded to include all of the
+basis products.
+
+
+Topics::	not_yet_reviewed, problem
+Examples::
+Theory::
 The polynomial chaos expansion (PCE) is a general framework for
 the approximate representation of random response functions in terms
 of finite-dimensional series expansions in standardized random variables
@@ -8,291 +156,24 @@ of finite-dimensional series expansions in standardized random variables
 
 where \f$\alpha_i\f$ is a deterministic coefficient, \f$\Psi_i\f$ is a
 multidimensional orthogonal polynomial and \f$\xi\f$ is a vector of
-standardized random variables.  An important distinguishing feature of
+standardized random variables. An important distinguishing feature of
 the methodology is that the functional relationship between random
 inputs and outputs is captured, not merely the output statistics as in
 the case of many nondeterministic methodologies. %Dakota provides
-access to PCE methods through the NonDPolynomialChaos class.  Refer to
+access to PCE methods through the NonDPolynomialChaos class. Refer to
 the Uncertainty Quantification Capabilities chapter of the Users
 Manual [\ref UsersMan "Adams et al., 2010"] for additional information
 on the PCE algorithm.
 
-To select the basis \f$\Psi_i\f$ of the expansion, three approaches
-may be employed, as previously shown in Tables \ref T5d29 "5.29", 
-\ref T5d30 "5.30", and \ref T5d31 "5.31":
-Wiener, Askey, and Extended.  The Wiener option uses a Hermite
-orthogonal polynomial basis for all random variables and employs the
-same nonlinear variable transformation as the local and global
-reliability methods (and therefore has the same variable support).
-The Askey option, however, employs an extended basis of Hermite,
-Legendre, Laguerre, Jacobi, and generalized Laguerre orthogonal
-polynomials.  The Extended option avoids the use of any nonlinear
-variable transformations by augmenting the Askey approach with
-numerically-generated orthogonal polynomials for non-Askey probability
-density functions.  The selection of Wiener versus Askey versus
-Extended is partially automated and partially under the user's
-control.  The Extended option is the default and supports only
-Gaussian correlations (see Tables \ref T5d29 "5.29", 
-\ref T5d30 "5.30", and \ref T5d31 "5.31").  This default can
-be overridden by the user by supplying the keyword \c askey to request
-restriction to the use of Askey bases only or by supplying the keyword
-\c wiener to request restriction to the use of exclusively Hermite
-bases.  If needed to support prescribed correlations (not under user
-control), the Extended and Askey options will fall back to the Wiener
-option <EM>on a per variable basis</EM>.  If the prescribed
-correlations are also unsupported by Wiener expansions, then %Dakota
-will exit with an error.  Additional details include:
-- Askey polynomial selections include Hermite for normal (optimal) as 
-  well as bounded normal, lognormal, bounded lognormal, gumbel, frechet, 
-  and weibull (sub-optimal); Legendre for uniform (optimal) as well as
-  loguniform, triangular, and bin-based histogram (sub-optimal);
-  Laguerre for exponential (optimal); Jacobi for beta (optimal); and
-  generalized Laguerre for gamma (optimal).
-- Extended polynomial selections replace each of the sub-optimal Askey 
-  basis selections with numerically-generated polynomials that are 
-  orthogonal to the prescribed probability density functions (for bounded 
-  normal, lognormal, bounded lognormal, loguniform, triangular, gumbel, 
-  frechet, weibull, and bin-based histogram).
-
-The \c p_refinement keyword specifies the usage of automated
-polynomial order refinement, which can be either \c uniform or \c
-dimension_adaptive.  The \c dimension_adaptive option is supported for
-the tensor-product quadrature and Smolyak sparse grid options (see
-\ref T5d39 "Table 5.39" below), and \c uniform is supported for tensor
-and sparse grids as well as regression approaches (\c collocation_points 
-or \c collocation_ratio, see \ref T5d40 "Table 5.40" below).  Each of
-these refinement cases makes use of the \c max_iterations and \c
-convergence_tolerance method independent controls (see \ref T5d1
-"Table 5.1"); the former control limits the number of refinement 
-iterations, and the latter control terminates refinement when the
-two-norm of the change in the response covariance matrix (or, in
-goal-oriented approaches, the two-norm of change in the statistical
-quantities of interest (QOI)) falls below the tolerance.  The \c
-dimension_adaptive case can be further specified to utilize \c sobol,
-\c decay, or \c generalized refinement controls.  The former two cases
-employ anisotropic tensor/sparse grids in which the anisotropic
-dimension preference (leading to anisotropic integrations/expansions
-with differing refinement levels for different random dimensions) is
-determined using either total Sobol' indices from variance-based
-decomposition (\c sobol case: high indices result in high dimension
-preference) or using spectral coefficient decay rates from a rate
-estimation technique similar to Richardson extrapolation (\c decay
-case: low decay rates result in high dimension preference).  In these
-two cases as well as the \c uniform refinement case, the \c
-quadrature_order or \c sparse_grid_level are ramped by one on each
-refinement iteration until either of the two convergence controls is
-satisfied.  For the \c uniform refinement case with regression 
-approaches, the \c expansion_order is ramped by one on each iteration 
-while the oversampling ratio (either defined by \c collocation_ratio
-or inferred from \c collocation_points based on the initial expansion) 
-is held fixed.  Finally, the \c generalized \c dimension_adaptive case 
-is the default adaptive approach; it refers to the generalized sparse
-grid algorithm, a greedy approach in which candidate index sets are 
-evaluated for their impact on the statistical QOI, the most
-influential sets are selected and used to generate additional
-candidates, and the index set frontier of a sparse grid is evolved in
-an unstructured and goal-oriented manner (refer to User's Manual PCE
-descriptions for additional specifics).
-
-The \c variance_based_decomp and \c drop_tolerance are also the same
-as those described in \ref MethodNonDMC, but since PCE outputs main,
-interaction, and total effects by default, the \c univariate_effects
-option has been added to allow suppression of the interaction effects
-since the output volume of these results can be prohibitive for high
-dimensional problems.  Similar to suppression of these interactions is
-the covariance control, which can be selected to be \c
-diagonal_covariance or \c full_covariance, with the former supporting
-suppression of the off-diagonal covariance terms (to save compute and
-memory resources and reduce output volume).
-
-As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, 
-The default behavior is to form expansions over aleatory 
-uncertain continuous variables.  To form expansions 
-over a broader set of variables, one needs to specify 
-\c active followed by \c state, \c epistemic, \c design, or \c all 
-in the variables specification block. 
-For continuous design, continuous state, and continuous
-epistemic uncertain variables included in the expansion,
-Legendre chaos bases are used to model the bounded intervals for these
-variables.  However, these variables are not assumed to have any
-particular probability distribution, only that they are independent
-variables.  Moreover, when probability integrals are evaluated, only
-the aleatory random variable domain is integrated, leaving behind a
-polynomial relationship between the statistics and the remaining
-design/state/epistemic variables.
-
-To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
-options are provided and the specification details for these options
-are provided in Tables \ref T5d39 "5.39" and \ref T5d40 "5.40":
-
-<ol>
-<li> multidimensional integration by a tensor-product of Gaussian
-     quadrature rules (specified with \c quadrature_order, and, 
-     optionally, \c dimension_preference).  The default rule
-     selection is to employ \c non_nested Gauss rules including
-     Gauss-Hermite (for normals or transformed normals),
-     Gauss-Legendre (for uniforms or transformed uniforms),
-     Gauss-Jacobi (for betas), Gauss-Laguerre (for exponentials),
-     generalized Gauss-Laguerre (for gammas), and
-     numerically-generated Gauss rules (for other distributions when
-     using an Extended basis).  For the case of \c p_refinement or the
-     case of an explicit \c nested override, Gauss-Hermite rules are
-     replaced with Genz-Keister nested rules and Gauss-Legendre rules
-     are replaced with Gauss-Patterson nested rules, both of which
-     exchange lower integrand precision for greater point reuse.  
-     By specifying a \c dimension_preference, where higher preference
-     leads to higher order polynomial resolution, the tensor grid may
-     be rendered anisotropic.  The dimension specified to have 
-     highest preference will be set to the specified \c quadrature_order
-     and all other dimensions will be reduced in proportion to their
-     reduced preference; any non-integral portion is truncated.
-     To synchronize with tensor-product integration, a tensor-product
-     expansion is used, where the order \f$p_i\f$ of the expansion in
-     each dimension is selected to be half of the integrand precision
-     available from the rule in use, rounded down.  In the case of
-     non-nested Gauss rules with integrand precision \f$2m_i-1\f$,
-     \f$p_i\f$ is one less than the quadrature order \f$m_i\f$ in each
-     dimension (a one-dimensional expansion contains the same number 
-     of terms, \f$p+1\f$, as the number of Gauss points).  The 
-     total number of terms, \e N, in a tensor-product expansion 
-     involving \e n uncertain input variables is 
-     \f[N ~=~ 1 + P ~=~ \prod_{i=1}^{n} (p_i + 1)\f]
-     In some advanced use cases (e.g., multifidelity UQ), multiple
-     grid resolutions can be employed; for this reason, the \c 
-     quadrature_order specification supports an array input.
-<li> multidimensional integration by the Smolyak sparse grid method
-     (specified with \c sparse_grid_level and, optionally, \c
-     dimension_preference).  The underlying one-dimensional
-     integration rules are the same as for the tensor-product
-     quadrature case; however, the default rule selection is \c nested
-     for sparse grids (Genz-Keister for normals/transformed normals
-     and Gauss-Patterson for uniforms/transformed uniforms).  This
-     default can be overridden with an explicit \c non_nested
-     specification (resulting in Gauss-Hermite for normals/transformed
-     normals and Gauss-Legendre for uniforms/transformed uniforms).
-     As for tensor quadrature, the \c dimension_preference
-     specification enables the use of anisotropic sparse grids (refer
-     to the PCE description in the User's Manual for the anisotropic
-     index set constraint definition).  Similar to anisotropic tensor
-     grids, the dimension with greatest preference will have
-     resolution at the full \c sparse_grid_level and all other
-     dimension resolutions will be reduced in proportion to their
-     reduced preference.  For PCE with either isotropic or anisotropic
-     sparse grids, a summation of tensor-product expansions is used,
-     where each anisotropic tensor-product quadrature rule underlying
-     the sparse grid construction results in its own anisotropic
-     tensor-product expansion as described in case 1.  These
-     anisotropic tensor-product expansions are summed into a sparse
-     PCE using the standard Smolyak summation (again, refer to the
-     User's Manual for additional details).  As for \c quadrature_order,
-     the \c sparse_grid_level specification admits an array input for
-     enabling specification of multiple grid resolutions used by certain
-     advanced solution methodologies.
-<li> multidimensional integration by Stroud cubature rules [\ref
-     Stroud1971 "Stroud, 1971"] and extensions 
-     [\ref Xiu2008 "Xiu, 2008"], as specified with \c cubature_integrand.  
-     A total-order
-     expansion is used, where the isotropic order \e p of the
-     expansion is half of the integrand order, rounded down.  The
-     total number of terms \e N for an isotropic total-order expansion
-     of order \e p over \e n variables is given by
-     \f[N~=~1 + P ~=~1 + \sum_{s=1}^{p} {\frac{1}{s!}} 
-     \prod_{r=0}^{s-1} (n + r) ~=~\frac{(n+p)!}{n!p!}\f]
-     Since the maximum integrand order is currently five for normal
-     and uniform and two for all other types, at most second- and
-     first-order expansions, respectively, will be used.  As a result,
-     cubature is primarily useful for global sensitivity analysis,
-     where the Sobol' indices will provide main effects and, at most,
-     two-way interactions.  In addition, the random variable set must
-     be independent and identically distributed (\e iid), so the use
-     of \c askey or \c wiener transformations may be required to
-     create \e iid variable sets in the transformed space (as well as
-     to allow usage of the higher order cubature rules for normal and
-     uniform).  Note that global sensitivity analysis often assumes
-     uniform bounded regions, rather than precise probability
-     distributions, so the \e iid restriction would not be problematic
-     in that case.
-
-<li> multidimensional integration by Latin hypercube sampling
-     (specified with \c expansion_samples).  In this case, the
-     expansion order \e p cannot be inferred from the numerical
-     integration specification and it is necessary to provide an
-     \c expansion_order to specify \e p for a total-order expansion.
-<li> linear regression (specified with either \c collocation_points or
-     \c collocation_ratio).  A total-order expansion is used and must
-     be specified using \c expansion_order as described in the
-     previous option.  <!-- Given \e p or \e N, the total number of
-     collocation points (including any sample reuse) must be at least
-     \e N, and an oversampling is generally advisable.  To more easily
-     satisfy this requirement (i.e., to avoid requiring the user to
-     calculate \e N from \e n and \e p), --> To avoid requiring the 
-     user to calculate \e N from \e n and \e p), the \c collocation_ratio 
-     allows for specification of a constant factor applied to \e
-     N (e.g., \c collocation_ratio = \c 2. produces samples = \e 2N).
-     In addition, the default linear relationship with \e N can be
-     overridden using a real-valued exponent specified using \c
-     ratio_order.  In this case, the number of samples becomes
-     \f$cN^o\f$ where \f$c\f$ is the \c collocation_ratio and \f$o\f$
-     is the \c ratio_order.  The \c use_derivatives flag informs the
-     regression approach to include derivative matching equations
-     (limited to gradients at present) in the least squares solutions,
-     enabling the use of fewer collocation points for a given
-     expansion order and dimension (number of points required becomes
-     \f$\frac{cN^o}{n+1}\f$).  When admissible, a constrained least
-     squares approach is employed in which response values are first
-     reproduced exactly and error in reproducing response derivatives
-     is minimized.  Two collocation grid options are supported: the
-     default is Latin hypercube sampling ("point collocation"), and an
-     alternate approach of "probabilistic collocation" is also
-     available through inclusion of the \c tensor_grid keyword.  In
-     this alternate case, the collocation grid is defined using a
-     subset of tensor-product quadrature points: the order of the 
-     tensor-product grid is selected as one more than the expansion
-     order in each dimension (to avoid sampling at roots of the basis 
-     polynomials) and then the tensor multi-index is uniformly sampled
-     to generate a non-repeated subset of tensor quadrature points.
-     <!-- the order of the tensor-product grid is the minimum required
-     to meet or exceed the point requirement, and then this set of
-     points is filtered down to the requirement based on the subset of
-     points having highest product integration weight.  In our experience,
-     the alternate probabilistic collocation approach using a structured
-     grid tends to suffer from ill-conditioning more quickly than the
-     default point collocation approach using an unstructured grid. -->
-<li> coefficient import from a file (specified with \c
-     expansion_import_file).  A total-order expansion is assumed and
-     must be specified using \c expansion_order.
-
-If \c collocation_points or \c collocation_ratio is specified, the PCE
-coefficients will be determined by regression. \ref T5d41 "Table 5.41"
-lists a set of optional regression specifications.  If no regression
-specification is provided, appropriate defaults are defined.
-Specifically SVD-based least-squares will be used for solving
-over-determined systems and under-determined systems will be solved
-using LASSO. For the situation when the number of function values is
-smaller than the number of terms in a PCE, but the total number of
-samples including gradient values is greater than the number of terms,
-the resulting over-determined system will be solved using equality
-constrained least squares.  Technical information on the various
-methods listed below can be found in the Linear regression section of
-the Theory Manual. Some of the regression methods (OMP, LASSO, and
-LARS) are able to produce a set of possible PCE coefficient vectors
-(see the Linear regression section in the Theory Manual). If cross
-validation is inactive, then only one solution, consistent with the \c
-noise_tolerance, will be returned. If cross validation is active,
-%Dakota will choose between possible coefficient vectors found
-internally by the regression method across the set of expansion orders
-(1,...,expansion_order) and the set of specified noise tolerances and
-return the one with the lowest cross validation error indicator.
-
 If \e n is small (e.g., two or three), then tensor-product Gaussian
-quadrature is quite effective and can be the preferred choice.  For
+quadrature is quite effective and can be the preferred choice. For
 moderate to large \e n (e.g., five or more), tensor-product quadrature
 quickly becomes too expensive and the sparse grid and regression
-approaches are preferred.  <!-- For large \e n (e.g., more than ten),
+approaches are preferred. <!-- For large \e n (e.g., more than ten),
 point collocation may begin to suffer from ill-conditioning and sparse
 grids are generally recommended. --> Random sampling for coefficient
 estimation is generally not recommended due to its slow convergence
-rate.  <!--, although it does hold the advantage that the simulation
+rate. <!--, although it does hold the advantage that the simulation
 budget is more flexible than that required by the other approaches.-->
 For incremental studies, approaches 4 and 5 support reuse of previous
 samples through the \c incremental_lhs (refer to \ref MethodNonDMC for
@@ -301,66 +182,26 @@ ModelSurrG for description of the "all" option of sample reuse)
 specifications, respectively.
 
 In the quadrature and sparse grid cases, growth rates for nested and
-non-nested rules can be synchronized for consistency.  For a
+non-nested rules can be synchronized for consistency. For a
 non-nested Gauss rule used within a sparse grid, linear
 one-dimensional growth rules of \f$m=2l+1\f$ are used to enforce odd
 quadrature orders, where \e l is the grid level and \e m is the number
-of points in the rule.  The precision of this Gauss rule is then
-\f$i=2m-1=4l+1\f$.  For nested rules, order growth with level is
+of points in the rule. The precision of this Gauss rule is then
+\f$i=2m-1=4l+1\f$. For nested rules, order growth with level is
 typically exponential; however, the default behavior is to restrict
 the number of points to be the lowest order rule that is available
 that meets the one-dimensional precision requirement implied by either
 a level \e l for a sparse grid (\f$i=4l+1\f$) or an order \e m for a
-tensor grid (\f$i=2m-1\f$).  This behavior is known as "restricted
-growth" or "delayed sequences."  To override this default behavior in
+tensor grid (\f$i=2m-1\f$). This behavior is known as "restricted
+growth" or "delayed sequences." To override this default behavior in
 the case of sparse grids, the \c unrestricted keyword can be used; it
 cannot be overridden for tensor grids using nested rules since it also
-provides a mapping to the available nested rule quadrature orders.  An
+provides a mapping to the available nested rule quadrature orders. An
 exception to the default usage of restricted growth is the \c
 dimension_adaptive \c p_refinement \c generalized sparse grid case
 described previously, since the ability to evolve the index sets of a
 sparse grid in an unstructured manner eliminates the motivation for
 restricting the exponential growth of nested rules.
 
-Additional specifications include the level mappings described in \ref
-MethodNonD and the \c sample_type, \c samples, \c seed, \c fixed_seed,
-and \c rng specifications described in \ref MethodNonDMC, where the \c
-sample_type options are restricted to \c random and \c lhs.  Each of
-these sampling specifications refer to sampling on the PCE
-approximation for the purposes of generating approximate statistics,
-which should be distinguished from simulation sampling for generating
-the chaos coefficients as described in options 4 and 5 above (although
-options 4 and 5 will share the \c sample_type, \c seed, and \c rng
-settings, if provided).  The \c sample_refinement specification is
-similar to that of \ref MethodNonDLocalRel, with the difference that
-the number of refinement samples is not under the user's control
-(these evaluations are approximation-based, so management of this
-expense is less critical).  This option allows for refinement of
-probability and generalized reliability results using importance
-sampling. \ref T5d42 "Table 5.42" provide the details of these
-sampling specifications for polynomial chaos.
-
-The advanced use case of multifidelity UQ automatically becomes active
-if the model selected for iteration by the method specification is a
-multifidelity surrogate model (refer to \ref ModelSurrH).  In this
-case, an expansion will first be formed for the model discrepancy (the
-difference between response results if \c additive \c correction or
-the ratio of results if \c multiplicative \c correction), using the
-first \c quadrature_order or \c sparse_grid_level value along with any
-specified refinement strategy.  Second, an expansion will be formed
-for the low fidelity surrogate model, using the second \c
-quadrature_order or \c sparse_grid_level value (if present; the first
-is reused if not present) along with any specified refinement
-strategy.  Then the two expansions are combined (added or multiplied)
-into an expansion that approximates the high fidelity model, from
-which the final set of statistics are generated.  For polynomial chaos
-expansions, this high fidelity expansion can differ significantly in 
-form from the low fidelity and discrepancy expansions, particularly in
-the \c multiplicative case where it is expanded to include all of the
-basis products.
-
-Topics::	not_yet_reviewed
-Examples::
-Theory::
 Faq::
 See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-stoch_collocation

@@ -34,6 +34,28 @@ types of content
 All edits should occur on the above content. The scripts will link to this 
 content and build the manual.
 
+####
+File Formats
+####
+The TopicMetadataFiles are simply copied into the final doxygen file - so they are in doxygen format.
+
+The MetaDataFiles are a mix of formats
+
+Blurb::
+doxygen format starting on a new line.
+Description::
+doxygen format starting on a new line.
+Topics::        topics_listed_on_the_same_line, separate_by_a_comma_and_space
+Examples::
+doxygen format starting on a new line.
+Theory::
+doxygen format starting on a new line.
+Faq::
+doxygen format starting on a new line.
+See_Also::	page_names_listed_on_the_same_line, separate_by_a_comma_and_space  (the naming convention for pagenames is the full keyword hierarchy, delimited by hyphens, i.e. blockname-keyword_1-keyword_2-parent_keyword-keyword_to_be_referenced   This will be interpreted by the script and written into a doxygen reference, and the nice name will be displayed as a link)
+
+
+
 
 ####
 Script Details:
