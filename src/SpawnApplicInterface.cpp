@@ -158,9 +158,6 @@ create_analysis_process(bool block_flag, bool new_group)
   const char *arg_list[4], **av;
   int status;
   pid_t pid = 0;
-  // WJB:  too tired to fix, so resolve compile issue and
-  //       leave as runtime issue for another day..
-#if 0
   static std::string no_workdir;
 
   av = WorkdirHelper::arg_adjust(commandLineArgs, argList, arg_list,
@@ -170,7 +167,6 @@ create_analysis_process(bool block_flag, bool new_group)
 
   if (curWorkdir.c_str())
     WorkdirHelper::reset();
-#endif // WJB: end of too tired block
 
   return(pid);
 }
