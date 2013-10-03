@@ -152,8 +152,7 @@ derived_synch_nowait(PRPQueue& prp_queue)
 }
 
 
-// WJB - ToDo: confer with MSE -- is the class name a typo??
-pid_t ProcessHandleApplicInterface::
+pid_t SpawnApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
   const char *arg_list[4], **av;
