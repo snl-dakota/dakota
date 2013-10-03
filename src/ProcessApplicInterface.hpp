@@ -17,7 +17,7 @@
 
 #include "ApplicationInterface.hpp"
 #ifdef _WIN32
-typedef int pid_t;
+#include <process.h>
 #endif
 
 
