@@ -16,6 +16,7 @@
 #define PROCESS_APPLIC_INTERFACE_H
 
 #include "ApplicationInterface.hpp"
+#include <sys/types.h>
 
 
 namespace Dakota {
