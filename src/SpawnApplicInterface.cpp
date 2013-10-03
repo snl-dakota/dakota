@@ -10,9 +10,10 @@
 //- Description:  Class implementation
 //- Owner:        Dave Gay / Bill Bohnhoff
 
+#include "SpawnApplicInterface.hpp"
+#include "WorkdirHelper.hpp"
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
-#include "SpawnApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #define NOMINMAX

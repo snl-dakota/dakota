@@ -74,3 +74,4 @@ inline SpawnApplicInterface::~SpawnApplicInterface()
 } // namespace Dakota
 
 #endif
+
