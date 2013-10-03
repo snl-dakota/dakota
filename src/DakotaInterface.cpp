@@ -15,9 +15,12 @@
 #include "DakotaVariables.hpp"
 
 #include "SysCallApplicInterface.hpp"
-#ifndef _MSC_VER
+
+#if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H)
 #include "ForkApplicInterface.hpp"
-#endif // _MSC_VER
+#elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
+#include "SpawnApplicInterface.hpp"
+#endif // HAVE_SYS_WAIT_H, HAVE_UNISTD_H
 
 // Direct interfaces
 #ifdef DAKOTA_GRID
@@ -230,10 +233,17 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   if (interface_type == "system")
     return new SysCallApplicInterface(problem_db);
 
-#ifndef _MSC_VER
-  else if (interface_type == "fork")
+  else if (interface_type == "fork") {
+#if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H) // includes CYGWIN/MINGW
     return new ForkApplicInterface(problem_db);
-#endif // _MSC_VER
+#elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
+    return new SpawnApplicInterface(problem_db);
+#else
+    Cerr << "Fork interface requested, but not enabled in this DAKOTA "
+	 << "executable." << std::endl;
+    return NULL;
+#endif
+  }
 
   else if (interface_type == "direct")
     return new TestDriverInterface(problem_db);
@@ -255,6 +265,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
       return NULL;
 #endif
   }
+
   else if (interface_type == "python") {
 #ifdef DAKOTA_PYTHON
     return new PythonInterface(problem_db);
@@ -1317,21 +1328,20 @@ const StringArray& Interface::analysis_drivers() const
 }
 
 
-const AnalysisCode* Interface::analysis_code() const
-{
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->analysis_code();
-  // default: virtual fn not defined by derived class
-  return NULL;
-}
-
-
 bool Interface::evaluation_cache() const
 {
   if (interfaceRep)
     return interfaceRep->evaluation_cache();
   else // letter lacking redefinition of virtual fn.
     return false; // default
+}
+
+
+void Interface::file_cleanup() const
+{
+  if (interfaceRep)
+    interfaceRep->file_cleanup();
+  // else no-op
 }
 
 } // namespace Dakota

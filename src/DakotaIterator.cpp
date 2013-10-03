@@ -138,9 +138,9 @@ Iterator::Iterator(BaseConstructor, Model& model):
   numFinalSolutions(probDescDB.get_sizet("method.final_solutions")),
   // Output verbosity is observed within Iterator (algorithm verbosity),
   // Model (synchronize/estimate_derivatives verbosity), Interface
-  // (map/synch verbosity), Approximation (global data fit coefficient
-  // reporting), and AnalysisCode (file operations verbosity) as follows:
-  //               iterator     model     interface   approx    file ops
+  // (map/synch verbosity, file operations verbosity), and Approximation
+  // (global data fit coefficient reporting) as follows:
+  //               iterator     model  iface: map, file ops      approx
   //   "silent" :   silent      silent     silent     quiet      quiet
   //   "quiet"  :    quiet      quiet       quiet     quiet      quiet
   //   "normal" :   normal      normal     normal     quiet      quiet

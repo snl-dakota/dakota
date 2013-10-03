@@ -15,8 +15,7 @@
 #ifndef GRID_APPLIC_INTERFACE_H
 #define GRID_APPLIC_INTERFACE_H
 
-#include "SysCallAnalysisCode.hpp"
-#include "ApplicationInterface.hpp"
+#include "SysCallApplicationInterface.hpp"
 
 
 namespace Dakota {
@@ -41,7 +40,7 @@ typedef int  (*stop_grid_computing_t)();
     adapted for use with an external grid dervices library which was
     dynamically linked using dlopen() services. */
 
-class GridApplicInterface: public ApplicationInterface
+class GridApplicInterface: public SysCallApplicInterface
 {
 public:
 
@@ -87,16 +86,9 @@ public:
 	///
 	/// TODO - allow local analyses?????
 	///
-  	code.spawn_analysis(analysis_id, BLOCK);
+  	spawn_analysis_to_shell(analysis_id, BLOCK);
   	return 0; // used for failure codes in DirectFn case
 	}
-
-  const StringArray& analysis_drivers() const;
-
-  const AnalysisCode* analysis_code() const;
-
-  /// Used to read/write parameter files and responses
-  SysCallAnalysisCode code;
 
 protected:
 
@@ -131,14 +123,6 @@ protected:
   /// handle to dynamically linked stop_grid_computing function
   stop_grid_computing_t  stop_grid_computing;
 };
-
-
-inline const StringArray& GridApplicInterface::analysis_drivers() const
-{ return code.program_names(); }
-
-
-inline const AnalysisCode* GridApplicInterface::analysis_code() const
-{ return &code; }
 
 } // namespace Dakota
 

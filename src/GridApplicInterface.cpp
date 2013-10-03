@@ -42,9 +42,6 @@ the following elements contain the iteration nums.
           0
           no iteration num returned
 */
-#ifdef TESTING_GRID
-Dakota::SysCallAnalysisCode* global_code;
-#endif
 
 
 namespace Dakota {
@@ -52,7 +49,7 @@ namespace Dakota {
 
 GridApplicInterface::
 GridApplicInterface(const ProblemDescDB& problem_db):
-  ApplicationInterface(problem_db), code(problem_db)
+  SysCallApplicInterface(problem_db)
 { 
   void* handle = dlopen("foo.so", RTLD_NOW);
   if (!handle) {
@@ -85,14 +82,10 @@ GridApplicInterface(const ProblemDescDB& problem_db):
          << std::endl;
     abort_handler(-1);
   }
-  int status = (*start_grid_computing)(code.program_names()[0].data(),
-				       code.parameters_filename().data(), 
-				       code.results_filename().data());
-  // TODO - ERROR CHECKING
-#ifdef TESTING_GRID
-  global_code = &code;
-#endif
-  //code.fileSaveFlag=true;
+  int status = (*start_grid_computing)(programNames[0].data(),
+				       paramsFileName.data(), 
+				       resultsFileName.data());
+  //fileSaveFlag=true;
 }
 
 
@@ -130,7 +123,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   //
   try {
     if (evalCommRank == 0)
-      code.read_results_files(response, fn_eval_id);
+      read_results_files(response, fn_eval_id);
   }
   catch(String& err_msg) {
     // a String exception involves detection of an incomplete file/data
@@ -155,9 +148,9 @@ void GridApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   // Write the params file
   //
   int fn_eval_id = pair.eval_id();
-  code.define_filenames(fn_eval_id);
-  code.write_parameters_files(pair.prp_parameters(), pair.active_set(),
-			      pair.prp_response(),   fn_eval_id);
+  define_filenames(fn_eval_id);
+  write_parameters_files(pair.prp_parameters(), pair.active_set(),
+			 pair.prp_response(),   fn_eval_id);
   //
   // Launch the grid solver
   //
@@ -185,7 +178,7 @@ void GridApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
     //
     int fn_eval_id = *it;
     bool err_msg_caught = false;
-    const String& file_to_test = code.results_filename(fn_eval_id);
+    const String& file_to_test = fileNameMap[fn_eval_id].second;
     if (grid_file_test(file_to_test)) {
       //
       // File exists; test for complete/valid set of results (an incomplete
@@ -202,7 +195,7 @@ void GridApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
       }
       Response response = pr_pair.prp_response(); // shallow copy
 
-      try { code.read_results_files(response, fn_eval_id); }
+      try { read_results_files(response, fn_eval_id); }
       catch(String& err_msg) {
 	//
 	// If a String exception (incomplete file) is caught, set
@@ -276,8 +269,8 @@ bool GridApplicInterface::grid_file_test(const String& root_file)
   // Unix stat utility returns 0 if successful in gathering file statistics,
   // -1 if there's an error (e.g., the file does not exist).
   struct stat buf; // see man pages for info available from buf (not used here)
-  size_t num_progs = code.program_names().length();
-  if ( num_progs > 1 && code.output_filter_name().empty() ) {
+  size_t num_progs = programNames.length();
+  if ( num_progs > 1 && oFilterName().empty() ) {
     char prog_num[16];
 
 #ifdef __SUNPRO_CC
@@ -317,7 +310,7 @@ extern "C" int stop_grid_computing()
 
 /** sample function prototype for submitting a grid evaluation */
 extern "C" int perform_analysis(char *iteration_num)
-{ global_code->spawn_evaluation(true); return 0; }
+{ spawn_evaluation_to_shell(true); return 0; }
 #endif
 
 } // namespace Dakota

@@ -62,7 +62,11 @@ class WorkdirHelper
   //
 
   friend class CommandShell;                       // calls change_cwd, reset
-  friend class ForkAnalysisCode;                   // calls arg_adjust
+#if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H)
+  friend class ForkApplicInterface;                // calls arg_adjust
+#elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
+  friend class SpawnApplicInterface;               // calls arg_adjust
+#endif // HAVE_SYS_WAIT_H, HAVE_UNISTD_H
 
   /// Treat get_npath as a legacy, "blackbox" utility
 #ifdef DEBUG_GET_NPATH

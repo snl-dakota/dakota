@@ -1032,7 +1032,7 @@ const Interface& ProblemDescDB::get_interface()
   // specification, i.e., any dependence on iterator/model/variables/responses
   // specifications (dependence on the strategy specification is OK since there
   // is only one):
-  // > Interface, AnalysisCode: method.output
+  // > Interface: method.output
   // > ApplicationInterface: responses.gradient_type, responses.hessian_type,
   //     responses.gradients.mixed.id_analytic
   // > DakotaInterface: responses.labels

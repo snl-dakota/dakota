@@ -388,10 +388,13 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
 set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
     DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp
     GaussProcApproximation.cpp PecosApproximation.cpp ApplicationInterface.cpp
-    SysCallApplicInterface.cpp DirectApplicInterface.cpp TestDriverInterface.cpp
-    AnalysisCode.cpp SysCallAnalysisCode.cpp CommandShell.cpp)
-if(NOT MSVC)
-  list(APPEND interface_src ForkApplicInterface.cpp ForkAnalysisCode.cpp)
+    ProcessApplicInterface.cpp ProcessHandleApplicInterface.cpp
+    SysCallApplicInterface.cpp CommandShell.cpp
+    DirectApplicInterface.cpp TestDriverInterface.cpp)
+if(HAVE_SYS_WAIT_H AND HAVE_UNISTD_H)
+  list(APPEND interface_src ForkApplicInterface.cpp)
+elseif(WIN32)
+  list(APPEND interface_src SpawnApplicInterface.cpp)
 endif()
 
 CheckPackage(SURFPACK)

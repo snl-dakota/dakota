@@ -187,9 +187,6 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // > Future concurrent iterator partitioning within nested models would also 
   //   dictate that iterator comm attributes get set at init time rather than
   //   construct time.
-  // > It would be beneficial to have suppressOutput available at SysCall/Fork
-  //   ApplicInterface construct time so that the corresponding AnalysisCode
-  //   flags can be set up once, but they will instead be set at eval time.
   iteratorCommSize = si_pl.server_communicator_size();
   iteratorCommRank = si_pl.server_communicator_rank();
   if ( iteratorCommRank // any processor other than rank 0 in iteratorComm

@@ -41,7 +41,6 @@ class Response;
 class Iterator;
 class Model;
 class Approximation;
-class AnalysisCode;
 
 
 /// Base class for the interface class hierarchy.
@@ -203,11 +202,11 @@ public:
   /// retrieve the analysis drivers specification for application interfaces
   virtual const StringArray& analysis_drivers() const;
 
-  /// return AnalysisCode::fileNameMap when defined for derived Interface class
-  virtual const AnalysisCode* analysis_code() const;
-
   /// return flag indicating usage of the global evaluation cache
   virtual bool evaluation_cache() const;
+
+  /// clean up any interface parameter/response files when aborting
+  virtual void file_cleanup() const;
 
   //
   //- Heading: Set and Inquire functions

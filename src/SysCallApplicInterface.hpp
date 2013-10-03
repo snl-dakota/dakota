@@ -15,8 +15,7 @@
 #ifndef SYS_CALL_APPLIC_INTERFACE_H
 #define SYS_CALL_APPLIC_INTERFACE_H
 
-#include "ApplicationInterface.hpp"
-#include "SysCallAnalysisCode.hpp"
+#include "ProcessApplicInterface.hpp"
 
 
 namespace Dakota {
@@ -25,10 +24,10 @@ namespace Dakota {
 /// Derived application interface class which spawns simulation codes
 /// using system calls.
 
-/** SysCallApplicInterface uses a SysCallAnalysisCode object for
-    performing simulation invocations. */
+/** system() is part of the C API and can be used on both Windows and
+    Unix systems. */
 
-class SysCallApplicInterface: public ApplicationInterface
+class SysCallApplicInterface: public ProcessApplicInterface
 {
 public:
 
@@ -39,14 +38,11 @@ public:
   SysCallApplicInterface(const ProblemDescDB& problem_db); ///< constructor
   ~SysCallApplicInterface();                               ///< destructor
 
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
-
-  void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
-
-  void derived_map_asynch(const ParamResponsePair& pair);
 
   void derived_synch(PRPQueue& prp_queue);
 
@@ -54,21 +50,17 @@ public:
 
   int  derived_synchronous_local_analysis(int analysis_id);
 
-  const std::vector<String>& analysis_drivers() const;
-
-  const AnalysisCode* analysis_code() const;
-
   void init_communicators_checks(int max_iterator_concurrency);
+
+  void map_bookkeeping(pid_t pid, int fn_eval_id);
+
+  pid_t create_evaluation_process(bool block_flag);
 
 private:
 
   //
   //- Heading: Methods
   //
-
-  /// Spawn the application by managing the input filter, analysis drivers,
-  /// and output filter.  Called from derived_map() & derived_map_asynch().
-  void spawn_application(bool block_flag);
 
   /// Convenience function for common code between derived_synch() &
   /// derived_synch_nowait()
@@ -78,14 +70,18 @@ private:
   /// the necessary results file(s)
   bool system_call_file_test(const std::string& root_file);
 
+  /// spawn a complete function evaluation
+  void spawn_evaluation_to_shell(bool block_flag);
+  /// spawn the input filter portion of a function evaluation
+  void spawn_input_filter_to_shell(bool block_flag);
+  /// spawn a single analysis as part of a function evaluation
+  void spawn_analysis_to_shell(int analysis_id, bool block_flag);
+  /// spawn the output filter portion of a function evaluation
+  void spawn_output_filter_to_shell(bool block_flag);
+
   //
   //- Heading: Data
   //
-
-  /// SysCallAnalysisCode provides convenience functions for passing
-  /// the input filter, the analysis drivers, and the output filter
-  /// to a CommandShell in various combinations
-  SysCallAnalysisCode sysCallSimulator;
 
   /// set of function evaluation id's for active asynchronous
   /// system call evaluations
@@ -124,18 +120,9 @@ inline void SysCallApplicInterface::derived_synch_nowait(PRPQueue& prp_queue)
 inline int SysCallApplicInterface::
 derived_synchronous_local_analysis(int analysis_id)
 {
-  sysCallSimulator.spawn_analysis(analysis_id, BLOCK);
+  spawn_analysis_to_shell(analysis_id, BLOCK);
   return 0; // used for failure codes in DirectFn case
 }
-
-
-inline const std::vector<String>&
-SysCallApplicInterface::analysis_drivers() const
-{ return sysCallSimulator.program_names(); }
-
-
-inline const AnalysisCode* SysCallApplicInterface::analysis_code() const
-{ return &sysCallSimulator; }
 
 
 // define construct-time checks since no derived interface plug-ins

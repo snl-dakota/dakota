@@ -16,7 +16,6 @@
 #include "PRPMultiIndex.hpp"
 #include "DakotaBinStream.hpp"
 #include "DakotaGraphics.hpp"
-#include "AnalysisCode.hpp"
 #include "DakotaInterface.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
@@ -85,13 +84,9 @@ void abort_handler(int code)
 
   if (Dak_pddb) {
     // cleanup parameters/results files
-    AnalysisCode const *ac;
     InterfaceList &ifaces = Dak_pddb->interface_list();
-    InterfaceList::iterator It = ifaces.begin(), Ie = ifaces.end();
-    for(; It != Ie; ++It) {
-      if ((ac = It->analysis_code()))
-	ac->file_cleanup();
-    }
+    for (InterfaceList::iterator It = ifaces.begin(); It != ifaces.end(); ++It)
+      It->file_cleanup(); // virtual fn defined for ProcessApplicInterface
     // properly terminate in parallel
     Dak_pddb->parallel_library().abort_helper(code);
   }

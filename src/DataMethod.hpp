@@ -26,7 +26,7 @@ namespace Dakota {
 // Iterator
 // --------
 // define special values for outputLevel within
-// Iterator/Model/Interface/Approximation/AnalysisCode
+// Iterator/Model/Interface/Approximation
 enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
        DEBUG_OUTPUT };
 

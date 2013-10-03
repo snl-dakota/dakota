@@ -15,6 +15,7 @@
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include "CommandShell.hpp"
 #include <sys/types.h> // MAY REQUIRE ifndef(HPUX)
 #include <sys/stat.h>
 
@@ -33,77 +34,16 @@ namespace Dakota {
 
 SysCallApplicInterface::
 SysCallApplicInterface(const ProblemDescDB& problem_db):
-  ApplicationInterface(problem_db), sysCallSimulator(problem_db)
+  ProcessApplicInterface(problem_db)
 { }
 
 
-void SysCallApplicInterface::
-derived_map(const Variables& vars, const ActiveSet& set, Response& response,
-	    int fn_eval_id)
+void SysCallApplicInterface::map_bookkeeping(pid_t pid, int fn_eval_id)
+{ sysCallSet.insert(fn_eval_id); } // ignores pid
+
+
+pid_t SysCallApplicInterface::create_evaluation_process(bool block_flag)
 {
-  // This function may be executed by a multiprocessor evalComm.
-
-  sysCallSimulator.define_filenames(final_eval_id_tag(fn_eval_id)); // all of evalComm
-  if (evalCommRank == 0)
-    sysCallSimulator.write_parameters_files(vars, set, response, fn_eval_id);
-
-  spawn_application(BLOCK);
-
-  try { 
-    if (evalCommRank == 0)
-      sysCallSimulator.read_results_files(response, fn_eval_id,
-					  final_eval_id_tag(fn_eval_id));
-  }
-
-  catch(std::string& err_msg) {
-    // a std::string exception involves detection of an incomplete file/data
-    // set.  In the synchronous case, there is no potential for an incomplete 
-    // file resulting from a race condition -> echo the error and abort.
-    Cerr << err_msg << std::endl;
-    abort_handler(-1);
-  }
-
-  // Do not call manage_failure() from the following catch since the recursion 
-  // of calling derived_map again would be confusing at best.  The approach 
-  // here is to have catch(int) rethrow the exception to an outer catch (either
-  // the catch within manage_failure or a catch that calls manage_failure).  An
-  // alternative solution would be to eliminate the try block above and move 
-  // all catches to the higher level of try { derived_map() } - this would be
-  // simpler to understand but would replicate catch(std::string) in map, 
-  // manage_failure, and serve.  By having catch(std::string) here and having
-  // catch(int) rethrow, we eliminate unnecessary proliferation of 
-  // catch(std::string).
-  catch(int fail_code) { // failure capture exception thrown by response.read()
-    //Cout << "Rethrowing int." << std::endl;
-    throw; // from this catch to the outer one in manage_failure
-  }
-}
-
-
-void SysCallApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
-{
-  // This function may not be executed by a multiprocessor evalComm.
-
-  int fn_eval_id = pair.eval_id();
-  sysCallSimulator.define_filenames(final_eval_id_tag(fn_eval_id));
-  sysCallSimulator.write_parameters_files(pair.prp_parameters(),
-					  pair.active_set(),
-					  pair.prp_response(), fn_eval_id);
-
-  spawn_application(FALL_THROUGH);
-
-  sysCallSet.insert(fn_eval_id);
-}
-
-
-void SysCallApplicInterface::spawn_application(bool block_flag)
-{
-  // if a slave processor or if output verbosity is "silent", suppress output
-  // from the SysCallAnalysisCode instance.  Must be done at eval time rather
-  // than in the constructor since dependent on Model::init_communicators().
-  if (suppressOutput || outputLevel == SILENT_OUTPUT)
-    sysCallSimulator.suppress_output_flag(true); // suppress system call echoes
-
   // Check for erroneous concurrent analysis specification:
   if (asynchLocalAnalysisFlag && evalCommRank == 0 && evalServerId == 1)
     Cerr << "Warning: asynchronous analysis_drivers not supported in system "
@@ -120,39 +60,37 @@ void SysCallApplicInterface::spawn_application(bool block_flag)
   // a nonblocking analysis scheduler, or a blended eval/analysis scheduler, or
   // if none of these, then the fn eval level would have to be blocking).  For
   // now, none of these options appear attractive (especially since
-  // ForkApplicInterface/ForkAnalysisCode already provide the required
-  // capabilities in a straightforward fashion) and local asynch analysis
-  // concurrency will not be attempted in the system call case (although 
-  // message passing concurrency will be supported).
+  // ForkApplicInterface already provides the required capabilities in a
+  // straightforward fashion) and local asynch analysis concurrency will not be
+  // attempted in the system call case (although message passing concurrency
+  // will be supported).
 
   if (evalCommSize > 1) { // run a blocking schedule of single-proc. analyses
                           // over analysis servers
     if (!block_flag) {
       Cerr << "Error: multiprocessor evalComm does not support nonblocking "
-	   << "SysCallApplicInterface::spawn_application." << std::endl;
+	   << "SysCallApplicInterface::spawn_evaluation." << std::endl;
       abort_handler(-1);
     }
 
-    const std::string& ifilter_name = sysCallSimulator.input_filter_name();
-    if (!ifilter_name.empty() && evalCommRank == 0)
-      sysCallSimulator.spawn_input_filter(BLOCK);
+    if (!iFilterName.empty() && evalCommRank == 0)
+      spawn_input_filter_to_shell(BLOCK);
 
     int i;
     if (evalCommRank == 0 && !suppressOutput) {
       if (eaDedMasterFlag)
-        Cout << "System call: self-scheduling { ";
+        Cout << "System call: dynamic scheduling { ";
       else
         Cout << "System call: static scheduling { ";
-      const std::vector<String>& prog_names = sysCallSimulator.program_names();
       for (i=0; i<numAnalysisDrivers; i++)
-        Cout << prog_names[i] << ' ';
+        Cout << programNames[i] << ' ';
       Cout << "} among " << numAnalysisServers << " analysis servers"
            << std::endl;
     }
 
     // Schedule analyses using either master-slave/dynamic or peer/static
-    bool output_setting = sysCallSimulator.suppress_output_flag();
-    sysCallSimulator.suppress_output_flag(true); // turn off sys call output
+    bool output_setting = suppressOutput; // for restore below
+    suppressOutput = true; // turn off sys call output
     if (eaDedMasterFlag) { // master-slave dynamic scheduling requires a
       // central pt of control & therefore needs separate schedule & serve fns.
       if (evalCommRank == 0)
@@ -170,23 +108,24 @@ void SysCallApplicInterface::spawn_application(bool block_flag)
       parallelLib.barrier_e();
 
       for (i=analysisServerId; i<=numAnalysisDrivers; i+=numAnalysisServers)
-        sysCallSimulator.spawn_analysis(i, BLOCK);
+        spawn_analysis_to_shell(i, BLOCK);
 
       // avoid peer 1 reading all the results files before peers 2-n have
       // completed writing them
       parallelLib.barrier_e();
     }
-    sysCallSimulator.suppress_output_flag(output_setting); // rtn to prev. value
+    suppressOutput = output_setting; // restore
 
-    const std::string& ofilter_name = sysCallSimulator.output_filter_name();
-    if (!ofilter_name.empty() && evalCommRank == 0)
-      sysCallSimulator.spawn_output_filter(BLOCK);
+    if (!oFilterName.empty() && evalCommRank == 0)
+      spawn_output_filter_to_shell(BLOCK);
   }
   else // launch entire fn eval in a single system call on the local processor
     // An asynchronous_local_analyses scheduler is not supported because of the
     // difficulty in detecting analysis completion (there is not a user
     // specified results file in all cases).
-    sysCallSimulator.spawn_evaluation(block_flag);
+    spawn_evaluation_to_shell(block_flag);
+
+  return 0; // pid's not available for system calls
 }
 
 
@@ -201,8 +140,7 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
     bool err_msg_caught = false;
 
     // Test for existence of the results file(s) corresponding to this PRPair
-    const std::string& file_to_test
-      = sysCallSimulator.results_filename(fn_eval_id);
+    const std::string& file_to_test = fileNameMap[fn_eval_id].second;
     if (system_call_file_test(file_to_test)) {
       // File exists; test for complete/valid set of results (an incomplete 
       // set can result from a race condition in which Dakota is reading a 
@@ -211,15 +149,14 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
       ParamResponsePair pr_pair;
       bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
       if (!found) {
-	Cerr << "Error: failure in queue lookup within SysCallApplicInterface::"
-	     << "derived_synch_kernel()." << std::endl;
+	Cerr << "Error: failure in queue lookup within SysCallApplic"
+	     << "Interface::derived_synch_kernel()." << std::endl;
 	abort_handler(-1);
       }
       Response response = pr_pair.prp_response(); // shallow copy
 
       try {
-	sysCallSimulator.read_results_files(response, fn_eval_id,
-					    final_eval_id_tag(fn_eval_id));
+	read_results_files(response, fn_eval_id, final_eval_id_tag(fn_eval_id));
       }
 
       // If a std::string exception (incomplete file) is caught, set 
@@ -295,17 +232,18 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
 }
 
 
-bool SysCallApplicInterface::system_call_file_test(const std::string& root_file)
+bool SysCallApplicInterface::
+system_call_file_test(const std::string& root_file)
 {
   // Unix stat utility returns 0 if successful in gathering file statistics,
   // -1 if there's an error (e.g., the file does not exist).
   struct stat buf; // see man pages for info available from buf (not used here)
-  size_t num_progs = sysCallSimulator.program_names().size();
-  if ( num_progs > 1 && sysCallSimulator.output_filter_name().empty() ) {
+  size_t num_programs = programNames.size();
+  if ( num_programs > 1 && oFilterName.empty() ) {
 #ifdef __SUNPRO_CC
     // Sun Solaris has been observed to have problems with the final results
     // file existing before previous results files exist (I/O threading?)
-    for (size_t i=0; i<num_progs; ++i) {
+    for (size_t i=0; i<num_programs; ++i) {
       std::string tagged_file =   root_file + "."
                                 + boost::lexical_cast<std::string>(i+1);
       if ( stat((char*)tagged_file.data(), &buf) == -1 )
@@ -314,14 +252,155 @@ bool SysCallApplicInterface::system_call_file_test(const std::string& root_file)
     return true;
 #else
     // Testing all files is usually overkill for sequential analyses.  It's only
-    // really necessary to check the last tagged_file: root_file.[num_progs]
+    // really necessary to check the last tagged_file: root_file.[num_programs]
     std::string tagged_file =   root_file + "."
-                              + boost::lexical_cast<std::string>(num_progs);
+                              + boost::lexical_cast<std::string>(num_programs);
     return ( stat((char*)tagged_file.data(), &buf) == -1 ) ? false : true;
 #endif // __SUNPRO_CC
   }
   else
     return ( stat((char*)root_file.data(), &buf) == -1 ) ? false : true;
+}
+
+
+/** Put the SysCallApplicInterface to the shell.  This function is
+    used when all portions of the function evaluation (i.e., all analysis
+    drivers) are executed on the local processor. */
+void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
+{
+  // MSE, 11/17/99: system call file passing changed to pass both files to all
+  // 3 executables since: (1) in many cases, the OFilter will need to know the
+  // asv, parameters, etc., and (2) in asynch usage, each of the 3 pieces must
+  // be able to manage tagged files and/or working subdirectories.
+
+  static std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
+  const char* s = useWorkdir ? curWorkdir.c_str() : 0;
+  size_t num_programs = programNames.size(),
+    wd_strlen = useWorkdir ? curWorkdir.size() : 0;
+  bool needparen;
+
+  // Input filter portion
+  if ((needparen = !block_flag &&
+       (num_programs > 1 || !iFilterName.empty() || !oFilterName.empty())))
+  	shell << "(";
+  if (!iFilterName.empty()) {
+    shell << iFilterName;
+    if (commandLineArgs)
+      shell << " " << paramsFileName << " " << resultsFileName;
+    shell << "; ";
+  }
+  
+  // Analysis code portion (function evaluation may be asynchronous, but
+  // analyses must be sequential within each function evaluation)
+  for (size_t i=0; i<num_programs; ++i) {
+    shell << programNames[i];
+    if (commandLineArgs) {
+       const char* s1 = paramsFileName.c_str();
+       if (s && !std::strncmp(s,s1,wd_strlen) && s1[wd_strlen] == '/')
+		s1 += wd_strlen + 1;
+      shell << " " << s1;
+      std::string prog_num( (multipleParamsFiles || num_programs > 1) ?
+                            "." + boost::lexical_cast<std::string>(i+1) : "" );
+      if (multipleParamsFiles) // append program cntr to paramsFileName
+	shell << prog_num;
+
+      s1 = resultsFileName.c_str();
+      if (s && !std::strncmp(s,s1,wd_strlen) && s1[wd_strlen] == '/')
+		s1 += wd_strlen + 1;
+      shell << " " << s1;
+      if (num_programs > 1)     // append program cntr to resultsFileName
+	shell << prog_num;
+    }
+    if (i != num_programs-1)
+      shell << "; ";
+  }
+
+  // Output filter portion
+  if (!oFilterName.empty()) {
+    shell << "; " << oFilterName;
+    if (commandLineArgs)
+      shell << " " << paramsFileName << " " << resultsFileName;
+  }
+  if (needparen)
+  	shell << ")"; // wasteful: needless extra shell layer
+
+  // Process definition complete; now set the shell's asynchFlag and
+  // suppressOutputFlag from the incoming block_flag & the interface's
+  // suppressOutput and spawn the process.
+  shell.asynch_flag(!block_flag);
+  shell.suppress_output_flag(suppressOutput);
+  shell << flush;
+}
+
+
+/** Put the input filter to the shell.  This function is used when multiple
+    analysis drivers are spread between processors.  No need to check for a
+    Null input filter, as this is checked externally.  Use of nonblocking
+    shells is supported in this fn, although its use is currently prevented
+    externally. */
+void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
+{
+  static std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
+
+  shell << iFilterName;
+  if (commandLineArgs)
+    shell << " " << paramsFileName << " " << resultsFileName;
+
+  shell.asynch_flag(!block_flag);
+  shell.suppress_output_flag(suppressOutput);
+  shell << flush;
+}
+
+
+/** Put a single analysis to the shell.  This function is used when
+    multiple analysis drivers are spread between processors.  Use of
+    nonblocking shells is supported in this fn, although its use is
+    currently prevented externally. */
+void SysCallApplicInterface::
+spawn_analysis_to_shell(int analysis_id, bool block_flag)
+{
+  static std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
+
+  shell << programNames[analysis_id-1];
+  if (commandLineArgs) {
+    using std::string;
+    size_t num_programs = programNames.size();
+    shell << " " << paramsFileName;
+    string prog_num( (multipleParamsFiles || num_programs > 1) ?
+                     "." + boost::lexical_cast<string>(analysis_id) : "" );
+    if (multipleParamsFiles) // append program cntr to paramsFileName
+      shell << prog_num;
+    shell << " " << resultsFileName;
+    if (num_programs > 1)     // append program cntr to resultsFileName
+      shell << prog_num;
+  }
+
+  shell.asynch_flag(!block_flag);
+  shell.suppress_output_flag(suppressOutput);
+  shell << flush;
+}
+
+
+/** Put the output filter to the shell.  This function is used when multiple
+    analysis drivers are spread between processors.  No need to check for a
+    Null output filter, as this is checked externally.  Use of nonblocking
+    shells is supported in this fn, although its use is currently prevented
+    externally. */
+void SysCallApplicInterface::spawn_output_filter_to_shell(bool block_flag)
+{
+  static std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
+
+  shell << oFilterName;
+  if (commandLineArgs)
+    shell << " " << paramsFileName << " " << resultsFileName;
+
+  shell.asynch_flag(!block_flag);
+  shell.suppress_output_flag(suppressOutput);
+  shell << flush;
 }
 
 } // namespace Dakota

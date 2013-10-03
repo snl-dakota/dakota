@@ -6,46 +6,73 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        AnalysisCode
-//- Description:  Abstract base class for the analysis code simulators used
-//-               by the interface classes to perform function evaluations.
+//- Class:        ProcessApplicInterface
+//- Description:  Derived class for the case when analysis code simulators use
+//-               vfork\exec\wait to provide the function evaluations
 //- Owner:        Mike Eldred
-//- Version: $Id: AnalysisCode.hpp 7021 2010-10-12 22:19:01Z wjbohnh $
+//- Version: $Id: ProcessApplicInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
 
-#ifndef ANALYSIS_CODE_H
-#define ANALYSIS_CODE_H
+#ifndef PROCESS_APPLIC_INTERFACE_H
+#define PROCESS_APPLIC_INTERFACE_H
 
-#include "dakota_system_defs.hpp"
-#include "dakota_data_types.hpp"
+#include "ApplicationInterface.hpp"
 
 
 namespace Dakota {
 
-class Variables;
-class ActiveSet;
-class Response;
-class ProblemDescDB;
-class ParallelLibrary;
+/// Derived application interface class that spawns a simulation code
+/// using a separate process and communicates with it through files.
 
+/** ProcessApplicInterface is subclassed for process handles or file
+    completion testing. */
 
-/// Base class providing common functionality for derived classes
-/// (SysCallAnalysisCode and ForkAnalysisCode) which spawn separate
-/// processes for managing simulations.
-
-/** The AnalysisCode class hierarchy provides simulation spawning
-    services for ApplicationInterface derived classes and alleviates
-    these classes of some of the specifics of simulation code
-    management.  The hierarchy does not employ the letter-envelope
-    technique since the ApplicationInterface derived classes
-    instantiate the appropriate derived AnalysisCode class directly. */
-
-class AnalysisCode
+class ProcessApplicInterface: public ApplicationInterface
 {
 public:
 
   //
+  //- Heading: Constructors and destructor
+  //
+
+  /// constructor
+  ProcessApplicInterface(const ProblemDescDB& problem_db);
+  /// destructor
+  ~ProcessApplicInterface();
+
+protected:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void derived_map(const Variables& vars, const ActiveSet& set,
+		   Response& response, int fn_eval_id);
+
+  void derived_map_asynch(const ParamResponsePair& pair);
+
+  const StringArray& analysis_drivers() const;
+
+  void file_cleanup() const;
+
+  //
+  //- Heading: New virtual functions
+  //
+
+  /// bookkeeping of process and evaluation ids for asynchronous maps
+  virtual void map_bookkeeping(pid_t pid, int fn_eval_id) = 0;
+
+  /// Spawn the evaluation by managing the input filter, analysis drivers,
+  /// and output filter.  Called from derived_map() & derived_map_asynch().
+  virtual pid_t create_evaluation_process(bool block_flag) = 0;
+
+  //
   //- Heading: Methods
   //
+
+  /// execute analyses synchronously on the local processor
+  void synchronous_local_analyses(int start, int end, int step);
+
+  //void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
 
   /// define modified filenames from user input by handling Unix temp
   /// file and optionally tagging with given eval_id_tag
@@ -63,60 +90,9 @@ public:
 			  const String& eval_id_tag);
 
   //
-  //- Heading: Set and Inquire functions
-  //
-
-  //void io_filters(IOFilter& ifilter, IOFilter& ofilter);
-
-  /// return programNames
-  const std::vector<String>& program_names() const;
-  /// return iFilterName
-  const std::string& input_filter_name()    const;
-  /// return oFilterName
-  const std::string& output_filter_name()   const;
-
-  /// return paramsFileName
-  const std::string& parameters_filename()  const;
-  /// return resultsFileName
-  const std::string& results_filename()     const;
-  /// return the results filename entry in fileNameMap corresponding to id
-  const std::string& results_filename(const int id);
-
-  /// set suppressOutputFlag
-  void suppress_output_flag(const bool flag);
-  /// return suppressOutputFlag
-  bool suppress_output_flag() 	       const;
-
-  /// return commandLineArgs
-  bool command_line_arguments()        const;
-
-  /// return multipleParamsFiles
-  bool multiple_parameters_filenames() const;
-
-  /// remove temporary files if not fileSaveFlag
-  void file_cleanup() const;
-
-protected:
-
-  //
-  //- Heading: Constructors and destructor (protected since only derived class
-  //           objects should be instantiated)
-  //
-
-  AnalysisCode(const ProblemDescDB& problem_db); ///< constructor
-  ~AnalysisCode();                               ///< destructor
-
-  /// return Workdir if useWorkdir is true (only called by derived classes)
-  const char* work_dir() const;
-
-  //
   //- Heading: Data
   //
 
-  /// flag set by master processor to suppress output from slave processors
-  bool suppressOutputFlag;
-  /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
-  short outputLevel;
   /// flags tagging of parameter/results files
   bool fileTagFlag;
   /// flags retention of parameter/results files
@@ -138,8 +114,6 @@ protected:
   /// the names of the analysis code programs (analysis_drivers user
   /// specification)
   std::vector<String> programNames;
-  /// the number of analysis code programs (length of programNames)
-  size_t numPrograms;
   /// the name of the parameters file from user specification
   std::string specifiedParamsFileName;
   /// the parameters file name actually used (modified with tagging or
@@ -165,9 +139,6 @@ protected:
   /// evaluations.  Map key is the function evaluation identifier.
   std::map<int, std::pair<std::string, std::string> > fileNameMap;
 
-  //IOFilter inputFilter;
-  //IOFilter outputFilter;
-
   /// whether to use a new or specified work_directory
   bool useWorkdir;
   /// its name, if specified...
@@ -178,21 +149,20 @@ protected:
   bool dirSave;
   /// whether to delete the directory when Dakota terminates
   bool dirDel;
+  /// for dirTag, whether we have workDir
+  bool haveWorkdir;
+
   /// template directory (if specified)
   std::string templateDir;
-
   /// template files (if specified)
   StringArray templateFiles;
-
   /// whether to force a copy (versus link) every time
   bool templateCopy;
-
   /// whether to replace existing files
   bool templateReplace;
   /// state variable for template directory
   bool haveTemplateDir;
-  /// for dirTag, whether we have workDir
-  bool haveWorkdir;
+
   /// Dakota directory (if needed)
   std::string dakDir;
 
@@ -214,50 +184,25 @@ private:
   //- Heading: Data
   //
 
-  /// reference to the ParallelLibrary object.  Used in define_filenames().
-  ParallelLibrary& parallelLib;
-
   /// the set of optional analysis components used by the analysis drivers
   /// (from the analysis_components interface specification)
   String2DArray analysisComponents;
 };
 
 
-inline const std::vector<String>& AnalysisCode::program_names() const
+/** Execute analyses synchronously in succession on the local
+    processor (start to end in step increments).  Modeled after
+    ApplicationInterface::synchronous_local_evaluations(). */
+inline void ProcessApplicInterface::
+synchronous_local_analyses(int start, int end, int step)
+{
+  for (int analysis_id=start; analysis_id<=end; analysis_id+=step)
+    derived_synchronous_local_analysis(analysis_id);
+}
+
+
+inline const StringArray& ProcessApplicInterface::analysis_drivers() const
 { return programNames; }
-
-inline const std::string& AnalysisCode::input_filter_name() const
-{ return iFilterName; }
-
-inline const std::string& AnalysisCode::output_filter_name() const
-{ return oFilterName; }
-
-inline const std::string& AnalysisCode::parameters_filename() const
-{ return paramsFileName; }
-
-inline const std::string& AnalysisCode::results_filename() const
-{ return resultsFileName; }
-
-inline const std::string& AnalysisCode::results_filename(const int id)
-{ return fileNameMap[id].second; }
-
-inline void AnalysisCode::suppress_output_flag(const bool flag)
-{ suppressOutputFlag = flag; }
-
-inline bool AnalysisCode::suppress_output_flag() const
-{ return suppressOutputFlag; }
-
-inline bool AnalysisCode::command_line_arguments() const
-{ return commandLineArgs; }
-
-inline bool AnalysisCode::multiple_parameters_filenames() const
-{ return multipleParamsFiles; }
-
-inline const char* AnalysisCode::work_dir() const
-{ return useWorkdir ? curWorkdir.c_str() : 0; }
-
-//inline void AnalysisCode::io_filters(IOFilter& ifilter, IOFilter& ofilter)
-//{ inputFilter = ifilter; outputFilter = ofilter; }
 
 } // namespace Dakota
 

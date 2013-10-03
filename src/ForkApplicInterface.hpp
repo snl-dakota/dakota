@@ -15,19 +15,18 @@
 #ifndef FORK_APPLIC_INTERFACE_H
 #define FORK_APPLIC_INTERFACE_H
 
-#include "ForkAnalysisCode.hpp"
-#include "ApplicationInterface.hpp"
+#include "ProcessHandleApplicInterface.hpp"
 
 
 namespace Dakota {
 
 /// Derived application interface class which spawns simulation codes
-/// using forks.
+/// using fork/execvp/waitpid.
 
-/** ForkApplicInterface uses a ForkAnalysisCode object for performing
-    simulation invocations. */
+/** ForkApplicInterface is used on Unix systems and is a peer to
+    SpawnApplicInterface for Windows systems. */
 
-class ForkApplicInterface: public ApplicationInterface
+class ForkApplicInterface: public ProcessHandleApplicInterface
 {
 public:
 
@@ -40,26 +39,46 @@ public:
   /// destructor
   ~ForkApplicInterface();
 
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
-
-  void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
-
-  void derived_map_asynch(const ParamResponsePair& pair);
 
   void derived_synch(PRPQueue& prp_queue);
 
   void derived_synch_nowait(PRPQueue& prp_queue);
 
-  int  derived_synchronous_local_analysis(int analysis_id);
+  /// spawn a child process for an analysis component within an
+  /// evaluation using fork()/vfork()/execvp() and wait for completion
+  /// using waitpid() if block_flag is true
+  pid_t create_analysis_process(bool block_flag, bool new_group);
 
-  const StringArray& analysis_drivers() const;
+  size_t wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map);
+  size_t wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
+				  int analysis_id);
 
-  const AnalysisCode* analysis_code() const;
+  void join_evaluation_process_group(bool new_group);
+  void join_analysis_process_group(bool new_group);
 
-  void init_communicators_checks(int max_iterator_concurrency);
+  void evaluation_process_group_id(pid_t pgid);
+  pid_t evaluation_process_group_id() const;
+  void analysis_process_group_id(pid_t pgid);
+  pid_t analysis_process_group_id() const;
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// process all available completions within the nonblocking process group;
+  /// if block_flag = true, wait for at least one completion
+  pid_t wait_evaluation(bool block_flag);
+  /// process all available completions within the nonblocking process group;
+  /// if block_flag = true, wait for at least one completion
+  pid_t wait_analysis(bool block_flag);
+
+  /// check the exit status of setpgid and abort if an error code was returned
+  void check_group(int err, pid_t proc_group_id);
 
 private:
 
@@ -67,36 +86,22 @@ private:
   //- Heading: Methods
   //
 
-  /// Convenience function for common code between derived_synch() &
-  /// derived_synch_nowait()
-  void derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid);
-
-  /// perform the complete function evaluation by managing the input
-  /// filter, analysis programs, and output filter
-  pid_t fork_evaluation(bool block_flag);
-
-  /// execute analyses asynchronously on the local processor
-  void asynchronous_local_analyses(int start, int end, int step);
-
-  /// execute analyses synchronously on the local processor
-  void synchronous_local_analyses(int start, int end, int step);
-
-  /// serve the analysis scheduler and execute analysis jobs asynchronously
-  void serve_analyses_asynch();
-
-  //void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
+  /// process all available completions within the nonblocking process group;
+  /// if block_flag = true, wait for at least one completion
+  pid_t wait(pid_t proc_group_id, bool block_flag);
 
   //
   //- Heading: Data
   //
 
-  /// ForkAnalysisCode provides convenience functions for forking
-  /// individual programs and checking fork exit status
-  ForkAnalysisCode forkSimulator;
-
-  /// map of fork process id's to function evaluation id's for
-  /// asynchronous evaluations
-  std::map<pid_t, int> evalProcessIdMap;
+  /// the process group id used to identify a set of child evaluation processes
+  /// used by this interface instance (to distinguish from other interface
+  /// instances that could be running at the same time)
+  pid_t evalProcGroupId;
+  /// the process group id used to identify a set of child analysis processes
+  /// used by this interface instance (to distinguish from other interface
+  /// instances that could be running at the same time)
+  pid_t analysisProcGroupId;
 };
 
 
@@ -104,52 +109,28 @@ inline ForkApplicInterface::~ForkApplicInterface()
 { /* Virtual destructor handles referenceCount at Interface level. */ }
 
 
-/** This code provides the derived function used by ApplicationInterface::
-    serve_analyses_synch() as well as a convenience function for
-    ForkApplicInterface::synchronous_local_analyses() below. */
-inline int ForkApplicInterface::
-derived_synchronous_local_analysis(int analysis_id)
-{
-#ifdef MPI_DEBUG
-  Cout << "Blocking fork to analysis " << analysis_id << std::endl; // flush buf
-#endif // MPI_DEBUG
-  forkSimulator.driver_argument_list(analysis_id);
-  forkSimulator.fork_analysis(BLOCK, false);
-  return 0; // used for failure codes in DirectFn case
-}
+inline pid_t ForkApplicInterface::wait_evaluation(bool block_flag)
+{ return wait(evalProcGroupId, block_flag); }
 
 
-/** Execute analyses synchronously in succession on the local
-    processor (start to end in step increments).  Modeled after
-    ApplicationInterface::synchronous_local_evaluations(). */
-inline void ForkApplicInterface::
-synchronous_local_analyses(int start, int end, int step)
-{
-  for (int analysis_id=start; analysis_id<=end; analysis_id+=step)
-    derived_synchronous_local_analysis(analysis_id);
-}
+inline pid_t ForkApplicInterface::wait_analysis(bool block_flag)
+{ return wait(analysisProcGroupId, block_flag); }
 
 
-inline const StringArray& ForkApplicInterface::analysis_drivers() const
-{ return forkSimulator.program_names(); }
+inline void ForkApplicInterface::evaluation_process_group_id(pid_t pgid)
+{ evalProcGroupId = pgid; }
 
 
-inline const AnalysisCode* ForkApplicInterface::analysis_code() const
-{ return &forkSimulator; }
+inline pid_t ForkApplicInterface::evaluation_process_group_id() const
+{ return evalProcGroupId; }
 
 
-// define construct-time checks since no derived interface plug-ins
-inline void ForkApplicInterface::
-init_communicators_checks(int max_iterator_concurrency)
-{
-  if (check_multiprocessor_analysis() ||
-      check_multiprocessor_asynchronous(max_iterator_concurrency))
-    abort_handler(-1);
-}
+inline void ForkApplicInterface::analysis_process_group_id(pid_t pgid)
+{ analysisProcGroupId = pgid; }
 
 
-//inline void ForkApplicInterface::clear_bookkeeping()
-//{ processIdMap.clear(); }
+inline pid_t ForkApplicInterface::analysis_process_group_id() const
+{ return analysisProcGroupId; }
 
 } // namespace Dakota
 
