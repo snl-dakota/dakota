@@ -16,7 +16,9 @@
 #define PROCESS_APPLIC_INTERFACE_H
 
 #include "ApplicationInterface.hpp"
-#include <sys/types.h>
+#ifdef _WIN32
+typedef int pid_t;
+#endif
 
 
 namespace Dakota {
