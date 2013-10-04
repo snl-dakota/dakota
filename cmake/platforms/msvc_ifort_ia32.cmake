@@ -8,17 +8,15 @@
 set( DAKOTA_HAVE_MPI OFF
      CACHE BOOL "MSVC is a serial build" FORCE )
 
-# WJB - ToDo:  move these settings to a proper location
+# WJB - ToDo:  move these settings to a proper host-specific location
 
-set( Boost_INCLUDE_DIR "C:/Dashboards/Support/boost_1_47"
-     CACHE PATH "Boost spec should be in host-specific file" FORCE )
+# Path to installed Boost
+set (BOOST_ROOT "C:/sems/boost/1.54.0" CACHE PATH
+     "Use SEMS installed Boost 1.54.0")
 
-set( Boost_LIBRARY_DIRS "C:/Dashboards/Support/boost_1_47/lib"
-     CACHE FILEPATH "Boost spec should be in host-specific file" FORCE )
-
-#set( LAPACK_DIR "C:/Dashboards/Support/lapack-3.4.2/build"
-set( LAPACK_DIR "C:/Dashboards/Support/lapack-3.3.1"
-     CACHE PATH "LAPACK spec should be in host-specific file" FORCE )
+# Path to lapack-config.cmake in the installed location
+set( LAPACK_DIR "C:/sems/lapack/3.4.2/lib/cmake/lapack-3.4.2"
+     CACHE PATH "Use SEMS installed LAPACK 3.4.2" FORCE )
 
 ############################################################################
 

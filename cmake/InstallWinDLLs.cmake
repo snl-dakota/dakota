@@ -71,22 +71,28 @@ endif()
 
 # Assume ifortvars sourced and append Intel libraries based on environment var
 #set(ifort_libpath "c:/Program Files/Intel/Compiler/11.1/065/lib/ia32")
-GET_FILENAME_COMPONENT(ifort_libpath "$ENV{IFORT_COMPILER11}/lib/ia32" ABSOLUTE)
+if(DEFINED ENV{IFORT_COMPILER11})
+  GET_FILENAME_COMPONENT(ifort_libpath "$ENV{IFORT_COMPILER11}/lib/ia32" ABSOLUTE)
+elseif (DEFINED ENV{IFORT_COMPILER12})
+  GET_FILENAME_COMPONENT(ifort_libpath "$ENV{IFORT_COMPILER12}/redist/ia32/compiler" ABSOLUTE)
+endif()
 
-# Intel release libraries
-list(APPEND __install__libs
-  ${ifort_libpath}/libmmd.dll
-  ${ifort_libpath}/libifcoremd.dll
-  ${ifort_libpath}/svml_dispmd.dll
-)
-
-# Intel debug libraries
-IF(CMAKE_INSTALL_DEBUG_LIBRARIES)
-  list(APPEND  __install__libs
-    ${ifort_libpath}/libmmdd.dll
-    ${ifort_libpath}/libifcoremdd.dll
+if(DEFINED ifort_libpath)
+  message(STATUS "Installing Intel Fortran libraries from ${ifort_libpath}")
+  # Intel release libraries
+  list(APPEND __install__libs
+    "${ifort_libpath}/libmmd.dll"
+    "${ifort_libpath}/libifcoremd.dll"
+    "${ifort_libpath}/svml_dispmd.dll"
   )
-ENDIF()
+  # Intel debug libraries
+  IF(CMAKE_INSTALL_DEBUG_LIBRARIES)
+    list(APPEND  __install__libs
+      "${ifort_libpath}/libmmdd.dll"
+      "${ifort_libpath}/libifcoremdd.dll"
+    )
+  ENDIF()
+endif()
 
 # Verify libraries exist
   FOREACH(lib
