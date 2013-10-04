@@ -1,19 +1,51 @@
 Blurb::
 Specify the response values at which to estimate relevant statistics
 Description::
+The \c response_levels specification provides the target response
+values for which to compute probabilities, reliabilities, or generalized
+reliabilities (forward mapping).
+
 The particular statistics depend on the method, and they include:
  -# Reliabilities
  -# CDF probabilities
  -# CCDF probabilities
 
-CDF/CCDF probabilities are calculated for specified response levels
-using a simple binning approach. 
+\c num_response_levels is used to specify which arguments of the \c response_level
+correspond to which response.
 
-CDF/CCDF reliabilities are calculated for specified response levels by
-computing the number of sample standard deviations separating the
-sample mean from the response level. 
 Topics::	
 Examples::
+For example, specifying a \c response_level of
+52.3 followed with \c compute \c probabilities will result in the
+calculation of the probability that the response value is less than or equal to
+52.3, given the uncertain distributions on the inputs. 
+
+For an example with multiple responses, the following specification
+\verbatim
+response_levels = 1. 2. .1 .2 .3 .4 10. 20. 30.
+  num_response_levels = 2 4 3
+\endverbatim
+would assign the first two response levels (1., 2.) to response
+function 1, the next four response levels (.1, .2, .3, .4) to response
+function 2, and the final three response levels (10., 20., 30.) to
+response function 3.  If the \c num_response_levels key were omitted
+from this example, then the response levels would be evenly distributed
+among the response functions (three levels each in this case).
+
 Theory::
+Sets of response-probability pairs computed with the forward/inverse
+mappings define either a cumulative distribution function (CDF) or a
+complementary cumulative distribution function (CCDF) for each
+response function. 
+
+In the case of evidence-based epistemic methods,
+this is generalized to define either cumulative belief and
+plausibility functions (CBF and CPF) or complementary cumulative
+belief and plausibility functions (CCBF and CCPF) for each response
+function. 
+
+A forward mapping involves computing the belief and
+plausibility probability level for a specified response level.
+
 Faq::
 See_Also::	

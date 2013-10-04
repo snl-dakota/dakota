@@ -16,7 +16,7 @@ is treated independently.
 
 The number of steps are taken in each direction, so that the total number of points in the parameter study is \f$1+ 2\sum{n}  \f$.
 
-Topics::	parameter_study
+Topics::	parameter_studies
 Examples::
 Theory::
 Faq::

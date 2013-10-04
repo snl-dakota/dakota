@@ -23,7 +23,7 @@ Defaults can vary depending on the method.
 \li DOT constrained optimizers: 0.003
 \li NPSOL: dependent upon the machine precision, typically on the order of \c 1.e-8 for double precision computations
 
-Topics::	problem, not_yet_reviewed
+Topics::	method_independent_controls
 Examples::
 Theory::
 Faq::

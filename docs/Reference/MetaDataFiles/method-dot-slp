@@ -3,7 +3,7 @@ Sequential Linear Programming
 Description::
 See \ref topic-package_dot for information related to all \c DOT methods.
 
-Topics::	package_dot, sequential_linear_programming, not_yet_reviewed
+Topics::	package_dot
 Examples::
 Theory::
 Faq::

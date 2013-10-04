@@ -27,7 +27,7 @@ continuous design variable scaling. When automatic scaling is in use
 for linear constraints they are linearly scaled by a computed
 characteristic value, but not affinely to [0,1].
 
-Topics::	not_yet_reviewed
+Topics::	linear_constraints
 Examples::
 Theory::
 Faq::

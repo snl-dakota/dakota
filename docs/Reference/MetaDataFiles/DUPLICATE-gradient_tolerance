@@ -6,7 +6,8 @@ threshold value on the L2 norm of the objective function gradient that
 indicates convergence to an unconstrained minimum (no active
 constraints). The \c gradient_tolerance control is defined for all
 gradient-based optimizers.
-Topics::	not_yet_reviewed, problem
+
+Topics::	
 Examples::
 Theory::
 Faq::

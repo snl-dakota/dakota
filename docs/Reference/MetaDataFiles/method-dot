@@ -17,13 +17,9 @@ supported with DOT; linear constraint coefficients, bounds, and
 targets can be provided to DOT at start-up and tracked
 internally. 
 
-<b> Group 1 </b>
+One of the five available methods in <b> Group 1 </b> must be specified.
 
-One of the five available methods must be specified.
-
-<b> Optional Keywords </b>
-
-All these methods take the same optional keywords, dealing with
+All these methods take the same <b> Optional Keywords </b>, dealing with
 linear equality and inequality constraints.
 
 <b> Method Independent Controls - Stopping Critiera </b>
@@ -62,7 +58,7 @@ balance the load and lower the total run time in parallel optimization
 studies. 
 
 
-Topics::	package_dot, not_yet_reviewed
+Topics::	package_dot
 Examples::
 Theory::
 Faq::

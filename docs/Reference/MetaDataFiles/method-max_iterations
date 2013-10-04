@@ -5,8 +5,7 @@ The maximum number of iterations.
 
 The default for \c max_iterations is 100. 
 
-
-Topics::	not_yet_reviewed
+Topics::	method_independent_controls
 Examples::
 Theory::
 Faq::

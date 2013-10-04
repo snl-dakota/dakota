@@ -2,10 +2,11 @@ Blurb::
 Choose complementary cumulative functions
 Description::
 Applies to 
- -* CCDF - complementary cumulative distribution function
- -* CCBF - complementary cumulative belief function
- -* CCPF - complementary cumulative plausibility function
-Topics::	not_yet_reviewed
+\li CCDF - complementary cumulative distribution function
+\li CCBF - complementary cumulative belief function
+\li CCPF - complementary cumulative plausibility function
+
+Topics::	
 Examples::
 Theory::
 Faq::

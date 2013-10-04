@@ -9,17 +9,12 @@ directions (%Dakota's \c conmin_mfd method) for constrained
 optimization. As CONMIN was a predecessor to the DOT commercial
 library, the algorithm controls are very similar.
 
-<b> Group 1 </b>
+One of the two available methods in <b> Group 1 </b> must be specified.
 
-One of the two available methods must be specified.
-
-<b> Optional Keywords </b>
-
-All these methods take the same optional keywords, dealing with
+All these methods take the same <b> Optional Keywords </b>, dealing with
 linear equality and inequality constraints.
 
-
-Topics::	package_conmin, not_yet_reviewed
+Topics::	package_conmin
 Examples::
 Theory::
 Faq::

@@ -4,7 +4,9 @@ Description::
 Each entry in \c linear_equality_scales may be a
 user-specified, nonzero characteristic value to be used in scaling each
 constraint. 
-Behavior:
+
+Behavior depends on the value of \c linear_equality_scale_type:
+\li <tt>scale_type</tt> - behavior of \c linear_equality_scales
 \li <tt>'none'</tt> - ignored
 \li <tt>'value'</tt> - required
 \li <tt>'auto'</tt> - optional
@@ -26,7 +28,7 @@ continuous design variable scaling. When automatic scaling is in use
 for linear constraints they are linearly scaled by a computed
 characteristic value, but not affinely to [0,1].
 
-Topics::	not_yet_reviewed
+Topics::	linear_constraints
 Examples::
 Theory::
 Faq::

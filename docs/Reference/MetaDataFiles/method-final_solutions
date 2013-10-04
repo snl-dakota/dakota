@@ -20,7 +20,7 @@ surrogate-based global method will take all of the
 solutions available (e.g. all of the solutions 
 in the Pareto front). 
 --->
-Topics::	problem, not_yet_reviewed
+Topics::	method_independent_controls
 Examples::
 In the case of sampling methods, if one 
 specifies 100 samples (for example) but also specifies

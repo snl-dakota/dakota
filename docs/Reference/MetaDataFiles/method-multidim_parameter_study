@@ -13,7 +13,8 @@ Since the initial values from the
 variables specification will not be used, they need not be
 specified.
 
-Topics::	parameter_study
+Topics::	parameter_studies
 Examples::
 Theory::
 Faq::
+See_Also::	method-centered_parameter_study, method-list_parameter_study, method-vector_parameter_study

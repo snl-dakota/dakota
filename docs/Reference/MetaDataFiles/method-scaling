@@ -82,7 +82,7 @@ linear constraints.  Further, when continuous design variables are log
 scaled, linear constraints are not allowed.
 </ul>
 
-Topics::	not_yet_reviewed
+Topics::	not_yet_reviewed, method_independent_controls
 Examples::
 Theory::
 Faq::

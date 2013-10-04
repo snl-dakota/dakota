@@ -1,11 +1,11 @@
 Blurb::
 Define coefficients of the linear equalities
 Description::
-In the equality case, the constraint matrix \f[A\f]
+In the equality case, the constraint matrix \f$A\f$
 provides coefficients for the variables on the left hand side of:
 \f[Ax = a_t\f]
 
-Topics::	not_yet_reviewed
+Topics::	linear_constraints
 Examples::
 Theory::
 Faq::

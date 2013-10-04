@@ -4,7 +4,8 @@ Description::
 The step vector defines the change in value for every variable, for a single step.
 Step \f$n+1\f$ is step \f$n\f$ plus the step vector.
 
-The points are determined by this step, plus the number of points.
+The points are determined by this step vector, plus the number of steps.
+
 Topics::	
 Examples::
 Theory::

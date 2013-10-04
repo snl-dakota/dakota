@@ -2,7 +2,7 @@ Blurb::
 Define coefficients of the linear inequality constraints
 Description::
 In the inequality case, the
-constraint matrix \f[A\f] provides coefficients for the variables in the
+constraint matrix \f$A\f$ provides coefficients for the variables in the
 two-sided formulation:
 \f[a_l \leq Ax \leq a_u\f]
 
@@ -13,7 +13,7 @@ resulting in
 one-sided inequalities of the form
 \f[Ax \leq 0.0\f].
 
-Topics::	not_yet_reviewed
+Topics::	linear_constraints
 Examples::
 Theory::
 Faq::

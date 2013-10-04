@@ -7,7 +7,7 @@ If no model pointer string is specified and no model specification is provided b
 This default model specification is of type \c single with no \c variables_pointer, \c interface_pointer, or \c responses_pointer (see \ref ModelSingle). 
 It is appropriate to omit a model specification whenever the relationships are unambiguous due to the presence of single variables, interface, and responses specifications.
 
-Topics::	block_pointer, not_yet_reviewed
+Topics::	block_pointer, method_independent_controls
 Examples::
 Theory::
 Faq::

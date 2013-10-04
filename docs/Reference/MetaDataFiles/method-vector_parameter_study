@@ -16,13 +16,15 @@ initial value, through:
 \li the \ref variables-continuous_state-initial_state keyword 
 \li relying on the default initial value, based on the rest of the
     variables specification
+
 From the initial value, the vector can be defined using one of the
-two choices.
+two keyword choices.
 
 Once the vector is defined, the samples are then fully specifed
 by \ref method-vector_parameter_study-num_steps.
 
-Topics::	parameter_study
+Topics::	parameter_studies
 Examples::
 Theory::
 Faq::
+See_Also::	method-centered_parameter_study, method-multidim_parameter_study, method-list_parameter_study

@@ -1,7 +1,40 @@
 Blurb::
+Augment an existing LHS study
 Description::
-Topics::	not_yet_reviewed
+\c incremental_lhs will augment an existing LHS sampling study with more
+samples to get better estimates of mean, variance, and percentiles.
+
+To use this \c sample_type, a previous LHS sampling study with sample size N must have
+already been performed, and the dakota restart file must be
+available from this previous study. The variables and 
+responses specifications must be the same in both studies.
+
+The syntax for
+running the second sample set is: 
+\verbatim 
+dakota -i input2.in -r dakota.rst
+\endverbatim
+where \c input2.in is the file which specifies
+incremental sampling and dakota.rst is the restart
+file containing the results of the previous study. 
+
+The number of samples in the second
+set MUST currently be 2 times the number of previous samples, although
+incremental sampling based on any power of two may be supported in
+future releases.
+
+Topics::	
 Examples::
+For example, say a user performs
+an initial study using \c lhs as the \c sample_type, and generates 50
+samples. If the user creates a new input file where \c samples is now
+specified to be 100, the \c sample_type is defined to be \c
+incremental_lhs, and \c previous_samples is
+specified to be 50, the user will get 50 new LHS samples which
+maintain both the correlation and stratification of the original LHS
+sample. The N new samples will be combined with the N original
+samples to generate a combined sample of size 2N.
+
 Theory::
 Faq::
 See_Also::	

@@ -3,7 +3,7 @@ A conjugate gradient optimization method
 Description::
 This is a duplicated keyword. Please use \ref method-dot instead.
 
-Topics::	conjugate_gradient, not_yet_reviewed, problem
+Topics::	
 Examples::
 Theory::
 Faq::

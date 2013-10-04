@@ -13,7 +13,7 @@ results may not be reliable.
 
 See \ref topic-package_dot for information related to all \c DOT methods.
 
-Topics::	package_dot, conjugate_gradient, not_yet_reviewed
+Topics::	package_dot
 Examples::
 Theory::
 Faq::

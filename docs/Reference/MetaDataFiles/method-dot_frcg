@@ -13,7 +13,7 @@ recommending any code changes to address this. However, all users who
 use \c dot_frcg in DOT Version 4.20 should be aware that
 results may not be reliable.
 
-Topics::	conjugate_gradient, not_yet_reviewed, problem
+Topics::	
 Examples::
 Theory::
 Faq::

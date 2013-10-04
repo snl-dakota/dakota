@@ -5,7 +5,7 @@ The maximum number of function evaluations.
 
 The default for \c max_function_evaluations is 1000. 
 
-Topics::	not_yet_reviewed, problem
+Topics::	method_independent_controls
 Examples::
 Theory::
 Faq::

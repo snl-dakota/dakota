@@ -16,25 +16,28 @@ The following keywords change how the samples are selected:
 \li seed
 \li variance_based_decomp
 
-!!!!!!!!!!!!!!!!!!!!!!!! Does variance_based_decomp change the samples?  if so, this is not mentioned at all.
-
 <b> Method Outputs </b>
-
-The keywords change the method outputs:
-\li variance_based_decomp
-\li reliability_levels
-\li response_levels
-\li distribution
-\li probability_levels     
-\li gen_reliability_levels 
-
-
 
 As a default, %Dakota provides correlation analyses when running LHS.
 Correlation tables are printed with the simple, partial, and rank
 correlations between inputs and outputs. These can be useful to get a
 quick sense of how correlated the inputs are to each other, and how
-correlated various outputs are to inputs. 
+correlated various outputs are to inputs. \c variance_based_decomp is
+used to request more sensitivity information, with additional cost.
+
+Additional statistics can be computed from the samples using the following
+keywords:
+\li \c response_levels
+\li \c reliability_levels
+\li \c probability_levels     
+\li \c gen_reliability_levels 
+
+\c response_levels computes statistics at the specified response value.
+The other three allow the specification of the statistic value, and will
+estimate the corresponding response value.
+
+\c distribution is used to specify whether the statistic values are 
+from cumulative or complementary cumulative functions.
 
 <!---
 Normally, \c sampling generates samples only for the 
@@ -69,7 +72,7 @@ In the case where one wants to generate samples only over
 state variables, one would specify \c active \c state in the 
 variables specification block. 
 --->
-Topics::	not_yet_reviewed, problem
+Topics::	
 Examples::
 Theory::
 Faq::

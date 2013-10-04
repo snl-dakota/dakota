@@ -18,7 +18,7 @@ actual reliabilities that are lower than the estimated reliabilities).
 In either case (\c fixed_seed or not), the study is repeatable if the
 user specifies a \c seed and the study is random is the user omits a
 \c seed specification.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

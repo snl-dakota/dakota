@@ -9,7 +9,7 @@ file and \c single_method is the selected strategy (all other
 strategies require one or more method pointers), since the single
 method to use is unambiguous in this case.
 
-Topics::	block_identifier, not_yet_reviewed
+Topics::	block_identifier, method_independent_controls
 Examples::
 Theory::
 Faq::

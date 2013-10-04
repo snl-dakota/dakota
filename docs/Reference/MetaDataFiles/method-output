@@ -35,7 +35,7 @@ suppresses function evaluation headers and scheduling output. Similarly,
 approximation coefficient details, and \c debug further adds diagnostics 
 from nonblocking schedulers.
 
-Topics::	dakota_output
+Topics::	dakota_output, method_independent_controls
 Examples::
 Theory::
 Faq::

@@ -8,6 +8,8 @@ dakota_IO
  dakota_output
  file_formats
 dakota_concepts
+ method_independent_controls
+  linear_constraints
  block
   block_identifier
   block_pointer

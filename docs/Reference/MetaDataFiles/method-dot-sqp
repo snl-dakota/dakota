@@ -3,7 +3,7 @@ Sequential Quadratic Program
 Description::
 See \ref topic-package_dot for information related to all \c DOT methods.
 
-Topics::	package_dot, sequential_quadratic_programming, not_yet_reviewed
+Topics::	package_dot
 Examples::
 Theory::
 Faq::

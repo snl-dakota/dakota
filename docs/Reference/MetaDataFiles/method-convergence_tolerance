@@ -34,7 +34,7 @@ Notes on each library:
     objective function).
 \li NL2SOL: See \ref method-nl2sol
 
-Topics::	problem, not_yet_reviewed
+Topics::	method_independent_controls
 Examples::
 Theory::
 Faq::

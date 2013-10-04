@@ -2,11 +2,11 @@ Blurb::
 Define upper bounds for the linear inequality constraint
 Description::
 In the inequality case, the
-lower \f[a_l\f] and upper \f[a_u\f] bounds provide constraint limits for the
+lower \f$a_l\f$ and upper \f$a_u\f$ bounds provide constraint limits for the
 two-sided formulation:
 \f[a_l \leq Ax \leq a_u\f]
 
-Where \f[A\f] is the constrain matrix of variable coefficients.
+Where \f$A\f$ is the constrain matrix of variable coefficients.
 
 As with nonlinear inequality constraints (see \ref RespFnOpt), the 
 default linear inequality constraint bounds are selected so that 
@@ -25,7 +25,8 @@ This feature is commonly used to drop one
 of the bounds in order to specify a 1-sided constraint (just as the
 default lower bounds drop out since \c -DBL_MAX < \c
 -bigRealBoundSize). 
-Topics::	not_yet_reviewed
+
+Topics::	linear_constraints
 Examples::
 Theory::
 Faq::

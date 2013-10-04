@@ -1,21 +1,23 @@
 Blurb::
 Select between cumulative or complementary-cumulative functions
 Description::
-The selection of a 
- -* CDF - cumulative distribution function
- -* CBF - cumulative belief function
- -* CPF - cumulative plausibility function
-vs. a
- -* CCDF - complementary cumulative distribution function
- -* CCBF - complementary cumulative belief function
- -* CCPF - complementary cumulative plausibility function
+The selection of cumulative:
+\li CDF - cumulative distribution function
+\li CBF - cumulative belief function
+\li CPF - cumulative plausibility function
+
+vs. complementary cumulative:
+\li CCDF - complementary cumulative distribution function
+\li CCBF - complementary cumulative belief function
+\li CCPF - complementary cumulative plausibility function
+
 can be performed with the \c distribution keyword
 and the choice of \c cumulative or \c complementary.
 
 This selection also
 defines the sign of the reliability or generalized reliability
 indices.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

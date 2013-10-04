@@ -8,11 +8,15 @@ tabs, and newlines. In this format, vectors may therefore appear
 as a single row or single column (or mixture; entries will 
 populate the vector in order). 
 
-\b Attention: Prior to October 2011, calibration and surrogate data 
+<b> Important Notes </b>
+
+\li Prior to October 2011, calibration and surrogate data 
 files were free-form format. They now default to annotated format, 
-though {\c freeform} remains an option. For both formats, a warning 
+though {\c freeform} remains an option. 
+\li For both formats, a warning 
 will be generated if a specific number of data are expected, but extra 
-is found and an error generated when there is insufficient data. Some 
+is found and an error generated when there is insufficient data. 
+\li Some 
 TPLs like SCOLIB and JEGA manage their own file I/O and only support 
 the free-form option. 
 

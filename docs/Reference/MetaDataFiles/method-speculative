@@ -51,7 +51,7 @@ exploited by %Dakota (it will be ignored for \c vendor \c numerical
 gradients).
 
 
-Topics::	not_yet_reviewed
+Topics::	method_independent_controls
 Examples::
 Theory::
 Faq::
