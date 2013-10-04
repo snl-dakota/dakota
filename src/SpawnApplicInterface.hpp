@@ -51,9 +51,8 @@ protected:
 
   pid_t create_analysis_process(bool block_flag, bool new_group);
 
-  size_t wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map);
-  size_t wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
-				  int analysis_id);
+  size_t wait_local_analyses();
+  size_t wait_local_analyses_send(int analysis_id);
 
   //
   //- Heading: Data

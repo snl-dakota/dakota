@@ -63,14 +63,11 @@ protected:
 
   /// wait for asynchronous analyses on the local processor, completing
   /// at least one job
-  virtual size_t
-    wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map) = 0;
+  virtual size_t wait_local_analyses() = 0;
 
   /// test for asynchronous analysis completions on the local processor
   /// and return results for any completions by sending messages
-  virtual size_t
-    wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
-			     int analysis_id) = 0;
+  virtual size_t wait_local_analyses_send(int analysis_id) = 0;
 
   /// create (if new_group) and join the process group for asynch evaluations
   virtual void join_evaluation_process_group(bool new_group);
@@ -117,9 +114,11 @@ protected:
   //- Heading: Data
   //
 
-  /// map of fork process id's to function evaluation id's for
-  /// asynchronous evaluations
+  /// map of fork process id's to function evaluation id's for asynchronous
+  /// evaluations
   std::map<pid_t, int> evalProcessIdMap;
+  /// map of fork process id's to analysis job id's for asynchronous analyses
+  std::map<pid_t, int> analysisProcessIdMap;
 
   /// an array of strings for use with execvp(const char *, char * const *).
   /// These are converted to an array of const char*'s in fork_program().

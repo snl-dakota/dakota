@@ -67,15 +67,14 @@ derived_synch_nowait(PRPQueue& prp_queue)
 }
 
 
-size_t ForkApplicInterface::
-wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map)
+size_t ForkApplicInterface::wait_local_analyses()
 {
   // Enforce scheduling fairness with a Waitsome design
-  size_t completed = 0, num_running = proc_analysis_id_map.size();
+  size_t completed = 0, num_running = analysisProcessIdMap.size();
   pid_t pid = wait_analysis(true); // block for completion
   do { // perform this loop at least once for the pid from wait.
-    std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find(pid);
-    if (an_it == proc_analysis_id_map.end()) {
+    std::map<pid_t, int>::iterator an_it = analysisProcessIdMap.find(pid);
+    if (an_it == analysisProcessIdMap.end()) {
       Cerr << "Error: analysis completion does not match local process ids "
 	   << "within ForkApplicInterface::wait_local_analyses()." << std::endl;
       abort_handler(-1);
@@ -83,7 +82,7 @@ wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map)
 #ifdef MPI_DEBUG
     Cout << "Analysis " << an_it->second << " has completed" << std::endl;
 #endif // MPI_DEBUG
-    proc_analysis_id_map.erase(an_it); ++completed;
+    analysisProcessIdMap.erase(an_it); ++completed;
   } while ( completed < num_running && (pid=wait_analysis(false)) > 0 );
     // process any additional completions
 
@@ -91,15 +90,13 @@ wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map)
 }
 
 
-size_t ForkApplicInterface::
-wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
-			 int analysis_id)
+size_t ForkApplicInterface::wait_local_analyses_send(int analysis_id)
 {
   int rtn_code = 0; pid_t pid;
-  size_t num_running = proc_analysis_id_map.size(), completed = 0;
+  size_t num_running = analysisProcessIdMap.size(), completed = 0;
   while ( completed < num_running && (pid=wait_analysis(false)) > 0 ) {
-    std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find(pid);
-    if (an_it == proc_analysis_id_map.end()) {
+    std::map<pid_t, int>::iterator an_it = analysisProcessIdMap.find(pid);
+    if (an_it == analysisProcessIdMap.end()) {
       Cerr << "Error: analysis completion does not match local process ids "
 	   << "within ForkApplicInterface::serve_analyses_asynch()."
 	   << std::endl;
@@ -113,7 +110,7 @@ wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
     // multiple send buffers (which would be a pain since the number of
     // send_buffers would vary with num_completed).
     parallelLib.send_ea(rtn_code, 0, analysis_id);
-    proc_analysis_id_map.erase(an_it); ++completed;
+    analysisProcessIdMap.erase(an_it); ++completed;
   }
 
   return completed;
@@ -186,38 +183,88 @@ create_analysis_process(bool block_flag, bool new_group)
 }
 
 
-pid_t ForkApplicInterface::wait(pid_t proc_group_id, bool block_flag)
+pid_t ForkApplicInterface::
+wait(pid_t process_group_id, std::map<pid_t, int>& process_id_map,
+     bool block_flag)
 {
   int status;
-  pid_t pid = (block_flag) ?
-    waitpid(-proc_group_id, &status, 0) :     // block for completion w/i group
-    waitpid(-proc_group_id, &status, WNOHANG);// don't block for completion
 
-  check_wait(pid, status);
+  // Test for existence of proc_group_id.  
+
+  // wait/test for any completion within the process group.  We prefer this
+  // approach for the blocking wait case since it can utilize a system-optimized
+  // wait facility that avoids a "busy wait."  But if the last child in the
+  // group has exited, then the process group no longer exists and an error
+  // will be returned (pid = -1).
+  pid_t pid = (block_flag) ?
+    waitpid(-process_group_id, &status, 0) : // block for completion w/i group
+    waitpid(-process_group_id, &status, WNOHANG);// don't block for completion
+
+  if (pid == -1 && errno == ECHILD) { // special case: mitigate w/ fallback
+    // This fallback is consistent with Approach 3 below: abandon
+    // group id and manually test each pid within the process_id_map
+    std::map<pid_t, int>::iterator gp_it;
+    bool done = false;
+    while (!done) {
+      for (gp_it=process_id_map.begin(); gp_it!=process_id_map.end(); ++gp_it) {
+	pid = waitpid(gp_it->first, &status, WNOHANG);
+	check_wait(pid, status);
+	if (pid > 0)
+	  { done = true; break; }
+      }
+      if (block_flag) {
+#ifdef HAVE_USLEEP
+	if (!done)
+	  usleep(1000); // 1000 microseconds = 1 millisec
+#endif // HAVE_UNISTD_H
+      }
+      else done = true;
+    }
+  }
+  else // default error handling
+    check_wait(pid, status);
 
   return pid;
 }
 
 
-void ForkApplicInterface::join_evaluation_process_group(bool new_group)
+void ForkApplicInterface::
+join_process_group(pid_t& process_group_id, bool new_group)
 {
   if (new_group) // create new group id from the child process id
-    evalProcGroupId = getpid(); // this child pid becomes group leader
-  // else we rely on parent to propagate group id through fork() to here
+    process_group_id = getpid(); // this child pid becomes group leader
 
-  int err = setpgid(0, evalProcGroupId); // pid=0 -> use pid from this process
-  check_group(err, evalProcGroupId);
-}
+  // else we rely on parent to propagate previous process_group_id
+  // through fork() to here
 
+  // race conditions have been observed with loss of group process ids,
+  // presumably when the last child exits.  waitpid(-group_id) can fail
+  // in this case, which is distinctly different from waitpid(proc_id) on
+  // a process that has exited.
 
-void ForkApplicInterface::join_analysis_process_group(bool new_group)
-{
-  if (new_group) // create new group id from the child process id
-    analysisProcGroupId = getpid(); // this child pid becomes group leader
-  // else we rely on parent to propagate group id through fork() to here
+  // Approach 1: hard error if setpgid failure
+  //int err = setpgid(0, process_group_id);
+  //check_group(err, process_group_id);
 
-  int err = setpgid(0, analysisProcGroupId);//pid=0 -> use pid from this process
-  check_group(err, analysisProcGroupId);
+  // Approach 2: as a fallback, try creating a new process group.
+  // NOTE: use of this fallback cannot be communicated back to the parent.
+  // Implementing consistent fall back logic appears to be more complicated
+  // than the simpler approach 3.
+  //int err1 = setpgid(0, process_group_id);//pid=0 -> use pid from this process
+  //if (err1 && !new_group) { // && errno == E****)
+  //  process_group_id = getpid(); // this child pid becomes group leader
+  //  int err2 = setpgid(0, process_group_id);
+  //  check_group(err2, process_group_id);
+  //}
+  //else
+  //  check_group(err1, process_group_id);
+
+  // Approach 3: rely on parent to mitigate with fallback not based on groups
+  int err = setpgid(0, process_group_id); // pid=0 -> use pid from this process
+  if (err && outputLevel == DEBUG_OUTPUT) // non-fatal
+    Cerr << "Warning: setpgid failure for assigning fork process group on "
+	 << "child.\n         Parent will mitigate with fallback approach."
+	 << std::endl;
 }
 
 
@@ -244,7 +291,7 @@ void ForkApplicInterface::check_group(int err, pid_t proc_group_id)
       Cerr << "pid is not the calling process and not a child of the "
 	   << "calling process." << std::endl; break;
     default:
-      Cerr << "std::strerror(errno)" << std::endl; break;
+      Cerr << std::strerror(errno) << std::endl; break;
     }
     abort_handler(-1);
   }

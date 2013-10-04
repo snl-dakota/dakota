@@ -54,9 +54,8 @@ protected:
   /// using waitpid() if block_flag is true
   pid_t create_analysis_process(bool block_flag, bool new_group);
 
-  size_t wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map);
-  size_t wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
-				  int analysis_id);
+  size_t wait_local_analyses();
+  size_t wait_local_analyses_send(int analysis_id);
 
   void join_evaluation_process_group(bool new_group);
   void join_analysis_process_group(bool new_group);
@@ -70,10 +69,10 @@ protected:
   //- Heading: Member functions
   //
 
-  /// process all available completions within the nonblocking process group;
+  /// process all available completions within the evaluation process group;
   /// if block_flag = true, wait for at least one completion
   pid_t wait_evaluation(bool block_flag);
-  /// process all available completions within the nonblocking process group;
+  /// process all available completions within the analysis process group;
   /// if block_flag = true, wait for at least one completion
   pid_t wait_analysis(bool block_flag);
 
@@ -86,9 +85,12 @@ private:
   //- Heading: Methods
   //
 
-  /// process all available completions within the nonblocking process group;
-  /// if block_flag = true, wait for at least one completion
-  pid_t wait(pid_t proc_group_id, bool block_flag);
+  /// core code used by wait_{evaluation,analysis}()
+  pid_t wait(pid_t proc_group_id, std::map<pid_t, int>& process_id_map,
+	     bool block_flag);
+
+  /// core code used by join_{evaluation,analysis}_process_group()
+  void join_process_group(pid_t& process_group_id, bool new_group);
 
   //
   //- Heading: Data
@@ -110,11 +112,19 @@ inline ForkApplicInterface::~ForkApplicInterface()
 
 
 inline pid_t ForkApplicInterface::wait_evaluation(bool block_flag)
-{ return wait(evalProcGroupId, block_flag); }
+{ return wait(evalProcGroupId, evalProcessIdMap, block_flag); }
 
 
 inline pid_t ForkApplicInterface::wait_analysis(bool block_flag)
-{ return wait(analysisProcGroupId, block_flag); }
+{ return wait(analysisProcGroupId, analysisProcessIdMap, block_flag); }
+
+
+inline void ForkApplicInterface::join_evaluation_process_group(bool new_group)
+{ join_process_group(evalProcGroupId, new_group); }
+
+
+inline void ForkApplicInterface::join_analysis_process_group(bool new_group)
+{ join_process_group(analysisProcGroupId, new_group); }
 
 
 inline void ForkApplicInterface::evaluation_process_group_id(pid_t pgid)

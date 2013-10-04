@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
   //Sleep(500); // 500 milliseconds = 0.5 seconds
-#elif defined(HAVE_SLEEP)
+#elif defined(HAVE_UNISTD_H)
   //sleep(1);
 #endif // SLEEP
 

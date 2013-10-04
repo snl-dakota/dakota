@@ -287,7 +287,7 @@ void DirectApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   // there is no simple way to get response results back to the parent
   // process from the child.  Short of resorting to the file system, there
   // are examples of using pipes to accomplish this, but this moves the
-  // idea away from the state of low hanging fruit with high payoff.
+  // idea away from the state of low risk / high payoff.
 }
 
 

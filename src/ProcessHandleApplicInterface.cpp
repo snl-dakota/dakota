@@ -312,7 +312,7 @@ asynchronous_local_analyses(int start, int end, int step)
   }
 
   // link process id's to analysis id's for asynch jobs
-  std::map<pid_t, int> proc_analysis_id_map;
+  analysisProcessIdMap.clear();
   size_t i, num_sends;
   int analysis_id, num_jobs = 1 + (int)((end-start)/step);
   pid_t pid, proc_gp;
@@ -335,7 +335,7 @@ asynchronous_local_analyses(int start, int end, int step)
 #endif // MPI_DEBUG
     driver_argument_list(analysis_id);
     pid = create_analysis_process(FALL_THROUGH, new_group);
-    proc_analysis_id_map[pid] = analysis_id;
+    analysisProcessIdMap[pid] = analysis_id;
     new_group = false;
   }
 
@@ -349,8 +349,8 @@ asynchronous_local_analyses(int start, int end, int step)
 #ifdef MPI_DEBUG
     Cout << "Waiting on completed analyses" << std::endl;
 #endif // MPI_DEBUG
-    recv_cntr += completed = wait_local_analyses(proc_analysis_id_map);//virtual
-    new_group = proc_analysis_id_map.empty();
+    recv_cntr += completed = wait_local_analyses(); // virtual fn
+    new_group = analysisProcessIdMap.empty();
     for (i=0; i<completed; ++i) {
       if (send_cntr < num_jobs) {
         analysis_id = start + send_cntr*step;
@@ -359,7 +359,7 @@ asynchronous_local_analyses(int start, int end, int step)
 #endif // MPI_DEBUG
 	driver_argument_list(analysis_id);
         pid = create_analysis_process(FALL_THROUGH, new_group);
-        proc_analysis_id_map[pid] = analysis_id;
+        analysisProcessIdMap[pid] = analysis_id;
         ++send_cntr; new_group = false;
       }
       else break;
@@ -382,7 +382,7 @@ void ProcessHandleApplicInterface::serve_analyses_asynch()
 
   // link process id's to analysis id's for asynch jobs
   pid_t pid, proc_gp; int analysis_id;
-  std::map<pid_t, int> proc_analysis_id_map;
+  analysisProcessIdMap.clear();
 
   MPI_Status  status; // holds MPI_SOURCE, MPI_TAG, & MPI_ERROR
   MPI_Request recv_request = MPI_REQUEST_NULL;
@@ -417,7 +417,7 @@ void ProcessHandleApplicInterface::serve_analyses_asynch()
 	  // execute
 	  driver_argument_list(analysis_id);
           pid = create_analysis_process(FALL_THROUGH, new_group);
-	  proc_analysis_id_map[pid] = analysis_id; ++num_running;
+	  analysisProcessIdMap[pid] = analysis_id; ++num_running;
 	  new_group = false;
 	  // repost
           parallelLib.irecv_ea(analysis_id, 0, MPI_ANY_TAG, recv_request);
@@ -429,8 +429,7 @@ void ProcessHandleApplicInterface::serve_analyses_asynch()
     // Step 3: check for any completed jobs and return results to master
     // -----------------------------------------------------------------
     if (num_running)
-      num_running -=
-	wait_local_analyses_send(proc_analysis_id_map, analysis_id); // virtual
+      num_running -= wait_local_analyses_send(analysis_id); // virtual fn
 
   } while (analysis_id || num_running);
 }
@@ -448,13 +447,34 @@ void ProcessHandleApplicInterface::check_wait(pid_t pid, int status)
 {
   if (pid == -1) {
     Cerr << "\nFork error in parent retrieving child; error code " << errno
-	 << " (" << std::strerror(errno) << ").\nConsider using system "
-	 << "interface." << std::endl;
+	 << ":\n  ";
+    switch (errno) {
+    case ECHILD:
+      Cerr << "The process specified by pid does not exist or is not a child "
+	   << "of the calling process";           break;
+    case EINTR:
+      Cerr << "WNOHANG was not set and an unblocked signal or a SIGCHLD was "
+	   << "caught";                           break;
+    case EINVAL:
+      Cerr << "The options argument was invalid"; break;
+    default:
+      Cerr << std::strerror(errno);               break;
+    }
+    Cerr << ".\nConsider using system interface." << std::endl;
     abort_handler(-1);
   }
   else if (pid > 0) {
 #ifdef HAVE_SYS_WAIT_H
-    // checks for an abnormal exit status and, if present, abort 
+    // checks for an abnormal exit status and, if present, abort.
+    // From waitpid man pages: If &status is not NULL, waitpid() stores status
+    // information which can be inspected with the following macros (which take
+    // status as an argument):
+    // > WIFEXITED(status): returns true if the child terminated normally, that
+    //   is, by calling exit or _exit, or by returning from main(). 
+    // > WEXITSTATUS(status): returns the exit status of the child. This
+    //   consists of the status argument that the child specified in a call
+    //   to exit or _exit or as the argument for a return statement in main().
+    //   This macro should only be employed if WIFEXITED returned true.
     if ( WIFEXITED(status) == 0 || (signed char)WEXITSTATUS(status) == -1 ) {
       Cerr << "Fork application failure, aborting.\nSystem error message: "
 	   << std::strerror(errno) << '\n';

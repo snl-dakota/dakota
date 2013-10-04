@@ -172,8 +172,7 @@ create_analysis_process(bool block_flag, bool new_group)
 }
 
 
-size_t SpawnApplicInterface::
-wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map)
+size_t SpawnApplicInterface::wait_local_analyses()
 {
 	DWORD dw;
 	HANDLE *h;
@@ -185,8 +184,8 @@ wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map)
 		while (wait_for_one(n,h,req,&i)) {
 			GetExitCodeProcess(h[i], &dw);
 			check_wait((pid_t)h[i], (int)dw);
-			std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find((pid_t)h[i]);
-			if (an_it == proc_analysis_id_map.end()) {
+			std::map<pid_t, int>::iterator an_it = analysisProcessIdMap.find((pid_t)h[i]);
+			if (an_it == analysisProcessIdMap.end()) {
 			  Cerr << "Error: analysis completion does not match local process ids "
 			       << "within SpawnApplicInterface::wait_local_analyses()."
 			       << std::endl;
@@ -196,7 +195,7 @@ wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map)
 			Cout << "Analysis " << an_it->second << " has completed"
 			     << std::endl;
 #endif // MPI_DEBUG
-			proc_analysis_id_map.erase(an_it); ++completed;
+			analysisProcessIdMap.erase(an_it); ++completed;
 			CloseHandle(h[i]);
 			if (i < --n)
 				h[i] = h[n];
@@ -215,9 +214,7 @@ wait_local_analyses(std::map<pid_t, int>& proc_analysis_id_map)
     after ApplicationInterface::serve_evaluations_asynch().  NOTE: This fn
     should be elevated to ApplicationInterface if and when another derived
     interface class supports hybrid analysis parallelism. */
-size_t SpawnApplicInterface::
-wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
-			 int analysis_id)
+size_t SpawnApplicInterface::wait_local_analyses_send(int analysis_id)
 {
 	DWORD dw;
 	HANDLE *h;
@@ -229,8 +226,8 @@ wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
 			GetExitCodeProcess(h[i], &dw);
 			check_wait((pid_t)h[i], (int)dw);
 
-			std::map<pid_t, int>::iterator an_it = proc_analysis_id_map.find((pid_t)h[i]);
-			if (an_it == proc_analysis_id_map.end()) {
+			std::map<pid_t, int>::iterator an_it = analysisProcessIdMap.find((pid_t)h[i]);
+			if (an_it == analysisProcessIdMap.end()) {
 			  Cerr << "Error: analysis completion does not match local process ids "
 			       << "within SpawnApplicInterface::wait_local_analyses_send()."
 			       << std::endl;
@@ -244,7 +241,7 @@ wait_local_analyses_send(std::map<pid_t, int>& proc_analysis_id_map,
 			// multiple send buffers (which would be a pain since the number of
 			// send_buffers would vary with num_completed).
 			parallelLib.send_ea(rtn_code, 0, analysis_id);
-			proc_analysis_id_map.erase(an_it); ++completed;
+			analysisProcessIdMap.erase(an_it); ++completed;
 			CloseHandle(h[i]);
 			if (i < --n) h[i] = h[n];
 			else if (!n) break;
