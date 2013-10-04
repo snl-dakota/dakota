@@ -8,12 +8,6 @@ include_directories(
 
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
-add_definitions("-DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION")
-
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "XL" OR
-   ${CMAKE_CXX_COMPILER_ID} MATCHES "VisualAge")
-  add_definitions("-DBOOST_MPL_CFG_ASSERT_USE_RELATION_NAMES")
-endif()
 
 # DAKOTA-specific processing of specification maintenance options
 include(DakotaEnableSpecMaint)
@@ -44,38 +38,35 @@ if(DAKOTA_PLUGIN)
   add_definitions("-DDAKOTA_PLUGIN")
 endif(DAKOTA_PLUGIN)
 
+
+# -----------------
+# Boost Adjustments
+
+add_definitions("-DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION")
+
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "XL" OR
+   ${CMAKE_CXX_COMPILER_ID} MATCHES "VisualAge")
+  add_definitions("-DBOOST_MPL_CFG_ASSERT_USE_RELATION_NAMES")
+endif()
+
 option(BOOST_DISABLE_ASSERTS "Toggle BoostAssert, default is AssertDisabled" ON)
 if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif (BOOST_DISABLE_ASSERTS)
 
-option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BoostFS enabled" ON)
-if (DAKOTA_HAVE_BOOST_FS)
-  add_definitions("-DDAKOTA_HAVE_BOOST_FS")
+# For Boost [1.44.0, 1.46.0), Boost Filesystem V2 is the default, but
+# V3 is available.  Force use of V3 in src/.
+set(dakota_boost_vn 
+  "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+message(STATUS "Dakota src/ using Boost version: ${dakota_boost_vn}")
+if(${dakota_boost_vn} VERSION_LESS "1.46.0")
+  add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
+  message(WARNING
+    "Dakota only supports Boost 1.46.0 or newer; recommends 1.49.0 or newer")
+  message(STATUS "Dakota forcing use of Boost filesystem V3 API")
+endif()
 
-  # Boost Version info (to determine default Boost.Filesystem Version support)
-  file(STRINGS ${Boost_INCLUDE_DIR}/boost/version.hpp BOOST_VERSIONSTR
-       REGEX "#define[ ]+BOOST_VERSION[ ]+[0-9]+")
-
-  if(BOOST_VERSIONSTR)
-    math(EXPR BOOST_VN_MAJOR "${BOOST_VERSIONSTR} / 100000")
-    math(EXPR BOOST_VN_MINOR "${BOOST_VERSIONSTR} / 100 % 1000")
-    math(EXPR BOOST_VN_SUBMINOR "${BOOST_VERSIONSTR} % 100")
-    set(DAK_BOOST_VN "${BOOST_VN_MAJOR}.${BOOST_VN_MINOR}.${BOOST_VN_SUBMINOR}")
-    message(STATUS "Boost version: ${DAK_BOOST_VN}")
-
-    if(NOT ${BOOST_VN_MINOR} VERSION_LESS "46")
-      #add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
-      #set(DAKOTA_HAVE_BOOST_FS OFF)
-      message(STATUS "DAKOTA using Boost.FilesystemV3")
-    endif()
-
-  else()
-    message(FATAL_ERROR 
-      "Problem with Boost version from ${Boost_INCLUDE_DIR}/boost/version.hpp")
-  endif(BOOST_VERSIONSTR)
-
-endif (DAKOTA_HAVE_BOOST_FS)
+# -----------------
 
 
 include(CheckIncludeFile)
@@ -545,7 +536,7 @@ if(HAVE_QUESO)
 endif(HAVE_QUESO)
 
 
-# TODO: conditional on Acro?  
+# Boost is required, but have to protect against empty DIR list
 if(Boost_FOUND)
   list(APPEND link_directories ${Boost_LIBRARY_DIRS})
   list(APPEND EXTRA_TPL_LIBS ${Boost_LIBRARIES})

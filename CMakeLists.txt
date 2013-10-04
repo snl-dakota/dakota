@@ -209,9 +209,8 @@ endif()
 
 # Surfpack can optionally use the serialization library.  If enabled,
 # the Surfpack standalone executable will be built.
-# TODO: default this to ON
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
-option(HAVE_BOOST_SERIALIZATION "Use Boost serialization library" OFF)
+option(HAVE_BOOST_SERIALIZATION "Use Boost serialization library" ON)
 if(HAVE_SURFPACK AND HAVE_BOOST_SERIALIZATION)
   list(APPEND dakota_boost_components "serialization")
 endif()
