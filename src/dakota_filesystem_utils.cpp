@@ -976,42 +976,16 @@ void workdir_adjust(const std::string& workdir)
 }
 
 
-/** Portability adapter for getcwd
- */
+/** Portability adapter for getcwd: return the string in OS-native
+    format.  TODO: change paths throughout code to use bfs::path where
+    possible, since Windows (and Cygwin) use wchar_t instead of
+    char_t. */
 std::string get_cwd()
 {
-#ifdef DAKOTA_HAVE_BOOST_FS
-
-  #if BOOST_FILESYSTEM_VERSION < 3
-    return bfs::current_path<bfs::path>().string();
-  #else
-    return bfs::current_path().string();
-  #endif
-
-#else
-
-  boost::array<char, DAK_MAXPATHLEN> cwd;
-
-#if defined(_WIN32) || defined(_WIN64)
-#define DAK_FAIL_FMT "GetCurrentDirectory() failed!\n"
-  size_t len = GetCurrentDirectory(DAK_MAXPATHLEN, cwd.c_array());
-  if (len <= 0 || len >= DAK_MAXPATHLEN)
-#else
-#define DAK_FAIL_FMT "getcwd() failed!\n"
-  if (!getcwd(cwd.c_array(), DAK_MAXPATHLEN))
-#endif
-  {
-    Cerr << "\nERROR: " << DAK_FAIL_FMT << std::endl;
-    abort_handler(-1);
-  }
-
-#if defined(_WIN32) || defined(_WIN64)
-  if (cwd[1] == ':')
-    dakdrive = Map(cwd.c_array()[0]);
-#endif
-
-  return std::string( cwd.c_array() );
-#endif
+  // string is wchar on Windows and Cygwin, char elsewhere. This will
+  // get the native path and return as a string, using locale-specific
+  // conversion from wchar to char if needed.
+  return bfs::current_path().string();
 }
 
 } // namespace Dakota
