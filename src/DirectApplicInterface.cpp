@@ -278,6 +278,16 @@ void DirectApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 
   //pthread_create/thr_create(derived_map(...)) launches a new thread
   //threadIdMap[tid] = fn_eval_id;
+
+  // Design note, 10/2013: the heavy fork() approach that already exists in
+  // ProcessHandleApplicInterface::create_evaluation_process() would be a
+  // quick and easy substitute for POSIX threads.  While this would work
+  // nicely for managing job concurrency with code that's already in hand
+  // (assuming sufficient memory for the required heavy fork() concurrency),
+  // there is no simple way to get response results back to the parent
+  // process from the child.  Short of resorting to the file system, there
+  // are examples of using pipes to accomplish this, but this moves the
+  // idea away from the state of low hanging fruit with high payoff.
 }
 
 
