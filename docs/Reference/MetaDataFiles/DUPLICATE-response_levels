@@ -12,7 +12,7 @@ using a simple binning approach.
 CDF/CCDF reliabilities are calculated for specified response levels by
 computing the number of sample standard deviations separating the
 sample mean from the response level. 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

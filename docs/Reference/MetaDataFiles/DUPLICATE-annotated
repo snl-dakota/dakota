@@ -18,7 +18,7 @@ is found and an error generated when there is insufficient data. Some
 TPLs like SCOLIB and JEGA manage their own file I/O and only support 
 the free-form option. 
 
-Topics::	file_formats, not_yet_reviewed
+Topics::	file_formats
 Examples::
 Theory::
 Faq::

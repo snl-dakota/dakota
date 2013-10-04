@@ -1,10 +1,11 @@
 Blurb::
 Define the vector with the inital point plus direction and magnitude of each step
 Description::
-The step vector defines the change in value for every value, for a single step.
+The step vector defines the change in value for every variable, for a single step.
+Step \f$n+1\f$ is step \f$n\f$ plus the step vector.
 
 The points are determined by this step, plus the number of points.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

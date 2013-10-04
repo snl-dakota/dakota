@@ -1,9 +1,9 @@
 Blurb::
-Squential Quadratic Program
+Sequential Quadratic Program
 Description::
 This is a duplicated keyword. Please use \ref method-dot instead.
 
-Topics::	squential_quadratic_programming, not_yet_reviewed, problem
+Topics::	sequential_quadratic_programming, not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

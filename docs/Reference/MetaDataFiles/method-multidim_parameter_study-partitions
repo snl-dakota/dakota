@@ -16,7 +16,7 @@ for discrete range or set types and therefore no integer rounding
 occurs, so the partitions specification must be carefully selected in
 the presence of these types. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

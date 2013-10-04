@@ -10,6 +10,8 @@ on zero-residual test problems -- can exhibit quadratic convergence
 rates near the solution.  (Real problems almost never have zero
 residuals, i.e., perfect fits.)
 
+See \ref topic-package_optpp for info related to all \c optpp methods.
+
 Topics::	package_optpp, newton_method, not_yet_reviewed
 Examples::
 Theory::

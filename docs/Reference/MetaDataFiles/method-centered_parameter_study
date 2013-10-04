@@ -14,9 +14,9 @@ are taken along a vector, the \c centered_parameter_study
 takes steps along each orthogonal dimension. Each dimension
 is treated independently.
 
-The number of steps are taken in each direction, so that the total number of points in the parameter study is \f[1+ 2\sum{n}  \f]
+The number of steps are taken in each direction, so that the total number of points in the parameter study is \f$1+ 2\sum{n}  \f$.
 
-Topics::	parameter_study, not_yet_reviewed
+Topics::	parameter_study
 Examples::
 Theory::
 Faq::

@@ -4,7 +4,7 @@ Description::
 The random \c seed control provides a mechanism for making a
 stochastic optimization repeatable. That is, the use of the same
 random seed in identical studies will generate identical results.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

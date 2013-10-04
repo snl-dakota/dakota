@@ -14,7 +14,7 @@ the actual values should be specified, not the set indices, although
 the values will be validated for membership within the set value
 specifications. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

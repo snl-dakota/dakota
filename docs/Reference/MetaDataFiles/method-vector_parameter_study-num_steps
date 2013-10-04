@@ -16,7 +16,7 @@ index steps that are integers: no remainder is currently permitted in
 the integer step calculation and no rounding to integer steps will
 occur. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

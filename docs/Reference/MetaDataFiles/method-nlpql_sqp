@@ -1,5 +1,5 @@
 Blurb::
-Squential Quadratic Program
+Sequential Quadratic Program
 Description::
 The method independent controls for maximum iterations and output
 verbosity are mapped to NLPQL controls MAXIT and IPRINT, respectively.
@@ -8,7 +8,7 @@ NLPQLPOptimizer class.
 
 
 
-Topics::	package_nlpql, squential_quadratic_programming, not_yet_reviewed
+Topics::	package_nlpql, sequential_quadratic_programming, not_yet_reviewed
 Examples::
 Theory::
 Faq::

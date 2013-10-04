@@ -68,7 +68,7 @@ that the variable set that is active with a particular iterator is the
 same variable set for which derivatives are typically computed.
 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 For example, the default behavior
 for a nondeterministic sampling method is to sample the uncertain

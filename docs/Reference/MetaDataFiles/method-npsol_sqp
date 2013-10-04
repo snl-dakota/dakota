@@ -1,5 +1,5 @@
 Blurb::
-Squential Quadratic Program
+Sequential Quadratic Program
 Description::
 
 <b> Stopping Criteria </b>
@@ -71,7 +71,7 @@ user to provide the values of the linear constraints on every function
 evaluation. 
 
 
-Topics::	package_npsol, squential_quadratic_programming, not_yet_reviewed
+Topics::	package_npsol, sequential_quadratic_programming, not_yet_reviewed
 Examples::
 Theory::
 Faq::

@@ -9,9 +9,7 @@ for multiple coordinate vector studies (to investigate the response
 variations along some n-dimensional vector such as an optimizer search
 direction).
 
-<b> Group 1 </b>
-
-Group 1 is used to define the vector along which the parameters are 
+<b> Group 1 </b> is used to define the vector along which the parameters are 
 varied. Both cases also rely on the variables specification of an
 initial value, through:
 \li the \ref variables-continuous_design-initial_point keyword
@@ -24,7 +22,7 @@ two choices.
 Once the vector is defined, the samples are then fully specifed
 by \ref method-vector_parameter_study-num_steps.
 
-Topics::	parameter_study, not_yet_reviewed
+Topics::	parameter_study
 Examples::
 Theory::
 Faq::

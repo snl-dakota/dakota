@@ -10,7 +10,7 @@ annotated for free-form tabular format as described in the User's
 manual.
 
 
-Topics::	parameter_study, not_yet_reviewed
+Topics::	parameter_study
 Examples::
 This shows the method and variables block of a Dakota input file
 that runs a list_parameter_study.

@@ -2,6 +2,8 @@ Blurb::
 Newton method based optimization
 Description::
 
+See \ref topic-package_optpp for info related to all \c optpp methods.
+
 Topics::	package_optpp, newton_method, not_yet_reviewed
 Examples::
 Theory::

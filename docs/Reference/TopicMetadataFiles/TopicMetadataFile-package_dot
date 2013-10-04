@@ -8,3 +8,4 @@ feasible directions (%Dakota's \c dot_mmfd method), sequential linear
 programming (%Dakota's \c dot_slp method), and sequential quadratic
 programming (%Dakota's \c dot_sqp method) methods for constrained
 optimization.
+

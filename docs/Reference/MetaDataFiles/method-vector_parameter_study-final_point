@@ -7,7 +7,7 @@ from the variables specification, and the \c final_point.
 
 The actual points are determined based on the this vector and the number of steps.
 of points chosen in \c num_points.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::
