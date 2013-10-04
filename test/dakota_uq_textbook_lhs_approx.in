@@ -25,7 +25,7 @@ method,
 	sampling
 	  samples = 5000 seed = 5
 	  sample_type lhs
-	  response_levels = 2.e-5 3.e-5 4.e-5		#0,#1,#2,#3,#5,#6
+	  response_levels = 2.e-5 3.e-5 4.e-5		#0,#1,#2,#3,#6,#7
 
 model,
 	id_model = 'UQ_M'
@@ -33,26 +33,30 @@ model,
 	  dace_method_pointer = 'DACE'
 	  polynomial quadratic		#0
 # 	  neural_network		#1
-#	  gaussian_process surfpack	#2,#4,#5,#6
+#	  gaussian_process surfpack	#2,#4,#5,#6,#7
 #	  mars				#3
 
 # Test 2 with a samples file, free-form or annotated
-#	samples_file = 'dakota_uq_textbook_lhs_approx.annotated' #5
-#	samples_file = 'dakota_uq_textbook_lhs_approx.freeform'	 #6
-#	  freeform     						 #6
+#	samples_file = 'dakota_uq_textbook_lhs_approx.annotated' #6
+#	samples_file = 'dakota_uq_textbook_lhs_approx.freeform'	 #7
+#	  freeform     						 #7
 
 variables,
-	lognormal_uncertain =  2
-	  means             =  1.0  1.0
-#	  std_deviations    =  0.5	 0.5
-	  error_factors     =  1.1  1.1
-	  descriptors       =  'TF1ln' 'TF1ln'
-#	discrete_uncertain_set_int = 1				#4
-#	  set_probs  = .1 .2 .4 .2 .1				#4
-#	  set_values =  1  2  3  4  5				#4
-#	  descriptors = 'ModelForm'				#4
-	uncertain_correlation_matrix =  1. 0.
-					0. 1.
+	lognormal_uncertain =  2			#0,#1,#2,#3,#4,#6,#7
+	  means             =  1.0  1.0			#0,#1,#2,#3,#4,#6,#7
+#	  std_deviations    =  0.5	 0.5		#0,#1,#2,#3,#4,#6,#7
+	  error_factors     =  1.1  1.1			#0,#1,#2,#3,#4,#6,#7
+	  descriptors       =  'TF1ln' 'TF1ln'		#0,#1,#2,#3,#4,#6,#7
+#	discrete_uncertain_set_int = 1					#4
+#	  set_probs  = .1 .2 .4 .2 .1					#4
+#	  set_values =  1  2  3  4  5					#4
+#	  descriptors = 'ModelForm'					#4
+#	histogram_point_uncertain 2					#5
+#	  num_pairs 7 7		  					#5
+#	  abscissas 0.200 2.166 4.133 6.100 8.067 10.033 12.000		#5
+#	            0.200 2.166 4.133 6.100 8.067 10.033 12.000		#5
+#	  counts    1     1     1     1     1     1      1		#5
+#	            1     1     1     1     1     1      1		#5
 
 responses,
 	response_functions = 1
@@ -68,7 +72,7 @@ method,
 	model_pointer = 'DACE_M'
 	sampling
 	  samples = 2			#0
-#	  samples = 20			#3,#4
+#	  samples = 20			#3,#4,#5
 	  seed = 50
 	  sample_type lhs
 

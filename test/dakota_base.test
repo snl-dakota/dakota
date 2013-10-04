@@ -60968,6 +60968,33 @@ Partial Rank Correlation Matrix between input and output:
    ModelForm  9.24315e-01 
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 20 total (16 new, 4 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  7.0242243141e+03  7.1669982046e+03  9.7683111548e-01  2.1402321340e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.8255207996e+03  7.2229278287e+03  7.0292369146e+03  7.3103065270e+03
+Simple Correlation Matrix among all inputs and outputs:
+                   hpuv_1       hpuv_2 response_fn_1 
+      hpuv_1  1.00000e+00 
+      hpuv_2  3.00063e-03  1.00000e+00 
+response_fn_1  5.94395e-01  6.01599e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+      hpuv_1  7.41856e-01 
+      hpuv_2  7.45882e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                   hpuv_1       hpuv_2 response_fn_1 
+      hpuv_1  1.00000e+00 
+      hpuv_2 -5.51481e-04  1.00000e+00 
+response_fn_1  6.54174e-01  6.32457e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+      hpuv_1  8.44986e-01 
+      hpuv_2  8.36679e-01 
+Test Number 6 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -60998,7 +61025,7 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        TF1ln  2.65699e-02 
        TF1ln  1.68629e-01 
-Test Number 6 succeeded
+Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 Moment-based statistics for each response function:
