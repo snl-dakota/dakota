@@ -57,7 +57,8 @@ int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 }
 
 
-void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
+void SerialDirectApplicInterface::
+wait_local_evaluations(Dakota::PRPQueue& prp_queue)
 {
   if (multiProcAnalysisFlag) {
     Cerr << "Error: plugin serial direct fn does not support multiprocessor "

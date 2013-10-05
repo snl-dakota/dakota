@@ -1079,9 +1079,10 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
     asynchronous jobs or from peer_{static,dynamic}_schedule_evaluations()
     to perform a local portion of the total job set.  It uses 
     derived_map_asynch() to initiate asynchronous evaluations and 
-    derived_synch() to capture completed jobs, and mirrors the
+    wait_local_evaluations() to capture completed jobs, and mirrors the
     master_dynamic_schedule_evaluations() message passing scheduler as
-    much as possible (derived_synch() is modeled after MPI_Waitsome()). */
+    much as possible (wait_local_evaluations() is modeled after
+    MPI_Waitsome()). */
 void ApplicationInterface::
 asynchronous_local_evaluations(PRPQueue& local_prp_queue)
 {
@@ -1106,11 +1107,11 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
   size_t recv_cntr = 0, completed; bool launch;
   while (recv_cntr < num_jobs) {
 
-    // Step 2: process completed jobs with derived_synch()
+    // Step 2: process completed jobs with wait_local_evaluations()
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Waiting on completed jobs" << std::endl;
     completionSet.clear();
-    derived_synch(asynchLocalActivePRPQueue); // rebuilds completionSet
+    wait_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
     recv_cntr += completed = completionSet.size();
     for (ISCIter id_iter = completionSet.begin();
 	 id_iter != completionSet.end(); ++id_iter)
@@ -1532,11 +1533,11 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
     static_servers = asynchLocalEvalConcurrency;//asynchLocalEvalConcurrency * numEvalServers;
 
   // "Step 2" (of asynch_local_evaluations_nowait()): process any completed
-  // jobs using derived_synch_nowait()
+  // jobs using test_local_evaluations()
   if (outputLevel == DEBUG_OUTPUT) // explicit debug user specification
     Cout << "Testing for completed jobs\n";
   completionSet.clear();
-  derived_synch_nowait(asynchLocalActivePRPQueue); // rebuilds completionSet
+  test_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
   size_t completed = completionSet.size();
   for (ISCIter id_iter = completionSet.begin();
        id_iter != completionSet.end(); ++id_iter)
@@ -1583,9 +1584,9 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
     threads).  It is called from synch_nowait() and passed the
     complete set of all asynchronous jobs (beforeSynchCorePRPQueue).
     It uses derived_map_asynch() to initiate asynchronous evaluations
-    and derived_synch_nowait() to capture completed jobs in
+    and test_local_evaluations() to capture completed jobs in
     nonblocking mode.  It mirrors a nonblocking message passing
-    scheduler as much as possible (derived_synch_nowait() modeled
+    scheduler as much as possible (test_local_evaluations() modeled
     after MPI_Testsome()).  The result of this function is
     rawResponseMap, which uses eval_id as a key.  It is assumed that
     the incoming local_prp_queue contains only active and new jobs - 
@@ -1944,7 +1945,7 @@ void ApplicationInterface::serve_evaluations_asynch()
     // -----------------------------------------------------------------
     if (num_active > 0) {
       completionSet.clear();
-      derived_synch_nowait(asynchLocalActivePRPQueue);// rebuilds completionSet
+      test_local_evaluations(asynchLocalActivePRPQueue);//rebuilds completionSet
       num_active -= completionSet.size();
       PRPQueueIter q_it;
       for (ISCIter id_iter = completionSet.begin();
@@ -2017,7 +2018,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
     // -----------------------------------------------------------------
     if (num_active > 0) {
       completionSet.clear();
-      derived_synch_nowait(asynchLocalActivePRPQueue);// rebuilds completionSet
+      test_local_evaluations(asynchLocalActivePRPQueue);//rebuilds completionSet
       num_completed = completionSet.size();
       if (num_completed == num_active)
 	{ num_active = 0; asynchLocalActivePRPQueue.clear(); }
@@ -2210,7 +2211,7 @@ void ApplicationInterface::serve_analyses_synch()
 
     if (analysis_id) { // analysis_id = 0 is the termination signal
 
-      int rtn_code = derived_synchronous_local_analysis(analysis_id);
+      int rtn_code = synchronous_local_analysis(analysis_id);
 
       if (request != MPI_REQUEST_NULL) // MPI_REQUEST_NULL = -1 IBM, 0 elsewhere
         parallelLib.wait(request, status); // block until prev isend completes
@@ -2237,19 +2238,20 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
   // SysCall/Fork application interface exception handling:
   // When a simulation failure is detected w/i Response::read(istream), 
   // an int exception is thrown which is first caught by catch(int fail_code) 
-  // within derived_map or derived_synch, depending on whether the simulation
-  // was synch or asynch.  In the case of derived_map, it rethrows the
-  // exception to an outer catch in map or serve which then invokes 
-  // manage_failure.  In the case of derived_synch, it invokes manage_failure
-  // directly.  manage_failure can then catch subsequent exceptions resulting
-  // from the try blocks below.
+  // within derived_map or wait_local_evaluations, depending on whether the
+  // simulation was synch or asynch.  In the case of derived_map, it rethrows
+  // the exception to an outer catch in map or serve which then invokes 
+  // manage_failure.  In the case of wait_local_evaluations, it invokes
+  // manage_failure directly.  manage_failure can then catch subsequent
+  // exceptions resulting from the try blocks below.
 
   // DirectFn application interface exception handling:
   // The DirectFn case is simpler than SysCall since (1) synch case: the 
-  // exception can be thrown directly from derived_map to map or serve which 
-  // then invokes manage_failure (which then catches additional exceptions 
-  // thrown directly from derived_map), or (2) asynch case: derived_synch
-  // throws no exceptions, but invokes manage_failure directly.
+  // exception can be thrown directly from derived_map to map or serve which
+  // then invokes manage_failure (which then catches additional exceptions
+  // thrown directly from derived_map), or (2) asynch case:
+  // wait_local_evaluations throws no exceptions, but invokes manage_failure
+  // directly.
 
   if (failAction == "retry") {
     //retry(vars, set, response, failRetryLimit);

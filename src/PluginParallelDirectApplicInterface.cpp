@@ -68,7 +68,8 @@ int ParallelDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 }
 
 
-void ParallelDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
+void ParallelDirectApplicInterface::
+wait_local_evaluations(Dakota::PRPQueue& prp_queue)
 {
   // For each job in the processing queue, evaluate the response
   for (Dakota::PRPQueueIter prp_iter = prp_queue.begin();

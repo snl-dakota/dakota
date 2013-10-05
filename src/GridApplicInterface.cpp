@@ -106,7 +106,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   ParamResponsePair prp(vars, interfaceId, response, fn_eval_id);
   derived_map_asynch(prp);
   //
-  // Call derived_synch until our id is in the set
+  // Call wait_local_evaluations() until our id is in the set
   //
   PRPQueue prp_queue;
   prp_queue.push_back(prp);
@@ -114,7 +114,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     Cerr << "derived_map - should start with an empty completion set\n";
     abort_handler(-1);
   }
-  derived_synch(prp_queue); // rebuilds completionSet
+  wait_local_evaluations(prp_queue); // rebuilds completionSet
   response = prp_queue.front().prp_response();
   completionSet.clear();
 #if 0
@@ -167,7 +167,7 @@ void GridApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 
 
 /// Convenience function for common code between wait and nowait case.
-void GridApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
+void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 {
   //
   // Iterate through the set of requests
@@ -190,7 +190,7 @@ void GridApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
       bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
       if (!found) {
 	Cerr << "Error: failure in queue lookup within GridApplicInterface::"
-	     << "derived_synch_kernel()." << std::endl;
+	     << "test_local_evaluations()." << std::endl;
 	abort_handler(-1);
       }
       Response response = pr_pair.prp_response(); // shallow copy

@@ -45,9 +45,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_synch(PRPQueue& prp_queue);
-
-  void derived_synch_nowait(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue);
+  void test_local_evaluations(PRPQueue& prp_queue);
 
   /// spawn a child process for an analysis component within an
   /// evaluation using fork()/vfork()/execvp() and wait for completion
@@ -55,14 +54,14 @@ protected:
   pid_t create_analysis_process(bool block_flag, bool new_group);
 
   size_t wait_local_analyses();
-  size_t wait_local_analyses_send(int analysis_id);
+  size_t test_local_analyses_send(int analysis_id);
 
   void join_evaluation_process_group(bool new_group);
   void join_analysis_process_group(bool new_group);
 
-  void evaluation_process_group_id(pid_t pgid);
+  void  evaluation_process_group_id(pid_t pgid);
   pid_t evaluation_process_group_id() const;
-  void analysis_process_group_id(pid_t pgid);
+  void  analysis_process_group_id(pid_t pgid);
   pid_t analysis_process_group_id() const;
 
   //

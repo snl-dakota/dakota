@@ -136,14 +136,14 @@ protected:
   /// detect completion of jobs and process their results.  It
   /// provides the processing code that is specific to derived
   /// classes.  This version waits for at least one completion.
-  virtual void derived_synch(PRPQueue& prp_queue);
+  virtual void wait_local_evaluations(PRPQueue& prp_queue);
 
   /// For asynchronous function evaluations, this method is used to
   /// detect completion of jobs and process their results.  It
   /// provides the processing code that is specific to derived
   /// classes.  This version is nonblocking and will return without
   /// any completions if none are immediately available.
-  virtual void derived_synch_nowait(PRPQueue& prp_queue);
+  virtual void test_local_evaluations(PRPQueue& prp_queue);
 
   // clears any bookkeeping in derived classes
   //virtual void clear_bookkeeping();
@@ -190,7 +190,7 @@ protected:
   /// Execute a particular analysis (identified by analysis_id) synchronously
   /// on the local processor.  Used for the derived class specifics within
   /// ApplicationInterface::serve_analyses_synch().
-  virtual int derived_synchronous_local_analysis(int analysis_id);
+  virtual int synchronous_local_analysis(int analysis_id);
 
   //
   //- Heading: Data
@@ -228,8 +228,8 @@ protected:
   /// (from the analysis_drivers interface specification)
   int numAnalysisDrivers;
 
-  /// the set of completed fn_eval_id's populated by derived_synch()
-  /// and derived_synch_nowait()
+  /// the set of completed fn_eval_id's populated by wait_local_evaluations()
+  /// and test_local_evaluations()
   IntSet completionSet;
 
 private:
@@ -538,27 +538,27 @@ derived_map_asynch(const ParamResponsePair& pair)
 }
 
 
-inline void ApplicationInterface::derived_synch(PRPQueue& prp_queue)
+inline void ApplicationInterface::wait_local_evaluations(PRPQueue& prp_queue)
 {
-  Cerr << "\nError: no default definition of virtual derived_synch() function "
-       << "defined in ApplicationInterface\n." << std::endl;
+  Cerr << "\nError: no default definition of virtual wait_local_evaluations() "
+       << "function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
 }
 
 
-inline void ApplicationInterface::derived_synch_nowait(PRPQueue& prp_queue)
+inline void ApplicationInterface::test_local_evaluations(PRPQueue& prp_queue)
 {
-  Cerr << "\nError: no default definition of virtual derived_synch_nowait() "
+  Cerr << "\nError: no default definition of virtual test_local_evaluations() "
        << "function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
 }
 
 
 inline int ApplicationInterface::
-derived_synchronous_local_analysis(int analysis_id)
+synchronous_local_analysis(int analysis_id)
 {
-  Cerr << "\nError: no default definition of virtual derived_synchronous_local_"
-       << "analysis() function defined in ApplicationInterface\n." << std::endl;
+  Cerr << "\nError: no default definition of virtual synchronous_local_analysis"
+       << "() function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
   return 0;
 }

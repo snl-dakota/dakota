@@ -200,7 +200,7 @@ inline void ProcessApplicInterface::
 synchronous_local_analyses(int start, int end, int step)
 {
   for (int analysis_id=start; analysis_id<=end; analysis_id+=step)
-    derived_synchronous_local_analysis(analysis_id);
+    synchronous_local_analysis(analysis_id);
 }
 
 

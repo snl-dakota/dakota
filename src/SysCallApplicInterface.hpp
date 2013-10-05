@@ -44,11 +44,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_synch(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue);
+  void test_local_evaluations(PRPQueue& prp_queue);
 
-  void derived_synch_nowait(PRPQueue& prp_queue);
-
-  int  derived_synchronous_local_analysis(int analysis_id);
+  int synchronous_local_analysis(int analysis_id);
 
   void init_communicators_checks(int max_iterator_concurrency);
 
@@ -61,10 +60,6 @@ private:
   //
   //- Heading: Methods
   //
-
-  /// Convenience function for common code between derived_synch() &
-  /// derived_synch_nowait()
-  void derived_synch_kernel(PRPQueue& prp_queue);
 
   /// detect completion of a function evaluation through existence of
   /// the necessary results file(s)
@@ -102,23 +97,16 @@ inline SysCallApplicInterface::~SysCallApplicInterface()
     will _always_ be processed (whereas accepting only a single completion 
     could always accept the same completion - the case of very inexpensive fn.
     evals. - and starve some servers). */
-inline void SysCallApplicInterface::derived_synch(PRPQueue& prp_queue)
+inline void SysCallApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
 {
   while (completionSet.empty()) // complete at least one job
-    derived_synch_kernel(prp_queue);
+    test_local_evaluations(prp_queue);
 }
-
-
-/** Check for completion of active asynch jobs (tracked with sysCallSet).
-    Make one pass through sysCallSet & complete all jobs that have returned. */
-inline void SysCallApplicInterface::derived_synch_nowait(PRPQueue& prp_queue)
-{ derived_synch_kernel(prp_queue); }
 
 
 /** This code provides the derived function used by 
     ApplicationInterface::serve_analyses_synch(). */
-inline int SysCallApplicInterface::
-derived_synchronous_local_analysis(int analysis_id)
+inline int SysCallApplicInterface::synchronous_local_analysis(int analysis_id)
 {
   spawn_analysis_to_shell(analysis_id, BLOCK);
   return 0; // used for failure codes in DirectFn case

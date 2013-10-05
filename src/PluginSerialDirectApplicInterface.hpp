@@ -68,13 +68,14 @@ protected:
   // execute the output filter portion of a direct evaluation invocation
   //int derived_map_of(const Dakota::String& of_name);
 
-  /// no-op hides base error; job batching occurs within derived_synch()
+  /// no-op hides base error; job batching occurs within
+  /// wait_local_evaluations()
   void derived_map_asynch(const Dakota::ParamResponsePair& pair);
 
   /// evaluate the batch of jobs contained in prp_queue
-  void derived_synch(Dakota::PRPQueue& prp_queue);
-  /// invokes derived_synch() (no special nowait support)
-  void derived_synch_nowait(Dakota::PRPQueue& prp_queue);
+  void wait_local_evaluations(Dakota::PRPQueue& prp_queue);
+  /// invokes wait_local_evaluations() (no special nowait support)
+  void test_local_evaluations(Dakota::PRPQueue& prp_queue);
 
   /// no-op hides default run-time error checks at DirectApplicInterface level
   void set_communicators_checks(int max_iterator_concurrency);
@@ -111,7 +112,8 @@ inline void SerialDirectApplicInterface::
 derived_map_asynch(const Dakota::ParamResponsePair& pair)
 {
   // no-op (just hides base class error throw). Jobs are run exclusively within
-  // derived_synch(), prior to there existing true batch processing facilities.
+  // wait_local_evaluations(), prior to there existing true batch processing
+  // facilities.
 }
 
 
@@ -121,8 +123,8 @@ derived_map_asynch(const Dakota::ParamResponsePair& pair)
     ApplicationInterface::serve_evaluations() -->
     ApplicationInterface::serve_evaluations_asynch()). */
 inline void SerialDirectApplicInterface::
-derived_synch_nowait(Dakota::PRPQueue& prp_queue)
-{ derived_synch(prp_queue); }
+test_local_evaluations(Dakota::PRPQueue& prp_queue)
+{ wait_local_evaluations(prp_queue); }
 
 
 // Hide default run-time error checks at DirectApplicInterface level

@@ -46,7 +46,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int  derived_synchronous_local_analysis(int analysis_id);
+  int synchronous_local_analysis(int analysis_id);
 
   void init_communicators_checks(int max_iterator_concurrency);
 
@@ -67,7 +67,7 @@ protected:
 
   /// test for asynchronous analysis completions on the local processor
   /// and return results for any completions by sending messages
-  virtual size_t wait_local_analyses_send(int analysis_id) = 0;
+  virtual size_t test_local_analyses_send(int analysis_id) = 0;
 
   /// create (if new_group) and join the process group for asynch evaluations
   virtual void join_evaluation_process_group(bool new_group);
@@ -87,9 +87,8 @@ protected:
   //- Heading: Methods
   //
 
-  /// Convenience function for common code between derived_synch() &
-  /// derived_synch_nowait()
-  void derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid);
+  /// Common processing code used by {wait,test}_local_evaluations
+  void process_local_evaluation(PRPQueue& prp_queue, const pid_t pid);
 
   //void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
 
@@ -147,7 +146,7 @@ inline ProcessHandleApplicInterface::~ProcessHandleApplicInterface()
     serve_analyses_synch() as well as a convenience function for
     ProcessHandleApplicInterface::synchronous_local_analyses() below. */
 inline int ProcessHandleApplicInterface::
-derived_synchronous_local_analysis(int analysis_id)
+synchronous_local_analysis(int analysis_id)
 {
 #ifdef MPI_DEBUG
   Cout << "Blocking fork to analysis " << analysis_id << std::endl; // flush buf

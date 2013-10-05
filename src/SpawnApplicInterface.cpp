@@ -88,8 +88,7 @@ wait_for_one(size_t n, HANDLE *h, int req1, size_t *pi)
 	}
 
 
-void SpawnApplicInterface::
-derived_synch(PRPQueue& prp_queue)
+void SpawnApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Wait for at least one completion and complete all jobs that have returned.
@@ -108,7 +107,7 @@ derived_synch(PRPQueue& prp_queue)
 		while (wait_for_one(n,h,req,&i)) {
 			GetExitCodeProcess(h[i], &dw);
 			check_wait((pid_t)h[i], (int)dw);
-			derived_synch_kernel(prp_queue, (pid_t)h[i]);
+			process_local_evaluation(prp_queue, (pid_t)h[i]);
 			CloseHandle(h[i]);
 			if (i < --n)
 				h[i] = h[n];
@@ -121,8 +120,7 @@ derived_synch(PRPQueue& prp_queue)
 }
 
 
-void SpawnApplicInterface::
-derived_synch_nowait(PRPQueue& prp_queue)
+void SpawnApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Do not wait - complete all jobs that are immediately available.
@@ -135,7 +133,7 @@ derived_synch_nowait(PRPQueue& prp_queue)
 		while (wait_for_one(n,h,0,&i)) {
 			GetExitCodeProcess(h[i], &dw);
 			check_wait((pid_t)h[i], (int)dw);
-			derived_synch_kernel(prp_queue, (pid_t)h[i]);
+			process_local_evaluation(prp_queue, (pid_t)h[i]);
 			CloseHandle(h[i]);
 			if (i < --n)
 				h[i] = h[n];
@@ -210,11 +208,7 @@ size_t SpawnApplicInterface::wait_local_analyses()
 }
 
 
-/** This code runs multiple asynch analyses on each server.  It is modeled
-    after ApplicationInterface::serve_evaluations_asynch().  NOTE: This fn
-    should be elevated to ApplicationInterface if and when another derived
-    interface class supports hybrid analysis parallelism. */
-size_t SpawnApplicInterface::wait_local_analyses_send(int analysis_id)
+size_t SpawnApplicInterface::test_local_analyses_send(int analysis_id)
 {
 	DWORD dw;
 	HANDLE *h;

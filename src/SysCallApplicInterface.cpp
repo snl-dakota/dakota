@@ -129,7 +129,9 @@ pid_t SysCallApplicInterface::create_evaluation_process(bool block_flag)
 }
 
 
-void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
+/** Check for completion of active asynch jobs (tracked with sysCallSet).
+    Make one pass through sysCallSet & complete all jobs that have returned. */
+void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 {
   // Convenience function for common code between wait and nowait case.
 
@@ -150,7 +152,7 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
       bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
       if (!found) {
 	Cerr << "Error: failure in queue lookup within SysCallApplic"
-	     << "Interface::derived_synch_kernel()." << std::endl;
+	     << "Interface::test_local_evaluations()." << std::endl;
 	abort_handler(-1);
       }
       Response response = pr_pair.prp_response(); // shallow copy
@@ -199,7 +201,7 @@ void SysCallApplicInterface::derived_synch_kernel(PRPQueue& prp_queue)
       // difficult than it is worth.
       catch(int fail_code) { // implemented at the derived class level since 
                              // DirectApplicInterface can do this w/o exceptions
-        //Cout << "Caught int in derived_synch." << std::endl;
+        //Cout << "Caught int in test_local_evaluations()." << std::endl;
         manage_failure(pr_pair.prp_parameters(), response.active_set(),
 		       response, fn_eval_id);
       }

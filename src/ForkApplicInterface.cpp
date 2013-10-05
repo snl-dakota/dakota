@@ -29,7 +29,7 @@ ForkApplicInterface(const ProblemDescDB& problem_db):
 { }
 
 
-void ForkApplicInterface::derived_synch(PRPQueue& prp_queue)
+void ForkApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Wait for at least one completion and complete all jobs that have returned.
@@ -39,24 +39,24 @@ void ForkApplicInterface::derived_synch(PRPQueue& prp_queue)
   // evals. - and starve some servers).
 
   // wait for any process within the process group to finish.  No need for
-  // usleep in derived_synch() since blocking wait is already system optimized.
+  // usleep in wait_local_evaluations() since blocking wait is already
+  // system optimized.
   pid_t pid = wait_evaluation(true); // block for completion
   do { // Perform this loop at least once for the pid from wait.
-    derived_synch_kernel(prp_queue, pid);
+    process_local_evaluation(prp_queue, pid);
   } while ( !evalProcessIdMap.empty() && (pid = wait_evaluation(false)) > 0 );
     // Check for any additional completions (scheduling fairness)
 }
 
 
-void ForkApplicInterface::
-derived_synch_nowait(PRPQueue& prp_queue)
+void ForkApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Do not wait - complete all jobs that are immediately available.
 
   pid_t pid;
   while ( !evalProcessIdMap.empty() && (pid=wait_evaluation(false)) > 0 )
-    derived_synch_kernel(prp_queue, pid);
+    process_local_evaluation(prp_queue, pid);
 
 #ifdef HAVE_USLEEP
   // HAVE_USLEEP should be defined due to dependence of fork on unistd.h
@@ -90,7 +90,7 @@ size_t ForkApplicInterface::wait_local_analyses()
 }
 
 
-size_t ForkApplicInterface::wait_local_analyses_send(int analysis_id)
+size_t ForkApplicInterface::test_local_analyses_send(int analysis_id)
 {
   int rtn_code = 0; pid_t pid;
   size_t num_running = analysisProcessIdMap.size(), completed = 0;

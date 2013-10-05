@@ -45,14 +45,13 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_synch(PRPQueue& prp_queue);
-
-  void derived_synch_nowait(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue);
+  void test_local_evaluations(PRPQueue& prp_queue);
 
   pid_t create_analysis_process(bool block_flag, bool new_group);
 
   size_t wait_local_analyses();
-  size_t wait_local_analyses_send(int analysis_id);
+  size_t test_local_analyses_send(int analysis_id);
 
   //
   //- Heading: Data

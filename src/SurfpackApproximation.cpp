@@ -590,7 +590,8 @@ sdv_to_realarray(const Pecos::SurrogateDataVars& sdv, RealArray& ra)
     merge_variable_arrays(cv, div, drv, ra);
   else {
     Cerr << "Error: bad parameter set length in SurfpackApproximation::"
-	 << "sdv_to_realarray()." << std::endl;
+	 << "sdv_to_realarray(): " << numVars << " != " << cv.length() << " + "
+	 << div.length() << " + " << drv.length() << "." << std::endl;
     abort_handler(-1);
   }
 }

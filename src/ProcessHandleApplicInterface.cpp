@@ -24,18 +24,17 @@ void ProcessHandleApplicInterface::map_bookkeeping(pid_t pid, int fn_eval_id)
 {
   // store the process & eval ids in a map.  The correspondence in completed
   // process id and fn eval id is then mapped to the appropriate index of
-  // prp_queue in derived_synch_kernel.  Correspondence between evalProcessIdMap
-  // order and beforeSynchCorePRPQueue order cannot be assumed due to the
-  // existence of hybrid parallelism, i.e. ApplicationInterface::serve_asynch().
+  // prp_queue in process_local_evaluation().  Correspondence between
+  // evalProcessIdMap and beforeSynchCorePRPQueue orders cannot be assumed
+  // due to hybrid parallelism, i.e. ApplicationInterface::serve_asynch().
   evalProcessIdMap[pid] = fn_eval_id;
 }
 
 
 void ProcessHandleApplicInterface::
-derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid)
+process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
 {
-  // Convenience function for common code between derived_synch() &
-  // derived_synch_nowait() cases
+  // Common processing code used by {wait,test}_local_evaluations()
 
   // Map pid to fn_eval_id (using evalProcessIdMap[pid] does the wrong thing
   // if the pid key is not found)
@@ -53,7 +52,7 @@ derived_synch_kernel(PRPQueue& prp_queue, const pid_t pid)
   bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
   if (!found) {
     Cerr << "Error: failure in queue lookup within ProcessHandleApplicInterface"
-	 << "::derived_synch_kernel()." << std::endl;
+	 << "::process_local_evaluation()." << std::endl;
     abort_handler(-1);
   }
   Response response = pr_pair.prp_response(); // shallow copy
@@ -429,7 +428,7 @@ void ProcessHandleApplicInterface::serve_analyses_asynch()
     // Step 3: check for any completed jobs and return results to master
     // -----------------------------------------------------------------
     if (num_running)
-      num_running -= wait_local_analyses_send(analysis_id); // virtual fn
+      num_running -= test_local_analyses_send(analysis_id); // virtual fn
 
   } while (analysis_id || num_running);
 }

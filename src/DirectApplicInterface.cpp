@@ -291,7 +291,7 @@ void DirectApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 }
 
 
-void DirectApplicInterface::derived_synch(PRPQueue& prp_queue)
+void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
 {
   Cerr << "Error: asynchronous capability (multiple threads) not installed in"
        << "\nDirectApplicInterface." << std::endl;
@@ -302,7 +302,7 @@ void DirectApplicInterface::derived_synch(PRPQueue& prp_queue)
   bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
   if (!found) {
     Cerr << "Error: failure in queue lookup within DirectApplicInterface::"
-	 << "derived_synch()." << std::endl;
+	 << "wait_local_evaluations()." << std::endl;
     abort_handler(-1);
   }
   int fail_code = 0, id = pr_pair.eval_id();
@@ -328,7 +328,7 @@ void DirectApplicInterface::derived_synch(PRPQueue& prp_queue)
 }
 
 
-void DirectApplicInterface::derived_synch_nowait(PRPQueue& prp_queue)
+void DirectApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 {
   Cerr << "Error: asynchronous capability (multiple threads) not installed in"
        << "\nDirectApplicInterface." << std::endl;

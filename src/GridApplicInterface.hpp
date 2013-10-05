@@ -66,22 +66,19 @@ public:
   void derived_map_asynch(const ParamResponsePair& pair);
 
   ///
-  void derived_synch(PRPQueue& prp_queue)
+  void wait_local_evaluations(PRPQueue& prp_queue)
 	{
   	while (completionSet.empty())
-          derived_synch_kernel(prp_queue);
+          test_local_evaluations(prp_queue);
 	}
 
   ///
-  void derived_synch_nowait(PRPQueue& prp_queue)
-	{
-	derived_synch_kernel(prp_queue);
-	}
+  void test_local_evaluations(PRPQueue& prp_queue);
 
   /** This code provides the derived function used by
    *  ApplicationInterface::serve_analyses_synch().
    */
-  int derived_synchronous_local_analysis(int analysis_id)
+  int synchronous_local_analysis(int analysis_id)
 	{
 	///
 	/// TODO - allow local analyses?????
@@ -95,10 +92,6 @@ protected:
   //
   //- Heading: Methods
   //
-
-  /// Convenience function for common code between derived_synch() &
-  /// derived_synch_nowait()
-  void derived_synch_kernel(PRPQueue& prp_queue);
 
   /// test file(s) for existence based on root_file name 
   bool grid_file_test(const String& root_file);

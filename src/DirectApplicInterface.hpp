@@ -85,10 +85,10 @@ public:
 		   Response& response, int fn_eval_id);
   void derived_map_asynch(const ParamResponsePair& pair);
 
-  void derived_synch(PRPQueue& prp_queue);
-  void derived_synch_nowait(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue);
+  void test_local_evaluations(PRPQueue& prp_queue);
 
-  int  derived_synchronous_local_analysis(int analysis_id);
+  int  synchronous_local_analysis(int analysis_id);
 
   const StringArray& analysis_drivers() const;
 
@@ -208,8 +208,7 @@ protected:
 
 /** This code provides the derived function used by 
     ApplicationInterface::serve_analyses_synch(). */
-inline int DirectApplicInterface::
-derived_synchronous_local_analysis(int analysis_id)
+inline int DirectApplicInterface::synchronous_local_analysis(int analysis_id)
 { 
   analysisDriverIndex = analysis_id-1;
   return derived_map_ac(analysisDrivers[analysisDriverIndex]);
