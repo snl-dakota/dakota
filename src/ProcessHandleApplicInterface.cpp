@@ -450,11 +450,11 @@ void ProcessHandleApplicInterface::check_wait(pid_t pid, int status)
 	 << ":\n  ";
     switch (errno) {
     case ECHILD:
-      Cerr << "The process specified by pid does not exist or is not a child "
-	   << "of the calling process";           break;
+      Cerr << "The process specified by pid does not exist or is not a\n  "
+	   << "child of the calling process";     break;
     case EINTR:
-      Cerr << "WNOHANG was not set and an unblocked signal or a SIGCHLD was "
-	   << "caught";                           break;
+      Cerr << "WNOHANG was not set and an unblocked signal or a SIGCHLD\n  "
+	   << "was caught";                       break;
     case EINVAL:
       Cerr << "The options argument was invalid"; break;
     default:

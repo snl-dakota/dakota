@@ -189,8 +189,6 @@ wait(pid_t process_group_id, std::map<pid_t, int>& process_id_map,
 {
   int status;
 
-  // Test for existence of proc_group_id.  
-
   // wait/test for any completion within the process group.  We prefer this
   // approach for the blocking wait case since it can utilize a system-optimized
   // wait facility that avoids a "busy wait."  But if the last child in the
@@ -276,19 +274,19 @@ void ForkApplicInterface::check_group(int err, pid_t proc_group_id)
 	 << ":\n  ";
     switch (errno) {
     case EACCES:
-      Cerr << "An attempt was made to change the process group ID of one "
-	   << "of the children of the calling process and the child had "
+      Cerr << "An attempt was made to change the process group ID of one\n  "
+	   << "of the children of the calling process and the child had\n  "
 	   << "already performed an exec." << std::endl; break;
     case EINVAL:
       Cerr << "pgid is less than 0." << std::endl; break;
     case EPERM:
-      Cerr << "An attempt was made to move a process into a process group "
-	   << "in a different session, or to change the process group ID "
-	   << "of one of the children of the calling process and the child "
-	   << "was in a different session, or to change the process group "
+      Cerr << "An attempt was made to move a process into a process group\n  "
+	   << "in a different session, or to change the process group ID\n  "
+	   << "of one of the children of the calling process and the child\n  "
+	   << "was in a different session, or to change the process group\n  "
 	   << "ID of a session leader." << std::endl; break;
     case ESRCH:
-      Cerr << "pid is not the calling process and not a child of the "
+      Cerr << "pid is not the calling process and not a child of the\n  "
 	   << "calling process." << std::endl; break;
     default:
       Cerr << std::strerror(errno) << std::endl; break;

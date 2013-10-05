@@ -391,16 +391,20 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       fnLabels = response.function_labels();
   }
   if (outputLevel > SILENT_OUTPUT) {
-    Cout << "\n------------------------------\nBegin Function Evaluation " 
-	 << std::setw(4) << evalIdCntr;
+    if (interfaceId.empty())
+      Cout << "\n---------------------\nBegin ";
+    else
+      Cout << "\n------------------------------\nBegin "
+	   << std::setw(8) << interfaceId << ' ';
+    Cout << "Evaluation " << std::setw(4) << evalIdCntr;
     // This may be more confusing than helpful:
     //if (evalIdRefPt)
     //  Cout << " (local evaluation " << evalIdCntr - evalIdRefPt << ")";
-    Cout << "\n------------------------------\n";
+    if (interfaceId.empty()) Cout << "\n---------------------\n";
+    else Cout << "\n------------------------------\n";
   }
   if (outputLevel > QUIET_OUTPUT)
-    Cout << "Parameters for function evaluation " << evalIdCntr << ":\n"
-	 << vars << '\n';
+    Cout << "Parameters for evaluation " << evalIdCntr << ":\n" << vars << '\n';
 
   response.active_set(set); // responseActiveSet = set for duplicate search
 
@@ -530,8 +534,11 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     if (outputLevel > QUIET_OUTPUT) {
       if (duplicate)
 	Cout << "\nActive response data retrieved from database";
-      else
-	Cout << "\nActive response data for function evaluation " << evalIdCntr;
+      else {
+	Cout << "\nActive response data for ";
+	if (!interfaceId.empty()) Cout << interfaceId << ' ';
+	Cout << "evaluation " << evalIdCntr;
+      }
       Cout << ":\n" << response << std::endl;
     }
   }
@@ -666,9 +673,12 @@ const IntResponseMap& ApplicationInterface::synch()
 
   if (outputLevel > QUIET_OUTPUT) // output completed responses
     for (IntRespMCIter rr_iter = rawResponseMap.begin();
-	 rr_iter != rawResponseMap.end(); ++rr_iter)
-      Cout << "\nActive response data for function evaluation "
-	   << rr_iter->first << ":\n" << rr_iter->second;
+	 rr_iter != rawResponseMap.end(); ++rr_iter) {
+      Cout << "\nActive response data for ";
+      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      Cout << "evaluation " << rr_iter->first
+	   << ":\n" << rr_iter->second;
+    }
 
   return rawResponseMap;
 }
@@ -770,9 +780,11 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
        rr_iter != rawResponseMap.end(); ++rr_iter) {
     int fn_eval_id = rr_iter->first;
     // output completed responses
-    if (outputLevel > QUIET_OUTPUT)
-      Cout << "\nActive response data for function evaluation " << fn_eval_id
-	   << ":\n" << rr_iter->second;
+    if (outputLevel > QUIET_OUTPUT) {
+      Cout << "\nActive response data for ";
+      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      Cout << "evaluation " << fn_eval_id << ":\n" << rr_iter->second;
+    }
     // clean up bookkeeping
     if (coreMappings) {
       PRPQueueIter prp_iter
@@ -2393,7 +2405,7 @@ continuation(const Variables& target_vars, const ActiveSet& set,
 
     if (fail_flag) {
       ++failures;
-      Cout << "\nFunction evaluation failed. Interval halving." << std::endl;
+      Cout << "\nEvaluation failed. Interval halving." << std::endl;
       if (failures > MAX_FAILURES) {
 	Cerr << "\n\nInterval halving limit exceeded in continuation: "
 	     << "aborting..." << std::endl;
@@ -2408,8 +2420,8 @@ continuation(const Variables& target_vars, const ActiveSet& set,
       }
     }
     else {
-      Cout << "\nFunction evaluation succeeded.\nContinuing with current step "
-	   << "size." << std::endl;
+      Cout << "\nEvaluation succeeded.\nContinuing with current step size."
+	   << std::endl;
 
       // Possibly append new continuation evals. to data_pairs list (?)
 
@@ -2440,7 +2452,9 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 {
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
-    Cout << "Evaluation " << fn_eval_id << " has returned from ";
+    if (interfaceId.empty()) Cout << "Evaluation ";
+    else Cout << interfaceId << " evaluation ";
+    Cout << fn_eval_id << " has returned from ";
     if (peer_flag) Cout << "peer server " << server_id+1 << '\n';
     else           Cout << "slave server " << server_id << '\n';
   }
@@ -2471,8 +2485,11 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
     abort_handler(-1);
   }
 
-  if (outputLevel > SILENT_OUTPUT)
-    Cout << "Function evaluation " << fn_eval_id << " has completed\n";
+  if (outputLevel > SILENT_OUTPUT) {
+    if (interfaceId.empty()) Cout << "Evaluation ";
+    else Cout << interfaceId << " evaluation ";
+    Cout << fn_eval_id << " has completed\n";
+  }
 
   rawResponseMap[fn_eval_id] = prp_it->prp_response();
   if (evalCacheFlag)  data_pairs.insert(*prp_it);
@@ -2490,9 +2507,11 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
 void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
 {
   int fn_eval_id = prp_it->eval_id();
-  if (outputLevel > SILENT_OUTPUT)
-    Cout << "Evaluating function evaluation " << fn_eval_id << std::endl;
-
+  if (outputLevel > SILENT_OUTPUT) {
+    Cout << "Performing ";
+    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    Cout << "evaluation " << fn_eval_id << std::endl;
+  }
   rawResponseMap[fn_eval_id] = prp_it->prp_response();
   if (evalCacheFlag)  data_pairs.insert(*prp_it);
   if (restartFileFlag) write_restart << *prp_it;

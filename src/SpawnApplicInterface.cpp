@@ -179,7 +179,7 @@ size_t SpawnApplicInterface::wait_local_analyses()
 	int req;
 	size_t i, j, n, completed = 0;
 
-	if ((h = wait_setup(&evalProcessIdMap, &n))) { // *** BUG?
+	if ((h = wait_setup(&analysisProcessIdMap, &n))) {
 		req = 1;
 		while (wait_for_one(n,h,req,&i)) {
 			GetExitCodeProcess(h[i], &dw);
@@ -221,7 +221,7 @@ size_t SpawnApplicInterface::wait_local_analyses_send(int analysis_id)
 	int rtn_code = 0;
 	size_t i, j, n, completed = 0;
 
-	if ((h = wait_setup(&evalProcessIdMap, &n))) { // *** BUG?
+	if ((h = wait_setup(&analysisProcessIdMap, &n))) {
 		while (wait_for_one(n,h,0,&i)) {
 			GetExitCodeProcess(h[i], &dw);
 			check_wait((pid_t)h[i], (int)dw);

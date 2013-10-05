@@ -584,12 +584,18 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
-    if (peer_flag)
-      Cout << "Peer 1 assigning function evaluation " << fn_eval_id 
-	   << " to peer " << server_id+1 << '\n'; // 2 to numEvalServers
-    else
-      Cout << "Master assigning function evaluation " << fn_eval_id 
-	   << " to server " << server_id << '\n';
+    if (peer_flag) {
+      Cout << "Peer 1 assigning ";
+      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      Cout << "evaluation " << fn_eval_id << " to peer "
+	   << server_id+1 << '\n'; // 2 to numEvalServers
+    }
+    else {
+      Cout << "Master assigning ";
+      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      Cout << "evaluation " << fn_eval_id << " to server "
+	   << server_id << '\n';
+    }
   }
 
   // pre-post nonblocking receives (to prevent any message buffering)
@@ -606,9 +612,12 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 {
   int fn_eval_id = prp_it->eval_id();
-  if (outputLevel > SILENT_OUTPUT)
-    Cout << "Initiating function evaluation " << fn_eval_id << '\n';
- 
+  if (outputLevel > SILENT_OUTPUT) {
+    Cout << "Initiating ";
+    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    Cout << "evaluation " << fn_eval_id << '\n';
+  }
+
   // bcast job to other processors within peer 1 (added for direct plugins)
   if (multiProcEvalFlag)
     broadcast_evaluation(*prp_it);
