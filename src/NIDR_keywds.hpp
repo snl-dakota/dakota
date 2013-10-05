@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1157 distinct keywords (plus 167 aliases) **/
+/** 1158 distinct keywords (plus 167 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1534,12 +1534,13 @@ static KeyWord
 		{"surrogate",8,5,5,1,kw_258,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}
 		},
-	kw_260[5] = {
-		{"annotated",8,0,2,0,0,0.,0.,0,N_rem(true,expDataFileAnnotated)},
-		{"freeform",8,0,2,0,0,0.,0.,0,N_rem(false,expDataFileAnnotated)},
-		{"num_config_variables",0x29,0,3,0,0,0.,0.,0,N_rem(nnintz,numExpConfigVars)},
+	kw_260[6] = {
+		{"annotated",8,0,3,0,0,0.,0.,0,N_rem(true,expDataFileAnnotated)},
+		{"freeform",8,0,3,0,0,0.,0.,0,N_rem(false,expDataFileAnnotated)},
+		{"num_config_variables",0x29,0,4,0,0,0.,0.,0,N_rem(nnintz,numExpConfigVars)},
 		{"num_experiments",0x29,0,1,0,0,0.,0.,0,N_rem(nnintz,numExperiments)},
-		{"num_std_deviations",0x29,0,4,0,0,0.,0.,0,N_rem(nnintz,numExpStdDeviations)}
+		{"num_replicates",13,0,2,0,0,0.,0.,0,N_rem(intL,numReplicates)},
+		{"num_std_deviations",0x29,0,5,0,0,0.,0.,0,N_rem(nnintz,numExpStdDeviations)}
 		},
 	kw_261[6] = {
 		{"nonlinear_equality_scale_types",0x807,0,2,0,0,0.,0.,3,N_rem(strL,nonlinearEqScaleTypes)},
@@ -1560,11 +1561,11 @@ static KeyWord
 		{"upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
 	kw_263[15] = {
-		{"calibration_data_file",11,5,4,0,kw_260,0.,0.,0,N_rem(str,expDataFileName)},
+		{"calibration_data_file",11,6,4,0,kw_260,0.,0.,0,N_rem(str,expDataFileName)},
 		{"calibration_term_scale_types",0x807,0,1,0,0,0.,0.,11,N_rem(strL,primaryRespFnScaleTypes)},
 		{"calibration_term_scales",0x806,0,2,0,0,0.,0.,11,N_rem(RealDL,primaryRespFnScales)},
 		{"calibration_weights",6,0,3,0,0,0.,0.,11,N_rem(RealDL,primaryRespFnWeights)},
-		{"least_squares_data_file",3,5,4,0,kw_260,0.,0.,-4,N_rem(str,expDataFileName)},
+		{"least_squares_data_file",3,6,4,0,kw_260,0.,0.,-4,N_rem(str,expDataFileName)},
 		{"least_squares_term_scale_types",0x807,0,1,0,0,0.,0.,7,N_rem(strL,primaryRespFnScaleTypes)},
 		{"least_squares_term_scales",0x806,0,2,0,0,0.,0.,7,N_rem(RealDL,primaryRespFnScales)},
 		{"least_squares_weights",6,0,3,0,0,0.,0.,7,N_rem(RealDL,primaryRespFnWeights)},

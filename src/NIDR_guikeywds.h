@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1157 distinct keywords (plus 167 aliases) **/
+/** 1158 distinct keywords (plus 167 aliases) **/
 
 static GuiKeyWord
 	kw_1[3] = {
@@ -1639,86 +1639,87 @@ static GuiKeyWord
 		{"surrogate",8,5,5,1,1537,kw_243},
 		{"variables_pointer",11,0,2,0,1527,0,0.,0.,0.,0,"{Variables set pointer} ModelCommands.html#ModelIndControl"}
 		},
-	kw_245[5] = {
-		{"annotated",8,0,2,0,2201,0,0.,0.,0.,0,"{Data file in annotated format} RespCommands.html#RespFnLS"},
-		{"freeform",8,0,2,0,2203,0,0.,0.,0.,0,"{Data file in freeform format} RespCommands.html#RespFnLS"},
-		{"num_config_variables",0x29,0,3,0,2205,0,0.,0.,0.,0,"{Configuration variable columns in file} RespCommands.html#RespFnLS"},
+	kw_245[6] = {
+		{"annotated",8,0,3,0,2203,0,0.,0.,0.,0,"{Data file in annotated format} RespCommands.html#RespFnLS"},
+		{"freeform",8,0,3,0,2205,0,0.,0.,0.,0,"{Data file in freeform format} RespCommands.html#RespFnLS"},
+		{"num_config_variables",0x29,0,4,0,2207,0,0.,0.,0.,0,"{Configuration variable columns in file} RespCommands.html#RespFnLS"},
 		{"num_experiments",0x29,0,1,0,2199,0,0.,0.,0.,0,"{Experiments (rows) in file} RespCommands.html#RespFnLS"},
-		{"num_std_deviations",0x29,0,4,0,2207,0,0.,0.,0.,0,"{Standard deviation columns in file} RespCommands.html#RespFnLS"}
+		{"num_replicates",13,0,2,0,2201,0,0.,0.,0.,0,0,0,"num_experiments"},
+		{"num_std_deviations",0x29,0,5,0,2209,0,0.,0.,0.,0,"{Standard deviation columns in file} RespCommands.html#RespFnLS"}
 		},
 	kw_246[6] = {
-		{"nonlinear_equality_scale_types",0x807,0,2,0,2222,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_scales",0x806,0,3,0,2224,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_targets",6,0,1,0,2220,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"scale_types",0x80f,0,2,0,2223,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"scales",0x80e,0,3,0,2225,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"targets",14,0,1,0,2221,0,0.,0.,0.,0,"{Nonlinear equality targets} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"}
+		{"nonlinear_equality_scale_types",0x807,0,2,0,2224,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"nonlinear_equality_scales",0x806,0,3,0,2226,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"nonlinear_equality_targets",6,0,1,0,2222,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"scale_types",0x80f,0,2,0,2225,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"scales",0x80e,0,3,0,2227,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"targets",14,0,1,0,2223,0,0.,0.,0.,0,"{Nonlinear equality targets} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"}
 		},
 	kw_247[8] = {
-		{"lower_bounds",14,0,1,0,2211,0,0.,0.,0.,0,"{Nonlinear inequality lower bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_lower_bounds",6,0,1,0,2210,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_scale_types",0x807,0,3,0,2214,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_scales",0x806,0,4,0,2216,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_upper_bounds",6,0,2,0,2212,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"scale_types",0x80f,0,3,0,2215,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"scales",0x80e,0,4,0,2217,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"upper_bounds",14,0,2,0,2213,0,0.,0.,0.,0,"{Nonlinear inequality upper bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
+		{"lower_bounds",14,0,1,0,2213,0,0.,0.,0.,0,"{Nonlinear inequality lower bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_lower_bounds",6,0,1,0,2212,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_scale_types",0x807,0,3,0,2216,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_scales",0x806,0,4,0,2218,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_upper_bounds",6,0,2,0,2214,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"scale_types",0x80f,0,3,0,2217,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"scales",0x80e,0,4,0,2219,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"upper_bounds",14,0,2,0,2215,0,0.,0.,0.,0,"{Nonlinear inequality upper bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
 		},
 	kw_248[15] = {
-		{"calibration_data_file",11,5,4,0,2197,kw_245,0.,0.,0.,0,"{Calibration data file name} RespCommands.html#RespFnLS"},
+		{"calibration_data_file",11,6,4,0,2197,kw_245,0.,0.,0.,0,"{Calibration data file name} RespCommands.html#RespFnLS"},
 		{"calibration_term_scale_types",0x807,0,1,0,2190,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"calibration_term_scales",0x806,0,2,0,2192,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"calibration_weights",6,0,3,0,2194,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"least_squares_data_file",3,5,4,0,2196,kw_245},
+		{"least_squares_data_file",3,6,4,0,2196,kw_245},
 		{"least_squares_term_scale_types",0x807,0,1,0,2190,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"least_squares_term_scales",0x806,0,2,0,2192,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"least_squares_weights",6,0,3,0,2194,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"nonlinear_equality_constraints",0x29,6,6,0,2219,kw_246,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnLS"},
-		{"nonlinear_inequality_constraints",0x29,8,5,0,2209,kw_247,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnLS"},
-		{"num_nonlinear_equality_constraints",0x21,6,6,0,2218,kw_246},
-		{"num_nonlinear_inequality_constraints",0x21,8,5,0,2208,kw_247},
+		{"nonlinear_equality_constraints",0x29,6,6,0,2221,kw_246,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnLS"},
+		{"nonlinear_inequality_constraints",0x29,8,5,0,2211,kw_247,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnLS"},
+		{"num_nonlinear_equality_constraints",0x21,6,6,0,2220,kw_246},
+		{"num_nonlinear_inequality_constraints",0x21,8,5,0,2210,kw_247},
 		{"primary_scale_types",0x80f,0,1,0,2191,0,0.,0.,0.,0,"{Calibration scaling types} RespCommands.html#RespFnLS",0,"calibration_terms"},
 		{"primary_scales",0x80e,0,2,0,2193,0,0.,0.,0.,0,"{Calibration scales} RespCommands.html#RespFnLS",0,"calibration_terms"},
 		{"weights",14,0,3,0,2195,0,0.,0.,0.,0,"{Calibration term weights} RespCommands.html#RespFnLS",0,"calibration_terms"}
 		},
 	kw_249[4] = {
-		{"absolute",8,0,2,0,2249},
-		{"bounds",8,0,2,0,2251},
-		{"ignore_bounds",8,0,1,0,2245,0,0.,0.,0.,0,"{Ignore variable bounds} RespCommands.html#RespGradMixed"},
-		{"relative",8,0,2,0,2247}
+		{"absolute",8,0,2,0,2251},
+		{"bounds",8,0,2,0,2253},
+		{"ignore_bounds",8,0,1,0,2247,0,0.,0.,0.,0,"{Ignore variable bounds} RespCommands.html#RespGradMixed"},
+		{"relative",8,0,2,0,2249}
 		},
 	kw_250[10] = {
-		{"central",8,0,6,0,2259,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,4,4,0,2243,kw_249,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
-		{"fd_gradient_step_size",0x406,0,7,0,2260,0,0.,0.,0.001},
-		{"fd_step_size",0x40e,0,7,0,2261,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
-		{"forward",8,0,6,0,2257,0,0.,0.,0.,0,"@"},
-		{"id_analytic_gradients",13,0,2,2,2237,0,0.,0.,0.,0,"{Analytic derivatives function list} RespCommands.html#RespGradMixed"},
-		{"id_numerical_gradients",13,0,1,1,2235,0,0.,0.,0.,0,"{Numerical derivatives function list} RespCommands.html#RespGradMixed"},
-		{"interval_type",8,0,5,0,2255,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
-		{"method_source",8,0,3,0,2241,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
-		{"vendor",8,0,4,0,2253}
+		{"central",8,0,6,0,2261,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"dakota",8,4,4,0,2245,kw_249,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
+		{"fd_gradient_step_size",0x406,0,7,0,2262,0,0.,0.,0.001},
+		{"fd_step_size",0x40e,0,7,0,2263,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
+		{"forward",8,0,6,0,2259,0,0.,0.,0.,0,"@"},
+		{"id_analytic_gradients",13,0,2,2,2239,0,0.,0.,0.,0,"{Analytic derivatives function list} RespCommands.html#RespGradMixed"},
+		{"id_numerical_gradients",13,0,1,1,2237,0,0.,0.,0.,0,"{Numerical derivatives function list} RespCommands.html#RespGradMixed"},
+		{"interval_type",8,0,5,0,2257,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
+		{"method_source",8,0,3,0,2243,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
+		{"vendor",8,0,4,0,2255}
 		},
 	kw_251[2] = {
-		{"fd_hessian_step_size",6,0,1,0,2292},
-		{"fd_step_size",14,0,1,0,2293,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessMixed"}
+		{"fd_hessian_step_size",6,0,1,0,2294},
+		{"fd_step_size",14,0,1,0,2295,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessMixed"}
 		},
 	kw_252[1] = {
-		{"damped",8,0,1,0,2309,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessMixed"}
+		{"damped",8,0,1,0,2311,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessMixed"}
 		},
 	kw_253[2] = {
-		{"bfgs",8,1,1,1,2307,kw_252,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
-		{"sr1",8,0,1,1,2311}
+		{"bfgs",8,1,1,1,2309,kw_252,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
+		{"sr1",8,0,1,1,2313}
 		},
 	kw_254[8] = {
-		{"absolute",8,0,2,0,2297},
-		{"bounds",8,0,2,0,2299},
-		{"central",8,0,3,0,2303,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"forward",8,0,3,0,2301,0,0.,0.,0.,0,"@"},
-		{"id_analytic_hessians",13,0,5,0,2313,0,0.,0.,0.,0,"{Analytic Hessians function list} RespCommands.html#RespHessMixed"},
-		{"id_numerical_hessians",13,2,1,0,2291,kw_251,0.,0.,0.,0,"{Numerical Hessians function list} RespCommands.html#RespHessMixed"},
-		{"id_quasi_hessians",13,2,4,0,2305,kw_253,0.,0.,0.,0,"{Quasi Hessians function list} RespCommands.html#RespHessMixed"},
-		{"relative",8,0,2,0,2295}
+		{"absolute",8,0,2,0,2299},
+		{"bounds",8,0,2,0,2301},
+		{"central",8,0,3,0,2305,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"forward",8,0,3,0,2303,0,0.,0.,0.,0,"@"},
+		{"id_analytic_hessians",13,0,5,0,2315,0,0.,0.,0.,0,"{Analytic Hessians function list} RespCommands.html#RespHessMixed"},
+		{"id_numerical_hessians",13,2,1,0,2293,kw_251,0.,0.,0.,0,"{Numerical Hessians function list} RespCommands.html#RespHessMixed"},
+		{"id_quasi_hessians",13,2,4,0,2307,kw_253,0.,0.,0.,0,"{Quasi Hessians function list} RespCommands.html#RespHessMixed"},
+		{"relative",8,0,2,0,2297}
 		},
 	kw_255[6] = {
 		{"nonlinear_equality_scale_types",0x807,0,2,0,2184,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
@@ -1752,51 +1753,51 @@ static GuiKeyWord
 		{"weights",14,0,4,0,2169,0,0.,0.,0.,0,"{Multi-objective weightings} RespCommands.html#RespFnOpt",0,"objective_functions"}
 		},
 	kw_258[8] = {
-		{"central",8,0,6,0,2259,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,4,4,0,2243,kw_249,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
-		{"fd_gradient_step_size",0x406,0,7,0,2260,0,0.,0.,0.001},
-		{"fd_step_size",0x40e,0,7,0,2261,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
-		{"forward",8,0,6,0,2257,0,0.,0.,0.,0,"@"},
-		{"interval_type",8,0,5,0,2255,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
-		{"method_source",8,0,3,0,2241,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
-		{"vendor",8,0,4,0,2253}
+		{"central",8,0,6,0,2261,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"dakota",8,4,4,0,2245,kw_249,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
+		{"fd_gradient_step_size",0x406,0,7,0,2262,0,0.,0.,0.001},
+		{"fd_step_size",0x40e,0,7,0,2263,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
+		{"forward",8,0,6,0,2259,0,0.,0.,0.,0,"@"},
+		{"interval_type",8,0,5,0,2257,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
+		{"method_source",8,0,3,0,2243,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
+		{"vendor",8,0,4,0,2255}
 		},
 	kw_259[7] = {
-		{"absolute",8,0,2,0,2271},
-		{"bounds",8,0,2,0,2273},
-		{"central",8,0,3,0,2277,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"fd_hessian_step_size",6,0,1,0,2266},
-		{"fd_step_size",14,0,1,0,2267,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessNum"},
-		{"forward",8,0,3,0,2275,0,0.,0.,0.,0,"@"},
-		{"relative",8,0,2,0,2269}
+		{"absolute",8,0,2,0,2273},
+		{"bounds",8,0,2,0,2275},
+		{"central",8,0,3,0,2279,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"fd_hessian_step_size",6,0,1,0,2268},
+		{"fd_step_size",14,0,1,0,2269,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessNum"},
+		{"forward",8,0,3,0,2277,0,0.,0.,0.,0,"@"},
+		{"relative",8,0,2,0,2271}
 		},
 	kw_260[1] = {
-		{"damped",8,0,1,0,2283,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessQuasi"}
+		{"damped",8,0,1,0,2285,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessQuasi"}
 		},
 	kw_261[2] = {
-		{"bfgs",8,1,1,1,2281,kw_260,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
-		{"sr1",8,0,1,1,2285}
+		{"bfgs",8,1,1,1,2283,kw_260,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
+		{"sr1",8,0,1,1,2287}
 		},
 	kw_262[19] = {
-		{"analytic_gradients",8,0,4,2,2231,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
-		{"analytic_hessians",8,0,5,3,2287,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
+		{"analytic_gradients",8,0,4,2,2233,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
+		{"analytic_hessians",8,0,5,3,2289,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
 		{"calibration_terms",0x29,15,3,1,2189,kw_248,0.,0.,0.,0,"{{Calibration (Least squares)} Number of calibration terms} RespCommands.html#RespFnLS"},
 		{"descriptors",15,0,2,0,2159,0,0.,0.,0.,0,"{Response labels} RespCommands.html#RespLabels"},
 		{"id_responses",11,0,1,0,2157,0,0.,0.,0.,0,"{Responses set identifier} RespCommands.html#RespSetId"},
 		{"least_squares_terms",0x21,15,3,1,2188,kw_248},
-		{"mixed_gradients",8,10,4,2,2233,kw_250,0.,0.,0.,0,"{Mixed gradients} RespCommands.html#RespGradMixed"},
-		{"mixed_hessians",8,8,5,3,2289,kw_254,0.,0.,0.,0,"{Mixed Hessians} RespCommands.html#RespHessMixed"},
-		{"no_gradients",8,0,4,2,2229,0,0.,0.,0.,0,"@"},
-		{"no_hessians",8,0,5,3,2263,0,0.,0.,0.,0,"@"},
+		{"mixed_gradients",8,10,4,2,2235,kw_250,0.,0.,0.,0,"{Mixed gradients} RespCommands.html#RespGradMixed"},
+		{"mixed_hessians",8,8,5,3,2291,kw_254,0.,0.,0.,0,"{Mixed Hessians} RespCommands.html#RespHessMixed"},
+		{"no_gradients",8,0,4,2,2231,0,0.,0.,0.,0,"@"},
+		{"no_hessians",8,0,5,3,2265,0,0.,0.,0.,0,"@"},
 		{"num_least_squares_terms",0x21,15,3,1,2188,kw_248},
 		{"num_objective_functions",0x21,11,3,1,2160,kw_257},
-		{"num_response_functions",0x21,0,3,1,2226},
-		{"numerical_gradients",8,8,4,2,2239,kw_258,0.,0.,0.,0,"{Numerical gradients} RespCommands.html#RespGradNum"},
-		{"numerical_hessians",8,7,5,3,2265,kw_259,0.,0.,0.,0,"{Numerical Hessians} RespCommands.html#RespHessNum"},
+		{"num_response_functions",0x21,0,3,1,2228},
+		{"numerical_gradients",8,8,4,2,2241,kw_258,0.,0.,0.,0,"{Numerical gradients} RespCommands.html#RespGradNum"},
+		{"numerical_hessians",8,7,5,3,2267,kw_259,0.,0.,0.,0,"{Numerical Hessians} RespCommands.html#RespHessNum"},
 		{"objective_functions",0x29,11,3,1,2161,kw_257,0.,0.,0.,0,"{{Optimization} Number of objective functions} RespCommands.html#RespFnOpt"},
-		{"quasi_hessians",8,2,5,3,2279,kw_261,0.,0.,0.,0,"{Quasi Hessians} RespCommands.html#RespHessQuasi"},
+		{"quasi_hessians",8,2,5,3,2281,kw_261,0.,0.,0.,0,"{Quasi Hessians} RespCommands.html#RespHessQuasi"},
 		{"response_descriptors",7,0,2,0,2158},
-		{"response_functions",0x29,0,3,1,2227,0,0.,0.,0.,0,"{{Generic responses} Number of response functions} RespCommands.html#RespFnGen"}
+		{"response_functions",0x29,0,3,1,2229,0,0.,0.,0.,0,"{{Generic responses} Number of response functions} RespCommands.html#RespFnGen"}
 		},
 	kw_263[1] = {
 		{"method_list",15,0,1,1,37,0,0.,0.,0.,0,"{List of methods} StratCommands.html#StratHybrid"}

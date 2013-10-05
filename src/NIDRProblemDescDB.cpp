@@ -5522,7 +5522,8 @@ static IntList
 	MP_(idAnalyticHessians),
 	MP_(idNumericalGrads),
 	MP_(idNumericalHessians),
-	MP_(idQuasiHessians);
+	MP_(idQuasiHessians),
+        MP_(numReplicates);
 
 static RealVector
 	MP_(expConfigVars),

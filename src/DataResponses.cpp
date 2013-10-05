@@ -20,9 +20,10 @@ namespace Dakota {
 DataResponsesRep::DataResponsesRep(): numObjectiveFunctions(0),
   numNonlinearIneqConstraints(0), numNonlinearEqConstraints(0),
   numLeastSqTerms(0), numResponseFunctions(0), numExperiments(1),
-  numExpConfigVars(0), numExpStdDeviations(0), expDataFileAnnotated(true),
-  ignoreBounds(false), centralHess(false), methodSource("dakota"),
-  intervalType("forward"), fdGradStepType("relative"), fdHessStepType("relative"), 
+  numReplicates(1), numExpConfigVars(0), numExpStdDeviations(0), 
+  expDataFileAnnotated(true), ignoreBounds(false), centralHess(false), 
+  methodSource("dakota"), intervalType("forward"), 
+  fdGradStepType("relative"), fdHessStepType("relative"), 
   referenceCount(1)
 { }
 
@@ -40,7 +41,7 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
-    << numExperiments << numExpConfigVars << numExpStdDeviations
+    << numExperiments << numReplicates << numExpConfigVars << numExpStdDeviations
     << expConfigVars << expObservations << expStdDeviations << expDataFileName
     << expDataFileAnnotated
     // derivative settings
@@ -65,7 +66,7 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> primaryRespFnScaleTypes >> primaryRespFnScales >> nonlinearIneqScaleTypes
     >> nonlinearIneqScales >> nonlinearEqScaleTypes >> nonlinearEqScales 
     // experimental data
-    >> numExperiments >> numExpConfigVars >> numExpStdDeviations
+    >> numExperiments >> numReplicates >> numExpConfigVars >> numExpStdDeviations
     >> expConfigVars >> expObservations >> expStdDeviations >> expDataFileName
     >> expDataFileAnnotated
     // derivative settings
@@ -90,7 +91,7 @@ void DataResponsesRep::write(std::ostream& s) const
     << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
-    << numExperiments << numExpConfigVars << numExpStdDeviations
+    << numExperiments << numReplicates << numExpConfigVars << numExpStdDeviations
     << expConfigVars << expObservations << expStdDeviations << expDataFileName
     << expDataFileAnnotated
     // derivative settings

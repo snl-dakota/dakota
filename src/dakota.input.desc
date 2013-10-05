@@ -2236,6 +2236,7 @@ TAG "responses/calibration_terms/calibration_data_file"
 TAG "responses/calibration_terms/calibration_data_file/num_experiments"
 	DESC "{Experiments (rows) in file} RespCommands.html#RespFnLS"
 
+TAG "responses/calibration_terms/calibration_data_file/num_replicates"
 TAG "responses/calibration_terms/calibration_data_file/annotated"
 	DESC "{Data file in annotated format} RespCommands.html#RespFnLS"
 

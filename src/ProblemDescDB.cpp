@@ -1537,7 +1537,8 @@ const IntList& ProblemDescDB::get_il(const String& entry_name) const
 	{"gradients.mixed.id_numerical", P idNumericalGrads},
 	{"hessians.mixed.id_analytic", P idAnalyticHessians},
 	{"hessians.mixed.id_numerical", P idNumericalHessians},
-	{"hessians.mixed.id_quasi", P idQuasiHessians}};
+	{"hessians.mixed.id_quasi", P idQuasiHessians},
+	{"num_replicates", P numReplicates}};
     #undef P
 
     KW<IntList, DataResponsesRep> *kw;

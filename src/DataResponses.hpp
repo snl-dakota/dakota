@@ -115,8 +115,11 @@ public:
 
   // experimental data (for least squares and Bayesian algorithms)
 
-  /// number of rows of experimental data (replicates or distinct experiments)
+  /// number of distinct experiments in experimental data
   size_t numExperiments;
+  /// number of replicates in experimental data (e.g. one experiment 
+  /// run many times at the same configuration gives replicates)
+  IntList numReplicates;
   /// number of experimental configuration vars (state variables) in
   /// each row of data
   size_t numExpConfigVars;
