@@ -11,8 +11,8 @@ set( DAKOTA_HAVE_MPI OFF
 # WJB - ToDo:  move these settings to a proper host-specific location
 
 # Path to installed Boost
-set (BOOST_ROOT "C:/sems/boost/1.54.0" CACHE PATH
-     "Use SEMS installed Boost 1.54.0")
+#set (BOOST_ROOT "C:/sems/boost/1.54.0" CACHE PATH
+#     "Use SEMS installed Boost 1.54.0")
 
 # Path to lapack-config.cmake in the installed location
 set( LAPACK_DIR "C:/sems/lapack/3.4.2/lib/cmake/lapack-3.4.2"
