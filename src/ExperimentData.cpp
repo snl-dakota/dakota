@@ -51,7 +51,7 @@ read_historical_data(const std::string& expDataFileName,
   size_t num_cols = numExpConfigVars + numFunctions + numExpStdDeviationsRead;
 
   TabularIO::read_data_tabular(expDataFileName, context_message, 
-			       experimental_data, numExperiments,  num_cols, 
+			       experimental_data, total_num_rows ,  num_cols, 
 			       expDataFileAnnotated);
 
   // Get views of the data in 3 matrices for convenience
