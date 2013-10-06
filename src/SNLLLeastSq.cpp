@@ -593,10 +593,11 @@ void SNLLLeastSq::post_run(std::ostream& s)
   // For LeastSq methods, always report the residuals
   // A DB lookup needs to have the data differenced off from the user response
   if (obsDataFlag) {
-    size_t num_experiments = obsData.numRows();
+    //size_t num_experiments = obsData.numRows();
     for (size_t i=0; i<numLeastSqTerms; ++i)
-      for (size_t j=0; j<num_experiments; ++j)
-        best_fns[i] -= obsData(j,i);
+      for (size_t j=0; j<numExperiments; ++j)
+        for (size_t k=0; k<numReplicates(j); ++k)
+          best_fns[i] -= expData.scalar_data(i,j,k);
   }
 
   bestResponseArray.front().function_values(best_fns);

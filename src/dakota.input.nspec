@@ -1501,7 +1501,8 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 #  	    |
   	    ( calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,expDataFileName)}
               [ num_experiments INTEGER >= 0 {N_rem(nnintz,numExperiments)} ]
-              [ num_replicates INTEGERLIST LEN num_experiments {N_rem(intL,numReplicates)} ]
+#              [ num_replicates INTEGERLIST LEN num_experiments {N_rem(ivec,numReplicates)} ]
+              [ num_replicates INTEGER >=0 {N_rem(nnintz,numReplicates)} ]
               [ annotated {N_rem(true,expDataFileAnnotated)} | 
                 freeform  {N_rem(false,expDataFileAnnotated)} 
                 ]

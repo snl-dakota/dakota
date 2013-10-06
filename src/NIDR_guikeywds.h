@@ -1644,7 +1644,7 @@ static GuiKeyWord
 		{"freeform",8,0,3,0,2205,0,0.,0.,0.,0,"{Data file in freeform format} RespCommands.html#RespFnLS"},
 		{"num_config_variables",0x29,0,4,0,2207,0,0.,0.,0.,0,"{Configuration variable columns in file} RespCommands.html#RespFnLS"},
 		{"num_experiments",0x29,0,1,0,2199,0,0.,0.,0.,0,"{Experiments (rows) in file} RespCommands.html#RespFnLS"},
-		{"num_replicates",13,0,2,0,2201,0,0.,0.,0.,0,0,0,"num_experiments"},
+		{"num_replicates",0x29,0,2,0,2201},
 		{"num_std_deviations",0x29,0,5,0,2209,0,0.,0.,0.,0,"{Standard deviation columns in file} RespCommands.html#RespFnLS"}
 		},
 	kw_246[6] = {

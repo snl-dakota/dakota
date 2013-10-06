@@ -313,38 +313,43 @@ bool Minimizer::data_transform_model(bool weight_flag)
     Cout << "Initializing data transformation" << std::endl;
   
   // These may be promoted to members once we use state vars / sigma
-  size_t num_experiments = probDescDB.get_sizet("responses.num_experiments");
+  numExperiments = probDescDB.get_sizet("responses.num_experiments");
+  //numReplicates = probDescDB.get_iv("responses.num_replicates");
+  size_t num_replicates = probDescDB.get_sizet("responses.num_replicates");
+  numReplicates.resize(numExperiments);
+  for (size_t i=0; i<numExperiments; i++) 
+    numReplicates(i)=num_replicates;
   size_t num_config_vars_read = 
     probDescDB.get_sizet("responses.num_config_vars");
   size_t num_sigma_read = 
     probDescDB.get_sizet("responses.num_std_deviations");
 
-  if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
-    Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
-	 << "only first will be used." << std::endl;
+  //if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
+  //  Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
+  //	 << "only first will be used." << std::endl;
   if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
     Cout << "\nWarning (least squares): experimental_config_variables " 
 	 << "will be read from file, but ignored." << std::endl;
-
   bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
   bool calc_sigma_from_data = true; //calculate sigma if not provided 
   expData.load_scalar(obsDataFilename, "Least Squares",
-                      num_experiments,
+                      numExperiments, numReplicates,
                       num_config_vars_read, numFunctions, num_sigma_read,
                       annotated, calc_sigma_from_data ,
                       outputLevel);
   // copy the y portion of the data to obsData
-  obsData.reshape(num_experiments, numUserPrimaryFns);
-  for (int j = 0; j < num_experiments; ++j) {
-    for (int y_ind = 0; y_ind < numUserPrimaryFns; ++y_ind) {
-      obsData(j,y_ind) = expData.scalar_data(y_ind,j,0);//need to handle replicates
-    }
-  }
+  //obsData.reshape(num_experiments, numUserPrimaryFns);
+  //for (int j = 0; j < num_experiments; ++j) {
+  //  for (int y_ind = 0; y_ind < numUserPrimaryFns; ++y_ind) {
+  //    obsData(j,y_ind) = expData.scalar_data(y_ind,j,0);//need to handle replicates
+  //  }
+  //}
   if (outputLevel >= VERBOSE_OUTPUT) {
     Cout << "\nUsing calibration data from " << obsDataFilename << ":\n";
-    for (int j = 0; j < num_experiments; j++)
-      for (int y_ind = 0; y_ind < numUserPrimaryFns; y_ind++) 
-        Cout <<  obsData(j,y_ind) << '\n';
+    for (int y_ind = 0; y_ind < numUserPrimaryFns; y_ind++) 
+      for (int j = 0; j < numExperiments; j++)
+        for (int k = 0; k < numReplicates(j); k++) 
+        Cout <<  expData.scalar_data(y_ind,j,k) << '\n';
     Cout << std::endl;
   }
   // weight the terms with sigma from the file if active
@@ -385,8 +390,11 @@ bool Minimizer::data_transform_model(bool weight_flag)
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
   
-  size_t i,j,temp_counter;
-  int total_calib_terms = num_experiments * numUserPrimaryFns;
+  size_t i,j,total_num_rows=0,total_calib_terms=0,temp_counter=0;
+  for (j=0; j<numExperiments; j++) 
+    total_num_rows += numReplicates(j);
+  total_calib_terms=total_num_rows*numUserPrimaryFns;
+  Cout << "total calibration terms " << total_calib_terms;
   Sizet2DArray var_map_indices(numContinuousVars), 
     primary_resp_map_indices(total_calib_terms), 
     secondary_resp_map_indices(numNonlinearConstraints);
@@ -407,8 +415,8 @@ bool Minimizer::data_transform_model(bool weight_flag)
     nonlinear_resp_map[i][0] = false;
   }
   for (i=0; i<numUserPrimaryFns; i++) {
-    for (j=0; j<num_experiments; j++) {
-      temp_counter = i*num_experiments+j;
+    for (j=0; j<total_num_rows; j++) {
+      temp_counter = i*total_num_rows+j;
       primary_resp_map_indices[temp_counter][0] = i;
     }
   }
@@ -421,7 +429,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
 
   void (*vars_recast) (const Variables&, Variables&) = NULL;
   void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = 
-    (num_experiments>1) ? replicate_set_recast : NULL;
+    (total_num_rows>1) ? replicate_set_recast : NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
 			   const Response&, Response&)
     = primary_resp_differencer;
@@ -443,14 +451,14 @@ bool Minimizer::data_transform_model(bool weight_flag)
   bool recurse_flag = false;
   const RealVector& submodel_weights = 
     iteratedModel.subordinate_model().primary_response_fn_weights();
-  if (num_experiments <= 1) {
+  if (numExperiments <= 1) {
     iteratedModel.primary_response_fn_weights(submodel_weights);
   } 
   else { 
     RealVector recast_weights(total_calib_terms);
     for (i=0; i<numUserPrimaryFns; i++) {
-      for (j=0; j<num_experiments; j++) {
-        recast_weights(i*num_experiments+j)=submodel_weights(i);
+      for (j=0; j<total_num_rows; j++) {
+        recast_weights(i*total_num_rows+j)=submodel_weights(i);
       }
     }
     iteratedModel.primary_response_fn_weights(recast_weights);
@@ -988,31 +996,39 @@ data_difference_core(const Response& raw_response, Response& residual_response)
   const RealVector& fn_vals = raw_response.function_values();
   RealVector current_fn_gradient(numContinuousVars);
   RealSymMatrix current_fn_hessian(numContinuousVars);
-  size_t num_experiments = asv.size()/raw_response.active_set_request_vector().size();
-  //size_t num_experiments = probDescDB.get_sizet("responses.num_experiments");
+  size_t counter, total_num_rows = 0; 
+  for (size_t j=0; j<numExperiments; j++) 
+    total_num_rows += numReplicates(j);
+  //size_t num_experiments = asv.size()/raw_response.active_set_request_vector().size();
   //residual_response.update(raw_response);
   for (size_t i=0; i<minimizerInstance->numUserPrimaryFns; i++) {
-    if (asv[i] & 1) 
-      for (size_t j = 0; j < num_experiments; ++j)
-        residual_response.function_value(fn_vals[i] - 
-				       minimizerInstance->obsData(j,i),i*num_experiments+j);
+    if (asv[i] & 1) {
+      counter = 0;
+      for (size_t j = 0; j < numExperiments; ++j) {
+        for (size_t k = 0; k < numReplicates(j); ++k) {
+          residual_response.function_value(fn_vals[i] - 
+				       minimizerInstance->expData.scalar_data(i,j,k),i*total_num_rows+counter);
+          counter++;
+        }
+      }
+    }
     if (asv[i] & 2) {
       current_fn_gradient=raw_response.function_gradient_copy(i);
       Cout << "current_fn_gradient " << current_fn_gradient;
-      for (size_t j = 0; j < num_experiments; ++j)
-        residual_response.function_gradient(current_fn_gradient, i*num_experiments+j);
+      for (size_t j = 0; j < total_num_rows; ++j)
+        residual_response.function_gradient(current_fn_gradient, i*total_num_rows+j);
     }
     if (asv[i] & 4) {
       current_fn_hessian=raw_response.function_hessian(i);
       Cout << "current_fn_hessian " << current_fn_hessian;
-      for (size_t j = 0; j < num_experiments; ++j)
-        residual_response.function_hessian(current_fn_hessian, i*num_experiments+j); 
+      for (size_t j = 0; j < total_num_rows; ++j)
+        residual_response.function_hessian(current_fn_hessian, i*total_num_rows+j); 
     }
     functions_req = true;
   }
 
   if (outputLevel > NORMAL_OUTPUT) {
-    for (size_t i=0; i<10; i++) {
+    for (size_t i=0; i<total_num_rows; i++) {
       if (asv[i] & 1) 
         Cout << " residual_response function " << i << residual_response.function_value(i) << '\n';
       if (asv[i] & 2) 

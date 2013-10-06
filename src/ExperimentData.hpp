@@ -22,18 +22,21 @@
 
 namespace Dakota {
 
+using boost::multi_array;
+using boost::extents;
 // free function for now; to be encapsulated
 /// Read data in historical format into x, y, sigma matrices
 void read_historical_data(const std::string& expDataFileName,
 			  const std::string& context_message,
 			  size_t numExperiments,
+			  IntVector& numReplicates,
 			  size_t numExpConfigVars,
 			  size_t numFunctions,
 			  size_t numExpStdDeviationsRead,
 			  bool expDataFileAnnotated,
 			  bool calc_sigma_from_data,
 			  RealMatrix& xObsData,
-			  RealMatrix& yObsData,
+                          RealMatrixArray& yObsData,
 			  RealMatrix& yStdData);
   
 // special values for sigma_type 
@@ -197,6 +200,7 @@ public:
   void load_scalar(const std::string& expDataFilename,
 		   const std::string& context_message,
 		   size_t numExperiments,
+		   IntVector& numReplicates,
 		   size_t numExpConfigVars,
 		   size_t numFunctions,
 		   size_t numExpStdDeviationsRead,

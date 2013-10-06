@@ -212,11 +212,13 @@ protected:
   String obsDataFilename;
   /// flag indicating whether user-supplied data is active
   bool obsDataFlag;
-  /// storage for user-supplied data for computing residuals
-  RealMatrix obsData;
   /// Container for experimental data to which to calibrate model 
   /// using least squares or other formulations which minimize SSE
   ExperimentData expData;
+  /// number of experiments
+  size_t numExperiments; 
+  /// number of replicates
+  IntVector numReplicates; 
 
   // scaling data follow 
   bool       scaleFlag;              ///< flag for overall scaling status

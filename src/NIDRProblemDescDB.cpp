@@ -5522,8 +5522,7 @@ static IntList
 	MP_(idAnalyticHessians),
 	MP_(idNumericalGrads),
 	MP_(idNumericalHessians),
-	MP_(idQuasiHessians),
-        MP_(numReplicates);
+	MP_(idQuasiHessians);
 
 static RealVector
 	MP_(expConfigVars),
@@ -5587,6 +5586,7 @@ static size_t
 	MP_(numNonlinearEqConstraints),
 	MP_(numNonlinearIneqConstraints),
 	MP_(numObjectiveFunctions),
+	MP_(numReplicates),
 	MP_(numResponseFunctions);
 
 #undef MP2

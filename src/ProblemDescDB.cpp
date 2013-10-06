@@ -1399,6 +1399,17 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if ((kw = (KW<IntVector, DataMethodRep>*)Binsearch(IVdme, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
   }
+// else if ((L = Begins(entry_name, "responses."))) {
+//	if (dbRep->responsesDBLocked)
+//		Locked_db();
+//    #define P &DataResponsesRep::
+//    static KW<IntVector, DataResponsesRep> IVdme[] = {	// must be sorted
+//	{"num_replicates", P numReplicates}};
+//    #undef P
+//    KW<IntVector, DataResponsesRep> *kw;
+//    if ((kw = (KW<IntVector, DataResponsesRep>*)Binsearch(IVdme, L)))
+//	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
+//  }
   Bad_name(entry_name, "get_iv");
   return abort_handler_t<const IntVector&>(-1);
 }
@@ -1537,8 +1548,7 @@ const IntList& ProblemDescDB::get_il(const String& entry_name) const
 	{"gradients.mixed.id_numerical", P idNumericalGrads},
 	{"hessians.mixed.id_analytic", P idAnalyticHessians},
 	{"hessians.mixed.id_numerical", P idNumericalHessians},
-	{"hessians.mixed.id_quasi", P idQuasiHessians},
-	{"num_replicates", P numReplicates}};
+	{"hessians.mixed.id_quasi", P idQuasiHessians}};
     #undef P
 
     KW<IntList, DataResponsesRep> *kw;
@@ -2319,6 +2329,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"nonlinear_equality_constraints", P numNonlinearEqConstraints},
 	{"nonlinear_inequality_constraints", P numNonlinearIneqConstraints},
 	{"objective_functions", P numObjectiveFunctions},
+	{"replicates", P numReplicates},
 	{"response_functions", P numResponseFunctions},
 	{"std_deviations", P numExpStdDeviations}};
     #undef P

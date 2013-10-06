@@ -1539,7 +1539,7 @@ static KeyWord
 		{"freeform",8,0,3,0,0,0.,0.,0,N_rem(false,expDataFileAnnotated)},
 		{"num_config_variables",0x29,0,4,0,0,0.,0.,0,N_rem(nnintz,numExpConfigVars)},
 		{"num_experiments",0x29,0,1,0,0,0.,0.,0,N_rem(nnintz,numExperiments)},
-		{"num_replicates",13,0,2,0,0,0.,0.,0,N_rem(intL,numReplicates)},
+		{"num_replicates",0x29,0,2,0,0,0.,0.,0,N_rem(nnintz,numReplicates)},
 		{"num_std_deviations",0x29,0,5,0,0,0.,0.,0,N_rem(nnintz,numExpStdDeviations)}
 		},
 	kw_261[6] = {

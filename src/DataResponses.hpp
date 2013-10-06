@@ -119,7 +119,8 @@ public:
   size_t numExperiments;
   /// number of replicates in experimental data (e.g. one experiment 
   /// run many times at the same configuration gives replicates)
-  IntList numReplicates;
+  //IntVector numReplicates;
+  size_t numReplicates;
   /// number of experimental configuration vars (state variables) in
   /// each row of data
   size_t numExpConfigVars;
