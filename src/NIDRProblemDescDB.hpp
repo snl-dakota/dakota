@@ -161,6 +161,7 @@ public:
   KWH(resp_RealL);
   KWH(resp_false);
   KWH(resp_intL);
+  KWH(resp_ivec);
   KWH(resp_lit);
   KWH(resp_nnintz);
   KWH(resp_start);

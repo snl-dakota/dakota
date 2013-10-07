@@ -313,12 +313,27 @@ bool Minimizer::data_transform_model(bool weight_flag)
     Cout << "Initializing data transformation" << std::endl;
   
   // These may be promoted to members once we use state vars / sigma
+  // TODO: need better validation of these sizes and data with error msgs
   numExperiments = probDescDB.get_sizet("responses.num_experiments");
-  //numReplicates = probDescDB.get_iv("responses.num_replicates");
-  size_t num_replicates = probDescDB.get_sizet("responses.num_replicates");
-  numReplicates.resize(numExperiments);
-  for (size_t i=0; i<numExperiments; i++) 
-    numReplicates(i)=num_replicates;
+  numReplicates = probDescDB.get_iv("responses.num_replicates");
+  if (numReplicates.length() != numExperiments) {
+    if (numReplicates.length() == 0) {
+      numReplicates.resize(numExperiments);
+      // default is 1 replicate
+      numReplicates = 1;
+    }
+    // expand replicates for each experiment, if needed
+    // resize should preserve zeroth entry
+    else if (numReplicates.length() == 1) {
+      numReplicates.resize(numExperiments);
+      for (size_t i=1; i<numExperiments; ++i) 
+	numReplicates[i] = numReplicates[0];
+    }
+    else {
+      Cerr << "Error in replicate length" << std::endl;
+      abort_handler(-1);
+    }
+  }
   size_t num_config_vars_read = 
     probDescDB.get_sizet("responses.num_config_vars");
   size_t num_sigma_read = 

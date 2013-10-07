@@ -1361,6 +1361,19 @@ resp_intL(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+resp_ivec(const char *keyname, Values *val, void **g, void *v)
+{
+  DataResponsesRep *dr = (*(Resp_Info**)g)->dr;
+  IntVector *iv = &(dr->**(IntVector DataResponsesRep::**)v);
+  size_t i, n = val->n;
+  iv->sizeUninitialized(n);
+
+  int *z = val->i;
+  for(i = 0; i < n; i++)
+    (*iv)[i] = z[i];
+}
+
+void NIDRProblemDescDB::
 resp_lit(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Resp_Info**)g)->dr->*((Resp_mp_lit*)v)->sp = ((Resp_mp_lit*)v)->lit;
@@ -5524,6 +5537,9 @@ static IntList
 	MP_(idNumericalHessians),
 	MP_(idQuasiHessians);
 
+static IntVector
+	MP_(numReplicates);
+
 static RealVector
 	MP_(expConfigVars),
 	MP_(expObservations),
@@ -5586,7 +5602,6 @@ static size_t
 	MP_(numNonlinearEqConstraints),
 	MP_(numNonlinearIneqConstraints),
 	MP_(numObjectiveFunctions),
-	MP_(numReplicates),
 	MP_(numResponseFunctions);
 
 #undef MP2
