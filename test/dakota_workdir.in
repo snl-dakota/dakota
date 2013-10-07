@@ -20,7 +20,9 @@
 # * asynch vs. synch
 # * Test with trydir/subdir for workdir (currently requires mkdir trydir first)
 # * Get autotagging working and test
-# * Parallel testing: blocked as doesn't seem to find driver in pwd
+# * Parallel testing: blocked for test > 1 as doesn't seem to find driver in pwd
+
+# p0=3,p1=2
 
 method
   multidim_parameter_study		
@@ -34,12 +36,12 @@ variables
 
 interface
 # This is masking a problem on Mac, where tests 4 and 6 don't work with fork
-  system	#0,#2,#4,#6,#8
-#  fork		#1,#3,#5,#7,#9
+  system	#0,#2,#4,#6,#8,#p0
+#  fork		#1,#3,#5,#7,#9,#p1
     # Testing workdir without concurrent evaluations is kind of silly
-#    asynchronous evaluation_concurrency = 2	     	     	#1,#2,#9
-    analysis_driver = 'dakota_workdir.sh'			#0
-#    analysis_driver = 'dakota_workdir.sh tag'			#1
+#    asynchronous evaluation_concurrency = 2	     	     	#1,#2,#9,#p1
+    analysis_driver = 'dakota_workdir.sh'			#0,#p0
+#    analysis_driver = 'dakota_workdir.sh tag'			#1,#p1
 #    analysis_driver = 'dakota_workdir.sh tag_save' 		#2
 #    analysis_driver = 'dakota_workdir.sh templatefiles' 	#3
 #    analysis_driver = 'dakota_workdir.sh templatedir' 		#4
@@ -51,7 +53,7 @@ interface
 
     work_directory
       named 'trydir'
-#	directory_tag						#1,#2,#9
+#	directory_tag						#1,#2,#9,#p1
 #	directory_save  					#2,#9
 # 	template_files = 'dakota_workdir.root.dat' 		#3,#5
 # 	template_directory = 'dakota_workdir.templatedir'	#4,#6
