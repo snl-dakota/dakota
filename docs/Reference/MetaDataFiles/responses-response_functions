@@ -12,7 +12,7 @@ optimization and least squares algorithms, the generic response
 function data set need not have a specific interpretation and the user
 is free to define whatever functional form is convenient. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 This type of data set is used by uncertainty

@@ -1,0 +1,30 @@
+Blurb::
+Do not respect bounds when computing gradients or Hessians
+Description::
+When %Dakota computes gradients or Hessians by finite differences and the
+variables in question have bounds, it by default chooses finite-differencing
+steps that keep the variables within their specified bounds. Older versions
+of %Dakota generally ignored bounds when computing finite differences.
+To restore the older behavior, one can add keyword <tt>ignore_bounds</tt>
+to the <tt>response</tt> specification when <tt>method_source dakota</tt>
+(or just <tt>dakota</tt>) is also specified.
+
+In forward difference or backward difference computations, honoring
+bounds is straightforward.
+
+To honor bounds when approximating \f$\partial f / \partial x_i\f$, i.e., component \f$i\f$
+of the gradient of \f$f\f$, by central differences, %Dakota chooses two steps
+\f$h_1\f$ and \f$h_2\f$ with \f$h_1 \ne h_2\f$, such that \f$x + h_1 e_i\f$
+and \f$x + h_2 e_i\f$ both satisfy the bounds, and then computes
+\f[
+\frac{\partial f}{\partial x_i} \cong
+\frac{h_2^2(f_1 - f_0) - h_1^2(f_2 - f_0)}{h_1 h_2 (h_2 - h_1)} ,
+\f]
+with \f$f_0 = f(x)\f$, \f$f_1 = f(x + h_1 e_i)\f$, and
+\f$f_2 = f(x + h_2 e_i)\f$.
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

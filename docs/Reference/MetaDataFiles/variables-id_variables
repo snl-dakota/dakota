@@ -3,12 +3,9 @@ Give the block a name, in case of multiple variables blocks
 Description::
 The optional set identifier specification uses the keyword \c
 id_variables to input a unique string for use in identifying a
-particular variables set.  A model can then identify the use of this
+particular variables set. A model can then identify the use of this
 variables set by specifying the same string in its \c
-variables_pointer specification (see \ref ModelIndControl). For
-example, a model whose specification contains 
-<tt>variables_pointer = 'V1'</tt> will use a variables specification 
-containing the set identifier <tt>id_variables = 'V1'</tt>.
+variables_pointer specification (see \ref model-variables_pointer).
 
 If the \c id_variables specification is omitted, a particular variables
 set will be used by a model only if that model omits specifying a \c 
@@ -21,6 +18,11 @@ case.
 
 Topics::	block_identifier, not_yet_reviewed
 Examples::
+For
+example, a model whose specification contains 
+<tt>variables_pointer = 'V1'</tt> will use a variables specification 
+containing the set identifier <tt>id_variables = 'V1'</tt>.
+
 Theory::
 Faq::
-See_Also::	
+See_Also::	model-variables_pointer

@@ -4,7 +4,9 @@ Description::
 A calibration data set is specified using \c calibration_terms and
 optional keywords for weighting/scaling, data, and
 constraints. Each of the calibration terms is a residual to
-be driven toward zero
+be driven toward zero.
+
+<b> Constraints </b>
 
 The keywords \c nonlinear_inequality_constraints, and \c nonlinear_equality_constraints 
 specify the number of nonlinear inequality
@@ -17,32 +19,23 @@ Any linear constraints present in an application need only be input to
 an optimizer at start up and do not need to be part of the data
 returned on every function evaluation. These are therefore specified in the method block.
 
-The \c primary_scale_types specification includes strings
-specifying the scaling type for each residual term in methods that
-support scaling, when scaling is enabled (see \ref MethodIndControl
-for details). Each entry in \c primary_scale_types may be
-selected from <tt>'none'</tt>, <tt>'value'</tt>, or <tt>'log'</tt>, to
-select no, characteristic value, or logarithmic scaling, respectively.
-Automatic scaling is not available for calibration terms. If a single
-string is specified it will apply to each least squares terms. Each
-entry in \c calibration_term_scales may be a user-specified nonzero
-characteristic value to be used in scaling each term. These values
-are ignored for scaling type <tt>'none'</tt>, required for
-<tt>'value'</tt>, and optional for <tt>'log'</tt>. If a single real
-value is specified it will apply to each term. The \c
-weights specification provides a means to specify a
-relative emphasis among the vector of squared residuals through
-multiplication of these squared residuals by a vector of weights: \f[f
-= \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^M_i - y^O_i)^2\f]
-If characteristic value scaling is additionally specified, then it is
+<b> Optional Keywords </b>
+
+The optional keywords relate to scaling responses 
+(for better numerical results),
+dealing with multiple residuals, and importing data.
+
+If characteristic value scaling is specified, then it is
 applied to each residual prior to squaring: \f[f = \sum_{i=1}^{n} w_i
-(\frac{y^M_i - y^O_i}{s_i})^2\f] And in the case where experimental
+(\frac{y^M_i - y^O_i}{s_i})^2\f] 
+
+In the case where experimental
 data uncertainties are supplied, then the weights are automatically
 defined to be the inverse of the experimental variance: \f[f =
 \sum_{i=1}^{n} \frac{1}{\sigma^2_i} (\frac{y^M_i - y^O_i}{s_i})^2\f]
 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 These types of problems are commonly encountered

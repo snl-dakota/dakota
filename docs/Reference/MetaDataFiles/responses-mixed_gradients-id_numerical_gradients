@@ -9,7 +9,7 @@ the total number of functions, must appear once and only once within
 the union of the \c id_analytic_gradients and \c
 id_numerical_gradients lists. 
 
-Topics::	objective_function_pointer, not_yet_reviewed
+Topics::	objective_function_pointer
 Examples::
 Theory::
 Faq::

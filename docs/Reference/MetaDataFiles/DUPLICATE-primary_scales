@@ -1,11 +1,17 @@
 Blurb::
-Choose how much each response is scaled
+Supply a characteristic value to scale each reponse
 Description::
 Each entry in
 \c primary_scales may be a user-specified nonzero characteristic value
-to be used in scaling each response. These values are
-ignored for scaling type \c none, required for
-\c value, and optional for \c log. If a single real
+to be used in scaling each response. 
+
+Behavior depends on the value of \c primary_scale_type:
+\li <tt>scale_type</tt> - behavior of \c primary_scales
+\li <tt>'none'</tt>     - ignored
+\li <tt>'value'</tt>    - required
+\li <tt>'log'</tt>     - optional
+
+If a single real
 value is specified it will apply to each function. 
 
 Topics::	not_yet_reviewed

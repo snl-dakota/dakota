@@ -4,11 +4,12 @@ Description::
 The specification \c calibration_data_file may be used to
 specify a text file containing \c calibration_terms observed data
 values to be used in computing
-the residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and
+the residuals \f$R_i = y^M_i - y^O_i \f$ where \e M denotes model and
 \e O, observation from the file. In this case the simulator should
 return the actual model response, as %Dakota will compute the residual
 internally using the supplied data.
-Topics::	not_yet_reviewed
+
+Topics::	
 Examples::
 Theory::
 Faq::

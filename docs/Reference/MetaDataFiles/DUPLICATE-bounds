@@ -1,6 +1,9 @@
 Blurb::
+Scale step-size by the domain of the parameter
 Description::
-Topics::	empty
+Scale step-size by the domain of the parameter
+
+Topics::	
 Examples::
 Theory::
 Faq::

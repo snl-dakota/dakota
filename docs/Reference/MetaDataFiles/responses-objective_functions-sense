@@ -7,7 +7,7 @@ for each of the objective functions, indicating
 the goal for each objective within an optimization. If a single
 string is specified it will apply to each objective function. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

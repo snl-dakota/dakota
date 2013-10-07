@@ -1,0 +1,37 @@
+Blurb::
+Use BFGS method to compute quasi-hessians
+Description::
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) update will be used to compute
+quasi-Hessians.
+
+\f[
+B_{k+1} = B_{k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k s_k} + 
+\frac{y_k y_k^T}{y_k^T s_k}
+\f]
+
+where \f$B_k\f$ is the \f$k^{th}\f$ approximation to the Hessian, 
+\f$s_k = x_{k+1} - x_k\f$ is the step and 
+\f$y_k = \nabla f_{k+1} - \nabla f_k\f$ is the corresponding yield 
+in the gradients. 
+
+<b> Notes </b>
+
+\li Initial scaling of 
+\f$\frac{y_k^T y_k}{y_k^T s_k} I\f$ is used for \f$B_0\f$ prior to the first 
+update. 
+\li Numerical safeguarding is used
+to protect against numerically small denominators within the updates. 
+\li This safeguarding skips the update if 
+\f$|y_k^T s_k| < 10^{-6} s_k^T B_k s_k\f$ 
+\li Additional safeguarding can be 
+added using the \c damped option, which utilizes an alternative 
+damped BFGS update when the curvature condition \f$y_k^T s_k > 0\f$ 
+is nearly violated.
+
+
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

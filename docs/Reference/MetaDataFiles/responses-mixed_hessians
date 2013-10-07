@@ -27,11 +27,10 @@ fd_hessian_step_size and \c bfgs, \c damped \c bfgs, or \c sr1
 secant update selections are as described previously in \ref
 RespHessNum and \ref RespHessQuasi and pertain to those functions
 listed by the \c id_numerical_hessians and \c id_quasi_hessians
-lists. \ref T9d11 "Table 9.11" summarizes the mixed Hessian
-specification.
+lists.
 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

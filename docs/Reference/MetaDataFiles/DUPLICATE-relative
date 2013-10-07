@@ -1,6 +1,8 @@
 Blurb::
+Scale step size by the parameter value
 Description::
-Topics::	empty
+Scale step size by the parameter value
+Topics::	
 Examples::
 Theory::
 Faq::

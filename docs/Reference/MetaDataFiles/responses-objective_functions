@@ -5,6 +5,8 @@ The \c objective_functions keyword specifies the number of objective
 functions returned to Dakota.
 The number of objective functions must be 1 or greater.
 
+<b> Constraints </b>
+
 The keywords \c nonlinear_inequality_constraints, and \c nonlinear_equality_constraints 
 specify the number of nonlinear inequality
 constraints, and nonlinear equality constraints, respectively. 
@@ -16,7 +18,17 @@ Any linear constraints present in an application need only be input to
 an optimizer at start up and do not need to be part of the data
 returned on every function evaluation. These are therefore specified in the method block.
 
-Topics::	not_yet_reviewed
+<b> Optional Keywords </b>
+
+The optional keywords relate to scaling the objective functions (for better numerical results),
+formulating the problem as minimization or maximization, and dealing with multiple
+objective functions.
+
+If
+scaling is used, it is applied before multi-objective weighted
+sums are formed.
+
+Topics::	
 Examples::
 Theory::
 Faq::

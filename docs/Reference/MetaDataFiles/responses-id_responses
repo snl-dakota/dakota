@@ -3,7 +3,7 @@ Give the block a name, in case of multiple responses blocks
 Description::
 The optional set identifier specification uses the keyword \c
 id_responses to input a string for use in identifying a particular
-responses specification.  A model can then identify the use of this
+responses specification. A model can then identify the use of this
 response set by specifying the same string in its \c responses_pointer
 specification (see \ref ModelIndControl). For example, a model whose
 specification contains <tt>responses_pointer = 'R1'</tt> will use a
@@ -18,7 +18,7 @@ omitted from the responses specification and \c responses_pointer can
 be omitted from the model specification(s), since there is no
 potential for ambiguity in this case.
 
-Topics::	block_identifier, not_yet_reviewed
+Topics::	block_identifier
 Examples::
 Theory::
 Faq::
