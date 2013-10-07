@@ -151,6 +151,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_addtnl_users.in
       dakota_ampl_diet.in
       dakota_ampl_fma.in
+      dakota_ampl_tb.in
       dakota_container.in
       dakota_drivers.in
       dakota_logratio_taylor2.in
