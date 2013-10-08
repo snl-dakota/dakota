@@ -187,19 +187,19 @@ public:
   String fdHessStepType;
   /// mixed gradient numerical identifiers (from the \c id_numerical_gradients
   /// specification in \ref RespGradMixed)
-  IntList idNumericalGrads;
+  IntSet idNumericalGrads;
   /// mixed gradient analytic identifiers (from the \c id_analytic_gradients
   /// specification in \ref RespGradMixed)
-  IntList idAnalyticGrads;
+  IntSet idAnalyticGrads;
   /// mixed Hessian numerical identifiers (from the \c id_numerical_hessians
   /// specification in \ref RespHessMixed)
-  IntList idNumericalHessians;
+  IntSet idNumericalHessians;
   /// mixed Hessian quasi identifiers (from the \c id_quasi_hessians
   /// specification in \ref RespHessMixed)
-  IntList idQuasiHessians;
+  IntSet idQuasiHessians;
   /// mixed Hessian analytic identifiers (from the \c id_analytic_hessians
   /// specification in \ref RespHessMixed)
-  IntList idAnalyticHessians;
+  IntSet idAnalyticHessians;
 
 private:
 

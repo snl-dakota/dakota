@@ -116,8 +116,7 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
-  expansionSamples(-1), cubIntOrder(USHRT_MAX), collocationPoints(-1),
-  collocationRatio(0.), collocRatioTermsOrder(1.),
+  cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
   regressionL2Penalty(0.), crossValidation(false), tensorGridFlag(false),
   //expansionSampleType("lhs"), sampleType("lhs"),
@@ -126,18 +125,16 @@ DataMethodRep::DataMethodRep():
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), likelihoodScale(1.0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
-  batchSize(0),calibrateSigmaFlag(false),
-  numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2), 
-  jumpStep(5),
-
+  batchSize(0),calibrateSigmaFlag(false), numChains(3), numCR(3),
+  crossoverChainPairs(3), grThreshold(1.2), jumpStep(5),
   // Parameter Study
   numSteps(0),
   pstudyFileAnnotated(true),
   // Verification
   refinementRate(2.),
-  referenceCount(1),
   // Point import/export files
-  approxImportAnnotated(true), approxExportAnnotated(true)
+  approxImportAnnotated(true), approxExportAnnotated(true),
+  referenceCount(1)
 { }
 
 
@@ -223,7 +220,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << refinementControl << nestingOverride << growthOverride << expansionType
     << piecewiseBasis << sparseGridBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
+    << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
     << crossValidation << pointReuse << tensorGridFlag << tensorGridOrder
@@ -332,7 +329,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> refinementControl >> nestingOverride >> growthOverride >> expansionType
     >> piecewiseBasis >> sparseGridBasisType >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
-    >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder >> collocationPoints
+    >> sparseGridLevel >> anisoDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> regressionType
     >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
     >> crossValidation >> pointReuse >> tensorGridFlag >> tensorGridOrder
@@ -441,7 +438,7 @@ void DataMethodRep::write(std::ostream& s) const
     << refinementControl << nestingOverride << growthOverride << expansionType
     << piecewiseBasis << sparseGridBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
+    << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
     << crossValidation << pointReuse << tensorGridFlag << tensorGridOrder

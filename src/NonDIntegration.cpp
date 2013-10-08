@@ -155,6 +155,56 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
 }
 
 
+/** Converts a scalar order specification and a vector anisotropic
+    dimension preference into an anisotropic order vector.  It is used
+    for initialization and does not enforce a reference lower bound
+    (see also NonDQuadrature::update_anisotropic_order()). */
+void NonDIntegration::
+dimension_preference_to_anisotropic_order(unsigned short scalar_order_spec,
+					  const RealVector& dim_pref_spec,
+					  UShortArray& aniso_order)
+{
+  // Note: this fn is the inverse of anisotropic_order_to_dimension_preference()
+
+  Real max_dim_pref = dim_pref_spec[0];
+  size_t i, max_dim_pref_index = 0, num_v = dim_pref_spec.length();
+  for (i=1; i<num_v; ++i)
+    if (dim_pref_spec[i] > max_dim_pref)
+      { max_dim_pref = dim_pref_spec[i]; max_dim_pref_index = i; }
+
+  aniso_order.resize(num_v);
+  for (i=0; i<num_v; ++i)
+    aniso_order[i] = (i == max_dim_pref_index) ? scalar_order_spec :
+      (unsigned short)(scalar_order_spec * dim_pref_spec[i] / max_dim_pref);
+      // truncates fractional order
+}
+
+
+/** Converts a vector anisotropic order into a scalar order and vector
+    anisotropic dimension preference. */
+void NonDIntegration::
+anisotropic_order_to_dimension_preference(const UShortArray& aniso_order,
+					  unsigned short& scalar_order,
+					  RealVector& dim_pref)
+{
+  // Note: this fn is the inverse of dimension_preference_to_anisotropic_order()
+
+  scalar_order = aniso_order[0];
+  size_t i, num_v = aniso_order.size(); bool anisotropic = false;
+  for (i=1; i<num_v; ++i)
+    if (aniso_order[i] > scalar_order)
+      { scalar_order = aniso_order[i]; anisotropic = true; }
+
+  if (anisotropic) { // preserve ratios; normalization not required
+    dim_pref.resize(num_v);
+    for (i=0; i<num_v; ++i)
+      dim_pref[i] = (Real)aniso_order[i];
+  }
+  else
+    dim_pref.resize(0);
+}
+
+
 void NonDIntegration::increment_grid_preference(const RealVector& dim_pref)
 {
   // derived classes must provide at least one of increment_grid_preference()
@@ -185,7 +235,7 @@ void NonDIntegration::increment_grid_weights(const RealVector& aniso_wts)
 }
 
 
-void NonDIntegration::increment_refinement_sequence()
+void NonDIntegration::increment_specification_sequence()
 { ++sequenceIndex; } // default overridden by NonD{Quadrature,SparseGrid}
 
 } // namespace Dakota

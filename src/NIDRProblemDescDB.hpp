@@ -111,6 +111,7 @@ public:
   KWH(method_Realz);
   KWH(method_Ri);
   KWH(method_false);
+  KWH(method_szarray);
   KWH(method_ilit2);
   KWH(method_ilit2p);
   KWH(method_int);
@@ -123,7 +124,6 @@ public:
   KWH(method_litr);
   KWH(method_litz);
   KWH(method_nnint);
-  KWH(method_nnintz);
   KWH(method_num_resplevs);
   KWH(method_piecewise);
   KWH(method_pint);
@@ -131,6 +131,7 @@ public:
   KWH(method_resplevs);
   KWH(method_resplevs01);
   KWH(method_shint);
+  KWH(method_sizet);
   KWH(method_slit2);
   KWH(method_start);
   KWH(method_stop);
@@ -138,15 +139,15 @@ public:
   KWH(method_strL);
   KWH(method_true);
   KWH(method_tr_final);
-  KWH(method_ushint);
   KWH(method_usharray);
+  KWH(method_ushint);
   KWH(method_type);
 
   KWH(model_Real);
   KWH(model_RealDL);
   KWH(model_false);
   KWH(model_int);
-  KWH(model_intset);
+  KWH(model_intsetm1);
   KWH(model_lit);
   KWH(model_order);
   KWH(model_shint);
@@ -160,10 +161,10 @@ public:
   KWH(resp_RealDL);
   KWH(resp_RealL);
   KWH(resp_false);
-  KWH(resp_intL);
+  KWH(resp_intset);
   KWH(resp_ivec);
   KWH(resp_lit);
-  KWH(resp_nnintz);
+  KWH(resp_sizet);
   KWH(resp_start);
   KWH(resp_stop);
   KWH(resp_str);

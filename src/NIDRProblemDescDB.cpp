@@ -997,7 +997,7 @@ method_nnint(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-method_nnintz(const char *keyname, Values *val, void **g, void *v)
+method_sizet(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i; // test value as int, prior to storage as size_t
 #ifdef REDUNDANT_INT_CHECKS
@@ -1116,8 +1116,27 @@ method_usharray(const char *keyname, Values *val, void **g, void *v)
   size_t i, n = val->n;
 
   usa->resize(n);
-  for(i = 0; i < n; i++)
-    (*usa)[i] = z[i];
+  for (i=0; i<n; ++i)
+    if (z[i] >= 0)
+      (*usa)[i] = z[i];
+    else
+      botch("%s must have non-negative values", keyname);
+}
+
+void NIDRProblemDescDB::
+method_szarray(const char *keyname, Values *val, void **g, void *v)
+{
+  SizetArray *sza
+    = &((*(Meth_Info**)g)->dme->**(SizetArray DataMethodRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
+
+  sza->resize(n);
+  for (i=0; i<n; ++i)
+    if (z[i] >= 0)
+      (*sza)[i] = z[i];
+    else
+      botch("%s must have non-negative values", keyname);
 }
 
 void NIDRProblemDescDB::
@@ -1248,14 +1267,14 @@ model_int(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-model_intset(const char *keyname, Values *val, void **g, void *v)
+model_intsetm1(const char *keyname, Values *val, void **g, void *v)
 {
   IntSet *is = &((*(Mod_Info**)g)->dmo->**(IntSet DataModelRep::**)v);
   int *z = val->i;
   size_t i, n = val->n;
 
   for(i = 0; i < n; i++)
-    is->insert(z[i]-1);
+    is->insert(z[i] - 1); // model converts ids -> indices
 }
 
 void NIDRProblemDescDB::
@@ -1349,15 +1368,14 @@ resp_RealL(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-resp_intL(const char *keyname, Values *val, void **g, void *v)
+resp_intset(const char *keyname, Values *val, void **g, void *v)
 {
-  DataResponsesRep *dr = (*(Resp_Info**)g)->dr;
+  IntSet *is = &((*(Resp_Info**)g)->dr->**(IntSet DataResponsesRep::**)v);
   int *z = val->i;
-  IntList *il = &(dr->**(IntList DataResponsesRep::**)v);
   size_t i, n = val->n;
 
-  for(i = 0; i < n; i++)
-    il->push_back(z[i]);
+  for (i=0; i<n; ++i)
+    is->insert(z[i]);
 }
 
 void NIDRProblemDescDB::
@@ -1380,7 +1398,7 @@ resp_lit(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-resp_nnintz(const char *keyname, Values *val, void **g, void *v)
+resp_sizet(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i; // test value as int, prior to storage as size_t
 #ifdef REDUNDANT_INT_CHECKS
@@ -1417,12 +1435,12 @@ BuildLabels(StringArray *sa, size_t nsa, size_t n1, size_t n2, const char *stub)
   }
 }
 
-static int flist_check(IntList *L, int n, IntArray *iv, const char *what)
+static int mixed_check(IntSet *S, int n, IntArray *iv, const char *what)
 {
   int nbad, j;
 
   nbad = 0;
-  for(ILCIter it = L->begin(), ite = L->end(); it != ite; ++it) {
+  for(ISCIter it = S->begin(), ite = S->end(); it != ite; ++it) {
     j = *it;
     if (j < 1 || j > n) {
       if (!nbad++)
@@ -1436,7 +1454,7 @@ static int flist_check(IntList *L, int n, IntArray *iv, const char *what)
 }
 
 static void
-flist_check2(size_t n, IntArray *iv, const char *what)
+mixed_check2(size_t n, IntArray *iv, const char *what)
 {
   int j;
   size_t i;
@@ -1585,9 +1603,9 @@ make_response_defaults(std::list<DataResponses>* drl)
       iv = new IntArray;
       //iv->resize(nf);
       iv->assign(nf, 0);
-      if (!(flist_check(&dr->idAnalyticGrads, ni, iv, "id_analytic_gradients")
-	    + flist_check(&dr->idNumericalGrads, ni, iv, "id_numerical_gradients")))
-	flist_check2(nf, iv, "gradient");
+      if (!(mixed_check(&dr->idAnalyticGrads, ni, iv, "id_analytic_gradients")
+	    + mixed_check(&dr->idNumericalGrads, ni, iv, "id_numerical_gradients")))
+	mixed_check2(nf, iv, "gradient");
       delete iv;
     }
     if ((n = dr->numNonlinearEqConstraints) > 0
@@ -1610,10 +1628,10 @@ make_response_defaults(std::list<DataResponses>* drl)
       iv = new IntArray;
       //iv->resize(nf);
       iv->assign(nf, 0);
-      if (!(flist_check(&dr->idAnalyticHessians, ni, iv, "id_analytic_hessians")
-	    + flist_check(&dr->idNumericalHessians, ni, iv, "id_numerical_hessians")
-	    + flist_check(&dr->idQuasiHessians, ni, iv, "id_quasi_hessians")))
-	flist_check2(nf, iv, "Hessian");
+      if (!(mixed_check(&dr->idAnalyticHessians, ni, iv, "id_analytic_hessians")
+	    + mixed_check(&dr->idNumericalHessians, ni, iv, "id_numerical_hessians")
+	    + mixed_check(&dr->idQuasiHessians, ni, iv, "id_quasi_hessians")))
+	mixed_check2(nf, iv, "Hessian");
       delete iv;
     }
     if (nerr)
@@ -5234,7 +5252,7 @@ static Real
 	MP_(xConvTol);
 
 static RealVector
-	MP_(anisoGridDimPref),
+	MP_(anisoDimPref),
 	MP_(finalPoint),
 	MP_(linearEqConstraintCoeffs),
 	MP_(linearEqScales),
@@ -5256,6 +5274,10 @@ static RealVectorArray
 
 static unsigned short
 	MP_(cubIntOrder);
+
+static SizetArray
+	MP_(collocationPoints),
+	MP_(expansionSamples);
 
 static UShortArray
         MP_(expansionOrder),
@@ -5314,13 +5336,11 @@ static short
 
 static int
 	MP_(batchSize),
-	MP_(collocationPoints),
 	MP_(contractAfterFail),
 	MP_(covarianceType),
         MP_(crossoverChainPairs),
 	MP_(emulatorSamples),
 	MP_(expandAfterSuccess),
-	MP_(expansionSamples),
 	MP_(jumpStep),
 	MP_(maxFunctionEvaluations),
 	MP_(maxIterations),
@@ -5530,7 +5550,7 @@ static int
 #define MP_(x) DataResponsesRep::* resp_mp_##x = &DataResponsesRep::x
 #define MP2(x,y) resp_mp_##x##_##y = {&DataResponsesRep::x,#y}
 
-static IntList
+static IntSet
 	MP_(idAnalyticGrads),
 	MP_(idAnalyticHessians),
 	MP_(idNumericalGrads),

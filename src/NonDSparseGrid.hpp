@@ -60,7 +60,7 @@ public:
   /// based on specified anisotropic weighting
   void increment_grid_weights(const RealVector& aniso_wts);
   /// advance to next nevel in ssgLevelSeqSpec sequence
-  void increment_refinement_sequence();
+  void increment_specification_sequence();
 
   /// returns SparseGridDriver::active_multi_index()
   const std::set<UShortArray>& active_multi_index() const;
@@ -140,12 +140,13 @@ private:
 inline void NonDSparseGrid::reset()
 {
   // restore user specification state prior to any uniform/adaptive refinement
-  ssgLevelRef = ssgLevelSeqSpec[sequenceIndex]; ssgDriver->level(ssgLevelRef);
+  ssgLevelRef = ssgLevelSeqSpec[sequenceIndex];
+  ssgDriver->level(ssgLevelRef);
   ssgDriver->dimension_preference(dimPrefSpec);
 }
 
 
-inline void NonDSparseGrid::increment_refinement_sequence()
+inline void NonDSparseGrid::increment_specification_sequence()
 {
   if (sequenceIndex+1 < ssgLevelSeqSpec.size())
     ++sequenceIndex;

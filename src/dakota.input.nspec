@@ -66,7 +66,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	[ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
 	[ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
 	[ scaling {N_mdm(true,methodScaling)} ]
-	[ final_solutions INTEGER >= 0 {N_mdm(nnintz,numFinalSolutions)} ]
+	[ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
 	( ( surrogate_based_local {N_mdm(lit,methodName_surrogate_based_local)}
 	    approx_method_name STRING {N_mdm(str,subMethodName)}
 	    | approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
@@ -221,7 +221,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ convergence_type {0}
 		metric_tracker {N_mdm(lit,convergenceType_metric_tracker)}
 		[ percent_change REAL {N_mdm(Realz,convergenceTolerance)} ]
-		[ num_generations INTEGER >= 0 {N_mdm(nnintz,numGenerations)} ]
+		[ num_generations INTEGER >= 0 {N_mdm(sizet,numGenerations)} ]
 		]
 	      [ postprocessor_type {0}
 		orthogonal_distance REALLIST {N_mdm(RealLlit,3postProcessorType_distance_postprocessor)}
@@ -242,12 +242,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ convergence_type {0}
 		( best_fitness_tracker {N_mdm(lit,convergenceType_best_fitness_tracker)}
 		  [ percent_change REAL {N_mdm(Realz,convergenceTolerance)} ]
-		  [ num_generations INTEGER >= 0 {N_mdm(nnintz,numGenerations)} ]
+		  [ num_generations INTEGER >= 0 {N_mdm(sizet,numGenerations)} ]
 		  )
 		|
 		( average_fitness_tracker {N_mdm(lit,convergenceType_average_fitness_tracker)}
 		  [ percent_change REAL {N_mdm(Realz,convergenceTolerance)} ]
-		  [ num_generations INTEGER >= 0 {N_mdm(nnintz,numGenerations)} ]
+		  [ num_generations INTEGER >= 0 {N_mdm(sizet,numGenerations)} ]
 		  )
 		]
 	      )
@@ -442,13 +442,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		          [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
 			    | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
 			)
-			[ dimension_preference REALLIST {N_mdm(RealDL,anisoGridDimPref)} ]
+			[ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
 		        [ nested {N_mdm(type,nestingOverride_NESTED)}
 			  | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    )
 		    | cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
 		    | ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
-		      	( ( collocation_points INTEGER >= 0 {N_mdm(nnint,collocationPoints)}
+			[ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+		      	( ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
 		            | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
 			    [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
 			    [ ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
@@ -471,7 +472,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
 		          )
 		    	  |
-			  ( expansion_samples INTEGER >= 0 {N_mdm(nnint,expansionSamples)}
+			  ( expansion_samples INTEGERLIST {N_mdm(szarray,expansionSamples)}
 		            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
 		            [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
 		          )
@@ -483,7 +484,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    	| expansion_import_file STRING {N_mdm(str,expansionImportFile)}
                       )
 		    | ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-		      	collocation_points INTEGER >= 0 {N_mdm(nnint,collocationPoints)}
+		      	collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
 			[ cross_validation {N_mdm(true,crossValidation)} ]
 #		        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 			[ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
@@ -544,7 +545,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			[ nodal {N_mdm(type,sparseGridBasisType_NODAL_INTERPOLANT)}
 			  | hierarchical {N_mdm(type,sparseGridBasisType_HIERARCHICAL_INTERPOLANT)} ]
 		      )
-		    [ dimension_preference REALLIST {N_mdm(RealDL,anisoGridDimPref)} ]
+		    [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
 		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 		    [ nested {N_mdm(type,nestingOverride_NESTED)}
 		      | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
@@ -1064,7 +1065,7 @@ KEYWORD model {N_mom3(start,0,stop)}
 	  )
 	|
 	( surrogate {N_mom(lit,modelType_surrogate)}
-	  [ id_surrogates INTEGERLIST {N_mom(intset,surrogateFnIndices)} ]
+	  [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
 	  ( global {0}
             ( gaussian_process ALIAS kriging {0}
 	      ( dakota {N_mom(lit,surrogateType_global_gaussian)}
@@ -1469,65 +1470,65 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 # Note: since NIDR does not support BOOLLIST or ENUMLIST, we employ one of two different approaches below for array alternation:
 #       (1) id_* lists used when there are conditional sub-specifications (e.g., mixed grads, mixed Hessians)
 #       (2) STRINGLISTs used for alternation without conditional sub-specifications (e.g., scale_types)
-	( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(nnintz,numObjectiveFunctions)}
+	( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(sizet,numObjectiveFunctions)}
 	  [ sense STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnSense)} ]
 	  [ primary_scale_types ALIAS objective_function_scale_types STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
 	  [ primary_scales ALIAS objective_function_scales REALLIST LEN1 objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
 	  [ weights ALIAS multi_objective_weights REALLIST LEN objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
-	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
+	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
 	    [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
 	    [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
 	    [ scale_types ALIAS nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
 	    [ scales ALIAS nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
 	    ]
-	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
+	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearEqConstraints)}
 	    [ targets ALIAS nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
 	    ]
 	  )
 	|
-	( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
+	( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(sizet,numLeastSqTerms)}
 	  [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
 	  [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
 	  [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
 	  [ 
 #           ( calibration_data_arrays {0}
-#             [ num_experiments INTEGER >= 0 {N_rem(nnintz,numExperiments)} ]
+#             [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
 #             [ experimental_config_variables REALLIST {N_rem(RealDL,expConfigVars)} ]
 #	      [ experimental_observations REALLIST {N_rem(RealDL,expObservations)} ]
 #	      [ experimental_std_deviations REALLIST {N_rem(RealDL,expStdDeviations)} ]
 #             )
 #  	    |
   	    ( calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,expDataFileName)}
-              [ num_experiments INTEGER >= 0 {N_rem(nnintz,numExperiments)} ]
+              [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
               [ num_replicates INTEGERLIST {N_rem(ivec,numReplicates)} ]
               [ annotated {N_rem(true,expDataFileAnnotated)} | 
                 freeform  {N_rem(false,expDataFileAnnotated)} 
                 ]
-              [ num_config_variables INTEGER >= 0 {N_rem(nnintz,numExpConfigVars)} ] 
-              [ num_std_deviations INTEGER >= 0 {N_rem(nnintz,numExpStdDeviations)} ]
+              [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ] 
+              [ num_std_deviations INTEGER >= 0 {N_rem(sizet,numExpStdDeviations)} ]
               )
             ]  
-    	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
+    	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
   	    [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
   	    [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
   	    [ scale_types ALIAS nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
   	    [ scales ALIAS nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
   	    ]
-  	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
+  	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearEqConstraints)}
   	    [ targets ALIAS nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
   	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
   	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
   	    ]
   	  )
-  	| response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(nnintz,numResponseFunctions)}
+  	| response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
 	no_gradients {N_rem(lit,gradientType_none)}
 	| analytic_gradients {N_rem(lit,gradientType_analytic)}
 	|
 	( ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-	    id_numerical_gradients INTEGERLIST {N_rem(intL,idNumericalGrads)}
-	    id_analytic_gradients INTEGERLIST {N_rem(intL,idAnalyticGrads)}
+	    id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
+	    id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
 	    )
 	  | numerical_gradients {N_rem(lit,gradientType_numerical)}
 	  [ method_source {0} ] # formerly required for dakota | vendor
@@ -1567,7 +1568,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	| analytic_hessians {N_rem(lit,hessianType_analytic)}
 	|
 	( mixed_hessians {N_rem(lit,hessianType_mixed)}
-	  [ id_numerical_hessians INTEGERLIST {N_rem(intL,idNumericalHessians)}
+	  [ id_numerical_hessians INTEGERLIST {N_rem(intset,idNumericalHessians)}
 	    [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
 	    ]
 	  [ relative {N_rem(lit,fdHessStepType_relative)}
@@ -1576,11 +1577,11 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	  [ forward  {N_rem(false,centralHess)}
 	    | central {N_rem(true,centralHess)}
 	    ]
-	  [ id_quasi_hessians INTEGERLIST {N_rem(intL,idQuasiHessians)}
+	  [ id_quasi_hessians INTEGERLIST {N_rem(intset,idQuasiHessians)}
 	    ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
 	      [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
 	      )
 	    | sr1 {N_rem(lit,quasiHessianType_sr1)}
 	    ]
-	  [ id_analytic_hessians INTEGERLIST {N_rem(intL,idAnalyticHessians)} ]
+	  [ id_analytic_hessians INTEGERLIST {N_rem(intset,idAnalyticHessians)} ]
 	  )

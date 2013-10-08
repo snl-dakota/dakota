@@ -700,9 +700,9 @@ public:
   /// return the finite difference gradient step type (fdGradST)
   const String& fd_gradient_step_type() const;
   /// return the mixed gradient analytic IDs (gradIdAnalytic)
-  const IntList& gradient_id_analytic() const;
+  const IntSet& gradient_id_analytic() const;
   /// return the mixed gradient numerical IDs (gradIdNumerical)
-  const IntList& gradient_id_numerical() const;
+  const IntSet& gradient_id_numerical() const;
   /// return the Hessian evaluation type (hessType)
   const String& hessian_type() const;
   /// return the Hessian evaluation type (quasiHessType)
@@ -714,11 +714,11 @@ public:
   /// return the finite difference Hessian step type (fdHessST)
   const String& fd_hessian_step_type() const;
   /// return the mixed Hessian analytic IDs (hessIdAnalytic)
-  const IntList& hessian_id_analytic() const;
+  const IntSet& hessian_id_analytic() const;
   /// return the mixed Hessian analytic IDs (hessIdNumerical)
-  const IntList& hessian_id_numerical() const;
+  const IntSet& hessian_id_numerical() const;
   /// return the mixed Hessian analytic IDs (hessIdQuasi)
-  const IntList& hessian_id_quasi() const;
+  const IntSet& hessian_id_quasi() const;
 
   /// set the optimization sense for multiple objective functions
   void primary_response_fn_sense(const BoolDeque& sense);
@@ -879,8 +879,8 @@ protected:
   bool	 centralHess; ///< option to use old 2nd-order finite diffs for Hessians
   RealVector fdGradSS;       ///< relative step sizes for numerical gradients
   String fdGradST;           ///< step type for numerical gradients
-  IntList gradIdAnalytic;    ///< analytic id's for mixed gradients
-  IntList gradIdNumerical;   ///< numerical id's for mixed gradients
+  IntSet gradIdAnalytic;    ///< analytic id's for mixed gradients
+  IntSet gradIdNumerical;   ///< numerical id's for mixed gradients
   String hessType;           ///< Hess type: none,numerical,quasi,analytic,mixed
   String quasiHessType;      ///< quasi-Hessian type: bfgs, damped_bfgs, sr1
   RealVector fdHessByGradSS; ///< relative step sizes for numerical Hessians
@@ -888,9 +888,9 @@ protected:
   RealVector fdHessByFnSS;   ///< relative step sizes for numerical Hessians
                              ///< estimated with 2nd-order fn differences
   String fdHessST;           ///< step type for numerical Hessians
-  IntList hessIdAnalytic;    ///< analytic id's for mixed Hessians
-  IntList hessIdNumerical;   ///< numerical id's for mixed Hessians
-  IntList hessIdQuasi;       ///< quasi id's for mixed Hessians
+  IntSet hessIdAnalytic;    ///< analytic id's for mixed Hessians
+  IntSet hessIdNumerical;   ///< numerical id's for mixed Hessians
+  IntSet hessIdQuasi;       ///< quasi id's for mixed Hessians
   bool supportsEstimDerivs;  ///< whether model should perform or forward
                              ///< derivative estimation
 
@@ -2429,11 +2429,11 @@ inline const String& Model::fd_gradient_step_type() const
 { return (modelRep) ? modelRep->fdGradST : fdGradST; }
 
 
-inline const IntList& Model::gradient_id_analytic() const
+inline const IntSet& Model::gradient_id_analytic() const
 { return (modelRep) ? modelRep->gradIdAnalytic : gradIdAnalytic; }
 
 
-inline const IntList& Model::gradient_id_numerical() const
+inline const IntSet& Model::gradient_id_numerical() const
 { return (modelRep) ? modelRep->gradIdNumerical : gradIdNumerical; }
 
 
@@ -2457,15 +2457,15 @@ inline const String& Model::fd_hessian_step_type() const
 { return (modelRep) ? modelRep->fdHessST : fdHessST; }
 
 
-inline const IntList& Model::hessian_id_analytic() const
+inline const IntSet& Model::hessian_id_analytic() const
 { return (modelRep) ? modelRep->hessIdAnalytic : hessIdAnalytic; }
 
 
-inline const IntList& Model::hessian_id_numerical() const
+inline const IntSet& Model::hessian_id_numerical() const
 { return (modelRep) ? modelRep->hessIdNumerical : hessIdNumerical; }
 
 
-inline const IntList& Model::hessian_id_quasi() const
+inline const IntSet& Model::hessian_id_quasi() const
 { return (modelRep) ? modelRep->hessIdQuasi : hessIdQuasi; }
 
 

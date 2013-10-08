@@ -36,7 +36,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
   crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
   noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(probDescDB.get_real("method.nond.regression_penalty"))
+  l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
+  expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
+  collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
+  expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
+  sequenceIndex(0)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -70,12 +74,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  // expansion_order defined for expansion_samples/collocation_pts
-  UShortArray exp_order = probDescDB.get_usa("method.nond.expansion_order");
-  if (!exp_order.empty())
-    Pecos::inflate_scalar(exp_order, numContinuousVars);
-  bool import_annotated = false;
-  String approx_type; bool regression_flag = false;
+  bool import_annotated = false, regression_flag = false;
+  String approx_type; UShortArray exp_order;
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_seq_spec
       = probDescDB.get_usa("method.nond.quadrature_order");
@@ -98,17 +98,30 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
     }
     else { // expansion_samples or collocation_{points,ratio}
+      // expansion_order defined for expansion_samples/collocation_pts
+      if (!expOrderSeqSpec.empty()) {
+	const RealVector& dim_pref
+	  = probDescDB.get_rv("method.nond.dimension_preference");
+	unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
+	  expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+	if (dim_pref.empty())
+	  exp_order.assign(numContinuousVars, scalar);
+	else
+	  NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
+	    dim_pref, exp_order);
+      }
+
       // default pattern is static for consistency in any outer loop,
       // but gets overridden below for unstructured grid refinement.
       bool vary_pattern = false;
-      int exp_samples = probDescDB.get_int("method.nond.expansion_samples");
-      if (exp_samples >= 0) { // expectation
+      if (!expSamplesSeqSpec.empty()) { // expectation
 	if (refineType) { // no obvious logic for sample refinement
 	  Cerr << "Error: uniform/adaptive refinement of expansion_samples not "
 	       << "supported." << std::endl;
 	  abort_handler(-1);
 	}
-	numSamplesOnModel       = exp_samples;
+	numSamplesOnModel = (sequenceIndex < expSamplesSeqSpec.size()) ?
+	  expSamplesSeqSpec[sequenceIndex] : expSamplesSeqSpec.back();
 	expansionCoeffsApproach = Pecos::SAMPLING;
 
 	// reuse type/seed/rng settings intended for the expansion_sampler.
@@ -150,24 +163,20 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  }
 	}
 
-	int colloc_pts=probDescDB.get_int("method.nond.collocation_points");
-	if (colloc_pts >= 0)
-	  numSamplesOnModel = colloc_pts;
-	
-	if ( expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION ) {
+	if (!collocPtsSeqSpec.empty())
+	  numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
+	    collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+	if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION ) {
 	  size_t exp_terms
 	    = Pecos::PolynomialApproximation::total_order_terms(exp_order);
 	  termsOrder
 	    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
-	  if (colloc_pts >= 0) {
-	    // numSamplesOnModel = colloc_pts;
-	    // define collocRatio for use in uniform refinement
-	    collocRatio
-	      = terms_samples_to_ratio(exp_terms, colloc_pts, termsOrder);
-	  }
-	  else if (collocRatio > 0.)
-	    numSamplesOnModel
-	      = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+	  if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
+	    collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel,
+						 termsOrder);
+	  else if (collocRatio > 0.)     // define colloc pts from collocRatio
+	    numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio,
+						       termsOrder);
 	}
 
 	if (tensorRegression) { // structured grid: uniform sub-sampling of TPQ
@@ -190,7 +199,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  // convert aniso vector to scalar + dim_pref.  If isotropic, dim_pref
 	  // is empty; if aniso, it differs from exp_order aniso due to offset.
 	  RealVector dim_pref;
-	  order_to_dim_preference(dim_quad_order, quad_order_seq[0], dim_pref);
+	  NonDIntegration::anisotropic_order_to_dimension_preference(
+	    dim_quad_order, quad_order_seq[0], dim_pref);
 	  // use alternate NonDQuad ctor to filter or sample TPQ points
 	  // (NonDExpansion invokes uSpaceModel.build_approximation()
 	  // which invokes daceIterator.run_iterator()).  The quad order inputs
@@ -476,6 +486,68 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 
+void NonDPolynomialChaos::increment_specification_sequence()
+{
+  bool update_exp = false, update_sampler = false;
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: case Pecos::CUBATURE:
+    // update grid order/level, if multiple values were provided
+    NonDExpansion::increment_specification_sequence(); break;
+  case Pecos::SAMPLING:
+    // advance expansionOrder and/or expansionSamples, as admissible
+    if (sequenceIndex+1 <   expOrderSeqSpec.size()) update_exp     = true;
+    if (sequenceIndex+1 < expSamplesSeqSpec.size()) update_sampler = true;
+    if (update_exp || update_sampler) ++sequenceIndex;
+    if (update_sampler) numSamplesOnModel = expSamplesSeqSpec[sequenceIndex];
+    break;
+  case Pecos::ORTHOG_LEAST_INTERPOLATION:
+    // advance collocationPoints
+    if (sequenceIndex+1 < collocPtsSeqSpec.size()) {
+      update_sampler = true; ++sequenceIndex;
+      numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+    }
+    break;
+  default: // regression
+    // advance expansionOrder and/or collocationPoints, as admissible
+    if (sequenceIndex+1 <  expOrderSeqSpec.size()) update_exp     = true;
+    if (sequenceIndex+1 < collocPtsSeqSpec.size()) update_sampler = true;
+    if (update_exp || update_sampler) ++sequenceIndex;
+    if (update_sampler) numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+    break;
+  }
+
+  if (update_exp) {
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    PecosApproximation* poly_approx_rep;
+    for (size_t i=0; i<numFunctions; i++) {
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      //if (poly_approx_rep) // may be NULL based on approxFnIndices
+	//poly_approx_rep->expansion_order(expOrderSeqSpec[sequenceIndex]);
+        // *** TO DO, also need to manage dim_pref
+    }
+  }
+
+  if (update_sampler) {
+    if (tensorRegression) {
+      NonDQuadrature* nond_quad
+	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_quad->samples(numSamplesOnModel);
+      //if (nond_quad->mode() == RANDOM_TENSOR)
+      //  nond_quad->update_grid(expOrderSeqSpec[sequenceIndex]); // *** TO DO
+      //nond_quad->update(); // *** TO DO: needed?
+    }
+    else { // enforce increment through sampling_reset()
+      NonDSampling* nond_sampling
+	= (NonDSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_sampling->sampling_reference(0); // no lower bound
+      DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+      dfs_model->total_points(numSamplesOnModel);
+    }
+  }
+}
+
+
 /** Used for uniform refinement of regression-based PCE. */
 void NonDPolynomialChaos::increment_order()
 {
@@ -489,7 +561,7 @@ void NonDPolynomialChaos::increment_order()
     }
   }
 
-  // update numSamplesOnModel based on existing collocatio ratio and
+  // update numSamplesOnModel based on existing collocation ratio and
   // updated number of expansion terms
   numSamplesOnModel
     = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);

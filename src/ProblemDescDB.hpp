@@ -202,6 +202,8 @@ public:
   const RealVector& get_rv(const String& entry_name) const;
   /// get an IntVector out of the database based on an identifier string
   const IntVector& get_iv(const String& entry_name) const;
+  /// get an SizetArray out of the database based on an identifier string
+  const SizetArray& get_sza(const String& entry_name) const;
   /// get an UShortArray out of the database based on an identifier string
   const UShortArray& get_usa(const String& entry_name) const;
   /// get a RealSymMatrix out of the database based on an identifier string
@@ -210,8 +212,6 @@ public:
   const RealVectorArray& get_rva(const String& entry_name) const;
   /// get an IntVectorArray out of the database based on an identifier string
   const IntVectorArray& get_iva(const String& entry_name) const;
-  /// get an IntList out of the database based on an identifier string
-  const IntList& get_il(const String& entry_name) const;
   /// get an IntSet out of the database based on an identifier string
   const IntSet& get_is(const String& entry_name) const;
   /// get an IntSetArray out of the database based on an identifier string

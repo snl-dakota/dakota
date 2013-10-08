@@ -32,8 +32,8 @@ extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
 extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
 extern Graphics        dakota_graphics; // defined in dakota_global_defs.cpp
 
-// These globals defined here rather than in dakota_global_defs.cpp in order to minimize
-// dakota_restart_util object file dependencies
+// These globals defined here rather than in dakota_global_defs.cpp in order
+// to minimize dakota_restart_util object file dependencies
 Interface dummy_interface; ///< dummy Interface object used for mandatory
                            ///< reference initialization or default virtual
                            ///< function return by reference when a real
@@ -68,16 +68,16 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   intervalType(problem_db.get_string("responses.interval_type")),
   fdGradSS(problem_db.get_rv("responses.fd_gradient_step_size")),
   fdGradST(problem_db.get_string("responses.fd_gradient_step_type")),
-  gradIdAnalytic(problem_db.get_il("responses.gradients.mixed.id_analytic")),
-  gradIdNumerical(problem_db.get_il("responses.gradients.mixed.id_numerical")),
+  gradIdAnalytic(problem_db.get_is("responses.gradients.mixed.id_analytic")),
+  gradIdNumerical(problem_db.get_is("responses.gradients.mixed.id_numerical")),
   hessType(problem_db.get_string("responses.hessian_type")),
   quasiHessType(problem_db.get_string("responses.quasi_hessian_type")),
   fdHessByFnSS(problem_db.get_rv("responses.fd_hessian_step_size")),
   fdHessByGradSS(problem_db.get_rv("responses.fd_hessian_step_size")),
   fdHessST(problem_db.get_string("responses.fd_hessian_step_type")),
-  hessIdAnalytic(problem_db.get_il("responses.hessians.mixed.id_analytic")),
-  hessIdNumerical(problem_db.get_il("responses.hessians.mixed.id_numerical")),
-  hessIdQuasi(problem_db.get_il("responses.hessians.mixed.id_quasi")),
+  hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
+  hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
+  hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
   supportsEstimDerivs(true),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
@@ -2510,7 +2510,7 @@ int Model::derivative_concurrency() const
       else if (gradType == "mixed") {
 	bool first_order = false, second_order = false;
 	if (hessType == "mixed") { // mixed Hessians with mixed gradients
-	  for (ILCIter cit=hessIdNumerical.begin();
+	  for (ISCIter cit=hessIdNumerical.begin();
 	       cit!=hessIdNumerical.end(); ++cit) {
 	    if (contains(gradIdAnalytic, *cit))
 	      first_order  = true;

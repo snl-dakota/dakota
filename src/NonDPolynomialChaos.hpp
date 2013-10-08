@@ -46,12 +46,17 @@ public:
   /// destructor
   ~NonDPolynomialChaos();
 
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
   void resolve_inputs(short& u_space_type, short& data_order);
+
   void initialize_u_space_model();
+
+  void increment_specification_sequence();
 
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
@@ -61,8 +66,6 @@ public:
 
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
-
-protected:
 
   /// archive the PCE coefficient array for the orthogonal basis
   void archive_coefficients();
@@ -88,22 +91,35 @@ private:
 
   /// filename for import of chaos coefficients
   String expansionImportFile;
+
   /// factor applied to terms^termsOrder in computing number of regression
   /// points, either user specified or inferred
   Real collocRatio;
   /// exponent applied to number of expansion terms for computing
   /// number of regression points
   Real termsOrder;
+
   /// option for regression PCE using a filtered set tensor-product points
   bool tensorRegression;
+
   /// flag for use of cross-validation for selection of parameter settings
   /// in regression approaches
   bool crossValidation;
+
   /// noise tolerance for compressive sensing algorithms; vector form used
   /// in cross-validation
   RealVector noiseTols;
   /// L2 penalty for LASSO algorithm (elastic net variant)
   Real l2Penalty;
+
+  /// user specification for expansion_order (array for multifidelity)
+  UShortArray expOrderSeqSpec;
+  /// user specification for collocation_points (array for multifidelity)
+  SizetArray collocPtsSeqSpec;
+  /// user specification for expansion_samples (array for multifidelity)
+  SizetArray expSamplesSeqSpec;
+  /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
+  size_t sequenceIndex;
 
   /// derivative of the PCE with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)
@@ -142,29 +158,6 @@ terms_samples_to_ratio(size_t num_exp_terms, int samples, Real terms_order)
   size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;;
   return (Real)(samples * data_per_pt) /
     std::pow((Real)num_exp_terms, terms_order);
-}
-
-
-inline void NonDPolynomialChaos::
-order_to_dim_preference(const UShortArray& order, unsigned short& scalar,
-			RealVector& dim_pref)
-{
-  // Note: this function is the inverse of NonDQuadrature::
-  // anisotropic_preference(unsigned short, const RealVector&, UShortArray&)
-
-  scalar = order[0];
-  size_t i; bool anisotropic = false;
-  for (i=1; i<numContinuousVars; ++i)
-    if (order[i] > scalar)
-      { scalar = order[i]; anisotropic = true; }
-
-  if (anisotropic) { // preserve ratios; normalization not required
-    dim_pref.resize(numContinuousVars);
-    for (i=0; i<numContinuousVars; ++i)
-      dim_pref[i] = (Real)order[i];
-  }
-  else
-    dim_pref.resize(0);
 }
 
 } // namespace Dakota

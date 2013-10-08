@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1158 distinct keywords (plus 167 aliases) **/
+/** 1159 distinct keywords (plus 167 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -814,7 +814,7 @@ static KeyWord
 		},
 	kw_146[3] = {
 		{"metric_tracker",8,0,1,1,0,0.,0.,0,N_mdm(lit,convergenceType_metric_tracker)},
-		{"num_generations",0x29,0,3,0,0,0.,0.,0,N_mdm(nnintz,numGenerations)},
+		{"num_generations",0x29,0,3,0,0,0.,0.,0,N_mdm(sizet,numGenerations)},
 		{"percent_change",10,0,2,0,0,0.,0.,0,N_mdm(Realz,convergenceTolerance)}
 		},
 	kw_147[2] = {
@@ -964,11 +964,12 @@ static KeyWord
 		{"reuse_points",8,0,1,0,0,0.,0.,0,N_mdm(lit,pointReuse_all)},
 		{"reuse_samples",0,0,1,0,0,0.,0.,-1,N_mdm(lit,pointReuse_all)}
 		},
-	kw_176[4] = {
-		{"collocation_points",0x29,17,1,1,kw_174,0.,0.,0,N_mdm(nnint,collocationPoints)},
-		{"collocation_ratio",10,17,1,1,kw_174,0.,0.,0,N_mdm(Realp,collocationRatio)},
-		{"expansion_import_file",11,0,1,1,0,0.,0.,0,N_mdm(str,expansionImportFile)},
-		{"expansion_samples",0x29,3,1,1,kw_175,0.,0.,0,N_mdm(nnint,expansionSamples)}
+	kw_176[5] = {
+		{"collocation_points",13,17,2,1,kw_174,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"collocation_ratio",10,17,2,1,kw_174,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
+		{"expansion_import_file",11,0,2,1,0,0.,0.,0,N_mdm(str,expansionImportFile)},
+		{"expansion_samples",13,3,2,1,kw_175,0.,0.,0,N_mdm(szarray,expansionSamples)}
 		},
 	kw_177[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxExportAnnotated)},
@@ -979,7 +980,7 @@ static KeyWord
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
 	kw_179[6] = {
-		{"collocation_points",0x29,0,1,1,0,0.,0.,0,N_mdm(nnint,collocationPoints)},
+		{"collocation_points",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
 		{"cross_validation",8,0,2,0,0,0.,0.,0,N_mdm(true,crossValidation)},
 		{"import_points_file",11,2,5,0,kw_178,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"reuse_points",8,0,4,0,0,0.,0.,0,N_mdm(lit,pointReuse_all)},
@@ -996,7 +997,7 @@ static KeyWord
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
 	kw_182[3] = {
-		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoGridDimPref)},
+		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
 		{"nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)}
 		},
@@ -1027,7 +1028,7 @@ static KeyWord
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
 		{"cubature_integrand",9,0,3,1,0,0.,0.,0,N_mdm(ushint,cubIntOrder)},
 		{"diagonal_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)},
-		{"expansion_order",13,4,3,1,kw_176,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"expansion_order",13,5,3,1,kw_176,0.,0.,0,N_mdm(usharray,expansionOrder)},
 		{"export_points_file",11,2,8,0,kw_177,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"full_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_FULL_COVARIANCE)},
 		{"least_interpolation",0,6,3,1,kw_179,0.,0.,2,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
@@ -1110,7 +1111,7 @@ static KeyWord
 		{0,0,1,0,0,kw_166},
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
 		{"diagonal_covariance",8,0,8,0,0,0.,0.,0,N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)},
-		{"dimension_preference",14,0,4,0,0,0.,0.,0,N_mdm(RealDL,anisoGridDimPref)},
+		{"dimension_preference",14,0,4,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
 		{"export_points_file",11,2,11,0,kw_192,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"full_covariance",8,0,8,0,0,0.,0.,0,N_mdm(type,covarianceControl_FULL_COVARIANCE)},
 		{"h_refinement",8,3,1,0,kw_194,0.,0.,0,N_mdm(type,refinementType_H_REFINEMENT)},
@@ -1190,11 +1191,11 @@ static KeyWord
 		{"refinement_rate",10,0,2,0,0,0.,0.,0,N_mdm(Real,refinementRate)}
 		},
 	kw_214[2] = {
-		{"num_generations",0x29,0,2,0,0,0.,0.,0,N_mdm(nnintz,numGenerations)},
+		{"num_generations",0x29,0,2,0,0,0.,0.,0,N_mdm(sizet,numGenerations)},
 		{"percent_change",10,0,1,0,0,0.,0.,0,N_mdm(Realz,convergenceTolerance)}
 		},
 	kw_215[2] = {
-		{"num_generations",0x29,0,2,0,0,0.,0.,0,N_mdm(nnintz,numGenerations)},
+		{"num_generations",0x29,0,2,0,0,0.,0.,0,N_mdm(sizet,numGenerations)},
 		{"percent_change",10,0,1,0,0,0.,0.,0,N_mdm(Realz,convergenceTolerance)}
 		},
 	kw_216[2] = {
@@ -1303,7 +1304,7 @@ static KeyWord
 		{"dot_sqp",8,9,11,1,kw_26,0.,0.,0,N_mdm(lit,methodName_dot_sqp)},
 		{"efficient_global",8,5,11,1,kw_79,0.,0.,0,N_mdm(lit,methodName_efficient_global)},
 		{"efficient_subspace",8,2,11,1,kw_80,0.,0.,0,N_mdm(lit,methodName_nond_efficient_subspace)},
-		{"final_solutions",0x29,0,10,0,0,0.,0.,0,N_mdm(nnintz,numFinalSolutions)},
+		{"final_solutions",0x29,0,10,0,0,0.,0.,0,N_mdm(sizet,numFinalSolutions)},
 		{"fsu_cvt",8,6,11,1,kw_83,0.,0.,0,N_mdm(lit,methodName_fsu_cvt)},
 		{"fsu_quasi_mc",8,10,11,1,kw_85},
 		{"gaussian_process_adaptive_importance_sampling",0,4,11,1,kw_91,0.,0.,4,N_mdm(lit,methodName_nond_gpais)},
@@ -1521,7 +1522,7 @@ static KeyWord
 	kw_258[5] = {
 		{"global",8,21,2,1,kw_252},
 		{"hierarchical",8,3,2,1,kw_254,0.,0.,0,N_mom(lit,surrogateType_hierarchical)},
-		{"id_surrogates",13,0,1,0,0,0.,0.,0,N_mom(intset,surrogateFnIndices)},
+		{"id_surrogates",13,0,1,0,0,0.,0.,0,N_mom(intsetm1,surrogateFnIndices)},
 		{"local",8,1,2,1,kw_256,0.,0.,0,N_mom(lit,surrogateType_local_taylor)},
 		{"multipoint",8,1,2,1,kw_257,0.,0.,0,N_mom(lit,surrogateType_multipoint_tana)}
 		},
@@ -1537,10 +1538,10 @@ static KeyWord
 	kw_260[6] = {
 		{"annotated",8,0,3,0,0,0.,0.,0,N_rem(true,expDataFileAnnotated)},
 		{"freeform",8,0,3,0,0,0.,0.,0,N_rem(false,expDataFileAnnotated)},
-		{"num_config_variables",0x29,0,4,0,0,0.,0.,0,N_rem(nnintz,numExpConfigVars)},
-		{"num_experiments",0x29,0,1,0,0,0.,0.,0,N_rem(nnintz,numExperiments)},
+		{"num_config_variables",0x29,0,4,0,0,0.,0.,0,N_rem(sizet,numExpConfigVars)},
+		{"num_experiments",0x29,0,1,0,0,0.,0.,0,N_rem(sizet,numExperiments)},
 		{"num_replicates",13,0,2,0,0,0.,0.,0,N_rem(ivec,numReplicates)},
-		{"num_std_deviations",0x29,0,5,0,0,0.,0.,0,N_rem(nnintz,numExpStdDeviations)}
+		{"num_std_deviations",0x29,0,5,0,0,0.,0.,0,N_rem(sizet,numExpStdDeviations)}
 		},
 	kw_261[6] = {
 		{"nonlinear_equality_scale_types",0x807,0,2,0,0,0.,0.,3,N_rem(strL,nonlinearEqScaleTypes)},
@@ -1569,10 +1570,10 @@ static KeyWord
 		{"least_squares_term_scale_types",0x807,0,1,0,0,0.,0.,7,N_rem(strL,primaryRespFnScaleTypes)},
 		{"least_squares_term_scales",0x806,0,2,0,0,0.,0.,7,N_rem(RealDL,primaryRespFnScales)},
 		{"least_squares_weights",6,0,3,0,0,0.,0.,7,N_rem(RealDL,primaryRespFnWeights)},
-		{"nonlinear_equality_constraints",0x29,6,6,0,kw_261,0.,0.,0,N_rem(nnintz,numNonlinearEqConstraints)},
-		{"nonlinear_inequality_constraints",0x29,8,5,0,kw_262,0.,0.,0,N_rem(nnintz,numNonlinearIneqConstraints)},
-		{"num_nonlinear_equality_constraints",0x21,6,6,0,kw_261,0.,0.,-2,N_rem(nnintz,numNonlinearEqConstraints)},
-		{"num_nonlinear_inequality_constraints",0x21,8,5,0,kw_262,0.,0.,-2,N_rem(nnintz,numNonlinearIneqConstraints)},
+		{"nonlinear_equality_constraints",0x29,6,6,0,kw_261,0.,0.,0,N_rem(sizet,numNonlinearEqConstraints)},
+		{"nonlinear_inequality_constraints",0x29,8,5,0,kw_262,0.,0.,0,N_rem(sizet,numNonlinearIneqConstraints)},
+		{"num_nonlinear_equality_constraints",0x21,6,6,0,kw_261,0.,0.,-2,N_rem(sizet,numNonlinearEqConstraints)},
+		{"num_nonlinear_inequality_constraints",0x21,8,5,0,kw_262,0.,0.,-2,N_rem(sizet,numNonlinearIneqConstraints)},
 		{"primary_scale_types",0x80f,0,1,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
 		{"primary_scales",0x80e,0,2,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
 		{"weights",14,0,3,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
@@ -1595,8 +1596,8 @@ static KeyWord
 		},
 	kw_266[3] = {
 		{0,0,8,0,0,kw_265},
-		{"id_analytic_gradients",13,0,2,2,0,0.,0.,0,N_rem(intL,idAnalyticGrads)},
-		{"id_numerical_gradients",13,0,1,1,0,0.,0.,0,N_rem(intL,idNumericalGrads)}
+		{"id_analytic_gradients",13,0,2,2,0,0.,0.,0,N_rem(intset,idAnalyticGrads)},
+		{"id_numerical_gradients",13,0,1,1,0,0.,0.,0,N_rem(intset,idNumericalGrads)}
 		},
 	kw_267[2] = {
 		{"fd_hessian_step_size",6,0,1,0,0,0.,0.,1,N_rem(RealL,fdHessStepSize)},
@@ -1614,9 +1615,9 @@ static KeyWord
 		{"bounds",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_bounds)},
 		{"central",8,0,3,0,0,0.,0.,0,N_rem(true,centralHess)},
 		{"forward",8,0,3,0,0,0.,0.,0,N_rem(false,centralHess)},
-		{"id_analytic_hessians",13,0,5,0,0,0.,0.,0,N_rem(intL,idAnalyticHessians)},
-		{"id_numerical_hessians",13,2,1,0,kw_267,0.,0.,0,N_rem(intL,idNumericalHessians)},
-		{"id_quasi_hessians",13,2,4,0,kw_269,0.,0.,0,N_rem(intL,idQuasiHessians)},
+		{"id_analytic_hessians",13,0,5,0,0,0.,0.,0,N_rem(intset,idAnalyticHessians)},
+		{"id_numerical_hessians",13,2,1,0,kw_267,0.,0.,0,N_rem(intset,idNumericalHessians)},
+		{"id_quasi_hessians",13,2,4,0,kw_269,0.,0.,0,N_rem(intset,idQuasiHessians)},
 		{"relative",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_relative)}
 		},
 	kw_271[6] = {
@@ -1639,10 +1640,10 @@ static KeyWord
 		},
 	kw_273[11] = {
 		{"multi_objective_weights",6,0,4,0,0,0.,0.,10,N_rem(RealDL,primaryRespFnWeights)},
-		{"nonlinear_equality_constraints",0x29,6,6,0,kw_271,0.,0.,0,N_rem(nnintz,numNonlinearEqConstraints)},
-		{"nonlinear_inequality_constraints",0x29,8,5,0,kw_272,0.,0.,0,N_rem(nnintz,numNonlinearIneqConstraints)},
-		{"num_nonlinear_equality_constraints",0x21,6,6,0,kw_271,0.,0.,-2,N_rem(nnintz,numNonlinearEqConstraints)},
-		{"num_nonlinear_inequality_constraints",0x21,8,5,0,kw_272,0.,0.,-2,N_rem(nnintz,numNonlinearIneqConstraints)},
+		{"nonlinear_equality_constraints",0x29,6,6,0,kw_271,0.,0.,0,N_rem(sizet,numNonlinearEqConstraints)},
+		{"nonlinear_inequality_constraints",0x29,8,5,0,kw_272,0.,0.,0,N_rem(sizet,numNonlinearIneqConstraints)},
+		{"num_nonlinear_equality_constraints",0x21,6,6,0,kw_271,0.,0.,-2,N_rem(sizet,numNonlinearEqConstraints)},
+		{"num_nonlinear_inequality_constraints",0x21,8,5,0,kw_272,0.,0.,-2,N_rem(sizet,numNonlinearIneqConstraints)},
 		{"objective_function_scale_types",0x807,0,2,0,0,0.,0.,2,N_rem(strL,primaryRespFnScaleTypes)},
 		{"objective_function_scales",0x806,0,3,0,0,0.,0.,2,N_rem(RealDL,primaryRespFnScales)},
 		{"primary_scale_types",0x80f,0,2,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
@@ -1669,23 +1670,23 @@ static KeyWord
 	kw_277[19] = {
 		{"analytic_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_analytic)},
 		{"analytic_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_analytic)},
-		{"calibration_terms",0x29,15,3,1,kw_263,0.,0.,0,N_rem(nnintz,numLeastSqTerms)},
+		{"calibration_terms",0x29,15,3,1,kw_263,0.,0.,0,N_rem(sizet,numLeastSqTerms)},
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_rem(strL,responseLabels)},
 		{"id_responses",11,0,1,0,0,0.,0.,0,N_rem(str,idResponses)},
-		{"least_squares_terms",0x21,15,3,1,kw_263,0.,0.,-3,N_rem(nnintz,numLeastSqTerms)},
+		{"least_squares_terms",0x21,15,3,1,kw_263,0.,0.,-3,N_rem(sizet,numLeastSqTerms)},
 		{"mixed_gradients",8,2,4,2,kw_266,0.,0.,0,N_rem(lit,gradientType_mixed)},
 		{"mixed_hessians",8,8,5,3,kw_270,0.,0.,0,N_rem(lit,hessianType_mixed)},
 		{"no_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_none)},
 		{"no_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_none)},
-		{"num_least_squares_terms",0x21,15,3,1,kw_263,0.,0.,-8,N_rem(nnintz,numLeastSqTerms)},
-		{"num_objective_functions",0x21,11,3,1,kw_273,0.,0.,4,N_rem(nnintz,numObjectiveFunctions)},
-		{"num_response_functions",0x21,0,3,1,0,0.,0.,6,N_rem(nnintz,numResponseFunctions)},
+		{"num_least_squares_terms",0x21,15,3,1,kw_263,0.,0.,-8,N_rem(sizet,numLeastSqTerms)},
+		{"num_objective_functions",0x21,11,3,1,kw_273,0.,0.,4,N_rem(sizet,numObjectiveFunctions)},
+		{"num_response_functions",0x21,0,3,1,0,0.,0.,6,N_rem(sizet,numResponseFunctions)},
 		{"numerical_gradients",8,8,4,2,kw_265,0.,0.,0,N_rem(lit,gradientType_numerical)},
 		{"numerical_hessians",8,7,5,3,kw_274,0.,0.,0,N_rem(lit,hessianType_numerical)},
-		{"objective_functions",0x29,11,3,1,kw_273,0.,0.,0,N_rem(nnintz,numObjectiveFunctions)},
+		{"objective_functions",0x29,11,3,1,kw_273,0.,0.,0,N_rem(sizet,numObjectiveFunctions)},
 		{"quasi_hessians",8,2,5,3,kw_276,0.,0.,0,N_rem(lit,hessianType_quasi)},
 		{"response_descriptors",7,0,2,0,0,0.,0.,-14,N_rem(strL,responseLabels)},
-		{"response_functions",0x29,0,3,1,0,0.,0.,0,N_rem(nnintz,numResponseFunctions)}
+		{"response_functions",0x29,0,3,1,0,0.,0.,0,N_rem(sizet,numResponseFunctions)}
 		},
 	kw_278[1] = {
 		{"method_list",15,0,1,1,0,0.,0.,0,N_stm(strL,hybridMethodList)}

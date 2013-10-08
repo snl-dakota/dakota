@@ -69,6 +69,8 @@ protected:
   virtual void compute_expansion();
   /// uniformly increment the expansion order (PCE only)
   virtual void increment_order();
+  /// increment the input specification sequence (PCE only)
+  virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
   /// print expansion coefficients, as supported by derived instance
@@ -102,9 +104,6 @@ protected:
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
   void refine_expansion();
-
-  /// update settings for subsequent passes in the case of multifidelity models
-  void update_hierarchy();
 
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,

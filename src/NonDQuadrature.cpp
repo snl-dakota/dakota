@@ -169,7 +169,8 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
   if (dim_pref_spec.empty()) //   iso tensor grid
     dim_quad_order.assign(numContinuousVars, quad_order_spec);
   else                       // aniso tensor grid
-    anisotropic_preference(quad_order_spec, dim_pref_spec, dim_quad_order);
+    dimension_preference_to_anisotropic_order(quad_order_spec, dim_pref_spec,
+					      dim_quad_order);
   //dimPrefRef = dimPrefSpec; // not currently necessary
 
   // Update Pecos::TensorProductDriver::quadOrder from dim_quad_order
@@ -396,35 +397,16 @@ increment_dimension_quadrature_order(const RealVector& dim_pref,
   dim_quad_order[max_dim_pref_index] += 1;
   // now balance the other dims relative to this new increment, preserving
   // previous resolution
-  anisotropic_preference(dim_pref, dim_quad_order);
+  update_anisotropic_order(dim_pref, dim_quad_order);
 
   if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
   else             tpqDriver->quadrature_order(dim_quad_order);
 }
 
 
-/** This version of anisotropic_preference() converts a scalar
-    quad_order_spec and a dim_pref vector into a quad_order vector.  It is
-    used for initialization and does not enforce a reference lower bound. */
 void NonDQuadrature::
-anisotropic_preference(unsigned short quad_order_spec,
-		       const RealVector& dim_pref_spec,
-		       UShortArray& dim_quad_order)
-{
-  Real max_dim_pref = dim_pref_spec[0]; size_t i, max_dim_pref_index = 0;
-  for (i=1; i<numContinuousVars; ++i)
-    if (dim_pref_spec[i] > max_dim_pref)
-      { max_dim_pref = dim_pref_spec[i]; max_dim_pref_index = i; }
-
-  dim_quad_order.resize(numContinuousVars);
-  for (i=0; i<numContinuousVars; ++i)
-    dim_quad_order[i] = (i == max_dim_pref_index) ? quad_order_spec :
-      (unsigned short)(quad_order_spec*dim_pref_spec[i]/max_dim_pref);//truncate
-}
-
-
-void NonDQuadrature::
-anisotropic_preference(const RealVector& dim_pref, UShortArray& quad_order_ref)
+update_anisotropic_order(const RealVector& dim_pref,
+			 UShortArray& quad_order_ref)
 {
   // Logic is loosely patterned after anisotropic SSG in which the dominant
   // dimension is constrained by the current ssgLevel and all nondominant

@@ -194,16 +194,16 @@ Iterator::Iterator(BaseConstructor, Model& model):
 	   << std::endl;
       abort_handler(-1);
     }
-    const IntList& mixed_grad_analytic_ids
-      = probDescDB.get_il("responses.gradients.mixed.id_analytic");
-    const IntList& mixed_grad_numerical_ids
-      = probDescDB.get_il("responses.gradients.mixed.id_numerical");
+    const IntSet& mixed_grad_analytic_ids
+      = probDescDB.get_is("responses.gradients.mixed.id_analytic");
+    const IntSet& mixed_grad_numerical_ids
+      = probDescDB.get_is("responses.gradients.mixed.id_numerical");
     Cout << "Mixed gradients: analytic gradients for functions { ";
-    for (ILCIter cit=mixed_grad_analytic_ids.begin();
+    for (ISCIter cit=mixed_grad_analytic_ids.begin();
 	 cit!=mixed_grad_analytic_ids.end(); cit++)
       Cout << *cit << ' ';
     Cout << "} and\nnumerical gradients for functions { ";
-    for (ILCIter cit=mixed_grad_numerical_ids.begin();
+    for (ISCIter cit=mixed_grad_numerical_ids.begin();
 	 cit!=mixed_grad_numerical_ids.end(); cit++)
       Cout << *cit << ' ';
     Cout << "} using " << intervalType << " differences\ncalculated by the "
@@ -212,7 +212,7 @@ Iterator::Iterator(BaseConstructor, Model& model):
 
   Cout << "hessianType = " << hessianType << '\n';
   if ( hessianType == "numerical" || ( hessianType == "mixed" &&
-      !probDescDB.get_il("responses.hessians.mixed.id_numerical").empty() ) ) {
+      !probDescDB.get_is("responses.hessians.mixed.id_numerical").empty() ) ) {
     const RealVector& fdhss
       = probDescDB.get_rv("responses.fd_hessian_step_size");
     if (fdhss.length()) // else use defaults from initializer list

@@ -104,7 +104,7 @@ protected:
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
 
   void increment_grid_preference(const RealVector& dim_pref);
-  void increment_refinement_sequence();
+  void increment_specification_sequence();
 
   int num_samples() const;
 
@@ -129,15 +129,10 @@ private:
   /// with highest product weight
   void filter_parameter_sets();
 
-  /// initialize quad_order vector based on quad_order_spec scalar and
-  /// dim_pref_spec vector
-  void anisotropic_preference(unsigned short quad_order_spec,
-			      const RealVector& dim_pref_spec,
-			      UShortArray& quad_order);
   /// update quad_order_ref based on an updated dimension preference,
   /// enforcing previous values as a lower bound
-  void anisotropic_preference(const RealVector& dim_pref,
-			      UShortArray& quad_order_ref);
+  void update_anisotropic_order(const RealVector& dim_pref,
+				UShortArray& quad_order_ref);
 
   /// initialize dim_quad_order from quad_order_spec and dim_pref_spec
   void initialize_dimension_quadrature_order(unsigned short quad_order_spec,
@@ -231,7 +226,7 @@ increment_grid_preference(const RealVector& dim_pref)
 { increment_grid_preference(dim_pref, dimQuadOrderRef); }
 
 
-inline void NonDQuadrature::increment_refinement_sequence()
+inline void NonDQuadrature::increment_specification_sequence()
 {
   if (sequenceIndex+1 < quadOrderSeqSpec.size())
     ++sequenceIndex;

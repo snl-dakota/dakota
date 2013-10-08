@@ -1183,8 +1183,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
   if (!dbRep)
 	Null_rep("get_rv");
-  if (Begins(entry_name,"strategy.")) {
-    if (entry_name == "strategy.concurrent.parameter_sets")
+  if (strbegins(entry_name,"strategy.")) {
+    if (strends(entry_name, "concurrent.parameter_sets"))
       return dbRep->strategySpec.dataStratRep->concurrentParameterSets;
   }
   else if ((L = Begins(entry_name, "method."))) {
@@ -1202,7 +1202,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"linear_inequality_lower_bounds", P linearIneqLowerBnds},
 	{"linear_inequality_scales", P linearIneqScales},
 	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
-	{"nond.dimension_preference", P anisoGridDimPref},
+	{"nond.dimension_preference", P anisoDimPref},
 	{"nond.proposal_covariance_scale", P proposalCovScale},
 	{"nond.regression_noise_tolerance", P regressionNoiseTol},
 	{"parameter_study.final_point", P finalPoint},
@@ -1301,10 +1301,10 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
     if ((kw = (KW<RealVector, DataVariablesRep>*)Binsearch(RVdv, L)))
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
-  else if (Begins(entry_name, "interface.")) {
+  else if (strbegins(entry_name, "interface.")) {
     if (dbRep->interfaceDBLocked)
 	Locked_db();
-    else if (entry_name == "interface.failure_capture.recovery_fn_vals")
+    else if (strends(entry_name, "failure_capture.recovery_fn_vals"))
       return dbRep->dataInterfaceIter->dataIfaceRep->recoveryFnVals;
   }
   else if ((L = Begins(entry_name, "responses."))) {
@@ -1410,6 +1410,31 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 }
 
 
+const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+  	Null_rep("get_sza");
+  if ((L = Begins(entry_name, "method."))) {
+    if (dbRep->methodDBLocked)
+	Locked_db();
+    #define P &DataMethodRep::
+    static KW<SizetArray, DataMethodRep> SZAdme[] = {	// must be sorted
+	{"nond.collocation_points", P collocationPoints},
+	{"nond.expansion_samples", P expansionSamples}};
+    #undef P
+
+    KW<SizetArray, DataMethodRep> *kw;
+    if ((kw = (KW<SizetArray, DataMethodRep>*)Binsearch(SZAdme, L)))
+	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+  }
+
+  Bad_name(entry_name, "get_sza");
+  return abort_handler_t<const SizetArray&>(-1);
+}
+
+
 const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 {
   const char *L;
@@ -1445,7 +1470,7 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
   if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
-    if (entry_name == "variables.uncertain.correlation_matrix")
+    if (strends(entry_name, "uncertain.correlation_matrix"))
       return dbRep->dataVariablesIter->dataVarsRep->uncertainCorrelations;
   }
   Bad_name(entry_name, "get_rsm");
@@ -1528,17 +1553,23 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 }
 
 
-const IntList& ProblemDescDB::get_il(const String& entry_name) const
+const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
   const char *L;
 
   if (!dbRep)
-	Null_rep("get_il");
+	Null_rep("get_is");
+  if (strbegins(entry_name, "model.")) {
+    if (dbRep->modelDBLocked)
+	Locked_db();
+    if (strends(entry_name, "surrogate.function_indices"))
+      return dbRep->dataModelIter->dataModelRep->surrogateFnIndices;
+  }
   else if ((L = Begins(entry_name, "responses."))) {
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<IntList, DataResponsesRep> ILdr[] = {	// must be sorted
+    static KW<IntSet, DataResponsesRep> ISdr[] = {	// must be sorted
 	{"gradients.mixed.id_analytic", P idAnalyticGrads},
 	{"gradients.mixed.id_numerical", P idNumericalGrads},
 	{"hessians.mixed.id_analytic", P idAnalyticHessians},
@@ -1546,25 +1577,9 @@ const IntList& ProblemDescDB::get_il(const String& entry_name) const
 	{"hessians.mixed.id_quasi", P idQuasiHessians}};
     #undef P
 
-    KW<IntList, DataResponsesRep> *kw;
-    if ((kw = (KW<IntList, DataResponsesRep>*)Binsearch(ILdr, L)))
+    KW<IntSet, DataResponsesRep> *kw;
+    if ((kw = (KW<IntSet, DataResponsesRep>*)Binsearch(ISdr, L)))
 	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
-  }
-
-  Bad_name(entry_name, "get_il");
-  return abort_handler_t<const IntList&>(-1);
-}
-
-
-const IntSet& ProblemDescDB::get_is(const String& entry_name) const
-{
-  if (!dbRep)
-	Null_rep("get_is");
-  if (strbegins(entry_name, "model.")) {
-    if (dbRep->modelDBLocked)
-	Locked_db();
-    if (entry_name == "model.surrogate.function_indices")
-      return dbRep->dataModelIter->dataModelRep->surrogateFnIndices;
   }
   Bad_name(entry_name, "get_is");
   return abort_handler_t<const IntSet&>(-1);
@@ -1673,8 +1688,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
   if (!dbRep)
 	Null_rep("get_sa");
-  if (Begins(entry_name, "strategy.")) {
-    if (entry_name == "strategy.hybrid.method_list")
+  if (strbegins(entry_name, "strategy.")) {
+    if (strends(entry_name, "hybrid.method_list"))
       return dbRep->strategySpec.dataStratRep->hybridMethodList;
   }
   else if ((L = Begins(entry_name, "method."))) {
@@ -1774,7 +1789,7 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
   if (strbegins(entry_name, "interface.")) {
     if (dbRep->interfaceDBLocked)
 	Locked_db();
-    if (entry_name == "interface.application.analysis_components")
+    if (strends(entry_name, "application.analysis_components"))
       return dbRep->dataInterfaceIter->dataIfaceRep->analysisComponents;
   }
   Bad_name(entry_name, "get_s2a");
@@ -1889,7 +1904,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
   else if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
-    if (entry_name == "variables.id")
+    if (strends(entry_name, "id"))
       return dbRep->dataVariablesIter->dataVarsRep->idVariables;
   }
   else if ((L = Begins(entry_name, "interface."))) {
@@ -1950,7 +1965,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
   if (!dbRep)
 	Null_rep("get_real");
   if (strbegins(entry_name, "strategy.")) {
-    if (entry_name == "strategy.hybrid.local_search_probability")
+    if (strends(entry_name, "hybrid.local_search_probability"))
       return dbRep->strategySpec.dataStratRep->hybridLSProb;
   }
   else if ((L = Begins(entry_name, "method."))) {
@@ -2070,9 +2085,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"max_iterations", P maxIterations},
 	{"nl2sol.covariance", P covarianceType},
 	{"nond.batch_size", P batchSize},
-	{"nond.collocation_points", P collocationPoints},
 	{"nond.emulator_samples", P emulatorSamples},
-	{"nond.expansion_samples", P expansionSamples},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},
@@ -2211,9 +2224,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
   if (strbegins(entry_name, "method.")) {
     if (dbRep->methodDBLocked)
 	Locked_db();
-    DataMethodRep *MeRep = dbRep->dataMethodIter->dataMethodRep;
     if (strends(entry_name, "nond.cubature_integrand"))
-      return MeRep->cubIntOrder;
+      return dbRep->dataMethodIter->dataMethodRep->cubIntOrder;
   }
   Bad_name(entry_name, "get_ushort");
   return abort_handler_t<unsigned short>(-1);
@@ -2674,7 +2686,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
   if (strbegins(entry_name, "variables.")) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
-    if (entry_name == "variables.uncertain.correlation_matrix") {
+    if (strends(entry_name, "uncertain.correlation_matrix")) {
 	dbRep->dataVariablesIter->dataVarsRep->uncertainCorrelations = rsm;
 	return;
 	}

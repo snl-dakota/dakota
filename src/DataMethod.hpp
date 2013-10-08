@@ -666,7 +666,7 @@ public:
   /// the \c expansion_order specification in \ref MethodNonDPCE
   UShortArray expansionOrder;
   /// the \c expansion_samples specification in \ref MethodNonDPCE
-  int expansionSamples;
+  SizetArray expansionSamples;
   /// allows for incremental PCE construction using the \c
   /// incremental_lhs specification in \ref MethodNonDPCE
   String expansionSampleType;
@@ -677,12 +677,12 @@ public:
   /// \ref MethodNonDSC, and other stochastic expansion-enabled methods
   UShortArray sparseGridLevel;
   /// the \c dimension_preference specification for tensor and sparse grids
-  /// in \ref MethodNonDPCE and \ref MethodNonDSC
-  RealVector anisoGridDimPref;
+  /// and expansion orders in \ref MethodNonDPCE and \ref MethodNonDSC
+  RealVector anisoDimPref;
   /// the \c cubature_integrand specification in \ref MethodNonDPCE
   unsigned short cubIntOrder;
   /// the \c collocation_points specification in \ref MethodNonDPCE
-  int collocationPoints;
+  SizetArray collocationPoints;
   /// the \c collocation_ratio specification in \ref MethodNonDPCE
   Real collocationRatio;
   /// order applied to the number of expansion terms when applying

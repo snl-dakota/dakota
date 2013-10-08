@@ -85,15 +85,15 @@ ApplicationInterface(const ProblemDescDB& problem_db):
       asv_value += 4;
     defaultASV.assign(num_fns, asv_value);
     if (grad_type == "mixed") {
-      const IntList& id_anal_grad
-	= problem_db.get_il("responses.gradients.mixed.id_analytic");
-      for (ILCIter cit=id_anal_grad.begin(); cit!=id_anal_grad.end(); ++cit)
+      const IntSet& id_anal_grad
+	= problem_db.get_is("responses.gradients.mixed.id_analytic");
+      for (ISCIter cit=id_anal_grad.begin(); cit!=id_anal_grad.end(); ++cit)
         defaultASV[*cit - 1] += 2;
     }
     if (hess_type == "mixed") {
-      const IntList& id_anal_hess
-	= problem_db.get_il("responses.hessians.mixed.id_analytic");
-      for (ILCIter cit=id_anal_hess.begin(); cit!=id_anal_hess.end(); ++cit)
+      const IntSet& id_anal_hess
+	= problem_db.get_is("responses.hessians.mixed.id_analytic");
+      for (ISCIter cit=id_anal_hess.begin(); cit!=id_anal_hess.end(); ++cit)
         defaultASV[*cit - 1] += 4;
     }
   }
