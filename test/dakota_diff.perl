@@ -157,6 +157,8 @@ sub compare_output {
   my @base_excerpt = @{$_[1]};
   my @tst_excerpt  = @{$_[2]};
 
+  my @base_diffs = ();
+  my @test_diffs = ();
   my $test_diff = 0;
   my $test_fail = 0;
 
@@ -553,8 +555,8 @@ sub compare_output {
   if ($test_fail == 0) {
     while ( scalar(@base_excerpt) > 0 ) { 
       $test_diff = 1;
-      push @base_diffs, $base;
       $base = shift @base_excerpt; # grab next line
+      push @base_diffs, $base;
     }
   }
 
@@ -572,9 +574,6 @@ sub compare_output {
     foreach (@test_diffs) {
       print "test> $_";
     }
-    @base_diffs = ();
-    @test_diffs = ();
-    $test_diff = 0;
   }
 
 }  # end compare_output
