@@ -875,13 +875,14 @@ KEYWORD12 method
           ( cubature_integrand INTEGER
           |
           ( expansion_order INTEGERLIST
-            ( collocation_points INTEGER >= 0
+	    [ dimension_preference REALLIST ]
+            ( collocation_points INTEGERLIST
               [ ratio_order REAL ]
-              [ ( least_squares
-                  [ svd
-                  |
-                  ( equality_constrained ]
-                )
+              [ least_squares
+                [ svd
+                |
+                ( equality_constrained ]
+              )
               |
               ( orthogonal_matching_pursuit ALIAS omp
                 [ noise_tolerance REALLIST ]
@@ -913,11 +914,11 @@ KEYWORD12 method
             |
             ( collocation_ratio REAL
               [ ratio_order REAL ]
-              [ ( least_squares
-                  [ svd
-                  |
-                  ( equality_constrained ]
-                )
+              [ least_squares
+                [ svd
+                |
+                ( equality_constrained ]
+              )
               |
               ( orthogonal_matching_pursuit ALIAS omp
                 [ noise_tolerance REALLIST ]
@@ -948,7 +949,7 @@ KEYWORD12 method
               ]
             )
             |
-            ( expansion_samples INTEGER >= 0
+            ( expansion_samples INTEGERLIST
               [ reuse_points ALIAS reuse_samples ]
               [ incremental_lhs ]
               [ import_points_file STRING
@@ -962,7 +963,7 @@ KEYWORD12 method
           )
           |
           ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli
-            ( collocation_points INTEGER >= 0
+            ( collocation_points INTEGERLIST
             [ cross_validation ]
             [ tensor_grid INTEGERLIST ]
             [ reuse_points ALIAS reuse_samples ]
@@ -1352,7 +1353,7 @@ KEYWORD12 method
               [ system
                 ( series
                 |
-                (  parallel
+                ( parallel
               ]
             ]
           ]
