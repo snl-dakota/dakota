@@ -74,8 +74,21 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
+  String approx_type;
   bool import_annotated = false, regression_flag = false;
-  String approx_type; UShortArray exp_order;
+  // expansion_order defined for expansion_samples/regression
+  UShortArray exp_order;
+  if (!expOrderSeqSpec.empty()) {
+    const RealVector& dim_pref
+      = probDescDB.get_rv("method.nond.dimension_preference");
+    unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
+      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+    if (dim_pref.empty())
+      exp_order.assign(numContinuousVars, scalar);
+    else
+      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
+	dim_pref, exp_order);
+  }
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_seq_spec
       = probDescDB.get_usa("method.nond.quadrature_order");
@@ -98,19 +111,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
     }
     else { // expansion_samples or collocation_{points,ratio}
-      // expansion_order defined for expansion_samples/collocation_pts
-      if (!expOrderSeqSpec.empty()) {
-	const RealVector& dim_pref
-	  = probDescDB.get_rv("method.nond.dimension_preference");
-	unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
-	  expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-	if (dim_pref.empty())
-	  exp_order.assign(numContinuousVars, scalar);
-	else
-	  NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
-	    dim_pref, exp_order);
-      }
-
       // default pattern is static for consistency in any outer loop,
       // but gets overridden below for unstructured grid refinement.
       bool vary_pattern = false;
