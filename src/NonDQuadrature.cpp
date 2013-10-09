@@ -166,11 +166,8 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
 				      UShortArray& dim_quad_order)
 {
   // Update dimQuadOrderRef from quad_order_spec and dimPrefSpec
-  if (dim_pref_spec.empty()) //   iso tensor grid
-    dim_quad_order.assign(numContinuousVars, quad_order_spec);
-  else                       // aniso tensor grid
-    dimension_preference_to_anisotropic_order(quad_order_spec, dim_pref_spec,
-					      dim_quad_order);
+  dimension_preference_to_anisotropic_order(quad_order_spec,   dim_pref_spec,
+					    numContinuousVars, dim_quad_order);
   //dimPrefRef = dimPrefSpec; // not currently necessary
 
   // Update Pecos::TensorProductDriver::quadOrder from dim_quad_order

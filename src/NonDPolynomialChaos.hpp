@@ -114,6 +114,8 @@ private:
 
   /// user specification for expansion_order (array for multifidelity)
   UShortArray expOrderSeqSpec;
+  /// user specification for dimension_preference
+  RealVector dimPrefSpec;
   /// user specification for collocation_points (array for multifidelity)
   SizetArray collocPtsSeqSpec;
   /// user specification for expansion_samples (array for multifidelity)

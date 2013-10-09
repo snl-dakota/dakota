@@ -52,6 +52,8 @@ public:
 
   /// increment OrthogPolyApproximation::approxOrder uniformly
   void increment_order();
+  /// replace OrthogPolyApproximation::approxOrder wth incoming order
+  void update_order(const UShortArray& order);
 
   /// set pecosBasisApprox.configOptions.expCoeffsSolnApproach
   void solution_approach(short soln_approach);
@@ -303,6 +305,10 @@ inline PecosApproximation::~PecosApproximation()
 
 inline void PecosApproximation::increment_order()
 { polyApproxRep->increment_order(); }
+
+
+inline void PecosApproximation::update_order(const UShortArray& order)
+{ polyApproxRep->update_order(order); }
 
 
 inline void PecosApproximation::solution_approach(short soln_approach)

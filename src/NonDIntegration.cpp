@@ -162,12 +162,18 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
 void NonDIntegration::
 dimension_preference_to_anisotropic_order(unsigned short scalar_order_spec,
 					  const RealVector& dim_pref_spec,
+					  size_t num_v,
 					  UShortArray& aniso_order)
 {
   // Note: this fn is the inverse of anisotropic_order_to_dimension_preference()
 
+  if (dim_pref_spec.empty()) {
+    aniso_order.assign(num_v, scalar_order_spec);
+    return;
+  }
+
   Real max_dim_pref = dim_pref_spec[0];
-  size_t i, max_dim_pref_index = 0, num_v = dim_pref_spec.length();
+  size_t i, max_dim_pref_index = 0;
   for (i=1; i<num_v; ++i)
     if (dim_pref_spec[i] > max_dim_pref)
       { max_dim_pref = dim_pref_spec[i]; max_dim_pref_index = i; }
@@ -196,12 +202,12 @@ anisotropic_order_to_dimension_preference(const UShortArray& aniso_order,
       { scalar_order = aniso_order[i]; anisotropic = true; }
 
   if (anisotropic) { // preserve ratios; normalization not required
-    dim_pref.resize(num_v);
+    dim_pref.sizeUninitialized(num_v);
     for (i=0; i<num_v; ++i)
       dim_pref[i] = (Real)aniso_order[i];
   }
   else
-    dim_pref.resize(0);
+    dim_pref.sizeUninitialized(0);
 }
 
 

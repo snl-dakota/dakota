@@ -38,6 +38,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
   expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
+  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
   sequenceIndex(0)
@@ -79,15 +80,10 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // expansion_order defined for expansion_samples/regression
   UShortArray exp_order;
   if (!expOrderSeqSpec.empty()) {
-    const RealVector& dim_pref
-      = probDescDB.get_rv("method.nond.dimension_preference");
     unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
       expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-    if (dim_pref.empty())
-      exp_order.assign(numContinuousVars, scalar);
-    else
-      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
-	dim_pref, exp_order);
+    NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
+      dimPrefSpec, numContinuousVars, exp_order);
   }
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_seq_spec
@@ -99,12 +95,12 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     if (!quad_order_seq_spec.empty()) {
       expansionCoeffsApproach = Pecos::QUADRATURE;
       construct_quadrature(u_space_sampler, g_u_model, quad_order_seq_spec,
-	probDescDB.get_rv("method.nond.dimension_preference"));
+	dimPrefSpec);
     }
     else if (!ssg_level_seq_spec.empty()) {
       expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
       construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_seq_spec,
-	probDescDB.get_rv("method.nond.dimension_preference"));
+	dimPrefSpec);
     }
     else if (cub_int_spec != USHRT_MAX) {
       expansionCoeffsApproach = Pecos::CUBATURE;
@@ -517,14 +513,19 @@ void NonDPolynomialChaos::increment_specification_sequence()
     break;
   }
 
+  UShortArray exp_order;
+  if (update_exp || (update_sampler && tensorRegression) )
+    NonDIntegration::dimension_preference_to_anisotropic_order(
+      expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
+      exp_order);
+
   if (update_exp) {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     PecosApproximation* poly_approx_rep;
     for (size_t i=0; i<numFunctions; i++) {
       poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      //if (poly_approx_rep) // may be NULL based on approxFnIndices
-	//poly_approx_rep->expansion_order(expOrderSeqSpec[sequenceIndex]);
-        // *** TO DO, also need to manage dim_pref
+      if (poly_approx_rep) // may be NULL based on approxFnIndices
+	poly_approx_rep->update_order(exp_order);
     }
   }
 
@@ -533,9 +534,13 @@ void NonDPolynomialChaos::increment_specification_sequence()
       NonDQuadrature* nond_quad
 	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
       nond_quad->samples(numSamplesOnModel);
-      //if (nond_quad->mode() == RANDOM_TENSOR)
-      //  nond_quad->update_grid(expOrderSeqSpec[sequenceIndex]); // *** TO DO
-      //nond_quad->update(); // *** TO DO: needed?
+      if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
+	UShortArray dim_quad_order(numContinuousVars);
+	for (size_t i=0; i<numContinuousVars; ++i)
+	  dim_quad_order[i] = exp_order[i] + 1;
+        nond_quad->quadrature_order(dim_quad_order);
+      }
+      nond_quad->update(); // sanity check on sizes, likely a no-op
     }
     else { // enforce increment through sampling_reset()
       NonDSampling* nond_sampling

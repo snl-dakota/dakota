@@ -71,11 +71,13 @@ public:
   //- Heading: Member functions
   //
 
-  /// propagate any numSamples updates and/or grid increments
+  /// propagate any numSamples updates and/or grid updates/increments
   void update();
 
   /// return Pecos::TensorProductDriver::quadOrder
   const Pecos::UShortArray& quadrature_order() const;
+  /// set dimQuadOrderRef and map to Pecos::TensorProductDriver::quadOrder
+  void quadrature_order(const Pecos::UShortArray& dim_quad_order);
 
   /// set numSamples
   void samples(size_t samples);
@@ -178,6 +180,15 @@ private:
 
 inline const Pecos::UShortArray& NonDQuadrature::quadrature_order() const
 { return tpqDriver->quadrature_order(); }
+
+
+inline void NonDQuadrature::
+quadrature_order(const Pecos::UShortArray& dim_quad_order)
+{
+  dimQuadOrderRef = dim_quad_order;
+  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
+  else             tpqDriver->quadrature_order(dim_quad_order);
+}
 
 
 inline void NonDQuadrature::samples(size_t samples)
