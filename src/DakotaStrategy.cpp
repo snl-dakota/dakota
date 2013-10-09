@@ -469,7 +469,8 @@ void Strategy::schedule_iterators(Iterator& the_iterator, Model& the_model)
 
 
 /** This function is adapted from
-    ApplicationInterface::self_schedule_evaluations(). */
+    ApplicationInterface::self_schedule_evaluations().  It occurs on a
+    dedicated master scheduler, so output is directed to std::cout.*/
 void Strategy::self_schedule_iterators(Model& the_model)
 {
   // model.init_communicators() is called on the iterator servers, but not on
@@ -477,7 +478,7 @@ void Strategy::self_schedule_iterators(Model& the_model)
   parallelLib.print_configuration(); // matches call within init_communicators()
 
   int i, num_sends = std::min(numIteratorServers, numIteratorJobs);
-  Cout << "First pass: assigning " << num_sends << " iterator jobs among " 
+  std::cout << "First pass: assigning " << num_sends << " iterator jobs among " 
        << numIteratorServers << " servers\n";
 
   MPIPackBuffer*   send_buffers  = new MPIPackBuffer   [num_sends];
@@ -500,7 +501,7 @@ void Strategy::self_schedule_iterators(Model& the_model)
 
   // self-schedule remaining jobs
   if (num_sends < numIteratorJobs) {
-    Cout << "Second pass: self-scheduling " << numIteratorJobs-num_sends 
+    std::cout << "Second pass: self-scheduling " << numIteratorJobs-num_sends 
          << " remaining iterator jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
     MPI_Status* status_array = new MPI_Status [num_sends];
@@ -534,7 +535,7 @@ void Strategy::self_schedule_iterators(Model& the_model)
     delete [] index_array;
   }
   else { // all jobs assigned in first pass
-    Cout << "Waiting on all iterator jobs." << endl;
+    std::cout << "Waiting on all iterator jobs." << endl;
     parallelLib.waitall(numIteratorJobs, recv_requests);
     // All buffers received, now generate rawResponseArray
     for (i=0; i<numIteratorJobs; i++)
