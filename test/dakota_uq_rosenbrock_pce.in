@@ -5,9 +5,9 @@ strategy,
 
 method,
 	polynomial_chaos
-# 	  expansion_order    = 4 2	#14,#15,#16,#17,#18
-# 	  expansion_order    = 4	#19
 	  quadrature_order   = 5	#0,#1,#2,#3,#4,#5,#12,#13,#20,#21,#22,#23,#24,#25,#26,#27,#28
+# 	  expansion_order    = 4	#14,#15,#16,#17,#18,#19
+# 	  dimension_preference = 4 2	#14,#15,#16,#17,#18
 	  dimension_preference = 5 3	#0,#1,#2,#3,#4,#20,#21,#22,#23,#24,#25,#26,#27,#28
 # One SSG level higher for n=5 relative to n=2:
 # One SSG level higher for anisotropic relative to isotropic:
