@@ -139,6 +139,8 @@ public:
 
   /// return Pecos::OrthogPolyApproximation::expansion_terms()
   size_t expansion_terms() const;
+  /// return Pecos::OrthogPolyApproximation::expansion_order()
+  const UShortArray& expansion_order() const;
 
   /// set the noise tolerance(s) for compressed sensing algorithms
   void noise_tolerance(const RealVector& noise_tol);
@@ -454,6 +456,10 @@ inline void PecosApproximation::coefficients_norms_flag(bool flag)
 
 inline size_t PecosApproximation::expansion_terms() const
 { return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_terms(); }
+
+
+inline const UShortArray& PecosApproximation::expansion_order() const
+{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_order(); }
 
 
 inline void PecosApproximation::noise_tolerance(const RealVector& noise_tol)
