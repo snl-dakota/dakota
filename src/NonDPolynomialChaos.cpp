@@ -484,7 +484,7 @@ void NonDPolynomialChaos::compute_expansion()
 
 void NonDPolynomialChaos::increment_specification_sequence()
 {
-  bool update_exp = false, update_sampler = false;
+  bool update_exp = false, update_sampler = false, update_ratio = false;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: case Pecos::CUBATURE:
@@ -506,27 +506,53 @@ void NonDPolynomialChaos::increment_specification_sequence()
     break;
   default: // regression
     // advance expansionOrder and/or collocationPoints, as admissible
-    if (sequenceIndex+1 <  expOrderSeqSpec.size()) update_exp     = true;
-    if (sequenceIndex+1 < collocPtsSeqSpec.size()) update_sampler = true;
+    if (sequenceIndex+1 <  expOrderSeqSpec.size())   update_exp     = true;
+    if (sequenceIndex+1 < collocPtsSeqSpec.size())   update_sampler = true;
+    else if (collocPtsSeqSpec.empty() && update_exp) update_ratio   = true;
     if (update_exp || update_sampler) ++sequenceIndex;
     if (update_sampler) numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+    if (collocPtsSeqSpec.empty() && update_exp) // (fixed) collocRatio case
+      update_sampler = true;
     break;
   }
 
+  // define exp_order for local use
   UShortArray exp_order;
-  if (update_exp || (update_sampler && tensorRegression) )
+  if (update_exp)
     NonDIntegration::dimension_preference_to_anisotropic_order(
       expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
       exp_order);
-
-  if (update_exp) {
+  else if (update_sampler && tensorRegression) {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     PecosApproximation* poly_approx_rep;
     for (size_t i=0; i<numFunctions; i++) {
       poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
       if (poly_approx_rep) // may be NULL based on approxFnIndices
-	poly_approx_rep->update_order(exp_order);
+	{ exp_order = poly_approx_rep->expansion_order(); break; }
     }
+  }
+
+  // update expansion order within Pecos::OrthogPolyApproximation
+  if (update_exp) {
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    PecosApproximation* poly_approx_rep;
+    for (size_t i=0; i<numFunctions; i++) {
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      if (poly_approx_rep) { // may be NULL based on approxFnIndices
+	poly_approx_rep->update_order(exp_order);
+	// could have OrthogPolyApproximation::update_order() update
+	// numExpansionTerms and then add logic like this:
+	//if (update_ratio) exp_terms = poly_approx_rep->expansion_terms();
+      }
+    }
+  }
+
+  // update numSamplesOnModel from collocRatio
+  if (update_ratio) {
+    numSamplesOnModel = terms_ratio_to_samples(
+      Pecos::PolynomialApproximation::total_order_terms(exp_order),
+      collocRatio, termsOrder);
+    update_sampler = true;
   }
 
   if (update_sampler) {
