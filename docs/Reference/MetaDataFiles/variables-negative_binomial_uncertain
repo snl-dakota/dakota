@@ -7,7 +7,7 @@ The density function for the negative binomial distribution is given by:
 \f[f(x) = \left(\begin{array}{c}{n+x-1}\\{x}\end{array}\right){p^n}{(1-p)^{x}}\f] 
 where \c p is the probability of success per trial and \c n is the number of successful trials.
 
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	discrete_variables, aleatory_uncertain_variables, not_yet_reviewed
 Examples::
 Theory::
 Faq::
