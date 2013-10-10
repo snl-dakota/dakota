@@ -1,11 +1,16 @@
 Blurb::
-Aleatory uncertain variable - an aribtrary continuous random variable
+Aleatory uncertain variable - an arbitrary continuous random variable
+!!!!!!!!!!!!!!!clarify difference between ordinatea and count
+
 Description::
 Histogram uncertain variables are typically used to model a set of
 empirical data. A bin histogram is a continuous aleatory distribution
-that allows the user to specify bins of non-zero width (where the
-uncertain variable may lie) along with the relative frequencies that
+that allows the user to specify bins of non-zero width where the
+uncertain variable may lie along with the relative frequencies that
 are associated with each bin. 
+When using a histogram bin variable, one must define at least one bin (with two bounding value
+pairs). One can characterize the bin with non-zero widths
+(abscissas and counts) or with individual points (abscissas and ordinates).
 
 <!-- The distinction between the two types is that the former
 specifies bins of non-zero width, whereas the latter specifies
@@ -16,17 +21,11 @@ distribution and the point pairs specification defines a "discrete
 histogram" distribution (although the points are real-valued, the
 number of possible values is finite). -->
 
-Within the histogram bin uncertain optional group specification, the
-number of histogram bin uncertain variables is a required
-specification, the number of pairs is an optional key for
-apportionment of abscissas/ordinates/counts, specification of
-abscissas and either ordinates or counts is required, and the variable
-descriptors is an optional specification. When using a histogram bin
-variable, one must define at least one bin (with two bounding value
-pairs).
+
 
 The \c abscissas specification define abscissa values ("x"
-coordinates) for the probability density function of each histogram variable. When paired with
+coordinates) for the probability density function of each histogram variable. 
+When paired with
 \c counts, the specifications provide sets of \c (x,c) pairs for each
 histogram variable where \c c defines a count (i.e., a frequency or
 relative probability) associated with a bin. If using bins of unequal

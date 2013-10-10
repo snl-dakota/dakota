@@ -4,7 +4,13 @@ Description::
 These variables are specified with: 1) a list of positive integers specifying how many set members there are, and 2) a list of permissable integer values.
 
 Topics:: 	discrete_variables, design_variables, not_yet_reviewed
-Examples::
+Examples:: Four integer variables whose values will be selected during the search for an optimal design. \f$y1 \in [0,1]\f$, \f$y2 \in [0, 1]\f$, \f$y3 \in [0,5]\f$ and \f$y4 \in [10, 15, 20, 23]\f$.
+\verbatim
+discrete_design_set_integer 4
+        num_set_values 2 2 2 4
+        set_values 0 1 0 1 0 5 10 15 20 23
+        descriptors 'y1' 'y2' 'y3' 'y4'
+\endverbatim
 Theory::
 Design variables are those variables which are modified for the
 purposes of computing an optimal design.

@@ -2,12 +2,10 @@ Blurb::
 Continuous design variables, each defined by a single interval
 Description::
 
-For continuous variables, the \c scale_types specification includes strings specifying the scaling type for each component of the continuous design variables vector in methods that support scaling, when scaling is enabled.
-Each entry in \c scale_types may be selected from \c 'none', \c 'value', \c 'auto', or \c 'log', to select no, characteristic value, automatic, or logarithmic scaling, respectively. If a single string is specified it will apply to all components of the continuous design variables vector. 
+Continuous variables that are changed during the search for the optimal
+design.
 
-Each entry in \c scales may be a user-specified nonzero real characteristic value to be used in scaling each variable component. These values are ignored for scaling type \c 'none', required for \c 'value', and optional for \c 'auto' and \c 'log'. If a single real value is specified it will apply to all components of the continuous design variables vector.
-
-Topics::	continuous_variables, design_variables, not_yet_reviewed
+Topics::	continuous_variables, design_variables
 Examples::
 Theory::
 Faq::

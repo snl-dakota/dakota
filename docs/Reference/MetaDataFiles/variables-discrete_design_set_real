@@ -3,8 +3,15 @@ Discrete design variables - specified using lists of reals
 Description::
 These variables are specified with: 1) a list of positive integers specifying how many set members there are, and 2) a list of permissable values.
 
-Topics:: 	discrete_variables, design_variables, not_yet_reviewed
-Examples::
+Topics:: 	discrete_variables, design_variables
+Examples:: Two continuous, restricted variables whose values will be selected during  the search for an optimal design. \f$y1 \in [0.25,1.25, 2.25, 3.25, 4.25]\f$, \f$y2 \in [0,5]\f$
+\verbatim
+discrete_design_set_real 2
+        num_set_values 5 2
+        set_values 0.25 1.25 2.25 3.25 4.25 0 5
+        descriptors 'y1' 'y2'
+\endverbatim
+
 Theory::
 Design variables are those variables which are modified for the
 purposes of computing an optimal design.

@@ -1,8 +1,9 @@
 Blurb::
-Second parameter of the beta distribution
+Parameter of the exponential distribution
 Description::
-Specifies the list of \f$\beta\f$ parameters to define the distributions of the beta random variables. Length must match the other parameters and the number of beta random variables.
-Topics::	not_yet_reviewed
+Specifies the list of \f$\beta\f$ parameters to define the distributions of the exponential random variables. Length must match the other parameters and the number of exponential random variables. 
+
+Topics::	
 Examples::
 Theory::
 Faq::

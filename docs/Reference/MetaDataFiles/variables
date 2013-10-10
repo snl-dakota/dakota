@@ -8,7 +8,7 @@ In the case of
 - An optimization study:
  - These variables are adjusted in order to locate an optimal design.
 - Parameter studies/sensitivity analysis/design of experiments: 
- - These parameters are perturbed to explore the parameter space
+ - These parameters are perturbed to explore the parameter space.
 - Uncertainty analysis: 
  - The variables are associated with distribution/interval characterizations which are used to compute corresponding distribution/interval characterizations for response functions. 
 
@@ -24,6 +24,8 @@ To accommodate these different studies, Dakota supports different:
   - discrete range
   - discrete integer set
   - discrete real set
+
+
 Use the \ref topics-variables page to browse the available variables
 by type and domain.
 
@@ -45,7 +47,7 @@ Dakota support continuous design variables exclusively.
 Aleatory uncertainty is also known as inherent variability,
 irreducible uncertainty, or randomness.
 
-Aleatory uncertainty is predominantly charaterized using 
+Aleatory uncertainty is predominantly characterized using 
 probability theory. This is the only option implemented in Dakota.
 
 
@@ -57,7 +59,7 @@ In %Dakota, epistemic uncertainty is characterized by
 interval analysis or the Dempster-Shafer theory of evidence.
 
 Note that epistemic uncertainty can also be modeled
-with probability density functions - similarly to aleatory uncertainty
+with probability density functions - (as done with aleatory uncertainty).
 Dakota does not support this capability.
 
 

@@ -1,7 +1,7 @@
 Blurb::
 Aleatory uncertain variable - gumbel
 Description::
-Within the gumbel optional uncertain group specification, the number of gumbel uncertain variables, and the alpha and beta parameters are required specifications. The Gumbel distribution is also referred to as the Type I Largest Extreme Value distribution. The distribution of maxima in sample sets from a population with a normal distribution will asymptotically converge to this distribution. It is commonly used to model demand variables such as wind loads and flood levels.
+The Gumbel distribution is also referred to as the Type I Largest Extreme Value distribution. The distribution of maxima in sample sets from a population with a normal distribution will asymptotically converge to this distribution. It is commonly used to model demand variables such as wind loads and flood levels.
 
 The density function for the Gumbel distribution is given by: 
 \f[f(x) = \alpha e^{-\alpha(x-\beta)} exp(-e^{-\alpha(x-\beta)})\f]
@@ -11,7 +11,7 @@ and
 \f$\sigma_{GU} = \frac{\pi}{\sqrt{6}\alpha}\f$.
 
 
-Topics::	continuous_variables, aleatory_uncertain_variables , not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 When used with design of experiments and multidimensional parameter

@@ -15,12 +15,13 @@ override the default active subset.
 If the user does not specify any explicit override of the active view
 of the variables, %Dakota first considers the response function
 specification. 
--* If the user specifies objective
+
+- If the user specifies objective
 functions or calibration terms in the response specification block,
 then we can infer that the active variables should be the design
 variables (since design variables are used within optimization and
 least squares methods). 
--* If the user instead specifies the generic
+- If the user instead specifies the generic
 response type of \c response_functions, then
 %Dakota cannot infer the active variable subset from the response
 specification and will instead infer it from the method selection. 

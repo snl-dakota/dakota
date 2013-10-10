@@ -1,14 +1,15 @@
 Blurb::
 Aleatory uncertain variable - Weibull
 Description::
-The Weibull distribution is commonly used in reliability studies to predict the lifetime of a device. Within the weibull uncertain optional group specification, the number of weibull uncertain variables and the alpha and beta parameters are required specifications. The Weibull distribution is also referred to as the Type III Smallest Extreme Value distribution. It is also used to model capacity variables such as material strength.
+The Weibull distribution is also referred to as the Type III Smallest Extreme Value distribution.
+The Weibull distribution is commonly used in reliability studies to predict the lifetime of a device.  It is also used to model capacity variables such as material strength.
 
-The density function for the weibull distribution is given by: 
+The density function for the Weibull distribution is given by: 
 \f[f(x) = \frac{\alpha}{\beta} \left(\frac{x}{\beta}\right)^{\alpha-1} e^{-\left(\frac{x}{\beta}\right)^{\alpha}}\f]
 where \f$\mu_W = \beta \Gamma(1+\frac{1}{\alpha})\f$ and 
 \f$\sigma_W = \sqrt{\frac{\Gamma(1+\frac{2}{\alpha})}{\Gamma^2(1+\frac{1}{\alpha})} - 1} \mu_W\f$
 
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 Faq::

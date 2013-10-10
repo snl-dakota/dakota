@@ -12,7 +12,7 @@ are the upper and lower bounds of the uniform distribution, respectively. The me
 \f$\frac{(U_U-L_U)^2}{12}\f$.
 Note that this distribution is a special case of the more general beta distribution.
 
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 Faq::

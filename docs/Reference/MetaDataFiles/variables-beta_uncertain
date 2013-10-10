@@ -10,7 +10,7 @@ The density function for the beta distribution is
 is the gamma function and 
 \f$B(\alpha, \beta) = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)}\f$ 
 is the beta function. 
-To calculate mean and standard deviation from the alpha, beta, upper bound, and lower bound parameters of the beta distribution, the following expressions may be used. 
+To calculate the mean and standard deviation from the alpha, beta, upper bound, and lower bound parameters of the beta distribution, the following expressions may be used. 
 
 \f[\mu_B = L_B+\frac{\alpha}{\alpha+\beta}(U_B-L_B)\f]
 

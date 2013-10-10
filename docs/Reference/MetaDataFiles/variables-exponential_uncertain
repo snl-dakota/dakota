@@ -1,15 +1,18 @@
 Blurb::
 Aleatory uncertain variable - exponential
 Description::
-The exponential distribution is often used for modeling failure rates. Within the exponential uncertain optional group specification, the number of exponential uncertain variables and the beta parameters are required specifications, and variable descriptors is an optional specification.
+The exponential distribution is often used for modeling failure rates. 
+
 The density function for the exponential distribution is given by: 
 \f[f(x) = \frac{1}{\beta} e^{\frac{-x}{\beta}}\f] 
 where 
 \f$\mu_{E} = \beta\f$ and \f$\sigma^2_{E} = \beta^2\f$. 
+
+
 Note that 
 this distribution is a special case of the more general gamma distribution.
 
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 When used with design of experiments and multidimensional parameter

@@ -11,7 +11,7 @@ if \f$M_T\leq x \leq U_T\f$, and 0 elsewhere. In these equations,
 \f$L_T\f$ is the lower bound, \f$U_T\f$ is the upper bound, 
 and \f$M_T\f$ is the mode of the triangular distribution. 
 
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 Faq::

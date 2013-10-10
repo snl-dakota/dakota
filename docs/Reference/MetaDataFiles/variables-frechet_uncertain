@@ -1,7 +1,7 @@
 Blurb::
-Aleatory uncertain variable - frechet
+Aleatory uncertain variable - Frechet
 Description::
-With the frechet uncertain optional group specification, the number of frechet uncertain variables and the alpha and beta parameters are required specifications. The Frechet distribution is also referred to as the Type II Largest Extreme Value distribution. 
+The Frechet distribution is also referred to as the Type II Largest Extreme Value distribution. 
 The distribution of maxima in sample sets from a population with a lognormal distribution will asymptotically converge to this distribution. It is commonly used to model non-negative demand variables.
 
 The density function for the frechet distribution is: 
@@ -9,7 +9,7 @@ The density function for the frechet distribution is:
 where \f$\mu_F = \beta\Gamma(1-\frac{1}{\alpha})\f$ and 
 \f$\sigma_F^2 = \beta^2[\Gamma(1-\frac{2}{\alpha})-\Gamma^2(1-\frac{1}{\alpha})]\f$
 
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 When used with design of experiments and multidimensional parameter

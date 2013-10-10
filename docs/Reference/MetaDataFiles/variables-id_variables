@@ -5,7 +5,10 @@ The optional set identifier specification uses the keyword \c
 id_variables to input a unique string for use in identifying a
 particular variables set. A model can then identify the use of this
 variables set by specifying the same string in its \c
-variables_pointer specification (see \ref model-variables_pointer).
+variables_pointer specification (see \ref ModelIndControl). For
+example, a model whose specification contains 
+<tt>variables_pointer  'V1'</tt> will use a variables specification 
+containing the set identifier <tt>id_variables  'V1'</tt>.
 
 If the \c id_variables specification is omitted, a particular variables
 set will be used by a model only if that model omits specifying a \c 
@@ -16,7 +19,6 @@ specification and \c variables_pointer can be omitted from the model
 specification(s), since there is no potential for ambiguity in this
 case.
 
-Topics::	block_identifier, not_yet_reviewed
 Examples::
 For
 example, a model whose specification contains 
