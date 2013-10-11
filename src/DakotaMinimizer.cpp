@@ -334,6 +334,12 @@ bool Minimizer::data_transform_model(bool weight_flag)
       abort_handler(-1);
     }
   }
+  numRowsExpData = 0;
+  for (size_t i=0; i<numExperiments; i++)
+      numRowsExpData+=numReplicates(i);
+  size_t total_calib_terms = numRowsExpData*numUserPrimaryFns;
+  Cout << "numTotalCalibTerms  " << total_calib_terms;
+
   size_t num_config_vars_read = 
     probDescDB.get_sizet("responses.num_config_vars");
   size_t num_sigma_read = 
@@ -405,11 +411,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
   
-  size_t i,j,total_num_rows=0,total_calib_terms=0,temp_counter=0;
-  for (j=0; j<numExperiments; j++) 
-    total_num_rows += numReplicates(j);
-  total_calib_terms=total_num_rows*numUserPrimaryFns;
-  Cout << "total calibration terms " << total_calib_terms;
+  size_t i,j,temp_counter=0;
   Sizet2DArray var_map_indices(numContinuousVars), 
     primary_resp_map_indices(total_calib_terms), 
     secondary_resp_map_indices(numNonlinearConstraints);
@@ -430,8 +432,8 @@ bool Minimizer::data_transform_model(bool weight_flag)
     nonlinear_resp_map[i][0] = false;
   }
   for (i=0; i<numUserPrimaryFns; i++) {
-    for (j=0; j<total_num_rows; j++) {
-      temp_counter = i*total_num_rows+j;
+    for (j=0; j<numRowsExpData; j++) {
+      temp_counter = i*numRowsExpData+j;
       primary_resp_map_indices[temp_counter][0] = i;
     }
   }
@@ -444,7 +446,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
 
   void (*vars_recast) (const Variables&, Variables&) = NULL;
   void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = 
-    (total_num_rows>1) ? replicate_set_recast : NULL;
+    (numRowsExpData>1) ? replicate_set_recast : NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
 			   const Response&, Response&)
     = primary_resp_differencer;
@@ -472,8 +474,8 @@ bool Minimizer::data_transform_model(bool weight_flag)
   else { 
     RealVector recast_weights(total_calib_terms);
     for (i=0; i<numUserPrimaryFns; i++) {
-      for (j=0; j<total_num_rows; j++) {
-        recast_weights(i*total_num_rows+j)=submodel_weights(i);
+      for (j=0; j<numRowsExpData; j++) {
+        recast_weights(i*numRowsExpData+j)=submodel_weights(i);
       }
     }
     iteratedModel.primary_response_fn_weights(recast_weights);
@@ -1011,9 +1013,7 @@ data_difference_core(const Response& raw_response, Response& residual_response)
   const RealVector& fn_vals = raw_response.function_values();
   RealVector current_fn_gradient(numContinuousVars);
   RealSymMatrix current_fn_hessian(numContinuousVars);
-  size_t counter, total_num_rows = 0; 
-  for (size_t j=0; j<numExperiments; j++) 
-    total_num_rows += numReplicates(j);
+  size_t counter;
   //size_t num_experiments = asv.size()/raw_response.active_set_request_vector().size();
   //residual_response.update(raw_response);
   for (size_t i=0; i<minimizerInstance->numUserPrimaryFns; i++) {
@@ -1022,7 +1022,7 @@ data_difference_core(const Response& raw_response, Response& residual_response)
       for (size_t j = 0; j < numExperiments; ++j) {
         for (size_t k = 0; k < numReplicates(j); ++k) {
           residual_response.function_value(fn_vals[i] - 
-				       minimizerInstance->expData.scalar_data(i,j,k),i*total_num_rows+counter);
+				       minimizerInstance->expData.scalar_data(i,j,k),i*numRowsExpData+counter);
           counter++;
         }
       }
@@ -1030,26 +1030,26 @@ data_difference_core(const Response& raw_response, Response& residual_response)
     if (asv[i] & 2) {
       current_fn_gradient=raw_response.function_gradient_copy(i);
       Cout << "current_fn_gradient " << current_fn_gradient;
-      for (size_t j = 0; j < total_num_rows; ++j)
-        residual_response.function_gradient(current_fn_gradient, i*total_num_rows+j);
+      for (size_t j = 0; j < numRowsExpData; ++j)
+        residual_response.function_gradient(current_fn_gradient, i*numRowsExpData+j);
     }
     if (asv[i] & 4) {
       current_fn_hessian=raw_response.function_hessian(i);
       Cout << "current_fn_hessian " << current_fn_hessian;
-      for (size_t j = 0; j < total_num_rows; ++j)
-        residual_response.function_hessian(current_fn_hessian, i*total_num_rows+j); 
+      for (size_t j = 0; j < numRowsExpData; ++j)
+        residual_response.function_hessian(current_fn_hessian, i*numRowsExpData+j); 
     }
     functions_req = true;
   }
 
   if (outputLevel > NORMAL_OUTPUT) {
-    for (size_t i=0; i<total_num_rows; i++) {
+    for (size_t i=0; i<numRowsExpData*numUserPrimaryFns; i++) {
       if (asv[i] & 1) 
-        Cout << " residual_response function " << i << residual_response.function_value(i) << '\n';
+        Cout << " residual_response function " << i << ' ' << residual_response.function_value(i) << '\n';
       if (asv[i] & 2) 
-        Cout << " residual_response gradient " << i << residual_response.function_gradient_view(i) << '\n';
+        Cout << " residual_response gradient " << i << ' ' << residual_response.function_gradient_view(i) << '\n';
       if (asv[i] & 4) 
-        Cout << " residual_response hessian " << i << residual_response.function_hessian(i) << '\n';
+        Cout << " residual_response hessian " << i << ' ' << residual_response.function_hessian(i) << '\n';
     }
   }
   return functions_req;
@@ -1794,7 +1794,7 @@ objective(const RealVector& fn_vals, size_t num_fns,
 	obj_fn += std::pow(fn_vals[i], 2); // default weight = 1
     else
       for (size_t i=0; i<num_fns; ++i)
-	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
+   	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
   }
   return obj_fn;
 }

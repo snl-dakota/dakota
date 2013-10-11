@@ -54,14 +54,15 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
 
   // Wrap the iteratedModel, which initially is the userDefinedModel,
   // in 0 -- 3 RecastModels, potentially resulting in weight(scale(data(model)))
-  size_t num_experiments=probDescDB.get_sizet("responses.num_experiments");
-  numIterPrimaryFns = numIterPrimaryFns*num_experiments ;
-  numLeastSqTerms = numLeastSqTerms*num_experiments;
+  //numIterPrimaryFns = numUserPrimaryFns*numRowsExpData;
+  //numLeastSqTerms = numUserPrimaryFns*numRowsExpData;
   
   if (obsDataFlag) {
     // this might set weights based on exp std deviations
     weightFlag = data_transform_model(weightFlag);
     ++minimizerRecasts;
+    numLeastSqTerms = numUserPrimaryFns*numRowsExpData;
+    numIterPrimaryFns = numUserPrimaryFns*numRowsExpData;
   }
   if (scaleFlag) {
     scale_model();

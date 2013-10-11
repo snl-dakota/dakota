@@ -241,6 +241,7 @@ void Optimizer::print_results(std::ostream& s)
       write_data_partial(s, 0, numUserPrimaryFns, best_fns); 
     }
     else {
+      //size_t total_calib_terms = numUserPrimaryFns*numRowsExpData;
       Real t = 0.;
       for(size_t j=0; j<numUserPrimaryFns; ++j) {
 	const Real& t1 = best_fns[j];
@@ -324,24 +325,46 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
 
   // reduce to a single primary response, with all user primary
   // responses contributing
-  primary_resp_map_indices[0].resize(numUserPrimaryFns);
-  nonlinear_resp_map[0].resize(numUserPrimaryFns);
-  for (i=0; i<numUserPrimaryFns; i++) {
-    primary_resp_map_indices[0][i] = i;
-    nonlinear_resp_map[0][i] = (local_nls_recast);
+  if (local_nls_recast) {
+    size_t total_calib_terms = numRowsExpData * numUserPrimaryFns;
+    Cout << "total_calib_terms in reduce_model " << total_calib_terms <<'\n';
+    primary_resp_map_indices[0].resize(total_calib_terms);
+    nonlinear_resp_map[0].resize(total_calib_terms);
+    for (i=0; i<total_calib_terms; i++) {
+      primary_resp_map_indices[0][i] = i;
+      nonlinear_resp_map[0][i] = (local_nls_recast);
+    }
+
+    // adjust active set vector to 1 + numNonlinearConstraints
+    ShortArray asv(1 + numNonlinearConstraints, 1);
+    activeSet.request_vector(asv);
+
+    for (i=0; i<numNonlinearConstraints; i++) {
+      secondary_resp_map_indices[i].resize(1);
+      secondary_resp_map_indices[i][0] = total_calib_terms + i;
+      nonlinear_resp_map[numObjectiveFns+i].resize(1);
+      nonlinear_resp_map[numObjectiveFns+i][0] = false;
+    }
   }
+  else {
+    primary_resp_map_indices[0].resize(numUserPrimaryFns);
+    nonlinear_resp_map[0].resize(numUserPrimaryFns);
+    for (i=0; i<numUserPrimaryFns; i++) {
+      primary_resp_map_indices[0][i] = i;
+      nonlinear_resp_map[0][i] = (local_nls_recast);
+    }
 
-  // adjust active set vector to 1 + numNonlinearConstraints
-  ShortArray asv(1 + numNonlinearConstraints, 1);
-  activeSet.request_vector(asv);
+    // adjust active set vector to 1 + numNonlinearConstraints
+    ShortArray asv(1 + numNonlinearConstraints, 1);
+    activeSet.request_vector(asv);
 
-  for (i=0; i<numNonlinearConstraints; i++) {
-    secondary_resp_map_indices[i].resize(1);
-    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
-    nonlinear_resp_map[numObjectiveFns+i].resize(1);
-    nonlinear_resp_map[numObjectiveFns+i][0] = false;
+    for (i=0; i<numNonlinearConstraints; i++) {
+      secondary_resp_map_indices[i].resize(1);
+      secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
+      nonlinear_resp_map[numObjectiveFns+i].resize(1);
+      nonlinear_resp_map[numObjectiveFns+i][0] = false;
+    }
   }
-
   void (*vars_recast) (const Variables&, Variables&) = NULL;
   // recast active set if needed for Gauss-Newton LSQ
   void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&)
@@ -423,10 +446,11 @@ void Optimizer::objective_reduction(const Response& full_response,
 {
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Local single objective transformation:\n";
-
+  //size_t num_fns = numRowsExpData*numUserPrimaryFns;
   short reduced_asv0 = reduced_response.active_set_request_vector()[0];
   if (reduced_asv0 & 1) { // build objective fn from full_response functions
     Real sum = objective(full_response.function_values(), sense, full_wts);
+    //Real sum = objective(full_response.function_values(), num_fns, sense, full_wts);
     reduced_response.function_value(sum, 0);    
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "                     " << std::setw(write_precision+7) << sum
@@ -568,14 +592,12 @@ void Optimizer::post_run(std::ostream& s)
 	localObjectiveRecast && obsDataFlag) {
       //size_t num_experiments = obsData.numRows();
       const RealVector& fn_vals = best_resp.function_values();
-      size_t total_num_rows = 0, counter = 0; 
-      for (size_t j=0; j<numExperiments; j++) 
-        total_num_rows += numReplicates(j);
+      size_t counter; 
       for (size_t i=0; i<numUserPrimaryFns; ++i) {
         counter=0;
         for (size_t j=0; j<numExperiments; ++j) {
           for (size_t k=0; k<numReplicates(j); ++k){
-	    best_resp.function_value(fn_vals[i] - expData.scalar_data(i,j,k), i*total_num_rows+counter);
+	    best_resp.function_value(fn_vals[i] - expData.scalar_data(i,j,k), i*numRowsExpData+counter);
             counter++;
           }
         }
