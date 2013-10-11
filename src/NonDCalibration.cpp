@@ -30,6 +30,7 @@ NonDCalibration::NonDCalibration(Model& model): NonD(model),
   expDataFileName(probDescDB.get_string("responses.exp_data_filename")),
   expDataFileAnnotated(probDescDB.get_bool("responses.exp_data_file_annotated")),
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
+  numReplicates(probDescDB.get_iv("responses.num_replicates")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
   numExpStdDeviationsRead(probDescDB.get_sizet("responses.num_std_deviations")),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),
@@ -47,9 +48,11 @@ NonDCalibration::NonDCalibration(Model& model): NonD(model),
   }
 
   // for backward compatibility with single experiment data files
-  if (!expDataFileName.empty() && numExperiments == 0)
+  if (!expDataFileName.empty() && numExperiments == 0) {
     numExperiments = 1;
-
+    numReplicates.resize(1);
+    numReplicates(0) = 1;
+  }
   if (numExpConfigVars > 0) {
 
     // would need to trap error if all_variables were later allowed

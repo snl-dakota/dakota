@@ -190,7 +190,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
   expData.load_scalar(expDataFileName, "DREAM Bayes Calibration",
-		      numExperiments, 
+		      numExperiments, numReplicates, 
 		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
 		      expDataFileAnnotated, calc_sigma_from_data,
 		      outputLevel);
@@ -333,8 +333,9 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
 {
   double result = 0.;
-  size_t i,j;
+  size_t i,j,k;
   int num_exp = NonDDREAMInstance->numExperiments;
+  IntVector num_replicates = NonDDREAMInstance->numReplicates;
   int num_funcs = NonDDREAMInstance->numFunctions;
   int num_cont = NonDDREAMInstance->numContinuousVars; 
 
@@ -392,21 +393,22 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   // matrix of standard deviations.  Thus, we just have to iterate over this to 
   // calculate the likelihood. 
   if (NonDDREAMInstance->calibrateSigmaFlag) {
-    for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++) {
-	size_t replicate = 0;
-	Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i, replicate);
-	result = result+pow((fn_vals(j)-data_i_j)/zp[num_cont+j],2.0);
-      }
+    for (j=0; j<num_funcs; j++)
+      for (i=0; i<num_exp; i++)
+        for (k=0; k<num_replicates(i); k++){
+	  Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i, k);
+	  result = result+pow((fn_vals(j)-data_i_j)/zp[num_cont+j],2.0);
+        }
   }
   else {	
-    for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++) {
-	size_t replicate = 0;
-	Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i, replicate);
-	Real std_i_j = NonDDREAMInstance->expData.scalar_sigma(j, i, replicate);
-        result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
-      }
+    for (j=0; j<num_funcs; j++)
+      for (i=0; i<num_exp; i++)
+        for (k=0; k<num_replicates(i); k++){
+	  Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i, k);
+	  //Real std_i_j = NonDDREAMInstance->expData.scalar_sigma(j, i, k);
+          //result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
+          result = result+pow((fn_vals(j)-data_i_j),2.0);
+        }
   }
 
   result = (result*(NonDDREAMInstance->likelihoodScale));
