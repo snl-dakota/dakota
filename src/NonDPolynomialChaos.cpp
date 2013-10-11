@@ -490,13 +490,15 @@ void NonDPolynomialChaos::increment_specification_sequence()
   case Pecos::HIERARCHICAL_SPARSE_GRID: case Pecos::CUBATURE:
     // update grid order/level, if multiple values were provided
     NonDExpansion::increment_specification_sequence(); break;
-  case Pecos::SAMPLING:
+  case Pecos::SAMPLING: {
     // advance expansionOrder and/or expansionSamples, as admissible
-    if (sequenceIndex+1 <   expOrderSeqSpec.size()) update_exp     = true;
-    if (sequenceIndex+1 < expSamplesSeqSpec.size()) update_sampler = true;
+    size_t next_i = sequenceIndex + 1;
+    if (next_i <   expOrderSeqSpec.size()) update_exp = true;
+    if (next_i < expSamplesSeqSpec.size())
+      { numSamplesOnModel = expSamplesSeqSpec[next_i]; update_sampler = true; }
     if (update_exp || update_sampler) ++sequenceIndex;
-    if (update_sampler) numSamplesOnModel = expSamplesSeqSpec[sequenceIndex];
     break;
+  }
   case Pecos::ORTHOG_LEAST_INTERPOLATION:
     // advance collocationPoints
     if (sequenceIndex+1 < collocPtsSeqSpec.size()) {
@@ -504,36 +506,25 @@ void NonDPolynomialChaos::increment_specification_sequence()
       numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
     }
     break;
-  default: // regression
+  default: { // regression
     // advance expansionOrder and/or collocationPoints, as admissible
-    if (sequenceIndex+1 <  expOrderSeqSpec.size())   update_exp     = true;
-    if (sequenceIndex+1 < collocPtsSeqSpec.size())   update_sampler = true;
-    else if (collocPtsSeqSpec.empty() && update_exp) update_ratio   = true;
+    size_t next_i = sequenceIndex + 1;
+    if (next_i <  expOrderSeqSpec.size()) update_exp = true;
+    if (next_i < collocPtsSeqSpec.size())
+      { numSamplesOnModel = collocPtsSeqSpec[next_i]; update_sampler = true; }
     if (update_exp || update_sampler) ++sequenceIndex;
-    if (update_sampler) numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
-    if (collocPtsSeqSpec.empty() && update_exp) // (fixed) collocRatio case
-      update_sampler = true;
+    if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+      update_ratio = update_sampler = true;
     break;
   }
+  }
 
-  // define exp_order for local use
   UShortArray exp_order;
-  if (update_exp)
+  if (update_exp) {
+    // update expansion order within Pecos::OrthogPolyApproximation
     NonDIntegration::dimension_preference_to_anisotropic_order(
       expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
       exp_order);
-  else if (update_sampler && tensorRegression) {
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep;
-    for (size_t i=0; i<numFunctions; i++) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep) // may be NULL based on approxFnIndices
-	{ exp_order = poly_approx_rep->expansion_order(); break; }
-    }
-  }
-
-  // update expansion order within Pecos::OrthogPolyApproximation
-  if (update_exp) {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     PecosApproximation* poly_approx_rep;
     for (size_t i=0; i<numFunctions; i++) {
@@ -546,15 +537,24 @@ void NonDPolynomialChaos::increment_specification_sequence()
       }
     }
   }
+  else if (update_sampler && tensorRegression) {
+    // extract unchanged expansion order from Pecos::OrthogPolyApproximation
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    PecosApproximation* poly_approx_rep;
+    for (size_t i=0; i<numFunctions; i++) {
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      if (poly_approx_rep) // may be NULL based on approxFnIndices
+	{ exp_order = poly_approx_rep->expansion_order(); break; }
+    }
+  }
 
   // update numSamplesOnModel from collocRatio
-  if (update_ratio) {
+  if (update_ratio)
     numSamplesOnModel = terms_ratio_to_samples(
       Pecos::PolynomialApproximation::total_order_terms(exp_order),
       collocRatio, termsOrder);
-    update_sampler = true;
-  }
 
+  // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler) {
     if (tensorRegression) {
       NonDQuadrature* nond_quad
