@@ -91,21 +91,20 @@ protected:
     ////////////////////////////////////////////////////////////////
     // OPT / POF METHODS
     ////////////////////////////////////////////////////////////////
-    void  shrink_all_spheres(); // shrink all disks by 90% to allow more sampling
-    
-    void adjust_radius_of_previous_samples_due_to_new_threshold();
+    void  shrink_big_spheres(); // shrink all disks by 90% to allow more sampling
     
     void assign_sphere_radius_POF(double* x, size_t isample);
     
     void assign_sphere_radius_OPT(double* x, size_t isample);
     
-    void resolve_overlap_POF();
+    void resolve_overlap_POF(size_t ksample);
     
-    double f_true(double* x);
+    void compute_response(double* x);
     
-    double f_grad_FD(double* x, double f, double &curv);
+    void compute_response_for_FD_gradients(double* x);
     
     double get_dart_radius(double f, double fgrad, double fcurv);
+    
     
     ////////////////////////////////////////////////////////////////
     // VOLUME OF SPHERE UNION METHODS
@@ -125,6 +124,8 @@ protected:
     ////////////////////////////////////////////////////////////////
     // OUTPUT METHODS
     ////////////////////////////////////////////////////////////////
+    
+    double f_true(double* x); // for debuging only
     
     void plot_vertices_2d();
     
@@ -185,6 +186,11 @@ protected:
     double* _line_flat_end;
     double* _line_flat_length;
     
+    double** _fval;
+    size_t _ieval;
+    size_t _active_response_function;
+    double _dx; // spacing for FD
+    size_t _num_sample_eval;
 
 };
 

@@ -174,6 +174,9 @@ void NonDPOFDarts::quantify_uncertainty()
         
         _n_dim = numContinuousVars;
         
+        _ieval = 0; _num_sample_eval = 2 * _n_dim + 1;
+        
+        _dx = 1E-4; // spacing for FD
         
         _total_budget = 0;
         initialize_distribution_mappings();
@@ -227,6 +230,10 @@ void NonDPOFDarts::quantify_uncertainty()
         diag = sqrt(diag);
         _max_radius = /*0.1*/ 1000.0 * diag;
         
+        _fval = new double*[numFunctions];
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) _fval[resp_fn_count] = new double[_total_budget * _num_sample_eval];
+        
+        
         
         // to be commmented later!!
         Cout << "pof:: Number of dimensions = " << _n_dim << '\n';
@@ -243,7 +250,6 @@ void NonDPOFDarts::quantify_uncertainty()
     
     void NonDPOFDarts::exit_pof_darts()
     {
-        delete[] _sample_points;
         delete[] _dart;
         delete[] _grad_vec;
         delete[] _line_flat;
@@ -252,6 +258,10 @@ void NonDPOFDarts::quantify_uncertainty()
         delete[] _line_flat_length;
         delete[] _xmin;
         delete[] _xmax;
+        for (size_t isample = 0; isample < _num_inserted_points; isample++) delete[] _sample_points[isample];
+        delete[] _sample_points;
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) delete[] _fval[resp_fn_count];
+        delete[] _fval;
     }
     
     void NonDPOFDarts::execute(size_t kd)
@@ -261,21 +271,19 @@ void NonDPOFDarts::quantify_uncertainty()
        
         _num_inserted_points = 0; _num_darts = 0;
         
-        for (size_t resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++)
+        for (size_t resp_fn_count = 0; resp_fn_count<numFunctions; resp_fn_count++)
         {
+            _active_response_function = resp_fn_count;
+            
             size_t num_levels = requestedRespLevels[resp_fn_count].length();
             
             for (size_t level_count=0; level_count<num_levels; level_count++)
             {
                 _failure_threshold = requestedRespLevels[resp_fn_count][level_count];
                 
-                std::cout<<  "pof::    budget for threshold = " << _failure_threshold << std::endl;
-                
-                if (_num_inserted_points > 0)
-                {
-                    adjust_radius_of_previous_samples_due_to_new_threshold();
-                    resolve_overlap_POF();
-                }
+                for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(_sample_points[isample], isample);
+               
+                for (size_t isample = 0; isample < _num_inserted_points; isample++) resolve_overlap_POF(isample);
                 
                 start_time = clock();
                 if (kd == 0)
@@ -297,15 +305,6 @@ void NonDPOFDarts::quantify_uncertainty()
                 std::cout.precision(4);
                 std::cout<<  "pof::    Execution Time = " << std::fixed << cpu_time << " seconds." << std::endl;
             
-                
-                /*
-                if (_n_dim == 2)
-                {
-                    Cout<< "pof:: Plotting in points.ps ... ";
-                    plot_vertices_2d();
-                }
-                */
-                
             }
         }
         
@@ -313,6 +312,8 @@ void NonDPOFDarts::quantify_uncertainty()
         double pof_val(0.0);
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
+            _active_response_function = resp_fn_count;
+            
             size_t num_levels = requestedRespLevels[resp_fn_count].length();
             
             for (size_t level_count = 0; level_count < num_levels; level_count++)
@@ -324,9 +325,17 @@ void NonDPOFDarts::quantify_uncertainty()
                 
                 Cout << "pof::  Estimating pof for threshold = " << _failure_threshold << '\n';
                 
-                adjust_radius_of_previous_samples_due_to_new_threshold();
-                resolve_overlap_POF();
+                for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(_sample_points[isample], isample);
                 
+                for (size_t isample = 0; isample < _num_inserted_points; isample++) resolve_overlap_POF(isample);
+                
+                /*
+                if (_n_dim == 2)
+                {
+                    Cout<< "pof:: Plotting in mps_shphere.ps ... ";
+                    plot_vertices_2d();
+                }
+                */
                 
                 retrieve_POF_bounds(lower, upper);
                 pof_val = 0.5 * (lower + upper);
@@ -379,7 +388,7 @@ void NonDPOFDarts::quantify_uncertainty()
                 if (_num_successive_misses_p + _num_successive_misses_m > _max_num_successive_misses)
                 {
                     std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking all disks!" << std::endl;
-                    shrink_all_spheres();
+                    shrink_big_spheres();
                     
                 }
             }
@@ -469,7 +478,7 @@ void NonDPOFDarts::quantify_uncertainty()
                 if (_num_successive_misses_p + _num_successive_misses_m > _max_num_successive_misses) 
                 {
                     std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking all disks!" << std::endl;
-                    shrink_all_spheres();
+                    shrink_big_spheres();
                 }
             }
             else 
@@ -585,73 +594,84 @@ void NonDPOFDarts::quantify_uncertainty()
     
     void NonDPOFDarts::add_point(double* x)
     {
-        _sample_points[_num_inserted_points] = new double[_n_dim + 4];
+        _sample_points[_num_inserted_points] = new double[_n_dim + 1];
         
         for (size_t idim = 0; idim < _n_dim; idim++) _sample_points[_num_inserted_points][idim] = x[idim];
         
         if (_global_optimization) assign_sphere_radius_OPT(x, _num_inserted_points);
         else                      assign_sphere_radius_POF(x, _num_inserted_points);
         
-        _num_inserted_points++;
+        resolve_overlap_POF(_num_inserted_points);
         
-        if (_num_inserted_points > 1) resolve_overlap_POF();
+        _num_inserted_points++;
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // OPT / POF methods
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    void NonDPOFDarts::shrink_all_spheres()
+    void NonDPOFDarts::shrink_big_spheres()
     {
+        double rr_max(0.0);
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
-            _sample_points[isample][_n_dim] = 0.81 *  _sample_points[isample][_n_dim];
+            if (fabs(_sample_points[isample][_n_dim]) > rr_max) rr_max = fabs(_sample_points[isample][_n_dim]);
         }
+        
+        Cout<< "rr_max = " << rr_max << std::endl;
+        
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            if (fabs(_sample_points[isample][_n_dim]) > 0.81 * rr_max) _sample_points[isample][_n_dim] *= 0.81;
+        }
+                
     }
 
-    
-    void NonDPOFDarts::adjust_radius_of_previous_samples_due_to_new_threshold()
-    {
-        for (size_t isample = 0; isample < _num_inserted_points; isample++)
-        {
-            double f = _sample_points[isample][_n_dim + 1];
-            double fgrad = _sample_points[isample][_n_dim + 2];
-            double fcurv = _sample_points[isample][_n_dim + 3];
-            
-            double r = get_dart_radius(f, fgrad, fcurv);
-            _sample_points[isample][_n_dim] = r * r;
-            if (f < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
-        }
-    }
-    
     void NonDPOFDarts::assign_sphere_radius_POF(double* x, size_t isample)
     {
-        double f = f_true(x);
+        if (isample == _num_inserted_points)
+        {
+            // A new disk: compute ALL responses
+            compute_response(x);
+            compute_response_for_FD_gradients(x);
+        }
         
-        double h;
-        double g = f_grad_FD(x, f, h);
+        size_t ieval = isample * _num_sample_eval;
+        double fval = _fval[_active_response_function][ieval]; ieval++;
+     
+        double grad(0.0), curv(0.0);
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            double fp = _fval[_active_response_function][ieval];ieval++;
+            double fm = _fval[_active_response_function][ieval];ieval++;
+            double dgrad = (fp - fm) / (2 * _dx);
+            grad += dgrad * dgrad;
+            double dcurv =  (fp - 2 * fval + fm) / (_dx * _dx);
+            curv+= dcurv * dcurv;
+        }
+        curv = sqrt(curv);
+        grad = sqrt(grad);
+
         
         // form a quadratic function and solve it to retrieve the radius
         // f(r) = a r^2 + b r + c = failure_threshold
         
-        if (f > _failure_threshold)
+        if (fval > _failure_threshold)
         {
             // we are interested in -gradient direction only if we are in the failure region
-            g  = -g; h = -h;
+            grad  = - grad; curv = -curv;
         }
         
-        double r = get_dart_radius(f, g, h);
+        double r = get_dart_radius(fval, grad, curv);
         
         _sample_points[isample][_n_dim] = r * r;
-        if (f < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
-        _sample_points[isample][_n_dim + 1] = f;
-        _sample_points[isample][_n_dim + 2] = g;
-        _sample_points[isample][_n_dim + 3] = h;
+        if (fval < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
     }
     
     
     void NonDPOFDarts::assign_sphere_radius_OPT(double* x, size_t isample)
     {
+        /*
         double f = f_true(x);
         double fcurv;
         double fgrad = f_grad_FD(x, f, fcurv); // this could be
@@ -685,18 +705,18 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         
         _sample_points[isample][_n_dim] = r * r;
-        _sample_points[isample][_n_dim + 1] = f;
-        _sample_points[isample][_n_dim + 2] = fgrad;
-        _sample_points[isample][_n_dim + 3] = fcurv;
+        */
     }
     
-    void NonDPOFDarts::resolve_overlap_POF()
+    void NonDPOFDarts::resolve_overlap_POF(size_t ksample)
     {
-       size_t last = _num_inserted_points - 1;
-        
-        for (size_t isample = 0; isample < last; isample++)
+        if (_num_inserted_points < 2) return;
+       
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
-            double rr_n = _sample_points[last][_n_dim];
+            if (isample == ksample) continue;
+            
+            double rr_n = _sample_points[ksample][_n_dim];
             double rr_i = _sample_points[isample][_n_dim];
             
             double bigger_rr(rr_n), smaller_rr(rr_n);
@@ -706,7 +726,7 @@ void NonDPOFDarts::quantify_uncertainty()
             double dd(0.0);
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
-                double dx = _sample_points[last][idim] - _sample_points[isample][idim];
+                double dx = _sample_points[ksample][idim] - _sample_points[isample][idim];
                 dd += dx * dx;
             }
             
@@ -718,16 +738,16 @@ void NonDPOFDarts::quantify_uncertainty()
                 {
                     // Inaccurate Overlap
                     double d = sqrt(dd);
-                    double fn = _sample_points[last][_n_dim + 1];
-                    double fi = _sample_points[isample][_n_dim + 1];
+                    double fn = _fval[_active_response_function][ksample * _num_sample_eval];
+                    double fi = _fval[_active_response_function][isample * _num_sample_eval];
                     double ri = (_failure_threshold - fi) / (fn - fi) * d;
                     double rn = d - ri;
                     
                     // overlaping disks of different colors, shrink both 
                     if (rn * rn < fabs(rr_n))
                     {
-                        _sample_points[last][_n_dim] = rn * rn;
-                        if (fn < _failure_threshold) _sample_points[last][_n_dim] = -_sample_points[last][_n_dim];
+                        _sample_points[ksample][_n_dim] = rn * rn;
+                        if (fn < _failure_threshold) _sample_points[ksample][_n_dim] = -_sample_points[ksample][_n_dim];
                     }
                     
                     if (ri * ri < fabs(rr_i))
@@ -740,34 +760,32 @@ void NonDPOFDarts::quantify_uncertainty()
         }
     }
     
-    double NonDPOFDarts::f_true(double* x)
+    void NonDPOFDarts::compute_response(double* x)
     {
         RealVector newX(_n_dim);
         for (size_t idim = 0; idim < _n_dim; idim++) newX[idim] = x[idim];
         
         iteratedModel.continuous_variables(newX);
         iteratedModel.compute_response();
-        double fval = iteratedModel.current_response().function_value(0);
-        return fval;
+        
+        for (size_t resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++)
+        {
+            double fval = iteratedModel.current_response().function_value(resp_fn_count);
+            _fval[resp_fn_count][_ieval] = fval;
+        }
+        _ieval++;
     }
     
-    double NonDPOFDarts::f_grad_FD(double* x, double f, double &curv)
+    void NonDPOFDarts::compute_response_for_FD_gradients(double* x)
     {
-        double h(1E-4); double grad(0.0); curv = 0.0;
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
-            x[idim] += h; // moving forward
-            double fp = f_true(x);
-            x[idim] -= (2*h); // moving backward
-            double fm = f_true(x);
-            x[idim] += h; // back to original location
-            double dgrad = (fp - fm) / (2 * h);
-            grad += dgrad * dgrad;
-            double dcurv =  (fp - 2 * f + fm) / (h * h);
-            curv+= dcurv * dcurv;
+            x[idim] += _dx; // moving forward
+            compute_response(x);
+            x[idim] -= (2 * _dx); // moving backward
+            compute_response(x);
+            x[idim] += _dx; // back to original location
         }
-        curv = sqrt(curv);
-        return sqrt(grad);
     }
     
     double NonDPOFDarts::get_dart_radius(double f, double fgrad, double fcurv)
@@ -1070,9 +1088,16 @@ void NonDPOFDarts::quantify_uncertainty()
     // OUTPUT METHODS
     ////////////////////////////////////////////////////////////////
     
+    double NonDPOFDarts::f_true(double* x)
+    {
+        return 0.0;
+    }
+    
     void NonDPOFDarts::plot_vertices_2d()
     {
-        std::fstream file("mps_spheres.ps", std::ios::out);
+        std::stringstream ss;
+        ss << "mps_spheres_" << _active_response_function << ".ps";
+        std::fstream file(ss.str().c_str(), std::ios::out);
         file << "%!PS-Adobe-3.0" << std::endl;
         file << "72 72 scale     % one unit = one inch" << std::endl;
         
