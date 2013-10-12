@@ -291,6 +291,16 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
   // default responseMode value is AUTO_CORRECTED_SURROGATE, which mitigates
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
+
+    // Model::set_communicators() provides sufficient context for
+    // bcast of responseMode
+    parallelLib.parallel_configuration_iterator(modelPCIter);
+    if (parallelLib.si_parallel_level_defined()) {
+      const ParallelConfiguration& pc = parallelLib.parallel_configuration();
+      if (pc.si_parallel_level().server_communicator_size() > 1)
+	parallelLib.bcast_i(responseMode);
+    }
+
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:
       lowFidelityModel.set_communicators(max_iterator_concurrency);
