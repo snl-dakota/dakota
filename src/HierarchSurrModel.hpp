@@ -292,8 +292,10 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
 
-    // Model::set_communicators() provides sufficient context for
-    // bcast of responseMode
+    // Unlike other derived models, the coupling of parallel configuration
+    // activation to a run-time mode selection requires bcast of that mode
+    // over the context of the Model.  Base class Model::set_communicators()
+    // provides sufficient context for this bcast() of responseMode.
     parallelLib.parallel_configuration_iterator(modelPCIter);
     if (parallelLib.si_parallel_level_defined()) {
       const ParallelConfiguration& pc = parallelLib.parallel_configuration();

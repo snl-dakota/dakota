@@ -92,7 +92,8 @@ public:
 
   const StringArray& analysis_drivers() const;
 
-  void set_communicators_checks(int max_iterator_concurrency);
+  void init_communicators_checks(int max_iterator_concurrency);
+  void  set_communicators_checks(int max_iterator_concurrency);
 
   //void clear_bookkeeping(); // clears threadIdMap
 
@@ -219,7 +220,19 @@ inline const StringArray& DirectApplicInterface::analysis_drivers() const
 { return analysisDrivers; }
 
 
-// define default run-time checks allowing override by derived plug-ins
+/** Process init issues as warnings since some contexts (e.g.,
+    HierarchSurrModel) initialize more configurations than will be
+    used and DirectApplicInterface allows override by derived plug-ins. */
+inline void DirectApplicInterface::
+init_communicators_checks(int max_iterator_concurrency)
+{
+  bool warn = true;
+  check_asynchronous(warn, max_iterator_concurrency);
+  check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+}
+
+
+/** Process run-time issues as hard errors. */
 inline void DirectApplicInterface::
 set_communicators_checks(int max_iterator_concurrency)
 {
