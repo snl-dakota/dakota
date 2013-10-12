@@ -66,6 +66,7 @@ EXTRA_DIST = container_alt.c \
 	     dakota_pcbdo_short_column_trsb.in \
 	     dakota_pcbdo_steel_column.in \
 	     dakota_pcbdo_steel_column_trsb.in \
+	     dakota_pof.in \
 	     dakota_portal_frame.in \
 	     dakota_pstudy.in \
 	     dakota_rbdo_cantilever_analytic2.in \
