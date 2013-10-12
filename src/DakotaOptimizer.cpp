@@ -326,7 +326,11 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // reduce to a single primary response, with all user primary
   // responses contributing
   if (local_nls_recast) {
-    size_t total_calib_terms = numRowsExpData * numUserPrimaryFns;
+    size_t total_calib_terms; 
+    if (!obsDataFlag)
+      total_calib_terms = numUserPrimaryFns;
+    else 
+      total_calib_terms = numRowsExpData * numUserPrimaryFns;
     Cout << "total_calib_terms in reduce_model " << total_calib_terms <<'\n';
     primary_resp_map_indices[0].resize(total_calib_terms);
     nonlinear_resp_map[0].resize(total_calib_terms);
