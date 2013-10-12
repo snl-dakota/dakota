@@ -1116,7 +1116,7 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
   bool static_limited
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   if (static_limited)
-    static_servers = asynchLocalEvalConcurrency;//asynchLocalEvalConcurrency * numEvalServers;
+    static_servers = asynchLocalEvalConcurrency * numEvalServers;
 
   if (num_active < num_jobs) {
     Cout << "Second pass: ";
@@ -1191,7 +1191,7 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   size_t static_servers;
   if (static_limited) {
-    static_servers = asynchLocalEvalConcurrency;//asynchLocalEvalConcurrency * numEvalServers;
+    static_servers = asynchLocalEvalConcurrency * numEvalServers;
     if (localServerAssigned.size() != asynchLocalEvalConcurrency)
       localServerAssigned.resize(asynchLocalEvalConcurrency);
     localServerAssigned.reset(); // in blocking case, always reset job map
@@ -1551,7 +1551,7 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   size_t static_servers, server_index;
   if (static_limited)
-    static_servers = asynchLocalEvalConcurrency;//asynchLocalEvalConcurrency * numEvalServers;
+    static_servers = asynchLocalEvalConcurrency * numEvalServers;
 
   // "Step 2" (of asynch_local_evaluations_nowait()): process any completed
   // jobs using test_local_evaluations()
@@ -1646,7 +1646,7 @@ assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   size_t static_servers;
   if (static_limited) {
-    static_servers = asynchLocalEvalConcurrency;//asynchLocalEvalConcurrency * numEvalServers;
+    static_servers = asynchLocalEvalConcurrency * numEvalServers;
     if (localServerAssigned.size() != asynchLocalEvalConcurrency) {
       localServerAssigned.resize(static_servers);
       localServerAssigned.reset(); // nonblocking case: only reset on 1st call
@@ -2520,7 +2520,7 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
 
   asynchLocalActivePRPQueue.erase(prp_it);
   if (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1) {// free "server"
-    size_t static_servers = asynchLocalEvalConcurrency,//asynchLocalEvalConcurrency * numEvalServers,
+    size_t static_servers = asynchLocalEvalConcurrency * numEvalServers,
       server_index = (fn_eval_id - 1) % static_servers;
     localServerAssigned.reset(server_index);
   }
