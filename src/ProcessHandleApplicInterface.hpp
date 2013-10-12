@@ -49,6 +49,7 @@ protected:
   int synchronous_local_analysis(int analysis_id);
 
   void init_communicators_checks(int max_iterator_concurrency);
+  void set_communicators_checks(int max_iterator_concurrency);
 
   void map_bookkeeping(pid_t pid, int fn_eval_id);
 
@@ -157,12 +158,25 @@ synchronous_local_analysis(int analysis_id)
 }
 
 
-// define construct-time checks since no derived interface plug-ins
+/** No derived interface plug-ins, so perform construct-time checks.
+    However, process init issues as warnings since some contexts (e.g.,
+    HierarchSurrModel) initialize more configurations than will be used. */
 inline void ProcessHandleApplicInterface::
 init_communicators_checks(int max_iterator_concurrency)
 {
-  if (check_multiprocessor_analysis() ||
-      check_multiprocessor_asynchronous(max_iterator_concurrency))
+  bool warn = true;
+  check_multiprocessor_analysis(warn);
+  check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+}
+
+
+/** Process run-time issues as hard errors. */
+inline void ProcessHandleApplicInterface::
+set_communicators_checks(int max_iterator_concurrency)
+{
+  bool warn = false, mp1 = check_multiprocessor_analysis(warn),
+    mp2 = check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+  if (mp1 || mp2)
     abort_handler(-1);
 }
 

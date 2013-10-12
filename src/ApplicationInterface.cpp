@@ -29,23 +29,23 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   parallelLib(problem_db.parallel_library()), suppressOutput(false),
   evalCommSize(1), evalCommRank(0), evalServerId(1), eaDedMasterFlag(false),
   analysisCommSize(1), analysisCommRank(0), analysisServerId(1),
-  numAnalysisServers(problem_db.get_int("interface.analysis_servers")),
+  numAnalysisServersSpec(problem_db.get_int("interface.analysis_servers")),
   multiProcAnalysisFlag(false), asynchLocalAnalysisFlag(false),
-  asynchLocalAnalysisConcurrency(
+  asynchLocalAnalysisConcSpec(
     problem_db.get_int("interface.asynch_local_analysis_concurrency")),
   numAnalysisDrivers(
     problem_db.get_sa("interface.application.analysis_drivers").size()),
   worldSize(parallelLib.world_size()), worldRank(parallelLib.world_rank()),
   iteratorCommSize(1), iteratorCommRank(0), ieMessagePass(false),
-  numEvalServers(problem_db.get_int("interface.evaluation_servers")),
+  numEvalServersSpec(problem_db.get_int("interface.evaluation_servers")),
   eaMessagePass(false), 
-  procsPerAnalysis(
+  procsPerAnalysisSpec(
     problem_db.get_int("interface.direct.processors_per_analysis")),
   lenVarsMessage(0), lenVarsActSetMessage(0), lenResponseMessage(0),
   lenPRPairMessage(0),
   evalScheduling(problem_db.get_string("interface.evaluation_scheduling")),
   analysisScheduling(problem_db.get_string("interface.analysis_scheduling")),
-  asynchLocalEvalConcurrency(
+  asynchLocalEvalConcSpec(
     problem_db.get_int("interface.asynch_local_evaluation_concurrency")),
   asynchLocalEvalStatic(
     problem_db.get_string("interface.local_evaluation_scheduling") == "static"),
@@ -109,11 +109,11 @@ init_communicators(const IntArray& message_lengths,
 		   int max_iterator_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
-  int min_procs_per_eval = procsPerAnalysis; // could add *numAnalysisDrivers
+  int min_procs_per_eval = procsPerAnalysisSpec;// could add *numAnalysisDrivers
   std::string default_config = "push_up"; // init_eval_comms&init_analysis_comms
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
-    numEvalServers, min_procs_per_eval, max_iterator_concurrency,
-    asynchLocalEvalConcurrency, default_config, evalScheduling);
+    numEvalServersSpec, min_procs_per_eval, max_iterator_concurrency,
+    asynchLocalEvalConcSpec, default_config, evalScheduling);
 
   set_evaluation_communicators(message_lengths);
 
@@ -124,8 +124,8 @@ init_communicators(const IntArray& message_lengths,
   if ( !ieDedMasterFlag || iteratorCommRank ) {
 
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
-      numAnalysisServers, procsPerAnalysis, numAnalysisDrivers,
-      asynchLocalAnalysisConcurrency, default_config, analysisScheduling);
+      numAnalysisServersSpec, procsPerAnalysisSpec, numAnalysisDrivers,
+      asynchLocalAnalysisConcSpec, default_config, analysisScheduling);
 
     set_analysis_communicators();
   }
@@ -205,7 +205,7 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // available for use in the constructor.
   ieDedMasterFlag = ie_pl.dedicated_master_flag();
   ieMessagePass   = ie_pl.message_pass();
-  numEvalServers  = ie_pl.num_servers(); // update to actual
+  numEvalServers  = ie_pl.num_servers(); // may differ from numEvalServersSpec
   evalCommRank    = ie_pl.server_communicator_rank();
   evalCommSize    = ie_pl.server_communicator_size();
   evalServerId    = ie_pl.server_id();
@@ -225,8 +225,9 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // readily distinguish unlimited concurrency for asynch local parallelism
   // (default is unlimited unless user spec) from message passing parallelism
   // with synchronous local evals (default; hybrid mode requires user spec > 1).
-  if (ieMessagePass && asynchLocalEvalConcurrency == 0)
-    asynchLocalEvalConcurrency = 1;
+  asynchLocalEvalConcurrency
+    = (ieMessagePass && asynchLocalEvalConcSpec == 0)
+    ? 1 : asynchLocalEvalConcSpec;
 }
 
 
@@ -238,7 +239,7 @@ void ApplicationInterface::set_analysis_communicators()
   // Extract attributes for analysis partitions
   eaDedMasterFlag    = ea_pl.dedicated_master_flag();
   eaMessagePass      = ea_pl.message_pass();
-  numAnalysisServers = ea_pl.num_servers(); // update to actual
+  numAnalysisServers = ea_pl.num_servers();//may differ from numAnalysisSrvSpec
   analysisCommRank   = ea_pl.server_communicator_rank();
   analysisCommSize   = ea_pl.server_communicator_size();
   analysisServerId   = ea_pl.server_id();
@@ -258,8 +259,9 @@ void ApplicationInterface::set_analysis_communicators()
   // readily distinguish unlimited concurrency for asynch local parallelism
   // (default is unlimited unless user spec) from message passing parallelism
   // with synchronous local evals (default; hybrid mode requires user spec > 1).
-  if (eaMessagePass && asynchLocalAnalysisConcurrency == 0)
-    asynchLocalAnalysisConcurrency = 1;
+  asynchLocalAnalysisConcurrency
+    = (eaMessagePass && asynchLocalAnalysisConcSpec == 0)
+    ? 1 : asynchLocalAnalysisConcSpec;
 
   // Set flag for asynch local parallelism of analyses.  In the local asynch
   // case (no message passing), a concurrency specification is interpreted as
@@ -287,9 +289,9 @@ set_communicators_checks(int max_iterator_concurrency)
 { } // default is no-op
 
 
-bool ApplicationInterface::check_multiprocessor_analysis()
+bool ApplicationInterface::check_multiprocessor_analysis(bool warn)
 {
-  bool err_flag = false;
+  bool issue_flag = false;
   // multiprocessor analyses are only valid for synchronous direct interfaces.
   // Neither system calls (synch or asynch), forks (synch or asynch), nor POSIX
   // threads (asynch direct) can share a communicator.  Attempting parallel
@@ -298,41 +300,54 @@ bool ApplicationInterface::check_multiprocessor_analysis()
   // perform the intended multiprocessor analysis and is therefore misleading
   // and should be explicitly prevented.
   if (multiProcAnalysisFlag) { // not valid for system/fork
-    // Note: processors_per_analysis only read by DB for direct interfaces,
-    //       so currently should not happen.
-    Cerr << "Error: Multiprocessor analyses are not valid with "
-	 << interfaceType << " interfaces.\n       Your processor allocation "
-	 << "may exceed the concurrency in the problem,\n       requiring a "
-	 << "reduction in allocation to eliminate the assignment of\n       "
-	 << "excess processors to the analysis level." << std::endl;
-    err_flag = true;
+    issue_flag = true;
+    if (iteratorCommRank == 0) {
+      if (warn) Cerr << "Warning: ";
+      else      Cerr << "Error:   ";
+      Cerr << "Multiprocessor analyses are not valid with " << interfaceType
+	   << " interfaces.";
+      if (warn) Cerr << "\n         This issue may be resolved at run time.";
+      else
+	Cerr << "\n         Your processor allocation may exceed the "
+	     << "concurrency in the problem,\n         requiring a reduction "
+	     << "in allocation to eliminate the assignment of\n         excess "
+	     << "processors to the analysis level.";
+      Cerr << std::endl;
+    }
   }
-  return err_flag;
+  return issue_flag;
 }
 
 
-bool ApplicationInterface::check_asynchronous(int max_iterator_concurrency)
+bool ApplicationInterface::
+check_asynchronous(bool warn, int max_iterator_concurrency)
 {
-  bool err_flag = false, asynch_local_eval_flag
+  bool issue_flag = false, asynch_local_eval_flag
     = ( max_iterator_concurrency > 1 &&
 	interfaceSynchronization == "asynchronous" &&
 	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
 	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
 
   // Check for asynchronous local evaluations or analyses
-  if (asynch_local_eval_flag || asynchLocalAnalysisFlag ) {
-    Cerr << "Error: asynchronous capability not supported in "
-	 << interfaceType << " interfaces." << std::endl;
-    err_flag = true;
+  if (asynch_local_eval_flag || asynchLocalAnalysisFlag) {
+    issue_flag = true;
+    if (iteratorCommRank == 0) {
+      if (warn) Cerr << "Warning: ";
+      else      Cerr << "Error:   ";
+      Cerr << "asynchronous capability not supported in " << interfaceType
+	   << " interfaces.";
+      if (warn) Cerr << "\n         This issue may be resolved at run time.";
+      Cerr << std::endl;
+    }
   }
-  return err_flag;
+  return issue_flag;
 }
 
 
 bool ApplicationInterface::
-check_multiprocessor_asynchronous(int max_iterator_concurrency)
+check_multiprocessor_asynchronous(bool warn, int max_iterator_concurrency)
 {
-  bool err_flag = false, asynch_local_eval_flag
+  bool issue_flag = false, asynch_local_eval_flag
     = ( max_iterator_concurrency > 1 &&
 	interfaceSynchronization == "asynchronous" &&
 	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
@@ -343,12 +358,18 @@ check_multiprocessor_asynchronous(int max_iterator_concurrency)
   // that evalComm is divided into single-processor analysis servers.
   if ( (multiProcEvalFlag     && asynch_local_eval_flag) ||
        (multiProcAnalysisFlag && asynchLocalAnalysisFlag) ) {
-    Cerr << "Error: asynchronous local jobs are not supported for "
-	 << "multiprocessor\n       communicator partitions.  Your "
-	 << "processor allocation may need adjustment." << std::endl;
-    err_flag = true;
+    issue_flag = true;
+    if (iteratorCommRank == 0) {
+      if (warn) Cerr << "Warning: ";
+      else      Cerr << "Error:   ";
+      Cerr << "asynchronous local jobs are not supported for multiprocessor\n"
+	   << "         communicator partitions.";
+      if (warn) Cerr << "  This issue may be resolved at run time.";
+      else      Cerr << "  Your processor allocation may need adjustment.";
+      Cerr << std::endl;
+    }
   }
-  return err_flag;
+  return issue_flag;
 }
 
 

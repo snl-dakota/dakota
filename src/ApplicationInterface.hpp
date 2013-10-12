@@ -111,11 +111,12 @@ protected:
   void stop_evaluation_servers();
 
   /// checks on multiprocessor analysis configuration
-  bool check_multiprocessor_analysis();
+  bool check_multiprocessor_analysis(bool warn);
   /// checks on asynchronous configuration (for direct interfaces)
-  bool check_asynchronous(int max_iterator_concurrency);
+  bool check_asynchronous(bool warn, int max_iterator_concurrency);
   /// checks on asynchronous settings for multiprocessor partitions
-  bool check_multiprocessor_asynchronous(int max_iterator_concurrency);
+  bool check_multiprocessor_asynchronous(bool warn,
+					 int max_iterator_concurrency);
 
   //
   //- Heading: Virtual functions (evaluations)
@@ -211,7 +212,10 @@ protected:
   int analysisCommSize; ///< size of analysisComm
   int analysisCommRank; ///< processor rank within analysisComm
   int analysisServerId; ///< analysis server identifier
-  int numAnalysisServers; ///< number of analysis servers
+  /// current number of analysis servers
+  int numAnalysisServers;
+  /// user specification for number of analysis servers
+  int numAnalysisServersSpec;
 
   /// flag for multiprocessor analysis partitions
   bool multiProcAnalysisFlag;
@@ -219,6 +223,8 @@ protected:
   /// flag for asynchronous local parallelism of analyses
   bool asynchLocalAnalysisFlag;
 
+  /// user specification for asynchronous local analysis concurrency
+  int asynchLocalAnalysisConcSpec;
   /// limits the number of concurrent analyses in asynchronous local
   /// scheduling and specifies hybrid concurrency when message passing
   int asynchLocalAnalysisConcurrency;
@@ -374,11 +380,17 @@ private:
   int iteratorCommSize; ///< size of iteratorComm
   int iteratorCommRank; ///< processor rank within iteratorComm
 
-  bool ieMessagePass;   ///< flag for message passing at ie scheduling level
-  int numEvalServers;   ///< number of evaluation servers
+  /// flag for message passing at ie scheduling level
+  bool ieMessagePass;
+  /// current number of evaluation servers
+  int numEvalServers;
+  /// user specification for number of evaluation servers
+  int numEvalServersSpec;
 
-  bool eaMessagePass;   ///< flag for message passing at ea scheduling level
-  int procsPerAnalysis; ///< processors per analysis servers
+  /// flag for message passing at ea scheduling level
+  bool eaMessagePass;
+  /// user specification for processors per analysis servers
+  int procsPerAnalysisSpec;
 
   /// length of a MPIPackBuffer containing a Variables object;
   /// computed in Model::init_communicators()
@@ -402,6 +414,8 @@ private:
   /// auto-configure logic in ParallelLibrary::resolve_inputs().
   String analysisScheduling;
 
+  /// user specification for asynchronous local evaluation concurrency
+  int asynchLocalEvalConcSpec;
   /// limits the number of concurrent evaluations in asynchronous local
   /// scheduling and specifies hybrid concurrency when message passing
   int asynchLocalEvalConcurrency;
@@ -500,11 +514,13 @@ inline void ApplicationInterface::init_serial()
 
 
 inline void ApplicationInterface::init_serial_evaluations()
-{ numEvalServers = 1; } // other evaluation defaults OK for serial operations
+{ numEvalServers = asynchLocalEvalConcurrency = 1; }
+// other evaluation defaults OK for serial operations
 
 
 inline void ApplicationInterface::init_serial_analyses()
-{ numAnalysisServers = 1; } // other analysis defaults OK for serial operations
+{ numAnalysisServers = asynchLocalAnalysisConcurrency = 1; }
+// other analysis defaults OK for serial operations
 
 
 inline int ApplicationInterface::asynch_local_evaluation_concurrency() const

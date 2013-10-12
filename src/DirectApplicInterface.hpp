@@ -223,8 +223,9 @@ inline const StringArray& DirectApplicInterface::analysis_drivers() const
 inline void DirectApplicInterface::
 set_communicators_checks(int max_iterator_concurrency)
 {
-  if (check_asynchronous(max_iterator_concurrency) ||
-      check_multiprocessor_asynchronous(max_iterator_concurrency))
+  bool warn = false,  mp1 = check_asynchronous(warn, max_iterator_concurrency),
+       mp2 = check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+  if (mp1 || mp2)
     abort_handler(-1);
 }
 
