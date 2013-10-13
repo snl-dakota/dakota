@@ -8504,13 +8504,13 @@ Test Number 5 succeeded
   response_fn_2: 105 val (105 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 105 val (105 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      4.6470246894e+00 w
-                      4.1471619695e+00 t
+                      4.6423639051e+00 w
+                      4.1581626235e+00 t
 <<<<< Best objective function  =
-                      1.9271964063e+01
+                      1.9303704075e+01
 <<<<< Best constraint values   =
-                      3.5046370165e+00
-                      9.0746431115e-01
+                      3.0092859815e+00
+                      9.0737729732e-01
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 440 total (440 new, 0 duplicate)
@@ -8518,13 +8518,13 @@ Test Number 6 succeeded
   response_fn_2: 440 val (440 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 440 val (440 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459906061e+00 w
-                      3.8921846817e+00 t
+                      2.4459905864e+00 w
+                      3.8921847130e+00 t
 <<<<< Best objective function  =
                       9.5202471685e+00
 <<<<< Best constraint values   =
                       3.0000000000e+00
-                      3.3029557407e+00
+                      3.3029556523e+00
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
 <<<<< Function evaluation summary (UQ_I): 105 total (105 new, 0 duplicate)
@@ -8532,13 +8532,13 @@ Test Number 7 succeeded
   response_fn_2: 105 val (105 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 105 val (105 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      4.6470246893e+00 w
-                      4.1471619696e+00 t
+                      4.6423639052e+00 w
+                      4.1581626236e+00 t
 <<<<< Best objective function  =
-                      1.9271964063e+01
+                      1.9303704076e+01
 <<<<< Best constraint values   =
-                      3.5046370165e+00
-                      9.0746431115e-01
+                      3.0092859817e+00
+                      9.0737729732e-01
 <<<<< Best data not found in evaluation cache
 Test Number 8 succeeded
 <<<<< Function evaluation summary (UQ_I): 539 total (539 new, 0 duplicate)
