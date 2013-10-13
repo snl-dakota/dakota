@@ -292,6 +292,8 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
 
+    /* TO DO: needed for sbuq but creates issue with dakota_sbo_hierarchical.in
+
     // Unlike other derived models, the coupling of parallel configuration
     // activation to a run-time mode selection requires bcast of that mode
     // over the context of the Model.  Base class Model::set_communicators()
@@ -302,6 +304,7 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
       if (pc.si_parallel_level().server_communicator_size() > 1)
 	parallelLib.bcast_i(responseMode);
     }
+    */
 
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:
