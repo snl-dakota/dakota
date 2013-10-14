@@ -301,7 +301,7 @@ bool ApplicationInterface::check_multiprocessor_analysis(bool warn)
   // and should be explicitly prevented.
   if (multiProcAnalysisFlag) { // not valid for system/fork
     issue_flag = true;
-    //if (iteratorCommRank == 0) {
+    if (iteratorCommRank == 0) {
       if (warn) Cerr << "Warning: ";
       else      Cerr << "Error:   ";
       Cerr << "Multiprocessor analyses are not valid with " << interfaceType
@@ -313,7 +313,7 @@ bool ApplicationInterface::check_multiprocessor_analysis(bool warn)
 	     << "in allocation to eliminate the assignment of\n         excess "
 	     << "processors to the analysis level.";
       Cerr << std::endl;
-    //}
+    }
   }
   return issue_flag;
 }
@@ -331,14 +331,14 @@ check_asynchronous(bool warn, int max_iterator_concurrency)
   // Check for asynchronous local evaluations or analyses
   if (asynch_local_eval_flag || asynchLocalAnalysisFlag) {
     issue_flag = true;
-    //if (iteratorCommRank == 0) {
+    if (iteratorCommRank == 0) {
       if (warn) Cerr << "Warning: ";
       else      Cerr << "Error:   ";
       Cerr << "asynchronous capability not supported in " << interfaceType
 	   << " interfaces.";
       if (warn) Cerr << "\n         This issue may be resolved at run time.";
       Cerr << std::endl;
-    //}
+    }
   }
   return issue_flag;
 }
@@ -359,7 +359,7 @@ check_multiprocessor_asynchronous(bool warn, int max_iterator_concurrency)
   if ( (multiProcEvalFlag     && asynch_local_eval_flag) ||
        (multiProcAnalysisFlag && asynchLocalAnalysisFlag) ) {
     issue_flag = true;
-    //if (iteratorCommRank == 0) {
+    if (iteratorCommRank == 0) {
       if (warn) Cerr << "Warning: ";
       else      Cerr << "Error:   ";
       Cerr << "asynchronous local jobs are not supported for multiprocessor\n"
@@ -367,7 +367,7 @@ check_multiprocessor_asynchronous(bool warn, int max_iterator_concurrency)
       if (warn) Cerr << "  This issue may be resolved at run time.";
       else      Cerr << "  Your processor allocation may need adjustment.";
       Cerr << std::endl;
-    //}
+    }
   }
   return issue_flag;
 }
