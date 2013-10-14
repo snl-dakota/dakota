@@ -201,7 +201,7 @@ protected:
 
   /// Service actualModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve();
+  void serve(int max_iterator_concurrency);
   /// Executed by the master to terminate actualModel server operations
   /// when DataFitSurrModel iteration is complete.
   void stop_servers();
@@ -510,10 +510,13 @@ derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 }
 
 
-inline void DataFitSurrModel::serve()
+inline void DataFitSurrModel::serve(int max_iterator_concurrency)
 {
+  // don't recurse, as actualModel.serve() will set actualModel comms
+  set_communicators(max_iterator_concurrency, false);
+
   if (!actualModel.is_null())
-    actualModel.serve();
+    actualModel.serve(daceIterator.maximum_concurrency()); // sets comms
 }
 
 

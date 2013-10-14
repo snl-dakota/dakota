@@ -99,7 +99,7 @@ protected:
 
   /// Service userDefinedInterface job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve();
+  void serve(int max_iterator_concurrency);
   /// executed by the master to terminate userDefinedInterface server
   /// operations when SingleModel iteration is complete.
   void stop_servers();
@@ -212,9 +212,10 @@ derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 }
 
 
-inline void SingleModel::serve()
+inline void SingleModel::serve(int max_iterator_concurrency)
 {
-  parallelLib.parallel_configuration_iterator(modelPCIter);
+  set_communicators(max_iterator_concurrency, false); // no recursion (moot)
+  //parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.serve_evaluations();
 }
 

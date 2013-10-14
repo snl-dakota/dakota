@@ -112,7 +112,7 @@ protected:
   /// Service optionalInterface and subModel job requests received from
   /// the master.  Completes when a termination message is received from
   /// stop_servers().
-  void serve();
+  void serve(int max_iterator_concurrency);
   /// Executed by the master to terminate server operations for subModel and
   /// optionalInterface when iteration on the NestedModel is complete.
   void stop_servers();
@@ -435,8 +435,11 @@ derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 }
 
 
-inline void NestedModel::serve()
+inline void NestedModel::serve(int max_iterator_concurrency)
 {
+  // don't recurse, as subModel.serve() will set subModel comms
+  set_communicators(max_iterator_concurrency, false);
+
   // manage optionalInterface and subModel servers
   componentParallelMode = 1;
   while (componentParallelMode) {
@@ -447,7 +450,7 @@ inline void NestedModel::serve()
       optionalInterface.serve_evaluations();
     }
     else if (componentParallelMode == SUB_MODEL)
-      subModel.serve();
+      subModel.serve(subIterator.maximum_concurrency()); // sets subModel comms
   }
 }
 

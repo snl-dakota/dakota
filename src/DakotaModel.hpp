@@ -202,7 +202,7 @@ public:
 
   /// Service job requests received from the master.  Completes when
   /// a termination message is received from stop_servers().
-  virtual void serve();
+  virtual void serve(int max_iterator_concurrency);
   /// Executed by the master to terminate all server operations for a
   /// particular model when iteration on the model is complete.
   virtual void stop_servers();

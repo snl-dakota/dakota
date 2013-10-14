@@ -812,9 +812,12 @@ void HierarchSurrModel::component_parallel_mode(short mode)
     new_iter_comm_size = pc.si_parallel_level().server_communicator_size();
   }
 
-  // activate the new serve mode
-  if (new_iter_comm_size > 1 && componentParallelMode != mode)
+  // activate the new serve mode (matches HierarchSurrModel::serve())
+  if (new_iter_comm_size > 1 && componentParallelMode != mode) {
     parallelLib.bcast_i(mode);
+    if (mode == HF_MODEL)
+      parallelLib.bcast_i(responseMode);
+  }
   componentParallelMode = mode;
 }
 

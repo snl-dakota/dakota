@@ -431,8 +431,7 @@ void Strategy::run_iterator(Iterator& the_iterator, Model& the_model)
   }
   else {
     //ParConfigLIter prev_pc = parallelLib.parallel_configuration_iterator();
-    the_model.set_communicators(the_iterator.maximum_concurrency());
-    the_model.serve(); // runs until termination message is received
+    the_model.serve(the_iterator.maximum_concurrency()); // runs until stopped
     //parallelLib.parallel_configuration_iterator(prev_pc); // reset
   }
 }

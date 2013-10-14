@@ -2897,10 +2897,10 @@ int Model::local_eval_concurrency()
 }
 
 
-void Model::serve()
+void Model::serve(int max_iterator_concurrency)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->serve();
+    modelRep->serve(max_iterator_concurrency);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual serve() function.\n"
          << "This model does not support server operations." << std::endl;

@@ -257,7 +257,7 @@ protected:
 
   /// Service subModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve();
+  void serve(int max_iterator_concurrency);
   /// executed by the master to terminate subModel server operations
   /// when RecastModel iteration is complete.
   void stop_servers();
@@ -586,13 +586,14 @@ inline void RecastModel::derived_init_serial()
 inline void RecastModel::
 derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
-  if (recurse_flag)
+  if (recurse_flag) {
     subModel.set_communicators(max_iterator_concurrency);
 
-  // the following assignments are not overridden in Model::set_communicators()
-  // since RecastModels do not define the ie_parallel_level
-  asynchEvalFlag = subModel.asynch_flag();
-  evaluationCapacity = subModel.evaluation_capacity();
+    // the following assignments aren't overridden in Model::set_communicators()
+    // since RecastModels do not define the ie_parallel_level
+    asynchEvalFlag     = subModel.asynch_flag();
+    evaluationCapacity = subModel.evaluation_capacity();
+  }
 }
 
 
@@ -601,8 +602,13 @@ derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 { if (recurse_flag) subModel.free_communicators(max_iterator_concurrency); }
 
 
-inline void RecastModel::serve()
-{ subModel.serve(); }
+inline void RecastModel::serve(int max_iterator_concurrency)
+{
+  // don't recurse, as subModel.serve() will set subModel comms
+  set_communicators(max_iterator_concurrency, false);
+
+  subModel.serve(max_iterator_concurrency); // sets subModel comms
+}
 
 
 inline void RecastModel::stop_servers()

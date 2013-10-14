@@ -489,7 +489,7 @@ void NonDLocalReliability::initial_taylor_series()
     // Evaluate response values/gradients at the mean values of the uncertain
     // vars for the (initial) Taylor series expansion in MV/AMV/AMV+.
     Cout << "\n>>>>> Evaluating response at mean values\n";
-    if (mppSearchType > MV && mppSearchType < NO_APPROX)
+    if (mppSearchType && mppSearchType < NO_APPROX)
       uSpaceModel.component_parallel_mode(TRUTH_MODEL);
     iteratedModel.continuous_variables(natafTransform.x_means());
     activeSet.request_vector(asrv);
@@ -966,7 +966,7 @@ void NonDLocalReliability::initialize_class_data()
   // Determine median limit state values for AMV/AMV+/FORM/SORM by evaluating
   // response fns at u = 0 (used for determining signs of reliability indices).
   Cout << "\n>>>>> Evaluating response at median values\n";
-  if (mppSearchType < NO_APPROX)
+  if (mppSearchType && mppSearchType < NO_APPROX)
     uSpaceModel.component_parallel_mode(TRUTH_MODEL);
   RealVector ep_median_u(numUncertainVars), // inits vals to 0
              ep_median_x(numUncertainVars, false);

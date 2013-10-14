@@ -114,7 +114,7 @@ protected:
   /// Service lowFidelityModel and highFidelityModel job requests received
   /// from the master.  Completes when a termination message is received from
   /// stop_servers().
-  void serve();
+  void serve(int max_iterator_concurrency);
   /// Executed by the master to terminate lowFidelityModel and
   /// highFidelityModel server operations when iteration on the
   /// HierarchSurrModel is complete.
@@ -292,20 +292,6 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
 
-    /* TO DO: needed for sbuq but creates issue with dakota_sbo_hierarchical.in
-
-    // Unlike other derived models, the coupling of parallel configuration
-    // activation to a run-time mode selection requires bcast of that mode
-    // over the context of the Model.  Base class Model::set_communicators()
-    // provides sufficient context for this bcast() of responseMode.
-    parallelLib.parallel_configuration_iterator(modelPCIter);
-    if (parallelLib.si_parallel_level_defined()) {
-      const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-      if (pc.si_parallel_level().server_communicator_size() > 1)
-	parallelLib.bcast_i(responseMode);
-    }
-    */
-
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:
       lowFidelityModel.set_communicators(max_iterator_concurrency);
@@ -380,16 +366,37 @@ derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 }
 
 
-inline void HierarchSurrModel::serve()
+inline void HierarchSurrModel::serve(int max_iterator_concurrency)
 {
-  // manage lowFidelityModel and highFidelityModel servers
+  set_communicators(max_iterator_concurrency, false); // don't recurse
+
+  // manage lowFidelityModel and highFidelityModel servers, matching
+  // communication from HierarchSurrModel::component_parallel_mode()
   componentParallelMode = 1;
   while (componentParallelMode) {
     parallelLib.bcast_i(componentParallelMode);
-    if (componentParallelMode == LF_MODEL)
-      lowFidelityModel.serve();
-    else if (componentParallelMode == HF_MODEL)
-      highFidelityModel.serve();
+    if (componentParallelMode == LF_MODEL) {
+      lowFidelityModel.serve(max_iterator_concurrency);
+      // Note: ignores erroneous BYPASS_SURROGATE to avoid responseMode bcast
+    }
+    else if (componentParallelMode == HF_MODEL) {
+      // receive responseMode from HierarchSurrModel::component_parallel_mode()
+      parallelLib.bcast_i(responseMode);
+      // employ correct iterator concurrency for highFidelityModel
+      switch (responseMode) {
+      case UNCORRECTED_SURROGATE:
+	Cerr << "Error: setting parallel mode to HF_MODEL is erroneous for a "
+	     << "response mode of UNCORRECTED_SURROGATE." << std::endl;
+	abort_handler(-1);
+	break;
+      case AUTO_CORRECTED_SURROGATE:
+	highFidelityModel.serve(highFidelityModel.derivative_concurrency());
+	break;
+      case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
+	highFidelityModel.serve(max_iterator_concurrency);
+	break;
+      }
+    }
   }
 }
 
