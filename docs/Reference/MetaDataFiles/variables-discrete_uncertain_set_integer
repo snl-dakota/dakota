@@ -17,7 +17,8 @@ Dempster-Shafer theory of evidence. In the discrete case, interval
 variables may be used to specify categorical choices which are
 epistemic. For example, if we have three possible forms for a physics
 model (model 1, 2, or 3) and there is epistemic uncertainty about
-which one is correct, a discrete uncertain interval or a discrete set
+which one is correct, a discrete uncertain interval or a 
+discrete uncertain set integer
 may be used to represent this type of uncertainty.
 
 Discrete variables may be used to represent things like epistemic model form
@@ -26,24 +27,62 @@ the effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis
 (either an interval analysis or a Dempster-Shafer evidence theory
 analysis), one can use a discrete epistemic variable to represent the
 uncertainty in the model form. There are three types of discrete
-epistemic variables, similar to discrete design and discrete state
-types: a discrete interval variable that may take any integer value
-within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4); a
-discrete uncertain set of integers, in which the discrete value may
+epistemic variables:
+
+\li a discrete interval variable that may take any integer value
+within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4)
+\li a discrete uncertain set of integers, in which the discrete value may
 take any value within the integer set (for example, the set may be
-defined as 1, 2, and 4); and a discrete uncertain set of reals, in
+defined as 1, 2, and 4)
+\li  a discrete uncertain set of reals, in
 which the discrete variable may take any value defined within the real
 set (for example, a parameter may have two allowable real values,
-3.285 or 4.79). The following Tables \ref T7d27 "7.27" through \ref
-T7d29 "7.29" summarize the required and optional specifications for
-each discrete epistemic variable subtype. Note that, relative to the
-discrete design and discrete state specifications, discrete epistemic
-specifications add interval or set probabilities while removing the
-notion of an initial value.
+3.285 or 4.79). 
 
-How is this different from a pmf, histogram
+The \c discrete uncertain set integer
+variable is NOT a discrete random variable,
+especially not one defined by a histogram.
+It is used in epistemic uncertainty analysis, where one is trying to model 
+uncertainty due to lack of knowledge. 
 
-Topics::	problem, discrete_variables, epistemic_uncertain_variables, not_yet_reviewed
+The discrete uncertain set integer variable is used in both interval analysis 
+and in Dempster-Shafer theory of evidence.
+
+\li interval analysis
+-the values are integers, equally weighted
+-the true value of the random variable is one of the integers in this set
+-output is the minimum and maximum function value conditional
+on the specified inputs
+
+\li Dempster-Shafer theory of evidence
+-the values are integers, but they can be assigned different weights
+-outputs are called "belief" and "plausibility." 
+Belief represents the smallest possible probability that is consistent with the evidence, 
+while plausibility represents the largest possible probability that is consistent with the evidence. 
+Evidence is the values together with their weights.
+
+Let \f$d1\f$ be 2 or 13 and \f$d2\f$ be 4, 5 or 26.
+The following specification is for an interval analysis:
+\verbatim
+discrete_uncertain_set_integer
+ num_set_values 2 3
+ set_values 2 13 4 5 26
+ descriptors 'd1' 'd2'
+\endverbatim
+
+Let \f$d1\f$ be 2, 3 or 4 with weight 0.6 or 1 with weight 0.4. Let \f$d2\f$ be 4, 5 or 6 with weights
+0.8, 0.15, 0.05.
+The following specification is for a Dempster-Shafer analysis:
+\verbatim
+continuous_interval_uncertain = 2
+ num_set_values 4 3
+ set_values 2 3 4 1 4 5 6 
+ set_probabilities 0.2 0.2 0.2 0.4 0.8 0.15 0.05
+ descriptors 'd1' 'd2'
+\endverbatim
+
+
+Topics::	problem, discrete_variables, epistemic_uncertain_variables
 Examples::
 Theory::
 Faq::

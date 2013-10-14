@@ -1,22 +1,16 @@
 Blurb::
-Distribution parameter
+Distribution parameter for the histogram point distribution 
 Description::
-Within the histogram point uncertain optional group specification, the
-number of histogram point uncertain variables is a required
-specification, the number of pairs is an optional key for
-apportionment of abscissas and counts, the sets of abscissas and
-counts are required, and the variable descriptors are optional. When
-using a histogram point variable, one must define at least one set of
-abscissa/count pairs.  As for \ref VarCAUV_Bin_Histogram, the \c
-abscissas specifications define abscissa values ("x" coordinates) for
-the PDF of each histogram variable.  When paired with \c counts, the
-specifications provide sets of \c (x,c) pairs for each histogram
-variable where \c c defines a count (i.e., a frequency or relative
-probability) associated with a point.
+When using a histogram point variable, one must define at least one set of
+abscissa/count pairs.   The \c
+abscissas  define abscissa values ("x" coordinates) for
+the PDF of each histogram variable.  These are  paired with \c counts which
+provide sets of \c (x,c) pairs for each histogram
+variable where \c c defines a count (i.e., a frequency)
+associated with a point.
 
 To fully specify a point-based histogram with \c n points, \c n
-\c (x,c) pairs (note that \c (x,c) and \c (x,y) are equivalent in this
-case) must be specified with the following features:
+\c (x,c) pairs   must be specified with the following features:
 
 \li \c x is the point value and \c c is the corresponding count 
     for that value.
@@ -24,7 +18,8 @@ case) must be specified with the following features:
 \li all \c c values must be positive.
 \li a minimum of one pair must be specified for each point-based histogram.
 
-Topics::	not_yet_reviewed
+
+Topics:
 Examples::
 Theory::
 Faq::
