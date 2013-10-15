@@ -303,6 +303,15 @@ TAG "method/asynch_pattern_search/constraint_penalty"
 TAG "method/asynch_pattern_search/smoothing_factor"
 	DESC "{Smoothing factor} MethodCommands.html#MethodAPPSDC"
 
+TAG "method/mesh_adaptive_search"
+TAG "method/mesh_adaptive_search/function_precision"
+	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/mesh_adaptive_search/random_seed"
+TAG "method/mesh_adaptive_search/history_file"
+TAG "method/mesh_adaptive_search/display_format"
+TAG "method/mesh_adaptive_search/variable_neighborhood_search"
+TAG "method/mesh_adaptive_search/display_all_evaluations"
 TAG "method/moga" GROUP "Optimization: Global"
 TAG "method/moga/fitness_type"
 	DESC "{Fitness type} MethodCommands.html#MethodJEGAMOGA"
@@ -611,8 +620,6 @@ TAG "method/nl2sol" GROUP "Calibration"
 	DESC "[CHOOSE LSQ method]"
 
 TAG "method/nl2sol/function_precision"
-	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
-
 TAG "method/nl2sol/absolute_conv_tol"
 	DESC "{Absolute function convergence tolerance} MethodCommands.html#MethodLSNL2SOL"
 

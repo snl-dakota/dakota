@@ -53,6 +53,9 @@
 #ifdef DAKOTA_DL_SOLVER
 #include "DLSolver.hpp"
 #endif
+#ifdef HAVE_NOMAD
+#include "NomadOptimizer.hpp"
+#endif
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
 #include "NLSSOLLeastSq.hpp"
@@ -428,6 +431,10 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name == "dl_solver")
     return new DLSolver(model);
 #endif
+#ifdef HAVE_NOMAD
+  else if (method_name == "mesh_adaptive_search")
+    return new NomadOptimizer(model);
+#endif
 #ifdef HAVE_NPSOL
   else if (method_name == "npsol_sqp")
     return new NPSOLOptimizer(model);
@@ -550,6 +557,10 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
 #ifdef DAKOTA_DL_SOLVER
   //else if (method_name == "dl_solver")
   //  return new DLSolver(NoDBBaseConstructor(), model);
+#endif
+#ifdef HAVE_NOMAD
+  //  else if (method_name == "mesh_adaptive_search")
+  //    return new NomadOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_NPSOL
   else if (method_name == "npsol_sqp")

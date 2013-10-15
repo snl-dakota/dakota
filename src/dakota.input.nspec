@@ -196,6 +196,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ constraint_penalty REAL {N_mdm(Real,constrPenalty)} ]
             [ smoothing_factor REAL {N_mdm(Real,smoothFactor)} ]
             )
+	  |
+	  ( mesh_adaptive_search {N_mdm(lit,methodName_mesh_adaptive_search)}
+	    [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
+	    [ random_seed INTEGER {N_mdm(nnint,randomSeed)} ]
+	    [ history_file STRING {N_mdm(str,historyFile)} ]
+	    [ display_format STRING {N_mdm(str,displayFormat)} ]
+	    [ variable_neighborhood_search REAL {N_mdm(Real,vns)} ]
+	    [ display_all_evaluations {N_mdm(true,showAllEval)} ]
+	    )
 	    |
 	    ( ( moga {N_mdm(lit,methodName_moga)}
 	      [ fitness_type {0}

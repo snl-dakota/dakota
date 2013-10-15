@@ -5085,6 +5085,7 @@ static Method_mp_lit
 	MP2(methodName,fsu_cvt),
 	MP2(methodName,fsu_halton),
 	MP2(methodName,fsu_hammersley),
+	MP2(methodName,mesh_adaptive_search),
 	MP2(methodName,moga),
 	MP2(methodName,ncsu_direct),
 	MP2(methodName,nl2sol),
@@ -5249,6 +5250,7 @@ static Real
 	MP_(threshStepLength),
 	MP_(vbdDropTolerance),
 	MP_(volBoxSize),
+	MP_(vns),
 	MP_(xConvTol);
 
 static RealVector
@@ -5290,7 +5292,9 @@ static String
 	MP_(approxExportFile),
 	MP_(approxImportFile),
         MP_(betaSolverName),
+        MP_(displayFormat),
 	MP_(expansionImportFile),
+	MP_(historyFile),
 	MP_(idMethod),
 	MP_(logFile),
 	MP_(modelPointer),
@@ -5321,6 +5325,7 @@ static bool
 	MP_(pstudyFileAnnotated),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
+	MP_(showAllEval),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(tensorGridFlag),

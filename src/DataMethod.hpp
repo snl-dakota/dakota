@@ -318,6 +318,7 @@ public:
   /// the \c verify_level specification in \ref MethodNPSOLDC
   int verifyLevel;
   /// the \c function_precision specification in \ref MethodNPSOLDC
+  /// and the \c EPSILON specification in NOMAD
   Real functionPrecision;	/* also used by nl2sol */
   /// the \c linesearch_tolerance specification in \ref MethodNPSOLDC
   Real lineSearchTolerance;
@@ -611,6 +612,16 @@ public:
 
   /// the \c seed specification for COLINY, NonD, & DACE methods
   int randomSeed;
+
+  // MADS
+  /// the \c HISTORY_FILE specification for NOMAD
+  String historyFile;
+  /// the \c DISPLAY_STATS specification for NOMAD
+  String displayFormat;
+  /// the \c VNS specification for NOMAD
+  Real vns;
+  /// the \c DISPLAY_ALL_EVAL specification for NOMAD
+  bool showAllEval;
 
   // NonD & DACE
 
