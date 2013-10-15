@@ -9,7 +9,7 @@
 //- Class:       NomadOptimizer
 //- Description: Implementation of the NOMADOptimizer class, including
 //		    derived subclasses used by the NOMAD Library.
-//- Owner:       Patty Hough/John Siirola/Brian Adams
+//- Owner:       Patty Hough
 //- Checked by:
 //- Version: $Id$
 
@@ -250,6 +250,44 @@ void NomadOptimizer::find_optimum()
      // Stop NOMAD output.
      NOMAD::Slave::stop_slaves ( out );
      NOMAD::end();
+
+     // Retrieve best iterate and convert from NOMAD to DAKOTA
+     // vector.
+
+     const NOMAD::Eval_Point * bestX = mads.get_best_feasible();
+     RealVector contVars(numCont);
+     IntVector  discIntVars(numDisc);
+     vector<NOMAD::bb_input_type> input_types;
+     input_types = p.get_bb_input_type();
+     for(int i=0;i<numTotal;i++)
+       {
+	 if(input_types[i]==NOMAD::CONTINUOUS)
+	   {
+	     contVars[i] = (*bestX)[i].value();
+	   }
+	 else
+	   {
+	     discIntVars[i-numCont] = (*bestX)[i].value();
+	   }
+	       
+       }
+     bestVariablesArray.front().continuous_variables(contVars);
+     bestVariablesArray.front().discrete_int_variables(discIntVars);
+
+     // Retrieve the best responses and convert from NOMAD to
+     // DAKOTA vector.h
+     if (!localObjectiveRecast) {
+       // else local_objective_recast_retrieve() is used in Optimizer::post_run()
+
+       RealVector best_fns(numFunctions);
+       const NOMAD::Point & bestFs = bestX->get_bb_outputs();
+       const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+       best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
+	 -bestFs[0].value() : bestFs[0].value();
+       for (int i=1; i<numFunctions; i++)
+	 best_fns[i] = bestFs[i].value();
+       bestResponseArray.front().function_values(best_fns);
+     }
 }
 
 void NomadOptimizer::load_parameters(Model &model)
