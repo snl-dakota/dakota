@@ -61,7 +61,7 @@ Belief represents the smallest possible probability that is consistent with the 
 while plausibility represents the largest possible probability that is consistent with the evidence. 
 Evidence is the values together with their weights.
 
-Let \f$d1\f$ be 2 or 13 and \f$d2\f$ be 4, 5 or 26.
+Let d1 be 2 or 13 and d2 be 4, 5 or 26.
 The following specification is for an interval analysis:
 \verbatim
 discrete_uncertain_set_integer
@@ -70,7 +70,7 @@ discrete_uncertain_set_integer
  descriptors 'd1' 'd2'
 \endverbatim
 
-Let \f$d1\f$ be 2, 3 or 4 with weight 0.6 or 1 with weight 0.4. Let \f$d2\f$ be 4, 5 or 6 with weights
+Let d1 be 2, 3 or 4 with weight 0.6 or 1 with weight 0.4. Let d2 be 4, 5 or 6 with weights
 0.8, 0.15, 0.05.
 The following specification is for a Dempster-Shafer analysis:
 \verbatim

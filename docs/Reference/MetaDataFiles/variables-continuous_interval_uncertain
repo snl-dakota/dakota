@@ -48,13 +48,14 @@ The following specification is for a Dempster-Shafer analysis:
 \verbatim
 continuous_interval_uncertain = 2
  num_intervals = 3 2
- interval_probs = 0.2 0.5 0.3 0.4 0.6
+ interval_probs = 0.25 0.5 0.25 0.4 0.6
  lower_bounds = 2.0 4.0 4.5 1.0 3.0
  upper_bounds = 2.5 5.0 6.0 5.0 5.0
 \endverbatim
 
 Here there are 2 interval uncertain variables. The first one is defined by three intervals, and the second by two intervals. The three intervals for the first variable have basic probability assignments of 0.2, 0.5, and 0.3, respectively, while the basic probability assignments for the two intervals for the second variable are 0.4 and 0.6. 
-The basic probability assignments for each interval variable must sum to one. The interval bounds for the first variable are [2, 2.5], [4, 5], and [4.5, 6], and the interval bounds for the second variable are [1.0, 5.0] and [3.0, 5.0]. Note that the intervals can be overlapping or disjoint.  
+The basic probability assignments for each interval variable must sum to one. The interval bounds for the first variable are [2, 2.5], [4, 5], and [4.5, 6], and the interval bounds for the second variable are [1.0, 5.0] and [3.0, 5.0]. Note that the intervals can be overlapping or disjoint.  The BPA for the first variable indicates that it is twice as likely that the value occurs 
+on the interval [4,5] than either [2,2.5] or [4.5,6].
 
 Topics::	continuous_variables, epistemic_uncertain_variables
 Examples::
