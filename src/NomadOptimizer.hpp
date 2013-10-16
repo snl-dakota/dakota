@@ -21,8 +21,6 @@
 
 #include <nomad.hpp>
 
-using namespace std;
-
 // Forward Declarations
 class NomadOptimizer;
 
@@ -66,7 +64,7 @@ namespace Dakota {
 	       
 	       NomadOptimizer(Model &model, int random_seed, int max_bb_evals, int max_iterations, 
 			      Real _epsilon, Real _vns, bool display_all_evaluations,
-			      string output_format, string history_file);
+			      std::string output_format, std::string history_file);
 	       NomadOptimizer(const RealVector& lower_bound_disc, const RealVector& upper_bound_disc, 
 		    const RealVector& lower_bound_cont, const RealVector& upper_bound_cont, 
 		    const RealVector& initial_point_disc, const RealVector& initial_point_cont,
@@ -74,7 +72,7 @@ namespace Dakota {
 		    int num_nonlinear_ineq_constraints, int num_nonlinear_eq_constraints,
 		    int random_seed, int max_bb_evals, int max_iterations, 
 		    Real _epsilon, Real _vns, bool display_all_evaluations,
-		    string output_format, string history_file);	      
+		    std::string output_format, std::string history_file);	      
 	       /// Destructor
                ~NomadOptimizer();
 	       
@@ -104,7 +102,7 @@ namespace Dakota {
 	       
 	       // Parameters.
 	       int randomSeed, maxBlackBoxEvals, maxIterations;
-	       string outputFormat, historyFile;
+               std::string outputFormat, historyFile;
 	       bool displayAll;
 	       Real epsilon, vns;
 	       
