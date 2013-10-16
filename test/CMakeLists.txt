@@ -234,7 +234,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       ${test_name}
       FILE_DEPENDENCIES "${test_all_files}"
       PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
-      APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
+      APPLICATION COMMAND ${PERL_EXECUTABLE}
+        ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
         --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${test_name}
         --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
         ${test_input_file}
@@ -258,7 +259,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 	  p${test_name}
 	  FILE_DEPENDENCIES "${test_all_files}"
 	  PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_pdiffs.out
-	  APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
+	  APPLICATION COMMAND ${PERL_EXECUTABLE}
+	    ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
 	    --parallel
  	    --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${test_name}
 	    --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -443,7 +445,6 @@ install(FILES dakota_test.perl
   DESTINATION "${DAKOTA_TEST_INSTALL}/test" PERMISSIONS
   OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-# WJB - DBG ToDo: only "install" a subset of test_support_files (.perl and .sh)?
 install(FILES ${test_support_files}
   DESTINATION "${DAKOTA_TEST_INSTALL}/test" PERMISSIONS
   OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
