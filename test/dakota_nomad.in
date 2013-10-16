@@ -1,0 +1,62 @@
+# DAKOTA INPUT FILE - dakota_nomad.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+strategy,
+	single_method
+#	tabular_graphics_data
+
+method,
+	mesh_adaptive_search
+#	seed = 1234
+#       max_function_evaluations = 1000				#5
+#	max_iterations = 100					#5
+#	function_precision = 0.00000001				#5
+#	variable_neighborhood_search = 0.1			#5
+#	display_format
+#	display_all_evaluations	       				#5
+#	history_file = 'mads_history.log'			#5
+
+variables,
+	continuous_design = 3
+	  initial_point   -1.0    1.5   2.0
+	  upper_bounds    10.0   10.0  10.0			#0,#4,#5
+	  lower_bounds   -10.0  -10.0 -10.0			#0,#4,#5
+	  descriptors      'x1'  'x2'  'x3'
+#	discrete_design_range = 2				#1,#4,#5
+#	  initial_point      2     2				#1,#4,#5
+#	  lower_bounds       1     1				#1,#4,#5
+#	  upper_bounds       4     9				#1,#4,#5
+#	  descriptors      'y1'   'y2'				#1,#4,#5
+#       discrete_design_set_real = 2				#2,#4,#5
+#         num_set_values = 4 5					#2,#4,#5
+#         set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#2,#4,#5
+#         descriptors      'y1'   'y2' 	       	       		#2,#4,#5
+#       discrete_design_set_int = 2				#3,#4,#5
+#         num_set_values = 2 2	  				#3,#4,#5
+#         set_values = 4 7 8 9					#3,#4,#5
+#         descriptors      'z1'   'z2'				#3,#4,#5
+
+interface,
+       direct							#0,#2,#4
+#	fork asynch evaluation_concurrency 4			#1,#3,#5
+	  analysis_driver = 'text_book'
+
+responses,
+	objective_functions = 1
+#	nonlinear_inequality_constraints = 2			#1,#3,#4
+	no_gradients
+	no_hessians
