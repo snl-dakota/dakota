@@ -468,25 +468,26 @@ bool Minimizer::data_transform_model(bool weight_flag)
   bool recurse_flag = false;
   const RealVector& submodel_weights = 
     iteratedModel.subordinate_model().primary_response_fn_weights();
-  if (numExperiments <= 1) {
+  if (submodel_weights.empty() || numRowsExpData <= 1) {
     iteratedModel.primary_response_fn_weights(submodel_weights);
   } 
   else { 
     RealVector recast_weights(total_calib_terms);
     for (i=0; i<numUserPrimaryFns; i++) {
       for (j=0; j<numRowsExpData; j++) {
-        recast_weights(i*numRowsExpData+j)=submodel_weights(i);
+        recast_weights(i*numRowsExpData+j) = submodel_weights(i);
       }
     }
     iteratedModel.primary_response_fn_weights(recast_weights);
   }
   // Preserve sense through data transformation
+  // BMA: TODO expand sense by replicates
   const BoolDeque& submodel_sense = 
     iteratedModel.subordinate_model().primary_response_fn_sense();
   iteratedModel.primary_response_fn_sense(submodel_sense);
 
-  return weight_flag;
   Cout << "Got to end of data_transform " << '\n';
+  return weight_flag;
 }
 
 /** Wrap the iteratedModel in a scaling transformation, such that
@@ -1735,31 +1736,7 @@ Real Minimizer::
 objective(const RealVector& fn_vals, const BoolDeque& max_sense,
 	  const RealVector& primary_wts) const
 {
-  Real obj_fn = 0.0;
-  if (optimizationFlag) { // MOO
-    bool use_sense = !max_sense.empty();
-    if (primary_wts.empty()) {
-      for (size_t i=0; i<numUserPrimaryFns; ++i)
-	if (use_sense && max_sense[i]) obj_fn -= fn_vals[i];
-	else                           obj_fn += fn_vals[i];
-      if (numUserPrimaryFns > 1)
-	obj_fn /= (Real)numUserPrimaryFns; // default weight = 1/n
-    }
-    else {
-      for (size_t i=0; i<numUserPrimaryFns; ++i)
-	if (use_sense && max_sense[i]) obj_fn -= primary_wts[i] * fn_vals[i];
-	else                           obj_fn += primary_wts[i] * fn_vals[i];
-    }
-  }
-  else { // NLS
-    if (primary_wts.empty())
-      for (size_t i=0; i<numUserPrimaryFns; ++i)
-	obj_fn += std::pow(fn_vals[i], 2); // default weight = 1
-    else
-      for (size_t i=0; i<numUserPrimaryFns; ++i)
-	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
-  }
-  return obj_fn;
+  return objective(fn_vals, numUserPrimaryFns, max_sense, primary_wts);
 }
 
 /** This "composite" objective is a more general case of the previous
@@ -1794,9 +1771,18 @@ objective(const RealVector& fn_vals, size_t num_fns,
 	obj_fn += std::pow(fn_vals[i], 2); // default weight = 1
     else
       for (size_t i=0; i<num_fns; ++i)
-   	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
+    	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
   }
   return obj_fn;
+}
+
+void Minimizer::
+objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads, 
+		   const BoolDeque& max_sense, const RealVector& primary_wts,
+		   RealVector& obj_grad) const
+{
+  objective_gradient(fn_vals, numUserPrimaryFns, fn_grads, max_sense,
+		     primary_wts, obj_grad);
 }
 
 /** The composite objective gradient computation combines the
@@ -1808,9 +1794,9 @@ objective(const RealVector& fn_vals, size_t num_fns,
     the active set requests are automatically augmented to make values
     available when needed, based on nonlinearRespMapping settings. */
 void Minimizer::
-objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-		   const BoolDeque& max_sense, const RealVector& primary_wts,
-		   RealVector& obj_grad) const
+objective_gradient(const RealVector& fn_vals, size_t num_fns,
+		   const RealMatrix& fn_grads, const BoolDeque& max_sense, 
+		   const RealVector& primary_wts, RealVector& obj_grad) const
 {
   if (obj_grad.length() != numContinuousVars)
     obj_grad.sizeUninitialized(numContinuousVars);
@@ -1818,7 +1804,7 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
   if (optimizationFlag) { // MOO
     bool use_sense = !max_sense.empty();
     if (primary_wts.empty()) {
-      for (size_t i=0; i<numUserPrimaryFns; ++i) {
+      for (size_t i=0; i<num_fns; ++i) {
 	const Real* fn_grad_i = fn_grads[i];
 	if (use_sense && max_sense[i])
 	  for (size_t j=0; j<numContinuousVars; ++j)
@@ -1827,11 +1813,11 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	  for (size_t j=0; j<numContinuousVars; ++j)
 	    obj_grad[j] += fn_grad_i[j];
       }
-      if (numUserPrimaryFns > 1)
-	obj_grad.scale(1./(Real)numUserPrimaryFns); // default weight = 1/n
+      if (num_fns > 1)
+	obj_grad.scale(1./(Real)num_fns); // default weight = 1/n
     }
     else {
-      for (size_t i=0; i<numUserPrimaryFns; ++i) {
+      for (size_t i=0; i<num_fns; ++i) {
 	const Real& wt_i      = primary_wts[i];
 	const Real* fn_grad_i = fn_grads[i];
 	if (use_sense && max_sense[i])
@@ -1844,7 +1830,7 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
     }
   }
   else { // NLS
-    for (size_t i=0; i<numUserPrimaryFns; ++i) {
+    for (size_t i=0; i<num_fns; ++i) {
       Real wt_2_fn_val = 2. * fn_vals[i]; // default weight = 1
       if (!primary_wts.empty()) wt_2_fn_val *= primary_wts[i];
       const Real* fn_grad_i = fn_grads[i];
@@ -1852,6 +1838,16 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	obj_grad[j] += wt_2_fn_val * fn_grad_i[j];
     }
   }
+}
+
+void Minimizer::
+objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads, 
+		  const RealSymMatrixArray& fn_hessians, 
+		  const BoolDeque& max_sense, const RealVector& primary_wts,
+		  RealSymMatrix& obj_hess) const
+{
+  objective_hessian(fn_vals, numUserPrimaryFns, fn_grads, fn_hessians, 
+		    max_sense, primary_wts, obj_hess);
 }
 
 
@@ -1866,7 +1862,8 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
     requests are automatically augmented to make values and gradients
     available when needed, based on nonlinearRespMapping settings. */
 void Minimizer::
-objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
+objective_hessian(const RealVector& fn_vals, size_t num_fns,
+		  const RealMatrix& fn_grads, 
 		  const RealSymMatrixArray& fn_hessians, 
 		  const BoolDeque& max_sense, const RealVector& primary_wts,
 		  RealSymMatrix& obj_hess) const
@@ -1878,7 +1875,7 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
   if (optimizationFlag) { // MOO
     bool use_sense = !max_sense.empty();
     if (primary_wts.empty()) {
-      for (i=0; i<numUserPrimaryFns; ++i) {
+      for (i=0; i<num_fns; ++i) {
 	const RealSymMatrix& fn_hess_i = fn_hessians[i];
 	if (use_sense && max_sense[i])
 	  for (j=0; j<numContinuousVars; ++j)
@@ -1889,11 +1886,11 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	    for (k=0; k<=j; ++k)
 	      obj_hess(j,k) += fn_hess_i(j,k);
       }
-      if (numUserPrimaryFns > 1)
-	obj_hess *= 1./(Real)numUserPrimaryFns; // default weight = 1/n
+      if (num_fns > 1)
+	obj_hess *= 1./(Real)num_fns; // default weight = 1/n
     }
     else
-      for (i=0; i<numUserPrimaryFns; ++i) {
+      for (i=0; i<num_fns; ++i) {
 	const RealSymMatrix& fn_hess_i = fn_hessians[i];
 	const Real&               wt_i = primary_wts[i];
 	if (use_sense && max_sense[i])
@@ -1918,7 +1915,7 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	for (j=0; j<numContinuousVars; ++j)
 	  for (k=0; k<=j; ++k) {
 	    Real& sum = obj_hess(j,k); sum = 0.;
-	    for (i=0; i<numUserPrimaryFns; ++i)
+	    for (i=0; i<num_fns; ++i)
 	      sum += fn_grads(j,i) * fn_grads(k,i); // default weight = 1
 	    sum *= 2.;
 	  }
@@ -1926,7 +1923,7 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	for (j=0; j<numContinuousVars; ++j)
 	  for (k=0; k<=j; ++k) {
 	    Real& sum = obj_hess(j,k); sum = 0.;
-	    for (i=0; i<numUserPrimaryFns; ++i)
+	    for (i=0; i<num_fns; ++i)
 	      sum += primary_wts[i] * fn_grads(j,i) * fn_grads(k,i);
 	    sum *= 2.;
 	  }
@@ -1937,7 +1934,7 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	for (j=0; j<numContinuousVars; ++j)
 	  for (k=0; k<=j; ++k) {
 	    Real& sum = obj_hess(j,k); sum = 0.;
-	    for (i=0; i<numUserPrimaryFns; ++i)
+	    for (i=0; i<num_fns; ++i)
 	      sum += fn_grads(j,i) * fn_grads(k,i) +
 		fn_vals[i] * fn_hessians[i](j,k);
 	    sum *= 2.;
@@ -1946,7 +1943,7 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	for (j=0; j<numContinuousVars; ++j)
 	  for (k=0; k<=j; ++k) {
 	    Real& sum = obj_hess(j,k); sum = 0.;
-	    for (i=0; i<numUserPrimaryFns; ++i)
+	    for (i=0; i<num_fns; ++i)
 	      sum += primary_wts[i] * (fn_grads(j,i) * fn_grads(k,i) +
 				       fn_vals[i] * fn_hessians[i](j,k));
 	    sum *= 2.;

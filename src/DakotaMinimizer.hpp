@@ -139,8 +139,22 @@ protected:
 			  const BoolDeque& max_sense,
 			  const RealVector& primary_wts,
 			  RealVector& obj_grad) const;
+  /// compute the gradient of the composite objective function
+  void objective_gradient(const RealVector& fn_vals, size_t num_fns,
+			  const RealMatrix& fn_grads,
+			  const BoolDeque& max_sense,
+			  const RealVector& primary_wts,
+			  RealVector& obj_grad) const;
+
   /// compute the Hessian of the composite objective function
   void objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
+			 const RealSymMatrixArray& fn_hessians,
+			 const BoolDeque& max_sense,
+			 const RealVector& primary_wts,
+			 RealSymMatrix& obj_hess) const;
+  /// compute the Hessian of the composite objective function
+  void objective_hessian(const RealVector& fn_vals, size_t num_fns,
+			 const RealMatrix& fn_grads,
 			 const RealSymMatrixArray& fn_hessians,
 			 const BoolDeque& max_sense,
 			 const RealVector& primary_wts,

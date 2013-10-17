@@ -234,16 +234,19 @@ void Optimizer::print_results(std::ostream& s)
     
     // TODO: based on local_nls_recast due to SurrBasedMinimizer?
     const RealVector& best_fns = bestResponseArray[i].function_values(); 
+    // BMA TODO: is this number of user constraints, or expanded to two-sided?
+    //    size_t num_fns = bestResponseArray[i].num_functions() - numNonlinearConstraints;
+    size_t num_fns = numUserPrimaryFns;
     if (optimizationFlag) {
-      if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions "; 
+      if (num_fns > 1) s << "<<<<< Best objective functions "; 
       else                       s << "<<<<< Best objective function  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, 0, numUserPrimaryFns, best_fns); 
+      write_data_partial(s, 0, num_fns, best_fns); 
     }
     else {
-      //size_t total_calib_terms = numUserPrimaryFns*numRowsExpData;
+      //size_t total_calib_terms = num_fns*numRowsExpData;
       Real t = 0.;
-      for(size_t j=0; j<numUserPrimaryFns; ++j) {
+      for(size_t j=0; j<num_fns; ++j) {
 	const Real& t1 = best_fns[j];
 	t += t1*t1;
       }
@@ -252,17 +255,17 @@ void Optimizer::print_results(std::ostream& s)
       s << "= " << std::setw(write_precision+7)
 	<< std::sqrt(t) << "; 0.5 * norm^2 = " << std::setw(write_precision+7)
 	<< 0.5*t << '\n';
-      if (numUserPrimaryFns > 1) s << "<<<<< Best residual terms "; 
+      if (num_fns > 1) s << "<<<<< Best residual terms "; 
       else                       s << "<<<<< Best residual term  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, 0, numUserPrimaryFns, best_fns); 
+      write_data_partial(s, 0, num_fns, best_fns); 
     }
 
-    size_t num_cons = numFunctions - numUserPrimaryFns; 
+    size_t num_cons = numFunctions - num_fns; 
     if (num_cons) { 
       s << "<<<<< Best constraint values   "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, numUserPrimaryFns, num_cons, best_fns); 
+      write_data_partial(s, num_fns, num_cons, best_fns); 
     } 
     // lookup evaluation id where best occurred.  This cannot be catalogued
     // directly because the optimizers track the best iterate internally and
@@ -289,7 +292,7 @@ void Optimizer::print_results(std::ostream& s)
 void Optimizer::
 local_objective_recast_retrieve(const Variables& vars, Response& response) const
 {
-  // TODO: if reduced, the active set may have the wrong size
+  // BMA TODO: if reduced, the active set may have the wrong size
   Response desired_resp;
   if (lookup_by_val(data_pairs, iteratedModel.interface_id(), vars,
 		    response.active_set(), desired_resp))
@@ -450,11 +453,11 @@ void Optimizer::objective_reduction(const Response& full_response,
 {
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Local single objective transformation:\n";
-  //size_t num_fns = numRowsExpData*numUserPrimaryFns;
+  // BMA TODO: review whether the model should provide all this information
+  size_t num_fns = full_response.num_functions() - numConstraints;
   short reduced_asv0 = reduced_response.active_set_request_vector()[0];
   if (reduced_asv0 & 1) { // build objective fn from full_response functions
-    Real sum = objective(full_response.function_values(), sense, full_wts);
-    //Real sum = objective(full_response.function_values(), num_fns, sense, full_wts);
+    Real sum = objective(full_response.function_values(), num_fns, sense, full_wts);
     reduced_response.function_value(sum, 0);    
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "                     " << std::setw(write_precision+7) << sum
@@ -463,7 +466,7 @@ void Optimizer::objective_reduction(const Response& full_response,
 
   if (reduced_asv0 & 2) { // build obj_grad from full_response gradients
     RealVector obj_grad = reduced_response.function_gradient_view(0);
-    objective_gradient(full_response.function_values(),
+    objective_gradient(full_response.function_values(), num_fns,
 		       full_response.function_gradients(), sense, full_wts,
 		       obj_grad);
     if (outputLevel > NORMAL_OUTPUT) {
@@ -475,7 +478,7 @@ void Optimizer::objective_reduction(const Response& full_response,
 
   if (reduced_asv0 & 4) { // build obj_hessian from full_response hessians
     RealSymMatrix obj_hessian = reduced_response.function_hessian_view(0);
-    objective_hessian(full_response.function_values(),
+    objective_hessian(full_response.function_values(), num_fns,
 		      full_response.function_gradients(),
 		      full_response.function_hessians(), sense, full_wts,
 		      obj_hessian);
