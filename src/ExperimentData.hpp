@@ -37,7 +37,7 @@ void read_historical_data(const std::string& expDataFileName,
 			  bool calc_sigma_from_data,
 			  RealMatrix& xObsData,
                           RealMatrixArray& yObsData,
-			  RealMatrix& yStdData);
+			  RealMatrixArray& yStdData);
   
 // special values for sigma_type 
 enum sigtype { NO_SIGMA, SCALAR_SIGMA, COVARIANCE_MATRIX };

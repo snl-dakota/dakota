@@ -28,7 +28,7 @@ read_historical_data(const std::string& expDataFileName,
 		     bool calc_sigma_from_data,
 		     RealMatrix& xObsData,
 		     RealMatrixArray& yObsData, 
-		     RealMatrix& yStdData)
+		     RealMatrixArray& yStdData)
 {
   //using boost::multi_array;
   //using boost::extents;
@@ -90,22 +90,30 @@ read_historical_data(const std::string& expDataFileName,
   }
   // BMA TODO: The number of experimental functions may not match the
   // user functions, so can't assume numFunctions
-  yStdData.reshape(total_num_rows, numFunctions);
+  yStdData.resize(numFunctions);
+  for (j=0; j<numFunctions; j++)
+    yStdData[j].reshape(numExperiments,max_replicates);
   if (numExpStdDeviationsRead > 0) {
     start_row = 0;
     start_col = numExpConfigVars + numFunctions;
     RealMatrix y_std_data(Teuchos::View, experimental_data,
 			  total_num_rows, numExpStdDeviationsRead,
 			  start_row, start_col);
+    size_t numrows_thusfar = 0; 
     // We allow 1 or numFunctions sigmas
-    for (i=0; i<total_num_rows; i++)
-      for (j=0; j<numFunctions; j++) {
-	if (numExpStdDeviationsRead == 1)
-	  yStdData(i,j) = y_std_data(i,0);
-	else
-	  yStdData(i,j) = y_std_data(i,j);
+    for (j=0; j<numFunctions; j++){
+      size_t numrows_thusfar = 0; 
+      for (i=0; i<numExperiments; i++){
+        for (k=0; k<numReplicates(i); k++){ 
+	  if (numExpStdDeviationsRead == 1)
+            yStdData[j](i,k) = y_std_data(numrows_thusfar+k,0);
+          else 
+            yStdData[j](i,k) = y_std_data(numrows_thusfar+k,j);
+          Cout << yStdData[j];
+      	}
+     	numrows_thusfar +=numReplicates(i);
       }
-    // BMA: This is odd to me -- we overwrite the read values with
+    }
     // user values?  Commenting out as we don't currently support
     // input file-specified errors.
     // if (expStdDeviations.length()==1) {
@@ -123,24 +131,28 @@ read_historical_data(const std::string& expDataFileName,
     // calculate sigma terms
     Real mean_est, var_est;
     for (j=0; j<numFunctions; j++){
-      mean_est = 0;
-      for (i=0; i<total_num_rows; i++)
-        mean_est += y_obs_data(i,j);
-      mean_est = mean_est / ((Real)numExperiments);
-      var_est = 0;
-      for (i=0; i<numExperiments; i++)
-        var_est += (y_obs_data(i,j)-mean_est)*(y_obs_data(i,j)-mean_est); 
-      // If only one data, point, use 1.0 in the likelihood (no weight)
-      for (i=0; i<numExperiments; i++)
-        yStdData(i,j) = (numExperiments > 1) ? 
-	  std::sqrt(var_est/(Real)(numExperiments-1)) : 1.0;
+      for (i=0; i<numExperiments; i++) {
+      	mean_est = 0;
+      	for (k=0; k<numReplicates(i); k++)
+          mean_est += yObsData[j](i,k);
+      	mean_est = mean_est / ((Real)numReplicates(i));
+      	var_est = 0;
+      	for (k=0; k<numReplicates(i); k++)
+          var_est += (yObsData[j](i,k)-mean_est)*(yObsData[j](i,k)-mean_est); 
+      	// If only one data, point, use 1.0 in the likelihood (no weight)
+        for (k=0; k<numReplicates(i); k++) 
+          yStdData[j](i,k) = (numReplicates(i) > 1) ? 
+	    std::sqrt(var_est/(Real)(numReplicates(i)-1)) : 1.0;
+      }
     }
   }
   else {
     // Default: use 1.0 in the likelihood (no weight)
-    yStdData = 1.0;
+    for (j=0; j<numFunctions; j++)
+      for (i=0; i<numExperiments; i++)
+        for (k=0; k<numReplicates(i); k++) 
+            yStdData[j](i,k) = 1.0;
   }
-
 }
 
 // Need to be careful not to get a view here...
@@ -179,8 +191,8 @@ load_scalar(const std::string& expDataFileName,
 	    bool calc_sigma_from_data,
 	    short verbosity)
 {
-  RealMatrix xObsData, yStdData;
-  RealMatrixArray yObsData;
+  RealMatrix xObsData;
+  RealMatrixArray yObsData, yStdData;
   //using boost::multi_array;
   //using boost::extents;
   //multi_array<Real,3> yObsFull(); 
@@ -193,9 +205,10 @@ load_scalar(const std::string& expDataFileName,
 
   if (verbosity > NORMAL_OUTPUT) {
     Cout << "xobs_data" << xObsData << '\n';
-    for (size_t j = 0; j<numFunctions; j++) 
+    for (size_t j = 0; j<numFunctions; j++){ 
       Cout << "yobs_data" << yObsData[j] << '\n';
-    Cout << "ystd_data" << yStdData << '\n';
+      Cout << "ystd_data" << yStdData[j] << '\n';
+    }
   }
 
   // do in phases for now to avoid confusion: add a sized, but empty
@@ -217,14 +230,15 @@ load_scalar(const std::string& expDataFileName,
       for (int i=0; i<numExpConfigVars; ++i)
 	real_config_vars[i] = xObsData(exp_ind, i);
 
-      // scalar data for a single function over 1 replicates
+      // scalar data for a single function over num replicates
       RealVector scalar_data(num_replicates);
       for (int i=0; i<num_replicates;i++)
         scalar_data[i] = yObsData[f_ind](exp_ind,i);
 
-      // sigma data for a single function over 1 replicates
+      // sigma data for a single function over num replicates
       RealVector sigma_scalar(num_replicates);
-      sigma_scalar[0] = yStdData(exp_ind, f_ind);
+      for (int i=0; i<num_replicates;i++)
+        sigma_scalar[i] = yStdData[f_ind](exp_ind, i);
 
       // SingleExperiment should be constructible from a single row of the
       // data, but we can't slice it that way easily
