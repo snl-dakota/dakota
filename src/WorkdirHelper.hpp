@@ -90,11 +90,15 @@ public:
   /// Prepend $PATH environment variable with an extra_path
   static void prepend_preferred_env_path(const std::string& extra_path);
 
-  /// Returns the string representing the path to the analysis driver
+  /// Returns the string representing the path to the analysis driver,
+  //  including typical windows extensions
   static std::string which(const std::string& driver_name);
 
 
 private:
+
+  /// Returns the string representing the path to the analysis driver
+  static std::string po_which(const std::string& driver_name);
 
   /// Initializes class member, startupPATH
   static std::string init_startup_path();

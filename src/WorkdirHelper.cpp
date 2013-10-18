@@ -11,6 +11,7 @@
 //- Owner:        Bill Bohnhoff
 
 #include "WorkdirHelper.hpp"
+#include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "dakota_filesystem_utils.hpp" // undesirable dependency for workdir_adjust
                               // WJB: wd_adjust has a MAJOR dependency on statics in dakota_filesystem_utils.cpp
@@ -124,8 +125,48 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 
 /** Uses string representing $PATH to locate an analysis driver on the host
  *  computer.  Returns the path to the driver (as a string)
+ *
+ *  This version is a wrapper over the "plain old which" implementation,
+ *  allowing an array of windows, 3-letter extensions to be checked.
  */
 std::string WorkdirHelper::which(const std::string& driver_name)
+{
+#if defined(_WIN32)
+  StringArray extensions;
+  extensions.push_back(".com"); extensions.push_back(".exe");
+  //extensions.push_back(".bat");extensions.push_back(".cmd"); // ToDo - ASAP: leverage %PATHEXT% !
+  extensions.push_back(""); // Backward compatibility - some users may already be explicit
+
+  std::string driver_path;
+
+  BOOST_FOREACH(const std::string& e, extensions) {
+    std::string driver_name_we = driver_name;
+    driver_name_we += e;
+
+    driver_path = po_which(driver_name_we);
+    if( !driver_path.empty() ) {
+#if defined(DEBUG)
+      Cout << driver_path << " FOUND when " << e << " appended" << std::endl;
+#endif
+      break;
+    }
+  }
+
+  return driver_path;
+
+#else
+
+  // "Plain ol" UNIX case was reliable, so just call it if NOT native Windows
+  return po_which(driver_name);
+#endif // _WIN32
+}
+
+/** Uses string representing $PATH to locate an analysis driver on the host
+ *  computer.  Returns the path to the driver (as a string)
+ *
+ *  This is the "plain old which" impl that worked well, historically, on unix.
+ */
+std::string WorkdirHelper::po_which(const std::string& driver_name)
 {
   std::string driver_path_str;
   bfs::path driver_path(driver_name);
