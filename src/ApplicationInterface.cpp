@@ -223,8 +223,9 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // simplify downstream logic by resetting default asynch local concurrency
   // to 1 for the case of message passing.  This allows schedulers to more
   // readily distinguish unlimited concurrency for asynch local parallelism
-  // (default is unlimited unless user spec) from message passing parallelism
-  // with synchronous local evals (default; hybrid mode requires user spec > 1).
+  // (default is unlimited unless user concurrency spec) from message passing
+  // parallelism with synchronous local evals (default; hybrid mode requires
+  // user spec > 1).
   asynchLocalEvalConcurrency
     = (ieMessagePass && asynchLocalEvalConcSpec == 0)
     ? 1 : asynchLocalEvalConcSpec;
@@ -705,31 +706,35 @@ const IntResponseMap& ApplicationInterface::synch()
 }
 
 
-/** This function will eventually provide nonblocking synchronization
-    for all cases of asynchronous evaluations, however it currently
-    supports only the local asynchronous case since nonblocking
-    message passing schedulers have not yet been implemented.  Called
-    from derived_synchronize_nowait() in derived Model classes. */
+/** This function provides nonblocking synchronization for the local
+    asynchronous case and selected nonblocking message passing schedulers.
+    Called from derived_synchronize_nowait() in derived Model classes. */
 const IntResponseMap& ApplicationInterface::synch_nowait()
 {
   rawResponseMap.clear();
 
   // Test nonduplicate evaluations and add completions to rawResponseMap
-  size_t core_prp_entries = beforeSynchCorePRPQueue.size();
-  if (headerFlag) { // set whenever an executed job (nonduplicate) completes
-    size_t num_synch_jobs = (coreMappings) ?
-      core_prp_entries : beforeSynchAlgPRPQueue.size();
+  size_t core_prp_entries = beforeSynchCorePRPQueue.size(), num_synch_jobs
+    = (coreMappings) ? core_prp_entries : beforeSynchAlgPRPQueue.size();
+  if (num_synch_jobs == 0) return rawResponseMap;
+
+  if (headerFlag) // set whenever an executed job (nonduplicate) completes
     Cout << "\nNonblocking synchronize of " << num_synch_jobs
          << " asynchronous evaluations" << std::endl; // disincludes duplicates
-  }
   if (core_prp_entries) {
     if (ieMessagePass) { // single or multi-processor servers
-      if (ieDedMasterFlag) master_dynamic_schedule_evaluations_nowait();
+      if (ieDedMasterFlag)
+	master_dynamic_schedule_evaluations_nowait();
       else {
-	//if ()
-	//  peer_static_schedule_evaluations_nowait(); // needed for override?
-	//else
-	peer_dynamic_schedule_evaluations_nowait();
+	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
+	    interfaceType == "direct" || evalScheduling == "static") {
+	  //peer_static_schedule_evaluations_nowait(); // needed for override?
+	  Cerr << "Error: message passing requires nonblocking scheduler."
+	       << std::endl;
+	  abort_handler(-1);
+	}
+	else
+	  peer_dynamic_schedule_evaluations_nowait();
       }
     }
     else // local to processor
@@ -1101,23 +1106,27 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
     to perform a local portion of the total job set.  It uses 
     derived_map_asynch() to initiate asynchronous evaluations and 
     wait_local_evaluations() to capture completed jobs, and mirrors the
-    master_dynamic_schedule_evaluations() message passing scheduler as
-    much as possible (wait_local_evaluations() is modeled after
-    MPI_Waitsome()). */
+    master_dynamic_schedule_evaluations() message passing scheduler as much
+    as possible (wait_local_evaluations() is modeled after MPI_Waitsome()). */
 void ApplicationInterface::
 asynchronous_local_evaluations(PRPQueue& local_prp_queue)
 {
-  // Step 1: first pass launching of jobs up to the local server capacity
-  PRPQueueIter local_prp_iter;
-  assign_asynch_local_queue(local_prp_queue, local_prp_iter);
-
   size_t i, static_servers, server_index, num_jobs = local_prp_queue.size(), 
-    num_active = asynchLocalActivePRPQueue.size();
+    num_sends = (asynchLocalEvalConcurrency) ?
+    std::min((size_t)asynchLocalEvalConcurrency, num_jobs) : num_jobs;
   bool static_limited
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   if (static_limited)
     static_servers = asynchLocalEvalConcurrency * numEvalServers;
 
+  // Step 1: first pass launching of jobs up to the local server capacity
+  Cout << "First pass: initiating ";
+  if (static_limited) Cout << "at most ";
+  Cout << num_sends << " local asynchronous jobs\n";
+  PRPQueueIter local_prp_iter;
+  assign_asynch_local_queue(local_prp_queue, local_prp_iter);
+
+  size_t num_active = asynchLocalActivePRPQueue.size();
   if (num_active < num_jobs) {
     Cout << "Second pass: ";
     if (static_limited) Cout << "static ";
@@ -1216,9 +1225,6 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
   bool launch;
 
   // Step 1: launch jobs up to asynch concurrency limit (if specified)
-  Cout << "First pass: initiating ";
-  if (static_limited) Cout << "at most ";
-  Cout << num_sends << " local asynchronous jobs\n";
   for (i=0, local_prp_iter = local_prp_queue.begin();
        local_prp_iter != local_prp_queue.end(); ++i, ++local_prp_iter) {
     launch = false;
@@ -1237,6 +1243,120 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
     if (static_limited && num_active == asynchLocalEvalConcurrency)
       break;
   }
+}
+
+
+size_t ApplicationInterface::
+test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
+{
+  int mpi_test_flag, index, fn_eval_id, new_eval_id, server_id;
+  MPI_Status status; // only 1 needed for parallelLib.test()
+  std::map<int, IntIntPair>::iterator run_iter; PRPQueueIter return_iter;
+  IntIntMap removals; size_t receives = 0;
+
+  for (run_iter  = msgPassRunningMap.begin();
+       run_iter != msgPassRunningMap.end(); ++run_iter) {
+    IntIntPair& id_index = run_iter->second;
+    index = id_index.second;
+    parallelLib.test(recvRequests[index], mpi_test_flag, status);
+    if (mpi_test_flag) {
+      fn_eval_id  = run_iter->first; // or status.MPI_TAG;
+      server_id   = id_index.first;
+      return_iter = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
+      receive_evaluation(return_iter, index, server_id, peer_flag);
+      ++receives;
+
+      // replace job if more are pending
+      bool new_job = false;
+      while (assign_iter != beforeSynchCorePRPQueue.end()) {
+	new_eval_id = assign_iter->eval_id();
+	if (msgPassRunningMap.find(new_eval_id) == msgPassRunningMap.end() &&
+	    lookup_by_eval_id(asynchLocalActivePRPQueue, new_eval_id) ==
+	    asynchLocalActivePRPQueue.end())
+	  { new_job = true; break; }
+	++assign_iter;
+      }
+      if (new_job) {
+	// assign job (reuse)
+	send_evaluation(assign_iter, index, server_id, peer_flag, true);
+	// update bookkeeping
+	removals[fn_eval_id] = new_eval_id; // replace old with new
+	++assign_iter;
+      }
+      else
+	removals[fn_eval_id] = 0; // no replacement, just remove
+    }
+  }
+
+  // update msgPassRunningMap.  This is not done inside loop above to:
+  // (1) avoid any iterator invalidation, and
+  // (2) avoid testing of newly inserted jobs (violates scheduling fairness)
+  for (IntIntMIter it=removals.begin(); it!=removals.end(); ++it) {
+    int remove_id = it->first, replace_id = it->second;
+    if (replace_id) {
+      run_iter = msgPassRunningMap.find(remove_id);
+      msgPassRunningMap[replace_id] = run_iter->second; // does not invalidate
+      msgPassRunningMap.erase(run_iter); // run_iter still valid
+    }
+    else
+      msgPassRunningMap.erase(remove_id);
+  }
+
+  return receives;
+}
+
+
+size_t ApplicationInterface::
+test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
+{
+  bool static_limited
+    = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
+  size_t static_servers, server_index;
+  if (static_limited)
+    static_servers = asynchLocalEvalConcurrency * numEvalServers;
+
+  // "Step 2" (of asynch_local_evaluations_nowait()): process any completed
+  // jobs using test_local_evaluations()
+  if (outputLevel == DEBUG_OUTPUT) // explicit debug user specification
+    Cout << "Testing for completed jobs\n";
+  completionSet.clear();
+  test_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
+  size_t completed = completionSet.size();
+  for (ISCIter id_iter = completionSet.begin();
+       id_iter != completionSet.end(); ++id_iter)
+    process_asynch_local(*id_iter);
+
+  // "Step 3" (of asynch_local_evaluations_nowait()): backfill completed
+  // jobs with the next pending jobs from assign_queue (if present)
+  if (completed) {
+    int fn_eval_id; bool launch;
+    size_t num_active = asynchLocalActivePRPQueue.size();
+    if (static_limited) assign_iter = assign_queue.begin(); // reset to start
+    for (; assign_iter != assign_queue.end(); ++assign_iter) {
+      fn_eval_id = assign_iter->eval_id();
+      // test of msgPassRunningMap needed for static_limited or for
+      // peer_dynamic_schedule_evaluations_nowait()
+      if ( lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id) ==
+	   asynchLocalActivePRPQueue.end() &&
+	   rawResponseMap.find(fn_eval_id)    == rawResponseMap.end() &&
+	   msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end() ) {
+	launch = true;
+	if (static_limited) { // only schedule if local "server" not busy
+	  server_index = (fn_eval_id - 1) % static_servers;
+	  if (localServerAssigned[server_index]) launch = false;
+	  else            localServerAssigned.set(server_index);
+	}
+	if (launch) {
+	  launch_asynch_local(assign_iter); ++num_active;
+	  if (asynchLocalEvalConcurrency && // if throttled
+	      num_active >= asynchLocalEvalConcurrency)
+	    { ++assign_iter; break; } // else assign_iter incremented by loop
+	}
+      }
+    }
+  }
+
+  return completed;
 }
 
 
@@ -1359,19 +1479,16 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
   // work relative to other peers), but results in a few more passed messages.
   int fn_eval_id, server_id;
   size_t i, index, server_index, num_jobs = beforeSynchCorePRPQueue.size(), 
-    num_local_jobs = (size_t)std::floor((Real)num_jobs/numEvalServers),//static!
-    num_remote_jobs = num_jobs - num_local_jobs,//static! (only for init bound)
     num_remote_running = msgPassRunningMap.size(),
-    num_local_running = asynchLocalActivePRPQueue.size(),
-    num_running = num_remote_running + num_local_running,
+    num_local_running  = asynchLocalActivePRPQueue.size(),
+    num_running  = num_remote_running + num_local_running,
+    num_backfill = num_jobs - num_running,
     local_capacity = 1, capacity = numEvalServers;
   if (asynchLocalEvalConcurrency > 1) {
     local_capacity = asynchLocalEvalConcurrency;
     capacity      *= asynchLocalEvalConcurrency;
   }
-  size_t remote_capacity = capacity - local_capacity,
-    local_run_target  = std::min(local_capacity,  num_local_jobs),
-    remote_run_target = std::min(remote_capacity, num_remote_jobs);
+  size_t remote_capacity = capacity - local_capacity;
 
   // allocate remote_capacity entries as this avoids need for dynamic resizing
   if (!sendBuffers) {
@@ -1382,9 +1499,14 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
 
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin(), local_prp_iter;
   if (!num_running) { // simplest case
+    size_t num_local_jobs = (size_t)std::floor((Real)num_jobs/numEvalServers),
+      num_remote_jobs   = num_jobs - num_local_jobs, 
+      local_run_target  = std::min(local_capacity,  num_local_jobs),
+      remote_run_target = std::min(remote_capacity, num_remote_jobs);
+
     // don't leave a static gap since we're going to dynamically assign...
     Cout << "First pass: assigning " << remote_run_target << " jobs among " 
-	 << numEvalServers << " remote peers\n";
+	 << numEvalServers-1 << " remote peers\n";
     std::advance(assign_iter, local_run_target);//num_local_jobs);
     PRPQueueIter assign_iter_save = assign_iter;
     for (i=0; i<remote_run_target; ++i, ++assign_iter) {
@@ -1402,78 +1524,64 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     // asynchLocalEvalConcurrency > 1 do we get the hybrid parallelism of
     // asynch jobs on each peer.
     PRPQueue local_prp_queue(beforeSynchCorePRPQueue.begin(), assign_iter_save);
-    // *** TO DO: generalize cases after this initial implementation
-    if (asynchLocalEvalConcurrency <= 1) {
-      Cerr << "Error: asynch local eval concurrency required at this time."
-	   << std::endl;
-      abort_handler(-1);
-    }
     Cout << "First pass: Peer 1 initiating " << local_run_target
 	 << " local jobs\n";
     assign_asynch_local_queue(local_prp_queue, local_prp_iter);
   }
-  else { // fill in any gaps
-    UShortArray server_jobs; PRPQueue local_prp_queue; bool backfill = false;
-    if (num_remote_running < remote_run_target) {
-      backfill = true;
-      server_jobs.assign(numEvalServers-1, 0);
-      std::map<int, IntIntPair>::iterator run_iter;
-      for (run_iter  = msgPassRunningMap.begin();
-	   run_iter != msgPassRunningMap.end(); ++run_iter)
-	// server_id is 1:numEvalServ-1, server_jobs is indexed 0:numEvalServ-2
-	{ server_id = run_iter->second.first; ++server_jobs[server_id - 1]; }
-    }
-    if (num_local_running < local_run_target)
-      backfill = true;
-
-    if (backfill) {
-      bool running_mp, running_la, backfill_local = false;
-      for (; assign_iter != beforeSynchCorePRPQueue.end(); ++assign_iter) {
-	fn_eval_id = assign_iter->eval_id();
-	running_mp = (msgPassRunningMap.find(fn_eval_id) !=
-		      msgPassRunningMap.end());
-	running_la = (lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id)
-		      != asynchLocalActivePRPQueue.end());
-	if (!running_mp && !running_la) { //  can launch as new job
-	  // determine min among local and remote loadings; tie goes to remote
-	  // server_id is 1:numEvalServ-1, server_index is 0:numEvalServ-2
-	  unsigned short load, min_load = server_jobs[0];
-	  size_t min_server_id = 1;
-	  for (server_index=1; server_index<numEvalServers-1; ++server_index) {
-	    if (min_load == 0) break;
-	    load = server_jobs[server_index];
-	    if (load < min_load)
-	      { min_server_id = server_index + 1; min_load = load; }
-	  }
-	  if (num_local_running < min_load) // tie goes to remote
-	    { min_server_id = 0; min_load = num_local_running; }
-
-	  // assign job
-	  if (min_server_id == 0 && num_local_running < local_run_target) {
-	    local_prp_queue.insert(*assign_iter);
-	    ++num_local_running; backfill_local = true;
-	  }
-	  else if (min_server_id && num_remote_running < remote_run_target) {
-	    index = (min_server_id - 1) * asynchLocalEvalConcurrency + min_load;
-	    // assign job (peer, !reuse)
-	    send_evaluation(assign_iter, index, min_server_id, true, false);
-	    // update bookkeeping
-	    msgPassRunningMap[fn_eval_id] = IntIntPair(min_server_id, index);
-	    ++server_jobs[min_server_id - 1]; ++num_remote_running;
-	  }
+  else if (num_backfill && num_running < capacity) { // fill in any gaps
+    UShortArray server_jobs(numEvalServers-1, 0); PRPQueue local_prp_queue;
+    // server_id is 1:numEvalServ-1, server_jobs is indexed 0:numEvalServ-2
+    for (std::map<int, IntIntPair>::iterator r_it = msgPassRunningMap.begin();
+	 r_it != msgPassRunningMap.end(); ++r_it)
+      { server_id = r_it->second.first; ++server_jobs[server_id - 1]; }
+    bool running_mp, running_la, backfill_local = false;
+    for (; assign_iter != beforeSynchCorePRPQueue.end(); ++assign_iter) {
+      fn_eval_id = assign_iter->eval_id();
+      running_mp = (msgPassRunningMap.find(fn_eval_id) !=
+		    msgPassRunningMap.end());
+      running_la = (lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id) !=
+		    asynchLocalActivePRPQueue.end());
+      if (!running_mp && !running_la) { //  can launch as new job
+	// determine min among local and remote loadings; tie goes to remote
+	// server_id is 1:numEvalServ-1, server_index is 0:numEvalServ-2
+	unsigned short load, min_load = server_jobs[0];
+	size_t min_server_id = 1;
+	for (server_index=1; server_index<numEvalServers-1; ++server_index) {
+	  if (min_load == 0) break;
+	  load = server_jobs[server_index];
+	  if (load < min_load)
+	    { min_server_id = server_index + 1; min_load = load; }
 	}
-	else if (running_la) // include in local queue for asynch processing
+	if (num_local_running < min_load) // tie goes to remote
+	  { min_server_id = 0; min_load = num_local_running; }
+	
+	// assign job
+	if (min_server_id == 0 && num_local_running < local_capacity) {
 	  local_prp_queue.insert(*assign_iter);
+	  ++num_local_running; backfill_local = true;
+	}
+	else if (min_server_id && num_remote_running < remote_capacity) {
+	  index = (min_server_id - 1) * asynchLocalEvalConcurrency + min_load;
+	  // assign job (peer, !reuse)
+	  send_evaluation(assign_iter, index, min_server_id, true, false);
+	  // update bookkeeping
+	  msgPassRunningMap[fn_eval_id] = IntIntPair(min_server_id, index);
+	  ++server_jobs[min_server_id - 1]; ++num_remote_running;
+	}
       }
-
-      if (backfill_local)
-	assign_asynch_local_queue_nowait(local_prp_queue, local_prp_iter);
+      else if (running_la) // include in local queue for asynch processing
+	local_prp_queue.insert(*assign_iter);
     }
+    
+    if (backfill_local)
+      assign_asynch_local_queue_nowait(local_prp_queue, local_prp_iter);
   }
 
   // Step 2: check status of running jobs and backfill any completions
-  test_receives_backfill(assign_iter, true); // peer
-  test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+  if (num_remote_running)
+    test_receives_backfill(assign_iter, true); // peer
+  if (num_local_running)
+    test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
@@ -1481,122 +1589,6 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     delete [] recvBuffers;   recvBuffers = NULL;
     delete [] recvRequests; recvRequests = NULL;
   }
-}
-
-
-size_t ApplicationInterface::
-test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
-{
-  int mpi_test_flag, index, fn_eval_id, new_eval_id, server_id;
-  MPI_Status status; // only 1 needed for parallelLib.test()
-  std::map<int, IntIntPair>::iterator run_iter; PRPQueueIter return_iter;
-  IntIntMap removals; size_t receives = 0;
-
-  for (run_iter  = msgPassRunningMap.begin();
-       run_iter != msgPassRunningMap.end(); ++run_iter) {
-    IntIntPair& id_index = run_iter->second;
-    index = id_index.second;
-    parallelLib.test(recvRequests[index], mpi_test_flag, status);
-    if (mpi_test_flag) {
-      fn_eval_id  = run_iter->first; // or status.MPI_TAG;
-      server_id   = id_index.first;
-      return_iter = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
-      receive_evaluation(return_iter, index, server_id, peer_flag);
-      ++receives;
-
-      // replace job if more are pending
-      bool new_job = false;
-      while (assign_iter != beforeSynchCorePRPQueue.end()) {
-	new_eval_id = assign_iter->eval_id();
-	if (msgPassRunningMap.find(new_eval_id) == msgPassRunningMap.end() &&
-	    lookup_by_eval_id(asynchLocalActivePRPQueue, new_eval_id) ==
-	    asynchLocalActivePRPQueue.end())
-	  { new_job = true; break; }
-	++assign_iter;
-      }
-      if (new_job) {
-	// assign job (reuse)
-	send_evaluation(assign_iter, index, server_id, peer_flag, true);
-	// update bookkeeping
-	removals[fn_eval_id] = new_eval_id; // replace old with new
-	++assign_iter;
-      }
-      else
-	removals[fn_eval_id] = 0; // no replacement, just remove
-    }
-  }
-
-  // update msgPassRunningMap.  This is not done inside loop above to:
-  // (1) avoid any iterator invalidation, and
-  // (2) avoid testing of newly inserted jobs (violates scheduling fairness)
-  for (IntIntMIter it=removals.begin(); it!=removals.end(); ++it) {
-    int remove_id = it->first, replace_id = it->second;
-    if (replace_id) {
-      run_iter = msgPassRunningMap.find(remove_id);
-      msgPassRunningMap[replace_id] = run_iter->second; // does not invalidate
-      msgPassRunningMap.erase(run_iter); // run_iter still valid
-    }
-    else
-      msgPassRunningMap.erase(remove_id);
-  }
-
-  return receives;
-}
-
-
-size_t ApplicationInterface::
-test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
-{
-  bool static_limited
-    = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
-  size_t static_servers, server_index;
-  if (static_limited)
-    static_servers = asynchLocalEvalConcurrency * numEvalServers;
-
-  // "Step 2" (of asynch_local_evaluations_nowait()): process any completed
-  // jobs using test_local_evaluations()
-  if (outputLevel == DEBUG_OUTPUT) // explicit debug user specification
-    Cout << "Testing for completed jobs\n";
-  completionSet.clear();
-  test_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
-  size_t completed = completionSet.size();
-  for (ISCIter id_iter = completionSet.begin();
-       id_iter != completionSet.end(); ++id_iter)
-    process_asynch_local(*id_iter);
-
-  // "Step 3" (of asynch_local_evaluations_nowait()): backfill completed
-  // jobs with the next pending jobs from assign_queue (if present)
-  if (completed) {
-    int fn_eval_id; bool launch;
-    size_t num_active = asynchLocalActivePRPQueue.size();
-    if (static_limited) assign_iter = assign_queue.begin(); // reset to start
-    for (; assign_iter != assign_queue.end(); ++assign_iter) {
-      fn_eval_id = assign_iter->eval_id();
-      // > don't need to test msgPassRunningMap for local_prp_queue scope or
-      //   for beforeSynchCorePRPQueue started past previous launches
-      // > do need to test msgPassRunningMap for beforeSynchCorePRPQueue scope
-      //   reset to beginning (static_limited)
-      if ( lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id) ==
-	   asynchLocalActivePRPQueue.end() && rawResponseMap.find(fn_eval_id) ==
-	   rawResponseMap.end() && ( !static_limited ||
-	     msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end() ) ) {
-	launch = true;
-	if (static_limited) { // only schedule if local "server" not busy
-	  server_index = (fn_eval_id - 1) % static_servers;
-	  if (localServerAssigned[server_index]) launch = false;
-	  else            localServerAssigned.set(server_index);
-	}
-	if (launch) {
-	  launch_asynch_local(assign_iter); ++num_active;
-	  if (asynchLocalEvalConcurrency && // if throttled
-	      num_active >= asynchLocalEvalConcurrency)
-	    break;
-	}
-      }
-    }
-  }
-
-  return completed;
 }
 
 
