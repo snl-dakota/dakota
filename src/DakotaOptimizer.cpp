@@ -218,6 +218,7 @@ void Optimizer::print_results(std::ostream& s)
   // initialize the results archive for this dataset
   archive_allocate_best(num_best);
 
+  // data for looking up the function evaluation ID number
   const String& interface_id = iteratedModel.interface_id(); 
   int eval_id; 
   ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
@@ -230,23 +231,22 @@ void Optimizer::print_results(std::ostream& s)
     s << "<<<<< Best parameters          "; 
     if (num_best > 1) s << "(set " << i+1 << ") "; 
     s << "=\n" << bestVariablesArray[i]; 
-    // output best response
     
+    // output best response
     // TODO: based on local_nls_recast due to SurrBasedMinimizer?
     const RealVector& best_fns = bestResponseArray[i].function_values(); 
-    // BMA TODO: is this number of user constraints, or expanded to two-sided?
-    //    size_t num_fns = bestResponseArray[i].num_functions() - numNonlinearConstraints;
-    size_t num_fns = numUserPrimaryFns;
+    // the functions may have been expanded for data differencing, so
+    // can't use the number of user-provided functions (numUserPrimaryFns)
+    size_t num_primary_fns = best_fns.length() - numNonlinearConstraints;
     if (optimizationFlag) {
-      if (num_fns > 1) s << "<<<<< Best objective functions "; 
+      if (num_primary_fns > 1) s << "<<<<< Best objective functions "; 
       else                       s << "<<<<< Best objective function  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, 0, num_fns, best_fns); 
+      write_data_partial(s, 0, num_primary_fns, best_fns); 
     }
     else {
-      //size_t total_calib_terms = num_fns*numRowsExpData;
       Real t = 0.;
-      for(size_t j=0; j<num_fns; ++j) {
+      for(size_t j=0; j<num_primary_fns; ++j) {
 	const Real& t1 = best_fns[j];
 	t += t1*t1;
       }
@@ -255,17 +255,16 @@ void Optimizer::print_results(std::ostream& s)
       s << "= " << std::setw(write_precision+7)
 	<< std::sqrt(t) << "; 0.5 * norm^2 = " << std::setw(write_precision+7)
 	<< 0.5*t << '\n';
-      if (num_fns > 1) s << "<<<<< Best residual terms "; 
+      if (num_primary_fns > 1) s << "<<<<< Best residual terms "; 
       else                       s << "<<<<< Best residual term  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, 0, num_fns, best_fns); 
+      write_data_partial(s, 0, num_primary_fns, best_fns); 
     }
 
-    size_t num_cons = numFunctions - num_fns; 
-    if (num_cons) { 
+    if (numNonlinearConstraints) { 
       s << "<<<<< Best constraint values   "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, num_fns, num_cons, best_fns); 
+      write_data_partial(s, num_primary_fns, numNonlinearConstraints, best_fns); 
     } 
     // lookup evaluation id where best occurred.  This cannot be catalogued
     // directly because the optimizers track the best iterate internally and
@@ -292,11 +291,30 @@ void Optimizer::print_results(std::ostream& s)
 void Optimizer::
 local_objective_recast_retrieve(const Variables& vars, Response& response) const
 {
-  // BMA TODO: if reduced, the active set may have the wrong size
+  // The returned response needs to be in the user space, but possible
+  // expanded by the experimental data replicates
+  // BMA TODO: Could have two retrieve functions to avoid extra copies
+  ActiveSet lookup_set(response.active_set());
+  if (obsDataFlag) {
+    lookup_set.reshape(numUserPrimaryFns);
+    lookup_set.request_values(1);
+  }
+
   Response desired_resp;
   if (lookup_by_val(data_pairs, iteratedModel.interface_id(), vars,
-		    response.active_set(), desired_resp))
-    response.update(desired_resp);
+		    lookup_set, desired_resp)) {
+    if (obsDataFlag) {
+      for (size_t i=0; i<numUserPrimaryFns; i++) {
+	for (size_t j=0; j<numRowsExpData; j++) {
+	  response.function_value(desired_resp.function_value(i),
+				  i*numRowsExpData+j);
+	}
+      }
+    }
+    else {
+      response.update(desired_resp);
+    }
+  }
   else
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;
@@ -557,10 +575,13 @@ void Optimizer::post_run(std::ostream& s)
     // transform primary responses back to user space via lookup for
     // local obj recast or simply via scaling transform
     
-    // retrieve the user space primary functions via lookup and
-    // unscale constraints if needed
+    // retrieve the user space
+    // primary functions via lookup and unscale constraints if needed
+    // this will retrieve primary functions of size best (possibly
+    // expanded, but not differenced with replicate data)
     if (localObjectiveRecast) {
       local_objective_recast_retrieve(best_vars, best_resp);
+      // BMA TODO: if retrieved the best fns/cons from DB, why unscaling cons?
       if (secondaryRespScaleFlag || 
 	  need_resp_trans_byvars(best_resp.active_set_request_vector(),
 				 numUserPrimaryFns, numNonlinearConstraints)) {
@@ -594,23 +615,21 @@ void Optimizer::post_run(std::ostream& s)
     }
 
     // if looked up in DB, need to reapply the data transformation so
-    // user will see final residuals
+    // user will see final residuals, possibly expanded by experimental data
     if (/* local_nls_recast && (implicit in localObjectiveRecast) */ 
 	localObjectiveRecast && obsDataFlag) {
       //size_t num_experiments = obsData.numRows();
       const RealVector& fn_vals = best_resp.function_values();
-      size_t counter; 
-      for (size_t i=0; i<numUserPrimaryFns; ++i) {
-        counter=0;
-        for (size_t j=0; j<numExperiments; ++j) {
-          for (size_t k=0; k<numReplicates(j); ++k){
-	    best_resp.function_value(fn_vals[i] - expData.scalar_data(i,j,k), i*numRowsExpData+counter);
-            counter++;
-          }
-        }
-      }   
+      size_t fn_index = 0;
+      for (size_t i=0; i<numUserPrimaryFns; ++i)
+        for (size_t j=0; j<numExperiments; ++j)
+          for (size_t k=0; k<numReplicates(j); ++k) {
+	    best_resp.function_value
+	      (fn_vals[fn_index] - expData.scalar_data(i,j,k), fn_index);
+	    ++fn_index;
+	  }
     }
- 
+
   }
 
   Iterator::post_run(s);
