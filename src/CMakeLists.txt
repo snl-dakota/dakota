@@ -823,6 +823,29 @@ endif()
 add_executable(dakota main.cpp)
 add_executable(dakota_restart_util restart_util.cpp)
 add_executable(dakota_library_mode library_mode.cpp)
+
+if(DAKOTA_ENABLE_TESTS)
+  # Copy test executables to test/
+  add_custom_command(TARGET dakota POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:dakota>"
+                                       "${Dakota_BINARY_DIR}/test"
+    DEPENDS "$<TARGET_FILE:dakota>"
+    )
+  add_custom_command(TARGET dakota_library_mode POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:dakota_library_mode>"
+                                       "${Dakota_BINARY_DIR}/test"
+    DEPENDS "$<TARGET_FILE:dakota_library_mode>"
+    )
+
+  if(DAKOTA_HAVE_MPI)
+    add_custom_command(TARGET dakota_library_split POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:dakota_library_split>"
+                                         "${Dakota_BINARY_DIR}/test"
+      DEPENDS "$<TARGET_FILE:dakota_library_split>"
+      )
+  endif()
+
+endif()
   
 list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
 

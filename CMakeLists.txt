@@ -339,6 +339,7 @@ if(DAKOTA_F90)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
 
+option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
 # Option to turn off key DAKOTA TPL tests, default OFF
 # Needs to go before adding the packages subdirectory
 option(DAKOTA_ENABLE_TPL_TESTS "Enable DAKOTA TPL tests?" OFF)
@@ -358,8 +359,6 @@ endif()
 
 add_subdirectory(packages)
 add_subdirectory(src)
-
-option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
 if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)

@@ -68,31 +68,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     COMMENT "Copy DAKOTA test support files to binary test/ directory"
     )
 
-  # Copy any necessary executables into the BINARY_DIR/test directory
-  # TODO: review for whether works on Windows and remove these on make clean
-  get_target_property(EXE_LOC dakota LOCATION)
-  get_target_property(LIBMODE_EXE_LOC dakota_library_mode LOCATION)
-  get_target_property(LIBSPLIT_EXE_LOC dakota_library_split LOCATION)
-
-  add_custom_target(test_dakota ALL
-    ${CMAKE_COMMAND} -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/
-    DEPENDS dakota)  
-
-  add_custom_target(test_lib_mode_dakota ALL
-    ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/
-    DEPENDS dakota_library_mode)  
-
-  if(DAKOTA_HAVE_MPI)
-    add_custom_target(test_lib_split ALL ${CMAKE_COMMAND} -E 
-      copy ${LIBSPLIT_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/
-      DEPENDS dakota_library_split)
-  endif()
-
-  get_target_property(Dakota_EXECUTABLE_OUTPUT_DIR dakota LOCATION)
-  get_filename_component(
-    Dakota_EXECUTABLE_OUTPUT_DIR
-    ${Dakota_EXECUTABLE_OUTPUT_DIR} PATH)
-
   # Create one CTest per DAKOTA input file, in a protected subdirectory
   set(copied_test_files_abs "")
 
@@ -233,8 +208,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     add_application_test(
       ${test_name}
       FILE_DEPENDENCIES "${test_all_files}"
-      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
-      APPLICATION COMMAND ${PERL_EXECUTABLE}
+      PREPROCESS COMMAND "${CMAKE_COMMAND}" -E remove dakota_diffs.out
+      APPLICATION COMMAND "${PERL_EXECUTABLE}"
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
         --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${test_name}
         --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -258,8 +233,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 	add_application_test(
 	  p${test_name}
 	  FILE_DEPENDENCIES "${test_all_files}"
-	  PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_pdiffs.out
-	  APPLICATION COMMAND ${PERL_EXECUTABLE}
+	  PREPROCESS COMMAND "${CMAKE_COMMAND}" -E remove dakota_pdiffs.out
+	  APPLICATION COMMAND "${PERL_EXECUTABLE}"
 	    ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
 	    --parallel
  	    --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${test_name}
@@ -420,21 +395,19 @@ endif()
 # analysis driver: copy the .exe to a file with no extension. These
 # files will be generated to the build tree, but not installed.
 if (WIN32 AND ${CMAKE_GENERATOR} MATCHES "Visual Studio")
-  set(dte_abs "")
   foreach(dte ${dakota_test_executables})
-    get_target_property(EXE_LOC ${dte} LOCATION)
-    get_filename_component(EXE_NAME ${EXE_LOC} NAME)
-    get_filename_component(EXE_NAME_WE ${EXE_LOC} NAME_WE)
-    add_file_copy_command(${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME})
-    add_file_copy_command(${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME_WE})
-    list(APPEND dte_abs ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}
-      ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME_WE})
+    # Hang a custom command off the test executable targets
+    add_custom_command(TARGET ${dte} POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${dte}>" 
+                                         "${CMAKE_CURRENT_BINARY_DIR}/${dte}"
+      DEPENDS "$<TARGET_FILE:${dte}>"
+      )
+    add_custom_command(TARGET ${dte} POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${dte}>"
+                                         "${CMAKE_CURRENT_BINARY_DIR}/${dte}.exe"
+      DEPENDS "$<TARGET_FILE:${dte}>"
+      )
   endforeach()
-
-  add_custom_target(dakota_test_executable_copies ALL 
-    DEPENDS ${dte_abs}
-    COMMENT "Copy DAKOTA test executables to test directory"
-  )
 endif()
 
 # TODO: install to bin/?
