@@ -69,7 +69,8 @@ Minimizer::Minimizer(Model& model):
   bool err_flag = false;
   // Check for active design variables and discrete variable support
   if (methodName == "moga"      || methodName == "soga" ||
-      methodName == "coliny_ea" || methodName == "surrogate_based_global") {
+      methodName == "coliny_ea" || methodName == "surrogate_based_global" ||
+      methodName == "mesh_adaptive_search" ) {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteRealVars) {
       Cerr << "\nError: " << methodName << " requires active variables."
 	   << std::endl;
@@ -109,7 +110,8 @@ Minimizer::Minimizer(Model& model):
        methodName != "moga"             &&  methodName != "soga"             &&
        methodName != "dl_solver"        &&  methodName != "efficient_global" &&
        !strbegins(methodName, "coliny_") &&  
-       methodName != "asynch_pattern_search") {
+       methodName != "asynch_pattern_search" &&
+       methodName != "mesh_adaptive_search") {
     Cerr << "\nError: nonlinear constraints not currently supported by "
 	 << methodName << ".\n       Please select a different method for "
 	 << "generally constrained problems." << std::endl;
@@ -135,6 +137,7 @@ Minimizer::Minimizer(Model& model):
        ( methodName == "optpp_pds"  || strbegins(methodName, "coliny_") || 
          strbegins(methodName, "ncsu_")        || 
 	 methodName == "asynch_pattern_search" ||
+	 methodName == "mesh_adaptive_search" ||
 	 methodName == "moga"       || methodName == "soga" ) )
     Cerr << "\nWarning: Gradient/Hessian specification for a nongradient-based "
 	 << "optimizer is ignored.\n\n";

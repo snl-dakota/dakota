@@ -691,7 +691,7 @@ static GuiKeyWord
 		{"probability_levels",14,1,9,0,1469,kw_101},
 		{"response_levels",14,2,7,0,1447,kw_106},
 		{"rng",8,2,6,0,1441,kw_107},
-		{"seed",0x19,0,5,0,1439,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
+		{"seed",0x19,0,5,0,1439,0,0.,0.,0.,0,"{Random seed for initial GP construction} MethodCommands.html#MethodNonDGlobalRel"},
 		{"u_gaussian_process",8,2,1,1,1419,kw_108},
 		{"u_kriging",0,0,1,1,1418},
 		{"use_derivatives",8,0,4,0,1437,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalRel"},
@@ -771,7 +771,7 @@ static GuiKeyWord
 		{"import",8,0,1,1,1383},
 		{"mm_adapt_import",8,0,1,1,1387},
 		{"samples",9,0,2,0,1389,0,0.,0.,0.,0,"{Refinement samples} MethodCommands.html#MethodNonDLocalRel"},
-		{"seed",0x19,0,3,0,1391,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDMC"}
+		{"seed",0x19,0,3,0,1391,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_125[3] = {
 		{"first_order",8,0,1,1,1377},
@@ -829,7 +829,7 @@ static GuiKeyWord
 		{"linear_inequality_scale_types",15,0,10,0,425,0,0.,0.,0.,0,"{Linear inequality scaling types} MethodCommands.html#MethodIndControl"},
 		{"linear_inequality_scales",14,0,11,0,427,0,0.,0.,0.,0,"{Linear inequality scales} MethodCommands.html#MethodIndControl"},
 		{"linear_inequality_upper_bounds",14,0,9,0,423,0,0.,0.,0.,0,"{Linear inequality upper bounds} MethodCommands.html#MethodIndControl"},
-		{"random_seed",9,0,2,0,287},
+		{"seed",0x19,0,2,0,287,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodJEGADC"},
 		{"variable_neighborhood_search",10,0,5,0,293}
 		},
 	kw_133[2] = {
@@ -910,7 +910,7 @@ static GuiKeyWord
 		{"postprocessor_type",8,1,5,0,335,kw_142,0.,0.,0.,0,"{Post_processor type} MethodCommands.html#MethodJEGAMOGA"},
 		{"print_each_pop",8,0,17,0,375,0,0.,0.,0.,0,"{Population output} MethodCommands.html#MethodJEGADC"},
 		{"replacement_type",8,4,2,0,305,kw_144,0.,0.,0.,0,"{Replacement type} MethodCommands.html#MethodJEGAMOGA"},
-		{"seed",0x19,0,21,0,417,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodJEGADC"}
+		{"seed",0x19,0,21,0,417,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDMC"}
 		},
 	kw_146[1] = {
 		{"partitions",13,0,1,1,1527,0,0.,0.,0.,0,"{Partitions per variable} MethodCommands.html#MethodPSMPS"}
@@ -1324,7 +1324,7 @@ static GuiKeyWord
 		{"population_size",0x29,0,13,0,371,0,0.,0.,0.,0,"{Number of population members} MethodCommands.html#MethodJEGADC"},
 		{"print_each_pop",8,0,15,0,375,0,0.,0.,0.,0,"{Population output} MethodCommands.html#MethodJEGADC"},
 		{"replacement_type",8,4,2,0,347,kw_205,0.,0.,0.,0,"{Replacement type} MethodCommands.html#MethodJEGASOGA"},
-		{"seed",0x19,0,19,0,417,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodJEGADC"}
+		{"seed",0x19,0,19,0,417,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDMC"}
 		},
 	kw_207[14] = {
 		{"function_precision",10,0,12,0,201,0,0.,0.,0.,0,"{Function precision} MethodCommands.html#MethodNPSOLDC"},

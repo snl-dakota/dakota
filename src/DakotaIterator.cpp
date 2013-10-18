@@ -559,8 +559,8 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
   //  return new DLSolver(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_NOMAD
-  //  else if (method_name == "mesh_adaptive_search")
-  //    return new NomadOptimizer(NoDBBaseConstructor(), model);
+  else if (method_name == "mesh_adaptive_search")
+    return new NomadOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_NPSOL
   else if (method_name == "npsol_sqp")

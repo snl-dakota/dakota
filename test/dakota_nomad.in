@@ -21,7 +21,7 @@ strategy,
 
 method,
 	mesh_adaptive_search
-#	seed = 1234
+	seed = 1234
 #       max_function_evaluations = 1000				#5
 #	max_iterations = 100					#5
 #	function_precision = 0.00000001				#5

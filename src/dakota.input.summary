@@ -316,7 +316,7 @@ KEYWORD12 method
 	|
 	( mesh_adaptive_search
 	  [ function_precision REAL ]
-	  [ random_seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ history_file STRING ]
 	  [ display_format STRING ]
 	  [ variable_neighborhood_search REAL ]

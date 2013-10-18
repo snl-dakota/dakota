@@ -61,18 +61,10 @@ namespace Dakota {
 	       @param model DAKOTA Model object
 	       */
 	       NomadOptimizer(Model &model);
+
+               /// alternate constructor for Iterator instantiations by name
+       NomadOptimizer(NoDBBaseConstructor, Model& model);
 	       
-	       NomadOptimizer(Model &model, int random_seed, int max_bb_evals, int max_iterations, 
-			      Real _epsilon, Real _vns, bool display_all_evaluations,
-			      std::string output_format, std::string history_file);
-	       NomadOptimizer(const RealVector& lower_bound_disc, const RealVector& upper_bound_disc, 
-		    const RealVector& lower_bound_cont, const RealVector& upper_bound_cont, 
-		    const RealVector& initial_point_disc, const RealVector& initial_point_cont,
-		    int num_cont, int num_disc, int num_functions,
-		    int num_nonlinear_ineq_constraints, int num_nonlinear_eq_constraints,
-		    int random_seed, int max_bb_evals, int max_iterations, 
-		    Real _epsilon, Real _vns, bool display_all_evaluations,
-		    std::string output_format, std::string history_file);	      
 	       /// Destructor
                ~NomadOptimizer();
 	       
@@ -97,7 +89,7 @@ namespace Dakota {
 	       // Will be filled by calling 
 	       // load_parameters in the constructor,
 	       // where we have access to the model.
-	       int numCont,numDisc,numTotal;
+               int numCont, numInt, numReal, numTotal;
 	       int nObjFn, nIneqConstrs, nEqConstrs, nResponses;
 	       
 	       // Parameters.

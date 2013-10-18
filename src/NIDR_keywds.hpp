@@ -782,7 +782,7 @@ static KeyWord
 		{"display_format",11,0,4,0,0,0.,0.,0,N_mdm(str,displayFormat)},
 		{"function_precision",10,0,1,0,0,0.,0.,0,N_mdm(Real,functionPrecision)},
 		{"history_file",11,0,3,0,0,0.,0.,0,N_mdm(str,historyFile)},
-		{"random_seed",9,0,2,0,0,0.,0.,0,N_mdm(nnint,randomSeed)},
+		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
 		{"variable_neighborhood_search",10,0,5,0,0,0.,0.,0,N_mdm(Real,vns)}
 		},
 	kw_141[2] = {

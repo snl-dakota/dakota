@@ -307,7 +307,9 @@ TAG "method/mesh_adaptive_search"
 TAG "method/mesh_adaptive_search/function_precision"
 	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
 
-TAG "method/mesh_adaptive_search/random_seed"
+TAG "method/mesh_adaptive_search/seed"
+	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
+
 TAG "method/mesh_adaptive_search/history_file"
 TAG "method/mesh_adaptive_search/display_format"
 TAG "method/mesh_adaptive_search/variable_neighborhood_search"
@@ -435,7 +437,7 @@ TAG "method/moga/mutation_type/mutation_rate"
 	DESC "{Mutation rate} MethodCommands.html#MethodJEGADC"
 
 TAG "method/moga/seed"
-	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
+	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
 
 TAG "method/surrogate_based_local/linear_inequality_constraint_matrix"
 	DESC "{Linear inequality coefficient matrix} MethodCommands.html#MethodIndControl"
@@ -1228,7 +1230,7 @@ TAG "method/local_reliability/mpp_search/integration/sample_refinement/samples"
 	DESC "{Refinement samples} MethodCommands.html#MethodNonDLocalRel"
 
 TAG "method/local_reliability/mpp_search/integration/sample_refinement/seed"
-	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
+	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
 
 TAG "method/local_reliability/response_levels"
 TAG "method/local_reliability/response_levels/num_response_levels"
@@ -1256,7 +1258,7 @@ TAG "method/global_reliability/use_derivatives"
 	DESC "{Derivative usage} MethodCommands.html#MethodNonDGlobalRel"
 
 TAG "method/global_reliability/seed"
-	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
+	DESC "{Random seed for initial GP construction} MethodCommands.html#MethodNonDGlobalRel"
 
 TAG "method/global_reliability/rng"
 TAG "method/global_reliability/rng/mt19937"
