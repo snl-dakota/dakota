@@ -290,7 +290,7 @@ private:
 
   /// helper function for sending sendBuffers[buff_index] to server
   void send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
-		       bool peer_flag, bool reuse_flag);
+		       bool peer_flag);
   /// helper function for processing recvBuffers[buff_index] within scheduler
   void receive_evaluation(PRPQueueIter& prp_it, size_t buff_index,
 			  int server_id, bool peer_flag);
@@ -590,11 +590,11 @@ broadcast_evaluation(const ParamResponsePair& pair)
 
 inline void ApplicationInterface::
 send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
-		bool peer_flag, bool reuse_flag)
+		bool peer_flag)
 {
-  if (reuse_flag)
+  if (sendBuffers[buff_index].size()) // reuse of existing send/recv buffers
     { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
-  else
+  else                                // freshly allocated send/recv buffers
     recvBuffers[buff_index].resize(lenResponseMessage);
   sendBuffers[buff_index] << prp_it->prp_parameters() << prp_it->active_set();
 
