@@ -63033,6 +63033,45 @@ Test Number 0 succeeded
                      -4.7902545262e-01
                      -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 12 total (10 new, 2 duplicate)
+<<<<< Best parameters          =
+                      4.0017301996e+00 x1
+                      2.0807347873e+00 x2
+<<<<< Best residual terms      =
+                      4.5121849971e-01
+                      2.5121849971e-01
+                     -1.4878150029e-01
+                     -3.4878150029e-01
+                     -5.2652280288e-01
+                     -6.2652280288e-01
+                     -7.2652280288e-01
+                     -9.2652280288e-01
+                      1.2859215526e-01
+                      2.2859215526e-01
+                     -3.7140784474e-01
+                     -5.7140784474e-01
+<<<<< Best constraint values   =
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.9883073503e+00 x1
+                      2.2233004907e+00 x2
+<<<<< Best residual terms =
+                     -1.1603778181e-01
+                     -3.1603778181e-01
+                     -7.1603778181e-01
+                     -9.1603778181e-01
+                     -7.0505472481e-01
+                     -8.0505472481e-01
+                     -9.0505472480e-01
+                     -1.1050547248e+00
+                      7.4891139670e-01
+                      8.4891139670e-01
+                      2.4891139670e-01
+                      4.8911396698e-02
+<<<<< Best data captured at function evaluation 113
 dakota_users_textbook_opt_conmin.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 59 total (48 new, 11 duplicate)
