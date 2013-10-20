@@ -26,15 +26,15 @@ method,
 #	max_iterations = 100					#5
 #	function_precision = 0.00000001				#5
 #	variable_neighborhood_search = 0.1			#5
-#	display_format
+#	display_format = 'bbe obj'
 #	display_all_evaluations	       				#5
 #	history_file = 'mads_history.log'			#5
 
 variables,
 	continuous_design = 3
 	  initial_point   -1.0    1.5   2.0
-	  upper_bounds    10.0   10.0  10.0			#0,#4,#5
-	  lower_bounds   -10.0  -10.0 -10.0			#0,#4,#5
+	  upper_bounds    10.0   10.0  10.0
+	  lower_bounds   -10.0  -10.0 -10.0
 	  descriptors      'x1'  'x2'  'x3'
 #	discrete_design_range = 2				#1,#4,#5
 #	  initial_point      2     2				#1,#4,#5
@@ -44,7 +44,7 @@ variables,
 #       discrete_design_set_real = 2				#2,#4,#5
 #         num_set_values = 4 5					#2,#4,#5
 #         set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#2,#4,#5
-#         descriptors      'y1'   'y2' 	       	       		#2,#4,#5
+#         descriptors      'y3'   'y4' 	       	       		#2,#4,#5
 #       discrete_design_set_int = 2				#3,#4,#5
 #         num_set_values = 2 2	  				#3,#4,#5
 #         set_values = 4 7 8 9					#3,#4,#5
@@ -53,7 +53,7 @@ variables,
 interface,
        direct							#0,#2,#4
 #	fork asynch evaluation_concurrency 4			#1,#3,#5
-	  analysis_driver = 'text_book'
+	  analysis_driver = 'text_book'	   			#p0
 
 responses,
 	objective_functions = 1

@@ -103,11 +103,11 @@ variables,
 	  scale_types      'value'      'none'	#0,#20
 #	  scale_types      'value'	    'auto'	#1,#7,#8,#22
 #	  scale_types      'none'	    'auto'	#2
-#	  scale_types      'log'        'none'	#3,#9
+#	  scale_types      'log'        'none'	#3,#9,#23
 #	  scale_types      'value'	    		#4
 #         scale_types      'auto'       		#5
 #         scale_types      'none'       		#6
-#	  scale_types      'log'        'auto'	#21
+#	  scale_types      'log'        'auto'	#21,#24
 	  scales           2.0	    1.5		#0,#1,#4,#7,#8,#20,#22
 	  descriptors      'intake_dia' 'flatness'	#0,#1,#2,#3,#4,#5,#6
 #	  descriptors      'intake_dia' 'flatness'	#7,#8,#9,#20,#21
