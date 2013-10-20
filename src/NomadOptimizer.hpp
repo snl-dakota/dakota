@@ -89,8 +89,8 @@ namespace Dakota {
 	       // Will be filled by calling 
 	       // load_parameters in the constructor,
 	       // where we have access to the model.
-               int numCont, numInt, numReal, numTotal;
-	       int nObjFn, nIneqConstrs, nEqConstrs, nResponses;
+               int numTotalVars;
+       int numNomadNonlinearIneqConstraints;
 	       
 	       // Parameters.
 	       int randomSeed, maxBlackBoxEvals, maxIterations;
@@ -101,6 +101,15 @@ namespace Dakota {
 	       NOMAD::Point initialPoint;
 	       NOMAD::Point upperBound;
 	       NOMAD::Point lowerBound;
+
+       /// map from Dakota constraint number to Nomad constraint number
+       std::vector<int> constraintMapIndices;
+
+       /// multipliers for constraint transformations
+       std::vector<double> constraintMapMultipliers;
+
+       /// offsets for constraint transformations
+       std::vector<double> constraintMapOffsets;
      };
 
      ///  NOMAD-based Evaluator class.
@@ -125,6 +134,18 @@ namespace Dakota {
 	  private:
 	       Model& _model;
 	       int n_cont,n_disc_int, n_disc_real;
+
+       int numNomadNonlinearIneqConstr, numNomadNonlinearEqConstr;
+
+       /// map from Dakota constraint number to APPS constraint number
+       std::vector<int> constrMapIndices;
+
+       /// multipliers for constraint transformations
+       std::vector<double> constrMapMultipliers;
+
+       /// offsets for constraint transformations
+       std::vector<double> constrMapOffsets;
+
 	  public:
 	       /// Constructor
 	       /** NOMAD Evaluator Constructor
@@ -163,5 +184,16 @@ namespace Dakota {
 		    const NOMAD::Double &h_max,
 		    bool &count_eval) const;
 	       
+       /// publishes constraint transformation
+       void set_constraint_map (int numNomadNonlinearIneqConstraints,
+				int numNomadNonlinearEqConstraints,
+				std::vector<int> constraintMapIndices,
+				std::vector<double> constraintMapMultipliers,
+				std::vector<double> constraintMapOffsets)
+       { numNomadNonlinearIneqConstr = numNomadNonlinearIneqConstraints;
+	 numNomadNonlinearEqConstr = numNomadNonlinearEqConstraints,
+	 constrMapIndices = constraintMapIndices;
+	 constrMapMultipliers = constraintMapMultipliers;
+	 constrMapOffsets = constraintMapOffsets;}
      } ;   
 }

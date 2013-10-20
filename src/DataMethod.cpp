@@ -96,6 +96,9 @@ DataMethodRep::DataMethodRep():
   constraintPenalty(-1.), crossoverRate(-1.), crossoverType(""),
   initializationType("unique_random"), mutationType(""), replacementType(""), 
   fitnessType(""), populationSize(50), flatFile(),
+  // NOMAD
+  historyFile("mads_history"), displayFormat("bbe obj"), 
+  vns(0.0), showAllEval(false),
   // NCSU 
   volBoxSize(-1.),
   // DDACE
