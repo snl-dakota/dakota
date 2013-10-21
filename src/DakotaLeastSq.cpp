@@ -126,7 +126,7 @@ void LeastSq::weight_model()
     primary_resp_map_indices(numLeastSqTerms), 
     secondary_resp_map_indices(numNonlinearConstraints);
   bool nonlinear_vars_map = false;
-  BoolDequeArray nonlinear_resp_map(num_recast_fns);
+  BoolDequeArray nonlinear_resp_map(numLeastSqTerms+numNonlinearConstraints);
 
   for (i=0; i<numContinuousVars; i++) {
     var_map_indices[i].resize(1);
