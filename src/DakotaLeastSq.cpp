@@ -197,10 +197,12 @@ void LeastSq::print_results(std::ostream& s)
   //best_vars.discrete_variables().write(s);
 
   const RealVector& fn_vals_star = bestResponseArray.front().function_values();
+  const RealVector& lsq_weights
+	= iteratedModel.subordinate_model().primary_response_fn_weights();
   Real t = 0.;
   for(size_t i=0; i<numLeastSqTerms; i++) {
     const Real& t1 = fn_vals_star[i];
-    t += t1*t1;
+    t += t1*t1*lsq_weights[i];
   }
   s << "<<<<< Best residual norm = " << std::setw(write_precision+7)
     << std::sqrt(t) << "; 0.5 * norm^2 = " << std::setw(write_precision+7)
