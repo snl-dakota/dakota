@@ -166,35 +166,35 @@ $h_{j}(\mathbf{x}) = h_{t_{j}}$. Some optimizers (e.g.,
 \texttt{npsol\_}, \texttt{optpp\_}, \texttt{soga}, and \texttt{moga}
 methods) can handle these constraint forms directly, whereas other
 optimizers (e.g., \texttt{asynch\_pattern\_search}, \texttt{dot\_},
-and \texttt{conmin\_}) require Dakota to perform an internal
-conversion of all constraints to one-sided inequality constraints of
-the form $g_{i}(\mathbf{x}) \leq 0$. In the latter case, the two-sided
-inequality constraints are treated as $g_{i}(\mathbf{x}) - g_{U_{i}}
-\leq 0$ and $g_{L_{i}} - g_{i}(\mathbf{x}) \leq 0$ and the equality
-constraints are treated as $h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0$ and
-$h_{t_{j}} - h_{j}(\mathbf{x}) \leq 0$. The situation is similar for
-linear constraints: \texttt{asynch\_pattern\_search},
-\texttt{npsol\_}, \texttt{optpp\_}, \texttt{soga}, and \texttt{moga}
-methods support them directly, whereas \texttt{dot\_} and
-\texttt{conmin\_} methods do not. For linear inequalities of the form
-$a_{L_{i}} \leq \mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}$ and
-linear equalities of the form $\mathbf{a}_{i}^{T}\mathbf{x} =
-a_{t_{j}}$, the nonlinear constraint arrays in \texttt{dot\_} and
-\texttt{conmin\_} methods are further augmented to include
-$\mathbf{a}_{i}^{T}\mathbf{x} - a_{U_{i}} \leq 0$ and $a_{L_{i}} -
-\mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the inequality case and
-$\mathbf{a}_{i}^{T}\mathbf{x} - a_{t_{j}} \leq 0$ and $a_{t_{j}} -
-\mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the equality case. Awareness
-of these constraint augmentation procedures can be important for
-understanding the diagnostic data returned from the \texttt{dot\_} and
-\texttt{conmin\_} methods. Other optimizers fall somewhere in between.
-\texttt{nlpql\_} methods support nonlinear equality constraints
-$h_{j}(\mathbf{x}) = 0$ and nonlinear one-sided inequalities
-$g_{i}(\mathbf{x}) \geq 0$, but does not natively support linear
-constraints. Constraint mappings are used with NLPQL for both linear
-and nonlinear cases. Most \texttt{coliny\_} methods now support two-sided
-nonlinear inequality constraints and nonlinear constraints with
-targets, but do not natively support linear constraints.
+and \texttt{conmin\_}, \texttt{mesh\_adaptive\_search}) require Dakota
+to perform an internal conversion of all constraints to one-sided
+inequality constraints of the form $g_{i}(\mathbf{x}) \leq 0$. In the
+latter case, the two-sided inequality constraints are treated as
+$g_{i}(\mathbf{x}) - g_{U_{i}} \leq 0$ and $g_{L_{i}} -
+g_{i}(\mathbf{x}) \leq 0$ and the equality constraints are treated as
+$h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0$ and $h_{t_{j}} -
+h_{j}(\mathbf{x}) \leq 0$. The situation is similar for linear
+constraints: \texttt{asynch\_pattern\_search}, \texttt{npsol\_},
+\texttt{optpp\_}, \texttt{soga}, and \texttt{moga} methods support
+them directly, whereas \texttt{dot\_} and \texttt{conmin\_} methods do
+not. For linear inequalities of the form $a_{L_{i}} \leq
+\mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}$ and linear equalities of
+the form $\mathbf{a}_{i}^{T}\mathbf{x} = a_{t_{j}}$, the nonlinear
+constraint arrays in \texttt{dot\_} and \texttt{conmin\_} methods are
+further augmented to include $\mathbf{a}_{i}^{T}\mathbf{x} - a_{U_{i}}
+\leq 0$ and $a_{L_{i}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the
+inequality case and $\mathbf{a}_{i}^{T}\mathbf{x} - a_{t_{j}} \leq 0$
+and $a_{t_{j}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the equality
+case. Awareness of these constraint augmentation procedures can be
+important for understanding the diagnostic data returned from the
+\texttt{dot\_} and \texttt{conmin\_} methods. Other optimizers fall
+somewhere in between.  \texttt{nlpql\_} methods support nonlinear
+equality constraints $h_{j}(\mathbf{x}) = 0$ and nonlinear one-sided
+inequalities $g_{i}(\mathbf{x}) \geq 0$, but does not natively support
+linear constraints. Constraint mappings are used with NLPQL for both
+linear and nonlinear cases. Most \texttt{coliny\_} methods now support
+two-sided nonlinear inequality constraints and nonlinear constraints
+with targets, but do not natively support linear constraints.
 
 When gradient and Hessian information is used in the optimization,
 derivative components are most commonly computed with respect to the
@@ -373,6 +373,11 @@ search, \texttt{coliny\_pattern\_search}, has the option of using
 either a coordinate or a simplex basis as well as allowing more
 options for the stencil to evolve over the course of the optimization.
 It handles nonlinear constriants through the use of penalty functions.
+The
+\texttt{mesh\_adaptive\_search}~\cite{AuLeTr09a},~\cite{Nomad},~\cite{Le2011a}
+is similar in spirit to and falls in the same class of methods as the
+pattern search methods.  The primary difference is that its underlying
+searach structure is that of a mesh.
 
 {\bf Simplex} methods for nonlinear optimization problem are similar
 to pattern search methods, but their search directions are defined by
@@ -1180,6 +1185,10 @@ Derivative-Free Local & nonsmooth; continuous variables; bound constraints
          & linear and nonlinear constraints & coliny\_solis\_wets, \\
          &          & surrogate\_based\_local \\
 \hline
+         & nonsmooth; continuous variables; &  \\
+         & discrete variables; bound constraints, & mesh\_adaptive\_search \\
+         & nonlinear constraints &  \\
+\hline
 Derivative-Free Global & nonsmooth; continuous variables; bound constraints
 & ncsu\_direct \\
 \hline
@@ -1321,6 +1330,9 @@ here along with the license status and web page where available.
     Laboratory all have site licenses for NPSOL. Other users may
     obtain their own copy of NPSOL and compile it with the Dakota
     source code.}
+
+\item NOMAD (\texttt{mesh\_adaptive\_search}) License: LGPL; website:
+  \url{http://www.gerad.ca/NOMAD/Project/Home.html}.
 
 \item OPT++ (\texttt{optpp\_} methods) License: LGPL; website:
   \url{http://csmr.ca.sandia.gov/opt++}.
