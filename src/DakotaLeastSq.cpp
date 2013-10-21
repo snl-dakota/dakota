@@ -202,7 +202,10 @@ void LeastSq::print_results(std::ostream& s)
   Real t = 0.;
   for(size_t i=0; i<numLeastSqTerms; i++) {
     const Real& t1 = fn_vals_star[i];
-    t += t1*t1*lsq_weights[i];
+    if (lsq_weights.empty())
+      t += t1*t1;
+    else  
+      t += t1*t1*lsq_weights[i];
   }
   s << "<<<<< Best residual norm = " << std::setw(write_precision+7)
     << std::sqrt(t) << "; 0.5 * norm^2 = " << std::setw(write_precision+7)

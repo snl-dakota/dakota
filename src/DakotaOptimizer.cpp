@@ -250,7 +250,10 @@ void Optimizer::print_results(std::ostream& s)
       Real t = 0.;
       for(size_t j=0; j<num_primary_fns; ++j) {
 	const Real& t1 = best_fns[j];
-	t += t1*t1*lsq_weights[j];
+        if (lsq_weights.empty())
+	  t += t1*t1;
+	else
+          t += t1*t1*lsq_weights[j];
       }
       s << "<<<<< Best residual norm ";
       if (num_best > 1) s << "(set " << i+1 << ") ";
