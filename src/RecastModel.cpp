@@ -416,8 +416,9 @@ transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
     num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
   const ShortArray& recast_asv = recast_set.request_vector();
   if (recast_asv.size() != num_recast_fns) {
-    Cerr << "Error: inconsistent asv sizing in RecastModel::transform_set()."
-	 << endl;
+    Cerr << "Error: inconsistent asv sizing in RecastModel::transform_set().\n"
+	 << "       recast asv size = " << recast_asv.size() << '\n'
+	 << "       recast functions = " << num_recast_fns << endl;
     abort_handler(-1);
   }
 
@@ -486,7 +487,7 @@ inverse_transform_set(const Variables& sub_model_vars,
     num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
   const ShortArray& recast_asv = recast_set.request_vector();
   if (recast_asv.size() != num_recast_fns) {
-    Cerr << "Error: inconsistent asv sizing in RecastModel::transform_set()."
+    Cerr << "Error: inconsistent asv sizing in RecastModel::inverse_transform_set()."
 	 << endl;
     abort_handler(-1);
   }

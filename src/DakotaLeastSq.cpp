@@ -120,10 +120,10 @@ void LeastSq::weight_model()
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initializing weighting transformation" << std::endl;
 
+  // the size of the recast is the total numLeastSqTerms being iterated
   size_t i;
-  size_t num_recast_fns = numUserPrimaryFns + numNonlinearConstraints;
   Sizet2DArray var_map_indices(numContinuousVars), 
-    primary_resp_map_indices(numUserPrimaryFns), 
+    primary_resp_map_indices(numLeastSqTerms), 
     secondary_resp_map_indices(numNonlinearConstraints);
   bool nonlinear_vars_map = false;
   BoolDequeArray nonlinear_resp_map(num_recast_fns);
@@ -132,7 +132,7 @@ void LeastSq::weight_model()
     var_map_indices[i].resize(1);
     var_map_indices[i][0] = i;
   }
-  for (i=0; i<numUserPrimaryFns; i++) {
+  for (i=0; i<numLeastSqTerms; i++) {
     primary_resp_map_indices[i].resize(1);
     primary_resp_map_indices[i][0] = i;
     nonlinear_resp_map[i].resize(1);
@@ -140,9 +140,9 @@ void LeastSq::weight_model()
   }
   for (i=0; i<numNonlinearConstraints; i++) {
     secondary_resp_map_indices[i].resize(1);
-    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
-    nonlinear_resp_map[numUserPrimaryFns+i].resize(1);
-    nonlinear_resp_map[numUserPrimaryFns+i][0] = false;
+    secondary_resp_map_indices[i][0] = numLeastSqTerms + i;
+    nonlinear_resp_map[numLeastSqTerms+i].resize(1);
+    nonlinear_resp_map[numLeastSqTerms+i][0] = false;
   }
 
   void (*vars_recast) (const Variables&, Variables&) = NULL;
@@ -207,8 +207,8 @@ void LeastSq::print_results(std::ostream& s)
     << 0.5*t << '\n';
 
   // Print best response functions
-  if (numUserPrimaryFns > 1) s << "<<<<< Best residual terms      =\n";
-  else                       s << "<<<<< Best residual term       =\n";
+  if (numLeastSqTerms > 1) s << "<<<<< Best residual terms      =\n";
+  else                     s << "<<<<< Best residual term       =\n";
   write_data_partial(s, 0, numLeastSqTerms, fn_vals_star);
 
   size_t num_cons = numFunctions - numLeastSqTerms;

@@ -309,7 +309,8 @@ void Minimizer::initialize_run()
 /** Reads observation data to compute least squares residuals.  Does
     not change size of responses, and is the first wrapper, therefore
     sizes are based on userDefinedModel. This will set weights to
-    sigma[i]^-2 if appropriate. */
+    sigma[i]^-2 if appropriate. weight_flag is true is there already
+    exist user-specified weights in the calling context. */
 bool Minimizer::data_transform_model(bool weight_flag)
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -376,40 +377,6 @@ bool Minimizer::data_transform_model(bool weight_flag)
         Cout <<  expData.scalar_data(y_ind,j,k) << '\n';
     Cout << std::endl;
   }
-  // weight the terms with sigma from the file if active
-  if (num_sigma_read > 0) {
-    if (weight_flag) {
-      Cerr << "\nError: both weights and experimental standard deviations "
-	   << "specified in Dakota::LeastSq." << std::endl;
-      abort_handler(-1);
-    }
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "\nLeast squares: weighting least squares terms with 1 / square"
-	   << " of standard deviations read from file." << std::endl;
-    RealVector lsq_weights(numUserPrimaryFns);
-    if (num_sigma_read == 1) {
-      double sigma = 
-	expData.scalar_sigma(0,0,0); 
-      lsq_weights = std::pow(sigma, -2.);
-    }
-    else if (num_sigma_read == numUserPrimaryFns) {
-      for (size_t i=0; i<numUserPrimaryFns; ++i) {
-	double sigma = 
-	  expData.scalar_sigma(i,0,0);
-	lsq_weights[i] = std::pow(sigma, -2.);
-      }
-    }
-    else {
-      Cerr << "\nError: std_deviations read needs to be length 1 or number "
-	   << "of calibration_terms in Dakota::LeastSq." << std::endl;
-      abort_handler(-1);
-    }
-
-    // this will potentially be setting on the scale/data transformed model
-    iteratedModel.primary_response_fn_weights(lsq_weights);
-    weight_flag = true;
-  }
-
 
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
@@ -423,7 +390,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   BoolDequeArray nonlinear_resp_map(num_recast_fns);
   // adjust active set vector to 1 + numNonlinearConstraints
   ShortArray asv(total_calib_terms + numNonlinearConstraints, 1);
-    activeSet.request_vector(asv);
+  activeSet.request_vector(asv);
   
   for (i=0; i<numContinuousVars; i++) {
     var_map_indices[i].resize(1);
@@ -469,25 +436,69 @@ bool Minimizer::data_transform_model(bool weight_flag)
 
   // Preserve weights through data transformations
   bool recurse_flag = false;
-  const RealVector& submodel_weights = 
-    iteratedModel.subordinate_model().primary_response_fn_weights();
-  if (submodel_weights.empty() || numRowsExpData <= 1) {
-    iteratedModel.primary_response_fn_weights(submodel_weights);
-  } 
-  else { 
-    RealVector recast_weights(total_calib_terms);
-    for (i=0; i<numUserPrimaryFns; i++) {
-      for (j=0; j<numRowsExpData; j++) {
-        recast_weights(i*numRowsExpData+j) = submodel_weights(i);
+  
+  // weight the terms with sigma from the file if active
+  // BMA TODO: Data reader must validate specification of 0, 1, or N sigma
+  if (num_sigma_read > 0) {
+
+    if (weight_flag) {
+      Cerr << "\nError: both weights and experimental standard deviations "
+	   << "specified in Dakota::LeastSq." << std::endl;
+      abort_handler(-1);
+    }
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nLeast squares: weighting least squares terms with 1 / square"
+	   << " of standard deviations read from file." << std::endl;
+
+    RealVector lsq_weights(total_calib_terms);
+    for (int y_ind = 0; y_ind < numUserPrimaryFns; y_ind++) {
+      size_t counter=0;
+      for (int j = 0; j < numExperiments; j++){
+	for (int k = 0; k < numReplicates(j); k++) {
+	  lsq_weights(y_ind*numRowsExpData+counter) = 
+	    std::pow(expData.scalar_sigma(y_ind,j,k),-2.);
+	  counter++;
+	}
       }
     }
-    iteratedModel.primary_response_fn_weights(recast_weights);
+
+    // because the weights originate in the data, set them only on
+    // this data_transform RecastModel, not on the incoming submodel
+    iteratedModel.primary_response_fn_weights(lsq_weights);
+    weight_flag = true;
+
   }
+  else {
+    
+    // BMA TODO: reconcile use of weight flag vs. empty weights
+    // Can this just be done on basis of submodel's weights?
+    const RealVector& submodel_weights = 
+      iteratedModel.subordinate_model().primary_response_fn_weights();
+    if (submodel_weights.empty() || numRowsExpData <= 1) {
+      // no need to expand number of weights: leave as 0 or 1
+      iteratedModel.primary_response_fn_weights(submodel_weights);
+    } 
+    else { 
+      // submodel has weights and there are multiple experiments / replicates
+      RealVector recast_weights(total_calib_terms);
+      for (i=0; i<numUserPrimaryFns; i++) {
+	for (j=0; j<numRowsExpData; j++) {
+	  recast_weights(i*numRowsExpData+j) = submodel_weights(i);
+	}
+      }
+      iteratedModel.primary_response_fn_weights(recast_weights);
+    }
+    // leave weight_flag as passed in (true or false)
+
+  }
+
   // Preserve sense through data transformation
   // BMA: TODO expand sense by replicates
   const BoolDeque& submodel_sense = 
     iteratedModel.subordinate_model().primary_response_fn_sense();
   iteratedModel.primary_response_fn_sense(submodel_sense);
+
+  // BMA TODO: data transform needs to expand scales by replicates
 
   Cout << "Got to end of data_transform " << '\n';
   return weight_flag;
@@ -498,6 +509,9 @@ bool Minimizer::data_transform_model(bool weight_flag)
     affects variables, primary, and secondary responses */
 void Minimizer::scale_model()
 {
+  // BMA TODO: scale_model needs to be modular on number of incoming
+  // response functions, not hard-wired to numUserPrimaryFns.
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initializing scaling transformation" << std::endl;
 
