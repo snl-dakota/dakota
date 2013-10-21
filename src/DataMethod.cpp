@@ -39,7 +39,7 @@ DataMethodRep::DataMethodRep():
   // Branch and bound
   //branchBndNumSamplesRoot(0), branchBndNumSamplesNode(0),
   // DL_SOLVER
-  dlDetails(""), dlLib(NULL),
+  dlLib(NULL), //dlDetails(""),
   // NPSOL
   verifyLevel(-1), functionPrecision(1.e-10), lineSearchTolerance(0.9),
   // NL2SOL: Real values of -1. ==> use NL2SOL default
@@ -83,19 +83,18 @@ DataMethodRep::DataMethodRep():
   newSolnsGenerated(-9999), numberRetained(-9999),
   expansionFlag(true), // default = on, no_expansion spec turns off
   expandAfterSuccess(0), contractAfterFail(0), mutationRange(-9999),
-  randomizeOrderFlag(false), betaSolverName(""),
+  randomizeOrderFlag(false), //betaSolverName(""),
   // JEGA
-  numCrossPoints(2), numParents(2), numOffspring(2),
-  convergenceType(""), fitnessLimit(6.0),
-  shrinkagePercent(0.9), percentChange(0.1), numGenerations(15),
-  nichingType("null_niching"), numDesigns(100),
-  postProcessorType("null_postprocessor"),
-  logFile("JEGAGlobal.log"),
+  numCrossPoints(2), numParents(2), numOffspring(2), //convergenceType(""),
+  fitnessLimit(6.0), shrinkagePercent(0.9), percentChange(0.1),
+  numGenerations(15), nichingType("null_niching"), numDesigns(100),
+  postProcessorType("null_postprocessor"), logFile("JEGAGlobal.log"),
   printPopFlag(false),
   // JEGA/COLINY
-  constraintPenalty(-1.), crossoverRate(-1.), crossoverType(""),
-  initializationType("unique_random"), mutationType(""), replacementType(""), 
-  fitnessType(""), populationSize(50), flatFile(),
+  constraintPenalty(-1.), crossoverRate(-1.), //crossoverType(""),
+  initializationType("unique_random"),
+  //mutationType(""), replacementType(""), fitnessType(""),
+  populationSize(50), //flatFile(),
   // NOMAD
   historyFile("mads_history"), displayFormat("bbe obj"), 
   vns(0.0), showAllEval(false),
@@ -214,6 +213,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // COLINY, NonD, DACE, & JEGA
   s << randomSeed;
 
+  // MADS
+  s << historyFile << displayFormat << vns << showAllEval;
+
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
     << vbdFlag << vbdDropTolerance;
@@ -323,6 +325,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // COLINY, NonD, DACE, & JEGA
   s >> randomSeed;
 
+  // MADS
+  s >> historyFile >> displayFormat >> vns >> showAllEval;
+
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag >> previousSamples
     >> vbdFlag >> vbdDropTolerance;
@@ -431,6 +436,9 @@ void DataMethodRep::write(std::ostream& s) const
 
   // COLINY, NonD, DACE, & JEGA
   s << randomSeed;
+
+  // MADS
+  s << historyFile << displayFormat << vns << showAllEval;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
