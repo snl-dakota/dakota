@@ -945,8 +945,8 @@ init_evaluation_communicators(const int& evaluation_servers,
 inline const ParallelLevel& ParallelLibrary::
 init_analysis_communicators(const int& analysis_servers,
   const int& procs_per_analysis, const int& max_analysis_concurrency,
-  const int& asynch_local_analysis_concurrency,const std::string& default_config,
-  const std::string& analysis_scheduling)
+  const int& asynch_local_analysis_concurrency,
+  const std::string& default_config, const std::string& analysis_scheduling)
 {
   init_communicators(*currPCIter->iePLIter, analysis_servers,
     procs_per_analysis, max_analysis_concurrency,

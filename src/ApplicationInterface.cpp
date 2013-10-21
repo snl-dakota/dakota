@@ -630,6 +630,7 @@ const IntResponseMap& ApplicationInterface::synch()
   // asynchronous case.
   size_t core_prp_entries = beforeSynchCorePRPQueue.size(), num_synch_jobs
     = (coreMappings) ? core_prp_entries : beforeSynchAlgPRPQueue.size();
+  if (num_synch_jobs == 0) return rawResponseMap;
   Cout << "\nBlocking synchronize of " << num_synch_jobs
        << " asynchronous evaluations" << std::endl; // disincludes duplicates
   if (core_prp_entries) {
@@ -1032,12 +1033,14 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
     total_capacity  = numEvalServers * server_capacity,
     remote_capacity = total_capacity - server_capacity;
 
+  /* Note: this switch needs to be consistent with inter-comm creation
+     logic in init_communicators().
   if (num_jobs <= remote_capacity && !multiProcEvalFlag) {
-    // don't bother with asynchronous_local_evaluations_nowait()
-    // (assumes single processor servers)
+    // avoid nonblocking local scheduling if not required
     master_dynamic_schedule_evaluations();
     return;
   }
+  */
   // else use round-robin (skipping peer1 on first round).  Could alternatively
   // minimize the number of local jobs, but this is less balanced (also consider
   // the memory budgeting for sims) and leads to less intuitive id assignments.
