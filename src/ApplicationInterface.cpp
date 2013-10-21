@@ -50,7 +50,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   asynchLocalEvalStatic(
     problem_db.get_string("interface.local_evaluation_scheduling") == "static"),
   interfaceSynchronization(problem_db.get_string("interface.synchronization")),
-  headerFlag(true),
+  //headerFlag(true),
   asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
   evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
   restartFileFlag(problem_db.get_bool("interface.restart_file")),
@@ -718,8 +718,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
   size_t core_prp_entries = beforeSynchCorePRPQueue.size(), num_synch_jobs
     = (coreMappings) ? core_prp_entries : beforeSynchAlgPRPQueue.size();
   if (num_synch_jobs == 0) return rawResponseMap;
-
-  if (headerFlag) // set whenever an executed job (nonduplicate) completes
+  //if (headerFlag) // set whenever an executed job (nonduplicate) completes
     Cout << "\nNonblocking synchronize of " << num_synch_jobs
          << " asynchronous evaluations" << std::endl; // disincludes duplicates
   if (core_prp_entries) {
@@ -741,7 +740,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
     else // local to processor
       asynchronous_local_evaluations_nowait(beforeSynchCorePRPQueue);
   }
-  headerFlag = !rawResponseMap.empty();
+  //headerFlag = !rawResponseMap.empty();
 
   // Since beforeSynchCorePRPQueue processing will not in general be completed, 
   // process duplicates listed in beforeSynchDuplicateMap only if the 
@@ -843,8 +842,8 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
   if (asynchLocalEvalConcurrency > 1) capacity *= asynchLocalEvalConcurrency;
   int num_jobs = beforeSynchCorePRPQueue.size(),
      num_sends = std::min(capacity, num_jobs);
-  Cout << "First pass: master assigning " << num_sends << " jobs among " 
-       << numEvalServers << " servers\n";
+  Cout << "Master dynamic schedule: first pass assigning " << num_sends
+       << " jobs among " << numEvalServers << " servers\n";
 
   // only need num_sends entries (not num_jobs) due to reuse
   sendBuffers  = new MPIPackBuffer   [num_sends];
@@ -862,15 +861,15 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
 
   // schedule remaining jobs
   if (num_sends < num_jobs) {
-    Cout << "Second pass: master scheduling " << num_jobs-num_sends 
-         << " remaining jobs\n";
+    Cout << "Master dynamic schedule: second pass scheduling "
+	 << num_jobs-num_sends << " remaining jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
     MPI_Status* status_array = new MPI_Status [num_sends];
     int* index_array = new int [num_sends];
     PRPQueueIter return_iter;
     while (recv_cntr < num_jobs) {
       if (outputLevel > SILENT_OUTPUT)
-        Cout << "Waiting on completed jobs" << std::endl;
+        Cout << "Master dynamic schedule: waiting on completed jobs"<<std::endl;
       parallelLib.waitsome(num_sends, recvRequests, out_count, index_array, 
 			   status_array);
       recv_cntr += out_count;
@@ -891,7 +890,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
   }
   else { // all jobs assigned in first pass
     if (outputLevel > SILENT_OUTPUT)
-      Cout << "Waiting on all jobs" << std::endl;
+      Cout << "Master dynamic schedule: waiting on all jobs" << std::endl;
     parallelLib.waitall(num_jobs, recvRequests);
     // All buffers received, now generate rawResponseMap
     for (i=0, prp_iter = beforeSynchCorePRPQueue.begin(); i<num_jobs;
@@ -931,7 +930,7 @@ void ApplicationInterface::peer_static_schedule_evaluations()
   int num_jobs       = beforeSynchCorePRPQueue.size(), 
       num_peer1_jobs = (int)std::floor((Real)num_jobs/numEvalServers),
       num_sends      = num_jobs - num_peer1_jobs;
-  Cout << "Static peer schedule: assigning " << num_jobs << " jobs among " 
+  Cout << "Peer static schedule: assigning " << num_jobs << " jobs among " 
        << numEvalServers << " peers\n";
   sendBuffers  = new MPIPackBuffer   [num_sends];
   recvBuffers  = new MPIUnpackBuffer [num_sends];
@@ -972,11 +971,13 @@ void ApplicationInterface::peer_static_schedule_evaluations()
   // serves a dual role: throttles concurrency if asynch local alone, and
   // multiplies concurrency if hybrid).
   if (asynchLocalEvalConcurrency > 1) { // peer_dynamic is default in this case
-    Cout << "Peer 1 scheduling " << num_peer1_jobs << " local jobs\n";
+    Cout << "Peer static schedule: peer 1 scheduling " << num_peer1_jobs
+	 << " local jobs\n";
     asynchronous_local_evaluations(local_prp_queue);
   }
   else { // 1 synchronous job at a time
-    Cout << "Peer 1 evaluating " << num_peer1_jobs << " local jobs\n";
+    Cout << "Peer static schedule: peer 1 evaluating " << num_peer1_jobs
+	 << " local jobs\n";
     synchronous_local_evaluations(local_prp_queue);
   }
   // reassign used to be required for beforeSynchDuplicates to work properly in
@@ -988,7 +989,7 @@ void ApplicationInterface::peer_static_schedule_evaluations()
 
   if (num_sends) { // Retrieve results from peers
     if (outputLevel > SILENT_OUTPUT)
-      Cout << "Waiting on assigned jobs" << std::endl;
+      Cout << "Peer static schedule: waiting on assigned jobs" << std::endl;
     parallelLib.waitall(num_sends, recvRequests);
 
     // All buffers received, now generate rawResponseMap
@@ -1033,33 +1034,25 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
     total_capacity  = numEvalServers * server_capacity,
     remote_capacity = total_capacity - server_capacity;
 
-  /* Note: this switch needs to be consistent with inter-comm creation
-     logic in init_communicators().
-  if (num_jobs <= remote_capacity && !multiProcEvalFlag) {
-    // avoid nonblocking local scheduling if not required
-    master_dynamic_schedule_evaluations();
-    return;
-  }
-  */
-  // else use round-robin (skipping peer1 on first round).  Could alternatively
-  // minimize the number of local jobs, but this is less balanced (also consider
-  // the memory budgeting for sims) and leads to less intuitive id assignments.
+  // avoid nonblocking local scheduling, if not required.
+  // Note: this scheduler switch needs to be fully consistent with inter-comm
+  // creation logic in init_communicators().
+  //if (num_jobs <= remote_capacity && !multiProcEvalFlag)
+  //  { master_dynamic_schedule_evaluations(); return; }
 
-  size_t num_assign  = std::min(total_capacity, num_jobs),
-    num_local_assign = (int)std::floor((Real)num_assign/numEvalServers),
-    num_buff = std::min(remote_capacity, num_jobs - num_local_assign);
+  // Use round-robin assignment, skipping peer1 on 1st round.  Alternatively,
+  // could minimize local job count, but this is less balanced (also consider
+  // the memory budgeting for sims) and leads to less intuitive id assignments.
+  size_t num_assign   = std::min(total_capacity, num_jobs),
+    num_local_assign  = (int)std::floor((Real)num_assign/numEvalServers),
+    num_remote_assign = num_jobs - num_local_assign,
+    num_buff          = std::min(remote_capacity, num_remote_assign);
+  Cout << "Peer dynamic schedule: first pass assigning " << num_remote_assign
+       << " jobs among " << numEvalServers-1 << " remote peers\n";
   sendBuffers  = new MPIPackBuffer   [num_buff];
   recvBuffers  = new MPIUnpackBuffer [num_buff];
   recvRequests = new MPI_Request     [num_buff];
   int i, server_id, fn_eval_id;
-
-  Cout << "Dynamic peer schedule: first pass assigning " << num_assign
-       << " jobs among " << numEvalServers << " peers\n";
-
-  // Assign jobs locally + remotely using a round-robin assignment.  Since
-  // this is a static schedule, all remote job assignments are sent now.  This
-  // assignment is not dependent on the capacity of the other peers (i.e.,
-  // on whether they run serve_evaluation_synch or serve_evaluation_asynch).
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin();
   PRPQueue local_prp_queue; int buff_index = 0;
   for (i=1; i<=num_assign; ++i, ++assign_iter) {//shift +1 to prefer remote work
@@ -1075,21 +1068,21 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
   }
 
   // Start nonblocking asynch local computations on peer 1
-  Cout << "Peer 1 scheduling " << num_local_assign << " local jobs\n";
+  Cout << "Peer dynamic schedule: first pass launching " << num_local_assign
+       << " local jobs\n";
   // "Step 1" of asynch_local_evaluations_nowait()
   PRPQueueIter local_prp_iter;
   assign_asynch_local_queue(local_prp_queue, local_prp_iter);
 
   // block until local and remote scheduling are complete
+  if (outputLevel > SILENT_OUTPUT && num_jobs > num_assign)
+    Cout << "Peer dynamic schedule: second pass scheduling "
+	 << num_jobs - num_assign << " remaining jobs" << std::endl;
   size_t recv_cntr = 0;
   while (recv_cntr < num_jobs) {
     // process completed message passing jobs and backfill
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "Testing message receives\n";
     recv_cntr += test_receives_backfill(assign_iter, true); // peer
     // "Step 2" and "Step 3" of asynch_local_evaluations_nowait()
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "Testing local completions\n";
     recv_cntr += test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
   }
 
@@ -1250,6 +1243,9 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
 size_t ApplicationInterface::
 test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 {
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "Testing message receives from remote servers\n";
+
   int mpi_test_flag, index, fn_eval_id, new_eval_id, server_id;
   MPI_Status status; // only 1 needed for parallelLib.test()
   std::map<int, IntIntPair>::iterator run_iter; PRPQueueIter return_iter;
@@ -1310,6 +1306,9 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 size_t ApplicationInterface::
 test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
 {
+  if (outputLevel == DEBUG_OUTPUT) // explicit debug user specification
+    Cout << "Testing local completions\n";
+
   bool static_limited
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   size_t static_servers, server_index;
@@ -1318,8 +1317,6 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
 
   // "Step 2" (of asynch_local_evaluations_nowait()): process any completed
   // jobs using test_local_evaluations()
-  if (outputLevel == DEBUG_OUTPUT) // explicit debug user specification
-    Cout << "Testing for completed jobs\n";
   completionSet.clear();
   test_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
   size_t completed = completionSet.size();
@@ -1394,11 +1391,11 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
   // Step 1: launch any new jobs up to capacity limit
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin(), return_iter;
   if (!num_running) { // simplest case
-    size_t run_target = std::min(capacity, num_jobs);
-    Cout << "First pass: assigning " << run_target << " jobs among " 
-	 << numEvalServers << " servers\n";
+    num_running = std::min(capacity, num_jobs);
+    Cout << "Master dynamic schedule: first pass assigning " << num_running
+	 << " jobs among " << numEvalServers << " servers\n";
     // send data & post receives for 1st set of jobs
-    for (i=0; i<run_target; ++i, ++assign_iter) {
+    for (i=0; i<num_running; ++i, ++assign_iter) {
       server_id  = i%numEvalServers + 1; // from 1 to numEvalServers
       fn_eval_id = assign_iter->eval_id();
       // assign job
@@ -1409,6 +1406,8 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
     }
   }
   else if (num_backfill && num_running < capacity) { // fill in any gaps
+    Cout << "Master dynamic schedule: first pass backfilling jobs up to "
+	 << "available capacity\n";
     UShortArray server_jobs(numEvalServers, 0);
     for (std::map<int, IntIntPair>::iterator r_it = msgPassRunningMap.begin();
 	 r_it != msgPassRunningMap.end(); ++r_it)
@@ -1444,6 +1443,10 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
   }
 
   // Step 2: check status of running jobs and backfill any completions
+  Cout << "Master dynamic schedule: second pass testing for completions ("
+       << num_running << " running)";
+  if (num_running == num_jobs) Cout << '\n';
+  else Cout << " and backfilling (" << num_jobs-num_running << " remaining)\n";
   test_receives_backfill(assign_iter, false); // !peer
 
   if (msgPassRunningMap.empty()) {
@@ -1500,16 +1503,16 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin(), local_prp_iter;
   if (!num_running) { // simplest case
     size_t num_local_jobs = (size_t)std::floor((Real)num_jobs/numEvalServers),
-      num_remote_jobs   = num_jobs - num_local_jobs, 
-      local_run_target  = std::min(local_capacity,  num_local_jobs),
-      remote_run_target = std::min(remote_capacity, num_remote_jobs);
+      num_remote_jobs  = num_jobs - num_local_jobs;
+    num_local_running  = std::min(local_capacity,  num_local_jobs);
+    num_remote_running = std::min(remote_capacity, num_remote_jobs);
 
     // don't leave a static gap since we're going to dynamically assign...
-    Cout << "First pass: assigning " << remote_run_target << " jobs among " 
-	 << numEvalServers-1 << " remote peers\n";
-    std::advance(assign_iter, local_run_target);//num_local_jobs);
+    Cout << "Peer dynamic schedule: first pass assigning " << num_remote_running
+	 << " jobs among " << numEvalServers-1 << " remote peers\n";
+    std::advance(assign_iter, num_local_running);//num_local_jobs);
     PRPQueueIter assign_iter_save = assign_iter;
-    for (i=0; i<remote_run_target; ++i, ++assign_iter) {
+    for (i=0; i<num_remote_running; ++i, ++assign_iter) {
       server_id = i%(numEvalServers-1) + 1; // 1 to numEvalServers-1
       fn_eval_id = assign_iter->eval_id();
       // assign job to remote peer
@@ -1524,11 +1527,15 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     // asynchLocalEvalConcurrency > 1 do we get the hybrid parallelism of
     // asynch jobs on each peer.
     PRPQueue local_prp_queue(beforeSynchCorePRPQueue.begin(), assign_iter_save);
-    Cout << "First pass: Peer 1 initiating " << local_run_target
+    Cout << "Peer dynamic schedule: first pass launching " << num_local_running
 	 << " local jobs\n";
     assign_asynch_local_queue(local_prp_queue, local_prp_iter);
+
+    num_running = num_local_running + num_remote_running; // update
   }
   else if (num_backfill && num_running < capacity) { // fill in any gaps
+    Cout << "Peer dynamic schedule: first pass backfilling jobs up to "
+	 << "available capacity\n";
     UShortArray server_jobs(numEvalServers-1, 0); PRPQueue local_prp_queue;
     // server_id is 1:numEvalServ-1, server_jobs is indexed 0:numEvalServ-2
     for (std::map<int, IntIntPair>::iterator r_it = msgPassRunningMap.begin();
@@ -1575,9 +1582,15 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     
     if (backfill_local)
       assign_asynch_local_queue_nowait(local_prp_queue, local_prp_iter);
+
+    num_running = num_local_running + num_remote_running; // update
   }
 
   // Step 2: check status of running jobs and backfill any completions
+  Cout << "Peer dynamic schedule: second pass testing for completions ("
+       << num_running << " running)";
+  if (num_running == num_jobs) Cout << '\n';
+  else Cout << " and backfilling (" << num_jobs-num_running << " remaining)\n";
   if (num_remote_running)
     test_receives_backfill(assign_iter, true); // peer
   if (num_local_running)
@@ -1616,11 +1629,28 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
 void ApplicationInterface::
 asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
 {
+  size_t num_jobs = local_prp_queue.size(),
+    num_target = (asynchLocalEvalConcurrency) ?
+      std::min((size_t)asynchLocalEvalConcurrency, num_jobs) : num_jobs,
+    num_active = asynchLocalActivePRPQueue.size(),
+    num_launch = num_target - num_active;
+  bool static_limited
+    = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
+
   // Step 1: update asynchLocalActivePRPQueue with jobs from local_prp_queue
-  PRPQueueIter local_prp_iter;
-  assign_asynch_local_queue_nowait(local_prp_queue, local_prp_iter);
+  PRPQueueIter local_prp_iter = local_prp_queue.begin();
+  if (num_launch) {
+    Cout << "First pass: initiating ";
+    if (static_limited) Cout << "at most ";
+    Cout << num_launch << " local asynchronous jobs\n";
+    assign_asynch_local_queue_nowait(local_prp_queue, local_prp_iter);
+  }
 
   // Step 2: process any completed jobs and backfill if necessary
+  num_active = asynchLocalActivePRPQueue.size(); // update
+  Cout << "Second pass: testing for completions (" << num_active << " running)";
+  if (num_active == num_jobs) Cout << '\n';
+  else Cout << " and backfilling (" << num_jobs - num_active << " remaining)\n";
   test_local_backfill(local_prp_queue, local_prp_iter);
 }
 
