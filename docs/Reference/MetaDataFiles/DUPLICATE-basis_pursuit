@@ -1,6 +1,8 @@
-Blurb::
+Blurb:: 
+Compute the coefficients of a polynomial expansion by solving the Basis Pursuit \f$\ell_1\f$-minimization problem using linear programming.
 Description::
-Topics::	empty
+Compute the coefficients of a polynomial expansion by solving the Basis Pursuit \f$\ell_1\f$-minimization problem using linear programming.
+Topics::
 Examples::
 Theory::
 Faq::

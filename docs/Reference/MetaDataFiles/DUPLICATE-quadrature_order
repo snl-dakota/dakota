@@ -1,7 +1,7 @@
 Blurb::
 Cubature using tensor-products of Gaussian quadrature rules
 Description::
-multidimensional integration by a tensor-product of Gaussian
+Multidimensional integration by a tensor-product of Gaussian
    quadrature rules (specified with \c quadrature_order, and, 
    optionally, \c dimension_preference). The default rule
    selection is to employ \c non_nested Gauss rules including
@@ -35,7 +35,7 @@ multidimensional integration by a tensor-product of Gaussian
    In some advanced use cases (e.g., multifidelity UQ), multiple
    grid resolutions can be employed; for this reason, the \c 
    quadrature_order specification supports an array input.
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

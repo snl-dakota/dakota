@@ -1,6 +1,8 @@
-Blurb::
+Blurb:: 
+Coefficient import from a file.
 Description::
-Topics::	empty
+Import PCE coefficients from a file (specified with expansion_import_file). A total-order expansion is assumed and must be specified using expansion_order.
+Topics::
 Examples::
 Theory::
 Faq::

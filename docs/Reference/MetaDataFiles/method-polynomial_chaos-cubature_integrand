@@ -1,7 +1,7 @@
 Blurb::
 Cubature using Stroud rules and their extensions
 Description::
-multidimensional integration by Stroud cubature rules [\ref
+Multi-dimensional integration by Stroud cubature rules [\ref
    Stroud1971 "Stroud, 1971"] and extensions 
    [\ref Xiu2008 "Xiu, 2008"], as specified with \c cubature_integrand. 
    A total-order
@@ -26,7 +26,7 @@ multidimensional integration by Stroud cubature rules [\ref
    distributions, so the \e iid restriction would not be problematic
    in that case.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

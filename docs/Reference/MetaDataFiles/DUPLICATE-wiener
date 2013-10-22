@@ -6,8 +6,9 @@ orthogonal polynomial basis for all random variables and employs the
 same nonlinear variable transformation as the local and global
 reliability methods (and therefore has the same variable support).
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::
 See_Also::	
+askey

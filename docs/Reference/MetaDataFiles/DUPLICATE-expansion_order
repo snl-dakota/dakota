@@ -1,13 +1,13 @@
 Blurb::
-Cubature by LHS
+The maximum order of a polynomial expansion
 Description::
-multidimensional integration by Latin hypercube sampling
+Multidimensional integration by Latin hypercube sampling
    (specified with \c expansion_samples). In this case, the
    expansion order \e p cannot be inferred from the numerical
    integration specification and it is necessary to provide an
    \c expansion_order to specify \e p for a total-order expansion.
 
-linear regression (specified with either \c collocation_points or
+Linear regression (specified with either \c collocation_points or
    \c collocation_ratio). A total-order expansion is used and must
    be specified using \c expansion_order as described in the
    previous option. <!-- Given \e p or \e N, the total number of
@@ -67,10 +67,10 @@ validation is inactive, then only one solution, consistent with the \c
 noise_tolerance, will be returned. If cross validation is active,
 %Dakota will choose between possible coefficient vectors found
 internally by the regression method across the set of expansion orders
-(1,...,expansion_order) and the set of specified noise tolerances and
+(1,...,\c expansion_order) and the set of specified noise tolerances and
 return the one with the lowest cross validation error indicator.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

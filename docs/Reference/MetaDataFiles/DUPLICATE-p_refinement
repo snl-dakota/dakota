@@ -47,7 +47,9 @@ candidates, and the index set frontier of a sparse grid is evolved in
 an unstructured and goal-oriented manner (refer to User's Manual PCE
 descriptions for additional specifics).
 
-Topics::	not_yet_reviewed
+For the case of p_refinement or the case of an explicit nested override, Gauss-Hermite rules are replaced with Genz-Keister nested rules and Gauss-Legendre rules are replaced with Gauss-Patterson nested rules, both of which exchange lower integrand precision for greater point reuse.
+
+Topics::
 Examples::
 Theory::
 Faq::

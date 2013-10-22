@@ -12,8 +12,9 @@ polynomials.
  Laguerre for exponential (optimal); Jacobi for beta (optimal); and
  generalized Laguerre for gamma (optimal).
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also::
+wiener

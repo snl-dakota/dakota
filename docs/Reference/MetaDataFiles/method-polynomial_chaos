@@ -123,7 +123,7 @@ expense is less critical). This option allows for refinement of
 probability and generalized reliability results using importance
 sampling.
 
-<b> Some extra stuff that probably doesn't belong here </b>
+<b> Multi-fidelity UQ </b>
 
 The advanced use case of multifidelity UQ automatically becomes active
 if the model selected for iteration by the method specification is a

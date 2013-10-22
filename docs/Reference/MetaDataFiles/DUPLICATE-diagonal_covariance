@@ -6,7 +6,7 @@ be very large. \c diagonal_covariance is used to
 suppress the off-diagonal covariance terms (to save compute and
 memory resources and reduce output volume).
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

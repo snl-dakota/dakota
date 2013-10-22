@@ -5,7 +5,7 @@ With a large number of responses, the covariance matrix can
 be very large. \c full_covariance is used to
 force Dakota to output the full covariance matrix.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

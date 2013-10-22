@@ -1,8 +1,8 @@
 Blurb::
-????
+Drop values lower than this tolerance
 Description::
-This is not described in the reference manual.
-Topics::	not_yet_reviewed, problem
+Drop values lower than this tolerance. For PCE which outputs main, interaction, and total effects by default, the univariate_effects option has been added to allow suppression of the interaction effects since the output volume of these results can be prohibitive for high dimensional problems. Similar to suppression of these interactions is the covariance control, which can be selected to be diagonal_covariance or full_covariance, with the former supporting suppression of the off-diagonal covariance terms (to save compute and memory resources and reduce output volume).
+Topics::
 Examples::
 Theory::
 Faq::
