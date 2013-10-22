@@ -594,8 +594,10 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 {
   if (sendBuffers[buff_index].size()) // reuse of existing send/recv buffers
     { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
-  else                                // freshly allocated send/recv buffers
+  else {                              // freshly allocated send/recv buffers
+    //sendBuffers[buff_index].resize(lenVarsActSetMessage); // protected
     recvBuffers[buff_index].resize(lenResponseMessage);
+  }
   sendBuffers[buff_index] << prp_it->prp_parameters() << prp_it->active_set();
 
   int fn_eval_id = prp_it->eval_id();
@@ -613,6 +615,11 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 	   << server_id << '\n';
     }
   }
+
+#ifdef MPI_DEBUG
+  Cout << "send_evaluation() buff_index = " << buff_index << " fn_eval_id = "
+       << fn_eval_id << " server_id = " << server_id << std::endl;
+#endif // MPI_DEBUG
 
   // pre-post nonblocking receives (to prevent any message buffering)
   parallelLib.irecv_ie(recvBuffers[buff_index], server_id, fn_eval_id,

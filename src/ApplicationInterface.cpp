@@ -1269,7 +1269,8 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 	new_eval_id = assign_iter->eval_id();
 	if (msgPassRunningMap.find(new_eval_id) == msgPassRunningMap.end() &&
 	    lookup_by_eval_id(asynchLocalActivePRPQueue, new_eval_id) ==
-	    asynchLocalActivePRPQueue.end())
+	    asynchLocalActivePRPQueue.end() &&
+	    rawResponseMap.find(fn_eval_id) == rawResponseMap.end())
 	  { new_job = true; break; }
 	++assign_iter;
       }
@@ -1336,8 +1337,8 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
       // peer_dynamic_schedule_evaluations_nowait()
       if ( lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id) ==
 	   asynchLocalActivePRPQueue.end() &&
-	   rawResponseMap.find(fn_eval_id)    == rawResponseMap.end() &&
-	   msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end() ) {
+	   msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end() &&
+	   rawResponseMap.find(fn_eval_id)    == rawResponseMap.end() ) {
 	launch = true;
 	if (static_limited) { // only schedule if local "server" not busy
 	  server_index = (fn_eval_id - 1) % static_servers;
@@ -1481,7 +1482,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
   // Rounding down num_local_jobs offloads this processor (which has additional
   // work relative to other peers), but results in a few more passed messages.
   int fn_eval_id, server_id;
-  size_t i, index, server_index, num_jobs = beforeSynchCorePRPQueue.size(), 
+  size_t i, index, server_index, num_jobs = beforeSynchCorePRPQueue.size(),
     num_remote_running = msgPassRunningMap.size(),
     num_local_running  = asynchLocalActivePRPQueue.size(),
     num_running  = num_remote_running + num_local_running,
@@ -1905,15 +1906,14 @@ void ApplicationInterface::serve_evaluations_synch_peer()
 
 /** This code is invoked by serve_evaluations() to perform multiple
     asynchronous jobs on each slave/peer server.  The servers test for
-    any incoming jobs, launch any new jobs, process any completed
-    jobs, and return any results.  Each of these components is
-    nonblocking, although the server loop continues until a
-    termination signal is received from the master (sent via
-    stop_evaluation_servers()).  In the master-slave case, the master
-    maintains the correct number of jobs on each slave.  In the static
-    scheduling case, each server is responsible for limiting
-    concurrency (since the entire static schedule is sent to the peers
-    at start up). */
+    any incoming jobs, launch any new jobs, process any completed jobs,
+    and return any results.  Each of these components is nonblocking,
+    although the server loop continues until a termination signal is
+    received from the master (sent via stop_evaluation_servers()).  In
+    the master-slave case, the master maintains the correct number of
+    jobs on each slave.  In the static scheduling case, each server is
+    responsible for limiting concurrency (since the entire static
+    schedule is sent to the peers at start up). */
 void ApplicationInterface::serve_evaluations_asynch()
 {
   // ---------------------------------------------------------------------------
@@ -2004,7 +2004,8 @@ void ApplicationInterface::serve_evaluations_asynch()
 	  if (evalCommRank == 0) {
 	    // In this case, use a blocking send to avoid having to manage waits
 	    // on multiple send buffers (which would be a pain since the number
-	    // of sendBuffers would vary with completionSet length).
+	    // of sendBuffers would vary with completionSet length).  The eval
+	    // scheduler processor should have pre-posted corresponding recv's.
 	    MPIPackBuffer send_buffer(lenResponseMessage);
 	    send_buffer << q_it->prp_response();
 	    parallelLib.send_ie(send_buffer, 0, completed_eval_id);
@@ -2503,6 +2504,11 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
     if (peer_flag) Cout << "peer server " << server_id+1 << '\n';
     else           Cout << "slave server " << server_id << '\n';
   }
+
+#ifdef MPI_DEBUG
+  Cout << "receive_evaluation() buff_index = " << buff_index << " fn_eval_id = "
+       << fn_eval_id << " server_id = " << server_id << std::endl;
+#endif // MPI_DEBUG
 
   // Process incoming buffer from remote server.  Avoid multiple key-value
   // lookups.  Incoming response is a lightweight constructed response
