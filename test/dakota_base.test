@@ -13037,12 +13037,12 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   8.5240000000e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 454 total (454 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1200 total (1200 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 1200 total (1198 new, 2 duplicate)
 <<<<< Best parameters          =
-                      9.9972990258e-01 x1
-                      9.9945548661e-01 x2
+                      9.9974094064e-01 x1
+                      9.9947761598e-01 x2
 <<<<< Best objective function  =
-                      7.4881153739e-08
+                      6.8988724941e-08
 <<<<< Best data captured at function evaluation 1200
 dakota_rosenbrock_hessians.in 
 Test Number 0 succeeded
