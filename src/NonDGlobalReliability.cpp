@@ -578,7 +578,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
     
 	// Check for convergence based on max EIF/EFF
 	convergenceTol = .001;
-	maxIterations  = 25*numContinuousVars;
+        if (maxIterations == -1) 
+          maxIterations  = 25*numContinuousVars;
 	if (approxIters >= maxIterations || -exp_fns_star < convergenceTol)
 	  approxConverged = true;
 	else {

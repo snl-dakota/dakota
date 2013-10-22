@@ -169,8 +169,9 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     // preserve these EGO settings for now, but eventually map through
     // from spec (and update test baselines)
     convergenceTol = 1.e-12; distanceTol = 1.e-8;
-    maxIterations  = 25*numContinuousVars;
-
+    if (maxIterations == -1) 
+      maxIterations  = 25*numContinuousVars;
+    
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
     int max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU  

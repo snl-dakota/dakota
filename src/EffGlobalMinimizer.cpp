@@ -219,7 +219,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   sbIterNum = 0;
   bool approxConverged = false;
   convergenceTol = 1.e-12; Real dist_tol = 1.e-8;
-  maxIterations  = 25*numContinuousVars;
+  if (maxIterations == -1) 
+    maxIterations  = 25*numContinuousVars;
   RealVector prev_cv_star;
   while (!approxConverged) {
     ++sbIterNum;
