@@ -875,7 +875,7 @@ KEYWORD12 method
           ( cubature_integrand INTEGER
           |
           ( expansion_order INTEGERLIST
-	    [ dimension_preference REALLIST ]
+            [ dimension_preference REALLIST ]
             ( collocation_points INTEGERLIST
               [ ratio_order REAL ]
               [ least_squares
