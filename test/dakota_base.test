@@ -13991,29 +13991,29 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 862 total (862 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8052663011e-01 x2
-                      1.7114763327e-15 x3
-                      3.0041191498e-16 x4
-                      1.8598848360e-17 x5
-                      7.5073111339e-01 x6
+                      2.8052710587e-01 x2
+                      1.6531059658e-15 x3
+                      1.4959450101e-16 x4
+                      1.4812386161e-17 x5
+                      7.5073031264e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0760048407e+00
+                      1.0760048417e+00
 <<<<< Best data captured at function evaluation 862
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 421 total (421 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 505 total (504 new, 1 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 410 total (410 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 462 total (461 new, 1 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8163042618e-01 x2
-                      2.2580972380e-15 x3
-                      6.1823247589e-16 x4
-                      1.2234198012e-16 x5
-                      7.5653841404e-01 x6
+                      2.8169308200e-01 x2
+                      1.2620042717e-15 x3
+                      7.3419945296e-17 x4
+                      1.0686830502e-16 x5
+                      7.5663038265e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759888884e+00
-<<<<< Best data captured at function evaluation 505
+                      1.0759888948e+00
+<<<<< Best data captured at function evaluation 462
 dakota_sbo_rosen.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 2490 total (2490 new, 0 duplicate)
@@ -14034,13 +14034,13 @@ Test Number 1 succeeded
                       3.3804846892e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 1259 total (1259 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1264 total (1264 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 232 total (232 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9877309311e-01 x1
-                      9.9749692298e-01 x2
+                      9.9877875470e-01 x1
+                      9.9750827673e-01 x2
 <<<<< Best objective function  =
-                      1.7630449648e-06
+                      1.7487336641e-06
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 938 total (938 new, 0 duplicate)
@@ -14100,28 +14100,28 @@ Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 722 total (722 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 232 total (232 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9876987821e-01 x1
-                      9.9749050560e-01 x2
+                      9.9876998575e-01 x1
+                      9.9749072029e-01 x2
 <<<<< Best objective function  =
-                      1.7708981512e-06
+                      1.7706348603e-06
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 277 total (277 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 273 total (273 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 109 total (109 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000707850e+00 x1
-                      1.0001419769e+00 x2
+                      1.0000737088e+00 x1
+                      1.0001478749e+00 x2
 <<<<< Best objective function  =
-                      5.0266635925e-09
+                      5.4534065583e-09
 <<<<< Best data not found in evaluation cache
 Test Number 11 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 543 total (543 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 486 total (486 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 106 total (106 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9989513445e-01 x1
-                      9.9978979990e-01 x2
+                      9.9989424793e-01 x1
+                      9.9978802423e-01 x2
 <<<<< Best objective function  =
-                      1.1019822868e-08
+                      1.1206810909e-08
 <<<<< Best data not found in evaluation cache
 dakota_sbo_sine_fcn.in
 Test Number 0 succeeded
@@ -43192,16 +43192,16 @@ Test Number 0 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   5.0000000000e-01   7.5000000000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 17200 total (15800 new, 1400 duplicate)
-  response_fn_1: 17200 val (15800 n, 1400 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 18000 total (16500 new, 1500 duplicate)
+  response_fn_1: 18000 val (16500 n, 1500 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 6100 total (5700 new, 400 duplicate)
-  response_fn_1: 6100 val (5700 n, 400 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 8200 total (7900 new, 300 duplicate)
+  response_fn_1: 8200 val (7900 n, 300 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
@@ -43729,38 +43729,38 @@ Moment-based statistics for each response function:
    1.0000000000e+03                     -8.9741017591e-01
 dakota_uq_rosenbrock_global.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
+<<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   9.9784986437e-03                      2.3271553724e+00
-   1.0000000000e+00   2.5280821122e-02                      1.9551815772e+00
-   5.0000000000e+00   1.0865158654e-01                      1.2337309604e+00
-   1.0000000000e+01   1.6440466648e-01                      9.7651497035e-01
-   5.0000000000e+01   3.7200074416e-01                      3.2655895992e-01
-   1.0000000000e+02   5.0100724242e-01                     -2.5247850170e-03
-   5.0000000000e+02   8.1750233240e-01                     -9.0588762462e-01
-   1.0000000000e+03   9.0601277350e-01                     -1.3165948888e+00
+   5.0000000000e-01   1.0537631643e-02                      2.3066334473e+00
+   1.0000000000e+00   2.1716681688e-02                      2.0195184333e+00
+   5.0000000000e+00   1.0511680605e-01                      1.2529233256e+00
+   1.0000000000e+01   1.6592859589e-01                      9.7037984396e-01
+   5.0000000000e+01   3.6986355044e-01                      3.3221475782e-01
+   1.0000000000e+02   5.0117883115e-01                     -2.9548958015e-03
+   5.0000000000e+02   8.1630579927e-01                     -9.0137606789e-01
+   1.0000000000e+03   9.0612272524e-01                     -1.3172508639e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 195 total (104 new, 91 duplicate)
+<<<<< Function evaluation summary: 149 total (92 new, 57 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0049888196e-02                      2.3244801098e+00
-   1.0000000000e+00   2.1711813121e-02                      2.0196122235e+00
-   5.0000000000e+00   1.0471841765e-01                      1.2551154977e+00
-   1.0000000000e+01   1.6380290518e-01                      9.7894772301e-01
-   5.0000000000e+01   3.7048220751e-01                      3.3057647931e-01
-   1.0000000000e+02   5.0094489666e-01                     -2.3685068944e-03
-   5.0000000000e+02   8.1759087825e-01                     -9.0622222160e-01
-   1.0000000000e+03   9.0452294841e-01                     -1.3077618337e+00
+   5.0000000000e-01   1.0202413008e-02                      2.3188194889e+00
+   1.0000000000e+00   2.7495072116e-02                      1.9189540904e+00
+   5.0000000000e+00   1.0574055870e-01                      1.2495031081e+00
+   1.0000000000e+01   1.6569460338e-01                      9.7131948899e-01
+   5.0000000000e+01   3.6997290041e-01                      3.3192512117e-01
+   1.0000000000e+02   4.9986254277e-01                      3.4455418319e-04
+   5.0000000000e+02   8.1826070427e-01                     -9.0875665435e-01
+   1.0000000000e+03   9.0579563037e-01                     -1.3153010683e+00
 dakota_uq_rosenbrock_ivp_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 210 total (210 new, 0 duplicate)
 mean:  Min = 3.4615198127e+02  Max = 1.1533050900e+03
 std_dev:  Min = 1.0052201478e+03  Max = 2.5527136417e+03
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 630 total (630 new, 0 duplicate)
-mean:  Min = 3.0164997170e+02  Max = 1.6010000000e+03
-std_dev:  Min = 7.7604718249e+02  Max = 3.1243588142e+03
+<<<<< Function evaluation summary (ALEAT_I): 546 total (525 new, 21 duplicate)
+mean:  Min = 3.0164672474e+02  Max = 1.6010000000e+03
+std_dev:  Min = 7.7604864244e+02  Max = 3.1217946761e+03
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 45129 total (44457 new, 672 duplicate)
 mean:  Min = 3.0200260044e+02  Max = 1.6050000000e+03
@@ -58150,20 +58150,20 @@ Test Number 0 succeeded
 mean_limit:  Min = -7.1726082293e+00  Max = 8.4492360254e+00
 std_dev_limit:  Min = 2.2123955936e-01  Max = 7.4099283986e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2541 total (2387 new, 154 duplicate)
-mean_limit:  Min = -1.1807930097e+01  Max = 1.0327710960e+01
+<<<<< Function evaluation summary (ALEAT_I): 2618 total (2541 new, 77 duplicate)
+mean_limit:  Min = -1.1807930097e+01  Max = 1.0479850328e+01
 std_dev_limit:  Min = 2.0229642834e-01  Max = 1.1201081379e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2805 total (2635 new, 170 duplicate)
-mean_limit:  Min = -1.1802556867e+01  Max = 1.0417384095e+01
-std_dev_limit:  Min = 2.0192896185e-01  Max = 1.1153851585e+01
-Test Number 3 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2310 total (2156 new, 154 duplicate)
-mean_limit:  Min = -1.1807930097e+01  Max = 1.0146186145e+01
-std_dev_limit:  Min = 2.0016844611e-01  Max = 1.1062806921e+01
-Test Number 4 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 2975 total (2890 new, 85 duplicate)
 mean_limit:  Min = -1.1802556867e+01  Max = 1.0479881985e+01
+std_dev_limit:  Min = 2.0192896185e-01  Max = 1.1153851585e+01
+Test Number 3 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2541 total (2541 new, 0 duplicate)
+mean_limit:  Min = -1.1807930097e+01  Max = 1.0479850328e+01
+std_dev_limit:  Min = 2.0016844611e-01  Max = 7.9337697294e+00
+Test Number 4 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 2890 total (2635 new, 255 duplicate)
+mean_limit:  Min = -1.1802556867e+01  Max = 1.0017926491e+01
 std_dev_limit:  Min = 1.9957448390e-01  Max = 1.0988137837e+01
 Test Number 5 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 182182 total (181951 new, 231 duplicate)
@@ -60654,8 +60654,8 @@ Test Number 3 succeeded
    0.0000000000e+00   1.2189499948e-01   6.7590202943e-01
    2.5000000000e-01   1.2189499948e-01   6.7590202943e-01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 72 total (61 new, 11 duplicate)
-  response_fn_1: 48 val (44 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 68 total (57 new, 11 duplicate)
+  response_fn_1: 44 val (40 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 30 val (23 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
@@ -60711,7 +60711,7 @@ Test Number 0 succeeded
 response_fn_1:  Min = 4.4376104545e+01  Max = 1.2000223265e+04
 response_fn_2:  Min = -3.6713252985e+00  Max = 9.8183834392e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 59 total (58 new, 1 duplicate)
+<<<<< Function evaluation summary: 60 total (58 new, 2 duplicate)
 response_fn_1:  Min = 4.0425600000e+01  Max = 1.3950161600e+04
 response_fn_2:  Min = -4.0000000000e+00  Max = 9.9500000000e+01
 Test Number 2 succeeded
@@ -60725,7 +60725,7 @@ mean_f1:  Min = 2.9224259407e+06  Max = 5.6798492523e+06
 ccdf_beta_f2:  Min = 1.1142846380e+01  Max = 1.5000341555e+01
 ccdf_beta_f3:  Min = 2.1149763722e+01  Max = 2.9965272113e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 261 total (261 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 315 total (315 new, 0 duplicate)
 mean_f1:  Min = 2.4271658417e+06  Max = 6.2681799041e+06
 ccdf_beta_f2:  Min = 1.0918832972e+01  Max = 1.5386715423e+01
 ccdf_beta_f3:  Min = 2.0696377241e+01  Max = 3.0762469002e+01
@@ -61628,7 +61628,7 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
-response_fn_1:  Min = -8.8320789396e-02  Max = 2.5603280668e+02
+response_fn_1:  Min = -8.8320424534e-02  Max = 2.5603280647e+02
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF1ln    ModelForm response_fn_1 
        TF1ln  1.00000e+00 
@@ -61645,21 +61645,21 @@ Simple Rank Correlation Matrix among all inputs and outputs:
        TF1ln  1.00000e+00 
        TF1ln -5.18345e-03  1.00000e+00 
    ModelForm  4.98285e-03  3.41675e-03  1.00000e+00 
-response_fn_1  5.11011e-02  7.77017e-02  9.20796e-01  1.00000e+00 
+response_fn_1  5.11010e-02  7.77019e-02  9.20796e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  1.22507e-01 
-       TF1ln  1.93149e-01 
+       TF1ln  1.22506e-01 
+       TF1ln  1.93150e-01 
    ModelForm  9.24315e-01 
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (16 new, 4 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  7.0242243141e+03  7.1669982046e+03  9.7683111548e-01  2.1402321340e-01
+ response_fn_1  7.0242243141e+03  7.1669982130e+03  9.7683111950e-01  2.1402322890e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  6.8255207996e+03  7.2229278287e+03  7.0292369146e+03  7.3103065270e+03
+ response_fn_1  6.8255207993e+03  7.2229278289e+03  7.0292369228e+03  7.3103065355e+03
 Simple Correlation Matrix among all inputs and outputs:
                    hpuv_1       hpuv_2 response_fn_1 
       hpuv_1  1.00000e+00 
@@ -61673,11 +61673,11 @@ Simple Rank Correlation Matrix among all inputs and outputs:
                    hpuv_1       hpuv_2 response_fn_1 
       hpuv_1  1.00000e+00 
       hpuv_2 -5.51481e-04  1.00000e+00 
-response_fn_1  6.54174e-01  6.32457e-01  1.00000e+00 
+response_fn_1  6.52914e-01  6.33754e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-      hpuv_1  8.44986e-01 
-      hpuv_2  8.36679e-01 
+      hpuv_1  8.44517e-01 
+      hpuv_2  8.37189e-01 
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
@@ -62967,11 +62967,11 @@ dakota_users_rosen_opt_ego.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.8685147238e-01 x1
-                      9.7393815431e-01 x2
+                      9.8765432099e-01 x1
+                      9.7546105777e-01 x2
 <<<<< Best objective function  =
-                      1.7327222878e-04
-<<<<< Best data captured at function evaluation 23
+                      1.5241579028e-04
+<<<<< Best data captured at function evaluation 27
 dakota_users_rosen_opt_nls.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
@@ -64528,25 +64528,25 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.2800000000e+01   P3   P0
    3.6571428571e+00   P4   P0
   -2.7200000000e+01   P0   P1
-   7.4940054162e-16   P1   P1
-  -1.2490009027e-15   P2   P1
-  -4.0800696155e-15   P3   P1
-   2.9601321394e-14   P4   P1
+  -1.8735013541e-15   P1   P1
+  -6.0368376964e-15   P2   P1
+   1.6028844918e-15   P3   P1
+   1.7704587796e-14   P4   P1
    2.5142857143e+01   P0   P2
-  -2.0816681712e-15   P1   P2
-  -1.0408340856e-15   P2   P2
-  -1.9428902931e-15   P3   P2
-  -3.0756647229e-14   P4   P2
+  -1.4571677198e-15   P1   P2
+  -4.6837533851e-15   P2   P2
+  -9.7144514655e-16   P3   P2
+  -5.3082538365e-15   P4   P2
   -1.2800000000e+01   P0   P3
-  -2.7686186677e-15   P1   P3
-  -6.3143934526e-15   P2   P3
-  -4.2500725161e-15   P3   P3
-   2.0983215165e-14   P4   P3
+  -1.1657341759e-15   P1   P3
+  -2.4286128664e-16   P2   P3
+  -3.4000580129e-16   P3   P3
+   7.2129802131e-15   P4   P3
    3.6571428571e+00   P0   P4
-   2.9320296191e-14   P1   P4
-  -2.9195396101e-14   P2   P4
-   1.9890339376e-14   P3   P4
-  -6.8851174762e-15   P4   P4
+   1.8453988337e-14   P1   P4
+  -2.4980018054e-15   P2   P4
+   5.6829541073e-15   P3   P4
+   7.6579367847e-15   P4   P4
 Polynomial Chaos coefficients for response_fn_2:
    0.0000000000e+00   P0   P0
    0.0000000000e+00   P1   P0
@@ -64615,8 +64615,8 @@ response_fn_1:  Min = 6.0000000000e+00  Max = 1.6800000000e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 49 total (46 new, 3 duplicate)
-response_fn_1:  Min = 6.0000017548e+00  Max = 1.6799918712e+02
+<<<<< Function evaluation summary: 45 total (43 new, 2 duplicate)
+response_fn_1:  Min = 6.0000017330e+00  Max = 1.6799918712e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 7 succeeded
