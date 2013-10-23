@@ -1044,14 +1044,13 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
   // could minimize local job count, but this is less balanced (also consider
   // the memory budgeting for sims) and leads to less intuitive id assignments.
   size_t num_assign   = std::min(total_capacity, num_jobs),
-    num_local_assign  = (int)std::floor((Real)num_assign/numEvalServers),
-    num_remote_assign = num_jobs - num_local_assign,
-    num_buff          = std::min(remote_capacity, num_remote_assign);
+    num_local_assign  = num_assign / numEvalServers, // truncates fractional
+    num_remote_assign = num_assign - num_local_assign;
   Cout << "Peer dynamic schedule: first pass assigning " << num_remote_assign
        << " jobs among " << numEvalServers-1 << " remote peers\n";
-  sendBuffers  = new MPIPackBuffer   [num_buff];
-  recvBuffers  = new MPIUnpackBuffer [num_buff];
-  recvRequests = new MPI_Request     [num_buff];
+  sendBuffers  = new MPIPackBuffer   [num_remote_assign];
+  recvBuffers  = new MPIUnpackBuffer [num_remote_assign];
+  recvRequests = new MPI_Request     [num_remote_assign];
   int i, server_id, fn_eval_id;
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin();
   PRPQueue local_prp_queue; int buff_index = 0;
@@ -1270,7 +1269,7 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
 	if (msgPassRunningMap.find(new_eval_id) == msgPassRunningMap.end() &&
 	    lookup_by_eval_id(asynchLocalActivePRPQueue, new_eval_id) ==
 	    asynchLocalActivePRPQueue.end() &&
-	    rawResponseMap.find(fn_eval_id) == rawResponseMap.end())
+	    rawResponseMap.find(new_eval_id) == rawResponseMap.end())
 	  { new_job = true; break; }
 	++assign_iter;
       }
