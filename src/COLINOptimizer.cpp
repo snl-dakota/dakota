@@ -294,6 +294,7 @@ void COLINOptimizer::find_optimum()
     // this will initialize functions, constraints, and bounds
 
     colinProblem.second->set_problem(iteratedModel);
+    colinProblem.second->set_blocking_synch(blockingSynch);
     colinSolver->set_problem(colinProblem.first);
 
     // Set the constraint penalty.  This is a property of the

@@ -321,15 +321,10 @@ evaluation_available()
   // map, return true.  Otherwise, call synchronize() to collect
   // completed eval, populating response map in the process.
 
-  // TODO: Make synchronize_nowait() work when DAKOTA is run with
-  // MPI.  Once that is done, re-enable asynchronous PS through use of
-  // blockingSynch.
-
   if (dakota_responses.empty()) {
 
-    dakota_responses = iteratedModel.synchronize();
-    //    dakota_responses = (blockingSynch) ?
-    //      iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
+    dakota_responses = (blockingSynch) ?
+      iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
 
     if (dakota_responses.empty())
       return false;
