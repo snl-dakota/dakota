@@ -240,7 +240,7 @@ COLINOptimizer::COLINOptimizer(Model& model):
 COLINOptimizer::
 COLINOptimizer(const String& method_name, Model& model, int seed,
 	       int max_iter, int max_eval):
-  Optimizer(NoDBBaseConstructor(), model), blockingSynch(false)
+  Optimizer(NoDBBaseConstructor(), model), blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
@@ -256,7 +256,7 @@ COLINOptimizer(const String& method_name, Model& model, int seed,
 
 COLINOptimizer::
 COLINOptimizer(const String& method_name, Model& model):
-  Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false)
+  Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
@@ -764,8 +764,10 @@ void COLINOptimizer::set_solver_parameters()
     // the flag is true only for an explicit blocking user
     // specification.
 
-    blockingSynch = (probDescDB.get_string("method.coliny.synchronization")
-		     == "blocking") ? true : false;
+    // default is blocking (most solvers) unless explicit override for PS
+    blockingSynch =
+      (probDescDB.get_string("method.pattern_search.synchronization") ==
+       "nonblocking") ? false : true;
 
     const Real& contraction_factor
       = probDescDB.get_real("method.coliny.contraction_factor");
@@ -878,10 +880,6 @@ void COLINOptimizer::set_solver_parameters()
     if (!pattern_basis.empty() && colinSolver->has_property("basis"))
       colinSolver->property("basis") = string(pattern_basis);
     maxConcurrency *= total_pattern_size;
-    if (!blockingSynch)
-      Cout << "\n 'synchronization nonblocking' is currently not fully functional."
-	   << "\n Pattern Search will operate in 'synchronization blocking' mode."
-	   << "\n Full nonblocking functionality will return in future releases.\n\n";
   }
 
   if (solverType != COBYLA) {

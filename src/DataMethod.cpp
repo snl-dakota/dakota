@@ -58,10 +58,8 @@ DataMethodRep::DataMethodRep():
   searchSchemeSize(32),
   // APPSPACK
   initStepLength(1.0), contractStepLength(0.5), threshStepLength(0.01),
-  evalSynchronize("nonblocking"),
   meritFunction("merit2_squared"), constrPenalty(1.0), smoothFactor(0.0),
   // COLINY
-  //evalSynchronization("nonblocking"), // leave empty string as default
   constantPenalty(false), globalBalanceParam(-1.),
   localBalanceParam(-1.), maxBoxSize(-1.), minBoxSize(-1.),
   //boxDivision("major_dimension"), // leave empty string as default
@@ -175,20 +173,22 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << stepLenToBoundary << centeringParam << searchSchemeSize;
 
   // APPSPACK
-  s << initStepLength << contractStepLength << threshStepLength
-    << evalSynchronize << meritFunction << constrPenalty << smoothFactor;
+  s << initStepLength << contractStepLength << threshStepLength << meritFunction
+    << constrPenalty << smoothFactor;
 
   // COLINY
-  s << evalSynchronization << constraintPenalty << constantPenalty
-    << globalBalanceParam << localBalanceParam << maxBoxSize << minBoxSize
-    << boxDivision << mutationAdaptive << showMiscOptions << miscOptions
-    << solnTarget << crossoverRate << mutationRate << mutationScale
-    << mutationMinScale << initDelta << threshDelta << contractFactor
-    << newSolnsGenerated << numberRetained << expansionFlag
-    << expandAfterSuccess << contractAfterFail << mutationRange
-    << totalPatternSize << randomizeOrderFlag << selectionPressure
-    << replacementType << crossoverType << mutationType << exploratoryMoves
-    << patternBasis;
+  s << constraintPenalty << constantPenalty << globalBalanceParam
+    << localBalanceParam << maxBoxSize << minBoxSize << boxDivision
+    << mutationAdaptive << showMiscOptions << miscOptions << solnTarget
+    << crossoverRate << mutationRate << mutationScale << mutationMinScale
+    << initDelta << threshDelta << contractFactor << newSolnsGenerated
+    << numberRetained << expansionFlag << expandAfterSuccess
+    << contractAfterFail << mutationRange << totalPatternSize
+    << randomizeOrderFlag << selectionPressure << replacementType
+    << crossoverType << mutationType << exploratoryMoves << patternBasis;
+
+  // COLINY + APPSPACK
+  s << evalSynchronize;
 
   // JEGA
   s << numCrossPoints << numParents << numOffspring << fitnessType
@@ -287,20 +287,22 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> stepLenToBoundary >> centeringParam >> searchSchemeSize;
 
   // APPSPACK
-  s >> initStepLength >> contractStepLength >> threshStepLength
-    >> evalSynchronize >> meritFunction >> constrPenalty >> smoothFactor;
+  s >> initStepLength >> contractStepLength >> threshStepLength >> meritFunction
+    >> constrPenalty >> smoothFactor;
 
   // COLINY
-  s >> evalSynchronization >> constraintPenalty >> constantPenalty
-    >> globalBalanceParam >> localBalanceParam >> maxBoxSize >> minBoxSize
-    >> boxDivision >> mutationAdaptive >> showMiscOptions >> miscOptions
-    >> solnTarget >> crossoverRate >> mutationRate >> mutationScale
-    >> mutationMinScale >> initDelta >> threshDelta >> contractFactor
-    >> newSolnsGenerated >> numberRetained >> expansionFlag
-    >> expandAfterSuccess >> contractAfterFail >> mutationRange
-    >> totalPatternSize >> randomizeOrderFlag >> selectionPressure
-    >> replacementType >> crossoverType >> mutationType >> exploratoryMoves
-    >> patternBasis;
+  s >> constraintPenalty >> constantPenalty >> globalBalanceParam
+    >> localBalanceParam >> maxBoxSize >> minBoxSize >> boxDivision
+    >> mutationAdaptive >> showMiscOptions >> miscOptions >> solnTarget
+    >> crossoverRate >> mutationRate >> mutationScale >> mutationMinScale
+    >> initDelta >> threshDelta >> contractFactor >> newSolnsGenerated
+    >> numberRetained >> expansionFlag >> expandAfterSuccess
+    >> contractAfterFail >> mutationRange >> totalPatternSize
+    >> randomizeOrderFlag >> selectionPressure >> replacementType
+    >> crossoverType >> mutationType >> exploratoryMoves >> patternBasis;
+
+  // COLINY + APPSPACK
+  s >> evalSynchronize;
 
   // JEGA
   s >> numCrossPoints >> numParents >> numOffspring >> fitnessType
@@ -399,20 +401,22 @@ void DataMethodRep::write(std::ostream& s) const
     << stepLenToBoundary << centeringParam << searchSchemeSize;
 
   // APPSPACK
-  s << initStepLength << contractStepLength << threshStepLength
-    << evalSynchronize << meritFunction << constrPenalty << smoothFactor;
+  s << initStepLength << contractStepLength << threshStepLength << meritFunction
+    << constrPenalty << smoothFactor;
 
   // COLINY
-  s << evalSynchronization << constraintPenalty << constantPenalty
-    << globalBalanceParam << localBalanceParam << maxBoxSize << minBoxSize
-    << boxDivision << mutationAdaptive << showMiscOptions << miscOptions
-    << solnTarget << crossoverRate << mutationRate << mutationScale
-    << mutationMinScale << initDelta << threshDelta << contractFactor
-    << newSolnsGenerated << numberRetained << expansionFlag
-    << expandAfterSuccess << contractAfterFail << mutationRange
-    << totalPatternSize << randomizeOrderFlag << selectionPressure
-    << replacementType << crossoverType << mutationType << exploratoryMoves
-    << patternBasis;
+  s << constraintPenalty << constantPenalty << globalBalanceParam
+    << localBalanceParam << maxBoxSize << minBoxSize << boxDivision
+    << mutationAdaptive << showMiscOptions << miscOptions << solnTarget
+    << crossoverRate << mutationRate << mutationScale << mutationMinScale
+    << initDelta << threshDelta << contractFactor << newSolnsGenerated
+    << numberRetained << expansionFlag << expandAfterSuccess
+    << contractAfterFail << mutationRange << totalPatternSize
+    << randomizeOrderFlag << selectionPressure << replacementType
+    << crossoverType << mutationType << exploratoryMoves << patternBasis;
+
+  // COLINY + APPSPACK
+  s << evalSynchronize;
 
   // JEGA
   s << numCrossPoints << numParents << numOffspring << fitnessType

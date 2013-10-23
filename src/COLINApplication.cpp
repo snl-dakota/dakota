@@ -45,14 +45,8 @@ using std::make_pair;
 
 namespace Dakota {
 
-  // Note that blockingSynch is not currently being used.  There are
-  // two reasons: 1) synchronize_nowait() does not work when DAKOTA is
-  // run using MPI, and 2) there is not a mechanism to set/use it in
-  // COLIN 3.  We will make use of blockingSynch again after these
-  // issues are resolved.
-
 COLINApplication::COLINApplication(Model& model) :
-  blockingSynch(0)
+  blockingSynch(true) // updated from COLINOptimizer
 { set_problem(model);}
 
   /** Set variable bounds and linear and nonlinear constraints.  This

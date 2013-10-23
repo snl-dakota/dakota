@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   }
 
   //srand ( (unsigned int) (time(NULL)/x[0]) );
-  //sleep( (int)(3.0*((double)rand()/RAND_MAX)));
+  //sleep( (int)(5.*((double)rand()/RAND_MAX)));
 
   //sleep(5);
 

@@ -5038,8 +5038,6 @@ static Method_mp_lit
 	MP2(crossoverType,blend),
 	MP2(crossoverType,two_point),
 	MP2(crossoverType,uniform),
-	MP2(evalSynchronization,blocking),
-	MP2(evalSynchronization,nonblocking),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
 	MP2(expansionSampleType,incremental_lhs),

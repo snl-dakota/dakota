@@ -236,12 +236,13 @@ void APPSOptimizer::set_apps_parameters()
   }
   else {
 
-    // Set synchronous or asynchronouse GSS behavior.
+    // Set synchronous or asynchronous GSS behavior.
     // A null string is the DB default and nonblocking is the HOPS default, so
     // the flag is true only for an explicit blocking user specification.
 
-    const bool blocking_synch = (probDescDB.get_string("method.asynch_pattern_search.synchronization")
-		     == "blocking") ? true : false;
+    const bool blocking_synch
+      = (probDescDB.get_string("method.pattern_search.synchronization") ==
+	 "blocking");
     if (blocking_synch) {
       mediatorParams->setParameter("Synchronous Evaluations", true);
       evalMgr->set_blocking_synch(true);

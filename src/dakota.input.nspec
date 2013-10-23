@@ -318,8 +318,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    | basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
 		    ]
 		  [ synchronization {0}
-		    blocking {N_mdm(lit,evalSynchronization_blocking)}
-		    | nonblocking {N_mdm(lit,evalSynchronization_nonblocking)}
+		    blocking {N_mdm(lit,evalSynchronize_blocking)}
+		    | nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
 		    ]
 		  )
 		|

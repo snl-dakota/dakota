@@ -46,10 +46,7 @@ method,
 #	  threshold_delta = 1.e-4		#p11,#p12,#p13,#p14,#p15,#p16
 #	  threshold_delta = 1.e-4 	        #p17,#p18,#p19
 #	SYNCHRONIZATION FOR APPS/PS
-#	  synchronization nonblocking		#p9,#p10,#p13,#p14
-#	  synchronization nonblocking		#p17,#p18
-#	  synchronization blocking		#p8,#p11,#p12,#p15
-#	  synchronization blocking		#p16,#p19
+#	  synchronization nonblocking		#p13,#p14,#p17,#p18
 #	EXPLORATORY MOVES FOR PS
 #	    exploratory_moves basic_pattern
 #	    exploratory_moves multi_step

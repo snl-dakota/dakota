@@ -386,8 +386,8 @@ static KeyWord
 		{"simplex",8,0,1,1,0,0.,0.,0,N_mdm(lit,patternBasis_simplex)}
 		},
 	kw_69[2] = {
-		{"blocking",8,0,1,1,0,0.,0.,0,N_mdm(lit,evalSynchronization_blocking)},
-		{"nonblocking",8,0,1,1,0,0.,0.,0,N_mdm(lit,evalSynchronization_nonblocking)}
+		{"blocking",8,0,1,1,0,0.,0.,0,N_mdm(lit,evalSynchronize_blocking)},
+		{"nonblocking",8,0,1,1,0,0.,0.,0,N_mdm(lit,evalSynchronize_nonblocking)}
 		},
 	kw_70[11] = {
 		{0,0,5,0,0,kw_53},

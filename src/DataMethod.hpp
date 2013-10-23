@@ -369,9 +369,6 @@ public:
   /// the \c threshStepLength choice for nonlinearly constrained APPS in
   /// \ref MethodAPPSDC
   Real threshStepLength;
-  /// the \c synchronization choice for nonlinearly constrained APPS in
-  /// \ref MethodAPPSDC
-  String evalSynchronize;
   /// the \c meritFunction choice for nonlinearly constrained APPS in
   /// \ref MethodAPPSDC
   String meritFunction;
@@ -384,9 +381,6 @@ public:
 
   // COLINY
 
-  /// the \c synchronization setting for parallel pattern search
-  /// methods in \ref MethodSCOLIBPS and \ref MethodAPPS
-  String evalSynchronization;
   /// the initial \c constraint_penalty for COLINY methods in
   /// \ref MethodAPPS, \ref MethodSCOLIBDIR, \ref MethodSCOLIBPS,
   /// \ref MethodSCOLIBSW and \ref MethodSCOLIBEA
@@ -478,6 +472,12 @@ public:
   String patternBasis;
   /// beta solvers don't need documentation
   String betaSolverName;
+
+  // COLINY and APPS
+
+  /// the \c synchronization setting for parallel pattern search
+  /// methods in \ref MethodSCOLIBPS and \ref MethodAPPS
+  String evalSynchronize;
 
   // JEGA
 
