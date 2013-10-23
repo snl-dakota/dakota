@@ -88,6 +88,21 @@ foreach(pri_lib ${dakota_darwin_dylibs})
   list(APPEND dakota_darwin_dylibs ${dakota_secondary_dylibs})
 endforeach()
 
+# Make a second pass over the list to prepend paths to boost libs that were
+# discovered while looking for dakota_secondary_dylibs. Any duplicates
+# will be removed below.
+foreach(pri_lib ${dakota_darwin_dylibs})
+  string(REGEX REPLACE "^libboost_(.*)$"
+    "${Cached_Boost_LIBRARY_DIRS}/libboost_\\1"
+    boost_dylib_fullpath "${pri_lib}")
+
+  if( ${pri_lib} MATCHES libboost_ )
+    # REMOVE boost entries if NOT absolute path
+    list(REMOVE_ITEM dakota_darwin_dylibs ${pri_lib})
+    list(APPEND dakota_boost_dylibs ${boost_dylib_fullpath})
+  endif()
+endforeach()
+
 # otool finished proccessing dylibs -
 # OK to "re-insert" Boost dylibs into the list (ABSOLUTE PATH!)
 
@@ -97,23 +112,18 @@ list(APPEND dakota_darwin_dylibs ${dakota_boost_dylibs})
 list(REMOVE_DUPLICATES dakota_darwin_dylibs)
 cmake_policy(POP)
 
-# Process each DLL and install, excluding anything in the build tree OR
-# any boost dylibs without a full path
+# Process each DLL and install, excluding anything in the build tree
 foreach(dakota_dll ${dakota_darwin_dylibs})
   string(REGEX REPLACE "^${CMAKE_CURRENT_BINARY_DIR}(.*)$"
     "dak_omit/\\1" omit_btree_dll "${dakota_dll}")
   string(REGEX REPLACE "^${resolved_build_dir}(.*)$"
     "dak_omit/\\1" omit_resolved_btree_dll "${dakota_dll}")
-  string(REGEX REPLACE "^libboost_(.*)$"
-    "dak_omit/\\1" omit_no_abs_boost_dll "${dakota_dll}")
 
   if( ${omit_btree_dll} MATCHES dak_omit )
     #message("-- EXCLUDE: ${omit_btree_dll} - OK, already installed in lib")
     message("-- EXCLUDE: ${dakota_dll} - OK, already installed in lib")
   elseif( ${omit_resolved_btree_dll} MATCHES dak_omit )
     message("-- EXCLUDE: ${dakota_dll} - OK, already installed in lib")
-  elseif( ${omit_no_abs_boost_dll} MATCHES dak_omit )
-    message("-- EXCLUDE: ${dakota_dll} - OK, copying from full path instead")
   else()
     dakota_install_dll("${dakota_dll}")
   endif()
