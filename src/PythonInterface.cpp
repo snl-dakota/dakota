@@ -107,18 +107,22 @@ int PythonInterface::python_run(const String& ac_name)
 
   // convert DAKOTA data types to Python objects (lists and/or numpy arrays)
   PyObject *cv, *cv_labels, *div, *div_labels, *drv, *drv_labels,
-    *av, *av_labels, *asv, *dvv;
+    *av, *av_labels, *asv, *dvv, *an_comps;
   python_convert(xC, &cv);
-  python_convert(xCLabels, &cv_labels);
+  python_convert_strlist(xCLabels, &cv_labels);
   python_convert_int(xDI, xDI.length(), &div);
-  python_convert(xDILabels, &div_labels);
+  python_convert_strlist(xDILabels, &div_labels);
   python_convert(xDR, &drv);
-  python_convert(xDRLabels, &drv_labels);
+  python_convert_strlist(xDRLabels, &drv_labels);
   python_convert(xC, xDI, xDR, &av);
   python_convert(xCLabels, xDILabels, xDRLabels, &av_labels);
   python_convert_int(directFnASV, directFnASV.size(), &asv);
   python_convert_int(directFnDVV, directFnDVV.size(), &dvv);
-  // TO DO: analysis components
+  // send analysis components, or an empty list
+  if (analysisComponents.size() > 0)
+    python_convert_strlist(analysisComponents[analysisDriverIndex], &an_comps);
+  else
+    an_comps = PyList_New(0);
 
   // assemble everything into a dictionary to pass to user function
   // this should eat references to the objects declared above
@@ -136,6 +140,7 @@ int PythonInterface::python_run(const String& ac_name)
   PyDict_SetItem(pDict, PyString_FromString("av_labels"), av_labels);
   PyDict_SetItem(pDict, PyString_FromString("asv"), asv);
   PyDict_SetItem(pDict, PyString_FromString("dvv"), dvv);
+  PyDict_SetItem(pDict, PyString_FromString("analysis_components"), an_comps);
   PyDict_SetItem(pDict, PyString_FromString("currEvalId"), 
 		 PyInt_FromLong((long) currEvalId));
 
@@ -366,9 +371,10 @@ python_convert(const RealVector& c_src, const IntVector& di_src,
 }
 
 
-// convert StringArray to list of strings
+// convert StringArray/MultiArray to list of strings
+template<class StringArrayT>
 bool PythonInterface::
-python_convert(const StringMultiArray& src, PyObject** dst)
+python_convert_strlist(const StringArrayT& src, PyObject** dst)
 {
   int sz = src.size();
   if (!(*dst = PyList_New(sz))) {

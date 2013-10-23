@@ -55,7 +55,8 @@ protected:
   bool python_convert(const RealVector& c_src, const IntVector& di_src,
 		      const RealVector& dr_src, PyObject** dst);
   /// convert labels
-  bool python_convert(const StringMultiArray& src, PyObject** dst);
+  template<class StringArrayT>
+  bool python_convert_strlist(const StringArrayT& src, PyObject** dst);
   /// convert all labels to single list
   bool python_convert(const StringMultiArray& c_src, 
 		      const StringMultiArray& di_src, 

@@ -9,6 +9,10 @@ def rosenbrock_list(**kwargs):
     x = kwargs['cv']
     ASV = kwargs['asv']
 
+    # get analysis components
+    #an_comps = kwargs['analysis_components']
+    #print an_comps
+
     f0 = x[1]-x[0]*x[0]
     f1 = 1-x[0]
 
