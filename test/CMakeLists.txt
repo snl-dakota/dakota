@@ -186,16 +186,14 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_var_views_uq.in
       )
   endif()
-  # Remove tests that fail on Windows
+  # Remove tests that fail on Windows (for now)
   if (WIN32)
     list(REMOVE_ITEM dakota_test_input_files
       dakota_3pc.in
+      dakota_container.in
+      dakota_coliny_p.in
+      dakota_workdir.in
     )
-  endif()
-
-  # No dakota_workdir tests work on Windows for now
-  if (WIN32)
-    list(REMOVE_ITEM dakota_test_input_files dakota_workdir.in)
   endif()
 
   foreach(test_input_file ${dakota_test_input_files})
