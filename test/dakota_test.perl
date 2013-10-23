@@ -59,7 +59,15 @@ my $ui = "\\d+";                      # numerical field: unsigned integer
 # command line processing may adjust above global variables
 process_command_line();
 
-$ENV{'PATH'} = "$bin_dir:$ENV{'PATH'}"; 
+# optionally prepend bin-dir to the PATH
+if ("${bin_dir}" gt "") {
+  if ($Config{osname} =~ /MSWin/) {
+    $ENV{'PATH'} = "${bin_dir};$ENV{'PATH'}"; 
+  }
+  else {
+    $ENV{'PATH'} = "${bin_dir}:$ENV{'PATH'}"; 
+  }
+}
 my $env_path = $ENV{'PATH'}; 
 print "Testing executables in $bin_dir, PATH=$env_path\n"; 
 
