@@ -514,12 +514,18 @@ inline void ApplicationInterface::init_serial()
 
 
 inline void ApplicationInterface::init_serial_evaluations()
-{ numEvalServers = asynchLocalEvalConcurrency = 1; }
+{
+  numEvalServers = asynchLocalEvalConcurrency = 1;
+  multiProcEvalFlag = false; // for *_communicators_checks()
+}
 // other evaluation defaults OK for serial operations
 
 
 inline void ApplicationInterface::init_serial_analyses()
-{ numAnalysisServers = asynchLocalAnalysisConcurrency = 1; }
+{
+  numAnalysisServers = asynchLocalAnalysisConcurrency = 1;
+  multiProcAnalysisFlag = false; // for *_communicators_checks()
+}
 // other analysis defaults OK for serial operations
 
 

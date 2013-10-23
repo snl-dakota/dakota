@@ -226,8 +226,8 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // (default is unlimited unless user concurrency spec) from message passing
   // parallelism with synchronous local evals (default; hybrid mode requires
   // user spec > 1).
-  asynchLocalEvalConcurrency
-    = (ieMessagePass && asynchLocalEvalConcSpec == 0)
+  asynchLocalEvalConcurrency = (/*ieMessagePass*/worldSize > 1 &&
+				asynchLocalEvalConcSpec == 0)
     ? 1 : asynchLocalEvalConcSpec;
 }
 
@@ -260,8 +260,8 @@ void ApplicationInterface::set_analysis_communicators()
   // readily distinguish unlimited concurrency for asynch local parallelism
   // (default is unlimited unless user spec) from message passing parallelism
   // with synchronous local evals (default; hybrid mode requires user spec > 1).
-  asynchLocalAnalysisConcurrency
-    = (eaMessagePass && asynchLocalAnalysisConcSpec == 0)
+  asynchLocalAnalysisConcurrency = (/*eaMessagePass*/worldSize > 1 &&
+				    asynchLocalAnalysisConcSpec == 0)
     ? 1 : asynchLocalAnalysisConcSpec;
 
   // Set flag for asynch local parallelism of analyses.  In the local asynch
