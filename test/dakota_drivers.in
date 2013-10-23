@@ -69,4 +69,3 @@ responses,
 	  interval_type central
 	  fd_gradient_step_size = 1.e-4
 	no_hessians
-
