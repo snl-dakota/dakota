@@ -188,7 +188,9 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   endif()
   # Remove tests that fail on Windows
   if (WIN32)
-    # TODO
+    list(REMOVE_ITEM dakota_test_input_files
+      dakota_3pc.in
+    )
   endif()
 
   # No dakota_workdir tests work on Windows for now
