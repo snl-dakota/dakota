@@ -350,7 +350,7 @@ void NonDInterval::calculate_cbf_cpf(bool complementary)
   if (complementary) {
     bel_total = bpa_sum; plaus_total = bpa_sum;
     for (it_max  = cell_max.begin(), it_min  = cell_min.begin(), i=0; 
-	 it_max != cell_max.end(),   it_min != cell_min.end(),   i<numCells;
+	 it_max != cell_max.end() && it_min != cell_min.end() && i<numCells;
 	 ++it_max, ++it_min, ++i) {
       bel_fn[i]    = bel_total;
       plaus_fn[i]  = plaus_total;
@@ -371,7 +371,7 @@ void NonDInterval::calculate_cbf_cpf(bool complementary)
   else {
     bel_total = plaus_total = 0.;
     for (it_max  = cell_max.begin(), it_min  = cell_min.begin(), i=0; 
-	 it_max != cell_max.end(),   it_min != cell_min.end(),   i<numCells;
+	 it_max != cell_max.end() && it_min != cell_min.end() && i<numCells;
 	 ++it_max, ++it_min, ++i) {
       bel_total   += cellBPA[it_max->second];
       plaus_total += cellBPA[it_min->second];

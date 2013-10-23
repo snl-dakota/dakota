@@ -1246,7 +1246,7 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
   if (outputLevel == DEBUG_OUTPUT)
     Cout << "Testing message receives from remote servers\n";
 
-  int mpi_test_flag, index, fn_eval_id, new_eval_id, server_id;
+  int mpi_test_flag, buff_index, fn_eval_id, new_eval_id, server_id;
   MPI_Status status; // only 1 needed for parallelLib.test()
   std::map<int, IntIntPair>::iterator run_iter; PRPQueueIter return_iter;
   IntIntMap removals; size_t receives = 0;
@@ -1254,13 +1254,13 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
   for (run_iter  = msgPassRunningMap.begin();
        run_iter != msgPassRunningMap.end(); ++run_iter) {
     IntIntPair& id_index = run_iter->second;
-    index = id_index.second;
-    parallelLib.test(recvRequests[index], mpi_test_flag, status);
+    buff_index = id_index.second;
+    parallelLib.test(recvRequests[buff_index], mpi_test_flag, status);
     if (mpi_test_flag) {
       fn_eval_id  = run_iter->first; // or status.MPI_TAG;
       server_id   = id_index.first;
       return_iter = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
-      receive_evaluation(return_iter, index, server_id, peer_flag);
+      receive_evaluation(return_iter, buff_index, server_id, peer_flag);
       ++receives;
 
       // replace job if more are pending
@@ -1276,7 +1276,7 @@ test_receives_backfill(PRPQueueIter& assign_iter, bool peer_flag)
       }
       if (new_job) {
 	// assign job
-	send_evaluation(assign_iter, index, server_id, peer_flag);
+	send_evaluation(assign_iter, buff_index, server_id, peer_flag);
 	// update bookkeeping
 	removals[fn_eval_id] = new_eval_id; // replace old with new
 	++assign_iter;
@@ -1376,8 +1376,8 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
   // beforeSynchCorePRPQueue includes running evaluations plus new requests;
   // previous completions have been removed by synch_nowait().  Thus, the queue
   // size could be larger or smaller than on the previous nowait invocation.
-  size_t i, index, server_index, num_jobs = beforeSynchCorePRPQueue.size(),
-    num_running  = msgPassRunningMap.size(),
+  size_t i, num_jobs = beforeSynchCorePRPQueue.size(), buff_index, server_index,
+    server_job_index, num_running  = msgPassRunningMap.size(),
     num_backfill = num_jobs - num_running, capacity = numEvalServers;
   if (asynchLocalEvalConcurrency > 1) capacity *= asynchLocalEvalConcurrency;
   int fn_eval_id, server_id;
@@ -1390,55 +1390,75 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
   }
 
   // Step 1: launch any new jobs up to capacity limit
-  PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin(), return_iter;
+  PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin();
   if (!num_running) { // simplest case
     num_running = std::min(capacity, num_jobs);
     Cout << "Master dynamic schedule: first pass assigning " << num_running
 	 << " jobs among " << numEvalServers << " servers\n";
     // send data & post receives for 1st set of jobs
     for (i=0; i<num_running; ++i, ++assign_iter) {
-      server_id  = i%numEvalServers + 1; // from 1 to numEvalServers
-      fn_eval_id = assign_iter->eval_id();
+      server_index = i%numEvalServers;
+      server_id    = server_index + 1; // from 1 to numEvalServers
+      // stratify buff_index in a manner that's convenient for backfill lookups
+      server_job_index = i/numEvalServers; // job index local to each server
+      buff_index = server_index * asynchLocalEvalConcurrency + server_job_index;
       // assign job
-      send_evaluation(assign_iter, i, server_id, false); // !peer
+      send_evaluation(assign_iter, buff_index, server_id, false); // !peer
       // update bookkeeping
-      msgPassRunningMap[fn_eval_id] = IntIntPair(server_id, i);
-      //++server_jobs[server_index];
+      fn_eval_id = assign_iter->eval_id();
+      msgPassRunningMap[fn_eval_id] = IntIntPair(server_id, buff_index);
     }
   }
   else if (num_backfill && num_running < capacity) { // fill in any gaps
     Cout << "Master dynamic schedule: first pass backfilling jobs up to "
 	 << "available capacity\n";
-    UShortArray server_jobs(numEvalServers, 0);
+    UShortSetArray server_jobs(numEvalServers);
     for (std::map<int, IntIntPair>::iterator r_it = msgPassRunningMap.begin();
-	 r_it != msgPassRunningMap.end(); ++r_it)
-      { server_id = r_it->second.first; ++server_jobs[server_id - 1]; }
-    for (; assign_iter != beforeSynchCorePRPQueue.end(), num_running < capacity;
-	 ++assign_iter) {
+	 r_it != msgPassRunningMap.end(); ++r_it) {
+      server_index = r_it->second.first - 1; buff_index = r_it->second.second;
+      server_jobs[server_index].insert(buff_index);
+    }
+    for (; assign_iter != beforeSynchCorePRPQueue.end() &&
+	   num_running < capacity; ++assign_iter) {
       fn_eval_id = assign_iter->eval_id();
       if (msgPassRunningMap.find(fn_eval_id) == msgPassRunningMap.end()) {
 	// find server to use and define index within buffers/requests
 	// Approach 1: grab first available slot
-	// for (index=0, server_index=0; server_index<numEvalServers;
+	// for (buff_index=0, server_index=0; server_index<numEvalServers;
 	//      ++server_index) {
-	//   index += server_jobs[server_index];
+	//   buff_index += server_jobs[server_index];
 	//   if (server_jobs[server_index] < asynchEvalConcurrency)
 	//     { ++server_jobs[server_index]; break; }
 	// }
 	// Approach 2: load balance by finding min within server_jobs
-	unsigned short min_load = server_jobs[0]; size_t min_index = 0;
+	unsigned short load, min_load = server_jobs[0].size();
+	size_t min_index = 0;
 	for (server_index=1; server_index<numEvalServers; ++server_index) {
 	  if (min_load == 0) break;
-	  if (server_jobs[server_index] < min_load) 
-	    { min_index = server_index; min_load = server_jobs[min_index]; }
+	  load = server_jobs[server_index].size();
+	  if (load < min_load) 
+	    { min_index = server_index; min_load = load; }
 	}
-	index     = min_index * asynchLocalEvalConcurrency + min_load;
 	server_id = min_index + 1; // 1 to numEvalServers
+	// find an available buff_index for this server_id.  Logic uses first
+	// available within this server's allocation of buffer indices.
+	UShortSet& server_jobs_mi = server_jobs[min_index]; bool avail = false;
+	size_t max_buff_index = server_id*asynchLocalEvalConcurrency;
+	for (buff_index=min_index*asynchLocalEvalConcurrency;
+	     buff_index<max_buff_index; ++buff_index)
+	  if (server_jobs_mi.find(buff_index) == server_jobs_mi.end())
+	    { avail = true; break; }
+	if (!avail) {
+	  Cerr << "Error: no available buffer index for backfill in Application"
+	       << "Interface::master_dynamic_schedule_evaluations_nowait()."
+	       << std::endl;
+	  abort_handler(-1);
+	}
 	// assign job
-	send_evaluation(assign_iter, index, server_id, false); // !peer
+	send_evaluation(assign_iter, buff_index, server_id, false); // !peer
 	// update bookkeeping
-	msgPassRunningMap[fn_eval_id] = IntIntPair(server_id, index);
-	++server_jobs[min_index]; ++num_running;
+	msgPassRunningMap[fn_eval_id] = IntIntPair(server_id, buff_index);
+	server_jobs[min_index].insert(buff_index); ++num_running;
       }
     }
   }
@@ -1482,12 +1502,12 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
   // Rounding down num_local_jobs offloads this processor (which has additional
   // work relative to other peers), but results in a few more passed messages.
   int fn_eval_id, server_id;
-  size_t i, index, server_index, num_jobs = beforeSynchCorePRPQueue.size(),
-    num_remote_running = msgPassRunningMap.size(),
-    num_local_running  = asynchLocalActivePRPQueue.size(),
+  size_t i, num_jobs = beforeSynchCorePRPQueue.size(), buff_index, server_index,
+    server_job_index, num_remote_running = msgPassRunningMap.size(),
+    num_local_running = asynchLocalActivePRPQueue.size(),
     num_running  = num_remote_running + num_local_running,
-    num_backfill = num_jobs - num_running,
-    local_capacity = 1, capacity = numEvalServers;
+    num_backfill = num_jobs - num_running, local_capacity = 1,
+    capacity     = numEvalServers;
   if (asynchLocalEvalConcurrency > 1) {
     local_capacity = asynchLocalEvalConcurrency;
     capacity      *= asynchLocalEvalConcurrency;
@@ -1514,13 +1534,16 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     std::advance(assign_iter, num_local_running);//num_local_jobs);
     PRPQueueIter assign_iter_save = assign_iter;
     for (i=0; i<num_remote_running; ++i, ++assign_iter) {
-      server_id = i%(numEvalServers-1) + 1; // 1 to numEvalServers-1
-      fn_eval_id = assign_iter->eval_id();
+      server_index = i%(numEvalServers-1);
+      server_id    = server_index + 1; // 1 to numEvalServers-1
+      // stratify buff_index in a manner that's convenient for backfill lookups
+      server_job_index = i/(numEvalServers-1); // job index local to each server
+      buff_index = server_index * asynchLocalEvalConcurrency + server_job_index;
       // assign job to remote peer
-      send_evaluation(assign_iter, i, server_id, true); // peer
+      send_evaluation(assign_iter, buff_index, server_id, true); // peer
       // update bookkeeping
-      msgPassRunningMap[fn_eval_id] = IntIntPair(server_id, i);
-      //++server_jobs[server_index];
+      fn_eval_id = assign_iter->eval_id();
+      msgPassRunningMap[fn_eval_id] = IntIntPair(server_id, buff_index);
     }
 
     // Perform computation for first num_local_jobs jobs on peer 1.  Default 
@@ -1537,11 +1560,13 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
   else if (num_backfill && num_running < capacity) { // fill in any gaps
     Cout << "Peer dynamic schedule: first pass backfilling jobs up to "
 	 << "available capacity\n";
-    UShortArray server_jobs(numEvalServers-1, 0); PRPQueue local_prp_queue;
     // server_id is 1:numEvalServ-1, server_jobs is indexed 0:numEvalServ-2
+    UShortSetArray server_jobs(numEvalServers-1); PRPQueue local_prp_queue;
     for (std::map<int, IntIntPair>::iterator r_it = msgPassRunningMap.begin();
-	 r_it != msgPassRunningMap.end(); ++r_it)
-      { server_id = r_it->second.first; ++server_jobs[server_id - 1]; }
+	 r_it != msgPassRunningMap.end(); ++r_it) {
+      server_index = r_it->second.first - 1; buff_index = r_it->second.second;
+      server_jobs[server_index].insert(buff_index);
+    }
     bool running_mp, running_al, backfill_local = false;
     for (; assign_iter != beforeSynchCorePRPQueue.end(); ++assign_iter) {
       fn_eval_id = assign_iter->eval_id();
@@ -1549,32 +1574,48 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
 		    msgPassRunningMap.end());
       running_al = (lookup_by_eval_id(asynchLocalActivePRPQueue, fn_eval_id) !=
 		    asynchLocalActivePRPQueue.end());
-      if (!running_mp && !running_al) { //  can launch as new job
+      if (!running_mp && !running_al) { // can launch as new job
 	// determine min among local and remote loadings; tie goes to remote
 	// server_id is 1:numEvalServ-1, server_index is 0:numEvalServ-2
-	unsigned short load, min_load = server_jobs[0];
+	unsigned short load, min_load = server_jobs[0].size();
 	size_t min_server_id = 1;
 	for (server_index=1; server_index<numEvalServers-1; ++server_index) {
 	  if (min_load == 0) break;
-	  load = server_jobs[server_index];
+	  load = server_jobs[server_index].size();
 	  if (load < min_load)
 	    { min_server_id = server_index + 1; min_load = load; }
 	}
 	if (num_local_running < min_load) // tie goes to remote
 	  { min_server_id = 0; min_load = num_local_running; }
-	
+
 	// assign job
 	if (min_server_id == 0 && num_local_running < local_capacity) {
 	  local_prp_queue.insert(*assign_iter);
 	  ++num_local_running; backfill_local = true;
 	}
 	else if (min_server_id && num_remote_running < remote_capacity) {
-	  index = (min_server_id - 1) * asynchLocalEvalConcurrency + min_load;
+	  // find an available buff_index for this server_id.  Logic uses first
+	  // available within this server's allocation of buffer indices.
+	  size_t min_server_index = min_server_id - 1,
+	    max_buff_index = min_server_id*asynchLocalEvalConcurrency;
+	  UShortSet& server_jobs_mi = server_jobs[min_server_index];
+	  bool avail = false;
+	  for (buff_index=max_buff_index-asynchLocalEvalConcurrency;
+	       buff_index<max_buff_index; ++buff_index)
+	    if (server_jobs_mi.find(buff_index) == server_jobs_mi.end())
+	      { avail = true; break; }
+	  if (!avail) {
+	    Cerr << "Error: no available buffer index for backfill in "
+		 << "ApplicationInterface::peer_dynamic_schedule_evaluations_"
+		 << "nowait()."<< std::endl;
+	    abort_handler(-1);
+	  }
 	  // assign job
-	  send_evaluation(assign_iter, index, min_server_id, true); // peer
+	  send_evaluation(assign_iter, buff_index, min_server_id, true); // peer
 	  // update bookkeeping
-	  msgPassRunningMap[fn_eval_id] = IntIntPair(min_server_id, index);
-	  ++server_jobs[min_server_id - 1]; ++num_remote_running;
+	  msgPassRunningMap[fn_eval_id] = IntIntPair(min_server_id, buff_index);
+	  server_jobs[min_server_index].insert(buff_index);
+	  ++num_remote_running;
 	}
       }
       else if (running_al) // include in local queue for asynch processing
@@ -2380,7 +2421,7 @@ ApplicationInterface::get_source_pair(const Variables& target_vars)
   // TO DO: Need to check for same interfaceId as well.  Currently, this is 
   // part of Response -> need to add to Interface.
   PRPCacheCIter prp_iter, prp_end_iter = data_pairs.end(), best_iter;
-  for (prp_iter  = data_pairs.begin(); prp_iter != prp_end_iter; ++prp_iter) {
+  for (prp_iter = data_pairs.begin(); prp_iter != prp_end_iter; ++prp_iter) {
     //if (interfaceId == prp_iter->interface_id()) {
       const RealVector& xc_source 
 	= prp_iter->prp_parameters().continuous_variables();
