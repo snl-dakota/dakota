@@ -94,6 +94,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
+  Cout << "numExperiment " << numExperiments << '\n';
+  Cout << "numReplicates " << numReplicates << '\n';
+  Cout << " expDataFileName " << expDataFileName << '\n';
   expData.load_scalar(expDataFileName, "QUESO Bayes Calibration",
 		      numExperiments, numReplicates, 
 		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
@@ -314,8 +317,6 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   int num_cont = NonDQUESOInstance->numContinuousVars; 
   RealVector x(num_cont);
   
-  //Cout << "numExperiments" << num_exp << '\n';
-  //Cout << "numFunctions" << num_funcs << '\n';
   //Cout << "numExpStdDeviationsRead " << NonDQUESOInstance->numExpStdDeviationsRead << '\n';
 
   for (i=0; i<num_cont; i++) 
@@ -374,9 +375,9 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
       for (i=0; i<num_exp; i++) 
         for (k=0; k<num_replicates(i); k++){
 	  Real data_i_j = NonDQUESOInstance->expData.scalar_data(j, i, k);
-	  //Real std_i_j = NonDQUESOInstance->expData.scalar_sigma(j, i, k);
-          //result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
-          result = result+pow((fn_vals(j)-data_i_j),2.0);
+	  Real std_i_j = NonDQUESOInstance->expData.scalar_sigma(j, i, k);
+          result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
+          //result = result+pow((fn_vals(j)-data_i_j),2.0);
         }
   }
 

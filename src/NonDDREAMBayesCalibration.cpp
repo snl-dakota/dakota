@@ -405,9 +405,9 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
       for (i=0; i<num_exp; i++)
         for (k=0; k<num_replicates(i); k++){
 	  Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i, k);
-	  //Real std_i_j = NonDDREAMInstance->expData.scalar_sigma(j, i, k);
-          //result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
-          result = result+pow((fn_vals(j)-data_i_j),2.0);
+	  Real std_i_j = NonDDREAMInstance->expData.scalar_sigma(j, i, k);
+          result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
+          //result = result+pow((fn_vals(j)-data_i_j),2.0);
         }
   }
 
