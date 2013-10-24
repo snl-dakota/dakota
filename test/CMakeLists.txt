@@ -190,8 +190,28 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   if (WIN32)
     list(REMOVE_ITEM dakota_test_input_files
       dakota_3pc.in
-      dakota_container.in
       dakota_coliny_p.in
+      dakota_container.in
+      dakota_drivers.in
+      dakota_cantilever.in
+      dakota_cantilever_examples.in
+      dakota_cantilever_ego.in
+      dakota_mogatest.in
+      dakota_rbdo_short_column_analytic2.in
+      dakota_rbdo_short_column_trsb2.in
+      dakota_scaling.in
+      dakota_sebdo_short_column_adapt.in
+      dakota_short_column_taylor2.in
+      dakota_rbdo_short_column_analytic2.in
+      dakota_rbdo_short_column_trsb2.in
+      dakota_short_column_taylor2.in
+      dakota_uq_cantilever_sop_exp.in
+      dakota_uq_cantilever_sop_exp.in
+      dakota_uq_rosenbrock_adapt_pce_lls.in
+      dakota_uq_rosenbrock_global.in
+      dakota_users_mogatest1.in
+      dakota_users_mogatest2.in
+      dakota_users_mogatest3.in
       dakota_workdir.in
     )
   endif()
