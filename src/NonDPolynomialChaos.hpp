@@ -126,6 +126,9 @@ private:
   /// derivative of the PCE with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)
   RealMatrix pceGradsMeanX;
+
+  /// user request for use of normalization when outputting PCE coefficients
+  bool normalizedCoeffOutput;
 };
 
 

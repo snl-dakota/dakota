@@ -2389,6 +2389,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.calibrate_sigma", P calibrateSigmaFlag},
 	{"nond.cross_validation", P crossValidation},
+	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.tensor_grid", P tensorGridFlag},
 	{"print_each_pop", P printPopFlag},

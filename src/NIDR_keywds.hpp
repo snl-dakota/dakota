@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1172 distinct keywords (plus 167 aliases) **/
+/** 1173 distinct keywords (plus 167 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1041,7 +1041,7 @@ static KeyWord
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"univariate_effects",8,0,1,0,0,0.,0.,0,N_mdm(type,vbdControl_UNIVARIATE_VBD)}
 		},
-	kw_192[21] = {
+	kw_192[22] = {
 		{0,0,1,0,0,kw_15},
 		{0,0,1,0,0,kw_16},
 		{0,0,4,0,0,kw_21},
@@ -1051,15 +1051,16 @@ static KeyWord
 		{"cubature_integrand",9,0,3,1,0,0.,0.,0,N_mdm(ushint,cubIntOrder)},
 		{"diagonal_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)},
 		{"expansion_order",13,5,3,1,kw_181,0.,0.,0,N_mdm(usharray,expansionOrder)},
-		{"export_points_file",11,2,8,0,kw_182,0.,0.,0,N_mdm(str,approxExportFile)},
+		{"export_points_file",11,2,9,0,kw_182,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"full_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_FULL_COVARIANCE)},
-		{"least_interpolation",0,6,3,1,kw_184,0.,0.,2,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
+		{"least_interpolation",0,6,3,1,kw_184,0.,0.,3,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
+		{"normalized",8,0,6,0,0,0.,0.,0,N_mdm(true,normalizedCoeffs)},
 		{"oli",0,6,3,1,kw_184,0.,0.,1,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"orthogonal_least_interpolation",8,6,3,1,kw_184,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"p_refinement",8,2,1,0,kw_186,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
 		{"quadrature_order",13,3,3,1,kw_187,0.,0.,0,N_mdm(usharray,quadratureOrder)},
-		{"sample_refinement",8,3,7,0,kw_188},
-		{"sample_type",8,2,6,0,kw_189},
+		{"sample_refinement",8,3,8,0,kw_188},
+		{"sample_type",8,2,7,0,kw_189},
 		{"sparse_grid_level",13,2,3,1,kw_190,0.,0.,0,N_mdm(usharray,sparseGridLevel)},
 		{"variance_based_decomp",8,2,4,0,kw_191,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
@@ -1361,7 +1362,7 @@ static KeyWord
 		{"nond_local_interval_est",0,2,11,1,kw_135,0.,0.,-20,N_mdm(lit,methodName_nond_local_interval_est)},
 		{"nond_local_reliability",0,3,11,1,kw_143,0.,0.,-20,N_mdm(lit2,methodName_nond_local_reliability)},
 		{"nond_pof_darts",0,1,11,1,kw_165,0.,0.,13,N_mdm(lit,methodName_nond_pof_darts)},
-		{"nond_polynomial_chaos",0,16,11,1,kw_192,0.,0.,13,N_mdm(lit,methodName_nond_polynomial_chaos)},
+		{"nond_polynomial_chaos",0,17,11,1,kw_192,0.,0.,13,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"nond_sampling",0,2,11,1,kw_196,0.,0.,15,N_mdm(lit,methodName_nond_sampling)},
 		{"nond_stoch_collocation",0,17,11,1,kw_206,0.,0.,19,N_mdm(lit,methodName_nond_stoch_collocation)},
 		{"nonlinear_cg",8,1,11,1,kw_207,0.,0.,0,N_mdm(lit,methodName_nonlinear_cg)},
@@ -1374,7 +1375,7 @@ static KeyWord
 		{"optpp_q_newton",8,4,11,1,kw_215,0.,0.,0,N_mdm(lit,methodName_optpp_q_newton)},
 		{"output",8,5,3,0,kw_216},
 		{"pof_darts",8,1,11,1,kw_165,0.,0.,0,N_mdm(lit,methodName_nond_pof_darts)},
-		{"polynomial_chaos",8,16,11,1,kw_192,0.,0.,0,N_mdm(lit,methodName_nond_polynomial_chaos)},
+		{"polynomial_chaos",8,17,11,1,kw_192,0.,0.,0,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"psuade_moat",8,1,11,1,kw_217,0.,0.,0,N_mdm(lit,methodName_psuade_moat)},
 		{"richardson_extrap",8,4,11,1,kw_218,0.,0.,0,N_mdm(lit,methodName_richardson_extrap)},
 		{"sampling",8,2,11,1,kw_196,0.,0.,0,N_mdm(lit,methodName_nond_sampling)},

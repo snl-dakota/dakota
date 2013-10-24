@@ -265,7 +265,7 @@ protected:
   void store();
   void combine(short corr_type);
 
-  void print_coefficients(std::ostream& s) const;
+  void print_coefficients(std::ostream& s, bool normalized = false);
   void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
   const RealVector& approximation_coefficients() const;
@@ -708,8 +708,9 @@ inline size_t PecosApproximation::finalization_index(size_t i)
 { return pecosBasisApprox.finalization_index(i); }
 
 
-inline void PecosApproximation::print_coefficients(std::ostream& s) const
-{ pecosBasisApprox.print_coefficients(s); }
+inline void PecosApproximation::
+print_coefficients(std::ostream& s, bool normalized)
+{ pecosBasisApprox.print_coefficients(s, normalized); }
 
 
 inline const RealVector& PecosApproximation::approximation_coefficients() const

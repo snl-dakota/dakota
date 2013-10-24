@@ -712,6 +712,9 @@ public:
   /// flag indicating the use of cross-validation across expansion orders
   /// (given a prescribed maximum order) and, for some methods, noise tolerances
   bool crossValidation;
+  /// flag indicating the output of PCE coefficients corresponding to
+  /// normalized basis polynomials
+  bool normalizedCoeffs;
   /// allows PCE construction to reuse points from previous sample
   /// sets or data import using the \c reuse_points specification in
   /// \ref MethodNonDPCE

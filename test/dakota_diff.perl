@@ -301,8 +301,8 @@ sub compare_output {
     #}
 
     # PCE
-    if ( ($base =~ /^Polynomial Chaos coefficients for/) &&
-	 ($test =~ /^Polynomial Chaos coefficients for/) ) {
+    if ( ($base =~ /of Polynomial Chaos Expansion for/) &&
+	 ($test =~ /of Polynomial Chaos Expansion for/) ) {
       $b_hdr = $base; # save header in case of diffs
       $t_hdr = $test; # save header in case of diffs
       $first_diff = 0;

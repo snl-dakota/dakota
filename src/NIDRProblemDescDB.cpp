@@ -5322,6 +5322,7 @@ static bool
 	MP_(methodScaling),
 	MP_(methodUseDerivsFlag),
 	MP_(mutationAdaptive),
+	MP_(normalizedCoeffs),
 	MP_(printPopFlag),
 	MP_(pstudyFileAnnotated),
 	MP_(randomizeOrderFlag),

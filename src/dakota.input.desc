@@ -781,6 +781,7 @@ TAG "method/polynomial_chaos/variance_based_decomp/drop_tolerance"
 
 TAG "method/polynomial_chaos/diagonal_covariance"
 TAG "method/polynomial_chaos/full_covariance"
+TAG "method/polynomial_chaos/normalized"
 TAG "method/polynomial_chaos/sample_type"
 	DESC "{Sampling type} MethodCommands.html#MethodNonDMC"
 

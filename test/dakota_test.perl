@@ -1005,7 +1005,7 @@ sub parse_test_output {
       }
     }
     
-    while (/^Polynomial Chaos coefficients for/) {
+    while (/of Polynomial Chaos Expansion for/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (header)

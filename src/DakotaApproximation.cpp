@@ -533,10 +533,10 @@ coefficient_labels(std::vector<std::string>& coeff_labels) const
 }
 
 
-void Approximation::print_coefficients(std::ostream& s) const
+void Approximation::print_coefficients(std::ostream& s, bool normalized)
 {
   if (approxRep)
-    approxRep->print_coefficients(s);
+    approxRep->print_coefficients(s, normalized);
   else {
     Cerr << "Error: print_coefficients() not available for this approximation "
 	 << "type." << std::endl;

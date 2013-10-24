@@ -2101,8 +2101,8 @@ void NonDExpansion::print_results(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   print_coefficients(s);
-  s << "-------------------------------------------------------------------"
-    << "\nStatistics derived analytically from polynomial expansion:\n";
+  s << "-----------------------------------------------------------------------"
+    << "------\nStatistics derived analytically from polynomial expansion:\n";
   print_moments(s);
   print_covariance(s);
 
@@ -2130,8 +2130,8 @@ void NonDExpansion::print_results(std::ostream& s)
     print_distribution_mappings(s);
     print_system_mappings(s);
   }
-  s << "-------------------------------------------------------------------"
-    << std::endl;
+  s << "-----------------------------------------------------------------------"
+    << "------" << std::endl;
 }
 
 } // namespace Dakota

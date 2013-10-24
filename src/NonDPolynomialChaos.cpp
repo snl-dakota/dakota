@@ -41,7 +41,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
-  sequenceIndex(0)
+  sequenceIndex(0),
+  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized"))
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -291,7 +292,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
-  crossValidation(false), l2Penalty(0.)
+  crossValidation(false), l2Penalty(0.), normalizedCoeffOutput(false)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -628,9 +629,12 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
   char tag[10];
   int j; // for sprintf %i
 
-  s << "-------------------------------------------------------------------\n";
+  s << "-----------------------------------------------------------------------"
+    << "------\n";
   for (i=0; i<numFunctions; i++) {
-    s << "Polynomial Chaos coefficients for " << fn_labels[i] << ":\n";
+    if (normalizedCoeffOutput) s << "Normalized coefficients of ";
+    else                       s << "Coefficients of ";
+    s << "Polynomial Chaos Expansion for " << fn_labels[i] << ":\n";
     // header
     s << "  " << std::setw(width) << "coefficient";
     for (j=0; j<numContDesVars; j++)
@@ -642,7 +646,7 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
     s << "\n  " << std::setw(width) << "-----------";
     for (j=0; j<numContinuousVars; j++)
       s << " ----";
-    poly_approxs[i].print_coefficients(s);
+    poly_approxs[i].print_coefficients(s, normalizedCoeffOutput);
   }
 }
 

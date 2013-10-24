@@ -118,8 +118,8 @@ DataMethodRep::DataMethodRep():
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
-  regressionL2Penalty(0.), crossValidation(false), tensorGridFlag(false),
-  //expansionSampleType("lhs"), sampleType("lhs"),
+  regressionL2Penalty(0.), crossValidation(false), normalizedCoeffs(false),
+  tensorGridFlag(false), //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
@@ -128,13 +128,11 @@ DataMethodRep::DataMethodRep():
   batchSize(0),calibrateSigmaFlag(false), numChains(3), numCR(3),
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5),
   // Parameter Study
-  numSteps(0),
-  pstudyFileAnnotated(true),
+  numSteps(0), pstudyFileAnnotated(true),
   // Verification
   refinementRate(2.),
   // Point import/export files
-  approxImportAnnotated(true), approxExportAnnotated(true),
-  referenceCount(1)
+  approxImportAnnotated(true), approxExportAnnotated(true), referenceCount(1)
 { }
 
 
@@ -228,14 +226,14 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << pointReuse << tensorGridFlag << tensorGridOrder
-    << expansionImportFile << sampleType << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << nondOptAlgorithm
-    << distributionType << responseLevelTarget << responseLevelTargetReduce
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << emulatorSamples << emulatorType << rejectionType
-    << metropolisType << proposalCovScale << likelihoodScale
-    << fitnessMetricType << batchSelectionType << batchSize
+    << crossValidation << normalizedCoeffs << pointReuse << tensorGridFlag
+    << tensorGridOrder << expansionImportFile << sampleType
+    << reliabilitySearchType << reliabilityIntegration << integrationRefine
+    << nondOptAlgorithm << distributionType << responseLevelTarget
+    << responseLevelTargetReduce << responseLevels << probabilityLevels
+    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << emulatorType << rejectionType << metropolisType << proposalCovScale
+    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep;
 
@@ -342,14 +340,14 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> sparseGridLevel >> anisoDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> regressionType
     >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
-    >> crossValidation >> pointReuse >> tensorGridFlag >> tensorGridOrder
-    >> expansionImportFile >> sampleType >> reliabilitySearchType
-    >> reliabilityIntegration >> integrationRefine >> nondOptAlgorithm
-    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
-    >> responseLevels >> probabilityLevels >> reliabilityLevels
-    >> genReliabilityLevels >> emulatorSamples >> emulatorType >> rejectionType
-    >> metropolisType >> proposalCovScale >> likelihoodScale
-    >> fitnessMetricType >> batchSelectionType >> batchSize
+    >> crossValidation >> normalizedCoeffs >> pointReuse >> tensorGridFlag
+    >> tensorGridOrder >> expansionImportFile >> sampleType
+    >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
+    >> nondOptAlgorithm >> distributionType >> responseLevelTarget
+    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
+    >> reliabilityLevels >> genReliabilityLevels >> emulatorSamples
+    >> emulatorType >> rejectionType >> metropolisType >> proposalCovScale
+    >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep;
 
@@ -456,14 +454,14 @@ void DataMethodRep::write(std::ostream& s) const
     << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << pointReuse << tensorGridFlag << tensorGridOrder
-    << expansionImportFile << sampleType << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << nondOptAlgorithm
-    << distributionType << responseLevelTarget << responseLevelTargetReduce
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << emulatorSamples << emulatorType << rejectionType
-    << metropolisType << proposalCovScale << likelihoodScale
-    << fitnessMetricType << batchSelectionType << batchSize
+    << crossValidation << normalizedCoeffs << pointReuse << tensorGridFlag
+    << tensorGridOrder << expansionImportFile << sampleType
+    << reliabilitySearchType << reliabilityIntegration << integrationRefine
+    << nondOptAlgorithm << distributionType << responseLevelTarget
+    << responseLevelTargetReduce << responseLevels << probabilityLevels
+    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << emulatorType << rejectionType << metropolisType << proposalCovScale
+    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep;
 

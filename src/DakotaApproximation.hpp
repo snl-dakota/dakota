@@ -118,7 +118,7 @@ public:
   virtual void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
   /// print the coefficient array computed in build()/rebuild()
-  virtual void print_coefficients(std::ostream& s) const;
+  virtual void print_coefficients(std::ostream& s, bool normalized = false);
 
   /// return the minimum number of samples (unknowns) required to
   /// build the derived class approximation type in numVars dimensions

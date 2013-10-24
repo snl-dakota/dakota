@@ -514,6 +514,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    [ diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
 		      | full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
 		    ]
+		    [ normalized {N_mdm(true,normalizedCoeffs)} ]
 		    [ sample_type {0}
 		      lhs {N_mdm(lit,sampleType_lhs)}
 		      | random {N_mdm(lit,sampleType_random)}

@@ -719,6 +719,7 @@ KEYWORD12 method
 	    ]
 	  [ diagonal_covariance
 	  | full_covariance ]
+	  [ normalized ]
 	  [ sample_type
 	    lhs
 	    | random
