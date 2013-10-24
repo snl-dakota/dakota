@@ -642,7 +642,7 @@ const IntResponseMap& ApplicationInterface::synch()
 	// interface, multiProcEvalFlag (includes single proc analysis cases),
 	// static scheduling override, or static asynch local specification.
 	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
-	    interfaceType == "direct" || evalScheduling == "static")// *** TO DO
+	    interfaceType == "direct" || evalScheduling == "peer_static")
 	  peer_static_schedule_evaluations();
 	else // utilizes asynch local evals even if hybrid mode not specified
 	  peer_dynamic_schedule_evaluations();
@@ -727,7 +727,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 	master_dynamic_schedule_evaluations_nowait();
       else {
 	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
-	    interfaceType == "direct" || evalScheduling == "static") {
+	    interfaceType == "direct" || evalScheduling == "peer_static") {
 	  //peer_static_schedule_evaluations_nowait(); // needed for override?
 	  Cerr << "Error: message passing requires nonblocking scheduler."
 	       << std::endl;
@@ -2138,7 +2138,8 @@ void ApplicationInterface::stop_evaluation_servers()
 { 
   if (iteratorCommSize > 1) {
     if (!ieDedMasterFlag) {
-      Cout << "Peer 1 stopping" << std::endl;
+      if (outputLevel > NORMAL_OUTPUT)
+	Cout << "Peer 1 stopping" << std::endl;
       if (multiProcEvalFlag) { // stop serve_peer procs
         int fn_eval_id = 0;
         parallelLib.bcast_e(fn_eval_id);
@@ -2150,10 +2151,12 @@ void ApplicationInterface::stop_evaluation_servers()
     int end = (ieDedMasterFlag) ? numEvalServers : numEvalServers-1;
     for (int i=0; i<end; ++i) { // stop serve_evaluation_synch/asynch procs
       int server_id = i + 1;
-      if (ieDedMasterFlag)
-        Cout << "Master stopping server " << server_id << std::endl;
-      else
-        Cout << "Peer " << server_id+1 << " stopping"<< std::endl;
+      if (outputLevel > NORMAL_OUTPUT) {
+	if (ieDedMasterFlag)
+	  Cout << "Master stopping server " << server_id << std::endl;
+	else
+	  Cout << "Peer " << server_id+1 << " stopping"<< std::endl;
+      }
       // nonblocking sends: master posts all terminate messages without waiting
       // for completion.  Bcast cannot be used since all procs must call it and
       // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.

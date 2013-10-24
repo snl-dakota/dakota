@@ -8,8 +8,12 @@ KEYWORD01 strategy {NIDRProblemDescDB::strategy_start}
 	  [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]
           ] 
 	[ iterator_servers INTEGER {N_stm(int,iteratorServers)} ]
-	[ iterator_self_scheduling {N_stm(lit,iteratorScheduling_self)} ]
-	[ iterator_static_scheduling {N_stm(lit,iteratorScheduling_static)} ]
+	[ iterator_scheduling {0}
+	  master {N_stm(lit,iteratorScheduling_master)}
+	  | peer {N_stm(lit,iteratorScheduling_peer)} ]
+#	  | ( peer {0}
+#	      dynamic  {N_stm(lit,iteratorScheduling_peer_dynamic)}
+#	      | static {N_stm(lit,iteratorScheduling_peer_static)} ) ]
 	( hybrid {N_stm(lit,strategyType_hybrid)}
 	  ( sequential ALIAS uncoupled {N_stm(lit,hybridType_sequential)}
 #	    [ adaptive {N_stm(lit,hybridType_sequential_adaptive)}
@@ -1462,16 +1466,24 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 	  ]
 	[ asynchronous {N_ifm(lit,interfaceSynchronization_asynchronous)}
 	  [ evaluation_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]
-	  [ local_evaluation_self_scheduling {N_ifm(lit,asynchLocalEvalScheduling_self)} |
-	    local_evaluation_static_scheduling {N_ifm(lit,asynchLocalEvalScheduling_static)} ]
+	  [ local_evaluation_scheduling {0}
+	    dynamic  {N_ifm(lit,asynchLocalEvalScheduling_dynamic)}
+	    | static {N_ifm(lit,asynchLocalEvalScheduling_static)} ]
 	  [ analysis_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalAnalysisConcurrency)} ]
 	  ]
 	[ evaluation_servers INTEGER > 0 {N_ifm(pint,evalServers)} ]
-	[ evaluation_self_scheduling {N_ifm(lit,evalScheduling_self)}
-	| evaluation_static_scheduling {N_ifm(lit,evalScheduling_static)} ]
+	[ evaluation_scheduling {0}
+	  master {N_ifm(lit,evalScheduling_master)}
+	  | ( peer {0}
+	      dynamic  {N_ifm(lit,evalScheduling_peer_dynamic)}
+	      | static {N_ifm(lit,evalScheduling_peer_static)} ) ]
 	[ analysis_servers INTEGER > 0 {N_ifm(pint,analysisServers)} ]
-	[ analysis_self_scheduling {N_ifm(lit,analysisScheduling_self)}
-	| analysis_static_scheduling {N_ifm(lit,analysisScheduling_static)} ]
+	[ analysis_scheduling {0}
+	  master {N_ifm(lit,analysisScheduling_master)}
+	  | peer {N_ifm(lit,analysisScheduling_peer)} ]
+#	  | ( peer {0}
+#	      dynamic  {N_ifm(lit,analysisScheduling_peer_dynamic)}
+#	      | static {N_ifm(lit,analysisScheduling_peer_static)} ) ]
 
 KEYWORD12 responses {N_rem3(start,0,stop)}
 	[ id_responses STRING {N_rem(str,idResponses)} ]

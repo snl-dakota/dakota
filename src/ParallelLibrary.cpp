@@ -436,10 +436,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
 #endif
 */
 
-  const bool self_scheduling_override
-    = (scheduling_override == "self")   ? true : false;
-  const bool static_scheduling_override
-    = (scheduling_override == "static") ? true : false;
+  const bool master_override = (scheduling_override == "master");
+  const bool peer_override   = strbegins(scheduling_override, "peer");
 
   bool ded_master;
   if (avail_procs <= 1) {
@@ -464,9 +462,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
     // -------------------------------
 
     // First reduce num_servers request if necessary
-    if ( self_scheduling_override || 
-         ( max_concurrency > avail_procs*capacity_multiplier && 
-           !static_scheduling_override ) ) {
+    if (master_override ||
+	(max_concurrency > avail_procs*capacity_multiplier && !peer_override)) {
       // ded. master/self: cap num_servers at number of slave procs.
       if (num_servers > avail_procs-1) {
         num_servers = avail_procs-1;
@@ -505,8 +502,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
 
     // Now that num_servers is reasonable, use it to branch on either static or
     // dynamic scheduling
-    if (self_scheduling_override || (!static_scheduling_override &&
-        num_servers > 1 && max_concurrency > num_servers*capacity_multiplier)) {
+    if (master_override || (!peer_override && num_servers > 1 &&
+	max_concurrency > num_servers*capacity_multiplier)) {
       // dynamic sched. -> self or distributed (self only for now)
       procs_per_server = (avail_procs-1) / num_servers;
       proc_remainder   = (avail_procs-1) % num_servers;
@@ -532,8 +529,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
     num_servers = avail_procs/procs_per_server; // trial config (not final)
     int max_servers
       = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);
-    if ( !self_scheduling_override && ( num_servers <= 1 ||
-         num_servers >= max_servers || static_scheduling_override ) ) {
+    if (!master_override && (num_servers <= 1 || num_servers >= max_servers ||
+			     peer_override)) {
       // static sched.
       if (num_servers < 1) {
 	if (print_rank)
@@ -565,7 +562,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
       // static schedule on 2 servers is a good option (achieved with a user
       // request for "static" overriding the capacity logic), and distributed
       // scheduling could be the best option when available.
-      if (num_servers < 2 && !self_scheduling_override) {
+      if (num_servers < 2 && !master_override) {
         // reducing procs by 1 dropped num_servers back to 1
         procs_per_server = avail_procs;
         num_servers = 1;
@@ -614,7 +611,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
       // scheduling_override request makes sense from an efficiency standpoint,
       // but may be neglecting a user request in lieu of a built-in default.
       // Output a warning if neglecting a user request:
-      if (self_scheduling_override && print_rank)
+      if (master_override && print_rank)
         Cerr << "Warning: default_config takes precendence over a "
 	     << "self_scheduling request\n         when neither num_servers "
 	     << "nor procs_per_server is specified.\n";
@@ -623,9 +620,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
       ded_master = false; // tau_i = 1 -> static scheduling
     }
     else { // concurrency pushed up
-      if ( self_scheduling_override ||
-           ( !static_scheduling_override && avail_procs > 2 &&
-             max_concurrency > avail_procs*capacity_multiplier ) ) {
+      if ( master_override || ( !peer_override && avail_procs > 2 &&
+           max_concurrency > avail_procs*capacity_multiplier ) ) {
         // dynamic sched.: self or distr. (self only for now)
         num_servers = avail_procs-1;
         int max_servers

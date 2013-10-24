@@ -8,7 +8,7 @@
 strategy,
         multi_start
 #	  iterator_servers = 8
-#	  iterator_static_scheduling
+#	  iterator_scheduling peer
 	  method_pointer = 'PS'
 	  random_starts = 24 seed = 121117
 
@@ -58,7 +58,7 @@ interface,
 	direct
 	  analysis_drivers = 'text_book1' 'text_book2' 'text_book3'
 #	  evaluation_servers = 8
-#	  evaluation_static_scheduling
+#	  evaluation_scheduling peer static
 #	  processors_per_analysis = 2
 	  deactivate evaluation_cache restart_file
 

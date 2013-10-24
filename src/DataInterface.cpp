@@ -35,16 +35,15 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
     << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
-    << fileTagFlag << fileSaveFlag
-    << procsPerAnalysis //<< gridHostNames << gridProcsPerHost
+    << fileTagFlag << fileSaveFlag << procsPerAnalysis
+    //<< gridHostNames << gridProcsPerHost
     << interfaceSynchronization << asynchLocalEvalConcurrency
-    << asynchLocalEvalScheduling
-    << asynchLocalAnalysisConcurrency << evalServers << evalScheduling
-    << analysisServers << analysisScheduling << failAction << retryLimit
-    << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
-    << restartFileFlag << useWorkdir << workDir << dirTag << dirSave
-    << templateDir << templateFiles << templateCopy << templateReplace
-    << numpyFlag;
+    << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
+    << evalServers << evalScheduling << analysisServers << analysisScheduling
+    << failAction << retryLimit << recoveryFnVals << activeSetVectorFlag
+    << evalCacheFlag << restartFileFlag << useWorkdir << workDir << dirTag
+    << dirSave << templateDir << templateFiles << templateCopy
+    << templateReplace << numpyFlag;
 }
 
 
@@ -52,17 +51,16 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
 {
   s >> idInterface >> interfaceType >> algebraicMappings >> analysisDrivers
     >> analysisComponents >> inputFilter >> outputFilter >> parametersFile
-    >> resultsFile >> allowExistingResultsFlag >> verbatimFlag >> apreproFlag 
-    >> fileTagFlag >> fileSaveFlag
-    >> procsPerAnalysis //>> gridHostNames >> gridProcsPerHost
+    >> resultsFile >> allowExistingResultsFlag  >> verbatimFlag >> apreproFlag 
+    >> fileTagFlag >> fileSaveFlag >> procsPerAnalysis
+    //>> gridHostNames >> gridProcsPerHost
     >> interfaceSynchronization >> asynchLocalEvalConcurrency
-    >> asynchLocalEvalScheduling
-    >> asynchLocalAnalysisConcurrency >> evalServers >> evalScheduling
-    >> analysisServers >> analysisScheduling >> failAction >> retryLimit
-    >> recoveryFnVals >> activeSetVectorFlag >> evalCacheFlag
-    >> restartFileFlag >> useWorkdir >> workDir >> dirTag >> dirSave
-    >> templateDir >> templateFiles >> templateCopy >> templateReplace
-    >> numpyFlag;
+    >> asynchLocalEvalScheduling >> asynchLocalAnalysisConcurrency
+    >> evalServers >> evalScheduling >> analysisServers >> analysisScheduling
+    >> failAction >> retryLimit >> recoveryFnVals >> activeSetVectorFlag
+    >> evalCacheFlag >> restartFileFlag >> useWorkdir >> workDir >> dirTag
+    >> dirSave >> templateDir >> templateFiles >> templateCopy
+    >> templateReplace >> numpyFlag;
 }
 
 
@@ -70,17 +68,16 @@ void DataInterfaceRep::write(std::ostream& s) const
 {
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
-    << resultsFile << allowExistingResultsFlag << verbatimFlag << apreproFlag 
-    << fileTagFlag << fileSaveFlag
-    << procsPerAnalysis //<< gridHostNames << gridProcsPerHost
+    << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
+    << fileTagFlag << fileSaveFlag << procsPerAnalysis
+    //<< gridHostNames << gridProcsPerHost
     << interfaceSynchronization << asynchLocalEvalConcurrency
-    << asynchLocalEvalScheduling
-    << asynchLocalAnalysisConcurrency << evalServers << evalScheduling
-    << analysisServers << analysisScheduling << failAction << retryLimit
-    << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
-    << restartFileFlag << useWorkdir << workDir << dirTag << dirSave
-    << templateDir << templateFiles << templateCopy << templateReplace
-    << numpyFlag;
+    << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
+    << evalServers << evalScheduling << analysisServers << analysisScheduling
+    << failAction << retryLimit << recoveryFnVals << activeSetVectorFlag
+    << evalCacheFlag << restartFileFlag << useWorkdir << workDir << dirTag
+    << dirSave << templateDir << templateFiles << templateCopy
+    << templateReplace << numpyFlag;
 }
 
 

@@ -58,7 +58,7 @@ interface,
 #	  analysis_components = 'M1' 'M2' 'M3'
 #	  evaluation_servers = 1		   #p0,#p1,#p3,#p8
 #	  evaluation_servers = 2		       #p2,#p4,#p9
-#	  evaluation_static_scheduling		       #p2,#p4,#p9
+#	  evaluation_scheduling peer dynamic	       #p2,#p4,#p9
 #	  processors_per_analysis = 2	 	 	       #p1
 
 responses,

@@ -15,9 +15,9 @@
 strategy,
         multi_start graphics
 #	  iterator_servers = 3         #p0
-#	  iterator_static_scheduling   #p0
+#	  iterator_scheduling peer     #p0
 #	  iterator_servers = 2         #p1
-#	  iterator_self_scheduling     #p1
+#	  iterator_scheduling master   #p1
           method_pointer = 'NLP'
 	  random_starts = 3 seed = 123
 	  starting_points = -.8  -.8

@@ -163,7 +163,7 @@ interface,
 #		evaluation_concurrency 10	#3,#8,#18,#19
 #		evaluation_concurrency 2	#p22,#p23,#p24,#p25
 #		evaluation_concurrency 2	#p26,#p27,#p28,#p29
-#		evaluation_self_scheduling	#p24,#p25,#p28,#p29
+#		evaluation_scheduling master	#p24,#p25,#p28,#p29
 		analysis_driver = 'text_book'
 
 responses,

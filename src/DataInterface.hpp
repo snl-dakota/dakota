@@ -116,9 +116,7 @@ public:
   /// the \c evaluation_concurrency specification in \ref InterfIndControl)
   int asynchLocalEvalConcurrency;
   /// scheduling approach for asynchronous local evaluations (from the 
-  /// \c local_evaluation_self_scheduling and 
-  /// \c local_evaluation_static_scheduling specifications in
-  /// \ref InterfIndControl)
+  /// \c local_evaluation_scheduling specification in \ref InterfIndControl)
   String asynchLocalEvalScheduling;
   /// analysis concurrency for asynchronous simulation-based interfaces
   /// (from the \c analysis_concurrency specification in \ref InterfIndControl)
@@ -127,15 +125,15 @@ public:
   /// (from the \c evaluation_servers specification in \ref InterfIndControl)
   int evalServers;
   /// the scheduling approach to be used for concurrent evaluations
-  /// within an iterator (from the \c evaluation_self_scheduling and
-  /// evaluation_static_scheduling specifications in \ref InterfIndControl)
+  /// within an iterator (from the \c evaluation_scheduling specification
+  /// in \ref InterfIndControl)
   String evalScheduling;
   /// number of analysis servers to be used in the parallel configuration
   /// (from the \c analysis_servers specification in \ref InterfIndControl)
   int analysisServers;
   /// the scheduling approach to be used for concurrent analyses within
-  /// a function evaluation (from the \c analysis_self_scheduling and
-  /// \c analysis_static_scheduling specifications in \ref InterfIndControl)
+  /// a function evaluation (from the \c analysis_scheduling specification
+  /// in \ref InterfIndControl)
   String analysisScheduling;
   /// the selected action upon capture of a simulation failure:
   /// abort, retry, recover, or continuation (from the \c failure_capture

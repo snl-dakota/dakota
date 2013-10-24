@@ -4933,10 +4933,13 @@ static Iface_mp_ilit
 	MP3(failAction,retryLimit,retry);
 
 static Iface_mp_lit
-	MP2(analysisScheduling,self),
-	MP2(analysisScheduling,static),
-	MP2(evalScheduling,self),
-	MP2(evalScheduling,static),
+	MP2(analysisScheduling,master),
+	MP2(analysisScheduling,peer),
+      //MP2(analysisScheduling,peer_dynamic),
+      //MP2(analysisScheduling,peer_static),
+	MP2(evalScheduling,master),
+	MP2(evalScheduling,peer_dynamic),
+	MP2(evalScheduling,peer_static),
 	MP2(failAction,abort),
 	MP2(failAction,continuation),
 	MP2(interfaceSynchronization,asynchronous),
@@ -4947,7 +4950,7 @@ static Iface_mp_lit
 	MP2(interfaceType,python),
 	MP2(interfaceType,scilab),
 	MP2(interfaceType,system),
-	MP2(asynchLocalEvalScheduling,self),
+	MP2(asynchLocalEvalScheduling,dynamic),
 	MP2(asynchLocalEvalScheduling,static);
 
 static String
@@ -5647,8 +5650,10 @@ static Strategy_mp_lit
 	MP2(hybridType,embedded),
 	MP2(hybridType,sequential),
       //MP2(hybridType,sequential_adaptive),
-	MP2(iteratorScheduling,self),
-	MP2(iteratorScheduling,static),
+	MP2(iteratorScheduling,master),
+	MP2(iteratorScheduling,peer),
+      //MP2(iteratorScheduling,peer_dynamic),
+      //MP2(iteratorScheduling,peer_static),
 	MP2(strategyType,hybrid),
 	MP2(strategyType,multi_start),
 	MP2(strategyType,pareto_set),

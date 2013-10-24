@@ -22,12 +22,9 @@ TAG "strategy/results_output/results_output_file"
 TAG "strategy/iterator_servers"
 	DESC "{Number of iterator servers} StratCommands.html#StratIndControl"
 
-TAG "strategy/iterator_self_scheduling"
-	DESC "{Self-scheduling of iterator jobs} StratCommands.html#StratIndControl"
-
-TAG "strategy/iterator_static_scheduling"
-	DESC "{Static scheduling of iterator jobs} StratCommands.html#StratIndControl"
-
+TAG "strategy/iterator_scheduling"
+TAG "strategy/iterator_scheduling/master"
+TAG "strategy/iterator_scheduling/peer"
 TAG "strategy/hybrid"
 	DESC "[CHOOSE strategy type]{Hybrid strategy} StratCommands.html#StratHybrid"
 
@@ -2150,33 +2147,26 @@ TAG "interface/asynchronous"
 TAG "interface/asynchronous/evaluation_concurrency"
 	DESC "{Asynchronous evaluation concurrency} InterfCommands.html#InterfIndControl"
 
-TAG "interface/asynchronous/local_evaluation_self_scheduling"
-	DESC "{Self-schedule local evals} InterfCommands.html#InterfIndControl"
-
-TAG "interface/asynchronous/local_evaluation_static_scheduling"
-	DESC "{Static-schedule local evals} InterfCommands.html#InterfIndControl"
-
+TAG "interface/asynchronous/local_evaluation_scheduling"
+TAG "interface/asynchronous/local_evaluation_scheduling/dynamic"
+TAG "interface/asynchronous/local_evaluation_scheduling/static"
 TAG "interface/asynchronous/analysis_concurrency"
 	DESC "{Asynchronous analysis concurrency} InterfCommands.html#InterfIndControl"
 
 TAG "interface/evaluation_servers"
 	DESC "{Number of evaluation servers} InterfCommands.html#InterfIndControl"
 
-TAG "interface/evaluation_self_scheduling"
-	DESC "[CHOOSE evaluation sched.]{Self scheduling of evaluations} InterfCommands.html#InterfIndControl"
-
-TAG "interface/evaluation_static_scheduling"
-	DESC "{Static scheduling of evaluations} InterfCommands.html#InterfIndControl"
-
+TAG "interface/evaluation_scheduling"
+TAG "interface/evaluation_scheduling/master"
+TAG "interface/evaluation_scheduling/peer"
+TAG "interface/evaluation_scheduling/peer/dynamic"
+TAG "interface/evaluation_scheduling/peer/static"
 TAG "interface/analysis_servers"
 	DESC "{Number of analysis servers} InterfCommands.html#InterfIndControl"
 
-TAG "interface/analysis_self_scheduling"
-	DESC "[CHOOSE analysis sched.]{Self scheduling of analyses} InterfCommands.html#InterfIndControl"
-
-TAG "interface/analysis_static_scheduling"
-	DESC "{Static scheduling of analyses} InterfCommands.html#InterfIndControl"
-
+TAG "interface/analysis_scheduling"
+TAG "interface/analysis_scheduling/master"
+TAG "interface/analysis_scheduling/peer"
 TAG "responses"
 	DESC "{Responses} A responses object specifies the data that can be returned to DAKOTA through the interface after the completion of a function evaluation. RespCommands.html"
 

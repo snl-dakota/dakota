@@ -8,8 +8,10 @@ KEYWORD01 strategy
 	  [ results_output_file STRING ]
 	  ]
 	[ iterator_servers INTEGER ]
-	[ iterator_self_scheduling ]
-	[ iterator_static_scheduling ]
+	[ iterator_scheduling
+	  master
+	  | peer
+	  ]
 	( hybrid
 	  ( sequential ALIAS uncoupled
 	    method_list STRINGLIST
@@ -1861,16 +1863,26 @@ KEYWORD12 interface
 	  ]
 	[ asynchronous
 	  [ evaluation_concurrency INTEGER > 0 ]
-	  [ local_evaluation_self_scheduling
-	  | local_evaluation_static_scheduling ]
+	  [ local_evaluation_scheduling
+	    dynamic
+	    | static
+	    ]
 	  [ analysis_concurrency INTEGER > 0 ]
 	  ]
 	[ evaluation_servers INTEGER > 0 ]
-	[ evaluation_self_scheduling
-	| evaluation_static_scheduling ]
+	[ evaluation_scheduling
+	  master
+	  |
+	  ( peer
+	    dynamic
+	    | static
+	    )
+	  ]
 	[ analysis_servers INTEGER > 0 ]
-	[ analysis_self_scheduling
-	| analysis_static_scheduling ]
+	[ analysis_scheduling
+	  master
+	  | peer
+	  ]
 
 KEYWORD12 responses
 	[ id_responses STRING ]
