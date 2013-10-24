@@ -193,8 +193,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_coliny_p.in
       dakota_container.in
       dakota_drivers.in
-      dakota_cantilever.in
-      dakota_cantilever_examples.in
       dakota_cantilever_ego.in
       dakota_mogatest.in
       dakota_rbdo_short_column_analytic2.in
@@ -212,6 +210,11 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_users_mogatest1.in
       dakota_users_mogatest2.in
       dakota_users_mogatest3.in
+      dakota_lps_pce_rosenbrock_fail.in
+      dakota_rosenbrock_fail.in
+      dakota_uq_rosenbrock_pce_lls_cv_fail.in
+      dakota_nomad.in
+      dakota_pcbdo_cantilever.in
       dakota_workdir.in
     )
   endif()
