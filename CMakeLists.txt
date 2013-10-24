@@ -207,6 +207,14 @@ if(HAVE_ACRO)
   list(APPEND dakota_boost_components "signals")
 endif()
 
+# Queso requires the program_options library in addition
+option(HAVE_QUESO "Build the QUESO package." OFF)
+option(HAVE_QUESO_GPMSA "Use the QUESO GPMSA package when QUESO enabled." ON)
+option(HAVE_QUESO_GRVY "Use optional QUESO GRVY package; not recommended." OFF)
+if (HAVE_QUESO)
+  list(APPEND dakota_boost_components "program_options")
+endif()
+
 # Surfpack can optionally use the serialization library.  If enabled,
 # the Surfpack standalone executable will be built.
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
