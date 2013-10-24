@@ -21,7 +21,9 @@ method,
 #	optpp_newton			#4
 #	optpp_g_newton			#5
 #	nlssol_sqp			#6
-#       nl2sol                          #7,#8
+#       nl2sol                          #7,#8,#9
+#       coliny_ea                       #10       
+#       seed = 3247                     #10
 	  merit_function el_bakry	#0,#1,#2,#3,#4,#5
 	  max_iterations = 50
 	  convergence_tolerance = 1e-8
@@ -47,16 +49,20 @@ responses,
 	objective_functions = 1			#0,#1,#2,#3,#4
 	nonlinear_inequality_constraints = 2	#0,#1,#2,#3,#4
 #	calibration_terms = 2			#5,#6
-# 	calibration_terms = 3			#7,#8
+# 	calibration_terms = 3			#7,#8,#9,#10
 #         calibration_data_file = 'dakota_textbook_nips.lsq.dat' #7
-# 	    freeform  #7
+# 	    freeform  #7,#9,#10
 #         calibration_data_file = 'dakota_textbook_nips.lsq.ann' #8
+#         calibration_data_file = 'dakota_textbook_nips.rep.dat' #9,#10
+#         num_experiments = 2  #9,#10
+#         num_replicates = 1 3 #9,#10
 #	nonlinear_inequality_constraints = 1	#5,#6
-	analytic_gradients	 			#0,#2,#4,#5,#6,#7,#8
+	analytic_gradients	 			#0,#2,#4,#5,#6,#7,#8,#9
+#       no_gradients                                    #10
 #	numerical_gradients	        		#1,#3
 #	  method_source vendor	        		#1,#3
 #	  interval_type forward	        		#1,#3
 #	  fd_gradient_step_size = 1.e-5	 	 	#1,#3
-	no_hessians					#0,#1,#2,#3,#5,#6,#7,#8
+	no_hessians					#0,#1,#2,#3,#5,#6,#7,#8,#9,#10
 #	analytic_hessians				#4
 

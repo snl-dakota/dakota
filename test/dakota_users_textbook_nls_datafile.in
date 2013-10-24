@@ -1,8 +1,6 @@
 # Dakota Input File: textbook_nls_datafile.in
 method
-    nl2sol                                 #0,#1
-#    coliny_ea                              #2
-#    seed = 3247                            #2              
+    nl2sol                               
     max_iterations = 50                     
     convergence_tolerance = 1e-8            
 
@@ -22,10 +20,7 @@ interface
 
 responses
    calibration_terms = 3
-     calibration_data_file = 'dakota_users_textbook_nls_datafile.lsq.dat'       #0
-#     calibration_data_file = 'dakota_users_textbook_replicates.lsq.dat'        #1,#2
-#      num_experiments = 2                                                      #1,#2
-#      num_replicates = 1 3                                                     #1,#2
+     calibration_data_file = 'dakota_users_textbook_nls_datafile.lsq.dat'      
        freeform
   analytic_gradients
   no_hessians
