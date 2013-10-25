@@ -823,6 +823,12 @@ endif()
 add_executable(dakota main.cpp)
 add_executable(dakota_restart_util restart_util.cpp)
 add_executable(dakota_library_mode library_mode.cpp)
+if (DAKOTA_HAVE_MPI)
+  add_executable(dakota_library_split library_split.cpp)
+  target_link_libraries(dakota_library_split
+    dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+  install(TARGETS dakota_library_split DESTINATION bin)
+endif()
 
 if(DAKOTA_ENABLE_TESTS)
   # Copy test executables to test/
@@ -887,13 +893,6 @@ if(NOT MSVC)
     DESTINATION "bin" PERMISSIONS
     OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )
-endif()
-
-if (DAKOTA_HAVE_MPI)
-  add_executable(dakota_library_split library_split.cpp)
-  target_link_libraries(dakota_library_split
-    dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
-  install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
 if (DAKOTA_DLL_API)
