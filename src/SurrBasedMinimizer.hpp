@@ -134,8 +134,7 @@ protected:
 
   /// Set of response function vectors defining a filter (objective vs.
   /// constraint violation) for iterate selection/rejection
-  // RealVectorList sbFilter;
-  RealVectorArray sbFilter;
+  RealVectorList sbFilter;
   /// Lagrange multipliers for basic Lagrangian calculations
   RealVector lagrangeMult;
   /// Lagrange multipliers for augmented Lagrangian calculations

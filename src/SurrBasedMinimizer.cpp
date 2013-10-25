@@ -314,8 +314,8 @@ bool SurrBasedMinimizer::update_filter(const RealVector& fn_vals)
     gamma = 1.e-5;
     beta  = 1. - gamma;
   }
-  RealVectorArray::iterator filt_it;
-  std::vector<RealVectorArray::iterator> rm_list;
+  RVLIter filt_it;
+  std::list<RVLIter> rm_list;
   for (filt_it = sbFilter.begin(); filt_it != sbFilter.end(); filt_it++) {
     filt_f = objective(*filt_it, sense, wts);
     if (numNonlinearConstraints) {
@@ -347,8 +347,9 @@ bool SurrBasedMinimizer::update_filter(const RealVector& fn_vals)
     }
   }
 
-  // prune dominated points from filter
-  std::vector<RealVectorArray::iterator>::const_iterator rm_it;
+  // prune dominated points from filter.  Since these are iterators into a
+  // std::list, erasures do not invalidate other iterators.
+  std::list<RVLIter>::iterator rm_it;
   for (rm_it = rm_list.begin(); rm_it != rm_list.end(); ++rm_it)
     sbFilter.erase(*rm_it);
   // new point is not dominated: add to filter and accept iterate
