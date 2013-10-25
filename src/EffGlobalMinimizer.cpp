@@ -219,8 +219,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   sbIterNum = 0;
   bool approxConverged = false;
   convergenceTol = 1.e-12; Real dist_tol = 1.e-8;
-  if (maxIterations == -1) 
-    maxIterations  = 25*numContinuousVars;
+  // Decided for now (10-25-2013) to have EGO take the maxIterations 
+  // as the default from minimizer, so it will be initialized as 100
+  //  maxIterations  = 25*numContinuousVars;
   RealVector prev_cv_star;
   while (!approxConverged) {
     ++sbIterNum;

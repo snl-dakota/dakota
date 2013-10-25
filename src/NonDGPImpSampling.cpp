@@ -74,7 +74,7 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
     numEmulEval = 10000;
   construct_lhs(gpEval, gpModel, sample_type, numEmulEval, randomSeed,
 		rngName, vary_pattern);
-  if (maxIterations == -1)
+  if (maxIterations < 0) 
     numPtsAdd = 150;
   else
     numPtsAdd = maxIterations;
