@@ -1404,6 +1404,8 @@ TAG "model/surrogate/global/gaussian_process/surfpack/optimization_method"
 TAG "model/surrogate/global/gaussian_process/surfpack/max_trials"
 	DESC "{Surfpack GP maximum trials} ModelCommands.html#ModelSurrG"
 
+TAG "model/surrogate/global/gaussian_process/surfpack/nugget"
+TAG "model/surrogate/global/gaussian_process/surfpack/find_nugget"
 TAG "model/surrogate/global/gaussian_process/surfpack/correlation_lengths"
 	DESC "{Surfpack GP correlation lengths} ModelCommands.html#ModelSurrG"
 

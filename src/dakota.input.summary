@@ -1502,6 +1502,8 @@ KEYWORD model
 		  ]
 		[ optimization_method STRING ]
 		[ max_trials INTEGER > 0 ]
+		[ nugget REAL > 0
+		| find_nugget INTEGER ]
 		[ correlation_lengths REALLIST ]
 		[ export_model_file STRING ]
 		)

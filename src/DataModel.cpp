@@ -23,9 +23,9 @@ DataModelRep::DataModelRep():
   approxImportAnnotated(true), approxExportAnnotated(true),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
-  mlsPolyOrder(0), mlsWeightFunction(0), rbfBases(0), rbfMaxPts(0),
-  rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0), annRandomWeight(0),
-  annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
+  krigingNugget(0.0), krigingFindNugget(0), mlsPolyOrder(0), mlsWeightFunction(0), 
+  rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0), 
+  annRandomWeight(0),annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
   pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.0),
   pressFlag(false), approxChallengeAnnotated(true), referenceCount(1)
 { }
@@ -43,11 +43,11 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
-    << mlsPolyOrder << mlsWeightFunction << rbfBases << rbfMaxPts
-    << rbfMaxSubsets << rbfMinPartition << marsMaxBases << marsInterpolation
-    << annRandomWeight << annNodes << annRange << trendOrder << pointSelection
-    << diagMetrics << crossValidateFlag << numFolds << percentFold 
-    << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
+    << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
+    << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases 
+    << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder 
+    << pointSelection << diagMetrics << crossValidateFlag << numFolds 
+    << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
     << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs;
 }
@@ -65,11 +65,11 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
     >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
-    >> mlsPolyOrder >> mlsWeightFunction >> rbfBases >> rbfMaxPts
-    >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases >> marsInterpolation
-    >> annRandomWeight >> annNodes >> annRange >> trendOrder >> pointSelection
-    >> diagMetrics >> crossValidateFlag >> numFolds >> percentFold 
-    >> pressFlag  >> approxChallengeFile >> approxChallengeAnnotated 
+    >> krigingNugget >> krigingFindNugget >> mlsPolyOrder >> mlsWeightFunction
+    >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases
+    >> marsInterpolation >> annRandomWeight >> annNodes >> annRange >> trendOrder 
+    >> pointSelection >> diagMetrics >> crossValidateFlag >> numFolds 
+    >> percentFold >> pressFlag  >> approxChallengeFile >> approxChallengeAnnotated 
     >> optionalInterfRespPointer >> primaryVarMaps
     >> secondaryVarMaps >> primaryRespCoeffs >> secondaryRespCoeffs;
 }
@@ -87,11 +87,11 @@ void DataModelRep::write(std::ostream& s) const
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
-    << mlsPolyOrder << mlsWeightFunction << rbfBases << rbfMaxPts
-    << rbfMaxSubsets << rbfMinPartition << marsMaxBases << marsInterpolation
-    << annRandomWeight << annNodes << annRange << trendOrder << pointSelection
-    << diagMetrics << crossValidateFlag << numFolds << percentFold 
-    << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
+    << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
+    << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases
+    << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder
+    << pointSelection << diagMetrics << crossValidateFlag << numFolds 
+    << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
     << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs;
 }

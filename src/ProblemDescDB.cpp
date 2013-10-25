@@ -2036,6 +2036,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     #define P &DataModelRep::
     static KW<Real, DataModelRep> Rdmo[] = {	// must be sorted
       {"surrogate.neural_network_range", P annRange},
+      {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold}};
     #undef P
 
@@ -2183,6 +2184,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
     static KW<short, DataModelRep> Shdmo[] = {	// must be sorted
 	{"correction_order", P approxCorrectionOrder},
 	{"correction_type", P approxCorrectionType},
+	{"find_nugget", P krigingFindNugget},
 	{"kriging_max_trials", P krigingMaxTrials},
 	{"mars_max_bases", P marsMaxBases},
 	{"mls_poly_order", P mlsPolyOrder},

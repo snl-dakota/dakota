@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1173 distinct keywords (plus 167 aliases) **/
+/** 1175 distinct keywords (plus 167 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1443,16 +1443,18 @@ static KeyWord
 		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_quadratic)},
 		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
-	kw_247[5] = {
-		{"correlation_lengths",14,0,4,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
-		{"export_model_file",11,0,5,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
+	kw_247[7] = {
+		{"correlation_lengths",14,0,5,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
+		{"export_model_file",11,0,6,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
+		{"find_nugget",9,0,4,0,0,0.,0.,0,N_mom(shint,krigingFindNugget)},
 		{"max_trials",0x19,0,3,0,0,0.,0.,0,N_mom(shint,krigingMaxTrials)},
+		{"nugget",0x1a,0,4,0,0,0.,0.,0,N_mom(Real,krigingNugget)},
 		{"optimization_method",11,0,2,0,0,0.,0.,0,N_mom(str,krigingOptMethod)},
 		{"trend",8,4,1,0,kw_246}
 		},
 	kw_248[2] = {
 		{"dakota",8,2,1,1,kw_245,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
-		{"surfpack",8,5,1,1,kw_247,0.,0.,0,N_mom(lit,surrogateType_global_kriging)}
+		{"surfpack",8,7,1,1,kw_247,0.,0.,0,N_mom(lit,surrogateType_global_kriging)}
 		},
 	kw_249[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(true,approxImportAnnotated)},

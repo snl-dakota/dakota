@@ -157,6 +157,10 @@ public:
   RealVector krigingMaxCorrelations;
   /// lower bound on kriging correlation vector
   RealVector krigingMinCorrelations;
+  /// nugget value for kriging
+  Real krigingNugget;
+  /// option to have Kriging find the best nugget value to use
+  short krigingFindNugget;
   /// polynomial order for moving least squares approximation
   short mlsPolyOrder;
   /// weight function for moving least squares approximation

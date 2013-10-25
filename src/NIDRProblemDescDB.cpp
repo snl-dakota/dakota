@@ -5495,6 +5495,7 @@ static Model_mp_type
 
 static Real
 	MP_(annRange),
+	MP_(krigingNugget),
 	MP_(percentFold);
 
 static RealVector
@@ -5537,6 +5538,7 @@ static bool
 static short
 	MP_(annNodes),
 	MP_(annRandomWeight),
+	MP_(krigingFindNugget),
 	MP_(krigingMaxTrials),
 	MP_(marsMaxBases),
 	MP_(mlsPolyOrder),

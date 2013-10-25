@@ -164,6 +164,23 @@ SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
 
       // NIDR support for RealArray (aka std::vector) would eliminate xtra copy!
       // old parameters
+      Real nugget = problem_db.get_real("model.surrogate.nugget");
+      short find_nugget = problem_db.get_short("model.surrogate.find_nugget");
+      if (nugget > 0) {
+        args["nugget"] = toString<Real>(nugget);
+      } 
+      else { 
+        if (find_nugget > 0) {
+          if (find_nugget == 1)  
+            args["find_nugget"] = toString<bool>(false);
+          else if (find_nugget == 2)  
+            args["find_nugget"] = toString<bool>(true);
+          else {
+            Cerr << " find_nugget must be 1 or 2" << '\n'; 
+            abort_handler(-1);
+          }
+        }
+      }
 
       const RealVector& correlation_rv
         = problem_db.get_rv("model.surrogate.kriging_correlations");
