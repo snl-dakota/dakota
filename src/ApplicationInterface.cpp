@@ -1194,8 +1194,8 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
   size_t static_servers;
   if (static_limited) {
     static_servers = asynchLocalEvalConcurrency * numEvalServers;
-    if (localServerAssigned.size() != asynchLocalEvalConcurrency)
-      localServerAssigned.resize(asynchLocalEvalConcurrency);
+    if (localServerAssigned.size() != static_servers)
+      localServerAssigned.resize(static_servers);
     localServerAssigned.reset(); // in blocking case, always reset job map
   }
   // for static_limited, need an aggregated set of completions for job launch
@@ -1710,7 +1710,7 @@ assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
   size_t static_servers;
   if (static_limited) {
     static_servers = asynchLocalEvalConcurrency * numEvalServers;
-    if (localServerAssigned.size() != asynchLocalEvalConcurrency) {
+    if (localServerAssigned.size() != static_servers) {
       localServerAssigned.resize(static_servers);
       localServerAssigned.reset(); // nonblocking case: only reset on 1st call
     }
