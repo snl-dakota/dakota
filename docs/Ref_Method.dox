@@ -6153,6 +6153,12 @@ sampling, regression, and expansion import options.
 <td>Optional
 <td>N/A
 <tr>
+<td>Orthogonal Least Interpolation (OLI)
+<td>\c orthogonal_least_interpolation
+<td>none
+<td>Optional
+<td>N/A
+<tr>
 <td>Noise tolerance(s) used in conjuction with BPDN, OMP, LARS, LASSO 
 as an exit condition 
 <td>\c noise_tolerance

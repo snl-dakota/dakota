@@ -1334,6 +1334,19 @@ $\| \hat{f}_{\boldsymbol{\beta}}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$ and ch
 \end{equation}
 to construct the final ``best'' PCE approximation of $f$ that the training data can produce. 
 
+\subsection{Orthogonal Least Interpolation}
+Orthogonal least interpolation (OLI)~\cite{narayan12} enables the construction of  interpolation polynomials based on arbitrarily located grids in arbitrary dimensions. The interpolation polynomials can be constructed using using orthogonal polynomials corresponding to the probability distribution function of the uncertain random variables. 
+
+The algorithm for constructing an OLI is split into three stages: 
+(i) basis determination - transform the orthogonal basis into a polynomial space
+that is “amenable” for interpolation;
+(ii) coefficient determination - determine the interpolatory coefficients on the transformed basis elements;
+(iii) connection problem - translate the coefficients on the transformed basis to coefficients in the original orthogonal basis
+These three steps can be achieved by a sequence of LU and QR factorizations.
+
+Orthogonal least interpolation is closesly related to the aforementioned regression methods, in that OLI can be used to build approximations of simulation models when computing structured simulation data, such as sparse grids or cubature nodes, is infeasiable. The interpolants produced by OLI have two additional important properties. Firstly, the orthogonal least interpolant is the lowest-degree polynomial that interpolates the data. Secondly, the least orthogonal interpolation space is monotonic. This second property means that the least interpolant can be extended to new data without the need to completely reconstructing the interpolant. The transformed interpolation basis can simply be extended to include the new necessary basis functions.
+
+
 \section{Analytic moments} \label{uq:expansion:moment}
 
 Mean and covariance of polynomial chaos expansions are available
