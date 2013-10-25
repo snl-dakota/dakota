@@ -71,9 +71,15 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # Create one CTest per DAKOTA input file, in a protected subdirectory
   set(copied_test_files_abs "")
 
-  file(GLOB dakota_test_input_files 
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in"
+  if (WIN32)
+    file(GLOB dakota_test_input_files 
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_b*.in" "dakota_r*.in"
     )
+  else()
+    file(GLOB dakota_test_input_files 
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in"
+    )
+  endif()
 
   # Agressively omit tests for partial distributions to internal and
   # external web.  Initial set is aggressive, omitting any test that
@@ -215,6 +221,15 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_uq_rosenbrock_pce_lls_cv_fail.in
       dakota_nomad.in
       dakota_pcbdo_cantilever.in
+      dakota_pof.in
+      dakota_uq_ishigami_dste_exp.in
+      dakota_uq_rosenbrock_adapt_exp.in
+      dakota_uq_rosenbrock_pce_lls.in
+      dakota_uq_rosenbrock_pce_lls_cv.in
+      dakota_uq_rosenbrock_sc.in
+      dakota_uq_short_column_adapt_gsg.in
+      dakota_rbdo_cantilever_trsb.in
+      dakota_rbdo_short_column_trsb.in
       dakota_workdir.in
     )
   endif()
