@@ -141,7 +141,7 @@ void gen_dakota_input(const int& color, std::string& input)
 {
 
   // TODO: diagnose problems with ded. master/self scheduling which hangs
-  //       mandating use of evaluation_static_scheduling
+  //       mandating use of evaluation_scheduling peer static
   switch(color) {
 
   case 1:
@@ -157,7 +157,7 @@ void gen_dakota_input(const int& color, std::string& input)
       "	interface,"
       "		direct"
       "		  analysis_driver = 'plugin_text_book'"
-      "           evaluation_static_scheduling"
+      "           evaluation_scheduling peer static"
       "	responses,"
       "		num_objective_functions = 1"
       "		numerical_gradients"
@@ -177,7 +177,7 @@ void gen_dakota_input(const int& color, std::string& input)
       "	interface,"
       "		direct"
       "		  analysis_driver = 'plugin_text_book'"
-      "           evaluation_static_scheduling"
+      "           evaluation_scheduling peer static"
       "	responses,"
       "		num_objective_functions = 1"
       "		num_nonlinear_inequality_constraints = 2"
