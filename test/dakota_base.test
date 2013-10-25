@@ -3352,20 +3352,20 @@ Test Number 13 succeeded
 <<<<< Best data captured at function evaluation 121
 dakota_cantilever_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+<<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.2592620818e+00 w
-                      3.4814843040e+00 t
+                      2.0740768966e+00 w
+                      3.9349438602e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8655854763e+00
+                      8.1613761498e+00
 <<<<< Best constraint values   =
-                     -3.0183429813e-02
-                     -3.3851969258e-03
-<<<<< Best data captured at function evaluation 18
+                      -8.9851411359e-02
+                      -2.7834504675e-03
+<<<<< Best data captured at function evaluation 14
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -3396,7 +3396,7 @@ Test Number 2 succeeded
                       2.2583025476e+00
 <<<<< Best data captured at function evaluation 14
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 397198 total (352140 new, 45058 duplicate)
+<<<<< Function evaluation summary: 397198 total (352140 new, 45059 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-01   5.1750032887e-02                      1.6281170649e+00
@@ -17941,16 +17941,16 @@ Test Number 9 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_separable_ego_5D.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 145 total (145 new, 0 duplicate)
+<<<<< Function evaluation summary: 120 total (120 new, 0 duplicate)
 <<<<< Best parameters          =
-                     -9.8765432099e-01 cdv_1
-                     -9.3827160494e-01 cdv_2
-                      9.8765432099e-01 cdv_3
-                      8.8888888889e-01 cdv_4
-                     -1.0370370370e+00 cdv_5
+                      1.0022862369e+00 cdv_1
+                     -1.0315500686e+00 cdv_2
+                     -9.0534979424e-01 cdv_3
+                      1.1248285322e+00 cdv_4
+                     -9.9314128944e-01 cdv_5
 <<<<< Best objective function  =
-                     -1.1494942832e+00
-<<<<< Best data captured at function evaluation 122
+                     -1.1097596190e+00
+<<<<< Best data captured at function evaluation 101
 dakota_short_column.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
@@ -62597,16 +62597,16 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 51
 dakota_users_herbie_shubert_opt_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 145 total (145 new, 0 duplicate)
+<<<<< Function evaluation summary: 120 total (120 new, 0 duplicate)
 <<<<< Best parameters          =
-                     -9.8765432099e-01 cdv_1
-                     -9.3827160494e-01 cdv_2
-                      9.8765432099e-01 cdv_3
-                      8.8888888889e-01 cdv_4
-                     -1.0370370370e+00 cdv_5
+                      1.0022862369e+00 cdv_1
+                     -1.0315500686e+00 cdv_2
+                     -9.0534979424e-01 cdv_3
+                      1.1248285322e+00 cdv_4
+                     -9.9314128944e-01 cdv_5
 <<<<< Best objective function  =
-                     -1.1494942832e+00
-<<<<< Best data captured at function evaluation 122
+                     -1.1097596190e+00
+<<<<< Best data captured at function evaluation 101
 dakota_users_logratio_uq_reliability.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 656 total (560 new, 96 duplicate)
