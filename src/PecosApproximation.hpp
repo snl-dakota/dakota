@@ -70,10 +70,15 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
-  /// set pecosBasisApprox.configOptions.vbdControl
-  void vbd_control(short vbd_cntl);
-  /// get pecosBasisApprox.configOptions.vbdControl
-  short vbd_control() const;
+  /// set pecosBasisApprox.configOptions.vbdFlag
+  void vbd_flag(bool flag);
+  /// get pecosBasisApprox.configOptions.vbdFlag
+  bool vbd_flag() const;
+
+  /// set pecosBasisApprox.configOptions.vbdOrderLimit
+  void vbd_order_limit(unsigned short vbd_order);
+  /// get pecosBasisApprox.configOptions.vbdOrderLimit
+  unsigned short vbd_order_limit() const;
 
   // set pecosBasisApprox.configOptions.refinementType
   //void refinement_type(short refine_type);
@@ -337,12 +342,20 @@ inline bool PecosApproximation::expansion_gradient_flag() const
 { return polyApproxRep->expansion_coefficient_gradient_flag(); }
 
 
-inline void PecosApproximation::vbd_control(short vbd_cntl)
-{ polyApproxRep->vbd_control(vbd_cntl); }
+inline void PecosApproximation::vbd_flag(bool flag)
+{ polyApproxRep->vbd_flag(flag); }
 
 
-inline short PecosApproximation::vbd_control() const
-{ return polyApproxRep->vbd_control(); }
+inline bool PecosApproximation::vbd_flag() const
+{ return polyApproxRep->vbd_flag(); }
+
+
+inline void PecosApproximation::vbd_order_limit(unsigned short vbd_order)
+{ polyApproxRep->vbd_order_limit(vbd_order); }
+
+
+inline unsigned short PecosApproximation::vbd_order_limit() const
+{ return polyApproxRep->vbd_order_limit(); }
 
 
 //inline void PecosApproximation::refinement_type(short refine_type)

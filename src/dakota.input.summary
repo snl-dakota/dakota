@@ -714,7 +714,7 @@ KEYWORD12 method
 	      ]
 	    )
 	  [ variance_based_decomp
-	    [ univariate_effects ]
+	    [ interaction_order INTEGER > 0 ]
 	    [ drop_tolerance REAL ]
 	    ]
 	  [ diagonal_covariance
@@ -802,7 +802,7 @@ KEYWORD12 method
 	  [ nested
 	  | non_nested ]
 	  [ variance_based_decomp
-	    [ univariate_effects ]
+	    [ interaction_order INTEGER > 0 ]
 	    [ drop_tolerance REAL ]
 	    ]
 	  [ diagonal_covariance

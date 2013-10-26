@@ -26,7 +26,7 @@ method,
 #	  seed = 12347 rng rnum2			#2
 #	  response_levels =				#2
 #	  .1 1. 50. 100. 500. 1000.			#2
-#	  variance_based_decomp #univariate_effects	#2
+#	  variance_based_decomp #interaction_order = 1	#2
 
 variables,
 	continuous_design = 2				#0

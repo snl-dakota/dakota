@@ -11,7 +11,7 @@ method,
 #	  sparse_grid_level = 2				#2,#5
 	  samples = 10000 seed = 12347 rng rnum2
 	  probability_levels = .001 .01 .1 .2 .3 .4 .5 .6 .7 .8 .9 .99 .999
-	  variance_based_decomp #univariate_effects
+	  variance_based_decomp #interaction_order = 1
 #	  output debug
 
 variables,

@@ -5276,7 +5276,8 @@ static RealVectorArray
 	MP_(responseLevels);
 
 static unsigned short
-	MP_(cubIntOrder);
+	MP_(cubIntOrder),
+	MP_(vbdOrder);
 
 static SizetArray
 	MP_(collocationPoints),
@@ -5433,8 +5434,7 @@ static Method_mp_type
 	MP2s(surrBasedLocalSubProbObj,AUGMENTED_LAGRANGIAN_OBJECTIVE),
 	MP2s(surrBasedLocalSubProbObj,LAGRANGIAN_OBJECTIVE),
 	MP2s(surrBasedLocalSubProbObj,ORIGINAL_PRIMARY),
-	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE),
-	MP2p(vbdControl,UNIVARIATE_VBD);                   // Pecos enumeration
+	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE);
 
 #undef MP4
 #undef MP3

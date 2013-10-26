@@ -110,9 +110,8 @@ DataMethodRep::DataMethodRep():
   numSamples(0), fixedSeedFlag(false), previousSamples(0), vbdFlag(false),
   vbdDropTolerance(-1.),
   // NonD
-  vbdControl(Pecos::ALL_VBD), covarianceControl(DEFAULT_COVARIANCE),
-  rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
-  refinementControl(Pecos::NO_CONTROL),
+  vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE), rngName("mt19937"),
+  refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
@@ -219,7 +218,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << vbdFlag << vbdDropTolerance;
 
   // NonD
-  s << vbdControl << covarianceControl << rngName << refinementType
+  s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
     << piecewiseBasis << sparseGridBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
@@ -333,7 +332,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> vbdFlag >> vbdDropTolerance;
 
   // NonD
-  s >> vbdControl >> covarianceControl >> rngName >> refinementType
+  s >> vbdOrder >> covarianceControl >> rngName >> refinementType
     >> refinementControl >> nestingOverride >> growthOverride >> expansionType
     >> piecewiseBasis >> sparseGridBasisType >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
@@ -447,7 +446,7 @@ void DataMethodRep::write(std::ostream& s) const
     << vbdFlag << vbdDropTolerance;
 
   // NonD
-  s << vbdControl << covarianceControl << rngName << refinementType
+  s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
     << piecewiseBasis << sparseGridBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder

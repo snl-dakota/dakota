@@ -8,7 +8,7 @@ method
     dimension_preference = 2 1
     samples = 10000 seed = 12347 rng rnum2
     response_levels = .1 1. 50. 100. 500. 1000.
-    variance_based_decomp #univariate_effects
+    variance_based_decomp #interaction_order = 1
     output silent
 
 variables

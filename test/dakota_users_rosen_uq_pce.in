@@ -10,7 +10,7 @@ method
     seed = 12347 rng rnum2
     response_levels =
     .1 1. 50. 100. 500. 1000.
-    variance_based_decomp #univariate_effects
+    variance_based_decomp #interaction_order = 1
 
 variables
   uniform_uncertain = 2

@@ -267,9 +267,11 @@ private:
   /// evaluated at the means (used as uncertainty importance metrics)
   RealMatrix expGradsMeanX;
 
-  /// enumeration for controlling VBD calculation and output: NO_VBD,
-  /// UNIVARIATE_VBD, or ALL_VBD
-  short vbdControl;
+  /// flag indicating the activation of variance-bsaed decomposition
+  /// for computing Sobol' indices
+  bool vbdFlag;
+  /// limits the order of interactions within the component Sobol' indices
+  unsigned short vbdOrderLimit;
   /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
 

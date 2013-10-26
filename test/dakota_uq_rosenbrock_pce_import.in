@@ -12,7 +12,7 @@ method,
 	  import_points_file = 'dakota_uq_rosenbrock_pce_import.dat' annotated
 #	  samples = 10000		
 #	  response_levels = .1 1. 50. 100. 500. 1000.	
-	  variance_based_decomp #univariate_effects
+	  variance_based_decomp #interaction_order = 1
 #	  output debug
 
 variables,

@@ -508,7 +508,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                    	]
 		      )
 		    [ variance_based_decomp {N_mdm(true,vbdFlag)}
-		      [ univariate_effects {N_mdm(type,vbdControl_UNIVARIATE_VBD)} ]
+		      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
 		      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
 		    ]
 		    [ diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
@@ -564,7 +564,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    [ nested {N_mdm(type,nestingOverride_NESTED)}
 		      | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    [ variance_based_decomp {N_mdm(true,vbdFlag)}
-		      [ univariate_effects {N_mdm(type,vbdControl_UNIVARIATE_VBD)} ]
+		      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
 		      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
 		    ]
 		    [ diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}

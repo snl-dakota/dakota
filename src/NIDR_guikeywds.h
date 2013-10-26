@@ -1086,7 +1086,7 @@ static GuiKeyWord
 		},
 	kw_179[2] = {
 		{"drop_tolerance",10,0,2,0,745,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDMC"},
-		{"univariate_effects",8,0,1,0,743,0,0.,0.,0.,0,"{Restriction of VBD indices to main/total} MethodCommands.html#MethodNonDPCE"}
+		{"interaction_order",0x19,0,1,0,743}
 		},
 	kw_180[26] = {
 		{"askey",8,0,2,0,647},
@@ -1179,7 +1179,7 @@ static GuiKeyWord
 		},
 	kw_193[2] = {
 		{"drop_tolerance",10,0,2,0,827,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDSC"},
-		{"univariate_effects",8,0,1,0,825,0,0.,0.,0.,0,"{Restriction of VBD indices to main/total} MethodCommands.html#MethodNonDSC"}
+		{"interaction_order",0x19,0,1,0,825}
 		},
 	kw_194[26] = {
 		{"askey",8,0,2,0,799},

@@ -19,7 +19,7 @@ method,
 	1.9402090381e-01 3.8555575073e-01 6.0503820154e-01
 	7.9058284725e-01 9.0905085582e-01
 	  cumulative distribution
-	  variance_based_decomp #univariate
+	  variance_based_decomp #interaction_order = 1
 
 variables,
 #	active all					#1,#3

@@ -17,7 +17,7 @@ method,
 #	  hierarchical				#48,#49,#50,#51,#58,#59,#60
 	  samples = 10000 seed = 12347 rng rnum2
 	  response_levels = .1 1. 50. 100. 500. 1000.
-	  variance_based_decomp #univariate_effects
+	  variance_based_decomp #interaction_order = 1
 	  output silent
 
 variables,

@@ -44,21 +44,16 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
   expSampling(false), impSampling(false),
-  covarianceControl(probDescDB.get_short("method.nond.covariance_control"))
+  covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
+  vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
+  // Note: minimum VBD order for variance-controlled refinement is enforced
+  //       in NonDExpansion::construct_{quadrature,sparse_grid}
+  vbdOrderLimit(probDescDB.get_ushort("method.nond.vbd_interaction_order")),
+  vbdDropTol(probDescDB.get_real("method.vbd_drop_tolerance"))
 {
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
   epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
-
-  if (probDescDB.get_bool("method.variance_based_decomp")) {
-    vbdControl = probDescDB.get_short("method.nond.vbd_control");
-    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
-  }
-  else
-    vbdControl = Pecos::NO_VBD;
-  // Note: minimum VBD control for variance-controlled refinement is
-  //       enforced in NonDExpansion::construct_{quadrature,sparse_grid}
-  //Cout << "VBD control = " << vbdControl << std::endl;
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
@@ -75,7 +70,7 @@ NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
   ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), expSampling(false),
-  impSampling(false), vbdControl(Pecos::NO_VBD),
+  impSampling(false), vbdFlag(false), vbdOrderLimit(0),
   covarianceControl(DEFAULT_COVARIANCE)
 {
   // override default definition in NonD ctor.  If there are any aleatory
@@ -234,8 +229,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   }
 
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
-    vbdControl = Pecos::UNIVARIATE_VBD;
+  if (!vbdFlag && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
+    { vbdFlag = true; vbdOrderLimit = 1; }
 
   // manage rule nesting override
   nestedRules = ( ruleNestingOverride == Pecos::NESTED ||
@@ -260,8 +255,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
   /*
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
-    vbdControl = Pecos::UNIVARIATE_VBD;
+  if (!vbdFlag && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
+    { vbdFlag = true; vbdOrderLimit = 1; }
   // nested overrides not currently part of tensor regression spec
   nestedRules = (ruleNestingOverride == Pecos::NESTED ||
     (refineType && ruleNestingOverride != Pecos::NON_NESTED));
@@ -288,8 +283,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
   /*
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
-    vbdControl = Pecos::UNIVARIATE_VBD;
+  if (!vbdFlag && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
+    { vbdFlag = true; vbdOrderLimit = 1; }
   // nested overrides not currently part of tensor regression spec
   nestedRules = (ruleNestingOverride == Pecos::NESTED ||
     (refineType && ruleNestingOverride != Pecos::NON_NESTED));
@@ -306,8 +301,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 		      const RealVector& dim_pref)
 {
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
-    vbdControl = Pecos::UNIVARIATE_VBD;
+  if (!vbdFlag && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
+    { vbdFlag = true; vbdOrderLimit = 1; }
 
   nestedRules = (ruleNestingOverride != Pecos::NON_NESTED);
 
@@ -320,8 +315,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // Exception 2: NonDIntegration::print_points_weights() needs weights for
   //              outputLevel > NORMAL_OUTPUT.
   bool all_vars  = (numContDesVars || numContEpistUncVars || numContStateVars);
-  bool nodal_vbd = (methodName == "nond_stoch_collocation" &&
-    expansionCoeffsApproach != Pecos::HIERARCHICAL_SPARSE_GRID && vbdControl);
+  bool nodal_vbd = (vbdFlag && methodName == "nond_stoch_collocation" &&
+    expansionCoeffsApproach != Pecos::HIERARCHICAL_SPARSE_GRID);
   bool track_wts = (!all_vars || nodal_vbd || outputLevel > NORMAL_OUTPUT);
 
   // tracking of collocation indices within the SparseGridDriver
@@ -393,8 +388,9 @@ void NonDExpansion::initialize_u_space_model()
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
       poly_approx_rep->solution_approach(expansionCoeffsApproach);
-      poly_approx_rep->vbd_control(vbdControl);
       poly_approx_rep->refinement_control(refineControl);
+      poly_approx_rep->vbd_flag(vbdFlag);
+      poly_approx_rep->vbd_order_limit(vbdOrderLimit);
       poly_approx_rep->maximum_iterations(maxIterations);
       poly_approx_rep->convergence_tolerance(convergenceTol);
       if (num_int)
@@ -1290,9 +1286,9 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
       else          poly_approx_rep->compute_moments();
     }
 
-    if (vbdControl == Pecos::ALL_VBD)
-      poly_approx_rep->compute_component_effects(); // needed w/i total effects
-    poly_approx_rep->compute_total_effects();
+    if (!vbdOrderLimit) // no order limit --> component used within total
+      poly_approx_rep->compute_component_effects();
+    poly_approx_rep->compute_total_effects(); // from scratch or using component
     if (numFunctions > 1)
       avg_sobol += poly_approx_rep->total_sobol_indices();
     else
@@ -1595,8 +1591,7 @@ void NonDExpansion::compute_statistics()
     }
 
     // *** global sensitivities:
-    // UNIVARIATE_VBD --> main, total; ALL_VBD --> main, interaction, total
-    if (vbdControl && poly_approx_rep->expansion_coefficient_flag()) {
+    if (vbdFlag && poly_approx_rep->expansion_coefficient_flag()) {
       poly_approx_rep->compute_component_effects(); // main or main+interaction
       poly_approx_rep->compute_total_effects();     // total
     }
@@ -2033,7 +2028,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
   StringArray sobol_labels; size_t i, j, num_indices;
-  if (vbdControl == Pecos::ALL_VBD) {
+  if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
     poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
     const Pecos::BitArrayULongMap& s_index_map
@@ -2056,7 +2051,6 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
-      // UNIVARIATE_VBD: main effects only; ALL_VBD: main+interaction effects
       const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
       const RealVector& total_indices = poly_approx_rep->total_sobol_indices();
       s << fn_labels[i] << " Sobol indices:\n" << std::setw(38) << "Main"
@@ -2067,7 +2061,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 	  s << "                     "   << std::setw(write_precision+7) 
 	    << sobol_indices[j+1] << ' ' << std::setw(write_precision+7)
 	    << total_indices[j]   << ' ' << cv_labels[j] << '\n';
-      if (vbdControl == Pecos::ALL_VBD) {
+      if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
 	s << std::setw(39) << "Interaction\n";
 	for (j=numContinuousVars+1; j<num_indices; ++j)
 	  if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
@@ -2108,7 +2102,7 @@ void NonDExpansion::print_results(std::ostream& s)
 
   if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT)
     print_local_sensitivity(s);
-  if (vbdControl)
+  if (vbdFlag)
     print_sobol_indices(s);
 
   if (totalLevelRequests) {

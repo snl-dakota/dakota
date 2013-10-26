@@ -1240,31 +1240,47 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"beta_uncertain.lower_bounds", P betaUncLowerBnds},
 	{"beta_uncertain.upper_bounds", P betaUncUpperBnds},
 	{"binomial_uncertain.prob_per_trial", P binomialUncProbPerTrial},
-	{"continuous_aleatory_uncertain.initial_point", P continuousAleatoryUncVars},
-	{"continuous_aleatory_uncertain.lower_bounds", P continuousAleatoryUncLowerBnds},
-	{"continuous_aleatory_uncertain.upper_bounds", P continuousAleatoryUncUpperBnds},
+	{"continuous_aleatory_uncertain.initial_point",
+	 P continuousAleatoryUncVars},
+	{"continuous_aleatory_uncertain.lower_bounds",
+	 P continuousAleatoryUncLowerBnds},
+	{"continuous_aleatory_uncertain.upper_bounds",
+	 P continuousAleatoryUncUpperBnds},
 	{"continuous_design.initial_point", P continuousDesignVars},
 	{"continuous_design.lower_bounds", P continuousDesignLowerBnds},
 	{"continuous_design.scales", P continuousDesignScales},
 	{"continuous_design.upper_bounds", P continuousDesignUpperBnds},
-	{"continuous_epistemic_uncertain.initial_point", P continuousEpistemicUncVars},
-	{"continuous_epistemic_uncertain.lower_bounds", P continuousEpistemicUncLowerBnds},
-	{"continuous_epistemic_uncertain.upper_bounds", P continuousEpistemicUncUpperBnds},
+	{"continuous_epistemic_uncertain.initial_point",
+	 P continuousEpistemicUncVars},
+	{"continuous_epistemic_uncertain.lower_bounds",
+	 P continuousEpistemicUncLowerBnds},
+	{"continuous_epistemic_uncertain.upper_bounds",
+	 P continuousEpistemicUncUpperBnds},
 	{"continuous_state.initial_state", P continuousStateVars},
 	{"continuous_state.lower_bounds", P continuousStateLowerBnds},
 	{"continuous_state.upper_bounds", P continuousStateUpperBnds},
-	{"discrete_aleatory_uncertain_real.initial_point", P discreteRealAleatoryUncVars},
-	{"discrete_aleatory_uncertain_real.lower_bounds", P discreteRealAleatoryUncLowerBnds},
-	{"discrete_aleatory_uncertain_real.upper_bounds", P discreteRealAleatoryUncUpperBnds},
+	{"discrete_aleatory_uncertain_real.initial_point",
+	 P discreteRealAleatoryUncVars},
+	{"discrete_aleatory_uncertain_real.lower_bounds",
+	 P discreteRealAleatoryUncLowerBnds},
+	{"discrete_aleatory_uncertain_real.upper_bounds",
+	 P discreteRealAleatoryUncUpperBnds},
 	{"discrete_design_set_real.initial_point", P discreteDesignSetRealVars},
-	{"discrete_design_set_real.lower_bounds", P discreteDesignSetRealLowerBnds},
-	{"discrete_design_set_real.upper_bounds", P discreteDesignSetRealUpperBnds},
-	{"discrete_epistemic_uncertain_real.initial_point", P discreteRealEpistemicUncVars},
-	{"discrete_epistemic_uncertain_real.lower_bounds", P discreteRealEpistemicUncLowerBnds},
-	{"discrete_epistemic_uncertain_real.upper_bounds", P discreteRealEpistemicUncUpperBnds},
+	{"discrete_design_set_real.lower_bounds",
+	 P discreteDesignSetRealLowerBnds},
+	{"discrete_design_set_real.upper_bounds",
+	 P discreteDesignSetRealUpperBnds},
+	{"discrete_epistemic_uncertain_real.initial_point",
+	 P discreteRealEpistemicUncVars},
+	{"discrete_epistemic_uncertain_real.lower_bounds",
+	 P discreteRealEpistemicUncLowerBnds},
+	{"discrete_epistemic_uncertain_real.upper_bounds",
+	 P discreteRealEpistemicUncUpperBnds},
 	{"discrete_state_set_real.initial_state", P discreteStateSetRealVars},
-	{"discrete_state_set_real.lower_bounds", P discreteStateSetRealLowerBnds},
-	{"discrete_state_set_real.upper_bounds", P discreteStateSetRealUpperBnds},
+	{"discrete_state_set_real.lower_bounds",
+	 P discreteStateSetRealLowerBnds},
+	{"discrete_state_set_real.upper_bounds",
+	 P discreteStateSetRealUpperBnds},
 	{"exponential_uncertain.betas", P exponentialUncBetas},
 	{"frechet_uncertain.alphas", P frechetUncAlphas},
 	{"frechet_uncertain.betas", P frechetUncBetas},
@@ -1282,7 +1298,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"lognormal_uncertain.zetas", P lognormalUncZetas},
 	{"loguniform_uncertain.lower_bounds", P loguniformUncLowerBnds},
 	{"loguniform_uncertain.upper_bounds", P loguniformUncUpperBnds},
-	{"negative_binomial_uncertain.prob_per_trial", P negBinomialUncProbPerTrial},
+	{"negative_binomial_uncertain.prob_per_trial",
+	 P negBinomialUncProbPerTrial},
 	{"normal_uncertain.lower_bounds", P normalUncLowerBnds},
 	{"normal_uncertain.means", P normalUncMeans},
 	{"normal_uncertain.std_deviations", P normalUncStdDevs},
@@ -1728,10 +1745,13 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{"continuous_aleatory_uncertain.labels", P continuousAleatoryUncLabels},
 	{"continuous_design.labels", P continuousDesignLabels},
 	{"continuous_design.scale_types", P continuousDesignScaleTypes},
-	{"continuous_epistemic_uncertain.labels", P continuousEpistemicUncLabels},
+	{"continuous_epistemic_uncertain.labels",
+	 P continuousEpistemicUncLabels},
 	{"continuous_state.labels", P continuousStateLabels},
-	{"discrete_aleatory_uncertain_int.labels", P discreteIntAleatoryUncLabels},
-	{"discrete_aleatory_uncertain_real.labels", P discreteRealAleatoryUncLabels},
+	{"discrete_aleatory_uncertain_int.labels",
+	 P discreteIntAleatoryUncLabels},
+	{"discrete_aleatory_uncertain_real.labels",
+	 P discreteRealAleatoryUncLabels},
 	{"discrete_design_range.labels", P discreteDesignRangeLabels},
 	{"discrete_design_set_int.labels", P discreteDesignSetIntLabels},
 	{"discrete_design_set_real.labels", P discreteDesignSetRealLabels},
@@ -2014,7 +2034,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"optpp.gradient_tolerance", P gradientTolerance},
 	{"optpp.max_step", P maxStep},
 	{"optpp.steplength_to_boundary", P stepLenToBoundary},
-	{"sbl.trust_region.contract_threshold", P surrBasedLocalTRContractTrigger},
+	{"sbl.trust_region.contract_threshold",
+	 P surrBasedLocalTRContractTrigger},
 	{"sbl.trust_region.contraction_factor", P surrBasedLocalTRContract},
 	{"sbl.trust_region.expand_threshold", P surrBasedLocalTRExpandTrigger},
 	{"sbl.trust_region.expansion_factor", P surrBasedLocalTRExpand},
@@ -2163,7 +2184,6 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
 	{"nond.sparse_grid_basis_type", P sparseGridBasisType},
-	{"nond.vbd_control", P vbdControl},
 	{"optpp.merit_function", P meritFn},
 	{"output", P methodOutput},
 	{"sbl.acceptance_logic", P surrBasedLocalAcceptLogic},
@@ -2223,13 +2243,22 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
 unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 {
+  const char *L;
+
   if (!dbRep)
 	Null_rep("get_ushort");
-  if (strbegins(entry_name, "method.")) {
+  if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
-    if (strends(entry_name, "nond.cubature_integrand"))
-      return dbRep->dataMethodIter->dataMethodRep->cubIntOrder;
+    #define P &DataMethodRep::
+    static KW<unsigned short, DataMethodRep> UShdmo[] = { // must be sorted
+	{"nond.cubature_integrand", P cubIntOrder},
+	{"nond.vbd_interaction_order", P vbdOrder}};
+    #undef P
+
+    KW<unsigned short, DataMethodRep> *kw;
+    if ((kw = (KW<unsigned short, DataMethodRep>*)Binsearch(UShdmo, L)))
+	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
   }
   Bad_name(entry_name, "get_ushort");
   return abort_handler_t<unsigned short>(-1);
@@ -2246,7 +2275,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<size_t, DataMethodRep> Szdmo[] = {	// must be sorted
+    static KW<size_t, DataMethodRep> Szdmo[] = { // must be sorted
 	{"final_solutions", P numFinalSolutions},
 	{"jega.num_cross_points", P numCrossPoints},
 	{"jega.num_designs", P numDesigns},
@@ -2414,7 +2443,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
 	{"hierarchical_tags", P hierarchicalTags},
-	{"surrogate.challenge_points_file_annotated", P approxChallengeAnnotated},
+	{"surrogate.challenge_points_file_annotated",
+	 P approxChallengeAnnotated},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
 	{"surrogate.export_points_file_annotated", P approxExportAnnotated},

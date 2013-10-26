@@ -644,10 +644,9 @@ public:
 
   // NonD
 
-  /// a sub-specification of vbdFlag: {NO,UNIVARIATE,ALL}_VBD.  When
-  /// vbdFlag is on, controls granularity of calculation/output of
-  /// main/interaction/total effects
-  short vbdControl;
+  /// a sub-specification of vbdFlag: interaction order limit for
+  /// calculation/output of component VBD indices
+  unsigned short vbdOrder;
   /// restrict the calculation of a full response covariance matrix
   /// for high dimensional outputs: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
   short covarianceControl;

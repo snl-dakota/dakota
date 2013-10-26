@@ -773,9 +773,7 @@ TAG "method/polynomial_chaos/orthogonal_least_interpolation/import_points_file/f
 TAG "method/polynomial_chaos/variance_based_decomp"
 	DESC "{Variance based decomposition (VBD)} MethodCommands.html#MethodNonDMC"
 
-TAG "method/polynomial_chaos/variance_based_decomp/univariate_effects"
-	DESC "{Restriction of VBD indices to main/total} MethodCommands.html#MethodNonDPCE"
-
+TAG "method/polynomial_chaos/variance_based_decomp/interaction_order"
 TAG "method/polynomial_chaos/variance_based_decomp/drop_tolerance"
 	DESC "{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDMC"
 
@@ -832,9 +830,7 @@ TAG "method/stoch_collocation/non_nested"
 TAG "method/stoch_collocation/variance_based_decomp"
 	DESC "{Variance-based decomposition (VBD)} MethodCommands.html#MethodNonDSC"
 
-TAG "method/stoch_collocation/variance_based_decomp/univariate_effects"
-	DESC "{Restriction of VBD indices to main/total} MethodCommands.html#MethodNonDSC"
-
+TAG "method/stoch_collocation/variance_based_decomp/interaction_order"
 TAG "method/stoch_collocation/variance_based_decomp/drop_tolerance"
 	DESC "{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDSC"
 
