@@ -75,7 +75,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     file(GLOB dakota_test_input_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
       "dakota_4*" "dakota_a*.in" "dakota_b*.in" "dakota_c*.in" "dakota_d*.in"
       "dakota_h*" "dakota_i*.in" "dakota_k*.in" "dakota_m*.in" "dakota_n*.in"
-      "dakota_r*.in" "dakota_s*.in"
+      "dakota_r*.in" "dakota_sb*.in" "dakota_us*.in"
     )
   else()
     file(GLOB dakota_test_input_files 
@@ -232,6 +232,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_rbdo_cantilever_trsb.in
       dakota_rbdo_short_column_trsb.in
       dakota_rbdo_steel_column_analytic2.in
+      dakota_sbuq_hierarchical.in
       dakota_workdir.in
     )
   endif()
