@@ -152,7 +152,7 @@ namespace Dakota {
 	       @param p NOMAD Parameters object
 	       @param model DAKOTA Model object
 	       */
-	       Evaluator(const NOMAD::Parameters &p, Model model);
+	       Evaluator(const NOMAD::Parameters &p, Model& model);
 	       
 	       /// Destructor
 	       ~Evaluator(void);

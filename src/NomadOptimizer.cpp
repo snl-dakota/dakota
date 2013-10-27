@@ -97,7 +97,7 @@ void NomadOptimizer::find_optimum()
      
      // Obtain response types
 
-	  bb_responses[1] = NOMAD::OBJ;
+	  bb_responses[0] = NOMAD::OBJ;
      
      for(int i=0; i<this->numNomadNonlinearIneqConstraints;i++)
      {
@@ -258,7 +258,7 @@ void NomadOptimizer::find_optimum()
 // Sub Class: Evaluator, this class bridges NOMAD-style inputs with 
 // DAKOTA style communication w/Black Box program.
 
-     NomadOptimizer::Evaluator::Evaluator(const NOMAD::Parameters &p, Model model) : NOMAD::Evaluator (p),_model(model)
+     NomadOptimizer::Evaluator::Evaluator(const NOMAD::Parameters &p, Model& model) : NOMAD::Evaluator (p),_model(model)
      {
 	  // Here we should take the parameters and get the problem information
 	  // Like # of variables and types, # and types of constrs
