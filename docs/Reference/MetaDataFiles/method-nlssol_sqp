@@ -27,7 +27,7 @@ in use, but is typically on the order of \c 1.e-8 for double precision
 computations. Extremely small values for \c constraint_tolerance may
 not be attainable. 
 
-Topics::	sequential_quadratic_programming, not_yet_reviewed
+Topics::	sequential_quadratic_programming, nonlinear_least_squares 
 Examples::
 Theory::
 Faq::

@@ -16,7 +16,7 @@ differences of function values only (using \c fd_hessian_step_size)
 \c fd_hessian_step_size)
 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

@@ -7,7 +7,7 @@ value (between 0 and 1), the more accurately the algorithm will attempt to
 compute a precise minimum along the search direction. 
 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

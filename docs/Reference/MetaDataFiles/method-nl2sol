@@ -2,7 +2,7 @@ Blurb::
 Trust-region method for nonlinear least squares
 Description::
 NL2SOL is available as \c nl2sol and addresses unconstrained and
-bound-constrained problems. It uses a trust-region method (and thus
+bound-constrained least squares problems. It uses a trust-region method (and thus
 can be viewed as a generalization of the Levenberg-Marquardt
 algorithm) and adaptively chooses between two Hessian approximations,
 the Gauss-Newton approximation alone and the Gauss-Newton
@@ -27,11 +27,10 @@ These tolerances may also be specified explicitly using:
 
 The internal NL2SOL defaults can be obtained for many of these
 controls by specifying the value -1. 
-
-the internal defaults are often functions of machine epsilon 
+The internal defaults are often functions of machine epsilon 
 (as limited by \c function_precision).
 
-Topics::	not_yet_reviewed
+Topics:: nonlinear_least_squares
 Examples::
 Theory::
 NL2SOL has a variety of internal controls as described in AT&T Bell

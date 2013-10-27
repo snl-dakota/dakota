@@ -11,7 +11,7 @@ affecting H is \ref responses-numerical_hessians-fd_step_size (NL2SOL's \c delta
 dltfdc).
 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

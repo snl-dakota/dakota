@@ -7,7 +7,7 @@ functions can be computed. This is used to prevent the algorithm from trying
 to distinguish between function values that differ by less than the
 inherent error in the calculation. 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

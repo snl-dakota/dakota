@@ -1,6 +1,8 @@
 Blurb::
 Sequential Quadratic Program
 Description::
+NPSOL provides an implementation of sequential quadratic programming 
+that can be accessed with \c npsol_sqp.
 
 <b> Stopping Criteria </b>
 
@@ -71,7 +73,7 @@ user to provide the values of the linear constraints on every function
 evaluation. 
 
 
-Topics::	package_npsol, sequential_quadratic_programming, not_yet_reviewed
+Topics::	package_npsol, sequential_quadratic_programming
 Examples::
 Theory::
 Faq::

@@ -1,7 +1,7 @@
 Blurb::
 False convergence tolerance
 Description::
- \c false_conv_tol (NL2SOL's \c xftol) is the
+\c false_conv_tol (NL2SOL's \c xftol) is the
 false-convergence tolerance (stop with a suspicion of discontinuity
 when a more favorable stopping test is not satisfied and a step of
 scaled length at most \c false_conv_tol is not accepted)  
@@ -9,7 +9,7 @@ scaled length at most \c false_conv_tol is not accepted)
 The internal default is a function of machine epsilon 
 (as limited by \c function_precision). The default is selected with a value of -1.
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

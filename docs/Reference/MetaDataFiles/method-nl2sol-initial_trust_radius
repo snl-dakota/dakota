@@ -7,7 +7,7 @@ specifies the initial trust region radius for the algorithm.
 The internal default results in the internal use of steps of length 1. 
 The default is selected with a value of -1.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

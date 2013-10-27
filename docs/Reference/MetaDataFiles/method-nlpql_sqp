@@ -1,6 +1,12 @@
 Blurb::
 Sequential Quadratic Program
 Description::
+NLPQL provides an implementation of sequential quadratic programming through 
+\c nlpqp_sqp.  The particular SQP implementation in \c nlpql_sqp uses a variant with
+distributed and non-monotone line search.
+Thus, this variant is designed to be more robust in the presence of
+inaccurate or noisy gradients common in many engineering applications.
+
 The method independent controls for maximum iterations and output
 verbosity are mapped to NLPQL controls MAXIT and IPRINT, respectively.
 The maximum number of function evaluations is enforced within the
@@ -8,7 +14,7 @@ NLPQLPOptimizer class.
 
 
 
-Topics::	package_nlpql, sequential_quadratic_programming, not_yet_reviewed
+Topics::	package_nlpql, sequential_quadratic_programming
 Examples::
 Theory::
 Faq::
