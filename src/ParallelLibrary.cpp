@@ -464,7 +464,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
     // First reduce num_servers request if necessary
     if (master_override ||
 	(max_concurrency > avail_procs*capacity_multiplier && !peer_override)) {
-      // ded. master/self: cap num_servers at number of slave procs.
+      // ded. master: cap num_servers at number of slave procs.
       if (num_servers > avail_procs-1) {
         num_servers = avail_procs-1;
         if (print_rank)
@@ -1007,31 +1007,25 @@ void ParallelLibrary::print_configuration()
 	 << "schedule\n-----\t\t\t-----------    ----------------    "
 	 << "------------------\nconcurrent iterators\t  " << std::setw(4)
          << si_pl.numServers << "\t\t   " << std::setw(4)
-	 << si_pl.procsPerServer << "\t\t     ";
-    if (si_pl.dedicatedMasterFlag)
-      Cout << "ded. master/self\n";
-    else
-      Cout << "peer/static\n";
+	 << si_pl.procsPerServer << "\t\t       ";
+    if (si_pl.dedicatedMasterFlag) Cout << "ded. master\n";
+    else                           Cout << "peer\n";
 
     // Iterator diagnostics
     Cout << "concurrent evaluations\t  " << std::setw(4) << num_eval_srv
-	 << "\t\t   " << std::setw(4) << p_per_eval << "\t\t     ";
-    if (iterator_ded_master_flag)
-      Cout << "ded. master/self\n";
-    else
-      Cout << "peer/static\n";
+	 << "\t\t   " << std::setw(4) << p_per_eval << "\t\t       ";
+    if (iterator_ded_master_flag)  Cout << "ded. master\n";
+    else                           Cout << "peer\n";
 
     // Evaluation diagnostics
     Cout << "concurrent analyses\t  " << std::setw(4) << num_anal_srv
-	 << "\t\t   " << std::setw(4) << p_per_anal << "\t\t     ";
-    if (eval_ded_master_flag)
-      Cout << "ded. master/self\n";
-    else
-      Cout << "peer/static\n";
+	 << "\t\t   " << std::setw(4) << p_per_anal << "\t\t       ";
+    if (eval_ded_master_flag)      Cout << "ded. master\n";
+    else                           Cout << "peer\n";
 
     // Analysis diagnostics
     Cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
-         << "\t\t     N/A\t        N/A\n\nTotal parallelism levels =   " 
+         << "\t\t     N/A\t       N/A\n\nTotal parallelism levels =   " 
          << par_levels << "\n-------------------------------------------------"
 	 << "----------------------------" << std::endl;
   }
