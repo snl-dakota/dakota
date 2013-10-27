@@ -329,6 +329,7 @@ factor of two or three slower than %Dakota's.  As of %Dakota 5.2, the
 Surfpack implementation is the default in all contexts except Bayesian
 calibration.  The %Dakota GP is provided for continuity, but may be
 deprecated in the future.
+For more details on the Surfpack GP, see [\ref Dalbey2013 "Dalbey, 2013"].
 
 The trend function of both GP models is selected using the \c trend
 keyword, with options \c constant, \c linear, or \c reduced_quadratic
@@ -379,6 +380,24 @@ correlation parameters that are most likely for that one subset.  It
 is similar to the %Dakota GP's point selection in that the Surfpack GP
 will only interpolate the selected subset of points.
 
+Note that typically, the Surfpack GP handles ill-conditioning and 
+does not use a nugget.  If the user wishes to specify a nugget, 
+there are two approaches.  The user can specify the value 
+of a nugget with \c nugget.  In this case, the nugget will be 
+the value defined by the user.  The other approach is to have 
+Surfpack find the optimal value of the nugget.  This 
+is specified by \c find_nugget.  There are two options for \c find_nugget. 
+If the user specifies \c find_nugget = 1, kriging will assume that the 
+reciprocal condition number of the correlation matrix R, rcondR, is zero and 
+calculate the nugget needed to make the worst case of R not 
+ill-conditioned.  If \c find_nugget = 2, it means kriging will calculate rcondR, 
+which requires a Cholesky factorization. If rcondR indicates that R is not 
+ill-conditioned, then kriging uses the Cholesky factorization. 
+Otherwise, if rcondR says R is ill conditioned, then kriging will 
+calculate the nugget needed to make the worst case of R not ill conditioned. 
+\c find_nugget = 1 or 2 are similar, the second option just takes more 
+computation (the initial Cholesky factorization) for larger problems.
+
 The \c use_derivatives keyword will cause the Surfpack GP to be
 constructed from a combination of function value and gradient
 information (if available).  This is only beneficial when a function
@@ -400,7 +419,8 @@ Also, a poorly spaced sample design has a greater adverse affect on
 the conditioning of the correlation matrix when derivative information
 is included. This can result in significantly more points being
 discarded and hence providing little benefit to the derivative
-enhanced GP/Kriging model's accuracy.
+enhanced GP/Kriging model's accuracy. For more details on 
+the use of derivatives in the kriging model, see [\ref Dalbey2013 "Dalbey, 2013"].
 
 <!-- TODO: document MARS, ANN, and RBF controls -->
 Tables \ref T6d4 "6.4" and \ref T6d5 "6.5" summarize the global 
@@ -481,6 +501,18 @@ approximation type, Part I
 <td>integer
 <td>Optional
 <td>
+<tr>
+<td>Surfpack user-specified nugget 
+<td>\c nugget
+<td>real
+<td>Optional
+<td>None
+<tr>
+<td>Surfpack finds the optimal nugget 
+<td>\c find_nugget
+<td>integer
+<td>Optional (values = 1 or 2)
+<td>None
 <tr>
 <td>Surfpack GP gradient enhancement
 <td>\c use_derivatives
