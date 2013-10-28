@@ -28,5 +28,6 @@ set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE"
 set(BUILD_STATIC_LIBS ON  CACHE BOOL "Build static libs")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "DO NOT Build shared libs!")
 
-set(Boost_USE_STATIC_LIBS ON CACHE BOOL "Use static Boost libs")
+# WB - ToDo:  investigate why Boost STATIC libs are a problem on steinman
+#set(Boost_USE_STATIC_LIBS ON CACHE BOOL "Use static Boost libs")
 
