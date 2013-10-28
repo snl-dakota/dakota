@@ -6,18 +6,19 @@ strategy,
 
 method,									
        bayes_calibration queso,						
-#       emulator
-#      	gp
-#        emulator_samples = 50
-     #   points_file = 'ros.txt' freeform
+       emulator
+      	gaussian_process surfpack
+        emulator_samples = 50
 #        pce 
 #        sparse_grid_level = 3 
-          samples = 1000 #seed = 348					
+          samples = 1000 seed = 348					
           rejection delayed 
           metropolis adaptive
-          likelihood_scale = 0.001 
+          #likelihood_scale = 0.01 
+          #likelihood_scale = 100 
           output verbose
           #proposal_covariance_scale = 0.1 0.3
+          #calibrate_sigma
 
 variables,								
          #active all 
@@ -36,13 +37,10 @@ interface,
 
 responses,								
 	calibration_terms = 1					
-	#calibration_terms = 3					
-        #calibration_data_file = 'text3C.txt'
-        calibration_data_file = 'test10_sig.txt'
-        #calibration_data_file = 'textbook20.txt'
+        calibration_data_file = 'dakota_queso.test10.txt'
           freeform
-          num_experiments = 10
-         # num_config_variables = 1 
+          num_experiments = 1
+          num_replicates = 10
           num_std_deviations = 1
 	no_gradients							
 	no_hessians
