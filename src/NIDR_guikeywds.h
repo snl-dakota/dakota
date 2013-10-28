@@ -212,12 +212,12 @@ static GuiKeyWord
 		{"sc",8,1,1,1,1239,kw_34}
 		},
 	kw_36[6] = {
-		{"chains",0x29,0,1,0,1203,0,3.},
-		{"crossover_chain_pairs",0x29,0,3,0,1207},
+		{"chains",0x29,0,1,0,1203,0,3.,0.,0.,0,"{Number of chains} MethodCommands.html#MethodNonDBayesCalib"},
+		{"crossover_chain_pairs",0x29,0,3,0,1207,0,0.,0.,0.,0,"{Number of chain pairs used in crossover } MethodCommands.html#MethodNonDBayesCalib"},
 		{"emulator",8,4,6,0,1213,kw_35},
-		{"gr_threshold",0x1a,0,4,0,1209},
-		{"jump_step",0x29,0,5,0,1211},
-		{"num_cr",0x29,0,2,0,1205,0,1.}
+		{"gr_threshold",0x1a,0,4,0,1209,0,0.,0.,0.,0,"{Gelman-Rubin Threshold for convergence} MethodCommands.html#MethodNonDBayesCalib"},
+		{"jump_step",0x29,0,5,0,1211,0,0.,0.,0.,0,"{Jump-Step } MethodCommands.html#MethodNonDBayesCalib"},
+		{"num_cr",0x29,0,2,0,1205,0,1.,0.,0.,0,"{Number of candidate points used in burn-in adaptation} MethodCommands.html#MethodNonDBayesCalib"}
 		},
 	kw_37[2] = {
 		{"adaptive",8,0,1,1,1191},
@@ -245,7 +245,7 @@ static GuiKeyWord
 		{"import_points_file",11,2,2,0,1169,kw_41},
 		{"metropolis",8,2,5,0,1187,kw_37,0.,0.,0.,0,"{Metropolis type for the MCMC algorithm } MethodCommands.html#MethodNonDBayesCalib"},
 		{"proposal_covariance_scale",14,0,7,0,1199,0,0.,0.,0.,0,"{Proposal covariance scaling} MethodCommands.html#MethodNonDBayesCalib"},
-		{"rejection",8,2,4,0,1181,kw_38,0.,0.,0.,0,"{Rejection type for the MCMC algorithms} MethodCommands.html#MethodNonDBayesCalib"},
+		{"rejection",8,2,4,0,1181,kw_38},
 		{"rng",8,2,6,0,1193,kw_39,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDBayesCalib"}
 		},
 	kw_43[2] = {
@@ -279,7 +279,7 @@ static GuiKeyWord
 		{"emulator",8,4,1,0,1135,kw_48},
 		{"metropolis",8,2,3,0,1187,kw_37,0.,0.,0.,0,"{Metropolis type for the MCMC algorithm } MethodCommands.html#MethodNonDBayesCalib"},
 		{"proposal_covariance_scale",14,0,5,0,1199,0,0.,0.,0.,0,"{Proposal covariance scaling} MethodCommands.html#MethodNonDBayesCalib"},
-		{"rejection",8,2,2,0,1181,kw_38,0.,0.,0.,0,"{Rejection type for the MCMC algorithms} MethodCommands.html#MethodNonDBayesCalib"},
+		{"rejection",8,2,2,0,1181,kw_38},
 		{"rng",8,2,4,0,1193,kw_39,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDBayesCalib"}
 		},
 	kw_50[8] = {
@@ -1101,7 +1101,7 @@ static GuiKeyWord
 		{"least_interpolation",0,6,3,1,724,kw_172},
 		{"normalized",8,0,6,0,751},
 		{"oli",0,6,3,1,724,kw_172},
-		{"orthogonal_least_interpolation",8,6,3,1,725,kw_172},
+		{"orthogonal_least_interpolation",8,6,3,1,725,kw_172,0.,0.,0.,0,"{Orthogonal Least Interpolation (OLI)} MethodCommands.html#MethodNonDPCE"},
 		{"p_refinement",8,2,1,0,635,kw_174,0.,0.,0.,0,"{Automated polynomial order refinement} MethodCommands.html#MethodNonDPCE"},
 		{"probability_levels",14,1,13,0,1081,kw_17,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
 		{"quadrature_order",13,3,3,1,651,kw_175,0.,0.,0.,0,"{Quadrature order for PCE coefficient estimation} MethodCommands.html#MethodNonDPCE"},
@@ -1562,9 +1562,9 @@ static GuiKeyWord
 	kw_233[7] = {
 		{"correlation_lengths",14,0,5,0,1597,0,0.,0.,0.,0,"{Surfpack GP correlation lengths} ModelCommands.html#ModelSurrG"},
 		{"export_model_file",11,0,6,0,1599},
-		{"find_nugget",9,0,4,0,1595},
+		{"find_nugget",9,0,4,0,1595,0,0.,0.,0.,0,"{Surfpack finds the optimal nugget } ModelCommands.html#ModelSurrG"},
 		{"max_trials",0x19,0,3,0,1591,0,0.,0.,0.,0,"{Surfpack GP maximum trials} ModelCommands.html#ModelSurrG"},
-		{"nugget",0x1a,0,4,0,1593},
+		{"nugget",0x1a,0,4,0,1593,0,0.,0.,0.,0,"{Surfpack user-specified nugget } ModelCommands.html#ModelSurrG"},
 		{"optimization_method",11,0,2,0,1589,0,0.,0.,0.,0,"{Surfpack GP optimization method} ModelCommands.html#ModelSurrG"},
 		{"trend",8,4,1,0,1579,kw_232,0.,0.,0.,0,"{Surfpack GP trend function} ModelCommands.html#ModelSurrG"}
 		},
@@ -1678,8 +1678,8 @@ static GuiKeyWord
 		{"annotated",8,0,3,0,2237,0,0.,0.,0.,0,"{Data file in annotated format} RespCommands.html#RespFnLS"},
 		{"freeform",8,0,3,0,2239,0,0.,0.,0.,0,"{Data file in freeform format} RespCommands.html#RespFnLS"},
 		{"num_config_variables",0x29,0,4,0,2241,0,0.,0.,0.,0,"{Configuration variable columns in file} RespCommands.html#RespFnLS"},
-		{"num_experiments",0x29,0,1,0,2233,0,0.,0.,0.,0,"{Experiments (rows) in file} RespCommands.html#RespFnLS"},
-		{"num_replicates",13,0,2,0,2235},
+		{"num_experiments",0x29,0,1,0,2233,0,0.,0.,0.,0,"{Experiments in file} RespCommands.html#RespFnLS"},
+		{"num_replicates",13,0,2,0,2235,0,0.,0.,0.,0,"{Replicates per each experiment in file} RespCommands.html#RespFnLS"},
 		{"num_std_deviations",0x29,0,5,0,2243,0,0.,0.,0.,0,"{Standard deviation columns in file} RespCommands.html#RespFnLS"}
 		},
 	kw_251[6] = {

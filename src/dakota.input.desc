@@ -763,6 +763,8 @@ TAG "method/polynomial_chaos/expansion_order/expansion_import_file"
 	DESC "{PCE coeffs import file} MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/orthogonal_least_interpolation"
+	DESC "{Orthogonal Least Interpolation (OLI)} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/collocation_points"
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/cross_validation"
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/tensor_grid"
@@ -1055,8 +1057,6 @@ TAG "method/bayes_calibration/gpmsa/export_points_file"
 TAG "method/bayes_calibration/gpmsa/export_points_file/annotated"
 TAG "method/bayes_calibration/gpmsa/export_points_file/freeform"
 TAG "method/bayes_calibration/queso/rejection"
-	DESC "{Rejection type for the MCMC algorithms} MethodCommands.html#MethodNonDBayesCalib"
-
 TAG "method/bayes_calibration/queso/rejection/standard"
 TAG "method/bayes_calibration/queso/rejection/delayed"
 TAG "method/bayes_calibration/queso/metropolis"
@@ -1074,10 +1074,20 @@ TAG "method/bayes_calibration/queso/proposal_covariance_scale"
 
 TAG "method/bayes_calibration/dream"
 TAG "method/bayes_calibration/dream/chains"
+	DESC "{Number of chains} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/bayes_calibration/dream/num_cr"
+	DESC "{Number of candidate points used in burn-in adaptation} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/bayes_calibration/dream/crossover_chain_pairs"
+	DESC "{Number of chain pairs used in crossover } MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/bayes_calibration/dream/gr_threshold"
+	DESC "{Gelman-Rubin Threshold for convergence} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/bayes_calibration/dream/jump_step"
+	DESC "{Jump-Step } MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/bayes_calibration/dream/emulator"
 TAG "method/bayes_calibration/dream/emulator/gaussian_process"
 TAG "method/bayes_calibration/dream/emulator/gaussian_process/surfpack"
@@ -1401,7 +1411,11 @@ TAG "model/surrogate/global/gaussian_process/surfpack/max_trials"
 	DESC "{Surfpack GP maximum trials} ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process/surfpack/nugget"
+	DESC "{Surfpack user-specified nugget } ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/gaussian_process/surfpack/find_nugget"
+	DESC "{Surfpack finds the optimal nugget } ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/gaussian_process/surfpack/correlation_lengths"
 	DESC "{Surfpack GP correlation lengths} ModelCommands.html#ModelSurrG"
 
@@ -2233,9 +2247,11 @@ TAG "responses/calibration_terms/calibration_data_file"
 	DESC "{Calibration data file name} RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/calibration_data_file/num_experiments"
-	DESC "{Experiments (rows) in file} RespCommands.html#RespFnLS"
+	DESC "{Experiments in file} RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/calibration_data_file/num_replicates"
+	DESC "{Replicates per each experiment in file} RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_data_file/annotated"
 	DESC "{Data file in annotated format} RespCommands.html#RespFnLS"
 
