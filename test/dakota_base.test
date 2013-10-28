@@ -64855,14 +64855,14 @@ response_fn_1 Sobol indices:
                       4.8720635019e-01  4.8653182270e-01 uuv_1
                       5.3833096458e-01  4.7814488670e-01 uuv_2
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 700 total (531 new, 169 duplicate)
+<<<<< Function evaluation summary: 700 total (530 new, 170 duplicate)
 response_fn_1 Sobol indices:
                                   Main             Total
-                      1.5709989209e-01  2.7091791165e-01 uuv_1
-                      1.9805333912e-01  2.2995061564e-01 uuv_2
+                      1.6890115953e-01  1.8085861753e-01 uuv_1
+                      2.0994020410e-01  1.8111027061e-01 uuv_2
                       1.5092623811e-01  9.4977768750e-02 geuv_1
-                     -1.1593701690e-02  5.9716702235e-02 hpuv_1
-                      5.2220935349e-01  6.1735549688e-01 hpuv_2
+                      2.4415939924e-04  3.5559676620e-04 hpuv_1
+                      5.3336880194e-01  5.8173883360e-01 hpuv_2
 dakota_workdir.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)

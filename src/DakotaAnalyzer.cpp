@@ -227,6 +227,7 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 	copy_data(sample_j, ncont, total_c_vars[0][j]);
       if (ndiscint) {
 	IntVector& t_div_0j = total_di_vars[0][j];
+        t_div_0j.sizeUninitialized(ndiscint);
 	for (k=0; k<ndiscint; ++k)
 	  t_div_0j[k] = (int)sample_j[ncont+k];
       }
@@ -267,6 +268,7 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 	copy_data(sample_j, ncont, total_c_vars[1][j]);
       if (ndiscint) {
 	IntVector& t_div_1j = total_di_vars[1][j];
+        t_div_1j.sizeUninitialized(ndiscint);
 	for (k=0; k<ndiscint; ++k)
 	  t_div_1j[k] = (int)sample_j[ncont+k];
       }
