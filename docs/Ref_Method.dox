@@ -5713,15 +5713,26 @@ an unstructured and goal-oriented manner (refer to User's Manual PCE
 descriptions for additional specifics).
 
 The \c variance_based_decomp and \c drop_tolerance are also the same
-as those described in \ref MethodNonDMC, but since PCE outputs main,
-interaction, and total effects by default, the \c univariate_effects
-option has been added to allow suppression of the interaction effects
-since the output volume of these results can be prohibitive for high
-dimensional problems.  Similar to suppression of these interactions is
-the covariance control, which can be selected to be \c
-diagonal_covariance or \c full_covariance, with the former supporting
-suppression of the off-diagonal covariance terms (to save compute and
-memory resources and reduce output volume).
+as those described in \ref MethodNonDMC, but since the default VBD
+outputs for PCE include main and total effects and all interactions
+present within the terms of the expansion, the \c interaction_order
+option has been added to allow suppression of higher-order
+interactions, since the output volume (and memory and compute
+consumption) of these results could be extensive for high dimensional
+problems (note: the previous \c univariate_effects specification is
+equivalent to \c interaction_order = 1 in the current specification).
+Similar to suppression of interactions is the covariance control,
+which can be selected to be \c diagonal_covariance or \c
+full_covariance, with the former supporting suppression of the
+off-diagonal covariance terms (to again save compute and memory
+resources and reduce output volume).  The \c normalized specification
+requests output of PCE coefficients that correspond to normalized
+orthogonal basis polynomials.  This has no effect on the expansion or
+statistics generated from it (each multidimensional basis polynomial
+is divided by its norm, such that the corresponding coefficient is
+multiplied by this norm to result in the same expansion); rather, it
+is primarily useful for analysis of decay rates within the coefficient
+spectrum.
 
 As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, 
 The default behavior is to form expansions over aleatory 
@@ -5789,11 +5800,11 @@ Specification detail for polynomial chaos expansion method: general controls.
 <td>Optional group
 <td>VBD indices not computed/printed
 <tr>
-<td>Restriction of VBD indices to main/total
-<td>\c univariate_effects
-<td>none
+<td>Restriction of order of VBD interations
+<td>\c interaction_order
+<td>integer > 0
 <td>Optional
-<td>Unrestricted: interaction effects included
+<td>Unrestricted (VBD includes all interaction orders present in the expansion)
 <tr>
 <td>VBD tolerance for omitting small indices
 <td>\c drop_tolerance
@@ -5806,6 +5817,12 @@ Specification detail for polynomial chaos expansion method: general controls.
 <td>none
 <td>Optional
 <td>\c diagonal_covariance for response vector > 10; else \c full_covariance
+<tr>
+<td>Output PCE coefficients corresponding to normalized basis
+<td>\c normalized
+<td>none
+<td>Optional
+<td>PCE coefficients correspond to unnormalized basis polynomials
 </table>
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
@@ -6072,7 +6089,7 @@ sampling, regression, and expansion import options.
 <td>Optional
 <td>regression with LHS sample set ("point collocation")
 <tr>
-<td>PCE coeffs import file
+<td>Import file for PCE coefficients
 <td>\c expansion_import_file
 <td>string
 <td>Required (1 of 7 selections)
@@ -6521,11 +6538,11 @@ Specification detail for stochastic collocation method: general controls.
 <td>Optional group
 <td>VBD indices not computed/printed
 <tr>
-<td>Restriction of VBD indices to main/total
-<td>\c univariate_effects
-<td>none
+<td>Restriction of order of VBD interations
+<td>\c interaction_order
+<td>integer > 0
 <td>Optional
-<td>Unrestricted: interaction effects included
+<td>Unrestricted (VBD includes all interaction orders present in the expansion)
 <tr>
 <td>VBD tolerance for omitting small indices
 <td>\c drop_tolerance
