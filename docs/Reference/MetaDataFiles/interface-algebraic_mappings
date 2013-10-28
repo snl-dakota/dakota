@@ -19,7 +19,7 @@ response descriptors used by %Dakota (see \ref VarCommands and \ref
 RespLabels).  Ordering is not important, as %Dakota will reorder data
 as needed.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

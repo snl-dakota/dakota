@@ -11,7 +11,7 @@ This capability has been used for interfaces with IDEA and JAVASpaces
 in the past and is currently a placeholder for future work with Condor
 and/or Globus services. It is not currently operational. 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

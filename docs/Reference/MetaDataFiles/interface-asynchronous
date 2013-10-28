@@ -54,7 +54,7 @@ concurrency is 7 and job 2 completes, it will be replaced with job 9.
 This can result in idle processors if runtimes are non-uniform.
 
 
-Topics::	problem, concurrency_and_parallelism, not_yet_reviewed
+Topics::	problem, concurrency_and_parallelism
 Examples::
 Theory::
 Faq::

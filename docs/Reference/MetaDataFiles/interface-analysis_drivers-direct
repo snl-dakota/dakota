@@ -15,7 +15,7 @@ session and then save these definitions to a ModelCenter configuration
 file. The \c analysis_components specification provides the means to
 communicate this configuration file to %Dakota's ModelCenter interface.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 The rosenbrock function is available as an executable, which can be
 launched with fork, and is also compiled with Dakota. The internal

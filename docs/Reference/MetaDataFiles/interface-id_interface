@@ -18,7 +18,7 @@ omitted from the interface specification and \c interface_pointer can
 be omitted from the model specification(s), since there is no
 potential for ambiguity in this case.
 
-Topics::	block_identifier, not_yet_reviewed
+Topics::	block_identifier
 Examples::
 For example, a model whose
 specification contains \c interface_pointer = 'I1' will use an

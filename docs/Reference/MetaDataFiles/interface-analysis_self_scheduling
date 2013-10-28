@@ -17,7 +17,7 @@ the Users Manual [\ref UsersMan "Adams et al., 2010"] for additional
 information.
 
 
-Topics::	problem, concurrency_and_parallelism, not_yet_reviewed
+Topics::	problem, concurrency_and_parallelism
 Examples::
 Theory::
 Faq::

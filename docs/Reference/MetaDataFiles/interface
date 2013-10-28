@@ -18,7 +18,7 @@ No idea what the servers or scheduling do.
 
 
 
-Topics::	block, not_yet_reviewed, problem
+Topics::	block, problem
 Examples::
 Theory::
 Function evaluations are performed using either interfaces to simulation codes, algebraic mappings, or a combination of the two.

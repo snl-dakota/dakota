@@ -5,10 +5,6 @@ The optional \c deactivate specification block includes three features
 which a user may deactivate in order to simplify interface development, 
 increase execution speed, and/or reduce memory and disk requirements:
 
-!!!!!!!!!!!!!!!!!!!!!!!
-Can these be specified independently or concurrently?
-!!!!!!!!!!!!!!!!!!!!
-
 \li Active set vector (ASV) control: deactivation of this feature
 using a \c deactivate \c active_set_vector specification allows the
 user to turn off any variability in ASV values so that active set
@@ -75,8 +71,10 @@ are costly or prone to failure. Please note that using the \c deactivate
 \c restart_file specification will result in a zero length restart file 
 with the default name \c dakota.rst.
 
+These three features may be deactivated independently and concurrently.
 
-Topics::	not_yet_reviewed, problem
+
+Topics::
 Examples::
 Theory::
 Faq::

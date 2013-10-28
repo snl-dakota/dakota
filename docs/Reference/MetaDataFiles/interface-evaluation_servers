@@ -31,7 +31,7 @@ processors used for each analysis partition. Note that if both \c
 analysis_servers and \c processors_per_analysis are specified and they
 are not in agreement, then \c analysis_servers takes precedence. 
 
-Topics::	problem, not_yet_reviewed
+Topics::	problem
 Examples::
 Theory::
 Faq::

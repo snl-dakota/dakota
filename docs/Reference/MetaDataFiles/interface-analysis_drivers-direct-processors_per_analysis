@@ -16,7 +16,7 @@ analysis_servers and \c processors_per_analysis are specified and they
 are not in agreement, then \c analysis_servers takes precedence. 
 
 
-Topics::	concurrency_and_parallelism, not_yet_reviewed
+Topics::	concurrency_and_parallelism
 Examples::
 Theory::
 Faq::
