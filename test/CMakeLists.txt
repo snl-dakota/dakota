@@ -75,7 +75,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     file(GLOB dakota_test_input_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
       "dakota_4*" "dakota_a*.in" "dakota_b*.in" "dakota_c*.in" "dakota_d*.in"
       "dakota_h*" "dakota_i*.in" "dakota_k*.in" "dakota_m*.in" "dakota_n*.in"
-      "dakota_r*.in" "dakota_sb*.in" "dakota_us*.in"
+      "dakota_r*.in" "dakota_sb*.in" "dakota_us*.in" "dakota_v*.in"
     )
   else()
     file(GLOB dakota_test_input_files 
@@ -220,8 +220,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_lps_pce_rosenbrock_fail.in
       dakota_rosenbrock_fail.in
       dakota_uq_rosenbrock_pce_lls_cv_fail.in
-      dakota_nomad.in
-      dakota_pcbdo_cantilever.in
       dakota_pof.in
       dakota_uq_ishigami_dste_exp.in
       dakota_uq_rosenbrock_adapt_exp.in
