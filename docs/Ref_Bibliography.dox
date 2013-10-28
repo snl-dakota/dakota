@@ -264,6 +264,12 @@ Program for Constrained Function Minimization," NASA TM X-62282.
 \li \anchor Vrand1995 Vanderplaats Research and Development, Inc.,
 1995.  "DOT Users Manual, Version 4.20," Colorado Springs.
 
+\li \anchor Vrugt2009 Vrugt, J. A., and ter Braak, C. J. F., and 
+Diks, C. G. H., and Robinson, B. A., and Hyman, J. M., and Higdon, D. 
+"Accelerating Markov chain Monte Carlo simulation by self-adaptive 
+differential evolution with randomized subspace sampling." 
+International Journal of Nonlinear Scientific Numerical Simulation, 10(3), 2009.
+
 \li \anchor Weirs2010 Weirs, V. G. and Kamm, J. R. and Swiler, L. P. and 
 Ratto, M. and Tarantola, S. and Adams, B. M. and Rider, W. J. and 
 Eldred, M. S, 2010.  "Sensitivity Analysis Techniques Applied to a 

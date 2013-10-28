@@ -7082,14 +7082,20 @@ tens of thousands, so in the case of model calibration, often emulators
 of the computational simulation are used. For more details on the algorithms
 underlying the methods, see the %Dakota User's manual.  
 
-We have two Bayesian calibration methods under development in %Dakota: 
-one called QUESO and one called GPMSA.  They are specified with the
-\c bayes_calibration \c queso or \c bayes_calibration \c gpmsa, respectively. 
-The QUESO method is using components from the QUESO library 
+We have three Bayesian calibration methods under development in %Dakota: 
+one called QUESO, one called DREAM, and one called GPMSA.  They are specified with the
+\c bayes_calibration \c queso, \c bayes_calibration \c dream, 
+or \c bayes_calibration \c gpmsa, respectively. 
+The QUESO method uses components from the QUESO library 
 (Quantification of Uncertainty for Estimation, Simulation, and 
 Optimization) developed at The University of Texas at Austin. 
 We are using a DRAM (Delayed Rejected Adaptive Metropolis) algorithm 
 for the MCMC sampling from the QUESO library. 
+DREAM (DiffeRential Evolution Adaptive
+Metropolis) is a method that runs multiple different chains simultaneously 
+for global exploration, and automatically tunes the proposal covariance
+during the process by a self-adaptive randomized subspace sampling. 
+[\ref Vrugt2009 "Vrugt et al. 2009"].
 GPMSA (Gaussian Process Models for Simulation Analysis) is 
 a code that has been developed at Los Alamos National Laboratory. 
 It uses Gaussian process models as part of constructing 
@@ -7139,6 +7145,24 @@ experimental points against which we are trying to match the model),
 of the sigma values is turned off by default:  only the design parameters are 
 calibrated in default mode.    
 
+For the DREAM method, one can define the number of chains used with 
+\c chains.  The total number of generations per chain in DREAM is 
+the number of samples (\c samples) divided by the number of chains (\c chains).  
+The minimum number of chains is three.  
+The number of chains randomly selected to be used in the crossover 
+each time a crossover occurs is \c crossover_chain_pairs.
+There is an extra adaptation during burn-in, in which DREAM estimates a
+distribution of crossover probabilities that favors large jumps over
+smaller ones in each of the chains. 
+Normalization is required to ensure that all of the input dimensions contribute 
+equally.  In this process, a discrete number of candidate points for 
+each crossover value is generated.  This parameter is \c num_cr. 
+The \c gr_threshold is the convergence tolerance for the Gelman-Rubin 
+statistic which will govern the convergence of the multiple chain 
+process.  The integer \c jump_step forces a long jump every \c jump_step 
+generations.
+For more details about these parameters, see [\ref Vrugt2009 "Vrugt et al. 2009"].
+
 For the GPMSA method, one can define the number of samples which will be used 
 in construction of the emulator, \c emulator_samples.  The emulator 
 involves Gaussian processes in GPMSA, so the user does not specify anything 
@@ -7186,11 +7210,11 @@ Specification detail for the Bayesian calibration methods
 <td>Metropolis type for the MCMC algorithm 
 <td>\c metropolis 
 <td>\c hastings | \c adaptive
-<td>Optional
+<td>Optional (QUESO only)
 <td>hastings
 <tr>
 <td>Rejection type for the MCMC algorithms
-<td>\c rejection 
+<td>\c rejection (QUESO only)
 <td>\c standard | \c delayed
 <td>Optional
 <td>standard
@@ -7214,15 +7238,15 @@ Specification detail for the Bayesian calibration methods
 <td>10000
 <tr>
 <td>Likelihood scale factor
-<td>\c likelihood_scale
+<td>\c likelihood_scale 
 <td>real
-<td>Optional
+<td>Optional (QUESO only)
 <td>none
 <tr>
 <td>Proposal covariance scaling
 <td>\c proposal_covariance_scale
 <td>list of reals
-<td>Optional
+<td>Optional (QUESO only)
 <td>none
 <tr>
 <td>Calibrate sigma flag
@@ -7230,6 +7254,36 @@ Specification detail for the Bayesian calibration methods
 <td>none
 <td>Optional
 <td>The sigma terms are not calibrated
+<tr>
+<td>Number of chains
+<td>\c chains
+<td>integer
+<td>Optional (DREAM only)
+<td>3
+<tr>
+<td>Number of chain pairs used in crossover 
+<td>\c crossover_chain_pairs
+<td>integer
+<td>Optional (DREAM only)
+<td>3
+<tr>
+<td>Number of candidate points used in burn-in adaptation
+<td>\c num_cr
+<td>integer
+<td>Optional (DREAM only)
+<td>1
+<tr>
+<td>Gelman-Rubin Threshold for convergence
+<td>\c gr_threshold
+<td>real
+<td>Optional (DREAM only)
+<td>1.2
+<tr>
+<td>Jump-Step 
+<td>\c jump_step
+<td>integer
+<td>Optional (DREAM only)
+<td>5
 </table>
 
 
