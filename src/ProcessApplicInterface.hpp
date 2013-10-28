@@ -17,7 +17,7 @@
 
 #include "ApplicationInterface.hpp"
 #ifdef _WIN32
-typedef int pid_t;
+typedef intptr_t pid_t;
 #endif
 
 

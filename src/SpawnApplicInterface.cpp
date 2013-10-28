@@ -154,7 +154,7 @@ pid_t SpawnApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
   const char *arg_list[4], **av;
-  int status;
+  pid_t status;
   pid_t pid = 0;
   static std::string no_workdir;
 
