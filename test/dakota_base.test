@@ -3396,7 +3396,7 @@ Test Number 2 succeeded
                       2.2583025476e+00
 <<<<< Best data captured at function evaluation 14
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 397189 total (352140 new, 45059 duplicate)
+<<<<< Function evaluation summary: 397189 total (352140 new, 45049 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-01   5.1750032887e-02                      1.6281170649e+00
