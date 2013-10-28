@@ -381,7 +381,7 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
         }
   }
 
-  result = (result*(NonDQUESOInstance->likelihoodScale));
+  result = (result/(NonDQUESOInstance->likelihoodScale));
   result = -1.0*result;
   Cout << "result final " << result << '\n';
   Cout << "likelihood is " << exp(result) << '\n';
