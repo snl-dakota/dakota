@@ -628,7 +628,7 @@ LIBS, e.g.,
 -- TPL LIBS: nidr;teuchos;pecos;pecos_src;lhs;mods;mod;dfftpack;sparsegrid;
 surfpack;surfpack;surfpack_fortran;utilib;colin;interfaces;scolib;3po;pebbl;
 tinyxml;conmin;dace;analyzer;random;sampling;bose;dot;fsudace;hopspack;jega;
-jega_fe;moga;soga;eutils;utilities;ncsuopt;nlpql;cport;npsol;optpp;psuade;
+jega_fe;moga;soga;eutils;utilities;ncsuopt;nlpql;cport;nomad;npsol;optpp;psuade;
 DGraphics;amplsolver
 \endcode
 
