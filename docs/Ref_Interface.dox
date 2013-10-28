@@ -205,17 +205,11 @@ Specification detail for interface independent controls: parallelism
 <td>Optional
 <td>local: unlimited concurrency, hybrid: no concurrency
 <tr>
-<td>Self-schedule local evals
-<td>\c local_evaluation_self_scheduling
-<td>none
-<td>Optional (1 of 2)
-<td>self-scheduled local evals
-<tr>
-<td>Static-schedule local evals
-<td>\c local_evaluation_static_scheduling
-<td>none
-<td>Optional (1 of 2)
-<td>self-scheduled local evals
+<td>Local evaluation scheduling
+<td>\c local_evaluation_scheduling
+<td>\c dynamic | \c static
+<td>Optional
+<td>dynamic
 <tr>
 <td>Asynchronous analysis concurrency
 <td>\c analysis_concurrency
@@ -229,17 +223,17 @@ Specification detail for interface independent controls: parallelism
 <td>Optional
 <td>no override of auto configure
 <tr>
-<td>Self scheduling of evaluations
-<td>\c evaluation_self_scheduling
-<td>none
+<td>Message passing configuration for scheduling of evaluations
+<td>\c evaluation_scheduling
+<td>\c master | \c peer
 <td>Optional
 <td>no override of auto configure
 <tr>
-<td>Static scheduling of evaluations
-<td>\c evaluation_static_scheduling
-<td>none
-<td>Optional
-<td>no override of auto configure
+<td>Peer scheduling of evaluations
+<td>\c peer
+<td>\c dynamic | \c static
+<td>Required
+<td>dynamic if asynchronous local support
 <tr>
 <td>Number of analysis servers
 <td>\c analysis_servers
@@ -247,15 +241,9 @@ Specification detail for interface independent controls: parallelism
 <td>Optional
 <td>no override of auto configure
 <tr>
-<td>Self scheduling of analyses
-<td>\c analysis_self_scheduling
-<td>none
-<td>Optional
-<td>no override of auto configure
-<tr>
-<td>Static scheduling of analyses
-<td>\c analysis_static_scheduling
-<td>none
+<td>Message passing configuration for scheduling of analyses
+<td>\c analysis_scheduling
+<td>\c master | \c peer
 <td>Optional
 <td>no override of auto configure
 </table>
@@ -281,33 +269,44 @@ analysis_concurrency specifications, a hybrid parallelism can be
 selected through combination of message passing parallelism with
 asynchronous parallelism on each server.
 
-The optional \c evaluation_servers and \c analysis_servers
-specifications support user overrides of the automatic parallel
-configuration for the number of evaluation servers and the number of
-analysis servers.  Similarly, the optional \c
-evaluation_self_scheduling, \c evaluation_static_scheduling, \c
-analysis_self_scheduling, and \c analysis_static_scheduling
+If Dakota's automatic parallel configuration is undesirable for some
+reason, the user can specify overrides that enforce a desired number
+of partitions and/or a desired scheduling configuration at the
+evaluation and analysis parallelism levels. The optional \c
+evaluation_servers and \c analysis_servers specifications support user
+overrides of the automatic parallel configuration for the number of
+evaluation servers and the number of analysis servers.  Similarly, the
+optional \c evaluation_scheduling and \c analysis_scheduling
 specifications can be used to override the automatic parallel
-configuration of scheduling approach at the evaluation and analysis
-parallelism levels.  That is, if the automatic configuration is
-undesirable for some reason, the user can enforce a desired number of
-partitions and a desired scheduling policy at these parallelism
-levels. Refer to ParallelLibrary and the Parallel Computing chapter of
-the Users Manual [\ref UsersMan "Adams et al., 2010"] for additional 
-information.
+configuration at the evaluation and analysis parallelism levels to use
+either a dedicated \c master or a \c peer partition.  In addition, the
+evaluation parallelism level supports an override for the scheduling
+algorithm used within a \c peer partition; this can be either \c
+dynamic or \c static scheduling (default configuration of a peer
+partition employs a dynamic scheduler when it can be supported; i.e.,
+when the peer 1 local scheduling can be asynchronous).  The
+ParallelLibrary class and the Parallel Computing chapter of the Users
+Manual [\ref UsersMan "Adams et al., 2010"] provide additional details
+on parallel configurations.
 
-When performing asynchronous local evaluations, the local evaluation
-scheduling keywords control how new evaluation jobs are dispatched
-when one completes.  If \c local_evaluation_self_scheduling (default)
-is specified, each completed evaluation will be replaced by the next
-in the local evaluation queue.  If \c
-local_evaluation_static_scheduling is specified, each completed
-evaluation will be replaced by an evaluation number congruent modulo
-the \c evaluation_concurrency.  This is helpful for relative node
-scheduling as described in \c Dakota/examples/parallelism.  For
-example, assuming only local concurrency (no MPI), if the local
-concurrency is 7 and job 2 completes, it will be replaced with job 9.
-This can result in idle processors if runtimes are non-uniform.
+When performing asynchronous local evaluations, the \c
+local_evaluation_scheduling keyword controls how new evaluation jobs
+are dispatched when one completes.  If the \c
+local_evaluation_scheduling is specified as \c dynamic (the default),
+each completed evaluation will be replaced by the next in the local
+evaluation queue.  If \c local_evaluation_scheduling is specified as
+\c static, each completed evaluation will be replaced by an evaluation
+number that is congruent modulo the \c evaluation_concurrency.  This
+is helpful for relative node scheduling as described in \c
+Dakota/examples/parallelism.  For example, assuming only asynchronous
+local concurrency (no MPI), if the local concurrency is 6 and job 2
+completes, it will be replaced with job 8.  For the case of hybrid
+parallelism, static local scheduling results in evaluation
+replacements that are modulo the total capacity, defined as the
+product of the evaluation concurrency and the number of evaluation
+servers.  Both of these cases can result in idle processors if
+runtimes are non-uniform, so the default dynamic scheduling is
+preferred when relative node scheduling is not required.
 
 
 \section InterfAlgebraic Algebraic mappings
@@ -742,15 +741,13 @@ those for the fork interface as summarized previously in \ref T8d5
 For direct function interfaces, \c processors_per_analysis is an
 additional optional setting within the required group which can be
 used to specify multiprocessor analysis partitions. As with the \c
-evaluation_servers, \c analysis_servers, \c
-evaluation_self_scheduling, \c evaluation_static_scheduling, \c
-analysis_self_scheduling, and \c analysis_static_scheduling
-specifications described above in \ref InterfIndControl, \c
-processors_per_analysis provides a means for the user to override the
-automatic parallel configuration (refer to ParallelLibrary and the
-Parallel Computing chapter of the Users Manual 
-[\ref UsersMan "Adams et al., 2010"]) for the number of
-processors used for each analysis partition.  Note that if both \c
+evaluation_servers, \c analysis_servers, \c evaluation_scheduling, and
+\c analysis_scheduling specifications described above in \ref
+InterfIndControl, \c processors_per_analysis provides a means for the
+user to override the automatic parallel configuration (refer to
+ParallelLibrary and the Parallel Computing chapter of the Users Manual
+[\ref UsersMan "Adams et al., 2010"]) for the number of processors
+used for each analysis partition.  Note that if both \c
 analysis_servers and \c processors_per_analysis are specified and they
 are not in agreement, then \c analysis_servers takes precedence. The
 direct interface specifications are summarized in \ref T8d6 "Table 8.6".

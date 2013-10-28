@@ -364,16 +364,15 @@ the following nonintrusive approaches are supported:
 <li> \ref Dakota::SysCallApplicInterface "SysCallApplicInterface": the
 simulation is invoked using a system call (the C function \c
 system()).  Asynchronous invocation utilizes a background system call.
-Utilizes the \ref Dakota::SysCallAnalysisCode "SysCallAnalysisCode"
-class to define syntax for input filter, analysis code, output filter,
-or combined spawning, which in turn utilize the \ref
-Dakota::CommandShell "CommandShell" utility.
+Utilizes the \ref Dakota::CommandShell "CommandShell" utility.
 
 <li> \ref Dakota::ForkApplicInterface "ForkApplicInterface": the
 simulation is invoked using a fork (the \c fork/exec/wait family of
 functions).  Asynchronous invocation utilizes a nonblocking fork.
-Utilizes the \ref Dakota::ForkAnalysisCode "ForkAnalysisCode" class
-for lower level fork operations.
+
+<li> \ref Dakota::SpawnApplicInterface "SpawnApplicInterface": for
+Windows, fork is replaced by spawn.  Asynchronous invocation utilizes
+a nonblocking spawn.
 
 <!-- <li> \ref Dakota::GridApplicInterface "GridApplicInterface": the
 simulation is invoked using distributed resource facilities.  This
@@ -381,7 +380,11 @@ capability is experimental and still under development.  The design is
 evolving into the use of Condor and/or Globus tools. -->
 </ul>
 
-A semi-intrusive approach is also supported by:
+Fork and Spawn are inherited from \ref
+Dakota::ProcessHandleApplicInterface "ProcessHandleApplicInterface"
+and System and ProcessHandle are inherited from \ref
+Dakota::ProcessApplicInterface "ProcessApplicInterface".  A
+semi-intrusive approach is also supported by:
 
 <ul>
 

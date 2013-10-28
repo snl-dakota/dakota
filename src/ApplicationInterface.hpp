@@ -212,10 +212,8 @@ protected:
   int analysisCommSize; ///< size of analysisComm
   int analysisCommRank; ///< processor rank within analysisComm
   int analysisServerId; ///< analysis server identifier
-  /// current number of analysis servers
-  int numAnalysisServers;
-  /// user specification for number of analysis servers
-  int numAnalysisServersSpec;
+  int numAnalysisServers;     ///< current number of analysis servers
+  int numAnalysisServersSpec; ///< user spec for number of analysis servers
 
   /// flag for multiprocessor analysis partitions
   bool multiProcAnalysisFlag;

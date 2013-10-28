@@ -200,18 +200,17 @@ formats such as XML or YAML and binary formats such as HDF5.  The
 contents, organization, and format of results files are all under
 active development and are subject to change.
 
-The \c iterator_servers, \c iterator_self_scheduling,
-and \c iterator_static_scheduling specifications provide manual
-overrides for the number of concurrent iterator partitions and the
-scheduling policy for concurrent iterator jobs.  These settings are
-normally determined automatically in the parallel configuration
-routines (see ParallelLibrary) but can be overridden with user inputs
-if desired. The \c graphics, \c tabular_graphics_data, and \c
+The \c iterator_servers and \c iterator_scheduling specifications
+provide manual overrides for the number of concurrent iterator
+partitions and the scheduling configuration (\c master or \c peer) for
+concurrent iterator jobs.  These settings are normally determined
+automatically in the parallel configuration routines (see
+ParallelLibrary) but can be overridden with user inputs if
+desired. The \c graphics, \c tabular_graphics_data, and \c
 tabular_graphics_file specifications are valid for all strategies.
-However, the \c iterator_servers, \c iterator_self_scheduling, and \c
-iterator_static_scheduling overrides are only useful inputs for those
-strategies supporting concurrency in iterators, i.e., \c multi_start
-and \c pareto_set.
+However, the \c iterator_servers and \c iterator_scheduling overrides
+are only useful inputs for those strategies supporting concurrency in
+iterators, i.e., \c multi_start and \c pareto_set.
 
 \anchor T4d1
 <table>
@@ -270,15 +269,9 @@ Specification detail for strategy independent controls
 <td>Optional
 <td>no override of auto configure
 <tr>
-<td>Self-scheduling of iterator jobs
-<td>\c iterator_self_scheduling
-<td>none
-<td>Optional
-<td>no override of auto configure
-<tr>
-<td>Static scheduling of iterator jobs
-<td>\c iterator_static_scheduling
-<td>none
+<td>Message passing configuration for scheduling of iterator jobs
+<td>\c iterator_scheduling
+<td>\c master | \c peer
 <td>Optional
 <td>no override of auto configure
 </table>
