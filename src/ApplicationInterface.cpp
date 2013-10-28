@@ -189,17 +189,6 @@ set_evaluation_communicators(const IntArray& message_lengths)
   //   construct time.
   iteratorCommSize = si_pl.server_communicator_size();
   iteratorCommRank = si_pl.server_communicator_rank();
-  if ( iteratorCommRank // any processor other than rank 0 in iteratorComm
-       || ( outputLevel == SILENT_OUTPUT && evalCommRank == 0 &&
-	   !eaDedMasterFlag && numAnalysisServers < 2) )
-    suppressOutput = true; // suppress output of fn. eval. echoes
-
-  /* Additional output granularity:
-  if (ieMessagePass)                // suppress fn eval output in 
-    suppressLowLevelOutput = true;  //   SysCall/Fork/Direct
-  if (methodOutput == "quiet")      // suppress scheduling & vars/response
-    suppressHighLevelOutput = true; //   output in ApplicationInterface & Model
-  */
 
   // These attributes are set by init_evaluation_communicators and are not 
   // available for use in the constructor.
@@ -254,6 +243,17 @@ void ApplicationInterface::set_analysis_communicators()
 //#endif
   else // split flag insufficient if 1 server (no split in peer case)
     multiProcAnalysisFlag = (analysisCommSize > 1); // could vary
+
+  if ( iteratorCommRank // any processor other than rank 0 in iteratorComm
+       || ( outputLevel == SILENT_OUTPUT && evalCommRank == 0 &&
+	   !eaDedMasterFlag && numAnalysisServers < 2) )
+    suppressOutput = true; // suppress output of fn. eval. echoes
+  /* Additional output granularity:
+  if (ieMessagePass)                // suppress fn eval output in 
+    suppressLowLevelOutput = true;  //   SysCall/Fork/Direct
+  if (methodOutput == "quiet")      // suppress scheduling & vars/response
+    suppressHighLevelOutput = true; //   output in ApplicationInterface & Model
+  */
 
   // simplify downstream logic by resetting default asynch local concurrency
   // to 1 for the case of message passing.  This allows schedulers to more
