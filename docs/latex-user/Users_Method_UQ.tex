@@ -1703,6 +1703,8 @@ refined by focusing samples of the expensive simulation on particular areas of
 interest rather than rely on random selection or standard space-filling
 techniques. 
 
+\subsection{Adaptive sampling based on surrogates}\label{uq:adaptive:surrogate}
+
 At a high-level, the adaptive sampling pipeline is a four-step process:
 \begin{enumerate}
 \item Evaluate the expensive simulation (referred to as the true model) at
@@ -1819,6 +1821,14 @@ For batch selection of points, one specifies a \texttt{batch\_selection}
 strategy and a \texttt{batch\_size}. 
 The details of the specification are provided in the Dakota 
 reference manual. 
+
+\subsection{Adaptive sampling based on dart throwing}\label{uq:adaptive:darts}
+\texttt{pof\_darts} is a novel method for estimating the probability of failure based on random sphere-packing. Random spheres are sampled from the domain with the constraint that each new sphere center has to be outside prior disks. The radius of each sphere is chosen such that the entire sphere lie either in the failure or the non-failure region. This radius depends of the function evaluation at the disk center, the failure threshold and an estimate of the function gradient at the disk center. Estimating each radius in the current version requires 2d + 1 function evaluations. In the coming version we intend to utilize a surrogate for evaluating the gradient and hence only one function evaluation would be required for each sphere. After exhausting the sampling budget specified by \texttt{samples}, No of spheres per failure threshold, the domain is decomposed into two regions, failure and non-failure, each represented by the union of the spheres of each type. The volume of the union of failure spheres gives a lower bound on the required estimate of the probability of failure, while the volume of the union of the non-failure spheres subtracted from the volume of the domain gives an upper estimate. We currently report the average of both estimates. 
+
+\texttt{pof\_darts} handles multiple response functions and allow each to have multiple failure thresholds. For each failure threshold \texttt{pof\_darts} will insert a number of spheres specified by the user-input parameter "samples". However, estimating the probability of failure for each failure threshold would utilize the total number of disks sampled for all failure thresholds. For failure threshold the sphere radii changes to generate the right spatial decomposition.
+
+The adaptive sampling method is specified by the method keyword 
+\texttt{pof\_darts}. Sample budget is specified by \texttt{samples}.
 
 \section{Epistemic Nondeterministic Methods}\label{uq:epistemic}
 
