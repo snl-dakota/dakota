@@ -1047,20 +1047,18 @@ data_difference_core(const Response& raw_response, Response& residual_response)
     }
     if (asv[i] & 2) {
       current_fn_gradient=raw_response.function_gradient_copy(i);
-      Cout << "current_fn_gradient " << current_fn_gradient;
       for (size_t j = 0; j < numRowsExpData; ++j)
         residual_response.function_gradient(current_fn_gradient, i*numRowsExpData+j);
     }
     if (asv[i] & 4) {
       current_fn_hessian=raw_response.function_hessian(i);
-      Cout << "current_fn_hessian " << current_fn_hessian;
       for (size_t j = 0; j < numRowsExpData; ++j)
         residual_response.function_hessian(current_fn_hessian, i*numRowsExpData+j); 
     }
     functions_req = true;
   }
 
-  if (outputLevel > NORMAL_OUTPUT) {
+  if (minimizerInstance->outputLevel == DEBUG_OUTPUT) {
     for (size_t i=0; i<numRowsExpData*numUserPrimaryFns; i++) {
       if (asv[i] & 1) 
         Cout << " residual_response function " << i << ' ' << residual_response.function_value(i) << '\n';
