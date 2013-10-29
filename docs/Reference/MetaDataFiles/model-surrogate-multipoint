@@ -11,6 +11,15 @@ approximation is identified through the required \c
 actual_model_pointer specification.  \ref T6d7 "Table 6.7" summarizes
 the multipoint approximation specifications.
 
+Multipoint approximations involve response data from  two or more
+points in parameter space, often involving the current and previous
+iterates of a minimization algorithm. Available techniques currently
+include:
+
+<b> TANA-3 </b>: This multipoint approximation uses a two-point
+exponential approximation \ref{Xu98,Fad90} built with response value
+and gradient information from the current and previous iterates.
+
 Topics::	not_yet_reviewed
 Examples::
 Theory::

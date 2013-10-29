@@ -1,5 +1,77 @@
 Blurb::
+Linear, Quadratic, and Cubic Polynomial Models
+
 Description::
+Linear, quadratic, and cubic polynomial models are available in
+Dakota. The form of the linear polynomial model is
+
+\begin{equation}
+ \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
+ \label{models:surf:equation01}
+\end{equation}
+
+the form of the quadratic polynomial model is:
+
+\begin{equation}
+ \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
+ +\sum_{i=1}^{n}\sum_{j \ge i}^{n}c_{ij}x_{i}x_{j}
+ \label{models:surf:equation02}
+\end{equation}
+
+and the form of the cubic polynomial model is:
+
+\begin{equation}
+ \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i}
+ +\sum_{i=1}^{n}\sum_{j \ge i}^{n}c_{ij}x_{i}x_{j}
+ +\sum_{i=1}^{n}\sum_{j \ge i}^{n}\sum_{k \ge j}^{n}
+ c_{ijk}x_{i}x_{j}x_{k}
+ \label{models:surf:equation03}
+\end{equation}
+
+In all of the polynomial models, $\hat{f}(\mathbf{x})$ is the response
+of the polynomial model; the $x_{i},x_{j},x_{k}$ terms are the
+components of the $n$-dimensional design parameter values; the $c_{0}$
+, $c_{i}$ , $c_{ij}$ , $c_{ijk} $ terms are the polynomial
+coefficients, and $n$ is the number of design parameters. The number
+of coefficients, $n_{c}$, depends on the order of polynomial model and
+the number of design parameters. For the linear polynomial:
+
+\begin{equation}
+ n_{c_{linear}}=n+1
+ \label{models:surf:equation04}
+\end{equation}
+
+for the quadratic polynomial:
+
+\begin{equation}
+ n_{c_{quad}}=\frac{(n+1)(n+2)}{2}
+ \label{models:surf:equation05}
+\end{equation}
+
+and for the cubic polynomial:
+
+\begin{equation}
+ n_{c_{cubic}}=\frac{(n^{3}+6 n^{2}+11 n+6)}{6}
+ \label{models:surf:equation06}
+\end{equation}
+
+There must be at least $n_{c}$ data samples in order to form a fully
+determined linear system and solve for the polynomial coefficients. In
+Dakota, a least-squares approach involving a singular value
+decomposition numerical method is applied to solve the linear system.
+
+The utility of the polynomial models stems from two sources: (1) over
+a small portion of the parameter space, a low-order polynomial model
+is often an accurate approximation to the true data trends, and (2)
+the least-squares procedure provides a surface fit that smooths out
+noise in the data. For this reason, the surrogate-based optimization
+strategy often is successful when using polynomial models,
+particularly quadratic models. However, a polynomial surface fit may
+not be the best choice for modeling data trends over the entire
+parameter space, unless it is known a priori that the true data trends
+are close to linear, quadratic, or cubic. See \ref{Mye95} for more
+information on polynomial models.
+
 Topics::	empty
 Examples::
 Theory::

@@ -27,5 +27,18 @@ hierarchical approximation specifications.
 Topics::	not_yet_reviewed
 Examples::
 Theory::
+
+<b> Multifidelity Surrogates </b>: Multifidelity modeling involves the
+use of a low-fidelity physics-based model as a surrogate for the
+original high-fidelity model. The low-fidelity model typically
+involves a coarser mesh, looser convergence tolerances, reduced
+element order, or omitted physics. It is a separate model in its own
+right and does not require data from the high-fidelity model for
+construction. Rather, the primary need for high-fidelity evaluations
+is for defining correction functions that are applied to the
+low-fidelity results.
+
+
+
 Faq::
 See_Also::	model-surrogate-global, model-surrogate-local, model-surrogate-multipoint

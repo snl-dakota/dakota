@@ -234,5 +234,81 @@ is described in detail in [\ref Eldred2004a "Eldred et al., 2004a"].
 Topics::	not_yet_reviewed
 Examples::
 Theory::
+
+
+Global methods, often referred to as \emph{response surface methods},
+involve many points spread over the parameter ranges of interest.
+These surface fitting methods work in conjunction with the sampling
+methods and design of experiments methods described in
+Sections \ref{uq:sampling} and  \ref{dace:background}.
+
+<b> Polynomial Regression </b>: First-order (linear), second-order
+(quadratic), and third-order (cubic) polynomial response surfaces
+computed using linear least squares regression methods. Note: there is
+currently no use of forward- or backward-stepping regression methods
+to eliminate unnecessary terms from the polynomial model.
+
+<b> Gaussian Process (GP) or Kriging Interpolation </b>
+Dakota contains two implementations of Gaussian process, also known as 
+Kriging  
+ef{Giu98}, spatial interpolation. One of these resides in 
+the Surfpack sub-package of Dakota, the other resides in Dakota itself.
+Both versions use the Gaussian correlation function with parameters that
+are selected by Maximum Likelihood Estimation (MLE). This correlation 
+function results in a response surface that is $C^\infty$-continuous.
+Prior to Dakota 5.2, the Surfpack GP was referred to as the ``Kriging'' 
+model and the Dakota version was labeled as the ``Gaussian Process.'' 
+These terms are now used interchangeably. As of Dakota 5.2,the 
+Surfpack GP is used by default. For now the user still has the option 
+to select the Dakota GP, but the Dakota GP is deprecated and will be 
+removed in a future release.
+\begin{itemize}
+\item <b> Surfpack GP </b>: Ill-conditioning due to a poorly spaced sample 
+   design is handled by discarding points that contribute the least 
+   unique information to the correlation matrix. Therefore, the points 
+   that are discarded are the ones that are easiest to predict. The 
+   resulting surface will exactly interpolate the data values at the 
+   retained points but is not guaranteed to interpolate the discarded 
+   points.
+\item <b> Dakota GP </b>: Ill-conditioning is handled by adding a jitter 
+   term or ``nugget'' to diagonal elements of the correlation matrix. 
+   When this happens, the Dakota GP may not exactly interpolate the 
+   data values.
+\end{itemize}
+
+<b> Artificial Neural Networks </b>: An implementation of the
+stochastic layered perceptron neural network developed by Prof. D. C.
+Zimmerman of the University of Houston \ref{Zim96}. This neural network
+method is intended to have a lower training (fitting) cost than
+typical back-propagation neural networks.
+
+<b> Multivariate Adaptive Regression Splines (MARS) </b>: Software
+developed by Prof. J. H. Friedman of Stanford University \ref{Fri91}.
+The MARS method creates a $C^2$-continuous patchwork of splines in the
+parameter space.
+
+<b> Radial Basis Functions (RBF) </b>: Radial basis functions are 
+functions whose value typically depends on the distance from a center point, 
+called the centroid. The surrogate model approximation is constructed
+as the weighted sum of individual radial basis functions. 
+
+<b> Moving Least Squares (MLS) </b>: Moving Least Squares can be 
+considered a more specialized version of linear regression models.
+MLS is a weighted least squares approach where the weighting is 
+``moved'' or recalculated for every new point where 
+a prediction is desired. \ref{Nea04} 
+
+%<b> Orthogonal Polynomials </b>: This technique involves the use of
+%multivariate orthogonal polynomials as a global basis for surrogate
+%modeling. These multivariate polynomials are constructed as a product
+%of particular univariate orthogonal polynomials, including Hermite,
+%Legendre, Laguerre, Jacobi, and generalized Laguerre polynomials,
+%which are defined as functions of standard normal, standard uniform,
+%standard exponential, standard beta, and standard gamma random
+%variables, respectively. Given the probabilistic interpretation of
+%the approximation variables, this data fit is primarily used for
+%uncertainty quantification, and in particular, polynomial chaos
+%expansions.
+
 Faq::
 See_Also::	model-surrogate-local, model-surrogate-hierarchical, model-surrogate-multipoint

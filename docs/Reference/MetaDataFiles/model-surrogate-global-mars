@@ -1,5 +1,41 @@
 Blurb::
+Multivariate Adaptive Regression Spline (MARS) Models}
+
 Description::
+This surface fitting method uses multivariate adaptive regression
+splines from the MARS3.5 package \ref{Fri91} developed at Stanford
+University. 
+
+The form of the MARS model is based on the following expression:
+
+\begin{equation}
+ \hat{f}(\mathbf{x})=\sum_{m=1}^{M}a_{m}B_{m}(\mathbf{x})
+ \label{models:surf:equation10} 
+\end{equation}
+
+where the $a_{m}$ are the coefficients of the truncated power basis
+functions $B_{m}$, and $M$ is the number of basis functions. The MARS
+software partitions the parameter space into subregions, and then
+applies forward and backward regression methods to create a local
+surface model in each subregion. The result is that each subregion
+contains its own basis functions and coefficients, and the subregions
+are joined together to produce a smooth, $C^{2}$-continuous surface
+model.
+
+MARS is a nonparametric surface fitting method and can represent
+complex multimodal data trends. The regression component of MARS
+generates a surface model that is not guaranteed to pass through all
+of the response data values. Thus, like the quadratic polynomial
+model, it provides some smoothing of the data. The MARS reference
+material does not indicate the minimum number of data points that are
+needed to create a MARS surface model. However, in practice it has
+been found that at least $n_{c_{quad}}$, and sometimes as many as 2 to
+4 times $n_{c_{quad}}$, data points are needed to keep the MARS
+software from terminating. Provided that sufficient data samples can
+be obtained, MARS surface models can be useful in SBO and OUU
+applications, as well as in the prediction of global trends throughout
+the parameter space.
+
 Topics::	empty
 Examples::
 Theory::

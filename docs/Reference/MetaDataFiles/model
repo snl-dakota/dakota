@@ -1,6 +1,9 @@
 Blurb::
 Specifies how variables are mapped into a set of responses
 Description::
+A model is comprised of a mapping from variables, through an
+interface, to responses.
+
 <b> Model Group 1 </b>
 The type of model can be:
 -# \c single
@@ -10,20 +13,17 @@ The type of model can be:
 The input file must specify one of these types. If the type is not
 specified, Dakota will assume a single model.
 
-
 <b> Block Pointers and ID </b>
 
-Each
-of these model types supports \c variables_pointer and \c
+Each of these model types supports \c variables_pointer and \c
 responses_pointer strings for identifying the variables and responses
 specifications used in constructing the model by cross-referencing
 with \c id_variables and \c id_responses strings from particular
-variables and responses keyword specifications. 
+variables and responses keyword specifications.
 
-These pointers are
-valid for each model type since each model contains a set of variables
-that is mapped into a set of responses -- only the specifics of the
-mapping differ. 
+These pointers are valid for each model type since each model contains
+a set of variables that is mapped into a set of responses -- only the
+specifics of the mapping differ.
 
 Additional pointers are used for each model type for
 constructing the components of the variable to response mapping. As a
@@ -81,7 +81,6 @@ This example also supplies model independent controls for model
 identifier, variables pointer, and responses pointer (see \ref
 ModelIndControl), and supplies model dependent controls for specifying
 details of the nested mapping (see \ref ModelNested).
-
 
 Theory::
 Faq::
