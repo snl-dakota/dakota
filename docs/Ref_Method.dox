@@ -4080,17 +4080,16 @@ optimization and global nonlinear least squares as well as general
 nonlinear constraints through abstraction and subproblem recasting
 within the SurrBasedMinimizer and EffGlobalMinimizer classes.
 
-The efficient global method is in prototype form.  Currently, we do
-not expose any specification controls for the underlying Gaussian
-process model used or for the optimization of the expected improvement
-function (which is currently performed by the NCSU DIRECT algorithm
-using its internal defaults).  The efficient global algorithm is
-specified by the keyword \c efficient_global along with an optional \c
-seed specification, as shown in in Table \ref T5d28 "5.28" below.  By
+The efficient global optimization algorithm is specified by the
+keyword \c efficient_global along with an optional \c seed
+specification, as shown in in Table \ref T5d28 "5.28" below.  By
 default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
 implementation may be selected instead.  If \c use_derivatives is
 specified the GP model will be built using available derivative data
-(Surfpack GP only).
+(Surfpack GP only).  The \c import_points_file and \c
+export_points_file specifications are as described in \ref ModelSurrG,
+(the use of an embedded global surrogate model necessitates repeating
+selected surrogate model specifications within the method specification).
 
 \anchor T5d28
 <table>
@@ -5186,7 +5185,11 @@ desired, one must use the appropriate controls to specify the active
 variables in the variables specification block. By default, the
 Surfpack GP (Kriging) model is used, but the %Dakota implementation may
 be selected instead. If \c use_derivatives is specified the GP model
-will be built using available derivative data (Surfpack GP only).
+will be built using available derivative data (Surfpack GP only).  
+The \c import_points_file and \c export_points_file specifications are
+as described in \ref ModelSurrG (the use of an embedded global
+surrogate model necessitates repeating selected surrogate model
+specifications within the method specification).
 
 \ref T5d35 "Table 5.35" provides details of the global reliability method
 specifications beyond those of \ref T5d28 "Table 5.28".
@@ -5366,6 +5369,11 @@ the importance density. Thus, the Gaussian process adaptive importance
 sampling algorithm overcomes limitations involving using a potentially
 inaccurate surrogate model directly in importance sampling calculations.  
 
+The \c import_points_file and \c export_points_file specifications are
+as described in \ref ModelSurrG, (the use of an embedded GP model
+necessitates repeating selected surrogate model specifications within
+the method specification).
+
 \ref T5d37 "Table 5.37" provides details of the \c gpais method
 for Gaussian process adaptive importance sampling. 
 
@@ -5526,7 +5534,12 @@ whereupon the lie values are removed from the surrogate and the selected points
 are evaluated on the true model and the surrogate is refit with these values.
 </ol>
 
-\ref T5d38 "Table 5.38" provides details of the \c adaptive_sampling  method
+The \c import_points_file and \c export_points_file specifications are
+as described in \ref ModelSurrG, (the use of an embedded global
+surrogate model necessitates repeating selected surrogate model
+specifications within the method specification).
+
+\ref T5d38 "Table 5.38" provides details of the \c adaptive_sampling method
 for adaptive sampling. 
 
 \anchor T5d38
@@ -5810,7 +5823,10 @@ statistics generated from it (each multidimensional basis polynomial
 is divided by its norm, such that the corresponding coefficient is
 multiplied by this norm to result in the same expansion); rather, it
 is primarily useful for analysis of decay rates within the coefficient
-spectrum.
+spectrum.  The \c import_points_file and \c export_points_file
+specifications are as described in \ref ModelSurrG, (the use of an
+embedded global surrogate model necessitates repeating selected
+surrogate model specifications within the method specification).
 
 As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, 
 The default behavior is to form expansions over aleatory 
@@ -5965,7 +5981,10 @@ are provided in Tables \ref T5d40 "5.40" and \ref T5d41 "5.41":
      \f[N ~=~ 1 + P ~=~ \prod_{i=1}^{n} (p_i + 1)\f]
      In some advanced use cases (e.g., multifidelity UQ), multiple
      grid resolutions can be employed; for this reason, the \c 
-     quadrature_order specification supports an array input.
+     quadrature_order specification supports an array input.  In the
+     case of an output level of verbose or higher, the quadrature
+     points and weights are exported in tabular form to the file \c 
+     dakota_quadrature_tabular.dat.
 <li> multidimensional integration by the Smolyak sparse grid method
      (specified with \c sparse_grid_level and, optionally, \c
      dimension_preference).  The underlying one-dimensional
@@ -5993,7 +6012,10 @@ are provided in Tables \ref T5d40 "5.40" and \ref T5d41 "5.41":
      User's Manual for additional details).  As for \c quadrature_order,
      the \c sparse_grid_level specification admits an array input for
      enabling specification of multiple grid resolutions used by certain
-     advanced solution methodologies.
+     advanced solution methodologies, and in the
+     case of an output level of verbose or higher, the sparse grid
+     points and weights are exported in tabular form to the file \c 
+     dakota_sparse_tabular.dat.
 <li> multidimensional integration by Stroud cubature rules [\ref
      Stroud1971 "Stroud, 1971"] and extensions 
      [\ref Xiu2008 "Xiu, 2008"], as specified with \c cubature_integrand.  
@@ -6017,7 +6039,9 @@ are provided in Tables \ref T5d40 "5.40" and \ref T5d41 "5.41":
      uniform).  Note that global sensitivity analysis often assumes
      uniform bounded regions, rather than precise probability
      distributions, so the \e iid restriction would not be problematic
-     in that case.
+     in that case.  In the case of an output level of verbose or
+     higher, the cubature points and weights are exported in tabular
+     form to the file \c dakota_cubature_tabular.dat.
 
 \anchor T5d41
 <table>
@@ -6564,18 +6588,19 @@ releases, the \c hierarchical interpolation approach will enable local
 refinement in addition to the current \c uniform and \c
 dimension_adaptive options.
 
-The \c variance_based_decomp and covariance controls are identical to
-that described in \ref MethodNonDPCE.  As a default, the interpolation
-will be performed over continuous aleatory uncertain variables.  To
-expand the dimensionality of the interpolation to include continuous
-design, state, and epistemic uncertain variables, it is necessary to
-specify which variables are active in the variables specification
-block.  Interpolation points for these dimensions are based on
-Gauss-Legendre rules if non-nested, Gauss-Patterson rules if nested,
-and Newton-Cotes points in the case of piecewise bases.  Again, when
-probability integrals are evaluated, only the aleatory random variable
-domain is integrated, leaving behind a polynomial relationship between
-the statistics and the remaining design/state/epistemic variables.
+The \c variance_based_decomp, covariance, and \c export_points_file
+controls are identical to that described in \ref MethodNonDPCE.  As a
+default, the interpolation will be performed over continuous aleatory
+uncertain variables.  To expand the dimensionality of the
+interpolation to include continuous design, state, and epistemic
+uncertain variables, it is necessary to specify which variables are
+active in the variables specification block.  Interpolation points for
+these dimensions are based on Gauss-Legendre rules if non-nested,
+Gauss-Patterson rules if nested, and Newton-Cotes points in the case
+of piecewise bases.  Again, when probability integrals are evaluated,
+only the aleatory random variable domain is integrated, leaving behind
+a polynomial relationship between the statistics and the remaining
+design/state/epistemic variables.
 
 \ref T5d45 "Table 5.45" shows these general SC controls, and it along
 with \ref T5d46 "Table 5.46" to follow provide the details of the
@@ -6914,7 +6939,11 @@ can support interval optimization over discrete variables.
 When using \c lhs, \c ego, or \c sbo,
 one can specify a seed for the number of LHS samples, the random
 number generator, and the number of samples. The \c ea
-option allows the seed to be specified.  \ref T5d48 "Table 5.48"
+option allows the seed to be specified.    The \c import_points_file and \c
+export_points_file specifications are as described in \ref ModelSurrG,
+(the use of an embedded global surrogate model necessitates repeating
+selected surrogate model specifications within the method
+specification).  \ref T5d48 "Table 5.48"
 provides the specification for the global interval methods.
 
 \anchor T5d48
@@ -7132,6 +7161,11 @@ can support interval optimization over discrete variables.
 When using \c lhs, \c ego, or \c sbo, one can specify the
 seed for the number of LHS samples, the random number generator, and
 the number of samples. \c ea will use the seed specification also.
+The \c import_points_file and \c
+export_points_file specifications are as described in \ref ModelSurrG,
+(the use of embedded global surrogate models necessitates repeating
+selected surrogate model specifications within the method
+specification).
 
 Note that to calculate the plausibility and belief cumulative
 distribution functions, one has to look at all combinations of
@@ -7294,7 +7328,8 @@ expansion), or a \c sc emulator (stochastic collocation).  For the
 The user can define the number of samples 
 \c emulator_samples from which the emulator should be built.  It is also 
 possible to build the Gaussian process from points read in from the 
-\c import_points_file.  For \c pce or \c sc, the user can define a \c sparse_grid_level. 
+\c import_points_file and to export approximation-based sample evaluations 
+using \c export_points_file.  For \c pce or \c sc, the user can define a \c sparse_grid_level. 
 
 In terms of the MCMC sampling, one can specify the following for the QUESO method: 
 With the \c metropolis type, we have the options \c hastings for a standard 
