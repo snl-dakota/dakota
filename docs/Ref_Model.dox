@@ -697,14 +697,20 @@ from previous function evaluations performed in the run or from
 function evaluations read from a restart database or text file) in the
 building of new global approximations.  The default is no reuse of old
 data (since this can induce directional bias), and the settings of \c
-all, \c region, and \c points_file result in reuse of all available
-data, reuse of all data available in the current trust region, and
-reuse of all data from a specified text file, respectively.  Both \c
-dace_method_pointer and \c reuse_samples are optional specifications,
-which gives the user maximum flexibility in using design of
-experiments data, restart/text file data, or both.  Note that the
-default format for a samples data file has changed in %Dakota 5.2 (see
-User's Manual).
+all, \c region, and \c import_points_file result in reuse of all
+available data, reuse of all data available in the current trust
+region, and reuse of all data from a specified text file,
+respectively.  Both \c dace_method_pointer and \c reuse_samples are
+optional specifications, which gives the user maximum flexibility in
+using design of experiments data, restart/text file data, or both.  A
+global surrogate may also export any approximation-based samples to a
+separate file (note: these samples are also included in the standard
+output stream for output level of \c verbose or higher), identified
+using the \c export_points_file option. The tabular format employed
+for both the import and export data files may be either \c annotated
+or \c freeform, where the former includes a descriptive header and
+evaluation counter and the latter only contains the input and output
+data.
 
 The \c use_derivatives flag specifies that any available derivative
 information should be used in global approximation builds, for those
@@ -777,7 +783,6 @@ then a multipoint correction, as opposed to the local \c additive and
 \c multiplicative corrections.  Each of these correction capabilities
 is described in detail in [\ref Eldred2004a "Eldred et al., 2004a"].
 
-
 \anchor T6d6
 <table>
 <caption align = "top">
@@ -809,22 +814,28 @@ Specification detail for global approximations: build and correction controls
 <td>\c reuse_samples
 <td>\c all | \c region | \c none
 <td>Optional group
-<td>\c all if \c points_file defined, \c none otherwise
+<td>\c all if \c import_points_file defined, \c none otherwise
 <tr>
 <td>File import of samples for global approximation builds
-<td>\c points_file
+<td>\c import_points_file
 <td>string
 <td>Optional
 <td>no point import from a file
 <tr>
-<td>Data file in annotated format
-<td>\c annotated 
+<td>Import points file format
+<td>\c annotated | \c freeform
 <td>boolean
 <td>Optional
 <td>annotated
 <tr>
-<td>Data file in freeform format
-<td>\c freeform
+<td>File export of global approximation-based sample results
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
 <td>boolean
 <td>Optional
 <td>annotated

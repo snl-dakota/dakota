@@ -4130,6 +4130,30 @@ Specification detail for the efficient global method
 <td>none
 <td>Optional
 <td>Use function values only
+<tr>
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 
@@ -5211,6 +5235,30 @@ Specification detail for global reliability methods
 <td>integer
 <td>Optional
 <td>Time based seed: nonrepeatable
+<tr>
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 
@@ -5300,12 +5348,6 @@ Specification detail for the LHS-based importance sampling method
 <td>\c mt19937 | \c rnum2
 <td>Optional
 <td>Mersenne twister (\c mt19937)
-<tr>
-<td>File name for previously generated points to be imported as the basis for the initial GP
-<td>\c points_file
-<td>string
-<td>annotated|freeform
-<td>N/A
 </table>
 
 The second importance sampling method in %Dakota, \c gpais, is the one we recommend, 
@@ -5372,11 +5414,29 @@ Specification detail for Gaussian process adaptive importance sampling method
 <td>Optional
 <td>Mersenne twister (\c mt19937)
 <tr>
-<td>File name for previously generated points to be imported as the basis for the initial GP
-<td>\c points_file
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
 <td>string
-<td>annotated|freeform
-<td>N/A
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 \subsubsection MethodNonDAdaptive Adaptive sampling methods
@@ -5532,11 +5592,29 @@ Specification detail for adaptive sampling method
 <td>Optional
 <td>1
 <tr>
-<td>File name for previously generated points to be imported as the basis for the initial GP
-<td>\c points_file
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
 <td>string
-<td>annotated|freeform
-<td>N/A
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 \subsubsection MethodNonDPOFDarts POF Darts method
@@ -5823,6 +5901,30 @@ Specification detail for polynomial chaos expansion method: general controls.
 <td>none
 <td>Optional
 <td>PCE coefficients correspond to unnormalized basis polynomials
+<tr>
+<td>File name for points to be imported for forming a PCE (unstructured grid assumed)
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the PCE
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
@@ -6124,8 +6226,7 @@ return the one with the lowest cross validation error indicator.
 \htmlonly
 Table 5.43
 \endhtmlonly
-Specification detail for polynomial chaos expansion method: expansion 
-sampling, regression, and expansion import options.
+Specification detail for polynomial chaos expansion method: additional regression options.
 </caption>
 <tr>
 <td><b>Description</b>
@@ -6555,6 +6656,18 @@ Specification detail for stochastic collocation method: general controls.
 <td>none
 <td>Optional
 <td>\c diagonal_covariance for response vector > 10; else \c full_covariance
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the interpolant
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 To form the multidimensional interpolants \f$L_i\f$ of the expansion,
@@ -6860,6 +6973,30 @@ Specification detail for global interval estimation used in epistemic uncertaint
 <td>integer
 <td>Optional
 <td>10,000 for LHS, approximately numVars^2 for EGO
+<tr>
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 
@@ -7068,6 +7205,30 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td>integer
 <td>Optional
 <td>10,000 for LHS, approximately numVars^2 for EGO
+<tr>
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 
@@ -7133,7 +7294,7 @@ expansion), or a \c sc emulator (stochastic collocation).  For the
 The user can define the number of samples 
 \c emulator_samples from which the emulator should be built.  It is also 
 possible to build the Gaussian process from points read in from the 
-\c points_file.  For \c pce or \c sc, the user can define a \c sparse_grid_level. 
+\c import_points_file.  For \c pce or \c sc, the user can define a \c sparse_grid_level. 
 
 In terms of the MCMC sampling, one can specify the following for the QUESO method: 
 With the \c metropolis type, we have the options \c hastings for a standard 
@@ -7223,6 +7384,30 @@ Specification detail for the Bayesian calibration methods
 <td>\c emulator_samples (for gaussian process), \c sparse_grid_level (for pce or sc)
 <td>Optional
 <td>N/A
+<tr>
+<td>File name for points to be imported as the basis for the initial emulator
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the emulator
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 <tr>
 <td>Metropolis type for the MCMC algorithm 
 <td>\c metropolis 
@@ -8116,17 +8301,11 @@ Specification detail for the list parameter study
 <td>File containing points to evaluate
 <td>\c import_points_file
 <td>string
-<td>Required Group
-<td>N/A
+<td>Optional Group
+<td>no point import from a file
 <tr>
-<td>Points file in annotated format
-<td>\c annotated 
-<td>boolean
-<td>Optional
-<td>annotated
-<tr>
-<td>Points file in freeform format
-<td>\c freeform
+<td>Import points file format
+<td>\c annotated | \c freeform
 <td>boolean
 <td>Optional
 <td>annotated
