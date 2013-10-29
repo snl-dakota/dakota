@@ -21,7 +21,7 @@
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
-# timeout overrides: 12=TD360, 13=TD360
+# timeout overrides: 12=TD360, 13=TD400
 
 #=======================================================================
 method,
