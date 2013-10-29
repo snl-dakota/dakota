@@ -1,7 +1,9 @@
 Blurb::
-Description::
-Topics::	empty
+Description::   The \c named keyword allows the user to specify the name of
+the work directory created by Dakota. The directory will be created as a subdirectory of the directory in which Dakota is invoked.
+Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also::	interface-analysis_drivers-system-work_directory-directory_tag
+	interface-analysis_drivers-system-work_directory-directory_save 

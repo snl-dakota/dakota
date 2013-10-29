@@ -13,7 +13,7 @@ function evaluations are running simultaneously using files in a
 shared disk space, and file saving is most useful when debugging the
 data communication between %Dakota and the simulation.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

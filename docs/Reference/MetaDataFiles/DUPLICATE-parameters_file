@@ -6,7 +6,7 @@ file names are supplied as strings using the \c parameters_file and \c
 results_file specifications. Both specifications are optional with the
 default data transfer files being Unix temporary files with
 system-generated names (e.g., \c /usr/tmp/aaaa08861). 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

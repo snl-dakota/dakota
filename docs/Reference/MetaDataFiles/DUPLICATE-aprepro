@@ -7,7 +7,7 @@ usage with the APREPRO pre-processing tool
 [\ref Sjaar1992 "Sjaardema, 1992"] 
 using the \c aprepro specification (NOTE: the DPrePro
 pre-processing utility does not require this special formatting). 
-Topics::	file_formats, not_yet_reviewed
+Topics::	file_formats
 Examples::
 Theory::
 Faq::

@@ -35,7 +35,7 @@ data communication between %Dakota and the simulation.
 
 For details on the remaining keywords in the fork group, see the subpages.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 a fork interface
 specification which specifies the names of the analysis executable and

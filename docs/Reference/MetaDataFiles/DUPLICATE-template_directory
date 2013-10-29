@@ -1,6 +1,6 @@
 Blurb::
-Description::
-Topics::	empty
+Description::	Upon creation of a working directory, all the files in the directory specified by \c template_directory are linked (file system symbolic links) or copied into the working directory. 
+Topics::
 Examples::
 Theory::
 Faq::

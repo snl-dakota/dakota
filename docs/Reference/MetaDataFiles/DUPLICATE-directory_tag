@@ -1,6 +1,6 @@
 Blurb::
-Description::
-Topics::	empty
+Description::	When a work directory is created by Dakota, a suffix comprised of a '.' and the evaluation number is appended to the directory name. The \c directory_tag keyword is usually used with \c directory_save keyword.
+Topics::
 Examples::
 Theory::
 Faq::

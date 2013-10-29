@@ -1,6 +1,6 @@
 Blurb::
-Description::
-Topics::	empty
+Description::	If a working directory is created by Dakota, it is deleted after the evaluation is completed unless the the \c directory_save keyword is specified.
+Topics::
 Examples::
 Theory::
 Faq::

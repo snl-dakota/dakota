@@ -1,6 +1,6 @@
 Blurb::
-Description::
-Topics::	empty
+Description::	By default, files specified by the \c template_directory and \c template_files keywords are linked into any work directory created by Dakota. If the \c copy keyword is specified, these files are copied rather than linked.
+Topics::
 Examples::
 Theory::
 Faq::

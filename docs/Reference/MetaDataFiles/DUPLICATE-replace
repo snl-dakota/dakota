@@ -1,6 +1,6 @@
 Blurb::
-Description::
-Topics::	empty
+Description::	By default, Dakota will not overwrite any existing files in a work directory it creates. The \c replace keyword changes this behavior to allow overwriting.
+Topics::
 Examples::
 Theory::
 Faq::

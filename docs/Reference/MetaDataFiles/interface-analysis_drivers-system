@@ -8,7 +8,7 @@ when necessary. To enable the system call interface, replace the \c fork
 keyword with \c system. All other keywords have identical meanings to
 those for the fork interface
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::
