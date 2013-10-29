@@ -75,7 +75,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     file(GLOB dakota_test_input_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
       "dakota_4*" "dakota_a*.in" "dakota_b*.in" "dakota_c*.in" "dakota_d*.in"
       "dakota_h*" "dakota_i*.in" "dakota_k*.in" "dakota_m*.in" "dakota_n*.in"
-      "dakota_r*.in" "dakota_sb*.in" "dakota_us*.in" "dakota_v*.in"
+      "dakota_r*.in" "dakota_sb*.in" "dakota_u*.in" "dakota_v*.in"
     )
   else()
     file(GLOB dakota_test_input_files 
@@ -197,10 +197,9 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # Remove tests that fail on Windows (for now)
   if (WIN32)
     list(REMOVE_ITEM dakota_test_input_files
-      dakota_3pc.in
-      dakota_coliny_p.in
-      dakota_container.in
-      dakota_drivers.in
+      dakota_3pc.in                         # error/abort: Unix shell
+      dakota_container.in                   # error/abort: Unix shell
+      dakota_drivers.in                     # 4-6 error/abort: refork?
       dakota_cantilever_ego.in
       dakota_mogatest.in
       dakota_rbdo_short_column_analytic2.in
@@ -217,11 +216,11 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_users_mogatest1.in
       dakota_users_mogatest2.in
       dakota_users_mogatest3.in
-      dakota_lps_pce_rosenbrock_fail.in
-      dakota_rosenbrock_fail.in
-      dakota_uq_rosenbrock_pce_lls_cv_fail.in
-      dakota_pof.in
-      dakota_uq_ishigami_dste_exp.in
+      dakota_lps_pce_rosenbrock_fail.in       # maybe fixed
+      dakota_rosenbrock_fail.in               # maybe fixed
+      dakota_uq_rosenbrock_pce_lls_cv_fail.in # maybe fixed
+      dakota_pof.in                           # 1 timeout (stale)
+      dakota_uq_ishigami_dste_exp.in          # 2,3 Abort. range error in NKM
       dakota_uq_rosenbrock_adapt_exp.in
       dakota_uq_rosenbrock_pce_lls.in
       dakota_uq_rosenbrock_pce_lls_cv.in
@@ -230,7 +229,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_rbdo_cantilever_trsb.in
       dakota_rbdo_short_column_trsb.in
       dakota_rbdo_steel_column_analytic2.in
-      dakota_sbuq_hierarchical.in
       dakota_workdir.in
     )
   endif()
