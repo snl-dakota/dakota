@@ -69,7 +69,7 @@ static GuiKeyWord
 	kw_11[3] = {
 		{"analysis_concurrency",0x19,0,3,0,2167,0,0.,0.,0.,0,"{Asynchronous analysis concurrency} InterfCommands.html#InterfIndControl"},
 		{"evaluation_concurrency",0x19,0,1,0,2159,0,0.,0.,0.,0,"{Asynchronous evaluation concurrency} InterfCommands.html#InterfIndControl"},
-		{"local_evaluation_scheduling",8,2,2,0,2161,kw_10}
+		{"local_evaluation_scheduling",8,2,2,0,2161,kw_10,0.,0.,0.,0,"{Local evaluation scheduling} InterfCommands.html#InterfIndControl"}
 		},
 	kw_12[2] = {
 		{"dynamic",8,0,1,1,2177},
@@ -77,15 +77,15 @@ static GuiKeyWord
 		},
 	kw_13[2] = {
 		{"master",8,0,1,1,2173},
-		{"peer",8,2,1,1,2175,kw_12}
+		{"peer",8,2,1,1,2175,kw_12,0.,0.,0.,0,"{Peer scheduling of evaluations} InterfCommands.html#InterfIndControl"}
 		},
 	kw_14[8] = {
 		{"algebraic_mappings",11,0,2,0,2081,0,0.,0.,0.,0,"{Algebraic mappings file} InterfCommands.html#InterfAlgebraic"},
 		{"analysis_drivers",15,12,3,0,2083,kw_8,0.,0.,0.,0,"{Analysis drivers} InterfCommands.html#InterfApplic"},
-		{"analysis_scheduling",8,2,8,0,2183,kw_9},
+		{"analysis_scheduling",8,2,8,0,2183,kw_9,0.,0.,0.,0,"{Message passing configuration for scheduling of analyses} InterfCommands.html#InterfIndControl"},
 		{"analysis_servers",0x19,0,7,0,2181,0,0.,0.,0.,0,"{Number of analysis servers} InterfCommands.html#InterfIndControl"},
 		{"asynchronous",8,3,4,0,2157,kw_11,0.,0.,0.,0,"{Asynchronous interface usage} InterfCommands.html#InterfIndControl"},
-		{"evaluation_scheduling",8,2,6,0,2171,kw_13},
+		{"evaluation_scheduling",8,2,6,0,2171,kw_13,0.,0.,0.,0,"{Message passing configuration for scheduling of evaluations} InterfCommands.html#InterfIndControl"},
 		{"evaluation_servers",0x19,0,5,0,2169,0,0.,0.,0.,0,"{Number of evaluation servers} InterfCommands.html#InterfIndControl"},
 		{"id_interface",11,0,1,0,2079,0,0.,0.,0.,0,"{Interface set identifier} InterfCommands.html#InterfIndControl"}
 		},
@@ -140,10 +140,10 @@ static GuiKeyWord
 		{"batch_size",9,0,4,0,973,0,0.,0.,0.,0,"{Batch size (number of points added each iteration)} MethodCommands.html#MethodNonDAdaptive"},
 		{"distribution",8,2,11,0,1075,kw_15,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
 		{"emulator_samples",9,0,1,0,953,0,0.,0.,0.,0,"{Number of samples on the emulator to generate a new true sample each iteration} MethodCommands.html#MethodNonDAdaptive"},
-		{"export_points_file",11,2,6,0,981,kw_20},
+		{"export_points_file",11,2,6,0,981,kw_20,0.,0.,0.,0,"{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodNonDAdaptive"},
 		{"fitness_metric",8,3,2,0,955,kw_21,0.,0.,0.,0,"{Fitness metric} MethodCommands.html#MethodNonDAdaptive"},
 		{"gen_reliability_levels",14,1,13,0,1085,kw_16,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
-		{"import_points_file",11,2,5,0,975,kw_22},
+		{"import_points_file",11,2,5,0,975,kw_22,0.,0.,0.,0,"{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDAdaptive"},
 		{"misc_options",15,0,8,0,1003},
 		{"probability_levels",14,1,12,0,1081,kw_17,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
 		{"response_levels",14,2,7,0,987,kw_25},
@@ -493,13 +493,13 @@ static GuiKeyWord
 		{"surfpack",8,0,1,1,615}
 		},
 	kw_75[2] = {
-		{"annotated",8,0,1,0,623,0,0.,0.,0.,0,"{Points file in annotated format} MethodCommands.html#MethodPSLPS"},
-		{"freeform",8,0,1,0,625,0,0.,0.,0.,0,"{Points file in freeform format} MethodCommands.html#MethodPSLPS"}
+		{"annotated",8,0,1,0,623},
+		{"freeform",8,0,1,0,625}
 		},
 	kw_76[6] = {
-		{"export_points_file",11,2,4,0,627,kw_73},
+		{"export_points_file",11,2,4,0,627,kw_73,0.,0.,0.,0,"{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodEG"},
 		{"gaussian_process",8,2,1,0,613,kw_74,0.,0.,0.,0,"{GP selection} MethodCommands.html#MethodEG"},
-		{"import_points_file",11,2,3,0,621,kw_75,0.,0.,0.,0,"{File containing points to evaluate} MethodCommands.html#MethodPSLPS"},
+		{"import_points_file",11,2,3,0,621,kw_75,0.,0.,0.,0,"{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodEG"},
 		{"kriging",0,2,1,0,612,kw_74},
 		{"seed",0x19,0,5,0,1305,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"},
 		{"use_derivatives",8,0,2,0,619,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodEG"}
@@ -571,9 +571,9 @@ static GuiKeyWord
 	kw_88[10] = {
 		{"distribution",8,2,7,0,1075,kw_15,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
 		{"emulator_samples",9,0,1,0,921},
-		{"export_points_file",11,2,3,0,929,kw_83},
+		{"export_points_file",11,2,3,0,929,kw_83,0.,0.,0.,0,"{File name for exporting approximation-based samples from evaluating the emulator} MethodCommands.html#MethodNonDBayesCalib"},
 		{"gen_reliability_levels",14,1,9,0,1085,kw_16,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
-		{"import_points_file",11,2,2,0,923,kw_84},
+		{"import_points_file",11,2,2,0,923,kw_84,0.,0.,0.,0,"{File containing points to evaluate} MethodCommands.html#MethodPSLPS"},
 		{"probability_levels",14,1,8,0,1081,kw_17,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
 		{"response_levels",14,2,4,0,935,kw_87},
 		{"rng",8,2,10,0,1089,kw_18,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
@@ -642,9 +642,9 @@ static GuiKeyWord
 		{"freeform",8,0,1,0,1113}
 		},
 	kw_101[5] = {
-		{"export_points_file",11,2,4,0,1115,kw_98},
+		{"export_points_file",11,2,4,0,1115,kw_98,0.,0.,0.,0,"{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodNonDGlobalIntervalEst"},
 		{"gaussian_process",8,2,1,0,1101,kw_99,0.,0.,0.,0,"{EGO GP selection} MethodCommands.html#MethodNonDGlobalIntervalEst"},
-		{"import_points_file",11,2,3,0,1109,kw_100},
+		{"import_points_file",11,2,3,0,1109,kw_100,0.,0.,0.,0,"{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDGlobalIntervalEst"},
 		{"kriging",0,2,1,0,1100,kw_99},
 		{"use_derivatives",8,0,2,0,1107,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalIntervalEst"}
 		},
@@ -698,9 +698,9 @@ static GuiKeyWord
 		},
 	kw_113[13] = {
 		{"distribution",8,2,8,0,1467,kw_103},
-		{"export_points_file",11,2,3,0,1435,kw_106},
+		{"export_points_file",11,2,3,0,1435,kw_106,0.,0.,0.,0,"{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodNonDGlobalRel"},
 		{"gen_reliability_levels",14,1,10,0,1477,kw_104},
-		{"import_points_file",11,2,2,0,1429,kw_107},
+		{"import_points_file",11,2,2,0,1429,kw_107,0.,0.,0.,0,"{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDGlobalRel"},
 		{"probability_levels",14,1,9,0,1473,kw_105},
 		{"response_levels",14,2,7,0,1451,kw_110},
 		{"rng",8,2,6,0,1445,kw_111},
@@ -1011,7 +1011,7 @@ static GuiKeyWord
 		{"bp",0,0,2,0,686},
 		{"bpdn",0,1,2,0,688,kw_162},
 		{"cross_validation",8,0,3,0,703,0,0.,0.,0.,0,"{Specify whether to use cross validation} MethodCommands.html#MethodNonDPCE"},
-		{"import_points_file",11,2,7,0,717,kw_161},
+		{"import_points_file",11,2,7,0,717,kw_161,0.,0.,0.,0,"{File name for points to be imported for forming a PCE (unstructured grid assumed)} MethodCommands.html#MethodNonDPCE"},
 		{"lars",0,1,2,0,692,kw_163},
 		{"lasso",0,2,2,0,696,kw_164},
 		{"least_absolute_shrinkage",8,2,2,0,697,kw_164,0.,0.,0.,0,"{L1 minimization via Least Absolute Shrinkage Operator (LASSO)} MethodCommands.html#MethodNonDPCE"},
@@ -1026,7 +1026,7 @@ static GuiKeyWord
 		{"use_derivatives",8,0,4,0,705}
 		},
 	kw_168[4] = {
-		{"import_points_file",11,2,3,0,717,kw_161},
+		{"import_points_file",11,2,3,0,717,kw_161,0.,0.,0.,0,"{File name for points to be imported for forming a PCE (unstructured grid assumed)} MethodCommands.html#MethodNonDPCE"},
 		{"incremental_lhs",8,0,2,0,715,0,0.,0.,0.,0,"{Use incremental LHS for expansion_samples} MethodCommands.html#MethodNonDPCE"},
 		{"reuse_points",8,0,1,0,713},
 		{"reuse_samples",0,0,1,0,712}
@@ -1035,7 +1035,7 @@ static GuiKeyWord
 		{"collocation_points",13,18,2,1,671,kw_167,0.,0.,0.,0,"{Number collocation points to estimate coeffs} MethodCommands.html#MethodNonDPCE"},
 		{"collocation_ratio",10,18,2,1,673,kw_167,0.,0.,0.,0,"{Collocation point oversampling ratio to estimate coeffs} MethodCommands.html#MethodNonDPCE"},
 		{"dimension_preference",14,0,1,0,669},
-		{"expansion_import_file",11,0,2,1,723,0,0.,0.,0.,0,"{PCE coeffs import file} MethodCommands.html#MethodNonDPCE"},
+		{"expansion_import_file",11,0,2,1,723,0,0.,0.,0.,0,"{Import file for PCE coefficients} MethodCommands.html#MethodNonDPCE"},
 		{"expansion_samples",13,4,2,1,711,kw_168,0.,0.,0.,0,"{Number simulation samples to estimate coeffs} MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_170[2] = {
@@ -1049,7 +1049,7 @@ static GuiKeyWord
 	kw_172[6] = {
 		{"collocation_points",13,0,1,1,727},
 		{"cross_validation",8,0,2,0,729},
-		{"import_points_file",11,2,5,0,735,kw_171},
+		{"import_points_file",11,2,5,0,735,kw_171,0.,0.,0.,0,"{File name for points to be imported as the basis for the initial emulator} MethodCommands.html#MethodNonDBayesCalib"},
 		{"reuse_points",8,0,4,0,733},
 		{"reuse_samples",0,0,4,0,732},
 		{"tensor_grid",13,0,3,0,731}
@@ -1086,7 +1086,7 @@ static GuiKeyWord
 		},
 	kw_179[2] = {
 		{"drop_tolerance",10,0,2,0,745,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDMC"},
-		{"interaction_order",0x19,0,1,0,743}
+		{"interaction_order",0x19,0,1,0,743,0,0.,0.,0.,0,"{Restriction of order of VBD interations} MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_180[26] = {
 		{"askey",8,0,2,0,647},
@@ -1094,12 +1094,12 @@ static GuiKeyWord
 		{"diagonal_covariance",8,0,5,0,747},
 		{"distribution",8,2,12,0,1075,kw_15,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
 		{"expansion_order",13,5,3,1,667,kw_169,0.,0.,0.,0,"{Expansion order} MethodCommands.html#MethodNonDPCE"},
-		{"export_points_file",11,2,9,0,767,kw_170},
+		{"export_points_file",11,2,9,0,767,kw_170,0.,0.,0.,0,"{File name for exporting approximation-based samples from evaluating the PCE} MethodCommands.html#MethodNonDPCE"},
 		{"fixed_seed",8,0,18,0,871,0,0.,0.,0.,0,"{Fixed seed flag} MethodCommands.html#MethodNonDMC"},
 		{"full_covariance",8,0,5,0,749},
 		{"gen_reliability_levels",14,1,14,0,1085,kw_16,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
 		{"least_interpolation",0,6,3,1,724,kw_172},
-		{"normalized",8,0,6,0,751},
+		{"normalized",8,0,6,0,751,0,0.,0.,0.,0,"{Output PCE coefficients corresponding to normalized basis} MethodCommands.html#MethodNonDPCE"},
 		{"oli",0,6,3,1,724,kw_172},
 		{"orthogonal_least_interpolation",8,6,3,1,725,kw_172,0.,0.,0.,0,"{Orthogonal Least Interpolation (OLI)} MethodCommands.html#MethodNonDPCE"},
 		{"p_refinement",8,2,1,0,635,kw_174,0.,0.,0.,0,"{Automated polynomial order refinement} MethodCommands.html#MethodNonDPCE"},
@@ -1179,14 +1179,14 @@ static GuiKeyWord
 		},
 	kw_193[2] = {
 		{"drop_tolerance",10,0,2,0,827,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDSC"},
-		{"interaction_order",0x19,0,1,0,825}
+		{"interaction_order",0x19,0,1,0,825,0,0.,0.,0.,0,"{Restriction of order of VBD interations} MethodCommands.html#MethodNonDSC"}
 		},
 	kw_194[26] = {
 		{"askey",8,0,2,0,799},
 		{"diagonal_covariance",8,0,8,0,829},
 		{"dimension_preference",14,0,4,0,815,0,0.,0.,0.,0,"{Dimension preference for anisotropic tensor and sparse grids} MethodCommands.html#MethodNonDSC"},
 		{"distribution",8,2,14,0,1075,kw_15,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
-		{"export_points_file",11,2,11,0,847,kw_185},
+		{"export_points_file",11,2,11,0,847,kw_185,0.,0.,0.,0,"{File name for exporting approximation-based samples from evaluating the interpolant} MethodCommands.html#MethodNonDSC"},
 		{"fixed_seed",8,0,20,0,871,0,0.,0.,0.,0,"{Fixed seed flag} MethodCommands.html#MethodNonDMC"},
 		{"full_covariance",8,0,8,0,831},
 		{"gen_reliability_levels",14,1,16,0,1085,kw_16,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
@@ -1541,8 +1541,8 @@ static GuiKeyWord
 		{"press",8,0,2,0,1705,0,0.,0.,0.,0,"{Perform PRESS cross validation} ModelCommands.html#ModelSurrG"}
 		},
 	kw_229[2] = {
-		{"annotated",8,0,1,0,1677,0,0.,0.,0.,0,"{Challenge file in annotated format} ModelCommands.html#ModelSurrG"},
-		{"freeform",8,0,1,0,1679,0,0.,0.,0.,0,"{Challenge file in freeform format} ModelCommands.html#ModelSurrG"}
+		{"annotated",8,0,1,0,1677},
+		{"freeform",8,0,1,0,1679}
 		},
 	kw_230[3] = {
 		{"constant",8,0,1,1,1571},
@@ -1573,8 +1573,8 @@ static GuiKeyWord
 		{"surfpack",8,7,1,1,1577,kw_233}
 		},
 	kw_235[2] = {
-		{"annotated",8,0,1,0,1671,0,0.,0.,0.,0,"{Data file in annotated format} ModelCommands.html#ModelSurrG"},
-		{"freeform",8,0,1,0,1673,0,0.,0.,0.,0,"{Data file in freeform format} ModelCommands.html#ModelSurrG"}
+		{"annotated",8,0,1,0,1671,0,0.,0.,0.,0,"{Challenge file in annotated format} ModelCommands.html#ModelSurrG"},
+		{"freeform",8,0,1,0,1673,0,0.,0.,0.,0,"{Challenge file in freeform format} ModelCommands.html#ModelSurrG"}
 		},
 	kw_236[2] = {
 		{"cubic",8,0,1,1,1609},
@@ -1619,12 +1619,12 @@ static GuiKeyWord
 		{"correction",8,6,8,0,1683,kw_226,0.,0.,0.,0,"{Surrogate correction approach} ModelCommands.html#ModelSurrG"},
 		{"dace_method_pointer",11,0,3,0,1659,0,0.,0.,0.,0,"{Design of experiments method pointer} ModelCommands.html#ModelSurrG"},
 		{"diagnostics",7,2,9,0,1696,kw_228},
-		{"export_points_file",11,2,6,0,1675,kw_229},
+		{"export_points_file",11,2,6,0,1675,kw_229,0.,0.,0.,0,"{File export of global approximation-based sample results} ModelCommands.html#ModelSurrG"},
 		{"gaussian_process",8,2,1,1,1563,kw_234,0.,0.,0.,0,"[CHOOSE surrogate type]{Dakota Gaussian process} ModelCommands.html#ModelSurrG"},
-		{"import_points_file",11,2,5,0,1669,kw_235},
+		{"import_points_file",11,2,5,0,1669,kw_235,0.,0.,0.,0,"{File import of samples for global approximation builds} ModelCommands.html#ModelSurrG"},
 		{"kriging",0,2,1,1,1562,kw_234},
 		{"mars",8,3,1,1,1601,kw_237,0.,0.,0.,0,"{Multivariate adaptive regression splines} ModelCommands.html#ModelSurrG"},
-		{"metrics",15,2,9,0,1697,kw_228},
+		{"metrics",15,2,9,0,1697,kw_228,0.,0.,0.,0,"{Compute surrogate diagnostics} ModelCommands.html#ModelSurrG"},
 		{"minimum_points",8,0,2,0,1655},
 		{"moving_least_squares",8,3,1,1,1613,kw_238,0.,0.,0.,0,"{Moving least squares} ModelCommands.html#ModelSurrG"},
 		{"neural_network",8,4,1,1,1621,kw_239,0.,0.,0.,0,"{Artificial neural network} ModelCommands.html#ModelSurrG"},
@@ -1666,7 +1666,7 @@ static GuiKeyWord
 		{"multipoint",8,2,2,1,1713,kw_247,0.,0.,0.,0,"{Multipoint approximation} ModelCommands.html#ModelSurrMP"}
 		},
 	kw_249[7] = {
-		{"hierarchical_tagging",8,0,4,0,1551},
+		{"hierarchical_tagging",8,0,4,0,1551,0,0.,0.,0.,0,"{Hierarchical evaluation tags} ModelCommands.html#ModelIndControl"},
 		{"id_model",11,0,1,0,1545,0,0.,0.,0.,0,"{Model set identifier} ModelCommands.html#ModelIndControl"},
 		{"nested",8,2,5,1,1743,kw_223,0.,0.,0.,0,"[CHOOSE model type]"},
 		{"responses_pointer",11,0,3,0,1549,0,0.,0.,0.,0,"{Responses set pointer} ModelCommands.html#ModelIndControl"},
@@ -1886,7 +1886,7 @@ static GuiKeyWord
 	kw_280[10] = {
 		{"graphics",8,0,1,0,3,0,0.,0.,0.,0,"{Graphics flag} StratCommands.html#StratIndControl"},
 		{"hybrid",8,5,7,1,23,kw_271,0.,0.,0.,0,"[CHOOSE strategy type]{Hybrid strategy} StratCommands.html#StratHybrid"},
-		{"iterator_scheduling",8,2,6,0,17,kw_272},
+		{"iterator_scheduling",8,2,6,0,17,kw_272,0.,0.,0.,0,"{Message passing configuration for scheduling of iterator jobs} StratCommands.html#StratIndControl"},
 		{"iterator_servers",9,0,5,0,15,0,0.,0.,0.,0,"{Number of iterator servers} StratCommands.html#StratIndControl"},
 		{"multi_start",8,3,7,1,41,kw_274,0.,0.,0.,0,"{Multi-start iteration strategy} StratCommands.html#StratMultiStart"},
 		{"output_precision",0x29,0,3,0,9,0,0.,0.,0.,0,"{Numeric output precision} StratCommands.html#StratIndControl"},

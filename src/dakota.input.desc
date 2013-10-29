@@ -23,6 +23,8 @@ TAG "strategy/iterator_servers"
 	DESC "{Number of iterator servers} StratCommands.html#StratIndControl"
 
 TAG "strategy/iterator_scheduling"
+	DESC "{Message passing configuration for scheduling of iterator jobs} StratCommands.html#StratIndControl"
+
 TAG "strategy/iterator_scheduling/master"
 TAG "strategy/iterator_scheduling/peer"
 TAG "strategy/hybrid"
@@ -665,15 +667,13 @@ TAG "method/efficient_global/use_derivatives"
 	DESC "{Derivative usage} MethodCommands.html#MethodEG"
 
 TAG "method/efficient_global/import_points_file"
-	DESC "{File containing points to evaluate} MethodCommands.html#MethodPSLPS"
+	DESC "{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodEG"
 
 TAG "method/efficient_global/import_points_file/annotated"
-	DESC "{Points file in annotated format} MethodCommands.html#MethodPSLPS"
-
 TAG "method/efficient_global/import_points_file/freeform"
-	DESC "{Points file in freeform format} MethodCommands.html#MethodPSLPS"
-
 TAG "method/efficient_global/export_points_file"
+	DESC "{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodEG"
+
 TAG "method/efficient_global/export_points_file/annotated"
 TAG "method/efficient_global/export_points_file/freeform"
 TAG "method/polynomial_chaos" GROUP "Uncertainty Quantification"
@@ -757,10 +757,12 @@ TAG "method/polynomial_chaos/expansion_order/expansion_samples/incremental_lhs"
 	DESC "{Use incremental LHS for expansion_samples} MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/expansion_order/collocation_points/import_points_file"
+	DESC "{File name for points to be imported for forming a PCE (unstructured grid assumed)} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/expansion_order/collocation_points/import_points_file/annotated"
 TAG "method/polynomial_chaos/expansion_order/collocation_points/import_points_file/freeform"
 TAG "method/polynomial_chaos/expansion_order/expansion_import_file"
-	DESC "{PCE coeffs import file} MethodCommands.html#MethodNonDPCE"
+	DESC "{Import file for PCE coefficients} MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/orthogonal_least_interpolation"
 	DESC "{Orthogonal Least Interpolation (OLI)} MethodCommands.html#MethodNonDPCE"
@@ -770,18 +772,24 @@ TAG "method/polynomial_chaos/orthogonal_least_interpolation/cross_validation"
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/tensor_grid"
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/reuse_points"
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/import_points_file"
+	DESC "{File name for points to be imported as the basis for the initial emulator} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/import_points_file/annotated"
 TAG "method/polynomial_chaos/orthogonal_least_interpolation/import_points_file/freeform"
 TAG "method/polynomial_chaos/variance_based_decomp"
 	DESC "{Variance based decomposition (VBD)} MethodCommands.html#MethodNonDMC"
 
 TAG "method/polynomial_chaos/variance_based_decomp/interaction_order"
+	DESC "{Restriction of order of VBD interations} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/variance_based_decomp/drop_tolerance"
 	DESC "{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDMC"
 
 TAG "method/polynomial_chaos/diagonal_covariance"
 TAG "method/polynomial_chaos/full_covariance"
 TAG "method/polynomial_chaos/normalized"
+	DESC "{Output PCE coefficients corresponding to normalized basis} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/sample_type"
 	DESC "{Sampling type} MethodCommands.html#MethodNonDMC"
 
@@ -794,6 +802,8 @@ TAG "method/polynomial_chaos/sample_refinement/import"
 TAG "method/polynomial_chaos/sample_refinement/adapt_import"
 TAG "method/polynomial_chaos/sample_refinement/mm_adapt_import"
 TAG "method/polynomial_chaos/export_points_file"
+	DESC "{File name for exporting approximation-based samples from evaluating the PCE} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/export_points_file/annotated"
 TAG "method/polynomial_chaos/export_points_file/freeform"
 TAG "method/stoch_collocation" GROUP "Uncertainty Quantification"
@@ -833,6 +843,8 @@ TAG "method/stoch_collocation/variance_based_decomp"
 	DESC "{Variance-based decomposition (VBD)} MethodCommands.html#MethodNonDSC"
 
 TAG "method/stoch_collocation/variance_based_decomp/interaction_order"
+	DESC "{Restriction of order of VBD interations} MethodCommands.html#MethodNonDSC"
+
 TAG "method/stoch_collocation/variance_based_decomp/drop_tolerance"
 	DESC "{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDSC"
 
@@ -846,6 +858,8 @@ TAG "method/stoch_collocation/sample_refinement/import"
 TAG "method/stoch_collocation/sample_refinement/adapt_import"
 TAG "method/stoch_collocation/sample_refinement/mm_adapt_import"
 TAG "method/stoch_collocation/export_points_file"
+	DESC "{File name for exporting approximation-based samples from evaluating the interpolant} MethodCommands.html#MethodNonDSC"
+
 TAG "method/stoch_collocation/export_points_file/annotated"
 TAG "method/stoch_collocation/export_points_file/freeform"
 TAG "method/sampling" GROUP "Uncertainty Quantification"
@@ -900,9 +914,13 @@ TAG "method/importance_sampling/response_levels/compute/system/parallel"
 TAG "method/gpais" GROUP "Uncertainty Quantification"
 TAG "method/gpais/emulator_samples"
 TAG "method/gpais/import_points_file"
+	DESC "{File containing points to evaluate} MethodCommands.html#MethodPSLPS"
+
 TAG "method/gpais/import_points_file/annotated"
 TAG "method/gpais/import_points_file/freeform"
 TAG "method/gpais/export_points_file"
+	DESC "{File name for exporting approximation-based samples from evaluating the emulator} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/gpais/export_points_file/annotated"
 TAG "method/gpais/export_points_file/freeform"
 TAG "method/gpais/response_levels"
@@ -934,9 +952,13 @@ TAG "method/adaptive_sampling/batch_size"
 	DESC "{Batch size (number of points added each iteration)} MethodCommands.html#MethodNonDAdaptive"
 
 TAG "method/adaptive_sampling/import_points_file"
+	DESC "{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDAdaptive"
+
 TAG "method/adaptive_sampling/import_points_file/annotated"
 TAG "method/adaptive_sampling/import_points_file/freeform"
 TAG "method/adaptive_sampling/export_points_file"
+	DESC "{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodNonDAdaptive"
+
 TAG "method/adaptive_sampling/export_points_file/annotated"
 TAG "method/adaptive_sampling/export_points_file/freeform"
 TAG "method/adaptive_sampling/response_levels"
@@ -1017,9 +1039,13 @@ TAG "method/global_interval_est/sbo/use_derivatives"
 	DESC "{Derivative usage} MethodCommands.html#MethodNonDGlobalIntervalEst"
 
 TAG "method/global_interval_est/sbo/import_points_file"
+	DESC "{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDGlobalIntervalEst"
+
 TAG "method/global_interval_est/sbo/import_points_file/annotated"
 TAG "method/global_interval_est/sbo/import_points_file/freeform"
 TAG "method/global_interval_est/sbo/export_points_file"
+	DESC "{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodNonDGlobalIntervalEst"
+
 TAG "method/global_interval_est/sbo/export_points_file/annotated"
 TAG "method/global_interval_est/sbo/export_points_file/freeform"
 TAG "method/global_interval_est/ea"
@@ -1253,9 +1279,13 @@ TAG "method/global_reliability/u_gaussian_process"
 TAG "method/global_reliability/x_gaussian_process/surfpack"
 TAG "method/global_reliability/x_gaussian_process/dakota"
 TAG "method/global_reliability/import_points_file"
+	DESC "{File name for points to be imported as the basis for the initial GP} MethodCommands.html#MethodNonDGlobalRel"
+
 TAG "method/global_reliability/import_points_file/annotated"
 TAG "method/global_reliability/import_points_file/freeform"
 TAG "method/global_reliability/export_points_file"
+	DESC "{File name for exporting approximation-based samples from evaluating the GP} MethodCommands.html#MethodNonDGlobalRel"
+
 TAG "method/global_reliability/export_points_file/annotated"
 TAG "method/global_reliability/export_points_file/freeform"
 TAG "method/global_reliability/use_derivatives"
@@ -1370,6 +1400,8 @@ TAG "model/responses_pointer"
 	DESC "{Responses set pointer} ModelCommands.html#ModelIndControl"
 
 TAG "model/hierarchical_tagging"
+	DESC "{Hierarchical evaluation tags} ModelCommands.html#ModelIndControl"
+
 TAG "model/single"
 	DESC "@"
 
@@ -1487,19 +1519,19 @@ TAG "model/surrogate/global/reuse_points/all"
 TAG "model/surrogate/global/reuse_points/region"
 TAG "model/surrogate/global/reuse_points/none"
 TAG "model/surrogate/global/import_points_file"
+	DESC "{File import of samples for global approximation builds} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/import_points_file/annotated"
-	DESC "{Data file in annotated format} ModelCommands.html#ModelSurrG"
-
-TAG "model/surrogate/global/import_points_file/freeform"
-	DESC "{Data file in freeform format} ModelCommands.html#ModelSurrG"
-
-TAG "model/surrogate/global/export_points_file"
-TAG "model/surrogate/global/export_points_file/annotated"
 	DESC "{Challenge file in annotated format} ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/export_points_file/freeform"
+TAG "model/surrogate/global/import_points_file/freeform"
 	DESC "{Challenge file in freeform format} ModelCommands.html#ModelSurrG"
 
+TAG "model/surrogate/global/export_points_file"
+	DESC "{File export of global approximation-based sample results} ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/export_points_file/annotated"
+TAG "model/surrogate/global/export_points_file/freeform"
 TAG "model/surrogate/global/use_derivatives"
 	DESC "{Surfpack GP gradient enhancement} ModelCommands.html#ModelSurrG"
 
@@ -1517,6 +1549,8 @@ TAG "model/surrogate/global/correction/additive"
 TAG "model/surrogate/global/correction/multiplicative"
 TAG "model/surrogate/global/correction/combined"
 TAG "model/surrogate/global/metrics"
+	DESC "{Compute surrogate diagnostics} ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/metrics/cross_validate"
 TAG "model/surrogate/global/metrics/cross_validate/folds"
 	DESC "{Number cross validation folds} ModelCommands.html#ModelSurrG"
@@ -2161,6 +2195,8 @@ TAG "interface/asynchronous/evaluation_concurrency"
 	DESC "{Asynchronous evaluation concurrency} InterfCommands.html#InterfIndControl"
 
 TAG "interface/asynchronous/local_evaluation_scheduling"
+	DESC "{Local evaluation scheduling} InterfCommands.html#InterfIndControl"
+
 TAG "interface/asynchronous/local_evaluation_scheduling/dynamic"
 TAG "interface/asynchronous/local_evaluation_scheduling/static"
 TAG "interface/asynchronous/analysis_concurrency"
@@ -2170,14 +2206,20 @@ TAG "interface/evaluation_servers"
 	DESC "{Number of evaluation servers} InterfCommands.html#InterfIndControl"
 
 TAG "interface/evaluation_scheduling"
+	DESC "{Message passing configuration for scheduling of evaluations} InterfCommands.html#InterfIndControl"
+
 TAG "interface/evaluation_scheduling/master"
 TAG "interface/evaluation_scheduling/peer"
+	DESC "{Peer scheduling of evaluations} InterfCommands.html#InterfIndControl"
+
 TAG "interface/evaluation_scheduling/peer/dynamic"
 TAG "interface/evaluation_scheduling/peer/static"
 TAG "interface/analysis_servers"
 	DESC "{Number of analysis servers} InterfCommands.html#InterfIndControl"
 
 TAG "interface/analysis_scheduling"
+	DESC "{Message passing configuration for scheduling of analyses} InterfCommands.html#InterfIndControl"
+
 TAG "interface/analysis_scheduling/master"
 TAG "interface/analysis_scheduling/peer"
 TAG "responses"

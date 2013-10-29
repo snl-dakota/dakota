@@ -1003,29 +1003,29 @@ void ParallelLibrary::print_configuration()
     // Strategy diagnostics
     Cout << "\n---------------------------------------------------------------"
 	 << "--------------\nDAKOTA parallel configuration:\n\n"
-	 << "Level\t\t\tnum_servers    procs_per_server    partition/"
-	 << "schedule\n-----\t\t\t-----------    ----------------    "
-	 << "------------------\nconcurrent iterators\t  " << std::setw(4)
+	 << "Level\t\t\tnum_servers    procs_per_server    partition\n"
+	 << "-----\t\t\t-----------    ----------------    ---------\n"
+	 << "concurrent iterators\t  " << std::setw(4)
          << si_pl.numServers << "\t\t   " << std::setw(4)
-	 << si_pl.procsPerServer << "\t\t       ";
+	 << si_pl.procsPerServer << "\t\t   ";
     if (si_pl.dedicatedMasterFlag) Cout << "ded. master\n";
     else                           Cout << "peer\n";
 
     // Iterator diagnostics
     Cout << "concurrent evaluations\t  " << std::setw(4) << num_eval_srv
-	 << "\t\t   " << std::setw(4) << p_per_eval << "\t\t       ";
+	 << "\t\t   " << std::setw(4) << p_per_eval << "\t\t   ";
     if (iterator_ded_master_flag)  Cout << "ded. master\n";
     else                           Cout << "peer\n";
 
     // Evaluation diagnostics
     Cout << "concurrent analyses\t  " << std::setw(4) << num_anal_srv
-	 << "\t\t   " << std::setw(4) << p_per_anal << "\t\t       ";
+	 << "\t\t   " << std::setw(4) << p_per_anal << "\t\t   ";
     if (eval_ded_master_flag)      Cout << "ded. master\n";
     else                           Cout << "peer\n";
 
     // Analysis diagnostics
     Cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
-         << "\t\t     N/A\t       N/A\n\nTotal parallelism levels =   " 
+         << "\t\t     N/A\t   N/A\n\nTotal parallelism levels =   " 
          << par_levels << "\n-------------------------------------------------"
 	 << "----------------------------" << std::endl;
   }
