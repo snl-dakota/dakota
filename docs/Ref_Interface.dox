@@ -608,11 +608,14 @@ necessary to cloister input and output files in separate directories
 to avoid conflicts.  When the \c work_directory feature is enabled,
 %Dakota will create a directory for each evaluation/analysis (with
 optional tagging and saving as with files), and execute the analysis
-driver from that working directory.  If an optional \c
-template_directory and/or list of \c template_files is specified,
-%Dakota will link (or copy) those files into each working
-directory. The specifications for fork and \ref InterfApplicSC 
-"system call" interfaces are summarized in \ref T8d5 "Table 8.5".
+driver from that working directory.  The directory may be \c named
+with a string, or left anonymous to use temporary file space.  If an
+optional \c template_directory and/or list of \c template_files is
+specified, %Dakota will link (or copy) those files into each working
+directory. For additional details, see the User's Manual.
+
+The specifications for fork and \ref InterfApplicSC "system call"
+interfaces are summarized in \ref T8d5 "Table 8.5".
   
 \anchor T8d5
 <table>
@@ -805,13 +808,15 @@ within Sandia and supported to varying degrees.
 %Dakota supports library-linked interfaces to Matlab, Scilab, and
 Python scientific computation software, but they must be explicitly
 enabled when compiling %Dakota from source.  First consult the Users
-Manual [\ref UsersMan "Adams et al., 2010"] for discussion and
-examples.  Contact the %Dakota users mailing list for assistance
-building and using %Dakota with these interfaces.  To enable, specify
-one of the interfaces in \ref T8d7 "Table 8.7".  In all these
-interfaces, the \c analysis_driver is used to specify a Matlab,
-Scilab, or Python file which implements the parameter to response
-mapping.
+Manual [\ref UsersMan "Adams et al., 2010"] for more extensive
+discussion and examples.  Contact the %Dakota users mailing list for
+assistance building and using %Dakota with these interfaces.  To
+enable, specify one of the interfaces in \ref T8d7 "Table 8.7".  In
+all these interfaces, the \c analysis_driver is used to specify a
+Matlab, Scilab, or Python file which implements the parameter to
+response mapping.  The Python interface supports either a (default)
+list-based interface, or a NumPy interface, enabled by the \c numpy
+keyword.
 
 \anchor T8d7
 <table>

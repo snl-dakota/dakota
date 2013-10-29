@@ -153,6 +153,17 @@ used. It is appropriate to omit optional cross-referencing whenever
 the relationships are unambiguous due to the presence of only one
 specification.
 
+The hierarchical tagging (\c hierarchical_tagging) option is useful
+for studies involving multiple models with a nested or hierarchical
+relationship.  For example a nested model has a sub-method, which
+itself likely operates on a sub-model, or a hierarchical approximation
+involves coordination of low and high fidelity models.  Specifying \c
+hierarchical_tagging will yield function evaluation identifiers
+("tags") composed of the evaluation IDs of the models involved, e.g.,
+outermodel.innermodel.interfaceid = 4.9.2.  This communicates the
+outer contexts to the analysis driver when performing a function
+evaluation.
+
 Table \ref T6d1 "6.1" provides the specification detail for the model
 independent controls involving identifiers, model type controls, and
 pointers.
@@ -196,6 +207,12 @@ model types, and pointers
 <td>string
 <td>Optional
 <td>model use of last responses parsed
+<tr>
+<td>Hierarchical evaluation tags
+<td>\c hierarchical_tagging
+<td>none
+<td>Optional
+<td>no hierarchical tagging
 </table>
 
 
@@ -817,6 +834,13 @@ Specification detail for global approximations: build and correction controls
 <td>none
 <td>Optional
 <td>derivative data not used in global approximation builds
+<tr>
+<td>Compute surrogate diagnostics
+<td>\c metrics
+<td>1 or more of \c sum_squared, \c mean_squared, \c root_mean_squared, 
+    \c sum_abs, \c mean_abs, \c max_abs, \c rsquared
+<td>Optional
+<td>No diagnostics
 <tr>
 <td>Perform cross validation
 <td>\c cross_validation
