@@ -7303,10 +7303,15 @@ in which the covariance of the proposal density is updated adaptively.
 For the delayed rejection part of the DRAM algorithm, one specifies \c rejection, 
 followed by \c standard (no delayed rejection) or \c delayed.  Finally, the user 
 has two scale factors which help control the scaling involved in the problem. 
-The \c likelihood_scale is a number which multiplies the likelihood.  This 
+The \c likelihood_scale is a number which scales the likelihood by dividing 
+the log of the likelihood (e.g. dividing the sum of squared differences 
+between the experimental data and simulation data or SSE).  This 
 is useful for situations with very small likelihoods (e.g. the model is either 
 very far away from the data or there is a lot of data so the likelihood function 
-involves multiplying many likelihoods together and becomes very small). 
+involves multiplying many likelihoods together, where the SSE term is large 
+and the likelihood becomes very small). 
+In some respects, the \c likelihood_scale can be seen as a normalizing factor
+for the SSE.  If the SSE is large, the \c likelihood_scale should be large. 
 The second factor is a \c proposal_covariance_scale which scales the proposal 
 covariance.  This may be useful when the input variables being calibrated 
 are of different magnitudes:  one may want to take a larger step in a direction 

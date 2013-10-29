@@ -2189,7 +2189,7 @@ Dempster-Shafer calculations, as well as comparisons on test problems.
 
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
 
-We have two preliminary implementations of Bayesian calibration methods 
+We have three preliminary implementations of Bayesian calibration methods 
 in Dakota, where a ``prior distribution'' on a parameter is 
 updated through a Bayesian framework involving experimental data and 
 a likelihood function. 
@@ -2253,20 +2253,27 @@ Markov Chain Monte Carlo (MCMC) is the standard method used to compute
 posterior parameter densities, given the observational data 
 and the priors. There are many references that 
 describe the basic algorithm~\cite{Gilks}, and in addition, the algorithms 
-are an active research area. The variation used in Dakota is DRAM: 
+are an active research area.  One variation used in Dakota is DRAM: 
 Delayed Rejection and Adaptive Metropolis~\cite{Haario}. Note that 
 MCMC algorithms take tens or hundreds of thousands of steps to converge. 
 Since each iteration involves an evaluation of the model 
 $\mathcal{M}(\theta)$, often surrogate models of the simulation 
 model are employed.
  
-As mentioned above, we have two implementations of a Bayesian 
-calibration:  one called QUESO and one called GPMSA. 
+As mentioned above, we have three implementations of a Bayesian 
+calibration:  one called QUESO, one called DREAM, and one called GPMSA. 
 They are specified with the \texttt{bayes\_calibration} \texttt{queso}
-or \texttt{bayes\_calibration} \texttt{gpmsa}, respectively.
+or \texttt{bayes\_calibration} \texttt{dream} or 
+\texttt{bayes\_calibration} \texttt{gpmsa}, respectively.
 The QUESO method uses components from the QUESO library
 (Quantification of Uncertainty for Estimation, Simulation, and
 Optimization) developed at The University of Texas at Austin.
+DREAM uses the DREAM code developed by John Burkardt. 
+It is based on the DiffeRential Evolution Adaptive
+Metropolis approach which runs multiple different chains simultaneously
+for global exploration, and automatically tunes the proposal covariance
+during the process by a self-adaptive randomized subspace sampling
+~\cite{Vrugt}.
 The GPMSA calibration capability uses the GPMSA code developed at 
 Los Alamos National Laboratory.
 
@@ -2285,11 +2292,16 @@ or the adaptive Metropolis in which the covariance of the proposal
 density is updated adaptively. There is also a setting to control 
 the delayed rejection. Finally, there are two scale factors 
 which control the scaling of the problem. The 
-\texttt{likelihood\_scale} is a number which multiplies the likelihood. 
-This is useful for situations with very small likelihoods 
-(e.g. the model is either very far away from the data or 
-there is a lot of data so the likelihood function 
-involves multiplying many likelihoods together and becomes very small).
+\texttt{likelihood\_scale} is a number 
+which scales the likelihood by dividing
+the log of the likelihood (e.g. dividing the sum of squared differences
+between the experimental data and simulation data or SSE).  This
+is useful for situations with very small likelihoods (e.g. the model is either
+very far away from the data or there is a lot of data so the likelihood function
+involves multiplying many likelihoods together, where the SSE term is large
+and the likelihood becomes very small).
+In some respects, the \texttt{likelihood\_scale} can be seen as a normalizing factor
+for the SSE.  If the SSE is large, the likelihood scale should be large.
 The second factor is a \texttt{proposal\_covariance\_scale} 
 which is a vector that controls the scaling of the proposal covariance
 in the different input directions. This may be useful when the 
@@ -2297,6 +2309,24 @@ input variables being calibrated are of different magnitudes:
 one may want to take a larger step in a direction
 with a larger magnitude, for example.
     
+For the DREAM method, one can define the number of chains used with
+\texttt{chains}.  The total number of generations per chain in DREAM is
+the number of samples divided by the number of chains.
+The minimum number of chains is three.
+The number of chains randomly selected to be used in the crossover
+each time a crossover occurs is \texttt{crossover\_chain\_pairs}.
+There is an extra adaptation during burn-in, in which DREAM estimates a
+distribution of crossover probabilities that favors large jumps over
+smaller ones in each of the chains.
+Normalization is required to ensure that all of the input dimensions contribute
+equally.  In this process, a discrete number of candidate points for
+each crossover value is generated.  This parameter is \texttt{num\_cr}.
+The \texttt{gr\_threshold} is the convergence tolerance for the Gelman-Rubin
+statistic which will govern the convergence of the multiple chain
+process.  The integer \texttt{jump\_step} forces a long jump every 
+\texttt{jump\_step} generations.
+For more details about these parameters, see \cite{Vrugt}. 
+
 GPMSA is another code that provides the capability for Bayesian 
 calibration.
 A key part of GPMSA is the construction of an emulator from simulation runs 
@@ -2368,13 +2398,13 @@ method,
           samples = 5000 #seed = 348                                    
           rejection delayed
           metropolis adaptive
-          likelihood_scale = 0.001
+          likelihood_scale = 100.0 
           output verbose
           #proposal_covariance_scale = 0.1 0.3
  
 variables,
        continuous_design = 2
-grep '         lower_bounds = 0. 0.
+         lower_bounds = 0. 0.
          upper_bounds = 3. 3.
          initial_point = 1. 1.
 
@@ -2383,10 +2413,11 @@ interface,
            analysis_driver = 'text_book'
 
 responses,
-        num_calibration_terms = 1
-        calibration_data_file = 'test10_sig.txt'
+        calibration_terms = 1
+        calibration_data_file = 'dakota_queso.test10.txt'
           freeform
-          num_experiments = 10
+          num_experiments = 1
+          num_replicates = 10 
           num_std_deviations = 1
         no_gradients
         no_hessians
@@ -2409,11 +2440,12 @@ are the responses, and the final column is the  log of the
 likelihood.
 
 We expect to continue development of Bayesian calibration methods, 
-so check for updates to this capability. The Bayesian capability 
-in Dakota currently relies on the QUESO library developed by The University of 
+so check for updates to this capability. The QUESO and GPMSA capabilities
+in Dakota currently rely on the QUESO library developed by The University of 
 Texas at Austin. This integrated capability is still in prototype form and 
-available to close collaborators of the Dakota team.
-If you are interested in this capability, contact the Dakota developers at  
+available to close collaborators of the Dakota team.  DREAM is distributed 
+with Dakota.
+If you are interested in these capabilities, contact the Dakota developers at  
 dakota-developers@development.sandia.gov.
   
 \section{Uncertainty Quantification Usage Guidelines }\label{usage:uq}
