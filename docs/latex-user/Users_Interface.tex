@@ -805,6 +805,22 @@ follow the function evaluation echo:
 \end{verbatim}
 \end{small}
 
+\textbf{Hierarchical tagging:} When a model's specification includes
+the {\tt hierarchical\_tagging} keyword, the tag applied to parameter
+and results file names of any subordinate interfaces will reflect any
+model hierarchy present.  This option is useful for studies involving
+multiple models with a nested or hierarchical relationship.  For
+example a nested model has a sub-method, which itself likely operates
+on a sub-model, or a hierarchical approximation involves coordination
+of low and high fidelity models.  Specifying {\tt
+  hierarchical\_tagging} will yield function evaluation identifiers
+(``tags'') composed of the evaluation IDs of the models involved,
+e.g., outermodel.innermodel.interfaceid = 4.9.2.  This communicates
+the outer contexts to the analysis driver when performing a function
+evaluation.  For an example of using hierarhical tagging in a nested
+model context, see {\tt
+  dakota/test/dakota\_uq\_timeseries\_*\_optinterf.in}.
+
 \subsection{Temporary Files}\label{interfaces:file:temporary}
 
 If \texttt{parameters\_file} and \texttt{results\_file} are not

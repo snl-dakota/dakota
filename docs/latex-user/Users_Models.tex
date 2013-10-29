@@ -356,10 +356,11 @@ and (3) using the response data to solve for the unknown coefficients
 correlation factors) in the surface fit model. In cases where there is
 more than one response quantity (e.g., an objective function plus one
 or more constraints), then a separate surface is built for each
-response quantity. Currently, the surface fit models are built using
-only 0$^{\mathrm{th}}$-order information (function values only), although
-extensions to using higher-order information (gradients and Hessians)
-are possible. Each surface fitting method employs a different
+response quantity. Currently, most surface fit models are built using
+only 0$^{\mathrm{th}}$-order information (function values only),
+although extensions to using higher-order information (gradients and
+Hessians) are possible, and the Kriging model does allow construction
+for gradient data. Each surface fitting method employs a different
 numerical method for computing its internal coefficients. For example,
 the polynomial surface uses a least-squares approach that employs a
 singular value decomposition to compute the polynomial coefficients,
@@ -369,12 +370,14 @@ numerical methods used in the surface fitting codes is provided in the
 Dakota Developers Manual~\cite{DevMan}.
 
 The set of design points that is used to construct a surface fit model
-is generated using either the DDACE software package~\cite{TonXX} or the
-LHS software package~\cite{Ima84}. These packages provide a variety of
-sampling methods including Monte Carlo (random) sampling, Latin
-hypercube sampling, orthogonal array sampling, central composite
+is generated using either the DDACE software package~\cite{TonXX} or
+the LHS software package~\cite{Ima84}. These packages provide a
+variety of sampling methods including Monte Carlo (random) sampling,
+Latin hypercube sampling, orthogonal array sampling, central composite
 design sampling, and Box-Behnken sampling. More information on these
-software packages is provided in Chapter~\ref{dace}.
+software packages is provided in Chapter~\ref{dace}.  Optionally, the
+quality of a surrogate model can be assessed with surrogate metrics or
+diagnostics as described in Section~\ref{models:surf:diagnostics}.
 
 \subsubsection{Taylor Series}\label{models:surf:taylor}
 
@@ -866,6 +869,81 @@ is still under development.  We have found that it works well
 in trust region methods where the surrogate model is constructed in 
 a constrained region over a few points.  It does not appear to be working 
 as well globally, at least at this point in time.
+
+
+\subsubsection{Surrogate Diagnostic Metrics}\label{models:surf:diagnostics}
+
+The surrogate models provided by Dakota's Surfpack package
+(polynomial, Kriging, ANN, MARS, RBF, and MLS) include the ability to
+compute diagnostic metrics on the basis of (1) simple prediction error
+with respect to the training data, (2) prediction error estimated by
+cross-validation (iteratively omitting subsets of the training data),
+and (3) prediction error with respect to user-supplied hold-out or
+challenge data.  All diagnostics are based on differences between
+$o(x_i)$ the observed value, and $p(x_i)$, the surrogate model
+prediction for training (or omitted or challenge) data point $x_i$.
+In the simple error metric case, the points $x_i$ are those used to
+train the model, for cross validation they are points selectively
+omitted from the build, and for challenge data, they are supplementary
+points provided by the user.  The basic metrics are specified via the
+{\tt metrics} keyword, followed by one or more of:
+
+\begin{itemize}
+\item {\tt sum\_squared}: $\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}$
+
+\item {\tt mean\_squared}: $\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}$
+
+\item {\tt root\_mean\_squared}: $\sqrt{\frac{1}{n}\sum_{i=1}^{n}{ \left( o(x_i) - p(x_i) \right) ^2}}$
+
+\item {\tt sum\_abs}: $\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }$
+
+\item {\tt mean\_abs}: $\frac{1}{n}\sum_{i=1}^{n}{ \left| o(x_i) - p(x_i) \right| }$
+
+\item {\tt max\_abs}: $\max_i \left| o(x_i) - p(x_i) \right|$
+
+\item {\tt rsquared} $ R^2 = \frac{\sum_{i=1}^{n}{\left(p_i -
+        \bar{o}\right)^2}}{ \sum_{i=1}^{n}{\left(o_i -
+        \bar{o}\right)^2}}$
+\end{itemize}
+
+Here, $n$ is the number of data points used to create the model, and
+$\bar{o}$ is the mean of the true response values.  $R^2$, developed
+for and most useful with polynomial regression, quantifies the amount
+of variability in the data that is captured by the model.  The value
+of $R^2$ falls on in the interval $[0,1]$.  Values close to $1$
+indicate that the model matches the data closely.  The remainder of
+the metrics measure error, so smaller values indicate better fit.
+
+{\bf Cross-validation:} With the exception of $R^2$, the above metrics
+can be computed via a cross-validation process.  The class of $k$-fold
+cross-validation metrics is used to predict how well a model might
+generalize to unseen data.  The training data is randomly divided into
+$k$ partitions.  Then $k$ models are computed, each excluding the
+corresponding $k^{th}$ partition of the data.  Each model is evaluated
+at the points that were excluded in its generation and any metrics
+specified above are computed with respect to the held out data.  A
+special case, when $k$ is equal to the number of data points, is known
+as leave-one-out cross-validation or prediction error sum of squares
+(PRESS).  To specify $k$-fold cross-validation or PRESS, follow the
+list of metrics with {\tt cross\_validate} and/or {\tt press},
+respectively.
+
+{\bf Challenge data:} A user may optionally specify {\tt
+  challenge\_points\_file}, a data file in freeform or annotated
+format that contains additional trial point/response data, one point
+per row.  When specified, any of the above metrics specified will be
+computed with respect to the challenge data.
+
+Caution is advised when applying and interpreting these metrics.  In
+general, lower errors are better, but for interpolatory models like
+Kriging models, will almost always be zero.  Root-mean-squared and the
+absolute metrics are on the same scale as the predictions and data.
+$R^2$ is meaningful for polynomial models, but less so for other model
+types.  When possible, general 5-fold or 10-fold cross validation will
+provide more reliable estimates of the true model prediction
+error. Goodness-of-fit metrics provide a valuable tool for analyzing
+and comparing models but must not be applied blindly.
+
 
 \subsection{Multifidelity Surrogate Models} \label{models:surrogate:multifid}
 

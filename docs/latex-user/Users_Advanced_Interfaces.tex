@@ -757,10 +757,10 @@ lists or NumPy arrays.
 
 The Python direct interface must be enabled when compiling Dakota.
 Set the CMake variable \\ {\tt DAKOTA\_PYTHON:BOOL=ON}, and optionally
-{\tt DAKOTA\_PYTHON\_NUMPY:BOOL=ON} to use Dakota's NumPy array
-interface (requires NumPy installation providing arrayobject.h). If
-NumPy is not enabled, Dakota will use multiply-subscripted lists for
-data flow.
+{\tt DAKOTA\_PYTHON\_NUMPY:BOOL=ON} (default is ON) to use Dakota's
+NumPy array interface (requires NumPy installation providing
+arrayobject.h). If NumPy is not enabled, Dakota will use
+multiply-subscripted lists for data flow.
 
 An example of using the Python direct interface with both lists and
 arrays is included in \\
@@ -813,6 +813,7 @@ drv\_labels & discrete real variable labels \\
 av\_labels  & all variable labels \\
 asv        & active set vector \\
 dvv        & derivative variables vector \\
+analysis\_components & list of analysis components as strings \\
 currEvalId & current evaluation ID number \\
 \hline
 \end{tabular}

@@ -456,6 +456,7 @@ Figure~\ref{variables:figure01}.
     <int>    DVV_i:label_cdv\(\sb{i}\)            (i = 1 to p) \color{green}
     <int>    analysis_components
     <string> AC_i:analysis_driver_name\(\sb{i}\)  (i = 1 to q)
+    <string> eval_id
   \end{alltt}
   \end{bigbox}
   \caption{Parameters file data format - standard option.}
@@ -532,7 +533,12 @@ for a set of \texttt{analysis\_drivers} using the
 analysis components used for a particular analysis driver is the set
 passed in a particular parameters file.
 
-Several standard-format parameters file examples are shown in
+The final entry {\tt eval\_id} in the parameters file is the
+evaluation ID, by default an integer indicating interface evaluation
+ID number.  When hierarchical tagging is enabled as described
+in~\ref{interfaces:file:tagging1}, the identifier will be a
+colon-separated string, e.g., 4:9:2.  Several standard-format
+parameters file examples are shown in
 Section~\ref{interfaces:mappings}.
 
 \subsection{Parameters file format (APREPRO)}\label{variables:parameters:aprepro}
@@ -585,6 +591,7 @@ with the variables data.
     \{ DVV_i:label_cdv\(\sb{i}\) = <int> \}                   (i = 1 to p) \color{green}
     \{ DAKOTA_AN_COMPS = <int> \}
     \{ AC_i:analysis_driver_name\(\sb{i}\) = <string> \}      (i = 1 to q)
+    \{ DAKOTA_EVAL_ID = <string> \}
   \end{alltt}
   \end{bigbox}
   \caption{Parameters file data format - APREPRO option.}

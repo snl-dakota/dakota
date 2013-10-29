@@ -92,8 +92,9 @@ Deterministic least squares and Bayesian Calibration methods allow
 specification of experimental observations to difference with
 responses in calculating a model misfit metric (such as a sum of
 squared residuals).  The default file format is {\tt annotated}, but
-the {\tt freeform} option is supported.  The data file should contain
-one row per experiment.   The columns of the data file contain, in sequence
+the {\tt freeform} option is supported.  The data file is comprised of
+one or more experiments, each with one or more replicates, one row per
+replicate.  The columns of the data file contain, in sequence
 \begin{itemize}
 \item {\bf configuration variables (optional):} state variable values
   indicating the configuration at which this experiment was conducted;
