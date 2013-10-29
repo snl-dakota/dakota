@@ -4,10 +4,6 @@
 #
 ############################################################################
 
-#set(Boost_INCLUDE_DIR
-#  "/Users/dakota/local/boost.gnu-4.3.2/include"
-#  CACHE PATH "Always use pre-installed Boost1.45 subset" FORCE)
-
 ############################################################################
 # All Unix platforms build DAKOTA with MPI enabled
 
