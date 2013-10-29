@@ -339,14 +339,19 @@ interfaced only with the (inexpensive) surrogate, no parallelism is
 exploited here.  Load balancing can be an important issue when
 performing evaluations for update of existing surrogate models.
 
-\item Hierarchical surrogate model: parallelism is supported for both
-the low and high fidelity models.  Since the top-level iterator is
-interfaced only with the low-fidelity model, and the high-fidelity
-model is used only for verifications and correction updating, the
-algorithmic coarse-grained parallelism supported by the iterator is
-enacted on the low fidelity model and the only parallelism available
-for high fidelity executions arises from any numerical differencing
-required for high-fidelity gradient and Hessian data.
+\item Hierarchical surrogate model: parallelism is supported for the 
+low or the high fidelity models, and in some contexts, for both models
+at the same time.  In the multifidelity optimization context, the
+optimizer is interfaced only with the low-fidelity model, and the
+high-fidelity model is used only for verifications and correction
+updating.  For this case, the algorithmic coarse-grained parallelism
+supported by the optimizer is enacted on the low fidelity model and
+the only parallelism available for high fidelity executions arises
+from any numerical differencing required for high-fidelity gradient
+and Hessian data.  In contexts that compute model discrepancies, such
+as multifidelity UQ, the algorithmic concurrency involves evaluation
+of both low and high fidelity models, so parallel schedulers can
+exploit simultaneous concurrency for both models.
 
 \item Nested model: Currently, nested models only support concurrency
 in the sub-iterator execution on the sub-model.  This means that the
@@ -678,7 +683,7 @@ which results in output excerpts similar to the following:
     (text_book /tmp/file8EI3kG /tmp/fileuY2ltR) &
     Initiating function evaluation 4
     (text_book /tmp/fileEZpDC2 /tmp/fileeMDVLd) &
-    Second pass: self-scheduling 45 remaining jobs
+    Second pass: scheduling 45 remaining local asynchronous jobs
     Waiting on completed jobs
     Function evaluation 1 has completed
     Initiating function evaluation 5
@@ -727,16 +732,16 @@ dedicated processor.
 The default behavior for asynchronous local parallelism is for Dakota
 to dispatch the next evaluation the local queue when one completes
 (and can optionally be specified by
-\texttt{local\_evaluation\_self\_scheduling}.  In some cases, the
+\texttt{local\_evaluation\_scheduling dynamic}.  In some cases, the
 simulation code interface benefits from knowing which job number will
 replace a completed job.  This includes some modes of application
 tiling with certain MPI implementations, where sending a job to the
 correct subset of available processors is done with relative node
-scheduling.  The keyword
-\texttt{local\_evaluation\_static\_scheduling} forces this behavior,
-so a completed evaluation will be replaced with one congruent module
-the evaluation concurrency.  For example, with 7 concurrent jobs, eval
-number 2 will be replaced with eval number 9.  Examples of this usage
+scheduling.  The keywords
+\texttt{local\_evaluation\_scheduling static} forces this behavior,
+so a completed evaluation will be replaced with one congruent modulo
+the evaluation concurrency.  For example, with 6 concurrent jobs, eval
+number 2 will be replaced with eval number 8.  Examples of this usage
 can be seen in \texttt{Dakota/examples/parallelism}.
 
 
@@ -794,16 +799,20 @@ message passing parallelism:
 \begin{itemize}
 % TO DO: need a more descriptive term, e.g. single-point dedicated
 % dynamic scheduling
-\item \emph{Self-scheduling}: in the dedicated master model, the master
-  processor manages a single processing queue and maintains a
+\item \emph{Dynamic scheduling}: in the dedicated master model, the
+  master processor manages a single processing queue and maintains a
   prescribed number of jobs (usually one) active on each slave. Once a
   slave server has completed a job and returned its results, the
-  master assigns the next job to this slave. Thus, the slaves
-  themselves determine the schedule through their job completion
-  speed. This provides a simple dynamic scheduler in that
-  heterogeneous processor speeds and/or job durations are naturally
-  handled, provided there are sufficient instances scheduled through
-  the servers to balance the variation.
+  master assigns the next job to this slave. Thus, the job assignment
+  on the master adapts to the job completion speed on the slaves. This
+  provides a simple dynamic scheduler in that heterogeneous processor
+  speeds and/or job durations are naturally handled, provided there
+  are sufficient instances scheduled through the servers to balance
+  the variation.  In the case of a peer partition, dynamic schedulers
+  can also be employed, provided that peer 1 can employ nonblocking
+  synchronization of its local evaluations.  This allows it to balance
+  its local work with servicing job assignments and returns from the
+  other peers.
 
 \item \emph{Static scheduling}: if scheduling is statically determined
   at start-up, then no master processor is needed to direct traffic
@@ -879,7 +888,7 @@ keyword and would appear similar to:
 \end{small}
 
 The relevant excerpts from the Dakota output for a dedicated master
-partition and self-schedule, the default when the maximum concurrency
+partition and dynamic schedule, the default when the maximum concurrency
 (49) exceeds the available capacity (5), would appear similar to the
 following:
 \begin{small}
@@ -889,12 +898,12 @@ following:
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1                5              peer/static
-    concurrent evaluations       4                1              ded. master/self
-    concurrent analyses          1                1              peer/static
-    multiprocessor analysis      1               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1                5            peer
+    concurrent evaluations       4                1            ded. master
+    concurrent analyses          1                1            peer
+    multiprocessor analysis      1               N/A           N/A
 
     Total parallelism levels =   1
     -----------------------------------------------------------------------------
@@ -924,7 +933,7 @@ following:
     Master assigning function evaluation 2 to server 2
     Master assigning function evaluation 3 to server 3
     Master assigning function evaluation 4 to server 4
-    Second pass: self-scheduling 45 remaining jobs
+    Second pass: scheduling 45 remaining jobs
     Waiting on completed jobs
     job 1 has returned from slave server 1
     Master assigning function evaluation 5 to server 1
@@ -1048,7 +1057,7 @@ message passing parallelism, and hybrid parallelism is only available
 through the specification of asynchronous concurrency greater than one.
 
 The relevant excerpts of the Dakota output for a dedicated master
-partition and self schedule, the default when the maximum concurrency
+partition and dynamic schedule, the default when the maximum concurrency
 (49) exceeds the maximum available capacity (10), would appear similar
 to the following:
 \begin{small}
@@ -1058,12 +1067,12 @@ to the following:
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1                5              peer/static
-    concurrent evaluations       4                1              ded. master/self
-    concurrent analyses          1                1              peer/static
-    multiprocessor analysis      1               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1                5            peer
+    concurrent evaluations       4                1            ded. master
+    concurrent analyses          1                1            peer
+    multiprocessor analysis      1               N/A           N/A
 
     Total parallelism levels =   1
     -----------------------------------------------------------------------------
@@ -1097,7 +1106,7 @@ to the following:
     Master assigning function evaluation 6 to server 2
     Master assigning function evaluation 7 to server 3
     Master assigning function evaluation 8 to server 4
-    Second pass: self-scheduling 41 remaining jobs
+    Second pass: scheduling 41 remaining jobs
     Waiting on completed jobs
 
     <snip>
@@ -1265,15 +1274,16 @@ for the next lower level of parallelism.
 \end{figure}
 
 Dakota is designed to allow the freedom to configure each parallelism
-level with either the dedicated master partition/self-scheduling
+level with either the dedicated master partition/dynamic scheduling
 combination or the peer partition/static scheduling combination. In
-addition, certain external libraries may provide additional options.
+addition, the iterator-evaluation level supports a peer partition/dynamic 
+scheduling option, and certain external libraries may provide custom options.
 %(e.g., PICO supports distributed scheduling in peer partitions).
 As an
 example, Figure~\ref{parallel:figure02} shows a case in which a branch
 and bound strategy employs peer partition/distributed scheduling at
 level 1, each optimizer partition employs concurrent function
-evaluations in a dedicated master partition/self-scheduling model at
+evaluations in a dedicated master partition/dynamic scheduling model at
 level 2, and each function evaluation partition employs concurrent
 multiprocessor analyses in a peer partition/static scheduling model at
 level 3. In this case, \texttt{MPI\_COMM\_WORLD} is subdivided into
@@ -1520,13 +1530,15 @@ in selecting configuration overrides:
   sufficient to schedule all jobs in one pass, then a peer partition
   and static schedule will be selected. If this capacity is not
   sufficient, then a dedicated-master partition and dynamic schedule
-  will be used. These selections can be overridden with self/static
-  scheduling request specifications for the concurrent iterator,
-  evaluation, and analysis parallelism levels. For example, if it is
-  known that processor speeds and job durations have little
-  variability, then overriding the automatic configuration with a
-  static schedule request could eliminate the unnecessary loss of a
-  processor to scheduling.
+  will be used. These partition selections can be overridden with
+  master/peer specifications for the concurrent iterator, evaluation,
+  and analysis parallelism levels, and the scheduling selections can
+  be overridden with dynamic/static specifications for the concurrent
+  evaluation parallelism level. For example, if it is known that
+  processor speeds and job durations have little variability, then
+  overriding the automatic configuration with a peer/static
+  configuration could eliminate the unnecessary loss of a processor to
+  scheduling.
 
 \item With the exception of the concurrent-iterator parallelism level
   (iterator executions tend to have high variability in duration),
@@ -1584,13 +1596,11 @@ to a processor (i.e., asynchronous local parallelism). This
   servers times the number of asynchronous jobs per server.
 \end{itemize}
 
-In addition, \texttt{evaluation\_servers},
-\texttt{evaluation\_self\_scheduling}, and
-\texttt{evaluation\_static\_scheduling} keywords can be used to
+In addition, \texttt{evaluation\_servers} and
+\texttt{evaluation\_scheduling} keywords can be used to
 override the automatic parallelism configuration for concurrent
-function evaluations; \texttt{analysis\_servers},
-\texttt{analysis\_self\_scheduling}, and
-\texttt{analysis\_static\_scheduling} keywords can be used to override
+function evaluations; \texttt{analysis\_servers} and
+\texttt{analysis\_scheduling} keywords can be used to override
 the automatic parallelism configuration for concurrent analyses; and
 the \texttt{processors\_per\_analysis} keyword can be used to override
 the automatic parallelism configuration for the size of multiprocessor
@@ -1601,11 +1611,10 @@ the Dakota Reference Manual~\cite{RefMan}.
 \subsection{The strategy specification}\label{parallel:spec:strategy}
 
 To specify concurrency in iterator executions, the
-\texttt{iterator\_servers}, \texttt{iterator\_self\_scheduling}, and
-\texttt{iterator\_static\_scheduling} keywords are used to override
-the automatic parallelism configuration. See the strategy commands
-specification in the Dakota Reference Manual~\cite{RefMan} for additional
-information.
+\texttt{iterator\_servers} and \texttt{iterator\_scheduling} keywords
+are used to override the automatic parallelism configuration. See the
+strategy commands specification in the Dakota Reference
+Manual~\cite{RefMan} for additional information.
 
 \subsection{Single-processor Dakota specification}\label{parallel:spec:single}
 
@@ -1745,19 +1754,19 @@ report from the Dakota output:
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1                4              peer/static
-    concurrent evaluations       3                1              ded. master/self
-    concurrent analyses          1                1              peer/static
-    multiprocessor analysis      1               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1                4            peer
+    concurrent evaluations       3                1            ded. master
+    concurrent analyses          1                1            peer
+    multiprocessor analysis      1               N/A           N/A
 
     Total parallelism levels =   1
     -----------------------------------------------------------------------------
 \end{verbatim}
 \end{small}
 
-The dedicated master partition and self-scheduling algorithm are
+The dedicated master partition and dynamic scheduling algorithm are
 automatically selected for the concurrent evaluations parallelism
 level since the number of function evaluations (11) is greater than
 the maximum capacity of the servers (4). Since one of the processors
@@ -1766,12 +1775,12 @@ computation and the 11 evaluations can be completed in approximately 4
 passes through the servers. If it is known that there is little
 variability in evaluation duration, then this logic could be
 overridden to use a static schedule through use of the
-\texttt{evaluation\_static\_scheduling} specification:
+\texttt{evaluation\_scheduling peer static} specification:
 \begin{small}
 \begin{verbatim}
     interface,
             system,
-              evaluation_static_scheduling
+              evaluation_scheduling peer static
               analysis_drivers = 'text_book'
 \end{verbatim}
 \end{small}
@@ -1784,12 +1793,12 @@ configuration report:
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1                4              peer/static
-    concurrent evaluations       4                1              peer/static
-    concurrent analyses          1                1              peer/static
-    multiprocessor analysis      1               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1                4            peer
+    concurrent evaluations       4                1            peer
+    concurrent analyses          1                1            peer
+    multiprocessor analysis      1               N/A           N/A
 
     Total parallelism levels =   1
     -----------------------------------------------------------------------------
@@ -1829,12 +1838,12 @@ selected (without any override request):
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1                4              peer/static
-    concurrent evaluations       4                1              peer/static
-    concurrent analyses          1                1              peer/static
-    multiprocessor analysis      1               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1                4            peer
+    concurrent evaluations       4                1            peer
+    concurrent analyses          1                1            peer
+    multiprocessor analysis      1               N/A           N/A
 
     Total parallelism levels =   1
     -----------------------------------------------------------------------------
@@ -1861,12 +1870,12 @@ configuration report:
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1                6              peer/static
-    concurrent evaluations       5                1              ded. master/self
-    concurrent analyses          1                1              peer/static
-    multiprocessor analysis      1               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1                6            peer
+    concurrent evaluations       5                1            ded. master
+    concurrent analyses          1                1            peer
+    multiprocessor analysis      1               N/A           N/A
 
     Total parallelism levels =   1
     -----------------------------------------------------------------------------
@@ -1885,7 +1894,7 @@ following input could be used:
     interface,
              fork
                analysis_drivers = `text_book1' `text_book2' `text_book3'
-               evaluation_static_scheduling
+               evaluation_scheduling peer static
                evaluation_servers = 2
 \end{verbatim}
 \end{small}
@@ -1896,12 +1905,12 @@ which results in the following 2-level parallel configuration:
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1                6              peer/static
-    concurrent evaluations       2                3              peer/static
-    concurrent analyses          3                1              peer/static
-    multiprocessor analysis      1               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1                6            peer
+    concurrent evaluations       2                3            peer
+    concurrent analyses          3                1            peer
+    multiprocessor analysis      1               N/A           N/A
 
     Total parallelism levels =   2
     -----------------------------------------------------------------------------
@@ -1924,7 +1933,7 @@ internally:
     interface,
              direct
                analysis_drivers = `text_book1' `text_book2' `text_book3'
-               evaluation_static_scheduling
+               evaluation_scheduling peer static
                evaluation_servers = 2
                processors_per_analysis = 2
 \end{verbatim}
@@ -1938,12 +1947,12 @@ processor Dakota run \\
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         1               12              peer/static
-    concurrent evaluations       2                6              peer/static
-    concurrent analyses          3                2              peer/static
-    multiprocessor analysis      2               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         1               12            peer
+    concurrent evaluations       2                6            peer
+    concurrent analyses          3                2            peer
+    multiprocessor analysis      2               N/A           N/A
 
     Total parallelism levels =   3
     -----------------------------------------------------------------------------
@@ -1977,14 +1986,14 @@ and the fine model would employ 4 servers of 10 processors each.
 
 Next, consider the following 4-level parallel case that employs the
 Pareto set optimization strategy. In this case,
-\texttt{iterator\_servers} and \texttt{iterator\_static\_scheduling}
+\texttt{iterator\_servers} and \texttt{iterator\_scheduling peer}
 requests are included in the strategy specification:
 \begin{small}
 \begin{verbatim}
     strategy,
              pareto_set
                iterator_servers = 2
-               iterator_static_scheduling
+               iterator_scheduling peer
                opt_method_pointer = 'NLP'
                random_weight_sets = 4
 \end{verbatim}
@@ -1999,12 +2008,12 @@ for a 24 processor Dakota run \\
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         2               12              peer/static
-    concurrent evaluations       2                6              peer/static
-    concurrent analyses          3                2              peer/static
-    multiprocessor analysis      2               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         2               12            peer
+    concurrent evaluations       2                6            peer
+    concurrent analyses          3                2            peer
+    multiprocessor analysis      2               N/A           N/A
 
     Total parallelism levels =   4
     -----------------------------------------------------------------------------
@@ -2045,7 +2054,7 @@ and the strategy and interface specifications from the
             direct,
               analysis_drivers = 'text_book1' 'text_book2' 'text_book3'
               evaluation_servers = 8
-              evaluation_static_scheduling
+              evaluation_scheduling peer static
               processors_per_analysis = 2
 \end{verbatim}
 \end{small}
@@ -2056,12 +2065,12 @@ The resulting parallel configuration is reported as
     -----------------------------------------------------------------------------
     Dakota parallel configuration:
 
-    Level                   num_servers    procs_per_server    partition/schedule
-    -----                   -----------    ----------------    ------------------
-    concurrent iterators         8               48              peer/static
-    concurrent evaluations       8                6              peer/static
-    concurrent analyses          3                2              peer/static
-    multiprocessor analysis      2               N/A                N/A
+    Level                   num_servers    procs_per_server    partition
+    -----                   -----------    ----------------    ---------
+    concurrent iterators         8               48            peer
+    concurrent evaluations       8                6            peer
+    concurrent analyses          3                2            peer
+    multiprocessor analysis      2               N/A           N/A
 
     Total parallelism levels =   4
     -----------------------------------------------------------------------------
@@ -2158,10 +2167,10 @@ case:
 Dakota will use a peer-to-peer scheduler, and run the $M$ jobs
 concurrently.  When the possible concurrency is greater than $M$,
 Dakota will by default launch $M-1$ jobs with a master-slave model.
-Specifying {\tt static\_schedule} in the Dakota input, will override
-the default master-slave scheduler and Dakota will launch M jobs, but
-jobs will be launched blocking, so all M will complete, then another M
-will be scheduled.
+Specifying a static schedule (see {\tt evaluation\_scheduling} 
+options) in the Dakota input, will override the default master-slave 
+scheduler and Dakota will launch M jobs, but jobs will be launched 
+blocking, so all M will complete, then another M will be scheduled.
 
 \item If the analysis is extremely inexpensive, performance may be
 improved by launching multiple evaluation jobs local to each Dakota
@@ -2255,7 +2264,7 @@ proposed.
 
 This Case 3 variant uses OpenMPI 1.3.3 or newer or SLURM srun relative
 node scheduling capability.  It leverages Dakota's
-\texttt{local\_evaluation\_static\_scheduling} option together with
+\texttt{local\_evaluation\_scheduling static} option together with
 integer arithmetic to schedule each evaluation on the right subset of
 the processor allocation.  For examples, see \texttt{Case3\_MPICH}
 (srun variant) and \texttt{Case3\_OpenMPI}.  Similar approaches work
