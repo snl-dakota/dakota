@@ -21,8 +21,11 @@ set( LAPACK_DIR "C:/sems/lapack/3.4.2/lib/cmake/lapack-3.4.2"
 ############################################################################
 
 # WJB - ToDo:  come up with a better way ("custom" flags are undesirable)
-set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE"
-     CACHE STRING "Linker FORCE flag needed on Aday" FORCE )
+# WJB - NOTE:  desperate measures here -- hard code path to boost on steinman
+set( CMAKE_EXE_LINKER_FLAGS
+  "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE -LIBPATH:C:\sems\boost\1.54.0\lib"
+  CACHE STRING "Linker FORCE flag needed on Aday and Release builds on steinman"
+  FORCE )
 
 # DO NOT use shared libraries on Windows (yet)
 set(BUILD_STATIC_LIBS ON  CACHE BOOL "Build static libs")
