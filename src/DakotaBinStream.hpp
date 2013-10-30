@@ -61,8 +61,6 @@ public:
 
   /// Binary Input stream operator>>
   BiStream& operator>>(std::string& ds);
-  /// Input operator, reads char* from binary stream BiStream
-  BiStream& operator>>(char* s);
   /// Input operator, reads char from binary stream BiStream
   BiStream& operator>>(char& c);
   /// Input operator, reads int* from binary stream BiStream
@@ -77,7 +75,7 @@ public:
   BiStream& operator>>(double& d);
   /// Input operator, reads float from binary stream BiStream
   BiStream& operator>>(float& f);
-  /// Input operator, reads unsigned char* from binary stream BiStream
+  /// Input operator, reads unsigned char from binary stream BiStream
   BiStream& operator>>(unsigned char& c);
   /// Input operator, reads unsigned int from binary stream BiStream
   BiStream& operator>>(unsigned int& i);
@@ -138,8 +136,6 @@ public:
 
   /// Binary Output stream operator<<
   BoStream& operator<<(const std::string& ds);
-  /// Output operator, writes char* TO binary stream BoStream
-  BoStream& operator<<(const char* s);
   /// Output operator, writes char to binary stream BoStream
   BoStream& operator<<(const char& c);
   /// Output operator, writes int to binary stream BoStream

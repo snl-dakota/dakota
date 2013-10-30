@@ -121,63 +121,11 @@ BiStream& BiStream::operator>>(std::string& ds)
     return *this;
   tmp[size] = '\0';       // Add the null terminator
   ds = tmp; 
+  std::free(tmp);
   //Cout << "debug: std::string = " << ds << std::endl;
 #endif
 
   return *this;
-}
-
-
-/** Reading char array is a special case. The method has no way
-    of knowing if the length to the input array is large enough, it
-    assumes it is one char longer than actual string, 
-    (Null terminator added). As with the std::string the size of the
-    xdr buffer as well as the char array size written must be read from
-    the stream prior to reading and converting the char array.  */
-BiStream& BiStream::operator>>(char* s)
-{
-#ifndef NO_XDR
-  /* convert message structure to local representation */
-  if (! dak_xdr_setpos(&xdrInBuf, 0))
-    Cerr << "xdr_setpos failed" << std::endl;
-
-  // The reason for the (sizeof(int) *2) is that we are
-  // reading in two integers before the string (size,xdrStringSize)
-  if ( read((char*)inBuf, sizeof(int) * 2) == 0)
-    return *this;  // if EOF return *this
-
-  // convert to integers
-  int size;
-  int xdr_string_size;
-  dak_xdr_int(&xdrInBuf, &size);
-  dak_xdr_int(&xdrInBuf, &xdr_string_size);
-  
-  // reset xdr stream position
-  if (! dak_xdr_setpos(&xdrInBuf, 0))
-    Cerr << "xdr_setpos failed" << std::endl;
-  /* read and convert message structure to local representation */
-  if (read((char*)inBuf, xdr_string_size ) == 0)
-    return *this;  // if EOF return *this
-
-  dak_xdr_string(&xdrInBuf, (char **) &s, size);
-  s[size] = '\0';       // Add the null terminator
-  //Cout << "debug:  char string in = " << s << std::endl;
-#else
-  // do native binary reads
-  // read in size
-  int size;
-  if (read((char*)&size, sizeof(int)) == 0)
-    return *this; // if EOF return *this
-  // read in char data
-  char* tmp = (char *)std::malloc(size + 1);
-  if (read((char*)tmp, size) == 0)
-    return *this;
-  tmp[size] = '\0';       // Add the null terminator
-  s = tmp; 
-  //Cout << "debug:  char string in = " << s << std::endl;
-#endif
-
-  return *this; 
 }
 
 
@@ -603,7 +551,7 @@ BoStream& BoStream::operator<<(const std::string& ds)
     Cerr << "xdr_setpos failed" << std::endl;
 
   // determine size of string after converted to xdr
-  int N = std::strlen(ds.data());
+  int N = ds.size();
   char *tmp = (char *) ds.data(); // pointer to char data
   dak_xdr_string(&xdrOutBuf, (char **) &tmp, sizeof(char)* N);
   int xdr_buffer_size = dak_xdr_getpos(&xdrOutBuf);
@@ -627,52 +575,10 @@ BoStream& BoStream::operator<<(const std::string& ds)
 #else
   // Do native binary writes.
   // write size of string.
-  int N = std::strlen(ds.data());
+  int N = ds.size();
   write((char *)&N, sizeof(int));
   // write string data
   write((char *)ds.data(), N);
-#endif
-  return *this;
-}
-
-
-/** The output of char* is the same as the output of the std::string.  
-    The size of the xdr buffer and the size of the string must be
-    written first, then the string itself. */
-BoStream& BoStream::operator<<(const char* s)
-{
-#ifndef NO_XDR
-  if (! dak_xdr_setpos(&xdrOutBuf, 0))
-    Cerr << "xdr_setpos failed" << std::endl;
-
-  // determine size of string after converted to xdr
-  int N = std::strlen(s);
-  dak_xdr_string(&xdrOutBuf, (char **) &s, sizeof(char)* N);
-  int xdr_buffer_size = dak_xdr_getpos(&xdrOutBuf);
-
-  // reset xdr stream
-  if (! dak_xdr_setpos(&xdrOutBuf, 0))
-    Cerr << "xdr_setpos failed" << std::endl;
-
-  // convert ints
-  dak_xdr_int(&xdrOutBuf, &N);
-  dak_xdr_int(&xdrOutBuf, &xdr_buffer_size);
-
-  // convert string
-  dak_xdr_string(&xdrOutBuf, (char **)&s, sizeof(char)* N);
-
-  // get total xdr buffer size
-  xdr_buffer_size = dak_xdr_getpos(&xdrOutBuf);
-
-  // write binary data to file
-  write((char *)&outBuf, xdr_buffer_size);
-#else
-  // Do native binary writes.
-  // write size of string.
-  int N = std::strlen(s);
-  write((char *)&N, sizeof(int));
-  // write string data
-  write((char *)s, N);
 #endif
   return *this;
 }

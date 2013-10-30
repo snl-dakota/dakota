@@ -128,7 +128,7 @@ void print_restart(int argc, char** argv, String print_dest)
     exit(-1);
   }
 
-  BiStream read_restart(argv[2]);
+  BiStream read_restart(argv[2], std::ios::binary);
   if (!read_restart) {
     Cerr << "Error: failed to open restart file " << argv[2] << endl;
     exit(-1);
@@ -194,7 +194,7 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
     exit(-1);
   }
 
-  BiStream read_restart(argv[2]);
+  BiStream read_restart(argv[2], std::ios::binary);
   if (!read_restart) {
     Cerr << "Error: failed to open restart file " << argv[2] << endl;
     exit(-1);
@@ -395,7 +395,7 @@ void read_neutral(int argc, char** argv)
   }
 
   extern BoStream write_restart;
-  write_restart.open(argv[3]);
+  write_restart.open(argv[3], std::ios::binary);
   cout << "Writing new restart file " << argv[3] << '\n';
 
   int cntr = 0;
@@ -463,7 +463,7 @@ void repair_restart(int argc, char** argv, String identifier_type)
     exit(-1);
   }
 
-  BiStream read_restart(read_restart_filename.c_str());
+  BiStream read_restart(read_restart_filename.c_str(), std::ios::binary);
   if (!read_restart) {
     Cerr << "Error: failed to open restart file "
          << read_restart_filename << endl;
@@ -471,7 +471,7 @@ void repair_restart(int argc, char** argv, String identifier_type)
   }
 
   extern BoStream write_restart;
-  write_restart.open(write_restart_filename.c_str());
+  write_restart.open(write_restart_filename.c_str(), std::ios::binary);
 
   cout << "Writing new restart file " << write_restart_filename << '\n';
 
@@ -529,12 +529,12 @@ void concatenate_restart(int argc, char** argv)
   }
 
   extern BoStream write_restart;
-  write_restart.open(argv[argc-1]);
+  write_restart.open(argv[argc-1], std::ios::binary);
   cout << "Writing new restart file " << argv[argc-1] << '\n';
 
   for (int cat_cntr=2; cat_cntr<argc-1; cat_cntr++) {
 
-    BiStream read_restart(argv[cat_cntr]);
+    BiStream read_restart(argv[cat_cntr], std::ios::binary);
     if (!read_restart) {
       Cerr << "Error: failed to open restart file " << argv[cat_cntr] << endl;
       exit(-1);

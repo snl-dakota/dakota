@@ -1363,7 +1363,7 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // ------------
   // Process the evaluations from the restart file
   if (read_restart_flag) {
-    BiStream read_restart(read_restart_filename.c_str());
+    BiStream read_restart(read_restart_filename.c_str(), std::ios::binary);
     if (!read_restart.good()) {
       Cerr << "\nError: could not open restart file " << read_restart_filename
 	   << std::endl;
@@ -1424,7 +1424,8 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // per interface, whereas there is only one parallel library instance.
   //if (!deactivateRestartFlag) {
   if (write_restart_filename == read_restart_filename) {
-    write_restart.open(write_restart_filename.c_str(), std::ios::app);
+    write_restart.open(write_restart_filename.c_str(), 
+		       std::ios::binary | std::ios::app);
 
     Cout << "Appending new evaluations to existing restart file " 
          << write_restart_filename << std::endl;
@@ -1445,7 +1446,7 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
     // contents and start over [see FSTREAM(3C++) in AT&T C++ Library Manual].
   }
   else {
-    write_restart.open(write_restart_filename.c_str());
+    write_restart.open(write_restart_filename.c_str(), std::ios::binary);
     Cout << "Writing new restart file " << write_restart_filename << std::endl;
     // Write any processed records from the old restart file to the new file.
     // This prevents the situation where good data from an initial run and a 
