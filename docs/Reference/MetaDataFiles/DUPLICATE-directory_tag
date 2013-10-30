@@ -1,6 +1,14 @@
 Blurb::
-Description::	When a work directory is created by Dakota, a suffix comprised of a '.' and the evaluation number is appended to the directory name. The \c directory_tag keyword is usually used with \c directory_save keyword.
-Topics::
+Tag each work directory with the function evaluation number
+Description::
+If this keyword is used, Dakota will append a period and the function evaluation
+number to the work directory names.
+
+If this keyword is omitted, the default is no tagging, and the
+same work directory will be used for ALL function evaluations.
+Tagging is most useful when multiple
+function evaluations are running simultaneously.
+
 Examples::
 Theory::
 Faq::

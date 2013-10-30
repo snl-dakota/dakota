@@ -1,10 +1,15 @@
 Blurb::
 Specify the name of the results file
 Description::
-The parameters and results
-file names are supplied as strings using the \c parameters_file and \c
-results_file specifications. Both specifications are optional with the
-default data transfer files being Unix temporary files with
+The results file must be written by the analysis driver.
+It is read by Dakota to determine the response values for
+each function evaluation.
+
+The name of the file can be optionally specified using 
+the \c results_file keyword.
+
+If this is not specified, the
+default data transfer files are Unix temporary files with
 system-generated names (e.g., \c /usr/tmp/aaaa08861). 
 
 Topics::

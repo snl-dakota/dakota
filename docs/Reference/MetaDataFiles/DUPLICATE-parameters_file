@@ -1,10 +1,12 @@
 Blurb::
 Specify the name of the parameters file
 Description::
-The parameters and results
-file names are supplied as strings using the \c parameters_file and \c
-results_file specifications. Both specifications are optional with the
-default data transfer files being Unix temporary files with
+The parameters file is used by Dakota to pass the parameter values to the 
+analysis driver. The name of the file can be optionally specified using 
+the \c parameters_file keyword.
+
+If this is not specified, the
+default data transfer files are Unix temporary files with
 system-generated names (e.g., \c /usr/tmp/aaaa08861). 
 Topics::
 Examples::

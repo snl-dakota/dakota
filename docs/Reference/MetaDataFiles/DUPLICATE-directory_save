@@ -1,5 +1,9 @@
 Blurb::
-Description::	If a working directory is created by Dakota, it is deleted after the evaluation is completed unless the the \c directory_save keyword is specified.
+Do not delete the work directories after completion of the function evaluation
+Description::
+If a working directory is created by Dakota using the \c work_directory keyword, 
+it is deleted after the evaluation is completed unless the the \c directory_save keyword is specified.
+
 Topics::
 Examples::
 Theory::

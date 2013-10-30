@@ -1,12 +1,16 @@
 Blurb::
-Write input files in APREPRO syntax
+Write parameters files in APREPRO syntax
 Description::
 The
 format of data in the parameters files can be modified for direct
 usage with the APREPRO pre-processing tool 
 [\ref Sjaar1992 "Sjaardema, 1992"] 
-using the \c aprepro specification (NOTE: the DPrePro
-pre-processing utility does not require this special formatting). 
+using the \c aprepro specification
+
+Without this keyword, the parameters file are written in
+DPrePro format. DPrePro is a utility included with Dakota,
+described in the Users Manual.
+
 Topics::	file_formats
 Examples::
 Theory::

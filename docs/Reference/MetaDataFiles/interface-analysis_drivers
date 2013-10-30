@@ -1,21 +1,38 @@
 Blurb::
-Define how to run a function evaluation
+Define how Dakota should run a function evaluation
 Description::
-The required \c analysis_drivers specification provides the names of
+The required \c analysis_drivers keyword provides the names of
 executable analysis programs or scripts, a.k.a. "drivers" which comprise a function
-evaluation. 
+evaluation. The optional and required sub-keywords specify how Dakota will
+manage directories and files, and run the driver(s).
+
+<b> Types of Interfaces </b>
+
+Dakota has two recommended ways of running analysis drivers: 
+\li as an external processes (\c fork), or 
+\li using internal code to couple to the analysis driver (\c direct)
+
+Other options are available for advanced users, and are not as well documented, supported, or tested
+\li external processes (\c system)
+\li internal coupling (\c python, \c matlab, \c scilab, \c grid)
 
 <b> Use Cases </b>
+
+The internally coupled codes have few options.
+Their behavior is described in the \ref interface-analysis_drivers-direct keyword. 
+
+For external processes using the \ref interface-analysis_drivers-fork keyword, 
+
 In order of increasing complexity, a function evaluation may comprised of:
--# A single analysis driver
-   Function evaluation is contained entirely within a single script/executable.
+-# A single analysis driver <br>
+   Function evaluation is contained entirely within a single script/executable. <br>
    Supply the name of the executable or script
--# A single analysis driver with filters
+-# A single analysis driver with filters <br>
    Function evaluation is split into a pre-processing, analysis, post-processing
--# A single analysis driver with environment variables
+-# A single analysis driver with environment variables <br>
    Function evaluation is contained within one analysis driver, but it requires
    environment variables to be set before running
--# Multiple analysis drivers
+-# Multiple analysis drivers <br>
    Drivers are run sequentially and can have any of the above options as well.
 
 Topics::	problem
