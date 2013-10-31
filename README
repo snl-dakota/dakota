@@ -11,9 +11,10 @@ Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis
 Brian M. Adams      (Project Lead)                      _/_/_/       
 Michael S. Eldred   (Research Lead)           	         _/_/    
 James R. Stewart    (Business Manager)	 	    _/_/_/_/_/_/ 
-William J. Bohnhoff (Support Manager)        	   _/  _/_/  _/  
-Keith R. Dalbey                                   _/  _/_/  _/   
+J. Adam Stephens    (Support Analyst)        	   _/  _/_/  _/  
+William Bohnhoff                                   _/  _/_/  _/   
 John P. Eddy	                               	    _/_/_/       
+Keith R. Dalbey
 Mohamed S.Ebeida
 Kenneth T. Hu
 John D. Jakeman
@@ -84,6 +85,7 @@ Versions
 
 Versions of the DAKOTA software have been tagged as follows:
 
+5.4                11/15/13 (refer to svn externals for TPL tags)
 5.3.1              05/15/13 (refer to svn externals for TPL tags)
 5.3                01/31/13 (refer to svn externals for TPL tags)
 5.2                11/30/11 (refer to svn externals for TPL tags)
