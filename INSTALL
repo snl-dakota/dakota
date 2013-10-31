@@ -26,7 +26,7 @@ Table of Contents
 
 Distribution Contents
 Binary Quick Start
- I.   Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX
+ I.   Install Unix-Like Binary (Linux RHEL6 and binary compatible, Mac OS X)
  II.  Install Windows Executable
  III. Test Binary Distribution installation.
 Source Quick Start
@@ -92,7 +92,7 @@ or zip).
  * See Section III below to test binary installion.
 
 --------------------------------------------------------------------
-I. Install Unix-Like Binary (Linux, Mac OS X, Sun Solaris, IBM AIX)
+I. Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
 --------------------------------------------------------------------
 
 1. Extract archive file into suitable install location, e.g. /home/username.
@@ -188,6 +188,10 @@ II.  Install Windows Executable
       with the path to your Dakota installation:
 
       C:\Users\name> path=%path%;%install_dir%\bin;%install_dir%\test;%install_dir%\lib
+      
+      Note that the path will be set only for as long as the cmd window
+      remains open. To permanently add Dakota to your path, consult the 
+      documentation for your version of Windows. 
 
 --------------------------------------------------------------------
 III. Test Binary Distribution installation.
