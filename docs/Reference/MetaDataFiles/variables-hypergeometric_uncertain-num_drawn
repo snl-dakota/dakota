@@ -4,12 +4,11 @@ Description::
 The density function for the hypergeometric distribution is given by: 
 \f[f(x) = \frac{\left(\begin{array}{c}m\\x\end{array}\right)\left(\begin{array}{c}{N-m}\\{n-x}\end{array}\right)}{\left(\begin{array}{c}N\\n\end{array}\right)}\f] 
 where
--N is the total population (e.g. the total number of balls in the urn)
--m is the number of items in the selected population (e.g. the number of white balls in the full urn of N items)
--n is the size of the sample (e.g. number of balls drawn)
--x is the number of sucess (e.g. drawing a white ball)
--\frac{a}{b} is a binomial coeffecient
-
+- N is the total population (e.g. the total number of balls in the urn)
+- m is the number of items in the selected population (e.g. the number of white balls in the full urn of N items)
+- n is the size of the sample (e.g. number of balls drawn)
+- x is the number of sucess (e.g. drawing a white ball)
+- \f$ \frac{a}{b}\f$ is a binomial coeffecient
 
 Topics::	
 Examples::

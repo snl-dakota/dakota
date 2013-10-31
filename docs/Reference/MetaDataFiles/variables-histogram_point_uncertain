@@ -7,7 +7,7 @@ a probability distribution function (PDF).  A point histogram is a discrete
 aleatory distribution that allows the user to specify a set of
 real-valued points and associated frequency values or counts.
 <!-- In this case, the histogram's "bins" have zero width.
-Point histograms are similar to \ref VarDDSRV and \ref VarDSSRV, but
+Point histograms are similar to \ref variables-discrete_design_set_real and \ref variables-discrete_state_set_real, but
 differ in the inclusion of information on the relative probabilities
 of observing the different values within the set.-->
 

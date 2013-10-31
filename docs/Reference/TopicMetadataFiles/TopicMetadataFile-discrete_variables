@@ -1,0 +1,35 @@
+This page discusses discrete state and design variables. 
+The uncertain variables are described on the variable
+keyword pages.
+
+There are currently three ways to specify a discrete 
+state or design variable:
+-# Set of integers
+-# Set of reals
+-# Range
+
+<b> Sets </b>
+
+Sets of integers and reals are basically the same, except
+that one of them is restricted to integer values.
+
+Specifying a set requires three keywords:
+- Variable declaration keyword - specifies the number of variables being defined
+- \c num_set_values - a list of positive integers specifying how many members each variable contains
+  - Length = # of variables
+- \c set_values - a list of the permissable integer values in ALL sets, concatenated together.
+  - Length = sum of \c num_set_values
+  - The order is very important here.
+  - The list is partitioned according to the values of \c num_set_values, and each partition is assigned to a variable.
+- The ordering of \c num_set_values, and the partitions of \c set_values must match the strings from \c descriptions
+
+Examples are given on the pages:
+- \ref variables-discrete_design_set_integer
+- \ref variables-discrete_design_set_real 
+
+<b> Range </b>
+
+For discrete range variables, the \c lower_bounds and \c upper_bounds restrict the size of the feasible design space and are frequently used to prevent nonphysical designs. 
+This is a discrete interval variable that may take any integer value within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4).
+
+WIP...

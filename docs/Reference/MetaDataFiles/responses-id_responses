@@ -5,7 +5,7 @@ The optional set identifier specification uses the keyword \c
 id_responses to input a string for use in identifying a particular
 responses specification. A model can then identify the use of this
 response set by specifying the same string in its \c responses_pointer
-specification (see \ref ModelIndControl). For example, a model whose
+specification. For example, a model whose
 specification contains <tt>responses_pointer = 'R1'</tt> will use a
 responses set with <tt>id_responses = 'R1'</tt>.
 

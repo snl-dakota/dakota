@@ -22,7 +22,7 @@ used to specify multiprocessor analysis partitions. As with the \c
 evaluation_servers, \c analysis_servers, \c
 evaluation_self_scheduling, \c evaluation_static_scheduling, \c
 analysis_self_scheduling, and \c analysis_static_scheduling
-specifications described above in \ref InterfIndControl, \c
+specifications, \c
 processors_per_analysis provides a means for the user to override the
 automatic parallel configuration (refer to ParallelLibrary and the
 Parallel Computing chapter of the Users Manual 

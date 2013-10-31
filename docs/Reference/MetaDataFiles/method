@@ -59,8 +59,8 @@ method,
 	  convergence_tolerance = 1e-4
 	  output verbose
 \endverbatim
-This example demonstrates the use of identifiers and pointers (see
-\ref MethodIndControl) as well as some method independent and method
+This example demonstrates the use of identifiers and pointers
+as well as some method independent and method
 dependent controls for the sequential quadratic programming (SQP)
 algorithm from the DOT library.  The \c max_iterations, \c
 convergence_tolerance, and \c output settings are method independent

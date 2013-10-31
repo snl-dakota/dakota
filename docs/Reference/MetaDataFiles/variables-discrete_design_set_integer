@@ -1,7 +1,8 @@
 Blurb::
 Discrete design variables - specified using lists of integers
 Description::
-These variables are specified with: 1) a list of positive integers specifying how many set members there are, and 2) a list of permissable integer values.
+The details of how to specify this discrete variable are located on the 
+\ref topic-discrete_variables page.
 
 Topics:: 	discrete_variables, design_variables, not_yet_reviewed
 Examples:: 
@@ -13,12 +14,5 @@ discrete_design_set_integer 4
         descriptors 'y1' 'y2' 'y3' 'y4'
 \endverbatim
 Theory::
-Design variables are those variables which are modified for the
-purposes of computing an optimal design.
-
-Engineering design problems may contain discrete variables such as
-material types, feature counts, stock gauge selections, etc. These
-variables may assume only a fixed number of values.
-
 Faq::
 See_Also::	

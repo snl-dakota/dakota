@@ -5,9 +5,10 @@ The \c named keyword allows the user to specify the name of
 the work directory created by Dakota. 
 The directory will be created as a subdirectory of the directory in which Dakota is invoked.
 
-The \c directory_tag keyword will append the function evaluation number to the name.
+If \c named is not used, the default work directory is called \c workdir.
+!!!!!!!! The user manual and reference manual conflict on this point!!!!!!!!!!! as of 131030
 
-Topics::
+Topics::	problem
 Examples::
 Theory::
 Faq::

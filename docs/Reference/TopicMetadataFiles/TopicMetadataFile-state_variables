@@ -2,3 +2,9 @@ State variables provide a convenient mechanism for managing additional
 model parameterizations such as mesh density, simulation convergence
 tolerances, and time step controls. 
 
+Only parameter studies and design of experiments 
+methods will iterate on state variables.
+
+The \c initial_state is used as the only value
+for the state variable for all other methods, unless \c active
+\c state is invoked.

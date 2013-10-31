@@ -57,8 +57,8 @@ model,
 \endverbatim
 This example demonstrates the use of identifiers and pointers. It
 provides the optional model independent specifications for model
-identifier, variables pointer, and responses pointer (see \ref
-ModelIndControl) as well as model dependent specifications for 
+identifier, variables pointer, and responses pointer
+as well as model dependent specifications for 
 global surrogates (see \ref ModelSurrG).
 
 Finally, an advanced nested model example would be
@@ -78,9 +78,9 @@ model
 					 0. 0. 0. 0. 0. 0. 1. 3. 0.
 \endverbatim 
 This example also supplies model independent controls for model
-identifier, variables pointer, and responses pointer (see \ref
-ModelIndControl), and supplies model dependent controls for specifying
-details of the nested mapping (see \ref ModelNested).
+identifier, variables pointer, and responses pointer
+and supplies model dependent controls for specifying
+details of the nested mapping.
 
 Theory::
 Faq::

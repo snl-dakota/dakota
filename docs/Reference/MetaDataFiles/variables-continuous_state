@@ -1,19 +1,12 @@
 Blurb::
 Continuous state variables
 Description::
-State variables consist of "other" variables which are to be mapped through
-the simulation interface, in that they are not to be used for design and
-they are not modeled as being uncertain. State variables provide
-a convenient mechanism for parameterizing additional model inputs which might
-include solver convergence tolerances, time step controls or 
-mesh fildelity parameters.
+Continuous state variables are defined by bounds.
 
-Only parameter studies and design of experiments methods will iterate
-on state variables.  The \c initial_value is used as the only value
-for the state variable for all other methods, unless \c active
-\c state is invoked.
+Default behavior for most methods is that only the initial_state values are used.
 
-Continuous state variables are defined by an interval.
+See the \ref topic-state_variables page for details on the behavior of state
+variables.
 
 Topics::	state_variables, continuous_variables
 Examples::

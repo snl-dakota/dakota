@@ -13,7 +13,7 @@ The \c scale_types
 specifications include strings
 specifying the scaling type for each nonlinear inequality or equality
 constraint, respectively, in methods that support scaling, when scaling
-is enabled (see \ref MethodIndControl for details). Each entry in \c
+is enabled. Each entry in \c
 scale_types may be selected from <tt>'none'</tt>,
 <tt>'value'</tt>, <tt>'auto'</tt>, or <tt>'log'</tt>, to select no,
 characteristic value, automatic, or logarithmic scaling, respectively.

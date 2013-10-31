@@ -1,18 +1,13 @@
 Blurb::
 Discrete state variables, each defined by a set of permissible real numbers
 Description::
-State variables consist of "other" variables which are to be mapped through
-the simulation interface, in that they are not to be used for design and
-they are not modeled as being uncertain. State variables provide
-a convenient mechanism for parameterizing additional model inputs which might
-include solver convergence tolerances, time step controls or 
-mesh fildelity parameters.
+Discrete state variables defined by a set of permissible real numbers.
 
-Only parameter studies and design of experiments methods will iterate
-on state variables.  The \c initial_value is used as the only value
-for the state variable for all other methods, unless \c active
-\c state is invoked.
+The details of how to specify this discrete variable are located on the 
+\ref topic-discrete_variables page.
 
+See the \ref topic-state_variables page for details on the behavior of state
+variables.
 
 Topics::	discrete_variables, state_variables
 Examples::

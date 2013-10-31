@@ -12,13 +12,14 @@ Dakota has two recommended ways of running analysis drivers:
 \li as an external processes (\c fork), or 
 \li using internal code to couple to the analysis driver (\c direct)
 
-Other options are available for advanced users, and are not as well documented, supported, or tested
+Other options are available for advanced users, and are not as well documented, supported, or tested:
 \li external processes (\c system)
 \li internal coupling (\c python, \c matlab, \c scilab, \c grid)
 
 <b> Use Cases </b>
 
-The internally coupled codes have few options.
+The internally coupled codes have few options because many of the details are
+already handled with the coupling.
 Their behavior is described in the \ref interface-analysis_drivers-direct keyword. 
 
 For external processes using the \ref interface-analysis_drivers-fork keyword, 
@@ -35,11 +36,17 @@ In order of increasing complexity, a function evaluation may comprised of:
 -# Multiple analysis drivers <br>
    Drivers are run sequentially and can have any of the above options as well.
 
-Topics::	problem
-Examples::      For details and examples see the Simulation Interface
+For details and examples see the Simulation Interface
 Components section of the Interfaces chapter of the User's Manual; for
 details on the filters and environment variables, see the subsection on
 Syntax for Filter and Driver Strings.
+
+!!!!!!!!!!!!!! question - what is the difference between a filter and analysis driver? do filters run once for all function evals?
+what's the point? multiple analysis drivers each get a filter? different directories? why?  why not just have multiple analysis drivers?? do we have any examples?!!!
+what's the use case?
+
+Topics::	problem
+Examples::
 Theory::
 Faq::
 See_Also::	

@@ -1,16 +1,22 @@
 Blurb::
 Determine how Dakota responds to analysis driver failure
 Description::
-Failure capturing in interfaces is governed by the
-optional \c failure_capture specification. Supported directives for
-mitigating captured failures are \c abort (the default), \c retry, \c
-recover, and \c continuation. The \c retry selection supports an
-integer input for specifying a limit on retries, and the \c recover
-selection supports a list of reals for specifying the dummy function
-values (only zeroth order information is supported) to use for the
-failed function evaluation. Refer to the Simulation Code Failure
-Capturing chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"] 
-for additional information.
+Dakota can deal with analysis failure in a few ways. However,
+the first step is that Dakota must detect analysis failure. 
+- Dakota always expects a results file to be written by the analysis driver
+- If the file does not exist when the analysis driver exits, a Dakota error results.
+- The analysis driver must communicate an analysis failure to Dakota by
+  writing a results file beginning with "fail". 
+  - This is not case sensitive
+  - Everything after fail is ignored
+
+Once Dakota detects analysis failure, the failure can be mitigated in four ways:
+- \ref interface-analysis_drivers-failure_capture-abort (the default)
+- \ref interface-analysis_drivers-failure_capture-retry
+- \ref interface-analysis_drivers-failure_capture-recover
+- \ref interface-analysis_drivers-failure_capture-continuation
+
+!!!!!!!!! Why is this stuff below commented out?? !!!!!!!!!!!!!!!1
 <!-- If no failure -->
 <!-- capturing specification is provided, then the default behavior is -->
 <!-- method dependent. For those iterative algorithms that provide -->
@@ -19,8 +25,12 @@ for additional information.
 <!-- back to the algorithm for mitigation, with no specific action taken by -->
 <!-- %Dakota. For all other algorithms, the default is to abort. -->
 
+Refer to the Simulation Code Failure
+Capturing chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"] 
+for additional information.
 
-Topics::
+
+Topics::	problem
 Examples::
 Theory::
 Faq::

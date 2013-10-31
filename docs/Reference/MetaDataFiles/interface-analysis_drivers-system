@@ -1,5 +1,5 @@
 Blurb::
-Launch analysis drivers with a system call
+(Not recommended) Launch analysis drivers with a system call
 Description::
 The system call interface is included in %Dakota for portability and
 backward compatibility. Users are strongly encouraged to use the 

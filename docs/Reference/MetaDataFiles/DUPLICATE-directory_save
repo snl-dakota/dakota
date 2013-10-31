@@ -4,6 +4,9 @@ Description::
 If a working directory is created by Dakota using the \c work_directory keyword, 
 it is deleted after the evaluation is completed unless the the \c directory_save keyword is specified.
 
+This keyword can only be used if the \c named keyword is used to specify a 
+work directory name.
+
 Topics::
 Examples::
 Theory::

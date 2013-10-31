@@ -14,8 +14,8 @@ type strings through each of the \c scale_types (see \ref
 VarCommands); \c objective_function_scale_types, \c
 calibration_term_scale_types, \c nonlinear_inequality_scale_types,
 \c nonlinear_equality_scale_types (see \ref RespFn); \c
-linear_inequality_scale_types, and \c linear_equality_scale_types (see
-\ref MethodIndControl below) specifications.  Valid options for types
+linear_inequality_scale_types, and \c linear_equality_scale_types
+specifications.  Valid options for types
 include
  <tt>'none'</tt> (default), <tt>'value'</tt>, <tt>'auto'</tt>, or
 <tt>'log'</tt>, for no, characteristic value, automatic, or
@@ -29,8 +29,8 @@ of nonzero characteristic scale values through each of the \c
 scales (see \ref VarCommands); \c objective_function_scales, \c
 calibration_term_scales, \c nonlinear_inequality_scales, \c
 nonlinear_equality_scales (see \ref RespFn); \c
-linear_inequality_scales, and \c linear_equality_scales (see \ref
-MethodIndControl below) specifications.  These values are ignored for
+linear_inequality_scales, and \c linear_equality_scales
+specifications.  These values are ignored for
 scaling type <tt>'none'</tt>, required for <tt>'value'</tt>, and
 optional for <tt>'auto'</tt> and <tt>'log'</tt>.  If a single value is
 specified using any of these keywords it will apply to each component

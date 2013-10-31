@@ -1,9 +1,12 @@
 Blurb::
-The permissible values for each variable
+The permissible values for each discrete variable
 Description::
-The specification is described in more detail on the parent page, along with \c num_set_values
-Topics::	not_yet_reviewed
+This keyword allows specification of the permissible values for discrete set
+variables. All the variables of the type use this single keyword, so the specification
+can be confusing. See the description on the \ref topic-discrete_variables page.
+
+Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also::

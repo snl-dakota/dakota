@@ -34,9 +34,9 @@ take any value within the integer set (for example, the set may be
 defined as 1, 2, and 4); and a discrete uncertain set of reals, in
 which the discrete variable may take any value defined within the real
 set (for example, a parameter may have two allowable real values,
-3.285 or 4.79). The following Tables \ref T7d27 "7.27" through \ref
-T7d29 "7.29" summarize the required and optional specifications for
-each discrete epistemic variable subtype. Note that, relative to the
+3.285 or 4.79).
+
+Note that, relative to the
 discrete design and discrete state specifications, discrete epistemic
 specifications add interval or set probabilities while removing the
 notion of an initial value.
