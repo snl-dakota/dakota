@@ -206,11 +206,13 @@ if ( ${ConfigStatus} EQUAL 0 )
 
     # Remove results files before testing commences to avoid stale reporting;
     # process_dakota_test_results would remove some of these, but be aggressive
-    execute_process(COMMAND "${CMAKE_COMMAND}" -E remove 
+    file(GLOB diffs2delete
+     ${CTEST_BINARY_DIRECTORY}/test/dakota_*/dakota_diffs.out 
+     ${CTEST_BINARY_DIRECTORY}/test/pdakota_*/dakota_pdiffs.out
+     )
+    file(REMOVE ${diffs2delete}
       ${CTEST_BINARY_DIRECTORY}/test/dakota_diffs.out 
       ${CTEST_BINARY_DIRECTORY}/test/dakota_pdiffs.out
-      ${CTEST_BINARY_DIRECTORY}/test/dakota_*/dakota_diffs.out 
-      ${CTEST_BINARY_DIRECTORY}/test/pdakota_*/dakota_pdiffs.out
       ${CTEST_BINARY_DIRECTORY}/test/dakota_results.log
       )
 
