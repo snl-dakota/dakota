@@ -1725,6 +1725,7 @@ TAG "variables/normal_uncertain/lower_bounds"
 TAG "variables/normal_uncertain/upper_bounds"
 	DESC "{Distribution upper bounds} VarCommands.html#VarCAUV_Normal"
 
+TAG "variables/normal_uncertain/initial_point"
 TAG "variables/normal_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Normal"
 
@@ -1752,6 +1753,7 @@ TAG "variables/lognormal_uncertain/lower_bounds"
 TAG "variables/lognormal_uncertain/upper_bounds"
 	DESC "{Distribution upper bounds} VarCommands.html#VarCAUV_Lognormal"
 
+TAG "variables/lognormal_uncertain/initial_point"
 TAG "variables/lognormal_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Lognormal"
 
@@ -1764,6 +1766,7 @@ TAG "variables/uniform_uncertain/lower_bounds"
 TAG "variables/uniform_uncertain/upper_bounds"
 	DESC "{Distribution upper bounds} VarCommands.html#VarCAUV_Uniform"
 
+TAG "variables/uniform_uncertain/initial_point"
 TAG "variables/uniform_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Uniform"
 
@@ -1776,6 +1779,7 @@ TAG "variables/loguniform_uncertain/lower_bounds"
 TAG "variables/loguniform_uncertain/upper_bounds"
 	DESC "{Distribution upper bounds} VarCommands.html#VarCAUV_Loguniform"
 
+TAG "variables/loguniform_uncertain/initial_point"
 TAG "variables/loguniform_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Loguniform"
 
@@ -1791,6 +1795,7 @@ TAG "variables/triangular_uncertain/lower_bounds"
 TAG "variables/triangular_uncertain/upper_bounds"
 	DESC "{Distribution upper bounds} VarCommands.html#VarCAUV_Triangular"
 
+TAG "variables/triangular_uncertain/initial_point"
 TAG "variables/triangular_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Triangular"
 
@@ -1800,6 +1805,7 @@ TAG "variables/exponential_uncertain" GROUP "Continuous Aleatory Uncertain"
 TAG "variables/exponential_uncertain/betas"
 	DESC "{exponential uncertain betas} VarCommands.html#VarCAUV_Exponential"
 
+TAG "variables/exponential_uncertain/initial_point"
 TAG "variables/exponential_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Exponential"
 
@@ -1818,6 +1824,7 @@ TAG "variables/beta_uncertain/lower_bounds"
 TAG "variables/beta_uncertain/upper_bounds"
 	DESC "{Distribution upper bounds} VarCommands.html#VarCAUV_Beta"
 
+TAG "variables/beta_uncertain/initial_point"
 TAG "variables/beta_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Beta"
 
@@ -1830,6 +1837,7 @@ TAG "variables/gamma_uncertain/alphas"
 TAG "variables/gamma_uncertain/betas"
 	DESC "{gamma uncertain betas} VarCommands.html#VarCAUV_Gamma"
 
+TAG "variables/gamma_uncertain/initial_point"
 TAG "variables/gamma_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Gamma"
 
@@ -1842,6 +1850,7 @@ TAG "variables/gumbel_uncertain/alphas"
 TAG "variables/gumbel_uncertain/betas"
 	DESC "{gumbel uncertain betas} VarCommands.html#VarCAUV_Gumbel"
 
+TAG "variables/gumbel_uncertain/initial_point"
 TAG "variables/gumbel_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Gumbel"
 
@@ -1854,6 +1863,7 @@ TAG "variables/frechet_uncertain/alphas"
 TAG "variables/frechet_uncertain/betas"
 	DESC "{frechet uncertain betas} VarCommands.html#VarCAUV_Frechet"
 
+TAG "variables/frechet_uncertain/initial_point"
 TAG "variables/frechet_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Frechet"
 
@@ -1866,6 +1876,7 @@ TAG "variables/weibull_uncertain/alphas"
 TAG "variables/weibull_uncertain/betas"
 	DESC "{weibull uncertain betas} VarCommands.html#VarCAUV_Weibull"
 
+TAG "variables/weibull_uncertain/initial_point"
 TAG "variables/weibull_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Weibull"
 
@@ -1884,6 +1895,7 @@ TAG "variables/histogram_bin_uncertain/ordinates"
 TAG "variables/histogram_bin_uncertain/counts"
 	DESC "{sets of counts for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"
 
+TAG "variables/histogram_bin_uncertain/initial_point"
 TAG "variables/histogram_bin_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCAUV_Bin_Histogram"
 
@@ -1893,6 +1905,7 @@ TAG "variables/poisson_uncertain" GROUP "Discrete Aleatory Uncertain"
 TAG "variables/poisson_uncertain/lambdas"
 	DESC "{poisson uncertain lambdas} VarCommands.html#VarDAUV_Poisson"
 
+TAG "variables/poisson_uncertain/initial_point"
 TAG "variables/poisson_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDAUV_Poisson"
 
@@ -1903,6 +1916,7 @@ TAG "variables/binomial_uncertain/probability_per_trial"
 TAG "variables/binomial_uncertain/num_trials"
 	DESC "{binomial uncertain num_trials} VarCommands.html#VarDAUV_Binomial"
 
+TAG "variables/binomial_uncertain/initial_point"
 TAG "variables/binomial_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDAUV_Binomial"
 
@@ -1913,6 +1927,7 @@ TAG "variables/negative_binomial_uncertain/probability_per_trial"
 TAG "variables/negative_binomial_uncertain/num_trials"
 	DESC "{negative binomial uncertain success num_trials} VarCommands.html#VarDAUV_Negative_Binomial"
 
+TAG "variables/negative_binomial_uncertain/initial_point"
 TAG "variables/negative_binomial_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDAUV_Negative_Binomial"
 
@@ -1920,6 +1935,7 @@ TAG "variables/geometric_uncertain" GROUP "Discrete Aleatory Uncertain"
 	DESC "{geometric uncertain variables} VarCommands.html#VarDAUV_Geometric"
 
 TAG "variables/geometric_uncertain/probability_per_trial"
+TAG "variables/geometric_uncertain/initial_point"
 TAG "variables/geometric_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDAUV_Geometric"
 
@@ -1935,6 +1951,7 @@ TAG "variables/hypergeometric_uncertain/selected_population"
 TAG "variables/hypergeometric_uncertain/num_drawn"
 	DESC "{hypergeometric uncertain num_drawn } VarCommands.html#VarDAUV_Hypergeometric"
 
+TAG "variables/hypergeometric_uncertain/initial_point"
 TAG "variables/hypergeometric_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDAUV_Hypergeometric"
 
@@ -1950,6 +1967,7 @@ TAG "variables/histogram_point_uncertain/abscissas"
 TAG "variables/histogram_point_uncertain/counts"
 	DESC "{sets of counts for point-based histogram variables} VarCommands.html#VarDAUV_Point_Histogram"
 
+TAG "variables/histogram_point_uncertain/initial_point"
 TAG "variables/histogram_point_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDAUV_Point_Histogram"
 
@@ -1971,6 +1989,7 @@ TAG "variables/continuous_interval_uncertain/lower_bounds"
 TAG "variables/continuous_interval_uncertain/upper_bounds"
 	DESC "{upper bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"
 
+TAG "variables/continuous_interval_uncertain/initial_point"
 TAG "variables/continuous_interval_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCEUV_Interval"
 
@@ -1989,6 +2008,7 @@ TAG "variables/discrete_interval_uncertain/lower_bounds"
 TAG "variables/discrete_interval_uncertain/upper_bounds"
 	DESC "{Upper bounds} VarCommands.html#VarDIUV"
 
+TAG "variables/discrete_interval_uncertain/initial_point"
 TAG "variables/discrete_interval_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDIUV"
 
@@ -2004,6 +2024,7 @@ TAG "variables/discrete_uncertain_set_integer/set_values"
 TAG "variables/discrete_uncertain_set_integer/set_probabilities"
 	DESC "{Probabilities for each set member} VarCommands.html#VarDUSIV"
 
+TAG "variables/discrete_uncertain_set_integer/initial_point"
 TAG "variables/discrete_uncertain_set_integer/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDUSIV"
 
@@ -2019,6 +2040,7 @@ TAG "variables/discrete_uncertain_set_real/set_values"
 TAG "variables/discrete_uncertain_set_real/set_probabilities"
 	DESC "{Probabilities for each set member} VarCommands.html#VarDUSRV"
 
+TAG "variables/discrete_uncertain_set_real/initial_point"
 TAG "variables/discrete_uncertain_set_real/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDUSRV"
 

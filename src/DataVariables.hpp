@@ -86,6 +86,9 @@ public:
   /// user selection/override of variables domain:
   /// {DEFAULT,MIXED,RELAXED}_DOMAIN
   short varsDomain;
+  /// flag indicating user specification of initial points (for local
+  /// optimization-based UQ methods) for at least one uncertain variable type
+  bool uncertainVarsInitPt;
   /// number of continuous design variables (from the \c continuous_design
   /// specification in \ref VarDV)
   size_t numContinuousDesVars;
@@ -240,179 +243,249 @@ public:
 
   // Aleatory uncertain arrays
 
-  /// means of the normal uncertain variables (from the \c nuv_means
-  /// specification in \ref VarAUV)
+  /// means of the normal uncertain variables (from the \c means
+  /// specification in \ref VarCAUV_Normal)
   RealVector normalUncMeans;
   /// standard deviations of the normal uncertain variables (from
-  /// the \c nuv_std_deviations specification in \ref VarAUV)
+  /// the \c std_deviations specification in \ref VarCAUV_Normal)
   RealVector normalUncStdDevs;
   /// distribution lower bounds for the normal uncertain variables
-  /// (from the \c nuv_lower_bounds specification in \ref VarAUV)
+  /// (from the \c lower_bounds specification in \ref VarCAUV_Normal)
   RealVector normalUncLowerBnds;
   /// distribution upper bounds for the normal uncertain variables
-  /// (from the \c nuv_upper_bounds specification in \ref VarAUV)
+  /// (from the \c upper_bounds specification in \ref VarCAUV_Normal)
   RealVector normalUncUpperBnds;
+  /// initial values of the normal uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Normal)
+  RealVector normalUncVars;
   /// lambdas (means of the corresponding normals) of the lognormal uncertain
-  /// variables (from the \c lnuv_lambdas specification in \ref VarAUV)
+  /// variables (from the \c lambdas specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncLambdas;
-  /// zetas (standard deviations of the corresponding normals) of the lognormal
-  /// uncertain variables (from the \c lnuv_zetas specification in \ref VarAUV)
+  /// zetas (standard deviations of the corresponding normals) of the
+  /// lognormal uncertain variables (from the \c zetas specification
+  /// in \ref VarCAUV_Lognormal)
   RealVector lognormalUncZetas;
   /// means of the lognormal uncertain variables (from the \c
-  /// lnuv_means specification in \ref VarAUV)
+  /// means specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncMeans;
   /// standard deviations of the lognormal uncertain variables (from
-  /// the \c lnuv_std_deviations specification in \ref VarAUV)
+  /// the \c std_deviations specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncStdDevs;
   /// error factors for the lognormal uncertain variables (from
-  /// the \c lnuv_error_factors specification in \ref VarAUV)
+  /// the \c error_factors specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncErrFacts;
   /// distribution lower bounds for the lognormal uncertain variables
-  /// (from the \c lnuv_lower_bounds specification in \ref VarAUV)
+  /// (from the \c lower_bounds specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncLowerBnds;
   /// distribution upper bounds for the lognormal uncertain variables
-  /// (from the \c lnuv_upper_bounds specification in \ref VarAUV)
+  /// (from the \c upper_bounds specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncUpperBnds;
+  /// initial values of the lognormal uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Lognormal)
+  RealVector lognormalUncVars;
   /// distribution lower bounds for the uniform uncertain variables
-  /// (from the \c uuv_lower_bounds specification in \ref VarAUV)
+  /// (from the \c lower_bounds specification in \ref VarCAUV_Uniform)
   RealVector uniformUncLowerBnds;
   /// distribution upper bounds for the uniform uncertain variables
-  /// (from the \c uuv_upper_bounds specification in \ref VarAUV)
+  /// (from the \c upper_bounds specification in \ref VarCAUV_Uniform)
   RealVector uniformUncUpperBnds;
+  /// initial values of the uniform uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Uniform)
+  RealVector uniformUncVars;
   /// distribution lower bounds for the loguniform uncertain variables
-  /// (from the \c luuv_lower_bounds specification in \ref VarAUV)
+  /// (from the \c lower_bounds specification in \ref VarCAUV_Loguniform)
   RealVector loguniformUncLowerBnds;
   /// distribution upper bounds for the loguniform uncertain variables
-  /// (from the \c luuv_upper_bounds specification in \ref VarAUV)
+  /// (from the \c upper_bounds specification in \ref VarCAUV_Loguniform)
   RealVector loguniformUncUpperBnds;
-  /// modes of the triangular uncertain variables (from the \c tuv_modes
-  /// specification in \ref VarAUV)
+  /// initial values of the loguniform uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Loguniform)
+  RealVector loguniformUncVars;
+  /// modes of the triangular uncertain variables (from the \c modes
+  /// specification in \ref VarCAUV_Triangular)
   RealVector triangularUncModes;
   /// distribution lower bounds for the triangular uncertain variables
-  /// (from the \c tuv_lower_bounds specification in \ref VarAUV)
+  /// (from the \c lower_bounds specification in \ref VarCAUV_Triangular)
   RealVector triangularUncLowerBnds;
   /// distribution upper bounds for the triangular uncertain variables
-  /// (from the \c tuv_upper_bounds specification in \ref VarAUV)
+  /// (from the \c upper_bounds specification in \ref VarCAUV_Triangular)
   RealVector triangularUncUpperBnds;
+  /// initial values of the triangular uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Triangular)
+  RealVector triangularUncVars;
   /// beta factors for the exponential uncertain variables (from
-  /// the \c euv_betas specification in \ref VarAUV)
+  /// the \c betas specification in \ref VarCAUV_Exponential)
   RealVector exponentialUncBetas;
+  /// initial values of the exponential uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Exponential)
+  RealVector exponentialUncVars;
   /// alpha factors for the beta uncertain variables (from
-  /// the \c buv_means specification in \ref VarAUV)
+  /// the \c means specification in \ref VarCAUV_Beta)
   RealVector betaUncAlphas;
   /// beta factors for the beta uncertain variables (from
-  /// the \c buv_std_deviations specification in \ref VarAUV)
+  /// the \c std_deviations specification in \ref VarCAUV_Beta)
   RealVector betaUncBetas;
   /// distribution lower bounds for the beta uncertain variables
-  /// (from the \c buv_lower_bounds specification in \ref VarAUV)
+  /// (from the \c lower_bounds specification in \ref VarCAUV_Beta)
   RealVector betaUncLowerBnds;
   /// distribution upper bounds for the beta uncertain variables
-  /// (from the \c buv_upper_bounds specification in \ref VarAUV)
+  /// (from the \c upper_bounds specification in \ref VarCAUV_Beta)
   RealVector betaUncUpperBnds;
+  /// initial values of the beta uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Beta)
+  RealVector betaUncVars;
   /// alpha factors for the gamma uncertain variables (from
-  /// the \c gauv_alphas specification in \ref VarAUV)
+  /// the \c alphas specification in \ref VarCAUV_Gamma)
   RealVector gammaUncAlphas;
   /// beta factors for the gamma uncertain variables (from
-  /// the \c gauv_betas specification in \ref VarAUV)
+  /// the \c betas specification in \ref VarCAUV_Gamma)
   RealVector gammaUncBetas;
+  /// initial values of the gamma uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Gamma)
+  RealVector gammaUncVars;
   /// alpha factors for the gumbel uncertain variables (from the \c
-  /// guuv_alphas specification in \ref VarAUV)
+  /// alphas specification in \ref VarCAUV_Gumbel)
   RealVector gumbelUncAlphas;
   /// beta factors for of the gumbel uncertain variables (from
-  /// the \c guuv_betas specification in \ref VarAUV)
+  /// the \c betas specification in \ref VarCAUV_Gumbel)
   RealVector gumbelUncBetas;
+  /// initial values of the gumbel uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Gumbel)
+  RealVector gumbelUncVars;
   /// alpha factors for the frechet uncertain variables (from
-  /// the \c fuv_alphas specification in \ref VarAUV)
+  /// the \c alphas specification in \ref VarCAUV_Frechet)
   RealVector frechetUncAlphas;
   /// beta factors for the frechet uncertain variables (from
-  /// the \c fuv_betas specification in \ref VarAUV)
+  /// the \c betas specification in \ref VarCAUV_Frechet)
   RealVector frechetUncBetas;
+  /// initial values of the frechet uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Frechet)
+  RealVector frechetUncVars;
   /// alpha factors for the weibull uncertain variables (from
-  /// the \c wuv_alphas specification in \ref VarAUV)
+  /// the \c alphas specification in \ref VarCAUV_Weibull)
   RealVector weibullUncAlphas;
   /// beta factors for the weibull uncertain variables (from
-  /// the \c wuv_betas specification in \ref VarAUV)
+  /// the \c betas specification in \ref VarCAUV_Weibull)
   RealVector weibullUncBetas;
+  /// initial values of the weibull uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Weibull)
+  RealVector weibullUncVars;
   /// an array containing a vector of (x,c) pairs for each bin-based
   /// histogram uncertain variable (see continuous linear histogram in
   /// LHS manual; from the \c histogram_bin_uncertain specification in
-  /// \ref VarAUV).  (x,y) ordinate specifications are converted to (x,c)
-  /// counts within NIDR.
+  /// \ref VarCAUV_Bin_Histogram).  (x,y) ordinate specifications are
+  /// converted to (x,c) counts within NIDR.
   RealVectorArray histogramUncBinPairs;
+  /// initial values of the histogram bin uncertain variables (from the \c
+  /// initial_point specification in \ref VarCAUV_Bin_Histogram)
+  RealVector histogramBinUncVars;
   /// lambdas (rate parameter) for the poisson uncertain variables (from
-  /// the \c lambdas specification in \ref VarAUV)
+  /// the \c lambdas specification in \ref VarDAUV_Poisson)
   RealVector poissonUncLambdas;
+  /// initial values of the poisson uncertain variables (from the \c
+  /// initial_point specification in \ref VarDAUV_Poisson)
+  IntVector poissonUncVars;
   /// probabilities per each trial (p) for the binomial uncertain variables
-  /// from the \c prob_per_trial specification in \ref VarAUV)
+  /// from the \c prob_per_trial specification in \ref VarDAUV_Binomial)
   RealVector binomialUncProbPerTrial;
   /// Number of trials (N) for the binomial uncertain variables
-  /// from the \c num_trials specification in \ref VarAUV)
+  /// from the \c num_trials specification in \ref VarDAUV_Binomial)
   IntVector binomialUncNumTrials;
-  /// probabilities per each trial (p) for the negative binomial uncertain 
-  /// variables from the \c prob_per_trial specification in \ref VarAUV)
+  /// initial values of the binomial uncertain variables (from the \c
+  /// initial_point specification in \ref VarDAUV_Binomial)
+  IntVector binomialUncVars;
+  /// probabilities per each trial (p) for the negative binomial
+  /// uncertain variables from the \c prob_per_trial specification in
+  /// \ref VarDAUV_Negative_Binomial)
   RealVector negBinomialUncProbPerTrial;
   /// Number of trials (N) for the negative binomial uncertain variables
-  /// from the \c num_trials specification in \ref VarAUV)
+  /// from the \c num_trials specification in \ref VarDAUV_Negative_Binomial)
   IntVector negBinomialUncNumTrials;
-  /// probabilities per each trial (p) for the geometric uncertain 
-  /// variables from the \c prob_per_trial specification in \ref VarAUV)
+  /// initial values of the negative binomial uncertain variables (from the
+  /// \c initial_point specification in \ref VarDAUV_Negative_Binomial)
+  IntVector negBinomialUncVars;
+  /// probabilities per each trial (p) for the geometric uncertain variables
+  /// from the \c prob_per_trial specification in \ref VarDAUV_Geometric)
   RealVector geometricUncProbPerTrial;
+  /// initial values of the geometric uncertain variables (from the \c
+  /// initial_point specification in \ref VarDAUV_Geometric)
+  IntVector geometricUncVars;
   /// Size of total populations (N) for the hypergeometric uncertain variables
-  /// from the \c total_population specification in \ref VarAUV)
+  /// from the \c total_population specification in \ref VarDAUV_Hypergeometric)
   IntVector hyperGeomUncTotalPop;
-  /// Size of selected populations for the hypergeometric uncertain variables
-  /// from the \c selected_population specification in \ref VarAUV)
+  /// Size of selected populations for the hypergeometric uncertain
+  /// variables from the \c selected_population specification in \ref
+  /// VarDAUV_Hypergeometric)
   IntVector hyperGeomUncSelectedPop;
-  /// Number failed in the selected populations for the hypergeometric 
-  /// variablesfrom the \c num_drawn specification in \ref VarAUV)
+  /// Number failed in the selected populations for the hypergeometric variables
+  /// from the \c num_drawn specification in \ref VarDAUV_Hypergeometric)
   IntVector hyperGeomUncNumDrawn;
+  /// initial values of the hypergeometric uncertain variables (from the
+  /// \c initial_point specification in \ref VarDAUV_Hypergeometric)
+  IntVector hyperGeomUncVars;
   /// an array containing a vector of (x,c) pairs for each point-based
-  /// histogram uncertain variable (see discrete histogram in LHS manual;
-  /// from the \c histogram_point_uncertain specification in \ref VarAUV)
+  /// histogram uncertain variable (see discrete histogram in LHS
+  /// manual; from the \c histogram_point_uncertain specification in
+  /// \ref VarDAUV_Point_Histogram)
   RealVectorArray histogramUncPointPairs;
+  /// initial values of the histogram point uncertain variables (from the \c
+  /// initial_point specification in \ref VarDAUV_Point_Histogram)
+  RealVector histogramPointUncVars;
   /// correlation matrix for all uncertain variables (from the \c
-  /// uncertain_correlation_matrix specification in \ref VarAUV). This
-  /// matrix specifies rank correlations for sampling methods (i.e.,
-  /// LHS) and correlation coefficients (rho_ij = normalized covariance
-  /// matrix) for analytic reliability methods.
+  /// uncertain_correlation_matrix specification in \ref
+  /// VarAUV_Correlations). This matrix specifies rank correlations
+  /// for LHS sampling and correlation coefficients (rho_ij =
+  /// normalized covariance matrix) for other methods.
   RealSymMatrix uncertainCorrelations;
 
   // Epistemic uncertain arrays
 
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c continuous_interval_uncertain \c interval_probs
-  /// specification in \ref VarEUV)
+  /// specification in \ref VarCEUV_Interval)
   RealVectorArray continuousIntervalUncBasicProbs;
   /// lower bounds defining cells for each epistemic interval uncertain
   /// variable (from the \c continuous_interval_uncertain \c lower_bounds
-  /// specification in \ref VarEUV)
+  /// specification in \ref VarCEUV_Interval)
   RealVectorArray continuousIntervalUncLowerBounds;
   /// upper bounds defining cells for each epistemic interval uncertain
   /// variable (from the \c continuous_interval_uncertain \c upper_bounds
-  /// specification in \ref VarEUV)
+  /// specification in \ref VarCEUV_Interval)
   RealVectorArray continuousIntervalUncUpperBounds;
+  /// initial values of the continuous interval uncertain variables
+  /// (from the \c initial_point specification in \ref VarCEUV_Interval)
+  RealVector continuousIntervalUncVars;
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c discrete_interval_uncertain \c interval_probs
-  /// specification in \ref VarEUV)
+  /// specification in \ref VarDIUV)
   RealVectorArray discreteIntervalUncBasicProbs;
   /// lower bounds defining cells for each epistemic interval uncertain
   /// variable (from the \c discrete_interval_uncertain \c lower_bounds
-  /// specification in \ref VarEUV)
+  /// specification in \ref VarDIUV)
   IntVectorArray discreteIntervalUncLowerBounds;
   /// upper bounds defining cells for each epistemic interval uncertain
   /// variable (from the \c discrete_interval_uncertain \c upper_bounds
-  /// specification in \ref VarEUV)
+  /// specification in \ref VarDIUV)
   IntVectorArray discreteIntervalUncUpperBounds;
+  /// initial values of the discrete interval uncertain variables
+  /// (from the \c initial_point specification in \ref VarDIUV)
+  IntVector discreteIntervalUncVars;
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
   /// defined by an integer set (from the \c discrete_uncertain_set_integer
-  /// \c set_values specification in \ref VarEUV)
+  /// \c set_values specification in \ref VarDUSIV)
   IntRealMapArray discreteUncSetIntValuesProbs;
+  /// initial values of the discrete uncertain set integer variables
+  /// (from the \c initial_point specification in \ref VarDUSIV)
+  IntVector discreteUncSetIntVars;
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
   /// defined by a real set (from the \c discrete_uncertain_set_real
-  /// \c set_values specification in \ref VarEUV)
+  /// \c set_values specification in \ref VarDUSRV)
   RealRealMapArray discreteUncSetRealValuesProbs;
+  /// initial values of the discrete uncertain set real variables
+  /// (from the \c initial_point specification in \ref VarDUSRV)
+  RealVector discreteUncSetRealVars;
 
   // State arrays
 

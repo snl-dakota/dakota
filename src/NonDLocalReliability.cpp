@@ -56,7 +56,10 @@ NonDLocalReliability* NonDLocalReliability::nondLocRelInstance(NULL);
 
 
 NonDLocalReliability::NonDLocalReliability(Model& model):
-  NonDReliability(model), warmStartFlag(true), nipModeOverrideFlag(true),
+  NonDReliability(model),
+  initialPtUserSpec(
+    probDescDB.get_bool("variables.uncertain.initial_point_flag")),
+  warmStartFlag(true), nipModeOverrideFlag(true),
   curvatureDataAvailable(false), kappaUpdated(false),
   secondOrderIntType(HOHENRACK), curvatureThresh(1.e-10), warningBits(0)
 {

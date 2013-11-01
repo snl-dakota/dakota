@@ -2457,12 +2457,18 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     if ((kw = (KW<bool, DataModelRep>*)Binsearch(Bdmo, L)))
 	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
-  /*
-  else if (strbegins(entry_name, "variables.")) {
+  else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<bool, DataVariablesRep> Bdv[] = {	// must be sorted
+	{"uncertain.initial_point_flag", P uncertainVarsInitPt}};
+    #undef P
+
+    KW<bool, DataVariablesRep> *kw;
+    if ((kw = (KW<bool, DataVariablesRep>*)Binsearch(Bdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
-  */
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
 	Locked_db();

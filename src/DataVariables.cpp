@@ -19,37 +19,37 @@ namespace Dakota {
 // Default constructor:
 DataVariablesRep::DataVariablesRep():
   varsView(DEFAULT_VIEW), varsDomain(DEFAULT_DOMAIN),
-  numContinuousDesVars(0), numDiscreteDesRangeVars(0),
-  numDiscreteDesSetIntVars(0), numDiscreteDesSetRealVars(0),
-  numNormalUncVars(0), numLognormalUncVars(0), numUniformUncVars(0),
-  numLoguniformUncVars(0), numTriangularUncVars(0), numExponentialUncVars(0),
-  numBetaUncVars(0), numGammaUncVars(0), numGumbelUncVars(0),
-  numFrechetUncVars(0), numWeibullUncVars(0), numHistogramBinUncVars(0),
-  numPoissonUncVars(0), numBinomialUncVars(0), numNegBinomialUncVars(0),
-  numGeometricUncVars(0), numHyperGeomUncVars(0), numHistogramPtUncVars(0),
-  numContinuousIntervalUncVars(0), numDiscreteIntervalUncVars(0),
-  numDiscreteUncSetIntVars(0), numDiscreteUncSetRealVars(0),
-  numContinuousStateVars(0), numDiscreteStateRangeVars(0),
-  numDiscreteStateSetIntVars(0), numDiscreteStateSetRealVars(0),
-  referenceCount(1)
+  uncertainVarsInitPt(false), numContinuousDesVars(0),
+  numDiscreteDesRangeVars(0), numDiscreteDesSetIntVars(0),
+  numDiscreteDesSetRealVars(0), numNormalUncVars(0), numLognormalUncVars(0),
+  numUniformUncVars(0), numLoguniformUncVars(0), numTriangularUncVars(0),
+  numExponentialUncVars(0), numBetaUncVars(0), numGammaUncVars(0),
+  numGumbelUncVars(0), numFrechetUncVars(0), numWeibullUncVars(0),
+  numHistogramBinUncVars(0), numPoissonUncVars(0), numBinomialUncVars(0),
+  numNegBinomialUncVars(0), numGeometricUncVars(0), numHyperGeomUncVars(0),
+  numHistogramPtUncVars(0), numContinuousIntervalUncVars(0),
+  numDiscreteIntervalUncVars(0), numDiscreteUncSetIntVars(0),
+  numDiscreteUncSetRealVars(0), numContinuousStateVars(0),
+  numDiscreteStateRangeVars(0), numDiscreteStateSetIntVars(0),
+  numDiscreteStateSetRealVars(0), referenceCount(1)
 { }
 
 
 void DataVariablesRep::write(MPIPackBuffer& s) const
 {
-  s << idVariables << varsView << varsDomain << numContinuousDesVars
-    << numDiscreteDesRangeVars << numDiscreteDesSetIntVars
-    << numDiscreteDesSetRealVars << numNormalUncVars << numLognormalUncVars
-    << numUniformUncVars << numLoguniformUncVars << numTriangularUncVars
-    << numExponentialUncVars << numBetaUncVars << numGammaUncVars
-    << numGumbelUncVars << numFrechetUncVars << numWeibullUncVars
-    << numHistogramBinUncVars << numPoissonUncVars << numBinomialUncVars
-    << numNegBinomialUncVars << numGeometricUncVars << numHyperGeomUncVars 
-    << numHistogramPtUncVars << numContinuousIntervalUncVars
-    << numDiscreteIntervalUncVars << numDiscreteUncSetIntVars
-    << numDiscreteUncSetRealVars << numContinuousStateVars
-    << numDiscreteStateRangeVars << numDiscreteStateSetIntVars
-    << numDiscreteStateSetRealVars;
+  s << idVariables << varsView << varsDomain << uncertainVarsInitPt
+    << numContinuousDesVars << numDiscreteDesRangeVars
+    << numDiscreteDesSetIntVars << numDiscreteDesSetRealVars << numNormalUncVars
+    << numLognormalUncVars << numUniformUncVars << numLoguniformUncVars
+    << numTriangularUncVars << numExponentialUncVars << numBetaUncVars
+    << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
+    << numWeibullUncVars << numHistogramBinUncVars << numPoissonUncVars
+    << numBinomialUncVars << numNegBinomialUncVars << numGeometricUncVars
+    << numHyperGeomUncVars << numHistogramPtUncVars
+    << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
+    << numDiscreteUncSetIntVars << numDiscreteUncSetRealVars
+    << numContinuousStateVars << numDiscreteStateRangeVars
+    << numDiscreteStateSetIntVars << numDiscreteStateSetRealVars;
 
   // Design arrays
   s << continuousDesignVars         << continuousDesignLowerBnds
@@ -63,26 +63,33 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
-    << normalUncUpperBnds << lognormalUncLambdas << lognormalUncZetas
-    << lognormalUncMeans << lognormalUncStdDevs << lognormalUncErrFacts
-    << lognormalUncLowerBnds << lognormalUncUpperBnds << uniformUncLowerBnds
-    << uniformUncUpperBnds << loguniformUncLowerBnds << loguniformUncUpperBnds
-    << triangularUncModes << triangularUncLowerBnds << triangularUncUpperBnds
-    << exponentialUncBetas << betaUncAlphas << betaUncBetas << betaUncLowerBnds
-    << betaUncUpperBnds << gammaUncAlphas << gammaUncBetas << gumbelUncAlphas
-    << gumbelUncBetas << frechetUncAlphas << frechetUncBetas << weibullUncAlphas
-    << weibullUncBetas << histogramUncBinPairs << poissonUncLambdas
-    << binomialUncProbPerTrial << binomialUncNumTrials 
-    << negBinomialUncProbPerTrial << negBinomialUncNumTrials 
-    << geometricUncProbPerTrial << hyperGeomUncTotalPop
-    << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn << histogramUncPointPairs
+    << normalUncUpperBnds << normalUncVars << lognormalUncLambdas
+    << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
+    << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
+    << lognormalUncVars << uniformUncLowerBnds << uniformUncUpperBnds
+    << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
+    << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
+    << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas
+    << exponentialUncVars << betaUncAlphas << betaUncBetas << betaUncLowerBnds
+    << betaUncUpperBnds << betaUncVars << gammaUncAlphas << gammaUncBetas
+    << gammaUncVars << gumbelUncAlphas << gumbelUncBetas << gumbelUncVars
+    << frechetUncAlphas << frechetUncBetas << frechetUncVars << weibullUncAlphas
+    << weibullUncBetas << weibullUncVars << histogramUncBinPairs
+    << histogramBinUncVars << poissonUncLambdas << poissonUncVars
+    << binomialUncProbPerTrial << binomialUncNumTrials << binomialUncVars
+    << negBinomialUncProbPerTrial << negBinomialUncNumTrials
+    << negBinomialUncVars << geometricUncProbPerTrial << geometricUncVars
+    << hyperGeomUncTotalPop << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn
+    << hyperGeomUncVars << histogramUncPointPairs << histogramPointUncVars
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
   s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
-    << continuousIntervalUncUpperBounds << discreteIntervalUncBasicProbs
-    << discreteIntervalUncLowerBounds << discreteIntervalUncUpperBounds
-    << discreteUncSetIntValuesProbs << discreteUncSetRealValuesProbs;
+    << continuousIntervalUncUpperBounds << continuousIntervalUncVars
+    << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
+    << discreteIntervalUncUpperBounds << discreteIntervalUncVars
+    << discreteUncSetIntValuesProbs << discreteUncSetIntVars
+    << discreteUncSetRealValuesProbs << discreteUncSetRealVars;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds
@@ -115,19 +122,19 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
 
 void DataVariablesRep::read(MPIUnpackBuffer& s)
 {
-  s >> idVariables >> varsView >> varsDomain >> numContinuousDesVars
-    >> numDiscreteDesRangeVars >> numDiscreteDesSetIntVars
-    >> numDiscreteDesSetRealVars >> numNormalUncVars >> numLognormalUncVars
-    >> numUniformUncVars >> numLoguniformUncVars >> numTriangularUncVars
-    >> numExponentialUncVars >> numBetaUncVars >> numGammaUncVars
-    >> numGumbelUncVars >> numFrechetUncVars >> numWeibullUncVars
-    >> numHistogramBinUncVars >> numPoissonUncVars >> numBinomialUncVars
-    >> numNegBinomialUncVars >> numGeometricUncVars >> numHyperGeomUncVars 
-    >> numHistogramPtUncVars >> numContinuousIntervalUncVars
-    >> numDiscreteIntervalUncVars >> numDiscreteUncSetIntVars
-    >> numDiscreteUncSetRealVars >> numContinuousStateVars
-    >> numDiscreteStateRangeVars >> numDiscreteStateSetIntVars
-    >> numDiscreteStateSetRealVars;
+  s >> idVariables >> varsView >> varsDomain >> uncertainVarsInitPt
+    >> numContinuousDesVars >> numDiscreteDesRangeVars
+    >> numDiscreteDesSetIntVars >> numDiscreteDesSetRealVars >> numNormalUncVars
+    >> numLognormalUncVars >> numUniformUncVars >> numLoguniformUncVars
+    >> numTriangularUncVars >> numExponentialUncVars >> numBetaUncVars
+    >> numGammaUncVars >> numGumbelUncVars >> numFrechetUncVars
+    >> numWeibullUncVars >> numHistogramBinUncVars >> numPoissonUncVars
+    >> numBinomialUncVars >> numNegBinomialUncVars >> numGeometricUncVars
+    >> numHyperGeomUncVars >> numHistogramPtUncVars
+    >> numContinuousIntervalUncVars >> numDiscreteIntervalUncVars
+    >> numDiscreteUncSetIntVars >> numDiscreteUncSetRealVars
+    >> numContinuousStateVars >> numDiscreteStateRangeVars
+    >> numDiscreteStateSetIntVars >> numDiscreteStateSetRealVars;
 
   // Design arrays
   s >> continuousDesignVars         >> continuousDesignLowerBnds
@@ -141,26 +148,33 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
 
   // Aleatory uncertain arrays
   s >> normalUncMeans >> normalUncStdDevs >> normalUncLowerBnds
-    >> normalUncUpperBnds >> lognormalUncLambdas >> lognormalUncZetas
-    >> lognormalUncMeans >> lognormalUncStdDevs >> lognormalUncErrFacts
-    >> lognormalUncLowerBnds >> lognormalUncUpperBnds >> uniformUncLowerBnds
-    >> uniformUncUpperBnds >> loguniformUncLowerBnds >> loguniformUncUpperBnds
-    >> triangularUncModes >> triangularUncLowerBnds >> triangularUncUpperBnds
-    >> exponentialUncBetas >> betaUncAlphas >> betaUncBetas >> betaUncLowerBnds
-    >> betaUncUpperBnds >> gammaUncAlphas >> gammaUncBetas >> gumbelUncAlphas
-    >> gumbelUncBetas >> frechetUncAlphas >> frechetUncBetas >> weibullUncAlphas
-    >> weibullUncBetas >> histogramUncBinPairs >> poissonUncLambdas
-    >> binomialUncProbPerTrial >> binomialUncNumTrials 
-    >> negBinomialUncProbPerTrial >> negBinomialUncNumTrials 
-    >> geometricUncProbPerTrial >> hyperGeomUncTotalPop
-    >> hyperGeomUncSelectedPop >> hyperGeomUncNumDrawn >> histogramUncPointPairs
+    >> normalUncUpperBnds >> normalUncVars >> lognormalUncLambdas
+    >> lognormalUncZetas >> lognormalUncMeans >> lognormalUncStdDevs
+    >> lognormalUncErrFacts >> lognormalUncLowerBnds >> lognormalUncUpperBnds
+    >> lognormalUncVars >> uniformUncLowerBnds >> uniformUncUpperBnds
+    >> uniformUncVars >> loguniformUncLowerBnds >> loguniformUncUpperBnds
+    >> loguniformUncVars >> triangularUncModes >> triangularUncLowerBnds
+    >> triangularUncUpperBnds >> triangularUncVars >> exponentialUncBetas
+    >> exponentialUncVars >> betaUncAlphas >> betaUncBetas >> betaUncLowerBnds
+    >> betaUncUpperBnds >> betaUncVars >> gammaUncAlphas >> gammaUncBetas
+    >> gammaUncVars >> gumbelUncAlphas >> gumbelUncBetas >> gumbelUncVars
+    >> frechetUncAlphas >> frechetUncBetas >> frechetUncVars >> weibullUncAlphas
+    >> weibullUncBetas >> weibullUncVars >> histogramUncBinPairs
+    >> histogramBinUncVars >> poissonUncLambdas >> poissonUncVars
+    >> binomialUncProbPerTrial >> binomialUncNumTrials >> binomialUncVars
+    >> negBinomialUncProbPerTrial >> negBinomialUncNumTrials
+    >> negBinomialUncVars >> geometricUncProbPerTrial >> geometricUncVars
+    >> hyperGeomUncTotalPop >> hyperGeomUncSelectedPop >> hyperGeomUncNumDrawn
+    >> hyperGeomUncVars >> histogramUncPointPairs >> histogramPointUncVars
     >> uncertainCorrelations;
 
   // Epistemic uncertain arrays
   s >> continuousIntervalUncBasicProbs >> continuousIntervalUncLowerBounds
-    >> continuousIntervalUncUpperBounds >> discreteIntervalUncBasicProbs
-    >> discreteIntervalUncLowerBounds >> discreteIntervalUncUpperBounds
-    >> discreteUncSetIntValuesProbs >> discreteUncSetRealValuesProbs;
+    >> continuousIntervalUncUpperBounds >> continuousIntervalUncVars
+    >> discreteIntervalUncBasicProbs >> discreteIntervalUncLowerBounds
+    >> discreteIntervalUncUpperBounds >> discreteIntervalUncVars
+    >> discreteUncSetIntValuesProbs >> discreteUncSetIntVars
+    >> discreteUncSetRealValuesProbs >> discreteUncSetRealVars;
 
   // State arrays
   s >> continuousStateVars         >> continuousStateLowerBnds
@@ -193,19 +207,19 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
 
 void DataVariablesRep::write(std::ostream& s) const
 {
-  s << idVariables << varsView << varsDomain << numContinuousDesVars
-    << numDiscreteDesRangeVars << numDiscreteDesSetIntVars
-    << numDiscreteDesSetRealVars << numNormalUncVars << numLognormalUncVars
-    << numUniformUncVars << numLoguniformUncVars << numTriangularUncVars
-    << numExponentialUncVars << numBetaUncVars << numGammaUncVars
-    << numGumbelUncVars << numFrechetUncVars << numWeibullUncVars
-    << numHistogramBinUncVars << numPoissonUncVars << numBinomialUncVars
-    << numNegBinomialUncVars << numGeometricUncVars << numHyperGeomUncVars 
-    << numHistogramPtUncVars << numContinuousIntervalUncVars
-    << numDiscreteIntervalUncVars << numDiscreteUncSetIntVars
-    << numDiscreteUncSetRealVars << numContinuousStateVars
-    << numDiscreteStateRangeVars << numDiscreteStateSetIntVars
-    << numDiscreteStateSetRealVars;
+  s << idVariables << varsView << varsDomain << uncertainVarsInitPt
+    << numContinuousDesVars << numDiscreteDesRangeVars
+    << numDiscreteDesSetIntVars << numDiscreteDesSetRealVars << numNormalUncVars
+    << numLognormalUncVars << numUniformUncVars << numLoguniformUncVars
+    << numTriangularUncVars << numExponentialUncVars << numBetaUncVars
+    << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
+    << numWeibullUncVars << numHistogramBinUncVars << numPoissonUncVars
+    << numBinomialUncVars << numNegBinomialUncVars << numGeometricUncVars
+    << numHyperGeomUncVars << numHistogramPtUncVars
+    << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
+    << numDiscreteUncSetIntVars << numDiscreteUncSetRealVars
+    << numContinuousStateVars << numDiscreteStateRangeVars
+    << numDiscreteStateSetIntVars << numDiscreteStateSetRealVars;
 
   // Design arrays
   s << continuousDesignVars         << continuousDesignLowerBnds
@@ -219,26 +233,33 @@ void DataVariablesRep::write(std::ostream& s) const
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
-    << normalUncUpperBnds << lognormalUncLambdas << lognormalUncZetas
-    << lognormalUncMeans << lognormalUncStdDevs << lognormalUncErrFacts
-    << lognormalUncLowerBnds << lognormalUncUpperBnds << uniformUncLowerBnds
-    << uniformUncUpperBnds << loguniformUncLowerBnds << loguniformUncUpperBnds
-    << triangularUncModes << triangularUncLowerBnds << triangularUncUpperBnds
-    << exponentialUncBetas << betaUncAlphas << betaUncBetas << betaUncLowerBnds
-    << betaUncUpperBnds << gammaUncAlphas << gammaUncBetas << gumbelUncAlphas
-    << gumbelUncBetas << frechetUncAlphas << frechetUncBetas << weibullUncAlphas
-    << weibullUncBetas << histogramUncBinPairs << poissonUncLambdas
-    << binomialUncProbPerTrial << binomialUncNumTrials 
-    << negBinomialUncProbPerTrial << negBinomialUncNumTrials 
-    << geometricUncProbPerTrial << hyperGeomUncTotalPop
-    << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn << histogramUncPointPairs
+    << normalUncUpperBnds << normalUncVars << lognormalUncLambdas
+    << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
+    << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
+    << lognormalUncVars << uniformUncLowerBnds << uniformUncUpperBnds
+    << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
+    << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
+    << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas
+    << exponentialUncVars << betaUncAlphas << betaUncBetas << betaUncLowerBnds
+    << betaUncUpperBnds << betaUncVars << gammaUncAlphas << gammaUncBetas
+    << gammaUncVars << gumbelUncAlphas << gumbelUncBetas << gumbelUncVars
+    << frechetUncAlphas << frechetUncBetas << frechetUncVars << weibullUncAlphas
+    << weibullUncBetas << weibullUncVars << histogramUncBinPairs
+    << histogramBinUncVars << poissonUncLambdas << poissonUncVars
+    << binomialUncProbPerTrial << binomialUncNumTrials << binomialUncVars
+    << negBinomialUncProbPerTrial << negBinomialUncNumTrials
+    << negBinomialUncVars << geometricUncProbPerTrial << geometricUncVars
+    << hyperGeomUncTotalPop << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn
+    << hyperGeomUncVars << histogramUncPointPairs << histogramPointUncVars
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
   s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
-    << continuousIntervalUncUpperBounds << discreteIntervalUncBasicProbs
-    << discreteIntervalUncLowerBounds << discreteIntervalUncUpperBounds
-    << discreteUncSetIntValuesProbs << discreteUncSetRealValuesProbs;
+    << continuousIntervalUncUpperBounds << continuousIntervalUncVars
+    << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
+    << discreteIntervalUncUpperBounds << discreteIntervalUncVars
+    << discreteUncSetIntValuesProbs << discreteUncSetIntVars
+    << discreteUncSetRealValuesProbs << discreteUncSetRealVars;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds

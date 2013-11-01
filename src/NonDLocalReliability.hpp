@@ -291,6 +291,8 @@ private:
   RealVector ranVarMeansU;
   /// initial guess for MPP search in u-space
   RealVector initialPtU;
+  /// flag indicating user specification of (any portion of) initialPtU
+  bool initialPtUserSpec;
   /// location of MPP in x-space
   RealVector mostProbPointX;
   /// location of MPP in u-space
