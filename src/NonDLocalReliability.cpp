@@ -396,8 +396,13 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
     computedGenRelLevels[i].resize(num_levels);
   }
 
+  if (initialPtUserSpec)
+    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
+				initialPtUSpec);
+  else
+    { initialPtUSpec.sizeUninitialized(numUncertainVars); initialPtUSpec = 1.; }
+
   // Size class-scope arrays.
-  initialPtU.sizeUninitialized(numUncertainVars);
   mostProbPointX.sizeUninitialized(numUncertainVars);
   mostProbPointU.sizeUninitialized(numUncertainVars);
   fnGradX.sizeUninitialized(numUncertainVars);
@@ -1118,12 +1123,12 @@ void NonDLocalReliability::initialize_level_data()
     }
 
     // initial optimizer guess in u-space (initialPtU)
-    initialPtU = 1.;
+    initialPtU = initialPtUSpec; // initialPtUSpec set in ctor
 
     /*
     // fall back if projection is unavailable (or numerics don't work out).
-    initialPtU = (ria_flag) ?
-      1. : std::fabs(requestedCDFRelLevel)/std::sqrt((Real)numUncertainVars);
+    initialPtU = (ria_flag) ? initialPtUSpec :
+      std::fabs(requestedCDFRelLevel)/std::sqrt((Real)numUncertainVars);
 
     // if fnValsMeanX/fnGradU are available, then warm start initialPtU using
     // a projection from the means.
@@ -1225,7 +1230,7 @@ void NonDLocalReliability::initialize_mpp_search_data()
 	  initialPtU[i] = mostProbPointU[i] + alpha * fnGradU[i];
       }
       else
-	initialPtU = 1.;//mostProbPointU;// can cause premature conv w/ some opt
+	initialPtU = initialPtUSpec;//mostProbPointU: premature conv w/ some opt
     }
     else {
       // For PMA case, scale mostProbPointU so that its magnitude equals
@@ -1267,7 +1272,7 @@ void NonDLocalReliability::initialize_mpp_search_data()
 	  initialPtU[i] = mostProbPointU[i] * scale_factor;
       }
       else
-	initialPtU = 1.;//mostProbPointU;// can cause premature conv w/ some opt
+	initialPtU = initialPtUSpec;//mostProbPointU: premature conv w/ some opt
     }
   }
   else { // cold start: reset to mean inputs/outputs
@@ -1276,7 +1281,7 @@ void NonDLocalReliability::initialize_mpp_search_data()
     if (mppSearchType < NO_APPROX) // AMV/AMV+/TANA
       assign_mean_data();
     // initial optimizer guess in u-space (initialPtU)
-    initialPtU = 1.;
+    initialPtU = initialPtUSpec; // initialPtUSpec set in ctor
   }
 }
 

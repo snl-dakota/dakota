@@ -289,10 +289,12 @@ private:
 
   /// vector of means for all uncertain random variables in u-space
   RealVector ranVarMeansU;
-  /// initial guess for MPP search in u-space
-  RealVector initialPtU;
   /// flag indicating user specification of (any portion of) initialPtU
   bool initialPtUserSpec;
+  /// user specification or default initial guess for local optimization
+  RealVector initialPtUSpec;
+  /// current starting point for MPP searches in u-space
+  RealVector initialPtU;
   /// location of MPP in x-space
   RealVector mostProbPointX;
   /// location of MPP in u-space
