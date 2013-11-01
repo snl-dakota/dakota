@@ -204,6 +204,16 @@ if ( ${ConfigStatus} EQUAL 0 )
     message("DAKOTA_CTESTREGEXP: ${DAKOTA_CTEST_REGEXP}")
     message("DAKOTA_CTEST_PARALLEL_LEVEL: ${DAKOTA_CTEST_PARALLEL_LEVEL} ")	
 
+    # Remove results files before testing commences to avoid stale reporting;
+    # process_dakota_test_results would remove some of these, but be aggressive
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E remove 
+      ${CTEST_BINARY_DIRECTORY}/test/dakota_diffs.out 
+      ${CTEST_BINARY_DIRECTORY}/test/dakota_pdiffs.out
+      ${CTEST_BINARY_DIRECTORY}/test/dakota_*/dakota_diffs.out 
+      ${CTEST_BINARY_DIRECTORY}/test/pdakota_*/dakota_pdiffs.out
+      ${CTEST_BINARY_DIRECTORY}/test/dakota_results.log
+      )
+
     if (DAKOTA_TEST_SBATCH)
       # Generate files needed to submit tests to queue
       configure_file(
