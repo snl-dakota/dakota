@@ -396,12 +396,6 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
     computedGenRelLevels[i].resize(num_levels);
   }
 
-  if (initialPtUserSpec)
-    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
-				initialPtUSpec);
-  else
-    { initialPtUSpec.sizeUninitialized(numUncertainVars); initialPtUSpec = 1.; }
-
   // Size class-scope arrays.
   mostProbPointX.sizeUninitialized(numUncertainVars);
   mostProbPointU.sizeUninitialized(numUncertainVars);
@@ -435,139 +429,10 @@ NonDLocalReliability::~NonDLocalReliability()
 
 void NonDLocalReliability::quantify_uncertainty()
 {
-  initialize_random_variable_parameters();
-  initial_taylor_series();
-  if (mppSearchType)
-    mpp_search();
-  else
-    mean_value();
+  if (mppSearchType) mpp_search();
+  else               mean_value();
 
   numRelAnalyses++;
-}
-
-
-/** An initial first- or second-order Taylor-series approximation is
-    required for MV/AMV/AMV+/TANA or for the case where momentStats
-    (from MV) are required within finalStatistics for subIterator
-    usage of NonDLocalReliability. */
-void NonDLocalReliability::initial_taylor_series()
-{
-  bool init_ts_flag = (mppSearchType < NO_APPROX) ? true : false;
-  size_t i, j, k;
-  ShortArray asrv(numFunctions, 0);
-  short mode = 3;
-  if (taylorOrder == 2 && hessianType != "quasi") // no data yet in quasiHess
-    mode |= 4;
-
-  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  switch (mppSearchType) {
-  case MV:
-    asrv.assign(numFunctions, mode);
-    break;
-  case AMV_X:      case AMV_U:
-  case AMV_PLUS_X: case AMV_PLUS_U:
-  case TANA_X:     case TANA_U:
-    for (i=0; i<numFunctions; ++i)
-      if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
-	  !requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty() )
-	asrv[i] = mode;
-    // no break: fall through
-  case NO_APPROX:
-    if (subIteratorFlag) {
-      // check final_asv for active mean and std deviation stats
-      size_t cntr = 0;
-      for (i=0; i<numFunctions; i++) {
-	for (j=0; j<2; j++) {
-	  if (final_asv[cntr++]) { // mean, std deviation
-	    asrv[i] = mode;
-	    init_ts_flag = true;
-	  }
-	}
-	cntr += requestedRespLevels[i].length() +
-	  requestedProbLevels[i].length() + requestedRelLevels[i].length() +
-	  requestedGenRelLevels[i].length();
-      }
-    }
-    break;
-  }
-
-  momentStats.shape(2, numFunctions); // init to 0
-  if (init_ts_flag) {
-    bool correlation_flag = natafTransform.x_correlation();
-    // Evaluate response values/gradients at the mean values of the uncertain
-    // vars for the (initial) Taylor series expansion in MV/AMV/AMV+.
-    Cout << "\n>>>>> Evaluating response at mean values\n";
-    if (mppSearchType && mppSearchType < NO_APPROX)
-      uSpaceModel.component_parallel_mode(TRUTH_MODEL);
-    iteratedModel.continuous_variables(natafTransform.x_means());
-    activeSet.request_vector(asrv);
-    iteratedModel.compute_response(activeSet);
-    const Response& curr_resp = iteratedModel.current_response();
-    fnValsMeanX       = curr_resp.function_values();
-    fnGradsMeanX      = curr_resp.function_gradients();
-    if (mode & 4)
-      fnHessiansMeanX = curr_resp.function_hessians();
-
-    // compute the covariance matrix from the correlation matrix
-    RealSymMatrix covariance;
-    const Pecos::RealVector& x_std_devs = natafTransform.x_std_deviations();
-    if (correlation_flag) {
-      covariance.shapeUninitialized(numUncertainVars);
-      const Pecos::RealSymMatrix& x_corr_mat
-	= natafTransform.x_correlation_matrix();
-      for (i=0; i<numUncertainVars; i++) {
-	for (j=0; j<=i; j++) {
-	  covariance(i,j) = x_std_devs[i]*x_std_devs[j]*x_corr_mat(i,j);
-	  //if (i != j)
-	  //  covariance(j,i) = covariance(i,j);
-	}
-      }
-    }
-    else {
-      covariance.shape(numUncertainVars); // inits to 0
-      for (i=0; i<numUncertainVars; i++)
-	covariance(i,i) = std::pow(x_std_devs[i], 2);
-    }
-
-    // MVFOSM computes a first-order mean, which is just the response evaluated
-    // at the input variable means.  If Hessian data is available, compute a
-    // second-order mean including the effect of input variable correlations.
-    // MVFOSM computes a first-order variance including the effect of input
-    // variable correlations.  Second-order variance requires skewness/kurtosis
-    // of the inputs and is not practical.  NOTE: if fnGradsMeanX is zero, then
-    // std_dev will be zero --> bad for MV CDF estimates.
-    bool t2nq = (taylorOrder == 2 && hessianType != "quasi"); // 2nd-order mean
-    for (i=0; i<numFunctions; ++i) {
-      if (asrv[i]) {
-	Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
-	mean = fnValsMeanX[i]; // first-order mean
-	Real v1 = 0., v2 = 0.;
-	for (j=0; j<numUncertainVars; ++j) {
-	  if (correlation_flag)
-	    for (k=0; k<numUncertainVars; ++k) {
-	      if (t2nq) v1 += covariance(j,k)*fnHessiansMeanX[i](j,k);
-	      v2 += covariance(j,k) * fnGradsMeanX(j,i) * fnGradsMeanX(k,i);
-	    }
-	  else {
-	    if (t2nq) v1 += covariance(j,j)*fnHessiansMeanX[i](j,j);
-	    v2 += covariance(j,j) * std::pow(fnGradsMeanX(j,i), 2);
-	  }
-	}
-	if (t2nq) mean += v1/2.;
-	std_dev = std::sqrt(v2);
-      }
-    }
-
-    // Teuchos/BLAS-based approach.  As a matrix triple-product, this has some
-    // unneeded FLOPs.  A vector-matrix triple product would be preferable, but
-    // requires vector extractions from fnGradsMeanX.
-    //RealSymMatrix variance(numFunctions, false);
-    //Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1., covariance,
-    //                             fnGradsMeanX, variance);
-    //for (i=0; i<numFunctions; i++)
-    //  momentStats(1,i) = sqrt(variance(i,i));
-    //Cout << "\nvariance = " << variance << "\nmomentStats = " << momentStats;
-  }
 }
 
 
@@ -577,6 +442,9 @@ void NonDLocalReliability::mean_value()
   // CDF/CCDF data points for each response function and store in 
   // finalStatistics.  Additionally, if uncorrelated variables, compute
   // importance factors.
+
+  initialize_random_variable_parameters();
+  initial_taylor_series();
 
   // initialize arrays
   impFactor.shapeUninitialized(numUncertainVars, numFunctions);
@@ -730,6 +598,29 @@ void NonDLocalReliability::mpp_search()
   // set the object instance pointer for use within the static member fns
   NonDLocalReliability* prev_instance = nondLocRelInstance;
   nondLocRelInstance = this;
+
+  // The following 2 calls must precede use of natafTransform.trans_X_to_U()
+  initialize_random_variable_parameters();
+  // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
+  // Since the uncertain variable distributions (means, std devs, correlations)
+  // may change among NonDLocalReliability invocations (e.g., RBDO with design
+  // variable insertion), this code block is performed on every invocation.
+  natafTransform.transform_correlations();
+
+  // initialize initialPtUSpec on first reliability analysis; needs to precede
+  // iteratedModel.continuous_variables() assignment in initial_taylor_series()
+  if (numRelAnalyses == 0) {
+    if (initialPtUserSpec)
+      natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
+				  initialPtUSpec);
+    else {
+      initialPtUSpec.sizeUninitialized(numUncertainVars);
+      initialPtUSpec = 1.;
+    }
+  }
+
+  // sets iteratedModel.continuous_variables() to mean values
+  initial_taylor_series();
 
   // Initialize local arrays
   statCount = 0;
@@ -943,6 +834,131 @@ void NonDLocalReliability::mpp_search()
 }
 
 
+/** An initial first- or second-order Taylor-series approximation is
+    required for MV/AMV/AMV+/TANA or for the case where momentStats
+    (from MV) are required within finalStatistics for subIterator
+    usage of NonDLocalReliability. */
+void NonDLocalReliability::initial_taylor_series()
+{
+  bool init_ts_flag = (mppSearchType < NO_APPROX); // updated below
+  size_t i, j, k;
+  ShortArray asrv(numFunctions, 0);
+  short mode = 3;
+  if (taylorOrder == 2 && hessianType != "quasi") // no data yet in quasiHess
+    mode |= 4;
+
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  switch (mppSearchType) {
+  case MV:
+    asrv.assign(numFunctions, mode);
+    break;
+  case AMV_X:      case AMV_U:
+  case AMV_PLUS_X: case AMV_PLUS_U:
+  case TANA_X:     case TANA_U:
+    for (i=0; i<numFunctions; ++i)
+      if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
+	  !requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty() )
+	asrv[i] = mode;
+    // no break: fall through
+  case NO_APPROX:
+    if (subIteratorFlag) {
+      // check final_asv for active mean and std deviation stats
+      size_t cntr = 0;
+      for (i=0; i<numFunctions; i++) {
+	for (j=0; j<2; j++) {
+	  if (final_asv[cntr++]) { // mean, std deviation
+	    asrv[i] = mode;
+	    init_ts_flag = true;
+	  }
+	}
+	cntr += requestedRespLevels[i].length() +
+	  requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+	  requestedGenRelLevels[i].length();
+      }
+    }
+    break;
+  }
+
+  momentStats.shape(2, numFunctions); // init to 0
+  if (init_ts_flag) {
+    bool correlation_flag = natafTransform.x_correlation();
+    // Evaluate response values/gradients at the mean values of the uncertain
+    // vars for the (initial) Taylor series expansion in MV/AMV/AMV+.
+    Cout << "\n>>>>> Evaluating response at mean values\n";
+    if (mppSearchType && mppSearchType < NO_APPROX)
+      uSpaceModel.component_parallel_mode(TRUTH_MODEL);
+    iteratedModel.continuous_variables(natafTransform.x_means());
+    activeSet.request_vector(asrv);
+    iteratedModel.compute_response(activeSet);
+    const Response& curr_resp = iteratedModel.current_response();
+    fnValsMeanX       = curr_resp.function_values();
+    fnGradsMeanX      = curr_resp.function_gradients();
+    if (mode & 4)
+      fnHessiansMeanX = curr_resp.function_hessians();
+
+    // compute the covariance matrix from the correlation matrix
+    RealSymMatrix covariance;
+    const Pecos::RealVector& x_std_devs = natafTransform.x_std_deviations();
+    if (correlation_flag) {
+      covariance.shapeUninitialized(numUncertainVars);
+      const Pecos::RealSymMatrix& x_corr_mat
+	= natafTransform.x_correlation_matrix();
+      for (i=0; i<numUncertainVars; i++) {
+	for (j=0; j<=i; j++) {
+	  covariance(i,j) = x_std_devs[i]*x_std_devs[j]*x_corr_mat(i,j);
+	  //if (i != j)
+	  //  covariance(j,i) = covariance(i,j);
+	}
+      }
+    }
+    else {
+      covariance.shape(numUncertainVars); // inits to 0
+      for (i=0; i<numUncertainVars; i++)
+	covariance(i,i) = std::pow(x_std_devs[i], 2);
+    }
+
+    // MVFOSM computes a first-order mean, which is just the response evaluated
+    // at the input variable means.  If Hessian data is available, compute a
+    // second-order mean including the effect of input variable correlations.
+    // MVFOSM computes a first-order variance including the effect of input
+    // variable correlations.  Second-order variance requires skewness/kurtosis
+    // of the inputs and is not practical.  NOTE: if fnGradsMeanX is zero, then
+    // std_dev will be zero --> bad for MV CDF estimates.
+    bool t2nq = (taylorOrder == 2 && hessianType != "quasi"); // 2nd-order mean
+    for (i=0; i<numFunctions; ++i) {
+      if (asrv[i]) {
+	Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
+	mean = fnValsMeanX[i]; // first-order mean
+	Real v1 = 0., v2 = 0.;
+	for (j=0; j<numUncertainVars; ++j) {
+	  if (correlation_flag)
+	    for (k=0; k<numUncertainVars; ++k) {
+	      if (t2nq) v1 += covariance(j,k)*fnHessiansMeanX[i](j,k);
+	      v2 += covariance(j,k) * fnGradsMeanX(j,i) * fnGradsMeanX(k,i);
+	    }
+	  else {
+	    if (t2nq) v1 += covariance(j,j)*fnHessiansMeanX[i](j,j);
+	    v2 += covariance(j,j) * std::pow(fnGradsMeanX(j,i), 2);
+	  }
+	}
+	if (t2nq) mean += v1/2.;
+	std_dev = std::sqrt(v2);
+      }
+    }
+
+    // Teuchos/BLAS-based approach.  As a matrix triple-product, this has some
+    // unneeded FLOPs.  A vector-matrix triple product would be preferable, but
+    // requires vector extractions from fnGradsMeanX.
+    //RealSymMatrix variance(numFunctions, false);
+    //Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1., covariance,
+    //                             fnGradsMeanX, variance);
+    //for (i=0; i<numFunctions; i++)
+    //  momentStats(1,i) = sqrt(variance(i,i));
+    //Cout << "\nvariance = " << variance << "\nmomentStats = " << momentStats;
+  }
+}
+
+
 /** Initialize class-scope arrays and perform other start-up
     activities, such as evaluating median limit state responses. */
 void NonDLocalReliability::initialize_class_data()
@@ -958,12 +974,6 @@ void NonDLocalReliability::initialize_class_data()
     prevFnGradDLev0.shape(num_final_grad_vars, numFunctions);
     prevFnGradULev0.shape(numUncertainVars, numFunctions);
   }
-
-  // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
-  // Since the uncertain variable distributions (means, std devs, correlations)
-  // may change among NonDLocalReliability invocations (e.g., RBDO with design
-  // variable insertion), this code block is performed on every invocation.
-  natafTransform.transform_correlations();
 
   // define ranVarMeansU for use in the transformed AMV option
   //if (mppSearchType == AMV_U)
