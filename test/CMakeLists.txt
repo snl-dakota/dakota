@@ -71,17 +71,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # Create one CTest per DAKOTA input file, in a protected subdirectory
   set(copied_test_files_abs "")
 
-  if (WIN32)
-    file(GLOB dakota_test_input_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-      "dakota_4*" "dakota_a*.in" "dakota_b*.in" "dakota_c*.in" "dakota_d*.in"
-      "dakota_h*" "dakota_i*.in" "dakota_k*.in" "dakota_m*.in" "dakota_n*.in"
-      "dakota_r*.in" "dakota_sb*.in" "dakota_u*.in" "dakota_v*.in"
-    )
-  else()
-    file(GLOB dakota_test_input_files 
-      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in"
-    )
-  endif()
+  file(GLOB dakota_test_input_files 
+       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
 
   # Agressively omit tests for partial distributions to internal and
   # external web.  Initial set is aggressive, omitting any test that
@@ -194,43 +185,26 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_var_views_uq.in
       )
   endif()
-  # Remove tests that fail on Windows (for now)
+
+  # Remove tests that fail on Windows (for now); the aborts could be
+  # managed via gold standards if they don't pop a Windows error dialog
   if (WIN32)
     list(REMOVE_ITEM dakota_test_input_files
-      dakota_3pc.in                         # error/abort: Unix shell
-      dakota_container.in                   # error/abort: Unix shell
-      dakota_drivers.in                     # 4-6 error/abort: refork?
-      dakota_cantilever_ego.in
-      dakota_mogatest.in
-      dakota_rbdo_short_column_analytic2.in
-      dakota_rbdo_short_column_trsb2.in
-      dakota_sebdo_short_column_adapt.in
-      dakota_short_column_taylor2.in
-      dakota_rbdo_short_column_analytic2.in
-      dakota_rbdo_short_column_trsb2.in
-      dakota_short_column_taylor2.in
-      dakota_uq_cantilever_sop_exp.in
-      dakota_uq_cantilever_sop_exp.in
-      dakota_uq_rosenbrock_adapt_pce_lls.in
-      dakota_uq_rosenbrock_global.in
-      dakota_users_mogatest1.in
-      dakota_users_mogatest2.in
-      dakota_users_mogatest3.in
-      dakota_lps_pce_rosenbrock_fail.in       # maybe fixed
-      dakota_rosenbrock_fail.in               # maybe fixed
-      dakota_uq_rosenbrock_pce_lls_cv_fail.in # maybe fixed
-      dakota_pof.in                           # 1 timeout (stale)
-      dakota_uq_ishigami_dste_exp.in          # 2,3 Abort. range error in NKM
-      dakota_uq_rosenbrock_adapt_exp.in
-      dakota_uq_rosenbrock_pce_lls.in
-      dakota_uq_rosenbrock_pce_lls_cv.in
-      dakota_uq_rosenbrock_sc.in
-      dakota_uq_short_column_adapt_gsg.in
-      dakota_rbdo_cantilever_trsb.in
-      dakota_rbdo_short_column_trsb.in
-      dakota_rbdo_steel_column_analytic2.in
-      dakota_workdir.in
-    )
+      dakota_3pc.in                         # abort: Unix shell
+      dakota_container.in                   # abort: Unix shell
+      dakota_drivers.in                     # 4-6 abort; refork?
+      dakota_pcbdo_cantilever.in	    # 4 fails
+      dakota_rbdo_steel_column_analytic2.in # abort: LAPACK error
+      dakota_rbdo_steel_column_trsb2.in	    # abort: LAPACK error
+      dakota_uq_cantilever_adapt_gsg.in	    # abort: algorithm diverges
+      dakota_uq_ishigami_dste_exp.in	    # abort: subscript out of range
+      dakota_uq_rosenbrock_adapt_pce_lls.in # timeouts on 1,2,3
+      dakota_uq_short_column_adapt_gsg.in   # abort: algorithm diverges
+      dakota_uq_short_column_ivp_exp.in	    # abort: surfpack data asserts
+      dakota_uq_timeseries_ivp_optinterf.in # workdir issue?
+      dakota_uq_timeseries_sop_optinterf.in # workdir issue?
+      dakota_workdir.in			    # abort: Unix shell
+      )
   endif()
 
   foreach(test_input_file ${dakota_test_input_files})
