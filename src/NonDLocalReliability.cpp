@@ -614,6 +614,8 @@ void NonDLocalReliability::mpp_search()
       natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
 				  initialPtUSpec);
     else {
+      // don't use the mean uncertain variable defaults from the parser
+      // since u ~= 0 can cause problems for some formulations
       initialPtUSpec.sizeUninitialized(numUncertainVars);
       initialPtUSpec = 1.;
     }

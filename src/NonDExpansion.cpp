@@ -70,7 +70,7 @@ NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
   ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), expSampling(false),
-  impSampling(false), vbdFlag(false), vbdOrderLimit(0),
+  impSampling(false), vbdFlag(false), vbdOrderLimit(0), vbdDropTol(-1.),
   covarianceControl(DEFAULT_COVARIANCE)
 {
   // override default definition in NonD ctor.  If there are any aleatory
