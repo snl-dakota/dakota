@@ -196,6 +196,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_pcbdo_cantilever.in	    # 4 fails
       dakota_rbdo_steel_column_analytic2.in # abort: LAPACK error
       dakota_rbdo_steel_column_trsb2.in	    # abort: LAPACK error
+      dakota_sbuq_hier_poly_prod.in	    # hangs on nightly build host
       dakota_uq_cantilever_adapt_gsg.in	    # abort: algorithm diverges
       dakota_uq_ishigami_dste_exp.in	    # abort: subscript out of range
       dakota_uq_rosenbrock_adapt_pce_lls.in # timeouts on 1,2,3
