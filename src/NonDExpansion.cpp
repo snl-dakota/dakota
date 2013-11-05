@@ -2020,6 +2020,12 @@ void NonDExpansion::print_covariance(std::ostream& s)
 
 void NonDExpansion::print_sobol_indices(std::ostream& s)
 {
+  // effects are computed per resp fn within compute_statistics()
+  // if vbdFlag and expansion_coefficient_flag
+
+  // this fn called if vbdFlag and prints per resp fn if
+  // expansion_coefficient_flag and non-negligible variance
+ 
   s << "\nGlobal sensitivity indices for each response function:\n";
 
   const StringArray& fn_labels = iteratedModel.response_labels();
@@ -2027,7 +2033,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
     = iteratedModel.continuous_variable_labels();
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
-  StringArray sobol_labels; size_t i, j, num_indices;
+  StringArray sobol_labels; size_t i, j, num_indices; Real var_i;
   if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
     poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
@@ -2051,24 +2057,40 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
-      const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
-      const RealVector& total_indices = poly_approx_rep->total_sobol_indices();
-      s << fn_labels[i] << " Sobol indices:\n" << std::setw(38) << "Main"
-	<< std::setw(19) << "Total\n";
-      for (j=0; j<numContinuousVars; ++j)
-	if (std::abs(sobol_indices[j+1]) > vbdDropTol ||
-	    std::abs(total_indices[j])   > vbdDropTol)   // print main / total
-	  s << "                     "   << std::setw(write_precision+7) 
-	    << sobol_indices[j+1] << ' ' << std::setw(write_precision+7)
-	    << total_indices[j]   << ' ' << cv_labels[j] << '\n';
-      if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
-	s << std::setw(39) << "Interaction\n";
-	for (j=numContinuousVars+1; j<num_indices; ++j)
-	  if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
-	    s << "                     " << std::setw(write_precision+7) 
-	      << sobol_indices[j] << ' ' << sobol_labels[j] << '\n';
+      // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
+      // In this case, we cannot screen effectively at this level.
+      bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
+			    respVariance[i]     <= Pecos::SMALL_NUMBER ) ||
+			  ( covarianceControl   == FULL_COVARIANCE &&
+			    respCovariance(i,i) <= Pecos::SMALL_NUMBER ) )
+	              ? false : true;
+      if (well_posed) {
+	const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
+	const RealVector& total_indices
+	  = poly_approx_rep->total_sobol_indices();
+	s << fn_labels[i] << " Sobol' indices:\n" << std::setw(38) << "Main"
+	  << std::setw(19) << "Total\n";
+	for (j=0; j<numContinuousVars; ++j)
+	  if (std::abs(sobol_indices[j+1]) > vbdDropTol ||
+	      std::abs(total_indices[j])   > vbdDropTol)   // print main / total
+	    s << "                     "   << std::setw(write_precision+7) 
+	      << sobol_indices[j+1] << ' ' << std::setw(write_precision+7)
+	      << total_indices[j]   << ' ' << cv_labels[j] << '\n';
+	if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
+	  s << std::setw(39) << "Interaction\n";
+	  for (j=numContinuousVars+1; j<num_indices; ++j)
+	    if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
+	      s << "                     " << std::setw(write_precision+7) 
+		<< sobol_indices[j] << ' ' << sobol_labels[j] << '\n';
+	}
       }
+      else
+	s << fn_labels[i] << " Sobol' indices not available due to negligible "
+	  << "variance\n";
     }
+    else
+      s << fn_labels[i] << "Sobol' indices not available due to expansion "
+	<< "coefficient mode\n";
   }
 }
 
