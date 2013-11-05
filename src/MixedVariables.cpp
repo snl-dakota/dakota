@@ -12,7 +12,6 @@
 
 #include "MixedVariables.hpp"
 #include "ProblemDescDB.hpp"
-#include "DakotaBinStream.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_data_util.hpp"
 

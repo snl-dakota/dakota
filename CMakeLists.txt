@@ -199,7 +199,7 @@ if(DAKOTA_HAVE_HDF5)
 endif() # DAKOTA_HAVE_HDF5
 
 # Mandate a system or user-provided Boost, including some libraries
-set(dakota_boost_components "regex;filesystem;system")
+set(dakota_boost_components "regex;filesystem;serialization;system")
 
 # Acro requires the signals library in addition
 option(HAVE_ACRO "Build the ACRO package." ON)
@@ -215,13 +215,6 @@ if (HAVE_QUESO)
   list(APPEND dakota_boost_components "program_options")
 endif()
 
-# Surfpack can optionally use the serialization library.  If enabled,
-# the Surfpack standalone executable will be built.
-option(HAVE_SURFPACK "Build the Surfpack package." ON)
-option(HAVE_BOOST_SERIALIZATION "Use Boost serialization library" ON)
-if(HAVE_SURFPACK AND HAVE_BOOST_SERIALIZATION)
-  list(APPEND dakota_boost_components "serialization")
-endif()
 
 # Options for adaptive sampling that affect both packages and src
 option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" ON)

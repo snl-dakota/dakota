@@ -12,7 +12,6 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr, write_precision
 #include "dakota_data_types.hpp"
-#include "DakotaBinStream.hpp"
 #include "MPIPackBuffer.hpp"
 #include <boost/foreach.hpp>
 
@@ -667,64 +666,6 @@ template <typename OrdinalType, typename ScalarType>
 inline std::ostream& operator<<(std::ostream& s,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
 { write_data(s, data); return s; }
-
-
-/// standard binary stream extraction operator for full
-/// SerialDenseVector with labels
-template <typename OrdinalType, typename ScalarType>
-void read_data(BiStream& s,
-	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
-	       StringMultiArray& label_array)
-{
-  OrdinalType i, len;
-  s >> len;
-  if( len != v.length() )
-    v.sizeUninitialized(len);
-  if( len != label_array.size() )
-    label_array.resize(boost::extents[len]);
-  for (i=0; i<len; ++i)
-    s >> v[i] >> label_array[i];
-}
-
-
-/// standard binary stream extraction operator for full
-/// SerialDenseVector with labels
-template <typename OrdinalType, typename ScalarType>
-void read_data(BiStream& s,
-	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
-	       StringMultiArrayView label_array)
-{
-  OrdinalType i, len;
-  s >> len;
-  if( len != v.length() )
-    v.sizeUninitialized(len);
-  if( len != label_array.size() ) {
-    Cerr << "Error: size of label_array in read_data(BiStream&) does not "
-	 << "equal length of SerialDenseVector." << std::endl;
-    abort_handler(-1);
-  }
-  for (i=0; i<len; ++i)
-    s >> v[i] >> label_array[i];
-}
-
-
-/// standard binary stream insertion operator for full
-/// SerialDenseVector with labels
-template <typename OrdinalType, typename ScalarType>
-void write_data(BoStream& s,
-		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
-		const StringMultiArray& label_array)
-{
-  OrdinalType i, len = v.length();
-  if (label_array.size() != len) {
-    Cerr << "Error: size of label_array in write_data(BoStream) does not "
-	 << "equal length of SerialDenseVector." << std::endl;
-    abort_handler(-1);
-  }
-  s << len;
-  for (i=0; i<len; ++i)
-    s << v[i] << label_array[i];
-}
 
 
 /// standard MPI buffer extraction operator for full SerialDenseVector

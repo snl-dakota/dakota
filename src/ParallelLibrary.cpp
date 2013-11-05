@@ -10,6 +10,7 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
+#include <boost/archive/archive_exception.hpp>
 #include "ParallelLibrary.hpp"
 #include "DakotaBinStream.hpp"
 #include "ProblemDescDB.hpp"
@@ -1381,28 +1382,36 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
            << " evaluations." << std::endl;
 
     int cntr = 0;
-    while ( !read_restart.eof() && 
+    while ( read_restart.good() && !read_restart.eof() && 
             (!stopRestartEvals || cntr < stopRestartEvals) ) {
       // Use default constr. & rely on Variables::read(BiStream&)
       // & Response::read(BiStream&) to resize vars and response.
       ParamResponsePair current_pair;
-
-      // Exception handling installed since EOF is not captured properly 
-      // by BiStream.
-      try { read_restart >> current_pair; }
-
-      catch(std::string& err_msg) {
-        //Cerr << "Warning: " << err_msg << std::endl;
+      try { 
+	read_restart >> current_pair; 
+      }
+      catch(const boost::archive::archive_exception& e) {
+	Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	     << e.what() << std::endl;
+	abort_handler(-1);
+      }
+      catch(const std::string& err_msg) {
+        Cout << "\nWarning reading restart file: " << err_msg << std::endl;
         break;
       }
 
-      data_pairs.insert(current_pair); ++cntr;
+      data_pairs.insert(current_pair); 
+      ++cntr;
       Cout << "\n------------------------------------------\nRestart record "
 	   << std::setw(4) << cntr << "  (evaluation id " << std::setw(4)
 	   << current_pair.eval_id() << "):"
 	   << "\n------------------------------------------\n" << current_pair;
       // Note: interface id is printed in ParamResponsePair::write(ostream&)
       // if present
+
+      // peek to force EOF if the last restart record was read
+      read_restart.peek();
+
     }
     read_restart.close();
     Cout << "Restart file processing completed: " << cntr
@@ -1413,51 +1422,45 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // -------------
   // Write restart
   // -------------
-  // Always write a restart log file.  Assign the write_restart stream to the
-  // filename specified by the user on the dakota command line.  If a 
-  // write_restart file is not specified, "dakota.rst" is the default.  It 
-  // would be desirable to suppress the creation of the restart file altogether
-  // if the user has explicitly deactivated this feature; however this is
-  // problematic for 2 reasons: (1) problem_db is not readily available (except
-  // in init_iterator_communicators()), and (2) the "deactivate restart_file"
-  // specification is linked to the interface and therefore should be enforced
-  // per interface, whereas there is only one parallel library instance.
-  //if (!deactivateRestartFlag) {
-  if (write_restart_filename == read_restart_filename) {
-    write_restart.open(write_restart_filename.c_str(), 
-		       std::ios::binary | std::ios::app);
 
-    Cout << "Appending new evaluations to existing restart file " 
-         << write_restart_filename << std::endl;
-    // One possible problem here is the use of stop_restart, since we could
-    // be appending new results for the same points back to the same file,
-    // such that multiple records (potentially corrupted results followed by
-    // good results) exist for the same point.  Need to either (1) remove the
-    // unread records (by closing and rewriting the file) before writing new
-    // ones or (2) always write a new restart file in the stop_restart case.
-    // In case (2), the processed records from the old restart file should be
-    // written to the new one (see below).
+  // Always write a restart log file.  Assign the write_restart stream
+  // to the filename specified by the user on the dakota command line.
+  // If a write_restart file is not specified, "dakota.rst" is the
+  // default.
 
-    // NOTE: It may be preferable to always start over to avoid appending to
-    // a damaged file.  Restart is often used when DAKOTA has been killed by a
-    // scheduler in which case the file could have a partial evaluation at the
-    // end.  If reusing dakota.rst as the write_restart, std::ios::trunc
-    // (implied by std::ios::out which is the default) will discard any old file
-    // contents and start over [see FSTREAM(3C++) in AT&T C++ Library Manual].
-  }
-  else {
-    write_restart.open(write_restart_filename.c_str(), std::ios::binary);
+  // It would be desirable to suppress the creation of the restart
+  // file altogether if the user has explicitly deactivated this
+  // feature; however this is problematic for 2 reasons: (1)
+  // problem_db is not readily available (except in
+  // init_iterator_communicators()), and (2) the "deactivate
+  // restart_file" specification is linked to the interface and
+  // therefore should be enforced per interface, whereas there is only
+  // one parallel library instance.  if (!deactivateRestartFlag) {
+
+  // Previously we supported append to an existing restart file.  With
+  // Boost serialization, there's no easy way to append to a file (all
+  // writes must occur with a single output archive instance).  This
+  // also improves behavior with stop_restart, as now only the desired
+  // evals are rewritten, omitting any corrupt data at the end of
+  // file.
+
+  if (write_restart_filename == read_restart_filename)
+    Cout << "Overwriting existing restart file " << write_restart_filename 
+	 << std::endl;
+  else
     Cout << "Writing new restart file " << write_restart_filename << std::endl;
-    // Write any processed records from the old restart file to the new file.
-    // This prevents the situation where good data from an initial run and a 
-    // restart run are in separate files.  By keeping all of the saved data in
-    // 1 file, restarts can be chained together indefinitely.
-    //
-    // "View" the data_pairs cache as an ordered collection (by eval_id)
-    PRPCacheCIter cit, cit_end = data_pairs.end();
-    for (cit = data_pairs.begin(); cit != cit_end; ++cit)
-      write_restart << *cit;
-  }
+
+  write_restart.open(write_restart_filename.c_str(), std::ios::binary);
+
+  // Write any processed records from the old restart file to the new file.
+  // This prevents the situation where good data from an initial run and a 
+  // restart run are in separate files.  By keeping all of the saved data in
+  // 1 file, restarts can be chained together indefinitely.
+  //
+  // "View" the data_pairs cache as an ordered collection (by eval_id)
+  PRPCacheCIter cit, cit_end = data_pairs.end();
+  for (cit = data_pairs.begin(); cit != cit_end; ++cit)
+    write_restart << *cit;
   //}
 }
 

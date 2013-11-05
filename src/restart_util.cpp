@@ -14,6 +14,7 @@
 /** \file restart_util.cpp
     \brief file containing the DAKOTA restart utility main program */
 
+#include <boost/archive/archive_exception.hpp>
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "DakotaBinStream.hpp"
@@ -144,14 +145,20 @@ void print_restart(int argc, char** argv, String print_dest)
   write_precision = 16;
 
   int cntr = 0;
-  while (!read_restart.eof()) {
+  while (read_restart.good() && !read_restart.eof()) {
 
     ParamResponsePair current_pair;
-    try { read_restart >> current_pair; }
-
-    catch(String& err_msg) {
-      //Cerr << "Warning: " << err_msg << endl;
-      break; // out of while loop
+    try { 
+      read_restart >> current_pair; 
+    }
+    catch(const boost::archive::archive_exception& e) {
+      Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	   << e.what() << std::endl;
+      abort_handler(-1);
+    }
+    catch(const std::string& err_msg) {
+      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+      break;
     }
 
     cntr++;
@@ -203,14 +210,20 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   extern PRPCache data_pairs;
   size_t records_read = 0;  // counter for restart records read
   size_t num_evals = 0;     // unique insertions to data_pairs
-  while (!read_restart.eof()) {
+  while (read_restart.good() && !read_restart.eof()) {
 
     ParamResponsePair current_pair;
-    try { read_restart >> current_pair; }
-
-    catch(String& err_msg) {
-      //Cerr << "Warning: " << err_msg << endl;
-      break; // out of while loop
+    try { 
+      read_restart >> current_pair; 
+    }
+    catch(const boost::archive::archive_exception& e) {
+      Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	   << e.what() << std::endl;
+      abort_handler(-1);
+    }
+    catch(const std::string& err_msg) {
+      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+      break;
     }
 
     ++records_read;
@@ -399,7 +412,7 @@ void read_neutral(int argc, char** argv)
   cout << "Writing new restart file " << argv[3] << '\n';
 
   int cntr = 0;
-  while (!neutral_file_stream.eof()) {
+  while (neutral_file_stream.good() && !neutral_file_stream.eof()) {
     ParamResponsePair current_pair;
     try { current_pair.read_annotated(neutral_file_stream); }
     catch(String& err_msg) {
@@ -476,14 +489,20 @@ void repair_restart(int argc, char** argv, String identifier_type)
   cout << "Writing new restart file " << write_restart_filename << '\n';
 
   int cntr = 0, good_cntr = 0;
-  while (!read_restart.eof()) {
+  while (read_restart.good() && !read_restart.eof()) {
 
     ParamResponsePair current_pair;
-    try { read_restart >> current_pair; }
-
-    catch(String& err_msg) {
-      //Cerr << "Warning: " << err_msg << endl;
-      break; // out of while loop
+    try { 
+      read_restart >> current_pair; 
+    }
+    catch(const boost::archive::archive_exception& e) {
+      Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	   << e.what() << std::endl;
+      abort_handler(-1);
+    }
+    catch(const std::string& err_msg) {
+      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+      break;
     }
 
     cntr++;
@@ -541,14 +560,20 @@ void concatenate_restart(int argc, char** argv)
     }
 
     int cntr = 0;
-    while (!read_restart.eof()) {
+    while (read_restart.good() && !read_restart.eof()) {
 
       ParamResponsePair current_pair;
-      try { read_restart >> current_pair; }
-
-      catch(String& err_msg) {
-        //Cerr << "Warning: " << err_msg << endl;
-        break; // out of while loop
+      try { 
+	read_restart >> current_pair; 
+      }
+      catch(const boost::archive::archive_exception& e) {
+	Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	     << e.what() << std::endl;
+	abort_handler(-1);
+      }
+      catch(const std::string& err_msg) {
+        Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+        break;
       }
       write_restart << current_pair;
       cntr++;

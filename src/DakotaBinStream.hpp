@@ -7,36 +7,39 @@
     _______________________________________________________________________ */
 
 //- Class:       DakotaBinStream
-//- Description: A replacement for the RWbistream class.  This class reads
-//-              and writes binary files by extending the basic iostream
-//-		 if RPC/xdr is not supported then comment #ifdef out all 
-//-		 xdr specific code and output in native binary format.
-//- Owner:       
-//- Version: $Id: 
-
+//- Description: This class reads and writes binary files by extending
+//-              the basic iostream and writing in native binary
+//-              format with Boost serialization
+//- Owner:       Brian Adams
+//- Version: $Id$ 
 
 #ifndef DAKOTA_BINSTREAM_H
 #define DAKOTA_BINSTREAM_H
 
 #include "dakota_system_defs.hpp"
-#ifndef NO_XDR
-#include "dak_xdr_interface.h"
-#endif
+#include "dakota_global_defs.hpp"  // for Cerr, write_precision
+#include "dakota_data_types.hpp"
+
+// forward declarations
+namespace boost {
+  namespace archive {
+    class binary_oarchive;
+    class binary_iarchive;
+  }
+}
 
 namespace Dakota {
 
 /// The binary input stream class.  Overloads the >> operator for all
 /// data types
 
-/** The Dakota::BiStream class is a  binary input class which overloads the >>
-    operator for all standard data types (int, char, float, etc). The class 
-    relies on the methods within the ifstream base class.
-    The Dakota::BiStream class inherits from the ifstream class.
-    If available, the class utilize rpc/xdr to construct machine independent 
-    binary files.  These Dakota restart files can be moved from host to host.
-    The motivation to develop these classes was to replace the Rogue
-    wave classes which Dakota historically used for binary I/O.  */
-
+/** The Dakota::BiStream class is a binary input class which overloads
+    the >> operator for all standard data types (int, char, float,
+    etc). The class relies on the methods within the ifstream base
+    class.  The Dakota::BiStream class inherits from the ifstream
+    class.  The class utilizes Boost serialization platform-depdendent
+    binary files.  TODO: Later we will extend to be portable so Dakota
+    restart files can be moved from host to host. */
 class BiStream : public virtual std::ifstream
 {
 public:
@@ -55,11 +58,17 @@ public:
   /// Destructor, calls xdr_destroy to delete xdr stream
   ~BiStream();
 
+  /// Open a stream after default constructing
+  /// Open a stream after default constructing
+  void open(const char *filename, 
+	    ios_base::openmode mode = ios_base::in | ios_base::binary);
+
+
   //
   //- Heading: operators
   //
 
-  /// Binary Input stream operator>>
+  /// Input operator, reads string from binary stream BiStream
   BiStream& operator>>(std::string& ds);
   /// Input operator, reads char from binary stream BiStream
   BiStream& operator>>(char& c);
@@ -90,28 +99,22 @@ private:
   //- Heading : Private data members
   //
 
-  /// XDR input stream buffer
-#ifndef NO_XDR
-  XDR xdrInBuf;
-  /// Buffer to hold data as it is read in
-  char inBuf[MAX_NETOBJ_SZ];
-#endif
+  /// Binary input archive from which data is read
+  boost::archive::binary_iarchive *inputArchive;
+
 };
 
 
 /// The binary output stream class.  Overloads the << operator for all
 /// data types
 
-/** The Dakota::BoStream class is a binary output classes which
-    overloads the << operator for all standard data types (int, char,
-    float, etc). The class relies on the built in write methods
-    within the ostream base classes.  Dakota::BoStream inherits
-    from the ofstream class.  The motivation to develop this class was
-    to replace the Rogue wave class which Dakota historically used for
-    binary I/O.  If available, the class utilize rpc/xdr to construct machine 
-    independent binary files. These Dakota restart files can be moved 
-    between hosts. */
-
+/** The Dakota::BoStream class is a binary output class which overloads
+    the << operator for all standard data types (int, char, float,
+    etc). The class relies on the methods within the ofstream base
+    class.  The Dakota::BiStream class inherits from the ofstream
+    class.  The class utilizes Boost serialization platform-depdendent
+    binary files.  TODO: Later we will extend to be portable so Dakota
+    restart files can be moved from host to host. */
 class BoStream : public virtual std::ofstream
 {
 public:
@@ -127,8 +130,11 @@ public:
   /// Constructor takes name of input file, mode
   BoStream(const char *s, std::ios_base::openmode mode);
 
-  /// Destructor, calls xdr_destroy to delete xdr stream
-  ~BoStream() throw();
+  ~BoStream();
+
+  /// Open a stream after default constructing
+  void open(const char *filename, 
+	    ios_base::openmode mode = ios_base::out | ios_base::binary);
 
   //
   //- Heading: operators 
@@ -165,13 +171,70 @@ private:
   //- Heading : Private data members
   //
 
-  /// XDR output stream buffer
-#ifndef NO_XDR
-  XDR xdrOutBuf;
-  /// Buffer to hold converted data before it is written
-  char outBuf[MAX_NETOBJ_SZ];
-#endif
+  /// Binary output archive from which data is read
+  boost::archive::binary_oarchive *outputArchive;
+
 };
+
+// TODO: make these handle Teuchos only and use boost serialization
+// directly to serialize std types.
+
+/// standard binary stream extraction operator for full
+/// SerialDenseVector with labels
+template <typename OrdinalType, typename ScalarType>
+void read_data(BiStream& s,
+	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+	       StringMultiArray& label_array)
+{
+  OrdinalType i, len;
+  s >> len;
+  if( len != v.length() )
+    v.sizeUninitialized(len);
+  if( len != label_array.size() )
+    label_array.resize(boost::extents[len]);
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
+/// standard binary stream extraction operator for full
+/// SerialDenseVector with labels
+template <typename OrdinalType, typename ScalarType>
+void read_data(BiStream& s,
+	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+	       StringMultiArrayView label_array)
+{
+  OrdinalType i, len;
+  s >> len;
+  if( len != v.length() )
+    v.sizeUninitialized(len);
+  if( len != label_array.size() ) {
+    Cerr << "Error: size of label_array in read_data(BiStream&) does not "
+	 << "equal length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
+/// standard binary stream insertion operator for full
+/// SerialDenseVector with labels
+template <typename OrdinalType, typename ScalarType>
+void write_data(BoStream& s,
+		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+		const StringMultiArray& label_array)
+{
+  OrdinalType i, len = v.length();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data(BoStream) does not "
+	 << "equal length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  s << len;
+  for (i=0; i<len; ++i)
+    s << v[i] << label_array[i];
+}
 
 
 /// Read an array from BiStream, s
