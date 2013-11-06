@@ -981,7 +981,7 @@ sub parse_test_output {
       }
     }
 
-    while (/^\w+ Sobol indices:/) {
+    while (/^\w+ Sobol' indices:/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (header)

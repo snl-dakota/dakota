@@ -345,8 +345,8 @@ sub compare_output {
     }
 
     # UQ mappings and indices
-    while ( ($base =~ /^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:|(Moment-based statistics|95% confidence intervals) for each response function:)$/o) &&
-	    ($test =~ /^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:|(Moment-based statistics|95% confidence intervals) for each response function:)$/o) ) {
+    while ( ($base =~ /^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol' indices:|(Moment-based statistics|95% confidence intervals) for each response function:)$/o) &&
+	    ($test =~ /^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol' indices:|(Moment-based statistics|95% confidence intervals) for each response function:)$/o) ) {
       $b_hdr1 = $base;         # save headers in case of diffs
       $b_hdr2 = shift @base_excerpt; # save headers in case of diffs
       $t_hdr1 = $test;         # save headers in case of diffs
