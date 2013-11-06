@@ -107,6 +107,21 @@ if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
+if(UNIX)
+  #check_include_files("rpc/types.h" HAVE_RPC_TYPES_H)
+  check_include_file("rpc/xdr.h" HAVE_RPC_XDR_H)
+  find_program(RPCGEN rpcgen)
+
+  if(HAVE_RPC_XDR_H)
+    #message("  Found XDR header files.")
+    set(HAVE_RPC_XDR_H ON)
+    add_definitions("-DHAVE_RPC_XDR_H -DHAVE_RPC_TYPES_H")
+  else()
+    message(WARNING "** XDR bindings NOT properly enabled; continuing anyway..")
+    add_definitions("-DNO_XDR")
+  endif()
+endif(UNIX)
+
 
 if(DAKOTA_F90)
   # A future version of CMake should set the Fortran FIXED_FLAG automagically
@@ -328,6 +343,10 @@ set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     ExperimentData.cpp
     )
+
+if(HAVE_RPC_XDR_H)
+  list(APPEND util_src dak_xdr_interface.c)
+endif(HAVE_RPC_XDR_H)
 
 if(DAKOTA_DL_SOLVER)
   list(APPEND util_src DLSolver.cpp)
@@ -767,13 +786,17 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
   endif()
 
   message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
+  set(dak_release_num 
+    #"${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}")
+    "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
 
   file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.cpp
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
         #include \"DakotaBuildInfo.hpp\"
-        std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_SVN_REV}\"; 
+        std::string Dakota::DakotaBuildInfo::releaseNum=\"${dak_release_num}\";
+        std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_SVN_REV}\";
         // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
-        //       Lower priority - a post-5.3 release task
+        //       Lower priority - a post-5.4 release task
         " )
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)

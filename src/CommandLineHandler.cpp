@@ -520,17 +520,19 @@ void CommandLineHandler::reset_streams()
 /** Version is always output to Cout */ 
 void CommandLineHandler::output_version() const
 {
-  std::string version_info;
+  std::string version_info("Dakota version ");
+  version_info += DakotaBuildInfo::get_release_num(); 
 
   // Major/interim releases:
-  version_info += "DAKOTA version 5.4 released 11/15/2013.\n";
-  // Developmental/VOTD releases:
-  //version_info += "DAKOTA version 5.3.1+ developmental release.\n";
+  //version_info += " released 11/15/2013.\n";
+
+  // Developmental/Stable releases:
+  version_info += "+ developmental release.\n";
 
   version_info += "Subversion revision " 
-    + DakotaBuildInfo::getRev()
-    + " built " + DakotaBuildInfo::getDate()
-    + " " + DakotaBuildInfo::getTime() + ".";
+    + DakotaBuildInfo::get_rev_number()
+    + " built " + DakotaBuildInfo::get_build_date()
+    + " " + DakotaBuildInfo::get_build_time() + ".";
 
   output_helper(version_info, Cout);
 }

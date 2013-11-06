@@ -25,20 +25,23 @@ class DakotaBuildInfo
 public:
 
   // Queries
-  static std::string getRev();
-  static std::string getDate();
-  static std::string getTime();
+  static std::string get_release_num();
+  static std::string get_rev_number();
+  static std::string get_build_date();
+  static std::string get_build_time();
 
 private:
 
   // Cached data - updated by the build system
+  static std::string releaseNum;
   static std::string rev;
 };
 
 
-inline std::string DakotaBuildInfo::getRev()  { return rev;      }
-inline std::string DakotaBuildInfo::getDate() { return __DATE__; }
-inline std::string DakotaBuildInfo::getTime() { return __TIME__; }
+inline std::string DakotaBuildInfo::get_release_num() { return releaseNum; }
+inline std::string DakotaBuildInfo::get_rev_number()  { return rev; }
+inline std::string DakotaBuildInfo::get_build_date()  { return __DATE__; }
+inline std::string DakotaBuildInfo::get_build_time()  { return __TIME__; }
 
 } // namespace Dakota
 
