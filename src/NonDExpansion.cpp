@@ -1289,10 +1289,13 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
     if (!vbdOrderLimit) // no order limit --> component used within total
       poly_approx_rep->compute_component_effects();
     poly_approx_rep->compute_total_effects(); // from scratch or using component
-    if (numFunctions > 1)
-      avg_sobol += poly_approx_rep->total_sobol_indices();
-    else
-      avg_sobol  = poly_approx_rep->total_sobol_indices();
+    // Note: response functions for which negligible variance is detected have
+    // their totalSobolIndices assigned to zero.  This avoid corrupting the
+    // aggregation, although the scaling that follows could be improved to
+    // divide by the number of nonzero contributions (avg_sobol is currently
+    // used only in a relative sense, so this is low priority).
+    if (numFunctions > 1) avg_sobol += poly_approx_rep->total_sobol_indices();
+    else                  avg_sobol  = poly_approx_rep->total_sobol_indices();
   }
   if (numFunctions > 1)
     avg_sobol.scale(1./(Real)numFunctions);

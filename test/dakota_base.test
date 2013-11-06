@@ -17868,16 +17868,16 @@ Test Number 3 succeeded
                       2.5000915276e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 464 total (464 new, 0 duplicate)
-  response_fn_1: 464 val (464 n, 0 d), 464 grad (464 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 464 val (464 n, 0 d), 464 grad (464 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 540 total (540 new, 0 duplicate)
+  response_fn_1: 540 val (540 n, 0 d), 540 grad (540 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 540 val (540 n, 0 d), 540 grad (540 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      8.1064350162e+00 b
+                      8.1046092804e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.0266087541e+02
+                      2.0261523201e+02
 <<<<< Best constraint values   =
-                      2.5021391720e+00
+                      2.5000847456e+00
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
 <<<<< Function evaluation summary (UQ_I): 240 total (240 new, 0 duplicate)
