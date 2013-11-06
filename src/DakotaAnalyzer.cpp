@@ -699,7 +699,7 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
 
   size_t i, k, offset;
   for (k=0; k<numFunctions; ++k) {
-    s << resp_labels[k] << " Sobol indices:\n"; 
+    s << resp_labels[k] << " Sobol' indices:\n"; 
     s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
     
     for (i=0; i<numContinuousVars; ++i)
