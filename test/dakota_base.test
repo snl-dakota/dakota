@@ -51045,24 +51045,24 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary: 625 total (625 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.4270000000e+03  1.8594767834e+03
+ response_fn_1  2.4270000000e+03  1.2518410442e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.1767813293e+00  7.4871082196e-02 cdv1
-                     -1.1165475642e+00  1.5155787884e-01 cdv2
-                     -8.5518831582e-01  4.1411682742e-01 nuv1
-                     -1.2123622293e+00  4.0489882368e-02 nuv2
-                      1.2516524115e+00 cdv1 cdv2 
-                      1.2297150360e+00 cdv1 nuv1 
-                      1.2461680676e+00 cdv2 nuv1 
-                      1.2297150360e+00 cdv1 nuv2 
-                      1.2297150360e+00 cdv2 nuv2 
-                      1.2528521117e+00 nuv1 nuv2 
-                     -1.2297150360e+00 cdv1 cdv2 nuv1 
-                     -1.2297150360e+00 cdv1 cdv2 nuv2 
-                     -1.2297150360e+00 cdv1 nuv1 nuv2 
-                     -1.2297150360e+00 cdv2 nuv1 nuv2 
-                      1.2297150360e+00 cdv1 cdv2 nuv1 nuv2 
+                     -1.8995412033e+00  1.2085567814e-01 cdv1
+                     -1.8023128434e+00  2.4464225289e-01 cdv2
+                     -1.3804310130e+00  6.6846061974e-01 nuv1
+                     -1.9569753111e+00  6.5358106864e-02 nuv2
+                      2.0203968814e+00 cdv1 cdv2 
+                      1.9849859283e+00 cdv1 nuv1 
+                      2.0115441431e+00 cdv2 nuv1 
+                      1.9849859283e+00 cdv1 nuv2 
+                      1.9849859283e+00 cdv2 nuv2 
+                      2.0223334179e+00 nuv1 nuv2 
+                     -1.9849859283e+00 cdv1 cdv2 nuv1 
+                     -1.9849859283e+00 cdv1 cdv2 nuv2 
+                     -1.9849859283e+00 cdv1 nuv1 nuv2 
+                     -1.9849859283e+00 cdv2 nuv1 nuv2 
+                      1.9849859283e+00 cdv1 cdv2 nuv1 nuv2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.4865720242e+03   1.0000000000e-03
@@ -51082,24 +51082,24 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary: 625 total (625 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  7.0500000000e+02  1.8145987077e+03
+ response_fn_1  7.0500000000e+02  1.5185558929e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
-                      6.4906780406e-01  3.1657433845e-01 nuv1
-                      7.4054098317e-01  4.4044173769e-01 nuv2
-                      4.6291773268e-01  1.6155871197e-01 ciuv1
-                      3.8990322241e-01  5.6149981568e-02 ciuv2
-                     -3.3249346561e-01 nuv1 nuv2 
-                     -3.5678913071e-01 nuv1 ciuv1 
-                     -3.2439491058e-01 nuv2 ciuv1 
-                     -3.5678913071e-01 nuv1 ciuv2 
-                     -3.5678913071e-01 nuv2 ciuv2 
-                     -3.3375324084e-01 ciuv1 ciuv2 
-                      3.5678913071e-01 nuv1 nuv2 ciuv1 
-                      3.5678913071e-01 nuv1 nuv2 ciuv2 
-                      3.5678913071e-01 nuv1 ciuv1 ciuv2 
-                      3.5678913071e-01 nuv2 ciuv1 ciuv2 
-                     -3.5678913071e-01 nuv1 nuv2 ciuv1 ciuv2 
+                      7.2521623823e-01  3.5371474199e-01 nuv1
+                      8.2742102244e-01  4.9211422623e-01 nuv2
+                      5.1722709800e-01  1.8051273013e-01 ciuv1
+                      4.3564654796e-01  6.2737480052e-02 ciuv2
+                     -3.7150149624e-01 nuv1 nuv2 
+                     -3.9864752126e-01 nuv1 ciuv1 
+                     -3.6245282123e-01 nuv2 ciuv1 
+                     -3.9864752126e-01 nuv1 ciuv2 
+                     -3.9864752126e-01 nuv2 ciuv2 
+                     -3.7290906791e-01 ciuv1 ciuv2 
+                      3.9864752126e-01 nuv1 nuv2 ciuv1 
+                      3.9864752126e-01 nuv1 nuv2 ciuv2 
+                      3.9864752126e-01 nuv1 ciuv1 ciuv2 
+                      3.9864752126e-01 nuv2 ciuv1 ciuv2 
+                     -3.9864752126e-01 nuv1 nuv2 ciuv1 ciuv2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.2577739047e+00   1.0000000000e-03
@@ -51119,30 +51119,30 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary: 101 total (101 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.7300000000e+03  2.0734378162e+03
+ response_fn_1  2.7300000000e+03  1.6645455836e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -5.9468404344e-01  2.6092434457e+00 cdv1
-                     -5.4624009857e-01  2.6709199978e+00 cdv2
-                     -3.3603784737e-01  2.8820871266e+00 nuv1
-                     -3.4333645728e-01  2.8863670480e+00 nuv2
-                     -5.5597157845e-01  2.6727670492e+00 ciuv1
-                     -6.1189430543e-01  2.5920331837e+00 ciuv2
-                      6.5490027886e-01 cdv1 cdv2 
-                      6.3725680258e-01 cdv1 nuv1 
-                      6.5048940979e-01 cdv2 nuv1 
-                      6.3725680258e-01 cdv1 nuv2 
-                      6.3725680258e-01 cdv2 nuv2 
-                      6.5586515647e-01 nuv1 nuv2 
-                      6.3725680258e-01 cdv1 ciuv1 
-                      6.3725680258e-01 cdv2 ciuv1 
-                      6.3725680258e-01 nuv1 ciuv1 
-                      6.6206794110e-01 nuv2 ciuv1 
-                      6.3725680258e-01 cdv1 ciuv2 
-                      6.3725680258e-01 cdv2 ciuv2 
-                      6.3725680258e-01 nuv1 ciuv2 
-                      6.3725680258e-01 nuv2 ciuv2 
-                      6.5490027886e-01 ciuv1 ciuv2 
+                     -6.4129632217e-01  2.8137600863e+00 cdv1
+                     -5.8905526405e-01  2.8802709444e+00 cdv2
+                     -3.6237702693e-01  3.1079896878e+00 nuv1
+                     -3.7024771347e-01  3.1126050762e+00 nuv2
+                     -5.9954951277e-01  2.8822627706e+00 ciuv1
+                     -6.5985555179e-01  2.7952008567e+00 ciuv2
+                      7.0623240165e-01 cdv1 cdv2 
+                      6.8720600171e-01 cdv1 nuv1 
+                      7.0147580166e-01 cdv2 nuv1 
+                      6.8720600171e-01 cdv1 nuv2 
+                      6.8720600171e-01 cdv2 nuv2 
+                      7.0727290790e-01 nuv1 nuv2 
+                      6.8720600171e-01 cdv1 ciuv1 
+                      6.8720600171e-01 cdv2 ciuv1 
+                      6.8720600171e-01 nuv1 ciuv1 
+                      7.1396187662e-01 nuv2 ciuv1 
+                      6.8720600171e-01 cdv1 ciuv2 
+                      6.8720600171e-01 cdv2 ciuv2 
+                      6.8720600171e-01 nuv1 ciuv2 
+                      6.8720600171e-01 nuv2 ciuv2 
+                      7.0623240165e-01 ciuv1 ciuv2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.6039310238e+03   1.0000000000e-03
@@ -54655,24 +54655,24 @@ Test Number 52 succeeded
 <<<<< Function evaluation summary: 625 total (625 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5140000000e+03  1.6179666045e+03
+ response_fn_1  2.5140000000e+03  8.6737869652e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.6305503025e+00  9.8890944413e-02 d1
-                     -1.5509925648e+00  2.0742392470e-01 d2
-                     -1.5509925648e+00  2.0742392470e-01 x1
-                     -1.6588140930e+00  7.0627153932e-02 x2
-                      1.7294412469e+00 d1 d2 
-                      1.7004660042e+00 d1 x1 
-                      1.7294412469e+00 d2 x1 
-                      1.7004660042e+00 d1 x2 
-                      1.7004660042e+00 d2 x2 
-                      1.7294412469e+00 x1 x2 
-                     -1.7004660042e+00 d1 d2 x1 
-                     -1.7004660042e+00 d1 d2 x2 
-                     -1.7004660042e+00 d1 x1 x2 
-                     -1.7004660042e+00 d2 x1 x2 
-                      1.7004660042e+00 d1 d2 x1 x2 
+                     -3.2778819193e+00  1.9879965566e-01 d1
+                     -3.1179476508e+00  4.1698261707e-01 d2
+                     -3.1179476508e+00  4.1698261707e-01 x1
+                     -3.3347003858e+00  1.4198118913e-01 x2
+                      3.4766815749e+00 d1 d2 
+                      3.4184328819e+00 d1 x1 
+                      3.4766815749e+00 d2 x1 
+                      3.4184328819e+00 d1 x2 
+                      3.4184328819e+00 d2 x2 
+                      3.4766815749e+00 x1 x2 
+                     -3.4184328819e+00 d1 d2 x1 
+                     -3.4184328819e+00 d1 d2 x2 
+                     -3.4184328819e+00 d1 x1 x2 
+                     -3.4184328819e+00 d2 x1 x2 
+                      3.4184328819e+00 d1 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54685,24 +54685,24 @@ Test Number 53 succeeded
 <<<<< Function evaluation summary: 625 total (625 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.4655000000e+03  2.3139444138e+03
+ response_fn_1  3.4655000000e+03  1.1545164572e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.5498040258e+00  1.0822218710e-01 d1
-                     -1.4835493458e+00  1.9969006444e-01 d2
-                     -1.4835493458e+00  1.9969006444e-01 x1
-                     -1.6033976184e+00  5.4628594427e-02 x2
-                      1.6580262129e+00 d1 d2 
-                      1.6328130154e+00 d1 x1 
-                      1.6580262129e+00 d2 x1 
-                      1.6328130154e+00 d1 x2 
-                      1.6328130154e+00 d2 x2 
-                      1.6580262129e+00 x1 x2 
-                     -1.6328130154e+00 d1 d2 x1 
-                     -1.6328130154e+00 d1 d2 x2 
-                     -1.6328130154e+00 d1 x1 x2 
-                     -1.6328130154e+00 d2 x1 x2 
-                      1.6328130154e+00 d1 d2 x1 x2 
+                     -3.1850219436e+00  2.2240879167e-01 d1
+                     -3.0488611091e+00  4.1038558848e-01 d2
+                     -3.0488611091e+00  4.1038558848e-01 x1
+                     -3.2951628168e+00  1.1226791846e-01 x2
+                      3.4074307353e+00 d1 d2 
+                      3.3556147729e+00 d1 x1 
+                      3.4074307353e+00 d2 x1 
+                      3.3556147729e+00 d1 x2 
+                      3.3556147729e+00 d2 x2 
+                      3.4074307353e+00 x1 x2 
+                     -3.3556147729e+00 d1 d2 x1 
+                     -3.3556147729e+00 d1 d2 x2 
+                     -3.3556147729e+00 d1 x1 x2 
+                     -3.3556147729e+00 d2 x1 x2 
+                      3.3556147729e+00 d1 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54715,24 +54715,24 @@ Test Number 54 succeeded
 <<<<< Function evaluation summary: 625 total (625 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.4981666667e+03  1.4884213207e+03
+ response_fn_1  2.4981666667e+03  8.1003501296e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.9321448369e+00  4.5560385819e-02 d1
-                     -1.8443652758e+00  1.6091713341e-01 d2
-                     -1.8443652758e+00  1.6092214882e-01 x1
-                     -1.9374240739e+00  7.1963491787e-02 x2
-                      1.9978119934e+00 d1 d2 
-                      1.9677245984e+00 d1 x1 
-                      1.9955525549e+00 d2 x1 
-                      1.9838140322e+00 d1 x2 
-                      1.9835632621e+00 d2 x2 
-                      2.0136556725e+00 x1 x2 
-                     -1.9858227006e+00 d1 d2 x1 
-                     -1.9858227006e+00 d1 d2 x2 
-                     -1.9858227006e+00 d1 x1 x2 
-                     -1.9858227006e+00 d2 x1 x2 
-                      1.9858227006e+00 d1 d2 x1 x2 
+                     -4.6876552189e+00  1.1053590615e-01 d1
+                     -4.4746896534e+00  3.9040760602e-01 d2
+                     -4.4746896534e+00  3.9041977409e-01 x1
+                     -4.7004633905e+00  1.7459355603e-01 x2
+                      4.8469729796e+00 d1 d2 
+                      4.7739767261e+00 d1 x1 
+                      4.8414912639e+00 d2 x1 
+                      4.8130119563e+00 d1 x2 
+                      4.8124035528e+00 d2 x2 
+                      4.8854119744e+00 x1 x2 
+                     -4.8178852685e+00 d1 d2 x1 
+                     -4.8178852685e+00 d1 d2 x2 
+                     -4.8178852685e+00 d1 x1 x2 
+                     -4.8178852685e+00 d2 x1 x2 
+                      4.8178852685e+00 d1 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54745,23 +54745,23 @@ Test Number 55 succeeded
 <<<<< Function evaluation summary: 209 total (209 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5140000000e+03  1.6179666045e+03
+ response_fn_1  2.5140000000e+03  8.6737869652e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.6305503025e+00 -1.6015750598e+00 d1
-                     -1.5509925648e+00 -1.4930420795e+00 d2
-                     -1.5509925648e+00 -1.4930420795e+00 x1
-                     -1.6588140930e+00 -1.6298388503e+00 x2
-                      1.7294412469e+00 d1 d2 
-                      1.7004660042e+00 d1 x1 
-                      1.7294412469e+00 d2 x1 
-                      1.7004660042e+00 d1 x2 
-                      1.7004660042e+00 d2 x2 
-                      1.7294412469e+00 x1 x2 
-                     -1.7004660042e+00 d1 d2 x1 
-                     -1.7004660042e+00 d1 d2 x2 
-                     -1.7004660042e+00 d1 x1 x2 
-                     -1.7004660042e+00 d2 x1 x2 
+                     -3.2778819193e+00 -3.2196332263e+00 d1
+                     -3.1179476508e+00 -3.0014502649e+00 d2
+                     -3.1179476508e+00 -3.0014502649e+00 x1
+                     -3.3347003858e+00 -3.2764516928e+00 x2
+                      3.4766815749e+00 d1 d2 
+                      3.4184328819e+00 d1 x1 
+                      3.4766815749e+00 d2 x1 
+                      3.4184328819e+00 d1 x2 
+                      3.4184328819e+00 d2 x2 
+                      3.4766815749e+00 x1 x2 
+                     -3.4184328819e+00 d1 d2 x1 
+                     -3.4184328819e+00 d1 d2 x2 
+                     -3.4184328819e+00 d1 x1 x2 
+                     -3.4184328819e+00 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54774,23 +54774,23 @@ Test Number 56 succeeded
 <<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.6305000000e+03  1.6665037879e+03
+ response_fn_1  2.6305000000e+03  9.7159848960e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.6091358226e+00 -1.6428871991e+00 d1
-                     -1.5129767787e+00 -1.5166667799e+00 d2
-                     -1.5129767787e+00 -1.5166487764e+00 x1
-                     -1.6534190325e+00 -1.6212422437e+00 x2
-                      1.7002037863e+00 d1 d2 
-                      1.6727664238e+00 d1 x1 
-                      1.7020401452e+00 d2 x1 
-                      1.7049338508e+00 d1 x2 
-                      1.7057215047e+00 d2 x2 
-                      1.7331768708e+00 x1 x2 
-                     -1.7038851458e+00 d1 d2 x1 
-                     -1.7038851458e+00 d1 d2 x2 
-                     -1.7038851458e+00 d1 x1 x2 
-                     -1.7038851458e+00 d2 x1 x2 
+                     -3.0793093282e+00 -3.1438973680e+00 d1
+                     -2.8952953771e+00 -2.9023567170e+00 d2
+                     -2.8952953771e+00 -2.9023222648e+00 x1
+                     -3.1640515230e+00 -3.1024766799e+00 x2
+                      3.2535807765e+00 d1 d2 
+                      3.2010754969e+00 d1 x1 
+                      3.2570949094e+00 d2 x1 
+                      3.2626324249e+00 d1 x2 
+                      3.2641397123e+00 d2 x2 
+                      3.3166794442e+00 x1 x2 
+                     -3.2606255794e+00 d1 d2 x1 
+                     -3.2606255794e+00 d1 d2 x2 
+                     -3.2606255794e+00 d1 x1 x2 
+                     -3.2606255794e+00 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54803,23 +54803,23 @@ Test Number 57 succeeded
 <<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.4716041667e+03  1.9499907466e+03
+ response_fn_1  2.4716041667e+03  9.8303539117e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.0685764987e+00 -8.5373108086e-01 d1
-                     -1.0179462013e+00 -7.4945804800e-01 d2
-                     -1.0179462013e+00 -7.4953566580e-01 x1
-                     -1.0907845794e+00 -1.0189330729e+00 x2
-                      1.2394841269e+00 d1 d2 
-                      1.1973222513e+00 d1 x1 
-                      1.2497961541e+00 d2 x1 
-                      1.1246952718e+00 d1 x2 
-                      1.1258641045e+00 d2 x2 
-                      1.1679483623e+00 x1 x2 
-                     -1.1155520774e+00 d1 d2 x1 
-                     -1.1155520774e+00 d1 d2 x2 
-                     -1.1155520774e+00 d1 x1 x2 
-                     -1.1155520774e+00 d2 x1 x2 
+                     -1.5743239039e+00 -1.2577941306e+00 d1
+                     -1.4997307536e+00 -1.1041696326e+00 d2
+                     -1.4997307536e+00 -1.1042839862e+00 x1
+                     -1.6070428644e+00 -1.5011847024e+00 x2
+                      1.8261205369e+00 d1 d2 
+                      1.7640038343e+00 d1 x1 
+                      1.8413131514e+00 d2 x1 
+                      1.6570031749e+00 d1 x2 
+                      1.6587252054e+00 d2 x2 
+                      1.7207275545e+00 x1 x2 
+                     -1.6435325909e+00 d1 d2 x1 
+                     -1.6435325909e+00 d1 d2 x2 
+                     -1.6435325909e+00 d1 x1 x2 
+                     -1.6435325909e+00 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54832,23 +54832,23 @@ Test Number 58 succeeded
 <<<<< Function evaluation summary: 209 total (209 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5140000000e+03  1.6179666045e+03
+ response_fn_1  2.5140000000e+03  8.6606447692e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.6305503025e+00 -1.6015750598e+00 d1
-                     -1.5509925648e+00 -1.4930420795e+00 d2
-                     -1.5509925648e+00 -1.4930420795e+00 x1
-                     -1.6588140930e+00 -1.6298388503e+00 x2
-                      1.7294412469e+00 d1 d2 
-                      1.7004660042e+00 d1 x1 
-                      1.7294412469e+00 d2 x1 
-                      1.7004660042e+00 d1 x2 
-                      1.7004660042e+00 d2 x2 
-                      1.7294412469e+00 x1 x2 
-                     -1.7004660042e+00 d1 d2 x1 
-                     -1.7004660042e+00 d1 d2 x2 
-                     -1.7004660042e+00 d1 x1 x2 
-                     -1.7004660042e+00 d2 x1 x2 
+                     -3.2778819193e+00 -3.2196332263e+00 d1
+                     -3.1179476508e+00 -3.0014502649e+00 d2
+                     -3.1179476508e+00 -3.0014502649e+00 x1
+                     -3.3347003858e+00 -3.2764516928e+00 x2
+                      3.4766815749e+00 d1 d2 
+                      3.4184328819e+00 d1 x1 
+                      3.4766815749e+00 d2 x1 
+                      3.4184328819e+00 d1 x2 
+                      3.4184328819e+00 d2 x2 
+                      3.4766815749e+00 x1 x2 
+                     -3.4184328819e+00 d1 d2 x1 
+                     -3.4184328819e+00 d1 d2 x2 
+                     -3.4184328819e+00 d1 x1 x2 
+                     -3.4184328819e+00 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54861,23 +54861,23 @@ Test Number 59 succeeded
 <<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.6305000000e+03  1.6665037879e+03
+ response_fn_1  2.6305000000e+03  2.4658211867e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
-                     -1.6091358226e+00 -1.6428871991e+00 d1
-                     -1.5129767787e+00 -1.5166667799e+00 d2
-                     -1.5129767787e+00 -1.5166487764e+00 x1
-                     -1.6534190325e+00 -1.6212422437e+00 x2
-                      1.7002037863e+00 d1 d2 
-                      1.6727664238e+00 d1 x1 
-                      1.7020401452e+00 d2 x1 
-                      1.7049338508e+00 d1 x2 
-                      1.7057215047e+00 d2 x2 
-                      1.7331768708e+00 x1 x2 
-                     -1.7038851458e+00 d1 d2 x1 
-                     -1.7038851458e+00 d1 d2 x2 
-                     -1.7038851458e+00 d1 x1 x2 
-                     -1.7038851458e+00 d2 x1 x2 
+                     -3.0793093282e+00 -3.1438973680e+00 d1
+                     -2.8952953771e+00 -2.9023567170e+00 d2
+                     -2.8952953771e+00 -2.9023222648e+00 x1
+                     -3.1640515230e+00 -3.1024766799e+00 x2
+                      3.2535807765e+00 d1 d2 
+                      3.2010754969e+00 d1 x1 
+                      3.2570949094e+00 d2 x1 
+                      3.2626324249e+00 d1 x2 
+                      3.2641397123e+00 d2 x2 
+                      3.3166794442e+00 x1 x2 
+                     -3.2606255794e+00 d1 d2 x1 
+                     -3.2606255794e+00 d1 d2 x2 
+                     -3.2606255794e+00 d1 x1 x2 
+                     -3.2606255794e+00 d2 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -54889,24 +54889,8 @@ response_fn_1 Sobol' indices:
 Test Number 60 succeeded
 <<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
 Moment-based statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.3028541667e+03  1.8595498462e+03
-response_fn_1 Sobol' indices:
-                                  Main             Total
-                     -9.4204852202e-01 -7.0487047979e-01 d1
-                     -8.8729957269e-01 -5.9020796625e-01 d2
-                     -8.8729957269e-01 -5.9030054745e-01 x1
-                     -9.6738813832e-01 -8.8745876063e-01 x2
-                      1.1309109331e+00 d1 d2 
-                      1.0836221504e+00 d1 x1 
-                      1.1422504225e+00 d2 x1 
-                      1.0037588166e+00 d1 x2 
-                      1.0050441087e+00 d2 x2 
-                      1.0522403102e+00 x1 x2 
-                     -9.9370461928e-01 d1 d2 x1 
-                     -9.9370461928e-01 d1 d2 x2 
-                     -9.9370461928e-01 d1 x1 x2 
-                     -9.9370461928e-01 d2 x1 x2 
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  2.3028541667e+03 -2.1164520213e+06
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
