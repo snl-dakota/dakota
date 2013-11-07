@@ -107,21 +107,6 @@ if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
-if(UNIX)
-  #check_include_files("rpc/types.h" HAVE_RPC_TYPES_H)
-  check_include_file("rpc/xdr.h" HAVE_RPC_XDR_H)
-  find_program(RPCGEN rpcgen)
-
-  if(HAVE_RPC_XDR_H)
-    #message("  Found XDR header files.")
-    set(HAVE_RPC_XDR_H ON)
-    add_definitions("-DHAVE_RPC_XDR_H -DHAVE_RPC_TYPES_H")
-  else()
-    message(WARNING "** XDR bindings NOT properly enabled; continuing anyway..")
-    add_definitions("-DNO_XDR")
-  endif()
-endif(UNIX)
-
 
 if(DAKOTA_F90)
   # A future version of CMake should set the Fortran FIXED_FLAG automagically
@@ -338,15 +323,11 @@ set(Dakota_src DakotaBuildInfo.cpp)
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_tabular_io.cpp dakota_global_defs.cpp 
-    CommandLineHandler.cpp DakotaGraphics.cpp
+    CommandLineHandler.cpp DakotaGraphics.cpp 
     DakotaBinStream.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     ExperimentData.cpp
     )
-
-if(HAVE_RPC_XDR_H)
-  list(APPEND util_src dak_xdr_interface.c)
-endif(HAVE_RPC_XDR_H)
 
 if(DAKOTA_DL_SOLVER)
   list(APPEND util_src DLSolver.cpp)
