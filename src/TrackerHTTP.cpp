@@ -131,7 +131,7 @@ void TrackerHTTP::initialize(int world_rank)
   if (ptr_notrack != NULL || world_rank > 0)
     return;
 
-  dakotaVersion = DakotaBuildInfo::getRev();
+  dakotaVersion = DakotaBuildInfo::get_rev_number();
 
   curlPtr = curl_easy_init();
   if (!curlPtr && outputLevel > TH_QUIET_OUTPUT)
