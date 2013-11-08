@@ -2093,7 +2093,7 @@ and [3.0, 5.0].  Note that the intervals can be overlapping or disjoint.
 \htmlonly
 Table 7.26
 \endhtmlonly
-Specification detail for interval uncertain variables
+Specification detail for continuous interval uncertain variables
 </caption>
 <tr>
 <td><b>Description</b>
@@ -2139,7 +2139,9 @@ Specification detail for interval uncertain variables
 <td>vector of <tt>'ciuv_i'</tt> where <tt>i = 1,2,3,...</tt>
 </table>
 
+
 \subsection VarDIUV Discrete Interval Uncertain Variables 
+
 Discrete variables may be used to represent things like epistemic model form
 uncertainty, as mentioned above. For example, if one wants to analyze
 the effect of model 1 vs. model 2 vs. model 3 in an epistemic analysis
