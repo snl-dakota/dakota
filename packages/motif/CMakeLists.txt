@@ -40,7 +40,6 @@ add_library(DGraphics
 			  src/Widgets/strarray.c 
 			  src/Widgets/StrToPmap.c 
 			  src/Widgets/ThWheel.c 
-			  src/Widgets/ToggleBplus.c 
 			  src/Widgets/XCC.c 
 )
 
