@@ -15,6 +15,7 @@ using namespace std;
 #include <Xm/Form.h>
 #include <Xm/PushB.h>
 #include <Xm/DialogS.h>
+#include <Xm/ToggleB.h>
 //#include <Xm/TextF.h>
 //#include <Xm/MainW.h>
 //#include <Xm/PanedW.h>
@@ -23,7 +24,6 @@ using namespace std;
 //#include <Xm/XmP.h>
 //#include "RowCol.h"
 #include "ThWheel.h"
-#include "ToggleBplus.h"
 #include "SciPlot.h"
 
 //#define GRAPHICS_DEBUG
@@ -509,27 +509,27 @@ void Graph2D::options_callback(Widget widget, XtPointer client_data,
 
   // Markers option button
   graph->markersButton
-    = XmCreateToggleButtonPlus(RowCol, "    Markers", NULL, 0);
+    = XmCreateToggleButton(RowCol, "    Markers", NULL, 0);
   // set the button to selected/checked or unselected/unchecked
   XtVaSetValues(graph->markersButton, XmNset, graph->markersOn, NULL);
   XtManageChild(graph->markersButton);
 
   // Axis labels option button
   graph->axisLabelsButton
-    = XmCreateToggleButtonPlus(RowCol, "    Axis labels", NULL, 0);
+    = XmCreateToggleButton(RowCol, "    Axis labels", NULL, 0);
   // set the button to selected/checked or unselected/unchecked
   XtVaSetValues(graph->axisLabelsButton, XmNset, graph->axisLabelsOn, NULL);
   XtManageChild(graph->axisLabelsButton);
 
   // Legend option button
-  graph->legendButton = XmCreateToggleButtonPlus(RowCol, "    Legend", NULL, 0);
+  graph->legendButton = XmCreateToggleButton(RowCol, "    Legend", NULL, 0);
   // set the button to selected/checked or unselected/unchecked
   XtVaSetValues(graph->legendButton, XmNset, graph->legendOn, NULL);
   XtManageChild(graph->legendButton);
 
   // Y log scale option button
   graph->yLogButton
-    = XmCreateToggleButtonPlus(RowCol, "    Log scale - Y axis", NULL, 0);
+    = XmCreateToggleButton(RowCol, "    Log scale - Y axis", NULL, 0);
   // if y log scale is disallowed, gray out the selection as unavailable
   XtVaSetValues(graph->yLogButton, XmNsensitive, graph->yLogAllow, NULL);
   // set the button to selected/checked or unselected/unchecked
@@ -538,7 +538,7 @@ void Graph2D::options_callback(Widget widget, XtPointer client_data,
 
   // X log scale option button
   graph->xLogButton
-    = XmCreateToggleButtonPlus(RowCol, "    Log scale - X axis", NULL, 0);
+    = XmCreateToggleButton(RowCol, "    Log scale - X axis", NULL, 0);
   // if x log scale is disallowed, gray out the selection as unavailable
   XtVaSetValues(graph->xLogButton, XmNsensitive, graph->xLogAllow, NULL);
   // set the button to selected/checked or unselected/unchecked
