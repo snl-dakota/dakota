@@ -47,6 +47,7 @@ set(CPACK_PACKAGE_VERSION_PATCH "${Dakota_VERSION_PATCH}")
 set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 
 # Always omit .svn directories, duplicate TPLs, and GPL packages
+# FFTW is GPL
 # TODO: review whether want to include FFTW
 set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/"
     "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"

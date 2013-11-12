@@ -38,10 +38,19 @@ file for important U.S. Government legal notices.
 
 The DAKOTA distribution contains libraries which are available
 separately under compatible licensing terms.  In particular, many of
-the libraries in packages are available separately under
-the GNU Lesser General Public License (LGPL).  DAKOTA source
-distributions include optional GNU GPL-licensed components, which are
-disabled by default, resulting in an LGPL-compatible DAKOTA.
+the libraries in the packages/ directory are available separately
+under the GNU Lesser General Public License (LGPL).
+
+DAKOTA may optionally depend on GNU GPL-licensed components, which are
+disabled by default, resulting in an LGPL-compatible DAKOTA.  Optional
+GPL capabilities include:
+
+ * dakota/packages/pecos/packages/fftw: optionally included with
+   Dakota; enable with CMake setting HAVE_FFTW
+
+ * GNU Scientific Library: external third-party library; enable with
+   CMake setting DAKOTA_HAVE_GSL and pointer to gsl-config
+
 
 ------------------------------------------------------------------------------
 Overview
