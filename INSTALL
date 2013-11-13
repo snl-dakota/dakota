@@ -65,8 +65,8 @@ bin-dist      lib	 Library files for DAKOTA and it's associated TPLs.
 src-dist      packages	 Libraries of iterative algorithms provided by
 	      		 commercial vendors and related Sandia projects.
 			 Additionally, libraries for parsing (nidr),
-			 vector/matrix utilities (Trilinos Teuchos), Boost C++
-			 libraries, stochastic utilities (Pecos), algebraic
+			 vector/matrix utilities (Trilinos Teuchos),
+			 stochastic utilities (Pecos), algebraic
 			 interface (AMPL), surface fitting (Surfpack), etc.
 
 src-dist     cmake	 Scripts supporting CMake builds.	 
