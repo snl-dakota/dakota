@@ -135,15 +135,15 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   }
   else { // case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION:
     Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
-    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
-    RealVector lower_u, upper_u;
-    nataf.trans_X_to_U(lower_bounds,lower_u);
-    nataf.trans_X_to_U(upper_bounds,upper_u);
+    //Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
+    //RealVector lower_u, upper_u;
+    //nataf.trans_X_to_U(lower_bounds,lower_u);
+    //nataf.trans_X_to_U(upper_bounds,upper_u);
     for (size_t i=0;i<numContinuousVars;i++) {
-//      paramMins[i]=lower_bounds[i];
-//      paramMaxs[i]=upper_bounds[i];
-      paramMins[i]=lower_u[i];
-      paramMaxs[i]=upper_u[i];
+      paramMins[i]=lower_bounds[i];
+      paramMaxs[i]=upper_bounds[i];
+//      paramMins[i]=lower_u[i];
+//      paramMaxs[i]=upper_u[i];
     }
   }
   // the parameter domain will now be expanded by sigma terms if 
@@ -341,11 +341,14 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
     //Cout << "DAKOTA X" << x << '\n';
   }
   else { //case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION: 
-  //    RealVector u(num_cont);
-  //    Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
-  //    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
-  //    nataf.trans_X_to_U(x,u);
     NonDQUESOInstance->emulatorModel.continuous_variables(x); 
+      RealVector u(num_cont);
+      for (i=0; i<num_cont; i++) 
+        u(i)=paramValues[i];
+      Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
+      Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
+      nataf.trans_U_to_X(u,x);
+    //NonDQUESOInstance->emulatorModel.continuous_variables(x); 
   } 
 
   // Compute simulation response to use in likelihood 
