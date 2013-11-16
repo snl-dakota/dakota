@@ -10,9 +10,9 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include <boost/archive/archive_exception.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include "ParallelLibrary.hpp"
-#include "DakotaBinStream.hpp"
 #include "ProblemDescDB.hpp"
 #include "CommandLineHandler.hpp"
 #include "ParamResponsePair.hpp"
@@ -42,7 +42,6 @@ namespace Dakota {
 
 // Note: MSVC requires these defined outside any function
 extern PRPCache data_pairs;
-extern BoStream write_restart;
 extern Graphics dakota_graphics;
 extern ResultsManager iterator_results_db;
 
@@ -1364,12 +1363,15 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // ------------
   // Process the evaluations from the restart file
   if (read_restart_flag) {
-    BiStream read_restart(read_restart_filename.c_str(), std::ios::binary);
-    if (!read_restart.good()) {
+    
+    std::ifstream restart_input_fs(read_restart_filename.c_str(), 
+				   std::ios::binary);
+    if (!restart_input_fs.good()) {
       Cerr << "\nError: could not open restart file " << read_restart_filename
 	   << std::endl;
       abort_handler(-1);
     }
+    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
     // The -stop_restart input for restricting the number of evaluations read
     // in from the restart file is very useful when the last few evaluations in
@@ -1382,13 +1384,13 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
            << " evaluations." << std::endl;
 
     int cntr = 0;
-    while ( read_restart.good() && !read_restart.eof() && 
+    while ( restart_input_fs.good() && !restart_input_fs.eof() && 
             (!stopRestartEvals || cntr < stopRestartEvals) ) {
       // Use default constr. & rely on Variables::read(BiStream&)
       // & Response::read(BiStream&) to resize vars and response.
       ParamResponsePair current_pair;
       try { 
-	read_restart >> current_pair; 
+	restart_input_archive & current_pair;
       }
       catch(const boost::archive::archive_exception& e) {
 	Cerr << "\nError reading restart file (boost::archive exception):\n" 
@@ -1410,10 +1412,10 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
       // if present
 
       // peek to force EOF if the last restart record was read
-      read_restart.peek();
+      restart_input_fs.peek();
 
     }
-    read_restart.close();
+    restart_input_fs.close();
     Cout << "Restart file processing completed: " << cntr
 	 << " evaluations retrieved and " << data_pairs.size()
 	 << " unique evaluations stored.\n";
@@ -1435,7 +1437,8 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // init_iterator_communicators()), and (2) the "deactivate
   // restart_file" specification is linked to the interface and
   // therefore should be enforced per interface, whereas there is only
-  // one parallel library instance.  if (!deactivateRestartFlag) {
+  // one parallel library instance.  
+  //if (!deactivateRestartFlag) {
 
   // Previously we supported append to an existing restart file.  With
   // Boost serialization, there's no easy way to append to a file (all
@@ -1450,7 +1453,8 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   else
     Cout << "Writing new restart file " << write_restart_filename << std::endl;
 
-  write_restart.open(write_restart_filename.c_str(), std::ios::binary);
+  restartOutputFS.open(write_restart_filename.c_str(), std::ios::binary);
+  restartOutputArchive = new boost::archive::binary_oarchive(restartOutputFS);
 
   // Write any processed records from the old restart file to the new file.
   // This prevents the situation where good data from an initial run and a 
@@ -1458,10 +1462,24 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // 1 file, restarts can be chained together indefinitely.
   //
   // "View" the data_pairs cache as an ordered collection (by eval_id)
-  PRPCacheCIter cit, cit_end = data_pairs.end();
+
+  // don't use a const iterator as PRP does not have a const serialize fn
+  PRPCacheIter cit, cit_end = data_pairs.end();
   for (cit = data_pairs.begin(); cit != cit_end; ++cit)
-    write_restart << *cit;
+    restartOutputArchive->operator&(*cit);
+
+  // flush is critical so we have a complete restart record should Dakota abort
+  restartOutputFS.flush();
+
   //}
+}
+
+
+void ParallelLibrary::write_restart(const ParamResponsePair& prp)
+{
+  restartOutputArchive->operator&(prp);
+  // flush is critical so we have a complete restart record should Dakota abort
+  restartOutputFS.flush();
 }
 
 
@@ -1502,7 +1520,7 @@ void ParallelLibrary::close_streams()
 
   // clean up data from manage_restart
   if (server_master_flag) // && !deactivateRestartFlag)
-    write_restart.close();
+    restartOutputFS.close();
 
   // terminate any additional services that may be active
 #ifdef DAKOTA_MODELCENTER
@@ -1523,8 +1541,10 @@ void ParallelLibrary::close_streams()
 }
 
 
-void ParallelLibrary::abort_helper(int code) const {
+void ParallelLibrary::abort_helper(int code) {
   
+  restartOutputFS.close();
+
   // Abort the process(es)
 #ifdef DAKOTA_HAVE_MPI
 #ifdef HAVE_AIX_MPI

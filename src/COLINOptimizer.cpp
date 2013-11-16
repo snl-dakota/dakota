@@ -64,7 +64,6 @@ using std::runtime_error;
 //
 
 namespace Dakota {
-  extern PRPCache data_pairs; // global container
  
 //
 // - TypeManager registrations

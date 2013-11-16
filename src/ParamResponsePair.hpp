@@ -17,6 +17,7 @@
 #define PARAM_RESPONSE_PAIR_H
 
 #include "dakota_data_types.hpp"
+#include "dakota_data_io.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 
@@ -50,6 +51,9 @@ class ParamResponsePair
   /// inequality operator
   friend bool operator!=(const ParamResponsePair& pair1, 
 			 const ParamResponsePair& pair2);
+
+  /// allow boost access to serialize this class
+  friend class boost::serialization::access;
 
 public:
 
@@ -92,11 +96,6 @@ public:
   /// write a ParamResponsePair object in tabular format to an std::ostream
   void write_tabular(std::ostream& s)   const;
 
-  /// read a ParamResponsePair object from the binary restart stream
-  void read(BiStream& s);
-  /// write a ParamResponsePair object to the binary restart stream
-  void write(BoStream& s)          const;
-
   /// read a ParamResponsePair object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
   /// write a ParamResponsePair object to a packed MPI buffer
@@ -124,6 +123,10 @@ public:
   void active_set(const ActiveSet& set);
 
 private:
+
+  /// serialize the PRP: write and read are symmetric for this class
+  template<class Archive>
+  void serialize(Archive& ar, const unsigned int version);
 
   //
   //- Heading: Data
@@ -268,34 +271,6 @@ inline std::ostream& operator<<(std::ostream& s, const ParamResponsePair& pair)
 { pair.write(s); return s; }
 
 
-inline void ParamResponsePair::read(BiStream& s)
-{
-  s >> prPairParameters >> evalInterfaceIds.second
-    >> prPairResponse   >> evalInterfaceIds.first;
-}
-
-
-// BDS/MSE: The flush here is essential so that a complete restart file exists
-// between function evaluations.  Otherwise an incomplete record can exist
-// between evals which is vulnerable to a kill of the DAKOTA process.
-inline void ParamResponsePair::write(BoStream& s) const
-{
-  s << prPairParameters << evalInterfaceIds.second
-    << prPairResponse   << evalInterfaceIds.first; //<< flush;
-  s.flush();
-}
-
-
-/// BiStream extraction operator for ParamResponsePair
-inline BiStream& operator>>(BiStream& s, ParamResponsePair& pair)
-{ pair.read(s); return s; }
-
-
-/// BoStream insertion operator for ParamResponsePair
-inline BoStream& operator<<(BoStream& s, const ParamResponsePair& pair)
-{ pair.write(s); return s; }
-
-
 /** interfaceId is omitted since master processor retains interface
     ids and communicates asv and response data only with slaves. */
 inline void ParamResponsePair::read(MPIUnpackBuffer& s)
@@ -335,5 +310,14 @@ inline bool operator!=(const ParamResponsePair& pair1,
 { return !(pair1 == pair2); }
 
 } // namespace Dakota
+
+
+// Since we may serialize this class through a temporary, force
+// serialization mode and no tracking
+BOOST_CLASS_IMPLEMENTATION(Dakota::ParamResponsePair, 
+			   boost::serialization::object_serializable)
+BOOST_CLASS_TRACKING(Dakota::ParamResponsePair, 
+		     boost::serialization::track_never)
+
 
 #endif

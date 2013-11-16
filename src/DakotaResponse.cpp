@@ -11,15 +11,20 @@
 //- Owner:        Mike Eldred
 
 #include "DakotaResponse.hpp"
-#include "DakotaBinStream.hpp"
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
 #include <algorithm>
 #include <boost/regex.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/export.hpp>
 
 static const char rcsId[]="@(#) $Id: DakotaResponse.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
+BOOST_CLASS_EXPORT(Dakota::ResponseRep)
+BOOST_CLASS_EXPORT(Dakota::Response)
 
 namespace Dakota {
 
@@ -575,77 +580,6 @@ void ResponseRep::write_tabular(std::ostream& s) const
 }
 
 
-/** Binary version differs from ASCII version in 2 primary ways:
-    (1) it lacks formatting.
-    (2) the Response has not been sized a priori.  In reading data from
-        the binary restart file, a ParamResponsePair was constructed with
-        its default constructor which called the Response default 
-        constructor.  Therefore, we must first read sizing data and resize 
-        all of the arrays. */
-void ResponseRep::read(BiStream& s)
-{
-  size_t i, num_fns, num_params;
-  bool grad_flag, hess_flag;
-
-  // Read sizing data, responseActiveSet, and functionLabels
-  s >> num_fns >> num_params >> grad_flag >> hess_flag
-    >> responseActiveSet >> functionLabels; // reshape not needed
-
-  // reshape response arrays and reset all data to zero
-  reshape(num_fns, num_params, grad_flag, hess_flag);
-  reset();
-
-  // Get fn. values as governed by ASV requests
-  const ShortArray& asv = responseActiveSet.request_vector();
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
-      s >> functionValues[i];
-
-  // Get function gradients as governed by ASV requests
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      read_col_vector_trans(s, (int)i, functionGradients);
-
-  // Get function Hessians as governed by ASV requests
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      read_lower_triangle(s, functionHessians[i]);
-}
-
-
-/** Binary version differs from ASCII version in 2 primary ways:
-    (1) It lacks formatting.
-    (2) In reading data from the binary restart file, ParamResponsePairs are
-        constructed with their default constructor which calls the Response
-        default constructor.  Therefore, we must first write sizing data so
-        that ResponseRep::read(BoStream& s) can resize the arrays. */
-void ResponseRep::write(BoStream& s) const
-{
-  const ShortArray& asv = responseActiveSet.request_vector();
-  size_t i, num_fns = asv.size(),
-    num_params = responseActiveSet.derivative_vector().size();
-  bool grad_flag = !functionGradients.empty(),
-       hess_flag = !functionHessians.empty();
-
-  // Write sizing data, responseActiveSet, and functionLabels
-  s << num_fns << num_params << grad_flag << hess_flag
-    << responseActiveSet << functionLabels;
-
-  // Write the function values if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
-      s << functionValues[i];
-
-  // Write the function gradients if present
-  for (int i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      write_col_vector_trans(s, i, functionGradients);
-
-  // Write the function Hessians if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      write_lower_triangle(s, functionHessians[i]);
-}
 
 
 /** UnpackBuffer version differs from BiStream version in the omission
@@ -711,6 +645,114 @@ void ResponseRep::write(MPIPackBuffer& s) const
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
       write_lower_triangle(s, functionHessians[i]);
+}
+
+
+template<class Archive, typename OrdinalType, typename ScalarType>
+void ResponseRep::write_sdm_col
+(Archive& ar, int col,
+ const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm) const
+{
+  OrdinalType nr = sdm.numRows(); 
+  const ScalarType* sdm_c = sdm[col]; // column vector 
+  for (OrdinalType row=0; row<nr; ++row) 
+    ar & sdm_c[row];
+}
+
+template<class Archive, typename OrdinalType, typename ScalarType>
+void ResponseRep::read_sdm_col
+(Archive& ar, int col, Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = sdm.numRows(); 
+  ScalarType* sdm_c = sdm[col]; // column vector
+  for (OrdinalType row=0; row<nr; ++row) 
+    ar & sdm_c[row];
+}
+
+
+/** Binary version differs from ASCII version in 2 primary ways:
+    (1) it lacks formatting.
+    (2) the Response has not been sized a priori.  In reading data from
+        the binary restart file, a ParamResponsePair was constructed with
+        its default constructor which called the Response default 
+        constructor.  Therefore, we must first read sizing data and resize 
+        all of the arrays. */
+template<class Archive> 
+void ResponseRep::load(Archive& ar, const unsigned int version)
+{
+  size_t i, num_fns, num_params;
+  bool grad_flag, hess_flag;
+    
+  // Read sizing data, responseActiveSet, and functionLabels
+  ar & num_fns;
+  ar & num_params;
+  ar & grad_flag;
+  ar & hess_flag;
+  ar & responseActiveSet;
+  ar & functionLabels;
+
+
+  // reshape response arrays and reset all data to zero
+  reshape(num_fns, num_params, grad_flag, hess_flag);
+  reset();
+
+  const ShortArray& asv = responseActiveSet.request_vector();
+
+  // Get fn. values as governed by ASV requests
+  for (size_t i=0; i<num_fns; ++i)
+    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
+      ar & functionValues[i];
+
+  // Get function gradients as governed by ASV requests
+  for (int i=0; i<num_fns; ++i)
+    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
+      read_sdm_col(ar, i, functionGradients);
+    
+  // Get function Hessians as governed by ASV requests
+  for (size_t i=0; i<num_fns; ++i)
+    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
+      ar & functionHessians[i];
+}
+
+
+/** Binary version differs from ASCII version in 2 primary ways:
+    (1) It lacks formatting.
+    (2) In reading data from the binary restart file, ParamResponsePairs are
+        constructed with their default constructor which calls the Response
+        default constructor.  Therefore, we must first write sizing data so
+        that ResponseRep::read(BoStream& s) can resize the arrays. */
+template<class Archive> 
+void ResponseRep::save(Archive& ar, const unsigned int version) const
+{
+    
+  const ShortArray& asv = responseActiveSet.request_vector();
+  size_t num_fns = asv.size(),
+    num_params = responseActiveSet.derivative_vector().size();
+  bool grad_flag = !functionGradients.empty(),
+    hess_flag = !functionHessians.empty();
+    
+  // Write sizing data, responseActiveSet, and functionLabels
+  ar & num_fns;
+  ar & num_params;
+  ar & grad_flag;
+  ar & hess_flag;
+  ar & responseActiveSet;
+  ar & functionLabels;
+
+  // Write the function values if present
+  for (size_t i=0; i<num_fns; ++i)
+    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
+      ar & functionValues[i];
+
+  // Write the function gradients if present
+  for (int i=0; i<num_fns; ++i)
+    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
+      write_sdm_col(ar, i, functionGradients);
+
+  // Write the function Hessians if present
+  for (size_t i=0; i<num_fns; ++i)
+    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
+      ar & functionHessians[i];
 }
 
 
@@ -1084,5 +1126,25 @@ void ResponseRep::active_set_derivative_vector(const SizetArray& asdv)
   // assign the new derivative vector
   responseActiveSet.derivative_vector(asdv);
 }
+
+template<class Archive>
+void Response::load(Archive& ar, const unsigned int version)
+{
+  if (responseRep) // should not occur in current usage
+    responseRep->load(ar, version); // fwd to existing rep
+  else { // read from restart: responseRep must be instantiated
+    responseRep = new ResponseRep(); // default constructor is sufficient
+    responseRep->load(ar, version); // fwd to new rep
+  }
+}
+
+
+template<class Archive>
+void Response::save(Archive& ar, const unsigned int version) const
+{
+  if (responseRep) responseRep->save(ar, version);
+}
+ 
+
 
 } // namespace Dakota

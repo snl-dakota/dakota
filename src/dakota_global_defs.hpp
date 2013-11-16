@@ -40,7 +40,6 @@ const size_t _NPOS = ~(size_t)0; // one's complement
 extern std::ostream* dakota_cout;
 extern std::ostream* dakota_cerr;
 //extern PRPCache data_pairs;
-//extern BoStream write_restart;
 //extern Graphics dakota_graphics;
 extern int write_precision;
 //extern ParallelLibrary dummy_lib;

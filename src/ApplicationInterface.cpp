@@ -11,7 +11,6 @@
 //- Owner:        Mike Eldred
 
 #include "dakota_system_defs.hpp"
-#include "DakotaBinStream.hpp"
 #include "ApplicationInterface.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
@@ -19,7 +18,6 @@
 
 namespace Dakota {
 
-extern BoStream write_restart;
 extern PRPCache data_pairs;
 
 
@@ -519,7 +517,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	  ParamResponsePair prp(vars, interfaceId, core_resp, currEvalId,
 				evalCacheFlag);
 	  if (evalCacheFlag)   data_pairs.insert(prp);
-	  if (restartFileFlag) write_restart << prp;
+	  if (restartFileFlag) parallelLib.write_restart(prp);
 	}
       }
     }
@@ -2564,8 +2562,8 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   raw_response.update(remote_response);
 
   // insert into restart and eval cache ASAP
-  if (evalCacheFlag)  data_pairs.insert(*prp_it);
-  if (restartFileFlag) write_restart << *prp_it;
+  if (evalCacheFlag)   data_pairs.insert(*prp_it);
+  if (restartFileFlag) parallelLib.write_restart(*prp_it);
 }
 
 
@@ -2586,8 +2584,8 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
   }
 
   rawResponseMap[fn_eval_id] = prp_it->prp_response();
-  if (evalCacheFlag)  data_pairs.insert(*prp_it);
-  if (restartFileFlag) write_restart << *prp_it;
+  if (evalCacheFlag)   data_pairs.insert(*prp_it);
+  if (restartFileFlag) parallelLib.write_restart(*prp_it);
 
   asynchLocalActivePRPQueue.erase(prp_it);
   if (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1) {// free "server"
@@ -2607,8 +2605,8 @@ void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
     Cout << "evaluation " << fn_eval_id << std::endl;
   }
   rawResponseMap[fn_eval_id] = prp_it->prp_response();
-  if (evalCacheFlag)  data_pairs.insert(*prp_it);
-  if (restartFileFlag) write_restart << *prp_it;
+  if (evalCacheFlag)   data_pairs.insert(*prp_it);
+  if (restartFileFlag) parallelLib.write_restart(*prp_it);
 }
 
 

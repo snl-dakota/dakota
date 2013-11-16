@@ -11,9 +11,15 @@
 //- Owner:        Mike Eldred
 
 #include "ParamResponsePair.hpp"
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/utility.hpp>  // for std::pair
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/export.hpp>
 
 static const char rcsId[]="@(#) $Id: ParamResponsePair.cpp 6715 2010-04-02 21:58:15Z wjbohnh $";
 
+BOOST_CLASS_EXPORT(Dakota::ParamResponsePair)
 
 namespace Dakota {
 
@@ -38,6 +44,16 @@ void ParamResponsePair::write_annotated(std::ostream& s) const
     s << evalInterfaceIds.second << ' ';
   prPairResponse.write_annotated(s);
   s << evalInterfaceIds.first << '\n';
+}
+
+
+template<class Archive>
+void ParamResponsePair::serialize(Archive& ar, const unsigned int version)
+{
+  ar & prPairParameters;
+  ar & evalInterfaceIds.second;
+  ar & prPairResponse;
+  ar & evalInterfaceIds.first; 
 }
 
 } // namespace Dakota

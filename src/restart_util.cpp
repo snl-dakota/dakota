@@ -14,10 +14,10 @@
 /** \file restart_util.cpp
     \brief file containing the DAKOTA restart utility main program */
 
-#include <boost/archive/archive_exception.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-#include "DakotaBinStream.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #ifdef HAVE_PDB_H
@@ -129,11 +129,12 @@ void print_restart(int argc, char** argv, String print_dest)
     exit(-1);
   }
 
-  BiStream read_restart(argv[2], std::ios::binary);
-  if (!read_restart) {
+  std::ifstream restart_input_fs(argv[2], std::ios::binary);
+  if (!restart_input_fs.good()) {
     Cerr << "Error: failed to open restart file " << argv[2] << endl;
     exit(-1);
   }
+  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
   std::ofstream neutral_file_stream;
   if (print_dest == "neutral_file") {
@@ -145,11 +146,11 @@ void print_restart(int argc, char** argv, String print_dest)
   write_precision = 16;
 
   int cntr = 0;
-  while (read_restart.good() && !read_restart.eof()) {
+  while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
     try { 
-      read_restart >> current_pair; 
+      restart_input_archive & current_pair; 
     }
     catch(const boost::archive::archive_exception& e) {
       Cerr << "\nError reading restart file (boost::archive exception):\n" 
@@ -170,6 +171,9 @@ void print_restart(int argc, char** argv, String print_dest)
 	   << current_pair;
     else if (print_dest == "neutral_file")
       current_pair.write_annotated(neutral_file_stream);
+
+      // peek to force EOF if the last restart record was read
+      restart_input_fs.peek();
   }
   if (print_dest == "neutral_file")
     neutral_file_stream.close();
@@ -201,20 +205,21 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
     exit(-1);
   }
 
-  BiStream read_restart(argv[2], std::ios::binary);
-  if (!read_restart) {
+  std::ifstream restart_input_fs(argv[2], std::ios::binary);
+  if (!restart_input_fs.good()) {
     Cerr << "Error: failed to open restart file " << argv[2] << endl;
     exit(-1);
   }
+  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
   extern PRPCache data_pairs;
   size_t records_read = 0;  // counter for restart records read
   size_t num_evals = 0;     // unique insertions to data_pairs
-  while (read_restart.good() && !read_restart.eof()) {
+  while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
     try { 
-      read_restart >> current_pair; 
+      restart_input_archive & current_pair; 
     }
     catch(const boost::archive::archive_exception& e) {
       Cerr << "\nError reading restart file (boost::archive exception):\n" 
@@ -234,6 +239,9 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
 	   << current_pair.eval_id() << ") is a duplicate; ignoring." << std::endl;
     else
       ++num_evals; // more efficient than evaluating data_pairs.size()?
+
+    // peek to force EOF if the last restart record was read
+    restart_input_fs.peek();
   }
   // size_t num_evals = data_pairs.size();
 
@@ -406,9 +414,9 @@ void read_neutral(int argc, char** argv)
     Cerr << "Error: failed to open neutral file " << argv[2] << endl;
     exit(-1);
   }
-
-  extern BoStream write_restart;
-  write_restart.open(argv[3], std::ios::binary);
+  
+  std::ofstream restart_output_fs(argv[3], std::ios::binary);
+  boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
   cout << "Writing new restart file " << argv[3] << '\n';
 
   int cntr = 0;
@@ -419,12 +427,12 @@ void read_neutral(int argc, char** argv)
       //Cerr << "Warning: " << err_msg << endl;
       break; // out of while loop
     }
-    write_restart << current_pair;
+    restart_output_archive & current_pair;
     cntr++;
   }
   cout << "Neutral file processing completed: " << cntr
        << " evaluations retrieved.\n";
-  write_restart.close();
+  restart_output_fs.close();
 }
 
 
@@ -476,24 +484,27 @@ void repair_restart(int argc, char** argv, String identifier_type)
     exit(-1);
   }
 
-  BiStream read_restart(read_restart_filename.c_str(), std::ios::binary);
-  if (!read_restart) {
+  std::ifstream restart_input_fs(read_restart_filename.c_str(), 
+				 std::ios::binary);
+  if (!restart_input_fs.good()) {
     Cerr << "Error: failed to open restart file "
          << read_restart_filename << endl;
     exit(-1);
   }
+  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
-  extern BoStream write_restart;
-  write_restart.open(write_restart_filename.c_str(), std::ios::binary);
+  std::ofstream restart_output_fs(write_restart_filename.c_str(), 
+				  std::ios::binary);
+  boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
 
   cout << "Writing new restart file " << write_restart_filename << '\n';
 
   int cntr = 0, good_cntr = 0;
-  while (read_restart.good() && !read_restart.eof()) {
+  while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
     try { 
-      read_restart >> current_pair; 
+      restart_input_archive & current_pair; 
     }
     catch(const boost::archive::archive_exception& e) {
       Cerr << "\nError reading restart file (boost::archive exception):\n" 
@@ -525,13 +536,16 @@ void repair_restart(int argc, char** argv, String identifier_type)
 
     // if current_pair is bad, omit it from the new restart file
     if (!bad_flag) {
-      write_restart << current_pair;
+      restart_output_archive & current_pair;
       good_cntr++;
     }
+
+    // peek to force EOF if the last restart record was read
+    restart_input_fs.peek();
   }
   cout << "Restart repair completed: " << cntr << " evaluations retrieved"
        << ", " << cntr-good_cntr << " removed, " << good_cntr << " saved.\n";
-  write_restart.close();
+  restart_output_fs.close();
 }
 
 
@@ -547,24 +561,26 @@ void concatenate_restart(int argc, char** argv)
     exit(-1);
   }
 
-  extern BoStream write_restart;
-  write_restart.open(argv[argc-1], std::ios::binary);
+  std::ofstream restart_output_fs(argv[argc-1], std::ios::binary);
+  boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
+
   cout << "Writing new restart file " << argv[argc-1] << '\n';
 
   for (int cat_cntr=2; cat_cntr<argc-1; cat_cntr++) {
 
-    BiStream read_restart(argv[cat_cntr], std::ios::binary);
-    if (!read_restart) {
+    std::ifstream restart_input_fs(argv[cat_cntr], std::ios::binary);
+    if (!restart_input_fs.good()) {
       Cerr << "Error: failed to open restart file " << argv[cat_cntr] << endl;
       exit(-1);
     }
+    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
     int cntr = 0;
-    while (read_restart.good() && !read_restart.eof()) {
+    while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
       ParamResponsePair current_pair;
       try { 
-	read_restart >> current_pair; 
+	restart_input_archive & current_pair; 
       }
       catch(const boost::archive::archive_exception& e) {
 	Cerr << "\nError reading restart file (boost::archive exception):\n" 
@@ -575,14 +591,17 @@ void concatenate_restart(int argc, char** argv)
         Cout << "\nWarning reading restart file: " << err_msg << std::endl;
         break;
       }
-      write_restart << current_pair;
+      restart_output_archive & current_pair;
       cntr++;
+ 
+      // peek to force EOF if the last restart record was read
+      restart_input_fs.peek();
     }
 
     cout << argv[cat_cntr] << " processing completed: " << cntr
          << " evaluations retrieved.\n";
   }
-  write_restart.close();
+  restart_output_fs.close();
 }
 
 } // namespace Dakota

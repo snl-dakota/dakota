@@ -11,9 +11,14 @@
 //- Owner:        Mike Eldred
 
 #include "DakotaActiveSet.hpp"
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/export.hpp>
 
 static const char rcsId[]="@(#) $Id";
 
+BOOST_CLASS_EXPORT(Dakota::ActiveSet)
 
 namespace Dakota {
 
@@ -29,6 +34,14 @@ ActiveSet::ActiveSet(size_t num_fns, size_t num_deriv_vars)
 
 ActiveSet::ActiveSet(size_t num_fns)
 { reshape(num_fns); request_values(1); }
+
+
+template<class Archive>
+void ActiveSet::serialize(Archive& ar, const unsigned int version)
+{
+  ar & requestVector;
+  ar & derivVarsVector;
+}
 
 
 /// equality operator for ActiveSet

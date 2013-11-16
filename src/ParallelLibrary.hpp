@@ -24,6 +24,15 @@
 #include <mpi.h>
 #endif // DAKOTA_HAVE_MPI
 
+// forward declarations
+namespace boost {
+  namespace archive {
+    class binary_oarchive;
+    class binary_iarchive;
+  }
+}
+
+
 namespace Dakota {
 
 #ifndef DAKOTA_HAVE_MPI
@@ -414,11 +423,14 @@ public:
 			      bool results_output = false,
 			      std::string results_filename = std::string());
 
+  /// write a parameter/response set to the restart file
+  void write_restart(const ParamResponsePair& prp);
+
   /// close streams, files, and any other services
   void close_streams();
 
   /// finalize MPI with correct communicator for abort
-  void abort_helper(int code) const;
+  void abort_helper(int code);
 
   /// get pretty startup message
   const std::string& startup_message() const;
@@ -744,6 +756,11 @@ private:
   std::string readRestartFilename;  ///< input filename for restart
   std::string writeRestartFilename; ///< output filename for restart
   int stopRestartEvals; ///< number of evals at which to stop restart processing
+
+  /// Binary stream to which restart data is written
+  std::ofstream restartOutputFS;
+  /// Binary output archive to which data is written (ptr as no default ctor)
+  boost::archive::binary_oarchive *restartOutputArchive;
 
   /// the complete set of parallelism levels for managing multilevel
   /// parallelism among one or more configurations

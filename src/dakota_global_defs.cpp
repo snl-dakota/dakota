@@ -14,7 +14,6 @@
 #include "dakota_global_defs.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
-#include "DakotaBinStream.hpp"
 #include "DakotaGraphics.hpp"
 #include "DakotaInterface.hpp"
 #include "ParallelLibrary.hpp"
@@ -36,9 +35,6 @@ std::ostream* dakota_cerr = &std::cerr; ///< DAKOTA stderr initially points to
   ///< std::cerr, but may be redirected to a tagged ofstream if there are
   ///< concurrent iterators.
 PRPCache data_pairs;          ///< contains all parameter/response pairs.
-BoStream write_restart;       ///< the restart binary output stream (doesn't
-                              ///< really need to be global anymore except for
-                              ///< abort_handler()).
 
 /// Global results database for iterator results
 ResultsManager iterator_results_db;
@@ -80,7 +76,6 @@ void abort_handler(int code)
   // Clean up
   Cout << std::flush; // flush cout or ofstream redirection
   Cerr << std::flush; // flush cerr or ofstream redirection
-  write_restart.close();
 
   if (Dak_pddb) {
     // cleanup parameters/results files

@@ -14,15 +14,21 @@
 #include "ProblemDescDB.hpp"
 #include "RelaxedVariables.hpp"
 #include "MixedVariables.hpp"
-#include "DakotaBinStream.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_data_util.hpp"
 #include "dakota_system_defs.hpp"
 #include "boost/functional/hash/hash.hpp"
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/utility.hpp>  // for std::pair
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/export.hpp>
 
 //#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: DakotaVariables.cpp 7037 2010-10-23 01:18:08Z mseldre $";
+
+BOOST_CLASS_EXPORT(Dakota::Variables)
 
 namespace Dakota {
 
@@ -465,6 +471,72 @@ void Variables::check_view_compatibility()
     abort_handler(-1);
 }
 
+  
+template<class Archive> 
+void Variables::load(Archive& ar, const unsigned int version)
+{
+  // Binary version.
+  std::pair<short,short> view;
+  ar & view;
+  SizetArray vars_comps_totals;
+  ar & vars_comps_totals;
+
+  SharedVariablesData svd(view, vars_comps_totals);
+
+  if (variablesRep) { // should not occur in current usage
+    if (sharedVarsData.view() != view) {
+      // decrement old reference count and replace with new letter
+      Cerr << "Warning: variables type mismatch in Variables::load(Archive&)."
+	   << std::endl;
+      if (--variablesRep->referenceCount == 0) 
+	delete variablesRep;
+      variablesRep = get_variables(svd);
+    }
+  }
+  else // read from restart: variablesRep must be instantiated
+    variablesRep = get_variables(svd);
+
+  // This code block would normally be the default implementation
+  // (without variablesRep forwards), but we must support creation
+  // of new letters above.
+  ar & variablesRep->allContinuousVars;
+  StringMultiArrayView acvl = all_continuous_variable_labels();
+  ar & acvl;
+  ar & variablesRep->allDiscreteIntVars;
+  StringMultiArrayView adivl = all_discrete_int_variable_labels();
+  ar & adivl;
+  ar & variablesRep->allDiscreteRealVars;
+  StringMultiArrayView adrvl = all_discrete_real_variable_labels();
+  ar & adrvl;
+
+  // rebuild active/inactive views
+  variablesRep->build_views();
+  // types/ids not required
+}
+
+
+template<class Archive> 
+void Variables::save(Archive& ar, const unsigned int version) const
+{
+  // Binary version.
+  if (variablesRep)
+    variablesRep->save(ar, version); // envelope fwd to letter
+  else { // default implementation for letters
+    ar & sharedVarsData.view();
+    ar & sharedVarsData.components_totals();
+    ar & allContinuousVars;
+    StringMultiArrayView acvl = all_continuous_variable_labels();
+    ar & acvl; 
+    ar & allDiscreteIntVars;
+    StringMultiArrayView adivl = all_discrete_int_variable_labels();
+    ar & adivl;
+    ar & allDiscreteRealVars;
+    StringMultiArrayView adrvl = all_discrete_real_variable_labels();
+    ar & adrvl;
+    // types/ids not required
+  }
+}
+
 
 void Variables::read(std::istream& s)
 {
@@ -519,7 +591,7 @@ void Variables::read_annotated(std::istream& s)
   if (variablesRep) { // should not occur in current usage
     if (sharedVarsData.view() != view) {
       // decrement old reference count and replace with new letter
-      Cerr << "Warning: variables type mismatch in Variables::read(BiStream&)."
+      Cerr << "Warning: variables type mismatch in Variables::read(istream&)."
 	   << std::endl;
       if (--variablesRep->referenceCount == 0) 
         delete variablesRep;
@@ -586,67 +658,6 @@ void Variables::write_tabular(std::ostream& s) const
     Cerr << "Error: Letter lacking redefinition of virtual write_tabular "
          << "function.\nNo default defined at base class." << std::endl;
     abort_handler(-1);
-  }
-}
-
-
-void Variables::read(BiStream& s)
-{
-  // Binary version.
-  std::pair<short,short> view;
-  s >> view.first;
-  if (s.eof()) // exception handling since EOF not captured properly by BiStream
-    throw String("Empty record in Variables::read(BiStream&)");
-  s >> view.second;
-  size_t i, num_vc_totals = 12;
-  SizetArray vars_comps_totals(num_vc_totals);
-  for (i=0; i<num_vc_totals; ++i)
-    s >> vars_comps_totals[i];
-  SharedVariablesData svd(view, vars_comps_totals);
-
-  if (variablesRep) { // should not occur in current usage
-    if (sharedVarsData.view() != view) {
-      // decrement old reference count and replace with new letter
-      Cerr << "Warning: variables type mismatch in Variables::read(BiStream&)."
-	   << std::endl;
-      if (--variablesRep->referenceCount == 0) 
-        delete variablesRep;
-      variablesRep = get_variables(svd);
-    }
-  }
-  else // read from restart: variablesRep must be instantiated
-    variablesRep = get_variables(svd);
-
-  // This code block would normally be the default implementation (without
-  // variablesRep forwards), but we must support creation of new letters above.
-  read_data(s, variablesRep->allContinuousVars,
-	    all_continuous_variable_labels());
-  read_data(s, variablesRep->allDiscreteIntVars,
-	    all_discrete_int_variable_labels());
-  read_data(s, variablesRep->allDiscreteRealVars,
-	    all_discrete_real_variable_labels());
-  // rebuild active/inactive views
-  variablesRep->build_views();
-  // types/ids not required
-}
-
-
-void Variables::write(BoStream& s) const
-{
-  // Binary version.
-  if (variablesRep)
-    variablesRep->write(s); // envelope fwd to letter
-  else { // default implementation for letters
-    const std::pair<short,short>& view = sharedVarsData.view();
-    const SizetArray& vc_totals = sharedVarsData.components_totals();
-    s << view.first << view.second;
-    size_t i, num_vc_totals = vc_totals.size();
-    for (i=0; i<num_vc_totals; ++i)
-      s << vc_totals[i];
-    write_data(s, allContinuousVars,   all_continuous_variable_labels());
-    write_data(s, allDiscreteIntVars,  all_discrete_int_variable_labels());
-    write_data(s, allDiscreteRealVars, all_discrete_real_variable_labels());
-    // types/ids not required
   }
 }
 

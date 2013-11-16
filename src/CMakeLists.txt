@@ -323,8 +323,7 @@ set(Dakota_src DakotaBuildInfo.cpp)
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_tabular_io.cpp dakota_global_defs.cpp 
-    CommandLineHandler.cpp DakotaGraphics.cpp 
-    DakotaBinStream.cpp SensAnalysisGlobal.cpp 
+    CommandLineHandler.cpp DakotaGraphics.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     ExperimentData.cpp
     )

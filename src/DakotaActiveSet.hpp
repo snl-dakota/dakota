@@ -19,7 +19,6 @@
 #include "dakota_data_types.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_data_util.hpp"
-#include "DakotaBinStream.hpp"
 #include "MPIPackBuffer.hpp"
 
 namespace Dakota {
@@ -98,17 +97,18 @@ public:
   /// write an active set object to an std::ostream in annotated format
   void write_annotated(std::ostream& s) const;
 
-  /// read an active set object from the binary restart stream
-  void read(BiStream& s);
-  /// write an active set object to the binary restart stream
-  void write(BoStream& s) const;
-
   /// read an active set object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
   /// write an active set object to a packed MPI buffer
   void write(MPIPackBuffer& s) const;
 
 private:
+
+  friend class boost::serialization::access;
+
+  template<class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
 
   //
   //- Heading: Data
@@ -219,14 +219,6 @@ inline void ActiveSet::write_annotated(std::ostream& s) const
 }
 
 
-inline void ActiveSet::read(BiStream& s)
-{ s >> requestVector >> derivVarsVector; }
-
-
-inline void ActiveSet::write(BoStream& s) const
-{ s << requestVector << derivVarsVector; }
-
-
 inline void ActiveSet::read(MPIUnpackBuffer& s)
 { s >> requestVector >> derivVarsVector; }
 
@@ -242,16 +234,6 @@ inline std::istream& operator>>(std::istream& s, ActiveSet& set)
 
 /// std::ostream insertion operator for ActiveSet.  Calls write(std::istream&).
 inline std::ostream& operator<<(std::ostream& s, const ActiveSet& set)
-{ set.write(s); return s; }
-
-
-/// BiStream extraction operator for ActiveSet.  Calls read(BiStream&).
-inline BiStream& operator>>(BiStream& s, ActiveSet& set)
-{ set.read(s); return s; }
-
-
-/// BoStream insertion operator for ActiveSet.  Calls write(BoStream&).
-inline BoStream& operator<<(BoStream& s, const ActiveSet& set)
 { set.write(s); return s; }
 
 

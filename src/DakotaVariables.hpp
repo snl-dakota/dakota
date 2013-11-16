@@ -19,13 +19,10 @@
 #include "SharedVariablesData.hpp"
 #include "dakota_data_io.hpp"
 
-
 namespace Dakota {
 
 // forward declarations
 class ProblemDescDB;
-class BiStream;
-class BoStream;
 class MPIPackBuffer;
 class MPIUnpackBuffer;
 
@@ -48,6 +45,9 @@ class Variables
   //
   //- Heading: Friends
   //
+
+  /// for serializing private data members
+  friend class boost::serialization::access;
 
   /// equality operator
   friend bool operator==(const Variables& vars1, const Variables& vars2);
@@ -108,11 +108,6 @@ public:
   virtual void read_tabular(std::istream& s);
   /// write a variables object in tabular format to an std::ostream
   virtual void write_tabular(std::ostream& s) const;
-
-  /// read a variables object from the binary restart stream
-  virtual void read(BiStream& s);
-  /// write a variables object to the binary restart stream
-  virtual void write(BoStream& s) const;
 
   /// read a variables object from a packed MPI buffer
   virtual void read(MPIUnpackBuffer& s);
@@ -419,6 +414,17 @@ private:
 
   /// perform sanity checks on view.first and view.second after update
   void check_view_compatibility();
+
+  /// read a Variables object from an archive
+  template<class Archive> 
+  void load(Archive& ar, const unsigned int version);
+
+  /// write a Variables object to an archive
+  template<class Archive> 
+  void save(Archive& ar, const unsigned int version) const;
+ 
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
+ 
 
   //
   //- Heading: Data
@@ -1034,21 +1040,9 @@ inline std::istream& operator>>(std::istream& s, Variables& vars)
 inline std::ostream& operator<<(std::ostream& s, const Variables& vars)
 { vars.write(s); return s; }
 
-
-/// BiStream extraction operator for Variables.
-inline BiStream& operator>>(BiStream& s, Variables& vars)
-{ vars.read(s); return s; }
-
-
-/// BoStream insertion operator for Variables.
-inline BoStream& operator<<(BoStream& s, const Variables& vars)
-{ vars.write(s); return s; }
-
-
 /// MPIUnpackBuffer extraction operator for Variables.
 inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, Variables& vars)
 { vars.read(s); return s; }
-
 
 /// MPIPackBuffer insertion operator for Variables.
 inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const Variables& vars)
@@ -1138,5 +1132,14 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
 }
 
 } // namespace Dakota
+
+
+// Since we may serialize this class through a temporary, force
+// serialization mode and no tracking
+BOOST_CLASS_IMPLEMENTATION(Dakota::Variables, 
+			   boost::serialization::object_serializable)
+BOOST_CLASS_TRACKING(Dakota::Variables, 
+		     boost::serialization::track_never)
+
 
 #endif

@@ -50,6 +50,9 @@ class ResponseRep
   //- Heading: Friends
   //
 
+  /// for serializing private data members
+  friend class boost::serialization::access;
+
   /// the handle class can access attributes of the body class directly
   friend class Response;
 
@@ -86,15 +89,35 @@ private:
   /// write functionValues to an std::ostream (tabular format)
   void write_tabular(std::ostream& s) const;
 
-  /// read a responseRep object from a binary stream
-  void read(BiStream& s);
-  /// write a responseRep object to a binary stream
-  void write(BoStream& s) const;
-
   /// read a responseRep object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
   /// write a responseRep object to a packed MPI buffer
   void write(MPIPackBuffer& s) const;
+
+
+  // need two functions here due to passed column
+
+  /// write a column of a SerialDenseMatrix
+  template<class Archive, typename OrdinalType, typename ScalarType>
+  void write_sdm_col
+  (Archive& ar, int col,
+   const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm) const;
+
+  /// read a column of a SerialDenseMatrix
+  template<class Archive, typename OrdinalType, typename ScalarType>
+  void read_sdm_col(Archive& ar, int col, 
+		    Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm);
+
+  /// read a ResponseRep from an archive
+  template<class Archive> 
+  void load(Archive& ar, const unsigned int version);
+
+  /// write a ResponseRep to an archive
+  template<class Archive> 
+  void save(Archive& ar, const unsigned int version) const;
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 
   /// return the number of doubles active in response.  Used for sizing 
   /// double* response_data arrays passed into read_data and write_data.
@@ -317,11 +340,6 @@ public:
   /// write responseRep::functionValues in tabular format to an std::ostream
   void write_tabular(std::ostream& s) const;
 
-  /// read a response object from the binary restart stream
-  void read(BiStream& s);
-  /// write a response object to the binary restart stream
-  void write(BoStream& s) const;
-
   /// read a response object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
   /// write a response object to a packed MPI buffer
@@ -373,6 +391,19 @@ public:
   bool is_null() const;
 
 private:
+
+  friend class boost::serialization::access;
+
+  /// read a Response from an archive
+  template<class Archive>
+  void load(Archive& ar, const unsigned int version);
+
+  /// write a Response to an archive
+  template<class Archive>
+  void save(Archive& ar, const unsigned int version) const;
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 
   //
   //- Heading: Private data members
@@ -637,21 +668,6 @@ inline void Response::write_tabular(std::ostream& s) const
 { if (responseRep) responseRep->write_tabular(s); }
 
 
-inline void Response::read(BiStream& s)
-{
-  if (responseRep) // should not occur in current usage
-    responseRep->read(s); // fwd to existing rep
-  else { // read from restart: responseRep must be instantiated
-    responseRep = new ResponseRep(); // default constructor is sufficient
-    responseRep->read(s); // fwd to new rep
-  }
-}
-
-
-inline void Response::write(BoStream& s) const
-{ if (responseRep) responseRep->write(s); }
-
-
 inline void Response::read(MPIUnpackBuffer& s)
 {
   bool body;
@@ -692,16 +708,6 @@ inline std::ostream& operator<<(std::ostream& s, const Response& response)
 { response.write(s); return s; }
 
 
-/// BiStream extraction operator for Response.  Calls read(BiStream&).
-inline BiStream& operator>>(BiStream& s, Response& response)
-{ response.read(s); return s; }
-
-
-/// BoStream insertion operator for Response.  Calls write(BoStream&).
-inline BoStream& operator<<(BoStream& s, const Response& response)
-{ response.write(s); return s; }
-
-
 /// MPIUnpackBuffer extraction operator for Response.  Calls
 /// read(MPIUnpackBuffer&).
 inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, Response& response)
@@ -735,5 +741,21 @@ inline std::string re_match(const std::string& token, const boost::regex& re)
 }
 
 } // namespace Dakota
+
+
+// Since we may serialize this class through a temporary, force
+// serialization mode and no tracking
+BOOST_CLASS_IMPLEMENTATION(Dakota::ResponseRep, 
+			   boost::serialization::object_serializable)
+BOOST_CLASS_TRACKING(Dakota::ResponseRep, 
+		     boost::serialization::track_never)
+
+// Since we may serialize this class through a temporary, force
+// serialization mode and no tracking
+BOOST_CLASS_IMPLEMENTATION(Dakota::Response, 
+			   boost::serialization::object_serializable)
+BOOST_CLASS_TRACKING(Dakota::Response, 
+		     boost::serialization::track_never)
+
 
 #endif // !DAKOTA_RESPONSE_H

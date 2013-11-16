@@ -14,6 +14,71 @@
 #include "dakota_data_types.hpp"
 #include "MPIPackBuffer.hpp"
 #include <boost/foreach.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include "boost/serialization/split_free.hpp"
+
+namespace boost {
+namespace serialization {
+
+// this is NOT the recommend way to read contiguous arrays, but it's a start
+// http://www.boost.org/doc/libs/1_54_0/libs/serialization/doc/wrappers.html#arrays
+/// Load a Teuchos::SerialDenseVector from an archive
+template <class Archive, typename OrdinalType, typename ScalarType>
+void load(Archive& ar, Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v, 
+     const unsigned int version)
+{
+  OrdinalType i, len;
+  ar & len;
+  if( len != v.length() )
+    v.sizeUninitialized(len);
+  for (i=0; i<len; ++i)
+    ar & v[i];
+}
+
+/// Save a Teuchos::SerialDenseVector  an archive
+template <class Archive, typename OrdinalType, typename ScalarType>
+void save(Archive& ar, 
+	  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v, 
+	  const unsigned int version)
+{
+  OrdinalType i, len = v.length();
+  ar & len;
+  // make a temporary array for serialization
+  //  ar & make_array(v.values(), len);
+  for (i=0; i<len; ++i)
+    ar & v[i];
+}
+
+/// Serialize a symmetric matrix (pre-sized) to/from an archive
+template<class Archive, typename OrdinalType, typename ScalarType>
+void serialize(Archive& ar,
+	       Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm,
+	       const unsigned int version)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      ar & sm(i,j);
+}
+
+/// Serialize a pre-sized MultiArrayView to/from an archive
+template<class Archive>
+void serialize(Archive& ar, Dakota::StringMultiArrayView& label_array,
+	       const unsigned int version)
+{
+  size_t len = label_array.size();
+  for (size_t i=0; i<len; ++i)
+      ar & label_array[i];
+}
+
+}  // namespace serialization
+}  // namespace boost
+
+/// Register separate load/save for IntVector type
+BOOST_SERIALIZATION_SPLIT_FREE(Dakota::IntVector)
+/// Register separate load/save for RealVector type
+BOOST_SERIALIZATION_SPLIT_FREE(Dakota::RealVector)
 
 
 namespace Dakota {
