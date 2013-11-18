@@ -19,6 +19,7 @@
 static const char rcsId[]="@(#) $Id";
 
 BOOST_CLASS_EXPORT(Dakota::ActiveSet)
+//BOOST_CLASS_EXPORT_IMPLEMENT(Dakota::ActiveSet)
 
 namespace Dakota {
 
@@ -42,6 +43,16 @@ void ActiveSet::serialize(Archive& ar, const unsigned int version)
   ar & requestVector;
   ar & derivVarsVector;
 }
+
+// These shouldn't be necessary, but using to avoid static linking
+// issues until can find the right Boost macro ordering
+template void ActiveSet::
+serialize<boost::archive::binary_iarchive>(boost::archive::binary_iarchive& ar, 
+					   const unsigned int version);
+
+template void ActiveSet::
+serialize<boost::archive::binary_oarchive>(boost::archive::binary_oarchive& ar, 
+					   const unsigned int version);
 
 
 /// equality operator for ActiveSet

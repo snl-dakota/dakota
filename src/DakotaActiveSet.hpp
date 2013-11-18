@@ -20,6 +20,7 @@
 #include "dakota_data_io.hpp"
 #include "dakota_data_util.hpp"
 #include "MPIPackBuffer.hpp"
+//#include <boost/serialization/export.hpp>
 
 namespace Dakota {
 
@@ -253,5 +254,12 @@ inline bool operator!=(const ActiveSet& set1, const ActiveSet& set2)
 { return !(set1 == set2); }
 
 } // namespace Dakota
+
+// allow static linking
+// BOOST_CLASS_EXPORT_KEY(Dakota::ActiveSet);
+
+// BOOST_CLASS_IMPLEMENTATION(Dakota::ActiveSet, 
+//  			   boost::serialization::object_serializable)
+
 
 #endif
