@@ -36,14 +36,68 @@ the LICENSE file, and is also available online from
 http://www.gnu.org/licenses/lgpl.html.  Also refer to the COPYRIGHT
 file for important U.S. Government legal notices.
 
-The DAKOTA distribution contains libraries which are available
-separately under compatible licensing terms.  In particular, many of
-the libraries in the packages/ directory are available separately
-under the GNU Lesser General Public License (LGPL).
+Dakota source and binary distributions include external libraries
+which have compatible licensing terms.  In particular, those in the
+packages/ directory are available separately under the following
+licenses.  These packages may in turn include packages under other
+licenses; see their contents for the most up to date details.  Here
+[SNL] denotes software originating at Sandia National Laboratories.
 
-DAKOTA may optionally depend on GNU GPL-licensed components, which are
-disabled by default, resulting in an LGPL-compatible DAKOTA.  Optional
-GPL capabilities include:
+dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
+  acro              Revised BSD License [SNL]
+    (including colin, dummy, interfaces, pebbl, scolib, utilib)
+    tpl
+      ampl          MIT License (old style with disclaimer)
+      3po/cobyla    MIT License (modern style with sublicense)
+      3po/hooke	    MIT License (variant)
+      cxxtest	    GNU Lesser General Public License (LGPL)
+      momhlib	    GNU Lesser General Public License (LGPL)
+      tinyxml	    ZLib license
+      vpykit/pyutilib.virtualenv  BSD License  
+  ampl		    MIT License (old style with disclaimer)
+  CONMIN	    Public Domain
+  DDACE		    GNU Lesser General Public License (LGPL) [SNL]
+  DOT		    Commercial license (optional add-on)
+  dream		    GNU Lesser General Public License (LGPL)
+  FSUDace	    GNU Lesser General Public License (LGPL)
+  hopspack	    GNU Lesser General Public License (LGPL) [SNL]
+    CDDLIB	    GNU General Public License (GPL; disabled by default)
+  JEGA		    GNU Lesser General Public License (LGPL) [SNL]
+  motif/SciPlot	    GNU Library General Public License (old LGPL)
+  NCSUOpt	    MIT License
+  nidr		    BSD License [SNL]
+  NL2SOL	    Publicly Available
+  NLPQL		    Commercial license (optional add-on)
+  NOMAD		    GNU Lesser General Public License (LGPL)
+  NPSOL		    Commercial license (optional add-on)
+  OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
+    teuchos	    BSD License [SNL]
+  pecos		    GNU Lesser General Public License (LGPL) [SNL]
+    dfftpack	    Public Domain
+    fftw	    GNU General Public License (GPL; disabled by default)
+    LHS		    GNU Lesser General Public License (LGPL) [SNL]
+    teuchos	    BSD License [SNL]
+    VPISparseGrid   GNU Lesser General Public License (LGPL)
+  PSUADE	    GNU Lesser General Public License (LGPL)
+  queso		    GNU Lesser General Public License (LGPL)
+  surfpack	    GNU Lesser General Public License (LGPL) [SNL]
+    CONMIN	    Public Domain	      
+    NCSUOpt	    MIT License
+  teuchos	    BSD License [SNL]
+
+Third-party system libraries: In addition to standard compiler and
+system runtime libraries, Dakota requires the following external
+third-party libraries for compilation and operation:
+
+  BLAS/LAPACK	    BSD License, or that of compiler or system-provided libs
+  Boost		    Boost Software License
+
+GPL/Other: DAKOTA may optionally depend on GNU GPL-licensed
+components, which are disabled by default, resulting in an
+LGPL-compatible DAKOTA.  Optional GPL capabilities include:
+
+ * dakota/trunk/packages/hopspack/src/src-citizens/citizen-gss/cddlib/;
+   enable with CMake setting HAVE_CDDLIB.
 
  * dakota/packages/pecos/packages/fftw: optionally included with
    Dakota; enable with CMake setting HAVE_FFTW
@@ -51,6 +105,14 @@ GPL capabilities include:
  * GNU Scientific Library: external third-party library; enable with
    CMake setting DAKOTA_HAVE_GSL and pointer to gsl-config
 
+ * cURL/libcurl: external third-party library, MIT/modified-BSD
+   license, but its dependencies have numerous licenses that make it
+   challenging to redistribute.  Redistributed Dakota binaries never
+   include libcurl.
+
+Utilities required to compile and deploy Dakota and its documentation
+are not included here.  These may include compilers, MPI, X Windows,
+system runtimes, Doxygen, LaTeX, CMake, etc.
 
 ------------------------------------------------------------------------------
 Overview
