@@ -258,7 +258,7 @@ int MatlabInterface::matlab_engine_run(const String& ac_name)
     dims[1] = 1;
     mx_tmp[9] = mxCreateCellArray(2,dims);
     for( i=0; i<numACV; ++i)  
-      mxSetCell(mx_tmp[9], i, mxCreateString( xCLabels[i] ));
+      mxSetCell(mx_tmp[9], i, mxCreateString( xCLabels[i].c_str() ));
     mxSetFieldByNumber(dakota_matlab, 0, iF, mx_tmp[9]);
   }
   else
@@ -270,7 +270,7 @@ int MatlabInterface::matlab_engine_run(const String& ac_name)
     dims[1] = 1;
     mx_tmp[10] = mxCreateCellArray(2,dims);
     for( i=0; i<numADIV; ++i)
-      mxSetCell(mx_tmp[10], i, mxCreateString( xDILabels[i] ));
+      mxSetCell(mx_tmp[10], i, mxCreateString( xDILabels[i].c_str() ));
     mxSetFieldByNumber(dakota_matlab, 0, iF, mx_tmp[10]);
   }
   else
@@ -281,7 +281,7 @@ int MatlabInterface::matlab_engine_run(const String& ac_name)
     dims[1] = 1;
     mx_tmp[11] = mxCreateCellArray(2,dims);
     for( i=0; i<numADRV; ++i)
-      mxSetCell(mx_tmp[11], i, mxCreateString( xDRLabels[i] ));
+      mxSetCell(mx_tmp[11], i, mxCreateString( xDRLabels[i].c_str() ));
     mxSetFieldByNumber(dakota_matlab, 0, iF, mx_tmp[11]);
   }
   else
