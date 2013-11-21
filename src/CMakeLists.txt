@@ -290,6 +290,12 @@ if(DAKOTA_HAVE_MPI)
   list(APPEND EXTRA_TPL_LIBS ${MPI_LIBRARY} ${MPI_LIBRARIES})
 endif(DAKOTA_HAVE_MPI)
 
+if(DAKOTA_HAVE_HDF5)
+  add_definitions("-DDAKOTA_HAVE_HDF5")
+  include_directories(${HDF5_INCLUDE_DIRS})
+  list(APPEND EXTRA_TPL_LIBS ${HDF5_LIBRARY_DIRS})
+endif(DAKOTA_HAVE_HDF5)
+
 
 # Couple with "external" packages based on user preference
 
