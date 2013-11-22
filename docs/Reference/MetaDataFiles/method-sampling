@@ -74,6 +74,55 @@ variables specification block.
 --->
 Topics::	
 Examples::
+\verbatim
+# tested on Dakota 5.3.1, 131101
+
+strategy
+  tabular_graphics_data
+    tabular_graphics_file = 'Sampling_basic.dat'
+  single_method
+
+method
+  sampling
+    sample_type lhs
+    samples = 20
+
+model
+  single
+
+variables
+  active uncertain
+  uniform_uncertain = 2
+    descriptors  =   'input1'     'input2'
+    lower_bounds =  -2.0     -2.0
+    upper_bounds =   2.0      2.0
+  continuous_state = 1
+    descriptors =   'constant1'
+    initial_state = 100
+
+interface
+  analysis_drivers 'text_book'
+    fork
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+\endverbatim
+
+This example illustrates a basic sampling Dakota input file.
+
+\li LHS is used instead of purely random sampling.
+\li The default random number generator is used.
+\li Without a \c seed specified, this will not be reproducable
+\li In the \c variables block, two types of variables are used
+\li Only the uncertain variables are varied, this is the default 
+    behavior, and is also specified by the \c active keyword, w/ the
+    \c uncertain option
+
 Theory::
 Faq::
-See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-importance_sampling, method-polynomial_chaos, method-stoch_collocation
+<b>Q: </b> Do I need to keep the LHS* and S4 files?
+<b>A: </b> No
+
+See_Also::	variables-active

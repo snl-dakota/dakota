@@ -25,6 +25,39 @@ by \ref method-vector_parameter_study-num_steps.
 
 Topics::	parameter_studies
 Examples::
+
+The following example is a good comparison to the examples on
+\ref method-multidim_parameter_study and \ref method-centered_parameter_study.
+\verbatim
+# tested on Dakota 5.3.1 on 131101
+strategy
+  tabular_graphics_data
+    tabular_graphics_file = 'rosen_vector.dat'
+  single_method
+
+method
+  vector_parameter_study
+    num_steps = 10
+    final_point =    2.0      2.0
+model
+  single
+
+variables
+  continuous_design = 2
+    initial_point =   -2.0     -2.0
+    descriptors =     'x1'     "x2"
+
+interface
+  analysis_driver = 'rosenbrock'
+    fork
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	method-centered_parameter_study, method-multidim_parameter_study, method-list_parameter_study

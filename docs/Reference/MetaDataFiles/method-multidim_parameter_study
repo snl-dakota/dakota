@@ -15,6 +15,44 @@ specified.
 
 Topics::	parameter_studies
 Examples::
+This example is taken from the Users Manual and is a good comparison to the examples on
+\ref method-centered_parameter_study and \ref method-vector_parameter_study.
+\verbatim
+# tested on Dakota 5.3.1 on 131101
+strategy
+  tabular_graphics_data
+    tabular_graphics_file = 'rosen_multidim.dat'
+  single_method
+
+method
+  multidim_parameter_study
+    partitions = 10 8
+
+model
+  single
+
+variables
+  continuous_design = 2
+    lower_bounds     -2.0     -2.0
+    upper_bounds      2.0      2.0
+    descriptors       'x1'     "x2"
+
+interface
+  analysis_driver = 'rosenbrock'
+    fork
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+
+\endverbatim
+
+This example illustrates the full factorial combinations of parameter values created
+by the multidim_parameter_study. With 10 and 8 partitions, there are actually
+11 and 9 values for each variable. This means that \f$ 11 \times 9 = 99 \f$ 
+function evaluations will be required.
+
 Theory::
 Faq::
 See_Also::	method-centered_parameter_study, method-list_parameter_study, method-vector_parameter_study

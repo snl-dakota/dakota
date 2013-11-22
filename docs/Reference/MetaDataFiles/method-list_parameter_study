@@ -26,7 +26,6 @@ Topics::	parameter_studies
 Examples::
 This shows the method and variables block of a Dakota input file
 that runs a list_parameter_study.
-
 \verbatim
 method
   list_parameter_study
@@ -35,10 +34,6 @@ method
                  3.2e6    0.0028    0.32 
                  3.3e6    0.0027    0.34 
                  3.3e6    0.0026    0.36  
-                 3.9e6    0.0025    0.32  
-                 3.3e6    0.0024    0.34  
-                 3.3e6    0.0023    0.35  
-                 3.3e6    0.0022    0.34  
 
 variables
   continuous_design = 3
@@ -53,14 +48,62 @@ method
     list_of_points =
 3.1e6    0.0029    0.31  3.2e6    0.0028    
 0.32    3.3e6    0.0027    
-0.34  3.3e6    0.0026    0.36     3.9e6    0.0025    0.32  3.3e6    
-0.0024    0.34    3.3e6    0.0023    0.35  3.3e6    0.0022    0.34  
+0.34  3.3e6    0.0026    0.36
 
 variables
   continuous_design = 3
     descriptors = 'E'  'MASS'   'DENSITY'
 \endverbatim
 Although the first example is much more readable.
+
+And here's a full input file:
+
+\verbatim
+# tested on Dakota 5.3.1 on 131101
+strategy
+  tabular_graphics_data
+    tabular_graphics_file 'List_param_study.dat'
+  single_method
+
+method
+  list_parameter_study
+    list_of_points =     0.1    0.1
+                         0.2    0.1
+                         0.3    0.0
+                         0.3    1.0
+
+model
+  single
+
+variables
+  active design
+  continuous_design = 2
+    descriptors    'x1' 'x2'
+  continuous_state = 1
+    descriptors =   'constant1'
+    initial_state = 100
+
+interface
+  analysis_drivers 'text_book'
+    fork
+  asynchronous
+    evaluation_concurrency 2
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+
+\endverbatim
+
+This example illustrates the list_parameter_study.
+
+\li The function evaluations are independent, so any level of 
+    \c evaluation_concurrency can be used
+\li Default behavior for parameter studies is to iterate on all variables. 
+    However, because \c active \c design is specified, this study will only 
+    iterate on the \c continuous_design variables.
+
 
 Theory::
 Faq::

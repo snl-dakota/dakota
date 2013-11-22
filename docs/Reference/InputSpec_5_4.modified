@@ -8,8 +8,11 @@ KEYWORD01 strategy
           [ results_output_file STRING ]
         ]
         [ iterator_servers INTEGER ]
-        [ iterator_self_scheduling ]
-        [ iterator_static_scheduling ]
+        [ iterator_scheduling
+          ( master
+          |
+          ( peer
+        ]
         ( hybrid
           ( sequential ALIAS uncoupled
             ( method_list STRINGLIST
@@ -499,6 +502,24 @@ KEYWORD12 method
           [ linear_equality_scales REALLIST ]
         )
         |
+        ( mesh_adaptive_search
+          [ function_precision REAL ]
+          [ seed INTEGER > 0 ]
+          [ history_file STRING ]
+          [ display_format STRING ]
+          [ variable_neighborhood_search REAL ]
+          [ display_all_evaluations ]
+          [ linear_inequality_constraint_matrix REALLIST ]
+          [ linear_inequality_lower_bounds REALLIST ]
+          [ linear_inequality_upper_bounds REALLIST ]
+          [ linear_inequality_scale_types STRINGLIST ]
+          [ linear_inequality_scales REALLIST ]
+          [ linear_equality_constraint_matrix REALLIST ]
+          [ linear_equality_targets REALLIST ]
+          [ linear_equality_scale_types STRINGLIST ]
+          [ linear_equality_scales REALLIST ]
+        )
+        |
         ( moga
           [ fitness_type
             ( layer_rank
@@ -974,12 +995,13 @@ KEYWORD12 method
             ]
           )
           [ variance_based_decomp
-            [ univariate_effects ]
+            [ interaction_order INTEGER > 0 ]
             [ drop_tolerance REAL ]
           ]
           [ diagonal_covariance
           |
           ( full_covariance ]
+          [ normalized ]
           [ sample_type
             ( lhs
             |
@@ -1079,7 +1101,7 @@ KEYWORD12 method
           |
           ( non_nested ]
           [ variance_based_decomp
-            [ univariate_effects ]
+            [ interaction_order INTEGER > 0 ]
             [ drop_tolerance REAL ]
           ]
           [ diagonal_covariance
@@ -1363,10 +1385,10 @@ KEYWORD12 method
             ]
           [ probability_levels REALLIST
             [ num_probability_levels INTEGERLIST ]
-            ]
+          ]
           [ gen_reliability_levels REALLIST
             [ num_gen_reliability_levels INTEGERLIST ]
-            ]
+          ]
           [ rng
             ( mt19937
             |
@@ -1936,6 +1958,9 @@ KEYWORD model
                 ]
                 [ optimization_method STRING ]
                 [ max_trials INTEGER > 0 ]
+                [ nugget REAL > 0
+                |
+                ( find_nugget INTEGER ]
                 [ correlation_lengths REALLIST ]
                 [ export_model_file STRING ]
               )
@@ -2120,6 +2145,7 @@ KEYWORD12 variables
           ( std_deviations ALIAS nuv_std_deviations REALLIST
           [ lower_bounds ALIAS nuv_lower_bounds REALLIST ]
           [ upper_bounds ALIAS nuv_upper_bounds REALLIST ]
+          [ initial_point REALLIST ]
           [ descriptors ALIAS nuv_descriptors STRINGLIST ]
         ]
         [ lognormal_uncertain INTEGER > 0
@@ -2134,26 +2160,31 @@ KEYWORD12 variables
           )
           [ lower_bounds ALIAS lnuv_lower_bounds REALLIST ]
           [ upper_bounds ALIAS lnuv_upper_bounds REALLIST ]
+          [ initial_point REALLIST ]
           [ descriptors ALIAS lnuv_descriptors STRINGLIST ]
         ]
         [ uniform_uncertain INTEGER > 0
           ( lower_bounds ALIAS uuv_lower_bounds REALLIST
           ( upper_bounds ALIAS uuv_upper_bounds REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS uuv_descriptors STRINGLIST ]
         ]
         [ loguniform_uncertain INTEGER > 0
           ( lower_bounds ALIAS luuv_lower_bounds REALLIST
           ( upper_bounds ALIAS luuv_upper_bounds REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS luuv_descriptors STRINGLIST ]
         ]
         [ triangular_uncertain INTEGER > 0
           ( modes ALIAS tuv_modes REALLIST
           ( lower_bounds ALIAS tuv_lower_bounds REALLIST
           ( upper_bounds ALIAS tuv_upper_bounds REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS tuv_descriptors STRINGLIST ]
         ]
         [ exponential_uncertain INTEGER > 0
           ( betas ALIAS euv_betas REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS euv_descriptors STRINGLIST ]
         ]
         [ beta_uncertain INTEGER > 0
@@ -2161,26 +2192,31 @@ KEYWORD12 variables
           ( betas ALIAS buv_betas REALLIST
           ( lower_bounds ALIAS buv_lower_bounds REALLIST
           ( upper_bounds ALIAS buv_upper_bounds REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS buv_descriptors STRINGLIST ]
         ]
         [ gamma_uncertain INTEGER > 0
           ( alphas ALIAS gauv_alphas REALLIST
           ( betas ALIAS gauv_betas REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS gauv_descriptors STRINGLIST ]
         ]
         [ gumbel_uncertain INTEGER > 0
           ( alphas ALIAS guuv_alphas REALLIST
           ( betas ALIAS guuv_betas REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS guuv_descriptors STRINGLIST ]
         ]
         [ frechet_uncertain INTEGER > 0
           ( alphas ALIAS fuv_alphas REALLIST
           ( betas ALIAS fuv_betas REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS fuv_descriptors STRINGLIST ]
         ]
         [ weibull_uncertain INTEGER > 0
           ( alphas ALIAS wuv_alphas REALLIST
           ( betas ALIAS wuv_betas REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS wuv_descriptors STRINGLIST ]
         ]
         [ histogram_bin_uncertain INTEGER > 0
@@ -2189,36 +2225,43 @@ KEYWORD12 variables
           ( ordinates ALIAS huv_bin_ordinates REALLIST
           |
           ( counts ALIAS huv_bin_counts REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS huv_bin_descriptors STRINGLIST ]
         ]
         [ poisson_uncertain INTEGER > 0
           ( lambdas REALLIST
+          [ initial_point INTEGERLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ binomial_uncertain INTEGER > 0
           ( probability_per_trial ALIAS prob_per_trial REALLIST
           ( num_trials INTEGERLIST
+          [ initial_point INTEGERLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ negative_binomial_uncertain INTEGER > 0
           ( probability_per_trial ALIAS prob_per_trial REALLIST
           ( num_trials INTEGERLIST
+          [ initial_point INTEGERLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ geometric_uncertain INTEGER > 0
           ( probability_per_trial ALIAS prob_per_trial REALLIST
+          [ initial_point INTEGERLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ hypergeometric_uncertain INTEGER > 0
           ( total_population INTEGERLIST
           ( selected_population INTEGERLIST
           ( num_drawn INTEGERLIST
+          [ initial_point INTEGERLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ histogram_point_uncertain INTEGER > 0
           [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST ]
           ( abscissas ALIAS huv_point_abscissas REALLIST
           ( counts ALIAS huv_point_counts REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS huv_point_descriptors STRINGLIST ]
         ]
         [ uncertain_correlation_matrix REALLIST ]
@@ -2227,6 +2270,7 @@ KEYWORD12 variables
           [ interval_probabilities ALIAS interval_probs ALIAS iuv_interval_probs REALLIST ]
           ( lower_bounds REALLIST
           ( upper_bounds REALLIST
+          [ initial_point REALLIST ]
           [ descriptors ALIAS iuv_descriptors STRINGLIST ]
         ]
         [ discrete_interval_uncertain ALIAS discrete_uncertain_range INTEGER > 0
@@ -2234,18 +2278,21 @@ KEYWORD12 variables
           [ interval_probabilities ALIAS interval_probs ALIAS range_probabilities ALIAS range_probs REALLIST ]
           ( lower_bounds INTEGERLIST
           ( upper_bounds INTEGERLIST
+          [ initial_point INTEGERLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ discrete_uncertain_set_integer INTEGER > 0
           [ num_set_values INTEGERLIST ]
           ( set_values INTEGERLIST
           [ set_probabilities ALIAS set_probs REALLIST ]
+          [ initial_point INTEGERLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ discrete_uncertain_set_real INTEGER > 0
           [ num_set_values INTEGERLIST ]
           ( set_values REALLIST
           [ set_probabilities ALIAS set_probs REALLIST ]
+          [ initial_point REALLIST ]
           [ descriptors STRINGLIST ]
         ]
         [ continuous_state INTEGER > 0
@@ -2355,19 +2402,29 @@ KEYWORD12 interface
         ]
         [ asynchronous
           [ evaluation_concurrency INTEGER > 0 ]
-          [ local_evaluation_self_scheduling
-          |
-          ( local_evaluation_static_scheduling ]
+          [ local_evaluation_scheduling
+            ( dynamic
+            |
+            ( static
+          ]
           [ analysis_concurrency INTEGER > 0 ]
         ]
         [ evaluation_servers INTEGER > 0 ]
-        [ evaluation_self_scheduling
-        |
-        ( evaluation_static_scheduling ]
+        [ evaluation_scheduling
+          ( master
+          |
+          ( peer
+            ( dynamic
+            |
+            ( static
+          )
+        ]
         [ analysis_servers INTEGER > 0 ]
-        [ analysis_self_scheduling
-        |
-        ( analysis_static_scheduling ]
+        [ analysis_scheduling
+          ( master
+          |
+          ( peer
+        ]
 
 KEYWORD12 responses
         [ id_responses STRING ]
@@ -2396,6 +2453,7 @@ KEYWORD12 responses
           [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST ]
           [ calibration_data_file ALIAS least_squares_data_file STRING
             [ num_experiments INTEGER >= 0 ]
+            [ num_replicates INTEGERLIST ]
             [ annotated
             |
             ( freeform ]

@@ -8,3 +8,11 @@ methods will iterate on state variables.
 The \c initial_state is used as the only value
 for the state variable for all other methods, unless \c active
 \c state is invoked.
+
+If a method iterates on a state variable, the variable is treated
+as a design variable with the given bounds, or as a uniform uncertain 
+variable with the given bounds.
+
+If the state variable is defined only by its bounds, and the
+method does NOT iterate on state variables, then the \c initial_state
+must be inferred.
