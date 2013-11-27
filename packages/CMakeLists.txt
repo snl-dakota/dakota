@@ -211,6 +211,13 @@ if(HAVE_FSUDACE)
 endif(HAVE_FSUDACE)
 
 if(HAVE_HOPSPACK)
+  # Default the GPL package to off in Dakota, but allow user override
+  set(HAVE_CDDLIB OFF CACHE BOOL "Enable GPL-licensed package CDDLIB")
+
+  # HOPSPACK doesn't install headers and libraries by default
+  set(INSTALL_HEADERS ON CACHE BOOL "Install headers")
+  set(INSTALL_LIB ON CACHE BOOL "Install libraries")
+
   if(DAKOTA_HAVE_MPI)
     # See hopspack/ConfigureMPI.cmake for MPI "help"
     set(mpi ON CACHE BOOL "MPI requested so enable in HOPSPACK" FORCE)
