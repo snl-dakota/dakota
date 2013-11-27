@@ -81,39 +81,6 @@ struct DerivedStringType128
 
 class SimpleBinaryStream
 {
-private:
-
-  //
-  //- Heading:  Debugging utility methods
-  //
-  void output_status(herr_t status) const
-  {
-    std::cout << "BinaryDF return ErrStat (POSITIVE_val) " << status << std::endl;
-  }
-
-
-  //
-  //- Heading: Data
-  //
-
-  /// file name of binary file stream - empty string if in-core
-  std::string fileName;
-
-  /// Binary stream ID
-  hid_t binStreamId;
-
-  /// Toggle for storage - default is false - true means store data in-core
-  bool streamIsIncore; // WJB: enforce an empty string for fileName in this case
-
-  /// Max string length for storing std::string as a type derived from H5T_C_S1
-  const size_t maxStringLength;
-
-  /// Toggle for exit vs continue execution - default is true
-  bool exitOnError;
-
-  /// In-class caching of the error status code (mostly for debugging)
-  herr_t errorStatus;
-
 public:
 
   /// File-based storage constructor
@@ -220,47 +187,6 @@ public:
     return ret_val;
   }
 
-private:
-
-  template <size_t DIM>
-  herr_t store_data(const std::string& dset_name,
-                    const std::vector<hsize_t>& dims,
-                    const std::vector<std::string>& buf) const
-  {
-    if ( dims.size() != DIM && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-#if 0
-    // WJB: use a for loop and delegate each entry the to single string store?
-    boost::multi_array<std::string, 1> tmp_buf( boost::extents[num_strings] );
-    /* boost::multi_array<unsigned char, 2> tmp_buf(
-      boost::extents[num_strings][DerivedStringType128::length()] ); */
-
-    std::cout << "chk2ndString inArray: " << buf[1].c_str() << std::endl;
-
-    for(int i=0; i<num_strings; ++i)
-      tmp_buf[i] = buf[i];
-
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       dims.size(), dims.data(),
-                       DerivedStringType128::datatype(), tmp_buf[0].c_str() );
-                       //DerivedStringType128::datatype(), &buf[0] );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-#endif
-
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       DIM, dims.data(), DerivedStringType128::datatype(),
-                       buf.data()->c_str() );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    return ret_val;
-  }
-
-public:
 
   /// ToDo: String2DArray
 
@@ -282,29 +208,6 @@ public:
     return store_data<1>( dset_name, dims, buf );
   }
 
-
-private:
-
-  template <typename T, size_t DIM>
-  herr_t store_data(const std::string& dset_name,
-                    const std::vector<hsize_t>& dims,
-                    const T* buf) const
-  {
-    if ( dims.size() != DIM && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       DIM, dims.data(), NativeDataTypes<T>::datatype(),
-                       buf );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    return ret_val;
-  }
-
-
-public:
 
   template <typename T>
   herr_t store_data(const std::string& dset_name,
@@ -341,6 +244,19 @@ public:
     dims += buf.size(); // std::vector<T> is 1D dataspace
 
     return store_data<T,1>( dset_name, dims, buf.data() );
+  }
+
+
+  herr_t store_data(const std::string& dset_name,
+                    const RealVector& buf) const
+  {
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    std::vector<hsize_t> dims;
+    dims += buf.length(); // RealVector is 1D dataspace
+
+    return store_data<double,1>( dset_name, dims, buf.values() );
   }
 
 
@@ -448,6 +364,96 @@ public:
 
 
 private:
+
+  template <size_t DIM>
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<hsize_t>& dims,
+                    const std::vector<std::string>& buf) const
+  {
+    if ( dims.size() != DIM && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+#if 0
+    // WJB: use a for loop and delegate each entry the to single string store?
+    boost::multi_array<std::string, 1> tmp_buf( boost::extents[num_strings] );
+    /* boost::multi_array<unsigned char, 2> tmp_buf(
+      boost::extents[num_strings][DerivedStringType128::length()] ); */
+
+    std::cout << "chk2ndString inArray: " << buf[1].c_str() << std::endl;
+
+    for(int i=0; i<num_strings; ++i)
+      tmp_buf[i] = buf[i];
+
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       dims.size(), dims.data(),
+                       DerivedStringType128::datatype(), tmp_buf[0].c_str() );
+                       //DerivedStringType128::datatype(), &buf[0] );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+#endif
+
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       DIM, dims.data(), DerivedStringType128::datatype(),
+                       buf.data()->c_str() );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    return ret_val;
+  }
+
+
+  template <typename T, size_t DIM>
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<hsize_t>& dims,
+                    const T* buf) const
+  {
+    if ( dims.size() != DIM && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+                       DIM, dims.data(), NativeDataTypes<T>::datatype(),
+                       buf );
+
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    return ret_val;
+  }
+
+
+  //
+  //- Heading:  Debugging utility methods
+  //
+  void output_status(herr_t status) const
+  {
+    std::cout << "BinaryDF return ErrStat (POSITIVE_val) " << status << std::endl;
+  }
+
+
+  //
+  //- Heading: Data
+  //
+
+  /// file name of binary file stream - empty string if in-core
+  std::string fileName;
+
+  /// Binary stream ID
+  hid_t binStreamId;
+
+  /// Toggle for storage - default is false - true means store data in-core
+  bool streamIsIncore; // WJB: enforce an empty string for fileName in this case
+
+  /// Max string length for storing std::string as a type derived from H5T_C_S1
+  const size_t maxStringLength;
+
+  /// Toggle for exit vs continue execution - default is true
+  bool exitOnError;
+
+  /// In-class caching of the error status code (mostly for debugging)
+  herr_t errorStatus;
+
 
   // WJB:  consider boost::ublas::bounded_vector type instead
   //static std::vector<hsize_t, 1> staticVectorDims;
