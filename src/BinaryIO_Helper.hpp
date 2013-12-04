@@ -138,19 +138,39 @@ public:
     } */
   }
 
-#if 0
-  /// Incore storage constructor (WJB: BAD - interface looks like default constructor)
-  // perhaps no default is_incore param AND add a strParam for the initial group??
-  SimpleBinaryStream(bool stream_is_incore    = true,
-                     bool incore_stream_exist = true,
-                     bool read_only           = true,
-                     size_t max_str_len       = DerivedStringType128::length(),
-                     bool exit_on_error       = true) :
+
+  /// Incore storage constructor
+  // WJB - ToDo:  add a strParam for the initial group?? read_only for in-core??
+  SimpleBinaryStream(bool stream_is_incore,
+                     size_t max_str_len = DerivedStringType128::length(),
+                     bool exit_on_error = true) :
     fileName(std::string()), binStreamId(),
     streamIsIncore(stream_is_incore), maxStringLength(max_str_len),
-    errorStatus()
-  { // WJB - ToDo: use a private method to "share" with file-based constructor }
-#endif
+    exitOnError(exit_on_error), errorStatus()
+  {
+    // CORE driver - as WJB understands it, db data is "flushed" to file at end
+    //http://www.mail-archive.com/hdf-forum@hdfgroup.org/msg00660.html
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    bool persist = true;
+    if ( H5Pset_fapl_core(fapl_id, 4096, persist) && exitOnError)
+      throw BinaryStream_CreateFailure();
+
+    binStreamId = H5Fcreate( "dak_db_persist.h5", H5F_ACC_TRUNC, H5P_DEFAULT,
+                             fapl_id );
+    if ( binStreamId < 0 ) {
+      if ( exitOnError )
+        throw BinaryStream_CreateFailure();
+      //else // WJB: is there a way to "set" a GENERIC streamCreation ErrStatus?
+        //errorStatus = status;
+    }
+
+    if ( !errorStatus ) {
+      // Use a derived HDF data type to support more typical Dakota string len
+      if ( maxStringLength != DerivedStringType128::length() && exitOnError )
+        throw BinaryStream_CreateFailure();
+    }
+  }
+
 
   /// destructor
   ~SimpleBinaryStream()
