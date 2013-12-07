@@ -269,15 +269,14 @@ void NonDAdaptImpSampling::converge_cov()
   if (numRepPoints==0) return;
 
   // iteratively sample and select representative points until COV converges
-  Real converge_tol = .0001;
+  //Real abs_tol = .0001; // absolute tolerance
   Real p, sum_p = 0., sum_var = 0.;
-  Real cov, delta_cov, old_cov = DBL_MAX;
+  Real cov, old_cov = DBL_MAX;
   RealVectorArray samples(numSamples);
 
-  size_t total_samples = 0, max_iterations = 10,
-    max_samples = numSamples*max_iterations;
+  size_t total_samples = 0, max_samples = numSamples*maxIterations;
   bool converged = false;
-  while (!converged && (total_samples < max_samples) ) {
+  while (!converged && total_samples < max_samples) {
     // generate samples based on multimodal sampling density - the set
     //   of samples is output
     generate_samples(samples);
@@ -287,9 +286,11 @@ void NonDAdaptImpSampling::converge_cov()
     calculate_statistics(samples, total_samples, sum_p, p, true, sum_var, cov);
 
     // check for convergence of cov
-    delta_cov = std::abs(cov - old_cov);
-    if (delta_cov < converge_tol)
+    if (std::abs(old_cov) > 0. &&
+	std::abs(cov/old_cov - 1.) < convergenceTol) // relative tol
       converged = true;
+    //else if (std::abs(cov - old_cov) < abs_tol)
+    //  converged = true;
     else {
       old_cov = cov;
 
@@ -301,7 +302,7 @@ void NonDAdaptImpSampling::converge_cov()
 	reps_and_samples[numRepPoints+i] = samples[i];
 
       select_rep_points(reps_and_samples);
-     } 
+    }
   }
 }
 
@@ -309,13 +310,12 @@ void NonDAdaptImpSampling::converge_cov()
 void NonDAdaptImpSampling::converge_probability()
 {
   // iteratively sample until probability converges
-  Real converge_tol = .000001;
+  //Real abs_tol = .000001; // absolute tolerance
   Real sum_var, cov, p, sum_p = 0., old_p = initProb;
   RealVectorArray samples(numSamples);
-  size_t total_samples = 0, max_iterations = 1000,
-    max_samples = numSamples*max_iterations;
+  size_t total_samples = 0, max_samples = numSamples*maxIterations;
   bool converged = false;
-  while (!converged && (total_samples < max_samples) ) {
+  while (!converged && total_samples < max_samples) {
     // generate samples based on multimodal sampling density - the set
     //   of samples is output
     generate_samples(samples);
@@ -323,9 +323,20 @@ void NonDAdaptImpSampling::converge_probability()
     // calculate probability with this set of samples
     calculate_statistics(samples, total_samples, sum_p, p, false, sum_var, cov);
     // check for convergence of probability
-    // for IS, only perform one iteration
-    if ( (std::abs(p-old_p) < converge_tol) || importanceSamplingType==IS)
+    // MSE: enforce both probabilities to be non-0/1 and employ a relative tol
+    //   (during refinement, this enforces non-0/1 p for 2 consecutive iters).
+    //   If the true p is 0 or 1, then we will incur the overhead of maxIter.
+    if (importanceSamplingType == IS) // for IS, only perform one iteration
       converged = true;
+    else if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
+	     std::abs(p/old_p - 1.) < convergenceTol) // relative tol
+      converged = true;
+    //else if (p > 0. && p < 1. && std::abs(p - old_p) < abs_tol)// absolute tol
+    //  converged = true;
+#ifdef DEBUG
+    Cout << "converge_probability(): old_p = " << old_p << " p = " << p
+	 << std::endl;
+#endif // DEBUG
     old_p = p;
   }
   // If p(success) calculated, return 1-p 
@@ -768,8 +779,8 @@ calculate_statistics(const RealVectorArray& samples,
     const RealVector& limit_state_fns  = limit_state_resp.function_values();
 
     // if point is a failure, calculate mmpdf, pdf, and add to sum
-    if (( cdfFlag && (limit_state_fns[respFn] < failThresh)) ||
-	(!cdfFlag && (limit_state_fns[respFn] > failThresh)) ) {
+    if ( ( cdfFlag && limit_state_fns[respFn] < failThresh) ||
+	 (!cdfFlag && limit_state_fns[respFn] > failThresh) ) {
 
       // calculate mmpdf
       Real mmpdf = 0.;
@@ -806,7 +817,7 @@ calculate_statistics(const RealVectorArray& samples,
     for (i=0; i<num_failures; i++)
       sum_var += std::pow((failure_pdf[i]/failure_mmpdf[i]) - prob, 2);
     Real var = sum_var/double(total_samples)/double(total_samples - 1);
-    cov = std::sqrt(var)/prob;
+    cov = std::sqrt(var)/prob; // MSE: possible division by zero ?
   }
 }
 
