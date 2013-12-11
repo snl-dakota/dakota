@@ -58,13 +58,17 @@ public:
   /// initializes data needed for importance sampling: an initial set
   /// of points around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealVectorArray& initial_points, int resp_fn,
+  void initialize(const RealVectorArray& full_points, int resp_fn,
 		  const Real& initial_prob, const Real& failure_threshold);
-
+  /// initializes data needed for importance sampling: an initial set
+  /// of points around which to sample, a failure threshold, an
+  /// initial probability to refine, and flags to control transformations
+  void initialize(const RealMatrix& full_points, int resp_fn,
+		  const Real& initial_prob, const Real& failure_threshold);
   /// initializes data needed for importance sampling: an initial
   /// point around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealVector& initial_point, int resp_fn,
+  void initialize(const RealVector& full_point, int resp_fn,
 		  const Real& initial_prob, const Real& failure_threshold);
 
   /// returns the probability calculated by the importance sampling
