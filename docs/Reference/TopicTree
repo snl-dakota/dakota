@@ -61,6 +61,7 @@ methods
   local_optimization_methods
    unconstrained
    constrained
+   sequential_quadratic_programming
   global_optimization_methods
   bayesian_calibration
   nonlinear_least_squares

@@ -14,7 +14,7 @@ NLPQLPOptimizer class.
 
 
 
-Topics::	package_nlpql, sequential_quadratic_programming
+Topics::	package_nlpql, sequential_quadratic_programming, local_optimization_methods
 Examples::
 Theory::
 Faq::

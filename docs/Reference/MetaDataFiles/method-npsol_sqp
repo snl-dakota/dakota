@@ -73,7 +73,7 @@ user to provide the values of the linear constraints on every function
 evaluation. 
 
 
-Topics::	package_npsol, sequential_quadratic_programming
+Topics::	package_npsol, sequential_quadratic_programming, local_optimization_methods
 Examples::
 Theory::
 Faq::

@@ -77,7 +77,7 @@ variable and constraint summaries, and new best points
 
 
 
-Topics::	package_hopspack, pattern_search, not_yet_reviewed
+Topics::	package_hopspack, global_optimization_methods, not_yet_reviewed
 Examples::
 Theory::
 Faq::

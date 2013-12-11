@@ -30,7 +30,7 @@ controls by specifying the value -1.
 The internal defaults are often functions of machine epsilon 
 (as limited by \c function_precision).
 
-Topics:: nonlinear_least_squares
+Topics::	nonlinear_least_squares
 Examples::
 Theory::
 NL2SOL has a variety of internal controls as described in AT&T Bell

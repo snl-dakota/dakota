@@ -5,7 +5,7 @@ The conjugate gradient method is for unconstrained problems.
 
 See \ref topic-package_optpp for info related to all \c optpp methods.
 
-Topics::	package_optpp, conjugate_gradient, not_yet_reviewed
+Topics::	package_optpp, local_optimization_methods, not_yet_reviewed
 Examples::
 Theory::
 Faq::

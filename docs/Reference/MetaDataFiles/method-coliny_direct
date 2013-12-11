@@ -60,7 +60,7 @@ DIRECT can be terminated with:
  \li \c min_boxsize_limit - most effective in practice
 
 
-Topics::	package_scolib, package_coliny, direct, not_yet_reviewed
+Topics::	package_scolib, package_coliny, global_optimization_methods, not_yet_reviewed
 Examples::
 Theory::
 Faq::

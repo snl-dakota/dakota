@@ -121,7 +121,7 @@ constraint penalty is adapted to the value \c constraint_penalty/L,
 where L is the the smallest step length used so far.
 
  
-Topics::	package_scolib, package_coliny, pattern_search, not_yet_reviewed
+Topics::	package_scolib, package_coliny, global_optimization_methods, not_yet_reviewed
 Examples::
 Theory::
 Faq::

@@ -44,7 +44,7 @@ to vary the amount of information presented to the user during execution.
 The final results are written to the Dakota tabular output. Additional information
 is also available - see the \c log_file and \c print_each_pop keywords.
 
-Topics::	package_jega, evolutionary_algorithm, not_yet_reviewed
+Topics::	package_jega, global_optimization_methods, not_yet_reviewed
 Examples::
 Theory::
 The basic steps of the \c soga algorithm are as follows: 
