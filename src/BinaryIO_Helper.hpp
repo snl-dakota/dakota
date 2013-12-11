@@ -144,7 +144,7 @@ public:
   SimpleBinaryStream(bool stream_is_incore,
                      size_t max_str_len = DerivedStringType128::length(),
                      bool exit_on_error = true) :
-    fileName(std::string()), binStreamId(),
+    fileName("dak_db_persist.h5"), binStreamId(),
     streamIsIncore(stream_is_incore), maxStringLength(max_str_len),
     exitOnError(exit_on_error), errorStatus()
   {
@@ -155,7 +155,7 @@ public:
     if ( H5Pset_fapl_core(fapl_id, 4096, persist) && exitOnError)
       throw BinaryStream_CreateFailure();
 
-    binStreamId = H5Fcreate( "dak_db_persist.h5", H5F_ACC_TRUNC, H5P_DEFAULT,
+    binStreamId = H5Fcreate( fileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
                              fapl_id );
     if ( binStreamId < 0 ) {
       if ( exitOnError )
@@ -393,29 +393,20 @@ private:
     if ( dims.size() != DIM && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-#if 0
-    // WJB: use a for loop and delegate each entry the to single string store?
-    boost::multi_array<std::string, 1> tmp_buf( boost::extents[num_strings] );
-    /* boost::multi_array<unsigned char, 2> tmp_buf(
-      boost::extents[num_strings][DerivedStringType128::length()] ); */
+    const size_t num_strings = buf.size();
 
-    std::cout << "chk2ndString inArray: " << buf[1].c_str() << std::endl;
+    // WJB - ToDo:  experiment with chunk size and compression (-1==NO) params
+    hid_t strings_pt = H5PTcreate_fl( binStreamId, dset_name.c_str(),
+                         DerivedStringType128::datatype(),
+                         num_strings*DerivedStringType128::length(), -1);
 
+    // Write each string in the array the "packet" table, individually
+    // WJB - ToDo:  *should* consider writing entire buffer out in a single call
+    //std::cout << "chk 2ndString in Array: " << buf[1].c_str() << std::endl;
+    
+    herr_t ret_val;
     for(int i=0; i<num_strings; ++i)
-      tmp_buf[i] = buf[i];
-
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       dims.size(), dims.data(),
-                       DerivedStringType128::datatype(), tmp_buf[0].c_str() );
-                       //DerivedStringType128::datatype(), &buf[0] );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-#endif
-
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       DIM, dims.data(), DerivedStringType128::datatype(),
-                       buf.data()->c_str() );
+      ret_val = H5PTappend( strings_pt, 1, buf[i].c_str() );
 
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
