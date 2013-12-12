@@ -79,30 +79,30 @@ NonDAdaptImpSampling(Model& model, const String& sample_type, int samples,
 
 /** Initializes data using a vector array of starting points. */
 void NonDAdaptImpSampling::
-initialize(const RealVectorArray& full_points, int resp_fn,
+initialize(const RealVectorArray& acv_points, int resp_fn,
 	   const Real& initial_prob, const Real& failure_threshold)
 {
-  size_t i, j, cntr, num_points = full_points.size();
+  size_t i, j, cntr, num_points = acv_points.size();
   initPoints.resize(num_points);
 
   designPoint.sizeUninitialized(numContDesVars);
-  const RealVector& init_pt_0 = full_points[0];
+  const RealVector& acv_pt_0 = acv_points[0];
   for (i=0; i<numContDesVars; i++)
-    designPoint[i] = init_pt_0[i];
+    designPoint[i] = acv_pt_0[i];
 
-  RealVector full_u_point;
+  RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
-    RealVector& uv_init_pt_i = initPoints[i];
-    uv_init_pt_i.sizeUninitialized(numUncertainVars);
+    RealVector& init_pt_i = initPoints[i];
+    init_pt_i.sizeUninitialized(numUncertainVars);
     if (transInitPoints) {
-      natafTransform.trans_X_to_U(full_points[i], full_u_point);
+      natafTransform.trans_X_to_U(acv_points[i], acv_u_point);
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	uv_init_pt_i[cntr] = full_u_point[j];
+	init_pt_i[cntr] = acv_u_point[j];
     }
     else {
-      const RealVector& full_init_pt_i = full_points[i];
+      const RealVector& acv_init_pt_i = acv_points[i];
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	uv_init_pt_i[cntr] = full_init_pt_i[j];
+	init_pt_i[cntr] = acv_init_pt_i[j];
     }
   }
 #ifdef DEBUG  
@@ -120,33 +120,32 @@ initialize(const RealVectorArray& full_points, int resp_fn,
 
 /** Initializes data using a matrix of starting points. */
 void NonDAdaptImpSampling::
-initialize(const RealMatrix& full_points, int resp_fn,
+initialize(const RealMatrix& acv_points, int resp_fn,
 	   const Real& initial_prob, const Real& failure_threshold)
 {
-  size_t i, j, cntr, num_points = full_points.numCols();
+  size_t i, j, cntr, num_points = acv_points.numCols();
   initPoints.resize(num_points);
 
   designPoint.sizeUninitialized(numContDesVars);
-  const Real* init_pt_0 = full_points[0];
+  const Real* acv_pt_0 = acv_points[0];
   for (i=0; i<numContDesVars; i++)
-    designPoint[i] = init_pt_0[i];
+    designPoint[i] = acv_pt_0[i];
 
-  RealVector full_u_point;
+  RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
-    const Real* full_init_pt_i = full_points[i];
-    RealVector& uv_init_pt_i = initPoints[i];
-    uv_init_pt_i.sizeUninitialized(numUncertainVars);
+    const Real* acv_pt_i = acv_points[i];
+    RealVector& init_pt_i = initPoints[i];
+    init_pt_i.sizeUninitialized(numUncertainVars);
     if (transInitPoints) {
-      RealVector full_init_pt_view(Teuchos::View,
-				   const_cast<Real*>(full_init_pt_i),
-				   numContinuousVars);
-      natafTransform.trans_X_to_U(full_init_pt_view, full_u_point);
+      RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
+			     numContinuousVars);
+      natafTransform.trans_X_to_U(acv_pt_view, acv_u_point);
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	uv_init_pt_i[cntr] = full_u_point[j];
+	init_pt_i[cntr] = acv_u_point[j];
     }
     else
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	uv_init_pt_i[cntr] = full_init_pt_i[j];
+	init_pt_i[cntr] = acv_pt_i[j];
   }
 #ifdef DEBUG  
   for (i=0; i<num_points; i++)
@@ -163,26 +162,26 @@ initialize(const RealMatrix& full_points, int resp_fn,
 
 /** Initializes data using only one starting point. */
 void NonDAdaptImpSampling::
-initialize(const RealVector& full_point, int resp_fn,
+initialize(const RealVector& acv_point, int resp_fn,
 	   const Real& initial_prob, const Real& failure_threshold)
 {
   size_t j, cntr;
   designPoint.sizeUninitialized(numContDesVars);
   for (j=0; j<numContDesVars; ++j)
-    designPoint[j] = full_point[j];
+    designPoint[j] = acv_point[j];
 
   initPoints.resize(1);
-  RealVector& uv_init_pt = initPoints[0];
-  uv_init_pt.sizeUninitialized(numUncertainVars);
+  RealVector& init_pt = initPoints[0];
+  init_pt.sizeUninitialized(numUncertainVars);
   if (transInitPoints) {
-    RealVector full_u_point;
-    natafTransform.trans_X_to_U(full_point, full_u_point);
+    RealVector acv_u_point;
+    natafTransform.trans_X_to_U(acv_point, acv_u_point);
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-      uv_init_pt[cntr] = full_u_point[j];
+      init_pt[cntr] = acv_u_point[j];
   }
   else
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-      uv_init_pt[cntr] = full_point[j];
+      init_pt[cntr] = acv_point[j];
 
   respFn     = resp_fn;
   initProb   = initial_prob;
@@ -256,7 +255,7 @@ void NonDAdaptImpSampling::quantify_uncertainty()
   else if (importanceSamplingType == IS || importanceSamplingType == AIS) {
 
     // select representative points
-    select_init_rep_points(initPoints);
+    select_init_rep_points();
 
     // iteratively generate samples from input set of points until
     //   probability converges (IS only performs one iteration)
@@ -288,7 +287,7 @@ void NonDAdaptImpSampling::converge_cov()
 {
   // select intial set of representative points from initPoints
   // representative points & weights stored in repPoints/repWeights
-  select_init_rep_points(initPoints);
+  select_init_rep_points();
 
   // If no representative points were found, quit
   if (numRepPoints==0) return;
@@ -318,15 +317,7 @@ void NonDAdaptImpSampling::converge_cov()
     //  converged = true;
     else {
       old_cov = cov;
-
-      // select rep points from among new samples & current repPoints
-      RealVectorArray reps_and_samples(numRepPoints+numSamples);
-      for (size_t i=0; i<numRepPoints; i++)
-	reps_and_samples[i] = repPoints[i];
-      for (size_t i=0; i<numSamples; i++)
-	reps_and_samples[numRepPoints+i] = samples[i];
-
-      select_rep_points(reps_and_samples);
+      select_rep_points(samples); // define new rep pts from prev + new samples
     }
   }
 }
@@ -374,8 +365,7 @@ void NonDAdaptImpSampling::converge_probability()
 }
 
 
-void NonDAdaptImpSampling::
-select_init_rep_points(const RealVectorArray& samples)
+void NonDAdaptImpSampling::select_init_rep_points()
 {
   // This differs from 'select_rep_points' because it allows a tolerance on
   //   the initial samples when determining failure to ensure that meaningful
@@ -384,15 +374,16 @@ select_init_rep_points(const RealVectorArray& samples)
 
   // pick out failures from input samples
   // calculate beta for failures only
-  size_t i, j, cntr, num_samples = samples.size(), fail_count = 0;
+  size_t i, j, cntr, num_samples = initPoints.size(), fail_count = 0;
   RealVector sample_fns(num_samples);
 
-  // store designPoint in full_sample, append uncertain samples later
-  RealVector full_sample;
+  // store designPoint in acv_sample, append uncertain samples later
+  RealVector acv_sample, acv_x_sample;
   if (transPoints) {
-   full_sample.sizeUninitialized(numContinuousVars);
-   for (j=0; j<numContDesVars; ++j)
-     full_sample[j] = designPoint[j];
+    acv_sample.sizeUninitialized(numContinuousVars);
+    for (j=0; j<numContDesVars; ++j)
+      acv_sample[j] = designPoint[j];
+    acv_x_sample.sizeUninitialized(numContinuousVars);
   }
   else
     for (j=0; j<numContDesVars; ++j)
@@ -405,31 +396,27 @@ select_init_rep_points(const RealVectorArray& samples)
   if (num_samples > 1) {
     Real min_fn = DBL_MAX, max_fn = -DBL_MAX;
     for (i=0; i<num_samples; ++i) {
-      const RealVector& sample_i = samples[i];
+      const RealVector& sample_i = initPoints[i];
       if (transPoints) { // u-space points -> x-space Model (NonDLocal)
 	// append uncertain sample to designPoint before evaluation
 	// this must be done before the transformation because trans_U_to_X
 	//   expects numContinuousVars variables
 	for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	  full_sample[j] = sample_i[cntr];
-	RealVector sample_x;
-	natafTransform.trans_U_to_X(full_sample, sample_x);
-	iteratedModel.continuous_variables(sample_x);
+	  acv_sample[j] = sample_i[cntr];
+	natafTransform.trans_U_to_X(acv_sample, acv_x_sample);
+	iteratedModel.continuous_variables(acv_x_sample);
       }
       else // u-space points -> u-space Model (NonDGlobal)
 	for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
 	  iteratedModel.continuous_variable(sample_i[cntr], j);
       iteratedModel.compute_response();
-      const Response&   limit_state_resp = iteratedModel.current_response();
-      const RealVector& limit_state_fns  = limit_state_resp.function_values();
-      Real fn = limit_state_fns[respFn];
+      Real fn = sample_fns[i]
+	= iteratedModel.current_response().function_values()[respFn];
       if (fn < min_fn) min_fn = fn;
       if (fn > max_fn) max_fn = fn;
 #ifdef DEBUG
       Cout << "fn " << fn << "min_fn " << min_fn << "max_fn" << max_fn << '\n';
 #endif
-      // store response
-      sample_fns[i] = fn;
     }
     fail_tol = std::min(.01*(max_fn-min_fn), 0.5); 
   }
@@ -442,9 +429,9 @@ select_init_rep_points(const RealVectorArray& samples)
     // this must be done before the transformation because trans_U_to_X
     //   expects numContinuousVars variables
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-      full_sample[j] = 0.; // center
+      acv_sample[j] = 0.; // center
     RealVector center_x;
-    natafTransform.trans_U_to_X(full_sample, center_x);
+    natafTransform.trans_U_to_X(acv_sample, center_x);
     iteratedModel.continuous_variables(center_x);
   }
   else // u-space points -> u-space Model (NonDGlobal)
@@ -452,9 +439,7 @@ select_init_rep_points(const RealVectorArray& samples)
       iteratedModel.continuous_variable(0., j); // center
   
   iteratedModel.compute_response();
-  const Response&   limit_state_resp = iteratedModel.current_response();
-  const RealVector& limit_state_fns  = limit_state_resp.function_values();
-  Real fn = limit_state_fns[respFn];
+  Real fn = iteratedModel.current_response().function_values()[respFn];
   invertProb = false; 
   if ( (cdfFlag && fn < failThresh) || (!cdfFlag && fn > failThresh) ) {
     // center is a failure - calculate prob. of success instead
@@ -463,12 +448,12 @@ select_init_rep_points(const RealVectorArray& samples)
   }
 
 #ifdef DEBUG
-  Cout << "Failure threshold " << failThresh << '\n';
-  Cout << "Failure tolerance " << fail_tol << '\n';
+  Cout << "Failure threshold " << failThresh
+       << " Failure tolerance " << fail_tol << '\n';
 #endif
   // Find failure points among initial samples
-  RealVector temp_betas(num_samples);
-  RealVectorArray temp_samples(num_samples);
+  RealArray  fail_betas;   fail_betas.reserve(num_samples);
+  SizetArray fail_indices; fail_indices.reserve(num_samples);
   for (i=0; i<num_samples; i++) {
 
     // pull from storage instead of recalculating
@@ -478,36 +463,19 @@ select_init_rep_points(const RealVectorArray& samples)
 #endif
     if ( ( cdfFlag && fn < failThresh+fail_tol) ||
 	 (!cdfFlag && fn > failThresh-fail_tol) ) {
-      temp_samples[fail_count] = samples[i];
-      Real beta = 0.;
-      for (j=0; j<numUncertainVars; j++) {
-	beta += std::pow(samples[i][j],2);
-      }
-      beta = std::sqrt(beta);
-      temp_betas[fail_count] = beta;
-      fail_count++;
+      fail_indices.push_back(i);
+      fail_betas.push_back(initPoints[i].normFrobenius());
+      ++fail_count;
     }
   }
 
 #ifdef DEBUG 
   Cout << "Number of failure points " << fail_count << '\n';
 #endif
+  numRepPoints = 0;
   // if there are no failure points, quit
-  if (fail_count==0) { 
-    // no failures, so p=0 (or 1)
-    numRepPoints = 0;
+  if (fail_count==0) // no failures, so p=0 (or 1)
     return;
-  }
-
-  // now the first 'fail_count' entries in temp_samples & temp_betas contain
-  //   the failure samples & their beta values
-  // copy these into a new data structure of this exact size
-  RealVector fail_betas(fail_count);
-  RealVectorArray fail_samples(fail_count);
-  for (i=0; i<fail_count; i++) {
-    fail_betas[i]   = temp_betas[i];
-    fail_samples[i] = temp_samples[i];
-  }
 
   // remove points too close together
   // start with most probable failure point (smallest beta)
@@ -517,7 +485,6 @@ select_init_rep_points(const RealVectorArray& samples)
   // repeat until all failure points exhausted
   Real cutoff_distance = 1.;
   IntArray min_indx(fail_count);
-  size_t num_rep_pts = 0;
   bool exhausted = false;
   while (!exhausted) {
     Real min_beta = 100.;
@@ -525,34 +492,28 @@ select_init_rep_points(const RealVectorArray& samples)
       Real beta = fail_betas[i];
       if (beta < min_beta) {
 	min_beta = beta;
-	min_indx[num_rep_pts] = i;
+	min_indx[numRepPoints] = i;
       }
     }
     if (min_beta == 100.)  
       exhausted = true;
     else {
-      size_t idx = min_indx[num_rep_pts];
-      for (i=0; i<fail_count; i++) {
-	if (fail_betas[i] < 99.) {
-	  Real distance = 0.;
-	  for (j=0; j<numUncertainVars; j++)
-	    distance += std::pow(fail_samples[i][j]-fail_samples[idx][j],2);
-	  distance = std::sqrt(distance);
-	  if (distance < cutoff_distance)
-	    fail_betas[i] = 100.;
-	}
-      }
-      num_rep_pts++;
+      size_t idx = min_indx[numRepPoints], fail_idx = fail_indices[idx];
+      const RealVector& ref = initPoints[fail_idx];
+      for (i=0; i<fail_count; ++i)
+	if (fail_betas[i] < 99. &&
+	    distance(initPoints[fail_indices[i]], ref) < cutoff_distance)
+	  fail_betas[i] = 100.;
+      ++numRepPoints;
     }
   }
 
-  // set the number of representative points
-  numRepPoints = num_rep_pts;
-
   // store samples in min_indx in repPoints
   repPoints.resize(numRepPoints);
-  for (i=0; i<numRepPoints; i++)
-    repPoints[i] = fail_samples[min_indx[i]];
+  for (i=0; i<numRepPoints; i++) {
+    size_t idx = min_indx[i], fail_idx = fail_indices[idx];
+    repPoints[i] = initPoints[fail_idx];
+  }
 
   calculate_rep_weights();
 }
@@ -563,62 +524,49 @@ select_rep_points(const RealVectorArray& samples)
 {
   // pick out failures from input samples
   // calculate beta for failures only
-  size_t num_samples = samples.size();
-  RealVector temp_betas(num_samples);
-  RealVectorArray temp_samples(num_samples);
-  size_t i, j, cntr, fail_count = 0;
+  size_t i, j, cntr, fail_count = 0,
+    num_samples = samples.size() + numRepPoints;
+  RealArray  fail_betas;   fail_betas.reserve(num_samples);
+  SizetArray fail_indices; fail_indices.reserve(num_samples);
 
-  // store designPoint in full_sample, append uncertain samples later
-  RealVector full_sample;
+  // store designPoint in acv_sample, append uncertain samples later
+  RealVector acv_sample, acv_x_sample;
   if (transPoints) {
-   full_sample.sizeUninitialized(numContinuousVars);
-   for (j=0; j<numContDesVars; ++j)
-     full_sample[j] = designPoint[j];
+    acv_sample.sizeUninitialized(numContinuousVars);
+    for (j=0; j<numContDesVars; ++j)
+      acv_sample[j] = designPoint[j];
+    acv_x_sample.sizeUninitialized(numContinuousVars);
   }
   else
     for (j=0; j<numContDesVars; ++j)
       iteratedModel.continuous_variable(designPoint[j], j);
 
   for (i=0; i<num_samples; i++) {
-    const RealVector& sample_i = samples[i];
+    const RealVector& sample_i = (i<numRepPoints) ? repPoints[i] :
+      samples[i-numRepPoints];
 
     if (transPoints) { // u-space points -> x-space Model (NonDLocal)
       // append uncertain sample to designPoint before evaluation
       // this must be done before the transformation because trans_U_to_X
       //   expects numContinuousVars variables
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	full_sample[j] = sample_i[cntr];
-      RealVector sample_x;
-      natafTransform.trans_U_to_X(full_sample, sample_x);
-      iteratedModel.continuous_variables(sample_x);
+	acv_sample[j] = sample_i[cntr];
+      natafTransform.trans_U_to_X(acv_sample, acv_x_sample);
+      iteratedModel.continuous_variables(acv_x_sample);
     }
     else // u-space points -> u-space Model (NonDGlobal)
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
 	iteratedModel.continuous_variable(sample_i[cntr], j);
 
     iteratedModel.compute_response();
-    const Response&   limit_state_resp = iteratedModel.current_response();
-    const RealVector& limit_state_fns  = limit_state_resp.function_values();
-    if ( ( cdfFlag && limit_state_fns[respFn] < failThresh) ||
-	 (!cdfFlag && limit_state_fns[respFn] > failThresh) ) {
-      temp_samples[fail_count] = sample_i;
-      Real beta = 0.;
-      for (j=0; j<numUncertainVars; j++)
-	beta += std::pow(samples[i][j],2);
-      beta = std::sqrt(beta);
-      temp_betas[fail_count] = beta;
+    Real limit_state_fn
+      = iteratedModel.current_response().function_values()[respFn];
+    if ( ( cdfFlag && limit_state_fn < failThresh) ||
+	 (!cdfFlag && limit_state_fn > failThresh) ) {
+      fail_indices.push_back(i);
+      fail_betas.push_back(sample_i.normFrobenius());
       ++fail_count;
     }
-  }
-
-  // now the first 'fail_count' entries in temp_samples & temp_betas contain
-  //   the failure samples & their beta values
-  // copy these into a new data structure of this exact size
-  RealVector fail_betas(fail_count);
-  RealVectorArray fail_samples(fail_count);
-  for (i=0; i<fail_count; i++) {
-    fail_betas[i]   = temp_betas[i];
-    fail_samples[i] = temp_samples[i];
   }
 
   // remove points too close together
@@ -629,7 +577,7 @@ select_rep_points(const RealVectorArray& samples)
   // repeat until all failure points exhausted
   Real cutoff_distance = 1.5;
   IntArray min_indx(fail_count);
-  size_t num_rep_pts = 0;
+  size_t new_rep_pts = 0;
   bool exhausted = false;
   while (!exhausted) {
     Real min_beta = 100.;
@@ -637,34 +585,36 @@ select_rep_points(const RealVectorArray& samples)
       Real beta = fail_betas[i];
       if (beta < min_beta) {
 	min_beta = beta;
-	min_indx[num_rep_pts] = i;
+	min_indx[new_rep_pts] = i;
       }
     }
     if (min_beta == 100.)  
       exhausted = true;
     else {
-      size_t idx = min_indx[num_rep_pts];
-      for (i=0; i<fail_count; i++) {
+      size_t idx = min_indx[new_rep_pts], fail_idx = fail_indices[idx];
+      const RealVector& ref = (fail_idx < numRepPoints) ?
+	repPoints[fail_idx] : samples[fail_idx - numRepPoints];
+      for (i=0; i<fail_count; ++i)
 	if (fail_betas[i] < 99.) {
-	  Real distance = 0.;
-	  for (j=0; j<numUncertainVars; j++)
-	    distance += std::pow(fail_samples[i][j]-fail_samples[idx][j],2);
-	  distance = std::sqrt(distance);
-	  if (distance < cutoff_distance)
+	  fail_idx = fail_indices[i];
+	  const RealVector& pt = (fail_idx < numRepPoints) ?
+	    repPoints[fail_idx] : samples[fail_idx - numRepPoints];
+	  if (distance(pt, ref) < cutoff_distance)
 	    fail_betas[i] = 100.;
 	}
-      }
-      num_rep_pts++;
+      ++new_rep_pts;
     }
   }
 
-  // set the number of representative points
-  numRepPoints = num_rep_pts;
-
   // store samples in min_indx in repPoints
-  repPoints.resize(numRepPoints);
-  for (i=0; i<numRepPoints; ++i)
-    repPoints[i] = fail_samples[min_indx[i]];
+  RealVectorArray prev_rep_pts = repPoints;
+  repPoints.resize(new_rep_pts);
+  for (i=0; i<new_rep_pts; ++i) {
+    size_t idx = min_indx[i], fail_idx = fail_indices[idx];
+    repPoints[i] = (fail_idx < numRepPoints) ? prev_rep_pts[fail_idx] :
+      samples[fail_idx - numRepPoints];
+  }
+  numRepPoints = new_rep_pts;
 
   calculate_rep_weights();
 }
@@ -676,12 +626,9 @@ void NonDAdaptImpSampling::calculate_rep_weights()
   RealVector rep_density(numRepPoints);
   Real sum_density = 0.;
   for (size_t i=0; i<numRepPoints; i++) {
-    Real beta = 0.;
-    for (size_t j=0; j<numUncertainVars; j++)
-      beta += std::pow(repPoints[i][j],2);
-    beta = std::sqrt(beta);
-    rep_density[i] = Pecos::phi(beta);
-    sum_density   += Pecos::phi(beta);
+    Real phi_beta = Pecos::phi(repPoints[i].normFrobenius());
+    rep_density[i] = phi_beta;
+    sum_density   += phi_beta;
   }
   repWeights.sizeUninitialized(numRepPoints);
   for (size_t i=0; i<numRepPoints; i++)
@@ -744,25 +691,23 @@ calculate_statistics(const RealVectorArray& samples,
 		     bool compute_cov, Real& sum_var, Real& cov)
 {
   // Note: The current beta calculation assumes samples input in u-space
-  size_t i, j, k, cntr, num_failures;
-  RealVector failure_mmpdf, failure_pdf;
+  size_t i, j, k, cntr;
+  RealArray failure_ratios;
+  if (compute_cov)
+    failure_ratios.reserve(numSamples);
 
-  // store designPoint in full_sample, append uncertain samples later
-  RealVector full_sample;
+  // store designPoint in acv_sample, append uncertain samples later
+  RealVector acv_sample, acv_x_sample;
   if (transPoints) {
-   full_sample.sizeUninitialized(numContinuousVars);
-   for (j=0; j<numContDesVars; ++j)
-     full_sample[j] = designPoint[j];
+    acv_sample.sizeUninitialized(numContinuousVars);
+    for (j=0; j<numContDesVars; ++j)
+      acv_sample[j] = designPoint[j];
+    acv_x_sample.sizeUninitialized(numContinuousVars);
   }
   else
     for (j=0; j<numContDesVars; ++j)
       iteratedModel.continuous_variable(designPoint[j], j);
 
-  if (compute_cov) {
-    num_failures = 0;
-    failure_mmpdf.resize(numSamples);
-    failure_pdf.resize(numSamples);
-  }
   // calculate the probability of failure
   for (i=0; i<numSamples; i++) {
     const RealVector& sample_i = samples[i];
@@ -772,10 +717,9 @@ calculate_statistics(const RealVectorArray& samples,
       // this must be done before the transformation because trans_U_to_X
       //   expectes numContinuousVars variables
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	full_sample[j] = sample_i[cntr];
-      RealVector sample_x;
-      natafTransform.trans_U_to_X(full_sample, sample_x);
-      iteratedModel.continuous_variables(sample_x);
+	acv_sample[j] = sample_i[cntr];
+      natafTransform.trans_U_to_X(acv_sample, acv_x_sample);
+      iteratedModel.continuous_variables(acv_x_sample);
     }
     else // u-space points -> u-space Model (NonDGlobal)
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
@@ -783,47 +727,32 @@ calculate_statistics(const RealVectorArray& samples,
 
     // get response value at the sample point
     iteratedModel.compute_response();
-    const Response&   limit_state_resp = iteratedModel.current_response();
-    const RealVector& limit_state_fns  = limit_state_resp.function_values();
+    Real limit_state_fn
+      = iteratedModel.current_response().function_values()[respFn];
 
     // if point is a failure, calculate mmpdf, pdf, and add to sum
-    if ( ( cdfFlag && limit_state_fns[respFn] < failThresh) ||
-	 (!cdfFlag && limit_state_fns[respFn] > failThresh) ) {
-
+    if ( ( cdfFlag && limit_state_fn < failThresh) ||
+	 (!cdfFlag && limit_state_fn > failThresh) ) {
       // calculate mmpdf
       Real mmpdf = 0.;
-      for (j=0; j<numRepPoints; j++) {
-	Real beta  = 0.;
-	for (k=0; k<numUncertainVars; k++) 
-	  beta += std::pow((repPoints[j][k]-samples[i][k]),2);
-	beta = std::sqrt(beta);
-	mmpdf += repWeights[j]*Pecos::phi(beta);
-      }
-
+      for (j=0; j<numRepPoints; ++j)
+	mmpdf += repWeights[j]*Pecos::phi(distance(repPoints[j], sample_i));
       // calculate pdf
-      Real beta = 0.;
-      for (j=0; j<numUncertainVars; j++)
-	beta += std::pow(samples[i][j],2);
-      Real pdf = Pecos::phi(std::sqrt(beta));
-
+      Real pdf = Pecos::phi(sample_i.normFrobenius()), ratio = pdf/mmpdf;
       // add sample's contribution to sum_prob
-      sum_prob += pdf/mmpdf;
-
-      // if cov requested, store failure sample data in local structures 
-      //   to avoid recalculating
-      if (compute_cov) {
-	failure_mmpdf[num_failures] = mmpdf;
-	failure_pdf[num_failures]   = pdf;
-	num_failures++;
-      }
+      sum_prob += ratio;
+      // if cov requested, store failure data to avoid recalculating
+      if (compute_cov)
+	failure_ratios.push_back(ratio);
     }
   }
   prob = sum_prob/double(total_samples);
 
   // compute the coeff of variation if requested
   if (compute_cov) {
+    size_t num_failures = failure_ratios.size();
     for (i=0; i<num_failures; i++)
-      sum_var += std::pow((failure_pdf[i]/failure_mmpdf[i]) - prob, 2);
+      sum_var += std::pow(failure_ratios[i] - prob, 2);
     Real var = sum_var/double(total_samples)/double(total_samples - 1);
     cov = std::sqrt(var)/prob; // MSE: possible division by zero ?
   }

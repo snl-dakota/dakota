@@ -95,8 +95,8 @@ private:
   /// until probability converges
   void converge_probability();
 
-  /// select representative points from initial set of samples
-  void select_init_rep_points(const RealVectorArray& samples);
+  /// select representative points from initialPoints
+  void select_init_rep_points();
 
   /// select representative points from a set of samples
   void select_rep_points(const RealVectorArray& samples);
@@ -111,11 +111,12 @@ private:
   /// the coefficent of variation (if requested)
   void calculate_statistics(const RealVectorArray& samples,
 			    const size_t& total_sample_number,
-			    Real& probability_sum,
-			    Real& probability,
-			    bool  cov_flag,
-			    Real& variance_sum,
+			    Real& probability_sum, Real& probability,
+			    bool  cov_flag, Real& variance_sum,
 			    Real& coeff_of_variation);
+
+  /// compute Euclidean distance between points a and b
+  Real distance(const RealVector& a, const RealVector& b);
 
   //
   //- Heading: Data members
@@ -166,6 +167,23 @@ inline NonDAdaptImpSampling::~NonDAdaptImpSampling()
 
 inline const Real& NonDAdaptImpSampling::get_probability()
 { return finalProb; }
+
+
+inline Real NonDAdaptImpSampling::
+distance(const RealVector& a, const RealVector& b)
+{
+  size_t len = a.length();
+  if (b.length() != len) {
+    Cerr << "Error: inconsistent vector length in NonDAdaptImpSampling::"
+	 << "distance()" << std::endl;
+    abort_handler(-1);
+  }
+
+  Real amb, dist_sq = 0.;
+  for (size_t j=0; j<len; ++j)
+    { amb = a[j] - b[j]; dist_sq += amb * amb; }
+  return std::sqrt(dist_sq);
+}
 
 } // namespace Dakota
 
