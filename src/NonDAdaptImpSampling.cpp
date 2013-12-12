@@ -113,8 +113,10 @@ initialize(const RealVectorArray& acv_points, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
+#ifdef DEBUG  
   Cout << "RespFn " << resp_fn << "  InitProb " << initProb
        << "  FailThres " << failure_threshold << '\n';
+#endif
 }
 
 
@@ -155,8 +157,10 @@ initialize(const RealMatrix& acv_points, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
+#ifdef DEBUG  
   Cout << "RespFn " << resp_fn << "  InitProb " << initProb
        << "  FailThres " << failure_threshold << '\n';
+#endif
 }
 
 
@@ -186,6 +190,10 @@ initialize(const RealVector& acv_point, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
+#ifdef DEBUG  
+  Cout << "RespFn " << resp_fn << "  InitProb " << initProb
+       << "  FailThres " << failure_threshold << '\n';
+#endif
 }
 
 
@@ -349,10 +357,10 @@ void NonDAdaptImpSampling::converge_probability()
       converged = true;
     //else if (p > 0. && p < 1. && std::abs(p - old_p) < abs_tol)// absolute tol
     //  converged = true;
-//#ifdef DEBUG
+#ifdef DEBUG
     Cout << "converge_probability(): old_p = " << old_p << " p = " << p
 	 << std::endl;
-//#endif // DEBUG
+#endif // DEBUG
     old_p = p;
   }
   // If p(success) calculated, return 1-p 
