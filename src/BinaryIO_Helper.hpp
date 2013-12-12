@@ -19,6 +19,7 @@
 //#include <boost/filesystem/operations.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/multi_array.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "hdf5.h"
 #include "hdf5_hl.h"
@@ -214,6 +215,8 @@ public:
   herr_t store_data(const std::string& dset_name,
                     const StringArray& buf) const
   {
+    create_groups(dset_name);
+
     if ( (buf.empty() || buf[0].length() >= DerivedStringType128::length())
           && exitOnError )
       throw DerivedStringType128::ExceedsMaxLengthException();
@@ -431,6 +434,47 @@ private:
       throw BinaryStream_StoreDataFailure();
 
     return ret_val;
+  }
+
+  /** Assume we have an absolute path /root/dir/dataset and create
+      groups /root/ and /root/dir/ if needed */
+  void create_groups(const std::string& dset_name) const {
+
+    // the first group will be empty due to leading delimiter
+    // the last group will be the dataset name
+    std::vector<std::string> groups;
+    boost::split(groups, dset_name, boost::is_any_of("/"));
+
+    // index instead of pruning first and last or clever iterators
+    std::string full_path;
+    for(size_t i=1; i<(groups.size()-1); ++i) {
+      
+      full_path += '/' + groups[i];
+
+      // if doesn't exist, add
+      //herr_t status = H5Eset_auto(NULL, NULL);
+      //      herr_t status = H5Gget_objinfo(binStreamId, full_path.c_str(), 0, NULL);
+      // herr_t status = 
+      // 	H5Gget_info_by_name(binStreamId, full_path.c_str(), NULL, H5P_DEFAULT)
+	;
+      //      htri_t grpexists = H5Lexists( hid_t loc_id, const char *name, hid_t lapl_id ) 
+
+      htri_t grpexists = 
+	H5Lexists(binStreamId, full_path.c_str(), H5P_DEFAULT);
+      if (grpexists == 0) {
+	hid_t create_status = 
+	  H5Gcreate(binStreamId, full_path.c_str(), 
+		    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	// I think needed to avoid resource leaks:
+	H5Gclose(create_status);
+      }
+      else if (grpexists < 0) {
+	throw BinaryStream_StoreDataFailure();
+      }
+
+    }
+    
+
   }
 
 
