@@ -39,10 +39,12 @@ class BinaryStream_OpenFailure   {};
 class BinaryStream_CreateFailure {};
 class BinaryStream_CloseFailure  {};
 
+class BinaryStream_CreateGroupFailure {};
 //class BinaryStream_CreateDataSpaceFailure {};
 class BinaryStream_StoreDataFailure    {};
 class BinaryStream_GetDataFailure      {};
 	
+class BinaryStream_InvalidPath         {};
 class BinaryStream_InvalidDataSpace    {};
 //class BinaryStream_InvalidVariable   {};
 
@@ -170,6 +172,9 @@ public:
       if ( maxStringLength != DerivedStringType128::length() && exitOnError )
         throw BinaryStream_CreateFailure();
     }
+
+    // WJB - ToDo: look into potential resource leak
+    //H5Pclose(fapl_id);
   }
 
 
@@ -195,6 +200,8 @@ public:
     if ( val.length() >= DerivedStringType128::length() && exitOnError )
       throw DerivedStringType128::ExceedsMaxLengthException();
 
+    create_groups(dset_name);
+
     std::vector<hsize_t> dims;
     dims += 1;  // string is a 1D dataspace
 
@@ -215,8 +222,6 @@ public:
   herr_t store_data(const std::string& dset_name,
                     const StringArray& buf) const
   {
-    create_groups(dset_name);
-
     if ( (buf.empty() || buf[0].length() >= DerivedStringType128::length())
           && exitOnError )
       throw DerivedStringType128::ExceedsMaxLengthException();
@@ -375,9 +380,12 @@ public:
 
   herr_t read_data(const std::string& dset_name, std::string& buf) const
   {
+    htri_t path_valid = H5LTpath_valid(binStreamId, dset_name.c_str(), 1);
+    if ( path_valid != 1 && exitOnError )
+      throw BinaryStream_InvalidPath();
+
     buf.reserve(maxStringLength);
-    herr_t ret_val = H5LTread_dataset_string( binStreamId, dset_name.c_str(),
-                       &buf[0] );
+    herr_t ret_val = H5LTread_dataset_string(binStreamId, dset_name.c_str(), &buf[0]);
 
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_GetDataFailure();
@@ -395,6 +403,8 @@ private:
   {
     if ( dims.size() != DIM && exitOnError )
       throw BinaryStream_StoreDataFailure();
+
+    create_groups(dset_name);
 
     const size_t num_strings = buf.size();
 
@@ -414,6 +424,8 @@ private:
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
+    // WJB - ToDo: look into potential resource leak
+    //H5PTclose(strings_pt);
     return ret_val;
   }
 
@@ -425,6 +437,8 @@ private:
   {
     if ( dims.size() != DIM && exitOnError )
       throw BinaryStream_StoreDataFailure();
+
+    create_groups(dset_name);
 
     herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
                        DIM, dims.data(), NativeDataTypes<T>::datatype(),
@@ -465,11 +479,15 @@ private:
 	hid_t create_status = 
 	  H5Gcreate(binStreamId, full_path.c_str(), 
 		    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+        if (create_status < 0)
+          throw BinaryStream_CreateGroupFailure();
+
 	// I think needed to avoid resource leaks:
 	H5Gclose(create_status);
       }
       else if (grpexists < 0) {
-	throw BinaryStream_StoreDataFailure();
+        throw BinaryStream_StoreDataFailure();
       }
 
     }
