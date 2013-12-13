@@ -660,7 +660,8 @@ select_rep_points(const RealVectorArray& samples)
   }
   numRepPoints = new_rep_pts;
 #ifdef DEBUG //TMW: Debug output to monitor the repPoints
-  Cout << "select_rep_point(): #Points = " << repPoints.size() << " Point =  " << repPoints[0] << std::endl;
+  Cout << "select_rep_point(): #Points = " << repPoints.size()
+       << " Point =  " << repPoints[0] << std::endl;
 #endif
   calculate_rep_weights();
 }
@@ -686,7 +687,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
 {
   // generate std normal samples
 
-  size_t i, j, k, cntr = 0, sample_counter = 0;
+  size_t i, j, k, cntr;
   RealVector n_means(numUncertainVars), // init to 0
     n_std_devs(numUncertainVars, false), n_l_bnds(numUncertainVars, false),
     n_u_bnds(numUncertainVars, false);
@@ -694,9 +695,10 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
   // Bound the sampler if necessary - this is needed for NonDGlobalReliability
   // because the Gaussian Process model is only accurate within these bounds
   if (useModelBounds) {
+    // TO DO: enforce that iteratedModel is a u-space model?
     const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
     const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-    for (i=numContDesVars; i<numContinuousVars; ++i, ++cntr) {
+    for (i=numContDesVars, cntr=0; i<numContinuousVars; ++i, ++cntr) {
       n_l_bnds[cntr] = c_l_bnds[i];
       n_u_bnds[cntr] = c_u_bnds[i];
     }
@@ -705,7 +707,6 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
     n_l_bnds = -DBL_MAX;
     n_u_bnds =  DBL_MAX;
   }
-  //varyPattern = true;
   initialize_lhs(false);
   RealMatrix lhs_samples_array;
   lhsDriver.generate_normal_samples(n_means, n_std_devs, n_l_bnds, n_u_bnds,
@@ -713,20 +714,19 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
 
   // generate u-space samples by adding std normals to rep points
 
-  for (i=0; i<numRepPoints; ++i) {
-    int num_samples = int(repWeights[i]*numSamples);
-    if (sample_counter < numSamples && num_samples == 0)
-      num_samples = 1;
+  for (i=0, cntr=0; i<numRepPoints; ++i) {
+    // apportion numSamples among repPoints based on repWeights
+    int num_rep_samples = (numRepPoints > 1) ?
+      std::max(1, int(repWeights[i]*numSamples)) : numSamples;
+    // recenter std normals around i-th rep point
     const RealVector& rep_pt_i = repPoints[i];
-    for (j=0; j<num_samples; j++) {
-      // WJB -- ToDo: use NumericalType vector ops
-      Real* lhs_samples_col_j = lhs_samples_array[sample_counter+j];
-      samples[sample_counter+j].sizeUninitialized(numUncertainVars);
-      for (k=0; k<numUncertainVars; k++)
-	samples[sample_counter+j][k] = lhs_samples_col_j[k] + rep_pt_i[k];
+    for (j=0; j<num_rep_samples && cntr<numSamples; ++j, ++cntr) {
+      Real* lhs_sample = lhs_samples_array[cntr];
+      RealVector& rep_sample = samples[cntr];
+      rep_sample.sizeUninitialized(numUncertainVars);
+      for (k=0; k<numUncertainVars; ++k)
+	rep_sample[k] = lhs_sample[k] + rep_pt_i[k];
     }
-    sample_counter += num_samples;
-    if (sample_counter >= numSamples) break;
   }
 }
 
@@ -783,7 +783,8 @@ calculate_statistics(const RealVectorArray& samples,
       // calculate mmpdf
       Real mmpdf = 0.;
       for (j=0; j<numRepPoints; ++j)
-	mmpdf += repWeights[j]*Pecos::phi(distance(repPoints[j], sample_i)/n_std_devs);
+	mmpdf += repWeights[j] *
+	  Pecos::phi(distance(repPoints[j], sample_i) / n_std_devs);
       // calculate pdf
       Real pdf = Pecos::phi(sample_i.normFrobenius()), ratio = pdf/mmpdf;
       // add sample's contribution to sum_prob

@@ -5451,6 +5451,7 @@ static int
 	MP_(populationSize),
 	MP_(previousSamples),
 	MP_(randomSeed),
+	MP_(refineSamples),
 	MP_(searchSchemeSize),
 	MP_(surrBasedLocalSoftConvLimit),
 	MP_(totalPatternSize),

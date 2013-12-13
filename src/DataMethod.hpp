@@ -743,6 +743,9 @@ public:
   /// refinement selection in \ref MethodNonDLocalRel, \ref MethodNonDPCE,
   /// and \ref MethodNonDSC
   String integrationRefine;
+  /// the \c refinement_samples selection in \ref MethodNonDLocalRel,
+  /// \ref MethodNonDPCE, and \ref MethodNonDSC
+  int refineSamples;
   /// the algorithm selection \c sqp or \c nip used for computing the MPP in
   /// \ref MethodNonDLocalRel or the interval in \ref MethodNonDLocalIntervalEst
   String nondOptAlgorithm;

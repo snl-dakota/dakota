@@ -724,10 +724,11 @@ KEYWORD12 method
 	    lhs
 	    | random
 	    ]
-	  [ sample_refinement
+	  [ probability_refinement ALIAS sample_refinement
 	    import
 	    | adapt_import
 	    | mm_adapt_import
+	    [ refinement_samples INTEGER ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
@@ -811,10 +812,11 @@ KEYWORD12 method
 	    lhs
 	    | random
 	    ]
-	  [ sample_refinement
+	  [ probability_refinement ALIAS sample_refinement
 	    import
 	    | adapt_import
 	    | mm_adapt_import
+	    [ refinement_samples INTEGER ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
@@ -1346,11 +1348,11 @@ KEYWORD12 method
 	    [ integration
 	      first_order
 	      | second_order
-	      [ sample_refinement
+	      [ probability_refinement ALIAS sample_refinement
 		import
 		| adapt_import
 		| mm_adapt_import
-		[ samples INTEGER ]
+		[ refinement_samples INTEGER ]
 		[ seed INTEGER > 0 ]
 		]
 	      ]

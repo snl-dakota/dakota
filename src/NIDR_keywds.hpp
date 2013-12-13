@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1197 distinct keywords (plus 167 aliases) **/
+/** 1199 distinct keywords (plus 170 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -746,16 +746,17 @@ static KeyWord
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
 		{"import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
 		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)},
-		{"samples",9,0,2,0,0,0.,0.,0,N_mdm(int,numSamples)},
+		{"refinement_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,refineSamples)},
 		{"seed",0x19,0,3,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
 		},
-	kw_137[3] = {
+	kw_137[4] = {
 		{"first_order",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilityIntegration_first_order)},
-		{"sample_refinement",8,5,2,0,kw_136},
+		{"probability_refinement",8,5,2,0,kw_136},
+		{"sample_refinement",0,5,2,0,kw_136,0.,0.,-1},
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilityIntegration_second_order)}
 		},
 	kw_138[10] = {
-		{"integration",8,3,3,0,kw_137},
+		{"integration",8,4,3,0,kw_137},
 		{"nip",8,0,2,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_nip)},
 		{"no_approx",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_no_approx)},
 		{"sqp",8,0,2,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_sqp)},
@@ -1018,22 +1019,23 @@ static KeyWord
 		{"dimension_adaptive",8,3,1,1,kw_185},
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
-	kw_187[3] = {
+	kw_187[4] = {
+		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
+		{"import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
+		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)},
+		{"refinement_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,refineSamples)}
+		},
+	kw_188[3] = {
 		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
 		{"nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)}
-		},
-	kw_188[3] = {
-		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
-		{"import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
-		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)}
 		},
 	kw_189[2] = {
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
 	kw_190[3] = {
-		{0,0,3,0,0,kw_187},
+		{0,0,3,0,0,kw_188},
 		{"restricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
 		{"unrestricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
 		},
@@ -1041,7 +1043,7 @@ static KeyWord
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"interaction_order",0x19,0,1,0,0,0.,0.,0,N_mdm(ushint,vbdOrder)}
 		},
-	kw_192[22] = {
+	kw_192[23] = {
 		{0,0,1,0,0,kw_15},
 		{0,0,1,0,0,kw_16},
 		{0,0,4,0,0,kw_21},
@@ -1058,8 +1060,9 @@ static KeyWord
 		{"oli",0,6,3,1,kw_184,0.,0.,1,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"orthogonal_least_interpolation",8,6,3,1,kw_184,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"p_refinement",8,2,1,0,kw_186,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
-		{"quadrature_order",13,3,3,1,kw_187,0.,0.,0,N_mdm(usharray,quadratureOrder)},
-		{"sample_refinement",8,3,8,0,kw_188},
+		{"probability_refinement",8,4,8,0,kw_187},
+		{"quadrature_order",13,3,3,1,kw_188,0.,0.,0,N_mdm(usharray,quadratureOrder)},
+		{"sample_refinement",0,4,8,0,kw_187,0.,0.,-2},
 		{"sample_type",8,2,7,0,kw_189},
 		{"sparse_grid_level",13,2,3,1,kw_190,0.,0.,0,N_mdm(usharray,sparseGridLevel)},
 		{"variance_based_decomp",8,2,4,0,kw_191,0.,0.,0,N_mdm(true,vbdFlag)},
@@ -1107,10 +1110,11 @@ static KeyWord
 		{"dimension_adaptive",8,2,1,1,kw_200},
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
-	kw_202[3] = {
+	kw_202[4] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
 		{"import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
-		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)}
+		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)},
+		{"refinement_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,refineSamples)}
 		},
 	kw_203[2] = {
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
@@ -1126,7 +1130,7 @@ static KeyWord
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"interaction_order",0x19,0,1,0,0,0.,0.,0,N_mdm(ushint,vbdOrder)}
 		},
-	kw_206[22] = {
+	kw_206[23] = {
 		{0,0,1,0,0,kw_15},
 		{0,0,1,0,0,kw_16},
 		{0,0,4,0,0,kw_21},
@@ -1142,8 +1146,9 @@ static KeyWord
 		{"non_nested",8,0,6,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
 		{"p_refinement",8,2,1,0,kw_201,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
 		{"piecewise",8,0,2,0,0,0.,0.,0,NIDRProblemDescDB::method_piecewise},
+		{"probability_refinement",8,4,10,0,kw_202},
 		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(usharray,quadratureOrder)},
-		{"sample_refinement",8,3,10,0,kw_202},
+		{"sample_refinement",0,4,10,0,kw_202,0.,0.,-2},
 		{"sample_type",8,2,9,0,kw_203},
 		{"sparse_grid_level",13,4,3,1,kw_204,0.,0.,0,N_mdm(usharray,sparseGridLevel)},
 		{"use_derivatives",8,0,5,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
@@ -1362,9 +1367,9 @@ static KeyWord
 		{"nond_local_interval_est",0,2,11,1,kw_135,0.,0.,-20,N_mdm(lit,methodName_nond_local_interval_est)},
 		{"nond_local_reliability",0,3,11,1,kw_143,0.,0.,-20,N_mdm(lit2,methodName_nond_local_reliability)},
 		{"nond_pof_darts",0,1,11,1,kw_165,0.,0.,13,N_mdm(lit,methodName_nond_pof_darts)},
-		{"nond_polynomial_chaos",0,17,11,1,kw_192,0.,0.,13,N_mdm(lit,methodName_nond_polynomial_chaos)},
+		{"nond_polynomial_chaos",0,18,11,1,kw_192,0.,0.,13,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"nond_sampling",0,2,11,1,kw_196,0.,0.,15,N_mdm(lit,methodName_nond_sampling)},
-		{"nond_stoch_collocation",0,17,11,1,kw_206,0.,0.,19,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"nond_stoch_collocation",0,18,11,1,kw_206,0.,0.,19,N_mdm(lit,methodName_nond_stoch_collocation)},
 		{"nonlinear_cg",8,1,11,1,kw_207,0.,0.,0,N_mdm(lit,methodName_nonlinear_cg)},
 		{"npsol_sqp",8,0,11,1,kw_209,0.,0.,0,N_mdm(lit,methodName_npsol_sqp)},
 		{"optpp_cg",8,0,11,1,kw_211,0.,0.,0,N_mdm(lit,methodName_optpp_cg)},
@@ -1375,7 +1380,7 @@ static KeyWord
 		{"optpp_q_newton",8,4,11,1,kw_215,0.,0.,0,N_mdm(lit,methodName_optpp_q_newton)},
 		{"output",8,5,3,0,kw_216},
 		{"pof_darts",8,1,11,1,kw_165,0.,0.,0,N_mdm(lit,methodName_nond_pof_darts)},
-		{"polynomial_chaos",8,17,11,1,kw_192,0.,0.,0,N_mdm(lit,methodName_nond_polynomial_chaos)},
+		{"polynomial_chaos",8,18,11,1,kw_192,0.,0.,0,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"psuade_moat",8,1,11,1,kw_217,0.,0.,0,N_mdm(lit,methodName_psuade_moat)},
 		{"richardson_extrap",8,4,11,1,kw_218,0.,0.,0,N_mdm(lit,methodName_richardson_extrap)},
 		{"sampling",8,2,11,1,kw_196,0.,0.,0,N_mdm(lit,methodName_nond_sampling)},
@@ -1383,7 +1388,7 @@ static KeyWord
 		{"soga",8,3,11,1,kw_224,0.,0.,0,N_mdm(lit,methodName_soga)},
 		{"speculative",8,0,6,0,0,0.,0.,0,N_mdm(true,speculativeFlag)},
 		{"stanford",8,2,11,1,kw_225},
-		{"stoch_collocation",8,17,11,1,kw_206,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"stoch_collocation",8,18,11,1,kw_206,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
 		{"surrogate_based_global",8,3,11,1,kw_226,0.,0.,0,N_mdm(lit,methodName_surrogate_based_global)},
 		{"surrogate_based_local",8,9,11,1,kw_232,0.,0.,0,N_mdm(lit,methodName_surrogate_based_local)},
 		{"vector_parameter_study",8,3,11,1,kw_233,0.,0.,0,N_mdm(lit,methodName_vector_parameter_study)}

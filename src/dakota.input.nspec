@@ -519,10 +519,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      lhs {N_mdm(lit,sampleType_lhs)}
 		      | random {N_mdm(lit,sampleType_random)}
 		    ]
-		    [ sample_refinement {0}
+		    [ probability_refinement ALIAS sample_refinement {0}
 		      import {N_mdm(lit,integrationRefine_is)}
 		      | adapt_import {N_mdm(lit,integrationRefine_ais)}
 		      | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
+		      [ refinement_samples INTEGER {N_mdm(int,refineSamples)} ]
 		    ]
 	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
               	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
@@ -574,10 +575,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      lhs {N_mdm(lit,sampleType_lhs)}
 		      | random {N_mdm(lit,sampleType_random)}
 		    ]
-	      	    [ sample_refinement {0}
+	      	    [ probability_refinement ALIAS sample_refinement {0}
 		      import {N_mdm(lit,integrationRefine_is)}
 		      | adapt_import {N_mdm(lit,integrationRefine_ais)}
 		      | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
+		      [ refinement_samples INTEGER {N_mdm(int,refineSamples)} ]
 		    ]
 	    	    [ export_points_file STRING {N_mdm(str,approxExportFile)} 
               	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
@@ -954,11 +956,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ integration {0}
 	        first_order {N_mdm(lit,reliabilityIntegration_first_order)}
 	        | second_order {N_mdm(lit,reliabilityIntegration_second_order)}
-	        [ sample_refinement {0}
+	        [ probability_refinement ALIAS sample_refinement {0}
 		  import {N_mdm(lit,integrationRefine_is)}
 		  | adapt_import {N_mdm(lit,integrationRefine_ais)}
 		  | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
-		  [ samples INTEGER {N_mdm(int,numSamples)} ]
+		  [ refinement_samples INTEGER {N_mdm(int,refineSamples)} ]
 		  [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
 		]
 	      ]

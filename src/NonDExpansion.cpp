@@ -469,8 +469,8 @@ void NonDExpansion::construct_expansion_sampler()
 	is_type = MMAIS;
       Cout << "IS refinement type " << is_type;
 
-      //TMW: Modified this to use numSamplesOnExpansion rather than 1000
-      int refine_samples = numSamplesOnExpansion; bool vary_pattern = true;
+      int refine_samples = probDescDB.get_int("method.nond.refinement_samples");
+      bool vary_pattern = true;
       importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
 	sample_type, refine_samples, orig_seed, rng, vary_pattern, is_type,
 	cdfFlag, false, false, false), false);

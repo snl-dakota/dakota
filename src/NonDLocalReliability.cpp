@@ -358,8 +358,8 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
     // integration refinement requires an MPP, but it may be unconverged (AMV)
     if (mppSearchType) {
       // For NonDLocal, integration refinement is applied to the original model
-      int refinement_samples = probDescDB.get_int("method.samples"),
-	  refinement_seed    = probDescDB.get_int("method.random_seed");
+      int refine_samples = probDescDB.get_int("method.nond.refinement_samples"),
+	  refine_seed    = probDescDB.get_int("method.random_seed");
       String sample_type, rng; // empty strings: use defaults
 
       // flags control if/when transformation is needed in importanceSampler
@@ -367,8 +367,8 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
 	   vary_pattern = true;
 
       importanceSampler.assign_rep(
-	new NonDAdaptImpSampling(iteratedModel, sample_type, refinement_samples,
-	refinement_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
+	new NonDAdaptImpSampling(iteratedModel, sample_type, refine_samples,
+	refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
 	x_data_flag, x_model_flag, bounded_model), false);
 
       iteratedModel.init_communicators(importanceSampler.maximum_concurrency());
