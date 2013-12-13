@@ -113,10 +113,6 @@ initialize(const RealVectorArray& acv_points, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
-#ifdef DEBUG
-  Cout << "RespFn " << resp_fn << "  InitProb " << initProb
-       << "  FailThres " << failure_threshold << '\n';
-#endif
 }
 
 
@@ -157,10 +153,6 @@ initialize(const RealMatrix& acv_points, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
-#ifdef DEBUG
-  Cout << "RespFn " << resp_fn << "  InitProb " << initProb
-       << "  FailThres " << failure_threshold << '\n';
-#endif
 }
 
 

@@ -5139,17 +5139,17 @@ Specification detail for local reliability methods
 <td>Optional group
 <td>First-order integration
 <tr>
-<td>Refinement method
-<td>\c refinement
+<td>Importance sampling refinement
+<td>\c probability_refinement
 <td>\c import | \c adapt_import | \c mm_adapt_import
 <td>Optional group
 <td>No refinement
 <tr>
 <td>Refinement samples
-<td>\c samples
+<td>\c refinement_samples
 <td>integer
 <td>Optional
-<td>0
+<td>1000 (per iteration, if adaptive)
 <tr>
 <td>Refinement seed
 <td>\c seed
@@ -6369,11 +6369,10 @@ approximation for the purposes of generating approximate statistics,
 which should be distinguished from simulation sampling for generating
 the chaos coefficients as described in options 4 and 5 above (although
 options 4 and 5 will share the \c sample_type, \c seed, and \c rng
-settings, if provided).  The \c sample_refinement specification is
-similar to that of \ref MethodNonDLocalRel, with the difference that
-the number of refinement samples is not under the user's control
-(these evaluations are approximation-based, so management of this
-expense is less critical).  This option allows for refinement of
+settings, if provided).  The \c probability_refinement specification
+is identical to that of \ref MethodNonDLocalRel, with the
+implementation difference that density reweighting must account for
+additional non-Gaussian cases.  This option allows for refinement of
 probability and generalized reliability results using importance
 sampling. \ref T5d44 "Table 5.44" provide the details of these
 sampling specifications for polynomial chaos.
@@ -6424,10 +6423,16 @@ Specification detail for polynomial chaos expansion method: sampling controls.
 <td>Mersenne twister (\c mt19937)
 <tr>
 <td>Importance sampling refinement
-<td>\c sample_refinement
+<td>\c probability_refinement
 <td>\c import | \c adapt_import | \c mm_adapt_import
 <td>Optional group
 <td>No sampling refinement
+<tr>
+<td>Refinement samples
+<td>\c refinement_samples
+<td>integer
+<td>Optional
+<td>1000 (per iteration, if adaptive)
 </table>
 
 The advanced use case of multifidelity UQ automatically becomes active
@@ -6776,16 +6781,17 @@ grid order \e m).
 Additional specifications include the level mappings described in \ref
 MethodNonD, the \c sample_type, \c samples, \c seed, \c fixed_seed,
 and \c rng specifications described in \ref MethodNonDMC, and the \c
-sample_refinement specification described in \ref MethodNonDPCE.  Each
-of the sampling specifications is identical to those for PCE shown in
-\ref T5d44 "Table 5.44" and refer to sampling on the interpolant for
-the purposes of generating approximate statistics, which should not be
-confused with collocation evaluations used for forming the
-interpolant.  Finally, the process for multifidelity UQ is identical
-to that described in \ref MethodNonDPCE, with the exception that the
-high fidelity expansion generated from combining the low fidelity and
-discrepancy expansions retains the polynomial form of the low fidelity
-expansion (only the coefficients are updated).
+probability_refinement and \c refinement_samples specifications
+described in \ref MethodNonDPCE.  Each of the sampling specifications
+is identical to those for PCE shown in \ref T5d44 "Table 5.44" and
+refer to sampling on the interpolant for the purposes of generating
+approximate statistics, which should not be confused with collocation
+evaluations used for forming the interpolant.  Finally, the process
+for multifidelity UQ is identical to that described in \ref
+MethodNonDPCE, with the exception that the high fidelity expansion
+generated from combining the low fidelity and discrepancy expansions
+retains the polynomial form of the low fidelity expansion (only the
+coefficients are updated).
 
 
 \subsection MethodNonDEpist Epistemic Uncertainty Quantification Methods
