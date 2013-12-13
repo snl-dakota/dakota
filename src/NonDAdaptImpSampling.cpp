@@ -113,7 +113,7 @@ initialize(const RealVectorArray& acv_points, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
-#ifdef DEBUG  
+#ifdef DEBUG
   Cout << "RespFn " << resp_fn << "  InitProb " << initProb
        << "  FailThres " << failure_threshold << '\n';
 #endif
@@ -157,7 +157,7 @@ initialize(const RealMatrix& acv_points, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
-#ifdef DEBUG  
+#ifdef DEBUG
   Cout << "RespFn " << resp_fn << "  InitProb " << initProb
        << "  FailThres " << failure_threshold << '\n';
 #endif
@@ -190,10 +190,6 @@ initialize(const RealVector& acv_point, int resp_fn,
   respFn     = resp_fn;
   initProb   = initial_prob;
   failThresh = failure_threshold;
-#ifdef DEBUG  
-  Cout << "RespFn " << resp_fn << "  InitProb " << initProb
-       << "  FailThres " << failure_threshold << '\n';
-#endif
 }
 
 
@@ -237,7 +233,12 @@ void NonDAdaptImpSampling::quantify_uncertainty()
         // for now, hardcode to MMAIS
         // iteratively generate samples and select representative points
         //   until coefficient of variation converges
-        converge_cov();
+
+        //TMW: Only run converge_cov() for MMAIS
+        if (importanceSamplingType == MMAIS)
+          converge_cov();
+
+        select_init_rep_points();
 
         if (numRepPoints)
 	  // iteratively generate samples from final set of
@@ -339,11 +340,13 @@ void NonDAdaptImpSampling::converge_probability()
   RealVectorArray samples(numSamples);
   size_t total_samples = 0, max_samples = numSamples*maxIterations;
   bool converged = false;
+
   while (!converged && total_samples < max_samples) {
     // generate samples based on multimodal sampling density - the set
     //   of samples is output
     generate_samples(samples);
     total_samples += numSamples;
+
     // calculate probability with this set of samples
     calculate_statistics(samples, total_samples, sum_p, p, false, sum_var, cov);
     // check for convergence of probability
@@ -355,6 +358,9 @@ void NonDAdaptImpSampling::converge_probability()
     else if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
 	     std::abs(p/old_p - 1.) < convergenceTol) // relative tol
       converged = true;
+    else
+      select_rep_points(samples); //TMW: Select a new repPoint
+       
     //else if (p > 0. && p < 1. && std::abs(p - old_p) < abs_tol)// absolute tol
     //  converged = true;
 #ifdef DEBUG
@@ -533,9 +539,14 @@ select_rep_points(const RealVectorArray& samples)
   // pick out failures from input samples
   // calculate beta for failures only
   size_t i, j, cntr, fail_count = 0,
-    num_samples = samples.size() + numRepPoints;
+    //TMW: Modified this to exclude the previous repPoints
+    num_samples = samples.size();// + numRepPoints;
   RealArray  fail_betas;   fail_betas.reserve(num_samples);
   SizetArray fail_indices; fail_indices.reserve(num_samples);
+
+  //TMW: Additional variables needed if no failures are found
+  size_t closestpt;
+  Real mindist = DBL_MAX, closestbeta, ddist;
 
   // store designPoint in acv_sample, append uncertain samples later
   RealVector acv_sample, acv_x_sample;
@@ -550,8 +561,10 @@ select_rep_points(const RealVectorArray& samples)
       iteratedModel.continuous_variable(designPoint[j], j);
 
   for (i=0; i<num_samples; i++) {
-    const RealVector& sample_i = (i<numRepPoints) ? repPoints[i] :
-      samples[i-numRepPoints];
+    //TMW: Modified this to exclude the previous repPoints
+    //const RealVector& sample_i = (i<numRepPoints) ? repPoints[i] :
+    //  samples[i-numRepPoints];
+    const RealVector& sample_i = samples[i];
 
     if (transPoints) { // u-space points -> x-space Model (NonDLocal)
       // append uncertain sample to designPoint before evaluation
@@ -575,6 +588,21 @@ select_rep_points(const RealVectorArray& samples)
       fail_betas.push_back(sample_i.normFrobenius());
       ++fail_count;
     }
+    else { //TMW: Determine if this point is closest to the failThresh
+      ddist = std::abs(limit_state_fn - failThresh);
+      if (ddist < mindist) {
+         mindist = ddist;
+         closestpt = i;
+         closestbeta = sample_i.normFrobenius();
+      }
+    }
+  }
+
+  //TMW: If no points are found in the failure domain, take the closest one
+  if (fail_count == 0) {
+      fail_count = 1;
+      fail_indices.push_back(closestpt);
+      fail_betas.push_back(closestbeta);
   }
 
   // remove points too close together
@@ -600,13 +628,17 @@ select_rep_points(const RealVectorArray& samples)
       exhausted = true;
     else {
       size_t idx = min_indx[new_rep_pts], fail_idx = fail_indices[idx];
-      const RealVector& ref = (fail_idx < numRepPoints) ?
-	repPoints[fail_idx] : samples[fail_idx - numRepPoints];
+      //TMW: Modified this to exclude the previous repPoints
+      //const RealVector& ref = (fail_idx < numRepPoints) ?
+	//repPoints[fail_idx] : samples[fail_idx - numRepPoints];
+      const RealVector& ref = samples[fail_idx];
       for (i=0; i<fail_count; ++i)
 	if (fail_betas[i] < 99.) {
 	  fail_idx = fail_indices[i];
-	  const RealVector& pt = (fail_idx < numRepPoints) ?
-	    repPoints[fail_idx] : samples[fail_idx - numRepPoints];
+          //TMW: Modified this to exclude the previous repPoints
+	  //const RealVector& pt = (fail_idx < numRepPoints) ?
+	    //repPoints[fail_idx] : samples[fail_idx - numRepPoints];
+	  const RealVector& pt = samples[fail_idx];
 	  if (distance(pt, ref) < cutoff_distance)
 	    fail_betas[i] = 100.;
 	}
@@ -616,14 +648,20 @@ select_rep_points(const RealVectorArray& samples)
 
   // store samples in min_indx in repPoints
   RealVectorArray prev_rep_pts = repPoints;
+
+
   repPoints.resize(new_rep_pts);
   for (i=0; i<new_rep_pts; ++i) {
     size_t idx = min_indx[i], fail_idx = fail_indices[idx];
-    repPoints[i] = (fail_idx < numRepPoints) ? prev_rep_pts[fail_idx] :
-      samples[fail_idx - numRepPoints];
+    //TMW: Modified this to exclude the previous repPoints
+    //repPoints[i] = (fail_idx < numRepPoints) ? prev_rep_pts[fail_idx] :
+      //samples[fail_idx - numRepPoints];
+    repPoints[i] = samples[fail_idx];
   }
   numRepPoints = new_rep_pts;
-
+#ifdef DEBUG //TMW: Debug output to monitor the repPoints
+  Cout << "select_rep_point(): #Points = " << repPoints.size() << " Point =  " << repPoints[0] << std::endl;
+#endif
   calculate_rep_weights();
 }
 
@@ -652,7 +690,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
   RealVector n_means(numUncertainVars), // init to 0
     n_std_devs(numUncertainVars, false), n_l_bnds(numUncertainVars, false),
     n_u_bnds(numUncertainVars, false);
-  n_std_devs = 1.;
+  n_std_devs = 1.;//1.;
   // Bound the sampler if necessary - this is needed for NonDGlobalReliability
   // because the Gaussian Process model is only accurate within these bounds
   if (useModelBounds) {
@@ -701,6 +739,7 @@ calculate_statistics(const RealVectorArray& samples,
   // Note: The current beta calculation assumes samples input in u-space
   size_t i, j, k, cntr;
   RealArray failure_ratios;
+  Real n_std_devs = 1.0;
   if (compute_cov)
     failure_ratios.reserve(numSamples);
 
@@ -744,7 +783,7 @@ calculate_statistics(const RealVectorArray& samples,
       // calculate mmpdf
       Real mmpdf = 0.;
       for (j=0; j<numRepPoints; ++j)
-	mmpdf += repWeights[j]*Pecos::phi(distance(repPoints[j], sample_i));
+	mmpdf += repWeights[j]*Pecos::phi(distance(repPoints[j], sample_i)/n_std_devs);
       // calculate pdf
       Real pdf = Pecos::phi(sample_i.normFrobenius()), ratio = pdf/mmpdf;
       // add sample's contribution to sum_prob
