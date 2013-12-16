@@ -100,6 +100,7 @@
 #ifdef HAVE_ESM
 #include "EfficientSubspaceMethod.hpp"
 #endif
+#include "OptDartsOptimizer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
@@ -409,6 +410,8 @@ Iterator* Iterator::get_iterator(Model& model)
   }
   else if (method_name == "nonlinear_cg")
     return new NonlinearCGOptimizer(model);
+  else if (method_name == "optdarts")
+    return new OptDartsOptimizer(model);
 #ifdef HAVE_OPTPP
   else if (strbegins(method_name, "optpp_")) {
     if (strends(method_name, "_g_newton")) return new SNLLLeastSq(model);

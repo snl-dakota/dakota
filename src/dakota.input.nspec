@@ -152,6 +152,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  nlpql_sqp {N_mdm(lit,methodName_nlpql_sqp)}
 	  |
 #	  | reduced_sqp
+	  ( optdarts {N_mdm(lit,methodName_optdarts)}
+	    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+            )
+	  |
 	  ( optpp_cg {N_mdm(lit,methodName_optpp_cg)}
 	    |
 	    ( optpp_q_newton {N_mdm(lit,methodName_optpp_q_newton)}

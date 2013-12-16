@@ -238,6 +238,10 @@ TAG "method/stanford/linesearch_tolerance"
 	DESC "{Line search tolerance} MethodCommands.html#MethodNPSOLDC"
 
 TAG "method/nlpql_sqp" GROUP "Optimization: Local, Derivative-based"
+TAG "method/optdarts"
+TAG "method/optdarts/seed"
+	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
+
 TAG "method/optpp_cg" GROUP "Optimization: Local, Derivative-based"
 TAG "method/optpp_q_newton" GROUP "Optimization: Local, Derivative-based"
 TAG "method/optpp_fd_newton" GROUP "Optimization: Local, Derivative-based"
@@ -307,7 +311,7 @@ TAG "method/mesh_adaptive_search/function_precision"
 	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
 
 TAG "method/mesh_adaptive_search/seed"
-	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
+	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
 
 TAG "method/mesh_adaptive_search/history_file"
 TAG "method/mesh_adaptive_search/display_format"
@@ -436,7 +440,7 @@ TAG "method/moga/mutation_type/mutation_rate"
 	DESC "{Mutation rate} MethodCommands.html#MethodJEGADC"
 
 TAG "method/moga/seed"
-	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
+	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
 
 TAG "method/surrogate_based_local/linear_inequality_constraint_matrix"
 	DESC "{Linear inequality coefficient matrix} MethodCommands.html#MethodIndControl"
@@ -796,10 +800,14 @@ TAG "method/polynomial_chaos/sample_type"
 TAG "method/polynomial_chaos/sample_type/lhs"
 TAG "method/polynomial_chaos/sample_type/random"
 TAG "method/polynomial_chaos/probability_refinement"
+	DESC "{Importance sampling refinement} MethodCommands.html#MethodNonDLocalRel"
+
 TAG "method/polynomial_chaos/probability_refinement/import"
 TAG "method/polynomial_chaos/probability_refinement/adapt_import"
 TAG "method/polynomial_chaos/probability_refinement/mm_adapt_import"
 TAG "method/polynomial_chaos/probability_refinement/refinement_samples"
+	DESC "{Refinement samples} MethodCommands.html#MethodNonDLocalRel"
+
 TAG "method/polynomial_chaos/export_points_file"
 	DESC "{File name for exporting approximation-based samples from evaluating the PCE} MethodCommands.html#MethodNonDPCE"
 
@@ -1258,7 +1266,7 @@ TAG "method/local_reliability/mpp_search/integration/probability_refinement/adap
 TAG "method/local_reliability/mpp_search/integration/probability_refinement/mm_adapt_import"
 TAG "method/local_reliability/mpp_search/integration/probability_refinement/refinement_samples"
 TAG "method/local_reliability/mpp_search/integration/probability_refinement/seed"
-	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
+	DESC "{Random seed} MethodCommands.html#MethodNonDBayesCalib"
 
 TAG "method/local_reliability/response_levels"
 TAG "method/local_reliability/response_levels/num_response_levels"
@@ -1326,7 +1334,7 @@ TAG "method/fsu_quasi_mc/variance_based_decomp"
 
 TAG "method/fsu_quasi_mc/variance_based_decomp/drop_tolerance"
 TAG "method/fsu_quasi_mc/samples"
-	DESC "{Refinement samples} MethodCommands.html#MethodNonDLocalRel"
+	DESC "{Number of samples taken in the MCMC sampling} MethodCommands.html#MethodNonDBayesCalib"
 
 TAG "method/fsu_quasi_mc/fixed_sequence"
 	DESC "{Fixed sequence flag} MethodCommands.html#MethodFSUDACE"

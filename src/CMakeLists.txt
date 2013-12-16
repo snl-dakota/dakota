@@ -420,7 +420,7 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonlinearCGOptimizer.cpp 
     SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp 
     SurrBasedGlobalMinimizer.cpp
-    EffGlobalMinimizer.cpp
+    EffGlobalMinimizer.cpp OptDartsOptimizer.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)

@@ -5196,6 +5196,7 @@ static Method_mp_lit
 	MP2(methodName,nond_stoch_collocation),
 	MP2(methodName,nonlinear_cg),
 	MP2(methodName,npsol_sqp),
+	MP2(methodName,optdarts),
 	MP2(methodName,optpp_cg),
 	MP2(methodName,optpp_fd_newton),
 	MP2(methodName,optpp_g_newton),
