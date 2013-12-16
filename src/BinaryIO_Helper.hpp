@@ -64,6 +64,8 @@ struct NativeDataTypes<double>
   static hid_t datatype() { return H5T_NATIVE_DOUBLE; }
 };
 
+// WJB - ToDo: verify NO need for fixed lentgh string type by 1/9/2014
+#if 1
 struct DerivedStringType128
 {
   static const size_t length() { return 128; }
@@ -80,6 +82,70 @@ struct DerivedStringType128
 
   class ExceedsMaxLengthException {};
 };
+#endif
+
+// Monostate pattern - really more of a "wrapper" around C API here
+class H5VariableString
+{
+  // Nesting within SimpleBinaryStream probably makes sense in this case
+  //friend class HDF5Client; ? should the client be the object allowed to close the hid_t resource for the variable string type?
+
+public:
+
+  static hid_t datatype() { return create(); }
+    
+private:
+
+  static hid_t create()
+  { 
+    //if (varStringType == -1) {
+    if (numVStrUses == 0) {
+      // H5Tcopy not called yet, so do it now (only once)
+      varStringType = H5Tcopy(H5T_C_S1);
+      H5Tset_size(varStringType, H5T_VARIABLE);
+      if (varStringType < 0)
+	throw std::string("H5Tcreate error");
+
+    }
+
+    ++numVStrUses;
+    return varStringType;
+  }
+
+  // not sure if this type is immutable; if so, can't close it
+  /// release the type
+  static void destroy(hid_t var_str_hid) { 
+    assert(var_str_hid == varStringType); // WJB: do away with var_str_hid after some testing
+    H5Tclose(varStringType); 
+    // typeInitialized = false;
+    //assert(numVStrUses == 1); // WJB: do away with numVStrUses after some testing
+  }
+
+
+  // could consider just using varStringType < 0 as uninit 
+
+  /// count the number of initializations (eventually, do away with this cache?)
+  static short numVStrUses;
+  /// the static type for this string type
+  static hid_t varStringType;
+
+  //
+  //- Heading:  DISABLED constructors and assignment operator
+  //
+
+  /// default constructor
+  H5VariableString();
+  /// copy constructor
+  H5VariableString(const H5VariableString&);
+
+  /// assignment operator
+  H5VariableString& operator=(const H5VariableString&);
+
+};
+
+short H5VariableString::numVStrUses = 0;
+//hid_t H5VariableString::varStringType = -1;
+hid_t H5VariableString::varStringType = H5VariableString::datatype();
 
 
 class SimpleBinaryStream
@@ -181,6 +247,13 @@ public:
   /// destructor
   ~SimpleBinaryStream()
   {
+    // WJB: need to be "clever" and destroy when ALL SimpleBinaryStream objects
+    // are no longer in scope (role of the HDF5 client?)
+    // versus
+    // allow each SimpleBinaryStream to create/destroy the "one" varStringHid
+    // that it "owns"
+    //H5VariableString::destroy(varStringHid);
+
     if ( H5Fclose(binStreamId) < 0 )
       throw BinaryStream_CloseFailure();
   }
@@ -209,11 +282,76 @@ public:
                        1, dims.data(), DerivedStringType128::datatype(),
                        val.c_str() );
 
+    // BMA: demo of storing with new data type; not sure why need the
+    // extra pointer indirection
+    const char * c_str = val.c_str();
+    const char ** ptr_c_str = &c_str;
+    std::string dsetfullname(dset_name);
+    dsetfullname += "-store_data_LT";
+    //H5VariableString::create vstr;
+    herr_t ret_val2 = H5LTmake_dataset(binStreamId, dsetfullname.c_str(), 1, 
+				       dims.data(), H5VariableString::datatype(), ptr_c_str);
+
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
     return ret_val;
   }
+
+
+  void check_error_store(herr_t ret_val) const
+  {
+    if ( ret_val < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+  }
+
+  herr_t store_vstr(const std::string& dset_name,
+                    const std::string& val) const
+  {
+    std::cout << "Start: storing H5VariableString " << std::endl;
+
+    // Demonstrate three approaches for storing a variable length string...
+    // These all seem to create the same data in the file
+    // In all cases, need to make appropriate H5?close(...) calls
+
+    // Approach 1: only useful if the dataset is one string (LTstring)
+    std::string sltstr(dset_name);
+    sltstr += "-store_vstr_LTstr";
+    herr_t ret_val1 = H5LTmake_dataset_string(binStreamId, sltstr.c_str(),
+     					     val.c_str());
+    check_error_store(ret_val1);
+    // Approach 2: still using the LT interface; won't help with array of string
+    std::vector<hsize_t> dims;
+    dims += 1;  // string is a 1D dataspace
+    //H5VariableString vstr;
+
+    const char * c_str = val.c_str();
+    const char ** ptr_c_str = &c_str;
+
+/* WJB: probably don't need to leverage this, but keep for now
+    std::string slt(dset_name);
+    slt += "-store_vstr_LT";
+    herr_t ret_val2 = H5LTmake_dataset(binStreamId, slt.c_str(), 1, 
+     				      dims.data(), H5VariableString::datatype(),
+    				      ptr_c_str);
+    check_error_store(ret_val2);
+// WJB: end Approach 2 comment block */
+    // Approach 3: using the full interface, so could be leveraged for
+    // array of string (1 dimensional dataspace, N elements, each a
+    // variable length string)
+    std::string sh(dset_name);
+    sh += "-store_vstr_D";
+    hid_t space = H5Screate_simple (1, dims.data(), NULL);
+    hid_t dset = H5Dcreate (binStreamId, sh.c_str(), H5VariableString::datatype(),
+    			    space, H5P_DEFAULT, H5P_DEFAULT,
+    			    H5P_DEFAULT);
+    herr_t ret_val3 = H5Dwrite (dset, H5VariableString::datatype(), H5S_ALL, H5S_ALL, 
+				H5P_DEFAULT, ptr_c_str);
+    check_error_store(ret_val3);
+
+    std::cout << "Finish: storing H5VariableString " << std::endl;
+  }
+
 
 
   /// ToDo: String2DArray
@@ -520,6 +658,10 @@ private:
 
   /// Max string length for storing std::string as a type derived from H5T_C_S1
   const size_t maxStringLength;
+
+  /// hid_t of the variable-length string_type derived from H5T_C_S1
+  //  WJB: maybe one variable length string creation PER HDF5 stream object is the sensible way to manage the resource?
+  //const hid_t varStringHid; // WJB: "feels redundant" -- refactor ASAP
 
   /// Toggle for exit vs continue execution - default is true
   bool exitOnError;
