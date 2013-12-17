@@ -27,11 +27,13 @@ void test_write_read_native_val(const std::string& file_name,
 
   // scope within which file write takes place
   {
+    bool db_is_incore = false;
     bool file_exist = true;
     bool read_only = false;
 
     // open file
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
     status = binary_file.store_data(data_label, val_out);
     assert(status >= 0);
@@ -42,11 +44,13 @@ void test_write_read_native_val(const std::string& file_name,
   // scope within which file read takes place
   {
     // open/read file
+    bool db_is_incore = false;
     bool file_exist = true;
     bool read_only = true;
     T val_in = 0;
 
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
     // WJB: see hack (hdr file) to make a single val look like a vec of len==1
     status = binary_file.read_data(data_label, val_in);
@@ -71,11 +75,13 @@ void test_write_read_std_vec(const std::string& file_name,
 
   // scope within which file write takes place
   {
+    bool db_is_incore = false;
     bool file_exist = true;
     bool read_only = false;
 
     // open file
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
     status = binary_file.store_data(data_label, vec_out);
     assert(status >= 0);
@@ -86,9 +92,11 @@ void test_write_read_std_vec(const std::string& file_name,
   // scope within which file read takes place
   {
     // open/read file
+    bool db_is_incore = false;
     bool file_exist = true;
     bool read_only = true;
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
 #if 0
     // WJB: enabling read of more sophisticated data types suggests a lack of
@@ -107,6 +115,7 @@ void test_write_read_std_vec(const std::string& file_name,
 
 void test_write_read_string(const std::string& file_name)
 {
+  bool db_is_incore = false;
   bool file_exist = true;
   bool read_only = false;
   herr_t status;
@@ -114,7 +123,8 @@ void test_write_read_string(const std::string& file_name)
   // scope within which file write takes place
   {
     // open file
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
     // std::string
     // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
@@ -137,7 +147,8 @@ void test_write_read_string(const std::string& file_name)
     // open/read file
     file_exist = true;
     read_only = true;
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
     std::string tst_str_in;
     status = binary_file.read_data("/StdString_128chars", tst_str_in);
@@ -156,6 +167,7 @@ void test_write_read_string(const std::string& file_name)
 
 void test_write_read_string_array(const std::string& file_name)
 {
+  bool db_is_incore = false;
   bool file_exist = true;
   bool read_only = false;
   herr_t status;
@@ -163,7 +175,8 @@ void test_write_read_string_array(const std::string& file_name)
   // scope within which file write takes place
   {
     // open file
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
     // std::string
     // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
@@ -191,7 +204,8 @@ void test_write_read_string_array(const std::string& file_name)
     // open/read file
     file_exist = true;
     read_only = true;
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
 
     // binary stream goes out of scope... (file close)
@@ -231,6 +245,7 @@ int main()
   assert(rval_out == rmatrix_out[0](0));
   assert(rval_out == rmatrix_out[1](1));
 
+  bool db_is_incore = false;
   bool file_exist = false;
   bool read_only = false;
   herr_t status;
@@ -240,7 +255,8 @@ int main()
   // scope within which file write takes place
   {
     // open/create file
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
     
     // RealMatrix -- WJB: come back ASAP -- try RealVectorArray instead
     status = binary_file.store_data("/RealMatrixData", rmatrix_out);
@@ -263,7 +279,8 @@ int main()
     // open/read file
     file_exist = true;
     read_only = true;
-    SimpleBinaryStream binary_file(file_name, file_exist, read_only);
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
 
     // read data 
   

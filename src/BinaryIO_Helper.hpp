@@ -153,16 +153,20 @@ class SimpleBinaryStream
 public:
 
   /// File-based storage constructor
-  SimpleBinaryStream(const  std::string& stream_file_name,
+  SimpleBinaryStream(const  std::string& file_name = "dak_db_persist.h5",
+                     bool   db_is_incore      = true,
                      bool   file_stream_exist = true,
                      bool   read_only         = true,
                      size_t max_str_len       = DerivedStringType128::length(),
                      bool   exit_on_error     = true) :
-    fileName(stream_file_name), binStreamId(),
+    fileName(file_name), binStreamId(),
     streamIsIncore(false), maxStringLength(max_str_len),
     exitOnError(exit_on_error), errorStatus()
   {
     // WJB - ToDo: split-out into .cpp file
+
+    //std::cout << "Start: REPEAT old behavior (preDEFAULT incoreConstructor) " << std::endl;
+
     if ( file_stream_exist ) {
       if ( read_only ) {
         binStreamId = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -207,7 +211,7 @@ public:
     } */
   }
 
-
+#if 0
   /// Incore storage constructor
   // WJB - ToDo:  add a strParam for the initial group?? read_only for in-core??
   SimpleBinaryStream(bool stream_is_incore,
@@ -242,7 +246,7 @@ public:
     // WJB - ToDo: look into potential resource leak
     //H5Pclose(fapl_id);
   }
-
+#endif
 
   /// destructor
   ~SimpleBinaryStream()
@@ -308,7 +312,7 @@ public:
   herr_t store_vstr(const std::string& dset_name,
                     const std::string& val) const
   {
-    std::cout << "Start: storing H5VariableString " << std::endl;
+    //std::cout << "Start: storing H5VariableString " << std::endl;
 
     // Demonstrate three approaches for storing a variable length string...
     // These all seem to create the same data in the file
@@ -349,7 +353,7 @@ public:
 				H5P_DEFAULT, ptr_c_str);
     check_error_store(ret_val3);
 
-    std::cout << "Finish: storing H5VariableString " << std::endl;
+    //std::cout << "Finish: storing H5VariableString " << std::endl;
   }
 
 
@@ -674,18 +678,6 @@ private:
   //static std::vector<hsize_t, 1> staticVectorDims;
   //static std::vector<hsize_t, 2> staticMatrixDims;
   //static std::vector<hsize_t, 3> static3DBufDims;
-
-  //
-  //- Heading:  DISABLED constructors and assignment operator
-  //
-
-  /// default constructor
-  SimpleBinaryStream();
-  /// copy constructor
-  SimpleBinaryStream(const SimpleBinaryStream&);
-
-  /// assignment operator
-  SimpleBinaryStream& operator=(const SimpleBinaryStream&);
 
 };
 
