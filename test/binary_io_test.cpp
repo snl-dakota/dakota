@@ -125,6 +125,10 @@ void test_write_read_string(const std::string& file_name)
     status = binary_file.store_data("/StdString_128chars", tst_str);
     assert(status >= 0);
 
+    std::string tst_vstr("StringsForDakotaResultsShouldBeVariableLen");
+    status = binary_file.store_vstr("/StdString_variable_length", tst_vstr);
+    assert(status >= 0);
+
     // binary stream goes out of scope... (file close)
   }
 
