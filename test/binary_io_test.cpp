@@ -19,11 +19,14 @@ using namespace Dakota;
 //#define RANK 2
 
 template <typename T>
-void test_write_read_native_val(const std::string& file_name,
-                                const std::string& data_label,
-                                T val_out)
+void test_write_read_native_val(const std::string& data_label, T val_out,
+                                const std::string& file_name="")
 {
   herr_t status;
+
+  if ( !file_name.empty() )
+  {
+  // WJB: begin -- just a test, BUT SHOULD have proper indentation
 
   // scope within which file write takes place
   {
@@ -56,6 +59,21 @@ void test_write_read_native_val(const std::string& file_name,
     status = binary_file.read_data(data_label, val_in);
     assert(status >= 0);
     assert(val_in == val_out);
+  }
+  // WJB: end -- just a test, BUT SHOULD have proper indentation
+  }
+
+  else {
+    // scope within which DB write takes place
+    {
+      // open HDF5 DB - FIRST test of DEFAULT constructor with default args
+      SimpleBinaryStream incore_db;
+
+      status = incore_db.store_data(data_label, val_out);
+      assert(status >= 0);
+
+      // binary stream goes out of scope... (file close)
+    }
   }
 }
 
@@ -214,10 +232,9 @@ void test_write_read_string_array(const std::string& file_name)
 }
 
 
-int main()
+herr_t testHDF5fileDB(const std::string& file_name)
 {
   double rval_out = 3.14159;
-  std::string file_name("binary_io_test.h5");
 
   std::vector<double> rmatrix_row0;
   rmatrix_row0 += rval_out, .23;
@@ -265,7 +282,8 @@ int main()
     // binary stream goes out of scope... (file close)
   }
 
-  test_write_read_native_val(file_name, "/DakPi", 3.14159);
+  // WJB: shucks -- test_write_read_native_val(file_name, "/DakPi", 3.14159);
+  test_write_read_native_val("/DakPi", 3.14159, file_name);
   test_write_read_std_vec(file_name, "/SomeIntVectorData", 314159);
 
   test_write_read_string(file_name);
@@ -295,6 +313,63 @@ int main()
     //assert(rmatrix_in(0, 0) == rmatrix_out(0, 0));
 #endif 
   }
+
+  return status;
+}
+
+
+#if 0
+// WJB: ASAP -- more granular functions for code sharing (incore vs file_stream)
+herr_t testHDF5legacyRMatrixDBstorage(bool db_is_incore)
+{
+  bool file_exist = false;
+  bool read_only = false;
+  herr_t status;
+
+  return status;
+}
+#endif
+
+herr_t testHDF5incoreDB()
+{
+  // Need:  more granular functions for code sharing (testHDF5legacy... )
+  /* bool db_is_incore = true;
+  bool file_exist = false;
+  bool read_only = false;
+  herr_t status; */
+
+  //return status;
+  return test_write_read_native_val("/DakPi", 3.14159);
+}
+
+
+herr_t testHDF5_DB(const std::string& file_name="")
+{
+  herr_t status;
+
+  if ( !file_name.empty() ) {
+    // Legacy, fileStream test of HDF5 IO
+    status = testHDF5fileDB(file_name);
+  }
+  else {
+    // No arguments to test function implies in-core test coverage
+    status = testHDF5incoreDB();
+  }
+
+  return status;
+}
+
+
+int main()
+{
+  herr_t status;
+
+  status = testHDF5_DB("binary_io_test.h5");
+
+  // New test: no argument means test in-core HDF5
+  status = testHDF5_DB();
+
+  // ToDo:  test vector of DBs
 
   return status;
 }
