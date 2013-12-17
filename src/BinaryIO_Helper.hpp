@@ -152,7 +152,7 @@ class SimpleBinaryStream
 {
 public:
 
-  /// File-based storage constructor
+  /// Default constructor (evaluate whether sensible - default params??)
   SimpleBinaryStream(const  std::string& file_name = "dak_db_persist.h5",
                      bool   db_is_incore      = true,
                      bool   file_stream_exist = true,
@@ -160,14 +160,34 @@ public:
                      size_t max_str_len       = DerivedStringType128::length(),
                      bool   exit_on_error     = true) :
     fileName(file_name), binStreamId(),
-    streamIsIncore(false), maxStringLength(max_str_len),
+    dbIsIncore(db_is_incore), maxStringLength(max_str_len),
     exitOnError(exit_on_error), errorStatus()
   {
     // WJB - ToDo: split-out into .cpp file
+    if ( db_is_incore ) {
+      // CORE driver - DB data store is persisted to file at end
+      //http://www.mail-archive.com/hdf-forum@hdfgroup.org/msg00660.html
 
-    //std::cout << "Start: REPEAT old behavior (preDEFAULT incoreConstructor) " << std::endl;
+      hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+      bool persist = true;
+      if ( H5Pset_fapl_core(fapl_id, 4096, persist) && exitOnError)
+        throw BinaryStream_CreateFailure();
 
-    if ( file_stream_exist ) {
+      binStreamId = H5Fcreate( fileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
+                               fapl_id );
+
+      if ( binStreamId < 0 ) {
+        if ( exitOnError )
+          throw BinaryStream_CreateFailure();
+        //else
+          //errorStatus = status;
+      }
+
+      // WJB - ToDo: look into potential resource leak
+      //H5Pclose(fapl_id);
+    }
+
+    else if ( file_stream_exist ) {
       if ( read_only ) {
         binStreamId = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
       }
@@ -197,11 +217,13 @@ public:
 
     if ( !errorStatus ) {
       // Use a derived HDF data type to support more typical Dakota string len
+      // WJB - ToDo: verify this check (string length) is a thing of the past
       if ( maxStringLength != DerivedStringType128::length() && exitOnError )
         throw BinaryStream_CreateFailure();
     }
 
     /* WJB: "Requirement" (BMA) to store the maxStrLen in the binary File?
+    //       HOPEFULLY, a thing of the past
     if ( !read_only && !errorStatus ) {
         //hid_t derivedH5T_StrSize; // store as a dataspace ??
         //
@@ -211,42 +233,6 @@ public:
     } */
   }
 
-#if 0
-  /// Incore storage constructor
-  // WJB - ToDo:  add a strParam for the initial group?? read_only for in-core??
-  SimpleBinaryStream(bool stream_is_incore,
-                     size_t max_str_len = DerivedStringType128::length(),
-                     bool exit_on_error = true) :
-    fileName("dak_db_persist.h5"), binStreamId(),
-    streamIsIncore(stream_is_incore), maxStringLength(max_str_len),
-    exitOnError(exit_on_error), errorStatus()
-  {
-    // CORE driver - as WJB understands it, db data is "flushed" to file at end
-    //http://www.mail-archive.com/hdf-forum@hdfgroup.org/msg00660.html
-    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
-    bool persist = true;
-    if ( H5Pset_fapl_core(fapl_id, 4096, persist) && exitOnError)
-      throw BinaryStream_CreateFailure();
-
-    binStreamId = H5Fcreate( fileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
-                             fapl_id );
-    if ( binStreamId < 0 ) {
-      if ( exitOnError )
-        throw BinaryStream_CreateFailure();
-      //else // WJB: is there a way to "set" a GENERIC streamCreation ErrStatus?
-        //errorStatus = status;
-    }
-
-    if ( !errorStatus ) {
-      // Use a derived HDF data type to support more typical Dakota string len
-      if ( maxStringLength != DerivedStringType128::length() && exitOnError )
-        throw BinaryStream_CreateFailure();
-    }
-
-    // WJB - ToDo: look into potential resource leak
-    //H5Pclose(fapl_id);
-  }
-#endif
 
   /// destructor
   ~SimpleBinaryStream()
@@ -263,13 +249,13 @@ public:
   }
 
 
-  // WJB: will a client to to query? -- hid_t binary_stream_id() const { return binStreamId; }
+  // WJB: will a client need to query? -- hid_t binary_stream_id() const { return binStreamId; }
 
   //
   //- Heading:  Data storage methods (write HDF5)
   //
   
-  /// Strings are weird in HDF5
+  /// String value stored in HDF5
   herr_t store_data(const std::string& dset_name,
                     const std::string& val) const
   {
@@ -651,14 +637,14 @@ private:
   //- Heading: Data
   //
 
-  /// file name of binary file stream - empty string if in-core
+  /// File name of binary file stream for persisting DB data store
   std::string fileName;
 
   /// Binary stream ID
   hid_t binStreamId;
 
-  /// Toggle for storage - default is false - true means store data in-core
-  bool streamIsIncore; // WJB: enforce an empty string for fileName in this case
+  /// Toggle for storage - default is true, i.e. store DB in-core
+  bool dbIsIncore;
 
   /// Max string length for storing std::string as a type derived from H5T_C_S1
   const size_t maxStringLength;
