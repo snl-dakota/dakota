@@ -330,7 +330,7 @@ herr_t testHDF5legacyRMatrixDBstorage(bool db_is_incore)
 }
 #endif
 
-herr_t testHDF5incoreDB()
+void testHDF5incoreDB()
 {
   // Need:  more granular functions for code sharing (testHDF5legacy... )
   /* bool db_is_incore = true;
@@ -338,8 +338,8 @@ herr_t testHDF5incoreDB()
   bool read_only = false;
   herr_t status; */
 
+  test_write_read_native_val("/DakPi", 3.14159);
   //return status;
-  return test_write_read_native_val("/DakPi", 3.14159);
 }
 
 
@@ -353,7 +353,8 @@ herr_t testHDF5_DB(const std::string& file_name="")
   }
   else {
     // No arguments to test function implies in-core test coverage
-    status = testHDF5incoreDB();
+    //status = testHDF5incoreDB();
+    testHDF5incoreDB();
   }
 
   return status;
