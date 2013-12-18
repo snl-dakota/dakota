@@ -282,6 +282,10 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // in evaluating the PC expansion
   uSpaceModel.init_communicators(
     numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+
+  if (probDescDB.parallel_library().command_line_check())
+    Cout << "\nPolynomial_chaos construction completed: initial grid size of "
+	 << numSamplesOnModel << " evaluations to be performed." << std::endl;
 }
 
 

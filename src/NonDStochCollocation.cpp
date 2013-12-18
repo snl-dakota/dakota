@@ -133,6 +133,11 @@ NonDStochCollocation::NonDStochCollocation(Model& model):
   // in evaluating the stochastic expansion
   uSpaceModel.init_communicators(
     numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+
+  if (probDescDB.parallel_library().command_line_check())
+    Cout << "\nStochastic collocation construction completed: initial grid "
+	 << "size of " << numSamplesOnModel << " evaluations to be performed."
+	 << std::endl;
 }
 
 
