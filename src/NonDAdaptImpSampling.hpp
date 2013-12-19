@@ -99,7 +99,7 @@ private:
   void select_init_rep_points();
 
   /// select representative points from a set of samples
-  void select_rep_points(const RealVectorArray& samples);
+  void select_rep_points(const RealVectorArray& samples, Real& fail_tol);
 
   /// calculate relative weights of representative points
   void calculate_rep_weights();
@@ -118,6 +118,9 @@ private:
   /// compute Euclidean distance between points a and b
   Real distance(const RealVector& a, const RealVector& b);
 
+  /// evaluate the model at the sample points and store the responses
+  void evaluate_samples(const RealVectorArray& samples);
+
   //
   //- Heading: Data members
   //
@@ -132,6 +135,8 @@ private:
   size_t respFn;
   /// the original set of samples passed into the MMAIS routine
   RealVectorArray initPoints;
+  /// the values of the response function at the sample points
+  RealVector sampleVals;
   /// the set of representative points around which to sample
   RealVectorArray repPoints;
   /// the weight associated with each representative point
