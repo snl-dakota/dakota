@@ -64,25 +64,6 @@ struct NativeDataTypes<double>
   static hid_t datatype() { return H5T_NATIVE_DOUBLE; }
 };
 
-// WJB - ToDo: verify NO need for fixed lentgh string type by 1/9/2014
-#if 1
-struct DerivedStringType128
-{
-  static const size_t length() { return 128; }
-
-  //static hid_t datatype()      { return H5T_STRING; }
-  static hid_t datatype()
-  { 
-    // WJB:  is it a problem if the return val is incremented by each invocation?
-    hid_t hidStrExtraBytes = H5Tcopy(H5T_C_S1);
-    H5Tset_size(hidStrExtraBytes, 128);
-    //H5Tset_strpad(hidStrExtraBytes, H5T_STR_NULLPAD);
-    return hidStrExtraBytes;
-  }
-
-  class ExceedsMaxLengthException {};
-};
-#endif
 
 // Monostate pattern - really more of a "wrapper" around C API here
 class H5VariableString
@@ -157,11 +138,9 @@ public:
                      bool   db_is_incore      = true,
                      bool   file_stream_exist = true,
                      bool   read_only         = true,
-                     size_t max_str_len       = DerivedStringType128::length(),
                      bool   exit_on_error     = true) :
     fileName(file_name), binStreamId(),
-    dbIsIncore(db_is_incore), maxStringLength(max_str_len),
-    exitOnError(exit_on_error), errorStatus()
+    dbIsIncore(db_is_incore), exitOnError(exit_on_error), errorStatus()
   {
     // WJB - ToDo: split-out into .cpp file
     if ( db_is_incore ) {
@@ -215,22 +194,6 @@ public:
       }
     }
 
-    if ( !errorStatus ) {
-      // Use a derived HDF data type to support more typical Dakota string len
-      // WJB - ToDo: verify this check (string length) is a thing of the past
-      if ( maxStringLength != DerivedStringType128::length() && exitOnError )
-        throw BinaryStream_CreateFailure();
-    }
-
-    /* WJB: "Requirement" (BMA) to store the maxStrLen in the binary File?
-    //       HOPEFULLY, a thing of the past
-    if ( !read_only && !errorStatus ) {
-        //hid_t derivedH5T_StrSize; // store as a dataspace ??
-        //
-        if ( !addDim("MaxStringLength", maxStringLength, ds_id) ) {
-          ;
-        }
-    } */
   }
 
 
@@ -254,40 +217,6 @@ public:
   //
   //- Heading:  Data storage methods (write HDF5)
   //
-  
-  /// String value stored in HDF5
-  herr_t store_data(const std::string& dset_name,
-                    const std::string& val) const
-  {
-    // Not really able to do std:;string, so leverage a DERIVED HDF5 string type
-    if ( val.length() >= DerivedStringType128::length() && exitOnError )
-      throw DerivedStringType128::ExceedsMaxLengthException();
-
-    create_groups(dset_name);
-
-    std::vector<hsize_t> dims;
-    dims += 1;  // string is a 1D dataspace
-
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       1, dims.data(), DerivedStringType128::datatype(),
-                       val.c_str() );
-
-    // BMA: demo of storing with new data type; not sure why need the
-    // extra pointer indirection
-    const char * c_str = val.c_str();
-    const char ** ptr_c_str = &c_str;
-    std::string dsetfullname(dset_name);
-    dsetfullname += "-store_data_LT";
-    //H5VariableString::create vstr;
-    herr_t ret_val2 = H5LTmake_dataset(binStreamId, dsetfullname.c_str(), 1, 
-				       dims.data(), H5VariableString::datatype(), ptr_c_str);
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    return ret_val;
-  }
-
 
   void check_error_store(herr_t ret_val) const
   {
@@ -295,73 +224,45 @@ public:
       throw BinaryStream_StoreDataFailure();
   }
 
-  herr_t store_vstr(const std::string& dset_name,
+ 
+  /// String value stored in HDF5
+  herr_t store_data(const std::string& dset_name,
                     const std::string& val) const
   {
-    //std::cout << "Start: storing H5VariableString " << std::endl;
+    create_groups(dset_name);
 
-    // Demonstrate three approaches for storing a variable length string...
-    // These all seem to create the same data in the file
-    // In all cases, need to make appropriate H5?close(...) calls
+    herr_t ret_val = H5LTmake_dataset_string(binStreamId, dset_name.c_str(),
+					     val.c_str());
+    check_error_store(ret_val);
 
-    // Approach 1: only useful if the dataset is one string (LTstring)
-    std::string sltstr(dset_name);
-    sltstr += "-store_vstr_LTstr";
-    herr_t ret_val1 = H5LTmake_dataset_string(binStreamId, sltstr.c_str(),
-     					     val.c_str());
-    check_error_store(ret_val1);
-    // Approach 2: still using the LT interface; won't help with array of string
-    std::vector<hsize_t> dims;
-    dims += 1;  // string is a 1D dataspace
-    //H5VariableString vstr;
-
-    const char * c_str = val.c_str();
-    const char ** ptr_c_str = &c_str;
-
-/* WJB: probably don't need to leverage this, but keep for now
-    std::string slt(dset_name);
-    slt += "-store_vstr_LT";
-    herr_t ret_val2 = H5LTmake_dataset(binStreamId, slt.c_str(), 1, 
-     				      dims.data(), H5VariableString::datatype(),
-    				      ptr_c_str);
-    check_error_store(ret_val2);
-// WJB: end Approach 2 comment block */
-    // Approach 3: using the full interface, so could be leveraged for
-    // array of string (1 dimensional dataspace, N elements, each a
-    // variable length string)
-    std::string sh(dset_name);
-    sh += "-store_vstr_D";
-    hid_t space = H5Screate_simple (1, dims.data(), NULL);
-    hid_t dset = H5Dcreate (binStreamId, sh.c_str(), H5VariableString::datatype(),
-    			    space, H5P_DEFAULT, H5P_DEFAULT,
-    			    H5P_DEFAULT);
-    herr_t ret_val3 = H5Dwrite (dset, H5VariableString::datatype(), H5S_ALL, H5S_ALL, 
-				H5P_DEFAULT, ptr_c_str);
-    check_error_store(ret_val3);
-
-    //std::cout << "Finish: storing H5VariableString " << std::endl;
+    return ret_val;
   }
 
-
-
-  /// ToDo: String2DArray
-
-  /// StringArray
+  /// Store a StringArray where each string is variable length (Merge
+  /// of h5ex_t_vlstring.c (relies on contiguous string storage) and
+  /// h5ex_t_vlen.c (doesn't leverage VL string))
   herr_t store_data(const std::string& dset_name,
                     const StringArray& buf) const
   {
-    if ( (buf.empty() || buf[0].length() >= DerivedStringType128::length())
-          && exitOnError )
-      throw DerivedStringType128::ExceedsMaxLengthException();
+    create_groups(dset_name);
 
-    const size_t num_strings = buf.size();
-    std::vector<hsize_t> dims;
+    // store a 1-D array of strings
+    int rank = 1;
+    std::vector<hsize_t> dims(rank);
+    dims[0] = buf.size();
+    
+    // array of pointers to each null-terminated string
+    std::vector<const char *> wdata(buf.size());
+    for (size_t i=0; i<buf.size(); ++i)
+      wdata[i] = buf[i].c_str();
 
-    // 1D since using a HDF5 derived Type within the container
-    dims += num_strings;
+    herr_t status = 
+      H5LTmake_dataset(binStreamId, dset_name.c_str(), rank, dims.data(),
+		       H5VariableString::datatype(), wdata.data());
 
-    //return store_data<std::string, 1>( dset_name, dims, buf.data() );
-    return store_data<1>( dset_name, dims, buf );
+    check_error_store(status);
+
+    return (status);
   }
 
 
@@ -506,58 +407,87 @@ public:
   }
 
 
+  // BMA TODO: extract the common core from these
+
   herr_t read_data(const std::string& dset_name, std::string& buf) const
   {
     htri_t path_valid = H5LTpath_valid(binStreamId, dset_name.c_str(), 1);
     if ( path_valid != 1 && exitOnError )
       throw BinaryStream_InvalidPath();
 
-    buf.reserve(maxStringLength);
-    herr_t ret_val = H5LTread_dataset_string(binStreamId, dset_name.c_str(), &buf[0]);
+    // get the number of dimensions
+    int rank  = 0;
+    herr_t dim_stat = 
+      H5LTget_dataset_ndims(binStreamId, dset_name.c_str(), &rank);
+    // strings should have rank 0
+    if ( (dim_stat < 0 || rank !=0 ) && exitOnError)
+      throw BinaryStream_GetDataFailure();
 
+    // read the dimensions
+    size_t      bytes = 0;
+    H5T_class_t dt_class;
+    hsize_t ndims[1] = {0};
+    herr_t size_stat = 
+      H5LTget_dataset_info(binStreamId, dset_name.c_str(), ndims, &dt_class, 
+			   &bytes);
+    if (size_stat < 0 && exitOnError)
+      throw BinaryStream_GetDataFailure();
+
+    // make vector of bytes to store string
+    std::vector<char> vec_char(bytes);
+
+    // get the string
+    herr_t ret_val = H5LTread_dataset_string(binStreamId, dset_name.c_str(),
+					       &vec_char[0]);
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_GetDataFailure();
 
+    // set the string
+    buf = &vec_char[0];
+
     return ret_val;
   }
+
+  herr_t read_data(const std::string& dset_name, 
+		   StringArray& string_array)
+  {
+    htri_t path_valid = H5LTpath_valid(binStreamId, dset_name.c_str(), 1);
+    if ( path_valid != 1 && exitOnError )
+      throw BinaryStream_InvalidPath();
+
+    // get the number of dimensions of the StringArray (should be 1)
+    int rank = 0;
+    herr_t dim_stat = 
+      H5LTget_dataset_ndims(binStreamId, dset_name.c_str(), &rank);
+    if ( (dim_stat < 0 || rank != 1 ) && exitOnError)
+      throw BinaryStream_GetDataFailure();
+
+    // read the number of strings
+    size_t total_bytes = 0;
+    H5T_class_t dt_class;
+    hsize_t dims[1] = {0};
+    herr_t size_stat = 
+      H5LTget_dataset_info(binStreamId, dset_name.c_str(), dims, &dt_class, 
+			   &total_bytes);
+    if (size_stat < 0 && exitOnError)
+      throw BinaryStream_GetDataFailure();
+
+    size_t num_str = dims[0];
+    string_array.resize(num_str);
+
+    for (size_t i=0; i<num_str; ++i) {
+      // TODO: read each string from the HDF5 sharing core with above reader
+      ;
+    }
+
+  }
+
 
 
 private:
 
-  template <size_t DIM>
-  herr_t store_data(const std::string& dset_name,
-                    const std::vector<hsize_t>& dims,
-                    const std::vector<std::string>& buf) const
-  {
-    if ( dims.size() != DIM && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    create_groups(dset_name);
-
-    const size_t num_strings = buf.size();
-
-    // WJB - ToDo:  experiment with chunk size and compression (-1==NO) params
-    hid_t strings_pt = H5PTcreate_fl( binStreamId, dset_name.c_str(),
-                         DerivedStringType128::datatype(),
-                         num_strings*DerivedStringType128::length(), -1);
-
-    // Write each string in the array the "packet" table, individually
-    // WJB - ToDo:  *should* consider writing entire buffer out in a single call
-    //std::cout << "chk 2ndString in Array: " << buf[1].c_str() << std::endl;
-    
-    herr_t ret_val;
-    for(int i=0; i<num_strings; ++i)
-      ret_val = H5PTappend( strings_pt, 1, buf[i].c_str() );
-
-    if ( ret_val < 0 && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    // WJB - ToDo: look into potential resource leak
-    //H5PTclose(strings_pt);
-    return ret_val;
-  }
-
-
+  /// storage of contiguous array of T, potentially as a multi-array with dims
+  /// for example vector<int>, vector<real>, IntVector, RealVector, RealMatrix
   template <typename T, size_t DIM>
   herr_t store_data(const std::string& dset_name,
                     const std::vector<hsize_t>& dims,
@@ -645,9 +575,6 @@ private:
 
   /// Toggle for storage - default is true, i.e. store DB in-core
   bool dbIsIncore;
-
-  /// Max string length for storing std::string as a type derived from H5T_C_S1
-  const size_t maxStringLength;
 
   /// hid_t of the variable-length string_type derived from H5T_C_S1
   //  WJB: maybe one variable length string creation PER HDF5 stream object is the sensible way to manage the resource?

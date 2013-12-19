@@ -138,23 +138,18 @@ void test_write_read_string(const std::string& file_name)
   bool read_only = false;
   herr_t status;
 
+#if 0
+    std::string ja_str_out("AnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTestAnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTest");
+#endif
+  std::string tst_str("StringsForDakotaResultsShouldBeVariableLen");
+
   // scope within which file write takes place
   {
     // open file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
                                    read_only);
 
-    // std::string
-    // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
-#if 0
-    std::string ja_str_out("AnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTestAnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTest");
-#endif
-    std::string tst_str("StringsUsedInDakotaResultsDataCanBeUpTo128");
-    status = binary_file.store_data("/StdString_128chars", tst_str);
-    assert(status >= 0);
-
-    std::string tst_vstr("StringsForDakotaResultsShouldBeVariableLen");
-    status = binary_file.store_vstr("/StdString_variable_length", tst_vstr);
+    status = binary_file.store_data("/StdString", tst_str);
     assert(status >= 0);
 
     // binary stream goes out of scope... (file close)
@@ -169,14 +164,11 @@ void test_write_read_string(const std::string& file_name)
                                    read_only);
 
     std::string tst_str_in;
-    status = binary_file.read_data("/StdString_128chars", tst_str_in);
+    status = binary_file.read_data("/StdString", tst_str_in);
     assert(status >= 0);
-    assert( tst_str_in.capacity() == DerivedStringType128::length() );
-    assert( tst_str_in.size() <= DerivedStringType128::length() );
 
     //std::cout << "WJB-verify string data: " << tst_str_in.c_str() <<std::endl;
-    std::string tst_str("S");
-    assert( tst_str_in[0] == tst_str[0] );
+    assert(tst_str_in == tst_str);
 
     // binary stream goes out of scope... (file close)
   }
@@ -190,26 +182,24 @@ void test_write_read_string_array(const std::string& file_name)
   bool read_only = false;
   herr_t status;
 
+#if 0
+  std::string ja_str_out("AnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTestAnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTest");
+#endif
+  std::string ja_str_out("Taking_Four_Score_to_WriteRead_HDF5");
+
+  StringArray str_array_out;
+  assert(str_array_out.empty() == true);
+
+  str_array_out.push_back(ja_str_out);
+  str_array_out.push_back(file_name);
+  str_array_out.push_back(ja_str_out);
+  str_array_out.push_back(file_name);
+
   // scope within which file write takes place
   {
     // open file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
                                    read_only);
-
-    // std::string
-    // Currently limited to an array "type", derived from H5T_C_S1, max_len=128
-#if 0
-    std::string ja_str_out("AnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTestAnotherStringToGiveTheNewTypeMoreOfAstressTest_PlusGiveTheNewTypeMoreOfAstressTest");
-#endif
-    std::string ja_str_out("Taking_Four_Score_to_WriteRead_HDF5");
-
-    StringArray str_array_out;
-    assert(str_array_out.empty() == true);
-
-    str_array_out.push_back(ja_str_out);
-    str_array_out.push_back(file_name);
-    str_array_out.push_back(ja_str_out);
-    str_array_out.push_back(file_name);
 
     status = binary_file.store_data("/StringArrayData", str_array_out);
 
@@ -225,6 +215,12 @@ void test_write_read_string_array(const std::string& file_name)
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
                                    read_only);
 
+    StringArray str_array_in;
+    binary_file.read_data("/StringArrayData", str_array_in);
+    
+    assert(str_array_in.size() == str_array_out.size());
+    // for (size_t i=0; i<str_array_out.size(); ++i)
+    //   assert(str_array_in[i] = str_array_out[i]);
 
     // binary stream goes out of scope... (file close)
   }
