@@ -15,6 +15,7 @@
 #ifndef APPROXIMATION_INTERFACE_H
 #define APPROXIMATION_INTERFACE_H
 
+#include "SharedApproxData.hpp"
 #include "DakotaApproximation.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaVariables.hpp"
@@ -108,6 +109,7 @@ protected:
   void clear_all();
   void clear_saved();
 
+  SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
   const Pecos::SurrogateData& approximation_data(size_t index);
 
@@ -153,6 +155,8 @@ private:
   /// response function subset that is approximated
   IntSet approxFnIndices;
 
+  /// data that is shared among all functionSurfaces
+  SharedApproxData sharedData;
   /// list of approximations, one per response function
   /** This formulation allows the use of mixed approximations (i.e.,
       different approximations used for different response functions),
@@ -223,9 +227,8 @@ recommended_points(bool constraint_flag) const
   // the time needed, since it may vary (depending on presence of constraints).
   int rec_points = 0;
   for (ISCIter cit=approxFnIndices.begin(); cit!=approxFnIndices.end(); cit++)
-    rec_points = 
-      std::max(rec_points, 
-	       functionSurfaces[*cit].recommended_points(constraint_flag));
+    rec_points = std::max(rec_points, 
+      functionSurfaces[*cit].recommended_points(constraint_flag));
   return rec_points;
 }
 
@@ -233,6 +236,56 @@ recommended_points(bool constraint_flag) const
 inline void ApproximationInterface::
 approximation_function_indices(const IntSet& approx_fn_indices)
 { approxFnIndices = approx_fn_indices; }
+
+
+/** This function removes data provided by a previous append_approximation()
+    call, possibly different numbers for each function, or as specified in
+    pop_count, which is assumed to be the same for all functions. */
+inline void ApproximationInterface::pop_approximation(bool save_surr_data)
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    // remove entries from Approximation::currentPoints
+    functionSurfaces[*it].pop(save_surr_data);
+  sharedData.pop(save_surr_data); // TO DO: do first or last?
+}
+
+
+/** This function updates the coefficients for each Approximation based
+    on data increments provided by {update,append}_approximation(). */
+inline void ApproximationInterface::restore_approximation()
+{
+  sharedData.restore(); // do shared aggregation first
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].restore();
+}
+
+
+inline bool ApproximationInterface::restore_available()
+{ return sharedData.restore_available(); }
+
+
+inline void ApproximationInterface::finalize_approximation()
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].finalize();
+  sharedData.finalize(); // do shared cleanup last
+}
+
+
+inline void ApproximationInterface::store_approximation()
+{
+  sharedData.store(); // do shared storage first
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].store();
+}
+
+
+inline void ApproximationInterface::combine_approximation(short corr_type)
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].combine(corr_type);
+  sharedData.combine(corr_type); // do shared cleanup last
+}
 
 
 inline void ApproximationInterface::clear_current()
@@ -256,6 +309,10 @@ inline void ApproximationInterface::clear_saved()
 }
 
 
+inline SharedApproxData& ApproximationInterface::shared_approximation()
+{ return sharedData; }
+
+
 inline std::vector<Approximation>& ApproximationInterface::approximations()
 { return functionSurfaces; }
 
@@ -263,7 +320,7 @@ inline std::vector<Approximation>& ApproximationInterface::approximations()
 inline const Pecos::SurrogateData& ApproximationInterface::
 approximation_data(size_t index)
 {
-  if (!approxFnIndices.count(index)) {
+  if (approxFnIndices.find(index) == approxFnIndices.end()) {
     Cerr << "Error: index passed to ApproximationInterface::approximation_data"
 	 << "() does not correspond to an approximated function." << std::endl;
     abort_handler(-1);

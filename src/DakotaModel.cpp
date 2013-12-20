@@ -2760,6 +2760,20 @@ bool Model::force_rebuild()
 }
 
 
+SharedApproxData& Model::shared_approximation()
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual shared_approximation"
+         << "() function.\nThis model does not support approximations."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // envelope fwd to letter
+  return modelRep->shared_approximation();
+}
+
+
 std::vector<Approximation>& Model::approximations()
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.

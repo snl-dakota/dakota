@@ -168,6 +168,8 @@ protected:
   /// combine the current data fit approximation with one previously stored
   void combine_approximation(short corr_type);
 
+  /// retrieve the SharedApproxData from approxInterface
+  SharedApproxData& shared_approximation();
   /// retrieve the set of Approximations from approxInterface
   std::vector<Approximation>& approximations();
   /// return the approximation coefficients from each Approximation
@@ -397,6 +399,10 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 
 inline bool DataFitSurrModel::restore_available()
 { return approxInterface.restore_available(); }
+
+
+inline SharedApproxData& DataFitSurrModel::shared_approximation()
+{ return approxInterface.shared_approximation(); }
 
 
 inline std::vector<Approximation>& DataFitSurrModel::approximations()

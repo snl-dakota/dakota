@@ -20,6 +20,8 @@
 
 namespace Dakota {
 
+class SharedApproxData;
+
 
 /// Derived approximation class for global basis polynomials.
 
@@ -38,27 +40,17 @@ public:
 
   /// default constructor
   PecosApproximation();
-  /// alternate constructor
-  PecosApproximation(const String& approx_type, const UShortArray& approx_order,
-		     size_t num_vars, short data_order, short output_level);
   /// standard ProblemDescDB-driven constructor
-  PecosApproximation(ProblemDescDB& problem_db, size_t num_vars);
+  PecosApproximation(ProblemDescDB& problem_db,
+		     const SharedApproxData& shared_data);
+  /// alternate constructor
+  PecosApproximation(const SharedApproxData& shared_data);
   /// destructor
   ~PecosApproximation();
 
   //
   //- Heading: Member functions
   //
-
-  /// increment OrthogPolyApproximation::approxOrder uniformly
-  void increment_order();
-  /// replace OrthogPolyApproximation::approxOrder wth incoming order
-  void update_order(const UShortArray& order);
-
-  /// set pecosBasisApprox.configOptions.expCoeffsSolnApproach
-  void solution_approach(short soln_approach);
-  /// get pecosBasisApprox.configOptions.expCoeffsSolnApproach
-  short solution_approach() const;
 
   /// set pecosBasisApprox.configOptions.expansionCoeffFlag
   void expansion_coefficient_flag(bool coeff_flag);
@@ -70,44 +62,12 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
-  /// set pecosBasisApprox.configOptions.vbdFlag
-  void vbd_flag(bool flag);
-  /// get pecosBasisApprox.configOptions.vbdFlag
-  bool vbd_flag() const;
-
-  /// set pecosBasisApprox.configOptions.vbdOrderLimit
-  void vbd_order_limit(unsigned short vbd_order);
-  /// get pecosBasisApprox.configOptions.vbdOrderLimit
-  unsigned short vbd_order_limit() const;
-
-  // set pecosBasisApprox.configOptions.refinementType
-  //void refinement_type(short refine_type);
-  // get pecosBasisApprox.configOptions.refinementType
-  //short refinement_type() const;
-
-  /// set pecosBasisApprox.configOptions.refinementControl
-  void refinement_control(short refine_cntl);
-  /// get pecosBasisApprox.configOptions.refinementControl
-  short refinement_control() const;
-
-  /// set pecosBasisApprox.configOptions.maxIterations
-  void maximum_iterations(int max_iter);
-  /// get pecosBasisApprox.configOptions.maxIterations
-  int maximum_iterations() const;
-
-  /// set pecosBasisApprox.configOptions.convergenceTol
-  void convergence_tolerance(Real conv_tol);
-  /// get pecosBasisApprox.configOptions.convergenceTol
-  Real convergence_tolerance() const;
-
   /// Performs global sensitivity analysis using Sobol' Indices by
   /// computing component (main and interaction) effects
   void compute_component_effects();
   /// Performs global sensitivity analysis using Sobol' Indices by
   /// computing total effects
   void compute_total_effects();
-  /// return polyApproxRep->sobolIndexMap
-  const Pecos::BitArrayULongMap& sobol_index_map() const;
   /// return polyApproxRep->sobolIndices
   const Pecos::RealVector& sobol_indices() const;
   /// return polyApproxRep->totalSobolIndices
@@ -115,42 +75,6 @@ public:
 
   /// return OrthogPolyApproximation::decayRates
   const Pecos::RealVector& dimension_decay_rates() const;
-
-  /// set pecosBasisApprox.randomVarsKey
-  void random_variables_key(const Pecos::BitArray& random_vars_key);
-
-  /// set pecosBasisApprox.driverRep
-  void integration_iterator(const Iterator& iterator);
-
-  /// invoke Pecos::OrthogPolyApproximation::construct_basis()
-  void construct_basis(const Pecos::ShortArray& u_types,
-		       const Pecos::AleatoryDistParams& adp,
-		       const Pecos::BasisConfigOptions& bc_options);
-
-  /// set Pecos::OrthogPolyApproximation::basisTypes
-  void basis_types(const Pecos::ShortArray& basis_types);
-  /// get Pecos::OrthogPolyApproximation::basisTypes
-  const Pecos::ShortArray& basis_types() const;
-
-  /// set Pecos::OrthogPolyApproximation::polynomialBasis
-  void polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis);
-  /// get Pecos::OrthogPolyApproximation::polynomialBasis
-  const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
-
-  /// invoke Pecos::OrthogPolyApproximation::cross_validation()
-  void cross_validation(bool flag);
-  /// invoke Pecos::OrthogPolyApproximation::coefficients_norms_flag()
-  void coefficients_norms_flag(bool flag);
-
-  /// return Pecos::OrthogPolyApproximation::expansion_terms()
-  size_t expansion_terms() const;
-  /// return Pecos::OrthogPolyApproximation::expansion_order()
-  const UShortArray& expansion_order() const;
-
-  /// set the noise tolerance(s) for compressed sensing algorithms
-  void noise_tolerance(const RealVector& noise_tol);
-  /// set the L2 penalty parameter for LASSO (elastic net variant)
-  void l2_penalty(Real l2_pen);
 
   /// invoke Pecos::PolynomialApproximation::allocate_arrays()
   void allocate_arrays();
@@ -263,18 +187,16 @@ protected:
   void rebuild();
   void pop(bool save_data);
   void restore();
-  bool restore_available();
-  size_t restoration_index();
   void finalize();
-  size_t finalization_index(size_t i);
   void store();
   void combine(short corr_type);
 
   void print_coefficients(std::ostream& s, bool normalized = false);
-  void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
   const RealVector& approximation_coefficients() const;
   void approximation_coefficients(const RealVector& approx_coeffs);
+
+  void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
   //
   //- Heading: Data
@@ -296,34 +218,21 @@ private:
   /// the Pecos basis approximation, encompassing OrthogPolyApproximation
   /// and InterpPolyApproximation
   Pecos::BasisApproximation pecosBasisApprox;
-
-  /// convenience pointer to representation
+  /// convenience pointer to representation of Pecos polynomial approximation
   Pecos::PolynomialApproximation* polyApproxRep;
+
+  // convenience pointer to shared data representation
+  //SharedPecosApproxData* sharedPecosDataRep;
 };
 
 
-inline PecosApproximation::PecosApproximation(): polyApproxRep(NULL)
+inline PecosApproximation::PecosApproximation():
+  polyApproxRep(NULL) //, sharedPecosDataRep(NULL)
 { }
 
 
 inline PecosApproximation::~PecosApproximation()
 { }
-
-
-inline void PecosApproximation::increment_order()
-{ polyApproxRep->increment_order(); }
-
-
-inline void PecosApproximation::update_order(const UShortArray& order)
-{ polyApproxRep->update_order(order); }
-
-
-inline void PecosApproximation::solution_approach(short soln_approach)
-{ polyApproxRep->solution_approach(soln_approach); }
-
-
-inline short PecosApproximation::solution_approach() const
-{ return polyApproxRep->solution_approach(); }
 
 
 inline void PecosApproximation::expansion_coefficient_flag(bool coeff_flag)
@@ -342,65 +251,12 @@ inline bool PecosApproximation::expansion_gradient_flag() const
 { return polyApproxRep->expansion_coefficient_gradient_flag(); }
 
 
-inline void PecosApproximation::vbd_flag(bool flag)
-{ polyApproxRep->vbd_flag(flag); }
-
-
-inline bool PecosApproximation::vbd_flag() const
-{ return polyApproxRep->vbd_flag(); }
-
-
-inline void PecosApproximation::vbd_order_limit(unsigned short vbd_order)
-{ polyApproxRep->vbd_order_limit(vbd_order); }
-
-
-inline unsigned short PecosApproximation::vbd_order_limit() const
-{ return polyApproxRep->vbd_order_limit(); }
-
-
-//inline void PecosApproximation::refinement_type(short refine_type)
-//{ polyApproxRep->refinement_type(refine_type); }
-
-
-//inline short PecosApproximation::refinement_type() const
-//{ return polyApproxRep->refinement_type(); }
-
-
-inline void PecosApproximation::refinement_control(short refine_cntl)
-{ polyApproxRep->refinement_control(refine_cntl); }
-
-
-inline short PecosApproximation::refinement_control() const
-{ return polyApproxRep->refinement_control(); }
-
-
-inline void PecosApproximation::maximum_iterations(int max_iter)
-{ polyApproxRep->maximum_iterations(max_iter); }
-
-
-inline int PecosApproximation::maximum_iterations() const
-{ return polyApproxRep->maximum_iterations(); }
-
-
-inline void PecosApproximation::convergence_tolerance(Real conv_tol)
-{ polyApproxRep->convergence_tolerance(conv_tol); }
-
-
-inline Real PecosApproximation::convergence_tolerance() const
-{ return polyApproxRep->convergence_tolerance(); }
-
-
 inline void PecosApproximation::compute_component_effects()
 { polyApproxRep->compute_component_sobol(); }
 
 
 inline void PecosApproximation::compute_total_effects()
 { polyApproxRep->compute_total_sobol(); }
-
-
-inline const Pecos::BitArrayULongMap& PecosApproximation::
-sobol_index_map() const
-{ return polyApproxRep->sobol_index_map(); }
 
 
 inline const Pecos::RealVector& PecosApproximation::sobol_indices() const
@@ -413,77 +269,10 @@ inline const Pecos::RealVector& PecosApproximation::total_sobol_indices() const
 
 inline const Pecos::RealVector& PecosApproximation::
 dimension_decay_rates() const
-{ return polyApproxRep->dimension_decay_rates(); }
-
-
-inline void PecosApproximation::
-random_variables_key(const Pecos::BitArray& random_vars_key)
-{ polyApproxRep->random_variables_key(random_vars_key); }
-
-
-inline void PecosApproximation::
-construct_basis(const Pecos::ShortArray& u_types,
-		const Pecos::AleatoryDistParams& adp,
-		const Pecos::BasisConfigOptions& bc_options)
 {
-  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
-    construct_basis(u_types, adp, bc_options);
+  return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    dimension_decay_rates();
 }
-
-
-inline void PecosApproximation::
-basis_types(const Pecos::ShortArray& basis_types)
-{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->basis_types(basis_types); }
-
-
-inline const Pecos::ShortArray& PecosApproximation::basis_types() const
-{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->basis_types(); }
-
-
-inline void PecosApproximation::
-polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis)
-{
-  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
-    polynomial_basis(poly_basis);
-}
-
-
-inline const std::vector<Pecos::BasisPolynomial>& PecosApproximation::
-polynomial_basis() const
-{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->polynomial_basis(); }
-
-
-inline void PecosApproximation::cross_validation(bool flag)
-{
-  ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
-    cross_validation(flag);
-}
-
-
-inline void PecosApproximation::coefficients_norms_flag(bool flag)
-{
-  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
-    coefficients_norms_flag(flag);
-}
-
-
-inline size_t PecosApproximation::expansion_terms() const
-{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_terms(); }
-
-
-inline const UShortArray& PecosApproximation::expansion_order() const
-{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_order(); }
-
-
-inline void PecosApproximation::noise_tolerance(const RealVector& noise_tol)
-{
-  ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
-    noise_tolerance(noise_tol);
-}
-
-
-inline void PecosApproximation::l2_penalty(Real l2_pen)
-{ ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->l2_penalty(l2_pen); }
 
 
 inline void PecosApproximation::allocate_arrays()
@@ -681,14 +470,6 @@ inline void PecosApproximation::restore()
 }
 
 
-inline bool PecosApproximation::restore_available()
-{ return pecosBasisApprox.restore_available(); }
-
-
-inline size_t PecosApproximation::restoration_index()
-{ return pecosBasisApprox.restoration_index(); }
-
-
 inline void PecosApproximation::finalize()
 {
   // base class implementation appends currentPoints with savedSDPArrays
@@ -717,10 +498,6 @@ inline void PecosApproximation::combine(short corr_type)
 }
 
 
-inline size_t PecosApproximation::finalization_index(size_t i)
-{ return pecosBasisApprox.finalization_index(i); }
-
-
 inline void PecosApproximation::
 print_coefficients(std::ostream& s, bool normalized)
 { pecosBasisApprox.print_coefficients(s, normalized); }
@@ -737,7 +514,7 @@ approximation_coefficients(const RealVector& approx_coeffs)
 
 inline void PecosApproximation::
 coefficient_labels(std::vector<std::string>& coeff_labels) const
-{ pecosBasisApprox.coefficient_labels(coeff_labels); }
+{ polyApproxRep->coefficient_labels(coeff_labels); }
 
 } // namespace Dakota
 

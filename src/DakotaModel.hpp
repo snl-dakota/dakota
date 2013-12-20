@@ -35,6 +35,7 @@ namespace Dakota {
 class ProblemDescDB;
 class ParallelLibrary;
 class Approximation;
+class SharedApproxData;
 class DiscrepancyCorrection;
 
 
@@ -162,10 +163,14 @@ public:
   /// based on changes in the inactive data
   virtual bool force_rebuild();
 
-  /// retrieve the set of Approximations within a DataFitSurrModel
+  /// retrieve the shared approximation data within the ApproximationInterface
+  /// of a DataFitSurrModel
+  virtual SharedApproxData& shared_approximation();
+  /// retrieve the set of Approximations within the ApproximationInterface
+  /// of a DataFitSurrModel
   virtual std::vector<Approximation>& approximations();
   /// retrieve the approximation data from a particular Approximation
-  /// instance within a DataFitSurrModel
+  /// instance within the ApproximationInterface of a DataFitSurrModel
   virtual const Pecos::SurrogateData& approximation_data(size_t index);
 
   /// retrieve the approximation coefficients from each Approximation

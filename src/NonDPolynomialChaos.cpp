@@ -18,6 +18,7 @@
 #include "DataFitSurrModel.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSampling.hpp"
+#include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "SparseGridDriver.hpp"
 #include "TensorProductDriver.hpp"
@@ -165,7 +166,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	    collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
 	if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION ) {
 	  size_t exp_terms
-	    = Pecos::PolynomialApproximation::total_order_terms(exp_order);
+	    = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
 	  termsOrder
 	    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
 	  if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
@@ -262,7 +263,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),
@@ -392,56 +393,40 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDPolynomialChaos::initialize_u_space_model()
 {
-  // The expansion_order specification is passed through the DataFitSurrModel
-  // ctor.  Any additional specification data needed by OrthogPolyApproximation
-  // must be passed through by diving through the hierarchy.
-  bool num_int = (expansionCoeffsApproach == Pecos::QUADRATURE ||
-		  expansionCoeffsApproach == Pecos::CUBATURE   ||
-		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID);
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const Pecos::ShortArray& u_types = natafTransform.u_types();
-
-  PecosApproximation *poly_approx_rep, *poly_approx_rep0;
-  NonDIntegration* u_space_sampler_rep = (num_int || tensorRegression) ?
-    (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep() : NULL;
-
-  // Rather than automatically constructing the orthogonal polynomial
-  // basis within each OrthogPolyApproximation ctor invocation, manage
-  // it here so that we may reuse bases among the response function
-  // set and an integration driver (if present).  This efficiency
-  // becomes more important for numerically-generated polynomials.
-  bool first = true;
+  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
+  // passed through the DataFitSurrModel ctor chain.  Additional data needed
+  // by OrthogPolyApproximation are passed using Pecos::BasisConfigOptions.
+  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
   Pecos::BasisConfigOptions bc_options(nestedRules, false, true, useDerivs);
-  for (size_t i=0; i<numFunctions; i++) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep) { // may be NULL based on approxFnIndices
-      if (first) {
-	poly_approx_rep->construct_basis(u_types,
-	  iteratedModel.aleatory_distribution_parameters(), bc_options);
-	if (num_int || tensorRegression)
-	  u_space_sampler_rep->
-	    initialize_grid(poly_approx_rep->polynomial_basis());
-	poly_approx_rep0 = poly_approx_rep;
-	first = false;
-      }
-      else {           // reuse rep0 basis for all other reps
-        poly_approx_rep->basis_types(poly_approx_rep0->basis_types());
-	poly_approx_rep->polynomial_basis(poly_approx_rep0->polynomial_basis());
-      }
-      // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
-      // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
-      poly_approx_rep->coefficients_norms_flag(true);
-      // Transfer regression data: cross validation, noise tol, and L2 penalty.
-      // Note: regression solver type is transferred via expansionCoeffsApproach
-      //       in NonDExpansion::initialize_u_space_model()
-      if (expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-	poly_approx_rep->cross_validation(crossValidation);
-	if (!noiseTols.empty())
-	  poly_approx_rep->noise_tolerance(noiseTols);
-	if (expansionCoeffsApproach == Pecos::LASSO_REGRESSION)
-	  poly_approx_rep->l2_penalty(l2Penalty);
-      }
-    }
+  shared_data_rep->configuration_options(bc_options);
+
+  // For PCE, the approximation and integration bases are the same.  We (always)
+  // construct it for the former and (conditionally) pass it in to the latter.
+  shared_data_rep->construct_basis(natafTransform.u_types(),
+    iteratedModel.aleatory_distribution_parameters());
+  if (tensorRegression || expansionCoeffsApproach == Pecos::QUADRATURE ||
+      expansionCoeffsApproach == Pecos::CUBATURE   ||
+      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID) {
+    NonDIntegration* u_space_sampler_rep = 
+      (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+    u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
+  }
+
+  // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
+  // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
+  shared_data_rep->coefficients_norms_flag(true);
+
+  // Transfer regression data: cross validation, noise tol, and L2 penalty.
+  // Note: regression solver type is transferred via expansionCoeffsApproach
+  //       in NonDExpansion::initialize_u_space_model()
+  if (expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
+    shared_data_rep->cross_validation(crossValidation);
+    if (!noiseTols.empty())
+      shared_data_rep->noise_tolerance(noiseTols);
+    if (expansionCoeffsApproach == Pecos::LASSO_REGRESSION)
+      shared_data_rep->l2_penalty(l2Penalty);
   }
 
   // perform last due to numSamplesOnModel update
@@ -471,16 +456,23 @@ void NonDPolynomialChaos::compute_expansion()
 	   << std::endl;
       abort_handler(-1);
     }
+    // allocate the shared approximation data (default total-order expansion):
+    SharedApproxData& shared_data = uSpaceModel.shared_approximation();
+    shared_data.build();
+    size_t num_exp_terms
+      = ((SharedPecosApproxData*)shared_data.data_rep())->expansion_terms();
+    // allocate arrays per response fn:
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    RealVectorArray chaos_coeffs(numFunctions);
     PecosApproximation* poly_approx_rep;
+    RealVectorArray chaos_coeffs(numFunctions);
     for (size_t i=0; i<numFunctions; i++) {
       poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
       if (poly_approx_rep) { // may be NULL based on approxFnIndices
 	poly_approx_rep->allocate_arrays();
-	chaos_coeffs[i].sizeUninitialized(poly_approx_rep->expansion_terms());
+	chaos_coeffs[i].sizeUninitialized(num_exp_terms);
       }
     }
+    // import the PCE coefficients
     read_data(import_stream, chaos_coeffs);
     uSpaceModel.approximation_coefficients(chaos_coeffs);
   }
@@ -489,7 +481,7 @@ void NonDPolynomialChaos::compute_expansion()
 
 void NonDPolynomialChaos::increment_specification_sequence()
 {
-  bool update_exp = false, update_sampler = false, update_ratio = false;
+  bool update_exp = false, update_sampler = false, update_from_ratio = false;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
   case Pecos::HIERARCHICAL_SPARSE_GRID: case Pecos::CUBATURE:
@@ -519,45 +511,31 @@ void NonDPolynomialChaos::increment_specification_sequence()
       { numSamplesOnModel = collocPtsSeqSpec[next_i]; update_sampler = true; }
     if (update_exp || update_sampler) ++sequenceIndex;
     if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-      update_ratio = update_sampler = true;
+      update_from_ratio = update_sampler = true;
     break;
   }
   }
 
   UShortArray exp_order;
   if (update_exp) {
-    // update expansion order within Pecos::OrthogPolyApproximation
+    // update expansion order within Pecos::SharedOrthogPolyApproxData
     NonDIntegration::dimension_preference_to_anisotropic_order(
       expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
       exp_order);
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep;
-    for (size_t i=0; i<numFunctions; i++) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep) { // may be NULL based on approxFnIndices
-	poly_approx_rep->update_order(exp_order);
-	// could have OrthogPolyApproximation::update_order() update
-	// numExpansionTerms and then add logic like this:
-	//if (update_ratio) exp_terms = poly_approx_rep->expansion_terms();
-      }
-    }
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    shared_data_rep->expansion_order(exp_order);
+    if (update_from_ratio) // update numSamplesOnModel from collocRatio
+      numSamplesOnModel	= terms_ratio_to_samples(
+	Pecos::SharedPolyApproxData::total_order_terms(exp_order),
+	collocRatio, termsOrder);
   }
   else if (update_sampler && tensorRegression) {
-    // extract unchanged expansion order from Pecos::OrthogPolyApproximation
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep;
-    for (size_t i=0; i<numFunctions; i++) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep) // may be NULL based on approxFnIndices
-	{ exp_order = poly_approx_rep->expansion_order(); break; }
-    }
+    // extract unchanged expansion order from Pecos::SharedOrthogPolyApproxData
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    exp_order = shared_data_rep->expansion_order();
   }
-
-  // update numSamplesOnModel from collocRatio
-  if (update_ratio)
-    numSamplesOnModel = terms_ratio_to_samples(
-      Pecos::PolynomialApproximation::total_order_terms(exp_order),
-      collocRatio, termsOrder);
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler) {
@@ -587,15 +565,11 @@ void NonDPolynomialChaos::increment_specification_sequence()
 /** Used for uniform refinement of regression-based PCE. */
 void NonDPolynomialChaos::increment_order()
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep; size_t exp_terms = 0;
-  for (size_t i=0; i<numFunctions; i++) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep) { // may be NULL based on approxFnIndices
-      poly_approx_rep->increment_order();
-      exp_terms = std::max(poly_approx_rep->expansion_terms(), exp_terms);
-    }
-  }
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->increment_order();
+  size_t exp_terms = Pecos::SharedPolyApproxData::total_order_terms(
+    shared_data_rep->expansion_order());
 
   // update numSamplesOnModel based on existing collocation ratio and
   // updated number of expansion terms
@@ -684,6 +658,5 @@ void NonDPolynomialChaos::archive_coefficients()
 
   }
 }
-
 
 } // namespace Dakota

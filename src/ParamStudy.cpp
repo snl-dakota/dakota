@@ -419,8 +419,8 @@ void ParamStudy::multidim_loop()
     for (j=0; j<numDiscreteRealVars; ++j, ++p_cntr)
       dsr_step(j, multidim_indices[p_cntr], dsr_values[j], vars);
     // increment the multidimensional index set
-    Pecos::PolynomialApproximation::increment_indices(multidim_indices,
-						      partition_limits, true);
+    Pecos::SharedPolyApproxData::increment_indices(multidim_indices,
+						   partition_limits, true);
   }
 }
 
@@ -431,7 +431,8 @@ load_distribute_points(const String& points_filename, bool annotated)
 {
   // don't know the size until the file is read, so use dynamic container
   RealArray point_list;
-  size_t num_vars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  size_t num_vars
+    = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
   TabularIO::read_data_tabular(points_filename, "List Parameter Study",
 			       point_list, annotated, num_vars);
   // now get a view of it

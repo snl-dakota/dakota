@@ -41,6 +41,7 @@ class Response;
 class Iterator;
 class Model;
 class Approximation;
+class SharedApproxData;
 
 
 /// Base class for the interface class hierarchy.
@@ -183,6 +184,8 @@ public:
   /// clears saved data (from pop invocations) from an approximation interface
   virtual void clear_saved();
 
+  /// retrieve the SharedApproxData within an ApproximationInterface
+  virtual SharedApproxData& shared_approximation();
   /// retrieve the Approximations within an ApproximationInterface
   virtual std::vector<Approximation>& approximations();
   /// retrieve the approximation data from a particular Approximation

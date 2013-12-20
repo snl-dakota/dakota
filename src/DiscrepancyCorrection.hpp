@@ -15,6 +15,7 @@
 #ifndef DISCREPANCY_CORRECTION_H
 #define DISCREPANCY_CORRECTION_H
 
+#include "SharedApproxData.hpp"
 #include "DakotaApproximation.hpp"
 #include "DakotaModel.hpp"
 #include "DataModel.hpp"
@@ -168,6 +169,8 @@ private:
   /// flag indicating the need for multiplicative correction calculations
   bool computeMultiplicative;
 
+  /// data that is shared among all correction Approximations
+  SharedApproxData sharedData;
   /// array of additive corrections; surrogate models of a model
   /// discrepancy function (formed from model differences)
   std::vector<Approximation> addCorrections;

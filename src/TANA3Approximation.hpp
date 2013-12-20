@@ -38,9 +38,10 @@ public:
   /// default constructor
   TANA3Approximation();
   /// standard constructor
-  TANA3Approximation(ProblemDescDB& problem_db, size_t num_vars);
+  TANA3Approximation(ProblemDescDB& problem_db,
+		     const SharedApproxData& shared_data);
   /// alternate constructor
-  TANA3Approximation(size_t num_vars, short data_order, short output_level);
+  TANA3Approximation(const SharedApproxData& shared_data);
   /// destructor
   ~TANA3Approximation();
 
@@ -93,11 +94,17 @@ inline TANA3Approximation::TANA3Approximation()
 
 
 inline TANA3Approximation::
-TANA3Approximation(size_t num_vars, short data_order, short output_level):
+TANA3Approximation(const SharedApproxData& shared_data):
   // as Hessian data cannot be used, do not accept 4 bit since it could
   // affect data requirement estimations in Approximation base class
-  Approximation(NoDBBaseConstructor(), num_vars, (data_order & 3), output_level)
-{ approxType = "multipoint_tana"; }
+  Approximation(NoDBBaseConstructor(), shared_data)
+{
+  if (sharedDataRep->buildDataOrder != 3) {
+    Cerr << "Error: response values and gradients required in "
+	 << "TANA3Approximation." << std::endl;
+    abort_handler(-1);
+  }
+}
 
 
 inline TANA3Approximation::~TANA3Approximation()

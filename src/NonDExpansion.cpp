@@ -21,6 +21,7 @@
 #include "RecastModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
+#include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "pecos_stat_util.hpp"
 #include "SensAnalysisGlobal.hpp"
@@ -365,42 +366,32 @@ construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
 
 void NonDExpansion::initialize_u_space_model()
 {
+  // Commonly used approx settings are passed through the DataFitSurrModel ctor
+  // chain.  Additional data are passed using Pecos::ExpansionConfigOptions.
+  // Note: passing outputLevel again is redundant with DataFitSurrModel ctor.
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach, outputLevel,
+    vbdFlag, vbdOrderLimit, refineControl, maxIterations, convergenceTol);
+  shared_data_rep->configuration_options(ec_options);
+
   // if all variables mode, initialize key to random variable subset
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  bool num_int  = (expansionCoeffsApproach == Pecos::QUADRATURE ||
-		   expansionCoeffsApproach == Pecos::CUBATURE ||
-		   expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-		   expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID);
-  Pecos::BitArray random_vars_key; size_t i;
-  if (all_vars) {
-    random_vars_key.resize(numContinuousVars);
+  if (numContDesVars || numContEpistUncVars || numContStateVars) {
+    Pecos::BitArray random_vars_key(numContinuousVars);
+    size_t i, num_cdv_cauv = numContDesVars + numContAleatUncVars;
     for (i=0; i<numContinuousVars; ++i)
-      random_vars_key[i]
-	= (i >= numContDesVars && i < numContDesVars + numContAleatUncVars);
-  }
-  // Specification data needed by PecosApproximation must be passed
-  // by diving through the class containment hierarchy.
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  Model&    g_u_model       = uSpaceModel.subordinate_model();
-  for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep) { // may be NULL based on approxFnIndices
-      poly_approx_rep->solution_approach(expansionCoeffsApproach);
-      poly_approx_rep->refinement_control(refineControl);
-      poly_approx_rep->vbd_flag(vbdFlag);
-      poly_approx_rep->vbd_order_limit(vbdOrderLimit);
-      poly_approx_rep->maximum_iterations(maxIterations);
-      poly_approx_rep->convergence_tolerance(convergenceTol);
-      if (num_int)
-	poly_approx_rep->integration_iterator(u_space_sampler);
-      if (all_vars)
-	poly_approx_rep->random_variables_key(random_vars_key);
-    }
+      random_vars_key[i] = (i >= numContDesVars && i < num_cdv_cauv);
+    shared_data_rep->random_variables_key(random_vars_key);
   }
 
-  if (num_int) {
+  // if numerical integration, manage u_space_sampler updates
+  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
+      expansionCoeffsApproach == Pecos::CUBATURE ||
+      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID) {
+    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+    Model&    g_u_model       = uSpaceModel.subordinate_model();
+    shared_data_rep->integration_iterator(u_space_sampler);
     u_space_sampler.output_level(outputLevel); // for tabular output of pts/wts
     numSamplesOnModel = u_space_sampler.maximum_concurrency()
                       / g_u_model.derivative_concurrency();
@@ -2036,29 +2027,33 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   const StringArray& fn_labels = iteratedModel.response_labels();
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
+
+  // construct labels corresponding to (aggregated) sobol index map
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
-  StringArray sobol_labels; size_t i, j, num_indices; Real var_i;
+  PecosApproximation* poly_approx_rep; StringArray sobol_labels;
+  size_t i, j, num_indices;
   if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
-    poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
     const Pecos::BitArrayULongMap& s_index_map
-      = poly_approx_rep->sobol_index_map();
-    num_indices = poly_approx_rep->sobol_indices().length();
-    sobol_labels.resize(num_indices);
+      = shared_data_rep->sobol_index_map();
+    sobol_labels.resize(s_index_map.size());
     for (Pecos::BAULMCIter map_cit=s_index_map.begin();
 	 map_cit!=s_index_map.end(); ++map_cit) { // loop in key sorted order
       const BitArray& set = map_cit->first;
-      unsigned long index = map_cit->second;
-      // a 0-way interaction followed by numContinuousVars main effects
-      if (index > numContinuousVars) {            // an interaction
-	String& label = sobol_labels[index];      // store in index order
+      unsigned long index = map_cit->second; // 0-way -> n 1-way -> interaction
+      if (index > numContinuousVars) {       // an interaction
+	String& label = sobol_labels[index]; // store in index order
 	for (j=0; j<numContinuousVars; ++j)
 	  if (set[j])
 	    label += cv_labels[j] + " ";
       }
     }
   }
+
+  // print sobol indices per response function
+  // TO DO: manage sparsity --> proper usage of aggregated labels
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
@@ -2082,11 +2077,12 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 	      << sobol_indices[j+1] << ' ' << std::setw(write_precision+7)
 	      << total_indices[j]   << ' ' << cv_labels[j] << '\n';
 	if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
+	  num_indices = sobol_indices.length();
 	  s << std::setw(39) << "Interaction\n";
 	  for (j=numContinuousVars+1; j<num_indices; ++j)
 	    if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
 	      s << "                     " << std::setw(write_precision+7) 
-		<< sobol_indices[j] << ' ' << sobol_labels[j] << '\n';
+		<< sobol_indices[j] << ' ' << sobol_labels[j] << '\n'; // TO DO
 	}
       }
       else

@@ -73,18 +73,19 @@ void DiscrepancyCorrection::initialize_corrections()
   case 1: dataOrder = 3; break;
   case 0: default: dataOrder = 1; break;
   }
+
   ISIter it;
+  sharedData = SharedApproxData("local_taylor", approx_order, numVars,
+				dataOrder, NORMAL_OUTPUT);
   if (computeAdditive) {
     addCorrections.resize(numFns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-      addCorrections[*it] = Approximation("local_taylor", approx_order, 
-					  numVars, dataOrder, NORMAL_OUTPUT);
+      addCorrections[*it] = Approximation(sharedData);
   }
   if (computeMultiplicative) {
     multCorrections.resize(numFns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-      multCorrections[*it] = Approximation("local_taylor", approx_order, 
-					   numVars, dataOrder, NORMAL_OUTPUT);
+      multCorrections[*it] = Approximation(sharedData);
   }
   correctionPrevCenterPt = surrModel.current_variables().copy();
 }
@@ -143,10 +144,8 @@ compute(const Variables& vars, const Response& truth_response,
     = (computeMultiplicative) ? check_scaling(truth_fns, approx_fns) : false;
   if (badScalingFlag && addCorrections.empty()) {
     addCorrections.resize(numFns);
-    UShortArray approx_order(numVars, correctionOrder);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-      addCorrections[*it] = Approximation("local_taylor", approx_order, 
-					  numVars, dataOrder, NORMAL_OUTPUT);
+      addCorrections[*it] = Approximation(sharedData);
   }
 
   Pecos::SurrogateDataVars sdv(vars.continuous_variables(),

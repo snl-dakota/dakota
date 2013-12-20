@@ -1246,6 +1246,20 @@ void Interface::clear_saved()
 }
 
 
+SharedApproxData& Interface::shared_approximation()
+{
+  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual shared_approximation"
+         << "() function.\nThis interface does not support approximations."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // envelope fwd to letter
+  return interfaceRep->shared_approximation();
+}
+
+
 std::vector<Approximation>& Interface::approximations()
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.

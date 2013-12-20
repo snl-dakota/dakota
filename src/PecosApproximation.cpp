@@ -14,23 +14,27 @@
 #include "PecosApproximation.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDIntegration.hpp"
+#include "SharedPecosApproxData.hpp"
 
 //#define DEBUG
 
 
 namespace Dakota {
 
-PecosApproximation::
-PecosApproximation(const String& approx_type, const UShortArray& approx_order, 
-		   size_t num_vars, short data_order, short output_level):
-  Approximation(NoDBBaseConstructor(), num_vars, data_order, output_level)
+PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
+  Approximation(NoDBBaseConstructor(), shared_data)
+  //sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
 {
-  approxType = approx_type;
-  short basis_type;  approx_type_to_basis_type(approxType, basis_type);
-  bool  use_derivs = (data_order > 1);
-  pecosBasisApprox =
-    Pecos::BasisApproximation(basis_type, approx_order, numVars, use_derivs,
-			      outputLevel);
+  // Dakota::PecosApproximation manages the Pecos::BasisApproximation instance,
+  // and Dakota::SharedPecosApproxData manages the Pecos::SharedBasisApproxData
+  // instance.  The latter shared data instance must be passed through to
+  // initialize the former approximation instance, which retains a pointer to
+  // the shared data representation.
+
+  SharedPecosApproxData* shared_pecos_data_rep
+    = (SharedPecosApproxData*)sharedDataRep;
+  pecosBasisApprox
+    = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
   polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
@@ -38,65 +42,24 @@ PecosApproximation(const String& approx_type, const UShortArray& approx_order,
 
 
 PecosApproximation::
-PecosApproximation(ProblemDescDB& problem_db, size_t num_vars):
-  Approximation(BaseConstructor(), problem_db, num_vars)
+PecosApproximation(ProblemDescDB& problem_db,
+		   const SharedApproxData& shared_data):
+  Approximation(BaseConstructor(), problem_db, shared_data)
+  //sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
 {
-  short basis_type; approx_type_to_basis_type(approxType, basis_type);
-  UShortArray approx_order;
-  if (basis_type == Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL)
-    approx_order = problem_db.get_usa("method.nond.expansion_order");
-  bool use_derivs = problem_db.get_bool("model.surrogate.derivative_usage");
-  buildDataOrder = 1;
-  if (use_derivs) {
-    if (problem_db.get_string("responses.gradient_type") != "none")
-      buildDataOrder |= 2;
-    if (problem_db.get_string("responses.hessian_type")  != "none")
-      buildDataOrder |= 4;
-  }
-  pecosBasisApprox =
-    Pecos::BasisApproximation(basis_type, approx_order, numVars, use_derivs,
-			      outputLevel);
+  // Dakota::PecosApproximation manages the Pecos::BasisApproximation instance,
+  // and Dakota::SharedPecosApproxData manages the Pecos::SharedBasisApproxData
+  // instance.  The latter shared data instance must be passed through to
+  // initialize the former approximation instance, which retains a pointer to
+  // the shared data representation.
+
+  SharedPecosApproxData* shared_pecos_data_rep
+    = (SharedPecosApproxData*)sharedDataRep;
+  pecosBasisApprox
+    = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
   polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
-}
-
-
-void PecosApproximation::
-approx_type_to_basis_type(const String& approx_type, short& basis_type)
-{
-  basis_type = Pecos::NO_BASIS;
-  if (strends(approx_type, "orthogonal_polynomial")) {
-    if (strbegins(approx_type, "global_regression"))
-      basis_type = Pecos::GLOBAL_REGRESSION_ORTHOGONAL_POLYNOMIAL;
-    else if (strbegins(approx_type, "global_projection"))
-      basis_type = Pecos::GLOBAL_PROJECTION_ORTHOGONAL_POLYNOMIAL;
-    else if (strbegins(approx_type, "global"))
-      basis_type = Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL;
-    //else if (strbegins(approx_type, "piecewise_regression"))
-    //  basis_type = Pecos::PIECEWISE_REGRESSION_ORTHOGONAL_POLYNOMIAL;
-    //else if (strbegins(approx_type, "piecewise_projection"))
-    //  basis_type = Pecos::PIECEWISE_PROJECTION_ORTHOGONAL_POLYNOMIAL;
-    //else if (strbegins(approx_type, "piecewise"))
-    //  basis_type = Pecos::PIECEWISE_ORTHOGONAL_POLYNOMIAL;
-  }
-  else if (strends(approx_type, "interpolation_polynomial")) {
-    if (strbegins(approx_type, "global_nodal"))
-      basis_type = Pecos::GLOBAL_NODAL_INTERPOLATION_POLYNOMIAL;
-    else if (strbegins(approx_type, "global_hierarchical"))
-      basis_type = Pecos::GLOBAL_HIERARCHICAL_INTERPOLATION_POLYNOMIAL;
-    else if (strbegins(approx_type, "piecewise_nodal"))
-      basis_type = Pecos::PIECEWISE_NODAL_INTERPOLATION_POLYNOMIAL;
-    else if (strbegins(approx_type, "piecewise_hierarchical"))
-      basis_type = Pecos::PIECEWISE_HIERARCHICAL_INTERPOLATION_POLYNOMIAL;
-  }
-}
-
-
-void PecosApproximation::integration_iterator(const Iterator& iterator)
-{
-  NonDIntegration* integration_rep = (NonDIntegration*)iterator.iterator_rep();
-  polyApproxRep->integration_driver_rep(integration_rep->driver().driver_rep());
 }
 
 } // namespace Dakota

@@ -39,27 +39,9 @@ namespace Dakota {
     letter IS the representation, its rep pointer is set to NULL (an
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
-			     size_t num_vars):
-  // See base constructor in DakotaIterator.cpp for full discussion of output
-  // verbosity.  For approximations, verbose adds quad poly coeff reporting.
-  outputLevel(problem_db.get_short("method.output")),
-  numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), approxRep(NULL), referenceCount(1)
+			     const SharedApproxData& shared_data):
+  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
 {
-  if (problem_db.get_bool("model.surrogate.derivative_usage")  &&
-      approxType != "global_polynomial"                        &&
-      approxType != "global_kriging"                           &&
-#ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
-      !strends(approxType, "_interpolation_polynomial") &&
-      !strends(approxType, "_orthogonal_polynomial"))
-#else
-      approxType != "global_orthogonal_polynomial"             &&
-      approxType != "piecewise_nodal_interpolation_polynomial" &&
-      approxType != "piecewise_hierarchical_interpolation_polynomial")
-#endif
-    Cerr << "\nWarning: use_derivatives is not currently supported by "
-	 << approxType << ".\n\n";
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
        << "class for letter." << std::endl;
@@ -75,10 +57,8 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     letter IS the representation, its rep pointer is set to NULL (an
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::
-Approximation(NoDBBaseConstructor, size_t num_vars, short data_order,
-	      short output_level):
-  outputLevel(output_level), numVars(num_vars), buildDataOrder(data_order),
-  approxRep(NULL), referenceCount(1)
+Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
+  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
@@ -92,8 +72,8 @@ Approximation(NoDBBaseConstructor, size_t num_vars, short data_order,
     case (problem_db is needed to build a meaningful Approximation object).
     This makes it necessary to check for NULL in the copy constructor,
     assignment operator, and destructor. */
-Approximation::Approximation(): buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
-  approxRep(NULL), referenceCount(1)
+Approximation::Approximation():
+  sharedDataRep(NULL), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation() called to build empty approximation "
@@ -105,8 +85,9 @@ Approximation::Approximation(): buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
 /** Envelope constructor only needs to extract enough data to properly
     execute get_approx, since Approximation(BaseConstructor, problem_db)
     builds the actual base class data for the derived approximations. */
-Approximation::Approximation(ProblemDescDB& problem_db, size_t num_vars):
-  referenceCount(1)
+Approximation::
+Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data):
+  sharedDataRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(ProblemDescDB&) called to instantiate "
@@ -114,7 +95,7 @@ Approximation::Approximation(ProblemDescDB& problem_db, size_t num_vars):
 #endif
 
   // Set the rep pointer to the appropriate derived type
-  approxRep = get_approx(problem_db, num_vars);
+  approxRep = get_approx(problem_db, shared_data);
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -123,23 +104,23 @@ Approximation::Approximation(ProblemDescDB& problem_db, size_t num_vars):
 /** Used only by the envelope constructor to initialize approxRep to the 
     appropriate derived type. */
 Approximation* Approximation::
-get_approx(ProblemDescDB& problem_db, size_t num_vars)
+get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_approx(ProblemDescDB&)."
        << std::endl;
 #endif
 
-  const String& approx_type = problem_db.get_string("model.surrogate.type");
+  const String& approx_type = shared_data.data_rep()->approxType;
   if (approx_type == "local_taylor")
-    return new TaylorApproximation(problem_db, num_vars);
+    return new TaylorApproximation(problem_db, shared_data);
   else if (approx_type == "multipoint_tana")
-    return new TANA3Approximation(problem_db, num_vars);
+    return new TANA3Approximation(problem_db, shared_data);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
-    return new PecosApproximation(problem_db, num_vars);
+    return new PecosApproximation(problem_db, shared_data);
   else if (approx_type == "global_gaussian")
-    return new GaussProcApproximation(problem_db, num_vars);
+    return new GaussProcApproximation(problem_db, shared_data);
 #ifdef HAVE_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
@@ -147,7 +128,7 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
 	   approx_type == "global_moving_least_squares")
-    return new SurfpackApproximation(problem_db, num_vars);
+    return new SurfpackApproximation(problem_db, shared_data);
 #endif // HAVE_SURFPACK
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -160,10 +141,8 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
 /** This is the alternate envelope constructor for instantiations on
     the fly.  Since it does not have access to problem_db, it utilizes
     the NoDBBaseConstructor constructor chain. */
-Approximation::
-Approximation(const String& approx_type, const UShortArray& approx_order,
-	      size_t num_vars, short data_order, short output_level):
-  referenceCount(1)
+Approximation::Approximation(const SharedApproxData& shared_data):
+  sharedDataRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(String&) called to instantiate "
@@ -171,8 +150,7 @@ Approximation(const String& approx_type, const UShortArray& approx_order,
 #endif
 
   // Set the rep pointer to the appropriate derived type
-  approxRep =
-    get_approx(approx_type, approx_order, num_vars, data_order, output_level);
+  approxRep = get_approx(shared_data);
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -180,25 +158,23 @@ Approximation(const String& approx_type, const UShortArray& approx_order,
 
 /** Used only by the envelope constructor to initialize approxRep to the 
     appropriate derived type. */
-Approximation* Approximation::
-get_approx(const String& approx_type, const UShortArray& approx_order, 
-	   size_t num_vars, short data_order, short output_level)
+Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_approx(String&)." << std::endl;
 #endif
 
   Approximation* approx;
+  const String&  approx_type = shared_data.data_rep()->approxType;
   if (approx_type == "local_taylor")
-    approx = new TaylorApproximation(num_vars, data_order, output_level);
+    approx = new TaylorApproximation(shared_data);
   else if (approx_type == "multipoint_tana")
-    approx = new TANA3Approximation(num_vars, data_order, output_level);
+    approx = new TANA3Approximation(shared_data);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
-    approx = new PecosApproximation(approx_type, approx_order, num_vars,
-				    data_order, output_level);
+    approx = new PecosApproximation(shared_data);
   else if (approx_type == "global_gaussian")
-    approx = new GaussProcApproximation(num_vars, data_order, output_level);
+    approx = new GaussProcApproximation(shared_data);
 #ifdef HAVE_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
@@ -206,8 +182,7 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
 	   approx_type == "global_moving_least_squares")
-    approx = new SurfpackApproximation(approx_type, approx_order, num_vars,
-				       data_order, output_level);
+    approx = new SurfpackApproximation(shared_data);
 #endif // HAVE_SURFPACK
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -298,8 +273,8 @@ void Approximation::build()
     if (num_curr_pts < ms) {
       Cerr << "\nError: not enough samples to build approximation.  "
 	   << "Construction of this approximation\n       requires at least "
-	   << ms << " samples for " << numVars << " variables.  Only "
-	   << num_curr_pts << " samples were provided." << std::endl;
+	   << ms << " samples for " << sharedDataRep->numVars << " variables.  "
+	   << "Only " << num_curr_pts << " samples were provided." << std::endl;
       abort_handler(-1);
     }
   }
@@ -345,31 +320,8 @@ void Approximation::restore()
   if (approxRep)
     approxRep->restore();
   else
-    popCountStack.push_back(approxData.restore(restoration_index()));
-}
-
-
-bool Approximation::restore_available()
-{
-  if (!approxRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: restore_available() not available for this approximation "
-	 << "type." << std::endl;
-    abort_handler(-1);
-  }
-
-  return approxRep->restore_available();
-}
-
-
-size_t Approximation::restoration_index()
-{
-  if (!approxRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: restoration_index() not available for this approximation "
-	 << "type." << std::endl;
-    abort_handler(-1);
-  }
-
-  return approxRep->restoration_index();
+    popCountStack.push_back(
+      approxData.restore(sharedDataRep->restoration_index()));
 }
 
 
@@ -384,7 +336,7 @@ void Approximation::finalize()
     // finalization has to apply restorations in the correct order
     size_t i, num_restore = approxData.saved_trials(); // # of saved trial sets
     for (i=0; i<num_restore; ++i)
-      approxData.restore(finalization_index(i), false);
+      approxData.restore(sharedDataRep->finalization_index(i), false);
     clear_saved(); // clear only after process completed
   }
 }
@@ -401,18 +353,6 @@ void Approximation::combine(short corr_type)
 {
   if (approxRep) approxRep->combine(corr_type);
 //else           approxData.combine(); // base contribution; derived augments
-}
-
-
-size_t Approximation::finalization_index(size_t i)
-{
-  if (!approxRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: finalization_index(size_t) not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(-1);
-  }
-
-  return approxRep->finalization_index(i);
 }
 
 
@@ -591,10 +531,11 @@ int Approximation::min_points(bool constraint_flag) const
     int coeffs = min_coefficients();
     if (constraint_flag)
       coeffs -= num_constraints();
-    int data_per_pt = 0;
-    if (buildDataOrder & 1) data_per_pt += 1;
-    if (buildDataOrder & 2) data_per_pt += numVars;
-    if (buildDataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
+    short bdo = sharedDataRep->buildDataOrder;
+    size_t data_per_pt = 0, num_v = sharedDataRep->numVars;
+    if (bdo & 1) data_per_pt += 1;
+    if (bdo & 2) data_per_pt += num_v;
+    if (bdo & 4) data_per_pt += num_v*(num_v + 1)/2;
     return (data_per_pt > 1) ?
       (int)std::ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
   }
@@ -609,10 +550,11 @@ int Approximation::recommended_points(bool constraint_flag) const
     int coeffs = recommended_coefficients();
     if (constraint_flag)
       coeffs -= num_constraints();
-    int data_per_pt = 0;
-    if (buildDataOrder & 1) data_per_pt += 1;
-    if (buildDataOrder & 2) data_per_pt += numVars;
-    if (buildDataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
+    short bdo = sharedDataRep->buildDataOrder;
+    size_t data_per_pt = 0, num_v = sharedDataRep->numVars;
+    if (bdo & 1) data_per_pt += 1;
+    if (bdo & 2) data_per_pt += num_v;
+    if (bdo & 4) data_per_pt += num_v*(num_v + 1)/2;
     return (data_per_pt > 1) ?
       (int)std::ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
   }
@@ -627,19 +569,20 @@ add(const Variables& vars, bool anchor_flag, bool deep_copy)
   else { // not virtual: all derived classes use following definition
     // Approximation does not know about view mappings; therefore, take the
     // simple approach of matching up active or all counts with numVars.
-    if (vars.cv() + vars.div() + vars.drv() == numVars)
+    size_t num_v = sharedDataRep->numVars;
+    if (vars.cv() + vars.div() + vars.drv() == num_v)
       add(vars.continuous_variables(), vars.discrete_int_variables(),
 	  vars.discrete_real_variables(), anchor_flag, deep_copy);
-    else if (vars.acv() + vars.adiv() + vars.adrv() == numVars)
+    else if (vars.acv() + vars.adiv() + vars.adrv() == num_v)
       add(vars.all_continuous_variables(), vars.all_discrete_int_variables(),
 	  vars.all_discrete_real_variables(), anchor_flag, deep_copy);
     /*
-    else if (vars.cv() == numVars) {  // compactMode does not affect vars
+    else if (vars.cv() == num_v) {  // compactMode does not affect vars
       IntVector empty_iv; RealVector empty_rv;
       add(vars.continuous_variables(), empty_iv, empty_rv,
 	  anchor_flag, deep_copy);
     }
-    else if (vars.acv() == numVars) { // potential conflict with cv/div/drv
+    else if (vars.acv() == num_v) { // potential conflict with cv/div/drv
       IntVector empty_iv; RealVector empty_rv;
       add(vars.all_continuous_variables(), empty_iv, empty_rv,
 	  anchor_flag, deep_copy);
@@ -692,7 +635,7 @@ void Approximation::draw_surface()
   else { // draw surface of 2 independent variables
 
     if (approxCLowerBnds.length() != 2 ||
-	approxCUpperBnds.length() != 2 || numVars != 2)
+	approxCUpperBnds.length() != 2 || sharedDataRep->numVars != 2)
       return;
 
     // define number of equally spaced points in each direction

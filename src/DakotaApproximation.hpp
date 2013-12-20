@@ -16,6 +16,7 @@
 
 #include "dakota_data_util.hpp"
 #include "SurrogateData.hpp"
+#include "SharedApproxData.hpp"
 
 namespace Dakota {
 
@@ -48,10 +49,9 @@ public:
   /// default constructor
   Approximation();
   /// standard constructor for envelope
-  Approximation(ProblemDescDB& problem_db, size_t num_vars);
+  Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data);
    /// alternate constructor
-  Approximation(const String& approx_type, const UShortArray& approx_order,
-		size_t num_vars, short data_order, short output_level);
+  Approximation(const SharedApproxData& shared_data);
   /// copy constructor
   Approximation(const Approximation& approx);
 
@@ -74,14 +74,8 @@ public:
   virtual void pop(bool save_data);
   /// restores state prior to previous append()
   virtual void restore();
-  /// queries availability of restoration for trial set
-  virtual bool restore_available();
-  /// return index of trial set within restorable bookkeeping sets
-  virtual size_t restoration_index();
   /// finalize approximation by applying all remaining trial sets
   virtual void finalize();
-  /// return index of i-th trailing trial set within restorable bookkeeping sets
-  virtual size_t finalization_index(size_t i);
 
   /// store current approximation for later combination
   virtual void store();
@@ -145,9 +139,6 @@ public:
   /// return the recommended number of samples to build the approximation type
   /// in numVars dimensions (default same as min_points)
   int recommended_points(bool constraint_flag) const;
-
-  /// return the number of variables used in the approximation
-  int num_variables() const;
 
   /// return approxData
   const Pecos::SurrogateData& approximation_data() const;
@@ -214,36 +205,19 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Approximation(BaseConstructor, const ProblemDescDB& problem_db,
-		size_t num_vars);
+		const SharedApproxData& shared_data);
 
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Approximation(NoDBBaseConstructor, size_t num_vars, short data_order,
-		short output_level);
+  Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data);
 
   //
   //- Heading: Data
   //
 
-  /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
-  short outputLevel;
-
-  /// number of variables in the approximation
-  int numVars;
-
-  /// approximation type identifier
-  String approxType;
-  /// order of the data used for surrogate construction, in ActiveSet
-  /// request vector 3-bit format.
-  /** This setting distinguishes derivative data intended for use in
-      construction (includes derivatives w.r.t. the build variables) from
-      derivative data that may be approximated separately (excludes derivatives
-      w.r.t. auxilliary variables).  This setting should also not be inferred
-      directly from the responses specification, since we may need gradient
-      support for evaluating gradients at a single point (e.g., the center of
-      a trust region), but not require gradient evaluations at every point. */
-  short buildDataOrder;
+  // approximation type identifier
+  //String approxType;
 
   /// gradient of the approximation returned by gradient()
   RealVector approxGradient;
@@ -254,20 +228,8 @@ protected:
   /// approximation model (one response function)
   Pecos::SurrogateData approxData;
 
-  /// approximation continuous lower bounds (used by 3D graphics and
-  /// Surfpack KrigingModel)
-  RealVector approxCLowerBnds;
-  /// approximation continuous upper bounds (used by 3D graphics and
-  /// Surfpack KrigingModel)
-  RealVector approxCUpperBnds;
-  /// approximation continuous lower bounds
-  IntVector approxDILowerBnds;
-  /// approximation continuous upper bounds
-  IntVector approxDIUpperBnds;
-  /// approximation continuous lower bounds
-  RealVector approxDRLowerBnds;
-  /// approximation continuous upper bounds
-  RealVector approxDRUpperBnds;
+  /// contains the approximation data that is shared among the response set
+  SharedApproxData* sharedDataRep;
 
 private:
 
@@ -277,13 +239,12 @@ private:
 
   /// Used only by the standard envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  Approximation* get_approx(ProblemDescDB& problem_db, size_t num_vars);
+  Approximation* get_approx(ProblemDescDB& problem_db,
+			    const SharedApproxData& shared_data);
 
   /// Used only by the alternate envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  Approximation* get_approx(const String& approx_type,
-			    const UShortArray& approx_order, size_t num_vars,
-			    short data_order, short output_level);
+  Approximation* get_approx(const SharedApproxData& shared_data);
 
   //
   //- Heading: Data
@@ -300,37 +261,8 @@ private:
 };
 
 
-inline int Approximation::num_variables() const
-{ return (approxRep) ? approxRep->numVars : numVars; }
-
-
 inline const Pecos::SurrogateData& Approximation::approximation_data() const
 { return (approxRep) ? approxRep->approxData : approxData; }
-
-
-inline void Approximation::
-set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
-	   const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
-	   const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
-{
-  // enforce deep copies since lower/upper may be active views
-  if (approxRep) {
-    copy_data(c_l_bnds,  approxRep->approxCLowerBnds);
-    copy_data(c_u_bnds,  approxRep->approxCUpperBnds);
-    copy_data(di_l_bnds, approxRep->approxDILowerBnds);
-    copy_data(di_u_bnds, approxRep->approxDIUpperBnds);
-    copy_data(dr_l_bnds, approxRep->approxDRLowerBnds);
-    copy_data(dr_u_bnds, approxRep->approxDRUpperBnds);
-  }
-  else {
-    copy_data(c_l_bnds,  approxCLowerBnds);
-    copy_data(c_u_bnds,  approxCUpperBnds);
-    copy_data(di_l_bnds, approxDILowerBnds);
-    copy_data(di_u_bnds, approxDIUpperBnds);
-    copy_data(dr_l_bnds, approxDRLowerBnds);
-    copy_data(dr_u_bnds, approxDRUpperBnds);
-  }
-}
 
 
 inline Approximation* Approximation::approx_rep() const
@@ -376,7 +308,8 @@ add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy)
     // for compact mode, any active discrete {int,real} vars are managed
     // as real values (e.g., NonDSampling::update_model_from_sample())
     // and we do not convert them back to {di,dr}_vars here.
-    RealVector c_vars(Teuchos::View, const_cast<Real*>(sample_c_vars), numVars);
+    RealVector c_vars(Teuchos::View, const_cast<Real*>(sample_c_vars),
+		      sharedDataRep->numVars);
     IntVector di_vars; RealVector dr_vars; // empty
     add(c_vars, di_vars, dr_vars, anchor_flag, deep_copy);
   }

@@ -33,7 +33,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   approxFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   //graph3DFlag(problem_db.get_bool("strategy.graphics")),
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
-  challengeAnnotated(problem_db.get_bool("model.surrogate.challenge_points_file_annotated")),
+  challengeAnnotated(
+    problem_db.get_bool("model.surrogate.challenge_points_file_annotated")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
   actualModelInterfaceId(am_interface_id)
 {
@@ -41,8 +42,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   // be incorrect since there is no longer an approximation interface
   // specification (assign_rep() is used from DataFitSurrModel).
   // Override these inherited settings.
-  interfaceId   = "APPROX_INTERFACE";
-  interfaceType = "approximation";
+  interfaceId = "APPROX_INTERFACE"; interfaceType = "approximation";
   algebraicMappings = false; // for now; *** TO DO ***
 
   // process approxFnIndices.  IntSets are sorted and unique.  Error checking
@@ -60,8 +60,9 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   // despite view mappings, x in map() always = size of active actualModelVars
   size_t num_vars = actualModelVars.cv() + actualModelVars.div()
                   + actualModelVars.drv();
+  sharedData = SharedApproxData(problem_db, num_vars);
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it] = Approximation(problem_db, num_vars);
+    functionSurfaces[*it] = Approximation(problem_db, sharedData);
 
   /*
   // Old approach for scaling/offsetting approximation results read the data
@@ -124,21 +125,20 @@ ApproximationInterface(const String& approx_type,
 		       const String& am_interface_id, size_t num_fns,
 		       short data_order, short output_level):
   Interface(NoDBBaseConstructor(), num_fns, output_level), //graph3DFlag(false),
-  challengeAnnotated(true),
-  actualModelVars(am_vars.copy()), actualModelCache(am_cache),
-  actualModelInterfaceId(am_interface_id)
+  challengeAnnotated(true), actualModelVars(am_vars.copy()),
+  actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
 {
-  interfaceId   = "APPROX_INTERFACE";
-  interfaceType = "approximation";
+  interfaceId = "APPROX_INTERFACE"; interfaceType = "approximation";
 
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
   size_t num_vars = actualModelVars.cv() + actualModelVars.div()
                   + actualModelVars.drv();
+  sharedData = SharedApproxData(approx_type, approx_order, num_vars,
+				data_order, output_level);
   for (int i=0; i<num_fns; i++) {
     approxFnIndices.insert(i);
-    functionSurfaces[i] = Approximation(approx_type, approx_order, num_vars,
-					data_order, output_level);
+    functionSurfaces[i] = Approximation(sharedData);
   }
 }
 
@@ -341,7 +341,6 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   if (actualModelCache && response_pr.first > 0) {
     // anchor vars/resp are not sufficiently persistent for use in shallow
     // copies.  Therefore, use ordered id lookup in global PRPCache.
-//
     IntStringPair ids(response_pr.first, actualModelInterfaceId);
     PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -519,12 +518,13 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
 		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
-  // build the approximation surfaces
+  // initialize the data shared among approximation instances
+  sharedData.set_bounds(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
+			dr_l_bnds, dr_u_bnds);
+  sharedData.build();
+  // build the approximation surface instances
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
-    // always set bounds since needed for some approximation models
-    functionSurfaces[index].set_bounds(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
-				       dr_l_bnds, dr_u_bnds);
     // construct the approximation
     functionSurfaces[index].build();
 
@@ -546,7 +546,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   /* Old 3D graphics capability:
   int index = *approxFnIndices.begin();
   // if graphics is on for 2 variables, plot first functionSurface in 3D
-  if (graph3DFlag && functionSurfaces[index].num_variables() == 2) {
+  if (graph3DFlag && sharedData.num_variables() == 2) {
     functionSurfaces[index].draw_surface();
   }
   */
@@ -558,6 +558,8 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 void ApproximationInterface::
 rebuild_approximation(const BoolDeque& rebuild_deque)
 {
+  // rebuild data shared among approximation instances
+  sharedData.rebuild();
   // rebuild the approximation surfaces
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     // check for rebuild request (defaults to true if no deque defined)
@@ -566,60 +568,6 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
       functionSurfaces[*it].rebuild(); // invokes increment_coefficients()
       // diagnostics not currently active on rebuild
     }
-}
-
-
-/** This function removes data provided by a previous call to
-    append_approximation(), possibly different numbers for each
-    function, or as specified in pop_count, which is assumed same for
-    all functions. */
-void ApproximationInterface::pop_approximation(bool save_surr_data)
-{
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    // remove entries from Approximation::currentPoints
-    functionSurfaces[*it].pop(save_surr_data);
-}
-
-
-/** This function updates the coefficients for each Approximation based
-    on data increments provided by {update,append}_approximation(). */
-void ApproximationInterface::restore_approximation()
-{
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].restore();
-}
-
-
-/** This function updates the coefficients for each Approximation based
-    on data increments provided by {update,append}_approximation(). */
-bool ApproximationInterface::restore_available()
-{
-  bool avail = true;
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    if (!functionSurfaces[*it].restore_available())
-      { avail = false; break; }
-  return avail;
-}
-
-
-void ApproximationInterface::finalize_approximation()
-{
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].finalize();
-}
-
-
-void ApproximationInterface::store_approximation()
-{
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].store();
-}
-
-
-void ApproximationInterface::combine_approximation(short corr_type)
-{
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combine(corr_type);
 }
 
 

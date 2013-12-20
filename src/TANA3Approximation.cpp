@@ -19,29 +19,19 @@
 namespace Dakota {
 
 TANA3Approximation::
-TANA3Approximation(ProblemDescDB& problem_db, size_t num_vars):
-  Approximation(BaseConstructor(), problem_db, num_vars)
+TANA3Approximation(ProblemDescDB& problem_db,
+		   const SharedApproxData& shared_data):
+  Approximation(BaseConstructor(), problem_db, shared_data)
 {
-  buildDataOrder = 3;
-  pExp.sizeUninitialized(numVars);
-  minX.sizeUninitialized(numVars);
-
-  // retrieve actual_model_pointer specification and set the DB
-  const String& actual_model_ptr
-    = problem_db.get_string("model.surrogate.actual_model_pointer");
-  size_t model_index = problem_db.get_db_model_node(); // for restoration
-  problem_db.set_db_model_nodes(actual_model_ptr);
-  // sanity checks on actual model data
-  if (problem_db.get_string("responses.gradient_type") == "none") {
-    Cerr << "Error: response gradients required in TANA3Approximation."
-	 << std::endl;
+  // sanity checks
+  if (sharedDataRep->buildDataOrder != 3) {
+    Cerr << "Error: response values and gradients required in "
+	 << "TANA3Approximation." << std::endl;
     abort_handler(-1);
   }
-  if (problem_db.get_string("responses.hessian_type") != "none")
-    Cerr << "Warning: response Hessians not used within TANA3Approximation."
-	 << std::endl;
-  // restore the specification
-  problem_db.set_db_model_nodes(model_index);
+
+  pExp.sizeUninitialized(sharedDataRep->numVars);
+  minX.sizeUninitialized(sharedDataRep->numVars);
 }
 
 
@@ -50,7 +40,7 @@ int TANA3Approximation::min_coefficients() const
   // TANA-3 requires 2 expansion points, each with value and gradient data.
   // However, this class requires a minimum of 1 expansion point, for which a
   // first-order Taylor series is employed as an interim approximation.
-  return numVars + 1;
+  return sharedDataRep->numVars + 1;
 }
 
 
@@ -58,7 +48,7 @@ int TANA3Approximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
   // the number of constraints within approxData's anchor point.
-  return (approxData.anchor()) ? numVars + 1 : 0;
+  return (approxData.anchor()) ? sharedDataRep->numVars + 1 : 0;
 }
 
 
@@ -83,13 +73,9 @@ void TANA3Approximation::build()
 	 << std::endl;
     abort_handler(-1);
   }
-  if (!(buildDataOrder & 1)) {
-    Cerr << "Error: response values required in TANA3Approximation::build."
-	 << std::endl;
-    abort_handler(-1);
-  }
-  if ( !(buildDataOrder & 2) ||
-       approxData.anchor_gradient().length() != numVars ) {
+
+  size_t num_v = sharedDataRep->numVars;
+  if (approxData.anchor_gradient().length() != num_v) {
     Cerr << "Error: response gradients required in TANA3Approximation::build."
 	 << std::endl;
     abort_handler(-1);
@@ -97,22 +83,20 @@ void TANA3Approximation::build()
 
   if (approxData.size()) { // two-point approximation
     // Check gradients
-    if (approxData.response_gradient(0).length() != numVars) {
+    if (approxData.response_gradient(0).length() != num_v) {
       Cerr << "Error: gradients required in TANA3Approximation::build."
 	   << std::endl;
       abort_handler(-1);
     }
 
     // alternate constructor sets numVars after construction
-    if (pExp.empty())
-      pExp.sizeUninitialized(numVars);
-    if (minX.empty())
-      minX.sizeUninitialized(numVars);
+    if (pExp.empty()) pExp.sizeUninitialized(num_v);
+    if (minX.empty()) minX.sizeUninitialized(num_v);
 
     // Calculate TANA3 terms
     const RealVector& x1 = approxData.continuous_variables(0);
     const RealVector& x2 = approxData.anchor_continuous_variables();
-    for (size_t i=0; i<numVars; i++)
+    for (size_t i=0; i<num_v; i++)
       minX[i] = std::min(x1[i], x2[i]);
     find_scaled_coefficients();
   }
@@ -171,8 +155,8 @@ void TANA3Approximation::find_scaled_coefficients()
   // numerical difficulties for x <= 0.
   // s = (x-l)/(u-l) + 1  -->  x = l + (s-1)(u-l)  -->  dx/ds = u-l
   // This approach has been observed to result in large p[i]'s.
-  RealVector s_eval(numVars), sgrad1(numVars), sgrad2(numVars);
-  for (i=0; i<numVars; i++) {
+  RealVector s_eval(num_v), sgrad1(num_v), sgrad2(num_v);
+  for (i=0; i<num_v; i++) {
     Real lb = l_bnds[i], bdiff = u_bnds[i] - lb;
     s_eval[i] = (x_eval[i] - lb)/bdiff + 1.;
     scX1[i]   = (x1[i]     - lb)/bdiff + 1.;
@@ -189,9 +173,9 @@ void TANA3Approximation::find_scaled_coefficients()
   offset(x2, scX2);
 
   // Calculate p exponents
-  size_t i;
+  size_t i, num_v = sharedDataRep->numVars;
   Real p_max = 10.; // TANA papers use either 5 or application-specific logic
-  for (i=0; i<numVars; i++) {
+  for (i=0; i<num_v; i++) {
     // A number of numerical problems are possible:
     // if grad2[i]   -> 0 or s2[i] -> 0, grad_ratio or pt_ratio -> Infinity
     // if grad_ratio <= 0, log(grad_ratio) -> -Inf (if 0), FPE (if negative)
@@ -237,7 +221,7 @@ void TANA3Approximation::find_scaled_coefficients()
 
   // Calculate H
   H = f1 - f2;
-  for (i=0; i<numVars; i++) {
+  for (i=0; i<num_v; i++) {
     Real s2i = scX2[i], pi = pExp[i];
     H -= grad2[i] * std::pow(s2i,1.-pi) / pi *
       (std::pow(scX1[i],pi) - std::pow(s2i,pi));
@@ -257,7 +241,8 @@ void TANA3Approximation::find_scaled_coefficients()
 void TANA3Approximation::offset(const RealVector& x, RealVector& s)
 {
   copy_data(x, s);
-  for (size_t i=0; i<numVars; i++) {
+  size_t i, num_v = sharedDataRep->numVars;
+  for (i=0; i<num_v; i++) {
     // Offset based on lower bound:
     //Real lb = l_bnds[i];
     //Real offset = (lb <= 0.) ? 1. - lb : 0.;
@@ -280,13 +265,14 @@ Real TANA3Approximation::value(const Variables& vars)
 {
   Real approx_val;
   const RealVector& x = vars.continuous_variables();
+  size_t i, num_v = sharedDataRep->numVars;
   if (approxData.size()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
     RealVector s_eval;
     offset(x, s_eval);
-    size_t i; bool rescale_flag = false;
-    for (i=0; i<numVars; i++)
+    bool rescale_flag = false;
+    for (i=0; i<num_v; i++)
       if (x[i] < minX[i] && s_eval[i] < 0.) { // *** change from old NonDRel ***
 	minX[i] = x[i];
 	rescale_flag = true;
@@ -300,7 +286,7 @@ Real TANA3Approximation::value(const Variables& vars)
     const Real&       f2    = approxData.anchor_function();
     const RealVector& grad2 = approxData.anchor_gradient();
     Real sum1 = 0., sum_diff1_sq = 0., sum_diff2_sq = 0.;
-    for (i=0; i<numVars; i++) {
+    for (i=0; i<num_v; i++) {
       Real pi = pExp[i], sp = std::pow(s_eval[i],pi), s2i = scX2[i],
 	diff1 = sp - std::pow(scX1[i],pi), diff2 = sp - std::pow(s2i,pi);
       sum1 += grad2[i]*std::pow(s2i,1.-pi)/pi*diff2;
@@ -318,7 +304,7 @@ Real TANA3Approximation::value(const Variables& vars)
     approx_val             = approxData.anchor_function();
     const RealVector&   x0 = approxData.anchor_continuous_variables();
     const RealVector& grad = approxData.anchor_gradient();
-    for (size_t i=0; i<numVars; i++) {
+    for (i=0; i<num_v; i++) {
       Real dist_i = x[i] - x0[i];
       approx_val += grad[i] * dist_i;
     }
@@ -336,8 +322,8 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
     const RealVector& x = vars.continuous_variables();
     RealVector s_eval;
     offset(x, s_eval);
-    size_t i; bool rescale_flag = false;
-    for (i=0; i<numVars; i++)
+    size_t i, num_v = sharedDataRep->numVars; bool rescale_flag = false;
+    for (i=0; i<num_v; i++)
       if (x[i] < minX[i] && s_eval[i] < 0.) {
 	minX[i] = x[i];
 	rescale_flag = true;
@@ -350,13 +336,13 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
     // Calculate approxGradient
     const RealVector& grad2 = approxData.anchor_gradient();
     Real sum_diff1_sq = 0., sum_diff2_sq = 0.;
-    for (i=0; i<numVars; i++) {
+    for (i=0; i<num_v; i++) {
       Real pi = pExp[i], sp = std::pow(s_eval[i],pi),
 	diff1 = sp - std::pow(scX1[i],pi), diff2 = sp - std::pow(scX2[i],pi);
       sum_diff1_sq += diff1*diff1;
       sum_diff2_sq += diff2*diff2;
     }
-    for (i=0; i<numVars; i++) {
+    for (i=0; i<num_v; i++) {
       Real svi = s_eval[i], s2i = scX2[i], pi = pExp[i], sp = std::pow(svi,pi),
 	diff1 = sp - std::pow(scX1[i],pi), diff2 = sp - std::pow(s2i,pi);
       Real E= H*pi*std::pow(svi,pi-1.)*(diff2*sum_diff1_sq - diff1*sum_diff2_sq)

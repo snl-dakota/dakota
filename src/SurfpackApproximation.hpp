@@ -26,6 +26,8 @@ template< typename T > class SurfpackMatrix;
 
 namespace Dakota {
 
+class SharedApproxData;
+
 
 /// Derived approximation class for Surfpack approximation classes.
 /// Interface between Surfpack and Dakota.
@@ -48,12 +50,11 @@ public:
 
   /// default constructor
   SurfpackApproximation();
-  /// alternate constructor
-  SurfpackApproximation(const String& approx_type,
-			const UShortArray& approx_order, size_t num_vars,
-			short data_order, short output_level);
   /// standard constructor: Surfpack surface of appropriate type will be created
-  SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars);
+  SurfpackApproximation(const ProblemDescDB& problem_db,
+			const SharedApproxData& shared_data);
+  /// alternate constructor
+  SurfpackApproximation(const SharedApproxData& shared_data);
   /// destructor
   ~SurfpackApproximation();
 
@@ -115,32 +116,9 @@ private:
   /// into surf_data
   void add_anchor_to_surfdata(SurfData& surf_data);
 
-  /// add Pecos::SurrogateData::SurrogateData{Vars,Resp} to SurfData,
-  /// accounting for buildDataOrder available
-  void add_sd_to_surfdata(const Pecos::SurrogateDataVars& sdv,
-			  const Pecos::SurrogateDataResp& sdr, short fail_code,
-			  SurfData& surf_data);
-
-  /// copy RealSymMatrix to SurfpackMatrix (Real type only)
-  void copy_matrix(const RealSymMatrix& rsm,
-		   SurfpackMatrix<Real>& surfpack_matrix);
-
-  /// merge cv, div, and drv vectors into a single ra array
-  void merge_variable_arrays(const RealVector& cv,  const IntVector& div,
-			     const RealVector& drv, RealArray& ra);
-  /// aggregate {continuous,discrete int,discrete real} variables 
-  /// from SurrogateDataVars into ra
-  void sdv_to_realarray(const Pecos::SurrogateDataVars& sdv, RealArray& ra);
-  /// aggregate {active,all} {continuous,discrete int,discrete real}
-  /// variables into ra
-  void vars_to_realarray(const Variables& vars, RealArray& ra);
-
   //
   //- Heading: Data
   //
-
-  /// order of polynomial approximation
-  unsigned short approxOrder;
 
   // Vector representation of the Approximation (e.g., polynomial coefficients
   // for linear regression or trained neural network weights).  The format of
@@ -154,26 +132,13 @@ private:
   /// The data used to build the approximation, in Surfpack format
   SurfData* surfData;
 
-  /// A Surfpack model name for saving the surrogate model
-  String exportModelName;
-    
-  /// set of diagnostic metrics
-  StringArray diagnosticSet;
-
-  /// whether to perform cross validation
-  bool crossValidateFlag;
-  /// number of folds for CV
-  unsigned numFolds;
-  /// percentage of data for CV
-  Real percentFold;
-  /// whether to perform PRESS
-  bool pressFlag;
-
+  // convenience pointer to shared data representation
+  //SharedSurfpackApproxData* sharedSurfDataRep;
 };
 
 
 inline SurfpackApproximation::SurfpackApproximation():
-  surfData(NULL), model(NULL), factory(NULL)
+  surfData(NULL), model(NULL), factory(NULL)//, sharedDataRep(NULL)
 { }
 
 

@@ -18,7 +18,7 @@
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
 #include "PecosApproximation.hpp"
-#include "InterpPolyApproximation.hpp"
+#include "SharedInterpPolyApproxData.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
 //#define DEBUG
@@ -282,11 +282,16 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDStochCollocation::initialize_u_space_model()
 {
-  // build a polynomial basis for purposes of defining collocation pts/wts
-  std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
+  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
+  // passed through the DataFitSurrModel ctor chain.  Additional data needed
+  // by InterpPolyApproximation are passed using Pecos::BasisConfigOptions.
+  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
   Pecos::BasisConfigOptions bc_options(nestedRules, piecewiseBasis,
 				       true, useDerivs);
-  Pecos::InterpPolyApproximation::construct_basis(natafTransform.u_types(),
+
+  // build a polynomial basis for purposes of defining collocation pts/wts
+  std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
+  Pecos::SharedInterpPolyApproxData::construct_basis(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters(), bc_options,
     num_int_poly_basis);
 
