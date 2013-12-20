@@ -243,10 +243,9 @@ approximation_function_indices(const IntSet& approx_fn_indices)
     pop_count, which is assumed to be the same for all functions. */
 inline void ApproximationInterface::pop_approximation(bool save_surr_data)
 {
+  sharedData.pop(save_surr_data); // operation order not currently important
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    // remove entries from Approximation::currentPoints
     functionSurfaces[*it].pop(save_surr_data);
-  sharedData.pop(save_surr_data); // TO DO: do first or last?
 }
 
 
@@ -254,9 +253,10 @@ inline void ApproximationInterface::pop_approximation(bool save_surr_data)
     on data increments provided by {update,append}_approximation(). */
 inline void ApproximationInterface::restore_approximation()
 {
-  sharedData.restore(); // do shared aggregation first
+  sharedData.pre_restore(); // do shared aggregation first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].restore();
+    functionSurfaces[*it].restore(); // requires sharedData restoration index
+  sharedData.post_restore(); // do shared cleanup last
 }
 
 
@@ -266,9 +266,10 @@ inline bool ApproximationInterface::restore_available()
 
 inline void ApproximationInterface::finalize_approximation()
 {
+  sharedData.pre_finalize(); // do shared aggregation first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].finalize();
-  sharedData.finalize(); // do shared cleanup last
+    functionSurfaces[*it].finalize(); // requires sharedData finalization index
+  sharedData.post_finalize(); // do shared cleanup last
 }
 
 
@@ -282,9 +283,10 @@ inline void ApproximationInterface::store_approximation()
 
 inline void ApproximationInterface::combine_approximation(short corr_type)
 {
+  sharedData.pre_combine(corr_type); // do shared aggregation first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].combine(corr_type);
-  sharedData.combine(corr_type); // do shared cleanup last
+  sharedData.post_combine(corr_type); // do shared cleanup last
 }
 
 

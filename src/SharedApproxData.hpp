@@ -82,17 +82,23 @@ public:
   /// return index of trial set within restorable bookkeeping sets
   virtual size_t restoration_index();
   /// restore a previous state of the shared approximation data 
-  virtual void restore();
+  virtual void pre_restore();
+  /// clean up saved storage following restoration 
+  virtual void post_restore();
   /// return index of i-th trailing trial set within restorable bookkeeping sets
   virtual size_t finalization_index(size_t i);
   /// finalize the shared approximation data following a set of increments
-  virtual void finalize();
+  virtual void pre_finalize();
+  /// clean up saved storage following aggregation
+  virtual void post_finalize();
 
   /// store the current state of the shared approximation data for
   /// later combination
   virtual void store();
-  /// combine the shared approximation data from current and saved states
-  virtual void combine(short corr_type);
+  /// aggregate the shared approximation data from current and saved states
+  virtual void pre_combine(short corr_type);
+  /// clean up saved storage after aggregation
+  virtual void post_combine(short corr_type);
 
   //
   //- Heading: Member functions

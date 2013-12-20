@@ -115,12 +115,15 @@ protected:
   void pop(bool save_surr_data);
   bool restore_available();
   size_t restoration_index();
-  void restore();
+  void pre_restore();
+  void post_restore();
   size_t finalization_index(size_t i);
-  void finalize();
+  void pre_finalize();
+  void post_finalize();
 
   void store();
-  void combine(short corr_type);
+  void pre_combine(short corr_type);
+  void post_combine(short corr_type);
 
 private:
 
@@ -174,24 +177,36 @@ inline size_t SharedPecosApproxData::restoration_index()
 { return pecosSharedDataRep->restoration_index(); }
 
 
-inline void SharedPecosApproxData::restore()
-{ pecosSharedDataRep->restore_data(); }
+inline void SharedPecosApproxData::pre_restore()
+{ pecosSharedDataRep->pre_restore_data(); }
+
+
+inline void SharedPecosApproxData::post_restore()
+{ pecosSharedDataRep->post_restore_data(); }
 
 
 inline size_t SharedPecosApproxData::finalization_index(size_t i)
 { return pecosSharedDataRep->finalization_index(i); }
 
 
-inline void SharedPecosApproxData::finalize()
-{ pecosSharedDataRep->finalize_data(); }
+inline void SharedPecosApproxData::pre_finalize()
+{ pecosSharedDataRep->pre_finalize_data(); }
+
+
+inline void SharedPecosApproxData::post_finalize()
+{ pecosSharedDataRep->post_finalize_data(); }
 
 
 inline void SharedPecosApproxData::store()
 { pecosSharedDataRep->store_data(); }
 
 
-inline void SharedPecosApproxData::combine(short corr_type)
-{ pecosSharedDataRep->combine_data(corr_type); }
+inline void SharedPecosApproxData::pre_combine(short corr_type)
+{ pecosSharedDataRep->pre_combine_data(corr_type); }
+
+
+inline void SharedPecosApproxData::post_combine(short corr_type)
+{ pecosSharedDataRep->post_combine_data(corr_type); }
 
 
 inline void SharedPecosApproxData::

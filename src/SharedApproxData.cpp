@@ -385,13 +385,25 @@ size_t SharedApproxData::restoration_index()
 }
 
 
-void SharedApproxData::restore()
+void SharedApproxData::pre_restore()
 {
   if (dataRep)
-    dataRep->restore();
+    dataRep->pre_restore();
   else {
-    Cerr << "\nError: restore() not defined for this shared approximation type."
-	 << std::endl;
+    Cerr << "\nError: pre_restore() not defined for this shared approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void SharedApproxData::post_restore()
+{
+  if (dataRep)
+    dataRep->post_restore();
+  else {
+    Cerr << "\nError: post_restore() not defined for this shared approximation "
+	 << "type." << std::endl;
     abort_handler(-1);
   }
 }
@@ -409,13 +421,25 @@ size_t SharedApproxData::finalization_index(size_t i)
 }
 
 
-void SharedApproxData::finalize()
+void SharedApproxData::pre_finalize()
 {
   if (dataRep)
-    dataRep->finalize();
+    dataRep->pre_finalize();
   else {
-    Cerr << "\nError: finalize() not defined for this shared approximation "
+    Cerr << "\nError: pre_finalize() not defined for this shared approximation "
 	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void SharedApproxData::post_finalize()
+{
+  if (dataRep)
+    dataRep->post_finalize();
+  else {
+    Cerr << "\nError: post_finalize() not defined for this shared "
+	 << "approximation type." << std::endl;
     abort_handler(-1);
   }
 }
@@ -433,13 +457,25 @@ void SharedApproxData::store()
 }
 
 
-void SharedApproxData::combine(short corr_type)
+void SharedApproxData::pre_combine(short corr_type)
 {
   if (dataRep)
-    dataRep->combine(corr_type);
+    dataRep->pre_combine(corr_type);
   else {
-    Cerr << "\nError: combine() not defined for this shared approximation type."
-	 << std::endl;
+    Cerr << "\nError: pre_combine() not defined for this shared approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void SharedApproxData::post_combine(short corr_type)
+{
+  if (dataRep)
+    dataRep->post_combine(corr_type);
+  else {
+    Cerr << "\nError: post_combine() not defined for this shared approximation "
+	 << "type." << std::endl;
     abort_handler(-1);
   }
 }
