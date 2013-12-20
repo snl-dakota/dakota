@@ -336,11 +336,7 @@ void SharedApproxData::build()
 {
   if (dataRep)
     dataRep->build();
-  else {
-    Cerr << "\nError: build() not defined for this shared approximation type."
-	 << std::endl;
-    abort_handler(-1);
-  }
+  //else no-op (implementation not required for shared data)
 }
 
 
