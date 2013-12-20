@@ -42,9 +42,10 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // gradient/Hessian specifications and approximation type support.  The
   // converse of enforcing minimal data requirements (e.g., TANA) is
   // enforced in the derived classes.
-  bool use_derivs = problem_db.get_bool("model.surrogate.derivative_usage");
+  bool global_approx = strbegins(approxType, "global_"),
+    use_derivs = problem_db.get_bool("model.surrogate.derivative_usage");
   buildDataOrder = 1;
-  if (use_derivs) {
+  if ( !global_approx || (global_approx && use_derivs) ) {
 
     // retrieve actual_model_pointer specification and set the DB
     const String& actual_model_ptr
@@ -53,7 +54,8 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
     problem_db.set_db_model_nodes(actual_model_ptr);
 
     if (problem_db.get_string("responses.gradient_type") != "none") {
-      if (approxType == "global_polynomial" || approxType == "global_kriging" ||
+      if (!global_approx || approxType == "global_polynomial" ||
+	  approxType == "global_kriging" ||
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
 	  strends(approxType, "_interpolation_polynomial") ||
 	  strends(approxType, "_orthogonal_polynomial"))
@@ -68,7 +70,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
 	     << approxType << " for gradient incorporation.\n\n";
     }
     if (problem_db.get_string("responses.hessian_type")  != "none") {
-      if (approxType == "global_polynomial")
+      if (approxType == "local_taylor" || approxType == "global_polynomial")
 	buildDataOrder |= 4;
       else
 	Cerr << "Warning: use_derivatives is not currently supported by "
@@ -99,9 +101,11 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
   dataRep(NULL), referenceCount(1)
 {
+  bool global_approx = strbegins(approxType, "global_");
   buildDataOrder = 1;
   if (data_order & 2) {
-    if (approxType == "global_polynomial" || approxType == "global_kriging" ||
+    if (!global_approx || approxType == "global_polynomial" ||
+	approxType == "global_kriging" ||
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
 	strends(approxType, "_interpolation_polynomial") ||
 	strends(approxType, "_orthogonal_polynomial"))
@@ -116,7 +120,7 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 	   << approxType << " for gradient incorporation.\n\n";
   }
   if (data_order & 4) {
-    if (approxType == "global_polynomial")
+    if (approxType == "local_taylor" || approxType == "global_polynomial")
       buildDataOrder |= 4;
     else
       Cerr << "Warning: use_derivatives is not currently supported by "
