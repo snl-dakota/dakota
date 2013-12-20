@@ -357,11 +357,7 @@ void SharedApproxData::pop(bool save_surr_data)
 {
   if (dataRep)
     dataRep->pop(save_surr_data);
-  else {
-    Cerr << "\nError: pop() not defined for this shared approximation type."
-	 << std::endl;
-    abort_handler(-1);
-  }
+  //else no-op (implementation not required for shared data)
 }
 
 
