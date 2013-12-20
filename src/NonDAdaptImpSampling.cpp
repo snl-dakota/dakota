@@ -283,7 +283,7 @@ void NonDAdaptImpSampling::quantify_uncertainty()
     // iteratively generate samples and select representative points
     //   until coefficient of variation converges
     converge_cov();
-
+    
     if (numRepPoints)
       // iteratively generate samples from final set of representative points
       //   until probability converges
@@ -305,6 +305,9 @@ void NonDAdaptImpSampling::converge_cov()
 {
   // select intial set of representative points from initPoints
   // representative points & weights stored in repPoints/repWeights
+  //Real fail_tol = 0.5;
+  //select_rep_points(initPoints,fail_tol);
+
   select_init_rep_points();
 
   // If no representative points were found, quit
@@ -653,7 +656,6 @@ select_rep_points(const RealVectorArray& samples, Real& fail_tol)
   // store samples in min_indx in repPoints
   RealVectorArray prev_rep_pts = repPoints;
 
-
   repPoints.resize(new_rep_pts);
   for (i=0; i<new_rep_pts; ++i) {
     size_t idx = min_indx[i], fail_idx = fail_indices[idx];
@@ -732,6 +734,8 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
 	rep_sample[k] = lhs_sample[k] + rep_pt_i[k];
     }
   }
+
+  sampleVals.resize(numSamples);
 }
 
 
@@ -763,7 +767,8 @@ calculate_statistics(const RealVectorArray& samples,
   */
   // calculate the probability of failure
   for (i=0; i<numSamples; i++) {
-    const RealVector& sample_i = samples[i];
+    
+    RealVector sample_i = samples[i];
 
     /*if (transPoints) { // u-space points -> x-space Model (NonDLocal)
       // append uncertain sample to designPoint before evaluation
