@@ -305,10 +305,10 @@ void NonDAdaptImpSampling::converge_cov()
 {
   // select intial set of representative points from initPoints
   // representative points & weights stored in repPoints/repWeights
-  //Real fail_tol = 0.5;
-  //select_rep_points(initPoints,fail_tol);
+  Real fail_tol = 0.5;
+  select_rep_points(initPoints,fail_tol);
 
-  select_init_rep_points();
+ // select_init_rep_points();
 
   // If no representative points were found, quit
   if (numRepPoints==0) return;
@@ -491,8 +491,8 @@ void NonDAdaptImpSampling::select_init_rep_points()
 #endif
   numRepPoints = 0;
   // if there are no failure points, quit
-  if (fail_count==0) // no failures, so p=0 (or 1)
-    return;
+  //if (fail_count==0) // no failures, so p=0 (or 1)
+    //return;
 
   // remove points too close together
   // start with most probable failure point (smallest beta)
@@ -607,7 +607,7 @@ select_rep_points(const RealVectorArray& samples, Real& fail_tol)
 
   //TMW: If no points are found in the failure domain, take the closest one
   if (fail_count == 0) {
-      fail_count = 1;
+      ++fail_count;
       fail_indices.push_back(closestpt);
       fail_betas.push_back(closestbeta);
   }
@@ -654,7 +654,7 @@ select_rep_points(const RealVectorArray& samples, Real& fail_tol)
   }
 
   // store samples in min_indx in repPoints
-  RealVectorArray prev_rep_pts = repPoints;
+  //RealVectorArray prev_rep_pts = repPoints;
 
   repPoints.resize(new_rep_pts);
   for (i=0; i<new_rep_pts; ++i) {
@@ -724,6 +724,12 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
     // apportion numSamples among repPoints based on repWeights
     int num_rep_samples = (numRepPoints > 1) ?
       std::max(1, int(repWeights[i]*numSamples)) : numSamples;
+
+    if (i == numRepPoints - 1) {
+       num_rep_samples = numSamples - cntr;
+    }
+
+
     // recenter std normals around i-th rep point
     const RealVector& rep_pt_i = repPoints[i];
     for (j=0; j<num_rep_samples && cntr<numSamples; ++j, ++cntr) {
@@ -770,6 +776,8 @@ calculate_statistics(const RealVectorArray& samples,
     
     RealVector sample_i = samples[i];
 
+    //Cout << "size of sample" << sample_i.length() << std::endl;
+
     /*if (transPoints) { // u-space points -> x-space Model (NonDLocal)
       // append uncertain sample to designPoint before evaluation
       // this must be done before the transformation because trans_U_to_X
@@ -799,6 +807,8 @@ calculate_statistics(const RealVectorArray& samples,
       Real mmpdf = 0.;
 
       for (j=0; j<numRepPoints; ++j) {
+        //Cout << "repPoint = " << repPoints[j] << std::endl;
+
 	mmpdf += repWeights[j] *
 	  Pecos::phi(distance(repPoints[j], sample_i) / n_std_devs);
       }
