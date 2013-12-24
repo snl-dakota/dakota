@@ -317,6 +317,22 @@ public:
   }
 
 
+  /// storage of ragged array of vector<T> - each "row" can be variable length
+  /// for example vector< vector<int> >, vector< vector<double> >
+  template <typename T>
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<std::vector<T> >& buf) const
+  {
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    std::vector<hsize_t> dims;
+    dims += buf.size(); // std::vector< row_vec > is STILL 1D dataspace
+
+    return store_data<T,1>(dset_name, dims, buf);
+  }
+
+
   // should parameterize on ScalarType -- template <typename T>
   // that way, same func for ints, doubles,...
   herr_t store_data(const std::string& dset_name,
@@ -486,6 +502,53 @@ public:
 
 private:
 
+  /// storage of ragged array of vector<T> - each "row" can be variable length
+  /// for example vector<vector<int>>, vector<vector<real>>,
+  /// WJB - ToDo: consider support for vector<IntVector>,vector<RealVector>
+  template <typename T, size_t DIM>
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<hsize_t>& dims,
+                    const std::vector<std::vector<T> >& buf) const
+  {
+    if ( dims.size() != DIM && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    const size_t num_rows = buf.size();
+
+    // WJB - ToDo:  better group "management" (Evans uses a stack)
+    create_groups(dset_name);
+
+    std::vector<hvl_t> wdata;
+
+    for (size_t i=0; i<num_rows; ++i) {
+      hvl_t row_data;
+      row_data.len = buf[i].size();
+      row_data.p   = (void*)buf[i].data();
+      wdata.push_back(row_data);
+    }
+
+    // WJB - ToDo:  evaluate necessity of BOTH filetype AND memtype
+    //              (versus re-use of same hid_t for use cases below)
+    hid_t filetype = H5Tvlen_create( NativeDataTypes<T>::datatype() );
+    hid_t memtype  = H5Tvlen_create( NativeDataTypes<T>::datatype() );
+
+    // Create dataspace.  Setting maximum size to NULL sets the maximum
+    hid_t space = H5Screate_simple( 1, dims.data(), NULL );
+
+    // Create the dataset and write the variable-length data to it.
+    hid_t dset = H5Dcreate( binStreamId, dset_name.c_str(), filetype, space,
+                   H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+    herr_t status = H5Dwrite( dset, memtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+                      wdata.data() );
+
+    if ( status < 0 && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    // WJB: need better resource "management" (invoke close funcs at proper time)
+    return (status);
+  }
+
+
   /// storage of contiguous array of T, potentially as a multi-array with dims
   /// for example vector<int>, vector<real>, IntVector, RealVector, RealMatrix
   template <typename T, size_t DIM>
@@ -496,6 +559,7 @@ private:
     if ( dims.size() != DIM && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
+// WJB: need better group "management" (Evans uses a stack)
     create_groups(dset_name);
 
     herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),

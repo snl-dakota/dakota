@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright (c) 2010, Sandia National Laboratories.
+    2opyright (c) 2010, Sandia National Laboratories.
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -9,6 +9,7 @@
 #include "BinaryIO_Helper.hpp"
 
 #include <boost/assign/std/vector.hpp>
+#include <boost/foreach.hpp>
 
 #include <cassert>
 #include <iostream>
@@ -175,6 +176,72 @@ void test_write_read_string(const std::string& file_name)
 }
 
 
+template <typename T>
+void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
+                                 const std::string& file_name="")
+{
+  using std::vector;
+  bool db_is_incore = false;
+  bool file_exist = true;
+  bool read_only = false;
+  herr_t status;
+
+  vector< vector<T> > vlvec_array_out;
+  vector<T> wdat0(4);
+  vector<T> wdat1, wdat3;
+  vector<T> wdat2(3);
+
+  for (size_t i=0; i<wdat0.size(); ++i)
+    wdat0[i] = wdat0.size() - i; // 4 3 2 1
+
+  for (size_t i=0; i<wdat2.size(); ++i)
+    wdat2[i] = wdat2.size() - i; // 3 2 1
+
+  wdat1 += seed_val,seed_val;
+  for (size_t i=2; i<6; ++i) {
+    wdat1.push_back(wdat1[i-1] + wdat1[i-2]); // 1 1 2 3 5 8 etc.
+  }
+
+  wdat3 += seed_val,seed_val;
+  for (size_t i=2; i<8; ++i) {
+    wdat3.push_back(wdat3[i-1] + wdat3[i-2]); // 1 1 2 3 5 8 13 21 etc.
+  }
+
+  vlvec_array_out.push_back(wdat0); vlvec_array_out.push_back(wdat1); 
+  vlvec_array_out.push_back(wdat2); vlvec_array_out.push_back(wdat3); 
+
+  // scope within which file write takes place
+  {
+    // open file
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
+
+    status = binary_file.store_data(data_label, vlvec_array_out);
+    assert(status >= 0);
+    // binary stream goes out of scope... (file close)
+  }
+
+  // scope within which file read takes place
+  {
+    /* open/read file
+    file_exist = true;
+    read_only = true;
+    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                   read_only);
+
+    vector< vector<T> > vlvec_array_in;
+    //binary_file.read_data("/RaggedArrayData", vlvec_array_in);
+    
+    // WJB: consider Teuchos vector ( hopefully overloaded == )
+    assert(vlvec_array_in.size() == vlvec_array_out.size());
+    // for (size_t i=0; i<str_array_out.size(); ++i)
+    //   assert(str_array_in[i] = str_array_out[i]);
+
+    // binary stream goes out of scope... (file close) */
+  }
+
+}
+
 void test_write_read_string_array(const std::string& file_name)
 {
   bool db_is_incore = false;
@@ -278,9 +345,11 @@ herr_t testHDF5fileDB(const std::string& file_name)
     // binary stream goes out of scope... (file close)
   }
 
-  // WJB: shucks -- test_write_read_native_val(file_name, "/DakPi", 3.14159);
   test_write_read_native_val("/DakPi", 3.14159, file_name);
   test_write_read_std_vec(file_name, "/SomeIntVectorData", 314159);
+
+  test_write_read_vlvec_array("/RaggedIntArrayData",   1, file_name);
+  test_write_read_vlvec_array("/RaggedRealArrayData", 1., file_name);
 
   test_write_read_string(file_name);
   test_write_read_string_array(file_name);
@@ -363,8 +432,9 @@ int main()
 
   status = testHDF5_DB("binary_io_test.h5");
 
-  // New test: no argument means test in-core HDF5
-  status = testHDF5_DB();
+  // no argument to test function implies default, i.e. test in-core HDF5
+  //status = testHDF5_DB();
+  testHDF5_DB();
 
   // ToDo:  test vector of DBs
 
