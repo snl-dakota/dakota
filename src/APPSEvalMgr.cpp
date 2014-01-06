@@ -181,4 +181,9 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
   }
 }
 
+std::string APPSEvalMgr::getEvaluatorType(void) const
+{
+  return ("DakotaLinkedEvaluator");
+}
+
 } // namespace Dakota
