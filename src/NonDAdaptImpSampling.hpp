@@ -95,21 +95,18 @@ private:
   /// until probability converges
   void converge_probability();
 
-  /// select representative points from initialPoints
-  void select_init_rep_points();
-
   /// select representative points from a set of samples
-  void select_rep_points(const RealVectorArray& samples, Real& fail_tol);
+  void select_rep_points(const RealVectorArray& samples_u);
 
   /// calculate relative weights of representative points
   void calculate_rep_weights();
 
   /// generate a set of samples based on multimodal sampling density
-  void generate_samples(RealVectorArray& samples);
+  void generate_samples(RealVectorArray& samples_u);
 
   /// calculate the probability of exceeding the failure threshold and
   /// the coefficent of variation (if requested)
-  void calculate_statistics(const RealVectorArray& samples,
+  void calculate_statistics(const RealVectorArray& samples_u,
 			    const size_t& total_sample_number,
 			    Real& probability_sum, Real& probability,
 			    bool  cov_flag, Real& variance_sum,
@@ -119,11 +116,16 @@ private:
   Real distance(const RealVector& a, const RealVector& b);
 
   /// evaluate the model at the sample points and store the responses
-  void evaluate_samples(const RealVectorArray& samples);
+  void evaluate_samples(const RealVectorArray& samples_u);
 
   //
   //- Heading: Data members
   //
+
+  // Note: requested/computed response/probability level arrays are managed
+  // by NonD(Global/Local)Reliability, and the currently active scalars (for
+  // a particular response function at a particular level) are passed though
+  // initialize().
 
   /// integration type (is, ais, mmais) provided by input specification
   short importanceSamplingType;
@@ -133,12 +135,12 @@ private:
   size_t numRepPoints;
   /// the response function in the model to be sampled
   size_t respFn;
-  /// the original set of samples passed into the MMAIS routine
-  RealVectorArray initPoints;
+  /// the original set of u-space samples passed into the MMAIS routine
+  RealVectorArray initPointsU;
   /// the values of the response function at the sample points
   RealVector sampleVals;
-  /// the set of representative points around which to sample
-  RealVectorArray repPoints;
+  /// the set of representative points in u-space around which to sample
+  RealVectorArray repPointsU;
   /// the weight associated with each representative point
   RealVector repWeights;
   /// design point at which uncertain space is being sampled
@@ -147,7 +149,7 @@ private:
   /// initial points
   bool transInitPoints;
   /// flag to control if u->x transformation should be performed
-  /// before evaluation
+  /// before model evaluation
   bool transPoints;
   /// flag to control if the sampler should respect the model bounds
   bool useModelBounds;
@@ -159,10 +161,6 @@ private:
   Real finalProb;
   /// the failure threshold (z-bar) for the problem.
   Real failThresh;
-  // Note: requested/computed response/probability level arrays are managed
-  // by NonD(Global/Local)Reliability, and the currently active scalars (for
-  // a particular response function at a particular level) are passed though
-  // initialize().
 };
 
 
