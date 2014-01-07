@@ -920,6 +920,7 @@ KEYWORD12 method
 	  [ import
 	  | adapt_import
 	  | mm_adapt_import ]
+	  [ refinement_samples INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute

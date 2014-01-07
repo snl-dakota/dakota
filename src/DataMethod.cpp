@@ -119,7 +119,7 @@ DataMethodRep::DataMethodRep():
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
   regressionL2Penalty(0.), crossValidation(false), normalizedCoeffs(false),
   tensorGridFlag(false), //expansionSampleType("lhs"), sampleType("lhs"),
-  refineSamples(1000), distributionType(CUMULATIVE),
+  refineSamples(0), distributionType(CUMULATIVE),
   responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
   emulatorSamples(0), emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), likelihoodScale(1.0),

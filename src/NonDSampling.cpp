@@ -60,7 +60,7 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
   initialize_final_statistics();
 
   // update concurrency
-  if (numSamples) // samples is now optional (default = 0)
+  if (numSamples) // samples is optional (default = 0)
     maxConcurrency *= numSamples;
 }
 
@@ -89,7 +89,7 @@ NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
     sampleType = "lhs";
 
   // not used but included for completeness
-  if (numSamples) // samples is now optional (default = 0)
+  if (numSamples) // samples is optional (default = 0)
     maxConcurrency *= numSamples;
 }
 
@@ -113,7 +113,7 @@ NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
     sampleType = "lhs";
 
   // not used but included for completeness
-  if (numSamples) // samples is now optional (default = 0)
+  if (numSamples) // samples is optional (default = 0)
     maxConcurrency *= numSamples;
 }
 

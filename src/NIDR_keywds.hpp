@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1201 distinct keywords (plus 170 aliases) **/
+/** 1202 distinct keywords (plus 170 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -690,14 +690,15 @@ static KeyWord
 		{"compute",8,3,2,0,kw_123},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_125[7] = {
+	kw_125[8] = {
 		{0,0,1,0,0,kw_15},
 		{0,0,1,0,0,kw_16},
 		{0,0,4,0,0,kw_21},
 		{"adapt_import",8,0,1,0,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
 		{"import",8,0,1,0,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
 		{"mm_adapt_import",8,0,1,0,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)},
-		{"response_levels",14,2,2,0,kw_124,0.,0.,0,N_mdm(resplevs,responseLevels)}
+		{"refinement_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,refineSamples)},
+		{"response_levels",14,2,3,0,kw_124,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
 	kw_126[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,pstudyFileAnnotated)},
@@ -1345,7 +1346,7 @@ static KeyWord
 		{"global_reliability",8,10,11,1,kw_121,0.,0.,0,N_mdm(lit,methodName_nond_global_reliability)},
 		{"gpais",8,4,11,1,kw_95,0.,0.,0,N_mdm(lit,methodName_nond_gpais)},
 		{"id_method",11,0,1,0,0,0.,0.,0,N_mdm(str,idMethod)},
-		{"importance_sampling",8,4,11,1,kw_125,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
+		{"importance_sampling",8,5,11,1,kw_125,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
 		{"list_parameter_study",8,2,11,1,kw_127,0.,0.,0,N_mdm(lit,methodName_list_parameter_study)},
 		{"local_evidence",8,6,11,1,kw_134,0.,0.,0,N_mdm(lit,methodName_nond_local_evidence)},
 		{"local_interval_est",8,2,11,1,kw_135,0.,0.,0,N_mdm(lit,methodName_nond_local_interval_est)},
@@ -1366,7 +1367,7 @@ static KeyWord
 		{"nond_global_evidence",0,5,11,1,kw_103,0.,0.,-23,N_mdm(lit,methodName_nond_global_evidence)},
 		{"nond_global_interval_est",0,5,11,1,kw_109,0.,0.,-23,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"nond_global_reliability",0,10,11,1,kw_121,0.,0.,-23,N_mdm(lit,methodName_nond_global_reliability)},
-		{"nond_importance_sampling",0,4,11,1,kw_125,0.,0.,-21,N_mdm(lit,methodName_nond_importance_sampling)},
+		{"nond_importance_sampling",0,5,11,1,kw_125,0.,0.,-21,N_mdm(lit,methodName_nond_importance_sampling)},
 		{"nond_local_evidence",0,6,11,1,kw_134,0.,0.,-20,N_mdm(lit,methodName_nond_local_evidence)},
 		{"nond_local_interval_est",0,2,11,1,kw_135,0.,0.,-20,N_mdm(lit,methodName_nond_local_interval_est)},
 		{"nond_local_reliability",0,3,11,1,kw_143,0.,0.,-20,N_mdm(lit2,methodName_nond_local_reliability)},

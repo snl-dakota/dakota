@@ -461,6 +461,7 @@ void NonDExpansion::construct_expansion_sampler()
       Cout << "IS refinement type " << is_type;
 
       int refine_samples = probDescDB.get_int("method.nond.refinement_samples");
+      if (!refine_samples) refine_samples = 1000; // context-specific default
       bool vary_pattern = true;
       importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
 	sample_type, refine_samples, orig_seed, rng, vary_pattern, is_type,

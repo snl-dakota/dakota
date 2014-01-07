@@ -58,17 +58,17 @@ public:
   /// initializes data needed for importance sampling: an initial set
   /// of points around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealVectorArray& full_points, int resp_fn,
+  void initialize(const RealVectorArray& full_points, size_t resp_index,
 		  const Real& initial_prob, const Real& failure_threshold);
   /// initializes data needed for importance sampling: an initial set
   /// of points around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealMatrix& full_points, int resp_fn,
+  void initialize(const RealMatrix& full_points, size_t resp_index,
 		  const Real& initial_prob, const Real& failure_threshold);
   /// initializes data needed for importance sampling: an initial
   /// point around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealVector& full_point, int resp_fn,
+  void initialize(const RealVector& full_point, size_t resp_index,
 		  const Real& initial_prob, const Real& failure_threshold);
 
   /// returns the probability calculated by the importance sampling
@@ -87,36 +87,37 @@ private:
   //- Heading: Utility routines
   //
 
+  /// select representative points from a set of samples
+  void select_rep_points(const RealVectorArray& var_samples_u,
+			 const RealVector& fn_samples);
+  /// refine probability estimates using sampling centered at
+  /// representative points
+  void refine_rep_points();
+
   /// iteratively generate samples and select representative points
   /// until coefficient of variation converges
   void converge_cov();
-
   /// iteratively generate samples from final set of representative points
   /// until probability converges
   void converge_probability();
 
-  /// select representative points from a set of samples
-  void select_rep_points(const RealVectorArray& samples_u);
-
-  /// calculate relative weights of representative points
-  void calculate_rep_weights();
-
   /// generate a set of samples based on multimodal sampling density
-  void generate_samples(RealVectorArray& samples_u);
+  void generate_samples(RealVectorArray& var_samples_u);
+  /// evaluate the model at the sample points and store the responses
+  void evaluate_samples(const RealVectorArray& var_samples_u,
+		        RealVector& fn_samples);
 
   /// calculate the probability of exceeding the failure threshold and
   /// the coefficent of variation (if requested)
-  void calculate_statistics(const RealVectorArray& samples_u,
-			    const size_t& total_sample_number,
+  void calculate_statistics(const RealVectorArray& var_samples_u,
+			    const RealVector& fn_samples,
+			    size_t total_sample_number,
 			    Real& probability_sum, Real& probability,
 			    bool  cov_flag, Real& variance_sum,
 			    Real& coeff_of_variation);
 
   /// compute Euclidean distance between points a and b
   Real distance(const RealVector& a, const RealVector& b);
-
-  /// evaluate the model at the sample points and store the responses
-  void evaluate_samples(const RealVectorArray& samples_u);
 
   //
   //- Heading: Data members
@@ -129,22 +130,9 @@ private:
 
   /// integration type (is, ais, mmais) provided by input specification
   short importanceSamplingType;
-  /// flag for inversion of probability values using 1.-p
-  bool invertProb;
-  /// the number of representative points around which to sample
-  size_t numRepPoints;
-  /// the response function in the model to be sampled
-  size_t respFn;
-  /// the original set of u-space samples passed into the MMAIS routine
-  RealVectorArray initPointsU;
-  /// the values of the response function at the sample points
-  RealVector sampleVals;
-  /// the set of representative points in u-space around which to sample
-  RealVectorArray repPointsU;
-  /// the weight associated with each representative point
-  RealVector repWeights;
-  /// design point at which uncertain space is being sampled
-  RealVector designPoint;
+
+  /// flag to identify if initial points are generated from an LHS sample
+  bool initLHS;
   /// flag to control if x->u transformation should be performed for
   /// initial points
   bool transInitPoints;
@@ -153,8 +141,23 @@ private:
   bool transPoints;
   /// flag to control if the sampler should respect the model bounds
   bool useModelBounds;
-  /// flag to identify if initial points are generated from an LHS sample
-  bool initLHS;
+  /// flag for inversion of probability values using 1.-p
+  bool invertProb;
+
+  /// size of sample batch within each refinement iteration
+  int refineSamples;
+
+  /// the active response function index in the model to be sampled
+  size_t respFnIndex;
+  /// design subset for which uncertain subset is being sampled
+  RealVector designPoint;
+  /// the original set of u-space samples passed in initialize()
+  RealVectorArray initPointsU;
+  /// the set of representative points in u-space around which to sample
+  RealVectorArray repPointsU;
+  /// the weight associated with each representative point
+  RealVector repWeights;
+
   /// the initial probability (from FORM or SORM)
   Real initProb;
   /// the final calculated probability (p)

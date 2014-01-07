@@ -41,8 +41,15 @@ NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
   //   need to be transformed prior to evaluation
   transPoints(true),
   // should the model bounds be respected?
-  useModelBounds(false)
-{ 
+  useModelBounds(false),
+  // invert the sense of the refinement
+  invertProb(false),
+  // size of refinement batches is separate from initial LHS size (numSamples)
+  refineSamples(probDescDB.get_int("method.nond.refinement_samples"))
+{
+  // if separate refinement batch size not provided, reuse initial LHS size
+  if (!refineSamples) refineSamples = numSamples;
+
   statsFlag = true;
   initialize_random_variables(STD_NORMAL_U);
   const String& int_refine
@@ -51,32 +58,38 @@ NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
       int_refine == "mmais")    importanceSamplingType = MMAIS;
   else if (int_refine ==  "is") importanceSamplingType =    IS;
   else if (int_refine == "ais") importanceSamplingType =   AIS;
+
+  // maxConcurrency defined from initial LHS size (numSamples)
 }
 
 
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 NonDAdaptImpSampling::
-NonDAdaptImpSampling(Model& model, const String& sample_type, int samples,
-		     int seed, const String& rng, bool vary_pattern,
-		     short is_type, bool cdf_flag, bool x_space_data,
-		     bool x_space_model, bool bounded_model):
-  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng,
+NonDAdaptImpSampling(Model& model, const String& sample_type,
+		     int refine_samples, int refine_seed, const String& rng,
+		     bool vary_pattern, short is_type, bool cdf_flag,
+		     bool x_space_data, bool x_space_model, bool bounded_model):
+  NonDSampling(NoDBBaseConstructor(), model, sample_type, 0, refine_seed, rng,
 	       vary_pattern, ALEATORY_UNCERTAIN), // only sample aleatory vars
   initLHS(false), importanceSamplingType(is_type),
   transInitPoints(x_space_data), transPoints(x_space_model),
-  useModelBounds(bounded_model)
-{ cdfFlag = cdf_flag; }
+  useModelBounds(bounded_model), invertProb(false),
+  refineSamples(refine_samples)
+{
+  cdfFlag = cdf_flag;
+  if (refineSamples)
+    maxConcurrency *= refineSamples;
+}
 
 
 /** Initializes data using a vector array of starting points. */
 void NonDAdaptImpSampling::
-initialize(const RealVectorArray& acv_points, int resp_fn,
+initialize(const RealVectorArray& acv_points, size_t resp_index,
 	   const Real& initial_prob, const Real& failure_threshold)
 {
   size_t i, j, cntr, num_points = acv_points.size();
   initPointsU.resize(num_points);
-  sampleVals.resize(num_points);
 
   if (numContDesVars) { // store inactive variable values, if present
     designPoint.sizeUninitialized(numContDesVars);
@@ -105,20 +118,19 @@ initialize(const RealVectorArray& acv_points, int resp_fn,
     Cout << "Initial Point " << i << initPointsU[i] << '\n';
 #endif
 
-  respFn     = resp_fn;
-  initProb   = initial_prob;
-  failThresh = failure_threshold;
+  respFnIndex = resp_index;
+  initProb    = initial_prob;
+  failThresh  = failure_threshold;
 }
 
 
 /** Initializes data using a matrix of starting points. */
 void NonDAdaptImpSampling::
-initialize(const RealMatrix& acv_points, int resp_fn,
+initialize(const RealMatrix& acv_points, size_t resp_index,
 	   const Real& initial_prob, const Real& failure_threshold)
 {
   size_t i, j, cntr, num_points = acv_points.numCols();
   initPointsU.resize(num_points);
-  sampleVals.resize(num_points);
 
   if (numContDesVars) { // store inactive variable values, if present
     designPoint.sizeUninitialized(numContDesVars);
@@ -148,15 +160,15 @@ initialize(const RealMatrix& acv_points, int resp_fn,
     Cout << "Initial Point " << i << initPointsU[i] << '\n';
 #endif
 
-  respFn     = resp_fn;
-  initProb   = initial_prob;
-  failThresh = failure_threshold;
+  respFnIndex = resp_index;
+  initProb    = initial_prob;
+  failThresh  = failure_threshold;
 }
 
 
 /** Initializes data using only one starting point. */
 void NonDAdaptImpSampling::
-initialize(const RealVector& acv_point, int resp_fn,
+initialize(const RealVector& acv_point, size_t resp_index,
 	   const Real& initial_prob, const Real& failure_threshold)
 {
   size_t j, cntr;
@@ -168,7 +180,6 @@ initialize(const RealVector& acv_point, int resp_fn,
   }
 
   initPointsU.resize(1);
-  sampleVals.resize(1);
   RealVector& init_pt = initPointsU[0];
   init_pt.sizeUninitialized(numUncertainVars);
   if (transInitPoints) {
@@ -181,24 +192,25 @@ initialize(const RealVector& acv_point, int resp_fn,
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
       init_pt[cntr] = acv_point[j];
 
-  respFn     = resp_fn;
-  initProb   = initial_prob;
-  failThresh = failure_threshold;
+  respFnIndex = resp_index;
+  initProb    = initial_prob;
+  failThresh  = failure_threshold;
 }
 
 
 void NonDAdaptImpSampling::quantify_uncertainty()
 {
   if (initLHS) {
-    // Get initial set of LHS points.  I may need to do something 
-    // fancier here, but as a default this is performing LHS sampling 
-    // over the original distributions, evaluating the points, and 
-    // computing statistics to get the initial probability estimates.
-    get_parameter_sets(iteratedModel);
-    bool log_resp_flag = (allDataFlag || statsFlag);
-    evaluate_parameter_sets(iteratedModel, log_resp_flag, false);
+    // Get initial set of LHS points: samples over the original distributions,
+    // evaluates the points, and computes the initial probability estimates.
+    // Note: {get,evaluate}_parameter_sets() is heavier weight relative to
+    // {get,evaluate}_samples() used elsewhere, since this initial LHS
+    // evaluates all response fns, not just the active resp fn being refined.
+    get_parameter_sets(iteratedModel); // generates numSamples points
+    evaluate_parameter_sets(iteratedModel, true, false);
     compute_statistics(allSamples, allResponses);
 
+    RealVector init_fns(numSamples);
     size_t level_count, resp_fn_count;
     for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
       size_t rl_len = requestedRespLevels[resp_fn_count].length(),
@@ -214,10 +226,9 @@ void NonDAdaptImpSampling::quantify_uncertainty()
       }
 
       //TMW: Store the response values for reuse later
-      size_t i, num_all = allResponses.size();
-      sampleVals.resize(num_all);
-      for (i=0; i<num_all; i++)
-	sampleVals[i] = allResponses[i+1].function_value(resp_fn_count);
+      size_t i; IntRespMIter it;
+      for (i=0, it=allResponses.begin(); it!=allResponses.end(); ++i, ++it)
+	init_fns[i] = it->second.function_value(resp_fn_count);
       
       // Loop over response/probability/reliability levels
       for (level_count=0; level_count<num_levels; level_count++) {
@@ -230,164 +241,38 @@ void NonDAdaptImpSampling::quantify_uncertainty()
 	Cout << "z " << z << " pfirst " << p_first << '\n';
 	initialize(allSamples, resp_fn_count, p_first, z);
  
-        // for now, hardcode to MMAIS
-        // iteratively generate samples and select representative points
-        //   until coefficient of variation converges
-
-        //TMW: Only run converge_cov() for MMAIS
-        if (importanceSamplingType == MMAIS)
-          converge_cov();
-
-        select_rep_points(initPointsU);
-
-        if (numRepPoints)
-	  // iteratively generate samples from final set of
-	  // representative points until probability converges
-	  converge_probability();
-	else { // If no representative points were found, then p=0 (or 1)
-	  // If p(success) calculated, set finalProb accordingly
-	  if (invertProb) {
-	    finalProb = 1.;
-	    cdfFlag = !cdfFlag; // reset for next requested response level
-	  }
-	  else
-	    finalProb = 0.;
-        }
-
-#ifdef DEBUG
-        Cout << "Final Probability " << finalProb << '\n';
-#endif
+	// select initial set of representative points
+        select_rep_points(initPointsU, init_fns);
+	// perform refinement iterations
+	refine_rep_points();
+	// update bookkeeping
         computedProbLevels[resp_fn_count][level_count] = finalProb;
       }
     }
   }
-  else if (importanceSamplingType == IS || importanceSamplingType == AIS) {
+  else {
+    // no initial LHS: refine only the active respFnIndex starting
+    // from the initial points passed into initialize()
 
-    evaluate_samples(initPointsU);
-
-    // select representative points
-    select_rep_points(initPointsU);
-
-    // iteratively generate samples from input set of points until
-    //   probability converges (IS only performs one iteration)
-    converge_probability();
-  }
-  else if (importanceSamplingType == MMAIS) {
-    // iteratively generate samples and select representative points
-    //   until coefficient of variation converges
-    converge_cov();
-    
-    if (numRepPoints)
-      // iteratively generate samples from final set of representative points
-      //   until probability converges
-      converge_probability();
-    else { // If no represenative points were found, then p=0 (or 1)
-      // If p(success) calculated, set p accordingly
-      if (invertProb) {
-	finalProb = 1.;
-	cdfFlag = !cdfFlag; // reset for next requested response level
-      }
-      else
-	finalProb = 0.;
-    }
+    // compute response samples for the initial points
+    RealVector init_fns;
+    evaluate_samples(initPointsU, init_fns);
+    // select initial set of representative points
+    select_rep_points(initPointsU, init_fns);
+    // perform refinement iterations
+    refine_rep_points();
   }
 }
 
 
-void NonDAdaptImpSampling::converge_cov()
+void NonDAdaptImpSampling::
+select_rep_points(const RealVectorArray& var_samples_u,
+		  const RealVector& fn_samples)
 {
-  // select intial set of representative points from initPointsU
-  // representative points & weights stored in repPointsU/repWeights
-  select_rep_points(initPointsU);
-
-  // If no representative points were found, quit
-  if (numRepPoints==0) return;
-
-  // iteratively sample and select representative points until COV converges
-  //Real abs_tol = .0001; // absolute tolerance
-  Real p, sum_p = 0., sum_var = 0.;
-  Real cov, old_cov = DBL_MAX;
-  RealVectorArray samples(numSamples);
-
-  size_t total_samples = 0, max_samples = numSamples*maxIterations;
-  bool converged = false;
-  while (!converged && total_samples < max_samples) {
-    // generate samples based on multimodal sampling density - the set
-    //   of samples is output
-    generate_samples(samples);
-    total_samples += numSamples; 
-
-    // calculate probability and coeff of variation
-    calculate_statistics(samples, total_samples, sum_p, p, true, sum_var, cov);
-
-    // check for convergence of cov
-    if (std::abs(old_cov) > 0. &&
-	std::abs(cov/old_cov - 1.) < convergenceTol) // relative tol
-      converged = true;
-    //else if (std::abs(cov - old_cov) < abs_tol)
-    //  converged = true;
-    else {
-      old_cov = cov;
-      select_rep_points(samples); // define new rep pts from new samples
-    }
-  }
-}
-
-
-void NonDAdaptImpSampling::converge_probability()
-{
-  // iteratively sample until probability converges
-  //Real abs_tol = .000001; // absolute tolerance
-  Real sum_var, cov, p, sum_p = 0., old_p = initProb;
-  RealVectorArray samples(numSamples);
-  size_t total_samples = 0, max_samples = numSamples*maxIterations;
-  bool converged = false;
-
-  while (!converged && total_samples < max_samples) {
-    // generate samples based on multimodal sampling density - the set
-    //   of samples is output
-    generate_samples(samples);
-    total_samples += numSamples;
-
-    // calculate probability with this set of samples
-    calculate_statistics(samples, total_samples, sum_p, p, false, sum_var, cov);
-    // check for convergence of probability
-    // MSE: enforce both probabilities to be non-0/1 and employ a relative tol
-    //   (during refinement, this enforces non-0/1 p for 2 consecutive iters).
-    //   If the true p is 0 or 1, then we will incur the overhead of maxIter.
-    if (importanceSamplingType == IS) // for IS, only perform one iteration
-      converged = true;
-    else if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
-	     std::abs(p/old_p - 1.) < convergenceTol) // relative tol
-      converged = true;
-    else
-      select_rep_points(samples); //TMW: Select a new repPoint
-    //else if (p > 0. && p < 1. && std::abs(p - old_p) < abs_tol)// absolute tol
-    //  converged = true;
-#ifdef DEBUG
-    Cout << "converge_probability(): old_p = " << old_p << " p = " << p
-	 << std::endl;
-#endif // DEBUG
-    old_p = p;
-  }
-  // If p(success) calculated, return 1-p 
-  if (invertProb) { 
-    finalProb = 1.-p;
-    cdfFlag = !cdfFlag; // reset for next requested response level
-  }
-  else
-    finalProb = p;
-}
-
-
-void NonDAdaptImpSampling::select_rep_points(const RealVectorArray& samples_u)
-{
-  // pick out failures from input samples_u
+  // pick out failures from input samples
   // calculate beta for failures only
-  size_t i, j, cntr, fail_count = 0,
-
   //TMW: Modified this to exclude the previous repPointsU
-  num_samples = samples_u.size();
+  size_t i, j, cntr, fail_count = 0, num_samples = var_samples_u.size();
   RealArray  fail_betas;   fail_betas.reserve(num_samples);
   SizetArray fail_indices; fail_indices.reserve(num_samples);
 
@@ -410,12 +295,14 @@ void NonDAdaptImpSampling::select_rep_points(const RealVectorArray& samples_u)
   for (i=0; i<num_samples; i++) {
     //TMW: Modified this to exclude the previous repPointsU
     //const RealVector& sample_i = (i<numRepPoints) ? repPointsU[i] :
-    //  samples_u[i-numRepPoints];
-    const RealVector& sample_i = samples_u[i];
+    //  var_samples_u[i-numRepPoints];
+    const RealVector& sample_i = var_samples_u[i];
     //TMW: We now use the stored values rather than recomputing
-    Real limit_state_fn = sampleVals[i];
-    if ( ( cdfFlag && limit_state_fn < failThresh ) ||
-	 (!cdfFlag && limit_state_fn > failThresh ) ) {
+    Real limit_state_fn = fn_samples[i];
+    if ( ( limit_state_fn < failThresh &&
+	   ( cdfFlag || (invertProb && !cdfFlag) ) ) ||
+	 ( limit_state_fn > failThresh &&
+	   (!cdfFlag || (invertProb &&  cdfFlag) ) ) ) {
       fail_indices.push_back(i);
       fail_betas.push_back(sample_i.normFrobenius());
       ++fail_count;
@@ -462,16 +349,15 @@ void NonDAdaptImpSampling::select_rep_points(const RealVectorArray& samples_u)
       size_t idx = min_indx[new_rep_pts], fail_idx = fail_indices[idx];
       //TMW: Modified this to exclude the previous repPointsU
       //const RealVector& ref = (fail_idx < numRepPoints) ?
-	//repPointsU[fail_idx] : samples_u[fail_idx - numRepPoints];
-      const RealVector& ref = samples_u[fail_idx];
+	//repPointsU[fail_idx] : var_samples_u[fail_idx - numRepPoints];
+      const RealVector& ref = var_samples_u[fail_idx];
       for (i=0; i<fail_count; ++i)
 	if (fail_betas[i] < 99.) {
 	  fail_idx = fail_indices[i];
           //TMW: Modified this to exclude the previous repPointsU
 	  //const RealVector& pt = (fail_idx < numRepPoints) ?
-	    //repPointsU[fail_idx] : samples_u[fail_idx - numRepPoints];
-	  const RealVector& pt = samples_u[fail_idx];
-	  if (distance(pt, ref) < cutoff_distance)
+	    //repPointsU[fail_idx] : var_samples_u[fail_idx - numRepPoints];
+	  if (distance(var_samples_u[fail_idx], ref) < cutoff_distance)
 	    fail_betas[i] = 100.;
 	}
       ++new_rep_pts;
@@ -481,28 +367,138 @@ void NonDAdaptImpSampling::select_rep_points(const RealVectorArray& samples_u)
   // store samples in min_indx in repPointsU
   //RealVectorArray prev_rep_pts = repPointsU;
 
+  // define repPointsU and calculate repWeights
   repPointsU.resize(new_rep_pts);
+  repWeights.sizeUninitialized(new_rep_pts);
+  Real sum_density = 0.;
   for (i=0; i<new_rep_pts; ++i) {
     size_t idx = min_indx[i], fail_idx = fail_indices[idx];
     //TMW: Modified this to exclude the previous repPointsU
     //repPointsU[i] = (fail_idx < numRepPoints) ? prev_rep_pts[fail_idx] :
-      //samples_u[fail_idx - numRepPoints];
-    repPointsU[i] = samples_u[fail_idx];
+      //var_samples_u[fail_idx - numRepPoints];
+    repPointsU[i] = var_samples_u[fail_idx];
+
+    Real phi_beta = Pecos::phi(repPointsU[i].normFrobenius());
+    repWeights[i] = phi_beta;
+    sum_density  += phi_beta;
   }
-  numRepPoints = new_rep_pts;
+  repWeights.scale(1./sum_density);
+
 #ifdef DEBUG //TMW: Debug output to monitor the repPointsU
   Cout << "select_rep_point(): #Points = " << repPointsU.size()
        << " Point =  " << repPointsU[0] << std::endl;
 #endif
-  calculate_rep_weights();
 }
 
 
-void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples_u)
+void NonDAdaptImpSampling::refine_rep_points()
+{
+  if (repPointsU.empty()) { // should not happen
+    // If no represenative points were found, then p=0 (or 1)
+    // If p(success) calculated, set p accordingly
+    finalProb = (invertProb) ? 1. : 0.;
+  }
+  else {
+    // iteratively generate samples and select representative points
+    //   until coefficient of variation converges
+    //TMW: Only run converge_cov() for MMAIS
+    if (importanceSamplingType == MMAIS)
+      converge_cov();
+    // iteratively generate samples and select representative points
+    //   until probability converges
+    converge_probability();
+  }
+#ifdef DEBUG
+  Cout << "Final Probability " << finalProb << '\n';
+#endif
+}
+
+
+void NonDAdaptImpSampling::converge_cov()
+{
+  // iteratively sample and select representative points until COV converges
+  //Real abs_tol = .0001; // absolute tolerance
+  Real p, sum_p = 0., sum_var = 0.;
+  Real cov, old_cov = DBL_MAX;
+  RealVectorArray var_samples_u(refineSamples);
+  RealVector fn_samples(refineSamples);
+
+  size_t total_samples = 0, max_samples = refineSamples*maxIterations;
+  bool converged = false;
+  while (!converged && total_samples < max_samples) {
+    // generate samples based on multimodal sampling density - the set
+    //   of samples is output
+    generate_samples(var_samples_u);
+    evaluate_samples(var_samples_u, fn_samples);
+    total_samples += refineSamples; 
+
+    // calculate probability and coeff of variation
+    calculate_statistics(var_samples_u, fn_samples, total_samples, sum_p, p,
+			 true, sum_var, cov);
+
+    // check for convergence of cov
+    if (std::abs(old_cov) > 0. &&
+	std::abs(cov/old_cov - 1.) < convergenceTol) // relative tol
+      converged = true;
+    //else if (std::abs(cov - old_cov) < abs_tol)
+    //  converged = true;
+    else {
+      old_cov = cov;
+      select_rep_points(var_samples_u, fn_samples); // define new rep pts
+    }
+  }
+}
+
+
+void NonDAdaptImpSampling::converge_probability()
+{
+  // iteratively sample until probability converges
+  //Real abs_tol = .000001; // absolute tolerance
+  Real sum_var, cov, p, sum_p = 0., old_p = initProb;
+  RealVectorArray var_samples_u(refineSamples);
+  RealVector fn_samples(refineSamples);
+  size_t total_samples = 0, max_samples = refineSamples*maxIterations;
+  bool converged = false;
+
+  while (!converged && total_samples < max_samples) {
+    // generate samples based on multimodal sampling density - the set
+    //   of samples is output
+    generate_samples(var_samples_u);
+    evaluate_samples(var_samples_u, fn_samples);
+    total_samples += refineSamples;
+
+    // calculate probability with this set of samples
+    calculate_statistics(var_samples_u, fn_samples, total_samples, sum_p, p,
+			 false, sum_var, cov);
+    // check for convergence of probability
+    // MSE: enforce both probabilities to be non-0/1 and employ a relative tol
+    //   (during refinement, this enforces non-0/1 p for 2 consecutive iters).
+    //   If the true p is 0 or 1, then we will incur the overhead of maxIter.
+    if (importanceSamplingType == IS) // for IS, only perform one iteration
+      converged = true;
+    else if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
+	     std::abs(p/old_p - 1.) < convergenceTol) // relative tol
+      converged = true;
+    else
+      select_rep_points(var_samples_u, fn_samples); //TMW: select new repPoints
+    //else if (p > 0. && p < 1. && std::abs(p - old_p) < abs_tol)// absolute tol
+    //  converged = true;
+#ifdef DEBUG
+    Cout << "converge_probability(): old_p = " << old_p << " p = " << p
+	 << std::endl;
+#endif // DEBUG
+    old_p = p;
+  }
+  // If p(success) calculated, return 1-p 
+  finalProb = (invertProb) ? 1. - p : p;
+}
+
+
+void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
 {
   // generate std normal samples
 
-  size_t i, j, k, cntr;
+  size_t i, j, k, cntr, num_rep_pts = repPointsU.size();
   RealVector n_means(numUncertainVars), // init to 0
     n_std_devs(numUncertainVars, false), n_l_bnds(numUncertainVars, false),
     n_u_bnds(numUncertainVars, false);
@@ -525,38 +521,40 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples_u)
   initialize_lhs(false);
   RealMatrix lhs_samples_array;
   lhsDriver.generate_normal_samples(n_means, n_std_devs, n_l_bnds, n_u_bnds,
-				    numSamples, lhs_samples_array);
+				    refineSamples, lhs_samples_array);
 
   // generate u-space samples by adding std normals to rep points
 
   int num_rep_samples;
-  for (i=0, cntr=0; i<numRepPoints; ++i) {
+  for (i=0, cntr=0; i<num_rep_pts; ++i) {
 
-    if (i == numRepPoints - 1) // last set: include all remaining lhs samples
-      num_rep_samples = (numSamples > cntr) ? numSamples - cntr : 0;
-    else // apportion numSamples among repPointsU based on repWeights
-      num_rep_samples = (numRepPoints > 1) ?
-	std::max(1, int(repWeights[i]*numSamples)) : numSamples;
+    if (i == num_rep_pts - 1) // last set: include all remaining lhs samples
+      num_rep_samples = (refineSamples > cntr) ? refineSamples - cntr : 0;
+    else // apportion refineSamples among repPointsU based on repWeights
+      num_rep_samples = (num_rep_pts > 1) ?
+	std::max(1, int(repWeights[i]*refineSamples)) : refineSamples;
 
     // recenter std normals around i-th rep point
     const RealVector& rep_pt_i = repPointsU[i];
-    for (j=0; j<num_rep_samples && cntr<numSamples; ++j, ++cntr) {
+    for (j=0; j<num_rep_samples && cntr<refineSamples; ++j, ++cntr) {
       Real* lhs_sample = lhs_samples_array[cntr];
-      RealVector& rep_sample = samples_u[cntr];
+      RealVector& rep_sample = var_samples_u[cntr];
       rep_sample.sizeUninitialized(numUncertainVars);
       for (k=0; k<numUncertainVars; ++k)
 	rep_sample[k] = lhs_sample[k] + rep_pt_i[k];
     }
   }
-
-  sampleVals.resize(numSamples);
 }
 
 
-void NonDAdaptImpSampling::evaluate_samples(const RealVectorArray& samples_u)
+void NonDAdaptImpSampling::
+evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
 {
+  size_t i, j, k, cntr, num_samples = var_samples_u.size();
+  if (fn_samples.length() != num_samples)
+    fn_samples.sizeUninitialized(num_samples);
+
   // store designPoint in acv_sample, append uncertain samples later
-  size_t i, j, k, cntr;
   RealVector acv_sample, acv_x_sample;
   if (transPoints) {
     acv_sample.sizeUninitialized(numContinuousVars);
@@ -570,9 +568,9 @@ void NonDAdaptImpSampling::evaluate_samples(const RealVectorArray& samples_u)
 
   // calculate the probability of failure
   ActiveSet set = iteratedModel.current_response().active_set(); // copy
-  set.request_values(0); set.request_value(1, respFn);
-  for (i=0; i<numSamples; i++) {
-    const RealVector& sample_i = samples_u[i];
+  set.request_values(0); set.request_value(1, respFnIndex);
+  for (i=0; i<num_samples; i++) {
+    const RealVector& sample_i = var_samples_u[i];
 
     if (transPoints) { // u-space points -> x-space Model (NonDLocal)
       // append uncertain sample to designPoint before evaluation
@@ -589,40 +587,40 @@ void NonDAdaptImpSampling::evaluate_samples(const RealVectorArray& samples_u)
 
     // get response value at the sample point
     iteratedModel.compute_response(set);
-    sampleVals[i] = iteratedModel.current_response().function_values()[respFn];
+    fn_samples[i]
+      = iteratedModel.current_response().function_value(respFnIndex);
   }
 }
 
 
 void NonDAdaptImpSampling::
-calculate_statistics(const RealVectorArray& samples_u, 
-		     const size_t& total_samples, Real& sum_prob, Real& prob,
-		     bool compute_cov, Real& sum_var, Real& cov)
+calculate_statistics(const RealVectorArray& var_samples_u,
+		     const RealVector& fn_samples, size_t total_samples,
+		     Real& sum_prob, Real& prob, bool compute_cov,
+		     Real& sum_var, Real& cov)
 {
   // Note: The current beta calculation assumes samples input in u-space
-  size_t i, j, k, cntr;
-  RealArray failure_ratios;
+  size_t i, j, k, cntr, num_samples = var_samples_u.size(),
+    num_rep_pts = repPointsU.size();
   Real n_std_devs = 1.0;
+  RealArray failure_ratios;
   if (compute_cov)
-    failure_ratios.reserve(numSamples);
-
-  evaluate_samples(samples_u);
+    failure_ratios.reserve(num_samples);
 
   // calculate the probability of failure
-  for (i=0; i<numSamples; i++) {
-    
-    const RealVector& sample_i = samples_u[i];
-    Real limit_state_fn = sampleVals[i];
+  for (i=0; i<num_samples; i++) {
 
     // if point is a failure, calculate mmpdf, pdf, and add to sum
-    if ( ( cdfFlag && limit_state_fn < failThresh) ||
-	 (!cdfFlag && limit_state_fn > failThresh) ) {
+    if ( ( fn_samples[i] < failThresh &&
+	   ( cdfFlag || (invertProb && !cdfFlag) ) ) ||
+	 ( fn_samples[i] > failThresh &&
+	   (!cdfFlag || (invertProb &&  cdfFlag) ) ) ) {
+
+      const RealVector& sample_i = var_samples_u[i];
+
       // calculate mmpdf
       Real mmpdf = 0.;
-
-      for (j=0; j<numRepPoints; ++j)
-        //Cout << "repPoint = " << repPoints[j] << std::endl;
-
+      for (j=0; j<num_rep_pts; ++j)
 	mmpdf += repWeights[j] *
 	  Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
 
@@ -645,22 +643,6 @@ calculate_statistics(const RealVectorArray& samples_u,
     Real var = sum_var/double(total_samples)/double(total_samples - 1);
     cov = std::sqrt(var)/prob; // MSE: possible division by zero ?
   }
-}
-
-
-void NonDAdaptImpSampling::calculate_rep_weights()
-{
-  // calculate repWeights
-  RealVector rep_density(numRepPoints);
-  Real sum_density = 0.;
-  for (size_t i=0; i<numRepPoints; i++) {
-    Real phi_beta = Pecos::phi(repPointsU[i].normFrobenius());
-    rep_density[i] = phi_beta;
-    sum_density   += phi_beta;
-  }
-  repWeights.sizeUninitialized(numRepPoints);
-  for (size_t i=0; i<numRepPoints; i++)
-    repWeights[i] = rep_density[i]/sum_density;
 }
 
 

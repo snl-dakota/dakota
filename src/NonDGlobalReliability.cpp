@@ -307,16 +307,16 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // and may be constructed here.  Thus, NonDGlobal applies integration
   // refinement to the G-hat(u) surrogate.  Behavior needs to be repeatable
   // and AIS is not part of the EGRA spec: either reuse lhs_seed or hardwire.
-  int refinement_samples = 1000, refinement_seed = 123457;
+  int refine_samples = 1000, refine_seed = 123457;
   // these flags control if/when space transformation is needed in the sampler
   bool x_model_flag = false, bounded_model = true;
   bool x_data_flag = (mppSearchType == EGRA_X) ? true : false;
   integrationRefinement = MMAIS; vary_pattern = true;
 
-  importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
-    sample_type, refinement_samples, refinement_seed, rng, vary_pattern,
-    integrationRefinement, cdfFlag, x_data_flag, x_model_flag, bounded_model),
-    false);
+  importanceSampler.assign_rep(new
+    NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples, refine_seed,
+			 rng, vary_pattern, integrationRefinement, cdfFlag,
+			 x_data_flag, x_model_flag, bounded_model), false);
 
   uSpaceModel.init_communicators(importanceSampler.maximum_concurrency());
 }
