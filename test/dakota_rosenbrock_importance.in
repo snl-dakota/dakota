@@ -20,7 +20,8 @@ method,
           #adapt_import                             #1
           #mm_adapt_import                          #2
 	  response_levels = 3.0  
-          samples = 50
+          samples = 250
+	  refinement_samples = 100
 	  seed = 5639
           output quiet 
 
