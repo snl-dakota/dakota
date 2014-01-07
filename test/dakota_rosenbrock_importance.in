@@ -16,14 +16,14 @@ strategy,
 
 method,
         importance_sampling
-          import                                    #0
-          #adapt_import                             #1
-          #mm_adapt_import                          #2
+	  import                                   #0
+#	  adapt_import                             #1
+#	  mm_adapt_import                          #2
 	  response_levels = 3.0  
           samples = 250
 	  refinement_samples = 100
 	  seed = 5639
-          output quiet 
+          output silent 
 
 variables,
 #	uniform_uncertain = 2
