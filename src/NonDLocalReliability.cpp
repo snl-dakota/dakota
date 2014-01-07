@@ -2191,7 +2191,7 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
       initialize(mpp_u, respFnCount, p, requestedTargetLevel);
     // no summary output since on-the-fly constructed:
     importanceSampler.run_iterator(Cout);
-    p = importance_sampler_rep->get_probability();
+    p = importance_sampler_rep->final_probability();
     if (outputLevel > NORMAL_OUTPUT)
       Cout << " refined = " << std::setw(wpp7) << p;
   }

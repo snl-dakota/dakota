@@ -1691,10 +1691,10 @@ void NonDExpansion::compute_statistics()
 	    // no summary output since on-the-fly constructed:
             importanceSampler.run_iterator(Cout);
 
-            //const Real& p = imp_sampler_rep->get_probability();
+            //Real p = imp_sampler_rep->final_probability();
             //Cout << "importance sampling estimate for function " << i 
             //     << " level " << j << " = " << p << "\n";
-	    imp_sampler_stats[i][j] = imp_sampler_rep->get_probability();
+	    imp_sampler_stats[i][j] = imp_sampler_rep->final_probability();
 	  }
 	}
 	// sampler_cntr offset by moments, rl_len for p, pl_len, and gl_len

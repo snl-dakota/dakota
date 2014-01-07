@@ -119,7 +119,7 @@ initialize(const RealVectorArray& acv_points, size_t resp_index,
 #endif
 
   respFnIndex = resp_index;
-  initProb    = initial_prob;
+  probEstimate    = initial_prob;
   failThresh  = failure_threshold;
 }
 
@@ -161,7 +161,7 @@ initialize(const RealMatrix& acv_points, size_t resp_index,
 #endif
 
   respFnIndex = resp_index;
-  initProb    = initial_prob;
+  probEstimate    = initial_prob;
   failThresh  = failure_threshold;
 }
 
@@ -193,13 +193,16 @@ initialize(const RealVector& acv_point, size_t resp_index,
       init_pt[cntr] = acv_point[j];
 
   respFnIndex = resp_index;
-  initProb    = initial_prob;
+  probEstimate    = initial_prob;
   failThresh  = failure_threshold;
 }
 
 
 void NonDAdaptImpSampling::quantify_uncertainty()
 {
+  //TMW: Only converge COV for MMAIS
+  bool cov_flag = (importanceSamplingType == MMAIS);
+  RealVector init_fns;
   if (initLHS) {
     // Get initial set of LHS points: samples over the original distributions,
     // evaluates the points, and computes the initial probability estimates.
@@ -210,7 +213,7 @@ void NonDAdaptImpSampling::quantify_uncertainty()
     evaluate_parameter_sets(iteratedModel, true, false);
     compute_statistics(allSamples, allResponses);
 
-    RealVector init_fns(numSamples);
+    init_fns.sizeUninitialized(numSamples);
     size_t level_count, resp_fn_count;
     for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
       size_t rl_len = requestedRespLevels[resp_fn_count].length(),
@@ -244,9 +247,9 @@ void NonDAdaptImpSampling::quantify_uncertainty()
 	// select initial set of representative points
         select_rep_points(initPointsU, init_fns);
 	// perform refinement iterations
-	refine_rep_points();
+	converge_statistics(cov_flag);
 	// update bookkeeping
-        computedProbLevels[resp_fn_count][level_count] = finalProb;
+        computedProbLevels[resp_fn_count][level_count] = probEstimate;
       }
     }
   }
@@ -255,12 +258,11 @@ void NonDAdaptImpSampling::quantify_uncertainty()
     // from the initial points passed into initialize()
 
     // compute response samples for the initial points
-    RealVector init_fns;
     evaluate_samples(initPointsU, init_fns);
     // select initial set of representative points
     select_rep_points(initPointsU, init_fns);
     // perform refinement iterations
-    refine_rep_points();
+    converge_statistics(cov_flag);
   }
 }
 
@@ -391,106 +393,84 @@ select_rep_points(const RealVectorArray& var_samples_u,
 }
 
 
-void NonDAdaptImpSampling::refine_rep_points()
+void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
 {
-  if (repPointsU.empty()) { // should not happen
+  if (repPointsU.empty()) {
+    // should not happen due to TMW changes to select_rep_points()
+    Cerr << "Error: no representative points in NonDAdaptImpSampling::"
+	 << "converge_statistics()" << std::endl;
+    abort_handler(-1);
+
     // If no represenative points were found, then p=0 (or 1)
-    // If p(success) calculated, set p accordingly
-    finalProb = (invertProb) ? 1. : 0.;
+    // If p(success) calculated, set final p accordingly
+    //probEstimate = (invertProb) ? 1. : 0.;
+    //return;
   }
-  else {
-    // iteratively generate samples and select representative points
-    //   until coefficient of variation converges
-    //TMW: Only run converge_cov() for MMAIS
-    if (importanceSamplingType == MMAIS)
-      converge_cov();
-    // iteratively generate samples and select representative points
-    //   until probability converges
-    converge_probability();
-  }
-#ifdef DEBUG
-  Cout << "Final Probability " << finalProb << '\n';
-#endif
-}
 
-
-void NonDAdaptImpSampling::converge_cov()
-{
-  // iteratively sample and select representative points until COV converges
-  //Real abs_tol = .0001; // absolute tolerance
-  Real p, sum_p = 0., sum_var = 0.;
-  Real cov, old_cov = DBL_MAX;
-  RealVectorArray var_samples_u(refineSamples);
-  RealVector fn_samples(refineSamples);
-
-  size_t total_samples = 0, max_samples = refineSamples*maxIterations;
-  bool converged = false;
-  while (!converged && total_samples < max_samples) {
-    // generate samples based on multimodal sampling density - the set
-    //   of samples is output
-    generate_samples(var_samples_u);
-    evaluate_samples(var_samples_u, fn_samples);
-    total_samples += refineSamples; 
-
-    // calculate probability and coeff of variation
-    calculate_statistics(var_samples_u, fn_samples, total_samples, sum_p, p,
-			 true, sum_var, cov);
-
-    // check for convergence of cov
-    if (std::abs(old_cov) > 0. &&
-	std::abs(cov/old_cov - 1.) < convergenceTol) // relative tol
-      converged = true;
-    //else if (std::abs(cov - old_cov) < abs_tol)
-    //  converged = true;
-    else {
-      old_cov = cov;
-      select_rep_points(var_samples_u, fn_samples); // define new rep pts
-    }
-  }
-}
-
-
-void NonDAdaptImpSampling::converge_probability()
-{
-  // iteratively sample until probability converges
-  //Real abs_tol = .000001; // absolute tolerance
-  Real sum_var, cov, p, sum_p = 0., old_p = initProb;
+  // iteratively sample and select representative points until COV & 
+  // probability converge
+  //Real cov_abs_tol = .0001, p_abs_tol = .000001; // absolute tolerances
   RealVectorArray var_samples_u(refineSamples);
   RealVector fn_samples(refineSamples);
   size_t total_samples = 0, max_samples = refineSamples*maxIterations;
-  bool converged = false;
+  Real sum_var = 0., cov, old_cov = DBL_MAX, p, sum_p = 0.,
+    old_p = (invertProb) ? 1. - probEstimate : probEstimate;
+  bool converged = false, p_converged, cov_converged;
 
   while (!converged && total_samples < max_samples) {
-    // generate samples based on multimodal sampling density - the set
-    //   of samples is output
+    // generate samples based on multimodal sampling density
     generate_samples(var_samples_u);
     evaluate_samples(var_samples_u, fn_samples);
     total_samples += refineSamples;
 
-    // calculate probability with this set of samples
+    // calculate probability and, optionally, coeff of variation
     calculate_statistics(var_samples_u, fn_samples, total_samples, sum_p, p,
-			 false, sum_var, cov);
-    // check for convergence of probability
-    // MSE: enforce both probabilities to be non-0/1 and employ a relative tol
-    //   (during refinement, this enforces non-0/1 p for 2 consecutive iters).
-    //   If the true p is 0 or 1, then we will incur the overhead of maxIter.
+			 cov_flag, sum_var, cov);
+#ifdef DEBUG
+    Cout << "converge_statistics(): old_p = " << old_p << " p = " << p;
+    if (cov_flag) Cout << " old_cov = " << old_cov << " cov = " << cov;
+    Cout << std::endl;
+#endif // DEBUG
+
     if (importanceSamplingType == IS) // for IS, only perform one iteration
       converged = true;
-    else if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
-	     std::abs(p/old_p - 1.) < convergenceTol) // relative tol
-      converged = true;
-    else
-      select_rep_points(var_samples_u, fn_samples); //TMW: select new repPoints
-    //else if (p > 0. && p < 1. && std::abs(p - old_p) < abs_tol)// absolute tol
-    //  converged = true;
-#ifdef DEBUG
-    Cout << "converge_probability(): old_p = " << old_p << " p = " << p
-	 << std::endl;
-#endif // DEBUG
-    old_p = p;
+    else {
+      // COV convergence metrics
+      cov_converged = !cov_flag;
+      if (cov_flag) { // optional COV convergence metric
+	if (std::abs(old_cov) > 0. &&
+	    std::abs(cov/old_cov - 1.) < convergenceTol) // relative cov
+	  cov_converged = true;
+	//else if (std::abs(cov - old_cov) < cov_abs_tol) // absolute cov
+	//  cov_converged = true;
+      }
+
+      // probability convergence metrics:
+      // enforce both probabilities to be non-0/1 and employ a relative tol
+      // (during refinement, this enforces non-0/1 p for 2 consecutive
+      // iterations).  If the true p is 0 or 1, then we will incur the
+      // overhead of maxIterations in seeking separation.
+      p_converged = false;
+      if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
+	  std::abs(p/old_p - 1.) < convergenceTol) // relative p
+	p_converged = true;
+      //else if (p > 0. && p < 1. && std::abs(p - old_p) < p_abs_tol)// absolute
+      //  p_converged = true;
+
+      // current logic: require both metrics for same cycle
+      converged = (p_converged && cov_converged);
+      if (!converged) {
+	select_rep_points(var_samples_u, fn_samples); // select new repPoints
+	old_p = p;
+	if (cov_flag) old_cov = cov;
+      }
+    }
   }
   // If p(success) calculated, return 1-p 
-  finalProb = (invertProb) ? 1. - p : p;
+  probEstimate = (invertProb) ? 1. - p : p;
+#ifdef DEBUG
+  Cout << "converge_statistics(): final p = " << probEstimate << std::endl;
+#endif
 }
 
 

@@ -803,7 +803,7 @@ void NonDGlobalReliability::importance_sampling()
       // no summary output since on-the-fly constructed:
       importanceSampler.run_iterator(Cout);
 
-      const Real& p = importance_sampler_rep->get_probability();
+      Real p = importance_sampler_rep->final_probability();
 #ifdef DEBUG
       Cout << "\np = " << p << std::endl;
 #endif // DEBUG

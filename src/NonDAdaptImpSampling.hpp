@@ -71,8 +71,8 @@ public:
   void initialize(const RealVector& full_point, size_t resp_index,
 		  const Real& initial_prob, const Real& failure_threshold);
 
-  /// returns the probability calculated by the importance sampling
-  const Real& get_probability();
+  /// returns the final probability calculated by the importance sampling
+  Real final_probability();
 
   /// print the final statistics
   void print_results(std::ostream& s);
@@ -90,16 +90,10 @@ private:
   /// select representative points from a set of samples
   void select_rep_points(const RealVectorArray& var_samples_u,
 			 const RealVector& fn_samples);
-  /// refine probability estimates using sampling centered at
-  /// representative points
-  void refine_rep_points();
 
   /// iteratively generate samples and select representative points
-  /// until coefficient of variation converges
-  void converge_cov();
-  /// iteratively generate samples from final set of representative points
-  /// until probability converges
-  void converge_probability();
+  /// until probability and (optionally) coefficient of variation converge
+  void converge_statistics(bool cov_flag);
 
   /// generate a set of samples based on multimodal sampling density
   void generate_samples(RealVectorArray& var_samples_u);
@@ -110,11 +104,9 @@ private:
   /// calculate the probability of exceeding the failure threshold and
   /// the coefficent of variation (if requested)
   void calculate_statistics(const RealVectorArray& var_samples_u,
-			    const RealVector& fn_samples,
-			    size_t total_sample_number,
-			    Real& probability_sum, Real& probability,
-			    bool  cov_flag, Real& variance_sum,
-			    Real& coeff_of_variation);
+			    const RealVector& fn_samples, size_t total_samples,
+			    Real& sum_prob, Real& prob, bool compute_cov,
+			    Real& sum_var, Real& cov);
 
   /// compute Euclidean distance between points a and b
   Real distance(const RealVector& a, const RealVector& b);
@@ -158,10 +150,9 @@ private:
   /// the weight associated with each representative point
   RealVector repWeights;
 
-  /// the initial probability (from FORM or SORM)
-  Real initProb;
-  /// the final calculated probability (p)
-  Real finalProb;
+  /// the probability estimate that is iteratively refined by
+  /// importance sampling
+  Real probEstimate;
   /// the failure threshold (z-bar) for the problem.
   Real failThresh;
 };
@@ -171,8 +162,8 @@ inline NonDAdaptImpSampling::~NonDAdaptImpSampling()
 { }
 
 
-inline const Real& NonDAdaptImpSampling::get_probability()
-{ return finalProb; }
+inline Real NonDAdaptImpSampling::final_probability()
+{ return probEstimate; }
 
 
 inline Real NonDAdaptImpSampling::

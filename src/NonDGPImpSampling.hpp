@@ -58,7 +58,7 @@ public:
   void quantify_uncertainty();
   
   /// returns the probability calculated by the importance sampling
-  const Real& get_probability();
+  Real final_probability();
  
   /// print the final statistics
   void print_results(std::ostream& s);
@@ -121,14 +121,11 @@ private:
   void calcRhoDraw();
   /// function to pick the next X value to be evaluated by the Iterated model
   RealVector drawNewX(int this_k);
-  
-
 };
 
 
-inline const Real& NonDGPImpSampling::get_probability()
+inline Real NonDGPImpSampling::final_probability()
 { return finalProb; }
-
 
 } // namespace Dakota
 

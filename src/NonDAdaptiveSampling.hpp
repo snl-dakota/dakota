@@ -61,7 +61,7 @@ protected:
   void quantify_uncertainty();
   
   /// returns the probability calculated by the importance sampling
-  const Real& get_probability();
+  Real final_probability();
  
 
 private:
@@ -249,10 +249,10 @@ private:
 
   /// Score New candidates based on the chosen metrics
   void score_new_candidates();
-
 };
 
-inline const Real& NonDAdaptiveSampling::get_probability()
+
+inline Real NonDAdaptiveSampling::final_probability()
 { return finalProb; }
 
 
