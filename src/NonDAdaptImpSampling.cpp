@@ -118,9 +118,10 @@ initialize(const RealVectorArray& acv_points, size_t resp_index,
     Cout << "Initial Point " << i << initPointsU[i] << '\n';
 #endif
 
-  respFnIndex = resp_index;
-  probEstimate    = initial_prob;
-  failThresh  = failure_threshold;
+  respFnIndex  = resp_index;
+  probEstimate = initial_prob;
+  failThresh   = failure_threshold;
+  invertProb   = (probEstimate > 0.5);
 }
 
 
@@ -160,9 +161,10 @@ initialize(const RealMatrix& acv_points, size_t resp_index,
     Cout << "Initial Point " << i << initPointsU[i] << '\n';
 #endif
 
-  respFnIndex = resp_index;
-  probEstimate    = initial_prob;
-  failThresh  = failure_threshold;
+  respFnIndex  = resp_index;
+  probEstimate = initial_prob;
+  failThresh   = failure_threshold;
+  invertProb   = (probEstimate > 0.5);
 }
 
 
@@ -192,9 +194,10 @@ initialize(const RealVector& acv_point, size_t resp_index,
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
       init_pt[cntr] = acv_point[j];
 
-  respFnIndex = resp_index;
-  probEstimate    = initial_prob;
-  failThresh  = failure_threshold;
+  respFnIndex  = resp_index;
+  probEstimate = initial_prob;
+  failThresh   = failure_threshold;
+  invertProb   = (probEstimate > 0.5);
 }
 
 
