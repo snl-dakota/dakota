@@ -49,10 +49,13 @@ function(DakotaEnableSpecMaint)
       OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp"
       DEPENDS nidrgen 
               ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-  	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
-  	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_initdefs.h
+  	      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
       COMMAND ${NIDR_BINARY_DIR}/nidrgen
+      # Can't seem to suppress NIDR_initdefs.h with . or -
+      # Just remove it after generation
       ARGS    dakota.input.nspec dakota.input.desc NIDR_initdefs.h NIDR_keywds.hpp
+      COMMAND "${CMAKE_COMMAND}"
+      ARGS    -E remove "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_initdefs.h"
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
   

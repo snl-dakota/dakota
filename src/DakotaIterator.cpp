@@ -34,7 +34,6 @@
 #include "SurrBasedGlobalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
 #include "NonlinearCGOptimizer.hpp"
-#include "NIDR_initdefs.h"
 #ifdef DAKOTA_DDACE
 #include "DDACEDesignCompExp.hpp"
 #endif
@@ -135,7 +134,7 @@ Iterator::Iterator(BaseConstructor, Model& model):
   methodSource(probDescDB.get_string("responses.method_source")),
   intervalType(probDescDB.get_string("responses.interval_type")),
   hessianType(probDescDB.get_string("responses.hessian_type")),
-  fdGradStepSize(fdGradStepDflt),
+  fdGradStepSize(0.001),
   fdGradStepType(probDescDB.get_string("responses.fd_gradient_step_type")),
   fdHessByGradStepSize(0.001), fdHessByFnStepSize(0.002), 
   fdHessStepType(probDescDB.get_string("responses.fd_hessian_step_type")),

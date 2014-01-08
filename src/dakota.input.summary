@@ -1988,7 +1988,7 @@ KEYWORD12 responses
 	  [ interval_type ]
 	  [ forward
 	  | central ]
-	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST := 0.001 ]
+	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST ]
 	  )
 	|
 	( numerical_gradients
@@ -2003,7 +2003,7 @@ KEYWORD12 responses
 	  [ interval_type ]
 	  [ forward
 	  | central ]
-	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST := 0.001 ]
+	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST ]
 	  )
 	no_hessians
 	|

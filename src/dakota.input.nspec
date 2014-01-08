@@ -1597,8 +1597,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	  [ forward {N_rem(lit,intervalType_forward)}
 	    | central {N_rem(lit,intervalType_central)}
 	    ]
-	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST := fdGradStepDflt 0.001
-		{N_rem(RealL,fdGradStepSize)} ]
+	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
 	  )
 	no_hessians {N_rem(lit,hessianType_none)}
 	|
