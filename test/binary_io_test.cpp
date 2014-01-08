@@ -33,11 +33,11 @@ void test_write_read_native_val(const std::string& data_label, T val_out,
   {
     bool db_is_incore = false;
     bool file_exist = true;
-    bool read_only = false;
+    bool write_file = true;
 
     // open file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     status = binary_file.store_data(data_label, val_out);
     assert(status >= 0);
@@ -50,11 +50,11 @@ void test_write_read_native_val(const std::string& data_label, T val_out,
     // open/read file
     bool db_is_incore = false;
     bool file_exist = true;
-    bool read_only = true;
+    bool write_file = false;
     T val_in = 0;
 
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     // WJB: see hack (hdr file) to make a single val look like a vec of len==1
     status = binary_file.read_data(data_label, val_in);
@@ -96,11 +96,11 @@ void test_write_read_std_vec(const std::string& file_name,
   {
     bool db_is_incore = false;
     bool file_exist = true;
-    bool read_only = false;
+    bool write_file = true;
 
     // open file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     status = binary_file.store_data(data_label, vec_out);
     assert(status >= 0);
@@ -113,9 +113,9 @@ void test_write_read_std_vec(const std::string& file_name,
     // open/read file
     bool db_is_incore = false;
     bool file_exist = true;
-    bool read_only = true;
+    bool write_file = false;
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
 #if 0
     // WJB: enabling read of more sophisticated data types suggests a lack of
@@ -136,7 +136,7 @@ void test_write_read_string(const std::string& file_name)
 {
   bool db_is_incore = false;
   bool file_exist = true;
-  bool read_only = false;
+  bool write_file = true;
   herr_t status;
 
 #if 0
@@ -148,7 +148,7 @@ void test_write_read_string(const std::string& file_name)
   {
     // open file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     status = binary_file.store_data("/StdString", tst_str);
     assert(status >= 0);
@@ -160,9 +160,9 @@ void test_write_read_string(const std::string& file_name)
   {
     // open/read file
     file_exist = true;
-    read_only = true;
+    write_file = false;
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     std::string tst_str_in;
     status = binary_file.read_data("/StdString", tst_str_in);
@@ -183,7 +183,7 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
   using std::vector;
   bool db_is_incore = false;
   bool file_exist = true;
-  bool read_only = false;
+  bool write_file = true;
   herr_t status;
 
   vector< vector<T> > vlvec_array_out;
@@ -214,7 +214,7 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
   {
     // open file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     status = binary_file.store_data(data_label, vlvec_array_out);
     assert(status >= 0);
@@ -225,9 +225,9 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
   {
     /* open/read file
     file_exist = true;
-    read_only = true;
+    write_file = false;
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     vector< vector<T> > vlvec_array_in;
     //binary_file.read_data("/RaggedArrayData", vlvec_array_in);
@@ -246,7 +246,7 @@ void test_write_read_string_array(const std::string& file_name)
 {
   bool db_is_incore = false;
   bool file_exist = true;
-  bool read_only = false;
+  bool write_file = true;
   herr_t status;
 
 #if 0
@@ -266,7 +266,7 @@ void test_write_read_string_array(const std::string& file_name)
   {
     // open file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     status = binary_file.store_data("/StringArrayData", str_array_out);
 
@@ -278,9 +278,9 @@ void test_write_read_string_array(const std::string& file_name)
   {
     // open/read file
     file_exist = true;
-    read_only = true;
+    write_file = false;
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     StringArray str_array_in;
     binary_file.read_data("/StringArrayData", str_array_in);
@@ -327,7 +327,7 @@ herr_t testHDF5fileDB(const std::string& file_name)
 
   bool db_is_incore = false;
   bool file_exist = false;
-  bool read_only = false;
+  bool write_file = true;
   herr_t status;
 
   // WJB - ToDo: CONTINUE to split-out into functions
@@ -336,7 +336,7 @@ herr_t testHDF5fileDB(const std::string& file_name)
   {
     // open/create file
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
     
     // RealMatrix -- WJB: come back ASAP -- try RealVectorArray instead
     status = binary_file.store_data("/RealMatrixData", rmatrix_out);
@@ -361,9 +361,9 @@ herr_t testHDF5fileDB(const std::string& file_name)
   {
     // open/read file
     file_exist = true;
-    read_only = true;
+    write_file = false;
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   read_only);
+                                   write_file);
 
     // read data 
   
@@ -388,7 +388,7 @@ herr_t testHDF5fileDB(const std::string& file_name)
 herr_t testHDF5legacyRMatrixDBstorage(bool db_is_incore)
 {
   bool file_exist = false;
-  bool read_only = false;
+  bool write_file = false;
   herr_t status;
 
   return status;
@@ -400,7 +400,7 @@ void testHDF5incoreDB()
   // Need:  more granular functions for code sharing (testHDF5legacy... )
   /* bool db_is_incore = true;
   bool file_exist = false;
-  bool read_only = false;
+  bool write_file = true;
   herr_t status; */
 
   test_write_read_native_val("/DakPi", 3.14159);
@@ -432,7 +432,13 @@ int main()
 
   status = testHDF5_DB("binary_io_test.h5");
 
-  // no argument to test function implies default, i.e. test in-core HDF5
+  // No arguments to the test function implies default, i.e. test in-core HDF5
+  // NOTE (1/8/14):  New default parameters for IO helper constructor means
+  // that the HDF5 DB will NOT be persisted to a file when the program ends.
+  // 
+  // In order to get the in-core DB persisted to a file, there is now a need
+  // to override the default parameters to the SimpleBinaryStream constructor.
+  // 
   //status = testHDF5_DB();
   testHDF5_DB();
 

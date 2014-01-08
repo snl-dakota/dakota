@@ -134,11 +134,11 @@ class SimpleBinaryStream
 public:
 
   /// Default constructor (evaluate whether sensible - default params??)
-  SimpleBinaryStream(const  std::string& file_name = "dak_db_persist.h5",
-                     bool   db_is_incore      = true,
-                     bool   file_stream_exist = true,
-                     bool   read_only         = true,
-                     bool   exit_on_error     = true) :
+  SimpleBinaryStream(const std::string& file_name = "dak_db_persist.h5",
+                     bool db_is_incore      = true,
+                     bool file_stream_exist = true,
+                     bool writable_fstream  = false,
+                     bool exit_on_error     = true) :
     fileName(file_name), binStreamId(),
     dbIsIncore(db_is_incore), exitOnError(exit_on_error), errorStatus()
   {
@@ -148,7 +148,7 @@ public:
       //http://www.mail-archive.com/hdf-forum@hdfgroup.org/msg00660.html
 
       hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
-      bool persist = true;
+      bool persist = writable_fstream;
       if ( H5Pset_fapl_core(fapl_id, 4096, persist) && exitOnError)
         throw BinaryStream_CreateFailure();
 
@@ -167,11 +167,12 @@ public:
     }
 
     else if ( file_stream_exist ) {
-      if ( read_only ) {
-        binStreamId = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+      if ( writable_fstream ) {
+        binStreamId = H5Fopen(fileName.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
       }
       else {
-        binStreamId = H5Fopen(fileName.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+        // open file stream as read-only
+        binStreamId = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
       }
 
       if ( binStreamId < 0 ) {
