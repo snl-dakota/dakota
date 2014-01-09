@@ -17,8 +17,8 @@ export DAKOTA=/path/to/dakota
 export PATH=$DAKOTA/bin:$DAKOTA/test:$PATH:.
 
 # Case 1: Run DAKOTA in parallel and launch M-1 = 5 parallel analysis
-# jobs at once (use default self_scheduling; to run M = 6 jobs, see
-# dakota_pstudy.in for static_scheduling)
+# jobs at once (use default scheduling; to run M = 6 jobs, see
+# dakota_pstudy.in for peer static or peer dynamic scheduling)
 
 mpiexec -n 6 $DAKOTA/bin/dakota -i dakota_pstudy.in
 
