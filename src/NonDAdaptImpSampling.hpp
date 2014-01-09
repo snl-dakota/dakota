@@ -127,10 +127,10 @@ private:
   bool initLHS;
   /// flag to control if x->u transformation should be performed for
   /// initial points
-  bool transInitPoints;
+  bool xSpaceInitData;
   /// flag to control if u->x transformation should be performed
   /// before model evaluation
-  bool transPoints;
+  bool xSpaceModel;
   /// flag to control if the sampler should respect the model bounds
   bool useModelBounds;
   /// flag for inversion of probability values using 1.-p

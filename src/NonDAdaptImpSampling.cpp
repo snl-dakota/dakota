@@ -34,12 +34,11 @@ namespace Dakota {
 /** This is the primary constructor.  It accepts a Model reference. */
 NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
   NonDSampling(model), initLHS(true),
-  // if initial points in x-space, they must be transformed because method
-  //   expects all points in u-space
-  transInitPoints(true),
+  // if initial points in x-space, they must be transformed to u-space
+  xSpaceInitData(true),
   // if model is in x-space then future points generated in u-space will
   //   need to be transformed prior to evaluation
-  transPoints(true),
+  xSpaceModel(true),
   // should the model bounds be respected?
   useModelBounds(false),
   // invert the sense of the refinement
@@ -72,9 +71,8 @@ NonDAdaptImpSampling(Model& model, const String& sample_type,
 		     bool x_space_data, bool x_space_model, bool bounded_model):
   NonDSampling(NoDBBaseConstructor(), model, sample_type, 0, refine_seed, rng,
 	       vary_pattern, ALEATORY_UNCERTAIN), // only sample aleatory vars
-  initLHS(false), importanceSamplingType(is_type),
-  transInitPoints(x_space_data), transPoints(x_space_model),
-  useModelBounds(bounded_model), invertProb(false),
+  initLHS(false), importanceSamplingType(is_type), xSpaceInitData(x_space_data),
+  xSpaceModel(x_space_model), useModelBounds(bounded_model), invertProb(false),
   refineSamples(refine_samples)
 {
   cdfFlag = cdf_flag;
@@ -102,7 +100,7 @@ initialize(const RealVectorArray& acv_points, size_t resp_index,
   for (i=0; i<num_points; i++) {
     RealVector& init_pt_i = initPointsU[i];
     init_pt_i.sizeUninitialized(numUncertainVars);
-    if (transInitPoints) {
+    if (xSpaceInitData) {
       natafTransform.trans_X_to_U(acv_points[i], acv_u_point);
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
@@ -145,7 +143,7 @@ initialize(const RealMatrix& acv_points, size_t resp_index,
     const Real* acv_pt_i = acv_points[i];
     RealVector& init_pt_i = initPointsU[i];
     init_pt_i.sizeUninitialized(numUncertainVars);
-    if (transInitPoints) {
+    if (xSpaceInitData) {
       RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
 			     numContinuousVars);
       natafTransform.trans_X_to_U(acv_pt_view, acv_u_point);
@@ -184,7 +182,7 @@ initialize(const RealVector& acv_point, size_t resp_index,
   initPointsU.resize(1);
   RealVector& init_pt = initPointsU[0];
   init_pt.sizeUninitialized(numUncertainVars);
-  if (transInitPoints) {
+  if (xSpaceInitData) {
     RealVector acv_u_point;
     natafTransform.trans_X_to_U(acv_point, acv_u_point);
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
@@ -287,7 +285,7 @@ select_rep_points(const RealVectorArray& var_samples_u,
 
   // store designPoint in acv_sample, append uncertain samples later
   RealVector acv_sample, acv_x_sample;
-  if (transPoints) {
+  if (xSpaceModel) {
     acv_sample.sizeUninitialized(numContinuousVars);
     for (j=0; j<numContDesVars; ++j)
       acv_sample[j] = designPoint[j];
@@ -539,7 +537,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
 
   // store designPoint in acv_sample, append uncertain samples later
   RealVector acv_sample, acv_x_sample;
-  if (transPoints) {
+  if (xSpaceModel) {
     acv_sample.sizeUninitialized(numContinuousVars);
     for (j=0; j<numContDesVars; ++j)
       acv_sample[j] = designPoint[j];
@@ -555,7 +553,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
   for (i=0; i<num_samples; i++) {
     const RealVector& sample_i = var_samples_u[i];
 
-    if (transPoints) { // u-space points -> x-space Model (NonDLocal)
+    if (xSpaceModel) { // u-space points -> x-space Model (NonDLocal)
       // append uncertain sample to designPoint before evaluation
       // this must be done before the transformation because trans_U_to_X
       //   expectes numContinuousVars variables
