@@ -832,12 +832,11 @@ void x_y_pairs_to_x_set(
 
 /// generic find_index (inactive)
 template <typename ContainerType>
-typename ContainerType::size_type
-find_index(const ContainerType& c,
-           const typename ContainerType::value_type& search_data)
+size_t find_index(const ContainerType& c,
+		  const typename ContainerType::value_type& search_data)
 {
   // should be more efficient than find() + distance()
-  typename ContainerType::size_type cntr = 0;
+  size_t cntr = 0;
   BOOST_FOREACH(const typename ContainerType::value_type& entry, c) {
     if (entry == search_data)
       return cntr;
@@ -866,8 +865,8 @@ template <typename T>
 size_t find_index(const boost::multi_array<T, 1>& bma, const T& search_data)
 {
   // should be more efficient than find() + distance()
-  size_t len = bma.size();
-  for (size_t i=0; i<len; i++)
+  size_t i, len = bma.size();
+  for (i=0; i<len; i++)
     if (bma[i] == search_data)
       return i;
   return _NPOS;
@@ -907,11 +906,10 @@ inline size_t find_index(StringMultiArrayConstView bmacv,
 
 /// compute the index of an entry within a std::list
 template <typename ListT>
-typename ListT::size_type find_index(const ListT& l,
-                                     const typename ListT::value_type& val)
+size_t find_index(const ListT& l, const typename ListT::value_type& val)
 {
   // should be more efficient than find() + distance()
-  typename ListT::size_type cntr = 0;
+  size_t cntr = 0;
   BOOST_FOREACH(const typename ListT::value_type& entry, l) {
     if (entry == val)
       return cntr;
