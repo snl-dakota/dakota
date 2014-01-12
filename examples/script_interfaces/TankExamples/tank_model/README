@@ -1,0 +1,18 @@
+Version 1
+06 January, 2014
+
+This directory contains all the code for running the Tank problem,
+used in the 2014 V&V Challenge Workshop at the ASME V&V Symposium.
+
+There are usage notes within the individual files. More details and
+the context of the workshop are available online at: https://share.sandia.gov/vvcw
+This site will continue to operate until at least FY15.
+
+To test that the code is running properly, type
+  python EvalTank.py SampleInputToEvalTankpy SampleSummaryFile SampleDataFile
+or
+  EvalTank.py SampleInputToEvalTankpy SampleSummaryFile SampleDataFile
+The second option requires that EvalTank.py be executable.
+
+Because of the selected resultStyle, only SampleSummaryFile will be written.
+The SampleDataFile will only be written if resultStyle is 1.
