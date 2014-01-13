@@ -439,7 +439,7 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
       // COV convergence metrics
       cov_converged = !cov_flag;
       if (cov_flag) { // optional COV convergence metric
-	if (std::abs(old_cov) > 0. &&
+	if (std::abs(old_cov) > 0. && std::abs(cov) > 0. &&
 	    std::abs(cov/old_cov - 1.) < convergenceTol) // relative cov
 	  cov_converged = true;
 	//else if (std::abs(cov - old_cov) < cov_abs_tol) // absolute cov
@@ -581,17 +581,18 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 		     Real& sum_var, Real& cov)
 {
   // Note: The current beta calculation assumes samples input in u-space
-  size_t i, j, k, cntr, num_samples = var_samples_u.size(),
+  size_t i, j, k, batch_size = var_samples_u.size(),
     num_rep_pts = repPointsU.size();
-  Real n_std_devs = 1.0;
+  Real n_std_devs = 1., recentered_pdf, pdf_ratio;
   RealArray failure_ratios;
   if (compute_cov)
-    failure_ratios.reserve(num_samples);
+    failure_ratios.reserve(batch_size);
 
-  // calculate the probability of failure
-  for (i=0; i<num_samples; i++) {
+  // calculate the probability of failure using all samples relative
+  // to each of the representative points
+  for (i=0; i<batch_size; i++) {
 
-    // if point is a failure, calculate mmpdf, pdf, and add to sum
+    // if point is a failure, calculate recentered_pdf, pdf, and add to sum
     if ( ( fn_samples[i] < failThresh &&
 	   ( cdfFlag || (invertProb && !cdfFlag) ) ) ||
 	 ( fn_samples[i] > failThresh &&
@@ -599,30 +600,73 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
       const RealVector& sample_i = var_samples_u[i];
 
-      // calculate mmpdf
-      Real mmpdf = 0.;
+      // calculate recentered_pdf
+      recentered_pdf = 0.;
       for (j=0; j<num_rep_pts; ++j)
-	mmpdf += repWeights[j] *
+	recentered_pdf += repWeights[j] *
 	  Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
 
-      // calculate pdf
-      Real pdf = Pecos::phi(sample_i.normFrobenius()), ratio = pdf/mmpdf;
+      // calculate ratio of pdf relative to origin to pdf relative to rep pt
+      pdf_ratio = Pecos::phi(sample_i.normFrobenius()) / recentered_pdf;
       // add sample's contribution to sum_prob
-      sum_prob += ratio;
-      // if cov requested, store failure data to avoid recalculating
+      sum_prob += pdf_ratio;
+      // if cov requested, store ratio data to avoid recalculating
       if (compute_cov)
-	failure_ratios.push_back(ratio);
+	failure_ratios.push_back(pdf_ratio);
     }
   }
+  /* Alternate approach computes probs for point sets only w.r.t. corresponding
+     rep pt.  This does not appear to be correct/consistent w/ multimodal PDF.
+  for (i=0, cntr=0; i<num_rep_pts; ++i) {
+    // loop over all of sample batch, but associate with the correct rep point
+    const RealVector& rep_pt = repPointsU[i];
+    Real              rep_wt = repWeights[i];
+
+    if (i == num_rep_pts - 1) // last set: include all remaining lhs samples
+      rep_batch_size = (cntr < batch_size) ? batch_size - cntr : 0;
+    else // apportion batch_size among repPointsU based on repWeights
+      rep_batch_size = (num_rep_pts > 1) ?
+	std::max(1, int(rep_wt * batch_size)) : batch_size;
+
+    // recenter std normals around i-th rep point
+    for (j=0; j<rep_batch_size && cntr<batch_size; ++j, ++cntr) {
+
+      // if point is a failure, calculate pdf ratio and add to sum
+      if ( ( fn_samples[cntr] < failThresh &&
+	     ( cdfFlag || (invertProb && !cdfFlag) ) ) ||
+	   ( fn_samples[cntr] > failThresh &&
+	     (!cdfFlag || (invertProb &&  cdfFlag) ) ) ) {
+	const RealVector& rep_sample = var_samples_u[cntr];
+
+	// calculate recentered u-space pdf
+        recentered_pdf = rep_wt *
+	  Pecos::phi(distance(rep_pt, rep_sample) / n_std_devs);
+
+	// calculate ratio of pdf relative to origin to pdf relative to rep pt
+        pdf_ratio = Pecos::phi(rep_sample.normFrobenius()) / recentered_pdf;
+
+	// add sample's contribution to sum
+	sum_prob += pdf_ratio;
+	// if cov requested, store failure data to avoid recalculating
+	if (compute_cov)
+	  failure_ratios.push_back(pdf_ratio);
+      }
+    }
+  }
+  */
   prob = sum_prob/double(total_samples);
 
   // compute the coeff of variation if requested
   if (compute_cov) {
-    size_t num_failures = failure_ratios.size();
-    for (i=0; i<num_failures; i++)
-      sum_var += std::pow(failure_ratios[i] - prob, 2);
-    Real var = sum_var/double(total_samples)/double(total_samples - 1);
-    cov = std::sqrt(var)/prob; // MSE: possible division by zero ?
+    if (prob > 0.) {
+      size_t num_failures = failure_ratios.size();
+      for (i=0; i<num_failures; i++)
+	sum_var += std::pow(failure_ratios[i] - prob, 2);
+      Real var = sum_var/double(total_samples)/double(total_samples - 1);
+      cov = std::sqrt(var) / prob;
+    }
+    else
+      cov = 0.;
   }
 }
 

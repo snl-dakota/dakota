@@ -1745,8 +1745,8 @@ static GuiKeyWord
 	kw_256[10] = {
 		{"central",8,0,6,0,2349,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
 		{"dakota",8,4,4,0,2333,kw_255,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
-		{"fd_gradient_step_size",0x406,0,7,0,2350,0,0.,0.,0.001},
-		{"fd_step_size",0x40e,0,7,0,2351,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
+		{"fd_gradient_step_size",6,0,7,0,2350},
+		{"fd_step_size",14,0,7,0,2351,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
 		{"forward",8,0,6,0,2347,0,0.,0.,0.,0,"@"},
 		{"id_analytic_gradients",13,0,2,2,2327,0,0.,0.,0.,0,"{Analytic derivatives function list} RespCommands.html#RespGradMixed"},
 		{"id_numerical_gradients",13,0,1,1,2325,0,0.,0.,0.,0,"{Numerical derivatives function list} RespCommands.html#RespGradMixed"},
@@ -1809,8 +1809,8 @@ static GuiKeyWord
 	kw_264[8] = {
 		{"central",8,0,6,0,2349,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
 		{"dakota",8,4,4,0,2333,kw_255,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
-		{"fd_gradient_step_size",0x406,0,7,0,2350,0,0.,0.,0.001},
-		{"fd_step_size",0x40e,0,7,0,2351,0,0.,0.,0.001,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
+		{"fd_gradient_step_size",6,0,7,0,2350},
+		{"fd_step_size",14,0,7,0,2351,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
 		{"forward",8,0,6,0,2347,0,0.,0.,0.,0,"@"},
 		{"interval_type",8,0,5,0,2345,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
 		{"method_source",8,0,3,0,2331,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
