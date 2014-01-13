@@ -2037,11 +2037,11 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
     // create aggregate interaction labels (once for all response fns)
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
-    const Pecos::BitArrayULongMap& s_index_map
+    const Pecos::BitArrayULongMap& sobol_map
       = shared_data_rep->sobol_index_map();
-    sobol_labels.resize(s_index_map.size());
-    for (Pecos::BAULMCIter map_cit=s_index_map.begin();
-	 map_cit!=s_index_map.end(); ++map_cit) { // loop in key sorted order
+    sobol_labels.resize(sobol_map.size());
+    for (Pecos::BAULMCIter map_cit=sobol_map.begin();
+	 map_cit!=sobol_map.end(); ++map_cit) { // loop in key sorted order
       const BitArray& set = map_cit->first;
       unsigned long index = map_cit->second; // 0-way -> n 1-way -> interaction
       if (index > numContinuousVars) {       // an interaction
@@ -2054,7 +2054,6 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
   }
 
   // print sobol indices per response function
-  // TO DO: manage sparsity --> proper usage of aggregated labels
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
@@ -2066,24 +2065,52 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 			    respCovariance(i,i) <= Pecos::SMALL_NUMBER ) )
 	              ? false : true;
       if (well_posed) {
-	const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
 	const RealVector& total_indices
 	  = poly_approx_rep->total_sobol_indices();
+	const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
+        Pecos::ULongULongMap sparse_sobol_map
+	  = poly_approx_rep->sparse_sobol_index_map();
+	bool dense = sparse_sobol_map.empty();
+	Real sobol; size_t main_cntr = 0;
+	// Print Main and Total effects
 	s << fn_labels[i] << " Sobol' indices:\n" << std::setw(38) << "Main"
 	  << std::setw(19) << "Total\n";
-	for (j=0; j<numContinuousVars; ++j)
-	  if (std::abs(sobol_indices[j+1]) > vbdDropTol ||
-	      std::abs(total_indices[j])   > vbdDropTol)   // print main / total
-	    s << "                     "   << std::setw(write_precision+7) 
-	      << sobol_indices[j+1] << ' ' << std::setw(write_precision+7)
-	      << total_indices[j]   << ' ' << cv_labels[j] << '\n';
+	for (j=0; j<numContinuousVars; ++j) {
+	  if (dense)
+	    sobol = sobol_indices[j+1];
+	  else {
+	    Pecos::ULULMIter it = sparse_sobol_map.find(j+1);
+	    if (it == sparse_sobol_map.end())
+	      sobol = 0.;
+	    else
+	      { sobol = sobol_indices[it->second]; ++main_cntr; }
+	  }
+	  if (std::abs(sobol)            > vbdDropTol ||
+	      std::abs(total_indices[j]) > vbdDropTol) // print main / total
+	    s << "                     " << std::setw(write_precision+7)
+	      << sobol << ' ' << std::setw(write_precision+7)
+	      << total_indices[j] << ' ' << cv_labels[j] << '\n';
+	}
+	// Print Interaction effects
 	if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
 	  num_indices = sobol_indices.length();
 	  s << std::setw(39) << "Interaction\n";
-	  for (j=numContinuousVars+1; j<num_indices; ++j)
-	    if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
-	      s << "                     " << std::setw(write_precision+7) 
-		<< sobol_indices[j] << ' ' << sobol_labels[j] << '\n'; // TO DO
+	  if (dense) {
+	    for (j=numContinuousVars+1; j<num_indices; ++j)
+	      if (std::abs(sobol_indices[j]) > vbdDropTol) // print interaction
+		s << "                     " << std::setw(write_precision+7) 
+		  << sobol_indices[j] << ' ' << sobol_labels[j] << '\n';
+	  }
+	  else {
+	    Pecos::ULULMIter it = ++sparse_sobol_map.begin(); // skip 0-way
+	    std::advance(it, main_cntr);                // advance past 1-way
+	    for (; it!=sparse_sobol_map.end(); ++it) { // 2-way and above
+	      sobol = sobol_indices[it->second];
+	      if (std::abs(sobol) > vbdDropTol) // print interaction
+		s << "                     " << std::setw(write_precision+7) 
+		  << sobol << ' ' << sobol_labels[it->first] << '\n';
+	    }
+	  }
 	}
       }
       else
@@ -2091,7 +2118,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 	  << "variance\n";
     }
     else
-      s << fn_labels[i] << "Sobol' indices not available due to expansion "
+      s << fn_labels[i] << " Sobol' indices not available due to expansion "
 	<< "coefficient mode\n";
   }
 }

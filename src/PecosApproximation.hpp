@@ -68,10 +68,13 @@ public:
   /// Performs global sensitivity analysis using Sobol' Indices by
   /// computing total effects
   void compute_total_effects();
+
   /// return polyApproxRep->sobolIndices
   const Pecos::RealVector& sobol_indices() const;
   /// return polyApproxRep->totalSobolIndices
   const Pecos::RealVector& total_sobol_indices() const;
+  /// return RegressOrthogPolyApproximation::sparseSobolIndexMap
+  Pecos::ULongULongMap sparse_sobol_index_map() const;
 
   /// return OrthogPolyApproximation::decayRates
   const Pecos::RealVector& dimension_decay_rates() const;
@@ -265,6 +268,10 @@ inline const Pecos::RealVector& PecosApproximation::sobol_indices() const
 
 inline const Pecos::RealVector& PecosApproximation::total_sobol_indices() const
 { return polyApproxRep->total_sobol_indices(); }
+
+
+inline Pecos::ULongULongMap PecosApproximation::sparse_sobol_index_map() const
+{ return polyApproxRep->sparse_sobol_index_map(); }
 
 
 inline const Pecos::RealVector& PecosApproximation::
