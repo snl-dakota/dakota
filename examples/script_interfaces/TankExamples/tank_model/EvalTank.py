@@ -9,15 +9,17 @@
 
 # Arguments: 
 ## inputFileName - gives the parameter values (in dprepro format).
-##   the names MUST be consistent, but the ordering does not matter
 ## summaryFileName - results file to be written (in a format suitable for Dakota)
 ## dataFileName - writes out detailed simulation results, in plain text
 ##   this can be large. This is optional, if nothing is passed, no datafile is written.
 ##   if an empty string "" is passed, no datafile is written
 
 
-# The inputFile must have the following inputs: P Gamma H E Nu L R T meshID resultStyle
-# The first 9 inputs are described in FEMTank.py
+# The inputFile must have the following inputs: P Gamma_Chi H E Nu L R T meshID resultStyle
+##  the names MUST be consistent, but the ordering does not matter
+##  The first 9 inputs are described in FEMTank.py
+##  Note that if either Gamma_Chi OR H is ommitted, they will both be set to 0 (pressure only scenario)
+
 # resultStyle is used to select from four predetermined sets of responses
 ##  It selects the location inputs X_vec and Phi_vec, and sets flags to produce speciallized summaryFiles
 ##
@@ -77,8 +79,12 @@ def main():
   Nu = inputDict.get('Nu') #Poisson's ratio
 
   Pressure = inputDict.get('P') #Internal Pressure (lb_f/in^2 gage)
-  LiqHeight = inputDict.get('H') #height of liquid (inches)
-  Gamma = inputDict.get('Gamma') #liquid specific weight (lb_f / inches^3)
+  if (inputDict.get('H') != None) and (inputDict.get('Gamma_Chi') != None):
+    LiqHeight = inputDict.get('H') #height of liquid (inches)
+    Gamma_Chi = inputDict.get('Gamma_Chi') #liquid specific weight (lb_f / inches^3)
+  else:
+    LiqHeight = 0
+    Gamma_Chi = 0
 
   meshID = inputDict.get('meshID')
   if meshID == 24: #flag to run "untanked" cylinder, must also specify M,N
@@ -110,7 +116,6 @@ def main():
     dPhi=pi/(nPhi-1)
     Phi_vec = [idx*dPhi for idx in range(0,int(nPhi*5/6))] #exclude the top 5 inches
     nX=len(X_vec)
-    dataFileName = ''; #no need for datafile
 
   elif resultStyle == 3: # for Pressure Only Tests
     X_vec = [0, 27, 28, 29]
@@ -133,11 +138,11 @@ def main():
   if (meshID != 24):
     # Run the tank (skewed cylinder)
     import FEMTank
-    FEMTank.main(X_vec, Phi_vec, Pressure, Gamma, LiqHeight, E, Nu, Length, Radius, Thickness, meshID, summaryFileName, dataFileName)
+    FEMTank.main(X_vec, Phi_vec, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Radius, Thickness, meshID, summaryFileName, dataFileName)
   else:
     # Run the cylinder
     import Cylinder
-    Cylinder.main(X_vec, Phi_vec, Pressure, Gamma, LiqHeight, E, Nu, Length, Radius, Thickness, M, N, summaryFileName, dataFileName)
+    Cylinder.main(X_vec, Phi_vec, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Radius, Thickness, M, N, summaryFileName, dataFileName)
 
 if __name__ == "__main__":
   main()  

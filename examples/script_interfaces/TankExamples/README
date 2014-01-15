@@ -7,17 +7,21 @@ an engineering analysis. The examples run a model of a
 cylindrical tank, which simulates displacement, strain, and
 stress responses to load.
 
+
 NOTES
 -----------------
-This was originally intended to run in a Linux environment. It has been tested w/ 
-Dakota 5.4 and python 2.6.6 and 3.3.2, on RHEL 6. Some of the driver scripts are 
-written in bash, and no Windows equivalent is provided. 
-However, the python driver scripts have also been tested on Windows 7, Dakota 5.4,
-and Python 3.3.3.
+This was originally intended to run in a Linux environment and python 2 or 3.
+It has been tested w/ Dakota 5.4 and python 2.6.6 and 3.3.2, on RHEL 6. 
+Some of the driver scripts are written in bash, and no Windows equivalent is provided. 
+However, the python driver scripts have also been tested on Windows 7, Dakota 5.4, and Python 3.3.3.
+Although this was not tested on Mac systems, it is assumed that the tank model will
+run with default installations of python, and the Dakota examples will run under Dakota 5.4.
 
 
 The Dakota examples
 -----------------
+Usage information is included in each Dakota input file.
+
 DakotaList dir: two list parameter studies.
 A list parameter study is good for manual exploration of parameter space.
 This illustrates the most basic method, plus:
@@ -42,8 +46,9 @@ This illustrates:
  A complicated driver script that makes multiple calls to the setup script (EvalTank.py) in order calibrate to data from multiple experiments
  How to use Dakota to optimize some inputs, while others are constant (state variables), and another is modified within the driver script (Pressure)
 
-Usage
+
+Tank Model
 ------------------
-Usage information is included in each Dakota input file.
-The Tank model can also be run without Dakota. Instructions are included within the 
+The Tank model is found in the tank_model directory. 
+Instructions are included within the README in the 
 tank_model dir.

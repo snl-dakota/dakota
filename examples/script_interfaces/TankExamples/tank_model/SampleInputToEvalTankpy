@@ -5,9 +5,9 @@
 # must be on the path.
 #
 # usage
-# EvalTank.py SampleInputToEvalTankpy.in SampleSummaryFile SampleDataFile
+# EvalTank.py SampleInputToEvalTankpy SampleSummaryFile SampleDataFile
 31.563		P  # Pressure (psi)
-3.1631		Gamma #Gamma (positive values) or chi (negative values)
+3.1631		Gamma_Chi #Gamma (positive values) or chi (negative values)
 35.903		H # Liquid Height (in)
 2.8618e7	E # Young's Modulus (psi)
 0.2684		Nu # Poisson ratio
@@ -15,4 +15,4 @@
 29.952		R # Tank radius (in)
 0.2252		T # Tank wall thickness (in)
 2		meshID
-2		resultStyle
+1		resultStyle
