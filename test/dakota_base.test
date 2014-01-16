@@ -16085,6 +16085,7 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -1.9999999961e+00  He1  He0
   -2.0000000000e+02  He0  He1
    6.0100000000e+02  He2  He0
+   4.5349598204e-14  He1  He1
    1.0000000000e+02  He0  He2
    3.0335756975e-09  He3  He0
   -2.0000000000e+02  He2  He1
@@ -16097,7 +16098,6 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.2315924728e-10  He5  He0
   -6.1163730535e-11  He4  He1
   -7.7890482329e-12  He2  He3
-   4.5349598204e-14  He1  He1
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
@@ -16527,9 +16527,11 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.0000000000e+02  He0  He2
    2.0327655713e-10  He3  He0
   -2.0000000000e+02  He2  He1
+  -2.1305122436e-13  He1  He2
    1.2919712893e-10  He0  He3
    1.0000000000e+02  He4  He0
    1.4150822443e-10  He3  He1
+  -3.0459188091e-14  He0  He4
    2.7723161304e-11  He5  He0
    7.9720769226e-12  He4  He1
    1.0296890922e-10  He2  He3
@@ -16541,8 +16543,6 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.8873034187e-10  He2  He4
    2.5312979904e-11  He1  He5
   -1.4470311260e-11  He0  He6
-  -2.1305122436e-13  He1  He2
-  -3.0459188091e-14  He0  He4
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
