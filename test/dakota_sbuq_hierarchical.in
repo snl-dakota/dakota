@@ -17,10 +17,12 @@ method,
 #	model_pointer = 'HIFI'
 #	  polynomial_chaos non_nested
 #	    sparse_grid_level = 3
+#	    variance_based_decomp
 #
 #	  stoch_collocation non_nested
 #	    sparse_grid_level = 5
 #	    piecewise use_derivatives
+#	    variance_based_decomp
 # Multifidelity test suite
 	model_pointer = 'SURROGATE'
 	polynomial_chaos				#0,#1,#2,#6,#7,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#p0,#p1,#p2,#p3
@@ -44,6 +46,7 @@ method,
 #	  quadrature_order = 1				#7,#9
 #	  sparse_grid_level = 5 10			#10
 #	  piecewise use_derivatives			#10
+	  variance_based_decomp
 
 model,
 	id_model = 'SURROGATE'
