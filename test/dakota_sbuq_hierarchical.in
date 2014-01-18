@@ -13,7 +13,7 @@ strategy,
 
 method,
 	id_method = 'SBUQ'
-# Single fidelity verification
+# Single fidelity verifications
 #	model_pointer = 'HIFI'
 #	  polynomial_chaos non_nested
 #	    sparse_grid_level = 3
