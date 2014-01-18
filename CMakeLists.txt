@@ -50,6 +50,7 @@ set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 # FFTW is GPL, CDDLIB is GPL
 # TODO: review whether want to include FFTW
 set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/"
+  "^${Dakota_SOURCE_DIR}/packages/fftw/"
   "^${Dakota_SOURCE_DIR}/packages/hopspack/src/src-citizens/citizen-gss/cddlib/"
   "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
   "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"

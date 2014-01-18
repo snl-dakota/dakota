@@ -99,8 +99,9 @@ LGPL-compatible DAKOTA.  Optional GPL capabilities include:
  * dakota/trunk/packages/hopspack/src/src-citizens/citizen-gss/cddlib/;
    enable with CMake setting HAVE_CDDLIB.
 
- * dakota/packages/pecos/packages/fftw: optionally included with
-   Dakota; enable with CMake setting HAVE_FFTW
+ * dakota/packages/fftw or dakota/packages/pecos/packages/fftw:
+   optionally included with Dakota; enable with CMake setting
+   HAVE_FFTW
 
  * GNU Scientific Library: external third-party library; enable with
    CMake setting DAKOTA_HAVE_GSL and pointer to gsl-config

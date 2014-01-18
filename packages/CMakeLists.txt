@@ -17,13 +17,22 @@ option(HAVE_PECOS "Build the Pecos package." ON)
 option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
+# Packages formerly underneath Pecos
+option(HAVE_FFT "Use either the fftw or dfftpack packages" ON)
+option(HAVE_DFFTPACK "Build the dfftpack package.  This OPTION has no effect if
+  HAVE_FFT is OFF" ON)
+option(HAVE_FFTW "Find and use an installed fftw package. This OPTION has no
+  effect if HAVE_FFT is OFF" OFF)
 
-if(HAVE_CONMIN)
-  if ( NOT CONMIN_DIR )
-    set( CONMIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/CONMIN )
-    add_subdirectory(CONMIN)
-  endif()
-endif(HAVE_CONMIN)
+option(HAVE_LHS "Build the LHS package." ON)
+option(HAVE_SPARSE_GRID "Build the VPISparseGrid package." ON)
+
+# For managing additional packages that packages like pecos and surfpack depend on
+include(ManageRelocatablePackage)
+
+# Surfpack requires CONMIN and NCSUOPT before descending
+ManageRelocatablePackage(CONMIN CONMIN)
+ManageRelocatablePackage(NCSUOPT NCSUOpt)
 
 add_subdirectory(nidr)
 
@@ -39,8 +48,18 @@ if(HAVE_OPTPP)
   endif()
 endif()
 
+# Configure other Pecos dependencies before descending
 # Both DAKOTA and PECOS unconditionally depend on Teuchos, and the "shared
 # component magic" is managed in the top-level CMakeLists.txt file
+include(FftwExternalProject) 
+if(HAVE_FFT) 
+  ManageRelocatablePackage(DFFTPACK dfftpack) 
+  FftwExternalProject() 
+endif(HAVE_FFT) 
+ 
+ManageRelocatablePackage(LHS LHS)
+ 
+ManageRelocatablePackage(SPARSE_GRID VPISparseGrid)
 
 add_subdirectory(pecos)
 
@@ -233,10 +252,6 @@ endif(HAVE_HOPSPACK)
 if(HAVE_JEGA)
   add_subdirectory(JEGA)
 endif(HAVE_JEGA)
-
-if(HAVE_NCSUOPT)
-  add_subdirectory(NCSUOpt)
-endif(HAVE_NCSUOPT)
 
 if(HAVE_NL2SOL)
   add_subdirectory(NL2SOL)
