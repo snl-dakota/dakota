@@ -1,8 +1,0 @@
-This file has been obsoleted.  The system dependencies previously
-described here have been largely eliminated with the new configure
-mechanism.  Also the configure and install procedure has changed.
-Look in the FAQ for more info.
-
-Maurice LeBrun
-mjl@dino.ph.utexas.edu
-
