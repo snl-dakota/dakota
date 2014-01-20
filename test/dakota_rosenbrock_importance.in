@@ -10,6 +10,8 @@
 # initial number of samples is 100 or larger, but to keep the computational 
 # costs down, it is set to 50 samples. 
 
+# timeout overrides: 2=TD180
+
 strategy,
 	single_method
 	  tabular_graphics_data
