@@ -183,7 +183,7 @@ void GaussProcApproximation::build()
   Approximation::build();
 
   size_t i, j, offset = 0, num_v = sharedDataRep->numVars;
-  numObs = approxData.size();
+  numObs = approxData.points();
   // GaussProcApproximation does not directly handle anchorPoint
   // -> treat it as another currentPoint
   if (approxData.anchor()) {

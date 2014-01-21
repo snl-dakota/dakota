@@ -571,7 +571,7 @@ void EffGlobalMinimizer::get_best_sample()
 
   const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
 
-  size_t i, sam_star_idx = 0, num_data_pts = gp_data_0.size();
+  size_t i, sam_star_idx = 0, num_data_pts = gp_data_0.points();
   Real fn, fn_star = DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
     const RealVector& sams = gp_data_0.continuous_variables(i);

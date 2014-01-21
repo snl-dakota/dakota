@@ -41,7 +41,7 @@ void NonDGlobalSingleInterval::get_best_sample(bool maximize, bool eval_approx)
   // to determine truthFnStar for use in the expected improvement function
   const Pecos::SurrogateData& gp_data
     = fHatModel.approximation_data(respFnCntr);
-  size_t i, index_star, num_data_pts = gp_data.size();
+  size_t i, index_star, num_data_pts = gp_data.points();
   truthFnStar = (maximize) ? -DBL_MAX : DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
     const Real& truth_fn = gp_data.response_function(i);

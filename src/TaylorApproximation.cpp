@@ -46,7 +46,7 @@ void TaylorApproximation::build()
   // No computations needed.  Just do sanity checking on approxData.
 
   // Check number of data points
-  if (!approxData.anchor() || approxData.size()) {
+  if (!approxData.anchor() || approxData.points()) {
     Cerr << "Error: wrong number of data points in TaylorApproximation::"
 	 << "build()." << std::endl;
     abort_handler(-1);

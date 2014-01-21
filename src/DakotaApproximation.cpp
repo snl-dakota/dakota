@@ -268,7 +268,7 @@ void Approximation::build()
   if (approxRep)
     approxRep->build();
   else {
-    size_t num_curr_pts = approxData.size();
+    size_t num_curr_pts = approxData.points();
     int ms = min_points(true); // account for anchor point & buildDataOrder
     if (num_curr_pts < ms) {
       Cerr << "\nError: not enough samples to build approximation.  "

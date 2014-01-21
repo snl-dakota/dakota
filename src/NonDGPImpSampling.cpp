@@ -350,7 +350,7 @@ void NonDGPImpSampling::quantify_uncertainty()
 	  //the 1.0 here is reall rhoZero/rhoZero (ok for rho0=rho1=rho2)
           gpModel.pop_approximation(false, true);
           //gpModel.update_approximation(true);
-          Cout << "Size of build data set " << gp_data.size() << '\n';
+          Cout << "Size of build data set " << gp_data.points() << '\n';
         } 
 //Since we need to evaluate the SUCCESSIVE SEQUENCES of GPs built using numSamples-->numPtsTotal
 //it might be most efficient to "pop" the data and go backward: 

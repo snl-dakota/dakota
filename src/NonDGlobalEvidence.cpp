@@ -115,7 +115,7 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
 
   // GT:
   // We want to make sure that we pick a data point that lies inside the cell
-  size_t i, j, index_star, num_data_pts = gp_data.size();
+  size_t i, j, index_star, num_data_pts = gp_data.points();
   truthFnStar = (maximize) ? -DBL_MAX : DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
     const Real&      truth_fn = gp_data.response_function(i);

@@ -793,7 +793,7 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
   if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
     Cout << "Requested build data order is " << sharedDataRep->buildDataOrder
 	 << '\n';
-  size_t i, num_data_pts = approxData.size();
+  size_t i, num_data_pts = approxData.points();
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
   const Pecos::SDRArray& sdr_array = approxData.response_data();
   const Pecos::SizetShortMap& failed_resp = approxData.failed_response_data();

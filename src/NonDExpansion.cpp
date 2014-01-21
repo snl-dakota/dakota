@@ -1675,7 +1675,7 @@ void NonDExpansion::compute_statistics()
 	  // original build points and LHS expansion sampler points
 	  const Pecos::SurrogateData& exp_data
 	    = uSpaceModel.approximation_data(i);
-	  size_t m, num_data_pts = exp_data.size(),
+	  size_t m, num_data_pts = exp_data.points(),
 	    num_to_is = numSamplesOnExpansion + num_data_pts;
 	  RealVectorArray initial_points(num_to_is);
 	  for (m=0; m<num_data_pts; ++m)

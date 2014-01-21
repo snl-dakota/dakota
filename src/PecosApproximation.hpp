@@ -449,7 +449,7 @@ inline void PecosApproximation::rebuild()
   // support of both update and append, need a mechanism to detect
   // the +/- direction of discrepancy between data and coefficients.
 
-  //size_t curr_pts  = approxData.size(),
+  //size_t curr_pts  = approxData.points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
     pecosBasisApprox.increment_coefficients();

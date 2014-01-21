@@ -81,7 +81,7 @@ void TANA3Approximation::build()
     abort_handler(-1);
   }
 
-  if (approxData.size()) { // two-point approximation
+  if (approxData.points()) { // two-point approximation
     // Check gradients
     if (approxData.response_gradient(0).length() != num_v) {
       Cerr << "Error: gradients required in TANA3Approximation::build."
@@ -266,7 +266,7 @@ Real TANA3Approximation::value(const Variables& vars)
   Real approx_val;
   const RealVector& x = vars.continuous_variables();
   size_t i, num_v = sharedDataRep->numVars;
-  if (approxData.size()) { // TANA-3 approximation
+  if (approxData.points()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
     RealVector s_eval;
@@ -316,7 +316,7 @@ Real TANA3Approximation::value(const Variables& vars)
 
 const RealVector& TANA3Approximation::gradient(const Variables& vars)
 {
-  if (approxData.size()) { // TANA-3 approximation
+  if (approxData.points()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
     const RealVector& x = vars.continuous_variables();

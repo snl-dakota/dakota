@@ -774,7 +774,7 @@ void NonDGlobalReliability::importance_sampling()
       //         levels for importance sampling efficiency.
       const Pecos::SurrogateData& gp_data
 	= uSpaceModel.approximation_data(respFnCount);
-      size_t num_data_pts = gp_data.size();
+      size_t num_data_pts = gp_data.points();
       gp_inputs.resize(num_data_pts);
       for (i=0; i<num_data_pts; ++i)
 	gp_inputs[i] = gp_data.continuous_variables(i); // view OK

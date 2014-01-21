@@ -199,7 +199,7 @@ namespace Dakota
 		int dim = 0;
 		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(0);
 
-		if(gp_data.size() > 1) dim = gp_data.continuous_variables(0).length();
+		if(gp_data.points() > 1) dim = gp_data.continuous_variables(0).length();
 
 		int i,j;
  
@@ -413,7 +413,7 @@ namespace Dakota
 				double min_sq_dist;
 				int min_index;
 				bool first = true;
-				for (int j = 0; j < gp_data.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+				for (int j = 0; j < gp_data.points(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
 				{
 					double sq_dist = 0;
 					for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
@@ -449,7 +449,7 @@ namespace Dakota
 				int min_index;
 				bool first = true;
 
-				for (int j = 0; j < gp_data.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+				for (int j = 0; j < gp_data.points(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
 				{
 					double sq_dist = 0;
 					for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
@@ -526,9 +526,9 @@ namespace Dakota
 		AMSC = NULL;
  
 		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
-		if(gp_data.size() < 1) return;
+		if(gp_data.points() < 1) return;
 
-		int n = gp_data.size();
+		int n = gp_data.points();
 		int d = gp_data.continuous_variables(0).length();
 		double *data_resp_vector = new double[n*(d+1)];
 
@@ -800,10 +800,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
     //Find the mean response value
     const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
     Real mean_value = 0;
-    for (i = 0; i < gp_data.size(); i++) {
+    for (i = 0; i < gp_data.points(); i++) {
       mean_value += gp_data.response_function(i);
     } 
-    mean_value /= (Real)gp_data.size();
+    mean_value /= (Real)gp_data.points();
 
     for(i = 0; i < batchSize; i++) {
       //Rescore the candidates after refitting the gp each time
@@ -1078,10 +1078,10 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount)
   emulEvalScores = 0.0;
 
   const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
-  if(gp_data.size() < 1)
+  if(gp_data.points() < 1)
     return;
 
-  int n_train = gp_data.size();
+  int n_train = gp_data.points();
   int n_cand = numEmulEval;
 ////***ATTENTION***
 //// I do this all over the place, but there has to be a better way to obtain
@@ -1147,7 +1147,7 @@ Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
   double min_sq_dist;
   int min_index;
   bool first = true;
-  for (int j = 0; j < gp_data.size(); j++) {
+  for (int j = 0; j < gp_data.points(); j++) {
     double sq_dist = 0;
     for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
       sq_dist += pow(test_point[d]-gp_data.continuous_variables(j)[d],2);
@@ -1176,7 +1176,7 @@ Real NonDAdaptiveSampling::calc_score_delta_x(int respFnCount,
   double min_sq_dist;
   int min_index;
   bool first = true;
-  for (int j = 0; j < gp_data.size(); j++) {
+  for (int j = 0; j < gp_data.points(); j++) {
     double sq_dist = 0;
     for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
       sq_dist += pow(test_point[d]-gp_data.continuous_variables(j)[d],2);
