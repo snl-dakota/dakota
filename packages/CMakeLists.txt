@@ -233,6 +233,9 @@ if(HAVE_HOPSPACK)
   # Default the GPL package to off in Dakota, but allow user override
   set(HAVE_CDDLIB OFF CACHE BOOL "Enable GPL-licensed package CDDLIB")
 
+  # Override the HOPSPACK default to install the binary in bin/
+  set(HOPSPACK_EXEC_DEST "bin")
+
   # HOPSPACK doesn't install headers and libraries by default
   set(INSTALL_HEADERS ON CACHE BOOL "Install headers")
   set(INSTALL_LIB ON CACHE BOOL "Install libraries")
