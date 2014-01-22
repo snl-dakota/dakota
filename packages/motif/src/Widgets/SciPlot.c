@@ -27,6 +27,7 @@
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
@@ -870,7 +871,7 @@ _ListSetStyle (SciPlotList *p, int pcolor, int pstyle, int lcolor, int lstyle)
 }
 
 static void 
-_ListSetLegend (SciPlotList *p, char *legend)
+_ListSetLegend (SciPlotList *p, const char *legend)
 {
 /* Note!  Do checks in here later on... */
 
@@ -3533,7 +3534,7 @@ SciPlotListAddFloat (Widget wi, int idnum, int num, float *xlist, float *ylist)
 
 int 
 SciPlotListCreateDouble (Widget wi, int num, double *xlist, double *ylist,
-                         char *legend)
+                         const char *legend)
 {
   int idnum;
   SciPlotList *p;

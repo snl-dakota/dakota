@@ -31,7 +31,9 @@ using namespace std;
 // initialize statics
 XtAppContext Graphics2D::appCon;
 int Graphics2D::threadExitVal(1);
-String Graphics2D::fallbackResources[] = {
+// workaround for const correctness with string literals
+//String Graphics2D::fallbackResources[] = {
+const char* Graphics2D::fallbackResources[] = {
   "Graphics2D*borderWidth: 0", "Graphics2D*background: gray50",
   "Graphics2D*foreground: white", "Graphics2D*tester.plotback.borderWidth: 0",
   "Graphics2D*tester.plotback.opt_button.borderWidth: 0",
@@ -48,7 +50,7 @@ Graphics2D::Graphics2D(): num2dPlots(0), my2dPlots(NULL)
 
   int argc = 0;
   topLevel = XtAppInitialize(&appCon, "Graphics2D", NULL, 0, &argc, NULL,
-                             fallbackResources, NULL, 0);
+                             const_cast<char**>(fallbackResources), NULL, 0);
 
   Arg args[20];
   XtSetArg(args[0], XmNwidth,  500);
@@ -77,10 +79,14 @@ Graphics2D::Graphics2D(): num2dPlots(0), my2dPlots(NULL)
   //CreateMenuChoice(pullDown1, "Close", choice_callback, (XtPointer)NULL);
   //XtManageChild(workArea);
 
-  XtSetArg(args[0], XtNshrinkToFit, True);
-  XtSetArg(args[1], XtNframeWidth,  10);
-  XtSetArg(args[2], XtCOuterOffset, 10);
-  XtSetArg(args[3], XtNstoreByRow,  True);
+  std:string res_name = XtNshrinkToFit;
+  XtSetArg(args[0], const_cast<char*>(res_name.c_str()), True);
+  res_name = XtNframeWidth;
+  XtSetArg(args[1], const_cast<char*>(res_name.c_str()),  10);
+  res_name =  XtCOuterOffset;
+  XtSetArg(args[2], const_cast<char*>(res_name.c_str()), 10);
+  res_name =XtNstoreByRow ;
+  XtSetArg(args[3], const_cast<char*>(res_name.c_str()),  True);
   workArea = XtCreateManagedWidget("tester", xfwfRowColWidgetClass, 
                                    //xmRowColumnWidgetClass,
                                    mainWindow, args, 4);

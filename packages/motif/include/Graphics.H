@@ -47,7 +47,9 @@ private:
 
   static XtAppContext appCon;
   static int threadExitVal;
-  static String fallbackResources[];
+  // workaround for const correctness with string literals
+  //  static String fallbackResources[];
+  static const char* fallbackResources[];
 
   Widget mainWindow, menuBar, pullDown1, workArea, topLevel; //pullDown2
   pthread_t threadId;

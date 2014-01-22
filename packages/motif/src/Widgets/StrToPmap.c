@@ -28,6 +28,7 @@ static char rcsid[] = "$ StrToPmap.c <thoth>, what a hack $";
 #include	<X11/Shell.h>	/* XtNvisual */
 #include <sys/param.h>		/* get MAXPATHLEN if possible */
 #include <stdlib.h>		/* for malloc definitions */
+#include <stdio.h>
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 256
 #endif

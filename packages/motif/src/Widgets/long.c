@@ -6,6 +6,7 @@
   13 Aug 1993
 */
 
+#include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include "Converters.h"

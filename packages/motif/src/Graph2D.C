@@ -58,9 +58,14 @@ void Graph2D::add_window(Widget& parent)
   Arg args[20];
   XtSetArg(args[0], XmNresizable, True);
   XtSetArg(args[1], XmNwidth,     200);
-  plotBack = XmCreateForm(parent, "plotback", args, 2);
+  // workaround to pass string literal to char* interface
+  std::string name_str("plotback");
+  plotBack = XmCreateForm(parent, const_cast<char*>(name_str.c_str()), args, 2);
   XtManageChild(plotBack);
-  XmString xmstr1 = XmStringCreateLtoR("Options", XmFONTLIST_DEFAULT_TAG);
+  // workaround to pass string literal to char* interface
+  std::string text_str("Options");
+  XmString xmstr1 = XmStringCreateLtoR(const_cast<char*>(text_str.c_str()), 
+				       XmFONTLIST_DEFAULT_TAG);
   vertWheel  = XtVaCreateManagedWidget("wheel_R", xfwfThumbWheelWidgetClass,
 				       plotBack, XtNvertical, True,
 				       XmNrightAttachment, XmATTACH_POSITION,
@@ -507,29 +512,41 @@ void Graph2D::options_callback(Widget widget, XtPointer client_data,
   Widget RowCol = XtVaCreateManagedWidget("RowCol", xmRowColumnWidgetClass,
                                           Frame, NULL);
 
+  // workaround to pass string literal to char* interface
+  std::string widget_name;
+
   // Markers option button
+  widget_name = "    Markers";
   graph->markersButton
-    = XmCreateToggleButton(RowCol, "    Markers", NULL, 0);
+    = XmCreateToggleButton(RowCol, const_cast<char*>(widget_name.c_str()), 
+			   NULL, 0);
   // set the button to selected/checked or unselected/unchecked
   XtVaSetValues(graph->markersButton, XmNset, graph->markersOn, NULL);
   XtManageChild(graph->markersButton);
 
   // Axis labels option button
+  widget_name = "    Axis labels";
   graph->axisLabelsButton
-    = XmCreateToggleButton(RowCol, "    Axis labels", NULL, 0);
+    = XmCreateToggleButton(RowCol, const_cast<char*>(widget_name.c_str()),
+			   NULL, 0);
   // set the button to selected/checked or unselected/unchecked
   XtVaSetValues(graph->axisLabelsButton, XmNset, graph->axisLabelsOn, NULL);
   XtManageChild(graph->axisLabelsButton);
 
   // Legend option button
-  graph->legendButton = XmCreateToggleButton(RowCol, "    Legend", NULL, 0);
+  widget_name = "    Legend";
+  graph->legendButton = 
+    XmCreateToggleButton(RowCol, const_cast<char*>(widget_name.c_str()),
+			 NULL, 0);
   // set the button to selected/checked or unselected/unchecked
   XtVaSetValues(graph->legendButton, XmNset, graph->legendOn, NULL);
   XtManageChild(graph->legendButton);
 
   // Y log scale option button
+  widget_name = "    Log scale - Y axis";
   graph->yLogButton
-    = XmCreateToggleButton(RowCol, "    Log scale - Y axis", NULL, 0);
+    = XmCreateToggleButton(RowCol, const_cast<char*>(widget_name.c_str()),
+			   NULL, 0);
   // if y log scale is disallowed, gray out the selection as unavailable
   XtVaSetValues(graph->yLogButton, XmNsensitive, graph->yLogAllow, NULL);
   // set the button to selected/checked or unselected/unchecked
@@ -537,8 +554,9 @@ void Graph2D::options_callback(Widget widget, XtPointer client_data,
   XtManageChild(graph->yLogButton);
 
   // X log scale option button
+  widget_name = "    Log scale - X axis";
   graph->xLogButton
-    = XmCreateToggleButton(RowCol, "    Log scale - X axis", NULL, 0);
+    = XmCreateToggleButton(RowCol,  const_cast<char*>(widget_name.c_str()), NULL, 0);
   // if x log scale is disallowed, gray out the selection as unavailable
   XtVaSetValues(graph->xLogButton, XmNsensitive, graph->xLogAllow, NULL);
   // set the button to selected/checked or unselected/unchecked

@@ -169,7 +169,7 @@ int SciPlotListCreateFromData P_((Widget wi, int num, real *xlist, real *ylist, 
 int SciPlotListCreateFloat P_((Widget wi, int num, float *xlist, float *ylist, char *legend));
 void SciPlotListUpdateFloat P_((Widget wi, int idnum, int num, float *xlist, float *ylist));
 void SciPlotListAddFloat P_((Widget wi, int idnum, int num, float *xlist, float *ylist));
-int SciPlotListCreateDouble P_((Widget wi, int num, double *xlist, double *ylist, char *legend));
+int SciPlotListCreateDouble P_((Widget wi, int num, double *xlist, double *ylist, const char *legend));
 void SciPlotListUpdateDouble P_((Widget wi, int idnum, int num, double *xlist, double *ylist));
 void SciPlotListAddDouble P_((Widget wi, int idnum, int num, double *xlist, double *ylist));
 void SciPlotListSetStyle P_((Widget wi, int idnum, int pcolor, int pstyle, int lcolor, int lstyle));
