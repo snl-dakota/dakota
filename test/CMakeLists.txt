@@ -220,8 +220,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     add_application_test(
       ${test_name}
       FILE_DEPENDENCIES "${test_all_files}"
-      PREPROCESS COMMAND "${CMAKE_COMMAND}" -E remove dakota_diffs.out
-      APPLICATION COMMAND "${PERL_EXECUTABLE}"
+      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove dakota_diffs.out
+      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
         --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${test_name}
         --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -245,8 +245,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 	add_application_test(
 	  p${test_name}
 	  FILE_DEPENDENCIES "${test_all_files}"
-	  PREPROCESS COMMAND "${CMAKE_COMMAND}" -E remove dakota_pdiffs.out
-	  APPLICATION COMMAND "${PERL_EXECUTABLE}"
+	  PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove dakota_pdiffs.out
+	  APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
 	    ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
 	    --parallel
  	    --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${test_name}
