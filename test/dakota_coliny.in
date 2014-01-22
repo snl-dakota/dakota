@@ -23,6 +23,8 @@
 # 20-21 coliny_cobyla
 # 22-31 coliny_ea
 
+# timeout overrides: 13=TA1800
+
 strategy,
 	single_method
 #	tabular_graphics_data
