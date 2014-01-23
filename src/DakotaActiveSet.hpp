@@ -255,11 +255,18 @@ inline bool operator!=(const ActiveSet& set1, const ActiveSet& set2)
 
 } // namespace Dakota
 
+
+// Since we may serialize this class through a temporary, force
+// serialization mode and no tracking
+BOOST_CLASS_IMPLEMENTATION(Dakota::ActiveSet, 
+			   boost::serialization::object_serializable)
+BOOST_CLASS_TRACKING(Dakota::ActiveSet, 
+		     boost::serialization::track_never)
+
 // allow static linking
 // BOOST_CLASS_EXPORT_KEY(Dakota::ActiveSet);
 
 // BOOST_CLASS_IMPLEMENTATION(Dakota::ActiveSet, 
 //  			   boost::serialization::object_serializable)
-
 
 #endif
