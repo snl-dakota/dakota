@@ -303,9 +303,9 @@ select_rep_points(const RealVectorArray& var_samples_u,
     //TMW: We now use the stored values rather than recomputing
     Real limit_state_fn = fn_samples[i];
     if ( ( limit_state_fn < failThresh &&
-	   ( cdfFlag || (invertProb && !cdfFlag) ) ) ||
+	   ( (!invertProb && cdfFlag) || (invertProb && !cdfFlag) ) ) ||
 	 ( limit_state_fn > failThresh &&
-	   (!cdfFlag || (invertProb &&  cdfFlag) ) ) ) {
+	   ( (!invertProb && !cdfFlag) || (invertProb &&  cdfFlag) ) ) ) {
       fail_indices.push_back(i);
       fail_betas.push_back(sample_i.normFrobenius());
       ++fail_count;
@@ -388,8 +388,9 @@ select_rep_points(const RealVectorArray& var_samples_u,
   repWeights.scale(1./sum_density);
 
 #ifdef DEBUG //TMW: Debug output to monitor the repPointsU
-  Cout << "select_rep_point(): #Points = " << repPointsU.size()
-       << " Point =  " << repPointsU[0] << std::endl;
+  Cout << "select_rep_point(): #Points = " << repPointsU.size()<< std::endl;
+  for (i=0; i<new_rep_pts; i++)
+      Cout << " Point " << i << " =  " << repPointsU[i] << std::endl;
 #endif
 }
 
@@ -594,9 +595,9 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
     // if point is a failure, calculate recentered_pdf, pdf, and add to sum
     if ( ( fn_samples[i] < failThresh &&
-	   ( cdfFlag || (invertProb && !cdfFlag) ) ) ||
+	   ( (!invertProb && cdfFlag) || (invertProb && !cdfFlag) ) ) ||
 	 ( fn_samples[i] > failThresh &&
-	   (!cdfFlag || (invertProb &&  cdfFlag) ) ) ) {
+	   ( (!invertProb && !cdfFlag) || (invertProb &&  cdfFlag) ) ) ) {
 
       const RealVector& sample_i = var_samples_u[i];
 
@@ -615,6 +616,7 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 	failure_ratios.push_back(pdf_ratio);
     }
   }
+
   /* Alternate approach computes probs for point sets only w.r.t. corresponding
      rep pt.  This does not appear to be correct/consistent w/ multimodal PDF.
   for (i=0, cntr=0; i<num_rep_pts; ++i) {
