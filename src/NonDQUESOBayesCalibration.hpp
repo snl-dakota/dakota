@@ -17,9 +17,8 @@
 
 #include "NonDBayesCalibration.hpp"
 #include "ExperimentData.hpp"
-//#include "uqGenericScalarFunctionClass.H"
-#include "uqGslVector.h"
-#include "uqGslMatrix.h"
+#include "queso/GslVector.h"
+#include "queso/GslMatrix.h"
 
 
 namespace Dakota {
@@ -74,12 +73,12 @@ protected:
   //We are not using all of these arguments but may in the future.
   /// Likelihood function for call-back from QUESO to DAKOTA for evaluation
   static double dakotaLikelihoodRoutine(
-  const uqGslVectorClass& paramValues,
-  const uqGslVectorClass* paramDirection,
+  const QUESO::GslVector& paramValues,
+  const QUESO::GslVector* paramDirection,
   const void*  functionDataPtr,
-  uqGslVectorClass*       gradVector,
-  uqGslMatrixClass*       hessianMatrix,
-  uqGslVectorClass*       hessianEffect);
+  QUESO::GslVector*       gradVector,
+  QUESO::GslMatrix*       hessianMatrix,
+  QUESO::GslVector*       hessianEffect);
 
   //
   //- Heading: Data

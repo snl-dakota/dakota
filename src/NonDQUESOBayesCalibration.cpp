@@ -15,16 +15,18 @@
 #include "NonDQUESOBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "uqStatisticalInverseProblem.h"
-#include "uqStatisticalInverseProblemOptions.h"
-#include "uqMetropolisHastingsSGOptions.h"
-#include "uqSequenceStatisticalOptions.h"
-#include "uqGslVector.h"
-#include "uqGslMatrix.h"
-#include "uqEnvironment.h"
-#include "uqEnvironmentOptions.h"
-#include "uqDefines.h"
-#include "uqValidationCycle.h"
+#include "queso/StatisticalInverseProblem.h"
+#include "queso/StatisticalInverseProblemOptions.h"
+#include "queso/MetropolisHastingsSGOptions.h"
+#include "queso/SequenceStatisticalOptions.h"
+#include "queso/GslVector.h"
+#include "queso/GslMatrix.h"
+#include "queso/Environment.h"
+#include "queso/EnvironmentOptions.h"
+#include "queso/Defines.h"
+#include "queso/ValidationCycle.h"
+#include "queso/GenericScalarFunction.h"
+#include "queso/UniformVectorRV.h"
 #include "ProbabilityTransformation.hpp"
 
 static const char rcsId[]="@(#) $Id$";
@@ -78,8 +80,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
   // and send QUESO the proper MPI subenvironments.
 
-  uqEnvOptionsValuesClass* envOptionsValues = NULL;
-  envOptionsValues = new uqEnvOptionsValuesClass();
+  QUESO::EnvOptionsValues* envOptionsValues = NULL;
+  envOptionsValues = new QUESO::EnvOptionsValues();
   envOptionsValues->m_subDisplayFileName   = "outputData/display";
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
@@ -89,7 +91,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   else
     envOptionsValues->m_seed                 = 1 + (int)clock(); 
       
-  uqFullEnvironmentClass* env = new uqFullEnvironmentClass(MPI_COMM_SELF,"","",envOptionsValues);
+  QUESO::FullEnvironment* env = new QUESO::FullEnvironment(MPI_COMM_SELF,"","",envOptionsValues);
  
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
@@ -117,11 +119,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   else 
     total_num_params = numContinuousVars; 
   
-  uqVectorSpaceClass<uqGslVectorClass,uqGslMatrixClass>
+  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
     paramSpace(*env, "param_", total_num_params, NULL);
 
-  uqGslVectorClass paramMins(paramSpace.zeroVector());
-  uqGslVectorClass paramMaxs(paramSpace.zeroVector());
+  QUESO::GslVector paramMins(paramSpace.zeroVector());
+  QUESO::GslVector paramMaxs(paramSpace.zeroVector());
   const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
   const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
   const RealVector& init_point = emulatorModel.continuous_variables();
@@ -161,13 +163,13 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   Cout << "paramMins  " << paramMins << '\n';
   Cout << "paramMaxs  " << paramMaxs << '\n';
   // instantiate QUESO parameters and likelihood
-  uqBoxSubsetClass<uqGslVectorClass,uqGslMatrixClass>
+  QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
     paramDomain("param_",paramSpace,paramMins,paramMaxs);
   
   ////////////////////////////////////////////////////////
   // Step 3 of 5: Instantiate the likelihood function object
   ////////////////////////////////////////////////////////
-  uqGenericScalarFunctionClass<uqGslVectorClass,uqGslMatrixClass>
+  QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>
     likelihoodFunctionObj("like_",
                           paramDomain,
                           &dakotaLikelihoodRoutine,
@@ -177,25 +179,25 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   // Step 4 of 5: Instantiate the inverse problem
   ////////////////////////////////////////////////////////
-  uqUniformVectorRVClass<uqGslVectorClass,uqGslMatrixClass>
+  QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix>
     priorRv("prior_", paramDomain);
-  uqGenericVectorRVClass<uqGslVectorClass,uqGslMatrixClass>
+  QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
     postRv("post_", paramSpace);
   // Inverse problem: instantiate it (posterior rv is instantiated internally)
-  uqSipOptionsValuesClass* calIpOptionsValues = NULL;
-  calIpOptionsValues = new uqSipOptionsValuesClass();
+  QUESO::SipOptionsValues* calIpOptionsValues = NULL;
+  calIpOptionsValues = new QUESO::SipOptionsValues();
   //definitely want to retain computeSolution
   calIpOptionsValues->m_computeSolution      = true;
   calIpOptionsValues->m_dataOutputFileName   = "outputData/tgaCalOutput";
   calIpOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpOptionsValues->m_dataOutputAllowedSet.insert(1);
 
-  uqStatisticalInverseProblemClass<uqGslVectorClass,uqGslMatrixClass>
+  QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>
     ip("", calIpOptionsValues, priorRv, likelihoodFunctionObj, postRv);
 
-  uqMhOptionsValuesClass* calIpMhOptionsValues = NULL;
+  QUESO::MhOptionsValues* calIpMhOptionsValues = NULL;
 
-  calIpMhOptionsValues = new uqMhOptionsValuesClass();
+  calIpMhOptionsValues = new QUESO::MhOptionsValues();
   calIpMhOptionsValues->m_dataOutputFileName   = "outputData/tgaCalOutput";
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
@@ -242,9 +244,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
   ////////////////////////////////////////////////////////
-  uqGslVectorClass paramInitials(paramSpace.zeroVector());
-  uqGslVectorClass covDiag(paramSpace.zeroVector());
-  //uqGslMatrixClass proposalCovMatrix(paramSpace.zeroVector());
+  QUESO::GslVector paramInitials(paramSpace.zeroVector());
+  QUESO::GslVector covDiag(paramSpace.zeroVector());
+  //QUESO::GslMatrix proposalCovMatrix(paramSpace.zeroVector());
   for (int i=0;i<numContinuousVars;i++) {
     if (init_point[i])
       paramInitials[i]=init_point[i];
@@ -269,8 +271,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   Cout << "covDiag " << covDiag << '\n';
   Cout << "initParams " << paramInitials << '\n';
 
-  uqGslMatrixClass* proposalCovMatrix = postRv.imageSet().vectorSpace().newProposalMatrix(&covDiag,&paramInitials); 
-  //uqGslMatrixClass proposalCovMatrix(covDiag);
+  QUESO::GslMatrix* proposalCovMatrix = postRv.imageSet().vectorSpace().newProposalMatrix(&covDiag,&paramInitials); 
+  //QUESO::GslMatrix proposalCovMatrix(covDiag);
   Cout << "ProposalCovMatrix " << '\n'; 
   for (size_t i=0;i<total_num_params;i++) {
     for (size_t j=0;j<total_num_params;j++) 
@@ -301,12 +303,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
 
 double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
-  const uqGslVectorClass& paramValues,
-  const uqGslVectorClass* paramDirection,
+  const QUESO::GslVector& paramValues,
+  const QUESO::GslVector* paramDirection,
   const void*  functionDataPtr,
-  uqGslVectorClass*       gradVector,
-  uqGslMatrixClass*       hessianMatrix,
-  uqGslVectorClass*       hessianEffect)
+  QUESO::GslVector*       gradVector,
+  QUESO::GslMatrix*       hessianMatrix,
+  QUESO::GslVector*       hessianEffect)
 {
   
   double result = 0.;
