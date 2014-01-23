@@ -10,7 +10,7 @@
 # initial number of samples is 100 or larger, but to keep the computational 
 # costs down, it is set to 50 samples. 
 
-# timeout overrides: 2=TD180
+# timeout overrides: 2=TD1200
 
 strategy,
 	single_method
@@ -21,7 +21,8 @@ method,
 	  import                                   #0
 #	  adapt_import                             #1
 #	  mm_adapt_import                          #2
-	  response_levels = 3.0  
+	  response_levels = .5 1. 5. 10. 50. 100. 500. 1000.
+	  #response_levels = 3.0  
           samples = 250
 	  refinement_samples = 100
 	  seed = 5639

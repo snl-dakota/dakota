@@ -13087,20 +13087,41 @@ Test Number 4 succeeded
 <<<<< Best data captured at function evaluation 240
 dakota_rosenbrock_importance.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 350 total (350 new, 0 duplicate)
+<<<<< Function evaluation summary: 1050 total (1050 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   3.0000000000e+00   4.6585053823e-02
+   5.0000000000e-01   2.2144997449e-02
+   1.0000000000e+00   3.7270755485e-02
+   5.0000000000e+00   1.0893608606e-01
+   1.0000000000e+01   1.6171883873e-01
+   5.0000000000e+01   4.0308369536e-01
+   1.0000000000e+02   5.3320560469e-01
+   5.0000000000e+02   8.3275253885e-01
+   1.0000000000e+03   9.1425127901e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 14350 total (14350 new, 0 duplicate)
+<<<<< Function evaluation summary: 65650 total (65650 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   3.0000000000e+00   6.5025639157e-02
+   5.0000000000e-01   1.0186219896e-02
+   1.0000000000e+00   2.4561041044e-02
+   5.0000000000e+00   9.5109707449e-02
+   1.0000000000e+01   1.6261577370e-01
+   5.0000000000e+01   3.6078993890e-01
+   1.0000000000e+02   4.9109540381e-01
+   5.0000000000e+02   8.2041849217e-01
+   1.0000000000e+03   9.0966132983e-01
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 308650 total (308650 new, 0 duplicate)
+<<<<< Function evaluation summary: 1941150 total (1941150 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   3.0000000000e+00   6.6108611024e-02
+   5.0000000000e-01   1.0284244126e-02
+   1.0000000000e+00   2.1341255691e-02
+   5.0000000000e+00   1.0254454421e-01
+   1.0000000000e+01   1.6119364913e-01
+   5.0000000000e+01   3.6587395921e-01
+   1.0000000000e+02   4.9302139290e-01
+   5.0000000000e+02   8.2054936191e-01
+   1.0000000000e+03   9.0758724457e-01
 dakota_rosenbrock_users.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
