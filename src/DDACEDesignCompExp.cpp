@@ -460,7 +460,7 @@ void DDACEDesignCompExp::compute_main_effects()
 
     // Perform the ANOVA computations and display screen output
     Cout << "\n--------------------------------\nMain effects for "
-	 << setw(14) << fn_labels[f] << ":\n--------------------------------";
+	 << std::setw(14) << fn_labels[f] << ":\n--------------------------------";
     DDaceMainEffects::OneWayANOVA main_effects(ddace_factors);	
     main_effects.printANOVATables();
   }
