@@ -213,7 +213,6 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
   extern PRPCache data_pairs;
-  size_t records_read = 0;  // counter for restart records read
   size_t num_evals = 0;     // unique insertions to data_pairs
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
@@ -231,19 +230,12 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
       break;
     }
 
-    ++records_read;
-    std::pair<PRPCacheCIter, bool> insert_result;
-    insert_result = data_pairs.insert(current_pair);
-    if (insert_result.second == false)
-      Cout << "Warning: Restart record " << records_read << " (evaluation id " 
-	   << current_pair.eval_id() << ") is a duplicate; ignoring." << std::endl;
-    else
-      ++num_evals; // more efficient than evaluating data_pairs.size()?
+    data_pairs.insert(current_pair);
+    ++num_evals;
 
     // peek to force EOF if the last restart record was read
     restart_input_fs.peek();
   }
-  // size_t num_evals = data_pairs.size();
 
   size_t i, j;
   if (print_dest == "pdb_file") {
@@ -356,6 +348,9 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
 
     String curr_interf;
     PRPCacheCIter prp_iter = data_pairs.begin();
+
+    // override default to output data in full precision (double = 16 digits)
+    write_precision = 16;
 
     for (i=0; i<num_evals; ++i, ++prp_iter) {
       const String& new_interf = prp_iter->interface_id();

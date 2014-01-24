@@ -159,12 +159,16 @@ struct hashed  {};
 /** For a global cache, both evaluation and interface id's are used for
     tagging ParamResponsePair records. */
 typedef bmi::multi_index_container<Dakota::ParamResponsePair, bmi::indexed_by<
-  // sorted by increasing evalId/interfaceId value
-  bmi::ordered_unique<bmi::tag<ordered>,
-		      bmi::const_mem_fun<Dakota::ParamResponsePair,
-		      const IntStringPair&,
-		      &Dakota::ParamResponsePair::eval_interface_ids> >,
-  // hashed using partial_prp_hash and compared using partial_prp_equality
+  // sorted by increasing evalId/interfaceId value; can be non-unique due to
+  // restart database and restarted run having different evals with the same
+  // evalId/interfaceId (due to modified execution settings)
+  bmi::ordered_non_unique<bmi::tag<ordered>,
+			  bmi::const_mem_fun<Dakota::ParamResponsePair,
+			  const IntStringPair&,
+			  &Dakota::ParamResponsePair::eval_interface_ids> >,
+  // hashed using partial_prp_hash and compared using partial_prp_equality;
+  // can be non-unique due to multiple evals with same interfaceId/variables
+  // but distinct active set
   bmi::hashed_non_unique<bmi::tag<hashed>,
 			 bmi::identity<Dakota::ParamResponsePair>,
                          partial_prp_hash, partial_prp_equality> > >
@@ -196,11 +200,13 @@ inline PRPCacheHIter hashedCacheEnd(PRPCache& prp_cache)
 typedef bmi::multi_index_container<Dakota::ParamResponsePair, bmi::indexed_by<
   /* random access for index-based operator[] access
   bmi::random_access<bmi::tag<random> >, */
-  // sorted by increasing evaluation id for fast key-based lookups
+  // sorted by unique/increasing evaluation id for fast key-based lookups
   bmi::ordered_unique<bmi::tag<ordered>,
 		      bmi::const_mem_fun<Dakota::ParamResponsePair, int,
 		      &Dakota::ParamResponsePair::eval_id> >,
-  // hashed using partial_prp_hash and compared using partial_prp_equality
+  // hashed using partial_prp_hash and compared using partial_prp_equality;
+  // can be non-unique due to multiple evals with same interfaceId/variables
+  // but distinct active set
   bmi::hashed_non_unique<bmi::tag<hashed>,
 			 bmi::identity<Dakota::ParamResponsePair>,
                          partial_prp_hash, partial_prp_equality> > >
@@ -271,8 +277,8 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const ParamResponsePair& search_pr,
 }
 
 
-/// find the evaluation id of a ParamResponsePair within a PRPMultiIndexCache
-/// based on interface id, variables, and ActiveSet search data
+/// find a ParamResponsePair within a PRPMultiIndexCache based on the
+/// interface id, variables, and ActiveSet search data
 inline PRPCacheHIter
 lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 	      const Variables& search_vars,  const ActiveSet& search_set)
@@ -283,8 +289,8 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 }
 
 
-/// find a ParamResponsePair within a PRPMultiIndexCache based on interface id,
-/// variables, and ActiveSet search data
+/// alternate overloaded form returns bool and sets found_pr by wrapping
+/// lookup_by_val(PRPMultiIndexCache&, String&, Variables&, ActiveSet&)
 inline bool 
 lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 	      const Variables& search_vars, const ActiveSet& search_set,
@@ -417,8 +423,8 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const ParamResponsePair& search_pr,
 }
 
 
-/// find the evaluation id of a ParamResponsePair within a PRPMultiIndexQueue
-/// based on interface id, variables, and ActiveSet search data
+/// find a ParamResponsePair within a PRPMultiIndexQueue based on
+/// interface id, variables, and ActiveSet search data
 inline PRPQueueHIter
 lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
 	      const Variables& search_vars,  const ActiveSet& search_set)
@@ -429,8 +435,8 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
 }
 
 
-/// find a ParamResponsePair within a PRPMultiIndexQueue based on interface id,
-/// variables, and ActiveSet search data
+/// alternate overloaded form returns bool and sets found_pr by wrapping
+/// lookup_by_val(PRPMultiIndexQueue&, String&, Variables&, ActiveSet&)
 inline bool 
 lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
 	      const Variables& search_vars, const ActiveSet& search_set,
