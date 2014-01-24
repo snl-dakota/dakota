@@ -216,7 +216,8 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
     SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
                                    write_file);
 
-    status = binary_file.store_data(data_label, vlvec_array_out);
+    //status = binary_file.store_data(data_label, vlvec_array_out); // WJB: old approach, no hyperslabs
+    status = binary_file.store_hypdata(data_label, vlvec_array_out);
     assert(status >= 0);
     // binary stream goes out of scope... (file close)
   }

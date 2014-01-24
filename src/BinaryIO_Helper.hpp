@@ -334,6 +334,89 @@ public:
   }
 
 
+  /// RECTANGULAR storage of ragged array of vector<T> - each "row" can be
+  /// variable length BUT a hyperslab is selected for writing data, row-by-row
+  /// (HDF5's fill_value used to fill empty locations in the rectangular space)
+  /// for example vector< vector<int> >, vector< vector<double> >
+  template <typename T>
+  herr_t store_hypdata(const std::string& dset_name,
+                       const std::vector<std::vector<T> >& buf) const
+  {
+    // Create a 2D dataspace sufficient to store first row vector
+    std::vector<hsize_t> dims;
+    dims += 1, buf[0].size();
+
+    std::vector<hsize_t> maxdims;
+    maxdims += H5S_UNLIMITED, H5S_UNLIMITED;
+
+    // Create the data space...
+    hid_t dataspace = H5Screate_simple( dims.size(), dims.data(),
+                        maxdims.data() );
+
+    // Enable chunking using creation properties
+    // Chunk size is that of the longest row vector
+    size_t num_cols = 0;
+    for(int i=0; i<buf.size(); ++i) {
+      num_cols = std::max(num_cols, buf[i].size());  
+    }
+
+    std::vector<hsize_t> chunk_dims;
+    chunk_dims += 1, num_cols;
+
+    hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
+    H5Pset_layout(cparms, H5D_CHUNKED);
+
+    herr_t status = H5Pset_chunk( cparms, chunk_dims.size(),
+                      chunk_dims.data() );
+
+    // Create a new dataset within the DB using cparms creation properties.
+    hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
+                      NativeDataTypes<T>::datatype(), dataspace, H5P_DEFAULT,
+                      cparms, H5P_DEFAULT);
+
+    std::vector< std::vector<hsize_t> > row_dims(buf.size(), dims);
+    std::vector<hsize_t> extents = dims;
+
+    // WJB:  consider functor approach once I have more confidence
+    //std::for_each( buf.begin(), buf.end(),
+      //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
+
+    for(int i=0; i<buf.size(); ++i) {
+      extents[0] = i+1;
+      extents[1] = buf[i].size();
+
+      // Each row is NOT necessarily the same size, so extend the dataset.
+
+      status = H5Dextend( dataset, extents.data() );
+
+      hid_t db_space = H5Dget_space(dataset);
+
+      dims[0] = extents[0];
+      dims[1] = extents[1];
+      row_dims[i][1] = dims[1];
+
+      // Select a hyperslab... row-by-row
+      std::vector<hsize_t> offset;
+      offset += i, 0;
+
+      status = H5Sselect_hyperslab(db_space, H5S_SELECT_SET, offset.data(),
+                 NULL, row_dims[i].data(), NULL);
+
+      dataspace = H5Screate_simple(row_dims[i].size(), row_dims[i].data(),
+                    maxdims.data() );
+
+      // Write the row data to the hyperslab
+      status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), dataspace,
+                 db_space, H5P_DEFAULT, buf[i].data() );
+      //std::cout << "- Row: " << i << " - data written\n" << std::endl;
+    }
+
+    // WJB - ToDo: free resources
+    //std::cout << std::endl; 
+  }
+
+
+
   // should parameterize on ScalarType -- template <typename T>
   // that way, same func for ints, doubles,...
   herr_t store_data(const std::string& dset_name,
