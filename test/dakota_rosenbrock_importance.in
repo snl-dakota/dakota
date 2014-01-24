@@ -10,7 +10,7 @@
 # initial number of samples is 100 or larger, but to keep the computational 
 # costs down, it is set to 50 samples. 
 
-# timeout overrides: 2=TD1200 2=TA1200
+# timeout overrides: 2=TD1200 2=TA1800
 
 strategy,
 	single_method
