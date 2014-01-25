@@ -424,6 +424,7 @@ void ParamStudy::multidim_loop()
   }
 }
 
+
 /** Load from file and distribute points; using this function to
     manage construction of the temporary array */
 bool ParamStudy::
@@ -439,6 +440,7 @@ load_distribute_points(const String& points_filename, bool annotated)
   RealVector list_of_pts(Teuchos::View, &point_list[0], point_list.size());
   return distribute_list_of_points(list_of_pts);
 }
+
 
 bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
 {

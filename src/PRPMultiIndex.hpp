@@ -107,7 +107,7 @@ inline bool id_vars_exact_compare(const ParamResponsePair& database_pr,
     return false;
 
   // For Boost hashing, a post-processing step is used to manage the ActiveSet
-  // logic as shown below in id_vars_set_compare
+  // logic as shown in set_compare()
 
   return true;
 }
@@ -350,9 +350,65 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 /// (i.e. std::pair<eval_id,interface_id>) search data
 inline PRPCacheOIter
 lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids)
-{ return prp_cache.get<ordered>().find(search_ids); }
+{
+  if (search_ids.first > 0) // positive ids (evals from current exec) are unique
+    return prp_cache.get<ordered>().find(search_ids);
+  else { // negative (restart) and 0 (file import) ids are non-unique in general
+
+    /*
+    // could allow lookup if only one item found, but still a misuse of the fn
+    PRPCacheOIter prp_it0, prp_it1;
+    boost::tuples::tie(prp_it0, prp_it1)
+      = prp_cache.get<ordered>().equal_range(search_ids);
+    switch (std::distance(prp_it0, prp_it1)) {
+    case 0: return prp_cache.get<ordered>().end(); break;
+    case 1: return prp_it0;                        break;
+    default:
+      Cerr << "Error: duplicate entries in PRPCache lookup_by_ids()."
+           << std::endl;
+      abort_handler(-1); break;
+    }
+    */
+
+    Cerr << "Error: lookup_by_ids(PRPCache&) used for lookup with non-positive "
+	 << "evaluation id, which may be non-unique." << std::endl;
+    abort_handler(-1);
+  }
+}
 
 
+inline PRPCacheOIter
+lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids,
+	      const ParamResponsePair& search_pr)
+{
+  if (search_ids.first > 0) // positive ids (evals from current exec) are unique
+    return prp_cache.get<ordered>().find(search_ids);
+  else { // negative (restart) and 0 (file import) ids are non-unique in general
+
+    // equal_range returns a small sequence of possibilities resulting from
+    // ordered lookup with ONLY search_ids.  Post-processing can then be
+    // applied to this sequence if needed using vars_compare().
+    PRPCacheOIter prp_it0, prp_it1;
+    boost::tuples::tie(prp_it0, prp_it1)
+      = prp_cache.get<ordered>().equal_range(search_ids);
+    switch (std::distance(prp_it0, prp_it1)) {
+    case 0: return prp_cache.get<ordered>().end(); break;
+    case 1: return prp_it0;                        break;
+    default:
+      while (prp_it0 != prp_it1) {
+	if ( binary_equal_to(prp_it0->prp_parameters(),
+			     search_pr.prp_parameters()) &&
+	     set_compare(*prp_it0, search_pr.active_set()) )
+	  return prp_it0;
+	++prp_it0;
+      }
+      return prp_cache.get<ordered>().end();       break;
+    }
+  }
+}
+
+
+/* Not currently needed:
 /// find a ParamResponsePair within a PRPMultiIndexCache based on
 /// eval_interface_ids
 inline bool
@@ -376,6 +432,7 @@ inline bool
 lookup_by_ids(PRPMultiIndexCache& prp_cache, const ParamResponsePair& search_pr,
               ParamResponsePair& found_pr)
 { return lookup_by_ids(prp_cache, search_pr.eval_interface_ids(), found_pr); }
+*/
 
 
 // ------------------------------------

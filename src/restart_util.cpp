@@ -172,8 +172,8 @@ void print_restart(int argc, char** argv, String print_dest)
     else if (print_dest == "neutral_file")
       current_pair.write_annotated(neutral_file_stream);
 
-      // peek to force EOF if the last restart record was read
-      restart_input_fs.peek();
+    // peek to force EOF if the last restart record was read
+    restart_input_fs.peek();
   }
   if (print_dest == "neutral_file")
     neutral_file_stream.close();
@@ -212,34 +212,34 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   }
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
-  extern PRPCache data_pairs;
-  size_t num_evals = 0;     // unique insertions to data_pairs
-  while (restart_input_fs.good() && !restart_input_fs.eof()) {
-
-    ParamResponsePair current_pair;
-    try { 
-      restart_input_archive & current_pair; 
-    }
-    catch(const boost::archive::archive_exception& e) {
-      Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	   << e.what() << std::endl;
-      abort_handler(-1);
-    }
-    catch(const std::string& err_msg) {
-      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-      break;
-    }
-
-    data_pairs.insert(current_pair);
-    ++num_evals;
-
-    // peek to force EOF if the last restart record was read
-    restart_input_fs.peek();
-  }
-
-  size_t i, j;
+  size_t i, j, num_evals = 0;
   if (print_dest == "pdb_file") {
-    PRPCacheCIter prp_iter = data_pairs.begin();
+
+    PRPCache read_pairs;
+    while (restart_input_fs.good() && !restart_input_fs.eof()) {
+
+      ParamResponsePair current_pair;
+      try { 
+	restart_input_archive & current_pair; 
+      }
+      catch(const boost::archive::archive_exception& e) {
+	Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	     << e.what() << std::endl;
+	abort_handler(-1);
+      }
+      catch(const std::string& err_msg) {
+	Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+	break;
+      }
+
+      read_pairs.insert(current_pair);
+      ++num_evals;
+
+      // peek to force EOF if the last restart record was read
+      restart_input_fs.peek();
+    }
+
+    PRPCacheCIter prp_iter = read_pairs.begin();
     StringMultiArrayConstView cv_labels
       = prp_iter->prp_parameters().continuous_variable_labels();
     StringMultiArrayConstView div_labels
@@ -345,26 +345,40 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   else if (print_dest == "text_file") {
     cout << "Writing tabular text file " << argv[3] << '\n';
     std::ofstream tabular_text(argv[3]);
-
     String curr_interf;
-    PRPCacheCIter prp_iter = data_pairs.begin();
 
     // override default to output data in full precision (double = 16 digits)
-    write_precision = 16;
+    //write_precision = 16;
 
-    for (i=0; i<num_evals; ++i, ++prp_iter) {
-      const String& new_interf = prp_iter->interface_id();
-      if (i == 0 || new_interf != curr_interf) {
+    while (restart_input_fs.good() && !restart_input_fs.eof()) {
+
+      ParamResponsePair current_pair;
+      try { 
+	restart_input_archive & current_pair; 
+      }
+      catch(const boost::archive::archive_exception& e) {
+	Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	     << e.what() << std::endl;
+	abort_handler(-1);
+      }
+      catch(const std::string& err_msg) {
+	Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+	break;
+      }
+
+      const String& new_interf = current_pair.interface_id();
+      if (num_evals == 0 || new_interf != curr_interf) {
         curr_interf = new_interf;
         // Header (note: use matlab comment syntax "%"):
+	const Variables& vars = current_pair.prp_parameters();
         StringMultiArrayConstView acv_labels
-	  = prp_iter->prp_parameters().all_continuous_variable_labels();
+	  = vars.all_continuous_variable_labels();
         StringMultiArrayConstView adiv_labels
-	  = prp_iter->prp_parameters().all_discrete_int_variable_labels();
+	  = vars.all_discrete_int_variable_labels();
         StringMultiArrayConstView adrv_labels
-	  = prp_iter->prp_parameters().all_discrete_real_variable_labels();
+	  = vars.all_discrete_real_variable_labels();
         const StringArray& fn_labels
-	  = prp_iter->prp_response().function_labels();
+	  = current_pair.prp_response().function_labels();
         size_t num_acv = acv_labels.size(), num_adiv = adiv_labels.size(),
 	  num_adrv = adrv_labels.size(), num_fns = fn_labels.size();
 	if (!curr_interf.empty())
@@ -381,7 +395,11 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
         tabular_text << '\n';
       }
       // Data: (note: not maximum precision)
-      prp_iter->write_tabular(tabular_text);
+      current_pair.write_tabular(tabular_text);
+      ++num_evals;
+
+      // peek to force EOF if the last restart record was read
+      restart_input_fs.peek();
     }
   }
 

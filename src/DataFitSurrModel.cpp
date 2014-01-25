@@ -322,7 +322,8 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   // > used by NonDLocal *without* persistent vars,response
 
   // build a local, multipoint, or global data fit approximation.
-  if (strbegins(surrogateType, "local_") || strbegins(surrogateType, "multipoint_"))
+  if (strbegins(surrogateType, "local_") ||
+      strbegins(surrogateType, "multipoint_"))
     // NOTE: branch not used by SBO
     update_local_multipoint();
   else { // global approximation.  NOTE: branch used by SBO.
@@ -697,7 +698,8 @@ void DataFitSurrModel::build_local_multipoint()
 
   // Define the data requests
   short asv_value = 3;
-  if (strbegins(surrogateType, "local_") && actualModel.hessian_type() != "none")
+  if (strbegins(surrogateType, "local_") &&
+      actualModel.hessian_type() != "none")
     asv_value += 4;
   ShortArray orig_asv(numFns, asv_value), actual_asv, approx_asv;
   asv_mapping(orig_asv, actual_asv, approx_asv, true);
@@ -752,9 +754,9 @@ void DataFitSurrModel::build_global()
     const Pecos::SurrogateDataVars& anchor_vars
       = approxInterface.approximation_data(index).anchor_variables();
 
-    // Process the PRPCache
-    // (this relies on data_pairs being in eval_id order so variables
-    // and responses are correctly ordered)
+    // Process the PRPCache using default iterators (index 0 =
+    // ordered_non_unique).  We rely on data_pairs being in eval_id
+    // order so VariablesArray and IntResponseMap are correctly aligned.
     for (PRPCacheCIter prp_iter = data_pairs.begin();
 	 prp_iter != data_pairs.end(); ++prp_iter) {
       const Variables&  db_vars    = prp_iter->prp_parameters();
@@ -804,9 +806,9 @@ void DataFitSurrModel::build_global()
 	  break;
 
       // append the data to approxInterface
-      VarsLIter v_it; RespLIter r_it; int cntr = -1;
+      VarsLIter v_it; RespLIter r_it; int cntr = 1;
       for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
-	   v_it != reuseFileVars.end(); ++v_it, ++r_it, --cntr) {
+	   v_it != reuseFileVars.end(); ++v_it, ++r_it, ++cntr) {
 	// apply any recastings for surrogate modeling at this level
 	if (manage_recursion) {
 	  Variables vars(*v_it); Response resp(*r_it); // shallow copies
@@ -834,11 +836,14 @@ void DataFitSurrModel::build_global()
 	  if (inside(vars.continuous_variables(), vars.discrete_int_variables(),
 		     vars.discrete_real_variables())) {
 	    if (outputLevel >= DEBUG_OUTPUT)
-	      Cout << "Transformed data for imported eval " << -cntr << ":\n"
+	      Cout << "Transformed data for imported eval " << cntr << ":\n"
 		   << vars << resp;
-	    // dummy eval id < 0 for file imports
-	    approxInterface.append_approximation(vars,
-						 std::make_pair(cntr, resp));
+	    // dummy eval id = 0 for file imports (was previously = -cntr):
+	    //   id > 0 for unique evals from current execution (in data_pairs)
+	    //   id = 0 for evals from file import (not in data_pairs)
+	    //   id < 0 for non-unique evals from restart (in data_pairs)
+	    approxInterface.append_approximation(vars, std::make_pair(0, resp));
+					         //std::make_pair(-cntr, resp));
 	    ++reuse_points;
 	  }
 	}
@@ -847,11 +852,14 @@ void DataFitSurrModel::build_global()
 			v_it->discrete_int_variables(),
 			v_it->discrete_real_variables())) {
 	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Untransformed data for imported eval " << -cntr << ":\n"
+	    Cout << "Untransformed data for imported eval " << cntr << ":\n"
 		 << *v_it << *r_it;
-	  // dummy eval id < 0 for file imports
-	  approxInterface.append_approximation(*v_it,
-					       std::make_pair(cntr, *r_it));
+	  // dummy eval id = 0 for file imports (was previously = -cntr):
+	  //   id > 0 for unique evals from current execution (in data_pairs)
+	  //   id = 0 for evals from file import (not in data_pairs)
+	  //   id < 0 for non-unique evals from restart (in data_pairs)
+	  approxInterface.append_approximation(*v_it, std::make_pair(0, *r_it));
+					       //std::make_pair(-cntr, *r_it));
 	  ++reuse_points;
 	}
       }

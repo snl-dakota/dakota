@@ -140,6 +140,10 @@ private:
   void shallow_add(const Variables& vars, const Response& response,
 		   bool anchor);
 
+  /// populate continuous variables within vars from sample_c_vars
+  void sample_to_variables(const Real* sample_c_vars, size_t num_cv,
+			   Variables& vars);
+
   /// append to the popCountStack within each of the functionSurfaces
   /// based on the active set definitions within resp_map
   void update_pop_counts(const IntResponseMap& resp_map);
@@ -328,6 +332,23 @@ approximation_data(size_t index)
     abort_handler(-1);
   }
   return functionSurfaces[index].approximation_data();
+}
+
+
+inline void ApproximationInterface::
+sample_to_variables(const Real* sample_c_vars, size_t num_cv, Variables& vars)
+{
+  if (vars.cv() == num_cv)
+    for (size_t i=0; i<num_cv; ++i)
+      vars.continuous_variable(sample_c_vars[i], i);
+  else if (vars.acv() == num_cv)
+    for (size_t i=0; i<num_cv; ++i)
+      vars.all_continuous_variable(sample_c_vars[i], i);
+  else {
+    Cerr << "Error: size mismatch in ApproximationInterface::"
+	 << "sample_to_variables()" << std::endl;
+    abort_handler(-1);
+  }
 }
 
 } // namespace Dakota

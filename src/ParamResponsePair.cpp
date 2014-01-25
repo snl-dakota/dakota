@@ -53,7 +53,7 @@ void ParamResponsePair::serialize(Archive& ar, const unsigned int version)
   ar & prPairParameters;
   ar & evalInterfaceIds.second;
   ar & prPairResponse;
-  ar & evalInterfaceIds.first; 
+  ar & evalInterfaceIds.first;
 }
 
 

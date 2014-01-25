@@ -618,24 +618,26 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   allResponses.clear();
 
   // now read variables and responses (minimal error checking for now)
-  int cntr = -1; // use negative ids for file import if not annotated with IDs
-  for (size_t i=0; i<num_evals; ++i, --cntr) {
+  int eval_id, cntr; size_t i;
+  for (i=0, cntr=1; i<num_evals; ++i, ++cntr) {
 
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "   reading sample " << i << std::endl;
 
-    int eval_id = cntr;  // default eval_id is the (negative) cntr
-
     try {
       if (annotated) {
 	tabular_file >> eval_id;
-	if (eval_id != i+1) {
+	if (eval_id != cntr) {
 	  Cerr << "\nError in post-run input: unexpected eval_id from leading "
 	       << "column in file." << std::endl;
 	  tabular_file.close();
 	  abort_handler(-1);
 	}
       }
+      // use negative ids for file import in this context, since repeated use
+      // of 0 is not acceptable for the allResponses IntResponseMap below.  As
+      // a result, this differs from the logic for approximation data import.
+      eval_id = -cntr;
       if (compactMode) {
 	// this doesn't work because getCol is returning a copy;
 	// could construct a View...
@@ -653,8 +655,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     }
     catch (const std::ios_base::failure& failorbad_except) {
       Cerr << "\nError: insufficient data in post-run input file;\n       "
-	   << "expected " << num_evals << " samples, read " << i 
-	   << '\n' << std::endl;
+	   << "expected " << num_evals << " samples, read " << i << '\n'
+	   << std::endl;
       tabular_file.close();
       abort_handler(-1);
     }

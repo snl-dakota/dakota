@@ -1362,6 +1362,7 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // Read restart
   // ------------
   // Process the evaluations from the restart file
+  PRPCache read_pairs;
   if (read_restart_flag) {
     
     std::ifstream restart_input_fs(read_restart_filename.c_str(), 
@@ -1402,50 +1403,42 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
         break;
       }
 
-      data_pairs.insert(current_pair); 
+      read_pairs.insert(current_pair); 
       ++cntr;
       Cout << "\n------------------------------------------\nRestart record "
 	   << std::setw(4) << cntr << "  (evaluation id " << std::setw(4)
 	   << current_pair.eval_id() << "):"
 	   << "\n------------------------------------------\n" << current_pair;
-      // Note: interface id is printed in ParamResponsePair::write(ostream&)
-      // if present
+      // Note: interface id printed in ParamResponsePair::write(ostream&)
 
-      // peek to force EOF if the last restart record was read
-      restart_input_fs.peek();
-
+      restart_input_fs.peek(); // peek to force EOF if the last record was read
     }
     restart_input_fs.close();
     Cout << "Restart file processing completed: " << cntr
-	 << " evaluations retrieved and " << data_pairs.size()
-	 << " unique evaluations stored.\n";
+	 << " evaluations retrieved.\n";
   }
 
   // -------------
   // Write restart
   // -------------
 
-  // Always write a restart log file.  Assign the write_restart stream
-  // to the filename specified by the user on the dakota command line.
-  // If a write_restart file is not specified, "dakota.rst" is the
-  // default.
+  // Always write a restart log file.  Assign the write_restart stream to
+  // the filename specified by the user on the dakota command line.  If a
+  // write_restart file is not specified, "dakota.rst" is the default.
 
-  // It would be desirable to suppress the creation of the restart
-  // file altogether if the user has explicitly deactivated this
-  // feature; however this is problematic for 2 reasons: (1)
-  // problem_db is not readily available (except in
-  // init_iterator_communicators()), and (2) the "deactivate
-  // restart_file" specification is linked to the interface and
-  // therefore should be enforced per interface, whereas there is only
-  // one parallel library instance.  
+  // It would be desirable to suppress the creation of the restart file
+  // altogether if the user has explicitly deactivated this feature; however
+  // this is problematic for 2 reasons: (1) problem_db is not readily available
+  // (except in init_iterator_communicators()), and (2) the "deactivate
+  // restart_file" specification is linked to the interface and therefore should
+  // be enforced per interface, whereas there is only one parallel lib instance.
   //if (!deactivateRestartFlag) {
 
   // Previously we supported append to an existing restart file.  With
   // Boost serialization, there's no easy way to append to a file (all
   // writes must occur with a single output archive instance).  This
   // also improves behavior with stop_restart, as now only the desired
-  // evals are rewritten, omitting any corrupt data at the end of
-  // file.
+  // evals are rewritten, omitting any corrupt data at the end of file.
 
   if (write_restart_filename == read_restart_filename)
     Cout << "Overwriting existing restart file " << write_restart_filename 
@@ -1461,15 +1454,35 @@ manage_outputs_restart(const ParallelLevel& pl, bool results_output,
   // restart run are in separate files.  By keeping all of the saved data in
   // 1 file, restarts can be chained together indefinitely.
   //
-  // "View" the data_pairs cache as an ordered collection (by eval_id)
+  // "View" the read_pairs cache as a collection ordered by eval_id
 
-  // don't use a const iterator as PRP does not have a const serialize fn
-  PRPCacheIter cit, cit_end = data_pairs.end();
-  for (cit = data_pairs.begin(); cit != cit_end; ++cit)
-    restartOutputArchive->operator&(*cit);
+  if (!read_pairs.empty()) {
+    // don't use a const iterator as PRP does not have a const serialize fn
+    PRPCacheIter it, it_end = read_pairs.end();
+    for (it = read_pairs.begin(); it != it_end; ++it) {
+      restartOutputArchive->operator&(*it);
 
-  // flush is critical so we have a complete restart record should Dakota abort
-  restartOutputFS.flush();
+      // Distinguish restart evals in memory by negating their eval ids;
+      // positive ids could be misleading if inconsistent with the progression
+      // of a restarted run (resulting in different evaluations that share the
+      // same evalInterfaceIds).  Moreover, they may not be unique within the
+      // restart DB in the presence of overlay/concatenation of multiple runs.
+      //   id > 0 for unique evals from current execution (in data_pairs)
+      //   id = 0 for evals from file import (not in data_pairs)
+      //   id < 0 for non-unique evals from restart (in data_pairs)
+      int restart_eval_id = it->eval_id();
+      if (restart_eval_id > 0) {
+	ParamResponsePair pair(*it); // shallow vars/resp copy, deep ids copy
+	pair.eval_id(-restart_eval_id);
+	data_pairs.insert(pair);
+      }
+      else
+	data_pairs.insert(*it);
+    }
+
+    // flush is critical so we have a complete restart record in case of abort
+    restartOutputFS.flush();
+  }
 
   //}
 }
