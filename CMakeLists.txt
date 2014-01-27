@@ -63,7 +63,9 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalFull})
   list(APPEND CPACK_SOURCE_IGNORE_FILES
     "^${Dakota_SOURCE_DIR}/local/buildscripts/"
     "^${Dakota_SOURCE_DIR}/local/examples/"
+    "^${Dakota_SOURCE_DIR}/local/jenkins/"
     "^${Dakota_SOURCE_DIR}/local/miscscripts/"
+    "^${Dakota_SOURCE_DIR}/local/project_management/"
     "^${Dakota_SOURCE_DIR}/local/sqa/"
     "^${Dakota_SOURCE_DIR}/local/tracking/"
     "^${Dakota_SOURCE_DIR}/local/www.sandia.gov/"
