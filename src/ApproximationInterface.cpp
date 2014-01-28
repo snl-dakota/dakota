@@ -343,6 +343,10 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
     // copies.  Therefore, use ordered id lookup in global PRPCache.
     IntStringPair ids(response_pr.first, actualModelInterfaceId);
     PRPCacheCIter p_it;
+    // sign indicates dataset source (see DataFitSurrModel::build_global()):
+    //   eval id > 0 for unique evals from current execution (in data_pairs)
+    //   eval id = 0 for evals from file import (not in data_pairs)
+    //   eval id < 0 for non-unique evals from restart (in data_pairs)
     if (response_pr.first > 0) // unique evals: current run
       p_it = lookup_by_ids(data_pairs, ids);
     else { // non-unique eval ids from restart/file import
@@ -383,6 +387,10 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       IntStringPair ids(r_it->first, actualModelInterfaceId);
+      // sign indicates dataset source (see DataFitSurrModel::build_global()):
+      //   eval id > 0 for unique evals from current execution (in data_pairs)
+      //   eval id = 0 for evals from file import (not in data_pairs)
+      //   eval id < 0 for non-unique evals from restart (in data_pairs)
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import
@@ -426,6 +434,10 @@ update_approximation(const VariablesArray& vars_array,
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       IntStringPair ids(r_it->first, actualModelInterfaceId);
+      // sign indicates dataset source (see DataFitSurrModel::build_global()):
+      //   eval id > 0 for unique evals from current execution (in data_pairs)
+      //   eval id = 0 for evals from file import (not in data_pairs)
+      //   eval id < 0 for non-unique evals from restart (in data_pairs)
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import
@@ -458,6 +470,10 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
     // copies.  Therefore, use ordered id lookup in global PRPCache.
     IntStringPair ids(response_pr.first, actualModelInterfaceId);
     PRPCacheCIter p_it;
+    // sign indicates dataset source (see DataFitSurrModel::build_global()):
+    //   eval id > 0 for unique evals from current execution (in data_pairs)
+    //   eval id = 0 for evals from file import (not in data_pairs)
+    //   eval id < 0 for non-unique evals from restart (in data_pairs)
     if (response_pr.first > 0) // unique evals: current run
       p_it = lookup_by_ids(data_pairs, ids);
     else { // nonunique eval ids from restart/file import
@@ -503,6 +519,10 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       IntStringPair ids(r_it->first, actualModelInterfaceId);
+      // sign indicates dataset source (see DataFitSurrModel::build_global()):
+      //   eval id > 0 for unique evals from current execution (in data_pairs)
+      //   eval id = 0 for evals from file import (not in data_pairs)
+      //   eval id < 0 for non-unique evals from restart (in data_pairs)
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import
@@ -547,6 +567,10 @@ append_approximation(const VariablesArray& vars_array,
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
       IntStringPair ids(r_it->first, actualModelInterfaceId);
+      // sign indicates dataset source (see DataFitSurrModel::build_global()):
+      //   eval id > 0 for unique evals from current execution (in data_pairs)
+      //   eval id = 0 for evals from file import (not in data_pairs)
+      //   eval id < 0 for non-unique evals from restart (in data_pairs)
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import

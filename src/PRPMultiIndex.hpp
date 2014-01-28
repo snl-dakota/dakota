@@ -273,7 +273,8 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 }
 
 
-/*
+/* Better to use cache iterators and avoid extra shallow copies if not needed
+
 /// alternate overloaded form returns bool and sets found_pr by wrapping
 /// lookup_by_val(PRPMultiIndexCache&, ParamResponsePair&)
 inline bool 
@@ -335,6 +336,10 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 inline PRPCacheOIter
 lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids)
 {
+  // sign of eval id indicates different dataset sources:
+  //   eval id > 0 for unique evals from current execution (in data_pairs)
+  //   eval id = 0 for evals from file import (not in data_pairs)
+  //   eval id < 0 for non-unique evals from restart (in data_pairs)
   if (search_ids.first > 0) // positive ids (evals from current exec) are unique
     return prp_cache.get<ordered>().find(search_ids);
   else { // negative (restart) and 0 (file import) ids are non-unique in general
@@ -365,6 +370,10 @@ inline PRPCacheOIter
 lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids,
 	      const ParamResponsePair& search_pr)
 {
+  // sign of eval id indicates different dataset sources:
+  //   eval id > 0 for unique evals from current execution (in data_pairs)
+  //   eval id = 0 for evals from file import (not in data_pairs)
+  //   eval id < 0 for non-unique evals from restart (in data_pairs)
   if (search_ids.first > 0) // positive ids (evals from current exec) are unique
     return prp_cache.get<ordered>().find(search_ids);
   else { // negative (restart) and 0 (file import) ids are non-unique in general
@@ -392,7 +401,8 @@ lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids,
 }
 
 
-/* Not currently needed:
+/* Better to use cache iterators and avoid extra shallow copies if not needed
+
 /// find a ParamResponsePair within a PRPMultiIndexCache based on
 /// eval_interface_ids
 inline bool
@@ -460,7 +470,8 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
 }
 
 
-/*
+/* Better to use cache iterators and avoid extra shallow copies if not needed
+
 /// alternate overloaded form returns bool and sets found_pr by wrapping
 /// lookup_by_val(PRPMultiIndexQueue&, ParamResponsePair&)
 inline bool 
@@ -524,7 +535,8 @@ lookup_by_eval_id(PRPMultiIndexQueue& prp_queue, int search_id)
 { return prp_queue.get<ordered>().find(search_id); }
 
 
-/*
+/* Better to use cache iterators and avoid extra shallow copies if not needed
+
 /// find a ParamResponsePair within a PRPMultiIndexQueue based on eval_id
 inline bool
 lookup_by_eval_id(PRPMultiIndexQueue& prp_queue, int search_id,
