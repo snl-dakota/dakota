@@ -81,7 +81,7 @@ public:
   virtual Model& surrogate_model();
   /// return the truth sub-model in surrogate models
   virtual Model& truth_model();
-  /// portion of subordinate_models()() specific to derived model classes
+  /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// propagate vars/labels/bounds/targets from the bottom up
   virtual void update_from_subordinate_model(bool recurse_flag = true);

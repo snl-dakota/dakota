@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1202 distinct keywords (plus 170 aliases) **/
+/** 1202 distinct keywords (plus 171 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -34,9 +34,10 @@ static KeyWord
 		{"template_directory",11,2,4,0,kw_5,0.,0.,0,N_ifm(str,templateDir)},
 		{"template_files",15,2,4,0,kw_5,0.,0.,0,N_ifm(strL,templateFiles)}
 		},
-	kw_7[8] = {
+	kw_7[9] = {
 		{"allow_existing_results",8,0,3,0,0,0.,0.,0,N_ifm(true,allowExistingResultsFlag)},
 		{"aprepro",8,0,5,0,0,0.,0.,0,N_ifm(true,apreproFlag)},
+		{"dprepro",0,0,5,0,0,0.,0.,-1,N_ifm(true,apreproFlag)},
 		{"file_save",8,0,7,0,0,0.,0.,0,N_ifm(true,fileSaveFlag)},
 		{"file_tag",8,0,6,0,0,0.,0.,0,N_ifm(true,fileTagFlag)},
 		{"parameters_file",11,0,1,0,0,0.,0.,0,N_ifm(str,parametersFile)},
@@ -49,14 +50,14 @@ static KeyWord
 		{"deactivate",8,3,6,0,kw_1},
 		{"direct",8,1,4,1,kw_2,0.,0.,0,N_ifm(lit,interfaceType_direct)},
 		{"failure_capture",8,4,5,0,kw_3},
-		{"fork",8,8,4,1,kw_7,0.,0.,0,N_ifm(lit,interfaceType_fork)},
+		{"fork",8,9,4,1,kw_7,0.,0.,0,N_ifm(lit,interfaceType_fork)},
 		{"grid",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_grid)},
 		{"input_filter",11,0,2,0,0,0.,0.,0,N_ifm(str,inputFilter)},
 		{"matlab",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_matlab)},
 		{"output_filter",11,0,3,0,0,0.,0.,0,N_ifm(str,outputFilter)},
 		{"python",8,1,4,1,kw_4,0.,0.,0,N_ifm(lit,interfaceType_python)},
 		{"scilab",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_scilab)},
-		{"system",8,8,4,1,kw_7,0.,0.,0,N_ifm(lit,interfaceType_system)}
+		{"system",8,9,4,1,kw_7,0.,0.,0,N_ifm(lit,interfaceType_system)}
 		},
 	kw_9[2] = {
 		{"master",8,0,1,1,0,0.,0.,0,N_ifm(lit,analysisScheduling_master)},

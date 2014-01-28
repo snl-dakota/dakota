@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1202 distinct keywords (plus 170 aliases) **/
+/** 1202 distinct keywords (plus 171 aliases) **/
 
 static GuiKeyWord
 	kw_1[3] = {
@@ -34,9 +34,10 @@ static GuiKeyWord
 		{"template_directory",11,2,4,0,2171,kw_5,0.,0.,0.,0,"{Template directory} InterfCommands.html#InterfApplicF"},
 		{"template_files",15,2,4,0,2173,kw_5,0.,0.,0.,0,"{Template files} InterfCommands.html#InterfApplicF"}
 		},
-	kw_7[8] = {
+	kw_7[9] = {
 		{"allow_existing_results",8,0,3,0,2153,0,0.,0.,0.,0,"{Allow existing results files} InterfCommands.html#InterfApplicF"},
 		{"aprepro",8,0,5,0,2157,0,0.,0.,0.,0,"{Aprepro parameters file format} InterfCommands.html#InterfApplicF"},
+		{"dprepro",0,0,5,0,2156},
 		{"file_save",8,0,7,0,2161,0,0.,0.,0.,0,"{Parameters and results file saving} InterfCommands.html#InterfApplicF"},
 		{"file_tag",8,0,6,0,2159,0,0.,0.,0.,0,"{Parameters and results file tagging} InterfCommands.html#InterfApplicF"},
 		{"parameters_file",11,0,1,0,2149,0,0.,0.,0.,0,"{Parameters file name} InterfCommands.html#InterfApplicF"},
@@ -49,14 +50,14 @@ static GuiKeyWord
 		{"deactivate",8,3,6,0,2203,kw_1,0.,0.,0.,0,"{Feature deactivation} InterfCommands.html#InterfApplic"},
 		{"direct",8,1,4,1,2179,kw_2,0.,0.,0.,0,"[CHOOSE interface type]{Direct function interface } InterfCommands.html#InterfApplicDF"},
 		{"failure_capture",8,4,5,0,2193,kw_3,0.,0.,0.,0,"{Failure capturing} InterfCommands.html#InterfApplic"},
-		{"fork",8,8,4,1,2147,kw_7,0.,0.,0.,0,"@{Fork interface } InterfCommands.html#InterfApplicF"},
+		{"fork",8,9,4,1,2147,kw_7,0.,0.,0.,0,"@{Fork interface } InterfCommands.html#InterfApplicF"},
 		{"grid",8,0,4,1,2191,0,0.,0.,0.,0,"{Grid interface } InterfCommands.html#InterfApplicG"},
 		{"input_filter",11,0,2,0,2141,0,0.,0.,0.,0,"{Input filter} InterfCommands.html#InterfApplic"},
 		{"matlab",8,0,4,1,2183,0,0.,0.,0.,0,"{Matlab interface } InterfCommands.html#InterfApplicMSP"},
 		{"output_filter",11,0,3,0,2143,0,0.,0.,0.,0,"{Output filter} InterfCommands.html#InterfApplic"},
 		{"python",8,1,4,1,2185,kw_4,0.,0.,0.,0,"{Python interface } InterfCommands.html#InterfApplicMSP"},
 		{"scilab",8,0,4,1,2189,0,0.,0.,0.,0,"{Scilab interface } InterfCommands.html#InterfApplicMSP"},
-		{"system",8,8,4,1,2145,kw_7}
+		{"system",8,9,4,1,2145,kw_7}
 		},
 	kw_9[2] = {
 		{"master",8,0,1,1,2239},
