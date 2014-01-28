@@ -103,7 +103,7 @@ protected:
   /// pass request to actualModel if recursing and then update from it
   void update_from_subordinate_model(bool recurse_flag = true);
   /// return approxInterface
-  Interface& interface();
+  Interface& iface();
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into actualModel
@@ -368,7 +368,7 @@ inline void DataFitSurrModel::update_from_subordinate_model(bool recurse_flag)
 }
 
 
-inline Interface& DataFitSurrModel::interface()
+inline Interface& DataFitSurrModel::iface()
 { return approxInterface; }
 
 

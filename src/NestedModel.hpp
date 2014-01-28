@@ -79,7 +79,7 @@ protected:
   /// return subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// return optionalInterface
-  Interface& interface();
+  Interface& iface();
 
   /// pass a bypass request on to the subModel for any lower-level surrogates
   void surrogate_response_mode(short mode);
@@ -342,7 +342,7 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
-inline Interface& NestedModel::interface()
+inline Interface& NestedModel::iface()
 { return optionalInterface; }
 
 

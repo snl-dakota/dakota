@@ -23,11 +23,6 @@
 struct ASL; // forward declaration
 #endif // HAVE_AMPL
 
-// likely need more general _WIN32 here
-#ifdef __MINGW32__
-#undef interface
-#endif
-
 // forward declaration
 namespace Pecos { class SurrogateData; }
 
@@ -75,7 +70,7 @@ public:
   virtual ~Interface();
 
   /// assignment operator
-  Interface operator=(const Interface& interface);
+  Interface operator=(const Interface& interface_in);
 
   //
   //- Heading: Virtual functions
@@ -446,8 +441,8 @@ inline bool Interface::is_null() const
 
 
 /// global comparison function for Interface
-inline bool interface_id_compare(const Interface& interface, const void* id)
-{ return ( *(const String*)id == interface.interface_id() ); }
+inline bool interface_id_compare(const Interface& interface_in, const void* id)
+{ return ( *(const String*)id == interface_in.interface_id() ); }
 
 } // namespace Dakota
 

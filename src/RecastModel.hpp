@@ -170,7 +170,7 @@ protected:
   /// pass request to subModel if recursing and then update from it
   void update_from_subordinate_model(bool recurse_flag = true);
   /// return subModel interface
-  Interface& interface();
+  Interface& iface();
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into subModel
@@ -436,8 +436,8 @@ inline void RecastModel::update_from_subordinate_model(bool recurse_flag)
 }
 
 
-inline Interface& RecastModel::interface()
-{ return subModel.interface(); }
+inline Interface& RecastModel::iface()
+{ return subModel.iface(); }
 
 
 inline void RecastModel::

@@ -336,15 +336,15 @@ Interface::Interface(const Interface& interface)
 
 /** Assignment operator decrements referenceCount for old interfaceRep, assigns
     new interfaceRep, and increments referenceCount for new interfaceRep. */
-Interface Interface::operator=(const Interface& interface)
+Interface Interface::operator=(const Interface& interface_in)
 {
-  if (interfaceRep != interface.interfaceRep) { // normal case: old != new
+  if (interfaceRep != interface_in.interfaceRep) { // normal case: old != new
     // Decrement old
     if (interfaceRep) // Check for NULL
       if ( --interfaceRep->referenceCount == 0 ) 
 	delete interfaceRep;
     // Assign and increment new
-    interfaceRep = interface.interfaceRep;
+    interfaceRep = interface_in.interfaceRep;
     if (interfaceRep) // Check for NULL
       interfaceRep->referenceCount++;
   }

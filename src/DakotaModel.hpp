@@ -22,11 +22,6 @@
 #include "DakotaResponse.hpp"
 #include "DistributionParams.hpp"
 
-// likely need more general _WIN32 here
-#ifdef __MINGW32__
-#undef interface
-#endif
-
 namespace Pecos { class SurrogateData; /* forward declarations */ }
 
 namespace Dakota {
@@ -93,7 +88,7 @@ public:
   /// return the interface employed by the derived model class, if present:
   /// SingleModel::userDefinedInterface, DataFitSurrModel::approxInterface,
   /// or NestedModel::optionalInterface
-  virtual Interface& interface();
+  virtual Interface& iface();
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms

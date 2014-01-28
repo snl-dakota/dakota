@@ -46,15 +46,13 @@ namespace {
 /// initialize signal handlers
 void signal_init()
 {
-// likely need more general _WIN32 here (or see active bug on Win32 defs)
-#ifdef __MINGW32__
-  signal(WM_QUIT, abort_handler);
-  signal(WM_CHAR, abort_handler);
+#if defined(__MINGW32__) || defined(_MSC_VER)
+  std::signal(SIGBREAK, abort_handler);
 #else
-  signal(SIGKILL, abort_handler);
-  signal(SIGTERM, abort_handler);
+  std::signal(SIGKILL, abort_handler);
 #endif
-  signal(SIGINT,  abort_handler);
+  std::signal(SIGTERM, abort_handler);
+  std::signal(SIGINT,  abort_handler);
 }
 
 
@@ -281,7 +279,7 @@ void DakotaRunner::start()
 #ifdef DAKOTA_PLUGIN
   ModelList& models = problem_db->model_list();
   for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
-    Interface& interface = ml_iter->interface();
+    Interface& interface = ml_iter->iface();
     if ( interface.interface_type() == "direct" &&
 	 contains(interface.analysis_drivers(), "plugin_rosenbrock") ) {
       // set the DB nodes to that of the existing Model specification

@@ -409,7 +409,7 @@ void run_dakota_mixed(const char* dakota_input_file)
   Dakota::ModelLIter ml_iter;
   for (ml_iter = models.begin(); ml_iter != models.end(); ml_iter++) {
     const Dakota::StringArray& drivers
-      = ml_iter->interface().analysis_drivers();
+      = ml_iter->iface().analysis_drivers();
     if (drivers.size() == 1 && drivers[0] == "plugin_text_book") {
       // Change initial guess:
       //ml_iter->continuous_variables(T);
@@ -440,7 +440,7 @@ void model_interface_plugins(Dakota::ProblemDescDB& problem_db)
   Dakota::ModelList& models = problem_db.model_list();
   Dakota::ModelLIter ml_iter;
   for (ml_iter = models.begin(); ml_iter != models.end(); ml_iter++) {
-    Dakota::Interface& interface = ml_iter->interface();
+    Dakota::Interface& interface = ml_iter->iface();
     bool rosen_plugin   = interface.interface_type() == "direct" &&
       Dakota::contains(interface.analysis_drivers(), "plugin_rosenbrock");
     bool textbook_plugin = interface.interface_type() == "direct" &&

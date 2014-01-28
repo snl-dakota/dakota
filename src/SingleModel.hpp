@@ -50,7 +50,7 @@ protected:
   //
 
   /// return userDefinedInterface
-  Interface& interface();
+  Interface& iface();
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/
@@ -145,7 +145,7 @@ inline SingleModel::~SingleModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
-inline Interface& SingleModel::interface()
+inline Interface& SingleModel::iface()
 { return userDefinedInterface; }
 
 
