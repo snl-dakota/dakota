@@ -743,12 +743,20 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
     // directly because the optimizers track the best iterate internally and 
     // return the best results after iteration completion.  Therfore, perform a
     // search in data_pairs to extract the evalId for the best fn eval.
-    if (lookup_by_val(data_pairs, interface_id, bestVariablesArray[i],
-		      activeSet, eval_id))
-      s << "<<<<< Best data captured at function evaluation " << eval_id
-	<< "\n\n";
-    else
+    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
+					   bestVariablesArray[i], activeSet);
+    if (cache_it == data_pairs.get<hashed>().end())
       s << "<<<<< Best data not found in evaluation cache\n\n";
+    else {
+      eval_id = cache_it->eval_id();
+      if (eval_id > 0)
+	s << "<<<<< Best data captured at function evaluation " << eval_id
+	  << "\n\n";
+      else // should not occur
+	s << "<<<<< Best data not found in evaluations from current execution,"
+	  << "\n      but retrieved from restart archive with evaluation id "
+	  << -eval_id << "\n\n";
+    }
 
     // pass data to the results archive
     archive_best(i, bestVariablesArray[i], bestResponseArray[i]);

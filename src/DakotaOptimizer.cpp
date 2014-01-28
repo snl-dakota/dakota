@@ -269,23 +269,30 @@ void Optimizer::print_results(std::ostream& s)
     if (numNonlinearConstraints) { 
       s << "<<<<< Best constraint values   "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, num_primary_fns, numNonlinearConstraints, best_fns); 
+      write_data_partial(s, num_primary_fns, numNonlinearConstraints,best_fns); 
     } 
     // lookup evaluation id where best occurred.  This cannot be catalogued
     // directly because the optimizers track the best iterate internally and
     // return the best results after iteration completion.  Therfore, perform a
     // search in data_pairs to extract the evalId for the best fn eval.
-    if (lookup_by_val(data_pairs, interface_id, bestVariablesArray[i], 
-                      search_set, eval_id))
-      s << "<<<<< Best data captured at function evaluation " << eval_id
-        << "\n\n";
-    else 
-      s << "<<<<< Best data not found in evaluation cache\n\n"; 
+    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
+					   bestVariablesArray[i], search_set);
+    if (cache_it == data_pairs.get<hashed>().end())
+      s << "<<<<< Best data not found in evaluation cache\n\n";
+    else {
+      int eval_id = cache_it->eval_id();
+      if (eval_id > 0)
+	s << "<<<<< Best data captured at function evaluation " << eval_id
+	  << "\n\n";
+      else // should not occur
+	s << "<<<<< Best data not found in evaluations from current execution,"
+	  << "\n      but retrieved from restart archive with evaluation id "
+	  << -eval_id << "\n\n";
+    }
 
     // pass data to the results archive
     archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
-
-  } 
+  }
 }
 
 
@@ -305,24 +312,19 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
     lookup_set.request_values(1);
   }
 
-  Response desired_resp;
-  if (lookup_by_val(data_pairs, iteratedModel.interface_id(), vars,
-		    lookup_set, desired_resp)) {
-    if (obsDataFlag) {
-      for (size_t i=0; i<numUserPrimaryFns; i++) {
-	for (size_t j=0; j<numRowsExpData; j++) {
-	  response.function_value(desired_resp.function_value(i),
-				  i*numRowsExpData+j);
-	}
-      }
-    }
-    else {
-      response.update(desired_resp);
-    }
-  }
-  else
+  PRPCacheHIter cache_it
+    = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
+  if (cache_it == data_pairs.get<hashed>().end())
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;
+  else if (obsDataFlag) {
+    const RealVector& desired_fns = cache_it->prp_response().function_values();
+    for (size_t i=0; i<numUserPrimaryFns; i++)
+      for (size_t j=0; j<numRowsExpData; j++)
+	response.function_value(desired_fns[i], i*numRowsExpData+j);
+  }
+  else
+    response.update(cache_it->prp_response());
 }
 
 

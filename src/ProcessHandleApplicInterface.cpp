@@ -48,14 +48,13 @@ process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
   int fn_eval_id = map_iter->second;
 
   // now populate the corresponding response by reading the results file 
-  ParamResponsePair pr_pair;
-  bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
-  if (!found) {
+  PRPQueueIter queue_it = lookup_by_eval_id(prp_queue, fn_eval_id);
+  if (queue_it == prp_queue.end()) {
     Cerr << "Error: failure in queue lookup within ProcessHandleApplicInterface"
 	 << "::process_local_evaluation()." << std::endl;
     abort_handler(-1);
   }
-  Response response = pr_pair.prp_response(); // shallow copy
+  Response response = queue_it->prp_response(); // shallow copy
   try { 
     read_results_files(response, fn_eval_id, final_eval_id_tag(fn_eval_id));
   }
@@ -71,13 +70,13 @@ process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
     // failure and populate response, or (2) abort the run.  NOTE: this 
     // destroys load balancing but trying to load balance failure recovery 
     // would be more difficult than it is worth.
-    manage_failure(pr_pair.prp_parameters(), response.active_set(), response,
+    manage_failure(queue_it->prp_parameters(), response.active_set(), response,
 		   fn_eval_id);
   }
 
   // bookkeep the completed job
-  //pr_pair.prp_response(response);                    // not needed for shallow
-  //replace_by_eval_id(prp_queue, fn_eval_id, pr_pair);// not needed for shallow
+  //queue_it->prp_response(response);                    // not needed (shallow)
+  //replace_by_eval_id(prp_queue, fn_eval_id, *queue_it);// not needed (shallow)
   completionSet.insert(fn_eval_id);
   evalProcessIdMap.erase(pid);
 }

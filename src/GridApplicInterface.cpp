@@ -186,14 +186,13 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       // file that a simulator has not finished writing).  Response::read
       // throws a String exception if data is missing/misformatted.
       //
-      ParamResponsePair pr_pair;
-      bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
-      if (!found) {
+      PRPQueueIter queue_it = lookup_by_eval_id(prp_queue, fn_eval_id);
+      if (queue_it == prp_queue.end()) {
 	Cerr << "Error: failure in queue lookup within GridApplicInterface::"
 	     << "test_local_evaluations()." << std::endl;
 	abort_handler(-1);
       }
-      Response response = pr_pair.prp_response(); // shallow copy
+      Response response = queue_it->prp_response(); // shallow copy
 
       try { read_results_files(response, fn_eval_id); }
       catch(String& err_msg) {
@@ -236,7 +235,7 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 	// call manage_failure which will either (1) repair the failure and
 	// populate response, or (2) abort the run.
 	//
-	manage_failure(pr_pair.prp_parameters(), response.active_set(),
+	manage_failure(queue_it->prp_parameters(), response.active_set(),
 		       response, fn_eval_id);
       }
       //
@@ -245,8 +244,8 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       // add evaluation id to completion set.
       //
       if (!err_msg_caught) {
-	//pr_pair.prp_response(response);                    // not needed
-	//replace_by_eval_id(prp_queue, fn_eval_id, pr_pair);// not needed
+	//queue_it->prp_response(response);                    // not needed
+	//replace_by_eval_id(prp_queue, fn_eval_id, *queue_it);// not needed
 	completionSet.insert(fn_eval_id);
 	failCountMap.erase(fn_eval_id); // if present
       }

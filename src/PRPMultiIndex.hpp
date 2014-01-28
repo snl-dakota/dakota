@@ -261,6 +261,19 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const ParamResponsePair& search_pr)
 }
 
 
+/// find a ParamResponsePair within a PRPMultiIndexCache based on the
+/// interface id, variables, and ActiveSet search data
+inline PRPCacheHIter
+lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
+	      const Variables& search_vars,  const ActiveSet& search_set)
+{
+  Response search_resp(search_set);
+  ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
+  return lookup_by_val(prp_cache, search_pr);
+}
+
+
+/*
 /// alternate overloaded form returns bool and sets found_pr by wrapping
 /// lookup_by_val(PRPMultiIndexCache&, ParamResponsePair&)
 inline bool 
@@ -277,18 +290,6 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const ParamResponsePair& search_pr,
 }
 
 
-/// find a ParamResponsePair within a PRPMultiIndexCache based on the
-/// interface id, variables, and ActiveSet search data
-inline PRPCacheHIter
-lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
-	      const Variables& search_vars,  const ActiveSet& search_set)
-{
-  Response search_resp(search_set);
-  ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
-  return lookup_by_val(prp_cache, search_pr);
-}
-
-
 /// alternate overloaded form returns bool and sets found_pr by wrapping
 /// lookup_by_val(PRPMultiIndexCache&, String&, Variables&, ActiveSet&)
 inline bool 
@@ -300,24 +301,6 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
     = lookup_by_val(prp_cache, search_interface_id, search_vars, search_set);
   if (prp_hash_it != prp_cache.get<hashed>().end()) {
     found_pr = *prp_hash_it;
-    return true;
-  }
-  else
-    return false;
-}
-
-
-/// find the evaluation id of a ParamResponsePair within a PRPMultiIndexCache
-/// based on interface id, variables, and ActiveSet search data
-inline bool
-lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
-	      const Variables& search_vars, const ActiveSet& search_set,
-	      int& found_eval_id)
-{
-  PRPCacheHIter prp_hash_it
-    = lookup_by_val(prp_cache, search_interface_id, search_vars, search_set);
-  if (prp_hash_it != prp_cache.get<hashed>().end()) {
-    found_eval_id = prp_hash_it->eval_id();
     return true;
   }
   else
@@ -341,6 +324,7 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
   else
     return false;
 }
+*/
 
 
 // ------------------------------------
@@ -464,6 +448,19 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const ParamResponsePair& search_pr)
 }
 
 
+/// find a ParamResponsePair within a PRPMultiIndexQueue based on
+/// interface id, variables, and ActiveSet search data
+inline PRPQueueHIter
+lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
+	      const Variables& search_vars,  const ActiveSet& search_set)
+{
+  Response search_resp(search_set);
+  ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
+  return lookup_by_val(prp_queue, search_pr);
+}
+
+
+/*
 /// alternate overloaded form returns bool and sets found_pr by wrapping
 /// lookup_by_val(PRPMultiIndexQueue&, ParamResponsePair&)
 inline bool 
@@ -480,18 +477,6 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const ParamResponsePair& search_pr,
 }
 
 
-/// find a ParamResponsePair within a PRPMultiIndexQueue based on
-/// interface id, variables, and ActiveSet search data
-inline PRPQueueHIter
-lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
-	      const Variables& search_vars,  const ActiveSet& search_set)
-{
-  Response search_resp(search_set);
-  ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
-  return lookup_by_val(prp_queue, search_pr);
-}
-
-
 /// alternate overloaded form returns bool and sets found_pr by wrapping
 /// lookup_by_val(PRPMultiIndexQueue&, String&, Variables&, ActiveSet&)
 inline bool 
@@ -503,24 +488,6 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
     = lookup_by_val(prp_queue, search_interface_id, search_vars, search_set);
   if (prp_hash_it != prp_queue.get<hashed>().end()) {
     found_pr = *prp_hash_it;
-    return true;
-  }
-  else
-    return false;
-}
-
-
-/// find the evaluation id of a ParamResponsePair within a PRPMultiIndexQueue
-/// based on interface id, variables, and ActiveSet search data
-inline bool
-lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
-	      const Variables& search_vars, const ActiveSet& search_set,
-	      int& found_eval_id)
-{
-  PRPQueueHIter prp_hash_it
-    = lookup_by_val(prp_queue, search_interface_id, search_vars, search_set);
-  if (prp_hash_it != prp_queue.get<hashed>().end()) {
-    found_eval_id = prp_hash_it->eval_id();
     return true;
   }
   else
@@ -544,6 +511,7 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
   else
     return false;
 }
+*/
 
 
 // ----------------------------------------
@@ -552,13 +520,14 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
 /// find a ParamResponsePair within a PRPMultiIndexQueue based on search_id
 /// (i.e. integer eval_id) search data
 inline PRPQueueOIter
-lookup_by_eval_id(PRPMultiIndexQueue& prp_queue, const int& search_id)
+lookup_by_eval_id(PRPMultiIndexQueue& prp_queue, int search_id)
 { return prp_queue.get<ordered>().find(search_id); }
 
 
+/*
 /// find a ParamResponsePair within a PRPMultiIndexQueue based on eval_id
 inline bool
-lookup_by_eval_id(PRPMultiIndexQueue& prp_queue, const int& search_id,
+lookup_by_eval_id(PRPMultiIndexQueue& prp_queue, int search_id,
 		  ParamResponsePair& found_pr)
 {
   PRPQueueOIter prp_iter = lookup_by_eval_id(prp_queue, search_id);
@@ -578,6 +547,7 @@ lookup_by_eval_id(PRPMultiIndexQueue& prp_queue,
 		  const ParamResponsePair& search_pr,
 		  ParamResponsePair& found_pr)
 { return lookup_by_eval_id(prp_queue, search_pr.eval_id(), found_pr); }
+*/
 
 } // namespace Dakota
 

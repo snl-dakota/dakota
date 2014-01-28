@@ -554,18 +554,18 @@ void SNLLLeastSq::post_run(std::ostream& s)
   activeSet.request_vector(search_asv);
 
   // The retrieved primary response will be unweighted and unscaled
-  Response desired_resp;
-  if (lookup_by_val(data_pairs, iteratedModel.interface_id(),
-		    bestVariablesArray.front(), activeSet, desired_resp))
-    copy_data_partial(desired_resp.function_values(), 0, numLeastSqTerms,
-		      best_fns, 0); // unscaled -> user/native
-  else {
+  PRPCacheHIter cache_it = lookup_by_val(data_pairs,
+    iteratedModel.interface_id(), bestVariablesArray.front(), activeSet);
+  if (cache_it == data_pairs.get<hashed>().end()) {
     // This can occur in model calibration under uncertainty using nested
     // models, so make this non-fatal.
     Cerr << "Warning: failure in recovery of final least squares terms."
          << std::endl;
     //abort_handler(-1);
   }
+  else
+    copy_data_partial(cache_it->prp_response().function_values(), 0,
+		      numLeastSqTerms, best_fns, 0); // unscaled -> user/native
   activeSet.request_values(1); // restore
 
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.

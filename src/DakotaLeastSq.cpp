@@ -226,14 +226,21 @@ void LeastSq::print_results(std::ostream& s)
   // directly because the optimizers track the best iterate internally and 
   // return the best results after iteration completion.  Therfore, perform a
   // search in the data_pairs cache to extract the evalId for the best fn. eval.
-  int eval_id;
   activeSet.request_values(1);
-  if (lookup_by_val(data_pairs, iteratedModel.interface_id(), best_vars,
-		    activeSet, eval_id))
-    s << "<<<<< Best data captured at function evaluation " << eval_id
-      << std::endl;
-  else
-    s << "<<<<< Best data not found in evaluation cache" << std::endl;
+  PRPCacheHIter cache_it = lookup_by_val(data_pairs,
+    iteratedModel.interface_id(), best_vars, activeSet);
+  if (cache_it == data_pairs.get<hashed>().end())
+    s << "<<<<< Best data not found in evaluation cache\n\n";
+  else {
+    int eval_id = cache_it->eval_id();
+    if (eval_id > 0)
+      s << "<<<<< Best data captured at function evaluation " << eval_id
+	<< "\n\n";
+    else // should not occur
+      s << "<<<<< Best data not found in evaluations from current execution,"
+	<< "\n      but retrieved from restart archive with evaluation id "
+	<< -eval_id << "\n\n";
+  }
  
   // Print confidence intervals for each estimated parameter. 
   // These CIs are based on a linear approximation of the underlying 

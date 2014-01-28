@@ -1451,10 +1451,10 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       ShortArray search_asv(numFunctions, 0);
       search_asv[respFnCount] = 2;
       search_set.request_vector(search_asv);
-      Response desired_resp;
-      if( lookup_by_val(data_pairs, iteratedModel.interface_id(), search_vars,
-			search_set, desired_resp) ) {
-	fnGradX = desired_resp.function_gradient_copy(respFnCount);
+      PRPCacheHIter cache_it = lookup_by_val(data_pairs,
+	iteratedModel.interface_id(), search_vars, search_set);
+      if (cache_it != data_pairs.get<hashed>().end()) {
+	fnGradX = cache_it->prp_response().function_gradient_copy(respFnCount);
 	found_mode |= 2;
       }
     }
@@ -1471,10 +1471,10 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       ShortArray search_asv(numFunctions, 0);
       search_asv[respFnCount] = 4;
       search_set.request_vector(search_asv);
-      Response desired_resp;
-      if( lookup_by_val(data_pairs, iteratedModel.interface_id(), search_vars,
-			search_set, desired_resp) ) {
-        fnHessX = desired_resp.function_hessian(respFnCount);
+      PRPCacheHIter cache_it = lookup_by_val(data_pairs,
+	iteratedModel.interface_id(), search_vars, search_set);
+      if (cache_it != data_pairs.get<hashed>().end()) {
+        fnHessX = cache_it->prp_response().function_hessian(respFnCount);
 	found_mode |= 4;
       }
     }

@@ -298,16 +298,15 @@ void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
   abort_handler(-1);
 
   /*
-  ParamResponsePair pr_pair;
-  bool found = lookup_by_eval_id(prp_queue, fn_eval_id, pr_pair);
-  if (!found) {
+  PRPQueueIter queue_it = lookup_by_eval_id(prp_queue, fn_eval_id);
+  if (queue_it == prp_queue.end()) {
     Cerr << "Error: failure in queue lookup within DirectApplicInterface::"
 	 << "wait_local_evaluations()." << std::endl;
     abort_handler(-1);
   }
-  int fail_code = 0, id = pr_pair.eval_id();
-  Variables vars    = pr_pair.prp_parameters(); // shallow copy
-  Response response = pr_pair.prp_response();   // shallow copy
+  int fail_code = 0, id = queue_it->eval_id();
+  Variables vars    = queue_it->prp_parameters(); // shallow copy
+  Response response = queue_it->prp_response();   // shallow copy
 
   // pthread_join/thr_join(target_thread, ..., status) recovers threads.
   // status provides a mechanism to return failure codes from analyses.
@@ -323,7 +322,7 @@ void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
     manage_failure(vars, response.active_set(), response, id);
 
   Cout << "Thread for evaluation " << id << " captured.\n";
-  pr_pair.prp_response(response);
+  queue_it->prp_response(response);
   */
 }
 

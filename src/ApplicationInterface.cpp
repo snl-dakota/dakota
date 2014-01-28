@@ -580,29 +580,48 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 bool ApplicationInterface::
 duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
 {
-  // check data_pairs list
-  Response desired_resp;
+  PRPCacheHIter cache_it
+    = lookup_by_val(data_pairs, interfaceId, vars, response.active_set());
 
   // The incoming response's responseActiveSet was updated in map(), but
   // the rest of response is out-of-date (the previous fn. eval).
-  if (lookup_by_val(data_pairs, interfaceId, vars, response.active_set(),
-		    desired_resp)) {
+  if (cache_it != data_pairs.get<hashed>().end()) {
     // due to id_vars_set_compare, the desired response set could be a
     // subset of the data_pairs response -> use update().
-    response.update(desired_resp);
+    response.update(cache_it->prp_response());
+
+    // If duplication detected with an eval from restart/file import, promote
+    // the database eval id to current run status to enable more meaningful
+    // lookups (e.g., eval id of final result) downstream.  There are several
+    // possible bookkeeping update approaches; here, we choose to delete the
+    // old record and readd it with original ASV content and updated eval id.
+    // This approach is efficient and doesn't discard any data, but has the
+    // downside that the record's ASV may contain more than the current request.
+    // Another reasonable approach would be to keep the old record (original
+    // ASV) and add a new one (with the current ASV subset), but this is less
+    // efficient and complicates eval id management in downstream lookups
+    // (multiple records can match a particular Ids/Vars/Set lookup, requiring
+    // an additional test to prefer positive id's in some use cases).
+    if (cache_it->eval_id() <= 0) {
+      ParamResponsePair db_pair(*cache_it); // shallow copy of vars/resp
+      // can't change ordered set key directly; must remove/change/add
+      data_pairs.get<hashed>().erase(cache_it);
+      db_pair.eval_id(evalIdCntr);
+      data_pairs.insert(db_pair);              // shallow copy of vars/resp
+    }
+
     if (asynch_flag) // asynch case: bookkeep
       historyDuplicateMap[evalIdCntr] = response.copy();
     return true; // Duplication detected.
   }
   // check beforeSynchCorePRPQueue (if asynchronous)
   if (asynch_flag) {
-    PRPQueueHIter prp_hash_iter
-      = lookup_by_val(beforeSynchCorePRPQueue, interfaceId, vars,
-		      response.active_set());
-    if ( prp_hash_iter != hashedQueueEnd(beforeSynchCorePRPQueue) ) {
+    PRPQueueHIter queue_it = lookup_by_val(beforeSynchCorePRPQueue, interfaceId,
+					   vars, response.active_set());
+    if (queue_it != beforeSynchCorePRPQueue.get<hashed>().end()) {
       // Duplication detected: bookkeep
       beforeSynchDuplicateMap[evalIdCntr]
-	= std::make_pair(prp_hash_iter, response.copy());
+	= std::make_pair(queue_it, response.copy());
       return true; // Duplication detected.
     }
   }

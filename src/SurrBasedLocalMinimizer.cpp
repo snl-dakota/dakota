@@ -875,26 +875,29 @@ void SurrBasedLocalMinimizer::find_center_approx()
   else if (hierarchApproxFlag && sbIterNum) {
     // search for fn vals, grads, and Hessians separately since they may
     // be different fn evaluations
-    Response desired_resp;
     ActiveSet search_set = responseCenterApprox.active_set(); // copy
     search_set.request_values(1);
     const Variables& search_vars = iteratedModel.current_variables();
     const String& search_id = iteratedModel.surrogate_model().interface_id();
-    if ( lookup_by_val(data_pairs, search_id, search_vars, search_set,
-		       desired_resp) ) {
-      responseCenterApprox.function_values(desired_resp.function_values());
+    PRPCacheHIter cache_it
+      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+    if (cache_it != data_pairs.get<hashed>().end()) {
+      responseCenterApprox.function_values(
+	cache_it->prp_response().function_values());
       if (approxGradientFlag) {
 	search_set.request_values(2);
-	if ( lookup_by_val(data_pairs, search_id, search_vars, search_set,
-			   desired_resp) ) {
+	cache_it
+	  = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+	if (cache_it != data_pairs.get<hashed>().end()) {
 	  responseCenterApprox.function_gradients(
-	    desired_resp.function_gradients());
+	    cache_it->prp_response().function_gradients());
 	  if (approxHessianFlag) {
 	    search_set.request_values(4);
-	    if ( lookup_by_val(data_pairs, search_id, search_vars, search_set,
-			       desired_resp) ) {
+	    cache_it
+	      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+	    if (cache_it != data_pairs.get<hashed>().end()) {
 	      responseCenterApprox.function_hessians(
-		desired_resp.function_hessians());
+		cache_it->prp_response().function_hessians());
 	      found = true;
 	    }
 	  }

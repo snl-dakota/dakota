@@ -346,7 +346,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
     if (response_pr.first > 0) // unique evals: current run
       p_it = lookup_by_ids(data_pairs, ids);
     else { // non-unique eval ids from restart/file import
-      // rather than resorting to lookup_by_value(), use a two-pass approach
+      // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
       ParamResponsePair search_pr(vars, actualModelInterfaceId,
 				  response_pr.second);
@@ -386,7 +386,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_value(), use a two-pass approach
+	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
 	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
@@ -429,7 +429,7 @@ update_approximation(const VariablesArray& vars_array,
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_value(), use a two-pass approach
+	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
 				    r_it->second);
@@ -461,7 +461,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
     if (response_pr.first > 0) // unique evals: current run
       p_it = lookup_by_ids(data_pairs, ids);
     else { // nonunique eval ids from restart/file import
-      // rather than resorting to lookup_by_value(), use a two-pass approach
+      // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
       ParamResponsePair search_pr(vars, actualModelInterfaceId,
 				  response_pr.second);
@@ -506,7 +506,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_value(), use a two-pass approach
+	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
 	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
@@ -550,7 +550,7 @@ append_approximation(const VariablesArray& vars_array,
       if (r_it->first > 0) // unique evals: current run
 	p_it = lookup_by_ids(data_pairs, ids);
       else { // nonunique eval ids from restart/file import
-	// rather than resorting to lookup_by_value(), use a two-pass approach
+	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
 				    r_it->second);
