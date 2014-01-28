@@ -34,6 +34,8 @@ using std::endl;
 
 /// print a restart file
 void print_restart(int argc, char** argv, String print_dest);
+/// print a restart file (PDB format)
+void print_restart_pdb(int argc, char** argv, String print_dest);
 /// print a restart file (tabular format)
 void print_restart_tabular(int argc, char** argv, String print_dest);
 /// read a restart file (neutral file format)
@@ -85,7 +87,7 @@ int main(int argc, char* argv[])
   else if (util_command == "from_neutral")
     read_neutral(argc, argv);
   else if (util_command == "to_pdb")
-    print_restart_tabular(argc, argv, "pdb_file");
+    print_restart_pdb(argc, argv, "pdb_file");
   else if (util_command == "to_tabular")
     print_restart_tabular(argc, argv, "text_file");
   else if (util_command == "remove")
@@ -182,24 +184,167 @@ void print_restart(int argc, char** argv, String print_dest)
 }
 
 
-/** \b Usage: "dakota_restart_util to_pdb dakota.rst dakota.pdb"\n
-              "dakota_restart_util to_tabular dakota.rst dakota.txt"
+/** \b Usage: "dakota_restart_util to_pdb dakota.rst dakota.pdb"
+
+    Unrolls all data associated with a particular tag for all
+    evaluations and then writes this data in a tabular format
+    (e.g., to a PDB database or MATLAB/TECPLOT data file). */
+void print_restart_pdb(int argc, char** argv, String print_dest)
+{
+  if (argc != 4) {
+    Cerr << "Usage: \"dakota_restart_util to_pdb <restart_file> <pdb_file>\"."
+         << endl;
+    exit(-1);
+  }
+
+  std::ifstream restart_input_fs(argv[2], std::ios::binary);
+  if (!restart_input_fs.good()) {
+    Cerr << "Error: failed to open restart file " << argv[2] << endl;
+    exit(-1);
+  }
+  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+  size_t i, j, num_evals = 0;
+  PRPCache read_pairs;
+  while (restart_input_fs.good() && !restart_input_fs.eof()) {
+
+    ParamResponsePair current_pair;
+    try { 
+      restart_input_archive & current_pair; 
+    }
+    catch(const boost::archive::archive_exception& e) {
+      Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	   << e.what() << std::endl;
+      abort_handler(-1);
+    }
+    catch(const std::string& err_msg) {
+      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+      break;
+    }
+
+    read_pairs.insert(current_pair);
+    ++num_evals;
+
+    // peek to force EOF if the last restart record was read
+    restart_input_fs.peek();
+  }
+
+  PRPCacheCIter prp_iter = read_pairs.begin();
+  StringMultiArrayConstView cv_labels
+    = prp_iter->prp_parameters().continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = prp_iter->prp_parameters().discrete_int_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = prp_iter->prp_parameters().discrete_real_variable_labels();
+  const StringArray& fn_labels
+    = prp_iter->prp_response().function_labels();
+  size_t num_cv = cv_labels.size(), num_div = div_labels.size(),
+    num_drv = drv_labels.size(), num_fns = fn_labels.size();
+
+  // pack up tabular data matrices (organized such that use of a single index 
+  // returns the complete history for an attribute).
+  RealVector      uninitialized_rv(num_evals, false);
+  IntVector       uninitialized_iv(num_evals, false);
+  RealVectorArray tabular_rdata(num_cv+num_drv+num_fns, uninitialized_rv);
+  std::vector<IntVector> tabular_idata(num_div, uninitialized_iv);
+
+  for (i=0; i<num_evals; ++i, ++prp_iter) {
+    // Extract variables related data
+    const Variables&  local_vars    = prp_iter->prp_parameters();
+    const RealVector& local_c_vars  = local_vars.continuous_variables();
+    const IntVector&  local_di_vars = local_vars.discrete_int_variables();
+    const RealVector& local_dr_vars = local_vars.discrete_real_variables();
+    for (j=0; j<num_cv; ++j)
+      tabular_rdata[j][i] = local_c_vars[j];
+    for (j=0; j<num_div; ++j)
+      tabular_idata[j][i] = local_di_vars[j];
+    for (j=0; j<num_drv; ++j)
+      tabular_rdata[j+num_cv][i] = local_dr_vars[j];
+
+    // Extract response related data
+    const Response&   local_response = prp_iter->prp_response();
+    const RealVector& local_fns      = local_response.function_values();
+    //const ShortArray& local_asv =local_response.active_set_request_vector();
+    //const RealMatrix& local_grads = local_response.function_gradients();
+    //const RealMatrixArray& local_hessians
+    //  = local_response.function_hessians();
+    // NOTE: if any fns are inactive, they will appear as 0's in tabular_data
+    for (j=0; j<num_fns; ++j)
+      tabular_rdata[j+num_cv+num_drv][i] = local_fns[j];
+  }
+
+#ifdef HAVE_PDB_H
+  // open the PDB file
+  cout << "Writing PDB file:" << argv[3] << '\n';
+  PDBfile *fileID;
+  if ((fileID = PD_open(argv[3], "w")) == NULL){
+    cout << "Problem opening PDB file";
+    return;
+  }
+
+  // Note: tabular_rdata[j] returns the jth row vector from the matrix and
+  //       values() returns the double* pointer to the data of this row
+  //       vector.  const char* and const double* are passed to PDB_Write.
+
+  char *tag, cdim[6];
+  std::sprintf(cdim, "(%d)", num_evals);
+
+  String tag_name, snum_evals(cdim);
+
+  // write continuous variables
+  for (j=0; j<num_cv; ++j){
+    tag_name = cv_labels[j] + snum_evals;
+    tag = const_cast<char *>(tag_name.data());
+    if(!PD_write(fileID, tag, "double", (void *)tabular_rdata[j].values()))
+      cout << "PD_write error=" << PD_err << '\n';
+  }
+
+  // write discrete integer variables
+  for (j=0; j<num_div; ++j){
+    tag_name = div_labels[j] + snum_evals;
+    tag = const_cast<char *>(tag_name.data());
+    if(!PD_write(fileID, tag, "integer", (void *)tabular_idata[j].values()))
+      cout << "PD_write error=" << PD_err << '\n';
+  }
+
+  // write discrete real variables
+  for (j=0; j<num_drv; ++j){
+    tag_name = drv_labels[j] + snum_evals;
+    tag = const_cast<char *>(tag_name.data());
+    if(!PD_write(fileID, tag, "double",
+		 (void *)tabular_rdata[j+num_cv].values()))
+      cout << "PD_write error=" << PD_err << '\n';
+  }
+
+  // write corresponding function values
+  for (j=0; j<num_fns; ++j){
+    tag_name = fn_labels[j] + snum_evals;
+    tag = const_cast<char *>(tag_name.data());
+    if(!PD_write(fileID, tag, "double",
+		 (void *)tabular_rdata[j+num_cv+num_drv].values()))
+      cout << "PD_write error=" << PD_err << '\n';
+  }
+    
+  if(!PD_close(fileID))
+    cout << "Problem closing PDB file" << argv[3] << '\n';
+#else
+  cout << "PDB utilities not available" << endl;
+  exit(0);
+#endif
+
+  cout << "Restart file processing completed: " << num_evals
+       << " evaluations tabulated.\n";
+}
+
+
+/** \b Usage: "dakota_restart_util to_tabular dakota.rst dakota.txt"
 
     Unrolls all data associated with a particular tag for all
     evaluations and then writes this data in a tabular format
     (e.g., to a PDB database or MATLAB/TECPLOT data file). */
 void print_restart_tabular(int argc, char** argv, String print_dest)
 {
-  if (print_dest != "pdb_file" && print_dest != "text_file") {
-    Cerr << "Error: bad print_dest in print_restart_tabular" << endl;
-    exit(-1);
-  }
-  else if (print_dest == "pdb_file" && argc != 4) {
-    Cerr << "Usage: \"dakota_restart_util to_pdb <restart_file> <pdb_file>\"."
-         << endl;
-    exit(-1);
-  }
-  else if (print_dest == "text_file" && argc != 4) {
+  if (argc != 4) {
     Cerr << "Usage: \"dakota_restart_util to_tabular <restart_file> "
 	 << "<text_file>\"." << endl;
     exit(-1);
@@ -213,194 +358,65 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
   size_t i, j, num_evals = 0;
-  if (print_dest == "pdb_file") {
+  cout << "Writing tabular text file " << argv[3] << '\n';
+  std::ofstream tabular_text(argv[3]);
+  String curr_interf;
 
-    PRPCache read_pairs;
-    while (restart_input_fs.good() && !restart_input_fs.eof()) {
+  // override default to output data in full precision (double = 16 digits)
+  // Note: setprecision(write_precision) and std::ios::floatfield invoked
+  // in write_data_tabular() functions.
+  //write_precision = 16;
 
-      ParamResponsePair current_pair;
-      try { 
-	restart_input_archive & current_pair; 
-      }
-      catch(const boost::archive::archive_exception& e) {
-	Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	     << e.what() << std::endl;
-	abort_handler(-1);
-      }
-      catch(const std::string& err_msg) {
-	Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-	break;
-      }
+  while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
-      read_pairs.insert(current_pair);
-      ++num_evals;
-
-      // peek to force EOF if the last restart record was read
-      restart_input_fs.peek();
+    ParamResponsePair current_pair;
+    try { 
+      restart_input_archive & current_pair; 
+    }
+    catch(const boost::archive::archive_exception& e) {
+      Cerr << "\nError reading restart file (boost::archive exception):\n" 
+	   << e.what() << std::endl;
+      abort_handler(-1);
+    }
+    catch(const std::string& err_msg) {
+      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
+      break;
     }
 
-    PRPCacheCIter prp_iter = read_pairs.begin();
-    StringMultiArrayConstView cv_labels
-      = prp_iter->prp_parameters().continuous_variable_labels();
-    StringMultiArrayConstView div_labels
-      = prp_iter->prp_parameters().discrete_int_variable_labels();
-    StringMultiArrayConstView drv_labels
-      = prp_iter->prp_parameters().discrete_real_variable_labels();
-    const StringArray& fn_labels
-      = prp_iter->prp_response().function_labels();
-    size_t num_cv = cv_labels.size(), num_div = div_labels.size(),
-      num_drv = drv_labels.size(), num_fns = fn_labels.size();
-
-    // pack up tabular data matrices (organized such that use of a single index 
-    // returns the complete history for an attribute).
-    RealVector      uninitialized_rv(num_evals, false);
-    IntVector       uninitialized_iv(num_evals, false);
-    RealVectorArray tabular_rdata(num_cv+num_drv+num_fns, uninitialized_rv);
-    std::vector<IntVector> tabular_idata(num_div, uninitialized_iv);
-
-    for (i=0; i<num_evals; ++i, ++prp_iter) {
-      // Extract variables related data
-      const Variables&  local_vars    = prp_iter->prp_parameters();
-      const RealVector& local_c_vars  = local_vars.continuous_variables();
-      const IntVector&  local_di_vars = local_vars.discrete_int_variables();
-      const RealVector& local_dr_vars = local_vars.discrete_real_variables();
-      for (j=0; j<num_cv; ++j)
-	tabular_rdata[j][i] = local_c_vars[j];
-      for (j=0; j<num_div; ++j)
-	tabular_idata[j][i] = local_di_vars[j];
-      for (j=0; j<num_drv; ++j)
-	tabular_rdata[j+num_cv][i] = local_dr_vars[j];
-
-      // Extract response related data
-      const Response&   local_response = prp_iter->prp_response();
-      const RealVector& local_fns      = local_response.function_values();
-      //const ShortArray& local_asv =local_response.active_set_request_vector();
-      //const RealMatrix& local_grads = local_response.function_gradients();
-      //const RealMatrixArray& local_hessians
-      //  = local_response.function_hessians();
-      // NOTE: if any fns are inactive, they will appear as 0's in tabular_data
+    const String& new_interf = current_pair.interface_id();
+    if (num_evals == 0 || new_interf != curr_interf) {
+      curr_interf = new_interf;
+      // Header (note: use matlab comment syntax "%"):
+      const Variables& vars = current_pair.prp_parameters();
+      StringMultiArrayConstView acv_labels
+	= vars.all_continuous_variable_labels();
+      StringMultiArrayConstView adiv_labels
+	= vars.all_discrete_int_variable_labels();
+      StringMultiArrayConstView adrv_labels
+	= vars.all_discrete_real_variable_labels();
+      const StringArray& fn_labels
+	= current_pair.prp_response().function_labels();
+      size_t num_acv = acv_labels.size(), num_adiv = adiv_labels.size(),
+	num_adrv = adrv_labels.size(), num_fns = fn_labels.size();
+      if (!curr_interf.empty())
+	tabular_text << "%Interface = " << curr_interf << '\n';
+      tabular_text << "%eval_id ";
+      for (j=0; j<num_acv; ++j)
+	tabular_text << setw(14) << acv_labels[j].data() << ' ';
+      for (j=0; j<num_adiv; ++j)
+	tabular_text << setw(14) << adiv_labels[j].data() << ' ';
+      for (j=0; j<num_adrv; ++j)
+	tabular_text << setw(14) << adrv_labels[j].data() << ' ';
       for (j=0; j<num_fns; ++j)
-	tabular_rdata[j+num_cv+num_drv][i] = local_fns[j];
+	tabular_text << setw(14) << fn_labels[j].data() << ' ';
+      tabular_text << '\n';
     }
+    // Data: (note: not maximum precision)
+    current_pair.write_tabular(tabular_text);
+    ++num_evals;
 
-#ifdef HAVE_PDB_H
-    // open the PDB file
-    cout << "Writing PDB file:" << argv[3] << '\n';
-    PDBfile *fileID;
-    if ((fileID = PD_open(argv[3], "w")) == NULL){
-      cout << "Problem opening PDB file";
-      return;
-    }
-
-    // Note: tabular_rdata[j] returns the jth row vector from the matrix and
-    //       values() returns the double* pointer to the data of this row
-    //       vector.  const char* and const double* are passed to PDB_Write.
-
-    char *tag, cdim[6];
-    std::sprintf(cdim, "(%d)", num_evals);
-
-    String tag_name, snum_evals(cdim);
-
-    // write continuous variables
-    for (j=0; j<num_cv; ++j){
-      tag_name = cv_labels[j] + snum_evals;
-      tag = const_cast<char *>(tag_name.data());
-      if(!PD_write(fileID, tag, "double", (void *)tabular_rdata[j].values()))
-	cout << "PD_write error=" << PD_err << '\n';
-    }
-
-    // write discrete integer variables
-    for (j=0; j<num_div; ++j){
-      tag_name = div_labels[j] + snum_evals;
-      tag = const_cast<char *>(tag_name.data());
-      if(!PD_write(fileID, tag, "integer", (void *)tabular_idata[j].values()))
-	cout << "PD_write error=" << PD_err << '\n';
-    }
-
-    // write discrete real variables
-    for (j=0; j<num_drv; ++j){
-      tag_name = drv_labels[j] + snum_evals;
-      tag = const_cast<char *>(tag_name.data());
-      if(!PD_write(fileID, tag, "double",
-		   (void *)tabular_rdata[j+num_cv].values()))
-	cout << "PD_write error=" << PD_err << '\n';
-    }
-
-    // write corresponding function values
-    for (j=0; j<num_fns; ++j){
-      tag_name = fn_labels[j] + snum_evals;
-      tag = const_cast<char *>(tag_name.data());
-      if(!PD_write(fileID, tag, "double",
-		   (void *)tabular_rdata[j+num_cv+num_drv].values()))
-	cout << "PD_write error=" << PD_err << '\n';
-    }
-    
-    if(!PD_close(fileID))
-      cout << "Problem closing PDB file" << argv[3] << '\n';
-#else
-    cout << "PDB utilities not available" << endl;
-    exit(0);
-#endif
-  }
-  else if (print_dest == "text_file") {
-    cout << "Writing tabular text file " << argv[3] << '\n';
-    std::ofstream tabular_text(argv[3]);
-    String curr_interf;
-
-    // override default to output data in full precision (double = 16 digits)
-    //write_precision = 16;
-
-    while (restart_input_fs.good() && !restart_input_fs.eof()) {
-
-      ParamResponsePair current_pair;
-      try { 
-	restart_input_archive & current_pair; 
-      }
-      catch(const boost::archive::archive_exception& e) {
-	Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	     << e.what() << std::endl;
-	abort_handler(-1);
-      }
-      catch(const std::string& err_msg) {
-	Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-	break;
-      }
-
-      const String& new_interf = current_pair.interface_id();
-      if (num_evals == 0 || new_interf != curr_interf) {
-        curr_interf = new_interf;
-        // Header (note: use matlab comment syntax "%"):
-	const Variables& vars = current_pair.prp_parameters();
-        StringMultiArrayConstView acv_labels
-	  = vars.all_continuous_variable_labels();
-        StringMultiArrayConstView adiv_labels
-	  = vars.all_discrete_int_variable_labels();
-        StringMultiArrayConstView adrv_labels
-	  = vars.all_discrete_real_variable_labels();
-        const StringArray& fn_labels
-	  = current_pair.prp_response().function_labels();
-        size_t num_acv = acv_labels.size(), num_adiv = adiv_labels.size(),
-	  num_adrv = adrv_labels.size(), num_fns = fn_labels.size();
-	if (!curr_interf.empty())
-	  tabular_text << "%Interface = " << curr_interf << '\n';
-        tabular_text << "%eval_id ";
-        for (j=0; j<num_acv; ++j)
-          tabular_text << setw(14) << acv_labels[j].data() << ' ';
-        for (j=0; j<num_adiv; ++j)
-          tabular_text << setw(14) << adiv_labels[j].data() << ' ';
-        for (j=0; j<num_adrv; ++j)
-          tabular_text << setw(14) << adrv_labels[j].data() << ' ';
-        for (j=0; j<num_fns; ++j)
-          tabular_text << setw(14) << fn_labels[j].data() << ' ';
-        tabular_text << '\n';
-      }
-      // Data: (note: not maximum precision)
-      current_pair.write_tabular(tabular_text);
-      ++num_evals;
-
-      // peek to force EOF if the last restart record was read
-      restart_input_fs.peek();
-    }
+    // peek to force EOF if the last restart record was read
+    restart_input_fs.peek();
   }
 
   cout << "Restart file processing completed: " << num_evals
