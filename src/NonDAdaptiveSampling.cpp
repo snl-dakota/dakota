@@ -1675,7 +1675,7 @@ void NonDAdaptiveSampling::output_for_optimization(int dim)
 //// the domain boundaries, in a general framework this is inadequate
 ////***END ATTENTION***
     // BMA: Should be able to do
-    // iteratedModel.iface().analysis_drivers()[0]\
+    // iteratedModel.derived_interface().analysis_drivers()[0]\
     // to get the first driver in the list...
           << "herbie\'" << std:: endl
           << std::endl

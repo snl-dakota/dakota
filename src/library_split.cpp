@@ -227,7 +227,7 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   Dakota::ModelLIter ml_iter = models.begin();
   Dakota::ModelLIter ml_end = models.end();
   for ( ; ml_iter != ml_end; ++ml_iter) {
-    Dakota::Interface& model_iface = ml_iter->iface();
+    Dakota::Interface& model_iface = ml_iter->derived_interface();
     const Dakota::ParallelLevel& ea_level
       = ml_iter->parallel_configuration_iterator()->ea_parallel_level();
     const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();

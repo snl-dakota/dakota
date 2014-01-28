@@ -88,7 +88,7 @@ public:
   /// return the interface employed by the derived model class, if present:
   /// SingleModel::userDefinedInterface, DataFitSurrModel::approxInterface,
   /// or NestedModel::optionalInterface
-  virtual Interface& iface();
+  virtual Interface& derived_interface();
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms

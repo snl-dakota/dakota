@@ -279,7 +279,7 @@ void DakotaRunner::start()
 #ifdef DAKOTA_PLUGIN
   ModelList& models = problem_db->model_list();
   for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
-    Interface& interface = ml_iter->iface();
+    Interface& interface = ml_iter->derived_interface();
     if ( interface.interface_type() == "direct" &&
 	 contains(interface.analysis_drivers(), "plugin_rosenbrock") ) {
       // set the DB nodes to that of the existing Model specification

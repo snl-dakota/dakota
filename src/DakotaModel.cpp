@@ -2451,10 +2451,10 @@ void Model::update_from_subordinate_model(bool recurse_flag)
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-Interface& Model::iface()
+Interface& Model::derived_interface()
 {
   if (modelRep)
-    return modelRep->iface(); // envelope fwd to letter
+    return modelRep->derived_interface(); // envelope fwd to letter
   else // letter lacking redefinition of virtual fn.
     return dummy_interface; // return null/empty envelope
 }

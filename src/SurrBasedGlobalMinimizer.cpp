@@ -144,7 +144,7 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
     // we stop the surrogate-based global minimization process because it will
     // not work with such an inaccurate model.
     std::vector<Approximation>& approxs
-      = approx_model.iface().approximations();
+      = approx_model.derived_interface().approximations();
     std::vector<Approximation>::iterator it;
     for (it=approxs.begin(); it!=approxs.end(); ++it) {
       if (it->diagnostics_available()) {
