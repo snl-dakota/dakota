@@ -136,6 +136,16 @@ void read_data_tabular(const std::string& input_filename,
 		       RealArray& input_vector, bool annotated,
 		       size_t num_vars);
 
+
+/// PCE import: read possibly header-annotated whitespace-separated
+/// data or unknown length where each row is a real followed by
+/// num_vars unsigned shorts; append data to arrays passed by
+/// reference
+void read_data_tabular(const std::string& input_filename, 
+		       const std::string& context_message,
+		       RealArray& input_coeffs, UShort2DArray& input_indices, 
+		       bool annotated, size_t num_vars);
+
 //
 // Uses: DataFitSurrModel (highly specialized)
 //

@@ -246,6 +246,74 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
+void read_data_tabular(const std::string& input_filename, 
+		       const std::string& context_message,
+		       RealArray& input_coeffs, UShort2DArray& input_indices, 
+		       bool annotated, size_t num_vars)
+{
+  std::ifstream input_stream;
+  open_file(input_stream, input_filename, context_message);
+
+  //  input_vector.resize(num_rows);
+  try {
+
+    if (annotated)
+      read_header_tabular(input_stream);
+
+    while (input_stream.good() && !input_stream.eof()) {
+      if (annotated) {
+	// discard the row label (typically eval or data ID)
+	size_t discard_row_label;
+	if (!(input_stream >> discard_row_label))
+	  break;
+      }
+      double read_coeff;
+      if (!(input_stream >> read_coeff)) {
+	if (annotated) {
+	  // token required to exist
+	  Cerr << "\nError (" << context_message << "): unexpected coeff read "
+	       << "error in file " << input_filename << "." << std::endl;
+	  abort_handler(-1);
+	}
+	else
+	  // reached end of data (or TODO: other error)
+	  break;
+      }
+      input_coeffs.push_back(read_coeff);
+      // read the (required) indices of length num_vars
+      UShortArray index_set(num_vars, 0);
+      // don't break as these are required data
+      // use templated stream extraction from data_io
+      if (!(input_stream >> index_set)) {
+	Cerr << "\nError (" << context_message << "): unexpected indices read "
+	     << "error in file " << input_filename << "." << std::endl;
+	abort_handler(-1);
+      }
+      input_indices.push_back(index_set);
+    }
+  }
+  catch (const std::ios_base::failure& failorbad_except) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << ".";
+    if (annotated) {
+      Cout << "\nExpected header-annotated tabular file:"
+	   << "\n  * header row with labels "
+	   << "\n  * leading column with counter and " << num_vars 
+	   << " data columns";
+    }
+    else {
+      Cout << "\nExpected free-form tabular file: no leading row nor column; "
+	   << num_vars << " columns of whitespace-separated numeric data.";
+    }
+    Cout << std::endl;
+    abort_handler(-1);
+  }
+  catch(...) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << " (unknown error).";
+    abort_handler(-1);
+  }
+}
 
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
