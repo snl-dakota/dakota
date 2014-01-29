@@ -245,16 +245,24 @@ void read_data_tabular(const std::string& input_filename,
   }
 }
 
-
+/** Read possibly annotated data with unknown num_rows data into
+    input_coeffs (num_fns x num_rows) and input_indices (num_rows x
+    num_vars) */
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
-		       RealArray& input_coeffs, UShort2DArray& input_indices, 
-		       bool annotated, size_t num_vars)
+		       RealVectorArray& input_coeffs, 
+		       UShort2DArray& input_indices, 
+		       bool annotated, size_t num_vars, size_t num_fns)
 {
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
+  
+  // clear so we can append
+  input_indices.clear();
+  // need a temporary due to layout of returned data; this will be 
+  // num_rows x num_fns
+  Real2DArray coeffs_tmp;
 
-  //  input_vector.resize(num_rows);
   try {
 
     if (annotated)
@@ -267,8 +275,8 @@ void read_data_tabular(const std::string& input_filename,
 	if (!(input_stream >> discard_row_label))
 	  break;
       }
-      double read_coeff;
-      if (!(input_stream >> read_coeff)) {
+      RealArray read_coeffs(num_fns);
+      if (!(input_stream >> read_coeffs)) {
 	if (annotated) {
 	  // token required to exist
 	  Cerr << "\nError (" << context_message << "): unexpected coeff read "
@@ -279,7 +287,7 @@ void read_data_tabular(const std::string& input_filename,
 	  // reached end of data (or TODO: other error)
 	  break;
       }
-      input_coeffs.push_back(read_coeff);
+      coeffs_tmp.push_back(read_coeffs);
       // read the (required) indices of length num_vars
       UShortArray index_set(num_vars, 0);
       // don't break as these are required data
@@ -312,6 +320,18 @@ void read_data_tabular(const std::string& input_filename,
     Cerr << "\nError (" << context_message << "): could not read file " 
 	 << input_filename << " (unknown error).";
     abort_handler(-1);
+  }
+
+  size_t num_rows = coeffs_tmp.size();
+
+  // transpose copy from coeffs_tmp to input_coeffs
+  if (input_coeffs.size() != num_fns)
+    input_coeffs.resize(num_fns);
+  for (size_t fn_ind = 0; fn_ind < num_fns; ++fn_ind) {
+    if (input_coeffs[fn_ind].length() != num_rows)
+      input_coeffs[fn_ind].sizeUninitialized(num_rows);
+    for (size_t row_ind = 0; row_ind < num_rows; ++row_ind)
+      input_coeffs[fn_ind][row_ind] = coeffs_tmp[row_ind][fn_ind];
   }
 }
 
