@@ -1899,6 +1899,9 @@ KEYWORD12 interface
 	  [ deactivate
 	    [ active_set_vector ]
 	    [ evaluation_cache ]
+	    [ strict_cache_equality
+	      [ cache_tolerance REAL ]
+	      ]
 	    [ restart_file ]
 	    ]
 	  ]

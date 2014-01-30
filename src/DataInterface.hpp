@@ -150,11 +150,16 @@ public:
   /// off) (from the \c deactivate \c active_set_vector specification in
   /// \ref InterfIndControl)
   bool activeSetVectorFlag;
-  /// function evaluation cache: 1=active (all new evaluations checked against
-  /// existing cache and then added to cache), 0=inactive (cache neither
-  /// queried nor augmented) (from the \c deactivate \c evaluation_cache
-  /// specification in \ref InterfIndControl)
+  /// flag for deactivating lookups within the function evaluation
+  /// cache (from the \c deactivate \c evaluation_cache specification
+  /// in \ref InterfIndControl)
   bool evalCacheFlag;
+  /// flag enabling use of tolerance-based evaluation cache lookups
+  /// (from the \c deactivate \c strict_cache_equality specification
+  /// in \ref InterfIndControl)
+  bool nearbyEvalCacheFlag;
+  /// numerical tolerance for nearby evaluation cache lookups
+  Real nearbyEvalCacheTol;
   /// function evaluation cache: 1=active (all new evaluations written to
   /// restart), 0=inactive (no records written to restart) (from the
   /// \c deactivate \c restart_file specification in \ref InterfIndControl)

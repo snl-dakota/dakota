@@ -787,29 +787,32 @@ void Variables::reshape(const SizetArray& vc_totals)
 }
 
 
-/// equality operator for Variables
-bool operator==(const Variables& vars1, const Variables& vars2)
+/// tolerance-based equality for Variables (used in lookup_by_nearby_val())
+bool nearby(const Variables& vars1, const Variables& vars2, Real tol)
 {
   // this operator is a friend of Variables
 
   Variables *v1_rep = vars1.variablesRep, *v2_rep = vars2.variablesRep;
 
   // Require different rep pointers
-  if ( v1_rep != v2_rep &&
-         // Require identical view
-       ( v1_rep->sharedVarsData.view() != v2_rep->sharedVarsData.view() ||
-	 // tolerance-based equality (labels/types/ids are ignored)
-	 v1_rep->allContinuousVars     != v2_rep->allContinuousVars     ||
-	 v1_rep->allDiscreteIntVars    != v2_rep->allDiscreteIntVars    ||
-	 v1_rep->allDiscreteRealVars   != v2_rep->allDiscreteRealVars ) )
-    return false;
+  if (v1_rep == v2_rep)
+    return true;
 
-  return true;
+  // Could require identical view, but in terms of cache lookups for purposes
+  // of response retrieval, this is not necessary:
+  //if ( v1_rep->sharedVarsData.view() != v2_rep->sharedVarsData.view())
+  //  return false;
+
+  // tolerance-based equality (ignore labels/types/ids).  Enforce exact equality
+  // in discrete real, since these values should not be subject to roundoff.
+  return ( nearby(v1_rep->allContinuousVars, v2_rep->allContinuousVars, tol) &&
+	   v1_rep->allDiscreteIntVars     == v2_rep->allDiscreteIntVars &&
+	   v1_rep->allDiscreteRealVars    == v2_rep->allDiscreteRealVars );
 }
 
 
-/// binary_equal_to (since 'operator==' is not suitable for boost/hashed lookup)
-bool binary_equal_to(const Variables& vars1, const Variables& vars2)
+/// strict binary equality operator (used in boost hashed lookups)
+bool operator==(const Variables& vars1, const Variables& vars2)
 {
   // this function is a friend of Variables
 
@@ -818,30 +821,16 @@ bool binary_equal_to(const Variables& vars1, const Variables& vars2)
   if (v1_rep == v2_rep)
     return true;
 
-  // Require identical view
-  if (v1_rep->sharedVarsData.view() != v2_rep->sharedVarsData.view())
-    return false;
-  // Require identical content in variable array lengths and values
-  // (labels/types/ids are ignored)
-  size_t cv_size = v1_rep->allContinuousVars.length(),
-    div_size = v1_rep->allDiscreteIntVars.length(),
-    drv_size = v1_rep->allDiscreteRealVars.length();
-  if (v2_rep->allContinuousVars.length()   != cv_size ||
-      v2_rep->allDiscreteIntVars.length()  != div_size ||
-      v2_rep->allDiscreteRealVars.length() != drv_size)
-    return false;
-  size_t i;
-  for (i=0; i<cv_size; ++i)
-    if (v2_rep->allContinuousVars[i]   != v1_rep->allContinuousVars[i])
-      return false;
-  for (i=0; i<div_size; ++i)
-    if (v2_rep->allDiscreteIntVars[i]  != v1_rep->allDiscreteIntVars[i])
-      return false;
-  for (i=0; i<drv_size; ++i)
-    if (v2_rep->allDiscreteRealVars[i] != v1_rep->allDiscreteRealVars[i])
-      return false;
+  // Could require identical view, but in terms of cache lookups for purposes
+  // of response retrieval, this is not necessary:
+  //if (v1_rep->sharedVarsData.view() != v2_rep->sharedVarsData.view())
+  //  return false;
 
-  return true;
+  // Require identical content in variable array lengths and values
+  // (ignore labels/types/ids) using Teuchos::SerialDenseVector::operator==
+  return (v1_rep->allContinuousVars   == v2_rep->allContinuousVars  &&
+	  v1_rep->allDiscreteIntVars  == v2_rep->allDiscreteIntVars &&
+	  v1_rep->allDiscreteRealVars == v2_rep->allDiscreteRealVars);
 }
 
 

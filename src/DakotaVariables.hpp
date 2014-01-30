@@ -49,16 +49,17 @@ class Variables
   /// for serializing private data members
   friend class boost::serialization::access;
 
-  /// equality operator
+  /// strict equality operator (for boost hash-based lookups)
   friend bool operator==(const Variables& vars1, const Variables& vars2);
-  /// inequality operator
+  /// strict inequality operator
   friend bool operator!=(const Variables& vars1, const Variables& vars2);
+
+  /// tolerance-based equality operator
+  friend bool nearby(const Variables& vars1, const Variables& vars2,
+		     Real rel_tol);
 
   /// hash_value
   friend std::size_t hash_value(const Variables& vars);
-
-  /// binary_equal_to (since 'operator==' is not suitable for boost/hash_set)
-  friend bool binary_equal_to(const Variables& vars1, const Variables& vars2);
 
 public:
 

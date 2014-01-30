@@ -221,7 +221,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // ------------------------------------------------------------------------
   case FILTERED_TENSOR:
     Cout << "Filtered to " << numSamples
-	 << " samples with max product weight\n.";
+	 << " samples with max product weight.\n";
     // Compute the tensor-product grid and store in allSamples
     tpqDriver->compute_grid(allSamples);
     // retain a subset of the minimal order tensor grid
@@ -231,7 +231,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // Probabilistic collocation from random sampling of a tensor multi-index
   // ----------------------------------------------------------------------
   case RANDOM_TENSOR:
-    Cout << numSamples << " samples drawn randomly from tensor grid\n.";
+    Cout << numSamples << " samples drawn randomly from tensor grid.\n";
     const Pecos::UShortArray& lev_index = tpqDriver->level_index();
     tpqDriver->update_1d_collocation_points_weights(quad_order, lev_index);
     const Pecos::Real3DArray& colloc_pts_1d

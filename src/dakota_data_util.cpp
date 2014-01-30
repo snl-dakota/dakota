@@ -22,6 +22,26 @@ namespace Dakota {
 // ------------
 
 
+bool nearby(const RealVector& rv1, const RealVector& rv2, Real rel_tol)
+{
+  // Check for equality in array lengths
+  size_t len = rv1.length();
+  if ( rv2.length() != len )
+    return false;
+	
+  // Check each value (labels are ignored!)
+  for (size_t i=0; i<len; i++)
+    if (rv1[i] == 0.) { // prevent division by 0
+      if (rv2[i] != 0.) //(std::abs(rv2[i]) > abs_tol)
+	return false;
+    }
+    else if ( fabs(1. - rv2[i]/rv1[i]) > rel_tol ) // DBL_EPSILON
+      return false;
+
+  return true;
+}
+
+
 bool operator==(const ShortArray& dsa1, const ShortArray& dsa2)
 {
   // Check for equality in array lengths

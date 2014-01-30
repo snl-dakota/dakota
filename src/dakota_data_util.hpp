@@ -39,8 +39,10 @@ namespace Dakota {
 // Equality operator definitions for data types
 // --------------------------------------------
 
+/// tolerance-based equality operator for RealVector
+bool nearby(const RealVector& rv1, const RealVector& rv2, Real rel_tol);
 /// equality operator for IntArray
-bool operator==(const IntArray& dia1,   const IntArray& dia2);
+bool operator==(const IntArray& dia1, const IntArray& dia2);
 /// equality operator for ShortArray
 bool operator==(const ShortArray& dsa1, const ShortArray& dsa2);
 /// equality operator for StringArray

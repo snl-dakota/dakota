@@ -1493,6 +1493,9 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 	  [ deactivate {0}
 	    [ active_set_vector {N_ifm(false,activeSetVectorFlag)} ]
 	    [ evaluation_cache {N_ifm(false,evalCacheFlag)} ]
+	    [ strict_cache_equality {N_ifm(true,nearbyEvalCacheFlag)}
+	      [ cache_tolerance REAL {N_ifm(Real,nearbyEvalCacheTol)} ]
+	      ]
 	    [ restart_file {N_ifm(false,restartFileFlag)} ]
 	    ]
 	  ]

@@ -362,8 +362,8 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   std::ofstream tabular_text(argv[3]);
   String curr_interf;
 
-  // override default to output data in full precision (double = 16 digits)
-  // Note: setprecision(write_precision) and std::ios::floatfield invoked
+  // override default to output data in full precision (double = 16 digits).
+  // Note: setprecision(write_precision) and std::ios::floatfield are embedded
   // in write_data_tabular() functions.
   //write_precision = 16;
 

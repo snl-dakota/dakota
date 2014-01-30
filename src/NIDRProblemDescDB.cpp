@@ -447,6 +447,12 @@ struct Var_mp_type {
 };
 
 void NIDRProblemDescDB::
+iface_Real(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Iface_Info**)g)->di->**(Real DataInterfaceRep::**)v = *val->r;
+}
+
+void NIDRProblemDescDB::
 iface_Rlit(const char *keyname, Values *val, void **g, void *v)
 {
   DataInterfaceRep *di = (*(Iface_Info**)g)->di;
@@ -5067,6 +5073,7 @@ static bool
 	MP_(evalCacheFlag),
 	MP_(fileSaveFlag),
 	MP_(fileTagFlag),
+	MP_(nearbyEvalCacheFlag),
 	MP_(numpyFlag),
 	MP_(restartFileFlag),
 	MP_(templateCopy),
@@ -5080,6 +5087,9 @@ static int
 	MP_(asynchLocalEvalConcurrency),
 	MP_(evalServers),
 	MP_(procsPerAnalysis);
+
+static Real
+	MP_(nearbyEvalCacheTol);
 
 #undef MP3
 #undef MP2

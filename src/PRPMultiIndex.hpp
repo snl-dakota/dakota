@@ -96,14 +96,11 @@ inline bool id_vars_exact_compare(const ParamResponsePair& database_pr,
   // First check interface id strings.  If a different interface was used, then
   // we must assume that the results are not interchangeable (differing model
   // fidelity).
-  if ( search_pr.interface_id() != database_pr.interface_id() )
+  if ( search_pr.interface_id()   != database_pr.interface_id() )
     return false;
 
-  // For Boost hashing, need exact binary equality instead of the
-  // tolerance-based operator== for Variables
-  //if ( search_vars != stored_vars )
-  if ( !binary_equal_to( search_pr.prp_parameters(),
-			 database_pr.prp_parameters() ) )
+  // For Boost hashing, need exact binary equality (not tolerance-based)
+  if ( search_pr.prp_parameters() != database_pr.prp_parameters() )
     return false;
 
   // For Boost hashing, a post-processing step is used to manage the ActiveSet
@@ -328,6 +325,22 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 */
 
 
+inline PRPCacheOIter
+lookup_by_nearby_val(PRPMultiIndexCache& prp_cache,
+		     const String& search_interface_id,
+		     const Variables& search_vars, const ActiveSet& search_set,
+		     Real tol)
+{
+  PRPCacheOIter cache_it;
+  for (cache_it=prp_cache.begin(); cache_it!=prp_cache.end(); ++cache_it)
+    if (cache_it->interface_id() == search_interface_id      && // exact
+	nearby(cache_it->prp_parameters(), search_vars, tol) && // tolerance
+	set_compare(*cache_it, search_set))                     // subset
+      return cache_it; // Duplication detected.
+  return prp_cache.end();
+}
+
+
 // ------------------------------------
 // lookup_by_ids for PRPMultiIndexCache
 // ------------------------------------
@@ -389,9 +402,8 @@ lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids,
     case 1: return prp_it0;                        break;
     default:
       while (prp_it0 != prp_it1) {
-	if ( binary_equal_to(prp_it0->prp_parameters(),
-			     search_pr.prp_parameters()) &&
-	     set_compare(*prp_it0, search_pr.active_set()) )
+	if (prp_it0->prp_parameters() == search_pr.prp_parameters() && // exact
+	    set_compare(*prp_it0, search_pr.active_set()))            // subset
 	  return prp_it0;
 	++prp_it0;
       }

@@ -90,6 +90,7 @@ public:
 
 #define KWH(x) static void x(const char *keyname, Values *val, void **g, void *v)
 
+  KWH(iface_Real);
   KWH(iface_Rlit);
   KWH(iface_false);
   KWH(iface_ilit);

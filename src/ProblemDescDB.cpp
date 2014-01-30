@@ -2065,6 +2065,10 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     if ((kw = (KW<Real, DataModelRep>*)Binsearch(Rdmo, L)))
 	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
+  else if (strbegins(entry_name, "interface.")) {
+    if (strends(entry_name, "nearby_evaluation_cache_tolerance"))
+      return dbRep->dataInterfaceIter->dataIfaceRep->nearbyEvalCacheTol;
+  }
   Bad_name(entry_name, "get_real");
   return abort_handler_t<const Real&>(-1);
 }
@@ -2484,6 +2488,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"dirSave", P dirSave},
 	{"dirTag", P dirTag},
 	{"evaluation_cache", P evalCacheFlag},
+	{"nearby_evaluation_cache", P nearbyEvalCacheFlag},
 	{"python.numpy", P numpyFlag},
 	{"restart_file", P restartFileFlag},
 	{"templateCopy", P templateCopy},

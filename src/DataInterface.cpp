@@ -22,9 +22,10 @@ DataInterfaceRep::DataInterfaceRep():
   interfaceSynchronization("synchronous"), asynchLocalEvalConcurrency(0),
   asynchLocalAnalysisConcurrency(0), evalServers(0), analysisServers(0),
   failAction("abort"), retryLimit(1), activeSetVectorFlag(true),
-  evalCacheFlag(true), restartFileFlag(true), referenceCount(1),
-  useWorkdir(false), dirTag(false), dirSave(false), templateCopy(false),
-  templateReplace(false), numpyFlag(false)
+  evalCacheFlag(true), nearbyEvalCacheFlag(false),
+  nearbyEvalCacheTol(DBL_EPSILON), // default relative tolerance is tight
+  restartFileFlag(true), referenceCount(1), useWorkdir(false), dirTag(false),
+  dirSave(false), templateCopy(false), templateReplace(false), numpyFlag(false)
   // procsPerAnalysis, evalServers, and analysisServers default to zero
   // in order to allow detection of user override > 0
 { }
@@ -41,9 +42,10 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << analysisServers << analysisScheduling
     << failAction << retryLimit << recoveryFnVals << activeSetVectorFlag
-    << evalCacheFlag << restartFileFlag << useWorkdir << workDir << dirTag
-    << dirSave << templateDir << templateFiles << templateCopy
-    << templateReplace << numpyFlag;
+    << evalCacheFlag << nearbyEvalCacheFlag << nearbyEvalCacheTol
+    << restartFileFlag << useWorkdir << workDir << dirTag << dirSave
+    << templateDir << templateFiles << templateCopy << templateReplace
+    << numpyFlag;
 }
 
 
@@ -58,9 +60,10 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
     >> asynchLocalEvalScheduling >> asynchLocalAnalysisConcurrency
     >> evalServers >> evalScheduling >> analysisServers >> analysisScheduling
     >> failAction >> retryLimit >> recoveryFnVals >> activeSetVectorFlag
-    >> evalCacheFlag >> restartFileFlag >> useWorkdir >> workDir >> dirTag
-    >> dirSave >> templateDir >> templateFiles >> templateCopy
-    >> templateReplace >> numpyFlag;
+    >> evalCacheFlag >> nearbyEvalCacheFlag >> nearbyEvalCacheTol
+    >> restartFileFlag >> useWorkdir >> workDir >> dirTag >> dirSave
+    >> templateDir >> templateFiles >> templateCopy >> templateReplace
+    >> numpyFlag;
 }
 
 
@@ -75,9 +78,10 @@ void DataInterfaceRep::write(std::ostream& s) const
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << analysisServers << analysisScheduling
     << failAction << retryLimit << recoveryFnVals << activeSetVectorFlag
-    << evalCacheFlag << restartFileFlag << useWorkdir << workDir << dirTag
-    << dirSave << templateDir << templateFiles << templateCopy
-    << templateReplace << numpyFlag;
+    << evalCacheFlag << nearbyEvalCacheFlag << nearbyEvalCacheTol
+    << restartFileFlag << useWorkdir << workDir << dirTag << dirSave
+    << templateDir << templateFiles << templateCopy << templateReplace
+    << numpyFlag;
 }
 
 

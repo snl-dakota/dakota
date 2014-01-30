@@ -2216,6 +2216,8 @@ TAG "interface/analysis_drivers/deactivate"
 
 TAG "interface/analysis_drivers/deactivate/active_set_vector"
 TAG "interface/analysis_drivers/deactivate/evaluation_cache"
+TAG "interface/analysis_drivers/deactivate/strict_cache_equality"
+TAG "interface/analysis_drivers/deactivate/strict_cache_equality/cache_tolerance"
 TAG "interface/analysis_drivers/deactivate/restart_file"
 TAG "interface/asynchronous"
 	DESC "{Asynchronous interface usage} InterfCommands.html#InterfIndControl"

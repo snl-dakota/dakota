@@ -51,6 +51,10 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   //headerFlag(true),
   asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
   evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
+  nearbyDuplicateDetect(
+    problem_db.get_bool("interface.nearby_evaluation_cache")),
+  nearbyTolerance(
+    problem_db.get_real("interface.nearby_evaluation_cache_tolerance")),
   restartFileFlag(problem_db.get_bool("interface.restart_file")),
   failAction(problem_db.get_string("interface.failure_capture.action")),
   failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
@@ -580,52 +584,74 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 bool ApplicationInterface::
 duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
 {
-  PRPCacheHIter cache_it
-    = lookup_by_val(data_pairs, interfaceId, vars, response.active_set());
-
-  // The incoming response's responseActiveSet was updated in map(), but
-  // the rest of response is out-of-date (the previous fn. eval).
-  if (cache_it != data_pairs.get<hashed>().end()) {
-    // due to id_vars_set_compare, the desired response set could be a
-    // subset of the data_pairs response -> use update().
-    response.update(cache_it->prp_response());
-
-    // If duplication detected with an eval from restart/file import, promote
-    // the database eval id to current run status to enable more meaningful
-    // lookups (e.g., eval id of final result) downstream.  There are several
-    // possible bookkeeping update approaches; here, we choose to delete the
-    // old record and readd it with original ASV content and updated eval id.
-    // This approach is efficient and doesn't discard any data, but has the
-    // downside that the record's ASV may contain more than the current request.
-    // Another reasonable approach would be to keep the old record (original
-    // ASV) and add a new one (with the current ASV subset), but this is less
-    // efficient and complicates eval id management in downstream lookups
-    // (multiple records can match a particular Ids/Vars/Set lookup, requiring
-    // an additional test to prefer positive id's in some use cases).
-    if (cache_it->eval_id() <= 0) {
-      ParamResponsePair db_pair(*cache_it); // shallow copy of vars/resp
-      // can't change ordered set key directly; must remove/change/add
-      data_pairs.get<hashed>().erase(cache_it);
-      db_pair.eval_id(evalIdCntr);
-      data_pairs.insert(db_pair);              // shallow copy of vars/resp
+  // Two flavors of cache lookup are supported: exact and tolerance-based.
+  // Note 1: incoming response's responseActiveSet was updated in map(), but
+  //   the rest of response is out-of-date (the previous fn. eval).  Due to
+  //   set_compare(), the desired response set could be a subset of the
+  //   data_pairs response -> use update().
+  // Note 2: If duplication detected with an eval from restart/file import,
+  //   promote the database eval id to current run status to enable more
+  //   meaningful lookups (e.g., eval id of final result) downstream.  There
+  //   are several possible bookkeeping update approaches; here, we choose to
+  //   delete the old record and readd it with original ASV content and updated
+  //   eval id.  This approach is efficient and doesn't discard any data, but
+  //   has the downside that the record's ASV may contain more than the current
+  //   request.  Another reasonable approach would be to keep the old record
+  //   (original ASV) and add a new one (with the current ASV subset), but
+  //   this is less efficient and complicates eval id management in downstream
+  //   lookups (multiple records can match a particular Ids/Vars/Set lookup,
+  //   requiring an additional test to prefer positive id's in some use cases).
+  PRPCacheOIter ord_it; PRPCacheHIter hash_it;
+  ParamResponsePair cache_pr; int cache_eval_id; bool cache_hit = false;
+  if (nearbyDuplicateDetect) { // slow but allows tolerance on equality
+    ord_it = lookup_by_nearby_val(data_pairs, interfaceId, vars,
+				  response.active_set(), nearbyTolerance);
+    cache_hit = (ord_it != data_pairs.end());
+    if (cache_hit) { // ordered-specific updates (shared updates below)
+      response.update(ord_it->prp_response());
+      cache_eval_id = ord_it->eval_id();
+      if (cache_eval_id <= 0)
+	{ cache_pr = *ord_it; data_pairs.erase(ord_it); }
+    }
+  }
+  else { // fast but requires exact binary match
+    hash_it = lookup_by_val(data_pairs, interfaceId, vars,
+			    response.active_set());
+    cache_hit = (hash_it != data_pairs.get<hashed>().end());
+    if (cache_hit) { // hashed-specific updates (shared updates below)
+      response.update(hash_it->prp_response());
+      cache_eval_id = hash_it->eval_id();
+      if (cache_eval_id <= 0)
+	{ cache_pr = *hash_it; data_pairs.get<hashed>().erase(hash_it); }
+    }
+  }
+  if (cache_hit) { // updates shared among ordered/hashed lookups
+    if (cache_eval_id <= 0) {
+      // ordered key is const; must remove (above) & change/add (below)
+      cache_pr.eval_id(evalIdCntr); // promote
+      data_pairs.insert(cache_pr);  // shallow copy of previous vars/resp
     }
 
     if (asynch_flag) // asynch case: bookkeep
       historyDuplicateMap[evalIdCntr] = response.copy();
-    return true; // Duplication detected.
+
+    return true; // Duplication detected
   }
-  // check beforeSynchCorePRPQueue (if asynchronous)
+
+  // check beforeSynchCorePRPQueue as well (if asynchronous and no cache hit)
   if (asynch_flag) {
+    // queue lookups only support one flavor for simplicity: exact lookup
     PRPQueueHIter queue_it = lookup_by_val(beforeSynchCorePRPQueue, interfaceId,
 					   vars, response.active_set());
     if (queue_it != beforeSynchCorePRPQueue.get<hashed>().end()) {
       // Duplication detected: bookkeep
       beforeSynchDuplicateMap[evalIdCntr]
 	= std::make_pair(queue_it, response.copy());
-      return true; // Duplication detected.
+      return true; // Duplication detected
     }
   }
-  return false; // Duplication not detected.
+
+  return false; // Duplication not detected
 }
 
 

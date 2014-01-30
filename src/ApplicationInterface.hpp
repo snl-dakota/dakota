@@ -444,6 +444,11 @@ private:
   /// used to manage a user request to deactivate the function evaluation
   /// cache (i.e., queries and insertions using the data_pairs cache).
   bool evalCacheFlag;
+  /// flag indicating optional usage of tolerance-based duplication detection
+  /// (less efficient, but helpful when experiencing restart cache misses)
+  bool nearbyDuplicateDetect;
+  /// tolerance value for tolerance-based duplication detection
+  Real nearbyTolerance;
 
   /// used to manage a user request to deactivate the restart file (i.e., 
   /// insertions into write_restart).
