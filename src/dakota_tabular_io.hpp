@@ -104,6 +104,15 @@ void write_data_tabular(std::ostream& tabular_ostream,
   bool active_only = false, bool write_responses = true);
 
 
+/// PCE export: write freeform format file with whitespace-separated
+/// data where each row has num_fns reals from coeffs, followed
+/// by num_vars unsigned shorts from indices
+void write_data_tabular(const std::string& output_filename, 
+			const std::string& context_message,
+			const RealVectorArray& output_coeffs, 
+			const UShort2DArray& output_indices);
+
+
 //
 //- Utilities for tabular read
 //

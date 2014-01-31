@@ -106,6 +106,56 @@ void write_data_tabular(std::ostream& tabular_ostream,
 }
 
 
+void write_data_tabular(const std::string& output_filename, 
+			const std::string& context_message,
+			const RealVectorArray& output_coeffs, 
+			const UShort2DArray& output_indices)
+{
+  std::ofstream output_stream;
+  open_file(output_stream, output_filename, context_message);
+
+  size_t num_fns = output_coeffs.size();
+  size_t num_ind_rows = output_indices.size();
+
+  bool error_flag = false;
+  if (num_fns == 0) {
+    Cerr << "\nError (write_data_tabular): empty coefficient array." 
+	 << std::endl;
+    error_flag = true;
+  }
+  if (num_ind_rows == 0) {
+    Cerr << "\nError (write_data_tabular): empty indices array." << std::endl;
+    error_flag = true;
+  }
+  if (error_flag)  
+    abort_handler(-1);
+
+  size_t num_coeff_rows = output_coeffs[0].length();
+  size_t num_vars = output_indices[0].size();
+  if (num_coeff_rows != num_ind_rows) {
+    Cerr << "\nError (write_data_tabular): mismatch in PCE coefficient and "
+	 << "index lengths." << std::endl;
+    error_flag = true;
+  }
+  if (num_vars == 0) {
+    Cerr << "\nError (write_data_tabular): empty indices row." << std::endl;
+    error_flag = true;
+  }
+  if (error_flag)
+    abort_handler(-1);
+
+  // TODO: consider removing TabularIO namespace
+  for (size_t row = 0; row < num_coeff_rows; ++row) {
+    for (size_t fn_ind = 0; fn_ind < num_fns; ++fn_ind)
+      Dakota::
+	write_data_tabular(output_stream, &output_coeffs[fn_ind][row], 1);
+    Dakota::
+      write_data_tabular(output_stream, &output_indices[row][0], num_vars);
+    output_stream << std::endl;
+  }
+}
+
+
 //
 // Tabular read helpers
 //
