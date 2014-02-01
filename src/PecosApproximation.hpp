@@ -62,6 +62,10 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
+  /// return expansion coefficients in a form consistent witn the
+  /// shared multi-index
+  RealVector dense_coefficients() const;
+
   /// Performs global sensitivity analysis using Sobol' Indices by
   /// computing component (main and interaction) effects
   void compute_component_effects();
@@ -517,6 +521,13 @@ inline const RealVector& PecosApproximation::approximation_coefficients() const
 inline void PecosApproximation::
 approximation_coefficients(const RealVector& approx_coeffs)
 { pecosBasisApprox.approximation_coefficients(approx_coeffs); }
+
+
+inline RealVector PecosApproximation::dense_coefficients() const
+{
+  return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    dense_coefficients();
+}
 
 
 inline void PecosApproximation::

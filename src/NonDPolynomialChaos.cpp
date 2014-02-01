@@ -468,8 +468,8 @@ void NonDPolynomialChaos::compute_expansion()
       = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
     data_rep->allocate(multi_index); // defines multiIndex, sobolIndexMap
 
-    // post coefficients to the OrthogPolyApproximation instances (calls to
-    // OrthogPolyApproximation::allocate_arrays() are embedded)
+    // post coefficients to the OrthogPolyApproximation instances (also calls
+    // OrthogPolyApproximation::allocate_arrays())
     uSpaceModel.approximation_coefficients(coeffs_array);
   }
 }
@@ -630,9 +630,12 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
       s << " ----";
     poly_approxs[i].print_coefficients(s, normalizedCoeffOutput);
     if (export_pce) {
-      const RealVector& coeffs_i = poly_approxs[i].approximation_coefficients();
-      coeffs_array[i] = RealVector(Teuchos::View, coeffs_i.values(),
-				   coeffs_i.length());
+      // poly_approxs[i].approximation_coefficients() may be sparse; need
+      // dense coeffs consistent with shared multi-index for tabular export
+      PecosApproximation* approx_rep
+	= (PecosApproximation*)poly_approxs[i].approx_rep();
+      // default returns a vector view; sparse returns a copy
+      coeffs_array[i] = approx_rep->dense_coefficients();
     }
   }
 
