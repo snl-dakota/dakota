@@ -76,6 +76,12 @@ public:
   /// get Pecos::SharedOrthogPolyApproxData::polynomialBasis
   const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
 
+  /// set Pecos::SharedOrthogPolyApproxData::multiIndex and allocate
+  /// associated arrays
+  void allocate(const UShort2DArray& mi);
+  /// get Pecos::SharedOrthogPolyApproxData::multiIndex
+  const UShort2DArray& multi_index() const;
+
   /// return Pecos::SharedPolyApproxData::sobolIndexMap
   const Pecos::BitArrayULongMap& sobol_index_map() const;
 
@@ -253,6 +259,17 @@ polynomial_basis() const
 {
   return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
     polynomial_basis();
+}
+
+
+inline void SharedPecosApproxData::allocate(const UShort2DArray& mi)
+{ ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->allocate_data(mi); }
+
+
+inline const UShort2DArray& SharedPecosApproxData::multi_index() const
+{
+  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
+    multi_index();
 }
 
 

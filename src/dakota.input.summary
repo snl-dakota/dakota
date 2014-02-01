@@ -699,21 +699,16 @@ KEYWORD12 method
 	      [ use_derivatives ]
 	      [ tensor_grid ]
 	      [ reuse_points ALIAS reuse_samples ]
-	      [ import_points_file STRING
-		[ annotated
-		| freeform ]
-		]
 	      )
 	    |
 	    ( expansion_samples INTEGERLIST
 	      [ reuse_points ALIAS reuse_samples ]
 	      [ incremental_lhs ]
-	      [ import_points_file STRING
-		[ annotated
-		| freeform ]
-		]
 	      )
-	    | expansion_import_file STRING
+	    [ import_points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
 	    )
 	  |
 	  ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli
@@ -726,6 +721,7 @@ KEYWORD12 method
 	      | freeform ]
 	      ]
 	    )
+	  | import_expansion_file STRING
 	  [ variance_based_decomp
 	    [ interaction_order INTEGER > 0 ]
 	    [ drop_tolerance REAL ]
@@ -747,6 +743,7 @@ KEYWORD12 method
 	    [ annotated
 	    | freeform ]
 	    ]
+	  [ export_expansion_file STRING ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]

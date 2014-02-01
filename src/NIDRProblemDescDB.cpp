@@ -5394,6 +5394,7 @@ static String
 	MP_(approxImportFile),
         MP_(betaSolverName),
         MP_(displayFormat),
+	MP_(expansionExportFile),
 	MP_(expansionImportFile),
 	MP_(historyFile),
 	MP_(idMethod),

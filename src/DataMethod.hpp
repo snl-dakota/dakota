@@ -726,8 +726,10 @@ public:
   /// orthogonal least interpolation PCE; based on the \c tensor_grid
   /// specification in \ref MethodNonDPCE
   UShortArray tensorGridOrder;
-  /// the \c expansion_import_file specification in \ref MethodNonDPCE
+  /// the \c import_expansion_file specification in \ref MethodNonDPCE
   String expansionImportFile;
+  /// the \c export_expansion_file specification in \ref MethodNonDPCE
+  String expansionExportFile;
   /// the \c sample_type specification in \ref MethodNonDMC, \ref
   /// MethodNonDPCE, and \ref MethodNonDSC
   String sampleType;

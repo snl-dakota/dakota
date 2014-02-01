@@ -89,6 +89,8 @@ private:
   //- Heading: Data
   //
 
+  /// filename for export of chaos coefficients
+  String expansionExportFile;
   /// filename for import of chaos coefficients
   String expansionImportFile;
 

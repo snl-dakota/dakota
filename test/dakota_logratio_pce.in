@@ -5,11 +5,11 @@ strategy,
 
 method,
 	polynomial_chaos askey
- 	  expansion_order = 2				#0,#2,#3
+ 	  expansion_order = 2				#0,#2
 	  expansion_samples  = 250			#0
 #	  quadrature_order   = 3			#1
 #	  collocation_points = 12			#2
-#	  expansion_import_file = 'dakota_logratio_pce.txt'	#3
+#	  import_expansion_file = 'dakota_logratio_pce.txt'	#3
 	  samples = 10000 seed = 12347 rng rnum2
 	  sample_type lhs
 	  response_levels = .4 .5 .55 .6 .65 .7

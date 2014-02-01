@@ -24,6 +24,7 @@
 #include "TensorProductDriver.hpp"
 #include "CubatureDriver.hpp"
 #include "dakota_data_io.hpp"
+#include "dakota_tabular_io.hpp"
 
 
 namespace Dakota {
@@ -31,8 +32,10 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
+  expansionExportFile(
+    probDescDB.get_string("method.nond.export_expansion_file")),
   expansionImportFile(
-    probDescDB.get_string("method.nond.expansion_import_file")),
+    probDescDB.get_string("method.nond.import_expansion_file")),
   collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
   crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
@@ -445,36 +448,29 @@ void NonDPolynomialChaos::compute_expansion()
     // ---------------------------
     // Import the PCE coefficients
     // ---------------------------
-    std::ifstream import_stream(expansionImportFile.c_str());
-    if (!import_stream) {
-      Cerr << "\nError: cannot open polynomial chaos expansion import file "
-	   << expansionImportFile << std::endl;
-      abort_handler(-1);
-    }
     if (subIteratorFlag || !finalStatistics.function_gradients().empty()) {
+      // fatal for import, but warning for export
       Cerr << "\nError: PCE coefficient import not supported in advanced modes"
 	   << std::endl;
       abort_handler(-1);
     }
-    // allocate the shared approximation data (default total-order expansion):
-    SharedApproxData& shared_data = uSpaceModel.shared_approximation();
-    shared_data.build();
-    size_t num_exp_terms
-      = ((SharedPecosApproxData*)shared_data.data_rep())->expansion_terms();
-    // allocate arrays per response fn:
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep;
-    RealVectorArray chaos_coeffs(numFunctions);
-    for (size_t i=0; i<numFunctions; i++) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep) { // may be NULL based on approxFnIndices
-	poly_approx_rep->allocate_arrays();
-	chaos_coeffs[i].sizeUninitialized(num_exp_terms);
-      }
-    }
-    // import the PCE coefficients
-    read_data(import_stream, chaos_coeffs);
-    uSpaceModel.approximation_coefficients(chaos_coeffs);
+
+    // import the PCE coefficients for all QoI and a shared multi-index.
+    // Annotation provides questionable value in this context & is off for now.
+    RealVectorArray coeffs_array(numFunctions); UShort2DArray multi_index;
+    String context("polynomial chaos expansion import file");
+    TabularIO::read_data_tabular(expansionImportFile, context, coeffs_array,
+				 multi_index, false, numContinuousVars,
+				 numFunctions);
+
+    // post the shared data
+    SharedPecosApproxData* data_rep
+      = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
+    data_rep->allocate(multi_index); // defines multiIndex, sobolIndexMap
+
+    // post coefficients to the OrthogPolyApproximation instances (calls to
+    // OrthogPolyApproximation::allocate_arrays() are embedded)
+    uSpaceModel.approximation_coefficients(coeffs_array);
   }
 }
 
@@ -597,7 +593,15 @@ void NonDPolynomialChaos::increment_order()
 
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
-  s << std::scientific << std::setprecision(write_precision);
+  bool export_pce = false;
+  RealVectorArray coeffs_array;
+  if (!expansionExportFile.empty()) {
+    if (subIteratorFlag || !finalStatistics.function_gradients().empty())
+      Cerr << "\nWarning: PCE coefficient export not supported in advanced "
+	   << "modes" << std::endl;
+    else
+      { export_pce = true; coeffs_array.resize(numFunctions); }
+  }
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
@@ -607,8 +611,8 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
   char tag[10];
   int j; // for sprintf %i
 
-  s << "-----------------------------------------------------------------------"
-    << "------\n";
+  s << std::scientific << std::setprecision(write_precision) << "-----------"
+    << "------------------------------------------------------------------\n";
   for (i=0; i<numFunctions; i++) {
     if (normalizedCoeffOutput) s << "Normalized coefficients of ";
     else                       s << "Coefficients of ";
@@ -625,6 +629,21 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
     for (j=0; j<numContinuousVars; j++)
       s << " ----";
     poly_approxs[i].print_coefficients(s, normalizedCoeffOutput);
+    if (export_pce) {
+      const RealVector& coeffs_i = poly_approxs[i].approximation_coefficients();
+      coeffs_array[i] = RealVector(Teuchos::View, coeffs_i.values(),
+				   coeffs_i.length());
+    }
+  }
+
+  if (export_pce) {
+    // export the PCE coefficients for all QoI and a shared multi-index.
+    // Annotation provides questionable value in this context & is off for now.
+    SharedPecosApproxData* data_rep
+      = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
+    String context("polynomial chaos expansion export file");
+    TabularIO::write_data_tabular(expansionExportFile, context, coeffs_array,
+				  data_rep->multi_index());//, false);
   }
 }
 

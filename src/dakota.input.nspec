@@ -452,8 +452,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			)
 		    ]
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
-		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
-#		      | piecewise {NIDRProblemDescDB::method_piecewise} ]
+		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+#		      | piecewise {NIDRProblemDescDB::method_piecewise}
+		    ]
 		    ( quadrature_order INTEGERLIST {N_mdm(usharray,quadratureOrder)}
 		      | ( sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
 		          [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
@@ -464,9 +465,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			  | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    )
 		    | cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
-		    | ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
-			[ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-		      	( ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+		    | ( ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
+			  [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+		      	  ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
 		            | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
 			    [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
 			    [ ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
@@ -476,7 +477,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			          [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ] )
 			      | basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
 			      | ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-			      	  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ] )
+			          [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ] )
 			      | ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
 			          [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ] )
 			      | ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
@@ -493,24 +494,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
 		            [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
 		          )
-	        	  [ import_points_file STRING {N_mdm(str,approxImportFile)} 
-                   	    [ annotated {N_mdm(true,approxImportAnnotated)} | 
-                     	      freeform  {N_mdm(false,approxImportAnnotated)} ] 
-                   	  ]
-			)
-		    	| expansion_import_file STRING {N_mdm(str,expansionImportFile)}
-                      )
-		    | ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-		      	collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
-			[ cross_validation {N_mdm(true,crossValidation)} ]
-#		        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-			[ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
-		        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+                        )
+			|
+			( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+		      	  collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+			  [ cross_validation {N_mdm(true,crossValidation)} ]
+#		          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+			  [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
+		          [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+		      	)
 	        	[ import_points_file STRING {N_mdm(str,approxImportFile)} 
                    	  [ annotated {N_mdm(true,approxImportAnnotated)} | 
                      	    freeform  {N_mdm(false,approxImportAnnotated)} ] 
                    	]
 		      )
+		    | import_expansion_file STRING {N_mdm(str,expansionImportFile)}
 		    [ variance_based_decomp {N_mdm(true,vbdFlag)}
 		      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
 		      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
@@ -533,6 +531,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               	      [ annotated {N_mdm(true,approxExportAnnotated)} | 
                 	freeform  {N_mdm(false,approxExportAnnotated)} ]
 		    ]
+		    [ export_expansion_file STRING {N_mdm(str,expansionExportFile)} ]
 		    )
 		  |
 		  ( stoch_collocation ALIAS nond_stoch_collocation {N_mdm(lit,methodName_nond_stoch_collocation)}
