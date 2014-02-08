@@ -112,9 +112,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
     }
     else { // expansion_samples or collocation_{points,ratio}
-      // default pattern is static for consistency in any outer loop,
-      // but gets overridden below for unstructured grid refinement.
-      bool vary_pattern = false;
       if (!expSamplesSeqSpec.empty()) { // expectation
 	if (refineType) { // no obvious logic for sample refinement
 	  Cerr << "Error: uniform/adaptive refinement of expansion_samples not "
@@ -130,16 +127,16 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	// unstructured grid refinement/replacement/augmentation.  Also unlike
 	// expansion_sampler, we use an ACTIVE sampler mode for estimating the
 	// coefficients over all active variables.
-	if (numSamplesOnModel)
+	if (numSamplesOnModel) {
+	  // default pattern is fixed for consistency in any outer loop,
+	  // but gets overridden in cases of unstructured grid refinement.
+	  bool vary_pattern = false;
 	  construct_lhs(u_space_sampler, g_u_model,
 	    probDescDB.get_string("method.sample_type"), numSamplesOnModel,
 	    probDescDB.get_int("method.random_seed"),
 	    probDescDB.get_string("method.random_number_generator"),
 	    vary_pattern, ACTIVE);
-
-	if (!import_pts_file.empty())
-	  import_annotated
-	    = probDescDB.get_bool("method.import_points_file_annotated");
+	}
       }
       else { // regression
 	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
@@ -180,70 +177,70 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 						       termsOrder);
 	}
 
-	if (tensorRegression) { // structured grid: uniform sub-sampling of TPQ
-	  UShortArray dim_quad_order;
-	  if ( expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ) {
-	    dim_quad_order
-	      = probDescDB.get_usa("method.nond.tensor_grid_order");
-	    Pecos::inflate_scalar(dim_quad_order, numContinuousVars);
-	  }
-	  else {
-	    // define nominal quadrature order as exp_order + 1
-	    // (m > p avoids most of the 0's in the Psi measurement matrix)
-	    dim_quad_order.resize(numContinuousVars);
-	    for (size_t i=0; i<numContinuousVars; ++i)//misses nested increment
-	      dim_quad_order[i] = exp_order[i] + 1;
-	  }
+	if (numSamplesOnModel) {
+	  if (tensorRegression) {// structured grid: uniform sub-sampling of TPQ
+	    UShortArray dim_quad_order;
+	    if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION) {
+	      dim_quad_order
+		= probDescDB.get_usa("method.nond.tensor_grid_order");
+	      Pecos::inflate_scalar(dim_quad_order, numContinuousVars);
+	    }
+	    else {
+	      // define nominal quadrature order as exp_order + 1
+	      // (m > p avoids most of the 0's in the Psi measurement matrix)
+	      // Note: misses nested exp order increment (increment_order())
+	      dim_quad_order.resize(numContinuousVars);
+	      for (size_t i=0; i<numContinuousVars; ++i)
+		dim_quad_order[i] = exp_order[i] + 1;
+	    }
 	  
-	  // define order sequence for input to NonDQuadrature
-	  UShortArray quad_order_seq(1); // one level of refinement
-	  // convert aniso vector to scalar + dim_pref.  If isotropic, dim_pref
-	  // is empty; if aniso, it differs from exp_order aniso due to offset.
-	  RealVector dim_pref;
-	  NonDIntegration::anisotropic_order_to_dimension_preference(
-	    dim_quad_order, quad_order_seq[0], dim_pref);
-	  // use alternate NonDQuad ctor to filter or sample TPQ points
-	  // (NonDExpansion invokes uSpaceModel.build_approximation()
-	  // which invokes daceIterator.run_iterator()).  The quad order inputs
-	  // are updated within NonDQuadrature as needed to satisfy min order
-	  // constraints (but not nested constraints: nestedRules is false).
-	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
-			       probDescDB.get_int("method.random_seed"),
-			       quad_order_seq, dim_pref);
-	  // don't allow data import (currently permissible in input spec)
-	  pt_reuse.clear(); import_pts_file.clear();
-	}
-	else { // unstructured grid: LHS samples
-	  // if reusing samples within a refinement strategy, ensure different
-	  // random numbers are generated for points within the grid (even if
-	  // the number of samples differs)
-	  vary_pattern = (refineType && !pt_reuse.empty());
-	  // reuse type/seed/rng settings intended for the expansion_sampler.
-	  // Unlike expansion_sampler, allow sampling pattern to vary under
-	  // unstructured grid refinement/replacement/augmentation.  Also
-	  // unlike expansion_sampler, we use an ACTIVE sampler mode for
-	  // forming the PCE over all active variables.
-	  if (numSamplesOnModel)
+	    // define order sequence for input to NonDQuadrature
+	    UShortArray quad_order_seq(1); // one level of refinement
+	    // convert aniso vector to scalar + dim_pref.  If iso, dim_pref is
+	    // empty; if aniso, it differs from exp_order aniso due to offset.
+	    RealVector dim_pref;
+	    NonDIntegration::anisotropic_order_to_dimension_preference(
+	      dim_quad_order, quad_order_seq[0], dim_pref);
+	    // use alternate NonDQuad ctor to filter or sample TPQ points
+	    // (NonDExpansion invokes uSpaceModel.build_approximation()
+	    // which invokes daceIterator.run_iterator()). The quad order inputs
+	    // are updated within NonDQuadrature as needed to satisfy min order
+	    // constraints (but not nested constraints: nestedRules is false).
+	    construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
+				 probDescDB.get_int("method.random_seed"),
+				 quad_order_seq, dim_pref);
+	  }
+	  else { // unstructured grid: LHS samples
+	    // if reusing samples within a refinement strategy, ensure different
+	    // random numbers are generated for points within the grid (even if
+	    // the number of samples differs)
+	    bool vary_pattern = (refineType && !pt_reuse.empty());
+	    // reuse type/seed/rng settings intended for the expansion_sampler.
+	    // Unlike expansion_sampler, allow sampling pattern to vary under
+	    // unstructured grid refinement/replacement/augmentation.  Also
+	    // unlike expansion_sampler, we use an ACTIVE sampler mode for
+	    // forming the PCE over all active variables.
 	    construct_lhs(u_space_sampler, g_u_model,
 	      probDescDB.get_string("method.sample_type"), numSamplesOnModel,
 	      probDescDB.get_int("method.random_seed"),
 	      probDescDB.get_string("method.random_number_generator"),
 	      vary_pattern, ACTIVE);
-
-	  if (!import_pts_file.empty())
-	    import_annotated
-	      = probDescDB.get_bool("method.import_points_file_annotated");
+	  }
+	  // TO DO:
+	  //if (probDescDB.get_string("method.nond.expansion_sample_type")
+	  //    == "incremental_lhs"))
+	  //  construct_incremental_lhs();
 	}
-	// TO DO:
-	//if (probDescDB.get_string("method.nond.expansion_sample_type")
-	//    == "incremental_lhs"))
-	//  construct_incremental_lhs();
       }
 
       // maxConcurrency updated here for expansion samples and regression
       // and in initialize_u_space_model() for sparse/quad/cub
       if (numSamplesOnModel) // optional with default = 0
 	maxConcurrency *= numSamplesOnModel;
+
+      if (!import_pts_file.empty())
+	import_annotated
+	  = probDescDB.get_bool("method.import_points_file_annotated");
     }
 
     if (regression_flag)
