@@ -68,7 +68,7 @@ struct NativeDataTypes<double>
 // Monostate pattern - really more of a "wrapper" around C API here
 class H5VariableString
 {
-  // Nesting within SimpleBinaryStream probably makes sense in this case
+  // Nesting within HDF5BinaryStream probably makes sense in this case
   //friend class HDF5Client; ? should the client be the object allowed to close the hid_t resource for the variable string type?
 
 public:
@@ -129,12 +129,12 @@ short H5VariableString::numVStrUses = 0;
 hid_t H5VariableString::varStringType = H5VariableString::datatype();
 
 
-class SimpleBinaryStream
+class HDF5BinaryStream
 {
 public:
 
   /// Default constructor (evaluate whether sensible - default params??)
-  SimpleBinaryStream(const std::string& file_name = "dak_db_persist.h5",
+  HDF5BinaryStream(const std::string& file_name = "dak_db_persist.h5",
                      bool db_is_incore      = true,
                      bool file_stream_exist = true,
                      bool writable_fstream  = false,
@@ -199,12 +199,12 @@ public:
 
 
   /// destructor
-  ~SimpleBinaryStream()
+  ~HDF5BinaryStream()
   {
-    // WJB: need to be "clever" and destroy when ALL SimpleBinaryStream objects
+    // WJB: need to be "clever" and destroy when ALL HDF5BinaryStream objects
     // are no longer in scope (role of the HDF5 client?)
     // versus
-    // allow each SimpleBinaryStream to create/destroy the "one" varStringHid
+    // allow each HDF5BinaryStream to create/destroy the "one" varStringHid
     // that it "owns"
     //H5VariableString::destroy(varStringHid);
 
