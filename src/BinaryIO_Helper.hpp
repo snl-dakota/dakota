@@ -17,8 +17,9 @@
 #include "dakota_data_types.hpp"
 
 //#include <boost/filesystem/operations.hpp>
+//#include <boost/multi_array.hpp>
 #include <boost/assign/std/vector.hpp>
-#include <boost/multi_array.hpp>
+#include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include "hdf5.h"
@@ -27,9 +28,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
-// WJB - ToDo: eliminate using directives in header files
-using namespace boost::assign;
 
 
 namespace Dakota
@@ -284,10 +282,9 @@ public:
     // tmp store value as the 0th entry in a vec prior to writing 1D dataspace
     std::vector<T> buf; buf.reserve(1); buf.push_back(val);
 
-    std::vector<hsize_t> dims;
-    dims += buf.size();
-
-    return store_data<T,1>( dset_name, dims, buf.data() );
+    return store_data<T,1>( dset_name,
+                            boost::assign::list_of( buf.size() ),
+                            buf.data() );
   }
 
 
@@ -298,10 +295,10 @@ public:
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims;
-    dims += buf.size(); // std::vector<T> is 1D dataspace
-
-    return store_data<T,1>( dset_name, dims, buf.data() );
+    // std::vector<T> is a 1D dataspace
+    return store_data<T,1>( dset_name,
+                            boost::assign::list_of( buf.size() ),
+                            buf.data() );
   }
 
 
@@ -311,10 +308,10 @@ public:
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims;
-    dims += buf.length(); // RealVector is 1D dataspace
-
-    return store_data<double,1>( dset_name, dims, buf.values() );
+    // RealVector is a 1D dataspace
+    return store_data<double,1>( dset_name,
+                                 boost::assign::list_of( buf.length() ),
+                                 buf.values() );
   }
 
 
@@ -327,10 +324,11 @@ public:
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims;
-    dims += buf.size(); // std::vector< row_vec > is STILL 1D dataspace
-
-    return store_data<T,1>(dset_name, dims, buf);
+    // WJB hmmm -- is this tested? return store_data<T,1>(dset_name, dims, buf);
+    // Surprisingly, std::vector< std::vector<T> > is STILL 1D dataspace in HDF5
+    return store_data<T,1>( dset_name,
+                            boost::assign::list_of( buf.size() ),
+                            buf );
   }
 
 
@@ -342,16 +340,18 @@ public:
   herr_t store_hypdata(const std::string& dset_name,
                        const std::vector<std::vector<T> >& buf) const
   {
+    using namespace boost::assign;
+
     // Create a 2D dataspace sufficient to store first row vector
     std::vector<hsize_t> dims;
     dims += 1, buf[0].size();
 
-    std::vector<hsize_t> maxdims;
-    maxdims += H5S_UNLIMITED, H5S_UNLIMITED;
+    std::vector<hsize_t> max_dims;
+    max_dims += H5S_UNLIMITED, H5S_UNLIMITED;
 
     // Create the data space...
     hid_t dataspace = H5Screate_simple( dims.size(), dims.data(),
-                        maxdims.data() );
+                        max_dims.data() );
 
     // Enable chunking using creation properties
     // Chunk size is that of the longest row vector
@@ -403,7 +403,7 @@ public:
                  NULL, row_dims[i].data(), NULL);
 
       dataspace = H5Screate_simple(row_dims[i].size(), row_dims[i].data(),
-                    maxdims.data() );
+                    max_dims.data() );
 
       // Write the row data to the hyperslab
       status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), dataspace,
@@ -415,6 +415,87 @@ public:
     //std::cout << std::endl; 
   }
 
+// WJB - ToDo:  come back and wrap-up ASAP
+#if 0
+  template <typename T>
+  herr_t append_row_record(const std::string& dset_name,
+                           const std::vector<T>& buf) const
+  {
+    // WJB:  consider functor approach once I have more confidence
+    //std::for_each( buf.begin(), buf.end(),
+      //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
+
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+
+    std::vector<hsize_t> max_dims; // WJB: AGAIN QUERY!! (and assert??)
+    {
+    //using namespace boost::assign;
+    //max_dims += H5S_UNLIMITED, H5S_UNLIMITED;
+    }
+    max_dims += H5S_UNLIMITED, H5S_UNLIMITED;
+
+    // Reuse existing data space...
+    hid_t dataspace;
+    //hid_t dataspace = H5Screate_simple( dims.size(), dims.data(),
+                        //max_dims.data() );
+
+//WJB: must fail since code NOT WRITTEN
+assert(buf.size() ==0);
+    // Find the existing dataset within the DB to be appended to
+    // WJB: come BACK ASAP
+    hid_t dataset;
+    //hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
+                      //NativeDataTypes<T>::datatype(), dataspace, H5P_DEFAULT,
+                      //cparms, H5P_DEFAULT);
+
+
+    // get it to compile -- THEN QUERY (by dset_name) for dims
+    std::vector<hsize_t> dims;
+    dims += 1, buf.size(); // WJB: wish UNLIMITED, might consider assert
+
+    // WJB: ONLY row ROW now -- std::vector< std::vector<hsize_t> > row_dims(buf.size(), dims);
+    std::vector<hsize_t> row_dims = dims; // DOES NOT seem quite right
+    std::vector<hsize_t> extents = dims;
+
+    herr_t status;
+    // WJB: forLoop is in caller -- for(int i=0; i<buf.size(); ++i) {
+// WJB: get it to compile, then QUESRY for i valueOf previous WRITE
+      size_t i=3;
+      extents[0] = i+1;
+      extents[1] = buf.size();
+
+      // New row is NOT necessarily the same size as previous rows,
+      // so extend the dataset.
+
+      status = H5Dextend( dataset, extents.data() );
+
+      hid_t db_space = H5Dget_space(dataset);
+
+      dims[0] = extents[0];
+      dims[1] = extents[1];
+      row_dims[1] = dims[1];
+
+      // Select a hyperslab... row-by-row
+      std::vector<hsize_t> offset;
+      offset += i, 0;  // AGAIN, QUERY for the correct 'i' ROW!!
+
+      status = H5Sselect_hyperslab(db_space, H5S_SELECT_SET, offset.data(),
+                 NULL, row_dims.data(), NULL);
+
+      dataspace = H5Screate_simple(row_dims.size(), row_dims.data(),
+                    max_dims.data() );
+
+      // Write the row data to the hyperslab
+      status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), dataspace,
+                 db_space, H5P_DEFAULT, buf.data() );
+      std::cout << "- Row: " << i << " - data written\n" << std::endl;
+    //
+    //}
+
+  }
+#endif
 
 
   // should parameterize on ScalarType -- template <typename T>
@@ -425,12 +506,11 @@ public:
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims;
-    dims += buf.numRows(), buf.numCols(); // Matrix is 2D
-
-    return store_data<double,2>( dset_name, dims, buf.values() );
+    // Matrix is 2D
+    return store_data<double,2>( dset_name,
+             boost::assign::list_of( buf.numRows() )( buf.numCols() ),
+             buf.values() );
   }
-
 
   herr_t store_data(const std::string& dset_name,
                     const RealVectorArray& buf) const
@@ -438,17 +518,17 @@ public:
     if ( buf.size() == 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims;
-    dims += buf.size(), buf[0].length(); // VectorArray is 2D
-
     // RECALL:  teuchos is a C++ library, but has fortran layout
-    // WJB:     look into a Boost MultiArray here instead!
+    /* WJB:     look into a Boost MultiArray here instead!
     RealMatrix tmp( dims[0], dims[1] );
     for(int i=0; i<dims[0]; ++i)
       for(int j=0; j<dims[1]; ++j)
         tmp(i, j) = buf[i][j];
-
-    return store_data<double,2>( dset_name, dims, tmp.values() );
+    */
+    // VectorArray is 2D
+    return store_data<double,2>( dset_name,
+             boost::assign::list_of( buf.size() )( buf[0].length() ),
+             &buf[0][0] );
   }
 
 
