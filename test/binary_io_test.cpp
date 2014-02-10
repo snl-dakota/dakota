@@ -36,8 +36,8 @@ void test_write_read_native_val(const std::string& data_label, T val_out,
     bool write_file = true;
 
     // open file
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     status = binary_file.store_data(data_label, val_out);
     assert(status >= 0);
@@ -53,8 +53,8 @@ void test_write_read_native_val(const std::string& data_label, T val_out,
     bool write_file = false;
     T val_in = 0;
 
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     // WJB: see hack (hdr file) to make a single val look like a vec of len==1
     status = binary_file.read_data(data_label, val_in);
@@ -68,7 +68,7 @@ void test_write_read_native_val(const std::string& data_label, T val_out,
     // scope within which DB write takes place
     {
       // open HDF5 DB - FIRST test of DEFAULT constructor with default args
-      SimpleBinaryStream incore_db;
+      HDF5BinaryStream incore_db;
 
       status = incore_db.store_data(data_label, val_out);
       assert(status >= 0);
@@ -99,8 +99,8 @@ void test_write_read_std_vec(const std::string& file_name,
     bool write_file = true;
 
     // open file
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     status = binary_file.store_data(data_label, vec_out);
     assert(status >= 0);
@@ -114,8 +114,8 @@ void test_write_read_std_vec(const std::string& file_name,
     bool db_is_incore = false;
     bool file_exist = true;
     bool write_file = false;
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
 #if 0
     // WJB: enabling read of more sophisticated data types suggests a lack of
@@ -147,8 +147,8 @@ void test_write_read_string(const std::string& file_name)
   // scope within which file write takes place
   {
     // open file
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     status = binary_file.store_data("/StdString", tst_str);
     assert(status >= 0);
@@ -161,8 +161,8 @@ void test_write_read_string(const std::string& file_name)
     // open/read file
     file_exist = true;
     write_file = false;
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     std::string tst_str_in;
     status = binary_file.read_data("/StdString", tst_str_in);
@@ -213,8 +213,8 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
   // scope within which file write takes place
   {
     // open file
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     //status = binary_file.store_data(data_label, vlvec_array_out); // WJB: old approach, no hyperslabs
     status = binary_file.store_hypdata(data_label, vlvec_array_out);
@@ -227,8 +227,8 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
     /* open/read file
     file_exist = true;
     write_file = false;
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     vector< vector<T> > vlvec_array_in;
     //binary_file.read_data("/RaggedArrayData", vlvec_array_in);
@@ -266,8 +266,8 @@ void test_write_read_string_array(const std::string& file_name)
   // scope within which file write takes place
   {
     // open file
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     status = binary_file.store_data("/StringArrayData", str_array_out);
 
@@ -280,8 +280,8 @@ void test_write_read_string_array(const std::string& file_name)
     // open/read file
     file_exist = true;
     write_file = false;
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     StringArray str_array_in;
     binary_file.read_data("/StringArrayData", str_array_in);
@@ -336,8 +336,8 @@ herr_t testHDF5fileDB(const std::string& file_name)
   // scope within which file write takes place
   {
     // open/create file
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
     
     // RealMatrix -- WJB: come back ASAP -- try RealVectorArray instead
     status = binary_file.store_data("/RealMatrixData", rmatrix_out);
@@ -363,8 +363,8 @@ herr_t testHDF5fileDB(const std::string& file_name)
     // open/read file
     file_exist = true;
     write_file = false;
-    SimpleBinaryStream binary_file(file_name, db_is_incore, file_exist,
-                                   write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
 
     // read data 
   
@@ -438,7 +438,7 @@ int main()
   // that the HDF5 DB will NOT be persisted to a file when the program ends.
   // 
   // In order to get the in-core DB persisted to a file, there is now a need
-  // to override the default parameters to the SimpleBinaryStream constructor.
+  // to override the default parameters to the HDF5BinaryStream constructor.
   // 
   //status = testHDF5_DB();
   testHDF5_DB();
