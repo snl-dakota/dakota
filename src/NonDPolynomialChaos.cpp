@@ -406,9 +406,10 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // construct it for the former and (conditionally) pass it in to the latter.
   shared_data_rep->construct_basis(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
-  if (tensorRegression || expansionCoeffsApproach == Pecos::QUADRATURE ||
-      expansionCoeffsApproach == Pecos::CUBATURE   ||
-      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID) {
+  if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
+       expansionCoeffsApproach == Pecos::CUBATURE   ||
+       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+       ( tensorRegression && numSamplesOnModel ) ) {
     NonDIntegration* u_space_sampler_rep = 
       (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
     u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
