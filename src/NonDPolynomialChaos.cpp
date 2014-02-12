@@ -201,11 +201,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	    RealVector dim_pref;
 	    NonDIntegration::anisotropic_order_to_dimension_preference(
 	      dim_quad_order, quad_order_seq[0], dim_pref);
-	    // use alternate NonDQuad ctor to filter or sample TPQ points
-	    // (NonDExpansion invokes uSpaceModel.build_approximation()
-	    // which invokes daceIterator.run_iterator()). The quad order inputs
-	    // are updated within NonDQuadrature as needed to satisfy min order
-	    // constraints (but not nested constraints: nestedRules is false).
+	    // use alternate NonDQuad ctor to filter (deprecated) or sub-sample
+	    // quadrature points (uSpaceModel.build_approximation() invokes
+	    // daceIterator.run_iterator()).  The quad order inputs are updated
+	    // within NonDQuadrature as needed to satisfy min order constraints
+	    // (but not nested constraints: nestedRules is false for m >= p+1).
 	    construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
 				 probDescDB.get_int("method.random_seed"),
 				 quad_order_seq, dim_pref);

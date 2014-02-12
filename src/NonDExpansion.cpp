@@ -258,7 +258,10 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   // enforce minimum required VBD control
   if (!vbdFlag && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
     { vbdFlag = true; vbdOrderLimit = 1; }
-  // nested overrides not currently part of tensor regression spec
+
+  // don't use nested rules for tensor regression since this could induce zeros
+  // in the Vandermonde matrix (high order rules contain zeros for lower-order
+  // polynomials), despite protection of m >= p+1  
   nestedRules = (ruleNestingOverride == Pecos::NESTED ||
     (refineType && ruleNestingOverride != Pecos::NON_NESTED));
   */
@@ -286,7 +289,10 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   // enforce minimum required VBD control
   if (!vbdFlag && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
     { vbdFlag = true; vbdOrderLimit = 1; }
-  // nested overrides not currently part of tensor regression spec
+
+  // don't use nested rules for tensor regression since this could induce zeros
+  // in the Vandermonde matrix (high order rules contain zeros for lower-order
+  // polynomials), despite protection of m >= p+1  
   nestedRules = (ruleNestingOverride == Pecos::NESTED ||
     (refineType && ruleNestingOverride != Pecos::NON_NESTED));
   */

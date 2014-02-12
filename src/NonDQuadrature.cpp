@@ -82,7 +82,8 @@ NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
     evaluation of filtered tensor quadrature points. */
 NonDQuadrature::
 NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref): 
-  NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
+  nestedRules(false), // minimize zeros introduced into Vandermonde matrix
   quadMode(FILTERED_TENSOR), numSamples(num_filt_samples)
 {
   // initialize the numerical integration driver
@@ -101,7 +102,8 @@ NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref):
 NonDQuadrature::
 NonDQuadrature(Model& model, int num_rand_samples, int seed,
 	       const UShortArray& quad_order_seq, const RealVector& dim_pref): 
-  NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
+  nestedRules(false), // minimize zeros introduced into Vandermonde matrix
   quadOrderSeqSpec(quad_order_seq), quadMode(RANDOM_TENSOR),
   numSamples(num_rand_samples), randomSeed(seed)
 {
