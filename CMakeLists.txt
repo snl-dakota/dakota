@@ -413,36 +413,21 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
 
 
 # Final CPack settings
-if(NOT WIN32)
-
-  # if(APPLE)
-  #else if(NOT CYGWIN)
-  if(NOT CYGWIN)
-    # All unix-like systems EXCEPT cygwin (WJB - ToDo:  MacOSX)
-    set(CPACK_GENERATOR TGZ)
-    set(CPACK_SOURCE_GENERATOR TGZ)
-
-  else()
-
-    # Workaround for surprising error with Source TGZ creation on Cygwin
-    #set(CPACK_GENERATOR CygwinBinary)
-    set(CPACK_GENERATOR ZIP)
-
-    #message("BROKEN!  Will NOT create a custom, Cygwin SOURCE archive")
-    # Unfortunately, FAILS too -- set(CPACK_SOURCE_GENERATOR CygwinSource)
-    # Need to rely on windows builds for the source distro format (zip)
-
-  endif() # NOT CYGWIN
-
-else()
-
-  #message("Debugging CPACK logic -- In the Windows ZIP branch")
+if(WIN32)
   set(CPACK_GENERATOR ZIP)
   set(CPACK_SOURCE_GENERATOR ZIP)
-
-  message("Verify CPACK GENERATOR on windows: ${CPACK_GENERATOR}")
-
-endif() # NOT WIN32
+elseif(CYGWIN)
+  # The Cygwin-specific generators require additional information to
+  # create packages that work with Cygwin's package manager (we suspect)
+  #set(CPACK_GENERATOR CygwinBinary)
+  #set(CPACK_SOURCE_GENERATOR CygwinSource)
+  set(CPACK_GENERATOR ZIP)
+  set(CPACK_SOURCE_GENERATOR ZIP)
+else()
+  # All unix-like systems EXCEPT cygwin (WJB - ToDo:  MacOSX-specific packages)
+  set(CPACK_GENERATOR TGZ)
+  set(CPACK_SOURCE_GENERATOR TGZ)
+endif()
 
 include(CPack)
 
