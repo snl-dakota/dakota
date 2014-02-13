@@ -21,7 +21,7 @@ method,
 	  import                                   #0
 #	  adapt_import                             #1
 #	  mm_adapt_import                          #2
-	  response_levels = .5 1. 5. 10. 50. 100. 500. 1000.
+	  response_levels = 0.5 5 50 500 
 	  #response_levels = 3.0  
           samples = 250
 	  refinement_samples = 100
