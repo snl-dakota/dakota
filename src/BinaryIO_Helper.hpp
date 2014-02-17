@@ -18,7 +18,6 @@
 
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/multi_array.hpp>
-#include <boost/assign/std/vector.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -331,28 +330,29 @@ public:
   herr_t store_hypdata(const std::string& dset_name,
                        const std::vector<std::vector<T> >& buf) const
   {
-    using namespace boost::assign;
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
 
     // Create a 2D dataspace sufficient to store first row vector
-    std::vector<hsize_t> dims;
-    dims += 1, buf[0].size();
+    std::vector<hsize_t> dims(2);
+    dims[0] = buf.size(); dims[1] = buf[0].size();
 
-    std::vector<hsize_t> max_dims;
-    max_dims += H5S_UNLIMITED, H5S_UNLIMITED;
+    std::vector<hsize_t> max_dims(2);
+    max_dims[0] = H5S_UNLIMITED; max_dims[1] = H5S_UNLIMITED;
 
-    // Create the data space...
-    hid_t dataspace = H5Screate_simple( dims.size(), dims.data(),
+    // Create the memory space...
+    hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
                         max_dims.data() );
 
     // Enable chunking using creation properties
     // Chunk size is that of the longest row vector
-    size_t num_cols = 0;
+    size_t num_cols = dims[1];
     for(int i=0; i<buf.size(); ++i) {
       num_cols = std::max(num_cols, buf[i].size());  
     }
 
-    std::vector<hsize_t> chunk_dims;
-    chunk_dims += 1, num_cols;
+    std::vector<hsize_t> chunk_dims(2);
+    chunk_dims[0] = 1; chunk_dims[1] = num_cols;
 
     hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
     H5Pset_layout(cparms, H5D_CHUNKED);
@@ -361,8 +361,9 @@ public:
                       chunk_dims.data() );
 
     // Create a new dataset within the DB using cparms creation properties.
+
     hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
-                      NativeDataTypes<T>::datatype(), dataspace, H5P_DEFAULT,
+                      NativeDataTypes<T>::datatype(), mem_space, H5P_DEFAULT,
                       cparms, H5P_DEFAULT);
 
     std::vector< std::vector<hsize_t> > row_dims(buf.size(), dims);
@@ -373,118 +374,79 @@ public:
       //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
 
     for(int i=0; i<buf.size(); ++i) {
-      extents[0] = i+1;
-      extents[1] = buf[i].size();
 
-      // Each row is NOT necessarily the same size, so extend the dataset.
+      status = do_next_row_record( dset_name, i, max_dims, // dims,
+                          dataset, mem_space, buf[i] );
+                          //row_dims, dataset, mem_space, buf[i] );
 
-      status = H5Dextend( dataset, extents.data() );
+      //std::cout << "- Row: " << i << "\t" << row_dims[i][1] << " - data written\n" << std::endl;
+      std::cout << "- Assert doNextRowStatus: " << "\t" << status << " - SHOULD be DECENT -- prefer exceptionCode.. ...\n" << std::endl;
 
-      hid_t db_space = H5Dget_space(dataset);
-
-      dims[0] = extents[0];
-      dims[1] = extents[1];
-      row_dims[i][1] = dims[1];
-
-      // Select a hyperslab... row-by-row
-      std::vector<hsize_t> offset;
-      offset += i, 0;
-
-      status = H5Sselect_hyperslab(db_space, H5S_SELECT_SET, offset.data(),
-                 NULL, row_dims[i].data(), NULL);
-
-      dataspace = H5Screate_simple(row_dims[i].size(), row_dims[i].data(),
-                    max_dims.data() );
-
-      // Write the row data to the hyperslab
-      status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), dataspace,
-                 db_space, H5P_DEFAULT, buf[i].data() );
-      //std::cout << "- Row: " << i << " - data written\n" << std::endl;
     }
 
     // WJB - ToDo: free resources
     //std::cout << std::endl; 
   }
 
-// WJB - ToDo:  come back and wrap-up ASAP
-#if 0
-  template <typename T>
-  herr_t append_row_record(const std::string& dset_name,
-                           const std::vector<T>& buf) const
-  {
     // WJB:  consider functor approach once I have more confidence
     //std::for_each( buf.begin(), buf.end(),
       //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
 
-    if ( buf.empty() && exitOnError )
+// WJB - ToDo:  come back and wrap-up ASAP
+//  herr_t append_row_record(const std::string& dset_name,
+//                           const std::vector<T>& buf) const
+//WJB: must fail since code NOT WRITTEN
+//assert(buf.size() ==0);
+#if 1
+  template <typename T>
+  herr_t do_next_row_record(const std::string& dset_name,
+    size_t row_index,
+    const std::vector<hsize_t>& max_dims,
+    hid_t dataset,
+    hid_t mem_space,
+    const std::vector<T>& record) const
+  {
+    if ( record.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
 
-    std::vector<hsize_t> max_dims; // WJB: AGAIN QUERY!! (and assert??)
-    {
-    //using namespace boost::assign;
-    //max_dims += H5S_UNLIMITED, H5S_UNLIMITED;
-    }
-    max_dims += H5S_UNLIMITED, H5S_UNLIMITED;
+    htri_t ds_status = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+    if ( !ds_status && exitOnError )
+      throw BinaryStream_StoreDataFailure();
 
-    // Reuse existing data space...
-    hid_t dataspace;
-    //hid_t dataspace = H5Screate_simple( dims.size(), dims.data(),
-                        //max_dims.data() );
+    std::vector<hsize_t> curr_dims(max_dims);
 
-//WJB: must fail since code NOT WRITTEN
-assert(buf.size() ==0);
-    // Find the existing dataset within the DB to be appended to
-    // WJB: come BACK ASAP
-    hid_t dataset;
-    //hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
-                      //NativeDataTypes<T>::datatype(), dataspace, H5P_DEFAULT,
-                      //cparms, H5P_DEFAULT);
+    herr_t retval = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
+                      &curr_dims[0], NULL, NULL );
+    //if (curr_dims[0] != 1) assert(row_index == curr_dims[0]); // NOT firstRow!
 
+    // Extend the dataset by 1 row with num_cols increased if necessary
+    std::vector<hsize_t> dims(max_dims);
+    dims[0] = row_index + 1;
+    dims[1] = (record.size() > curr_dims[1]) ? record.size() : curr_dims[1];
 
-    // get it to compile -- THEN QUERY (by dset_name) for dims
-    std::vector<hsize_t> dims;
-    dims += 1, buf.size(); // WJB: wish UNLIMITED, might consider assert
+    retval = H5Dextend( dataset, dims.data() );
 
-    // WJB: ONLY row ROW now -- std::vector< std::vector<hsize_t> > row_dims(buf.size(), dims);
-    std::vector<hsize_t> row_dims = dims; // DOES NOT seem quite right
-    std::vector<hsize_t> extents = dims;
+    std::vector<hsize_t> record_dims(max_dims);
+    record_dims[0] = 1; record_dims[1] = record.size();
 
-    herr_t status;
-    // WJB: forLoop is in caller -- for(int i=0; i<buf.size(); ++i) {
-// WJB: get it to compile, then QUESRY for i valueOf previous WRITE
-      size_t i=3;
-      extents[0] = i+1;
-      extents[1] = buf.size();
+    retval = H5Sset_extent_simple( mem_space, record_dims.size(),
+               record_dims.data(), max_dims.data() );
 
-      // New row is NOT necessarily the same size as previous rows,
-      // so extend the dataset.
+    hid_t db_stream_space = H5Dget_space(dataset);
 
-      status = H5Dextend( dataset, extents.data() );
+    // Select a row-record hyperslab...
+    std::vector<hsize_t> offset(max_dims);
+    offset[0] = row_index; offset[1] = 0;
 
-      hid_t db_space = H5Dget_space(dataset);
+    retval = H5Sselect_hyperslab( db_stream_space, H5S_SELECT_SET,
+               offset.data(), NULL, record_dims.data(), NULL );
 
-      dims[0] = extents[0];
-      dims[1] = extents[1];
-      row_dims[1] = dims[1];
+    // Write the row data record to the hyperslab
+    retval = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), mem_space,
+               db_stream_space, H5P_DEFAULT, record.data() );
 
-      // Select a hyperslab... row-by-row
-      std::vector<hsize_t> offset;
-      offset += i, 0;  // AGAIN, QUERY for the correct 'i' ROW!!
-
-      status = H5Sselect_hyperslab(db_space, H5S_SELECT_SET, offset.data(),
-                 NULL, row_dims.data(), NULL);
-
-      dataspace = H5Screate_simple(row_dims.size(), row_dims.data(),
-                    max_dims.data() );
-
-      // Write the row data to the hyperslab
-      status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), dataspace,
-                 db_space, H5P_DEFAULT, buf.data() );
-      std::cout << "- Row: " << i << " - data written\n" << std::endl;
-    //
-    //}
-
+    return retval;
   }
 #endif
 
