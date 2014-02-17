@@ -266,25 +266,16 @@ public:
 
 
   template <typename T>
-  herr_t store_data(const std::string& dset_name,
-                    const T& val) const
+  herr_t store_data(const std::string& dset_name, const T& val) const
   {
-    /* WJB: no time time to dig-deeper, think of the data as an array of len==1
-    hsize_t dims[1]={1};    
-    herr_t ret_val = H5LTmake_dataset_<TYPE>( binStreamId, dset_name.c_str(),
-                       1, dims, &val );
+    hsize_t dims[1] = {1};    
+    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(), 1, dims,
+                       NativeDataTypes<T>::datatype(), &val );
 
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 		  
-    return ret_val; */
-
-    // tmp store value as the 0th entry in a vec prior to writing 1D dataspace
-    std::vector<T> buf; buf.reserve(1); buf.push_back(val);
-
-    return store_data<T,1>( dset_name,
-                            boost::assign::list_of( buf.size() ),
-                            buf.data() );
+    return ret_val;
   }
 
 
@@ -518,17 +509,21 @@ assert(buf.size() ==0);
     if ( buf.size() == 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
+    std::vector<hsize_t> dims(2);
+    dims[0] = buf.size(); dims[1] = buf[0].length();
+
     // RECALL:  teuchos is a C++ library, but has fortran layout
-    /* WJB:     look into a Boost MultiArray here instead!
+    // WJB:     look into a Boost MultiArray here instead!
     RealMatrix tmp( dims[0], dims[1] );
-    for(int i=0; i<dims[0]; ++i)
+    for(int i=0; i<dims[0]; ++i) {
       for(int j=0; j<dims[1]; ++j)
         tmp(i, j) = buf[i][j];
-    */
+    }
+    //
     // VectorArray is 2D
     return store_data<double,2>( dset_name,
-             boost::assign::list_of( buf.size() )( buf[0].length() ),
-             &buf[0][0] );
+             dims,
+             &tmp[0][0] );
   }
 
 
