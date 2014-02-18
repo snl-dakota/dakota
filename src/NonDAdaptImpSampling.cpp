@@ -253,6 +253,8 @@ void NonDAdaptImpSampling::quantify_uncertainty()
         computedProbLevels[resp_fn_count][level_count] = probEstimate;
       }
     }
+    // propagate computedProbLevels to finalStatistics
+    update_final_statistics();
   }
   else {
     // no initial LHS: refine only the active respFnIndex starting
