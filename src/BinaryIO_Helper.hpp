@@ -337,8 +337,7 @@ public:
     std::vector<hsize_t> dims(2);
     dims[0] = buf.size(); dims[1] = buf[0].size();
 
-    std::vector<hsize_t> max_dims(2);
-    max_dims[0] = H5S_UNLIMITED; max_dims[1] = H5S_UNLIMITED;
+    std::vector<hsize_t> max_dims = unlimitedDims2D();
 
     // Create the memory space...
     hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
@@ -348,17 +347,15 @@ public:
     // Chunk size is that of the longest row vector
     size_t num_cols = dims[1];
     for(int i=0; i<buf.size(); ++i) {
-      num_cols = std::max(num_cols, buf[i].size());  
+      num_cols = std::max( num_cols, buf[i].size() );  
     }
 
-    std::vector<hsize_t> chunk_dims(2);
+    std::vector<hsize_t> chunk_dims = dims;
     chunk_dims[0] = 1; chunk_dims[1] = num_cols;
 
     hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
     H5Pset_layout(cparms, H5D_CHUNKED);
-
-    herr_t status = H5Pset_chunk( cparms, chunk_dims.size(),
-                      chunk_dims.data() );
+    H5Pset_chunk( cparms, chunk_dims.size(), chunk_dims.data() );
 
     // Create a new dataset within the DB using cparms creation properties.
 
@@ -366,89 +363,33 @@ public:
                       NativeDataTypes<T>::datatype(), mem_space, H5P_DEFAULT,
                       cparms, H5P_DEFAULT);
 
-    std::vector< std::vector<hsize_t> > row_dims(buf.size(), dims);
-    std::vector<hsize_t> extents = dims;
-
-    // WJB:  consider functor approach once I have more confidence
-    //std::for_each( buf.begin(), buf.end(),
-      //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
-
+    herr_t status;
     for(int i=0; i<buf.size(); ++i) {
-
-      status = do_next_row_record( dset_name, i, max_dims, // dims,
-                          dataset, mem_space, buf[i] );
-                          //row_dims, dataset, mem_space, buf[i] );
-
-      //std::cout << "- Row: " << i << "\t" << row_dims[i][1] << " - data written\n" << std::endl;
-      std::cout << "- Assert doNextRowStatus: " << "\t" << status << " - SHOULD be DECENT -- prefer exceptionCode.. ...\n" << std::endl;
-
+      status = append_row_record( dset_name, i, buf[i].data(), buf[i].size() );
     }
 
     // WJB - ToDo: free resources
-    //std::cout << std::endl; 
+    H5Sclose(mem_space);
+
   }
 
-    // WJB:  consider functor approach once I have more confidence
-    //std::for_each( buf.begin(), buf.end(),
-      //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
 
-// WJB - ToDo:  come back and wrap-up ASAP
-//  herr_t append_row_record(const std::string& dset_name,
-//                           const std::vector<T>& buf) const
-//WJB: must fail since code NOT WRITTEN
-//assert(buf.size() ==0);
-#if 1
   template <typename T>
-  herr_t do_next_row_record(const std::string& dset_name,
-    size_t row_index,
-    const std::vector<hsize_t>& max_dims,
-    hid_t dataset,
-    hid_t mem_space,
-    const std::vector<T>& record) const
+  herr_t append_row_record(const std::string& dset_name,
+                           const std::vector<T>& buf) const
   {
-    if ( record.empty() && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-
-    htri_t ds_status = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
-    if ( !ds_status && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    std::vector<hsize_t> curr_dims(max_dims);
-
-    herr_t retval = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
-                      &curr_dims[0], NULL, NULL );
-    //if (curr_dims[0] != 1) assert(row_index == curr_dims[0]); // NOT firstRow!
-
-    // Extend the dataset by 1 row with num_cols increased if necessary
-    std::vector<hsize_t> dims(max_dims);
-    dims[0] = row_index + 1;
-    dims[1] = (record.size() > curr_dims[1]) ? record.size() : curr_dims[1];
-
-    retval = H5Dextend( dataset, dims.data() );
-
-    std::vector<hsize_t> record_dims(max_dims);
-    record_dims[0] = 1; record_dims[1] = record.size();
-
-    retval = H5Sset_extent_simple( mem_space, record_dims.size(),
-               record_dims.data(), max_dims.data() );
-
-    hid_t db_stream_space = H5Dget_space(dataset);
-
-    // Select a row-record hyperslab...
-    std::vector<hsize_t> offset(max_dims);
-    offset[0] = row_index; offset[1] = 0;
-
-    retval = H5Sselect_hyperslab( db_stream_space, H5S_SELECT_SET,
-               offset.data(), NULL, record_dims.data(), NULL );
-
-    // Write the row data record to the hyperslab
-    retval = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), mem_space,
-               db_stream_space, H5P_DEFAULT, record.data() );
-
-    return retval;
+    hsize_t last_row = find_last_dataset_record(dset_name);
+    return append_row_record( dset_name, last_row, buf.data(), buf.size() );
   }
-#endif
+
+  // WJB: nearly a DUPLICATE version of above code for Teuchos row vectors
+  //template <typename OrdinalType, typename ScalarType>
+  herr_t append_row_record(const std::string& dset_name,
+                           const RealVector& buf) const
+  {
+    hsize_t last_row = find_last_dataset_record(dset_name);
+    return append_row_record( dset_name, last_row, &buf[0], buf.length() );
+  }
 
 
   // should parameterize on ScalarType -- template <typename T>
@@ -465,27 +406,61 @@ public:
              buf.values() );
   }
 
+
   herr_t store_data(const std::string& dset_name,
                     const RealVectorArray& buf) const
   {
-    if ( buf.size() == 0 && exitOnError )
+    if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> dims(2);
-    dims[0] = buf.size(); dims[1] = buf[0].length();
+    // WJB: much of the "chunking setup" code is nearly identical to the
+    // std::vector version, so re-factor for reuse next sprint
 
-    // RECALL:  teuchos is a C++ library, but has fortran layout
-    // WJB:     look into a Boost MultiArray here instead!
-    RealMatrix tmp( dims[0], dims[1] );
-    for(int i=0; i<dims[0]; ++i) {
-      for(int j=0; j<dims[1]; ++j)
-        tmp(i, j) = buf[i][j];
+    // Create a 2D dataspace sufficient to store first row vector
+    std::vector<hsize_t> dims(2);
+    dims[0] = buf.size(); dims[1] = buf[0].length(); // WJB: fcnPtr vs PassIn?
+
+    std::vector<hsize_t> max_dims = unlimitedDims2D();
+
+    // Create the memory space...
+    hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
+                        max_dims.data() );
+
+    // Enable chunking using creation properties
+    // Chunk size is that of the longest row vector
+    int num_cols = dims[1];
+    for(int i=0; i<buf.size(); ++i) {
+      num_cols = std::max( num_cols, buf[i].length() ); // WJB: "generic" possible?
     }
-    //
-    // VectorArray is 2D
-    return store_data<double,2>( dset_name,
-             dims,
-             &tmp[0][0] );
+
+    std::vector<hsize_t> chunk_dims = dims;
+    chunk_dims[0] = 1; chunk_dims[1] = num_cols;
+
+    hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
+    H5Pset_layout(cparms, H5D_CHUNKED);
+    H5Pset_chunk( cparms, chunk_dims.size(), chunk_dims.data() );
+
+    // Create a new dataset within the DB using cparms creation properties.
+
+    // size() vs length() and 'size_type' vs 'ScalarType' prevents writing a
+    // generic algorithm, common to both std::vector and Teuchos vector
+    hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
+                      NativeDataTypes<double>::datatype(), mem_space,
+                      H5P_DEFAULT, cparms, H5P_DEFAULT);
+
+    herr_t status;
+    for(int i=0; i<dims[0]; ++i) {
+      std::vector<double> tmp( dims[1] );
+      for(int j=0; j<dims[1]; ++j)
+        tmp[j] = buf[i][j];
+
+      status = append_row_record( dset_name, i, tmp.data(), buf[i].length() );
+    }
+
+    // WJB - ToDo: free resources
+    H5Sclose(mem_space);
+
+    //std::cout << std::endl; 
   }
 
 
@@ -693,6 +668,91 @@ private:
     return ret_val;
   }
 
+
+  /** Check whether a dataset exists (lookup by name) and return the index
+      of the last entry; i.e. the dims[0] of its corresponding dataspace
+      ("fortran-style" indexing is assumed since easier with HDF5 queries). */
+  hsize_t find_last_dataset_record(const std::string& dset_name) const
+  {
+    htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+
+    if ( !ds_exists && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    int ndims;
+    herr_t status = H5LTget_dataset_ndims(binStreamId, dset_name.c_str(),
+                      &ndims);
+
+    std::vector<hsize_t> dims( ndims, hsize_t(1) );
+    status = H5LTget_dataset_info(binStreamId, dset_name.c_str(), &dims[0],
+               NULL, NULL);
+    return dims[0];
+  }
+
+
+    // WJB:  consider functor approach once I have more confidence
+    //std::for_each( buf.begin(), buf.end(),
+      //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
+
+  template <typename T>
+  herr_t append_row_record(const std::string& dset_name, const size_t row_index,
+                           const T* buf, size_t buf_len) const
+  {
+    htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+
+    if ( !ds_exists || buf == NULL && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    std::vector<hsize_t> max_dims = unlimitedDims2D();
+    std::vector<hsize_t> curr_dims(max_dims);
+
+    herr_t status = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
+                      &curr_dims[0], NULL, NULL );
+
+    //hsize_t last_index = find_last_dataset_record(dset_name);
+    size_t last_index = row_index;
+
+    //if (curr_dims[0] != 1) assert(last_index==curr_dims[0]); // NOT firstRow!
+
+    // Extend the dataset by 1 row with num_cols increased if necessary
+    std::vector<hsize_t> dims(max_dims);
+    dims[0] = last_index + 1;
+    dims[1] = (buf_len > curr_dims[1]) ? buf_len : curr_dims[1];
+
+    hid_t dataset = H5Dopen(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+    status = H5Dextend( dataset, dims.data() );
+
+    std::vector<hsize_t> record_dims(max_dims);
+    record_dims[0] = 1; record_dims[1] = buf_len;
+
+    /* WJB:  Examples show mem_space re-created
+    // Logical, but shouldn't we query for the current mem_space and extend??
+    status = H5Sset_extent_simple( mem_space, record_dims.size(),
+               record_dims.data(), max_dims.data() );
+    // NOT sure I like the re-creation idea, but if it works, does it matter? */
+    hid_t mem_space = H5Screate_simple( record_dims.size(), record_dims.data(),
+                        max_dims.data() );
+
+    hid_t db_stream_space = H5Dget_space(dataset);
+
+    // Select a row-record hyperslab...
+    std::vector<hsize_t> offset(max_dims);
+    offset[0] = last_index; offset[1] = 0;
+
+    status = H5Sselect_hyperslab( db_stream_space, H5S_SELECT_SET,
+               offset.data(), NULL, record_dims.data(), NULL );
+
+    // Write the row data record to the hyperslab
+    status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), mem_space,
+               db_stream_space, H5P_DEFAULT, buf );
+
+    H5Sclose(db_stream_space);
+    H5Sclose(mem_space);
+
+    return status;
+  }
+
+
   /** Assume we have an absolute path /root/dir/dataset and create
       groups /root/ and /root/dir/ if needed */
   void create_groups(const std::string& dset_name) const {
@@ -776,6 +836,19 @@ private:
   //static std::vector<hsize_t, 1> staticVectorDims;
   //static std::vector<hsize_t, 2> staticMatrixDims;
   //static std::vector<hsize_t, 3> static3DBufDims;
+
+  static std::vector<hsize_t> unlimitedDims2D()
+  {
+    const static std::vector<hsize_t> max_dims = initializeUnlimitedDims();
+    return max_dims;
+  }
+
+  static std::vector<hsize_t> initializeUnlimitedDims()
+  {
+    std::vector<hsize_t> max_dims_2d(2);
+    max_dims_2d[0] = H5S_UNLIMITED; max_dims_2d[1] = H5S_UNLIMITED;
+    return max_dims_2d;
+  }
 
 };
 
