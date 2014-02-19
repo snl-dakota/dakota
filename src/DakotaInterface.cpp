@@ -66,7 +66,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  Interfaces support the full granularity in verbosity.
   outputLevel(problem_db.get_short("method.output")), appendIfaceId(true),
-  interfaceRep(NULL), referenceCount(1)
+  interfaceRep(NULL), referenceCount(1), asl(NULL)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;

@@ -19,11 +19,11 @@
 #include "dakota_global_defs.hpp" // for BaseConstructor
 #include "dakota_data_types.hpp"
 
-#ifdef HAVE_AMPL
-struct ASL; // forward declaration
-#endif // HAVE_AMPL
+// forward declarations
 
-// forward declaration
+// always declare ASL rather than have a conditionally included class member
+struct ASL;
+
 namespace Pecos { class SurrogateData; }
 
 namespace Dakota {
@@ -407,10 +407,8 @@ private:
   /// number of objects sharing interfaceRep
   int referenceCount;
 
-#ifdef HAVE_AMPL
   /// pointer to an AMPL solver library (ASL) object
   ASL *asl;
-#endif // HAVE_AMPL
 };
 
 
