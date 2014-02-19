@@ -5222,6 +5222,8 @@ static Method_mp_lit
 	MP2(methodName,list_parameter_study),
 	MP2(methodName,centered_parameter_study),
 	MP2(methodName,multidim_parameter_study),
+	MP2(mcmcType,dram),
+	MP2(mcmcType,multilevel),
 	MP2(metropolisType,adaptive),
 	MP2(metropolisType,hastings),
 	MP2(mutationType,bit_random),

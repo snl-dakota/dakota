@@ -824,12 +824,16 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                       	freeform  {N_mdm(false,approxExportAnnotated)} ]
               	    ]
                   )
-                [ rejection {0}
-	          standard {N_mdm(lit,rejectionType_standard)}
-		  | delayed {N_mdm(lit,rejectionType_delayed)} ]
-                [ metropolis {0}
-	          hastings {N_mdm(lit,metropolisType_hastings)}
-		  | adaptive {N_mdm(lit,metropolisType_adaptive)} ]
+                [ mcmc_type {0} 
+	          ( dram {N_mdm(lit,mcmcType_dram)}
+                    [ rejection {0}
+	              standard {N_mdm(lit,rejectionType_standard)}
+		      | delayed {N_mdm(lit,rejectionType_delayed)} ]
+                    [ metropolis {0}
+	              hastings {N_mdm(lit,metropolisType_hastings)}
+		      | adaptive {N_mdm(lit,metropolisType_adaptive)} ]
+                    )
+	          | multilevel {N_mdm(lit,mcmcType_multilevel)} ] 
 	        [ rng {0}
 		  mt19937 {N_mdm(lit,rngName_mt19937)}
 		  | rnum2 {N_mdm(lit,rngName_rnum2)} ]

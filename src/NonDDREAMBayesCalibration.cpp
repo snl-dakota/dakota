@@ -412,7 +412,7 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   }
 
   result = (result/(NonDDREAMInstance->likelihoodScale));
-  result = -1.0*result;
+  result = -0.5*result;
   Cout << "result final " << result << '\n';
   Cout << "likelihood is " << exp(result) << '\n';
   if (NonDDREAMInstance->outputLevel > NORMAL_OUTPUT) {

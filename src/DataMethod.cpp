@@ -122,7 +122,7 @@ DataMethodRep::DataMethodRep():
   refineSamples(0), distributionType(CUMULATIVE),
   responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
   emulatorSamples(0), emulatorType(NO_EMULATOR), rejectionType("delayed"),
-  metropolisType("hastings"), likelihoodScale(1.0),
+  metropolisType("hastings"), mcmcType("dram"), likelihoodScale(1.0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   batchSize(0),calibrateSigmaFlag(false), numChains(3), numCR(3),
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5),
@@ -232,7 +232,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorType << rejectionType
-    << metropolisType << proposalCovScale << likelihoodScale
+    << metropolisType << mcmcType << proposalCovScale << likelihoodScale
     << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep;
@@ -347,7 +347,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
     >> genReliabilityLevels >> emulatorSamples >> emulatorType >> rejectionType
-    >> metropolisType >> proposalCovScale >> likelihoodScale
+    >> metropolisType >> mcmcType >> proposalCovScale >> likelihoodScale
     >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep;
@@ -462,7 +462,7 @@ void DataMethodRep::write(std::ostream& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorType << rejectionType
-    << metropolisType << proposalCovScale << likelihoodScale
+    << metropolisType << mcmcType << proposalCovScale << likelihoodScale
     << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep;

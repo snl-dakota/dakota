@@ -772,6 +772,8 @@ public:
   int emulatorSamples;
   /// the \c emulator specification in \ref MethodNonDBayesCalib
   short emulatorType;
+  /// the \c mcmc type specification in \ref MethodNonDBayesCalib
+  String mcmcType;
   /// the \c rejection type specification in \ref MethodNonDBayesCalib
   String rejectionType;
   /// the \c metropolis type specification in \ref MethodNonDBayesCalib

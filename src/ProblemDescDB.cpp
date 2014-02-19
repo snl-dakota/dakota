@@ -1865,6 +1865,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"jega.niching_type", P nichingType},
 	{"jega.postprocessor_type", P postProcessorType},
 	{"log_file", P logFile},
+	{"mcmc_type", P mcmcType},
 	{"mesh_adaptive_search.display_format", P displayFormat},
 	{"mesh_adaptive_search.history_file", P historyFile},
 	{"metropolis", P metropolisType},

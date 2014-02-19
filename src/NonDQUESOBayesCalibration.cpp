@@ -43,6 +43,7 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::NonDQUESOInstance(NULL);
 NonDQUESOBayesCalibration::NonDQUESOBayesCalibration(Model& model):
   NonDBayesCalibration(model),
   numSamples(probDescDB.get_int("method.samples")),
+  mcmcType(probDescDB.get_string("method.mcmc_type")),
   rejectionType(probDescDB.get_string("method.rejection")),
   metropolisType(probDescDB.get_string("method.metropolis")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
@@ -66,6 +67,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   Cout << "Standardized space " << standardizedSpace << '\n';
   // instantiate QUESO objects and execute
   NonDQUESOInstance=this;
+  Cout << "MCMC type  "<< mcmcType << '\n';
   Cout << "Rejection type  "<< rejectionType << '\n';
   Cout << "Metropolis type " << metropolisType << '\n';
   Cout << "Num Samples " << numSamples << '\n';
@@ -90,8 +92,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     envOptionsValues->m_seed                 = randomSeed;
   else
     envOptionsValues->m_seed                 = 1 + (int)clock(); 
-      
-  QUESO::FullEnvironment* env = new QUESO::FullEnvironment(MPI_COMM_SELF,"","",envOptionsValues);
+ 
+  QUESO::FullEnvironment *env;    
+  if (strends(mcmcType, "dram"))
+    env = new QUESO::FullEnvironment(MPI_COMM_SELF,"","",envOptionsValues);
+  else if (strends(mcmcType, "multilevel"))
+    env = new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL);
  
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
@@ -222,16 +228,18 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   if (strends(rejectionType, "standard"))
     calIpMhOptionsValues->m_drMaxNumExtraStages = 0;
   else if (strends(rejectionType, "delayed"))
-    calIpMhOptionsValues->m_drMaxNumExtraStages = 1;
-  calIpMhOptionsValues->m_drScalesForExtraStages.resize(1);
-  calIpMhOptionsValues->m_drScalesForExtraStages[0] = 6;
+    calIpMhOptionsValues->m_drMaxNumExtraStages = 3;
+  calIpMhOptionsValues->m_drScalesForExtraStages.resize(3);
+  calIpMhOptionsValues->m_drScalesForExtraStages[0] = 5;
+  calIpMhOptionsValues->m_drScalesForExtraStages[1] = 10;
+  calIpMhOptionsValues->m_drScalesForExtraStages[2] = 20;
   if (strends(metropolisType, "hastings"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
   else if (strends(metropolisType, "adaptive"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 1;
   calIpMhOptionsValues->m_amAdaptInterval           = 100;
-  //calIpMhOptionsValues->m_amEta                     = 1.92;
-  //calIpMhOptionsValues->m_amEpsilon                 = 1.e-5;
+  calIpMhOptionsValues->m_amEta                     = 2.88;
+  calIpMhOptionsValues->m_amEpsilon                 = 1.e-8;
 
   calIpMhOptionsValues->m_filteredChainGenerate              = true;
   calIpMhOptionsValues->m_filteredChainDiscardedPortion      = 0.;
@@ -259,7 +267,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   Cout << "proposalCovScale " << proposalCovScale << '\n';
   if (!proposalCovScale.empty()) {
     for (int i=0;i<total_num_params;i++) {
-      covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i])*proposalCovScale[i];
+      covDiag[i] =proposalCovScale[i];
     }
   }
   else { 
@@ -267,7 +275,6 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i]);
     }
   }
-
   Cout << "covDiag " << covDiag << '\n';
   Cout << "initParams " << paramInitials << '\n';
 
@@ -278,10 +285,14 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     for (size_t j=0;j<total_num_params;j++) 
        Cout <<  (*proposalCovMatrix)(i,j) << "  " ; 
   }
-  ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues,
+  
+  if (strends(mcmcType, "dram"))
+    ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues,
                                     paramInitials, proposalCovMatrix);
+  else if (strends(mcmcType, "multilevel")) {
+    ip.solveWithBayesMLSampling();
+  } 
 
-  //ip.solveWithBayesMLSampling();
   // Return
   delete proposalCovMatrix;
   delete calIpMhOptionsValues;
@@ -387,7 +398,7 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   }
 
   result = (result/(NonDQUESOInstance->likelihoodScale));
-  result = -1.0*result;
+  result = -0.5*result;
   Cout << "result final " << result << '\n';
   Cout << "likelihood is " << exp(result) << '\n';
   if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {

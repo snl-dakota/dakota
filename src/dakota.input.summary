@@ -1189,13 +1189,18 @@ KEYWORD12 method
 		[ sparse_grid_level INTEGERLIST ]
 		)
 	      ]
-	    [ rejection
-	      standard
-	      | delayed
-	      ]
-	    [ metropolis
-	      hastings
-	      | adaptive
+	    [ mcmc_type
+	      ( dram
+		[ rejection
+		  standard
+		  | delayed
+		  ]
+		[ metropolis
+		  hastings
+		  | adaptive
+		  ]
+		)
+	      | multilevel
 	      ]
 	    [ rng
 	      mt19937
@@ -1214,13 +1219,18 @@ KEYWORD12 method
 	      [ annotated
 	      | freeform ]
 	      ]
-	    [ rejection
-	      standard
-	      | delayed
-	      ]
-	    [ metropolis
-	      hastings
-	      | adaptive
+	    [ mcmc_type
+	      ( dram
+		[ rejection
+		  standard
+		  | delayed
+		  ]
+		[ metropolis
+		  hastings
+		  | adaptive
+		  ]
+		)
+	      | multilevel
 	      ]
 	    [ rng
 	      mt19937

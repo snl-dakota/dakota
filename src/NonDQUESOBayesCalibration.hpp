@@ -44,6 +44,8 @@ public:
   NonDQUESOBayesCalibration(Model& model); ///< standard constructor
   ~NonDQUESOBayesCalibration();            ///< destructor
 
+  /// MCMC type (DRAM or Multilevel, both within QUESO) 
+  String mcmcType;
   /// Rejection type (standard or delayed, in the DRAM framework) 
   String rejectionType;
   /// Metropolis type (hastings or adaptive, in the DRAM framework) 
