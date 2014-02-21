@@ -25,8 +25,10 @@
 #include "hdf5_hl.h"
 
 #include <iostream>
-#include <vector>
+#include <limits>
+#include <cmath>
 #include <string>
+#include <vector>
 
 
 namespace Dakota
@@ -52,13 +54,21 @@ struct NativeDataTypes {};
 template <>
 struct NativeDataTypes<int>
 {
+  typedef int SelfType;
+
   static hid_t datatype() { return H5T_NATIVE_INT; }
+  //static SelfType get_fill_value() { return nan(""); }
+  static const SelfType get_fill_value()
+  { return std::numeric_limits<SelfType>::min(); }
 };
 
 template <>
 struct NativeDataTypes<double>
 {
+  typedef double SelfType;
+
   static hid_t datatype() { return H5T_NATIVE_DOUBLE; }
+  static const SelfType get_fill_value() { return nan(""); }
 };
 
 
@@ -308,8 +318,8 @@ public:
   /// storage of ragged array of vector<T> - each "row" can be variable length
   /// for example vector< vector<int> >, vector< vector<double> >
   template <typename T>
-  herr_t store_data(const std::string& dset_name,
-                    const std::vector<std::vector<T> >& buf) const
+  herr_t store_vl_data(const std::string& dset_name,
+                       const std::vector<std::vector<T> >& buf) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
@@ -327,8 +337,8 @@ public:
   /// (HDF5's fill_value used to fill empty locations in the rectangular space)
   /// for example vector< vector<int> >, vector< vector<double> >
   template <typename T>
-  herr_t store_hypdata(const std::string& dset_name,
-                       const std::vector<std::vector<T> >& buf) const
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<std::vector<T> >& buf) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
@@ -353,7 +363,10 @@ public:
     std::vector<hsize_t> chunk_dims = dims;
     chunk_dims[0] = 1; chunk_dims[1] = num_cols;
 
+    T filler = NativeDataTypes<T>::get_fill_value();
     hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
+
+    H5Pset_fill_value(cparms, NativeDataTypes<T>::datatype(), &filler);
     H5Pset_layout(cparms, H5D_CHUNKED);
     H5Pset_chunk( cparms, chunk_dims.size(), chunk_dims.data() );
 
@@ -365,7 +378,7 @@ public:
 
     herr_t status;
     for(int i=0; i<buf.size(); ++i) {
-      status = append_row_record( dset_name, i, buf[i].data(), buf[i].size() );
+      status = append_data_slab( dset_name, i, buf[i].data(), buf[i].size() );
     }
 
     // WJB - ToDo: free resources
@@ -375,20 +388,20 @@ public:
 
 
   template <typename T>
-  herr_t append_row_record(const std::string& dset_name,
-                           const std::vector<T>& buf) const
+  herr_t append_data_slab(const std::string& dset_name,
+                          const std::vector<T>& buf) const
   {
     hsize_t last_row = find_last_dataset_record(dset_name);
-    return append_row_record( dset_name, last_row, buf.data(), buf.size() );
+    return append_data_slab( dset_name, last_row, buf.data(), buf.size() );
   }
 
   // WJB: nearly a DUPLICATE version of above code for Teuchos row vectors
   //template <typename OrdinalType, typename ScalarType>
-  herr_t append_row_record(const std::string& dset_name,
-                           const RealVector& buf) const
+  herr_t append_data_slab(const std::string& dset_name,
+                          const RealVector& buf) const
   {
     hsize_t last_row = find_last_dataset_record(dset_name);
-    return append_row_record( dset_name, last_row, &buf[0], buf.length() );
+    return append_data_slab( dset_name, last_row, &buf[0], buf.length() );
   }
 
 
@@ -454,7 +467,7 @@ public:
       for(int j=0; j<dims[1]; ++j)
         tmp[j] = buf[i][j];
 
-      status = append_row_record( dset_name, i, tmp.data(), buf[i].length() );
+      status = append_data_slab( dset_name, i, tmp.data(), buf[i].length() );
     }
 
     // WJB - ToDo: free resources
@@ -695,8 +708,8 @@ private:
       //StoreRowVector(dataset, NativeDataTypes<T>::datatype(), dataspace) );
 
   template <typename T>
-  herr_t append_row_record(const std::string& dset_name, const size_t row_index,
-                           const T* buf, size_t buf_len) const
+  herr_t append_data_slab(const std::string& dset_name, const size_t row_index,
+                          const T* buf, size_t buf_len) const
   {
     htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
 
