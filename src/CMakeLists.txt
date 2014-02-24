@@ -1,10 +1,34 @@
 # CMakeLists.txt for Dakota src
 
-include_directories(
-  ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/src
-  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
-  ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${Teuchos_INCLUDE_DIRS}
-  )
+# --- Initialize variables for Makefile export
+
+# No variable for #defines as no need to separately treat Dakota and TPLs
+
+# All source/build tree include directories (including ExternalProject)
+set(DAKOTA_INCDIRS)
+# All external TPL include directories
+set(EXT_TPL_INCDIRS)
+
+# All source/build build tree library directories
+set(DAKOTA_LIBDIRS)
+# All external TPL library directories
+set(EXT_TPL_LIBDIRS)
+
+# Dakota core libraries 
+set(DAKOTA_LIBS) 
+# Libraries from CMake-built packages from Dakota or its parent 
+set(DAKOTA_PKG_LIBS) 
+# Libraries from packages built with ExternalProject_add within Dakota
+set(DAKOTA_EXTPROJ_LIBS) 
+# External third-party libraries installed on the system
+set(EXT_TPL_LIBS)
+
+
+list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/src
+  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages)
+
+list(APPEND EXT_TPL_INCDIRS
+  ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
@@ -14,23 +38,26 @@ include(DakotaEnableSpecMaint)
 DakotaEnableSpecMaint()
 
 # Use TPL_LIBS for libraries built as part of this project
-set(TPL_LIBS nidr)
-# Use EXTRA_TPL_LIBS for additional libraries from the system or ExternalProject
-set(EXTRA_TPL_LIBS "")
+list(APPEND DAKOTA_PKG_LIBS nidr)
 
 # WJB - ToDo:  convince myself that dakota_src_fortran should have a
 #              better name and be specified in the initial EXPORTS_TARGETS set
 set(EXPORT_TARGETS dakota_src nidr)
 
-link_directories(${Teuchos_LIBRARY_DIRS})
-list(APPEND TPL_LIBS ${Teuchos_LIBRARIES})
 # We don't want to export Teuchos libs unless we're building in our
 # tree.  However, when building under Trilinos, targets like pecos_src
 # and dakota_src need to see these libraries in the exports list at
 # this point as Trilinos hasn't exported them yet.
 if (BUILD_IN_TRILINOS OR 
     Teuchos_DIR MATCHES "${Dakota_BINARY_DIR}/packages/teuchos")
+  list(APPEND DAKOTA_INCDIRS ${Teuchos_INCLUDE_DIRS})
+  list(APPEND DAKOTA_LIBDIRS ${Teuchos_LIBRARY_DIRS})
   list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
+  list(APPEND DAKOTA_PKG_LIBS ${Teuchos_LIBRARIES})
+else()
+  list(APPEND EXT_TPL_INCDIRS ${Teuchos_INCLUDE_DIRS})
+  list(APPEND EXT_TPL_LIBDIRS ${Teuchos_LIBRARY_DIRS})
+  list(APPEND EXT_TPL_LIBS ${Teuchos_LIBRARIES})
 endif()
 
 option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
@@ -122,7 +149,7 @@ if(DAKOTA_F90)
   endif()
 
   add_definitions("-DDAKOTA_F90")
-  include_directories(${Dakota_BINARY_DIR})
+  #include_directories(${Dakota_BINARY_DIR})
 
   #list(APPEND CMAKE_Fortran_FLAGS ${FIXED_FLAG})
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${FIXED_FLAG}")
@@ -141,7 +168,7 @@ if(DAKOTA_DL_SOLVER)
     message(STATUS "DAKOTA DL Solver enabled, LibDL = ${CMAKE_DL_LIBS}")
     add_definitions("-DDAKOTA_DL_SOLVER")
     add_definitions("-DDAKOTA_HAVE_DLFCN_H")
-    list(APPEND EXTRA_TPL_LIBS ${CMAKE_DL_LIBS})
+    list(APPEND EXT_TPL_LIBS ${CMAKE_DL_LIBS})
   else()
     message(WARNING "DL solver requested, but dlfcn.h not found; disabling.")
     add_definitions("-DNO_NIDR_DYNLIB")
@@ -161,7 +188,7 @@ if(DAKOTA_USAGE_TRACKING)
   if(CURL_FOUND)
     message(STATUS "DAKOTA usage tracking enabled with <URL;proxy> = <${TRACKING_LOCATION_AND_PROXY}>")
     add_definitions("-DDAKOTA_USAGE_TRACKING=\"${TRACKING_LOCATION_AND_PROXY}\"")
-    list(APPEND EXTRA_TPL_LIBS ${CURL_LIBRARIES})
+    list(APPEND EXT_TPL_LIBS ${CURL_LIBRARIES})
   else()
     message(WARNING "Tracking requested, but curl not found; disabling.")
     set(DAKOTA_USAGE_TRACKING OFF CACHE BOOL 
@@ -176,9 +203,9 @@ if(DAKOTA_MATLAB)
   if(MATLAB_FOUND)
     message(STATUS "Using MATLAB headers in: ${MATLAB_INCLUDE_DIR}")
     message(STATUS "Using MATLAB libraries in: ${MATLAB_LIBRARIES}")
-    include_directories(${MATLAB_INCLUDE_DIR})
+    list(APPEND EXT_TPL_INCDIRS ${MATLAB_INCLUDE_DIR})
     add_definitions("-DDAKOTA_MATLAB")
-    list(APPEND EXTRA_TPL_LIBS ${MATLAB_LIBRARIES})
+    list(APPEND EXT_TPL_LIBS ${MATLAB_LIBRARIES})
   else() # MATLAB NOT FOUND
     message(SEND_ERROR "MATLAB requested, but not found in ${MATLAB_ROOT}; consider setting MATLAB_DIR")
   endif(MATLAB_FOUND)
@@ -194,7 +221,7 @@ if(DAKOTA_SCILAB)
 
     # Scilab compilation options
     add_definitions("-DDAKOTA_SCILAB")
-    include_directories(${SCILAB_INCLUDES_PATH})
+    list(APPEND EXT_TPL_INCDIRS ${SCILAB_INCLUDES_PATH})
       
     # Scilab linking options 
     # TODO: Don't appear to get used anywhere!
@@ -218,7 +245,7 @@ if(DAKOTA_SCILAB)
     set(SCI_LINK_FLAGS 
       "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}/")
 
-    list(APPEND EXTRA_TPL_LIBS ${SCILAB_LIBRARY})
+    list(APPEND EXT_TPL_LIBS ${SCILAB_LIBRARY})
 
   else() # SCILAB_ROOT
     message(SEND_ERROR 
@@ -237,16 +264,16 @@ if(DAKOTA_PYTHON)
     # Have a valid Python.h and libraries
     message(STATUS "Using Python headers in: ${PYTHON_INCLUDE_DIRS}")
     message(STATUS "Using Python libraries in: ${PYTHON_LIBRARIES}")
-    include_directories(${PYTHON_INCLUDE_DIRS})
+    list(APPEND EXT_TPL_INCDIRS ${PYTHON_INCLUDE_DIRS})
     add_definitions("-DDAKOTA_PYTHON")
-    list(APPEND EXTRA_TPL_LIBS ${PYTHON_LIBRARIES})
+    list(APPEND EXT_TPL_LIBS ${PYTHON_LIBRARIES})
 
     if(DAKOTA_PYTHON_NUMPY)
       include(FindNUMARRAY)
       if(PYTHON_NUMARRAY_FOUND)
 	# Have a valid arrayobject.h
 	message(STATUS "Using NumPy headers in: ${PYTHON_NUMARRAY_INCLUDE_DIR}")
-	include_directories(${PYTHON_NUMARRAY_INCLUDE_DIR})
+	list(APPEND EXT_TPL_INCDIRS ${PYTHON_NUMARRAY_INCLUDE_DIR})
 	add_definitions("-DDAKOTA_PYTHON_NUMPY")
       else()
 	message("Python NumPy requested, but headers/libaries not found; "
@@ -266,11 +293,14 @@ endif(DAKOTA_PYTHON)
 
 if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
-  include_directories(
+  # TODO: generalize the location of this library, possibly install
+  # it.  Using TPL as these paths will be needed for include/link if a
+  # client is using an installed Dakota.
+  list(APPEND EXT_TPL_INCDIRS
     "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/include")
-  link_directories(
+  list(APPEND EXT_TPL_LIBDIRS 
     "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/lib/i686-cygwin-cygwinNT")
-  list(APPEND EXTRA_TPL_LIBS PHXCppApi)
+  list(APPEND EXT_TPL_LIBS PHXCppApi)
 endif(DAKOTA_MODELCENTER)
 
 if(DAKOTA_HAVE_GSL)
@@ -278,22 +308,21 @@ if(DAKOTA_HAVE_GSL)
   #add_definitions("-DDAKOTA_HAVE_GSL")
 
   #message(STATUS "Enable GSL support -- headers: ${GSL_INCLUDE_DIRS}")
-  include_directories("${GSL_INCLUDE_DIRS}")
-
-  list(APPEND link_directories "${GSL_LIBRARY_DIRS}")
-  list(APPEND EXTRA_TPL_LIBS gsl m)
+  list(APPEND EXT_TPL_INCDIRS "${GSL_INCLUDE_DIRS}")
+  list(APPEND EXT_TPL_LIBDIRS "${GSL_LIBRARY_DIRS}")
+  list(APPEND EXT_TPL_LIBS gsl m)
 endif(DAKOTA_HAVE_GSL)
 
 if(DAKOTA_HAVE_MPI)
   add_definitions("-DDAKOTA_HAVE_MPI")
-  include_directories(${MPI_INCLUDE_PATH})
-  list(APPEND EXTRA_TPL_LIBS ${MPI_LIBRARY} ${MPI_LIBRARIES})
+  list(APPEND EXT_TPL_INCDIRS ${MPI_INCLUDE_PATH})
+  list(APPEND EXT_TPL_LIBS ${MPI_LIBRARY} ${MPI_LIBRARIES})
 endif(DAKOTA_HAVE_MPI)
 
 if(DAKOTA_HAVE_HDF5)
   add_definitions("-DDAKOTA_HAVE_HDF5")
-  include_directories(${HDF5_INCLUDE_DIRS})
-  list(APPEND EXTRA_TPL_LIBS ${HDF5_LIBRARIES})
+  list(APPEND EXT_TPL_INCDIRS ${HDF5_INCLUDE_DIRS})
+  list(APPEND EXT_TPL_LIBS ${HDF5_LIBRARIES})
 endif(DAKOTA_HAVE_HDF5)
 
 
@@ -303,18 +332,18 @@ function(CheckPackage package)
   if(HAVE_${package})
     add_definitions("-DHAVE_${package}")
     string(TOLOWER ${package} package_lower)
-    set(TPL_LIBS ${TPL_LIBS} ${package_lower} PARENT_SCOPE)
+    set(DAKOTA_PKG_LIBS ${DAKOTA_PKG_LIBS} ${package_lower} PARENT_SCOPE)
     list(APPEND EXPORT_TARGETS ${package_lower})
   endif()
 endfunction(CheckPackage)
 
 
 CheckPackage(PECOS)
-list(APPEND TPL_LIBS ${Pecos_LINK_LIBRARIES})
+list(APPEND DAKOTA_PKG_LIBS ${Pecos_LINK_LIBRARIES})
 list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 if(HAVE_PECOS)
-  include_directories(${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
-                      ${VPISparseGrid_SOURCE_DIR}/src)
+  list(APPEND DAKOTA_INCDIRS ${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
+    ${VPISparseGrid_SOURCE_DIR}/src)
 else()
   message(FATAL_ERROR
     "DAKOTA cannot currently be configured without PECOS: ${Pecos_SOURCE_DIR}")
@@ -376,8 +405,9 @@ endif()
 CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
   list(APPEND interface_src SurfpackApproximation.cpp)
-  include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src)
-  list(APPEND TPL_LIBS surfpack surfpack_fortran)
+  list(APPEND DAKOTA_INCDIRS ${Surfpack_BINARY_DIR} 
+    ${Surfpack_SOURCE_DIR}/src)
+  list(APPEND DAKOTA_PKG_LIBS surfpack surfpack_fortran)
 endif(HAVE_SURFPACK)
 
 if(DAKOTA_MATLAB)
@@ -432,13 +462,14 @@ if(HAVE_ACRO)
   add_definitions("-DDAKOTA_COLINY")
   add_definitions("-DDAKOTA_UTILIB")
 
-  include_directories(${Acro_BINARY_DIR}/packages
-                      ${Acro_BINARY_DIR}/packages/utilib
-                      ${Acro_SOURCE_DIR}/packages/interfaces/src
-                      ${Acro_SOURCE_DIR}/packages/scolib/src
-                      ${Acro_SOURCE_DIR}/packages/utilib/src
-                      ${Acro_SOURCE_DIR}/packages/colin/src
-                      ${Acro_SOURCE_DIR}/tpl/tinyxml)
+  list(APPEND DAKOTA_INCDIRS ${Acro_BINARY_DIR}/packages
+    ${Acro_BINARY_DIR}/packages/utilib
+    ${Acro_SOURCE_DIR}/packages/interfaces/src
+    ${Acro_SOURCE_DIR}/packages/scolib/src
+    ${Acro_SOURCE_DIR}/packages/utilib/src
+    ${Acro_SOURCE_DIR}/packages/colin/src
+    ${Acro_SOURCE_DIR}/tpl/tinyxml
+    )
 
   list(APPEND interface_src COLINApplication.cpp)
   list(APPEND iterator_src COLINOptimizer.cpp)
@@ -446,7 +477,7 @@ if(HAVE_ACRO)
   foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
     string(TOUPPER "${acro_dep}" ACRODEP)
     if (HAVE_${ACRODEP})
-      list(APPEND TPL_LIBS ${acro_dep})
+      list(APPEND DAKOTA_PKG_LIBS ${acro_dep})
       list(APPEND EXPORT_TARGETS ${acro_dep})
     endif()
   endforeach()
@@ -460,15 +491,16 @@ if(HAVE_ADAPTIVE_SAMPLING)
     list(APPEND iterator_src MorseSmaleComplex.cpp)
 
     # ANN does approximate k-nearest neighbor search
-    include_directories(
-      ${Dakota_SOURCE_DIR}/packages/ann/include)
-    list(APPEND TPL_LIBS ANN)
+    list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/ann/include)
+    list(APPEND DAKOTA_PKG_LIBS ANN)
     list(APPEND EXPORT_TARGETS ANN)
 
     # Dionysus provides persistence diagram and bottleneck distance
     # The MS_Complex class requires this unconditionally
     add_definitions("-DHAVE_DIONYSUS")
-    include_directories(${Dakota_BINARY_DIR}/packages/dionysus_ext-prefix/src/dionysus_ext/include)
+    # TODO: Using build tree as these don't currently get installed
+    list(APPEND DAKOTA_INCDIRS 
+      ${Dakota_BINARY_DIR}/packages/dionysus_ext-prefix/src/dionysus_ext/include)
   endif()
 endif()
 
@@ -491,26 +523,31 @@ if(HAVE_QUESO)
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
   endif()
 
-  #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
-  include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
-                      ${GSL_INCLUDE_DIRS})
+  #list(APPEND DAKOTA_INCDIRS "$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
+  list(APPEND DAKOTA_INCDIRS 
+    ${Dakota_BINARY_DIR}/packages/queso_ext/include ${GSL_INCLUDE_DIRS})
 
-  #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
+  #list(APPEND DAKOTA_LIBDIRS "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
   # Would prefer to detect 32 vs. 64-bit, but the location is
   # operating system-specific; should be harmless to add the extra
   # directory, but put 64-bit first
-  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib64)
-  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
+  list(APPEND DAKOTA_LIBDIRS 
+    ${Dakota_BINARY_DIR}/packages/queso_ext/lib64)
+  list(APPEND DAKOTA_LIBDIRS 
+    ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
 
-  # Can't put these in TPL_LIBS because Trilinos will try to export them:
-  list(APPEND EXTRA_TPL_LIBS queso)
+  # Can't put these in DAKOTA_PKG_LIBS; Trilinos will try to export them
+  list(APPEND DAKOTA_EXTPROJ_LIBS queso)
 
   if (HAVE_QUESO_GRVY)
-    include_directories(${Dakota_BINARY_DIR}/packages/grvy_ext/include)
-    list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/grvy_ext/lib64)
-    list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
-    # Can't put these in TPL_LIBS because Trilinos will try to export them:
-    list(APPEND EXTRA_TPL_LIBS grvy)
+    list(APPEND DAKOTA_INCDIRS 
+      ${Dakota_BINARY_DIR}/packages/grvy_ext/include)
+    list(APPEND DAKOTA_LIBDIRS
+      ${Dakota_BINARY_DIR}/packages/grvy_ext/lib64)
+    list(APPEND DAKOTA_LIBDIRS
+      ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
+    # Can't put these in DAKOTA_PKG_LIBS; Trilinos will try to export them
+    list(APPEND DAKOTA_EXTPROJ_LIBS grvy)
     add_dependencies(queso_ext grvy_ext)
   endif()
 
@@ -523,22 +560,23 @@ endif(HAVE_QUESO)
 
 # Boost is required, but have to protect against empty DIR list
 if(Boost_FOUND)
-  list(APPEND link_directories ${Boost_LIBRARY_DIRS})
-  list(APPEND EXTRA_TPL_LIBS ${Boost_LIBRARIES})
+  list(APPEND EXT_TPL_LIBDIRS ${Boost_LIBRARY_DIRS})
+  list(APPEND EXT_TPL_LIBS ${Boost_LIBRARIES})
 endif()
 
 CheckPackage(CONMIN)
 if(HAVE_CONMIN)
-  link_directories ( ${link_directories} ${CONMIN_LIB_DIRS} )
+  list(APPEND DAKOTA_LIBDIRS ${CONMIN_LIB_DIRS})
   set(iterator_src ${iterator_src} CONMINOptimizer.cpp)
 endif(HAVE_CONMIN)
 
 if(HAVE_DDACE)
   add_definitions("-DDAKOTA_DDACE")
-  include_directories(${ddace_BINARY_DIR} ${ddace_SOURCE_DIR}/include)
+  list(APPEND DAKOTA_INCDIRS 
+    ${ddace_BINARY_DIR} ${ddace_SOURCE_DIR}/include)
   set(iterator_src ${iterator_src} DDACEDesignCompExp.cpp)
   #link_directories(${Dakota_BINARY_DIR}/methods/DDACE)
-  set(TPL_LIBS ${TPL_LIBS} dace analyzer random sampling bose)
+  list(APPEND DAKOTA_PKG_LIBS dace analyzer random sampling bose)
   list(APPEND EXPORT_TARGETS dace analyzer random sampling bose)
   if(DDACE_ENABLE_STANDALONE)
     list(APPEND EXPORT_TARGETS fatools)
@@ -552,45 +590,46 @@ endif(HAVE_DOT)
 
 CheckPackage(DREAM)
 if(HAVE_DREAM)
-  include_directories(${Dream_SOURCE_DIR})
+  list(APPEND DAKOTA_INCDIRS ${Dream_SOURCE_DIR})
   set(iterator_src ${iterator_src} NonDDREAMBayesCalibration.cpp)
 endif(HAVE_DREAM)
 
 CheckPackage(FSUDACE)
 if(HAVE_FSUDACE)
-  include_directories(${FSUDace_BINARY_DIR} ${FSUDace_SOURCE_DIR})
+  list(APPEND DAKOTA_INCDIRS ${FSUDace_BINARY_DIR} ${FSUDace_SOURCE_DIR})
   set(iterator_src ${iterator_src} FSUDesignCompExp.cpp)
 endif(HAVE_FSUDACE)
 
 if(HAVE_HOPSPACK)
   #add_definitions("-DHAVE_HOPSPACK") # WJB: use convention?
   add_definitions("-DDAKOTA_HOPS")
-  include_directories(${HOPSPACK_BINARY_DIR}/src/src-shared
-                      ${HOPSPACK_SOURCE_DIR}/src/src-shared
-                      ${HOPSPACK_SOURCE_DIR}/src/src-citizens
-                      ${HOPSPACK_SOURCE_DIR}/src/src-evaluator
-                      ${HOPSPACK_SOURCE_DIR}/src/src-executor
-                      ${HOPSPACK_SOURCE_DIR}/src/src-framework
-                      ${HOPSPACK_SOURCE_DIR}/src/src-main)
+  list(APPEND DAKOTA_INCDIRS ${HOPSPACK_BINARY_DIR}/src/src-shared
+    ${HOPSPACK_SOURCE_DIR}/src/src-shared
+    ${HOPSPACK_SOURCE_DIR}/src/src-citizens
+    ${HOPSPACK_SOURCE_DIR}/src/src-evaluator
+    ${HOPSPACK_SOURCE_DIR}/src/src-executor
+    ${HOPSPACK_SOURCE_DIR}/src/src-framework
+    ${HOPSPACK_SOURCE_DIR}/src/src-main
+    )
   list(APPEND iterator_src APPSOptimizer.cpp APPSEvalMgr.cpp)
   #link_directories(${Dakota_BINARY_DIR}/packages/hopspack)
-  list(APPEND TPL_LIBS hopspack)
+  list(APPEND DAKOTA_PKG_LIBS hopspack)
   list(APPEND EXPORT_TARGETS hopspack)
 endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
   add_definitions("-DHAVE_JEGA")
-  include_directories(${JEGA_BINARY_DIR} ${JEGA_BINARY_DIR}/eddy
-                      ${JEGA_SOURCE_DIR}/eddy ${JEGA_SOURCE_DIR}/include)
+  list(APPEND DAKOTA_INCDIRS ${JEGA_BINARY_DIR} ${JEGA_BINARY_DIR}/eddy
+    ${JEGA_SOURCE_DIR}/eddy ${JEGA_SOURCE_DIR}/include)
   list(APPEND iterator_src JEGAOptimizer.cpp)
-  list(APPEND TPL_LIBS jega jega_fe moga soga eutils utilities)
+  list(APPEND DAKOTA_PKG_LIBS jega jega_fe moga soga eutils utilities)
   list(APPEND EXPORT_TARGETS jega jega_fe moga soga eutils utilities)
 endif(HAVE_JEGA)
 
 if(HAVE_NCSUOPT)
   add_definitions("-DHAVE_NCSU")
   set(iterator_src ${iterator_src} NCSUOptimizer.cpp)
-  list(APPEND TPL_LIBS ncsuopt)
+  list(APPEND DAKOTA_PKG_LIBS ncsuopt)
   list(APPEND EXPORT_TARGETS ncsuopt)
 endif(HAVE_NCSUOPT)
 
@@ -602,18 +641,17 @@ endif(HAVE_NLPQL)
 if(HAVE_NL2SOL)
   add_definitions("-DHAVE_NL2SOL")
   set(iterator_src ${iterator_src} NL2SOLLeastSq.cpp)
-  include_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
-  #link_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
-  list(APPEND TPL_LIBS cport)
+  #link_directories(${Dakota_BINARY_DIR}/packages/NL2SOL)
+  list(APPEND DAKOTA_PKG_LIBS cport)
   list(APPEND EXPORT_TARGETS cport)
 endif(HAVE_NL2SOL)
 
 if(HAVE_NOMAD)
   add_definitions("-DHAVE_NOMAD")
-  include_directories(${NOMAD_BINARY_DIR}/src ${NOMAD_SOURCE_DIR}/src)
+  list(APPEND DAKOTA_INCDIRS 
+    ${NOMAD_BINARY_DIR}/src ${NOMAD_SOURCE_DIR}/src)
   set(iterator_src ${iterator_src} NomadOptimizer.cpp)
-  #link_directories(${Dakota_BINARY_DIR}/packages/NOMAD)
-  list(APPEND TPL_LIBS nomad)
+  list(APPEND DAKOTA_PKG_LIBS nomad)
   list(APPEND EXPORT_TARGETS nomad)
 endif(HAVE_NOMAD)
 
@@ -631,7 +669,8 @@ if(HAVE_NPSOL)
 endif(HAVE_NPSOL)
 
 if(HAVE_OPTPP)
-  include_directories(${optpp_BINARY_DIR}/include ${optpp_SOURCE_DIR}/include)
+  list(APPEND DAKOTA_INCDIRS 
+    ${optpp_BINARY_DIR}/include ${optpp_SOURCE_DIR}/include)
 
   add_definitions("-DHAVE_OPTPP")
   # WJB:  OPT++ macro naming "convention" differs from DAKOTA.  Even worse,
@@ -641,38 +680,38 @@ if(HAVE_OPTPP)
   add_definitions("-DDAKOTA_OPTPP")
 
   set(iterator_src ${iterator_src} SNLLBase.cpp SNLLOptimizer.cpp SNLLLeastSq.cpp)
-  set(TPL_LIBS ${TPL_LIBS} optpp)
+  list(APPEND DAKOTA_PKG_LIBS optpp)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
 
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
   list(APPEND interface_src PSUADEDesignCompExp.cpp)
-  include_directories(${PSUADE_SOURCE_DIR})
+  list(APPEND DAKOTA_INCDIRS ${PSUADE_SOURCE_DIR})
 endif(HAVE_PSUADE)
 
 if(HAVE_X_GRAPHICS)
   add_definitions("-DHAVE_X_GRAPHICS")
-  include_directories(${DakotaMotif_SOURCE_DIR}/include ${X11_INCLUDE_DIR} 
-    ${MOTIF_INCLUDE_DIR})
+  list(APPEND DAKOTA_INCDIRS ${DakotaMotif_SOURCE_DIR}/include 
+    ${X11_INCLUDE_DIR} ${MOTIF_INCLUDE_DIR})
   #set(iterator_src ${iterator_src} PSUADEDesignCompExp.cpp)
-  link_directories(${DakotaMotif_BINARY_DIR})
-  list(APPEND TPL_LIBS DGraphics)
+  list(APPEND DAKOTA_LIBDIRS ${DakotaMotif_BINARY_DIR})
+  list(APPEND DAKOTA_PKG_LIBS DGraphics)
   list(APPEND EXPORT_TARGETS DGraphics)
 
-  list(APPEND EXTRA_TPL_LIBS ${X11_LIBRARIES} ${MOTIF_LIBRARIES})
+  list(APPEND EXT_TPL_LIBS ${X11_LIBRARIES} ${MOTIF_LIBRARIES})
   if (X11_Xpm_FOUND)
-    list(APPEND EXTRA_TPL_LIBS ${X11_Xpm_LIB})
+    list(APPEND EXT_TPL_LIBS ${X11_Xpm_LIB})
   endif()
   # cmake-2.8.4 doesn't set a helper variable X11_Xmu_LIB
   if (LIBXMU)
-    list(APPEND EXTRA_TPL_LIBS ${LIBXMU})
+    list(APPEND EXT_TPL_LIBS ${LIBXMU})
   endif()
   if (X11_Xt_FOUND)
-    list(APPEND EXTRA_TPL_LIBS ${X11_Xt_LIB})
+    list(APPEND EXT_TPL_LIBS ${X11_Xt_LIB})
   endif()
   if (Threads_FOUND)
-    list(APPEND EXTRA_TPL_LIBS ${CMAKE_THREAD_LIBS_INIT})
+    list(APPEND EXT_TPL_LIBS ${CMAKE_THREAD_LIBS_INIT})
   endif()
 endif(HAVE_X_GRAPHICS)
 
@@ -685,14 +724,53 @@ if(MSVC)
   list(APPEND Dakota_src dirent.h dirent.c)
 endif()
 
+# Experiment with moving AMPL here; if cross-platform link errors, revert
+if(HAVE_AMPL)
+  add_definitions("-DHAVE_AMPL")
+
+  #include_directories(${Ampl_SOURCE_DIR}/ampl)
+  list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/ampl)
+
+  #link_directories(${Dakota_BINARY_DIR}/packages/ampl)
+  list(APPEND DAKOTA_PKG_LIBS amplsolver)
+  list(APPEND EXPORT_TARGETS amplsolver)
+endif(HAVE_AMPL)
+
+#if(DAKOTA_RESULTS_DB)
+#  set(HAVE_YAML-CPP ON CACHE BOOL 
+#      "Results DB requires yaml-cpp" FORCE)
+#  CheckPackage(YAML-CPP)
+#  list(APPEND EXT_TPL_INCDIRS ${YAML_CPP_SOURCE_DIR}/include)
+#endif()
+
+list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
+
+# Now that packages and TPLs are processed, set include/link directories
+include_directories(${DAKOTA_INCDIRS} ${EXT_TPL_INCDIRS})
+link_directories(${DAKOTA_LIBDIRS} ${EXT_TPL_LIBDIRS})
+
+
+# --- Create the core Dakota libraries and set properties
+
 add_library(dakota_src_fortran ${Dakota_src_fortran})
 # the intel fortran compiler can  not handle all the -I stuff
 # that is coming from the C++ files, but it does not need any of it
 # so clear out the includes for this target
 set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
+list(APPEND EXPORT_TARGETS dakota_src_fortran)
+
 add_library(dakota_src ${Dakota_src})
 target_link_libraries(dakota_src dakota_src_fortran)
-list(APPEND EXPORT_TARGETS dakota_src_fortran)
+if(HAVE_AMPL)
+  # Enforce AMPL config header creation prior to compiling dakota sources
+  add_dependencies(dakota_src amplsolver)
+endif()
+
+# Enforce library ordering
+list (APPEND DAKOTA_LIBS dakota_src dakota_src_fortran)
+
+
+# --- Explicit dependencies for Dakota core libraries
 
 if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
@@ -703,8 +781,6 @@ if(ENABLE_SPEC_MAINT)
   add_dependencies(dakota_src dakota-spec-files)
 endif()
 
-## MORE TPLs to append to the link stream, conditionally, based on user prefs
-
 if(HAVE_QUESO)
   # Enforce GRVY/QUESO config header creation prior to compiling dakota sources
   add_dependencies(dakota_src queso_ext)
@@ -713,31 +789,13 @@ if(HAVE_QUESO)
   endif()
 endif()
 
-if(HAVE_AMPL)
-  add_definitions("-DHAVE_AMPL")
-
-  # Enforce AMPL config header creation prior to compiling dakota sources
-  add_dependencies(dakota_src amplsolver)
-
-  #include_directories(${Ampl_SOURCE_DIR}/ampl)
-  include_directories(${Dakota_BINARY_DIR}/packages/ampl)
-
-  #link_directories(${Dakota_BINARY_DIR}/packages/ampl)
-  set(TPL_LIBS ${TPL_LIBS} amplsolver)
-  list(APPEND EXPORT_TARGETS amplsolver)
-endif(HAVE_AMPL)
-
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
 if (DAKOTA_MODELCENTER)
   target_link_libraries(dakota_src PHXCppApi)
 endif()
 
-#if(DAKOTA_RESULTS_DB)
-#  set(HAVE_YAML-CPP ON CACHE BOOL 
-#      "Results DB requires yaml-cpp" FORCE)
-#  CheckPackage(YAML-CPP)
-#  include_directories(${YAML_CPP_SOURCE_DIR}/include)
-#endif()
+
+# --- Generated source files
 
 if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
 
@@ -807,14 +865,16 @@ if(MSVC)
                  ${Dakota_BINARY_DIR}/src/dirent.h COPYONLY)
 endif()
 
-## DAKOTA executables.
+
+#--- Add Dakota executables, with custom commands and properties
+
 add_executable(dakota main.cpp)
 add_executable(dakota_restart_util restart_util.cpp)
 add_executable(dakota_library_mode library_mode.cpp)
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.cpp)
-  target_link_libraries(dakota_library_split
-    dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+  target_link_libraries(dakota_library_split ${DAKOTA_LIBS} 
+    ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS})
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
@@ -841,17 +901,19 @@ if(DAKOTA_ENABLE_TESTS)
 
 endif()
   
-list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
-
 if(DAKOTA_SCILAB)
   set_target_properties(dakota PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
   set_target_properties(dakota_restart_util PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
   set_target_properties(dakota_library_mode PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
 endif()
 
-target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
-target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
-target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+target_link_libraries(dakota ${DAKOTA_LIBS} 
+  ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS})
+target_link_libraries(dakota_restart_util ${DAKOTA_LIBS} 
+  ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS})
+target_link_libraries(dakota_library_mode ${DAKOTA_LIBS} 
+  ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS})
+
 
 #include(InstallRequiredSystemLibraries)
 #include(GetPrerequisites)
@@ -885,7 +947,8 @@ endif()
 
 if (DAKOTA_DLL_API)
   add_library(dll_api dakota_dll_api.cpp)
-  target_link_libraries(dll_api dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+  target_link_libraries(dll_api ${DAKOTA_LIBS} 
+    ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS})
   install(TARGETS dll_api DESTINATION lib)
 endif()
 
@@ -909,40 +972,75 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
   endif()
 endif()
   
-#if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
-#  message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")
-#endif()
 
-message(STATUS "TPL LIBS: ${TPL_LIBS}")
-message(STATUS "EXTRA TPL LIBS: ${EXTRA_TPL_LIBS}")
+# --- Define variables used for export Makefiles
+# TODO: use these variables/names in the Trilinos block below
 
-# Pass some data back to Trilinos
+get_directory_property(Dakota_DEFS COMPILE_DEFINITIONS) 
+set(Dakota_DEFINES ${Dakota_DEFS} CACHE INTERNAL 
+  "Dakota preprocessor defines") 
+
+# Includes from the source and build tree (will be installed)
+set(Dakota_INCLUDE_DIRS ${DAKOTA_INCDIRS} CACHE INTERNAL 
+  "Dakota source and build include directories") 
+# External includes
+set(Dakota_TPL_INCLUDE_DIRS ${EXT_TPL_INCDIRS} CACHE INTERNAL 
+  "Dakota external TPL include directories") 
+
+# Paths to libraries in the build tree (will be installed)
+set(Dakota_LIBRARY_DIRS ${DAKOTA_LIBDIRS} CACHE INTERNAL 
+  "Dakota build-time library directories") 
+# External libraries
+set(Dakota_TPL_LIBRARY_DIRS ${EXT_TPL_LIBDIRS} CACHE INTERNAL 
+  "Dakota external TPL library directories") 
+
+# Any library that will be installed with Dakota, including Queso
+set(Dakota_LIBRARIES ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS}
+  CACHE INTERNAL "Dakota libraries") 
+
+# Libraries that will be on the system
+set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS} CACHE INTERNAL
+  "Dakota TPL libraries") 
+ 
+message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
+message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
+
+
+# --- Pass some data back to Trilinos
+
 if (BUILD_IN_TRILINOS)
 
   # All include directories needed for Dakota
+  # TODO: clients use Dakota_INCLUDE_DIRS and DAKOTA_TPL_INCLUDE_DIRS instead...
   get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
   set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
     "Dakota include directories")
 
   # Link directories needed for queso, grvy, GSL
-  get_directory_property(Dakota_LDIRS LINK_DIRECTORIES)
-  set(Dakota_LINK_DIRS ${Dakota_LDIRS} CACHE INTERNAL "Dakota link directories")
+  set(Dakota_LINK_DIRS ${DAKOTA_LIBDIRS} ${EXT_TPL_LIBDIRS}
+    CACHE INTERNAL "Dakota link directories")
 
-  # Libraries built in Dakota CMake
-  set(Dakota_LIBS dakota_src dakota_src_fortran ${TPL_LIBS})
-  # Only remove the Teuchos libraries from the Dakota_LIBS variable
+  # Libraries built in Dakota CMake (can't include EXTPROJ libs here)
+  set(Dakota_LIBS ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS})
+  # Remove the Teuchos libraries
   list(REMOVE_ITEM Dakota_LIBS ${Teuchos_LIBRARIES})
   set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
     "Dakota libraries")
 
   # Libraries built outside of Dakota CMake
-  set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
-    "Dakota extra libraries")
+  set(Dakota_EXTRA_LIBRARIES ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS} 
+    CACHE INTERNAL "Dakota extra libraries")
   message(STATUS 
     "Export targets to <export-name> = ${ExportTarget}: ${EXPORT_TARGETS}"
     )
 endif()
 
-# Unconditionally export targets so we detect problems before Trilinos does
+# Generate export Makefile 
+include(WriteExportMakefile) 
+WriteExportMakefile() 
+install(FILES ${Dakota_BINARY_DIR}/src/Makefile.export.Dakota.install 
+  DESTINATION include RENAME Makefile.export.Dakota) 
+
+# Unconditionally export targets to detect problems before Trilinos does
 export(TARGETS ${EXPORT_TARGETS} FILE
   "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")

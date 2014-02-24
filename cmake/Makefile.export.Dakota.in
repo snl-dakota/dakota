@@ -1,0 +1,24 @@
+# Exported Makefile fragments for Dakota
+
+## List of package definitions
+${EXPORT_FILE_VAR_PREFIX}_DEFINES=${MAKEFILE_DEFINES}
+
+## List of package include dirs
+${EXPORT_FILE_VAR_PREFIX}_INCLUDE_DIRS=${MAKEFILE_INCLUDE_DIRS}
+
+## List of package library paths
+${EXPORT_FILE_VAR_PREFIX}_LIBRARY_DIRS=${MAKEFILE_LIBRARY_DIRS}
+
+## List of package libraries
+${EXPORT_FILE_VAR_PREFIX}_LIBRARIES=${MAKEFILE_LIBRARIES}
+
+## List of TPL include dirs
+${EXPORT_FILE_VAR_PREFIX}_TPL_INCLUDE_DIRS=${MAKEFILE_TPL_INCLUDE_DIRS}
+
+## List of TPL library paths external to the Dakota build
+${EXPORT_FILE_VAR_PREFIX}_TPL_LIBRARY_DIRS=${MAKEFILE_TPL_LIBRARY_DIRS}
+
+## List of required TPLs external to the Dakota build
+${EXPORT_FILE_VAR_PREFIX}_TPL_LIBRARIES=${MAKEFILE_TPL_LIBRARIES}
+
+
