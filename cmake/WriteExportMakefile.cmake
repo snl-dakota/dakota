@@ -92,7 +92,7 @@ function(LibsRemoveInactiveConfigs lib_list_in lib_list_out)
 
   # TODO: determine if this is a debug configuration
   #list(FIND ${DEBUG_CONFIGURATIONS} "${CMAKE_BUILD_TYPE}" found_index)
-  string(TOLOWER ${CMAKE_BUILD_TYPE} lcbt)
+  string(TOLOWER "${CMAKE_BUILD_TYPE}" lcbt)
   set(debug_flag FALSE)
   if ("${lcbt}" STREQUAL "debug")
     set(debug_flag TRUE)
