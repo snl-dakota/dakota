@@ -570,9 +570,20 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
         iteratedModel.continuous_variable(sample_i[cntr], j);
 
     // get response value at the sample point
-    iteratedModel.compute_response(set);
-    fn_samples[i]
-      = iteratedModel.current_response().function_value(respFnIndex);
+    if (asynchFlag) // set from iteratedModel for stand-alone or on-the-fly
+      iteratedModel.asynch_compute_response(set);
+    else {
+      iteratedModel.compute_response(set);
+      fn_samples[i]
+	= iteratedModel.current_response().function_value(respFnIndex);
+    }
+  }
+
+  if (asynchFlag) {
+    const IntResponseMap& resp_map = iteratedModel.synchronize();
+    IntRespMCIter r_cit;
+    for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+      fn_samples[i] = r_cit->second.function_value(respFnIndex);
   }
 }
 
