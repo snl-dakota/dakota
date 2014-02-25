@@ -127,18 +127,18 @@ function(WriteExportMakefile)
     MAKEFILE_DEFINES)
   tribits_list_to_string("${Dakota_INCLUDE_DIRS}" "-I" 
     MAKEFILE_INCLUDE_DIRS)
-  tribits_list_to_string("${Dakota_LIBRARY_DIRS}" ${CMAKE_LIBRARY_PATH_FLAG}
+  tribits_list_to_string("${Dakota_LIBRARY_DIRS}" "${CMAKE_LIBRARY_PATH_FLAG}"
     MAKEFILE_LIBRARY_DIRS)
   tribits_library_list_to_string("${Dakota_LIBRARIES}" 
-    ${CMAKE_LINK_LIBRARY_FLAG} MAKEFILE_LIBRARIES)
+    "${CMAKE_LINK_LIBRARY_FLAG}" MAKEFILE_LIBRARIES)
 
   tribits_list_to_string("${Dakota_TPL_INCLUDE_DIRS}" "-I" 
     MAKEFILE_TPL_INCLUDE_DIRS)
   tribits_list_to_string("${Dakota_TPL_LIBRARY_DIRS}" 
-    ${CMAKE_LIBRARY_PATH_FLAG} MAKEFILE_TPL_LIBRARY_DIRS)
+    "${CMAKE_LIBRARY_PATH_FLAG}" MAKEFILE_TPL_LIBRARY_DIRS)
   LibsRemoveInactiveConfigs("${Dakota_TPL_LIBRARIES}" pruned_tpl_libs)
   tribits_library_list_to_string("${pruned_tpl_libs}"
-    ${CMAKE_LINK_LIBRARY_FLAG} MAKEFILE_TPL_LIBRARIES)
+    "${CMAKE_LINK_LIBRARY_FLAG}" MAKEFILE_TPL_LIBRARIES)
 
   set(EXPORT_FILE_VAR_PREFIX Dakota)
 
