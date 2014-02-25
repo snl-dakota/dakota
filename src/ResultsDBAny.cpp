@@ -28,11 +28,11 @@ namespace Dakota {
 
 /** Add or update existing entry */
 void ResultsDBAny::
-add_data(const StrStrSizet& iterator_id,
-	 const std::string& data_name,
-	 const boost::any& result,
-	 const MetaDataType& metadata
-	 )
+insert(const StrStrSizet& iterator_id,
+       const std::string& data_name,
+       const boost::any& result,
+       const MetaDataType& metadata
+       )
 {
   ResultsKeyType key = make_key(iterator_id, data_name); 
 

@@ -131,10 +131,6 @@ private:
 
 };
 
-short H5VariableString::numVStrUses = 0;
-//hid_t H5VariableString::varStringType = -1;
-hid_t H5VariableString::varStringType = H5VariableString::datatype();
-
 
 class HDF5BinaryStream
 {
@@ -864,6 +860,28 @@ private:
   }
 
 };
+
+
+// stub so storing vector<RealMatrix> will compile
+template <>
+herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
+				    const std::vector<RealMatrix>& buf) const;
+
+// stub so storing vector<IntVector> will compile
+template <>
+herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
+				    const std::vector<IntVector>& buf) const;
+
+// stub so storing vector<RealVector> will compile
+template <>
+herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
+				    const std::vector<RealVector>& buf) const;
+
+// stub so storing vector<vector<string> > will compile
+template <>
+herr_t HDF5BinaryStream::
+store_data(const std::string& dset_name,
+	   const std::vector<std::vector<std::string> >& buf) const;
 
 
 } // namespace Dakota

@@ -17,6 +17,16 @@
 
 #include "dakota_results_types.hpp"
 #include "ResultsDBAny.hpp"
+#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+
+#ifdef DAKOTA_HAVE_HDF5
+#include "ResultsDBHDF5.hpp"
+#else
+// forward declaration due to PIMPL in support of conditional compilation HDF5
+class ResultsDBHDF5;
+#endif
+
 
 // Design notes (BMA, Fall 2012)
 
@@ -201,8 +211,7 @@ public:
 
     For now, using concrete types for most insertion, since underlying
     databases like HDF5 might need concrete types; though template
-    parameter for array allocation and retrieval.  Probably want to
-    use concrete types for arrays too.
+    parameter for array allocation and retrieval. 
 
     All insertions overwrite any previous data.
 */
@@ -215,12 +224,12 @@ class ResultsManager
 public:
 
   /// default constructor: no databases active until initialize called
-  ResultsManager(): coreDBActive(false), fileDBActive(false)
+  ResultsManager(): coreDBActive(false), hdf5DBActive(false)
   { /* no-op*/ }
 
   /// initialize the results manager to manage an in-core database,
   /// writing to the specified file name
-  void initialize(const std::string& text_filename);
+  void initialize(const std::string& base_filename);
 
   /// whether any databases are active
   bool active() const;
@@ -232,25 +241,45 @@ public:
   /// Copy of valid results names for when manager is passed around
   ResultsNames results_names;
 
-  /// insert StringMultiArrayConstView, e.g. variable labels
+  // TODO: consider templating on container and scalar type
+
+  /// insert data
+  template<typename StoredType>
+  void insert(const StrStrSizet& iterator_id,
+	      const std::string& data_name,
+	      const StoredType& sent_data,
+	      const MetaDataType metadata = MetaDataType())
+  {
+    if (coreDBActive)
+      coreDB->insert(iterator_id, data_name, sent_data, metadata);
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->insert(iterator_id, data_name, sent_data, metadata);
+#endif
+  }
+  
+  // TODO: can't seem to pass SMACV by const ref...
   void insert(const StrStrSizet& iterator_id,
 	      const std::string& data_name,
 	      StringMultiArrayConstView sma_labels,
-	      const MetaDataType metadata = MetaDataType());
-
-
-  /// insert StringArray, e.g., response labels
-  void insert(const StrStrSizet& iterator_id,
-	      const std::string& data_name,
-	      const StringArray& sa_labels,
-	      const MetaDataType metadata = MetaDataType());
-
-  // TODO: may need care that we have values_copied = true, otherwise copy
-  /// insert RealMatrix, e.g. correlations
-  void insert(const StrStrSizet& iterator_id,
-	      const std::string& data_name,
-	      const RealMatrix& matrix,
-	      const MetaDataType metadata = MetaDataType());
+	      const MetaDataType metadata = MetaDataType())
+  {
+    std::vector<std::string> vs_labels;
+    if (coreDBActive || hdf5DBActive) {
+      // convert to standard data type
+      // consider adding to data_utils
+      size_t size_sma = sma_labels.size();
+      vs_labels.resize(size_sma);
+      for (size_t i=0; i<size_sma; ++i)
+	vs_labels[i] = sma_labels[i];
+    }
+   if (coreDBActive)
+      coreDB->insert(iterator_id, data_name, vs_labels, metadata);
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->insert(iterator_id, data_name, vs_labels, metadata);
+#endif
+  }
 
   /// allocate an entry with array of StoredType of array_size for
   /// future insertion; likely move to non-templated accessors for these
@@ -261,9 +290,15 @@ public:
 		 size_t array_size,
 		 const MetaDataType metadata = MetaDataType())
   {
-    if (!coreDBActive) return;
-    coreDB.array_allocate<StoredType>(iterator_id, data_name, array_size, 
-				      metadata);
+    if (coreDBActive)
+      coreDB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
+					 metadata);
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
+					 metadata);
+#endif
+
   }
 
   /// insert into a previously allocated array of StoredType at index
@@ -275,8 +310,14 @@ public:
 	       size_t index,
 	       const StoredType& sent_data)
   {
-    if (!coreDBActive) return;
-    coreDB.array_insert<StoredType>(iterator_id, data_name, index, sent_data);
+    if (coreDBActive)
+      coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
+				       sent_data);
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, 
+				       sent_data);
+#endif
   }
 
 
@@ -287,7 +328,7 @@ private:
   StoredType core_lookup(const StrStrSizet& iterator_id,
 			 const std::string& data_name) const
   {
-    return coreDB.get_data<StoredType>(iterator_id, data_name);
+    return coreDB->get_data<StoredType>(iterator_id, data_name);
   }
 
   /// retrieve data via pointer to avoid copy; work-around for Boost
@@ -296,7 +337,7 @@ private:
   StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
 			      const std::string& data_name) const
   {
-    return coreDB.get_data_ptr<StoredType>(iterator_id, data_name);
+    return coreDB->get_data_ptr<StoredType>(iterator_id, data_name);
   }
 
   /// retrieve data from in-core array of StoredType at given index
@@ -305,7 +346,7 @@ private:
 			 const std::string& data_name,
 			 size_t index) const
   {
-    return coreDB.get_array_data<StoredType>(iterator_id, data_name, index);
+    return coreDB->get_array_data<StoredType>(iterator_id, data_name, index);
   }
 
   /// retrieve data via pointer to entry in in-core array
@@ -314,7 +355,7 @@ private:
 				    const std::string& data_name,
 				    size_t index) const
   {
-    return coreDB.get_array_data_ptr<StoredType>(iterator_id, data_name, index);
+    return coreDB->get_array_data_ptr<StoredType>(iterator_id, data_name, index);
   }
 
   /// retrieve requested data into provided db_data StoredType
@@ -325,7 +366,7 @@ private:
   {
     abort_handler(-1);
     return;
-    //db_data = fileDB.lookup(iterator_id data_name);
+    //db_data = hdf5DB.lookup(iterator_id data_name);
   }
 
 
@@ -333,21 +374,25 @@ private:
   // Data
   // ----
 
+  // TODO: consider removing or renaming flags based on HDF5 needs
+
   /// whether the in-core database in active
   bool coreDBActive;
   /// filename for the in-core database
   std::string coreDBFilename;
 
   /// whether the file database is active
-  bool fileDBActive;
+  bool hdf5DBActive;
 
   /// In-core database, with option to flush to file at end
-  ResultsDBAny coreDB;
+  boost::scoped_ptr<ResultsDBAny> coreDB;
 
-  /// File-based database
-  //ResultsDBHDF5 fileDB;
+  /// File-based database; using shared_ptr due to potentially incomplete type
+  /// and requirements for checked_delete in debug builds
+  boost::shared_ptr<ResultsDBHDF5> hdf5DB;
 
 };  // class ResultsManager
+
 
 
 // Notes on ResultsEntry: 

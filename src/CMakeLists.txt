@@ -361,6 +361,11 @@ set(util_src ParallelLibrary.cpp MPIPackBuffer.cpp
     ExperimentData.cpp
     )
 
+if(DAKOTA_HAVE_HDF5)
+  #list(APPEND util_src ResultsDBHDF5.cpp)
+  list(APPEND util_src BinaryIO_Helper.cpp)
+endif()
+
 if(DAKOTA_DL_SOLVER)
   list(APPEND util_src DLSolver.cpp)
 endif(DAKOTA_DL_SOLVER)
