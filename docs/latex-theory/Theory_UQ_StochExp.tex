@@ -1661,6 +1661,22 @@ customizations:
   desired analysis objectives.
 \end{itemize}
 
+% TO DO: add full discussion of hierarchical estimation of statistical QoI:
+Hierarchical increments in a variety of statistical QoI may be derived,
+starting from increments in response mean and covariance.  The former
+is defined from computing the expectation of the difference interpolants
+in Eqs.~\ref{eq:hierarch_interp_nd_L}-\ref{eq:hierarch_interp_nd_H}, and 
+the latter is defined as:
+\begin{equation}
+\Delta \Sigma_{ij} = \Delta E[R_i R_j] - \mu_{R_i} \Delta E[R_j] - 
+\mu_{R_j} \Delta E[R_i] - \Delta E[R_i] \Delta E[R_j]
+\end{equation}
+Increments in standard deviation and reliability indices can subsequently
+be defined, where care is taken to preserve numerical precision through
+the square root operation (e.g., via Boost sqrt1pm1()).
+% Std Deviation:
+% Reliability index:
+
 %If the objectives and constraints of a design under uncertainty
 %problem are focused on variance (e.g., robust design), then the
 %general-purpose formulations described above are sufficiently
