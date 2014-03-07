@@ -204,7 +204,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_uq_short_column_ivp_exp.in	    # abort: surfpack data asserts
       dakota_uq_timeseries_ivp_optinterf.in # workdir issue?
       dakota_uq_timeseries_sop_optinterf.in # workdir issue?
-      dakota_workdir.in			    # abort: Unix shell
       )
   endif()
 
