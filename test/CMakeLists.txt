@@ -34,7 +34,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   list(APPEND test_support_files
     dakota_container.sh dakota_3pc.ac.sh dakota_3pc.if.sh dakota_3pc.of.sh
     dakota_3pc.ac_verb.sh dakota_3pc.if_verb.sh dakota_3pc.of_verb.sh
-    dakota_workdir.sh
+    dakota_workdir.py
     )
 
   # supplemental data
