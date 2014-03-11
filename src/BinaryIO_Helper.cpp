@@ -39,7 +39,7 @@ herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
     std::vector<hsize_t> dims(2);
     dims[0] = buf.size(); dims[1] = buf[0].length(); // WJB: fcnPtr vs PassIn?
 
-    std::vector<hsize_t> max_dims = unlimitedDims2D();
+    std::vector<hsize_t> max_dims = initializeUnlimitedDims<2>();
 
     // Create the memory space...
     hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
