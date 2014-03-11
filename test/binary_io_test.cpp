@@ -307,6 +307,55 @@ void test_write_read_string_array(const std::string& file_name)
 }
 
 
+void test_write_read_array_of_teuchos_matrices(const std::string& file_name)
+{
+  bool db_is_incore = false;
+  bool file_exist = true;
+  bool write_file = true;
+  herr_t status;
+
+  RealMatrix::scalarType rval_out = 3.14159;
+
+  RealMatrix rmatrix_out(2, 2);
+  rmatrix_out(0, 0) = rval_out;
+  rmatrix_out(0, 1) = 0.23;
+  rmatrix_out(1, 0) = 0.23;
+  rmatrix_out(1, 1) = rval_out;
+
+  RealMatrixArray array_of_matrices_out;
+  assert(array_of_matrices_out.empty() == true);
+
+  array_of_matrices_out.push_back(rmatrix_out);
+
+  // scope within which file write takes place
+  {
+    // open file
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
+                                 write_file);
+
+    status = binary_file.store_data("/ArrayOfTeuchosMatrices",
+               array_of_matrices_out);
+    assert(status >= 0);
+
+    // Test append to existing 3D dataset ("tweak" existing matrix a bit 1st)
+
+    for(int i=0; i<rmatrix_out.numRows(); ++i) {
+      RealMatrix::scalarType tweakVal = 2*i;
+      for(int j=0; j<rmatrix_out.numCols(); ++j) {
+        RealMatrix::scalarType tmp = rmatrix_out(i, j);
+        rmatrix_out(i, j) = tmp + tweakVal;
+      }
+    }
+
+    status = binary_file.append_data_slab("/ArrayOfTeuchosMatrices",
+               rmatrix_out);
+    assert(status >= 0);
+
+    // binary stream goes out of scope... (file close)
+  }
+
+}
+
 herr_t testHDF5fileDB(const std::string& file_name)
 {
   double rval_out = 3.14159;
@@ -356,6 +405,8 @@ herr_t testHDF5fileDB(const std::string& file_name)
 
     // binary stream goes out of scope... (file close)
   }
+
+  test_write_read_array_of_teuchos_matrices(file_name);
 
   test_write_read_native_val("/DakPi", 3.14159, file_name);
   test_write_read_std_vec(file_name, "/SomeIntVectorData", 314159);
