@@ -47,28 +47,28 @@ class BinaryStream_InvalidPath         {};
 class BinaryStream_InvalidDataSpace    {};
 //class BinaryStream_InvalidVariable   {};
 
-	
+
 template <typename T>
 struct NativeDataTypes {};
 
 template <>
 struct NativeDataTypes<int>
 {
-  typedef int SelfType;
+  typedef int PrimitiveType;
 
   static hid_t datatype() { return H5T_NATIVE_INT; }
-  //static SelfType get_fill_value() { return nan(""); }
-  static const SelfType get_fill_value()
-  { return std::numeric_limits<SelfType>::min(); }
+  //static PrimitiveType get_fill_value() { return nan(""); }
+  static const PrimitiveType get_fill_value()
+  { return std::numeric_limits<PrimitiveType>::min(); }
 };
 
 template <>
 struct NativeDataTypes<double>
 {
-  typedef double SelfType;
+  typedef double PrimitiveType;
 
   static hid_t datatype() { return H5T_NATIVE_DOUBLE; }
-  static const SelfType get_fill_value() { return nan(""); }
+  static const PrimitiveType get_fill_value() { return nan(""); }
 };
 
 
@@ -343,7 +343,7 @@ public:
     std::vector<hsize_t> dims(2);
     dims[0] = buf.size(); dims[1] = buf[0].size();
 
-    std::vector<hsize_t> max_dims = unlimitedDims2D();
+    std::vector<hsize_t> max_dims = initializeUnlimitedDims<2>();
 
     // Create the memory space...
     hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
@@ -400,7 +400,6 @@ public:
     return append_data_slab( dset_name, last_row, &buf[0], buf.length() );
   }
 
-
   // should parameterize on ScalarType -- template <typename T>
   // that way, same func for ints, doubles,...
   herr_t store_data(const std::string& dset_name,
@@ -416,6 +415,7 @@ public:
   }
 
 
+
   herr_t store_data(const std::string& dset_name,
                     const RealVectorArray& buf) const
   {
@@ -429,7 +429,7 @@ public:
     std::vector<hsize_t> dims(2);
     dims[0] = buf.size(); dims[1] = buf[0].length(); // WJB: fcnPtr vs PassIn?
 
-    std::vector<hsize_t> max_dims = unlimitedDims2D();
+    std::vector<hsize_t> max_dims = initializeUnlimitedDims<2>();
 
     // Create the memory space...
     hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
@@ -468,10 +468,81 @@ public:
 
     // WJB - ToDo: free resources
     H5Sclose(mem_space);
-
     //std::cout << std::endl; 
   }
 
+
+  /// RECTANGULAR storage of array of Teuchos Matrix objects - each "slab" can
+  /// have variable Mrows x Ncols, but a hyperslab is selected for writing data,
+  /// one matrix "slab" at a time (HDF5's fill_value used to fill empty
+  /// locations in the rectangular space).
+  /// for example vector<RealMatrix>, vector<IntMatrix>
+  //template <typename T>
+  herr_t store_data(const std::string& dset_name,
+                    const RealMatrixArray& buf) const
+  {
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    // WJB: much of the "chunking setup" code is nearly identical to the
+    // Teuchos "row" VectorSlab version, so re-factor for reuse THIS sprint
+
+    // Create a 3D dataspace sufficient to store first matrix slab
+    std::vector<hsize_t> dims(3);
+    dims[0] = buf.size(); dims[1] = buf[0].numRows(); dims[2] = buf[0].numCols();
+
+    std::vector<hsize_t> max_dims = initializeUnlimitedDims<3>();
+
+    // Create the memory space...
+    hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
+                        max_dims.data() );
+
+    // Enable chunking using creation properties
+    // Chunk size is that of the largest matrix slab
+    int slab_size = dims[1]*dims[2];
+    for(int i=0; i<buf.size(); ++i) {
+      slab_size = std::max( slab_size, buf[i].numRows()*buf[i].numCols() );
+    }
+
+    std::vector<hsize_t> chunk_dims = dims;
+    chunk_dims[0] = 1; chunk_dims[1] = slab_size/2; chunk_dims[2] = slab_size/2;
+
+    hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
+    H5Pset_layout(cparms, H5D_CHUNKED);
+    H5Pset_chunk( cparms, chunk_dims.size(), chunk_dims.data() );
+
+    // Create a new dataset within the DB using cparms creation properties.
+
+    // size() vs length() and 'size_type' vs 'ScalarType' prevents writing a
+    // generic algorithm
+    hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
+                      NativeDataTypes<double>::datatype(), mem_space,
+                      H5P_DEFAULT, cparms, H5P_DEFAULT);
+
+    herr_t status;
+    for(int i=0; i<buf.size(); ++i) {
+      //status = append_data_slab( dset_name, i, buf[i].values(),
+                                 //buf[i].numRows()*buf[i].numCols() );
+      status = append_data_slab<RealMatrixArray::value_type::scalarType>( dset_name, i, buf[0]);
+    }
+
+    // WJB - ToDo: free resources
+    H5Sclose(mem_space);
+
+  }
+
+
+  // WJB: nearly a DUPLICATE version of above code for Teuchos Matrix Slabs
+  //template <typename OrdinalType, typename ScalarType>
+  herr_t append_data_slab(const std::string& dset_name,
+                          const RealMatrix& buf) const
+  {
+    hsize_t last_slab = find_last_dataset_record(dset_name);
+    //return append_data_slab( dset_name, last_slab, buf.values(),
+                             //buf.numRows()*buf.numCols() );
+    return append_data_slab<RealMatrixArray::value_type::scalarType>( dset_name,
+             last_slab, buf );
+  }
 
   //
   //- Heading:  Data retrieval methods (read HDF5)
@@ -712,7 +783,8 @@ private:
     if ( !ds_exists || buf == NULL && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    std::vector<hsize_t> max_dims = unlimitedDims2D();
+    // WJB: IF contiguous "record" buf -- extending beyond 2D should be doable
+    std::vector<hsize_t> max_dims = initializeUnlimitedDims<2>();
     std::vector<hsize_t> curr_dims(max_dims);
 
     herr_t status = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
@@ -754,6 +826,68 @@ private:
     // Write the row data record to the hyperslab
     status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), mem_space,
                db_stream_space, H5P_DEFAULT, buf );
+
+    H5Sclose(db_stream_space);
+    H5Sclose(mem_space);
+
+    return status;
+  }
+
+
+  template <typename T>
+  herr_t append_data_slab(const std::string& dset_name,const size_t outer_index,
+                          const RealMatrix& buf) const
+  {
+    htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+
+    if ( !ds_exists || buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    // WJB: IF contiguous "record" buf - this "3D" version seems doable
+    std::vector<hsize_t> max_dims = initializeUnlimitedDims<3>();
+    std::vector<hsize_t> curr_dims(max_dims);
+
+    herr_t status = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
+                      &curr_dims[0], NULL, NULL );
+
+    //hsize_t last_index = find_last_dataset_record(dset_name);
+    size_t last_index = outer_index;
+
+    //if (curr_dims[0] != 1) assert(last_index==curr_dims[0]); // NOT firstMatrixSlice!
+
+    // Extend the dataset by a single matrix-slab with Nrows x Ncols increased
+    // if necessary
+    std::vector<hsize_t> dims(max_dims);
+    dims[0] = last_index + 1;
+
+    //OrdinalType n_rows, n_cols;
+    int n_rows = buf.numRows();
+    int n_cols = buf.numCols();
+    dims[1] = (n_rows > curr_dims[1]) ? n_rows : curr_dims[1];
+    dims[2] = (n_cols > curr_dims[2]) ? n_cols : curr_dims[2];
+
+    hid_t dataset = H5Dopen(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+    status = H5Dextend( dataset, dims.data() );
+
+    std::vector<hsize_t> record_dims(max_dims); // WJB: slab_dims might be better name now
+    record_dims[0] = 1; record_dims[1] = n_rows; record_dims[2] = n_cols;
+
+
+    hid_t mem_space = H5Screate_simple( record_dims.size(), record_dims.data(),
+                        max_dims.data() );
+
+    hid_t db_stream_space = H5Dget_space(dataset);
+
+    // Select a matrix-slab (i.e. HDF5 hyperslab)...
+    std::vector<hsize_t> offset(max_dims);
+    offset[0] = last_index; offset[1] = 0; offset[2] = 0;
+
+    status = H5Sselect_hyperslab( db_stream_space, H5S_SELECT_SET,
+               offset.data(), NULL, record_dims.data(), NULL );
+
+    // Write the matrix data to the hyperslab
+    status = H5Dwrite( dataset, NativeDataTypes<T>::datatype(), mem_space,
+               db_stream_space, H5P_DEFAULT, buf.values() );
 
     H5Sclose(db_stream_space);
     H5Sclose(mem_space);
@@ -843,20 +977,15 @@ private:
 
   // WJB:  consider boost::ublas::bounded_vector type instead
   //static std::vector<hsize_t, 1> staticVectorDims;
-  //static std::vector<hsize_t, 2> staticMatrixDims;
-  //static std::vector<hsize_t, 3> static3DBufDims;
 
-  static std::vector<hsize_t> unlimitedDims2D()
-  {
-    const static std::vector<hsize_t> max_dims = initializeUnlimitedDims();
-    return max_dims;
-  }
+//    boost::array<hsize_t, DIM> max_dims_nd;
+//    max_dims_nd.fill(H5S_UNLIMITED);
 
+  template <size_t DIM>
   static std::vector<hsize_t> initializeUnlimitedDims()
   {
-    std::vector<hsize_t> max_dims_2d(2);
-    max_dims_2d[0] = H5S_UNLIMITED; max_dims_2d[1] = H5S_UNLIMITED;
-    return max_dims_2d;
+    const static std::vector<hsize_t> max_dims_nd(DIM, H5S_UNLIMITED);
+    return max_dims_nd;
   }
 
 };
