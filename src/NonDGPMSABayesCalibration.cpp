@@ -80,7 +80,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "import points file "<< approxImportFile;
   Cout << "import points annotated " << approxImportAnnotated;
   if (approxImportFile.empty())
-    lhsIter.run_iterator(Cout);
+    lhsIter.run(Cout);
   // instantiate QUESO objects and execute
   NonDGPMSAInstance=this;
   Cout << "Rejection type  "<< rejectionType << '\n';

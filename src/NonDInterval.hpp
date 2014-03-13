@@ -51,10 +51,8 @@ public:
   //- Heading: Member functions
   //
 
-  /// performs an epistemic uncertainty propagation using  
-  /// Dempster-Shafer evidence theory methods which solve 
-  /// for cumulative distribution functions of belief and plausibility
-  //virtual void quantify_uncertainty(); // pure virtual, called by run_iterator
+  // performs an epistemic uncertainty propagation using interval propagation
+  //virtual void quantify_uncertainty();
 
   /// print the cumulative distribution functions for belief and plausibility
   void print_results(std::ostream& s);

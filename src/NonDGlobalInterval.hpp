@@ -50,7 +50,7 @@ public:
 
   /// Performs an optimization to determine interval bounds for an   
   /// entire function or interval bounds on a particular statistical estimator
-  void quantify_uncertainty(); // pure virtual, called by run_iterator
+  void quantify_uncertainty();
 
   const Model& algorithm_space_model() const;
 

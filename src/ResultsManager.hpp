@@ -67,7 +67,7 @@ namespace Dakota {
 
 /// Get a globally unique 1-based execution number for a given
 /// iterator name (combination of methodName and methodID) for use in
-/// results DB.  Each run_iterator call creates or increments this
+/// results DB.  Each Iterator::run() call creates or increments this
 /// count for its string identifier.
 class ResultsID {
 

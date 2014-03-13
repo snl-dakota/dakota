@@ -105,8 +105,7 @@ protected:
   //- Heading: New virtual member functions
   //
 
-  /// performs a forward uncertainty propagation of parameter
-  /// distributions into response statistics
+  /// Mapping of the core_run() virtual function for the NonD branch
   virtual void quantify_uncertainty() = 0;
 
   /// initializes respCovariance
@@ -404,6 +403,8 @@ inline void NonD::initialize_run()
 }
 
 
+/** Performs a forward uncertainty propagation of parameter
+    distributions into response statistics. */
 inline void NonD::core_run()
 { bestVarsRespMap.clear(); quantify_uncertainty(); }
 

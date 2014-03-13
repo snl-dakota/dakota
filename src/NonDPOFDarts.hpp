@@ -52,7 +52,7 @@ public:
   //
 
   /// perform POFDart analysis and return probability of failure 
-  void quantify_uncertainty(); // called by run_iterator
+  void quantify_uncertainty();
 
 protected: 
   //

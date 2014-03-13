@@ -52,7 +52,7 @@ protected:
   //- Heading: New virtual member functions
   //
 
-  /// Redefines the run_iterator virtual function for the PStudy/DACE branch.
+  /// Redefines the core_run() virtual function for the Verification branch
   virtual void perform_verification() = 0;
 
   //

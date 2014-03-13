@@ -55,7 +55,7 @@ protected:
   //- Heading: New virtual member functions
   //
 
-  /// Redefines the run_iterator virtual function for the PStudy/DACE branch.
+  /// Mapping of the core_run() virtual function for the PStudy/DACE branch
   virtual void extract_trends() = 0;
 
   //
