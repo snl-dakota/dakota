@@ -1,9 +1,0 @@
-#!/bin/csh
-#
-# This script launches 'exact' on the user-specified study file.
-#
-
-set path = ($path ../../methods/acro/packages/exact/src/exact)
-setenv PYTHONPATH ../../methods/acro/packages/exact/src
-
-exact $*
