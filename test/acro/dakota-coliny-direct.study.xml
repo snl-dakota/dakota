@@ -1,0 +1,60 @@
+<experimental-study name="dakota-coliny-direct">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>coliny</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+  
+      <factor name="test" filename="dakota-direct_problems"/>
+  
+      <factor name="method:base">
+          <level>coliny_direct max_function_evaluations=5000</level>
+      </factor>
+
+      <factor name="method:output">
+          <level>output silent</level>
+      </factor>
+
+      <factor name="method:misc_options">
+          <level>"'output_header=verbose' 'max_iterations=0' 'function_value_tolerance=0' 'debug=0'"</level>
+      </factor>
+
+      <factor name="method:seed">
+          <level>seed 100</level>
+      </factor>
+
+      <factor name="strategy:base">
+          <level>single_method</level>
+       </factor>
+
+      <factor name="interface:base">
+          <level>asynch algebraic_mappings</level>
+       </factor>
+
+    </factors>
+    <controls>
+       <executable>python dakota_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Termination" type="validation">
+    <category>validation</category>
+    <options>_measurement='TerminationStatus' _value=_termination</options>
+  </analysis>
+
+  <analysis name="ConstraintViolation" type="validation">
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+</experimental-study>

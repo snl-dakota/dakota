@@ -1,0 +1,29 @@
+# Dakota Input File: rosen_multidim.in
+# Usage:
+#   dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
+environment
+  graphics
+  tabular_graphics_data
+    tabular_graphics_file = 'rosen_multidim.dat'
+
+method
+  multidim_parameter_study
+    partitions = 8 8
+
+model
+  single
+
+variables
+  continuous_design = 2
+    lower_bounds     -2.0     -2.0
+    upper_bounds      2.0      2.0
+    descriptors       'x1'     "x2"
+
+interface
+  analysis_driver = 'rosenbrock'
+    direct
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians

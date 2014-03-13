@@ -1,0 +1,1 @@
+continuous_design=3 cdv_upper_bounds  10.0  10.0  10.0 cdv_lower_bounds -10.0 -10.0 -10.0 cdv_initial_point  0.5   1.5   2.5 cdv_descriptor 'x[1]' 'x[2]' 'x[3]'

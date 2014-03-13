@@ -1,0 +1,42 @@
+##  DAKOTA INPUT FILE - dakota_mogatest1.in 
+
+ 
+
+strategy,
+	single
+	graphics tabular_graphics_data
+
+method,
+#	jega
+        moga                                            
+	output silent 
+	max_function_evaluations = 2500			
+	initialization_type unique_random
+	crossover_type shuffle_random			
+	  num_offspring = 2 num_parents = 2		
+	  crossover_rate = 0.8
+	mutation_type replace_uniform			
+	  mutation_rate = 0.1				
+	fitness_type domination_count                   
+	replacement_type below_limit = 6                
+	  shrinkage_percentage = 0.9                    
+	convergence_type metric_tracker                 
+	  percent_change = 0.05 num_generations = 40    
+        seed = 10983
+   
+variables,
+	continuous_design = 3				
+	  initial_point     0     	 0	 0	
+	  upper_bounds      4  	 4	 4	
+	  lower_bounds     -4	-4	-4	
+	  descriptors      'x1'  	'x2'	'x3'	
+
+interface,
+	system                                  
+	  analysis_driver = 'mogatest1'			
+
+responses,
+	num_objective_functions = 2                     
+	no_gradients
+	no_hessians
+

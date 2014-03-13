@@ -1,0 +1,79 @@
+# DAKOTA INPUT FILE - dakota_pstudy.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+method,
+	vector_parameter_study				#0,#1,#2,#6
+	  step_vector = .1 .1 .1        num_steps = 4	#0,#1
+#	  final_point =  2. 2. 2.       num_steps = 4	#2
+#	  step_vector = .1 .1 .1 1 1 1  num_steps = 4	#6
+#	list_parameter_study				#3,#7
+#	  list_of_points = 1.1 1.2 1.3 1.4 1.5 1.6	#3
+#			   1.7 1.8 1.9 2.0 2.1 2.2	#3
+#	  list_of_points = 1.1 1.2 1.3 1 2 3.		#7
+#			   1.4 1.5 1.6 2 4 5.		#7
+#			   1.7 1.8 1.9 3 6 7.		#7
+#			   2.0 2.1 2.2 4 8 9.		#7
+# Tests 10 and 11 mirror 3 and 7, but with user-specified points
+#	list_parameter_study				#10,#11
+#	  import_points_file = 'dakota_pstudy.3.dat'	#10
+#	    annotated					#10
+#	  import_points_file = 'dakota_pstudy.7.dat'	#11
+#	    freeform					#11
+#
+#	centered_parameter_study			#4,#8
+#	  step_vector = .05 .05 .05			#4
+#	  steps_per_variable = 5			#4
+#	  step_vector = .05 .05 .05 1 1 1		#8
+#	  steps_per_variable = 2			#8
+#	multidim_parameter_study			#5,#9
+#	  partitions = 2 3 4				#5
+#         partitions = 2				#9
+
+variables,
+	continuous_design = 3
+	  initial_point    1.0   1.0   1.0
+#	  upper_bounds    10.0  10.0  10.0		#5,#9
+#	  lower_bounds   -10.0 -10.0 -10.0		#5,#9
+#       discrete_design_range = 1                       #6,#7,#8,#9,#11
+#	  initial_point = 0				#6
+#	  initial_point = 3				#8
+#         lower_bounds  = 0				#9
+#         upper_bounds  = 6				#9
+#       discrete_design_set_int = 1                     #6,#7,#8,#9,#11
+#	  initial_point = 2				#6
+#	  initial_point = 6				#8
+#	  set_values = 2 4 6 8 10			#6,#7,#8,#9,#11
+#       discrete_design_set_real = 1                    #6,#7,#8,#9,#11
+#	  initial_point = 1.				#6
+#	  initial_point = 5.				#8
+#	  set_values = 1. 3. 5. 7. 9.			#6,#7,#8,#9,#11
+
+interface,
+	system asynchronous evaluation_concurrency = 5
+	  analysis_driver = 'text_book'
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	analytic_gradients				#0,#2,#6
+#	no_gradients					#3,#4,#5,#7,#8,#9,#10,#11
+#	numerical_gradients				#1
+#	  method_source dakota				#1
+#	  interval_type central				#1
+#	  fd_gradient_step_size = 1.e-4			#1
+#	no_hessians       				#1,#3,#4,#5,#7,#8,#9,#10,#11
+	analytic_hessians       			#0,#2,#6

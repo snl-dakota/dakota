@@ -1,0 +1,101 @@
+# DAKOTA INPUT FILE - dakota_sbnls_rosen.in
+
+# Surrogate-based nonlinear least squares to minimize Rosenbrock's function.
+
+environment,
+	graphics
+	tabular_graphics_data
+	method_pointer = 'SBLLS'
+
+method,
+	id_method = 'SBLLS'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'		#0,#1,#2,#4,#5,#6,#7
+#	approx_method_name = 'nl2sol'		#3
+#	approx_method_name = 'npsol_sqp'	#8
+#	approx_method_name = 'dot_sqp'		#9
+	max_iterations = 500
+#	soft_convergence_limit = 10
+###############################################
+# the trust region (TR) commands specify the
+# size of the first trust region, plus the
+# scaling factors that are applied to the TR
+# on subsequent interations
+###############################################
+	trust_region
+	  initial_size = 0.10
+	  minimum_size = 1.0e-6
+	  contract_threshold = 0.25
+	  expand_threshold   = 0.75
+	  contraction_factor = 0.50
+	  expansion_factor   = 1.50
+	approx_subproblem
+	  original_primary			#0,#1,#2,#3,#4,#5
+#	  single_objective			#6,#7,#8,#9
+	  original_constraints
+
+###############################################
+# begin opt specification
+###############################################
+method,						#0,#1,#2,#4,#5,#6,#7
+	id_method = 'NLP'			#0,#1,#2,#4,#5,#6,#7
+	nl2sol,					#0,#1,#2
+#	optpp_g_newton,				#4
+#	nlssol_sqp,				#5
+#	npsol_sqp,				#6
+#	dot_sqp,				#7
+	  convergence_tolerance = 1e-8		#0,#1,#2,#4,#5,#6,#7
+
+model,
+	id_model = 'SURROGATE'
+	surrogate global		      	#0
+	  responses_pointer = 'SURROGATE_RESP'
+	  dace_method_pointer = 'SAMPLING' 	#0
+	  correction additive first_order 	#0
+	  polynomial quadratic 			#0
+# 	surrogate local taylor_series		#1,#2,#3,#4,#5,#6,#7,#8,#9
+#	  actual_model_pointer = 'TRUTH' 	#1,#2,#3,#4,#5,#6,#7,#8,#9
+
+variables,
+	continuous_design = 2
+	  initial_point   -1.2	1.0
+	  lower_bounds    -2.0 -2.0
+	  upper_bounds     2.0 	2.0
+	  descriptors      'x1' 'x2'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	calibration_terms = 2
+	analytic_gradients
+	no_hessians
+
+###############################################
+# Sampling method specifications for sampling in
+# the trust regions of the SBNLS environment
+###############################################
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+	sampling
+	  samples = 10 seed = 531
+	  sample_type lhs
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+interface,
+	direct
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'TRUE_RESP'
+	calibration_terms = 2
+	analytic_gradients
+	no_hessians				#0,#1
+#	analytic_hessians			#2,#3,#4,#5,#6,#7,#8,#9

@@ -1,0 +1,50 @@
+# Solve the AMPL diet1 problem: minimize cost subject to buying at
+# least one entree, side, and drink.  The optimal objective is 2.81.
+#
+# The AMPL model files are generated from pyomo:
+#   pyomo diet1.py diet.dat --save-model dakota_ampl_diet.nl --symbolic-solver-labels
+#
+# This test is protecting parsing of AMPL labels with spaces and AMPL
+# responses that are ordered differently than the Dakota reponses.
+#
+# Technically the decision variables are discrete, but the SQP finds
+# the correct solution on the bounds of the domain
+
+method,
+	npsol_sqp
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-12
+
+variables,
+	continuous_design = 9
+	  initial_point    9 * 0.5
+	  upper_bounds     9 * 1.0
+	  lower_bounds     9 * 0.0
+	  descriptors
+             'Buy[Sausage McMuffin]'
+             'Buy[Orange Juice]'
+             'Buy[Big Mac]'
+             'Buy[Filet-O-Fish]'
+             'Buy[Quarter Pounder w Cheese]'
+             'Buy[1% Lowfat Milk]'
+             'Buy[Fries, small]'
+             'Buy[McGrilled Chicken]'
+             'Buy[McLean Deluxe w Cheese]'
+             
+interface,
+	  algebraic_mappings = 'dakota_ampl_diet.nl'
+	  asynchronous
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
+	  lower_bounds = 3 * 1.0
+	  upper_bounds = 3 * 20.0
+	response_descriptors = 
+	  'Total_Cost'
+	  'Entree'
+	  'Side'
+	  'Drink'
+	analytic_gradients				
+	no_hessians
+

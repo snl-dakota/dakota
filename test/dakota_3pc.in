@@ -1,0 +1,58 @@
+# DAKOTA INPUT FILE - dakota_3pc.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# This tester populates a test matrix of fork/system vs. synch/asynch
+# for the 3 piece interface (Note: the temporary/named files testing
+# dimension is not available as it is in dakota_textbook.in due to the
+# use of tagged working directories within
+# dakota_3pc.if.sh/dakota_3pc.ac.sh/dakota_3pc.of.sh).
+
+method,
+        dot_mmfd
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-4
+
+variables,
+	continuous_design = 2
+	  initial_point    0.9    1.1
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	fork					#0,#1,#4
+#	system 					#2,#3,#5
+#	  asynchronous				#1,#3
+	  input_filter    = 'dakota_3pc.if.sh'	#0,#1,#2,#3
+	  output_filter   = 'dakota_3pc.of.sh'	#0,#1,#2,#3
+	  analysis_driver = 'dakota_3pc.ac.sh'	#0,#1,#2,#3
+#	  input_filter    = 'dakota_3pc.if_verb.sh'	#4,#5
+#	  output_filter   = 'dakota_3pc.of_verb.sh'	#4,#5
+#	  analysis_driver = 'dakota_3pc.ac_verb.sh'	#4,#5
+	  parameters_file = 'tb.in'
+	  results_file    = 'tb.out'
+	  file_tag				#0,#1,#2,#3
+#	  verbatim				#4,#5
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	numerical_gradients
+	  method_source dakota
+	  interval_type central
+	  fd_gradient_step_size = 1.e-4
+	no_hessians

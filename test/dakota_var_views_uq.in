@@ -1,0 +1,58 @@
+## DAKOTA INPUT FILE - dakota_var_views_uq.in
+
+# This file contains tests of the variable views override capability
+# in the context of UQ methods.  It covers continuous variables
+# (discrete are covered in another test set) and considers only
+# default and 'active all' views to catch the most egregious problems.
+# Mix-and-match tests will be captured separately.
+
+method,
+	sampling,				#0,   #9
+	  samples = 100				#0,   #9
+	  seed = 34785				#0,#2,#3,#4,#6,#8,#9
+#	local_reliability			#1,   #f10
+#	  mpp_search x_taylor_mean		#1,   #f10
+#	  num_response_levels = 1 1 1		#1,#2,#f10,#f11
+#	  response_levels = 0.5	0.5 0.5		#1,#2,#f10,#f11
+#	global_reliability  	    		#2,   #f11
+#	  x_gaussian_process			#2,   #f11
+#	polynomial_chaos			#3,   #f12
+#	  quadrature_order = 5			#3,#4,#f12,#f13
+#	stoch_collocation			#4,   #f13
+#       local_interval_est nip			#5,   #f14
+#       global_interval_est ego			#6,   #f15
+#	local_evidence sqp  			#7,   #f16
+#	global_evidence lhs			#8,   #17
+
+variables,
+#	active all		#9,#f10,#f11,#f12,#f13,#f14,#f15,#f16,#17
+	continuous_design = 2
+	  initial_point  0.   0.
+	  upper_bounds   2.   2.
+	  lower_bounds  -2.  -2.
+	  descriptors   'x1' 'x2'
+	uniform_uncertain = 2
+	  upper_bounds   2.   2.
+	  lower_bounds  -2.  -2.
+	  descriptors   'x3' 'x4'
+	continuous_interval_uncertain = 2
+	  num_intervals    1      1
+	  interval_probs   1.	  1.
+	  upper_bounds     2.     2.
+	  lower_bounds    -2.    -2.
+	  descriptors     'x5'   'x6'
+	continuous_state = 2
+	  initial_state  0.   0.
+	  upper_bounds   2.   2.
+	  lower_bounds  -2.  -2.
+	  descriptors   'x7' 'x8'
+
+interface,
+	direct
+	  analysis_driver = 'text_book'
+
+responses,
+	response_functions = 3
+	no_gradients		#0,#2,#3,#4,#6,#8,#9,#f11,#f12,#f13,#f15,#17
+#	analytic_gradients	#1,#5,#7,#f10,#f14,#f16
+	no_hessians

@@ -1,0 +1,77 @@
+<experimental-study name="coliny">
+  <tags>
+    <tag>nightly</tag>
+    <tag>coliny</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+  
+      <factor name="dakota_coliny">
+        <level>id=0 _value=3000.0</level>
+        <level>id=1 _value=3000.0</level>
+        <level>id=2 _value=3000.0</level>
+        <level>id=3 _value=3000.0</level>
+        <level>id=4 _value=3000.0</level>
+        <level>id=5 _value=3000.0</level>
+
+        <level>id=6 _value=3000.0</level>
+        <level>id=7 _value=3000.0</level>
+        <level>id=8 _value=3000.0</level>
+        <level>id=9 _value=3000.0</level>
+        <level>id=10 _value=3000.0</level>
+        <level>id=11 _value=3000.0</level>
+
+        <level>id=12 _value=3000.0</level>
+        <level>id=13 _value=3000.0</level>
+        <level>id=14 _value=3000.0</level>
+        <level>id=15 _value=3000.0</level>
+        <level>id=16 _value=3000.0</level>
+        <level>id=17 _value=3000.0</level>
+        <level>id=18 _value=3000.0</level>
+        <level>id=19 _value=3000.0</level>
+
+        <level>id=20 _value=3000.0</level>
+        <level>id=21 _value=3000.0</level>
+        <level>id=22 _value=3000.0</level>
+        <level>id=23 _value=3000.0</level>
+        <level>id=24 _value=3000.0</level>
+        <level>id=25 _value=3000.0</level>
+
+        <level>id=26 _value=3000.0</level>
+        <level>id=27 _value=3000.0</level>
+
+        <level>id=28 _value=3000.0</level>
+        <level>id=29 _value=3000.0</level>
+        <level>id=30 _value=3000.0</level>
+        <level>id=31 _value=3000.0</level>
+        <level>id=32 _value=3000.0</level>
+        <level>id=33 _value=3000.0</level>
+        <level>id=34 _value=3000.0</level>
+        <level>id=35 _value=3000.0</level>
+        <level>id=36 _value=3000.0</level>
+        <level>id=37 _value=3000.0</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable timelimit="60.0">./dakota_test</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>

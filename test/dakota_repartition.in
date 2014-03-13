@@ -1,0 +1,69 @@
+# DAKOTA INPUT FILE - dakota_repartition.in
+
+# A two-pass parameter study with repartitioning of multiprocessor
+# analysis server size.  Method 1 uses 2 processors per analysis, and
+# method 2 repartitions to 5 processors per analysis.  A minimum of 5
+# processors is required to run this input file, which will result in
+# a dedicated master/self-scheduling approach for method 1 (9 jobs
+# through 2 2-proc. servers) and a peer/static scheduling approach for
+# method 2 (44 jobs through 1 5-proc. server).  11 processors is also
+# a good choice (5 2-proc. servers and 2 5-proc. servers with
+# dedicated- master/self-scheduling for both methods).
+
+# Processor specification for automated parallel tests:
+# p0=5
+
+environment,
+	top_method_pointer = 'HS'
+
+method,
+	id_method = 'HS'
+	hybrid sequential
+	method_pointer_list = 'VPS' 'CPS'
+
+method,
+	id_method = 'VPS'
+	model_pointer = 'M1'
+        vector_parameter_study
+	  step_vector = -.1 -.1 -.1 -.1
+	  num_steps = 8
+#	final_solutions = 3			#1
+
+method,
+	id_method = 'CPS'
+	model_pointer = 'M2'
+	centered_parameter_study
+	  step_vector = .1 .1 .1 .1
+	  steps_per_variable = 5  5  5  5
+
+model,
+	id_model = 'M1'
+	single
+	  interface_pointer = 'I1'
+
+model,
+	id_model = 'M2'
+	single
+	  interface_pointer = 'I2'
+
+variables,
+	continuous_design = 4
+	  initial_point       1.0 1.0 1.0 1.0
+
+interface,
+	id_interface = 'I1'
+	direct
+	  analysis_driver = 'text_book'
+#	  processors_per_analysis = 2		#p0
+
+interface,
+	id_interface = 'I2'
+	direct
+	  analysis_driver = 'text_book'
+#	  processors_per_analysis = 5		#p0
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	no_gradients
+	no_hessians

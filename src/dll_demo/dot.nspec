@@ -1,0 +1,11 @@
+KEYWORD dot {dot_start}
+	frcg ALIAS dot_frcg {N_mdm(lit,methodName_dot_frcg)}
+	    | mmfd ALIAS dot_mmfd {N_mdm(lit,methodName_dot_mmfd)}
+	    | bfgs ALIAS dot_bfgs {N_mdm(lit,methodName_dot_bfgs)}
+	    | slp ALIAS dot_slp {N_mdm(lit,methodName_dot_slp)}
+	    | sqp ALIAS dot_sqp {N_mdm(lit,methodName_dot_sqp)}
+	    [ optimization_type {0}
+	      minimize {N_mdm(lit,minMaxType_minimize)}
+	      | maximize {N_mdm(lit,minMaxType_maximize)}
+	      ]
+

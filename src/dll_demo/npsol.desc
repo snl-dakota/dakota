@@ -1,0 +1,10 @@
+TAG "stanford/npsol" GROUP "Optimization: Local, Derivative-based"
+TAG "stanford/nlssol" GROUP "Nonlinear Least Squares"
+TAG "stanford/verify_level"
+	DESC "{Gradient verification level} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNPSOLDC"
+
+TAG "stanford/function_precision"
+	DESC "{Function precision} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNPSOLDC"
+
+TAG "stanford/linesearch_tolerance"
+	DESC "{Line search tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNPSOLDC"

@@ -1,0 +1,106 @@
+# Dakota INPUT FILE - rosen_multidim.in #0
+## Dakota INPUT FILE - dakota_rosenbrock_vector.in #1
+## Dakota INPUT FILE - rosen_grad_opt.in #2
+## Dakota INPUT FILE - dakota_rosenbrock_ps_opt.in #4
+## Dakota INPUT FILE - dakota_rosenbrock_ea_opt.in #5
+## Dakota INPUT FILE - rosen_sampling.in #6
+## Dakota INPUT FILE - rosen_syscall.in #7
+## Dakota INPUT FILE - dakota_rosenbrock_ls.in #8
+# Included Dakota example using the rosenbrock analysis code #0,#2,#6,#7
+# in a multidimensional parameter study.  Usage:			      #0
+#   dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout #0
+## with gradient-based optimization, bounded design variables.  Usage: 	       #2
+##   dakota -i rosen_grad_opt.in -o rosen_grad_opt.out > rosen_grad_opt.stdout #2
+## with a random sampling uncertainty quantification method.  Usage: 	       #6
+##   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout #6
+## with gradient-based optimization, bounded design variables, and 	    #7
+## analysis code called with fork.  Usage:				    #7
+##   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout #7
+
+environment
+  graphics
+  tabular_graphics_data
+    tabular_graphics_file = 'rosen_multidim.dat' #0
+#    tabular_graphics_file = 'rosen_grad_opt.dat' #2
+#    tabular_graphics_file = 'rosen_sampling.dat' #6
+#    tabular_graphics_file = 'rosen_syscall.dat' #7
+
+method
+#  max_iterations = 100      #2,#3,#7,#8
+#  max_iterations = 100      #5
+#  max_iterations = 1000      #4
+#  max_function_evaluations = 2000  #4
+#  max_function_evaluations = 2000  #5
+#  convergence_tolerance = 1e-4    #2,#3,#7,#8
+  multidim_parameter_study     #0
+    partitions = 8 8           #0
+#  vector_parameter_study      #1
+#    final_point = 1.1  1.3     #1
+#    num_steps = 10      #1
+#  conmin_frcg        #2,#7,#9
+#    scaling        #9
+#    output verbose      #9
+#  optpp_g_newton                      #3
+#  nl2sol          #8
+#  coliny_pattern_search                   #4
+#    solution_accuracy = 1e-4    #4
+#    initial_delta = 0.5      #4
+#    threshold_delta = 1e-4    #4
+#    exploratory_moves basic_pattern  #4
+#    contraction_factor = 0.75    #4
+#  coliny_ea        #5
+#    seed = 11011011      #5
+#    population_size = 50      #5
+#    fitness_type merit_function    #5
+#    mutation_type offset_normal    #5
+#    mutation_rate 1.0      #5
+#    crossover_type two_point    #5
+#    crossover_rate 0.0      #5
+#    replacement_type chc = 10    #5
+#  sampling                     #6
+#    sample_type random         #6
+#    samples = 200              #6
+#    seed = 17                  #6
+#    response_levels = 100.0    #6
+
+model
+  single
+
+variables
+  continuous_design = 2                #0,#1,#2,#3,#4,#5,#7,#8,#9
+#    initial_point    -0.3      0.2    #1
+#    initial_point    -1.2      1.0    #2,#3,#7,#8,#9
+#    initial_point     0.0      0.0    #4
+    lower_bounds     -2.0     -2.0     #0,#2,#3,#4,#5,#7,#8
+#    lower_bounds     -2.0      0.001  #9
+    upper_bounds      2.0      2.0     #0,#2,#3,#4,#5,#7,#8,#9
+    descriptors       'x1'     "x2"    #0,#1,#2,#3,#4,#5,#7,#8,#9
+#    scale_types = 'value' 'log'       #9
+#    scales = 4.0 0.1      #9
+#  uniform_uncertain = 2      #6
+#    lower_bounds       -2.0  -2.0  #6
+#    upper_bounds        2.0   2.0  #6
+#    descriptors         'x1'  'x2'  #6
+
+interface
+  analysis_driver = 'rosenbrock'
+    direct          #0,#1,#2,#3,#4,#5,#6,#8,#9
+#    system
+#    fork                             #7
+#    parameters_file = 'params.in'    #7
+#    results_file    = 'results.out'  #7
+
+responses
+#  objective_functions = 1             #1,#2,#4,#5,#7,#9
+#    objective_function_scale_types = 'value' #9
+#    objective_function_scales = 50.0  #9
+#  calibration_terms = 2    #3,#8
+  response_functions = 1    #6,#0
+  no_gradients        #0,#1,#4,#5,#6
+##  analytic_gradients      #2
+#  numerical_gradients      #2,#7
+#    method_source dakota      #2,#7
+#    interval_type forward      #2,#7
+#    fd_gradient_step_size = 1.e-5    #2,#7
+#  analytic_gradients      #3,#8,#9
+  no_hessians

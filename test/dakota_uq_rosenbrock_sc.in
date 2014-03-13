@@ -1,0 +1,117 @@
+# DAKOTA INPUT FILE : dakota_uq_rosenbrock_sc.in
+
+environment,
+	#graphics
+
+method,
+	stoch_collocation
+	  quadrature_order = 5			#0,#1,#2,#3,#4,#5,#12,#13,#14,#15,#16,#17,#18,#19,#20,#52,#53,#54
+	  dimension_preference = 5 3		#0,#1,#2,#3,#4,#12,#13,#14,#15,#16,#17,#18,#19,#20
+#	  sparse_grid_level = 2			#6,#7,#8,#9,#10,#11,#21,#22,#23,#24,#25,#26,#27,#28,#29,#48
+#	  sparse_grid_level = 3			#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43,#49,#55,#56,#57,#58,#59,#60
+#	  dimension_preference = 2 1		#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43,#49
+#	  piecewise	       	   		#44,#45,#50,#53,#56,#59
+#	  piecewise use_derivatives		#46,#47,#51,#54,#57,#60
+#	  quadrature_order  = 20		#44,#46
+#	  sparse_grid_level = 10		#45,#47,#50,#51
+#	  hierarchical				#48,#49,#50,#51,#58,#59,#60
+	  samples = 10000 seed = 12347 rng rnum2
+	  response_levels = .1 1. 50. 100. 500. 1000.	#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#24,#25,#26,#27,#28,#29,#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43,#44,#45,#46,#47,#48,#49,#50,#51
+#	  response_levels = 1000.:1000.:8000.	#52,#53,#54,#55,#56,#57,#58,#59,#60
+	  variance_based_decomp #interaction_order = 1
+	  output silent
+
+variables,
+#	active all				#52,#53,#54,#55,#56,#57,#58,#59,#60
+	normal_uncertain = 2			#0,#6,#12,#21,#30,#35
+      	  means             =  0.   0. 		#0,#6,#12,#21,#30,#35
+	  std_deviations    =  1.   1.		#0,#6,#12,#21,#30,#35
+#	  lower_bounds      = -2.  -2. 		#12,#21,#35
+#	  upper_bounds      =  2.   2.		#12,#21,#35
+	  descriptors       = 'x1' 'x2'		#0,#6,#12,#21,#30,#35
+#	uniform_uncertain = 2			#1,#7,#31,#44,#45,#46,#47,#48,#49,#50,#51,#52,#53,#54,#55,#56,#57,#58,#59,#60
+#      	  lower_bounds      = -2.  -2. 		#1,#7,#31,#44,#45,#46,#47,#48,#49,#50,#51,#52,#53,#54,#55,#56,#57,#58,#59,#60
+#	  upper_bounds      =  2.   2.		#1,#7,#31,#44,#45,#46,#47,#48,#49,#50,#51,#52,#53,#54,#55,#56,#57,#58,#59,#60
+#	  descriptors       = 'x1' 'x2'		#1,#7,#31,#44,#45,#46,#47,#48,#49,#50,#51,#52,#53,#54,#55,#56,#57,#58,#59,#60
+#	exponential_uncertain = 2		#2,#8,#32
+#	  betas             =  2.   2.		#2,#8,#32
+#	  descriptors       = 'x1' 'x2'		#2,#8,#32
+#	beta_uncertain = 2			#3,#9,#33
+#	  alphas            =  1.5  1.5		#3,#9,#33
+#	  betas             =  2.   2.		#3,#9,#33
+#      	  lower_bounds      = -2.  -2. 		#3,#9,#33
+#	  upper_bounds      =  2.   2.		#3,#9,#33
+#	  descriptors       = 'x1' 'x2'		#3,#9,#33
+#	gamma_uncertain = 2			#4,#10,#34
+#	  alphas           =  2.5  2.5		#4,#10,#34
+#	  betas            =  2.   2.		#4,#10,#34
+#	  descriptors      = 'x1' 'x2'		#4,#10,#34
+#	normal_uncertain = 1			#5,#11
+#      	  means             =  0. 		#5,#11
+#	  std_deviations    =  1.		#5,#11
+#	  descriptors       = 'x1'		#5,#11
+#	uniform_uncertain = 1			#5,#11
+#      	  lower_bounds      = -2. 		#5,#11
+#	  upper_bounds      =  2.		#5,#11
+#	  descriptors       = 'x2'		#5,#11
+#	exponential_uncertain = 1		#5,#11
+#	  betas             =  2.		#5,#11
+#	  descriptors       = 'x3'		#5,#11
+#	beta_uncertain = 1			#5,#11
+#	  alphas            =  1.5		#5,#11
+#	  betas             =  2.		#5,#11
+#      	  lower_bounds      = -2. 		#5,#11
+#	  upper_bounds      =  2.		#5,#11
+#	  descriptors       = 'x4'		#5,#11
+#	gamma_uncertain = 1			#5,#11
+#	  alphas           =  2.5		#5,#11
+#	  betas            =  2.		#5,#11
+#	  descriptors      = 'x5'		#5,#11
+#	lognormal_uncertain = 2			#13,#14,#22,#23,#36,#37
+#    	  means             =  1.   1.		#13,#14,#22,#23,#36,#37
+#	  std_deviations    =  0.5  0.5		#13,#14,#22,#23,#36,#37
+#	  lower_bounds      =  0.25 0.25	#14,#23,#37
+#	  upper_bounds      =  2.5  2.5		#14,#23,#37
+#	  descriptors       = 'x1' 'x2'		#13,#14,#22,#23,#36,#37
+#	loguniform_uncertain = 2		#15,#24,#38
+#	  lower_bounds      =  0.1 0.1		#15,#24,#38
+#	  upper_bounds      =  10. 10.		#15,#24,#38
+#	  descriptors       = 'x1' 'x2'		#15,#24,#38
+#	triangular_uncertain = 2		#16,#25,#39
+#      	  modes             =  0.   0. 		#16,#25,#39
+#	  lower_bounds      = -2.  -2. 		#16,#25,#39
+#	  upper_bounds      =  2.   2.		#16,#25,#39
+#	  descriptors       = 'x1' 'x2'		#16,#25,#39
+#	gumbel_uncertain = 2			#17,#26,#40
+#	  alphas            = 1.5 2.0 		#17,#26,#40
+#	  betas             = 2.5 3.0 		#17,#26,#40
+#	  descriptors       = 'x1' 'x2'		#17,#26,#40
+#	frechet_uncertain = 2			#18,#27,#41
+#	  alphas            = 2.5 3.0 		#18,#27,#41
+#	  betas             = 3.5 4.0 		#18,#27,#41
+#	  descriptors       = 'x1' 'x2'		#18,#27,#41
+#	weibull_uncertain = 2			#19,#28,#42
+#	  alphas            = 1.5 2.0 		#19,#28,#42
+#	  betas             = 2.5 3.0 		#19,#28,#42
+#	  descriptors       = 'x1' 'x2'		#19,#28,#42
+#	histogram_bin_uncertain = 2		#20,#29,#43
+#	  num_pairs =  3        4		#20,#29,#43
+#	  abscissas =  1  4  6  1  2  3  4	#20,#29,#43
+#	  counts    = 17 21  0 12 24 12  0	#20,#29,#43
+#	  descriptors   = 'x1' 'x2'		#20,#29,#43
+#	continuous_design = 2			#52,#53,#54,#55,#56,#57,#58,#59,#60
+#	  initial_point     = -1.5 -1.5		#52,#53,#54,#55,#56,#57,#58,#59,#60
+#	  lower_bounds      = -2.  -2.		#52,#53,#54,#55,#56,#57,#58,#59,#60
+#	  upper_bounds      =  2.   2.		#52,#53,#54,#55,#56,#57,#58,#59,#60
+#	  descriptors       = 'd1' 'd2'		#52,#53,#54,#55,#56,#57,#58,#59,#60
+
+interface,
+	direct
+	  analysis_driver = 'rosenbrock'	#0,#1,#2,#3,#4,#6,#7,#8,#9,#10,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#24,#25,#26,#27,#28,#29,#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43,#44,#45,#46,#47,#48,#49,#50,#51
+#	  analysis_driver = 'generalized_rosenbrock' #5,#11,#52,#53,#54,#55,#56,#57,#58,#59,#60
+
+responses,
+	response_functions = 1
+        no_gradients				#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#24,#25,#26,#27,#28,#29,#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43,#44,#45,#48,#49,#50,#52,#53,#55,#56,#58,#59
+#	analytic_gradients			#46,#47,#51,#54,#57,#60
+	no_hessians

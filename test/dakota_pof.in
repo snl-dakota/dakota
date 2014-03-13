@@ -1,0 +1,35 @@
+# DAKOTA INPUT FILE : dakota_pof.in
+# This input file tests the Probability-of-Failure (POF) 
+# Darts capability.  There are two examples:  the smooth_herbie
+# example tests multiple response levels and the text_book
+# example tests multiple functions. 
+
+environment
+#  tabular_graphics_data
+
+method
+   pof_darts
+      samples = 100
+      seed = 8493
+      response_levels = -0.9 -0.8 -0.5       #0 
+      #num_response_levels = 1 1
+#      response_levels = 2.0 0.1             #1 
+
+variables
+   active all
+   uniform_uncertain = 2
+   lower_bounds = -2.0 -2.0 
+   upper_bounds = 2.0 2.0
+
+interface
+   direct 
+   analysis_driver = 'smooth_herbie'         #0
+#   analysis_driver = 'text_book'            #1
+
+responses,
+   objective_functions = 1               #0
+#   objective_functions = 2               #1
+   no_gradients
+   no_hessians
+  
+

@@ -1,0 +1,116 @@
+# DAKOTA Input File: dakota_ouu1_tbch.in
+# Optimization under uncertainty
+
+environment,
+#	graphics
+	  method_pointer = 'OPTIM'
+
+###########################
+# begin opt specification #
+###########################
+method,
+	id_method = 'OPTIM'
+	model_pointer = 'OPTIM_M'
+	dot_sqp
+#	npsol_sqp
+	  convergence_tolerance = 1.e-6
+
+model,
+	id_model = 'OPTIM_M'
+	nested
+	  variables_pointer  = 'OPTIM_V'
+	  sub_method_pointer = 'UQ'
+	  optional_interface_pointer  = 'OPTIONAL_I'
+	  optional_interface_responses_pointer = 'OPTIONAL_I_R'
+	  responses_pointer  = 'OPTIM_R'
+	  primary_response_mapping   = 0. 0. 1. 0. 0. 0. 0. 0. 1.
+	  secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
+
+variables,
+	id_variables = 'OPTIM_V'
+	continuous_design = 2
+	  initial_point    1.8    1.0
+	  upper_bounds     2.164  4.0
+	  lower_bounds     1.5    0.0
+	  descriptors      'd1'   'd2'
+
+responses,
+# minimize f + p_fail_r1 + p_fail_r3
+# s.t.     g_1/2/3 <= 0
+#          mean_r2 + 3*sigma_r2 <= 1.6e+05
+# NOTE: This specifies the TOTAL RESPONSE for the optimization,
+#       which is a combination of nested & interface responses.
+	id_responses = 'OPTIM_R'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 4
+	nonlinear_inequality_upper_bounds = 0.0 0.0 0.0 1.6e+5
+	numerical_gradients
+	  method_source dakota
+	  interval_type central
+	  fd_gradient_step_size = 1.e-1
+	no_hessians
+
+##########################################
+# begin optional interface specification #
+##########################################
+interface,
+	id_interface = 'OPTIONAL_I'
+	direct
+	  analysis_driver = 'cyl_head'
+
+responses,
+# NOTE: This is the response set from the optional interface.
+	id_responses = 'OPTIONAL_I_R'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
+	no_gradients
+	no_hessians
+
+##########################
+# begin UQ specification #
+##########################
+method,
+	id_method = 'UQ'
+	model_pointer = 'UQ_M'
+        sampling
+	  samples = 50 sample_type lhs
+	  seed = 12347 rng rnum2
+	  response_levels = 4.2e+11 1.6e+05 7.5e+05
+	  complementary distribution
+#	  fixed_seed					#1
+	  output quiet
+
+model,
+	id_model = 'UQ_M'
+	single
+	  variables_pointer = 'UQ_V'
+	  interface_pointer = 'UQ_I'
+	  responses_pointer = 'UQ_R'
+
+variables,
+	id_variables = 'UQ_V'
+	continuous_design = 2
+	normal_uncertain = 2
+	  means          =  248.89, 593.33
+	  std_deviations =   12.4,  29.7
+	  descriptors    =  'nuv1'  'nuv2'
+	uniform_uncertain = 2
+	  lower_bounds =  199.3,  474.63
+	  upper_bounds =  298.5,  712.
+	  descriptors  =  'uuv1'  'uuv2'
+	weibull_uncertain = 2
+	  alphas       =    12., 30.
+	  betas        =   250., 590.
+	  descriptors  =  'wuv1'  'wuv2'
+
+interface,
+	id_interface = 'UQ_I'
+	direct
+	  analysis_driver = 'text_book_ouu'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'UQ_R'
+	response_functions = 3
+	no_gradients
+	no_hessians

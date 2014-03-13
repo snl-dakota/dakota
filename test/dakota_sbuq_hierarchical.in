@@ -1,0 +1,98 @@
+# Nonblocking scheduler tests:
+#   asynch local:    20
+#   message passing: p0 (peer), p1 (ded master)
+#   hybrid:          p2 (peer), p3 (ded master)
+
+# Processor specification for parallel tests:
+# p0=2,p1=3,p2=2,p3=3
+
+environment,
+	graphics tabular_graphics_data
+	method_pointer = 'SBUQ'
+
+method,
+	id_method = 'SBUQ'
+# Single fidelity verifications
+#	model_pointer = 'HIFI'
+#	  polynomial_chaos non_nested
+#	    sparse_grid_level = 3
+#	    variance_based_decomp
+#
+#	  stoch_collocation non_nested
+#	    sparse_grid_level = 5
+#	    piecewise use_derivatives
+#	    variance_based_decomp
+# Multifidelity test suite
+	model_pointer = 'SURROGATE'
+	polynomial_chaos				#0,#1,#2,#6,#7,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#p0,#p1,#p2,#p3
+#	  expansion_order = 2 4				#11,#13,#15,#16,#18
+#	  expansion_order = 3 5				#12,#17,#19
+#	  dimension_preference = 2 1			#16,#17
+#	  uniform p_refinement				#18,#19
+#	  orthogonal_least_interpolation		#14
+#	  collocation_ratio =  2			#11,#16,#18
+#	  collocation_ratio = .9			#12,#17,#19
+#	  collocation_points = 10 40			#13,#14
+#	  expansion_samples = 200 2000			#15
+#	  seed = 12347	      	  			#11,#12,#13,#14,#15,#16,#17,#18,#19
+#	stoch_collocation				#3,#4,#5,#8,#9,#10
+	  sparse_grid_level = 1 3			#0,#3
+#	  sparse_grid_level = 2 4			#20,#p0,#p1,#p2,#p3
+#	  quadrature_order = 3 5			#6,#8
+#	  uniform p_refinement				#1,#4,#7,#9
+#	  dimension_adaptive p_refinement generalized	#2,#5
+#	  sparse_grid_level = 0		  		#1,#4,#2,#5
+#	  quadrature_order = 1				#7,#9
+#	  sparse_grid_level = 5 10			#10
+#	  piecewise use_derivatives			#10
+	  variance_based_decomp
+
+model,
+	id_model = 'SURROGATE'
+	surrogate hierarchical
+	  low_fidelity_model  = 'LOFI'
+	  high_fidelity_model = 'HIFI'
+	  correction additive zeroth_order	#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#p0,#p1,#p2,#p3
+#	  correction additive first_order	#10	
+
+variables,
+	normal_uncertain = 2			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#p0,#p1,#p2,#p3
+      	  means             =  0.   0.		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#p0,#p1,#p2,#p3
+	  std_deviations    =  1.   1.		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#p0,#p1,#p2,#p3
+#	uniform_uncertain = 2			#10
+#	  lower_bounds      = -5.  -5.		#10
+#	  upper_bounds	    =  5.   5.		#10
+	  descriptors       = 'x1' 'x2'
+
+responses,
+	response_functions = 1
+	no_gradients	       			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#p0,#p1,#p2,#p3
+# 	analytic_gradients			#10
+	no_hessians				
+
+model,
+	id_model = 'LOFI'
+	single
+	  interface_pointer = 'LOFI_FN'
+
+interface,
+	id_interface = 'LOFI_FN'
+	direct					#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19
+#	fork					#20,#p0,#p1,#p2,#p3
+#	  asynch evaluation_concurrency = 3	#20,#p2,#p3
+ 	  analysis_driver = 'lf_rosenbrock'
+	  deactivate restart_file
+
+model,
+	id_model = 'HIFI'
+	single
+	  interface_pointer = 'HIFI_FN'
+
+interface,
+	id_interface = 'HIFI_FN'
+	direct					#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19
+#	fork					#20,#p0,#p1,#p2,#p3
+#	  asynch evaluation_concurrency = 2	#20,#p2,#p3
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate restart_file
+

@@ -1,0 +1,49 @@
+# DAKOTA INPUT FILE - dakota_herbie_gpais.in
+# This file tests the Gaussian Process adaptive importance sampling (GPAIS)
+# capabilities.  The Herbie function is used because it is multi-modal. 
+# The "true" CDF probability of the Herbie function for a response level 
+# of -1.065 is approximately 1.5%.  The "true" CDF probability 
+# of the Herbie function for a response level of -1.0985 is 
+# approximately 0.25%.  The main controls here are samples (number of initial 
+# LHS samples to build the initial GP), emulator_samples (number of samples
+# used to query the emulator: preferably, this should be at least 1000), and 
+# the max_iterations (number of additional iterations where a "true" 
+# simulation point is added to the GP at each iteration). The results 
+# are more accurate with the default settings of  emulator_samples = 10000 
+# and max_iterations = 150.  However, for the purposes of testing cost, 
+# I have lowered these numbers. 
+	
+environment, 
+        #graphics
+        tabular_graphics_data
+
+method,
+        #importance_sampling 
+        #import
+        #output debug
+        gpais 
+        emulator_samples = 100
+        max_iterations = 5 
+        #response_levels = -1.0985
+        response_levels = -1.065 
+        compute probabilities
+        samples = 100
+       # seed6 = 3847 
+        seed = 4326
+       #seed8 = 19993 
+       # seed = 25632
+
+variables,
+	uniform_uncertain = 2 
+        lower_bounds = -2. -2. 
+        upper_bounds =  2. 2.
+        descriptors = 'x1' 'x2'
+
+interface,
+         direct
+	  analysis_driver = 'herbie'
+
+responses,
+	response_functions = 1 
+	no_gradients
+	no_hessians

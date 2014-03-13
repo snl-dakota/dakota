@@ -1,0 +1,98 @@
+# 0 fully over-determined SVD_LEAST_SQ
+# 1 fully over-determined ELNET
+
+# 2 fully under-determined BP
+# 3 fully under-determined BPDN
+# 4 fully under-determined OMP
+# 5 fully under-determined LASSO
+# 6 fully under-determined LARS
+# 7 fully under-determined ELNET
+
+# 8 fully over-determined SVD_LEAST_SQ using_derivatives
+# 9 fully over-determined ELNET        using_derivatives
+
+# 10 fully under-determined BP         using_derivatives
+# 11 fully under-determined BPDN       using_derivatives
+# 12 fully under-determined OMP        using_derivatives
+# 13 fully under-determined LASSO      using_derivatives
+# 14 fully under-determined LARS       using_derivatives
+# 15 fully under-determined ELNET      using_derivatives
+
+# 16 partially under-determined using_derivatives EQ_CON_LEAST_SQ_REGRESSION 
+# 17 partially under-determined using_derivatives SVD_LEAST_SQ
+# 18 partially under-determined using_derivatives BP
+# 19 partially under-determined using_derivatives BPDN
+# 20 partially under-determined using_derivatives OMP
+# 21 partially under-determined using_derivatives LASSO
+# 22 partially under-determined using_derivatives LARS
+# 23 partially under-determined using_derivatives ELNET
+
+# 24 fully under-determined SVD_LEAST_SQ
+# 25 fully under-determined SVD_LEAST_SQ using_derivatives
+# 26 fully over-determined OMP
+# 27 partially under-determined using_derivatives OMP
+
+# 28 fully over-determined   DEFAULT_LEAST_SQ_REGRESSION (SVD)
+# 29 fully under-determined  DEFAULT_LEAST_SQ_REGRESSION (SVD)
+# 30 fully over-determined   DEFAULT_LEAST_SQ_REGRESSION using_derivatives (SVD)
+# 31 fully under-determined  DEFAULT_LEAST_SQ_REGRESSION using_derivatives (SVD)
+# 32 partially under-determined DEFAULT_LEAST_SQ_REGRESSION using_derivatives (EQ_CON_LEAST_SQ_REGRESSION)
+
+# 33 fully over-determined      DEFAULT_REGRESSION (SVD)
+# 34 fully under-determined     DEFAULT_REGRESSION (LASSO)
+# 35 fully over-determined      DEFAULT_REGRESSION using_derivatives (SVD)
+# 36 fully under-determined     DEFAULT_REGRESSION using_derivatives (LASSO)
+# 37 partially under-determined DEFAULT_REGRESSION using_derivatives (EQ_CON_LEAST_SQ_REGRESSION)
+
+# 38 fully under-determined EQ_CON_LEAST_SQ_REGRESSION
+# 39 fully over-determined EQ_CON_LEAST_SQ_REGRESSION
+# 40 fully over-determined BP
+# 41 fully over-determined BPDN
+# 42 fully over-determined LARS
+# 43 fully over-determined LASSO
+
+# 44 least orthogonal interpolation
+
+environment,
+	#graphics
+	output_precision = 16
+
+method,
+	polynomial_chaos 
+ 	  expansion_order   = 4		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#24,#25,#26,#27,#28,#29,#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43
+	  collocation_ratio = 3 	#0,#1,#26,#28,#33,#40,#41,#42,#43
+# 	  collocation_points = 15       #44
+#	  collocation_ratio = 0.7 	#2,#3,#4,#5,#6,#7,#10,#11,#12,#13,#14,#15,#24,#25,#29,#31,#34,#36,#38
+#	  collocation_ratio = 4 	#8,#9,#30,#35,#39
+#	  collocation_ratio = 2  	#16,#17,#18,#19,#20,#21,#22,#23,#27,#32,#37
+#	  least_squares	      		#28,#29,#30,#31,#32
+	  least_squares svd 		#0,#8,#17,#24,#25
+#	  least_squares equality_constrained #16,#38,#39
+#	  basis_pursuit	  		#2,#10,#18,#40
+# 	  basis_pursuit_denoising	#3,#11,#19,#41
+#	    noise_tolerance = 1.e-3	#3,#11,#19,
+#	  orthogonal_matching_pursuit	#4,#12,#20,#26,#27
+#	  least_absolute_shrinkage	#5,#13,#21,#1,#7,#9,#15,#23,#42
+#	  least_angle_regression	#6,#14,#22,#43
+#	    l2_penalty = 0.01		#1,#7,#9,#15,#23
+#	  orthogonal_least_interpolation #44
+	  variance_based_decomp #interaction_order = 1
+	  seed = 1234567
+#	  use_derivatives		#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#27,#30,#31,#32,#35,#36,#37,#38,#39
+	  output verbose
+
+variables,
+	uniform_uncertain = 2
+	  lower_bounds = -2. -2.
+	  upper_bounds =  2.  2.
+	  descriptors  = 'x1' 'x2'		
+
+interface,
+	direct
+	analysis_driver = 'rosenbrock'		
+
+responses,
+	response_functions = 1
+	no_gradients			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#24,#26,#28,#29,#33,#34,#40,#41,#42,#43,#44
+#	analytic_gradients		#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#25,#27,#30,#31,#32,#35,#36,#37,#38,#39
+	no_hessians

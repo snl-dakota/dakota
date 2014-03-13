@@ -1,0 +1,117 @@
+TAG "jega/moga" GROUP "Optimization: Global"
+TAG "jega/moga/fitness_type"
+	DESC "{Fitness type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "jega/moga/fitness_type/layer_rank"
+TAG "jega/moga/fitness_type/domination_count"
+TAG "jega/moga/replacement_type"
+	DESC "{Replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/moga/replacement_type/elitist"
+TAG "jega/moga/replacement_type/roulette_wheel"
+TAG "jega/moga/replacement_type/unique_roulette_wheel"
+TAG "jega/moga/replacement_type/below_limit"
+	DESC "{Below limit selection} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/moga/replacement_type/below_limit/shrinkage_fraction"
+TAG "jega/moga/niching_type"
+	DESC "{Niche pressure type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "jega/moga/niching_type/radial"
+TAG "jega/moga/niching_type/distance"
+TAG "jega/moga/convergence_type"
+	DESC "{Convergence type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "jega/moga/convergence_type/metric_tracker"
+	DESC "{Convergence type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "jega/moga/convergence_type/percent_change"
+	DESC "{Percent change limit for metric_tracker converger} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "jega/moga/convergence_type/num_generations"
+	DESC "{Number generations for metric_tracker converger} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "jega/moga/postprocessor_type"
+	DESC "{Post_processor type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "jega/moga/postprocessor_type/orthogonal_distance"
+	DESC "{Post_processor distance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "jega/soga" GROUP "Optimization: Global"
+TAG "jega/soga/fitness_type"
+	DESC "{Fitness type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "jega/soga/fitness_type/merit_function"
+TAG "jega/soga/fitness_type/constraint_penalty"
+	DESC "{Constraint penalty in merit function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "jega/soga/replacement_type"
+	DESC "{Replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "jega/soga/replacement_type/elitist"
+TAG "jega/soga/replacement_type/favor_feasible"
+TAG "jega/soga/replacement_type/roulette_wheel"
+TAG "jega/soga/replacement_type/unique_roulette_wheel"
+TAG "jega/soga/convergence_type"
+TAG "jega/soga/convergence_type/best_fitness_tracker"
+TAG "jega/soga/convergence_type/best_fitness_tracker/percent_change"
+	DESC "{Percent change in fitness} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "jega/soga/convergence_type/best_fitness_tracker/num_generations"
+	DESC "{Number of generations (for convergence test) } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "jega/soga/convergence_type/average_fitness_tracker"
+TAG "jega/soga/convergence_type/average_fitness_tracker/percent_change"
+TAG "jega/soga/convergence_type/average_fitness_tracker/num_generations"
+TAG "jega/population_size"
+	DESC "{Number of population members} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/log_file"
+	DESC "{Log file} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/print_each_pop"
+	DESC "{Population output} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/initialization_type"
+	DESC "{Initialization type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/initialization_type/simple_random"
+TAG "jega/initialization_type/unique_random"
+TAG "jega/initialization_type/flat_file"
+TAG "jega/crossover_type"
+	DESC "{Crossover type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/crossover_type/multi_point_binary"
+	DESC "{Multi point binary crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/crossover_type/multi_point_parameterized_binary"
+	DESC "{Multi point parameterized binary crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/crossover_type/multi_point_real"
+	DESC "{Multi point real crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/crossover_type/shuffle_random"
+	DESC "{Random shuffle crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/crossover_type/shuffle_random/num_parents"
+	DESC "{Number of parents in random shuffle crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/crossover_type/shuffle_random/num_offspring"
+	DESC "{Number of offspring in random shuffle crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/crossover_type/crossover_rate"
+	DESC "{Crossover rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/mutation_type"
+	DESC "{Mutation type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/mutation_type/bit_random"
+TAG "jega/mutation_type/replace_uniform"
+TAG "jega/mutation_type/offset_normal"
+TAG "jega/mutation_type/offset_cauchy"
+TAG "jega/mutation_type/offset_uniform"
+TAG "jega/mutation_type/offset_normal/mutation_scale"
+	DESC "{Mutation scale} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "jega/mutation_type/mutation_rate"
+	DESC "{Mutation rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"

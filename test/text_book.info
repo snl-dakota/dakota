@@ -1,0 +1,162 @@
+//Brian Driessen, 10/24/96
+//This is an ascii file used to give new Dakota developers a quick
+// tutorial on how the text_book example works.
+
+	Pre-Introduction:  To verify to yourself that text_book.cpp does something.
+Please follow the following steps:
+	1. copy the file text_book.cpp from /home/dakota/Dakota/test directory
+to your personal /Dakota/test directory.
+	2.  copy the file text_book.in.1 from the /home/dakota directory to
+your personal /Dakota/test directory.
+	3.  Within your personal /Dakota/test directory, type the following 
+compile/link commands at the unix prompt;
+		CC -c text_book.cpp -Aa
+			(creates text_book.o)
+		CC -o text_book text_book.o -Aa -lm
+			(creates executable text_book)
+Remove the file text_book.out, if it exists.  Execute the following at the unix prompt:
+
+	%text_book text_book.in.1 text_book.out
+Then, view the file text_book.out.
+
+	Introduction:  text_book.cpp has been compiled to produce the executable file
+text_book.  This executable uses two command-line arguments.  The first is an
+input file (text_book.in.1) and the second an output file (text_book.out).  
+The input file must contain the 
+following information:  The number of design variables (n), the values of the 
+design variables x(i), and the active set vector ASV, whose length is one more
+than the number of constraints.	Herein, m denotes the number of constraints in the
+optimization problem.
+	A typical input file, for n=2, with 2 constraints, would look as follows :
+	
+	
+                     2 array_length
+                     9.0000000000e-01 r
+                     2.5000000000e+00 x
+1
+1
+1
+
+
+The descriptive words in the input file are optional; for example, the first
+variable is called "r" and the second one called "x".  However, an equally
+valid input file would be :
+	
+2 
+9.0000000000e-01 
+2.5000000000e+00 
+1
+1
+1
+
+The first ASV value is associated with the objective function.  The remaining
+m are associated with the constraints.  
+
+Of course the first thing text_book does is to read in the information in the 
+input file.
+
+Text_book writes a different amount of output to the output file (text_book.out), 
+depending on the active set vector.  For all functions, (objective and constraint
+functions), if ASV(i)==1, only the function value will be output.  If ASV(i)==2,
+only the gradient of function i will be printed.  If ASV(i)==3, both the 
+function value and gradient value will be output.  
+	The following is what text_book.out should have looked like for the 
+above input file:
+
+	
+                     5.0626000000e+00 f
+                     -4.4000000000e-01 c1
+                     5.7500000000e+00 c2
+
+
+However, for the following input file (text_book.in.1)
+
+                     2 array_length
+                     9.0000000000e-01 r
+                     2.5000000000e+00 x
+3
+3
+3
+
+
+, the following output file is produced:
+
+
+	
+                     5.0626000000e+00 f
+                     -4.4000000000e-01 c1
+                     5.7500000000e+00 c2
+[ -4.0000000000e-03 1.3500000000e+01 ]
+[ 1.8000000000e+00 -5.0000000000e-01 ]
+[ 0.0000000000e+00 5.0000000000e+00 ]
+
+
+
+	Here, we obtained not only the objective function and constraint function
+values, but also each of their gradients.  
+
+For the following input file (text_book.in.1), 
+
+
+
+                     2 array_length
+                     9.0000000000e-01 r
+                     2.5000000000e+00 x
+3
+1
+3
+
+
+, the following output file is produced:
+
+                     5.0626000000e+00 f
+                     -4.4000000000e-01 c1
+                     5.7500000000e+00 c2
+[ -4.0000000000e-03 1.3500000000e+01 ]
+[ 0.0000000000e+00 5.0000000000e+00 ]
+
+	Here, we did not obtain the gradient of constraint #2.  
+
+The reader can extrapolate what the output files will be for other 
+active set vectors.
+
+	Inspection of the file text_book.cpp will reveal that the objective
+function used in this demonstration is:
+	
+	f = (x1 - 1)^4  + (x2 - 1)^4
+and that the constraint vector is:
+	c1 = x1^2 - .5 * x1
+	c2 = x2^2 - .5
+and that the gradients are:
+	df/dx1 = 4*(x1-1)^3
+	df/dx2 = 4*(x2-1)^3
+
+	dc1/dx1 = 2 * x1
+	dc1/dx2 = -.5
+	dc2/dx1 = 0
+	dc2/dx2 = 2 * x1
+
+ 	
+	The bigger picture is that the users of Dakota will have executable files
+that also take in such an input file and output such an output file.  Their particular functions
+and gradients will, of course, depend on what there own functions are (which could be, 
+for example, a simulation of a finite element model whose response depends on design variables
+that include stiffness values or shell-element thickness, etc.)  
+	The iterations of the Dakota optimizer(s) will produce a sequence of files, 
+such as text_book.in.1, text_book.in.2, text_book.in.3, ...., one file for each 
+time the optimizer(s) needs function or gradient values.  (Likewise, one will
+obtain text_book.out.1, text_book.out.2, text_book.out.3, ...)  This allows
+the user to view these files and observe the sequence of function/gradient evaluations
+produced during the Dakota iterative optimization process.   
+	Note on using the text_book file as an example to solve other
+optimization problems:  the variable num_fg at the top of text_book.cpp 
+must be set to equal n + 1.
+
+	
+
+ 
+
+
+
+
+

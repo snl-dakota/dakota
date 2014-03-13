@@ -1,0 +1,27 @@
+# Dakota Input File: herbie_shubert_opt_ego.in
+# Example of using EGO to find the minumum of the 5 dimensional version
+# of the abitrary-dimensional/separable 'herbie' OR 'smooth_herbie' OR
+# 'shubert' test functions
+environment
+  tabular_graphics_data
+  tabular_graphics_file = 'herbie_shubert_opt_ego.dat'
+
+method
+  efficient_global    # EGO Efficient Global Optimization
+    seed = 123456
+
+variables
+  continuous_design = 5        # 5 dimensions
+    lower_bounds      5*-2.0      # use 5 copies of -2.0 for bound
+    upper_bounds      5*2.0      # use 5 copies of 2.0 for bound
+
+interface
+  direct
+#    analysis_driver = 'herbie'      # use this for herbie
+    analysis_driver = 'smooth_herbie' # use this for smooth_herbie
+#    analysis_driver = 'shubert'      # use this for shubert
+
+responses
+  objective_functions = 1
+  no_gradients
+  no_hessians

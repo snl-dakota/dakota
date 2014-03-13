@@ -1,0 +1,70 @@
+# DAKOTA Input File: dakota_uq_cantilever.in
+# Reliability analysis using the cantilever test function.
+
+environment
+	graphics
+
+method,
+	id_method = 'UQ'
+	model_pointer = 'UQ_M'
+	local_reliability
+#	  mpp_search x_taylor_mean			#1,#7
+#	  mpp_search u_taylor_mean			#2,#8
+#	  mpp_search x_taylor_mpp			#3,#9
+#	  mpp_search u_taylor_mpp			#4,#10
+#	  mpp_search x_two_point
+#	  mpp_search u_two_point
+#	  mpp_search no_approx				#5,#11
+#	  nip						#1,#2,#3,#4,#5,#7,#8,#9,#10,#11
+	  num_response_levels = 0 11 11			   #0,#1,#2,#3,#4,#5
+	  response_levels = 				   #0,#1,#2,#3,#4,#5
+	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0	   #0,#1,#2,#3,#4,#5
+	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0	   #0,#1,#2,#3,#4,#5
+#	  num_probability_levels = 0 11 11		   #6,#7,#8,#9,#10,#11
+#	  probability_levels =  			   #6,#7,#8,#9,#10,#11
+#	1.1781223736e-03 1.0140642250e-02 5.2949484412e-02 #6,#7,#8,#9,#10,#11
+#	1.7616121376e-01 3.9671123925e-01 6.5056238575e-01 #6,#7,#8,#9,#10,#11
+#	8.4502957725e-01 9.4772602285e-01 9.8645187403e-01 #6,#7,#8,#9,#10,#11
+#	9.9724902938e-01 9.9955171208e-01		   #6,#7,#8,#9,#10,#11
+#	2.4239392063e-06 4.3299260280e-05 5.0259027330e-04 #6,#7,#8,#9,#10,#11
+#	3.8646724666e-03 2.0168889215e-02 7.3551406291e-02 #6,#7,#8,#9,#10,#11
+#	1.9402090381e-01 3.8555575073e-01 6.0503820154e-01 #6,#7,#8,#9,#10,#11
+#	7.9058284725e-01 9.0905085582e-01		   #6,#7,#8,#9,#10,#11
+	  cumulative distribution
+
+model,
+	id_model = 'UQ_M'
+	single
+	  variables_pointer = 'UQ_V'
+	  interface_pointer = 'UQ_I'
+	  responses_pointer = 'UQ_R'
+
+variables,
+	id_variables = 'UQ_V'
+# continuous_design is not required (OUU will augment
+# automatically), but it is good form
+	continuous_design = 2
+	  initial_point    2.5    2.5
+	  upper_bounds    10.0   10.0
+	  lower_bounds     1.0    1.0
+	  descriptors 'w' 't'
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
+
+interface,
+	id_interface = 'UQ_I'
+	direct
+	  analysis_driver = 'cantilever'
+#	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'UQ_R'
+	response_functions = 3
+	analytic_gradients
+#	numerical_gradients
+#	  method_source dakota
+#	  interval_type central
+#	  fd_gradient_step_size = 1.e-4
+	no_hessians

@@ -1,0 +1,126 @@
+# Example for MacOSX, where -fPIC is not needed.
+# For testing, I (dmg) used the VOTD Dakota on Ictinus
+
+PATH=:/Users/dakota/local/openmpi-1.3.3/bin:/usr/local/gcc-4.3.2/bin:/usr/local/bin:/usr/bin:.:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/dakota/bin
+
+#Rpath = -Wl,-rpath,.
+Rpath =
+
+D = /Users/dakota/nightly/builds/csri_Darwin_i386/Dakota
+CFLAGS = -O2
+CXX = mpic++ $(CFLAGS)
+CC = cc $(CFLAGS)
+BUILTINS =
+NPROC = 1
+Inc = \
+	-DHAVE_CONFIG_H \
+	-I$D/src \
+	-I$D \
+	-I$D/packages/teuchos/src \
+	-I$D/packages/Pecos \
+	-I$D/packages/Pecos/src \
+	-I$D/packages \
+	-I$D/packages/plplot/include \
+	-I$D/packages/motif/include \
+	-I$D/packages/motif/src/Widgets \
+	-I$D/packages/boost \
+	-I$D/packages/Pecos/packages/VPISparseGrid/src \
+	-I$D/packages/Surfpack \
+	-I$D/packages/Surfpack/src \
+	-I$D/packages/Surfpack/src/interpreter \
+	-I$D/packages/Surfpack/src/surfaces \
+	-I$D/methods/acro/include \
+	-I$D/methods/acro/include/tinyxml \
+	-I$D/methods/DDACE \
+	-I$D/methods/DDACE/include \
+	-I$D/methods/FSUDace \
+	-I$D/methods/hopspack/src-appspack \
+	-I$D/methods/hopspack/src-cddlib \
+	-I$D/methods/hopspack/src-conveyor \
+	-I$D/methods/hopspack/src-nappspack \
+	-I$D/methods/hopspack/src-shared \
+	-I$D/methods/JEGA \
+	-I$D/methods/JEGA/eddy \
+	-I$D/methods/JEGA/include \
+	-I$D/methods/OPTPP/include \
+	-I$D/methods/OPTPP/newmat11 \
+	-I$D/methods/PSUADE \
+	-DMPICH_IGNORE_CXX_SEEK
+
+Flib = /usr/local/gcc-4.3.2/lib/libgfortran.dylib
+
+L = $(Rpath) $D/src/.libs/libdakota.a $D/packages/teuchos/src/.libs/libteuchos.a $D/packages/Pecos/.libs/libpecos.a $D/packages/teuchos/src/.libs/libteuchos.a $D/packages/plplot/src/.libs/libplplotd.a $D/packages/motif/src/.libs/libDGraphics.a $D/packages/Surfpack/src/.libs/libsurfpack.a $D/methods/CONMIN/src/.libs/libconmin.a $D/methods/DDACE/src/.libs/libddace.a $D/methods/FSUDace/.libs/libfsudace.a $D/methods/NL2SOL/.libs/libcport.a $D/methods/NPSOL/.libs/libnpsol.a $D/methods/OPTPP/lib/.libs/libopt.a $D/methods/PSUADE/.libs/libpsuade.a $D/methods/OPTPP/lib/.libs/libnewmat.a $D/packages/Pecos/packages/LHS/.libs/liblhs.a $D/packages/Pecos/packages/VPISparseGrid/src/.libs/libsparsegrid.a $D/methods/NCSUOpt/libncsuopt.a $D/methods/acro/packages/coliny/src/libcoliny.a $D/methods/acro/packages/utilib/src/.libs/libutilib.a $D/methods/acro/packages/colin/src/libcolin.a $D/methods/acro/packages/pebbl/src/libpebbl.a $D/methods/acro/packages/utilib/src/.libs/libutilib.a $D/methods/acro/packages/tpl/3po/lib3po.a $D/methods/hopspack/src-nappspack/libnappspack.a $D/methods/hopspack/src-appspack/libappspack.a $D/methods/hopspack/src-conveyor/libconveyor.a $D/methods/hopspack/src-shared/libshared.a $D/methods/hopspack/src-cddlib/libcdd.a $D/packages/ampl/funcadd0.o $D/packages/ampl/amplsolver.a /usr/X11/lib/libXpm.4.11.0.dylib /Users/dakota/local/openmotif-2.2.3/lib/libXm.dylib /usr/X11/lib/libXmu.6.2.0.dylib /usr/X11/lib/libXt.6.0.0.dylib /usr/X11/lib/libXp.6.2.0.dylib /usr/X11/lib/libXext.6.4.0.dylib /usr/X11/lib/libX11.6.2.0.dylib /usr/X11/lib/libXau.6.0.0.dylib /usr/X11/lib/libXdmcp.6.0.0.dylib /usr/X11/lib/libSM.6.0.0.dylib /usr/X11/lib/libICE.6.3.0.dylib -llapack -lblas -L/usr/local/gcc-4.3.2/lib/gcc/i386-apple-darwin9.4.0/4.3.2 -L/usr/local/gcc-4.3.2/lib $(Flib) -lm -lgcc_s.10.5 -lSystem
+
+.C.o:
+	$(CXX) -c $(Inc) $*.C
+
+.c.o:
+	$(CC) -c $(Inc) $*.c
+
+all: dakdll dot.dll jega.dll nlpql.dll npsol.dll
+
+dakota_dylib = main1.o nidr.o DakotaIterator1.o NIDRProblemDescDB1.o $D/src/.libs/libdakota.a
+dakota.dylib: $(dakota_dylib)
+	mpic++ -L/usr/lib -dynamiclib -o dakota.dylib $(dakota_dylib) $L
+
+main1.o: $D/src/main.C
+	$(CXX) -c $(Inc) -o main1.o -Dmain=main1 $D/src/main.C
+
+DakotaIterator1.o: $D/src/DakotaIterator.C
+	$(CXX) -c -o DakotaIterator1.o -DDAKOTA_DYNLIB -DDAKOTA_DOT -DDAKOTA_NLPQL -DDAKOTA_NPSOL $(CFLAGS) $(Inc) $D/src/DakotaIterator.C
+
+# Must have NIDRProblemDescDB1.C here so it includes the
+# right NIDR_keywds.H
+
+NIDRProblemDescDB1.C: $D/src/NIDRProblemDescDB.C
+	ln $D/src/NIDRProblemDescDB.C NIDRProblemDescDB1.C || \
+	cp $D/src/NIDRProblemDescDB.C NIDRProblemDescDB1.C
+
+dakdll: dakdll.o dakota.dylib
+	$(CXX) dakdll.o dakota.dylib -o dakdll $(Flib)
+
+dakdll.o: dakdll.c
+	$(CXX) -c dakdll.c
+
+jega_dll = jega.o $D/src/JEGAOptimizer.o $D/methods/JEGA/src/.libs/libjega.a dakota.dylib
+jega.dll: $(jega_dll)
+	$(CXX) -o jega.dll -bundle $(jega_dll)
+
+dot_dll = dot.o DOTOptimizer.o $D/methods/DOT/dbl_prec/.libs/libdot.a dakota.dylib
+dot.dll: $(dot_dll)
+	$(CXX) -o dot.dll -bundle $(dot_dll) $(Flib)
+
+DOTOptimizer.o: $D/src/DOTOptimizer.C
+	$(CXX) -c -o DOTOptimizer.o $(Inc) $D/src/DOTOptimizer.C
+
+NLPQLPOptimizer.o: $D/src/NLPQLPOptimizer.C
+	$(CXX) -c -o NLPQLPOptimizer.o $(Inc) $D/src/NLPQLPOptimizer.C
+
+NPSOLOptimizer.o: $D/src/NPSOLOptimizer.C
+	$(CXX) -c -o NPSOLOptimizer.o $(Inc) $D/src/NPSOLOptimizer.C
+
+NLSSOLLeastSq.o: $D/src/NLSSOLLeastSq.C
+	$(CXX) -c -o NLSSOLLeastSq.o $(Inc) $D/src/NLSSOLLeastSq.C
+
+SOLBase.o: $D/src/SOLBase.C
+	$(CXX) -c -o SOLBase.o $(Inc) $D/src/SOLBase.C
+
+npoptn_wrapper.o: $D/src/npoptn_wrapper.f
+	gfortran -c $(CFLAGS) -o npoptn_wrapper.o $D/src/npoptn_wrapper.f
+
+nlpql_dll = nlpql.o NLPQLPOptimizer.o dakota.dylib
+nlpql.dll: $(nlpql_dll)
+	$(CXX) -o nlpql.dll -bundle -L/usr/lib $(nlpql_dll) $D/methods/NLPQL/.libs/libnlpql.a $(Flib)
+
+npsol_dll = npsol.o NPSOLOptimizer.o NLSSOLLeastSq.o SOLBase.o npoptn_wrapper.o dakota.dylib
+npsol.dll: $(npsol_dll)
+	$(CXX) -o npsol.dll -bundle $(npsol_dll) $D/methods/NPSOL/.libs/libnpsol.a -lblas $(Flib)
+
+nidr.o: $D/packages/nidr/nidr.c
+	cc -c $(CFLAGS) -o nidr.o -I$D/packages/nidr $D/packages/nidr/nidr.c
+
+NIDR_keywds.H: noj.nspec noj.desc
+	nidrgen noj.nspec noj.desc >NIDR_keywds.H
+
+clean:
+	rm -f dakdll *.dll *.o *.dylib NIDRProblemDescDB1.C

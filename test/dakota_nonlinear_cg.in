@@ -1,0 +1,32 @@
+## DAKOTA INPUT FILE - dakota_nonlinear_cg
+## Test DAKOTA's built-in nonlinear conjugate gradient solver
+## TODO: compare to other CG solvers and use harder problem
+
+method,
+	nonlinear_cg
+	  max_iterations = 50
+	  convergence_tolerance = 1e-4
+	  misc_options 
+	    # use Fletcher-Reeves update type
+	    'update_type=fletcher_reeves'
+	    # for each linesearch, start with a step of 5.0, then backtrack
+	    # until simple decrease
+	    'initial_step=5.0' 
+	    'reset_step=true'
+	    'linesearch_type=ls_simple'
+	    # Reset to steepest descent every 5 iterations
+	    'restart_iter=5'
+
+variables,
+	continuous_design = 2
+	  initial_point    3.0    2.0
+	  descriptors      'x1'   'x2'
+
+interface,
+	direct
+	  analysis_driver =       'text_book'
+
+responses,
+	objective_functions = 1
+	analytic_gradients
+	no_hessians

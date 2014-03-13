@@ -1,0 +1,28 @@
+
+
+strategy,
+	single_method
+	tabular_graphics_data
+
+method,
+	stanford npsol		
+	  output verbose	
+	  convergence_tolerance = 1.e-8
+
+variables,
+	continuous_design = 2
+	  initial_point    0.9    1.1
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	system asynchronous
+	  analysis_driver=  'text_book'
+
+responses,
+	num_objective_functions = 3
+	multi_objective_weights = .7 .2 .1
+	analytic_gradients
+	no_hessians		
+

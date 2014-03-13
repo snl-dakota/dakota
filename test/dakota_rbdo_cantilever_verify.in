@@ -1,0 +1,39 @@
+# Reliability analysis using the cantilever test function.
+
+method,
+	local_reliability
+	  mpp_search no_approx
+	  num_response_levels = 0 1 1		#0,#1,#2,#3
+	  response_levels = 0.0 0.0		#0,#1,#2,#3
+#	  compute reliabilities			#2,#3
+#	  num_probability_levels = 0 1 1	#4,#5
+#	  probability_levels = .00135 .00135	#4,#5
+#	  num_reliability_levels = 0 1 1	#6,#7
+#	  reliability_levels = 3. 3.		#6,#7
+	  complementary distribution
+
+variables,
+	continuous_design = 2
+	  initial_point    2.2383436721 5.0812956924  #0
+#	  initial_point    2.2383436724 5.0812956917  #1
+#	  initial_point    2.4368516977 3.8541639805  #2
+#	  initial_point    2.4368516977 3.8541639805  #3
+#	  initial_point    2.4376800635 3.8530510228  #4
+#	  initial_point    2.4485419602 3.8813809238  #5
+#	  initial_point    2.4376831856 3.8530511428  #6
+#	  initial_point    2.4485432927 3.8813846052  #7
+	  descriptors 'w' 't'
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
+
+interface,
+	direct
+	  analysis_driver = 'cantilever'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 3
+	analytic_gradients
+	no_hessians

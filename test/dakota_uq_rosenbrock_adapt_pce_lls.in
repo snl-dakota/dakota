@@ -1,0 +1,31 @@
+
+# timeout overrides: 4=TD300
+
+environment,
+	#graphics
+#	output_precision = 16
+
+method,
+	polynomial_chaos
+ 	  expansion_order = 0
+	  uniform p_refinement
+	  collocation_ratio = 2 seed = 12347
+#	  reuse_points			#1,#3
+#	  use_derivatives		#2,#3,#5
+#	  tensor_grid			#4,#5
+
+variables,
+	normal_uncertain = 2			
+      	  means             =  0.  0.
+	  std_deviations    =  1.  1.		
+	  descriptors       = 'x1' 'x2'		
+
+interface,
+	direct
+	analysis_driver = 'rosenbrock'		
+
+responses,
+	response_functions = 1
+	no_gradients			#0,#1,#4
+#	analytic_gradients		#2,#3,#5
+	no_hessians

@@ -1,0 +1,38 @@
+strategy,
+	single_method
+	  tabular_graphics_data
+
+method,
+	coliny_ea
+	  max_iterations = 2000
+	  max_function_evaluations = 10000
+	  seed = 11011011
+	  population_size = 10
+	  replacement_type chc = 5
+	  fitness_type merit_function
+	  misc_options 'debug=100000' 'realarray_mutation_type=normal'
+	               'realarray_mutation_selfadaptation=true'
+	  	       'realarray_mutation_allele_rate=1.0'
+                       'realarray_autorescale=false'
+	  crossover_type two_point
+	  crossover_rate=0.0
+	  show_misc_options
+	  output debug
+
+model,
+	single
+
+variables,
+	continuous_design = 2
+	  cdv_lower_bounds    -2.0     -2.0
+	  cdv_upper_bounds     2.0      2.0
+	  cdv_descriptors      'x1'     'x2'
+
+interface,
+	fork asynch
+	  analysis_driver = 'rosenbrock'
+
+responses,
+	num_objective_functions = 1
+	no_gradients
+	no_hessians

@@ -1,0 +1,29 @@
+# TO DO: define a meaningful verification test.  text_book generates inf's
+#        for test 1 and ~DBL_MIN for test 2.
+
+method,
+	richardson_extrap
+	  estimate_order		#0
+#	  converge_order		#1
+#	  converge_qoi			#2
+	  refinement_rate = 2.
+	  output verbose
+
+variables,
+	continuous_state = 2
+	  initial_state = 128. 64.
+	  descriptors = 'M1' 'M2'
+
+interface,
+	fork
+	asynchronous evaluation_concurrency = 3
+	  analysis_drivers = 'text_book'
+#	  parameters_file  = 'params.in'
+#	  results_file     = 'results.out'
+#	  file_tag file_save aprepro
+
+responses,
+	response_functions = 3
+	  descriptors = 'W1' 'W2' 'W3'
+	no_gradients
+	no_hessians

@@ -1,0 +1,96 @@
+# Example for Linux, loading commercial solvers (dot, npsol, nlpql) form *.dll files.
+# For testing, I (dmg) configured with
+# ./configure F77=g95 FC=g95 FCLIBS=' ' CPPFLAGS=-DMPICH_IGNORE_CXX_SEEK FLIBS='/home/dmgay/h/bin/g95-install/lib/gcc-lib/x86_64-unknown-linux-gnu/4.1.2/libf95.a /usr/lib/gcc/x86_64-redhat-linux/3.4.6/libg2c.a -lm' --prefix=`pwd`/local --with-dl_solver --with-plugin --enable-docs --with-blas=`pwd`/blas.a
+
+PATH=:/usr/kerberos/bin:/home/dmgay/h/bin:/usr/local/gcc-4.4.2/bin:/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin
+
+CC = g++
+FC = gfortran
+CFLAGS = -O2 -fPIC
+#Rpath = -Wl,-rpath,.,-rpath,/usr/local/gcc-4.4.2/lib64
+Rpath = -Wl,-rpath,/usr/local/gcc-4.4.2/lib64
+D = ..
+# D = Dakota directory
+#D = /home/dmgay/h/dakota/svn/Dakota3
+
+Inc = \
+	-DHAVE_CONFIG_H \
+	-I$D/src \
+	-I$D \
+	-I$D/packages/teuchos/src \
+	-I$D/packages/Pecos \
+	-I$D/packages/Pecos/src \
+	-I$D/packages \
+	-I$D/packages/plplot/include \
+	-I$D/packages/motif/include \
+	-I$D/packages/motif/src/Widgets \
+	-I$D/packages/boost \
+	-I$D/packages/Pecos/packages/VPISparseGrid/src \
+	-I$D/packages/Surfpack \
+	-I$D/packages/Surfpack/src \
+	-I$D/packages/Surfpack/src/interpreter \
+	-I$D/packages/Surfpack/src/surfaces \
+	-I$D/methods/acro/include \
+	-I$D/methods/acro/include/tinyxml \
+	-I$D/methods/DDACE \
+	-I$D/methods/DDACE/include \
+	-I$D/methods/FSUDace \
+	-I$D/methods/hopspack/src-appspack \
+	-I$D/methods/hopspack/src-cddlib \
+	-I$D/methods/hopspack/src-conveyor \
+	-I$D/methods/hopspack/src-nappspack \
+	-I$D/methods/hopspack/src-shared \
+	-I$D/methods/JEGA \
+	-I$D/methods/JEGA/eddy \
+	-I$D/methods/JEGA/include \
+	-I$D/methods/OPTPP/include \
+	-I$D/methods/OPTPP/newmat11 \
+	-I$D/methods/PSUADE \
+	-DMPICH_IGNORE_CXX_SEEK
+
+L1 = $(Rpath) $D/src/.libs/libdakota.a $D/packages/teuchos/src/.libs/libteuchos.a $D/packages/Pecos/.libs/libpecos.a $D/packages/teuchos/src/.libs/libteuchos.a $D/packages/plplot/src/.libs/libplplotd.a $D/packages/motif/src/.libs/libDGraphics.a $D/packages/Surfpack/src/.libs/libsurfpack.a $D/methods/CONMIN/src/.libs/libconmin.a $D/methods/DDACE/src/.libs/libddace.a $D/methods/FSUDace/.libs/libfsudace.a ../methods/JEGA/src/.libs/libjega.a $D/methods/NL2SOL/.libs/libcport.a $D/methods/NPSOL/.libs/libnpsol.a $D/methods/OPTPP/lib/.libs/libopt.a $D/methods/PSUADE/.libs/libpsuade.a $D/methods/OPTPP/lib/.libs/libnewmat.a $D/packages/Pecos/packages/LHS/.libs/liblhs.a $D/packages/Pecos/packages/VPISparseGrid/src/.libs/libsparsegrid.a $D/methods/NCSUOpt/libncsuopt.a $D/methods/acro/packages/coliny/src/libcoliny.a $D/methods/acro/packages/utilib/src/.libs/libutilib.a $D/methods/acro/packages/colin/src/libcolin.a $D/methods/acro/packages/pebbl/src/libpebbl.a $D/methods/acro/packages/utilib/src/.libs/libutilib.a $D/methods/acro/packages/tpl/3po/lib3po.a $D/methods/hopspack/src-nappspack/libnappspack.a $D/methods/hopspack/src-appspack/libappspack.a $D/methods/hopspack/src-conveyor/libconveyor.a $D/methods/hopspack/src-shared/libshared.a $D/methods/hopspack/src-cddlib/libcdd.a -lgd -lfreetype -lXpm -lXm -ljpeg -lpng -lXmu -lXt -lXp -lXext -lX11 -lSM -lICE $D/packages/ampl/funcadd0.o $D/packages/ampl/amplsolver.a -llapack -lblas -lgfortran -lm -ldl
+
+.C.o:
+	$(CC) -c $(CFLAGS) $(Inc) $*.C
+
+# for testing "nidrgen -lp noj.nspec"
+
+L = -llapack -lblas
+
+all: dakshl restart_utilshl libdot.dll libnlpql.dll libnpsol.dll
+
+dakshl = $D/src/main.o DakotaIterator2.o
+dakshl: $(dakshl)
+	mpic++ -pthread -o dakshl $(Rpath) $(dakshl) $(L1)
+
+restart_utilshl = $D/src/restart_util.o  DakotaIterator2.o
+restart_utilshl: $(restart_utilshl)
+	mpic++ -pthread -o restart_utilshl $(Rpath) $(restart_utilshl) $(L1)
+
+DakotaIterator2.o: $D/src/DakotaIterator.C
+	$(CC) -c -o DakotaIterator2.o -DDAKOTA_SHLIB $(CFLAGS) $(Inc) $D/src/DakotaIterator.C
+
+libdot.dll:
+	mkdir t
+	ln ../methods/DOT/dbl_prec/dot?.f t
+	cd t; $(FC) -c $(CFLAGS) -fPIC *.f; $(FC) -shared -o ../libdot.dll *.o; cd ..
+	rm -r t
+
+libnlpql.dll:
+	mkdir t
+	cd ../methods/NLPQL; ln LSQL.f NLPINF.f NLPJOB.f NLPJOB_test.f NLPL1.f NLPLSQ.f \
+	NLPLSX.f NLPMMX.f NLPQLB.f NLPQLG.f NLPQLP.f QL.f ../../dakdll/t; cd ../../dakdll
+	cd t; $(FC) -c $(CFLAGS) -fPIC *.f; $(FC) -shared -o ../libnlpql.dll *.o; cd ..
+	rm -r t
+
+libnpsol.dll:
+	mkdir t
+	ln ../src/npoptn_wrapper.f t
+	cd ../methods/NPSOL; ln blas1.f blas2.f chsubs.f cmsubs.f f06subs.f lssolsubs.f \
+	mcsubs.f nlssolsubs.f npcomsubs.f npsolsubs.f opsubs.f qrsubs.f rtcomsubs.f \
+	srsubs.f ../../dakdll/t; cd ../../dakdll
+	cd t; $(FC) -c $(CFLAGS) -fPIC *.f; $(FC) -shared -o ../libnpsol.dll *.o; cd ..
+	rm -r t
+
+clean:
+	rm -f dakshl restart_utilshl lib*.dll *.o

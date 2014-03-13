@@ -1,0 +1,69 @@
+# DAKOTA INPUT FILE : dakota_logratio_taylor2.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# This file covers second-order reliability index approach (RIA) CDF
+# mappings from response_levels to probability_levels and second-order
+# performance measure approach (PMA) CDF mappings from these
+# probability_levels back to the original response_levels for MVSOSM,
+# x-/u-space AMV^2, x-/u-space AMV^2+, x-/u-space TANA, and SORM.
+
+environment,
+	graphics
+
+method,
+	local_reliability
+#	  mpp_search x_taylor_mean			#1
+#	  mpp_search u_taylor_mean			#2
+#	  mpp_search x_taylor_mpp			#3,#8,#10,#12
+#	  mpp_search u_taylor_mpp			#4,#9,#11,#13
+#	  mpp_search x_two_point			#5
+#	  mpp_search u_two_point			#6
+#	  mpp_search no_approx				#7
+#	  nip
+#	  integration second_order #3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13
+	  output verbose
+#	  response_levels = .4 .5 .55 .6 .65 .7
+#	   .75 .8 .85 .9 1. 1.05 1.15 1.2 1.25 1.3
+#	   1.35 1.4 1.5 1.55 1.6 1.65 1.7 1.75
+	  probability_levels =     .047624085968  .10346525476
+	   .13818404972 .17616275822 .21641741368 .25803428383
+	   .30020938126 .34226491011 .38365052981 .42393548231
+	   .50000004094 .53539344223 .60043460095 .63004131818
+	   .65773508977 .68356844621 .70761025526 .72994058685
+	   .76981945354 .78755158265 .80393505578 .81906005155
+	   .83301386856 .84588021936
+
+variables,
+	lognormal_uncertain = 2
+       	  means             =  1.  1
+	  std_deviations    =  0.5 0.5
+	  descriptors       =  'TF1ln'   'TF2ln'
+	uncertain_correlation_matrix =  1   0.3
+					0.3 1
+
+interface,
+	system asynch
+	  analysis_driver = 'log_ratio'
+
+responses,
+	response_functions = 1
+	analytic_gradients
+	analytic_hessians		#0,#1,#2,#3,#4,#5,#6,#7
+#	quasi_hessians bfgs #damped	#12,#13
+#	quasi_hessians sr1		#10,#11
+#	numerical_hessians		#8,#9
+#	  fd_hessian_step_size = 1.e-5	#8,#9

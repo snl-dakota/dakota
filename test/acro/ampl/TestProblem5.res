@@ -1,0 +1,1 @@
+num_objective_functions=1 num_nonlinear_inequality_constraints=3 nonlinear_inequality_upper_bounds 3.0 3.0 2.0 nonlinear_inequality_lower_bounds = -2.e+307 -2.e+307 2.0 no_gradients no_hessians response_descriptors 'obj' 'c1' 'c2' 'c3'

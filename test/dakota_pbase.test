@@ -1,0 +1,2263 @@
+dakota_apps.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 24
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 287 total (287 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      9.0039062500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      6.2598446631e-02
+<<<<< Best constraint values   =
+                     -2.0019531250e-01
+<<<<< Best data captured at function evaluation 216
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 29
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.2271967622e-01 x1
+                      1.1761084488e+00 x2
+                      1.5784521988e+00 x3
+<<<<< Best objective function  =
+                      1.3318448984e-01
+<<<<< Best constraint values   =
+                     -2.0027442923e-01
+<<<<< Best data captured at function evaluation 63
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 402 total (402 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      0.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.1250000000e+00
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 23
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 197 total (197 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1091092410e+00 x1
+                      1.0783907590e+00 x2
+                      7.0339075897e-01 x3
+<<<<< Best objective function  =
+                      7.9194471793e-03
+<<<<< Best constraint values   =
+                      6.9092792906e-01
+                      6.0837200851e-01
+                      4.9475855980e-01
+<<<<< Best data captured at function evaluation 21
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 198 total (198 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.7187500000e-01 x1
+                      1.3046875000e+00 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.0210210234e-02
+<<<<< Best constraint values   =
+                     -2.0092773438e-01
+<<<<< Best data captured at function evaluation 142
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 80 total (80 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 21
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0272044278e+00 x1
+                      9.7498307224e-01 x2
+                      9.7060807224e-01 x3
+<<<<< Best objective function  =
+                      1.6857017976e-06
+<<<<< Best data captured at function evaluation 38
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 73 total (73 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.8524375893e-01 x1
+                      1.0856546786e+00 x2
+                      1.7438578036e+00 x3
+<<<<< Best objective function  =
+                      3.3581357739e-01
+<<<<< Best constraint values   =
+                     -2.0031708191e-01
+<<<<< Best data captured at function evaluation 49
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 95 total (95 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 17
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 144 total (144 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.4121842688e-01 x1
+                      1.2232346981e+00 x2
+                      1.4943284481e+00 x3
+<<<<< Best objective function  =
+                      7.8765434761e-02
+<<<<< Best constraint values   =
+                     -2.0045627808e-01
+<<<<< Best data captured at function evaluation 103
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 32
+Test Number 13 succeeded
+<<<<< Function evaluation summary: 244 total (244 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0215885294e-01 x1
+                      5.0213802206e-01 x2
+                      2.4935442721e+00 x3
+<<<<< Best objective function  =
+                      5.0987740624e+00
+<<<<< Best constraint values   =
+                      1.0945025633e-03
+                      1.0631667211e-03
+<<<<< Best data captured at function evaluation 244
+Test Number 14 succeeded
+<<<<< Function evaluation summary: 64 total (64 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 32
+Test Number 15 succeeded
+<<<<< Function evaluation summary: 71 total (71 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1091092410e+00 x1
+                      1.1096407590e+00 x2
+                      6.7214075897e-01 x3
+<<<<< Best objective function  =
+                      1.1840693327e-02
+<<<<< Best constraint values   =
+                      6.7530292906e-01
+                      6.7674799344e-01
+                      4.5177319986e-01
+<<<<< Best data captured at function evaluation 53
+Test Number 16 succeeded
+<<<<< Function evaluation summary: 210 total (210 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9264820337e-01 x1
+                      1.0073128318e+00 x2
+                      1.0073907615e+00 x3
+<<<<< Best objective function  =
+                      8.7648399372e-09
+<<<<< Best data captured at function evaluation 210
+Test Number 17 succeeded
+<<<<< Function evaluation summary: 224 total (224 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9833152522e-01 x1
+                      4.9737159978e-01 x2
+                      2.5059653498e+00 x3
+<<<<< Best objective function  =
+                      5.2706769214e+00
+<<<<< Best constraint values   =
+                     -3.5149085931e-04
+                     -1.7872543449e-03
+<<<<< Best data captured at function evaluation 177
+Test Number 18 succeeded
+<<<<< Function evaluation summary: 250 total (250 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1091092410e+00 x1
+                      1.0783907590e+00 x2
+                      7.0339075897e-01 x3
+<<<<< Best objective function  =
+                      7.9194471793e-03
+<<<<< Best constraint values   =
+                      6.9092792906e-01
+                      6.0837200851e-01
+                      4.9475855980e-01
+<<<<< Best data captured at function evaluation 24
+Test Number 19 succeeded
+<<<<< Function evaluation summary: 64 total (64 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 35
+Test Number 20 succeeded
+<<<<< Function evaluation summary: 61 total (61 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 33
+Test Number 21 succeeded
+<<<<< Function evaluation summary: 332 total (332 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0439146078e-01 x1
+                      5.0498353922e-01 x2
+                      2.4862335392e+00 x3
+<<<<< Best objective function  =
+                      4.9995738850e+00
+<<<<< Best constraint values   =
+                      1.9189761028e-03
+                      2.8126444882e-03
+<<<<< Best data captured at function evaluation 293
+Test Number 22 succeeded
+<<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 33
+Test Number 23 succeeded
+<<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 33
+Test Number 24 succeeded
+<<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 33
+Test Number 25 succeeded
+<<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 33
+Test Number 26 succeeded
+<<<<< Function evaluation summary: 468 total (468 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 25
+Test Number 27 succeeded
+<<<<< Function evaluation summary: 499 total (499 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 27
+Test Number 28 succeeded
+<<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 34
+Test Number 29 succeeded
+<<<<< Function evaluation summary: 448 total (448 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                     -0.0000000000e+00
+                     -0.0000000000e+00
+<<<<< Best data captured at function evaluation 33
+dakota_coliny_p.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.7893892864e-01 x1
+                      5.7495736388e-01 x2
+                      1.3050171516e+00 x3
+<<<<< Best objective function  =
+                      7.2726686137e-02
+<<<<< Best constraint values   =
+                      4.7691601150e-02
+                      4.1106505960e-02
+<<<<< Best data captured at function evaluation 68
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.7893892864e-01 x1
+                      5.7495736388e-01 x2
+                      1.3050171516e+00 x3
+<<<<< Best objective function  =
+                      7.2726686137e-02
+<<<<< Best constraint values   =
+                      4.7691601150e-02
+                      4.1106505960e-02
+<<<<< Best data captured at function evaluation 68
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 62 total (62 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      9.9988570533e-01 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      5.5511151231e-17
+                     -1.1102230246e-16
+<<<<< Best data captured at function evaluation 62
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 62 total (62 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      9.9988570533e-01 x3
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      5.5511151231e-17
+                     -1.1102230246e-16
+<<<<< Best data captured at function evaluation 62
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 353 total (353 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.2294873749e-01 x1
+                      2.0525326424e-01 x2
+                      9.9984758421e-01 x3
+<<<<< Best objective function  =
+                      9.9064456572e-01
+<<<<< Best constraint values   =
+                     -8.7510240069e-02
+                     -1.9345466264e-02
+<<<<< Best data captured at function evaluation 322
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 353 total (353 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.2294873749e-01 x1
+                      2.0525326424e-01 x2
+                      9.9984758421e-01 x3
+<<<<< Best objective function  =
+                      9.9064456572e-01
+<<<<< Best constraint values   =
+                     -8.7510240069e-02
+                     -1.9345466264e-02
+<<<<< Best data captured at function evaluation 322
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -4.5229303672e-02 x1
+                     -1.6890680891e-01 x2
+                      1.1832626589e+00 x3
+<<<<< Best objective function  =
+                      3.0615871485e+00
+<<<<< Best constraint values   =
+                      8.6499094365e-02
+                      5.1144161932e-02
+<<<<< Best data captured at function evaluation 485
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -4.5229303672e-02 x1
+                     -1.6890680891e-01 x2
+                      1.1832626589e+00 x3
+<<<<< Best objective function  =
+                      3.0615871485e+00
+<<<<< Best constraint values   =
+                      8.6499094365e-02
+                      5.1144161932e-02
+<<<<< Best data captured at function evaluation 485
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 13 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 14 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 15 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 16 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 17 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 18 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+Test Number 19 succeeded
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.5507812500e-01 x1
+                      6.5507812500e-01 x2
+                      1.0000000000e+00 x3
+<<<<< Best objective function  =
+                      2.8308245201e-02
+<<<<< Best constraint values   =
+                      1.0158828735e-01
+                      1.0158828735e-01
+<<<<< Best data captured at function evaluation 132
+dakota_dace.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.0625565391e-01 cdv_1
+                      1.7966183297e-01 cdv_2
+                      1.9281970958e-01 cdv_3
+                      2.1916471235e+00 csv_1
+<<<<< Best objective function  =
+                      3.1254689919e+00
+<<<<< Best constraint values   =
+                      3.9616090681e-03
+                     -1.2084945273e-01
+<<<<< Best data captured at function evaluation 20
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  5.16495e-02  1.00000e+00 
+       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00 
+       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00 
+      obj_fn -4.99626e-02 -4.66793e-02 -7.25756e-02  8.33132e-01  1.00000e+00 
+nln_ineq_con_1  9.39037e-01 -2.05895e-01 -2.92181e-02 -3.21161e-02 -3.21366e-02  1.00000e+00 
+nln_ineq_con_2 -1.82922e-01  9.50371e-01 -1.19377e-02  6.22073e-03 -1.68181e-02 -4.14859e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -1.84324e-02  9.71743e-01 -7.47542e-01 
+       cdv_2 -4.85328e-02 -7.40946e-01  9.77858e-01 
+       cdv_3 -9.53009e-02 -2.74523e-02 -6.70752e-02 
+       csv_1  8.33463e-01  3.13943e-02  8.45201e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  6.35714e-02  1.00000e+00 
+       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00 
+       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00 
+      obj_fn -4.50000e-02 -3.05102e-02 -4.48980e-02  9.84082e-01  1.00000e+00 
+nln_ineq_con_1  9.46531e-01 -2.03163e-01 -5.74490e-02 -4.87755e-02 -4.35714e-02  1.00000e+00 
+nln_ineq_con_2 -2.45510e-01  9.31735e-01 -1.23469e-02  1.44898e-02  2.87755e-02 -4.73878e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.10410e-03  9.82362e-01 -8.46657e-01 
+       cdv_2  5.28573e-02 -8.22690e-01  9.80382e-01 
+       cdv_3 -9.20598e-02 -1.65570e-01 -1.29305e-01 
+       csv_1  9.84183e-01 -8.66602e-02  1.95501e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.0625565391e-01 cdv_1
+                      1.7966183297e-01 cdv_2
+                      1.9281970958e-01 cdv_3
+                      2.1916471235e+00 csv_1
+<<<<< Best objective function  =
+                      3.1254689919e+00
+<<<<< Best constraint values   =
+                      3.9616090681e-03
+                     -1.2084945273e-01
+<<<<< Best data captured at function evaluation 20
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  5.16495e-02  1.00000e+00 
+       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00 
+       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00 
+      obj_fn -4.99626e-02 -4.66793e-02 -7.25756e-02  8.33132e-01  1.00000e+00 
+nln_ineq_con_1  9.39037e-01 -2.05895e-01 -2.92181e-02 -3.21161e-02 -3.21366e-02  1.00000e+00 
+nln_ineq_con_2 -1.82922e-01  9.50371e-01 -1.19377e-02  6.22073e-03 -1.68181e-02 -4.14859e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -1.84324e-02  9.71743e-01 -7.47542e-01 
+       cdv_2 -4.85328e-02 -7.40946e-01  9.77858e-01 
+       cdv_3 -9.53009e-02 -2.74523e-02 -6.70752e-02 
+       csv_1  8.33463e-01  3.13943e-02  8.45201e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  6.35714e-02  1.00000e+00 
+       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00 
+       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00 
+      obj_fn -4.50000e-02 -3.05102e-02 -4.48980e-02  9.84082e-01  1.00000e+00 
+nln_ineq_con_1  9.46531e-01 -2.03163e-01 -5.74490e-02 -4.87755e-02 -4.35714e-02  1.00000e+00 
+nln_ineq_con_2 -2.45510e-01  9.31735e-01 -1.23469e-02  1.44898e-02  2.87755e-02 -4.73878e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.10410e-03  9.82362e-01 -8.46657e-01 
+       cdv_2  5.28573e-02 -8.22690e-01  9.80382e-01 
+       cdv_3 -9.20598e-02 -1.65570e-01 -1.29305e-01 
+       csv_1  9.84183e-01 -8.66602e-02  1.95501e-01 
+Test Number 2 succeeded
+<<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.0625565391e-01 cdv_1
+                      1.7966183297e-01 cdv_2
+                      1.9281970958e-01 cdv_3
+                      2.1916471235e+00 csv_1
+<<<<< Best objective function  =
+                      3.1254689919e+00
+<<<<< Best constraint values   =
+                      3.9616090681e-03
+                     -1.2084945273e-01
+<<<<< Best data captured at function evaluation 20
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  5.16495e-02  1.00000e+00 
+       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00 
+       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00 
+      obj_fn -4.99626e-02 -4.66793e-02 -7.25756e-02  8.33132e-01  1.00000e+00 
+nln_ineq_con_1  9.39037e-01 -2.05895e-01 -2.92181e-02 -3.21161e-02 -3.21366e-02  1.00000e+00 
+nln_ineq_con_2 -1.82922e-01  9.50371e-01 -1.19377e-02  6.22073e-03 -1.68181e-02 -4.14859e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -1.84324e-02  9.71743e-01 -7.47542e-01 
+       cdv_2 -4.85328e-02 -7.40946e-01  9.77858e-01 
+       cdv_3 -9.53009e-02 -2.74523e-02 -6.70752e-02 
+       csv_1  8.33463e-01  3.13943e-02  8.45201e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  6.35714e-02  1.00000e+00 
+       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00 
+       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00 
+      obj_fn -4.50000e-02 -3.05102e-02 -4.48980e-02  9.84082e-01  1.00000e+00 
+nln_ineq_con_1  9.46531e-01 -2.03163e-01 -5.74490e-02 -4.87755e-02 -4.35714e-02  1.00000e+00 
+nln_ineq_con_2 -2.45510e-01  9.31735e-01 -1.23469e-02  1.44898e-02  2.87755e-02 -4.73878e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.10410e-03  9.82362e-01 -8.46657e-01 
+       cdv_2  5.28573e-02 -8.22690e-01  9.80382e-01 
+       cdv_3 -9.20598e-02 -1.65570e-01 -1.29305e-01 
+       csv_1  9.84183e-01 -8.66602e-02  1.95501e-01 
+Test Number 3 succeeded
+<<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.0625565391e-01 cdv_1
+                      1.7966183297e-01 cdv_2
+                      1.9281970958e-01 cdv_3
+                      2.1916471235e+00 csv_1
+<<<<< Best objective function  =
+                      3.1254689919e+00
+<<<<< Best constraint values   =
+                      3.9616090681e-03
+                     -1.2084945273e-01
+<<<<< Best data captured at function evaluation 20
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  5.16495e-02  1.00000e+00 
+       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00 
+       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00 
+      obj_fn -4.99626e-02 -4.66793e-02 -7.25756e-02  8.33132e-01  1.00000e+00 
+nln_ineq_con_1  9.39037e-01 -2.05895e-01 -2.92181e-02 -3.21161e-02 -3.21366e-02  1.00000e+00 
+nln_ineq_con_2 -1.82922e-01  9.50371e-01 -1.19377e-02  6.22073e-03 -1.68181e-02 -4.14859e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -1.84324e-02  9.71743e-01 -7.47542e-01 
+       cdv_2 -4.85328e-02 -7.40946e-01  9.77858e-01 
+       cdv_3 -9.53009e-02 -2.74523e-02 -6.70752e-02 
+       csv_1  8.33463e-01  3.13943e-02  8.45201e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1  1.00000e+00 
+       cdv_2  6.35714e-02  1.00000e+00 
+       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00 
+       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00 
+      obj_fn -4.50000e-02 -3.05102e-02 -4.48980e-02  9.84082e-01  1.00000e+00 
+nln_ineq_con_1  9.46531e-01 -2.03163e-01 -5.74490e-02 -4.87755e-02 -4.35714e-02  1.00000e+00 
+nln_ineq_con_2 -2.45510e-01  9.31735e-01 -1.23469e-02  1.44898e-02  2.87755e-02 -4.73878e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       cdv_1 -3.10410e-03  9.82362e-01 -8.46657e-01 
+       cdv_2  5.28573e-02 -8.22690e-01  9.80382e-01 
+       cdv_3 -9.20598e-02 -1.65570e-01 -1.29305e-01 
+       csv_1  9.84183e-01 -8.66602e-02  1.95501e-01 
+dakota_drivers.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      2.0539125956e-15
+                      2.0539125956e-15
+<<<<< Best data captured at function evaluation 82
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      2.1094237468e-15
+                      2.1094237468e-15
+<<<<< Best data captured at function evaluation 82
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      2.0539125956e-15
+                      2.0539125956e-15
+<<<<< Best data captured at function evaluation 82
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      1.0000000000e+00 cdv_4
+<<<<< Best objective function  =
+                      1.2500000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 82
+dakota_hybrid.in 
+Test Number 0 succeeded
+<<<<< Best parameters          (set 1) =
+                      1.0000934323e+00 x1
+                      1.0000906824e+00 x2
+<<<<< Best response functions  (set 1) =
+                      1.4382822838e-16
+<<<<< Best parameters          (set 2) =
+                      1.0000727327e+00 x1
+                      1.0000696574e+00 x2
+<<<<< Best response functions  (set 2) =
+                      5.1527961202e-17
+<<<<< Best parameters          (set 3) =
+                      9.9989470256e-01 x1
+                      1.0001011503e+00 x2
+<<<<< Best response functions  (set 3) =
+                      2.2761478478e-16
+dakota_lib_mode.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9999868171e-01 x1
+                      4.9999868171e-01 x2
+<<<<< Best objective function  =
+                      1.2500131830e-01
+<<<<< Best constraint values   =
+                     -6.5914342853e-07
+                     -6.5914342853e-07
+<<<<< Best data captured at function evaluation 9
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 8 total (8 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9988784831e-01 cdv_1
+                      4.9988784831e-01 cdv_2
+<<<<< Best objective function  =
+                      1.2511218943e-01
+<<<<< Best constraint values   =
+                     -5.6063269127e-05
+                     -5.6063269127e-05
+<<<<< Best data captured at function evaluation 8
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.0731615484e-01 x1
+                      6.7978778969e-01 x2
+<<<<< Best objective function  =
+                      3.4291428244e-02
+<<<<< Best constraint values   =
+                      2.8939017086e-02
+                      1.5845336159e-01
+<<<<< Best data captured at function evaluation 51
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.0731615484e-01 x1
+                      6.7978778969e-01 x2
+<<<<< Best objective function  =
+                      3.4291428244e-02
+<<<<< Best constraint values   =
+                      2.8939017086e-02
+                      1.5845336159e-01
+<<<<< Best data captured at function evaluation 51
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   2.4400000000e+01   P0   P0
+  -2.7200000000e+01   P1   P0
+  -2.7200000000e+01   P0   P1
+   2.5142857143e+01   P2   P0
+  -2.7366997557e-14   P1   P1
+   2.5142857143e+01   P0   P2
+  -1.2800000000e+01   P3   P0
+   3.1204205886e-14   P2   P1
+   2.7977620221e-14   P1   P2
+  -1.2800000000e+01   P0   P3
+   3.6571428571e+00   P4   P0
+  -3.6377151291e-15   P3   P1
+   8.7707618945e-15   P2   P2
+   3.5610403515e-14   P1   P3
+   3.6571428571e+00   P0   P4
+Polynomial Chaos coefficients for response_fn_2:
+   1.3333333333e+00   P0   P0
+  -6.6613381478e-16   P1   P0
+  -1.0000000000e+00   P0   P1
+   2.6666666667e+00   P2   P0
+  -1.6375789613e-15   P1   P1
+  -4.4408920985e-16   P0   P2
+  -4.1633363423e-16   P3   P0
+  -5.4123372450e-16   P2   P1
+  -1.9984014443e-15   P1   P2
+  -1.1102230246e-16   P0   P3
+  -5.2735593670e-16   P4   P0
+  -5.9414279052e-16   P3   P1
+  -1.0547118734e-15   P2   P2
+  -3.7470027081e-16   P1   P3
+  -2.2204460493e-16   P0   P4
+Polynomial Chaos coefficients for response_fn_3:
+   1.3333333333e+00   P0   P0
+  -1.0000000000e+00   P1   P0
+   2.2551405188e-16   P0   P1
+   1.0547118734e-15   P2   P0
+   1.6896206656e-15   P1   P1
+   2.6666666667e+00   P0   P2
+   1.5265566589e-16   P3   P0
+   1.5022705302e-15   P2   P1
+   1.3322676296e-15   P1   P2
+   9.0205620751e-17   P0   P3
+   6.9388939039e-17   P4   P0
+   1.2875985000e-15   P3   P1
+   1.7208456882e-15   P2   P2
+   1.2316536679e-15   P1   P3
+   2.2204460493e-16   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.4400000000e+01  2.8211266465e+01
+ response_fn_2  1.3333333333e+00  1.3249737943e+00
+ response_fn_3  1.3333333333e+00  1.3249737943e+00
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   2.4400000000e+01   P0   P0
+  -2.7200000000e+01   P1   P0
+  -2.7200000000e+01   P0   P1
+   2.5142857143e+01   P2   P0
+  -2.0872192863e-14   P1   P1
+   2.5142857143e+01   P0   P2
+  -1.2800000000e+01   P3   P0
+  -5.6232796197e-14   P2   P1
+   9.1593399532e-15   P1   P2
+  -1.2800000000e+01   P0   P3
+   3.6571428571e+00   P4   P0
+  -2.6534330289e-14   P3   P1
+  -4.8294701571e-15   P2   P2
+   9.6728181020e-15   P1   P3
+   3.6571428571e+00   P0   P4
+Polynomial Chaos coefficients for response_fn_2:
+   1.3333333333e+00   P0   P0
+  -1.6238095937e-15   P1   P0
+  -1.0000000000e+00   P0   P1
+   2.6666666667e+00   P2   P0
+   1.0050554139e-16   P1   P1
+   7.5178578640e-16   P0   P2
+  -3.0368502851e-16   P3   P0
+  -3.4965520063e-17   P2   P1
+   2.7270937245e-15   P1   P2
+  -4.9859747407e-17   P0   P3
+  -4.4495657159e-16   P4   P0
+  -1.2849964148e-15   P3   P1
+  -2.5969352536e-16   P2   P2
+   8.5058370937e-16   P1   P3
+  -1.1535911115e-15   P0   P4
+Polynomial Chaos coefficients for response_fn_3:
+   1.3333333333e+00   P0   P0
+  -1.0000000000e+00   P1   P0
+  -1.2212453271e-15   P0   P1
+  -2.9698465909e-15   P2   P0
+  -5.6066262744e-15   P1   P1
+   2.6666666667e+00   P0   P2
+  -1.8873791419e-15   P3   P0
+  -4.5241588253e-15   P2   P1
+  -1.0547118734e-15   P1   P2
+  -6.5225602697e-16   P0   P3
+  -1.6930901126e-15   P4   P0
+  -6.7168492990e-15   P3   P1
+  -1.1657341759e-15   P2   P2
+   6.5225602697e-16   P1   P3
+  -1.3322676296e-15   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.4400000000e+01  2.8211266465e+01
+ response_fn_2  1.3333333333e+00  1.3249737943e+00
+ response_fn_3  1.3333333333e+00  1.3249737943e+00
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   2.4400000000e+01   P0   P0
+  -2.7200000000e+01   P1   P0
+  -2.7200000000e+01   P0   P1
+   2.5142857143e+01   P2   P0
+   1.0658141036e-14   P1   P1
+   2.5142857143e+01   P0   P2
+  -1.2800000000e+01   P3   P0
+   2.9753977060e-14   P2   P1
+   1.5987211555e-14   P1   P2
+  -1.2800000000e+01   P0   P3
+   3.6571428571e+00   P4   P0
+  -1.1990408666e-14   P3   P1
+   2.1316282073e-14   P2   P2
+   2.8421709430e-14   P1   P3
+   3.6571428571e+00   P0   P4
+Polynomial Chaos coefficients for response_fn_2:
+   1.3333333333e+00   P0   P0
+  -1.1102230246e-16   P1   P0
+  -1.0000000000e+00   P0   P1
+   2.6666666667e+00   P2   P0
+   1.7208456882e-15   P1   P1
+   2.4980018054e-15   P0   P2
+  -7.7715611724e-16   P3   P0
+   4.5241588253e-15   P2   P1
+   2.4980018054e-15   P1   P2
+   1.2767564783e-15   P0   P3
+   3.3306690739e-16   P4   P0
+  -1.7763568394e-15   P3   P1
+   5.9396931817e-15   P2   P2
+   3.0531133177e-15   P1   P3
+   6.6613381478e-16   P0   P4
+Polynomial Chaos coefficients for response_fn_3:
+   1.3333333333e+00   P0   P0
+  -1.0000000000e+00   P1   P0
+  -6.6613381478e-16   P0   P1
+  -1.1379786002e-15   P2   P0
+  -1.6028844918e-15   P1   P1
+   2.6666666667e+00   P0   P2
+   1.2767564783e-15   P3   P0
+  -1.0408340856e-16   P2   P1
+  -1.6514567491e-15   P1   P2
+  -9.0205620751e-16   P0   P3
+   1.9428902931e-16   P4   P0
+  -5.5511151231e-17   P3   P1
+  -3.3029134983e-15   P2   P2
+  -2.7478019859e-15   P1   P3
+   0.0000000000e+00   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.4400000000e+01  2.8211266465e+01
+ response_fn_2  1.3333333333e+00  1.3249737943e+00
+ response_fn_3  1.3333333333e+00  1.3249737943e+00
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   2.4400000000e+01   P0   P0
+  -2.7200000000e+01   P1   P0
+  -2.7200000000e+01   P0   P1
+   2.5142857143e+01   P2   P0
+  -6.8972605405e-15   P1   P1
+   2.5142857143e+01   P0   P2
+  -1.2800000000e+01   P3   P0
+   6.0160210147e-15   P2   P1
+   6.7862382380e-15   P1   P2
+  -1.2800000000e+01   P0   P3
+   3.6571428571e+00   P4   P0
+  -1.7711526690e-15   P3   P1
+   1.7381929229e-14   P2   P2
+   2.2447321779e-14   P1   P3
+   3.6571428571e+00   P0   P4
+Polynomial Chaos coefficients for response_fn_2:
+   1.3333333333e+00   P0   P0
+   1.3600232052e-15   P1   P0
+  -1.0000000000e+00   P0   P1
+   2.6666666667e+00   P2   P0
+   4.9266146718e-16   P1   P1
+   6.1062266354e-16   P0   P2
+   8.0491169285e-16   P3   P0
+   1.7416623699e-15   P2   P1
+   1.5126788711e-15   P1   P2
+  -5.2735593670e-16   P0   P3
+   4.8572257327e-17   P4   P0
+   2.0122792321e-16   P3   P1
+   1.0477729795e-15   P2   P2
+   1.1934897515e-15   P1   P3
+   5.5511151231e-16   P0   P4
+Polynomial Chaos coefficients for response_fn_3:
+   1.3333333333e+00   P0   P0
+  -1.0000000000e+00   P1   P0
+   1.7000290065e-16   P0   P1
+   2.3939183968e-16   P2   P0
+   6.7480743215e-16   P1   P1
+   2.6666666667e+00   P0   P2
+  -4.8572257327e-17   P3   P0
+   1.8813076097e-15   P2   P1
+   1.4536982729e-15   P1   P2
+   4.4408920985e-16   P0   P3
+  -2.2117724319e-16   P4   P0
+  -1.6826817717e-15   P3   P1
+  -1.2576745201e-15   P2   P2
+   1.6722734308e-15   P1   P3
+   8.1878948066e-16   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.4400000000e+01  2.8211266465e+01
+ response_fn_2  1.3333333333e+00  1.3249737943e+00
+ response_fn_3  1.3333333333e+00  1.3249737943e+00
+dakota_lib_split.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0003666224e+00 x1
+                      1.0003666224e+00 x2
+                      1.0003666224e+00 x3
+<<<<< Best objective function  =
+                      5.4199752248e-14
+<<<<< Best data captured at function evaluation 55
+<<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9988658610e-01 x1
+                      4.9988658610e-01 x2
+<<<<< Best objective function  =
+                      1.2511345250e-01
+<<<<< Best constraint values   =
+                     -5.6694089465e-05
+                     -5.6694089465e-05
+<<<<< Best data captured at function evaluation 22
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0003666224e+00 x1
+                      1.0003666224e+00 x2
+                      1.0003666224e+00 x3
+<<<<< Best objective function  =
+                      5.4199752248e-14
+<<<<< Best data captured at function evaluation 55
+<<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9988658610e-01 x1
+                      4.9988658610e-01 x2
+<<<<< Best objective function  =
+                      1.2511345250e-01
+<<<<< Best constraint values   =
+                     -5.6694089465e-05
+                     -5.6694089465e-05
+<<<<< Best data captured at function evaluation 22
+dakota_multistart.in 
+Test Number 0 succeeded
+<<<<< Results summary:
+   set_id             x1             x2            x1*            x2*         obj_fn
+        1           -0.8           -0.8  -0.8543728665  -0.8543728665   0.5584096919
+        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596
+        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596
+        4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946
+        5              0              0  0.03572926375  0.03572926375  0.08730499239
+        6  -0.7767971993  0.01810943539  -0.7024118387  0.03572951143   0.3165522387
+        7  -0.3291571008  -0.7697378755   0.3167607374  -0.4009188363   0.2471403213
+        8   0.8704730469   0.7720679005    0.177092899   0.3167611756  0.08256082751
+Test Number 1 succeeded
+<<<<< Results summary:
+   set_id             x1             x2            x1*            x2*
+        1           -0.8           -0.8  -0.8543728665  -0.8543728665   0.5584096919
+        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596
+        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596
+        4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946
+        5              0              0  0.03572926375  0.03572926375  0.08730499239
+        6  -0.7767971993  0.01810943539  -0.7024118387  0.03572951143   0.3165522387
+        7  -0.3291571008  -0.7697378755   0.3167607374  -0.4009188363   0.2471403213
+        8   0.8704730469   0.7720679005    0.177092899   0.3167611756  0.08256082751
+dakota_repartition.in 
+Test Number 0 succeeded
+<<<<< Function evaluation summary (I1): 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      5.0000000000e-01 cdv_3
+                      5.0000000000e-01 cdv_4
+<<<<< Best objective function  =
+                      2.5000000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 6
+<<<<< Function evaluation summary (I2): 41 total (41 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 cdv_1
+                      5.0000000000e-01 cdv_2
+                      1.0000000000e+00 cdv_3
+                      5.0000000000e-01 cdv_4
+<<<<< Best objective function  =
+                      1.8750000000e-01
+<<<<< Best constraint values   =
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 31
+dakota_sbo_hierarchical.in 
+Test Number 0 succeeded
+<<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 23 total (23 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000125e+00 x1
+                      1.0000000217e+00 x2
+<<<<< Best objective function  =
+                      1.1745338267e-15
+<<<<< Best data captured at function evaluation 21
+dakota_sbo_textbook.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 69 total (65 new, 4 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000022554e-01 x2
+<<<<< Best objective function  =
+                      1.2499988723e-01
+<<<<< Best constraint values   =
+                     -1.1276860468e-07
+                      2.2553726020e-07
+<<<<< Best data captured at function evaluation 64
+dakota_sbuq_hierarchical.in 
+Test Number 0 succeeded
+Polynomial Chaos coefficients for response_fn_1:
+   3.6360000000e+01  He0  He0
+  -4.0000000000e-01  He1  He0
+   4.0000000000e+01  He2  He0
+  -4.0000000000e+01  He0  He1
+  -1.5043521984e-14  He0  He2
+   1.3692750637e-14  He3  He0
+  -1.3692750637e-14  He4  He0
+   5.0922229396e-15  He5  He0
+   2.9605947323e-16  He6  He0
+   2.0865143828e-16  He7  He0
+   1.0169642906e-13  He1  He1
+  -9.3258734069e-15  He2  He1
+  -5.0626169923e-14  He1  He2
+  -3.0198066270e-14  He2  He2
+  -2.2944609176e-15  He0  He3
+  -2.4980018054e-15  He0  He4
+  -1.3470706032e-15  He0  He5
+  -2.2204460493e-16  He0  He6
+   8.0358999878e-17  He0  He7
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6360000000e+01  6.9283186994e+01
+  numerical:    3.6360000000e+01  6.9283186994e+01  1.5396392053e+00  5.3335110933e+00
+Polynomial Chaos coefficients for response_fn_1:
+   3.6564000000e+02  He0  He0
+  -1.6000000000e+00  He1  He0
+   5.6100000000e+02  He2  He0
+   7.6309618346e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   9.3669285291e-15  He5  He0
+   6.0571146864e-14  He6  He0
+  -2.4940697655e-15  He7  He0
+  -1.6000000000e+02  He0  He1
+  -1.9203822560e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -1.5422559063e-14  He1  He2
+   2.5710336637e-14  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   1.0851598844e-14  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -1.9116508145e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -1.3933588080e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.3180376167e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -5.7435317525e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6564000000e+02  9.9751920282e+02
+  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9484765973e+02
+<<<<< Function evaluation summary (LOFI_FN): 122 total (101 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+   9.0002368984e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   1.4459151469e-14  He5  He0
+   6.0867206337e-14  He6  He0
+  -2.2854183272e-15  He7  He0
+  -2.0000000000e+02  He0  He1
+   8.2492606496e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -6.6048728986e-14  He1  He2
+  -4.4877296324e-15  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   8.5571379265e-15  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -2.1614509950e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -2.7404294112e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.0959930118e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -4.9399417537e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+Test Number 1 succeeded
+Polynomial Chaos coefficients for response_fn_1:
+   3.6360000000e+01  He0  He0
+  -4.0000000000e-01  He1  He0
+   4.0000000000e+01  He2  He0
+  -4.0000000000e+01  He0  He1
+  -1.5043521984e-14  He0  He2
+   1.3692750637e-14  He3  He0
+  -1.3692750637e-14  He4  He0
+   5.0922229396e-15  He5  He0
+   2.9605947323e-16  He6  He0
+   2.0865143828e-16  He7  He0
+   1.0169642906e-13  He1  He1
+  -9.3258734069e-15  He2  He1
+  -5.0626169923e-14  He1  He2
+  -3.0198066270e-14  He2  He2
+  -2.2944609176e-15  He0  He3
+  -2.4980018054e-15  He0  He4
+  -1.3470706032e-15  He0  He5
+  -2.2204460493e-16  He0  He6
+   8.0358999878e-17  He0  He7
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6360000000e+01  6.9283186994e+01
+  numerical:    3.6360000000e+01  6.9283186994e+01  1.5396392053e+00  5.3335110933e+00
+Polynomial Chaos coefficients for response_fn_1:
+   3.6564000000e+02  He0  He0
+  -1.6000000000e+00  He1  He0
+   5.6100000000e+02  He2  He0
+   7.6309618346e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   9.3669285291e-15  He5  He0
+   6.0571146864e-14  He6  He0
+  -2.4940697655e-15  He7  He0
+  -1.6000000000e+02  He0  He1
+  -1.9203822560e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -1.5422559063e-14  He1  He2
+   2.5710336637e-14  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   1.0851598844e-14  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -1.9116508145e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -1.3933588080e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.3180376167e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -5.7435317525e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6564000000e+02  9.9751920282e+02
+  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9484765973e+02
+<<<<< Function evaluation summary (LOFI_FN): 122 total (101 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+   9.0002368984e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   1.4459151469e-14  He5  He0
+   6.0867206337e-14  He6  He0
+  -2.2854183272e-15  He7  He0
+  -2.0000000000e+02  He0  He1
+   8.2492606496e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -6.6048728986e-14  He1  He2
+  -4.4877296324e-15  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   8.5571379265e-15  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -2.1614509950e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -2.7404294112e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.0959930118e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -4.9399417537e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+Test Number 2 succeeded
+Polynomial Chaos coefficients for response_fn_1:
+   3.6360000000e+01  He0  He0
+  -4.0000000000e-01  He1  He0
+   4.0000000000e+01  He2  He0
+  -4.0000000000e+01  He0  He1
+  -1.5043521984e-14  He0  He2
+   1.3692750637e-14  He3  He0
+  -1.3692750637e-14  He4  He0
+   5.0922229396e-15  He5  He0
+   2.9605947323e-16  He6  He0
+   2.0865143828e-16  He7  He0
+   1.0169642906e-13  He1  He1
+  -9.3258734069e-15  He2  He1
+  -5.0626169923e-14  He1  He2
+  -3.0198066270e-14  He2  He2
+  -2.2944609176e-15  He0  He3
+  -2.4980018054e-15  He0  He4
+  -1.3470706032e-15  He0  He5
+  -2.2204460493e-16  He0  He6
+   8.0358999878e-17  He0  He7
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6360000000e+01  6.9283186994e+01
+  numerical:    3.6360000000e+01  6.9283186994e+01  1.5396392053e+00  5.3335110933e+00
+Polynomial Chaos coefficients for response_fn_1:
+   3.6564000000e+02  He0  He0
+  -1.6000000000e+00  He1  He0
+   5.6100000000e+02  He2  He0
+   7.6309618346e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   9.3669285291e-15  He5  He0
+   6.0571146864e-14  He6  He0
+  -2.4940697655e-15  He7  He0
+  -1.6000000000e+02  He0  He1
+  -1.9203822560e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -1.5422559063e-14  He1  He2
+   2.5710336637e-14  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   1.0851598844e-14  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -1.9116508145e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -1.3933588080e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.3180376167e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -5.7435317525e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6564000000e+02  9.9751920282e+02
+  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9484765973e+02
+<<<<< Function evaluation summary (LOFI_FN): 122 total (101 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+   9.0002368984e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   1.4459151469e-14  He5  He0
+   6.0867206337e-14  He6  He0
+  -2.2854183272e-15  He7  He0
+  -2.0000000000e+02  He0  He1
+   8.2492606496e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -6.6048728986e-14  He1  He2
+  -4.4877296324e-15  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   8.5571379265e-15  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -2.1614509950e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -2.7404294112e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.0959930118e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -4.9399417537e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+Test Number 3 succeeded
+Polynomial Chaos coefficients for response_fn_1:
+   3.6360000000e+01  He0  He0
+  -4.0000000000e-01  He1  He0
+   4.0000000000e+01  He2  He0
+  -4.0000000000e+01  He0  He1
+  -1.5043521984e-14  He0  He2
+   1.3692750637e-14  He3  He0
+  -1.3692750637e-14  He4  He0
+   5.0922229396e-15  He5  He0
+   2.9605947323e-16  He6  He0
+   2.0865143828e-16  He7  He0
+   1.0169642906e-13  He1  He1
+  -9.3258734069e-15  He2  He1
+  -5.0626169923e-14  He1  He2
+  -3.0198066270e-14  He2  He2
+  -2.2944609176e-15  He0  He3
+  -2.4980018054e-15  He0  He4
+  -1.3470706032e-15  He0  He5
+  -2.2204460493e-16  He0  He6
+   8.0358999878e-17  He0  He7
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6360000000e+01  6.9283186994e+01
+  numerical:    3.6360000000e+01  6.9283186994e+01  1.5396392053e+00  5.3335110933e+00
+Polynomial Chaos coefficients for response_fn_1:
+   3.6564000000e+02  He0  He0
+  -1.6000000000e+00  He1  He0
+   5.6100000000e+02  He2  He0
+   7.6309618346e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   9.3669285291e-15  He5  He0
+   6.0571146864e-14  He6  He0
+  -2.4940697655e-15  He7  He0
+  -1.6000000000e+02  He0  He1
+  -1.9203822560e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -1.5422559063e-14  He1  He2
+   2.5710336637e-14  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   1.0851598844e-14  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -1.9116508145e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -1.3933588080e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.3180376167e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -5.7435317525e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6564000000e+02  9.9751920282e+02
+  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9484765973e+02
+<<<<< Function evaluation summary (LOFI_FN): 122 total (101 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   4.0200000000e+02  He0  He0
+  -2.0000000000e+00  He1  He0
+   6.0100000000e+02  He2  He0
+   9.0002368984e-14  He3  He0
+   1.0000000000e+02  He4  He0
+   1.4459151469e-14  He5  He0
+   6.0867206337e-14  He6  He0
+  -2.2854183272e-15  He7  He0
+  -2.0000000000e+02  He0  He1
+   8.2492606496e-14  He1  He1
+  -2.0000000000e+02  He2  He1
+   1.0836239313e-15  He3  He1
+   1.3919421171e-14  He4  He1
+   2.9013828377e-15  He5  He1
+  -4.5747356520e-15  He6  He1
+  -2.3442447278e-16  He7  He1
+   1.0000000000e+02  He0  He2
+  -6.6048728986e-14  He1  He2
+  -4.4877296324e-15  He2  He2
+   2.6737871176e-15  He3  He2
+  -3.4347524824e-15  He4  He2
+   7.7438055968e-16  He5  He2
+   1.6678016992e-15  He6  He2
+   2.3587833626e-16  He7  He2
+   8.5571379265e-15  He0  He3
+   3.4590386111e-15  He1  He3
+   3.5874081483e-14  He2  He3
+  -2.1614509950e-14  He0  He4
+  -1.8989439650e-15  He1  He4
+  -7.7276148443e-15  He2  He4
+  -2.7404294112e-15  He0  He5
+  -3.0161058836e-16  He1  He5
+  -2.6784130469e-15  He2  He5
+   8.0959930118e-15  He0  He6
+   2.6059401550e-16  He1  He6
+   2.9457917587e-15  He2  He6
+  -4.9399417537e-16  He0  He7
+   5.2880980018e-16  He1  He7
+  -6.9142222811e-16  He2  He7
+   5.3643156936e-15  He8  He0
+   7.5189707488e-17  He9  He0
+  -1.1679467896e-16 He10  He0
+   1.8729072592e-17 He11  He0
+  -4.2835348508e-18 He12  He0
+  -2.2107059296e-18 He13  He0
+   1.1984950600e-18 He14  He0
+  -3.5465457731e-15  He3  He3
+   1.7270135939e-16  He4  He3
+   4.3915488530e-16  He5  He3
+  -9.3752166524e-17  He6  He3
+   9.8686491078e-18  He7  He3
+   7.8486599935e-16  He3  He4
+   4.8726454970e-16  He4  He4
+  -4.6876083262e-16  He5  He4
+  -8.5939485980e-17  He6  He4
+  -4.2529178298e-17  He7  He4
+  -1.0954200510e-15  He3  He5
+  -5.3167347068e-16  He4  He5
+   3.4540271877e-17  He5  He5
+   6.2830399320e-17  He6  He5
+   6.8610608083e-18  He7  He5
+  -1.1842378929e-16  He3  He6
+   5.4812121919e-16  He4  He6
+   3.7171911639e-17  He5  He6
+  -1.3925760408e-17  He6  He6
+   9.7120038838e-19  He7  He6
+   1.2829243840e-16  He3  He7
+   3.7829821580e-17  He4  He7
+  -2.6316397621e-18  He5  He7
+  -1.1685733705e-17  He6  He7
+   9.4882249925e-19  He7  He7
+   4.7658085591e-16  He0  He8
+   6.4420348342e-18  He0  He9
+   5.9916798154e-18  He0 He10
+   6.1234042083e-19  He0 He11
+  -4.7468249677e-20  He0 He12
+  -5.2142046568e-20  He0 He13
+  -3.7244318977e-20  He0 He14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+dakota_uq_cantilever_interval.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 86 total (86 new, 0 duplicate)
+         weight: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 29 val (29 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 58 val (58 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+stress:  Min = -9.7749982853e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 160 total (145 new, 15 duplicate)
+         weight: 20 val (15 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 65 val (60 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 75 val (70 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
+stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
+displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
+dakota_uq_cantilever_sop_rel.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 8036 total (8036 new, 0 duplicate)
+mean_wt:  Min = 9.5209117200e+00  Max = 9.5209117200e+00
+ccdf_beta_s:  Min = 1.7627715524e+00  Max = 4.2949468386e+00
+ccdf_beta_d:  Min = 2.0125192955e+00  Max = 3.9385559339e+00
+Simple Correlation Matrix among all inputs and outputs:
+                   X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d
+      X_mean  1.00000e+00
+      Y_mean -4.15171e-03  1.00000e+00
+     mean_wt  0.00000e+00  0.00000e+00  1.00000e+00
+ ccdf_beta_s -6.19328e-01 -7.82554e-01  0.00000e+00  1.00000e+00
+ ccdf_beta_d -9.13854e-01 -4.01386e-01  0.00000e+00  8.84098e-01  1.00000e+00
+Partial Correlation Matrix between input and output:
+                  mean_wt  ccdf_beta_s  ccdf_beta_d
+      X_mean -0.00000e+00 -1.00000e+00 -9.99584e-01
+      Y_mean -0.00000e+00 -1.00000e+00 -9.97881e-01
+Simple Rank Correlation Matrix among all inputs and outputs:
+                   X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d
+      X_mean  1.00000e+00
+      Y_mean -2.06483e-03  1.00000e+00
+     mean_wt -9.12845e-02  8.07203e-02  1.00000e+00
+ ccdf_beta_s -5.97983e-01 -7.89388e-01 -2.13685e-02  1.00000e+00
+ ccdf_beta_d -9.19616e-01 -3.73349e-01  2.82833e-02  8.48451e-01  1.00000e+00
+Partial Rank Correlation Matrix between input and output:
+                  mean_wt  ccdf_beta_s  ccdf_beta_d
+      X_mean -9.14163e-02 -9.76738e-01 -9.92129e-01
+      Y_mean  8.08696e-02 -9.86420e-01 -9.55272e-01
+dakota_uq_short_column_ivp_exp.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
+           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
+cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
+           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
+cdf_beta:  Min = -2.1873457070e+00  Max = 1.1590048509e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
+           area: 124 val (93 n, 31 d), 124 grad (93 n, 31 d), 0 Hess (0 n, 0 d)
+    limit_state: 372 val (341 n, 31 d), 372 grad (341 n, 31 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.1873457813e+00  Max = 1.1590066274e+01
+Test Number 3 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
+           area: 124 val (93 n, 31 d), 124 grad (93 n, 31 d), 0 Hess (0 n, 0 d)
+    limit_state: 372 val (341 n, 31 d), 372 grad (341 n, 31 d), 0 Hess (0 n, 0 d)
+mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
+cdf_beta:  Min = -2.1873488264e+00  Max = 1.1590073862e+01
+dakota_uq_textbook_lhs.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+response_fn_1:  Mean = 3.8168454875e+11  Std. Dev. = 6.6923021702e+10  Coeff. of Variation = 1.7533594672e-01
+response_fn_2:  Mean = 6.1791347600e+04  Std. Dev. = 6.1426765735e+03  Coeff. of Variation = 9.9409979101e-02
+response_fn_3:  Mean = 3.5243745292e+05  Std. Dev. = 3.5957710811e+04  Coeff. of Variation = 1.0202579355e-01
+response_fn_1:  Mean = ( 3.6840556934e+11, 3.9496352816e+11 ), Std Dev = ( 5.8758871169e+10, 7.7742818321e+10 )
+response_fn_2:  Mean = ( 6.0572507301e+04, 6.3010187898e+04 ), Std Dev = ( 5.3933120806e+03, 7.1357953767e+03 )
+response_fn_3:  Mean = ( 3.4530266299e+05, 3.5957224285e+05 ), Std Dev = ( 3.1571116237e+04, 4.1771182886e+04 )
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   3.6000000000e+11   5.5000000000e-01
+   4.0000000000e+11   3.8000000000e-01
+   4.4000000000e+11   2.3000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   6.0000000000e+04   6.1000000000e-01
+   6.5000000000e+04   2.9000000000e-01
+   7.0000000000e+04   9.0000000000e-02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   3.5000000000e+05   5.2000000000e-01
+   4.0000000000e+05   9.0000000000e-02
+   4.5000000000e+05   0.0000000000e+00
+Simple Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1w         TF2w         TF1h         TF2h         TF3h response_fn_1 response_fn_2 response_fn_3 
+        TF1n  1.00000e+00 
+        TF2n  1.71596e-02  1.00000e+00 
+        TF1u -2.36053e-02 -1.10189e-02  1.00000e+00 
+        TF2u -1.37368e-02  1.60964e-02  2.58033e-02  1.00000e+00 
+        TF1w -1.33427e-02  2.56365e-02 -3.98790e-02 -9.16279e-03  1.00000e+00 
+        TF2w  2.22630e-02 -1.37459e-02 -1.20589e-02 -7.04614e-02  1.03692e-01  1.00000e+00 
+        TF1h -3.37448e-02  4.03689e-03 -5.05564e-03  4.57608e-02 -1.75819e-02 -7.10379e-02  1.00000e+00 
+        TF2h  1.23861e-02 -2.08380e-02  1.03769e-02  3.35062e-02 -3.10255e-03  1.79689e-02 -1.70702e-02  1.00000e+00 
+        TF3h -2.48872e-02  3.25896e-02  1.45599e-01 -6.57963e-02 -3.29158e-02  6.46672e-02  2.65344e-02 -6.20935e-03  1.00000e+00 
+response_fn_1  1.84979e-02  4.00161e-01  3.07332e-02  8.66203e-01  2.83574e-02  2.15737e-01  2.32123e-02  3.36250e-02 -2.81816e-02  1.00000e+00 
+response_fn_2  9.99430e-01  1.04544e-02 -2.16110e-02 -1.00976e-02 -1.40718e-02  1.93591e-02 -3.40439e-02  1.45063e-02 -3.13690e-02  1.79344e-02  1.00000e+00 
+response_fn_3  1.26864e-02  9.99186e-01 -8.33203e-03  1.56109e-02  1.82384e-02 -1.26402e-02 -2.37858e-03 -2.18038e-02  3.43238e-02  4.00397e-01  5.96911e-03  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+        TF1n  1.24609e-01  9.99484e-01 -1.21192e-01 
+        TF2n  9.39604e-01 -1.98171e-01  9.99249e-01 
+        TF1u  1.14403e-01  8.24782e-02  5.35030e-02 
+        TF2u  9.87061e-01  9.37434e-02 -3.75353e-03 
+        TF1w -1.48282e-02 -1.23822e-02 -1.91391e-01 
+        TF2w  8.91849e-01 -7.20811e-02  3.77690e-02 
+        TF1h  1.67810e-02 -1.20990e-02 -1.68182e-01 
+        TF2h  4.80087e-02  5.77466e-02 -2.81542e-02 
+        TF3h -2.37479e-02 -1.90043e-01  2.89758e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                     TF1n         TF2n         TF1u         TF2u         TF1w         TF2w         TF1h         TF2h         TF3h response_fn_1 response_fn_2 response_fn_3 
+        TF1n  1.00000e+00 
+        TF2n  1.44374e-02  1.00000e+00 
+        TF1u  4.48845e-03  5.21572e-02  1.00000e+00 
+        TF2u  5.18452e-03  2.29223e-03  2.60666e-02  1.00000e+00 
+        TF1w -2.87549e-02  8.62886e-03 -3.04710e-02  3.18512e-02  1.00000e+00 
+        TF2w -2.37504e-02  8.67687e-03 -1.80498e-02 -4.17642e-02  4.74887e-02  1.00000e+00 
+        TF1h -1.69217e-03  1.88539e-02 -1.20492e-02  4.08881e-02 -2.16142e-02 -3.50195e-02  1.00000e+00 
+        TF2h  9.99700e-03 -6.42064e-03  2.82988e-02  2.20582e-02  2.81548e-02  5.17972e-02 -3.02430e-02  1.00000e+00 
+        TF3h -1.74257e-02 -2.75308e-02  2.08749e-01 -1.09151e-01 -8.28083e-04  8.82928e-02  1.14251e-02  8.53285e-02  1.00000e+00 
+response_fn_1  1.96820e-03  3.64404e-01  4.47045e-02  8.68851e-01  6.36064e-02  2.49409e-01  2.24902e-02  3.34833e-02 -9.96820e-02  1.00000e+00 
+response_fn_2  1.00000e+00  1.44374e-02  4.48845e-03  5.18452e-03 -2.87549e-02 -2.37504e-02 -1.69217e-03  9.99700e-03 -1.74257e-02  1.96820e-03  1.00000e+00 
+response_fn_3  1.44374e-02  1.00000e+00  5.21572e-02  2.29223e-03  8.62886e-03  8.67687e-03  1.88539e-02 -6.42064e-03 -2.75308e-02  3.64404e-01  1.44374e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+        TF1n -5.23502e-03  1.00000e+00 -1.17062e-02 
+        TF2n  8.92165e-01 -7.78003e-03  1.00000e+00 
+        TF1u  7.11318e-02 -2.12561e-03 -3.71413e-02 
+        TF2u  9.78928e-01 -1.95373e-03  3.06565e-03 
+        TF1w  1.05075e-01  1.54021e-02 -7.12178e-03 
+        TF2w  8.40896e-01  1.06332e-02 -9.34090e-03 
+        TF1h -5.10906e-02  1.33132e-03 -1.69264e-02 
+        TF2h  1.33902e-02 -7.36227e-03  3.62420e-03 
+        TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
+dakota_workdir.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 x1
+                      0.0000000000e+00 x2
+<<<<< Best objective function  =
+                      1.0000000000e+00
+<<<<< Best data captured at function evaluation 5
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+      obj_fn -2.47233e-03 -6.59288e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.28815e-03 
+          x2 -6.59290e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  6.00000e-01  1.00000e+00 
+      obj_fn -2.66667e-01 -4.00000e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.63696e-02 
+          x2 -3.11272e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 x1
+                      0.0000000000e+00 x2
+<<<<< Best objective function  =
+                      1.0000000000e+00
+<<<<< Best data captured at function evaluation 5
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  0.00000e+00  1.00000e+00 
+      obj_fn -2.47233e-03 -6.59288e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.28815e-03 
+          x2 -6.59290e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2       obj_fn 
+          x1  1.00000e+00 
+          x2  6.00000e-01  1.00000e+00 
+      obj_fn -2.66667e-01 -4.00000e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+                   obj_fn 
+          x1 -3.63696e-02 
+          x2 -3.11272e-01 

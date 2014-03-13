@@ -1,0 +1,70 @@
+# DAKOTA INPUT FILE - dakota_grid.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+strategy,
+	single_method #graphics
+
+method,
+	max_iterations 100
+        output debug
+	max_function_evaluations 1000		#0,#1,#2,#3,#4,#5,#7,#8,#9
+#	max_function_evaluations 10000			#6
+#	max_cpu_time = 1.0
+#	convergence_tolerance = 1.e-5
+	solution_accuracy = 1.e-6
+	asynch_pattern_search				#0,#5
+	  initial_delta = .2				#0,#5
+	  threshold_delta = 1.e-4			#0,#5
+	  synchronization blocking			#0,#5
+#
+#	seed = 1234					#1,#2,#3,#4,#6,#7,#8,#9
+#
+#	coliny_direct					#1,#6
+#	  global_balance_parameter = 0.001		#1,#6
+#	  min_boxsize_limit = 1.e-6			#1,#6
+#
+#	coliny_pattern_search				#2,#7
+#	  initial_delta = .2				#2,#7
+#	  threshold_delta = 1.e-4			#2,#7
+#	  pattern_basis coordinate			#2,#7
+#	  synchronization nonblocking			#2,#7
+#	  exploratory_moves basic_pattern		#2,#7
+#
+#	coliny_solis_wets,				#3,#8
+#	  misc_options  = 'max_failure=6'		#3,#8
+#	  initial_delta = 0.2 threshold_delta = 0.001	#3,#8
+#
+#	coliny_cobyla					#4,#9
+# 	  initial_delta = .2				#4,#9
+# 	  threshold_delta = 1.e-4			#4,#9
+
+variables,
+	continuous_design = 3
+	  initial_point    0.5    1.5   2.0
+	  upper_bounds    10.0   10.0  10.0
+	  lower_bounds   -10.0  -10.0 -10.0
+	  descriptors      'x1'   'x2'   'x3'
+
+interface,
+        grid asynchronous evaluation_concurrency = 10
+          analysis_drivers = 'text_book1'
+
+responses,
+	objective_functions = 1
+#	nonlinear_inequality_constraints = 2	#5,#6,#7,#8,#9
+	no_gradients
+	no_hessians

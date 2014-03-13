@@ -1,0 +1,79 @@
+# DAKOTA INPUT FILE - dakota_su_mogatest1.in
+
+# Surrogate-based optimization to minimize Rosenbrock's function.
+
+environment,
+    tabular_graphics_data
+    method_pointer = 'SBGO'
+
+method,
+    id_method = 'SBGO'
+    surrogate_based_global
+    model_pointer = 'SURROGATE'
+    approx_method_pointer = 'MOGA'
+    max_iterations = 5
+    replace_points
+    output verbose
+
+###############################################
+# begin opt specification
+###############################################
+method,
+    id_method = 'MOGA'
+    moga
+    output silent
+        seed = 10983
+    population_size = 300
+    max_function_evaluations = 5000
+    initialization_type unique_random
+    crossover_type shuffle_random
+        num_offspring = 2 num_parents = 2
+        crossover_rate = 0.8
+    mutation_type replace_uniform
+        mutation_rate = 0.1
+    fitness_type domination_count
+    replacement_type below_limit = 6
+        shrinkage_percentage = 0.9
+    niching_type distance 0.05 0.05
+    postprocessor_type
+        orthogonal_distance 0.05 0.05
+    convergence_type metric_tracker
+        percent_change = 0.05 num_generations = 10
+
+model,
+    id_model = 'SURROGATE'
+    surrogate global
+        dace_method_pointer = 'SAMPLING'
+        correction additive zeroth_order
+#	polynomial quadratic
+        gaussian_process dakota
+
+method,
+    id_method = 'SAMPLING'
+    model_pointer = 'TRUTH'
+    sampling
+      samples = 100
+      seed = 531
+      sample_type lhs
+
+model,
+    id_model = 'TRUTH'
+    single
+      interface_pointer = 'TRUE_FN'
+
+variables,
+    continuous_design = 3
+        initial_point      0     0     0
+        upper_bounds       4     4     4
+        lower_bounds      -4    -4    -4
+        descriptors      'x1'  'x2'  'x3'
+
+interface,
+    id_interface = 'TRUE_FN'
+    system
+      analysis_driver = 'mogatest1'
+
+responses,
+    objective_functions = 2
+    no_gradients
+    no_hessians

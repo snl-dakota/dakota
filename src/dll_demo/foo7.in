@@ -1,0 +1,45 @@
+
+
+
+method,
+	scaling
+       moga     						
+	output silent						
+       seed = 10983                              		
+	max_function_evaluations = 2000				
+	initialization_type unique_random			
+	crossover_type						
+	  multi_point_parameterized_binary = 2			
+	  crossover_rate = 0.8  		  		
+	mutation_type offset_normal				
+	  mutation_scale = 0.1					
+	fitness_type domination_count				
+	replacement_type below_limit = 6			
+	  shrinkage_percentage = 0.9				
+	convergence_type metric_tracker				
+	  percent_change = 0.05 num_generations = 10   		
+
+variables,
+	continuous_design = 2
+	  initial_point      0	  0   	
+	  upper_bounds      20  	 20	
+	  lower_bounds     -20	-20	
+	  scale_types	'value' 'auto'  
+	  scales		5.0	1.0     
+	  descriptors       'x1'    'x2'	
+
+interface,
+	system
+	  analysis_driver = 'mogatest3'		
+
+responses,
+	num_objective_functions = 2				
+	  objective_function_scale_types = 'value' 'none'   	
+	  objective_function_scales = 2.5  1.0			
+	num_nonlinear_inequality_constraints = 2 		
+	  nonlinear_inequality_upper_bounds = 0.0 0.0		
+	  nonlinear_inequality_scale_types = 'value' 		
+	  nonlinear_inequality_scales =       2.0 2.5 		
+	no_gradients						
+	no_hessians						
+

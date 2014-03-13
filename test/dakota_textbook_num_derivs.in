@@ -1,0 +1,41 @@
+## DAKOTA INPUT FILE
+
+# Tests variants of numerical gradients.
+
+method,
+	optpp_q_newton				#0,#1,#2,#3,#4
+#	optpp_newton				#5,#6,#7,#8,#9
+
+variables,
+	continuous_design = 2
+	  initial_point    0.9    1.1		#0,#1,#2,#3
+#	  initial_point    0.9    1.1		#5,#6,#7,#8
+#	  initial_point    0.9    0.0		#4,#9
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	fork
+	  asynchronous
+	  analysis_driver = 'text_book'
+
+responses,
+	objective_functions = 1
+	numerical_gradients			#0,#1,#2,#3,#4
+	  method_source dakota			#0,#1,#2,#3,#4
+#	    absolute				#1,#4
+#	    bounds				#2
+#	    relative				#3
+	  interval_type central			#0,#1,#2,#3,#4
+	  fd_gradient_step_size = 1.e-4		#0,#1,#2,#3
+#	  fd_gradient_step_size = 1.e-308	#4
+#	analytic_gradients	  		#5,#6,#7,#8,#9
+	no_hessians				#0,#1,#2,#3,#4
+#	numerical_hessians			#5,#6,#7,#8,#9
+#	  absolute				#6,#9
+#	  bounds				#7
+#	  relative				#8
+#	  fd_hessian_step_size = 1.e-4		#5,#6,#7,#8
+#	  fd_hessian_step_size = 1.e-308	#9
+

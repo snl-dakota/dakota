@@ -1,0 +1,51 @@
+# Dakota Input File: textbook_uq_surrogate.in
+environment
+  tabular_graphics_data
+    tabular_graphics_file = 'textbook_uq_surrogate.dat'
+  method_pointer = 'UQ'
+
+method
+  id_method = 'UQ'
+    model_pointer = 'SURR'
+  sampling sample_type lhs 
+    samples = 1000
+    seed = 98765 rng rnum2
+    response_levels = 0.1 0.2 0.6
+          0.1 0.2 0.6
+          0.1 0.2 0.6
+    distribution cumulative
+
+model
+  id_model = 'SURR'
+  surrogate global
+    dace_method_pointer = 'DACE'
+    reuse_samples all
+#    polynomial quadratic
+#    neural_network
+#    gaussian_process surfpack
+    mars
+
+method
+  id_method = 'DACE'
+  model_pointer = 'DACE_M'
+  sampling sample_type lhs
+  samples = 121 seed = 5034 rng rnum2
+
+model
+  id_model = 'DACE_M'
+  single
+
+variables
+  uniform_uncertain = 2
+    lower_bounds =  0.   0.
+    upper_bounds =  1.   1.
+    descriptors  = 'x1' 'x2'
+
+interface
+  fork asynch evaluation_concurrency = 5
+    analysis_driver = 'text_book'
+
+responses
+  response_functions = 3
+  no_gradients
+  no_hessians

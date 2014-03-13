@@ -1,0 +1,88 @@
+# DAKOTA INPUT FILE - dakota_uq_ishigami_dste_exp.in
+
+environment,    
+	  tabular_graphics_data    
+	  method_pointer = 'EPISTEMIC'
+
+#################################
+# begin EPISTEMIC specification #
+#################################
+method,									 
+        id_method = 'EPISTEMIC'
+        model_pointer = 'EPIST_M'
+     	local_evidence		        #0
+#	global_evidence ego	        #1,#2,#3
+#         gaussian_process dakota       #1
+#         gaussian_process surfpack     #2,#3
+#	  seed = 627431			#1,#2,#3
+          response_levels = 1. 5. 100.
+	  output verbose
+
+model,
+        id_model = 'EPIST_M'
+        nested
+          variables_pointer  = 'EPIST_V'
+          sub_method_pointer = 'ALEATORY'
+          responses_pointer  = 'EPIST_R'
+          primary_variable_mapping = 'x1'
+          primary_response_mapping = 1. 0. 
+
+variables,
+        id_variables = 'EPIST_V'
+        continuous_interval_uncertain = 1				
+	  num_intervals   = 4.                                   
+          interval_probs  = 0.25 0.25 0.25 0.25
+	  lower_bounds    = 0.0  0.5  0.9  1.6
+	  upper_bounds    = 0.5  1.5  2.0  1.8 
+
+responses,
+        id_responses = 'EPIST_R'
+        response_functions = 1
+        analytic_gradients		#0	
+#	no_gradients			#1,#2,#3
+        no_hessians
+  
+################################
+# begin ALEATORY specification #
+################################
+method,
+        id_method = 'ALEATORY'
+        model_pointer = 'ALEAT_M'
+	stoch_collocation askey
+	  quadrature_order = 10
+
+model,
+        id_model = 'ALEAT_M'
+        single
+          variables_pointer = 'ALEAT_V'
+          interface_pointer = 'ALEAT_I'
+          responses_pointer = 'ALEAT_R'
+
+##########################################################################
+# Test 3 is the case where a combined expansion is performed.            # 
+# The other tests involve an expansion only over the aleatory variables. #
+##########################################################################
+
+variables,
+        id_variables = 'ALEAT_V'
+#	active all			#3
+	continuous_design = 1
+	  initial_point 1
+	  lower_bounds 	0.
+	  upper_bounds  2. 
+	  descriptors  'x1'
+	uniform_uncertain = 2
+	  lower_bounds 	0.  0.
+	  upper_bounds  2.  2. 
+	  descriptors  'x2' 'x3'
+		
+interface,
+        id_interface = 'ALEAT_I'
+        direct
+          analysis_driver = 'sobol_ishigami'
+
+responses,
+        id_responses = 'ALEAT_R'
+        response_functions = 1
+	analytic_gradients		
+        no_hessians

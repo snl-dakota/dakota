@@ -1,0 +1,23 @@
+# DAKOTA INPUT FILE - dakota_ncsu_textbook.in
+
+# Apply NCSU DIRECT to textbook problem exercising asynchronous (batch)
+# capability.  This problem will request 1, 2, 4, 6, or 8 jobs.
+
+method,
+	ncsu_direct
+
+variables,
+	continuous_design = 4
+	  upper_bounds     5.8    2.9  5     3
+	  lower_bounds     0.5   -2.9  0    -3
+	  descriptors      'x1'   'x2' 'x3'  'x4'
+
+interface,
+	fork
+	  asynchronous
+	  analysis_driver = 'text_book'
+
+responses,
+	objective_functions = 1
+	no_gradients
+	no_hessians

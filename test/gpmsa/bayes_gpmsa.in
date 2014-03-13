@@ -1,0 +1,27 @@
+# DAKOTA INPUT FILE - dakota_bayes.in
+
+strategy,							
+	single_method 							
+        tabular_graphics_data
+
+method,									
+        nond_bayes_calibration gpmsa,						
+        x_obs_data_file = 'x.dat'                                       
+        y_obs_data_file = 'y.dat'
+        y_std_data_file = 'ystd.dat'
+        output verbose
+	  samples = 25 seed = 1833					
+
+variables,								
+         uniform_uncertain = 2 
+         lower_bounds = 0. 0. 
+         upper_bounds = 2. 2.
+
+interface,								
+	  system 
+           analysis_driver = 'text_book'
+
+responses,								
+	num_response_functions = 1 					
+	no_gradients							
+	no_hessians

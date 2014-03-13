@@ -1,0 +1,24 @@
+# Dakota Input File: cylhead_opt_npsol.in
+method
+  npsol_sqp
+    convergence_tolerance = 1.e-8
+
+variables
+  continuous_design = 2
+    initial_point  1.8   1.0
+    upper_bounds   2.164 4.0
+    lower_bounds   1.5   0.0
+    descriptors'intake_dia' 'flatness'
+
+interface
+  fork asynchronous
+    analysis_driver = 'cyl_head'
+
+responses
+  objective_functions = 1
+  nonlinear_inequality_constraints = 3
+  numerical_gradients
+    method_source dakota
+    interval_type central
+    fd_gradient_step_size = 1.e-4
+  no_hessians

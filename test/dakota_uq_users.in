@@ -1,0 +1,56 @@
+# DAKOTA INPUT FILE - dakota_uq_users.in
+environment
+	  tabular_graphics_data
+          method_pointer = 'UQ'
+
+method,
+	id_method = 'UQ'
+#       model_pointer = 'SURR'			#4
+	sampling,
+	  samples = 10				#0,#2
+#	  samples = 5				#1,#3
+#         samples = 1000			#4
+	  seed = 98765 rng rnum2
+	  response_levels = 0.1 0.2 0.6
+			    0.1 0.2 0.6
+			    0.1 0.2 0.6
+	  sample_type lhs			#0,#1,#4
+#	  sample_type random			#2,#3
+	  distribution cumulative
+
+# model,                                         #4
+#        id_model = 'SURR'    			 #4
+#        surrogate global,			 #4
+#          dace_method_pointer = 'DACE'		 #4
+#          reuse_samples all			 #4
+###       polynomial quadratic          	 #4
+###       neural_network                	 #4
+###       gaussian_process surfpack   		 #4
+#          mars                         	 #4 
+
+# method,                                        #4
+#        id_method = 'DACE'			 #4
+#        model_pointer = 'DACE_M'		 #4
+#        sampling sample_type lhs		 #4
+#        samples = 121 seed = 5034 rng rnum2	 #4
+
+#model,						#4
+#        id_model = 'DACE_M'			#4
+#        single					#4
+#          interface_pointer = 'I1'		#4
+
+variables,
+	uniform_uncertain = 2
+	  lower_bounds =  0.   0.
+	  upper_bounds =  1.   1.
+	  descriptors  = 'x1' 'x2'
+
+interface,
+        id_interface = 'I1'
+	system asynch evaluation_concurrency = 5
+	  analysis_driver = 'text_book'
+
+responses,
+	response_functions = 3
+	no_gradients
+	no_hessians

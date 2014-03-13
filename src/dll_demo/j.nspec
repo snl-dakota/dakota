@@ -1,0 +1,83 @@
+KEYWORD jega {jega_start}
+	 ( moga {N_mdm3(moga_begin,0,moga_final)}
+	      [ fitness_type {0}
+		layer_rank {N_mdm(lit,fitnessType_layer_rank)}
+		| domination_count {N_mdm(lit,fitnessType_domination_count)}
+		]
+	      [ replacement_type {0}
+		elitist {N_mdm(lit,replacementType_elitist)}
+		| roulette_wheel {N_mdm(lit,replacementType_roulette_wheel)}
+		| unique_roulette_wheel {N_mdm(lit,replacementType_unique_roulette_wheel)}
+		|
+		( below_limit REAL {N_mdm(litp,3replacementType_below_limit)}
+		  [ shrinkage_fraction ALIAS shrinkage_percentage REAL {N_mdm(Real01,shrinkagePercent)} ]
+		  )
+		]
+	      [ niching_type {0}
+		radial REALLIST {N_mdm(RealLlit,3nichingType_radial)}
+		| distance REALLIST {N_mdm(RealLlit,3nichingType_distance)}
+		]
+	      [ convergence_type {0}
+		metric_tracker {N_mdm(lit,convergenceType_metric_tracker)}
+		[ percent_change REAL {N_mdm(Realz,convergenceTolerance)} ]
+		[ num_generations INTEGER >= 0 {N_mdm(nnintz,numGenerations)} ]
+		]
+	      [ postprocessor_type {0}
+		orthogonal_distance REALLIST {N_mdm(RealLlit,3postProcessorType_distance_postprocessor)}
+		]
+	      )
+	    |
+	    ( soga {N_mdm3(soga_begin,0,soga_final)}
+	      [ fitness_type {0}
+		merit_function {N_mdm(lit,fitnessType_merit_function)}
+		[ constraint_penalty REAL {N_mdm(Realp,constraintTolerance)} ]
+		]
+	      [ replacement_type {0}
+		elitist {N_mdm(lit,replacementType_elitist)}
+		| favor_feasible {N_mdm(lit,replacementType_favor_feasible)}
+		| roulette_wheel {N_mdm(lit,replacementType_roulette_wheel)}
+		| unique_roulette_wheel {N_mdm(lit,replacementType_unique_roulette_wheel)}
+		]
+	      [ convergence_type {0}
+		( best_fitness_tracker {N_mdm(lit,convergenceType_best_fitness_tracker)}
+		  [ percent_change REAL {N_mdm(Realz,convergenceTolerance)} ]
+		  [ num_generations INTEGER >= 0 {N_mdm(nnintz,numGenerations)} ]
+		  )
+		|
+		( average_fitness_tracker {N_mdm(lit,convergenceType_average_fitness_tracker)}
+		  [ percent_change REAL {N_mdm(Realz,convergenceTolerance)} ]
+		  [ num_generations INTEGER >= 0 {N_mdm(nnintz,numGenerations)} ]
+		  )
+		]
+	      )
+	    [ population_size INTEGER {N_mdm(nnint,populationSize)} ]
+	    [ log_file STRING {N_mdm(str,logFile)} ]
+	    [ print_each_pop {N_mdm(true,printPopFlag)} ]
+	    [ initialization_type {0}
+	      simple_random {N_mdm(lit,initializationType_random)}
+	      | unique_random {N_mdm(lit,initializationType_unique_random)}
+	      | flat_file STRING {N_mdm(slit2,3initializationType_flat_file)}
+	      ]
+	    [ crossover_type {0}
+	      multi_point_binary INTEGER {N_mdm(ilit2p,3crossoverType_multi_point_binary)}
+	      | multi_point_parameterized_binary INTEGER {N_mdm(ilit2p,3crossoverType_multi_point_parameterized_binary)}
+	      | multi_point_real INTEGER {N_mdm(ilit2p,3crossoverType_multi_point_real)}
+	      |
+	      ( shuffle_random {N_mdm(litc,3crossoverType_shuffle_random)}
+		[ num_parents INTEGER > 0 {N_mdm(pintz,numParents)} ] ##should the min be 2?
+		[ num_offspring INTEGER > 0 {N_mdm(pintz,numOffspring)} ]
+		)
+	      [ crossover_rate REAL {N_mdm(litz,3crossoverType_null_crossover)} ]
+	      ]
+	    [ mutation_type {0}
+	      bit_random {N_mdm(lit,mutationType_bit_random)}
+	      | replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
+	      |
+	      ( offset_normal {N_mdm(litc,3mutationType_offset_normal)}
+		| offset_cauchy {N_mdm(litc,3mutationType_offset_cauchy)}
+		| offset_uniform {N_mdm(litc,3mutationType_offset_uniform)}
+		[ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
+		)
+	      [ mutation_rate REAL {N_mdm(litz,3mutationType_null_mutation)} ]
+	      ]
+	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
