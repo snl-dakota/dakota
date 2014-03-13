@@ -263,20 +263,6 @@ KEYWORD12 method
 	  [ model_pointer STRING ]
 	  )
 	|
-	( optdarts
-	  [ seed INTEGER > 0 ]
-	  [ linear_inequality_constraint_matrix REALLIST ]
-	  [ linear_inequality_lower_bounds REALLIST ]
-	  [ linear_inequality_upper_bounds REALLIST ]
-	  [ linear_inequality_scale_types STRINGLIST ]
-	  [ linear_inequality_scales REALLIST ]
-	  [ linear_equality_constraint_matrix REALLIST ]
-	  [ linear_equality_targets REALLIST ]
-	  [ linear_equality_scale_types STRINGLIST ]
-	  [ linear_equality_scales REALLIST ]
-	  [ model_pointer STRING ]
-	  )
-	|
 	( optpp_cg
 	  [ max_step REAL ]
 	  [ gradient_tolerance REAL ]
@@ -673,6 +659,12 @@ KEYWORD12 method
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ min_boxsize_limit REAL ]
 	  [ volume_boxsize_limit REAL ]
+	  [ model_pointer STRING ]
+	  )
+	|
+	( genie_opt_darts
+	  | genie_direct
+	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|

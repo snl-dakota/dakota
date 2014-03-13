@@ -197,10 +197,6 @@ TAG "method/stanford/linesearch_tolerance"
 	DESC "{Line search tolerance} MethodCommands.html#MethodNPSOLDC"
 
 TAG "method/nlpql_sqp" GROUP "Optimization: Local, Derivative-based"
-TAG "method/optdarts"
-TAG "method/optdarts/seed"
-	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
-
 TAG "method/optpp_cg" GROUP "Optimization: Local, Derivative-based"
 TAG "method/optpp_q_newton" GROUP "Optimization: Local, Derivative-based"
 TAG "method/optpp_fd_newton" GROUP "Optimization: Local, Derivative-based"
@@ -270,7 +266,7 @@ TAG "method/mesh_adaptive_search/function_precision"
 	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
 
 TAG "method/mesh_adaptive_search/seed"
-	DESC "{Random seed} MethodCommands.html#MethodNonDBayesCalib"
+	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
 
 TAG "method/mesh_adaptive_search/history_file"
 TAG "method/mesh_adaptive_search/display_format"
@@ -399,7 +395,7 @@ TAG "method/moga/mutation_type/mutation_rate"
 	DESC "{Mutation rate} MethodCommands.html#MethodJEGADC"
 
 TAG "method/moga/seed"
-	DESC "{Random seed} MethodCommands.html#MethodPSUADE"
+	DESC "{Random seed} MethodCommands.html#MethodNonDBayesCalib"
 
 TAG "method/dot_frcg/linear_inequality_constraint_matrix"
 	DESC "{Linear inequality coefficient matrix} MethodCommands.html#MethodIndControl"
@@ -619,6 +615,11 @@ TAG "method/ncsu_direct/min_boxsize_limit"
 
 TAG "method/ncsu_direct/volume_boxsize_limit"
 	DESC "{Volume boxsize limit} MethodCommands.html#MethodNCSUDC"
+
+TAG "method/genie_opt_darts"
+TAG "method/genie_direct"
+TAG "method/genie_opt_darts/seed"
+	DESC "{Random seed} MethodCommands.html#MethodPSUADE"
 
 TAG "method/efficient_global" GROUP "Surrogate-based Methods"
 TAG "method/efficient_global/gaussian_process"

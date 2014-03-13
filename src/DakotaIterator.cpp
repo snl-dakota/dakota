@@ -378,7 +378,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new SurrBasedGlobalMinimizer(problem_db, model); break;
   case EFFICIENT_GLOBAL: return new EffGlobalMinimizer(problem_db, model);break;
   case NONLINEAR_CG: return new NonlinearCGOptimizer(problem_db, model);  break;
-  case OPT_DARTS:    return new OptDartsOptimizer(problem_db, model);     break;
+  case GENIE_OPT_DARTS: return new OptDartsOptimizer(problem_db, model); break;
+  case GENIE_DIRECT: return new OptDartsOptimizer(problem_db, model); break;
 #ifdef HAVE_OPTPP
   case OPTPP_G_NEWTON:
     return new SNLLLeastSq(problem_db, model);   break;
@@ -490,7 +491,7 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
   //else if (method_string == "efficient_global")
   //  return new EffGlobalMinimizer(model);
 
-  if (method_string == "optdarts")
+  if (strbegins(method_string, "genie_"))
     return new OptDartsOptimizer(model);
 #ifdef HAVE_OPTPP
   else if (strbegins(method_string, "optpp_")) {
@@ -706,7 +707,8 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case SURROGATE_BASED_GLOBAL:  return String("surrogate_based_global"); break;
   case EFFICIENT_GLOBAL:        return String("efficient_global"); break;
   case NONLINEAR_CG:            return String("nonlinear_cg"); break;
-  case OPT_DARTS:               return String("opt_darts"); break;
+  case GENIE_DIRECT:            return String("genie_direct"); break;
+  case GENIE_OPT_DARTS:         return String("genie_opt_darts"); break;
   case OPTPP_G_NEWTON:          return String("optpp_g_newton"); break;
   case OPTPP_Q_NEWTON:          return String("optpp_q_newton"); break;
   case OPTPP_FD_NEWTON:         return String("optpp_fd_newton"); break;
@@ -787,7 +789,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
     return SURROGATE_BASED_GLOBAL;
   else if (method_name == "efficient_global") return EFFICIENT_GLOBAL;
   else if (method_name == "nonlinear_cg")     return NONLINEAR_CG;
-  else if (method_name == "opt_darts")        return OPT_DARTS;
+  else if (method_name == "genie_opt_darts")  return GENIE_OPT_DARTS;
+  else if (method_name == "genie_direct")     return GENIE_DIRECT;
   else if (method_name == "optpp_g_newton")   return OPTPP_G_NEWTON;
   else if (method_name == "optpp_q_newton")   return OPTPP_Q_NEWTON;
   else if (method_name == "optpp_fd_newton")  return OPTPP_FD_NEWTON;
@@ -823,6 +826,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "fsu_hammersley")   return FSU_HAMMERSLEY;
   else if (method_name == "psuade_moat")      return PSUADE_MOAT;
   else if (method_name == "ncsu_direct")      return NCSU_DIRECT;
+  else if (method_name == "genie_opt_darts")  return GENIE_OPT_DARTS;
+  else if (method_name == "genie_direct")     return GENIE_DIRECT;
   else {
     Cerr << "Invalid method conversion: " << method_name << " not available."
 	 << std::endl;

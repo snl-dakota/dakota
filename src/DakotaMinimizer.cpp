@@ -177,8 +177,8 @@ void Minimizer::update_from_model(const Model& model)
 	 methodName == NONLINEAR_CG || methodName == OPTPP_CG             || 
 	 ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS )  ||
 	 methodName == NCSU_DIRECT  || methodName == MESH_ADAPTIVE_SEARCH ||
-	 methodName == OPT_DARTS    || methodName == DL_SOLVER            ||
-	 methodName == EFFICIENT_GLOBAL ) ) {
+	 methodName == GENIE_DIRECT || methodName == GENIE_OPT_DARTS      ||
+         methodName == DL_SOLVER    || methodName == EFFICIENT_GLOBAL ) ) {
     Cerr << "\nError: linear constraints not currently supported by "
 	 << method_enum_to_string(methodName) << ".\n       Please select a "
 	 << "different method for generally constrained problems." << std::endl;
@@ -189,7 +189,8 @@ void Minimizer::update_from_model(const Model& model)
   if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints ) &&
        ( methodName == NL2SOL        || methodName == OPTPP_CG    ||
 	 methodName == NONLINEAR_CG  || methodName == OPTPP_PDS   ||
-	 methodName == NCSU_DIRECT   || methodName == OPT_DARTS ) ) {
+	 methodName == NCSU_DIRECT   || methodName == GENIE_DIRECT ||
+         methodName == GENIE_OPT_DARTS )) {
     Cerr << "\nError: nonlinear constraints not currently supported by "
 	 << method_enum_to_string(methodName) << ".\n       Please select a "
 	 << "different method for generally constrained problems." << std::endl;

@@ -45,9 +45,13 @@ OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
      maxBlackBoxEvals = probDescDB.get_int("method.max_function_evaluations");
           
      maxIterations = probDescDB.get_int("method.max_iterations");
+     if (methodName == GENIE_OPT_DARTS) 
+       use_DIRECT = false;
+     else 
+       use_DIRECT = true;
 }
 
-OptDartsOptimizer::OptDartsOptimizer(Model& model): Optimizer(OPT_DARTS, model)
+OptDartsOptimizer::OptDartsOptimizer(Model& model): Optimizer(GENIE_OPT_DARTS, model)
 {
      // load_parameters
      this->load_parameters(model);
@@ -79,11 +83,12 @@ void OptDartsOptimizer::find_optimum()
     // to be deleted
     double TOL = 1E-6;
     size_t problem_index = 2;
-    bool use_DIRECT = false;
+    //bool use_DIRECT = false;
+    Cout << "use_DIRECT " << use_DIRECT << '\n'; 
     double fw_MC = 1E6;
     double fb_MC = -1E6;
     
-    opt_darts_execute(num_dim, budget, xmin, xmax, TOL, problem_index, use_DIRECT, fw_MC, fb_MC);
+    opt_darts_execute(num_dim, budget, xmin, xmax, TOL, problem_index, fw_MC, fb_MC);
     
     delete[] xmin;
     delete[] xmax;
@@ -283,7 +288,7 @@ void OptDartsOptimizer::load_parameters(Model &model)
 
     
     
-    void OptDartsOptimizer::opt_darts_execute(size_t num_dim, size_t budget, double* xmin, double* xmax, double TOL, size_t problem_index, bool use_DIRECT, double fw_MC, double fb_MC)
+    void OptDartsOptimizer::opt_darts_execute(size_t num_dim, size_t budget, double* xmin, double* xmax, double TOL, size_t problem_index, double fw_MC, double fb_MC)
     {
         initiate_random_generator(randomSeed);
         

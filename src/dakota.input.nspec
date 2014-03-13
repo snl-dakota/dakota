@@ -183,10 +183,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    |
 #	    reduced_sqp
 #	    |
-	    ( optdarts {N_mdm(utype,methodName_OPT_DARTS)}
-	      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-            )
-	    |
 	    ( optpp_cg {N_mdm(utype,methodName_OPTPP_CG)}
 	      |
 	      ( optpp_q_newton {N_mdm(utype,methodName_OPTPP_Q_NEWTON)}
@@ -455,6 +451,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
 	    [ volume_boxsize_limit REAL {N_mdm(Real,volBoxSize)} ]
 	  )
+	  |
+	  ( genie_opt_darts {N_mdm(utype,methodName_GENIE_OPT_DARTS)}
+	    | genie_direct {N_mdm(utype,methodName_GENIE_DIRECT)} 
+	    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+          )
 	  |
 	  ( efficient_global {N_mdm(utype,methodName_EFFICIENT_GLOBAL)}
 	    [ gaussian_process ALIAS kriging {0}

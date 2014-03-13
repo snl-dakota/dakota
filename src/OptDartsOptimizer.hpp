@@ -60,7 +60,7 @@ namespace Dakota {
 
          double opt_darts_f();
          
-         void opt_darts_execute(size_t num_dim, size_t budget, double* xmin, double* xmax, double TOL, size_t problem_index, bool use_DIRECT, double fw_MC, double fb_MC);
+         void opt_darts_execute(size_t num_dim, size_t budget, double* xmin, double* xmax, double TOL, size_t problem_index, double fw_MC, double fb_MC);
          
          void opt_darts_initiate(double* xmin, double* xmax);
          
@@ -158,7 +158,9 @@ namespace Dakota {
          double zx;	/* SWB seed1 */
          double zy;	/* SWB seed2 */
          size_t qlen;/* length of Q array */
-
+ 
+         // flag for DIRECT
+         bool use_DIRECT;
          
          // Variables for the stuff that must go in
          // the parameters.
