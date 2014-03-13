@@ -1,0 +1,25 @@
+# DAKOTA INPUT FILE - dakota_textbook_pce.in
+
+environment,
+	#graphics
+        tabular_graphics_data
+
+method,
+        optdarts
+        seed = 439
+
+variables,
+	continuous_design = 2
+        lower_bounds = 0. 0.
+        upper_bounds = 1. 1.
+	descriptors = 'x1' 'x2'
+
+interface,
+        direct
+	  analysis_driver = 'rosenbrock'	#0
+#	  analysis_driver = 'smooth_herbie'	#1
+
+responses,
+	num_objective_functions = 1 
+	no_gradients
+	no_hessians

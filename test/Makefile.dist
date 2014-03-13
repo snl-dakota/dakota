@@ -48,6 +48,7 @@ EXTRA_DIST = container_alt.c \
 	     dakota_mv.in \
 	     dakota_nl2test.in \
 	     dakota_nondevid.in \
+	     dakota_optdarts.in \
 	     dakota_ouu1_cantilever.in \
 	     dakota_ouu1_tbch.in \
 	     dakota_ouu1_tb.in \
