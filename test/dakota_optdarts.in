@@ -5,7 +5,8 @@ environment,
         tabular_graphics_data
 
 method,
-        optdarts
+        genie_opt_darts
+        # genie_direct 
         seed = 439
 
 variables,
