@@ -20,22 +20,17 @@ static const char rcsId[]="@(#) $Id: ExecutableEnvironment.cpp 6492 2009-12-19 0
 namespace Dakota {
 
 ExecutableEnvironment::ExecutableEnvironment():
-#ifdef DAKOTA_USAGE_TRACKING
-  Environment(BaseConstructor()), usageTracker()
-#else
   Environment(BaseConstructor())
-#endif
 { }
 
 
 ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
-#ifdef DAKOTA_USAGE_TRACKING
-  Environment(BaseConstructor(), argc, argv),
-  usageTracker(parallelLib.world_rank())
-#else
   Environment(BaseConstructor(), argc, argv)
-#endif
 {
+#ifdef DAKOTA_USAGE_TRACKING
+  usageTracker.reset( new TrackerHTTP(parallelLib.world_rank()) );
+#endif
+
   // could we wait to do redirection and any output here?
   // might get entangled with CL usage...
   if (programOptions.version)
@@ -51,7 +46,7 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
 #ifdef DAKOTA_USAGE_TRACKING
     // must wait for iterators to be instantiated; positive side effect is that 
     // we don't track dakota -version, -help, and errant usage
-    usageTracker.post_start(probDescDB);
+    usageTracker->post_start(probDescDB);
 #endif
   }
 }
@@ -60,7 +55,7 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
 ExecutableEnvironment::~ExecutableEnvironment()
 {
 #ifdef DAKOTA_USAGE_TRACKING
-  usageTracker.post_finish();
+  usageTracker->post_finish();
 #endif
 
   // destruction order of core objects:

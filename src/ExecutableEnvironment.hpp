@@ -15,10 +15,13 @@
 #ifndef EXECUTABLE_ENVIRONMENT_H
 #define EXECUTABLE_ENVIRONMENT_H
 
+#include <boost/shared_ptr.hpp>
 #include "DakotaEnvironment.hpp"
-
 #ifdef DAKOTA_USAGE_TRACKING
 #include "TrackerHTTP.hpp"
+#else
+// forward declaration due to PIMPL for conditional compilation of curl
+class TrackerHTTP;
 #endif
 
 namespace Dakota {
@@ -65,10 +68,10 @@ private:
   //- Heading: Data members
   //
 
-#ifdef DAKOTA_USAGE_TRACKING
-  // BMA TODO: WJB Guidance is don't conditionally change size of the class...
-  TrackerHTTP     usageTracker;   ///< posts usage data to Web server
-#endif
+  /// posts usage data to Web server; using shared_ptr due to
+  /// potentially incomplete type and requirements for checked_delete
+  /// in debug builds (scoped_ptr would suffice)
+  boost::shared_ptr<TrackerHTTP> usageTracker; 
 };
 
 } // namespace Dakota
