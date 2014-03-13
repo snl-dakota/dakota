@@ -17,6 +17,10 @@
 
 #include "DakotaEnvironment.hpp"
 
+#ifdef DAKOTA_USAGE_TRACKING
+#include "TrackerHTTP.hpp"
+#endif
+
 namespace Dakota {
 
 
