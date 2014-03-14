@@ -144,13 +144,13 @@ sub process_tags_dox {
     my $longname;
     my $filecnt;
     my $total = 0;
-    #my $MAX_LENGTH = 30; # maximum length of a long name before WARN                                                                        
-    my $MAX_LENGTH = 1000; # maximum length of a long name before WARN                                                                       
+    #my $MAX_LENGTH = 30; # maximum length of a long name before WARN
+    my $MAX_LENGTH = 1000; # maximum length of a long name before WARN
+    # Iterate over Reference Manual files
+    ##my @ref_files = <../../docs/Ref_*.dox>;
+    my @categories = ("Environment", "Method", "Model", "Variables", 
+		      "Interface", "Responses");
 
-    # Iterate over Reference Manual files                                                                                                    
-    ##my @ref_files = <../../docs/Ref_*.dox>;                                                                                                
-    my @categories = ("Strategy", "Method", "Model", "Variables", "Interface",
-		      "Responses");                                                
     foreach $category (@categories) {
 
         $lower_cat = lc($category);
