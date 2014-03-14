@@ -84,9 +84,6 @@ public:
   //- Heading: Member functions
   //
 
-  /// Instantiate topLevelIterator
-  void construct(bool run_parser = true);
-
   /// return mpiManager
   MPIManager& mpi_manager();
   /// return programOptions
@@ -120,6 +117,11 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// Instantiate topLevelIterator
+  void construct(bool run_parser = true);
+  /// Deallocate parallel partitioning for topLevelIterator
+  void destruct();
 
   //
   //- Heading: Data

@@ -116,6 +116,8 @@ CollabHybridMetaIterator::~CollabHybridMetaIterator()
   else
     for (i=0; i<num_iterators; ++i)
       deallocate(selectedIterators[i], selectedModels[i]);
+
+  // si_pl parallelism level is deallocated in ~MetaIterator
 }
 
 

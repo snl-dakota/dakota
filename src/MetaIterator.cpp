@@ -42,7 +42,10 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
 
 
 MetaIterator::~MetaIterator()
-{ }
+{
+  // deallocate the si_pl parallelism level
+  iterSched.free_iterator_parallelism();
+}
 
 
 void MetaIterator::

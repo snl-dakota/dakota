@@ -279,6 +279,8 @@ ConcurrentMetaIterator::~ConcurrentMetaIterator()
   ParallelLibrary& parallel_lib = probDescDB.parallel_library();
   iterSched.free_iterator(selectedIterator,
     parallel_lib.parallel_configuration().si_parallel_level());
+
+  // si_pl parallelism level is deallocated in ~MetaIterator
 }
 
 

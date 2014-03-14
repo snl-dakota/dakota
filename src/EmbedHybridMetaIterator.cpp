@@ -83,6 +83,8 @@ EmbedHybridMetaIterator::~EmbedHybridMetaIterator()
   else                       deallocate(globalIterator, globalModel);
   if (localModel.is_null())  deallocate(localIterator,  iteratedModel);
   else                       deallocate(localIterator,  localModel);
+
+  // si_pl parallelism level is deallocated in ~MetaIterator
 }
 
 

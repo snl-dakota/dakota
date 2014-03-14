@@ -117,11 +117,31 @@ init_iterator_parallelism(int max_concurrency, short default_config)
 /** Static version called for serialization. */
 void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
 {
+  // This is logically equivalent to init_iterator_parallelism(1), but static
+  // declaration allows its use in contexts without an IteratorScheduler
+  // instance (e.g., Dakota::Environment).  Since it is static, it does not
+  // update IteratorScheduler state.
+
   // Initialize iterator partitions for one iterator execution at a time
   const ParallelLevel& si_pl = parallel_lib.init_iterator_communicators(
     0, 0, 1, PUSH_DOWN, DEFAULT_SCHEDULING);
   // set up output streams without iterator tagging
   parallel_lib.manage_outputs_restart(si_pl);
+}
+
+
+void IteratorScheduler::free_iterator_parallelism()
+{
+  // deallocate the si_pl parallelism level
+  parallelLib.free_iterator_communicators();
+}
+
+
+/** Static version */
+void IteratorScheduler::free_iterator_parallelism(ParallelLibrary& parallel_lib)
+{
+  // deallocate the si_pl parallelism level (static version)
+  parallel_lib.free_iterator_communicators();
 }
 
 

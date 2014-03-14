@@ -251,62 +251,55 @@ Environment::~Environment()
       delete environmentRep;
     }
   }
-  else { // letter: base class destruction
-
-    // deallocate communicator partitions for topLevelIterator
-    IteratorScheduler::free_iterator(topLevelIterator, //topLevelModel,
-      parallelLib.parallel_configuration().w_parallel_level());
-
-    // free the iterator partitions
-    if (!parallelLib.is_null())
-      parallelLib.free_iterator_communicators();
-  }
+  else // letter: base class destruction
+    destruct();
 }
 
 
 void Environment::construct(bool run_parser)
 {
-  if (environmentRep)
-    environmentRep->construct(run_parser);
+  // Called only by letter instances, no Rep forward required
+
+  // Manage input file parsing, output redirection, and restart processing.
+  // Since all processors need the database, manage_inputs() does not require
+  // iterator partitions and it can precede init_iterator_communicators()
+  // (a simple world bcast is sufficient).  Output/restart management does
+  // utilize iterator partitions, so manage_outputs_restart() must follow
+  // init_iterator_communicators() within the Environment constructor
+  // (output/restart options may only be specified at this time).
+
+  // ProblemDescDB requires cmd line information, so pass programOptions
+  probDescDB.manage_inputs(programOptions, run_parser);
+  // extract global output specification data (environment keyword spec)
+  outputManager.parse(probDescDB);
+
+  // With respect to Environment interaction with the probDescDB linked lists,
+  // the current design allows the user to either fully specify the method to
+  // be used (which may itself contain pointers to variables, interface, and
+  // responses) or to rely on the default behavior in which the last data
+  // populated in the calls to the keyword handlers is used to build the
+  // model and the iterator.
+  const String& method_ptr
+    = probDescDB.get_string("environment.top_method_pointer");
+  // The method pointer is optional and some detective work may be
+  // required to resolve which method sits on top of a recursion.
+  if (method_ptr.empty()) probDescDB.resolve_top_method();
+  else                    probDescDB.set_db_list_nodes(method_ptr);
+
+  // Instantiate the topLevelIterator in parallel (invoke
+  // ProblemDescDB ctor chain on all processors)
+  if (probDescDB.get_ushort("method.algorithm") & META_BIT) {
+    // meta-iterator constructors manage IteratorScheduler::init_iterator()
+    // and IteratorScheduler::init_iterator_parallelism()
+    topLevelIterator = probDescDB.get_iterator(); // all procs
+  }
   else {
-    // Manage input file parsing, output redirection, and restart processing.
-    // Since all processors need the database, manage_inputs() does not require
-    // iterator partitions and it can precede init_iterator_communicators()
-    // (a simple world bcast is sufficient).  Output/restart management does
-    // utilize iterator partitions, so manage_outputs_restart() must follow
-    // init_iterator_communicators() within the Environment constructor
-    // (output/restart options may only be specified at this time).
-
-    // ProblemDescDB requires cmd line information, so pass programOptions
-    probDescDB.manage_inputs(programOptions, run_parser);
-    // extract global output specification data (environment keyword spec)
-    outputManager.parse(probDescDB);
-
-    // With respect to Environment interaction with the probDescDB linked lists,
-    // the current design allows the user to either fully specify the method to
-    // be used (which may itself contain pointers to variables, interface, and
-    // responses) or to rely on the default behavior in which the last data
-    // populated in the calls to the keyword handlers is used to build the
-    // model and the iterator.
-    const String& method_ptr
-      = probDescDB.get_string("environment.top_method_pointer");
-    // The method pointer is optional and some detective work may be
-    // required to resolve which method sits on top of a recursion.
-    if (method_ptr.empty()) probDescDB.resolve_top_method();
-    else                    probDescDB.set_db_list_nodes(method_ptr);
-
-    // Instantiate the topLevelIterator in parallel (invoke
-    // ProblemDescDB ctor chain on all processors)
-    if (probDescDB.get_ushort("method.algorithm") & META_BIT)
-      topLevelIterator = probDescDB.get_iterator(); // all procs
-    else {
-      IteratorScheduler::init_serial_iterators(parallelLib); // serialize si_pl
-      //topLevelModel = probDescDB.get_model(); // if access needed downstream
-      Model top_level_model = probDescDB.get_model();
-      IteratorScheduler::init_iterator(probDescDB, topLevelIterator,
-	top_level_model, // modelRep gets shared in topLevelIterator
-	parallelLib.parallel_configuration().w_parallel_level());
-    }
+    IteratorScheduler::init_serial_iterators(parallelLib); // serialize si_pl
+    //topLevelModel = probDescDB.get_model(); // if access needed downstream
+    Model top_level_model = probDescDB.get_model();
+    IteratorScheduler::init_iterator(probDescDB, topLevelIterator,
+      top_level_model, // modelRep gets shared in topLevelIterator
+      parallelLib.parallel_configuration().w_parallel_level());
   }
 }
 
@@ -334,5 +327,23 @@ void Environment::execute()
 }
 
 
+void Environment::destruct()
+{
+  // Called only by letter instances, no Rep forward required
+
+  if (topLevelIterator.is_null()) // help and version invocations
+    return;
+  else if (topLevelIterator.method_name() & META_BIT) {
+    // meta-iterator destructors manage IteratorScheduler::free_iterator()
+    // and ParallelLibrary::free_iterator_communicators()
+  }
+  else {
+    // deallocate communicator partitions for topLevelIterator
+    IteratorScheduler::free_iterator(topLevelIterator, //topLevelModel,
+      parallelLib.parallel_configuration().w_parallel_level());
+    // deallocate the (serialized) si_pl parallelism level
+    IteratorScheduler::free_iterator_parallelism(parallelLib);
+  }
+}
 
 } // namespace Dakota

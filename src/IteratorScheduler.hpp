@@ -58,6 +58,10 @@ public:
   /// parallelism level
   static void init_serial_iterators(ParallelLibrary& parallel_lib);
 
+  /// convenience function for deallocating the concurrent iterator
+  /// parallelism level
+  static void free_iterator_parallelism(ParallelLibrary& parallel_lib);
+
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
   static void init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
@@ -83,6 +87,10 @@ public:
   /// parallel configuration attributes, and managing outputs and restart.
   void init_iterator_parallelism(int max_concurrency,
 				 short default_config = PUSH_DOWN);
+
+  /// convenience function for deallocating the concurrent iterator
+  /// parallelism level
+  void free_iterator_parallelism();
 
   /// short convenience function for distributing control among
   /// master_dynamic_schedule_iterators(), serve_iterators(), and
