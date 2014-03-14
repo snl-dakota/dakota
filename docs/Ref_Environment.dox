@@ -16,38 +16,37 @@ namespace Dakota {
 \section EnvDescr Environment Description
 
 
-The environment section in a %Dakota input file specifies the top level
-technique which will govern the management of iterators and models in
-the solution of the problem of interest.
+The environment section in a %Dakota input file specifies the top
+level solution environment which will govern the management of
+iterators and models in the solution of the problem of interest.
 
-Each of the environment specifications identifies one or more method
-pointers (e.g., \c method_list, \c method_pointer) to identify the
-iterators that will be used in the environment.  These method pointers
-are strings that correspond to the \c id_method identifier strings
-from the method specifications (see \ref MethodIndControl). These
-string identifiers (e.g., 'NLP1') should \e not be confused with
-method selections (e.g., \c dot_mmfd).  Each of the method
-specifications identified in this manner has the responsibility for
-identifying corresponding model specifications (using \c model_pointer
-from \ref MethodIndControl), which in turn identify the variables,
-interface, and responses specifications (using \c variables_pointer,
-\c interface_pointer, and \c responses_pointer from \ref
-ModelCommands) that are used to build the model used by the iterator.
-If one of these specifications does not provide an optional pointer,
-then that component will be constructed using the last specification
-parsed.  In addition to method pointers, a variety of graphics options
-(e.g., \c tabular_graphics_data), iterator concurrency controls (e.g.,
-\c iterator_servers), and strategy data (e.g., \c starting_points) can
-be specified.
+The environment specification supports indentification of the
+top-level method (\c top_method_pointer) that provides the starting
+point for the iteration.  The corresponding method specification may
+recurse with additional sub-method pointers in the case of
+"meta-iteration" (see \ref MethodMeta), but ultimately must result in
+identification of one or more model specifications using \c
+model_pointer (see \ref MethodIndControl).  The model specifications
+in turn identify the variables, interface, and responses
+specifications (using \c variables_pointer, \c interface_pointer, and
+\c responses_pointer from \ref ModelCommands) that are used to build
+the model used by the iterator.  If one of these specifications does
+not provide an optional pointer, then that component will be
+constructed using the last specification parsed.
 
-Specification of a environment block in an input file is optional, with
-\c single_method being the default environment.  If no environment is
-specified or if \c single_method is specified without its optional \c
-method_pointer specification, then the default behavior is to employ
-the last method, variables, interface, and responses specifications
-parsed. This default behavior is most appropriate if only one
-specification is present for method, variables, interface, and
-responses, since there is no ambiguity in this case.
+In addition to the \c top_method_pointer, the environment specification
+provides a variety of output controls, including graphics options, data
+tabulation options, output precision, and results database options.
+
+Specification of a environment block in an input file is optional, in
+which case the top level method will be inferred (in the case of
+multiple method specifications) from the relationships implied by
+method pointers.  If this inference is not well defined, then the
+default behavior is to employ the last method, variables, interface,
+and responses specifications parsed. This default behavior is most
+appropriate if only one specification is present for method,
+variables, interface, and responses, since there is no ambiguity in
+this case.
 
 
 \section EnvSpec Environment Specification
@@ -60,25 +59,16 @@ environment,
 	<top method pointer>
 \endverbatim
 
-The <tt>\<environment independent controls\></tt> are those controls
-which are valid for a variety of strategies. Unlike the \ref
-MethodIndControl, which can be abstractions with slightly different
-implementations from one method to the next, the implementations of
-each of the environment independent controls are consistent for all
-strategies that use them. The <tt>\<environment dependent
-controls\></tt> are those controls which are only meaningful for a
-specific environment. Referring to dakota.input.summary, the
-environment independent controls are those controls defined externally
-from and prior to the environment selection blocks. They are all
-optional. The following sections provide additional detail on the
-environment independent controls followed by the environment selections and
-their corresponding environment dependent controls.
+Referring to dakota.input.summary, the environment output controls are
+defined in several optional blocks, followed by the optional \c
+top_method_pointer specification. The following sections provide
+additional detail on the output and method pointer controls.
 
 
 \section EnvOutput Environment Output Controls
 
 
-The environment independent controls are summarized in \ref T4d1 
+The environment output controls are summarized in \ref T4d1 
 "Table 4.1", including graphics, output data, and iterator scheduling
 controls.  The \c graphics flag activates a 2D graphics window
 containing history plots for the variables and response functions in
