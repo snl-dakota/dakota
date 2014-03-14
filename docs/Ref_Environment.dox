@@ -69,7 +69,7 @@ additional detail on the output and method pointer controls.
 
 
 The environment output controls are summarized in \ref T4d1 
-"Table 4.1", including graphics, output data, and iterator scheduling
+"Table 4.1", including graphics, output data, and results database
 controls.  The \c graphics flag activates a 2D graphics window
 containing history plots for the variables and response functions in
 the study.  This window is updated in an event loop with approximately
@@ -99,9 +99,6 @@ is hierarchical and a precursor to planned output to structured text
 formats such as XML or YAML and binary formats such as HDF5.  The
 contents, organization, and format of results files are all under
 active development and are subject to change.
-
-The \c graphics, \c tabular_graphics_data, and \c
-tabular_graphics_file specifications are valid for all strategies.
 
 \anchor T4d1
 <table>

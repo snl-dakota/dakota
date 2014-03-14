@@ -1,10 +1,24 @@
 TAG "environment"
+	DESC "{Environment} The environment specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. EnvCommands.html"
+
 TAG "environment/graphics"
+	DESC "{Graphics flag} EnvCommands.html#EnvOutput"
+
 TAG "environment/tabular_graphics_data"
+	DESC "{Tabulation of graphics data} EnvCommands.html#EnvOutput"
+
 TAG "environment/tabular_graphics_data/tabular_graphics_file"
+	DESC "{File name for tabular graphics data} EnvCommands.html#EnvOutput"
+
 TAG "environment/output_precision"
+	DESC "{Numeric output precision} EnvCommands.html#EnvOutput"
+
 TAG "environment/results_output"
+	DESC "{Enable results output} EnvCommands.html#EnvOutput"
+
 TAG "environment/results_output/results_output_file"
+	DESC "{File name for results output} EnvCommands.html#EnvOutput"
+
 TAG "environment/top_method_pointer"
 TAG "method"
 	DESC "{Method} A method specifies the name and controls of an iterative procedure, e.g., a sensitivity analysis, uncertainty quantification, or optimization method. MethodCommands.html"
@@ -44,47 +58,83 @@ TAG "method/final_solutions"
 	DESC "{Final solutions} MethodCommands.html#MethodIndControl"
 
 TAG "method/hybrid"
+	DESC "{Hybrid strategy} MethodCommands.html#MethodMetaHybrid"
+
 TAG "method/hybrid/sequential"
+	DESC "{Sequential hybrid} MethodCommands.html#MethodMetaHybrid"
+
 TAG "method/hybrid/sequential/method_name_list"
 TAG "method/hybrid/sequential/method_name_list/model_pointer_list"
 TAG "method/hybrid/sequential/method_pointer_list"
 TAG "method/hybrid/embedded"
+	DESC "{Embedded hybrid} MethodCommands.html#MethodMetaHybrid"
+
 TAG "method/hybrid/embedded/global_method_name"
 TAG "method/hybrid/embedded/global_method_name/global_model_pointer"
 TAG "method/hybrid/embedded/global_method_pointer"
+	DESC "{Pointer to the global method specification} MethodCommands.html#MethodMetaHybrid"
+
 TAG "method/hybrid/embedded/local_method_name"
 TAG "method/hybrid/embedded/local_method_name/local_model_pointer"
 TAG "method/hybrid/embedded/local_method_pointer"
+	DESC "{Pointer to the local method specification} MethodCommands.html#MethodMetaHybrid"
+
 TAG "method/hybrid/embedded/local_search_probability"
+	DESC "{Probability of executing local searches} MethodCommands.html#MethodMetaHybrid"
+
 TAG "method/hybrid/collaborative"
+	DESC "{Collaborative hybrid} MethodCommands.html#MethodMetaHybrid"
+
 TAG "method/hybrid/collaborative/method_name_list"
 TAG "method/hybrid/collaborative/method_name_list/model_pointer_list"
 TAG "method/hybrid/collaborative/method_pointer_list"
 TAG "method/multi_start"
+	DESC "{Multi-start iteration strategy} MethodCommands.html#MethodMetaMultiStart"
+
 TAG "method/multi_start/method_name"
 TAG "method/multi_start/method_name/model_pointer"
 	DESC "{Model pointer} MethodCommands.html#MethodIndControl"
 
 TAG "method/multi_start/method_pointer"
+	DESC "{Method pointer} MethodCommands.html#MethodMetaMultiStart"
+
 TAG "method/multi_start/random_starts"
+	DESC "{Number of random starting points} MethodCommands.html#MethodMetaMultiStart"
+
 TAG "method/multi_start/random_starts/seed"
-	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
+	DESC "{Seed for random starting points} MethodCommands.html#MethodMetaMultiStart"
 
 TAG "method/multi_start/starting_points"
+	DESC "{List of user-specified starting points} MethodCommands.html#MethodMetaMultiStart"
+
 TAG "method/pareto_set"
+	DESC "{Pareto set optimization strategy} MethodCommands.html#MethodMetaParetoSet"
+
 TAG "method/pareto_set/method_name"
 TAG "method/pareto_set/method_name/model_pointer"
 TAG "method/pareto_set/method_pointer"
+	DESC "{Optimization method pointer} MethodCommands.html#MethodMetaParetoSet"
+
 TAG "method/pareto_set/random_weight_sets"
+	DESC "{Number of random weighting sets} MethodCommands.html#MethodMetaParetoSet"
+
 TAG "method/pareto_set/random_weight_sets/seed"
-	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
+	DESC "{Seed for random weighting sets} MethodCommands.html#MethodMetaParetoSet"
 
 TAG "method/pareto_set/weight_sets"
+	DESC "{List of user-specified weighting sets} MethodCommands.html#MethodMetaParetoSet"
+
 TAG "method/hybrid/iterator_servers"
+	DESC "{Number of iterator servers} MethodCommands.html#MethodMeta"
+
 TAG "method/hybrid/iterator_scheduling"
+	DESC "{Message passing configuration for scheduling of iterator jobs} MethodCommands.html#MethodMeta"
+
 TAG "method/hybrid/iterator_scheduling/master"
 TAG "method/hybrid/iterator_scheduling/peer"
 TAG "method/hybrid/processors_per_iterator"
+	DESC "{Number of processors per iterator server} MethodCommands.html#MethodMeta"
+
 TAG "method/surrogate_based_local" GROUP "Surrogate-based Methods"
 TAG "method/surrogate_based_local/method_pointer"
 TAG "method/surrogate_based_local/method_name"
@@ -266,7 +316,7 @@ TAG "method/mesh_adaptive_search/function_precision"
 	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
 
 TAG "method/mesh_adaptive_search/seed"
-	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
+	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
 
 TAG "method/mesh_adaptive_search/history_file"
 TAG "method/mesh_adaptive_search/display_format"
@@ -395,34 +445,34 @@ TAG "method/moga/mutation_type/mutation_rate"
 	DESC "{Mutation rate} MethodCommands.html#MethodJEGADC"
 
 TAG "method/moga/seed"
-	DESC "{Random seed} MethodCommands.html#MethodNonDBayesCalib"
+	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
 
 TAG "method/dot_frcg/linear_inequality_constraint_matrix"
-	DESC "{Linear inequality coefficient matrix} MethodCommands.html#MethodIndControl"
+	DESC "{Linear inequality coefficient matrix} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_inequality_lower_bounds"
-	DESC "{Linear inequality lower bounds} MethodCommands.html#MethodIndControl"
+	DESC "{Linear inequality lower bounds} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_inequality_upper_bounds"
-	DESC "{Linear inequality upper bounds} MethodCommands.html#MethodIndControl"
+	DESC "{Linear inequality upper bounds} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_inequality_scale_types"
-	DESC "{Linear inequality scaling types} MethodCommands.html#MethodIndControl"
+	DESC "{Linear inequality scaling types} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_inequality_scales"
-	DESC "{Linear inequality scales} MethodCommands.html#MethodIndControl"
+	DESC "{Linear inequality scales} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_equality_constraint_matrix"
-	DESC "{Linear equality coefficient matrix} MethodCommands.html#MethodIndControl"
+	DESC "{Linear equality coefficient matrix} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_equality_targets"
-	DESC "{Linear equality targets} MethodCommands.html#MethodIndControl"
+	DESC "{Linear equality targets} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_equality_scale_types"
-	DESC "{Linear equality scaling types} MethodCommands.html#MethodIndControl"
+	DESC "{Linear equality scaling types} MethodCommands.html#MethodMin"
 
 TAG "method/dot_frcg/linear_equality_scales"
-	DESC "{Linear equality scales} MethodCommands.html#MethodIndControl"
+	DESC "{Linear equality scales} MethodCommands.html#MethodMin"
 
 TAG "method/coliny_pattern_search" GROUP "Optimization: Local, Derivative-free"
 TAG "method/coliny_pattern_search/constant_penalty"
@@ -619,7 +669,7 @@ TAG "method/ncsu_direct/volume_boxsize_limit"
 TAG "method/genie_opt_darts"
 TAG "method/genie_direct"
 TAG "method/genie_opt_darts/seed"
-	DESC "{Random seed} MethodCommands.html#MethodPSUADE"
+	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
 
 TAG "method/efficient_global" GROUP "Surrogate-based Methods"
 TAG "method/efficient_global/gaussian_process"
@@ -1219,6 +1269,8 @@ TAG "method/local_reliability/mpp_search/integration/probability_refinement/adap
 TAG "method/local_reliability/mpp_search/integration/probability_refinement/mm_adapt_import"
 TAG "method/local_reliability/mpp_search/integration/probability_refinement/refinement_samples"
 TAG "method/local_reliability/mpp_search/integration/probability_refinement/seed"
+	DESC "{Random seed} MethodCommands.html#MethodNonDBayesCalib"
+
 TAG "method/local_reliability/response_levels"
 TAG "method/local_reliability/response_levels/num_response_levels"
 TAG "method/local_reliability/response_levels/compute"
@@ -2141,7 +2193,7 @@ TAG "interface/analysis_drivers/direct"
 	DESC "[CHOOSE interface type]{Direct function interface } InterfCommands.html#InterfApplicDF"
 
 TAG "interface/analysis_drivers/direct/processors_per_analysis"
-	DESC "{Number of processors per analysis} InterfCommands.html#InterfApplicDF"
+	DESC "{Number of processors per analysis server} InterfCommands.html#InterfApplicDF"
 
 TAG "interface/analysis_drivers/matlab"
 	DESC "{Matlab interface } InterfCommands.html#InterfApplicMSP"
@@ -2202,6 +2254,8 @@ TAG "interface/evaluation_scheduling/peer"
 TAG "interface/evaluation_scheduling/peer/dynamic"
 TAG "interface/evaluation_scheduling/peer/static"
 TAG "interface/processors_per_evaluation"
+	DESC "{Number of processors per evaluation server} InterfCommands.html#InterfIndControl"
+
 TAG "interface/analysis_servers"
 	DESC "{Number of analysis servers} InterfCommands.html#InterfIndControl"
 

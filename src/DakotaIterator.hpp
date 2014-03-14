@@ -178,9 +178,11 @@ public:
   /// replaces existing letter with a new one
   void assign_rep(Iterator* iterator_rep, bool ref_count_incr = true);
 
-  // set the model (iterators and meta-iterators using a single model instance)
+  /// set the iteratedModel (iterators and meta-iterators using a single
+  /// model instance)
   void iterated_model(const Model& model);
-  // return the model (iterators & meta-iterators using a single model instance)
+  /// return the iteratedModel (iterators & meta-iterators using a single
+  /// model instance)
   Model& iterated_model();
 
   /// return the problem description database (probDescDB)

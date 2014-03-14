@@ -570,7 +570,7 @@ WARN_LOGFILE           =
 
 INPUT                  = Ref_Main.dox \
                          Ref_Intro.dox \
-                         Ref_Strategy.dox \
+                         Ref_Environment.dox \
                          Ref_Method.dox \
                          Ref_Model.dox \
                          Ref_Variables.dox \

@@ -425,8 +425,8 @@ sub gui_groups {
     kw_nest_desc("responses/response_functions", "{Generic responses} ");                                                                
                                             
     # Add top-level keyword help text"
-    $url = "StratCommands.html";
-    kw_add_desc("strategy", "{Strategy} The strategy specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. $url");
+    $url = "EnvCommands.html";
+    kw_add_desc("environment", "{Environment} The environment specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. $url");
 
     $url = "MethodCommands.html";
     kw_add_desc("method", "{Method} A method specifies the name and controls of an iterative procedure, e.g., a sensitivity analysis, uncertainty quantification, or optimization method. $url");
@@ -549,14 +549,12 @@ sub gui_defaults {
 
 
 
-    # -- STRATEGY:DONE --                                                                                                                    
+    # -- ENVIRONMENT:DONE --                                                                                                                    
 
-    # default to single_method for the strategy                                                                                              
-    kw_aug_desc("strategy/hybrid", "[CHOOSE strategy type]");
-    kw_aug_desc("strategy/single_method", "$DEFAULT");
+    #kw_aug_desc("environment/hybrid", "[CHOOSE environment type]");
 
-    # If the user selected hybrid, require them to specify the strategy type                                                                 
-    kw_aug_desc("strategy/hybrid/collaborative", "[CHOOSE hybrid type]");
+    # If the user selected hybrid, require them to specify the hybrid type                                                                 
+    #kw_aug_desc("environment/hybrid/collaborative", "[CHOOSE hybrid type]");
 
 
     # -- METHOD --                                                                                                                           
