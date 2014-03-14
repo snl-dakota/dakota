@@ -53,19 +53,20 @@ UsersMan "Adams et al., 2010"].
 \section RefSpec Input Specification Reference
 
 
-In %Dakota, the \e strategy creates and manages \e iterators and \e
-models.  A model contains a set of \e variables, an \e interface, and
-a set of \e responses, and the iterator operates on the model to map
-the variables into responses using the interface.  In a %Dakota input
-file, the user specifies these components through strategy, method,
-model, variables, interface, and responses keyword specifications.
-The Reference Manual closely follows this structure, with introductory
-material followed by detailed documentation of the strategy, method,
-model, variables, interface, and responses keyword specifications:
+In %Dakota, the \e environment creates the top level \e iterator and
+manages output mechanisms.  A \c model contains a set of \e variables,
+an \e interface, and a set of \e responses, and the iterator operates
+on the model to map the variables into responses using the interface.
+In a %Dakota input file, the user specifies these components through
+environment, method, model, variables, interface, and responses
+keyword specifications.  The Reference Manual closely follows this
+structure, with introductory material followed by detailed
+documentation of the environment, method, model, variables, interface,
+and responses keyword specifications:
 
 \ref IntroCommands
 
-\ref StratCommands
+\ref EnvCommands
 
 \ref MethodCommands
 

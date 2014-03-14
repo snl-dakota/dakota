@@ -223,6 +223,12 @@ Specification detail for interface independent controls: parallelism
 <td>Optional
 <td>no override of auto configure
 <tr>
+<td>Number of processors per evaluation server
+<td>\c processors_per_evaluation
+<td>integer
+<td>Optional
+<td>no override of auto configure
+<tr>
 <td>Message passing configuration for scheduling of evaluations
 <td>\c evaluation_scheduling
 <td>\c master | \c peer
@@ -271,11 +277,15 @@ asynchronous parallelism on each server.
 
 If Dakota's automatic parallel configuration is undesirable for some
 reason, the user can specify overrides that enforce a desired number
-of partitions and/or a desired scheduling configuration at the
-evaluation and analysis parallelism levels. The optional \c
-evaluation_servers and \c analysis_servers specifications support user
-overrides of the automatic parallel configuration for the number of
-evaluation servers and the number of analysis servers.  Similarly, the
+of partitions, a size for the partitions, and/or a desired scheduling
+configuration at the evaluation and analysis parallelism levels. The
+optional \c evaluation_servers and \c analysis_servers specifications
+support user overrides of the automatic parallel configuration for the
+number of evaluation servers and the number of analysis servers, and
+the optional \c processors_per_evaluation specification supports user
+overrides for the size of processor allocations for evaluation servers
+(Note: see \ref InterfApplicDF for the \c processors_per_analysis
+specification supported for direct interfaces).  Similarly, the
 optional \c evaluation_scheduling and \c analysis_scheduling
 specifications can be used to override the automatic parallel
 configuration at the evaluation and analysis parallelism levels to use
@@ -744,16 +754,17 @@ those for the fork interface as summarized previously in \ref T8d5
 For direct function interfaces, \c processors_per_analysis is an
 additional optional setting within the required group which can be
 used to specify multiprocessor analysis partitions. As with the \c
-evaluation_servers, \c analysis_servers, \c evaluation_scheduling, and
-\c analysis_scheduling specifications described above in \ref
-InterfIndControl, \c processors_per_analysis provides a means for the
-user to override the automatic parallel configuration (refer to
-ParallelLibrary and the Parallel Computing chapter of the Users Manual
-[\ref UsersMan "Adams et al., 2010"]) for the number of processors
-used for each analysis partition.  Note that if both \c
-analysis_servers and \c processors_per_analysis are specified and they
-are not in agreement, then \c analysis_servers takes precedence. The
-direct interface specifications are summarized in \ref T8d6 "Table 8.6".
+evaluation_servers, \c processors_per_evaluation, \c analysis_servers,
+\c evaluation_scheduling, and \c analysis_scheduling specifications
+described above in \ref InterfIndControl, \c processors_per_analysis
+provides a means for the user to override the automatic parallel
+configuration (refer to ParallelLibrary and the Parallel Computing
+chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"]) for
+the number of processors used for each analysis partition.  Note that
+if both \c analysis_servers and \c processors_per_analysis are
+specified and they are not in agreement, then \c analysis_servers
+takes precedence. The direct interface specifications are summarized
+in \ref T8d6 "Table 8.6".
 
 \anchor T8d6
 <table>
@@ -776,7 +787,7 @@ Additional specifications for direct function interfaces
 <td>Required group (1 of 7 selections)
 <td>N/A
 <tr>
-<td>Number of processors per analysis
+<td>Number of processors per analysis server
 <td>\c processors_per_analysis
 <td>integer
 <td>Optional
