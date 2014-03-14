@@ -335,7 +335,7 @@ void Environment::destruct()
     return;
   else if (topLevelIterator.method_name() & META_BIT) {
     // meta-iterator destructors manage IteratorScheduler::free_iterator()
-    // and ParallelLibrary::free_iterator_communicators()
+    // and IteratorScheduler::free_iterator_parallelism()
   }
   else {
     // deallocate communicator partitions for topLevelIterator

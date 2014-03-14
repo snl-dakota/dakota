@@ -14,7 +14,7 @@
 #include "DakotaPStudyDACE.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
-#ifdef DAKOTA_FSUDACE
+#ifdef HAVE_FSUDACE
 #include "fsu.H"
 #endif
 
@@ -69,7 +69,7 @@ volumetric_quality(int ndim, int num_samples, double* sample_points)
   int num_trials = 100000;
   int seed_init  = 1 + std::rand();
 
-#ifdef DAKOTA_FSUDACE
+#ifdef HAVE_FSUDACE
   chiMeas = chi_measure(ndim, num_samples, sample_points, num_trials,seed_init);
   dMeas   = d_measure(ndim, num_samples, sample_points, num_trials, seed_init);
   hMeas   = h_measure(ndim, num_samples, sample_points, num_trials, seed_init);
