@@ -15,6 +15,7 @@ namespace Dakota {
   <li> <a href="MethodCommands.html#MethodMetaMultiStart">Multistart Iteration Commands</a>
   <li> <a href="MethodCommands.html#MethodMetaParetoSet">Pareto Set Optimization Commands</a>
   </ul>
+<li> <a href="MethodCommands.html#MethodMin">Minimizer Commands</a>
 <li> <a href="MethodCommands.html#MethodOpt">Optimization Methods</a>
   <ul>
   <li> <a href="MethodCommands.html#MethodDOT">DOT Methods</a>
@@ -242,6 +243,30 @@ method,
 	  num_steps = 10
 \endverbatim
 
+Example specifications for each of the meta-iterators follow. A \c
+hybrid example is:
+\verbatim
+method,
+	hybrid sequential
+	  method_pointer_list = 'GA', 'PS', 'NLP'
+\endverbatim
+
+A \c multi_start example specification is:
+\verbatim
+method,
+	multi_start
+	  method_pointer = 'NLP1'
+	  random_starts = 10
+\endverbatim
+
+A \c pareto_set example specification is:
+\verbatim
+method,
+	pareto_set
+	  method_pointer = 'NLP1'
+          random_weight_sets = 10
+\endverbatim
+
 
 \section MethodSpec Method Specification
 
@@ -303,12 +328,11 @@ reasonable to pull them out of the method dependent blocks and consolidate the
 specifications.
 
 The method identifier string is supplied with \c id_method and is used
-to provide a unique identifier string for use with strategy
-specifications (refer to \ref StratDescr). It is appropriate to omit a
-method identifier string if only one method is included in the input
-file and \c single_method is the selected strategy (all other
-strategies require one or more method pointers), since the single
-method to use is unambiguous in this case.
+to provide a unique identifier string for use with environment or
+meta-iterator specifications (refer to \ref EnvDescr). It is
+appropriate to omit a method identifier string if only one method is
+included in the input file, since the single method to use is
+unambiguous in this case.
 
 The model pointer string is specified with \c model_pointer and is
 used to identify the model used to perform function evaluations for
@@ -317,8 +341,8 @@ corresponding id is available, %Dakota will exit with an error message.
 If no model pointer string is specified, then the last model
 specification parsed will be used.  If no model pointer string is
 specified and no model specification is provided by the user, then a
-default model specification is used (similar to the default strategy
-specification, see \ref StratDescr).  This default model specification
+default model specification is used (similar to the default environment
+specification, see \ref EnvDescr).  This default model specification
 is of type \c single with no \c variables_pointer, \c
 interface_pointer, or \c responses_pointer (see \ref ModelSingle).  It
 is appropriate to omit a model specification whenever the
@@ -454,17 +478,15 @@ part of the \c method_source \c dakota finite difference routine
 (since these additional evaluations are intentionally isolated from
 the iterators).
 
-The \c final_solutions controls the number of final solutions 
-returned by the iterator as the best solutions.  
-For most optimizers, this is one, but some optimizers 
-can produce multiple solutions (e.g. genetic algorithms).  
-In the case of analyzers such as sampling methods, if one 
-specifies 100 samples (for example) but also specifies
-\c final_solutions = 5, the five best solutions (in 
-order of lowest response function value) are returned. 
-When using a \c hybrid strategy, the number of final 
-solutions dictates how many solutions are passed from 
-one method to another. 
+The \c final_solutions controls the number of final solutions returned
+by the iterator as the best solutions.  For most optimizers, this is
+one, but some optimizers can produce multiple solutions (e.g. genetic
+algorithms).  In the case of analyzers such as sampling methods, if
+one specifies 100 samples (for example) but also specifies \c
+final_solutions = 5, the five best solutions (in order of lowest
+response function value) are returned.  When using a \c hybrid
+meta-iterator, the number of final solutions dictates how many
+solutions are passed from one method to another.
 
 Continuous design variable, function, and constraint scaling can be
 turned on for optimizers and least squares minimizers by providing the
@@ -573,7 +595,7 @@ pointers, output verbosity, speculative gradients, and scaling
 <td>\c id_method
 <td>string
 <td>Optional
-<td>strategy use of last method parsed
+<td>environment/meta-iterators employ last method parsed
 <tr>
 <td>%Model pointer
 <td>\c model_pointer
@@ -647,6 +669,397 @@ tolerances and iteration limits
 <td>Optional
 <td>1.e-4
 </table>
+
+
+\section MethodMeta Meta-Iterator Commands
+
+
+Four meta-iterators currently exist: \c hybrid, \c multi_start, \c
+pareto_set, and \c single_method.  These algorithms are implemented
+within the MetaIterator branch of the Iterator hierarchy in the
+CollabHybridMetaIterator, EmbedHybridMetaIterator,
+SeqHybridMetaIterator, and ConcurrentMetaIterator classes.  For each
+of the meta-iterators, a brief algorithm description is given below.
+Additional information on the algorithm logic is available in the
+Users Manual [\ref UsersMan "Adams et al., 2010"].
+
+In a hybrid minimization strategy (\c hybrid), a set of methods
+synergistically seek an optimal design.  The relationships among the
+methods are categorized as collaborative, embedded, or sequential.
+The goal in each case is to exploit the strengths of different
+optimization and nonlinear least squares algorithms through different
+stages of the minimization process. Global/local hybrids (e.g.,
+genetic algorithms combined with nonlinear programming) are a common
+example in which the desire for identification of a global optimum is
+balanced with the need for efficient navigation to a local optimum.
+
+In the multi-start iteration strategy (\c multi_start), a series of
+iterator runs are performed for different values of parameters in the
+model.  A common use is for multi-start optimization (i.e., different
+local optimization runs from different starting points for the design
+variables), but the concept and the code are more general.  An
+important feature is that these iterator runs may be performed
+concurrently.
+
+In the pareto set optimization strategy (\c pareto_set), a series of
+optimization or least squares calibration runs are performed for
+different weightings applied to multiple objective functions.  This
+set of optimal solutions defines a "Pareto set," which is useful for
+investigating design trade-offs between competing objectives.  Again,
+these optimizations can be performed concurrently, similar to the
+multi-start strategy discussed above.  The code is similar enough to
+the \c multi_start technique that both meta-iterators are implemented in
+the same ConcurrentMetaIterator class.
+
+The \c iterator_servers, \c processors_per_iterator, and \c
+iterator_scheduling specifications provide manual overrides for the
+number of concurrent iterator partitions, the size of iterator
+partitions, and the scheduling configuration (\c master or \c peer),
+respectively, for concurrent iterator jobs.  These settings are
+normally determined automatically in the parallel configuration
+routines (see ParallelLibrary) but can be overridden with user inputs
+if desired. 
+<!-- Each of these three overrides is only a useful input for those
+     meta-iterators supporting concurrency in their sub-iterators. -->
+
+\anchor T4d1
+<table>
+<caption align = "top">
+\htmlonly
+Table 4.1
+\endhtmlonly
+Specification detail for iterator scheduling controls
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Number of iterator servers
+<td>\c iterator_servers
+<td>integer
+<td>Optional
+<td>no override of auto configure
+<tr>
+<td>Number of processors per iterator server
+<td>\c processors_per_iterator
+<td>integer
+<td>Optional
+<td>no override of auto configure
+<tr>
+<td>Message passing configuration for scheduling of iterator jobs
+<td>\c iterator_scheduling
+<td>\c master | \c peer
+<td>Optional
+<td>no override of auto configure
+</table>
+
+
+\subsection MethodMetaHybrid Hybrid Minimization Commands
+
+
+The hybrid minimization strategy has \c sequential,\c embedded, and 
+\c collaborative approaches (see the Users
+Manual [\ref UsersMan "Adams et al., 2010"] for more information on
+the algorithms employed).  In the sequential approach, the best
+solutions are transferred from one method to the next through a
+specified sequence.  In the embedded approach, a tightly-coupled
+hybrid is employed in which a subordinate local method provides
+periodic refinements to a top-level global method.  And in the
+collaborative approach, multiple methods work together and share
+solutions while executing concurrently.
+
+In the \c sequential approach, a list of method strings supplied
+with the \c method_list specification specifies the identity and
+sequence of iterators to be used. Any number of iterators may be
+specified. In the sequential approach, method switching
+is managed through the separate convergence controls of each
+method.  The number of solutions transferred between methods is specified 
+by the particular method through its \c final_solutions method 
+control.  For example, if one sets up a two-level
+strategy with a first method that generates multiple solutions such as
+a genetic algorithm, followed by a second method that is initialized
+only at a single point such as a gradient-based algorithm, it is
+possible to take the multiple solutions generated by the first method
+and create several instances of the second method, each one with a
+different initial starting point. The logic governing the transfer of
+multiple solutions between methods is as follows: if one solution is
+returned from method A, then one solution is transferred to method B.
+If multiple solutions are returned from method A, and method B can
+accept multiple solutions as input (for example, as a genetic
+algorithm population), then one instance of method B is initialized
+with multiple solutions.  If multiple solutions are returned from
+method A but method B only can accept one initial starting point, then
+method B is run several times, each one with a separate starting point from 
+the results of method A. \ref T4d2 "Table 4.2" summarizes the sequential hybrid
+strategy inputs.
+
+\anchor T4d2
+<table>
+<caption align = "top">
+\htmlonly
+Table 4.2
+\endhtmlonly
+Specification detail for sequential hybrid meta-iterators
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Hybrid strategy
+<td>\c hybrid
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Sequential hybrid
+<td>\c sequential
+<td>none
+<td>Required group (1 of 3 selections)
+<td>N/A
+<tr>
+<td>%List of methods
+<td>\c method_list
+<td>list of strings
+<td>Required
+<td>N/A
+</table>
+
+In the \c embedded approach, global and local method strings supplied
+with the \c global_method_pointer and \c local_method_pointer
+specifications identify the two methods to be used. The \c
+local_search_probability setting is an optional specification for
+supplying the probability (between 0.0 and 1.0) of employing local
+search to improve estimates within the global search. \ref T4d3 "Table 4.3" 
+summarizes the embedded hybrid strategy inputs.
+
+\anchor T4d3
+<table>
+<caption align = "top">
+\htmlonly
+Table 4.3
+\endhtmlonly
+Specification detail for embedded hybrid meta-iterators
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Hybrid strategy
+<td>\c hybrid
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Embedded hybrid
+<td>\c embedded
+<td>none
+<td>Required group (1 of 3 selections)
+<td>N/A
+<tr>
+<td>Pointer to the global method specification
+<td>\c global_method_pointer
+<td>string
+<td>Required
+<td>N/A
+<tr>
+<td>Pointer to the local method specification
+<td>\c local_method_pointer
+<td>string
+<td>Required
+<td>N/A
+<tr>
+<td>Probability of executing local searches
+<td>\c local_search_probability
+<td>real
+<td>Optional
+<td>0.1
+</table>
+
+In the \c collaborative approach, a list of method strings supplied
+with the \c method_list specification specifies the pool of iterators
+to be used. Any number of iterators may be specified. The method
+collaboration logic follows that of either the Agent-Based
+Optimization or HOPSPACK codes and is currently under development.
+\ref T4d4 "Table 4.4" summarizes the collaborative hybrid strategy
+inputs.
+
+\anchor T4d4
+<table>
+<caption align = "top">
+\htmlonly
+Table 4.4
+\endhtmlonly
+Specification detail for collaborative hybrid meta-iterators
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Hybrid strategy
+<td>\c hybrid
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Collaborative hybrid
+<td>\c collaborative
+<td>none
+<td>Required group (1 of 3 selections)
+<td>N/A
+<tr>
+<td>%List of methods
+<td>\c method_list
+<td>list of strings
+<td>Required
+<td>N/A
+</table>
+
+
+\subsection MethodMetaMultiStart Multistart Iteration Commands
+
+
+The \c multi_start strategy must specify an iterator using \c
+method_pointer.  This iterator is responsible for completing a series
+of iterative analyses from a set of different starting points.  These
+starting points can be specified as follows: (1) using \c
+random_starts, for which the specified number of starting points are
+selected randomly within the variable bounds, (2) using \c
+starting_points, in which the starting values are provided in a list,
+or (3) using both \c random_starts and \c starting_points, for which
+the combined set of points will be used.  In aggregate, at least one
+starting point must be specified.  The most common example of a
+multi-start strategy is multi-start optimization, in which a series of
+optimizations are performed from different starting values for the
+design variables.  This can be an effective approach for problems with
+multiple minima.  \ref T4d5 "Table 4.5" summarizes the multi-start 
+strategy inputs.
+
+\anchor T4d5
+<table>
+<caption align = "top">
+\htmlonly
+Table 4.5
+\endhtmlonly
+Specification detail for multi-start meta-iterators
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Multi-start iteration strategy
+<td>\c multi_start
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Method pointer
+<td>\c method_pointer
+<td>string
+<td>Required
+<td>N/A
+<tr>
+<td>Number of random starting points
+<td>\c random_starts
+<td>integer
+<td>Optional group
+<td>no random starting points
+<tr>
+<td>Seed for random starting points
+<td>\c seed
+<td>integer
+<td>Optional
+<td>system-generated seed
+<tr>
+<td>%List of user-specified starting points
+<td>\c starting_points
+<td>list of reals
+<td>Optional
+<td>no user-specified starting points
+</table>
+
+
+\subsection MethodMetaParetoSet Pareto Set Optimization Commands
+
+
+The \c pareto_set strategy must specify an optimization or least
+squares calibration method using \c method_pointer.  This minimizer is
+responsible for computing a set of optimal solutions from a set of
+response weightings (multi-objective weights or least squares term
+weights).  These weightings can be specified as follows: (1) using \c
+random_weight_sets, in which case weightings are selected randomly
+within [0,1] bounds, (2) using \c weight_sets, in which the weighting
+sets are specified in a list, or (3) using both \c random_weight_sets
+and \c weight_sets, for which the combined set of weights will be
+used.  In aggregate, at least one set of weights must be specified.
+The set of optimal solutions is called the "pareto set," which can
+provide valuable design trade-off information when there are competing
+objectives.  \ref T4d6 "Table 4.6" summarizes the pareto set strategy
+inputs.
+
+\anchor T4d6
+<table>
+<caption align = "top">
+\htmlonly
+Table 4.6
+\endhtmlonly
+Specification detail for pareto set meta-iterators
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Pareto set optimization strategy
+<td>\c pareto_set
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Optimization method pointer
+<td>\c method_pointer
+<td>string
+<td>Required
+<td>N/A
+<tr>
+<td>Number of random weighting sets
+<td>\c random_weight_sets
+<td>integer
+<td>Optional
+<td>no random weighting sets
+<tr>
+<td>Seed for random weighting sets
+<td>\c seed
+<td>integer
+<td>Optional
+<td>system-generated seed
+<tr>
+<td>%List of user-specified weighting sets
+<td>\c weight_sets
+<td>list of reals
+<td>Optional
+<td>no user-specified weighting sets
+</table>
+
+
+\section MethodMin Minimizer Commands
+
 
 Linear inequality constraints can be supplied with the \c
 linear_inequality_constraint_matrix, \c
@@ -812,426 +1225,6 @@ inequality and equality constraints
 <td>Optional
 <td>vector values = \c 1. (no scaling)
 </table>
-
-
-\section MethodMeta Meta-Iterator Commands
-
-
-Four strategies currently exist: \c hybrid, \c multi_start, \c
-pareto_set, and \c single_method.  These algorithms are implemented
-within the MetaIterator branch of the Iterator hierarchy in the
-CollabHybridMetaIterator, EmbedHybridMetaIterator,
-SeqHybridMetaIterator, and ConcurrentMetaIterator classes.  For each
-of the strategies, a brief algorithm description is given below.
-Additional information on the algorithm logic is available in the
-Users Manual [\ref UsersMan "Adams et al., 2010"].
-
-In a hybrid minimization strategy (\c hybrid), a set of methods
-synergistically seek an optimal design.  The relationships among the
-methods are categorized as collaborative, embedded, or sequential.
-The goal in each case is to exploit the strengths of different
-optimization and nonlinear least squares algorithms through different
-stages of the minimization process. Global/local hybrids (e.g.,
-genetic algorithms combined with nonlinear programming) are a common
-example in which the desire for identification of a global optimum is
-balanced with the need for efficient navigation to a local optimum.
-
-In the multi-start iteration strategy (\c multi_start), a series of
-iterator runs are performed for different values of parameters in the
-model.  A common use is for multi-start optimization (i.e., different
-local optimization runs from different starting points for the design
-variables), but the concept and the code are more general.  An
-important feature is that these iterator runs may be performed
-concurrently.
-
-In the pareto set optimization strategy (\c pareto_set), a series of
-optimization or least squares calibration runs are performed for
-different weightings applied to multiple objective functions.  This
-set of optimal solutions defines a "Pareto set," which is useful for
-investigating design trade-offs between competing objectives.  Again,
-these optimizations can be performed concurrently, similar to the
-multi-start strategy discussed above.  The code is similar enough to
-the \c multi_start technique that both strategies are implemented in
-the same ConcurrentMetaIterator class.
-
-Lastly, the \c single_method strategy is the default strategy in that
-it does not provide control over multiple iterators or multiple
-models.  Rather, it provides the means for simple execution of a
-single iterator on a single model.  It is most commonly used when
-specifying other strategy-independent controls, e.g., tabular output,
-where the existence of the \c strategy block mandates selection of a
-strategy.
-
-Example specifications for each of the strategies follow. A \c
-hybrid example is:
-\verbatim
-strategy,
-	hybrid sequential
-	  method_list = 'GA', 'PS', 'NLP'
-\endverbatim
-
-A \c multi_start example specification is:
-\verbatim
-strategy,
-	multi_start
-	  method_pointer = 'NLP1'
-	  random_starts = 10
-\endverbatim
-
-A \c pareto_set example specification is:
-\verbatim
-strategy,
-	pareto_set
-	  method_pointer = 'NLP1'
-          random_weight_sets = 10
-\endverbatim
-
-The \c iterator_servers, \c processors_per_iterator, and \c
-iterator_scheduling specifications provide manual overrides for the
-number of concurrent iterator partitions, the size of iterator
-partitions, and the scheduling configuration (\c master or \c peer),
-respectively, for concurrent iterator jobs.  These settings are
-normally determined automatically in the parallel configuration
-routines (see ParallelLibrary) but can be overridden with user inputs
-if desired. 
-<!-- Each of these three overrides is only a useful input for those
-     meta-iterators supporting concurrency in their sub-iterators. -->
-
-\anchor T4d1
-<table>
-<caption align = "top">
-\htmlonly
-Table 4.1
-\endhtmlonly
-Specification detail for iterator scheduling controls
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Number of iterator servers
-<td>\c iterator_servers
-<td>integer
-<td>Optional
-<td>no override of auto configure
-<tr>
-<td>Number of processors per iterator server
-<td>\c processors_per_iterator
-<td>integer
-<td>Optional
-<td>no override of auto configure
-<tr>
-<td>Message passing configuration for scheduling of iterator jobs
-<td>\c iterator_scheduling
-<td>\c master | \c peer
-<td>Optional
-<td>no override of auto configure
-</table>
-
-
-\subsection MethodMetaHybrid Hybrid Minimization Commands
-
-
-The hybrid minimization strategy has \c sequential,\c embedded, and 
-\c collaborative approaches (see the Users
-Manual [\ref UsersMan "Adams et al., 2010"] for more information on
-the algorithms employed).  In the sequential approach, the best
-solutions are transferred from one method to the next through a
-specified sequence.  In the embedded approach, a tightly-coupled
-hybrid is employed in which a subordinate local method provides
-periodic refinements to a top-level global method.  And in the
-collaborative approach, multiple methods work together and share
-solutions while executing concurrently.
-
-In the \c sequential approach, a list of method strings supplied
-with the \c method_list specification specifies the identity and
-sequence of iterators to be used. Any number of iterators may be
-specified. In the sequential approach, method switching
-is managed through the separate convergence controls of each
-method.  The number of solutions transferred between methods is specified 
-by the particular method through its \c final_solutions method 
-control.  For example, if one sets up a two-level
-strategy with a first method that generates multiple solutions such as
-a genetic algorithm, followed by a second method that is initialized
-only at a single point such as a gradient-based algorithm, it is
-possible to take the multiple solutions generated by the first method
-and create several instances of the second method, each one with a
-different initial starting point. The logic governing the transfer of
-multiple solutions between methods is as follows: if one solution is
-returned from method A, then one solution is transferred to method B.
-If multiple solutions are returned from method A, and method B can
-accept multiple solutions as input (for example, as a genetic
-algorithm population), then one instance of method B is initialized
-with multiple solutions.  If multiple solutions are returned from
-method A but method B only can accept one initial starting point, then
-method B is run several times, each one with a separate starting point from 
-the results of method A. \ref T4d2 "Table 4.2" summarizes the sequential hybrid
-strategy inputs.
-
-\anchor T4d2
-<table>
-<caption align = "top">
-\htmlonly
-Table 4.2
-\endhtmlonly
-Specification detail for sequential hybrid strategies
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Hybrid strategy
-<td>\c hybrid
-<td>none
-<td>Required group (1 of 4 selections)
-<td>N/A
-<tr>
-<td>Sequential hybrid
-<td>\c sequential
-<td>none
-<td>Required group (1 of 3 selections)
-<td>N/A
-<tr>
-<td>%List of methods
-<td>\c method_list
-<td>list of strings
-<td>Required
-<td>N/A
-</table>
-
-In the \c embedded approach, global and local method strings supplied
-with the \c global_method_pointer and \c local_method_pointer
-specifications identify the two methods to be used. The \c
-local_search_probability setting is an optional specification for
-supplying the probability (between 0.0 and 1.0) of employing local
-search to improve estimates within the global search. \ref T4d3 "Table 4.3" 
-summarizes the embedded hybrid strategy inputs.
-
-\anchor T4d3
-<table>
-<caption align = "top">
-\htmlonly
-Table 4.3
-\endhtmlonly
-Specification detail for embedded hybrid strategies
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Hybrid strategy
-<td>\c hybrid
-<td>none
-<td>Required group (1 of 4 selections)
-<td>N/A
-<tr>
-<td>Embedded hybrid
-<td>\c embedded
-<td>none
-<td>Required group (1 of 3 selections)
-<td>N/A
-<tr>
-<td>Pointer to the global method specification
-<td>\c global_method_pointer
-<td>string
-<td>Required
-<td>N/A
-<tr>
-<td>Pointer to the local method specification
-<td>\c local_method_pointer
-<td>string
-<td>Required
-<td>N/A
-<tr>
-<td>Probability of executing local searches
-<td>\c local_search_probability
-<td>real
-<td>Optional
-<td>0.1
-</table>
-
-In the \c collaborative approach, a list of method strings supplied
-with the \c method_list specification specifies the pool of iterators
-to be used. Any number of iterators may be specified. The method
-collaboration logic follows that of either the Agent-Based
-Optimization or HOPSPACK codes and is currently under development.
-\ref T4d4 "Table 4.4" summarizes the collaborative hybrid strategy
-inputs.
-
-\anchor T4d4
-<table>
-<caption align = "top">
-\htmlonly
-Table 4.4
-\endhtmlonly
-Specification detail for collaborative hybrid strategies
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Hybrid strategy
-<td>\c hybrid
-<td>none
-<td>Required group (1 of 4 selections)
-<td>N/A
-<tr>
-<td>Collaborative hybrid
-<td>\c collaborative
-<td>none
-<td>Required group (1 of 3 selections)
-<td>N/A
-<tr>
-<td>%List of methods
-<td>\c method_list
-<td>list of strings
-<td>Required
-<td>N/A
-</table>
-
-
-\subsection MethodMetaMultiStart Multistart Iteration Commands
-
-
-The \c multi_start strategy must specify an iterator using \c
-method_pointer.  This iterator is responsible for completing a series
-of iterative analyses from a set of different starting points.  These
-starting points can be specified as follows: (1) using \c
-random_starts, for which the specified number of starting points are
-selected randomly within the variable bounds, (2) using \c
-starting_points, in which the starting values are provided in a list,
-or (3) using both \c random_starts and \c starting_points, for which
-the combined set of points will be used.  In aggregate, at least one
-starting point must be specified.  The most common example of a
-multi-start strategy is multi-start optimization, in which a series of
-optimizations are performed from different starting values for the
-design variables.  This can be an effective approach for problems with
-multiple minima.  \ref T4d5 "Table 4.5" summarizes the multi-start 
-strategy inputs.
-
-\anchor T4d5
-<table>
-<caption align = "top">
-\htmlonly
-Table 4.5
-\endhtmlonly
-Specification detail for multi-start strategies
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Multi-start iteration strategy
-<td>\c multi_start
-<td>none
-<td>Required group (1 of 4 selections)
-<td>N/A
-<tr>
-<td>Method pointer
-<td>\c method_pointer
-<td>string
-<td>Required
-<td>N/A
-<tr>
-<td>Number of random starting points
-<td>\c random_starts
-<td>integer
-<td>Optional group
-<td>no random starting points
-<tr>
-<td>Seed for random starting points
-<td>\c seed
-<td>integer
-<td>Optional
-<td>system-generated seed
-<tr>
-<td>%List of user-specified starting points
-<td>\c starting_points
-<td>list of reals
-<td>Optional
-<td>no user-specified starting points
-</table>
-
-
-\subsection MethodMetaParetoSet Pareto Set Optimization Commands
-
-
-The \c pareto_set strategy must specify an optimization or least
-squares calibration method using \c method_pointer.  This minimizer is
-responsible for computing a set of optimal solutions from a set of
-response weightings (multi-objective weights or least squares term
-weights).  These weightings can be specified as follows: (1) using \c
-random_weight_sets, in which case weightings are selected randomly
-within [0,1] bounds, (2) using \c weight_sets, in which the weighting
-sets are specified in a list, or (3) using both \c random_weight_sets
-and \c weight_sets, for which the combined set of weights will be
-used.  In aggregate, at least one set of weights must be specified.
-The set of optimal solutions is called the "pareto set," which can
-provide valuable design trade-off information when there are competing
-objectives.  \ref T4d6 "Table 4.6" summarizes the pareto set strategy
-inputs.
-
-\anchor T4d6
-<table>
-<caption align = "top">
-\htmlonly
-Table 4.6
-\endhtmlonly
-Specification detail for pareto set strategies
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Pareto set optimization strategy
-<td>\c pareto_set
-<td>none
-<td>Required group (1 of 4 selections)
-<td>N/A
-<tr>
-<td>Optimization method pointer
-<td>\c method_pointer
-<td>string
-<td>Required
-<td>N/A
-<tr>
-<td>Number of random weighting sets
-<td>\c random_weight_sets
-<td>integer
-<td>Optional
-<td>no random weighting sets
-<tr>
-<td>Seed for random weighting sets
-<td>\c seed
-<td>integer
-<td>Optional
-<td>system-generated seed
-<tr>
-<td>%List of user-specified weighting sets
-<td>\c weight_sets
-<td>list of reals
-<td>Optional
-<td>no user-specified weighting sets
-</table>
-
 
 
 \section MethodOpt Optimization Methods
