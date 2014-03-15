@@ -45,7 +45,7 @@
 #endif // HAVE_AMPL
 
 //#define DEBUG
-
+//#define REFCOUNT_DEBUG
 
 namespace Dakota {
 
@@ -219,6 +219,7 @@ Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
     to the appropriate derived type. */
 Interface* Interface::get_interface(ProblemDescDB& problem_db)
 {
+  const String& interface_type = problem_db.get_string("interface.type");
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter: Getting interface " << interface_type 
        << std::endl;
@@ -227,7 +228,6 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   // In the case where a derived interface type has been selected for managing
   // analysis_drivers, then this determines the letter instantiation and any 
   // algebraic mappings are overlayed by ApplicationInterface.
-  const String& interface_type = problem_db.get_string("interface.type");
   const String& algebraic_map_file
     = problem_db.get_string("interface.algebraic_mappings");
   if (interface_type == "system")
