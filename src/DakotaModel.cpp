@@ -22,13 +22,16 @@
 #include "HierarchSurrModel.hpp"
 #include "DakotaGraphics.hpp"
 
+//#define REFCOUNT_DEBUG
+
 static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 
 namespace Dakota 
 {
-extern PRPCache data_pairs;
+extern PRPCache        data_pairs;
 extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
 extern Graphics        dakota_graphics; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
@@ -263,7 +266,7 @@ Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
   currentResponse(set), numFns(set.request_vector().size()),
   userDefinedConstraints(svd), fdGradStepType("relative"),
   fdHessStepType("relative"), supportsEstimDerivs(true),
-  parallelLib(parallel_lib),
+  probDescDB(dummy_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(output_level), hierarchicalTagging(false),
@@ -285,7 +288,7 @@ Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
     separately from problem_db since parallel_lib is needed even in
     cases where problem_db is an empty envelope. */
 Model::
-Model(RecastBaseConstructor, const ProblemDescDB& problem_db,
+Model(RecastBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
   probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
@@ -308,7 +311,9 @@ Model(RecastBaseConstructor, const ProblemDescDB& problem_db,
     populated problem_db is needed to build a meaningful Model
     object).  This makes it necessary to check for NULL in the copy
     constructor, assignment operator, and destructor. */
-Model::Model(): modelRep(NULL), referenceCount(1), parallelLib(dummy_lib)
+Model::Model():
+  modelRep(NULL), referenceCount(1), probDescDB(dummy_db),
+  parallelLib(dummy_lib)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(), modelRep = NULL" << std::endl;

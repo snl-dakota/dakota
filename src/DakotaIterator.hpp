@@ -186,7 +186,7 @@ public:
   Model& iterated_model();
 
   /// return the problem description database (probDescDB)
-  const ProblemDescDB& problem_description_db() const;
+  ProblemDescDB& problem_description_db() const;
 
   /// return the method name by its enumeration value
   unsigned short method_name() const;
@@ -299,8 +299,8 @@ protected:
   //- Heading: Data
   //
 
-  /// shallow copy of the problem description database
-  ProblemDescDB probDescDB;
+  /// class member reference to the problem description database
+  ProblemDescDB& probDescDB;
 
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
@@ -414,7 +414,7 @@ inline Model& Iterator::iterated_model()
 { return (iteratorRep) ? iteratorRep->iteratedModel : iteratedModel; }
 
 
-inline const ProblemDescDB& Iterator::problem_description_db() const
+inline ProblemDescDB& Iterator::problem_description_db() const
 { return (iteratorRep) ? iteratorRep->probDescDB : probDescDB; }
 
 

@@ -681,7 +681,7 @@ public:
   /// return the current response (currentResponse)
   const Response& current_response() const;
   /// return the problem description database (probDescDB)
-  const ProblemDescDB& problem_description_db() const;
+  ProblemDescDB& problem_description_db() const;
   /// return the parallel library (parallelLib)
   ParallelLibrary& parallel_library() const;
   /// return the model type (modelType)
@@ -816,7 +816,7 @@ protected:
 
   /// constructor initializing base class for recast model class instances
   /// constructed on the fly
-  Model(RecastBaseConstructor, const ProblemDescDB& problem_db,
+  Model(RecastBaseConstructor, ProblemDescDB& problem_db,
 	ParallelLibrary& parallel_lib);
 
   //
@@ -935,8 +935,8 @@ protected:
   /// and PRPair
   IntArray messageLengths;
 
-  /// class member shallow copy of the problem description database
-  ProblemDescDB probDescDB;
+  /// class member reference to the problem description database
+  ProblemDescDB& probDescDB;
 
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
@@ -2411,7 +2411,7 @@ inline const Response& Model::current_response() const
 { return (modelRep) ? modelRep->currentResponse : currentResponse; }
 
 
-inline const ProblemDescDB& Model::problem_description_db() const
+inline ProblemDescDB& Model::problem_description_db() const
 { return (modelRep) ? modelRep->probDescDB : probDescDB; }
 
 

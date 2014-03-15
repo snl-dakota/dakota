@@ -110,12 +110,16 @@
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
 
+//#define REFCOUNT_DEBUG
+
 static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 namespace Dakota {
 
-extern Graphics dakota_graphics; // defined in ParallelLibrary.cpp
+extern ProblemDescDB  dummy_db;        // defined in dakota_global_defs.cpp
+extern Graphics       dakota_graphics; // defined in dakota_global_defs.cpp
 extern ResultsManager iterator_results_db;
+
 
 /** This constructor builds the base class data for all inherited
     iterators, including meta-iterators.  get_iterator() instantiates
@@ -165,12 +169,11 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
 Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
-  //probDescDB is empty envelope
-  methodName(method_name), convergenceTol(0.0001), maxIterations(100),
-  maxFunctionEvals(1000), maxEvalConcurrency(1), subIteratorFlag(false),
-  numFinalSolutions(1), outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId("NO_DB_METHOD"),
-  iteratorRep(NULL), referenceCount(1)
+  probDescDB(dummy_db), methodName(method_name), convergenceTol(0.0001),
+  maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
+  subIteratorFlag(false), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
+  summaryOutputFlag(false), resultsDB(iterator_results_db),
+  methodId("NO_DB_METHOD"), iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
@@ -184,8 +187,8 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
-Iterator::Iterator(): //probDescDB is empty envelope
-  resultsDB(iterator_results_db), iteratorRep(NULL), referenceCount(1)
+Iterator::Iterator(): probDescDB(dummy_db), resultsDB(iterator_results_db),
+  iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -454,8 +457,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     data.  This version is used for lightweight constructions without
     the ProblemDescDB. */
 Iterator::Iterator(const String& method_string, Model& model):
-  //probDescDB(model.problem_description_db()), // leave as empty envelope
-  resultsDB(iterator_results_db),
+  probDescDB(model.problem_description_db()), resultsDB(iterator_results_db),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG

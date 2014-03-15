@@ -49,6 +49,7 @@ MPIManager      dummy_mpi_mgr; ///< dummy MPIManager for ref initialization
 ProgramOptions  dummy_prg_opt; ///< dummy ProgramOptions for ref initialization
 OutputManager   dummy_out_mgr; ///< dummy OutputManager for ref initialization
 ParallelLibrary dummy_lib;     ///< dummy ParallelLibrary for ref initialization
+ProblemDescDB   dummy_db;      ///< dummy ProblemDescDB for ref initialization
 
 #ifdef DAKOTA_MODELCENTER
 int mc_ptr_int = 0;           ///< global pointer for ModelCenter API

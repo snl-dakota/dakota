@@ -27,6 +27,7 @@
 #include <string>
 
 //#define DEBUG
+//#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
 
@@ -96,7 +97,7 @@ ProblemDescDB* ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_db(ParallelLibrary&)."
-       << endl;
+       << std::endl;
 #endif
 
    Dak_pddb = this;	// for use in abort_handler()
