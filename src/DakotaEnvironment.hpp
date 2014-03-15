@@ -28,7 +28,7 @@
 /** The Dakota namespace encapsulates the core classes of the DAKOTA
     framework and prevents name clashes with third-party libraries
     from methods and packages.  The C++ source files defining these
-    core classes reside in Dakota/src as *.[CH]. */
+    core classes reside in Dakota/src as *.[ch]pp. */
 
 namespace Dakota {
 

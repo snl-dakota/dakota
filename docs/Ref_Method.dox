@@ -756,6 +756,23 @@ Specification detail for iterator scheduling controls
 <td>no override of auto configure
 </table>
 
+Each of the meta-iterator specifications identifies one or more method
+pointers (e.g., \c method_pointer_list, \c method_pointer) to identify
+the subordinate iterators that will be used in the meta-iteration.
+These method pointers are strings that correspond to the \c id_method
+identifier strings from the method specifications (see \ref
+MethodIndControl). These string identifiers (e.g., 'NLP1') should \e
+not be confused with method selections (e.g., \c dot_mmfd).  Each of
+the method specifications identified in this manner has the
+responsibility for identifying corresponding model specifications
+(using \c model_pointer from \ref MethodIndControl), which in turn
+identify the variables, interface, and responses specifications (using
+\c variables_pointer, \c interface_pointer, and \c responses_pointer
+from \ref ModelCommands) that are used to build the model used by the
+iterator.  If one of these specifications does not provide an optional
+pointer, then that component will be constructed using the last
+specification parsed.
+
 
 \subsection MethodMetaHybrid Hybrid Minimization Commands
 

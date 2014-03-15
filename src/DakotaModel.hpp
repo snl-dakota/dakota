@@ -936,6 +936,9 @@ protected:
   IntArray messageLengths;
 
   /// class member reference to the problem description database
+  /** Iterator and Model cannot use a shallow copy of ProblemDescDB
+      due to circular destruction dependency (reference counts can't
+      get to 0), since ProblemDescDB contains {iterator,model}List. */
   ProblemDescDB& probDescDB;
 
   /// class member reference to the parallel library

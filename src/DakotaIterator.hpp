@@ -300,6 +300,9 @@ protected:
   //
 
   /// class member reference to the problem description database
+  /** Iterator and Model cannot use a shallow copy of ProblemDescDB
+      due to circular destruction dependency (reference counts can't
+      get to 0), since ProblemDescDB contains {iterator,model}List. */
   ProblemDescDB& probDescDB;
 
   /// the model to be iterated (for iterators and meta-iterators
