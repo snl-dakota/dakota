@@ -84,6 +84,11 @@ public:
   //- Heading: Member functions
   //
 
+  // TO DO: would prefer that this be protected, once library mode changes
+  //        are completed
+  /// Instantiate topLevelIterator
+  void construct(bool run_parser = true);
+
   /// return mpiManager
   MPIManager& mpi_manager();
   /// return programOptions
@@ -118,8 +123,6 @@ protected:
   //- Heading: Member functions
   //
 
-  /// Instantiate topLevelIterator
-  void construct(bool run_parser = true);
   /// Deallocate parallel partitioning for topLevelIterator
   void destruct();
 
