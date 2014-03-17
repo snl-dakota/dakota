@@ -60,9 +60,9 @@ public:
     // TODO: consider whether alloc should be no-op in this case,
     // otherwise perhaps it should use array_size and maybe even a
     // non-default constructed StoredType
-    StoredType initial_entry;
-    std::vector<StoredType> initial_array(1);
-    initial_array[0] = initial_entry;
+    //StoredType initial_entry;
+    std::vector<StoredType> initial_array(array_size, StoredType());
+    //initial_array[0] = initial_entry;
 
     hdf5Stream->store_data(dataset_name(iterator_id, data_name),
 			   initial_array);
@@ -73,9 +73,11 @@ public:
 		    const std::string& data_name, size_t index,
 		    const StoredType& stored_data)
   {
-    // TODO: store at index specified... (or change API)
-    // hdf5Stream->store_data(dataset_name(iterator_id, data_name),
-    // 			   initial_array);
+    // TODO: store at index specified...
+    // BUT, for now, just to get some data written, ignore the index
+
+    hdf5Stream->store_data(dataset_name(iterator_id, data_name),
+     			   stored_data);
   }
 
 
