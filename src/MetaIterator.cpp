@@ -66,7 +66,7 @@ allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 
 
 void MetaIterator::
-allocate_by_name(const String& method_name, const String& model_ptr,
+allocate_by_name(const String& method_string, const String& model_ptr,
 		 Iterator& the_iterator, Model& the_model)
 {
   // model instantiation is DB-based, iterator instantiation is not
@@ -77,7 +77,7 @@ allocate_by_name(const String& method_name, const String& model_ptr,
   }
   if (the_model.is_null())
     the_model = probDescDB.get_model();
-  iterSched.init_iterator(method_name, the_iterator, the_model,
+  iterSched.init_iterator(method_string, the_iterator, the_model,
     probDescDB.parallel_library().parallel_configuration().si_parallel_level());
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore

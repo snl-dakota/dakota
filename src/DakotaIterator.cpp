@@ -188,7 +188,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
 Iterator::Iterator(): probDescDB(dummy_db), resultsDB(iterator_results_db),
-  iteratorRep(NULL), referenceCount(1)
+  methodName(DEFAULT_METHOD), iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "

@@ -165,15 +165,18 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
     the_model.init_communicators(the_iterator.maximum_evaluation_concurrency());
     if (multiproc) the_model.stop_configurations();
   }
-  // iterator ranks 1->n: match all the_model.init_communicators() calls
-  // that occur on rank 0 (due both to implicit model recursions within the
-  // Iterator constructors and the explicit call above).  Some data is stored
-  // in the empty envelope for later use in set/run/free.
+  // iterator ranks 1->n: match all the_model.init_communicators() calls that
+  // occur on rank 0 (due both to implicit model recursions within the Iterator
+  // constructors and the explicit call above).  Some data is stored in the
+  // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
     int last_concurrency = the_model.serve_configurations();
-    the_iterator.maximum_evaluation_concurrency(last_concurrency);//store: s/r/f
-    the_iterator.iterated_model(the_model);            // store for set/run/free
-    //the_iterator.method_name(name); // for logic based on meta-iterator bit
+    // store data for {run,free}_iterator() below:
+    the_iterator.maximum_evaluation_concurrency(last_concurrency);
+    the_iterator.iterated_model(the_model);
+    // store for meta-iterator bit logic applied to all ranks
+    // (e.g., Environment::execute/destruct()):
+    the_iterator.method_name(problem_db.get_ushort("method.algorithm"));
   }
 }
 
@@ -181,7 +184,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator. */
 void IteratorScheduler::
-init_iterator(const String& method_name, Iterator& the_iterator,
+init_iterator(const String& method_string, Iterator& the_iterator,
 	      Model& the_model, const ParallelLevel& pl)
 {
   if (pl.dedicated_master_flag() && pl.server_id() == 0) // ded master processor
@@ -194,21 +197,24 @@ init_iterator(const String& method_name, Iterator& the_iterator,
     bool multiproc = (pl.server_communicator_size() > 1);//iteratorCommSize > 1
     if (multiproc) the_model.init_comms_bcast_flag(true);
     // only master processor needs an iterator object:
-    // Note: problem_db.get_iterator() is not used since method_name is
-    // insufficient to distinguish unique from shared instances.
-    the_iterator = Iterator(method_name, the_model);
+    // Note: problem_db.get_iterator() is not used since method_string
+    // is insufficient to distinguish unique from shared instances.
+    the_iterator = Iterator(method_string, the_model);
     the_model.init_communicators(the_iterator.maximum_evaluation_concurrency());
     if (multiproc) the_model.stop_configurations();
   }
-  // iterator ranks 1->n: match all the_model.init_communicators() calls
-  // that occur on rank 0 (due both to implicit model recursions within the
-  // Iterator constructors and the explicit call above).  Some data is stored
-  // in the empty envelope for later use in set/run/free.
+  // iterator ranks 1->n: match all the_model.init_communicators() calls that
+  // occur on rank 0 (due both to implicit model recursions within the Iterator
+  // constructors and the explicit call above).  Some data is stored in the
+  // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
     int last_concurrency = the_model.serve_configurations();
-    the_iterator.maximum_evaluation_concurrency(last_concurrency);//store: s/r/f
-    the_iterator.iterated_model(the_model);            // store for set/run/free
-    //the_iterator.method_name(name); // for logic based on meta-iterator bit
+    // store data for {run,free}_iterator() below:
+    the_iterator.maximum_evaluation_concurrency(last_concurrency);
+    the_iterator.iterated_model(the_model);
+    // store for meta-iterator bit logic applied to all ranks
+    // (e.g., Environment::execute/destruct()):
+    the_iterator.method_string(method_string);
   }
 }
 

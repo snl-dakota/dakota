@@ -188,8 +188,12 @@ public:
   /// return the problem description database (probDescDB)
   ProblemDescDB& problem_description_db() const;
 
-  /// return the method name by its enumeration value
+  /// set the method name to an enumeration value
+  void method_name(unsigned short m_name);
+  /// return the method name via its native enumeration value
   unsigned short method_name() const;
+  /// set the method name by string
+  void method_string(const String& m_str);
   /// return the method name by string
   String method_string() const;
 
@@ -421,8 +425,22 @@ inline ProblemDescDB& Iterator::problem_description_db() const
 { return (iteratorRep) ? iteratorRep->probDescDB : probDescDB; }
 
 
+inline void Iterator::method_name(unsigned short m_name)
+{
+  if (iteratorRep) iteratorRep->methodName = m_name;
+  else             methodName = m_name;
+}
+
+
 inline unsigned short Iterator::method_name() const
 { return (iteratorRep) ? iteratorRep->methodName : methodName; }
+
+
+inline void Iterator::method_string(const String& m_str)
+{
+  if (iteratorRep) iteratorRep->methodName = method_string_to_enum(m_str);
+  else             methodName = method_string_to_enum(m_str);
+}
 
 
 inline String Iterator::method_string() const

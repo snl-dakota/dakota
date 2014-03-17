@@ -55,8 +55,8 @@ protected:
   /// initialize the_iterator and the_model based on method_ptr
   void allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 			   Model& the_model);
-  /// initialize the_iterator based on method_name
-  void allocate_by_name(const String& method_name, const String& model_ptr,
+  /// initialize the_iterator based on method_string
+  void allocate_by_name(const String& method_string, const String& model_ptr,
 			Iterator& the_iterator,	Model& the_model);
   /// free communicators for the_iterator and the_model
   void deallocate(Iterator& the_iterator, Model& the_model);

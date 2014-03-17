@@ -68,7 +68,7 @@ public:
 			    Model& the_model, const ParallelLevel& pl);
   /// convenience function for lightweight allocation of an iterator
   /// and (parallel) initialization of its comms
-  static void init_iterator(const String& method_name, Iterator& the_iterator,
+  static void init_iterator(const String& method_string, Iterator& the_iterator,
 			    Model& the_model, const ParallelLevel& pl);
 
   /// Convenience function for invoking an iterator and managing parallelism.
