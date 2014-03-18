@@ -18,20 +18,20 @@ environment,
         tabular_graphics_data
 
 method,
-        #importance_sampling 
-        #import
-        #output debug
+#	importance_sampling 
+#	  import
+#	output debug
         gpais 
         emulator_samples = 100
         max_iterations = 5 
-        #response_levels = -1.0985
+#	response_levels = -1.0985
         response_levels = -1.065 
         compute probabilities
         samples = 100
-       # seed6 = 3847 
+#	seed6 = 3847 
         seed = 4326
-       #seed8 = 19993 
-       # seed = 25632
+#	seed8 = 19993 
+#	seed = 25632
 
 variables,
 	uniform_uncertain = 2 
