@@ -187,8 +187,14 @@ void ProblemDescDB::
 parse_inputs(const ProgramOptions& prog_opts, 
 	     DbCallbackFunctionPtr callback, void *callback_data)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->parse_inputs(prog_opts, callback, callback_data);
+    // BMA TODO: Temporary workaround; can't get callback to work on
+    // letter yet. Need to replace Null_rep* with forward to letter
+    // and remove dbRep->, but initial cut didn't work.
+    if (callback)
+      (*callback)(this, callback_data);
+  }
   else {
 
     // Only the master parses the input file.
@@ -207,12 +213,14 @@ parse_inputs(const ProgramOptions& prog_opts,
       derived_parse_inputs(prog_opts);
 
       // Allow user input by callback function.
+      
       // BMA TODO: Is this comment true?
       // Note: the DB is locked and the list iterators are not defined.  Thus,
       // the user function must do something to put the DB in a usable set/get
       // state (e.g., resolve_top_method() or set_db_list_nodes()).
-      if (callback)
-	(*callback)(this, callback_data);
+
+      // if (callback)
+      // 	(*callback)(this, callback_data);
 
     }
 
