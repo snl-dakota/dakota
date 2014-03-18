@@ -15,7 +15,7 @@ J. Adam Stephens, Dena M. Vigil
 <li> <a href="index.html#DevIntro">Introduction</a> 
 <li> <a href="index.html#DevOverview">Overview of Dakota</a> 
   <ul>
-  <li> <a href="index.html#DevStrategies">Strategies</a>
+  <li> <a href="index.html#DevEnvironment">Environment</a>
   <li> <a href="index.html#DevIterators">Iterators</a>
   <li> <a href="index.html#DevModels">Models</a>
   <li> <a href="index.html#DevVariables">Variables</a>
@@ -61,25 +61,28 @@ Manual.
 
 \section DevOverview Overview of Dakota
 
-In %Dakota, the \e strategy creates and manages \e iterators and 
-\e models.  In the simplest case, the strategy creates a single iterator
-and a single model and executes the iterator on the model to perform a
-single study.  In a more advanced case, a hybrid optimization strategy
-might manage a global optimizer operating on a low-fidelity model in
-coordination with a local optimizer operating on a high-fidelity
-model.  And on the high end, a surrogate-based optimization under
-uncertainty strategy would employ an uncertainty quantification
-iterator nested within an optimization iterator and would employ truth
-models layered within surrogate models.  Thus, iterators and models
-provide both stand-alone capabilities as well as building blocks for
-more sophisticated studies.
+In %Dakota, the \e environment manages different execution modes and
+input/output streams and defines the top-level iterator.  This
+top-level iterator may be either a standard iterator or a
+meta-iterator.  In the former case, the iterator identifies a model
+and the environment executes the iterator on the model to perform a
+single study.  In the latter case, iterator recursions are present and
+sub-iterators may identify their own models.  For example, a hybrid
+meta-iterator might manage a global optimizer operating on a
+low-fidelity model in coordination with a local optimizer operating on
+a high-fidelity model.  And in a more advanced example, a
+surrogate-based optimization under uncertainty approach would employ
+an uncertainty quantification iterator nested within an optimization
+iterator and would employ truth models layered within surrogate
+models.  Thus, iterators and models provide both stand-alone
+capabilities as well as building blocks for more sophisticated studies.
 
 A model contains a set of \e variables, an \e interface, and a set of
 \e responses, and the iterator operates on the model to map the
 variables into responses using the interface.  Each of these
 components is a flexible abstraction with a variety of specializations
 for supporting different types of iterative studies.  In a %Dakota
-input file, the user specifies these components through strategy,
+input file, the user specifies these components through environment,
 method, model, variables, interface, and responses keyword
 specifications.
 
@@ -94,31 +97,20 @@ leveraged for new purposes.  The following sections tour %Dakota's
 class organization.
 
 
-\subsection DevStrategies Strategies
+\subsection DevEnvironment Environment
 
-Class hierarchy: \ref Dakota::Strategy "Strategy".
+Class hierarchy: \ref Dakota::Environment "Environment".
 
-Strategies provide a control layer for creation and management of
-iterators and models.  Specific strategies include:
+Environments provide the top level abstraction for managing different
+execution modes and managing input and output streams.  Specific
+environments include:
 
 <ul> 
-<li> \ref Dakota::SingleMethodStrategy "SingleMethodStrategy": the
-simplest strategy.  A single iterator is run on a single model to
-perform a single study.
+<li> \ref Dakota::ExecutableEnvironment "ExecutableEnvironment": the 
+environment for execution of %Dakota as a stand-alone application.
 
-<li> \ref Dakota::HybridStrategy "HybridStrategy": hybrid minimization
-using a set of iterators employing a corresponding set of models of
-varying fidelity.  Coordination approaches among the iterators include
-collaborative, embedded, and sequential approaches, as embodied in
-the CollaborativeHybridStrategy, EmbeddedHybridStrategy, and
-SequentialHybridStrategy derived classes.
-
-<li> \ref Dakota::ConcurrentStrategy "ConcurrentStrategy": two similar
-algorithms are available: (1) multi-start iteration from several
-different starting points, and (2) pareto set optimization for several
-different multiobjective weightings.  Employs a single iterator with a
-single model, but runs multiple instances of the iterator concurrently
-for different settings within the model.
+<li> \ref Dakota::LibraryEnvironment "LibraryEnvironment": the 
+environment for execution of %Dakota as an embedded library service.
 </ul>
 
 
@@ -131,10 +123,41 @@ as described in \ref IteratorFlow.
 The iterator hierarchy contains a variety of iterative algorithms for
 optimization, uncertainty quantification, nonlinear least squares,
 design of experiments, and parameter studies.  The hierarchy is
-divided into \ref Dakota::Minimizer "Minimizer" and 
-\ref Dakota::Analyzer "Analyzer" branches.  The 
-\ref Dakota::Minimizer "Minimizer" classes address optimization and 
-deterministic calibration and are grouped into:
+divided into \ref Dakota::MetaIterator "MetaIterator", 
+\ref Dakota::Minimizer "Minimizer", and \ref Dakota::Analyzer "Analyzer"
+branches.  
+
+The \ref Dakota::MetaIterator "MetaIterator" classes manage sequencing
+and collaboration among multiple methods with support for concurrent
+iterator parallelism.  Methods include:
+
+<ul> 
+<li> \ref Dakota::SeqHybridMetaIterator "SeqHybridMetaIterator": hybrid
+minimization using a set of iterators employing a corresponding set of 
+models of varying fidelity.  The sequential hybrid passes the best
+solutions from one method in as the starting points of the next method
+in the sequence.
+
+<li> \ref Dakota::CollabHybridMetaIterator "CollabHybridMetaIterator":
+hybrid minimization employing collaboration and sharing of response
+data among methods during the course if iteration.  This class is
+currently a placeholder.
+
+<li> \ref Dakota::EmbedHybridMetaIterator "EmbedHybridMetaIterator":
+hybrid minimization involving periodic use of a local search method
+for refinement during the iteration of an outer global method. This
+class is currently a placeholder.
+
+<li> \ref Dakota::ConcurrentMetaIterator "ConcurrentMetaIterator": two 
+similar algorithms are available: (1) multi-start iteration from several
+different starting points, and (2) pareto set optimization for several
+different multiobjective weightings.  Employs a single iterator with a
+single model, but runs multiple instances of the iterator concurrently
+for different settings within the model.
+</ul>
+
+The \ref Dakota::Minimizer "Minimizer" classes address
+optimization and deterministic calibration and are grouped into:
 
 <ul>
 <li> Optimization: \ref Dakota::Optimizer "Optimizer" provides a base
@@ -462,12 +485,13 @@ below.
 
 <ul> 
 <li> Multilevel parallel computing: %Dakota supports multiple levels of
-nested parallelism.  A strategy can manage concurrent iterators, each
-of which manages concurrent function evaluations, each of which
+nested parallelism.  A meta-iterator can manage concurrent iterators, 
+each of which manages concurrent function evaluations, each of which
 manages concurrent analyses executing on multiple processors.
 Partitioning of these levels with MPI communicators is managed in 
 \ref Dakota::ParallelLibrary "ParallelLibrary" and scheduling 
-routines for the levels are part of \ref Dakota::Strategy "Strategy", 
+routines for the levels are part of 
+\ref Dakota::IteratorScheduler "IteratorScheduler", 
 \ref Dakota::ApplicationInterface "ApplicationInterface", and 
 \ref Dakota::ForkApplicInterface "ForkApplicInterface".
 
@@ -480,7 +504,7 @@ Dakota::ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()"
 called from main.cpp.  NIDR uses the keyword handlers in the
 \ref Dakota::NIDRProblemDescDB "NIDRProblemDescDB" derived class to populate 
 data within the \ref Dakota::ProblemDescDB "ProblemDescDB" base class, 
-which maintains a \ref Dakota::DataStrategy "DataStrategy"
+which maintains a \ref Dakota::DataEnvironment "DataEnvironment"
 specification and lists of \ref Dakota::DataMethod "DataMethod", 
 \ref Dakota::DataModel "DataModel", \ref Dakota::DataVariables "DataVariables", 
 \ref Dakota::DataInterface "DataInterface", and 
@@ -508,7 +532,7 @@ concatenating, and post-processing restart files.
 counting and representation sharing through the use of letter-envelope
 and handle-body idioms (Coplien, "Advanced C++").  The former idiom
 provides for memory efficiency and enhanced polymorphism in the
-following class hierarchies: \ref Dakota::Strategy "Strategy", \ref
+following class hierarchies: \ref Dakota::Environment "Environment", \ref
 Dakota::Iterator "Iterator", \ref Dakota::Model "Model", \ref
 Dakota::Variables "Variables", \ref Dakota::Constraints "Constraints", 
 \ref Dakota::Interface "Interface", 
@@ -516,7 +540,7 @@ Dakota::Variables "Variables", \ref Dakota::Constraints "Constraints",
 \ref Dakota::Approximation "Approximation".  The latter 
 idiom provides for memory efficiency in data-intensive classes which
 do not involve a class hierarchy.  The \ref Dakota::Response "Response"
-and parser data (\ref Dakota::DataStrategy "DataStrategy", 
+and parser data (\ref Dakota::DataEnvironment "DataEnvironment", 
 \ref Dakota::DataMethod "DataMethod", \ref Dakota::DataModel "DataModel", 
 \ref Dakota::DataVariables "DataVariables",
 \ref Dakota::DataInterface "DataInterface", and
