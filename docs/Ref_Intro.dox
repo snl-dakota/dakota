@@ -21,7 +21,7 @@ namespace Dakota {
   <li> <a href="IntroCommands.html#IntroCmdsSamplePS">
        Sample 4: Parameter Study</a>
   <li> <a href="IntroCommands.html#IntroCmdsSampleML">
-       Sample 5: Hybrid Strategy</a>
+       Sample 5: Hybrid Meta-Iteration</a>
   </ul>
 <li> <a href="IntroCommands.html#IntroCmdsTables">Tabular descriptions</a>
 </ul>
@@ -31,19 +31,24 @@ namespace Dakota {
 \section IntroCmdsOverview Overview
 
 
-In %Dakota, a \e strategy creates and manages \e iterators and \e
-models. A model, generally speaking, contains a set of \e variables,
-an \e interface, and a set of \e responses.  An iterator repeatedly
+In %Dakota, the \e environment manages execution modes and I/O streams
+and defines the top-level iterator.  Generally speaking, an iterator
+contains a model and a model contains a set of \e variables, an \e
+interface, and a set of \e responses.  An iterator repeatedly
 operates on the model to map the variables into responses using the
-interface. Each of these six pieces (strategy, method, model,
+interface. Each of these six components (environment, method, model,
 variables, interface, and responses) are separate specifications in
 the user's input file, and as a whole, determine the study to be
-performed during an execution of the %Dakota software. A %Dakota
-execution is limited to a single strategy, which may invoke multiple
-methods. Furthermore, each method may have its own model, consisting
-of (generally speaking) its own variables, interface, and set of
-responses. Thus, there may be multiple specifications of the method,
-model, variables, interface, and responses sections.
+performed during an execution of the %Dakota software.
+
+A %Dakota execution is limited to a single environment, but may
+involve multiple methods and multiple models.  In particular, advanced
+iterators (i.e., meta- and component-based iterators) and advanced
+models (i.e., nested and surrogate models) may specialize to include
+recursions with additional sub-iterators and sub-models.  Since each
+model may contain its own variables, interface, and responses, there
+may be multiple specifications of the method, model, variables,
+interface, and responses sections.
 
 %Dakota input is most commonly specified through a text file, whose
 syntax is governed by the New Input Deck Reader (NIDR) parsing system
@@ -80,22 +85,22 @@ structure of the input specification file.
 
 Refer to the dakota.input.summary file for current input
 specifications.  From this file listing, it can be seen that the main
-structure of the strategy specification consists several required
-group specifications separated by logical OR's (indicated by \c |):
-either hybrid OR multi-start OR pareto set OR single method.  The
-method keyword is the most lengthy specification; however, its
-structure is again relatively simple. The structure is a set of
-optional method-independent settings followed by a long list of
-possible methods appearing as required group specifications
-(containing a variety of method-dependent settings) separated by OR's.
-The model keyword reflects a structure of three required group
-specifications separated by OR's.  Within the surrogate model type,
-the type of approximation must be specified with either a global OR
-multipoint OR local OR hierarchical required group specification.  The
-structure of the variables keyword is that of optional group
-specifications for continuous and discrete design variables, a number
-of different uncertain variable distribution types (continuous and
-discrete, aleatory and epistemic), and continuous and discrete state
+structure of the environment specification consists of several
+optional group specifications related to output controls and an
+optional \c top_method_pointer specification.  The method keyword is
+the most lengthy specification; however, its structure is again
+relatively simple. The structure is a set of optional
+method-independent settings followed by a long list of possible
+methods appearing as required group specifications (containing a
+variety of method-dependent settings) separated by OR's.  The model
+keyword reflects a structure of three required group specifications
+separated by OR's.  Within the surrogate model type, the type of
+approximation must be specified with either a global OR multipoint OR
+local OR hierarchical required group specification.  The structure of
+the variables keyword is that of optional group specifications for
+continuous and discrete design variables, a number of different
+uncertain variable distribution types (continuous and discrete,
+aleatory and epistemic), and continuous and discrete state
 variables. Each of these specifications can either appear or not
 appear as a group. Next, the interface keyword allows the
 specification of either algebraic mappings, simulation-based analysis
@@ -221,8 +226,7 @@ Dakota/examples/users/textbook_opt_conmin.in.
 
 \verbatim
 # Dakota Input File: textbook_opt_conmin.in
-strategy
-  single_method
+environment
   graphics
   tabular_graphics_data
     tabular_graphics_file = 'textbook_opt_conmin.dat'
@@ -266,11 +270,10 @@ Dakota/examples/users/rosen_opt_nls.in
 
 \verbatim
 # Dakota Input File: rosen_opt_nls.in
-strategy
+environment
   graphics
   tabular_graphics_data
     tabular_graphics_file = 'rosen_opt_nls.dat'
-  single_method
 
 method
   max_iterations = 100
@@ -301,15 +304,13 @@ responses
 \subsection IntroCmdsSampleUQ Sample 3: Nondeterministic Analysis
 
 The following sample input file shows Latin Hypercube Monte Carlo
-sampling using the Textbook Example. A similar file is available as \c
-Dakota/test/dakota_uq_textbook_lhs.in.
+sampling using the Textbook Example. It makes use of the default
+environment and model specifications, so they can be omitted.  A
+similar file is available as \c Dakota/test/dakota_uq_textbook_lhs.in.
 
 <!-- \include dakota_textbook_lhs.in -->
 
 \verbatim
-strategy,
-        single_method
-
 method,
         sampling,
           samples = 100 seed = 1
@@ -357,20 +358,17 @@ responses,
 \subsection IntroCmdsSamplePS Sample 4: Parameter Study
 
 The following sample input file shows a 1-D vector parameter study
-using the Textbook Example. It makes use of the default strategy and
-model specifications (\c single_method and \c single, respectively),
-so they can be omitted.  A similar file is available in the test
+using the Textbook Example. A similar file is available in the test
 directory as \c Dakota/examples/users/rosen_ps_vector.in.
 
 <!-- \include dakota_pstudy.in -->
 
 \verbatim
 # Dakota Input File: rosen_ps_vector.in
-strategy
+environment
   graphics
   tabular_graphics_data
     tabular_graphics_file = 'rosen_ps_vector.dat'
-  single_method
 
 method
   vector_parameter_study
@@ -396,10 +394,10 @@ responses
 \endverbatim
 
 
-\subsection IntroCmdsSampleML Sample 5: Hybrid Strategy
+\subsection IntroCmdsSampleML Sample 5: Hybrid Meta-Iteration
 
-The following sample input file shows a hybrid strategy using three
-methods. It employs a genetic algorithm, pattern search, and full
+The following sample input file shows a hybrid method using three
+sub-methods. It employs a genetic algorithm, pattern search, and full
 Newton gradient-based optimization in succession to solve the Textbook
 Example. A similar file is available as \c
 Dakota/examples/users/textbook_hybrid_strat.in.
@@ -407,12 +405,25 @@ Dakota/examples/users/textbook_hybrid_strat.in.
 <!-- \include dakota_hybrid.in -->
 
 \verbatim
-strategy
+environment
   graphics
-  hybrid sequential
-    method_list = 'PS' 'PS2' 'NLP'
+  top_level_method = 'H1'
 
 method
+  id_method = 'H1'
+  hybrid sequential
+    method_pointer_list = 'GA' 'PS' 'NLP'
+
+method,
+  id_method = 'GA'
+  model_pointer = 'M1'
+  coliny_ea
+    final_solutions = 1
+    seed = 1234
+    population_size = 5 
+    verbose output
+
+method,
   id_method = 'PS'
   model_pointer = 'M1'
   coliny_pattern_search stochastic
@@ -421,27 +432,15 @@ method
     threshold_delta = 1.e-4
     solution_accuracy = 1.e-10
     exploratory_moves basic_pattern
-    #verbose output
-
-method
-  id_method = 'PS2'
-  model_pointer = 'M1'
-  max_function_evaluations = 10
-  coliny_pattern_search stochastic
-    seed = 1234
-    initial_delta = 0.1
-    threshold_delta = 1.e-4
-    solution_accuracy = 1.e-10
-    exploratory_moves basic_pattern
-    #verbose output
+    verbose output
 
 method
   id_method = 'NLP'
   model_pointer = 'M2'
-        optpp_newton
+  optpp_newton
     gradient_tolerance = 1.e-12
     convergence_tolerance = 1.e-15
-    #verbose output
+    verbose output
 
 model
   id_model = 'M1'
@@ -548,7 +547,7 @@ relationships are denoted by the \c | symbol. These symbols only
 appear in dakota.input.nspec; they must not appear in actual user input
 files.
 
-\li Keyword specifications (i.e., \c strategy, \c method, \c model, \c
+\li Keyword specifications (i.e., \c environment, \c method, \c model, \c
 variables, \c interface, and \c responses) begin with the keyword
 possibly preceded by white space (blanks, tabs, and newlines)
 both in the input specifications and in user input

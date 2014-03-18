@@ -61,7 +61,7 @@ Manual.
 
 \section DevOverview Overview of Dakota
 
-In %Dakota, the \e environment manages different execution modes and
+In %Dakota, the \e environment manages execution modes and
 input/output streams and defines the top-level iterator.  This
 top-level iterator may be either a standard iterator or a
 meta-iterator.  In the former case, the iterator identifies a model
