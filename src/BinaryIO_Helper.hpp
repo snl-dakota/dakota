@@ -284,6 +284,7 @@ public:
   }
 
 
+#if 0
   template <typename T>
   herr_t store_data(const std::string& dset_name,
                     const std::vector<T>& buf) const
@@ -295,6 +296,14 @@ public:
     return store_data<T,1>( dset_name,
                             boost::assign::list_of( buf.size() ),
                             buf.data() );
+  }
+#endif
+
+
+  template <typename T>
+  herr_t store_data(const std::string& dset_name,
+                    const Teuchos::SerialDenseVector<int,T>& buf) const
+  {
   }
 
 

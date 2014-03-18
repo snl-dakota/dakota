@@ -415,7 +415,7 @@ herr_t testHDF5fileDB(const std::string& file_name)
   test_write_read_array_of_teuchos_matrices(file_name);
 
   test_write_read_native_val("/DakPi", 3.14159, file_name);
-  test_write_read_std_vec(file_name, "/SomeIntVectorData", 314159);
+  // WJB: get ALL numerial vector and matrix types working priot to getting fancy with template specialization and SCALAR, and vectors of primitive types -- test_write_read_std_vec(file_name, "/SomeIntVectorData", 314159);
 
   test_write_read_vlvec_array("/RaggedIntArrayData",   1, file_name);
   test_write_read_vlvec_array("/RaggedRealArrayData", 1., file_name);
