@@ -76,6 +76,7 @@ void ParallelLibrary::init_mpi_comm()
 {
   // do not initialize MPI.  Get worldRank/worldSize if available
   ParallelLevel pl;
+  String start_msg("Running Dakota executable.");
 #ifdef DAKOTA_HAVE_MPI // mpi available
   if (mpirunFlag) {
     pl.serverIntraComm = dakotaMPIComm;
@@ -87,7 +88,6 @@ void ParallelLibrary::init_mpi_comm()
   else
     pl.serverIntraComm = MPI_COMM_NULL;
   
-  String start_msg("Running Dakota executable.");
   if (worldSize > 1) {
     start_msg = "Running MPI Dakota executable in parallel on ";
     start_msg += boost::lexical_cast<std::string>(worldSize) + 
