@@ -129,8 +129,8 @@ DataInterface& DataInterface::operator=(const DataInterface& data_interface)
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataInterface::operator=(DataInterface&)" << std::endl;
-  if (dataIFaceRep)
-    Cout << "dataIFaceRep referenceCount = " << dataIFaceRep->referenceCount
+  if (dataIfaceRep)
+    Cout << "dataIfaceRep referenceCount = " << dataIfaceRep->referenceCount
 	 << std::endl;
 #endif
 

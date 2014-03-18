@@ -32,9 +32,6 @@ void run_dakota(const MPI_Comm& comm, const std::string& input,
 /// Wait for and collect results from DAKOTA runs
 void collect_results();
 
-/// Set input to NIDR via string argument instead of input file
-extern "C" void nidr_set_input_string(const char *);
-
 
 /// Driver routine for testing library mode with partitioned
 /// MPI_Comm. This test fixture requires MPI and can be run on 3--8
@@ -207,24 +204,22 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   std::string wfile("dakota.rst." + boost::lexical_cast<std::string>(color));
 
   Dakota::ProgramOptions prog_opts;
-  prog_opts.inputFile        = input;
+  prog_opts.inputString      = input;
   prog_opts.outputFile       = ofile;
   prog_opts.errorFile        = efile;
   prog_opts.writeRestartFile = wfile;
-  const char* rfile = NULL;
-
-  nidr_set_input_string(input.c_str());
 
   // Create LibraryEnvironment
   Dakota::LibraryEnvironment env(my_comm, prog_opts);
-
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-  problem_db.manage_inputs(prog_opts);
 
   // Perform interface plug-ins.
   // retrieve the currently active analysisComm from the Model.  In the most
   // general case, need an array of Comms to cover all Model configurations.
-  Dakota::ModelList& models = problem_db.model_list();
+
+  // Get only the models that match our plugin criteria
+  Dakota::ModelList models = 
+    env.filtered_model_list("single", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter = models.begin(), ml_end = models.end();
   for ( ; ml_iter != ml_end; ++ml_iter) {
     Dakota::Interface& model_iface = ml_iter->derived_interface();
@@ -236,7 +231,6 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   }
 
   // Execute the Environment
-  problem_db.lock(); // prevent run-time DB queries
   env.execute();
 
   std::cout << "*** Finished DAKOTA run " << color << std::endl;

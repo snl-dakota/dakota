@@ -28,23 +28,36 @@ LibraryEnvironment::LibraryEnvironment():
 { }
 
 
+/** Construct library environment, optionally performing check/bcast
+    of database and iterator construction */
 LibraryEnvironment::
-LibraryEnvironment(const ProgramOptions& prog_opts):
+LibraryEnvironment(const ProgramOptions& prog_opts, bool check_bcast_construct,
+		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts)
 {
-  // parse input and instantiate the topLevelIterator
-  construct();
+  //  outputManager.output_startup_message();
+
+  // parse input, and instantiate the topLevelIterator
+  parse(check_bcast_construct, callback, callback_data);
+  if (check_bcast_construct)
+    construct();
 }
 
 
+/** Construct library environment on passed MPI Comm, optionally
+    performing check/bcast of database and iterator construction */
 LibraryEnvironment::
-LibraryEnvironment(MPI_Comm dakota_mpi_comm, const ProgramOptions& prog_opts):
-  Environment(BaseConstructor(), prog_opts) // add base ctor with MPI_Comm?
+LibraryEnvironment(MPI_Comm dakota_mpi_comm, 
+		   const ProgramOptions& prog_opts, bool check_bcast_construct,
+		   DbCallbackFunctionPtr callback, void* callback_data):
+  Environment(BaseConstructor(), prog_opts, dakota_mpi_comm)
 { 
-  //  BMA TODO
+  //  outputManager.output_startup_message();
 
   // parse input and instantiate the topLevelIterator
-  construct();
+  parse(check_bcast_construct, callback, callback_data);
+  if (check_bcast_construct)
+    construct();
 }
 
 
@@ -64,13 +77,15 @@ insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
     probDescDB.insert_node(dv);
     probDescDB.insert_node(di);
     probDescDB.insert_node(dr);
-    // Sanity checking on minimal specification
-    probDescDB.check_input(String());
   }
-  // broadcast minimal DB specification to other processors (if needed)
-  probDescDB.broadcast();
-  // Perform post-processing of minimal specification on all processors
-  probDescDB.post_process();
+}
+
+
+void LibraryEnvironment::done_modifying_db()
+{  
+  // always check and broadcast before construction
+  probDescDB.check_and_broadcast(programOptions); 
+  construct();
 }
 
 

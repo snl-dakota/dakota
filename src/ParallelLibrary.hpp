@@ -395,13 +395,6 @@ public:
   /// finalize MPI with correct communicator for abort
   void abort_helper(int code);
 
-  /// get pretty startup message
-  const String& startup_message() const;
-
-  // BMA TODO: consider moving to OutputHandler, which is rank-aware
-  /// perform output of message on rank 0 only
-  void output_helper(const String& message, std::ostream &os = Cout) const;
-
   // Functions to get run_mode data
   // BMA TODO: consider moving all to ProgramOptions, possibly with
   // delegation from here.
@@ -672,8 +665,6 @@ private:
 
   bool dummyFlag;     ///< prevents multiple MPI_Finalize calls due to dummy_lib
 
-  String startupMessage; ///< cached startup message for use in check_inputs
-
   bool outputTimings; ///< timing info only beyond help/version/check
   Real startCPUTime;  ///< start reference for UTILIB CPU timer
   Real startWCTime;   ///< start reference for UTILIB wall clock timer
@@ -909,15 +900,6 @@ inline void ParallelLibrary::free_evaluation_communicators()
 
 inline void ParallelLibrary::free_analysis_communicators()
 { free_communicators(*currPCIter->eaPLIter); }
-
-
-inline void ParallelLibrary::
-output_helper(const String& message, std::ostream &os) const
-{ outputManager.output_helper(message, os); }
-
-
-inline const String& ParallelLibrary::startup_message() const
-{ return startupMessage; }
 
 
 inline bool ParallelLibrary::command_line_check() const

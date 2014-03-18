@@ -37,14 +37,27 @@ public:
 
   /// default constructor
   LibraryEnvironment();
-  /// primary constructor
-  LibraryEnvironment(const ProgramOptions& prog_opts);
-  /// alternate constructor accepting communicator
+
+  /// Primary constructor: program options typically specifies an
+  /// input file or input string.  Optionally specify a callback
+  /// function to be invoked after parsing.  Set check_bcast_construct
+  /// if performing late updates and later calling done_modifying_db().
+  LibraryEnvironment(const ProgramOptions& prog_opts,
+		     bool check_bcast_construct = true,
+		     DbCallbackFunctionPtr callback = NULL,
+		     void* callback_data = NULL);
+
+  /// Alternate constructor accepting communicator, same options as primary
   LibraryEnvironment(MPI_Comm dakota_mpi_comm,
-		     const ProgramOptions& prog_opts = ProgramOptions());
+		     const ProgramOptions& prog_opts = ProgramOptions(),
+		     bool check_bcast_construct = true,
+		     DbCallbackFunctionPtr callback = NULL,
+		     void* callback_data = NULL);
+
   /// destructor
   ~LibraryEnvironment();
-    
+
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -59,6 +72,9 @@ public:
   void insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
 		    Dakota::DataVariables& dv, Dakota::DataInterface& di,
 		    Dakota::DataResponses& dr);
+
+  /// Check database contents, broadcast, and construct iterators
+  void done_modifying_db();
 
   /// filter the available Interface instances based on matching interface
   /// type and analysis drivers

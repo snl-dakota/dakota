@@ -20,6 +20,8 @@
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
+using std::cout;
+
 namespace Dakota {
 
 
@@ -68,8 +70,9 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
     environments.  Since the letter IS the representation, its
     representation pointer is set to NULL (an uninitialized pointer
     causes problems in ~Environment). */
-Environment::Environment(BaseConstructor, const ProgramOptions& prog_opts):
-  mpiManager(), programOptions(prog_opts),
+Environment::Environment(BaseConstructor, const ProgramOptions& prog_opts,
+			 MPI_Comm dakota_mpi_comm):
+  mpiManager(dakota_mpi_comm), programOptions(prog_opts),
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
@@ -256,7 +259,10 @@ Environment::~Environment()
 }
 
 
-void Environment::construct(bool run_parser)
+/** Parse input file and invoked any callbacks, then optionally check
+    and sync database if check_bcast_database = true */
+void Environment::parse(bool check_bcast_database,
+			DbCallbackFunctionPtr callback, void* callback_data)
 {
   // Called only by letter instances, no Rep forward required
 
@@ -269,8 +275,24 @@ void Environment::construct(bool run_parser)
   // (output/restart options may only be specified at this time).
 
   // ProblemDescDB requires cmd line information, so pass programOptions
-  probDescDB.manage_inputs(programOptions, run_parser);
-  // extract global output specification data (environment keyword spec)
+
+  // parse input and callback functions
+  if ( !programOptions.inputFile.empty() || !programOptions.inputString.empty())
+    probDescDB.parse_inputs(programOptions, callback, callback_data);
+
+  // check if true, otherwise caller assumes responsibility  
+  if (check_bcast_database) 
+    probDescDB.check_and_broadcast(programOptions);
+
+}
+
+
+void Environment::construct()
+{
+  // Called only by letter instances, no Rep forward required
+
+  // extract global output specification data (environment keyword
+  // spec) right before run time in case of late library updates to DB
   outputManager.parse(probDescDB);
 
   // With respect to Environment interaction with the probDescDB linked lists,
@@ -315,12 +337,14 @@ void Environment::execute()
 
     probDescDB.lock(); // prevent run-time DB queries
 
-    if (topLevelIterator.method_name() & META_BIT)
+    // BMA: This requires methodName defined on all ranks for topLevelIterator
+    if (topLevelIterator.method_name() & META_BIT) {
       topLevelIterator.run(Cout);
-    else
+    }
+    else {
       IteratorScheduler::run_iterator(topLevelIterator, //topLevelModel,
         parallelLib.parallel_configuration().w_parallel_level());
-
+    }
     if (output_rank)
       Cout << "<<<<< Environment execution completed.\n";
   }

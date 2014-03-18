@@ -201,6 +201,12 @@ void ProgramOptions::validate() {
   //   Cerr << "when running input is needed";
   // }
 
+  if ( !inputFile.empty() && !inputString.empty() ) {
+    Cerr << "\nError: both input file and string specified in ProgramOptions"
+	 << std::endl;
+    abort_handler(-1);
+  }
+
   if ( !preRunFlag && !runFlag && !postRunFlag ) {
     preRunFlag = runFlag = postRunFlag = true;
     userModesFlag = false; // no active user modes

@@ -22,8 +22,18 @@ MPIManager::MPIManager():
   dakotaMPIComm(MPI_COMM_WORLD), worldRank(0), worldSize(1), mpirunFlag(false), 
   ownMPIFlag(false)
 {
-  /*empty ctor */
+  // MPI check for library clients not passing an MPI comm, since that
+  // will invoke this default ctor
+  // BMA TODO: Will this cause problems with dummy objects?
+#ifdef DAKOTA_HAVE_MPI
+  // Do not initialize MPI, but check if initialized.
+  int initialized = 0;
+  MPI_Initialized(&initialized);
+  if (initialized)
+    mpirunFlag = true;
+#endif
 }
+
 
 // Pull off the MPI arguments
 MPIManager::MPIManager(int& argc, char**& argv):

@@ -105,8 +105,9 @@ MixedVariables(const ProblemDescDB& problem_db,
   build_views();
 
 #ifdef REFCOUNT_DEBUG
-  Cout << "Letter instantiated: variablesView active = " << variablesView.first
-       << " inactive = " << variablesView.second << std::endl;
+  Cout << "Letter instantiated: variablesView active = "
+       << sharedVarsData.view().first << " inactive = " 
+       << sharedVarsData.view().second << std::endl;
 #endif
 }
 

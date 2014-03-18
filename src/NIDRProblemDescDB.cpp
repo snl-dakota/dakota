@@ -37,6 +37,9 @@
 #endif
 #endif /*DAKOTA_DL_SOLVER*/
 
+/// Set input to NIDR via string argument instead of input file
+extern "C" void nidr_set_input_string(const char *);
+
 extern "C" void nidr_lib_cleanup(void);
 
 namespace Dakota {
@@ -96,20 +99,36 @@ void NIDRProblemDescDB::warn(const char *fmt, ...)
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
     IDR populates the IDRProblemDescDB object with the input file data. */
 void NIDRProblemDescDB::
-derived_parse_inputs(const String& dakota_input_file,
-		     const String& parser_options)
+derived_parse_inputs(const ProgramOptions& prog_opts)
 {
   // set the pDDBInstance
   pDDBInstance = this;
 
+  const String& dakota_input_file = prog_opts.inputFile;
+  const String& dakota_input_string = prog_opts.inputString;
+  const String& parser_options = prog_opts.parserOptions;
+
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)
   if (!dakota_input_file.empty()) {
+
     Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
     if (dakota_input_file.size() == 1 && dakota_input_file[0] == '-')
       nidrin = stdin;
     else if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
       botch("cannot open \"%s\"", dakota_input_file.c_str());
+
+  } 
+  else if (!dakota_input_string.empty()) {
+
+    Cout << "Using provided Dakota input string" << std::endl;
+    // BMA TODO: output the string contents if verbose
+    nidr_set_input_string(dakota_input_string.c_str());
+
+  }
+  else {
+    Cerr << "\nError: NIDR parser called with no input." << std::endl;
+    abort_handler(-1);
   }
 
   // // nidr_parse parses the input file and invokes the keyword handlers

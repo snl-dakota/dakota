@@ -149,8 +149,9 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
   manage_linear_constraints(problem_db);
 
 #ifdef REFCOUNT_DEBUG
-  Cout << "Letter instantiated: variablesView active = " << variablesView.first
-       << " inactive = " << variablesView.second << std::endl;
+  Cout << "Letter instantiated: variablesView active = " 
+       << sharedVarsData.view().first << " inactive = " 
+       << sharedVarsData.view().second << std::endl;
 #endif
 }
 

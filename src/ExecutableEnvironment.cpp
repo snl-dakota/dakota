@@ -40,7 +40,13 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
   // getting version or help, don't instantiate anything.
   if (programOptions.instantiate_flag()) {
 
-    // parse input and instantiate the topLevelIterator
+    outputManager.output_startup_message();
+
+    // parse input, check, and sync across ranks
+    bool check_and_bcast_db = true;  // explicit default
+    parse(check_and_bcast_db);
+
+    // for executable env, always instantiate the topLevelIterator
     construct();
 
 #ifdef DAKOTA_USAGE_TRACKING

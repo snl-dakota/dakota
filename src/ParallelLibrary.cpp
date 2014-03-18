@@ -86,14 +86,15 @@ void ParallelLibrary::init_mpi_comm()
   }
   else
     pl.serverIntraComm = MPI_COMM_NULL;
-
+  
+  String start_msg("Running Dakota executable.");
   if (worldSize > 1) {
-    startupMessage = "Running MPI executable in parallel on ";
-    startupMessage += boost::lexical_cast<std::string>(worldSize) + 
-      " processors.\n";
+    start_msg = "Running MPI Dakota executable in parallel on ";
+    start_msg += boost::lexical_cast<std::string>(worldSize) + 
+      " processors.";
   }
   else
-    startupMessage = "Running MPI executable in serial mode.\n";
+    start_msg = "Running MPI Dakota executable in serial mode.";
 #else // mpi not available
   if (mpirunFlag) {
     Cerr << "Error: Attempting to run serial executable in parallel."
@@ -102,9 +103,10 @@ void ParallelLibrary::init_mpi_comm()
   }
   else { // use defaults: worldRank = 0, worldSize = 1
     pl.serverIntraComm = MPI_COMM_NULL;
-    startupMessage = "Running serial executable in serial mode.\n";
+    start_msg = "Running serial Dakota executable in serial mode.";
   }
 #endif // DAKOTA_HAVE_MPI
+  outputManager.startup_message(start_msg);
 
   parallelLevels.push_back(pl);
   currPLIter = parallelLevels.begin();

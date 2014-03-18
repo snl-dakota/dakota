@@ -94,6 +94,10 @@ public:
   size_t stopRestartEvals;
   String writeRestartFile;   //< e.g., "dakota.new.rst"
 
+  /// alternate input means for library clients: input string
+  /// (mutually exclusive with input file)
+  String inputString;
+
 private:
 
   /// any environment variables affecting global behavior get read here

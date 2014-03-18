@@ -63,6 +63,9 @@ public:
   /// Extract environment options from ProblemDescDB
   void parse(const ProblemDescDB& problem_db);
 
+  /// Set the Dakota startup message ("Running on...")
+  void startup_message(const String& start_msg);
+
   /// Update the tag to use on files
   void file_tag(const String& iterator_tag);
 
@@ -86,6 +89,9 @@ public:
 
   /// Output the current Dakota version
   void output_version(std::ostream& os = Cout) const;
+
+  /// Output the startup header and time
+  void output_startup_message(std::ostream& os = Cout) const;
 
   // BMA TODO: Review and possibly more cautious rank 0 I/O control
   /// Output only on Dakota world rank 0 (for version, help, etc.)
@@ -139,6 +145,9 @@ private:
 
   /// tag for various input/output files (default none)
   String fileTag;
+
+  /// message to print at startup when proceeding to instantiate objects
+  String startupMessage;
 
 
   // For stdout/stderr management

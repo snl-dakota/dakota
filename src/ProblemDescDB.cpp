@@ -27,6 +27,7 @@
 #include <string>
 
 //#define DEBUG
+//#define MPI_DEBUG
 //#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
@@ -177,24 +178,61 @@ ProblemDescDB::~ProblemDescDB()
 }
 
 
-/** Parse the input file, broadcast it to all processors, and
-    post-process the data on all processors. */
+/** DB setup phase 1: parse the input file and execute callback
+    functions if present.  Rank 0 only.
+
+    DB setup phase 2: optionally insert additional data via late sets.
+    Rank 0 only. */
 void ProblemDescDB::
-manage_inputs(const ProgramOptions& prog_opts, bool run_parser,
-	      void (*callback)(void*), void *callback_data)
+parse_inputs(const ProgramOptions& prog_opts, 
+	     DbCallbackFunctionPtr callback, void *callback_data)
 {
   if (dbRep)
-    dbRep->manage_inputs(prog_opts, run_parser, callback, callback_data);
+    dbRep->parse_inputs(prog_opts, callback, callback_data);
   else {
 
-    // parse the input file, execute the callback (if present), and
-    // check the keyword counts
-    if (run_parser)
-      parse_inputs(prog_opts.inputFile, 
-		   prog_opts.parserOptions,
-		   prog_opts.echoInput,
-		   callback, callback_data);
+    // Only the master parses the input file.
+    if (parallelLib.world_rank() == 0) {
 
+      if ( !prog_opts.inputFile.empty() && !prog_opts.inputString.empty() ) {
+	Cerr << "\nError: parse_inputs called with both input file and input "
+	     << "string." << std::endl;
+	abort_handler(-1);
+      }
+
+      if (prog_opts.echoInput)
+	echo_input_file(prog_opts);
+
+      // Parse the input file using one of the derived parser-specific classes
+      derived_parse_inputs(prog_opts);
+
+      // Allow user input by callback function.
+      // BMA TODO: Is this comment true?
+      // Note: the DB is locked and the list iterators are not defined.  Thus,
+      // the user function must do something to put the DB in a usable set/get
+      // state (e.g., resolve_top_method() or set_db_list_nodes()).
+      if (callback)
+	(*callback)(this, callback_data);
+
+    }
+
+  }
+}
+
+
+/** DB setup phase 3: perform basic checks on keywords counts in
+    current DB state, then sync to all processors. */
+void ProblemDescDB::check_and_broadcast(const ProgramOptions& prog_opts) {
+
+  if (dbRep)
+    dbRep->check_and_broadcast(prog_opts);
+  else {
+
+    // Check to make sure at least one of each of the keywords was found
+    // in the problem specification file; checks only happen on Dakota rank 0
+    if (parallelLib.world_rank() == 0)
+      check_input();
+  
     // bcast a minimal MPI buffer containing the input specification
     // data prior to post-processing
     broadcast();
@@ -203,39 +241,10 @@ manage_inputs(const ProgramOptions& prog_opts, bool run_parser,
     // size default variables/responses specification vectors (avoid
     // sending large vectors over an MPI buffer).
     post_process();
+
   }
 }
 
-
-/** Parse the input file, execute the callback function (if present), and
-    perform basic checks on keyword counts. */
-void ProblemDescDB::
-parse_inputs(const String& dakota_input_file, const String& parser_options,
-	     bool echo_input, void (*callback)(void*), void *callback_data)
-{
-  if (dbRep)
-    dbRep->parse_inputs(dakota_input_file, parser_options, echo_input,
-			callback, callback_data);
-  else {
-    // Only the master parses the input file.
-    if (parallelLib.world_rank() == 0) {
-
-      // Parse the input file using one of the derived parser-specific classes
-      derived_parse_inputs(dakota_input_file, parser_options);
-
-      // Allow user input by callback function.
-      // Note: the DB is locked and the list iterators are not defined.  Thus,
-      // the user function must do something to put the DB in a usable set/get
-      // state (e.g., resolve_top_method() or set_db_list_nodes()).
-      if (callback)
-	(*callback)(callback_data);
-
-      // Check to make sure at least one of each of the keywords was found
-      // in the problem specification file
-      check_input(dakota_input_file, echo_input);
-    }
-  }
-}
 
 
 void ProblemDescDB::broadcast()
@@ -298,11 +307,10 @@ void ProblemDescDB::post_process()
 
 
 void ProblemDescDB::
-derived_parse_inputs(const String& dakota_input_file, 
-		     const String& parser_options)
+derived_parse_inputs(const ProgramOptions& prog_opts)
 {
   if (dbRep)
-    dbRep->derived_parse_inputs(dakota_input_file, parser_options);
+    dbRep->derived_parse_inputs(prog_opts);
   else { // this fn must be redefined
     Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
 	 << " function.\n       No default defined at base class." << std::endl;
@@ -327,19 +335,15 @@ void ProblemDescDB::derived_post_process()
 }
 
 
-void ProblemDescDB::check_input(const String& dakota_input_file, 
-				bool echo_input)
+/** NOTE: when using library mode in a parallel application,
+    check_input() should either be called only on worldRank 0, or it
+    should follow a matched send_db_buffer()/receive_db_buffer() pair. */
+void ProblemDescDB::check_input()
 {
   if (dbRep)
-    dbRep->check_input(dakota_input_file, echo_input);
+    dbRep->check_input();
   else {
-    // NOTE: when using library mode in a parallel application, check_input()
-    // should either be called only on worldRank 0, or it should follow a
-    // matched send_db_buffer()/receive_db_buffer() pair.
 
-    if (echo_input)
-      echo_input_file(dakota_input_file);
- 
     int num_errors = 0;
     //if (!environmentCntr) { // Allow environment omission
     //  Cerr << "No environment specification found in input file.\n";
@@ -3009,15 +3013,9 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 }
 
 
-void ProblemDescDB::echo_input_file(const String& dakota_input_file)
+void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 {
-  // Generate the startup header, now that streams are potentially
-  // reassigned in ParallelLibrary manage_outputs_restart()
-  Cout << parallelLib.startup_message(); 
-  std::time_t curr_time = std::time(NULL);
-  std::string pretty_time(std::asctime(std::localtime(&curr_time))); 
-  Cout << "Start time: " << pretty_time << std::endl;
-
+  const String& dakota_input_file = prog_opts.inputFile;
   if (!dakota_input_file.empty()) {
     bool input_is_stdin = 
       ( dakota_input_file.size() == 1 && dakota_input_file[0] == '-');
@@ -3029,6 +3027,7 @@ void ProblemDescDB::echo_input_file(const String& dakota_input_file)
 	abort_handler(-1);
       }
 
+      // BMA TODO: could enable this now
       // want to output FQ path, but only valid in BFS v3; need wrapper
       //boost::filesystem::path bfs_file(dakota_input_file);
       //boost::filesystem::path bfs_abs_path = bfs_file.absolute();
@@ -3051,7 +3050,18 @@ void ProblemDescDB::echo_input_file(const String& dakota_input_file)
       Cout << "---------------------\n" << std::endl;
     }
   }
-
+  else if (!prog_opts.inputString.empty()) {
+    size_t header_len = 23;
+    std::string header(header_len, '-');
+    Cout << header << '\n';
+    Cout << "Begin DAKOTA input file\n";
+    Cout << "(from string)\n"; 
+    Cout << header << std::endl;
+    Cout << prog_opts.inputString << std::endl;
+    Cout << "---------------------\n";
+    Cout << "End DAKOTA input file\n";
+    Cout << "---------------------\n" << std::endl;
+  }
 }
 
 } // namespace Dakota

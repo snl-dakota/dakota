@@ -84,11 +84,6 @@ public:
   //- Heading: Member functions
   //
 
-  // TO DO: would prefer that this be protected, once library mode changes
-  //        are completed
-  /// Instantiate topLevelIterator
-  void construct(bool run_parser = true);
-
   /// return mpiManager
   MPIManager& mpi_manager();
   /// return programOptions
@@ -117,12 +112,19 @@ protected:
   /// constructor initializes the base class part of executable letter classes
   Environment(BaseConstructor, int argc, char* argv[]);
   /// constructor initializes the base class part of library letter classes
-  Environment(BaseConstructor, const ProgramOptions& prog_opts);
+  Environment(BaseConstructor, const ProgramOptions& prog_opts,
+	      MPI_Comm dakota_mpi_comm = MPI_COMM_WORLD);
 
   //
   //- Heading: Member functions
   //
 
+  /// parse inputs, callbacks, and optionally check and broadcast
+  void parse(bool check_bcast_database = true, 
+	     DbCallbackFunctionPtr callback = NULL, void* callback_data = NULL);
+
+  /// Instantiate topLevelIterator
+  void construct();
   /// Deallocate parallel partitioning for topLevelIterator
   void destruct();
 

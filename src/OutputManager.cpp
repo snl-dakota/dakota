@@ -121,6 +121,10 @@ void OutputManager::parse(const ProblemDescDB& problem_db)
 }
 
 
+void OutputManager::startup_message(const String& start_msg) 
+{ startupMessage = start_msg; }
+
+
 void OutputManager::file_tag(const String& iterator_tag) 
 { fileTag = iterator_tag; }
 
@@ -174,6 +178,19 @@ void OutputManager::output_version(std::ostream& os) const
 
   output_helper(version_info, os);
 }
+
+
+void OutputManager::output_startup_message(std::ostream& os) const 
+{
+  // Generate the startup header, now that streams are potentially
+  // reassigned
+  os << startupMessage << '\n'; 
+  std::time_t curr_time = std::time(NULL);
+  std::string pretty_time(std::asctime(std::localtime(&curr_time))); 
+  // asctime appends a newline, but use the endl to force flush
+  os << "Start time: " << pretty_time << std::endl;
+}
+
 
 
 void OutputManager::

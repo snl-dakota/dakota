@@ -51,8 +51,7 @@ public:
 
   /// parses the input file and populates the problem description
   /// database using NIDR.
-  void derived_parse_inputs(const String& dakota_input_file,
-			    const String& parser_options);
+  void derived_parse_inputs(const ProgramOptions& prog_opts);
   /// perform any data processing that must be coordinated with DB buffer
   /// broadcasting (performed prior to broadcasting the DB buffer on rank 0
   /// and after receiving the DB buffer on other processor ranks)

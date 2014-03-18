@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Description: A mock simulator main for testing DAKOTA in library mode.
+//- Description: A mock simulator main for testing Dakota in library mode.
 //-              Uses alternative instantiation syntax as described in the
 //-              library mode docs within the Developers Manual.
 //- Owner:       Mike Eldred
@@ -14,7 +14,7 @@
 //- Version: $Id: library_mode.cpp 5063 2008-06-05 02:08:06Z mseldre $
 
 /** \file library_mode.cpp
-    \brief file containing a mock simulator main for testing DAKOTA in
+    \brief file containing a mock simulator main for testing Dakota in
     library mode */
 
 #include "ParallelLibrary.hpp"
@@ -33,20 +33,22 @@
 #include <unistd.h>
 #endif
 
-/// Set input to NIDR via string argument instead of input file
-extern "C" void nidr_set_input_string(const char *);
+#ifndef DAKOTA_HAVE_MPI
+#define MPI_COMM_WORLD 0
+#endif // not DAKOTA_HAVE_MPI
+
 extern "C" int  nidr_save_exedir(const char*, int);
 
 void run_dakota_parse(const char* dakota_input_file);
 //namespace Dakota {
 void run_dakota_data();
 //} // namespace Dakota
-void run_dakota_mixed(const char* dakota_input_file);
+void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag);
 void interface_plugins(Dakota::LibraryEnvironment& env);
 void model_interface_plugins(Dakota::LibraryEnvironment& env);
 
 
-/// A mock simulator main for testing DAKOTA in library mode.
+/// A mock simulator main for testing Dakota in library mode.
 
 /** Uses alternative instantiation syntax as described in the library
     mode documentation within the Developers Manual.  Tests several
@@ -63,6 +65,8 @@ void model_interface_plugins(Dakota::LibraryEnvironment& env);
 
 int main(int argc, char* argv[])
 {
+  // BMA TODO: Make it clearer which options cause which behaviors
+
   // 3 ==> add both the directory containing this binary and . to the end
   // of $PATH if not already on $PATH.
   nidr_save_exedir(argv[0], 3);
@@ -112,10 +116,10 @@ int main(int argc, char* argv[])
       dakota_input_file = argv[1];
   }
 
-  // DAKOTA objects need to go out of scope prior to MPI_Finalize so
+  // Dakota objects need to go out of scope prior to MPI_Finalize so
   // that MPI code in destructors works properly in library mode.
   if (mixed_input)
-    run_dakota_mixed(dakota_input_file); // mode 3: mixed
+    run_dakota_mixed(dakota_input_file, parallel); // mode 3: mixed
   else if (dakota_input_file)
     run_dakota_parse(dakota_input_file); // mode 1: parse
   else
@@ -130,17 +134,58 @@ int main(int argc, char* argv[])
 }
 
 
-/// Function to encapsulate the DAKOTA object instantiations for
+// Default input for serial case:
+static const char serial_input[] = 
+  "	method,"
+  "		optpp_q_newton"
+  "		  max_iterations = 50"
+  "		  convergence_tolerance = 1e-4"
+  "	variables,"
+  "		continuous_design = 2"
+  "		  descriptors 'x1' 'x2'"
+  "	interface,"
+  "		direct"
+  "		  analysis_driver = 'plugin_rosenbrock'"
+  "	responses,"
+  "		num_objective_functions = 1"
+  "		analytic_gradients"
+  "		no_hessians";
+
+// Default input for parallel case
+static const char parallel_input[] = 
+  "	method,"
+  "		optpp_q_newton"
+  "		  max_iterations = 50"
+  "		  convergence_tolerance = 1e-4"
+  "	variables,"
+  "		continuous_design = 2"
+  "		  descriptors 'x1' 'x2'"
+  "	interface,"
+  "		direct"
+  "		  analysis_driver = 'plugin_text_book'"
+  "	responses,"
+  "		num_objective_functions = 1"
+  "		num_nonlinear_inequality_constraints = 2"
+  "		analytic_gradients"
+  "		no_hessians";
+
+// The above strings may include comments, provided a \n follows each
+// comment.  Before each new keyword, some white space (a blank, as
+// above, or \n) must appear.
+
+
+/// Function to encapsulate the Dakota object instantiations for
 /// mode 1: parsing an input file.
 
 /** This function parses from an input file to define the
     ProblemDescDB data. */
-
 void run_dakota_parse(const char* dakota_input_file)
 {
-  // Parse input and construct all Dakota objects.
+  // Parse input and construct Dakota LibraryEnvironment, performing
+  // input data checks
   Dakota::ProgramOptions opts;
   opts.inputFile = dakota_input_file;
+  // Defaults constructs the MPIManager, which assumes COMM_WORLD
   Dakota::LibraryEnvironment env(opts);
 
   if (env.mpi_manager().world_rank() == 0)
@@ -155,7 +200,7 @@ void run_dakota_parse(const char* dakota_input_file)
 }
 
 
-/// Function to encapsulate the DAKOTA object instantiations for
+/// Function to encapsulate the Dakota object instantiations for
 /// mode 2: direct Data class instantiation.
 
 /** Rather than parsing from an input file, this function populates
@@ -166,10 +211,16 @@ void run_dakota_parse(const char* dakota_input_file)
 void /*Dakota::*/run_dakota_data()
 {
   // Instantiate the parallel library and problem description database objects
-  Dakota::LibraryEnvironment env;
 
-  // Specify output redirection & restart processing (if non-defaults)
-  //env.specify_outputs_restart(NULL, NULL, NULL, NULL, NULL);
+  // Could set other command line options such as restart in opts:
+  Dakota::ProgramOptions opts;
+  // delay validation/sync of the Dakota database and iterator
+  // construction to allow update after all data is populated
+  bool check_bcast_construct = false;
+  // set up a Dakota instance, with the right MPI configuration if a
+  // parallel run (don't need to pass the MPI comm here, just doing to
+  // demonstrate).
+  Dakota::LibraryEnvironment env(MPI_COMM_WORLD, opts, check_bcast_construct);
 
   Dakota::DataMethod   dme; Dakota::DataModel    dmo;
   Dakota::DataVariables dv; Dakota::DataInterface di; Dakota::DataResponses dr;
@@ -199,9 +250,9 @@ void /*Dakota::*/run_dakota_data()
     drr->hessianType  = "none";
   }
   env.insert_nodes(dme, dmo, dv, di, dr);
-  // BMA: temporary workaround until discuss design with Mike
-  bool run_parser = false;
-  env.construct(run_parser);
+
+  // check database, broadcast, and construct iterators
+  env.done_modifying_db();
 
   // convenience function for iterating over models and performing any
   // interface plug-ins
@@ -212,19 +263,20 @@ void /*Dakota::*/run_dakota_data()
 }
 
 
-struct my_callback_data {
-  Dakota::ProblemDescDB *db;
-  // and in general other application-specific stuff needed
-  // for passing bounds, initial points, etc., to DAKOTA.
+/// Data for pass application-specific values needed for passing
+/// bounds, initial points, etc., to Dakota.
+struct callback_data {
+  double rosen_cdv_upper_bd;
 };
 
 
-/** Example of user-provided callback function to override input
-    specified and managed by NIDR, e.g., from an input deck. */
-static void my_callback_function(void *ptr)
+/** Example of user-provided callback function (an instance of
+    Dakota::DbCallbackFunction) to override input provided by Dakota
+    input file or input string data.  */
+static void callback_function(Dakota::ProblemDescDB* db, void *ptr)
 {
-  my_callback_data *data = (my_callback_data*)ptr;
-  Dakota::ProblemDescDB *db = data->db;
+  callback_data *my_data = (callback_data*)ptr;
+  double my_rosen_ub = my_data->rosen_cdv_upper_bd;
 
   // Do something to put the DB in a usable set/get state (unlock and set list
   // iterators).  The approach below is sufficient for simple input files, but
@@ -245,8 +297,8 @@ static void my_callback_function(void *ptr)
     db->set("variables.continuous_design.initial_point", rv);
     rv[0] = -2.;  rv[1] = -2.;
     db->set("variables.continuous_design.lower_bounds", rv);
-    rv[0] =  2.;
-    rv[1] =  2.;
+    rv[0] =  my_rosen_ub;
+    rv[1] =  my_rosen_ub;
     db->set("variables.continuous_design.upper_bounds", rv);
   }
   else if (Dakota::contains(drivers, "plugin_text_book")) {
@@ -261,7 +313,7 @@ static void my_callback_function(void *ptr)
 }
 
 
-/// Function to encapsulate the DAKOTA object instantiations for
+/// Function to encapsulate the Dakota object instantiations for
 /// mode 3: mixed parsing and direct updating
 
 /** This function showcases multiple features.  For parsing, either an
@@ -271,88 +323,43 @@ static void my_callback_function(void *ptr)
     user-supplied callback function, (2) updates to the DB prior to
     Environment instantiation, (3) updates directly to Iterators/Models
     following Environment instantiation. */
-
-void run_dakota_mixed(const char* dakota_input_file)
+void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
 {
-  // Instantiate the parallel library and problem description database objects
   Dakota::ProgramOptions opts;
   // in this use case, input file may be null:
   if (dakota_input_file)
     opts.inputFile = dakota_input_file;
-  Dakota::LibraryEnvironment env(opts);
+  opts.echoInput = true;
+  // Could specify output redirection & restart processing in opts if needed
 
-  // Specify output redirection & restart processing (if non-defaults)
-  //env.specify_outputs_restart(NULL, NULL, NULL, NULL, NULL);
+  // when no input file, use input string appropraite for MPI mode
+  if (!dakota_input_file) {
+    if (mpirun_flag)
+      opts.inputString = parallel_input;
+    else
+      opts.inputString = serial_input;
+  }
+  
+  // Setup client data to be available during callback 
+  callback_data data;
+  data.rosen_cdv_upper_bd = 2.0;
 
-  Dakota::ProblemDescDB&   problem_db   = env.problem_description_db();
+  // Construct library environment, parsing input file or string, then
+  // calling back.  However delay braodcast and validation of the db
+  // due to further data manipulations below, e.g., to avoid large
+  // default vector creation)
+  bool done_with_db = false;
+  Dakota::LibraryEnvironment env(opts, done_with_db, callback_function, &data);
+
   Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
   int world_rank = parallel_lib.world_rank();
-  if (world_rank == 0) {
+  if (world_rank == 0)
     Cout << "Library mode 3: run_dakota_mixed()\n";
-
-    if (!dakota_input_file) {
-      // define a default set of input strings that are used when no
-      // dakota_input_file is provided
-      if (parallel_lib.mpirun_flag()) {
-	// parallel default:
-	static const char default_input[] = 
-	  "	method,"
-	  "		optpp_q_newton"
-	  "		  max_iterations = 50"
-	  "		  convergence_tolerance = 1e-4"
-	  "	variables,"
-	  "		continuous_design = 2"
-	  "		  descriptors 'x1' 'x2'"
-	  "	interface,"
-	  "		direct"
-	  "		  analysis_driver = 'plugin_text_book'"
-	  "	responses,"
-	  "		num_objective_functions = 1"
-	  "		num_nonlinear_inequality_constraints = 2"
-	  "		analytic_gradients"
-	  "		no_hessians";
-	nidr_set_input_string(default_input);
-      }
-      else {
-	// serial default:
-	static const char default_input[] = 
-	  "	method,"
-	  "		optpp_q_newton"
-	  "		  max_iterations = 50"
-	  "		  convergence_tolerance = 1e-4"
-	  "	variables,"
-	  "		continuous_design = 2"
-	  "		  descriptors 'x1' 'x2'"
-	  "	interface,"
-	  "		direct"
-	  "		  analysis_driver = 'plugin_rosenbrock'"
-	  "	responses,"
-	  "		num_objective_functions = 1"
-	  "		analytic_gradients"
-	  "		no_hessians";
-	nidr_set_input_string(default_input);
-      }
-      // The above strings could have included comments, provided a \n followed
-      // each comment.  Before each new keyword, some white space (a blank, as
-      // above, or \n) must appear.
-    }
-  }
-
-  // Manage input file parsing, output redirection, and restart processing
-  // without a CommandLineHandle.  This version optionally uses an input file.
-  my_callback_data data;
-  data.db = &problem_db;
-  // In mixed mode, use parse_inputs() instead of manage_inputs() in order to
-  // defer broadcast() & post_process() until all DB inputs have been provided.
-
-  // BMA TODO: decide flow when using input file vs. string and encapsulate in LibraryEnvironment.  This second parse is only necessary if there's a callback function or data in a string...  Also don't want to call bcast, post_proc above...
-  bool echo_input = true;
-  problem_db.parse_inputs(dakota_input_file, std::string(), echo_input, 
-			  my_callback_function, &data);
 
   // Demonstrate changes to DB data initially set by parse_inputs():
   // if we're using rosenbrock, change the initial guess.  This update is
   // performed only on rank 0 and then problem_db.broadcast() is used.
+  Dakota::ProblemDescDB&   problem_db   = env.problem_description_db();
   if (world_rank == 0) {
     problem_db.resolve_top_method(); // allow DB set/get operations
     const Dakota::StringArray& drivers
@@ -363,15 +370,9 @@ void run_dakota_mixed(const char* dakota_input_file)
       problem_db.set("variables.continuous_design.initial_point", ip);
     }
   }
-  // parse_inputs() used above in order to defer post-processing (especially any
-  // large default vector creation) until after all inputs have been provided.
-  problem_db.broadcast();
-  problem_db.post_process();
 
-  // instantiate the top-level Iterator and its Model
-  // BMA: workaround until discuss design with Mike; in this case don't want to broadcast or post proc again either...
-  bool run_parser = false;
-  env.construct(run_parser);
+  // check, broadcast, and construct iterators/models
+  env.done_modifying_db();
 
   // Perform interface plug-ins.
   model_interface_plugins(env);

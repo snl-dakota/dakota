@@ -28,6 +28,10 @@ namespace Dakota {
 class ParallelLibrary;
 class ProgramOptions;
 
+// define the callback function for user updates to the problem DB
+class ProblemDescDB;
+typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
+
 
 /// The database containing information parsed from the DAKOTA input file.
 
@@ -101,29 +105,17 @@ public:
   //- Heading: Member methods
   //
 
-  /// invokes parse_inputs() to populate the problem description
-  /// database and execute any callback function, broadcast() to
-  /// propagate DB data to all processors, and post_process() to
-  /// construct default variables/response vectors.  This is now the
-  /// only API used by main and the file parsing mode in
-  /// library_mode.cpp.
-  void manage_inputs(const ProgramOptions& prog_opts, bool run_parser = true,
-		     void(*callback)(void*) = NULL, void* callback_data = NULL);
-  /// parses the input file and populates the problem description database.
-  /// This function reads from the dakota input filename passed in and
-  /// allows subsequent modifications to be done by a callback function.
-  /// This API is used by the mixed mode option in library_mode.cpp since it
-  /// allows broadcast() and post_process() to be deferred until all inputs
-  /// have been provided.
-  void parse_inputs(const String& dakota_input_file,
-		    const String& parser_options,
-		    bool echo_input = true,
-		    void(*callback)(void*) = NULL, void* callback_data = NULL);
-
+  /// Parses the input file or input string if present and executes
+  /// callbacks.  Does not perform any validation.
+  void parse_inputs(const ProgramOptions& prog_opts,
+		    DbCallbackFunctionPtr callback = NULL,
+		    void* callback_data = NULL);
+  /// performs check_input, broadcast, and post_process, but for now,
+  /// allowing separate invocation through the public API as well
+  void check_and_broadcast(const ProgramOptions& prog_opts);
   /// verifies that there is at least one of each of the required
-  /// keywords in the dakota input file.  Used by parse_inputs().
-  void check_input(const String& dakota_input_file,
-		   bool echo_input = true);
+  /// keywords in the dakota input file
+  void check_input();
   /// invokes send_db_buffer() and receive_db_buffer() to broadcast DB
   /// data across the processor allocation.  Used by manage_inputs().
   void broadcast();
@@ -304,8 +296,7 @@ protected:
   //
 
   /// derived class specifics within parse_inputs()
-  virtual void derived_parse_inputs(const String& dakota_input_file,
-				    const String& parser_options);
+  virtual void derived_parse_inputs(const ProgramOptions& prog_opts);
   /// derived class specifics within broadcast()
   virtual void derived_broadcast();
   /// derived class specifics within post_process()
@@ -373,8 +364,8 @@ private:
   /// and dataResponsesList.  Used by manage_inputs().
   void receive_db_buffer();
 
-  /// echo the (potentially) specified input file to stdout
-  void echo_input_file(const String& dakota_input_file);
+  /// echo the (potentially) specified input file or string to stdout
+  void echo_input_file(const ProgramOptions& prog_opts);
 
   //
   //- Heading: Data
