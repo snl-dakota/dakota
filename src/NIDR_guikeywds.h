@@ -16,7 +16,7 @@ static GuiKeyWord
 		{"output_precision",0x29,0,3,0,9,0,0.,0.,0.,0,"{Numeric output precision} EnvCommands.html#EnvOutput"},
 		{"results_output",8,1,4,0,11,kw_1,0.,0.,0.,0,"{Enable results output} EnvCommands.html#EnvOutput"},
 		{"tabular_graphics_data",8,1,2,0,5,kw_2,0.,0.,0.,0,"{Tabulation of graphics data} EnvCommands.html#EnvOutput"},
-		{"top_method_pointer",11,0,5,0,15}
+		{"top_method_pointer",11,0,5,0,15,0,0.,0.,0.,0,"{Method pointer} EnvCommands.html#EnvMethPtr"}
 		},
 	kw_4[1] = {
 		{"cache_tolerance",10,0,1,0,2255}
@@ -766,31 +766,31 @@ static GuiKeyWord
 		{"peer",8,0,1,1,115}
 		},
 	kw_121[1] = {
-		{"model_pointer_list",11,0,1,0,77}
+		{"model_pointer_list",11,0,1,0,77,0,0.,0.,0.,0,"{List of model pointers} MethodCommands.html#MethodMetaHybrid"}
 		},
 	kw_122[2] = {
-		{"method_name_list",15,1,1,1,75,kw_121},
-		{"method_pointer_list",15,0,1,1,79}
+		{"method_name_list",15,1,1,1,75,kw_121,0.,0.,0.,0,"{List of method names} MethodCommands.html#MethodMetaHybrid"},
+		{"method_pointer_list",15,0,1,1,79,0,0.,0.,0.,0,"{List of method pointers} MethodCommands.html#MethodMetaHybrid"}
 		},
 	kw_123[1] = {
-		{"global_model_pointer",11,0,1,0,61}
+		{"global_model_pointer",11,0,1,0,61,0,0.,0.,0.,0,"{Pointer to the global model specification} MethodCommands.html#MethodMetaHybrid"}
 		},
 	kw_124[1] = {
-		{"local_model_pointer",11,0,1,0,67}
+		{"local_model_pointer",11,0,1,0,67,0,0.,0.,0.,0,"{Pointer to the local model specification} MethodCommands.html#MethodMetaHybrid"}
 		},
 	kw_125[5] = {
-		{"global_method_name",11,1,1,1,59,kw_123},
+		{"global_method_name",11,1,1,1,59,kw_123,0.,0.,0.,0,"{Name of the global method} MethodCommands.html#MethodMetaHybrid"},
 		{"global_method_pointer",11,0,1,1,63,0,0.,0.,0.,0,"{Pointer to the global method specification} MethodCommands.html#MethodMetaHybrid"},
-		{"local_method_name",11,1,2,2,65,kw_124},
+		{"local_method_name",11,1,2,2,65,kw_124,0.,0.,0.,0,"{Name of the local method} MethodCommands.html#MethodMetaHybrid"},
 		{"local_method_pointer",11,0,2,2,69,0,0.,0.,0.,0,"{Pointer to the local method specification} MethodCommands.html#MethodMetaHybrid"},
 		{"local_search_probability",10,0,3,0,71,0,0.,0.,0.,0,"{Probability of executing local searches} MethodCommands.html#MethodMetaHybrid"}
 		},
 	kw_126[1] = {
-		{"model_pointer_list",11,0,1,0,53}
+		{"model_pointer_list",11,0,1,0,53,0,0.,0.,0.,0,"{List of model pointers} MethodCommands.html#MethodMetaHybrid"}
 		},
 	kw_127[2] = {
-		{"method_name_list",15,1,1,1,51,kw_126},
-		{"method_pointer_list",15,0,1,1,55}
+		{"method_name_list",15,1,1,1,51,kw_126,0.,0.,0.,0,"{List of method names} MethodCommands.html#MethodMetaHybrid"},
+		{"method_pointer_list",15,0,1,1,55,0,0.,0.,0.,0,"{List of method pointers} MethodCommands.html#MethodMetaHybrid"}
 		},
 	kw_128[8] = {
 		{"collaborative",8,2,1,1,73,kw_122,0.,0.,0.,0,"{Collaborative hybrid} MethodCommands.html#MethodMetaHybrid"},
@@ -1034,8 +1034,8 @@ static GuiKeyWord
 	kw_167[7] = {
 		{"iterator_scheduling",8,2,5,0,111,kw_120,0.,0.,0.,0,"{Message passing configuration for scheduling of iterator jobs} MethodCommands.html#MethodMeta"},
 		{"iterator_servers",0x19,0,4,0,109,0,0.,0.,0.,0,"{Number of iterator servers} MethodCommands.html#MethodMeta"},
-		{"method_name",11,1,1,1,83,kw_165},
-		{"method_pointer",11,0,1,1,87,0,0.,0.,0.,0,"{Method pointer} MethodCommands.html#MethodMetaMultiStart"},
+		{"method_name",11,1,1,1,83,kw_165,0.,0.,0.,0,"{Identification of a sub-method by name (no separate specification block)} MethodCommands.html#MethodIndControl"},
+		{"method_pointer",11,0,1,1,87,0,0.,0.,0.,0,"{Identification of a sub-method by pointer to a separate specification block} MethodCommands.html#MethodIndControl"},
 		{"processors_per_iterator",0x19,0,6,0,117,0,0.,0.,0.,0,"{Number of processors per iterator server} MethodCommands.html#MethodMeta"},
 		{"random_starts",9,1,2,0,89,kw_166,0.,0.,0.,0,"{Number of random starting points} MethodCommands.html#MethodMetaMultiStart"},
 		{"starting_points",14,0,3,0,93,0,0.,0.,0.,0,"{List of user-specified starting points} MethodCommands.html#MethodMetaMultiStart"}
@@ -1414,7 +1414,7 @@ static GuiKeyWord
 		{"verbose",8,0,1,1,25}
 		},
 	kw_220[2] = {
-		{"model_pointer",11,0,1,0,99},
+		{"model_pointer",11,0,1,0,99,0,0.,0.,0.,0,"{Identification of model by pointer} MethodCommands.html#MethodMetaMultiStart"},
 		{"opt_model_pointer",3,0,1,0,98}
 		},
 	kw_221[1] = {
@@ -1423,8 +1423,8 @@ static GuiKeyWord
 	kw_222[10] = {
 		{"iterator_scheduling",8,2,5,0,111,kw_120,0.,0.,0.,0,"{Message passing configuration for scheduling of iterator jobs} MethodCommands.html#MethodMeta"},
 		{"iterator_servers",0x19,0,4,0,109,0,0.,0.,0.,0,"{Number of iterator servers} MethodCommands.html#MethodMeta"},
-		{"method_name",11,2,1,1,97,kw_220},
-		{"method_pointer",11,0,1,1,101,0,0.,0.,0.,0,"{Optimization method pointer} MethodCommands.html#MethodMetaParetoSet"},
+		{"method_name",11,2,1,1,97,kw_220,0.,0.,0.,0,"{Identification of sub-iterator by name} MethodCommands.html#MethodMetaMultiStart"},
+		{"method_pointer",11,0,1,1,101,0,0.,0.,0.,0,"{Identification of sub-iterator by pointer} MethodCommands.html#MethodMetaMultiStart"},
 		{"multi_objective_weight_sets",6,0,3,0,106},
 		{"opt_method_name",3,2,1,1,96,kw_220},
 		{"opt_method_pointer",3,0,1,1,100},
@@ -1553,9 +1553,9 @@ static GuiKeyWord
 		{"approx_subproblem",8,7,6,0,145,kw_234,0.,0.,0.,0,"{Approximate subproblem formulation} MethodCommands.html#MethodSBL"},
 		{"constraint_relax",8,1,9,0,177,kw_235,0.,0.,0.,0,"{SBL constraint relaxation method for infeasible iterates} MethodCommands.html#MethodSBL"},
 		{"merit_function",8,4,7,0,161,kw_236,0.,0.,0.,0,"{SBL merit function} MethodCommands.html#MethodSBL"},
-		{"method_name",11,0,1,1,123},
-		{"method_pointer",11,0,1,1,121},
-		{"model_pointer",11,0,2,2,125},
+		{"method_name",11,0,1,1,123,0,0.,0.,0.,0,"{Identification of minimizer by name} MethodCommands.html#MethodMetaParetoSet"},
+		{"method_pointer",11,0,1,1,121,0,0.,0.,0.,0,"{Identification of minimizer by pointer} MethodCommands.html#MethodMetaParetoSet"},
+		{"model_pointer",11,0,2,2,125,0,0.,0.,0.,0,"{Identification of model by pointer} MethodCommands.html#MethodMetaParetoSet"},
 		{"soft_convergence_limit",9,0,3,0,127,0,0.,0.,0.,0,"{Soft convergence limit for SBL iterations} MethodCommands.html#MethodSBL"},
 		{"trust_region",8,6,5,0,131,kw_237,0.,0.,0.,0,"{Trust region group specification} MethodCommands.html#MethodSBL"},
 		{"truth_surrogate_bypass",8,0,4,0,129,0,0.,0.,0.,0,"{Flag for bypassing lower level surrogates in truth verifications} MethodCommands.html#MethodSBL"}
@@ -1603,7 +1603,7 @@ static GuiKeyWord
 		{"global_interval_est",8,8,10,1,1139,kw_109,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"global_reliability",8,16,10,1,1461,kw_119,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"gpais",8,11,10,1,963,kw_94,0.,0.,0.,0,0,"Uncertainty Quantification"},
-		{"hybrid",8,8,10,1,47,kw_128,0.,0.,0.,0,"{Hybrid strategy} MethodCommands.html#MethodMetaHybrid"},
+		{"hybrid",8,8,10,1,47,kw_128,0.,0.,0.,0,"{Hybrid meta-iterator} MethodCommands.html#MethodMetaHybrid"},
 		{"id_method",11,0,1,0,19,0,0.,0.,0.,0,"{Method set identifier} MethodCommands.html#MethodIndControl"},
 		{"importance_sampling",8,12,10,1,937,kw_132,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"list_parameter_study",8,3,10,1,1555,kw_134,0.,0.,0.,0,"{List parameter study} MethodCommands.html#MethodPSLPS","Parameter Studies"},
@@ -1614,7 +1614,7 @@ static GuiKeyWord
 		{"max_iterations",0x29,0,3,0,33,0,0.,0.,0.,0,"{Maximum iterations} MethodCommands.html#MethodIndControl"},
 		{"mesh_adaptive_search",8,16,10,1,319,kw_151},
 		{"moga",8,22,10,1,333,kw_164,0.,0.,0.,0,0,"Optimization: Global"},
-		{"multi_start",8,7,10,1,81,kw_167,0.,0.,0.,0,"{Multi-start iteration strategy} MethodCommands.html#MethodMetaMultiStart"},
+		{"multi_start",8,7,10,1,81,kw_167,0.,0.,0.,0,"{Multi-start meta-iterator} MethodCommands.html#MethodMetaMultiStart"},
 		{"multidim_parameter_study",8,2,10,1,1571,kw_168,0.,0.,0.,0,"{Multidimensional parameter study} MethodCommands.html#MethodPSMPS","Parameter Studies"},
 		{"ncsu_direct",8,5,10,1,637,kw_169,0.,0.,0.,0,0,"Optimization: Global"},
 		{"nl2sol",8,10,10,1,613,kw_170,0.,0.,0.,0,"[CHOOSE LSQ method]","Calibration"},
@@ -1643,7 +1643,7 @@ static GuiKeyWord
 		{"optpp_pds",8,11,10,1,279,kw_215,0.,0.,0.,0,0,"Optimization: Local, Derivative-free"},
 		{"optpp_q_newton",8,16,10,1,245,kw_218,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"output",8,5,2,0,21,kw_219,0.,0.,0.,0,"{Output verbosity} MethodCommands.html#MethodIndControl"},
-		{"pareto_set",8,10,10,1,95,kw_222,0.,0.,0.,0,"{Pareto set optimization strategy} MethodCommands.html#MethodMetaParetoSet"},
+		{"pareto_set",8,10,10,1,95,kw_222,0.,0.,0.,0,"{Pareto set minimization} MethodCommands.html#MethodMetaParetoSet"},
 		{"pof_darts",8,8,10,1,1049,kw_174},
 		{"polynomial_chaos",8,30,10,1,675,kw_197,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"psuade_moat",8,4,10,1,1349,kw_223,0.,0.,0.,0,"{PSUADE MOAT method} MethodCommands.html#MethodPSUADE","DACE"},
