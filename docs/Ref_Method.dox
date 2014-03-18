@@ -15,6 +15,12 @@ namespace Dakota {
   <li> <a href="MethodCommands.html#MethodMetaMultiStart">Multistart Iteration Commands</a>
   <li> <a href="MethodCommands.html#MethodMetaParetoSet">Pareto Set Optimization Commands</a>
   </ul>
+<li> <a href="MethodCommands.html#MethodSB">Surrogate-Based Minimization Methods</a>
+  <ul>
+  <li> <a href="MethodCommands.html#MethodSBL">Surrogate-Based Local Method</a>
+  <li> <a href="MethodCommands.html#MethodSBG">Surrogate-Based Global Method</a>
+  <li> <a href="MethodCommands.html#MethodEG">Efficient Global Method</a>
+  </ul>
 <li> <a href="MethodCommands.html#MethodMin">Minimizer Commands</a>
 <li> <a href="MethodCommands.html#MethodOpt">Optimization Methods</a>
   <ul>
@@ -104,12 +110,6 @@ namespace Dakota {
   <li> <a href="MethodCommands.html#MethodLSNL2SOL">NL2SOL Method</a>
   <li> <a href="MethodCommands.html#MethodLSNLSSOL">NLSSOL Method</a>
   <li> <a href="MethodCommands.html#MethodLSGN">Gauss-Newton Method</a>
-  </ul>
-<li> <a href="MethodCommands.html#MethodSB">Surrogate-Based Minimization Methods</a>
-  <ul>
-  <li> <a href="MethodCommands.html#MethodSBL">Surrogate-Based Local Method</a>
-  <li> <a href="MethodCommands.html#MethodSBG">Surrogate-Based Global Method</a>
-  <li> <a href="MethodCommands.html#MethodEG">Efficient Global Method</a>
   </ul>
 <li> <a href="MethodCommands.html#MethodNonD">Uncertainty Quantification Methods</a>
   <ul>
@@ -1200,6 +1200,515 @@ Specification detail for pareto set meta-iterators
 <td>list of reals
 <td>Optional
 <td>no user-specified weighting sets
+</table>
+
+
+\section MethodSB Surrogate-Based Minimization Methods
+
+
+In surrogate-based optimization (SBO) and surrogate-based nonlinear
+least squares (SBNLS), minimization occurs using a set of one or more
+approximations, defined from a surrogate model, that are built and
+periodically updated using data from a "truth" model. The surrogate
+model can be a global data fit (e.g., regression or interpolation of
+data generated from a design of computer experiments), a multipoint
+approximation, a local Taylor Series expansion, or a model hierarchy
+approximation (e.g., a low-fidelity simulation model), whereas the
+truth model involves a high-fidelity simulation model.  The goals of
+surrogate-based methods are to reduce the total number of truth model
+simulations and, in the case of global data fit surrogates, to smooth
+noisy data with an easily navigated analytic function.
+
+
+\subsection MethodSBL Surrogate-Based Local Method
+<!-- dakota subcat surrogate_based_local -->
+
+In the surrogate-based local (SBL) method, a trust region approach is
+used to manage the minimization process to maintain acceptable
+accuracy between the surrogate model and the truth model (by limiting
+the range over which the surrogate model is trusted). The process
+involves a sequence of minimizations performed on the surrogate model
+and bounded by the trust region. At the end of each approximate
+minimization, the candidate optimum point is validated using the truth
+model. If sufficient decrease has been obtained in the truth model,
+the trust region is re-centered around the candidate optimum point and
+the trust region will either shrink, expand, or remain the same size
+depending on the accuracy with which the surrogate model predicted the
+truth model decrease. If sufficient decrease has not been attained,
+the trust region center is not updated and the entire trust region
+shrinks by a user-specified factor. The cycle then repeats with the
+construction of a new surrogate model, a minimization, and another
+test for sufficient decrease in the truth model. This cycle continues
+until convergence is attained.
+
+The \c surrogate_based_local method must specify an optimization or
+least squares sub-method either by pointer using \c
+approx_method_pointer (e.g., 'NLP1') or by name using \c
+approx_method_name (e.g., 'npsol_sqp').  The former identifies a full
+sub-method specification for the sub-problem minimizer (which allows
+non-default minimizer settings), whereas the latter supports a
+streamlined specification (that employs default minimizer settings).
+For both cases, the \c surrogate_based_local method specification is
+responsible for using its \c model_pointer (see \ref MethodIndControl)
+to select a \c surrogate model (see \ref ModelSurrogate).  Any \c
+model_pointer identified in an approximate sub-method specification
+is ignored.
+
+In addition to the method independent controls for \c max_iterations
+and \c convergence_tolerance described in Table \ref T5d1 "5.1", SBL
+algorithm controls include \c soft_convergence_limit (a soft
+convergence control for the SBL iterations which limits the number of
+consecutive iterations with improvement less than the convergence
+tolerance) and \c truth_surrogate_bypass (a flag for bypassing all
+lower level surrogates when performing truth verifications on a top
+level surrogate).  Table \ref T5d24 "5.24" summarizes these SBL
+inputs.
+
+\anchor T5d24
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.24
+\endhtmlonly
+Specification detail for surrogate-based local minimization method
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Surrogate-based local method
+<td>\c surrogate_based_local
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Approximate sub-problem minimization method pointer
+<td>\c approx_method_pointer
+<td>string
+<td>Required (1 of 2 selections)
+<td>N/A
+<tr>
+<td>Approximate sub-problem minimization method name
+<td>\c approx_method_name
+<td>string
+<td>Required (1 of 2 selections)
+<td>N/A
+<tr>
+<td>Soft convergence limit for SBL iterations
+<td>\c soft_convergence_limit
+<td>integer
+<td>Optional
+<td>5
+<tr>
+<td>Flag for bypassing lower level surrogates in truth verifications
+<td>\c truth_surrogate_bypass
+<td>none
+<td>Optional
+<td>no bypass
+</table>
+
+The \c trust_region optional group specification can be used to
+specify the initial size of the trust region (using \c initial_size)
+relative to the total variable bounds, the minimum size of the trust
+region (using \c minimum_size), the contraction factor for the trust
+region size (using \c contraction_factor) used when the surrogate
+model is performing poorly, and the expansion factor for the trust
+region size (using \c expansion_factor) used when the the surrogate
+model is performing well. Two additional commands are the trust region
+size contraction threshold (using \c contract_threshold) and the trust
+region size expansion threshold (using \c expand_threshold).  These
+two commands are related to what is called the trust region ratio,
+which is the actual decrease in the truth model divided by the
+predicted decrease in the truth model in the current trust region. The
+command \c contract_threshold sets the minimum acceptable value for
+the trust region ratio, i.e., values below this threshold cause the
+trust region to shrink for the next SBL iteration. The command \c
+expand_threshold determines the trust region value above which the
+trust region will expand for the next SBL iteration. Table 
+\ref T5d25 "5.25" summarizes these trust region inputs.
+
+\anchor T5d25
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.25
+\endhtmlonly
+Specification detail for trust region controls in surrogate-based 
+local methods
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Trust region group specification
+<td>\c trust_region
+<td>none
+<td>Optional group
+<td>N/A
+<tr>
+<td>Trust region initial size (relative to bounds)
+<td>\c initial_size
+<td>real
+<td>Optional
+<td>0.4
+<tr>
+<td>Trust region minimum size
+<td>\c minimum_size
+<td>real
+<td>Optional
+<td>1.e-6
+<tr>
+<td>Shrink trust region if trust region ratio is below this value
+<td>\c contract_threshold
+<td>real
+<td>Optional
+<td>0.25
+<tr>
+<td>Expand trust region if trust region ratio is above this value
+<td>\c expand_threshold
+<td>real
+<td>Optional
+<td>0.75
+<tr>
+<td>Trust region contraction factor
+<td>\c contraction_factor
+<td>real
+<td>Optional
+<td>0.25
+<tr>
+<td>Trust region expansion factor
+<td>\c expansion_factor
+<td>real
+<td>Optional
+<td>2.0
+</table>
+
+For SBL problems with nonlinear constraints, a number of algorithm
+formulations exist as described in 
+[\ref Eldred2006a "Eldred and Dunlavy, 2006"] and as summarized in the
+Advanced Examples section of the Models chapter of the Users Manual 
+[\ref UsersMan "Adams et al., 2010"].
+First, the "primary" functions (that is, the objective functions or
+calibration terms) in the approximate subproblem can be selected to
+be surrogates of the original primary functions (\c original_primary),
+a single objective function (\c single_objective) formed from the
+primary function surrogates, or either an augmented Lagrangian merit
+function (\c augmented_lagrangian_objective) or a Lagrangian merit
+function (\c lagrangian_objective) formed from the primary and
+secondary function surrogates.  The former option may imply the use of
+a nonlinear least squares method, a multiobjective optimization
+method, or a single objective optimization method to solve the
+approximate subproblem, depending on the definition of the primary
+functions.  The latter three options all imply the use of a single
+objective optimization method regardless of primary function
+definition.  Second, the surrogate constraints in the approximate
+subproblem can be selected to be surrogates of the original
+constraints (\c original_constraints) or linearized approximations to
+the surrogate constraints (\c linearized_constraints), or constraints
+can be omitted from the subproblem (\c no_constraints). Following
+optimization of the approximate subproblem, the candidate iterate is
+evaluated using a merit function, which can be selected to be a simple
+penalty function with penalty ramped by SBL iteration number (\c
+penalty_merit), an adaptive penalty function where the penalty ramping
+may be accelerated in order to avoid rejecting good iterates which
+decrease the constraint violation (\c adaptive_penalty_merit), a
+Lagrangian merit function which employs first-order Lagrange
+multiplier updates (\c lagrangian_merit), or an augmented Lagrangian
+merit function which employs both a penalty parameter and zeroth-order
+Lagrange multiplier updates (\c augmented_lagrangian_merit).  When an
+augmented Lagrangian is selected for either the subproblem objective
+or the merit function (or both), updating of penalties and multipliers
+follows the approach described in [\ref Conn2000 "Conn et al., 2000"].
+Following calculation of the merit function for the new iterate, the
+iterate is accepted or rejected and the trust region size is adjusted
+for the next SBL iteration.  Iterate acceptance is governed either by
+a trust region ratio (\c tr_ratio) formed from the merit function
+values or by a filter method (\c filter); however, trust region
+resizing logic is currently based only on the trust region ratio.  For
+infeasible iterates, constraint relaxation can be used for balancing
+constraint satisfaction and progress made toward an optimum. The
+command \c constraint_relax followed by a method name specifies the
+type of relaxation to be used. Currently, \c homotopy [\ref Perez2004
+"Perez et al., 2004"] is the only available method for constraint
+relaxation, and this method is dependent on the presence of the NPSOL
+library within the %Dakota executable. Table \ref T5d26 "5.26"
+summarizes these constraint management inputs.
+
+\anchor T5d26
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.26
+\endhtmlonly
+Specification detail for constraint management in surrogate-based local methods
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Approximate subproblem formulation
+<td>\c approx_subproblem
+<td>\c original_primary | \c single_objective |
+\c augmented_lagrangian_objective | \c lagrangian_objective \n
+\c original_constraints | \c linearized_constraints | \c no_constraints
+<td>Optional group
+<td>\c original_primary \n \c original_constraints
+<tr>
+<td>SBL merit function
+<td>\c merit_function
+<td>\c penalty_merit | \c adaptive_penalty_merit | \c lagrangian_merit | 
+\c augmented_lagrangian_merit
+<td>Optional group
+<td>\c augmented_lagrangian_merit
+<tr>
+<td>SBL iterate acceptance logic
+<td>\c acceptance_logic
+<td>\c tr_ratio | \c filter
+<td>Optional group
+<td>\c filter
+<tr>
+<td>SBL constraint relaxation method for infeasible iterates
+<td>\c constraint_relax
+<td>\c homotopy
+<td>Optional group
+<td>no relaxation
+</table>
+
+
+\subsection MethodSBG Surrogate-Based Global Method
+<!-- dakota subcat surrogate_based_global -->
+
+The \c surrogate_based_global method differs from the \c
+surrogate_based_local method in a few ways.  First, \c
+surrogate_based_global is not a trust region method.  Rather, \c
+surrogate_based_global works in an iterative scheme where optimization
+is performed on a global surrogate using the same bounds during each
+iteration.  In one iteration, the optimal solutions of the surrogate
+model are found, and then a selected set of these optimal surrogate
+solutions are passed to the next iteration. At the next iteration,
+these surrogate points are evaluated with the "truth" model, and then
+these points are added back to the set of points upon which the next
+surrogate is constructed.  In this way, the optimization acts on a
+more accurate surrogate during each iteration, presumably driving to
+optimality quickly.  This approach has no guarantee of convergence.
+It was originally designed for MOGA (a multi-objective genetic
+algorithm).  Since genetic algorithms often need thousands or tens of
+thousands of points to produce optimal or near-optimal solutions, the
+use of surrogates can be helpful for reducing the truth model
+evaluations.  Instead of creating one set of surrogates for the
+individual objectives and running the optimization algorithm on the
+surrogate once, the idea is to select points along the (surrogate)
+Pareto frontier, which can be used to supplement the existing points.
+In this way, one does not need to use many points initially to get a
+very accurate surrogate.  The surrogate becomes more accurate as the
+iterations progress. Note that the user has the option of appending 
+the optimal points from the surrogate model to the current set of 
+truth points or using the optimal points from the surrogate model 
+to replace the optimal set of points from the previous iteration. 
+Although appending to the set is the default behavior, at this time 
+we strongly recommend using the option \c replace_points because it 
+appears to be more accurate and robust.  Finally, the number 
+of best solutions that will be passed from one iteration 
+to another is governed by the iterator control 
+\c final_solutions.  If this is not specified, the 
+surrogate-based global method will take all of the 
+solutions available (e.g. all of the solutions 
+in the Pareto front). 
+
+As for the \c surrogate_based_local method, the \c surrogate_based_global 
+specification must identify a sub-method using either \c
+approx_method_pointer or \c approx_method_name and must identify a
+surrogate model (see \ref ModelSurrogate) using its \c model_pointer
+(see \ref MethodIndControl).  The only other algorithm control at this
+time is the method independent control for \c max_iterations described
+in Table \ref T5d1 "5.1".  Table \ref T5d27 "5.27" summarizes the
+method dependent surrogate based global inputs.
+
+\anchor T5d27
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.27
+\endhtmlonly
+Specification detail for the surrogate-based global method
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Surrogate-based global method
+<td>\c surrogate_based_global 
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Approximate sub-problem minimization method pointer
+<td>\c approx_method_pointer
+<td>string
+<td>Required (1 of 2 selections)
+<td>N/A
+<tr>
+<td>Approximate sub-problem minimization method name
+<td>\c approx_method_name
+<td>string
+<td>Required (1 of 2 selections)
+<td>N/A
+<tr>
+<td>Replace points used in surrogate construction with best points from previous iteration
+<td>\c replace_points 
+<td>none
+<td>Optional
+<td>Points appended, not replaced
+</table>
+
+We have two cautionary notes before using the surrogate-based 
+global method:
+
+\li One might first try a single minimization method coupled with a
+surrogate model prior to using the surrogate-based global method.
+This is essentially equivalent to setting \c max_iterations to 1 and
+will allow one to get a sense of what surrogate types are the most
+accurate to use for the problem.  (Also note that one can specify that
+surrogates be built for all primary functions and constraints or for
+only a subset of these functions and constraints.  This allows one to
+use a "truth" model directly for some of the response functions,
+perhaps due to them being much less expensive than other functions.
+This is outlined in \ref ModelSurrogate.)
+
+\li We initially recommend a small number of maximum iterations, such
+as 3-5, to get a sense of how the optimization is evolving as the
+surrogate gets updated.  If it appears to be changing significantly,
+then a larger number (used in combination with restart) may be needed.
+
+
+\subsection MethodEG Efficient Global Method
+<!-- dakota subcat efficient_global -->
+
+The Efficient Global Optimization (EGO) method was first developed by
+Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"].  In
+EGO, a stochastic response surface approximation for the objective
+function is developed based on some sample points from the "true"
+simulation.  The particular response surface used is a Gaussian
+process (GP).  The GP allows one to calculate the prediction at a new
+input location as well as the uncertainty associated with that
+prediction.  The key idea in EGO is to maximize the Expected
+Improvement Function (EIF).  The EIF is used to select the location at
+which a new training point should be added to the Gaussian process
+model by maximizing the amount of improvement in the objective
+function that can be expected by adding that point. A point could be
+expected to produce an improvement in the objective function if its
+predicted value is better than the current best solution, or if the
+uncertainty in its prediction is such that the probability of it
+producing a better solution is high.  Because the uncertainty is
+higher in regions of the design space with few observations, this
+provides a balance between exploiting areas of the design space that
+predict good solutions, and exploring areas where more information is
+needed. EGO trades off this "exploitation vs. exploration."  The
+general procedure for these EGO-type methods is:
+
+\li Build an initial Gaussian process model of the objective function
+
+\li Find the point that maximizes the EIF.  If the EIF value at this
+point is sufficiently small, stop.
+
+\li Evaluate the objective function at the point where the EIF is
+maximized.  Update the Gaussian process model using this new point.
+Return to the previous step.
+ 
+Note that several major differences exist between our implementation
+and that of [\ref Jones1998 "Jones et al., 1998"].  First, rather than
+using a branch and bound method to find the point which maximizes the
+EIF, we use the DIRECT global optimization method (see \ref
+MethodSCOLIBDIR and \ref MethodNCSU).  Second, we support both global
+optimization and global nonlinear least squares as well as general
+nonlinear constraints through abstraction and subproblem recasting
+within the SurrBasedMinimizer and EffGlobalMinimizer classes.
+
+The efficient global optimization algorithm is specified by the
+keyword \c efficient_global along with an optional \c seed
+specification, as shown in in Table \ref T5d28 "5.28" below.  By
+default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
+implementation may be selected instead.  If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only).  The \c import_points_file and \c
+export_points_file specifications are as described in \ref ModelSurrG,
+(the use of an embedded global surrogate model necessitates repeating
+selected surrogate model specifications within the method specification).
+
+\anchor T5d28
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.28
+\endhtmlonly
+Specification detail for the efficient global method
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Efficient global method 
+<td>\c efficient_global
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Random seed
+<td>\c seed
+<td>integer
+<td>Optional
+<td>Time based seed: nonrepeatable
+<tr>
+<td>GP selection
+<td>\c gaussian_process
+<td>\c surfpack | \c dakota
+<td>Optional
+<td>Surfpack Gaussian process
+<tr>
+<td>Derivative usage
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>Use function values only
+<tr>
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 </table>
 
 
@@ -4209,515 +4718,6 @@ same as for the OPT++ optimization methods and are as described in
 full-Newton optimizers provide the foundation for Gauss-Newton, the
 specifications from \ref T5d6 "Table 5.6" are also applicable for 
 \c optpp_g_newton.
-
-
-\section MethodSB Surrogate-Based Minimization Methods
-
-
-In surrogate-based optimization (SBO) and surrogate-based nonlinear
-least squares (SBNLS), minimization occurs using a set of one or more
-approximations, defined from a surrogate model, that are built and
-periodically updated using data from a "truth" model. The surrogate
-model can be a global data fit (e.g., regression or interpolation of
-data generated from a design of computer experiments), a multipoint
-approximation, a local Taylor Series expansion, or a model hierarchy
-approximation (e.g., a low-fidelity simulation model), whereas the
-truth model involves a high-fidelity simulation model.  The goals of
-surrogate-based methods are to reduce the total number of truth model
-simulations and, in the case of global data fit surrogates, to smooth
-noisy data with an easily navigated analytic function.
-
-
-\subsection MethodSBL Surrogate-Based Local Method
-<!-- dakota subcat surrogate_based_local -->
-
-In the surrogate-based local (SBL) method, a trust region approach is
-used to manage the minimization process to maintain acceptable
-accuracy between the surrogate model and the truth model (by limiting
-the range over which the surrogate model is trusted). The process
-involves a sequence of minimizations performed on the surrogate model
-and bounded by the trust region. At the end of each approximate
-minimization, the candidate optimum point is validated using the truth
-model. If sufficient decrease has been obtained in the truth model,
-the trust region is re-centered around the candidate optimum point and
-the trust region will either shrink, expand, or remain the same size
-depending on the accuracy with which the surrogate model predicted the
-truth model decrease. If sufficient decrease has not been attained,
-the trust region center is not updated and the entire trust region
-shrinks by a user-specified factor. The cycle then repeats with the
-construction of a new surrogate model, a minimization, and another
-test for sufficient decrease in the truth model. This cycle continues
-until convergence is attained.
-
-The \c surrogate_based_local method must specify an optimization or
-least squares sub-method either by pointer using \c
-approx_method_pointer (e.g., 'NLP1') or by name using \c
-approx_method_name (e.g., 'npsol_sqp').  The former identifies a full
-sub-method specification for the sub-problem minimizer (which allows
-non-default minimizer settings), whereas the latter supports a
-streamlined specification (that employs default minimizer settings).
-For both cases, the \c surrogate_based_local method specification is
-responsible for using its \c model_pointer (see \ref MethodIndControl)
-to select a \c surrogate model (see \ref ModelSurrogate).  Any \c
-model_pointer identified in an approximate sub-method specification
-is ignored.
-
-In addition to the method independent controls for \c max_iterations
-and \c convergence_tolerance described in Table \ref T5d1 "5.1", SBL
-algorithm controls include \c soft_convergence_limit (a soft
-convergence control for the SBL iterations which limits the number of
-consecutive iterations with improvement less than the convergence
-tolerance) and \c truth_surrogate_bypass (a flag for bypassing all
-lower level surrogates when performing truth verifications on a top
-level surrogate).  Table \ref T5d24 "5.24" summarizes these SBL
-inputs.
-
-\anchor T5d24
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.24
-\endhtmlonly
-Specification detail for surrogate-based local minimization method
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Surrogate-based local method
-<td>\c surrogate_based_local
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Approximate sub-problem minimization method pointer
-<td>\c approx_method_pointer
-<td>string
-<td>Required (1 of 2 selections)
-<td>N/A
-<tr>
-<td>Approximate sub-problem minimization method name
-<td>\c approx_method_name
-<td>string
-<td>Required (1 of 2 selections)
-<td>N/A
-<tr>
-<td>Soft convergence limit for SBL iterations
-<td>\c soft_convergence_limit
-<td>integer
-<td>Optional
-<td>5
-<tr>
-<td>Flag for bypassing lower level surrogates in truth verifications
-<td>\c truth_surrogate_bypass
-<td>none
-<td>Optional
-<td>no bypass
-</table>
-
-The \c trust_region optional group specification can be used to
-specify the initial size of the trust region (using \c initial_size)
-relative to the total variable bounds, the minimum size of the trust
-region (using \c minimum_size), the contraction factor for the trust
-region size (using \c contraction_factor) used when the surrogate
-model is performing poorly, and the expansion factor for the trust
-region size (using \c expansion_factor) used when the the surrogate
-model is performing well. Two additional commands are the trust region
-size contraction threshold (using \c contract_threshold) and the trust
-region size expansion threshold (using \c expand_threshold).  These
-two commands are related to what is called the trust region ratio,
-which is the actual decrease in the truth model divided by the
-predicted decrease in the truth model in the current trust region. The
-command \c contract_threshold sets the minimum acceptable value for
-the trust region ratio, i.e., values below this threshold cause the
-trust region to shrink for the next SBL iteration. The command \c
-expand_threshold determines the trust region value above which the
-trust region will expand for the next SBL iteration. Table 
-\ref T5d25 "5.25" summarizes these trust region inputs.
-
-\anchor T5d25
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.25
-\endhtmlonly
-Specification detail for trust region controls in surrogate-based 
-local methods
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Trust region group specification
-<td>\c trust_region
-<td>none
-<td>Optional group
-<td>N/A
-<tr>
-<td>Trust region initial size (relative to bounds)
-<td>\c initial_size
-<td>real
-<td>Optional
-<td>0.4
-<tr>
-<td>Trust region minimum size
-<td>\c minimum_size
-<td>real
-<td>Optional
-<td>1.e-6
-<tr>
-<td>Shrink trust region if trust region ratio is below this value
-<td>\c contract_threshold
-<td>real
-<td>Optional
-<td>0.25
-<tr>
-<td>Expand trust region if trust region ratio is above this value
-<td>\c expand_threshold
-<td>real
-<td>Optional
-<td>0.75
-<tr>
-<td>Trust region contraction factor
-<td>\c contraction_factor
-<td>real
-<td>Optional
-<td>0.25
-<tr>
-<td>Trust region expansion factor
-<td>\c expansion_factor
-<td>real
-<td>Optional
-<td>2.0
-</table>
-
-For SBL problems with nonlinear constraints, a number of algorithm
-formulations exist as described in 
-[\ref Eldred2006a "Eldred and Dunlavy, 2006"] and as summarized in the
-Advanced Examples section of the Models chapter of the Users Manual 
-[\ref UsersMan "Adams et al., 2010"].
-First, the "primary" functions (that is, the objective functions or
-calibration terms) in the approximate subproblem can be selected to
-be surrogates of the original primary functions (\c original_primary),
-a single objective function (\c single_objective) formed from the
-primary function surrogates, or either an augmented Lagrangian merit
-function (\c augmented_lagrangian_objective) or a Lagrangian merit
-function (\c lagrangian_objective) formed from the primary and
-secondary function surrogates.  The former option may imply the use of
-a nonlinear least squares method, a multiobjective optimization
-method, or a single objective optimization method to solve the
-approximate subproblem, depending on the definition of the primary
-functions.  The latter three options all imply the use of a single
-objective optimization method regardless of primary function
-definition.  Second, the surrogate constraints in the approximate
-subproblem can be selected to be surrogates of the original
-constraints (\c original_constraints) or linearized approximations to
-the surrogate constraints (\c linearized_constraints), or constraints
-can be omitted from the subproblem (\c no_constraints). Following
-optimization of the approximate subproblem, the candidate iterate is
-evaluated using a merit function, which can be selected to be a simple
-penalty function with penalty ramped by SBL iteration number (\c
-penalty_merit), an adaptive penalty function where the penalty ramping
-may be accelerated in order to avoid rejecting good iterates which
-decrease the constraint violation (\c adaptive_penalty_merit), a
-Lagrangian merit function which employs first-order Lagrange
-multiplier updates (\c lagrangian_merit), or an augmented Lagrangian
-merit function which employs both a penalty parameter and zeroth-order
-Lagrange multiplier updates (\c augmented_lagrangian_merit).  When an
-augmented Lagrangian is selected for either the subproblem objective
-or the merit function (or both), updating of penalties and multipliers
-follows the approach described in [\ref Conn2000 "Conn et al., 2000"].
-Following calculation of the merit function for the new iterate, the
-iterate is accepted or rejected and the trust region size is adjusted
-for the next SBL iteration.  Iterate acceptance is governed either by
-a trust region ratio (\c tr_ratio) formed from the merit function
-values or by a filter method (\c filter); however, trust region
-resizing logic is currently based only on the trust region ratio.  For
-infeasible iterates, constraint relaxation can be used for balancing
-constraint satisfaction and progress made toward an optimum. The
-command \c constraint_relax followed by a method name specifies the
-type of relaxation to be used. Currently, \c homotopy [\ref Perez2004
-"Perez et al., 2004"] is the only available method for constraint
-relaxation, and this method is dependent on the presence of the NPSOL
-library within the %Dakota executable. Table \ref T5d26 "5.26"
-summarizes these constraint management inputs.
-
-\anchor T5d26
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.26
-\endhtmlonly
-Specification detail for constraint management in surrogate-based local methods
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Approximate subproblem formulation
-<td>\c approx_subproblem
-<td>\c original_primary | \c single_objective |
-\c augmented_lagrangian_objective | \c lagrangian_objective \n
-\c original_constraints | \c linearized_constraints | \c no_constraints
-<td>Optional group
-<td>\c original_primary \n \c original_constraints
-<tr>
-<td>SBL merit function
-<td>\c merit_function
-<td>\c penalty_merit | \c adaptive_penalty_merit | \c lagrangian_merit | 
-\c augmented_lagrangian_merit
-<td>Optional group
-<td>\c augmented_lagrangian_merit
-<tr>
-<td>SBL iterate acceptance logic
-<td>\c acceptance_logic
-<td>\c tr_ratio | \c filter
-<td>Optional group
-<td>\c filter
-<tr>
-<td>SBL constraint relaxation method for infeasible iterates
-<td>\c constraint_relax
-<td>\c homotopy
-<td>Optional group
-<td>no relaxation
-</table>
-
-
-\subsection MethodSBG Surrogate-Based Global Method
-<!-- dakota subcat surrogate_based_global -->
-
-The \c surrogate_based_global method differs from the \c
-surrogate_based_local method in a few ways.  First, \c
-surrogate_based_global is not a trust region method.  Rather, \c
-surrogate_based_global works in an iterative scheme where optimization
-is performed on a global surrogate using the same bounds during each
-iteration.  In one iteration, the optimal solutions of the surrogate
-model are found, and then a selected set of these optimal surrogate
-solutions are passed to the next iteration. At the next iteration,
-these surrogate points are evaluated with the "truth" model, and then
-these points are added back to the set of points upon which the next
-surrogate is constructed.  In this way, the optimization acts on a
-more accurate surrogate during each iteration, presumably driving to
-optimality quickly.  This approach has no guarantee of convergence.
-It was originally designed for MOGA (a multi-objective genetic
-algorithm).  Since genetic algorithms often need thousands or tens of
-thousands of points to produce optimal or near-optimal solutions, the
-use of surrogates can be helpful for reducing the truth model
-evaluations.  Instead of creating one set of surrogates for the
-individual objectives and running the optimization algorithm on the
-surrogate once, the idea is to select points along the (surrogate)
-Pareto frontier, which can be used to supplement the existing points.
-In this way, one does not need to use many points initially to get a
-very accurate surrogate.  The surrogate becomes more accurate as the
-iterations progress. Note that the user has the option of appending 
-the optimal points from the surrogate model to the current set of 
-truth points or using the optimal points from the surrogate model 
-to replace the optimal set of points from the previous iteration. 
-Although appending to the set is the default behavior, at this time 
-we strongly recommend using the option \c replace_points because it 
-appears to be more accurate and robust.  Finally, the number 
-of best solutions that will be passed from one iteration 
-to another is governed by the iterator control 
-\c final_solutions.  If this is not specified, the 
-surrogate-based global method will take all of the 
-solutions available (e.g. all of the solutions 
-in the Pareto front). 
-
-As for the \c surrogate_based_local method, the \c surrogate_based_global 
-specification must identify a sub-method using either \c
-approx_method_pointer or \c approx_method_name and must identify a
-surrogate model (see \ref ModelSurrogate) using its \c model_pointer
-(see \ref MethodIndControl).  The only other algorithm control at this
-time is the method independent control for \c max_iterations described
-in Table \ref T5d1 "5.1".  Table \ref T5d27 "5.27" summarizes the
-method dependent surrogate based global inputs.
-
-\anchor T5d27
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.27
-\endhtmlonly
-Specification detail for the surrogate-based global method
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Surrogate-based global method
-<td>\c surrogate_based_global 
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Approximate sub-problem minimization method pointer
-<td>\c approx_method_pointer
-<td>string
-<td>Required (1 of 2 selections)
-<td>N/A
-<tr>
-<td>Approximate sub-problem minimization method name
-<td>\c approx_method_name
-<td>string
-<td>Required (1 of 2 selections)
-<td>N/A
-<tr>
-<td>Replace points used in surrogate construction with best points from previous iteration
-<td>\c replace_points 
-<td>none
-<td>Optional
-<td>Points appended, not replaced
-</table>
-
-We have two cautionary notes before using the surrogate-based 
-global method:
-
-\li One might first try a single minimization method coupled with a
-surrogate model prior to using the surrogate-based global method.
-This is essentially equivalent to setting \c max_iterations to 1 and
-will allow one to get a sense of what surrogate types are the most
-accurate to use for the problem.  (Also note that one can specify that
-surrogates be built for all primary functions and constraints or for
-only a subset of these functions and constraints.  This allows one to
-use a "truth" model directly for some of the response functions,
-perhaps due to them being much less expensive than other functions.
-This is outlined in \ref ModelSurrogate.)
-
-\li We initially recommend a small number of maximum iterations, such
-as 3-5, to get a sense of how the optimization is evolving as the
-surrogate gets updated.  If it appears to be changing significantly,
-then a larger number (used in combination with restart) may be needed.
-
-
-\subsection MethodEG Efficient Global Method
-<!-- dakota subcat efficient_global -->
-
-The Efficient Global Optimization (EGO) method was first developed by
-Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"].  In
-EGO, a stochastic response surface approximation for the objective
-function is developed based on some sample points from the "true"
-simulation.  The particular response surface used is a Gaussian
-process (GP).  The GP allows one to calculate the prediction at a new
-input location as well as the uncertainty associated with that
-prediction.  The key idea in EGO is to maximize the Expected
-Improvement Function (EIF).  The EIF is used to select the location at
-which a new training point should be added to the Gaussian process
-model by maximizing the amount of improvement in the objective
-function that can be expected by adding that point. A point could be
-expected to produce an improvement in the objective function if its
-predicted value is better than the current best solution, or if the
-uncertainty in its prediction is such that the probability of it
-producing a better solution is high.  Because the uncertainty is
-higher in regions of the design space with few observations, this
-provides a balance between exploiting areas of the design space that
-predict good solutions, and exploring areas where more information is
-needed. EGO trades off this "exploitation vs. exploration."  The
-general procedure for these EGO-type methods is:
-
-\li Build an initial Gaussian process model of the objective function
-
-\li Find the point that maximizes the EIF.  If the EIF value at this
-point is sufficiently small, stop.
-
-\li Evaluate the objective function at the point where the EIF is
-maximized.  Update the Gaussian process model using this new point.
-Return to the previous step.
- 
-Note that several major differences exist between our implementation
-and that of [\ref Jones1998 "Jones et al., 1998"].  First, rather than
-using a branch and bound method to find the point which maximizes the
-EIF, we use the DIRECT global optimization method (see \ref
-MethodSCOLIBDIR and \ref MethodNCSU).  Second, we support both global
-optimization and global nonlinear least squares as well as general
-nonlinear constraints through abstraction and subproblem recasting
-within the SurrBasedMinimizer and EffGlobalMinimizer classes.
-
-The efficient global optimization algorithm is specified by the
-keyword \c efficient_global along with an optional \c seed
-specification, as shown in in Table \ref T5d28 "5.28" below.  By
-default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
-implementation may be selected instead.  If \c use_derivatives is
-specified the GP model will be built using available derivative data
-(Surfpack GP only).  The \c import_points_file and \c
-export_points_file specifications are as described in \ref ModelSurrG,
-(the use of an embedded global surrogate model necessitates repeating
-selected surrogate model specifications within the method specification).
-
-\anchor T5d28
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.28
-\endhtmlonly
-Specification detail for the efficient global method
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Efficient global method 
-<td>\c efficient_global
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Random seed
-<td>\c seed
-<td>integer
-<td>Optional
-<td>Time based seed: nonrepeatable
-<tr>
-<td>GP selection
-<td>\c gaussian_process
-<td>\c surfpack | \c dakota
-<td>Optional
-<td>Surfpack Gaussian process
-<tr>
-<td>Derivative usage
-<td>\c use_derivatives
-<td>none
-<td>Optional
-<td>Use function values only
-<tr>
-<td>File name for points to be imported as the basis for the initial GP
-<td>\c import_points_file
-<td>string
-<td>Optional
-<td>no point import from a file
-<tr>
-<td>Import points file format
-<td>\c annotated | \c freeform
-<td>boolean
-<td>Optional
-<td>annotated
-<tr>
-<td>File name for exporting approximation-based samples from evaluating the GP
-<td>\c export_points_file
-<td>string
-<td>Optional
-<td>no point export to a file
-<tr>
-<td>Export points file format
-<td>\c annotated | \c freeform
-<td>boolean
-<td>Optional
-<td>annotated
-</table>
 
 
 \section MethodNonD Uncertainty Quantification Methods
