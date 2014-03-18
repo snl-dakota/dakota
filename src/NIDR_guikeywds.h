@@ -816,11 +816,11 @@ static GuiKeyWord
 		{"num_response_levels",13,0,1,0,949}
 		},
 	kw_132[12] = {
-		{"adapt_import",8,0,1,0,941},
+		{"adapt_import",8,0,1,1,941},
 		{"distribution",8,2,7,0,1119,kw_19,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
 		{"gen_reliability_levels",14,1,9,0,1129,kw_20,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
-		{"import",8,0,1,0,939},
-		{"mm_adapt_import",8,0,1,0,943},
+		{"import",8,0,1,1,939},
+		{"mm_adapt_import",8,0,1,1,943},
 		{"model_pointer",11,0,4,0,1585},
 		{"probability_levels",14,1,8,0,1125,kw_21,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
 		{"refinement_samples",9,0,2,0,945},

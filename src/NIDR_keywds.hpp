@@ -786,9 +786,9 @@ static KeyWord
 		{0,0,1,0,0,kw_19},
 		{0,0,2,0,0,kw_20},
 		{0,0,4,0,0,kw_25},
-		{"adapt_import",8,0,1,0,0,0.,0.,0,N_mdm(utype,integrationRefine_AIS)},
-		{"import",8,0,1,0,0,0.,0.,0,N_mdm(utype,integrationRefine_IS)},
-		{"mm_adapt_import",8,0,1,0,0,0.,0.,0,N_mdm(utype,integrationRefine_MMAIS)},
+		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_AIS)},
+		{"import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_IS)},
+		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_MMAIS)},
 		{"refinement_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,refineSamples)},
 		{"response_levels",14,2,3,0,kw_141,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},

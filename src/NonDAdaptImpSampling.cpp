@@ -51,9 +51,6 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   // size of refinement batches is separate from initial LHS size (numSamples)
   refineSamples(probDescDB.get_int("method.nond.refinement_samples"))
 {
-  // IS/AIS/MMAIS spec is currently optional
-  if (!importanceSamplingType) importanceSamplingType = MMAIS;
-
   // if separate refinement batch size not provided, reuse initial LHS size
   if (!refineSamples) refineSamples = numSamples;
 

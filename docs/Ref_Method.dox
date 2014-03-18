@@ -5773,8 +5773,8 @@ Specification detail for the LHS-based importance sampling method
 <td>Type of importance sampling performed
 <td>\c import | \c adapt_import | \c mm_adapt_import
 <td>none
-<td>Optional
-<td>\c mm_adapt_import
+<td>Required
+<td>N/A
 <tr>
 <td>Random seed
 <td>\c seed

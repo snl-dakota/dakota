@@ -962,9 +962,9 @@ KEYWORD12 method
 	  )
 	|
 	( importance_sampling ALIAS nond_importance_sampling
-	  [ import
+	  import
 	  | adapt_import
-	  | mm_adapt_import ]
+	  | mm_adapt_import
 	  [ refinement_samples INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
