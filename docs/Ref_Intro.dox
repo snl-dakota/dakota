@@ -108,7 +108,7 @@ functions OR generic response functions), followed by the required
 specification of the gradients (either none OR numerical OR analytic
 OR mixed) and the required specification of the Hessians (either none
 OR numerical OR quasi OR analytic OR mixed).  Refer to \ref
-StratCommands, \ref MethodCommands, \ref ModelCommands, \ref
+EnvCommands, \ref MethodCommands, \ref ModelCommands, \ref
 VarCommands, \ref InterfCommands, and \ref RespCommands for detailed
 information on the keywords and their various optional and required
 specifications. And for additional details on NIDR specification logic
@@ -522,7 +522,7 @@ through \ref T6d9 "6.9") in succession.
 
 \htmlonly
 <hr>
-<br><b><a href="StratCommands.html#StratCommands">Next chapter</a></b>
+<br><b><a href="EnvCommands.html#EnvCommands">Next chapter</a></b>
 \endhtmlonly
 
 */

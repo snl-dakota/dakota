@@ -156,7 +156,7 @@ upper bounds, and discrete set types include the admissible set
 values.  State variables provide a convenient mechanism for
 parameterizing additional model inputs, such as mesh density,
 simulation convergence tolerances and time step controls, and can be
-used to enact model adaptivity in future strategy developments.
+used to enact model adaptivity in future method developments.
 
 The ordering of variables is important, and a consistent ordering is
 employed throughout the %Dakota software.  It is the same ordering as
