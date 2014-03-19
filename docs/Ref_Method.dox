@@ -21,7 +21,7 @@ namespace Dakota {
   <li> <a href="MethodCommands.html#MethodSBG">Surrogate-Based Global Method</a>
   <li> <a href="MethodCommands.html#MethodEG">Efficient Global Method</a>
   </ul>
-<li> <a href="MethodCommands.html#MethodMin">Minimizer Commands</a>
+<li> <a href="MethodCommands.html#MethodMin">Minimizer Commands for Linear Constraint Specification</a>
 <li> <a href="MethodCommands.html#MethodOpt">Optimization Methods</a>
   <ul>
   <li> <a href="MethodCommands.html#MethodDOT">DOT Methods</a>
@@ -307,6 +307,21 @@ sections provide additional detail on the method independent controls
 followed by the method selections and their corresponding method
 dependent controls.
 
+Starting with Dakota 6.0, the methods have been grouped into various types: 
+meta-iterators, surrogate-based minimizers, and "standard" or "typical" 
+methods such as various optimizers.  Meta-iterators are a special grouping 
+of methods because meta-iterators can point to lists of other methods and 
+lists of models corresponding to those methods.  For example, in a 
+hybrid method, a user may want to run two individual optimization methods 
+sequentially.  Surrogate-based minimizers are a special grouping of methods 
+because they can point both to other methods (e.g. what optimization
+method is being performed on the surrogate) as well as to models (e.g. various 
+surrogate models).  Standard methods can only point to the model upon which 
+they are operating.  In the subsequent discussion, the concept of a method 
+only including independent controls and dependent controls particular to 
+the actual method type (in versions of Dakota earlier than 6.0) 
+is expanded upon to include the additional functionality of meta-iterators 
+and surrogate-based minimizers. 
 
 \section MethodIndControl Method Independent Controls
 
@@ -679,10 +694,10 @@ identifying methods by pointer or by name and identifying models by
 pointer.  Method and model pointers are strings that identify
 particular method and model specifications based on their \c id_method
 and \c id_model identifier strings, respectively (see \ref
-MethodIndControl and \ref ModelIndControl).  These string identifiers
+MethodIndControl and \ref ModelIndControl).  These pointer string identifiers 
 (e.g., 'NLP1' or 'LO_FI_MODEL') are defined by the user and should \e
 not be confused with method and model selections (e.g., \c dot_mmfd or
-\c nested).  On the other hand, when identifying a method by name, the
+\c nested).  On the other hand, when identifying a method name, the
 string provided should exactly match the method selection (e.g.,
 'dot_mmfd'), and an error will result if the method name provided
 fails to identify a method that supports lightweight construction.  
@@ -1716,8 +1731,14 @@ Specification detail for the efficient global method
 </table>
 
 
-\section MethodMin Minimizer Commands
+\section MethodMin Minimizer Commands for Linear Constraint Specification
 
+Optimization and Least Squares methods both fall under the category 
+of minimizer.  Some of these methods can handle constraints.  Nonlinear 
+constraints are specified in the responses section and provided 
+by the Dakota interface.  Linear constraints are specified 
+in the optimization method.  This section describes the specification 
+of the linear constraints. 
 
 Linear inequality constraints can be supplied with the \c
 linear_inequality_constraint_matrix, \c
