@@ -30,7 +30,7 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model), sgBasisType(DEFAULT_INTERPOLANT)
+  NonDExpansion(problem_db, model), sgBasisType(DEFAULT_BASIS)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -65,13 +65,13 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
-    sgBasisType = probDescDB.get_short("method.nond.sparse_grid_basis_type");
+    sgBasisType = probDescDB.get_short("method.nond.expansion_basis_type");
     switch (sgBasisType) {
     case HIERARCHICAL_INTERPOLANT:
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
     case NODAL_INTERPOLANT:
       expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;              break;
-    case DEFAULT_INTERPOLANT:
+    case DEFAULT_BASIS:
       if ( u_space_type == STD_UNIFORM_U && nestedRules &&// TO DO:retire nested
 	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
 	     refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL ) ) {
@@ -148,7 +148,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     unsigned short num_int_level, short u_space_type,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs), sgBasisType(DEFAULT_INTERPOLANT)
+		piecewise_basis, use_derivs), sgBasisType(DEFAULT_BASIS)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -175,7 +175,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
-    // sgBasisType left as DEFAULT_INTERPOLANT
+    // sgBasisType left as DEFAULT_BASIS
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
     break;
   case Pecos::COMBINED_SPARSE_GRID:

@@ -120,7 +120,7 @@ DataMethodRep::DataMethodRep():
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
-  piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
+  piecewiseBasis(false), expansionBasisType(DEFAULT_BASIS),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
   regressionL2Penalty(0.), crossValidation(false), normalizedCoeffs(false),
@@ -238,7 +238,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << sparseGridBasisType << expansionOrder
+    << piecewiseBasis << expansionBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
@@ -363,7 +363,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // NonD
   s >> vbdOrder >> covarianceControl >> rngName >> refinementType
     >> refinementControl >> nestingOverride >> growthOverride >> expansionType
-    >> piecewiseBasis >> sparseGridBasisType >> expansionOrder
+    >> piecewiseBasis >> expansionBasisType >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> anisoDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> regressionType
@@ -488,7 +488,7 @@ void DataMethodRep::write(std::ostream& s) const
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << sparseGridBasisType << expansionOrder
+    << piecewiseBasis << expansionBasisType << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType

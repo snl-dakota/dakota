@@ -715,6 +715,11 @@ KEYWORD12 method
 	  |
 	  ( expansion_order INTEGERLIST
 	    [ dimension_preference REALLIST ]
+	    [ basis_type
+	      tensor_product
+	      | total_order
+	      | adapted
+	      ]
 	    ( collocation_points INTEGERLIST
 	      | collocation_ratio REAL
 	      [ ratio_order REAL ]
