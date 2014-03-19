@@ -17,14 +17,11 @@
 
 #include <boost/shared_ptr.hpp>
 #include "DakotaEnvironment.hpp"
-#ifdef DAKOTA_USAGE_TRACKING
-#include "TrackerHTTP.hpp"
-#else
-// forward declaration due to PIMPL for conditional compilation of curl
-class TrackerHTTP;
-#endif
 
 namespace Dakota {
+
+// forward declaration due to PIMPL for conditional compilation of curl
+class TrackerHTTP;
 
 
 /// Environment corresponding to execution as a stand-alone application.

@@ -192,7 +192,7 @@ parse_inputs(const ProgramOptions& prog_opts,
     // BMA TODO: Temporary workaround; can't get callback to work on
     // letter yet. Need to replace Null_rep* with forward to letter
     // and remove dbRep->, but initial cut didn't work.
-    if (callback)
+    if (callback && dbRep->parallelLib.world_rank() == 0)
       (*callback)(this, callback_data);
   }
   else {

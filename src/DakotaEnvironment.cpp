@@ -28,7 +28,12 @@ namespace Dakota {
 /** This letter constructor initializes base class data for inherited
     environments that are default constructed.  Since the letter IS
     the representation, its representation pointer is set to NULL (an
-    uninitialized pointer causes problems in ~Environment). */
+    uninitialized pointer causes problems in ~Environment). 
+
+    Use cases:
+    * library with no options, no MPI comm
+
+*/
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
@@ -45,7 +50,12 @@ Environment::Environment(BaseConstructor):
     environments: instantiate/initialize the environment, options,
     parallel library, and problem description database objects.  Since
     the letter IS the representation, its representation pointer is set
-    to NULL (an uninitialized pointer causes problems in ~Environment). */
+    to NULL (an uninitialized pointer causes problems in ~Environment). 
+    
+    Use cases:
+    * executable with command-line args
+
+*/
 Environment::Environment(BaseConstructor, int argc, char* argv[]):
   // MPIManager potentially parses off MPI options from argc/argv via MPI_Init
   mpiManager(argc, argv),    
@@ -69,7 +79,12 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 /** This letter constructor initializes base class data for inherited
     environments.  Since the letter IS the representation, its
     representation pointer is set to NULL (an uninitialized pointer
-    causes problems in ~Environment). */
+    causes problems in ~Environment). 
+
+    Use cases: 
+     * library with program options
+     * library with program options and MPI comm
+*/
 Environment::Environment(BaseConstructor, const ProgramOptions& prog_opts,
 			 MPI_Comm dakota_mpi_comm):
   mpiManager(dakota_mpi_comm), programOptions(prog_opts),

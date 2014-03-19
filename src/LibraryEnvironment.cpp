@@ -21,7 +21,6 @@ static const char rcsId[]="@(#) $Id: LibraryEnvironment.cpp 6492 2009-12-19 00:0
 
 namespace Dakota {
 
-// BMA TODO: initialize these properly
 
 LibraryEnvironment::LibraryEnvironment():
   Environment(BaseConstructor())
@@ -35,6 +34,7 @@ LibraryEnvironment(const ProgramOptions& prog_opts, bool check_bcast_construct,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts)
 {
+  // BMA TODO: give option for this to library users
   //  outputManager.output_startup_message();
 
   // parse input, and instantiate the topLevelIterator
@@ -45,13 +45,15 @@ LibraryEnvironment(const ProgramOptions& prog_opts, bool check_bcast_construct,
 
 
 /** Construct library environment on passed MPI Comm, optionally
-    performing check/bcast of database and iterator construction */
+    performing check/bcast of database and iterator construction.  MPI
+    Comm is first argument so client doesn't have to pass all args */
 LibraryEnvironment::
 LibraryEnvironment(MPI_Comm dakota_mpi_comm, 
 		   const ProgramOptions& prog_opts, bool check_bcast_construct,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts, dakota_mpi_comm)
 { 
+  // BMA TODO: give option for this to library users
   //  outputManager.output_startup_message();
 
   // parse input and instantiate the topLevelIterator

@@ -14,28 +14,31 @@
 #include "dakota_system_defs.hpp"
 #include "MPIManager.hpp"
 
-// TODO: decide where to manage output handling for worldRank = 0
 
 namespace Dakota {
+
 
 MPIManager::MPIManager():
   dakotaMPIComm(MPI_COMM_WORLD), worldRank(0), worldSize(1), mpirunFlag(false), 
   ownMPIFlag(false)
 {
-  // MPI check for library clients not passing an MPI comm, since that
-  // will invoke this default ctor
-  // BMA TODO: Will this cause problems with dummy objects?
+  // MPI check for library clients not passing any options or MPI
+  // comm, since that will invoke this default ctor.  
+  // BMA: This shouldn't cause problems for dummy objects as
+  // ownMPIFlag will be false.
 #ifdef DAKOTA_HAVE_MPI
-  // Do not initialize MPI, but check if initialized.
+  // Do not initialize MPI, but check if initialized and get data on rank/size.
   int initialized = 0;
   MPI_Initialized(&initialized);
-  if (initialized)
+  if (initialized) {
     mpirunFlag = true;
+    MPI_Comm_rank(dakotaMPIComm, &worldRank);
+    MPI_Comm_size(dakotaMPIComm, &worldSize);
+  }
 #endif
 }
 
 
-// Pull off the MPI arguments
 MPIManager::MPIManager(int& argc, char**& argv):
   dakotaMPIComm(MPI_COMM_WORLD), worldRank(0), worldSize(1), mpirunFlag(false), 
   ownMPIFlag(false)
@@ -45,7 +48,8 @@ MPIManager::MPIManager(int& argc, char**& argv):
   
 #ifdef DAKOTA_HAVE_MPI
   // Initialize MPI if and only if DAKOTA launched in parallel from
-  // the command-line (mpirunFlag).  Here DAKOTA owns MPI.
+  // the command-line (mpirunFlag).  Here MPI_Init pulls off the MPI
+  // arguments and Dakota owns MPI.
   if (mpirunFlag) {
     MPI_Init(&argc, &argv); // See comment above regarding argv and argc
     ownMPIFlag = true; // own MPI_Init, so call MPI_Finalize in destructor 
@@ -62,11 +66,14 @@ MPIManager::MPIManager(MPI_Comm dakota_mpi_comm):
   mpirunFlag(false), ownMPIFlag(false)
 {
 #ifdef DAKOTA_HAVE_MPI
-  // Do not initialize MPI, but check if initialized.
+  // Do not initialize MPI, but check if initialized and get data on rank/size.
   int initialized = 0;
   MPI_Initialized(&initialized);
-  if (initialized)
+  if (initialized) {
     mpirunFlag = true;
+    MPI_Comm_rank(dakotaMPIComm, &worldRank);
+    MPI_Comm_size(dakotaMPIComm, &worldSize);
+  }
 #endif
 }
 
