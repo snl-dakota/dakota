@@ -684,7 +684,7 @@ MethodIndControl and \ref ModelIndControl).  These string identifiers
 not be confused with method and model selections (e.g., \c dot_mmfd or
 \c nested).  On the other hand, when identifying a method by name, the
 string provided should exactly match the method selection (e.g.,
-"dot_mmfd"), and an error will result if the method name provided
+'dot_mmfd'), and an error will result if the method name provided
 fails to identify a method that supports lightweight construction.  
 
 \anchor T5d1
@@ -1242,17 +1242,15 @@ test for sufficient decrease in the truth model. This cycle continues
 until convergence is attained.
 
 The \c surrogate_based_local method must specify an optimization or
-least squares sub-method either by pointer using \c
-approx_method_pointer (e.g., 'NLP1') or by name using \c
-approx_method_name (e.g., 'npsol_sqp').  The former identifies a full
-sub-method specification for the sub-problem minimizer (which allows
-non-default minimizer settings), whereas the latter supports a
-streamlined specification (that employs default minimizer settings).
-For both cases, the \c surrogate_based_local method specification is
-responsible for using its \c model_pointer (see \ref MethodIndControl)
-to select a \c surrogate model (see \ref ModelSurrogate).  Any \c
-model_pointer identified in an approximate sub-method specification
-is ignored.
+least squares sub-method either by pointer using \c method_pointer
+(e.g., 'NLP1') or by name using \c method_name (e.g., 'npsol_sqp'),
+where the former identifies a full sub-method specification for the
+sub-problem minimizer (allowing non-default minimizer settings) and
+the latter supports a streamlined specification (employs default
+minimizer settings).  For both cases, a \c model_pointer (see 
+\ref MethodIndControl) must also be provided in order to select a 
+\c surrogate model (see \ref ModelSurrogate).  Any \c model_pointer
+identified within a sub-method specification is ignored.
 
 In addition to the method independent controls for \c max_iterations
 and \c convergence_tolerance described in Table \ref T5d1 "5.1", SBL
@@ -1286,15 +1284,21 @@ Specification detail for surrogate-based local minimization method
 <td>N/A
 <tr>
 <td>Approximate sub-problem minimization method pointer
-<td>\c approx_method_pointer
+<td>\c method_pointer
 <td>string
-<td>Required (1 of 2 selections)
+<td>Required (one of two selections)
 <td>N/A
 <tr>
 <td>Approximate sub-problem minimization method name
-<td>\c approx_method_name
+<td>\c method_name
 <td>string
-<td>Required (1 of 2 selections)
+<td>Required (one of two selections)
+<td>N/A
+<tr>
+<td>Surrogate model pointer
+<td>\c model_pointer
+<td>string
+<td>Required
 <td>N/A
 <tr>
 <td>Soft convergence limit for SBL iterations
@@ -1526,8 +1530,8 @@ in the Pareto front).
 
 As for the \c surrogate_based_local method, the \c surrogate_based_global 
 specification must identify a sub-method using either \c
-approx_method_pointer or \c approx_method_name and must identify a
-surrogate model (see \ref ModelSurrogate) using its \c model_pointer
+method_pointer or \c method_name and must identify a
+surrogate model (see \ref ModelSurrogate) using \c model_pointer
 (see \ref MethodIndControl).  The only other algorithm control at this
 time is the method independent control for \c max_iterations described
 in Table \ref T5d1 "5.1".  Table \ref T5d27 "5.27" summarizes the
