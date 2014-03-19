@@ -54,7 +54,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
   short data_order,
-      u_space_type = probDescDB.get_short("method.nond.expansion_type");
+    u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
   initialize(u_space_type);
 
@@ -114,6 +114,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
     }
     else { // expansion_samples or collocation_{points,ratio}
+      short exp_basis_type
+	= probDescDB.get_short("method.nond.expansion_basis_type");
       if (!expSamplesSeqSpec.empty()) { // expectation
 	if (refineType) { // no obvious logic for sample refinement
 	  Cerr << "Error: uniform/adaptive refinement of expansion_samples not "

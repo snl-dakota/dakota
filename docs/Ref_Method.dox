@@ -173,23 +173,24 @@ controls of an iterator. The terms "method" and "iterator" can be used
 interchangeably, although method often refers to an input
 specification whereas iterator usually refers to an object within the
 Iterator hierarchy. A method specification, then, is used to select an
-iterator from the iterator hierarchy, which includes meta-iterators
-such as hybrid and multi-start methods; component-based iterators such
-as surrogate-based and branch and bound methods; and standard
-iterators including optimization, uncertainty quantification, least
-squares, design of experiments, solution verification, and parameter
-study methods (see the Users Manual [\ref UsersMan "Adams et al., 2010"] 
+iterator from the iterator hierarchy, which includes stand-alone
+iterators for optimization, uncertainty quantification, least squares,
+design of experiments, solution verification, and parameter study
+methods, as well as advanced multi-component iterators such as hybrid
+and multi-start methods, surrogate-based methods, and branch and bound
+methods (refer to the Users Manual [\ref UsersMan "Adams et al., 2010"] 
 for more information on these iterator branches).
 
 Several examples follow. The first example shows a minimal
-specification for an optimization method.
+specification for an optimization method, the sequential quadratic 
+programming (SQP) algorithm from the DOT library.
 \verbatim
 method,
 	dot_sqp
 \endverbatim
 This example uses all of the defaults for this method.  
 
-A more sophisticated example would be
+A more advanced example would be
 \verbatim
 method,
 	id_method = 'NLP1'
@@ -200,12 +201,11 @@ method,
 	  output verbose
 \endverbatim
 This example demonstrates the use of identifiers and pointers (see
-\ref MethodIndControl) as well as some method independent and method
-dependent controls for the sequential quadratic programming (SQP)
-algorithm from the DOT library.  The \c max_iterations, \c
-convergence_tolerance, and \c output settings are method independent
-controls, in that they are defined for a variety of methods (see \ref
-MethodDOTIC for DOT usage of these controls). 
+\ref MethodIndControl) as well as some method independent controls for
+\c max_iterations, \c convergence_tolerance, and \c output settings.
+These controls are method independent in that they are defined outside
+of the method selection blocks within the method specification (see
+\ref MethodDOTIC for DOT usage of these controls).
 
 The next example shows a specification for a least squares method.
 \verbatim
@@ -241,22 +241,36 @@ method,
 	  num_steps = 10
 \endverbatim
 
-The final two examples show specifications for meta-iterators. A \c
-hybrid example is shown that identifies the sequence of sub-methods in
-a list of pointers to separate method specifications:
+The final three examples show specifications for advanced multi-component 
+iterators.  First, a \c hybrid example identifies the sequence of 
+sub-methods in a list of pointers to separate method specifications:
 \verbatim
 method,
 	hybrid sequential
 	  method_pointer_list = 'GA', 'PS', 'NLP'
 \endverbatim
 
-A \c multi_start example specification identifies a single sub-method
-that will be executed ten times from random starting points:
+Next, a \c multi_start example specification identifies a single 
+sub-method that will be executed ten times from random starting points:
 \verbatim
 method,
 	multi_start
 	  method_pointer = 'NLP1'
 	  random_starts = 10
+\endverbatim
+
+And, finally, a \c surrogate_based_local example specifies trust region
+controls and identifies a solver (by \c method_pointer) for the approximate 
+subproblems defined by the surrogate model (identified by \c model_pointer):
+\verbatim
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	method_pointer = 'NLP'
+	model_pointer  = 'SURROGATE'
+	trust_region
+	  initial_size = 0.10
+	  minimum_size = 1.0e-6
 \endverbatim
 
 
@@ -275,21 +289,22 @@ method,
 <!-- TO DO: communicate new method groupings from input spec? -->
 
 where <tt>\<method selection\></tt> is one of the following: \c
-hybrid, \c multi_start, \c pareto_set, \c dot_frcg, \c dot_mmfd, \c
-dot_bfgs, \c dot_slp, \c dot_sqp, \c conmin_frcg, \c conmin_mfd, \c
-npsol_sqp, \c nlssol_sqp, \c nlpql_sqp, \c nl2sol, \c nonlinear_cg, \c
-optpp_cg, \c optpp_q_newton, \c optpp_fd_newton, \c optpp_g_newton, \c
+hybrid, \c multi_start, \c pareto_set, \c surrogate_based_local, \c
+surrogate_based_global, \c dot_frcg, \c dot_mmfd, \c dot_bfgs, \c
+dot_slp, \c dot_sqp, \c conmin_frcg, \c conmin_mfd, \c npsol_sqp, \c
+nlssol_sqp, \c nlpql_sqp, \c nl2sol, \c nonlinear_cg, \c optpp_cg, \c
+optpp_q_newton, \c optpp_fd_newton, \c optpp_g_newton, \c
 optpp_newton, \c optpp_pds, \c asynch_pattern_search, \c
 coliny_cobyla, \c coliny_direct, \c coliny_pattern_search, \c
 coliny_solis_wets, \c coliny_ea, \c moga, \c soga, \c ncsu_direct, \c
-dl_solver, \c surrogate_based_local, \c surrogate_based_global, \c
-efficient_global, \c polynomial_chaos, \c stoch_collocation, \c
-sampling, \c importance_sampling, \c adaptive_sampling, \c
-local_reliability, \c global_reliability, \c local_evidence, \c
-global_evidence, \c local_interval_est, \c global_interval_est, \c
-bayes_calibration, \c dace, \c fsu_quasi_mc, \c fsu_cvt, \c
-psuade_moat, \c vector_parameter_study, \c list_parameter_study, \c
-centered_parameter_study, or \c multidim_parameter_study.
+efficient_global, \c dl_solver, \c polynomial_chaos, \c
+stoch_collocation, \c sampling, \c importance_sampling, \c
+adaptive_sampling, \c local_reliability, \c global_reliability, \c
+local_evidence, \c global_evidence, \c local_interval_est, \c
+global_interval_est, \c bayes_calibration, \c dace, \c fsu_quasi_mc,
+\c fsu_cvt, \c psuade_moat, \c vector_parameter_study, \c
+list_parameter_study, \c centered_parameter_study, or \c
+multidim_parameter_study.
 
 The <tt>\<method independent controls\></tt> are those controls which
 are valid for a variety of methods. In some cases, these controls are
@@ -301,27 +316,36 @@ controls are those controls defined externally from and prior to the
 method selection blocks. They are all optional. The method selection
 blocks are all required group specifications separated by logical
 OR's. The method dependent controls are those controls defined within
-the method selection blocks. Defaults for method independent and
-method dependent controls are defined in DataMethod.  The following
-sections provide additional detail on the method independent controls
-followed by the method selections and their corresponding method
-dependent controls.
+individual method selection blocks, or within specification groupings
+that apply to a set of methods. Method dependent controls that are
+defined for groups of methods are called out in the documentation,
+prior to the group of methods to which they apply.  Defaults for
+method independent and method dependent controls are generally defined
+in DataMethod.cpp, although some controls employ a non-informative
+default in DataMethod that is specialized within the Iterator
+hierarchy.  The following sections provide additional detail on the
+method independent controls followed by the method selections and
+their corresponding method dependent controls.
 
-Starting with Dakota 6.0, the methods have been grouped into various types: 
-meta-iterators, surrogate-based minimizers, and "standard" or "typical" 
-methods such as various optimizers.  Meta-iterators are a special grouping 
-of methods because meta-iterators can point to lists of other methods and 
-lists of models corresponding to those methods.  For example, in a 
-hybrid method, a user may want to run two individual optimization methods 
-sequentially.  Surrogate-based minimizers are a special grouping of methods 
-because they can point both to other methods (e.g. what optimization
-method is being performed on the surrogate) as well as to models (e.g. various 
-surrogate models).  Standard methods can only point to the model upon which 
-they are operating.  In the subsequent discussion, the concept of a method 
-only including independent controls and dependent controls particular to 
-the actual method type (in versions of Dakota earlier than 6.0) 
-is expanded upon to include the additional functionality of meta-iterators 
-and surrogate-based minimizers. 
+Starting with Dakota v6.0, the methods are grouped into two types:
+standard methods and advanced multi-component methods.  The former
+group is stand-alone and self-contained in the sense that it only
+requires access to a model to perform a study, whereas the latter
+group generally provides a higher level "meta-algorithm" that points
+to other methods and models for performing sub-iteration within a
+larger context.  For example, in a sequential hybrid method, the \c
+hybrid method specification must identify a list of subordinate
+methods, and the "meta-algorithm" executes these methods in sequence
+of methods and transferring information between them.  Surrogate-based
+minimizers provide another example in that they point both to other
+methods (e.g. what optimization method is used to solve the
+approximate subproblem) as well as to models (e.g. what type of
+surrogate model is employed).  <!-- In the subsequent discussion,
+the concept of a method only including independent controls and
+dependent controls particular to the actual method type (in versions
+of Dakota earlier than 6.0) is expanded upon to include the additional
+functionality of meta-iterators and surrogate-based minimizers. -->
+
 
 \section MethodIndControl Method Independent Controls
 
