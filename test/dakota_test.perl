@@ -162,6 +162,10 @@ foreach my $file (@test_inputs) {
                            \$dakota_command, \$dakota_args, \$dakota_input, 
 			   \$restart, \$restart_command);
 
+      # parse out option for file to examine for output; output will
+      # still go to $output, but then we'll check this file for diffs
+      parse_check_output($_, $pq_cnt, \$check_output);
+
       # parse out timeout and delay options
       parse_timeout($_, $cnt, \$delay, \$timeout);
 
@@ -279,7 +283,8 @@ foreach my $file (@test_inputs) {
       if ($exit_value == 0) {
 	print "succeeded\n";
         print TEST_OUT "Test Number $cnt succeeded\n";
-	parse_test_output($output);
+	if ($check_output) { parse_test_output($check_output); }
+	else               { parse_test_output($output); }
       }
       else {
         # if the test failed, don't parse out any results
@@ -587,6 +592,15 @@ sub parse_num_proc {
     print "No. of processors = ${$ref_num_proc}\n";
   }
 
+}
+
+sub parse_check_output {
+  my($line, $pq_cnt, $ref_check_output) = @_;
+
+  if ( $line =~ /(#|\s+)$pq_cnt=CheckOutput\'([\w\-\.]*)\'/ ) {
+    ${$ref_check_output} = $2;
+    print "Checking output in alternate file \'${$ref_check_output}\'\n";
+  }
 }
 
 
