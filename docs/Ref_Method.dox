@@ -19,7 +19,6 @@ namespace Dakota {
   <ul>
   <li> <a href="MethodCommands.html#MethodSBL">Surrogate-Based Local Method</a>
   <li> <a href="MethodCommands.html#MethodSBG">Surrogate-Based Global Method</a>
-  <li> <a href="MethodCommands.html#MethodEG">Efficient Global Method</a>
   </ul>
 <li> <a href="MethodCommands.html#MethodMin">Minimizer Commands for Linear Constraint Specification</a>
 <li> <a href="MethodCommands.html#MethodOpt">Optimization Methods</a>
@@ -104,6 +103,7 @@ namespace Dakota {
     <li> <a href="MethodCommands.html#MethodNCSUDC">
          NCSU method dependent controls</a>
     </ul>
+  <li> <a href="MethodCommands.html#MethodEG">Efficient Global Method</a>
   </ul>
 <li> <a href="MethodCommands.html#MethodLS">Least Squares Methods</a>
   <ul>
@@ -1610,126 +1610,6 @@ This is outlined in \ref ModelSurrogate.)
 as 3-5, to get a sense of how the optimization is evolving as the
 surrogate gets updated.  If it appears to be changing significantly,
 then a larger number (used in combination with restart) may be needed.
-
-
-\subsection MethodEG Efficient Global Method
-<!-- dakota subcat efficient_global -->
-
-The Efficient Global Optimization (EGO) method was first developed by
-Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"].  In
-EGO, a stochastic response surface approximation for the objective
-function is developed based on some sample points from the "true"
-simulation.  The particular response surface used is a Gaussian
-process (GP).  The GP allows one to calculate the prediction at a new
-input location as well as the uncertainty associated with that
-prediction.  The key idea in EGO is to maximize the Expected
-Improvement Function (EIF).  The EIF is used to select the location at
-which a new training point should be added to the Gaussian process
-model by maximizing the amount of improvement in the objective
-function that can be expected by adding that point. A point could be
-expected to produce an improvement in the objective function if its
-predicted value is better than the current best solution, or if the
-uncertainty in its prediction is such that the probability of it
-producing a better solution is high.  Because the uncertainty is
-higher in regions of the design space with few observations, this
-provides a balance between exploiting areas of the design space that
-predict good solutions, and exploring areas where more information is
-needed. EGO trades off this "exploitation vs. exploration."  The
-general procedure for these EGO-type methods is:
-
-\li Build an initial Gaussian process model of the objective function
-
-\li Find the point that maximizes the EIF.  If the EIF value at this
-point is sufficiently small, stop.
-
-\li Evaluate the objective function at the point where the EIF is
-maximized.  Update the Gaussian process model using this new point.
-Return to the previous step.
- 
-Note that several major differences exist between our implementation
-and that of [\ref Jones1998 "Jones et al., 1998"].  First, rather than
-using a branch and bound method to find the point which maximizes the
-EIF, we use the DIRECT global optimization method (see \ref
-MethodSCOLIBDIR and \ref MethodNCSU).  Second, we support both global
-optimization and global nonlinear least squares as well as general
-nonlinear constraints through abstraction and subproblem recasting
-within the SurrBasedMinimizer and EffGlobalMinimizer classes.
-
-The efficient global optimization algorithm is specified by the
-keyword \c efficient_global along with an optional \c seed
-specification, as shown in in Table \ref T5d28 "5.28" below.  By
-default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
-implementation may be selected instead.  If \c use_derivatives is
-specified the GP model will be built using available derivative data
-(Surfpack GP only).  The \c import_points_file and \c
-export_points_file specifications are as described in \ref ModelSurrG,
-(the use of an embedded global surrogate model necessitates repeating
-selected surrogate model specifications within the method specification).
-
-\anchor T5d28
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.28
-\endhtmlonly
-Specification detail for the efficient global method
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Efficient global method 
-<td>\c efficient_global
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Random seed
-<td>\c seed
-<td>integer
-<td>Optional
-<td>Time based seed: nonrepeatable
-<tr>
-<td>GP selection
-<td>\c gaussian_process
-<td>\c surfpack | \c dakota
-<td>Optional
-<td>Surfpack Gaussian process
-<tr>
-<td>Derivative usage
-<td>\c use_derivatives
-<td>none
-<td>Optional
-<td>Use function values only
-<tr>
-<td>File name for points to be imported as the basis for the initial GP
-<td>\c import_points_file
-<td>string
-<td>Optional
-<td>no point import from a file
-<tr>
-<td>Import points file format
-<td>\c annotated | \c freeform
-<td>boolean
-<td>Optional
-<td>annotated
-<tr>
-<td>File name for exporting approximation-based samples from evaluating the GP
-<td>\c export_points_file
-<td>string
-<td>Optional
-<td>no point export to a file
-<tr>
-<td>Export points file format
-<td>\c annotated | \c freeform
-<td>boolean
-<td>Optional
-<td>annotated
-</table>
-
 
 \section MethodMin Minimizer Commands for Linear Constraint Specification
 
@@ -3632,8 +3512,127 @@ Specification detail for the NCSU DIRECT method
 <td>1.0e-6
 </table>
 
-\subsection MethodAPPS Asynchronous Parallel Pattern Search (APPS)
-<!-- dakota subcat asynch_pattern_search -->
+\subsection MethodEG Efficient Global Method
+<!-- dakota subcat efficient_global -->
+
+The Efficient Global Optimization (EGO) method was first developed by
+Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"].  In
+EGO, a stochastic response surface approximation for the objective
+function is developed based on some sample points from the "true"
+simulation.  The particular response surface used is a Gaussian
+process (GP).  The GP allows one to calculate the prediction at a new
+input location as well as the uncertainty associated with that
+prediction.  The key idea in EGO is to maximize the Expected
+Improvement Function (EIF).  The EIF is used to select the location at
+which a new training point should be added to the Gaussian process
+model by maximizing the amount of improvement in the objective
+function that can be expected by adding that point. A point could be
+expected to produce an improvement in the objective function if its
+predicted value is better than the current best solution, or if the
+uncertainty in its prediction is such that the probability of it
+producing a better solution is high.  Because the uncertainty is
+higher in regions of the design space with few observations, this
+provides a balance between exploiting areas of the design space that
+predict good solutions, and exploring areas where more information is
+needed. EGO trades off this "exploitation vs. exploration."  The
+general procedure for these EGO-type methods is:
+
+\li Build an initial Gaussian process model of the objective function
+
+\li Find the point that maximizes the EIF.  If the EIF value at this
+point is sufficiently small, stop.
+
+\li Evaluate the objective function at the point where the EIF is
+maximized.  Update the Gaussian process model using this new point.
+Return to the previous step.
+ 
+Note that several major differences exist between our implementation
+and that of [\ref Jones1998 "Jones et al., 1998"].  First, rather than
+using a branch and bound method to find the point which maximizes the
+EIF, we use the DIRECT global optimization method (see \ref
+MethodSCOLIBDIR and \ref MethodNCSU).  Second, we support both global
+optimization and global nonlinear least squares as well as general
+nonlinear constraints through abstraction and subproblem recasting
+within the SurrBasedMinimizer and EffGlobalMinimizer classes.
+
+The efficient global optimization algorithm is specified by the
+keyword \c efficient_global along with an optional \c seed
+specification, as shown in in Table \ref T5d28 "5.28" below.  By
+default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
+implementation may be selected instead.  If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only).  The \c import_points_file and \c
+export_points_file specifications are as described in \ref ModelSurrG,
+(the use of an embedded global surrogate model necessitates repeating
+selected surrogate model specifications within the method specification).
+
+\anchor T5d28
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.28
+\endhtmlonly
+Specification detail for the efficient global method
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Efficient global method 
+<td>\c efficient_global
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Random seed
+<td>\c seed
+<td>integer
+<td>Optional
+<td>Time based seed: nonrepeatable
+<tr>
+<td>GP selection
+<td>\c gaussian_process
+<td>\c surfpack | \c dakota
+<td>Optional
+<td>Surfpack Gaussian process
+<tr>
+<td>Derivative usage
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>Use function values only
+<tr>
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+</table>
+
+
+\subsection MethodNOMAD Mesh Adaptive Direct Search Algorithm
+<!-- dakota subcat mesh_adaptive_search -->
 
 The mesh adaptive direct search algorithm [\ref AuLeTr09a "Audet, Le
 Digabel, and Tribes, 2009"] is a generalized pattern search in which
@@ -3647,7 +3646,7 @@ discrete parameters.  NOMAD is available to the public under the GNU
 LGPL and the source code is included with %Dakota.  NOMAD-specific
 software documentation is available from http://www.gerad.ca/nomad.
 
-\subsubsection MethodMADSIC NOMAD method independent controls
+\subsubsection MethodNOMADIC NOMAD method independent controls
 
 The only method independent controls that are currently mapped to APPS
 are \c max_function_evaluations and \c max_iterations.
