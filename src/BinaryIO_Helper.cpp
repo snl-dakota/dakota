@@ -8,6 +8,7 @@ short H5VariableString::numVStrUses = 0;
 //hid_t H5VariableString::varStringType = -1;
 hid_t H5VariableString::varStringType = H5VariableString::datatype();
 
+#if 0  // WJB: Templated design seems to lead to ambiquities and runtime errors
 // stub so storing vector<RealMatrix> will compile
 template <>
 herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
@@ -82,6 +83,7 @@ herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
     //std::cout << std::endl; 
 }
 
+
 // stub so storing vector<vector<string> > will compile
 template <>
 herr_t HDF5BinaryStream::
@@ -91,6 +93,6 @@ store_data(const std::string& dset_name,
   throw "No implementation for vector<vector<string> >!";
 
 }
-
+#endif
 
 } // namespace Dakota

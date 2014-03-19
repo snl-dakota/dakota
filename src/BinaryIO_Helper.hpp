@@ -269,9 +269,17 @@ public:
     return (status);
   }
 
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector<StringArray>& buf) const
+  {
+    // WJB - come back ASAP! (not needed for Optimization Results??)
+        throw BinaryStream_StoreDataFailure();
+  }
 
+  // Scalar data MAY NOT be needed by Dakota client, so consider eliminating,
+  // especially the template parameter which (potentially) leads to ambiguity
   template <typename T>
-  herr_t store_data(const std::string& dset_name, const T& val) const
+  herr_t store_data_scalar(const std::string& dset_name, const T& val) const
   {
     hsize_t dims[1] = {1};    
     herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(), 1, dims,
@@ -284,29 +292,35 @@ public:
   }
 
 
-#if 0
-  template <typename T>
-  herr_t store_data(const std::string& dset_name,
-                    const std::vector<T>& buf) const
+  // Store "standard" array data (NOTE: '_array' appended to method name) types
+  // NOT currently used by Dakota's ResultsDBHDF5 class
+  template <typename ArrayType>
+  herr_t store_data_array(const std::string& dset_name,
+                          const ArrayType& buf) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    // std::vector<T> is a 1D dataspace
-    return store_data<T,1>( dset_name,
-                            boost::assign::list_of( buf.size() ),
-                            buf.data() );
+    // WJB - ToDo:  some sort of "cast" (or way of determining RTTI) to ensure
+    //              ONLY arrays of primitive types are supported by this method
+
+    // ArrayType (e.g. std::array<T>) whose value_type is a primitive C++ type
+    // is a 1D dataspace
+    return store_data<typename ArrayType::value_type,1>( dset_name,
+             boost::assign::list_of( buf.size() ),
+             buf.data() );
   }
-#endif
 
 
-  template <typename T>
+  template <typename T> // T is tricky, it is the Teuchos::SDVector::scalarType
   herr_t store_data(const std::string& dset_name,
                     const Teuchos::SerialDenseVector<int,T>& buf) const
   {
+    throw "No implementation for Teuchos::SerialDenseVector<int,ScalarType>!";
   }
 
 
+#if 0 // WJB:  Disabled since I do NOT believe it is used by any client
   herr_t store_data(const std::string& dset_name,
                     const RealVector& buf) const
   {
@@ -314,7 +328,7 @@ public:
       throw BinaryStream_StoreDataFailure();
 
     // RealVector is a 1D dataspace
-    return store_data<double,1>( dset_name,
+    return store_data<RealVector::scalarType,1>( dset_name,
                                  boost::assign::list_of( buf.length() ),
                                  buf.values() );
   }
@@ -399,12 +413,16 @@ public:
     hsize_t last_row = find_last_dataset_record(dset_name);
     return append_data_slab( dset_name, last_row, buf.data(), buf.size() );
   }
+#endif
 
-  // WJB: nearly a DUPLICATE version of above code for Teuchos row vectors
+
+  // WJB:  Nearly a DUPLICATE version of above code, BUT overloaded for Teuchos
+  //       row vector slabs
   //template <typename OrdinalType, typename ScalarType>
   herr_t append_data_slab(const std::string& dset_name,
                           const RealVector& buf) const
   {
+// WJB - ASAP post commit Sp1 "complete": try std::vector before Teuchos types
     hsize_t last_row = find_last_dataset_record(dset_name);
     return append_data_slab( dset_name, last_row, &buf[0], buf.length() );
   }
@@ -424,13 +442,24 @@ public:
   }
 
 
-
+  herr_t store_data(const std::string& dset_name,
+                    const IntVectorArray& buf) const
+  {
+    throw "No implementation for vector< Teuchos::SerialDenseVector<int,int> >!";
+  }
+/*
+  template <typename T>  // T is tricky, it is the Teuchos::SDVector::scalarType
+  herr_t store_data(const std::string& dset_name,
+                    const std::vector< Teuchos::SerialDenseVector<int,T> >& buf) const
+  */
   herr_t store_data(const std::string& dset_name,
                     const RealVectorArray& buf) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
+// WJB - ASAP: resolve merge issue with refactored, chunking version
+#if 1
     // WJB: much of the "chunking setup" code is nearly identical to the
     // std::vector version, so re-factor for reuse next sprint
 
@@ -478,6 +507,7 @@ public:
     // WJB - ToDo: free resources
     H5Sclose(mem_space);
     //std::cout << std::endl; 
+#endif
   }
 
 
@@ -1000,7 +1030,7 @@ private:
 };
 
 
-// stub so storing vector<RealMatrix> will compile
+/* stub so storing vector<RealMatrix> will compile
 template <>
 herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
 				    const std::vector<RealMatrix>& buf) const;
@@ -1010,17 +1040,18 @@ template <>
 herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
 				    const std::vector<IntVector>& buf) const;
 
-// stub so storing vector<RealVector> will compile
+// stub so storing vector<RealVector> will compile (same as RealVectorArray!)
 template <>
 herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
 				    const std::vector<RealVector>& buf) const;
 
 // stub so storing vector<vector<string> > will compile
-template <>
+// WJB: try method overloading instead of (potentially) ambiguous template param
+// template <>
 herr_t HDF5BinaryStream::
 store_data(const std::string& dset_name,
-	   const std::vector<std::vector<std::string> >& buf) const;
-
+	   const std::vector<StringArray>& buf) const;
+*/
 
 } // namespace Dakota
 

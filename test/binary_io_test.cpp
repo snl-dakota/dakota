@@ -45,7 +45,8 @@ void test_write_read_native_val(const std::string& data_label, T val_out,
     HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist,
                                  write_file);
 
-    status = binary_file.store_data(data_label, val_out);
+    status = binary_file.store_data_scalar(data_label, val_out);
+    //status = 1;
     assert(status >= 0);
 
     // binary stream goes out of scope... (file close)
@@ -76,7 +77,7 @@ void test_write_read_native_val(const std::string& data_label, T val_out,
       // open HDF5 DB - FIRST test of DEFAULT constructor with default args
       HDF5BinaryStream incore_db;
 
-      status = incore_db.store_data(data_label, val_out);
+      status = incore_db.store_data_scalar(data_label, val_out);
       assert(status >= 0);
 
       // binary stream goes out of scope... (file close)
@@ -223,10 +224,12 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
                                  write_file);
 
     //status = binary_file.store_vl_data(data_label, vlvec_array_out); // WJB: old approach, no hyperslabs
-    status = binary_file.store_data(data_label, vlvec_array_out);
+
+    // WJB - come back ASAP -- need to test array_OF_arrays to confirm proper use of HYPERSLABS status = binary_file.store_data_array(data_label, vlvec_array_out);
+    binary_file.store_data_array(data_label, wdat3);
     assert(status >= 0);
 
-    // Test append to existing 2D dataset
+    /* WJB: TEUCHOS types are the PRIORITY!! Test append to existing 2D dataset
     status = binary_file.append_data_slab(data_label, wdat2);
     assert(status >= 0);
 
@@ -235,7 +238,7 @@ void test_write_read_vlvec_array(const std::string& data_label, T seed_val,
 
     status = binary_file.append_data_slab(data_label, wdat0);
     assert(status >= 0);
-
+    */
     // binary stream goes out of scope... (file close)
   }
 
