@@ -303,12 +303,12 @@ previously evaluated points (multipoint approximations), or from the
 restart database (global approximations with \c reuse_samples) can be
 used.  Surrogate models are used extensively in the surrogate-based
 optimization and least squares methods (see SurrBasedMinimizer and its
-derived classes and \ref MethodSB), in which the goals are to reduce
-expense by minimizing the number of truth function evaluations and to
-smooth out noisy data with a global data fit.  However, the use of
-surrogate models is not restricted to optimization techniques;
-uncertainty quantification and optimization under uncertainty methods
-are other primary users.
+derived classes and \ref MethodSBL and \ref MethodSBG), in which the
+goals are to reduce expense by minimizing the number of truth function
+evaluations and to smooth out noisy data with a global data fit.
+However, the use of surrogate models is not restricted to optimization
+techniques; uncertainty quantification and optimization under
+uncertainty methods are other primary users.
 
 The following sections present the \c global, \c multipoint, \c local,
 and \c hierarchical specification groups in further detail.

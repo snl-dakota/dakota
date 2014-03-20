@@ -9,18 +9,19 @@ namespace Dakota {
 <li> <a href="MethodCommands.html#MethodSpec">Method Specification</a>
 <li> <a href="MethodCommands.html#MethodIndControl">
      Method Independent Controls</a>
-<li> <a href="MethodCommands.html#MethodMeta">Meta-Iterators</a>
+<li> <a href="MethodCommands.html#MethodMeta">Component-Based Iterator Commands</a>
   <ul>
   <li> <a href="MethodCommands.html#MethodMetaHybrid">Hybrid Minimization Commands</a>
   <li> <a href="MethodCommands.html#MethodMetaMultiStart">Multistart Iteration Commands</a>
   <li> <a href="MethodCommands.html#MethodMetaParetoSet">Pareto Set Optimization Commands</a>
+  <li> <a href="MethodCommands.html#MethodSBL">Surrogate-Based Local Minimization</a>
+  <li> <a href="MethodCommands.html#MethodSBG">Surrogate-Based Global Minimization</a>
   </ul>
-<li> <a href="MethodCommands.html#MethodSB">Surrogate-Based Minimization Methods</a>
+<li> <a href="MethodCommands.html#MethodStd">Standard Iterator Commands</a>
+<li> <a href="MethodCommands.html#MethodMin">Minimizer Commands</a>
   <ul>
-  <li> <a href="MethodCommands.html#MethodSBL">Surrogate-Based Local Method</a>
-  <li> <a href="MethodCommands.html#MethodSBG">Surrogate-Based Global Method</a>
+  <li> <a href="MethodCommands.html#MethodEG">Efficient Global Minimization</a>
   </ul>
-<li> <a href="MethodCommands.html#MethodMin">Minimizer Commands for Linear Constraint Specification</a>
 <li> <a href="MethodCommands.html#MethodOpt">Optimization Methods</a>
   <ul>
   <li> <a href="MethodCommands.html#MethodDOT">DOT Methods</a>
@@ -103,7 +104,6 @@ namespace Dakota {
     <li> <a href="MethodCommands.html#MethodNCSUDC">
          NCSU method dependent controls</a>
     </ul>
-  <li> <a href="MethodCommands.html#MethodEG">Efficient Global Method</a>
   </ul>
 <li> <a href="MethodCommands.html#MethodLS">Least Squares Methods</a>
   <ul>
@@ -173,7 +173,7 @@ controls of an iterator. The terms "method" and "iterator" can be used
 interchangeably, although method often refers to an input
 specification whereas iterator usually refers to an object within the
 Iterator hierarchy. A method specification, then, is used to select an
-iterator from the iterator hierarchy, which includes stand-alone
+iterator from the iterator hierarchy, which includes standard
 iterators for optimization, uncertainty quantification, least squares,
 design of experiments, solution verification, and parameter study
 methods, as well as advanced multi-component iterators such as hybrid
@@ -181,16 +181,17 @@ and multi-start methods, surrogate-based methods, and branch and bound
 methods (refer to the Users Manual [\ref UsersMan "Adams et al., 2010"] 
 for more information on these iterator branches).
 
-Several examples follow. The first example shows a minimal
-specification for an optimization method, the sequential quadratic 
-programming (SQP) algorithm from the DOT library.
+Several examples follow. The first example shows a minimal specification 
+for an optimization method, the sequential quadratic programming (SQP) 
+algorithm from the DOT library.
 \verbatim
 method,
 	dot_sqp
 \endverbatim
-This example uses all of the defaults for this method.  
+This example uses all of the defaults for this method, including binding
+to a default model specification.  
 
-A more advanced example would be
+A more advanced specification would be
 \verbatim
 method,
 	id_method = 'NLP1'
@@ -317,34 +318,37 @@ method selection blocks. They are all optional. The method selection
 blocks are all required group specifications separated by logical
 OR's. The method dependent controls are those controls defined within
 individual method selection blocks, or within specification groupings
-that apply to a set of methods. Method dependent controls that are
-defined for groups of methods are called out in the documentation,
-prior to the group of methods to which they apply.  Defaults for
-method independent and method dependent controls are generally defined
-in DataMethod.cpp, although some controls employ a non-informative
-default in DataMethod that is specialized within the Iterator
-hierarchy.  The following sections provide additional detail on the
-method independent controls followed by the method selections and
-their corresponding method dependent controls.
+that apply to a set of methods. Defaults for method independent and
+method dependent controls are generally defined in DataMethod.cpp,
+although some controls employ a non-informative default in DataMethod
+that is specialized within the Iterator hierarchy.
 
 Starting with Dakota v6.0, the methods are grouped into two types:
-standard methods and advanced multi-component methods.  The former
-group is stand-alone and self-contained in the sense that it only
-requires access to a model to perform a study, whereas the latter
-group generally provides a higher level "meta-algorithm" that points
-to other methods and models for performing sub-iteration within a
-larger context.  For example, in a sequential hybrid method, the \c
-hybrid method specification must identify a list of subordinate
-methods, and the "meta-algorithm" executes these methods in sequence
-of methods and transferring information between them.  Surrogate-based
-minimizers provide another example in that they point both to other
-methods (e.g. what optimization method is used to solve the
-approximate subproblem) as well as to models (e.g. what type of
-surrogate model is employed).  <!-- In the subsequent discussion,
-the concept of a method only including independent controls and
-dependent controls particular to the actual method type (in versions
-of Dakota earlier than 6.0) is expanded upon to include the additional
-functionality of meta-iterators and surrogate-based minimizers. -->
+standard methods and multi-component methods.  The former group is
+stand-alone and self-contained in the sense that it only requires
+access to a model to perform a study.  While methods such as \c
+polynomial_chaos and \c efficient_global internally utilize multiple
+iterator and surrogate model components, these components are
+generally hidden from user control due to restrictions on modularity;
+thus, these methods are stand-alone.  The latter multi-component group
+of methods provides a higher level "meta-algorithm" that points to
+other methods and models that support sub-iteration within the larger
+context.  For example, in a sequential hybrid method, the \c hybrid
+method specification must identify a list of subordinate methods, and
+the "meta-algorithm" executes these methods in sequence and transfers
+information between them.  Surrogate-based minimizers provide another
+example in that they point both to other methods (e.g. what
+optimization method is used to solve the approximate subproblem) as
+well as to models (e.g. what type of surrogate model is employed).
+Multi-component methods generally provide some level of "plug and
+play" modularity, through their flexible support of a variety of
+method and model selections.
+
+The following sections provide additional detail on the method
+independent controls followed by the method selections and their
+corresponding method dependent controls.  Method dependent controls
+that are defined for groups of methods are called out in the
+documentation, prior to the group of methods to which they apply.
 
 
 \section MethodIndControl Method Independent Controls
@@ -681,21 +685,26 @@ tolerances and iteration limits
 <td>1.e-4
 </table>
 
-Meta-iterator, component-based iterator, and standard iterator
-specifications can include method pointer, method name, and model
-pointer specifications.  Meta-iterator specifications (hybrids,
-multi-start, pareto set) and component-based iterator specifications
-(surrogate-based local, surrogate-based global, branch and bound) must
-identify one or more methods (by pointer or by name) to specify the
-subordinate iterators that will be used in the top-level algorithm.
-Identifying a sub-iterator by name instead of by pointer is a
-lightweight option that relaxes the need for a separate method
-specification for the sub-iterator; however, a model pointer may be
-required in this case to provide the specification connectivity
-normally supported by the method pointer.  Refer to these individual
-method descriptions for specific requirements for these advanced
-methods.  All other (standard) method specifications support only an
-optional model pointer string, specified with \c model_pointer.
+
+\section MethodMeta Component-Based Iterator Commands
+
+
+Component-based iterator specifications include hybrid, multi-start,
+pareto set, surrogate-based local, surrogate-based global, and branch
+and bound methods.  Whereas a standard iterator specification only
+needs an optional model pointer string (specified with \c
+model_pointer), component-based iterator specifications can include
+method pointer, method name, and model pointer specifications in order
+to define the components employed in the "meta-iteration."  In
+particular, these specifications identify one or more methods (by
+pointer or by name) to specify the subordinate iterators that will be
+used in the top-level algorithm.  Identifying a sub-iterator by name
+instead of by pointer is a lightweight option that relaxes the need
+for a separate method specification for the sub-iterator; however, a
+model pointer may be required in this case to provide the
+specification connectivity normally supported by the method pointer.
+Refer to these individual method descriptions for specific
+requirements for these advanced methods.
 
 <!-- Hybrid meta-iterators identify sub-iterators and sub-models using
 either (a) lists of method pointers or lists of method names with
@@ -718,14 +727,14 @@ identifying methods by pointer or by name and identifying models by
 pointer.  Method and model pointers are strings that identify
 particular method and model specifications based on their \c id_method
 and \c id_model identifier strings, respectively (see \ref
-MethodIndControl and \ref ModelIndControl).  These pointer string identifiers 
-(e.g., 'NLP1' or 'LO_FI_MODEL') are defined by the user and should \e
-not be confused with method and model selections (e.g., \c dot_mmfd or
-\c nested).  On the other hand, when identifying a method name, the
-string provided should exactly match the method selection (e.g.,
-'dot_mmfd'), and an error will result if the method name provided
-fails to identify a method that supports lightweight construction.  
-
+MethodIndControl and \ref ModelIndControl).  These pointer string
+identifiers (e.g., 'NLP1' or 'LO_FI_MODEL') are defined by the user
+and should \e not be confused with method and model selections (e.g.,
+\c dot_mmfd or \c nested).  On the other hand, when identifying a
+method name, the string provided should exactly match the method
+selection (e.g., 'dot_mmfd'), and an error will result if the method
+name provided fails to identify a method that supports lightweight
+iterator construction.
 \anchor T5d1
 <table>
 <caption align = "top">
@@ -780,46 +789,8 @@ variables_pointer, \c interface_pointer, or \c responses_pointer (see
 whenever the relationships are unambiguous due to the presence of
 single variables, interface, and responses specifications.
 
-
-\section MethodMeta Meta-Iterator Commands
-
-
-Three meta-iterators currently exist: \c multi_start, \c pareto_set,
-and \c hybrid, where hybrid supports three options.  These algorithms
-are implemented within the MetaIterator branch of the Iterator
-hierarchy in the ConcurrentMetaIterator, CollabHybridMetaIterator,
-EmbedHybridMetaIterator, and SeqHybridMetaIterator classes.  For each
-of the meta-iterators, a brief algorithm description is given below.
-Additional information on the algorithm logic is available in the
-Users Manual [\ref UsersMan "Adams et al., 2010"].
-
-In a hybrid minimization approach (\c hybrid), a set of methods
-synergistically seek an optimal design.  The relationships among the
-methods are categorized as collaborative, embedded, or sequential.
-The goal in each case is to exploit the strengths of different
-optimization and nonlinear least squares algorithms through different
-stages of the minimization process. Global/local hybrids (e.g.,
-genetic algorithms combined with nonlinear programming) are a common
-example in which the desire for identification of a global optimum is
-balanced with the need for efficient navigation to a local optimum.
-
-In the multi-start iteration method (\c multi_start), a series of
-iterator runs are performed for different values of parameters in the
-model.  A common use is for multi-start optimization (i.e., different
-local optimization runs from different starting points for the design
-variables), but the concept and the code are more general.  
-
-In the pareto set optimization method (\c pareto_set), a series of
-optimization or least squares calibration runs are performed for
-different weightings applied to multiple objective functions.  This
-set of optimal solutions defines a "Pareto set," which is useful for
-investigating design trade-offs between competing objectives.  The
-code is similar enough to the \c multi_start technique that both
-meta-iterators are implemented in the same ConcurrentMetaIterator
-class.
-
-An important feature for meta-iterators is that execution of
-sub-iterator runs may be performed concurrently.  The \c
+An important feature for component-based iterators is that execution
+of sub-iterator runs may be performed concurrently.  The \c
 iterator_servers, \c processors_per_iterator, and \c
 iterator_scheduling specifications provide manual overrides for the
 number of concurrent iterator partitions, the size of iterator
@@ -827,9 +798,8 @@ partitions, and the scheduling configuration (\c master or \c peer),
 respectively, for concurrent iterator jobs.  These settings are
 normally determined automatically in the parallel configuration
 routines (see ParallelLibrary) but can be overridden with user inputs
-if desired.  
-<!-- Each of these three overrides is only a useful input for those 
-meta-iterators supporting concurrency in their sub-iterators. -->
+if desired.  Currently, \c hybrid, \c multi_start, and \c pareto_set
+component-based iterators support concurrency in their sub-iterators.
 
 \anchor T4d1
 <table>
@@ -869,8 +839,23 @@ Specification detail for iterator scheduling controls
 \subsection MethodMetaHybrid Hybrid Minimization Commands
 
 
-The hybrid minimization meta-iterator has \c sequential,\c embedded, 
-and \c collaborative approaches (see the Users
+In a hybrid minimization approach (\c hybrid), a set of methods
+synergistically seek an optimal design.  The relationships among the
+methods are categorized as collaborative, embedded, or sequential.
+The goal in each case is to exploit the strengths of different
+optimization and nonlinear least squares algorithms through different
+stages of the minimization process. Global/local hybrids (e.g.,
+genetic algorithms combined with nonlinear programming) are a common
+example in which the desire for identification of a global optimum is
+balanced with the need for efficient navigation to a local optimum.
+Hybrid algorithms are implemented within the MetaIterator branch of
+the Iterator hierarchy in the CollabHybridMetaIterator,
+EmbedHybridMetaIterator, and SeqHybridMetaIterator classes.
+Additional information on hybrid algorithm logic is available in the
+Users Manual [\ref UsersMan "Adams et al., 2010"].
+
+The hybrid minimization specification has \c sequential,\c embedded, 
+and \c collaborative options (see the Users
 Manual [\ref UsersMan "Adams et al., 2010"] for more information on
 the algorithms employed).  In the sequential approach, the best
 solutions are transferred from one method to the next through a
@@ -1090,6 +1075,16 @@ Specification detail for collaborative hybrid meta-iterators
 \subsection MethodMetaMultiStart Multistart Iteration Commands
 
 
+In the multi-start iteration method (\c multi_start), a series of
+iterator runs are performed for different values of parameters in the
+model.  A common use is for multi-start optimization (i.e., different
+local optimization runs from different starting points for the design
+variables), but the concept and the code are more general.
+Multi-start iteration is implemented within the MetaIterator branch of
+the Iterator hierarchy within the ConcurrentMetaIterator class.
+Additional information on the multi-start algorithm is available in
+the Users Manual [\ref UsersMan "Adams et al., 2010"].
+
 The \c multi_start meta-iterator must specify a sub-iterator using
 either a \c method_pointer or a \c method_name plus optional \c
 model_pointer.  This iterator is responsible for completing a series
@@ -1168,7 +1163,15 @@ Specification detail for multi-start meta-iterators
 \subsection MethodMetaParetoSet Pareto Set Optimization Commands
 
 
-The \c pareto_set meta-iterator must specify an optimization or least
+In the pareto set optimization method (\c pareto_set), a series of
+optimization or least squares calibration runs are performed for
+different weightings applied to multiple objective functions.  This
+set of optimal solutions defines a "Pareto set," which is useful for
+investigating design trade-offs between competing objectives.  The
+code is similar enough to the \c multi_start technique that both
+algorithms are implemented in the same ConcurrentMetaIterator class.
+
+The \c pareto_set specification must identify an optimization or least
 squares calibration method using either a \c method_pointer or a \c
 method_name plus optional \c model_pointer.  This minimizer is
 responsible for computing a set of optimal solutions from a set of
@@ -1242,8 +1245,8 @@ Specification detail for pareto set meta-iterators
 </table>
 
 
-\section MethodSB Surrogate-Based Minimization Methods
-
+\subsection MethodSBL Surrogate-Based Local Minimization
+<!-- dakota subcat surrogate_based_local -->
 
 In surrogate-based optimization (SBO) and surrogate-based nonlinear
 least squares (SBNLS), minimization occurs using a set of one or more
@@ -1257,10 +1260,6 @@ truth model involves a high-fidelity simulation model.  The goals of
 surrogate-based methods are to reduce the total number of truth model
 simulations and, in the case of global data fit surrogates, to smooth
 noisy data with an easily navigated analytic function.
-
-
-\subsection MethodSBL Surrogate-Based Local Method
-<!-- dakota subcat surrogate_based_local -->
 
 In the surrogate-based local (SBL) method, a trust region approach is
 used to manage the minimization process to maintain acceptable
@@ -1527,7 +1526,7 @@ Specification detail for constraint management in surrogate-based local methods
 </table>
 
 
-\subsection MethodSBG Surrogate-Based Global Method
+\subsection MethodSBG Surrogate-Based Global Minimization
 <!-- dakota subcat surrogate_based_global -->
 
 The \c surrogate_based_global method differs from the \c
@@ -1635,14 +1634,34 @@ as 3-5, to get a sense of how the optimization is evolving as the
 surrogate gets updated.  If it appears to be changing significantly,
 then a larger number (used in combination with restart) may be needed.
 
-\section MethodMin Minimizer Commands for Linear Constraint Specification
 
-Optimization and Least Squares methods both fall under the category 
-of minimizer.  Some of these methods can handle constraints.  Nonlinear 
-constraints are specified in the responses section and provided 
-by the Dakota interface.  Linear constraints are specified 
-in the optimization method.  This section describes the specification 
-of the linear constraints. 
+\section MethodStd Standard Iterator Commands
+
+
+Standard iterators are stand-alone and self-contained.  As such, they
+do not bind with other iterator specifications.  Rather, they contain
+a single pointer specification for binding to the model that will be
+employed within the iteration.  This pointer is the \c model_pointer
+specification from \ref T5d1 "Table 5.1", and it is optional.  Default
+behavior when a model pointer is not provided is as described
+previously in \ref MethodMeta.
+
+
+\section MethodMin Minimizer Commands
+
+
+Optimization and Least Squares methods both fall under the category of
+Minimizers (and are inherited from the Minimizer branch of the
+Iterator class hierarchy).  This section describes specifications that
+are common among Minimizers.
+
+Many of the %Dakota minimization methods can handle constraints.
+Nonlinear constraints are specified in the responses section, are
+provided by the user's analysis driver, and are documented in \ref
+RespFn.  Linear constraints are specified within the method
+specification, since they are managed internally by the minimizers
+(i.e., the user does not need to supply their values on each driver
+execution).
 
 Linear inequality constraints can be supplied with the \c
 linear_inequality_constraint_matrix, \c
@@ -1809,18 +1828,150 @@ inequality and equality constraints
 <td>vector values = \c 1. (no scaling)
 </table>
 
+Some methods are natively Minimizers, with support for both
+optimization and least squares.  These methods are described in the
+following sub-sections.
+
+
+\subsection MethodEG Efficient Global Minimization
+<!-- dakota subcat efficient_global -->
+
+The Efficient Global Optimization (EGO) method was first developed by
+Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"].  In
+EGO, a stochastic response surface approximation for the objective
+function is developed based on some sample points from the "true"
+simulation.  The particular response surface used is a Gaussian
+process (GP).  The GP allows one to calculate the prediction at a new
+input location as well as the uncertainty associated with that
+prediction.  The key idea in EGO is to maximize the Expected
+Improvement Function (EIF).  The EIF is used to select the location at
+which a new training point should be added to the Gaussian process
+model by maximizing the amount of improvement in the objective
+function that can be expected by adding that point. A point could be
+expected to produce an improvement in the objective function if its
+predicted value is better than the current best solution, or if the
+uncertainty in its prediction is such that the probability of it
+producing a better solution is high.  Because the uncertainty is
+higher in regions of the design space with few observations, this
+provides a balance between exploiting areas of the design space that
+predict good solutions, and exploring areas where more information is
+needed. EGO trades off this "exploitation vs. exploration."  The
+general procedure for these EGO-type methods is:
+
+\li Build an initial Gaussian process model of the objective function
+
+\li Find the point that maximizes the EIF.  If the EIF value at this
+point is sufficiently small, stop.
+
+\li Evaluate the objective function at the point where the EIF is
+maximized.  Update the Gaussian process model using this new point.
+Return to the previous step.
+ 
+Note that several major differences exist between our implementation
+and that of [\ref Jones1998 "Jones et al., 1998"].  First, rather than
+using a branch and bound method to find the point which maximizes the
+EIF, we use the DIRECT global optimization method (see \ref
+MethodSCOLIBDIR and \ref MethodNCSU).  Second, we support both global
+optimization and global nonlinear least squares as well as general
+nonlinear constraints through abstraction and subproblem recasting
+within the SurrBasedMinimizer and EffGlobalMinimizer classes.
+
+The efficient global minimization algorithm is specified by the
+keyword \c efficient_global along with an optional \c seed
+specification, as shown in in Table \ref T5d28 "5.28" below.  By
+default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
+implementation may be selected instead.  If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only).  The \c import_points_file and \c
+export_points_file specifications are as described in \ref ModelSurrG,
+(the use of an embedded global surrogate model necessitates repeating
+selected surrogate model specifications within the method specification).
+
+\anchor T5d28
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.28
+\endhtmlonly
+Specification detail for the efficient global method
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Efficient global method 
+<td>\c efficient_global
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Random seed
+<td>\c seed
+<td>integer
+<td>Optional
+<td>Time based seed: nonrepeatable
+<tr>
+<td>GP selection
+<td>\c gaussian_process
+<td>\c surfpack | \c dakota
+<td>Optional
+<td>Surfpack Gaussian process
+<tr>
+<td>Derivative usage
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>Use function values only
+<tr>
+<td>File name for points to be imported as the basis for the initial GP
+<td>\c import_points_file
+<td>string
+<td>Optional
+<td>no point import from a file
+<tr>
+<td>Import points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting approximation-based samples from evaluating the GP
+<td>\c export_points_file
+<td>string
+<td>Optional
+<td>no point export to a file
+<tr>
+<td>Export points file format
+<td>\c annotated | \c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+</table>
+
 
 \section MethodOpt Optimization Methods
 
 
-The %Dakota project started as an toolbox for optimization methods, and 
-has accumulated a broad variety of gradient-based and nongradient-based
-optimizers from the DOT, NPSOL, NLPQL, CONMIN, OPT++, APPS, SCOLIB, 
-NCSU, and JEGA packages.  These capabilities are described below.
+The %Dakota project started as an toolbox for optimization methods,
+and has accumulated a broad variety of gradient-based and
+nongradient-based optimizers from the DOT, NPSOL, NLPQL, CONMIN,
+OPT++, APPS, SCOLIB, NCSU, and JEGA packages.  These capabilities are
+described in the following sub-sections.
+
+Since least squares minimization is a special case of general
+optimization, all of these optimization methods also support solution
+of least squares problems, via an internal recasting performed at the
+Optimizer base class that is activated when an optimizer is presented
+with \c calibration_terms (see \ref RespFnLS).  Since information is
+lost in this transformation, it is not possible to go the other
+direction (i.e., to support general optimization within nonlinear
+least squares solvers).
 
 
 \subsection MethodDOT DOT Methods
-
 
 The DOT library 
 [\ref Vrand1995 "Vanderplaats Research and Development, 1995"] 
@@ -3534,124 +3685,6 @@ Specification detail for the NCSU DIRECT method
 <td>real in [0,1]
 <td>Optional
 <td>1.0e-6
-</table>
-
-\subsection MethodEG Efficient Global Method
-<!-- dakota subcat efficient_global -->
-
-The Efficient Global Optimization (EGO) method was first developed by
-Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"].  In
-EGO, a stochastic response surface approximation for the objective
-function is developed based on some sample points from the "true"
-simulation.  The particular response surface used is a Gaussian
-process (GP).  The GP allows one to calculate the prediction at a new
-input location as well as the uncertainty associated with that
-prediction.  The key idea in EGO is to maximize the Expected
-Improvement Function (EIF).  The EIF is used to select the location at
-which a new training point should be added to the Gaussian process
-model by maximizing the amount of improvement in the objective
-function that can be expected by adding that point. A point could be
-expected to produce an improvement in the objective function if its
-predicted value is better than the current best solution, or if the
-uncertainty in its prediction is such that the probability of it
-producing a better solution is high.  Because the uncertainty is
-higher in regions of the design space with few observations, this
-provides a balance between exploiting areas of the design space that
-predict good solutions, and exploring areas where more information is
-needed. EGO trades off this "exploitation vs. exploration."  The
-general procedure for these EGO-type methods is:
-
-\li Build an initial Gaussian process model of the objective function
-
-\li Find the point that maximizes the EIF.  If the EIF value at this
-point is sufficiently small, stop.
-
-\li Evaluate the objective function at the point where the EIF is
-maximized.  Update the Gaussian process model using this new point.
-Return to the previous step.
- 
-Note that several major differences exist between our implementation
-and that of [\ref Jones1998 "Jones et al., 1998"].  First, rather than
-using a branch and bound method to find the point which maximizes the
-EIF, we use the DIRECT global optimization method (see \ref
-MethodSCOLIBDIR and \ref MethodNCSU).  Second, we support both global
-optimization and global nonlinear least squares as well as general
-nonlinear constraints through abstraction and subproblem recasting
-within the SurrBasedMinimizer and EffGlobalMinimizer classes.
-
-The efficient global optimization algorithm is specified by the
-keyword \c efficient_global along with an optional \c seed
-specification, as shown in in Table \ref T5d28 "5.28" below.  By
-default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
-implementation may be selected instead.  If \c use_derivatives is
-specified the GP model will be built using available derivative data
-(Surfpack GP only).  The \c import_points_file and \c
-export_points_file specifications are as described in \ref ModelSurrG,
-(the use of an embedded global surrogate model necessitates repeating
-selected surrogate model specifications within the method specification).
-
-\anchor T5d28
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.28
-\endhtmlonly
-Specification detail for the efficient global method
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Efficient global method 
-<td>\c efficient_global
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Random seed
-<td>\c seed
-<td>integer
-<td>Optional
-<td>Time based seed: nonrepeatable
-<tr>
-<td>GP selection
-<td>\c gaussian_process
-<td>\c surfpack | \c dakota
-<td>Optional
-<td>Surfpack Gaussian process
-<tr>
-<td>Derivative usage
-<td>\c use_derivatives
-<td>none
-<td>Optional
-<td>Use function values only
-<tr>
-<td>File name for points to be imported as the basis for the initial GP
-<td>\c import_points_file
-<td>string
-<td>Optional
-<td>no point import from a file
-<tr>
-<td>Import points file format
-<td>\c annotated | \c freeform
-<td>boolean
-<td>Optional
-<td>annotated
-<tr>
-<td>File name for exporting approximation-based samples from evaluating the GP
-<td>\c export_points_file
-<td>string
-<td>Optional
-<td>no point export to a file
-<tr>
-<td>Export points file format
-<td>\c annotated | \c freeform
-<td>boolean
-<td>Optional
-<td>annotated
 </table>
 
 
