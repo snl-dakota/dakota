@@ -11,9 +11,9 @@ namespace Dakota {
      Method Independent Controls</a>
 <li> <a href="MethodCommands.html#MethodMeta">Component-Based Iterator Commands</a>
   <ul>
-  <li> <a href="MethodCommands.html#MethodMetaHybrid">Hybrid Minimization Commands</a>
-  <li> <a href="MethodCommands.html#MethodMetaMultiStart">Multistart Iteration Commands</a>
-  <li> <a href="MethodCommands.html#MethodMetaParetoSet">Pareto Set Optimization Commands</a>
+  <li> <a href="MethodCommands.html#MethodMetaHybrid">Hybrid Minimization</a>
+  <li> <a href="MethodCommands.html#MethodMetaMultiStart">Multistart Iteration</a>
+  <li> <a href="MethodCommands.html#MethodMetaParetoSet">Pareto Set Minimization</a>
   <li> <a href="MethodCommands.html#MethodSBL">Surrogate-Based Local Minimization</a>
   <li> <a href="MethodCommands.html#MethodSBG">Surrogate-Based Global Minimization</a>
   </ul>
@@ -836,7 +836,7 @@ Specification detail for iterator scheduling controls
 </table>
 
 
-\subsection MethodMetaHybrid Hybrid Minimization Commands
+\subsection MethodMetaHybrid Hybrid Minimization
 
 
 In a hybrid minimization approach (\c hybrid), a set of methods
@@ -1072,7 +1072,7 @@ Specification detail for collaborative hybrid meta-iterators
 </table>
 
 
-\subsection MethodMetaMultiStart Multistart Iteration Commands
+\subsection MethodMetaMultiStart Multistart Iteration
 
 
 In the multi-start iteration method (\c multi_start), a series of
@@ -1160,10 +1160,10 @@ Specification detail for multi-start meta-iterators
 </table>
 
 
-\subsection MethodMetaParetoSet Pareto Set Optimization Commands
+\subsection MethodMetaParetoSet Pareto Set Minimization
 
 
-In the pareto set optimization method (\c pareto_set), a series of
+In the pareto set minimization method (\c pareto_set), a series of
 optimization or least squares calibration runs are performed for
 different weightings applied to multiple objective functions.  This
 set of optimal solutions defines a "Pareto set," which is useful for
