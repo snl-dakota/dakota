@@ -26,7 +26,7 @@ model
 variables
   active design
   continuous_design = 8
-    descriptors =    'P'    'Gamma' 'H'    'E'      'Nu'     'L'  'R' 'T' 
+    descriptors =    'P'    'Gamma_Chi' 'H'    'E'      'Nu'     'L'  'R' 'T' 
   continuous_state = 2
     initial_state = 1 4
     descriptors = 'meshID' 'resultStyle'

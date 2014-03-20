@@ -4,6 +4,7 @@
 
 # this runs a gradient based optimization, which is formulated
 # to minimize residual values
+# it runs multiple times, to remove dependence on initial point
 # Dakota will run the analysis driver, and get a results file
 # with 24 responses. It then subtracts the 24 terms in the
 # calibration_data_file, and then minimizes the residuals 
@@ -14,9 +15,12 @@
 strategy
   tabular_graphics_data
     tabular_graphics_file 'Ponly_Tank1_calibration.dat'
-  single_method
+  method_pointer = 'method_nl2sol'
+  multi_start
+    random_starts = 10
 
 method
+  id_method  = 'method_nl2sol'
   nl2sol
     max_iterations = 100
     convergence_tolerance = 1e-6
@@ -29,11 +33,11 @@ variables
   active design
   continuous_design = 5
     descriptors =    'E'      'Nu'     'L'  'R' 'T' 
-    lower_bounds =   2.5e7    0.25    59    29   0.21
-    upper_bounds =   3.0e7    0.29    61    31   0.25
+    lower_bounds =   2.5e7    0.25    57    27   0.21
+    upper_bounds =   3.5e7    0.32    63    32   0.26
   continuous_state = 4
     initial_state = 4 3   0 1
-    descriptors = 'meshID' 'resultStyle'  'Gamma' 'H'
+    descriptors = 'meshID' 'resultStyle'  'Gamma_Chi' 'H'
 
 interface
   analysis_driver = 'RunTank_Ponly_calibration.sh' #specialize driver script because each function evaluation requires multiple runs of EvalTank.py
@@ -43,7 +47,7 @@ interface
       file_tag
   deactivate restart_file
   asynchronous
-    evaluation_concurrency 5 # this method can use concurrency up to the number of design variables, while computing numerical gradients
+    evaluation_concurrency 8 # this method can use concurrency up to the number of design variables, while computing numerical gradients
 
 responses
   calibration_terms = 24

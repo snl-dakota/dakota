@@ -33,7 +33,7 @@ variables
     descriptors =    'P'	'E'		'Nu'		'L'		'R'		'T' 
   continuous_state = 4
     initial_state = 4 		1 	 	0 		1
-    descriptors = 'meshID' 	'resultStyle'  'Gamma' 		'H'
+    descriptors = 'meshID' 	'resultStyle'  'Gamma_Chi' 		'H'
 
 interface
   analysis_driver = 'RunTank.sh' #this uses a bash script to add additional options. EvalTank.py is run from that script

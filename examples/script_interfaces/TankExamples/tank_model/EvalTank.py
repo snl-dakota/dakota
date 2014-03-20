@@ -106,6 +106,8 @@ def main():
     nPhi=91
     dPhi=pi/(nPhi-1)
     Phi_vec = [idx*dPhi for idx in range(0,nPhi)]
+    if dataFileName == '':
+      dataFileName = summaryFileName + '.data' 
 
   elif resultStyle == 2: # balance run time and accuracy of the max statistic
     nX=51 
@@ -122,27 +124,26 @@ def main():
     nX=len(X_vec)
     Phi_vec = [pi/6, pi/2, pi/4, 3*pi/4]
     nPhi=len(Phi_vec)
-    dataFileName = 'DisplacementsForPressureOnly'
+    dataFileName = 'DisplacementsDataOnDiagonal'
 
   elif resultStyle == 4: # for Validation tests
     X_vec = [0, 15, 20, 25]
     nX=len(X_vec)
     Phi_vec = [pi/6, pi/3, pi/2, 2*pi/3, 5*pi/6]
     nPhi=len(Phi_vec)
-    dataFileName = 'DisplacementsForPressureAndLiquid'
+    dataFileName = 'DisplacementsDataFullGrid'
 
   else:
     print("resultStyle must be 1, 2, 3, or 4")
     return 404
 
+  import FEMTank
   if (meshID != 24):
     # Run the tank (skewed cylinder)
-    import FEMTank
     FEMTank.main(X_vec, Phi_vec, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Radius, Thickness, meshID, summaryFileName, dataFileName)
   else:
     # Run the cylinder
-    import Cylinder
-    Cylinder.main(X_vec, Phi_vec, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Radius, Thickness, M, N, summaryFileName, dataFileName)
+    FEMTank.cylinder(X_vec, Phi_vec, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Radius, Thickness, M, N, summaryFileName, dataFileName)
 
 if __name__ == "__main__":
   main()  

@@ -31,7 +31,7 @@ variables
     upper_bounds =   150   3.0e7    0.29    61    31   0.25
   continuous_state = 4
     initial_state = 4       2               0      0
-    descriptors = 'meshID' 'resultStyle'  'Gamma' 'H'
+    descriptors = 'meshID' 'resultStyle'  'Gamma_Chi' 'H'
 
 interface
   analysis_driver = 'EvalTank.py' #EvalTank.py must be executable

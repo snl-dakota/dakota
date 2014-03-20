@@ -1,3 +1,4 @@
+function [x_vec_reflect, phi_vec, Displ ] = VizTankDataFile(dataFile)
 % VizTankDataFile.m
 % khu 131229
 % This parses the data file and plots a response in half symmetry (side
@@ -11,10 +12,6 @@
 % notes
 % this really only works for resultStyle 1, or a full grid of X and Phi
 
-clear
-home
-
-dataFile = 'SampleDataFile';
 
 %% select which responses to viz
 Header = 'Normal_Displacement';
@@ -41,7 +38,7 @@ Header = 'Normal_Displacement';
 % Header = 'sig_x_phi_Inboard';
 
 ResponseIsDisp = strfind(Header, 'Displacement');
-
+Displ = [];
 
 %% Parse the dataFile
 
@@ -116,13 +113,13 @@ ylabel('Circumferencial Angel (^o)')
 if ResponseIsDisp
     caxis([-Cmax,Cmax])
     colormap(bipolar(201))
+    Displ = Response;
 else
     SemiHot = hot(round(201*1.3)); SemiHot = SemiHot(1:201,:); %don't get white hot. too hard to see things.
     caxis([0,Cmax])
     colormap(SemiHot)
 end
 
-return
 
 %% Here's some customized code to plot the two stresses on a common color scale
 % run this instead of the "Plot the response..." section above
@@ -159,4 +156,5 @@ for SHidx = 1:length(StressHeaders)
     colorbar
     xlabel('Axial location (in)')
     ylabel('Circumferencial Angel (^o)')
+end
 end

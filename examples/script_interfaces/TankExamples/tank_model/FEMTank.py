@@ -14,7 +14,7 @@
 ##  1.	X_vec 		$1\times {{N}_{x}}$ vector, passed as comma delimited string, bounds $\left[ 0,\frac{L}{2} \right]$  (in)
 ##  2.	Phi_vec 	$1\times {{N}_{\varphi }}$ vector, passed as comma delimited string, bounds $\left[ 0,180 \right]$  (o)
 ##			The code computes responses at all combinations of $x,\varphi$ to produce ${N_x}\times {N_\varphi}$ locations
-##  3.	P		Scalar, bounds $\left[ 0,\infty  \right]$  (atm), (gage pressure)
+##  3.	P		Scalar, bounds $\left[ 0,\infty  \right]$  (psig)
 ##  4.	Gamma, -Chi	Scalar - Liquid specific weight OR composition
 ##  			Positive numbers interpreted as specific weight, bounds $\left[ 0,\infty  \right]$ (lbs/in3)
 ##  			Negative numbers $\left[ -1,0 \right]$ interpreted as negative composition
@@ -615,22 +615,35 @@ def cylinder(X_vec_in, Phi_vec_in, Pressure, Gamma, LiqHeight, E, Nu, Length, Ra
 
   results = cylEvalResults(M, N, X_vec, Phi_vec, Length, Thickness, Radius, E, Nu, Pressure, Gamma, LiqHeight)
 
-  # write out the results
-  if dataFileName: #if not empty, write out the full data file
+  # Write results files
+  # default is to write four quantities of interest from the simulation
+  # to the summary file, and an optional datafile with detailed information
+  # about stress, strain, and displacement
+  # In addition, two special cases exist that will skip the datafile,
+  # and write out the displacements at specific locations to the summary file
+  if (dataFileName == 'DisplacementsDataOnDiagonal'): #special case 3
+    reportDisplPonly(summaryFileName, results, X_vec, Phi_vec)
+  elif (dataFileName == 'DisplacementsDataFullGrid'): #special case 4
+    reportDisplPandL(summaryFileName, results, X_vec, Phi_vec)
+  elif dataFileName == '': # no datafile --> only write out the summary file, standard
+    if summaryFileName:
+      resultsSummary(results, X_vec, Phi_vec, summaryFileName) # write summary file in a Dakota friendly format
+  else: #if not a special case and not empty, complete the datafile and summaryFile
     reportInputs(dataFileName, X_vec, Phi_vec, Length, Thickness, Radius, E, Nu, Pressure, Gamma, LiqHeight, M, N, '') 
     reportResults(dataFileName, results, X_vec, Phi_vec) #complete the datafile
-  if summaryFileName:
-    resultsSummary(results, X_vec, Phi_vec, summaryFileName) # write summary file in a Dakota friendly format
+    if summaryFileName:
+      resultsSummary(results, X_vec, Phi_vec, summaryFileName) # write summary file in a Dakota friendly format
+
 
   return results
 
 #-------------------------------------------------------------------------------
 # Global vars for Cylinder 
 # limit the maximum length of the expansion 
-M_MAX = 25 # axial
-N_MAX = 25 # circumferencial
+M_MAX = 45 # axial
+N_MAX = 45 # circumferencial
            
-gCoefficients = cylHydrostaticCoefficients(M_MAX, N_MAX)
+gCoefficients = cylHydrostaticCoefficients(M_MAX+1, N_MAX+1)
 
 
 
@@ -648,61 +661,107 @@ def skewInputs(Pressure_orig, Gamma_orig, LiqHeight_orig, E_orig, Nu_orig, Lengt
 # skew the input vs. meshID using a Mesh Convergence Parameters
 # compute new parameter values
 
-  if ( Gamma_orig * LiqHeight_orig)  == 0:
-    meshID = meshID + 3 #greatly reduce mesh dependence for pressure only scenario
+# handle biases and skew differently for Ponly and PandL scenarios
+  if ( Gamma_orig * LiqHeight_orig)  == 0: # pressure only scenario
+    meshID = meshID + 2 
 
-  biasLength = 0
-  magLength = 1
-  mcpLength = 1.01
-  mcp2Length = 2/float(meshID)
-  Length_new = (Length_orig*magLength+biasLength)*pow(mcpLength, mcp2Length)
+    biasLength = 0
+    magLength = 1
+    mcpLength = 1.005
+    mcp2Length = 6/float(meshID)
+    Length_new = (Length_orig*magLength+biasLength)*pow(mcpLength, mcp2Length)
 
-  # convert 28-32 to 30-36
-  biasRadius = -12
-  magRadius = 1.5
-  mcpRadius = 0.99
-  mcp2Radius = 2/float(meshID)
-  Radius_new = (Radius_orig*magRadius+biasRadius)*pow(mcpRadius, mcp2Radius)
+    # convert 28-32 to 25-31
+    biasRadius = -17
+    magRadius = 1.5
+    mcpRadius = 0.992
+    mcp2Radius = 6/float(meshID)
+    Radius_new = (Radius_orig*magRadius+biasRadius)*pow(mcpRadius, mcp2Radius)
 
-  # convert 0.2~0.25 to 0.20~0.5
-  biasThickness = -1
-  magThickness = 6
-  mcpThickness = 0.996
-  mcp2Thickness = 4/float(meshID)
-  Thickness_new = (Thickness_orig*magThickness+biasThickness)*pow(mcpThickness, mcp2Thickness)
+    # convert 0.2~0.25 to 0.15~0.3
+    biasThickness = -0.45
+    magThickness = 3
+    mcpThickness = 0.996
+    mcp2Thickness = 6/float(meshID)
+    Thickness_new = (Thickness_orig*magThickness+biasThickness)*pow(mcpThickness, mcp2Thickness)
 
-  LiqHeight_new = LiqHeight_orig
+    LiqHeight_new = LiqHeight_orig #don't mess with height, will be too obvious
 
-  biasPressure = 0
-  magPressure = 1+(Nu_orig-0.25)/2
-  mcpPressure = 1.005
-  mcp2Pressure = 2/float(meshID)
-  Pressure_new = (Pressure_orig*magPressure+biasPressure)*pow(mcpPressure, mcp2Pressure)
+    biasPressure = 0
+    magPressure = 0.9-(Nu_orig-0.25)*2
+    mcpPressure = 1.005
+    mcp2Pressure = 7/float(meshID)
+    Pressure_new = (Pressure_orig*magPressure+biasPressure)*pow(mcpPressure, mcp2Pressure)
 
-  # convert 2.6~3.2 to 1.5~3.5
-  if Gamma_orig == 0:
     Gamma_new = 0
-  else:
-    biasGamma = -2.3
-    magGamma = 1.8
-    mcpGamma = 0.999
-    mcp2Gamma = 2/float(meshID)
+
+    # convert 26~30e6 to 15~23e6
+    biasE = -37e6
+    magE = 2
+    mcpE = 1.012
+    mcp2E = 6/float(meshID)
+    E_new = (E_orig*magE+biasE)*pow(mcpE, mcp2E)
+
+    # convert 0.24~0.34 to 0.28~0.355
+    Nu_new = Nu_orig
+    biasNu = 0.1
+    magNu = 0.75
+    Nu_new = (Nu_orig*magNu+biasNu)
+
+  else: # pressure and liquid loading
+    biasLength = 0
+    magLength = 1
+    mcpLength = 1.01
+    mcp2Length = 4/float(meshID)
+    Length_new = (Length_orig*magLength+biasLength)*pow(mcpLength, mcp2Length)
+
+    # convert 28-32 to 25-31
+    biasRadius = -17
+    magRadius = 1.5
+    mcpRadius = 0.99
+    mcp2Radius = 4/float(meshID)
+    Radius_new = (Radius_orig*magRadius+biasRadius)*pow(mcpRadius, mcp2Radius)
+
+    # convert 0.2~0.25 to 0.22~0.32
+    biasThickness = -0.18
+    magThickness = 2
+    mcpThickness = 0.993
+    mcp2Thickness = 5/float(meshID)
+    Thickness_new = (Thickness_orig*magThickness+biasThickness)*pow(mcpThickness, mcp2Thickness)
+
+    LiqHeight_new = LiqHeight_orig #don't mess with height, will be too obvious
+
+    biasPressure = 0
+    magPressure = 0.9
+    mcpPressure = 1.05
+    mcp2Pressure = 5/float(meshID)
+    Pressure_new = (Pressure_orig*magPressure+biasPressure)*pow(mcpPressure, mcp2Pressure)
+
+    # convert 2.6~3.2 to 1.7~2.9
+    biasGamma = -3.5
+    magGamma = 2
+    mcpGamma = 0.99
+    mcp2Gamma = 5/float(meshID)
     Gamma_new = (Gamma_orig*magGamma+biasGamma)*pow(mcpGamma, mcp2Gamma)
 
-  # convert 2.6~3e7 to 2~6e6
-  biasE = -24e6
-  magE = 1
-  mcpE = 1.02
-  mcp2E = 2/float(meshID)
-  E_new = (E_orig*magE+biasE)*pow(mcpE, mcp2E)
+    # convert 26~30e6 to 10~22e6
+    biasE = -68e6
+    magE = 3
+    mcpE = 1.02
+    mcp2E = 4/float(meshID)
+    E_new = (E_orig*magE+biasE)*pow(mcpE, mcp2E)
 
-  # convert 0.24~0.34 to 0.28~0.355
-  Nu_new = Nu_orig
-  biasNu = 0.1
-  magNu = 0.75
-  Nu_new = (Nu_orig*magNu+biasNu)
+    # convert 0.24~0.34 to 0.28~0.355
+    Nu_new = Nu_orig
+    biasNu = 0.1
+    magNu = 0.75
+    Nu_new = (Nu_orig*magNu+biasNu)
 
-  return ( Pressure_new, Gamma_new, LiqHeight_new, E_new, Nu_new, Length_new, Radius_new, Thickness_new)
+
+  M = meshID*4 + 8
+  N = meshID*4 + 7
+
+  return ( Pressure_new, Gamma_new, LiqHeight_new, E_new, Nu_new, Length_new, Radius_new, Thickness_new, M, N)
 
 def main(X_vec_in, Phi_vec_in, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Radius, Thickness, meshID, summaryFileName, dataFileName):
 
@@ -759,10 +818,8 @@ def main(X_vec_in, Phi_vec_in, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Ra
     return 404
 
 # convert meshID into expansion lengths
-  M = meshID*3 + 10
-  N = meshID*4 + 7
 
-  [Pressure_new, Gamma_new, LiqHeight_new, E_new, Nu_new, Length_new, Radius_new, Thickness_new] = skewInputs(Pressure_orig, Gamma_orig, LiqHeight_orig, E_orig, Nu_orig, Length_orig, Radius_orig, Thickness_orig, meshID)
+  [Pressure_new, Gamma_new, LiqHeight_new, E_new, Nu_new, Length_new, Radius_new, Thickness_new, M, N] = skewInputs(Pressure_orig, Gamma_orig, LiqHeight_orig, E_orig, Nu_orig, Length_orig, Radius_orig, Thickness_orig, meshID)
 
 # also rescale the x position, since the length of tank may have changed. angle does not change
   rescale = Length_orig / Length_orig
@@ -778,9 +835,9 @@ def main(X_vec_in, Phi_vec_in, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Ra
   # about stress, strain, and displacement
   # In addition, two special cases exist that will skip the datafile,
   # and write out the displacements at specific locations to the summary file
-  if (dataFileName == 'DisplacementsForPressureOnly'): #special case 3
+  if (dataFileName == 'DisplacementsDataOnDiagonal'): #special case 3
     reportDisplPonly(summaryFileName, results, X_vec_orig, Phi_vec_orig)
-  elif (dataFileName == 'DisplacementsForPressureAndLiquid'): #special case 4
+  elif (dataFileName == 'DisplacementsDataFullGrid'): #special case 4
     reportDisplPandL(summaryFileName, results, X_vec_orig, Phi_vec_orig)
   elif dataFileName == '': # no datafile --> only write out the summary file, standard
     resultsSummary(results, X_vec_orig, Phi_vec_orig, summaryFileName) # write summary file in a Dakota friendly format
@@ -789,7 +846,7 @@ def main(X_vec_in, Phi_vec_in, Pressure, Gamma_Chi, LiqHeight, E, Nu, Length, Ra
     reportResults(dataFileName, results, X_vec_orig, Phi_vec_orig) 
     resultsSummary(results, X_vec_orig, Phi_vec_orig, summaryFileName) # write summary file in a Dakota friendly format
     # for debugging, you can write out the true (skewed) parameter values
-#    reportInputs(dataFileName + 'true', X_vec_new, Phi_vec_new, Length_new, Thickness_new, Radius_new, E_new, Nu_new, Pressure_new, Gamma_new, LiqHeight_new, M, N, '')
+#    reportInputs(dataFileName + '.true', X_vec_new, Phi_vec_new, Length_new, Thickness_new, Radius_new, E_new, Nu_new, Pressure_new, Gamma_new, LiqHeight_new, M, N, '')
 
 if __name__ == "__main__":
   main()  
