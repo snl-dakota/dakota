@@ -316,11 +316,17 @@ public:
   herr_t store_data(const std::string& dset_name,
                     const Teuchos::SerialDenseVector<int,T>& buf) const
   {
-    throw "No implementation for Teuchos::SerialDenseVector<int,ScalarType>!";
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    // Teuchos::SerialDenseVector is a 1D dataspace
+    return store_data<T,1>( dset_name,
+                            boost::assign::list_of( buf.length() ),
+                            buf.values() );
   }
 
 
-#if 0 // WJB:  Disabled since I do NOT believe it is used by any client
+#if 0 // WJB:  Disabled while I test out the template version just above
   herr_t store_data(const std::string& dset_name,
                     const RealVector& buf) const
   {
@@ -442,24 +448,16 @@ public:
   }
 
 
-  herr_t store_data(const std::string& dset_name,
-                    const IntVectorArray& buf) const
-  {
-    throw "No implementation for vector< Teuchos::SerialDenseVector<int,int> >!";
-  }
-/*
   template <typename T>  // T is tricky, it is the Teuchos::SDVector::scalarType
-  herr_t store_data(const std::string& dset_name,
-                    const std::vector< Teuchos::SerialDenseVector<int,T> >& buf) const
-  */
-  herr_t store_data(const std::string& dset_name,
-                    const RealVectorArray& buf) const
+  herr_t store_data(
+            const std::string& dset_name,
+            const std::vector< Teuchos::SerialDenseVector<int,T> >& buf) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
 // WJB - ASAP: resolve merge issue with refactored, chunking version
-#if 1
+#if 0
     // WJB: much of the "chunking setup" code is nearly identical to the
     // std::vector version, so re-factor for reuse next sprint
 
@@ -552,8 +550,8 @@ public:
 
     // Create a new dataset within the DB using cparms creation properties.
 
-    // size() vs length() and 'size_type' vs 'ScalarType' prevents writing a
-    // generic algorithm
+    // 'size()' vs 'length()' and 'value_type' vs 'ScalarType' prevents
+    // writing a generic algorithm
     hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
                       NativeDataTypes<double>::datatype(), mem_space,
                       H5P_DEFAULT, cparms, H5P_DEFAULT);
@@ -1028,30 +1026,6 @@ private:
   }
 
 };
-
-
-/* stub so storing vector<RealMatrix> will compile
-template <>
-herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
-				    const std::vector<RealMatrix>& buf) const;
-
-// stub so storing vector<IntVector> will compile
-template <>
-herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
-				    const std::vector<IntVector>& buf) const;
-
-// stub so storing vector<RealVector> will compile (same as RealVectorArray!)
-template <>
-herr_t HDF5BinaryStream::store_data(const std::string& dset_name,
-				    const std::vector<RealVector>& buf) const;
-
-// stub so storing vector<vector<string> > will compile
-// WJB: try method overloading instead of (potentially) ambiguous template param
-// template <>
-herr_t HDF5BinaryStream::
-store_data(const std::string& dset_name,
-	   const std::vector<StringArray>& buf) const;
-*/
 
 } // namespace Dakota
 
