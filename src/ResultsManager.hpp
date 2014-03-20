@@ -24,7 +24,9 @@
 #include "ResultsDBHDF5.hpp"
 #else
 // forward declaration due to PIMPL in support of conditional compilation HDF5
-class Dakota::ResultsDBHDF5;
+namespace Dakota {
+  class ResultsDBHDF5;
+}
 #endif
 
 
