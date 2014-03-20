@@ -27,6 +27,7 @@ EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db):
 {
   maxIteratorConcurrency = 1;
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
 
   const String& global_ptr
     = problem_db.get_string("method.hybrid.global_method_pointer");
@@ -66,6 +67,7 @@ EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
   maxIteratorConcurrency = 1;
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
 
   String empty_model_ptr; // for now
   allocate_by_name(problem_db.get_string("method.hybrid.global_method_name"),

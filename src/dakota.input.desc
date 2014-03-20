@@ -114,13 +114,13 @@ TAG "method/multi_start"
 	DESC "{Multi-start meta-iterator} MethodCommands.html#MethodMetaMultiStart"
 
 TAG "method/multi_start/method_name"
-	DESC "{Identification of a sub-method by name (no separate specification block)} MethodCommands.html#MethodIndControl"
+	DESC "{Identification of a sub-method by name (no separate specification block)} MethodCommands.html#MethodMeta"
 
 TAG "method/multi_start/method_name/model_pointer"
-	DESC "{Model pointer} MethodCommands.html#MethodIndControl"
+	DESC "{Model pointer} MethodCommands.html#MethodMeta"
 
 TAG "method/multi_start/method_pointer"
-	DESC "{Identification of a sub-method by pointer to a separate specification block} MethodCommands.html#MethodIndControl"
+	DESC "{Identification of a sub-method by pointer to a separate specification block} MethodCommands.html#MethodMeta"
 
 TAG "method/multi_start/random_starts"
 	DESC "{Number of random starting points} MethodCommands.html#MethodMetaMultiStart"
@@ -347,15 +347,19 @@ TAG "method/asynch_pattern_search/smoothing_factor"
 
 TAG "method/mesh_adaptive_search"
 TAG "method/mesh_adaptive_search/function_precision"
-	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
+	DESC "{Function Evaluation Precision} MethodCommands.html#MethodNOMADDC"
 
 TAG "method/mesh_adaptive_search/seed"
-	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
+	DESC "{Random Seed} MethodCommands.html#MethodNOMADDC"
 
 TAG "method/mesh_adaptive_search/history_file"
+	DESC "{NOMAD History File} MethodCommands.html#MethodNOMADDC"
+
 TAG "method/mesh_adaptive_search/display_format"
 TAG "method/mesh_adaptive_search/variable_neighborhood_search"
 TAG "method/mesh_adaptive_search/display_all_evaluations"
+	DESC "{Display NOMAD evaluations} MethodCommands.html#MethodNOMADDC"
+
 TAG "method/moga" GROUP "Optimization: Global"
 TAG "method/moga/fitness_type"
 	DESC "{Fitness type} MethodCommands.html#MethodJEGAMOGA"
@@ -479,7 +483,7 @@ TAG "method/moga/mutation_type/mutation_rate"
 	DESC "{Mutation rate} MethodCommands.html#MethodJEGADC"
 
 TAG "method/moga/seed"
-	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
+	DESC "{Random seed} MethodCommands.html#MethodJEGADC"
 
 TAG "method/dot_frcg/linear_inequality_constraint_matrix"
 	DESC "{Linear inequality coefficient matrix} MethodCommands.html#MethodMin"
@@ -664,6 +668,8 @@ TAG "method/nl2sol" GROUP "Calibration"
 	DESC "[CHOOSE LSQ method]"
 
 TAG "method/nl2sol/function_precision"
+	DESC "{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"
+
 TAG "method/nl2sol/absolute_conv_tol"
 	DESC "{Absolute function convergence tolerance} MethodCommands.html#MethodLSNL2SOL"
 
@@ -703,7 +709,7 @@ TAG "method/ncsu_direct/volume_boxsize_limit"
 TAG "method/genie_opt_darts"
 TAG "method/genie_direct"
 TAG "method/genie_opt_darts/seed"
-	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
+	DESC "{Random seed} MethodCommands.html#MethodNonDMC"
 
 TAG "method/efficient_global" GROUP "Surrogate-based Methods"
 TAG "method/efficient_global/gaussian_process"
@@ -1258,7 +1264,7 @@ TAG "method/polynomial_chaos/samples"
 	DESC "{Number of samples} MethodCommands.html#MethodNonDMC"
 
 TAG "method/polynomial_chaos/seed"
-	DESC "{Random seed} MethodCommands.html#MethodNonDPCE"
+	DESC "{Refinement seed} MethodCommands.html#MethodNonDLocalRel"
 
 TAG "method/local_evidence" GROUP "Uncertainty Quantification"
 TAG "method/local_evidence/sqp"

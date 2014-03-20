@@ -48,7 +48,9 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
     { methodList = method_names; lightwtCtor = true;  }
   size_t i, num_iterators = methodList.size();
   if (!num_iterators) { // verify at least one method in list
-    Cerr << "Error: hybrid method list must have a least one entry."<<std::endl;
+    if (problem_db.parallel_library().world_rank() == 0)
+      Cerr << "Error: hybrid method list must have a least one entry."
+	   << std::endl;
     abort_handler(-1);
   }
 
@@ -94,26 +96,31 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
       }
     }
   }
-  Cout << "maxIteratorConcurrency = " << maxIteratorConcurrency << '\n';
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
+  if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+    Cout << "maxIteratorConcurrency = " << maxIteratorConcurrency << '\n';
 
   if (seqHybridType == "adaptive") {
     if (iterSched.messagePass) {
       // adaptive hybrid does not support iterator concurrency
-      Cerr << "Error: adaptive Sequential Hybrid does not support concurrent "
-	   << "iterator parallelism." << std::endl;
+      if (summaryOutputFlag)
+	Cerr << "Error: adaptive Sequential Hybrid does not support concurrent "
+	     << "iterator parallelism." << std::endl;
       abort_handler(-1);
     }
     if (iterSched.iteratorCommRank == 0) {
       progressThreshold
 	= problem_db.get_real("method.hybrid.progress_threshold");
       if (progressThreshold > 1.) {
-	Cerr << "Warning: progress_threshold should be <= 1.  Setting to 1.\n";
+	if (summaryOutputFlag)
+	  Cerr << "Warning: progress_threshold should be <= 1. Setting to 1.\n";
 	progressThreshold = 1.;
       }
       else if (progressThreshold < 0.) {
-	Cerr << "Warning: progress_threshold should be >= 0.  Setting to 0.\n";
+	if (summaryOutputFlag)
+	  Cerr << "Warning: progress_threshold should be >= 0. Setting to 0.\n";
 	progressThreshold = 0.;
       }
     }
@@ -163,6 +170,7 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
   methodList = problem_db.get_sa("method.hybrid.method_names");
   size_t i, num_iterators = methodList.size();
   if (!num_iterators) { // verify at least one method in list
+    //if (problem_db.parallel_library().world_rank() == 0)
     Cerr << "Error: hybrid method list must have a least one entry."<<std::endl;
     abort_handler(-1);
   }
@@ -171,23 +179,27 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
   // as a first cut, employ the final solutions spec for the seq hybrid.
   maxIteratorConcurrency = problem_db.get_sizet("method.final_solutions");
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
 
   if (seqHybridType == "adaptive") {
     if (iterSched.messagePass) {
       // adaptive hybrid does not support iterator concurrency
-      Cerr << "Error: adaptive Sequential Hybrid does not support concurrent "
-	   << "iterator parallelism." << std::endl;
+      if (summaryOutputFlag)
+	Cerr << "Error: adaptive Sequential Hybrid does not support concurrent "
+	     << "iterator parallelism." << std::endl;
       abort_handler(-1);
     }
     if (iterSched.iteratorCommRank == 0) {
       progressThreshold
 	= problem_db.get_real("method.hybrid.progress_threshold");
       if (progressThreshold > 1.) {
-	Cerr << "Warning: progress_threshold should be <= 1.  Setting to 1.\n";
+	if (summaryOutputFlag)
+	  Cerr << "Warning: progress_threshold should be <= 1. Setting to 1.\n";
 	progressThreshold = 1.;
       }
       else if (progressThreshold < 0.) {
-	Cerr << "Warning: progress_threshold should be >= 0.  Setting to 0.\n";
+	if (summaryOutputFlag)
+	  Cerr << "Warning: progress_threshold should be >= 0. Setting to 0.\n";
 	progressThreshold = 0.;
       }
     }
@@ -377,7 +389,6 @@ void SeqHybridMetaIterator::run_sequential()
   // Sequence complete: output final results
   // ---------------------------------------
   if (lead_rank) {
-    Cout << "\n<<<<< Sequential Hybrid completed.\n";
     // provide a final summary in cases where the default iterator output
     // is insufficient
     if (iterSched.messagePass) {// || numIteratorJobs > 1
@@ -457,8 +468,6 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
   }
 
   // Output interesting iterator statistics/progress metrics...
-  if (lead_rank)
-    Cout << "\n<<<<< adaptive Sequential Hybrid completed." << std::endl;
 }
 
 

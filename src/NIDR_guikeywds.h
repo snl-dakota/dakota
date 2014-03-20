@@ -170,7 +170,7 @@ static GuiKeyWord
 		{"response_levels",14,2,7,0,1039,kw_29},
 		{"rng",8,2,15,0,1141,kw_22,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,10,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,11,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,11,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_31[7] = {
 		{"merit1",8,0,1,1,305,0,0.,0.,0.,0,"[CHOOSE merit function]"},
@@ -318,7 +318,7 @@ static GuiKeyWord
 		{"model_pointer",11,0,5,0,1593},
 		{"queso",8,4,1,1,1185,kw_55},
 		{"samples",9,0,6,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,7,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"},
+		{"seed",0x19,0,7,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
 		{"use_derivatives",8,0,2,0,1301}
 		},
 	kw_57[4] = {
@@ -503,7 +503,7 @@ static GuiKeyWord
 		{"quality_metrics",8,0,3,0,1325,0,0.,0.,0.,0,"{Quality metrics} MethodCommands.html#MethodDDACE"},
 		{"random",8,0,1,1,1311},
 		{"samples",9,0,8,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,9,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"},
+		{"seed",0x19,0,9,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
 		{"symbols",9,0,6,0,1333,0,0.,0.,0.,0,"{Number of symbols} MethodCommands.html#MethodDDACE"},
 		{"variance_based_decomp",8,1,4,0,1327,kw_76,0.,0.,0.,0,"{Variance based decomposition} MethodCommands.html#MethodDDACE"}
 		},
@@ -554,7 +554,7 @@ static GuiKeyWord
 		{"probability_levels",14,1,7,0,1133,kw_21,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
 		{"rng",8,2,9,0,1141,kw_22,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,4,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_84[3] = {
 		{"grid",8,0,1,1,1349,0,0.,0.,0.,0,"[CHOOSE trial type]"},
@@ -571,7 +571,7 @@ static GuiKeyWord
 		{"num_trials",9,0,6,0,1355,0,0.,0.,0.,0,"{Number of trials  } MethodCommands.html#MethodFSUDACE"},
 		{"quality_metrics",8,0,2,0,1339,0,0.,0.,0.,0,"{Quality metrics} MethodCommands.html#MethodFSUDACE"},
 		{"samples",9,0,8,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,9,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"},
+		{"seed",0x19,0,9,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
 		{"trial_type",8,3,5,0,1347,kw_84,0.,0.,0.,0,"{Trial type} MethodCommands.html#MethodFSUDACE"},
 		{"variance_based_decomp",8,1,3,0,1341,kw_85,0.,0.,0.,0,"{Variance based decomposition} MethodCommands.html#MethodFSUDACE"}
 		},
@@ -623,11 +623,11 @@ static GuiKeyWord
 		{"response_levels",14,2,4,0,987,kw_93},
 		{"rng",8,2,11,0,1141,kw_22,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,6,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,7,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,7,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_95[2] = {
 		{"model_pointer",11,0,2,0,1593},
-		{"seed",0x19,0,1,0,649,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
+		{"seed",0x19,0,1,0,649,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDMC"}
 		},
 	kw_96[2] = {
 		{"parallel",8,0,1,1,1125},
@@ -673,7 +673,7 @@ static GuiKeyWord
 		{"rng",8,2,9,0,1141,kw_22,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,4,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
 		{"sbo",8,5,1,0,1083,kw_102},
-		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_104[2] = {
 		{"mt19937",8,0,1,1,1179},
@@ -706,7 +706,7 @@ static GuiKeyWord
 		{"rng",8,2,2,0,1177,kw_104,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDGlobalIntervalEst"},
 		{"samples",9,0,4,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
 		{"sbo",8,5,1,0,1149,kw_108},
-		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_110[2] = {
 		{"complementary",8,0,1,1,1521},
@@ -827,7 +827,7 @@ static GuiKeyWord
 		{"response_levels",14,2,3,0,955,kw_131},
 		{"rng",8,2,10,0,1141,kw_22,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,5,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,6,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,6,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_133[2] = {
 		{"annotated",8,0,1,0,1569},
@@ -927,10 +927,10 @@ static GuiKeyWord
 		{"response_levels",14,2,2,0,1447,kw_149}
 		},
 	kw_151[16] = {
-		{"display_all_evaluations",8,0,6,0,331},
+		{"display_all_evaluations",8,0,6,0,331,0,0.,0.,0.,0,"{Display NOMAD evaluations} MethodCommands.html#MethodNOMADDC"},
 		{"display_format",11,0,4,0,327},
-		{"function_precision",10,0,1,0,321,0,0.,0.,0.,0,"{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"},
-		{"history_file",11,0,3,0,325},
+		{"function_precision",10,0,1,0,321,0,0.,0.,0.,0,"{Function Evaluation Precision} MethodCommands.html#MethodNOMADDC"},
+		{"history_file",11,0,3,0,325,0,0.,0.,0.,0,"{NOMAD History File} MethodCommands.html#MethodNOMADDC"},
 		{"linear_equality_constraint_matrix",14,0,13,0,465,0,0.,0.,0.,0,"{Linear equality coefficient matrix} MethodCommands.html#MethodMin"},
 		{"linear_equality_scale_types",15,0,15,0,469,0,0.,0.,0.,0,"{Linear equality scaling types} MethodCommands.html#MethodMin"},
 		{"linear_equality_scales",14,0,16,0,471,0,0.,0.,0.,0,"{Linear equality scales} MethodCommands.html#MethodMin"},
@@ -941,7 +941,7 @@ static GuiKeyWord
 		{"linear_inequality_scales",14,0,12,0,463,0,0.,0.,0.,0,"{Linear inequality scales} MethodCommands.html#MethodMin"},
 		{"linear_inequality_upper_bounds",14,0,10,0,459,0,0.,0.,0.,0,"{Linear inequality upper bounds} MethodCommands.html#MethodMin"},
 		{"model_pointer",11,0,7,0,1593},
-		{"seed",0x19,0,2,0,323,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodJEGADC"},
+		{"seed",0x19,0,2,0,323,0,0.,0.,0.,0,"{Random Seed} MethodCommands.html#MethodNOMADDC"},
 		{"variable_neighborhood_search",10,0,5,0,329}
 		},
 	kw_152[2] = {
@@ -1023,10 +1023,10 @@ static GuiKeyWord
 		{"postprocessor_type",8,1,5,0,371,kw_161,0.,0.,0.,0,"{Post_processor type} MethodCommands.html#MethodJEGAMOGA"},
 		{"print_each_pop",8,0,18,0,411,0,0.,0.,0.,0,"{Population output} MethodCommands.html#MethodJEGADC"},
 		{"replacement_type",8,4,2,0,341,kw_163,0.,0.,0.,0,"{Replacement type} MethodCommands.html#MethodJEGAMOGA"},
-		{"seed",0x19,0,22,0,453,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDMC"}
+		{"seed",0x19,0,22,0,453,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodJEGADC"}
 		},
 	kw_165[1] = {
-		{"model_pointer",11,0,1,0,85,0,0.,0.,0.,0,"{Model pointer} MethodCommands.html#MethodIndControl"}
+		{"model_pointer",11,0,1,0,85,0,0.,0.,0.,0,"{Model pointer} MethodCommands.html#MethodMeta"}
 		},
 	kw_166[1] = {
 		{"seed",9,0,1,0,91,0,0.,0.,0.,0,"{Seed for random starting points} MethodCommands.html#MethodMetaMultiStart"}
@@ -1034,8 +1034,8 @@ static GuiKeyWord
 	kw_167[7] = {
 		{"iterator_scheduling",8,2,5,0,111,kw_120,0.,0.,0.,0,"{Message passing configuration for scheduling of iterator jobs} MethodCommands.html#MethodMeta"},
 		{"iterator_servers",0x19,0,4,0,109,0,0.,0.,0.,0,"{Number of iterator servers} MethodCommands.html#MethodMeta"},
-		{"method_name",11,1,1,1,83,kw_165,0.,0.,0.,0,"{Identification of a sub-method by name (no separate specification block)} MethodCommands.html#MethodIndControl"},
-		{"method_pointer",11,0,1,1,87,0,0.,0.,0.,0,"{Identification of a sub-method by pointer to a separate specification block} MethodCommands.html#MethodIndControl"},
+		{"method_name",11,1,1,1,83,kw_165,0.,0.,0.,0,"{Identification of a sub-method by name (no separate specification block)} MethodCommands.html#MethodMeta"},
+		{"method_pointer",11,0,1,1,87,0,0.,0.,0.,0,"{Identification of a sub-method by pointer to a separate specification block} MethodCommands.html#MethodMeta"},
 		{"processors_per_iterator",0x19,0,6,0,117,0,0.,0.,0.,0,"{Number of processors per iterator server} MethodCommands.html#MethodMeta"},
 		{"random_starts",9,1,2,0,89,kw_166,0.,0.,0.,0,"{Number of random starting points} MethodCommands.html#MethodMetaMultiStart"},
 		{"starting_points",14,0,3,0,93,0,0.,0.,0.,0,"{List of user-specified starting points} MethodCommands.html#MethodMetaMultiStart"}
@@ -1055,7 +1055,7 @@ static GuiKeyWord
 		{"absolute_conv_tol",10,0,2,0,617,0,0.,0.,0.,0,"{Absolute function convergence tolerance} MethodCommands.html#MethodLSNL2SOL"},
 		{"covariance",9,0,8,0,629,0,0.,0.,0.,0,"{Covariance post-processing} MethodCommands.html#MethodLSNL2SOL"},
 		{"false_conv_tol",10,0,6,0,625,0,0.,0.,0.,0,"{False convergence tolerance} MethodCommands.html#MethodLSNL2SOL"},
-		{"function_precision",10,0,1,0,615},
+		{"function_precision",10,0,1,0,615,0,0.,0.,0.,0,"{Relative precision in least squares terms} MethodCommands.html#MethodLSNL2SOL"},
 		{"initial_trust_radius",10,0,7,0,627,0,0.,0.,0.,0,"{Initial trust region radius} MethodCommands.html#MethodLSNL2SOL"},
 		{"model_pointer",11,0,10,0,1593},
 		{"regression_diagnostics",8,0,9,0,631,0,0.,0.,0.,0,"{Regression diagnostics post-processing} MethodCommands.html#MethodLSNL2SOL"},
@@ -1084,7 +1084,7 @@ static GuiKeyWord
 		{"response_levels",14,2,1,0,1059,kw_173},
 		{"rng",8,2,8,0,1141,kw_22,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,3,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,4,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,4,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_175[1] = {
 		{"num_reliability_levels",13,0,1,0,925,0,0.,0.,0.,0,"{Number of reliability levels} MethodCommands.html#MethodNonD"}
@@ -1235,7 +1235,7 @@ static GuiKeyWord
 		{"sample_refinement",0,4,8,0,802,kw_193},
 		{"sample_type",8,2,7,0,797,kw_195,0.,0.,0.,0,"{Sampling type} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,12,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,13,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"},
+		{"seed",0x19,0,13,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
 		{"sparse_grid_level",13,5,3,1,695,kw_196,0.,0.,0.,0,"{Sparse grid level for PCE coefficient estimation} MethodCommands.html#MethodNonDPCE"},
 		{"variance_based_decomp",8,2,4,0,785,kw_197,0.,0.,0.,0,"{Variance based decomposition (VBD)} MethodCommands.html#MethodNonDMC"},
 		{"wiener",8,0,2,0,691}
@@ -1263,7 +1263,7 @@ static GuiKeyWord
 		{"rng",8,2,9,0,1141,kw_22,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"sample_type",8,4,1,0,905,kw_200},
 		{"samples",9,0,4,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"},
+		{"seed",0x19,0,5,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
 		{"variance_based_decomp",8,1,2,0,917,kw_201}
 		},
 	kw_203[2] = {
@@ -1331,7 +1331,7 @@ static GuiKeyWord
 		{"sample_refinement",0,4,10,0,886,kw_208},
 		{"sample_type",8,2,9,0,881,kw_209},
 		{"samples",9,0,13,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,14,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"},
+		{"seed",0x19,0,14,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
 		{"sparse_grid_level",13,4,3,1,853,kw_210,0.,0.,0.,0,"{Sparse grid level for collocation points} MethodCommands.html#MethodNonDSC"},
 		{"use_derivatives",8,0,5,0,865,0,0.,0.,0.,0,"{Derivative enhancement flag} MethodCommands.html#MethodNonDSC"},
 		{"variance_based_decomp",8,2,7,0,871,kw_211,0.,0.,0.,0,"{Variance-based decomposition (VBD)} MethodCommands.html#MethodNonDSC"},
@@ -1442,7 +1442,7 @@ static GuiKeyWord
 		{"model_pointer",11,0,2,0,1593},
 		{"partitions",13,0,1,0,1359,0,0.,0.,0.,0,"{Number of partitions} MethodCommands.html#MethodPSUADE"},
 		{"samples",9,0,3,0,1361,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
-		{"seed",0x19,0,4,0,1363,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDPCE"}
+		{"seed",0x19,0,4,0,1363,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"}
 		},
 	kw_225[5] = {
 		{"converge_order",8,0,1,1,1587},
@@ -1493,7 +1493,7 @@ static GuiKeyWord
 		{"population_size",0x29,0,14,0,407,0,0.,0.,0.,0,"{Number of population members} MethodCommands.html#MethodJEGADC"},
 		{"print_each_pop",8,0,16,0,411,0,0.,0.,0.,0,"{Population output} MethodCommands.html#MethodJEGADC"},
 		{"replacement_type",8,4,2,0,383,kw_230,0.,0.,0.,0,"{Replacement type} MethodCommands.html#MethodJEGASOGA"},
-		{"seed",0x19,0,20,0,453,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodNonDMC"}
+		{"seed",0x19,0,20,0,453,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodJEGADC"}
 		},
 	kw_232[15] = {
 		{"function_precision",10,0,13,0,237,0,0.,0.,0.,0,"{Function precision} MethodCommands.html#MethodNPSOLDC"},

@@ -363,9 +363,8 @@ protected:
 
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
-  /// flag for summary output (evaluation stats, final results);
-  /// default true, but false for on-the-fly (helper) iterators and
-  /// sub-iterator use cases
+  /// flag for summary output (evaluation stats, final results); default true,
+  /// but false for on-the-fly (helper) iterators and sub-iterator use cases
   bool summaryOutputFlag;
 
   /// reference to the global iterator results database

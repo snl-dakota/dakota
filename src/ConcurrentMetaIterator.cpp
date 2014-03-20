@@ -64,8 +64,9 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     }
   }
   else {
-    Cerr << "Error: insufficient method identification in "
-	 << "ConcurrentMetaIterator." << std::endl;
+    if (problem_db.parallel_library().world_rank() == 0)
+      Cerr << "Error: insufficient method identification in "
+	   << "ConcurrentMetaIterator." << std::endl;
     abort_handler(-1);
   }
   iteratedModel = problem_db.get_model();
@@ -76,29 +77,30 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   maxIteratorConcurrency = iterSched.numIteratorJobs
     = param_sets.length() / param_set_len + num_random_sets;
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
-    Cerr << "Error: concurrent meta-iterator must have at least 1 job.  Please "
-	 << "specify either a\n       list of parameter sets or a number of "
-	 << "random jobs." << std::endl;
+    if (problem_db.parallel_library().world_rank() == 0)
+      Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
+	   << "Please specify either a\n       list of parameter sets or a "
+	   << "number of random jobs." << std::endl;
     abort_handler(-1);
   }
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
 
   // Instantiate the iterator.
   ParallelLibrary& parallel_lib = problem_db.parallel_library();
-  bool lead_rank = iterSched.lead_rank();
   if (lightwtCtor) {
     iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
       parallel_lib.parallel_configuration().si_parallel_level());
-    if (lead_rank)
-      Cout << "concurrent_iterator = " << concurr_iter_name << std::endl;
+    if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
     if (!model_ptr.empty())
       problem_db.set_db_model_nodes(restore_index); // restore
   }
   else {
     iterSched.init_iterator(problem_db, selectedIterator, iteratedModel,
       parallel_lib.parallel_configuration().si_parallel_level());
-    if (lead_rank)
-      Cout << "concurrent_iterator = "
+    if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Concurrent Iterator = "
 	   << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
 	   << std::endl;
     problem_db.set_db_list_nodes(restore_index);    // restore
@@ -128,19 +130,21 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
     = problem_db.get_rv("method.concurrent.parameter_sets").length()
     / param_set_len + problem_db.get_int("method.concurrent.random_jobs");
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
-    Cerr << "Error: concurrent meta-iterator must have at least 1 job.  Please "
-	 << "specify either a\n       list of parameter sets or a number of "
-	 << "random jobs." << std::endl;
+    if (problem_db.parallel_library().world_rank() == 0)
+      Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
+	   << "Please specify either a\n       list of parameter sets or a "
+	   << "number of random jobs." << std::endl;
     abort_handler(-1);
   }
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
 
   // Instantiate the iterator
   ParallelLibrary& parallel_lib = problem_db.parallel_library();
   iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
     parallel_lib.parallel_configuration().si_parallel_level());
-  if (iterSched.lead_rank())
-    Cout << "concurrent_iterator = " << concurr_iter_name << std::endl;
+  if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+    Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
 
   initialize(param_set_len);
 }

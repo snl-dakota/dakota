@@ -34,14 +34,18 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db):
     { methodList = method_ptrs;  lightwtCtor = false; }
   else if (!method_names.empty())
     { methodList = method_names; lightwtCtor = true;  }
+
   size_t i, num_iterators = methodList.size();
   if (!num_iterators) { // verify at least one method in list
-    Cerr << "Error: hybrid method list must have a least one entry."<<std::endl;
+    if (problem_db.parallel_library().world_rank() == 0)
+      Cerr << "Error: hybrid method list must have a least one entry."
+	   << std::endl;
     abort_handler(-1);
   }
 
-  maxIteratorConcurrency = methodList.size();
+  maxIteratorConcurrency = num_iterators;
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
 
   // Instantiate all Models and Iterators
   selectedIterators.resize(num_iterators); // slaves also need for run_iterator
@@ -83,12 +87,15 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
   methodList = problem_db.get_sa("method.hybrid.method_names");
   size_t i, num_iterators = methodList.size();
   if (!num_iterators) { // verify at least one method in list
-    Cerr << "Error: hybrid method list must have a least one entry."<<std::endl;
+    //if (problem_db.parallel_library().world_rank() == 0)
+    Cerr << "Error: hybrid method list must have a least one entry."
+	 << std::endl;
     abort_handler(-1);
   }
 
-  maxIteratorConcurrency = methodList.size();
+  maxIteratorConcurrency = num_iterators;
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  summaryOutputFlag = iterSched.lead_rank();
 
   // Instantiate all Models and Iterators
   selectedIterators.resize(num_iterators); // slaves also need for run_iterator

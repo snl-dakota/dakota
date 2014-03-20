@@ -162,33 +162,36 @@ void OutputManager::output_version(std::ostream& os) const
 {
   // Version is always output to Cout
 
-  std::string version_info("Dakota version ");
-  version_info += DakotaBuildInfo::get_release_num(); 
+  if (worldRank == 0) {
+    std::string version_info("Dakota version ");
+    version_info += DakotaBuildInfo::get_release_num(); 
 
-  // Major/interim releases:
-  //version_info += "released 05/15/2013.\n";
+    // Major/interim releases:
+    //version_info += "released 05/15/2013.\n";
 
-  // Developmental/Stable releases:
-  version_info += "+ developmental release.\n";
+    // Developmental/Stable releases:
+    version_info += "+ developmental release.\n";
 
-  version_info += "Subversion revision " 
-    + DakotaBuildInfo::get_rev_number()
-    + " built " + DakotaBuildInfo::get_build_date()
-    + " " + DakotaBuildInfo::get_build_time() + ".";
+    version_info += "Subversion revision " 
+      + DakotaBuildInfo::get_rev_number()
+      + " built " + DakotaBuildInfo::get_build_date()
+      + " " + DakotaBuildInfo::get_build_time() + ".";
 
-  output_helper(version_info, os);
+    os << version_info << std::endl;
+  }
 }
 
 
 void OutputManager::output_startup_message(std::ostream& os) const 
 {
-  // Generate the startup header, now that streams are potentially
-  // reassigned
-  os << startupMessage << '\n'; 
-  std::time_t curr_time = std::time(NULL);
-  std::string pretty_time(std::asctime(std::localtime(&curr_time))); 
-  // asctime appends a newline, but use the endl to force flush
-  os << "Start time: " << pretty_time << std::endl;
+  if (worldRank == 0) {
+    // Generate the startup header, now that streams are potentially reassigned
+    os << startupMessage << '\n'; 
+    std::time_t curr_time = std::time(NULL);
+    std::string pretty_time(std::asctime(std::localtime(&curr_time))); 
+    // asctime appends a newline, but use the endl to force flush
+    os << "Start time: " << pretty_time << std::endl;
+  }
 }
 
 
