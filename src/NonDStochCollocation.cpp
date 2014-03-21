@@ -30,7 +30,7 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model), sgBasisType(DEFAULT_BASIS)
+  NonDExpansion(problem_db, model)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -65,31 +65,32 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
-    sgBasisType = probDescDB.get_short("method.nond.expansion_basis_type");
-    switch (sgBasisType) {
-    case HIERARCHICAL_INTERPOLANT:
+    switch (expansionBasisType) {
+    case Pecos::HIERARCHICAL_INTERPOLANT:
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
-    case NODAL_INTERPOLANT:
+    case Pecos::NODAL_INTERPOLANT:
       expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;              break;
-    case DEFAULT_BASIS:
+    case Pecos::DEFAULT_BASIS:
       if ( u_space_type == STD_UNIFORM_U && nestedRules &&// TO DO:retire nested
 	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
 	     refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL ) ) {
 	expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
-	sgBasisType = HIERARCHICAL_INTERPOLANT;
+	expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
       }
       else {
 	expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
-	sgBasisType = NODAL_INTERPOLANT;
+	expansionBasisType = Pecos::NODAL_INTERPOLANT;
       }
       break;
     }
     /*
     if (refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL) {
-      if (!piecewiseBasis || sgBasisType != HIERARCHICAL_INTERPOLANT) {
+      if (!piecewiseBasis ||
+          expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT) {
 	// TO DO: promote this error check to resolve_inputs()
 	PCerr << "Warning: overriding basis type to local hierarchical\n.";
-	piecewiseBasis = true; sgBasisType = HIERARCHICAL_INTERPOLANT;
+	piecewiseBasis = true;
+	expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
       }
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
     }
@@ -107,11 +108,11 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
   if (piecewiseBasis)
-    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ? 
+    approx_type = (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ? 
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
-    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ?
+    approx_type = (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
       "global_hierarchical_interpolation_polynomial" :
       "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
@@ -148,7 +149,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     unsigned short num_int_level, short u_space_type,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs), sgBasisType(DEFAULT_BASIS)
+		piecewise_basis, use_derivs)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -175,15 +176,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
-    // sgBasisType left as DEFAULT_BASIS
+    // expansionBasisType left as Pecos::DEFAULT_BASIS
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
     break;
   case Pecos::COMBINED_SPARSE_GRID:
-    sgBasisType = NODAL_INTERPOLANT;
+    expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
     break;
   case Pecos::HIERARCHICAL_SPARSE_GRID:
-    sgBasisType = HIERARCHICAL_INTERPOLANT;
+    expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
     break;
   }
@@ -198,11 +199,11 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
   if (piecewiseBasis)
-    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ?
+    approx_type = (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
-    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ?
+    approx_type = (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
       "global_hierarchical_interpolation_polynomial" :
       "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
@@ -308,7 +309,7 @@ void NonDStochCollocation::initialize_u_space_model()
 
 void NonDStochCollocation::update_expansion()
 {
-  if (sgBasisType == HIERARCHICAL_INTERPOLANT) {
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     // grid levels have been updated, now evaluate the new points
     NonDSparseGrid* nond_sparse = (NonDSparseGrid*)
       uSpaceModel.subordinate_iterator().iterator_rep();
@@ -323,7 +324,7 @@ void NonDStochCollocation::update_expansion()
 
 Real NonDStochCollocation::compute_covariance_metric()
 {
-  if (sgBasisType == HIERARCHICAL_INTERPOLANT) {
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     size_t i, j;
     RealSymMatrix delta_resp_covar(numFunctions, false);
     bool warn_flag = false,
@@ -367,7 +368,7 @@ Real NonDStochCollocation::compute_final_statistics_metric()
   // combine delta_beta() and delta_z() from HierarchInterpPolyApproximation
   // with default definition of delta-{p,beta*}
 
-  if (sgBasisType == HIERARCHICAL_INTERPOLANT) {
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     // Note: from a generality perspective, it would be desirable to map through
     // support for delta_mean() and delta_std_deviation().  But how to manage
     // user requests (w/o nested response mappings)?  Since delta in response

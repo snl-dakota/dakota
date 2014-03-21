@@ -34,8 +34,9 @@
 namespace Dakota {
 
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
-  NonD(problem_db, model), expansionCoeffsApproach(-1), numUncertainQuant(0),
-  numSamplesOnModel(0),
+  NonD(problem_db, model), expansionCoeffsApproach(-1),
+  expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
+  numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.samples")),
   nestedRules(false),
   piecewiseBasis(probDescDB.get_bool("method.nond.piecewise_basis")),
@@ -67,8 +68,9 @@ NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, short u_space_type,
 	      bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
-  numUncertainQuant(0), numSamplesOnModel(0), numSamplesOnExpansion(0),
-  nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
+  expansionBasisType(Pecos::DEFAULT_BASIS), numUncertainQuant(0),
+  numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
+  piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
   ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), expSampling(false),
@@ -379,8 +381,10 @@ void NonDExpansion::initialize_u_space_model()
   // Note: passing outputLevel again is redundant with DataFitSurrModel ctor.
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach, outputLevel,
-    vbdFlag, vbdOrderLimit, refineControl, maxIterations, convergenceTol);
+  Pecos::ExpansionConfigOptions
+    ec_options(expansionCoeffsApproach, expansionBasisType,
+	       outputLevel, vbdFlag, vbdOrderLimit, refineControl,
+	       maxIterations, convergenceTol);
   shared_data_rep->configuration_options(ec_options);
 
   // if all variables mode, initialize key to random variable subset

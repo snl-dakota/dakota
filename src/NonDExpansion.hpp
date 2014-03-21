@@ -150,8 +150,13 @@ protected:
   Model uSpaceModel;
 
   /// method for collocation point generation and subsequent
-  /// calculation of the expanion coefficients
+  /// calculation of the expansion coefficients
   short expansionCoeffsApproach;
+
+  /// type of expansion basis: DEFAULT_BASIS or
+  /// Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT for SC or
+  /// Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS for PCE regression
+  short expansionBasisType;
 
   /// number of invocations of quantify_uncertainty()
   size_t numUncertainQuant;

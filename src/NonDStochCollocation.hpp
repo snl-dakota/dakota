@@ -67,9 +67,6 @@ private:
   //- Heading: Data
   //
 
-  /// Type of interpolant (from enum in DataMethod.hpp)
-  short sgBasisType;
-
 };
 
 } // namespace Dakota
