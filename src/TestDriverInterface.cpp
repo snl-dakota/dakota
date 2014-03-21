@@ -69,6 +69,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["salinas"]                = SALINAS;
   driverTypeMap["mc_api_run"]             = MODELCENTER;
   driverTypeMap["modelcenter"]            = MODELCENTER;
+  driverTypeMap["genz"]                  = GENZ;
 
   // convert strings to enums for analysisDriverTypes, iFilterType, oFilterType
   analysisDriverTypes.resize(numAnalysisDrivers);
@@ -146,6 +147,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case TEXT_BOOK_OUU: case SCALABLE_TEXT_BOOK: case SCALABLE_MONOMIALS:
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
+    case GENZ:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -275,6 +277,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
   case MODELCENTER: //case MC_API_RUN:
     fail_code = mc_api_run(); break;
 #endif // DAKOTA_MODELCENTER
+  case GENZ:
+    fail_code = genz(); break;
   default: {
     Cerr << "Error: analysis_driver '" << ac_name << "' is not available in "
 	 << "the direct interface." << std::endl;
@@ -1095,7 +1099,6 @@ int TestDriverInterface::gerstner()
   return 0; // no failure
 }
 
-
 int TestDriverInterface::scalable_gerstner()
 {
   if (multiProcAnalysisFlag) {
@@ -1203,6 +1206,144 @@ int TestDriverInterface::scalable_gerstner()
 	fnGrads[0][i] = (i%2) ? -2.*xC[i]* odd_coeff*val
 	                      : -2.*xC[i]*even_coeff*val;
       break;
+    }
+  }
+
+  return 0; // no failure
+}
+
+void TestDriverInterface::get_genz_coefficients( int num_dims, Real factor, 
+						 int c_type, 
+						 RealVector &c, RealVector &w )
+{
+  c.resize( num_dims );
+  w.resize( num_dims );
+  switch ( c_type )
+    {
+    case 0:
+      {
+	Real csum = 0.0;
+	for ( int d = 0; d < num_dims; d++ )
+	  {
+	    w[d] = 0.0;
+	    c[d] = ( (Real)d + 0.5 ) / (Real)num_dims;
+	    csum += c[d]; 
+	  }
+	for ( int d = 0; d < num_dims; d++ )
+	  {
+	    c[d] *= ( factor / csum );
+	  }
+	break;
+      }
+    case 1:
+      {
+	Real csum = 0.0;
+	for ( int d = 0; d < num_dims; d++ )
+	  {
+	    w[d] = 0.0;
+	    c[d] = 1.0 / (Real)( ( d + 1 ) * ( d + 1 ) );
+	    csum += c[d]; 
+	  }
+	for ( int d = 0; d < num_dims; d++ )
+	  {
+	    c[d] *= ( factor / csum );
+	  }
+	break;
+      }
+    case 2:
+      {
+	Real csum = 0.0;
+	for ( int d = 0; d < num_dims; d++ )
+	  {
+	    w[d] = 0.;
+	    c[d] = std::exp( (d+1)*std::log( 1.e-8 ) / num_dims );
+	    csum += c[d];
+	  }
+	for ( int d = 0; d < num_dims; d++ )
+	  {
+	    c[d] *= ( factor / csum );
+	  }
+	break;
+      }
+    default:
+      throw(std::runtime_error("GetCoefficients() ensure type in [0,1]"));
+    };
+};
+
+int TestDriverInterface::genz()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: genz direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numADIV || numADRV) {
+    Cerr << "Error: Bad variable types in genz direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (numFns != 1) {
+    Cerr << "Error: Bad number of functions in genz direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (hessFlag) {
+    Cerr << "Error: Hessians not supported in genz direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+
+  String an_comp = (!analysisComponents.empty() && 
+		    !analysisComponents[analysisDriverIndex].empty()) ?
+    analysisComponents[analysisDriverIndex][0] : "os1";
+  int coeff_type, fn_type;
+  Real factor;
+  if (an_comp == "os1")
+    { coeff_type = 0; fn_type = 0; factor = 4.5; }
+  else if (an_comp == "os2")
+    { coeff_type = 1; fn_type = 0; factor = 4.5; }
+  else if (an_comp == "os3")
+    { coeff_type = 2; fn_type = 0; factor = 4.5; }
+  else if (an_comp == "cp1")
+    { coeff_type = 0; fn_type = 1; factor = .25; }
+  else if (an_comp == "cp2")
+    { coeff_type = 1; fn_type = 1; factor = .25; }
+  else if (an_comp == "cp3")
+    { coeff_type = 2; fn_type = 1; factor = .25; }
+  else {
+    Cerr << "Error: analysis component specification required in gerstner "
+	 << "direct fn." << std::endl;
+    abort_handler(-1);
+  } 
+
+  RealVector c, w;
+  get_genz_coefficients( numVars, factor, 
+			 coeff_type, c, w );
+  c.print(std::cout);
+  Real pi = 4.0 * std::atan( 1.0 );
+
+  // **** f:
+  if (directFnASV[0] & 1) {
+    switch (fn_type) {
+    case 0: {
+      fnVals[0] = 2.0 * pi * w[0];
+      for ( int d = 0; d < numVars; d++ ){
+	fnVals[0] += c[d] * xC[d];
+      }
+      fnVals[0] = std::cos( fnVals[0] );
+      break;
+    }
+    case 1:{
+      fnVals[0] = 1.0;
+      for ( int d = 0; d < numVars; d++ )
+	{
+	  fnVals[0] *= ( 1.0 / ( c[d] * c[d] ) + ( xC[d] - w[d] ) * 
+			 ( xC[d] - w[d] ) );
+	}
+      fnVals[0] = 1.0 / fnVals[0];
+      break;
+    }
     }
   }
 
