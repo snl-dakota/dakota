@@ -169,6 +169,12 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	  numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
 	    collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
 	if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION ) {
+	  // for sub-sampled tensor grid, seems desirable to use tensor exp
+	  // TO DO: only for CS candidate? or true basis for Least sq as well?
+	  // TO DO: consider a dimensionality limit for TP expansion
+	  if (!expansionBasisType)
+	    expansionBasisType = (tensorRegression) ?
+	      Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
 	  size_t exp_terms;
 	  switch (expansionBasisType) {
 	  case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS:
@@ -178,21 +184,6 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	  case Pecos::TENSOR_PRODUCT_BASIS:
 	    exp_terms =
 	      Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
-	    break;
-	  case Pecos::DEFAULT_BASIS:
-	    // for sub-sampled tensor grid, seems desirable to use tensor exp
-	    // TO DO: only for CS candidate? or true basis for Least sq as well?
-	    // TO DO: consider a dimensionality limit for TP expansion
-	    if (tensorRegression) {
-	      exp_terms = 
-		Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
-	      expansionBasisType = Pecos::TENSOR_PRODUCT_BASIS;
-	    }
-	    else {
-	      exp_terms = 
-		Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-	      expansionBasisType = Pecos::TOTAL_ORDER_BASIS;
-	    }
 	    break;
 	  }
 	  termsOrder
@@ -543,10 +534,13 @@ void NonDPolynomialChaos::increment_specification_sequence()
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->expansion_order(exp_order);
-    if (update_from_ratio) // update numSamplesOnModel from collocRatio
-      numSamplesOnModel	= terms_ratio_to_samples(
-	Pecos::SharedPolyApproxData::total_order_terms(exp_order),
-	collocRatio, termsOrder);
+    if (update_from_ratio) { // update numSamplesOnModel from collocRatio
+      size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+	Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
+	Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+      numSamplesOnModel
+	= terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+    }
   }
   else if (update_sampler && tensorRegression) {
     // extract unchanged expansion order from Pecos::SharedOrthogPolyApproxData
@@ -586,8 +580,10 @@ void NonDPolynomialChaos::increment_order()
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   shared_data_rep->increment_order();
-  size_t exp_terms = Pecos::SharedPolyApproxData::total_order_terms(
-    shared_data_rep->expansion_order());
+  const UShortArray& exp_order = shared_data_rep->expansion_order();
+  size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+    Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
+    Pecos::SharedPolyApproxData::total_order_terms(exp_order);
 
   // update numSamplesOnModel based on existing collocation ratio and
   // updated number of expansion terms
