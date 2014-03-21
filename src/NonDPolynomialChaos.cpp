@@ -123,6 +123,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	numSamplesOnModel = (sequenceIndex < expSamplesSeqSpec.size()) ?
 	  expSamplesSeqSpec[sequenceIndex] : expSamplesSeqSpec.back();
 	expansionCoeffsApproach = Pecos::SAMPLING;
+	// assign a default expansionBasisType, if unspecified
+	if (!expansionBasisType) expansionBasisType = Pecos::TOTAL_ORDER_BASIS;
 
 	// reuse type/seed/rng settings intended for the expansion_sampler.
 	// Unlike expansion_sampler, allow sampling pattern to vary under
@@ -167,8 +169,32 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	  numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
 	    collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
 	if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION ) {
-	  size_t exp_terms
-	    = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+	  size_t exp_terms;
+	  switch (expansionBasisType) {
+	  case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS:
+	    exp_terms =
+	      Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+	    break;
+	  case Pecos::TENSOR_PRODUCT_BASIS:
+	    exp_terms =
+	      Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+	    break;
+	  case Pecos::DEFAULT_BASIS:
+	    // for sub-sampled tensor grid, seems desirable to use tensor exp
+	    // TO DO: only for CS candidate? or true basis for Least sq as well?
+	    // TO DO: consider a dimensionality limit for TP expansion
+	    if (tensorRegression) {
+	      exp_terms = 
+		Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+	      expansionBasisType = Pecos::TENSOR_PRODUCT_BASIS;
+	    }
+	    else {
+	      exp_terms = 
+		Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+	      expansionBasisType = Pecos::TOTAL_ORDER_BASIS;
+	    }
+	    break;
+	  }
 	  termsOrder
 	    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
 	  if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
