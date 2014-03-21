@@ -58,6 +58,7 @@ protected:
   /// on iteratedModel multiple times in parallel for different
   /// settings within the iterator or model.
   void core_run();
+  void print_results(std::ostream& s);
 
   void initialize_iterator(int job_index);
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
@@ -84,9 +85,6 @@ private:
   /// initialize the iterated Model prior to Iterator instantiation
   /// and define param_set_len
   void initialize_model(int& param_set_len);
-
-  /// prints the concurrent iteration results summary (called by core_run())
-  void print_results() const;
 
   //
   //- Heading: Data members

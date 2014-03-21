@@ -384,33 +384,6 @@ void SeqHybridMetaIterator::run_sequential()
       }
     }
   }
-
-  // ---------------------------------------
-  // Sequence complete: output final results
-  // ---------------------------------------
-  if (lead_rank) {
-    // provide a final summary in cases where the default iterator output
-    // is insufficient
-    if (iterSched.messagePass) {// || numIteratorJobs > 1
-      size_t i, j, cntr = 0, num_prp_res = prpResults.size(), num_prp_i;
-      Cout << "\n<<<<< Sequential hybrid final solution sets:\n";
-      for (i=0; i<num_prp_res; ++i) {
-	const PRPArray& prp_i = prpResults[i];
-	num_prp_i = prp_i.size();
-	for (j=0; j<num_prp_i; ++j, ++cntr) {
-	  const Variables& vars = prp_i[j].prp_parameters();
-	  const Response&  resp = prp_i[j].prp_response();
-	  if (!vars.is_null())
-	    Cout << "<<<<< Best parameters          (set " << cntr+1
-		 << ") =\n" << vars;
-	  if (!resp.is_null()) {
-	    Cout << "<<<<< Best response functions  (set " << cntr+1 << ") =\n";
-	    write_data(Cout, resp.function_values());
-	  }
-	}
-      }
-    }
-  }
 }
 
 
@@ -466,8 +439,6 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
       iterSched.run_iterator(selectedIterators[seqCount],
 	parallel_lib.parallel_configuration().si_parallel_level());
   }
-
-  // Output interesting iterator statistics/progress metrics...
 }
 
 
@@ -506,6 +477,32 @@ update_local_results(PRPArray& prp_results, int job_id)
     prp_results[0] = ParamResponsePair(curr_iterator.variables_results(),
 				       curr_model.interface_id(),
 				       curr_iterator.response_results(),job_id);
+  }
+}
+
+
+void SeqHybridMetaIterator::print_results(std::ostream& s)
+{
+  // provide a final summary in cases where the default iterator output
+  // is insufficient
+  if (iterSched.messagePass) {// || numIteratorJobs > 1
+    size_t i, j, cntr = 0, num_prp_res = prpResults.size(), num_prp_i;
+    s << "\n<<<<< Sequential hybrid final solution sets:\n";
+    for (i=0; i<num_prp_res; ++i) {
+      const PRPArray& prp_i = prpResults[i];
+      num_prp_i = prp_i.size();
+      for (j=0; j<num_prp_i; ++j, ++cntr) {
+	const Variables& vars = prp_i[j].prp_parameters();
+	const Response&  resp = prp_i[j].prp_response();
+	if (!vars.is_null())
+	  s << "<<<<< Best parameters          (set " << cntr+1 << ") =\n"
+	    << vars;
+	if (!resp.is_null()) {
+	  s << "<<<<< Best response functions  (set " << cntr+1 << ") =\n";
+	  write_data(s, resp.function_values());
+	}
+      }
+    }
   }
 }
 

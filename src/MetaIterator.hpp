@@ -49,6 +49,12 @@ protected:
   ~MetaIterator();
 
   //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void post_run(std::ostream& s);
+
+  //
   //- Heading: Convenience member functions
   //
 

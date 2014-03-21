@@ -61,6 +61,7 @@ protected:
   /// Performs the hybrid iteration by executing a sequence of iterators,
   /// using a similar sequence of models that may vary in fidelity
   void core_run();
+  void print_results(std::ostream& s);
 
   /// return the final solution from selectedIterators (variables)
   const Variables& variables_results() const;

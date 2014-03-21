@@ -90,4 +90,11 @@ void MetaIterator::deallocate(Iterator& the_iterator, Model& the_model)
     probDescDB.parallel_library().parallel_configuration().si_parallel_level());
 }
 
+
+void MetaIterator::post_run(std::ostream& s)
+{
+  if (iterSched.lead_rank()) 
+    print_results(s);
+}
+
 } // namespace Dakota
