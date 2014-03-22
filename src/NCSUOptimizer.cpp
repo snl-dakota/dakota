@@ -15,7 +15,7 @@
 #include "NCSUOptimizer.hpp"
 #include "ProblemDescDB.hpp"
 
-#define NCSU_DIRECT_F77 F77_FUNC_(ncsu_direct,NCSU_DIRECT)
+#define NCSU_DIRECT_F77 F77_FUNC_(ncsuopt_direct,NCSUOPT_DIRECT)
 
 extern "C" {
 

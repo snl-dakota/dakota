@@ -318,10 +318,10 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 
 /** Copy constructor manages sharing of interfaceRep and incrementing
     of referenceCount. */
-Interface::Interface(const Interface& interface)
+Interface::Interface(const Interface& interface_in)
 {
   // Increment new (no old to decrement)
-  interfaceRep = interface.interfaceRep;
+  interfaceRep = interface_in.interfaceRep;
   if (interfaceRep) // Check for an assignment of NULL
     interfaceRep->referenceCount++;
 
