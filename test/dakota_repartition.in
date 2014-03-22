@@ -54,13 +54,13 @@ interface,
 	id_interface = 'I1'
 	direct
 	  analysis_driver = 'text_book'
-#	  processors_per_analysis = 2		#p0
+#	  processors_per_evaluation = 2		#p0
 
 interface,
 	id_interface = 'I2'
 	direct
 	  analysis_driver = 'text_book'
-#	  processors_per_analysis = 5		#p0
+#	  processors_per_evaluation = 5		#p0
 
 responses,
 	objective_functions = 1

@@ -184,7 +184,7 @@ compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref,
 				 UShortArray& dim_quad_order)
 {
   dim_quad_order.assign(numContinuousVars, 1);
-  // compute minimal order tensor grid with at least numSamples points
+  // compute minimal order tensor grid with at least min_samples points
   if (dim_pref.empty()) // isotropic tensor grid
     while (tpqDriver->grid_size() < min_samples)
       increment_grid(dim_quad_order);

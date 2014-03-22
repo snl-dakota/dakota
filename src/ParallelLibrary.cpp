@@ -236,11 +236,11 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     // ------------------------
     // insufficient avail_procs
     // ------------------------
-    if (procs_per_server > 1 && print_rank)
+    if (procs_per_server > 1 && print_rank) // TO DO: consider hard error
       Cerr << "Warning: not enough available processors to support "
            << procs_per_server << " procs_per_server.\n         "
 	   << "Reducing to 1.\n";
-    if (num_servers > 1 && print_rank)
+    if (num_servers > 1 && print_rank) // TO DO: consider hard error
       Cerr << "Warning: not enough available processors to support " 
            << num_servers << " servers.\n         Reducing to 1.\n";
     procs_per_server = 1;
@@ -248,19 +248,36 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     ded_master = false; // static schedule
   }
   else if (num_servers > 0 && procs_per_server > 0) { // Data defaults are 0
-    // *** TO DO ***
+    // in this case, we are tightly constrained to respecting both overrides:
     int total_request = num_servers * procs_per_server;
-    if (ded_master) // TO DO
-      ++total_request;
-    if (total_request < avail_procs && print_rank)
-      Cerr << "Warning: user override of servers and partition size results in "
-	   << "idle processors (request: " << total_request << " avail: "
-	   << avail_procs << " idle: " << avail_procs - total_request << ")\n";
+    if (total_request == avail_procs) {
+      ded_master = false;
+      if (master_override && print_rank)
+	Cerr << "Warning: user selection of master scheduling cannot be "
+	     << "supported in this partition.  Overriding to peer partition.\n";
+    }
+    else if (total_request < avail_procs) {
+      ded_master = !peer_override; // dedicate a master if no peer override
+      if (ded_master) ++total_request;
+      if (total_request < avail_procs && print_rank)
+	Cerr << "Warning: user override of servers and partition size results "
+	     << "in idle processors\n         (request: " << total_request
+	     << " avail: " << avail_procs << " idle: "
+	     << avail_procs - total_request <<")\n";
+    }
+    else { // hard error if insufficient avail_procs
+      if (print_rank)
+	Cerr << "Error: insufficient available processors (" << avail_procs
+	     << ") to support user overrides of servers (" << num_servers
+	     << ")\n       and partition size (" << procs_per_server
+	     << ").  Please adjust total allocation or overrides." << std::endl;
+      abort_handler(-1);
+    }
   }
   else if (num_servers > 0) { // needs to be 0 so that a user request of 1 
                               // executes this block as a manual override
     // -------------------------------
-    // num_servers (or both) specified
+    // num_servers (only) specified
     // -------------------------------
 
     // First reduce num_servers request if necessary
@@ -274,10 +291,10 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	       << "dedicated master\n         partition.  Reducing num_servers"
 	       << " to " << num_servers << '\n';
       }
-      if (procs_per_server > 0 && 
-          procs_per_server != (avail_procs-1)/num_servers && print_rank)
-        Cerr << "Warning: num_servers and procs_per_server specifications are "
-    	     << "not equivalent.\n         num_servers takes precedence.\n";
+      //if (procs_per_server > 0 && 
+      //    procs_per_server != (avail_procs-1)/num_servers && print_rank)
+      //  Cerr << "Warning: num_servers and procs_per_server specifications are"
+      //       << " not equivalent.\n         num_servers takes precedence.\n";
     }
     else {
       // peer partition: cap num_servers at number of avail_procs
@@ -288,10 +305,10 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	       << "peer partition.\n         Reducing num_servers to " 
                << num_servers << '\n';
       }
-      if (procs_per_server > 0 && 
-          procs_per_server != avail_procs/num_servers && print_rank)
-        Cerr << "Warning: num_servers and procs_per_server specifications are "
-    	     << "not equivalent.\n         num_servers takes precedence.\n";
+      //if (procs_per_server > 0 && 
+      //    procs_per_server != avail_procs/num_servers && print_rank)
+      //  Cerr << "Warning: num_servers and procs_per_server specifications are"
+      //       << " not equivalent.\n         num_servers takes precedence.\n";
     }
     int max_servers
       = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);

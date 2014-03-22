@@ -169,11 +169,11 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	  numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
 	    collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
 	if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION ) {
-	  // for sub-sampled tensor grid, seems desirable to use tensor exp
+	  // for sub-sampled tensor grid, seems desirable to use tensor exp,
+	  // but enforce an arbitrary dimensionality limit of 5.
 	  // TO DO: only for CS candidate? or true basis for Least sq as well?
-	  // TO DO: consider a dimensionality limit for TP expansion
 	  if (!expansionBasisType)
-	    expansionBasisType = (tensorRegression) ?
+	    expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
 	      Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
 	  size_t exp_terms;
 	  switch (expansionBasisType) {
@@ -207,7 +207,12 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	    else {
 	      // define nominal quadrature order as exp_order + 1
 	      // (m > p avoids most of the 0's in the Psi measurement matrix)
-	      // Note: misses nested exp order increment (increment_order())
+	      // Note 1: eo+1 neglects nested quad order increment but this is
+	      //   enforced by initialize_u_space_model() ->
+	      //   NonDQuadrature::initialize_grid(),reset()
+	      // Note 2: nominal order provides lower bound that gets updated
+	      //   if insufficient sample size in initialize_u_space_model() ->
+	      //   NonDQuadrature::initialize_grid(),update(),sampling_reset()
 	      dim_quad_order.resize(numContinuousVars);
 	      for (size_t i=0; i<numContinuousVars; ++i)
 		dim_quad_order[i] = exp_order[i] + 1;
