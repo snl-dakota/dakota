@@ -24,22 +24,39 @@ class DakotaBuildInfo
 {
 public:
 
-  // Queries
+  /// Release number such as 5.4, 5.4+, or 5.3.1
   static std::string get_release_num();
+  /// Subversion revision number
   static std::string get_rev_number();
+  /// Release date, as set by CMake, or fallback on build date
+  static std::string get_release_date();
+  /// Compilation date
   static std::string get_build_date();
+  /// Compilation time
   static std::string get_build_time();
 
 private:
 
   // Cached data - updated by the build system
+
+  /// Release number such as 5.4, 5.4+, or 5.3.1
   static std::string releaseNum;
-  static std::string rev;
+  /// Release data; if empty, the build date is used as release date
+  /// to support stable
+  static std::string releaseDate;
+  /// Subversion revision of Dakota core
+  static std::string subversionRev;
 };
 
 
 inline std::string DakotaBuildInfo::get_release_num() { return releaseNum; }
-inline std::string DakotaBuildInfo::get_rev_number()  { return rev; }
+inline std::string DakotaBuildInfo::get_rev_number()  { return subversionRev; }
+inline std::string DakotaBuildInfo::get_release_date()  
+{ 
+  if (releaseDate.empty())
+    return __DATE__; 
+  return releaseDate;
+}
 inline std::string DakotaBuildInfo::get_build_date()  { return __DATE__; }
 inline std::string DakotaBuildInfo::get_build_time()  { return __TIME__; }
 

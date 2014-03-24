@@ -13,6 +13,7 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include "dakota_global_defs.hpp"
 #include "OutputManager.hpp"
 #include "ProgramOptions.hpp"
@@ -164,14 +165,14 @@ void OutputManager::output_version(std::ostream& os) const
 
   if (worldRank == 0) {
     std::string version_info("Dakota version ");
+
+    // release version, possibly stable with '+'
     version_info += DakotaBuildInfo::get_release_num(); 
+    if (boost::ends_with(DakotaBuildInfo::get_release_num(), "+"))
+      version_info += " (stable)";
+    version_info += " released " + DakotaBuildInfo::get_release_date() + ".\n"; 
 
-    // Major/interim releases:
-    //version_info += "released 05/15/2013.\n";
-
-    // Developmental/Stable releases:
-    version_info += "+ developmental release.\n";
-
+    // subversion revision
     version_info += "Subversion revision " 
       + DakotaBuildInfo::get_rev_number()
       + " built " + DakotaBuildInfo::get_build_date()

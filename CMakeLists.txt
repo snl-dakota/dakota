@@ -14,10 +14,30 @@ set(Dakota_VERSION_MAJOR 5)
 set(Dakota_VERSION_MINOR 4)
 set(Dakota_VERSION_PATCH 0)
 
-# Set this to append to the version number
-#set(Dakota_VERSION_APPEND_STABLE "+")
-set(Dakota_VERSION_APPEND_STABLE "")
+# --- Release time toggle 
+# Toggle this to append to the version number for stable
+#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
+set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
+
+# --- Release time toggle 
+# If empty, the build date will be used as the release date (could consider 
+# using the SVN rev date); use format Mmm dd yyyy, as in asctime()
+#set(Dakota_RELEASE_DATE "Nov 15 2013")    # Versioned release date Mmm dd yyyy
+set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
+
+# Dakota version to use for naming archives
 set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
+
+# Dakota version to use in source/docs (could use for tarball names?)
+# For now, we don't use .0 for new minor releases, use 5.4 not 5.4.0
+if (${Dakota_VERSION_PATCH} GREATER 0) 
+  set(Dakota_VERSION_SRC 
+    "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
+else()
+  set(Dakota_VERSION_SRC 
+    "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
+endif()
+
 
 # More widely distributed packages exclude more content
 # So smaller number implies less content

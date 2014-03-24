@@ -8,16 +8,16 @@ find_package(Perl REQUIRED)
 
 # TODO: Reduce configured headers
 
-# create Doxygen files with substituted PATH information
+# create Doxygen files with substituted PATH and version information
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake.in
 	       ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-ref.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref)
 
-# create DAKOTA headers
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex
-               ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex COPYONLY)
+# create Latex header with Dakota version information
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex)
 
 
 # Doxygen reference dependencies

@@ -834,15 +834,13 @@ if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
   endif()
 
   message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
-  set(dak_release_num 
-    #"${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}")
-    "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
-
+  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.cpp
         "// -- AUTO GENERATED FILE; DO NOT EDIT --
         #include \"DakotaBuildInfo.hpp\"
-        std::string Dakota::DakotaBuildInfo::releaseNum=\"${dak_release_num}\";
-        std::string Dakota::DakotaBuildInfo::rev=\"${Dakota_SVN_REV}\";
+        std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
+        std::string Dakota::DakotaBuildInfo::subversionRev=\"${Dakota_SVN_REV}\";
+        std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
         // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
         //       Lower priority - a post-5.4 release task
         " )
