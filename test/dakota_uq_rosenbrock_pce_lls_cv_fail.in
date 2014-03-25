@@ -1,8 +1,18 @@
 # 0 fully over-determined SVD_LEAST_SQ
 # 1 fully over-determined SVD_LEAST_SQ with derivatives
-# 2 fully under-determined LARS
-# 3 fully under-determined LARS with derivatives
-# 4 least interpolation with failure but no cross validation
+# 2 fully under-determined LASSO
+# 3 fully under-determined LASSO with derivatives
+# 4 fully under-determined OMP
+# 5 fully under-determined OMP with derivatives
+# 6 fully under-determined LARS
+# 7 fully under-determined LARS with derivatives
+# 8 least interpolation with failure but no cross validation
+# 9 fully over-determined SVD_LEAST_SQ but no cross validation
+# 10 fully over-determined SVD_LEAST_SQ with derivatives but no cross validation
+# 11 fully under-determined LASSO but no cross validation
+# 12 fully under-determined LASSO with derivatives but no cross validation
+
+# Test 4 with collocation =0.9 will be a good test of splitting data equally across data when some data is faulty
 
 environment,
 	#graphics
@@ -10,20 +20,26 @@ environment,
 
 method,
 	polynomial_chaos
- 	  expansion_order   = 6			#0,#1
+
+ 	  expansion_order   = 6			#0,#1,#9,#10
+# 	  expansion_order   = 5			#11,#12
 # 	  expansion_order   = 10		#2,#3,#4,#5,#6,#7
 	  cross_validation    			#0,#1,#2,#3,#4,#5,#6,#7
-	  collocation_ratio = 4 		#0,#1
-#	  collocation_ratio = .9 		#2,#4,#6
+	  collocation_ratio = 4 		#0,#1,#9,#10
+#	  collocation_ratio = .9 		#2,#6
+#	  collocation_ratio = .95 		#4
 #	  collocation_ratio = 3			#3,#5,#7
-	  least_squares svd			#0,#1
-#	  lasso					#2,#3
+#	  collocation_points = 30		#8
+#	  collocation_points = 37		#11
+
+#	  collocation_points = 11		#12
+	  least_squares svd			#0,#1,#10
+#	  lasso					#2,#3,#11,#12
 #	  omp					#4,#5
 #	  lars					#6,#7
 #	  orthogonal_least_interpolation 	#8
-#	  collocation_points = 30		#8
 	  seed = 1234567
-#	  use_derivatives		#1,#3,#5,#7
+#	  use_derivatives		#1,#3,#5,#7,#10,#12
 	  output verbose
 
 variables,
@@ -40,7 +56,7 @@ interface,
 
 responses,
 	response_functions = 1
-	no_gradients			#0,#2,#4,#6,#8
-#	analytic_gradients		#1,#3,#5,#7
+	no_gradients			#0,#2,#4,#6,#8,#9,#11
+#	analytic_gradients		#1,#3,#5,#7,#10,#12
 	no_hessians
 
