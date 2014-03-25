@@ -273,7 +273,7 @@ public:
                     const std::vector<StringArray>& buf) const
   {
     // WJB - come back ASAP! (not needed for Optimization Results??)
-        throw BinaryStream_StoreDataFailure();
+    throw std::string("store_data std::vector<StringArray> not implemented");
   }
 
   // Scalar data MAY NOT be needed by Dakota client, so consider eliminating,
@@ -316,6 +316,7 @@ public:
   herr_t store_data(const std::string& dset_name,
                     const Teuchos::SerialDenseVector<int,T>& buf) const
   {
+#if 0 // WJB:  Disabled since storing vector data is of little value without chunking/hyperslabs
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
@@ -323,10 +324,13 @@ public:
     return store_data<T,1>( dset_name,
                             boost::assign::list_of( buf.length() ),
                             buf.values() );
+#endif
+    //throw std::string("store_data Teuchos::SDVector<int,T> not implemented");
+    output_status(99);
   }
 
 
-#if 0 // WJB:  Disabled while I test out the template version just above
+#if 0 // WJB:  Disabled while I test-out the template version just above
   herr_t store_data(const std::string& dset_name,
                     const RealVector& buf) const
   {
@@ -453,11 +457,17 @@ public:
             const std::string& dset_name,
             const std::vector< Teuchos::SerialDenseVector<int,T> >& buf) const
   {
+    // 'size()' vs 'length()' and 'size_type' vs 'ScalarType' prevents writing a
+    // generic algorithm, common to both std::vector and Teuchos vector
+
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-// WJB - ASAP: resolve merge issue with refactored, chunking version
-#if 0
+
+    if ( buf[0].length() == 0 ) {
+      return 99; // WJB: trick to allow empty row-vectors while refactoring
+    }
+
     // WJB: much of the "chunking setup" code is nearly identical to the
     // std::vector version, so re-factor for reuse next sprint
 
@@ -475,8 +485,10 @@ public:
     // Chunk size is that of the longest row vector
     int num_cols = dims[1];
     for(int i=0; i<buf.size(); ++i) {
-      num_cols = std::max( num_cols, buf[i].length() ); // WJB: "generic" possible?
+      num_cols = std::max( num_cols, buf[i].length() ); // WJB: "generic" is hard?
     }
+
+    //output_status(num_cols);
 
     std::vector<hsize_t> chunk_dims = dims;
     chunk_dims[0] = 1; chunk_dims[1] = num_cols;
@@ -487,15 +499,14 @@ public:
 
     // Create a new dataset within the DB using cparms creation properties.
 
-    // size() vs length() and 'size_type' vs 'ScalarType' prevents writing a
-    // generic algorithm, common to both std::vector and Teuchos vector
     hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
-                      NativeDataTypes<double>::datatype(), mem_space,
+                      NativeDataTypes<T>::datatype(), mem_space,
                       H5P_DEFAULT, cparms, H5P_DEFAULT);
 
+    //std::cout << "--WJB: looks DECENT down to appendInvocation..."<< std::endl; 
     herr_t status;
     for(int i=0; i<dims[0]; ++i) {
-      std::vector<double> tmp( dims[1] );
+      std::vector<T> tmp( dims[1] );
       for(int j=0; j<dims[1]; ++j)
         tmp[j] = buf[i][j];
 
@@ -505,7 +516,6 @@ public:
     // WJB - ToDo: free resources
     H5Sclose(mem_space);
     //std::cout << std::endl; 
-#endif
   }
 
 
@@ -984,7 +994,9 @@ private:
   //
   void output_status(herr_t status) const
   {
+#ifndef NDEBUG
     std::cout << "BinaryDF return ErrStat (POSITIVE_val) " << status << std::endl;
+#endif
   }
 
 
