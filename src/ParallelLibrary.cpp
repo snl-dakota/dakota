@@ -243,16 +243,18 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     if (num_servers > 1 && print_rank) // TO DO: consider hard error
       Cerr << "Warning: not enough available processors to support " 
            << num_servers << " servers.\n         Reducing to 1.\n";
-    procs_per_server = 1;
-    num_servers = 1;
-    ded_master = false; // static schedule
+    num_servers = 1; procs_per_server = 1; ded_master = false; // peer partition
   }
   else if (num_servers > 0 && procs_per_server > 0) { // Data defaults are 0
-    // in this case, we are tightly constrained to respecting both overrides:
+    // ------------------------------------------
+    // num_servers and procs_per_server specified
+    // ------------------------------------------
+    // in this case, we are tightly constrained to respecting both overrides
+
     int total_request = num_servers * procs_per_server;
     if (total_request == avail_procs) {
       ded_master = false;
-      if (master_override && print_rank)
+      if (master_override && print_rank) // TO DO: consider hard error
 	Cerr << "Warning: user selection of master scheduling cannot be "
 	     << "supported in this partition.  Overriding to peer partition.\n";
     }
@@ -276,63 +278,37 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
   }
   else if (num_servers > 0) { // needs to be 0 so that a user request of 1 
                               // executes this block as a manual override
-    // -------------------------------
-    // num_servers (only) specified
-    // -------------------------------
+    // --------------------------
+    // only num_servers specified
+    // --------------------------
+    // in this case, we honor the override, but have freedom to vary server
+    // size in order to avoid idle processors
 
-    // First reduce num_servers request if necessary
-    if (master_override ||
-	(max_concurrency > avail_procs*capacity_multiplier && !peer_override)) {
-      // ded. master: cap num_servers at number of slave procs.
-      if (num_servers > avail_procs-1) {
-        num_servers = avail_procs-1;
-        if (print_rank)
-          Cerr << "Warning: not enough processors for num_servers request in "
-	       << "dedicated master\n         partition.  Reducing num_servers"
-	       << " to " << num_servers << '\n';
-      }
-      //if (procs_per_server > 0 && 
-      //    procs_per_server != (avail_procs-1)/num_servers && print_rank)
-      //  Cerr << "Warning: num_servers and procs_per_server specifications are"
-      //       << " not equivalent.\n         num_servers takes precedence.\n";
-    }
-    else {
-      // peer partition: cap num_servers at number of avail_procs
-      if (num_servers > avail_procs) {
-        num_servers = avail_procs;
-        if (print_rank)
-          Cerr << "Warning: not enough processors for num_servers request in "
-	       << "peer partition.\n         Reducing num_servers to " 
-               << num_servers << '\n';
-      }
-      //if (procs_per_server > 0 && 
-      //    procs_per_server != avail_procs/num_servers && print_rank)
-      //  Cerr << "Warning: num_servers and procs_per_server specifications are"
-      //       << " not equivalent.\n         num_servers takes precedence.\n";
-    }
-    int max_servers
-      = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);
-    if (num_servers > max_servers) { // num_servers request exceeds need
-      num_servers = max_servers;
+    if (num_servers > avail_procs) {
       if (print_rank)
-        Cerr << "Warning: num_servers capacity exceeds maximum concurrency.\n"
-	     << "         reducing num_servers to " << num_servers << '\n';
+	Cerr << "Error: insufficient available processors (" << avail_procs
+	     << ") to support user override of servers (" << num_servers
+	     << ")\n.  Please adjust total allocation or overrides."<<std::endl;
+      abort_handler(-1);
     }
-
-    // Now that num_servers is reasonable, use it to branch on either static or
-    // dynamic scheduling
-    if (master_override || (!peer_override && num_servers > 1 &&
-	max_concurrency > num_servers*capacity_multiplier)) {
+    else if (num_servers == avail_procs) {
+      ded_master = false; procs_per_server = 1; proc_remainder = 0;
+      if (master_override && print_rank) // TO DO: consider hard error
+	Cerr << "Warning: user selection of master scheduling cannot be "
+	     << "supported in this partition.  Overriding to peer partition.\n";
+    }
+    else if ( master_override || ( !peer_override && num_servers > 1 &&
+	      max_concurrency > num_servers * capacity_multiplier ) ) {
       // dynamic sched. -> self or distributed (self only for now)
       procs_per_server = (avail_procs-1) / num_servers;
       proc_remainder   = (avail_procs-1) % num_servers;
-      ded_master = true;
+      ded_master       = true;
     }
     else { // static sched.
       // num_servers*capacity_multiplier must equal max_concurrency
       procs_per_server = avail_procs / num_servers;
       proc_remainder   = avail_procs % num_servers;
-      ded_master = false;
+      ded_master       = false;
     }
   }
   else if (procs_per_server > 0) { // needs to be 0 so that a user request of 1
@@ -340,6 +316,12 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     // -------------------------------
     // only procs_per_server specified
     // -------------------------------
+    // in this case, we have less freedom than the previous num_servers case
+    // and strictly honoring the override may result in idle procs.  We could
+    // consider a less strict policy, at least for higher parallelism levels,
+    // but for now we will treat a user override at any level as gospel.
+
+    // *** TO HERE ***
 
     // rounding num_servers down means that procs_per_server will be >= request
     // (decreasing below request should be avoided).  Estimating num_servers 
@@ -348,8 +330,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     num_servers = avail_procs/procs_per_server; // trial config (not final)
     int max_servers
       = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);
-    if (!master_override && (num_servers <= 1 || num_servers >= max_servers ||
-			     peer_override)) {
+    if ( !master_override &&
+	 ( peer_override || num_servers <= 1 || num_servers >= max_servers ) ) {
       // static sched.
       if (num_servers < 1) {
 	if (print_rank)
