@@ -1782,8 +1782,17 @@ void DataFitSurrModel::update_actual_model()
     actualModel.discrete_design_set_real_values(discreteDesignSetRealValues);
 
   // uncertain variable distribution data
-  actualModel.aleatory_distribution_parameters().update(aleatDistParams);
-  actualModel.epistemic_distribution_parameters().update(epistDistParams);
+  // Note: Variables instances defined from the same variablesId are not shared
+  // (see ProblemDescDB::get_variables()), so we propagate any distribution
+  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
+  // differing variablesId, we cannot assume that the distribution information
+  // can be mapped, since the distributions used to build may differ from those
+  // used to evaluate.   More careful logic may be needed in the future...
+  if (currentVariables.shared_data().id() ==
+      actualModel.current_variables().shared_data().id()) {
+    actualModel.aleatory_distribution_parameters().update(aleatDistParams);
+    actualModel.epistemic_distribution_parameters().update(epistDistParams);
+  }
 
   if (!discreteStateSetIntValues.empty())
     actualModel.discrete_state_set_int_values(discreteStateSetIntValues);
@@ -1835,8 +1844,17 @@ void DataFitSurrModel::update_from_actual_model()
     discreteDesignSetRealValues = actualModel.discrete_design_set_real_values();
 
   // uncertain variable distribution data
-  aleatDistParams.update(actualModel.aleatory_distribution_parameters());
-  epistDistParams.update(actualModel.epistemic_distribution_parameters());
+  // Note: Variables instances defined from the same variablesId are not shared
+  // (see ProblemDescDB::get_variables()), so we propagate any distribution
+  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
+  // differing variablesId, we cannot assume that the distribution information
+  // can be mapped, since the distributions used to build may differ from those
+  // used to evaluate.  More careful logic may be needed in the future...
+  if (currentVariables.shared_data().id() ==
+      actualModel.current_variables().shared_data().id()) {
+    aleatDistParams.update(actualModel.aleatory_distribution_parameters());
+    epistDistParams.update(actualModel.epistemic_distribution_parameters());
+  }
 
   if (!actualModel.discrete_state_set_int_values().empty())
     discreteStateSetIntValues = actualModel.discrete_state_set_int_values();
