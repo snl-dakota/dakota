@@ -15242,10 +15242,8 @@ Test Number 12 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    5.0000000000e-01  He0  He0
    1.0000000000e+00  He1  He0
-  -4.8773847077e-15  He1  He1
    5.0000000000e-01  He0  He2
-  -5.7887310550e-15  He2  He1
-   1.1205263069e-15  He0  He3
+   2.4278834139e-16  He0  He3
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  5.0000000000e-01  1.2247448714e+00
@@ -15253,14 +15251,10 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       6.6666666667e-01  6.6666666667e-01 x1
                       3.3333333333e-01  3.3333333333e-01 x2
-                      6.0538464028e-29 x1 x2 
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.0000000000e+00  He0  He0
   -5.0000000000e-01  He0  He1
    1.0000000000e+00  He2  He0
-   2.8501749710e-16  He0  He2
-   5.8312017211e-16  He1  He2
-   3.2561942801e-16  He2  He2
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.0000000000e+00  1.5000000000e+00
@@ -15268,7 +15262,6 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       8.8888888889e-01  8.8888888889e-01 x1
                       1.1111111111e-01  1.1111111111e-01 x2
-                      4.9074236347e-31 x1 x2 
 <<<<< Function evaluation summary (LOFI_FN): 28 total (28 new, 0 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 9 total (9 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -15279,16 +15272,9 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -5.0000000000e-01  He1  He1
    5.0000000000e-01  He0  He2
    1.0000000000e+00  He3  He0
-  -2.8943655275e-14  He2  He1
-   4.8327491372e-15  He1  He2
   -2.5000000000e-01  He0  He3
-  -4.8773847077e-15  He3  He1
    5.0000000000e-01  He2  He2
-  -4.1775440491e-16  He0  He4
-  -5.7887310550e-15  He4  He1
-   3.2561942801e-16  He3  He2
-   1.1205263069e-15  He2  He3
-   2.9156008605e-16  He1  He4
+   2.4278834139e-16  He2  He3
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  5.0000000000e-01  4.2646805273e+00
@@ -15296,7 +15282,7 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       8.5223367698e-01  9.2096219931e-01 x1
                       7.9037800687e-02  1.4776632302e-01 x2
-                      6.8728522337e-02 x1 x2 
+                      6.8728522337e-02 x1 x2
 Test Number 13 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    5.0000000000e-01  He0  He0
@@ -15714,7 +15700,9 @@ Test Number 17 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    5.0000000000e-01  He0  He0
    1.0000000000e+00  He1  He0
+   2.9867681457e-16  He1  He1
    5.0000000000e-01  He0  He2
+  -3.3578008037e-16  He0  He4
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  5.0000000000e-01  1.2247448714e+00
@@ -15722,13 +15710,14 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       6.6666666667e-01  6.6666666667e-01 x1
                       3.3333333333e-01  3.3333333333e-01 x2
+                      5.9471893040e-32 x1 x2 
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.0000000000e+00  He0  He0
   -5.0000000000e-01  He0  He1
    1.0000000000e+00  He2  He0
-  -5.9143012514e-16  He1  He2
-   4.3846962039e-16  He3  He1
-  -2.3366785098e-16  He4  He1
+   9.9782552044e-16  He2  He1
+  -4.6753684919e-16  He3  He3
+   2.4748586532e-16  He1  He5
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.0000000000e+00  1.5000000000e+00
@@ -15736,7 +15725,7 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       8.8888888889e-01  8.8888888889e-01 x1
                       1.1111111111e-01  1.1111111111e-01 x2
-                      1.4060127928e-30 x1 x2 
+                      7.6491054910e-30 x1 x2 
 <<<<< Function evaluation summary (LOFI_FN): 67 total (67 new, 0 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 23 total (23 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -15747,13 +15736,19 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -5.0000000000e-01  He1  He1
    5.0000000000e-01  He0  He2
    1.0000000000e+00  He3  He0
-   1.3154088612e-15  He2  He1
-  -1.4785753129e-15  He1  He2
+   1.4967382807e-15  He2  He1
   -2.5000000000e-01  He0  He3
-  -2.7696697334e-16  He3  He1
    5.0000000000e-01  He2  He2
-  -2.9571506257e-16  He1  He4
-  -2.3366785098e-16  He5  He1
+   2.4748586532e-15  He1  He3
+  -3.3578008037e-16  He0  He4
+  -9.0369778735e-16  He2  He3
+   4.1537590550e-16  He0  He5
+  -1.6363789722e-15  He3  He3
+  -3.3578008037e-16  He2  He4
+   1.3611722592e-15  He1  He5
+  -4.6753684919e-16  He4  He3
+   2.4748586532e-16  He2  He5
+  -2.3376842460e-16  He3  He5
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  5.0000000000e-01  4.2646805273e+00
@@ -17022,9 +17017,8 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -4.0000000000e-01  He1  He0
   -4.0000000000e+01  He0  He1
    4.0000000000e+01  He2  He0
-   4.5349598204e-14  He1  He1
-   7.3752275201e-14  He3  He0
-  -1.1221567476e-13  He2  He1
+   1.0265770653e-14  He1  He1
+   6.0589456364e-14  He1  He2
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.6360000000e+01  6.9283186994e+01
@@ -17032,24 +17026,21 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       6.6667777741e-01  6.6667777741e-01 x1
                       3.3332222259e-01  3.3332222259e-01 x2
-                      5.6750819513e-30 x1 x2 
+                      1.5515213018e-30 x1 x2 
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.6564000000e+02  He0  He0
-  -1.5999999961e+00  He1  He0
+  -1.6000000000e+00  He1  He0
   -1.6000000000e+02  He0  He1
    5.6100000000e+02  He2  He0
    1.0000000000e+02  He0  He2
-   3.0335019453e-09  He3  He0
   -2.0000000000e+02  He2  He1
-  -3.7793639862e-10  He1  He2
-   9.9999999999e+01  He4  He0
-   4.3584543848e-11  He3  He1
-   3.7155457438e-10  He2  He2
-   6.8947660604e-11  He1  He3
-  -6.2324028681e-11  He0  He4
-   3.2315924728e-10  He5  He0
-  -6.1163730535e-11  He4  He1
-  -7.7890482329e-12  He2  He3
+   1.0000000000e+02  He4  He0
+   4.4152784022e-13  He3  He1
+  -6.3153372026e-13  He1  He3
+  -1.2366970270e-13  He0  He4
+  -6.8019734953e-14  He5  He0
+  -5.0134371381e-13  He1  He4
+   1.7020851115e-13  He0  He5
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.6564000000e+02  9.9751920282e+02
@@ -17057,35 +17048,33 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       8.7377449709e-01  9.5417290659e-01 x1
                       4.5827093412e-02  1.2622550291e-01 x2
-                      8.0398409495e-02 x1 x2 
+                      8.0398409494e-02 x1 x2 
 <<<<< Function evaluation summary (LOFI_FN): 28 total (28 new, 0 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 9 total (9 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
-  -1.9999999961e+00  He1  He0
+  -2.0000000000e+00  He1  He0
   -2.0000000000e+02  He0  He1
    6.0100000000e+02  He2  He0
-   4.5349598204e-14  He1  He1
+   1.0265770653e-14  He1  He1
    1.0000000000e+02  He0  He2
-   3.0335756975e-09  He3  He0
   -2.0000000000e+02  He2  He1
-  -3.7793639862e-10  He1  He2
-   9.9999999999e+01  He4  He0
-   4.3584543848e-11  He3  He1
-   3.7155457438e-10  He2  He2
-   6.8947660604e-11  He1  He3
-  -6.2324028681e-11  He0  He4
-   3.2315924728e-10  He5  He0
-  -6.1163730535e-11  He4  He1
-  -7.7890482329e-12  He2  He3
+   6.0589456364e-14  He1  He2
+   1.0000000000e+02  He4  He0
+   4.4152784022e-13  He3  He1
+  -6.3153372026e-13  He1  He3
+  -1.2366970270e-13  He0  He4
+  -6.8019734953e-14  He5  He0
+  -5.0134371381e-13  He1  He4
+   1.7020851115e-13  He0  He5
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409146e-02  1.2699495467e-01 x2
-                      7.2568545528e-02 x1 x2 
+                      5.4426409145e-02  1.2699495467e-01 x2
+                      7.2568545527e-02 x1 x2 
 Test Number 13 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.6360000000e+01  He0  He0
@@ -17413,8 +17402,8 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -4.0000000000e-01  He1  He0
   -4.0000000000e+01  He0  He1
    4.0000000000e+01  He2  He0
-  -1.1776905738e-14  He3  He0
-  -2.2488830585e-14  He2  He1
+   5.6184367312e-14  He3  He0
+   1.1579572941e-14  He2  He1
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.6360000000e+01  6.9283186994e+01
@@ -17422,53 +17411,55 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       6.6667777741e-01  6.6667777741e-01 x1
                       3.3332222259e-01  3.3332222259e-01 x2
-                      2.1072110142e-31 x1 x2 
+                      5.5867516704e-32 x1 x2 
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.6564000000e+02  He0  He0
-  -1.6000000001e+00  He1  He0
+  -1.5999999993e+00  He1  He0
   -1.6000000000e+02  He0  He1
-   5.6100000000e+02  He2  He0
-   9.5854110305e-11  He1  He1
+   5.6099999999e+02  He2  He0
    1.0000000000e+02  He0  He2
-   8.3828964458e-11  He3  He0
-  -2.0000000000e+02  He2  He1
-  -8.5467822872e-10  He1  He2
-   1.0000000000e+02  He4  He0
-  -3.5434921545e-11  He3  He1
-   5.4755013494e-10  He4  He1
-  -2.6289870177e-10  He3  He2
+   1.1252515594e-09  He3  He0
+  -1.9999999999e+02  He2  He1
+  -3.8826619831e-09  He1  He2
+   9.9999999999e+01  He4  He0
+  -3.1024009051e-10  He3  He1
+   6.9866496804e-11  He2  He2
+   9.7989977541e-11  He5  He0
+   2.2403422743e-09  He4  He1
+  -1.2048983306e-09  He3  He2
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.6564000000e+02  9.9751920282e+02
+ response_fn_1  3.6564000000e+02  9.9751920281e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
                       8.7377449710e-01  9.5417290659e-01 x1
                       4.5827093412e-02  1.2622550290e-01 x2
-                      8.0398409493e-02 x1 x2 
+                      8.0398409489e-02 x1 x2 
 <<<<< Function evaluation summary (LOFI_FN): 20 total (20 new, 0 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 6 total (6 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
-  -2.0000000001e+00  He1  He0
+  -1.9999999993e+00  He1  He0
   -2.0000000000e+02  He0  He1
-   6.0100000000e+02  He2  He0
-   9.5854110305e-11  He1  He1
+   6.0099999999e+02  He2  He0
    1.0000000000e+02  He0  He2
-   8.3817187552e-11  He3  He0
-  -2.0000000000e+02  He2  He1
-  -8.5467822872e-10  He1  He2
-   1.0000000000e+02  He4  He0
-  -3.5434921545e-11  He3  He1
-   5.4755013494e-10  He4  He1
-  -2.6289870177e-10  He3  He2
+   1.1253077438e-09  He3  He0
+  -1.9999999999e+02  He2  He1
+  -3.8826619831e-09  He1  He2
+   9.9999999999e+01  He4  He0
+  -3.1024009051e-10  He3  He1
+   6.9866496804e-11  He2  He2
+   9.7989977541e-11  He5  He0
+   2.2403422743e-09  He4  He1
+  -1.2048983306e-09  He3  He2
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545526e-02 x1 x2 
+                      5.4426409146e-02  1.2699495467e-01 x2
+                      7.2568545522e-02 x1 x2 
 Test Number 18 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.6360000000e+01  He0  He0
@@ -17557,13 +17548,13 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -4.0000000000e-01  He1  He0
   -4.0000000000e+01  He0  He1
    4.0000000000e+01  He2  He0
-   2.2085342409e-15  He0  He2
-   2.4379459484e-13  He3  He0
-   4.4844583689e-14  He2  He1
-  -2.1305122436e-13  He1  He2
-  -2.3992784474e-13  He4  He0
-  -1.0117518635e-13  He3  He1
-  -3.0459188091e-14  He0  He4
+   1.5127673957e-13  He1  He1
+   4.2027078591e-14  He0  He2
+   2.1042521315e-13  He3  He0
+   9.3899192304e-14  He2  He1
+  -1.6837082875e-13  He1  He2
+  -2.3641993101e-13  He4  He0
+  -1.2401401569e-14  He0  He4
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.6360000000e+01  6.9283186994e+01
@@ -17571,70 +17562,73 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       6.6667777741e-01  6.6667777741e-01 x1
                       3.3332222259e-01  3.3332222259e-01 x2
-                      3.2545213445e-29 x1 x2 
+                      2.0252708350e-29 x1 x2 
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.6564000000e+02  He0  He0
-  -1.5999999998e+00  He1  He0
+  -1.5999999955e+00  He1  He0
   -1.6000000000e+02  He0  He1
-   5.6100000000e+02  He2  He0
-   1.0000000000e+02  He0  He2
-   2.0303276253e-10  He3  He0
+   5.6099999999e+02  He2  He0
+  -6.0420442023e-09  He1  He1
+   9.9999999998e+01  He0  He2
+   2.6396990661e-09  He3  He0
   -2.0000000000e+02  He2  He1
-   1.2919712893e-10  He0  He3
-   1.0000000000e+02  He4  He0
-   1.4160939961e-10  He3  He1
-   2.7723161304e-11  He5  He0
-   7.9720769226e-12  He4  He1
-   1.0296890922e-10  He2  He3
-  -9.3337115490e-12  He1  He4
-  -1.8600160139e-11  He6  He0
-   4.9240006725e-11  He5  He1
-  -1.8189005671e-10  He4  He2
-  -6.4546206542e-11  He3  He3
-   1.8873034187e-10  He2  He4
-   2.5312979904e-11  He1  He5
-  -1.4470311260e-11  He0  He6
+   2.9429109668e-09  He1  He2
+  -4.8661595846e-10  He0  He3
+   9.9999999996e+01  He4  He0
+  -4.1694222750e-09  He2  He2
+  -4.0064306063e-09  He1  He3
+   2.3812294078e-10  He5  He0
+   2.1546783655e-10  He4  He1
+   1.0113282508e-09  He3  He2
+   1.1252081249e-09  He2  He3
+  -2.2518675606e-10  He0  He5
+  -2.7956272002e-10  He6  He0
+   5.7222186586e-10  He5  He1
+  -8.3571842715e-10  He4  He2
+  -1.5791761002e-09  He3  He3
+  -1.3104582198e-11  He0  He6
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.6564000000e+02  9.9751920282e+02
+ response_fn_1  3.6564000000e+02  9.9751920280e+02
 response_fn_1 Sobol' indices:
                                   Main             Total
                       8.7377449709e-01  9.5417290659e-01 x1
-                      4.5827093412e-02  1.2622550291e-01 x2
-                      8.0398409494e-02 x1 x2 
+                      4.5827093413e-02  1.2622550291e-01 x2
+                      8.0398409495e-02 x1 x2 
 <<<<< Function evaluation summary (LOFI_FN): 67 total (67 new, 0 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 23 total (23 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.0200000000e+02  He0  He0
-  -1.9999999998e+00  He1  He0
+  -1.9999999955e+00  He1  He0
   -2.0000000000e+02  He0  He1
-   6.0100000000e+02  He2  He0
-   1.0000000000e+02  He0  He2
-   2.0327655713e-10  He3  He0
+   6.0099999999e+02  He2  He0
+  -6.0418929255e-09  He1  He1
+   9.9999999998e+01  He0  He2
+   2.6399094913e-09  He3  He0
   -2.0000000000e+02  He2  He1
-  -2.1305122436e-13  He1  He2
-   1.2919712893e-10  He0  He3
-   1.0000000000e+02  He4  He0
-   1.4150822443e-10  He3  He1
-  -3.0459188091e-14  He0  He4
-   2.7723161304e-11  He5  He0
-   7.9720769226e-12  He4  He1
-   1.0296890922e-10  He2  He3
-  -9.3337115490e-12  He1  He4
-  -1.8600160139e-11  He6  He0
-   4.9240006725e-11  He5  He1
-  -1.8189005671e-10  He4  He2
-  -6.4546206542e-11  He3  He3
-   1.8873034187e-10  He2  He4
-   2.5312979904e-11  He1  He5
-  -1.4470311260e-11  He0  He6
+   2.9427425960e-09  He1  He2
+  -4.8661595846e-10  He0  He3
+   9.9999999996e+01  He4  He0
+  -4.1694222750e-09  He2  He2
+  -4.0064306063e-09  He1  He3
+  -1.2401401569e-14  He0  He4
+   2.3812294078e-10  He5  He0
+   2.1546783655e-10  He4  He1
+   1.0113282508e-09  He3  He2
+   1.1252081249e-09  He2  He3
+  -2.2518675606e-10  He0  He5
+  -2.7956272002e-10  He6  He0
+   5.7222186586e-10  He5  He1
+  -8.3571842715e-10  He4  He2
+  -1.5791761002e-09  He3  He3
+  -1.3104582198e-11  He0  He6
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 response_fn_1 Sobol' indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
+                      5.4426409146e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
 Test Number 20 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
