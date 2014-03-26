@@ -231,6 +231,9 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
        scheduling_override == PEER_DYNAMIC_SCHEDULING ||
        scheduling_override == PEER_STATIC_SCHEDULING);
 
+  // TO DO: consider modifications to the following logic when peer
+  //        dynamic scheduling is available.
+
   bool ded_master;
   if (avail_procs <= 1) {
     // ------------------------
@@ -276,7 +279,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
       abort_handler(-1);
     }
   }
-  else if (num_servers > 0) { // needs to be 0 so that a user request of 1 
+  else if (num_servers > 0) { // Data default is 0: user request of 1 
                               // executes this block as a manual override
     // --------------------------
     // only num_servers specified
@@ -299,109 +302,70 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     }
     else if ( master_override || ( !peer_override && num_servers > 1 &&
 	      max_concurrency > num_servers * capacity_multiplier ) ) {
-      // dynamic sched. -> self or distributed (self only for now)
+      // master partition (dynamic scheduling)
       procs_per_server = (avail_procs-1) / num_servers;
       proc_remainder   = (avail_procs-1) % num_servers;
       ded_master       = true;
     }
-    else { // static sched.
-      // num_servers*capacity_multiplier must equal max_concurrency
+    else { // peer partition (dynamic or static scheduling)
       procs_per_server = avail_procs / num_servers;
       proc_remainder   = avail_procs % num_servers;
       ded_master       = false;
     }
   }
-  else if (procs_per_server > 0) { // needs to be 0 so that a user request of 1
+  else if (procs_per_server > 0) { // Data default is 0: user request of 1
                                    // executes this block as a manual override
     // -------------------------------
     // only procs_per_server specified
     // -------------------------------
     // in this case, we have less freedom than the previous num_servers case
     // and strictly honoring the override may result in idle procs.  We could
-    // consider a less strict policy, at least for higher parallelism levels,
-    // but for now we will treat a user override at any level as gospel.
+    // consider a less strict policy, at least for higher parallelism levels
+    // where excess could be repurposed without causing problems with analysis
+    // decompositions, but for now we will treat a user override at any level
+    // as gospel.
 
-    // *** TO HERE ***
-
-    // rounding num_servers down means that procs_per_server will be >= request
-    // (decreasing below request should be avoided).  Estimating num_servers 
-    // using avail_procs (peer partition) provides an upper bound (i.e., 
-    // num_servers can only decrease for a dedicated master partition).
-    num_servers = avail_procs/procs_per_server; // trial config (not final)
-    int max_servers
-      = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);
-    if ( !master_override &&
-	 ( peer_override || num_servers <= 1 || num_servers >= max_servers ) ) {
-      // static sched.
-      if (num_servers < 1) {
-	if (print_rank)
-	  Cerr << "Warning: not enough processors for procs_per_server request."
-	       << "\n         reducing procs_per_server to " << avail_procs 
-	       << " and using 1 server.\n";
-        num_servers = 1;
-      }
-      else if (num_servers > max_servers) { // truncate & recalculate
-	if (print_rank)
-	  Cerr << "Warning: server availability (" << num_servers
-	       << ") exceeds maximum server utilization (" << max_servers
-	       << ").\n         reducing servers to " << max_servers << ".\n";
-        num_servers = max_servers;
-      }
-      procs_per_server = avail_procs / num_servers;
-      proc_remainder   = avail_procs % num_servers;
-      ded_master = false;
-    }
-    else { // dynamic scheduling -> self or distr. (self only for now)
-      num_servers = (avail_procs-1)/procs_per_server; // update config
-      // no need to check if this num_servers >= max_servers since max_servers
-      // would still be greater (num_servers can only decrease).  However, 
-      // num_servers can become < 2 (e.g., 8/4 > 1 -> dynamic -> 7/4 = 1 server
-      // of 7 procs. -> dedicated master not needed).  In this case, revert 
-      // back to a static schedule using 1 server with all procs (unless "self"
-      // specifically requested in scheduling_override).  This will mean
-      // considerable departure from the procs_per_server request.  Running a
-      // static schedule on 2 servers is a good option (achieved with a user
-      // request for "static" overriding the capacity logic), and distributed
-      // scheduling could be the best option when available.
-      if (num_servers < 2 && !master_override) {
-        // reducing procs by 1 dropped num_servers back to 1
-        procs_per_server = avail_procs;
-        num_servers = 1;
-        ded_master = false;
-      }
-      else {
-        proc_remainder = (avail_procs-1) % procs_per_server;
-        ded_master = true;
-      }
-    }
-
-    /* To simplify logic & to prevent going below p'_min, reducing 
-       procs_per_server below the request in code below will no longer be 
-       supported.
-
-    // Since integer division will always be on the conservative side,
-    // compare nominal w/ increasing num_servers by 1 to see which
-    // resulting procs_per_server provides the best match w/ the request
-    num_servers = avail_procs/procs_per_server;
-    float ssplus1_ppa = (float)avail_procs/(float)(num_servers+1);
-    float nom_ppa = (float)avail_procs/(float)num_servers; // note that
-    // this will often increase procs_per_server beyond the request since 
-    // more of remainder will be captured (assuming procsPer > numServers).
-    //if (print_rank)
-    //  Cout << "nom_ppa = " << nom_ppa << " ssplus1_ppa = " << ssplus1_ppa
-    //       << "\nnom_ppa delta = " << nom_ppa - procs_per_server
-    //       <<" ssplus1_ppa delta = "<<procs_per_server - ssplus1_ppa
-    //       << std::endl;
-    if (procs_per_server - ssplus1_ppa < nom_ppa - procs_per_server) {
+    proc_remainder = 0; // all cases, no freedom to increment server sizes
+    if (procs_per_server > avail_procs) {
       if (print_rank)
-        Cerr << "Warning: reducing procs_per_server for best fit.\n";
-      procs_per_server = (int)ssplus1_ppa;
-      num_servers += 1;
+	Cerr << "Error: insufficient available processors (" << avail_procs
+	     << ") to support user override of procs_per_server ("
+	     << procs_per_server << ")\n.  Please adjust total allocation or "
+	     << "overrides." << std::endl;
+      abort_handler(-1);
     }
-    else // nominal
-      procs_per_server = (int)nom_ppa;
-    proc_remainder = avail_procs % num_servers;
-    */
+    else if (procs_per_server == avail_procs) {
+      ded_master = false; num_servers = 1;
+      if (master_override && print_rank) // TO DO: consider hard error
+	Cerr << "Warning: user selection of master scheduling cannot be "
+	     << "supported in this partition.  Overriding to peer partition.\n";
+    }
+    else {
+      if (!peer_override)
+	num_servers = (avail_procs-1) / procs_per_server; // estimate
+      if ( master_override || ( !peer_override && num_servers > 1 &&
+	   max_concurrency > num_servers * capacity_multiplier ) ) {
+	// master partition (dynamic scheduling)
+	ded_master = true;
+	// previous num_servers estimate is correct
+	if ( (avail_procs-1) % procs_per_server && print_rank )
+	  Cerr << "Warning: user override of partition size results in idle "
+	       << "processors for dedicated master partition\n         "
+	       << "(partition size request: " << procs_per_server << " avail: "
+	       << avail_procs - 1 << " idle: "
+	       << avail_procs - 1 - num_servers * procs_per_server << ")\n";
+      }
+      else { // peer partition (dynamic or static scheduling)
+	ded_master  = false;
+	num_servers = avail_procs / procs_per_server;
+	if (avail_procs % procs_per_server && print_rank)
+	  Cerr << "Warning: user override of partition size results in idle "
+	       << "processors for peer partition\n         (partition size "
+	       << "request: " << procs_per_server << " avail: " << avail_procs
+	       << " idle: " << avail_procs - num_servers * procs_per_server
+	       << ")\n";
+      }
+    }
   }
   else {
     // --------------------------------------------------
@@ -413,43 +377,30 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
       // but may be neglecting a user request in lieu of a built-in default.
       // Output a warning if neglecting a user request:
       if (master_override && print_rank)
-        Cerr << "Warning: default_config takes precendence over a "
-	     << "master scheduling request\n         when neither num_servers "
-	     << "nor procs_per_server is specified.\n";
+        Cerr << "Warning: default_config takes precendence over a master "
+	     << "scheduling request\n         when neither num_servers nor "
+	     << "procs_per_server is specified.\n";
+      // TO DO: neglects available concurrency at lower levels (would require
+      // two passes through parallelism hierarchy to resolve)
       procs_per_server = avail_procs;
       num_servers = 1;
       ded_master = false; // tau_i = 1 -> static scheduling
     }
     else { // concurrency pushed up
-      if ( master_override || ( !peer_override && avail_procs > 2 &&
-           max_concurrency > avail_procs*capacity_multiplier ) ) {
-        // dynamic sched.: self or distr. (self only for now)
-        num_servers = avail_procs-1;
-        int max_servers
-          = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);
-        if (num_servers > max_servers)
-          num_servers = max_servers;
-        procs_per_server = (avail_procs-1) / num_servers;
-        proc_remainder   = (avail_procs-1) % num_servers;    
-        ded_master = true;
-      }
-      else { // static scheduling
-        if (max_concurrency <= 1) { // default max_concurrency can be 0 in 
-                                    // init_iterator_communicators
-          procs_per_server = avail_procs;
-          num_servers = 1;
-	}
-	else { 
-          num_servers = avail_procs;
-          int max_servers
-            = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);
-          if (num_servers > max_servers)
-            num_servers = max_servers;
-          procs_per_server = avail_procs / num_servers;
-	  proc_remainder   = avail_procs % num_servers;
-	}
+      if (master_override) // master partition (dynamic scheduling)
+	ded_master = true;
+      else if ( !peer_override &&
+		max_concurrency > avail_procs * capacity_multiplier )
+        // ded_master if num_servers > 1
+	ded_master = (avail_procs > 2 && max_concurrency > capacity_multiplier);
+      else // peer partition (dynamic or static scheduling)
         ded_master = false; // tau_i = n_ij_max -> static scheduling
-      }
+
+      int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+      num_servers = std::min(server_procs,
+	(int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier));
+      procs_per_server = server_procs / num_servers;
+      proc_remainder   = server_procs % num_servers;
     }
   }
 
