@@ -213,7 +213,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	       int capacity_multiplier, short default_config,
 	       short scheduling_override, bool print_rank)
 {
-//#ifdef MPI_DEBUG
+#ifdef MPI_DEBUG
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
 	 << num_servers << " procs_per_server = " << procs_per_server
@@ -221,7 +221,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	 << max_concurrency << " capacity_multiplier = " << capacity_multiplier
 	 << " default_config = " << default_config << " scheduling_override = "
 	 << scheduling_override << std::endl;
-//#endif
+#endif
 
   const bool master_override = (scheduling_override == MASTER_SCHEDULING);
   const bool peer_override
