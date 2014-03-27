@@ -722,7 +722,7 @@ identifying corresponding model specifications (using \c model_pointer
 from \ref MethodIndControl), whereas methods identified by name cannot
 delegate the need to identify a model by pointer.  -->
 
-\ref T5d1 "Table 5.1" provides general guidance with respect to
+\ref T5d3 "Table 5.3" provides general guidance with respect to
 identifying methods by pointer or by name and identifying models by
 pointer.  Method and model pointers are strings that identify
 particular method and model specifications based on their \c id_method
@@ -735,11 +735,11 @@ method name, the string provided should exactly match the method
 selection (e.g., 'dot_mmfd'), and an error will result if the method
 name provided fails to identify a method that supports lightweight
 iterator construction.
-\anchor T5d1
+\anchor T5d3
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.1
+Table 5.3
 \endhtmlonly
 Specification detail for meta-iteration and model pointers
 </caption>
@@ -801,11 +801,11 @@ routines (see ParallelLibrary) but can be overridden with user inputs
 if desired.  Currently, \c hybrid, \c multi_start, and \c pareto_set
 component-based iterators support concurrency in their sub-iterators.
 
-\anchor T4d1
+\anchor T5d4
 <table>
 <caption align = "top">
 \htmlonly
-Table 4.1
+Table 5.4
 \endhtmlonly
 Specification detail for iterator scheduling controls
 </caption>
@@ -890,14 +890,14 @@ instance of method B is initialized with multiple solutions.  If
 multiple solutions are returned from method A but method B only can
 accept one initial starting point, then method B is run several times,
 each one with a separate starting point from the results of method
-A. \ref T4d2 "Table 4.2" summarizes the sequential hybrid
+A. \ref T5d5 "Table 5.5" summarizes the sequential hybrid
 meta-iterator inputs.
 
-\anchor T4d2
+\anchor T5d5
 <table>
 <caption align = "top">
 \htmlonly
-Table 4.2
+Table 5.5
 \endhtmlonly
 Specification detail for sequential hybrid meta-iterators
 </caption>
@@ -946,13 +946,13 @@ meta-iterators, method pointers can be replaced by method names and
 optional model pointers.  The \c local_search_probability setting is
 an optional specification for supplying the probability (between 0.0
 and 1.0) of employing local search to improve estimates within the
-global search. \ref T4d3 "Table 4.3" summarizes the embedded hybrid inputs.
+global search. \ref T5d6 "Table 5.6" summarizes the embedded hybrid inputs.
 
-\anchor T4d3
+\anchor T5d6
 <table>
 <caption align = "top">
 \htmlonly
-Table 4.3
+Table 5.6
 \endhtmlonly
 Specification detail for embedded hybrid meta-iterators
 </caption>
@@ -1023,13 +1023,13 @@ method_pointer_list, \c method_name_list, and \c model_pointer_list
 are identical to that of the sequential hybrid. The method
 collaboration logic follows that of either the Agent-Based
 Optimization or HOPSPACK codes and is currently under development.
-\ref T4d4 "Table 4.4" summarizes the collaborative hybrid inputs.
+\ref T5d7 "Table 5.7" summarizes the collaborative hybrid inputs.
 
-\anchor T4d4
+\anchor T5d7
 <table>
 <caption align = "top">
 \htmlonly
-Table 4.4
+Table 5.7
 \endhtmlonly
 Specification detail for collaborative hybrid meta-iterators
 </caption>
@@ -1099,13 +1099,13 @@ starting point must be specified.  The most common example of a
 multi-start algorithm is multi-start optimization, in which a series of
 optimizations are performed from different starting values for the
 design variables.  This can be an effective approach for problems with
-multiple minima.  \ref T4d5 "Table 4.5" summarizes the multi-start inputs.
+multiple minima.  \ref T5d8 "Table 5.8" summarizes the multi-start inputs.
 
-\anchor T4d5
+\anchor T5d8
 <table>
 <caption align = "top">
 \htmlonly
-Table 4.5
+Table 5.8
 \endhtmlonly
 Specification detail for multi-start meta-iterators
 </caption>
@@ -1184,13 +1184,13 @@ and \c weight_sets, for which the combined set of weights will be
 used.  In aggregate, at least one set of weights must be specified.
 The set of optimal solutions is called the "pareto set," which can
 provide valuable design trade-off information when there are competing
-objectives.  \ref T4d6 "Table 4.6" summarizes the pareto set inputs.
+objectives.  \ref T5d9 "Table 5.9" summarizes the pareto set inputs.
 
-\anchor T4d6
+\anchor T5d9
 <table>
 <caption align = "top">
 \htmlonly
-Table 4.6
+Table 5.9
 \endhtmlonly
 Specification detail for pareto set meta-iterators
 </caption>
@@ -1297,14 +1297,14 @@ convergence control for the SBL iterations which limits the number of
 consecutive iterations with improvement less than the convergence
 tolerance) and \c truth_surrogate_bypass (a flag for bypassing all
 lower level surrogates when performing truth verifications on a top
-level surrogate).  Table \ref T5d24 "5.24" summarizes these SBL
+level surrogate).  Table \ref T5d10 "5.10" summarizes these SBL
 inputs.
 
-\anchor T5d24
+\anchor T5d10
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.24
+Table 5.10
 \endhtmlonly
 Specification detail for surrogate-based local minimization method
 </caption>
@@ -1370,13 +1370,13 @@ the trust region ratio, i.e., values below this threshold cause the
 trust region to shrink for the next SBL iteration. The command \c
 expand_threshold determines the trust region value above which the
 trust region will expand for the next SBL iteration. Table 
-\ref T5d25 "5.25" summarizes these trust region inputs.
+\ref T5d11 "5.11" summarizes these trust region inputs.
 
-\anchor T5d25
+\anchor T5d11
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.25
+Table 5.11
 \endhtmlonly
 Specification detail for trust region controls in surrogate-based 
 local methods
@@ -1479,14 +1479,14 @@ command \c constraint_relax followed by a method name specifies the
 type of relaxation to be used. Currently, \c homotopy [\ref Perez2004
 "Perez et al., 2004"] is the only available method for constraint
 relaxation, and this method is dependent on the presence of the NPSOL
-library within the %Dakota executable. Table \ref T5d26 "5.26"
+library within the %Dakota executable. Table \ref T5d12 "5.12"
 summarizes these constraint management inputs.
 
-\anchor T5d26
+\anchor T5d12
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.26
+Table 5.12
 \endhtmlonly
 Specification detail for constraint management in surrogate-based local methods
 </caption>
@@ -1572,14 +1572,14 @@ method_pointer or \c method_name and must identify a
 surrogate model (see \ref ModelSurrogate) using \c model_pointer
 (see \ref MethodIndControl).  The only other algorithm control at this
 time is the method independent control for \c max_iterations described
-in Table \ref T5d1 "5.1".  Table \ref T5d27 "5.27" summarizes the
+in Table \ref T5d1 "5.1".  Table \ref T5d13 "5.13" summarizes the
 method dependent surrogate based global inputs.
 
-\anchor T5d27
+\anchor T5d13
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.27
+Table 5.13
 \endhtmlonly
 Specification detail for the surrogate-based global method
 </caption>
@@ -1754,14 +1754,14 @@ continuous design variable scaling.  When automatic scaling is in use
 for linear constraints they are linearly scaled by a computed
 characteristic value, but not affinely to [0,1].
 
-\ref T5d3 "Table 5.3" provides the specification detail for the
+\ref T5d14 "Table 5.14" provides the specification detail for the
 method independent controls involving linear constraints.
 
-\anchor T5d3
+\anchor T5d14
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.3
+Table 5.14
 \endhtmlonly
 Specification detail for the method independent controls: linear 
 inequality and equality constraints
@@ -1878,7 +1878,7 @@ within the SurrBasedMinimizer and EffGlobalMinimizer classes.
 
 The efficient global minimization algorithm is specified by the
 keyword \c efficient_global along with an optional \c seed
-specification, as shown in in Table \ref T5d28 "5.28" below.  By
+specification, as shown in in Table \ref T5d15 "5.15" below.  By
 default, EGO uses the Surfpack GP (Kriging) model, but the %Dakota
 implementation may be selected instead.  If \c use_derivatives is
 specified the GP model will be built using available derivative data
@@ -1887,11 +1887,11 @@ export_points_file specifications are as described in \ref ModelSurrG,
 (the use of an embedded global surrogate model necessitates repeating
 selected surrogate model specifications within the method specification).
 
-\anchor T5d28
+\anchor T5d15
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.28
+Table 5.15
 \endhtmlonly
 Specification detail for the efficient global method
 </caption>
@@ -2027,7 +2027,7 @@ studies. Lastly, specialized handling of linear constraints is
 supported with DOT; linear constraint coefficients, bounds, and
 targets can be provided to DOT at start-up and tracked
 internally. Specification detail for these method independent controls
-is provided in Tables \ref T5d1 "5.1" through \ref T5d3 "5.3".
+is provided in Tables \ref T5d1 "5.1" through \ref T5d14 "5.14".
 
 
 \subsubsection MethodDOTDC DOT method dependent controls
@@ -2104,7 +2104,7 @@ linear equality constraints, this information can be provided to NPSOL
 at initialization and tracked internally, removing the need for the
 user to provide the values of the linear constraints on every function
 evaluation. Refer to \ref MethodIndControl for additional information
-and to Tables \ref T5d1 "5.1" through \ref T5d3 "5.3" for method
+and to Tables \ref T5d1 "5.1" through \ref T5d14 "5.14" for method
 independent control specification detail.
 
 
@@ -2121,14 +2121,14 @@ inherent error in the calculation. And the \c linesearch_tolerance
 setting controls the accuracy of the line search. The smaller the
 value (between 0 and 1), the more accurately NPSOL will attempt to
 compute a precise minimum along the search direction. 
-\ref T5d4 "Table 5.4" provides the specification detail for the NPSOL 
+\ref T5d16 "Table 5.16" provides the specification detail for the NPSOL 
 SQP method and its method dependent controls.
 
-\anchor T5d4
+\anchor T5d16
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.4
+Table 5.16
 \endhtmlonly
 Specification detail for the NPSOL SQP method
 </caption>
@@ -2269,7 +2269,7 @@ Newton methods (\c optpp_newton, \c optpp_q_newton, \c optpp_fd_newton,
 and \c optpp_g_newton); whereas \c optpp_cg must be unconstrained and
 \c optpp_pds can be, at most, bound-constrained. Specification detail 
 for the method independent controls is provided in Tables 
-\ref T5d1 "5.1" through \ref T5d3 "5.3".
+\ref T5d1 "5.1" through \ref T5d14 "5.14".
 
 
 \subsubsection MethodOPTPPDC OPT++ method dependent controls
@@ -2289,14 +2289,14 @@ constraints). The \c gradient_tolerance control is defined for all
 gradient-based optimizers.
 
 \c max_step and \c gradient_tolerance are the only method dependent
-controls for the OPT++ conjugate gradient method.  \ref T5d5 "Table 5.5" 
+controls for the OPT++ conjugate gradient method.  \ref T5d17 "Table 5.17" 
 covers this specification.
 
-\anchor T5d5
+\anchor T5d17
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.5
+Table 5.17
 \endhtmlonly
 Specification detail for the OPT++ conjugate gradient method
 </caption>
@@ -2402,13 +2402,13 @@ that the algorithm will take a pure Newton step. Default values are
 .2, .2, and .1 for the \c el_bakry, \c argaez_tapia, and \c van_shanno
 merit functions, respectively.
 
-\ref T5d6 "Table 5.6" provides the details for the Newton-based methods.
+\ref T5d18 "Table 5.18" provides the details for the Newton-based methods.
 
-\anchor T5d6
+\anchor T5d18
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.6
+Table 5.18
 \endhtmlonly
 Specification detail for OPT++ Newton-based optimization methods
 </caption>
@@ -2469,14 +2469,14 @@ Specification detail for OPT++ Newton-based optimization methods
 The \c search_scheme_size is defined for the PDS method to specify the
 number of points to be used in the direct search template.  PDS does
 not support parallelism at this time due to current limitations in the
-OPT++ interface.  \ref T5d7 "Table 5.7" provides the detail for the
+OPT++ interface.  \ref T5d19 "Table 5.19" provides the detail for the
 parallel direct search method.
 
-\anchor T5d7
+\anchor T5d19
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.7
+Table 5.19
 \endhtmlonly
 Specification detail for the OPT++ PDS method
 </caption>
@@ -2603,13 +2603,13 @@ function, must be nonnegative
 \li \c smoothing_parameter: initial smoothing value for smoothed
 penalty functions, must be between 0 and 1 (inclusive)
 
-\ref T5d8 "Table 5.8" summarizes the APPS specification.
+\ref T5d20 "Table 5.20" summarizes the APPS specification.
 
-\anchor T5d8
+\anchor T5d20
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.8
+Table 5.20
 \endhtmlonly
 Specification detail for the APPS method
 </caption>
@@ -2721,7 +2721,7 @@ parallel logic when the %Dakota configuration supports
 parallelism. Lastly, neither \c speculative gradients nor linear
 constraints are currently supported with SCOLIB.  Specification detail
 for method independent controls is provided in Tables \ref T5d1 "5.1"
-through \ref T5d3 "5.3".
+through \ref T5d14 "5.14".
 
 Some SCOLIB methods exploit parallelism through the use of %Dakota's
 concurrent function evaluations.  The nature of the algorithms,
@@ -2755,13 +2755,13 @@ Each of the SCOLIB methods supports the \c solution_target control,
 which defines a convergence criterion in which the optimizer will
 terminate if it finds an objective function value lower than the
 specified target.  Specification detail for method dependent
-controls for all SCOLIB methods is provided in Table \ref T5d9 "5.9".
+controls for all SCOLIB methods is provided in Table \ref T5d21 "5.21".
 
-\anchor T5d9
+\anchor T5d21
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.9
+Table 5.21
 \endhtmlonly
 Specification detail for SCOLIB method dependent controls
 </caption>
@@ -2791,7 +2791,7 @@ Specification detail for SCOLIB method dependent controls
 <td>\c -DBL_MAX
 </table>
 
-Each SCOLIB method supplements the settings of \ref T5d9 "Table 5.9"
+Each SCOLIB method supplements the settings of \ref T5d21 "Table 5.21"
 with controls which are specific to its particular class of method.
 
 
@@ -2816,13 +2816,13 @@ COBYLA currently only supports termination based on the \c
 max_function_evaluations and \c solution_target specifications.  The
 search performed by COBYLA is currently not parallelized.
 
-\ref T5d10 "Table 5.10" summarizes the COBYLA specification.
+\ref T5d22 "Table 5.22" summarizes the COBYLA specification.
 
-\anchor T5d10
+\anchor T5d22
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.10
+Table 5.22
 \endhtmlonly
 Specification detail for the COBYLA method
 </caption>
@@ -2904,13 +2904,13 @@ specification terminates DIRECT if the size of the smallest subregion
 falls below this threshold.  In practice, this latter specification is
 likely to be more effective at limiting DIRECT's search.
 
-\ref T5d11 "Table 5.11" summarizes the DIRECT specification.
+\ref T5d23 "Table 5.23" summarizes the DIRECT specification.
 
-\anchor T5d11
+\anchor T5d23
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.11
+Table 5.23
 \endhtmlonly
 Specification detail for the DIRECT method
 </caption>
@@ -2998,15 +2998,15 @@ new_solutions_generated new individuals from the selected parents
 criteria are satisfied or iteration limits are exceeded
 </ol>
 
-\ref T5d12 "Table 5.12" provides the specification detail for the
+\ref T5d24 "Table 5.24" provides the specification detail for the
 controls for seeding the method, initializing a population, and for
 selecting and replacing population members.
 
-\anchor T5d12
+\anchor T5d24
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.12
+Table 5.24
 \endhtmlonly
 Specification detail for the SCOLIB EA method dependent controls: 
 seed, initialization, selection, and replacement
@@ -3112,7 +3112,7 @@ individual's objective function within the population
 The \c replacement_type controls how current populations and newly
 generated individuals are combined to create a new population.  Each
 of the \c replacement_type selections accepts an integer value, which
-is referred to below and in \ref T5d12 "Table 5.12" as the \c
+is referred to below and in \ref T5d24 "Table 5.24" as the \c
 replacement_size:
 
 \li The \c random setting creates a new population using
@@ -3143,14 +3143,14 @@ replacement.
 Note that \c new_solutions_generated is not recognized by %Dakota as a
 valid keyword unless \c replacement_type has been specified.
 
-\ref T5d13 "Table 5.13" show the controls in the EA method associated
+\ref T5d25 "Table 5.25" show the controls in the EA method associated
 with crossover and mutation.
 
-\anchor T5d13
+\anchor T5d25
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.13
+Table 5.25
 \endhtmlonly
 Specification detail for the SCOLIB EA method: crossover and mutation
 </caption>
@@ -3386,15 +3386,15 @@ weighted penalty scheme described above is used.  Otherwise, the
 constraint penalty is adapted to the value \c constraint_penalty/L,
 where L is the the smallest step length used so far.
 
-\ref T5d14 "Table 5.14" and \ref T5d15 "Table 5.15" provide the 
+\ref T5d26 "Table 5.26" and \ref T5d27 "Table 5.27" provide the 
 specification detail for the SCOLIB pattern search method and its 
 method dependent controls.
 
-\anchor T5d14
+\anchor T5d26
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.14
+Table 5.26
 \endhtmlonly
 Specification detail for the SCOLIB pattern search method: randomization,
 delta, and constraint controls
@@ -3449,11 +3449,11 @@ delta, and constraint controls
 <td>algorithm dynamically adapts the constraint penalty
 </table>
 
-\anchor T5d15
+\anchor T5d27
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.15
+Table 5.27
 \endhtmlonly
 Specification detail for the SCOLIB pattern search method: pattern controls
 </caption>
@@ -3516,14 +3516,14 @@ heuristic for continuous parameter spaces.  Solis-Wets generates trial
 points using a multivariate normal distribution, and unsuccessful
 trial points are reflected about the current point to find a descent
 direction.  This algorithm is inherently serial and will not utilize
-any parallelism.  \ref T5d16 "Table 5.16" provides the specification  
+any parallelism.  \ref T5d28 "Table 5.28" provides the specification  
 detail for this method and its method dependent controls.
 
-\anchor T5d16
+\anchor T5d28
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.16
+Table 5.28
 \endhtmlonly
 Specification detail for the SCOLIB Solis-Wets method
 <!-- dakota subcat coliny_solis_wets -->
@@ -3650,14 +3650,14 @@ original hyperrectangle.  Basically, volume_boxsize_limit stops the
 optimization when the volume of the particular rectangle which has
 fmin is less than a certain percentage of the whole volume.  \c
 min_boxsize_limit uses an arbitrary measure to stop the optimization.
-The keywords for NCSU DIRECT are described in Table \ref T5d17 "5.17"
+The keywords for NCSU DIRECT are described in Table \ref T5d29 "5.29"
 below.
 
-\anchor T5d17
+\anchor T5d29
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.17 
+Table 5.29 
 \endhtmlonly
 Specification detail for the NCSU DIRECT method
 </caption>
@@ -3735,13 +3735,13 @@ progress and convergence accordingly.
 correspons to how aggressive NOMAD is in trying to move away from
 local minima.
 
-\ref T5d8 "Table 5.18" summarizes the NOMAD specification.
+\ref T5d20 "Table 5.30" summarizes the NOMAD specification.
 
-\anchor T5d18
+\anchor T5d30
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.18
+Table 5.30
 \endhtmlonly
 Specification detail for the mesh adaptive search  method
 </caption>
@@ -3812,8 +3812,8 @@ number of generations and function evaluations, respectively.  Note that
 currently, the %Dakota default for \c max_iterations is 100 and for 
 \c max_function_evaluations is 1000.  These are the default settings 
 that will be used to "stop" the JEGA algorithms, unless some specific
-convergence criteria are set (see Tables \ref T5d20 "5.20" and
-\ref T5d21 "5.21" below).
+convergence criteria are set (see Tables \ref T5d32 "5.32" and
+\ref T5d33 "5.33" below).
 
 Beginning with v2.0, JEGA also utilizes the \c output method independent control
 to vary the amount of information presented to the user during execution.
@@ -3920,7 +3920,7 @@ between any two designs.
 There are many controls which can be used for both MOGA and SOGA
 methods.  These include among others the random seed, initialization types,
 crossover and mutation types, and some replacement types.
-These are described in Tables \ref T5d18 "5.18" and \ref T5d19 "5.19" below.
+These are described in Tables \ref T5d30 "5.30" and \ref T5d31 "5.31" below.
 
 The \c seed control defines the starting seed for the random number
 generator.  The algorithm uses random numbers heavily but a specification
@@ -4075,11 +4075,11 @@ most fit.  For example, if 100 selections are requested, then the top 100
 designs as ranked by fitness will be selected and the remaining will be
 discarded.
 
-\anchor T5d19
+\anchor T5d31
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.19
+Table 5.31
 \endhtmlonly
 Specification detail for JEGA method dependent controls: seed,
 output, initialization, mutation, and replacement
@@ -4164,11 +4164,11 @@ output, initialization, mutation, and replacement
 <td>0.9
 </table>
 
-\anchor T5d20
+\anchor T5d32
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.20
+Table 5.32
 \endhtmlonly
 Specification detail for JEGA method dependent controls: crossover
 </caption>
@@ -4385,7 +4385,7 @@ over which the metric value should be tracked.  Convergence will be attained if
 the recorded metric is below \c percent_change for \c num_generations
 consecutive generations.
 
-The MOGA specific controls are described in \ref T5d21 "Table 5.21"
+The MOGA specific controls are described in \ref T5d33 "Table 5.33"
 below.  Note that MOGA and SOGA create additional output files during
 execution.  "finaldata.dat" is a file that holds the final set of Pareto optimal
 solutions after any post-processing is complete.  "discards.dat" holds
@@ -4415,11 +4415,11 @@ distances between each solution value to winnow down the solutions in
 the full Pareto front to a subset which will be passed to the next
 iteration.
    
-\anchor T5d21
+\anchor T5d33
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.21
+Table 5.33
 \endhtmlonly
 Specification detail for MOGA method controls
 </caption>
@@ -4532,13 +4532,13 @@ than \c percent_change in the best fitness value.  The percent change can
 be as low as 0% in which case there must be no change at all over the number
 of generations.  Both also respect the stopping criteria.
  
-The SOGA specific controls are described in \ref T5d22 "Table 5.22" below.
+The SOGA specific controls are described in \ref T5d34 "Table 5.34" below.
 
-\anchor T5d22
+\anchor T5d34
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.22
+Table 5.34
 \endhtmlonly
 Specification detail for SOGA method controls
 </caption>
@@ -4692,14 +4692,14 @@ RD[i] = |alpha| RD[j].  The finite-difference step-size tolerance
 affecting H is \c fd_hessian_step_size (NL2SOL's \c delta0 and \c
 dltfdc, as mentioned previously).
 
-Table \ref T5d23 "5.23" provides the specification detail for the
+Table \ref T5d35 "5.35" provides the specification detail for the
 NL2SOL method dependent controls.
 
-\anchor T5d23
+\anchor T5d35
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.23
+Table 5.35
 \endhtmlonly
 Specification detail for NL2SOL method dependent controls.
 </caption>
@@ -4797,7 +4797,7 @@ Mappings for the method independent and dependent controls are the
 same as for the OPT++ optimization methods and are as described in
 \ref MethodOPTPPIC and \ref MethodOPTPPDC.  In particular, since OPT++
 full-Newton optimizers provide the foundation for Gauss-Newton, the
-specifications from \ref T5d6 "Table 5.6" are also applicable for 
+specifications from \ref T5d18 "Table 5.18" are also applicable for 
 \c optpp_g_newton.
 
 
@@ -4909,15 +4909,15 @@ or CCDF/CCBF/CCPF can be performed with the \c distribution keyword
 followed by either \c cumulative for the CDF/CBF/CPF option or \c
 complementary for the CCDF/CCBF/CCPF option.  This selection also
 defines the sign of the reliability or generalized reliability
-indices.  \ref T5d29 "Table 5.20" provides the specification detail
+indices.  \ref T5d36 "Table 5.36" provides the specification detail
 for the forward/inverse mappings used by each of the nondeterministic
 analysis methods.
 
-\anchor T5d29
+\anchor T5d36
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.29
+Table 5.36
 \endhtmlonly
 Specification detail for forward/inverse level mappings
 </caption>
@@ -4990,8 +4990,8 @@ Specification detail for forward/inverse level mappings
 </table>
 
 Different nondeterministic methods have differing support for
-uncertain variable distributions. Tables \ref T5d29 "5.29", \ref 
-T5d30 "5.30", and \ref T5d31 "5.31" summarize the uncertain variables
+uncertain variable distributions. Tables \ref T5d37 "5.37", \ref 
+T5d38 "5.38", and \ref T5d39 "5.39" summarize the uncertain variables
 that are available for use by the different methods, where a "-"
 indicates that the distribution is not supported by the method, a "U"
 means the uncertain input variables of this type must be uncorrelated,
@@ -5026,11 +5026,11 @@ Additional notes include:
 <!-- and a "C#" denotes that correlations are only supported between 
 variables of this type and other variables in the same numbered set. -->
 
-\anchor T5d30
+\anchor T5d37
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.30
+Table 5.37
 \endhtmlonly
 Summary of Distribution Types supported by Nondeterministic Methods, Part I (Continuous Aleatory Types)
 </caption>
@@ -5231,11 +5231,11 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 </table>  
 
-\anchor T5d31
+\anchor T5d38
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.31
+Table 5.38
 \endhtmlonly
 Summary of Distribution Types supported by Nondeterministic Methods, Part II (Discrete Aleatory Types)
 </caption>
@@ -5332,11 +5332,11 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II (Di
 <td>-
 </table>
 
-\anchor T5d32
+\anchor T5d39
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.32
+Table 5.39
 \endhtmlonly
 Summary of Distribution Types supported by Nondeterministic Methods, Part III (Epistemic, Design, and State Types)
 </caption>
@@ -5567,15 +5567,15 @@ samples.  To obtain sensitivity indices that are reasonably accurate,
 we recommend that N, the number of samples, be at least one hundred
 and preferably several hundred or thousands. Because of the
 computational cost, \c variance_based_decomp is turned off as a
-default. \ref T5d33 "Table 5.33" provides details of the
-nondeterministic sampling specifications beyond those of \ref T5d28
-"Table 5.28".
+default. \ref T5d40 "Table 5.40" provides details of the
+nondeterministic sampling specifications beyond those of \ref T5d36
+"Table 5.36".
 
-\anchor T5d33
+\anchor T5d40
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.33
+Table 5.40
 \endhtmlonly
 Specification detail for nondeterministic sampling method
 </caption>
@@ -5741,14 +5741,14 @@ and [\ref Eldred2006b "Eldred and Bichon, 2006"] and in the Uncertainty
 Quantification Capabilities chapter of the Users Manual 
 [\ref UsersMan "Adams et al., 2010"].
 
-\ref T5d34 "Table 5.34" provides details of the local reliability method
-specifications beyond those of \ref T5d28 "Table 5.28".
+\ref T5d41 "Table 5.41" provides details of the local reliability method
+specifications beyond those of \ref T5d41 "Table 5.41".
 
-\anchor T5d34
+\anchor T5d41
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.34
+Table 5.41
 \endhtmlonly
 Specification detail for local reliability methods
 </caption>
@@ -5836,14 +5836,14 @@ as described in \ref ModelSurrG (the use of an embedded global
 surrogate model necessitates repeating selected surrogate model
 specifications within the method specification).
 
-\ref T5d35 "Table 5.35" provides details of the global reliability method
-specifications beyond those of \ref T5d28 "Table 5.28".
+\ref T5d42 "Table 5.42" provides details of the global reliability method
+specifications beyond those of \ref T5d36 "Table 5.36".
 
-\anchor T5d35
+\anchor T5d42
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.35
+Table 5.42
 \endhtmlonly
 Specification detail for global reliability methods
 </caption>
@@ -5956,13 +5956,13 @@ to search for "representative" points. Once these are located, the multimodal sa
 density is set and then \c mm_adapt_import proceeds similarly to \c adapt_import (sample 
 until convergence).  
 
-\ref T5d37 "Table 5.36" provides details of the \c importance_sampling method.
+\ref T5d43 "Table 5.43" provides details of the \c importance_sampling method.
 
-\anchor T5d36
+\anchor T5d43
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.36
+Table 5.43
 \endhtmlonly
 Specification detail for the LHS-based importance sampling method
 </caption>
@@ -6019,14 +6019,14 @@ as described in \ref ModelSurrG, (the use of an embedded GP model
 necessitates repeating selected surrogate model specifications within
 the method specification).
 
-\ref T5d37 "Table 5.37" provides details of the \c gpais method
+\ref T5d44 "Table 5.44" provides details of the \c gpais method
 for Gaussian process adaptive importance sampling. 
 
-\anchor T5d37
+\anchor T5d44
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.37
+Table 5.44
 \endhtmlonly
 Specification detail for Gaussian process adaptive importance sampling method
 </caption>
@@ -6184,14 +6184,14 @@ as described in \ref ModelSurrG, (the use of an embedded global
 surrogate model necessitates repeating selected surrogate model
 specifications within the method specification).
 
-\ref T5d38 "Table 5.38" provides details of the \c adaptive_sampling method
+\ref T5d45 "Table 5.45" provides details of the \c adaptive_sampling method
 for adaptive sampling. 
 
-\anchor T5d38
+\anchor T5d45
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.38
+Table 5.45
 \endhtmlonly
 Specification detail for adaptive sampling method
 </caption>
@@ -6308,14 +6308,14 @@ In summary, the total number of samples generated will be the
 total number of response levels (over all response functions) 
 times (2d+1)*\c samples, where d is the number of uncertain variables. 
 
-\ref T5d39 "Table 5.39" provides details of the \c pof_darts  method
+\ref T5d46 "Table 5.46" provides details of the \c pof_darts  method
 for estimating probability of failure. 
 
-\anchor T5d39
+\anchor T5d46
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.39
+Table 5.46
 \endhtmlonly
 Specification detail for the pof darts method
 </caption>
@@ -6372,8 +6372,8 @@ Manual [\ref UsersMan "Adams et al., 2010"] for additional information
 on the PCE algorithm.
 
 To select the basis \f$\Psi_i\f$ of the expansion, three approaches
-may be employed, as previously shown in Tables \ref T5d29 "5.29", 
-\ref T5d30 "5.30", and \ref T5d31 "5.31":
+may be employed, as previously shown in Tables \ref T5d37 "5.37", 
+\ref T5d38 "5.38", and \ref T5d39 "5.39":
 Wiener, Askey, and Extended.  The Wiener option uses a Hermite
 orthogonal polynomial basis for all random variables and employs the
 same nonlinear variable transformation as the local and global
@@ -6386,8 +6386,8 @@ numerically-generated orthogonal polynomials for non-Askey probability
 density functions.  The selection of Wiener versus Askey versus
 Extended is partially automated and partially under the user's
 control.  The Extended option is the default and supports only
-Gaussian correlations (see Tables \ref T5d29 "5.29", 
-\ref T5d30 "5.30", and \ref T5d31 "5.31").  This default can
+Gaussian correlations (see Tables \ref T5d37 "5.37", 
+\ref T5d38 "5.38", and \ref T5d39 "5.39").  This default can
 be overridden by the user by supplying the keyword \c askey to request
 restriction to the use of Askey bases only or by supplying the keyword
 \c wiener to request restriction to the use of exclusively Hermite
@@ -6412,9 +6412,9 @@ The \c p_refinement keyword specifies the usage of automated
 polynomial order refinement, which can be either \c uniform or \c
 dimension_adaptive.  The \c dimension_adaptive option is supported for
 the tensor-product quadrature and Smolyak sparse grid options (see
-\ref T5d40 "Table 5.40" below), and \c uniform is supported for tensor
+\ref T5d47 "Table 5.47" below), and \c uniform is supported for tensor
 and sparse grids as well as regression approaches (\c collocation_points 
-or \c collocation_ratio, see \ref T5d41 "Table 5.41" below).  Each of
+or \c collocation_ratio, see \ref T5d48 "Table 5.48" below).  Each of
 these refinement cases makes use of the \c max_iterations and \c
 convergence_tolerance method independent controls (see \ref T5d1
 "Table 5.1"); the former control limits the number of refinement 
@@ -6489,16 +6489,16 @@ the aleatory random variable domain is integrated, leaving behind a
 polynomial relationship between the statistics and the remaining
 design/state/epistemic variables.
 
-\ref T5d40 "Table 5.40" shows these general PCE controls and it, along
-with Tables \ref T5d41 "5.41", \ref T5d42 "5.42", and \ref T5d44 "5.44" 
+\ref T5d47 "Table 5.47" shows these general PCE controls and it, along
+with Tables \ref T5d48 "5.48", \ref T5d49 "5.49", and \ref T5d51 "5.51" 
 to follow, provide the details of the polynomial chaos expansion 
-specifications beyond those of \ref T5d28 "Table 5.28".
+specifications beyond those of \ref T5d36 "Table 5.36".
 
-\anchor T5d40
+\anchor T5d47
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.40
+Table 5.47
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: general controls.
 </caption>
@@ -6590,7 +6590,7 @@ Specification detail for polynomial chaos expansion method: general controls.
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
 options are provided and the specification details for these options
-are provided in Tables \ref T5d40 "5.40" and \ref T5d41 "5.41":
+are provided in Tables \ref T5d48 "5.48" and \ref T5d49 "5.49":
 
 <ol>
 <li> multidimensional integration by a tensor-product of Gaussian
@@ -6688,11 +6688,11 @@ are provided in Tables \ref T5d40 "5.40" and \ref T5d41 "5.41":
      higher, the cubature points and weights are exported in tabular
      form to the file \c dakota_cubature_tabular.dat.
 
-\anchor T5d41
+\anchor T5d48
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.41
+Table 5.48
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: quadrature, 
 cubature, and sparse grid approaches.
@@ -6790,11 +6790,11 @@ cubature, and sparse grid approaches.
      expansion_import_file).  A total-order expansion is assumed and
      must be specified using \c expansion_order.
 
-\anchor T5d42
+\anchor T5d49
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.42
+Table 5.49
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: expansion 
 sampling, regression, and expansion import options.
@@ -6868,7 +6868,7 @@ sampling, regression, and expansion import options.
 </table>
 
 If \c collocation_points or \c collocation_ratio is specified, the PCE
-coefficients will be determined by regression. \ref T5d43 "Table 5.43"
+coefficients will be determined by regression. \ref T5d50 "Table 5.50"
 lists a set of optional regression specifications.  If no regression
 specification is provided, appropriate defaults are defined.
 Specifically SVD-based least-squares will be used for solving
@@ -6889,11 +6889,11 @@ internally by the regression method across the set of expansion orders
 (1,...,expansion_order) and the set of specified noise tolerances and
 return the one with the lowest cross validation error indicator.
 
-\anchor T5d43
+\anchor T5d50
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.43
+Table 5.50
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: additional regression options.
 </caption>
@@ -7019,14 +7019,14 @@ is identical to that of \ref MethodNonDLocalRel, with the
 implementation difference that density reweighting must account for
 additional non-Gaussian cases.  This option allows for refinement of
 probability and generalized reliability results using importance
-sampling. \ref T5d44 "Table 5.44" provide the details of these
+sampling. \ref T5d51 "Table 5.51" provide the details of these
 sampling specifications for polynomial chaos.
 
-\anchor T5d44
+\anchor T5d51
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.44
+Table 5.51
 \endhtmlonly
 Specification detail for polynomial chaos expansion method: sampling controls.
 </caption>
@@ -7190,7 +7190,7 @@ nonequidistant collocation points (e.g., the Gauss point selections
 described above) is not well motivated, so equidistant Newton-Cotes
 points are employed in this case, and all random variable types are
 transformed to standard uniform probability space (refer to Tables
-\ref T5d29 "5.29", \ref T5d30 "5.30", and \ref T5d31 "5.31" for
+\ref T5d37 "5.37", \ref T5d38 "5.38", and \ref T5d39 "5.39" for
 variable types for which this transformation is supported).  The
 global gradient-enhanced interpolants (Hermite interpolation
 polynomials) are also restricted to uniform or transformed uniform
@@ -7252,16 +7252,16 @@ only the aleatory random variable domain is integrated, leaving behind
 a polynomial relationship between the statistics and the remaining
 design/state/epistemic variables.
 
-\ref T5d45 "Table 5.45" shows these general SC controls, and it along
-with \ref T5d46 "Table 5.46" to follow provide the details of the
-SC specifications beyond those of Tables \ref T5d28 "5.28" and 
-\ref T5d40 "5.43".
+\ref T5d52 "Table 5.52" shows these general SC controls, and it along
+with \ref T5d53 "Table 5.53" to follow provide the details of the
+SC specifications beyond those of Tables \ref T5d36 "5.36" and 
+\ref T5d50 "5.50".
 
-\anchor T5d45
+\anchor T5d52
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.45
+Table 5.52
 \endhtmlonly
 Specification detail for stochastic collocation method: general controls.
 </caption>
@@ -7347,7 +7347,7 @@ Specification detail for stochastic collocation method: general controls.
 
 To form the multidimensional interpolants \f$L_i\f$ of the expansion,
 two options are provided and the specification details for these options
-are provided in \ref T5d46 "Table 5.46".
+are provided in \ref T5d53 "Table 5.53".
 
 <ol>
 <li> interpolation on a tensor-product of Gaussian quadrature points
@@ -7366,11 +7366,11 @@ are provided in \ref T5d46 "Table 5.46".
      \c non_nested option, and the growth rules are restricted unless
      overridden by the \c unrestricted keyword.
 
-\anchor T5d46
+\anchor T5d53
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.46
+Table 5.53
 \endhtmlonly
 Specification detail for stochastic collocation method: grid controls.
 </caption>
@@ -7428,7 +7428,7 @@ MethodNonD, the \c sample_type, \c samples, \c seed, \c fixed_seed,
 and \c rng specifications described in \ref MethodNonDMC, and the \c
 probability_refinement and \c refinement_samples specifications
 described in \ref MethodNonDPCE.  Each of the sampling specifications
-is identical to those for PCE shown in \ref T5d44 "Table 5.44" and
+is identical to those for PCE shown in \ref T5d51 "Table 5.51" and
 refer to sampling on the interpolant for the purposes of generating
 approximate statistics, which should not be confused with collocation
 evaluations used for forming the interpolant.  Finally, the process
@@ -7514,15 +7514,15 @@ methods to calculate these bounds.  \c local_interval_est
 allows the user to specify either \c sqp which is sequential
 quadratic programming, or \c nip which is a nonlinear interior point
 method.  
-\ref T5d47 "Table 5.47" provides the specification for the 
+\ref T5d54 "Table 5.54" provides the specification for the 
 local interval method. 
 
 
-\anchor T5d47
+\anchor T5d54
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.47
+Table 5.54
 \endhtmlonly
 Specification detail for local interval estimation used in epistemic uncertainty
 </caption>
@@ -7594,14 +7594,14 @@ option allows the seed to be specified.    The \c import_points_file and \c
 export_points_file specifications are as described in \ref ModelSurrG,
 (the use of an embedded global surrogate model necessitates repeating
 selected surrogate model specifications within the method
-specification).  \ref T5d48 "Table 5.48"
+specification).  \ref T5d55 "Table 5.55"
 provides the specification for the global interval methods.
 
-\anchor T5d48
+\anchor T5d55
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.48
+Table 5.55
 \endhtmlonly
 Specification detail for global interval estimation used in epistemic uncertainty
 </caption>
@@ -7735,16 +7735,16 @@ gen_reliability_levels) or outputs (\c response_levels with \c compute
 probability levels and the same probability-based mappings described
 above are performed.
 
-\ref T5d49 "Table 5.49" provides the specification for the \c
+\ref T5d56 "Table 5.56" provides the specification for the \c
 local_evidence method. Note that two local optimization methods 
 are available:  \c sqp (sequential quadratic programming or \c nip
 (nonlinear interior point method). 
 
-\anchor T5d49
+\anchor T5d56
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.49
+Table 5.56
 \endhtmlonly
 Specification detail for local evidence theory method for epistemic uncertainty
 </caption>
@@ -7780,7 +7780,7 @@ and maximum function value must be calculated for each "interval cell
 combination."  These bounds are aggregated into belief and
 plausibility.
 
-\ref T5d50 "Table 5.50" provides the specification for the \c
+\ref T5d57 "Table 5.57" provides the specification for the \c
 global_evidence method.  \c global_evidence allows the user to specify
 several approaches for calculating the belief and plausibility functions: 
 \c lhs, \c ego, \c sbo, and \c ea.  
@@ -7834,11 +7834,11 @@ uses optimization methods instead to find the minimum and maximum
 sample values within each cell, this can also be computationally
 expensive.
 
-\anchor T5d50
+\anchor T5d57
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.50
+Table 5.57
 \endhtmlonly
 Specification detail for global evidence theory method for epistemic uncertainty
 </caption>
@@ -8046,14 +8046,14 @@ close collaborators of the %Dakota team.
 If you are interested in this capability, contact the %Dakota developers 
 at dakota-developers@development.sandia.gov.
 
-\ref T5d51 "Table 5.51" provides the specification 
+\ref T5d58 "Table 5.58" provides the specification 
 details for the \c bayes_calibration methods.
 
-\anchor T5d51
+\anchor T5d58
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.51
+Table 5.58
 \endhtmlonly
 Specification detail for the Bayesian calibration methods
 </caption>
@@ -8224,14 +8224,14 @@ In each of these cases, convergence order for a response quantity of
 interest (QOI) is estimated from
 \f[p = ln(\frac{QOI_3 - QOI_2}{QOI_2 - QOI_1})/ln(r)\f]
 where \f$r\f$ is the uniform refinement rate specified by \c 
-refinement_rate.  \ref T5d52 "Table 5.52" provides the specification 
+refinement_rate.  \ref T5d59 "Table 5.59" provides the specification 
 details for the \c richardson_extrap method.
 
-\anchor T5d52
+\anchor T5d59
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.52
+Table 5.59
 \endhtmlonly
 Specification detail for Richardson extrapolation method for solution verification
 </caption>
@@ -8325,13 +8325,13 @@ indices which indicate how important the uncertainty in each input
 variable is in contributing to the output variance.  More details 
 on variance based decomposition are given in \ref MethodNonDMC.
 Design of experiments specification detail is
-given in \ref T5d53 "Table 5.53".
+given in \ref T5d60 "Table 5.60".
 
-\anchor T5d53
+\anchor T5d60
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.53
+Table 5.60
 \endhtmlonly
 Specification detail for design of experiments methods
 </caption>
@@ -8457,7 +8457,7 @@ these sequences, see [\ref Halton1960 "Halton, 1960",
 \ref Kocis1997 "Kocis and Whiten, 1997"].
  
 The specification for specifying quasi-Monte Carlo (\c fsu_quasi_mc) 
-is given below in \ref T5d54 "Table 5.54".  
+is given below in \ref T5d61 "Table 5.61".  
 The user must specify if the sequence is 
 (\c halton) or (\c hammersley).  The user must also specify the number 
 of samples to generate for each variable (\c samples). 
@@ -8518,11 +8518,11 @@ distribution).  Complete explanation of these measures can be found in
 [\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 
 <!-- dakota subcat fsu_quasi_mc -->
-\anchor T5d54
+\anchor T5d61
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.54
+Table 5.61
 \endhtmlonly
 Specification detail for FSU Quasi-Monte Carlo sequences 
 </caption>
@@ -8655,14 +8655,14 @@ More details on the quality measures are given under the description of the
 QMC methods. 
 
 The specification detail for the FSU CVT method is given in 
-\ref T5d55 "Table 5.55".
+\ref T5d62 "Table 5.62".
 
 <!-- dakota subcat fsu_cvt -->
-\anchor T5d55
+\anchor T5d62
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.55
+Table 5.62
 \endhtmlonly
 Specification detail for FSU Centroidal Voronoi Tesselation sampling
 </caption>
@@ -8756,13 +8756,13 @@ partitions) applies to each variable being studied and must be odd
 also be adjusted at runtime as necessary.  For information on
 practical use of this method, see 
 [\ref Saltelli2004 "Saltelli, et al., 2004"].  The specification detail
-for the PSUADE MOAT method is given in \ref T5d56 "Table 5.56".
+for the PSUADE MOAT method is given in \ref T5d63 "Table 5.63".
 
-\anchor T5d56
+\anchor T5d63
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.56
+Table 5.63
 \endhtmlonly
 Specification detail for PSUADE methods
 </caption>
@@ -8856,14 +8856,14 @@ appropriate steps with any discrete range and discrete set variables.
 A \c num_steps specification must result in discrete range and set
 index steps that are integral: no remainder is currently permitted in
 the integer step calculation and no rounding to integer steps will
-occur.  The \c final_point specification detail is given in \ref T5d57
-"Table 5.57".
+occur.  The \c final_point specification detail is given in \ref T5d64
+"Table 5.64".
 
-\anchor T5d57
+\anchor T5d64
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.57
+Table 5.64
 \endhtmlonly
 final_point specification detail for the vector parameter study
 </caption>
@@ -8901,13 +8901,13 @@ state; real or integer), the steps are set index offsets, not steps
 between the actual set values.  This increment process is performed \c
 num_steps times, and since the initial values are included, the total
 number of simulations is again equal to \c num_steps+1. The \c
-step_vector specification detail is given in \ref T5d58 "Table 5.58".
+step_vector specification detail is given in \ref T5d65 "Table 5.65".
 
-\anchor T5d58
+\anchor T5d65
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.58
+Table 5.65
 \endhtmlonly
 step_vector specification detail for the vector parameter study
 </caption>
@@ -8960,13 +8960,13 @@ will not be used, they need not be specified. For discrete set types,
 the actual values should be specified, not the set indices, although
 the values will be validated for membership within the set value
 specifications.  The list parameter study specification detail is
-given in \ref T5d59 "Table 5.59".
+given in \ref T5d66 "Table 5.66".
 
-\anchor T5d59
+\anchor T5d66
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.59
+Table 5.66
 \endhtmlonly
 Specification detail for the list parameter study
 </caption>
@@ -9020,14 +9020,14 @@ MethodPSVPS) in either actual values (continuous and discrete range)
 or index offsets (discrete set). The \c steps_per_variable
 specification provides the number of increments per variable (again,
 employed sequentially) in each of the plus and minus directions. The
-centered parameter study specification detail is given in \ref T5d60
-"Table 5.60".
+centered parameter study specification detail is given in \ref T5d67
+"Table 5.67".
 
-\anchor T5d60
+\anchor T5d67
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.60
+Table 5.67
 \endhtmlonly
 Specification detail for the centered parameter study
 </caption>
@@ -9079,13 +9079,13 @@ occurs, so the partitions specification must be carefully selected in
 the presence of these types.  Since the initial values from the
 variables specification will not be used, they need not be
 specified. The multidimensional parameter study specification detail
-is given in \ref T5d61 "Table 5.61".
+is given in \ref T5d68 "Table 5.68".
 
-\anchor T5d61
+\anchor T5d68
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.61
+Table 5.68
 \endhtmlonly
 Specification detail for the multidimensional parameter study
 </caption>
