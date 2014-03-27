@@ -113,11 +113,39 @@ init_communicators(const IntArray& message_lengths,
 		   int max_iterator_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
-  int min_procs_per_eval = std::max(procsPerEvalSpec, procsPerAnalysisSpec);
+
+  /*
+  // Any logic must not overconstrain the evaluation partition and prevent
+  // assignment of multiple analysis servers/processors!  The code below does
+  // not do the right thing for all cases since min_procs_per_eval does NOT
+  // provide a lower bound, but rather an override which must be obeyed. To
+  // do this right will require a mix of top-down and bottom-up flow, or
+  // perhaps passing a new min_procs_per_server setting (add along with an
+  // attribute for peer_dynamic support).
+  int min_procs_per_eval;
+  if (numEvalServersSpec)
+    // don't overconstrain with a combination of numEvalServersSpec + analysis
+    // partition, since we don't want to preclude multiple analysis servers.
+    min_procs_per_eval = procsPerEvalSpec;
+  else {
+    // If there are analysis-level partition specifications, enforce a
+    // lower bound on procs_per_eval
+    int analysis_partition_l_bnd = 0;
+    if (numAnalysisServersSpec && procsPerAnalysisSpec)
+      analysis_partition_l_bnd
+      = numAnalysisServersSpec * procsPerAnalysisSpec; // ALMOST, except master
+    else if (numAnalysisServersSpec)
+      analysis_partition_l_bnd = numAnalysisServersSpec; // NO
+    else if (procsPerAnalysisSpec)
+      analysis_partition_l_bnd = procsPerAnalysisSpec;   // NO
+    min_procs_per_eval = std::max(procsPerEvalSpec, analysis_partition_l_bnd);
+  }
+  */
   short default_config = PUSH_UP; // init_eval_comms&init_analysis_comms
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
-    numEvalServersSpec, min_procs_per_eval, max_iterator_concurrency,
-    asynchLocalEvalConcSpec, default_config, evalScheduling);
+    numEvalServersSpec, /*min_procs_per_eval*/procsPerEvalSpec,
+    max_iterator_concurrency, asynchLocalEvalConcSpec, default_config,
+    evalScheduling);
 
   set_evaluation_communicators(message_lengths);
 

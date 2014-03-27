@@ -213,8 +213,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	       int capacity_multiplier, short default_config,
 	       short scheduling_override, bool print_rank)
 {
-/*
-#ifdef MPI_DEBUG
+//#ifdef MPI_DEBUG
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
 	 << num_servers << " procs_per_server = " << procs_per_server
@@ -222,8 +221,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	 << max_concurrency << " capacity_multiplier = " << capacity_multiplier
 	 << " default_config = " << default_config << " scheduling_override = "
 	 << scheduling_override << std::endl;
-#endif
-*/
+//#endif
 
   const bool master_override = (scheduling_override == MASTER_SCHEDULING);
   const bool peer_override
@@ -295,23 +293,20 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
       abort_handler(-1);
     }
     else if (num_servers == avail_procs) {
-      ded_master = false; procs_per_server = 1; proc_remainder = 0;
+      ded_master = false;
       if (master_override && print_rank) // TO DO: consider hard error
 	Cerr << "Warning: user selection of master scheduling cannot be "
 	     << "supported in this partition.  Overriding to peer partition.\n";
     }
     else if ( master_override || ( !peer_override && num_servers > 1 &&
-	      max_concurrency > num_servers * capacity_multiplier ) ) {
-      // master partition (dynamic scheduling)
-      procs_per_server = (avail_procs-1) / num_servers;
-      proc_remainder   = (avail_procs-1) % num_servers;
-      ded_master       = true;
-    }
-    else { // peer partition (dynamic or static scheduling)
-      procs_per_server = avail_procs / num_servers;
-      proc_remainder   = avail_procs % num_servers;
-      ded_master       = false;
-    }
+	      max_concurrency > num_servers * capacity_multiplier ) )
+      ded_master = true;  // master partition (dynamic scheduling)
+    else
+      ded_master = false; // peer partition (dynamic or static scheduling)
+
+    int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+    procs_per_server = server_procs / num_servers;
+    proc_remainder   = server_procs % num_servers;
   }
   else if (procs_per_server > 0) { // Data default is 0: user request of 1
                                    // executes this block as a manual override
@@ -335,37 +330,39 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
       abort_handler(-1);
     }
     else if (procs_per_server == avail_procs) {
-      ded_master = false; num_servers = 1;
+      ded_master = false;
       if (master_override && print_rank) // TO DO: consider hard error
 	Cerr << "Warning: user selection of master scheduling cannot be "
 	     << "supported in this partition.  Overriding to peer partition.\n";
     }
-    else {
-      if (!peer_override)
-	num_servers = (avail_procs-1) / procs_per_server; // estimate
-      if ( master_override || ( !peer_override && num_servers > 1 &&
-	   max_concurrency > num_servers * capacity_multiplier ) ) {
-	// master partition (dynamic scheduling)
-	ded_master = true;
-	// previous num_servers estimate is correct
-	if ( (avail_procs-1) % procs_per_server && print_rank )
-	  Cerr << "Warning: user override of partition size results in idle "
-	       << "processors for dedicated master partition\n         "
-	       << "(partition size request: " << procs_per_server << " avail: "
-	       << avail_procs - 1 << " idle: "
-	       << avail_procs - 1 - num_servers * procs_per_server << ")\n";
-      }
-      else { // peer partition (dynamic or static scheduling)
-	ded_master  = false;
-	num_servers = avail_procs / procs_per_server;
-	if (avail_procs % procs_per_server && print_rank)
-	  Cerr << "Warning: user override of partition size results in idle "
-	       << "processors for peer partition\n         (partition size "
-	       << "request: " << procs_per_server << " avail: " << avail_procs
-	       << " idle: " << avail_procs - num_servers * procs_per_server
-	       << ")\n";
+    else if (master_override)
+      ded_master = true;
+    else if (peer_override)
+      ded_master = false;
+    else { // neither override: try peer, then master
+      int peer_servers = avail_procs / procs_per_server;
+      // since we will not carry a proc_remainder, the logic below currently
+      // dedicates a master if there are excess processors, even if not needed
+      // to cover max_concurrency
+      if (peer_servers == 1 || // avail_procs not enough for 2 full servers
+	  max_concurrency <= peer_servers * capacity_multiplier)
+	ded_master = (avail_procs % procs_per_server);//if remainder, dedicate 1
+      else {
+	// num_servers could drop from 2 to 1 with one less processor, and 2
+	// peer servers will always be better than 1 ded master server.
+	// However, we currently choose n ded master servers over n+1 peer
+	// servers for n>1 if max_concurrency indicates dynamic scheduling.
+	int master_servers = (avail_procs - 1) / procs_per_server;
+	ded_master = (master_servers > 1);
       }
     }
+    int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+    num_servers = server_procs / procs_per_server;
+    if (server_procs % procs_per_server && print_rank)
+      Cerr << "Warning: user override of partition size results in idle "
+	   << "processors\n         (partition size request: "
+	   << procs_per_server << " avail: " << server_procs << " idle: "
+	   << server_procs - num_servers * procs_per_server << ")\n";
   }
   else {
     // --------------------------------------------------
