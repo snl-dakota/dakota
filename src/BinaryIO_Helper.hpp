@@ -228,10 +228,57 @@ public:
       throw BinaryStream_StoreDataFailure();
   }
 
+
+  /// Reserve space for Array of Strings dataset (extensible to 2D?) in HDF5
+  void reserve_dataset_space(const std::string& dset_name,
+                             const StringArray& buf) const
+  {
+    // WJB - no "chunking" setup for strings (yet)
+    store_data(dset_name, buf);
+
+  }
+
+  /// Reserve space for Array of Strings dataset (extensible to 2D?) in HDF5
+  void reserve_dataset_space(const std::string& dset_name,
+                             const std::vector<StringArray>& buf) const
+  {
+    // WJB - no "chunking" setup for strings (yet)
+    store_data(dset_name, buf);
+
+  }
+
  
+  /// Reserve space for Array of Teuchos Vectors dataset in HDF5 (NOTE: 2D!)
+  template <typename T> // T is the Teuchos::SDVector::scalarType
+  herr_t reserve_dataset_space(const std::string& dset_name,
+    const std::vector< Teuchos::SerialDenseVector<int,T> >& buf) const
+  {
+    reserve_dataset_space<T,2>( dset_name, buf.size(), buf[0].length() );
+
+    store_data(dset_name, buf);
+  }
+
+
+  /// Reserve space for Array of Teuchos Matrices dataset in HDF5 (NOTE: 3D!)
+  template <typename T> // T is the Teuchos::SDMatrix::scalarType
+  herr_t reserve_dataset_space(const std::string& dset_name,
+    const std::vector< Teuchos::SerialDenseMatrix<int,T> >& buf) const
+  {
+    if ( buf.empty() && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    int max_dim_sz = std::max( buf[0].numRows(), buf[0].numCols() );  
+
+    // WJB - NOTE: just reserving space here, NOT allocating/writing data
+    reserve_dataset_space<T,3>(dset_name, buf.size(), max_dim_sz*max_dim_sz);
+
+    store_data(dset_name, buf);
+  }
+
+
   /// String value stored in HDF5
   herr_t store_data(const std::string& dset_name,
-                    const std::string& val) const
+                    const std::string& val, std::size_t idx=0) const
   {
     create_groups(dset_name);
 
@@ -246,7 +293,7 @@ public:
   /// of h5ex_t_vlstring.c (relies on contiguous string storage) and
   /// h5ex_t_vlen.c (doesn't leverage VL string))
   herr_t store_data(const std::string& dset_name,
-                    const StringArray& buf) const
+                    const StringArray& buf, std::size_t idx=0) const
   {
     create_groups(dset_name);
 
@@ -270,7 +317,7 @@ public:
   }
 
   herr_t store_data(const std::string& dset_name,
-                    const std::vector<StringArray>& buf) const
+                    const std::vector<StringArray>& buf, std::size_t idx=0) const
   {
     // WJB - come back ASAP! (not needed for Optimization Results??)
     throw std::string("store_data std::vector<StringArray> not implemented");
@@ -296,7 +343,7 @@ public:
   // NOT currently used by Dakota's ResultsDBHDF5 class
   template <typename ArrayType>
   herr_t store_data_array(const std::string& dset_name,
-                          const ArrayType& buf) const
+                          const ArrayType& buf, std::size_t idx=0) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
@@ -314,7 +361,8 @@ public:
 
   template <typename T> // T is tricky, it is the Teuchos::SDVector::scalarType
   herr_t store_data(const std::string& dset_name,
-                    const Teuchos::SerialDenseVector<int,T>& buf) const
+                    const Teuchos::SerialDenseVector<int,T>& buf,
+                    std::size_t idx=0) const
   {
 #if 0 // WJB:  Disabled since storing vector data is of little value without chunking/hyperslabs
     if ( buf.empty() && exitOnError )
@@ -430,32 +478,34 @@ public:
   //       row vector slabs
   //template <typename OrdinalType, typename ScalarType>
   herr_t append_data_slab(const std::string& dset_name,
-                          const RealVector& buf) const
+                          const RealVector& buf, std::size_t idx=0) const
   {
 // WJB - ASAP post commit Sp1 "complete": try std::vector before Teuchos types
     hsize_t last_row = find_last_dataset_record(dset_name);
     return append_data_slab( dset_name, last_row, &buf[0], buf.length() );
   }
 
-  // should parameterize on ScalarType -- template <typename T>
-  // that way, same func for ints, doubles,...
+
+  template <typename T>  // T is the Teuchos::SDMatrix::scalarType
   herr_t store_data(const std::string& dset_name,
-                    const RealMatrix& buf) const
+                    const Teuchos::SerialDenseMatrix<int,T>& buf,
+                    std::size_t idx=0) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
     // Matrix is 2D
-    return store_data<double,2>( dset_name,
+    return store_data<T,2>( dset_name,
              boost::assign::list_of( buf.numRows() )( buf.numCols() ),
              buf.values() );
   }
 
 
-  template <typename T>  // T is tricky, it is the Teuchos::SDVector::scalarType
+  template <typename T>  // T is the Teuchos::SDVector::scalarType
   herr_t store_data(
             const std::string& dset_name,
-            const std::vector< Teuchos::SerialDenseVector<int,T> >& buf) const
+            const std::vector< Teuchos::SerialDenseVector<int,T> >& buf,
+            std::size_t idx=0) const
   {
     // 'size()' vs 'length()' and 'size_type' vs 'ScalarType' prevents writing a
     // generic algorithm, common to both std::vector and Teuchos vector
@@ -475,35 +525,10 @@ public:
     std::vector<hsize_t> dims(2);
     dims[0] = buf.size(); dims[1] = buf[0].length(); // WJB: fcnPtr vs PassIn?
 
-    std::vector<hsize_t> max_dims = initializeUnlimitedDims<2>();
-
-    // Create the memory space...
-    hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
-                        max_dims.data() );
-
-    // Enable chunking using creation properties
-    // Chunk size is that of the longest row vector
-    int num_cols = dims[1];
-    for(int i=0; i<buf.size(); ++i) {
-      num_cols = std::max( num_cols, buf[i].length() ); // WJB: "generic" is hard?
-    }
-
-    //output_status(num_cols);
-
-    std::vector<hsize_t> chunk_dims = dims;
-    chunk_dims[0] = 1; chunk_dims[1] = num_cols;
-
-    hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
-    H5Pset_layout(cparms, H5D_CHUNKED);
-    H5Pset_chunk( cparms, chunk_dims.size(), chunk_dims.data() );
+    std::vector<hsize_t> max_dims = initialize_unlimited_dims<2>();
 
     // Create a new dataset within the DB using cparms creation properties.
 
-    hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
-                      NativeDataTypes<T>::datatype(), mem_space,
-                      H5P_DEFAULT, cparms, H5P_DEFAULT);
-
-    //std::cout << "--WJB: looks DECENT down to appendInvocation..."<< std::endl; 
     herr_t status;
     for(int i=0; i<dims[0]; ++i) {
       std::vector<T> tmp( dims[1] );
@@ -513,9 +538,6 @@ public:
       status = append_data_slab( dset_name, i, tmp.data(), buf[i].length() );
     }
 
-    // WJB - ToDo: free resources
-    H5Sclose(mem_space);
-    //std::cout << std::endl; 
   }
 
 
@@ -524,25 +546,22 @@ public:
   /// one matrix "slab" at a time (HDF5's fill_value used to fill empty
   /// locations in the rectangular space).
   /// for example vector<RealMatrix>, vector<IntMatrix>
-  //template <typename T>
-  herr_t store_data(const std::string& dset_name,
-                    const RealMatrixArray& buf) const
+  template <typename T>
+  herr_t store_data(
+            const std::string& dset_name,
+            const std::vector< Teuchos::SerialDenseMatrix<int,T> >& buf,
+            std::size_t idx=0) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
+#if 0 // WJB: new design -- dataset is ALEADY created for "lookup" and overwrite
     // WJB: much of the "chunking setup" code is nearly identical to the
     // Teuchos "row" VectorSlab version, so re-factor for reuse THIS sprint
 
     // Create a 3D dataspace sufficient to store first matrix slab
     std::vector<hsize_t> dims(3);
     dims[0] = buf.size(); dims[1] = buf[0].numRows(); dims[2] = buf[0].numCols();
-
-    std::vector<hsize_t> max_dims = initializeUnlimitedDims<3>();
-
-    // Create the memory space...
-    hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
-                        max_dims.data() );
 
     // Enable chunking using creation properties
     // Chunk size is that of the largest matrix slab
@@ -551,30 +570,16 @@ public:
       slab_size = std::max( slab_size, buf[i].numRows()*buf[i].numCols() );
     }
 
-    std::vector<hsize_t> chunk_dims = dims;
-    chunk_dims[0] = 1; chunk_dims[1] = slab_size/2; chunk_dims[2] = slab_size/2;
-
-    hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
-    H5Pset_layout(cparms, H5D_CHUNKED);
-    H5Pset_chunk( cparms, chunk_dims.size(), chunk_dims.data() );
-
     // Create a new dataset within the DB using cparms creation properties.
-
     // 'size()' vs 'length()' and 'value_type' vs 'ScalarType' prevents
     // writing a generic algorithm
-    hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
-                      NativeDataTypes<double>::datatype(), mem_space,
-                      H5P_DEFAULT, cparms, H5P_DEFAULT);
-
+#endif
     herr_t status;
     for(int i=0; i<buf.size(); ++i) {
       //status = append_data_slab( dset_name, i, buf[i].values(),
                                  //buf[i].numRows()*buf[i].numCols() );
-      status = append_data_slab<RealMatrixArray::value_type::scalarType>( dset_name, i, buf[0]);
+      status = append_data_slab<T>( dset_name, i, buf[0]);
     }
-
-    // WJB - ToDo: free resources
-    H5Sclose(mem_space);
 
   }
 
@@ -585,8 +590,7 @@ public:
                           const RealMatrix& buf) const
   {
     hsize_t last_slab = find_last_dataset_record(dset_name);
-    //return append_data_slab( dset_name, last_slab, buf.values(),
-                             //buf.numRows()*buf.numCols() );
+
     return append_data_slab<RealMatrixArray::value_type::scalarType>( dset_name,
              last_slab, buf );
   }
@@ -831,7 +835,7 @@ private:
       throw BinaryStream_StoreDataFailure();
 
     // WJB: IF contiguous "record" buf -- extending beyond 2D should be doable
-    std::vector<hsize_t> max_dims = initializeUnlimitedDims<2>();
+    std::vector<hsize_t> max_dims = initialize_unlimited_dims<2>();
     std::vector<hsize_t> curr_dims(max_dims);
 
     herr_t status = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
@@ -891,7 +895,7 @@ private:
       throw BinaryStream_StoreDataFailure();
 
     // WJB: IF contiguous "record" buf - this "3D" version seems doable
-    std::vector<hsize_t> max_dims = initializeUnlimitedDims<3>();
+    std::vector<hsize_t> max_dims = initialize_unlimited_dims<3>();
     std::vector<hsize_t> curr_dims(max_dims);
 
     herr_t status = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
@@ -1031,10 +1035,50 @@ private:
 //    max_dims_nd.fill(H5S_UNLIMITED);
 
   template <size_t DIM>
-  static std::vector<hsize_t> initializeUnlimitedDims()
+  static std::vector<hsize_t> initialize_unlimited_dims()
   {
     const static std::vector<hsize_t> max_dims_nd(DIM, H5S_UNLIMITED);
     return max_dims_nd;
+  }
+
+
+
+  /// Reserve space for Array of Teuchos Objects dataset in HDF5
+  template <typename T, std::size_t NumRanges> // T TeuchosSDMatrix::scalarType
+  void reserve_dataset_space(const std::string& dset_name,
+                             std::size_t num_records=1,
+                             std::size_t max_record_len=1) const
+  {
+    if ( (NumRanges < 2) && exitOnError )
+      throw BinaryStream_StoreDataFailure();
+
+    // WJB - NOTE:  probably need a review from BMA here
+    std::size_t min_res_size = (max_record_len == 0) ? NumRanges-1
+                                                     : max_record_len;
+    create_groups(dset_name);
+
+    // Should be general enough to reserve space for either Vectors or Matrices
+    std::vector<hsize_t> dims(NumRanges);
+    dims[0] = num_records;
+    dims[1] = min_res_size/(NumRanges-1);
+    dims[NumRanges-1] = min_res_size/(NumRanges-1); // why NOT square? (just reserving space here)
+
+    std::vector<hsize_t> max_dims = initialize_unlimited_dims<NumRanges>();
+
+    // Create the memory space...
+    hid_t mem_space = H5Screate_simple( dims.size(), dims.data(),
+                        max_dims.data() );
+
+    hid_t cparms = H5Pcreate(H5P_DATASET_CREATE);
+
+    H5Pset_layout(cparms, H5D_CHUNKED);
+    H5Pset_chunk( cparms, dims.size(), dims.data() );
+
+    // Create a new dataset within the file using cparms creation properties.
+    hid_t dataset = H5Dcreate(binStreamId, dset_name.c_str(),
+                      NativeDataTypes<T>::datatype(), mem_space, H5P_DEFAULT,
+                      cparms, H5P_DEFAULT);
+    H5Pclose(cparms);
   }
 
 };

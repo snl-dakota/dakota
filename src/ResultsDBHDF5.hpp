@@ -59,13 +59,12 @@ public:
   {
     // TODO: consider whether alloc should be no-op in this case,
     // otherwise perhaps it should use array_size and maybe even a
-    // non-default constructed StoredType
-    //StoredType initial_entry;
-    std::vector<StoredType> initial_array(array_size, StoredType());
-    //initial_array[0] = initial_entry;
+    // non-default (HOW? additional args??) constructed StoredType
+    // WJB: add a dbg print msg here since NOT sure tested for 'array_size > 1'
+    std::vector<StoredType> initial_array( array_size, StoredType() );
 
-    hdf5Stream->store_data(dataset_name(iterator_id, data_name),
-			   initial_array);
+    hdf5Stream->reserve_dataset_space(dataset_name(iterator_id, data_name),
+			              initial_array);
   }
  
   template<typename StoredType>
@@ -74,10 +73,15 @@ public:
 		    const StoredType& stored_data)
   {
     // TODO: store at index specified...
-    // BUT, for now, just to get some data written, ignore the index
+    // WJB: OK, I hope I an ready for " store_data.. 'at index' "
+
+#ifndef NDEBUG
+    std::cout << dataset_name(iterator_id, data_name) << "\tHDF5db array_insert at index:  " << index << std::endl;
+#endif
 
     hdf5Stream->store_data(dataset_name(iterator_id, data_name),
-     			   stored_data);
+     			   stored_data, index);
+     			   //stored_data);
   }
 
 
