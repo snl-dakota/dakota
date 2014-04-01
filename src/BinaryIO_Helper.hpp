@@ -15,6 +15,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
+#include "dakota_global_defs.hpp"
 
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/multi_array.hpp>
@@ -249,29 +250,33 @@ public:
 
  
   /// Reserve space for Array of Teuchos Vectors dataset in HDF5 (NOTE: 2D!)
-  template <typename T> // T is the Teuchos::SDVector::scalarType
+  // T is the Teuchos::SDVector::scalarType
+  template <typename T>
   herr_t reserve_dataset_space(const std::string& dset_name,
     const std::vector< Teuchos::SerialDenseVector<int,T> >& buf) const
   {
-    reserve_dataset_space<T,2>( dset_name, buf.size(), buf[0].length() );
+    // WJB: prefer to pass in 1 "row vector" and the num_entries requested
+    reserve_dataset_space<T,2>( dset_name, buf.size(), buf.at(0).length() );
 
+    // WJB:  FEELS "backwards" (i.e. store_data() should reserve IF needed)
+    //       But do it anyway for consistency with DBAny::array_allocate 
     store_data(dset_name, buf);
   }
 
 
   /// Reserve space for Array of Teuchos Matrices dataset in HDF5 (NOTE: 3D!)
-  template <typename T> // T is the Teuchos::SDMatrix::scalarType
+  // T is the Teuchos::SDMatrix::scalarType
+  template <typename T>
   herr_t reserve_dataset_space(const std::string& dset_name,
     const std::vector< Teuchos::SerialDenseMatrix<int,T> >& buf) const
   {
-    if ( buf.empty() && exitOnError )
-      throw BinaryStream_StoreDataFailure();
+    // WJB: prefer to pass in 1 "matrix slice" and the num_entries requested
+    int max_dim_sz = std::max( buf.at(0).numRows(), buf.at(0).numCols() );  
 
-    int max_dim_sz = std::max( buf[0].numRows(), buf[0].numCols() );  
-
-    // WJB - NOTE: just reserving space here, NOT allocating/writing data
     reserve_dataset_space<T,3>(dset_name, buf.size(), max_dim_sz*max_dim_sz);
 
+    // WJB:  FEELS "backwards" (i.e. store_data() should reserve IF needed)
+    //       But do it anyway for consistency with DBAny::array_allocate 
     store_data(dset_name, buf);
   }
 
@@ -359,22 +364,38 @@ public:
   }
 
 
-  template <typename T> // T is tricky, it is the Teuchos::SDVector::scalarType
+  /// Store a Teuchos::SDVector (at an index) in a previously reserved 2D dataset
+  /// Teuchos::SerialDenseVector is a 1D object BUT stored in 2D space in HDF5
+  // T is the Teuchos::SDVector::scalarType
+  template <typename T>
   herr_t store_data(const std::string& dset_name,
                     const Teuchos::SerialDenseVector<int,T>& buf,
-                    std::size_t idx=0) const
+                    std::size_t index=0) const
   {
-#if 0 // WJB:  Disabled since storing vector data is of little value without chunking/hyperslabs
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    // Teuchos::SerialDenseVector is a 1D dataspace
-    return store_data<T,1>( dset_name,
-                            boost::assign::list_of( buf.length() ),
-                            buf.values() );
-#endif
-    //throw std::string("store_data Teuchos::SDVector<int,T> not implemented");
-    output_status(99);
+    htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+
+    if ( ds_exists ) {
+      std::vector<Teuchos::SerialDenseVector<int,T> > single_entry_array;
+      single_entry_array.push_back(buf);
+
+      // Invoke the store_data() method for an ARRAY of SDVectors
+      // WJB - ToDo:  Check index (does it exceed capacity?)
+      store_data(dset_name, single_entry_array, index);
+    }
+    else {
+      Cerr << "\nError: Must allocate array before insert"
+           // << "\n  Iterator ID: " << iterator_id
+           << "\n  Data name: " << dset_name
+           << std::endl;
+      
+      if (exitOnError)
+        throw BinaryStream_StoreDataFailure();
+    }
+
+    //output_status(99);
   }
 
 
@@ -1043,7 +1064,7 @@ private:
 
 
 
-  /// Reserve space for Array of Teuchos Objects dataset in HDF5
+  /// Reserve space for Array of Teuchos Objects in newly created HDF5 dataset
   template <typename T, std::size_t NumRanges> // T TeuchosSDMatrix::scalarType
   void reserve_dataset_space(const std::string& dset_name,
                              std::size_t num_records=1,
