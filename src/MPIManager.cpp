@@ -88,6 +88,19 @@ MPIManager::~MPIManager()
 }
 
 
+MPI_Comm MPIManager::dakota_mpi_comm() const 
+{ return dakotaMPIComm; }
+
+int MPIManager::world_rank() const 
+{ return worldRank; }
+
+int MPIManager::world_size() const 
+{ return worldSize; }
+
+bool MPIManager::mpirun_flag() const 
+{ return mpirunFlag; }
+
+  
 // Consider having the output manager queue up any messages prior to
 // rebinding cout/cerr
 bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
