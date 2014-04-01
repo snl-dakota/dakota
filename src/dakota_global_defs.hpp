@@ -91,6 +91,12 @@ T abort_handler_t(int code)
   throw code;
 }
 
+/// Global function to register signal handlers at top-level
+void register_signal_handlers();
+
+/// Global function to hold Dakota processes to help with MPI debugging.
+void mpi_debug_hold();
+
 } // namespace Dakota
 
 #endif // GLOBAL_DEFS_H

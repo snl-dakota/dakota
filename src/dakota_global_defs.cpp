@@ -20,6 +20,17 @@
 #include "ProblemDescDB.hpp"
 #include "ResultsManager.hpp"
 
+// Toggle for MPI debug hold
+//#define MPI_DEBUG
+
+#if defined(MPI_DEBUG) && defined(MPICH2)
+#include <sys/types.h> 
+#include <sys/stat.h> 
+#include <fcntl.h> 
+#include <unistd.h> 
+#endif 
+
+
 static const char rcsId[]="@(#) $Id: dakota_global_defs.cpp 6716 2010-04-03 18:35:08Z wjbohnh $";
 
 
@@ -87,5 +98,50 @@ void abort_handler(int code)
   else
     std::exit(code);
 }
+
+
+/// Tie various signal handlers to Dakota's abort_handler function
+void register_signal_handlers()
+{
+#if defined(__MINGW32__) || defined(_MSC_VER)
+  std::signal(SIGBREAK, Dakota::abort_handler);
+#else
+  std::signal(SIGKILL, Dakota::abort_handler);
+#endif
+  std::signal(SIGTERM, Dakota::abort_handler);
+  std::signal(SIGINT,  Dakota::abort_handler);
+}
+
+
+/** See details in code for details, depending on MPI implementation in use. */
+void mpi_debug_hold() {
+
+#ifdef MPI_DEBUG
+  // hold parallel job prior to MPI_Init() in order to attach debugger to
+  // master process.  Then step past ParallelLibrary instantiation and attach
+  // debugger to other processes.
+#ifdef MPICH2
+  // To use this approach, set $DAKOTA_DEBUGPIPE to a suitable name,
+  // and create $DAKOTA_DEBUGPIPE by executing "mkfifo $DAKOTA_DEBUGPIPE".
+  // After invoking "mpirun ... dakota ...", find the processes, invoke
+  // a debugger on them, set breakpoints, and execute "echo >$DAKOTA_DEBUGPIPE"
+  // to write something to $DAKOTA_DEBUGPIPE, thus releasing dakota from
+  // a wait at the open invocation below.
+  char *pname; int dfd;
+  if ( ( pname = getenv("DAKOTA_DEBUGPIPE") ) &&
+       ( dfd = open(pname,O_RDONLY) ) > 0 ) {
+    char buf[80];
+    read(dfd,buf,sizeof(buf));
+    close(dfd);
+  }
+#else
+  // This simple scheme has been observed to fail with MPICH2
+  int test;
+  std::cin >> test;
+#endif // MPICH2
+#endif // MPI_DEBUG
+
+}
+
 
 } // namespace Dakota
