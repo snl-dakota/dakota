@@ -52,11 +52,11 @@ if ( NOT DAKOTA_TEST_SBATCH )
   set( DAKOTA_TEST_SBATCH OFF )
 endif()
 
-if ( NOT DAKOTA_DO_TEST )
+if ( NOT DEFINED DAKOTA_DO_TEST )
   set( DAKOTA_DO_TEST ON )
 endif()
 
-if ( NOT DAKOTA_DO_PACK )
+if ( NOT DEFINED DAKOTA_DO_PACK )
   set( DAKOTA_DO_PACK ON )
 endif()
 
