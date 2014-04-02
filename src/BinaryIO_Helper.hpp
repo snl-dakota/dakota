@@ -377,13 +377,14 @@ public:
 
     htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
 
+    herr_t status;
     if ( ds_exists ) {
       std::vector<Teuchos::SerialDenseVector<int,T> > single_entry_array;
       single_entry_array.push_back(buf);
 
       // Invoke the store_data() method for an ARRAY of SDVectors
       // WJB - ToDo:  Check index (does it exceed capacity?)
-      store_data(dset_name, single_entry_array, index);
+      status = store_data(dset_name, single_entry_array, index);
     }
     else {
       Cerr << "\nError: Must allocate array before insert"
@@ -395,23 +396,12 @@ public:
         throw BinaryStream_StoreDataFailure();
     }
 
-    //output_status(99);
+    check_error_store(status);
+    return status;
   }
 
 
-#if 0 // WJB:  Disabled while I test-out the template version just above
-  herr_t store_data(const std::string& dset_name,
-                    const RealVector& buf) const
-  {
-    if ( buf.empty() && exitOnError )
-      throw BinaryStream_StoreDataFailure();
-
-    // RealVector is a 1D dataspace
-    return store_data<RealVector::scalarType,1>( dset_name,
-                                 boost::assign::list_of( buf.length() ),
-                                 buf.values() );
-  }
-
+#if 0 // WJB:  Disabled while I prioritize on Teuchos types
 
   /// storage of ragged array of vector<T> - each "row" can be variable length
   /// for example vector< vector<int> >, vector< vector<double> >
@@ -495,30 +485,41 @@ public:
 #endif
 
 
-  // WJB:  Nearly a DUPLICATE version of above code, BUT overloaded for Teuchos
-  //       row vector slabs
-  //template <typename OrdinalType, typename ScalarType>
-  herr_t append_data_slab(const std::string& dset_name,
-                          const RealVector& buf, std::size_t idx=0) const
-  {
-// WJB - ASAP post commit Sp1 "complete": try std::vector before Teuchos types
-    hsize_t last_row = find_last_dataset_record(dset_name);
-    return append_data_slab( dset_name, last_row, &buf[0], buf.length() );
-  }
-
-
-  template <typename T>  // T is the Teuchos::SDMatrix::scalarType
+  /// Store a Teuchos::SDMatrix (at an index) in a previously reserved 3D dataset
+  /// Teuchos::SerialDenseMatrix is a 2D object BUT stored in 3D space in HDF5
+  // T is the Teuchos::SDMatrix::scalarType
+  template <typename T>
   herr_t store_data(const std::string& dset_name,
                     const Teuchos::SerialDenseMatrix<int,T>& buf,
-                    std::size_t idx=0) const
+                    std::size_t index=0) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-    // Matrix is 2D
-    return store_data<T,2>( dset_name,
-             boost::assign::list_of( buf.numRows() )( buf.numCols() ),
-             buf.values() );
+    htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+
+    herr_t status;
+    if ( ds_exists ) {
+      std::vector<Teuchos::SerialDenseMatrix<int,T> > single_entry_array;
+      single_entry_array.push_back(buf);
+
+      // Invoke the store_data() method for an ARRAY of SDMatrices
+      // WJB - ToDo:  Check index (does it exceed capacity?)
+      status = store_data(dset_name, single_entry_array, index);
+    }
+
+    else {
+      Cerr << "\nError: Must allocate array before insert"
+           // << "\n  Iterator ID: " << iterator_id
+           << "\n  Data name: " << dset_name
+           << std::endl;
+      
+      if (exitOnError)
+        throw BinaryStream_StoreDataFailure();
+    }
+
+    check_error_store(status);
+    return status;
   }
 
 
@@ -526,7 +527,7 @@ public:
   herr_t store_data(
             const std::string& dset_name,
             const std::vector< Teuchos::SerialDenseVector<int,T> >& buf,
-            std::size_t idx=0) const
+            std::size_t index=0) const
   {
     // 'size()' vs 'length()' and 'size_type' vs 'ScalarType' prevents writing a
     // generic algorithm, common to both std::vector and Teuchos vector
@@ -539,26 +540,24 @@ public:
       return 99; // WJB: trick to allow empty row-vectors while refactoring
     }
 
-    // WJB: much of the "chunking setup" code is nearly identical to the
-    // std::vector version, so re-factor for reuse next sprint
-
-    // Create a 2D dataspace sufficient to store first row vector
-    std::vector<hsize_t> dims(2);
-    dims[0] = buf.size(); dims[1] = buf[0].length(); // WJB: fcnPtr vs PassIn?
-
-    std::vector<hsize_t> max_dims = initialize_unlimited_dims<2>();
-
-    // Create a new dataset within the DB using cparms creation properties.
+    // WJB - NOTE:  Reuse the reserved 2D dataspace
+    //std::vector<hsize_t> dims(2);
+    //dims[0] = buf.size(); dims[1] = buf[0].length(); // WJB: fcnPtr vs PassIn?
 
     herr_t status;
-    for(int i=0; i<dims[0]; ++i) {
-      std::vector<T> tmp( dims[1] );
-      for(int j=0; j<dims[1]; ++j)
-        tmp[j] = buf[i][j];
+    for(std::size_t record=0; record<buf.size(); ++record) {
 
-      status = append_data_slab( dset_name, i, tmp.data(), buf[i].length() );
+      std::size_t length = buf[record].length();
+      std::vector<T> tmp(length);
+
+      for(int j=0; j<length; ++j)
+        tmp[j] = buf[record][j];
+
+      status = append_data_slab( dset_name, index+record, tmp.data(), length );
     }
 
+    check_error_store(status);
+    return status;
   }
 
 
@@ -571,50 +570,30 @@ public:
   herr_t store_data(
             const std::string& dset_name,
             const std::vector< Teuchos::SerialDenseMatrix<int,T> >& buf,
-            std::size_t idx=0) const
+            std::size_t index=0) const
   {
     if ( buf.empty() && exitOnError )
       throw BinaryStream_StoreDataFailure();
 
-#if 0 // WJB: new design -- dataset is ALEADY created for "lookup" and overwrite
-    // WJB: much of the "chunking setup" code is nearly identical to the
-    // Teuchos "row" VectorSlab version, so re-factor for reuse THIS sprint
 
-    // Create a 3D dataspace sufficient to store first matrix slab
-    std::vector<hsize_t> dims(3);
-    dims[0] = buf.size(); dims[1] = buf[0].numRows(); dims[2] = buf[0].numCols();
-
-    // Enable chunking using creation properties
-    // Chunk size is that of the largest matrix slab
-    int slab_size = dims[1]*dims[2];
-    for(int i=0; i<buf.size(); ++i) {
-      slab_size = std::max( slab_size, buf[i].numRows()*buf[i].numCols() );
+    if ( (buf[0].numRows()*buf[0].numCols() ) == 0 ) {
+      return 99; // WJB: trick to allow empty matrix records while refactoring
     }
 
-    // Create a new dataset within the DB using cparms creation properties.
-    // 'size()' vs 'length()' and 'value_type' vs 'ScalarType' prevents
-    // writing a generic algorithm
-#endif
+    // WJB - NOTE:  Reuse the reserved 3D dataspace
+    //std::vector<hsize_t> dims(3);
+    //dims[0] = buf.size();
+    //dims[1] = buf[0].numRows(); dims[2] = buf[0].numCols();
+
     herr_t status;
-    for(int i=0; i<buf.size(); ++i) {
-      //status = append_data_slab( dset_name, i, buf[i].values(),
-                                 //buf[i].numRows()*buf[i].numCols() );
-      status = append_data_slab<T>( dset_name, i, buf[0]);
+    for(std::size_t record=0; record<buf.size(); ++record) {
+      status = append_data_slab( dset_name, index+record, buf[record] );
     }
 
+    check_error_store(status);
+    return status;
   }
 
-
-  // WJB: nearly a DUPLICATE version of above code for Teuchos Matrix Slabs
-  //template <typename OrdinalType, typename ScalarType>
-  herr_t append_data_slab(const std::string& dset_name,
-                          const RealMatrix& buf) const
-  {
-    hsize_t last_slab = find_last_dataset_record(dset_name);
-
-    return append_data_slab<RealMatrixArray::value_type::scalarType>( dset_name,
-             last_slab, buf );
-  }
 
   //
   //- Heading:  Data retrieval methods (read HDF5)
@@ -908,7 +887,7 @@ private:
 
   template <typename T>
   herr_t append_data_slab(const std::string& dset_name,const size_t outer_index,
-                          const RealMatrix& buf) const
+                          const Teuchos::SerialDenseMatrix<int,T>& buf) const
   {
     htri_t ds_exists = H5Lexists(binStreamId, dset_name.c_str(), H5P_DEFAULT);
 
