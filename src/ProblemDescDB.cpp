@@ -200,13 +200,14 @@ parse_inputs(const ProgramOptions& prog_opts,
     // Only the master parses the input file.
     if (parallelLib.world_rank() == 0) {
 
-      if ( !prog_opts.inputFile.empty() && !prog_opts.inputString.empty() ) {
+      if ( !prog_opts.input_file().empty() && 
+	   !prog_opts.input_string().empty() ) {
 	Cerr << "\nError: parse_inputs called with both input file and input "
 	     << "string." << std::endl;
 	abort_handler(-1);
       }
 
-      if (prog_opts.echoInput)
+      if (prog_opts.echo_input())
 	echo_input_file(prog_opts);
 
       // Parse the input file using one of the derived parser-specific classes
@@ -3023,7 +3024,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 
 void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 {
-  const String& dakota_input_file = prog_opts.inputFile;
+  const String& dakota_input_file = prog_opts.input_file();
   if (!dakota_input_file.empty()) {
     bool input_is_stdin = 
       ( dakota_input_file.size() == 1 && dakota_input_file[0] == '-');
@@ -3058,14 +3059,14 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
       Cout << "---------------------\n" << std::endl;
     }
   }
-  else if (!prog_opts.inputString.empty()) {
+  else if (!prog_opts.input_string().empty()) {
     size_t header_len = 23;
     std::string header(header_len, '-');
     Cout << header << '\n';
     Cout << "Begin DAKOTA input file\n";
     Cout << "(from string)\n"; 
     Cout << header << std::endl;
-    Cout << prog_opts.inputString << std::endl;
+    Cout << prog_opts.input_string() << std::endl;
     Cout << "---------------------\n";
     Cout << "End DAKOTA input file\n";
     Cout << "---------------------\n" << std::endl;

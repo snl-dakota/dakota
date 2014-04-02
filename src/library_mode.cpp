@@ -203,7 +203,7 @@ void run_dakota_parse(const char* dakota_input_file)
   // Parse input and construct Dakota LibraryEnvironment, performing
   // input data checks
   Dakota::ProgramOptions opts;
-  opts.inputFile = dakota_input_file;
+  opts.input_file(dakota_input_file);
 
   // Defaults constructs the MPIManager, which assumes COMM_WORLD
   Dakota::LibraryEnvironment env(opts);
@@ -298,18 +298,18 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
 {
   Dakota::ProgramOptions opts;
   // Could specify output redirection & restart processing in opts if needed
-  opts.echoInput = true;
+  opts.echo_input(true);
 
   // in this use case, input file may be null:
   if (dakota_input_file)
-    opts.inputFile = dakota_input_file;
+    opts.input_file(dakota_input_file);
 
   // when no input file, use input string appropraite for MPI mode
   if (!dakota_input_file) {
     if (mpirun_flag)
-      opts.inputString = parallel_input;
+      opts.input_string(parallel_input);
     else
-      opts.inputString = serial_input;
+      opts.input_string(serial_input);
   }
   
   // Setup client data to be available during callback: upper variable bound

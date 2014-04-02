@@ -903,47 +903,47 @@ inline void ParallelLibrary::free_analysis_communicators()
 
 
 inline bool ParallelLibrary::command_line_check() const
-{ return programOptions.checkFlag; }
+{ return programOptions.check(); }
 
 
 inline bool ParallelLibrary::command_line_pre_run() const
-{ return programOptions.preRunFlag; }
+{ return programOptions.pre_run(); }
 
 
 inline bool ParallelLibrary::command_line_run() const
-{ return programOptions.runFlag; }
+{ return programOptions.run(); }
 
 
 inline bool ParallelLibrary::command_line_post_run() const
-{ return programOptions.postRunFlag; }
+{ return programOptions.post_run(); }
 
 
 inline bool ParallelLibrary::command_line_user_modes() const
-{ return programOptions.userModesFlag; }
+{ return programOptions.user_modes(); }
 
 
 inline const String& ParallelLibrary::command_line_pre_run_input() const
-{ return programOptions.preRunInput; }
+{ return programOptions.pre_run_input(); }
 
 
 inline const String& ParallelLibrary::command_line_pre_run_output() const
-{ return programOptions.preRunOutput; }
+{ return programOptions.pre_run_output(); }
 
 
 inline const String& ParallelLibrary::command_line_run_input() const
-{ return programOptions.runInput; }
+{ return programOptions.run_input(); }
 
 
 inline const String& ParallelLibrary::command_line_run_output() const
-{ return programOptions.runOutput; }
+{ return programOptions.run_output(); }
 
 
 inline const String& ParallelLibrary::command_line_post_run_input() const
-{ return programOptions.postRunInput; }
+{ return programOptions.post_run_input(); }
 
 
 inline const String& ParallelLibrary::command_line_post_run_output() const
-{ return programOptions.postRunOutput; }
+{ return programOptions.post_run_output(); }
 
 
 // ---------------------------

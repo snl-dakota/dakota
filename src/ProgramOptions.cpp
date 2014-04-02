@@ -16,26 +16,31 @@
 
 namespace Dakota {
 
-// TODO: some of this should be conditional on rank
+// BMA TODO: review default settings from parallel library
+// checkFlag(false),
+// preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
+
+// BMA TODO: some of this should be conditional on rank
+
+// BMA TODO: How to call validate() in the case where a client default
+// constructs and then makes additional sessings?  Could the copy ctor
+// and assignment be used to validate when passed into Environment ctor?
+
 
 ProgramOptions::ProgramOptions():
-  help(false), version(false), echoInput(true),
-  checkFlag(false), preRunFlag(false), runFlag(false), postRunFlag(false),
-  userModesFlag(false), stopRestartEvals(0)
+  echoInput(true), stopRestartEvals(0),
+  helpFlag(false), versionFlag(false), checkFlag(false), 
+  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
   validate();
 }
 
-  // TODO: review default settings from parallel library
-  // checkFlag(false),
-  // preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
-
 ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
-  help(false), version(false), echoInput(true),
-  checkFlag(false), preRunFlag(false), runFlag(false), postRunFlag(false),
-  userModesFlag(false), stopRestartEvals(0)
+  echoInput(true), stopRestartEvals(0),
+  helpFlag(false), versionFlag(false), checkFlag(false), 
+  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -43,8 +48,8 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
   // encapsulate CLH here; world_rank manages conditional output
   CommandLineHandler clh(argc, argv, world_rank);
   
-  help = clh.retrieve("help");
-  version = clh.retrieve("version");
+  helpFlag = clh.retrieve("help");
+  versionFlag = clh.retrieve("version");
   checkFlag = clh.retrieve("check");
 
   // Need to catch the NULL case; this will clean up when GetLongOpt
@@ -82,18 +87,88 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
 }
 
 
-/// Whether command line args dictate instantiation of objects for run
-bool ProgramOptions::instantiate_flag() const
+const String& ProgramOptions::input_file() const
+{ return inputFile; }
+
+const String& ProgramOptions::input_string() const
+{ return inputString; }
+
+bool ProgramOptions::echo_input() const
+{ return echoInput; }
+
+const String& ProgramOptions::parser_options() const
+{ return parserOptions; }
+
+
+String ProgramOptions::output_file() const
+{ return outputFile.empty() ? "dakota.out" : outputFile; }
+
+const String& ProgramOptions::error_file() const
+{ return errorFile; }
+
+
+const String& ProgramOptions::read_restart_file() const
+{ return readRestartFile; }
+
+size_t ProgramOptions::stop_restart_evals() const
+{ return stopRestartEvals; }
+
+String ProgramOptions::write_restart_file() const
+{ return writeRestartFile.empty() ? "dakota.rst" : writeRestartFile; }
+
+
+bool ProgramOptions::help() const
+{ return helpFlag; }
+
+bool ProgramOptions::version() const
+{ return versionFlag; }
+
+bool ProgramOptions::check() const
+{ return checkFlag; }
+
+bool ProgramOptions::pre_run() const
+{ return preRunFlag; }
+
+bool ProgramOptions::run() const
+{ return runFlag; }
+
+bool ProgramOptions::post_run() const
+{ return postRunFlag; }
+
+bool ProgramOptions::user_modes() const
+{ return userModesFlag; }
+
+
+const String& ProgramOptions::pre_run_input() const
+{ return preRunInput; }
+
+const String& ProgramOptions::pre_run_output() const
+{ return preRunOutput; }
+
+const String& ProgramOptions::run_input() const
+{ return runInput; }
+
+const String& ProgramOptions::run_output() const
+{ return runOutput; }
+
+const String& ProgramOptions::post_run_input() const
+{ return postRunInput; }
+
+const String& ProgramOptions::post_run_output() const
+{ return postRunOutput; }
+
+
+bool ProgramOptions::proceed_to_instantiate() const
 {
-  if (help || version)
+  if (helpFlag || versionFlag)
     return false;
   return true;
 }
 
-/// Whether steps beyond check are requested
-bool ProgramOptions::run_flag() const
+
+bool ProgramOptions::proceed_to_run() const
 {
-  if (help || version || checkFlag)
+  if (helpFlag || versionFlag || checkFlag)
     return false;
   return true;
 }
@@ -103,35 +178,108 @@ bool ProgramOptions::user_stdout_redirect() const
 { return !outputFile.empty(); }
 
 
-String ProgramOptions::stdout_filename() const
-{ return outputFile.empty() ? "dakota.out" : outputFile; }
+void ProgramOptions::input_file(const String& in_file)
+{ 
+  inputFile = in_file; 
+  // not an error if client later resolves
+  if ( !inputFile.empty() && !inputString.empty() )
+    Cout << "Warning (ProgramOptions): both input file and string specified."
+	 << std::endl;
+}
+
+void ProgramOptions::input_string(const String& in_string)
+{  
+  inputString = in_string; 
+  // not an error if client later resolves
+  if ( !inputFile.empty() && !inputString.empty() )
+    Cout << "Warning (ProgramOptions): both input file and string specified."
+	 << std::endl;
+}
+
+void ProgramOptions::echo_input(bool echo_flag)
+{ echoInput = echo_flag; }
 
 
-String ProgramOptions::write_restart_filename() const
-{ return writeRestartFile.empty() ? "dakota.rst" : writeRestartFile; }
+void ProgramOptions::output_file(const String& out_file)
+{ outputFile = out_file; }
+
+void ProgramOptions::error_file(const String& err_file)
+{ errorFile = err_file; }
 
 
-// TODO: extend read/write to all data; currently only those exposed
-// in ParallelLibrary
+void ProgramOptions::read_restart_file(const String& read_rst)
+{ readRestartFile = read_rst; }
+
+void ProgramOptions::stop_restart_evals(size_t stop_rst)
+{ stopRestartEvals = stop_rst; }
+
+void ProgramOptions::write_restart_file(const String& write_rst)
+{ writeRestartFile = write_rst; }
+
+
+void ProgramOptions::help(bool help_flag)
+{ helpFlag = help_flag; }
+
+void ProgramOptions::version(bool version_flag)
+{ versionFlag = version_flag; }
+
+void ProgramOptions::check(bool check_flag)
+{ checkFlag = check_flag; }
+
+void ProgramOptions::pre_run(bool pre_run_flag)
+{ preRunFlag = pre_run_flag; }
+
+void ProgramOptions::run(bool run_flag)
+{ runFlag = run_flag; }
+
+void ProgramOptions::post_run(bool post_run_flag)
+{ postRunFlag = post_run_flag; }
+
+
+void ProgramOptions::pre_run_input(const String& pre_run_in)
+{ preRunInput = pre_run_in; }
+
+void ProgramOptions::pre_run_output(const String& pre_run_out)
+{ preRunOutput = pre_run_out; }
+
+void ProgramOptions::run_input(const String& run_in)
+{ runInput = run_in; }
+
+void ProgramOptions::run_output(const String& run_out)
+{ runOutput = run_out; }
+
+void ProgramOptions::post_run_input(const String& post_run_in)
+{ postRunInput = post_run_in; }
+
+void ProgramOptions::post_run_output(const String& post_run_out)
+{ postRunOutput = post_run_out; }
+
 
 void ProgramOptions::read(MPIUnpackBuffer& s) 
 {
-  // run modes
-  s >> checkFlag >> preRunFlag >> runFlag >> postRunFlag >> userModesFlag;
-  // filenames
+  // core files and options
+  s >> inputFile >> inputString >> echoInput >> parserOptions 
+    >> outputFile >> errorFile 
+    >> readRestartFile >> stopRestartEvals >> writeRestartFile;
+  // run mode controls
+  s >> helpFlag >> versionFlag >> checkFlag >> preRunFlag >> runFlag 
+    >> postRunFlag >> userModesFlag;
+  // run mode filenames
   s >> preRunInput >> preRunOutput >> runInput >> runOutput 
     >> postRunInput >> postRunOutput;
-
-  // BMA TODO: all relevant data...
-
 }
 
 
 void ProgramOptions::write(MPIPackBuffer& s) const
 {
-  // run modes
-  s << checkFlag << preRunFlag << runFlag << postRunFlag << userModesFlag;
-  // filenames
+  // core files and options
+  s << inputFile << inputString << echoInput << parserOptions 
+    << outputFile << errorFile 
+    << readRestartFile << stopRestartEvals << writeRestartFile;
+  // run mode controls
+  s << helpFlag << versionFlag << checkFlag << preRunFlag << runFlag 
+    << postRunFlag << userModesFlag;
+  // run mode filenames
   s << preRunInput << preRunOutput << runInput << runOutput 
     << postRunInput << postRunOutput;
 }
@@ -207,15 +355,13 @@ void ProgramOptions::validate() {
     abort_handler(-1);
   }
 
+  // if no phases were given, assume default that all are active
   if ( !preRunFlag && !runFlag && !postRunFlag ) {
     preRunFlag = runFlag = postRunFlag = true;
-    userModesFlag = false; // no active user modes
+    userModesFlag = false; // no active user-specified modes
   }
   else
-    userModesFlag = true;  // one or more active user modes
-
-  //  manage_run_modes();
-
+    userModesFlag = true;  // one or more active user-specified modes
 }
 
 

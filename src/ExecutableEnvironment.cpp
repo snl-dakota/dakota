@@ -37,12 +37,12 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
 
   // could we wait to do redirection and any output here?
   // might get entangled with CL usage...
-  if (programOptions.version)
+  if (programOptions.version())
     outputManager.output_version();
       
   // After command line parsing and before input DB parsing: if just
   // getting version or help, don't instantiate anything.
-  if (programOptions.instantiate_flag()) {
+  if (programOptions.proceed_to_instantiate()) {
 
     outputManager.output_startup_message();
 
@@ -79,10 +79,10 @@ ExecutableEnvironment::~ExecutableEnvironment()
 bool ExecutableEnvironment::check()
 {
   // don't proceed to execute 
-  if (programOptions.help || programOptions.version)
+  if (programOptions.help() || programOptions.version())
     return true;
 
-  if (programOptions.checkFlag) {
+  if (programOptions.check()) {
     if (parallelLib.world_rank() == 0)
       Cout << "\nInput check completed successfully (input parsed and objects "
 	   << "instantiated).\n" << std::endl;

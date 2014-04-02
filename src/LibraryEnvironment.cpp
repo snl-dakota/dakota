@@ -36,6 +36,7 @@ LibraryEnvironment(const ProgramOptions& prog_opts, bool check_bcast_construct,
 {
   // BMA TODO: give option for this to library users
   //  outputManager.output_startup_message();
+  // Also support run modes help, version, check
 
   // parse input, and instantiate the topLevelIterator
   parse(check_bcast_construct, callback, callback_data);

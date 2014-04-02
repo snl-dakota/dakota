@@ -292,7 +292,8 @@ void Environment::parse(bool check_bcast_database,
   // ProblemDescDB requires cmd line information, so pass programOptions
 
   // parse input and callback functions
-  if ( !programOptions.inputFile.empty() || !programOptions.inputString.empty())
+  if ( !programOptions.input_file().empty() || 
+       !programOptions.input_string().empty())
     probDescDB.parse_inputs(programOptions, callback, callback_data);
 
   // check if true, otherwise caller assumes responsibility  

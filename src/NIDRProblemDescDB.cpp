@@ -104,9 +104,9 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
   // set the pDDBInstance
   pDDBInstance = this;
 
-  const String& dakota_input_file = prog_opts.inputFile;
-  const String& dakota_input_string = prog_opts.inputString;
-  const String& parser_options = prog_opts.parserOptions;
+  const String& dakota_input_file = prog_opts.input_file();
+  const String& dakota_input_string = prog_opts.input_string();
+  const String& parser_options = prog_opts.parser_options();
 
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)

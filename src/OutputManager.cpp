@@ -53,8 +53,8 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
   worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag)
 {
   //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && !prog_opts.outputFile.empty()) {
-    redirect_cout(prog_opts.outputFile);
+  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
+    redirect_cout(prog_opts.output_file());
   }
 
   if (!mpirunFlag
@@ -133,13 +133,13 @@ void OutputManager::file_tag(const String& iterator_tag)
 void OutputManager::redirect_cout(const ProgramOptions& prog_opts, 
 		     bool force_cout_redirect) {
   if (force_cout_redirect || prog_opts.user_stdout_redirect())
-    redirect_cout(prog_opts.stdout_filename() + fileTag);
+    redirect_cout(prog_opts.output_file() + fileTag);
 }
 
 
 void OutputManager::redirect_cerr(const ProgramOptions& prog_opts) {
-  if (!prog_opts.errorFile.empty())
-    redirect_cerr(prog_opts.errorFile + fileTag);
+  if (!prog_opts.error_file().empty())
+    redirect_cerr(prog_opts.error_file() + fileTag);
 }
 
 
@@ -150,11 +150,11 @@ void OutputManager::init_resultsdb(ProgramOptions& prog_opts) {
 
 
 void OutputManager::init_restart(const ProgramOptions& prog_opts) {
-  bool read_restart_flag = !prog_opts.readRestartFile.empty();
+  bool read_restart_flag = !prog_opts.read_restart_file().empty();
   read_write_restart(read_restart_flag, 
-		     prog_opts.readRestartFile,
-		     prog_opts.stopRestartEvals,
-		     prog_opts.write_restart_filename() + fileTag);
+		     prog_opts.read_restart_file(),
+		     prog_opts.stop_restart_evals(),
+		     prog_opts.write_restart_file() + fileTag);
 }
 
 

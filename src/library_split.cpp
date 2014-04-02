@@ -204,10 +204,10 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   std::string wfile("dakota.rst." + boost::lexical_cast<std::string>(color));
 
   Dakota::ProgramOptions prog_opts;
-  prog_opts.inputString      = input;
-  prog_opts.outputFile       = ofile;
-  prog_opts.errorFile        = efile;
-  prog_opts.writeRestartFile = wfile;
+  prog_opts.input_string(input);
+  prog_opts.output_file(ofile);
+  prog_opts.error_file(efile);
+  prog_opts.write_restart_file(wfile);
 
   // Create LibraryEnvironment
   Dakota::LibraryEnvironment env(my_comm, prog_opts);

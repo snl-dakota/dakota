@@ -63,7 +63,7 @@ ParallelLibrary(const MPIManager& mpi_mgr, ProgramOptions& prog_opts,
   dakotaMPIComm(mpiManager.dakota_mpi_comm()),
   worldRank(mpiManager.world_rank()), worldSize(mpiManager.world_size()), 
   mpirunFlag(mpiManager.mpirun_flag()), dummyFlag(false), 
-  outputTimings(programOptions.run_flag()), startClock(0),
+  outputTimings(programOptions.proceed_to_run()), startClock(0),
   currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
 {
   initialize_timers();
