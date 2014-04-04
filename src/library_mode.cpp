@@ -17,9 +17,6 @@
     \brief file containing a mock simulator main for testing Dakota in
     library mode */
 
-// must inlcude early to get windows.h as early as possible:
-#include "dakota_system_defs.hpp"
-
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "LibraryEnvironment.hpp"
@@ -433,7 +430,7 @@ void model_interface_plugins(Dakota::LibraryEnvironment& env)
     // set DB nodes to input specification for this Model
     problem_db.set_db_model_nodes(ml_iter->model_id());
 
-    Dakota::Interface& interface = ml_iter->derived_interface();
+    Dakota::Interface& model_interface = ml_iter->derived_interface();
     if (initialized) {
       // Parallel case: plug in derived Interface object with an analysisComm.
       // Note: retrieval and passing of analysisComm is necessary only if
@@ -444,11 +441,11 @@ void model_interface_plugins(Dakota::LibraryEnvironment& env)
       const MPI_Comm& analysis_comm = ml_iter->parallel_configuration_iterator()
 	->ea_parallel_level().server_intra_communicator();
 
-      interface.assign_rep(new
+      model_interface.assign_rep(new
 	SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
     }
     else // Serial case: plug in derived Interface object w/o an analysisComm
-      interface.assign_rep(new
+      model_interface.assign_rep(new
 	SIM::SerialDirectApplicInterface(problem_db), false);
   }
 }

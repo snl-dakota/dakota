@@ -16,9 +16,8 @@
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
-#define NOMINMAX
+#include <dakota_windows.h>
 #include <process.h>
-#include <windows.h>
 #include <algorithm>
 
 

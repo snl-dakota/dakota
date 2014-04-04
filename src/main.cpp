@@ -15,9 +15,6 @@
 /** \file main.cpp
     \brief file containing the main program for DAKOTA */
 
-// must inlcude early to get windows.h as early as possible:
-#include "dakota_system_defs.hpp"
-
 #include "ExecutableEnvironment.hpp"
 
 #ifdef HAVE_AMPL

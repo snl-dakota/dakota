@@ -25,7 +25,7 @@ namespace bfs = boost::filesystem;
 
   #define NOMINMAX
   #include <io.h>
-  #include <windows.h>
+  #include <dakota_windows.h>
   #include <direct.h>
   #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
   #define DAK_MKDIR(a,b) _mkdir(a)

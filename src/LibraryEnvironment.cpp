@@ -98,11 +98,11 @@ filtered_interface_list(const String& interf_type, const String& an_driver)
   InterfaceList filt_interf_list;
   ModelList& models = probDescDB.model_list();
   for (ModelLIter ml_iter=models.begin(); ml_iter!=models.end(); ++ml_iter) {
-    Interface& interface = ml_iter->derived_interface();
-    if (interface.interface_type() == interf_type &&
+    Interface& model_interface = ml_iter->derived_interface();
+    if (model_interface.interface_type() == interf_type &&
       //interface.analysis_drivers().size() == 1  &&
-	contains(interface.analysis_drivers(), an_driver))
-      filt_interf_list.push_back(interface);
+	contains(model_interface.analysis_drivers(), an_driver))
+      filt_interf_list.push_back(model_interface);
   }
   return filt_interf_list;
 }
@@ -116,10 +116,10 @@ filtered_model_list(const String& model_type, const String& interf_type,
   ModelList& models = probDescDB.model_list();
   for (ModelLIter ml_iter=models.begin(); ml_iter!=models.end(); ++ml_iter) {
     if (ml_iter->model_type() == model_type) {
-      Interface& interface = ml_iter->derived_interface();
-      if (interface.interface_type() == interf_type &&
+      Interface& model_interface = ml_iter->derived_interface();
+      if (model_interface.interface_type() == interf_type &&
 	//interface.analysis_drivers().size() == 1  &&
-	  contains(interface.analysis_drivers(), an_driver))
+	  contains(model_interface.analysis_drivers(), an_driver))
 	filt_model_list.push_back(*ml_iter);
     }
   }

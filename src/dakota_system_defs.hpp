@@ -17,13 +17,6 @@
   #include "dakota_config.h"
 #endif // HAVE_CONFIG_H
 
-// Avoid redefinition of MIN and MAX macros by MSVC
-// eventually use only _WIN32 here                                              
-#if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-#define NOMINMAX 
-#include <windows.h> 
-#endif 
-
 // C++ headers
 
 #include <iostream>
