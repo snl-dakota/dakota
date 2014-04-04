@@ -1,0 +1,18 @@
+Blurb::
+Display a 2D graphics window of variables and responses
+Description::
+The \c graphics flag activates a 2D graphics window
+containing history plots for the variables and response functions in
+the study. This window is updated in an event loop with approximately
+a 2 second cycle time. 
+
+There is no
+dependence between the \c graphics flag and the \c
+tabular_graphics_data flag; they may be used independently or
+concurrently. 
+
+Topics::	dakota_output, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

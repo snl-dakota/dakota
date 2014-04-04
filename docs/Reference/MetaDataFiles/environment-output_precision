@@ -1,0 +1,16 @@
+Blurb::
+Control the output precision
+Description::
+Numeric output precision 
+can be controlled with \c output_precision with an
+upper limit of 16 enforced at run-time. When this control is not
+specified, most %Dakota output will default to a precision of 10,
+though filesystem interfaces and pre-run output use higher precision
+for accuracy and better results reproducibility.
+
+
+Topics::	dakota_output, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

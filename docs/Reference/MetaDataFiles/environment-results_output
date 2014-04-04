@@ -1,0 +1,18 @@
+Blurb::
+(Experimental) Write a summary file containing only the final results
+Description::
+Final results from a %Dakota study can be
+output to dakota_results.txt by specifying \c results_output
+(optionally specifying an alternate file name with \c
+results_output_filename). The current experimental text file format
+is hierarchical and a precursor to planned output to structured text
+formats such as XML or YAML and binary formats such as HDF5. The
+contents, organization, and format of results files are all under
+active development and are subject to change.
+
+
+Topics::	dakota_output, not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

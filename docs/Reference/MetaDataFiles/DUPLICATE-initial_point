@@ -1,5 +1,5 @@
 Blurb::
-Initial values for the design variables
+Initial values 
 Description::
 The \c initial_point specifications provide the point in design space from which an iterator is started and defaults to the midpoint of bounds (continuous design variables) or the middle value (discrete design variables).
 
@@ -8,4 +8,3 @@ Examples::
 Theory::
 Faq::
 See_Also::	
-

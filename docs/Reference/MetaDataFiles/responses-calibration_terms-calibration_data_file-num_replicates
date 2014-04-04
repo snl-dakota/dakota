@@ -1,6 +1,29 @@
 Blurb::
+Add context to data: number of repeats for each experiment
 Description::
-Topics::	empty
+A more advanced use of the \c calibration_data_file might specify \c
+num_experiments \f$ N_E \f$ and \c num_replicates \f$ N_R \f$,
+indicating that there are multiple experiments, each with 1 or more
+replicates to inform each residual term. When multiple experiments or
+replicates are present, %Dakota will expand the number of residuals
+for the repeat measurement data and difference with the data
+accordingly. For example, if the user has one experiment but five
+replicates were taken, in the example above with three calibration
+terms, the \c calibration_data_file would need to contain five rows
+(one for each replicate), and each row should contain three
+experimental data values that will be differenced with respect to the
+appropriate model response. In this example, \f$ N_E = 1 \f$, and \f$
+N_R = 5\f$. One can have varying numbers of experiments and
+replicates, such as two experiments, one with 3 replicates and one
+with 7 replicates. In this example, \c num_experiments = 2, and the
+number of replicates would be given as an integer vector: \c
+num_replicates = 3 7. In this example, there would be a total of 10
+rows of data in the experimental data file. To summarize, %Dakota
+will calculate the sum of the squared residuals as: \f[f =
+\sum_{i=1}^{N_E}\sum_{j=1}^{{N_R}_i}R_{i,j}^2\f] where the residuals
+now are calculated as: \f[R_{i,j} = y^M_i - y^O_{i,j}. \f]
+
+Topics::	not_yet_reviewed
 Examples::
 Theory::
 Faq::
