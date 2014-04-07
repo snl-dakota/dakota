@@ -9661,20 +9661,20 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_pof.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 1500 total (1500 new, 0 duplicate)
+<<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   1.9486572907e-01
-  -8.0000000000e-01   4.2219513629e-01
-  -5.0000000000e-01   8.2776926203e-01
+  -9.0000000000e-01   2.1877500000e-01
+  -8.0000000000e-01   4.3721000000e-01
+  -5.0000000000e-01   8.2170700000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+<<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e+00   2.9814776701e-01
+   2.0000000000e+00   2.8829400000e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   1.0000000000e-01   1.9700021918e-01
+   1.0000000000e-01   1.9251200000e-01
 dakota_portal_frame.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
