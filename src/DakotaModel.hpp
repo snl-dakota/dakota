@@ -960,6 +960,9 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
+  /// used to collect sub-models for subordinate_models()
+  ModelList modelList;
+
   /// array of IntSet's, each containing the set of allowable integer
   /// values corresponding to a discrete design integer set variable
   IntSetArray discreteDesignSetIntValues;
@@ -1077,9 +1080,6 @@ private:
   /// (automatic graphics posting in the model as opposed to
   /// graphics posting at the strategy level)
   bool modelAutoGraphicsFlag;
-
-  /// used to collect sub-models for subordinate_models()
-  ModelList modelList;
 
   /// history of vars populated in asynch_compute_response() and used in
   /// synchronize().

@@ -487,8 +487,8 @@ inverse_transform_set(const Variables& sub_model_vars,
     num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
   const ShortArray& recast_asv = recast_set.request_vector();
   if (recast_asv.size() != num_recast_fns) {
-    Cerr << "Error: inconsistent asv sizing in RecastModel::inverse_transform_set()."
-	 << endl;
+    Cerr << "Error: inconsistent asv sizing in RecastModel::"
+         << "inverse_transform_set()." << std::endl;
     abort_handler(-1);
   }
 

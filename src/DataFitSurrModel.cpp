@@ -36,6 +36,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
+  manageRecasting(false),
   importPointsFile(problem_db.get_string("model.surrogate.import_points_file")),
   exportPointsFile(problem_db.get_string("model.surrogate.export_points_file")),
   exportAnnotated(
@@ -128,16 +129,12 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
       problem_db.get_short("model.surrogate.correction_order"));
 
-  import_points(
-    problem_db.get_bool("model.surrogate.import_points_file_annotated"));
-
-  if (!exportPointsFile.empty()) {
-    TabularIO::open_file(exportFileStream, exportPointsFile,
-			 "DataFitSurrModel export");
-    if (exportAnnotated)
-      TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				      currentResponse, "eval id");
-  }
+  bool import_annotated
+    = problem_db.get_bool("model.surrogate.import_points_file_annotated");
+  import_points(import_annotated);
+  export_points();
+  if (import_annotated || exportAnnotated)
+    manage_data_recastings();
 }
 
 
@@ -154,8 +151,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 actual_model.current_response().active_set(), output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
-  exportPointsFile(export_points_file), exportAnnotated(export_annotated),
-  importPointsFile(import_points_file)
+  manageRecasting(false), exportPointsFile(export_points_file),
+  exportAnnotated(export_annotated), importPointsFile(import_points_file)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -244,14 +241,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   }
 
   import_points(import_annotated);
-
-  if (!exportPointsFile.empty()) {
-    TabularIO::open_file(exportFileStream, exportPointsFile,
-			 "DataFitSurrModel export");
-    if (exportAnnotated)
-      TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				      currentResponse, "eval id");
-  }
+  export_points();
+  if (import_annotated || exportAnnotated)
+    manage_data_recastings();
 }
 
 
@@ -791,36 +783,17 @@ void DataFitSurrModel::build_global()
     // ordering variables and responses appropriately.  Negative eval IDs mean
     // DB lookups will appropriately fail on these which aren't in the cache.
     if (!importPointsFile.empty()) {
-      // Test for any recasting or nesting within actualModel: we assume that
-      // user data import is post-nesting, but pre-recast.
-      // (1) data is imported at the user-space level but then must be applied
-      //     within the transformed space.  Transform imported data at run time
-      //     in order to capture latest initialize() calls to RecastModels.
-      // (2) stop the recursion if a nested model is encountered: we will apply
-      //     any recastings that occur following the last nesting. 
-      // (3) Additional surrogates in this recursion hierarchy are ignored.
-      ModelList& sub_models = subordinate_models();
-      ModelLIter ml_it; ModelLRevIter ml_rit;
-      size_t i, num_models = sub_models.size();
-      bool manage_recursion = false; BoolDeque recast_flags(num_models, false);
-      // detect recasting needs top down
-      for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i)
-	if (ml_it->model_type()      == "recast")
-	  manage_recursion = recast_flags[i] = true;
-	else if (ml_it->model_type() == "nested")
-	  break;
-
       // append the data to approxInterface
-      VarsLIter v_it; RespLIter r_it; int cntr = 1;
+      VarsLIter v_it; RespLIter r_it; ModelLRevIter ml_rit; int cntr = 1;
       for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
 	   v_it != reuseFileVars.end(); ++v_it, ++r_it, ++cntr) {
+	Variables vars(*v_it); Response resp(*r_it); // shallow copies
 	// apply any recastings for surrogate modeling at this level
-	if (manage_recursion) {
-	  Variables vars(*v_it); Response resp(*r_it); // shallow copies
-	  // apply recastings bottom up
-	  for (ml_rit =sub_models.rbegin(), i=num_models-1;
-	       ml_rit!=sub_models.rend(); ++ml_rit, --i)
-	    if (recast_flags[i]) {
+	if (manageRecasting) { // apply recastings bottom up
+	  // modelList assigned in manage_data_recastings()
+	  for (i=modelList.size()-1, ml_rit =modelList.rbegin();
+	       ml_rit!=modelList.rend(); --i, ++ml_rit)
+	    if (recastFlags[i]) {
 	      // utilize RecastModel::current{Variables,Response} to xform data
 	      Variables recast_vars = ml_rit->current_variables();//shallow copy
 	      Response  recast_resp = ml_rit->current_response(); //shallow copy
@@ -834,37 +807,24 @@ void DataFitSurrModel::build_global()
 	      // reassign rep pointers (no actual data copying)
 	      vars = recast_vars; resp = recast_resp;
 	    }
-	  // Note: for NonD uses with u-space models, the global_bounds boolean
-	  // in NonD::transform_model() needs to be set in order to allow test
-	  // of transformed bounds in "region" reuse case.  For "all" reuse case
-	  // typically used with data import, this is not necessary.
-	  if (inside(vars.continuous_variables(), vars.discrete_int_variables(),
-		     vars.discrete_real_variables())) {
-	    if (outputLevel >= DEBUG_OUTPUT)
-	      Cout << "Transformed data for imported eval " << cntr << ":\n"
-		   << vars << resp;
-	    // dummy eval id = 0 for file imports (was previously = -cntr):
-	    //   id > 0 for unique evals from current execution (in data_pairs)
-	    //   id = 0 for evals from file import (not in data_pairs)
-	    //   id < 0 for non-unique evals from restart (in data_pairs)
-	    approxInterface.append_approximation(vars, std::make_pair(0, resp));
-					         //std::make_pair(-cntr, resp));
-	    ++reuse_points;
-	  }
 	}
-	// no recastings: imported data may be applied as is
-	else if (inside(v_it->continuous_variables(),
-			v_it->discrete_int_variables(),
-			v_it->discrete_real_variables())) {
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Untransformed data for imported eval " << cntr << ":\n"
-		 << *v_it << *r_it;
+	// Note: for NonD uses with u-space models, the global_bounds boolean
+	// in NonD::transform_model() needs to be set in order to allow test
+	// of transformed bounds in "region" reuse case.  For "all" reuse case
+	// typically used with data import, this is not necessary.
+	if (inside(vars.continuous_variables(), vars.discrete_int_variables(),
+		   vars.discrete_real_variables())) {
+	  if (outputLevel >= DEBUG_OUTPUT) {
+	    if (manageRecasting) Cout << "Transformed ";
+	    else                 Cout << "Untransformed ";
+	    Cout << "data for imported eval " << cntr << ":\n" << vars << resp;
+	  }
 	  // dummy eval id = 0 for file imports (was previously = -cntr):
 	  //   id > 0 for unique evals from current execution (in data_pairs)
 	  //   id = 0 for evals from file import (not in data_pairs)
 	  //   id < 0 for non-unique evals from restart (in data_pairs)
-	  approxInterface.append_approximation(*v_it, std::make_pair(0, *r_it));
-					       //std::make_pair(-cntr, *r_it));
+	  approxInterface.append_approximation(vars, std::make_pair(0, resp));
+					       //std::make_pair(-cntr, resp));
 	  ++reuse_points;
 	}
       }
@@ -1500,6 +1460,45 @@ void DataFitSurrModel::import_points(bool annotated)
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieved " << reuseFileVars.size()
 	 << " total points." << std::endl;
+}
+
+
+/** Constructor helper to export approximation-based evaluations to a file. */
+void DataFitSurrModel::export_points()
+{
+  if (exportPointsFile.empty())
+    return;
+
+  TabularIO::open_file(exportFileStream, exportPointsFile,
+		       "DataFitSurrModel export");
+  if (exportAnnotated)
+    TabularIO::write_header_tabular(exportFileStream, currentVariables,
+				    currentResponse, "eval id");
+}
+
+
+/** Constructor helper to manage model recastings for data import/export. */
+void DataFitSurrModel::manage_data_recastings()
+{
+  // Test for any recasting or nesting within actualModel: we assume that
+  // user data import is post-nesting, but pre-recast.
+  // (1) data is imported at the user-space level but then must be applied
+  //     within the transformed space.  Transform imported data at run time
+  //     in order to capture latest initialize() calls to RecastModels.
+  // (2) stop the recursion if a nested model is encountered: we will apply
+  //     any recastings that occur following the last nesting. 
+  // (3) Additional surrogates in this recursion hierarchy are ignored.
+  ModelList& sub_models = subordinate_models(); // populates/returns modelList
+  ModelLIter ml_it; size_t i, num_models = sub_models.size();
+  manageRecasting = false; recastFlags.assign(num_models, false);
+  // detect recasting needs top down
+  for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i)
+    if (ml_it->model_type()      == "recast")
+      manageRecasting = recastFlags[i] = true;
+    else if (ml_it->model_type() == "nested")
+      break;
+
+  if (!manageRecasting) recastFlags.clear();
 }
 
 
