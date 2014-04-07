@@ -18,6 +18,8 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaNonD.hpp"
+#include "DakotaApproximation.hpp"
+
 
 namespace Dakota {
 
@@ -71,8 +73,10 @@ protected:
     void execute(size_t kd);
     
     void print_POF_results(double lower, double upper);
+    
     /// print the final statistics
     void print_results(std::ostream& s);
+    
     
     //////////////////////////////////////////////////////////////
     // MPS METHODS
@@ -91,35 +95,23 @@ protected:
     ////////////////////////////////////////////////////////////////
     // OPT / POF METHODS
     ////////////////////////////////////////////////////////////////
-    void  shrink_big_spheres(); // shrink all disks by 90% to allow more sampling
     
     void assign_sphere_radius_POF(double* x, size_t isample);
     
-    void assign_sphere_radius_OPT(double* x, size_t isample);
+    void compute_response_update_Lip(double* x);
     
-    void resolve_overlap_POF(size_t ksample);
-    
-    void compute_response(double* x);
-    
-    void compute_response_for_FD_gradients(double* x);
-    
-    double get_dart_radius(double f, double fgrad, double fcurv);
-    
-    
-    ////////////////////////////////////////////////////////////////
-    // VOLUME OF SPHERE UNION METHODS
-    ////////////////////////////////////////////////////////////////
-    
-    void retrieve_POF_bounds(double &lower, double &upper);
-    
-    double estimate_spheres_volume_0d(double** spheres, size_t num_spheres, size_t num_dim, double* xmin, double* xmax);
-    
-    double get_sphere_volume(double r, size_t num_dim);
-    
-    void sample_uniformly_from_unit_sphere(double* dart, size_t num_dim);
+    void  shrink_big_spheres(); // shrink all disks by 90% to allow more sampling
     
     double area_triangle(double x1, double y1, double x2, double y2, double x3, double y3);
-    
+   
+    //////////////////////////////////////////////////////////////
+    // Surrogate METHODS
+    //////////////////////////////////////////////////////////////
+    void initialize_surrogates();
+    void add_surrogate_data(const Variables& vars, const Response& resp);
+    void build_surrogate(size_t fn_index);
+    Real eval_surrogate(size_t fn_index, double *vin);
+
     
     ////////////////////////////////////////////////////////////////
     // OUTPUT METHODS
@@ -157,9 +149,7 @@ protected:
     double* _xmin; // lower left corner of the domain
     double* _xmax; // Upper right corner of the domain
     
-    bool   _global_optimization;
     double _failure_threshold;
-    double _global_minima;
     
     // Input
     double _num_darts;
@@ -177,7 +167,6 @@ protected:
     
     // Darts
     double* _dart; // a dart for inserting a new sample point
-    double* _grad_vec; // Function gradient at a given point
     
     size_t _flat_dim;
     size_t* _line_flat;
@@ -186,11 +175,14 @@ protected:
     double* _line_flat_end;
     double* _line_flat_length;
     
+    double* _Lip;
     double** _fval;
-    size_t _ieval;
     size_t _active_response_function;
-    double _dx; // spacing for FD
-    size_t _num_sample_eval;
+    
+    // surrogate variables
+    SharedApproxData sharedData;
+    std::vector<Approximation> gpApproximations;
+    Variables gpEvalVars;
 
 };
 
