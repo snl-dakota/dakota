@@ -69,7 +69,11 @@ struct NativeDataTypes<double>
   typedef double PrimitiveType;
 
   static hid_t datatype() { return H5T_NATIVE_DOUBLE; }
-  static const PrimitiveType get_fill_value() { return nan(""); }
+
+  static const PrimitiveType get_fill_value()
+  {
+    return Teuchos::ScalarTraits<PrimitiveType>::nan();
+  }
 };
 
 
