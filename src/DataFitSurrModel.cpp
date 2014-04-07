@@ -132,7 +132,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   bool import_annotated
     = problem_db.get_bool("model.surrogate.import_points_file_annotated");
   import_points(import_annotated);
-  export_points();
+  initialize_export();
   if (import_annotated || exportAnnotated)
     manage_data_recastings();
 }
@@ -241,7 +241,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   }
 
   import_points(import_annotated);
-  export_points();
+  initialize_export();
   if (import_annotated || exportAnnotated)
     manage_data_recastings();
 }
@@ -788,9 +788,12 @@ void DataFitSurrModel::build_global()
       for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
 	   v_it != reuseFileVars.end(); ++v_it, ++r_it, ++cntr) {
 	Variables vars(*v_it); Response resp(*r_it); // shallow copies
-	// apply any recastings for surrogate modeling at this level
+	// apply any recastings below this level: we perform these recastings at
+	// run time (instead of once in import_points()) to support any updates
+	// to the transformations (e.g., distribution parameter updates).
 	if (manageRecasting) { // apply recastings bottom up
-	  // modelList assigned in manage_data_recastings()
+	  // modelList previously assigned in manage_data_recastings(),
+	  // so we avoid re-incurring the overhead of subordinate_models()
 	  for (i=modelList.size()-1, ml_rit =modelList.rbegin();
 	       ml_rit!=modelList.rend(); --i, ++ml_rit)
 	    if (recastFlags[i]) {
@@ -1069,11 +1072,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     }
 
     // export data (optional)
-    if (!exportPointsFile.empty()) {
-      size_t export_id = (exportAnnotated) ? surrModelEvalCntr : _NPOS;
-      TabularIO::write_data_tabular(exportFileStream, currentVariables,
-				    approx_response, export_id);
-    }
+    export_point(surrModelEvalCntr, currentVariables, approx_response);
 
     // post-process
     switch (responseMode) {
@@ -1464,7 +1463,7 @@ void DataFitSurrModel::import_points(bool annotated)
 
 
 /** Constructor helper to export approximation-based evaluations to a file. */
-void DataFitSurrModel::export_points()
+void DataFitSurrModel::initialize_export()
 {
   if (exportPointsFile.empty())
     return;
@@ -1502,13 +1501,51 @@ void DataFitSurrModel::manage_data_recastings()
 }
 
 
+/** Constructor helper to export approximation-based evaluations to a file. */
+void DataFitSurrModel::
+export_point(int eval_id, const Variables& vars, const Response& resp)
+{
+  if (exportPointsFile.empty())
+    return;
+
+  size_t export_id = (exportAnnotated) ? eval_id : _NPOS;
+  if (manageRecasting) {
+    // create vars envelope & resp handle to manage the instances to be exported
+    Variables export_vars(vars); Response export_resp(resp); // shallow copies
+    VarsLIter v_it; RespLIter r_it; ModelLRevIter ml_rit; size_t i;
+    // modelList previously assigned in manage_data_recastings(),
+    // so we avoid re-incurring the overhead of subordinate_models()
+    for (i=modelList.size()-1, ml_rit =modelList.rbegin();
+	 ml_rit!=modelList.rend(); --i, ++ml_rit)
+      if (recastFlags[i]) {
+	// utilize RecastModel::current{Variables,Response} to xform data
+	Variables user_vars = ml_rit->current_variables();//shallow copy
+	Response  user_resp = ml_rit->current_response(); //shallow copy
+	// to propagate vars top down, forward transform is reqd
+	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
+	recast_model_rep->transform_variables(export_vars, user_vars);
+	//recast_model_rep->transform_set(export_vars, export_set, user_set);
+	// to propagate response top down, inverse transform is used
+	recast_model_rep->inverse_transform_response(user_vars, export_vars,
+						     export_resp, user_resp);
+	// reassign rep pointers (no actual data copying)
+	export_vars = user_vars; export_resp = user_resp;
+      }
+
+    TabularIO::write_data_tabular(exportFileStream, export_vars,
+				  export_resp, export_id);
+  }
+  else
+    TabularIO::write_data_tabular(exportFileStream, vars, resp, export_id);
+}
+
+
 void DataFitSurrModel::
 derived_synchronize_approx(const IntResponseMap& approx_resp_map,
 			   IntResponseMap& approx_resp_map_rekey)
 {
   // update map keys to use surrModelEvalCntr
-  bool actual_evals = !truthIdMap.empty(),
-       export_pts   = !exportPointsFile.empty();
+  bool actual_evals = !truthIdMap.empty();
   IntResponseMap& approx_resp_map_proxy
     = (actual_evals) ? approx_resp_map_rekey : surrResponseMap;
   for (IntRespMCIter r_cit = approx_resp_map.begin();
@@ -1531,22 +1568,16 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
 	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it) {
       deltaCorr.apply(v_it->second,//rawVarsMap[r_it->first],
 		      r_it->second, quiet_flag);
-      if (export_pts) { // decided to export auto-corrected approx response
-	size_t export_id = (exportAnnotated) ? r_it->first : _NPOS;
-	TabularIO::write_data_tabular(exportFileStream, v_it->second,
-				      r_it->second, export_id);
-      }
+      // decided to export auto-corrected approx response
+      export_point(r_it->first, v_it->second, r_it->second);
     }
     rawVarsMap.clear();
   }
-  else if (export_pts) {
+  else if (!exportPointsFile.empty()) {
     IntVarsMIter v_it; IntRespMIter r_it;
     for (r_it  = approx_resp_map_proxy.begin(), v_it = rawVarsMap.begin();
-	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it) {
-      size_t export_id = (exportAnnotated) ? r_it->first : _NPOS;
-      TabularIO::write_data_tabular(exportFileStream, v_it->second,
-				    r_it->second, export_id);
-    }
+	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it)
+      export_point(r_it->first, v_it->second, r_it->second);
     rawVarsMap.clear();
   }
 
@@ -1557,11 +1588,6 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
        r_cit != cachedApproxRespMap.end(); r_cit++)
     approx_resp_map_proxy[r_cit->first] = r_cit->second;
   cachedApproxRespMap.clear();
-
-  /*
-  // export approximate evaluations if requested
-  if (!exportPointsFile.empty())
-  */
 }
 
 

@@ -389,8 +389,8 @@ const IntResponseMap& RecastModel::derived_synchronize_nowait()
 void RecastModel::
 transform_variables(const Variables& recast_vars, Variables& sub_model_vars)
 {
-  // map from recast variables ("iterator space") into the model variables
-  // ("user space") and set these vars within the subModel
+  // typical flow: mapping from recast variables ("iterator space")
+  // into the sub-model variables ("user space")
   if (variablesMapping) variablesMapping(recast_vars, sub_model_vars);
   else                  sub_model_vars.active_variables(recast_vars);
 }
@@ -400,8 +400,8 @@ void RecastModel::
 inverse_transform_variables(const Variables& sub_model_vars,
 			    Variables& recast_vars)
 {
-  // map from recast variables ("iterator space") into the model variables
-  // ("user space") and set these vars within the subModel
+  // atypical flow: mapping from sub-model variables ("user space")
+  // into the recast variables ("iterator space")
   if (invVarsMapping) invVarsMapping(sub_model_vars, recast_vars);
   else                recast_vars.active_variables(sub_model_vars);
 }
@@ -411,6 +411,9 @@ void RecastModel::
 transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
 	      ActiveSet& sub_model_set)
 {
+  // typical flow: mapping from recast set ("iterator space") into the
+  // sub-model set ("user space")
+
   size_t i, j, num_recast_primary_fns = primaryRespMapIndices.size(),
     num_recast_secondary_fns = secondaryRespMapIndices.size(),
     num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
@@ -480,6 +483,9 @@ void RecastModel::
 inverse_transform_set(const Variables& sub_model_vars,
 		      const ActiveSet& sub_model_set, ActiveSet& recast_set)
 {
+  // atypical flow: mapping from sub-model set ("user space") into the
+  // recast set ("iterator space")
+
   /* TO DO: modify mapping below from forward to inverse
 
   size_t i, j, num_recast_primary_fns = primaryRespMapIndices.size(),
@@ -545,6 +551,9 @@ transform_response(const Variables& recast_vars,
 		   const Variables& sub_model_vars,
 		   const Response& sub_model_resp, Response& recast_resp)
 {
+  // typical flow: mapping from sub-model response ("user space") into
+  // the recast response ("iterator space")
+
   size_t num_recast_1_fns = primaryRespMapIndices.size();
 
   if (primaryRespMapping)
@@ -573,6 +582,9 @@ inverse_transform_response(const Variables& sub_model_vars,
 			   const Response& recast_resp,
 			   Response& sub_model_resp)
 {
+  // atypical flow: mapping from the recast response ("iterator space")
+  // into the sub-model response ("user space")
+
   size_t num_recast_1_fns = primaryRespMapIndices.size();
 
   if (invPriRespMapping)

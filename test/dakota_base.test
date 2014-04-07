@@ -52533,6 +52533,40 @@ response_fn_1 Sobol' indices:
                       4.9746891372e-01  7.0363551316e-01 x1
                       2.9636448684e-01  5.0253108628e-01 x2
                       2.0616659944e-01 x1 x2 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.5566666666e+02   P0   P0
+  -3.9999999588e+00   P1   P0
+  -5.3333333339e+02   P0   P1
+   9.1695238075e+02   P2   P0
+   4.8538481678e-08   P1   P1
+   2.6666666663e+02   P0   P2
+   6.7185255248e-08   P3   P0
+  -1.0666666665e+03   P2   P1
+  -2.5890292843e-07   P1   P2
+   1.6638377698e-07   P0   P3
+   3.6571428555e+02   P4   P0
+   1.4275421734e-08   P3   P1
+  -1.9170948917e-07   P2   P2
+   1.0745524470e-07   P1   P3
+  -1.6828079907e-07   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666666e+02  6.0656024176e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      4.9746891372e-01  7.0363551316e-01 x1
+                      2.9636448684e-01  5.0253108628e-01 x2
+                      2.0616659944e-01 x1 x2
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9000000000e-03
+   1.0000000000e+00   1.3600000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4230000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
 dakota_uq_rosenbrock_pce_lls.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)

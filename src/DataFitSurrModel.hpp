@@ -240,9 +240,11 @@ private:
   /// optionally read surrogate data points from provided file
   void import_points(bool annotated);
   /// initialize file stream for exporting surrogate evaluations
-  void export_points();
+  void initialize_export();
   /// initialize manageRecasting and recastFlags for data import/export
   void manage_data_recastings();
+  /// initialize file stream for exporting surrogate evaluations
+  void export_point(int eval_id, const Variables& vars, const Response& resp);
 
   /// Common code for processing of approximate response maps shared by
   /// derived_synchronize() and derived_synchronize_nowait()

@@ -6,12 +6,13 @@ method,
 	polynomial_chaos
 	  expansion_order = 4
 	  collocation_points = 0			#0
-#	  collocation_points = 10			#1
-#	  seed = 12347 rng rnum2			#1
+#	  collocation_points = 10			#1,#2
+#	  seed = 12347 rng rnum2			#1,#2
 # import data generated using tabular_graphics_data with quadrature_order = 5
 	  import_points_file = 'dakota_uq_rosenbrock_pce_import.dat' annotated
-#	  samples = 10000		
-#	  response_levels = .1 1. 50. 100. 500. 1000.	
+#	  export_points_file = 'dakota_uq_rosenbrock_pce_export.dat' annotated #2
+#	  samples = 10000				#2
+#	  response_levels = .1 1. 50. 100. 500. 1000.	#2
 	  variance_based_decomp #interaction_order = 1
 #	  output debug
 
