@@ -57,6 +57,9 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
   // the number of samples, but eventually we will get that from the input spec
   Cout << "Hello World, POF Darts is coming! " << '\n';
   Cout << "Number of samples " << samples << '\n';
+    
+    // initialize one GP surrogate per function
+    initialize_surrogates();
 }
 
 
@@ -68,8 +71,9 @@ void NonDPOFDarts::quantify_uncertainty()
 {
     Cout << "I am now computing uncertainty! " << '\n';
     
-    initiate_random_number_generator(seed);
+    if (fabs(seed - 1.0) < 1E-10) seed  = time(0);
     
+    initiate_random_number_generator(seed);
     
     init_pof_darts(); // prepare global variables and containers
     
@@ -169,17 +173,12 @@ void NonDPOFDarts::quantify_uncertainty()
     
     void NonDPOFDarts::init_pof_darts()
     {
-        _global_optimization = false;
-        
         _accepted_void_ratio = 1E-9;
         
         _n_dim = numContinuousVars;
         
-        _ieval = 0; _num_sample_eval = 2 * _n_dim + 1;
-        
-        _dx = 1E-4; // spacing for FD
-        
         _total_budget = 0;
+        
         initialize_distribution_mappings();
         for (size_t resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++)
         {
@@ -201,7 +200,6 @@ void NonDPOFDarts::quantify_uncertainty()
         
         _sample_points = new double*[max_num_points];
         _dart = new double[_n_dim];
-        _grad_vec = new double[_n_dim];
         
         _line_flat = new size_t[_n_dim];
         _line_flat_start = new double[max_num_points];
@@ -229,30 +227,20 @@ void NonDPOFDarts::quantify_uncertainty()
             diag += dx * dx;
         }
         diag = sqrt(diag);
-        _max_radius = /*0.1*/ 1000.0 * diag;
+        _max_radius = 0.25 * diag;
+        
         
         _fval = new double*[numFunctions];
-        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) _fval[resp_fn_count] = new double[_total_budget * _num_sample_eval];
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) _fval[resp_fn_count] = new double[_total_budget];
         
+        _Lip = new double[numFunctions];
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) _Lip[resp_fn_count] = 0.0;
         
-        
-        // to be commmented later!!
-        Cout << "pof:: Number of dimensions = " << _n_dim << '\n';
-        Cout << "pof:: Sample Budget = " << samples << '\n';
-        Cout << "pof:: Failure Threshold = " << _failure_threshold << '\n';
-        Cout << "pof:: Number of Successive Misses = " << _max_num_successive_misses << '\n';
-        Cout << "pof:: Maximum disk radius = " << _max_radius << '\n';
-        Cout << "pof:: first lower bound = " << _xmin[0] << '\n';
-        Cout << "pof:: second lower bound = " << _xmin[1] << '\n';
-        Cout << "pof:: first lower bound = " << _xmax[0] << '\n';
-        Cout << "pof:: second upper bound = " << _xmax[1] << '\n';
-        // */
     }
     
     void NonDPOFDarts::exit_pof_darts()
     {
         delete[] _dart;
-        delete[] _grad_vec;
         delete[] _line_flat;
         delete[] _line_flat_start;
         delete[] _line_flat_end;
@@ -262,7 +250,9 @@ void NonDPOFDarts::quantify_uncertainty()
         for (size_t isample = 0; isample < _num_inserted_points; isample++) delete[] _sample_points[isample];
         delete[] _sample_points;
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) delete[] _fval[resp_fn_count];
+        
         delete[] _fval;
+        delete[] _Lip;
     }
     
     void NonDPOFDarts::execute(size_t kd)
@@ -272,19 +262,27 @@ void NonDPOFDarts::quantify_uncertainty()
        
         _num_inserted_points = 0; _num_darts = 0;
         
-        for (size_t resp_fn_count = 0; resp_fn_count<numFunctions; resp_fn_count++)
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
             _active_response_function = resp_fn_count;
             
             size_t num_levels = requestedRespLevels[resp_fn_count].length();
             
-            for (size_t level_count=0; level_count<num_levels; level_count++)
+            for (size_t level_count = 0; level_count<num_levels; level_count++)
             {
                 _failure_threshold = requestedRespLevels[resp_fn_count][level_count];
                 
+                // adjust prior sphere radii to reflect current response function and threshold
                 for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(_sample_points[isample], isample);
-               
-                for (size_t isample = 0; isample < _num_inserted_points; isample++) resolve_overlap_POF(isample);
+                
+                /*
+                if (resp_fn_count == 1)
+                {
+                    Cout << "pof:: Plotting in mps_shphere.ps ... ";
+                    plot_vertices_2d();
+                    return;
+                }
+                */
                 
                 start_time = clock();
                 if (kd == 0)
@@ -305,46 +303,87 @@ void NonDPOFDarts::quantify_uncertainty()
                 std::cout<<  "pof::    Number of thrown darts = " << std::fixed << _num_darts << std::endl;
                 std::cout.precision(4);
                 std::cout<<  "pof::    Execution Time = " << std::fixed << cpu_time << " seconds." << std::endl;
-            
+                
             }
         }
         
-        double lower(0.0), upper(0.0);
-        double pof_val(0.0);
+        
+        
+        // build and evaluate the surrogate for the given function
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
+        {
+            std::cout <<  "pof::    building surrogates ...";
+            
+            start_time = clock();
+
+            build_surrogate(resp_fn_count);
+            
+            end_time = clock();
+            cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
+            
+            std::cout <<  " done!" << std::endl;
+            
+            std::cout.precision(4);
+            std::cout <<  "pof::    Execution Time = " << std::fixed << cpu_time << " seconds." << std::endl;
+
+        }
+        
+        
+        RealVector tmp_rv(_n_dim);
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
             _active_response_function = resp_fn_count;
             
             size_t num_levels = requestedRespLevels[resp_fn_count].length();
-            
+
             for (size_t level_count = 0; level_count < num_levels; level_count++)
             {
-                Cout << "resp_fn_count = " << resp_fn_count << '\n';
-                Cout << "level_count = " << level_count << '\n';
-                
                 _failure_threshold = requestedRespLevels[resp_fn_count][level_count];
                 
-                Cout << "pof::  Estimating pof for threshold = " << _failure_threshold << '\n';
-                
+                // adjust prior sphere radii to reflect current response function and threshold
                 for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(_sample_points[isample], isample);
                 
-                for (size_t isample = 0; isample < _num_inserted_points; isample++) resolve_overlap_POF(isample);
+                
+                std::cout <<  "pof::    Evaluating surrogates ...";
+
+                start_time = clock();
+                
+                double num_MC_samples(1E6);
+                double num_fMC_samples(0.0);
+                double isample = 0.0;
+                while (isample < num_MC_samples)
+                {
+                    for (size_t idim = 0; idim < _n_dim; idim++)
+                    {
+                        tmp_rv[idim] = _xmin[idim] + generate_a_random_number() * (_xmax[idim] - _xmin[idim]);
+                    }
+                
+                    double* _vars = tmp_rv.values();
+                    double surrogate_value = eval_surrogate(resp_fn_count, _vars);
+                    
+                    if (surrogate_value <  _failure_threshold) num_fMC_samples+=1.0;
+                    
+                    isample+=1.0;
+                }
+                double pof_val = num_fMC_samples / num_MC_samples;
+                computedProbLevels[resp_fn_count][level_count] = pof_val;
+                
+                end_time = clock();
+                cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
+                
+                std::cout <<  " done!" << std::endl;
+                
+                std::cout.precision(4);
+                std::cout <<  "pof::    Execution Time = " << std::fixed << cpu_time << " seconds." << std::endl;
                 
                 /*
                 if (_n_dim == 2)
                 {
-                    Cout<< "pof:: Plotting in mps_shphere.ps ... ";
+                    Cout << "pof:: Plotting in mps_shphere.ps ... ";
                     plot_vertices_2d();
                 }
                 */
                 
-                retrieve_POF_bounds(lower, upper);
-                pof_val = 0.5 * (lower + upper);
-                
-                // Laura, uncommenting this statement give me a segmentation fault can you please check the reason
-                // do we need to resize computedProbLevels?!
-                
-                computedProbLevels[resp_fn_count][level_count] = pof_val;
             }
         }
         return;
@@ -398,6 +437,7 @@ void NonDPOFDarts::quantify_uncertainty()
     
     void NonDPOFDarts::line_dart_throwing_games(size_t game_index)
     {
+        
         _num_successive_misses_p = 0;
         _num_successive_misses_m = 0;
         size_t num_prior_disks = _num_inserted_points;
@@ -461,7 +501,7 @@ void NonDPOFDarts::quantify_uncertainty()
                     if (ist > 0) t -= _line_flat_length[ist - 1];
                     _dart[_flat_dim] = _line_flat_start[ist] + t;
                     
-                    add_point(_dart); covered = false; 	
+                    add_point(_dart); covered = false;
                     
                     if (_num_inserted_points - num_prior_disks == samples)
                     {
@@ -599,17 +639,71 @@ void NonDPOFDarts::quantify_uncertainty()
         
         for (size_t idim = 0; idim < _n_dim; idim++) _sample_points[_num_inserted_points][idim] = x[idim];
         
-        if (_global_optimization) assign_sphere_radius_OPT(x, _num_inserted_points);
-        else                      assign_sphere_radius_POF(x, _num_inserted_points);
+        assign_sphere_radius_POF(x, _num_inserted_points);
         
-        resolve_overlap_POF(_num_inserted_points);
+        // adjust prior sphere radii to reflect new Lipschitz constant
+        for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(_sample_points[isample], isample);
         
         _num_inserted_points++;
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // OPT / POF methods
+    // POF methods
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    void NonDPOFDarts::assign_sphere_radius_POF(double* x, size_t isample)
+    {
+        if (isample == _num_inserted_points)  compute_response_update_Lip(x);
+        
+        double fval = _fval[_active_response_function][isample];
+        
+        double r = _max_radius;
+        
+        if (_Lip[_active_response_function] > 1E-10)
+        {
+            r = fabs(fval - _failure_threshold) / _Lip[_active_response_function];
+            if (r > _max_radius)
+            {
+                r = _max_radius;
+                _Lip[_active_response_function] = fabs(fval - _failure_threshold) / r;
+            }
+        }
+        
+        _sample_points[isample][_n_dim] = r * r;
+        
+        if (fval < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
+    }
+    
+    void NonDPOFDarts::compute_response_update_Lip(double* x)
+    {
+        RealVector newX(_n_dim);
+        for (size_t idim = 0; idim < _n_dim; idim++) newX[idim] = x[idim];
+        
+        iteratedModel.continuous_variables(newX);
+        iteratedModel.compute_response();
+        
+        add_surrogate_data(iteratedModel.current_variables(), iteratedModel.current_response());
+        
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
+        {
+            double fval = iteratedModel.current_response().function_value(resp_fn_count);
+            _fval[resp_fn_count][_num_inserted_points] = fval;
+            
+            // update Lipschitz constant
+            for (size_t isample = 0; isample < _num_inserted_points; isample++)
+            {
+                double dst = 0.0;
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    double dx = x[idim] - _sample_points[isample][idim];
+                    dst += dx * dx;
+                }
+                dst = sqrt(dst);
+                double L = fabs(fval - _fval[resp_fn_count][isample]) / dst;
+                if (L > _Lip[resp_fn_count]) _Lip[resp_fn_count] = L;
+            }
+        }
+    }
     
     void NonDPOFDarts::shrink_big_spheres()
     {
@@ -619,471 +713,70 @@ void NonDPOFDarts::quantify_uncertainty()
             if (fabs(_sample_points[isample][_n_dim]) > rr_max) rr_max = fabs(_sample_points[isample][_n_dim]);
         }
         
-        Cout<< "rr_max = " << rr_max << std::endl;
+        Cout << "rr_max = " << rr_max << std::endl;
         
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
             if (fabs(_sample_points[isample][_n_dim]) > 0.81 * rr_max) _sample_points[isample][_n_dim] *= 0.81;
         }
-                
-    }
-
-    void NonDPOFDarts::assign_sphere_radius_POF(double* x, size_t isample)
-    {
-        if (isample == _num_inserted_points)
-        {
-            // A new disk: compute ALL responses
-            compute_response(x);
-            compute_response_for_FD_gradients(x);
-        }
         
-        size_t ieval = isample * _num_sample_eval;
-        double fval = _fval[_active_response_function][ieval]; ieval++;
-     
-        double grad(0.0), curv(0.0);
-        for (size_t idim = 0; idim < _n_dim; idim++)
-        {
-            double fp = _fval[_active_response_function][ieval];ieval++;
-            double fm = _fval[_active_response_function][ieval];ieval++;
-            double dgrad = (fp - fm) / (2 * _dx);
-            grad += dgrad * dgrad;
-            double dcurv =  (fp - 2 * fval + fm) / (_dx * _dx);
-            curv+= dcurv * dcurv;
-        }
-        curv = sqrt(curv);
-        grad = sqrt(grad);
-
-        
-        // form a quadratic function and solve it to retrieve the radius
-        // f(r) = a r^2 + b r + c = failure_threshold
-        
-        if (fval > _failure_threshold)
-        {
-            // we are interested in -gradient direction only if we are in the failure region
-            grad  = - grad; curv = -curv;
-        }
-        
-        double r = get_dart_radius(fval, grad, curv);
-        
-        _sample_points[isample][_n_dim] = r * r;
-        if (fval < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
     }
     
-    
-    void NonDPOFDarts::assign_sphere_radius_OPT(double* x, size_t isample)
-    {
-        /*
-        double f = f_true(x);
-        double fcurv;
-        double fgrad = f_grad_FD(x, f, fcurv); // this could be
-        // form a quadratic function and solve it to retrieve the radius
-        // f(r) = a r^2 + b r + c = failure_threshold
-        
-        fgrad = -fgrad; fcurv = -fcurv; // we are interested in the descending direction onlly
-        
-        double r(0.0);
-        if (_num_inserted_points == 0)
-        {
-            _global_minima = f;
-        }
-        else if (f < _global_minima)
-        {
-            // adjust radius of all spheres
-            _global_minima = f;
-            for (size_t jsample = 0; jsample < _num_inserted_points; jsample++)
-            {
-                // adjust radius of old sphere
-                double fj = _sample_points[jsample][_n_dim + 1];
-                double gj = _sample_points[jsample][_n_dim + 2];
-                double hj = _sample_points[jsample][_n_dim + 3];
-                double rj = get_dart_radius(fj, gj, hj);
-                _sample_points[jsample][_n_dim] = rj * rj;
-            }
-        }
-        else
-        {
-            r = get_dart_radius(f, fgrad, fcurv);
-        }
-        
-        _sample_points[isample][_n_dim] = r * r;
-        */
-    }
-    
-    void NonDPOFDarts::resolve_overlap_POF(size_t ksample)
-    {
-        if (_num_inserted_points < 2) return;
-       
-        for (size_t isample = 0; isample < _num_inserted_points; isample++)
-        {
-            if (isample == ksample) continue;
-            
-            double rr_n = _sample_points[ksample][_n_dim];
-            double rr_i = _sample_points[isample][_n_dim];
-            
-            double bigger_rr(rr_n), smaller_rr(rr_n);
-            if (rr_i > bigger_rr) bigger_rr = rr_i;
-            if (rr_i < smaller_rr) smaller_rr = rr_i;
-            
-            double dd(0.0);
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-                double dx = _sample_points[ksample][idim] - _sample_points[isample][idim];
-                dd += dx * dx;
-            }
-            
-            if (rr_i * rr_n < 0.0)
-            {
-                // disks of different colors check for overlap:
-                double rcomb(sqrt(fabs(rr_i)) + sqrt(fabs(rr_n)));
-                if (dd < rcomb * rcomb)
-                {
-                    // Inaccurate Overlap
-                    double d = sqrt(dd);
-                    double fn = _fval[_active_response_function][ksample * _num_sample_eval];
-                    double fi = _fval[_active_response_function][isample * _num_sample_eval];
-                    double ri = (_failure_threshold - fi) / (fn - fi) * d;
-                    double rn = d - ri;
-                    
-                    // overlaping disks of different colors, shrink both 
-                    if (rn * rn < fabs(rr_n))
-                    {
-                        _sample_points[ksample][_n_dim] = rn * rn;
-                        if (fn < _failure_threshold) _sample_points[ksample][_n_dim] = -_sample_points[ksample][_n_dim];
-                    }
-                    
-                    if (ri * ri < fabs(rr_i))
-                    {
-                        _sample_points[isample][_n_dim] = ri * ri;
-                        if (fi < _failure_threshold) _sample_points[isample][_n_dim] = -_sample_points[isample][_n_dim];
-                    }
-                }
-            }
-        }
-    }
-    
-    void NonDPOFDarts::compute_response(double* x)
-    {
-        RealVector newX(_n_dim);
-        for (size_t idim = 0; idim < _n_dim; idim++) newX[idim] = x[idim];
-        
-        iteratedModel.continuous_variables(newX);
-        iteratedModel.compute_response();
-        
-        for (size_t resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++)
-        {
-            double fval = iteratedModel.current_response().function_value(resp_fn_count);
-            _fval[resp_fn_count][_ieval] = fval;
-        }
-        _ieval++;
-    }
-    
-    void NonDPOFDarts::compute_response_for_FD_gradients(double* x)
-    {
-        for (size_t idim = 0; idim < _n_dim; idim++)
-        {
-            x[idim] += _dx; // moving forward
-            compute_response(x);
-            x[idim] -= (2 * _dx); // moving backward
-            compute_response(x);
-            x[idim] += _dx; // back to original location
-        }
-    }
-    
-    double NonDPOFDarts::get_dart_radius(double f, double fgrad, double fcurv)
-    {
-        double a, b, c;
-        
-        if (_global_optimization) 
-            c = f - _global_minima; // f(0) - global_minima = c
-        else
-            c = f - _failure_threshold;
-        
-        b = fgrad; // f'(0) = b
-        
-        a = 0.5 * fcurv; // at r = 0, f''(0) = f_curv
-        
-        
-        double r;
-        if (fabs(a) < 1E-10)
-        {
-            r = fabs(c / b);
-        }
-        else
-        {
-            r =  -b / (2 * a);
-            double z = b * b - 4 * a * c;
-            if (z > 0.0)
-            {
-                if (r < 0) r += fabs(sqrt(z) / (2 * a));
-                else r -= fabs(sqrt(z) / (2 * a));
-            }
-        }	
-        if (r > _max_radius) r = _max_radius;
-        return r;
-    }
-    
-    
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // VOLUME OF SPHERE UNION METHODS
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    
-    void NonDPOFDarts::retrieve_POF_bounds(double &lower, double &upper)
-    {
-        Cout <<  "\n*** Estimating Volume of overlapping spheres ... ";
-        clock_t start_time, end_time; double cpu_time, total_time(0.0);
-        start_time = clock();
-        
-        double v_failure = 0.0; double v_nonfailure = 0.0;
-        size_t num_failure(0), num_non_failure(0);
-        for (size_t isphere = 0; isphere < _num_inserted_points; isphere++)
-        {
-            if (_sample_points[isphere][_n_dim] > 0.0) num_non_failure++; // non-failure sphere
-            else                                       num_failure++;     // failure region
-        }
-        
-        double VOL(1.0);
-        for (size_t idim = 0; idim < _n_dim; idim++)
-        {
-            double dx = _xmax[idim] - _xmin[idim];
-            VOL *= dx;
-        }
-        
-        if (num_failure > 0)
-        {
-            double** failure_spheres = new double*[num_failure];
-            for (size_t isphere = 0; isphere < num_failure; isphere++) failure_spheres[isphere] = new double[_n_dim + 1];
-            size_t ifailure(0);
-            for (size_t isphere = 0; isphere < _num_inserted_points; isphere++)
-            {
-                if (_sample_points[isphere][_n_dim] < 0.0)
-                {
-                    for (size_t idim = 0; idim < _n_dim; idim++) failure_spheres[ifailure][idim] = _sample_points[isphere][idim];
-                    failure_spheres[ifailure][_n_dim] = sqrt(-_sample_points[isphere][_n_dim]);
-                    ifailure++;
-                }
-            }
-            
-            v_failure = estimate_spheres_volume_0d(failure_spheres, num_failure, _n_dim, _xmin, _xmax);
-            // v_failure = estimate_spheres_volume_1d(failure_spheres, num_failure, _n_dim, _xmin, _xmax);
-            //v_failure = estimate_spheres_volume_2d(failure_spheres, num_failure, _n_dim, _xmin, _xmax);
-            
-            for (size_t isphere = 0; isphere < num_failure; isphere++) delete[] failure_spheres[isphere];
-            delete[] failure_spheres;
-        }
-        else v_failure = 0.0;
-        
-        if (num_non_failure > 0 && num_failure > 0)
-        {
-            // only calculate upper bound if non-failure disks exists
-            double** non_failure_spheres = new double*[num_non_failure];
-            for (size_t isphere = 0; isphere < num_non_failure; isphere++) non_failure_spheres[isphere] = new double[_n_dim + 1];
-            size_t inonfailure(0);
-            for (size_t isphere = 0; isphere < _num_inserted_points; isphere++)
-            {
-                if (_sample_points[isphere][_n_dim] > 0.0)
-                {
-                    for (size_t idim = 0; idim < _n_dim; idim++) non_failure_spheres[inonfailure][idim] = _sample_points[isphere][idim];
-                    non_failure_spheres[inonfailure][_n_dim] = sqrt(_sample_points[isphere][_n_dim]);
-                    inonfailure++;
-                }
-            }
-            v_nonfailure = estimate_spheres_volume_0d(non_failure_spheres, num_non_failure, _n_dim, _xmin, _xmax);
-            // v_nonfailure = estimate_spheres_volume_1d(non_failure_spheres, num_non_failure, _n_dim, _xmin, _xmax);
-            //v_nonfailure = estimate_spheres_volume_2d(non_failure_spheres, num_non_failure, _n_dim, _xmin, _xmax);
-            
-            for (size_t isphere = 0; isphere < num_non_failure; isphere++) delete[] non_failure_spheres[isphere];
-            delete[] non_failure_spheres;
-        }
-        else v_nonfailure = VOL;
-        
-        lower = v_failure / VOL;
-        upper = 1.0 - (v_nonfailure / VOL);
-        end_time = clock();
-        
-        std::cout<< "done!" << std::endl;
-        
-        cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
-        std::cout<<  "    Execution Time = " << std::fixed << cpu_time << " seconds." << std::endl;		
-        
-        if (upper < lower) upper = lower;
-        
-        print_POF_results(lower, upper);
-    }
-    
-    double NonDPOFDarts::estimate_spheres_volume_0d(double** spheres, size_t num_spheres, size_t num_dim, double* xmin, double* xmax)
-    {
-        std::vector<size_t> sphere_neighbors;
-        double total_volume(0.0);
-        double* dart = new double[num_dim];
-        for (size_t isphere = 0; isphere < num_spheres; isphere++)
-        {
-            double ri = spheres[isphere][num_dim]; // radius of sphere i
-            
-            // retrieve overlapping spheres
-            sphere_neighbors.clear(); bool redundant_sphere(false);
-            for (size_t jsphere = 0; jsphere < num_spheres; jsphere++)
-            {
-                if (isphere == jsphere) continue;
-                double rj = spheres[jsphere][num_dim]; // radius of sphere j
-                double d(0.0);
-                for (size_t idim = 0; idim < num_dim; idim++)
-                {
-                    double dx = spheres[jsphere][idim] - spheres[isphere][idim];
-                    d += dx * dx;
-                }
-                d = sqrt(d);
-                if (d + ri < rj)
-                {
-                    // sphere i is entirely inside sphere j
-                    redundant_sphere = true; break;
-                }
-                if (d + rj < ri)
-                {
-                    // sphere j is entirely inside sphere i
-                    continue;
-                }
-                if (d < ri + rj)
-                {
-                    // sphere j overlaps with sphere i
-                    sphere_neighbors.push_back(jsphere);
-                }
-            }
-            if (redundant_sphere) continue;
-            
-            double vi = get_sphere_volume(ri, num_dim);
-            
-            size_t num_experiments(20);
-            std::vector<double> sum(num_experiments);
-            std::vector<double> num(num_experiments);
-            while (true)
-            {
-                // thow groups of 1000 darts uniformly from a sphere
-                for (size_t iexp = 0; iexp < num_experiments; iexp++)
-                {
-                    size_t idart(0);
-                    while (idart < 100)
-                    {
-                        sample_uniformly_from_unit_sphere(dart, num_dim);
-                        
-                        for (size_t idim = 0; idim < num_dim; idim++) dart[idim] = spheres[isphere][idim] + dart[idim] * ri;
-                        
-                        double di_sq(0.0);
-                        for (size_t idim = 0; idim < num_dim; idim++)
-                        {
-                            double dx = dart[idim] - spheres[isphere][idim];
-                            di_sq += dx * dx;
-                        }
-                        
-                        double pi = di_sq - ri * ri; bool miss(false);
-                        size_t num_neighbors(sphere_neighbors.size());
-                        for (size_t ineighbor = 0; ineighbor < num_neighbors; ineighbor++)
-                        {
-                            size_t jsphere = sphere_neighbors[ineighbor];
-                            double rj = spheres[jsphere][num_dim]; // radius of sphere j
-                            
-                            double dj_sq(0.0);
-                            for (size_t idim = 0; idim < num_dim; idim++)
-                            {
-                                double dx = dart[idim] - spheres[jsphere][idim];
-                                dj_sq += dx * dx;
-                            }
-                            double pj = dj_sq - rj * rj;
-                            if (pj < pi)
-                            {
-                                miss = true; // dart is inside another power cell
-                                break;
-                            }
-                        }
-                        
-                        if (!miss)
-                        {
-                            for (size_t idim = 0; idim < num_dim; idim++)
-                            {	
-                                if (dart[idim] < xmin[idim] || dart[idim] > xmax[idim])
-                                {								
-                                    miss = true; break;  // dart is outside domain
-                                }
-                            }
-                        }
-                        
-                        idart++;
-                        num[iexp] += 1.0;
-                        if (miss) continue;
-                        
-                        sum[iexp] += 1.0;  // dart is inside the power cell of isphere
-                    }
-                }
-                
-                // mean and variance
-                double mean(0.0);
-                for (size_t iexp = 0; iexp < num_experiments; iexp++) mean+= sum[iexp] / num[iexp];
-                mean /= num_experiments;
-                
-                double var(0.0);
-                for (size_t iexp = 0; iexp < num_experiments; iexp++)
-                {
-                    double dvar = sum[iexp] / num[iexp] - mean;
-                    var+= dvar * dvar;
-                }
-                var = sqrt(var/num_experiments);
-                
-                // exact bounds = mean +- variance 
-                
-                if (var * vi < 1E-2)
-                {
-                    total_volume += mean * vi;
-                    break; // we obtain estimate up to 8 digits accuray					
-                }
-            }
-            
-        }
-        delete[] dart;
-        return total_volume;
-    }
-
-
-    double NonDPOFDarts::get_sphere_volume(double r, size_t num_dim)
-    {
-        double PI = 3.1415926535897932384626433832795;
-        // borrowed from Scott's code + some edits
-        // "0-dim"
-        double v = 1.; // volume
-        double s = 2.; // surface area of one dim higher ball
-        for (unsigned int i = 1; i <= num_dim; ++i)
-        {
-            double v_next = s / i;
-            s = 2 * PI * v;
-            v = v_next;
-        }
-        double volume = v * pow(r, int(num_dim));
-        return volume;
-    }
-    
-    void NonDPOFDarts::sample_uniformly_from_unit_sphere(double* dart, size_t num_dim)
-    {
-        double sf = 0.0;
-        for (size_t idim = 0; idim < num_dim; idim++)
-        {
-            double sum(0.0);
-            // select 12 random numbers from 0.0 to 1.0
-            for (size_t i = 0; i < 12; i++) sum += generate_a_random_number();
-            sum -= 6.0;
-            dart[idim] = sum;
-            sf += dart[idim] * dart[idim];
-        }
-        sf = 1.0 / sqrt(sf);
-        for (size_t idim = 0; idim < num_dim; idim++) dart[idim] *= sf;
-        
-        // point is on sphere surface now
-        double u = pow(generate_a_random_number(), 1.0 / num_dim);
-        for (size_t idim = 0; idim < num_dim; idim++) dart[idim] *= u;
-    }
-    
+ 
     double NonDPOFDarts::area_triangle(double x1, double y1, double x2, double y2, double x3, double y3)
     {
         return 0.5 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2));
     }
+    
+    ////////////////////////////////////////////////////////////////
+    // SUUROGATE METHODS
+    ////////////////////////////////////////////////////////////////
+    
+    void NonDPOFDarts::initialize_surrogates()
+    {
+        // create the data to configure the surrogate
+        // String approx_type("global_gaussian");  // Dakota GP
+        String approx_type("global_kriging");  // Surfpack GP
+        UShortArray approx_order;
+        short data_order = 1;  // assume only function values
+        short output_level = QUIET_OUTPUT;
+        sharedData = SharedApproxData(approx_type, approx_order, numContinuousVars, data_order, output_level);
+        //gpApproximations.resize(numFunctions, Approximation(sharedData));
+        for (size_t i=0; i < numFunctions; ++i)
+        {
+            gpApproximations.push_back(Approximation(sharedData));
+        }
+        // setup a variables object for evaluating the model
+        gpEvalVars = iteratedModel.current_variables().copy();
+    }
+    
+    void NonDPOFDarts::add_surrogate_data(const Variables& vars, const Response& resp)
+    {
+        for (size_t i=0; i < numFunctions; ++i)
+        {
+            bool anchor_flag = false;
+            bool deep_copy = true;
+            gpApproximations[i].add(vars, anchor_flag, deep_copy);
+            gpApproximations[i].add(resp, i, anchor_flag, deep_copy);
+        }
+    }
+    
+    void NonDPOFDarts::build_surrogate(size_t fn_index)
+    {
+        gpApproximations[fn_index].build();
+    }
+    
+    // evaluate at vector of x values in vin
+    Real NonDPOFDarts::eval_surrogate(size_t fn_index, double *vin)
+    {
+        // this copy could be moved outside the loop for memory efficiency
+        for (size_t vi=0; vi<numContinuousVars; ++vi)
+            gpEvalVars.continuous_variable(vin[vi], vi);
+        
+        return gpApproximations[fn_index].value(gpEvalVars);
+    }
+    
+
     
     ////////////////////////////////////////////////////////////////
     // OUTPUT METHODS
@@ -1091,6 +784,29 @@ void NonDPOFDarts::quantify_uncertainty()
     
     double NonDPOFDarts::f_true(double* x)
     {
+        // return text book
+        
+        if (_active_response_function == 0)
+        {
+            return pow(x[0] - 1, 4) + pow(x[1] - 1, 4);
+        }
+        else if (_active_response_function == 1)
+        {
+            return pow(x[0], 2) - 0.5 * x[1];
+        }
+        
+        
+        double E = 2.7182818284590452353602874713526;
+        double fval = 1.0;
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            double xm = x[idim] - 1.0;
+            double xp = x[idim] + 1.0;
+            double wherb = pow(E, - xm * xm) + pow(E, -0.8 * xp * xp) ;// - 0.05 * sin(8 * (x[idim] + 0.1));
+            fval *= wherb;
+        }
+        fval = -fval;
+        return fval;
         return 0.0;
     }
     
@@ -1264,19 +980,11 @@ void NonDPOFDarts::quantify_uncertainty()
         {
             double r = sqrt(fabs(_sample_points[index][2]));
             
-            if (_global_optimization && fabs(r) < 1E-10)
-            {
-                // global minima
-                file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << 0.02 * scale << "  ";
-                file << "redfcirc"     << std::endl; // non-failure disk
-            }
-            else
-            {
-                file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
+            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
                 
-                if (_sample_points[index][2] > 0) file << "greenfcirc"     << std::endl; // non-failure disk
-                else                              file << "redfcirc"     << std::endl; // non-failure disk
-            }
+            if (_sample_points[index][2] > 0) file << "greenfcirc"     << std::endl; // non-failure disk
+            else                              file << "redfcirc"     << std::endl; // non-failure disk
+           
         }
         
         // plot discs boundaries
@@ -1321,8 +1029,8 @@ void NonDPOFDarts::quantify_uncertainty()
             file << "blackfcirc"     << std::endl; // non-failure disk
         }
         
-        // plot failure isocontour
-        if (!_global_optimization)
+        // plot true failure isocontour
+        if (true)
         {
             double A((_xmax[0] - _xmin[0])*(_xmax[1] - _xmin[1]));
             
@@ -1498,6 +1206,191 @@ void NonDPOFDarts::quantify_uncertainty()
             print_POF_results(lower, upper);
             delete[] xx;
         }
+        
+        
+        
+        // plot surrogate failure isocontour
+        if (true)
+        {
+            std::cout << "plotting _active_response_function = " << _active_response_function << std::endl;
+            
+            double A((_xmax[0] - _xmin[0])*(_xmax[1] - _xmin[1]));
+            
+            double failure(0.0);
+            double non_failure(0.0);
+            double failure_spheres(0.0);
+            double non_failure_spheres(0.0);
+            double* xx = new double[2];
+            double sx = 0.001 * (_xmax[0] - _xmin[0]);
+            double sy = 0.001 * (_xmax[1] - _xmin[1]);
+            for (size_t i = 0; i < 1000; i++)
+            {
+                double xo = _xmin[0] + i * sx;
+                for (size_t j = 0; j < 1000; j++)
+                {
+                    double yo = _xmin[1] + j * sy;
+                    
+                    xx[0] = xo; xx[1] = yo;
+                    double fo = eval_surrogate(_active_response_function, xx);
+                    xx[0] = xo+sx; xx[1] = yo;
+                    double f1 = eval_surrogate(_active_response_function, xx);
+                    xx[0] = xo + sx; xx[1] = yo + sy;
+                    double f2 = eval_surrogate(_active_response_function, xx);
+                    xx[0] = xo; xx[1] = yo + sy;
+                    double f3 = eval_surrogate(_active_response_function, xx);
+                    
+                    size_t num_points(0);
+                    double x1, y1, x2, y2;
+                    if ((fo > _failure_threshold && f1 < _failure_threshold) || (fo < _failure_threshold && f1 > _failure_threshold))
+                    {
+                        double h = sx * (_failure_threshold - fo) / (f1 - fo);
+                        x1 = xo + h;
+                        y1 = yo; num_points++;
+                    }
+                    if ((f1 > _failure_threshold && f2 < _failure_threshold) || (f1 < _failure_threshold && f2 > _failure_threshold))
+                    {
+                        double h = sy * (_failure_threshold - f1) / (f2 - f1);
+                        if (num_points == 0)
+                        {
+                            x1 = xo + sx;
+                            y1 = yo + h;
+                        }
+                        else
+                        {
+                            x2 = xo + sx;
+                            y2 = yo + h;
+                        }
+                        num_points++;
+                    }
+                    if ((f2 > _failure_threshold && f3 < _failure_threshold) || (f2 < _failure_threshold && f3 > _failure_threshold))
+                    {
+                        double h = sx * (_failure_threshold - f2) / (f3 - f2);
+                        if (num_points == 0)
+                        {
+                            x1 = xo + sx - h;
+                            y1 = yo + sy;
+                        }
+                        else
+                        {
+                            x2 = xo + sx - h;
+                            y2 = yo + sy;
+                        }
+                        num_points++;
+                    }
+                    if ((f3 > _failure_threshold && fo < _failure_threshold) || (f3 < _failure_threshold && fo > _failure_threshold))
+                    {
+                        double h = sy * (_failure_threshold - f3) / (fo - f3);
+                        if (num_points == 0)
+                        {
+                            x1 = xo;
+                            y1 = yo + sy - h;
+                        }
+                        else
+                        {
+                            x2 = xo;
+                            y2 = yo + sy - h;
+                        }
+                        num_points++;
+                    }
+                    
+                    if (num_points == 2)
+                    {
+                        file << x1 * scale << " " << y1 * scale << "  ";
+                        file << x2 * scale << " " << y2 * scale << "  ";
+                        file << "redseg"     << std::endl;
+                        
+                        size_t num_failure_points(0);
+                        if (fo < _failure_threshold) num_failure_points++;
+                        if (f1 < _failure_threshold) num_failure_points++;
+                        if (f2 < _failure_threshold) num_failure_points++;
+                        if (f3 < _failure_threshold) num_failure_points++;
+                        
+                        if (num_failure_points == 1)
+                        {
+                            double a;
+                            if (fo < _failure_threshold) a = fabs(area_triangle(xo, yo, x1, y1, x2, y2));
+                            if (f1 < _failure_threshold) a = fabs(area_triangle(xo + sx, yo, x1, y1, x2, y2));
+                            if (f2 < _failure_threshold) a = fabs(area_triangle(xo + sx, yo + sy, x1, y1, x2, y2));
+                            if (f3 < _failure_threshold) a = fabs(area_triangle(xo, yo + sy, x1, y1, x2, y2));
+                            failure += a;
+                            non_failure += (sx * sy - a);
+                        }
+                        else if (num_failure_points == 2)
+                        {
+                            double a1, a2;
+                            if (fo < _failure_threshold && f1 < _failure_threshold)
+                            {
+                                a1 = area_triangle(xo, yo, xo + sx, yo, x1, y1);
+                                a2 = area_triangle(xo, yo, x1, y1, x2, y2);
+                            }
+                            if (f1 < _failure_threshold && f2 < _failure_threshold)
+                            {
+                                a1 = area_triangle(xo + sx, yo, xo + sx, yo + sy, x1, y1);
+                                a2 = area_triangle(xo + sx, yo + sy, x2, y2, x1, y1);
+                            }
+                            if (f2 < _failure_threshold && f3 < _failure_threshold)
+                            {
+                                a1 = area_triangle(xo + sx, yo + sy, xo, yo + sy, x1, y1);
+                                a2 = area_triangle(xo, yo + sy, x2, y2, x1, y1);
+                            }
+                            if (f3 < _failure_threshold && fo < _failure_threshold)
+                            {
+                                a1 = area_triangle(xo, yo, x1, y1, xo, yo + sy);
+                                a2 = area_triangle(xo, yo + sy, x1, y1, x2, y2);
+                            }
+                            failure += a1 + a2;
+                            non_failure += (sx * sy - a1 - a2);
+                        }
+                        else if (num_failure_points == 3)
+                        {
+                            double a;
+                            if (fo > _failure_threshold) a = fabs(area_triangle(xo, yo, x1, y1, x2, y2));
+                            if (f1 > _failure_threshold) a = fabs(area_triangle(xo + sx, yo, x1, y1, x2, y2));
+                            if (f2 > _failure_threshold) a = fabs(area_triangle(xo + sx, yo + sy, x1, y1, x2, y2));
+                            if (f3 > _failure_threshold) a = fabs(area_triangle(xo, yo + sy, x1, y1, x2, y2));
+                            failure += (sx * sy - a);
+                            non_failure += a;
+                        }
+                    }
+                    else
+                    {
+                        if (fo < _failure_threshold) failure += sx * sy;
+                        else non_failure += sx * sy;
+                    }
+                    
+                    for (size_t index = 0; index < _num_inserted_points; index++)
+                    {
+                        double xs = _sample_points[index][0];
+                        double ys = _sample_points[index][1];
+                        double rrs = fabs(_sample_points[index][2]);
+                        
+                        double xf(xo), yf(yo);
+                        if (fabs(xo + sx - xs) > fabs(xo - xs)) xf += sx;
+                        if (fabs(yo + sy - ys) > fabs(yo - ys)) yf += sy;
+                        
+                        double dx(xs - xf), dy(ys-yf);
+                        if (dx * dx + dy * dy < rrs)
+                        {
+                            // cell is entirely in sphere
+                            if (_sample_points[index][2] < 0.0) failure_spheres += sx * sy;
+                            else non_failure_spheres += sx * sy;
+                            break; // move to the next cell
+                        }
+                    }
+                    
+                }
+            }
+            Cout<< "pof::       POF (isocontouring) = " << std::setprecision(10) << failure / A << '\n';
+            double lower = failure_spheres / A;
+            double upper = 1 - (non_failure_spheres / A);
+            
+            if (upper < lower) upper = lower;
+            print_POF_results(lower, upper);
+            delete[] xx;
+        }
+        
+        
+        
         
         // plot current dart
         //file << (_dart[0] - s) * scale << "  " << (_dart[1] - s) * scale << "  ";
