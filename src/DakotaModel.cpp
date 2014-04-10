@@ -21,6 +21,7 @@
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
 #include "DakotaGraphics.hpp"
+#include "pecos_stat_util.hpp"
 
 //#define REFCOUNT_DEBUG
 
@@ -3448,6 +3449,104 @@ const RealSetArray& Model::discrete_set_real_values()
   }
 
   return activeDiscSetRealValues; // if not previously returned
+}
+
+
+Real Model::continuous_probability_density() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->continuous_probability_density();
+  else {
+    // TO DO: add error trap on correlated random variables
+    UShortMultiArrayConstView cv_types
+      = currentVariables.continuous_variable_types();
+    // any setting of active continuous vars must occur prior to fn invocation
+    // (similar to compute_response())
+    const RealVector& c_vars = currentVariables.continuous_variables();
+    Real pdf = 1.; size_t i, index = 0, num_cv = c_vars.length();
+    for (i=0; i<num_cv; ++i) {
+      switch (cv_types[i]) {
+      case NORMAL_UNCERTAIN: {
+	const RealVector& n_l_bnds = aleatDistParams.normal_lower_bounds();
+	const RealVector& n_u_bnds = aleatDistParams.normal_upper_bounds();
+	pdf *= (!n_l_bnds.empty() || !n_u_bnds.empty()) ?
+	  Pecos::bounded_normal_pdf(c_vars[i],
+				    aleatDistParams.normal_mean(index),
+				    aleatDistParams.normal_std_deviation(index),
+				    n_l_bnds[index], n_u_bnds[index]) :
+	  // TO DO: can one bnds be empty?
+	  Pecos::normal_pdf(c_vars[i], aleatDistParams.normal_mean(index),
+			    aleatDistParams.normal_std_deviation(index));
+	break;
+      }
+      case LOGNORMAL_UNCERTAIN: {
+	const RealVector& ln_l_bnds = aleatDistParams.lognormal_lower_bounds();
+	const RealVector& ln_u_bnds = aleatDistParams.lognormal_upper_bounds();
+	// TO DO: what about lambda/zeta/err fact specs?  Need to check here?
+	pdf *= (!ln_l_bnds.empty() || !ln_u_bnds.empty()) ?
+	  Pecos::bounded_lognormal_pdf(c_vars[i],
+			       aleatDistParams.lognormal_mean(index),
+			       aleatDistParams.lognormal_std_deviation(index),
+			       ln_l_bnds[index], ln_u_bnds[index]) :
+	  // TO DO: can one bnds be empty?
+	  Pecos::lognormal_pdf(c_vars[i], aleatDistParams.lognormal_mean(index),
+			       aleatDistParams.lognormal_std_deviation(index));
+	break;
+      }
+      case UNIFORM_UNCERTAIN:
+	pdf *= Pecos::uniform_pdf(aleatDistParams.uniform_lower_bound(index),
+				  aleatDistParams.uniform_upper_bound(index));
+	break;
+      case LOGUNIFORM_UNCERTAIN:
+	pdf *= Pecos::loguniform_pdf(c_vars[i],
+		 aleatDistParams.loguniform_lower_bound(index),
+		 aleatDistParams.loguniform_upper_bound(index));
+	break;
+      case TRIANGULAR_UNCERTAIN:
+	pdf *= Pecos::triangular_pdf(c_vars[i],
+		 aleatDistParams.triangular_mode(index),
+		 aleatDistParams.triangular_lower_bound(index),
+		 aleatDistParams.triangular_upper_bound(index));
+	break;
+      case EXPONENTIAL_UNCERTAIN: 
+	pdf *= Pecos::exponential_pdf(c_vars[i],
+				      aleatDistParams.exponential_beta(index));
+	break;
+      case BETA_UNCERTAIN:
+	pdf *= Pecos::beta_pdf(c_vars[i], aleatDistParams.beta_alpha(index),
+			       aleatDistParams.beta_beta(index),
+			       aleatDistParams.beta_lower_bound(index),
+			       aleatDistParams.beta_upper_bound(index));
+	break;
+      case GAMMA_UNCERTAIN:
+	pdf *= Pecos::gamma_pdf(c_vars[i], aleatDistParams.gamma_alpha(index),
+				aleatDistParams.gamma_beta(index));
+	break;
+      case GUMBEL_UNCERTAIN:
+	pdf *= Pecos::gumbel_pdf(c_vars[i], aleatDistParams.gumbel_alpha(index),
+				 aleatDistParams.gumbel_beta(index));
+	break;
+      case FRECHET_UNCERTAIN:
+	pdf *= Pecos::frechet_pdf(c_vars[i],
+				  aleatDistParams.frechet_alpha(index),
+				  aleatDistParams.frechet_beta(index));
+	break;
+      case WEIBULL_UNCERTAIN:
+	pdf *= Pecos::weibull_pdf(c_vars[i],
+				  aleatDistParams.weibull_alpha(index),
+				  aleatDistParams.weibull_beta(index));
+	break;
+      case HISTOGRAM_BIN_UNCERTAIN:
+	pdf *= Pecos::histogram_bin_pdf(c_vars[i],
+		 aleatDistParams.histogram_bin_pairs(index));
+	break;
+      //default: no-op
+      }
+      if (i+1 < num_cv)
+	index = (cv_types[i] == cv_types[i+1]) ? index + 1 : 0;
+    }
+    return pdf;
+  }
 }
 
 

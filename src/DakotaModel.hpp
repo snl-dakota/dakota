@@ -450,6 +450,10 @@ public:
   /// set epistDistParams
   void epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp);
 
+  /// compute a multivariate probability density from the marginals for the
+  /// active aleatory random variables (must be uncorrelated)
+  Real continuous_probability_density() const;
+
   // LABELS and TAGS
 
   /// return the active continuous variable labels from currentVariables
