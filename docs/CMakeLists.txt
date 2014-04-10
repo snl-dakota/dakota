@@ -196,3 +196,6 @@ add_dependencies(package_docs docs-pdf docs-doxygen)
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
   "html-dev;html-ref;latex-dev;latex-ref;man-dev;man-ref;SAND-shell-dev.aux;SAND-shell-dev.log;SAND-shell-ref.aux;SAND-shell-ref.log;SAND-shell-theory.aux;SAND-shell-theory.log;SAND-shell-user.aux;SAND-shell-user.log"
   )
+
+# New reference manual generation
+add_subdirectory(Reference)
