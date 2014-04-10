@@ -1525,7 +1525,8 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
 	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
 	recast_model_rep->transform_variables(export_vars, user_vars);
 	//recast_model_rep->transform_set(export_vars, export_set, user_set);
-	// to propagate response top down, inverse transform is used
+	// to propagate response top down, inverse transform is used.  Note:
+	// derivatives are not currently exported --> a no-op for Nataf.
 	recast_model_rep->inverse_transform_response(user_vars, export_vars,
 						     export_resp, user_resp);
 	// reassign rep pointers (no actual data copying)

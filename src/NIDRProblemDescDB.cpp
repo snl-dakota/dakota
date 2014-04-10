@@ -2207,8 +2207,8 @@ static void Vchk_NormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   if (B->length() && wronglen(n, B, "nuv_lower_bounds"))
     return;
   B = &dv->normalUncUpperBnds;
-  if (B->length())
-    wronglen(n, B, "nuv_upper_bounds");
+  if (B->length() && wronglen(n, B, "nuv_upper_bounds"))
+    return;
 }
 
 static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
@@ -2309,9 +2309,9 @@ static void Vchk_LognormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     Sd = &dv->lognormalUncStdDevs;
     if (Sd->length() && wronglen(n, Sd, "lnuv_std_deviations"))
       return;
+    else if (wronglen(n, &dv->lognormalUncErrFacts, "lnuv_error_factors"))
+      return;
   }
-  else if (wronglen(n, &dv->lognormalUncErrFacts, "lnuv_error_factors"))
-    return;
 
   // lower bounds
   B = &dv->lognormalUncLowerBnds;
@@ -2320,8 +2320,8 @@ static void Vchk_LognormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 
   // upper bounds
   B = &dv->lognormalUncUpperBnds;
-  if (B->length())
-    wronglen(n, B, "lnuv_upper_bounds");
+  if (B->length() && wronglen(n, B, "lnuv_upper_bounds"))
+    return;
 }
 
 static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)

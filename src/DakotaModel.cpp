@@ -3457,40 +3457,55 @@ Real Model::continuous_probability_density() const
   if (modelRep) // envelope fwd to letter
     return modelRep->continuous_probability_density();
   else {
-    // TO DO: add error trap on correlated random variables
-    UShortMultiArrayConstView cv_types
-      = currentVariables.continuous_variable_types();
+    // error trap on correlated random variables
+    if (!aleatDistParams.uncertain_correlations().empty()) {
+      Cerr << "Error: continuous_probability_density() uses a product of "
+	   << "marginal densities\n       and can only be used for independent "
+	   << "random variables." << std::endl;
+      abort_handler(-1);
+    }
+
     // any setting of active continuous vars must occur prior to fn invocation
     // (similar to compute_response())
     const RealVector& c_vars = currentVariables.continuous_variables();
+    UShortMultiArrayConstView cv_types
+      = currentVariables.continuous_variable_types();
     Real pdf = 1.; size_t i, index = 0, num_cv = c_vars.length();
     for (i=0; i<num_cv; ++i) {
       switch (cv_types[i]) {
-      case NORMAL_UNCERTAIN: {
-	const RealVector& n_l_bnds = aleatDistParams.normal_lower_bounds();
-	const RealVector& n_u_bnds = aleatDistParams.normal_upper_bounds();
-	pdf *= (!n_l_bnds.empty() || !n_u_bnds.empty()) ?
-	  Pecos::bounded_normal_pdf(c_vars[i],
-				    aleatDistParams.normal_mean(index),
-				    aleatDistParams.normal_std_deviation(index),
-				    n_l_bnds[index], n_u_bnds[index]) :
-	  // TO DO: can one bnds be empty?
-	  Pecos::normal_pdf(c_vars[i], aleatDistParams.normal_mean(index),
-			    aleatDistParams.normal_std_deviation(index));
+      case NORMAL_UNCERTAIN:
+	// NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
+	// this and use Pecos::normal_pdf() but single bound cases make this
+	// approach more complicated than warranted.
+	pdf *= Pecos::bounded_normal_pdf(c_vars[i],
+		 aleatDistParams.normal_mean(index),
+		 aleatDistParams.normal_std_deviation(index),
+		 aleatDistParams.normal_lower_bound(index),
+		 aleatDistParams.normal_upper_bound(index));
 	break;
-      }
       case LOGNORMAL_UNCERTAIN: {
-	const RealVector& ln_l_bnds = aleatDistParams.lognormal_lower_bounds();
-	const RealVector& ln_u_bnds = aleatDistParams.lognormal_upper_bounds();
-	// TO DO: what about lambda/zeta/err fact specs?  Need to check here?
-	pdf *= (!ln_l_bnds.empty() || !ln_u_bnds.empty()) ?
-	  Pecos::bounded_lognormal_pdf(c_vars[i],
-			       aleatDistParams.lognormal_mean(index),
-			       aleatDistParams.lognormal_std_deviation(index),
-			       ln_l_bnds[index], ln_u_bnds[index]) :
-	  // TO DO: can one bnds be empty?
-	  Pecos::lognormal_pdf(c_vars[i], aleatDistParams.lognormal_mean(index),
-			       aleatDistParams.lognormal_std_deviation(index));
+	// NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
+	// this and use Pecos::lognormal_pdf() but single bound cases make this
+	// approach more complicated than warranted.  NIDR does not default
+	// define all lognormal parameter mappings so this needs to be managed.
+	Real mean, stdev;
+	const RealVector& lambdas = aleatDistParams.lognormal_lambdas();
+	if (!lambdas.empty())
+	  Pecos::moments_from_lognormal_params(lambdas[index],
+	    aleatDistParams.lognormal_zeta(index), mean, stdev);
+	else {
+	  mean = aleatDistParams.lognormal_mean(index);
+	  const RealVector& err_facts
+	    = aleatDistParams.lognormal_error_factors();
+	  if (!err_facts.empty())
+	    Pecos::lognormal_std_deviation_from_err_factor(mean,
+	      err_facts[index], stdev);
+	  else
+	    stdev = aleatDistParams.lognormal_std_deviation(index);
+	}
+	pdf *= Pecos::bounded_lognormal_pdf(c_vars[i], mean, stdev,
+		 aleatDistParams.lognormal_lower_bound(index),
+		 aleatDistParams.lognormal_upper_bound(index));
 	break;
       }
       case UNIFORM_UNCERTAIN:
