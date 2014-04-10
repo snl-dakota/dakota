@@ -47,7 +47,7 @@ as 3-5, to get a sense of how the optimization is evolving as the
 surrogate gets updated. If it appears to be changing significantly,
 then a larger number (used in combination with restart) may be needed.
 
-Topics::	surrogate_based_optimization, not_yet_reviewed, problem
+Topics::	surrogate_based_optimization_methods, not_yet_reviewed, problem
 Examples::
 Theory::
 In surrogate-based optimization (SBO) and surrogate-based nonlinear

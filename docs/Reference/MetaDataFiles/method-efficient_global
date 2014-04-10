@@ -28,7 +28,7 @@ implementation may be selected instead. If \c use_derivatives is
 specified the GP model will be built using available derivative data
 (Surfpack GP only).
 
-Topics::	surrogate_based_optimization, not_yet_reviewed
+Topics::	surrogate_based_optimization_methods, not_yet_reviewed
 Examples::
 Theory::
 The particular response surface used is a Gaussian

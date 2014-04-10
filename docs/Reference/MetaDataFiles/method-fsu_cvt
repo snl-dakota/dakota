@@ -28,7 +28,7 @@ interval [0,1]. If the user specifies lower and upper bounds for a
 variable, the [0,1] samples are mapped to the [lower, upper] interval.
 
 
-Topics::	package_fsudace, dace, not_yet_reviewed
+Topics::	package_fsudace, design_and_analysis_of_computer_experiments, not_yet_reviewed
 Examples::
 Theory::
 This method is designed to generate samples with the goal of low discrepancy.

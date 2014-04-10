@@ -13,7 +13,7 @@ Advanced Examples section of the Models chapter of the Users Manual
 
 
 
-Topics::	surrogate_based_optimization, not_yet_reviewed
+Topics::	surrogate_based_optimization_methods, not_yet_reviewed
 Examples::
 Theory::
 In surrogate-based optimization (SBO) and surrogate-based nonlinear

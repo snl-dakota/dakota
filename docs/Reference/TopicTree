@@ -18,6 +18,9 @@ dakota_concepts
   advanced_strategies
  command_line_options
  restarts
+ pointers
+  block_pointer
+  objective_function_pointer
 models
  surrogate_models
   surrogate_based_optimization_methods

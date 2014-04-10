@@ -5,7 +5,7 @@ In contrast to the \c step_vector in a \c vector_parameter_study,
 which defines a vector in n-dimensions that applies to each individual step, this keyword defines the individual
 step size in each dimension, treated separately.
 
-Topics::	parameter_study
+Topics::	
 Examples::
 Theory::
 Faq::
