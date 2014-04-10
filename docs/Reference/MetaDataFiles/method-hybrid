@@ -1,0 +1,24 @@
+Blurb::
+Strategy in which a set of methods synergistically seek an optimal design
+Description::
+In a hybrid minimization strategy (\c hybrid), a set of methods
+synergistically seek an optimal design. The relationships among the
+methods are categorized as:
+\li collaborative
+\li embedded
+\li sequential
+
+The goal in each case is to exploit the strengths of different
+optimization and nonlinear least squares algorithms at different
+stages of the minimization process. Global + local hybrids (e.g.,
+genetic algorithms combined with nonlinear programming) are a common
+example in which the desire for identification of a global optimum is
+balanced with the need for efficient navigation to a local optimum.
+
+
+
+Topics::	not_yet_reviewed
+Examples::
+Theory::
+Faq::
+See_Also::	

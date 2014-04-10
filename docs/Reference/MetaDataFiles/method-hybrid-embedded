@@ -1,0 +1,19 @@
+Blurb::
+A subordinate local method provides periodic refinements to a top-level global method
+Description::
+In the \c embedded approach, a tightly-coupled
+hybrid is employed in which 
+a subordinate local method provides periodic refinements to a top-level global method. 
+
+Global and local method strings supplied
+with the \c global_method_pointer and \c local_method_pointer
+specifications identify the two methods to be used. The \c
+local_search_probability setting is an optional specification for
+supplying the probability (between 0.0 and 1.0) of employing local
+search to improve estimates within the global search. 
+
+Topics::	not_yet_reviewed, problem
+Examples::
+Theory::
+Faq::
+See_Also::	
