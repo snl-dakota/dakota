@@ -222,7 +222,7 @@ if(DAKOTA_HAVE_HDF5)
 
   #message( "Using pre-installed HDF5 in ${FIND_PACKAGE_MESSAGE_DETAILS_HDF5}" )
 
-  find_package(ZLIB REQUIRED)
+  #find_package(ZLIB REQUIRED)
   #message( "Using pre-installed ZLIB in ${ZLIB_LIBRARIES}" )
 
 endif() # DAKOTA_HAVE_HDF5
