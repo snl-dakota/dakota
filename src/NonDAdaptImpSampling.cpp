@@ -598,7 +598,7 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   // Note: The current beta calculation assumes samples input in u-space
   size_t i, j, k, cntr, batch_size = var_samples_u.size(),
     num_rep_pts = repPointsU.size();
-  Real n_std_devs = 1., recentered_pdf, pdf_ratio;
+  Real n_std_devs = 1., pdf_ratio;
   RealArray failure_ratios;
   if (compute_cov)
     failure_ratios.reserve(batch_size);
@@ -627,8 +627,6 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
       const RealVector& sample_i = var_samples_u[i];
 
-      // calculate recentered_pdf
-      recentered_pdf = recentered_density(sample_i);
       // need to send the sample point to iteratedModel so that we can 
       // calculate the density of the original density function
       if (xSpaceModel) { 
@@ -643,9 +641,9 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
       // calculate ratio of pdf relative to origin to pdf relative to rep pt
       // pdf_ratio1 = Pecos::phi(sample_i.normFrobenius()) / recentered_pdf;
-      pdf_ratio = iteratedModel.continuous_probability_density() / recentered_pdf;
-      // Cout <<  "sample i " << sample_i << " recentered_pdf " << recentered_pdf << '\n';
-      // Cout <<  "pdfratio1 " << pdf_ratio1 << "  pdf_ratio " << pdf_ratio << '\n';
+      pdf_ratio = iteratedModel.continuous_probability_density()
+	        / recentered_density(sample_i);
+
       // add sample's contribution to sum_prob
       sum_prob += pdf_ratio;
       // if cov requested, store ratio data to avoid recalculating
@@ -709,26 +707,30 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   }
 }
 
+
 Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point) 
 {
-  Real localpdf = 0.0; 
-  Real reppdf;  
   size_t i, j, num_rep_pts = repPointsU.size();
-  //    recentered_pdf =  0.;
-  //    for (j=0; j<num_rep_pts; ++j){
-  //	  recentered_pdf += repWeights[j] * 
-  //	  Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
-  //     } 
 
-  for (j=0; j<num_rep_pts; ++j){
-    reppdf = 1.0;
-    for (i=0; i<numUncertainVars; i++) {
-      reppdf *= Pecos::normal_pdf(repPointsU[j][i], sample_point[i],1.0);
-    }
-    localpdf += repWeights[j] * reppdf;
+  // Previous code:
+  //recentered_pdf =  0.;
+  //for (j=0; j<num_rep_pts; ++j) {
+  //  recentered_pdf += repWeights[j] * 
+  //    Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
+  //} 
+
+  Real local_pdf = 0., rep_pdf, stdev = 1.,
+    lwr = -DBL_MAX, upr = DBL_MAX; // placeholder bounds
+  for (i=0; i<num_rep_pts; ++i) {
+    rep_pdf = 1.;
+    for (j=0; j<numUncertainVars; ++j)
+      rep_pdf *= Pecos::bounded_normal_pdf(sample_point[j], repPointsU[i][j],
+					   stdev, lwr, upr);
+    local_pdf += repWeights[i] * rep_pdf;
   } 
-  return localpdf;
+  return local_pdf;
 }
+
 
 void NonDAdaptImpSampling::print_results(std::ostream& s)
 {
