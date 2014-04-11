@@ -141,11 +141,11 @@ init_communicators(const IntArray& message_lengths,
     min_procs_per_eval = std::max(procsPerEvalSpec, analysis_partition_l_bnd);
   }
   */
-  short default_config = PUSH_UP; // init_eval_comms&init_analysis_comms
+
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, /*min_procs_per_eval*/procsPerEvalSpec,
-    max_iterator_concurrency, asynchLocalEvalConcSpec, default_config,
-    evalScheduling);
+    max_iterator_concurrency, asynchLocalEvalConcSpec, PUSH_UP,// default_config
+    evalScheduling, true);// peer_dynamic is available
 
   set_evaluation_communicators(message_lengths);
 
@@ -157,7 +157,8 @@ init_communicators(const IntArray& message_lengths,
 
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
       numAnalysisServersSpec, procsPerAnalysisSpec, numAnalysisDrivers,
-      asynchLocalAnalysisConcSpec, default_config, analysisScheduling);
+      asynchLocalAnalysisConcSpec, PUSH_UP, // default_config
+      analysisScheduling, false); // peer_dynamic is not available
 
     set_analysis_communicators();
   }

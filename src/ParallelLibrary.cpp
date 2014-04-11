@@ -146,7 +146,7 @@ void ParallelLibrary::
 init_communicators(const ParallelLevel& parent_pl, int num_servers,
 		   int procs_per_server, int max_concurrency, 
 		   int asynch_local_concurrency, short default_config,
-		   short scheduling_override)
+		   short scheduling_override, bool peer_dynamic_avail)
 {
   ParallelLevel child_pl;
   child_pl.numServers     = num_servers;      // request/default to be updated
@@ -166,7 +166,7 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
   child_pl.dedicatedMasterFlag = resolve_inputs(child_pl.numServers,
     child_pl.procsPerServer, parent_pl.serverCommSize, child_pl.procRemainder,
     max_concurrency, capacity_multiplier, default_config, scheduling_override,
-    print_rank);
+    peer_dynamic_avail, print_rank);
 
   child_pl.commSplitFlag = (child_pl.dedicatedMasterFlag) ?
     split_communicator_dedicated_master(parent_pl, child_pl) :
@@ -211,7 +211,8 @@ bool ParallelLibrary::
 resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs, 
                int& proc_remainder, int max_concurrency,
 	       int capacity_multiplier, short default_config,
-	       short scheduling_override, bool print_rank)
+	       short scheduling_override, bool peer_dynamic_avail,
+	       bool print_rank)
 {
 #ifdef MPI_DEBUG
   if (print_rank)

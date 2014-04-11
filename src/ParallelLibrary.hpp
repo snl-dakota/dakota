@@ -354,19 +354,19 @@ public:
   /// split MPI_COMM_WORLD into iterator communicators
   const ParallelLevel& init_iterator_communicators(int iterator_servers,
     int procs_per_iterator, int max_iterator_concurrency, short default_config,
-    short iterator_scheduling);
+    short iterator_scheduling, bool peer_dynamic_avail);
 
   /// split an iterator communicator into evaluation communicators
   const ParallelLevel& init_evaluation_communicators(int evaluation_servers,
     int procs_per_evaluation, int max_evaluation_concurrency,
     int asynch_local_evaluation_concurrency, short default_config,
-    short evaluation_scheduling);
+    short evaluation_scheduling, bool peer_dynamic_avail);
 
   /// split an evaluation communicator into analysis communicators
   const ParallelLevel& init_analysis_communicators(int analysis_servers,
     int procs_per_analysis, int max_analysis_concurrency,
     int asynch_local_analysis_concurrency, short default_config,
-    short analysis_scheduling);
+    short analysis_scheduling, bool peer_dynamic_avail);
 
   /// deallocate iterator communicators
   void free_iterator_communicators();
@@ -573,7 +573,7 @@ private:
   /// split a parent communicator into child server communicators
   void init_communicators(const ParallelLevel& parent_pl, int num_servers,
     int procs_per_server, int max_concurrency, int asynch_local_concurrency,
-    short default_config, short scheduling_override);
+    short default_config, short scheduling_override, bool peer_dynamic_avail);
 
   /// deallocate intra/inter communicators for a particular ParallelLevel
   void free_communicators(ParallelLevel& pl);
@@ -590,8 +590,10 @@ private:
 
   /// resolve user inputs into a sensible partitioning scheme
   bool resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
-    int& proc_remainder, int max_concurrency, int capacity_multiplier,
-    short default_config, short scheduling_override, bool print_rank);
+		      int& proc_remainder, int max_concurrency,
+		      int capacity_multiplier, short default_config,
+		      short scheduling_override, bool peer_dynamic_avail,
+		      bool print_rank);
 
   /// blocking buffer send at the current communication level
   void  send(MPIPackBuffer& send_buff, int dest, int tag,
@@ -833,12 +835,13 @@ inline std::vector<MPI_Comm> ParallelLibrary::analysis_intra_communicators()
 inline const ParallelLevel& ParallelLibrary::
 init_iterator_communicators(int iterator_servers, int procs_per_iterator,
 			    int max_iterator_concurrency, short default_config,
-			    short iterator_scheduling)
+			    short iterator_scheduling, bool peer_dynamic_avail)
 {
   int asynch_local_iterator_concurrency = 0;
   init_communicators(*parallelLevels.begin(), iterator_servers,
-    procs_per_iterator, max_iterator_concurrency,
-    asynch_local_iterator_concurrency, default_config, iterator_scheduling);
+		     procs_per_iterator, max_iterator_concurrency,
+		     asynch_local_iterator_concurrency, default_config,
+		     iterator_scheduling, peer_dynamic_avail);
   currPCIter->siPLIter = currPLIter;
   return *currPLIter;
 }
@@ -848,7 +851,8 @@ inline const ParallelLevel& ParallelLibrary::
 init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
 			      int max_evaluation_concurrency,
 			      int asynch_local_evaluation_concurrency,
-			      short default_config, short evaluation_scheduling)
+			      short default_config, short evaluation_scheduling,
+			      bool peer_dynamic_avail)
 {
   /*
   // handle case where there is a new parallel configuration instance, but
@@ -870,8 +874,9 @@ init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
   }
   */
   init_communicators(*currPCIter->siPLIter, evaluation_servers,
-    procs_per_evaluation, max_evaluation_concurrency,
-    asynch_local_evaluation_concurrency, default_config, evaluation_scheduling);
+		     procs_per_evaluation, max_evaluation_concurrency,
+		     asynch_local_evaluation_concurrency, default_config,
+		     evaluation_scheduling, peer_dynamic_avail);
   currPCIter->iePLIter = currPLIter;
   return *currPLIter;
 }
@@ -880,11 +885,12 @@ init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
 inline const ParallelLevel& ParallelLibrary::
 init_analysis_communicators(int analysis_servers, int procs_per_analysis,
   int max_analysis_concurrency, int asynch_local_analysis_concurrency,
-  short default_config, short analysis_scheduling)
+  short default_config, short analysis_scheduling, bool peer_dynamic_avail)
 {
   init_communicators(*currPCIter->iePLIter, analysis_servers,
-    procs_per_analysis, max_analysis_concurrency,
-    asynch_local_analysis_concurrency, default_config, analysis_scheduling);
+		     procs_per_analysis, max_analysis_concurrency,
+		     asynch_local_analysis_concurrency, default_config,
+		     analysis_scheduling, peer_dynamic_avail);
   currPCIter->eaPLIter = currPLIter;
   return *currPLIter;
 }

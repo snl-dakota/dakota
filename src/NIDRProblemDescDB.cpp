@@ -2291,7 +2291,7 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
 static void Vchk_LognormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
-  RealVector *B, *L, *M, *Sd, *Z;
+  RealVector *B, *L, *M, *Sd, *Ef, *Z;
 
   // lambda/zeta, mean/std_deviation, or mean/error_factor
   n = dv->numLognormalUncVars;
@@ -2307,9 +2307,10 @@ static void Vchk_LognormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     if (wronglen(n, M, "lnuv_means"))
       return;
     Sd = &dv->lognormalUncStdDevs;
+    Ef = &dv->lognormalUncErrFacts;
     if (Sd->length() && wronglen(n, Sd, "lnuv_std_deviations"))
       return;
-    else if (wronglen(n, &dv->lognormalUncErrFacts, "lnuv_error_factors"))
+    else if (Ef->length() && wronglen(n, Ef, "lnuv_error_factors"))
       return;
   }
 
