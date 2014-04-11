@@ -110,6 +110,9 @@ private:
 
   /// compute Euclidean distance between points a and b
   Real distance(const RealVector& a, const RealVector& b);
+  /// compute density between a representative point 
+  /// and a sample point, assuming standard normal
+  Real recentered_density(const RealVector& sample_point);
 
   //
   //- Heading: Data members

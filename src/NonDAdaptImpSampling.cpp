@@ -596,12 +596,24 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 		     Real& sum_var, Real& cov)
 {
   // Note: The current beta calculation assumes samples input in u-space
-  size_t i, j, k, batch_size = var_samples_u.size(),
+  size_t i, j, k, cntr, batch_size = var_samples_u.size(),
     num_rep_pts = repPointsU.size();
   Real n_std_devs = 1., recentered_pdf, pdf_ratio;
   RealArray failure_ratios;
   if (compute_cov)
     failure_ratios.reserve(batch_size);
+
+  // get design point
+  RealVector acv_sample, acv_x_sample;
+  if (xSpaceModel) {
+    acv_sample.sizeUninitialized(numContinuousVars);
+    for (j=0; j<numContDesVars; ++j)
+      acv_sample[j] = designPoint[j];
+    acv_x_sample.sizeUninitialized(numContinuousVars);
+  }
+  else
+    for (j=0; j<numContDesVars; ++j)
+      iteratedModel.continuous_variable(designPoint[j], j);
 
   // calculate the probability of failure using all samples relative
   // to each of the representative points
@@ -616,13 +628,24 @@ calculate_statistics(const RealVectorArray& var_samples_u,
       const RealVector& sample_i = var_samples_u[i];
 
       // calculate recentered_pdf
-      recentered_pdf = 0.;
-      for (j=0; j<num_rep_pts; ++j)
-	recentered_pdf += repWeights[j] *
-	  Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
+      recentered_pdf = recentered_density(sample_i);
+      // need to send the sample point to iteratedModel so that we can 
+      // calculate the density of the original density function
+      if (xSpaceModel) { 
+        for (k=numContDesVars, cntr=0; cntr<numUncertainVars; ++k, ++cntr)
+          acv_sample[k] = sample_i[cntr];
+        natafTransform.trans_U_to_X(acv_sample, acv_x_sample);
+        iteratedModel.continuous_variables(acv_x_sample);
+      }
+      else // u-space points -> u-space Model (NonDGlobal)
+        for (k=numContDesVars, cntr=0; cntr<numUncertainVars; ++k, ++cntr)
+          iteratedModel.continuous_variable(sample_i[cntr], k);
 
       // calculate ratio of pdf relative to origin to pdf relative to rep pt
-      pdf_ratio = Pecos::phi(sample_i.normFrobenius()) / recentered_pdf;
+      // pdf_ratio1 = Pecos::phi(sample_i.normFrobenius()) / recentered_pdf;
+      pdf_ratio = iteratedModel.continuous_probability_density() / recentered_pdf;
+      // Cout <<  "sample i " << sample_i << " recentered_pdf " << recentered_pdf << '\n';
+      // Cout <<  "pdfratio1 " << pdf_ratio1 << "  pdf_ratio " << pdf_ratio << '\n';
       // add sample's contribution to sum_prob
       sum_prob += pdf_ratio;
       // if cov requested, store ratio data to avoid recalculating
@@ -686,6 +709,26 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   }
 }
 
+Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point) 
+{
+  Real localpdf = 0.0; 
+  Real reppdf;  
+  size_t i, j, num_rep_pts = repPointsU.size();
+  //    recentered_pdf =  0.;
+  //    for (j=0; j<num_rep_pts; ++j){
+  //	  recentered_pdf += repWeights[j] * 
+  //	  Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
+  //     } 
+
+  for (j=0; j<num_rep_pts; ++j){
+    reppdf = 1.0;
+    for (i=0; i<numUncertainVars; i++) {
+      reppdf *= Pecos::normal_pdf(repPointsU[j][i], sample_point[i],1.0);
+    }
+    localpdf += repWeights[j] * reppdf;
+  } 
+  return localpdf;
+}
 
 void NonDAdaptImpSampling::print_results(std::ostream& s)
 {
