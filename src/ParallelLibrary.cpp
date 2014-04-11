@@ -230,8 +230,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
        scheduling_override == PEER_DYNAMIC_SCHEDULING ||
        scheduling_override == PEER_STATIC_SCHEDULING);
 
-  // TO DO: consider modifications to the following logic when peer
-  //        dynamic scheduling is available.
+  // TO DO: manage idle processor assignment in partitioning.
 
   bool ded_master;
   if (avail_procs <= 1) {
@@ -299,11 +298,17 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	Cerr << "Warning: user selection of master scheduling cannot be "
 	     << "supported in this partition.  Overriding to peer partition.\n";
     }
-    else if ( master_override || ( !peer_override && num_servers > 1 &&
-	      max_concurrency > num_servers * capacity_multiplier ) )
-      ded_master = true;  // master partition (dynamic scheduling)
+    else if (master_override)
+      ded_master = true;
+    else if (peer_override || num_servers == 1 ||
+	     max_concurrency <= num_servers * capacity_multiplier)
+      ded_master = false;
+    // peer dynamic requires pps = 1 with no remainder (else use remainder to
+    // dedicate a master).  This turns out to be redundant of the check above.
+    //else if (peer_dynamic_avail && num_servers == avail_procs)
+    //  ded_master = false;
     else
-      ded_master = false; // peer partition (dynamic or static scheduling)
+      ded_master = true;
 
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
     procs_per_server = server_procs / num_servers;
@@ -319,7 +324,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     // consider a less strict policy, at least for higher parallelism levels
     // where excess could be repurposed without causing problems with analysis
     // decompositions, but for now we will treat a user override at any level
-    // as gospel.
+    // as gospel.  Also, peer_dynamic_avail is restricted to pps = 1.
 
     proc_remainder = 0; // all cases, no freedom to increment server sizes
     if (procs_per_server > avail_procs) {
@@ -345,8 +350,9 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
       // since we will not carry a proc_remainder, the logic below currently
       // dedicates a master if there are excess processors, even if not needed
       // to cover max_concurrency
-      if (peer_servers == 1 || // avail_procs not enough for 2 full servers
-	  max_concurrency <= peer_servers * capacity_multiplier)
+      if ( peer_servers == 1 || // avail_procs not enough for 2 full servers
+	   max_concurrency <= peer_servers * capacity_multiplier ||
+	   ( peer_dynamic_avail && procs_per_server == 1 ) )//pps=1:no remainder
 	ded_master = (avail_procs % procs_per_server);//if remainder, dedicate 1
       else {
 	// num_servers could drop from 2 to 1 with one less processor, and 2
@@ -357,6 +363,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	ded_master = (master_servers > 1);
       }
     }
+
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
     num_servers = server_procs / procs_per_server;
     if (server_procs % procs_per_server && print_rank)
@@ -378,25 +385,33 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
         Cerr << "Warning: default_config takes precendence over a master "
 	     << "scheduling request\n         when neither num_servers nor "
 	     << "procs_per_server is specified.\n";
-      // TO DO: neglects available concurrency at lower levels (would require
-      // two passes through parallelism hierarchy to resolve)
+      // TO DO: neglects available concurrency at lower levels (would
+      // require two passes through parallelism hierarchy to resolve)
       procs_per_server = avail_procs;
       num_servers = 1;
       ded_master = false; // tau_i = 1 -> static scheduling
     }
     else { // concurrency pushed up
+      // round up loaded servers but avoid std::ceil(Real-valued ratio)
+      int loaded_servers = max_concurrency / capacity_multiplier;
+      if (max_concurrency % capacity_multiplier) ++loaded_servers;
+
       if (master_override) // master partition (dynamic scheduling)
 	ded_master = true;
-      else if ( !peer_override &&
-		max_concurrency > avail_procs * capacity_multiplier )
-        // ded_master if num_servers > 1
-	ded_master = (avail_procs > 2 && max_concurrency > capacity_multiplier);
-      else // peer partition (dynamic or static scheduling)
+      else if (peer_override || loaded_servers <= avail_procs)
         ded_master = false; // tau_i = n_ij_max -> static scheduling
 
+      // We have excess concurrency (loaded_servers > avail_procs yields
+      // num_servers = server_procs, procs_per_server = 1, remainder = 0):
+      // use peer dynamic if available, then master if num_servers > 1,
+      // then revert to peer (static)
+      else if (peer_dynamic_avail)
+	ded_master = false;
+      else // ded_master if num_servers > 1 in calculation to follow
+	ded_master = (avail_procs > 2);// && loaded_servers > 1);
+
       int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
-      num_servers = std::min(server_procs,
-	(int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier));
+      num_servers = std::min(server_procs, loaded_servers);
       procs_per_server = server_procs / num_servers;
       proc_remainder   = server_procs % num_servers;
     }
@@ -603,7 +618,9 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   for (i=0; i<child_pl.numServers; ++i) {
     start[i] = end + 1;
     end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
-    if (proc_rem_cntr > 0)
+    // don't assign remainder to first peer, since this interferes with possible
+    // usage of dynamic peer scheduling (requires procs_per_server == 1)
+    if (proc_rem_cntr > 0 && i)
       { ++end; --proc_rem_cntr; }
     if (parent_pl.serverCommRank >= start[i] && parent_pl.serverCommRank <= end)
       color = color_cntr;

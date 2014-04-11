@@ -2308,10 +2308,11 @@ static void Vchk_LognormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       return;
     Sd = &dv->lognormalUncStdDevs;
     Ef = &dv->lognormalUncErrFacts;
-    if (Sd->length() && wronglen(n, Sd, "lnuv_std_deviations"))
-      return;
-    else if (Ef->length() && wronglen(n, Ef, "lnuv_error_factors"))
-      return;
+    if (Sd->length())
+      { if (wronglen(n, Sd, "lnuv_std_deviations")) return; }
+    else if (Ef->length())
+      { if (wronglen(n, Ef, "lnuv_error_factors"))  return; }
+    //else error, but this should be trapped elsewhere
   }
 
   // lower bounds

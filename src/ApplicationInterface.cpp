@@ -142,10 +142,12 @@ init_communicators(const IntArray& message_lengths,
   }
   */
 
+  bool peer_dynamic_avail
+    = (interfaceType != "direct" && !asynchLocalEvalStatic);
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, /*min_procs_per_eval*/procsPerEvalSpec,
     max_iterator_concurrency, asynchLocalEvalConcSpec, PUSH_UP,// default_config
-    evalScheduling, true);// peer_dynamic is available
+    evalScheduling, peer_dynamic_avail);
 
   set_evaluation_communicators(message_lengths);
 
