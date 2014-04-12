@@ -484,12 +484,8 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
     if (proc_rem_cntr > 0)
       { ++end; --proc_rem_cntr; }
-    if (parent_pl.serverCommRank >= start[i] &&
-	parent_pl.serverCommRank <= end) {
+    if (parent_pl.serverCommRank >= start[i] &&	parent_pl.serverCommRank <= end)
       color = color_cntr;
-      //Cout << "Slave processor " << parent_pl.serverCommRank
-      //     << " assigned color = " << color << std::endl;
-    }
 #ifdef MPI_DEBUG
     if (parent_pl.serverCommRank == 0)
       Cout << "group " << i << " has processors " << start[i] 
@@ -497,6 +493,15 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 #endif // MPI_DEBUG
     ++color_cntr;
   }
+  // address any idle processors not included in child_pl.procRemainder
+  // (resolve_inputs() must honor procs_per_server and will not augment with
+  // remainders in this case).  These processors get a color assignment for
+  // purposes of the split, but are not part of a child server.
+  // TO DO: will this cause problems for bcasts and job assingments?
+  //        (They will enter serve() but not receive any jobs?)
+  if (parent_pl.serverCommRank > end)
+    color = color_cntr;
+  // verify that all processors except master have a color
   if (parent_pl.serverCommRank && !color) {
     Cerr << "Error: slave processor " << parent_pl.serverCommRank 
          << " missing color assignment" << std::endl;
@@ -631,6 +636,15 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 #endif // MPI_DEBUG
     ++color_cntr;
   }
+  // address any idle processors not included in child_pl.procRemainder
+  // (resolve_inputs() must honor procs_per_server and will not augment with
+  // remainders in this case).  These processors get a color assignment for
+  // purposes of the split, but are not part of a child server.
+  // TO DO: will this cause problems for bcasts and job assingments?
+  //        (They will enter serve() but not receive any jobs?)
+  if (parent_pl.serverCommRank > end)
+    color = color_cntr;
+  // verify that all processors except master have a color
   if (!color) {
     Cerr << "Error: processor " << parent_pl.serverCommRank
 	 << " missing color assignment" << std::endl;
