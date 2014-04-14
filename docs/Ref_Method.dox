@@ -6471,7 +6471,9 @@ is primarily useful for analysis of decay rates within the coefficient
 spectrum.  The \c import_points_file and \c export_points_file
 specifications are as described in \ref ModelSurrG, (the use of an
 embedded global surrogate model necessitates repeating selected
-surrogate model specifications within the method specification).
+surrogate model specifications within the method specification). A PCE
+can be read in or exported to a file using \c import_expansion_file and 
+\c export_expansion_file respectively.
 
 As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, 
 The default behavior is to form expansions over aleatory 
@@ -6586,6 +6588,19 @@ Specification detail for polynomial chaos expansion method: general controls.
 <td>boolean
 <td>Optional
 <td>annotated
+<tr>
+<td>File name for importing expansion values and multi index to build a PCE
+<td>\c import_expansion_file
+<td>string
+<td>Optional
+<td>annotated
+<tr>
+<td>File name for exporting the coefficients and multi-index of a PCE 
+<td>\c export_expansion_file
+<td>string
+<td>Optional
+<td>no expansion import from a file
+<tr>
 </table>
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
@@ -6787,8 +6802,8 @@ cubature, and sparse grid approaches.
      grid tends to suffer from ill-conditioning more quickly than the
      default point collocation approach using an unstructured grid. -->
 <li> coefficient import from a file (specified with \c
-     expansion_import_file).  A total-order expansion is assumed and
-     must be specified using \c expansion_order.
+     import_expansion_file).  No type of expansion truncation is assumed 
+     the file must simply specified the coefficient value and multi-index.
 
 \anchor T5d49
 <table>
@@ -6861,7 +6876,7 @@ sampling, regression, and expansion import options.
 <td>regression with LHS sample set ("point collocation")
 <tr>
 <td>Import file for PCE coefficients
-<td>\c expansion_import_file
+<td>\c import_expansion_file
 <td>string
 <td>Required (1 of 7 selections)
 <td>N/A
