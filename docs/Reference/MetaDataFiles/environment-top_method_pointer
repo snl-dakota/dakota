@@ -1,11 +1,13 @@
 Blurb::
-Identify which method block the strategy will use
+Identify which method block will begin the Dakota study
 Description::
-The \c multi_start and \c pareto_set strategies must specify an iterator using \c method_pointer. 
+An optional \c top_method_pointer specification may be used to point
+to a particular method specification to begin iteration.
+If \c top_method_pointer is not
+used, then it will be inferred as decribed in \ref environment (no \c
+top_method_pointer within an environment specification is treated the
+same as no environment specification).
 
-The \c method_pointer keyword is optional for \c single_method. 
-If \c method_pointer is not used, then the last method specification parsed
-will be used as the iterator. 
 
 Topics::	block_pointer, not_yet_reviewed
 Examples::

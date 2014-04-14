@@ -1,25 +1,76 @@
 Blurb::
-Specifies the name and controls of an iterator.
+Specifies the name and behavior of a method
 Description::
-The method section in a Dakota input file specifies the method 
-and the various keywords to control its behavior.
+The method block(s) in a Dakota input file each specify 
+the various keywords to select a method and control its behavior.
 The terms "method" and "iterator" can be 
 used interchangeably.
 
-<!--- A method specification, then, is used to 
-select an iterator from the iterator hierarchy, which includes 
-optimization, uncertainty quantification, least squares, design 
-of experiments, and parameter study iterators (see the Users Manual 
-[Adams et al., 2010] for more information on these iterator branches). 
-This iterator may be used alone or in combination with other iterators 
-as dictated by the strategy specification (refer to Strategy Commands 
-for strategy command syntax and to the Users Manual 
-[Adams et al., 2010] for strategy algorithm descriptions).
---->
-
 <b> The Methods </b>
 
-Each \c method block must select one method from Group 1.
+Each \c method block must select one method.
+
+Starting with Dakota v6.0, the methods are grouped into two types:
+standard methods and multi-component methods.
+
+The standard methods are
+stand-alone and self-contained in the sense that they only require
+a model to perform a study. They do not call other methods.
+While methods such as \c
+polynomial_chaos and \c efficient_global internally utilize multiple
+iterator and surrogate model components, these components are
+generally hidden from user control due to restrictions on modularity;
+thus, these methods are stand-alone.
+
+The multi-component group
+of methods provides a higher level "meta-algorithm" that points to
+other methods and models that support sub-iteration.
+For example, in a sequential hybrid method, the \c hybrid
+method specification must identify a list of subordinate methods, and
+the "meta-algorithm" executes these methods in sequence and transfers
+information between them. Surrogate-based minimizers provide another
+example in that they point both to other methods (e.g. what
+optimization method is used to solve the approximate subproblem) as
+well as to models (e.g. what type of surrogate model is employed).
+Multi-component methods generally provide some level of "plug and
+play" modularity, through their flexible support of a variety of
+method and model selections.
+
+<b> Component-Based Iterator Commands </b>
+
+Component-based iterator specifications include hybrid, multi-start,
+pareto set, surrogate-based local, surrogate-based global, and branch
+and bound methods. Whereas a standard iterator specification only
+needs an optional model pointer string (specified with \c
+model_pointer), component-based iterator specifications can include
+method pointer, method name, and model pointer specifications in order
+to define the components employed in the "meta-iteration." In
+particular, these specifications identify one or more methods (by
+pointer or by name) to specify the subordinate iterators that will be
+used in the top-level algorithm. Identifying a sub-iterator by name
+instead of by pointer is a lightweight option that relaxes the need
+for a separate method specification for the sub-iterator; however, a
+model pointer may be required in this case to provide the
+specification connectivity normally supported by the method pointer.
+Refer to these individual method descriptions for specific
+requirements for these advanced methods.
+
+<!-- Hybrid meta-iterators identify sub-iterators and sub-models using
+either (a) lists of method pointers or lists of method names with
+optional model pointers (sequential and collaborative hybrids), or (b)
+global and local method pointers or global and local method names with
+optional model pointers (embedded hybrid). Multi-start and pareto-set
+meta-iterators identify a single sub-method either by pointer or name,
+with the latter name case supporting an optional model pointer. The
+branch and bound, surrogate-based local, and surrogate-based global
+methods support a similar specification in identifying a sub-method by
+either pointer or by name and either a required (surrogate-based) or
+optional (branch and bound) model pointer. Each of the method
+specifications identified by pointer has the responsibility for
+identifying corresponding model specifications (using \c model_pointer
+from \ref MethodIndControl), whereas methods identified by name cannot
+delegate the need to identify a model by pointer. -->
+
 
 <b> Method Independent Controls </b>
 
@@ -28,15 +79,6 @@ are referred to as method independent controls.
 These controls are valid for enough methods that it was
 reasonable to pull them out of the method dependent blocks and consolidate the
 specifications, however, they are NOT universally respected by all methods.
-
-<!---
-The method independent controls include a method identifier string, a model
-type specification with pointers to variables, interface, and responses
-specifications, a speculative gradient selection, an output verbosity control,
-maximum iteration and function evaluation limits, constraint and convergence
-tolerance specifications, a scaling selection, and a set of linear inequality
-and equality constraint specifications. 
---->
 
 
 Topics::	block, not_yet_reviewed
@@ -47,7 +89,7 @@ specification for an optimization method.
 method,
 	dot_sqp
 \endverbatim
-This example uses all of the defaults for this method.  
+This example uses all of the defaults for this method. 
 
 A more sophisticated example would be
 \verbatim
@@ -55,14 +97,14 @@ method,
 	id_method = 'NLP1'
 	model_pointer = 'M1'
 	dot_sqp
-	  max_iterations = 50
-	  convergence_tolerance = 1e-4
-	  output verbose
+	 max_iterations = 50
+	 convergence_tolerance = 1e-4
+	 output verbose
 \endverbatim
 This example demonstrates the use of identifiers and pointers
 as well as some method independent and method
 dependent controls for the sequential quadratic programming (SQP)
-algorithm from the DOT library.  The \c max_iterations, \c
+algorithm from the DOT library. The \c max_iterations, \c
 convergence_tolerance, and \c output settings are method independent
 controls, in that they are defined for a variety of methods (see \ref
 MethodDOTIC for DOT usage of these controls). 
@@ -71,10 +113,10 @@ The next example shows a specification for a least squares method.
 \verbatim
 method,
 	optpp_g_newton
-	  max_iterations = 10
-	  convergence_tolerance = 1.e-8
-	  search_method trust_region
-	  gradient_tolerance = 1.e-6
+	 max_iterations = 10
+	 convergence_tolerance = 1.e-8
+	 search_method trust_region
+	 gradient_tolerance = 1.e-6
 \endverbatim
 Some of the same method independent controls are present along with
 several method dependent controls (\c search_method and \c
@@ -86,9 +128,9 @@ with several method dependent controls (refer to \ref MethodNonDMC).
 \verbatim
 method,
 	sampling
-	  samples = 100	seed = 12345
-	  sample_type lhs
-	  response_levels = 1000. 500.
+	 samples = 100	seed = 12345
+	 sample_type lhs
+	 response_levels = 1000. 500.
 \endverbatim
 
 The last example shows a specification for a parameter study method
@@ -97,8 +139,8 @@ MethodPSVPS).
 \verbatim
 method,
 	vector_parameter_study
-	  step_vector = 1. 1. 1.
-	  num_steps = 10
+	 step_vector = 1. 1. 1.
+	 num_steps = 10
 \endverbatim
 
 Theory::

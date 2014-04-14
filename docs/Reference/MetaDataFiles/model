@@ -26,12 +26,12 @@ a set of variables that is mapped into a set of responses -- only the
 specifics of the mapping differ.
 
 Additional pointers are used for each model type for
-constructing the components of the variable to response mapping. As a
-strategy specification identifies one or more methods and a method
+constructing the components of the variable to response mapping.  As an
+environment specification identifies a top-level method and a method
 specification identifies a model, a model specification identifies
 variables, responses, and (for some types) interface specifications.
-These are specific to a model type, and are therefore specified underneath
-the relevant keyword.
+This top-down flow specifies all of the object interrelationships.
+
 
 Topics:: block, not_yet_reviewed
 Examples::

@@ -1,40 +1,49 @@
 Blurb::
 Specifies the top level technique which will govern the management of iterators and models
 Description::
-The strategy section in a %Dakota input file specifies the top level
-technique which will govern the management of iterators and models in
-the solution of the problem of interest. 
+The environment section in a %Dakota input file specifies the top
+level solution environment which will govern the management of
+iterators and models in the solution of the problem of interest.
 
-<b> Strategy Group 1 </b>
+The environment specification supports indentification of the
+top-level method (\c top_method_pointer) that provides the starting
+point for the iteration. The corresponding method specification may
+recurse with additional sub-method pointers in the case of
+"meta-iteration" (see \ref MethodMeta) or may specify a single method
+without recursion. Either case will ultimately result in
+identification of one or more model specifications using \c
+model_pointer (see \ref MethodIndControl), which again may or may not
+involve further recursion (see \ref ModelNested and \ref
+ModelSurrogate for recursion cases). Each of the model specifications
+identify the variables and responses specifications (using \c
+variables_pointer and \c responses_pointer from \ref ModelCommands)
+that are used to build the model, and depending on the type of model,
+may also identify an interface specification (using \c
+interface_pointer from \ref ModelCommands). If one of these
+specifications does not provide an optional pointer, then that
+component will be constructed using the last specification parsed.
+ 
+In addition to the \c top_method_pointer, the environment specification
+provides a variety of output controls, including graphics options, data
+tabulation options, output precision, and results database options.
+ 
+Specification of a environment block in an input file is optional, in
+which case the top level method will be inferred. In the case of a
+single method specification, there is no ambiguity, and in the case of
+multiple method specifications, the top level method will be deduced
+from the hierarchical relationships implied by method pointers. If
+this inference is not well defined (e.g., multiple method
+specifications without any pointer relationship), then the default
+behavior is to employ the last method specification parsed.
 
-Four strategies currently exist: 
--# \c hybrid
--# \c multi_start
--# \c pareto_set
--# \c single_method
-.
-\li Additional information on the algorithm logic is
-available in the Users Manual [\ref UsersMan "Adams et al., 2010"].
-\li One of these must be selected, however, if it not specified Dakota
-will default to the \c single_method strategy.
-\li More detail about these strategies and associated keywords are given
-on their individual pages.
 
 <b> Optional Keywords </b>
-In addition to the strategy, additional keywords are used to modify
+Additional keywords are used to modify
 the Dakota outputs - graphics and data, as well as how Dakota
 will handle methods that run concurrently.
 
 Topics::	block, not_yet_reviewed
 Examples::
 Theory::
-Specification of a strategy block in an input file is optional, with
-\c single_method being the default strategy. If no strategy is
-specified or if \c single_method is specified without its optional \c
-method_pointer specification, then the default behavior is to employ
-the last method, variables, interface, and responses specifications
-parsed. This default behavior is most appropriate if only one
-specification is present for method, variables, interface, and
-responses, since there is no ambiguity in this case.
 Faq::
 See_Also::	

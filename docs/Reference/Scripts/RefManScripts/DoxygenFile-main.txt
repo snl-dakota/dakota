@@ -1,9 +1,6 @@
 /**
 \mainpage
 
-<b> IMPORTANT NOTE! This version of the manual is currently in Beta testing. It is NOT 
-considered the authoritative Dakota manual. </b>
-
 The \b Dakota (<b>D</b>esign <b>A</b>nalysis <b>K</b>it for <b>O</b>ptimization and <b>T</b>erascale
 <b>A</b>pplications) toolkit provides a flexible, extensible interface
 between analysis codes and iteration methods.

@@ -14,30 +14,30 @@ This page lists the six blocks. From here, you can navigate to every keyword.
 
 <b> Introduction to Dakota Keywords </b>
 
-In %Dakota, the \e strategy creates and manages \e methods (a.k.a. iterators) and \e
-models. A model, generally speaking, contains a set of \e variables,
-an \e interface, and a set of \e responses. An iterator repeatedly
+In %Dakota, the \e environment manages execution modes and I/O streams
+and defines the top-level iterator. Generally speaking, an iterator
+contains a model and a model contains a set of \e variables, an \e
+interface, and a set of \e responses. An iterator repeatedly
 operates on the model to map the variables into responses using the
-interface. 
+interface. Each of these six components (environment, method, model,
+variables, interface, and responses) are separate specifications in
+the user's input file, and as a whole, determine the study to be
+performed during an execution of the %Dakota software.
 
-Each of these six pieces (strategy, method, model,
-variables, interface, and responses) are specified in separate blocks of
-the input file, and as a whole, determine the study to be
-performed during an execution of the %Dakota software. 
-
-A %Dakota
-execution is limited to a single strategy, which may invoke multiple
-methods. Furthermore, each method may have its own model, consisting
-of (generally speaking) its own variables, interface, and set of
-responses. Thus, there may be multiple specifications of the method,
-model, variables, interface, and responses sections.
-
+A %Dakota execution is limited to a single environment, but may
+involve multiple methods and multiple models. In particular, advanced
+iterators (i.e., meta- and component-based iterators) and advanced
+models (i.e., nested and surrogate models) may specialize to include
+recursions with additional sub-iterators and sub-models. Since each
+model may contain its own variables, interface, and responses, there
+may be multiple specifications of the method, model, variables,
+interface, and responses sections.
 
 <b> Keyword Pages </b>
 
 Every Dakota keyword has its own page in this manual. The page describes:
 - Whether the keyword takes <tt>ARGUMENTS</tt>, and the data type
-  Additional notes about <tt>ARGUMENTS</tt> can be found here: \ref input_spec-overview-arguments.
+ Additional notes about <tt>ARGUMENTS</tt> can be found here: \ref input_spec-overview-arguments.
 - Whether it has an <tt>ALIAS</tt>
 - Which additional keywords can be specified to change its behavior
 - Which of these additional keywords are required or optional

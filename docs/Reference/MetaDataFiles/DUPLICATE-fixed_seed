@@ -3,7 +3,7 @@ Reuse the same seed value for multiple sampling sets
 Description::
 The \c
 fixed_seed flag is relevant if multiple sampling sets will be
-generated during the course of a strategy (e.g., surrogate-based
+generated. This occurs when using advance methods (e.g., surrogate-based
 optimization, optimization under uncertainty). 
 
 Specifying this keyword

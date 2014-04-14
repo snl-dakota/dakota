@@ -1,20 +1,73 @@
 Blurb::
 Specifies how function evaluations will be performed in order to map the variables into the responses.
 Description::
-The interface section in a Dakota input file specifies how function evaluations will be performed in order to map the variables into the responses. 
+The interface section in a Dakota input file specifies how function evaluations will be performed in order to map the variables into the responses.
 
 In this context, a "function evaluation" is the series of operations that takes the variables and computes the responses. This can be comprised of one or many codes, scripts, and glue, which are generically referred to as "analysis drivers".
 
-<b> Interface Group 1 </b>
-???
+The optional \c asynchronous flag specifies use of asynchronous
+protocols (i.e., background system calls, nonblocking forks, POSIX
+threads) when evaluations or analyses are invoked. The \c
+evaluation_concurrency and \c analysis_concurrency specifications
+serve a dual purpose:
 
-<b> Interface Group 2 </b>
-???
+\li when running %Dakota on a single processor in \c asynchronous
+mode, the default concurrency of evaluations and analyses is all
+concurrency that is available. The \c evaluation_concurrency and \c
+analysis_concurrency specifications can be used to limit this
+concurrency in order to avoid machine overload or usage policy
+violation.
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-No idea what the servers or scheduling do.
-!!!!!!!!!!!!!!!!!!!!!!!!!!!
+\li when running %Dakota on multiple processors in message passing
+mode, the default concurrency of evaluations and analyses on each of
+the servers is one (i.e., the parallelism is exclusively that of the
+message passing). With the \c evaluation_concurrency and \c
+analysis_concurrency specifications, a hybrid parallelism can be
+selected through combination of message passing parallelism with
+asynchronous parallelism on each server.
 
+If Dakota's automatic parallel configuration is undesirable for some
+reason, the user can specify overrides that enforce a desired number
+of partitions, a size for the partitions, and/or a desired scheduling
+configuration at the evaluation and analysis parallelism levels. The
+optional \c evaluation_servers and \c analysis_servers specifications
+support user overrides of the automatic parallel configuration for the
+number of evaluation servers and the number of analysis servers, and
+the optional \c processors_per_evaluation specification supports user
+overrides for the size of processor allocations for evaluation servers
+(Note: see \ref InterfApplicDF for the \c processors_per_analysis
+specification supported for direct interfaces). Similarly, the
+optional \c evaluation_scheduling and \c analysis_scheduling
+specifications can be used to override the automatic parallel
+configuration at the evaluation and analysis parallelism levels to use
+either a dedicated \c master or a \c peer partition. In addition, the
+evaluation parallelism level supports an override for the scheduling
+algorithm used within a \c peer partition; this can be either \c
+dynamic or \c static scheduling (default configuration of a peer
+partition employs a dynamic scheduler when it can be supported; i.e.,
+when the peer 1 local scheduling can be asynchronous). The
+ParallelLibrary class and the Parallel Computing chapter of the Users
+Manual [\ref UsersMan "Adams et al., 2010"] provide additional details
+on parallel configurations.
+
+When performing asynchronous local evaluations, the \c
+local_evaluation_scheduling keyword controls how new evaluation jobs
+are dispatched when one completes. If the \c
+local_evaluation_scheduling is specified as \c dynamic (the default),
+each completed evaluation will be replaced by the next in the local
+evaluation queue. If \c local_evaluation_scheduling is specified as
+\c static, each completed evaluation will be replaced by an evaluation
+number that is congruent modulo the \c evaluation_concurrency. This
+is helpful for relative node scheduling as described in \c
+Dakota/examples/parallelism. For example, assuming only asynchronous
+local concurrency (no MPI), if the local concurrency is 6 and job 2
+completes, it will be replaced with job 8. For the case of hybrid
+parallelism, static local scheduling results in evaluation
+replacements that are modulo the total capacity, defined as the
+product of the evaluation concurrency and the number of evaluation
+servers. Both of these cases can result in idle processors if
+runtimes are non-uniform, so the default dynamic scheduling is
+preferred when relative node scheduling is not required.
 
 
 
@@ -25,7 +78,7 @@ Function evaluations are performed using either interfaces to simulation codes, 
 
 When employing mappings with simulation codes, the interface invokes the simulation using either forks, direct function invocations, or computational grid invocations.
 - In the fork case, Dakota will treat the simulation as a black-box and communication between Dakota and the simulation occurs through parameter and result files. This is the most common case.
-- In the direct function case, the simulation is internal to Dakota and communication occurs through the function parameter list. The direct case can involve linked simulation codes or test functions which are compiled into the Dakota executable. The test functions allow for rapid testing of algorithms without process creation overhead or engineering simulation expense. 
+- In the direct function case, the simulation is internal to Dakota and communication occurs through the function parameter list. The direct case can involve linked simulation codes or test functions which are compiled into the Dakota executable. The test functions allow for rapid testing of algorithms without process creation overhead or engineering simulation expense.
 - The grid case is experimental and under development, but is intended to support simulations which are external to Dakota and geographically distributed.
 
 When employing algebraic mappings, the AMPL solver library [Gay, 1997] is used to evaluate a directed acyclic graph (DAG) specification from a separate stub.nl file. Separate stub.col and stub.row files are also required to declare the string identifiers of the subset of inputs and outputs, respectively, that will be used in the algebraic mappings.
