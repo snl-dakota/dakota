@@ -24,11 +24,12 @@ cat $ScriptDir/DoxygenFile-main.txt \
   $ScriptDir/DoxygenFile-input_file_examples.txt \
   $ScriptDir/DoxygenFile-input_spec.txt \
   $ScriptDir/DoxygenFile-input_spec_summary.txt DakotaInputSpec.dox \
-  $ScriptDir/DoxygenFile-topics.txt \
   DakotaTopics.dox \
   $ScriptDir/DoxygenFile-keywords.txt DakotaKeywords.dox > ${output_dox}
 
 # TODO: should we treat separately?
+# Don't need this as the Java incorporates the topics header
+#  $ScriptDir/DoxygenFile-topics.txt \
 #outputs/TopicFile-Root \
 
 # mark the end of doxygen file
