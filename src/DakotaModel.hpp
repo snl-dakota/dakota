@@ -453,6 +453,9 @@ public:
   /// compute a multivariate probability density from the marginals for the
   /// active aleatory random variables (must be uncorrelated)
   Real continuous_probability_density() const;
+  /// return a set of distribution bounds for a particular index within the
+  /// active aleatory random variables
+  std::pair<Real, Real> continuous_distribution_bounds(size_t cv_index) const;
 
   // LABELS and TAGS
 

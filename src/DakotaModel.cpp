@@ -3565,6 +3565,66 @@ Real Model::continuous_probability_density() const
 }
 
 
+std::pair<Real, Real> Model::
+continuous_distribution_bounds(size_t cv_index) const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->continuous_distribution_bounds(cv_index);
+  else {
+    UShortMultiArrayConstView cv_types
+      = currentVariables.continuous_variable_types();
+    unsigned short dist_type = cv_types[cv_index];
+    size_t dist_index = cv_index - find_index(cv_types, dist_type);
+    Real lwr, upr;
+    switch (dist_type) {
+    // cases with (possibly optional) explicit distribution bounds
+    case NORMAL_UNCERTAIN:
+      lwr = aleatDistParams.normal_lower_bound(dist_index);
+      upr = aleatDistParams.normal_upper_bound(dist_index);
+      break;
+    case LOGNORMAL_UNCERTAIN:
+      lwr = aleatDistParams.lognormal_lower_bound(dist_index);
+      upr = aleatDistParams.lognormal_upper_bound(dist_index);
+      break;
+    case UNIFORM_UNCERTAIN:
+      lwr = aleatDistParams.uniform_lower_bound(dist_index);
+      upr = aleatDistParams.uniform_upper_bound(dist_index);
+      break;
+    case LOGUNIFORM_UNCERTAIN:
+      lwr = aleatDistParams.loguniform_lower_bound(dist_index);
+      upr = aleatDistParams.loguniform_upper_bound(dist_index);
+      break;
+    case TRIANGULAR_UNCERTAIN:
+      lwr = aleatDistParams.triangular_lower_bound(dist_index);
+      upr = aleatDistParams.triangular_upper_bound(dist_index);
+      break;
+    case BETA_UNCERTAIN:
+      lwr = aleatDistParams.beta_lower_bound(dist_index);
+      upr = aleatDistParams.beta_upper_bound(dist_index);
+      break;
+    // cases with implicit distribution bounds
+    case HISTOGRAM_BIN_UNCERTAIN: {
+      const RealVector& bin_prs_i
+	= aleatDistParams.histogram_bin_pairs(dist_index);
+      lwr = bin_prs_i[0]; upr = bin_prs_i[bin_prs_i.length() - 2];
+      break;
+    }
+    // semi-bounded cases without distribution bounds
+    case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN:
+    case FRECHET_UNCERTAIN:     case WEIBULL_UNCERTAIN:
+      lwr = 0.;           upr = DBL_MAX;
+      break;
+    // unbounded cases without distribution bounds
+    case GUMBEL_UNCERTAIN:
+      lwr = -DBL_MAX;     upr = DBL_MAX;
+      break;
+    //default: no-op
+    }
+    return std::pair<Real, Real>(lwr, upr);
+  }
+}
+
+
 int Model::evaluation_id() const
 {
   if (modelRep) // envelope fwd to letter

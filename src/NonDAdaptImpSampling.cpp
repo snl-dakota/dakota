@@ -719,13 +719,16 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   //    Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
   //} 
 
-  Real local_pdf = 0., rep_pdf, stdev = 1.,
-    lwr = -DBL_MAX, upr = DBL_MAX; // placeholder bounds
+  Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
-    for (j=0; j<numUncertainVars; ++j)
-      rep_pdf *= Pecos::bounded_normal_pdf(sample_point[j], repPointsU[i][j],
-					   stdev, lwr, upr);
+    for (j=0; j<numUncertainVars; ++j) {
+      std::pair<Real, Real> dist_bounds
+	= iteratedModel.continuous_distribution_bounds(j+numContDesVars);
+      rep_pdf *=
+	Pecos::bounded_normal_pdf(sample_point[j], repPointsU[i][j], stdev,
+				  dist_bounds.first, dist_bounds.second);
+    }
     local_pdf += repWeights[i] * rep_pdf;
   } 
   return local_pdf;
