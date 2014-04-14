@@ -371,8 +371,8 @@ if(DAKOTA_HAVE_HDF5
   # BinaryIO tester depends on Teuchos and HDF5
   include_directories(${HDF5_INCLUDE_DIRS})
   add_executable(binary_io_test binary_io_test.cpp)
-  target_link_libraries(binary_io_test ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
-    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${ZLIB_LIBRARIES})
+  target_link_libraries( binary_io_test ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
+    ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES} )
   link_directories(binary_io_test ${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
 endif()
 
