@@ -4,15 +4,18 @@ environment,
 
 method,
 	polynomial_chaos
-	  expansion_order = 4
-	  collocation_points = 0			#0
-#	  collocation_points = 10			#1,#2
-#	  seed = 12347 rng rnum2			#1,#2
+	  expansion_order = 4	#0,#1,#2,#3
+	  seed = 12347 rng rnum2
 # import data generated using tabular_graphics_data with quadrature_order = 5
-	  import_points_file = 'dakota_uq_rosenbrock_pce_import.dat' annotated
-#	  export_points_file = 'dakota_uq_rosenbrock_pce_export.dat' annotated #2
-#	  samples = 10000				#2
-#	  response_levels = .1 1. 50. 100. 500. 1000.	#2
+	  import_points_file = 'dakota_uq_rosenbrock_pce_import/dakota_uq_rosenbrock_pce_import.annot.pts.dat' annotated		#0,#1
+#	  import_points_file = 'dakota_uq_rosenbrock_pce_import/dakota_uq_rosenbrock_pce_import.freeform.pts.dat' freeform  #2,#3
+#	  export_points_file = 'dakota_uq_rosenbrock_pce_export.vals.dat' annotated #0,#2
+#	  export_points_file = 'dakota_uq_rosenbrock_pce_export.freeform.pts.dat' #,1#3
+	  export_expansion_file = 'dakota_uq_rosenbrock_pce_export.coeffs.dat' #0
+#	  import_expansion_file = 'dakota_uq_rosenbrock_pce_import/dakota_uq_rosenbrock_pce_import.coeffs.dat' #4
+	  collocation_points = 0 #0,#1,#2,#3
+	  samples = 10000			
+	  response_levels = .1 1. 50. 100. 500. 1000.
 	  variance_based_decomp #interaction_order = 1
 #	  output debug
 
