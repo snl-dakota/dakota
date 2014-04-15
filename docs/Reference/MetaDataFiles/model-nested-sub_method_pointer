@@ -153,7 +153,7 @@ back to the top-level responses. These specifications provide
 real-valued multipliers that are applied to the sub-iterator response
 results to define the outer level response set. These nested data
 results may be combined with non-nested data through use of the 
-``optional interface'' component within nested models.
+"optional interface" component within nested models.
 
 The nested model constructs admit a wide variety of multi-iterator,
 multi-model solution approaches. For example, optimization within

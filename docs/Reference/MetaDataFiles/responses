@@ -43,7 +43,7 @@ functions.
 
 Hessian availability for the response functions is similar to the
 gradient availability specifications, with the addition of support
-for ``quasi-Hessians":
+for "quasi-Hessians":
 
 The Hessian specification also links back to the iterative method in
 use; Hessians commonly would be used in gradient-based

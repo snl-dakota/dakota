@@ -18,7 +18,7 @@ relationships are denoted by the \c | symbol. These symbols only
 appear in dakota.input.nspec; they must not appear in actual user input
 files.
 
-\li Keyword specifications (i.e., \c strategy, \c method, \c model, \c
+\li Keyword specifications (i.e., \c environment, \c method, \c model, \c
 variables, \c interface, and \c responses) begin with the keyword
 possibly preceded by white space (blanks, tabs, and newlines)
 both in the input specifications and in user input

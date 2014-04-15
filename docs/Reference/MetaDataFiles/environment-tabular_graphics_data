@@ -8,7 +8,7 @@ flag.
 Within the file, the variables and response functions appear as
 columns and each function evaluation provides a new table row. This
 capability is most useful for post-processing of %Dakota results with
-third-party graphics tools such as MATLAB, Tecplot, etc. 
+third-party graphics tools such as MatLab, Tecplot, etc. 
 There is no
 dependence between the \c graphics flag and the \c
 tabular_graphics_data flag; they may be used independently or

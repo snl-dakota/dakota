@@ -282,7 +282,7 @@ many of the function evaluations requested by the iterator are
 intercepted by the duplicate detection code. This approach has the
 primary advantage of restoring the complete state of the iteration
 (including the ability to correctly detect subsequent duplicates) for
-all iterators and multi-iterator strategies without the need for
+all methods/iterators without the need for
 iterator-specific restart code. However, the possibility exists for
 numerical round-off error to cause a divergence between the
 evaluations performed in the previous and restarted studies. This has
@@ -427,7 +427,7 @@ has eliminated this need) or for advanced repair of restart records
 Conversion of a binary restart file to a tabular format enables
 convenient import of this data into 3rd-party post-processing tools
 such as Matlab, TECplot, Excel, etc. This facility is nearly identical
-to the output activated by the \ref strategy-tabular_graphics_data 
+to the output activated by the \ref environment-tabular_graphics_data 
 keyword in the Dakota input file specification, but
 with two important differences:
 -# No function evaluations are suppressed as they are with

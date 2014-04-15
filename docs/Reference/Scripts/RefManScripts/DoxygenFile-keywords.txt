@@ -4,7 +4,7 @@
 \page keywords Keywords Area
 This page lists the six blocks. From here, you can navigate to every keyword.
 
-- \subpage strategy
+- \subpage environment 
 - \subpage method
 - \subpage model
 - \subpage variables

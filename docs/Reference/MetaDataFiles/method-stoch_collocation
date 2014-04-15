@@ -146,7 +146,7 @@ approximation for the purposes of generating approximate statistics.
 \li \c seed
 \li \c fixed_seed
 \li \c rng
-\li \c sample_refinement 
+\li \c probability_refinement 
 \li \c reliability_levels
 \li \c response_levels
 \li \c probability_levels
@@ -157,7 +157,7 @@ the PCE coefficients as described in options 4 and 5 above (although
 options 4 and 5 will share the \c sample_type, \c seed, and \c rng
 settings, if provided). 
 
-The \c sample_refinement specification is
+The \c probability_refinement specification is
 similar to that of \ref MethodNonDLocalRel, with the difference that
 the number of refinement samples is not under the user's control
 (these evaluations are approximation-based, so management of this

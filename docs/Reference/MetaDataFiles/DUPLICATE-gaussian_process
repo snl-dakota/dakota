@@ -162,10 +162,10 @@ models are as follows:
    The \c gaussian_process dakota model has two features to 
    overcome ill-conditioning. The first is that the algorithm will 
    add a small amount of noise to the diagonal elements of the matrix 
-   (this is often referred to as a ``nugget'') and sometimes this is 
+   (this is often referred to as a "nugget") and sometimes this is 
    enough to improve the conditioning. The second is that the user 
    can specify to build the GP based only on a subset of points. The 
-   algorithm chooses an ``optimal'' subset of points (with respect to 
+   algorithm chooses an "optimal" subset of points (with respect to 
    predictive capability on the remaining unchosen points) using a 
    greedy heuristic. This option is specified with the keyword 
    \c point_selection in the input file.\\ \\
@@ -214,7 +214,7 @@ models are as follows:
    capability. Incorporating gradient information will only be 
    beneficial if accurate and inexpensive derivative information is 
    available, and the derivatives are not infinite or nearly so. Here 
-   ``inexpensive'' means that the cost of evaluating a function value 
+   "inexpensive" means that the cost of evaluating a function value 
    plus gradient is comparable to the cost of evaluating only the 
    function value, for example gradients computed by analytical, 
    automatic differentiation, or continuous adjoint techniques. It is 

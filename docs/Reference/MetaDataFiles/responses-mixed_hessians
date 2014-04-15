@@ -1,5 +1,5 @@
 Blurb::
-Hessians are needed and will be obtained from a mix of numerical, analytic, and ``quasi" sources
+Hessians are needed and will be obtained from a mix of numerical, analytic, and "quasi" sources
 Description::
 Hessian availability must be specified with either \c no_hessians, \c
 numerical_hessians, \c quasi_hessians, \c analytic_hessians, or \c

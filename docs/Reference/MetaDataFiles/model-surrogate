@@ -161,7 +161,7 @@ condition, such as matching values at the previous design iterate.
 %\begin{itemize}
 %\item Both the \c additive zeroth_order and
 % \c multiplicative zeroth_order correction methods are
-% ``free'' since they use values of $f_{t}(x_{c})$ that are normally
+% "free" since they use values of $f_{t}(x_{c})$ that are normally
 % computed by the SBO strategy.
 %
 %\item The use of either the \c additive first_order method or

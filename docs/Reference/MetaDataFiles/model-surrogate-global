@@ -1,4 +1,5 @@
 Blurb::
+Select a surrogate model with global support
 Description::
 The global surrogate model requires specification of one of the
 following approximation types: \c polynomial, \c gaussian_process, \c
@@ -105,13 +106,6 @@ enhanced GP/Kriging model's accuracy.
 
 <!-- TODO: document MARS, ANN, and RBF controls -->
 
-Table \ref T6d6 "6.6" summarizes the remaining (optional) global
-approximation specifications, including controls for the number of
-points requested to build the surrogate, the source of the points (\c
-dace_method_pointer and \c reuse_samples), the use of derivative
-information in constructions (\c use_derivatives), calculation of
-fitness metrics, and the \c correction method.
-
 The number of points used in building a global approximation is
 determined by three point counts:
 
@@ -123,11 +117,9 @@ Alternately an integer \c total_points may be specified to request a
 specific number of points in each surrogate build (a lower bound of
 minimum points is enforced).  This count, then, can be summarized as
 %Model points = (minimum | recommended | max(minimum, total)).
-
 \li Reused points: any samples available for reuse via the \c
 reuse_samples keyword (described below) are always used to build.
 This count defaults to zero.
-
 \li %Iterator points: \c samples specified within the DACE method 
 specification (identified via \c dace_method_pointer) always
 provide a lower bound on the number of fresh DACE samples used to
@@ -161,11 +153,7 @@ User's Manual).
 The \c use_derivatives flag specifies that any available derivative
 information should be used in global approximation builds, for those
 global surrogate types that support it (currently, polynomial
-regression and the Surfpack GP). <!-- This capability is currently
-supported in SurrBasedLocalMinimizer, Pecos::SurrogateDataPoint, \ref
-Approximation::build "Approximation::build()", and \c global_kriging
-models, but is not yet supported in any global approximation derived
-class redefinitions of build(). -->
+regression and the Surfpack GP). 
 
 To assess the goodness of fit of a global surrogate, a variety of
 diagnostic metrics are available for the following global
@@ -256,25 +244,23 @@ the Surfpack sub-package of Dakota, the other resides in Dakota itself.
 Both versions use the Gaussian correlation function with parameters that
 are selected by Maximum Likelihood Estimation (MLE). This correlation 
 function results in a response surface that is $C^\infty$-continuous.
-Prior to Dakota 5.2, the Surfpack GP was referred to as the ``Kriging'' 
-model and the Dakota version was labeled as the ``Gaussian Process.'' 
+Prior to Dakota 5.2, the Surfpack GP was referred to as the "Kriging" 
+model and the Dakota version was labeled as the "Gaussian Process." 
 These terms are now used interchangeably. As of Dakota 5.2,the 
 Surfpack GP is used by default. For now the user still has the option 
 to select the Dakota GP, but the Dakota GP is deprecated and will be 
 removed in a future release.
-\begin{itemize}
-\item <b> Surfpack GP </b>: Ill-conditioning due to a poorly spaced sample 
+\li <b> Surfpack GP </b>: Ill-conditioning due to a poorly spaced sample 
    design is handled by discarding points that contribute the least 
    unique information to the correlation matrix. Therefore, the points 
    that are discarded are the ones that are easiest to predict. The 
    resulting surface will exactly interpolate the data values at the 
    retained points but is not guaranteed to interpolate the discarded 
    points.
-\item <b> Dakota GP </b>: Ill-conditioning is handled by adding a jitter 
-   term or ``nugget'' to diagonal elements of the correlation matrix. 
+\li <b> Dakota GP </b>: Ill-conditioning is handled by adding a jitter 
+   term or "nugget" to diagonal elements of the correlation matrix. 
    When this happens, the Dakota GP may not exactly interpolate the 
    data values.
-\end{itemize}
 
 <b> Artificial Neural Networks </b>: An implementation of the
 stochastic layered perceptron neural network developed by Prof. D. C.
@@ -295,7 +281,7 @@ as the weighted sum of individual radial basis functions.
 <b> Moving Least Squares (MLS) </b>: Moving Least Squares can be 
 considered a more specialized version of linear regression models.
 MLS is a weighted least squares approach where the weighting is 
-``moved'' or recalculated for every new point where 
+"moved" or recalculated for every new point where 
 a prediction is desired. \ref{Nea04} 
 
 %<b> Orthogonal Polynomials </b>: This technique involves the use of
