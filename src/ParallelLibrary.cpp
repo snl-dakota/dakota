@@ -308,6 +308,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     //else if (peer_dynamic_avail && num_servers == avail_procs)
     //  ded_master = false;
     else
+      // since idle procs can be reallocated in this case, we don't need to be
+      // too concerned about a ded master partition inducing addtl remainder
       ded_master = true;
 
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
@@ -346,21 +348,45 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     else if (peer_override)
       ded_master = false;
     else { // neither override: try peer, then master
-      int peer_servers = avail_procs / procs_per_server;
-      // since we will not carry a proc_remainder, the logic below currently
+      int peer_servers   = avail_procs / procs_per_server,
+	  peer_remainder = avail_procs % procs_per_server;
+      // Since we will not carry a proc_remainder, the logic below currently
       // dedicates a master if there are excess processors, even if not needed
-      // to cover max_concurrency
-      if ( peer_servers == 1 || // avail_procs not enough for 2 full servers
-	   max_concurrency <= peer_servers * capacity_multiplier ||
-	   ( peer_dynamic_avail && procs_per_server == 1 ) )//pps=1:no remainder
-	ded_master = (avail_procs % procs_per_server);//if remainder, dedicate 1
+      // to cover max_concurrency.  We also use special logic to avoid inducing
+      // high idle proc counts due to selection of a master partition in the
+      // case of excess concurrency.  For example:
+      // > pps = 5, avail = 16: always dedicate master from remainder
+      // > pps = 5, avail = 15: avoid inducing 4 idle due to master selection
+      if (peer_remainder)
+	ded_master = true; // if any remainder, dedicate 1 for scheduling
+      else if ( peer_servers == 1 ||// avail_procs not enough for 2 full servers
+		max_concurrency <= peer_servers * capacity_multiplier ||
+		( peer_dynamic_avail && procs_per_server == 1 ) )
+	ded_master = false;
       else {
 	// num_servers could drop from 2 to 1 with one less processor, and 2
-	// peer servers will always be better than 1 ded master server.
-	// However, we currently choose n ded master servers over n+1 peer
-	// servers for n>1 if max_concurrency indicates dynamic scheduling.
-	int master_servers = (avail_procs - 1) / procs_per_server;
-	ded_master = (master_servers > 1);
+	// peer servers will always be better than 1 ded master server:
+	// > we generally choose n ded master servers over n+1 peer servers for
+	//   n>1 when max_concurrency indicates need for dynamic scheduling
+	// > but we try to avoid bad cases, when master selection is wasteful
+	//   due to significant increase in idle procs
+	int master_servers   = (avail_procs - 1) / procs_per_server,
+	    master_remainder = (avail_procs - 1) % procs_per_server;
+	// We seek a simple heuristic that disallows wasteful master partitions:
+	// > simple enforcement of !master_remainder is insufficient since this
+	//   would eval to true for any pps > 1 (peer_remainder is 0; therefore,
+	//   master_remainder = pps-1)
+	// > enforcement that we don't waste some portion (half) of a server is
+	//   also insufficiently general: master_remainder > pps / 2 is true
+	//   for all pps > 2 (since master_remainder = pps-1).
+	// > It appears we need to define wasteful more globally, e.g., if
+	//   idle / available > some %.  In the example above, 4 idle / 15 avail
+	//   increases idle percentage from 0% to 27% due to a master partition.
+	// > A more complicated formula would need to estimate the value to be
+	//   derived from dynamic scheduling in term of an excess concurrency
+	//   factor (# of scheduling passes), expected job heterogeneity, etc.
+	ded_master
+	  = (master_servers > 1 && master_remainder <= avail_procs / 10);
       }
     }
 
@@ -392,7 +418,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
       ded_master = false; // tau_i = 1 -> static scheduling
     }
     else { // concurrency pushed up
-      // round up loaded servers but avoid std::ceil(Real-valued ratio)
+      // round up loaded servers but avoid std::ceil((Real)numer/(Real)denom)
       int loaded_servers = max_concurrency / capacity_multiplier;
       if (max_concurrency % capacity_multiplier) ++loaded_servers;
 
@@ -409,6 +435,10 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	ded_master = false;
       else // ded_master if num_servers > 1 in calculation to follow
 	ded_master = (avail_procs > 2);// && loaded_servers > 1);
+
+      // As for the num_servers specification case, we don't need to be as
+      // concerned with selection of a wasteful master partition (increased
+      // idleness), since any partition remainder gets reallocated.
 
       int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
       num_servers = std::min(server_procs, loaded_servers);
