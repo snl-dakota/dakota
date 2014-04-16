@@ -616,7 +616,7 @@ space (low objective function and/or feasible constraints), and then
 it switches to a gradient-based algorithm (using the best design point
 found by the EA as its starting point) to perform an efficient local
 search for an optimum design point. More information on this hybrid
-approach is provided in Chapter~\ref{strat}.
+approach is provided in Section~\ref{adv_meth:hybrid}.
 
 \section{Additional Optimization Capabilities}
 \label{opt:additional}
@@ -632,7 +632,7 @@ section include:
   described above in
   Section~\ref{opt:methods:gradientfree:global:descriptions}. The
   second is the Pareto-set strategy, described in
-  Chapter~\ref{strat}. The third is a weighting factor approach for
+  Section~\ref{adv_meth:pareto}. The third is a weighting factor approach for
   multiobjective reduction, in which a composite objective function is
   constructed from a set of individual objective functions using a
   user-specified set of weighting factors. These latter two approaches
@@ -652,36 +652,37 @@ section include:
   This is a first step toward allowing optional parts of Dakota, such
   as proprietary solvers, to be accessed from shared
   libraries.\end{itemize}
-The Strategy Chapter~\ref{strat} offers details on the following
-approaches:
+The Advanced Methods Chapter~\ref{adv_meth} offers details on the 
+following component-based meta-algorithm approaches:
 \begin{itemize}
-\item \textbf{Multilevel Hybrid Optimization}: This strategy allows
-  the user to specify a sequence of optimization methods, with the
-  results from one method providing the starting point for the next
-  method in the sequence. An example which is useful in many
+\item \textbf{Sequential Hybrid Minimization}: This meta-algorithm
+  allows the user to specify a sequence of minimization methods, with
+  the results from one method providing the starting point for the
+  next method in the sequence. An example which is useful in many
   engineering design problems involves the use of a nongradient-based
   global optimization method (e.g., genetic algorithm) to identify a
   promising region of the parameter space, which feeds its results
   into a gradient-based method (quasi-Newton, SQP, etc.) to perform an
   efficient local search for the optimum point.
 
-\item \textbf{Multistart Local Optimization}: This strategy uses many
-  local optimization runs (often gradient-based), each of which is
-  started from a different initial point in the parameter space. This
-  is an attractive strategy in situations where multiple local optima
-  are known to exist or may potentially exist in the parameter
-  space. This approach combines the efficiency of local optimization
-  methods with the parameter space coverage of a global stratification
-  technique.
+\item \textbf{Multistart Local Minimization}: This meta-algorithm uses
+  many local minimization runs (often gradient-based), each of which
+  is started from a different initial point in the parameter
+  space. This is an attractive approach in situations where multiple
+  local optima are known to exist or may potentially exist in the
+  parameter space. This approach combines the efficiency of local
+  minimization methods with the parameter space coverage of a global
+  stratification technique.
 
-\item \textbf{Pareto-Set Optimization}: The Pareto-set optimization
+\item \textbf{Pareto-Set Minimization}: The Pareto-set minimization
   strategy allows the user to specify different sets of weights for
-  the individual objective functions in a multiobjective optimization
-  problem. Dakota executes each of these weighting sets as a separate
-  optimization problem, serially or in parallel, and then outputs the
-  set of optimal designs which define the Pareto set. Pareto set
-  information can be useful in making trade-off decisions in
-  engineering design problems.
+  either the individual objective functions in a multiobjective
+  optimization problem or the individual residual terms in a least
+  squares problem. Dakota executes each of these weighting sets as a
+  separate minimization problem, serially or in parallel, and then
+  outputs the set of optimal designs which define the Pareto
+  set. Pareto set information can be useful in making trade-off
+  decisions in engineering design problems.
 \end{itemize}
 
 \subsection{Multiobjective Optimization}
@@ -712,8 +713,8 @@ composite objective function is constructed from a set of individual
 objective functions using a user-specified set of weighting
 factors. This approach is optimization algorithm independent, in that
 it works with any of the optimization methods listed previously in
-this chapter.  The third capability is the Pareto-set optimization
-strategy described in Section~\ref{strat:pareto}. This capability also
+this chapter.  The third capability is the Pareto-set meta-algorithm
+described in Section~\ref{adv_meth:pareto}. This capability also
 utilizes the multiobjective response data transformations to allow
 optimization algorithm independence; however, it builds upon the basic
 approach by computing sets of optima in order to generate a Pareto
@@ -842,7 +843,7 @@ By performing multiple optimizations for different sets of weights, a
 family of optimal solutions can be generated which define the
 trade-offs that result when managing competing design concerns. This
 set of solutions is referred to as the Pareto set.
-Section~\ref{strat:pareto} describes a solution strategy used for
+Section~\ref{adv_meth:pareto} describes an algorithm for
 directly generating the Pareto set in order to investigate the
 trade-offs in multiobjective optimization problems.
 
@@ -1258,35 +1259,36 @@ themselves, cannot. For these reasons, nongradient-based methods
 deserve consideration when the problem may be nonsmooth, multimodal,
 or poorly behaved.
 
-{\bf Surrogate-based Methods} \\
-Approaches that seek to improve the effectiveness or efficiency of
-optimizers and least squares methods through the use of surrogate
-models include the surrogate-based local, surrogate-based global, and
-efficient global methods. Chapter~\ref{sbm} provides further
-information on these approaches. The surrogate-based local approach
-(see Section~\ref{sbm:sblm}) brings the efficiency of gradient-based
-optimization/least squares methods to nonsmooth or poorly behaved
-problems by smoothing noisy or discontinuous response results with a
-data fit surrogate model (e.g., a quadratic polynomial) and then
-minimizing on the smooth surrogate using efficient gradient-based
-techniques. The surrogate-based global approach (see
-Section~\ref{sbm:sbgm}) similarly employs optimizers/least squares
-methods with surrogate models, but rather than localizing through the
-use of trust regions, seeks global solutions using global methods.
-And the efficient global approach (see Section~\ref{sbm:egm}) uses the
-specific combination of Gaussian process surrogate models in
-combination with the DIRECT global optimizer. Similar to these
-surrogate-based approaches, the hybrid and multistart optimization
-strategies seek to bring the efficiency of gradient-based optimization
-methods to global optimization problems. In the former case, a global
-optimization method can be used for a few cycles to locate promising
-regions and then local gradient-based optimization is used to
-efficiently converge on one or more optima. In the latter case, a
-stratification technique is used to disperse a series of local
-gradient-based optimization runs through parameter space. Without
-surrogate data smoothing, however, these strategies are best for
-smooth multimodal problems. Section~\ref{strat:hybrid} and
-Section~\ref{strat:multistart} provide more information on these
+{\bf Surrogate-based Methods} \\ Approaches that seek to improve the
+effectiveness or efficiency of optimizers and least squares methods
+through the use of surrogate models include the surrogate-based local,
+surrogate-based global, and efficient global
+methods. Section~\ref{adv_meth:sbm} provides further information on
+these approaches. The surrogate-based local approach (see
+Section~\ref{adv_meth:sbm:sblm}) brings the efficiency of
+gradient-based optimization/least squares methods to nonsmooth or
+poorly behaved problems by smoothing noisy or discontinuous response
+results with a data fit surrogate model (e.g., a quadratic polynomial)
+and then minimizing on the smooth surrogate using efficient
+gradient-based techniques. The surrogate-based global approach (see
+Section~\ref{adv_meth:sbm:sbgm}) similarly employs optimizers/least
+squares methods with surrogate models, but rather than localizing
+through the use of trust regions, seeks global solutions using global
+methods.  And the efficient global approach (see
+Section~\ref{adv_meth:sbm:egm}) uses the specific combination of
+Gaussian process surrogate models in combination with the DIRECT
+global optimizer. Similar to these surrogate-based approaches, the
+hybrid and multistart optimization component-based algorithms seek to bring the
+efficiency of gradient-based optimization methods to global
+optimization problems. In the former case, a global optimization
+method can be used for a few cycles to locate promising regions and
+then local gradient-based optimization is used to efficiently converge
+on one or more optima. In the latter case, a stratification technique
+is used to disperse a series of local gradient-based optimization runs
+through parameter space. Without surrogate data smoothing, however,
+these strategies are best for smooth multimodal
+problems. Section~\ref{adv_meth:hybrid} and
+Section~\ref{adv_meth:multistart} provide more information on these
 approaches.
 
 \section{Optimization Third Party Libraries}

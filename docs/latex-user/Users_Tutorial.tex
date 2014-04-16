@@ -116,7 +116,7 @@ Section~\ref{tutorial:quickstart:output}.
 Section~\ref{tutorial:examples:param_study} and the test problem is 
 described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:rosenbrock}.
   \item Explore the many methods available in Dakota in
-    Chapters~\ref{ps}--~\ref{sbm}.
+    Chapters~\ref{ps}--~\ref{nls}.
   \item Try running the other examples in the same directory. These are mentioned
     throughout the manual, and listed in Table~\ref{tutorial:examples:table} 
     for convenience.
@@ -134,10 +134,9 @@ analysis. More details on all outputs can be found in Chapter \ref{output}.
 
 {\textbf{Screen output saved to a file}}
 
-Whenever an output file is specified for a Dakota run, the screen output
-itself becomes quite minimal 
-consisting of version statements, strategy statements
-and execution times.
+Whenever an output file is specified for a Dakota run, the screen
+output itself becomes quite minimal consisting of version statements,
+environment statements and execution times.
 
 {\textbf{Output file}}
 
@@ -286,11 +285,11 @@ The results are shown later, in Section~\ref{tutorial:examples:param_study}.
 
 There are six specification blocks that may appear in Dakota input
 files. These are identified in the input file using the following
-keywords: variables, interface, responses, model, method, and strategy. These
+keywords: variables, interface, responses, model, method, and environment. These
 keyword blocks can appear in any order in a Dakota input file. At
 least one \emph{variables}, \emph{interface}, \emph{responses}, and
 \emph{method} specification must appear, and no more than one
-\emph{strategy} specification should appear. In Figure~
+\emph{environment} specification should appear. In Figure~
 \ref{tutorial:rosenbrock_multidim}, one of each of the keyword blocks is
 used. Additional syntax features include use of the \#
 symbol to indicate a comment, use of single or double quotes for string inputs
@@ -299,13 +298,13 @@ specifications, and the optional use of ``='' symbols to indicate
 supplied data. See the Dakota Reference
 Manual~\cite{RefMan} for additional details on this input file syntax.
 
-Figure~\ref{tutorial:inputfile_block_layout} shows the relationships between 
-the six keyword blocks. Strategies are used to coordinate between methods. 
-Methods run models. Models blocks define the connections between variables, 
-the interface, and responses. Figure~\ref{tutorial:inputfile_block_layout} shows 
-the most common relationships between blocks but others are possible.  
-Most Dakota analyses apply strategies that 
-control a single method, the more advanced cases are discussed in Chapter~\ref{strat}.
+Figure~\ref{tutorial:inputfile_block_layout} shows the relationships
+between the six keyword blocks. An environment is used to identify
+the top level method.  A method runs a model.  A model block defines the
+connections between variables, the interface, and
+responses. Figure~\ref{tutorial:inputfile_block_layout} shows the most
+common relationships between blocks but others are possible.  Most
+Dakota analyses define a single method, whereas more advanced cases are discussed in Chapter~\ref{adv_meth}.
 
 \begin{figure}[ht!]
   \centering
@@ -315,12 +314,12 @@ control a single method, the more advanced cases are discussed in Chapter~\ref{s
 \end{figure}
 
 The first block of the input file shown in
-Figure~\ref{tutorial:rosenbrock_multidim} is the \emph{strategy} block.
+Figure~\ref{tutorial:rosenbrock_multidim} is the \emph{environment} block.
 This keyword block is used to specify some of Dakota's advanced
 meta-procedures such as hybrid optimization, 
 multi-start optimization, and Pareto optimization.
-See Chapter~\ref{strat} for more information on these
-meta-procedures. The \emph{strategy} block also contains the
+See Chapter~\ref{adv_meth} for more information on these
+meta-procedures. The \emph{environment} block also contains the
 settings for Dakota's graphical output (via the \texttt{graphics}
 flag) and the tabular data output (via the
 \texttt{tabular\_graphics\_data} keyword).
@@ -499,7 +498,7 @@ each dimension. For this example, the number of the grid partitions
 are the same in each dimension (8 partitions) but it would be possible 
 to specify (partitions = 8 2), and have only two partitions 
 over the second input variable.  Note that the
-\texttt{graphics} flag in the \emph{strategy} block of the input
+\texttt{graphics} flag in the \emph{environment} block of the input
 file could be commented out since, for this example, the iteration
 history plots created by Dakota are not particularly instructive. More
 interesting visualizations can be created by importing Dakota's
@@ -1162,9 +1161,9 @@ optimization & opt. under uncertainty (OUU)  & textbook\_opt\_ouu1.in  & ~\ref{a
 optimization & optimization with scaling  & rosen\_opt\_scaled.in  & ~\ref{opt:additional:scaling:example:figure01}\\
 calibration & nonlinear least squares  & rosen\_opt\_nls.in  & ~\ref{additional:rosenbrock_nls}\\
 calibration & NLS with datafile  & textbook\_nls\_datafile.in  & \\
-hybrid strategy & three opt. methods  & textbook\_hybrid\_strat.in  & ~\ref{strat:figure01}\\
-Pareto strategy & Pareto strategy  & textbook\_pareto\_strat.in  & ~\ref{strat:figure04}\\
-Multistart strategy & opt. from multiple starting points  & qsf\_multistart\_strat.in  & ~\ref{strat:figure02}\\
+advanced methods & hybrid minimization & textbook\_hybrid\_strat.in  & ~\ref{adv_meth:figure01}\\
+advanced methods & Pareto minimization & textbook\_pareto\_strat.in  & ~\ref{adv_meth:figure04}\\
+advanced methods & multistart minimization & qsf\_multistart\_strat.in  & ~\ref{adv_meth:figure02}\\
 system call &  & rosen\_syscall.in  & ~\ref{tutorial:rosenbrock_user} \\
 \hline
 \end{tabular}
@@ -1188,7 +1187,7 @@ raised by new Dakota users:
   Section~\ref{intro:files} for help finding these files.
 
 \item Detailed method descriptions appear in the Method Tour in
-  Chapters~\ref{ps} through~\ref{sbm}.
+  Chapters~\ref{ps} through~\ref{nls}.
 
 \item Building an interface to a simulation code:
   Section~\ref{advint:building}, and related information on parameters

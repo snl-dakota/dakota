@@ -60,8 +60,8 @@ transformations of uncertain variables and associated response
 derivatives to employ standardized random variables (see
 Sections~\ref{uq:reliability} and~\ref{uq:expansion}), multiobjective
 optimization (see Section~\ref{opt:additional:multiobjective}), merit
-functions (see Section~\ref{sbm:sblm}), and expected
-improvement/feasibility (see Sections~\ref{sbm:egm}
+functions (see Section~\ref{adv_meth:sbm:sblm}), and expected
+improvement/feasibility (see Sections~\ref{adv_meth:sbm:egm}
 and~\ref{uq:reliability:global}).  Refer to the Dakota Developers
 Manual~\cite{DevMan} for additional details on the mechanics of
 recasting problem formulations.
@@ -73,8 +73,8 @@ to capture the salient features of an expensive high-fidelity model.
 They can be used to explore the variations in response quantities over
 regions of the parameter space, or they can serve as inexpensive
 stand-ins for optimization or uncertainty quantification studies (see,
-for example, the surrogate-based optimization strategy in
-Section~\ref{sbm}).  Surrogate models supported in Dakota can be
+for example, the surrogate-based optimization methods in
+Section~\ref{adv_meth:sbm}).  Surrogate models supported in Dakota can be
 categorized into three types: data fits, multifidelity, and
 reduced-order model surrogates.  An overview and discussion of
 surrogate correction is provided here, with details following.
@@ -218,7 +218,7 @@ correction~\cite{Cha93}) and the first-order additive
 correction~\cite{Lew00} also enforce consistency in the gradients and
 provide a much more substantial correction capability that is
 sufficient for ensuring provable convergence in SBO algorithms (see
-Section~\ref{sbm:sblm}).  SBO convergence rates can be further
+Section~\ref{adv_meth:sbm:sblm}).  SBO convergence rates can be further
 accelerated through the use of second-order corrections which also
 enforce consistency in the Hessians~\cite{Eld04}, where the
 second-order information may involve analytic, finite-difference, or

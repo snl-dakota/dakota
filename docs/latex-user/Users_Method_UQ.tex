@@ -1887,7 +1887,7 @@ Latin Hypercube Sampling and takes the minimum and maximum of
 the samples as the bounds (no optimization is 
 performed) or \texttt{ego}. In the case of \texttt{ego}, 
 the efficient global optimization method is used to calculate 
-bounds. The ego method is described in Section~\ref{sbm:egm}.
+bounds. The ego method is described in Section~\ref{adv_meth:sbm:egm}.
 If the problem is amenable to local optimization 
 methods (e.g. can provide derivatives or use finite difference 
 method to calculate derivatives), then one can use local
@@ -2177,7 +2177,7 @@ Latin Hypercube Sampling and takes the minimum and maximum of
 the samples within each cell as the bounds (no optimization is 
 performed) or \texttt{ego}. In the case of \texttt{ego}, 
 the efficient global optimization method is used to calculate 
-bounds. The ego method is described in Section~\ref{sbm:egm}.
+bounds. The ego method is described in Section~\ref{adv_meth:sbm:egm}.
 Note that for a situation with many uncertain variables, 
 each with a fairly complicated Dempster-Shafer structure 
 described by many intervals, there will be a huge number 
@@ -2516,7 +2516,7 @@ simulation (see Section~\ref{adv_models:sbuq}). However, if this
 approach is selected, the user should be aware that it is very
 difficult to assess the accuracy of the results obtained. Unlike
 the case of surrogate-based local minimization (see
-Section~\ref{sbm:sblm}), there is no simple pointwise calculation to
+Section~\ref{adv_meth:sbm:sblm}), there is no simple pointwise calculation to
 verify the accuracy of the approximate results. This is due to the
 functional nature of uncertainty quantification, i.e. the accuracy of
 the surrogate over the entire parameter space needs to be considered,
