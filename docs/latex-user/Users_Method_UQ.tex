@@ -1878,23 +1878,21 @@ that falls within the output interval is a possible output
 with no frequency information assigned to it.
 
 We have the capability to perform interval analysis using either
-\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.
-In the global approach, one uses either a global optimization 
-method or a sampling method to assess the bounds. 
-\texttt{global\_interval\_est}
-allows the user to specify either \texttt{lhs}, which performs 
-Latin Hypercube Sampling and takes the minimum and maximum of 
-the samples as the bounds (no optimization is 
-performed) or \texttt{ego}. In the case of \texttt{ego}, 
-the efficient global optimization method is used to calculate 
-bounds. The ego method is described in Section~\ref{adv_meth:sbm:egm}.
-If the problem is amenable to local optimization 
-methods (e.g. can provide derivatives or use finite difference 
-method to calculate derivatives), then one can use local
-methods to calculate these bounds. \texttt{local\_interval\_est}
-allows the user to specify either \texttt{sqp} which is sequential 
-quadratic programming, or \texttt{nip} which is a nonlinear interior point 
-method. 
+\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.  In
+the global approach, one uses either a global optimization method or a
+sampling method to assess the bounds.  \texttt{global\_interval\_est}
+allows the user to specify either \texttt{lhs}, which performs Latin
+Hypercube Sampling and takes the minimum and maximum of the samples as
+the bounds (no optimization is performed) or \texttt{ego}. In the case
+of \texttt{ego}, the efficient global optimization method is used to
+calculate bounds. The ego method is described in
+Section~\ref{opt:methods:gradientfree:global}.  If the problem is
+amenable to local optimization methods (e.g. can provide derivatives
+or use finite difference method to calculate derivatives), then one
+can use local methods to calculate these
+bounds. \texttt{local\_interval\_est} allows the user to specify
+either \texttt{sqp} which is sequential quadratic programming, or
+\texttt{nip} which is a nonlinear interior point method.
 
 Note that when performing interval analysis, it is necessary to define
 interval uncertain variables as described in
@@ -2152,40 +2150,39 @@ response levels will be calculated. Likewise, if response levels
 are specified, the corresponding belief and plausibility values 
 will be mapped to bounds on the generalized reliability levels. 
 
-To elaborate on the differences between \texttt{global\_evidence}
-and \texttt{local\_evidence}: both of these methods
-take the Dempster-Shafer structures specified on the inputs 
-and calculate a resulting Dempster-Shafer structure on the 
-outputs (e.g. a cumulative belief and plausibility function). 
-To calculate the belief and plausibility measures, it is 
-necessary to calculate the minimum and maximum of the response function 
-in each ``interval cell combination.''  For example, in a two variable 
-problem, if the first variable had three intervals and associated BPAs 
-assigned and the second variable had two intervals and associated 
-BPAs assigned, there would be 6 interval cells in total. 
-In each of these six cells, one needs to identify a minimum and 
-maximum value of the response function. This is easy to do if 
-the function is monotonic in both variables, but in general 
-it is not. We offer the capability to use local optimization 
-methods to calculate these bounds: \texttt{local\_evidence}
-allows the user to specify either \texttt{sqp} which is sequential 
-quadratic programming, or \texttt{nip} which is a nonlinear interior point 
-method. We also offer the capability to use global methods to 
-assess these interval cell bounds. \texttt{global\_evidence}
-allows the user to specify either \texttt{lhs}, which performs 
-Latin Hypercube Sampling and takes the minimum and maximum of 
-the samples within each cell as the bounds (no optimization is 
-performed) or \texttt{ego}. In the case of \texttt{ego}, 
-the efficient global optimization method is used to calculate 
-bounds. The ego method is described in Section~\ref{adv_meth:sbm:egm}.
-Note that for a situation with many uncertain variables, 
-each with a fairly complicated Dempster-Shafer structure 
-described by many intervals, there will be a huge number 
-of interval calls, and the overall process of performing 
-Dempster-Shafer analysis will be extremely expensive. 
-Reference~\cite{Tang10b} provides more details about 
-the implementation of the optimization methods to perform 
-Dempster-Shafer calculations, as well as comparisons on test problems.
+To elaborate on the differences between \texttt{global\_evidence} and
+\texttt{local\_evidence}: both of these methods take the
+Dempster-Shafer structures specified on the inputs and calculate a
+resulting Dempster-Shafer structure on the outputs (e.g. a cumulative
+belief and plausibility function).  To calculate the belief and
+plausibility measures, it is necessary to calculate the minimum and
+maximum of the response function in each ``interval cell
+combination.''  For example, in a two variable problem, if the first
+variable had three intervals and associated BPAs assigned and the
+second variable had two intervals and associated BPAs assigned, there
+would be 6 interval cells in total.  In each of these six cells, one
+needs to identify a minimum and maximum value of the response
+function. This is easy to do if the function is monotonic in both
+variables, but in general it is not. We offer the capability to use
+local optimization methods to calculate these bounds:
+\texttt{local\_evidence} allows the user to specify either
+\texttt{sqp} which is sequential quadratic programming, or
+\texttt{nip} which is a nonlinear interior point method. We also offer
+the capability to use global methods to assess these interval cell
+bounds. \texttt{global\_evidence} allows the user to specify either
+\texttt{lhs}, which performs Latin Hypercube Sampling and takes the
+minimum and maximum of the samples within each cell as the bounds (no
+optimization is performed) or \texttt{ego}. In the case of
+\texttt{ego}, the efficient global optimization method is used to
+calculate bounds. The ego method is described in
+Section~\ref{opt:methods:gradientfree:global}.  Note that for a
+situation with many uncertain variables, each with a fairly
+complicated Dempster-Shafer structure described by many intervals,
+there will be a huge number of interval calls, and the overall process
+of performing Dempster-Shafer analysis will be extremely expensive.
+Reference~\cite{Tang10b} provides more details about the
+implementation of the optimization methods to perform Dempster-Shafer
+calculations, as well as comparisons on test problems.
 
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
 

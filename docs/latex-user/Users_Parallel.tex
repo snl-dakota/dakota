@@ -547,7 +547,7 @@ option (e.g., \texttt{/var/tmp/aaa0b2Mfv}, etc.). However, if
 additional simulation files must be protected (e.g., \texttt{model.i},
 \texttt{model.o}, \texttt{model.g}, \texttt{model.e}, etc.), then an
 effective approach is to create a tagged working subdirectory for each
-simulation instance. Section~\ref{advint:building} provides an example
+simulation instance. Section~\ref{interfaces:building} provides an example
 system call interface that demonstrates both the use of tagged working
 directories and the relocation of completed results files to avoid the
 race condition.
@@ -2100,7 +2100,7 @@ evaluations (application runs).
 call a shell script {\tt text\_book\_par\_driver} or {\tt
 text\_book\_driver} to launch the application.  This script is a
 stand-in for a typical Dakota-application black box interface (as
-described in Chapter~\ref{advint:building}), and includes mock
+described in Chapter~\ref{interfaces:building}), and includes mock
 application input preparation, execution, and postprocessing to return
 necessary metrics to Dakota.
 

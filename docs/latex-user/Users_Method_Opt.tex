@@ -528,17 +528,55 @@ accommodate only bound constraints, while \texttt{coliny\_direct}
 handles nonlinear constraints using a penalty formulation of the
 problem.
 
-\subsubsection{Example}
+{\bf Efficient Global Optimization (EGO)} is a global optimization
+technique that employs response surface surrogates~\cite{Jon98,Hua06}.
+In each EGO iteration, a Gaussian process (GP) approximation for the
+objective function is constructed based on sample points of the true
+simulation.  The GP allows one to specify the prediction at a new
+input location as well as the uncertainty associated with that
+prediction.  The key idea in EGO is to maximize an Expected
+Improvement Function (EIF), defined as the expectation that any point
+in the search space will provide a better solution than the current
+best solution, based on the expected values and variances predicted by
+the GP model.  It is important to understand how the use of this EIF
+leads to optimal solutions.  The EIF indicates how much the objective
+function value at a new potential location is expected to be less than
+the predicted value at the current best solution.  Because the GP
+model provides a Gaussian distribution at each predicted point,
+expectations can be calculated.  Points with good expected values and
+even a small variance will have a significant expectation of producing
+a better solution (exploitation), but so will points that have
+relatively poor expected values and greater variance (exploration).
+The EIF incorporates both the idea of choosing points which minimize
+the objective and choosing points about which there is large
+prediction uncertainty (e.g., there are few or no samples in that area
+of the space, and thus the probability may be high that a sample value
+is potentially lower than other values).  Because the uncertainty is
+higher in regions of the design space with few observations, this
+provides a balance between exploiting areas of the design space that
+predict good solutions, and exploring areas where more information is
+needed.
+
+There are two major differences between our implementation and that of
+~\cite{Jon98}: we do not use a branch and bound method to find points
+which maximize the EIF.  Rather, we use the DIRECT algorithm.  Second,
+we allow for multiobjective optimization and nonlinear least squares
+including general nonlinear constraints.  Constraints are handled
+through an augmented Lagrangian merit function approach (see
+Surrogate-Based Minimization chapter in Dakota Theory
+Manual~\cite{TheoMan}).
+
+\subsubsection{Examples}
 \label{opt:methods:gradientfree:global:example}
 
-In contrast to pattern search algorithms, which are local optimization
-methods, evolutionary algorithms (EA) are global optimization
-methods. As was described above for the pattern search algorithm, the
-Rosenbrock function is not an ideal test problem for showcasing the
-capabilities of evolutionary algorithms. Rather, EAs are best suited
-to optimization problems that have multiple local optima, and where
-gradients are either too expensive to compute or are not readily
-available.
+{\bf Evolutionary algorithm:} In contrast to pattern search
+algorithms, which are local optimization methods, evolutionary
+algorithms (EA) are global optimization methods. As was described
+above for the pattern search algorithm, the Rosenbrock function is not
+an ideal test problem for showcasing the capabilities of evolutionary
+algorithms. Rather, EAs are best suited to optimization problems that
+have multiple local optima, and where gradients are either too
+expensive to compute or are not readily available.
 
 \begin{figure}[ht!]
   \centering
@@ -617,6 +655,27 @@ it switches to a gradient-based algorithm (using the best design point
 found by the EA as its starting point) to perform an efficient local
 search for an optimum design point. More information on this hybrid
 approach is provided in Section~\ref{adv_meth:hybrid}.
+
+{\bf Efficient Global Optimization:} The method is specified as
+\texttt{efficient\_global}.  Currently we do not expose any
+specification controls for the underlying Gaussian process model used
+or for the optimization of the expected improvement function, which is
+currently performed by the NCSU DIRECT algorithm. The only item the
+user can specify is a seed which is used in the Latin Hypercube
+Sampling to generate the initial set of points which is used to
+construct the initial Gaussian process.  An example specification for
+the EGO algorithm is shown in Figure~\ref{opt:methods:gradientfree:global:example:egm_rosen}.
+\begin{figure}
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{rosen_opt_ego.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Dakota input file for the efficient global optimization example --
+see \texttt{Dakota/examples/users/rosen\_opt\_ego.in} }
+  \label{opt:methods:gradientfree:global:example:egm_rosen}
+\end{figure}
+
 
 \section{Additional Optimization Capabilities}
 \label{opt:additional}
@@ -1275,7 +1334,7 @@ Section~\ref{adv_meth:sbm:sbgm}) similarly employs optimizers/least
 squares methods with surrogate models, but rather than localizing
 through the use of trust regions, seeks global solutions using global
 methods.  And the efficient global approach (see
-Section~\ref{adv_meth:sbm:egm}) uses the specific combination of
+Section~\ref{opt:methods:gradientfree:global}) uses the specific combination of
 Gaussian process surrogate models in combination with the DIRECT
 global optimizer. Similar to these surrogate-based approaches, the
 hybrid and multistart optimization component-based algorithms seek to bring the
