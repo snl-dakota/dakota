@@ -99,6 +99,8 @@ public:
   /// executed by the scheduler master to manage a dynamic schedule of
   /// iterator jobs among slave iterator servers
   void master_dynamic_schedule_iterators(Iterator& meta_iterator);
+  /// executed by the scheduler master to terminate slave iterator servers
+  void stop_iterator_servers();
   /// executed on the slave iterator servers to perform iterator jobs
   /// assigned by the scheduler master
   void serve_iterators(Iterator& meta_iterator, Iterator& sub_iterator);

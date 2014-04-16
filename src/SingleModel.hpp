@@ -178,8 +178,8 @@ inline int SingleModel::local_eval_concurrency()
 
 inline bool SingleModel::derived_master_overload() const
 {
-  return ( userDefinedInterface.iterator_eval_dedicated_master_flag() && 
-           userDefinedInterface.multi_proc_eval_flag() ) ? true : false;
+  return ( userDefinedInterface.iterator_eval_dedicated_master() && 
+           userDefinedInterface.multi_proc_eval() ) ? true : false;
 }
 
 

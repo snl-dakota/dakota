@@ -830,6 +830,8 @@ TAG "method/polynomial_chaos/expansion_order/import_points_file"
 TAG "method/polynomial_chaos/expansion_order/import_points_file/annotated"
 TAG "method/polynomial_chaos/expansion_order/import_points_file/freeform"
 TAG "method/polynomial_chaos/import_expansion_file"
+	DESC "{File name for importing expansion values and multi index to build a PCE} MethodCommands.html#MethodNonDPCE"
+
 TAG "method/polynomial_chaos/variance_based_decomp"
 	DESC "{Variance based decomposition (VBD)} MethodCommands.html#MethodNonDMC"
 
@@ -864,6 +866,8 @@ TAG "method/polynomial_chaos/export_points_file"
 TAG "method/polynomial_chaos/export_points_file/annotated"
 TAG "method/polynomial_chaos/export_points_file/freeform"
 TAG "method/polynomial_chaos/export_expansion_file"
+	DESC "{File name for exporting the coefficients and multi-index of a PCE } MethodCommands.html#MethodNonDPCE"
+
 TAG "method/stoch_collocation" GROUP "Uncertainty Quantification"
 TAG "method/stoch_collocation/p_refinement"
 TAG "method/stoch_collocation/p_refinement/uniform"

@@ -374,8 +374,8 @@ inline void NestedModel::surrogate_response_mode(short mode)
 inline bool NestedModel::derived_master_overload() const
 {
   return ( !optInterfacePointer.empty() &&
-           optionalInterface.iterator_eval_dedicated_master_flag() && 
-           optionalInterface.multi_proc_eval_flag() ) ? true : false;
+           optionalInterface.iterator_eval_dedicated_master() && 
+           optionalInterface.multi_proc_eval() ) ? true : false;
 }
 
 

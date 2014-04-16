@@ -227,7 +227,7 @@ set_evaluation_communicators(const IntArray& message_lengths)
 
   // These attributes are set by init_evaluation_communicators and are not 
   // available for use in the constructor.
-  ieDedMasterFlag = ie_pl.dedicated_master_flag();
+  ieDedMasterFlag = ie_pl.dedicated_master();
   ieMessagePass   = ie_pl.message_pass();
   numEvalServers  = ie_pl.num_servers(); // may differ from numEvalServersSpec
   evalCommRank    = ie_pl.server_communicator_rank();
@@ -239,7 +239,7 @@ set_evaluation_communicators(const IntArray& message_lengths)
 			 ie_pl.processor_remainder());
 //#else
     // want multiProcEvalFlag=true on iterator master when slave evalCommSize>1
-    //multiProcEvalFlag = ie_pl.communicator_split_flag();
+    //multiProcEvalFlag = ie_pl.communicator_split();
 //#endif
   else // split flag insufficient if 1 server (no split in peer case)
     multiProcEvalFlag = (evalCommSize > 1); // could vary
@@ -262,7 +262,7 @@ void ApplicationInterface::set_analysis_communicators()
   const ParallelLevel& ea_pl = pc.ea_parallel_level();
 
   // Extract attributes for analysis partitions
-  eaDedMasterFlag    = ea_pl.dedicated_master_flag();
+  eaDedMasterFlag    = ea_pl.dedicated_master();
   eaMessagePass      = ea_pl.message_pass();
   numAnalysisServers = ea_pl.num_servers();//may differ from numAnalysisSrvSpec
   analysisCommRank   = ea_pl.server_communicator_rank();
@@ -274,7 +274,7 @@ void ApplicationInterface::set_analysis_communicators()
 			     ea_pl.processor_remainder());
 //#else
     // want multiProcAnalysisFlag=true on eval master when slave analysis size>1
-    //multiProcAnalysisFlag = ea_pl.communicator_split_flag();
+    //multiProcAnalysisFlag = ea_pl.communicator_split();
 //#endif
   else // split flag insufficient if 1 server (no split in peer case)
     multiProcAnalysisFlag = (analysisCommSize > 1); // could vary
@@ -2218,26 +2218,37 @@ void ApplicationInterface::stop_evaluation_servers()
     if (!ieDedMasterFlag) {
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "Peer 1 stopping" << std::endl;
-      if (multiProcEvalFlag) { // stop serve_peer procs
+      if (multiProcEvalFlag) {// stop serve_evaluation_{synch,asynch}_peer procs
         int fn_eval_id = 0;
         parallelLib.bcast_e(fn_eval_id);
       }
     }
     MPIPackBuffer send_buffer(0); // empty buffer
     MPI_Request send_request;
-    int term_tag = 0; // triggers termination
-    int end = (ieDedMasterFlag) ? numEvalServers : numEvalServers-1;
-    for (int i=0; i<end; ++i) { // stop serve_evaluation_synch/asynch procs
-      int server_id = i + 1;
+    int server_id, term_tag = 0, // triggers termination
+        end = (ieDedMasterFlag) ? numEvalServers+1 : numEvalServers;
+    for (server_id=1; server_id<end; ++server_id) {
+      // stop serve_evaluation_{synch,asynch} procs
       if (outputLevel > NORMAL_OUTPUT) {
 	if (ieDedMasterFlag)
 	  Cout << "Master stopping server " << server_id << std::endl;
 	else
-	  Cout << "Peer " << server_id+1 << " stopping"<< std::endl;
+	  Cout << "Peer " << server_id+1 << " stopping" << std::endl;
       }
       // nonblocking sends: master posts all terminate messages without waiting
       // for completion.  Bcast cannot be used since all procs must call it and
       // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.
+      parallelLib.isend_ie(send_buffer, server_id, term_tag, send_request);
+      parallelLib.free(send_request); // no test/wait on send_request
+    }
+    // if the communicator partitioning resulted in a trailing partition of 
+    // idle processors due to a partitioning remainder (caused by strictly
+    // honoring a processors_per_server override), then these are not
+    // included in numEvalServers and we quietly free them separately.
+    // We assume a single server with all idle processors and a valid
+    // inter-communicator (enforced during split).
+    if (parallelLib.parallel_configuration().ie_parallel_level().
+	idle_partition()) {
       parallelLib.isend_ie(send_buffer, server_id, term_tag, send_request);
       parallelLib.free(send_request); // no test/wait on send_request
     }

@@ -61,10 +61,11 @@ public:
   //- Heading: Member functions
   //
 
-  bool dedicated_master_flag() const;          ///< return dedicatedMasterFlag
-  bool communicator_split_flag() const;        ///< return commSplitFlag
-  bool server_master_flag() const;             ///< return serverMasterFlag
+  bool dedicated_master() const;               ///< return dedicatedMasterFlag
+  bool communicator_split() const;             ///< return commSplitFlag
+  bool server_master() const;                  ///< return serverMasterFlag
   bool message_pass() const;                   ///< return messagePass
+  bool idle_partition() const;                 ///< return idlePartition
   int num_servers() const;                     ///< return numServers
   int processors_per_server() const;           ///< return procsPerServer
   int processor_remainder() const;             ///< return procRemainder
@@ -98,6 +99,8 @@ private:
   bool commSplitFlag;            ///< signals a communicator split was used
   bool serverMasterFlag;         ///< identifies master server processors
   bool messagePass;              ///< flag for message passing at this level
+  bool idlePartition;            ///< identifies presence of an idle processor
+                                 ///< partition at this level
   int numServers;                ///< number of servers
   int procsPerServer;            ///< processors per server
   int procRemainder;             ///< proc remainder after equal distribution
@@ -117,7 +120,7 @@ private:
 
 inline ParallelLevel::ParallelLevel(): dedicatedMasterFlag(false),
   commSplitFlag(false), serverMasterFlag(false), messagePass(false),
-  numServers(0), procsPerServer(0), procRemainder(0),
+  idlePartition(false), numServers(0), procsPerServer(0), procRemainder(0),
   serverIntraComm(MPI_COMM_NULL), serverCommRank(0), serverCommSize(1),
   hubServerIntraComm(MPI_COMM_NULL), hubServerCommRank(0), hubServerCommSize(1),
   hubServerInterComm(MPI_COMM_NULL), hubServerInterComms(NULL), serverId(0)
@@ -130,10 +133,10 @@ inline void ParallelLevel::assign(const ParallelLevel& pl)
 {
   dedicatedMasterFlag = pl.dedicatedMasterFlag;
   commSplitFlag   = pl.commSplitFlag;   serverMasterFlag = pl.serverMasterFlag;
-  messagePass     = pl.messagePass;     numServers       = pl.numServers;
-  procsPerServer  = pl.procsPerServer;  procRemainder    = pl.procRemainder;
-  serverIntraComm = pl.serverIntraComm; serverCommRank   = pl.serverCommRank;
-  serverCommSize  = pl.serverCommSize;
+  messagePass     = pl.messagePass;     idlePartition    = pl.idlePartition;
+  numServers      = pl.numServers;      procsPerServer   = pl.procsPerServer;
+  procRemainder   = pl.procRemainder;   serverIntraComm  = pl.serverIntraComm;
+  serverCommRank  = pl.serverCommRank;  serverCommSize   = pl.serverCommSize;
   hubServerIntraComm  = pl.hubServerIntraComm;
   hubServerCommRank   = pl.hubServerCommRank;
   hubServerCommSize   = pl.hubServerCommSize; 
@@ -147,17 +150,20 @@ inline ParallelLevel::ParallelLevel(const ParallelLevel& pl)
 inline ParallelLevel& ParallelLevel::operator=(const ParallelLevel& pl)
 { assign(pl); return *this; }
 
-inline bool ParallelLevel::dedicated_master_flag() const
+inline bool ParallelLevel::dedicated_master() const
 { return dedicatedMasterFlag; }
 
-inline bool ParallelLevel::communicator_split_flag() const
+inline bool ParallelLevel::communicator_split() const
 { return commSplitFlag; }
 
-inline bool ParallelLevel::server_master_flag() const
+inline bool ParallelLevel::server_master() const
 { return serverMasterFlag; }
 
 inline bool ParallelLevel::message_pass() const
 { return messagePass; }
+
+inline bool ParallelLevel::idle_partition() const
+{ return idlePartition; }
 
 inline int ParallelLevel::num_servers() const
 { return numServers; }
@@ -863,7 +869,7 @@ init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
       // since the valid siPLIter could be several PC's back
       ParConfigLIter prev_pc_iter = currPCIter; prev_pc_iter--;
       currPCIter->siPLIter = prev_pc_iter->siPLIter;
-      if ( currPCIter->siPLIter->communicator_split_flag() )
+      if ( currPCIter->siPLIter->communicator_split() )
         currPCIter->numParallelLevels++;
     }
     else {

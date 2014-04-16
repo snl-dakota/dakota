@@ -88,7 +88,7 @@ init_iterator_parallelism(int max_concurrency, short default_config)
     iteratorScheduling, false); // peer_dynamic not available prior to threading
 
   // retrieve the partition data
-  //dedicatedMaster = si_pl.dedicated_master_flag();
+  //dedicatedMaster = si_pl.dedicated_master();
   messagePass        = si_pl.message_pass();
   iteratorCommRank   = si_pl.server_communicator_rank();
   iteratorCommSize   = si_pl.server_communicator_size();
@@ -96,7 +96,7 @@ init_iterator_parallelism(int max_concurrency, short default_config)
 
   // update requests with actual
   numIteratorServers = si_pl.num_servers();
-  iteratorScheduling = (si_pl.dedicated_master_flag())
+  iteratorScheduling = (si_pl.dedicated_master())
                      ? MASTER_SCHEDULING : PEER_SCHEDULING;
 
   // Manage ostream output and binary restart input/output.  If concurrent
@@ -151,7 +151,7 @@ void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 	      Model& the_model, const ParallelLevel& pl)
 {
-  if (pl.dedicated_master_flag() && pl.server_id() == 0) // ded master processor
+  if (pl.dedicated_master() && pl.server_id() == 0) // ded master processor
     return;
 
   // iterator rank 0: Instantiate the iterator and initialize communicators.
@@ -187,7 +187,7 @@ void IteratorScheduler::
 init_iterator(const String& method_string, Iterator& the_iterator,
 	      Model& the_model, const ParallelLevel& pl)
 {
-  if (pl.dedicated_master_flag() && pl.server_id() == 0) // ded master processor
+  if (pl.dedicated_master() && pl.server_id() == 0) // ded master processor
     return;
 
   // iterator rank 0: Instantiate the iterator and initialize communicators.
@@ -253,7 +253,7 @@ run_iterator(Iterator& the_iterator, const ParallelLevel& pl)
 void IteratorScheduler::
 free_iterator(Iterator& the_iterator, const ParallelLevel& pl)
 {
-  if (pl.dedicated_master_flag() && pl.server_id() == 0) // ded master processor
+  if (pl.dedicated_master() && pl.server_id() == 0) // ded master processor
     return;
 
   // could replace with new delegation fn:
@@ -280,12 +280,15 @@ void IteratorScheduler::
 schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 {
   if (iteratorScheduling == MASTER_SCHEDULING) { //(dedicatedMaster) {
-    if (parallelLib.world_rank() == 0) // strategy master
+    if (iteratorServerId == 0) { // strategy master
       master_dynamic_schedule_iterators(meta_iterator);
+      stop_iterator_servers();
+    }
     else // slave iterator servers
       serve_iterators(meta_iterator, sub_iterator);
   }
   else // static scheduling of iterator jobs
+    // jobs are not assigned by messages -> stop_iterator_servers() is not reqd
     peer_static_schedule_iterators(meta_iterator, sub_iterator);
 }
 
@@ -369,11 +372,35 @@ master_dynamic_schedule_iterators(Iterator& meta_iterator)
   delete [] send_buffers;
   delete [] recv_buffers;
   delete [] recv_requests;
+}
 
-  // terminate servers
-  for (i=0; i<numIteratorServers; i++) {
-    MPIPackBuffer send_buffer(0); // empty buffer
-    parallelLib.isend_si(send_buffer, i+1, 0, send_request); // send term
+
+void IteratorScheduler::stop_iterator_servers()
+{
+  // Only used for dedicated master iterator scheduling
+  // (see ApplicationInterface::stop_evaluation_servers() for example where
+  // termination of both master and peer scheduling are managed)
+
+  // terminate iterator servers
+  MPIPackBuffer send_buffer(0); // empty buffer
+  MPI_Request   send_request;
+  int server_id, term_tag = 0;
+  for (server_id=1; server_id<=numIteratorServers; ++server_id) {
+    // nonblocking sends: master posts all terminate messages without waiting
+    // for completion.  Bcast cannot be used since all procs must call it and
+    // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.
+    parallelLib.isend_si(send_buffer, server_id, term_tag, send_request);
+    parallelLib.free(send_request); // no test/wait on send_request
+  }
+  // if the communicator partitioning resulted in a trailing partition of 
+  // idle processors due to a partitioning remainder (caused by strictly
+  // honoring a processors_per_iterator override), then these are not
+  // included in numIteratorServers and we quietly free them separately.
+  // We assume a single server with all idle processors and a valid
+  // inter-communicator (enforced during split).
+  if (parallelLib.parallel_configuration().si_parallel_level().
+      idle_partition()) {
+    parallelLib.isend_si(send_buffer, server_id, term_tag, send_request);
     parallelLib.free(send_request); // no test/wait on send_request
   }
 }

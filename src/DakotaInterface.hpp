@@ -234,11 +234,11 @@ public:
 				bool relative_count) const;
 
   /// returns a flag signaling the use of multiprocessor evaluation partitions
-  bool multi_proc_eval_flag() const;
+  bool multi_proc_eval() const;
 
   /// returns a flag signaling the use of a dedicated master processor at the
   /// iterator-evaluation scheduling level
-  bool iterator_eval_dedicated_master_flag() const;
+  bool iterator_eval_dedicated_master() const;
 
   /// function to check interfaceRep (does this envelope contain a letter?)
   bool is_null() const;
@@ -426,11 +426,11 @@ inline int Interface::evaluation_id() const
 { return (interfaceRep) ? interfaceRep->evalIdCntr : evalIdCntr; }
 
 
-inline bool Interface::multi_proc_eval_flag() const
+inline bool Interface::multi_proc_eval() const
 { return (interfaceRep) ? interfaceRep->multiProcEvalFlag : multiProcEvalFlag; }
 
 
-inline bool Interface::iterator_eval_dedicated_master_flag() const
+inline bool Interface::iterator_eval_dedicated_master() const
 { return (interfaceRep) ? interfaceRep->ieDedMasterFlag : ieDedMasterFlag; }
 
 

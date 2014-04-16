@@ -155,14 +155,7 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
   int capacity_multiplier = std::max(asynch_local_concurrency, 1);
   bool print_rank         = (parent_pl.serverCommRank == 0);
 
-  // resolve_inputs can adaptively determine static vs. dynamic schedule,
-  // but it can't distinguish between self- and distributed scheduling (e.g., 
-  // PICO) without additional input.  May need to pass additional setting into 
-  // resolve_inputs to communicate the type of scheduling policy a particular 
-  // level supports, e.g.: "self"/"static"/"distributed" would be manual
-  // selection and "adaptive" would allow auto-selection.  For now, distributed
-  // scheduling is supported by using settings which auto-config to a static 
-  // schedule & then using the resulting peer partition for distr. scheduling.
+  // resolve_inputs selects master vs. peer scheduling
   child_pl.dedicatedMasterFlag = resolve_inputs(child_pl.numServers,
     child_pl.procsPerServer, parent_pl.serverCommSize, child_pl.procRemainder,
     max_concurrency, capacity_multiplier, default_config, scheduling_override,
@@ -230,20 +223,18 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
        scheduling_override == PEER_DYNAMIC_SCHEDULING ||
        scheduling_override == PEER_STATIC_SCHEDULING);
 
-  // TO DO: manage idle processor assignment in partitioning.
-
   bool ded_master;
   if (avail_procs <= 1) {
     // ------------------------
     // insufficient avail_procs
     // ------------------------
     if (procs_per_server > 1 && print_rank) // TO DO: consider hard error
-      Cerr << "Warning: not enough available processors to support "
+      Cerr << "\nWarning: not enough available processors to support "
            << procs_per_server << " procs_per_server.\n         "
-	   << "Reducing to 1.\n";
+	   << "Reducing to 1.\n\n";
     if (num_servers > 1 && print_rank) // TO DO: consider hard error
-      Cerr << "Warning: not enough available processors to support " 
-           << num_servers << " servers.\n         Reducing to 1.\n";
+      Cerr << "\nWarning: not enough available processors to support " 
+           << num_servers << " servers.\n         Reducing to 1.\n\n";
     num_servers = 1; procs_per_server = 1; ded_master = false; // peer partition
   }
   else if (num_servers > 0 && procs_per_server > 0) { // Data defaults are 0
@@ -256,21 +247,22 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     if (total_request == avail_procs) {
       ded_master = false;
       if (master_override && print_rank) // TO DO: consider hard error
-	Cerr << "Warning: user selection of master scheduling cannot be "
-	     << "supported in this partition.  Overriding to peer partition.\n";
+	Cerr << "\nWarning: user selection of master scheduling cannot be "
+	     << "supported in this partition.  Overriding to peer partition."
+	     << "\n\n";
     }
     else if (total_request < avail_procs) {
       ded_master = !peer_override; // dedicate a master if no peer override
       if (ded_master) ++total_request;
       if (total_request < avail_procs && print_rank)
-	Cerr << "Warning: user override of servers and partition size results "
-	     << "in idle processors\n         (request: " << total_request
-	     << " avail: " << avail_procs << " idle: "
-	     << avail_procs - total_request <<")\n";
+	Cerr << "\nWarning: user override of servers and partition size "
+	     << "results in idle processors\n         (request: "
+	     << total_request << " avail: " << avail_procs << " idle: "
+	     << avail_procs - total_request <<")\n\n";
     }
     else { // hard error if insufficient avail_procs
       if (print_rank)
-	Cerr << "Error: insufficient available processors (" << avail_procs
+	Cerr << "\nError: insufficient available processors (" << avail_procs
 	     << ") to support user overrides of servers (" << num_servers
 	     << ")\n       and partition size (" << procs_per_server
 	     << ").  Please adjust total allocation or overrides." << std::endl;
@@ -287,7 +279,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 
     if (num_servers > avail_procs) {
       if (print_rank)
-	Cerr << "Error: insufficient available processors (" << avail_procs
+	Cerr << "\nError: insufficient available processors (" << avail_procs
 	     << ") to support user override of servers (" << num_servers
 	     << ")\n.  Please adjust total allocation or overrides."<<std::endl;
       abort_handler(-1);
@@ -295,8 +287,9 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     else if (num_servers == avail_procs) {
       ded_master = false;
       if (master_override && print_rank) // TO DO: consider hard error
-	Cerr << "Warning: user selection of master scheduling cannot be "
-	     << "supported in this partition.  Overriding to peer partition.\n";
+	Cerr << "\nWarning: user selection of master scheduling cannot be "
+	     << "supported in this partition.  Overriding to peer partition."
+	     << "\n\n";
     }
     else if (master_override)
       ded_master = true;
@@ -331,7 +324,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     proc_remainder = 0; // all cases, no freedom to increment server sizes
     if (procs_per_server > avail_procs) {
       if (print_rank)
-	Cerr << "Error: insufficient available processors (" << avail_procs
+	Cerr << "\nError: insufficient available processors (" << avail_procs
 	     << ") to support user override of procs_per_server ("
 	     << procs_per_server << ")\n.  Please adjust total allocation or "
 	     << "overrides." << std::endl;
@@ -340,8 +333,9 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     else if (procs_per_server == avail_procs) {
       ded_master = false;
       if (master_override && print_rank) // TO DO: consider hard error
-	Cerr << "Warning: user selection of master scheduling cannot be "
-	     << "supported in this partition.  Overriding to peer partition.\n";
+	Cerr << "\nWarning: user selection of master scheduling cannot be "
+	     << "supported in this partition.  Overriding to peer partition."
+	     << "\n\n";
     }
     else if (master_override)
       ded_master = true;
@@ -393,10 +387,10 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
     num_servers = server_procs / procs_per_server;
     if (server_procs % procs_per_server && print_rank)
-      Cerr << "Warning: user override of partition size results in idle "
+      Cerr << "\nWarning: user override of partition size results in idle "
 	   << "processors\n         (partition size request: "
 	   << procs_per_server << " avail: " << server_procs << " idle: "
-	   << server_procs - num_servers * procs_per_server << ")\n";
+	   << server_procs - num_servers * procs_per_server << ")\n\n";
   }
   else {
     // --------------------------------------------------
@@ -408,9 +402,9 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
       // but may be neglecting a user request in lieu of a built-in default.
       // Output a warning if neglecting a user request:
       if (master_override && print_rank)
-        Cerr << "Warning: default_config takes precendence over a master "
+        Cerr << "\nWarning: default_config takes precendence over a master "
 	     << "scheduling request\n         when neither num_servers nor "
-	     << "procs_per_server is specified.\n";
+	     << "procs_per_server is specified.\n\n";
       // TO DO: neglects available concurrency at lower levels (would
       // require two passes through parallelism hierarchy to resolve)
       procs_per_server = avail_procs;
@@ -502,38 +496,41 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // Split parent Comm to create new intra- and inter-comms
   // ------------------------------------------------------
 
-  IntArray start(child_pl.numServers);
+  IntArray start_rank(child_pl.numServers);
   int color = 0; // reassigned unless master proc.
   // addtl_procs manages case where procRemainder > numServers that can occur
   // for large procsPerServer --> ensures that proc_rem_cntr < numServers
-  int i, color_cntr = 1, end = 0,
+  int i, color_cntr = 1, end_rank = 0,
     addtl_procs   = child_pl.procRemainder / child_pl.numServers, // truncated
     proc_rem_cntr = child_pl.procRemainder - addtl_procs*child_pl.numServers;
   for (i=0; i<child_pl.numServers; ++i) {
-    start[i] = end + 1;
-    end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
+    start_rank[i] = end_rank + 1;
+    end_rank = start_rank[i] + child_pl.procsPerServer + addtl_procs - 1;
     if (proc_rem_cntr > 0)
-      { ++end; --proc_rem_cntr; }
-    if (parent_pl.serverCommRank >= start[i] &&	parent_pl.serverCommRank <= end)
+      { ++end_rank; --proc_rem_cntr; }
+    if (parent_pl.serverCommRank >= start_rank[i] &&
+	parent_pl.serverCommRank <= end_rank)
       color = color_cntr;
 #ifdef MPI_DEBUG
     if (parent_pl.serverCommRank == 0)
-      Cout << "group " << i << " has processors " << start[i] 
-           << " through " << end << " with color = " << color_cntr << '\n';
+      Cout << "group " << i << " has processors " << start_rank[i]
+	   << " through " << end_rank << " with color = " << color_cntr << '\n';
 #endif // MPI_DEBUG
     ++color_cntr;
   }
+
   // address any idle processors not included in child_pl.procRemainder
   // (resolve_inputs() must honor procs_per_server and will not augment with
   // remainders in this case).  These processors get a color assignment for
   // purposes of the split, but are not part of a child server.
-  // TO DO: will this cause problems for bcasts and job assingments?
-  //        (They will enter serve() but not receive any jobs?)
-  if (parent_pl.serverCommRank > end)
+  if (parent_pl.serverCommRank > end_rank)
     color = color_cntr;
+  if (end_rank+1 < parent_pl.serverCommSize)
+    child_pl.idlePartition = true;
+
   // verify that all processors except master have a color
   if (parent_pl.serverCommRank && !color) {
-    Cerr << "Error: slave processor " << parent_pl.serverCommRank 
+    Cerr << "\nError: slave processor " << parent_pl.serverCommRank 
          << " missing color assignment" << std::endl;
     abort_handler(-1);
   }
@@ -543,17 +540,23 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 		 &child_pl.serverIntraComm);
   MPI_Comm_rank(child_pl.serverIntraComm, &child_pl.serverCommRank);
   MPI_Comm_size(child_pl.serverIntraComm, &child_pl.serverCommSize);
-  child_pl.serverId = color; // 0 for master, 1/2/3/.../n for slaves
+  child_pl.serverId = color; // master = 0, slaves = 1/2/3/.../n, idle = n+1
 
   // Create intercommunicators.  All processors in both intracommunicators 
   // (child_pl.serverIntraComm for master and slaves) must participate in call
   // with matching tags (tag = color on slave side and = i+1 on master side).
   // See example on p. 252 of MPI: The Complete Reference.
   if (parent_pl.serverCommRank == 0) {
-    child_pl.hubServerInterComms = new MPI_Comm [child_pl.numServers];
-    for(i=0; i<child_pl.numServers; ++i)
+    int num_hs_ic = child_pl.numServers;
+    if (child_pl.idlePartition) ++num_hs_ic;
+    child_pl.hubServerInterComms = new MPI_Comm [num_hs_ic];
+    for (i=0; i<child_pl.numServers; ++i)
       MPI_Intercomm_create(child_pl.serverIntraComm, 0,
-			   parent_pl.serverIntraComm, start[i], i+1,
+			   parent_pl.serverIntraComm, start_rank[i], i+1,
+			   &child_pl.hubServerInterComms[i]);
+    if (child_pl.idlePartition)
+      MPI_Intercomm_create(child_pl.serverIntraComm, 0,
+			   parent_pl.serverIntraComm, end_rank+1, i+1,
 			   &child_pl.hubServerInterComms[i]);
   }
   else
@@ -583,7 +586,9 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   // Create parent-child intracommunicator used to avoid broadcasting over all
   // of parent Comm when all you really need is the child rank == 0 processors.
-  color = (child_pl.serverCommRank == 0) ? 1 : 0;
+  // Exclude any idle partition.
+  color = (child_pl.serverCommRank == 0 &&
+	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.hubServerIntraComm);
   if (child_pl.serverCommRank == 0) {
@@ -643,40 +648,43 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // Split parent Comm to create new peer intra- and inter-comms
   // -----------------------------------------------------------
 
-  IntArray start(child_pl.numServers);
+  IntArray start_rank(child_pl.numServers);
   int color = 0; // reassigned for all procs. in peer case
   // addtl_procs manages case where procRemainder > numServers that can occur
   // for large procsPerServer --> ensures that proc_rem_cntr < numServers
-  int i, color_cntr = 1, end = -1,
+  int i, color_cntr = 1, end_rank = -1,
     addtl_procs   = child_pl.procRemainder / child_pl.numServers, // truncated
     proc_rem_cntr = child_pl.procRemainder - addtl_procs*child_pl.numServers;
   for (i=0; i<child_pl.numServers; ++i) {
-    start[i] = end + 1;
-    end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
+    start_rank[i] = end_rank + 1;
+    end_rank = start_rank[i] + child_pl.procsPerServer + addtl_procs - 1;
     // don't assign remainder to first peer, since this interferes with possible
     // usage of dynamic peer scheduling (requires procs_per_server == 1)
     if (proc_rem_cntr > 0 && i)
-      { ++end; --proc_rem_cntr; }
-    if (parent_pl.serverCommRank >= start[i] && parent_pl.serverCommRank <= end)
+      { ++end_rank; --proc_rem_cntr; }
+    if (parent_pl.serverCommRank >= start_rank[i] &&
+	parent_pl.serverCommRank <= end_rank)
       color = color_cntr;
 #ifdef MPI_DEBUG
     if (parent_pl.serverCommRank == 0)
-      Cout << "group " << i << " has processors " << start[i] 
-           << " through " << end << " with color = " << color_cntr << '\n';
+      Cout << "group " << i << " has processors " << start_rank[i] 
+           << " through " << end_rank << " with color = " << color_cntr << '\n';
 #endif // MPI_DEBUG
     ++color_cntr;
   }
+
   // address any idle processors not included in child_pl.procRemainder
   // (resolve_inputs() must honor procs_per_server and will not augment with
   // remainders in this case).  These processors get a color assignment for
   // purposes of the split, but are not part of a child server.
-  // TO DO: will this cause problems for bcasts and job assingments?
-  //        (They will enter serve() but not receive any jobs?)
-  if (parent_pl.serverCommRank > end)
+  if (parent_pl.serverCommRank > end_rank)
     color = color_cntr;
+  if (end_rank+1 < parent_pl.serverCommSize)
+    child_pl.idlePartition = true;
+
   // verify that all processors except master have a color
   if (!color) {
-    Cerr << "Error: processor " << parent_pl.serverCommRank
+    Cerr << "\nError: processor " << parent_pl.serverCommRank
 	 << " missing color assignment" << std::endl;
     abort_handler(-1);
   }
@@ -686,7 +694,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 		 &child_pl.serverIntraComm);
   MPI_Comm_rank(child_pl.serverIntraComm, &child_pl.serverCommRank);
   MPI_Comm_size(child_pl.serverIntraComm, &child_pl.serverCommSize);
-  child_pl.serverId = color; // peer id's = 1/2/3/.../n
+  child_pl.serverId = color; // peer id's = 1/2/3/.../n, idle id = n+1
 
   // Create intercommunicators.  Current implementation is very similar to
   // master-slave in that only the 1st server has an array of intercomms.  This
@@ -694,10 +702,16 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // design.  A more general implementation would give each peer an array of 
   // intercomms, and could easily be supported in the future if needed.
   if (child_pl.serverId == 1) {
-    child_pl.hubServerInterComms = new MPI_Comm [child_pl.numServers-1];
-    for(i=0; i<child_pl.numServers-1; ++i)
+    int num_hs_ic = child_pl.numServers - 1;
+    if (child_pl.idlePartition) ++num_hs_ic;
+    child_pl.hubServerInterComms = new MPI_Comm [num_hs_ic];
+    for (i=0; i<child_pl.numServers-1; ++i)
       MPI_Intercomm_create(child_pl.serverIntraComm, 0,
-			   parent_pl.serverIntraComm, start[i+1], i+2,
+			   parent_pl.serverIntraComm, start_rank[i+1], i+2,
+			   &child_pl.hubServerInterComms[i]);
+    if (child_pl.idlePartition)
+      MPI_Intercomm_create(child_pl.serverIntraComm, 0,
+			   parent_pl.serverIntraComm, end_rank+1, i+2,
 			   &child_pl.hubServerInterComms[i]);
   }
   else
@@ -727,7 +741,9 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 
   // Create parent-child intracommunicator used to avoid broadcasting over all
   // of parent Comm when all you really need is the child rank == 0 processors.
-  color = (child_pl.serverCommRank == 0) ? 1 : 0;
+  // Exclude any idle partition.
+  color = (child_pl.serverCommRank == 0 &&
+	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.hubServerIntraComm);
   if (child_pl.serverCommRank == 0) {
@@ -1006,7 +1022,10 @@ void ParallelLibrary::free_communicators(ParallelLevel& pl)
     MPI_Comm_free(&pl.hubServerIntraComm);
     if (pl.dedicatedMasterFlag) { // master-slave interComms
       if (pl.serverId == 0) { // if dedicated master
-        for(int i=0; i<pl.numServers; ++i) 
+	int i;
+        for(i=0; i<pl.numServers; ++i) 
+          MPI_Comm_free(&pl.hubServerInterComms[i]);
+	if (pl.idlePartition) // trailing server of idle processors
           MPI_Comm_free(&pl.hubServerInterComms[i]);
         delete [] pl.hubServerInterComms;
       }
@@ -1015,7 +1034,10 @@ void ParallelLibrary::free_communicators(ParallelLevel& pl)
     }
     else { // peer interComms
       if (pl.serverId == 1) { // 1st peer
-        for(int i=0; i<pl.numServers-1; ++i) 
+	int i;
+        for(i=0; i<pl.numServers-1; ++i) 
+          MPI_Comm_free(&pl.hubServerInterComms[i]);
+	if (pl.idlePartition) // trailing server of idle processors
           MPI_Comm_free(&pl.hubServerInterComms[i]);
         delete [] pl.hubServerInterComms;
       }
