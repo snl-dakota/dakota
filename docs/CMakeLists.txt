@@ -1,6 +1,8 @@
 # TODO: make documentation build cross-platform
 # TODO: dep for latex_modify
 
+# Java is needed for new reference, but not REQUIRED just yet
+find_package(Java)
 find_package(Doxygen REQUIRED)
 find_package(LATEX REQUIRED)
 # Only required for PDFs of Doxygen, but unconditional currently
@@ -15,10 +17,20 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake.in
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-ref.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-newref.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-newref)
+
 # create Latex header with Dakota version information
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex)
 
+
+# Doxygen new reference dependencies
+file(GLOB newref_kw_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "KeywordMetadata/*")
+file(GLOB newref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
+file(GLOB newref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "NewRef_*.dox")
+# TODO: omit .svn from the GLOB
+#file(GLOB_RECURSE newref_common RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "common/*") 
 
 # Doxygen reference dependencies
 file(GLOB dox_ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
@@ -30,6 +42,59 @@ set(dox_ref_deps
 file(GLOB dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
 set(dox_dev_deps 
   ${dox_dev_dox} Doxyfile header-dev.html header-dev.tex)
+
+
+# Generate new reference manual keyword and topic .dox files
+# For now, shortcut to copy common directory
+execute_process(
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/common" "${CMAKE_CURRENT_BINARY_DIR}/common"
+  )
+
+
+add_custom_command( 
+  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
+          ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
+  DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
+          ${Dakota_SOURCE_DIR}/src/dakota.input.nspec 
+          ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
+	  ${Dakota_SOURCE_DIR}/docs/NewRef_TopicTree.txt
+	  ${Dakota_SOURCE_DIR}/docs/TopicMetadata
+	  ${Dakota_SOURCE_DIR}/docs/NewRef_Topics_Intro.dox
+	  ${newref_kw_md}
+	  ${newref_topic_md}
+  COMMAND ${Java_JAVA_EXECUTABLE} 
+  ARGS -jar ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
+    ${Dakota_SOURCE_DIR}/src/dakota.input.nspec 
+    ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
+    ${Dakota_SOURCE_DIR}/docs/NewRef_TopicTree.txt
+    ${Dakota_SOURCE_DIR}/docs/TopicMetadata
+    ${Dakota_SOURCE_DIR}/docs/NewRef_Topics_Intro.dox
+    ${CMAKE_CURRENT_BINARY_DIR} 
+)
+ 
+add_custom_command(
+  DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/newref_concat_dox.sh 
+    ${Dakota_SOURCE_DIR}/src/dakota.input.summary
+    ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
+    ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
+    ${newref_dox}
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/newref_concat_dox.sh 
+  ARGS ${CMAKE_CURRENT_SOURCE_DIR} 
+    ${Dakota_SOURCE_DIR}/src/dakota.input.summary
+    ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox 
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
+    ${CMAKE_CURRENT_BINARY_DIR}/DakotaInputSpec.dox 
+) 
+
+
+add_custom_target(docs-newref
+  # Only list the explicit doxygen deps
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-newref
+    ${CMAKE_CURRENT_SOURCE_DIR}/Ref_Bibliography.dox
+    ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
+  COMMAND doxygen Doxyfile-newref
+)
+
 
 
 # Generate .dox into doxygen tag files
@@ -196,6 +261,3 @@ add_dependencies(package_docs docs-pdf docs-doxygen)
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
   "html-dev;html-ref;latex-dev;latex-ref;man-dev;man-ref;SAND-shell-dev.aux;SAND-shell-dev.log;SAND-shell-ref.aux;SAND-shell-ref.log;SAND-shell-theory.aux;SAND-shell-theory.log;SAND-shell-user.aux;SAND-shell-user.log"
   )
-
-# New reference manual generation
-add_subdirectory(Reference)
