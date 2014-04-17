@@ -1,5 +1,135 @@
 \chapter{Advanced Simulation Code Interfaces}\label{advint}
 
+This chapter will describe algebraic interface mappings based on
+AMPL in Section~\ref{advint:algebraic}, followed by discussion 
+of development and use of direct interfaces in 
+Sections~\ref{advint:direct}--\ref{advint:scilab}.
+
+\section{Algebraic Mappings}\label{advint:algebraic}
+
+If desired, one can define algebraic input-output mappings using the
+AMPL code~\cite{Fou03} and save these mappings in 3 files:
+\texttt{stub.nl}, \texttt{stub.col}, and \texttt{stub.row}, where
+\texttt{stub} is a particular root name describing a particular
+problem.  These files names can be communicated to Dakota using the
+\texttt{algebraic\_mappings} input.
+
+Dakota will use \texttt{stub.col} and \texttt{stub.row} to obtain
+input and output identifier strings, respectively, and will use the
+AMPL solver library~\cite{Gay97} to evaluate expressions conveyed
+in \texttt{stub.nl}, and, if needed, their first and second
+derivatives.
+
+As a simple example (from \texttt{Dakota/test/dakota\_ampl*}), consider
+algebraic mappings based on Newton's law $F = m a$.  The
+following is an AMPL input file of variable and expression
+declarations and output commands:
+\begin{center}
+\begin{bigbox}
+\begin{small}
+\verbatimtabinput[8]{dakota_ampl_fma.mod}
+\end{small}
+\end{bigbox}
+\end{center}
+
+When processed by an AMPL processor, three files are created (as
+requested by the ``option auxfiles" command).  The first is the \texttt{dakota\_ampl\_fma.nl}
+file containing problem statistics, expression graphs, bounds, etc.:
+\begin{center}
+\begin{bigbox}
+\begin{small}
+\verbatimtabinput[8]{dakota_ampl_fma.nl}
+\end{small}
+\end{bigbox}
+\end{center}
+
+Next, the \texttt{dakota\_ampl\_fma.col} file contains the set of variable
+descriptor strings:
+\begin{center}
+\begin{bigbox}
+\begin{small}
+\verbatimtabinput[8]{dakota_ampl_fma.col}
+\end{small}
+\end{bigbox}
+\end{center}
+
+and the \texttt{dakota\_ampl\_fma.row} file contains the set of response descriptor
+strings:
+\begin{center}
+\begin{bigbox}
+\begin{small}
+\verbatimtabinput[8]{dakota_ampl_fma.row}
+\end{small}
+\end{bigbox}
+\end{center}
+
+The variable and objective function names declared within AMPL should
+be a subset of the variable descriptors and response descriptors used
+by Dakota (see the Dakota Reference Manual~\cite{RefMan} for information
+on Dakota variable and response descriptors).  Ordering of the inputs
+and outputs within the AMPL declaration is not important, as Dakota
+will reorder data as needed.  The following listing shows an excerpt
+from \texttt{Dakota/test/dakota\_ampl\_fma.in}, which demonstrates a
+combined algebraic/simulation-based mapping in which algebraic
+mappings from the \texttt{fma} definition are overlaid with
+simulation-based mappings from \texttt{text\_book}:
+\begin{center}
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+variables,
+        continuous_design = 5
+          descriptor    'x1' 'mass' 'a' 'x4' 'v'
+          initial_point  0.0  2.0  1.0  0.0  3.0
+          lower_bounds  -3.0  0.0 -5.0 -3.0 -5.0
+          upper_bounds   3.0 10.0  5.0  3.0  5.0
+
+interface,
+        algebraic_mappings = 'dakota_ampl_fma.nl'
+        system
+          analysis_driver = 'text_book'
+          parameters_file = 'tb.in'
+          results_file    = 'tb.out'
+          file_tag
+
+responses,
+        response_descriptors = 'force' 'ineq1' 'energy'
+        num_objective_functions = 1
+        num_nonlinear_inequality_constraints = 1
+        num_nonlinear_equality_constraints = 1
+        nonlinear_equality_targets = 20.0
+        analytic_gradients
+        no_hessians
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\end{center}
+Note that the algebraic inputs and outputs are a subset of the total
+inputs and outputs and that Dakota will track the algebraic
+contributions to the total response set using the order of the
+descriptor strings.  In the case where both the algebraic and
+simulation-based components contribute to the same function, they are
+added together.
+
+To solve \texttt{text\_book} algebraically (refer to
+Section~\ref{additional:textbook} for definition), the
+following AMPL model file could be used
+\begin{center}
+\begin{bigbox}
+\begin{small}
+\verbatimtabinput[8]{dakota_ampl_tb.mod}
+\end{small}
+\end{bigbox}
+\end{center}
+Note that the nonlinear constraints should not currently be declared
+as constraints within AMPL.  Since the Dakota variable bounds and
+constraint bounds/targets currently take precedence over any AMPL
+specification, the current approach is to declare all AMPL outputs as
+objective functions and then map them into the appropriate response
+function type (objectives, least squares terms, nonlinear
+inequality/equality constraints, or generic response functions) within
+the Dakota input specification.
+
 
 \section{Developing a Direct Simulation Interface}\label{advint:direct}
 
@@ -119,7 +249,7 @@ In addition to built-in polynomial test functions described in
 Section~\ref{interfaces:direct}, Dakota includes direct interfaces to
 Sandia's Salinas code for structural dynamics, Phoenix Integration's
 ModelCenter framework, The Mathworks' Matlab scientific computing
-environment, Scilab (as described in Section~\ref{scilab}), and
+environment, Scilab (as described in Section~\ref{advint:scilab}), and
 Python. While these can be interfaced to with a script-based
 approach, some usability and efficiency gains may be realized by
 re-compiling Dakota with these direct interfaces enabled. Some
@@ -439,7 +569,7 @@ currEvalId & current evaluation ID number \\
 \end{tabular}
 \end{table}
 
-\section{Scilab Script and Direct Interfaces}\label{scilab}
+\section{Scilab Script and Direct Interfaces}\label{advint:scilab}
 
 Scilab is open source computation software which can be used to
 perform function evaluations during Dakota studies, for example to
