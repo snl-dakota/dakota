@@ -571,7 +571,9 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 {
   size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
-  SizetArray recast_vars_comps_total; // default: no change in size
+  SizetArray recast_vars_comps_total; // default: no change in cauv total
+  // we do not reorder the u-space variable types such that we preserve a
+  // 1-to-1 mapping with consistent ordering
   vars_map.resize(numContinuousVars);
   for (i=0; i<numContinuousVars; ++i) {
     vars_map[i].resize(1);

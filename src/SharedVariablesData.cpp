@@ -338,8 +338,81 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
 
   // totals are sufficient for forming ids
   initialize_all_continuous_ids(relax);
+  //if (!relax) {
+  //  initialize_all_discrete_int_ids();
+  //  initialize_all_discrete_real_ids();
+  //}
 
   // totals are insufficient for forming types
+}
+
+
+SharedVariablesDataRep::
+SharedVariablesDataRep(const std::pair<short,short>& view,
+		       const std::map<unsigned short, size_t>& vars_comps):
+  variablesComponents(vars_comps), variablesView(view), cvStart(0),
+  divStart(0), drvStart(0), icvStart(0), idivStart(0), idrvStart(0), numCV(0),
+  numDIV(0), numDRV(0), numICV(0), numIDIV(0), numIDRV(0), referenceCount(1)
+{
+  components_to_totals();
+
+  // totals are sufficient to size variables
+  bool relax = ( variablesView.first == RELAXED_ALL ||
+    ( variablesView.first >= RELAXED_DESIGN &&
+      variablesView.first <= RELAXED_STATE ) );
+  size_all_continuous_labels(relax);
+  initialize_all_continuous_types(relax); // Can only use default ordering...
+  initialize_all_continuous_ids(relax);
+  if (!relax) {
+    size_all_discrete_int_labels();
+    size_all_discrete_real_labels();
+    initialize_all_discrete_int_types();
+    //initialize_all_discrete_int_ids();
+    initialize_all_discrete_real_types();
+    //initialize_all_discrete_real_ids();
+  }
+}
+
+
+void SharedVariablesDataRep::components_to_totals()
+{
+  variablesCompsTotals.resize(12);
+
+  // continuous design
+  variablesCompsTotals[0] = vc_lookup(CONTINUOUS_DESIGN);
+  // discrete integer design
+  variablesCompsTotals[1] = vc_lookup(DISCRETE_DESIGN_RANGE)
+    + vc_lookup(DISCRETE_DESIGN_SET_INT);
+  // discrete real design
+  variablesCompsTotals[2] = vc_lookup(DISCRETE_DESIGN_SET_REAL);
+  // continuous aleatory uncertain
+  variablesCompsTotals[3] = vc_lookup(NORMAL_UNCERTAIN)
+    + vc_lookup(LOGNORMAL_UNCERTAIN)   + vc_lookup(UNIFORM_UNCERTAIN)
+    + vc_lookup(LOGUNIFORM_UNCERTAIN)  + vc_lookup(TRIANGULAR_UNCERTAIN)
+    + vc_lookup(EXPONENTIAL_UNCERTAIN) + vc_lookup(BETA_UNCERTAIN)
+    + vc_lookup(GAMMA_UNCERTAIN)       + vc_lookup(GUMBEL_UNCERTAIN)
+    + vc_lookup(FRECHET_UNCERTAIN)     + vc_lookup(WEIBULL_UNCERTAIN)
+    + vc_lookup(HISTOGRAM_BIN_UNCERTAIN);
+  // discrete integer aleatory uncertain
+  variablesCompsTotals[4] = vc_lookup(POISSON_UNCERTAIN)
+    + vc_lookup(BINOMIAL_UNCERTAIN)  + vc_lookup(NEGATIVE_BINOMIAL_UNCERTAIN)
+    + vc_lookup(GEOMETRIC_UNCERTAIN) + vc_lookup(HYPERGEOMETRIC_UNCERTAIN);
+  // discrete real aleatory uncertain
+  variablesCompsTotals[5] = vc_lookup(HISTOGRAM_POINT_UNCERTAIN);
+  // continuous epistemic uncertain
+  variablesCompsTotals[6] = vc_lookup(CONTINUOUS_INTERVAL_UNCERTAIN);
+  // discrete integer epistemic uncertain
+  variablesCompsTotals[7] = vc_lookup(DISCRETE_INTERVAL_UNCERTAIN)
+    + vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+  // discrete real epistemic uncertain
+  variablesCompsTotals[8] = vc_lookup(DISCRETE_UNCERTAIN_SET_REAL);
+  // continuous state
+  variablesCompsTotals[9] = vc_lookup(CONTINUOUS_STATE);
+  // discrete integer state
+  variablesCompsTotals[10] = vc_lookup(DISCRETE_STATE_RANGE)
+    + vc_lookup(DISCRETE_STATE_SET_INT);
+  // discrete real state
+  variablesCompsTotals[11] = vc_lookup(DISCRETE_STATE_SET_REAL);
 }
 
 

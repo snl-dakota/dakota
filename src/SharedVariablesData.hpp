@@ -47,6 +47,9 @@ private:
   /// standard constructor
   SharedVariablesDataRep(const ProblemDescDB& problem_db,
 			 const std::pair<short,short>& view);
+  /// medium weight constructor
+  SharedVariablesDataRep(const std::pair<short,short>& view,
+			 const std::map<unsigned short, size_t>& vars_comps);
   /// lightweight constructor
   SharedVariablesDataRep(const std::pair<short,short>& view,
 			 const SizetArray& vars_comps_totals);
@@ -57,6 +60,8 @@ private:
   //- Heading: Member functions
   //
 
+  /// update variablesCompsTotals from variablesComponents
+  void components_to_totals();
   /// size allContinuousLabels, with or without discrete relaxation
   void size_all_continuous_labels(bool relax);
   /// initialize allContinuousTypes, with or without discrete relaxation
@@ -283,16 +288,37 @@ public:
   /// get num_items continuous types beginning at index start
   UShortMultiArrayConstView
     all_continuous_types(size_t start, size_t num_items) const;
+  /// set num_items continuous types beginning at index start
+  void all_continuous_types(UShortMultiArrayConstView cv_types,
+			    size_t start, size_t num_items);
+  /// set continuous type at index
+  void all_continuous_type(unsigned short cv_type, size_t index);
   /// get num_items discrete integer types beginning at index start
   UShortMultiArrayConstView
     all_discrete_int_types(size_t start, size_t num_items) const;
+  /// set num_items discrete integer types beginning at index start
+  void all_discrete_int_types(UShortMultiArrayConstView div_types,
+			      size_t start, size_t num_items);
+  /// set discrete integer type at index
+  void all_discrete_int_type(unsigned short div_type, size_t index);
   /// get num_items discrete real types beginning at index start
   UShortMultiArrayConstView
     all_discrete_real_types(size_t start, size_t num_items) const;
+  /// set num_items discrete real types beginning at index start
+  void all_discrete_real_types(UShortMultiArrayConstView drv_types,
+			       size_t start, size_t num_items);
+  /// set discrete real type at index
+  void all_discrete_real_type(unsigned short drv_type, size_t index);
 
   /// get num_items continuous ids beginning at index start
   SizetMultiArrayConstView
     all_continuous_ids(size_t start, size_t num_items) const;
+  /// set num_items continuous ids beginning at index start
+  void all_continuous_ids(SizetMultiArrayConstView cv_ids,
+			  size_t start, size_t num_items);
+  /// set num_items continuous ids beginning at index start
+  void all_continuous_id(size_t id, size_t index);
+
   /// get ids of discrete variables that have been relaxed into
   /// continuous variable arrays
   const SizetArray& relaxed_discrete_ids() const;
@@ -527,12 +553,40 @@ all_continuous_types(size_t start, size_t num_items) const
 }
 
 
+inline void SharedVariablesData::
+all_continuous_types(UShortMultiArrayConstView cv_types,
+		     size_t start, size_t num_items)
+{
+  svdRep->allContinuousTypes[boost::indices[idx_range(start, start+num_items)]]
+    = cv_types;
+}
+
+
+inline void SharedVariablesData::
+all_continuous_type(unsigned short cv_type, size_t index)
+{ svdRep->allContinuousTypes[index] = cv_type; }
+
+
 inline UShortMultiArrayConstView SharedVariablesData::
 all_discrete_int_types(size_t start, size_t num_items) const
 {
   return svdRep->
     allDiscreteIntTypes[boost::indices[idx_range(start, start+num_items)]];
 }
+
+
+inline void SharedVariablesData::
+all_discrete_int_types(UShortMultiArrayConstView div_types,
+		       size_t start, size_t num_items)
+{
+  svdRep->allDiscreteIntTypes[boost::indices[idx_range(start, start+num_items)]]
+    = div_types;
+}
+
+
+inline void SharedVariablesData::
+all_discrete_int_type(unsigned short div_type, size_t index)
+{ svdRep->allDiscreteIntTypes[index] = div_type; }
 
 
 inline UShortMultiArrayConstView SharedVariablesData::
@@ -543,12 +597,40 @@ all_discrete_real_types(size_t start, size_t num_items) const
 }
 
 
+inline void SharedVariablesData::
+all_discrete_real_types(UShortMultiArrayConstView drv_types,
+			size_t start, size_t num_items)
+{
+  svdRep->
+    allDiscreteRealTypes[boost::indices[idx_range(start, start+num_items)]]
+    = drv_types;
+}
+
+
+inline void SharedVariablesData::
+all_discrete_real_type(unsigned short drv_type, size_t index)
+{ svdRep->allDiscreteRealTypes[index] = drv_type; }
+
+
 inline SizetMultiArrayConstView SharedVariablesData::
 all_continuous_ids(size_t start, size_t num_items) const
 {
   return svdRep->
     allContinuousIds[boost::indices[idx_range(start, start+num_items)]];
 }
+
+
+inline void SharedVariablesData::
+all_continuous_ids(SizetMultiArrayConstView cv_ids,
+		   size_t start, size_t num_items)
+{
+  svdRep->allContinuousIds[boost::indices[idx_range(start, start+num_items)]]
+    = cv_ids;
+}
+
+
+inline void SharedVariablesData::all_continuous_id(size_t cv_id, size_t index)
+{ svdRep->allContinuousIds[index] = cv_id; }
 
 
 inline const SizetArray& SharedVariablesData::relaxed_discrete_ids() const
