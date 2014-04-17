@@ -6,7 +6,7 @@ For each of
 the refinement factors, it evaluates three points along the
 refinement path and uses these results to perform an estimate of
 the convergence order for each response function.
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

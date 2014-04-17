@@ -2,8 +2,7 @@ Blurb::
 Use derivative data to construct surrogate models
 Description::
 If \c use_derivatives is 
-specified the GP model will be built using available derivative data (Surfpack GP only).
-Topics::	not_yet_reviewed
+specified with a GP  (Surfpack GP only) or PCE model the GP or PCE will be built using available derivative data.
 Examples::
 Theory::
 Faq::

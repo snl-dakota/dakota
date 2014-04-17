@@ -20,7 +20,7 @@ to the output of the method.
 
 <b> stoch_collocation Group 2 </b> 
 
-SC also supports four types of bases:
+SC supports four types of bases:
 
 the option of \c piecewise local basis
 functions. These are piecewise linear splines, or in the case of

@@ -1,3 +1,8 @@
+Parameter studies employ deterministic designs to explore the effect of
+parametric changes within simulation models, yielding one form of sensitivity analysis. They can help
+assess simulation characteristics such as smoothness, multi-modality, robustness, and nonlinearity, which
+affect the choice of algorithms and controls in follow-on optimization and UQ studies.
+
 Dakota's parameter study methods compute response data sets at a
 selection of points in the parameter space. These points may be
 specified as a vector, a list, a set of centered vectors, or a

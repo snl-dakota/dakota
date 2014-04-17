@@ -45,16 +45,16 @@ control.
 
 <b> polynomial_chaos Group 2 </b>
 
-!!!!!!!!!! These do not match the specification, making this very difficult to parse and use!!!!!!!!!!!!!!
-
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
 options are provided:
 
 <ul>
  <li> multidimensional integration by a tensor-product of Gaussian
-    quadrature rules (specified with \c quadrature_order, and, 
+    quadrature rules (specified with \c quadrature_order, and,
+    optionally, \c dimension_preference).
  <li> multidimensional integration by the Smolyak sparse grid method
-    (specified with \c sparse_grid_level and, optionally, \c
+    (specified with \c sparse_grid_level and, optionally, 
+    \c dimension_preference)
  <li> multidimensional integration by Stroud cubature rules 
  and extensions as specified with \c cubature_integrand. 
  <li> multidimensional integration by Latin hypercube sampling
@@ -63,7 +63,7 @@ options are provided:
   <li> linear regression (specified with either \c collocation_points or
      \c collocation_ratio).
   <li> coefficient import from a file (specified with \c
-     expansion_import_file). A total-order expansion is assumed and
+     import_expansion_file). A total-order expansion is assumed and
      must be specified using \c expansion_order.
  </ul>
 </ul>
