@@ -31,8 +31,8 @@ initialization and a variety of internal SCOLIB diagnostics. The
 majority of SCOLIB's methods perform independent function evaluations
 that can directly take advantage of %Dakota's parallel
 capabilities. Only \c coliny_solis_wets, \c coliny_cobyla, and certain
-configurations of \c coliny_pattern_search are inherently serial (see
-\ref MethodSCOLIBPS). The parallel methods automatically utilize
+configurations of \c coliny_pattern_search are inherently serial.
+The parallel methods automatically utilize
 parallel logic when the %Dakota configuration supports
 parallelism. Lastly, neither \c speculative gradients nor linear
 constraints are currently supported with SCOLIB.

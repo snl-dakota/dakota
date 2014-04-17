@@ -8,7 +8,7 @@ two-sided formulation:
 
 Where \f$A\f$ is the constrain matrix of variable coefficients.
 
-As with nonlinear inequality constraints (see \ref RespFnOpt), the 
+As with nonlinear inequality constraints (see \ref responses-objective_functions), the 
 default linear inequality constraint bounds are selected so that 
 one-sided inequalities of the form
 \f[Ax \leq 0.0\f]

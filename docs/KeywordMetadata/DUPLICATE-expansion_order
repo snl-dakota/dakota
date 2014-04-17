@@ -49,8 +49,8 @@ Linear regression (specified with either \c collocation_points or
    default point collocation approach using an unstructured grid. -->
 
 If \c collocation_points or \c collocation_ratio is specified, the PCE
-coefficients will be determined by regression. \ref T5d41 "Table 5.41"
-lists a set of optional regression specifications. If no regression
+coefficients will be determined by regression.
+If no regression
 specification is provided, appropriate defaults are defined.
 Specifically SVD-based least-squares will be used for solving
 over-determined systems and under-determined systems will be solved

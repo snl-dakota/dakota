@@ -106,8 +106,8 @@ as well as some method independent and method
 dependent controls for the sequential quadratic programming (SQP)
 algorithm from the DOT library. The \c max_iterations, \c
 convergence_tolerance, and \c output settings are method independent
-controls, in that they are defined for a variety of methods (see \ref
-MethodDOTIC for DOT usage of these controls). 
+controls, in that they are defined for a variety of methods (see \ref method-dot
+ for usage of these controls). 
 
 The next example shows a specification for a least squares method.
 \verbatim
@@ -121,10 +121,10 @@ method,
 Some of the same method independent controls are present along with
 several method dependent controls (\c search_method and \c
 gradient_tolerance) which are only meaningful for OPT++ methods (see
-\ref MethodOPTPPDC).
+\ref topic-package_optpp).
 
 The next example shows a specification for a nondeterministic method
-with several method dependent controls (refer to \ref MethodNonDMC).
+with several method dependent controls (refer to \ref method-sampling).
 \verbatim
 method,
 	sampling
@@ -135,7 +135,7 @@ method,
 
 The last example shows a specification for a parameter study method
 where, again, each of the controls are method dependent (refer to \ref
-MethodPSVPS).
+method-vector_parameter_study).
 \verbatim
 method,
 	vector_parameter_study

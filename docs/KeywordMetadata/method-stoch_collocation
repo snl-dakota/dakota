@@ -36,9 +36,7 @@ functions). When local basis functions are used, the usage of
 nonequidistant collocation points (e.g., the Gauss point selections
 described above) is not well motivated, so equidistant Newton-Cotes
 points are employed in this case, and all random variable types are
-transformed to standard uniform probability space (refer to Tables
-\ref T5d29 "5.29", \ref T5d30 "5.30", and \ref T5d31 "5.31" for
-variable types for which this transformation is supported). The
+transformed to standard uniform probability space. The
 global gradient-enhanced interpolants (Hermite interpolation
 polynomials) are also restricted to uniform or transformed uniform
 random variables (due to the need to compute collocation weights by
@@ -76,7 +74,7 @@ can be either \c uniform or \c dimension_adaptive. The \c
 dimension_adaptive case can be further specified as either \c sobol or
 \c generalized (\c decay not supported). Each of these automated
 refinement approaches makes use of the \c max_iterations and \c
-convergence_tolerance iteration controls (see \ref T5d1 "Table 5.1").
+convergence_tolerance iteration controls.
 The \c h_refinement specification involves use of the same piecewise
 interpolants (linear or cubic Hermite splines) described above for the
 \c piecewise specification option (it is not necessary to redundantly

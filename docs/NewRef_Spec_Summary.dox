@@ -4,7 +4,7 @@ This file is derived automatically from dakota.input.nspec, which is
 used in the generation of parser system files that are compiled into
 the %Dakota executable. Therefore, these files are the definitive
 source for input syntax, capability options, and associated data
-inputs. Refer to \ref SpecChange for information on how to modify the
+inputs. Refer to the Developers Manual information on how to modify the
 input specification and propagate the changes through the parsing
 system.
 
@@ -39,7 +39,7 @@ single or double quotes (e.g., \c 'text_book' or "text_book").
 \li In user input files, input is largely order-independent (except for
 entries in lists of data), case insensitive, and white-space
 insensitive. Although the order of input shown in the \ref
-IntroCmdsSamples generally follows the order of options in the input
+input_file_examples generally follows the order of options in the input
 specification, this is not required.
 
 \li In user input files, specifications may be abbreviated so long as

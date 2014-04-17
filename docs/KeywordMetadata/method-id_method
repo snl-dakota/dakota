@@ -3,7 +3,7 @@ Give the block a name, in case of multiple method blocks
 Description::
 The method identifier string is supplied with \c id_method and is used
 to provide a unique identifier string for use with environment or
-meta-iterator specifications (refer to \ref EnvDescr). It is
+meta-iterator specifications (refer to \ref environment). It is
 appropriate to omit a method identifier string if only one method is
 included in the input file, since the single method to use is
 unambiguous in this case.

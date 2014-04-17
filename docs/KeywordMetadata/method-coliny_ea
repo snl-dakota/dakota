@@ -42,8 +42,7 @@ individual's objective function within the population
 The \c replacement_type controls how current populations and newly
 generated individuals are combined to create a new population. Each
 of the \c replacement_type selections accepts an integer value, which
-is referred to below and in \ref T5d12 "Table 5.12" as the \c
-replacement_size:
+is referred to below as the \c replacement_size.
 
 \li The \c random setting creates a new population using
 (a) \c replacement_size randomly selected individuals from the current

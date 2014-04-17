@@ -2,26 +2,25 @@ Blurb::
 Description::
 Hierarchical approximations use corrected results from a low fidelity
 model as an approximation to the results of a high fidelity "truth"
-model.  These approximations are also known as model hierarchy,
+model. These approximations are also known as model hierarchy,
 multifidelity, variable fidelity, and variable complexity
-approximations.  The required \c low_fidelity_model_pointer
-specification points to the low fidelity model specification.  This
+approximations. The required \c low_fidelity_model_pointer
+specification points to the low fidelity model specification. This
 model is used to generate low fidelity responses which are then
-corrected and returned to an iterator.  The required \c
+corrected and returned to an iterator. The required \c
 high_fidelity_model_pointer specification points to the specification
-for the high fidelity truth model.  This model is used only for
+for the high fidelity truth model. This model is used only for
 verifying low fidelity results and updating low fidelity corrections.
 The \c correction specification specifies which correction technique
 will be applied to the low fidelity results in order to match the high
-fidelity results at one or more points.  In the hierarchical case (as
+fidelity results at one or more points. In the hierarchical case (as
 compared to the global case), the \c correction specification is
 required, since the omission of a correction technique would
-effectively eliminate the purpose of the high fidelity model.  If it
+effectively eliminate the purpose of the high fidelity model. If it
 is desired to use a low fidelity model without corrections, then a
 hierarchical approximation is not needed and a \c single model should
-be used.  Refer to \ref ModelSurrG for additional information on
-available correction approaches.  \ref T6d9 "Table 6.9" summarizes the
-hierarchical approximation specifications.
+be used. Refer to \ref model-surrogate-global for additional information on
+available correction approaches.
 
 
 Topics::	not_yet_reviewed
