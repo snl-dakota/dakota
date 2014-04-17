@@ -43,14 +43,6 @@ file(GLOB dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
 set(dox_dev_deps 
   ${dox_dev_dox} Doxyfile header-dev.html header-dev.tex)
 
-
-# Generate new reference manual keyword and topic .dox files
-# For now, shortcut to copy common directory
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/common" "${CMAKE_CURRENT_BINARY_DIR}/common"
-  )
-
-
 add_custom_command( 
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
           ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
