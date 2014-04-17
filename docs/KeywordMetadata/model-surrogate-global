@@ -224,7 +224,7 @@ Examples::
 Theory::
 
 
-Global methods, often referred to as \emph{response surface methods},
+Global methods, often referred to as \em response surface methods,
 involve many points spread over the parameter ranges of interest.
 These surface fitting methods work in conjunction with the sampling
 methods and design of experiments methods described in
@@ -243,7 +243,7 @@ ef{Giu98}, spatial interpolation. One of these resides in
 the Surfpack sub-package of Dakota, the other resides in Dakota itself.
 Both versions use the Gaussian correlation function with parameters that
 are selected by Maximum Likelihood Estimation (MLE). This correlation 
-function results in a response surface that is $C^\infty$-continuous.
+function results in a response surface that is \f$C^\infty\f$-continuous.
 Prior to Dakota 5.2, the Surfpack GP was referred to as the "Kriging" 
 model and the Dakota version was labeled as the "Gaussian Process." 
 These terms are now used interchangeably. As of Dakota 5.2,the 

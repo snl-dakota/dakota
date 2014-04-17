@@ -10,7 +10,7 @@ processes currently available: one that is in the surrogate library called surfp
 and one that is in dakota. The surfpack GP is often more accurate but is slower to build.
 
 Kriging/Gaussian-Process Spatial Interpolation Models
-\label{models:surf:kriging}
+<!--\label{models:surf:kriging} -->
 In Dakota 5.2, we have 2 versions of spatial interpolation models.
 One is located in Dakota itself and the other in the Surfpack subpackage 
 of Dakota which can be compiled in a stand alone mode. These models
@@ -34,33 +34,33 @@ response values from a set of data points. The number of times the
 fitted surface is differentiable will depend on the correlation function 
 that is used. Currently, the Gaussian correlation function is the only 
 option for either version included in Dakota; this makes the GP model 
-$C^{\infty}$-continuous. The form of the GP model is
+\f$C^{\infty}\f$-continuous. The form of the GP model is
 
-\begin{equation}
+\f[
  \hat{f}(\underline{x}) \approx \underline{g}(\underline{x})^T\underline{\beta} +
  \underline{r}(\underline{x})^{T}\underline{\underline{R}}^{-1}(\underline{f}-\underline{\underline{G}}\ \underline{\beta})
  \label{models:surf:equation08}
-\end{equation}
+\f]
 
-where $\underline{x}$ is the current point in $n$-dimensional parameter
-space; $\underline{g}(\underline{x})$ is the vector of trend basis 
-functions evaluated at $\underline{x}$; $\underline{\beta}$ is a vector
+where \f$\underline{x}\f$ is the current point in \f$n\f$-dimensional parameter
+space; \f$\underline{g}(\underline{x})\f$ is the vector of trend basis 
+functions evaluated at \f$\underline{x}\f$; \f$\underline{\beta}\f$ is a vector
 containing the generalized least squares estimates of the trend basis 
-function coefficients; $\underline{r}(\underline{x})$ is the correlation 
-vector of terms between $\underline{x}$ and the data points;
-$\underline{\underline{R}}$ is the correlation matrix for all of the 
-data points; $\underline{f}$ is the vector of response values; and 
-$\underline{\underline{G}}$ is the matrix containing the trend basis 
+function coefficients; \f$\underline{r}(\underline{x})\f$ is the correlation 
+vector of terms between \f$\underline{x}\f$ and the data points;
+\f$\underline{\underline{R}}\f$ is the correlation matrix for all of the 
+data points; \f$\underline{f}\f$ is the vector of response values; and 
+\f$\underline{\underline{G}}\f$ is the matrix containing the trend basis 
 functions evaluated at all data points. The terms in the correlation 
 vector and matrix are computed using a Gaussian correlation function 
-and are dependent on an $n$-dimensional vector of correlation parameters,
-$\underline{\theta} = \{\theta_{1},\ldots,\theta_{n}\}^T$. By default, 
-Dakota determines the value of $\underline{\theta}$ using a Maximum
+and are dependent on an \f$n\f$-dimensional vector of correlation parameters,
+\f$\underline{\theta} = \{\theta_{1},\ldots,\theta_{n}\}^T\f$. By default, 
+Dakota determines the value of \f$\underline{\theta}\f$ using a Maximum
 Likelihood Estimation (MLE) procedure. However, the user can also opt 
 to manually set them in the \c gaussian_process surfpack
 model by specifying a vector of correlation lengths, 
-$\underline{l}=\{\l_{1},\ldots,\l_{n}\}^T$ where 
-$\theta_i=1/(2 l_i^2)$. This definition of correlation lengths makes 
+\f$\underline{l}=\{\l_{1},\ldots,\l_{n}\}^T\f$ where 
+\f$\theta_i=1/(2 l_i^2)\f$. This definition of correlation lengths makes 
 their effect on the GP model's behavior directly analogous to the 
 role played by the standard deviation in a normal (a.k.a. Gaussian) 
 distribution. In the \c gaussian_process surpack model, we used 
@@ -76,10 +76,12 @@ local minima and maxima. GP interpolation is useful for both
 SBO and OUU, as well as for studying the global response value trends 
 in the parameter space. This surface fitting method needs a 
 minimum number of design points equal to the sum of the number of 
-basis functions and the number of dimensions, $n$, but it is 
+basis functions and the number of dimensions, \f$n\f$, but it is 
 recommended to use at least double this amount.
-%$n_{c_{quad}}$ design points when possible (refer to
-%Section \ref{models:surf:polynomial} for $n_{c}$ definitions).
+<!--
+%\f$n_{c_{quad}}\f$ design points when possible (refer to
+%Section \ref{models:surf:polynomial} for \f$n_{c}\f$ definitions).
+-->
 
 The GP model is guaranteed to pass through all of the response 
 data values that are used to construct the model. Generally, this is a
@@ -87,9 +89,9 @@ desirable feature. However, if there is considerable numerical noise
 in the response data, then a surface fitting method that provides some
 data smoothing (e.g., quadratic polynomial, MARS) may be a better
 choice for SBO and OUU applications. Another feature of the GP
-model is that the predicted response values, $\hat{f}(\underline{x})$,
+model is that the predicted response values, \f$\hat{f}(\underline{x})\f$,
 decay to the trend function, 
-$\underline{g}(\underline{x})^T\underline{\beta}$, when $\underline{x}$ 
+\f$\underline{g}(\underline{x})^T\underline{\beta}\f$, when \f$\underline{x}\f$ 
 is far from any of the data points from which the GP model was 
 constructed (i.e., when the model is used for extrapolation). 
 
@@ -134,7 +136,7 @@ models are as follows:
    \c local optimization, default to the center, in 
    log(correlation length) scale, of the of small feasible region. 
    However, these can also be user specified with the 
-   \c correlation_lengths keyword followed by a list of $n$ real 
+   \c correlation_lengths keyword followed by a list of \f$n\f$ real 
    numbers. The total number of evaluations of the 
    \c gaussian_process surfpack model's likelihood function can 
    be controlled using the \c max_trials keyword followed by a 
@@ -153,7 +155,7 @@ models are as follows:
    the \c kriging (now \c gaussian_process surfpack or
    \c kriging surfpack) model avoided 
    ill-conditioning by explicitly excluding poorly conditioned 
-   $\underline{\underline{R}}$ from consideration on the basis of their 
+   \f$\underline{\underline{R}}\f$ from consideration on the basis of their 
    having a large (estimate of) condition number; this constraint acted 
    to decrease the size of admissible correlation lengths. Note that a
    sufficiently bad sample design could require correlation lengths to 
@@ -170,7 +172,7 @@ models are as follows:
    greedy heuristic. This option is specified with the keyword 
    \c point_selection in the input file.\\ \\
    As of Dakota 5.2, the \c gaussian_process surfpack model has 
-   a similar capability. Points are {\bf not} discarded prior to the 
+   a similar capability. Points are \b not discarded prior to the 
    construction of the model. Instead, within the maximum likelihood 
    optimization loop, when the correlation matrix violates the 
    explicit (estimate of) condition number constraint, the 

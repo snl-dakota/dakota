@@ -47,7 +47,7 @@ PROJECT_BRIEF          = "Large-Scale Engineering Optimization and Uncertainty A
 # exceed 55 pixels and the maximum width should not exceed 200 pixels.
 # Doxygen will copy the logo to the output directory.
 
-PROJECT_LOGO           = common/dakota-logo.png
+PROJECT_LOGO           = images/dakota-logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -735,6 +735,7 @@ EXAMPLE_RECURSIVE      = NO
 # the \image command).
 
 IMAGE_PATH             =  common \
+                          images
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -940,7 +941,8 @@ HTML_EXTRA_STYLESHEET  = common/dox-stylesheet.css
 # files. In the HTML_STYLESHEET file, use the file name only. Also note that
 # the files will be copied as-is; there are no commands or markers available.
 
-HTML_EXTRA_FILES       = keyword-index.html
+HTML_EXTRA_FILES       = 
+#keyword-index.html
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
 # Doxygen will adjust the colors in the style sheet and background images

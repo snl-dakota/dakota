@@ -6,7 +6,7 @@ optimization method that supports general constraints and a
 mixture of real and discrete variables. \c soga is part of the JEGA library.
 
 <b> Constraints </b>
-\soga can utilize linear constraints.
+\c soga can utilize linear constraints.
 
 <b> Configuration </b>
 

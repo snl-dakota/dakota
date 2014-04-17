@@ -2,7 +2,7 @@ Blurb::
 (Default) Specified file is in the annotated format
 Description::
 Annotated Matrix (default for all I/O; specified via 
-{\tt annotated}): text file with one leading row of comments/column 
+\c annotated): text file with one leading row of comments/column 
 labels and one leading column of evaluation/row IDs surrounding 
 num\_rows x num\_cols whitespace-separated numeric data, (newlines 
 separating rows are not currently required, but may be in the 
@@ -14,7 +14,7 @@ depending on context.
 
 \li Prior to October 2011, calibration and surrogate data 
 files were free-form format. They now default to annotated format, 
-though {\c freeform} remains an option. 
+though \c freeform remains an option. 
 \li For both formats, a warning 
 will be generated if a specific number of data are expected, but extra 
 is found and an error generated when there is insufficient data. 

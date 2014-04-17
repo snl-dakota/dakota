@@ -12,7 +12,7 @@ populate the vector in order).
 
 \li Prior to October 2011, calibration and surrogate data 
 files were free-form format. They now default to annotated format, 
-though {\c freeform} remains an option. 
+though \c freeform remains an option. 
 \li For both formats, a warning 
 will be generated if a specific number of data are expected, but extra 
 is found and an error generated when there is insufficient data. 

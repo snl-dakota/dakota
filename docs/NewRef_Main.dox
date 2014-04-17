@@ -248,7 +248,7 @@ example, to read in the first 50 evaluations from
 
 The \c dakota_new.rst file will contain the 50 processed
 evaluations from \c dakota.rst as well as any new evaluations.
-All evaluations following the 50$^{\mathrm{th}}$ in \c dakota.rst
+All evaluations following the \f$50^{\mathrm{th}}\f$ in \c dakota.rst
 have been removed from the latest restart record.
 
 \section dakota_restart-appending Appending to a Restart File

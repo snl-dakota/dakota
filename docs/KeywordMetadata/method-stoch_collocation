@@ -115,6 +115,7 @@ two options are provided.
  sparse PCE, nested rules are employed unless overridden with the
  \c non_nested option, and the growth rules are restricted unless
  overridden by the \c unrestricted keyword.
+</ol>
 
 If \e n is small, then tensor-product Gaussian quadrature is again the
 preferred choice. For larger \e n, tensor-product quadrature quickly
