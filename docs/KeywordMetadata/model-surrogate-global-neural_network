@@ -4,22 +4,19 @@ Artificial Neural Network (ANN) Models
 Description::
 The ANN surface fitting method in Dakota employs a stochastic layered
 perceptron (SLP) artificial neural network based on the direct
-training approach of Zimmerman \ref{Zim96}. The SLP ANN method is
+training approach of Zimmerman \ref Zim96. The SLP ANN method is
 designed to have a lower training cost than traditional ANNs. This is
 a useful feature for SBO and OUU where new ANNs are constructed many
 times during the optimization process (i.e., one ANN for each response
 function, and new ANNs for each optimization iteration). The form of
 the SLP ANN model is
 
-\begin{equation}
- \hat{f}(\mathbf{x}) \approx
- \tanh(\tanh((\mathbf{x A}_{0}+\theta_{0})\mathbf{A}_{1}+\theta_{1}))
- \label{models:surf:equation09}
-\end{equation}
+\f[ \hat{f}(\mathbf{x}) \approx
+ \tanh(\tanh((\mathbf{x A}_{0}+\theta_{0})\mathbf{A}_{1}+\theta_{1})) \f]
 
-where $\mathbf{x}$ is the current point in $n$-dimensional parameter
+where \f$\mathbf{x}\f$ is the current point in \f$n\f$-dimensional parameter
 space, and the terms
-$\mathbf{A}_{0},\theta_{0},\mathbf{A}_{1},\theta_{1}$ are the matrices
+\f$\mathbf{A}_{0},\theta_{0},\mathbf{A}_{1},\theta_{1}\f$ are the matrices
 and vectors that correspond to the neuron weights and offset values in
 the ANN model. These terms are computed during the ANN training
 process, and are analogous to the polynomial coefficients in a
@@ -33,8 +30,8 @@ slope discontinuities as well as multiple maxima and minima. However,
 unlike kriging, the ANN surface is not guaranteed to exactly match the
 response values of the data points from which it was constructed. This
 ANN can be used with SBO and OUU strategies. As with kriging, this ANN
-can be constructed from fewer than $n_{c_{quad}}$ data points,
-however, it is a good rule of thumb to use at least $n_{c_{quad}}$
+can be constructed from fewer than \f$n_{c_{quad}}\f$ data points,
+however, it is a good rule of thumb to use at least \f$n_{c_{quad}}\f$
 data points when possible.
 
 Topics::	empty

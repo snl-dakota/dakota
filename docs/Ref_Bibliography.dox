@@ -22,8 +22,15 @@ Vol. 110, No. 3, pp. 357-366.
 1988.  "Parallel quasi-Newton Methods for Unconstrained Optimization,"
 <i>Mathematical Programming</i>, 42(1988), pp. 273-306.
 
+\li \anchor Cha93 K. J. Chang, R. T. Haftka, G. L. Giles, and P.-J. Kao.
+"Sensitivity-based scaling for approximating structural response."
+ J. Aircraft, 30:283-288, 1993.
+
 \li \anchor Conn2000 Conn, A. R. and Gould, N. I. M. and Toint, P. L.,
 2000.  <i>Trust-Region Methods</i>, SIAM-MPS, Philadelphia.
+
+\li \anchor Cre91 N. Cressie. "Statistics of Spatial Data".
+John Wiley and Sons, New York, 1991.
 
 \li \anchor Dalbey2012  Dalbey, K. and L. P. Swiler, 2012. 
 "Gaussian Process Adaptive Importance Sampling." 
@@ -95,6 +102,14 @@ Reliability Method Formulations in DAKOTA/UQ,"
 Probabilistic Mechanics and Structural Reliability</i>, Albuquerque, NM,
 July 26-28.
 
+\li \anchor Fad90 G. M. Fadel, M. F. Riley, and J.-F. M. Barthelemy.
+"Two point exponential approximation method for structural optimization."
+Structural Optimization, 2(2):117-124, 1990.
+
+\li \anchor Fri91 J. H. Friedman.
+"Multivariate adaptive regression splines."
+Annals of Statistics, 19(1):1-141, March 1991.
+
 \li \anchor Gablonsky2001 Gablonsky, J., 2001.   
 "DIRECT version 2.0 Userguide Technical Report
 CRSC-TR01-08", Center for Research in Scientific Computation,
@@ -115,6 +130,11 @@ Sandia Technical Report SAND2008-2261P.  Available as http://www.sandia.gov/~dmg
 Wright, M. H., 1986.  "User's Guide for NPSOL (Version 4.0): A Fortran
 Package for Nonlinear Programming," System Optimization Laboratory
 Technical Report SOL-86-2, Stanford University, Stanford, CA.
+
+\li \anchor Giu98 A. A. Giunta and L. T. Watson. 
+"A comparison of approximation modeling techniques: Polynomial versus interpolating models."
+In Proc. 7th AIAA/USAF/NASA/ISSMO Symposium on Multidisciplinary Analysis
+and Optimization, number AIAA-98-4758, pages 392-404, St. Louis, MO, 1998.
 
 \li \anchor Giunta2006 Giunta, A. A., Swiler, L.P., Brown, S.L,
 Eldred, M.S., Richards, M.D., and Cyr, E.C., 2006. 
@@ -185,11 +205,20 @@ Vol. B11, no. 3, pp. 311-334.
 <i> ACM Transactions on Mathematical Software</i>, Volume 23, Number 2, 
 1997, pages 266-294.
 
+\li \anchor Koe96 J. R. Koehler and A. B. Owen. Computer experiments. 
+In S. Ghosh and C. R. Rao, editors, Handbook of Statistics, volume 13.
+Elsevier Science, New York, 1996.
+
 \li \anchor Lewis2000 Lewis, R. M., and Nash, S. G., 2000.  
 "A Multigrid Approach to the Optimization of Systems Governed by Differential Equations," 
 paper AIAA-2000-4890 in <i>Proceedings of the 8th AIAA/USAF/NASA/ISSMO
 Symposium on Multidisciplinary Analysis and Optimization</i>, Long
 Beach, CA, Sept. 6-8.
+
+\li \anchor McF08 J. M. McFarland.
+"Uncertainty Analysis for Computer Simulations through Validation and Calibration."
+PhD thesis, Vanderbilt University, Nashville, Tennesssee, 2008. available for download at
+http://etd.library.vanderbilt.edu/ETD-db/available/etd-03282008-125137/.
 
 \li \anchor MeOlHoWi07 Meza, J. C., Oliva, R. A., Hough, P. D., and
 Williams, P. J., 2007. "OPT++: An Object-Oriented Toolkit for
@@ -204,9 +233,22 @@ Mathematical Software</i> 20(3):286-307.
 Preliminary Computational Experiments," <i>Technometrics</i> 33(2):
 161-174.
 
+\li \anchor Mye95 R. H. Myers and D. C. Montgomery.
+"Response Surface Methodology: Process and Product Optimization Using Designed Experiments."
+John Wiley & Sons, Inc., New York, 1995.
+
+\li \anchor Nea04 A. Nealen.
+"A short-as-possible introduction to the least squares, weighted least squares, and moving least
+squares methods for scattered data approximation and interpolation."
+Technical report, Discrete Geometric Modeling Group, Technishe Universitaet, Berlin, Germany, 2004.
+
 \li \anchor Oberkampf2003 Oberkampf, W.L. and J.C. Helton, 2003. 
 "Evidence Theory for Engineering Applications."  Sandia National 
 Laboratories Technical Report SAND2003-3559P.
+
+\li \anchor Orr96 M. J. L. Orr.
+"Introduction to radial basis function networks."
+Technical report, University of Edinburgh, Edinburgh, Scotland, 1996.
 
 \li \anchor Perez2004 Perez, V. M., J. E. Renaud, L. T. Watson, 2004.
 "An Interior-Point Sequetial Approximation Optimization Methodology",
@@ -290,9 +332,8 @@ degree two," Applied Numerical Mathematics, Vol. 58, pp. 1515-1520.
 Function Approximation for Design Optimization," AIAA Journal, Vol. 36, 
 No. 12, December 1998.
 
-\htmlonly
-<hr>
-<br><b><a href="RespCommands.html#RespCommands">Previous chapter</a></b>
-\endhtmlonly
+\li \anchor Zim96 D. C. Zimmerman.
+"Genetic algorithms for navigating expensive and complex design spaces,"
+September 1996. Final Report for Sandia National Laboratories contract AO-7736 CA 02.
 
 */

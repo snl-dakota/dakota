@@ -1,6 +1,5 @@
 Blurb::
 Moving Least Squares surrogate models
-
 Description::
 Moving Least Squares can be considered a more specialized 
 version of linear regression models. In linear regression, 
@@ -9,24 +8,21 @@ where the residual is defined as the difference between the
 surrogate model and the true model at a fixed number of points. 
 In weighted least squares, the residual terms are weighted so the 
 determination of the optimal coefficients governing the polynomial 
-regression function, denoted by $\hat{f}({\bf x})$, are obtained by 
+regression function, denoted by \f$\hat{f}({\bf x})\f$, are obtained by 
 minimizing the weighted sum of squares at N data points: 
 
-\begin{equation}
- \sum_{n=1}^{N}w_{n}({\parallel \hat{f}({\bf x_{n}})-f({\bf x_{n}})\parallel})
- \label{models:surf:equation12} 
-\end{equation}
+\f[ \sum_{n=1}^{N}w_{n}({\parallel \hat{f}({\bf x_{n}})-f({\bf x_{n}})\parallel}) \f]
 
 Moving least squares is a further generalization of weighted least squares
 where the weighting is "moved" or recalculated for every new point where 
-a prediction is desired. \ref{Nea04} The implementation of 
+a prediction is desired. \ref Nea04 The implementation of 
 moving least squares 
 is still under development. We have found that it works well 
 in trust region methods where the surrogate model is constructed in 
 a constrained region over a few points. It does not appear to be working 
 as well globally, at least at this point in time.
 
-Topics::	empty
+Topics::	not_yet_reviewed
 Examples::
 Theory::
 Faq::

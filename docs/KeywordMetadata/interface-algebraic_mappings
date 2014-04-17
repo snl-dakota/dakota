@@ -5,18 +5,18 @@ If desired, one can define algebraic input-output mappings using the
 AMPL code [\ref Ampl2003 "Fourer et al., 2003"] and save these
 mappings in 3 files: \c stub.nl, \c stub.col, and
 \c stub.row, where \c stub is a particular root name
-describing a particular problem.  These files names can be
-communicated to %Dakota using the \c algebraic_mappings input.  This
+describing a particular problem. These files names can be
+communicated to %Dakota using the \c algebraic_mappings input. This
 string may either specify the \c stub.nl filename, or
 alternatively, just the \c stub itself.
 
 %Dakota then uses \c stub.col and \c stub.row to extract
 the input and output identifier strings and employs the AMPL solver
 library [\ref Gay1997 "Gay, 1997"] to process the DAG specification in
-\c stub.nl.  The variable and objective function names declared
+\c stub.nl. The variable and objective function names declared
 within AMPL should be a subset of the variable descriptors and
-response descriptors used by %Dakota (see \ref VarCommands and \ref
-RespLabels).  Ordering is not important, as %Dakota will reorder data
+response descriptors used by %Dakota (see \ref variables and \ref
+responses-descriptors). Ordering is not important, as %Dakota will reorder data
 as needed.
 
 Topics::

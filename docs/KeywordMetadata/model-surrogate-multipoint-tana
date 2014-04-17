@@ -1,36 +1,32 @@
 Blurb::
 Local multi-point model via two-point nonlinear approximation
 Description::
-\subsubsection{Two Point Adaptive Nonlinearity Approximation}\label{models:surf:tana}
+<b> Two Point Adaptive Nonlinearity Approximation </b>
 
-The TANA-3 method \ref{Xu98} is a multipoint approximation method
-based on the two point exponential approximation \ref{Fad90}. This
+The TANA-3 method [\ref Xu1998 "Xu and Grandhi, 1998"] is a multipoint approximation method
+based on the two point exponential approximation \ref Fad90. This
 approach involves a Taylor series approximation in intermediate
 variables where the powers used for the intermediate variables are
 selected to match information at the current and previous expansion
 points. The form of the TANA model is:
 
-\begin{equation}
-\hat{f}({\bf x}) \approx f({\bf x}_2) + \sum_{i=1}^n 
+\f[ \hat{f}({\bf x}) \approx f({\bf x}_2) + \sum_{i=1}^n 
 \frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
 (x_i^{p_i} - x_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf x}) \sum_{i=1}^n 
-(x_i^{p_i} - x_{i,2}^{p_i})^2 \label{eq:tana_f}
-\end{equation}
+(x_i^{p_i} - x_{i,2}^{p_i})^2 \f]
 
-where $n$ is the number of variables and:
+where \f$n\f$ is the number of variables and:
 
-\begin{eqnarray}
-p_i & = & 1 + \ln \left[ \frac{\frac{\partial f}{\partial x_i}({\bf x}_1)}
+\f[ p_i = 1 + \ln \left[ \frac{\frac{\partial f}{\partial x_i}({\bf x}_1)}
 {\frac{\partial f}{\partial x_i}({\bf x}_2)} \right] \left/ 
-\ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. \label{eq:tana_pi} \\
-\epsilon({\bf x}) & = & \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
-\sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2} \label{eq:tana_eps} \\
-H & = & 2 \left[ f({\bf x}_1) - f({\bf x}_2) - \sum_{i=1}^n 
+\ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. 
+\epsilon({\bf x}) = \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
+\sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2} 
+H = 2 \left[ f({\bf x}_1) - f({\bf x}_2) - \sum_{i=1}^n 
 \frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
-(x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] \label{eq:tana_H}
-\end{eqnarray}
+(x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] \f]
 
-and ${\bf x}_2$ and ${\bf x}_1$ are the current and previous expansion
+and \f${\bf x}_2\f$ and \f${\bf x}_1\f$ are the current and previous expansion
 points. Prior to the availability of two expansion points, a
 first-order Taylor series is used.
 

@@ -10,7 +10,6 @@ processes currently available: one that is in the surrogate library called surfp
 and one that is in dakota. The surfpack GP is often more accurate but is slower to build.
 
 Kriging/Gaussian-Process Spatial Interpolation Models
-<!--\label{models:surf:kriging} -->
 In Dakota 5.2, we have 2 versions of spatial interpolation models.
 One is located in Dakota itself and the other in the Surfpack subpackage 
 of Dakota which can be compiled in a stand alone mode. These models
@@ -29,7 +28,7 @@ the differences between them are explained in more detail below.
 
 The Kriging, also known as Gaussian process (GP), method uses techniques 
 developed in the geostatistics and spatial statistics communities 
-( \ref{Cre91}, \ref{Koe96}) to produce smooth surface fit models of the 
+( \ref Cre91, \ref Koe96) to produce smooth surface fit models of the 
 response values from a set of data points. The number of times the 
 fitted surface is differentiable will depend on the correlation function 
 that is used. Currently, the Gaussian correlation function is the only 
@@ -39,7 +38,6 @@ option for either version included in Dakota; this makes the GP model
 \f[
  \hat{f}(\underline{x}) \approx \underline{g}(\underline{x})^T\underline{\beta} +
  \underline{r}(\underline{x})^{T}\underline{\underline{R}}^{-1}(\underline{f}-\underline{\underline{G}}\ \underline{\beta})
- \label{models:surf:equation08}
 \f]
 
 where \f$\underline{x}\f$ is the current point in \f$n\f$-dimensional parameter
@@ -68,7 +66,7 @@ this analogy to define a small feasible region in which to search for
 correlation lengths. This region should (almost) always contain some 
 correlation matrices that are well conditioned and some that are optimal, 
 or at least near optimal. More details on Kriging/GP models may be 
-found in \ref{Giu98}.
+found in \ref Giu98.
 
 Since a GP has a hyper-parametric error model, it can be used 
 to model surfaces with slope discontinuities along with multiple 
@@ -78,10 +76,6 @@ in the parameter space. This surface fitting method needs a
 minimum number of design points equal to the sum of the number of 
 basis functions and the number of dimensions, \f$n\f$, but it is 
 recommended to use at least double this amount.
-<!--
-%\f$n_{c_{quad}}\f$ design points when possible (refer to
-%Section \ref{models:surf:polynomial} for \f$n_{c}\f$ definitions).
--->
 
 The GP model is guaranteed to pass through all of the response 
 data values that are used to construct the model. Generally, this is a
@@ -98,11 +92,10 @@ constructed (i.e., when the model is used for extrapolation).
 As mentioned above, there are two \c gaussian_process models 
 in Dakota 5.2, the \c surfpack version and the \c dakota
 version. More details on the \c gaussian_process dakota
-model can be found in \ref{McF08}. The differences between these 
+model can be found in \ref McF08. The differences between these 
 models are as follows: 
 
-\begin{itemize}
-\item Trend Function: The GP models incorporate a parametric trend 
+\li Trend Function: The GP models incorporate a parametric trend 
    function whose purpose is to capture large-scale variations. In 
    both models, the trend function can be a constant, linear,or 
    reduced quadratic (main effects only, no interaction terms) 
@@ -115,7 +108,7 @@ models are as follows:
    of a full (i.e. it includes interaction terms) quadratic polynomial; 
    this is accessed by following the \c trend keyword with 
    \c quadratic.
-\item Correlation Parameter Determination: Both of the 
+\li Correlation Parameter Determination: Both of the 
    \c gaussian_process models use a Maximum Likelihood Estimation 
    (MLE) approach to find the optimal values of the hyper-parameters 
    governing the mean and correlation functions. By default both models 
@@ -125,13 +118,11 @@ models are as follows:
    The \c gaussian_process surfpack model has several options for 
    the optimization method used. These are specified by the 
    \c optimization_method keyword followed by one of these strings:
-   \begin{itemize}
-   \item \c global which uses the default DIRECT optimizer,
-   \item \c local which uses the CONMIN optimizer,
-   \item \c sampling which generates several random guesses and 
+   \li \c global which uses the default DIRECT optimizer,
+   \li \c local which uses the CONMIN optimizer,
+   \li \c sampling which generates several random guesses and 
       picks the candidate with greatest likelihood, and
-   \item \c none 
-   \end{itemize} 
+   \li \c none 
    The \c none option, and the starting location of the 
    \c local optimization, default to the center, in 
    log(correlation length) scale, of the of small feasible region. 
@@ -142,7 +133,7 @@ models are as follows:
    be controlled using the \c max_trials keyword followed by a 
    positive integer. Note that we have found the \c global 
    optimization method to be the most robust.
-\item Ill-conditioning. One of the major problems in determining 
+\li Ill-conditioning. One of the major problems in determining 
    the governing values for a Gaussian process or Kriging model is 
    the fact that the correlation matrix can easily become 
    ill-conditioned when there are too many input points close together.
@@ -208,7 +199,7 @@ models are as follows:
    than the \c gaussian_process dakota. For this reason, the
    \c gaussian_process surfpack version is the default 
    option as of Dakota 5.2. 
-\item Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the 
+\li Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the 
    \c use_derivatives keyword will cause the 
    \c gaussian_process surfpack model to be built from a 
    combination of function value and gradient information. The 
@@ -242,8 +233,6 @@ models are as follows:
    accurate GEK models than when pivoted Cholesky or 
    whole-point-block pivoted Cholesky was performed on GEK's 
    correlation matrix.
-\end{itemize}
-
 
 
 Topics::	not_yet_reviewed

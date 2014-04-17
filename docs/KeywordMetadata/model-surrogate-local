@@ -1,4 +1,5 @@
 Blurb::
+Need a blurb
 Description::
 Local approximations use value, gradient, and possibly Hessian data
 from a single point to form a series expansion for approximating data
@@ -6,7 +7,7 @@ in the vicinity of this point. The currently available local
 approximation is the \c taylor_series selection. The order of the
 Taylor series may be either first-order or second-order, which is
 automatically determined from the gradient and Hessian specifications
-in the responses specification (see \ref RespGrad and \ref RespHess)
+in the responses specification (see \ref responses gradients and Hessians sections)
 for the truth model.
 <!-- The first-order Taylor series expansion is known as the -->
 <!-- "linear approximation" in the optimization literature. Other local -->

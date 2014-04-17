@@ -6,10 +6,10 @@ to capture the salient features of an expensive high-fidelity model.
 They can be used to explore the variations in response quantities over
 regions of the parameter space, or they can serve as inexpensive
 stand-ins for optimization or uncertainty quantification studies (see,
-for example, the surrogate-based optimization strategy in Section
-\ref{sbm}).  Surrogate models are used extensively in the
-surrogate-based optimization and least squares methods (see
-SurrBasedMinimizer and its derived classes and \ref MethodSB), in
+for example, the surrogate-based optimization methods,
+\ref method-surrogate_based_global and \ref method-surrogate_based_local).
+Surrogate models are used extensively in the
+surrogate-based optimization and least squares methods, in
 which the goals are to reduce expense by minimizing the number of
 truth function evaluations and to smooth out noisy data with a global
 data fit. However, the use of surrogate models is not restricted to
@@ -70,7 +70,7 @@ Examples::
 Theory::
 
 
-\subsection{Correction Approaches}
+<b> Correction Approaches </b>
 
 Each of the surrogate model types supports the use of correction
 factors that improve the local accuracy of the surrogate models. The
@@ -89,44 +89,34 @@ in function values between the surrogate and original models at a
 single point in parameter space through use of a simple scalar offset
 or scaling applied to the surrogate model. First-order corrections
 such as the first-order multiplicative correction (also known as beta
-correction \ref{Cha93}) and the first-order additive
-correction \ref{Lew00} also enforce consistency in the gradients and
+correction \ref Cha93) and the first-order additive
+correction \ref Lewis2000 also enforce consistency in the gradients and
 provide a much more substantial correction capability that is
-sufficient for ensuring provable convergence in SBO algorithms (see
-Section \ref{sbm:sblm}). SBO convergence rates can be further
+sufficient for ensuring provable convergence in SBO algorithms.
+SBO convergence rates can be further
 accelerated through the use of second-order corrections which also
-enforce consistency in the Hessians \ref{Eld04}, where the
+enforce consistency in the Hessians \ref Eldred2004a, where the
 second-order information may involve analytic, finite-difference, or
 quasi-Newton Hessians.
 
 Correcting surrogate models with additive corrections involves
-\begin{equation}
-\hat{f_{hi_{\alpha}}}({\bf x}) = f_{lo}({\bf x}) + \alpha({\bf x}) 
-\label{eq:correct_val_add}
-\end{equation}
+\f[ \hat{f_{hi_{\alpha}}}({\bf x}) = f_{lo}({\bf x}) + \alpha({\bf x})  \f]
 where multifidelity notation has been adopted for clarity. For
 multiplicative approaches, corrections take the form
-\begin{equation}
-\hat{f_{hi_{\beta}}}({\bf x}) = f_{lo}({\bf x}) \beta({\bf x})
-\label{eq:correct_val_mult}
-\end{equation}
-where, for local corrections, $\alpha({\bf x})$ and $\beta({\bf x})$
+\f[ \hat{f_{hi_{\beta}}}({\bf x}) = f_{lo}({\bf x}) \beta({\bf x}) \f]
+where, for local corrections, \f$\alpha({\bf x})\f$ and \f$\beta({\bf x})\f$
 are first or second-order Taylor series approximations to the exact
 correction functions:
-\begin{eqnarray}
-\alpha({\bf x}) & = & A({\bf x_c}) + \nabla A({\bf x_c})^T 
+\f[ \alpha({\bf x}) = A({\bf x_c}) + \nabla A({\bf x_c})^T 
 ({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T 
-\nabla^2 A({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_a} \\
-\beta({\bf x}) & = & B({\bf x_c}) + \nabla B({\bf x_c})^T 
+\nabla^2 A({\bf x_c}) ({\bf x} - {\bf x_c}) 
+\beta({\bf x}) = B({\bf x_c}) + \nabla B({\bf x_c})^T 
 ({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T \nabla^2 
-B({\bf x_c}) ({\bf x} - {\bf x_c}) \label{eq:taylor_b}
-\end{eqnarray}
+B({\bf x_c}) ({\bf x} - {\bf x_c})  \f]
 where the exact correction functions are
-\begin{eqnarray}
-A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})    \label{eq:exact_A} \\
-B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} \label{eq:exact_B}
-\end{eqnarray}
-Refer to \ref{Eld04} for additional details on the derivations.
+\f[ A({\bf x}) = f_{hi}({\bf x}) - f_{lo}({\bf x})    
+B({\bf x}) = \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})}  \f]
+Refer to \ref Eldred2004a for additional details on the derivations.
 
 A combination of additive and multiplicative corrections can provide
 for additional flexibility in minimizing the impact of the correction
@@ -135,56 +125,56 @@ multiplicative corrections can satisfy local consistency, but through
 the combination, global accuracy can be addressed as well. This
 involves a convex combination of the additive and multiplicative
 corrections:
-\begin{equation}
-\hat{f_{hi_{\gamma}}}({\bf x}) = \gamma \hat{f_{hi_{\alpha}}}({\bf x}) +
-(1 - \gamma) \hat{f_{hi_{\beta}}}({\bf x}) \label{eq:combined_form}
-\end{equation}
-where $\gamma$ is calculated to satisfy an additional matching
+\f[ \hat{f_{hi_{\gamma}}}({\bf x}) = \gamma \hat{f_{hi_{\alpha}}}({\bf x}) +
+(1 - \gamma) \hat{f_{hi_{\beta}}}({\bf x})  \f]
+where \f$\gamma\f$ is calculated to satisfy an additional matching
 condition, such as matching values at the previous design iterate.
 
-%It should be noted that in both first order correction methods, the
-%function $\hat{f}(x)$ matches the function value and gradients of
-%$f_{t}(x)$ at $x=x_{c}$. This property is necessary in proving that
-%the first order-corrected SBO algorithms are provably convergent to a
-%local minimum of $f_{t}(x)$. However, the first order correction
-%methods are significantly more expensive than the zeroth order
-%correction methods, since the first order methods require computing
-%both $\nabla f_{t}(x_{c})$ and $\nabla f_{s}(x_{c})$. When the SBO
-%strategy is used with either of the zeroth order correction methods,
-%or with no correction method, convergence is not guaranteed to a local
-%minimum of $f_{t}(x)$. That is, the SBO strategy becomes a heuristic
-%optimization algorithm. From a mathematical point of view this is
-%undesirable, but as a practical matter, the heuristic variants of SBO
-%are often effective in finding local minima.
+<!---
 
-%\emph{Usage guidelines:}
-%\begin{itemize}
-%\item Both the \c additive zeroth_order and
-% \c multiplicative zeroth_order correction methods are
-% "free" since they use values of $f_{t}(x_{c})$ that are normally
-% computed by the SBO strategy.
-%
-%\item The use of either the \c additive first_order method or
-% the \c multiplicative first_order method does not necessarily
-% improve the rate of convergence of the SBO algorithm.
-%
-%\item When using the first order correction methods, the
-% \c TRUE_FCN_GRAD response keywords must be modified (see
-% bottom of Figure \ref{sbm:sblm_rosen}) to allow either analytic or
-% numerical gradients to be computed. This provides the gradient data
-% needed to compute the correction function.
-%
-%\item For many computationally expensive engineering optimization
-% problems, gradients often are too expensive to obtain or are
-% discontinuous (or may not exist at all). In such cases the heuristic
-% SBO algorithm has been an effective approach at identifying optimal
-% designs \ref{Giu02}.
-%\end{itemize}
+It should be noted that in both first order correction methods, the
+function \f$\hat{f}(x)\f$ matches the function value and gradients of
+\f$f_{t}(x)\f$ at \f$x=x_{c}\f$. This property is necessary in proving that
+the first order-corrected SBO algorithms are provably convergent to a
+local minimum of \f$f_{t}(x)\f$. However, the first order correction
+methods are significantly more expensive than the zeroth order
+correction methods, since the first order methods require computing
+both \f$\nabla f_{t}(x_{c})\f$ and \f$\nabla f_{s}(x_{c})\f$. When the SBO
+strategy is used with either of the zeroth order correction methods,
+or with no correction method, convergence is not guaranteed to a local
+minimum of \f$f_{t}(x)\f$. That is, the SBO strategy becomes a heuristic
+optimization algorithm. From a mathematical point of view this is
+undesirable, but as a practical matter, the heuristic variants of SBO
+are often effective in finding local minima.
 
+\emph{Usage guidelines:}
+
+\li Both the \c additive zeroth_order and
+ \c multiplicative zeroth_order correction methods are
+ "free" since they use values of \f$f_{t}(x_{c})\f$ that are normally
+ computed by the SBO strategy.
+
+\li The use of either the \c additive first_order method or
+ the \c multiplicative first_order method does not necessarily
+ improve the rate of convergence of the SBO algorithm.
+
+\li When using the first order correction methods, the
+ \c TRUE_FCN_GRAD response keywords must be modified (see
+ bottom of Figure \ref{sbm:sblm_rosen}) to allow either analytic or
+ numerical gradients to be computed. This provides the gradient data
+ needed to compute the correction function.
+
+\li For many computationally expensive engineering optimization
+ problems, gradients often are too expensive to obtain or are
+ discontinuous (or may not exist at all). In such cases the heuristic
+ SBO algorithm has been an effective approach at identifying optimal
+ designs \ref Giu02.
+
+--->
 
 <b>BMA: Not clear where to put this!  A lot could go to theory or users?</b>
 
-\subsection{Data Fit Surrogate Models}\label{models:surrogate:datafit}
+<b> Data Fit Surrogate Models </b>
 
 A surrogate of the {\em data fit} type is a non-physics-based
 approximation typically involving interpolation or regression of a set
@@ -224,7 +214,7 @@ The data fitting methods in Dakota include software developed by
 Sandia researchers and by various researchers in the academic
 community.
 
-\subsubsection{Procedures for Surface Fitting}\label{models:surf:procedures}
+<b> Procedures for Surface Fitting </b>
 
 The surface fitting process consists of three steps: (1) selection of
 a set of design points, (2) evaluation of the true response quantities
@@ -235,7 +225,7 @@ correlation factors) in the surface fit model. In cases where there is
 more than one response quantity (e.g., an objective function plus one
 or more constraints), then a separate surface is built for each
 response quantity. Currently, the surface fit models are built using
-only 0$^{\mathrm{th}}$-order information (function values only), although
+only 0\f$^{\mathrm{th}}\f$-order information (function values only), although
 extensions to using higher-order information (gradients and Hessians)
 are possible. Each surface fitting method employs a different
 numerical method for computing its internal coefficients. For example,
@@ -244,44 +234,39 @@ singular value decomposition to compute the polynomial coefficients,
 whereas the kriging surface uses Maximum Likelihood Estimation to
 compute its correlation coefficients. More information on the
 numerical methods used in the surface fitting codes is provided in the
-Dakota Developers Manual \ref{DevMan}.
+Dakota Developers Manual.
 
 The set of design points that is used to construct a surface fit model
-is generated using either the DDACE software package \ref{TonXX} or the
-LHS software package \ref{Ima84}. These packages provide a variety of
+is generated using either the DDACE software package or the
+LHS software package. These packages provide a variety of
 sampling methods including Monte Carlo (random) sampling, Latin
 hypercube sampling, orthogonal array sampling, central composite
-design sampling, and Box-Behnken sampling. More information on these
-software packages is provided in Chapter \ref{dace}.
+design sampling, and Box-Behnken sampling.
 
-\subsubsection{Taylor Series}\label{models:surf:taylor}
+<b> Taylor Series </b>
 
 The Taylor series model is purely a local approximation method. That
 is, it provides local trends in the vicinity of a single point in
 parameter space. The first-order Taylor series expansion is:
-\begin{equation}
-\hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
-({\bf x} - {\bf x}_0) \label{eq:taylor1}
-\end{equation}
+\f[ \hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
+({\bf x} - {\bf x}_0)  \f]
 and the second-order expansion is:
-\begin{equation}
-\hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
+\f[ \hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
 ({\bf x} - {\bf x}_0) + \frac{1}{2} ({\bf x} - {\bf x}_0)^T 
-\nabla^2_{\bf x} f({\bf x}_0) ({\bf x} - {\bf x}_0) \label{eq:taylor2}
-\end{equation}
+\nabla^2_{\bf x} f({\bf x}_0) ({\bf x} - {\bf x}_0)  \f]
 
-where ${\bf x}_0$ is the expansion point in $n$-dimensional parameter
-space and $f({\bf x}_0)$, $\nabla_{\bf x} f({\bf x}_0)$, and
-$\nabla^2_{\bf x} f({\bf x}_0)$ are the computed response value,
+where \f${\bf x}_0\f$ is the expansion point in \f$n\f$-dimensional parameter
+space and \f$f({\bf x}_0)\f$, \f$\nabla_{\bf x} f({\bf x}_0)\f$, and
+\f$\nabla^2_{\bf x} f({\bf x}_0)\f$ are the computed response value,
 gradient, and Hessian at the expansion point, respectively. As
 dictated by the responses specification used in building the local
 surrogate, the gradient may be analytic or numerical and the Hessian
 may be analytic, numerical, or based on quasi-Newton secant updates.
 
 In general, the Taylor series model is accurate only in the region of
-parameter space that is close to ${\bf x}_0$ . While the accuracy is
+parameter space that is close to \f${\bf x}_0\f$ . While the accuracy is
 limited, the first-order Taylor series model reproduces the correct
-value and gradient at the point $\mathbf{x}_{0}$, and the second-order
+value and gradient at the point \f$\mathbf{x}_{0}\f$, and the second-order
 Taylor series model reproduces the correct value, gradient, and
 Hessian. This consistency is useful in provably-convergent
 surrogate-based optimization. The other surface fitting methods do not
@@ -294,7 +279,7 @@ consistency requirements of provably-convergent SBO.
 
 
 
-\subsection{Multifidelity Surrogate Models} \label{models:surrogate:multifid}
+<b> Multifidelity Surrogate Models </b>
 
 A second type of surrogate is the {\em model hierarchy} type (also
 called multifidelity, variable fidelity, variable complexity, etc.).
@@ -306,7 +291,7 @@ incompressible Euler CFD model on a coarse discretization could be
 used as a low-fidelity surrogate for a high-fidelity Navier-Stokes
 model on a fine discretization.
 
-\subsection{Reduced Order Models} \label{models:surrogate:rom}
+<b> Reduced Order Models </b>
 
 A third type of surrogate model involves {\em reduced-order modeling}
 techniques such as proper orthogonal decomposition (POD) in
@@ -322,13 +307,12 @@ therefore have better predictive qualities than data fits), but do not
 require multiple system models of varying fidelity (as required for
 model hierarchy surrogates).
 
-\subsection{Surrogate Model Selection}
+<b> Surrogate Model Selection </b>
 
 This section offers some guidance on choosing from among the available
 surrogate model types.
 
-\begin{itemize}
-\item For Surrogate Based Local Optimization, i.e. the 
+\li For Surrogate Based Local Optimization, i.e. the 
    \c surrogate_based_local method, with a trust region, either
    \c surrogate \c local \c taylor_series or
    \c surrogate \c multipoint \c tana will probably 
@@ -338,7 +322,7 @@ surrogate model types.
    \c surrogate \c global 
    \c gaussian_process \c surfpack or
    \c surrogate \c global \c moving_least_squares.
-\item For Efficient Global Optimization (EGO), i.e. the 
+\li For Efficient Global Optimization (EGO), i.e. the 
    \c efficient_global method, the default\\
    \c gaussian_process \c surfpack 
    is likely to find a more optimal value and/or use fewer true 
@@ -348,28 +332,28 @@ surrogate model types.
    than the \c dakota version. Note that currently the 
    \c use_derivatives keyword is not recommended for use with
    EGO based methods.
-\item For EGO based global interval estimation (EGIE), i.e. the 
+\li For EGO based global interval estimation (EGIE), i.e. the 
    \c global_interval_est \c ego method, 
    the default \c gaussian_process \c surfpack will
    likely work better than the alternative \c gaussian_process 
    \c dakota.
-\item For Efficient Global Reliability Analysis (EGRA), i.e. the 
+\li For Efficient Global Reliability Analysis (EGRA), i.e. the 
    \c global_reliability method the \c surfpack and 
    \c dakota versions of the gaussian process tend to give 
    similar answers with the \c dakota version tending to use
    fewer true function evaluations. Since this is based on EGO, it
    is likely that the default \c surfpack version is more 
    accurate, although this has not been rigorously demonstrated.
-\item For EGO based Dempster-Shafer Theory of Evidence, i.e. the 
+\li For EGO based Dempster-Shafer Theory of Evidence, i.e. the 
    \c global_evidence \c ego method, the default
    \c gaussian_process \c surfpack will often use
    significantly fewer true function evaluations than the 
    alternative \c gaussian_process \c dakota.
-\item When using a global surrogate to extrapolate, either the
+\li When using a global surrogate to extrapolate, either the
    \c gaussian_process \c surfpack or 
    \c polynomial \c quadratic or 
    \c polynomial \c cubic is recommended.
-\item When there is over roughly two or three thousand data points 
+\li When there is over roughly two or three thousand data points 
    and you wish to interpolate (or approximately interpolate) then 
    a Taylor series, Radial Basis Function Network, or Moving Least
    Squares fit is recommended. The only reason that the 
@@ -378,7 +362,7 @@ surrogate model types.
    to construct when the number of data points is very large. Use 
    of the third party MARS package included in Dakota is generally 
    discouraged.
-\item In other situations that call for a global surrogate, the 
+\li In other situations that call for a global surrogate, the 
    \c gaussian_process \c surfpack is generally 
    recommended. The \c use_derivatives keyword will 
    only be useful if accurate and an inexpensive derivatives 
@@ -389,7 +373,6 @@ surrogate model types.
    gradients, are the highest order derivatives that can be used
    to construct the \c gaussian_process \c surfpack
    model; Hessians will not be used even if they are available.
-\end{itemize}
 
 Faq::
 See_Also::	model-single, model-nested

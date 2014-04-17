@@ -1,23 +1,18 @@
 Blurb::
 Radial Basis Functions
-
 Description::
 Radial basis functions are functions whose value typically depends on the 
-distance from a center point, called the centroid, ${\bf c}$. 
+distance from a center point, called the centroid, \f${\bf c}\f$. 
 The surrogate model approximation is then built up as the sum of K 
 weighted radial basis functions: 
+\f[ \hat{f}({\bf x})=\sum_{k=1}^{K}w_{k}\phi({\parallel {\bf x} - {\bf c_{k}} \parallel}) \f]
 
-\begin{equation}
- \hat{f}({\bf x})=\sum_{k=1}^{K}w_{k}\phi({\parallel {\bf x} - {\bf c_{k}} \parallel})
- \label{models:surf:equation11} 
-\end{equation}
-
-where the $\phi$ are the individual radial basis functions. 
+where the \f$\phi\f$ are the individual radial basis functions. 
 These functions can be of any form, but often a Gaussian bell-shaped 
 function or splines are used. 
 Our implementation uses a Gaussian radial basis function. 
 The weights are determined via a linear least squares solution approach.
-See \ref{Orr96} for more details.
+See \ref Orr96 for more details.
 
 Topics::	empty
 Examples::

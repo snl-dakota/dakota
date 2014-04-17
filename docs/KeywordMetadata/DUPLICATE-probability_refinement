@@ -4,15 +4,14 @@ Description::
 Allow refinement of probability and generalized reliability results using importance sampling
 
 
-The \c probability_refinement specification
-is identical to that of \ref MethodNonDLocalRel, with the
-implementation difference that density reweighting must account for
+The \c probability_refinement 
+density reweighting must account for
 additional non-Gaussian cases. This option allows for refinement of
 probability and generalized reliability results using importance
 sampling.
 
 
-Topics::
+Topics::	problem
 Examples::
 Theory::
 Faq::

@@ -83,13 +83,8 @@ releases, the \c hierarchical interpolation approach will enable local
 refinement in addition to the current \c uniform and \c
 dimension_adaptive options.
 
-The \c variance_based_decomp and covariance controls are identical to
-that described in \ref MethodNonDPCE. As a default, the interpolation
-will be performed over continuous aleatory uncertain variables. To
-expand the dimensionality of the interpolation to include continuous
-design, state, and epistemic uncertain variables, it is necessary to
-specify which variables are active in the variables specification
-block. Interpolation points for these dimensions are based on
+The \c variance_based_decomp and covariance controls.
+Interpolation points for these dimensions are based on
 Gauss-Legendre rules if non-nested, Gauss-Patterson rules if nested,
 and Newton-Cotes points in the case of piecewise bases. Again, when
 probability integrals are evaluated, only the aleatory random variable
@@ -156,8 +151,7 @@ the PCE coefficients as described in options 4 and 5 above (although
 options 4 and 5 will share the \c sample_type, \c seed, and \c rng
 settings, if provided). 
 
-The \c probability_refinement specification is
-similar to that of \ref MethodNonDLocalRel, with the difference that
+When using the \c probability_refinement control,
 the number of refinement samples is not under the user's control
 (these evaluations are approximation-based, so management of this
 expense is less critical). This option allows for refinement of
@@ -221,7 +215,7 @@ Uncertainty Quantification Capabilities chapter of the Users Manual
 [\ref UsersMan "Adams et al., 2010"] for additional information on the
 SC algorithm.
 
-<!-- As for \ref MethodNonDPCE, the orthogonal polynomials used in defining
+<!-- Rhe orthogonal polynomials used in defining
 the Gauss points that make up the interpolation grid are governed by
 the Wiener, Askey, or Extended options. The Wiener option uses
 interpolation points from Gauss-Hermite (non-nested) or Genz-Keister
@@ -240,8 +234,7 @@ overridden by the user using the keywords \c askey or \c wiener, and
 automatically falls back from Extended/Askey to Wiener on a per
 variable basis as needed to support prescribed correlations.-->
 
-Finally, the process for multifidelity UQ is identical
-to that described in \ref MethodNonDPCE, with the exception that the
+When using multifidelity UQ, the
 high fidelity expansion generated from combining the low fidelity and
 discrepancy expansions retains the polynomial form of the low fidelity
 expansion (only the coefficients are updated).

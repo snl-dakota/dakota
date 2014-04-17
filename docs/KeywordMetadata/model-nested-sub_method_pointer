@@ -67,7 +67,7 @@ mappings (the number of strings in user-supplied primary and secondary
 variable mapping specifications must equal the total number of active
 top-level variables, including both continuous and discrete types).
 The ordering of the active variables is the same as shown in
-dakota.input.summary and as presented in \ref VarCommands.
+dakota.input.summary on \ref input_spec_summary and as presented in \ref variables.
 
 If inactive variables are present at the outer level, then the default
 type 3 mapping is used for these variables; that is, outer loop
@@ -164,10 +164,9 @@ optimization (for optimization under uncertainty), and optimization
 within uncertainty quantification (for uncertainty of optima) are all
 supported, with and without surrogate model indirection. Several
 examples of nested model usage are provided in
-Chapter~\ref{adv_models}, most notably mixed epistemic-aleatory UQ in
-Section~\ref{adv_models:mixed_uq}, optimization under uncertainty
-(OUU) in Section~\ref{adv_models:ouu}, and surrogate-based UQ in
-Section~\ref{adv_models:sbuq}.
+the Users Manual, most notably mixed epistemic-aleatory UQ,
+optimization under uncertainty
+(OUU), and surrogate-based UQ.
 
 
 Topics::	block_pointer, not_yet_reviewed

@@ -227,8 +227,7 @@ Theory::
 Global methods, often referred to as \em response surface methods,
 involve many points spread over the parameter ranges of interest.
 These surface fitting methods work in conjunction with the sampling
-methods and design of experiments methods described in
-Sections \ref{uq:sampling} and  \ref{dace:background}.
+methods and design of experiments methods.
 
 <b> Polynomial Regression </b>: First-order (linear), second-order
 (quadratic), and third-order (cubic) polynomial response surfaces
@@ -264,12 +263,12 @@ removed in a future release.
 
 <b> Artificial Neural Networks </b>: An implementation of the
 stochastic layered perceptron neural network developed by Prof. D. C.
-Zimmerman of the University of Houston \ref{Zim96}. This neural network
+Zimmerman of the University of Houston \ref Zim96. This neural network
 method is intended to have a lower training (fitting) cost than
 typical back-propagation neural networks.
 
 <b> Multivariate Adaptive Regression Splines (MARS) </b>: Software
-developed by Prof. J. H. Friedman of Stanford University \ref{Fri91}.
+developed by Prof. J. H. Friedman of Stanford University \ref Fri91.
 The MARS method creates a $C^2$-continuous patchwork of splines in the
 parameter space.
 
@@ -282,7 +281,7 @@ as the weighted sum of individual radial basis functions.
 considered a more specialized version of linear regression models.
 MLS is a weighted least squares approach where the weighting is 
 "moved" or recalculated for every new point where 
-a prediction is desired. \ref{Nea04} 
+a prediction is desired. \ref Nea04 
 
 %<b> Orthogonal Polynomials </b>: This technique involves the use of
 %multivariate orthogonal polynomials as a global basis for surrogate

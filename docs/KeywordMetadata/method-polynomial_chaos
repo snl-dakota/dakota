@@ -115,8 +115,7 @@ the PCE coefficients as described in options 4 and 5 above (although
 options 4 and 5 will share the \c sample_type, \c seed, and \c rng
 settings, if provided). 
 
-The \c probability_refinement specification is
-similar to that of \ref MethodNonDLocalRel, with the difference that
+When using the \c probability_refinement control,
 the number of refinement samples is not under the user's control
 (these evaluations are approximation-based, so management of this
 expense is less critical). This option allows for refinement of
@@ -127,7 +126,7 @@ sampling.
 
 The advanced use case of multifidelity UQ automatically becomes active
 if the model selected for iteration by the method specification is a
-multifidelity surrogate model (refer to \ref ModelSurrH). In this
+multifidelity surrogate model (see \ref model-surrogate-hierarchical). In this
 case, an expansion will first be formed for the model discrepancy (the
 difference between response results if \c additive \c correction or
 the ratio of results if \c multiplicative \c correction), using the
@@ -176,9 +175,8 @@ estimation is generally not recommended due to its slow convergence
 rate. <!--, although it does hold the advantage that the simulation
 budget is more flexible than that required by the other approaches.-->
 For incremental studies, approaches 4 and 5 support reuse of previous
-samples through the \c incremental_lhs (refer to \ref MethodNonDMC for
-description of incremental LHS) and \c reuse_samples (refer to \ref
-ModelSurrG for description of the "all" option of sample reuse)
+samples through the \ref method-sampling-incremental_lhs 
+and \ref model-surrogate-global-reuse_points
 specifications, respectively.
 
 In the quadrature and sparse grid cases, growth rates for nested and

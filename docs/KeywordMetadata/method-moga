@@ -89,7 +89,7 @@ domination_count selector of JEGA v1.0 can now be achieved using the
 \c domination_count fitness type and \c below_limit replacement type. 
 
 
-Topics::	package_jega, , not_yet_reviewed
+Topics::	package_jega, not_yet_reviewed
 Examples::
 Theory::
 The basic steps of the \c soga algorithm are as follows: 

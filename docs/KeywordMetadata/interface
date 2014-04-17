@@ -35,7 +35,8 @@ support user overrides of the automatic parallel configuration for the
 number of evaluation servers and the number of analysis servers, and
 the optional \c processors_per_evaluation specification supports user
 overrides for the size of processor allocations for evaluation servers
-(Note: see \ref InterfApplicDF for the \c processors_per_analysis
+(Note: see \ref interface-analysis_drivers-direct
+for the \c processors_per_analysis
 specification supported for direct interfaces). Similarly, the
 optional \c evaluation_scheduling and \c analysis_scheduling
 specifications can be used to override the automatic parallel

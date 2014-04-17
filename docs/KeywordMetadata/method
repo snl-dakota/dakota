@@ -67,8 +67,8 @@ methods support a similar specification in identifying a sub-method by
 either pointer or by name and either a required (surrogate-based) or
 optional (branch and bound) model pointer. Each of the method
 specifications identified by pointer has the responsibility for
-identifying corresponding model specifications (using \c model_pointer
-from \ref MethodIndControl), whereas methods identified by name cannot
+identifying corresponding model specifications (using \ref method-model_pointer),
+ whereas methods identified by name cannot
 delegate the need to identify a model by pointer. -->
 
 
