@@ -7363,7 +7363,7 @@ Test Number 6 succeeded
                       6.3212055883e-01
 <<<<< Best data captured at function evaluation 57
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 68 total (63 new, 5 duplicate)
+<<<<< Function evaluation summary: 74 total (66 new, 8 duplicate)
 <<<<< Best parameters          =
                                      0 x1
                                      0 x2
@@ -7371,7 +7371,7 @@ Test Number 7 succeeded
 <<<<< Best objective functions =
                       6.3212055883e-01
                       6.3212055883e-01
-<<<<< Best data captured at function evaluation 63
+<<<<< Best data captured at function evaluation 69
 dakota_multiobj1.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
