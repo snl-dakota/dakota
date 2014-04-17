@@ -131,8 +131,8 @@ Nested models utilize a sub-iterator and a sub-model to perform a
 complete iterative study as part of every evaluation of the model.
 This sub-iteration accepts variables from the outer level, performs
 the sub-level analysis, and computes a set of sub-level responses
-which are passed back up to the outer level. As described in the
-Models chapter of the Reference Manual~\cite{RefMan}, mappings are
+which are passed back up to the outer level. 
+Mappings are
 employed for both the variable inputs to the sub-model and the
 response outputs from the sub-model.
 

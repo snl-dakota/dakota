@@ -2,13 +2,12 @@ Blurb::
 A model with one of each block: variable, interface, and response
 Description::
 The single model is the simplest model type. It uses a single
-interface instance (see Chapter~\ref{interfaces}) to map variables
-(see Chapter~\ref{variables}) into responses (see
-Chapter~\ref{responses}). There is no recursion in this case. Refer
-to the Models chapter in the Dakota Reference Manual~\cite{RefMan} for
-additional information on the single model specification.
+\ref interface instance to map \ref variables
+into \ref responses. There is no recursion in this case.
 
-In the \c single model case, a single interface is used to map the variables into responses. The optional \c interface_pointer specification identifies this interface by cross-referencing with the \c id_interface string input from a particular interface keyword specification.
+The optional \c interface_pointer specification identifies the interface block
+by cross-referencing with the \c id_interface string input from a particular interface keyword specification.
+The same logic follows for resposnes and variables.
 
 Topics::	not_yet_reviewed
 Examples::
