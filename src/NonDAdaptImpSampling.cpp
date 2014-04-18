@@ -489,7 +489,8 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
   // Apply distribution bounds to the std normal samples to avoid violating
   // physical constraints
   for (i=0; i<numUncertainVars; ++i) {
-    std::pair<Real,Real> bnds = iteratedModel.continuous_distribution_bounds(i);
+    std::pair<Real, Real> bnds
+      = iteratedModel.continuous_distribution_bounds(i+numContDesVars);
     n_l_bnds[i] = bnds.first;
     n_u_bnds[i] = bnds.second;
   }
