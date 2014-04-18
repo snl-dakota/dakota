@@ -76,12 +76,20 @@ public:
   /// Check database contents, broadcast, and construct iterators
   void done_modifying_db();
 
+  /// Plug-in the passed interface into any interface matching the
+  /// specified (possibly empty) model, interface, and driver strings
+  void plugin_interface(const String& model_type,
+			const String& interf_type,
+			const String& an_driver,
+			Interface* plugin_iface);
+
   /// filter the available Interface instances based on matching interface
-  /// type and analysis drivers
+  /// type and analysis drivers (empty String matches any)
   InterfaceList filtered_interface_list(const String& interf_type,
 					const String& an_driver);
+
   /// filter the available Model instances based on matching model
-  /// type, interface type, and analysis drivers
+  /// type, interface type, and analysis drivers (empty String matches any)
   ModelList filtered_model_list(const String& model_type,
 				const String& interf_type,
 				const String& an_driver);

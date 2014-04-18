@@ -50,6 +50,9 @@ void run_dakota_data();
 /// supplemented with additional C++ API adjustments
 void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag);
 
+/// Simplest example of interface plugin
+void simple_interface_plugin(Dakota::LibraryEnvironment& env);
+
 /// Plug an interface into Dakota when Model's configuration details not needed
 void interface_plugins(Dakota::LibraryEnvironment& env);
 
@@ -209,8 +212,11 @@ void run_dakota_parse(const char* dakota_input_file)
     Cout << "Library mode 1: run_dakota_parse()\n";
 
   // plug the client's interface (function evaluator) into the Dakota
-  // environment
-  model_interface_plugins(env);
+  // environment; in serial case, demonstrate the simpler plugin method
+  if (env.mpi_manager().mpirun_flag())
+    model_interface_plugins(env);
+  else
+    simple_interface_plugin(env);
 
   // Execute the environment
   env.execute();
@@ -377,10 +383,27 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
 }
 
 
+/** Demonstration of simple plugin where client code doesn't required
+    access to detailed Dakota data for other reasons */
+void simple_interface_plugin(Dakota::LibraryEnvironment& env)
+{
+  std::string model_type("");  // demo: empty string will match any model type
+  std::string interf_type("direct");
+  std::string an_driver("plugin_rosenbrock");
+
+  Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+  Dakota::Interface* serial_iface = 
+    new SIM::SerialDirectApplicInterface(problem_db);
+
+  env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
+}
+
+
 /** From a filtered list of Interface candidates, plug-in a derived
     direct application interface instance ("plugin_rosenbrock").  This
     approach is for use when you do not need access to Model-based
-    parallel configuration information. */
+    parallel configuration information.  This version demonstrates
+    getting access to the list of Interfaces and plugging in. */
 void interface_plugins(Dakota::LibraryEnvironment& env)
 {
   Dakota::InterfaceList filt_interfs

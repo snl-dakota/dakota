@@ -92,6 +92,36 @@ void LibraryEnvironment::done_modifying_db()
 }
 
 
+void LibraryEnvironment::plugin_interface(const String& model_type,
+					  const String& interf_type,
+					  const String& an_driver,
+					  Interface* plugin_iface)
+{
+  Dakota::ModelList filt_models = 
+    filtered_model_list(model_type, interf_type, an_driver);
+
+  if (filt_models.empty())
+    Cerr << "Warning: interface plugin requested, but no interfaces matched "
+	 << "specified\n  model type =" << model_type << ","
+	 << "\n  interface type = "<< interf_type << " , and"
+	 << "\n  driver name = " << an_driver << "." << std::endl;
+
+  Dakota::ModelLIter ml_iter = filt_models.begin();
+  Dakota::ModelLIter ml_end = filt_models.end();
+  for ( ; ml_iter != ml_end; ++ml_iter) {
+    // set DB nodes to input specification for this Model
+    probDescDB.set_db_model_nodes(ml_iter->model_id());
+    // plugin the Interface
+    Dakota::Interface& model_interface = ml_iter->derived_interface();
+    bool ref_count_incr = false;
+    model_interface.assign_rep(plugin_iface, ref_count_incr);
+  }
+}
+
+
+/** This convenience function helps clients locate and plugin to the
+    right Interface instance for simple cases. Pass an empty string to
+    match any instead of a specific instance */
 InterfaceList LibraryEnvironment::
 filtered_interface_list(const String& interf_type, const String& an_driver)
 {
@@ -99,15 +129,23 @@ filtered_interface_list(const String& interf_type, const String& an_driver)
   ModelList& models = probDescDB.model_list();
   for (ModelLIter ml_iter=models.begin(); ml_iter!=models.end(); ++ml_iter) {
     Interface& model_interface = ml_iter->derived_interface();
-    if (model_interface.interface_type() == interf_type &&
-      //interface.analysis_drivers().size() == 1  &&
-	contains(model_interface.analysis_drivers(), an_driver))
+    if ( ( interf_type.empty() || 
+	   model_interface.interface_type() == interf_type )
+	 &&
+	 ( an_driver.empty() || 
+	   //interface.analysis_drivers().size() == 1  &&
+	   contains(model_interface.analysis_drivers(), an_driver) )
+	 )
       filt_interf_list.push_back(model_interface);
   }
   return filt_interf_list;
 }
 
 
+/** This convenience function helps clients locate and plugin to the
+    right Interface instance for cases where the parallel
+    configuration is needed in constructing a parallel plugin.  Pass
+    an empty string to match any instead of a specific instance */
 ModelList LibraryEnvironment::
 filtered_model_list(const String& model_type, const String& interf_type,
 		    const String& an_driver)
@@ -115,11 +153,15 @@ filtered_model_list(const String& model_type, const String& interf_type,
   ModelList filt_model_list;
   ModelList& models = probDescDB.model_list();
   for (ModelLIter ml_iter=models.begin(); ml_iter!=models.end(); ++ml_iter) {
-    if (ml_iter->model_type() == model_type) {
+    if (model_type.empty() || ml_iter->model_type() == model_type) {
       Interface& model_interface = ml_iter->derived_interface();
-      if (model_interface.interface_type() == interf_type &&
-	//interface.analysis_drivers().size() == 1  &&
-	  contains(model_interface.analysis_drivers(), an_driver))
+      if ( ( interf_type.empty() || 
+	     model_interface.interface_type() == interf_type )
+	   &&
+	   ( an_driver.empty() || 
+	     //interface.analysis_drivers().size() == 1  &&
+	     contains(model_interface.analysis_drivers(), an_driver) )
+	   )
 	filt_model_list.push_back(*ml_iter);
     }
   }
