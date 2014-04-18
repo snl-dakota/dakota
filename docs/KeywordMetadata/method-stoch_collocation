@@ -12,7 +12,7 @@ The groups and optional keywords relating to method specification are:
 
 In addition, this method
 treats variables that are not aleatoric-uncertain different,
-despite the \ref method-active keyword.
+despite the \ref variables-active keyword.
 
 Group 5 and the remainder of the optional keywords relate 
 to the output of the method.

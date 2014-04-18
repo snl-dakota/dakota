@@ -18,8 +18,8 @@ model-surrogate for recursion cases). Each of the model specifications
 identify the variables and responses specifications (using \ref
 model-variables_pointer and \ref model-responses_pointer)
 that are used to build the model, and depending on the type of model,
-may also identify an interface specification (using \ref
-model-interface_pointer). If one of these
+may also identify an interface specification (for example, using \ref
+model-single-interface_pointer). If one of these
 specifications does not provide an optional pointer, then that
 component will be constructed using the last specification parsed.
  

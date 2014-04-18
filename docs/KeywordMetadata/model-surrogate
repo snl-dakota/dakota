@@ -100,22 +100,36 @@ second-order information may involve analytic, finite-difference, or
 quasi-Newton Hessians.
 
 Correcting surrogate models with additive corrections involves
-\f[ \hat{f_{hi_{\alpha}}}({\bf x}) = f_{lo}({\bf x}) + \alpha({\bf x})  \f]
+\anchor eq-correct_val_add
+\f{equation}
+\hat{f_{hi_{\alpha}}}({\bf x}) = f_{lo}({\bf x}) + \alpha({\bf x}) 
+\f}
 where multifidelity notation has been adopted for clarity. For
 multiplicative approaches, corrections take the form
-\f[ \hat{f_{hi_{\beta}}}({\bf x}) = f_{lo}({\bf x}) \beta({\bf x}) \f]
+\anchor eq-correct_val_mult
+\f{equation}
+\hat{f_{hi_{\beta}}}({\bf x}) = f_{lo}({\bf x}) \beta({\bf x})
+\f}
 where, for local corrections, \f$\alpha({\bf x})\f$ and \f$\beta({\bf x})\f$
 are first or second-order Taylor series approximations to the exact
 correction functions:
-\f[ \alpha({\bf x}) = A({\bf x_c}) + \nabla A({\bf x_c})^T 
+\anchor eq-taylor_a
+\anchor eq-taylor_b
+\f{eqnarray}
+\alpha({\bf x}) & = & A({\bf x_c}) + \nabla A({\bf x_c})^T 
 ({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T 
-\nabla^2 A({\bf x_c}) ({\bf x} - {\bf x_c}) 
-\beta({\bf x}) = B({\bf x_c}) + \nabla B({\bf x_c})^T 
+\nabla^2 A({\bf x_c}) ({\bf x} - {\bf x_c})  \\
+\beta({\bf x}) & = & B({\bf x_c}) + \nabla B({\bf x_c})^T 
 ({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T \nabla^2 
-B({\bf x_c}) ({\bf x} - {\bf x_c})  \f]
+B({\bf x_c}) ({\bf x} - {\bf x_c})
+\f}
 where the exact correction functions are
-\f[ A({\bf x}) = f_{hi}({\bf x}) - f_{lo}({\bf x})    
-B({\bf x}) = \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})}  \f]
+\anchor eq-exact_B
+\anchor eq-exact_A 
+\f{eqnarray}
+A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})    \\
+B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} 
+\f}
 Refer to \ref Eldred2004a for additional details on the derivations.
 
 A combination of additive and multiplicative corrections can provide
@@ -248,12 +262,18 @@ design sampling, and Box-Behnken sampling.
 The Taylor series model is purely a local approximation method. That
 is, it provides local trends in the vicinity of a single point in
 parameter space. The first-order Taylor series expansion is:
-\f[ \hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
-({\bf x} - {\bf x}_0)  \f]
+\anchor eq-taylor1
+\f{equation}
+\hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
+({\bf x} - {\bf x}_0) 
+\f}
 and the second-order expansion is:
-\f[ \hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
+\anchor eq-taylor2
+\f{equation}
+\hat{f}({\bf x}) \approx f({\bf x}_0) + \nabla_{\bf x} f({\bf x}_0)^T 
 ({\bf x} - {\bf x}_0) + \frac{1}{2} ({\bf x} - {\bf x}_0)^T 
-\nabla^2_{\bf x} f({\bf x}_0) ({\bf x} - {\bf x}_0)  \f]
+\nabla^2_{\bf x} f({\bf x}_0) ({\bf x} - {\bf x}_0)
+\f}
 
 where \f${\bf x}_0\f$ is the expansion point in \f$n\f$-dimensional parameter
 space and \f$f({\bf x}_0)\f$, \f$\nabla_{\bf x} f({\bf x}_0)\f$, and

@@ -1,7 +1,7 @@
 Blurb::
 Option for the \c active keyword
 Description::
-See the \c active keyword
+See the \ref variables-active keyword
 Topics::	
 Examples::
 Theory::

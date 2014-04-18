@@ -5,7 +5,7 @@ Groups 1 and 2, plus the optional keywords \c p_refinement and
 \c fixed_seed relate 
 to the specification of a PCE method. In addition, this method
 treats variables that are not aleatoric-uncertain different,
-despite the \ref method-active keyword.
+despite the \ref variables-active keyword.
 
 Group 3, and the remainder of the optional keywords relate 
 to the output of the method.
@@ -175,7 +175,7 @@ estimation is generally not recommended due to its slow convergence
 rate. <!--, although it does hold the advantage that the simulation
 budget is more flexible than that required by the other approaches.-->
 For incremental studies, approaches 4 and 5 support reuse of previous
-samples through the \ref method-sampling-incremental_lhs 
+samples through the \ref method-sampling-sample_type-incremental_lhs 
 and \ref model-surrogate-global-reuse_points
 specifications, respectively.
 

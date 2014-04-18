@@ -1,1 +1,20 @@
-empty
+Not yet reviewed.
+
+Here's a test of the anchors and links
+
+\ref eq-correct_val_add
+
+\ref eq-correct_val_mult "test caption"
+
+\ref eq-taylor_a test caption 2 without quotes
+
+\ref eq-taylor_b
+
+\ref eq-exact_B
+
+\ref eq-exact_A
+
+\ref eq-taylor1
+
+\ref eq-taylor2
+
