@@ -303,7 +303,7 @@ are residual terms.
 
 The included analysis driver can handle both formulations.
 In the \texttt{Dakota/test} directory, the \texttt{rosenbrock}
-executable (compiled from \texttt{Dakota\_Source/test/rosenbrock.C}) checks the number of
+executable (compiled from \texttt{Dakota\_Source/test/rosenbrock.cpp}) checks the number of
 response functions passed in the parameters file and returns either an
 objective function (as computed from
 Equation~\ref{additional:rosenstd}) for use with optimization methods
@@ -351,7 +351,7 @@ for examples of each usage.
 % gradientType = analytic
 % hessianType = none
 % 
-% >>>>> Running Single Method Strategy.
+% >>>>> Executing environment.
 % 
 % >>>>> Running optpp_g_newton iterator.
 % 
@@ -440,7 +440,7 @@ for examples of each usage.
 % Confidence Interval for x2 is [  9.9997372187e-01,  1.0000224436e+00 ]
 % 
 % <<<<< Iterator optpp_g_newton completed.
-% <<<<< Single Method Strategy completed.
+% <<<<< Environment execution completed.
 % Dakota execution time in seconds:
 %   Total CPU        =       0.01 [parent =   0.017997, child =  -0.007997]
 %   Total wall clock =  0.0672231
@@ -659,15 +659,15 @@ see \texttt{Dakota/examples/users/cylhead\_opt\_npsol.in} }
 \end{figure}
 
 The interface keyword specifies use of the \texttt{cyl\_head}
-executable (compiled from \texttt{Dakota\_Source/test/cyl\_head.C}) as the
+executable (compiled from \texttt{Dakota\_Source/test/cyl\_head.cpp}) as the
 simulator. The variables and responses keywords specify the data sets
 to be used in the iteration by providing the initial point,
 descriptors, and upper and lower bounds for two continuous design
 variables and by specifying the use of one objective function, three
 inequality constraints, and numerical gradients in the problem. The
 method keyword specifies the use of the \texttt{npsol\_sqp} method to
-solve this constrained optimization problem. No strategy keyword is
-specified, so the default \texttt{single\_method} strategy is used.
+solve this constrained optimization problem. No environment keyword is
+specified, so the default \texttt{single\_method} approach is used.
 
 The solution for the constrained optimization problem is:
 \begin{eqnarray*}
@@ -705,7 +705,7 @@ The final report from the Dakota output is as follows:
                          -3.3471647504e-01
                           0.0000000000e+00
     <<<<< Best data captured at function evaluation 51
-    <<<<< Single Method Strategy completed.
+    <<<<< Environment execution completed.
     Dakota execution time in seconds:					 
       Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
       Total wall clock =   0.232134
@@ -858,7 +858,7 @@ The final report from the Dakota output is as follows:
     <<<<< Best constraint values   =
                          -9.6301439045e-12
     <<<<< Best data captured at function evaluation 36
-    <<<<< Single Method Strategy completed.
+    <<<<< Environment execution completed.
     Dakota execution time in seconds:
       Total CPU        =      0.18 [parent =      0.18, child =         0]
       Total wall clock =  0.809126
@@ -962,7 +962,7 @@ follows:
                          -1.6009000260e-02
                          -3.7083558446e-11
     <<<<< Best data captured at function evaluation 31
-    <<<<< Single Method Strategy completed.
+    <<<<< Environment execution completed.
     Dakota execution time in seconds:
       Total CPU        =       0.03 [parent =   0.027995, child =   0.002005]
       Total wall clock =   0.281375
@@ -1035,7 +1035,7 @@ f_2(x) &=& (1+10x_2) \times \left[1-\bigg(\frac{x_1}{1+10x_2}\bigg)^2-
 The input file for this example is shown in
 Figure~\ref{additional:moga2inp}, which references the
 \texttt{mogatest2} executable (compiled from
-\texttt{Dakota\_Source/test/mogatest2.C}) as the simulator. The Pareto
+\texttt{Dakota\_Source/test/mogatest2.cpp}) as the simulator. The Pareto
 front is shown in Figure~\ref{additional:moga2front}. Note the
 discontinuous nature of the front in this example.
 
@@ -1083,7 +1083,7 @@ The input file for this example is shown in
 Figure~\ref{additional:moga3inp}. It differs from
 Figure~\ref{additional:moga2inp} in the variables and responses
 specifications, in the use of the \texttt{mogatest3} executable
-(compiled from \texttt{Dakota\_Source/test/mogatest3.C}) as the simulator, and
+(compiled from \texttt{Dakota\_Source/test/mogatest3.cpp}) as the simulator, and
 in the \texttt{max\_function\_evaluations} and \texttt{mutation\_type}
 MOGA controls. The Pareto set is shown in
 Figure~\ref{additional:moga3set}. Note the discontinuous nature of the
@@ -1176,7 +1176,7 @@ methodName = psuade_moat
 gradientType = none
 hessianType = none
 
->>>>> Running Single Method Strategy.
+>>>>> Executing environment.
 
 >>>>> Running psuade_moat iterator.
 
