@@ -616,11 +616,9 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 
   // Update continuous aleatory variable types (needed for Model::
   // continuous_{probability_density,distribution_bounds}())
-  UShortMultiArray u_var_types = x_model.continuous_variable_types();//copy
   for (i=numContDesVars; i<num_cdv_cauv; ++i)
-    pecos_to_dakota_variable_type(u_types[i], u_var_types[i]);
-  recast_model->continuous_variable_types(
-    u_var_types[boost::indices[idx_range(0, numContinuousVars)]]);
+    recast_model->continuous_variable_type(
+      pecos_to_dakota_variable_type(u_types[i]), i);
 
   // Populate aleatory random var distribution params for transformed u-space.
   // *** Note ***: For use with REGRESSION approaches, variable ordering in
@@ -846,37 +844,34 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 }
 
 
-void NonD::
-pecos_to_dakota_variable_type(unsigned short  pecos_var_type,
-			      unsigned short& dakota_var_type)
+unsigned short NonD::
+pecos_to_dakota_variable_type(unsigned short pecos_var_type)
 {
   switch (pecos_var_type) {
-  case Pecos::CONTINUOUS_DESIGN: dakota_var_type = CONTINUOUS_DESIGN; break;
+  case Pecos::CONTINUOUS_DESIGN:           return CONTINUOUS_DESIGN;      break;
   case Pecos::STD_NORMAL: case Pecos::NORMAL: case Pecos::BOUNDED_NORMAL:
-    dakota_var_type = NORMAL_UNCERTAIN; break;
+    return NORMAL_UNCERTAIN; break;
   case Pecos::LOGNORMAL: case Pecos::BOUNDED_LOGNORMAL:
-    dakota_var_type = LOGNORMAL_UNCERTAIN; break;
+    return LOGNORMAL_UNCERTAIN; break;
   case Pecos::STD_UNIFORM: case Pecos::UNIFORM:
-    dakota_var_type = UNIFORM_UNCERTAIN; break;
-  case Pecos::LOGUNIFORM: dakota_var_type = LOGUNIFORM_UNCERTAIN; break;
-  case Pecos::TRIANGULAR: dakota_var_type = TRIANGULAR_UNCERTAIN; break;
+    return UNIFORM_UNCERTAIN; break;
+  case Pecos::LOGUNIFORM:                  return LOGUNIFORM_UNCERTAIN;   break;
+  case Pecos::TRIANGULAR:                  return TRIANGULAR_UNCERTAIN;   break;
   case Pecos::STD_EXPONENTIAL: case Pecos::EXPONENTIAL:
-    dakota_var_type = EXPONENTIAL_UNCERTAIN; break;
-  case Pecos::STD_BETA: case Pecos::BETA:
-    dakota_var_type = BETA_UNCERTAIN; break;
-  case Pecos::STD_GAMMA: case Pecos::GAMMA:
-    dakota_var_type = GAMMA_UNCERTAIN; break;
-  case Pecos::GUMBEL:        dakota_var_type = GUMBEL_UNCERTAIN;        break;
-  case Pecos::FRECHET:       dakota_var_type = FRECHET_UNCERTAIN;       break;
-  case Pecos::WEIBULL:       dakota_var_type = WEIBULL_UNCERTAIN;       break;
-  case Pecos::HISTOGRAM_BIN: dakota_var_type = HISTOGRAM_BIN_UNCERTAIN; break;
-  case Pecos::CONTINUOUS_INTERVAL:
-    dakota_var_type = CONTINUOUS_INTERVAL_UNCERTAIN; break;
-  case Pecos::CONTINUOUS_STATE: dakota_var_type = CONTINUOUS_STATE; break;
+    return EXPONENTIAL_UNCERTAIN; break;
+  case Pecos::STD_BETA:  case Pecos::BETA:      return BETA_UNCERTAIN;    break;
+  case Pecos::STD_GAMMA: case Pecos::GAMMA:     return GAMMA_UNCERTAIN;   break;
+  case Pecos::GUMBEL:                           return GUMBEL_UNCERTAIN;  break;
+  case Pecos::FRECHET:                          return FRECHET_UNCERTAIN; break;
+  case Pecos::WEIBULL:                          return WEIBULL_UNCERTAIN; break;
+  case Pecos::HISTOGRAM_BIN:       return HISTOGRAM_BIN_UNCERTAIN;        break;
+  case Pecos::CONTINUOUS_INTERVAL: return CONTINUOUS_INTERVAL_UNCERTAIN;  break;
+  case Pecos::CONTINUOUS_STATE:    return CONTINUOUS_STATE;               break;
   default:
     Cerr << "Error: unsupported Pecos distribution type in "
 	 << "pecos_to_dakota_variable_type()." << std::endl;
-    abort_handler(-1); break;
+    abort_handler(-1);
+    return 0; break;
   }
 }
 

@@ -53,6 +53,8 @@ private:
   /// lightweight constructor
   SharedVariablesDataRep(const std::pair<short,short>& view,
 			 const SizetArray& vars_comps_totals);
+  /// default constructor
+  SharedVariablesDataRep();
   /// destructor
   ~SharedVariablesDataRep();
 
@@ -159,6 +161,15 @@ private:
 };
 
 
+inline SharedVariablesDataRep::SharedVariablesDataRep(): referenceCount(1)
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesDataRep::SharedVariablesDataRep() called to build "
+       << "empty body object." << std::endl;
+#endif
+}
+
+
 inline SharedVariablesDataRep::~SharedVariablesDataRep()
 { }
 
@@ -236,6 +247,9 @@ public:
   //
   //- Heading: member functions
   //
+
+  /// create a deep copy of the current object and return by value
+  SharedVariablesData copy() const;
 
   /// size labels for all of the continuous variables, with or without
   /// discrete relaxation

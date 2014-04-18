@@ -208,21 +208,29 @@ public:
 
   /// return the active continuous variable types
   UShortMultiArrayConstView continuous_variable_types() const;
-  /// set the active continuous variable types from currentVariables
+  /// set the active continuous variable types
   void continuous_variable_types(UShortMultiArrayConstView cv_types);
+  /// set an active continuous variable type
+  void continuous_variable_type(unsigned short cv_type, size_t index);
   /// return the active discrete integer variable types
   UShortMultiArrayConstView discrete_int_variable_types() const;
-  /// set the active discrete variable types from currentVariables
+  /// set the active discrete integer variable types
   void discrete_int_variable_types(UShortMultiArrayConstView div_types);
+  /// set an active discrete integer variable type
+  void discrete_int_variable_type(unsigned short div_type, size_t index);
   /// return the active discrete real variable types
   UShortMultiArrayConstView discrete_real_variable_types() const;
-  /// set the active discrete variable types from currentVariables
+  /// set the active discrete real variable types
   void discrete_real_variable_types(UShortMultiArrayConstView drv_types);
+  /// set an active discrete real variable type
+  void discrete_real_variable_type(unsigned short drv_type, size_t index);
 
   /// return the active continuous variable position identifiers
   SizetMultiArrayConstView continuous_variable_ids() const;
-  /// set the active continuous variable identifiers from currentVariables
+  /// set the active continuous variable position identifiers
   void continuous_variable_ids(SizetMultiArrayConstView cv_ids);
+  /// set an active continuous variable position identifier
+  void continuous_variable_id(size_t cv_id, size_t index);
 
   /// returns the set of discrete variable ids relaxed into a continuous array
   const SizetArray& relaxed_discrete_ids() const;
@@ -318,7 +326,7 @@ public:
   SizetMultiArrayConstView all_continuous_variable_ids() const;
 
   /// for use when a deep copy is needed (the representation is _not_ shared)
-  Variables copy() const;
+  Variables copy(bool deep_svd = false) const;
 
   /// returns variablesView
   const std::pair<short,short>& view() const;
@@ -740,6 +748,14 @@ continuous_variable_types(UShortMultiArrayConstView cv_types)
 }
 
 
+inline void Variables::
+continuous_variable_type(unsigned short cv_type, size_t index)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_continuous_type(cv_type, svd.cv_start() + index);
+}
+
+
 inline UShortMultiArrayConstView Variables::discrete_int_variable_types() const
 {
   const SharedVariablesData& svd = shared_data();
@@ -752,6 +768,14 @@ discrete_int_variable_types(UShortMultiArrayConstView div_types)
 {
   SharedVariablesData& svd = shared_data();
   svd.all_discrete_int_types(div_types, svd.div_start(), svd.div());
+}
+
+
+inline void Variables::
+discrete_int_variable_type(unsigned short div_type, size_t index)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_int_type(div_type, svd.div_start() + index);
 }
 
 
@@ -770,6 +794,14 @@ discrete_real_variable_types(UShortMultiArrayConstView drv_types)
 }
 
 
+inline void Variables::
+discrete_real_variable_type(unsigned short drv_type, size_t index)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_real_type(drv_type, svd.drv_start() + index);
+}
+
+
 inline SizetMultiArrayConstView Variables::continuous_variable_ids() const
 {
   const SharedVariablesData& svd = shared_data();
@@ -781,6 +813,13 @@ inline void Variables::continuous_variable_ids(SizetMultiArrayConstView cv_ids)
 {
   SharedVariablesData& svd = shared_data();
   svd.all_continuous_ids(cv_ids, svd.cv_start(), svd.cv());
+}
+
+
+inline void Variables::continuous_variable_id(size_t cv_id, size_t index)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_continuous_id(cv_id, svd.cv_start() + index);
 }
 
 

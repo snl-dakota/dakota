@@ -744,7 +744,7 @@ void Variables::write(MPIPackBuffer& s) const
 /** Deep copies are used for history mechanisms such as bestVariablesArray
     and data_pairs since these must catalogue copies (and should not
     change as the representation within currentVariables changes). */
-Variables Variables::copy() const
+Variables Variables::copy(bool deep_svd) const
 {
   // the envelope class instantiates a new envelope and a new letter and copies
   // current attributes into the new objects.
@@ -758,8 +758,10 @@ Variables Variables::copy() const
 
   // shallow copy of SharedVariablesData
   if (variablesRep) {
-    // deep copy of Variables, shallow copy of SharedVariablesData
-    vars.variablesRep = get_variables(variablesRep->sharedVarsData);
+    // deep copy of Variables
+    vars.variablesRep = (deep_svd) ?
+      get_variables(variablesRep->sharedVarsData.copy()) : // deep SVD copy
+      get_variables(variablesRep->sharedVarsData);      // shallow SVD copy
 
     vars.variablesRep->allContinuousVars   = variablesRep->allContinuousVars;
     vars.variablesRep->allDiscreteIntVars  = variablesRep->allDiscreteIntVars;

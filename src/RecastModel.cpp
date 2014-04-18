@@ -68,21 +68,23 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
-  // only reshape if change in the counts of each variable type
-  bool reshape_vars;
-  if (vars_comps_totals.empty() || 
-      sub_model_vars.variables_components_totals() == vars_comps_totals) {
-    currentVariables = sub_model_vars.copy();
+  bool reshape_vars; // only reshape if change in variable type counts
+  // variables are not mapped: deep copy of vars to allow independence, but 
+  // shallow copy of svd since types/labels/ids can be kept consistent
+  if (variablesMapping == NULL) {
+    currentVariables = sub_model_vars.copy(); // shared svd
     reshape_vars = false;
   }
-  else {
+  // variables are mapped but not resized: deep copy of vars and svd, since
+  // types may change in transformed space
+  else if (vars_comps_totals.empty() || 
+	   sub_model_vars.variables_components_totals() == vars_comps_totals) {
+    currentVariables = sub_model_vars.copy(true); // independent svd
+    reshape_vars = false;
+  }
+  else { // variables are resized
     SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
     currentVariables = Variables(recast_svd);
-    if (!variablesMapping) {
-      Cerr << "\nError (RecastModel): variables are resized, but no variables "
-	   << "mapping provided." << std::endl;
-      abort_handler(-1);
-    }
     reshape_vars = true;
   }
   // propagate number of active continuous vars to deriv vars
@@ -158,14 +160,21 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
-  // only reshape if change in the counts of each variable type
-  bool reshape_vars;
-  if (vars_comps_totals.empty() || 
-      sub_model_vars.variables_components_totals() == vars_comps_totals) {
-    currentVariables = sub_model_vars.copy();
+  bool reshape_vars; // only reshape if change in variable type counts
+  // variables are not mapped: deep copy of vars to allow independence, but 
+  // shallow copy of svd since types/labels/ids can be kept consistent
+  if (variablesMapping == NULL) {
+    currentVariables = sub_model_vars.copy(); // shared svd
     reshape_vars = false;
   }
-  else {
+  // variables are mapped but not resized: deep copy of vars and svd, since
+  // types may change in transformed space
+  else if (vars_comps_totals.empty() || 
+	   sub_model_vars.variables_components_totals() == vars_comps_totals) {
+    currentVariables = sub_model_vars.copy(true); // independent svd
+    reshape_vars = false;
+  }
+  else { // variables are resized
     SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
     currentVariables = Variables(recast_svd);
     reshape_vars = true;

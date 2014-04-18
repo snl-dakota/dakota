@@ -24,14 +24,14 @@
 namespace Dakota {
 
 // special values for domain: Relaxed or Mixed
-enum { DEFAULT_DOMAIN, RELAXED_DOMAIN, MIXED_DOMAIN };
+enum { DEFAULT_DOMAIN=0, RELAXED_DOMAIN, MIXED_DOMAIN };
 // special values for active view: All, Design, {A+E,A,E} Uncertain, or State
-enum { DEFAULT_VIEW, ALL_VIEW, DESIGN_VIEW, UNCERTAIN_VIEW,
+enum { DEFAULT_VIEW=0, ALL_VIEW, DESIGN_VIEW, UNCERTAIN_VIEW,
        ALEATORY_UNCERTAIN_VIEW, EPISTEMIC_UNCERTAIN_VIEW, STATE_VIEW };
 // special values for active and inactive views include EMPTY plus the 12
 // combinations of All, Design, {A+E,A,E} Uncertain, or State active view
 // [6 total] and Relaxed or Mixed domain [2 total].
-enum { EMPTY, RELAXED_ALL, MIXED_ALL,
+enum { EMPTY=0, RELAXED_ALL, MIXED_ALL,
        RELAXED_DESIGN, RELAXED_UNCERTAIN, RELAXED_ALEATORY_UNCERTAIN,
        RELAXED_EPISTEMIC_UNCERTAIN, RELAXED_STATE,
        MIXED_DESIGN, MIXED_UNCERTAIN, MIXED_ALEATORY_UNCERTAIN,
@@ -40,7 +40,7 @@ enum { EMPTY, RELAXED_ALL, MIXED_ALL,
 // special values for SharedVariablesData::variablesComponents and
 // SharedVariablesData::all*Types (Note: these differ from the
 // pecos_global_defs.hpp enumeration, which is focused on ranVarTypesX/U)
-enum { CONTINUOUS_DESIGN, DISCRETE_DESIGN_RANGE, DISCRETE_DESIGN_SET_INT,
+enum { CONTINUOUS_DESIGN=1, DISCRETE_DESIGN_RANGE, DISCRETE_DESIGN_SET_INT,
        DISCRETE_DESIGN_SET_REAL, NORMAL_UNCERTAIN, LOGNORMAL_UNCERTAIN,
        UNIFORM_UNCERTAIN, LOGUNIFORM_UNCERTAIN, TRIANGULAR_UNCERTAIN,
        EXPONENTIAL_UNCERTAIN, BETA_UNCERTAIN, GAMMA_UNCERTAIN, GUMBEL_UNCERTAIN,

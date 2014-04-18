@@ -313,8 +313,8 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
   }
 
 #ifdef REFCOUNT_DEBUG
-  Cout << "SharedVariablesData::SharedVariablesData(ProblemDescDB) called to "
-       << "build base class data for letter object." << std::endl;
+  Cout << "SharedVariablesDataRep::SharedVariablesDataRep(problem_db, view) "
+       << "called to build body object." << std::endl;
 #endif
 }
 
@@ -344,6 +344,11 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
   //}
 
   // totals are insufficient for forming types
+
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesDataRep::SharedVariablesDataRep(view, "
+       << "vars_comps_totals) called to build body object." << std::endl;
+#endif
 }
 
 
@@ -371,6 +376,11 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
     initialize_all_discrete_real_types();
     //initialize_all_discrete_real_ids();
   }
+
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesDataRep::SharedVariablesDataRep(view, vars_comps) "
+       << "called to build body object." << std::endl;
+#endif
 }
 
 
@@ -811,6 +821,66 @@ void SharedVariablesDataRep::initialize_inactive_components()
   inactiveVarsCompsTotals[11] = (adrv_cntr >= idrvStart && adrv_cntr < idrv_end)
                               ? num_dsrv : 0;
   //acv_cntr += num_csv; adiv_cntr += num_dsiv; adrv_cntr += num_dsrv;
+}
+
+
+/** Deep copies are used when recasting changes the nature of a
+    Variables set. */
+SharedVariablesData SharedVariablesData::copy() const
+{
+  // the handle class instantiates a new handle and a new body and copies
+  // current attributes into the new body
+
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::copy() called to generate a deep copy with no "
+       << "representation sharing." << std::endl;
+#endif
+
+  SharedVariablesData svd; // new handle: referenceCount=1, svdRep=NULL
+
+  if (svdRep) {
+    svd.svdRep = new SharedVariablesDataRep();
+
+    svd.svdRep->variablesId             = svdRep->variablesId;
+    svd.svdRep->variablesComponents     = svdRep->variablesComponents;
+    svd.svdRep->variablesCompsTotals    = svdRep->variablesCompsTotals;
+    svd.svdRep->activeVarsCompsTotals   = svdRep->activeVarsCompsTotals;
+    svd.svdRep->inactiveVarsCompsTotals = svdRep->inactiveVarsCompsTotals;
+    svd.svdRep->variablesView           = svdRep->variablesView;
+    svd.svdRep->cvStart   = svdRep->cvStart;
+    svd.svdRep->divStart  = svdRep->divStart;
+    svd.svdRep->drvStart  = svdRep->drvStart;
+    svd.svdRep->icvStart  = svdRep->icvStart;
+    svd.svdRep->idivStart = svdRep->idivStart;
+    svd.svdRep->idrvStart = svdRep->idrvStart;
+    size_t num_cv, num_div, num_drv;
+    num_cv  = svd.svdRep->numCV  = svdRep->numCV;
+    num_div = svd.svdRep->numDIV = svdRep->numDIV;
+    num_drv = svd.svdRep->numDRV = svdRep->numDRV;
+    svd.svdRep->numICV  = svdRep->numICV;
+    svd.svdRep->numIDIV = svdRep->numIDIV;
+    svd.svdRep->numIDRV = svdRep->numIDRV;
+
+    // Boost MultiArrays must be resized prior to operator= assignment
+    svd.svdRep->allContinuousLabels.resize(boost::extents[num_cv]);
+    svd.svdRep->allContinuousLabels = svdRep->allContinuousLabels;
+    svd.svdRep->allDiscreteIntLabels.resize(boost::extents[num_div]);
+    svd.svdRep->allDiscreteIntLabels = svdRep->allDiscreteIntLabels;
+    svd.svdRep->allDiscreteRealLabels.resize(boost::extents[num_drv]);
+    svd.svdRep->allDiscreteRealLabels = svdRep->allDiscreteRealLabels;
+    svd.svdRep->allContinuousTypes.resize(boost::extents[num_cv]);
+    svd.svdRep->allContinuousTypes = svdRep->allContinuousTypes;
+    svd.svdRep->allDiscreteIntTypes.resize(boost::extents[num_div]);
+    svd.svdRep->allDiscreteIntTypes = svdRep->allDiscreteIntTypes;
+    svd.svdRep->allDiscreteRealTypes.resize(boost::extents[num_drv]);
+    svd.svdRep->allDiscreteRealTypes = svdRep->allDiscreteRealTypes;
+    svd.svdRep->allContinuousIds.resize(boost::extents[num_cv]);
+    svd.svdRep->allContinuousIds = svdRep->allContinuousIds;
+
+    svd.svdRep->relaxedDiscreteIds = svdRep->relaxedDiscreteIds;
+  }
+
+  return svd;
 }
 
 } // namespace Dakota

@@ -364,8 +364,7 @@ private:
 
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations
-  void pecos_to_dakota_variable_type(unsigned short  pecos_var_type,
-				     unsigned short& dakota_var_type);
+  unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
 
   //
   //- Heading: Data members
