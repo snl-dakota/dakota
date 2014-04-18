@@ -853,28 +853,30 @@ SharedVariablesData SharedVariablesData::copy() const
     svd.svdRep->icvStart  = svdRep->icvStart;
     svd.svdRep->idivStart = svdRep->idivStart;
     svd.svdRep->idrvStart = svdRep->idrvStart;
-    size_t num_cv, num_div, num_drv;
-    num_cv  = svd.svdRep->numCV  = svdRep->numCV;
-    num_div = svd.svdRep->numDIV = svdRep->numDIV;
-    num_drv = svd.svdRep->numDRV = svdRep->numDRV;
-    svd.svdRep->numICV  = svdRep->numICV;
-    svd.svdRep->numIDIV = svdRep->numIDIV;
-    svd.svdRep->numIDRV = svdRep->numIDRV;
+    svd.svdRep->numCV     = svdRep->numCV;
+    svd.svdRep->numDIV    = svdRep->numDIV;
+    svd.svdRep->numDRV    = svdRep->numDRV;
+    svd.svdRep->numICV    = svdRep->numICV;
+    svd.svdRep->numIDIV   = svdRep->numIDIV;
+    svd.svdRep->numIDRV   = svdRep->numIDRV;
 
     // Boost MultiArrays must be resized prior to operator= assignment
-    svd.svdRep->allContinuousLabels.resize(boost::extents[num_cv]);
+    size_t num_acv  = svdRep->allContinuousLabels.size(),
+           num_adiv = svdRep->allDiscreteIntLabels.size(),
+           num_adrv = svdRep->allDiscreteRealLabels.size();
+    svd.svdRep->allContinuousLabels.resize(boost::extents[num_acv]);
     svd.svdRep->allContinuousLabels = svdRep->allContinuousLabels;
-    svd.svdRep->allDiscreteIntLabels.resize(boost::extents[num_div]);
+    svd.svdRep->allDiscreteIntLabels.resize(boost::extents[num_adiv]);
     svd.svdRep->allDiscreteIntLabels = svdRep->allDiscreteIntLabels;
-    svd.svdRep->allDiscreteRealLabels.resize(boost::extents[num_drv]);
+    svd.svdRep->allDiscreteRealLabels.resize(boost::extents[num_adrv]);
     svd.svdRep->allDiscreteRealLabels = svdRep->allDiscreteRealLabels;
-    svd.svdRep->allContinuousTypes.resize(boost::extents[num_cv]);
+    svd.svdRep->allContinuousTypes.resize(boost::extents[num_acv]);
     svd.svdRep->allContinuousTypes = svdRep->allContinuousTypes;
-    svd.svdRep->allDiscreteIntTypes.resize(boost::extents[num_div]);
+    svd.svdRep->allDiscreteIntTypes.resize(boost::extents[num_adiv]);
     svd.svdRep->allDiscreteIntTypes = svdRep->allDiscreteIntTypes;
-    svd.svdRep->allDiscreteRealTypes.resize(boost::extents[num_drv]);
+    svd.svdRep->allDiscreteRealTypes.resize(boost::extents[num_adrv]);
     svd.svdRep->allDiscreteRealTypes = svdRep->allDiscreteRealTypes;
-    svd.svdRep->allContinuousIds.resize(boost::extents[num_cv]);
+    svd.svdRep->allContinuousIds.resize(boost::extents[num_acv]);
     svd.svdRep->allContinuousIds = svdRep->allContinuousIds;
 
     svd.svdRep->relaxedDiscreteIds = svdRep->relaxedDiscreteIds;
