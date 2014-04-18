@@ -208,13 +208,21 @@ public:
 
   /// return the active continuous variable types
   UShortMultiArrayConstView continuous_variable_types() const;
+  /// set the active continuous variable types from currentVariables
+  void continuous_variable_types(UShortMultiArrayConstView cv_types);
   /// return the active discrete integer variable types
   UShortMultiArrayConstView discrete_int_variable_types() const;
+  /// set the active discrete variable types from currentVariables
+  void discrete_int_variable_types(UShortMultiArrayConstView div_types);
   /// return the active discrete real variable types
   UShortMultiArrayConstView discrete_real_variable_types() const;
+  /// set the active discrete variable types from currentVariables
+  void discrete_real_variable_types(UShortMultiArrayConstView drv_types);
 
   /// return the active continuous variable position identifiers
   SizetMultiArrayConstView continuous_variable_ids() const;
+  /// set the active continuous variable identifiers from currentVariables
+  void continuous_variable_ids(SizetMultiArrayConstView cv_ids);
 
   /// returns the set of discrete variable ids relaxed into a continuous array
   const SizetArray& relaxed_discrete_ids() const;
@@ -724,10 +732,26 @@ inline UShortMultiArrayConstView Variables::continuous_variable_types() const
 }
 
 
+inline void Variables::
+continuous_variable_types(UShortMultiArrayConstView cv_types)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_continuous_types(cv_types, svd.cv_start(), svd.cv());
+}
+
+
 inline UShortMultiArrayConstView Variables::discrete_int_variable_types() const
 {
   const SharedVariablesData& svd = shared_data();
   return svd.all_discrete_int_types(svd.div_start(), svd.div());
+}
+
+
+inline void Variables::
+discrete_int_variable_types(UShortMultiArrayConstView div_types)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_int_types(div_types, svd.div_start(), svd.div());
 }
 
 
@@ -738,10 +762,25 @@ inline UShortMultiArrayConstView Variables::discrete_real_variable_types() const
 }
 
 
+inline void Variables::
+discrete_real_variable_types(UShortMultiArrayConstView drv_types)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_real_types(drv_types, svd.drv_start(), svd.drv());
+}
+
+
 inline SizetMultiArrayConstView Variables::continuous_variable_ids() const
 {
   const SharedVariablesData& svd = shared_data();
   return svd.all_continuous_ids(svd.cv_start(), svd.cv());
+}
+
+
+inline void Variables::continuous_variable_ids(SizetMultiArrayConstView cv_ids)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_continuous_ids(cv_ids, svd.cv_start(), svd.cv());
 }
 
 

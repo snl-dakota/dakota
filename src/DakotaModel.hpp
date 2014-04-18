@@ -345,13 +345,21 @@ public:
   void discrete_real_variable(Real d_var, size_t i);
 
   /// return the active continuous variable types from currentVariables
-  UShortMultiArrayConstView continuous_variable_types()    const;
+  UShortMultiArrayConstView continuous_variable_types() const;
+  /// set the active continuous variable types from currentVariables
+  void continuous_variable_types(UShortMultiArrayConstView cv_types);
   /// return the active discrete variable types from currentVariables
-  UShortMultiArrayConstView discrete_int_variable_types()  const;
+  UShortMultiArrayConstView discrete_int_variable_types() const;
+  /// set the active discrete variable types from currentVariables
+  void discrete_int_variable_types(UShortMultiArrayConstView div_types);
   /// return the active discrete variable types from currentVariables
   UShortMultiArrayConstView discrete_real_variable_types() const;
+  /// set the active discrete variable types from currentVariables
+  void discrete_real_variable_types(UShortMultiArrayConstView drv_types);
   /// return the active continuous variable identifiers from currentVariables
-  SizetMultiArrayConstView  continuous_variable_ids()      const;
+  SizetMultiArrayConstView continuous_variable_ids() const;
+  /// set the active continuous variable identifiers from currentVariables
+  void continuous_variable_ids(SizetMultiArrayConstView cv_ids);
 
   /// return the inactive continuous variables in currentVariables
   const RealVector& inactive_continuous_variables() const;
@@ -1292,10 +1300,29 @@ inline UShortMultiArrayConstView Model::continuous_variable_types() const
 }
 
 
+inline void Model::continuous_variable_types(UShortMultiArrayConstView cv_types)
+{
+  if (modelRep)
+    modelRep->currentVariables.continuous_variable_types(cv_types);
+  else
+    currentVariables.continuous_variable_types(cv_types);
+}
+
+
 inline UShortMultiArrayConstView Model::discrete_int_variable_types() const
 {
   return (modelRep) ? modelRep->currentVariables.discrete_int_variable_types()
                     : currentVariables.discrete_int_variable_types();
+}
+
+
+inline void Model::
+discrete_int_variable_types(UShortMultiArrayConstView div_types)
+{
+  if (modelRep)
+    modelRep->currentVariables.discrete_int_variable_types(div_types);
+  else
+    currentVariables.discrete_int_variable_types(div_types);
 }
 
 
@@ -1306,10 +1333,29 @@ inline UShortMultiArrayConstView Model::discrete_real_variable_types() const
 }
 
 
+inline void Model::
+discrete_real_variable_types(UShortMultiArrayConstView drv_types)
+{
+  if (modelRep)
+    modelRep->currentVariables.discrete_real_variable_types(drv_types);
+  else
+    currentVariables.discrete_real_variable_types(drv_types);
+}
+
+
 inline SizetMultiArrayConstView Model::continuous_variable_ids() const
 {
   return (modelRep) ? modelRep->currentVariables.continuous_variable_ids()
                     : currentVariables.continuous_variable_ids();
+}
+
+
+inline void Model::continuous_variable_ids(SizetMultiArrayConstView cv_ids)
+{
+  if (modelRep)
+    modelRep->currentVariables.continuous_variable_ids(cv_ids);
+  else
+    currentVariables.continuous_variable_ids(cv_ids);
 }
 
 
