@@ -15,7 +15,7 @@ minimizing the weighted sum of squares at N data points:
 
 Moving least squares is a further generalization of weighted least squares
 where the weighting is "moved" or recalculated for every new point where 
-a prediction is desired. \ref Nea04 The implementation of 
+a prediction is desired. \cite Nea04 The implementation of 
 moving least squares 
 is still under development. We have found that it works well 
 in trust region methods where the surrogate model is constructed in 

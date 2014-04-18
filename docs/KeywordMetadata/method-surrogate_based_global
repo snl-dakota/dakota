@@ -24,7 +24,7 @@ optimality quickly.
 
 <b> Method Independent Controls </b>
 
-\li \ref method-model_pointer must be used to identify a surrogate model
+\li TODO FIX <!-- \ref method-model_pointer --> must be used to identify a surrogate model
 \li \ref method-max_iterations is used as a stopping critierion (see note below)
 
 <b> Notes </b>

@@ -592,7 +592,7 @@ LAYOUT_FILE            =
 # feature you need bibtex and perl available in the search path. Do not use
 # file names with spaces, bibtex cannot handle them.
 
-CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/latex-users/Users.bib \
+CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/latex-user/Users.bib \
                          @CMAKE_CURRENT_SOURCE_DIR@/latex-theory/Theory.bib
 
 #---------------------------------------------------------------------------
@@ -736,7 +736,10 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             =  @CMAKE_CURRENT_SOURCE_DIR@/images
+IMAGE_PATH             =  @CMAKE_CURRENT_SOURCE_DIR@/images \
+		          @CMAKE_CURRENT_SOURCE_DIR@/latex-user/images \
+		          @CMAKE_CURRENT_SOURCE_DIR@/latex-theory/images
+
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

@@ -28,7 +28,7 @@ the differences between them are explained in more detail below.
 
 The Kriging, also known as Gaussian process (GP), method uses techniques 
 developed in the geostatistics and spatial statistics communities 
-( \ref Cre91, \ref Koe96) to produce smooth surface fit models of the 
+( \cite Cre91, \cite Koe96) to produce smooth surface fit models of the 
 response values from a set of data points. The number of times the 
 fitted surface is differentiable will depend on the correlation function 
 that is used. Currently, the Gaussian correlation function is the only 
@@ -66,7 +66,7 @@ this analogy to define a small feasible region in which to search for
 correlation lengths. This region should (almost) always contain some 
 correlation matrices that are well conditioned and some that are optimal, 
 or at least near optimal. More details on Kriging/GP models may be 
-found in \ref Giu98.
+found in \cite Giu98.
 
 Since a GP has a hyper-parametric error model, it can be used 
 to model surfaces with slope discontinuities along with multiple 
@@ -92,7 +92,7 @@ constructed (i.e., when the model is used for extrapolation).
 As mentioned above, there are two \c gaussian_process models 
 in Dakota 5.2, the \c surfpack version and the \c dakota
 version. More details on the \c gaussian_process dakota
-model can be found in \ref McF08. The differences between these 
+model can be found in \cite McF08. The differences between these 
 models are as follows: 
 
 \li Trend Function: The GP models incorporate a parametric trend 

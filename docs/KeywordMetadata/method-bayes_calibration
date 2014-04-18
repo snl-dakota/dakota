@@ -32,7 +32,7 @@ DREAM (DiffeRential Evolution Adaptive
 Metropolis) is a method that runs multiple different chains simultaneously 
 for global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace sampling. 
-[\ref Vrugt2009 "Vrugt et al. 2009"].
+[\cite Vrugt2009].
 GPMSA (Gaussian Process Models for Simulation Analysis) is 
 a code that has been developed at Los Alamos National Laboratory. 
 It uses Gaussian process models as part of constructing 

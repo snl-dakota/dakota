@@ -4,7 +4,7 @@ Description::
 <b> Two Point Adaptive Nonlinearity Approximation </b>
 
 The TANA-3 method [\ref Xu1998 "Xu and Grandhi, 1998"] is a multipoint approximation method
-based on the two point exponential approximation \ref Fad90. This
+based on the two point exponential approximation \cite Fad90. This
 approach involves a Taylor series approximation in intermediate
 variables where the powers used for the intermediate variables are
 selected to match information at the current and previous expansion

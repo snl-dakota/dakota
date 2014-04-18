@@ -7,23 +7,22 @@ applications. Dakota also offers more advanced algorithms, e.g., to
 manage multi-objective optimization or perform surrogate-based
 minimization.  This chapter summarizes optimization problem
 formulation, standard algorithms available in Dakota (mostly through
-included third-party libraries, see~\ref{opt:libraries}), some
+included third-party libraries, see <!-- TODO ~\ref{opt:libraries} -->), some
 advanced capabilities, and offers usage guidelines.
 
-\section{Optimization Formulations}
-\label{opt:formulations}
+\section OptFormulations Optimization Formulations
 
 This section provides a basic introduction to the mathematical
 formulation of optimization, problems. The primary goal of this
 section is to introduce terms relating to these topics, and is not
 intended to be a description of theory or numerical algorithms. For
 further details,
-consult~\cite{Aro89},~\cite{Gil81},~\cite{Haf92},~\cite{Noc99}, and
-~\cite{Van84}.
+consult \cite Aro89 , \cite Gil81, \cite Haf92, \cite Noc99, and
+\cite Van84.
 
 A general optimization problem is formulated as follows:
 
-\begin{eqnarray}
+\f{eqnarray}{
   \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
   & & \mathbf{x} \in \Re^{n}\nonumber\\
   \hbox{subject to:} & &
@@ -33,52 +32,52 @@ A general optimization problem is formulated as follows:
   \mathbf{a}_U\nonumber\\
   & & \mathbf{A}_{e}\mathbf{x}=\mathbf{a}_{t}\nonumber\\
   & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U\nonumber
-\end{eqnarray}
+\f}
 
 where vector and matrix terms are marked in bold typeface. In this
-formulation, $\mathbf{x}=[x_{1},x_{2},\ldots,x_{n}]$ is an
-n-dimensional vector of real-valued \emph{design variables} or
-\emph{design parameters}. The n-dimensional vectors, $\mathbf{x}_{L}$
-and $\mathbf{x}_U$, are the lower and upper bounds, respectively, on
+formulation, \f$\mathbf{x}=[x_{1},x_{2},\ldots,x_{n}]\f$ is an
+n-dimensional vector of real-valued <em>design variables</em> or
+<em>design parameters</em>. The n-dimensional vectors, \f$\mathbf{x}_{L}\f$
+and \f$\mathbf{x}_U\f$, are the lower and upper bounds, respectively, on
 the design parameters. These bounds define the allowable values for
-the elements of $\mathbf{x}$, and the set of all allowable values is
-termed the \emph{design space} or the \emph{parameter space}. A
-\emph{design point} or a \emph{sample point} is a particular set of 
+the elements of \f$\mathbf{x}\f$, and the set of all allowable values is
+termed the <em>design space</em> or the <em>parameter space</em>. A
+<em>design point</em> or a <em>sample point</em> is a particular set of 
 values within the parameter space.
 
-The optimization goal is to minimize the \emph{objective function},
-$f(\mathbf{x})$, while satisfying the constraints. Constraints can be
+The optimization goal is to minimize the <em>objective function</em>,
+\f$f(\mathbf{x})\f$, while satisfying the constraints. Constraints can be
 categorized as either linear or nonlinear and as either inequality or
-equality. The \emph{nonlinear inequality constraints},
-$\mathbf{g(x)}$, are ``2-sided,'' in that they have both lower and
-upper bounds, $\mathbf{g}_L$ and $\mathbf{g}_U$, respectively. The
-\emph{nonlinear equality constraints}, $\mathbf{h(x)}$, have target
-values specified by $\mathbf{h}_{t}$. The linear inequality
-constraints create a linear system $\mathbf{A}_i\mathbf{x}$, where
-$\mathbf{A}_i$ is the coefficient matrix for the linear system. These
+equality. The <em>nonlinear inequality constraints}</em>,
+\f$\mathbf{g(x)}\f$, are ``2-sided,'' in that they have both lower and
+upper bounds, \f$\mathbf{g}_L\f$ and \f$\mathbf{g}_U\f$, respectively. The
+<em>nonlinear equality constraints</em>, \f$\mathbf{h(x)}\f$, have target
+values specified by \f$\mathbf{h}_{t}\f$. The linear inequality
+constraints create a linear system \f$\mathbf{A}_i\mathbf{x}\f$, where
+\f$\mathbf{A}_i\f$ is the coefficient matrix for the linear system. These
 constraints are also 2-sided as they have lower and upper bounds,
-$\mathbf{a}_L$ and $\mathbf{a}_U$, respectively. The linear equality
-constraints create a linear system $\mathbf{A}_e\mathbf{x}$, where
-$\mathbf{A}_e$ is the coefficient matrix for the linear system and
-$\mathbf{a}_{t}$ are the target values. The constraints partition the
+\f$\mathbf{a}_L\f$ and \f$\mathbf{a}_U\f$, respectively. The linear equality
+constraints create a linear system \f$\mathbf{A}_e\mathbf{x}\f$, where
+\f$\mathbf{A}_e\f$ is the coefficient matrix for the linear system and
+\f$\mathbf{a}_{t}\f$ are the target values. The constraints partition the
 parameter space into feasible and infeasible regions. A design point
-is said to be \emph{feasible} if and only if it satisfies all of the
+is said to be <em>feasible</em> if and only if it satisfies all of the
 constraints. Correspondingly, a design point is said to be
-\emph{infeasible} if it violates one or more of the constraints.
+<em>infeasible</em> if it violates one or more of the constraints.
 
 Many different methods exist to solve the optimization problem given
-by Equation~\ref{opt:formulations:equation01}, all of which iterate on
-$\mathbf{x}$ in some manner. That is, an initial value for each
-parameter in $\mathbf{x}$ is chosen, the \emph{response quantities},
-$f(\mathbf{x})$, $\mathbf{g(x)}$, $\mathbf{h(x)}$, are computed, often
+by Equation<!-- TODO ~\ref{opt:formulations:equation01}-->, all of which iterate on
+\f$\mathbf{x}\f$ in some manner. That is, an initial value for each
+parameter in \f$\mathbf{x}\f$ is chosen, the <em>response quantities</em>,
+\f$f(\mathbf{x})\f$, \f$\mathbf{g(x)}\f$, \f$\mathbf{h(x)}\f$, are computed, often
 by running a simulation, and some algorithm is applied to generate a
-new $\mathbf{x}$ that will either reduce the objective function,
+new \f$\mathbf{x}\f$ that will either reduce the objective function,
 reduce the amount of infeasibility, or both. To facilitate a general
 presentation of these methods, three criteria will be used in the
 following discussion to differentiate them: optimization problem type,
 search goal, and search method.
 
-The {\bf optimization problem type} can be characterized both by
+The <b>optimization problem type</b> can be characterized both by
 the types of constraints present in the problem and by the linearity
 or nonlinearity of the objective and constraint functions. For
 constraint categorization, a hierarchy of complexity exists for
@@ -86,32 +85,32 @@ optimization algorithms, ranging from simple bound constraints,
 through linear constraints, to full nonlinear constraints. By the
 nature of this increasing complexity, optimization problem
 categorizations are inclusive of all constraint types up to a
-particular level of complexity. That is, an \emph{unconstrained
-  problem} has no constraints, a \emph{bound-constrained problem} has
+particular level of complexity. That is, an <em>unconstrained
+  problem</em> has no constraints, a <em>bound-constrained problem</em> has
 only lower and upper bounds on the design parameters, a
-\emph{linearly-constrained problem} has both linear and bound
-constraints, and a \emph{nonlinearly-constrained problem} may contain
+<em>linearly-constrained problem</em> has both linear and bound
+constraints, and a <em>nonlinearly-constrained problem</em> may contain
 the full range of nonlinear, linear, and bound constraints. If all of
 the linear and nonlinear constraints are equality constraints, then
-this is referred to as an \emph{equality-constrained problem}, and if
+this is referred to as an <em>equality-constrained problem</em>, and if
 all of the linear and nonlinear constraints are inequality
 constraints, then this is referred to as an
-\emph{inequality-constrained problem}. Further categorizations can be
+<em>inequality-constrained problem</em>. Further categorizations can be
 made based on the linearity of the objective and constraint functions.
 A problem where the objective function and all constraints are linear
-is called a \emph{linear programming (LP) problem}. These types of
+is called a <em>linear programming (LP) problem</em>. These types of
 problems commonly arise in scheduling, logistics, and resource
 allocation applications. Likewise, a problem where at least some of
 the objective and constraint functions are nonlinear is called a
-\emph{nonlinear programming (NLP) problem}. These NLP problems
+<em>nonlinear programming (NLP) problem</em>. These NLP problems
 predominate in engineering applications and are the primary focus of
 Dakota.
 
-The {\bf search goal} refers to the ultimate objective of the
+The <b>search goal</b> refers to the ultimate objective of the
 optimization algorithm, i.e., either global or local optimization. In
-\emph{global optimization}, the goal is to find the design point that
+<em>global optimization</em>, the goal is to find the design point that
 gives the lowest feasible objective function value over the entire
-parameter space. In contrast, in \emph{local optimization}, the goal
+parameter space. In contrast, in <em>local optimization</em>, the goal
 is to find a design point that is lowest relative to a ``nearby''
 region of the parameter space. In almost all cases, global
 optimization will be more computationally expensive than local
@@ -119,11 +118,11 @@ optimization. Thus, the user must choose an optimization algorithm
 with an appropriate search scope that best fits the problem goals and
 the computational budget.
 
-The {\bf search method} refers to the approach taken in the
+The <b>search method</b> refers to the approach taken in the
 optimization algorithm to locate a new design point that has a lower
 objective function or is more feasible than the current design point.
-The search method can be classified as either \emph{gradient-based} or
-\emph{nongradient-based}. In a gradient-based algorithm, gradients of
+The search method can be classified as either <em>gradient-based</em> or
+<em>nongradient-based</em>. In a gradient-based algorithm, gradients of
 the response functions are computed to find the direction of
 improvement. Gradient-based optimization is the search method that
 underlies many efficient local optimization methods. However, a
@@ -145,85 +144,82 @@ local, multipoint, global, and hierarchical surrogates for use in
 optimization. Finally, sometimes there are multiple objectives that 
 one may want to optimize simultaneously instead of a single scalar 
 objective.  In this case, one may employ multi-objective methods 
-that are described in Section~\ref{opt:additional:multiobjective}.
+that are described in Section<!-- TODO ~\ref{opt:additional:multiobjective}-->.
 
 This overview of optimization approaches underscores that no single
 optimization method or algorithm works best for all types of
-optimization problems. Section~\ref{opt:usage} offers guidelines for
+optimization problems. Section<!-- TODO ~\ref{opt:usage}--> offers guidelines for
 choosing a Dakota optimization algorithm best matched to your specific
 optimization problem.
 
-\subsection{Constraint Considerations}
-\label{opt:formulations:constraints}
+\subsection OptFormulationsConstraints Constraint Considerations
 
 Dakota's input commands permit the user to specify two-sided nonlinear
-inequality constraints of the form $g_{L_{i}} \leq g_{i}(\mathbf{x})
-\leq g_{U_{i}}$, as well as nonlinear equality constraints of the form
-$h_{j}(\mathbf{x}) = h_{t_{j}}$. Some optimizers (e.g.,
-\texttt{npsol\_}, \texttt{optpp\_}, \texttt{soga}, and \texttt{moga}
+inequality constraints of the form \f$g_{L_{i}} \leq g_{i}(\mathbf{x})
+\leq g_{U_{i}}\f$, as well as nonlinear equality constraints of the form
+\f$h_{j}(\mathbf{x}) = h_{t_{j}}\f$. Some optimizers (e.g.,
+\c npsol_, \c optpp_, \c soga, and \c moga
 methods) can handle these constraint forms directly, whereas other
-optimizers (e.g., \texttt{asynch\_pattern\_search}, \texttt{dot\_},
-and \texttt{conmin\_}, \texttt{mesh\_adaptive\_search}) require Dakota
+optimizers (e.g., \c asynch_pattern_search, \c dot_,
+and \c conmin_, \c mesh_adaptive_search) require Dakota
 to perform an internal conversion of all constraints to one-sided
-inequality constraints of the form $g_{i}(\mathbf{x}) \leq 0$. In the
+inequality constraints of the form \f$g_{i}(\mathbf{x}) \leq 0\f$. In the
 latter case, the two-sided inequality constraints are treated as
-$g_{i}(\mathbf{x}) - g_{U_{i}} \leq 0$ and $g_{L_{i}} -
-g_{i}(\mathbf{x}) \leq 0$ and the equality constraints are treated as
-$h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0$ and $h_{t_{j}} -
-h_{j}(\mathbf{x}) \leq 0$. The situation is similar for linear
-constraints: \texttt{asynch\_pattern\_search}, \texttt{npsol\_},
-\texttt{optpp\_}, \texttt{soga}, and \texttt{moga} methods support
-them directly, whereas \texttt{dot\_} and \texttt{conmin\_} methods do
-not. For linear inequalities of the form $a_{L_{i}} \leq
-\mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}$ and linear equalities of
-the form $\mathbf{a}_{i}^{T}\mathbf{x} = a_{t_{j}}$, the nonlinear
-constraint arrays in \texttt{dot\_} and \texttt{conmin\_} methods are
-further augmented to include $\mathbf{a}_{i}^{T}\mathbf{x} - a_{U_{i}}
-\leq 0$ and $a_{L_{i}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the
-inequality case and $\mathbf{a}_{i}^{T}\mathbf{x} - a_{t_{j}} \leq 0$
-and $a_{t_{j}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the equality
+\f$g_{i}(\mathbf{x}) - g_{U_{i}} \leq 0\f$ and \f$g_{L_{i}} -
+g_{i}(\mathbf{x}) \leq 0\f$ and the equality constraints are treated as
+\f$h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0\f$ and \f$h_{t_{j}} -
+h_{j}(\mathbf{x}) \leq 0\f$. The situation is similar for linear
+constraints: \c asynch_pattern_search, \c npsol_,
+\c optpp_, \c soga, and \c moga methods support
+them directly, whereas \c dot_ and \c conmin_ methods do
+not. For linear inequalities of the form \f$a_{L_{i}} \leq
+\mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}\f$ and linear equalities of
+the form \f$\mathbf{a}_{i}^{T}\mathbf{x} = a_{t_{j}}\f$, the nonlinear
+constraint arrays in \c dot_ and \c conmin_ methods are
+further augmented to include \f$\mathbf{a}_{i}^{T}\mathbf{x} - a_{U_{i}}
+\leq 0\f$ and \f$a_{L_{i}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0\f$ in the
+inequality case and \f$\mathbf{a}_{i}^{T}\mathbf{x} - a_{t_{j}} \leq 0\f$
+and \f$a_{t_{j}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0\f$ in the equality
 case. Awareness of these constraint augmentation procedures can be
 important for understanding the diagnostic data returned from the
-\texttt{dot\_} and \texttt{conmin\_} methods. Other optimizers fall
-somewhere in between.  \texttt{nlpql\_} methods support nonlinear
-equality constraints $h_{j}(\mathbf{x}) = 0$ and nonlinear one-sided
-inequalities $g_{i}(\mathbf{x}) \geq 0$, but does not natively support
+\c dot_ and \c conmin_ methods. Other optimizers fall
+somewhere in between.  \c nlpql_ methods support nonlinear
+equality constraints \f$h_{j}(\mathbf{x}) = 0\f$ and nonlinear one-sided
+inequalities \f$g_{i}(\mathbf{x}) \geq 0\f$, but does not natively support
 linear constraints. Constraint mappings are used with NLPQL for both
-linear and nonlinear cases. Most \texttt{coliny\_} methods now support
+linear and nonlinear cases. Most \c coliny_ methods now support
 two-sided nonlinear inequality constraints and nonlinear constraints
 with targets, but do not natively support linear constraints.
 
 When gradient and Hessian information is used in the optimization,
 derivative components are most commonly computed with respect to the
 active continuous variables, which in this case are the
-\emph{continuous design variables}. This differs from parameter study
+<em>continuous design variables</em>. This differs from parameter study
 methods (for which all continuous variables are active) and from
 nondeterministic analysis methods (for which the uncertain variables
-are active). Refer to Section~\ref{responses:active} for additional
+are active). Refer to Section<!-- TODO ~\ref{responses:active}--> for additional
 information on derivative components and active continuous variables.
 
-\section{Optimizing with Dakota: Choosing a Method}
-\label{opt:methods}
+\section OptMethods Optimizing with Dakota: Choosing a Method
 
 This section summarizes the optimization methods available in
 Dakota. We group them according to search method and search goal and
 establish their relevance to types of problems. For a summary of this
-discussion, see Section~\ref{opt:usage}.
+discussion, see Section<!-- TODO ~\ref{opt:usage}-->.
 
-\subsection{Gradient-Based Local Methods}
-\label{opt:methods:gradient}
+\subsection OptMethodsGradient Gradient-Based Local Methods
 
 Gradient-based optimizers are best suited for efficient navigation to
 a local minimum in the vicinity of the initial point.  They are not
 intended to find global optima in nonconvex design spaces.  For global
-optimization methods, see~\ref{opt:methods:gradientfree:global}.
+optimization methods, see<!-- TODO ~\ref{opt:methods:gradientfree:global}-->.
 Gradient-based optimization methods are highly efficient, with the
 best convergence rates of all of the local optimization methods, and
 are the methods of choice when the problem is smooth, unimodal, and
 well-behaved. However, these methods can be among the least robust
 when a problem exhibits nonsmooth, discontinuous, or multimodal
 behavior.  The derivative-free methods described
-in~\ref{opt:methods:gradientfree:local} are more appropriate for
+in<!-- TODO ~\ref{opt:methods:gradientfree:local}--> are more appropriate for
 problems with these characteristics.
 
 Gradient accuracy is a critical factor for gradient-based optimizers,

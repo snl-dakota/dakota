@@ -49,7 +49,7 @@ strategy often is successful when using polynomial models,
 particularly quadratic models. However, a polynomial surface fit may
 not be the best choice for modeling data trends over the entire
 parameter space, unless it is known a priori that the true data trends
-are close to linear, quadratic, or cubic. See \ref Mye95 for more
+are close to linear, quadratic, or cubic. See \cite Mye95 for more
 information on polynomial models.
 
 Topics::	empty

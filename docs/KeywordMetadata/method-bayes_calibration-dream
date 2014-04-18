@@ -17,7 +17,7 @@ The \c gr_threshold is the convergence tolerance for the Gelman-Rubin
 statistic which will govern the convergence of the multiple chain 
 process. The integer \c jump_step forces a long jump every \c jump_step 
 generations.
-For more details about these parameters, see [\ref Vrugt2009 "Vrugt et al. 2009"].
+For more details about these parameters, see [\cite Vrugt2009 "Vrugt et al. 2009"].
 
 Topics::	package_queso, bayesian_calibration, not_yet_reviewed
 Examples::

@@ -89,7 +89,7 @@ in function values between the surrogate and original models at a
 single point in parameter space through use of a simple scalar offset
 or scaling applied to the surrogate model. First-order corrections
 such as the first-order multiplicative correction (also known as beta
-correction \ref Cha93) and the first-order additive
+correction \cite Cha93) and the first-order additive
 correction \ref Lewis2000 also enforce consistency in the gradients and
 provide a much more substantial correction capability that is
 sufficient for ensuring provable convergence in SBO algorithms.
@@ -174,7 +174,7 @@ are often effective in finding local minima.
 
 \li When using the first order correction methods, the
  \c TRUE_FCN_GRAD response keywords must be modified (see
- bottom of Figure \ref{sbm:sblm_rosen}) to allow either analytic or
+ bottom of Figure <!-- TODO \ref{sbm:sblm_rosen}) --> to allow either analytic or
  numerical gradients to be computed. This provides the gradient data
  needed to compute the correction function.
 
@@ -182,7 +182,7 @@ are often effective in finding local minima.
  problems, gradients often are too expensive to obtain or are
  discontinuous (or may not exist at all). In such cases the heuristic
  SBO algorithm has been an effective approach at identifying optimal
- designs \ref Giu02.
+ designs \cite Giu02.
 
 --->
 

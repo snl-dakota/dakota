@@ -3,7 +3,7 @@ Multivariate Adaptive Regression Spline (MARS) Models}
 
 Description::
 This surface fitting method uses multivariate adaptive regression
-splines from the MARS3.5 package \ref Fri91 developed at Stanford
+splines from the MARS3.5 package \cite Fri91 developed at Stanford
 University. 
 
 The form of the MARS model is based on the following expression:

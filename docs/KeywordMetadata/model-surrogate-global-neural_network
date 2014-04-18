@@ -4,7 +4,7 @@ Artificial Neural Network (ANN) Models
 Description::
 The ANN surface fitting method in Dakota employs a stochastic layered
 perceptron (SLP) artificial neural network based on the direct
-training approach of Zimmerman \ref Zim96. The SLP ANN method is
+training approach of Zimmerman \cite Zim96. The SLP ANN method is
 designed to have a lower training cost than traditional ANNs. This is
 a useful feature for SBO and OUU where new ANNs are constructed many
 times during the optimization process (i.e., one ANN for each response
