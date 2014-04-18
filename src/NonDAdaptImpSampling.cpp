@@ -482,50 +482,49 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
 {
   // generate std normal samples
 
-  size_t i, j, k, cntr, num_rep_pts = repPointsU.size();
-  RealVector n_means(numUncertainVars), // init to 0
-    n_std_devs(numUncertainVars, false), n_l_bnds(numUncertainVars, false),
-    n_u_bnds(numUncertainVars, false);
-  n_std_devs = 1.;//1.;
-  // Bound the sampler if necessary - this is needed for NonDGlobalReliability
-  // because the Gaussian Process model is only accurate within these bounds
-  if (useModelBounds) {
-    // TO DO: enforce that iteratedModel is a u-space model?
-    const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
-    const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-    for (i=numContDesVars, cntr=0; i<numContinuousVars; ++i, ++cntr) {
-      n_l_bnds[cntr] = c_l_bnds[i];
-      n_u_bnds[cntr] = c_u_bnds[i];
-    }
+  size_t i, j, cntr, num_rep_pts = repPointsU.size(), num_rep_samples;
+  RealVector n_std_devs(numUncertainVars, false),
+    n_l_bnds(numUncertainVars, false), n_u_bnds(numUncertainVars, false);
+  n_std_devs = 1.;
+  // Apply distribution bounds to the std normal samples to avoid violating
+  // physical constraints
+  for (i=0; i<numUncertainVars; ++i) {
+    std::pair<Real,Real> bnds = iteratedModel.continuous_distribution_bounds(i);
+    n_l_bnds[i] = bnds.first;
+    n_u_bnds[i] = bnds.second;
   }
-  else {
-    n_l_bnds = -DBL_MAX;
-    n_u_bnds =  DBL_MAX;
-  }
-  initialize_lhs(false);
+
+  // generate u-space samples by centering std normals around rep points
   RealMatrix lhs_samples_array;
-  lhsDriver.generate_normal_samples(n_means, n_std_devs, n_l_bnds, n_u_bnds,
-				    refineSamples, lhs_samples_array);
-
-  // generate u-space samples by adding std normals to rep points
-
-  int num_rep_samples;
+  // Equal apportionment:
+  //int num_rep_samples = refineSamples / num_rep_pts,
+  //    remainder       = refineSamples % num_rep_pts;
   for (i=0, cntr=0; i<num_rep_pts; ++i) {
 
-    if (i == num_rep_pts - 1) // last set: include all remaining lhs samples
+    // Equal apportionment:
+    //if (remainder)
+    //  { ++num_rep_samples; --remainder; }
+
+    // Unequal apportionment:
+    if (num_rep_pts == 1)
+      num_rep_samples = refineSamples;
+    else if (i == num_rep_pts - 1) // last set: include all remaining samples
       num_rep_samples = (refineSamples > cntr) ? refineSamples - cntr : 0;
     else // apportion refineSamples among repPointsU based on repWeights
-      num_rep_samples = (num_rep_pts > 1) ?
-	std::max(1, int(repWeights[i]*refineSamples)) : refineSamples;
+      num_rep_samples = std::min(refineSamples - cntr,
+	(size_t)std::floor(repWeights[i] * refineSamples + .5));
+    //Cout << "num_rep_samples = " << num_rep_samples << std::endl;
 
     // recenter std normals around i-th rep point
-    const RealVector& rep_pt_i = repPointsU[i];
-    for (j=0; j<num_rep_samples && cntr<refineSamples; ++j, ++cntr) {
-      Real* lhs_sample = lhs_samples_array[cntr];
-      RealVector& rep_sample = var_samples_u[cntr];
-      rep_sample.sizeUninitialized(numUncertainVars);
-      for (k=0; k<numUncertainVars; ++k)
-	rep_sample[k] = lhs_sample[k] + rep_pt_i[k];
+    if (num_rep_samples) {
+      initialize_lhs(false);
+      lhsDriver.generate_normal_samples(repPointsU[i], n_std_devs,
+	n_l_bnds, n_u_bnds, num_rep_samples, lhs_samples_array);
+
+      // copy sample set from lhs_samples_array into var_samples_u
+      for (j=0; j<num_rep_samples && cntr<refineSamples; ++j, ++cntr)
+	copy_data(lhs_samples_array[j], (int)numUncertainVars,
+		  var_samples_u[cntr]);
     }
   }
 }
@@ -722,11 +721,12 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
+    const RealVector& rep_pt_i = repPointsU[i];
     for (j=0; j<numUncertainVars; ++j) {
       std::pair<Real, Real> dist_bounds
 	= iteratedModel.continuous_distribution_bounds(j+numContDesVars);
       rep_pdf *=
-	Pecos::bounded_normal_pdf(sample_point[j], repPointsU[i][j], stdev,
+	Pecos::bounded_normal_pdf(sample_point[j], rep_pt_i[j], stdev,
 				  dist_bounds.first, dist_bounds.second);
     }
     local_pdf += repWeights[i] * rep_pdf;

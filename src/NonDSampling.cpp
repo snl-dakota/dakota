@@ -616,7 +616,7 @@ mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
 void NonDSampling::initialize_lhs(bool write_message)
 {
   // keep track of number of LHS executions for this object
-  numLHSRuns++;
+  ++numLHSRuns;
 
   // Set seed value for input to LHS's random number generator.  Emulate DDACE
   // behavior in which a user-specified seed gives you repeatable behavior but
