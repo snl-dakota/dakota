@@ -463,7 +463,9 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // Check to see if resulting partition sizes require comm splitting
   // ----------------------------------------------------------------
 
-  if (child_pl.numServers < 1) { // no partition: child == parent
+  // special cases for which we assign child = parent without partitioning
+  if (child_pl.numServers < 1 ||
+      parent_pl.serverId  > parent_pl.numServers) { // parent is idle partition
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0) ? true : false;
     child_pl.serverId = 0;
     child_pl.serverIntraComm = parent_pl.serverIntraComm; // or MPI_Comm_dup()
@@ -613,9 +615,11 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 
   // Note: requirements for splitting are different in this case.  Since a
   // processor is not dedicated for scheduling, one server means that
-  // child_pl.serverIntraComm == parent_pl.serverIntraComm, which is assigned
-  // as the default in the init_*_comms functions.
-  if (child_pl.numServers < 2) { // one peer partition: child == parent
+  // child_pl.serverIntraComm == parent_pl.serverIntraComm.
+
+  // special cases for which we assign child = parent without partitioning
+  if (child_pl.numServers < 2 || // one peer partition
+      parent_pl.serverId  > parent_pl.numServers) { // parent is idle partition
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0) ? true : false;
     child_pl.serverId = 1; // One server, peer id = 1
     child_pl.serverIntraComm = parent_pl.serverIntraComm; // or MPI_Comm_dup()
