@@ -166,12 +166,8 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
     split_communicator_peer_partition(parent_pl,   child_pl);
 
   // update number of parallelism levels
-#ifdef COMM_SPLIT_TO_SINGLE
-  if ( child_pl.commSplitFlag &&
+  if ( child_pl.commSplitFlag && child_pl.numServers > 1 &&
        ( child_pl.procsPerServer > 1 || child_pl.procRemainder ) )
-#else
-  if (child_pl.commSplitFlag)
-#endif
     ++currPCIter->numParallelLevels;
 
   parallelLevels.push_back(child_pl);
