@@ -463,33 +463,23 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // Check to see if resulting partition sizes require comm splitting
   // ----------------------------------------------------------------
 
-  // special cases for which we assign child = parent without partitioning
-  if (child_pl.numServers < 1 ||
-      parent_pl.serverId  > parent_pl.numServers) { // parent is idle partition
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0) ? true : false;
-    child_pl.serverId = 0;
-    child_pl.serverIntraComm = parent_pl.serverIntraComm; // or MPI_Comm_dup()
-    child_pl.serverCommRank  = parent_pl.serverCommRank;
-    child_pl.serverCommSize  = parent_pl.serverCommSize;
-    child_pl.hubServerIntraComm = MPI_COMM_NULL; // or a Comm of only 1 proc.
-    // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize
+  // special case for which we assign child = parent without partitioning
+  if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
+    inherit_as_server_comm(parent_pl, child_pl);
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
     return false; // set split flag to false in calling routine
   }
-  else
-    child_pl.messagePass = true;
 
 #ifndef COMM_SPLIT_TO_SINGLE
   // In some direct interfacing cases, the simulation requires its own comm
   // even if the comm is single processor.  In this case, the code block below
   // is bypassed and the additional comm split overhead is incurred.
   if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc servers
+    inherit_as_hub_server_comm(parent_pl, child_pl);
+    child_pl.messagePass = true;
     child_pl.serverMasterFlag = (parent_pl.serverCommRank) ? true : false;
     child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
-    child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
-    // use ctor defaults for child_pl.serverCommRank/serverCommSize
-    child_pl.hubServerIntraComm = parent_pl.serverIntraComm;// or MPI_Comm_dup()
-    child_pl.hubServerCommRank  = parent_pl.serverCommRank;
-    child_pl.hubServerCommSize  = parent_pl.serverCommSize;
     return false; // set split flag to false in calling routine
   }
 #endif
@@ -537,6 +527,15 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
+  // special case for which we assign child = parent without partitioning
+  if (child_pl.numServers < 1) { // no check on idlePartition for ded master
+    inherit_as_server_comm(parent_pl, child_pl);
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    child_pl.serverId = 0;
+    return false; // set split flag to false in calling routine
+  }
+
+  child_pl.messagePass = true;
 #ifdef DAKOTA_HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
@@ -617,33 +616,22 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // processor is not dedicated for scheduling, one server means that
   // child_pl.serverIntraComm == parent_pl.serverIntraComm.
 
-  // special cases for which we assign child = parent without partitioning
-  if (child_pl.numServers < 2 || // one peer partition
-      parent_pl.serverId  > parent_pl.numServers) { // parent is idle partition
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0) ? true : false;
-    child_pl.serverId = 1; // One server, peer id = 1
-    child_pl.serverIntraComm = parent_pl.serverIntraComm; // or MPI_Comm_dup()
-    child_pl.serverCommRank  = parent_pl.serverCommRank;
-    child_pl.serverCommSize  = parent_pl.serverCommSize;
-    child_pl.hubServerIntraComm = MPI_COMM_NULL; // or a Comm of only 1 proc.
-    // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize
+  // special case for which we assign child = parent without partitioning
+  if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
+    inherit_as_server_comm(parent_pl, child_pl);
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
     return false; // Set split flag to false in calling routine
   }
-  else
-    child_pl.messagePass = true;
 
 #ifndef COMM_SPLIT_TO_SINGLE
   // In some direct interfacing cases, the simulation requires its own comm
   // even if the comm is single processor.  In this case, the code block below
   // is bypassed and the additional comm split overhead is incurred.
   if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {// 1-proc. peers
-    child_pl.serverMasterFlag = true; // each child is single proc. & a master
+    inherit_as_hub_server_comm(parent_pl, child_pl);
+    child_pl.messagePass = child_pl.serverMasterFlag = true;
     child_pl.serverId = parent_pl.serverCommRank+1; // peer id's = 1/2/3/.../n
-    child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
-    // use ctor defaults for child_pl.serverCommRank/serverCommSize
-    child_pl.hubServerIntraComm = parent_pl.serverIntraComm;// or MPI_Comm_dup()
-    child_pl.hubServerCommRank  = parent_pl.serverCommRank;
-    child_pl.hubServerCommSize  = parent_pl.serverCommSize;
     return false; // Set split flag to false in calling routine
   }
 #endif
@@ -693,6 +681,15 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
+  // special case for which we assign child = parent without partitioning
+  if (child_pl.numServers < 2 && !child_pl.idlePartition) { // 1 peer, no idle
+    inherit_as_server_comm(parent_pl, child_pl);
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    child_pl.serverId = 1; // one server, peer id = 1
+    return false; // Set split flag to false in calling routine
+  }
+
+  child_pl.messagePass = true;
 #ifdef DAKOTA_HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);

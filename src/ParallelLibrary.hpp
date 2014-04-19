@@ -654,6 +654,14 @@ private:
   /// check the MPI return code and abort if error
   void check_error(const String& err_source, int err_code);
 
+  /// convenience function for updating child serverIntraComm from
+  /// parent serverIntraComm
+  void inherit_as_server_comm(const ParallelLevel& parent_pl,
+			      ParallelLevel& child_pl);
+  /// convenience function for updating child hubServerIntraComm from
+  /// parent serverIntraComm
+  void inherit_as_hub_server_comm(const ParallelLevel& parent_pl,
+				  ParallelLevel& child_pl);
 
   //
   //- Heading: Data
@@ -1447,6 +1455,29 @@ inline void ParallelLibrary::free(MPI_Request& request)
   int err_code = MPI_Request_free(&request);
   check_error("MPI_Request_free", err_code);
 #endif // DAKOTA_HAVE_MPI
+}
+
+
+inline void ParallelLibrary::
+inherit_as_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
+{
+  child_pl.serverIntraComm = parent_pl.serverIntraComm; // or MPI_Comm_dup()
+  child_pl.serverCommRank  = parent_pl.serverCommRank;
+  child_pl.serverCommSize  = parent_pl.serverCommSize;
+  child_pl.hubServerIntraComm = MPI_COMM_NULL; // or a Comm of only 1 proc.
+  // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize
+}
+
+
+inline void ParallelLibrary::
+inherit_as_hub_server_comm(const ParallelLevel& parent_pl,
+			   ParallelLevel& child_pl)
+{
+  child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
+  // use ctor defaults for child_pl.serverCommRank/serverCommSize
+  child_pl.hubServerIntraComm = parent_pl.serverIntraComm;// or MPI_Comm_dup()
+  child_pl.hubServerCommRank  = parent_pl.serverCommRank;
+  child_pl.hubServerCommSize  = parent_pl.serverCommSize;
 }
 
 } // namespace Dakota
