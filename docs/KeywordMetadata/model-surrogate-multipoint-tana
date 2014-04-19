@@ -3,7 +3,7 @@ Local multi-point model via two-point nonlinear approximation
 Description::
 <b> Two Point Adaptive Nonlinearity Approximation </b>
 
-The TANA-3 method [\ref Xu1998 "Xu and Grandhi, 1998"] is a multipoint approximation method
+The TANA-3 method [\cite Xu98 "Xu and Grandhi, 1998"] is a multipoint approximation method
 based on the two point exponential approximation \cite Fad90. This
 approach involves a Taylor series approximation in intermediate
 variables where the powers used for the intermediate variables are

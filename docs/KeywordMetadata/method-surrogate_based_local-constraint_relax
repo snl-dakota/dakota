@@ -3,7 +3,7 @@ Blurb::
 Description::
 The
 command \c constraint_relax followed by a method name specifies the
-type of relaxation to be used. Currently, \c homotopy [\ref Perez2004
+type of relaxation to be used. Currently, \c homotopy [\cite Per04a
 "Perez et al., 2004"] is the only available method for constraint
 relaxation, and this method is dependent on the presence of the NPSOL
 library within the %Dakota executable. 

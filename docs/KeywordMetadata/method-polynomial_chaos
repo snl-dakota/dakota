@@ -161,7 +161,7 @@ inputs and outputs is captured, not merely the output statistics as in
 the case of many nondeterministic methodologies. %Dakota provides
 access to PCE methods through the NonDPolynomialChaos class. Refer to
 the Uncertainty Quantification Capabilities chapter of the Users
-Manual [\ref UsersMan "Adams et al., 2010"] for additional information
+Manual [\cite UsersMan "Adams et al., 2010"] for additional information
 on the PCE algorithm.
 
 If \e n is small (e.g., two or three), then tensor-product Gaussian

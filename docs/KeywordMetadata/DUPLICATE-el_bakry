@@ -4,7 +4,7 @@ Description::
 The "el_bakry" merit function is the L2-norm of the first order
 optimality conditions for the nonlinear programming problem. The cost
 per linesearch iteration is n+1 function evaluations. For more
-information, see [\ref ElBak1996 "El-Bakry et al., 1996"].
+information, see [\cite ElBak1996 "El-Bakry et al., 1996"].
  
 Topics::	not_yet_reviewed
 Examples::

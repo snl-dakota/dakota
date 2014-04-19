@@ -85,7 +85,7 @@ search.
 \li The \c adaptive_pattern case invokes a pattern search technique
 that adaptively rescales the different search directions to maximize
 the number of redundant function evaluations. See 
-[\ref Hart2001c "Hart et al., 2001"] for details of this method. 
+[\cite Hart2001c "Hart et al., 2001"] for details of this method. 
 In preliminary experiments, this method had more robust performance
 than the standard \c basic_pattern case in serial tests. 
 This option supports a limited degree of parallelism. After successful

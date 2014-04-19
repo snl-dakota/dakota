@@ -212,7 +212,7 @@ basis functions, whereas SC forms multidimensional interpolation
 functions for known coefficients. %Dakota provides access to SC
 methods through the NonDStochCollocation class. Refer to the
 Uncertainty Quantification Capabilities chapter of the Users Manual
-[\ref UsersMan "Adams et al., 2010"] for additional information on the
+[\cite UsersMan "Adams et al., 2010"] for additional information on the
 SC algorithm.
 
 <!-- Rhe orthogonal polynomials used in defining

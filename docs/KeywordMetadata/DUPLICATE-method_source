@@ -15,7 +15,7 @@ and OPT++ each have their own internal finite differencing
 routines). The \c dakota routine is the default since it can execute
 in parallel and exploit the concurrency in finite difference
 evaluations (see Exploiting Parallelism in the Users Manual 
-[\ref UsersMan "Adams et al., 2010"]).
+[\cite UsersMan "Adams et al., 2010"]).
 
 However, the \c vendor setting can be desirable in some cases since
 certain libraries will modify their algorithm when the finite

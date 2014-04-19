@@ -9,7 +9,7 @@ The lognormal is often used to model:
 -# variables which are the product of a large number of other quantities, by the Central Limit Theorem
 -# quantities which cannot have negative values. 
 
-Within the lognormal uncertain optional group specification, the number of lognormal uncertain variables, the means, and either standard deviations or error factors must be specified, and the distribution lower and upper bounds and variable descriptors are optional specifications. These distribution bounds can be used to truncate the tails of lognormal distributions, which as for bounded normal, can result in the mean and the standard deviation of the sample data being different from the mean and standard deviation of the underlying distribution (see "bounded lognormal" and "bounded lognormal-n" distribution types in [\ref Wyss1998 "Wyss and Jorgensen, 1998"]). 
+Within the lognormal uncertain optional group specification, the number of lognormal uncertain variables, the means, and either standard deviations or error factors must be specified, and the distribution lower and upper bounds and variable descriptors are optional specifications. These distribution bounds can be used to truncate the tails of lognormal distributions, which as for bounded normal, can result in the mean and the standard deviation of the sample data being different from the mean and standard deviation of the underlying distribution (see "bounded lognormal" and "bounded lognormal-n" distribution types in [\cite Wyss1998 "Wyss and Jorgensen, 1998"]). 
 
 For the lognormal variables, one may specify either the mean 
 \f$\mu\f$

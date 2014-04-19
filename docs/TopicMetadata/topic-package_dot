@@ -1,5 +1,5 @@
 The DOT library 
-[\ref Vrand1995 "Vanderplaats Research and Development, 1995"] 
+[\cite Van95 "Vanderplaats Research and Development, 1995"] 
 contains nonlinear programming optimizers, specifically the
 Broyden-Fletcher-Goldfarb-Shanno (%Dakota's \c dot_bfgs method) and
 Fletcher-Reeves conjugate gradient (%Dakota's \c dot_frcg method)

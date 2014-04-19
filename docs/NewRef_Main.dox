@@ -29,8 +29,8 @@ dakota.input.summary. For more information see: \ref input_spec.
 
 For information on software structure, refer to the 
 Developers Manual, and for a tour of
-%Dakota features and capabilities, refer to the Users Manual [\ref
-UsersMan "Adams et al., 2010"].
+%Dakota features and capabilities, refer to the Users Manual 
+[\cite UsersMan "Adams et al., 2010"].
 
 \section main-how_to How to Use this Manual
 \li To learn how to run Dakota from the command line, see \subpage running_dakota
@@ -47,7 +47,8 @@ To find more information about a Dakota related topic
 -# Browse the Topics tree on the left pane
 -# Navigate through the topics pages, starting from the \subpage topics
 
-A bibliography for the Reference Manual is provided in \ref Bibliography 
+A bibliography for the Reference Manual is provided in 
+TODO: Fix biblio <!-- \ref Bibliography -->
 
 <!--------------------------------------------------------->
 
@@ -143,7 +144,7 @@ or
 \endverbatim
 
 Alternatively, any of a variety of Unix redirection variants can be
-used. Refer to \ref Anderson1986 for more information on Unix redirection.
+used. Refer to \cite And86 for more information on Unix redirection.
 The simplest of these redirects stdout to another file:
 \verbatim
     dakota dakota.in > dakota.out
@@ -399,7 +400,7 @@ which results in a report similar to the following:
 
 The contents of the generated neutral file are similar to the 
 following (from the first two records for the
-Cylinder example in \ref UsersMan).
+Cylinder example in \cite UsersMan).
 \verbatim
     6 7 2 1.8000000000000000e+00 intake_dia 1.0000000000000000e+00 flatness 0 0 0 0
     NULL 4 2 1 0 3 3 3 3 1 2 obj_fn nln_ineq_con_1 nln_ineq_con_2 nln_ineq_con_3
@@ -447,7 +448,7 @@ which results in a report similar to the following:
 \endverbatim
 
 The contents of the generated tabular file are similar to the following 
-(from the example in \ref UsersMan).
+(from the example in \cite UsersMan).
 Note that while evaluations resulting from numerical derivative offsets would be
 reported (as described above), derivatives returned as part of the
 evaluations are not reported (since they do not readily fit within a

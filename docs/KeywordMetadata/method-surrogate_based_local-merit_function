@@ -14,7 +14,7 @@ merit function which employs both a penalty parameter and zeroth-order
 Lagrange multiplier updates (\c augmented_lagrangian_merit). When an
 augmented Lagrangian is selected for either the subproblem objective
 or the merit function (or both), updating of penalties and multipliers
-follows the approach described in [\ref Conn2000 "Conn et al., 2000"].
+follows the approach described in [\cite Conn00 "Conn et al., 2000"].
 
 
 

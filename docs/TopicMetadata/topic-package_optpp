@@ -1,4 +1,4 @@
-The OPT++ library [\ref MeOlHoWi07 "Meza et al., 2007"] contains primarily
+The OPT++ library [\cite MeOlHoWi07 "Meza et al., 2007"] contains primarily
 gradient-based nonlinear programming optimizers for unconstrained,
 bound-constrained, and nonlinearly constrained minimization:
 Polak-Ribiere conjugate gradient (%Dakota's \c optpp_cg method),

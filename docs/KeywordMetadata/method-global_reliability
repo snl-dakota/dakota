@@ -9,8 +9,8 @@ limit state (based either in x-space via the \c x_gaussian_process
 specification or in u-space via the \c u_gaussian_process
 specification), followed by probability estimation based on multimodal
 adaptive importance sampling (see 
-[\ref Bichon2007 "Bichon et al., 2007"]) and 
-[\ref Bichon2008 "Bichon et al., 2008"]). These
+[\cite Bichon2007 "Bichon et al., 2007"]) and 
+[\cite Bichon2008 "Bichon et al., 2008"]). These
 probability estimates may then be transformed into generalized
 reliability levels if desired. At this time, inverse reliability
 analysis (mapping probability or generalized reliability levels into

@@ -28,7 +28,7 @@ Theory::
 In this context, we take
 sensitivity analysis to be global, not local as when calculating
 derivatives of output variables with respect to input variables. Our
-definition is similar to that of [\ref Saltelli2004 "Saltelli et al., 2004"]: 
+definition is similar to that of [\cite Sal04 "Saltelli et al., 2004"]: 
 "The study of how uncertainty in the output of a model can be 
 apportioned to different sources of uncertainty in the model input."
 
@@ -38,9 +38,9 @@ how the variance of the output behaves, with respect to each input
 variable. A larger value of the sensitivity index, \f$S_i\f$, means
 that the uncertainty in the input variable i has a larger effect on
 the variance of the output. More details on the calculations and
-interpretation of the sensitivity indices can be found in [\ref
-Saltelli2004 "Saltelli et al., 2004"] and
-[\ref Weirs2010 "Weirs et al., 2010"]. 
+interpretation of the sensitivity indices can be found in 
+[\cite Sal04 "Saltelli et al., 2004"] and
+[\cite Weirs10 "Weirs et al., 2010"]. 
 
 Faq::
 See_Also::	

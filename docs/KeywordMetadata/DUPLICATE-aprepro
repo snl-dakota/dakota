@@ -4,7 +4,7 @@ Description::
 The
 format of data in the parameters files can be modified for direct
 usage with the APREPRO pre-processing tool 
-[\ref Sjaar1992 "Sjaardema, 1992"] 
+[\cite Sja92 "Sjaardema, 1992"] 
 using the \c aprepro specification
 
 Without this keyword, the parameters file are written in

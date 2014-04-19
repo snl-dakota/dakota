@@ -1,7 +1,7 @@
 Blurb::
 Pattern search, derivative free optimization method
 Description::
-The asynchronous parallel pattern search (APPS) algorithm [\ref GrKo06
+The asynchronous parallel pattern search (APPS) algorithm [\cite GrKo06
 "Gray and Kolda, 2006"] is a fully asynchronous pattern search
 technique in that the search along each offset direction continues
 without waiting for searches along other directions to finish.

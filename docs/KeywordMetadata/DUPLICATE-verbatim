@@ -19,7 +19,7 @@ Note, this will not allow the use of \c file_tag, because the
 full command must be specified.
 
 For additional information on invocation syntax, see the Interfaces
-chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"]. 
+chapter of the Users Manual [\cite UsersMan "Adams et al., 2010"]. 
 Topics::	not_yet_reviewed, problem
 Examples::
 Theory::

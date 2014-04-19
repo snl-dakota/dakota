@@ -7,9 +7,9 @@ and \c convergence_tolerance
 
 For surrogate_based_local problems with nonlinear constraints, a number of algorithm
 formulations exist as described in 
-[\ref Eldred2006a "Eldred and Dunlavy, 2006"] and as summarized in the
+[\cite Eld06b "Eldred and Dunlavy, 2006"] and as summarized in the
 Advanced Examples section of the Models chapter of the Users Manual 
-[\ref UsersMan "Adams et al., 2010"].
+[\cite UsersMan "Adams et al., 2010"].
 
 
 

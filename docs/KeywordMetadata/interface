@@ -48,7 +48,7 @@ dynamic or \c static scheduling (default configuration of a peer
 partition employs a dynamic scheduler when it can be supported; i.e.,
 when the peer 1 local scheduling can be asynchronous). The
 ParallelLibrary class and the Parallel Computing chapter of the Users
-Manual [\ref UsersMan "Adams et al., 2010"] provide additional details
+Manual [\cite UsersMan "Adams et al., 2010"] provide additional details
 on parallel configurations.
 
 When performing asynchronous local evaluations, the \c

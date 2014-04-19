@@ -3,8 +3,8 @@ DIviding RECTangles method
 Description::
 North Carolina State University (NCSU) has an implementation of the
 DIRECT algorithm (DIviding RECTangles algorithm that is outlined in
-the SCOLIB method section above). This version is documented in [\ref
-Gablonsky2001 "Gablonsky, 2001".] We have found that the NCSU DIRECT
+the SCOLIB method section above). This version is documented in 
+[\cite Gab01 "Gablonsky, 2001".] We have found that the NCSU DIRECT
 implementation works better and is more robust for some problems than
 \c coliny_direct. Currently, we maintain both versions of DIRECT in
 %Dakota; in the future, we may deprecate one.

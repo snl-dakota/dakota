@@ -2,7 +2,7 @@ Blurb::
 Access to methods in the DOT package
 Description::
 The DOT library 
-[\ref Vrand1995 "Vanderplaats Research and Development, 1995"] 
+[\cite Van95 "Vanderplaats Research and Development, 1995"] 
 contains nonlinear programming optimizers, specifically the
 Broyden-Fletcher-Goldfarb-Shanno (%Dakota's \c dot_bfgs method) and
 Fletcher-Reeves conjugate gradient (%Dakota's \c dot_frcg method)
@@ -50,7 +50,7 @@ parallel algorithms which can directly take advantage of concurrent
 evaluations. However, if \c numerical_gradients with \c method_source
 \c dakota is specified, then the finite difference function
 evaluations can be performed concurrently (using any of the parallel
-modes described in the Users Manual [\ref UsersMan "Adams et al., 2010"]). 
+modes described in the Users Manual [\cite UsersMan "Adams et al., 2010"]). 
 In addition, if \c speculative
 is specified, then gradients (\c dakota \c numerical or \c analytic
 gradients) will be computed on each line search evaluation in order to

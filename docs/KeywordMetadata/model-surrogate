@@ -90,12 +90,12 @@ single point in parameter space through use of a simple scalar offset
 or scaling applied to the surrogate model. First-order corrections
 such as the first-order multiplicative correction (also known as beta
 correction \cite Cha93) and the first-order additive
-correction \ref Lewis2000 also enforce consistency in the gradients and
+correction \cite Lew00 also enforce consistency in the gradients and
 provide a much more substantial correction capability that is
 sufficient for ensuring provable convergence in SBO algorithms.
 SBO convergence rates can be further
 accelerated through the use of second-order corrections which also
-enforce consistency in the Hessians \ref Eldred2004a, where the
+enforce consistency in the Hessians \cite Eld04, where the
 second-order information may involve analytic, finite-difference, or
 quasi-Newton Hessians.
 
@@ -130,7 +130,7 @@ where the exact correction functions are
 A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})    \\
 B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} 
 \f}
-Refer to \ref Eldred2004a for additional details on the derivations.
+Refer to \cite Eld04 for additional details on the derivations.
 
 A combination of additive and multiplicative corrections can provide
 for additional flexibility in minimizing the impact of the correction

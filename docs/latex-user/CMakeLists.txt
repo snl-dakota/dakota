@@ -15,6 +15,11 @@ foreach(file ${users_tex})
   list(APPEND users_inputs_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
 endforeach() 
 
+# Copy the bib file to make latex versions easier to manage
+# Really belongs one dir above, but don't know how to manage the dependency
+add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/../Dakota.bib
+                      ${CMAKE_CURRENT_BINARY_DIR}/../Dakota.bib)
+
 # Most input files come from test/ directory
 set(test_path    "${Dakota_SOURCE_DIR}/test")
 
@@ -137,6 +142,8 @@ add_custom_command(
   OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux"
   DEPENDS   "${CMAKE_CURRENT_SOURCE_DIR}/${file_tex}.tex" 
             ${all_copied_files} ${users_images_abs} ${users_inputs_abs}
+	    "${CMAKE_CURRENT_BINARY_DIR}/../DakotaDefs.tex"
+	    "${CMAKE_CURRENT_BINARY_DIR}/../Dakota.bib"
   COMMAND   "${PDFLATEX_COMPILER}"
   ARGS      -interaction=batchmode "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
   COMMENT   "Latex (first pass): User's"

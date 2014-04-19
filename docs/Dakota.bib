@@ -1,10 +1,58 @@
-% LaTeX bibliography database for Dakota Users Manual
+% LaTeX bibliography database for all Dakota manuals 
 %
-% - entries arranged in short cite order (XxxNN)
-% - commented numbers preceding each entry indicate entry in old bibitem format
-%   from v3.3 users manual
-%
-% $Id: Users.bib 6770 2010-05-08 00:10:50Z briadam $
+% $Id$
+
+% --- Dakota Manuals ---
+
+@string{DakotaAuthorCitation =  
+"Adams, B.~M. and Bauman, L.~E. and Bohnhoff, W.~J. and Dalbey,
+K.~R. and Eddy, J.~P. and Ebeida, M.~S. and Eldred, M.~S. and Hough,
+P.~D. and Hu, K.~T. and Jakeman, J.~D. and Swiler, L.~P. and Vigil,
+D.~M."
+}
+
+@TechReport{DevMan,
+  author = 	 DakotaAuthorCitation,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.4 Developers Manual},
+  institution =  {Sandia National Laboratories},
+  number =       {SAND2010-2185},
+  year = 	 {Updated Nov. 2013},
+  address =	 {Albuquerque, NM},
+  note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
+}
+
+@TechReport{RefMan,
+  author = 	 DakotaAuthorCitation,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.4 Reference Manual},
+  institution =  {Sandia National Laboratories},
+  number =       {SAND2010-2184},
+  year = 	 {Updated Nov. 2013},
+  address =	 {Albuquerque, NM},
+  note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
+}
+
+@TechReport{TheoMan,
+  author = 	 DakotaAuthorCitation,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.4 Theory Manual},
+  institution =  {Sandia National Laboratories},
+  number =       {SAND2011-9106},
+  year = 	 {Updated Nov. 2013},
+  address =	 {Albuquerque, NM},
+  note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
+}
+
+@TechReport{UsersMan,
+  author = 	 DakotaAuthorCitation,
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.4 Users Manual},
+  institution =  {Sandia National Laboratories},
+  number =       {SAND2010-2183},
+  year = 	 {Updated Nov. 2013},
+  address =	 {Albuquerque, NM},
+  note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
+}
+
+
+% --- Remaining entries arranged alpha by first author, then year ---
 
 @Book{abram_stegun,
   author =	 {Abramowitz, M. and Stegun, I.~A.},
@@ -14,7 +62,14 @@
   year = 	 1965
 }
 
-%1
+@misc{Nomad,
+  Author       = {M.A. Abramson and C. Audet and G. Couture and J.E. {Dennis, Jr.} and S. {Le~Digabel} and C. Tribes},
+  Title        = {The {NOMAD} project},
+  Howpublished = {Software available at
+                  \url{http://www.gerad.ca/nomad}},
+  Url          = {http://www.gerad.ca/nomad},
+}
+
 @Article{Ale98,
   author = {Alexandrov, M. and {Dennis, Jr.}, J.~E. and Lewis, R.~M. and Torczon, V.},
   title = {A Trust-region Framework for Managing the Use of Approximation Models in Optimization},
@@ -42,7 +97,7 @@
   pages =	 {228--242}
 }
 
-%2
+% dox: Anderson1986
 @Book{And86,
   author = {Anderson, G. and Anderson, P.},
   title = {The UNIX C Shell Field Guide},
@@ -51,7 +106,15 @@
   year = 1986
 }
 
-%3
+% dox: Argaez2002
+@Article{Arg02,
+  author = {Argaez, M. and Tapia, R.~A. and Velazquez, L.},
+  title = {Numerical Comparisons of Path-Following Strategies for a Primal-Dual Interior-Point Method for Nonlinear Programming},
+  journal = {Journal of Optimization Theory and Applications},
+  volume = 114,
+  number = 2
+}
+
 @Book{Aro89,
   author = {Arora, J.~S.},
   title = {Introduction to Optimum Design},
@@ -69,6 +132,15 @@
   address =	 {Providence, RI}
 }
 
+@techreport{AuLeTr09a,
+  Author      = {C. Audet and S. {Le~Digabel} and C. Tribes},
+  Title       = {{NOMAD} user guide},
+  Institution = {Les cahiers du GERAD},
+  Number      = {G-2009-37},
+  Url         = {http://www.gerad.ca/NOMAD/Downloads/user_guide.pdf},
+  Year        = {2009}
+}
+
 @conference{Aug07,
 	Address = {Detroit, MI},
 	Author = {Aughenbaugh, J.~M. and Paredis, C.~J.~J.},
@@ -79,17 +151,21 @@
 	Year = {2007}
 }
 
-@techreport{AuLeTr09a,
-  Author      = {C. Audet and S. {Le~Digabel} and C. Tribes},
-  Title       = {{NOMAD} user guide},
-  Institution = {Les cahiers du GERAD},
-  Number      = {G-2009-37},
-  Url         = {http://www.gerad.ca/NOMAD/Downloads/user_guide.pdf},
-  Year        = {2009}
-}
+@article{barth_novak_ritter_00,
+	Author = {Barthelmann, V. and Novak, E. and Ritter, K.},
+	Fjournal = {Advances in Computational Mathematics},
+	Issn = {1019-7168},
+	Journal = {Adv. Comput. Math.},
+	Mrclass = {41A63 (41A05 65D05)},
+	Mrnumber = {MR1768951 (2001d:41033)},
+	Mrreviewer = {Timothy S. Norfolk},
+	Note = {Multivariate polynomial interpolation},
+	Number = 4,
+	Pages = {273--288},
+	Title = {High dimensional polynomial interpolation on sparse grids},
+	Volume = 12,
+	Year = 2000}
 
-
-%4
 @PhdThesis{Bar01a,
   author = {Bartlett, R.},
   title = {Object-Oriented Approaches to Large-Scale NonLinear Programming For Process Systems Engineering},
@@ -98,7 +174,6 @@
   year =  2001
 }
 
-%5
 @Article{Bar01b,
   author = {Bartlett, R.~A. and Biegler, L.~T.},
   title = {{rSQP++}: An Object-Oriented Framework for Successive Quadratic Programming},
@@ -118,6 +193,20 @@
   pages = {501--517}
 }
 
+% BMA: has this been superceded by the journal article that follows?
+@InProceedings{Bichon2007,
+  author = {Bichon, B.~J. and Eldred, M.~S. and Swiler, L.~P. and Mahadevan, S. and McFarland, J.~M.},
+  year = 2007,
+  title = {Multimodal Reliability Assessment for Complex Engineering Applications using Efficient Global Optimization},
+  number = {AIAA-2007-1946},
+  booktitle = {Proceedings of the 48th {AIAA/ASME/ASCE/AHS/ASC} Structures, Structural Dynamics, and Materials Conference (9th {AIAA} Non-Deterministic Approaches Conference)}, 
+  address = {Honolulu, HI},
+  month = {April}
+}  
+% dates = 23-26.
+
+% BMA: change this to Bic08 in User's
+% dox: Bichon2008
 @Article{Bic07,
   author = {Bichon, B.~J. and Eldred, M.~S. and Swiler, L.~P. and Mahadevan, S. and McFarland, J.~M.},
   title = {Efficient Global Reliability Analysis for Nonlinear Implicit Performance Functions},
@@ -128,7 +217,6 @@
   pages = {2459--2468}
 }
 
-%6
 @PhdThesis{Bir00,
   author = {Biros, G.},
   title = {Lagrange-Newton-Krylov-Schur methods for PDE-constrained optimization},
@@ -137,7 +225,6 @@
   year =  2000
 }
 
-%7
 @Book{Bli96,
   author = {Blinn, B.},
   title = {Portable Shell Programming: An Extensive Collection of Bourne Shell Examples},
@@ -155,6 +242,7 @@
   pages = {211--252}
 }
 
+% dox: Breit1984
 @Article{Bre84,
   author = {Breitung, K.},
   title = {Asymptotic approximation for multinormal integrals},
@@ -175,6 +263,7 @@
 }
 % number =       {},
 
+% dox: Byrd1988 
 @Article{Byr88,
   author = {Byrd, R.~H. and Schnabel, R.~B. and Schultz, G.~A.},
   title = {Parallel Quasi-Newton Methods for Unconstrained Optimization},
@@ -195,7 +284,6 @@
   address = 	{Philadelphia, USA},
 }
 
-%9
 @Article{Cha93,
   author = {Chang, K.~J. and Haftka, R.~T. and Giles, G.~L. and Kao, P.-J.},
   title = {Sensitivity-based scaling for approximating structural response},
@@ -214,7 +302,6 @@
   pages = {269--276}
 }
 
-%75
 @Book{Coe02,
   author = {Coello, C.~A. and Van Veldhuizen, D.~A. and Lamont, G.~B.},
   title = {Evolutionary Algorithms for Solving Multi-Objective Problems},
@@ -223,6 +310,7 @@
   year = 2002
 }
 
+% dox: Conn2000
 @Book{Con00,
   author = 	{Conn, A.~R. and Gould, N.~I.~M. and Toint, P.~L.},
   title = 	{Trust-Region Methods},
@@ -248,7 +336,6 @@
   volume = 	 {in preparation}
 }
 
-%10
 @Book{Cop92,
   author = {Coplien, J.~O.},
   title = {Advanced C++ Programming Styles and Idioms},
@@ -257,7 +344,6 @@
   year= 1992
 }
 
-%11
 @Book{Cre91,
   author = {Cressie, N.},
   title = {Statistics of Spatial Data},
@@ -268,33 +354,17 @@
 
 @article{Dalbey2012,
   title={{Gaussian Process Adaptive Importance Sampling}},
-  author={K. Dalbey and L.P. Swiler},
+  author={Dalbey, K. and Swiler, L.~P.},
   journal={International Journal for Uncertainty Quantification, submitted},
   year={2012},
 }
  
-
-%12
-@InProceedings{Den94a,
-  author = {Dennis, J.~E. and Lewis, R.~M.},
-  title = {Problem Formulations and Other Optimization Issues in Multidisciplinary Optimization},
-  booktitle = {Proc. AIAA Symposium on Fluid Dynamics},
-  year = 1994,
-  month = {June},
-  address = {Colorado Springs, Colordao},
-  number = {AIAA-94-2196},
-}
-
-%13
-@InProceedings{Den94b,
-  author = {Dennis, J.~E. and Torczon, V.~J.},
-  title = {Derivative-Free Pattern Search Methods for Multidisciplinary Design Problems},
-  number = {AIAA-94-4349},
-  booktitle = {Proc. 5th AIAA/USAF/NASA/ISSMO Symposium on Multidisciplinary Analysis and Optimization},
-  address = {Panama City, FL},
-  month = {September 7--9},
-  year = 1994,
-  pages = {922--932}
+@TechReport{Dalbey2013,
+  author = {Dalbey, K.}, 
+  year = 2013,
+  title = {Efficient and Robust Gradient Enhanced Kriging Emulators},
+  institution =  {Sandia National Laboratories},
+  number =       {SAND2013-7022}
 }
 
 @article{Den81,
@@ -306,7 +376,27 @@
    year = {1981}
 }
 
-%14
+@InProceedings{Den94a,
+  author = {Dennis, J.~E. and Lewis, R.~M.},
+  title = {Problem Formulations and Other Optimization Issues in Multidisciplinary Optimization},
+  booktitle = {Proc. AIAA Symposium on Fluid Dynamics},
+  year = 1994,
+  month = {June},
+  address = {Colorado Springs, Colordao},
+  number = {AIAA-94-2196},
+}
+
+@InProceedings{Den94b,
+  author = {Dennis, J.~E. and Torczon, V.~J.},
+  title = {Derivative-Free Pattern Search Methods for Multidisciplinary Design Problems},
+  number = {AIAA-94-4349},
+  booktitle = {Proc. 5th AIAA/USAF/NASA/ISSMO Symposium on Multidisciplinary Analysis and Optimization},
+  address = {Panama City, FL},
+  month = {September 7--9},
+  year = 1994,
+  pages = {922--932}
+}
+
 @Article{Der86,
   author = {Der Kiureghian, A. and Liu, P.~L.},
   title = {Structural Reliability Under Incomplete Information},
@@ -326,17 +416,7 @@
   pages = {137--154}
 }
 
-@Article{Du04,
-  author = 	 {Du, X. and Chen, W.},
-  title = 	 {Sequential Optimization and Reliability Assessment Method for Efficient
-Probabilistic Design},
-  journal = 	 {J. Mech. Design},
-  year = 	 2004,
-  volume =	 126,
-  pages =	 {225--233}
-}
-
-%73
+% dox: Du1999
 @Article{Du99,
   author = {Du, Q. and Faber, V. and Gunzburger, M.},
   title = {Centroidal Voronoi Tessellations: Applications and Algorithms},
@@ -346,7 +426,15 @@ Probabilistic Design},
   pages = {637--676}
 }
 
-%15
+@Article{Du04,
+  author = 	 {Du, X. and Chen, W.},
+  title = 	 {Sequential Optimization and Reliability Assessment Method for Efficient Probabilistic Design},
+  journal = 	 {J. Mech. Design},
+  year = 	 2004,
+  volume =	 126,
+  pages =	 {225--233}
+}
+
 @InProceedings{Eck97,
   author = {Eckstein, J. and Hart, W.~E. and Phillips, C.~A.},
   title = {Resource management in a parallel mixed integer programming package},
@@ -357,7 +445,6 @@ Probabilistic Design},
   note =  {\url{http://www.cs.sandia.gov/ISUG97/program.html}}
 }
 
-%16
 @InCollection{Eck01,
   author = {Eckstein, J. and Hart, W.~E. and Phillips, C.~A.},
   title = {{PICO}: An object-oriented framework for parallel branch and bound},
@@ -374,7 +461,22 @@ Probabilistic Design},
   note = {Last accessed: July 6, 2009}
 }
 
-%24
+@Inproceedings{Eddy2001,
+  author = {Eddy, J.~E. and Lewis, K.},
+  year = 2001,
+  title = {Effective Generation of Pareto Sets using Genetic Programming},
+  booktitle = {Proceedings of ASME Design Engineering Technical Conference}
+}
+
+@Article{ElBak1996,
+  author = {El-Bakry, A.~S. and Tapia, R.~A. and Tsuchiya, T. and Zhang, Y.},
+  year = 1996,
+  title = {On the Formulation and Theory of the Newton Interior-Point Method for Nonlinear Programming},
+  journal = {Journal of Optimization Theory and Applications},
+  volume = 89,
+  pages = {507--541}
+}
+
 @InProceedings{Eld96a,
   author = {Eldred, M.~S. and Hart, W.~E. and Bohnhoff, W.~J. and Romero,
   V.~J. and Hutchinson, S.~A. and Salinger, A.~G.},
@@ -387,7 +489,6 @@ Probabilistic Design},
   pages = {1568--1582}
 }
 
-%25
 @Article{Eld96b,
   author = {Eldred, M.~S. and Outka, D.~E. and Bohnhoff, W.~J. and
   Witkowski, W.~R. and Romero, V.~J. and Ponslet, E.~R. and Chen, K.~S.},
@@ -399,7 +500,6 @@ Probabilistic Design},
   year = 1996
 }
 
-%21
 @InProceedings{Eld98a,
   author = {Eldred, M.~S. and Hart, W.~E.},
   title = {Design and Implementation of Multilevel Parallel Optimization on the {Intel TeraFLOPS}},
@@ -411,7 +511,6 @@ Probabilistic Design},
   pages = {44--54}
 }
 
-%23
 @TechReport{Eld98b,
   author = {Eldred, M.~S.},
   title = {Optimization Strategies for Complex Engineering Applications},
@@ -421,7 +520,6 @@ Probabilistic Design},
   address =	 {Albuquerque, NM}
 }
 
-%20
 @InProceedings{Eld99,
   author = {Eldred, M.~S. and Schimel, B.~D.},
   title = {Extended Parallelism Models for Optimization on Massively Parallel Computers},
@@ -432,7 +530,6 @@ Probabilistic Design},
   year = 1999
 }
 
-%22
 @InProceedings{Eld00,
   author = {Eldred, M.~S. and Hart, W.~E. and Schimel, B.~D. and {van
   Bloemen Waanders}, B.~G.},
@@ -443,9 +540,8 @@ Probabilistic Design},
   year = 2000
 }
 
-%19
 @InProceedings{Eld02,
-  author = 	 {Eldred, M.~S. and Giunta, A.~A. and {Wojtkiewicz Jr.}, S.~F. and Trucano, T.~G.},
+  author = 	 {Eldred, M.~S. and Giunta, A.~A. and {Wojtkiewicz, Jr.}, S.~F. and Trucano, T.~G.},
   title = 	 {Formulations for Surrogate-Based Optimization Under Uncertainty},
   booktitle = 	 {Proc. 9th AIAA/ISSMO Symposium on Multidisciplinary Analysis and Optimization},
   year =	 2002,
@@ -454,6 +550,7 @@ Probabilistic Design},
   address =	 {Atlanta, GA}
 }
 
+% dox: Eldred2004a
 @InProceedings{Eld04,
   author = 		 {Eldred, M.~S. and Giunta, A.~A. and Collis, S.~S.},
   title = 		 {Second-Order Corrections for Surrogate-Based Optimization with Model Hierarchies},
@@ -464,16 +561,18 @@ Probabilistic Design},
   note = 	     {AIAA Paper 2004-4457},
 }
 
-@Article{Eld05,
-  author = {Eldred, M.~S. and Agarwal, H. and Perez, V.~M. and Wojtkiewicz, S.~F., Jr. and Renaud, J.~E.},
-  title = {Investigation of Reliability Method Formulations in DAKOTA/UQ},
-  journal = {Structure \& Infrastructure Engineering: Maintenance, Management, Life-Cycle Design \& Performance},
-  volume = 3,
-  number = 3,
-  year = 2007,
-  pages = {199--213}
+% BMA: Has this been superceded by the article following it?
+@InProceedings{Eldred2004b,
+  author = {Eldred, M.~S. and Agarwal, H. and Perez, V.~M. and {Wojtkiewicz, Jr.}, S.~F. and Renaud, J.~E.},
+  year = 2004,
+  title = {Investigation of Reliability Method Formulations in {DAKOTA/UQ}}, 
+  booktitle = {Proceedings of the 9th {ASCE} Joint Specialty Conference on Probabilistic Mechanics and Structural Reliability},
+  address = {Albuquerque, NM},
+  month = {July}
 }
+% dates = 26-28
 
+% dox: Eldred2006b
 @InProceedings{Eld06a,
   author = 	 {Eldred, M.~S. and Bichon, B.~J.},
   title = 	 {Second-Order Reliability Formulations in {DAKOTA/UQ}},
@@ -484,6 +583,7 @@ Probabilistic Design},
   address =	 {Newport,~RI}
 }
 
+% dox: Eldred2006a
 @InProceedings{Eld06b,
   author = 	 {Eldred, M.~S. and Dunlavy, D.~M.},
   title = 	 {Formulations for Surrogate-Based Optimization with Data Fit, Multifidelity, and Reduced-Order Models},
@@ -492,6 +592,17 @@ Probabilistic Design},
   month =        {September~6--8},
   number =       {AIAA-2006-7117},
   address =	 {Portsmouth,~VA}
+}
+
+% BMA: Fix year in User's
+@Article{Eld05,
+  author = {Eldred, M.~S. and Agarwal, H. and Perez, V.~M. and {Wojtkiewicz, Jr.}, S.~F. and Renaud, J.~E.},
+  title = {Investigation of Reliability Method Formulations in {DAKOTA/UQ}},
+  journal = {Structure \& Infrastructure Engineering: Maintenance, Management, Life-Cycle Design \& Performance},
+  volume = 3,
+  number = 3,
+  year = 2007,
+  pages = {199--213}
 }
 
 %Article{Eld06,
@@ -507,8 +618,7 @@ Probabilistic Design},
 
 @InProceedings{Eld07,
   author = 	 {Eldred, M.~S. and Webster, C.~G. and Constantine, P.},
-  title = 	 {Evaluation of Non-Intrusive Approaches for Wiener-Askey 
-Generalized Polynomial Chaos},
+  title = 	 {Evaluation of Non-Intrusive Approaches for Wiener-Askey Generalized Polynomial Chaos},
   booktitle = 	 {Proceedings of the 10th AIAA Non-Deterministic Approaches Conference},
   year =	 2008,
   month =        {April~7--10},
@@ -518,8 +628,7 @@ Generalized Polynomial Chaos},
 
 @InProceedings{Eld09a,
   author = 	 {Eldred, M.~S. and Burkardt, J.},
-  title = 	 {Comparison of Non-Intrusive Polynomial Chaos and Stochastic 
-Collocation Methods for Uncertainty Quantification},
+  title = 	 {Comparison of Non-Intrusive Polynomial Chaos and Stochastic Collocation Methods for Uncertainty Quantification},
   booktitle = 	 {Proceedings of the 47th AIAA Aerospace Sciences Meeting and Exhibit},
   year =	 2009,
   month =        {January 5--8,},
@@ -527,7 +636,7 @@ Collocation Methods for Uncertainty Quantification},
   address =	 {Orlando, FL}
 }
 
-
+% dox: Eldred2009
 @TechReport{Eld09b,
   author = {Eldred, M.~S and Swiler, L.~P.},
   title = {Efficient Algorithms for Mixed Aleatory-Epistemic Uncertainty Quantification with Application to Radiation-Hardened Electronics.  Part 1:  Algorithms and Benchmark Results},
@@ -537,6 +646,7 @@ Collocation Methods for Uncertainty Quantification},
   address = {Albuquerque, NM}
 }
 
+% dox: Eldred2011
 @Article{Eld11,
   author = {Eldred, M.~S. and Swiler, L.~P. and Tang, G},
   title = {Mixed Aleatory-Epistemic Uncertainty Quantification with Stochastic Expansions and Optimization-Based Interval Estimation},
@@ -545,45 +655,6 @@ Collocation Methods for Uncertainty Quantification},
   volume =	 96,
   number =       9,
   pages =	 {1092--1113}
-}
-
-@string{DakotaAuthorCitation =  
-"Adams, B.~M. and Bauman, L.~E. and Bohnhoff, W.~J. and Dalbey,
-K.~R. and Eddy, J.~P. and Ebeida, M.~S. and Eldred, M.~S. and Hough,
-P.~D. and Hu, K.~T. and Jakeman, J.~D. and Swiler, L.~P. and Vigil,
-D.~M."
-}
-
-%17
-@TechReport{RefMan,
-  author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.4 Reference Manual},
-  institution =  {Sandia National Laboratories},
-  number =       {SAND2010-2184},
-  year = 	 {Updated Jan. 2013},
-  address =	 {Albuquerque, NM},
-  note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
-}
-
-%18
-@TechReport{DevMan,
-  author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.4 Developers Manual},
-  institution =  {Sandia National Laboratories},
-  number =       {SAND2010-2185},
-  year = 	 {Updated Jan. 2013},
-  address =	 {Albuquerque, NM},
-  note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
-}
-
-@TechReport{TheoMan,
-  author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.4 Theory Manual},
-  institution =  {Sandia National Laboratories},
-  number =       {SAND2011-9106},
-  year = 	 {Updated Jan. 2013},
-  address =	 {Albuquerque, NM},
-  note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @Article{Fad90,
@@ -605,7 +676,6 @@ D.~M."
   pages =	 {1435--1442}
 }
 
-%26
 @Unpublished{Fla,
   author = {Flaggs, D.},
   title = {{JPrePost} User's Manual},
@@ -622,17 +692,31 @@ D.~M."
   pages = 	{44--59},
 }
 
+% dox: Ampl2003
 @Book{Fou03,
   author = {Fourer, R. and Gay, D.~M. and Kernighan, B.~W.},
-  title = {AMPL: A Modeling Language for Mathematical Programming, 2nd ed.},
+  title = {{AMPL}: A Modeling Language for Mathematical Programming, 2nd ed.},
   publisher = {Duxbury Press/Brooks/Cole Publishing Co.},
   address = {Pacific Grove, CA},
   year = 2003,
-  note = {For small examples, e.g., at most 300 variables, a student version of AMPL
-suffices; see \texttt{http://www.ampl.com/DOWNLOADS}.}
+  note = {For small examples, e.g., at most 300 variables, a student version of AMPL suffices; see \texttt{http://www.ampl.com/DOWNLOADS}.}
 }
 
-%27
+@article{Fran_Schwab_Todor_04,
+	Author = {Frauenfelder, P. and Schwab, C. and Todor, R. A.},
+	Coden = {CMMECC},
+	Fjournal = {Computer Methods in Applied Mechanics and Engineering},
+	Issn = {0045-7825},
+	Journal = {Comput. Methods Appl. Mech. Engrg.},
+	Mrclass = {65N30 (60H15 60H35)},
+	Mrnumber = {MR2105161 (2005i:65186)},
+	Number = {2-5},
+	Pages = {205--228},
+	Title = {Finite elements for elliptic problems with stochastic coefficients},
+	Volume = {194},
+	Year = {2005}
+}
+
 @Article{Fri91,
   author = {Friedman, J.~H.},
   title = {Multivariate Adaptive Regression Splines},
@@ -652,6 +736,7 @@ suffices; see \texttt{http://www.ampl.com/DOWNLOADS}.}
   note = {\url{ftp://ftp.ifor.math.ethz.ch/pub/fukuda/cdd/cddlibman/cddlibman.html}}
 }
 
+% dox: Gablonsky2001
 @TechReport{Gab01,
   author = {Gablonsky, J.},
   title = {DIRECT version 2.0 Userguide Technical Report},
@@ -661,7 +746,6 @@ suffices; see \texttt{http://www.ampl.com/DOWNLOADS}.}
   address =	 {Raleigh, NC}
 }
 
-%28
 @Book{Gam95,
   author = {Gamma, E. and Helm, R. and Johnson, R. and Vlissides, J.},
   title = {Design Patterns: Elements of Reusable Object-Oriented  Software},
@@ -678,6 +762,7 @@ suffices; see \texttt{http://www.ampl.com/DOWNLOADS}.}
   year = 	 2004
 }
 
+% dox: Gay1997
 @TechReport{Gay97,
   author = 	 {Gay, D.~M.},
   title = 	 {Hooking Your Solver to {AMPL}},
@@ -685,8 +770,31 @@ suffices; see \texttt{http://www.ampl.com/DOWNLOADS}.}
   number =       {Technical Report 97-4-06},
   year = 	 1997,
   address =	 {Murray Hill, NJ},
-  note =	{Available online as \url{http://www.ampl.com/REFS/HOOKING/index.html}
-and \url{http://www.ampl.com/REFS/hooking2.pdf} .}
+  note =	{Available online as \url{http://www.ampl.com/REFS/HOOKING/index.html} and \url{http://www.ampl.com/REFS/hooking2.pdf} and \url{http://www.ampl.com/REFS/hooking2.ps.gz}.}
+}
+
+@TechReport{Gay2008,
+  author = {Gay, D.~M.},
+  year = 2008,
+  title = {Specifying and Reading Program Input with {NIDR}},
+  institution = {Sandia National Laboratories},
+  number = {SAND2008-2261P},
+  note = {Available as \url{http://www.sandia.gov/~dmgay/nidr08.pdf}}
+}
+
+@article{gerstner_griebel_98,
+	AUTHOR = {Gerstner, T. and Griebel, M.},
+	FJOURNAL = {Numerical Algorithms},
+	ISSN = {1017-1398},
+	JOURNAL = {Numer. Algorithms},
+	MRCLASS = {65D30},
+ 	MRNUMBER = {MR1669959 (99m:65042)},
+	MRREVIEWER = {C. Dagnino},
+	NUMBER = {3-4},
+	PAGES = {209--232},
+         TITLE = {Numerical integration using sparse grids},
+  	VOLUME = {18},
+   	YEAR = {1998}
 }
 
 @Article {Gerstner_Griebel_2003,
@@ -705,7 +813,6 @@ and \url{http://www.ampl.com/REFS/hooking2.pdf} .}
 MRREVIEWER = {Marc Prevost},
 }
 
-%30
 @Book{Gha91,
   author = {Ghanem, R.~G. and Spanos, P.~D.},
   title = {Stochastic Finite Elements: A Spectral Approach},
@@ -714,7 +821,6 @@ MRREVIEWER = {Marc Prevost},
   year = 1991
 }
 
-%29
 @Article{Gha99,
   author = {Ghanem, R. and Red-Horse, J.~R.},
   title = {Propagation of Probabilistic Uncertainty in Complex Physical Systems using a Stochastic Finite Element Technique},
@@ -724,7 +830,13 @@ MRREVIEWER = {Marc Prevost},
   pages = {137-144}
 }
 
-%32
+@Book{Gilks,
+        Author = {Gilks, W.R. and Richardson, S. and Spiegelhalter, D.J.},
+        Publisher = {Chapman \& Hall},
+        Title = {Markov chain Monte Carlo in practice},
+        Year = {1998}
+}
+
 @Book{Gil81,
   author = {Gill, P.~E. and Murray, W. and Wright, M.~H.},
   title = {Practical Optimization},
@@ -733,7 +845,7 @@ MRREVIEWER = {Marc Prevost},
   year = 1981
 }
 
-%31
+%dox: Gill1986
 @TechReport{Gil86,
   author = {Gill, P.~E. and Murray, W. and Saunders, M.~A. and Wright, M.~H.},
   title = {User's Guide for {NPSOL (Version 4.0)}: A {Fortran} Package for Nonlinear Programming},
@@ -743,21 +855,22 @@ MRREVIEWER = {Marc Prevost},
   year = 1986
 }
 
-%33
+@article{GilMS05,
+	author={Philip E. Gill and Walter Murray and Michael A. Saunders},
+	title ={{SNOPT}: An {SQP} Algorithm for Large-Scale Constrained Optimization},
+	journal = {SIAM Review},
+	volume = {47},
+	pages = {99--131},
+	year = {2005},
+	number = {1}
+}
+
 @Book{Gil92,
   author = {Gilly, D.},
   title = {{UNIX} in a Nutshell},
   publisher = {O'Reilly and Associates, Inc.},
   address = {Sebastopol, CA},
   year = 1992
-}
-
-
-@Book{Gilks,
-        Author = {Gilks, W.R. and Richardson, S. and Spiegelhalter, D.J.},
-        Publisher = {Chapman \& Hall},
-        Title = {Markov chain Monte Carlo in practice},
-        Year = {1998}
 }
 
 @incollection {Ginsbourger,
@@ -776,7 +889,6 @@ MRREVIEWER = {Marc Prevost},
    year = {2010}
 }
 
-%36
 @InProceedings{Giu98,
   author = {Giunta, A.~A. and Watson, L.~T.},
   title = {A Comparison of Approximation Modeling Techniques: Polynomial Versus Interpolating Models},
@@ -787,7 +899,6 @@ MRREVIEWER = {Marc Prevost},
   pages = {392--404}
 }
 
-%35
 @InProceedings{Giu00,
   author = 	 {Giunta, A.~A. and Eldred, M.~S.},
   title = 	 {Implementation of a Trust Region Model Management Strategy in the {DAKOTA} Optimization Toolkit},
@@ -798,7 +909,6 @@ MRREVIEWER = {Marc Prevost},
   address =	 {Long Beach, CA}
 }
 
-%34
 @InProceedings{Giu02,
   author = {Giunta, A.~A.},
   title = {Use of Data Sampling, Surrogate Models, and Numerical Optimization in Engineering Design},
@@ -807,6 +917,15 @@ MRREVIEWER = {Marc Prevost},
   address = {Reno, NV},
   month = {January},
   year = 2002
+}
+
+@InProceedings{Giunta2006,
+  author = {Giunta, A.~A. and Swiler, L.~P. and Brown, S.~L and Eldred, M.~S. and Richards, M.~D. and Cyr, E.~C.},
+  year = 2006,
+  title = {The Surfpack Software Library for Surrogate Modeling of Sparse, Irregularly Spaced Multidimensional Data},
+  number = {AIAA-2006-7049},
+  booktitle = {Proceedings of the 11th {AIAA/ISSMO} Multidisciplinary Analysis and Optimization Conference},
+  address = {Portsmouth, VA}
 }
 
 @article{Giu06,
@@ -820,7 +939,6 @@ MRREVIEWER = {Marc Prevost},
   pages = {175-189}
 }
 
-%37
 @Book{Gol89,
   author = {Goldberg, D.~E.},
   title = {Genetic Algorithms in Search, Optimization, and Machine Learning},
@@ -850,8 +968,7 @@ MRREVIEWER = {Marc Prevost},
 
 @article{GrKo06,
   author = {Gray, G.~A. and Kolda, T.~G.},
-  title = {Algorithm 856: {APPSPACK} 4.0: Asynchronous Parallel
-                  Pattern Search for Derivative-Free Optimization},
+  title = {Algorithm 856: {APPSPACK} 4.0: Asynchronous Parallel Pattern Search for Derivative-Free Optimization},
   journal = {ACM Transactions on Mathematical Software},
   month = {September},
   year = {2006},
@@ -862,8 +979,7 @@ MRREVIEWER = {Marc Prevost},
 
 @TechReport{GrKo07,
   author = {Griffin, J.~D and Kolda, T.~G.},
-  title = {Nonlinearly-Constrained Optimization Using Asynchronous
-                  Parallel Generating Set Search},
+  title = {Nonlinearly-Constrained Optimization Using Asynchronous Parallel Generating Set Search},
   institution = {Sandia National Laboratories},
   number = {SAND2007-3257},
   year = {2007},
@@ -882,7 +998,6 @@ MRREVIEWER = {Marc Prevost},
   pages = {1892--1924}
 }
 
-%39
 @Book{Gro94,
   author = {Gropp, W. and Lusk, E. and Skjellum, A.},
   title = {Using {MPI}, Portable Parallel Programing with the Message-Passing Interface},
@@ -891,13 +1006,20 @@ MRREVIEWER = {Marc Prevost},
   year = 1994
 }
 
-%38
 @TechReport{Gro96,
   author = {Gropp, W. and Lusk, E.},
   title = {User's Guide for mpich, a Portable Implementation of {MPI}},
   institution = {Argonne National Laboratory, Mathematics and Computer Science Division},
   number = {ANL/MCS-TM-ANL-96/6},
   year = 1996
+}
+
+% BMA: Update site
+@Misc{Gunzburger2004,
+  author = {Gunburger, M. and Burkardt, J.},
+  year = 2004,
+  title = {Uniformity Measures for Point Samples in Hypercubes},
+  note = {Available on John Burkardt's web site: \url{http://www.csit.fsu.edu/~burkardt/}}
 }
 
 @Article{Haario,
@@ -910,7 +1032,17 @@ MRREVIEWER = {Marc Prevost},
         Volume = {16},
         Year = {2006}
 }
-%40
+
+@Article{Haftka1991,
+  author = {Haftka, R.~T.},
+  year = 1991,
+  title = {Combining Global and Local Approximations},
+  journal = {AIAA Journal},
+  volume = 29,
+  number = 9,
+  pages = {1523--1525}
+}
+
 @Book{Haf92,
   author = {Haftka, R.~T. and Gurdal, Z.},
   title = {Elements of Structural Optimization},
@@ -919,7 +1051,7 @@ MRREVIEWER = {Marc Prevost},
   year = 1992
 }
 
-%41
+% dox: Haldar2000
 @Book{Hal00,
   author =	 {Haldar, A. and Mahadevan, S.},
   title = 	 {Probability, Reliability, and Statistical Methods in Engineering Design},
@@ -928,7 +1060,42 @@ MRREVIEWER = {Marc Prevost},
   year = 	 2000
 }
 
-%42
+% BMA: check year
+@Article{Halton1960,
+  author = {Halton, J.~H.},
+  title = {On the efficiency of certain quasi-random sequences of points in evaluating multi-dimensional integrals},
+  journal = {Numerische Mathematik},
+  year = 1960,
+  volume = 2,
+  pages = {84--90}
+}
+
+@Article{Halton1964,
+  author = {Halton, J.~H. and Smith, G.~B.},
+  year = 1964,
+  title = {Algorithm 247: Radical-Inverse Quasi-Random Point Sequence},  
+  journal = {Communications of the ACM},
+  volume = 7,
+  pages = {701--702}
+}
+
+@InProceedings{Hart1999,
+  author = {Hart, W.~E. and Hunter, K.~O.},
+  year = 1999,
+  title = {A Performance Analysis of Evolutionary Pattern Search with Generalized Mutation Steps},
+  booktitle = {Proc Conf Evolutionary Computation},
+  pages = {672--679}
+}
+
+@InProceedings{Hart2001c,
+  author = {Hart, W.~E. and Giunta, A.~A. and Salinger, A.~G. and van Bloemen Waanders, B.~G.},
+  year = 2001,
+  title = {An Overview of the Adaptive Pattern Search Algorithm and its Application to Engineering Optimization Problems},
+  booktitle = {Proceedings of the McMaster Optimization Conference: Theory and Applications},
+  institution = {McMaster University},
+  address = {Hamilton, Ontario, Canada}
+}
+
 %TechReport{Har06,
 %  author = {Hart, W.~E.},
 %  title = {Coliny Users Manual: {Version 2.0}},
@@ -938,6 +1105,7 @@ MRREVIEWER = {Marc Prevost},
 %  address =	 {Albuquerque, NM},
 %  note = {Available online from \url{http://software.sandia.gov/Acro/Coliny/}}
 %}
+
 @misc{Har06,
   author = {Hart, W.~E.},
   title = {The Coliny Project},
@@ -954,8 +1122,6 @@ MRREVIEWER = {Marc Prevost},
   year = 	 1999
 }
 
-
-%43
 @TechReport{Hel00,
   author = {Helton, J.~C. and Davis, F.~J.},
   title = {Sampling-Based Methods for Uncertainty and Sensitivity Analysis},
@@ -964,6 +1130,18 @@ MRREVIEWER = {Marc Prevost},
   year = 	 2000,
   address =	 {Albuquerque, NM}
 }
+
+% BMA: FIX
+@Volumes{Helton2004,
+  author = {Helton, J.~C. and Oberkampf, W.~L.},
+  year= 2004,
+  title = {Special Issue of Reliability Engineering and System Safety: 
+Issue on Alternative Representations of Epistemic Uncertainty},
+  volume = 85, 
+  number = {1--3},
+  month = {Jul--Sep},
+  year = 2004
+} 
 
 @Article{Hel07,
   author = {Helton, J.~C. and Johnson, J.~D. and Oberkampf, W.~L. and Storlie, C.~B},
@@ -994,6 +1172,16 @@ MRREVIEWER = {Marc Prevost},
   pages =	 {547--556}}
 }
 
+% dox: HohenRack
+@Article{Hoh86,
+  author = 	 {Hohenbichler, M. and Rackwitz, R.},
+  title = 	 {Sensitivity and Importance Measures in Structural Reliability},
+  journal = 	 {Civil Eng. Syst.},
+  year = 	 1986,
+  volume =	 3,
+  pages =	 {203--209}
+}
+
 @Article{Hoh88,
   author = {Hohenbichler, M. and Rackwitz, R.},
   title = {Improvement of second-order reliability estimates by importance sampling},
@@ -1004,15 +1192,7 @@ MRREVIEWER = {Marc Prevost},
   pages = {2195--2199}
 }
 
-@Article{Hoh86,
-  author = 	 {Hohenbichler, M. and Rackwitz, R.},
-  title = 	 {Sensitivity and Importance Measures in Structural Reliability},
-  journal = 	 {Civil Eng. Syst.},
-  year = 	 1986,
-  volume =	 3,
-  pages =	 {203--209}
-}
-
+% dox: Hong
 @Article{Hon99,
   author = {Hong, H.P.},
   title = {Simple Approximations for Improving Second-Order Reliability Estimates},
@@ -1033,7 +1213,6 @@ MRREVIEWER = {Marc Prevost},
   address =	 {Honolulu, HI}
 }
 
-%44
 @Article{Hua06,
   author = 	 {Huang, D. and Allen, T.~T. and Notz, W.~I. and Zeng, N.},
   title = 	 {Global Optimization of Stochastic Black-Box Systems via Sequential Kriging Meta-Models}, 
@@ -1043,7 +1222,16 @@ MRREVIEWER = {Marc Prevost},
   pages =	 {441--466}
 }
 
-%45
+@Article{Iman1982,
+  author = {Iman, R.~L. and Conover, W.~J.},
+  year = 1982,
+  title = {A Distribution-Free Approach to Inducing Rank Correlation Among Input Variables},
+  journal = {Communications in Statistics: Simulation and Computation},
+  volume = {B11},
+  number = 3,
+  pages = {311--334}
+}
+
 @TechReport{Ima84,
   author = {Iman, R.~L. and Shortencarier, M.~J},
   title = {A {Fortran 77} Program and User's Guide for the Generation of Latin Hypercube Samples for Use with Computer Models},
@@ -1054,13 +1242,14 @@ MRREVIEWER = {Marc Prevost},
 }
 
 @Book{Jaynes,
-        Address = {Cambridge, UK; New York, NY},
-        Author = {Jaynes, E. T. and Bretthorst, G. Larry.},
-        Publisher = {Cambridge University Press},
-        Title = {Probability theory : the logic of science},
-        Year = {2003}
+  Address = {Cambridge, UK; New York, NY},
+  Author = {Jaynes, E. T. and Bretthorst, G. Larry.},
+  Publisher = {Cambridge University Press},
+  Title = {Probability theory : the logic of science},
+  Year = {2003}
 }
 
+% dox: Jones1998
 @Article{Jon98,
   author = 	 {Jones, D. and Schonlau, M. and Welch, W.},
   title = 	 {Efficient Global Optimization of Expensive Black-Box Functions},
@@ -1098,7 +1287,6 @@ MRREVIEWER = {Marc Prevost},
   pages =	 {425--464}
 }
 
-%46
 @Book{Ker88,
   author = {Kernighan, B.~W. and Ritchie, D.~M.},
   title = {The C Programming Language},
@@ -1116,7 +1304,16 @@ MRREVIEWER = {Marc Prevost},
   year =  2005
 }
 
-%47
+@Article{Kocis1997,
+  authors = {Kocis, L. and Whiten W.},
+  year = 1997,
+  title = {Computational Investigations of Low-Discrepancy Sequences},
+  journal = {ACM Transactions on Mathematical Software},
+  volume = 23,
+  number = 2,
+  pages = {266--294}
+}
+
 @InCollection{Koe96,
   author = {Koehler, J.~R. and Owen, A.~B.},
   title= {Computer Experiments},
@@ -1165,6 +1362,7 @@ MRREVIEWER = {Marc Prevost},
   Pages    = {1--15},
   Year     = {2011}
 }
+
 @article{herbiefunc,
   title={{Optimization Subject to Hidden Constraints via Statistical Emulation}},
   author={Lee, H. and Gramacy, R. and Linkletter, C. and Gray, G.},
@@ -1173,15 +1371,18 @@ MRREVIEWER = {Marc Prevost},
 
 }
 
-%48
-@TechReport{Lew00,
+% dox: Lewis2000
+@InProceedings{Lew00,
   author = {Lewis, R.~M. and Nash, S.~N.},
   title = {A Multigrid Approach to the Optimization of Systems Governed by Differential Equations},
+  booktitle = {Proceedings of the 8th {AIAA/USAF/NASA/ISSMO} Symposium on Multidisciplinary Analysis and Optimization},
   institution = {AIAA},
   number = {AIAA-2000-4890},
-  year = 2000
+  year = 2000,
+  address = {Long Beach, CA},
+  month = {Sep}
 }
-
+% dates = 6-8
  
 @article{MacKay,
     author = {David J.C. MacKay},
@@ -1219,7 +1420,6 @@ MRREVIEWER = {Marc Prevost},
   note = {available for download at http://etd.library.vanderbilt.edu/ETD-db/available/etd-03282008-125137/}
 }
 
-%49
 @Article{Mck79,
   author = {McKay, M.~D. and Beckman, R.~J. and Conover, W.~J.},
   title = {A Comparison of Three Methods for Selecting Values of Input Variables in the Analysis of Output from a Computer Code},
@@ -1230,17 +1430,6 @@ MRREVIEWER = {Marc Prevost},
   pages = {239--245}
 }
 
-%50
-@Article{MeOlHoWi07,
-  author = {Meza, J.~C. and Oliva, R.~A. and Hough, P.~D. and Williams, P.~J.},
-  title = {{OPT++:} An Object Oriented Toolkit for Nonlinear Optimization},
-  journal = {ACM Transactions on Mathematical Software},
-  volume = {33},
-  number = {2},
-  year = {2007}
-}
-
-%51
 @TechReport{Mez95,
   author = {Meza, J.~C. and Plantenga, T.~D.},
   title = {Optimal Control of a CVD Reactor for Prescribed Temperature Behavior},
@@ -1250,7 +1439,15 @@ MRREVIEWER = {Marc Prevost},
   year = 1995
 }
 
-%52
+@Article{MeOlHoWi07,
+  author = {Meza, J.~C. and Oliva, R.~A. and Hough, P.~D. and Williams, P.~J.},
+  title = {{OPT++:} An Object Oriented Toolkit for Nonlinear Optimization},
+  journal = {ACM Transactions on Mathematical Software},
+  volume = {33},
+  number = {2},
+  year = {2007}
+}
+
 @TechReport{Moe95,
   author = {Moen, C.~D. and Spence, P.~A. and Meza, J.~C},
   title = {Optimal Heat Transfer Design of Chemical Vapor Deposition Reactors},
@@ -1260,7 +1457,6 @@ MRREVIEWER = {Marc Prevost},
   year = 1995
 }
 
-%53
 @InProceedings{Moe96,
   author = {Moen, C.~D. and Spence, P.~A. and Meza, J.~C. and Plantenga, T.~D.},
   title = {Automatic Differentiation for Gradient-Based Optimization of Radiatively Heated Microelectronics Manufacturing Equipment},
@@ -1271,6 +1467,17 @@ MRREVIEWER = {Marc Prevost},
   pages = {1167--1175}
 }.
 
+@Article{More1994,
+  author = {More, J. and Thuente, D.},
+  year = 1994,
+  title = {Line Search Algorithms with Guaranteed Sufficient Decrease},
+  journal = {{ACM} Transactions on Mathematical Software},
+  volume = 20,
+  number = 3,
+  pages = {286--307}
+}
+
+% dox: Morris1991
 @Article{Mor91,
   author = {Morris, M.~D.},
   title = {Factorial sampling plans for preliminary computational experiments},
@@ -1281,7 +1488,6 @@ MRREVIEWER = {Marc Prevost},
   pages = {161--174}
 }
 
-%54
 @Book{Mye95,
   author = {Myers, R.~H. and Montgomery, D.~C.},
   title = {Response Surface Methodology: Process and Product Optimization Using Designed  Experiments},
@@ -1291,27 +1497,18 @@ MRREVIEWER = {Marc Prevost},
 }
 
 @book{NAS08,
-        author = {{National Research Council of the National Academies}},
-	Address = {Washington D.C.},
-	Publisher = {National Academy Press},
-	Title = {Evaluation of Quantification of Margins and Uncertainties Methodology for Assessing and Certifying the Reliability of the Nuclear Stockpile},
-	Year = {2008}}
-
-@misc{Nomad,
-  Author       = {M.A. Abramson and C. Audet and G. Couture
-                 and J.E. {Dennis, Jr.} and S. {Le~Digabel} and C. Tribes},
-  Title        = {The {NOMAD} project},
-  Howpublished = {Software available at
-                  \url{http://www.gerad.ca/nomad}},
-  Url          = {http://www.gerad.ca/nomad},
+  author = {{National Research Council of the National Academies}},
+  address = {Washington D.C.},
+  Publisher = {National Academy Press},
+  Title = {Evaluation of Quantification of Margins and Uncertainties Methodology for Assessing and Certifying the Reliability of the Nuclear Stockpile},
+  Year = {2008}
 }
-
-@TechReport{Plantenga2009,
-  author = 	 {Plantenga, T.~D.},
-  title = 	 {HOPSPACK 2.0 User Manual},
-  institution =  {Sandia National Laboratories},
-  number =       {SAND2009-6265},
-  year = 	 2009
+@TechReport{Nea04,
+  author = 	{Nealen, A.},
+  title = 	{A Short-As-Possible Introduction to the Least Squares, Weighted Least Squares, and Moving Least Squares Methods for Scattered Data Approximation and Interpolation},
+  institution = {Discrete Geometric Modeling Group, Technishe Universitaet},
+  address = {Berlin, Germany},
+  year = 	{2004}
 }
 
 @TechReport{webster1,
@@ -1333,93 +1530,6 @@ MRREVIEWER = {Marc Prevost},
   pages = {2411--2442}
 }
 
-@article{gerstner_griebel_98,
-	AUTHOR = {Gerstner, T. and Griebel, M.},
-	FJOURNAL = {Numerical Algorithms},
-	ISSN = {1017-1398},
-	JOURNAL = {Numer. Algorithms},
-	MRCLASS = {65D30},
- 	MRNUMBER = {MR1669959 (99m:65042)},
-	MRREVIEWER = {C. Dagnino},
-	NUMBER = {3-4},
-	PAGES = {209--232},
-         TITLE = {Numerical integration using sparse grids},
-  	VOLUME = {18},
-   	YEAR = {1998}}
-
-@article{was_woz,
-	Author = {G. W. Wasilkowski and H. Wo\'zniakowski},
-	Date-Added = {2006-03-23 10:09:10 -0500},
-	Date-Modified = {2006-03-23 10:14:37 -0500},
-	Journal = {Journal of Complexity},
-	Local-Url = {file://localhost/Users/webster/Documents/phd_research/papers_talks/smolyak_papers/wasilkowski_93.pdf},
-	Pages = {1-56},
-	Title = {Explicit Cost Bounds of Algorithms for Multivariate Tensor Product Problems},
-	Volume = {11},
-	Year = {1995}}
-
-@article{barth_novak_ritter_00,
-	Author = {Barthelmann, V. and Novak, E. and Ritter, K.},
-	Fjournal = {Advances in Computational Mathematics},
-	Issn = {1019-7168},
-	Journal = {Adv. Comput. Math.},
-	Mrclass = {41A63 (41A05 65D05)},
-	Mrnumber = {MR1768951 (2001d:41033)},
-	Mrreviewer = {Timothy S. Norfolk},
-	Note = {Multivariate polynomial interpolation},
-	Number = 4,
-	Pages = {273--288},
-	Title = {High dimensional polynomial interpolation on sparse grids},
-	Volume = 12,
-	Year = 2000}
-
-@Article{Smolyak_63,
-  author = 	 {Smolyak, S.A.},
-  title = 	 {Quadrature and interpolation formulas for tensor products of certain classes of functions},
-  journal = 	 {Dokl. Akad. Nauk SSSR},
-  year = 	 1963,
-  volume =	 4,
-  pages =	 {240--243}
-}
-
-@article{Fran_Schwab_Todor_04,
-	Author = {Frauenfelder, P. and Schwab, C. and Todor, R. A.},
-	Coden = {CMMECC},
-	Fjournal = {Computer Methods in Applied Mechanics and Engineering},
-	Issn = {0045-7825},
-	Journal = {Comput. Methods Appl. Mech. Engrg.},
-	Mrclass = {65N30 (60H15 60H35)},
-	Mrnumber = {MR2105161 (2005i:65186)},
-	Number = {2-5},
-	Pages = {205--228},
-	Title = {Finite elements for elliptic problems with stochastic coefficients},
-	Volume = {194},
-	Year = {2005}}
-
-@article {Xiu_Hesthaven_05,
-    AUTHOR = {Xiu, D. and Hesthaven, J.S.},
-     TITLE = {High-order collocation methods for differential equations with
-              random inputs},
-   JOURNAL = {SIAM J. Sci. Comput.},
-  FJOURNAL = {SIAM Journal on Scientific Computing},
-    VOLUME = 27,
-      YEAR = 2005,
-    NUMBER = 3,
-     PAGES = {1118--1139 (electronic)},
-      ISSN = {1064-8275},
-   MRCLASS = {65C30},
-  MRNUMBER = {MR2199923 (2006i:65010)},
-}
-
-@TechReport{Nea04,
-  author = 	{Nealen, A.},
-  title = 	{A Short-As-Possible Introduction to the Least Squares, Weighted Least Squares, and Moving Least Squares Methods for Scattered Data Approximation and Interpolation},
-  institution = {Discrete Geometric Modeling Group, Technishe Universitaet},
-  address = {Berlin, Germany},
-  year = 	{2004}
-}
-
-%55
 @Book{Noc99,
   author = {Nocedal, J. and Wright S.~J.},
   title = {Numerical Optimization},
@@ -1429,7 +1539,7 @@ MRREVIEWER = {Marc Prevost},
   year = 1999
 }
 
-%561
+%dox: Oberkampf2003
 @TechReport{Obe03,
   author = {Oberkampf, W.~.L. and Helton, J.~C.},
   title = {Evidence Theory for Engineering Applications},
@@ -1476,6 +1586,7 @@ Sttural Dynamics, and Materials Conference},
   note = 	{AIAA Paper 2002-1587},
 }
 
+% dox: Perez2004
 @Article{Per04a,
   author = 	{P\'erez, V.~M. and Renaud, J.~E. and Watson, L.~T.},
   title = 	{An Interior-Point Sequetial Approximation Optimization Methodology},
@@ -1497,7 +1608,6 @@ Sttural Dynamics, and Materials Conference},
   note = 	{AIAA Paper 2004-4312},
 }
 
-%56
 @Article{Per93,
   author = {Perttunen, C.~D. and Jones, D.~R. and Stuckman, B.~E.},
   title = {Lipschitzian optimization without the {Lipschitz} constant},
@@ -1508,7 +1618,14 @@ Sttural Dynamics, and Materials Conference},
   year = 1993
 }
 
-%57
+@TechReport{Plantenga2009,
+  author = 	 {Plantenga, T.~D.},
+  title = 	 {{HOPSPACK} 2.0 User Manual},
+  institution =  {Sandia National Laboratories},
+  number =       {SAND2009-6265},
+  year = 	 2009
+}
+
 @InProceedings{Pon96,
   author = {Ponslet, E.~R. and Eldred, M.~S.},
   title = {Discrete Optimization of Isolator Locations for Vibration Isolation Systems: an Analytical and Experimental Investigation},
@@ -1521,15 +1638,6 @@ Sttural Dynamics, and Materials Conference},
   note = {Also appears as Sandia Technical Report SAND96-1169, May 1996}
 }
 
-@Article{Rac02,
-  author = 	 {Rackwitz, R.},
-  title = 	 {Optimization and Risk Acceptability Based on the {L}ife {Q}uality {I}ndex},
-  journal = 	 {Struct. Saf},
-  year = 	 2002,
-  volume =	 24,
-  pages =	 {297--331}
-}
-
 @Article{Rac78,
   author = {Rackwitz, R. and Fiessler, B.},
   title = {Structural Reliability under Combined Random Load Sequences},
@@ -1537,6 +1645,15 @@ Sttural Dynamics, and Materials Conference},
   volume = 9,
   year = 1978,
   pages = {489--494}
+}
+
+@Article{Rac02,
+  author = 	 {Rackwitz, R.},
+  title = 	 {Optimization and Risk Acceptability Based on the {L}ife {Q}uality {I}ndex},
+  journal = 	 {Struct. Saf},
+  year = 	 2002,
+  volume =	 24,
+  pages =	 {297--331}
 }
 
 @Article{reagan_sens,
@@ -1548,7 +1665,6 @@ Sttural Dynamics, and Materials Conference},
   pages =	 {368--382}
 }
 
-%58
 @InProceedings{Red98,
   author = {Red-Horse, J.~R. and Paez, T.~L.},
   title = {Uncertainty Evaluation in Dynamic System Response},
@@ -1558,6 +1674,15 @@ Sttural Dynamics, and Materials Conference},
   year = 1998,
   pages = {1206--1212}
 }
+
+@InProceedings{Robinson1999,
+  author = {Robinson, D.~G. and Atcitty, C.},
+  year = 1999,
+  title = {Comparison of Quasi- and Pseudo-Monte Carlo Sampling for Reliability and Uncertainty Analysis},
+  booktitle = {Proceedings of the {AIAA} Probabilistic Methods Conference},
+  address = {St. Louis, MO},
+  number = {AIAA99-1589}
+} 
 
 @InProceedings{Rob06a,
   author = 	{Robinson, T.~D. and Eldred, M.~S. and Willcox, K.~E. and Haimes, R.},
@@ -1588,7 +1713,6 @@ Sttural Dynamics, and Materials Conference},
   pages = 	{1--7},
 }
 
-%59
 @Article{Ros52,
   author = {Rosenblatt, M.},
   title = {Remarks on a Multivariate Transformation},
@@ -1599,22 +1723,22 @@ Sttural Dynamics, and Materials Conference},
   pages = {470--472}
 }
 
-%74
+@article{Rosenbrock60,
+	author = {H. H. Rosenbrock},
+	title = {An Automatic Method for Finding the Greatest or Least Value of a Function},
+	journal = {Computer Journal},
+	volume = {3},
+	pages = {175--184},
+	year = {1960}
+}
+
+%dox: Saltelli2004
 @Book{Sal04,
   author = {Saltelli, A. and Tarantola, S. and Campolongo,F. and Ratto,M.},
   title = {Sensitivity Analysis in Practice: A Guide to Assessing
   Scientific Models.},
   publisher = {John Wiley \& Sons},
   year = 2004,
-}
-
-% may need number
-@TechReport{Sch04,
-  author = {Schittkowski, K.},
-  title = {{NLPQLP}: A Fortran Implementation of a Sequential Quadratic Programming Algorithm with Distributed and Non-Monotone Line Search -- User's Guide},
-  institution =  {Department of Mathematics, University of Bayreuth},
-  year = 	 2004,
-  address =	 {Bayreuth, Germany},
 }
 
 @Book{Sch87,
@@ -1625,7 +1749,16 @@ Sttural Dynamics, and Materials Conference},
   year = 1987,
 }
 
-%60
+% may need number
+% dox: Schitt2004
+@TechReport{Sch04,
+  author = {Schittkowski, K.},
+  title = {{NLPQLP}: A Fortran Implementation of a Sequential Quadratic Programming Algorithm with Distributed and Non-Monotone Line Search -- User's Guide},
+  institution =  {Department of Mathematics, University of Bayreuth},
+  year = 	 2004,
+  address =	 {Bayreuth, Germany},
+}
+
 @TechReport{Sch95,
   author = {Schunk, P.~R. and Sackinger, P.~A. and Rao, R.~R. and Chen, K.~S. and Cairncross, R.~A.},
   title = {{GOMA} -- A Full-Newton Finite Element Program for Free and Moving Boundary Problems with Coupled Fluid/Solid Momentum, Energy, Mass, and Chemical Species  Transport: User's Guide},
@@ -1663,7 +1796,7 @@ Sttural Dynamics, and Materials Conference},
 %number =      #,
 
 
-%61
+% dox: Sjaar1992
 @TechReport{Sja92,
   author = {Sjaardema, G.~D.},
   title = {{APREPRO}: An Algebraic Preprocessor for Parameterizing Finite Element Analyses},
@@ -1673,7 +1806,15 @@ Sttural Dynamics, and Materials Conference},
   address =	 {Albuquerque, NM},
 }
 
-%62
+@Article{Smolyak_63,
+  author = 	 {Smolyak, S.A.},
+  title = 	 {Quadrature and interpolation formulas for tensor products of certain classes of functions},
+  journal = 	 {Dokl. Akad. Nauk SSSR},
+  year = 	 1963,
+  volume =	 4,
+  pages =	 {240--243}
+}
+
 @Book{Sni96,
   author = {Snir, M. and Otto, S. and Huss-Lederman, S. and Walker, D. and Dongarra, J.},
   title = {MPI: The Complete Reference},
@@ -1682,6 +1823,7 @@ Sttural Dynamics, and Materials Conference},
   year = 1996
 }
 
+% dox: Srinivasan
 @Book{Srinivasan2002,
   title={{Importance Sampling}},
   author={Srinivasan, R.},
@@ -1689,7 +1831,7 @@ Sttural Dynamics, and Materials Conference},
   publisher={Springer-Verlag}
 }
  
-
+% dox: Stroud1971
 @Book{stroud,
   author =	 {Stroud, A.},
   title = 	 {Approximate Calculation of Multiple Integrals},
@@ -1699,7 +1841,6 @@ Sttural Dynamics, and Materials Conference},
 %  address =      {New York},
 
 
-%63
 @InProceedings{Sue01,
   author = {Sues, R. and Aminpour, M. and Shin, Y.},
   title = {Reliability-Based Multidisciplinary Optimization for Aerospace Systems},
@@ -1710,7 +1851,6 @@ Sttural Dynamics, and Materials Conference},
   year = 2001
 }
 
-%71
 @TechReport{Swi04,
   author = {Swiler, L.~P. and Wyss, G.~D.},
   title = {A User's Guide to {Sandia's} Latin Hypercube Sampling Software: {LHS UNIX} Library and Standalone Version},
@@ -1733,9 +1873,10 @@ Sttural Dynamics, and Materials Conference},
 
 @InProceedings{Swiler2010,
   title={Importance sampling: Promises and limitations},
-  author={Swiler, L.P. and West, N.J.},
+  author={Swiler, L.~P. and West, N.~J.},
   booktitle={Proceedings of the 12th AIAA Non-Deterministic Approaches Conference},
-  year={2010}
+  year={2010},
+  number = {AIAA-2010-2850}
 }
 
 @InProceedings{Tang10a,
@@ -1758,13 +1899,20 @@ Sttural Dynamics, and Materials Conference},
   note = 	{AIAA Paper 2010-XXXX},
 }
 
+% BMA: needs update with authoritative reference
+@Misc{Tapia1,
+  author = {Tapia, R.~A. and Argaez, M.}, 
+  title = {Global Convergence of a Primal-Dual Interior-Point Newton Method for Nonlinear Programming Using a Modified Augmented Lagrangian Function},
+  note = {(In Preparation)}
+}
+
 @phdthesis{Tat95,
 	Author = {Tatang, M.A.},
 	School = {MIT},
 	Title = {Direct incorporation of uncertainty in chemical and environmental engineering systems},
 	Year = 1995}
 
-%64
+% BMA: update site
 @TechReport{TonXX,
   author = {Tong, C.~H. and Meza, J.~C.},
   title = {{DDACE}: A Distributed Object-Oriented Software with Multiple Samplings for the Design and Analysis of Computer Experiments},
@@ -1774,9 +1922,12 @@ Sttural Dynamics, and Materials Conference},
   note = {Draft as yet unpublished, see also \url{http://csmr.ca.sandia.gov/projects/ddace/DDACEdoc/html/index.html}}
 }
 
+% dox: Tong2005
 @misc{Ton05,
   author = {Tong, C.~H.},
-  title = {The PSUADE Software Library},
+  title = {The {PSUADE} Software Library},
+  institution = {Lawrence Livermore National Laboratories},
+  number = { UCRL-WEB-211742},
   howpublished = {Web site},
   year = 2005,
   note = {\url{http://www.llnl.gov/CASC/uncertainty\_quantification/\#psuade}}
@@ -1801,7 +1952,17 @@ Sttural Dynamics, and Materials Conference},
   pages = {1183--1197}
 }
 
-%65
+@Article{VanShanno1999,
+  author = {Vanderbei, R.~J. and Shanno, D.~F.},
+  year = 1999,
+  title = {An interior-point algorithm for nonconvex nonlinear programming},
+  journal = {Computational Optimization and Applications},
+  volume = 13,
+  pages = {231--259}
+}
+
+% BMA: Fix year in User's
+% dox: Van1973
 @TechReport{Van78,
   author = {Vanderplaats, G.~N.},
   title = {{CONMIN} -- A {FORTRAN} Program for Constrained Function Minimization},
@@ -1811,7 +1972,6 @@ Sttural Dynamics, and Materials Conference},
   note = {See also Addendum to Technical Memorandum, 1978}
 }
 
-%66
 @Book{Van84,
   author = {Vanderplaats, G.~N.},
   title = {Numerical Optimization Techniques for Engineering Design: With Applications},
@@ -1820,7 +1980,7 @@ Sttural Dynamics, and Materials Conference},
   year = 1984
 }
 
-%67
+%dox: Vrand1995
 @Manual{Van95,
   title = {{DOT} Users Manual, {Version 4.20}},
   organization = {Vanderplaats Research and Development, Inc.},
@@ -1828,6 +1988,7 @@ Sttural Dynamics, and Materials Conference},
   year = 1995
 }
 
+% dox: Vrugt2009
 @Article{Vrugt,
   author = {Vrugt, J.~A. and ter Braak, C.~J.~F. and
 Diks, C.~G.~H. and Robinson, B.~A. and Hyman, J.~M. and Higdon, D.},
@@ -1847,7 +2008,6 @@ differential evolution with randomized subspace sampling},
   volume = 43,	
 }
 
-%68
 @Book{Wal96,
   author = {Wall, L. and Christiansen, T. and Schwartz, R.~L.},
   title = {Programming Perl},
@@ -1867,11 +2027,22 @@ differential evolution with randomized subspace sampling},
   address =	 {Reno, NV}
 }
 
-%69
 @Misc{WalXX,
   author = {Walton, B.},
   title = {{BPREPRO} preprocessor documentation},
   howpublished = {Online document \url{http://bwalton.com/bprepro.html}}
+}
+
+@article{was_woz,
+	Author = {G. W. Wasilkowski and H. Wo\'zniakowski},
+	Date-Added = {2006-03-23 10:09:10 -0500},
+	Date-Modified = {2006-03-23 10:14:37 -0500},
+	Journal = {Journal of Complexity},
+	Local-Url = {file://localhost/Users/webster/Documents/phd_research/papers_talks/smolyak_papers/wasilkowski_93.pdf},
+	Pages = {1-56},
+	Title = {Explicit Cost Bounds of Algorithms for Multivariate Tensor Product Problems},
+	Volume = {11},
+	Year = {1995}
 }
 
 @InProceedings{Wei06,
@@ -1884,6 +2055,7 @@ differential evolution with randomized subspace sampling},
   note = 	     {AIAA Paper 2006-2145},
 }
 
+% dox: Weirs2010
 @Article{Weirs10,
   author = 	 {Weirs, V.~G. and Kamm, J.~R. and Swiler, L.~P. and Ratto, M. and Tarantola, S. and Adams, B.~M. and Rider, W.~J. and Eldred, M.~S},
   title = 	 {Sensitivity Analysis Techniques Applied to a System of Hyperbolic Conservation Laws},
@@ -1912,15 +2084,11 @@ differential evolution with randomized subspace sampling},
   address =	 {Reno, NV}
 }
 
-%70
-@InProceedings{Wu01,
-  author = {Wu, Y.-T. and Shin, Y. and Sues, R. and Cesare, M.},
-  title = {Safety-Factor Based Approach for Probability-Based Design Optimization},
-  number = {AIAA-2001-1522},
-  booktitle = {Proc. 42nd AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference},
-  address = {Seattle, WA},
-  month = {April 16--19},
-  year = 2001
+@Book{Wright1,
+  author = {Wright, S.~J.},
+  year = 1997,
+  title = {Primal-Dual Interior-Point Methods},
+  publisher = {SIAM}
 }
 
 @Article{Wu87,
@@ -1942,6 +2110,16 @@ differential evolution with randomized subspace sampling},
   pages = 	{1911--1921},
 }
 
+@InProceedings{Wu01,
+  author = {Wu, Y.-T. and Shin, Y. and Sues, R. and Cesare, M.},
+  title = {Safety-Factor Based Approach for Probability-Based Design Optimization},
+  number = {AIAA-2001-1522},
+  booktitle = {Proc. 42nd AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference},
+  address = {Seattle, WA},
+  month = {April 16--19},
+  year = 2001
+}
+
 @Article{Wuj98b,
   author = 	{Wujek, B.~A. and Renaud, J.~E.},
   title = 	{New Adaptive Move-Limit Management Strategy for Approximate Optimization, Part 2},
@@ -1952,13 +2130,13 @@ differential evolution with randomized subspace sampling},
   pages = 	{1922--1934},
 }
 
-@Article{xiu_cubature,
-  author = 	 {Xiu, D.},
-  title = 	 {Numerical integration formulas of degree two},
-  journal = 	 {Applied Numerical Mathematics},
-  volume = 	 {58},
-  year =	 2008,
-  pages =	 {1515--1520}
+@TechReport{Wyss1998,
+  author = {Wyss, G.~D. and Jorgensen, K.~H.},
+  year = 1998,
+  title = {A User's Guide to {LHS}: {S}andia's {L}atin Hypercube Sampling Software},
+  institution = {Sandia National Laboratories},
+  number = {SAND98-0210},
+  address = {Albuquerque, NM}
 }
 
 @Article{XiuKarn02,
@@ -1971,6 +2149,32 @@ differential evolution with randomized subspace sampling},
   pages =	 {619--644}
 }
 
+@article {Xiu_Hesthaven_05,
+    AUTHOR = {Xiu, D. and Hesthaven, J.S.},
+     TITLE = {High-order collocation methods for differential equations with
+              random inputs},
+   JOURNAL = {SIAM J. Sci. Comput.},
+  FJOURNAL = {SIAM Journal on Scientific Computing},
+    VOLUME = 27,
+      YEAR = 2005,
+    NUMBER = 3,
+     PAGES = {1118--1139 (electronic)},
+      ISSN = {1064-8275},
+   MRCLASS = {65C30},
+  MRNUMBER = {MR2199923 (2006i:65010)},
+}
+
+% dox: Xiu2008
+@Article{xiu_cubature,
+  author = 	 {Xiu, D.},
+  title = 	 {Numerical integration formulas of degree two},
+  journal = 	 {Applied Numerical Mathematics},
+  volume = 	 {58},
+  year =	 2008,
+  pages =	 {1515--1520}
+}
+
+% dox: Xu1998
 @Article{Xu98,
   author = {Xu, S. and Grandhi, R.~V.},
   title = {Effective Two-Point Function Approximation for Design Optimization},
@@ -1981,7 +2185,6 @@ differential evolution with randomized subspace sampling},
   pages = {2269--2275}
 }
 
-%72
 @Misc{Zim96,
   author = {Zimmerman, D.~C.},
   title = {Genetic Algorithms for Navigating Expensive and Complex Design Spaces},
@@ -1997,23 +2200,4 @@ differential evolution with randomized subspace sampling},
   year =	 2004,
   month =        {July 26--28,},
   address =      {Albuquerque, NM}
-}
-
-@article{GilMS05,
-	author={Philip E. Gill and Walter Murray and Michael A. Saunders},
-	title ={{SNOPT}: An {SQP} Algorithm for Large-Scale Constrained Optimization},
-	journal = {SIAM Review},
-	volume = {47},
-	pages = {99--131},
-	year = {2005},
-	number = {1}
-}
-
-@article{Rosenbrock60,
-	author = {H. H. Rosenbrock},
-	title = {An Automatic Method for Finding the Greatest or Least Value of a Function},
-	journal = {Computer Journal},
-	volume = {3},
-	pages = {175--184},
-	year = {1960}
 }

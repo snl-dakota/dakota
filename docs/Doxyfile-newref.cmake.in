@@ -592,7 +592,7 @@ LAYOUT_FILE            =
 # feature you need bibtex and perl available in the search path. Do not use
 # file names with spaces, bibtex cannot handle them.
 
-CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/latex-user/Users.bib \
+CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/Dakota.bib \
                          @CMAKE_CURRENT_SOURCE_DIR@/latex-theory/Theory.bib
 
 #---------------------------------------------------------------------------
@@ -655,8 +655,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = DakotaReferenceManual.dox \
-                         @CMAKE_CURRENT_SOURCE_DIR@/NewRef_Bibliography.dox
+INPUT                  = DakotaReferenceManual.dox
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -847,14 +846,14 @@ VERBATIM_HEADERS       = YES
 # particularly helpful with template rich C++ code for which doxygen's built-in
 # parser lacks the necessairy type information.
 
-CLANG_ASSISTED_PARSING = NO
+#CLANG_ASSISTED_PARSING = NO
 
 # If clang assisted parsing is enabled you can provide the compiler with command
 # line options that you would normally use when invoking the compiler. Note that
 # the include paths will already be set by doxygen for the files and directories
 # specified at INPUT and INCLUDE_PATH.
 
-CLANG_OPTIONS          =
+#CLANG_OPTIONS          =
 
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index

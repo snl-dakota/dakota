@@ -15,7 +15,7 @@ before/after the analysis drivers.
 The \c verbatim keyword is used to modify the default driver/filter commands.
 
 For additional information on invocation syntax, see the Interfaces
-chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"]. 
+chapter of the Users Manual [\cite UsersMan "Adams et al., 2010"]. 
 
 <!---- The \c fork keyword anchors
 the group specification and the \c parameters_file, \c results_file,

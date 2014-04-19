@@ -11,7 +11,7 @@ multivariate adaptive regression spline, moving least squares, <!-- an
 orthogonal polynomial (Hermite, Legendre, Laguerre, Jacobi, and/or
 generalized Laguerre) approximation, --> or radial basis function
 approximation, respectively.  All these approximations are implemented
-in \ref Giunta2006 "SurfPack" except an alternate Gaussian process
+in \cite Giunta2006 "SurfPack" except an alternate Gaussian process
 model, which is implemented directly in %Dakota.
 
 In the polynomial case, the order of the polynomial (linear,
@@ -206,16 +206,16 @@ match the truth data at the point, and the \c multiplicative
 correction multiplies the approximation by a scalar (\c zeroth_order),
 a linear function (\c first_order), or a quadratic function (\c
 second_order) to match the truth data at the point.  The \c additive
-\c first_order case is due to [\ref Lewis2000 "Lewis and Nash, 2000"]
+\c first_order case is due to [\cite Lew00 "Lewis and Nash, 2000"]
 and the \c multiplicative \c first_order case is commonly known as
-beta correction [\ref Haftka1991 "Haftka, 1991"].  For the \c combined
+beta correction [\cite Haftka1991 "Haftka, 1991"].  For the \c combined
 correction, the use of both additive and multiplicative corrections
 allows the satisfaction of an additional matching condition, typically
 the truth function values at the previous correction point (e.g., the
 center of the previous trust region).  The \c combined correction is
 then a multipoint correction, as opposed to the local \c additive and
 \c multiplicative corrections.  Each of these correction capabilities
-is described in detail in [\ref Eldred2004a "Eldred et al., 2004a"].
+is described in detail in [\cite Eld04 "Eldred et al., 2004"].
 
 
 

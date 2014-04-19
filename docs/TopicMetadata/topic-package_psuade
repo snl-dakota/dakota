@@ -5,7 +5,7 @@ and optimization. Its features include non-intrusive and parallel
 function evaluations, sampling and analysis methods, an integrated
 design and analysis framework, global optimization, numerical
 integration, response surfaces (MARS and higher order regressions),
-graphical output with Pgplot or Matlab, and fault tolerance [\ref
-Tong2005 "C.H. Tong, 2005"].
+graphical output with Pgplot or Matlab, and fault tolerance 
+[\cite Ton05 "C.H. Tong, 2005"].
 
 

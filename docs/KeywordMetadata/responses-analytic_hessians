@@ -5,7 +5,7 @@ The \c analytic_hessians specification means that Hessian information
 is available directly from the simulation. The simulation must return
 the Hessian data in the %Dakota format (enclosed in double brackets; see
 %Dakota File Data Formats in Users Manual 
-[\ref UsersMan "Adams et al., 2010"]) for the case of file transfer of 
+[\cite UsersMan "Adams et al., 2010"]) for the case of file transfer of 
 data. The \c analytic_hessians keyword is a complete specification for 
 this case.
 

@@ -14,7 +14,7 @@ Four strategies currently exist:
 -# \c single_method
 .
 \li Additional information on the algorithm logic is
-available in the Users Manual [\ref UsersMan "Adams et al., 2010"].
+available in the Users Manual [\cite UsersMan "Adams et al., 2010"].
 \li One of these must be selected, however, if it not specified Dakota
 will default to the \c single_method strategy.
 \li More detail about these strategies and associated keywords are given

@@ -24,7 +24,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-newref.cmake.in
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex)
 
-
 # Doxygen new reference dependencies
 file(GLOB newref_kw_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "KeywordMetadata/*")
 file(GLOB newref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
@@ -82,7 +81,7 @@ add_custom_command(
 add_custom_target(docs-newref
   # Only list the explicit doxygen deps
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-newref
-    ${CMAKE_CURRENT_SOURCE_DIR}/Ref_Bibliography.dox
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dakota.bib
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
   COMMAND doxygen Doxyfile-newref
 )

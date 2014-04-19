@@ -35,7 +35,7 @@ for current input specifications.
   - Whether it has an <tt>ALIAS</tt>, or synonym
   - Which additional keywords can be specified to change its behavior
 - Additional details and descriptions are described in \ref keywords
-- For additional details on NIDR specification logic and rules, refer to [\ref Gay2008 "Gay, 2008"].
+- For additional details on NIDR specification logic and rules, refer to [\cite Gay2008 "Gay, 2008"].
 
 
 

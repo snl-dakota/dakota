@@ -2,5 +2,5 @@ The NLPQL library is a commercially-licensed library containing a
 sequential quadratic programming (SQP) optimizer, specified as
 %Dakota's \c nlpql_sqp method, for constrained optimization. The
 particular implementation used is NLPQLP 
-[\ref Schitt2004 "Schittkowski, 2004"], a variant with distributed 
+[\cite Sch04 "Schittkowski, 2004"], a variant with distributed 
 and non-monotone line search.

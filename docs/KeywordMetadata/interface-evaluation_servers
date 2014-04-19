@@ -13,7 +13,7 @@ parallelism levels. That is, if the automatic configuration is
 undesirable for some reason, the user can enforce a desired number of
 partitions and a desired scheduling policy at these parallelism
 levels. Refer to ParallelLibrary and the Parallel Computing chapter of
-the Users Manual [\ref UsersMan "Adams et al., 2010"] for additional 
+the Users Manual [\cite UsersMan "Adams et al., 2010"] for additional 
 information.
 
 For direct function interfaces, \c processors_per_analysis is an
@@ -26,7 +26,7 @@ specifications, \c
 processors_per_analysis provides a means for the user to override the
 automatic parallel configuration (refer to ParallelLibrary and the
 Parallel Computing chapter of the Users Manual 
-[\ref UsersMan "Adams et al., 2010"]) for the number of
+[\cite UsersMan "Adams et al., 2010"]) for the number of
 processors used for each analysis partition. Note that if both \c
 analysis_servers and \c processors_per_analysis are specified and they
 are not in agreement, then \c analysis_servers takes precedence. 

@@ -13,7 +13,7 @@ parallelism levels. That is, if the automatic configuration is
 undesirable for some reason, the user can enforce a desired number of
 partitions and a desired scheduling policy at these parallelism
 levels. Refer to ParallelLibrary and the Parallel Computing chapter of
-the Users Manual [\ref UsersMan "Adams et al., 2010"] for additional 
+the Users Manual [\cite UsersMan "Adams et al., 2010"] for additional 
 information.
 
 

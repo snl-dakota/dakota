@@ -13,7 +13,7 @@ initial points is chosen, and then an internal set of
 iterations is carried out. These iterations repeatedly replace 
 the current set of sample points by an estimate 
 of the centroids of the corresponding Voronoi subregions.
-[\ref Du1999 "Du, Faber, and Gunzburger, 1999"].
+[\cite Du99 "Du, Faber, and Gunzburger, 1999"].
 
 The user may generally ignore the details of this internal iteration. If 
 control is desired, however, there are a few variables with which the user

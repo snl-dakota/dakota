@@ -2,13 +2,13 @@ Blurb::
 Global Surrogate Based Optimization, a.k.a. EGO
 Description::
 The Efficient Global Optimization (EGO) method was first developed by
-Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"]. In
+Jones, Schonlau, and Welch [\cite Jon98 "Jones et al., 1998"]. In
 EGO, a stochastic response surface approximation for the objective
 function is developed based on some sample points from the "true"
 simulation. 
 
 Note that several major differences exist between our implementation
-and that of [\ref Jones1998 "Jones et al., 1998"]. First, rather than
+and that of [\cite Jon98 "Jones et al., 1998"]. First, rather than
 using a branch and bound method to find the point which maximizes the
 EIF, we use the DIRECT global optimization method.
 
