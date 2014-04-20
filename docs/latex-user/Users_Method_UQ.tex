@@ -215,6 +215,13 @@ to the existing points (maximin). Another criteria is to pick the
 sample point where the surrogate indicates the most uncertainty 
 in its prediction. 
 
+Recently, Dakota added a new method to assess failure probabilities 
+based on ideas from computational geometry.  Part of the idea
+underpinning this method is the idea of throwing ``darts'' which 
+are higher dimensional objects than sample points (e.g. lines, planes, etc.) 
+The POF (Probability-of-Failure) darts method uses these objects 
+to estimate failure probabilities. 
+ 
 \textbf{Interval Analysis}: Interval analysis is often used to model 
 epistemic uncertainty. In interval analysis, one assumes that nothing 
 is known about an epistemic uncertain variable except that its value lies 
@@ -237,7 +244,7 @@ local method uses gradient information in a derivative-based
 optimization approach, using either SQP (sequential quadratic 
 programming) or a NIP (nonlinear interior point) method to obtain bounds. 
  
-\textbf{Dempster-Shafer Theory of Evidence}: The objective of Evidence
+\textbf{Dempster-Shafer Theory of Evidence}: The objective of evidence
 theory is to model the effects of epistemic uncertainties. Epistemic
 uncertainty refers to the situation where one does not know enough
 to specify a probability distribution on a variable. Sometimes epistemic
@@ -266,7 +273,11 @@ are updated with experimental data, in a Bayesian framework that
 involves the experimental data and a likelihood function which describes 
 how well each parameter value is supported by the data. After the process
 of Bayesian calibration, the prior distribution becomes a posterior 
-distribution. 
+distribution. The posterior distribution of the parameters represents
+the parameter values that have been updated with the data (e.g. the 
+model, when run at these parameters, should yield results that are 
+consistent with the observational data). 
+ 
 
 \subsection{Variables and Responses for UQ}\label{uq:overview:varsresp}
 
@@ -1666,7 +1677,7 @@ adaptive method (sample until convergence).
 The second importance sampling method in Dakota is the one we recommend,
 at least for problems that have a relatively small number of input variables (e.g.
 less than 10). This method, Gaussian Process Adaptive Importance Sampling,
-is outlined in the paper ~\cite{Dalbey2012}.
+is outlined in the paper ~\cite{Dalbey2014}.
 This method  starts with an initial set of LHS samples and adds samples one at a time, 
 with the goal of adaptively improving the estimate of the ideal importance density
 during the process. The approach uses a mixture of component densities. An
@@ -1823,9 +1834,10 @@ The details of the specification are provided in the Dakota
 reference manual. 
 
 \subsection{Adaptive sampling based on dart throwing}\label{uq:adaptive:darts}
-\texttt{pof\_darts} is a novel method for estimating the probability of failure based on random sphere-packing. Random spheres are sampled from the domain with the constraint that each new sphere center has to be outside prior disks. The radius of each sphere is chosen such that the entire sphere lie either in the failure or the non-failure region. This radius depends of the function evaluation at the disk center, the failure threshold and an estimate of the function gradient at the disk center. Estimating each radius in the current version requires 2d + 1 function evaluations. In the coming version we intend to utilize a surrogate for evaluating the gradient and hence only one function evaluation would be required for each sphere. After exhausting the sampling budget specified by \texttt{samples}, No of spheres per failure threshold, the domain is decomposed into two regions, failure and non-failure, each represented by the union of the spheres of each type. The volume of the union of failure spheres gives a lower bound on the required estimate of the probability of failure, while the volume of the union of the non-failure spheres subtracted from the volume of the domain gives an upper estimate. We currently report the average of both estimates. 
+\texttt{pof\_darts} is a novel method for estimating the probability of failure based on random sphere-packing. Random spheres are sampled from the domain with the constraint that each new sphere center has to be outside prior disks. The radius of each sphere is chosen such that the entire sphere lie either in the failure or the non-failure region. This radius depends of the function evaluation at the disk center, the failure threshold and an estimate of the function gradient at the disk center. We utilize a Gaussian process surrogate for evaluating the gradient and hence only one function evaluation is required for each sphere. After exhausting the sampling budget specified by \texttt{samples}, which is the number of spheres per failure threshold, the domain is decomposed into two regions.  These regions correspond to failure and non-failure, each represented by the union of the spheres of each type. The volume of the union of failure spheres gives a lower bound on the required estimate of the probability of failure, while the volume of the union of the non-failure spheres subtracted from the volume of the domain gives an upper estimate. We currently report the average of both estimates.
 
-\texttt{pof\_darts} handles multiple response functions and allow each to have multiple failure thresholds. For each failure threshold \texttt{pof\_darts} will insert a number of spheres specified by the user-input parameter "samples". However, estimating the probability of failure for each failure threshold would utilize the total number of disks sampled for all failure thresholds. For failure threshold the sphere radii changes to generate the right spatial decomposition.
+\texttt{pof\_darts} handles multiple response functions and allows each to have multiple failure thresholds. For each failure threshold \texttt{pof\_darts} will insert a number of spheres specified by the user-input parameter "samples". However, estimating the probability of failure for each failure threshold would utilize the total number of disks sampled for all failure thresholds. For each failure threshold, the sphere radii changes to generate the right spatial decomposition.
+
 
 The adaptive sampling method is specified by the method keyword 
 \texttt{pof\_darts}. Sample budget is specified by \texttt{samples}.
@@ -2475,6 +2487,10 @@ Global      & smooth or limited nonsmooth response; & global\_reliability \\
 reliability & multimodal response; low dimensional; & \\
             & estimation of tail probabilities      & \\
 \hline
+Adaptive    & smooth or limited nonsmooth response; & importance\_sampling, \\
+Sampling    & multimodal response; low dimensional; & gpais, adaptive\_sampling, \\
+            & estimation of tail probabilities      & pof\_darts \\
+\hline
 Stochastic & smooth or limited nonsmooth response; & polynomial\_chaos, \\
 expansions & multimodal response; low dimensional; & stoch\_collocation\\
            & estimation of moments or moment-based metrics & \\
@@ -2554,6 +2570,16 @@ exhaustive sampling. While extremely promising, this method is still
 relatively new and is the subject of ongoing refinements as we deploy
 it to additional applications.
 
+{\bf Adaptive Sampling Methods} \\
+There are now a number of methods in Dakota which are tailored to 
+estimating tail probabilities.
+These methods include both standard importance sampling and 
+Gaussian Process Adaptive Importance Sampling, as well as 
+adaptive sampling and the POF-darts method. These methods 
+are suitable for smooth or limited non-smooth responses, 
+and work well in low dimensions. GPAIS and POF-darts utilize 
+a Gaussian process surrogate model.  
+ 
 {\bf Stochastic Expansions Methods} \\
 The next class of UQ methods available in Dakota is comprised of
 stochastic expansion methods (polynomial chaos and stochastic

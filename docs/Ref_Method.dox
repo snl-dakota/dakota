@@ -6001,7 +6001,7 @@ Specification detail for the LHS-based importance sampling method
 The second importance sampling method in %Dakota, \c gpais, is the one we recommend, 
 at least for problems that have a relatively small number of input variables (e.g. 
 less than 10-20).  This method, Gaussian Process Adaptive Importance Sampling, 
-is outlined in the paper [\ref Dalbey2012 "Dalbey and Swiler, 2012"].  
+is outlined in the paper [\ref Dalbey2014 "Dalbey and Swiler, 2014"].  
 This method  starts with an initial set of LHS samples and adds samples one at a time, 
 with the goal of adaptively improving the estimate of the ideal importance density 
 during the process.  The approach uses a mixture of component densities.  An   
