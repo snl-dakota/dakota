@@ -592,8 +592,7 @@ LAYOUT_FILE            =
 # feature you need bibtex and perl available in the search path. Do not use
 # file names with spaces, bibtex cannot handle them.
 
-CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/Dakota.bib \
-                         @CMAKE_CURRENT_SOURCE_DIR@/latex-theory/Theory.bib
+CITE_BIB_FILES         = @CMAKE_CURRENT_SOURCE_DIR@/Dakota.bib
 
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
