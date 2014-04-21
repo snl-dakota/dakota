@@ -97,8 +97,8 @@ void LibraryEnvironment::plugin_interface(const String& model_type,
 					  const String& an_driver,
 					  Interface* plugin_iface)
 {
-  Dakota::ModelList filt_models = 
-    filtered_model_list(model_type, interf_type, an_driver);
+  ModelList filt_models
+    = filtered_model_list(model_type, interf_type, an_driver);
 
   if (filt_models.empty())
     Cerr << "Warning: interface plugin requested, but no interfaces matched "
@@ -106,15 +106,14 @@ void LibraryEnvironment::plugin_interface(const String& model_type,
 	 << "\n  interface type = "<< interf_type << " , and"
 	 << "\n  driver name = " << an_driver << "." << std::endl;
 
-  Dakota::ModelLIter ml_iter = filt_models.begin();
-  Dakota::ModelLIter ml_end = filt_models.end();
-  for ( ; ml_iter != ml_end; ++ml_iter) {
+  ModelLIter ml_iter, ml_end = filt_models.end();
+  for (ml_iter = filt_models.begin(); ml_iter != ml_end; ++ml_iter) {
     // set DB nodes to input specification for this Model
     probDescDB.set_db_model_nodes(ml_iter->model_id());
     // plugin the Interface
-    Dakota::Interface& model_interface = ml_iter->derived_interface();
-    bool ref_count_incr = false;
-    model_interface.assign_rep(plugin_iface, ref_count_incr);
+    Interface& model_interface = ml_iter->derived_interface();
+    // don't increment ref count since no other envelope shares this letter
+    model_interface.assign_rep(plugin_iface, false);
   }
 }
 
@@ -127,15 +126,14 @@ filtered_interface_list(const String& interf_type, const String& an_driver)
 {
   InterfaceList filt_interf_list;
   ModelList& models = probDescDB.model_list();
-  for (ModelLIter ml_iter=models.begin(); ml_iter!=models.end(); ++ml_iter) {
+  ModelLIter ml_iter, ml_end = models.end();
+  for (ml_iter = models.begin(); ml_iter != ml_end; ++ml_iter) {
     Interface& model_interface = ml_iter->derived_interface();
     if ( ( interf_type.empty() || 
-	   model_interface.interface_type() == interf_type )
-	 &&
+	   model_interface.interface_type() == interf_type ) &&
 	 ( an_driver.empty() || 
 	   //interface.analysis_drivers().size() == 1  &&
-	   contains(model_interface.analysis_drivers(), an_driver) )
-	 )
+	   contains(model_interface.analysis_drivers(), an_driver) ) )
       filt_interf_list.push_back(model_interface);
   }
   return filt_interf_list;
@@ -152,16 +150,15 @@ filtered_model_list(const String& model_type, const String& interf_type,
 {
   ModelList filt_model_list;
   ModelList& models = probDescDB.model_list();
-  for (ModelLIter ml_iter=models.begin(); ml_iter!=models.end(); ++ml_iter) {
+  ModelLIter ml_iter, ml_end = models.end();
+  for (ml_iter = models.begin(); ml_iter != ml_end; ++ml_iter) {
     if (model_type.empty() || ml_iter->model_type() == model_type) {
       Interface& model_interface = ml_iter->derived_interface();
       if ( ( interf_type.empty() || 
-	     model_interface.interface_type() == interf_type )
-	   &&
+	     model_interface.interface_type() == interf_type ) &&
 	   ( an_driver.empty() || 
 	     //interface.analysis_drivers().size() == 1  &&
-	     contains(model_interface.analysis_drivers(), an_driver) )
-	   )
+	     contains(model_interface.analysis_drivers(), an_driver) ) )
 	filt_model_list.push_back(*ml_iter);
     }
   }

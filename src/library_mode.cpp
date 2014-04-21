@@ -387,7 +387,7 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
     access to detailed Dakota data for other reasons */
 void simple_interface_plugin(Dakota::LibraryEnvironment& env)
 {
-  std::string model_type("");  // demo: empty string will match any model type
+  std::string model_type(""); // demo: empty string will match any model type
   std::string interf_type("direct");
   std::string an_driver("plugin_rosenbrock");
 
@@ -420,7 +420,8 @@ void interface_plugins(Dakota::LibraryEnvironment& env)
        il_iter != filt_interfs.end(); ++il_iter) {
     // set DB nodes to input specification for this Interface
     problem_db.set_db_interface_node(il_iter->interface_id());
-    // assign representation
+    // assign representation: don't increment ref count since no other envelope
+    // shares this letter
     il_iter->assign_rep(new SIM::SerialDirectApplicInterface(problem_db),false);
   }
 }
@@ -464,10 +465,13 @@ void model_interface_plugins(Dakota::LibraryEnvironment& env)
       const MPI_Comm& analysis_comm = ml_iter->parallel_configuration_iterator()
 	->ea_parallel_level().server_intra_communicator();
 
+      // don't increment ref count since no other envelope shares this letter
       model_interface.assign_rep(new
 	SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
     }
-    else // Serial case: plug in derived Interface object w/o an analysisComm
+    else
+      // Serial case: plug in derived Interface object w/o an analysisComm;
+      // don't increment ref count since no other envelope shares this letter
       model_interface.assign_rep(new
 	SIM::SerialDirectApplicInterface(problem_db), false);
   }
