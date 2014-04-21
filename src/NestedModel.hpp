@@ -97,22 +97,22 @@ protected:
   /// evaluation (forwarded to optionalInterface)
   bool derived_master_overload() const;
   /// set up optionalInterface and subModel for parallel operations
-  void derived_init_communicators(int max_iterator_concurrency,
+  void derived_init_communicators(int max_eval_concurrency,
 				  bool recurse_flag = true);
   /// set up optionalInterface and subModel for serial operations.
   void derived_init_serial();
   /// set active parallel configuration within subModel
-  void derived_set_communicators(int max_iterator_concurrency,
+  void derived_set_communicators(int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the NestedModel
   /// (forwarded to optionalInterface and subModel)
-  void derived_free_communicators(int max_iterator_concurrency,
+  void derived_free_communicators(int max_eval_concurrency,
 				  bool recurse_flag = true);
 
   /// Service optionalInterface and subModel job requests received from
   /// the master.  Completes when a termination message is received from
   /// stop_servers().
-  void serve(int max_iterator_concurrency);
+  void serve(int max_eval_concurrency);
   /// Executed by the master to terminate server operations for subModel and
   /// optionalInterface when iteration on the NestedModel is complete.
   void stop_servers();
@@ -380,18 +380,17 @@ inline bool NestedModel::derived_master_overload() const
 
 
 /** Asynchronous flags need to be initialized for the subModel.  In
-    addition, max_iterator_concurrency is the outer level iterator
+    addition, max_eval_concurrency is the outer level iterator
     concurrency, not the subIterator concurrency that subModel will
     see, and recomputing the message_lengths on the subModel is
     probably not a bad idea either.  Therefore, recompute everything
     on subModel using init_communicators(). */
 inline void NestedModel::
-derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   // initialize optionalInterface for parallel operations
   if (!optInterfacePointer.empty())
-    optionalInterface.init_communicators(messageLengths,
-					 max_iterator_concurrency);
+    optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
   // max concurrency does not require a bcast as in Strategy::init_comms
   // since all procs instantiate subIterator
   if (recurse_flag)
@@ -411,12 +410,11 @@ inline void NestedModel::derived_init_serial()
 
 
 inline void NestedModel::
-derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (!optInterfacePointer.empty()) {
     parallelLib.parallel_configuration_iterator(modelPCIter);
-    optionalInterface.set_communicators(messageLengths,
-					max_iterator_concurrency);
+    optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
   }
   if (recurse_flag)
     subModel.set_communicators(subIterator.maximum_evaluation_concurrency());
@@ -424,7 +422,7 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 
 
 inline void NestedModel::
-derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (!optInterfacePointer.empty()) {
     parallelLib.parallel_configuration_iterator(modelPCIter);
@@ -435,10 +433,10 @@ derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 }
 
 
-inline void NestedModel::serve(int max_iterator_concurrency)
+inline void NestedModel::serve(int max_eval_concurrency)
 {
   // don't recurse, as subModel.serve() will set subModel comms
-  set_communicators(max_iterator_concurrency, false);
+  set_communicators(max_eval_concurrency, false);
 
   // manage optionalInterface and subModel servers
   componentParallelMode = 1;

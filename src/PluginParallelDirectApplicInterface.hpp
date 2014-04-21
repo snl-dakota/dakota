@@ -77,7 +77,7 @@ protected:
   void test_local_evaluations(Dakota::PRPQueue& prp_queue);
 
   /// no-op hides default run-time error checks at DirectApplicInterface level
-  void set_communicators_checks(int max_iterator_concurrency);
+  void set_communicators_checks(int max_eval_concurrency);
 
 private:
 
@@ -119,7 +119,7 @@ test_local_evaluations(Dakota::PRPQueue& prp_queue)
 
 // Hide default run-time error checks at DirectApplicInterface level
 inline void ParallelDirectApplicInterface::
-set_communicators_checks(int max_iterator_concurrency)
+set_communicators_checks(int max_eval_concurrency)
 { }
 
 } // namespace Dakota

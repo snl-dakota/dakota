@@ -2964,10 +2964,10 @@ int Model::local_eval_concurrency()
 }
 
 
-void Model::serve(int max_iterator_concurrency)
+void Model::serve(int max_eval_concurrency)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->serve(max_iterator_concurrency);
+    modelRep->serve(max_eval_concurrency);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual serve() function.\n"
          << "This model does not support server operations." << std::endl;
@@ -2994,10 +2994,10 @@ void Model::stop_servers()
     init_communicators() (not virtual) performs the estimation and then
     forwards the results to derived_init_communicators (virtual) which uses
     the data in different contexts. */
-void Model::init_communicators(int max_iterator_concurrency, bool recurse_flag)
+void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->init_communicators(max_iterator_concurrency, recurse_flag);
+    modelRep->init_communicators(max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
     // matches bcast in Model::serve_configurations() called from
@@ -3005,10 +3005,8 @@ void Model::init_communicators(int max_iterator_concurrency, bool recurse_flag)
     // are present in Iterator instantiations, only the matching Model instance
     // participates in this collective communication.
     if (initCommsBcastFlag &&
-	modelPCIter->si_parallel_level().server_communicator_rank() == 0) {
-      int max_conc = max_iterator_concurrency; // non-const copy
-      parallelLib.bcast_i(max_conc);
-    }
+	modelPCIter->si_parallel_level().server_communicator_rank() == 0)
+      parallelLib.bcast_i(max_eval_concurrency);
 
     // estimate messageLengths
     if (messageLengths.empty())
@@ -3020,7 +3018,7 @@ void Model::init_communicators(int max_iterator_concurrency, bool recurse_flag)
     // concurrency level as the lookup key.  Creation of a new parallel
     // configuration is avoided if an equivalent one already exists.
     std::map<int, ParConfigLIter>::iterator map_iter
-      = modelPCIterMap.find(max_iterator_concurrency);
+      = modelPCIterMap.find(max_eval_concurrency);
 
     // NOTE: modelPCIter update belongs in set_communicators().  However, also
     // updating it here allows passing of analysisComm into a parallel plugin
@@ -3039,9 +3037,9 @@ void Model::init_communicators(int max_iterator_concurrency, bool recurse_flag)
 
       // Setting modelPCIter here is insufficient; it must be set at run time
       // (within set_communicators()) according to the iterator context.
-      modelPCIterMap[max_iterator_concurrency] = modelPCIter
+      modelPCIterMap[max_eval_concurrency] = modelPCIter
 	= parallelLib.parallel_configuration_iterator();
-      derived_init_communicators(max_iterator_concurrency, recurse_flag);
+      derived_init_communicators(max_eval_concurrency, recurse_flag);
     }
     else
       modelPCIter = map_iter->second;
@@ -3068,27 +3066,27 @@ int Model::serve_configurations()
   if (modelRep) // envelope fwd to letter
     return modelRep->serve_configurations();
   else { // not a virtual function: base class definition for all letters
-    int max_concurrency = 1, last_concurrency = 1;
-    while (max_concurrency) {
-      parallelLib.bcast_i(max_concurrency);
-      if (max_concurrency) {
-	init_communicators(max_concurrency);
-	last_concurrency = max_concurrency;
+    int max_eval_concurrency = 1, last_eval_concurrency = 1;
+    while (max_eval_concurrency) {
+      parallelLib.bcast_i(max_eval_concurrency);
+      if (max_eval_concurrency) {
+	init_communicators(max_eval_concurrency);
+	last_eval_concurrency = max_eval_concurrency;
       }
     }
-    return last_concurrency;
+    return last_eval_concurrency;
   }
 }
 
 
-void Model::set_communicators(int max_iterator_concurrency, bool recurse_flag)
+void Model::set_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->set_communicators(max_iterator_concurrency, recurse_flag);
+    modelRep->set_communicators(max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
     std::map<int, ParConfigLIter>::iterator map_iter
-      = modelPCIterMap.find(max_iterator_concurrency);
+      = modelPCIterMap.find(max_eval_concurrency);
     if (map_iter == modelPCIterMap.end()) { // this config does not exist
       Cerr << "Error: failure in parallel configuration lookup in "
            << "Model::set_communicators()." << std::endl;
@@ -3097,7 +3095,7 @@ void Model::set_communicators(int max_iterator_concurrency, bool recurse_flag)
     else
       modelPCIter = map_iter->second;
 
-    derived_set_communicators(max_iterator_concurrency, recurse_flag);
+    derived_set_communicators(max_eval_concurrency, recurse_flag);
 
     // moved the following from init_communicators() since these are currently
     // needed at run time and not construct time (if set only at construct time,
@@ -3130,28 +3128,28 @@ void Model::set_communicators(int max_iterator_concurrency, bool recurse_flag)
 	  evaluationCapacity *= local_eval_conc;
       }
       else if (asynch_local_eval) // asynch local mode: capacity limited
-	evaluationCapacity = (local_eval_conc) ? local_eval_conc
-	                                       : max_iterator_concurrency;
+	evaluationCapacity = (local_eval_conc)
+	                   ?  local_eval_conc : max_eval_concurrency;
     }
   }
 }
 
 
-void Model::free_communicators(int max_iterator_concurrency, bool recurse_flag)
+void Model::free_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->free_communicators(max_iterator_concurrency, recurse_flag);
+    modelRep->free_communicators(max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
     // Note: deallocations do not utilize reference counting -> the _first_
     // call to free a particular configuration deallocates it and all
     // subsequent calls are ignored (to prevent multiple deallocations).
     std::map<int, ParConfigLIter>::iterator map_iter
-      = modelPCIterMap.find(max_iterator_concurrency);
+      = modelPCIterMap.find(max_eval_concurrency);
     if (map_iter != modelPCIterMap.end()) { // this config still exists
       modelPCIter = map_iter->second;
-      derived_free_communicators(max_iterator_concurrency, recurse_flag);
-      modelPCIterMap.erase(max_iterator_concurrency);
+      derived_free_communicators(max_eval_concurrency, recurse_flag);
+      modelPCIterMap.erase(max_eval_concurrency);
     }
   }
 }
@@ -3227,11 +3225,10 @@ void Model::init_serial()
 
 
 void Model::
-derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->derived_init_communicators(max_iterator_concurrency,
-					 recurse_flag);
+    modelRep->derived_init_communicators(max_eval_concurrency, recurse_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual derived_init_"
 	 << "communicators() function.\n       This model does not support "
@@ -3254,20 +3251,19 @@ void Model::derived_init_serial()
 
 
 void Model::
-derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->derived_set_communicators(max_iterator_concurrency, recurse_flag);
+    modelRep->derived_set_communicators(max_eval_concurrency, recurse_flag);
   // else default is nothing additional beyond set_communicators()
 }
 
 
 void Model::
-derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->derived_free_communicators(max_iterator_concurrency,
-					 recurse_flag);
+    modelRep->derived_free_communicators(max_eval_concurrency, recurse_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual derived_free_"
 	 << "communicators() function.\nThis model does not support "

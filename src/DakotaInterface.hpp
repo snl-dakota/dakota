@@ -96,12 +96,12 @@ public:
   /// allocate communicator partitions for concurrent evaluations within an
   /// iterator and concurrent multiprocessor analyses within an evaluation.
   virtual void init_communicators(const IntArray& message_lengths, 
-				  int max_iterator_concurrency);
+				  int max_eval_concurrency);
 
   /// set the local parallel partition data for an interface
   /// (the partitions are already allocated in ParallelLibrary).
   virtual void set_communicators(const IntArray& message_lengths,
-				 int max_iterator_concurrency);
+				 int max_eval_concurrency);
 
   /// deallocate communicator partitions for concurrent evaluations within an
   /// iterator and concurrent multiprocessor analyses within an evaluation.

@@ -109,8 +109,7 @@ ApplicationInterface::~ApplicationInterface()
 
 
 void ApplicationInterface::
-init_communicators(const IntArray& message_lengths,
-		   int max_iterator_concurrency)
+init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
 
@@ -146,7 +145,7 @@ init_communicators(const IntArray& message_lengths,
     = (interfaceType != "direct" && !asynchLocalEvalStatic);
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, /*min_procs_per_eval*/procsPerEvalSpec,
-    max_iterator_concurrency, asynchLocalEvalConcSpec, PUSH_UP,// default_config
+    max_eval_concurrency, asynchLocalEvalConcSpec, PUSH_UP,// default_config
     evalScheduling, peer_dynamic_avail);
 
   set_evaluation_communicators(message_lengths);
@@ -173,12 +172,12 @@ init_communicators(const IntArray& message_lengths,
     parallelLib.print_configuration();
 
   // check for configuration errors
-  init_communicators_checks(max_iterator_concurrency);
+  init_communicators_checks(max_eval_concurrency);
 }
 
 
 void ApplicationInterface::
-set_communicators(const IntArray& message_lengths, int max_iterator_concurrency)
+set_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 {
   set_evaluation_communicators(message_lengths);
 
@@ -192,7 +191,7 @@ set_communicators(const IntArray& message_lengths, int max_iterator_concurrency)
     init_serial_analyses();
 
   // check for configuration errors
-  set_communicators_checks(max_iterator_concurrency);
+  set_communicators_checks(max_eval_concurrency);
 }
 
 
@@ -314,14 +313,14 @@ void ApplicationInterface::set_analysis_communicators()
 /** Override DirectApplicInterface definition if plug-in to allow batch
     processing in Plugin{Serial,Parallel}DirectApplicInterface.cpp */
 void ApplicationInterface::
-init_communicators_checks(int max_iterator_concurrency)
+init_communicators_checks(int max_eval_concurrency)
 { } // default is no-op
 
 
 /** Override DirectApplicInterface definition if plug-in to allow batch
     processing in Plugin{Serial,Parallel}DirectApplicInterface.cpp */
 void ApplicationInterface::
-set_communicators_checks(int max_iterator_concurrency)
+set_communicators_checks(int max_eval_concurrency)
 { } // default is no-op
 
 
@@ -356,10 +355,10 @@ bool ApplicationInterface::check_multiprocessor_analysis(bool warn)
 
 
 bool ApplicationInterface::
-check_asynchronous(bool warn, int max_iterator_concurrency)
+check_asynchronous(bool warn, int max_eval_concurrency)
 {
   bool issue_flag = false, asynch_local_eval_flag
-    = ( max_iterator_concurrency > 1 &&
+    = ( max_eval_concurrency > 1 &&
 	interfaceSynchronization == "asynchronous" &&
 	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
 	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
@@ -381,10 +380,10 @@ check_asynchronous(bool warn, int max_iterator_concurrency)
 
 
 bool ApplicationInterface::
-check_multiprocessor_asynchronous(bool warn, int max_iterator_concurrency)
+check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
 {
   bool issue_flag = false, asynch_local_eval_flag
-    = ( max_iterator_concurrency > 1 &&
+    = ( max_eval_concurrency > 1 &&
 	interfaceSynchronization == "asynchronous" &&
 	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
 	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited

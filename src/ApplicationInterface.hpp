@@ -62,9 +62,9 @@ protected:
   //
 
   void init_communicators(const IntArray& message_lengths, 
-			  int max_iterator_concurrency);
-  void set_communicators(const IntArray& message_lengths, 
-			 int max_iterator_concurrency);
+			  int max_eval_concurrency);
+  void set_communicators(const IntArray& message_lengths,
+			 int max_eval_concurrency);
   void free_communicators();
 
   void init_serial();
@@ -113,10 +113,9 @@ protected:
   /// checks on multiprocessor analysis configuration
   bool check_multiprocessor_analysis(bool warn);
   /// checks on asynchronous configuration (for direct interfaces)
-  bool check_asynchronous(bool warn, int max_iterator_concurrency);
+  bool check_asynchronous(bool warn, int max_eval_concurrency);
   /// checks on asynchronous settings for multiprocessor partitions
-  bool check_multiprocessor_asynchronous(bool warn,
-					 int max_iterator_concurrency);
+  bool check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency);
 
   //
   //- Heading: Virtual functions (evaluations)
@@ -150,9 +149,9 @@ protected:
   //virtual void clear_bookkeeping();
 
   /// perform construct-time error checks on the parallel configuration
-  virtual void init_communicators_checks(int max_iterator_concurrency);
+  virtual void init_communicators_checks(int max_eval_concurrency);
   /// perform run-time error checks on the parallel configuration
-  virtual void set_communicators_checks(int max_iterator_concurrency);
+  virtual void set_communicators_checks(int max_eval_concurrency);
 
   //
   //- Heading: Member functions (analyses)

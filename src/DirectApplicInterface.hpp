@@ -92,8 +92,8 @@ public:
 
   const StringArray& analysis_drivers() const;
 
-  void init_communicators_checks(int max_iterator_concurrency);
-  void  set_communicators_checks(int max_iterator_concurrency);
+  void init_communicators_checks(int max_eval_concurrency);
+  void  set_communicators_checks(int max_eval_concurrency);
 
   //void clear_bookkeeping(); // clears threadIdMap
 
@@ -224,20 +224,20 @@ inline const StringArray& DirectApplicInterface::analysis_drivers() const
     HierarchSurrModel) initialize more configurations than will be
     used and DirectApplicInterface allows override by derived plug-ins. */
 inline void DirectApplicInterface::
-init_communicators_checks(int max_iterator_concurrency)
+init_communicators_checks(int max_eval_concurrency)
 {
   bool warn = true;
-  check_asynchronous(warn, max_iterator_concurrency);
-  check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+  check_asynchronous(warn, max_eval_concurrency);
+  check_multiprocessor_asynchronous(warn, max_eval_concurrency);
 }
 
 
 /** Process run-time issues as hard errors. */
 inline void DirectApplicInterface::
-set_communicators_checks(int max_iterator_concurrency)
+set_communicators_checks(int max_eval_concurrency)
 {
-  bool warn = false,  mp1 = check_asynchronous(warn, max_iterator_concurrency),
-       mp2 = check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+  bool warn = false,  mp1 = check_asynchronous(warn, max_eval_concurrency),
+       mp2 = check_multiprocessor_asynchronous(warn, max_eval_concurrency);
   if (mp1 || mp2)
     abort_handler(-1);
 }

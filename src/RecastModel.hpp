@@ -243,21 +243,21 @@ protected:
   bool derived_master_overload() const;
 
   /// set up RecastModel for parallel operations (request forwarded to subModel)
-  void derived_init_communicators(int max_iterator_concurrency,
+  void derived_init_communicators(int max_eval_concurrency,
 				  bool recurse_flag = true);
   /// set up RecastModel for serial operations (request forwarded to subModel).
   void derived_init_serial();
   /// set active parallel configuration within subModel
-  void derived_set_communicators(int max_iterator_concurrency,
+  void derived_set_communicators(int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the RecastModel (request forwarded
   /// to subModel)
-  void derived_free_communicators(int max_iterator_concurrency,
+  void derived_free_communicators(int max_eval_concurrency,
 				  bool recurse_flag = true);
 
   /// Service subModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve(int max_iterator_concurrency);
+  void serve(int max_eval_concurrency);
   /// executed by the master to terminate subModel server operations
   /// when RecastModel iteration is complete.
   void stop_servers();
@@ -575,8 +575,8 @@ inline bool RecastModel::derived_master_overload() const
 
 
 inline void RecastModel::
-derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
-{ if (recurse_flag) subModel.init_communicators(max_iterator_concurrency); }
+derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
+{ if (recurse_flag) subModel.init_communicators(max_eval_concurrency); }
 
 
 inline void RecastModel::derived_init_serial()
@@ -584,10 +584,10 @@ inline void RecastModel::derived_init_serial()
 
 
 inline void RecastModel::
-derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   if (recurse_flag) {
-    subModel.set_communicators(max_iterator_concurrency);
+    subModel.set_communicators(max_eval_concurrency);
 
     // the following assignments aren't overridden in Model::set_communicators()
     // since RecastModels do not define the ie_parallel_level
@@ -598,16 +598,16 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 
 
 inline void RecastModel::
-derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
-{ if (recurse_flag) subModel.free_communicators(max_iterator_concurrency); }
+derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
+{ if (recurse_flag) subModel.free_communicators(max_eval_concurrency); }
 
 
-inline void RecastModel::serve(int max_iterator_concurrency)
+inline void RecastModel::serve(int max_eval_concurrency)
 {
   // don't recurse, as subModel.serve() will set subModel comms
-  set_communicators(max_iterator_concurrency, false);
+  set_communicators(max_eval_concurrency, false);
 
-  subModel.serve(max_iterator_concurrency); // sets subModel comms
+  subModel.serve(max_eval_concurrency); // sets subModel comms
 }
 
 

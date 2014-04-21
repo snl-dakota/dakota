@@ -189,21 +189,21 @@ protected:
   void component_parallel_mode(short mode);
 
   /// set up actualModel for parallel operations
-  void derived_init_communicators(int max_iterator_concurrency,
+  void derived_init_communicators(int max_eval_concurrency,
 				  bool recurse_flag = true);
   /// set up actualModel for serial operations.
   void derived_init_serial();
   /// set active parallel configuration within actualModel
-  void derived_set_communicators(int max_iterator_concurrency,
+  void derived_set_communicators(int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the DataFitSurrModel
   /// (request forwarded to actualModel)
-  void derived_free_communicators(int max_iterator_concurrency,
+  void derived_free_communicators(int max_eval_concurrency,
 				  bool recurse_flag = true);
 
   /// Service actualModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve(int max_iterator_concurrency);
+  void serve(int max_eval_concurrency);
   /// Executed by the master to terminate actualModel server operations
   /// when DataFitSurrModel iteration is complete.
   void stop_servers();
@@ -450,15 +450,15 @@ approximation_data(size_t index)
 
 
 /** asynchronous flags need to be initialized for the sub-models.  In addition,
-    max_iterator_concurrency is the outer level iterator concurrency, not the
+    max_eval_concurrency is the outer level iterator concurrency, not the
     DACE concurrency that actualModel will see, and recomputing the
     message_lengths on the sub-model is probably not a bad idea either.
     Therefore, recompute everything on actualModel using init_communicators. */
 inline void DataFitSurrModel::
-derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   // initialize approxInterface (for serial operations).
-  // Note: this is where max_iterator_concurrency would be used.
+  // Note: this is where max_eval_concurrency would be used.
   //approxInterface.init_serial();
 
   // initialize actualModel for parallel operations
@@ -503,7 +503,7 @@ inline void DataFitSurrModel::derived_init_serial()
 
 
 inline void DataFitSurrModel::
-derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   //approxInterface.set_communicators(messageLengths);
@@ -518,7 +518,7 @@ derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 
 
 inline void DataFitSurrModel::
-derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
+derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
 {
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   //approxInterface.free_communicators();
@@ -529,10 +529,10 @@ derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 }
 
 
-inline void DataFitSurrModel::serve(int max_iterator_concurrency)
+inline void DataFitSurrModel::serve(int max_eval_concurrency)
 {
   // don't recurse, as actualModel.serve() will set actualModel comms
-  set_communicators(max_iterator_concurrency, false);
+  set_communicators(max_eval_concurrency, false);
 
   if (!actualModel.is_null())
     actualModel.serve(daceIterator.maximum_evaluation_concurrency());

@@ -48,8 +48,8 @@ protected:
 
   int synchronous_local_analysis(int analysis_id);
 
-  void init_communicators_checks(int max_iterator_concurrency);
-  void set_communicators_checks(int max_iterator_concurrency);
+  void init_communicators_checks(int max_eval_concurrency);
+  void set_communicators_checks(int max_eval_concurrency);
 
   void map_bookkeeping(pid_t pid, int fn_eval_id);
 
@@ -162,20 +162,20 @@ synchronous_local_analysis(int analysis_id)
     However, process init issues as warnings since some contexts (e.g.,
     HierarchSurrModel) initialize more configurations than will be used. */
 inline void ProcessHandleApplicInterface::
-init_communicators_checks(int max_iterator_concurrency)
+init_communicators_checks(int max_eval_concurrency)
 {
   bool warn = true;
   check_multiprocessor_analysis(warn);
-  check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+  check_multiprocessor_asynchronous(warn, max_eval_concurrency);
 }
 
 
 /** Process run-time issues as hard errors. */
 inline void ProcessHandleApplicInterface::
-set_communicators_checks(int max_iterator_concurrency)
+set_communicators_checks(int max_eval_concurrency)
 {
   bool warn = false, mp1 = check_multiprocessor_analysis(warn),
-    mp2 = check_multiprocessor_asynchronous(warn, max_iterator_concurrency);
+    mp2 = check_multiprocessor_asynchronous(warn, max_eval_concurrency);
   if (mp1 || mp2)
     abort_handler(-1);
 }
