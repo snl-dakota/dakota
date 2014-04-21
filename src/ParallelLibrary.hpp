@@ -586,20 +586,19 @@ private:
 
   /// split a parent communicator into a dedicated master processor
   /// and num_servers child communicators
-  bool split_communicator_dedicated_master(const ParallelLevel& parent_pl,
+  void split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     ParallelLevel& child_pl);
 
   /// split a parent communicator into num_servers peer child
   /// communicators (no dedicated master processor)
-  bool split_communicator_peer_partition(const ParallelLevel& parent_pl,
+  void split_communicator_peer_partition(const ParallelLevel& parent_pl,
     ParallelLevel& child_pl);
 
   /// resolve user inputs into a sensible partitioning scheme
-  bool resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
-		      int& proc_remainder, int max_concurrency,
-		      int capacity_multiplier, short default_config,
-		      short scheduling_override, bool peer_dynamic_avail,
-		      bool print_rank);
+  void resolve_inputs(ParallelLevel& child_pl, int avail_procs,
+		      int max_concurrency, int capacity_multiplier,
+		      short default_config, short scheduling_override,
+		      bool peer_dynamic_avail, bool print_rank);
 
   /// blocking buffer send at the current communication level
   void  send(MPIPackBuffer& send_buff, int dest, int tag,
@@ -878,7 +877,7 @@ init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
       ParConfigLIter prev_pc_iter = currPCIter; prev_pc_iter--;
       currPCIter->siPLIter = prev_pc_iter->siPLIter;
       if ( currPCIter->siPLIter->communicator_split() )
-        currPCIter->numParallelLevels++;
+        ++currPCIter->numParallelLevels;
     }
     else {
       Cerr << "Error: init_evaluation_communicators() called without preceding "
@@ -1461,9 +1460,13 @@ inline void ParallelLibrary::free(MPI_Request& request)
 inline void ParallelLibrary::
 inherit_as_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
+  child_pl.commSplitFlag = false;
+  //child_pl.messagePass = false; // default
+
   child_pl.serverIntraComm = parent_pl.serverIntraComm; // or MPI_Comm_dup()
   child_pl.serverCommRank  = parent_pl.serverCommRank;
   child_pl.serverCommSize  = parent_pl.serverCommSize;
+
   child_pl.hubServerIntraComm = MPI_COMM_NULL; // or a Comm of only 1 proc.
   // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize
 }
@@ -1473,8 +1476,12 @@ inline void ParallelLibrary::
 inherit_as_hub_server_comm(const ParallelLevel& parent_pl,
 			   ParallelLevel& child_pl)
 {
+  child_pl.commSplitFlag = false;
+  child_pl.messagePass   = true;
+
   child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
   // use ctor defaults for child_pl.serverCommRank/serverCommSize
+
   child_pl.hubServerIntraComm = parent_pl.serverIntraComm;// or MPI_Comm_dup()
   child_pl.hubServerCommRank  = parent_pl.serverCommRank;
   child_pl.hubServerCommSize  = parent_pl.serverCommSize;

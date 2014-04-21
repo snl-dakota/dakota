@@ -156,13 +156,13 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
   bool print_rank         = (parent_pl.serverCommRank == 0);
 
   // resolve_inputs selects master vs. peer scheduling
-  child_pl.dedicatedMasterFlag = resolve_inputs(child_pl.numServers,
-    child_pl.procsPerServer, parent_pl.serverCommSize, child_pl.procRemainder,
-    max_concurrency, capacity_multiplier, default_config, scheduling_override,
-    peer_dynamic_avail, print_rank);
+  resolve_inputs(child_pl, parent_pl.serverCommSize, max_concurrency,
+		 capacity_multiplier, default_config, scheduling_override,
+		 peer_dynamic_avail, print_rank);
 
-  child_pl.commSplitFlag = (child_pl.dedicatedMasterFlag) ?
-    split_communicator_dedicated_master(parent_pl, child_pl) :
+  if (child_pl.dedicatedMasterFlag)
+    split_communicator_dedicated_master(parent_pl, child_pl);
+  else
     split_communicator_peer_partition(parent_pl,   child_pl);
 
   // update number of parallelism levels
@@ -196,9 +196,8 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
     not divide out evenly with the number of available processors for the
     level.  If num_servers & procs_per_server are both nondefault, then the
     former takes precedence. */
-bool ParallelLibrary::
-resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs, 
-               int& proc_remainder, int max_concurrency,
+void ParallelLibrary::
+resolve_inputs(ParallelLevel& child_pl, int avail_procs, int max_concurrency,
 	       int capacity_multiplier, short default_config,
 	       short scheduling_override, bool peer_dynamic_avail,
 	       bool print_rank)
@@ -213,13 +212,17 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	 << scheduling_override << std::endl;
 #endif
 
+  int&  num_servers      = child_pl.numServers;
+  int&  procs_per_server = child_pl.procsPerServer;
+  int&  proc_remainder   = child_pl.procRemainder;
+  bool& ded_master       = child_pl.dedicatedMasterFlag;
+
   const bool master_override = (scheduling_override == MASTER_SCHEDULING);
   const bool peer_override
     = (scheduling_override == PEER_SCHEDULING ||
        scheduling_override == PEER_DYNAMIC_SCHEDULING ||
        scheduling_override == PEER_STATIC_SCHEDULING);
 
-  bool ded_master;
   if (avail_procs <= 1) {
     // ------------------------
     // insufficient avail_procs
@@ -446,12 +449,10 @@ resolve_inputs(int& num_servers, int& procs_per_server, int avail_procs,
 	 << ded_master << std::endl;
 #endif
 */
-
-  return ded_master;
 }
 
 
-bool ParallelLibrary::
+void ParallelLibrary::
 split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 				    ParallelLevel& child_pl)
 {
@@ -464,7 +465,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
-    return false; // set split flag to false in calling routine
+    return;
   }
 
 #ifndef COMM_SPLIT_TO_SINGLE
@@ -473,10 +474,9 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // is bypassed and the additional comm split overhead is incurred.
   if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc servers
     inherit_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.messagePass = true;
     child_pl.serverMasterFlag = (parent_pl.serverCommRank) ? true : false;
     child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
-    return false; // set split flag to false in calling routine
+    return;
   }
 #endif
 
@@ -528,7 +528,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = 0;
-    return false; // set split flag to false in calling routine
+    return;
   }
 
   child_pl.messagePass = true;
@@ -596,11 +596,11 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   if (child_pl.serverCommRank == 0 && parent_pl.serverCommRank)
     child_pl.serverMasterFlag = true; // this proc is a child partition master
-  return true; // Set split flag to true in calling routine
+  child_pl.commSplitFlag = true;
 }
 
 
-bool ParallelLibrary::
+void ParallelLibrary::
 split_communicator_peer_partition(const ParallelLevel& parent_pl, 
 				  ParallelLevel& child_pl)
 {
@@ -617,7 +617,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
-    return false; // Set split flag to false in calling routine
+    return;
   }
 
 #ifndef COMM_SPLIT_TO_SINGLE
@@ -626,9 +626,9 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // is bypassed and the additional comm split overhead is incurred.
   if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {// 1-proc. peers
     inherit_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.messagePass = child_pl.serverMasterFlag = true;
+    child_pl.serverMasterFlag = true;
     child_pl.serverId = parent_pl.serverCommRank+1; // peer id's = 1/2/3/.../n
-    return false; // Set split flag to false in calling routine
+    return;
   }
 #endif
 
@@ -682,7 +682,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = 1; // one server, peer id = 1
-    return false; // Set split flag to false in calling routine
+    return;
   }
 
   child_pl.messagePass = true;
@@ -751,7 +751,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 
   if (child_pl.serverCommRank == 0) // don't exclude parent master 
     child_pl.serverMasterFlag = true; // this proc is a child partition master
-  return true; // Set split flag to true in calling routine
+  child_pl.commSplitFlag = true;
 }
 
 
