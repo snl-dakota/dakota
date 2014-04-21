@@ -1,4 +1,5 @@
 Blurb::
+???
 Description::
 Within the histogram bin uncertain optional group specification, the
 number of histogram bin uncertain variables is a required
@@ -25,7 +26,7 @@ in the cases of bins of equal width, ordinate and count specifications
 are equivalent. In addition, ordinates and counts may be relative
 values; it is not necessary to scale them as all user inputs will be
 normalized.
-Topics::	not_yet_reviewed
+Topics::	problem
 Examples::
 Theory::
 Faq::

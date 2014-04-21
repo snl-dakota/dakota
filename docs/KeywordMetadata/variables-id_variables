@@ -16,6 +16,7 @@ specification and \c variables_pointer can be omitted from the model
 specification(s), since there is no potential for ambiguity in this
 case.
 
+Topics::	block_pointer
 Examples::
 For
 example, a model whose specification contains 

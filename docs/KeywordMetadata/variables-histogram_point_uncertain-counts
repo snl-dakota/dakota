@@ -19,7 +19,7 @@ To fully specify a point-based histogram with \c n points, \c n
 \li a minimum of one pair must be specified for each point-based histogram.
 
 
-Topics:
+Topics::	
 Examples::
 Theory::
 Faq::

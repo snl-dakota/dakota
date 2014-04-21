@@ -9,7 +9,6 @@ The details of how to specify this discrete variable are located on the
 See the \ref topic-state_variables page for details on the behavior of state
 variables.
 
-
 Topics:: 	discrete_variables, state_variables
 Examples::
 Theory::

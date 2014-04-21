@@ -51,7 +51,7 @@ and \f$\epsilon\f$ or \f$\sigma\f$ are as follows:
 The density function for the lognormal distribution is: 
 \f[f(x) = \frac{1}{\sqrt{2\pi}\zeta x} e^{-\frac{1}{2}\left(\frac{ln x-\lambda}{\zeta}\right)^2}\f]
 
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 When used with design of experiments and multidimensional parameter

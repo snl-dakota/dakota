@@ -9,7 +9,7 @@ where
 \c p 
 is the probability of failure per trial.
 
-Topics::	discrete_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	discrete_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 Faq::

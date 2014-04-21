@@ -4,7 +4,7 @@ Description::
 The details of how to specify this discrete variable are located on the 
 \ref topic-discrete_variables page.
 
-Topics:: 	discrete_variables, design_variables, not_yet_reviewed
+Topics:: 	discrete_variables, design_variables
 Examples:: 
 Four integer variables whose values will be selected during the search for an optimal design. \f$y1 \in [0,1]\f$, \f$y2 \in [0, 1]\f$, \f$y3 \in [0,5]\f$ and \f$y4 \in [10, 15, 20, 23]\f$.
 \verbatim

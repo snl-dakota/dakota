@@ -2,7 +2,7 @@ Blurb::
 Second parameter of the Weibull distribution
 Description::
 Specifies the list of \f$\beta\f$ parameters to define the distributions of the Weibull random variables. Length must match the other parameters and the number of Weibull random variables.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

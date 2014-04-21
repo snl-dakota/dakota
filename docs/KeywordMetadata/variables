@@ -96,7 +96,21 @@ granularity (e.g., from normal to histogram bin within
 aleatory uncertain - continuous ) is defined somewhat arbitrarily, but is 
 enforced consistently throughout the code.
 
-Topics:: block, not_yet_reviewed
+<b> Active Variables </b>
+
+The reason variable types exist is that methods have the capability to
+treat variable types differently. All methods have default behavior that
+determines which variable types are "active" and will be assigned values
+by the method. For example, optimization methods will only vary the
+design variables - by default.
+
+The default behavior should be described
+on each method page, or on topics pages that relate to classes of methods.
+In addition, the default behavior can be modified using the \ref variables-active
+keyword.
+
+
+Topics::	block
 Examples::
 Several examples follow. In the first example, two continuous design
 variables are specified:

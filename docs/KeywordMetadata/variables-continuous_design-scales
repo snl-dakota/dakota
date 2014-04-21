@@ -5,7 +5,7 @@ For continuous variables, the \c scale_types specification includes strings spec
 Each entry in \c scale_types may be selected from <tt>'none'</tt>, <tt>'value'</tt>, <tt>'auto'</tt>, or <tt>'log'</tt>, to select no, characteristic value, automatic, or logarithmic scaling, respectively. If a single string is specified it will apply to all components of the continuous design variables vector. 
 Each entry in \c scales may be a user-specified nonzero real characteristic value to be used in scaling each variable component. These values are ignored for scaling type <tt>'none'</tt>, required for <tt>'value'</tt>, and optional for <tt>'auto'</tt> and <tt>'log'</tt>. If a single real value is specified it will apply to all components of the continuous design variables vector.
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples:: Two continuous design variables, both scaled by the characteristic value 4.0
 \verbatim
   continuous_design = 2

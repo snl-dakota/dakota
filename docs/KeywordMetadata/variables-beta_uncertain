@@ -19,7 +19,7 @@ Solving these for \f$\alpha\f$ and \f$\beta\f$ gives:
 \f[\alpha = (\mu_B-L_B)\frac{(\mu_B-L_B)(U_B-\mu_B)-\sigma_B^2}{\sigma_B^2(U_B-L_B)}\f]
 \f[\beta = (U_B-\mu_B)\frac{(\mu_B-L_B)(U_B-\mu_B)-\sigma_B^2}{\sigma_B^2(U_B-L_B)}\f]
 Note that the uniform distribution is a special case of this distribution for parameters \f$\alpha = \beta = 1\f$.
-Topics::	continuous_variables, aleatory_uncertain_variables, not_yet_reviewed
+Topics::	continuous_variables, aleatory_uncertain_variables
 Examples::
 Theory::
 For vector and centered parameter studies, an inferred initial

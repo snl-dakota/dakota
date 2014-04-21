@@ -26,7 +26,7 @@ in the cases of bins of equal width, ordinate and count specifications
 are equivalent. In addition, ordinates and counts may be relative
 values; it is not necessary to scale them as all user inputs will be
 normalized.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

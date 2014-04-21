@@ -4,7 +4,7 @@ Description::
 The density function for the poisson distribution is given by: 
 \f[f(x) = \frac{\lambda e^{-\lambda}}{x!}\f] 
 where \f$\lambda\f$ is the frequency of events happening, and \c x is the number of events that occur. 
-Topics::
+Topics::	
 Examples::
 Theory::
 Faq::

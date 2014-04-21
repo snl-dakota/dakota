@@ -8,7 +8,7 @@ The density function for the geometric distribution is given by:
 where 
 \c p is the probability of failure per trial and \c x is the number of successful trials.
 
-Topics::
+Topics::	
 Examples::
 Theory::
 Faq::

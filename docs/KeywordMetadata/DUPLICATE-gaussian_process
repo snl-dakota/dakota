@@ -1,6 +1,9 @@
 Blurb::
 Use a Gaussian Process surrogate or emulator
 Description::
+!!!!!!!!!!!! need to update, has references to dakota 5.2
+
+
 This specifies the use of a Gaussian process emulator (also called 
 surrogate or meta-model). The Gaussian process (GP) will be constructed using a 
 limited number of expensive simulation runs. 
@@ -95,7 +98,10 @@ version. More details on the \c gaussian_process dakota
 model can be found in \cite McF08. The differences between these 
 models are as follows: 
 
-\li Trend Function: The GP models incorporate a parametric trend 
+<ul>
+<li> Trend Function:
+
+   The GP models incorporate a parametric trend 
    function whose purpose is to capture large-scale variations. In 
    both models, the trend function can be a constant, linear,or 
    reduced quadratic (main effects only, no interaction terms) 
@@ -103,12 +109,15 @@ models are as follows:
    followed by one of \c constant, \c linear, or 
    \c reduced_quadratic (in Dakota 5.0 and earlier, the reduced 
    quadratic option for the \c dakota version was selected using 
-   the keyword, \c quadratic). The \\
+   the keyword, \c quadratic). The 
    \c gaussian_process surfpack model has the additional option 
    of a full (i.e. it includes interaction terms) quadratic polynomial; 
    this is accessed by following the \c trend keyword with 
    \c quadratic.
-\li Correlation Parameter Determination: Both of the 
+</li>
+<li> Correlation Parameter Determination:
+
+   Both of the 
    \c gaussian_process models use a Maximum Likelihood Estimation 
    (MLE) approach to find the optimal values of the hyper-parameters 
    governing the mean and correlation functions. By default both models 
@@ -118,11 +127,17 @@ models are as follows:
    The \c gaussian_process surfpack model has several options for 
    the optimization method used. These are specified by the 
    \c optimization_method keyword followed by one of these strings:
-   \li \c global which uses the default DIRECT optimizer,
-   \li \c local which uses the CONMIN optimizer,
-   \li \c sampling which generates several random guesses and 
+   <ul>
+   <li> \c global which uses the default DIRECT optimizer,
+   </li>
+   <li> \c local which uses the CONMIN optimizer,
+   </li>
+   <li> \c sampling which generates several random guesses and 
       picks the candidate with greatest likelihood, and
-   \li \c none 
+   </li>
+   <li> \c none 
+   </li>
+   </ul>
    The \c none option, and the starting location of the 
    \c local optimization, default to the center, in 
    log(correlation length) scale, of the of small feasible region. 
@@ -132,8 +147,11 @@ models are as follows:
    \c gaussian_process surfpack model's likelihood function can 
    be controlled using the \c max_trials keyword followed by a 
    positive integer. Note that we have found the \c global 
-   optimization method to be the most robust.
-\li Ill-conditioning. One of the major problems in determining 
+   optimization method to be the most robust.}
+</li>
+<li> Ill-conditioning
+
+   One of the major problems in determining 
    the governing values for a Gaussian process or Kriging model is 
    the fact that the correlation matrix can easily become 
    ill-conditioned when there are too many input points close together.
@@ -151,7 +169,8 @@ models are as follows:
    to decrease the size of admissible correlation lengths. Note that a
    sufficiently bad sample design could require correlation lengths to 
    be so short that any interpolatory Kriging/GP model would become 
-   inept at extrapolation and interpolation. \\ \\
+   inept at extrapolation and interpolation.
+
    The \c gaussian_process dakota model has two features to 
    overcome ill-conditioning. The first is that the algorithm will 
    add a small amount of noise to the diagonal elements of the matrix 
@@ -161,7 +180,8 @@ models are as follows:
    algorithm chooses an "optimal" subset of points (with respect to 
    predictive capability on the remaining unchosen points) using a 
    greedy heuristic. This option is specified with the keyword 
-   \c point_selection in the input file.\\ \\
+   \c point_selection in the input file.
+
    As of Dakota 5.2, the \c gaussian_process surfpack model has 
    a similar capability. Points are \b not discarded prior to the 
    construction of the model. Instead, within the maximum likelihood 
@@ -187,7 +207,8 @@ models are as follows:
    \c gaussian_process surfpack model is not guaranteed to 
    exactly interpolate the discarded points. Warning: when two very 
    nearby points are on opposite sides of a discontinuity, it is 
-   possible for one of them to be discarded by this approach.\\ \\
+   possible for one of them to be discarded by this approach.
+
    Note that a pivoted Cholesky factorization can be significantly
    slower than the highly optimized implementation of non-pivoted 
    Cholesky factorization in typical LAPACK distributions. A 
@@ -198,8 +219,9 @@ models are as follows:
    more accurate and/or require fewer evaluations of the true function 
    than the \c gaussian_process dakota. For this reason, the
    \c gaussian_process surfpack version is the default 
-   option as of Dakota 5.2. 
-\li Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the 
+   option as of Dakota 5.2. }
+</li>
+<li> Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the 
    \c use_derivatives keyword will cause the 
    \c gaussian_process surfpack model to be built from a 
    combination of function value and gradient information. The 
@@ -216,7 +238,8 @@ models are as follows:
    also significantly less accurate than those built from analytical 
    derivatives. Note that GEK's correlation matrix tends to have a 
    significantly worse condition number than Kriging for the same 
-   sample design.\\ \\
+   sample design.
+
    This issue was addressed by using a pivoted Cholesky 
    factorization of Kriging's correlation matrix (which is a small 
    sub-matrix within GEK's correlation matrix) to rank points by how 
@@ -233,9 +256,11 @@ models are as follows:
    accurate GEK models than when pivoted Cholesky or 
    whole-point-block pivoted Cholesky was performed on GEK's 
    correlation matrix.
+</li>
+</ul>
 
 
-Topics::	not_yet_reviewed
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::
