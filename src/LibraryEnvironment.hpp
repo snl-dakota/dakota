@@ -77,8 +77,9 @@ public:
   void done_modifying_db();
 
   /// Plug-in the passed interface into any interface matching the
-  /// specified (possibly empty) model, interface, and driver strings
-  void plugin_interface(const String& model_type,
+  /// specified (possibly empty) model, interface, and driver strings;
+  /// returns true if a plugin was performed
+  bool plugin_interface(const String& model_type,
 			const String& interf_type,
 			const String& an_driver,
 			Interface* plugin_iface);

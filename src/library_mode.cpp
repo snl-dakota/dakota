@@ -50,15 +50,15 @@ void run_dakota_data();
 /// supplemented with additional C++ API adjustments
 void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag);
 
-/// Simplest example of interface plugin
-void simple_interface_plugin(Dakota::LibraryEnvironment& env);
+/// Convenience function with simplest example of interface plugin: plugin a serial
+/// DirectApplicInterface that can be constructed independent of Dakota's 
+/// configuration details.
+void serial_interface_plugin(Dakota::LibraryEnvironment& env);
 
-/// Plug an interface into Dakota when Model's configuration details not needed
-void interface_plugins(Dakota::LibraryEnvironment& env);
-
-/// Convenience function to plug a library client's interface into the
-/// appropriate model
-void model_interface_plugins(Dakota::LibraryEnvironment& env);
+/// Convenience function to plug a library client's interface into the appropriate 
+/// model, demonstrating use of Dakota parallel configuration in constructing the 
+/// plugin Interface on the right MPI_Comm
+void parallel_interface_plugin(Dakota::LibraryEnvironment& env);
 
 /** Data structure to pass application-specific values through Dakota
     back to the callback function, for example to convey late updates
@@ -112,6 +112,7 @@ int main(int argc, char* argv[])
   fpinit_ASL();	
 #endif
 
+  // whether running in parallel
   bool parallel = Dakota::MPIManager::detect_parallel_launch(argc, argv);
 
   // Define MPI_DEBUG in dakota_global_defs.cpp to cause a hold here
@@ -214,9 +215,9 @@ void run_dakota_parse(const char* dakota_input_file)
   // plug the client's interface (function evaluator) into the Dakota
   // environment; in serial case, demonstrate the simpler plugin method
   if (env.mpi_manager().mpirun_flag())
-    model_interface_plugins(env);
+    parallel_interface_plugin(env);
   else
-    simple_interface_plugin(env);
+    serial_interface_plugin(env);
 
   // Execute the environment
   env.execute();
@@ -278,8 +279,11 @@ void /*Dakota::*/run_dakota_data()
   env.done_modifying_db();
 
   // plug the client's interface (function evaluator) into the Dakota
-  // environment
-  model_interface_plugins(env);
+  // environment; in serial case, demonstrate the simpler plugin method
+  if (env.mpi_manager().mpirun_flag())
+    parallel_interface_plugin(env);
+  else
+    serial_interface_plugin(env);
 
   // Execute the environment
   env.execute();
@@ -354,8 +358,11 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
   env.done_modifying_db();
 
   // plug the client's interface (function evaluator) into the Dakota
-  // environment
-  model_interface_plugins(env);
+  // environment; in serial case, demonstrate the simpler plugin method
+  if (env.mpi_manager().mpirun_flag())
+    parallel_interface_plugin(env);
+  else
+    serial_interface_plugin(env);
 
   // Demonstrate changes to data after the Environment has been instantiated.
   // In this case, the DB is not updated since its data has already been
@@ -383,9 +390,11 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
 }
 
 
-/** Demonstration of simple plugin where client code doesn't required
-    access to detailed Dakota data for other reasons */
-void simple_interface_plugin(Dakota::LibraryEnvironment& env)
+/** Demonstration of simple plugin where client code doesn't require access to 
+    detailed Dakota data (such as Model-based parallel configuration information)
+    to construct the DirectApplicInterface.  This example plugs-in a derived serial
+    direct application interface instance ("plugin_rosenbrock"). */
+void serial_interface_plugin(Dakota::LibraryEnvironment& env)
 {
   std::string model_type(""); // demo: empty string will match any model type
   std::string interf_type("direct");
@@ -395,55 +404,29 @@ void simple_interface_plugin(Dakota::LibraryEnvironment& env)
   Dakota::Interface* serial_iface = 
     new SIM::SerialDirectApplicInterface(problem_db);
 
-  env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
-}
+  bool plugged_in =
+    env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
 
-
-/** From a filtered list of Interface candidates, plug-in a derived
-    direct application interface instance ("plugin_rosenbrock").  This
-    approach is for use when you do not need access to Model-based
-    parallel configuration information.  This version demonstrates
-    getting access to the list of Interfaces and plugging in. */
-void interface_plugins(Dakota::LibraryEnvironment& env)
-{
-  Dakota::InterfaceList filt_interfs
-    = env.filtered_interface_list("direct", "plugin_rosenbrock");
-  if (filt_interfs.empty()) {
-    Cerr << "Error: no interface plugin performed.  Check compatibility "
-	 << "between parallel configuration and selected analysis_driver."
+  if (!plugged_in) {
+    Cerr << "Error: no serial interface plugin performed.  Check compatibility "
+	 << "between parallel\n       configuration and selected analysis_driver."
 	 << std::endl;
     Dakota::abort_handler(-1);
-  }
-
-  Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-  for (Dakota::InterfLIter il_iter = filt_interfs.begin();
-       il_iter != filt_interfs.end(); ++il_iter) {
-    // set DB nodes to input specification for this Interface
-    problem_db.set_db_interface_node(il_iter->interface_id());
-    // assign representation: don't increment ref count since no other envelope
-    // shares this letter
-    il_iter->assign_rep(new SIM::SerialDirectApplicInterface(problem_db),false);
   }
 }
 
 
 /** From a filtered list of Model candidates, plug-in a derived direct
-    application interface instance ("plugin_rosenbrock" for serial,
-    "plugin_text_book" for parallel).  This approach provides more complete
-    access to the Model, e.g., for access to analysis communicators. */
-void model_interface_plugins(Dakota::LibraryEnvironment& env)
+    application interface instance ("plugin_text_book" for parallel).
+    This approach provides more complete access to the Model, e.g., for access to analysis communicators. */
+void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
 {
-  int initialized = 0;
-#ifdef DAKOTA_HAVE_MPI
-  MPI_Initialized(&initialized);
-#endif // DAKOTA_HAVE_MPI
-
-  Dakota::ModelList filt_models = (initialized) ?
-    env.filtered_model_list("single", "direct", "plugin_text_book") :
-    env.filtered_model_list("single", "direct", "plugin_rosenbrock");
+  // get the list of all models matching the specified model, interface, driver:
+  Dakota::ModelList filt_models = 
+    env.filtered_model_list("single", "direct", "plugin_text_book");
   if (filt_models.empty()) {
-    Cerr << "Error: no interface plugin performed.  Check compatibility "
-	 << "between parallel configuration and selected analysis_driver."
+    Cerr << "Error: no parallel interface plugin performed.  Check compatibility "
+	 << "between parallel\n       configuration and selected analysis_driver."
 	 << std::endl;
     Dakota::abort_handler(-1);
   }
@@ -455,25 +438,19 @@ void model_interface_plugins(Dakota::LibraryEnvironment& env)
     problem_db.set_db_model_nodes(ml_iter->model_id());
 
     Dakota::Interface& model_interface = ml_iter->derived_interface();
-    if (initialized) {
-      // Parallel case: plug in derived Interface object with an analysisComm.
-      // Note: retrieval and passing of analysisComm is necessary only if
-      // parallel operations will be performed in the derived constructor.
 
-      // retrieve the currently active analysisComm from the Model.  In the most
-      // general case, need an array of Comms to cover all Model configurations.
-      const MPI_Comm& analysis_comm = ml_iter->parallel_configuration_iterator()
-	->ea_parallel_level().server_intra_communicator();
+    // Parallel case: plug in derived Interface object with an analysisComm.
+    // Note: retrieval and passing of analysisComm is necessary only if
+    // parallel operations will be performed in the derived constructor.
 
-      // don't increment ref count since no other envelope shares this letter
-      model_interface.assign_rep(new
-	SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
-    }
-    else
-      // Serial case: plug in derived Interface object w/o an analysisComm;
-      // don't increment ref count since no other envelope shares this letter
-      model_interface.assign_rep(new
-	SIM::SerialDirectApplicInterface(problem_db), false);
+    // retrieve the currently active analysisComm from the Model.  In the most
+    // general case, need an array of Comms to cover all Model configurations.
+    const MPI_Comm& analysis_comm = ml_iter->parallel_configuration_iterator()
+      ->ea_parallel_level().server_intra_communicator();
+
+    // don't increment ref count since no other envelope shares this letter
+    model_interface.assign_rep(new
+      SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
   }
 }
 

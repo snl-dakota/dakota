@@ -92,19 +92,19 @@ void LibraryEnvironment::done_modifying_db()
 }
 
 
-void LibraryEnvironment::plugin_interface(const String& model_type,
+bool LibraryEnvironment::plugin_interface(const String& model_type,
 					  const String& interf_type,
 					  const String& an_driver,
 					  Interface* plugin_iface)
 {
+  bool plugged_in = false;
   ModelList filt_models
     = filtered_model_list(model_type, interf_type, an_driver);
 
   if (filt_models.empty())
     Cerr << "Warning: interface plugin requested, but no interfaces matched "
-	 << "specified\n  model type =" << model_type << ","
-	 << "\n  interface type = "<< interf_type << " , and"
-	 << "\n  driver name = " << an_driver << "." << std::endl;
+	 << "specified\n  model type = " << model_type << "\n  interface type = "
+	 << interf_type << "\n  driver name = " << an_driver << std::endl;
 
   ModelLIter ml_iter, ml_end = filt_models.end();
   for (ml_iter = filt_models.begin(); ml_iter != ml_end; ++ml_iter) {
@@ -114,7 +114,10 @@ void LibraryEnvironment::plugin_interface(const String& model_type,
     Interface& model_interface = ml_iter->derived_interface();
     // don't increment ref count since no other envelope shares this letter
     model_interface.assign_rep(plugin_iface, false);
+    plugged_in = true;
   }
+
+  return plugged_in;
 }
 
 
