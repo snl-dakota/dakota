@@ -113,38 +113,19 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
 
-  /*
-  // Any logic must not overconstrain the evaluation partition and prevent
-  // assignment of multiple analysis servers/processors!  The code below does
-  // not do the right thing for all cases since min_procs_per_eval does NOT
-  // provide a lower bound, but rather an override which must be obeyed. To
-  // do this right will require a mix of top-down and bottom-up flow, or
-  // perhaps passing a new min_procs_per_server setting (add along with an
-  // attribute for peer_dynamic support).
-  int min_procs_per_eval;
-  if (numEvalServersSpec)
-    // don't overconstrain with a combination of numEvalServersSpec + analysis
-    // partition, since we don't want to preclude multiple analysis servers.
-    min_procs_per_eval = procsPerEvalSpec;
-  else {
-    // If there are analysis-level partition specifications, enforce a
-    // lower bound on procs_per_eval
-    int analysis_partition_l_bnd = 0;
-    if (numAnalysisServersSpec && procsPerAnalysisSpec)
-      analysis_partition_l_bnd
-      = numAnalysisServersSpec * procsPerAnalysisSpec; // ALMOST, except master
-    else if (numAnalysisServersSpec)
-      analysis_partition_l_bnd = numAnalysisServersSpec; // NO
-    else if (procsPerAnalysisSpec)
-      analysis_partition_l_bnd = procsPerAnalysisSpec;   // NO
-    min_procs_per_eval = std::max(procsPerEvalSpec, analysis_partition_l_bnd);
-  }
-  */
-
+  // Define a min_procs_per_eval which captures overrides at the analysis level.
+  // This is managed separately from procsPerEvalSpec to avoid overconstraining
+  // the evaluation partition (passing in procsPerAnalysis for procsPerEval
+  // would serialize the analysis level).  The min_procs lower bounds are
+  // defined bottom up and counter the top-down allocation of resources. 
+  int min_procs_per_eval = std::max(1, procsPerAnalysisSpec);
+  if (numAnalysisServersSpec)
+    min_procs_per_eval *= numAnalysisServersSpec;
+  //if (analysisScheduling == MASTER_SCHEDULING) ++min_procs_per_eval;
   bool peer_dynamic_avail
     = (interfaceType != "direct" && !asynchLocalEvalStatic);
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
-    numEvalServersSpec, /*min_procs_per_eval*/procsPerEvalSpec,
+    numEvalServersSpec, procsPerEvalSpec, min_procs_per_eval,
     max_eval_concurrency, asynchLocalEvalConcSpec, PUSH_UP,// default_config
     evalScheduling, peer_dynamic_avail);
 
@@ -157,8 +138,8 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   if ( !ieDedMasterFlag || iteratorCommRank ) {
 
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
-      numAnalysisServersSpec, procsPerAnalysisSpec, numAnalysisDrivers,
-      asynchLocalAnalysisConcSpec, PUSH_UP, // default_config
+      numAnalysisServersSpec, procsPerAnalysisSpec, 1,// min_procs_per_analysis
+      numAnalysisDrivers, asynchLocalAnalysisConcSpec, PUSH_UP,// default_config
       analysisScheduling, false); // peer_dynamic is not available
 
     set_analysis_communicators();

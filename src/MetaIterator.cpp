@@ -25,6 +25,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
   iterSched(problem_db.parallel_library(),
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
+	    get_min_procs_per_iterator(problem_db),
 	    problem_db.get_short("method.iterator_scheduling"))
 { }
 
@@ -34,6 +35,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
   iterSched(problem_db.parallel_library(),
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
+	    get_min_procs_per_iterator(problem_db),
 	    problem_db.get_short("method.iterator_scheduling"))
 {
   iteratedModel = model;
@@ -45,6 +47,26 @@ MetaIterator::~MetaIterator()
 {
   // deallocate the si_pl parallelism level
   iterSched.free_iterator_parallelism();
+}
+
+
+int MetaIterator::get_min_procs_per_iterator(ProblemDescDB& problem_db)
+{
+  // Define min_procs_per_iterator to accomodate any lower level overrides.
+  // With default_config = PUSH_DOWN, this is less critical.
+  int ppa = problem_db.get_int("interface.direct.processors_per_analysis"),
+      num_a_serv = problem_db.get_int("interface.analysis_servers"),
+      ppe = problem_db.get_int("interface.processors_per_evaluation"),
+      num_e_serv = problem_db.get_int("interface.evaluation_servers");
+  int min_procs_per_eval = std::max(1, ppa);
+  if (num_a_serv)
+    min_procs_per_eval *= num_a_serv;
+  //if (analysisScheduling == MASTER_SCHEDULING) ++min_procs_per_eval;
+  int min_procs_per_iterator = std::max(min_procs_per_eval, ppe);
+  if (num_e_serv)
+    min_procs_per_iterator *= num_e_serv;
+  //if (evalScheduling == MASTER_SCHEDULING) ++min_procs_per_iterator;
+  return min_procs_per_iterator;
 }
 
 

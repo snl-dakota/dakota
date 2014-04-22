@@ -144,9 +144,10 @@ void ParallelLibrary::initialize_timers()
     for the concurrent evaluation and concurrent analysis levels. */
 void ParallelLibrary::
 init_communicators(const ParallelLevel& parent_pl, int num_servers,
-		   int procs_per_server, int max_concurrency, 
-		   int asynch_local_concurrency, short default_config,
-		   short scheduling_override, bool peer_dynamic_avail)
+		   int procs_per_server, int min_procs_per_server,
+		   int max_concurrency, int asynch_local_concurrency,
+		   short default_config, short scheduling_override,
+		   bool peer_dynamic_avail)
 {
   ParallelLevel child_pl;
   child_pl.numServers     = num_servers;      // request/default to be updated
@@ -156,9 +157,9 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
   bool print_rank         = (parent_pl.serverCommRank == 0);
 
   // resolve_inputs selects master vs. peer scheduling
-  resolve_inputs(child_pl, parent_pl.serverCommSize, max_concurrency,
-		 capacity_multiplier, default_config, scheduling_override,
-		 peer_dynamic_avail, print_rank);
+  resolve_inputs(child_pl, parent_pl.serverCommSize, min_procs_per_server,
+		 max_concurrency, capacity_multiplier, default_config,
+		 scheduling_override, peer_dynamic_avail, print_rank);
 
   // create child_pl by partitioning parent_pl 
   if (child_pl.dedicatedMasterFlag)
@@ -198,7 +199,8 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
     level.  If num_servers & procs_per_server are both nondefault, then the
     former takes precedence. */
 void ParallelLibrary::
-resolve_inputs(ParallelLevel& child_pl, int avail_procs, int max_concurrency,
+resolve_inputs(ParallelLevel& child_pl, int avail_procs,
+	       int min_procs_per_server, int max_concurrency,
 	       int capacity_multiplier, short default_config,
 	       short scheduling_override, bool peer_dynamic_avail,
 	       bool print_rank)

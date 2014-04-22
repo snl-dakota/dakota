@@ -45,7 +45,7 @@ public:
   //IteratorScheduler();
   /// constructor
   IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers,
-		    int procs_per_iterator = 0,
+		    int procs_per_iterator = 0, int min_procs_per_iterator = 1,
 		    short scheduling = DEFAULT_SCHEDULING);
   /// destructor
   ~IteratorScheduler();
@@ -120,16 +120,16 @@ public:
 
   ParallelLibrary& parallelLib; ///< reference to the ParallelLibrary instance
 
-  int   numIteratorJobs;    ///< number of iterator executions to schedule
-  int   numIteratorServers; ///< number of concurrent iterator partitions
-  int   procsPerIterator;   ///< partition size request
+  int   numIteratorJobs;     ///< number of iterator executions to schedule
+  int   numIteratorServers;  ///< number of concurrent iterator partitions
+  int   procsPerIterator;    ///< partition size request
+  int   minProcsPerIterator; ///< lower bound on partition size
+  int   iteratorCommRank;    ///< processor rank in iteratorComm
+  int   iteratorCommSize;    ///< number of processors in iteratorComm
+  int   iteratorServerId;    ///< identifier for an iterator server
 
-  int   iteratorCommRank;   ///< processor rank in iteratorComm
-  int   iteratorCommSize;   ///< number of processors in iteratorComm
-  int   iteratorServerId;   ///< identifier for an iterator server
-
-  bool  messagePass;        ///< flag for message passing at si level
-  short iteratorScheduling; ///< {DEFAULT,MASTER,PEER}_SCHEDULING
+  bool  messagePass;         ///< flag for message passing at si level
+  short iteratorScheduling;  ///< {DEFAULT,MASTER,PEER}_SCHEDULING
   //int maxIteratorConcurrency; ///< max concurrency possible in meta-algorithm
 
 private:

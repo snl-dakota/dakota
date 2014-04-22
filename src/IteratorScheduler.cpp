@@ -25,12 +25,13 @@ namespace Dakota {
     ParallelLibrary::init_iterator_communicators(). */
 IteratorScheduler::
 IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers,
-		  int procs_per_iterator, short scheduling):
+		  int procs_per_iterator, int min_procs_per_iterator,
+		  short scheduling):
   parallelLib(parallel_lib), numIteratorJobs(1),
   numIteratorServers(num_servers),                // DataMethod default = 0
   procsPerIterator(procs_per_iterator),           // DataMethod default = 0
-  iteratorCommRank(0), iteratorCommSize(1), iteratorServerId(0),
-  messagePass(false),
+  minProcsPerIterator(min_procs_per_iterator), iteratorCommRank(0),
+  iteratorCommSize(1), iteratorServerId(0), messagePass(false),
   iteratorScheduling(scheduling) // DataMethod default = DEFAULT_SCHEDULING
   //maxIteratorConcurrency(1)
 {
@@ -63,29 +64,23 @@ init_iterator_parallelism(int max_concurrency, short default_config)
 {
   //maxIteratorConcurrency = max_concurrency;
 
-  // TO DO: May want to set procs_per_iterator to a minimum size to accomodate
-  // any lower level requests/overrides.  With default_config = PUSH_DOWN,
-  // this is not currently needed.
-  //int procs_per_iterator = 0;
-
-  // Default parallel config is currently PUSH_DOWN for all strategies:
+  // Default parallel config for concurrent iterators is currently PUSH_DOWN:
   // >> parallel B&B has idle servers on initial phases.  When iterator servers
   //    are specified, the default max_concurrency yields a peer partition for
   //    use by distributed scheduling.
   // >> For multi_start/pareto_set, optimizer durations are likely to be large
   //    blocks with high variability; therefore, serialize at the source of the
   //    variability (PUSH_DOWN).
-  // Concurrent iterator approaches that might work well with PUSH_UP:
-  // >> OUU if the UQ portion was sampling-based with a fixed number of samples
-  // >> Multi-start with non-optimization algorithms (e.g., parameter studies).
-  //short default_config = PUSH_DOWN;
+  // Concurrent iterator approach that might work well with PUSH_UP:
+  // >> OUU/Mixed UQ if the aleatory UQ used a fixed number of samples
 
   // Initialize iterator partitions after parsing but prior to output/restart.
   // The default setting for max_concurrency is the number of specified iterator
   // servers, which will yield a peer partition.
   const ParallelLevel& si_pl = parallelLib.init_iterator_communicators(
-    numIteratorServers, procsPerIterator, max_concurrency, default_config,
-    iteratorScheduling, false); // peer_dynamic not available prior to threading
+    numIteratorServers, procsPerIterator, minProcsPerIterator,
+    max_concurrency, default_config, iteratorScheduling,
+    false); // peer_dynamic not available prior to threading
 
   // retrieve the partition data
   //dedicatedMaster = si_pl.dedicated_master();
@@ -124,7 +119,7 @@ void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
 
   // Initialize iterator partitions for one iterator execution at a time
   const ParallelLevel& si_pl = parallel_lib.init_iterator_communicators(0, 0,
-    1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
+    1, 1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
   // set up output streams without iterator tagging
   parallel_lib.manage_outputs_restart(si_pl);
 }

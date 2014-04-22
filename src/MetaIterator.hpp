@@ -75,6 +75,15 @@ protected:
   IteratorScheduler iterSched;
   /// maximum number of concurrent sub-iterator executions
   int maxIteratorConcurrency;
+
+private:
+
+  //
+  //- Heading: Convenience member functions
+  //
+
+  /// compute a minimum iterator partition size based on lower level overrides
+  int get_min_procs_per_iterator(ProblemDescDB& problem_db);
 };
 
 } // namespace Dakota
