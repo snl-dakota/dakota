@@ -65,15 +65,17 @@ NonDAdaptImpSampling::
 NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 		     int refine_samples, int refine_seed, const String& rng,
 		     bool vary_pattern, unsigned short is_type, bool cdf_flag,
-		     bool x_space_model, bool bounded_model):
+		     bool x_space_model, bool use_model_bounds):
   NonDSampling(IMPORTANCE_SAMPLING, model, sample_type, 0, refine_seed, rng,
 	       vary_pattern, ALEATORY_UNCERTAIN), // only sample aleatory vars
   importanceSamplingType(is_type), initLHS(false), 
-  useModelBounds(bounded_model), invertProb(false),
+  useModelBounds(use_model_bounds), invertProb(false),
   refineSamples(refine_samples)
 {
   if (x_space_model) {
-    // TO DO: need to pass through the natafTransform instance?
+    // This option is currently unused.  If used in the future, care must be
+    // taken to ensure that natafTransform.{x,u}_types() inherited from above
+    // are synchronized with those from the calling context.
     transform_model(model, uSpaceModel, useModelBounds, 5.);
   }
   else

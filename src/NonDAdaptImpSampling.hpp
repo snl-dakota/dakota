@@ -43,7 +43,7 @@ public:
   NonDAdaptImpSampling(Model& model, unsigned short sample_type, int samples,
 		       int seed, const String& rng, bool vary_pattern,
 		       unsigned short is_type, bool cdf_flag,
-		       bool x_space_model, bool bounded_model);
+		       bool x_space_model, bool use_model_bounds);
   /// destructor
   ~NonDAdaptImpSampling();
 

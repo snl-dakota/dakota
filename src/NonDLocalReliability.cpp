@@ -341,32 +341,34 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String rng; // empty string: use default
 
-    // flags control if/when transformation is needed in importanceSampler
-    bool x_model_flag, bounded_model = false, vary_pattern = true;
+    // Note: global bounds definition in transform_model() can be true
+    // (to bound an optimizer search) with AIS use_model_bounds = false
+    // (AIS will ignore these global bounds).
+    bool x_model_flag = false, use_model_bounds = false, vary_pattern = true;
 
-    // AIS is performed in u-space WITHOUT a surrogate: pass a u-space model
-    // when available; force a transform within NonDAIS when not.
+    // AIS is performed in u-space WITHOUT a surrogate: pass a truth u-space
+    // model when available, construct one when not.
     switch (mppSearchType) {
-    case AMV_X: case AMV_PLUS_X: case TANA_X:
-      x_model_flag = true; // surrogate applied before u-space
+    case AMV_X: case AMV_PLUS_X: case TANA_X: {
+      Model g_u_model;
+      transform_model(iteratedModel, g_u_model); // global bounds not needed
       importanceSampler.assign_rep(new
-        NonDAdaptImpSampling(iteratedModel, sample_type, refine_samples,
+        NonDAdaptImpSampling(g_u_model, sample_type, refine_samples,
 	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
-	  true, bounded_model), false);
+	  x_model_flag, use_model_bounds), false);
       break;
+    }
     case AMV_U: case AMV_PLUS_U: case TANA_U:
-      x_model_flag = false; // surrogate applied after u-space
       importanceSampler.assign_rep(new
 	NonDAdaptImpSampling(uSpaceModel.truth_model(), sample_type,
 	  refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	  cdfFlag, x_model_flag, bounded_model), false);
+	  cdfFlag, x_model_flag, use_model_bounds), false);
       break;
     case NO_APPROX:
-      x_model_flag = false; // no surrogate; can use uSpaceModel
       importanceSampler.assign_rep(new
         NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
 	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
-	  x_model_flag, bounded_model), false);
+	  x_model_flag, use_model_bounds), false);
       break;
     }
 
