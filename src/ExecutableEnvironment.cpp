@@ -31,10 +31,6 @@ ExecutableEnvironment::ExecutableEnvironment():
 ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
   Environment(BaseConstructor(), argc, argv)
 {
-#ifdef DAKOTA_USAGE_TRACKING
-  usageTracker.reset( new TrackerHTTP(parallelLib.world_rank()) );
-#endif
-
   // could we wait to do redirection and any output here?
   // might get entangled with CL usage...
   if (programOptions.version())
@@ -52,22 +48,12 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
 
     // for executable env, always instantiate the topLevelIterator
     construct();
-
-#ifdef DAKOTA_USAGE_TRACKING
-    // must wait for iterators to be instantiated; positive side effect is that 
-    // we don't track dakota -version, -help, and errant usage
-    usageTracker->post_start(probDescDB);
-#endif
   }
 }
 
 
 ExecutableEnvironment::~ExecutableEnvironment()
 {
-#ifdef DAKOTA_USAGE_TRACKING
-  usageTracker->post_finish();
-#endif
-
   // destruction order of core objects:
   //  * ParallelLibrary closes things it opens, e.g., restart
   //  * OutputManager knows what it rebinds, so closes in dtor 
@@ -102,7 +88,18 @@ void ExecutableEnvironment::execute()
   sigchld_save = std::signal(SIGCHLD, SIG_DFL);
 #endif
 
+#ifdef DAKOTA_USAGE_TRACKING
+  usageTracker.reset( new TrackerHTTP(parallelLib.world_rank()) );
+  // must wait for iterators to be instantiated; positive side effect is that 
+  // we don't track dakota -version, -help, and errant usage
+  usageTracker->post_start(probDescDB);
+#endif
+
   Environment::execute();
+
+#ifdef DAKOTA_USAGE_TRACKING
+  usageTracker->post_finish();
+#endif
 
 #ifndef _WIN32
   std::signal(SIGCHLD, sigchld_save);

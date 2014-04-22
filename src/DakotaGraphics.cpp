@@ -388,6 +388,9 @@ void Graphics::close()
     graphics2D->thread_wait(); // wait for user to exit the graphics thread
 
     delete graphics2D; // 2D
+    // reset member data since this Graphics is currently global
+    win2dOn = false;
+    graphicsCntr = 1;
   }
 #endif // HAVE_X_GRAPHICS
 }
@@ -397,8 +400,10 @@ void Graphics::close_tabular()
 {
   // only close tabular stream if initialization was previously performed
   // not an error when not open so all ranks can call this
-  if (tabularDataFlag && tabularDataFStream.is_open())
+  if (tabularDataFlag && tabularDataFStream.is_open()) {
     tabularDataFStream.close();
+    tabularDataFlag = false;
+  }
 }
 
 

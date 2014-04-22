@@ -40,7 +40,7 @@ void start_dakota_heartbeat(int);
 
 OutputManager::OutputManager():
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false), 
-  worldRank(0), mpirunFlag(false)
+  worldRank(0), mpirunFlag(false), restartOutputArchive(NULL)
 { }
 
 
@@ -50,7 +50,8 @@ OutputManager::
 OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
 	      bool dakota_mpirun_flag):
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false),
-  worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag)
+  worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag),
+  restartOutputArchive(NULL)
 {
   //  if output file specified, redirect immediately, possibly rebind later
   if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
@@ -81,6 +82,9 @@ void OutputManager::close_streams()
     error_ofstream.close();
     dakota_cerr = &std::cerr;
   }
+
+  if (restartOutputArchive)
+    delete restartOutputArchive;
 
   if (restartOutputFS.is_open())
     restartOutputFS.close();

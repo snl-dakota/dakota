@@ -72,8 +72,10 @@ TrackerHTTP::~TrackerHTTP()
   if (devNull)
     std::fclose(devNull);
 
-  if (curlPtr)
+  if (curlPtr) {
     curl_easy_cleanup(curlPtr);
+    curlPtr = NULL;
+ } 
 }
 
 //void TrackerHTTP::post_start()
@@ -234,6 +236,7 @@ void TrackerHTTP::send_data_using_post(const std::string& datatopost) const
   if (outputLevel > TH_NORMAL_OUTPUT)
     Cout << "POSTing data:\n" << datatopost << "\nto URL\n" << trackerLocation 
 	 << std::endl;
+
 
   char* cstr_location = new char[trackerLocation.size()+1];
   std::strcpy(cstr_location, trackerLocation.c_str());
