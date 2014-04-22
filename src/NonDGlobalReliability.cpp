@@ -306,13 +306,12 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   int refine_samples = 1000, refine_seed = 123457;
   // these flags control if/when space transformation is needed in the sampler
   bool x_model_flag = false, bounded_model = true;
-  bool x_data_flag = (mppSearchType == EGRA_X) ? true : false;
   integrationRefinement = MMAIS; vary_pattern = true;
 
   importanceSampler.assign_rep(new
     NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples, refine_seed,
 			 rng, vary_pattern, integrationRefinement, cdfFlag,
-			 x_data_flag, x_model_flag, bounded_model), false);
+			 x_model_flag, bounded_model), false);
 
   uSpaceModel.init_communicators(
     importanceSampler.maximum_evaluation_concurrency());
@@ -739,6 +738,7 @@ void NonDGlobalReliability::importance_sampling()
   // to define which samples are failures
   if (mppSearchType == EGRA_X)
     importance_sampler_rep->initialize_random_variables(natafTransform);
+  bool x_data_flag = (mppSearchType == EGRA_X);
 
   size_t i;
   statCount = 0;
@@ -790,13 +790,14 @@ void NonDGlobalReliability::importance_sampling()
 
       bool ria_flag = (levelCount < rl_len) ? true : false;
       if (ria_flag) {
-	Real z = computedRespLevels[respFnCount][levelCount] 
+	Real z =  computedRespLevels[respFnCount][levelCount] 
 	       = requestedRespLevels[respFnCount][levelCount];
-	importance_sampler_rep->initialize(gp_inputs, respFnCount, 0., z);
+	importance_sampler_rep->
+	  initialize(gp_inputs, x_data_flag, respFnCount, 0., z);
       }
       else
-	importance_sampler_rep->initialize(gp_inputs, respFnCount, 0.,
-	  computedRespLevels[respFnCount][levelCount]);
+	importance_sampler_rep->initialize(gp_inputs, x_data_flag,
+	  respFnCount, 0., computedRespLevels[respFnCount][levelCount]);
 
       // no summary output since on-the-fly constructed:
       importanceSampler.run(Cout);

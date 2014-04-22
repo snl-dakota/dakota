@@ -319,42 +319,59 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   }
 
   if (integrationRefinement) {
-    for (size_t i=0; i<numFunctions; i++) {
+    for (size_t i=0; i<numFunctions; i++)
       if (!requestedProbLevels[i].empty() || !requestedRelLevels[i].empty() ||
 	  !requestedGenRelLevels[i].empty()) {
 	Cerr << "\nError: importance sampling methods only supported for RIA."
 	     << "\n\n";
 	abort_handler(-1);
       }
-    }
-
     // integration refinement requires an MPP, but it may be unconverged (AMV)
-    if (mppSearchType) {
-      // For NonDLocal, integration refinement is applied to the original model
-      int refine_samples = probDescDB.get_int("method.nond.refinement_samples"),
-	  refine_seed    = probDescDB.get_int("method.random_seed");
-      if (!refine_samples) refine_samples = 1000; // context-specific default
-
-      unsigned short sample_type = SUBMETHOD_DEFAULT;
-      String rng; // empty string: use default
-
-      // flags control if/when transformation is needed in importanceSampler
-      bool x_data_flag = false, x_model_flag = true, bounded_model = false,
-	   vary_pattern = true;
-
-      importanceSampler.assign_rep(new
-	NonDAdaptImpSampling(iteratedModel, sample_type, refine_samples,
-	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
-	  x_data_flag, x_model_flag, bounded_model), false);
-
-      iteratedModel.init_communicators(
-	importanceSampler.maximum_evaluation_concurrency());
-    }
-    else {
+    if (!mppSearchType) {
       Cerr << "\nError: integration refinement only supported for MPP methods."
 	   << std::endl;
       abort_handler(-1);
     }
+
+    // For NonDLocal, integration refinement is applied to the original model
+    int refine_samples = probDescDB.get_int("method.nond.refinement_samples"),
+        refine_seed    = probDescDB.get_int("method.random_seed");
+    if (!refine_samples) refine_samples = 1000; // context-specific default
+
+    unsigned short sample_type = SUBMETHOD_DEFAULT;
+    String rng; // empty string: use default
+
+    // flags control if/when transformation is needed in importanceSampler
+    bool x_model_flag, bounded_model = false, vary_pattern = true;
+
+    // AIS is performed in u-space WITHOUT a surrogate: pass a u-space model
+    // when available; force a transform within NonDAIS when not.
+    switch (mppSearchType) {
+    case AMV_X: case AMV_PLUS_X: case TANA_X:
+      x_model_flag = true; // surrogate applied before u-space
+      importanceSampler.assign_rep(new
+        NonDAdaptImpSampling(iteratedModel, sample_type, refine_samples,
+	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
+	  true, bounded_model), false);
+      break;
+    case AMV_U: case AMV_PLUS_U: case TANA_U:
+      x_model_flag = false; // surrogate applied after u-space
+      importanceSampler.assign_rep(new
+	NonDAdaptImpSampling(uSpaceModel.truth_model(), sample_type,
+	  refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	  cdfFlag, x_model_flag, bounded_model), false);
+      break;
+    case NO_APPROX:
+      x_model_flag = false; // no surrogate; can use uSpaceModel
+      importanceSampler.assign_rep(new
+        NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
+	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
+	  x_model_flag, bounded_model), false);
+      break;
+    }
+
+    iteratedModel.init_communicators(
+      importanceSampler.maximum_evaluation_concurrency());
   }
 
   // Size the output arrays.  Relative to sampling methods, the output storage
@@ -2164,8 +2181,9 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
     // rep needed for access to functions not mapped to Iterator level
     NonDAdaptImpSampling* importance_sampler_rep
       = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    bool x_data_flag = false;
     importance_sampler_rep->
-      initialize(mpp_u, respFnCount, p, requestedTargetLevel);
+      initialize(mpp_u, x_data_flag, respFnCount, p, requestedTargetLevel);
     // no summary output since on-the-fly constructed:
     importanceSampler.run(Cout);
     p = importance_sampler_rep->final_probability();

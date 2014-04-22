@@ -468,7 +468,7 @@ void NonDExpansion::construct_expansion_sampler()
       bool vary_pattern = true;
       importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
 	sample_type, refine_samples, orig_seed, rng, vary_pattern, int_refine,
-	cdfFlag, false, false, false), false);
+	cdfFlag, false, false), false);
       uSpaceModel.init_communicators(
 	importanceSampler.maximum_evaluation_concurrency());
  
@@ -1654,6 +1654,7 @@ void NonDExpansion::compute_statistics()
     if (impSampling) {
       NonDAdaptImpSampling* imp_sampler_rep
 	= (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+      bool x_data_flag = false;
 
       //imp_sampler_rep->initialize_random_variables(natafTransform);
       // since importanceSampler uses an ALEATORY_UNCERTAIN sampling mode,
@@ -1689,7 +1690,7 @@ void NonDExpansion::compute_statistics()
 	  for (j=0; j<rl_len; ++j, ++sampler_cntr) {
             //Cout << "Initial estimate of p to seed "
 	    //     << exp_sampler_stats[sampler_cntr] << '\n';
-	    imp_sampler_rep->initialize(initial_points, i, 
+	    imp_sampler_rep->initialize(initial_points, x_data_flag, i, 
 	      exp_sampler_stats[sampler_cntr], requestedRespLevels[i][j]);
           
 	    // no summary output since on-the-fly constructed:

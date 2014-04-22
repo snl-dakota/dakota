@@ -39,11 +39,6 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   importanceSamplingType(
     probDescDB.get_ushort("method.nond.integration_refinement")),
   initLHS(true),
-  // if initial points in x-space, they must be transformed to u-space
-  xSpaceInitData(true),
-  // if model is in x-space then future points generated in u-space will
-  //   need to be transformed prior to evaluation
-  xSpaceModel(true),
   // should the model bounds be respected?
   useModelBounds(false),
   // invert the sense of the refinement
@@ -55,7 +50,9 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!refineSamples) refineSamples = numSamples;
 
   statsFlag = true;
-  initialize_random_variables(STD_NORMAL_U);
+  initialize_random_variables(STD_NORMAL_U);//ASKEY_U,EXTENDED_U
+
+  transform_model(iteratedModel, uSpaceModel, useModelBounds);
 
   // maxEvalConcurrency defined from initial LHS size (numSamples)
 }
@@ -68,13 +65,20 @@ NonDAdaptImpSampling::
 NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 		     int refine_samples, int refine_seed, const String& rng,
 		     bool vary_pattern, unsigned short is_type, bool cdf_flag,
-		     bool x_space_data, bool x_space_model, bool bounded_model):
+		     bool x_space_model, bool bounded_model):
   NonDSampling(IMPORTANCE_SAMPLING, model, sample_type, 0, refine_seed, rng,
 	       vary_pattern, ALEATORY_UNCERTAIN), // only sample aleatory vars
-  initLHS(false), importanceSamplingType(is_type), xSpaceInitData(x_space_data),
-  xSpaceModel(x_space_model), useModelBounds(bounded_model), invertProb(false),
+  importanceSamplingType(is_type), initLHS(false), 
+  useModelBounds(bounded_model), invertProb(false),
   refineSamples(refine_samples)
 {
+  if (x_space_model) {
+    // TO DO: need to pass through the natafTransform instance?
+    transform_model(model, uSpaceModel, useModelBounds, 5.);
+  }
+  else
+    uSpaceModel = model;
+
   cdfFlag = cdf_flag;
   if (refineSamples)
     maxEvalConcurrency *= refineSamples;
@@ -83,8 +87,8 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 
 /** Initializes data using a vector array of starting points. */
 void NonDAdaptImpSampling::
-initialize(const RealVectorArray& acv_points, size_t resp_index,
-	   const Real& initial_prob, const Real& failure_threshold)
+initialize(const RealVectorArray& acv_points, bool x_space_data,
+	   size_t resp_index, Real initial_prob, Real failure_threshold)
 {
   size_t i, j, cntr, num_points = acv_points.size();
   initPointsU.resize(num_points);
@@ -100,7 +104,7 @@ initialize(const RealVectorArray& acv_points, size_t resp_index,
   for (i=0; i<num_points; i++) {
     RealVector& init_pt_i = initPointsU[i];
     init_pt_i.sizeUninitialized(numUncertainVars);
-    if (xSpaceInitData) {
+    if (x_space_data) {
       natafTransform.trans_X_to_U(acv_points[i], acv_u_point);
       for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
@@ -125,8 +129,8 @@ initialize(const RealVectorArray& acv_points, size_t resp_index,
 
 /** Initializes data using a matrix of starting points. */
 void NonDAdaptImpSampling::
-initialize(const RealMatrix& acv_points, size_t resp_index,
-	   const Real& initial_prob, const Real& failure_threshold)
+initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
+	   Real initial_prob, Real failure_threshold)
 {
   size_t i, j, cntr, num_points = acv_points.numCols();
   initPointsU.resize(num_points);
@@ -143,7 +147,7 @@ initialize(const RealMatrix& acv_points, size_t resp_index,
     const Real* acv_pt_i = acv_points[i];
     RealVector& init_pt_i = initPointsU[i];
     init_pt_i.sizeUninitialized(numUncertainVars);
-    if (xSpaceInitData) {
+    if (x_space_data) {
       RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
 			     numContinuousVars);
       natafTransform.trans_X_to_U(acv_pt_view, acv_u_point);
@@ -168,8 +172,8 @@ initialize(const RealMatrix& acv_points, size_t resp_index,
 
 /** Initializes data using only one starting point. */
 void NonDAdaptImpSampling::
-initialize(const RealVector& acv_point, size_t resp_index,
-	   const Real& initial_prob, const Real& failure_threshold)
+initialize(const RealVector& acv_point, bool x_space_data, size_t resp_index,
+	   Real initial_prob, Real failure_threshold)
 {
   size_t j, cntr;
 
@@ -182,7 +186,7 @@ initialize(const RealVector& acv_point, size_t resp_index,
   initPointsU.resize(1);
   RealVector& init_pt = initPointsU[0];
   init_pt.sizeUninitialized(numUncertainVars);
-  if (xSpaceInitData) {
+  if (x_space_data) {
     RealVector acv_u_point;
     natafTransform.trans_X_to_U(acv_point, acv_u_point);
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
@@ -210,12 +214,13 @@ void NonDAdaptImpSampling::quantify_uncertainty()
     // Note: {get,evaluate}_parameter_sets() is heavier weight relative to
     // {get,evaluate}_samples() used elsewhere, since this initial LHS
     // evaluates all response fns, not just the active resp fn being refined.
-    get_parameter_sets(iteratedModel); // generates numSamples points
-    evaluate_parameter_sets(iteratedModel, true, false);
+    get_parameter_sets(uSpaceModel); // generates numSamples points
+    evaluate_parameter_sets(uSpaceModel, true, false);
     compute_statistics(allSamples, allResponses);
 
     init_fns.sizeUninitialized(numSamples);
     size_t level_count, resp_fn_count;
+    bool x_data_flag = false;
     for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
       size_t rl_len = requestedRespLevels[resp_fn_count].length(),
              pl_len = requestedProbLevels[resp_fn_count].length(),
@@ -243,7 +248,7 @@ void NonDAdaptImpSampling::quantify_uncertainty()
 	Real z = requestedRespLevels[resp_fn_count][level_count];
         Real p_first = computedProbLevels[resp_fn_count][level_count];
 	Cout << "z " << z << " pfirst " << p_first << '\n';
-	initialize(allSamples, resp_fn_count, p_first, z);
+	initialize(allSamples, x_data_flag, resp_fn_count, p_first, z);
  
 	// select initial set of representative points
         select_rep_points(initPointsU, init_fns);
@@ -285,17 +290,9 @@ select_rep_points(const RealVectorArray& var_samples_u,
   size_t closestpt;
   Real mindist = DBL_MAX, closestbeta, ddist;
 
-  // store designPoint in acv_sample, append uncertain samples later
-  RealVector acv_sample, acv_x_sample;
-  if (xSpaceModel) {
-    acv_sample.sizeUninitialized(numContinuousVars);
-    for (j=0; j<numContDesVars; ++j)
-      acv_sample[j] = designPoint[j];
-    acv_x_sample.sizeUninitialized(numContinuousVars);
-  }
-  else
-    for (j=0; j<numContDesVars; ++j)
-      iteratedModel.continuous_variable(designPoint[j], j);
+  // update designPoint once; update uncertain vars for each sample
+  for (j=0; j<numContDesVars; ++j)
+    uSpaceModel.continuous_variable(designPoint[j], j);
 
   for (i=0; i<num_samples; i++) {
     //TMW: Modified this to exclude the previous repPointsU
@@ -490,7 +487,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
   // physical constraints
   for (i=0; i<numUncertainVars; ++i) {
     std::pair<Real, Real> bnds
-      = iteratedModel.continuous_distribution_bounds(i+numContDesVars);
+      = uSpaceModel.continuous_distribution_bounds(i+numContDesVars);
     n_l_bnds[i] = bnds.first;
     n_u_bnds[i] = bnds.second;
   }
@@ -538,50 +535,31 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
   if (fn_samples.length() != num_samples)
     fn_samples.sizeUninitialized(num_samples);
 
-  // store designPoint in acv_sample, append uncertain samples later
-  RealVector acv_sample, acv_x_sample;
-  if (xSpaceModel) {
-    acv_sample.sizeUninitialized(numContinuousVars);
-    for (j=0; j<numContDesVars; ++j)
-      acv_sample[j] = designPoint[j];
-    acv_x_sample.sizeUninitialized(numContinuousVars);
-  }
-  else
-    for (j=0; j<numContDesVars; ++j)
-      iteratedModel.continuous_variable(designPoint[j], j);
+  // update designPoint once; update uncertain vars for each sample
+  for (j=0; j<numContDesVars; ++j)
+    uSpaceModel.continuous_variable(designPoint[j], j);
 
   // calculate the probability of failure
-  ActiveSet set = iteratedModel.current_response().active_set(); // copy
+  ActiveSet set = uSpaceModel.current_response().active_set(); // copy
   set.request_values(0); set.request_value(1, respFnIndex);
-  bool asynch_flag = iteratedModel.asynch_flag();
+  bool asynch_flag = uSpaceModel.asynch_flag();
   for (i=0; i<num_samples; i++) {
     const RealVector& sample_i = var_samples_u[i];
-
-    if (xSpaceModel) { // u-space points -> x-space Model (NonDLocal)
-      // append uncertain sample to designPoint before evaluation
-      // this must be done before the transformation because trans_U_to_X
-      //   expectes numContinuousVars variables
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-        acv_sample[j] = sample_i[cntr];
-      natafTransform.trans_U_to_X(acv_sample, acv_x_sample);
-      iteratedModel.continuous_variables(acv_x_sample);
-    }
-    else // u-space points -> u-space Model (NonDGlobal)
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-        iteratedModel.continuous_variable(sample_i[cntr], j);
+    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      uSpaceModel.continuous_variable(sample_i[cntr], j);
 
     // get response value at the sample point
-    if (asynch_flag) // set from iteratedModel for stand-alone or on-the-fly
-      iteratedModel.asynch_compute_response(set);
+    if (asynch_flag) // set from uSpaceModel for stand-alone or on-the-fly
+      uSpaceModel.asynch_compute_response(set);
     else {
-      iteratedModel.compute_response(set);
+      uSpaceModel.compute_response(set);
       fn_samples[i]
-	= iteratedModel.current_response().function_value(respFnIndex);
+	= uSpaceModel.current_response().function_value(respFnIndex);
     }
   }
 
   if (asynch_flag) {
-    const IntResponseMap& resp_map = iteratedModel.synchronize();
+    const IntResponseMap& resp_map = uSpaceModel.synchronize();
     IntRespMCIter r_cit;
     for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
       fn_samples[i] = r_cit->second.function_value(respFnIndex);
@@ -604,16 +582,8 @@ calculate_statistics(const RealVectorArray& var_samples_u,
     failure_ratios.reserve(batch_size);
 
   // get design point
-  RealVector acv_sample, acv_x_sample;
-  if (xSpaceModel) {
-    acv_sample.sizeUninitialized(numContinuousVars);
-    for (j=0; j<numContDesVars; ++j)
-      acv_sample[j] = designPoint[j];
-    acv_x_sample.sizeUninitialized(numContinuousVars);
-  }
-  else
-    for (j=0; j<numContDesVars; ++j)
-      iteratedModel.continuous_variable(designPoint[j], j);
+  for (j=0; j<numContDesVars; ++j)
+    uSpaceModel.continuous_variable(designPoint[j], j);
 
   // calculate the probability of failure using all samples relative
   // to each of the representative points
@@ -621,27 +591,20 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
     // if point is a failure, calculate recentered_pdf, pdf, and add to sum
     if ( ( fn_samples[i] < failThresh &&
-	   ( (!invertProb && cdfFlag) || (invertProb && !cdfFlag) ) ) ||
+	   ( (!invertProb &&  cdfFlag) || (invertProb && !cdfFlag) ) ) ||
 	 ( fn_samples[i] > failThresh &&
 	   ( (!invertProb && !cdfFlag) || (invertProb &&  cdfFlag) ) ) ) {
 
       const RealVector& sample_i = var_samples_u[i];
 
-      // need to send the sample point to iteratedModel so that we can 
+      // update uSpaceModel with the u-space sample point so that we can 
       // calculate the density of the original density function
-      if (xSpaceModel) { 
-        for (k=numContDesVars, cntr=0; cntr<numUncertainVars; ++k, ++cntr)
-          acv_sample[k] = sample_i[cntr];
-        natafTransform.trans_U_to_X(acv_sample, acv_x_sample);
-        iteratedModel.continuous_variables(acv_x_sample);
-      }
-      else // u-space points -> u-space Model (NonDGlobal)
-        for (k=numContDesVars, cntr=0; cntr<numUncertainVars; ++k, ++cntr)
-          iteratedModel.continuous_variable(sample_i[cntr], k);
+      for (k=numContDesVars, cntr=0; cntr<numUncertainVars; ++k, ++cntr)
+	uSpaceModel.continuous_variable(sample_i[cntr], k);
 
       // calculate ratio of pdf relative to origin to pdf relative to rep pt
       // pdf_ratio1 = Pecos::phi(sample_i.normFrobenius()) / recentered_pdf;
-      pdf_ratio = iteratedModel.continuous_probability_density()
+      pdf_ratio = uSpaceModel.continuous_probability_density()
 	        / recentered_density(sample_i);
 
       // add sample's contribution to sum_prob
@@ -725,7 +688,7 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
     const RealVector& rep_pt_i = repPointsU[i];
     for (j=0; j<numUncertainVars; ++j) {
       std::pair<Real, Real> dist_bounds
-	= iteratedModel.continuous_distribution_bounds(j+numContDesVars);
+	= uSpaceModel.continuous_distribution_bounds(j+numContDesVars);
       rep_pdf *=
 	Pecos::bounded_normal_pdf(sample_point[j], rep_pt_i[j], stdev,
 				  dist_bounds.first, dist_bounds.second);

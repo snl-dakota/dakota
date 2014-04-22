@@ -42,7 +42,7 @@ public:
   /// alternate constructor for on-the-fly instantiations
   NonDAdaptImpSampling(Model& model, unsigned short sample_type, int samples,
 		       int seed, const String& rng, bool vary_pattern,
-		       unsigned short is_type, bool cdf_flag, bool x_space_data,
+		       unsigned short is_type, bool cdf_flag,
 		       bool x_space_model, bool bounded_model);
   /// destructor
   ~NonDAdaptImpSampling();
@@ -58,18 +58,18 @@ public:
   /// initializes data needed for importance sampling: an initial set
   /// of points around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealVectorArray& full_points, size_t resp_index,
-		  const Real& initial_prob, const Real& failure_threshold);
+  void initialize(const RealVectorArray& full_points, bool x_space_data,
+		  size_t resp_index, Real initial_prob, Real failure_threshold);
   /// initializes data needed for importance sampling: an initial set
   /// of points around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealMatrix& full_points, size_t resp_index,
-		  const Real& initial_prob, const Real& failure_threshold);
+  void initialize(const RealMatrix& full_points, bool x_space_data,
+		  size_t resp_index, Real initial_prob, Real failure_threshold);
   /// initializes data needed for importance sampling: an initial
   /// point around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
-  void initialize(const RealVector& full_point, size_t resp_index,
-		  const Real& initial_prob, const Real& failure_threshold);
+  void initialize(const RealVector& full_point, bool x_space_data,
+		  size_t resp_index, Real initial_prob, Real failure_threshold);
 
   /// returns the final probability calculated by the importance sampling
   Real final_probability();
@@ -123,17 +123,17 @@ private:
   // a particular response function at a particular level) are passed though
   // initialize().
 
+  /// importance sampling is performed in standardized probability space.
+  /// This u-space model is either passed in (alternate constructor for
+  /// helper AIS) or constructed using transform_model() (standard
+  /// constructor for stand-alone AIS)
+  Model uSpaceModel;
+
   /// integration type (is, ais, mmais) provided by input specification
   unsigned short importanceSamplingType;
 
   /// flag to identify if initial points are generated from an LHS sample
   bool initLHS;
-  /// flag to control if x->u transformation should be performed for
-  /// initial points
-  bool xSpaceInitData;
-  /// flag to control if u->x transformation should be performed
-  /// before model evaluation
-  bool xSpaceModel;
   /// flag to control if the sampler should respect the model bounds
   bool useModelBounds;
   /// flag for inversion of probability values using 1.-p
