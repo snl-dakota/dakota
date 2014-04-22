@@ -1,19 +1,24 @@
-This page discusses discrete state and design variables. 
-The uncertain variables are described on the variable
-keyword pages.
+This page discusses discrete state, design, and uncertain variables. 
 
-There are currently three ways to specify a discrete 
-state or design variable:
+Variables with the word \c discrete in their name are all
+specified in similar ways. These include:
 -# Set of integers
 -# Set of reals
--# Range
+-# Range(s)
+and each of these is described below.
+
+In addition, some uncertain variables are discrete, real-valued
+random variables and are specified using parameters. These
+are described on their individual keyword pages.
+
+
 
 <b> Sets </b>
 
-Sets of integers and reals are basically the same, except
+Sets of integers and reals are the same, except
 that one of them is restricted to integer values.
 
-Specifying a set requires three keywords:
+The variables are specified using three keywords:
 - Variable declaration keyword - specifies the number of variables being defined
 - \c num_set_values - a list of positive integers specifying how many members each variable contains
   - Length = # of variables
@@ -26,10 +31,15 @@ Specifying a set requires three keywords:
 Examples are given on the pages:
 - \ref variables-discrete_design_set_integer
 - \ref variables-discrete_design_set_real 
+- \ref variables-discrete_uncertain_set_integer
+- \ref variables-discrete_uncertain_set_real
 
 <b> Range </b>
 
-For discrete range variables, the \c lower_bounds and \c upper_bounds restrict the size of the feasible design space and are frequently used to prevent nonphysical designs. 
+For discrete variables defined by range(s), the \c lower_bounds and \c upper_bounds restrict the permisible values.
+For design variables, this constrains the feasible design space and is frequently used to prevent nonphysical designs. 
 This is a discrete interval variable that may take any integer value within bounds (e.g., [1, 4], allowing values of 1, 2, 3, or 4).
+For some variable types, each variable is can be defined by multiple ranges.
 
-WIP...
+Examples are given on the pages:
+- \ref variables-discrete_interval_uncertain

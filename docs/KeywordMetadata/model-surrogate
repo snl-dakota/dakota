@@ -90,7 +90,7 @@ single point in parameter space through use of a simple scalar offset
 or scaling applied to the surrogate model. First-order corrections
 such as the first-order multiplicative correction (also known as beta
 correction \cite Cha93) and the first-order additive
-correction \cite Lew00 also enforce consistency in the gradients and
+correction [\cite Lew00 "Lewis and Nash, 2000"] also enforce consistency in the gradients and
 provide a much more substantial correction capability that is
 sufficient for ensuring provable convergence in SBO algorithms.
 SBO convergence rates can be further
