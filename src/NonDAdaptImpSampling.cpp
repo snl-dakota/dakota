@@ -370,6 +370,8 @@ select_rep_points(const RealVectorArray& var_samples_u,
   //RealVectorArray prev_rep_pts = repPointsU;
 
   // define repPointsU and calculate repWeights
+  if ((importanceSamplingType == IS) || (importanceSamplingType == AIS))
+    new_rep_pts = 1;
   repPointsU.resize(new_rep_pts);
   repWeights.sizeUninitialized(new_rep_pts);
   Real sum_density = 0.;
@@ -380,13 +382,23 @@ select_rep_points(const RealVectorArray& var_samples_u,
       //var_samples_u[fail_idx - numRepPoints];
     repPointsU[i] = var_samples_u[fail_idx];
 
-    Real phi_beta = Pecos::phi(repPointsU[i].normFrobenius());
-    repWeights[i] = phi_beta;
-    sum_density  += phi_beta;
+    // update uSpaceModel with the u-space rep point so that we can 
+    // calculate the density function of the representative point
+    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      uSpaceModel.continuous_variable(repPointsU[i][cntr], j);
+    
+    Real rep_pdf;
+    rep_pdf = uSpaceModel.continuous_probability_density();
+    //Real phi_beta = Pecos::phi(repPointsU[i].normFrobenius());
+    //repWeights[i] = phi_beta;
+    //sum_density  += phi_beta;
+    repWeights[i] = rep_pdf;
+    sum_density  += rep_pdf;
   }
   repWeights.scale(1./sum_density);
 
 #ifdef DEBUG //TMW: Debug output to monitor the repPointsU
+  Cout << "number of representative points " << new_rep_pts << '\n';
   Cout << "select_rep_point(): #Points = " << repPointsU.size()<< std::endl;
   for (i=0; i<new_rep_pts; i++)
       Cout << " Point " << i << " =  " << repPointsU[i] << std::endl;
