@@ -793,7 +793,6 @@ inline void ParallelLibrary::increment_parallel_configuration()
   // ApplicationInterface::init_communicators().  Any undefined iterators
   // are initialized to their "singular values" (NULL should not be used).
   ParallelConfiguration pc;
-  pc.numParallelLevels = (worldSize > 1) ? 1 : 0;
 
   // Approach 1 does not hard-wire pc.siPLIter and relies on assignment in
   // init_evaluation_communicators():

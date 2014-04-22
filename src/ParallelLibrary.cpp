@@ -160,14 +160,15 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
 		 capacity_multiplier, default_config, scheduling_override,
 		 peer_dynamic_avail, print_rank);
 
+  // create child_pl by partitioning parent_pl 
   if (child_pl.dedicatedMasterFlag)
     split_communicator_dedicated_master(parent_pl, child_pl);
   else
     split_communicator_peer_partition(parent_pl,   child_pl);
 
-  // update number of parallelism levels
-  if ( child_pl.commSplitFlag && child_pl.numServers > 1 &&
-       ( child_pl.procsPerServer > 1 || child_pl.procRemainder ) )
+  // update the number of parallelism levels (child_pl.messagePass is
+  // preferred to child_pl.commSplitFlag due to COMM_SPLIT_TO_SINGLE)
+  if (child_pl.messagePass)
     ++currPCIter->numParallelLevels;
 
   parallelLevels.push_back(child_pl);
@@ -254,9 +255,9 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs, int max_concurrency,
       ded_master = !peer_override; // dedicate a master if no peer override
       if (ded_master) ++total_request;
       if (total_request < avail_procs && print_rank)
-	Cerr << "\nWarning: user override of servers and partition size "
-	     << "results in idle processors\n         (request: "
-	     << total_request << " avail: " << avail_procs << " idle: "
+	Cerr << "\nWarning: user override of server count and server size "
+	     << "results in idle processors\n         (request = "
+	     << total_request << ", avail = " << avail_procs << ", idle = "
 	     << avail_procs - total_request <<")\n\n";
     }
     else { // hard error if insufficient avail_procs
@@ -386,9 +387,9 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs, int max_concurrency,
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
     num_servers = server_procs / procs_per_server;
     if (server_procs % procs_per_server && print_rank)
-      Cerr << "\nWarning: user override of partition size results in idle "
-	   << "processors\n         (partition size request: "
-	   << procs_per_server << " avail: " << server_procs << " idle: "
+      Cerr << "\nWarning: user override of server size results in idle "
+	   << "processors\n         (server size request = "
+	   << procs_per_server << ", avail = " << server_procs << ", idle = "
 	   << server_procs - num_servers * procs_per_server << ")\n\n";
   }
   else {
@@ -685,7 +686,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     return;
   }
 
-  child_pl.messagePass = true;
+  child_pl.messagePass = (child_pl.numServers > 1); // exclude 1 server + idle
 #ifdef DAKOTA_HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
@@ -779,31 +780,33 @@ void ParallelLibrary::print_configuration()
   if ( si_pl.serverId == 1 && ie_pl.dedicatedMasterFlag && 
        ie_pl.serverId == 1 && ie_pl.serverCommRank == 0 ) {
     // eval server 1 master sends analysis info to iterator server 1 master
-    MPIPackBuffer send_buffer(64);
-    send_buffer << ea_pl.numServers << ea_pl.procsPerServer
-                << ea_pl.dedicatedMasterFlag << pc.numParallelLevels;
+    MPIPackBuffer send_buffer(64); // 3 ints+1 short+1 bool < ~16 bytes
+    send_buffer << ea_pl.numServers    << ea_pl.procsPerServer
+		<< ea_pl.procRemainder << ea_pl.dedicatedMasterFlag
+		<< pc.numParallelLevels;
     send_ie(send_buffer, 0, 1001);
   }
   // use local copies for settings from other processors
   // (do not update parallel settings on message recipients).
-  int   num_anal_srv = ea_pl.numServers, p_per_anal = ea_pl.procsPerServer;
+  int num_anal_srv = ea_pl.numServers, p_per_anal = ea_pl.procsPerServer,
+    anal_remainder = ea_pl.procRemainder;
   bool  eval_ded_master_flag = ea_pl.dedicatedMasterFlag;
-  short par_levels = pc.numParallelLevels;
+  short dak_par_levels = pc.numParallelLevels;
   if (si_pl.serverId == 1 && si_pl.serverCommRank == 0) {
     if (ie_pl.dedicatedMasterFlag) {
       // iterator server 1 master recv's analysis info from eval server 1 master
       MPIUnpackBuffer recv_buffer(64);
       MPI_Status status;
       recv_ie(recv_buffer, 1, 1001, status);
-      recv_buffer >> num_anal_srv >> p_per_anal >> eval_ded_master_flag
-                  >> par_levels;
+      recv_buffer >> num_anal_srv >> p_per_anal >> anal_remainder
+		  >> eval_ded_master_flag >> dak_par_levels;
     }
     if (si_pl.dedicatedMasterFlag) {
       // iterator server 1 master sends combined info to strategy master
       MPIPackBuffer send_buffer(64);
       send_buffer << ie_pl.numServers << ie_pl.procsPerServer
                   << ie_pl.dedicatedMasterFlag << num_anal_srv << p_per_anal
-                  << eval_ded_master_flag << par_levels;
+                  << anal_remainder << eval_ded_master_flag << dak_par_levels;
       send_si(send_buffer, 0, 1002);
     }
   }
@@ -816,12 +819,12 @@ void ParallelLibrary::print_configuration()
     bool iterator_ded_master_flag = ie_pl.dedicatedMasterFlag;
     if (si_pl.dedicatedMasterFlag) {
       // strategy master receives combined info from iterator server 1 master
-      MPIUnpackBuffer recv_buffer(64); // 4 ints+1 short+2 bools < ~20 bytes
+      MPIUnpackBuffer recv_buffer(64); // 5 ints+1 short+2 bools < ~22 bytes
       MPI_Status status;
       recv_si(recv_buffer, 1, 1002, status);
       recv_buffer >> num_eval_srv >> p_per_eval >> iterator_ded_master_flag
-                  >> num_anal_srv >> p_per_anal >> eval_ded_master_flag
-                  >> par_levels;
+                  >> num_anal_srv >> p_per_anal >> anal_remainder
+		  >> eval_ded_master_flag >> dak_par_levels;
     }
 
     // Strategy diagnostics
@@ -848,9 +851,12 @@ void ParallelLibrary::print_configuration()
     else                           Cout << "peer\n";
 
     // Analysis diagnostics
+    int anal_par_levels = (p_per_anal > 1 || anal_remainder) ? 1 : 0;
     Cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
          << "\t\t     N/A\t   N/A\n\nTotal parallelism levels =   " 
-         << par_levels << "\n-------------------------------------------------"
+         << dak_par_levels + anal_par_levels << " (" << dak_par_levels
+	 << " dakota, " << anal_par_levels << " analysis)\n"
+	 << "-------------------------------------------------"
 	 << "----------------------------" << std::endl;
   }
 }
