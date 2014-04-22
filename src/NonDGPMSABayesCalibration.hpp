@@ -17,8 +17,6 @@
 #define NOND_GPMSA_BAYES_CALIBRATION_H
 
 #include "NonDBayesCalibration.hpp"
-#include "queso/GslVector.h"
-#include "queso/GslMatrix.h"
 
 
 namespace Dakota {

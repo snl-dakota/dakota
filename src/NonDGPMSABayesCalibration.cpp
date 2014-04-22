@@ -12,9 +12,14 @@
 //- Checked by:
 //- Version:
 
+// place Dakota headers first to minimize influence of QUESO defines
 #include "NonDGPMSABayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
+#include "ProbabilityTransformation.hpp"
+#include "NonDLHSSampling.hpp"
+#include "dakota_data_io.hpp"
+// then list QUESO headers
 #include "queso/StatisticalInverseProblem.h"
 #include "queso/StatisticalInverseProblemOptions.h"
 #include "queso/GslVector.h"
@@ -23,13 +28,10 @@
 #include "queso/EnvironmentOptions.h"
 #include "queso/Defines.h"
 #include "queso/ValidationCycle.h"
-#include "ProbabilityTransformation.hpp"
 #include "queso/VectorSpace.h" 
 #include "queso/JointPdf.h" 
 #include "queso/GpmsaComputerModel.h"
 #include "queso/SimulationModelOptions.h"
-#include "NonDLHSSampling.hpp"
-#include "dakota_data_io.hpp"
 
 #define CODE_TREATS_STATISTICALLY_ONLY_THE_THETA_PARAMETERS
 

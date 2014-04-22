@@ -12,9 +12,12 @@
 //- Checked by:
 //- Version:
 
+// place Dakota headers first to minimize influence of QUESO defines
 #include "NonDQUESOBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
+#include "ProbabilityTransformation.hpp"
+// then list QUESO headers
 #include "queso/StatisticalInverseProblem.h"
 #include "queso/StatisticalInverseProblemOptions.h"
 #include "queso/MetropolisHastingsSGOptions.h"
@@ -27,7 +30,6 @@
 #include "queso/ValidationCycle.h"
 #include "queso/GenericScalarFunction.h"
 #include "queso/UniformVectorRV.h"
-#include "ProbabilityTransformation.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 

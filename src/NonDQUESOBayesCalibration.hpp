@@ -17,9 +17,12 @@
 
 #include "NonDBayesCalibration.hpp"
 #include "ExperimentData.hpp"
-#include "queso/GslVector.h"
-#include "queso/GslMatrix.h"
 
+// forward declare isolate QUESO includes to Dakota .cpp files
+namespace QUESO {
+  class GslVector;
+  class GslMatrix;
+}
 
 namespace Dakota {
 
