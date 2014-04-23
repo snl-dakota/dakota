@@ -1,13 +1,24 @@
 Blurb::
-Multivariate Adaptive Regression Spline (MARS) Models}
-
+Multivariate Adaptive Regression Spline (MARS)
 Description::
 This surface fitting method uses multivariate adaptive regression
 splines from the MARS3.5 package \cite Fri91 developed at Stanford
 University. 
 
-The form of the MARS model is based on the following expression:
+The MARS reference
+material does not indicate the minimum number of data points that are
+needed to create a MARS surface model. However, in practice it has
+been found that at least \f$n_{c_{quad}}\f$, and sometimes as many as 2 to
+4 times \f$n_{c_{quad}}\f$, data points are needed to keep the MARS
+software from terminating. Provided that sufficient data samples can
+be obtained, MARS surface models can be useful in SBO and OUU
+applications, as well as in the prediction of global trends throughout
+the parameter space.
 
+Topics::	
+Examples::
+Theory::
+The form of the MARS model is based on the following expression:
 \f[ \hat{f}(\mathbf{x})=\sum_{m=1}^{M}a_{m}B_{m}(\mathbf{x}) \f]
 
 where the \f$a_{m}\f$ are the coefficients of the truncated power basis
@@ -23,18 +34,7 @@ MARS is a nonparametric surface fitting method and can represent
 complex multimodal data trends. The regression component of MARS
 generates a surface model that is not guaranteed to pass through all
 of the response data values. Thus, like the quadratic polynomial
-model, it provides some smoothing of the data. The MARS reference
-material does not indicate the minimum number of data points that are
-needed to create a MARS surface model. However, in practice it has
-been found that at least \f$n_{c_{quad}}\f$, and sometimes as many as 2 to
-4 times \f$n_{c_{quad}}\f$, data points are needed to keep the MARS
-software from terminating. Provided that sufficient data samples can
-be obtained, MARS surface models can be useful in SBO and OUU
-applications, as well as in the prediction of global trends throughout
-the parameter space.
+model, it provides some smoothing of the data.
 
-Topics::	not_yet_reviewed
-Examples::
-Theory::
 Faq::
 See_Also::	

@@ -1,4 +1,5 @@
 Blurb::
+????
 Description::
 In the \c surrogate model case, the specification first allows a
 mixture of surrogate and actual response mappings through the use of
@@ -9,7 +10,7 @@ identifiers range from 1 through the total number of response
 functions (see \ref responses-response_functions). Next, the specification selects a
 global, multipoint, local, or hierarchical approximation.
 
-Topics::	not_yet_reviewed
+Topics::	not_yet_reviewed, problem
 Examples::
 Theory::
 Faq::

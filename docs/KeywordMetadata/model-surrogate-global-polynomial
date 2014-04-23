@@ -1,8 +1,28 @@
 Blurb::
-Linear, Quadratic, and Cubic Polynomial Models
+Linear, Quadratic, or Cubic Polynomial Models
 Description::
-Linear, quadratic, and cubic polynomial models are available in
-Dakota. The form of the linear polynomial model is
+Linear, quadratic, or cubic polynomial surrogates models are available in
+Dakota.
+The utility of the polynomial models stems from two sources: 
+\li over
+  a small portion of the parameter space, a low-order polynomial model
+  is often an accurate approximation to the true data trends
+\li the least-squares procedure provides a surface fit that smooths out
+  noise in the data.
+
+The surrogate-based optimization
+methods are often successful when using polynomial models,
+particularly quadratic models. However, a polynomial surface fit may
+not be the best choice for modeling data trends over the entire
+parameter space, unless it is known a priori that the true data trends
+are close to linear, quadratic, or cubic. See \cite Mye95 for more
+information on polynomial models.
+
+Topics::	
+Examples::
+Theory::
+
+The form of the linear polynomial model is
 \f[ \hat{f}(\mathbf{x}) \approx c_{0}+\sum_{i=1}^{n}c_{i}x_{i} \f]
 
 the form of the quadratic polynomial model is:
@@ -40,20 +60,5 @@ determined linear system and solve for the polynomial coefficients. In
 Dakota, a least-squares approach involving a singular value
 decomposition numerical method is applied to solve the linear system.
 
-The utility of the polynomial models stems from two sources: (1) over
-a small portion of the parameter space, a low-order polynomial model
-is often an accurate approximation to the true data trends, and (2)
-the least-squares procedure provides a surface fit that smooths out
-noise in the data. For this reason, the surrogate-based optimization
-strategy often is successful when using polynomial models,
-particularly quadratic models. However, a polynomial surface fit may
-not be the best choice for modeling data trends over the entire
-parameter space, unless it is known a priori that the true data trends
-are close to linear, quadratic, or cubic. See \cite Mye95 for more
-information on polynomial models.
-
-Topics::	empty
-Examples::
-Theory::
 Faq::
 See_Also::	

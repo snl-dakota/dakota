@@ -4,6 +4,7 @@
 The \b Dakota (<b>D</b>esign <b>A</b>nalysis <b>K</b>it for <b>O</b>ptimization and <b>T</b>erascale
 <b>A</b>pplications) toolkit provides a flexible, extensible interface
 between analysis codes and iteration methods.
+
 <!-----
  %Dakota contains algorithms for:
 \li optimization with gradient and nongradient-based
@@ -38,17 +39,18 @@ Developers Manual, and for a tour of
 \li To learn about the Dakota restart utility, see \ref dakota_restart_utility
 
 To find more information about a specific keyword
--# Use the search box
--# Browse the Keywords tree on the left pane
--# Browse the \subpage input_spec
+-# Use the search box at the top right (currently only finds keyword names)
+-# Browse the Keywords tree on the left navigation pane
+-# Look at the \subpage input_spec
 -# Navigate through the keyword pages, starting from the \subpage keywords
 
 To find more information about a Dakota related topic
--# Browse the Topics tree on the left pane
+-# Browse the Topics Area on the left navigation pane
 -# Navigate through the topics pages, starting from the \subpage topics
 
 A bibliography for the Reference Manual is provided in 
-TODO: Fix biblio <!-- \ref Bibliography -->
+\ref citelist
+
 
 <!--------------------------------------------------------->
 

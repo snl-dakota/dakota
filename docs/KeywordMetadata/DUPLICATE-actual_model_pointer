@@ -1,6 +1,10 @@
 Blurb::
+Pointer to specify a "truth" model, from which to construct a surrogate
 Description::
-Topics::	block_pointer, not_yet_reviewed
+This must point to a model block, identified by \ref model-id_model.
+That model will be run to generate training data, from which a 
+surrogate model will be constructed.
+Topics::	block_pointer
 Examples::
 Theory::
 Faq::

@@ -1,6 +1,8 @@
 Blurb::
+Quadratic polynomials - main effects only
 Description::
-Topics::	empty
+In 2+ dimensions, this does not include interactions, a.k.a. mixed terms.
+Topics::	
 Examples::
 Theory::
 Faq::

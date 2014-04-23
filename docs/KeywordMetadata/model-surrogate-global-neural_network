@@ -1,14 +1,34 @@
 Blurb::
-Artificial Neural Network (ANN) Models
-
+Artificial Neural Network Models
 Description::
-The ANN surface fitting method in Dakota employs a stochastic layered
-perceptron (SLP) artificial neural network based on the direct
-training approach of Zimmerman \cite Zim96. The SLP ANN method is
-designed to have a lower training cost than traditional ANNs. This is
-a useful feature for SBO and OUU where new ANNs are constructed many
-times during the optimization process (i.e., one ANN for each response
-function, and new ANNs for each optimization iteration). The form of
+The Artificial Neural Network surrogate in Dakota employs a stochastic layered
+perceptron artificial neural network based on the direct
+training approach of Zimmerman \cite Zim96.
+
+The method is
+designed to have a lower training cost than traditional neural networks.
+This is
+a useful feature for surrogate-based optimization and
+optimization under uncertainty, where new surrogates are constructed many
+times during the optimization process (i.e., one surrogate for each response
+function, and new surrogates for each optimization iteration).
+
+The nueral network is a non parametric surface fitting method. Thus, along
+with kriging (Gaussian Process) and MARS,
+it can be used to model data trends that have
+slope discontinuities as well as multiple maxima and minima. However,
+unlike kriging, the neural network surrogate is not guaranteed to exactly match the
+response values of the data points from which it was constructed. 
+
+This surrogate
+can be constructed from fewer than \f$n_{c_{quad}}\f$ data points,
+however, it is a good rule of thumb to use at least \f$n_{c_{quad}}\f$
+data points when possible.
+
+Topics::	
+Examples::
+Theory::
+The form of
 the SLP ANN model is
 
 \f[ \hat{f}(\mathbf{x}) \approx
@@ -24,18 +44,5 @@ quadratic surface fit. A singular value decomposition method is used
 in the numerical methods that are employed to solve for the weights
 and offsets.
 
-The SLP ANN is a non parametric surface fitting method. Thus, along
-with kriging and MARS, it can be used to model data trends that have
-slope discontinuities as well as multiple maxima and minima. However,
-unlike kriging, the ANN surface is not guaranteed to exactly match the
-response values of the data points from which it was constructed. This
-ANN can be used with SBO and OUU strategies. As with kriging, this ANN
-can be constructed from fewer than \f$n_{c_{quad}}\f$ data points,
-however, it is a good rule of thumb to use at least \f$n_{c_{quad}}\f$
-data points when possible.
-
-Topics::	empty
-Examples::
-Theory::
 Faq::
 See_Also::	

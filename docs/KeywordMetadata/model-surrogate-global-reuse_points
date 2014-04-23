@@ -1,1 +1,26 @@
-DUPLICATE-reuse_points
+Blurb::
+Specify how to use existing training data
+Description::
+Dakota's global surrogate methods rely on training data, which can either
+come from evaluation of a "truth" model, which is gathered by the method
+specified with \ref model-surrogate-global-dace_method_pointer, OR from
+a file of existing training data, identified by \ref model-surrogate-global-import_points_file.
+
+If \c import_points_file is specified, \c reuse_points modifies how the file contents are used.
+
+<ul>
+  <li>\c all (default) - use all points in the file
+  </li>
+  <li>\c region - use only the points in the trust region
+  </li>
+  <li>\c none - ignore the contents of the file, and gather new training data
+    using the specified method
+  </li>
+</ul>
+
+Topics::	problem
+Examples::
+Theory::
+Faq::
+What is a trust region?
+See_Also::	

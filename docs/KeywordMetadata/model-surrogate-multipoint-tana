@@ -1,14 +1,19 @@
 Blurb::
 Local multi-point model via two-point nonlinear approximation
 Description::
-<b> Two Point Adaptive Nonlinearity Approximation </b>
+<b> TANA </b> stands for Two Point Adaptive Nonlinearity Approximation.
 
 The TANA-3 method [\cite Xu98 "Xu and Grandhi, 1998"] is a multipoint approximation method
 based on the two point exponential approximation \cite Fad90. This
 approach involves a Taylor series approximation in intermediate
 variables where the powers used for the intermediate variables are
 selected to match information at the current and previous expansion
-points. The form of the TANA model is:
+points.
+
+Topics::	
+Examples::
+Theory::
+The form of the TANA model is:
 
 \f[ \hat{f}({\bf x}) \approx f({\bf x}_2) + \sum_{i=1}^n 
 \frac{\partial f}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
@@ -30,8 +35,5 @@ and \f${\bf x}_2\f$ and \f${\bf x}_1\f$ are the current and previous expansion
 points. Prior to the availability of two expansion points, a
 first-order Taylor series is used.
 
-Topics::	empty
-Examples::
-Theory::
 Faq::
 See_Also::	

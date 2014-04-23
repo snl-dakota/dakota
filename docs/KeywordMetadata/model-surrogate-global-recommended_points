@@ -1,7 +1,12 @@
 Blurb::
+(Default) Construct surrogate with the recommended amount of points
 Description::
-Topics::	empty
+See parent page.
+
+Topics::	
 Examples::
 Theory::
 Faq::
+What is the heuristic?
 See_Also::	
+
