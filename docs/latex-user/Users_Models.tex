@@ -6,7 +6,7 @@ Chapters~\ref{ps} through~\ref{nls} presented the different
 ``iterators'' (or methods) available in Dakota.  An iterator iterates
 on a model in order to map a set of variables into a set of responses.
 This model may involve a simple mapping involving a single interface,
-or it may involve recursions using sub-iterator and sub-models.  These
+or it may involve recursions using sub-iterators and sub-models.  These
 recursion capabilities were developed in order to provide mechanisms
 for ``nesting,'' ``layering,'' and ``recasting'' of software
 components, which allows the use of these components as building
@@ -521,12 +521,12 @@ information on polynomial models.
 
 \subsubsection{Kriging/Gaussian-Process Spatial Interpolation Models}
 \label{models:surf:kriging}
-In Dakota 5.2, we have 2 versions of spatial interpolation models.
-One is located in Dakota itself and the other in the Surfpack subpackage 
+In the current release of Dakota, we have two versions of spatial interpolation 
+models. One is located in Dakota itself and the other in the Surfpack subpackage 
 of Dakota which can be compiled in a stand alone mode.  These models
 are denoted as \texttt{kriging dakota} and \texttt{kriging surfpack} or 
 as \texttt{gaussian\_process dakota} and 
-\texttt{gaussian\_process surfpack}.  In prior Dakota releases, the 
+\texttt{gaussian\_process surfpack}.  In Dakota releases prior to 5.2, the 
 \texttt{dakota} version was referred to as the \texttt{gaussian\_process} 
 model while the \texttt{surfpack} version was referred to as the 
 \texttt{kriging} model.  As of DAKTOA 5.2, specifying only 
@@ -604,7 +604,7 @@ is far from any of the data points from which the GP model was
 constructed (i.e., when the model is used for extrapolation). 
 
 As mentioned above, there are two \texttt{gaussian\_process} models 
-in Dakota 5.2, the \texttt{surfpack} version and the \texttt{dakota}
+in Dakota, the \texttt{surfpack} version and the \texttt{dakota}
 version.  More details on the \texttt{gaussian\_process dakota}
 model can be found in~\cite{McF08}. The differences between these 
 models are as follows: 
@@ -642,7 +642,7 @@ models are as follows:
       \end{itemize} 
       The \texttt{'none'} option, and the starting location of the 
       \texttt{'local'} optimization, default to the center, in 
-      log(correlation length) scale, of the of small feasible region.  
+      log(correlation length) scale, of the small feasible region.  
       However, these can also be user specified with the 
       \texttt{correlation\_lengths} keyword followed by a list of $n$ real 
       numbers.  The total number of evaluations of the 
@@ -792,7 +792,7 @@ data points when possible.
 \subsubsection{Multivariate Adaptive Regression Spline (MARS) Models}\label{models:surf:mars}
 
 This surface fitting method uses multivariate adaptive regression
-splines from the MARS3.5 package~\cite{Fri91} developed at Stanford
+splines from the MARS3.6 package~\cite{Fri91} developed at Stanford
 University. 
 
 The form of the MARS model is based on the following expression:
