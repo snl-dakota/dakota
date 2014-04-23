@@ -275,16 +275,24 @@ void IteratorScheduler::
 schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 {
   if (iteratorScheduling == MASTER_SCHEDULING) { //(dedicatedMaster) {
-    if (iteratorServerId == 0) { // strategy master
+    if (lead_rank()) { // strategy master
       master_dynamic_schedule_iterators(meta_iterator);
       stop_iterator_servers();
     }
     else // slave iterator servers
       serve_iterators(meta_iterator, sub_iterator);
   }
-  else // static scheduling of iterator jobs
-    // jobs are not assigned by messages -> stop_iterator_servers() is not reqd
-    peer_static_schedule_iterators(meta_iterator, sub_iterator);
+  else { // static scheduling of iterator jobs
+    if (iteratorServerId <= numIteratorServers) {
+      // jobs are not assigned by messages: stop_iterator_servers() is only
+      // required for an idle server partition
+      peer_static_schedule_iterators(meta_iterator, sub_iterator);
+      if (lead_rank())
+	stop_iterator_servers(); // stop an idle server partition, if present
+    }
+    else // for occupying an idle server partition (no jobs)
+      serve_iterators(meta_iterator, sub_iterator);
+  }
 }
 
 
@@ -380,13 +388,17 @@ void IteratorScheduler::stop_iterator_servers()
   MPIPackBuffer send_buffer(0); // empty buffer
   MPI_Request   send_request;
   int server_id, term_tag = 0;
-  for (server_id=1; server_id<=numIteratorServers; ++server_id) {
-    // nonblocking sends: master posts all terminate messages without waiting
-    // for completion.  Bcast cannot be used since all procs must call it and
-    // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.
-    parallelLib.isend_si(send_buffer, server_id, term_tag, send_request);
-    parallelLib.free(send_request); // no test/wait on send_request
-  }
+  if (iteratorScheduling == MASTER_SCHEDULING)
+    for (server_id=1; server_id<=numIteratorServers; ++server_id) {
+      // nonblocking sends: master posts all terminate messages without waiting
+      // for completion.  Bcast cannot be used since all procs must call it and
+      // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.
+      parallelLib.isend_si(send_buffer, server_id, term_tag, send_request);
+      parallelLib.free(send_request); // no test/wait on send_request
+    }
+  else
+    server_id = numIteratorServers + 1;
+
   // if the communicator partitioning resulted in a trailing partition of 
   // idle processors due to a partitioning remainder (caused by strictly
   // honoring a processors_per_iterator override), then these are not

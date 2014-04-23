@@ -626,7 +626,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   // Create parent-child intracommunicator used to avoid broadcasting over all
   // of parent Comm when all you really need is the child rank == 0 processors.
-  // Exclude any idle partition.
+  // Exclude any idle partition (example: bcast_si() in MetaIterators).
   color = (child_pl.serverCommRank == 0 &&
 	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,

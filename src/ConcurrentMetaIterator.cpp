@@ -51,6 +51,8 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     = problem_db.get_string("method.sub_method_name");
   const String& model_ptr = problem_db.get_string("method.sub_model_pointer");
   int param_set_len; size_t restore_index;
+  bool print_rank
+    = (problem_db.parallel_library().world_rank() == 0); // prior to lead_rank()
   if (!concurr_iter_ptr.empty()) {
     lightwtCtor = false;
     restore_index = problem_db.get_db_method_node(); // for restoration
@@ -64,7 +66,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     }
   }
   else {
-    if (problem_db.parallel_library().world_rank() == 0)
+    if (print_rank)
       Cerr << "Error: insufficient method identification in "
 	   << "ConcurrentMetaIterator." << std::endl;
     abort_handler(-1);
@@ -77,7 +79,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   maxIteratorConcurrency = iterSched.numIteratorJobs
     = param_sets.length() / param_set_len + num_random_sets;
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
-    if (problem_db.parallel_library().world_rank() == 0)
+    if (print_rank)
       Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
 	   << "Please specify either a\n       list of parameter sets or a "
 	   << "number of random jobs." << std::endl;
@@ -85,6 +87,11 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   }
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
   summaryOutputFlag = iterSched.lead_rank();
+  // from this point on, we can specialize logic in terms of iterator servers.
+  // An idle partition need not instantiate iterators (empty selectedIterator
+  // envelope is adequate) or initialize, so return now.
+  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+    return;
 
   // Instantiate the iterator.
   ParallelLibrary& parallel_lib = problem_db.parallel_library();
@@ -130,7 +137,7 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
     = problem_db.get_rv("method.concurrent.parameter_sets").length()
     / param_set_len + problem_db.get_int("method.concurrent.random_jobs");
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
-    if (problem_db.parallel_library().world_rank() == 0)
+    if (problem_db.parallel_library().world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
 	   << "Please specify either a\n       list of parameter sets or a "
 	   << "number of random jobs." << std::endl;
@@ -138,6 +145,11 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
   }
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
   summaryOutputFlag = iterSched.lead_rank();
+  // from this point on, we can specialize logic in terms of iterator servers.
+  // An idle partition need not instantiate iterators (empty selectedIterator
+  // envelope is adequate for serve_iterators()) or initialize, so return now.
+  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+    return;
 
   // Instantiate the iterator
   ParallelLibrary& parallel_lib = problem_db.parallel_library();
@@ -221,20 +233,21 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
 
       if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
 	  iterSched.numIteratorServers > 1) {
+	ParallelLibrary& parallel_lib = iterSched.parallelLib;
 	// For static scheduling, bcast all random jobs over si_intra_comm (not 
 	// necessary for self-scheduling as jobs are assigned from the master).
 	if (iterSched.lead_rank()) {
 	  MPIPackBuffer send_buffer;
 	  send_buffer << random_jobs;
 	  int buffer_len = send_buffer.size();
-	  iterSched.parallelLib.bcast_si(buffer_len);
-	  iterSched.parallelLib.bcast_si(send_buffer);
+	  parallel_lib.bcast_si(buffer_len);
+	  parallel_lib.bcast_si(send_buffer);
 	}
 	else {
 	  int buffer_len;
-	  iterSched.parallelLib.bcast_si(buffer_len);
+	  parallel_lib.bcast_si(buffer_len);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  iterSched.parallelLib.bcast_si(recv_buffer);
+	  parallel_lib.bcast_si(recv_buffer);
 	  recv_buffer >> random_jobs;
 	}
       }
@@ -278,11 +291,13 @@ ConcurrentMetaIterator::~ConcurrentMetaIterator()
 {
   // Virtual destructor handles referenceCount at Iterator level.
 
-  // Free the communicators once for all selectedIterator executions.
-  // The strategy dedicated master processor is excluded.
-  ParallelLibrary& parallel_lib = probDescDB.parallel_library();
-  iterSched.free_iterator(selectedIterator,
-    parallel_lib.parallel_configuration().si_parallel_level());
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    // Free the communicators once for all selectedIterator executions.
+    // The strategy dedicated master processor is excluded.
+    ParallelLibrary& parallel_lib = probDescDB.parallel_library();
+    iterSched.free_iterator(selectedIterator,
+      parallel_lib.parallel_configuration().si_parallel_level());
+  }
 
   // si_pl parallelism level is deallocated in ~MetaIterator
 }

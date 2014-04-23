@@ -47,12 +47,7 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
   else if (!method_names.empty())
     { methodList = method_names; lightwtCtor = true;  }
   size_t i, num_iterators = methodList.size();
-  if (!num_iterators) { // verify at least one method in list
-    if (problem_db.parallel_library().world_rank() == 0)
-      Cerr << "Error: hybrid method list must have a least one entry."
-	   << std::endl;
-    abort_handler(-1);
-  }
+  selectedIterators.resize(num_iterators); // all procs need for iterator sched
 
   // define maxIteratorConcurrency without access to selectedIterators
   // (init_iterator_parallelism() requires maxIteratorConcurrency and
@@ -99,6 +94,18 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
   summaryOutputFlag = iterSched.lead_rank();
+  // from this point on, we can specialize logic in terms of iterator servers.
+  // An idle partition need not instantiate iterators/models (empty Iterator
+  // envelopes are adequate for serve_iterators()), so return now.
+  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+    return;
+
+  if (!num_iterators) { // verify at least one method in list
+    if (summaryOutputFlag)
+      Cerr << "Error: hybrid method list must have a least one entry."
+	   << std::endl;
+    abort_handler(-1);
+  }
   if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
     Cout << "maxIteratorConcurrency = " << maxIteratorConcurrency << '\n';
 
@@ -127,7 +134,6 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
   }
 
   // Instantiate all Models and Iterators
-  selectedIterators.resize(num_iterators); // slaves also need for run_iterator
   if (lightwtCtor) {
     const String& model_ptr = probDescDB.get_string("method.sub_model_pointer");
     if (!model_ptr.empty())
@@ -169,17 +175,23 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
   methodList = problem_db.get_sa("method.hybrid.method_names");
   size_t i, num_iterators = methodList.size();
-  if (!num_iterators) { // verify at least one method in list
-    //if (problem_db.parallel_library().world_rank() == 0)
-    Cerr << "Error: hybrid method list must have a least one entry."<<std::endl;
-    abort_handler(-1);
-  }
 
   // define maxIteratorConcurrency without access to sub-method specs.
   // as a first cut, employ the final solutions spec for the seq hybrid.
   maxIteratorConcurrency = problem_db.get_sizet("method.final_solutions");
   iterSched.init_iterator_parallelism(maxIteratorConcurrency);
   summaryOutputFlag = iterSched.lead_rank();
+  // from this point on, we can specialize logic in terms of iterator servers.
+  // An idle partition need not instantiate iterators/models, so return now.
+  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+    return;
+
+  if (!num_iterators) { // verify at least one method in list
+    if (summaryOutputFlag)
+      Cerr << "Error: hybrid method list must have a least one entry."
+	   << std::endl;
+    abort_handler(-1);
+  }
 
   if (seqHybridType == "adaptive") {
     if (iterSched.messagePass) {
@@ -218,13 +230,15 @@ SeqHybridMetaIterator::~SeqHybridMetaIterator()
 {
   // Virtual destructor handles referenceCount at Iterator level.
 
-  size_t i, num_iterators = methodList.size();
-  if (lightwtCtor)
-    for (i=0; i<num_iterators; ++i)
-      deallocate(selectedIterators[i], iteratedModel);
-  else
-    for (i=0; i<num_iterators; ++i)
-      deallocate(selectedIterators[i], selectedModels[i]);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    size_t i, num_iterators = methodList.size();
+    if (lightwtCtor)
+      for (i=0; i<num_iterators; ++i)
+	deallocate(selectedIterators[i], iteratedModel);
+    else
+      for (i=0; i<num_iterators; ++i)
+	deallocate(selectedIterators[i], selectedModels[i]);
+  }
 
   // si_pl parallelism level is deallocated in ~MetaIterator
 }
@@ -242,8 +256,7 @@ void SeqHybridMetaIterator::core_run()
     satisfied.  Status: fully operational. */
 void SeqHybridMetaIterator::run_sequential()
 {
-  ParallelLibrary& parallel_lib = probDescDB.parallel_library();
-  bool lead_rank = iterSched.lead_rank();
+  ParallelLibrary& parallel_lib = iterSched.parallelLib;
   size_t num_iterators = methodList.size();
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
@@ -251,90 +264,93 @@ void SeqHybridMetaIterator::run_sequential()
     Iterator& curr_iterator = selectedIterators[seqCount];
     Model&    curr_model    = (lightwtCtor) ? iteratedModel :
       selectedModels[seqCount];
-    bool curr_accepts_multi = curr_iterator.accepts_multiple_points();
-    bool curr_returns_multi = curr_iterator.returns_multiple_points();
  
-    if (lead_rank)
+    if (summaryOutputFlag)
       Cout << "\n>>>>> Running Sequential Hybrid with iterator "
 	   << methodList[seqCount] << ".\n";
 
-    // -------------------------------------------------------------
-    // Define total number of runs for this iterator in the sequence
-    // -------------------------------------------------------------
-    // > run 1st iterator as is, using single default starting pt
-    // > subsequent iteration may involve multipoint data flow
-    // > In the future, we may support concurrent multipoint iterators, but
-    //   prior to additional specification data, we either have a single
-    //   multipoint iterator or concurrent single-point iterators.
-    if (seqCount == 0) // initialize numIteratorJobs
-      iterSched.numIteratorJobs = 1;
-    else {
-      // update numIteratorJobs
-      if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
-	// send curr_accepts_multi from 1st iterator master to strategy master
-	if (iterSched.iteratorCommRank == 0 && iterSched.iteratorServerId == 1){
-	  int multi_flag = (int)curr_accepts_multi; // bool -> int
-	  parallel_lib.send_si(multi_flag, 0, 0);
+    if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+      // -------------------------------------------------------------
+      // Define total number of runs for this iterator in the sequence
+      // -------------------------------------------------------------
+      // > run 1st iterator as is, using single default starting pt
+      // > subsequent iteration may involve multipoint data flow
+      // > In the future, we may support concurrent multipoint iterators, but
+      //   prior to additional specification data, we either have a single
+      //   multipoint iterator or concurrent single-point iterators.
+      if (seqCount == 0) // initialize numIteratorJobs
+	iterSched.numIteratorJobs = 1;
+      else {
+	bool curr_accepts_multi = curr_iterator.accepts_multiple_points();
+	//bool curr_returns_multi = curr_iterator.returns_multiple_points();
+	// update numIteratorJobs
+	if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+	  // send curr_accepts_multi from 1st iterator master to strategy master
+	  if (iterSched.iteratorCommRank == 0 &&
+	      iterSched.iteratorServerId == 1) {
+	    int multi_flag = (int)curr_accepts_multi; // bool -> int
+	    parallel_lib.send_si(multi_flag, 0, 0);
+	  }
+	  else if (iterSched.iteratorServerId == 0) {
+	    int multi_flag; MPI_Status status;
+	    parallel_lib.recv_si(multi_flag, 1, 0, status);
+	    curr_accepts_multi = (bool)multi_flag; // int -> bool
+	    iterSched.numIteratorJobs
+	      = (curr_accepts_multi) ? 1 : parameterSets.size();
+	  }
 	}
-	else if (iterSched.iteratorServerId == 0) {
-	  int multi_flag; MPI_Status status;
-	  parallel_lib.recv_si(multi_flag, 1, 0, status);
-	  curr_accepts_multi = (bool)multi_flag; // int -> bool
-	  iterSched.numIteratorJobs
-	    = (curr_accepts_multi) ? 1 : parameterSets.size();
+	else { // static scheduling
+	  if (iterSched.iteratorCommRank == 0)
+	    iterSched.numIteratorJobs
+	      = (curr_accepts_multi) ? 1 : parameterSets.size();
+	  // bcast numIteratorJobs over iteratorComm
+	  if (iterSched.iteratorCommSize > 1)
+	    parallel_lib.bcast_i(iterSched.numIteratorJobs);
 	}
       }
-      else { // static scheduling
-	if (iterSched.iteratorCommRank == 0)
-	  iterSched.numIteratorJobs
-	    = (curr_accepts_multi) ? 1 : parameterSets.size();
-	// bcast numIteratorJobs over iteratorComm
-	if (iterSched.iteratorCommSize > 1)
-	  parallel_lib.bcast_i(iterSched.numIteratorJobs);
-      }
-    }
-    // --------------------------
-    // size prpResults (2D array)
-    // --------------------------
-    // The total aggregated set of results:
-    // > can grow if multiple iterator jobs return multiple points or if
-    //   single instance returns more than used for initialization
-    // > can only shrink in the case where single instance returns fewer
-    //   than used for initialization
-    if (iterSched.iteratorCommRank == 0)
-      prpResults.resize(iterSched.numIteratorJobs);
+      // --------------------------
+      // size prpResults (2D array)
+      // --------------------------
+      // The total aggregated set of results:
+      // > can grow if multiple iterator jobs return multiple points or if
+      //   single instance returns more than used for initialization
+      // > can only shrink in the case where single instance returns fewer
+      //   than used for initialization
+      if (iterSched.iteratorCommRank == 0)
+	prpResults.resize(iterSched.numIteratorJobs);
 
-    // -----------------------------------------
-    // Define buffer lengths for message passing
-    // -----------------------------------------
-    if (iterSched.messagePass && iterSched.iteratorCommRank == 0) {
-      int params_msg_len, results_msg_len;
-      // define params_msg_len
-      if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
-	MPIPackBuffer params_buffer;
-	pack_parameters_buffer(params_buffer, 0);
-	params_msg_len = params_buffer.size();
+      // -----------------------------------------
+      // Define buffer lengths for message passing
+      // -----------------------------------------
+      if (iterSched.messagePass && iterSched.iteratorCommRank == 0) {
+	int params_msg_len, results_msg_len;
+	// define params_msg_len
+	if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+	  MPIPackBuffer params_buffer;
+	  pack_parameters_buffer(params_buffer, 0);
+	  params_msg_len = params_buffer.size();
+	}
+	// define results_msg_len
+	MPIPackBuffer results_buffer;
+	// pack_results_buffer() is not reliable for several reasons:
+	// > for seqCount == 0, prpResults contains empty envelopes
+	// > for seqCount >= 1, the previous state of prpResults may not
+	//   accurately reflect the future state due to the presence of some
+	//   multi-point iterators which do not define the results array.
+	//pack_results_buffer(results_buffer, 0);
+	// The following may be conservative in some cases (e.g., if the results
+	// arrays will be empty), but should be reliable.
+	ParamResponsePair prp_star(curr_iterator.variables_results(),
+          curr_model.interface_id(), curr_iterator.response_results());//shallow
+	// Note: max size_t removed from Iterator::numFinalSolutions in ctor
+	size_t prp_return_size = curr_iterator.num_final_solutions();
+	results_buffer << prp_return_size;
+	for (size_t i=0; i<prp_return_size; ++i)
+	  results_buffer << prp_star;
+	results_msg_len = results_buffer.size();
+	// publish lengths to IteratorScheduler
+	iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
       }
-      // define results_msg_len
-      MPIPackBuffer results_buffer;
-      // pack_results_buffer() is not reliable for several reasons:
-      // > for seqCount == 0, prpResults contains empty envelopes
-      // > for seqCount >= 1, the previous state of prpResults may not
-      //   accurately reflect the future state due to the presence of some
-      //   multi-point iterators which do not define the results array.
-      //pack_results_buffer(results_buffer, 0);
-      // The following may be conservative in some cases (e.g., if the results
-      // arrays will be empty), but should be reliable.
-      ParamResponsePair prp_star(curr_iterator.variables_results(),
-        curr_model.interface_id(), curr_iterator.response_results()); // shallow
-      // Note: max size_t removed from Iterator::numFinalSolutions in ctor
-      size_t prp_return_size = curr_iterator.num_final_solutions();
-      results_buffer << prp_return_size;
-      for (size_t i=0; i<prp_return_size; ++i)
-	results_buffer << prp_star;
-      results_msg_len = results_buffer.size();
-      // publish lengths to IteratorScheduler
-      iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
     }
 
     // ---------------------------------------------------
@@ -346,7 +362,8 @@ void SeqHybridMetaIterator::run_sequential()
     // Post-process the iterator results
     // ---------------------------------
     // convert prpResults to parameterSets for next iteration
-    if (iterSched.iteratorCommRank == 0 && seqCount+1 < num_iterators) {
+    if (iterSched.iteratorServerId <= iterSched.numIteratorServers &&
+	iterSched.iteratorCommRank == 0 && seqCount+1 < num_iterators) {
       size_t i, j, num_param_sets = 0, cntr = 0, num_prp_i;
       for (i=0; i<iterSched.numIteratorJobs; ++i)
 	num_param_sets += prpResults[i].size();
@@ -400,13 +417,12 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
   // NOTE 2: Parallel iterator scheduling is not currently supported (and this
   // code will fail if non-default iterator servers or scheduling is specified).
 
-  ParallelLibrary& parallel_lib = probDescDB.parallel_library();
-  bool lead_rank = iterSched.lead_rank();
+  ParallelLibrary& parallel_lib = iterSched.parallelLib;
   size_t num_iterators = methodList.size();
   progressMetric = 1.0;
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
-    if (lead_rank) {
+    if (summaryOutputFlag) {
       Cout << "\n>>>>> Running adaptive Sequential Hybrid with iterator "
 	   << methodList[seqCount] << '\n';
 
