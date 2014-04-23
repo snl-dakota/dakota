@@ -372,7 +372,7 @@ select_rep_points(const RealVectorArray& var_samples_u,
   //RealVectorArray prev_rep_pts = repPointsU;
 
   // define repPointsU and calculate repWeights
-  if ((importanceSamplingType == IS) || (importanceSamplingType == AIS))
+  if (importanceSamplingType == IS || importanceSamplingType == AIS)
     new_rep_pts = 1;
   repPointsU.resize(new_rep_pts);
   repWeights.sizeUninitialized(new_rep_pts);
@@ -389,11 +389,10 @@ select_rep_points(const RealVectorArray& var_samples_u,
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
       uSpaceModel.continuous_variable(repPointsU[i][cntr], j);
     
-    Real rep_pdf;
-    rep_pdf = uSpaceModel.continuous_probability_density();
     //Real phi_beta = Pecos::phi(repPointsU[i].normFrobenius());
     //repWeights[i] = phi_beta;
     //sum_density  += phi_beta;
+    Real rep_pdf = uSpaceModel.continuous_probability_density();
     repWeights[i] = rep_pdf;
     sum_density  += rep_pdf;
   }
