@@ -16,16 +16,16 @@
 # #n designators separated by a comma.
 
 # Processor specification for automated parallel tests:
-# p0=4, p1=4, p2=4, p3=5
+# p0=4, p1=4, p2=4, p3=5, p4=5
 
 environment,
 	  graphics
 	  tabular_graphics_data
 
 method,
-	dace oas seed = 5		#0,#8,#p0,#p1,#p2,#p3
+	dace oas seed = 5		#0,#8,#p0,#p1,#p2,#p3,#p4
 #       dace oa_lhs seed = 5            #9
-	  samples = 49 symbols = 7 	#0,#8,#9,#p0,#p1,#p2,#p3
+	  samples = 49 symbols = 7 	#0,#8,#9,#p0,#p1,#p2,#p3,#p4
 #	dace lhs seed = 5		#1
 #	  samples = 50 symbols = 50	#1
 #	fsu_quasi_mc hammersley		#2,#3
@@ -41,7 +41,7 @@ method,
 #  	  seed = 50374 fixed_seed	#6,#7
 #	  num_trials = 10000		#6,#7
 #	  max_iterations = 100		#6,#7
-#	  output quiet	   		#1,#2,#3,#4,#5,#6,#7,#8,#9,#p0,#p1,#p2,#p3
+#	  output quiet	   		#1,#2,#3,#4,#5,#6,#7,#8,#9,#p0,#p1,#p2,#p3,#p4
 
 variables,
 	active all
@@ -62,7 +62,9 @@ interface,
 #	evaluation_scheduling master
 # Force following line as comment in test 0 for examples/advanced
 #	evaluation_scheduling master	    	#0
-#	evaluation_scheduling peer dynamic	#p1
+#	evaluation_scheduling peer dynamic	#p1,#p4
+#	evaluation_servers = 4	   		#p4
+#	processors_per_evaluation = 1		#p4
 	system
 	  asynchronous			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#p2,#p3
 	    evaluation_concurrency = 5	#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#p2
