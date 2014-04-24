@@ -774,12 +774,9 @@ int ResponseRep::data_size()
     grad_size = responseActiveSet.derivative_vector().size(),
     hess_size = grad_size*(grad_size+1)/2; // (n^2+n)/2
   for (i=0; i<num_fns; ++i) {
-    if (asv[i] & 1)
-      size++;
-    if (asv[i] & 2)
-      size += grad_size;
-    if (asv[i] & 4)
-      size += hess_size;
+    if (asv[i] & 1) ++size;
+    if (asv[i] & 2) size += grad_size;
+    if (asv[i] & 4) size += hess_size;
   }
   return size;
 }
@@ -796,15 +793,19 @@ void ResponseRep::read_data(double* response_data)
       functionValues[i] = response_data[cntr++];
   num_fns = functionGradients.numCols();
   for (i=0; i<num_fns; ++i)
-    if (asv[i] & 2)
-      for (j=0; j<num_params; ++j)
-        functionGradients(i,j) = response_data[cntr++];
+    if (asv[i] & 2) {
+      Real* fn_grad_i = functionGradients[i];
+      for (j=0; j<num_params; ++j, ++cntr)
+        fn_grad_i[j] = response_data[cntr];
+    }
   num_fns = functionHessians.size();
   for (i=0; i<num_fns; ++i)
-    if (asv[i] & 4)
+    if (asv[i] & 4) {
+      RealSymMatrix& fn_hess_i = functionHessians[i];
       for (j=0; j<num_params; ++j)
-        for (k=0; k<=j; ++k)
-          functionHessians[i](j,k) = response_data[cntr++];
+        for (k=0; k<=j; ++k, ++cntr)
+          fn_hess_i(j,k) = response_data[cntr];
+    }
 }
 
 
@@ -814,20 +815,24 @@ void ResponseRep::write_data(double* response_data)
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, j, k, cntr = 0, num_fns = functionValues.length(),
     num_params = responseActiveSet.derivative_vector().size();
-  for (i=0; i<num_fns; i++)
+  for (i=0; i<num_fns; ++i)
     if (asv[i] & 1)
       response_data[cntr++] = functionValues[i];
   num_fns = functionGradients.numCols();
-  for (i=0; i<num_fns; i++)
-    if (asv[i] & 2)
-      for (j=0; j<num_params; j++)
-        response_data[cntr++] = functionGradients(i,j);
+  for (i=0; i<num_fns; ++i)
+    if (asv[i] & 2) {
+      const Real* fn_grad_i = functionGradients[i];
+      for (j=0; j<num_params; j++, ++cntr)
+        response_data[cntr] = fn_grad_i[j];
+    }
   num_fns = functionHessians.size();
-  for (i=0; i<num_fns; i++)
-    if (asv[i] & 4)
-      for (j=0; j<num_params; j++)
-        for (k=0; k<=j; k++)
-          response_data[cntr++] = functionHessians[i](j,k);
+  for (i=0; i<num_fns; ++i)
+    if (asv[i] & 4) {
+      const RealSymMatrix& fn_hess_i = functionHessians[i];
+      for (j=0; j<num_params; ++j)
+        for (k=0; k<=j; ++k, ++cntr)
+          response_data[cntr] = fn_hess_i(j,k);
+    }
 }
 
 

@@ -5,6 +5,9 @@
 # employed 384 processors in a variety of server configurations, e.g. an
 # 8/8/3/2 configuration as indicated in the comments.
 
+# Processor specification for automated parallel tests:
+# p0=12
+
 environment,
 	top_method_pointer = 'MS'
 
@@ -61,9 +64,11 @@ variables,
 interface,
 	direct
 	  analysis_drivers = 'text_book1' 'text_book2' 'text_book3'
-#	  evaluation_servers = 8
-#	  evaluation_scheduling peer static
-#	  processors_per_analysis = 2
+#	  evaluation_servers = 2	  	       #p0
+#	  evaluation_scheduling peer static 	       #p0
+#	  analysis_servers = 3 	       		       #p0
+#	  processors_per_analysis = 2 	       	       #p0
+#	  analysis_scheduling peer 	       	       #p0
 	  deactivate evaluation_cache restart_file
 
 responses,
