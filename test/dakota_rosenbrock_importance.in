@@ -17,24 +17,33 @@ environment,
 
 method,
         importance_sampling
-	  import                                   #0
+	  import                                   #0,#3,#4
 #	  adapt_import                             #1
 #	  mm_adapt_import                          #2
 	  response_levels = 0.5 5 50 500 
-#	  response_levels = 3.0  
+	 #response_levels = 3.0  
           samples = 250
 	  refinement_samples = 100
 	  seed = 5639
-          output silent 
+          output quiet 
 
 variables,
-#	uniform_uncertain = 2
-#	  lower_bounds   -2.0 -2.0
-#	  upper_bounds    2.0  2.0
-        normal_uncertain = 2
-         means = 0. 0. 
-         std_deviations = 1. 1.
-	  descriptors     'x1' 'x2'
+#       uniform_uncertain = 2                     #3
+#         lower_bounds   -2.0 -2.0                #3
+#         upper_bounds    2.0  2.0                #3
+#       beta_uncertain  = 1                       #4
+#         alphas = 0.5                            #4
+#         betas = 2.0                             #4
+#         lower_bounds = 0.0                      #4      
+#         upper_bounds = 1.0                      #4
+#         descriptors  'x1'                       #4
+#       exponential_uncertain = 1                 #4
+#         betas = 3.0                             #4
+#         descriptors 'x2'                        #4
+        normal_uncertain = 2                      #0,#1,#2
+         means = 0. 0.                            #0,#1,#2
+         std_deviations = 1. 1.                   #0,#1,#2
+	 descriptors     'x1' 'x2'                #0,#1,#2,#3
 
 interface,
         direct	

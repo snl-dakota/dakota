@@ -1,8 +1,7 @@
 # DAKOTA INPUT FILE - dakota_bayes.in
 
-strategy,							
-	single_method 							
-        tabular_graphics_data
+environment, 
+       tabular_graphics_data
 
 method,									
        bayes_calibration queso,						
@@ -12,6 +11,7 @@ method,
 #        pce 
 #        sparse_grid_level = 3 
           samples = 1000 seed = 348					
+          mcmc_type dram
           rejection delayed 
           metropolis adaptive
           #likelihood_scale = 0.01 

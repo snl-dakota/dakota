@@ -3,6 +3,7 @@ method,
  	  expansion_order   = 4
 	  collocation_ratio = 2
 #	  use_derivatives				#2,#3
+#         probability_refinement import                 #4
 	  samples = 10000 seed = 1234567 rng rnum2
 	  num_response_levels = 0 11 11
 	  response_levels =
@@ -39,6 +40,6 @@ interface,
 
 responses,
 	response_functions = 3
-	no_gradients					#0,#1
+	no_gradients					#0,#1,#4
 #	analytic_gradients				#2,#3
 	no_hessians

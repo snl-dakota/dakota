@@ -8,7 +8,7 @@ method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
 	local_reliability
-#	  mpp_search x_taylor_mean			#1,#7
+#	  mpp_search x_taylor_mean			#1,#7,#12
 #	  mpp_search u_taylor_mean			#2,#8
 #	  mpp_search x_taylor_mpp			#3,#9
 #	  mpp_search u_taylor_mpp			#4,#10
@@ -16,10 +16,12 @@ method,
 #	  mpp_search u_two_point
 #	  mpp_search no_approx				#5,#11
 #	  nip						#1,#2,#3,#4,#5,#7,#8,#9,#10,#11
-	  num_response_levels = 0 11 11			   #0,#1,#2,#3,#4,#5
-	  response_levels = 				   #0,#1,#2,#3,#4,#5
-	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0	   #0,#1,#2,#3,#4,#5
-	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0	   #0,#1,#2,#3,#4,#5
+#	  integration first_order                       #12
+#	  probability_refinement import seed = 6837     #12
+	  num_response_levels = 0 11 11			   #0,#1,#2,#3,#4,#5,#12
+	  response_levels = 				   #0,#1,#2,#3,#4,#5,#12
+	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0	   #0,#1,#2,#3,#4,#5,#12
+	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0	   #0,#1,#2,#3,#4,#5,#12
 #	  num_probability_levels = 0 11 11		   #6,#7,#8,#9,#10,#11
 #	  probability_levels =  			   #6,#7,#8,#9,#10,#11
 #	1.1781223736e-03 1.0140642250e-02 5.2949484412e-02 #6,#7,#8,#9,#10,#11
