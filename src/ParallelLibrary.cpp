@@ -451,6 +451,10 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
       // is informed by min_procs_per_server, flowing bottom-up from user
       // overrides; PUSH_DOWN needs max_procs_per_server, flowing bottom-up
       // from concurrency limits at each level.
+
+      // TO DO: passing max_procs_per_server=1 from ApplicationInterface::
+      // init_communicators() could provide a mechanism to prevent
+      // multiprocessor analysisComms with system/fork interfaces!
     }
     else { // concurrency pushed up
       // round up loaded servers but avoid (int)std::ceil((Real)num/(Real)denom)

@@ -808,10 +808,11 @@ inline void ParallelLibrary::increment_parallel_configuration()
   // In the first call from the ParallelLibrary ctor, this sets the siPLIter
   // to parallelLevels.end() as there's only one ParallelLevel in the list:
   pc.siPLIter = ++pl_iter;
-  pc.iePLIter = pc.eaPLIter = parallelLevels.end();
   // Inherit parallelism level count from si_pl partitioning
-  if (currPCIter != parallelConfigurations.end())
-    pc.numParallelLevels = currPCIter->numParallelLevels;
+  pc.numParallelLevels
+    = (pl_iter != parallelLevels.end() && pl_iter->messagePass) ? 1 : 0;
+  // ie and ea levels to be defined by Model::init_communicators()
+  pc.iePLIter = pc.eaPLIter = parallelLevels.end();
 
   parallelConfigurations.push_back(pc);
   currPCIter = --parallelConfigurations.end();
