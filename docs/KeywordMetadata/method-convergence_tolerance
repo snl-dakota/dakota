@@ -2,12 +2,16 @@ Blurb::
 Stopping criterion based on convergence of the objective function
 Description::
 The \c convergence_tolerance specification provides a real value for
-controlling the termination of iteration. In most cases, it is a
-relative convergence tolerance for the objective function; i.e., if
+controlling the termination of iteration.
+
+It is a
+<b> relative convergence tolerance </b> for the objective function; i.e., if
 the change in the objective function between successive iterations
 divided by the previous objective function is less than the amount
 specified by convergence_tolerance, then this convergence criterion is
-satisfied on the current iteration. 
+satisfied on the current iteration.
+
+Therefore, permissible values are between 0 and 1, non-inclusive.
 
 <b> Behavior Varies by Package/Library </b>
 
@@ -34,8 +38,9 @@ Notes on each library:
     objective function).
 \li NL2SOL: See \ref method-nl2sol
 
-Topics::	method_independent_controls
+Topics::	method_independent_controls, problem
 Examples::
 Theory::
 Faq::
+is this ever NOT a relative value?
 See_Also::	

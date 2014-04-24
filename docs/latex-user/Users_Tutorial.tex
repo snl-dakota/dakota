@@ -264,7 +264,33 @@ response_fn_1 -3.00705e-03 -5.01176e-01  1.00000e+00
 See Section~\ref{intro:files} for location of all files referenced in this
 manual.
 
-A simple Dakota
+There are six specification blocks that may appear in Dakota input
+files. These are identified in the input file using the following
+keywords: variables, interface, responses, model, method, and environment. These
+keyword blocks can appear in any order in a Dakota input file. At
+least one \emph{variables}, \emph{interface}, \emph{responses}, and
+\emph{method} specification must appear, and no more than one
+\emph{environment} specification should appear.
+
+Figure~\ref{tutorial:inputfile_block_layout} shows the relationships
+between the six keyword blocks. The environment specifies high level
+Dakota settings, and identifies
+the top level method. A method runs a model. A model block defines the
+connections between variables, the interface, and
+responses. Figure~\ref{tutorial:inputfile_block_layout} shows the most
+common relationships between blocks but others are possible. Most
+Dakota analyses define a single method which runs a single model.
+Advanced cases are discussed in Chapter~\ref{adv_meth}.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[height=2.5in]{images/inputfile_block_layout}
+  \caption{Relationship between the six blocks, for a simple study (left)
+            and an advanced, multi-method study (right)}
+  \label{tutorial:inputfile_block_layout}
+\end{figure}
+
+For a more concrete example, a simple Dakota
 input file, \texttt{rosen\_multidim.in},
 for a two-dimensional parameter study on Rosenbrock's
 function is shown in Figure~\ref{tutorial:rosenbrock_multidim}.
@@ -284,49 +310,23 @@ The results are shown later, in Section~\ref{tutorial:examples:param_study}.
   \label{tutorial:rosenbrock_multidim}
 \end{figure}
 
-There are six specification blocks that may appear in Dakota input
-files. These are identified in the input file using the following
-keywords: variables, interface, responses, model, method, and environment. These
-keyword blocks can appear in any order in a Dakota input file. At
-least one \emph{variables}, \emph{interface}, \emph{responses}, and
-\emph{method} specification must appear, and no more than one
-\emph{environment} specification should appear. In Figure~
-\ref{tutorial:rosenbrock_multidim}, one of each of the keyword blocks is
-used. Additional syntax features include use of the \#
+Additional syntax features for Dakota input files include use of the \#
 symbol to indicate a comment, use of single or double quotes for string inputs
 (e.g., \texttt{'x1'}), the use of commas and/or white space for separation of
 specifications, and the optional use of ``='' symbols to indicate
 supplied data. See the Dakota Reference
 Manual~\cite{RefMan} for additional details on this input file syntax.
 
-Figure~\ref{tutorial:inputfile_block_layout} shows the relationships
-between the six keyword blocks. An environment is used to identify
-the top level method.  A method runs a model.  A model block defines the
-connections between variables, the interface, and
-responses. Figure~\ref{tutorial:inputfile_block_layout} shows the most
-common relationships between blocks but others are possible.  Most
-Dakota analyses define a single method, whereas more advanced cases are discussed in Chapter~\ref{adv_meth}.
-
-\begin{figure}[ht!]
-  \centering
-  \includegraphics[height=3in]{images/inputfile_block_layout}
-  \caption{Relationship between the six blocks}
-  \label{tutorial:inputfile_block_layout}
-\end{figure}
-
 The first block of the input file shown in
 Figure~\ref{tutorial:rosenbrock_multidim} is the \emph{environment} block.
-This keyword block is used to specify some of Dakota's advanced
-meta-procedures such as hybrid optimization, 
-multi-start optimization, and Pareto optimization.
-See Chapter~\ref{adv_meth} for more information on these
-meta-procedures. The \emph{environment} block also contains the
-settings for Dakota's graphical output (via the \texttt{graphics}
+This keyword block is used to specify the general Dakota settings
+such as Dakota's graphical output (via the \texttt{graphics}
 flag) and the tabular data output (via the
-\texttt{tabular\_graphics\_data} keyword).
+\texttt{tabular\_graphics\_data} keyword). In addition, it 
+identifies the \texttt{top\_level\_method} that will control the Dakota study.
 
-The \emph{method} block of the input file specifies the iterative
-technique that Dakota will employ, such as a parameter study,
+The \emph{method} block of the input file specifies which iterative
+method Dakota will employ, such as a parameter study,
 optimization method, data sampling technique, etc.
 The keyword \texttt{multidim\_parameter\_study}
 in Figure~\ref{tutorial:rosenbrock_multidim} calls for a multidimensional
@@ -1120,7 +1120,7 @@ information on parameter studies and design of experiments methods.
 
 For a list of all the example Dakota input files, see 
 Table~\ref{tutorial:examples:table}. All of these input files 
-can be found in \texttt{Dakota/examples/users}. 
+can be found in \\ \texttt{Dakota/examples/users}. 
 
 \begin{table}[hbp]
 \centering
