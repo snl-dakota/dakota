@@ -2205,8 +2205,11 @@ void ApplicationInterface::stop_evaluation_servers()
     }
     MPIPackBuffer send_buffer(0); // empty buffer
     MPI_Request send_request;
-    int server_id, term_tag = 0, // triggers termination
-        end = (ieDedMasterFlag) ? numEvalServers+1 : numEvalServers;
+    int server_id, term_tag = 0; // triggers termination
+    // Peer partitions have one fewer interComm from server 1 to servers 2-n,
+    // relative to ded master partitions which have interComms from server 0
+    // to servers 1-n.
+    int end = (ieDedMasterFlag) ? numEvalServers+1 : numEvalServers;
     for (server_id=1; server_id<end; ++server_id) {
       // stop serve_evaluation_{synch,asynch} procs
       if (outputLevel > NORMAL_OUTPUT) {
@@ -2227,6 +2230,8 @@ void ApplicationInterface::stop_evaluation_servers()
     // included in numEvalServers and we quietly free them separately.
     // We assume a single server with all idle processors and a valid
     // inter-communicator (enforced during split).
+    // > dedicated master: server_id = #servers+1 -> interComm[#servers]
+    // > peer:             server_id = #servers   -> interComm[#servers-1]
     if (parallelLib.parallel_configuration().ie_parallel_level().
 	idle_partition()) {
       parallelLib.isend_ie(send_buffer, server_id, term_tag, send_request);

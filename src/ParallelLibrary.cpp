@@ -631,7 +631,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.hubServerIntraComm);
-  if (child_pl.serverCommRank == 0) {
+  if (color) {
     MPI_Comm_rank(child_pl.hubServerIntraComm, &child_pl.hubServerCommRank);
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }
@@ -786,7 +786,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.hubServerIntraComm);
-  if (child_pl.serverCommRank == 0) {
+  if (color) {
     MPI_Comm_rank(child_pl.hubServerIntraComm, &child_pl.hubServerCommRank);
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }

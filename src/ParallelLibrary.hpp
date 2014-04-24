@@ -809,6 +809,9 @@ inline void ParallelLibrary::increment_parallel_configuration()
   // to parallelLevels.end() as there's only one ParallelLevel in the list:
   pc.siPLIter = ++pl_iter;
   pc.iePLIter = pc.eaPLIter = parallelLevels.end();
+  // Inherit parallelism level count from si_pl partitioning
+  if (currPCIter != parallelConfigurations.end())
+    pc.numParallelLevels = currPCIter->numParallelLevels;
 
   parallelConfigurations.push_back(pc);
   currPCIter = --parallelConfigurations.end();

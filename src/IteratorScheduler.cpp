@@ -397,14 +397,18 @@ void IteratorScheduler::stop_iterator_servers()
       parallelLib.free(send_request); // no test/wait on send_request
     }
   else
-    server_id = numIteratorServers + 1;
+    server_id = numIteratorServers;
 
   // if the communicator partitioning resulted in a trailing partition of 
   // idle processors due to a partitioning remainder (caused by strictly
   // honoring a processors_per_iterator override), then these are not
   // included in numIteratorServers and we quietly free them separately.
   // We assume a single server with all idle processors and a valid
-  // inter-communicator (enforced during split).
+  // inter-communicator (enforced during split).  Peer partitions have one
+  // fewer interComm from server 1 to servers 2-n, relative to ded master
+  // partitions which have interComms from server 0 to servers 1-n:
+  // > dedicated master: server_id = #servers+1 -> interComm[#servers]
+  // > peer:             server_id = #servers   -> interComm[#servers-1]
   if (parallelLib.parallel_configuration().si_parallel_level().
       idle_partition()) {
     parallelLib.isend_si(send_buffer, server_id, term_tag, send_request);
