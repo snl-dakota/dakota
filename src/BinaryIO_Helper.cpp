@@ -1,5 +1,5 @@
 #include "BinaryIO_Helper.hpp"
-
+//
 namespace Dakota {
 
 // initialization of statics
