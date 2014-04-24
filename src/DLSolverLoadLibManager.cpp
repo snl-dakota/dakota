@@ -47,7 +47,7 @@ typedef void (*p_vf)(void);
 
 // WJB - ToDo: prefer function over macro
 #ifdef _WIN32
-#include <dakota_windows.h>
+#include "dakota_windows.h"
 #define find_dlsym(a,b,c) (a = (p_vf)GetProcAddress((HINSTANCE)(b),c))
 #define NO_DLERROR
 #else

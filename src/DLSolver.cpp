@@ -1,5 +1,5 @@
 #ifdef _WIN32
-#include <dakota_windows.h>
+#include "dakota_windows.h"
 #define dlopen(x,y) LoadLibrary(x)
 #define find_dlsym(a,b,c) (a = (dl_constructor_t)GetProcAddress((HINSTANCE)(b),c))
 #define dlclose(x) FreeLibrary((HMODULE)x)

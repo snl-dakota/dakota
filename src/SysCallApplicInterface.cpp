@@ -21,7 +21,7 @@
 
 // eventually just use _WIN32 here
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-#include <dakota_windows.h> // for Sleep()
+#include "dakota_windows.h" // for Sleep()
 #elif defined(HAVE_UNISTD_H)
 #include <unistd.h> // for usleep()
 #endif

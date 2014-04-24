@@ -29,7 +29,7 @@
 
 #ifdef DAKOTA_DL_SOLVER
 #ifdef _WIN32
-#include <dakota_windows.h>
+#include "dakota_windows.h"
 #define dlopen(x,y) LoadLibrary(x)
 #else
 #include <dlfcn.h>

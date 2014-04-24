@@ -13,7 +13,7 @@
 
 // for Sleep or sleep
 #ifdef _WIN32
-#include <dakota_windows.h>
+#include "dakota_windows.h"
 #else
 #include <unistd.h>
 #endif

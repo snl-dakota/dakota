@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 //- Description: A tester for DAKOTA's DLL API
-//- Owner:       Bill Hart
+//- Owner:       Brian Adams
 //- Checked by:
 //- Version: $Id$
 
@@ -21,31 +21,38 @@
 
 /// The main program for exercising the DLL API with a simple command-line
 
-int main(int argc, char* argv[])
-{
-if (argc != 3) {
-   std::cerr << "Usage: dll_tester <ntrials> <dakota.in>" << std::endl;
-   return -1;
-   }
-int ntrials = atoi(argv[1]);
+int main(int argc, char* argv[]) {
+  if (argc != 3) {
+    std::cerr << "Usage: dll_tester <ntrials> <dakota.in>" << std::endl;
+    return -1;
+  }
+  int ntrials = atoi(argv[1]);
 
-for (int i=0; i<ntrials; i++) {
+  // TODO: an improved test would allocate all the runners, then
+  // configure, then run them asynchronously, but concurrent Dakota
+  // instances in core are likely to be problematic.
+  for (int i=0; i<ntrials; i++) {
     int id;
     dakota_create(&id, "dakota_dll");
-    dakota_readInput(id, argv[2]);
+    int retcode = dakota_readInput(id, argv[2]);
+    if (retcode != 0) {
+      dakota_destroy(id);
+      return retcode;
+    }
     dakota_start(id);
     dakota_destroy(id);
 
     set_mc_ptr_int(1001);
     int tmp = get_mc_ptr_int();
 
+    // return code will be different if modelcenter not enabled
     if (tmp != 1001)
-        std::cout << "Set/Get of mc_ptr_int Failed!" << std::endl;
+      std::cout << "Set/Get of mc_ptr_int Failed!" << std::endl;
 
     std::cout << "Final Dakota Output:" << std::endl;
     std::cout << dakota_getStatus(id) << std::endl;
-    }
+  }
 
-return 0;
+  return 0;
 }
 

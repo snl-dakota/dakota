@@ -606,7 +606,7 @@ rec_cp(const char *from, const char *todir, int copy, int flatten, int replace)
 /* from ~dmgay/h/src/pathadjust.c */
 
 #ifdef _WIN32
-#include <dakota_windows.h>
+#include "dakota_windows.h"
 static int dakdrive;
 static char slmap[256] = { /* Identity except that slmap['\\'] == slmap[0x5c] == '/' */
 			   /* (note that Win32 system calls treat \ and / alike in filenames) */

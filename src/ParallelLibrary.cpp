@@ -144,10 +144,9 @@ void ParallelLibrary::initialize_timers()
     for the concurrent evaluation and concurrent analysis levels. */
 void ParallelLibrary::
 init_communicators(const ParallelLevel& parent_pl, int num_servers,
-		   int procs_per_server, int min_procs_per_server,
-		   int max_concurrency, int asynch_local_concurrency,
-		   short default_config, short scheduling_override,
-		   bool peer_dynamic_avail)
+		   int procs_per_server, int max_concurrency, 
+		   int asynch_local_concurrency, short default_config,
+		   short scheduling_override, bool peer_dynamic_avail)
 {
   ParallelLevel child_pl;
   child_pl.numServers     = num_servers;      // request/default to be updated
@@ -157,19 +156,18 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
   bool print_rank         = (parent_pl.serverCommRank == 0);
 
   // resolve_inputs selects master vs. peer scheduling
-  resolve_inputs(child_pl, parent_pl.serverCommSize, min_procs_per_server,
-		 max_concurrency, capacity_multiplier, default_config,
-		 scheduling_override, peer_dynamic_avail, print_rank);
+  resolve_inputs(child_pl, parent_pl.serverCommSize, max_concurrency,
+		 capacity_multiplier, default_config, scheduling_override,
+		 peer_dynamic_avail, print_rank);
 
-  // create child_pl by partitioning parent_pl 
   if (child_pl.dedicatedMasterFlag)
     split_communicator_dedicated_master(parent_pl, child_pl);
   else
     split_communicator_peer_partition(parent_pl,   child_pl);
 
-  // update the number of parallelism levels (child_pl.messagePass is
-  // preferred to child_pl.commSplitFlag due to COMM_SPLIT_TO_SINGLE)
-  if (child_pl.messagePass)
+  // update number of parallelism levels
+  if ( child_pl.commSplitFlag && child_pl.numServers > 1 &&
+       ( child_pl.procsPerServer > 1 || child_pl.procRemainder ) )
     ++currPCIter->numParallelLevels;
 
   parallelLevels.push_back(child_pl);
@@ -199,8 +197,7 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
     level.  If num_servers & procs_per_server are both nondefault, then the
     former takes precedence. */
 void ParallelLibrary::
-resolve_inputs(ParallelLevel& child_pl, int avail_procs,
-	       int min_procs_per_server, int max_concurrency,
+resolve_inputs(ParallelLevel& child_pl, int avail_procs, int max_concurrency,
 	       int capacity_multiplier, short default_config,
 	       short scheduling_override, bool peer_dynamic_avail,
 	       bool print_rank)
@@ -226,34 +223,17 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
        scheduling_override == PEER_DYNAMIC_SCHEDULING ||
        scheduling_override == PEER_STATIC_SCHEDULING);
 
-  if (min_procs_per_server > avail_procs) {
-    if (print_rank)
-      Cerr << "\nError: insufficient available processors (" << avail_procs
-	   << ") to support minimum partition size (" << min_procs_per_server
-	   << ").\n       Please adjust total allocation or overrides."
-	   << std::endl;
-    abort_handler(-1);
-  }
-  if (procs_per_server > avail_procs) {
-    if (print_rank)
-      Cerr << "\nError: insufficient available processors (" << avail_procs
-	   << ") to support processors_per_server override ("
-	   << procs_per_server << ").\n       Please adjust total allocation "
-	   << "or overrides." << std::endl;
-    abort_handler(-1);
-  }
-  if (num_servers > avail_procs) {
-    if (print_rank)
-      Cerr << "\nError: insufficient available processors (" << avail_procs
-	   << ") to support " << num_servers << " servers.\n       Please "
-	   << "adjust total allocation or overrides." << std::endl;
-    abort_handler(-1);
-  }
-
-  if (avail_procs == 1) {
+  if (avail_procs <= 1) {
     // ------------------------
     // insufficient avail_procs
     // ------------------------
+    if (procs_per_server > 1 && print_rank) // TO DO: consider hard error
+      Cerr << "\nWarning: not enough available processors to support "
+           << procs_per_server << " procs_per_server.\n         "
+	   << "Reducing to 1.\n\n";
+    if (num_servers > 1 && print_rank) // TO DO: consider hard error
+      Cerr << "\nWarning: not enough available processors to support " 
+           << num_servers << " servers.\n         Reducing to 1.\n\n";
     num_servers = 1; procs_per_server = 1; ded_master = false; // peer partition
   }
   else if (num_servers > 0 && procs_per_server > 0) { // Data defaults are 0
@@ -262,30 +242,21 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // ------------------------------------------
     // in this case, we are tightly constrained to respecting both overrides
 
-    if (min_procs_per_server > procs_per_server) {
-      if (print_rank)
-	Cerr << "\nError: processors_per_server override (" << procs_per_server
-	     << ") is inconsistent with minimum server size ("
-	     << min_procs_per_server << ").\n       Please adjust total "
-	     << "allocation or overrides\n";
-      abort_handler(-1);
-    }
-
     int total_request = num_servers * procs_per_server;
     if (total_request == avail_procs) {
       ded_master = false;
-      if (master_override && print_rank)
+      if (master_override && print_rank) // TO DO: consider hard error
 	Cerr << "\nWarning: user selection of master scheduling cannot be "
-	     << "supported in this partition.\n         Overriding to peer "
-	     << "partition.\n\n";
+	     << "supported in this partition.  Overriding to peer partition."
+	     << "\n\n";
     }
     else if (total_request < avail_procs) {
       ded_master = !peer_override; // dedicate a master if no peer override
       if (ded_master) ++total_request;
       if (total_request < avail_procs && print_rank)
-	Cerr << "\nWarning: user override of server count and server size "
-	     << "results in idle processors\n         (request = "
-	     << total_request << ", avail = " << avail_procs << ", idle = "
+	Cerr << "\nWarning: user override of servers and partition size "
+	     << "results in idle processors\n         (request: "
+	     << total_request << " avail: " << avail_procs << " idle: "
 	     << avail_procs - total_request <<")\n\n";
     }
     else { // hard error if insufficient avail_procs
@@ -305,22 +276,19 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // in this case, we honor the override, but have freedom to vary server
     // size in order to avoid idle processors
 
-    int min_procs = num_servers * min_procs_per_server;
-    if (avail_procs < min_procs) {
+    if (num_servers > avail_procs) {
       if (print_rank)
 	Cerr << "\nError: insufficient available processors (" << avail_procs
 	     << ") to support user override of servers (" << num_servers
-	     << ")\n       with minimum partition size ("
-	     << min_procs_per_server << ").  Please adjust total allocation "
-	     << "or overrides." << std::endl;
+	     << ")\n.  Please adjust total allocation or overrides."<<std::endl;
       abort_handler(-1);
     }
-    else if (avail_procs == min_procs) {
+    else if (num_servers == avail_procs) {
       ded_master = false;
-      if (master_override && print_rank)
+      if (master_override && print_rank) // TO DO: consider hard error
 	Cerr << "\nWarning: user selection of master scheduling cannot be "
-	     << "supported in this partition.\n         Overriding to peer "
-	     << "partition.\n\n";
+	     << "supported in this partition.  Overriding to peer partition."
+	     << "\n\n";
     }
     else if (master_override)
       ded_master = true;
@@ -329,8 +297,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
       ded_master = false;
     // peer dynamic requires pps = 1 with no remainder (else use remainder to
     // dedicate a master).  This turns out to be redundant of the check above.
-    //else if (peer_dynamic_avail && num_servers == avail_procs &&
-    //         min_procs_per_server == 1)
+    //else if (peer_dynamic_avail && num_servers == avail_procs)
     //  ded_master = false;
     else
       // since idle procs can be reallocated in this case, we don't need to be
@@ -338,7 +305,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
       ded_master = true;
 
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
-    procs_per_server = server_procs / num_servers; // >= min_procs_per_server
+    procs_per_server = server_procs / num_servers;
     proc_remainder   = server_procs % num_servers;
   }
   else if (procs_per_server > 0) { // Data default is 0: user request of 1
@@ -353,22 +320,21 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // decompositions, but for now we will treat a user override at any level
     // as gospel.  Also, peer_dynamic_avail is restricted to pps = 1.
 
-    if (min_procs_per_server > procs_per_server) {
+    proc_remainder = 0; // all cases, no freedom to increment server sizes
+    if (procs_per_server > avail_procs) {
       if (print_rank)
-	Cerr << "\nError: processors_per_server override (" << procs_per_server
-	     << ") is inconsistent with minimum server size ("
-	     << min_procs_per_server << ").\n       Please adjust total "
-	     << "allocation or overrides.\n";
+	Cerr << "\nError: insufficient available processors (" << avail_procs
+	     << ") to support user override of procs_per_server ("
+	     << procs_per_server << ")\n.  Please adjust total allocation or "
+	     << "overrides." << std::endl;
       abort_handler(-1);
     }
-
-    proc_remainder = 0; // all cases, no freedom to increment server sizes
-    if (procs_per_server == avail_procs) {
+    else if (procs_per_server == avail_procs) {
       ded_master = false;
-      if (master_override && print_rank)
+      if (master_override && print_rank) // TO DO: consider hard error
 	Cerr << "\nWarning: user selection of master scheduling cannot be "
-	     << "supported in this partition.\n         Overriding to peer "
-	     << "partition.\n\n";
+	     << "supported in this partition.  Overriding to peer partition."
+	     << "\n\n";
     }
     else if (master_override)
       ded_master = true;
@@ -406,7 +372,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 	// > enforcement that we don't waste some portion (half) of a server is
 	//   also insufficiently general: master_remainder > pps / 2 is true
 	//   for all pps > 2 (since master_remainder = pps-1).
-	// > It appears we need to assess wastefulness more globally, e.g., if
+	// > It appears we need to define wasteful more globally, e.g., if
 	//   idle / available > some %.  In the example above, 4 idle / 15 avail
 	//   increases idle percentage from 0% to 27% due to a master partition.
 	// > A more complicated formula would need to estimate the value to be
@@ -420,71 +386,61 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
     num_servers = server_procs / procs_per_server;
     if (server_procs % procs_per_server && print_rank)
-      Cerr << "\nWarning: user override of server size results in idle "
-	   << "processors\n         (server size request = "
-	   << procs_per_server << ", avail = " << server_procs << ", idle = "
+      Cerr << "\nWarning: user override of partition size results in idle "
+	   << "processors\n         (partition size request: "
+	   << procs_per_server << " avail: " << server_procs << " idle: "
 	   << server_procs - num_servers * procs_per_server << ")\n\n";
   }
   else {
     // --------------------------------------------------
     // neither num_servers nor procs_per_server specified -> auto config
     // --------------------------------------------------
-    if (min_procs_per_server == avail_procs) {
+    if (default_config == PUSH_DOWN) { // default for this parallelism level
+      // is concurrency pushed down.  default_config taking precedence over a
+      // scheduling_override request makes sense from an efficiency standpoint,
+      // but may be neglecting a user request in lieu of a built-in default.
+      // Output a warning if neglecting a user request:
       if (master_override && print_rank)
-        Cerr << "\nWarning: user selection of master scheduling cannot be "
-	     << "supported in this partition\n         due to minimum server "
-	     << "size (" << min_procs_per_server << ").  Overriding to peer "
-	     << "partition.\n\n";
-      procs_per_server = avail_procs; num_servers = 1; ded_master = false;
-    }
-    else if (default_config == PUSH_DOWN) {
-      // default_config taking precedence over a scheduling_override request
-      // makes sense from an efficiency standpoint, but is neglecting a user
-      // request in lieu of a built-in default.
-      if (master_override && print_rank)
-        Cerr << "\nWarning: default_config takes precedence over a master "
-	     << "scheduling request when\n         neither num_servers nor "
-	     << "procs_per_server is specified.  Overriding to peer "
-	     << "partition.\n\n";
-      procs_per_server = avail_procs; num_servers = 1; ded_master = false;
-      // TO DO: neglects available _concurrency_ at lower levels.  PUSH_UP
-      // is informed by min_procs_per_server, flowing bottom-up from user
-      // overrides; PUSH_DOWN needs max_procs_per_server, flowing bottom-up
-      // from concurrency limits at each level.
+        Cerr << "\nWarning: default_config takes precendence over a master "
+	     << "scheduling request\n         when neither num_servers nor "
+	     << "procs_per_server is specified.\n\n";
+      // TO DO: neglects available concurrency at lower levels (would
+      // require two passes through parallelism hierarchy to resolve)
+      procs_per_server = avail_procs;
+      num_servers = 1;
+      ded_master = false; // tau_i = 1 -> static scheduling
     }
     else { // concurrency pushed up
-      // round up loaded servers but avoid (int)std::ceil((Real)num/(Real)denom)
+      // round up loaded servers but avoid std::ceil((Real)numer/(Real)denom)
       int loaded_servers = max_concurrency / capacity_multiplier;
       if (max_concurrency % capacity_multiplier) ++loaded_servers;
-      // round down available servers
-      int avail_servers = avail_procs / min_procs_per_server;
 
       if (master_override) // master partition (dynamic scheduling)
 	ded_master = true;
-      else if (peer_override || loaded_servers <= avail_servers)
+      else if (peer_override || loaded_servers <= avail_procs)
         ded_master = false; // tau_i = n_ij_max -> static scheduling
 
-      // We have excess concurrency (loaded_servers > avail_servers yields
-      // procs_per_server = min_procs_per_server, num_servers =
-      // server_procs / min_procs_per_server): use peer dynamic if available,
-      // then master if num_servers > 1, then revert to peer (static)
-      else if (peer_dynamic_avail && min_procs_per_server == 1) // remainder=0
+      // We have excess concurrency (loaded_servers > avail_procs yields
+      // num_servers = server_procs, procs_per_server = 1, remainder = 0):
+      // use peer dynamic if available, then master if num_servers > 1,
+      // then revert to peer (static)
+      else if (peer_dynamic_avail)
 	ded_master = false;
-      else // ded_master if num_servers >= 2 in calculation to follow
-	ded_master = (avail_procs >= 2 * min_procs_per_server + 1);
+      else // ded_master if num_servers > 1 in calculation to follow
+	ded_master = (avail_procs > 2);// && loaded_servers > 1);
 
       // As for the num_servers specification case, we don't need to be as
       // concerned with selection of a wasteful master partition (increased
       // idleness), since any partition remainder gets reallocated.
 
       int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
-      num_servers = std::min(server_procs / min_procs_per_server,
-			     loaded_servers);
+      num_servers = std::min(server_procs, loaded_servers);
       procs_per_server = server_procs / num_servers;
       proc_remainder   = server_procs % num_servers;
     }
   }
 
+/*
 #ifdef MPI_DEBUG
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() returns num_servers = "
@@ -492,6 +448,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 	 << " proc_remainder = " << proc_remainder << " dedicated master = "
 	 << ded_master << std::endl;
 #endif
+*/
 }
 
 
@@ -626,12 +583,12 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   // Create parent-child intracommunicator used to avoid broadcasting over all
   // of parent Comm when all you really need is the child rank == 0 processors.
-  // Exclude any idle partition (example: bcast_si() in MetaIterators).
+  // Exclude any idle partition.
   color = (child_pl.serverCommRank == 0 &&
 	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.hubServerIntraComm);
-  if (color) {
+  if (child_pl.serverCommRank == 0) {
     MPI_Comm_rank(child_pl.hubServerIntraComm, &child_pl.hubServerCommRank);
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }
@@ -728,7 +685,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     return;
   }
 
-  child_pl.messagePass = (child_pl.numServers > 1); // exclude 1 server + idle
+  child_pl.messagePass = true;
 #ifdef DAKOTA_HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
@@ -786,7 +743,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.hubServerIntraComm);
-  if (color) {
+  if (child_pl.serverCommRank == 0) {
     MPI_Comm_rank(child_pl.hubServerIntraComm, &child_pl.hubServerCommRank);
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }
@@ -822,33 +779,31 @@ void ParallelLibrary::print_configuration()
   if ( si_pl.serverId == 1 && ie_pl.dedicatedMasterFlag && 
        ie_pl.serverId == 1 && ie_pl.serverCommRank == 0 ) {
     // eval server 1 master sends analysis info to iterator server 1 master
-    MPIPackBuffer send_buffer(64); // 3 ints+1 short+1 bool < ~16 bytes
-    send_buffer << ea_pl.numServers    << ea_pl.procsPerServer
-		<< ea_pl.procRemainder << ea_pl.dedicatedMasterFlag
-		<< pc.numParallelLevels;
+    MPIPackBuffer send_buffer(64);
+    send_buffer << ea_pl.numServers << ea_pl.procsPerServer
+                << ea_pl.dedicatedMasterFlag << pc.numParallelLevels;
     send_ie(send_buffer, 0, 1001);
   }
   // use local copies for settings from other processors
   // (do not update parallel settings on message recipients).
-  int num_anal_srv = ea_pl.numServers, p_per_anal = ea_pl.procsPerServer,
-    anal_remainder = ea_pl.procRemainder;
+  int   num_anal_srv = ea_pl.numServers, p_per_anal = ea_pl.procsPerServer;
   bool  eval_ded_master_flag = ea_pl.dedicatedMasterFlag;
-  short dak_par_levels = pc.numParallelLevels;
+  short par_levels = pc.numParallelLevels;
   if (si_pl.serverId == 1 && si_pl.serverCommRank == 0) {
     if (ie_pl.dedicatedMasterFlag) {
       // iterator server 1 master recv's analysis info from eval server 1 master
       MPIUnpackBuffer recv_buffer(64);
       MPI_Status status;
       recv_ie(recv_buffer, 1, 1001, status);
-      recv_buffer >> num_anal_srv >> p_per_anal >> anal_remainder
-		  >> eval_ded_master_flag >> dak_par_levels;
+      recv_buffer >> num_anal_srv >> p_per_anal >> eval_ded_master_flag
+                  >> par_levels;
     }
     if (si_pl.dedicatedMasterFlag) {
       // iterator server 1 master sends combined info to strategy master
       MPIPackBuffer send_buffer(64);
       send_buffer << ie_pl.numServers << ie_pl.procsPerServer
                   << ie_pl.dedicatedMasterFlag << num_anal_srv << p_per_anal
-                  << anal_remainder << eval_ded_master_flag << dak_par_levels;
+                  << eval_ded_master_flag << par_levels;
       send_si(send_buffer, 0, 1002);
     }
   }
@@ -861,12 +816,12 @@ void ParallelLibrary::print_configuration()
     bool iterator_ded_master_flag = ie_pl.dedicatedMasterFlag;
     if (si_pl.dedicatedMasterFlag) {
       // strategy master receives combined info from iterator server 1 master
-      MPIUnpackBuffer recv_buffer(64); // 5 ints+1 short+2 bools < ~22 bytes
+      MPIUnpackBuffer recv_buffer(64); // 4 ints+1 short+2 bools < ~20 bytes
       MPI_Status status;
       recv_si(recv_buffer, 1, 1002, status);
       recv_buffer >> num_eval_srv >> p_per_eval >> iterator_ded_master_flag
-                  >> num_anal_srv >> p_per_anal >> anal_remainder
-		  >> eval_ded_master_flag >> dak_par_levels;
+                  >> num_anal_srv >> p_per_anal >> eval_ded_master_flag
+                  >> par_levels;
     }
 
     // Strategy diagnostics
@@ -893,12 +848,9 @@ void ParallelLibrary::print_configuration()
     else                           Cout << "peer\n";
 
     // Analysis diagnostics
-    int anal_par_levels = (p_per_anal > 1 || anal_remainder) ? 1 : 0;
     Cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
          << "\t\t     N/A\t   N/A\n\nTotal parallelism levels =   " 
-         << dak_par_levels + anal_par_levels << " (" << dak_par_levels
-	 << " dakota, " << anal_par_levels << " analysis)\n"
-	 << "-------------------------------------------------"
+         << par_levels << "\n-------------------------------------------------"
 	 << "----------------------------" << std::endl;
   }
 }
@@ -1012,7 +964,10 @@ void ParallelLibrary::terminate_modelcenter()
 {
   // terminate any additional services that may be active
 #ifdef DAKOTA_MODELCENTER
-  int ireturn, iprint = 1; // print debugging info from ModelCenter API calls
+  // BMA TODO: we get a debug error if ireturn isn't defined, but not
+  // sure correct value, so setting to 0
+  //int ireturn, iprint = 1; // print debug info from ModelCenter API calls
+  int ireturn = 0, iprint = 1; // print debug info from ModelCenter API calls
   if (mc_ptr_int)
     mc_release_com(ireturn, iprint, mc_ptr_int);
   if (ireturn == -1) {

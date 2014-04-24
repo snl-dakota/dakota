@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Description: API for DLL interactions
-//- Owner:       Bill Hart
+//- Description: Declaration of the Dakota API for DLL interactions
+//- Owner:       Brian Adams
 //- Checked by:
 //- Version: $Id$
 
