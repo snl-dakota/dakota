@@ -13129,7 +13129,6 @@ Test Number 2 succeeded
    5.0000000000e+02   8.1955185992e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 650 total (650 new, 0 duplicate)
-  response_fn_1: 650 val (650 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    5.0000000000e-01   1.3936353359e-02
