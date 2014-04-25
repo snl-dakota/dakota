@@ -30,7 +30,7 @@ uses optimization methods instead to find the minimum and maximum
 sample values within each cell, this can also be computationally
 expensive.
 
-Topics::	problem, not_yet_reviewed
+Topics::	problem, epistemic_uncertainty_quantification_methods, evidence_theory
 Examples::
 Theory::
 The basic idea is that one specifies an "evidence structure"

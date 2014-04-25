@@ -18,9 +18,10 @@ The \c batch_selection strategies include:
 <li> \c naive: 
 <li> \c distance_penalty
 <li> \c constant_liar
+<li> \c topology
 </ol>
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

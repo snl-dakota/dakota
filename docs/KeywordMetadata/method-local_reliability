@@ -19,7 +19,7 @@ mpp_search specification which selects among different limit state
 approximations that can be used to reduce computational expense during
 the MPP searches. 
 
-Topics::	not_yet_reviewed
+Topics::        uncertainty_quantification, reliability_methods	
 Examples::
 Theory::
 The Mean Value method (MV, also known as MVFOSM in 

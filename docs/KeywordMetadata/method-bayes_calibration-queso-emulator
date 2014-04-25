@@ -4,7 +4,7 @@ Description::
 This keyword describes the type of emulator used when calculating 
 the likelihood function for the Bayesian calibration. The emulator can be a Gaussian 
 process, polynomial chaos expansion, or stochastic collocation. 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

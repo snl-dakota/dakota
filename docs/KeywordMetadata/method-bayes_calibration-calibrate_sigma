@@ -1,7 +1,8 @@
 Blurb::
 Calibrate the \c sigma term(s) in the likelihood function
-Description::
-Topics::	not_yet_reviewed
+Description::  This feature allows one to calibrate the observational error (the \c sigma terms) 
+as well as the model parameters. 
+Topics::	
 Examples::
 Theory::
 Faq::

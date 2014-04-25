@@ -6,9 +6,9 @@ in construction of the emulator, \c emulator_samples. The emulator
 involves Gaussian processes in GPMSA, so the user does not specify anything 
 about emulator type. At this point, the only controls active for GPMSA 
 are \c emulator_samples, \c seed and \c rng, and \c samples (the number of MCMC
-samples). 
+samples).  Note the GPMSA method is in a very preliminary state at this time. 
 
-Topics::	package_queso, bayesian_calibration, not_yet_reviewed
+Topics::	package_queso, bayesian_calibration
 Examples::
 Theory::
 Faq::

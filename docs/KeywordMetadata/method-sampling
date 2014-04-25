@@ -72,7 +72,7 @@ In the case where one wants to generate samples only over
 state variables, one would specify \c active \c state in the 
 variables specification block. 
 --->
-Topics::	
+Topics::	uncertainty_quantification, sampling	
 Examples::
 \verbatim
 # tested on Dakota 5.3.1, 131101

@@ -4,7 +4,7 @@ Description::
 In this strategy, the highest scoring candidate is selected and then all 
 remaining candidates are re-scored with a distance penalization factor 
 added in to the score. 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

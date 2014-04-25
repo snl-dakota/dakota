@@ -9,7 +9,7 @@ methods to calculate these bounds.
 \li \c sqp
 \li \c nip
 
-Topics::	not_yet_reviewed
+Topics::         uncertainty_quantification, epistemic_uncertainty_quantification_methods, interval_estimation	
 Examples::
 Theory::
 In interval analysis, one assumes that nothing is known about

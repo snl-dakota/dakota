@@ -36,7 +36,7 @@ to search for "representative" points. Once these are located, the multimodal sa
 density is set and then \c mm_adapt_import proceeds similarly to \c adapt_import (sample 
 until convergence). 
 
-Topics::	not_yet_reviewed
+Topics::	uncertainty_quantification, aleatory_uncertainty_quantification_methods, sampling
 Examples::
 Theory::
 Importance sampling is a method that allows one to estimate statistical 

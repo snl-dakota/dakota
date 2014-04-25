@@ -23,7 +23,7 @@ of design, epistemic uncertain, and state variables. If this is
 desired, one must use the appropriate controls to specify the active
 variables in the variables specification block. 
 
-Topics::	not_yet_reviewed, problem
+Topics::	uncertainty_quantification, reliability_methods, problem
 Examples::
 Theory::
 Faq::

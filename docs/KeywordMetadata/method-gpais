@@ -18,7 +18,7 @@ the importance density. Thus, the Gaussian process adaptive importance
 sampling algorithm overcomes limitations involving using a potentially
 inaccurate surrogate model directly in importance sampling calculations. 
 
-Topics::	not_yet_reviewed
+Topics::        uncertainty_quantification	
 Examples::
 Theory::
 Faq::

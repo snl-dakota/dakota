@@ -49,7 +49,7 @@ of the sigma values is turned off by default: only the design parameters are
 calibrated in default mode. 
 
 
-Topics::	bayesian_calibration, package_queso, not_yet_reviewed
+Topics::	bayesian_calibration, package_queso
 Examples::
 Theory::
 Faq::

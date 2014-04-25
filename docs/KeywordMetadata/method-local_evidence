@@ -8,7 +8,7 @@ Two local optimization methods
 are available: \c sqp (sequential quadratic programming or \c nip
 (nonlinear interior point method). 
 
-Topics::	not_yet_reviewed, evidence_theory
+Topics::	epistemic_uncertainty_quantification_methods, evidence_theory
 Examples::
 Theory::
 Faq::

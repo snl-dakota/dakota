@@ -62,7 +62,7 @@ and [\cite Eld06a "Eldred and Bichon, 2006"] and in the Uncertainty
 Quantification Capabilities chapter of the Users Manual 
 [\cite UsersMan "Adams et al., 2010"].
 
-Topics::	not_yet_reviewed
+Topics::        uncertainty_quantification, reliability_methods	
 Examples::
 Theory::
 Faq::

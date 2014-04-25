@@ -12,7 +12,7 @@ interval bounds on the output responses.
 \li \c sbo
 \li \c ea
 
-Topics::	not_yet_reviewed
+Topics::        uncertainty_quantification, epistemic_uncertainty_quantification_methods, interval_estimation
 Examples::
 Theory::
 Faq::

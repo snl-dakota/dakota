@@ -3,7 +3,7 @@ Take the highest scoring candidates
 Description::
 This strategy will select the \c n highest scoring candidates regardless of their
 position. This tends to group an entire round of points in the same area.
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

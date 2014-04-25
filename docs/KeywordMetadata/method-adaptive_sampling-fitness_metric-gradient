@@ -6,7 +6,7 @@ in range space (the outputs) of the two points. The output values used are
 predicted from the surrogate model. 
 This method attempts to evenly fill the range space of the surrogate.
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::
