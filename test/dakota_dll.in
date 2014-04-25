@@ -1,0 +1,30 @@
+# Dakota DLL test, based on rosenbrock users test 0
+
+# Use alternate dll_tester with 2 trials
+# 0=D'dll_tester', 0=DA'2', 0=Rn
+
+environment
+  tabular_graphics_data
+    tabular_graphics_file = 'rosen_multidim.dat' 
+
+method
+  multidim_parameter_study     
+    partitions = 8 8           
+
+model
+  single
+
+variables
+  continuous_design = 2                
+    lower_bounds     -2.0     -2.0     
+    upper_bounds      2.0      2.0     
+    descriptors       'x1'     "x2"    
+
+interface
+  analysis_driver = 'plugin_rosenbrock'
+    direct          
+
+responses
+  response_functions = 1    
+  no_gradients        
+  no_hessians

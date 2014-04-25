@@ -111,8 +111,6 @@ foreach my $file (@test_inputs) {
   # Check input file for multiple tests, uncomment lines needed for a
   # test, and comment out lines not needed for a test.
   my $cnt = ( defined $test_num ) ? $test_num : 0;
-  my $num_proc = 0;   # number of CPUs for a given test
-  my $restart = "";   # no restart by default
   my $found = 1;
   my $output_generated = 0;
   # pass through the loop at least twice since, in some cases, the #0 test is
@@ -136,15 +134,20 @@ foreach my $file (@test_inputs) {
     # trailing delimiter is important to avoid matching #nn with #n
     my $test0_tag = "(\\s|,)#0(\\s|,|\\\\)";
     my $test_tag = "(\\s|,)#$pq_cnt(\\s|,|\\\\)";
-
+    
     # per-test defaults for dakota command, input, restart, and timeout
     my $dakota_command = "dakota";
     my $dakota_args = "";
     my $dakota_input = $input;
     # Default is to write a unique restart per test, named for the test input
-    my $restart = "";
+    my $restart = "";   # no restart options by default
     my $restart_command = "-write_restart $restart_file";
-    # test timeout parameters (in seconds): these may be overridden by
+
+    # per-test defaults for number processors, output file, etc.
+    my $num_proc = 0;       # number of CPUs for a given test
+    my $check_output = "";  # log file to read test output from
+
+    # per-test timeout parameters (in seconds): these may be overridden by
     # individual test inputs through tdMM,taNN for delay and absolute timeout,
     # respectively
     my $delay = 60;      # delay before checking for file size changes (60 sec)
