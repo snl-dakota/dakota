@@ -411,7 +411,9 @@ if(ENABLE_DAKOTA_DOCS)
   endif()
 endif()
 
-option(DAKOTA_DLL_API "Enable DAKOTA DLL API." OFF)
+# The Dakota DLL API should build on all platforms, though the
+# ModelCenter portion will not
+option(DAKOTA_DLL_API "Enable DAKOTA DLL API." ON)
 
 add_subdirectory(examples)
 

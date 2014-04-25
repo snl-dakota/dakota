@@ -27,10 +27,11 @@
 #endif
 
 /// create and configure a new DakotaRunner, adding it to list of instances
-extern "C" void DAKOTA_DLL_FN dakota_create(int* dakota_ptr_int, char* logname);
+extern "C" void DAKOTA_DLL_FN dakota_create(int* dakota_ptr_int, 
+					    const char* logname);
 
 /// command DakotaRunner instance id to read from file dakotaInput
-extern "C" int DAKOTA_DLL_FN dakota_readInput(int id, char* dakotaInput);
+extern "C" int DAKOTA_DLL_FN dakota_readInput(int id, const char* dakotaInput);
 
 /// command DakotaRunner instance id to start (plugin interface and run strategy)
 extern "C" int DAKOTA_DLL_FN dakota_start(int id);

@@ -1,7 +1,7 @@
 # Dakota DLL test, based on rosenbrock users test 0
 
 # Use alternate dll_tester with 2 trials
-# 0=D'dll_tester', 0=DA'2', 0=Rn
+# 0=D'dll_tester', 0=DA'2', 0=Rn, 0=CheckOutput'dakota_dll.log'
 
 environment
   tabular_graphics_data

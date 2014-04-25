@@ -100,7 +100,7 @@ public:
 
   /// Set the input file and parse it, creating a Dakota
   /// LibraryEnvironment instance
-  void read_input(char* dakota_input)
+  void read_input(const char* dakota_input)
   {
     progOpts.input_file(dakota_input);
 
@@ -241,7 +241,7 @@ std::map<int ,DakotaRunner*> runners;
 
 } // end global namespace
 
-extern "C" void DAKOTA_DLL_FN dakota_create(int* dakota_ptr_int, char* logname)
+extern "C" void DAKOTA_DLL_FN dakota_create(int* dakota_ptr_int, const char* logname)
 { 
   // logname is the base filename for output and error to .log and .err
   std::string str_logname = logname ? logname : "dakota_dll";
@@ -252,7 +252,7 @@ extern "C" void DAKOTA_DLL_FN dakota_create(int* dakota_ptr_int, char* logname)
   *dakota_ptr_int = id;
 }
 
-extern "C" int DAKOTA_DLL_FN dakota_readInput(int id, char* dakotaInput)
+extern "C" int DAKOTA_DLL_FN dakota_readInput(int id, const char* dakotaInput)
 { 
   try {
     runners[id]->read_input(dakotaInput);
