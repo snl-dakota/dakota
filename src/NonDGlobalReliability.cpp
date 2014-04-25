@@ -304,14 +304,14 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   // refinement to the G-hat(u) surrogate.  Behavior needs to be repeatable
   // and AIS is not part of the EGRA spec: either reuse lhs_seed or hardwire.
   int refine_samples = 1000, refine_seed = 123457;
-  // these flags control if/when space transformation is needed in the sampler
-  bool x_model_flag = false, bounded_model = true;
+  // we pass a u-space model and enforce the EGRA GP bounds on the samples
+  bool x_model_flag = false, use_model_bounds = true;
   integrationRefinement = MMAIS; vary_pattern = true;
 
   importanceSampler.assign_rep(new
     NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples, refine_seed,
 			 rng, vary_pattern, integrationRefinement, cdfFlag,
-			 x_model_flag, bounded_model), false);
+			 x_model_flag, use_model_bounds), false);
 
   uSpaceModel.init_communicators(
     importanceSampler.maximum_evaluation_concurrency());

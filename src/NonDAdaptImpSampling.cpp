@@ -496,14 +496,31 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
   RealVector n_std_devs(numUncertainVars, false),
     n_l_bnds(numUncertainVars, false), n_u_bnds(numUncertainVars, false);
   n_std_devs = 1.;
-  // Apply distribution bounds to the std normal samples to avoid violating
-  // physical constraints
-  for (i=0; i<numUncertainVars; ++i) {
-    std::pair<Real, Real> bnds
-      = uSpaceModel.continuous_distribution_bounds(i+numContDesVars);
-    n_l_bnds[i] = bnds.first;
-    n_u_bnds[i] = bnds.second;
+
+  if (useModelBounds) {
+    // Apply a mixture of distribution bounds (when defined) and inferred/global
+    // bounds (when distribution bounds are undefined) to the std normal
+    // samples.  This feature is used for surrogates with bounded build data
+    // (e.g., GPs in EGRA --> prevents the rep point selection from wandering
+    // off and extrapolating on the GP trend function).
+    const RealVector& c_l_bnds = uSpaceModel.continuous_lower_bounds();
+    const RealVector& c_u_bnds = uSpaceModel.continuous_upper_bounds();
+    for (i=0; i<numUncertainVars; ++i) {
+      n_l_bnds[i] = c_l_bnds[i+numContDesVars];
+      n_u_bnds[i] = c_u_bnds[i+numContDesVars];
+    }
   }
+  else
+    // Apply distribution bounds to the std normal samples to avoid violating
+    // physical constraints.  This is the standard mode for cases without
+    // artificial bound constraints (PCE, SC, local reliability, stand-alone).
+    // Note: local reliability employs artificial bounds for the MPP search,
+    // but these are not relevant for the AIS process on the truth model.
+    for (i=0; i<numUncertainVars; ++i) {
+      std::pair<Real, Real> bnds
+	= uSpaceModel.continuous_distribution_bounds(i+numContDesVars);
+      n_l_bnds[i] = bnds.first; n_u_bnds[i] = bnds.second;
+    }
 
   // generate u-space samples by centering std normals around rep points
   RealMatrix lhs_samples_array;
