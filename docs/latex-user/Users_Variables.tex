@@ -153,7 +153,7 @@ response of the building.
 Aleatory uncertainties are irreducible variabilities inherent in
 nature.  They are characterized by having a sufficiently rich set of
 data as to allow modeling using probability distributions, and
-probabilistic methods are commonly used for propagating nput aleatory
+probabilistic methods are commonly used for propagating input aleatory
 uncertainties described by probability distribution specifications.
 The two following sections describe the continuous and discrete
 aleatory uncertain variables supported by Dakota.
@@ -252,7 +252,7 @@ The following types of discrete aleatory uncertain variables are available:
 Epistemic uncertainties are reducible uncertainties resulting from a
 lack of knowledge.  For epistemic uncertainties, data is generally
 sparse, making the use of probability theory questionable and leading
-to nonprobabilistic methods based on interval specifications  Dakota
+to nonprobabilistic methods based on interval specifications.  Dakota
 currently supports one epistemic uncertain variable type.
 
 \subsubsection{Continuous Epistemic Uncertain Variables}\label{variables:uncertain:ceuv}
@@ -316,17 +316,19 @@ refinement as the algorithm nears the optimal solution.
 
 \subsection{View}\label{variables:mixedview}
 As alluded to in the previous section, the iterative method selected
-for use in Dakota determines what subset, or view, of the variables
-data is active in the iteration. The general case of having a mixture
-of various different types of variables is supported within all of the
-Dakota methods even though certain methods will only modify certain
-types of variables (e.g., optimizers and least squares methods only
-modify design variables, and uncertainty quantification methods 
-typically only utilize uncertain variables).  
-This implies that variables which are not under the
-direct control of a particular iterator will be mapped through the
-interface in an unmodified state. This allows for a variety of
-parameterizations within the model in addition to those which are
+for use in Dakota partially determines what subset, or view, 
+of the variables data is active in the iteration. 
+(Section~\ref{variables:precedence} contains a discussion of
+how user overrides, response function type, and method are used to determine 
+active variable view.) The general case of having 
+a mixture of various different types of variables is supported 
+within all of the Dakota methods even though certain methods will 
+only modify certain types of variables (e.g., optimizers and least squares 
+methods only modify design variables, and uncertainty quantification methods 
+typically only utilize uncertain variables).  This implies that variables 
+which are not under the direct control of a particular iterator will be 
+mapped through the interface in an unmodified state. This allows for a 
+variety of parameterizations within the model in addition to those which are
 being used by a particular iterator, which can provide the convenience
 of consolidating the control over various modeling parameters in a
 single file (the Dakota input file). An important related point is
@@ -463,7 +465,7 @@ Figure~\ref{variables:figure01}.
   \label{variables:figure01}
 \end{figure}
 
-where ``\texttt{<int>}'' denotes an integer value,
+Integer values are denoted by ``\texttt{<int>}'',
 ``\texttt{<double>}'' denotes a double precision value, and
 ``\texttt{<string>}'' denotes a string value. Each of the colored
 blocks (black for variables, blue for active set vector, red for
