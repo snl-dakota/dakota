@@ -25,7 +25,6 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
   iterSched(problem_db.parallel_library(),
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
-	    get_min_procs_per_iterator(problem_db),
 	    problem_db.get_short("method.iterator_scheduling"))
 { }
 
@@ -35,7 +34,6 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
   iterSched(problem_db.parallel_library(),
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
-	    get_min_procs_per_iterator(problem_db),
 	    problem_db.get_short("method.iterator_scheduling"))
 {
   iteratedModel = model;
@@ -67,6 +65,30 @@ int MetaIterator::get_min_procs_per_iterator(ProblemDescDB& problem_db)
     min_procs_per_iterator *= num_e_serv;
   //if (evalScheduling == MASTER_SCHEDULING) ++min_procs_per_iterator;
   return min_procs_per_iterator;
+}
+
+
+int MetaIterator::
+get_max_procs_per_iterator(ProblemDescDB& problem_db, int max_eval_concurrency)
+{
+  // Define max_procs_per_iterator to estimate maximum processor usage
+  // from all lower levels.  With default_config = PUSH_DOWN, this is
+  // important to avoid pushing down more resources than can be utilized.
+
+  if (problem_db.get_string("interface.type") == "direct")
+    return problem_db.parallel_library().world_size();
+  else { // processors_per_analysis = 1 for system/fork
+    int max_procs_per_eval
+      = problem_db.get_sa("interface.application.analysis_drivers").size();
+    if (problem_db.get_short("interface.analysis_scheduling") ==
+	MASTER_SCHEDULING)
+      ++max_procs_per_eval;
+    int max_procs_per_iterator = max_procs_per_eval * max_eval_concurrency;
+    if (problem_db.get_short("interface.evaluation_scheduling") ==
+	MASTER_SCHEDULING)
+      ++max_procs_per_iterator;
+    return max_procs_per_iterator;
+  }
 }
 
 
@@ -103,6 +125,64 @@ allocate_by_name(const String& method_string, const String& model_ptr,
     probDescDB.parallel_library().parallel_configuration().si_parallel_level());
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
+}
+
+
+std::pair<int, int> MetaIterator::
+estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
+		    Model& the_model)
+{
+  // set_db_list_nodes() sets all the nodes w/i the linked lists to the
+  // appropriate Variables, Interface, and Response specs (as governed
+  // by the pointer strings in the method specification).
+  size_t method_index = probDescDB.get_db_method_node(); // for restoration
+  probDescDB.set_db_list_nodes(method_ptr);
+
+  if (the_model.is_null())
+    the_model = probDescDB.get_model();
+
+  const ParallelConfiguration& pc
+    = probDescDB.parallel_library().parallel_configuration();
+  int max_eval_concurrency
+    = iterSched.init_evaluation_concurrency(probDescDB, the_iterator,
+					    the_model, pc.w_parallel_level());
+
+  // needs to follow set_db_list_nodes
+  int min_ppi = get_min_procs_per_iterator(probDescDB),
+      max_ppi = get_max_procs_per_iterator(probDescDB, max_eval_concurrency);
+
+  probDescDB.set_db_list_nodes(method_index);            // restore
+  return std::pair<int, int>(min_ppi, max_ppi);
+}
+
+
+std::pair<int, int> MetaIterator::
+estimate_by_name(const String& method_string, const String& model_ptr,
+		 Iterator& the_iterator, Model& the_model)
+{
+  // model instantiation is DB-based, iterator instantiation is not
+  bool set = !model_ptr.empty(); size_t model_index;
+  if (set) {// && the_model.is_null())
+    model_index = probDescDB.get_db_model_node(); // for restoration
+    probDescDB.set_db_model_nodes(model_ptr);
+  }
+
+  if (the_model.is_null())
+    the_model = probDescDB.get_model();
+
+  const ParallelConfiguration& pc
+    = probDescDB.parallel_library().parallel_configuration();
+  int max_eval_concurrency
+    = iterSched.init_evaluation_concurrency(method_string, the_iterator,
+					    the_model, pc.w_parallel_level());
+
+  // needs to follow set_db_list_nodes
+  int min_ppi = get_min_procs_per_iterator(probDescDB),
+      max_ppi = get_max_procs_per_iterator(probDescDB, max_eval_concurrency);
+
+  if (set)
+    probDescDB.set_db_model_nodes(model_index);   // restore
+  return std::pair<int, int>(min_ppi, max_ppi);
 }
 
 

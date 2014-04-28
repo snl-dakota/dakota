@@ -25,15 +25,11 @@ namespace Dakota {
     ParallelLibrary::init_iterator_communicators(). */
 IteratorScheduler::
 IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers,
-		  int procs_per_iterator, int min_procs_per_iterator,
-		  short scheduling):
+		  int procs_per_iterator, short scheduling):
   parallelLib(parallel_lib), numIteratorJobs(1),
-  numIteratorServers(num_servers),                // DataMethod default = 0
-  procsPerIterator(procs_per_iterator),           // DataMethod default = 0
-  minProcsPerIterator(min_procs_per_iterator), iteratorCommRank(0),
-  iteratorCommSize(1), iteratorServerId(0), messagePass(false),
-  iteratorScheduling(scheduling) // DataMethod default = DEFAULT_SCHEDULING
-  //maxIteratorConcurrency(1)
+  numIteratorServers(num_servers), procsPerIterator(procs_per_iterator),
+  iteratorCommRank(0), iteratorCommSize(1), iteratorServerId(0),
+  messagePass(false), iteratorScheduling(scheduling)//,maxIteratorConcurrency(1)
 {
   // TO DO: support for multiple concurrent iterator partitions.
   //
@@ -60,14 +56,21 @@ IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers,
 /** Called from derived class constructors once maxIteratorConcurrency is
     defined but prior to instantiating Iterators and Models. */
 void IteratorScheduler::
-init_iterator_parallelism(int max_concurrency, short default_config)
+init_iterator_parallelism(int max_iterator_concurrency,
+			  int min_procs_per_iterator,
+			  int max_procs_per_iterator, short default_config)
 {
-  //maxIteratorConcurrency = max_concurrency;
+  //maxIteratorConcurrency = max_iterator_concurrency;
+  //minProcsPerIterator    = min_procs_per_iterator;
+  //maxProcsPerIterator    = (max_procs_per_iterator) ?
+  //  max_procs_per_iterator : parallelLib.world_size();
+  if (!max_procs_per_iterator)
+    max_procs_per_iterator = parallelLib.world_size();
 
   // Default parallel config for concurrent iterators is currently PUSH_DOWN:
   // >> parallel B&B has idle servers on initial phases.  When iterator servers
-  //    are specified, the default max_concurrency yields a peer partition for
-  //    use by distributed scheduling.
+  //    are specified, the default max_iterator_concurrency yields a peer
+  //    partition for use by distributed scheduling.
   // >> For multi_start/pareto_set, optimizer durations are likely to be large
   //    blocks with high variability; therefore, serialize at the source of the
   //    variability (PUSH_DOWN).
@@ -75,12 +78,12 @@ init_iterator_parallelism(int max_concurrency, short default_config)
   // >> OUU/Mixed UQ if the aleatory UQ used a fixed number of samples
 
   // Initialize iterator partitions after parsing but prior to output/restart.
-  // The default setting for max_concurrency is the number of specified iterator
-  // servers, which will yield a peer partition.
+  // The default setting for max_iterator_concurrency is the number of specified
+  // iterator servers, which will yield a peer partition.
   const ParallelLevel& si_pl = parallelLib.init_iterator_communicators(
-    numIteratorServers, procsPerIterator, minProcsPerIterator,
-    max_concurrency, default_config, iteratorScheduling,
-    false); // peer_dynamic not available prior to threading
+    numIteratorServers, procsPerIterator, min_procs_per_iterator,
+    max_procs_per_iterator, max_iterator_concurrency, default_config,
+    iteratorScheduling, false);// peer_dynamic not available prior to threading
 
   // retrieve the partition data
   //dedicatedMaster = si_pl.dedicated_master();
@@ -119,7 +122,7 @@ void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
 
   // Initialize iterator partitions for one iterator execution at a time
   const ParallelLevel& si_pl = parallel_lib.init_iterator_communicators(0, 0,
-    1, 1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
+    1, 1, 1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
   // set up output streams without iterator tagging
   parallel_lib.manage_outputs_restart(si_pl);
 }
@@ -156,7 +159,8 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
     bool multiproc = (pl.server_communicator_size() > 1);//iteratorCommSize > 1
     if (multiproc) the_model.init_comms_bcast_flag(true);
     // only master processor needs an iterator object:
-    the_iterator = problem_db.get_iterator(the_model); // new ctor chain
+    if (the_iterator.is_null())
+      the_iterator = problem_db.get_iterator(the_model);
     the_model.init_communicators(the_iterator.maximum_evaluation_concurrency());
     if (multiproc) the_model.stop_configurations();
   }
@@ -194,7 +198,8 @@ init_iterator(const String& method_string, Iterator& the_iterator,
     // only master processor needs an iterator object:
     // Note: problem_db.get_iterator() is not used since method_string
     // is insufficient to distinguish unique from shared instances.
-    the_iterator = Iterator(method_string, the_model);
+    if (the_iterator.is_null())
+      the_iterator = Iterator(method_string, the_model);
     the_model.init_communicators(the_iterator.maximum_evaluation_concurrency());
     if (multiproc) the_model.stop_configurations();
   }
@@ -211,6 +216,54 @@ init_iterator(const String& method_string, Iterator& the_iterator,
     // (e.g., Environment::execute/destruct()):
     the_iterator.method_string(method_string);
   }
+}
+
+
+/** This is a convenience function for computing the maximum
+    evaluation concurrency prior to concurrent iterator partitioning. */
+int IteratorScheduler::
+init_evaluation_concurrency(ProblemDescDB& problem_db, Iterator& the_iterator,
+			    Model& the_model, const ParallelLevel& pl)
+{
+  //if (pl.dedicated_master() && pl.server_id() == 0) // ded master processor
+  //  return;
+
+  ParallelLibrary& parallel_lib = problem_db.parallel_library();
+  int max_eval_concurrency;
+  if (pl.server_communicator_rank() == 0) {
+    if (the_iterator.is_null())
+      the_iterator = problem_db.get_iterator(the_model);
+    max_eval_concurrency = the_iterator.maximum_evaluation_concurrency();
+    if (pl.server_communicator_size() > 1)
+      parallel_lib.bcast(max_eval_concurrency, pl);
+  }
+  else
+    parallel_lib.bcast(max_eval_concurrency, pl);
+  return max_eval_concurrency;
+}
+
+
+/** This is a convenience function for computing the maximum
+    evaluation concurrency prior to concurrent iterator partitioning. */
+int IteratorScheduler::
+init_evaluation_concurrency(const String& method_string, Iterator& the_iterator,
+			    Model& the_model, const ParallelLevel& pl)
+{
+  //if (pl.dedicated_master() && pl.server_id() == 0) // ded master processor
+  //  return;
+
+  ParallelLibrary& parallel_lib = the_model.parallel_library();
+  int max_eval_concurrency;
+  if (pl.server_communicator_rank() == 0) {
+    if (the_iterator.is_null())
+      the_iterator = Iterator(method_string, the_model);
+    max_eval_concurrency = the_iterator.maximum_evaluation_concurrency();
+    if (pl.server_communicator_size() > 1)
+      parallel_lib.bcast(max_eval_concurrency, pl);
+  }
+  else
+    parallel_lib.bcast(max_eval_concurrency, pl);
+  return max_eval_concurrency;
 }
 
 

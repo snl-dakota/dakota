@@ -58,12 +58,35 @@ protected:
   //- Heading: Convenience member functions
   //
 
+  /// compute a minimum iterator partition size based on lower level overrides
+  int get_min_procs_per_iterator(ProblemDescDB& problem_db);
+  /// compute a maximum iterator partition size based on lower level concurrency
+  int get_max_procs_per_iterator(ProblemDescDB& problem_db,
+				 int max_eval_concurrency);
+
   /// initialize the_iterator and the_model based on method_ptr
   void allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 			   Model& the_model);
   /// initialize the_iterator based on method_string
   void allocate_by_name(const String& method_string, const String& model_ptr,
 			Iterator& the_iterator,	Model& the_model);
+
+  /// estimate minimum and maximum processors per iterator needed for
+  /// init_iterator_parallelism(); instantiates the_iterator and the_model
+  /// as needed, but on minimal processor ranks (is later augmented by
+  /// allocate_by_pointer())
+  std::pair<int, int> estimate_by_pointer(const String& method_ptr,
+					  Iterator& the_iterator,
+					  Model& the_model);
+  /// estimate minimum and maximum processors per iterator needed for
+  /// init_iterator_parallelism(); instantiates the_iterator and the_model
+  /// as needed, but on minimal processor ranks (is later augmented by
+  /// allocate_by_name())
+  std::pair<int, int> estimate_by_name(const String& method_string,
+				       const String& model_ptr,
+				       Iterator& the_iterator,
+				       Model& the_model);
+
   /// free communicators for the_iterator and the_model
   void deallocate(Iterator& the_iterator, Model& the_model);
 
@@ -82,8 +105,6 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// compute a minimum iterator partition size based on lower level overrides
-  int get_min_procs_per_iterator(ProblemDescDB& problem_db);
 };
 
 } // namespace Dakota

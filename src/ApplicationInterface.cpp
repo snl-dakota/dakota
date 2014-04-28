@@ -113,7 +113,9 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
 
-  // Define a min_procs_per_eval which captures overrides at the analysis level.
+  bool direct_int = (interfaceType == "direct");
+
+  // Define a min_procs_per_eval which captures overrides at the analysis level
   // This is managed separately from procsPerEvalSpec to avoid overconstraining
   // the evaluation partition (passing in procsPerAnalysis for procsPerEval
   // would serialize the analysis level).  The min_procs lower bounds are
@@ -122,12 +124,17 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   if (numAnalysisServersSpec)
     min_procs_per_eval *= numAnalysisServersSpec;
   //if (analysisScheduling == MASTER_SCHEDULING) ++min_procs_per_eval;
-  bool peer_dynamic_avail
-    = (interfaceType != "direct" && !asynchLocalEvalStatic);
+
+  // max_procs_per_eval captures available concurrency at the analysis level
+  int max_procs_per_eval = (direct_int) ? worldSize : numAnalysisDrivers;
+
+  // Peer dynamic requires asynch local executions and dynamic job assignment
+  bool peer_dynamic_avail = (!direct_int && !asynchLocalEvalStatic);
+
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, procsPerEvalSpec, min_procs_per_eval,
-    max_eval_concurrency, asynchLocalEvalConcSpec, PUSH_UP,// default_config
-    evalScheduling, peer_dynamic_avail);
+    max_procs_per_eval, max_eval_concurrency, asynchLocalEvalConcSpec,
+    PUSH_UP, evalScheduling, peer_dynamic_avail);
 
   set_evaluation_communicators(message_lengths);
 
@@ -136,11 +143,13 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // master never calls init_eval_comms (prevents some warnings in
   // ParallelLibrary::resolve_inputs).
   if ( !ieDedMasterFlag || iteratorCommRank ) {
+    int min_procs_per_analysis = 1,
+        max_procs_per_analysis = (direct_int) ? worldSize : 1;
 
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
-      numAnalysisServersSpec, procsPerAnalysisSpec, 1,// min_procs_per_analysis
-      numAnalysisDrivers, asynchLocalAnalysisConcSpec, PUSH_UP,// default_config
-      analysisScheduling, false); // peer_dynamic is not available
+      numAnalysisServersSpec, procsPerAnalysisSpec, min_procs_per_analysis,
+      max_procs_per_analysis, numAnalysisDrivers, asynchLocalAnalysisConcSpec,
+      PUSH_UP, analysisScheduling, false); // peer_dynamic is not available
 
     set_analysis_communicators();
   }

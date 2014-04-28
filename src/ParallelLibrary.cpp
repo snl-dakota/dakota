@@ -145,9 +145,9 @@ void ParallelLibrary::initialize_timers()
 void ParallelLibrary::
 init_communicators(const ParallelLevel& parent_pl, int num_servers,
 		   int procs_per_server, int min_procs_per_server,
-		   int max_concurrency, int asynch_local_concurrency,
-		   short default_config, short scheduling_override,
-		   bool peer_dynamic_avail)
+		   int max_procs_per_server, int max_concurrency,
+		   int asynch_local_concurrency, short default_config,
+		   short scheduling_override, bool peer_dynamic_avail)
 {
   ParallelLevel child_pl;
   child_pl.numServers     = num_servers;      // request/default to be updated
@@ -158,8 +158,9 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
 
   // resolve_inputs selects master vs. peer scheduling
   resolve_inputs(child_pl, parent_pl.serverCommSize, min_procs_per_server,
-		 max_concurrency, capacity_multiplier, default_config,
-		 scheduling_override, peer_dynamic_avail, print_rank);
+		 max_procs_per_server, max_concurrency, capacity_multiplier,
+		 default_config, scheduling_override, peer_dynamic_avail,
+		 print_rank);
 
   // create child_pl by partitioning parent_pl 
   if (child_pl.dedicatedMasterFlag)
@@ -200,11 +201,22 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
     former takes precedence. */
 void ParallelLibrary::
 resolve_inputs(ParallelLevel& child_pl, int avail_procs,
-	       int min_procs_per_server, int max_concurrency,
-	       int capacity_multiplier, short default_config,
-	       short scheduling_override, bool peer_dynamic_avail,
-	       bool print_rank)
+	       int min_procs_per_server, int max_procs_per_server, 
+	       int max_concurrency, int capacity_multiplier,
+	       short default_config, short scheduling_override,
+	       bool peer_dynamic_avail, bool print_rank)
 {
+  // min_procs_per_server provides a mechanism to flow user overrides
+  // bottom-up to balance top-down resource allocation.  In particular, it
+  // prevents over-allocation at higher levels, resulting in insufficient
+  // resources to support lower level overrides.
+
+  // max_procs_per_server provides a mechanism to flow concurrency limits 
+  // bottom-up.  It primarily serves two use cases:
+  // > enforces procs_per_server = 1 for system/fork analysis servers
+  // > improves logic for PUSH_DOWN of concurrency (doesn't delegate more
+  //   than lower levels can accommodate)
+
 #ifdef MPI_DEBUG
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
@@ -226,6 +238,14 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
        scheduling_override == PEER_DYNAMIC_SCHEDULING ||
        scheduling_override == PEER_STATIC_SCHEDULING);
 
+  if (min_procs_per_server > max_procs_per_server) {
+    if (print_rank)
+      Cerr << "\nError: bad input to ParallelLibrary::resolve_inputs.  Minimum "
+	   << "partition size (" << min_procs_per_server << ")\n       exceeds "
+	   << "maximum partition size (" << max_procs_per_server << ")."
+	   << std::endl;
+    abort_handler(-1);
+  }
   if (min_procs_per_server > avail_procs) {
     if (print_rank)
       Cerr << "\nError: insufficient available processors (" << avail_procs
@@ -262,7 +282,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // ------------------------------------------
     // in this case, we are tightly constrained to respecting both overrides
 
-    if (min_procs_per_server > procs_per_server) {
+    if (procs_per_server < min_procs_per_server) {
       if (print_rank)
 	Cerr << "\nError: processors_per_server override (" << procs_per_server
 	     << ") is inconsistent with minimum server size ("
@@ -270,6 +290,11 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 	     << "allocation or overrides\n";
       abort_handler(-1);
     }
+
+    if (procs_per_server > max_procs_per_server && print_rank)
+      Cerr << "\nWarning: processors_per_server override (" << procs_per_server
+	   << ") exceeds the estimated\n         maximum server size ("
+	   << max_procs_per_server << ") that can be utilized.\n\n";
 
     int total_request = num_servers * procs_per_server;
     if (total_request == avail_procs) {
@@ -302,8 +327,9 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // --------------------------
     // only num_servers specified
     // --------------------------
-    // in this case, we honor the override, but have freedom to vary server
-    // size in order to avoid idle processors
+    // in this case, we honor the override, but have more freedom to vary
+    // server size (within the {min,max}_procs_per_server bounds) in order
+    // to avoid idle processors
 
     int min_procs = num_servers * min_procs_per_server;
     if (avail_procs < min_procs) {
@@ -339,7 +365,22 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 
     int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
     procs_per_server = server_procs / num_servers; // >= min_procs_per_server
-    proc_remainder   = server_procs % num_servers;
+    if (procs_per_server >= max_procs_per_server) {// include = due to remainder
+      procs_per_server = max_procs_per_server; // truncate if necessary
+      proc_remainder   = 0; // don't reallocate; leave any remainder as idle
+      if (print_rank) {
+	int utilized = num_servers  * procs_per_server,
+	    idle     = server_procs - utilized;
+	if (idle)
+	  Cerr << "\nWarning: user override of servers (" << num_servers
+	       << ") combined with maximum partition size ("
+	       << max_procs_per_server << ")\n        results in idle "
+	       << "processors (avail = " << server_procs << ", utilized = "
+	       << utilized << ", idle = " << idle << ")\n\n";
+      }
+    }
+    else
+      proc_remainder = server_procs % num_servers;
   }
   else if (procs_per_server > 0) { // Data default is 0: user request of 1
                                    // executes this block as a manual override
@@ -353,7 +394,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // decompositions, but for now we will treat a user override at any level
     // as gospel.  Also, peer_dynamic_avail is restricted to pps = 1.
 
-    if (min_procs_per_server > procs_per_server) {
+    if (procs_per_server < min_procs_per_server) {
       if (print_rank)
 	Cerr << "\nError: processors_per_server override (" << procs_per_server
 	     << ") is inconsistent with minimum server size ("
@@ -361,6 +402,11 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 	     << "allocation or overrides.\n";
       abort_handler(-1);
     }
+
+    if (procs_per_server > max_procs_per_server && print_rank)
+      Cerr << "\nWarning: processors_per_server override (" << procs_per_server
+	   << ") exceeds the estimated\n         maximum server size ("
+	   << max_procs_per_server << ") that can be utilized.\n\n";
 
     proc_remainder = 0; // all cases, no freedom to increment server sizes
     if (procs_per_server == avail_procs) {
@@ -438,23 +484,39 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
       procs_per_server = avail_procs; num_servers = 1; ded_master = false;
     }
     else if (default_config == PUSH_DOWN) {
-      // default_config taking precedence over a scheduling_override request
-      // makes sense from an efficiency standpoint, but is neglecting a user
-      // request in lieu of a built-in default.
-      if (master_override && print_rank)
-        Cerr << "\nWarning: default_config takes precedence over a master "
-	     << "scheduling request when\n         neither num_servers nor "
-	     << "procs_per_server is specified.  Overriding to peer "
-	     << "partition.\n\n";
-      procs_per_server = avail_procs; num_servers = 1; ded_master = false;
-      // TO DO: neglects available _concurrency_ at lower levels.  PUSH_UP
-      // is informed by min_procs_per_server, flowing bottom-up from user
-      // overrides; PUSH_DOWN needs max_procs_per_server, flowing bottom-up
-      // from concurrency limits at each level.
-
-      // TO DO: passing max_procs_per_server=1 from ApplicationInterface::
-      // init_communicators() could provide a mechanism to prevent
-      // multiprocessor analysisComms with system/fork interfaces!
+      // PUSH_UP is informed by min_procs_per_server, flowing bottom-up from
+      // user overrides; PUSH_DOWN is informed by max_procs_per_server, flowing
+      // bottom-up from concurrency limits at each level.
+      if (master_override)
+	ded_master = true;
+      else if (peer_override)
+        ded_master = false;
+      else { // try peer, then master
+	// maximize procs_per_server for PUSH_DOWN
+	int peer_pps     = std::min(max_procs_per_server, avail_procs),
+	    peer_servers = avail_procs / peer_pps;
+	if (num_servers == 1 || (peer_dynamic_avail && peer_pps == 1) ||
+	    max_concurrency <= peer_servers * capacity_multiplier)
+	  ded_master = false;
+	else // ded_master if num_servers >= 2 in calculation to follow
+	     // avail_procs - 1 >= 2 * pps
+	  ded_master = (avail_procs >= 2 * max_procs_per_server + 1);
+      }
+      int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+      procs_per_server = std::min(max_procs_per_server, server_procs),
+      num_servers      = server_procs / procs_per_server;
+      if (procs_per_server == max_procs_per_server) {
+	proc_remainder = 0;
+	int idle = server_procs % procs_per_server;
+	if (idle)
+	  Cerr << "\nWarning: PUSH_DOWN configuration combined with maximum "
+	       << "partition size (" << max_procs_per_server << ")\n        "
+	       << "results in idle processors (avail = " << server_procs
+	       << ", utilized = " << num_servers * procs_per_server
+	       << ", idle = " << idle << ")\n\n";
+      }
+      else
+	proc_remainder = server_procs % procs_per_server;
     }
     else { // concurrency pushed up
       // round up loaded servers but avoid (int)std::ceil((Real)num/(Real)denom)
@@ -485,7 +547,25 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
       num_servers = std::min(server_procs / min_procs_per_server,
 			     loaded_servers);
       procs_per_server = server_procs / num_servers;
-      proc_remainder   = server_procs % num_servers;
+      if (procs_per_server >= max_procs_per_server) {// = included for remainder
+	procs_per_server = max_procs_per_server; // truncate if necessary
+	proc_remainder   = 0; // don't reallocate; leave any remainder as idle
+	// Note: could potentially increase num_servers for reduced
+	// procs_per_server, but additional servers will see no jobs (assuming
+	// accurate concurrency estimates) --> simpler to retain as idle.
+	if (print_rank) {
+	  int utilized = num_servers  * procs_per_server,
+	      idle     = server_procs - utilized;
+	  if (idle)
+	    Cerr << "\nWarning: PUSH_DOWN configuration combined with maximum "
+		 << "partition size (" << max_procs_per_server << ")\n        "
+		 << "results in idle processors (avail = " << server_procs
+		 << ", utilized = " << utilized << ", idle = " << idle
+		 << ")\n\n";
+	}
+      }
+      else
+	proc_remainder = server_procs % num_servers;
     }
   }
 

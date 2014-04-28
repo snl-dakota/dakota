@@ -25,10 +25,6 @@ EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db):
   localSearchProb(
     problem_db.get_real("method.hybrid.local_search_probability"))
 {
-  maxIteratorConcurrency = 1;
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency);
-  summaryOutputFlag = iterSched.lead_rank();
-
   const String& global_ptr
     = problem_db.get_string("method.hybrid.global_method_pointer");
   const String& global_name
@@ -38,19 +34,33 @@ EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db):
   const String& local_name
     = problem_db.get_string("method.hybrid.local_method_name");
 
+  maxIteratorConcurrency = 1;
+
+  // See notes in ConcurrentMetaIterator.
+  const String& sub_model_ptr
+    = problem_db.get_string("method.sub_model_pointer");
+
+  std::pair<int, int> g_ppi = (global_name.empty()) ?
+    estimate_by_pointer(global_ptr, globalIterator, globalModel) :
+    estimate_by_name(global_name, sub_model_ptr, globalIterator, iteratedModel);
+  std::pair<int, int> l_ppi = (local_name.empty()) ?
+    estimate_by_pointer(local_ptr, localIterator, localModel) :
+    estimate_by_name(local_name, sub_model_ptr, localIterator, iteratedModel);
+
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
+				      std::min(g_ppi.first,  l_ppi.first),
+				      std::max(g_ppi.second, l_ppi.second));
+  summaryOutputFlag = iterSched.lead_rank();
+
   if (!global_ptr.empty())
     allocate_by_pointer(global_ptr, globalIterator, globalModel);
   else if (!global_name.empty())
-    allocate_by_name(global_name,
-		     problem_db.get_string("method.sub_model_pointer"),
-		     globalIterator, iteratedModel);
+    allocate_by_name(global_name, sub_model_ptr, globalIterator, iteratedModel);
 
   if (!local_ptr.empty())
     allocate_by_pointer(local_ptr, localIterator, localModel);
   else if (!local_name.empty())
-    allocate_by_name(local_name,
-		     problem_db.get_string("method.sub_model_pointer"),
-		     localIterator, iteratedModel);
+    allocate_by_name(local_name, sub_model_ptr, localIterator, iteratedModel);
 }
 
 
@@ -65,15 +75,26 @@ EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
   // to validate iteratedModel against any model pointers (--> warnings, see
   // SurrBasedLocalMinimizer for example).
 
+  const String& global_name
+    = problem_db.get_string("method.hybrid.global_method_name");
+  const String& local_name
+    = problem_db.get_string("method.hybrid.local_method_name");
+  String empty_model_ptr; // for now
+
   maxIteratorConcurrency = 1;
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+
+  std::pair<int, int> g_ppi = estimate_by_name(global_name,    empty_model_ptr,
+					       globalIterator, iteratedModel);
+  std::pair<int, int> l_ppi = estimate_by_name(local_name,     empty_model_ptr,
+					       localIterator,  iteratedModel);
+
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
+				      std::min(g_ppi.first,  l_ppi.first),
+				      std::max(g_ppi.second, l_ppi.second));
   summaryOutputFlag = iterSched.lead_rank();
 
-  String empty_model_ptr; // for now
-  allocate_by_name(problem_db.get_string("method.hybrid.global_method_name"),
-		   empty_model_ptr, globalIterator, iteratedModel);
-  allocate_by_name(problem_db.get_string("method.hybrid.local_method_name"),
-		   empty_model_ptr, localIterator,  iteratedModel);
+  allocate_by_name(global_name, empty_model_ptr, globalIterator, iteratedModel);
+  allocate_by_name(local_name,  empty_model_ptr, localIterator,  iteratedModel);
 }
 
 

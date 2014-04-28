@@ -44,21 +44,31 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db):
   }
 
   maxIteratorConcurrency = num_iterators;
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+
+  const String& model_ptr = probDescDB.get_string("method.sub_model_pointer");
+  int min_procs_per_iter = INT_MAX, max_procs_per_iter = 0;
+  std::pair<int, int> ppi_pr;
+  for (i=0; i<num_iterators; ++i) {
+    if (lightwtCtor)
+      ppi_pr = estimate_by_name(methodList[i], model_ptr,
+				selectedIterators[i], iteratedModel);
+    else
+      ppi_pr = estimate_by_pointer(methodList[i], selectedIterators[i],
+				   selectedModels[i]);
+    if (ppi_pr.first  < min_procs_per_iter) min_procs_per_iter = ppi_pr.first;
+    if (ppi_pr.second > max_procs_per_iter) max_procs_per_iter = ppi_pr.second;
+  }
+
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
+				      min_procs_per_iter, max_procs_per_iter);
   summaryOutputFlag = iterSched.lead_rank();
 
   // Instantiate all Models and Iterators
   selectedIterators.resize(num_iterators); // slaves also need for run_iterator
-  if (lightwtCtor) {
-    const String& model_ptr = probDescDB.get_string("method.sub_model_pointer");
-    String empty_model_ptr; // avoids repetitive setting of model nodes
-    if (!model_ptr.empty())
-      problem_db.set_db_model_nodes(model_ptr);
-    iteratedModel = problem_db.get_model();
+  if (lightwtCtor)
     for (i=0; i<num_iterators; ++i)
-      allocate_by_name(methodList[i], empty_model_ptr,
-		       selectedIterators[i], iteratedModel);
-  }
+      allocate_by_name(methodList[i], model_ptr, selectedIterators[i],
+		       iteratedModel);
   else {
     selectedModels.resize(num_iterators);
     for (i=0; i<num_iterators; ++i)
@@ -92,14 +102,25 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 	 << std::endl;
     abort_handler(-1);
   }
+  selectedIterators.resize(num_iterators); // slaves also need for run_iterator
+  String empty_model_ptr; // no need to reassign DB model nodes
 
   maxIteratorConcurrency = num_iterators;
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+
+  int min_procs_per_iter = INT_MAX, max_procs_per_iter = 0;
+  std::pair<int, int> ppi_pr;
+  for (i=0; i<num_iterators; ++i) {
+    ppi_pr = estimate_by_name(methodList[i], empty_model_ptr,
+			      selectedIterators[i], iteratedModel);
+    if (ppi_pr.first  < min_procs_per_iter) min_procs_per_iter = ppi_pr.first;
+    if (ppi_pr.second > max_procs_per_iter) max_procs_per_iter = ppi_pr.second;
+  }
+
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
+				      min_procs_per_iter, max_procs_per_iter);
   summaryOutputFlag = iterSched.lead_rank();
 
   // Instantiate all Models and Iterators
-  selectedIterators.resize(num_iterators); // slaves also need for run_iterator
-  String empty_model_ptr; // no need to reassign DB model nodes
   for (i=0; i<num_iterators; ++i)
     allocate_by_name(methodList[i], empty_model_ptr,
 		     selectedIterators[i], iteratedModel);

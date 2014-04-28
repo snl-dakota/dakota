@@ -44,8 +44,8 @@ public:
   // default constructor
   //IteratorScheduler();
   /// constructor
-  IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers,
-		    int procs_per_iterator = 0, int min_procs_per_iterator = 1,
+  IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers = 0,
+		    int procs_per_iterator = 0,
 		    short scheduling = DEFAULT_SCHEDULING);
   /// destructor
   ~IteratorScheduler();
@@ -85,12 +85,25 @@ public:
 
   /// convenience function for initializing iterator communicators, setting
   /// parallel configuration attributes, and managing outputs and restart.
-  void init_iterator_parallelism(int max_concurrency,
+  void init_iterator_parallelism(int max_iterator_concurrency,
+				 int min_procs_per_iterator = 1,
+				 int max_procs_per_iterator = 0, // dummy
 				 short default_config = PUSH_DOWN);
 
   /// convenience function for deallocating the concurrent iterator
   /// parallelism level
   void free_iterator_parallelism();
+
+  /// convenience function for performing sufficient initialization to
+  /// define the maximum evaluation concurrency
+  int init_evaluation_concurrency(ProblemDescDB& problem_db,
+				  Iterator& the_iterator, Model& the_model,
+				  const ParallelLevel& pl);
+  /// convenience function for performing sufficient initialization to
+  /// define the maximum evaluation concurrency
+  int init_evaluation_concurrency(const String& method_string,
+				  Iterator& the_iterator, Model& the_model,
+				  const ParallelLevel& pl);
 
   /// short convenience function for distributing control among
   /// master_dynamic_schedule_iterators(), serve_iterators(), and
@@ -123,14 +136,15 @@ public:
   int   numIteratorJobs;     ///< number of iterator executions to schedule
   int   numIteratorServers;  ///< number of concurrent iterator partitions
   int   procsPerIterator;    ///< partition size request
-  int   minProcsPerIterator; ///< lower bound on partition size
+  //int minProcsPerIterator; //   lower bound on iterator partition size
+  //int maxProcsPerIterator; //   upper bound on iterator partition size
   int   iteratorCommRank;    ///< processor rank in iteratorComm
   int   iteratorCommSize;    ///< number of processors in iteratorComm
   int   iteratorServerId;    ///< identifier for an iterator server
 
   bool  messagePass;         ///< flag for message passing at si level
   short iteratorScheduling;  ///< {DEFAULT,MASTER,PEER}_SCHEDULING
-  //int maxIteratorConcurrency; ///< max concurrency possible in meta-algorithm
+  //int maxIteratorConcurrency; // max concurrency possible in meta-algorithm
 
 private:
 

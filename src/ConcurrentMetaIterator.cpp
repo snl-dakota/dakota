@@ -45,14 +45,14 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
 
   // Instantiate the model.  A model is used on all processors, even a
   // dedicated master.
+  ParallelLibrary& parallel_lib = problem_db.parallel_library();
   const String& concurr_iter_ptr
     = problem_db.get_string("method.sub_method_pointer");
   const String& concurr_iter_name
     = problem_db.get_string("method.sub_method_name");
   const String& model_ptr = problem_db.get_string("method.sub_model_pointer");
   int param_set_len; size_t restore_index;
-  bool print_rank
-    = (problem_db.parallel_library().world_rank() == 0); // prior to lead_rank()
+  bool print_rank = (parallel_lib.world_rank() == 0); // prior to lead_rank()
   if (!concurr_iter_ptr.empty()) {
     lightwtCtor = false;
     restore_index = problem_db.get_db_method_node(); // for restoration
@@ -73,6 +73,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   }
   iteratedModel = problem_db.get_model();
   initialize_model(param_set_len);
+  const ParallelConfiguration& pc = parallel_lib.parallel_configuration();
 
   // estimation of param_set_len is dependent on the iteratedModel
   // --> concurrent iterator partitioning is pushed downstream a bit
@@ -85,7 +86,25 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
 	   << "number of random jobs." << std::endl;
     abort_handler(-1);
   }
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  // It is not practical to estimate the evaluation concurrency without 
+  // instantiating the iterator (see, e.g., NonDPolynomialChaos), and here we
+  // have a circular dependency: we need the evaluation concurrency from the
+  // iterator to estimate the max_ppi for input to the si_pl partition, but
+  // we want to segregate iterator construction based on the si_pl partition.
+  // To resolve this dependency, we instantiate the iterator based on the w_pl
+  // level and then augment it below based on the si_pl level.  One iterator
+  // instantiation by name is wasted, but problem_db_get_iterator() should
+  // just return the previously instantiated instance.
+  int max_eval_conc = (lightwtCtor) ?
+    iterSched.init_evaluation_concurrency(concurr_iter_name, selectedIterator,
+					  iteratedModel, pc.w_parallel_level()):
+    iterSched.init_evaluation_concurrency(problem_db, selectedIterator,
+					  iteratedModel, pc.w_parallel_level());
+  // min and max ppi need DB list nodes set to sub-iterator/sub-model
+  int min_ppi = get_min_procs_per_iterator(problem_db),
+      max_ppi = get_max_procs_per_iterator(problem_db, max_eval_conc);
+
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
   summaryOutputFlag = iterSched.lead_rank();
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators (empty selectedIterator
@@ -94,10 +113,9 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     return;
 
   // Instantiate the iterator.
-  ParallelLibrary& parallel_lib = problem_db.parallel_library();
   if (lightwtCtor) {
     iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
-      parallel_lib.parallel_configuration().si_parallel_level());
+			    pc.si_parallel_level());
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
       Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
     if (!model_ptr.empty())
@@ -105,7 +123,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   }
   else {
     iterSched.init_iterator(problem_db, selectedIterator, iteratedModel,
-      parallel_lib.parallel_configuration().si_parallel_level());
+			    pc.si_parallel_level());
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
       Cout << "Concurrent Iterator = "
 	   << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
@@ -132,18 +150,27 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
 
   int param_set_len;
   initialize_model(param_set_len);
+  ParallelLibrary& parallel_lib = problem_db.parallel_library();
+  const ParallelConfiguration& pc = parallel_lib.parallel_configuration();
 
   maxIteratorConcurrency = iterSched.numIteratorJobs
     = problem_db.get_rv("method.concurrent.parameter_sets").length()
     / param_set_len + problem_db.get_int("method.concurrent.random_jobs");
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
-    if (problem_db.parallel_library().world_rank() == 0) // prior to lead_rank()
+    if (parallel_lib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
 	   << "Please specify either a\n       list of parameter sets or a "
 	   << "number of random jobs." << std::endl;
     abort_handler(-1);
   }
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency);
+  int max_eval_conc = 
+    iterSched.init_evaluation_concurrency(concurr_iter_name, selectedIterator,
+					  iteratedModel, pc.w_parallel_level());
+  // min and max ppi need DB list nodes set to sub-iterator/sub-model
+  int min_ppi = get_min_procs_per_iterator(problem_db),
+      max_ppi = get_max_procs_per_iterator(problem_db, max_eval_conc);
+
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
   summaryOutputFlag = iterSched.lead_rank();
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators (empty selectedIterator
@@ -152,9 +179,8 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
     return;
 
   // Instantiate the iterator
-  ParallelLibrary& parallel_lib = problem_db.parallel_library();
   iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
-    parallel_lib.parallel_configuration().si_parallel_level());
+			  pc.si_parallel_level());
   if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
     Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
 
