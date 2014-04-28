@@ -1,8 +1,8 @@
 # TODO: make documentation build cross-platform
 # TODO: dep for latex_modify
 
-# Java is needed for new reference, but not REQUIRED just yet
-find_package(Java)
+# Java is needed for new reference
+find_package(Java REQUIRED)
 find_package(Doxygen REQUIRED)
 find_package(LATEX REQUIRED)
 # Only required for PDFs of Doxygen, but unconditional currently
@@ -17,59 +17,53 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake.in
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-ref.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-newref.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-newref)
-
 # create Latex header with Dakota version information
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex)
 
-# Doxygen new reference dependencies
-file(GLOB newref_kw_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "KeywordMetadata/*")
-file(GLOB newref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
-file(GLOB newref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "NewRef_*.dox")
-# TODO: omit .svn from the GLOB
-#file(GLOB_RECURSE newref_common RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "common/*") 
-
 # Doxygen reference dependencies
-file(GLOB dox_ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
-file(GLOB dox_ref_images RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images/*")
-set(dox_ref_deps 
-  ${dox_ref_dox} Doxyfile-ref ${dox_ref_images} header-ref.html header-ref.tex)
+file(GLOB ref_kw_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "KeywordMetadata/*")
+file(GLOB ref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
+file(GLOB ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
+file(GLOB ref_images RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images/*")
+set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox} Doxyfile-ref 
+  ${ref_images} header-ref.html header-ref.tex Dakota.bib)
 
 # Doxygen developer dependencies
 file(GLOB dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
 set(dox_dev_deps 
   ${dox_dev_dox} Doxyfile header-dev.html header-dev.tex)
 
+
+# Generate the doxygen files for ref man keywords and topics,
+# specifying only required dependencies
 add_custom_command( 
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
           ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
   DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
           ${Dakota_SOURCE_DIR}/src/dakota.input.nspec 
-          ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
-	  ${Dakota_SOURCE_DIR}/docs/NewRef_TopicTree.txt
-	  ${Dakota_SOURCE_DIR}/docs/TopicMetadata
-	  ${Dakota_SOURCE_DIR}/docs/NewRef_Topics_Intro.dox
-	  ${newref_kw_md}
-	  ${newref_topic_md}
+	  ${ref_kw_md}
+	  ${ref_topic_md}
+	  ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
+	  ${Dakota_SOURCE_DIR}/docs/Ref_Topics_Intro.dox
   COMMAND ${Java_JAVA_EXECUTABLE} 
   ARGS -jar ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
     ${Dakota_SOURCE_DIR}/src/dakota.input.nspec 
     ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
-    ${Dakota_SOURCE_DIR}/docs/NewRef_TopicTree.txt
+    ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
     ${Dakota_SOURCE_DIR}/docs/TopicMetadata
-    ${Dakota_SOURCE_DIR}/docs/NewRef_Topics_Intro.dox
+    ${Dakota_SOURCE_DIR}/docs/Ref_Topics_Intro.dox
     ${CMAKE_CURRENT_BINARY_DIR} 
 )
  
+# Generate the master DakotaReferenceManual.dox
 add_custom_command(
-  DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/newref_concat_dox.sh 
+  DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
     ${Dakota_SOURCE_DIR}/src/dakota.input.summary
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
-    ${newref_dox}
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/newref_concat_dox.sh 
+    ${ref_dox}
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
   ARGS ${CMAKE_CURRENT_SOURCE_DIR} 
     ${Dakota_SOURCE_DIR}/src/dakota.input.summary
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox 
@@ -78,15 +72,7 @@ add_custom_command(
 ) 
 
 
-add_custom_target(docs-newref
-  # Only list the explicit doxygen deps
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-newref
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dakota.bib
-    ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
-  COMMAND doxygen Doxyfile-newref
-)
-
-
+# BMA: I simplified this as currently reference does not depend on developers
 
 # Generate .dox into doxygen tag files
 add_custom_command(
@@ -96,9 +82,13 @@ add_custom_command(
   COMMENT "Doxygen: Developer's Manual (first pass: tag generation)"
 )
 
+# BMA: Added an OUTPUT here for index.html since 2 passes don't work
+# with new manual
 add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
+          ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
   DEPENDS ${dox_ref_deps}
+          ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
   COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile-ref
   COMMENT "Doxygen: Reference Manual (first pass: tag generation)"
 )
@@ -113,13 +103,15 @@ add_custom_command(
   COMMENT "Doxygen: Developer's Manual (final pass)"
 )
 
-add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dakota-developers.tag
-          ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
-  COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile-ref
-  COMMENT "Doxygen: Reference Manual (final pass)"
-)
+# BMA: Running doxygen twice seems to break on the new reference manual
+# I commented this and instead made the above command generate the final index.html dep.
+#add_custom_command(
+#  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
+#  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dakota-developers.tag
+#          ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
+#  COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile-ref
+#  COMMENT "Doxygen: Reference Manual (final pass)"
+#)
 
 # Target to perform only doxygen generation phase
 add_custom_target(docs-doxygen 

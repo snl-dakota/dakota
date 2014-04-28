@@ -17,15 +17,15 @@ echo "\\endverbatim" >> DakotaInputSpec.dox
 ## Concatenate the Doxygen files
 # Some are header files, plus the collected topics and keyword pages, 
 # and the input spec summary
-cat $src_docs/NewRef_Main.dox \
-  $src_docs/NewRef_Sample_Inputs.dox \
-  $src_docs/NewRef_Input_Spec.dox \
-  $src_docs/NewRef_Spec_Summary.dox DakotaInputSpec.dox \
+cat $src_docs/Ref_Main.dox \
+  $src_docs/Ref_Sample_Inputs.dox \
+  $src_docs/Ref_Input_Spec.dox \
+  $src_docs/Ref_Spec_Summary.dox DakotaInputSpec.dox \
   DakotaTopics.dox \
-  $src_docs/NewRef_Keywords_Intro.dox DakotaKeywords.dox > ${output_dox}
+  $src_docs/Ref_Keywords_Intro.dox DakotaKeywords.dox > ${output_dox}
 
 # Don't need this as the Java incorporates the topics header
-#  $src_docs/NewRef_TopicsIntro.dox 
+#  $src_docs/Ref_TopicsIntro.dox 
 
 # mark the end of doxygen file
 echo '*/' >> ${output_dox}

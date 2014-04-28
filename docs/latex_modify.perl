@@ -12,6 +12,10 @@
 ################################
 # Reference Manual: refman.tex #
 ################################
+
+# BMA: skip until new PDF generation resolved
+if (0) {
+
 $texfile = "latex-ref/refman.tex";
 $newtexfile = $texfile . "_";
 open (INPUT,  "<$texfile")    || die "cannot open original file $texfile\n$!";
@@ -88,6 +92,10 @@ foreach $texfile (@texfiles) {
     rename $newtexfile, $texfile;
   }
 }
+
+}
+# BMA: skip until new PDF generation resolved
+
 
 #################################
 # Developers Manual: refman.tex #

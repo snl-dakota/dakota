@@ -1,96 +1,556 @@
-namespace Dakota { // for some reason, this doesn't work with mainpage
+/**
+\mainpage
 
-/** \mainpage Dakota Reference Manual
+The \b Dakota (<b>D</b>esign <b>A</b>nalysis <b>K</b>it for <b>O</b>ptimization and <b>T</b>erascale
+<b>A</b>pplications) toolkit provides a flexible, extensible interface
+between analysis codes and iteration methods.
 
-\image html logo_3d_halfsize.jpg
+<!-----
+ %Dakota contains algorithms for:
+\li optimization with gradient and nongradient-based
+methods
+\li uncertainty quantification with sampling, reliability,
+stochastic expansion, and interval estimation methods
+\li parameter estimation with nonlinear least squares methods
+\li sensitivity/variance analysis with design of experiments and parameter
+study capabilities
+\li Bayesian calibration approaches
 
-\author Brian M. Adams, Lara E. Bauman, William J. Bohnhoff, Keith
-R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred,
-Patricia D. Hough, Kenneth T. Hu, John D. Jakeman, Laura P. Swiler,
-J. Adam Stephens, Dena M. Vigil
-
-\htmlonly
-<b>Main Page Table of Contents</b>
-<ul>
-<li> <a href="index.html#RefOverview">Overview</a> 
-<li> <a href="index.html#RefSpec">Input Specification Reference</a> 
-<li> <a href="index.html#RefAddtnl">Additional Resources</a>
-</ul>
-\endhtmlonly
-
-
-\section RefOverview Overview
-
-
-The %Dakota (Design Analysis Kit for Optimization and Terascale
-Applications) toolkit provides a flexible, extensible interface
-between analysis codes and iteration methods.  %Dakota contains
-algorithms for optimization with gradient and nongradient-based
-methods, uncertainty quantification with sampling, reliability,
-stochastic expansion, and interval estimation methods, parameter
-estimation with nonlinear least squares methods, and
-sensitivity/variance analysis with design of experiments and parameter
-study capabilities.  (Solution verification and Bayesian approaches
-are also in development.)  These capabilities may be used on their own
-or as components within advanced algorithms such as surrogate-based
-optimization, mixed integer nonlinear programming, mixed
-aleatory-epistemic uncertainty quantification, or optimization under
-uncertainty. By employing object-oriented design to implement
-abstractions of the key components required for iterative systems
-analyses, the %Dakota toolkit provides a flexible problem-solving
-environment for design and performance analysis of computational
-models on high performance computers.
+These capabilities may be used on their own
+or as components within advanced algorithms such as: 
+\li surrogate-based optimization
+\li mixed integer nonlinear programming
+\li mixed aleatory-epistemic uncertainty quantification
+\li or optimization under uncertainty
+----->
 
 The Reference Manual focuses on documentation of the various input
-commands for %Dakota.  It follows closely the structure of
-dakota.input.summary, the master input specification summary.  For
-information on software structure, refer to the <a
-href="../html-dev/index.html">Developers Manual</a>, and for a tour of
-%Dakota features and capabilities, refer to the Users Manual [\ref
-UsersMan "Adams et al., 2010"].
+commands for %Dakota. It follows closely the structure of
+dakota.input.summary. For more information see: \ref input_spec.
+
+For information on software structure, refer to the 
+Developers Manual, and for a tour of
+%Dakota features and capabilities, refer to the Users Manual 
+[\cite UsersMan "Adams et al., 2010"].
+
+\section main-how_to How to Use this Manual
+\li To learn how to run Dakota from the command line, see \subpage running_dakota
+\li To learn to how to restart Dakota studies, see \ref dakota_restart
+\li To learn about the Dakota restart utility, see \ref dakota_restart_utility
+
+To find more information about a specific keyword
+-# Use the search box at the top right (currently only finds keyword names)
+-# Browse the Keywords tree on the left navigation pane
+-# Look at the \subpage input_spec
+-# Navigate through the keyword pages, starting from the \subpage keywords
+
+To find more information about a Dakota related topic
+-# Browse the Topics Area on the left navigation pane
+-# Navigate through the topics pages, starting from the \subpage topics
+
+A bibliography for the Reference Manual is provided in 
+\ref citelist
 
 
-\section RefSpec Input Specification Reference
+<!--------------------------------------------------------->
+
+\page running_dakota Running Dakota
+
+The Dakota executable file is named \c dakota (\c dakota.exe on
+Windows). 
+
+\section running_dakota-usage Usage
+
+If this command is entered at the command prompt without any
+arguments, a usage message similar to the following appears:
+\verbatim
+usage: dakota [options and <args>]
+        -help (Print this summary)
+        -version (Print Dakota version number)
+        -input <$val> (REQUIRED Dakota input file $val)
+        -output <$val> (Redirect Dakota standard output to file $val)
+        -error <$val> (Redirect Dakota standard error to file $val)
+        -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
+        -no_input_echo (Do not echo Dakota input file)
+        -check (Perform input checks)
+        -pre_run [$val] (Perform pre-run (variables generation) phase)
+        -run [$val] (Perform run (model evaluation) phase)
+        -post_run [$val] (Perform post-run (final results) phase)
+        -read_restart [$val] (Read an existing Dakota restart file $val)
+        -stop_restart <$val> (Stop restart file processing at evaluation $val)
+        -write_restart [$val] (Write a new Dakota restart file $val)
+\endverbatim
+
+Of these available command line inputs, only the \c input
+option is required, and the \c -input marker can be omitted if the
+input file name is the final item on the command line (see Examples); 
+all other command-line inputs are optional. 
+\li \c help prints the usage message above. 
+\li \c version prints the version number of the executable
+\li \c check invokes a dry-run mode in which the input file is processed and
+checked for errors, but the study is not performed
+\li \c input provides the name of the Dakota input file
+\li \c output and \c error options provide file
+names for redirection of the Dakota standard output (stdout) and
+standard error (stderr), respectively.
+\li  By default, Dakota will echo
+the input file to the output stream, but \c no_input_echo
+can override this behavior.
+\li \c parser input is for debugging and will not be further described here
+\li \c read_restart and \c write_restart commands
+provide the names of restart databases to read from and
+write to, respectively
+\li \c stop_restart command 
+limits the number of function evaluations read from the restart
+database (the default is all the evaluations) for those cases in which
+some evaluations were erroneous or corrupted. Restart management is an
+important technique for retaining data from expensive engineering
+applications. 
+\li \c -pre_run, \c -run, and \c -post_run instruct Dakota to run one or more
+execution phases, excluding others. 
 
 
-In %Dakota, the \e environment creates the top level \e iterator and
-manages output mechanisms.  A \c model contains a set of \e variables,
-an \e interface, and a set of \e responses, and the iterator operates
-on the model to map the variables into responses using the interface.
-In a %Dakota input file, the user specifies these components through
-environment, method, model, variables, interface, and responses
-keyword specifications.  The Reference Manual closely follows this
-structure, with introductory material followed by detailed
-documentation of the environment, method, model, variables, interface,
-and responses keyword specifications:
+Note that these command line inputs can be
+abbreviated so long as the abbreviation is unique, so the following
+are valid, unambiguous specifications: \c -h,
+\c -v, \c -c, \c -i, \c -o,
+\c -e, \c -s, \c -w, 
+\c -re, \c -pr, \c -ru, and \c -po and can be
+used in place of the longer forms of the command line inputs.
 
-\ref IntroCommands
+For information on restarting Dakota, see \subpage dakota_restart and
+\subpage dakota_restart_utility.
 
-\ref EnvCommands
+\section running_dakota-examples Examples
+ 
+To run Dakota with a particular input file, the following syntax can
+be used:
+\verbatim
+    dakota -i dakota.in
+\endverbatim
+or more simply
+\verbatim
+    dakota dakota.in
+\endverbatim
 
-\ref MethodCommands
+This will echo the standard output (stdout) and standard error
+(stderr) messages to the terminal. To redirect stdout and stderr to
+separate files, the \c -o and \c -e command line options
+may be used:
+\verbatim
+    dakota -i dakota.in -o dakota.out -e dakota.err
+\endverbatim
+or
+\verbatim
+    dakota -o dakota.out -e dakota.err dakota.in
+\endverbatim
 
-\ref ModelCommands
+Alternatively, any of a variety of Unix redirection variants can be
+used. Refer to \cite And86 for more information on Unix redirection.
+The simplest of these redirects stdout to another file:
+\verbatim
+    dakota dakota.in > dakota.out
+\endverbatim
 
-\ref VarCommands
+\section running_dakota-phases Execution Phases
 
-\ref InterfCommands
+Dakota has three execution phases: \c pre-run, \c run, and \c post-run.
+\li \c pre-run can be used to generate variable sets
+\li \c run (core run) invokes the simulation to
+evaluate variables, producing responses
+\li \c post-run accepts
+variable/response sets and analyzes the results (for example,
+calculate correlations from a set of samples). Currently only two
+modes are supported and only for sampling, parameter study, and DACE
+methods:
 
-\ref RespCommands
+(1) pre-run only with optional tabular output of variables:
+\verbatim
+    dakota -i dakota.in -pre_run [::myvariables.dat]
+\endverbatim
+
+(2) post-run only with required tabular input of variables/responses:
+\verbatim
+    dakota -i dakota.in -post_run myvarsresponses.dat::
+\endverbatim
+
+<!--------------------------------------------------------->
+
+\page dakota_restart Restarting Dakota Studies
+
+Dakota was developed for solving problems that require multiple calls
+to computationally expensive simulation codes. In some cases you may
+want to conduct the same optimization, but to a tighter final
+convergence tolerance. This would be costly if the entire optimization
+analysis had to be repeated. Interruptions imposed by computer usage
+policies, power outages, and system failures could also result in
+costly delays. However, Dakota automatically records the variable and
+response data from all function evaluations so that new executions of
+Dakota can pick up where previous executions left off.
+
+The Dakota restart file (e.g., \c dakota.rst) is written in a
+portable binary format. The portability derives from use of the XDR
+standard. 
+The primary restart commands, at the command line, are \c -read_restart, 
+\c -write_restart, and \c -stop_restart.
+
+\section dakota_restart-writing Writing Restart Files
+
+To write a restart file using a particular name, the
+\c -write_restart command line input (may be abbreviated as
+\c -w) is used:
+\verbatim
+    dakota -i dakota.in -write_restart my_restart_file
+\endverbatim
+If no \c -write_restart specification is used, then Dakota will
+still write a restart file, but using the default name
+\c dakota.rst instead of a user-specified name.
+
+To turn restart
+recording off, the user may use the 
+\ref interface-analysis_drivers-deactivate-restart_file
+keyword, in the \c interface block.
+This can increase execution speed and reduce
+disk storage requirements, but at the expense of a loss in the ability
+to recover and continue a run that terminates prematurely. Obviously,
+this option is not recommended when function evaluations are costly or
+prone to failure. Please note that using the \c deactivate \c restart_file
+specification will result in a zero length restart file
+with the default name dakota.rst, which can overwrite an exiting file.
+
+\section dakota_restart-using Using Restart Files
 
 
-\section RefAddtnl Additional Resources
+To restart Dakota from a restart file, the \c -read_restart
+command line input (may be abbreviated as \c -r) is used:
+\verbatim
+    dakota -i dakota.in -read_restart my_restart_file
+\endverbatim
+
+If no \c -read_restart specification is used, then Dakota will
+not read restart information from any file (i.e., the default is no
+restart processing).
+
+To read in only a portion of a restart file, the
+\c -stop_restart control (may be abbreviated as \c -s) is
+used to specify the number of entries to be read from the
+database. Note that this integer value corresponds to the restart
+record processing counter (as can be seen when using the
+\c print utility (see \ref dakota_restart_utility)
+which may differ from the evaluation numbers used in the previous run
+if, for example, any duplicates were detected (since these duplicates
+are not recorded in the restart file). In the case of a
+\c -stop_restart specification, it is usually desirable to
+specify a new restart file using \c -write_restart so as to
+remove the records of erroneous or corrupted function evaluations. For
+example, to read in the first 50 evaluations from
+\c dakota.rst:
+\verbatim
+    dakota -i dakota.in -r dakota.rst -s 50 -w dakota_new.rst
+\endverbatim
+
+The \c dakota_new.rst file will contain the 50 processed
+evaluations from \c dakota.rst as well as any new evaluations.
+All evaluations following the \f$50^{\mathrm{th}}\f$ in \c dakota.rst
+have been removed from the latest restart record.
+
+\section dakota_restart-appending Appending to a Restart File
+
+If the \c -write_restart and \c -read_restart
+specifications identify the same file (including the case where
+\c -write_restart is not specified and \c -read_restart
+identifies \c dakota.rst), then new evaluations will be appended
+to the existing restart file.
+
+\section dakota_restart-multiples Working with multiple Restart Files
 
 
-A bibliography for the Reference Manual is provided in:
+If the \c -write_restart and
+\c -read_restart specifications identify different files, then
+the evaluations read from the file identified by
+\c -read_restart are first written to the
+\c -write_restart file. Any new evaluations are then appended
+to the \c -write_restart file. In this way, restart operations
+can be chained together indefinitely with the assurance that all of
+the relevant evaluations are present in the latest restart file.
 
-\ref Bibliography
+\section dakota_restart-works How it Works
 
-Project web pages are maintained at http://dakota.sandia.gov/
-including documentation at http://dakota.sandia.gov/documentation.html
-and a list of publications at
-http://dakota.sandia.gov/publications.html
 
-*/
+Dakota's restart algorithm relies on its duplicate detection
+capabilities. Processing a restart file populates the list of function
+evaluations that have been performed. Then, when the study is
+restarted, it is started from the beginning (not a warm start) and
+many of the function evaluations requested by the iterator are
+intercepted by the duplicate detection code. This approach has the
+primary advantage of restoring the complete state of the iteration
+(including the ability to correctly detect subsequent duplicates) for
+all methods/iterators without the need for
+iterator-specific restart code. However, the possibility exists for
+numerical round-off error to cause a divergence between the
+evaluations performed in the previous and restarted studies. This has
+been extremely rare to date.
 
-} // namespace Dakota
+<!--------------------------------------------------------->
+
+\page dakota_restart_utility The Dakota Restart Utility
+
+The Dakota restart utility program provides a variety of facilities
+for managing restart files from Dakota executions. The executable
+program name is \c dakota_restart_util} and it has the
+following options, as shown by the usage message returned when
+executing the utility without any options:
+\verbatim
+Usage: 
+  dakota_restart_util print <restart_file>
+  dakota_restart_util to_neutral <restart_file> <neutral_file>
+  dakota_restart_util from_neutral <neutral_file> <restart_file>
+  dakota_restart_util to_pdb <restart_file> <pdb_file>
+  dakota_restart_util to_tabular <restart_file> <text_file>
+  dakota_restart_util remove <double> <old_restart_file> <new_restart_file>
+  dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>
+  dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>
+\endverbatim
+
+Several of these functions involve format conversions. In particular,
+the binary format used for restart files can be converted to ASCII
+text and printed to the screen, converted to and from a neutral file
+format, converted to a PDB format for use at Lawrence Livermore
+National Laboratory, or converted to a tabular format for importing
+into 3rd-party graphics programs. In addition, a restart file with
+corrupted data can be repaired by value or id, and multiple restart
+files can be combined to create a master database.
+
+\section dakota_restart_utility-print Print Command
+
+The \c print option is quite useful for interrogating the
+contents of a particular restart file, since the binary format is not
+convenient for direct inspection. The restart data is printed in full
+precision, so that exact matching of points is possible for restarted
+runs or corrupted data removals. For example, the following command
+\verbatim
+    dakota_restart_util print dakota.rst
+\endverbatim
+
+results in output similar to the following:
+\verbatim
+    ------------------------------------------
+    Restart record    1  (evaluation id    1):
+    ------------------------------------------
+    Parameters:
+                          1.8000000000000000e+00 intake_dia
+                          1.0000000000000000e+00 flatness
+
+    Active response data:
+    Active set vector = { 3 3 3 3 }
+                         -2.4355973813420619e+00 obj_fn
+                         -4.7428486677140930e-01 nln_ineq_con_1
+                         -4.5000000000000001e-01 nln_ineq_con_2
+                          1.3971143170299741e-01 nln_ineq_con_3
+     [ -4.3644298963447897e-01  1.4999999999999999e-01 ] obj_fn gradient
+     [  1.3855136437818300e-01  0.0000000000000000e+00 ] nln_ineq_con_1 gradient
+     [  0.0000000000000000e+00  1.4999999999999999e-01 ] nln_ineq_con_2 gradient
+     [  0.0000000000000000e+00 -1.9485571585149869e-01 ] nln_ineq_con_3 gradient
+
+    ------------------------------------------
+    Restart record    2  (evaluation id    2):
+    ------------------------------------------
+    Parameters:
+                          2.1640000000000001e+00 intake_dia
+                          1.7169994018008317e+00 flatness
+
+    Active response data:
+    Active set vector = { 3 3 3 3 }
+                         -2.4869127192988878e+00 obj_fn
+                          6.9256958799989843e-01 nln_ineq_con_1
+                         -3.4245008972987528e-01 nln_ineq_con_2
+                          8.7142207937157910e-03 nln_ineq_con_3
+     [ -4.3644298963447897e-01  1.4999999999999999e-01 ] obj_fn gradient
+     [  2.9814239699997572e+01  0.0000000000000000e+00 ] nln_ineq_con_1 gradient
+     [  0.0000000000000000e+00  1.4999999999999999e-01 ] nln_ineq_con_2 gradient
+     [  0.0000000000000000e+00 -1.6998301774282701e-01 ] nln_ineq_con_3 gradient
+
+    ...<snip>...
+
+    Restart file processing completed: 11 evaluations retrieved.
+\endverbatim
+
+\section dakota_restart_utility-neutral Neutral File Format
+
+A Dakota restart file can be converted to a neutral file format using
+a command like the following:
+\verbatim
+    dakota_restart_util to_neutral dakota.rst dakota.neu
+\endverbatim
+which results in a report similar to the following:
+\verbatim
+    Writing neutral file dakota.neu
+    Restart file processing completed: 11 evaluations retrieved.
+\endverbatim
+
+Similarly, a neutral file can be returned to binary format using a
+command like the following:
+\verbatim
+    dakota_restart_util from_neutral dakota.neu dakota.rst
+\endverbatim
+which results in a report similar to the following:
+\verbatim
+    Reading neutral file dakota.neu
+    Writing new restart file dakota.rst
+    Neutral file processing completed: 11 evaluations retrieved.
+\endverbatim
+
+The contents of the generated neutral file are similar to the 
+following (from the first two records for the
+Cylinder example in \cite UsersMan).
+\verbatim
+    6 7 2 1.8000000000000000e+00 intake_dia 1.0000000000000000e+00 flatness 0 0 0 0
+    NULL 4 2 1 0 3 3 3 3 1 2 obj_fn nln_ineq_con_1 nln_ineq_con_2 nln_ineq_con_3
+      -2.4355973813420619e+00 -4.7428486677140930e-01 -4.5000000000000001e-01
+       1.3971143170299741e-01 -4.3644298963447897e-01  1.4999999999999999e-01
+       1.3855136437818300e-01  0.0000000000000000e+00  0.0000000000000000e+00
+       1.4999999999999999e-01  0.0000000000000000e+00 -1.9485571585149869e-01 1
+    6 7 2 2.1640000000000001e+00 intake_dia 1.7169994018008317e+00 flatness 0 0 0 0
+    NULL 4 2 1 0 3 3 3 3 1 2 obj_fn nln_ineq_con_1 nln_ineq_con_2 nln_ineq_con_3
+      -2.4869127192988878e+00 6.9256958799989843e-01 -3.4245008972987528e-01
+       8.7142207937157910e-03 -4.3644298963447897e-01  1.4999999999999999e-01
+       2.9814239699997572e+01  0.0000000000000000e+00  0.0000000000000000e+00
+       1.4999999999999999e-01  0.0000000000000000e+00 -1.6998301774282701e-01 2
+\endverbatim
+
+This format is not intended for direct viewing (\c print should
+be used for this purpose). Rather, the neutral file capability has
+been used in the past for managing portability of restart data across
+platforms (recent use of the XDR standard for portable binary formats
+has eliminated this need) or for advanced repair of restart records
+(in cases where the \c remove command was insufficient).
+
+\section dakota_restart_utility-tabular Tabular Format
+
+Conversion of a binary restart file to a tabular format enables
+convenient import of this data into 3rd-party post-processing tools
+such as Matlab, TECplot, Excel, etc. This facility is nearly identical
+to the output activated by the \ref environment-tabular_graphics_data 
+keyword in the Dakota input file specification, but
+with two important differences:
+-# No function evaluations are suppressed as they are with
+  \c tabular_graphics_data (i.e., any internal finite
+  difference evaluations are included).
+-# The conversion can be performed posthumously, i.e., for Dakota
+  runs executed previously.
+
+An example command for converting a restart file to tabular format is:
+\verbatim
+    dakota_restart_util to_tabular dakota.rst dakota.m
+\endverbatim
+which results in a report similar to the following:
+\verbatim
+    Writing tabular text file dakota.m
+    Restart file processing completed: 10 evaluations tabulated.
+\endverbatim
+
+The contents of the generated tabular file are similar to the following 
+(from the example in \cite UsersMan).
+Note that while evaluations resulting from numerical derivative offsets would be
+reported (as described above), derivatives returned as part of the
+evaluations are not reported (since they do not readily fit within a
+compact tabular format):
+\verbatim
+%eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2
+       1            0.9            1.1         0.0002           0.26           0.76
+       2   0.6433962264   0.6962264151   0.0246865569  0.06584549662   0.1630331079
+       3   0.5310576935   0.5388046558  0.09360081618  0.01261994597  0.02478161031
+       4    0.612538853   0.6529854907  0.03703861037  0.04871110113   0.1201206246
+       5   0.5209215947   0.5259311717   0.1031862798  0.00839372202  0.01614279999
+       6   0.5661606434   0.5886684401  0.06405197568  0.02620365411  0.06345021064
+       7   0.5083873357    0.510239856   0.1159458957 0.003337755086 0.006151042802
+       8   0.5001577143   0.5001800249   0.1248312163 6.772666885e-05 0.0001012002012
+       9   0.5000000547   0.5000000598   0.1249999428 2.485652461e-08 3.238746073e-08
+      10            0.5            0.5          0.125 2.942091015e-15 3.60822483e-15
+\endverbatim
+
+\section dakota_restart_utility-concat Concatenation of Multiple Restart Files
+
+In some instances, it is useful to combine restart files into a single
+master function evaluation database. For example, when constructing a
+data fit surrogate model, data from previous studies can be pulled in
+and reused to create a combined data set for the surrogate fit. An
+example command for concatenating multiple restart files is:
+\verbatim
+    dakota_restart_util cat dakota.rst.1 dakota.rst.2 dakota.rst.3 dakota.rst.all
+\endverbatim
+which results in a report similar to the following:
+\verbatim
+    Writing new restart file dakota.rst.all
+    dakota.rst.1 processing completed: 10 evaluations retrieved.
+    dakota.rst.2 processing completed: 110 evaluations retrieved.
+    dakota.rst.3 processing completed: 65 evaluations retrieved.
+\endverbatim
+
+The \c dakota.rst.all database now contains 185 evaluations and
+can be read in for use in a subsequent Dakota study using the
+\c -read_restart option to the \c dakota executable.
+
+\section dakota_restart_utility-corrupted Removal of Corrupted Data
+
+On occasion, a simulation or computer system failure may cause a
+corruption of the Dakota restart file. For example, a simulation crash
+may result in failure of a post-processor to retrieve meaningful data.
+If 0's (or other erroneous data) are returned from the user's
+\c analysis_driver, then this bad data will get recorded in the
+restart file. If there is a clear demarcation of where corruption
+initiated (typical in a process with feedback, such as gradient-based
+optimization), then use of the \c -stop_restart option for the
+\c dakota executable can be effective in continuing the study
+from the point immediately prior to the introduction of bad data. If,
+however, there are interspersed corruptions throughout the restart
+database (typical in a process without feedback, such as sampling),
+then the \c remove and \c remove_ids options of
+\c dakota_restart_util can be useful.
+
+An example of the command syntax for the \c remove option is:
+\verbatim
+    dakota_restart_util remove 2.e-04 dakota.rst dakota.rst.repaired
+\endverbatim
+which results in a report similar to the following:
+\verbatim
+    Writing new restart file dakota.rst.repaired
+    Restart repair completed: 65 evaluations retrieved, 2 removed, 63 saved.
+\endverbatim
+where any evaluations in \c dakota.rst having an active response
+function value that matches \c 2.e-04 within machine precision
+are discarded when creating \c dakota.rst.repaired.
+
+An example of the command syntax for the \c remove_ids option is:
+\verbatim
+    dakota_restart_util remove_ids 12 15 23 44 57 dakota.rst dakota.rst.repaired
+\endverbatim
+which results in a report similar to the following:
+\verbatim
+    Writing new restart file dakota.rst.repaired
+    Restart repair completed: 65 evaluations retrieved, 5 removed, 60 saved.
+\endverbatim
+where evaluation ids \c 12, \c 15, \c 23,
+\c 44, and \c 57 have been discarded when creating
+\c dakota.rst.repaired. An important detail is that, unlike the 
+\c -stop_restart option which operates on restart record numbers, 
+the \c remove_ids
+option operates on evaluation ids. Thus, removal is not necessarily
+based on the order of appearance in the restart file. This distinction
+is important when removing restart records for a run that contained
+either asynchronous or duplicate evaluations, since the restart
+insertion order and evaluation ids may not correspond in these cases
+(asynchronous evaluations have ids assigned in the order of job
+creation but are inserted in the restart file in the order of job
+completion, and duplicate evaluations are not recorded which
+introduces offsets between evaluation id and record number). This can
+also be important if removing records from a concatenated restart
+file, since the same evaluation id could appear more than once. In
+this case, all evaluation records with ids matching the
+\c remove_ids list will be removed.
+
+If neither of these removal options is sufficient to handle a
+particular restart repair need, then the fallback position is to
+resort to direct editing of a neutral file 
+to perform the necessary
+modifications.
