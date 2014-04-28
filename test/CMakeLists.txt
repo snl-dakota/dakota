@@ -376,24 +376,6 @@ if(DAKOTA_HAVE_HDF5
   link_directories(binary_io_test ${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
 endif()
 
-if(DAKOTA_DLL_API)
-  # dll_tester needs to include Dakota/src/dll_api.h
-  include_directories(${Dakota_SOURCE_DIR}/src)
-  if (DAKOTA_MODELCENTER)
-    # setup link dirs before inclusion of dll_api library
-    link_directories(
-      "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/lib/i686-cygwin-cygwinNT")
-  endif()
-  list(APPEND dakota_test_executables dll_tester)
-  add_executable(dll_tester dll_tester.cpp)
-  
-  target_link_libraries(dll_tester dll_api)
-  if (DAKOTA_MODELCENTER)
-    # likely not needed due to CMake dependency managemane of dll_api library
-    target_link_libraries(dll_tester PHXCppApi)
-  endif()
-endif()
-
 # If needed, copy files from test/Debug or test/Release into test/.
 # Also temporary workaround until Dakota can properly detect .exe as
 # analysis driver: copy the .exe to a file with no extension. These

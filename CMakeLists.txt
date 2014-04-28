@@ -206,6 +206,11 @@ endif()
 # and src subdirectories
 option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
 if(DAKOTA_HAVE_GSL)
+  # We don't include CBLAS due to numerical differences between GSL
+  # CBLAS and system CBLAS.  This might cause issues when static
+  # linking on platforms that don't have a CBLAS, or will require the
+  # user to add it to the link libraries at configure time.  Might
+  # prefer to probe for libcblas, then conditionally set this option.
   set(GSL_WITHOUT_CBLAS TRUE)
   find_package(GSL REQUIRED)
 endif(DAKOTA_HAVE_GSL)
