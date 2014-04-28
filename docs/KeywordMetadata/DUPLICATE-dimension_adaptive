@@ -1,6 +1,9 @@
 Blurb::
+Perform automated expansion refinement by adapting to dimensions with higher `importance'.
 Description::
-Topics::	empty
+Perform automated expansion refinement by adapting to dimensions with higher `importance'.
+Dimension_adaptive refinement can be further specified as either sobol or generalized (decay not supported). Each of these automated refinement approaches makes use of the max_iterations and convergence_tolerance iteration controls
+Topics::
 Examples::
 Theory::
 Faq::

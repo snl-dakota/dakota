@@ -1,6 +1,8 @@
 Blurb::
+Use a multiplicative correction factor to improve the local accuracy of a surrogatel.
 Description::
-Topics::	empty
+Use a multiplicative correction factor to improve the local accuracy of a surrogatel.
+Topics::
 Examples::
 Theory::
 Faq::

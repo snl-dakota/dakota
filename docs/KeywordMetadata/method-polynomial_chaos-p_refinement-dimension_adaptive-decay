@@ -1,6 +1,8 @@
 Blurb::
+Use spectral coefficient decay rates from a rate estimation technique similar to Richardson extrapolation to control dimension refinement.
 Description::
-Topics::	empty
+Use spectral coefficient decay rates from a rate estimation technique similar to Richardson extrapolation to control dimension refinement. Low decay rates result in high dimension preference.
+Topics::
 Examples::
 Theory::
 Faq::

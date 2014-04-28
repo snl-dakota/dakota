@@ -1,0 +1,9 @@
+Blurb::
+Specify the number of samples used to improve a probabilty estimate.
+Description::
+Specify the number of samples used to improve a probabilty estimate. If using uni-modal sampling all samples are assigned to the sampling center. If using multi-modal sampling the samples are split between mutiple samples according to some internally computed weights.
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

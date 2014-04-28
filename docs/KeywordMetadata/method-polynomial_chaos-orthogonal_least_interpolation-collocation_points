@@ -1,6 +1,8 @@
 Blurb::
+Specify the number of collocation points used to estimate PCE coefficients using orthogonal least interpolation
 Description::
-Topics::	empty
+Specify the number of collocation points used to estimate PCE coefficients using orthogonal least interpolation
+Topics::
 Examples::
 Theory::
 Faq::

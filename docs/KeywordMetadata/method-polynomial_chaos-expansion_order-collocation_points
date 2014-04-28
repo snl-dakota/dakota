@@ -1,8 +1,7 @@
 Blurb::
- Specify the number of collocation points used to estimate PCE coefficients using regression
+Specify the number of collocation points used to estimate PCE coefficients using regression or orthogonal-least-interpolation.
 Description::
-If collocation_points or collocation_ratio is specified, the PCE coefficients will be determined by regression. collocation_points determines the number of model
-samples used in the regression.
+Specify the number of collocation points used to estimate PCE coefficients using regression or orthogonal-least-interpolation.
 Topics::
 Examples::
 Theory::

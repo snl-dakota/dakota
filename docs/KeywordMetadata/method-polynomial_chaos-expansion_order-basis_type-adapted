@@ -1,6 +1,8 @@
 Blurb::
+Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion.
 Description::
-Topics::	empty
+Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion.
+Topics::
 Examples::
 Theory::
 Faq::

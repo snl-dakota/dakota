@@ -1,6 +1,8 @@
 Blurb::
+The \f$l_2\f$ pentalty used when performing compressed sensing with elastic net.
 Description::
-Topics::	empty
+The \f$l_2\f$ pentalty used when performing compressed sensing with elastic net.
+Topics::
 Examples::
 Theory::
 Faq::

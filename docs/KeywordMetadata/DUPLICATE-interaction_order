@@ -1,0 +1,9 @@
+Blurb::
+Specify the maximum number of variables allowed in an interaction when reporting interaction metrics.
+Description::
+The interaction_order option has been added to allow suppression of higher-order interactions, since the output volume (and memory and compute consumption) of these results could be extensive for high dimensional problems (note: the previous univariate_effects specification is equivalent to interaction_order = 1 in the current specification). Similar to suppression of interactions is the covariance control, which can be selected to be diagonal_covariance or full_covariance, with the former supporting suppression of the off-diagonal covariance terms (to again save compute and memory resources and reduce output volume)
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

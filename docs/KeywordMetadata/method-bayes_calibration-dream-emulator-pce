@@ -1,6 +1,8 @@
 Blurb::
+Use a polynomial chaos expansion as a surrogate for the truth model when performing Bayesian inference.
 Description::
-Topics::	empty
+Use a polynomial chaos expansion as a surrogate for the truth model when performing Bayesian inference.
+Topics::
 Examples::
 Theory::
 Faq::
