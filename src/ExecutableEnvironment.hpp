@@ -52,8 +52,6 @@ public:
   //- Heading: Member functions
   //
 
-  /// determine input check versus run mode
-  bool check();
 
 private:
 

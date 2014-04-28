@@ -17,6 +17,10 @@
 #include "dakota_data_types.hpp"
 #include "MPIPackBuffer.hpp"
 
+// ProgramOptions is currently default constructible and we pass it by
+// value to the Environment constructors.  If it becomes larger or more 
+// complex, we will consider using handle/body idiom to manage the memory.
+
 // BMA TODO: define enum for run phases/modes and use <=, >, etc.
 // BMA TODO: validate pre/run/post modes based on CLH and PL examples
 // BMA TODO: transition to boost::program_options

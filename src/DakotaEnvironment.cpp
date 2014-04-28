@@ -367,6 +367,23 @@ void Environment::execute()
 }
 
 
+bool Environment::check() const
+{
+  // don't proceed to execute for help and version 
+  if (programOptions.help() || programOptions.version())
+    return true;
+
+  if (programOptions.check()) {
+    if (parallelLib.world_rank() == 0)
+      Cout << "\nInput check completed successfully (input parsed and objects "
+	   << "instantiated).\n" << std::endl;
+    return true;
+  }
+
+  return false;
+}
+
+
 void Environment::destruct()
 {
   // Called only by letter instances, no Rep forward required

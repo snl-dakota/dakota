@@ -430,8 +430,9 @@ public:
 
   ~ResultsEntry() { dbDataPtr = NULL; }
 
+  // inactive for now: may cause compile issues w/ Intel C++
   /// return a reference to the stored data, whether from core or file
-  const StoredType& const_view() const;
+  //  const StoredType& const_view() const;
   
 private:
 
@@ -495,20 +496,20 @@ ResultsEntry(const ResultsManager& results_mgr,
   }
 }
 
-
-template<typename StoredType>
-const StoredType& ResultsEntry<StoredType>::const_view() const
-{
-  // prefer return of core data
-  if (coreActive)
-    if (dbDataPtr)
-      return *dbDataPtr;
-    else {
-      Cerr << "Unexpected NULL pointer in ResultsManager!" << std::endl;
-      abort_handler(-1);
-    }
-  return dbData;
-}
+// inactive for now: may cause compile issues w/ Intel C++
+// template<typename StoredType>
+// const StoredType& ResultsEntry<StoredType>::const_view() const
+// {
+//   // prefer return of core data
+//   if (coreActive)
+//     if (dbDataPtr)
+//       return *dbDataPtr;
+//     else {
+//       Cerr << "Unexpected NULL pointer in ResultsManager!" << std::endl;
+//       abort_handler(-1);
+//     }
+//   return dbData;
+// }
 
 
 }  // namespace Dakota

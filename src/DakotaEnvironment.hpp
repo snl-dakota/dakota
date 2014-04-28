@@ -84,6 +84,10 @@ public:
   //- Heading: Member functions
   //
 
+  /// Print status of check and return true if in a "check" mode, including 
+  /// version and help.  Return false if proceeding to a run mode.
+  bool check() const;
+
   /// return mpiManager
   MPIManager& mpi_manager();
   /// return programOptions

@@ -61,24 +61,6 @@ ExecutableEnvironment::~ExecutableEnvironment()
 }
 
 
-// BMA TODO: rename this function...
-bool ExecutableEnvironment::check()
-{
-  // don't proceed to execute 
-  if (programOptions.help() || programOptions.version())
-    return true;
-
-  if (programOptions.check()) {
-    if (parallelLib.world_rank() == 0)
-      Cout << "\nInput check completed successfully (input parsed and objects "
-	   << "instantiated).\n" << std::endl;
-    return true;
-  }
-  else
-    return false;
-}
-
-
 void ExecutableEnvironment::execute()
 {
 #ifndef _WIN32

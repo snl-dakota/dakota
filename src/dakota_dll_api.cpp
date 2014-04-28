@@ -221,9 +221,8 @@ void DakotaRunner::start()
   }
 #endif
 
-  // Execute the Dakota environment
-  // TODO: should check be available to library clients?
-  if (true /* !dakotaEnv->check()*/) {
+  // Execute the Dakota environment assume proceeding beyond help/version/check
+  if (!dakotaEnv->check()) {
 
     // In case we're running a sequence of DAKOTA problems, make sure
     // the global evaluation cache is cleared in between runs.
