@@ -1,58 +1,19 @@
-
 /* Additional Dakota stylesheet */
-table.keyword  {
-   border: 1px solid black;
-   width:80%;
-   padding: 2em;
-   margin:1em;
-}
-
-th.keyword  {
-  width:100px;
-  padding: 2em;
-  margin-bottom: 1em;
-  border-right: 1px solid black;
-}
-td.keyword  {
-  padding:0.5em;
-  padding-left: 2em;
-}
-.keyword .kwtype {
-  color:#036;
-  font-size: 1.2em;
-  margin: 2em;
-}
-
-td.keyword  td.kwname {
-  width: 300 px;
-}
-
-
-span.keyword {
-	color: #787ace;
-}
-
-/*
-
-th.spec-table td.spec-table {
-  background-color: #cbb691;
-  font-weight: bold;
-}
-*/
-
-.spec-table table {
-}
-
 
 .spec-table table,
 .spec-table th,
 .spec-table td {
-  padding: .5em;
+  padding: 0 1em 0 1em;
   margin: 1em 0 1em 0;
-  border-bottom: 2px solid #372317;
+  border-bottom: 2px solid #d3beaa;
   vertical-align:top;
   text-align:left;
   color: #372317;
+}
+
+table.spec-table {
+  width: 95%;
+  padding-left: 25px;
 }
 
 .spec-table th {
@@ -89,9 +50,6 @@ th.spec-table td.spec-table {
   padding:0;
 }
 
-
-
-  
 h1 {
   color:#372317;
   font-variant: small-caps;
