@@ -16,6 +16,7 @@
 #define DAKOTA_MODEL_H
 
 #include "dakota_data_types.hpp"
+#include "MPIManager.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaConstraints.hpp"
@@ -288,6 +289,10 @@ public:
   void set_communicators(int max_eval_concurrency, bool recurse_flag = true);
   /// deallocate communicator partitions for a model
   void free_communicators(int max_eval_concurrency, bool recurse_flag = true);
+
+  /// retrieve the MPI communicator on which this model is configured to 
+  /// conduct function evaluation analyses (provided for library clients)
+  MPI_Comm analysis_comm() const;
 
   /// called from Strategy::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_configurations() on other iteratorComm processors

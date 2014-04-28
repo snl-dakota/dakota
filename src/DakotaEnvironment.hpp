@@ -57,10 +57,10 @@ public:
   /// envelope constructor for ExecutableEnvironment letter 
   Environment(int argc, char* argv[]);
   // envelope constructor for LibraryEnvironment letter 
-  Environment(const ProgramOptions& prog_opts);
+  Environment(ProgramOptions prog_opts);
   // envelope constructor for LibraryEnvironment letter 
   Environment(MPI_Comm dakota_mpi_comm, 
-	      const ProgramOptions& prog_opts = ProgramOptions());
+	      ProgramOptions prog_opts = ProgramOptions());
   /// envelope constructor for letter type identifed by String
   Environment(const String& env_type);
   /// copy constructor
@@ -112,7 +112,7 @@ protected:
   /// constructor initializes the base class part of executable letter classes
   Environment(BaseConstructor, int argc, char* argv[]);
   /// constructor initializes the base class part of library letter classes
-  Environment(BaseConstructor, const ProgramOptions& prog_opts,
+  Environment(BaseConstructor, ProgramOptions prog_opts,
 	      MPI_Comm dakota_mpi_comm = MPI_COMM_WORLD);
 
   //

@@ -30,7 +30,7 @@ LibraryEnvironment::LibraryEnvironment():
 /** Construct library environment, optionally performing check/bcast
     of database and iterator construction */
 LibraryEnvironment::
-LibraryEnvironment(const ProgramOptions& prog_opts, bool check_bcast_construct,
+LibraryEnvironment(ProgramOptions prog_opts, bool check_bcast_construct,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts)
 {
@@ -50,7 +50,7 @@ LibraryEnvironment(const ProgramOptions& prog_opts, bool check_bcast_construct,
     Comm is first argument so client doesn't have to pass all args */
 LibraryEnvironment::
 LibraryEnvironment(MPI_Comm dakota_mpi_comm, 
-		   const ProgramOptions& prog_opts, bool check_bcast_construct,
+		   ProgramOptions prog_opts, bool check_bcast_construct,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts, dakota_mpi_comm)
 { 

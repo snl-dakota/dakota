@@ -445,8 +445,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
 
     // retrieve the currently active analysisComm from the Model.  In the most
     // general case, need an array of Comms to cover all Model configurations.
-    const MPI_Comm& analysis_comm = ml_iter->parallel_configuration_iterator()
-      ->ea_parallel_level().server_intra_communicator();
+    const MPI_Comm& analysis_comm = ml_iter->analysis_comm();
 
     // don't increment ref count since no other envelope shares this letter
     model_interface.assign_rep(new

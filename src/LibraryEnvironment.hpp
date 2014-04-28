@@ -42,14 +42,14 @@ public:
   /// input file or input string.  Optionally specify a callback
   /// function to be invoked after parsing.  Set check_bcast_construct
   /// if performing late updates and later calling done_modifying_db().
-  LibraryEnvironment(const ProgramOptions& prog_opts,
+  LibraryEnvironment(ProgramOptions prog_opts,
 		     bool check_bcast_construct = true,
 		     DbCallbackFunctionPtr callback = NULL,
 		     void* callback_data = NULL);
 
   /// Alternate constructor accepting communicator, same options as primary
   LibraryEnvironment(MPI_Comm dakota_mpi_comm,
-		     const ProgramOptions& prog_opts = ProgramOptions(),
+		     ProgramOptions prog_opts = ProgramOptions(),
 		     bool check_bcast_construct = true,
 		     DbCallbackFunctionPtr callback = NULL,
 		     void* callback_data = NULL);

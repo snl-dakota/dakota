@@ -3155,6 +3155,16 @@ void Model::free_communicators(int max_eval_concurrency, bool recurse_flag)
 }
 
 
+MPI_Comm Model::analysis_comm() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->analysis_comm();
+  else
+    return 
+      parallel_configuration_iterator()->ea_parallel_level().server_intra_communicator();
+}
+
+
 /** This functionality has been pulled out of init_communicators() and
     defined separately so that it may be used in those cases when
     messageLengths is needed but model.init_communicators() is not

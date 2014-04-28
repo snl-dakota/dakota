@@ -85,7 +85,7 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
      * library with program options
      * library with program options and MPI comm
 */
-Environment::Environment(BaseConstructor, const ProgramOptions& prog_opts,
+Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
 			 MPI_Comm dakota_mpi_comm):
   mpiManager(dakota_mpi_comm), programOptions(prog_opts),
   outputManager(programOptions, mpiManager.world_rank(),
@@ -132,7 +132,7 @@ Environment::Environment(int argc, char* argv[]):
 /** Envelope constructor for LibraryEnvironment.  Selection of
     derived type by get_environment() is not necessary in this case. */
 Environment::
-Environment(const ProgramOptions& prog_opts): 
+Environment(ProgramOptions prog_opts): 
   referenceCount(1) // not used since this is the envelope
 {
 #ifdef REFCOUNT_DEBUG
@@ -150,7 +150,7 @@ Environment(const ProgramOptions& prog_opts):
 /** Envelope constructor for LibraryEnvironment.  Selection of
     derived type by get_environment() is not necessary in this case. */
 Environment::
-Environment(MPI_Comm dakota_mpi_comm, const ProgramOptions& prog_opts): 
+Environment(MPI_Comm dakota_mpi_comm, ProgramOptions prog_opts): 
   referenceCount(1) // not used since this is the envelope
 {
 #ifdef REFCOUNT_DEBUG
