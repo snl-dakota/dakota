@@ -158,7 +158,7 @@ sub process_tags_dox {
         $sub_cat = "";
         $subsub_cat = "";
         $subsubsub_cat = "";
-        $file = "../docs/Ref_$category.dox";
+        $file = "../docs/oldref/Ref_$category.dox";
         open (REF_FILE, "$file") ||
             die "ERROR: Cannot open file $file\n$!";
 
