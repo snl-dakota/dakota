@@ -93,7 +93,9 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   // To resolve this dependency, we instantiate the iterator based on the w_pl
   // level and then augment it below based on the si_pl level.  We avoid
   // repeated instantiations by the check on iterator.is_null() as well as
-  // theough the lookup in problem_db_get_iterator() (concurr_iter_ptr case).
+  // through the lookup in problem_db_get_iterator() (concurr_iter_ptr case);
+  // this requires that no calls to init_comms occur at construct time, since
+  // the si_pl basis for this is not yet available.
   const ParallelLevel& w_pl
     = parallel_lib.parallel_configuration().w_parallel_level();
   int max_eval_conc = (lightwtCtor) ?

@@ -827,19 +827,31 @@ inline void ParallelLibrary::increment_parallel_configuration()
 
 
 inline bool ParallelLibrary::w_parallel_level_defined() const
-{ return ( parallelLevels.end() == currPCIter->wPLIter ) ? false : true; }
+{
+  return ( currPCIter != parallelConfigurations.end() &&
+	   currPCIter->wPLIter != parallelLevels.end() );
+}
 
 
 inline bool ParallelLibrary::si_parallel_level_defined() const
-{ return ( parallelLevels.end() == currPCIter->siPLIter ) ? false : true; }
+{
+  return ( currPCIter != parallelConfigurations.end() &&
+	   currPCIter->siPLIter != parallelLevels.end() );
+}
 
 
 inline bool ParallelLibrary::ie_parallel_level_defined() const
-{ return ( parallelLevels.end() == currPCIter->iePLIter ) ? false : true; }
+{
+  return ( currPCIter != parallelConfigurations.end() &&
+	   currPCIter->iePLIter != parallelLevels.end() );
+}
 
 
 inline bool ParallelLibrary::ea_parallel_level_defined() const
-{ return ( parallelLevels.end() == currPCIter->eaPLIter ) ? false : true; }
+{
+  return ( currPCIter != parallelConfigurations.end() &&
+	   currPCIter->eaPLIter != parallelLevels.end() );
+}
 
 
 inline std::vector<MPI_Comm> ParallelLibrary::analysis_intra_communicators()
