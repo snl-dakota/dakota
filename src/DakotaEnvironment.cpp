@@ -14,9 +14,12 @@
 #include "DakotaEnvironment.hpp"
 #include "ExecutableEnvironment.hpp"
 #include "LibraryEnvironment.hpp"
+#include "WorkdirHelper.hpp"
 #include "ProblemDescDB.hpp"
 #include "IteratorScheduler.hpp"
 
+/// Add exedir and . to $PATH
+extern "C" int nidr_save_exedir(const char*, int);
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
@@ -39,6 +42,9 @@ Environment::Environment(BaseConstructor):
   parallelLib(mpiManager, programOptions, outputManager),
   probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
 {
+  // Initialize paths used by WorkdirHelper
+  WorkdirHelper::initialize();
+
 #ifdef REFCOUNT_DEBUG
   cout << "Environment::Environment(BaseConstructor) called to "
        << "build letter base class." << std::endl;
@@ -69,6 +75,17 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
   parallelLib(mpiManager, programOptions, outputManager),
   probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
 {
+  // Initialize paths used by WorkdirHelper and NIDR
+
+  // these data were previously statically initialized, so perform first
+  WorkdirHelper::initialize();
+
+  // Add both the directory containing this binary and . to the end of
+  // $PATH if not already on $PATH.
+  unsigned short exedir2path = 1;
+  unsigned short dot2path = 2;
+  nidr_save_exedir(argv[0], exedir2path | dot2path);
+
 #ifdef REFCOUNT_DEBUG
   cout << "Environment::Environment(BaseConstructor, int, char*) called "
        << "to build letter base class." << std::endl;
@@ -93,6 +110,9 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   parallelLib(mpiManager, programOptions, outputManager),
   probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
 {
+  // Initialize paths used by WorkdirHelper
+  WorkdirHelper::initialize();
+
 #ifdef REFCOUNT_DEBUG
   cout << "Environment::Environment(BaseConstructor, ProgramOptions&) called "
        << "to build letter base class." << std::endl;

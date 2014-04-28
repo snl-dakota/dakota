@@ -23,8 +23,6 @@
   extern "C" void fpinit_ASL();
 #endif
 
-/// Add exedir and . to $PATH
-extern "C" int nidr_save_exedir(const char*, int);
 
 
 /// The main DAKOTA program.
@@ -35,12 +33,6 @@ extern "C" int nidr_save_exedir(const char*, int);
 
 int main(int argc, char* argv[])
 {
-  // Add both the directory containing this binary and . to the end of
-  // $PATH if not already on $PATH.
-  unsigned short exedir2path = 1;
-  unsigned short dot2path = 2;
-  nidr_save_exedir(argv[0], exedir2path | dot2path);
-
 #ifdef HAVE_AMPL
   // Switch to 53-bit rounding if appropriate, to eliminate some
   // cross-platform differences.

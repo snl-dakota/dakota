@@ -24,9 +24,19 @@
 
 namespace Dakota {
 
-std::string WorkdirHelper::startupPWD          = get_cwd();
-std::string WorkdirHelper::startupPATH         = init_startup_path();
-std::string WorkdirHelper::dakPreferredEnvPath = init_preferred_env_path();
+std::string WorkdirHelper::startupPWD          = ".";
+std::string WorkdirHelper::startupPATH         = ".";
+std::string WorkdirHelper::dakPreferredEnvPath = ".";
+
+
+/// Initialize defers calls to Boost filesystem utilities until runtime
+void WorkdirHelper::initialize()
+{
+  startupPWD          = get_cwd();
+  startupPATH         = init_startup_path();
+  dakPreferredEnvPath = init_preferred_env_path();
+}
+
 
 /** Creates a "PATH=.:$PWD:PATH" string so that analysis driver
  *  detection is (hopefully) more robust

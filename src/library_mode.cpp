@@ -35,9 +35,6 @@ extern "C" void fpinit_ASL();
 #define MPI_COMM_WORLD 0
 #endif // not DAKOTA_HAVE_MPI
 
-/// Add exedir and . to $PATH
-extern "C" int  nidr_save_exedir(const char*, int);
-
 /// Run a Dakota LibraryEnvironment, mode 1: parsing an input file
 void run_dakota_parse(const char* dakota_input_file);
 
@@ -100,12 +97,6 @@ static void callback_function(Dakota::ProblemDescDB* db, void *ptr);
 */
 int main(int argc, char* argv[])
 {
-  // Add both the directory containing this binary and . to the end of
-  // $PATH if not already on $PATH.
-  unsigned short exedir2path = 1;
-  unsigned short dot2path = 2;
-  nidr_save_exedir(argv[0], exedir2path | dot2path);
-
 #ifdef HAVE_AMPL
   // Switch to 53-bit rounding if appropriate, to eliminate some
   // cross-platform differences.

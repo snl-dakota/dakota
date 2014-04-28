@@ -84,6 +84,9 @@ class WorkdirHelper
 
 public:
 
+  /// initialize paths in the workdir helper at runtime
+  static void initialize();
+
   /// Query for dakota's startup $PWD
   static const std::string& startup_pwd() { return startupPWD; }
 
