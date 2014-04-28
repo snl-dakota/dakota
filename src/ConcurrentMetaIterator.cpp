@@ -73,7 +73,6 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   }
   iteratedModel = problem_db.get_model();
   initialize_model(param_set_len);
-  const ParallelConfiguration& pc = parallel_lib.parallel_configuration();
 
   // estimation of param_set_len is dependent on the iteratedModel
   // --> concurrent iterator partitioning is pushed downstream a bit
@@ -92,14 +91,16 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   // iterator to estimate the max_ppi for input to the si_pl partition, but
   // we want to segregate iterator construction based on the si_pl partition.
   // To resolve this dependency, we instantiate the iterator based on the w_pl
-  // level and then augment it below based on the si_pl level.  One iterator
-  // instantiation by name is wasted, but problem_db_get_iterator() should
-  // just return the previously instantiated instance.
+  // level and then augment it below based on the si_pl level.  We avoid
+  // repeated instantiations by the check on iterator.is_null() as well as
+  // theough the lookup in problem_db_get_iterator() (concurr_iter_ptr case).
+  const ParallelLevel& w_pl
+    = parallel_lib.parallel_configuration().w_parallel_level();
   int max_eval_conc = (lightwtCtor) ?
     iterSched.init_evaluation_concurrency(concurr_iter_name, selectedIterator,
-					  iteratedModel, pc.w_parallel_level()):
+					  iteratedModel, w_pl):
     iterSched.init_evaluation_concurrency(problem_db, selectedIterator,
-					  iteratedModel, pc.w_parallel_level());
+					  iteratedModel, w_pl);
   // min and max ppi need DB list nodes set to sub-iterator/sub-model
   int min_ppi = get_min_procs_per_iterator(problem_db),
       max_ppi = get_max_procs_per_iterator(problem_db, max_eval_conc);
@@ -113,17 +114,20 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     return;
 
   // Instantiate the iterator.
+  // Note: the parallel configuration may have been incremented, so do not
+  // assume the same config as used above for w_pl.
+  const ParallelLevel& si_pl
+    = parallel_lib.parallel_configuration().si_parallel_level();
   if (lightwtCtor) {
     iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
-			    pc.si_parallel_level());
+			    si_pl);
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
       Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
     if (!model_ptr.empty())
       problem_db.set_db_model_nodes(restore_index); // restore
   }
   else {
-    iterSched.init_iterator(problem_db, selectedIterator, iteratedModel,
-			    pc.si_parallel_level());
+    iterSched.init_iterator(problem_db, selectedIterator, iteratedModel, si_pl);
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
       Cout << "Concurrent Iterator = "
 	   << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
