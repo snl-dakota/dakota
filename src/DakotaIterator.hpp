@@ -90,6 +90,18 @@ public:
   /// deallocation and resetting of instance pointers
   virtual void finalize_run();
 
+  /// write variables to file, following pre-run
+  virtual void pre_output();
+  /// read tabular data for post-run mode
+  virtual void post_input();
+  
+  /// initialize the communicators associated with iteratedModel as
+  /// well as any subordinate iterators or subordinate models
+  virtual void init_communicators();
+  /// free the communicators associated with iteratedModel as well as
+  /// any subordinate iterators or subordinate models
+  virtual void free_communicators();
+
   /// restore initial state for repeated sub-iterator executions
   virtual void reset();
 
@@ -385,12 +397,6 @@ private:
   /// Used by the envelope to instantiate the correct letter class
   Iterator* get_iterator(const String& method_string, Model& model);
 
-  /// convenience function to write variables to file, following pre-run
-  virtual void pre_output();
-
-  /// read tabular data for post-run mode
-  virtual void post_input();
-  
   //
   //- Heading: Data
   //

@@ -545,7 +545,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
 	(size_t)std::floor(repWeights[i] * refineSamples + .5));
     //Cout << "num_rep_samples = " << num_rep_samples << std::endl;
 
-    // recenter std normals around i-th rep point
+    // center std normals around i-th rep point
     if (num_rep_samples) {
       initialize_lhs(false);
       lhsDriver.generate_normal_samples(repPointsU[i], n_std_devs,

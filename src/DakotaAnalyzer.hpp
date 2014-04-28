@@ -91,6 +91,9 @@ protected:
 
   void pre_output();
 
+  void init_communicators();
+  void free_communicators();
+
   void print_results(std::ostream& s);
 
   const Model& algorithm_space_model() const;
@@ -228,6 +231,14 @@ inline const IntResponseMap& Analyzer::all_responses() const
 { return allResponses; }
 
 
+inline void Analyzer::init_communicators()
+{ iteratedModel.init_communicators(maxEvalConcurrency); }
+
+
+inline void Analyzer::free_communicators()
+{ iteratedModel.free_communicators(maxEvalConcurrency); }
+
+
 /** default definition that gets redefined in selected derived Minimizers */
 inline const Model& Analyzer::algorithm_space_model() const
 { return iteratedModel; }
@@ -264,6 +275,7 @@ inline const ResponseArray& Analyzer::response_array_results()
 
 inline bool Analyzer::returns_multiple_points() const
 { return true; }
+
 
 inline void Analyzer::response_results_active_set(const ActiveSet& set)
 { bestVarsRespMap.begin()->second.active_set(set); }

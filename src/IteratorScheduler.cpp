@@ -161,11 +161,11 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
     // only master processor needs an iterator object:
     if (the_iterator.is_null())
       the_iterator = problem_db.get_iterator(the_model);
-    the_model.init_communicators(the_iterator.maximum_evaluation_concurrency());
+    the_iterator.init_communicators();
     if (multiproc) the_model.stop_configurations();
   }
-  // iterator ranks 1->n: match all the_model.init_communicators() calls that
-  // occur on rank 0 (due both to implicit model recursions within the Iterator
+  // iterator ranks 1->n: match all init_communicators() calls that occur
+  // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
@@ -200,11 +200,11 @@ init_iterator(const String& method_string, Iterator& the_iterator,
     // is insufficient to distinguish unique from shared instances.
     if (the_iterator.is_null())
       the_iterator = Iterator(method_string, the_model);
-    the_model.init_communicators(the_iterator.maximum_evaluation_concurrency());
+    the_iterator.init_communicators();
     if (multiproc) the_model.stop_configurations();
   }
-  // iterator ranks 1->n: match all the_model.init_communicators() calls that
-  // occur on rank 0 (due both to implicit model recursions within the Iterator
+  // iterator ranks 1->n: match all init_communicators() calls that occur
+  // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
@@ -304,20 +304,12 @@ free_iterator(Iterator& the_iterator, const ParallelLevel& pl)
   if (pl.dedicated_master() && pl.server_id() == 0) // ded master processor
     return;
 
-  // could replace with new delegation fn:
-  //void DakotaIterator::free_communicators()
-  //{ iteratedModel.free_communicators(maxEvalConcurrency); }
-
-  // for iterator ranks > 0, the_model is stored in the empty iterator
-  // envelope in IteratorScheduler::init_iterator()
-  Model& the_model = the_iterator.iterated_model();
-
   // set the correct ParallelConfiguration within ParallelLibrary
   //parallelLib.parallel_configuration_iterator(
-  //  the_model.parallel_configuration_iterator());
+  //  the_iterator.iterated_model().parallel_configuration_iterator());
 
   // free fn. evaluation subcommunicators if present.
-  the_model.free_communicators(the_iterator.maximum_evaluation_concurrency());
+  the_iterator.free_communicators();
 }
 
 
@@ -354,7 +346,7 @@ schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 void IteratorScheduler::
 master_dynamic_schedule_iterators(Iterator& meta_iterator)
 {
-  // model.init_communicators() is called on the iterator servers, but not on
+  // init_communicators() is called on the iterator servers, but not on
   // the strategy master.  Therefore, match collective communications.
   parallelLib.print_configuration(); // matches call within init_communicators()
 
