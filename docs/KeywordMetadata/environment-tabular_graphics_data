@@ -1,21 +1,20 @@
-Blurb::
-Write a tabular results file with both variables and responses
-Description::
-The \c tabular_graphics_data flag activates
-file tabulation of the same variables and response function history
-data that gets passed to graphics windows with use of the \c graphics
-flag. 
-Within the file, the variables and response functions appear as
-columns and each function evaluation provides a new table row. This
-capability is most useful for post-processing of %Dakota results with
-third-party graphics tools such as MatLab, Tecplot, etc. 
-There is no
-dependence between the \c graphics flag and the \c
-tabular_graphics_data flag; they may be used independently or
-concurrently. 
+Blurb:: Write a tabular results file with variable and response history
 
-Topics::	dakota_output, not_yet_reviewed
+Description::
+Specifying the \c tabular_graphics_data flag writes to a data file the
+same variable and response function history data plotted when using
+the \c graphics flag.  Within the generated data file, the variables
+and response functions appear as columns and each function evaluation
+provides a new table row. This capability is most useful for
+post-processing of %Dakota results with third-party graphics tools
+such as MatLab, Excel, Tecplot, etc.
+
+There is no dependence between the \c graphics flag and the \c
+tabular_graphics_data flag; they may be used independently or
+concurrently.
+
+Topics::	dakota_output
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also::	environment-graphics

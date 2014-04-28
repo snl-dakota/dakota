@@ -5,23 +5,20 @@
 
 \section input_spec-nidr Dakota NIDR
 
-%Dakota input is governed by the NIDR input specification file. This
-file (dakota.input.nspec) is used by a code generator to create
-parsing system components that are compiled into the %Dakota executable. Therefore,
-dakota.input.nspec and its derived summary, dakota.input.summary, are
-the definitive source for input syntax, capability options, and
-optional and required capability sub-parameters for any given %Dakota
-version. 
+Valid %Dakota input is dictated governed by the NIDR \cite Gay2008
+input specification file, \c dakota.input.nspec. This file is used by
+a code generator to create parsing system components that are compiled
+into %Dakota. Therefore, dakota.input.nspec and its derived summary,
+dakota.input.summary, are the definitive source for input syntax,
+capability options, and optional and required capability
+sub-parameters for any given %Dakota version.
 
 Beginning users may find dakota.input.summary overwhelming or
 confusing and will likely derive more benefit from adapting example
 input files to a particular problem. Some examples can be found here:
-\subpage input_file_examples.
-Advanced users can
-master the many input specification possibilities by understanding the
-structure of the input specification file.
-
-
+\subpage input_file_examples.  Advanced users can master the many
+input specification possibilities by understanding the structure of
+the input specification file.
 
 
 \section input_spec-overview Input Spec Overview 
@@ -35,10 +32,7 @@ for current input specifications.
   - Whether it has an <tt>ALIAS</tt>, or synonym
   - Which additional keywords can be specified to change its behavior
 - Additional details and descriptions are described in \ref keywords
-- For additional details on NIDR specification logic and rules, refer to [\cite Gay2008 "Gay, 2008"].
-
-
-
+- For additional details on NIDR specification logic and rules, refer to \cite Gay2008 (Gay, 2008).
 
 \subsection input_spec-mistakes Common Specification Mistakes
 
@@ -46,7 +40,7 @@ Spelling mistakes and omission of required parameters are the most
 common errors. Some causes of errors are more obscure:
 
 \li Documentation of new capability sometimes lags its availability in
-source and executables, especially nightly releases. When parsing
+source and executables, especially stable releases. When parsing
 errors occur that the documentation cannot explain, reference to the
 particular input specification used in building the executable, which
 is installed alongside the executable, will often resolve the errors.

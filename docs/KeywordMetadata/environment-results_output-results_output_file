@@ -1,9 +1,9 @@
-Blurb::
-Specify the file name of the results file
-Description::
-Default is \c dakota_results.txt
+Blurb:: The base file name of the results file
 
-Topics::	dakota_output, not_yet_reviewed
+Description::
+Default file name is \c dakota_results.txt
+
+Topics::	dakota_output
 Examples::
 Theory::
 Faq::
