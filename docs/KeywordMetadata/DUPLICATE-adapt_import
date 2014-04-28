@@ -8,7 +8,7 @@ given the original density, and calculates the required probability (CDF or CCDF
 This continues iteratively until the 
 failure probability estimate converges. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

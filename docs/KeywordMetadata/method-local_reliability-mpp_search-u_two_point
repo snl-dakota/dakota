@@ -1,6 +1,7 @@
 Blurb::
-Description::
-Topics::	empty
+Description::   This mpp_search option is identical to x_two_point, but it performs the 
+Two-point Adaptive Nonlinear Approximation (TANA) in u-space instead of x-space. 
+Topics::       reliability_methods	
 Examples::
 Theory::
 Faq::

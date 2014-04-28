@@ -10,7 +10,7 @@ to search for "representative" points. Once these are located, the multimodal sa
 density is set and then \c mm_adapt_import proceeds similarly to \c adapt_import (sample 
 until convergence). 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::
