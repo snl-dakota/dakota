@@ -401,8 +401,10 @@ select_rep_points(const RealVectorArray& var_samples_u,
 #ifdef DEBUG //TMW: Debug output to monitor the repPointsU
   Cout << "number of representative points " << new_rep_pts << '\n';
   Cout << "select_rep_point(): #Points = " << repPointsU.size()<< std::endl;
-  for (i=0; i<new_rep_pts; i++)
-      Cout << " Point " << i << " =  " << repPointsU[i] << std::endl;
+  for (i=0; i<new_rep_pts; i++){
+      Cout << " Point " << i << " =  " << repPointsU[i] << '\n';
+      Cout << " Beta  " << repPointsU[i].normFrobenius() << '\n';;
+  }
 #endif
 }
 
@@ -685,7 +687,12 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   }
   */
   prob = sum_prob/double(total_samples);
-
+  if (prob > 1.0) {
+    prob = 1.0; 
+    Cerr << "\nWarning: the probability calculated by importance sampling is " 
+         << "greater than 1.0 due to numerical issues.  We set the probability to 1.0" 
+         << " in this case.\n";
+  }
   // compute the coeff of variation if requested
   if (compute_cov) {
     if (prob > 0.) {

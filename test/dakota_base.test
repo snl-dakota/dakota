@@ -3399,12 +3399,12 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary: 126 total (125 new, 1 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-01   5.1912451962e-02                      1.6265867094e+00
-   6.0000000000e-01   8.4069588753e-01                     -9.9732202775e-01
+   2.0000000000e-01   5.1704147132e-02                      1.6285501041e+00
+   6.0000000000e-01   8.3827617398e-01                     -9.8739782126e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-01   4.2953061949e-04                      3.3330285587e+00
-   6.0000000000e-01   1.8387835282e-01                      9.0068334659e-01
+   2.0000000000e-01   4.3728652071e-04                      3.3280463828e+00
+   6.0000000000e-01   1.8716025369e-01                      8.8840951802e-01
 dakota_cantilever_examples.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
@@ -45058,26 +45058,26 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0093417822e-02                      2.3228570026e+00
-   1.0000000000e+00   2.1700562158e-02                      2.0198290350e+00
-   5.0000000000e+00   1.0465005681e-01                      1.2554922669e+00
-   1.0000000000e+01   1.6200543015e-01                      9.8624916149e-01
-   5.0000000000e+01   3.6657487809e-01                      3.4093866517e-01
-   1.0000000000e+02   4.9651840989e-01                      8.7271629943e-03
-   5.0000000000e+02   8.1731075032e-01                     -9.0516402125e-01
-   1.0000000000e+03   9.0478650540e-01                     -1.3093170125e+00
+   5.0000000000e-01   1.0629813346e-02                      2.3033416728e+00
+   1.0000000000e+00   2.1243371199e-02                      2.0287207381e+00
+   5.0000000000e+00   1.0276313743e-01                      1.2659631520e+00
+   1.0000000000e+01   1.5997046612e-01                      9.9457927340e-01
+   5.0000000000e+01   3.6592400063e-01                      3.4266831602e-01
+   1.0000000000e+02   4.9606738847e-01                      9.8577549002e-03
+   5.0000000000e+02   8.1579552168e-01                     -8.9945762587e-01
+   1.0000000000e+03   9.0589703240e-01                     -1.3159049856e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 149 total (92 new, 57 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0117987645e-02                      2.3219435524e+00
-   1.0000000000e+00   2.1998552635e-02                      2.0141183893e+00
-   5.0000000000e+00   1.0563058586e-01                      1.2501050597e+00
-   1.0000000000e+01   1.6211960671e-01                      9.8578380730e-01
-   5.0000000000e+01   3.6885293540e-01                      3.3489290975e-01
-   1.0000000000e+02   4.9722696943e-01                      6.9510128051e-03
-   5.0000000000e+02   8.1619768584e-01                     -9.0096932732e-01
-   1.0000000000e+03   9.0528171951e-01                     -1.3122477334e+00
+   5.0000000000e-01   1.0063869779e-02                      2.3239581050e+00
+   1.0000000000e+00   2.1453053092e-02                      2.0246228492e+00
+   5.0000000000e+00   1.0254952809e-01                      1.2671572838e+00
+   1.0000000000e+01   1.6131286975e-01                      9.8907644860e-01
+   5.0000000000e+01   3.6709806080e-01                      3.3954909144e-01
+   1.0000000000e+02   4.9805128822e-01                      4.8847154809e-03
+   5.0000000000e+02   8.1762939360e-01                     -9.0636779504e-01
+   1.0000000000e+03   9.0483142873e-01                     -1.3095824091e+00
 dakota_uq_rosenbrock_ivp_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 210 total (210 new, 0 duplicate)
@@ -65939,27 +65939,19 @@ Partial Rank Correlation Matrix between input and output:
           x5 -6.38295e-01  3.30704e-02  3.30704e-02 
           x6 -5.52457e-01 -1.20173e-01 -1.20173e-01 
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 4 total (2 new, 2 duplicate)
+<<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   6.0000305176e+00   1.8796029941e-01   8.8543771465e-01   8.8543771465e-01
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00   5.0000000000e-01   4.8864331573e-20  -0.0000000000e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00   5.0000000000e-01   4.8864331573e-20  -0.0000000000e+00
+   1.0882812500e+01   5.8802633938e-01  -2.2247090368e-01  -2.2247090368e-01
+   1.6800000000e+02   1.0000000000e+00  -1.2637465622e+01  -1.0000000000e+50
+   1.6800000000e+02   1.0000000000e+00  -1.4142135624e+01  -1.0000000000e+50
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
+<<<<< Function evaluation summary: 47 total (45 new, 2 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   0.0000000000e+00                                   inf
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   9.9991631869e-01                     -3.7637822583e+00
-     Response Level  Probability Level  Reliability Index  General Rel Index
-     --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   9.9994471071e-01                     -3.8661243521e+00
+   1.0000000000e+01   3.5410294439e-01                      3.7426672082e-01
+   4.0000000000e+01   7.0117438724e-01                     -5.2778117347e-01
+   1.0000000000e+02   9.7807410216e-01                     -2.0155046850e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:

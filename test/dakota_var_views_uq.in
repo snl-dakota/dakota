@@ -12,8 +12,10 @@ method,
 	  seed = 34785				#0,#2,#3,#4,#6,#8,#9
 #	local_reliability			#1,   #f10
 #	  mpp_search x_taylor_mean		#1,   #f10
-#	  num_response_levels = 1 1 1		#1,#2,#f10,#f11
-#	  response_levels = 0.5	0.5 0.5		#1,#2,#f10,#f11
+#	  num_response_levels = 3 0 0 		#1,#2
+#	  response_levels = 10. 40. 100.	#1,#2
+#	  num_response_levels = 1 1 1		#f10,#f11
+#	  response_levels = 0.5	0.5 0.5		#f10,#f11
 #	global_reliability  	    		#2,   #f11
 #	  x_gaussian_process			#2,   #f11
 #	polynomial_chaos			#3,   #f12
