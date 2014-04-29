@@ -25,7 +25,6 @@
 #include "rnglib.hpp"
 
 // for core dream functionality
-// BMA TODO: namespace protect dream-related functions
 using std::string;
 #include "dream.hpp"
 
@@ -34,6 +33,8 @@ static const char rcsId[]="@(#) $Id$";
 // five forwards to the class static functions
 // BMA TODO: change interface to pass function pointers and
 // initializers and remove these globals
+
+namespace dream {
 
 /// forwarder to problem_size needed by DREAM
 void 
@@ -77,6 +78,9 @@ double sample_likelihood (int par_num, double zp[])
   return Dakota::NonDDREAMBayesCalibration::
     sample_likelihood(par_num, zp);
 }
+
+
+} // namespace dream
 
 
 namespace Dakota {
@@ -176,13 +180,16 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // Set seed in both local generator and the one underlying DREAM in RNGLIB
   // BMA TODO: Burkhardt says replace RNGLIB with Dakota RNG
   if (randomSeed) {
-    set_seed(randomSeed, randomSeed);
+    dream::set_seed(randomSeed, randomSeed);
     rnumGenerator.seed(randomSeed);
+    Cout << " DREAM Seed (user-specified) = " << randomSeed << std::endl;
   }
   else {
-    int clock_seed = 1 + (int)clock();
-    set_seed(clock_seed, clock_seed); 
+    // Use NonD convenience function for system seed
+    int clock_seed = generate_system_seed();
+    dream::set_seed(clock_seed, clock_seed); 
     rnumGenerator.seed(clock_seed);
+    Cout << " DREAM Seed (system-generated) = " << clock_seed << std::endl;
   }
 
   // BMA TODO: share most of this code with QUESO class
