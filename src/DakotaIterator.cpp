@@ -355,7 +355,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     case SUBMETHOD_DREAM:
       return new NonDDREAMBayesCalibration(problem_db, model); break;
 #endif
-    default:    return NULL;                            break;
+    default:
+      Cerr << "Bayesian calibration selection not available." << std::endl;
+      return NULL;                                            break;
     } break;
   case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
   case POF_DARTS: return new NonDPOFDarts(problem_db, model);          break;

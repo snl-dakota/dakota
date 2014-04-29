@@ -130,6 +130,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       emulatorModel = iteratedModel; // shared rep
     break;
   }
+
+  int mcmc_concurrency = 1; // prior to concurrent chains
+  maxEvalConcurrency *= mcmc_concurrency;
 }
 
 
@@ -141,19 +144,23 @@ void NonDBayesCalibration::init_communicators()
 {
   //iteratedModel.init_communicators(maxEvalConcurrency);
 
-  //if (emulatorType || standardizedSpace) {
-    int mcmc_concurrency = 1; // prior to concurrent chains
-    emulatorModel.init_communicators(mcmc_concurrency);
-  //}
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR:
+    stochExpIterator.init_communicators();                break;
+  case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
+    emulatorModel.init_communicators(maxEvalConcurrency); break;
+  }
 }
 
 
 void NonDBayesCalibration::free_communicators()
 {
-  //if (emulatorType || standardizedSpace) {
-    int mcmc_concurrency = 1; // prior to concurrent chains
-    emulatorModel.free_communicators(mcmc_concurrency);
-  //}
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR:
+    stochExpIterator.free_communicators();                break;
+  case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
+    emulatorModel.free_communicators(maxEvalConcurrency); break;
+  }
 
   //iteratedModel.free_communicators(maxEvalConcurrency);
 }
