@@ -1026,6 +1026,15 @@ void Iterator::init_communicators()
 }
 
 
+void Iterator::set_communicators()
+{
+  if(iteratorRep) // envelope fwd to letter
+    iteratorRep->set_communicators();
+  else // default needed for empty envelopes on iteratorCommRank > 0
+    iteratedModel.set_communicators(maxEvalConcurrency); // recurse_flag = true
+}
+
+
 void Iterator::free_communicators()
 {
   if(iteratorRep) // envelope fwd to letter

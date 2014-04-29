@@ -98,6 +98,8 @@ public:
   /// initialize the communicators associated with iteratedModel as
   /// well as any subordinate iterators or subordinate models
   virtual void init_communicators();
+  /// set the communicators associated with iteratedModel
+  virtual void set_communicators();
   /// free the communicators associated with iteratedModel as well as
   /// any subordinate iterators or subordinate models
   virtual void free_communicators();

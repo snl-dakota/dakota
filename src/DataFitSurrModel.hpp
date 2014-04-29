@@ -473,22 +473,20 @@ derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
     if (daceIterator.is_null()) {
       // store within empty envelope for later use in derived_{set,free}_comms
       daceIterator.maximum_evaluation_concurrency(min_conc);
-      actualModel.init_communicators(min_conc);
+      daceIterator.iterated_model(actualModel);
     }
     else {
       // daceIterator.maximum_evaluation_concurrency() includes user-specified
       // samples for building a global approx & any numerical deriv multiplier.
       // Analyzer::maxEvalConcurrency must remain constant for ctor/run/dtor.
-      int dace_conc = daceIterator.maximum_evaluation_concurrency();
+
       // The concurrency for global/local surrogate construction is defined by
       // the greater of the dace samples user-specification and the min_points
       // approximation requirement.
-      if (min_conc > dace_conc) {
-	dace_conc = min_conc;
-	daceIterator.maximum_evaluation_concurrency(dace_conc); // update
-      }
-      actualModel.init_communicators(dace_conc);
+      if (min_conc > daceIterator.maximum_evaluation_concurrency())
+	daceIterator.maximum_evaluation_concurrency(min_conc); // update
     }
+    daceIterator.init_communicators();
   }
 }
 
@@ -509,8 +507,7 @@ derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
   //approxInterface.set_communicators(messageLengths);
 
   if (recurse_flag && !actualModel.is_null())
-    actualModel.set_communicators(
-      daceIterator.maximum_evaluation_concurrency());
+    daceIterator.set_communicators();
 
   // asynchEvalFlag and evaluationCapacity updates not required for DFS
   // (refer to {Recast,HierarchSurr}Model::derived_set_communicators())
@@ -524,8 +521,7 @@ derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
   //approxInterface.free_communicators();
 
   if (recurse_flag && !actualModel.is_null())
-    actualModel.free_communicators(
-      daceIterator.maximum_evaluation_concurrency());
+    daceIterator.free_communicators();
 }
 
 

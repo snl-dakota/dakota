@@ -394,7 +394,7 @@ derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
   // max concurrency does not require a bcast as in Strategy::init_comms
   // since all procs instantiate subIterator
   if (recurse_flag)
-    subModel.init_communicators(subIterator.maximum_evaluation_concurrency());
+    subIterator.init_communicators();
 }
 
 
@@ -417,7 +417,7 @@ derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
     optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
   }
   if (recurse_flag)
-    subModel.set_communicators(subIterator.maximum_evaluation_concurrency());
+    subIterator.set_communicators();
 }
 
 
@@ -429,7 +429,7 @@ derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
     optionalInterface.free_communicators();
   }
   if (recurse_flag)
-    subModel.free_communicators(subIterator.maximum_evaluation_concurrency());
+    subIterator.free_communicators();
 }
 
 
