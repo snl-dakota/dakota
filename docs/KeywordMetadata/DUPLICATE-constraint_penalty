@@ -4,15 +4,15 @@ Description::
 \li \c constraint_penalty: the initial multiplier for the penalty
 function, must be nonnegative
 
-Most SCOLIB optimizers treat constraints
-with a simple penalty scheme that adds \c constraint_penalty times the
-sum of squares of the constraint violations to the objective function.
-Specific exceptions to this method for handling constraint violations
-are noted below. (The default value of \c constraint_penalty is
-1000.0, except for methods that dynamically adapt their constraint
-penalty, for which the default value is 1.0.)
+Most SCOLIB optimizers treat constraints with a simple penalty scheme
+that adds \c constraint_penalty times the sum of squares of the
+constraint violations to the objective function.  Specific exceptions
+to this method for handling constraint violations are noted
+below. (The default value of \c constraint_penalty is 1000.0, except
+for methods that dynamically adapt their constraint penalty, for which
+the default value is 1.0.)
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

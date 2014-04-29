@@ -1,11 +1,17 @@
 Blurb::
-Newton method based optimization
+Finite Difference Newton optimization method
 Description::
-Finite Difference Newton.
+This is a Newton method that expects a gradient and computes a
+finite-difference approximation to the Hessian.  Each of the
+Newton-based methods are automatically bound to the appropriate OPT++
+algorithm based on the user constraint specification (unconstrained,
+bound-constrained, or generally-constrained). In the
+generally-constrained case, the Newton methods use a nonlinear
+interior-point approach to manage the constraints.
 
 See \ref topic-package_optpp for info related to all \c optpp methods.
 
-Topics::	package_optpp, local_optimization_methods, not_yet_reviewed
+Topics::	package_optpp, local_optimization_methods
 Examples::
 Theory::
 Faq::

@@ -1,13 +1,12 @@
 Blurb::
 Display only univariate effects
 Description::
-Since these methods outputs main,
-interaction, and total effects by default, the \c univariate_effects
-option has been added to allow suppression of the interaction effects
-since the output volume of these results can be prohibitive for high
-dimensional problems. 
+Since these methods outputs main, interaction, and total effects by
+default, the \c univariate_effects option has been added to allow
+suppression of the interaction effects since the output volume of
+these results can be prohibitive for high dimensional problems.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

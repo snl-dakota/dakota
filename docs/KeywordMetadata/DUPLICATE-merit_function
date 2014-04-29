@@ -1,22 +1,11 @@
 Blurb::
 Balance goals of reducing objective function and satisfying constraints
 Description::
-A \c merit_function is a
-function in constrained optimization that attempts to provide joint
-progress toward reducing the objective function and satisfying the
-constraints. 
+A \c merit_function is a function in constrained optimization that
+attempts to provide joint progress toward reducing the objective
+function and satisfying the constraints.
 
-<!-- MSE/PDH: option retired on 12/14/2012 as OPT++ hardwires this
-   	   internally to match merit_function.
-The \c central_path specification represents a measure of proximity to
-the central path and specifies an update strategy for the perturbation
-parameter mu. Refer to [\cite Arg02 "Argaez et al., 2002"] for a
-detailed discussion on proximity measures to the central region. Valid
-options are, again, \c el_bakry, \c argaez_tapia, or \c van_shanno.
-The default value for \c central_path is the value of \c
-merit_function (either user-selected or default). -->
-
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

@@ -1,17 +1,15 @@
 Blurb::
-Pattern search, derivative free optimization method
+Simplex-based derivative free optimization method
 Description::
-The direct search algorithm, PDS
-(parallel direct search method), supports
-bound constraints.
+The direct search algorithm, PDS (parallel direct search method),
+supports bound constraints.
 
-The PDS method can directly
-exploit asynchronous evaluations; however, this capability has not yet
-been implemented in Dakota.
+The PDS method can directly exploit asynchronous evaluations; however,
+this capability has not yet been implemented in Dakota.
 
 See \ref topic-package_optpp for info related to all \c optpp methods.
 
-Topics::	package_optpp, not_yet_reviewed
+Topics::	package_optpp
 Examples::
 Theory::
 Faq::

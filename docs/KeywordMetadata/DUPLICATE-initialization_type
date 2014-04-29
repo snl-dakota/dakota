@@ -7,16 +7,14 @@ for the GA. There are three types:
 -# \c unique_random (default)
 -# \c flat_file
 
-!!!!!!!!! What is the default?
-
 Setting the size for the \c flat_file initializer has the effect of
-requiring a minimum number of designs to create. If this minimum number has
-not been created once the files are all read, the rest are created using
-the \c unique_random initializer and then the \c simple_random initializer if
-necessary.
+requiring a minimum number of designs to create. If this minimum
+number has not been created once the files are all read, the rest are
+created using the \c unique_random initializer and then the \c
+simple_random initializer if necessary.
 
 
-Topics::	not_yet_reviewed, problem
+Topics::	problem
 Examples::
 Theory::
 Faq::

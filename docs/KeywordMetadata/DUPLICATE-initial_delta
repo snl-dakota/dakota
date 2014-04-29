@@ -11,7 +11,7 @@ full step to the boundary in each direction. Relative application of
 \c initial_delta is not available unless the user scales the problem
 accordingly.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

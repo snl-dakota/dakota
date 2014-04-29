@@ -1,11 +1,11 @@
 Blurb::
 Define the convergence criterion for JEGA methods
 Description::
-The \c percent_change is the threshold beneath which
-convergence is attained whereby it is compared to the metric value computed. 
+The \c percent_change is the threshold beneath which convergence is
+attained whereby it is compared to the metric value computed.
 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

@@ -1,8 +1,8 @@
 Blurb::
 Pattern search, derivative free optimization method
 Description::
-The asynchronous parallel pattern search (APPS) algorithm [\cite GrKo06
-"Gray and Kolda, 2006"] is a fully asynchronous pattern search
+The asynchronous parallel pattern search (APPS) algorithm [\cite
+GrKo06 "Gray and Kolda, 2006"] is a fully asynchronous pattern search
 technique in that the search along each offset direction continues
 without waiting for searches along other directions to finish.
 
@@ -58,10 +58,9 @@ are:
 \li \ref method-constraint_tolerance
 \li \ref method-output
 
-Note that while APPS treats the
-constraint tolerance separately for linear and nonlinear constraints,
-we apply the same value to both if the user specifies \c
-constraint_tolerance. 
+Note that while APPS treats the constraint tolerance separately for
+linear and nonlinear constraints, we apply the same value to both if
+the user specifies \c constraint_tolerance.
 
 The APPS internal display level is mapped to
 the %Dakota \c output settings as follows:
@@ -77,7 +76,7 @@ variable and constraint summaries, and new best points
 
 
 
-Topics::	package_hopspack, global_optimization_methods, not_yet_reviewed
+Topics::	package_hopspack, global_optimization_methods
 Examples::
 Theory::
 Faq::

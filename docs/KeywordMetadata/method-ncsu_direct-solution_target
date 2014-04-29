@@ -1,19 +1,17 @@
 Blurb::
 Specifies a globally optimal value toward which the optimizer should track
 Description::
-The solution target specifies a goal toward
-which the optimizer should track. 
+The solution target specifies a goal toward which the optimizer should
+track.
 
-When \c solution_target is
-specified, \c convergence_tolerance specifies a percent error on the
-optimization. 
-
-This is used for test problems, when the true global
-minimum is known (call it \c solution_target := fglobal). Then, the
-optimization terminates when 100(f_min-fglobal)/max(1,abs(fglobal) <
+This is used for test problems, when the true global minimum is known
+(call it \c solution_target := fglobal). Then, the optimization
+terminates when 100(f_min-fglobal)/max(1,abs(fglobal) <
 convergence_tolerance. The default for fglobal is -1.0e100 and the
-default for convergence tolerance is described at \ref method-convergence_tolerance.
-Topics::	not_yet_reviewed
+default for convergence tolerance is described at \ref
+method-convergence_tolerance.
+
+Topics::
 Examples::
 Theory::
 Faq::

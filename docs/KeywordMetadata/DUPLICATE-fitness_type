@@ -1,10 +1,10 @@
 Blurb::
 Select the fitness type for JEGA methods
 Description::
-The two JEGA methods use different fitness types, which are described on their
-respective pages.
+The two JEGA methods use different fitness types, which are described
+on their respective pages.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

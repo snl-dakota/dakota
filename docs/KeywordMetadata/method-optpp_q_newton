@@ -1,11 +1,17 @@
 Blurb::
-Newton method based optimization
+Quasi-Newton optimization method
 Description::
-Linear constraints only.
+This is a Newton method that expects a gradient and computes a
+low-rank approximation to the Hessian.  Each of the Newton-based
+methods are automatically bound to the appropriate OPT++ algorithm
+based on the user constraint specification (unconstrained,
+bound-constrained, or generally-constrained). In the
+generally-constrained case, the Newton methods use a nonlinear
+interior-point approach to manage the constraints.
 
 See \ref topic-package_optpp for info related to all \c optpp methods.
 
-Topics::	package_optpp, local_optimization_methods, not_yet_reviewed
+Topics::	package_optpp, local_optimization_methods
 Examples::
 Theory::
 Faq::

@@ -1,24 +1,23 @@
 Blurb::
 Specified file is in the freeform format
 Description::
-Free-form Matrix: text file with no leading row and no leading 
-column. The num_rows x num_cols total numeric data entries may 
-appear separated with any whitespace including arbitrary spaces, 
-tabs, and newlines. In this format, vectors may therefore appear 
-as a single row or single column (or mixture; entries will 
-populate the vector in order). 
+Free-form Matrix: text file with no leading row and no leading
+column. The num_rows x num_cols total numeric data entries may appear
+separated with any whitespace including arbitrary spaces, tabs, and
+newlines. In this format, vectors may therefore appear as a single row
+or single column (or mixture; entries will populate the vector in
+order).
 
 <b> Important Notes </b>
 
-\li Prior to October 2011, calibration and surrogate data 
-files were free-form format. They now default to annotated format, 
-though \c freeform remains an option. 
-\li For both formats, a warning 
-will be generated if a specific number of data are expected, but extra 
-is found and an error generated when there is insufficient data. 
-\li Some 
-TPLs like SCOLIB and JEGA manage their own file I/O and only support 
-the free-form option. 
+\li Prior to October 2011, calibration and surrogate data files were
+free-form format. They now default to annotated format, though \c
+freeform remains an option.
+\li For both formats, a warning will be generated if a specific number
+of data are expected, but extra is found and an error generated when
+there is insufficient data.
+\li Some TPLs like SCOLIB and JEGA manage their own file I/O and only
+support the free-form option.
 
 Topics::	file_formats
 Examples::

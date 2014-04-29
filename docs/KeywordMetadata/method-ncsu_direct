@@ -3,17 +3,16 @@ DIviding RECTangles method
 Description::
 North Carolina State University (NCSU) has an implementation of the
 DIRECT algorithm (DIviding RECTangles algorithm that is outlined in
-the SCOLIB method section above). This version is documented in 
-[\cite Gab01 "Gablonsky, 2001".] We have found that the NCSU DIRECT
+the SCOLIB method section above). This version is documented in [\cite
+Gab01 "Gablonsky, 2001".] We have found that the NCSU DIRECT
 implementation works better and is more robust for some problems than
 \c coliny_direct. Currently, we maintain both versions of DIRECT in
 %Dakota; in the future, we may deprecate one.
 
-The NCSU DIRECT method
-is selected with \c ncsu_direct. We have tried to maintain
-consistency between the keywords in SCOLIB and NCSU implementation of
-DIRECT, but the algorithms have different parameters, so the keywords
-sometimes have slightly different meaning.
+The NCSU DIRECT method is selected with \c ncsu_direct. We have tried
+to maintain consistency between the keywords in SCOLIB and NCSU
+implementation of DIRECT, but the algorithms have different
+parameters, so the keywords sometimes have slightly different meaning.
 
 <b> Stopping Criteria </b>
 
@@ -24,19 +23,12 @@ The algorithm stops based on:
 -# \c min_boxsize_limit
 -# \c volume_boxsize_limit 
 
-This method will always strictly respect the number of
-iterations, but may slightly exceed the number of function
-evaluations, as it will always explore all sub-rectangles at the
-current level.
-
-<!---
-\c min_boxsize_limit is a setting that terminates the optimization
-when the measure of a hyperrectangle S with f(c(S)) = fmin is less
-than min_boxsize_limit. 
---->
+This method will always strictly respect the number of iterations, but
+may slightly exceed the number of function evaluations, as it will
+always explore all sub-rectangles at the current level.
 
 
-Topics::	global_optimization_methods, not_yet_reviewed
+Topics::	global_optimization_methods
 Examples::
 Theory::
 Faq::

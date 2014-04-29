@@ -4,7 +4,7 @@ Description::
 The \c search_scheme_size is defined for the PDS method to specify the
 number of points to be used in the direct search template.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

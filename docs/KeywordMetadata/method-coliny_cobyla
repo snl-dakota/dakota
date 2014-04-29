@@ -30,7 +30,7 @@ COBYLA currently only supports termination based on the \c
 max_function_evaluations and \c solution_target specifications.
 
 
-Topics::	package_scolib, package_coliny, local_optimization_methods, constrained, not_yet_reviewed
+Topics::	package_scolib, package_coliny, local_optimization_methods, constrained
 Examples::
 Theory::
 Faq::

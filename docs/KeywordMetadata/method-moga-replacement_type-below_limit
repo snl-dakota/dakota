@@ -1,9 +1,10 @@
 Blurb::
-???????
+Limit number of designs dominating those kept
 Description::
-The \c below_limit replacement will only keep designs that are 
+The \c below_limit replacement will only keep designs that are
 dominated by fewer than a limiting number of other designs.
-Topics::	not_yet_reviewed, problem
+
+Topics::	problem
 Examples::
 Theory::
 Faq::

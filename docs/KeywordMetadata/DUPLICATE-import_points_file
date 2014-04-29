@@ -1,14 +1,14 @@
 Blurb::
 Specify file containing points (variable and response values)
 Description::
-File of points (variable and response values) that will be 
-used by the method in place of function evaluations. 
+File of points (variable and response values) that will be used by the
+method in place of function evaluations.
 
-When used to construct surrogate models or emulators these 
-are often called build points or training data. 
+When used to construct surrogate models or emulators these are often
+called build points or training data.
 
-Although Dakota parses input files without regard to whitespace,
-the import_points_file must be in one of two formats:
+Although Dakota parses input files without regard to whitespace, the
+import_points_file must be in one of two formats:
 \li \c annotated (default)
 \li \c freeform 
 

@@ -1,11 +1,12 @@
 Blurb::
 A conjugate gradient optimization method
 Description::
-The conjugate gradient method is for unconstrained problems.
+The conjugate gradient method is an implementation of the
+Polak-Ribiere approach and handles only unconstrained problems.
 
 See \ref topic-package_optpp for info related to all \c optpp methods.
 
-Topics::	package_optpp, local_optimization_methods, not_yet_reviewed
+Topics::	package_optpp, local_optimization_methods
 Examples::
 Theory::
 Faq::

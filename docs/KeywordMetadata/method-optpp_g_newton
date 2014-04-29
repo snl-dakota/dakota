@@ -1,10 +1,10 @@
 Blurb::
-Newton method based optimization
+Newton method based least-squares calbration
 Description::
 The Gauss-Newton algorithm is available as \c optpp_g_newton and
 supports unconstrained, bound-constrained, and generally-constrained
-problems. When interfaced with the unconstrained, bound-constrained, and
-nonlinear interior point full-Newton optimizers from the OPT++
+problems. When interfaced with the unconstrained, bound-constrained,
+and nonlinear interior point full-Newton optimizers from the OPT++
 library, it provides a Gauss-Newton least squares capability which --
 on zero-residual test problems -- can exhibit quadratic convergence
 rates near the solution.  (Real problems almost never have zero
@@ -12,7 +12,7 @@ residuals, i.e., perfect fits.)
 
 See \ref topic-package_optpp for info related to all \c optpp methods.
 
-Topics::	package_optpp, local_optimization_methods, not_yet_reviewed
+Topics::	package_optpp, local_optimization_methods
 Examples::
 Theory::
 Faq::

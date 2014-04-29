@@ -1,25 +1,25 @@
 Blurb::
 Specify the type of niching pressure
 Description::
-The purpose of niching is to encourage differentiation along the Pareto
-frontier and thus a more even and uniform sampling. 
+The purpose of niching is to encourage differentiation along the
+Pareto frontier and thus a more even and uniform sampling.
 
-This is typically accomplished by discouraging clustering
-of design points in the performance space. 
-In JEGA, the application of niche
-pressure occurs as a secondary selection operation. The nicher is given a
-chance to perform a pre-selection operation prior to the operation of the
-selection (replacement) operator, and is then called to perform niching on the
-set of designs that were selected by the selection operator.
+This is typically accomplished by discouraging clustering of design
+points in the performance space.  In JEGA, the application of niche
+pressure occurs as a secondary selection operation. The nicher is
+given a chance to perform a pre-selection operation prior to the
+operation of the selection (replacement) operator, and is then called
+to perform niching on the set of designs that were selected by the
+selection operator.
 
-The radial nicher
-takes information input from the user to compute a minimum allowable distance
-between designs in the performance space and acts as a secondary selection
-operator whereby it enforces this minimum distance. The distance nicher 
-requires that solutions must be separated from other solutions by a 
-minimum distance in each dimension (vs. Euclidean distance for the 
-radial niching). After niching is complete, all designs in the population will
-be at least the minimum distance from one another in all directions.
+The radial nicher takes information input from the user to compute a
+minimum allowable distance between designs in the performance space
+and acts as a secondary selection operator whereby it enforces this
+minimum distance. The distance nicher requires that solutions must be
+separated from other solutions by a minimum distance in each dimension
+(vs. Euclidean distance for the radial niching). After niching is
+complete, all designs in the population will be at least the minimum
+distance from one another in all directions.
 
 The \c radial niche pressure applicator works by enforcing a minimum
 Euclidean distance between designs in the performance space at each
@@ -34,19 +34,19 @@ non-dominated frontier). The \c distance nicher enforces a minimimum
 distance in each dimension.
 
 The designs that are removed by the nicher are not discarded. They are
-buffered and re-inserted into the population during the next pre-selection
-operation. This way, the selector is still the only operator that discards
-designs and the algorithm will not waste time "re-filling" gaps created by the
-nicher.
+buffered and re-inserted into the population during the next
+pre-selection operation. This way, the selector is still the only
+operator that discards designs and the algorithm will not waste time
+"re-filling" gaps created by the nicher.
 
 The \c radial nicher requires as input a vector of fractions with
 length equal to the number of objectives. The elements of the vector
 are interpreted as percentages of the non-dominated range for each
-objective defining a minimum distance to all other designs. All
-values should be in the range (0, 1). The minimum allowable distance
-between any two designs in the performance space is the Euclidian
-(simple square-root-sum-of-squares calculation) distance defined by
-these percentages. The \c distance nicher has a similar input vector
+objective defining a minimum distance to all other designs. All values
+should be in the range (0, 1). The minimum allowable distance between
+any two designs in the performance space is the Euclidian (simple
+square-root-sum-of-squares calculation) distance defined by these
+percentages. The \c distance nicher has a similar input vector
 requirement, only the distance is the minimum distance in each
 dimension.
 
@@ -65,7 +65,7 @@ discarded. Note that like other niching operators, this one will not
 discard an extreme design.
 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

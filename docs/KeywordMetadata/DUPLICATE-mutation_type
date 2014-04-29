@@ -4,39 +4,39 @@ Description::
 There are five mutation types allowed. \c replace_uniform introduces
 random variation by first randomly choosing a design variable of a
 randomly selected design and reassigning it to a random valid value
-for that variable. No consideration of the current value is given
-when determining the new value. All mutation types have a \c
-mutation_rate. The number of mutations for the replace_uniform
-mutator is the product of the mutation_rate and the population_size.
+for that variable. No consideration of the current value is given when
+determining the new value. All mutation types have a \c
+mutation_rate. The number of mutations for the replace_uniform mutator
+is the product of the mutation_rate and the population_size.
 
-The \c bit_random mutator introduces random variation by first converting
-a randomly chosen variable of a randomly chosen design into a binary
-string. It then flips a randomly chosen bit in the string from a 1 to
-a 0 or visa versa. In this mutation scheme, the resulting value has more
-probability of being similar to the original value. The number of mutations
-performed is the product of the mutation_rate, the number of design variables,
-and the population size.
+The \c bit_random mutator introduces random variation by first
+converting a randomly chosen variable of a randomly chosen design into
+a binary string. It then flips a randomly chosen bit in the string
+from a 1 to a 0 or visa versa. In this mutation scheme, the resulting
+value has more probability of being similar to the original value. The
+number of mutations performed is the product of the mutation_rate, the
+number of design variables, and the population size.
 
 The offset mutators all act by adding an "offset" random amount to a
-variable value. The random amount has a mean of zero in all cases. The \c
-offset_normal mutator introduces random variation by adding a Gaussian
-random amount to a variable value. The random amount has a standard
-deviation dependent on the \c mutation_scale. The \c mutation_scale
-is a fraction in the range [0, 1] and is
-meant to help control the amount of variation that takes place when a
-variable is mutated. \c mutation_scale is multiplied by the range of
-the variable being mutated to serve as standard deviation. \c
-offset_cauchy is similar to \c offset_normal, except that a Cauchy
-random variable is added to the variable being mutated. The
-\c mutation_scale also defines the standard deviation for this mutator.
-Finally, \c offset_uniform adds a uniform random amount to the
-variable value. For the \c offset_uniform mutator, the \c mutation_scale
-is interpreted as a fraction of the total range of the variable. The
-range of possible deviation amounts is +/- 1/2 * (\c mutation_scale * variable
-range). The number of mutations for all offset mutators is defined
-as the product of \c mutation_rate and \c population_size.
+variable value. The random amount has a mean of zero in all cases. The
+\c offset_normal mutator introduces random variation by adding a
+Gaussian random amount to a variable value. The random amount has a
+standard deviation dependent on the \c mutation_scale. The \c
+mutation_scale is a fraction in the range [0, 1] and is meant to help
+control the amount of variation that takes place when a variable is
+mutated. \c mutation_scale is multiplied by the range of the variable
+being mutated to serve as standard deviation. \c offset_cauchy is
+similar to \c offset_normal, except that a Cauchy random variable is
+added to the variable being mutated. The \c mutation_scale also
+defines the standard deviation for this mutator.  Finally, \c
+offset_uniform adds a uniform random amount to the variable value. For
+the \c offset_uniform mutator, the \c mutation_scale is interpreted as
+a fraction of the total range of the variable. The range of possible
+deviation amounts is +/- 1/2 * (\c mutation_scale * variable
+range). The number of mutations for all offset mutators is defined as
+the product of \c mutation_rate and \c population_size.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

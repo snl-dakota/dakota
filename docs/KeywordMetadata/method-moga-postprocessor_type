@@ -1,15 +1,15 @@
 Blurb::
 Post process the final solution from \c moga
 Description::
-The purpose of this operation is to perform any needed data manipulations on the
-final solution deemed necessary. Currently the \c orthogonal_distance
-is the only one. It reduces the
-final solution set size such that a minimum distance in each direction exists
-between any two designs.
+The purpose of this operation is to perform any needed data
+manipulations on the final solution deemed necessary. Currently the \c
+orthogonal_distance is the only one. It reduces the final solution set
+size such that a minimum distance in each direction exists between any
+two designs.
 
 !!!!!!!!!!! Is this correct, the original did not match the input spec
 
-Topics::	not_yet_reviewed, problem
+Topics::	problem
 Examples::
 Theory::
 Faq::

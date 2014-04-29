@@ -1,17 +1,15 @@
 Blurb::
 Name of a sub-method to apply to surrogate model
 Description::
-The \c surrogate_based_local and \c surrogate_based_global
- methods must specify an optimization or
-least squares sub-method to apply to the surrogate model.
+The \c surrogate_based_local and \c surrogate_based_global methods
+must specify an optimization or least squares sub-method to apply to
+the surrogate model.
 
-
-Option 2 is using \c approx_method_name (e.g., 'npsol_sqp')
-which identifies a 
-sub-method for the sub-problem minimizer (which will use 
+Option 2 is using \c approx_method_name (e.g., 'npsol_sqp') which
+identifies a sub-method for the sub-problem minimizer (which will use
 default minimizer settings).
 
-Topics::	block_pointer, not_yet_reviewed, problem
+Topics::	block_pointer, problem
 Examples::
 Theory::
 Faq::

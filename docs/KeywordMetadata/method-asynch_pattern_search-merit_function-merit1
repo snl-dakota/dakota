@@ -1,9 +1,13 @@
 Blurb::
 Nonsmoothed merit function
 Description::
+APPS solves nonlinearly constrained problems by solving a sequence of
+linearly constrained merit function-base subproblems. There are
+several exact and smoothed exact penalty functions.
+
 \li \c merit1: based on \f$ \ell_1\f$ norm
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

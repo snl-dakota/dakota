@@ -74,7 +74,7 @@ valid keyword unless \c replacement_type has been specified.
 
 
 
-Topics::	package_scolib, package_coliny, global_optimization_methods, not_yet_reviewed
+Topics::	package_scolib, package_coliny, global_optimization_methods
 Examples::
 Theory::
 The basic steps of an evolutionary algorithm are depicted in Figure

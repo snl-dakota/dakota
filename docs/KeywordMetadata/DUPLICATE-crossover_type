@@ -9,18 +9,20 @@ may occur at any point along a solution chromosome (in the middle of a
 gene representing a design variable, for example). \c
 multi_point_parameterized_binary crossover is similar in that it
 performs a bit switching crossover routine at N crossover points.
-However, this crossover type performs crossover on each design variable 
-individually. So the individual chromosomes are crossed at N locations.
-\c multi_point_real crossover performs a variable switching crossover routing at
-N crossover points in the real real valued genome of two designs. In this
-scheme, crossover only occurs between design variables (chromosomes). Note that
-the standard solution chromosome representation in the JEGA algorithm is real
-encoded and can handle integer or real design variables. For any crossover
-types that use a binary representation, real variables are converted to long
-integers by multiplying the real number by 10^6 and then truncating. Note that
-this assumes a precision of only six decimal places. Discrete variables are
-represented as integers (indices within a list of possible values) within the
-algorithm and thus require no special treatment by the binary operators.
+However, this crossover type performs crossover on each design
+variable individually. So the individual chromosomes are crossed at N
+locations.  \c multi_point_real crossover performs a variable
+switching crossover routing at N crossover points in the real real
+valued genome of two designs. In this scheme, crossover only occurs
+between design variables (chromosomes). Note that the standard
+solution chromosome representation in the JEGA algorithm is real
+encoded and can handle integer or real design variables. For any
+crossover types that use a binary representation, real variables are
+converted to long integers by multiplying the real number by 10^6 and
+then truncating. Note that this assumes a precision of only six
+decimal places. Discrete variables are represented as integers
+(indices within a list of possible values) within the algorithm and
+thus require no special treatment by the binary operators.
 
 The final crossover type is \c shuffle_random. This crossover type
 performs crossover by choosing design variables at random from a
@@ -37,7 +39,7 @@ All crossover types take a \c crossover_rate. The crossover rate is
 used to calculate the number of crossover operations that take place.
 The number of crossovers is equal to the rate * population_size.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

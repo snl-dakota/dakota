@@ -1,14 +1,6 @@
 Blurb::
 DIviding RECTangles method
 Description::
-North Carolina State University (NCSU) has an implementation of the
-DIRECT algorithm (DIviding RECTangles algorithm that is outlined in
-the SCOLIB method section above). This version is documented in 
-[\cite Gab01 "Gablonsky, 2001".] We have found that the NCSU DIRECT
-implementation works better and is more robust for some problems than
-\c coliny_direct. Currently, we maintain both versions of DIRECT in
-%Dakota; in the future, we may deprecate one. 
-
 The DIviding RECTangles (DIRECT) optimization algorithm is a
 derivative free global optimization method that balances local search
 in promising regions of the design space with global search in
@@ -17,8 +9,9 @@ subdivides the space of feasible design points so as to guarantee that
 iterates are generated in the neighborhood of a global minimum in
 finitely many iterations.
 
-\image html direct1.jpg "Figure 5.1 Design space partitioning with DIRECT"
-\image latex direct1.eps "Design space partitioning with DIRECT" width=10cm
+\image html direct1.jpg "Figure 5.1 Design space partitioning with
+DIRECT" \image latex direct1.eps "Design space partitioning with
+DIRECT" width=10cm
 
 In practice, DIRECT has proven an effective heuristic for engineering
 design applications, for which it is able to quickly identify
@@ -28,26 +21,26 @@ optimizers.
 <b> See the page \ref topic-package_scolib for important information
 regarding all SCOLIB methods </b>
 
-The DIRECT algorithm supports concurrency up to twice the number of variables
-being optimized.
+The DIRECT algorithm supports concurrency up to twice the number of
+variables being optimized.
 
-DIRECT uses the \c solution_target, \c constraint_penalty and
-\c show_misc_options specifications that are described in
-\ref topic-package_scolib. Note, however, that DIRECT uses a fixed
-penalty value for constraint violations (i.e. it is not dynamically
-adapted as is done in \c coliny_pattern_search).
+DIRECT uses the \c solution_target, \c constraint_penalty and \c
+show_misc_options specifications that are described in \ref
+topic-package_scolib. Note, however, that DIRECT uses a fixed penalty
+value for constraint violations (i.e. it is not dynamically adapted as
+is done in \c coliny_pattern_search).
 
 <b> Search Parameters </b>
 
-The \c global_balance_parameter
-controls how much global search is performed by only allowing a
-subregion to be subdivided if the size of the subregion divided by the
-size of the largest subregion is at least \c global_balance_parameter.
-Intuitively, this forces large subregions to be subdivided before the
-smallest subregions are refined. The \c local_balance_parameter provides
-a tolerance for estimating whether the smallest subregion can provide
-a sufficient decrease to be worth subdividing; the default value is a
-small value that is suitable for most applications.
+The \c global_balance_parameter controls how much global search is
+performed by only allowing a subregion to be subdivided if the size of
+the subregion divided by the size of the largest subregion is at least
+\c global_balance_parameter.  Intuitively, this forces large
+subregions to be subdivided before the smallest subregions are
+refined. The \c local_balance_parameter provides a tolerance for
+estimating whether the smallest subregion can provide a sufficient
+decrease to be worth subdividing; the default value is a small value
+that is suitable for most applications.
 
 <b> Stopping Critieria </b>
 
@@ -60,7 +53,7 @@ DIRECT can be terminated with:
  \li \c min_boxsize_limit - most effective in practice
 
 
-Topics::	package_scolib, package_coliny, global_optimization_methods, not_yet_reviewed
+Topics::	package_scolib, package_coliny, global_optimization_methods
 Examples::
 Theory::
 Faq::
