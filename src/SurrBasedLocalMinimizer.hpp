@@ -49,6 +49,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void init_communicators();
+  void free_communicators();
+
   /// reset convergence controls in case of multiple SBLM executions
   void reset();
 

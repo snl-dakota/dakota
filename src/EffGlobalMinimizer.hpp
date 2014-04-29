@@ -43,6 +43,9 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  void init_communicators();
+  void free_communicators();
+
   void minimize_surrogates();
 
   const Model& algorithm_space_model() const;

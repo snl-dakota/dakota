@@ -78,23 +78,36 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   else if (!approx_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
     approxSubProbMinimizer = Iterator(approx_method_name, iteratedModel);
+}
 
-  // Allocate comms for parallel.  For DataFitSurrModel, concurrency
-  // is from daceIterator evals (global) or numerical derivatives
-  // (local/multipt) on actualModel.  For HierarchSurrModel,
+
+SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
+{ }
+
+
+void SurrBasedGlobalMinimizer::init_communicators()
+{
+  // iteratedModel is evaluated to add truth data (single compute_response())
+  iteratedModel.init_communicators(maxEvalConcurrency);
+
+  // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
+  // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
   // concurrency is from approxSubProbMinimizer on lowFidelityModel.
   iteratedModel.init_communicators(
     approxSubProbMinimizer.maximum_evaluation_concurrency());
 }
 
 
-SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
+void SurrBasedGlobalMinimizer::free_communicators()
 {
   // Virtual destructor handles referenceCount at Iterator level.
 
   // free communicators for iteratedModel
   iteratedModel.free_communicators(
     approxSubProbMinimizer.maximum_evaluation_concurrency());
+
+  // iteratedModel is evaluated to add truth data (single compute_response())
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

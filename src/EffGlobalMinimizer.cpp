@@ -110,17 +110,6 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
     probDescDB.get_bool("method.import_points_file_annotated")), false);
 
-  // *** TO DO: support scaling and other forced Recasts. ***
-  //if (minimizerRecasts)
-  //  iteratedModel.init_communicators(maxEvalConcurrency);
-
-  // eifModel.init_communicators() recursion is currently sufficient for
-  // fHatModel.  An additional fHatModel.init_communicators() call would be
-  // motivated by special parallel usage of fHatModel below that is not
-  // otherwise covered by the recursion.
-  //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
-  //fHatModel.init_communicators(fHatMaxConcurrency);
-
   // Following this ctor, Strategy::init_iterator() initializes the parallel
   // configuration for EffGlobalMinimizer + iteratedModel using
   // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction
@@ -149,12 +138,10 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 #ifdef HAVE_NCSU
   approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations, 
     max_fn_evals, min_box_size, vol_box_size), false);
-  eifModel.init_communicators(
-    approxSubProbMinimizer.maximum_evaluation_concurrency());
 #else
   Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. " 
-       << "Aborting process. " << std::endl;
-        abort_handler(-1);
+       << "Aborting process." << std::endl;
+  abort_handler(-1);
 #endif //HAVE_NCSU
 }
 
@@ -168,6 +155,27 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
 
 EffGlobalMinimizer::~EffGlobalMinimizer() 
+{ }
+
+
+void EffGlobalMinimizer::init_communicators()
+{
+  // iteratedModel is evaluated to add truth data (single compute_response())
+  iteratedModel.init_communicators(maxEvalConcurrency);
+
+  // eifModel.init_communicators() recursion is currently sufficient for
+  // fHatModel.  An additional fHatModel.init_communicators() call would be
+  // motivated by special parallel usage of fHatModel below that is not
+  // otherwise covered by the recursion.
+  //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
+  //fHatModel.init_communicators(fHatMaxConcurrency);
+
+  eifModel.init_communicators(
+    approxSubProbMinimizer.maximum_evaluation_concurrency());
+}
+
+
+void EffGlobalMinimizer::free_communicators()
 {
   // deallocate communicators for DIRECT on eifModel
   eifModel.free_communicators(
@@ -178,6 +186,9 @@ EffGlobalMinimizer::~EffGlobalMinimizer()
   // motivated by special parallel usage of fHatModel below that is not
   // otherwise covered by the recursion.
   //fHatModel.free_communicators(fHatMaxConcurrency);
+
+  // iteratedModel is evaluated to add truth data (single compute_response())
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

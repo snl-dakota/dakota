@@ -208,13 +208,6 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     aspm->constraint_tolerance(constraintTol);
   }
 
-  // Allocate comms in approxSubProbModel/iteratedModel for parallel SBLM.
-  // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
-  // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
-  // concurrency is from approxSubProbMinimizer on lowFidelityModel.
-  approxSubProbModel.init_communicators(
-    approxSubProbMinimizer.maximum_evaluation_concurrency());
-
   // If (and only if) the user has requested a surrogate bypass, test sub-models
   // to verify that there there is an additional approx layer to bypass.  The
   // surrogate bypass allows for rigorous evaluation of responseCenterTruth
@@ -346,12 +339,33 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 
 
 SurrBasedLocalMinimizer::~SurrBasedLocalMinimizer()
+{ }
+
+
+void SurrBasedLocalMinimizer::init_communicators()
+{
+  // iteratedModel is evaluated to add truth data (single compute_response())
+  iteratedModel.init_communicators(maxEvalConcurrency);
+
+  // Allocate comms in approxSubProbModel/iteratedModel for parallel SBLM.
+  // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
+  // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
+  // concurrency is from approxSubProbMinimizer on lowFidelityModel.
+  approxSubProbModel.init_communicators(
+    approxSubProbMinimizer.maximum_evaluation_concurrency());
+}
+
+
+void SurrBasedLocalMinimizer::free_communicators()
 {
   // Virtual destructor handles referenceCount at Strategy level.
 
   // free communicators for approxSubProbModel/iteratedModel
   approxSubProbModel.free_communicators(
     approxSubProbMinimizer.maximum_evaluation_concurrency());
+
+  // iteratedModel is evaluated to add truth data (single compute_response())
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 
