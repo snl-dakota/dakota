@@ -39,13 +39,24 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
   bool vary_pattern = false; // for consistency across outer loop invocations
   lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
     numSamples, seedSpec, rngName, vary_pattern, ACTIVE), false);
-  iteratedModel.init_communicators(lhsSampler.maximum_evaluation_concurrency());
 }
 
 
 NonDLHSInterval::~NonDLHSInterval()
+{ }
+
+
+void NonDLHSInterval::init_communicators()
+{
+  //iteratedModel.init_communicators(maxEvalConcurrency);
+  iteratedModel.init_communicators(lhsSampler.maximum_evaluation_concurrency());
+}
+
+
+void NonDLHSInterval::free_communicators()
 {
   iteratedModel.free_communicators(lhsSampler.maximum_evaluation_concurrency());
+  //iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

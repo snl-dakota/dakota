@@ -152,16 +152,27 @@ namespace Dakota
 			//gpEval.assign_rep(new FSUDesignCompExp(gpModel, numEmulEval, randomSeed, sampleDesign));
 		}
 
-		gpModel.init_communicators(gpEval.maximum_evaluation_concurrency());
-
-		gpModel.init_communicators(gpFinalEval.maximum_evaluation_concurrency());
 		#pragma endregion
 	}
 
-	NonDAdaptiveSampling::~NonDAdaptiveSampling()
-	{
-		gpModel.free_communicators(gpEval.maximum_evaluation_concurrency());
-	}
+  NonDAdaptiveSampling::~NonDAdaptiveSampling()
+  { }
+
+  void NonDAdaptiveSampling::init_communicators()
+  {
+    iteratedModel.init_communicators(maxEvalConcurrency);
+
+    gpModel.init_communicators(gpEval.maximum_evaluation_concurrency());
+    gpModel.init_communicators(gpFinalEval.maximum_evaluation_concurrency());
+  }
+
+  void NonDAdaptiveSampling::free_communicators()
+  {
+    gpModel.free_communicators(gpFinalEval.maximum_evaluation_concurrency());
+    gpModel.free_communicators(gpEval.maximum_evaluation_concurrency());
+
+    iteratedModel.free_communicators(maxEvalConcurrency);
+  }
 
 
 

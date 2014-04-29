@@ -44,8 +44,11 @@ public:
   ~NonDLocalInterval();                                       ///< destructor
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
+
+  void init_communicators();
+  void free_communicators();
 
   /// Performs a gradient-based optimization to determine interval
   /// bounds for an entire function or interval bounds on a particular

@@ -49,14 +49,14 @@ public:
 
   ~NonDAdaptiveSampling(); ///< destructor
 
-  /// print the final statistics
-  void print_results(std::ostream& s);
-
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  void init_communicators();
+  void free_communicators();
 
   /// perform the GP importance sampling and return probability of failure.
   void quantify_uncertainty();
@@ -64,6 +64,8 @@ protected:
   /// returns the probability calculated by the importance sampling
   Real final_probability();
  
+  /// print the final statistics
+  void print_results(std::ostream& s);
 
 private:
 

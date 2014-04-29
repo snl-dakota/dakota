@@ -135,17 +135,29 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 	sub_iterator.method_recourse();
     }
   }
+}
+
+
+NonDLocalInterval::~NonDLocalInterval()
+{ }
+
+
+void NonDLocalInterval::init_communicators()
+{
+  iteratedModel.init_communicators(maxEvalConcurrency);
 
   minMaxModel.init_communicators(
     minMaxOptimizer.maximum_evaluation_concurrency());
 }
 
 
-NonDLocalInterval::~NonDLocalInterval()
-{  
+void NonDLocalInterval::free_communicators()
+{
   // deallocate communicators for minMaxOptimizer on minMaxModel
   minMaxModel.free_communicators(
     minMaxOptimizer.maximum_evaluation_concurrency());
+
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

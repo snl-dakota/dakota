@@ -56,15 +56,22 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  void init_communicators();
+  void free_communicators();
+
   /// perform the GP importance sampling and return probability of failure.
   void quantify_uncertainty();
   
-  /// returns the probability calculated by the importance sampling
-  Real final_probability();
- 
   /// print the final statistics
   void print_results(std::ostream& s);
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// returns the probability calculated by the importance sampling
+  Real final_probability();
+ 
 private:
 
   //

@@ -80,9 +80,6 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   else
     numPtsAdd = maxIterations;
 
-  //gpModel.init_communicators(gpBuild.maximum_evaluation_concurrency());
-  gpModel.init_communicators(gpEval.maximum_evaluation_concurrency());
- 
   //construct sampler to generate one draw from rhoOne distribution, with 
   //seed varying between invocations
   construct_lhs(sampleRhoOne, iteratedModel, sample_type, 1, randomSeed,
@@ -90,11 +87,26 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
 }
 
 NonDGPImpSampling::~NonDGPImpSampling()
+{ }
+
+
+void NonDGPImpSampling::init_communicators()
+{
+  iteratedModel.init_communicators(maxEvalConcurrency);
+
+  //gpModel.init_communicators(gpBuild.maximum_evaluation_concurrency());
+  gpModel.init_communicators(gpEval.maximum_evaluation_concurrency());
+} 
+
+
+void NonDGPImpSampling::free_communicators()
 {
   //gpModel.free_communicators(gpBuild.maximum_evaluation_concurrency());
   gpModel.free_communicators(gpEval.maximum_evaluation_concurrency());
+
+  iteratedModel.init_communicators(maxEvalConcurrency);
 }
- 
+
 
 /** Calculate the failure probabilities for specified probability levels 
     using Gaussian process based importance sampling. */

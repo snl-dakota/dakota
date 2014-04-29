@@ -129,13 +129,6 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
       import_pts_file,
       probDescDB.get_bool("method.import_points_file_annotated")), false);
 
-    // intervalOptModel.init_communicators() recursion is currently sufficient
-    // for fHatModel.  An additional fHatModel.init_communicators() call would
-    // be motivated by special parallel usage of fHatModel below that is not
-    // otherwise covered by the recursion.
-    //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
-    //fHatModel.init_communicators(fHatMaxConcurrency);
-
     // Following this ctor, Strategy::init_iterator() initializes the parallel
     // configuration for NonDGlobalInterval + iteratedModel using
     // NonDGlobalInterval's maxEvalConcurrency.  During fHatModel construction
@@ -209,13 +202,31 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1);
 #endif // HAVE_NCSU
   }
+}
+
+
+NonDGlobalInterval::~NonDGlobalInterval()
+{ }
+
+
+void NonDGlobalInterval::init_communicators()
+{
+  iteratedModel.init_communicators(maxEvalConcurrency);
+
+  // intervalOptModel.init_communicators() recursion is currently sufficient
+  // for fHatModel.  An additional fHatModel.init_communicators() call would
+  // be motivated by special parallel usage of fHatModel below that is not
+  // otherwise covered by the recursion.
+  //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
+  //fHatModel.init_communicators(fHatMaxConcurrency);
+
   intervalOptModel.init_communicators(
     intervalOptimizer.maximum_evaluation_concurrency());
 }
 
 
-NonDGlobalInterval::~NonDGlobalInterval()
-{  
+void NonDGlobalInterval::free_communicators()
+{
   // deallocate communicators for DIRECT on intervalOptModel
   intervalOptModel.free_communicators(
     intervalOptimizer.maximum_evaluation_concurrency());
@@ -225,6 +236,8 @@ NonDGlobalInterval::~NonDGlobalInterval()
   // be motivated by special parallel usage of fHatModel below that is not
   // otherwise covered by the recursion.
   //fHatModel.free_communicators(fHatMaxConcurrency);
+
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

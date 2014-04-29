@@ -87,6 +87,22 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 }
 
 
+void NonDAdaptImpSampling::init_communicators()
+{
+  if (initLHS)
+    uSpaceModel.init_communicators(numSamples);
+  uSpaceModel.init_communicators(refineSamples);
+}
+
+
+void NonDAdaptImpSampling::free_communicators()
+{
+  uSpaceModel.free_communicators(refineSamples);
+  if (initLHS)
+    uSpaceModel.free_communicators(numSamples);
+}
+
+
 /** Initializes data using a vector array of starting points. */
 void NonDAdaptImpSampling::
 initialize(const RealVectorArray& acv_points, bool x_space_data,

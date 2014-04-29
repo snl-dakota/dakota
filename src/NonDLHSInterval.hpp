@@ -39,8 +39,11 @@ public:
   ~NonDLHSInterval();                                       ///< destructor
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
+
+  void init_communicators();
+  void free_communicators();
 
   /// performs an epistemic uncertainty propagation using LHS samples
   void quantify_uncertainty();

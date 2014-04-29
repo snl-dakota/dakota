@@ -57,7 +57,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   approxImportFile(probDescDB.get_string("method.import_points_file")),
-  approxImportAnnotated(probDescDB.get_bool("method.import_points_file_annotated")),
+  approxImportAnnotated(
+    probDescDB.get_bool("method.import_points_file_annotated")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
 {   
   const String& rng = probDescDB.get_string("method.random_number_generator");
@@ -65,12 +66,25 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   lhsIter.assign_rep(new
     NonDLHSSampling(iteratedModel, sample_type, emulatorSamples, randomSeed,
 		    rng, true, ACTIVE_UNIFORM), false);
-  iteratedModel.init_communicators(lhsIter.maximum_evaluation_concurrency());
 }
 
 
 NonDGPMSABayesCalibration::~NonDGPMSABayesCalibration()
 { }
+
+
+void NonDGPMSABayesCalibration::init_communicators()
+{
+  iteratedModel.init_communicators(lhsIter.maximum_evaluation_concurrency());
+  NonDBayesCalibration::init_communicators();
+}
+
+
+void NonDGPMSABayesCalibration::free_communicators()
+{
+  NonDBayesCalibration::free_communicators();
+  iteratedModel.free_communicators(lhsIter.maximum_evaluation_concurrency());
+}
 
 
 /** Perform the uncertainty quantification */

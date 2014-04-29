@@ -58,30 +58,34 @@ public:
   //
   //- Heading: Data
   //
-    /// Rejection type (standard or delayed, in the DRAM framework)
-    String rejectionType;
-    /// Metropolis type (hastings or adaptive, in the DRAM framework)
-    String metropolisType;
-    /// number of samples in the chain (e.g. number of MCMC samples)
-    int numSamples;
-    /// number of samples of the simulation to construct the GP 
-    int emulatorSamples;
-    /// scale factor for proposal covariance
-    RealVector proposalCovScale;
-    /// scale factor for likelihood
-    Real likelihoodScale;
-    /// flag to indicated if the sigma terms should be calibrated (default true)
-    bool calibrateSigmaFlag;
-    /// name of file from which to import build points to build GP
-    String approxImportFile;
-    ///  annotate flag
-    bool approxImportAnnotated;
+
+  /// Rejection type (standard or delayed, in the DRAM framework)
+  String rejectionType;
+  /// Metropolis type (hastings or adaptive, in the DRAM framework)
+  String metropolisType;
+  /// number of samples in the chain (e.g. number of MCMC samples)
+  int numSamples;
+  /// number of samples of the simulation to construct the GP 
+  int emulatorSamples;
+  /// scale factor for proposal covariance
+  RealVector proposalCovScale;
+  /// scale factor for likelihood
+  Real likelihoodScale;
+  /// flag to indicated if the sigma terms should be calibrated (default true)
+  bool calibrateSigmaFlag;
+  /// name of file from which to import build points to build GP
+  String approxImportFile;
+  ///  annotate flag
+  bool approxImportAnnotated;
 
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  void init_communicators();
+  void free_communicators();
 
   /// performs a forward uncertainty propagation by using GPM/SA to 
   /// generate a posterior distribution on parameters given a set of 
@@ -91,13 +95,14 @@ protected:
 
   /// print the final statistics
   //void print_results(std::ostream& s);
+
   //
-  //  //- Heading: Data
+  //- Heading: Data
+  //
 
   /// random seed to pass to QUESO
   int randomSeed;
   
-
 private:
 
   //
@@ -110,8 +115,6 @@ private:
   static NonDGPMSABayesCalibration* NonDGPMSAInstance;
   /// LHS iterator for generating samples for GP 
   Iterator lhsIter;
-  
-
 };
 
 } // namespace Dakota

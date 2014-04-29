@@ -48,12 +48,21 @@ public:
   ~NonDAdaptImpSampling();
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
 
-  /// performs an adaptive importance sampling and returns probability of 
-  /// failure. 
+  void init_communicators();
+  void free_communicators();
+
+  /// performs adaptive importance sampling and computes probability of failure
   void quantify_uncertainty();
+
+  /// print the final statistics
+  void print_results(std::ostream& s);
+
+  //
+  //- Heading: Member functions
+  //
 
   /// initializes data needed for importance sampling: an initial set
   /// of points around which to sample, a failure threshold, an
@@ -73,9 +82,6 @@ public:
 
   /// returns the final probability calculated by the importance sampling
   Real final_probability();
-
-  /// print the final statistics
-  void print_results(std::ostream& s);
 
 private:
 

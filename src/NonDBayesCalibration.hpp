@@ -47,6 +47,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void init_communicators();
+  void free_communicators();
+
   //void print_results(std::ostream& s);
 
   void quantify_uncertainty();

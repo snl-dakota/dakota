@@ -52,7 +52,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // Construct emulatorModel (no emulation, GP, PCE, or SC) for use in
   // likelihood evaluations
-  int mcmc_concurrency = 1; // prior to concurrent chains
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR: {
     // instantiate a NonD{PolynomialChaos,StochCollocation} iterator
@@ -73,7 +72,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
-    emulatorModel.init_communicators(mcmc_concurrency);
     break;
   }
   case GP_EMULATOR: case KRIGING_EMULATOR: {
@@ -123,14 +121,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	import_pts_file,
 	probDescDB.get_bool("method.import_points_file_annotated")), false);
     }
-    emulatorModel.init_communicators(mcmc_concurrency);
     break;
   }
   case NO_EMULATOR:
-    if (standardizedSpace) { // recast to standardized probability space
+    if (standardizedSpace) // recast to standardized probability space
       transform_model(iteratedModel, emulatorModel); // no global bounds
-      emulatorModel.init_communicators(mcmc_concurrency);
-    }
     else
       emulatorModel = iteratedModel; // shared rep
     break;
@@ -139,11 +134,28 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
 
 NonDBayesCalibration::~NonDBayesCalibration()
+{ }
+
+
+void NonDBayesCalibration::init_communicators()
 {
-  if (emulatorType || standardizedSpace) {
+  //iteratedModel.init_communicators(maxEvalConcurrency);
+
+  //if (emulatorType || standardizedSpace) {
+    int mcmc_concurrency = 1; // prior to concurrent chains
+    emulatorModel.init_communicators(mcmc_concurrency);
+  //}
+}
+
+
+void NonDBayesCalibration::free_communicators()
+{
+  //if (emulatorType || standardizedSpace) {
     int mcmc_concurrency = 1; // prior to concurrent chains
     emulatorModel.free_communicators(mcmc_concurrency);
-  }
+  //}
+
+  //iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

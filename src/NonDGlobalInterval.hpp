@@ -48,6 +48,9 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  void init_communicators();
+  void free_communicators();
+
   /// Performs an optimization to determine interval bounds for an   
   /// entire function or interval bounds on a particular statistical estimator
   void quantify_uncertainty();
