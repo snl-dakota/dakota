@@ -82,11 +82,6 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
     int search_scheme_size
       = probDescDB.get_int("method.optpp.search_scheme_size");
     maxEvalConcurrency *= search_scheme_size;
-    // The following is not performed in the Optimizer constructor since
-    // maxEvalConcurrency is updated above. The matching free_communicators()
-    // appears in the Optimizer destructor.
-    if (minimizerRecasts)
-      iteratedModel.init_communicators(maxEvalConcurrency);
     optpds->setSSS(search_scheme_size); 
     theOptimizer = optpds;
     break;

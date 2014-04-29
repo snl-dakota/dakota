@@ -26,13 +26,6 @@ APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
-
-  // The following is not performed in the Optimizer constructor since
-  // maxEvalConcurrency is updated within set_apps_parameters().  The
-  // matching free_communicators() appears in the Optimizer destructor.
-
-  if (minimizerRecasts)
-    iteratedModel.init_communicators(maxEvalConcurrency);
 }
 
 APPSOptimizer::APPSOptimizer(Model& model):
@@ -42,13 +35,6 @@ APPSOptimizer::APPSOptimizer(Model& model):
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
-
-  // The following is not performed in the Optimizer constructor since
-  // maxEvalConcurrency is updated within set_apps_parameters().  The
-  // matching free_communicators() appears in the Optimizer destructor.
-
-  if (minimizerRecasts)
-    iteratedModel.init_communicators(maxEvalConcurrency);
 }
 
 /** find_optimum redefines the Optimizer virtual function to perform

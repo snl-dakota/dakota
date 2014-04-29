@@ -150,18 +150,6 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
     reduce_model(local_nls_recast, require_hessians);
     ++minimizerRecasts;
   }
-
-  if (minimizerRecasts) {
-    // for grad-based Optimizers, maxEvalConcurrency has already been determined
-    // from derivative concurrency in the Iterator initializer, so initialize
-    // communicators in the RecastModel.  For nongradient methods (COLINY,
-    // OPT++ PDS, JEGA), maxEvalConcurrency is defined in the derived ctors,
-    // so init_communicators() is invoked there.
-    if (methodName < OPTPP_PDS || methodName > SOGA) {// exclude PDS,COLINY,JEGA
-      bool recurse_flag = true;  // explicit default: recurse down models
-      iteratedModel.init_communicators(maxEvalConcurrency, recurse_flag);
-    }
-  }
 }
 
 

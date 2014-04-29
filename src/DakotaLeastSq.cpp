@@ -87,13 +87,6 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
     weight_model();
     ++minimizerRecasts;
   }
-
-  if (minimizerRecasts) {
-    // since all LeastSq iterators are currently grad-based, maxEvalConcurrency
-    // has already been defined in the Iterator initializer list, so init here:
-    bool recurse_flag = true;  // explicit default: recurse down models
-    iteratedModel.init_communicators(maxEvalConcurrency, recurse_flag);
-  }
 }
 
 

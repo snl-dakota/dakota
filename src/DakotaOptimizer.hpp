@@ -125,10 +125,7 @@ inline Optimizer::Optimizer(): localObjectiveRecast(false)
 
 
 inline Optimizer::~Optimizer()
-{ 
-  if (minimizerRecasts)
-    iteratedModel.free_communicators(maxEvalConcurrency);
-}
+{ }
 
 
 inline void Optimizer::core_run()

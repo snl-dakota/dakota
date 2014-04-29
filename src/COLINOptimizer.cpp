@@ -225,13 +225,6 @@ COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, Model& model):
   solver_setup(probDescDB.get_ushort("method.algorithm"));
   set_rng(probDescDB.get_int("method.random_seed"));
   set_solver_parameters();
-
-  // The following is not performed in the Optimizer constructor since
-  // maxEvalConcurrency is updated within set_method_parameters().  The
-  // matching free_communicators() appears in the Optimizer destructor.
-
-  if (minimizerRecasts)
-    iteratedModel.init_communicators(maxEvalConcurrency);
 }
 
   /// Alternate constructor for on-the-fly instantiations.

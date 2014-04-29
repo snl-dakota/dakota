@@ -1854,12 +1854,6 @@ JEGAOptimizer::JEGAOptimizer(
 
     // We only ever need one EvaluatorCreator so we can create it now.
     this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
-
-    // The following is not performed in the Optimizer constructor since
-    // maxEvalConcurrency is updated above. The matching free_communicators()
-    // appears in the Optimizer destructor.
-    if(this->minimizerRecasts)
-      this->iteratedModel.init_communicators(this->maxEvalConcurrency);
 }
 
 JEGAOptimizer::~JEGAOptimizer(

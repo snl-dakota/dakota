@@ -1021,11 +1021,8 @@ void Iterator::init_communicators()
 {
   if(iteratorRep) // envelope fwd to letter
     iteratorRep->init_communicators();
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine init_communicators virtual "
-	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
-  }
+  else // default needed for empty envelopes on iteratorCommRank > 0
+    iteratedModel.init_communicators(maxEvalConcurrency); // recurse_flag = true
 }
 
 
@@ -1033,11 +1030,8 @@ void Iterator::free_communicators()
 {
   if(iteratorRep) // envelope fwd to letter
     iteratorRep->free_communicators();
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine free_communicators virtual "
-	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
-  }
+  else // default needed for empty envelopes on iteratorCommRank > 0
+    iteratedModel.free_communicators(maxEvalConcurrency); // recurse_flag = true
 }
 
 

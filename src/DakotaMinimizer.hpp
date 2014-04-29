@@ -82,9 +82,6 @@ protected:
   void post_run(std::ostream& s);
   void finalize_run();
 
-  void init_communicators();
-  void free_communicators();
-
   const Model& algorithm_space_model() const;
 
   //
@@ -415,14 +412,6 @@ inline void Minimizer::finalize_run()
   minimizerInstance = prevMinInstance;
   Iterator::finalize_run(); // included for completeness
 }
-
-
-inline void Minimizer::init_communicators()
-{ iteratedModel.init_communicators(maxEvalConcurrency); }
-
-
-inline void Minimizer::free_communicators()
-{ iteratedModel.free_communicators(maxEvalConcurrency); }
 
 
 /** default definition that gets redefined in selected derived Minimizers */

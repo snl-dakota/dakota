@@ -91,9 +91,6 @@ protected:
 
   void pre_output();
 
-  void init_communicators();
-  void free_communicators();
-
   void print_results(std::ostream& s);
 
   const Model& algorithm_space_model() const;
@@ -229,14 +226,6 @@ inline const RealMatrix& Analyzer::all_samples()
 
 inline const IntResponseMap& Analyzer::all_responses() const
 { return allResponses; }
-
-
-inline void Analyzer::init_communicators()
-{ iteratedModel.init_communicators(maxEvalConcurrency); }
-
-
-inline void Analyzer::free_communicators()
-{ iteratedModel.free_communicators(maxEvalConcurrency); }
 
 
 /** default definition that gets redefined in selected derived Minimizers */
