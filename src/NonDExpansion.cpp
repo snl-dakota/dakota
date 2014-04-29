@@ -92,7 +92,7 @@ NonDExpansion::~NonDExpansion()
 
 void NonDExpansion::init_communicators()
 {
-  // should be redundant since contained within recursions below
+  // this is redundant with Model recursions except for PCE coeff import case
   //iteratedModel.init_communicators(maxEvalConcurrency);
 
   if (numSamplesOnExpansion)
@@ -115,7 +115,7 @@ void NonDExpansion::free_communicators()
   else
     uSpaceModel.free_communicators(maxEvalConcurrency);
 
-  // should be redundant since contained within recursions above
+  // this is redundant with Model recursions except for PCE coeff import case
   //iteratedModel.free_communicators(maxEvalConcurrency);
 }
 

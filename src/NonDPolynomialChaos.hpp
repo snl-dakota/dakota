@@ -52,6 +52,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void init_communicators();
+  void free_communicators();
+
   void resolve_inputs(short& u_space_type, short& data_order);
 
   void initialize_u_space_model();

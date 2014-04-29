@@ -373,6 +373,26 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 { }
 
 
+void NonDPolynomialChaos::init_communicators()
+{
+  // this is redundant with Model recursions except for PCE coeff import case
+  if (!expansionImportFile.empty())
+    iteratedModel.init_communicators(maxEvalConcurrency);
+
+  NonDExpansion::init_communicators();
+}
+
+
+void NonDPolynomialChaos::free_communicators()
+{
+  NonDExpansion::free_communicators();
+
+  // this is redundant with Model recursions except for PCE coeff import case
+  if (!expansionImportFile.empty())
+    iteratedModel.free_communicators(maxEvalConcurrency);
+}
+
+
 void NonDPolynomialChaos::
 resolve_inputs(short& u_space_type, short& data_order)
 {
