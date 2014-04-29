@@ -47,7 +47,6 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
   else if (!method_names.empty())
     { methodList = method_names; lightwtCtor = true;  }
   size_t i, num_iterators = methodList.size();
-  selectedIterators.resize(num_iterators); // all procs need for iterator sched
 
   // define maxIteratorConcurrency without access to selectedIterators
   // (init_iterator_parallelism() requires maxIteratorConcurrency and
@@ -95,6 +94,8 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
   const String& model_ptr = probDescDB.get_string("method.sub_model_pointer");
   int min_procs_per_iter = INT_MAX, max_procs_per_iter = 0;
   std::pair<int, int> ppi_pr;
+  selectedIterators.resize(num_iterators); // all procs need for iterator sched
+  if (!lightwtCtor) selectedModels.resize(num_iterators);
   for (i=0; i<num_iterators; ++i) {
     if (lightwtCtor)
       ppi_pr = estimate_by_name(methodList[i], model_ptr,
@@ -153,12 +154,10 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
     for (i=0; i<num_iterators; ++i) // drives need for additional ctor chain
       allocate_by_name(methodList[i], model_ptr,
 		       selectedIterators[i], iteratedModel);
-  else {
-    selectedModels.resize(num_iterators);
+  else
     for (i=0; i<num_iterators; ++i)
       allocate_by_pointer(methodList[i], selectedIterators[i],
 			  selectedModels[i]);
-  }
 
   // now that parallel paritioning and iterator allocation has occurred,
   // manage acceptable values for Iterator::numFinalSolutions (needed for
