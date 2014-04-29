@@ -974,17 +974,4 @@ void workdir_adjust(const std::string& workdir)
 #endif
 }
 
-
-/** Portability adapter for getcwd: return the string in OS-native
-    format.  TODO: change paths throughout code to use bfs::path where
-    possible, since Windows (and Cygwin) use wchar_t instead of
-    char_t. */
-std::string get_cwd()
-{
-  // string is wchar on Windows and Cygwin, char elsewhere. This will
-  // get the native path and return as a string, using locale-specific
-  // conversion from wchar to char if needed.
-  return bfs::current_path().string();
-}
-
 } // namespace Dakota

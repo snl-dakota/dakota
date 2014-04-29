@@ -6,16 +6,18 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Description:  Filesystem_utils (to be replaced by Boost, eventually)
+//- Description:  Filesystem_utils (to be replaced by Boost.Filesystem)
 //-
 //- Version: $Id$
 
-#ifndef FILESYSTEM_UTILS_H
-#define FILESYSTEM_UTILS_H
+#ifndef DAKOTA_FILESYSTEM_UTILS_H
+#define DAKOTA_FILESYSTEM_UTILS_H
 
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"
+#include "dakota_data_types.hpp"
 #include <boost/algorithm/string.hpp> 
+#include <boost/filesystem/operations.hpp>
 #include <string>
 #include <vector>
 
@@ -33,7 +35,36 @@ int rec_rmdir(const char*);
 
 
 /// Portability adapter for getcwd
-std::string get_cwd();
+/* Portability adapter for getcwd: return the string in OS-native
+   format.  TODO: change paths throughout code to use bfs::path where
+   possible, since Windows (and Cygwin) use wchar_t instead of
+   char_t. */
+inline std::string get_cwd()
+{
+  // Get the native path and return as a string, using locale-specific
+  // conversion from wchar to char if needed.
+  return boost::filesystem::current_path().string();
+}
+
+
+/// Utility function for executable file search algorithms
+inline std::vector<std::string> get_pathext()
+{
+  // Get the possible filename extensions from the system environment variable
+
+  char* env_ext_str_list = std::getenv("PATHEXT");
+
+  // Create a SringArray of viable extensions for use in executable
+  // detection algorithms
+
+  StringArray ext_list;
+  boost::split( ext_list, env_ext_str_list, boost::is_any_of(";") );
+
+  ext_list.push_back("");  // Backward compatibility:  Some users may
+                           // already be explicit and specify filename.ext
+
+  return ext_list;
+}
 
 
 // WJB:  MAJOR OVERHAUL required to make this function a member of 
@@ -41,7 +72,7 @@ std::string get_cwd();
 void workdir_adjust(const std::string& workdir);
 
 
-/// Utility function from boost/test, not available in the DAKOTA snapshot
+/// Utility function from borrowed from boost/test
 inline void putenv_impl(const char* name_and_value)
 {
   if ( putenv( (char*)name_and_value) ) {
@@ -67,4 +98,5 @@ inline void putenv_impl(const char* name_and_value)
 
 } // namespace Dakota
 
-#endif // FILESYSTEM_UTILS_H
+#endif // DAKOTA_FILESYSTEM_UTILS_H
+
