@@ -13,7 +13,7 @@
 # Reference Manual: refman.tex #
 ################################
 
-# BMA: skip until new PDF generation resolved
+# JAS: This stuff no longer needed by new ref manual?
 if (0) {
 
 $texfile = "latex-ref/refman.tex";
@@ -92,9 +92,46 @@ foreach $texfile (@texfiles) {
     rename $newtexfile, $texfile;
   }
 }
+} # JAS
+#####################################################
+# Reference Manual: Workaround for apparent p{} bug #
+#####################################################
+# In keywords.tex, doxygen writes tables using an
+# arithmetic argument to p{}. latex is unable to 
+# correctly parse them. The workaround used here is
+# to extract the arithmetic argument calculate it 
+# once at the top of the file and save the result 
+# in a variable (\kludgelength), then substitute 
+# the variable.
+$texfile = "latex-ref/keywords.tex";
+$newtexfile = $texfile . "_";
+
+open (INPUT,'<',"$texfile")    || die "cannot open original file $texfile\n$!";
+open (OUTPUT,'>', "$newtexfile") || die "cannot open new file $newtexfile\n$!";
+print "Processing $texfile\n";
+# Find the first example of the arithmetic expression,
+# then rewind the file
+while (my $line = <INPUT>) {
+  if ($line  =~ /p\{(.*?)\}/) {
+    $arwidth = $1;
+    last;
+  }
+}
+
+seek(INPUT,0,0); 
+# Write out header to replacement keywords.tex file
+print OUTPUT "\\newlength{\\kludgelength}\n";
+print OUTPUT "\\setlength{\\kludgelength}\n    {$arwidth}\n";
+while ($line = <INPUT>) {
+	$line =~ s/p\{\Q$arwidth\E\}/p{\\kludgelength}/;
+	print OUTPUT $line;
 
 }
-# BMA: skip until new PDF generation resolved
+close(INPUT);
+close(OUTPUT);
+
+rename $newtexfile, $texfile;
+
 
 
 #################################
