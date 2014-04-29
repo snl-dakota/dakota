@@ -35,6 +35,8 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
   if (!numSamples)
     numSamples = 10000;
 
+  maxEvalConcurrency *= numSamples;
+
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   bool vary_pattern = false; // for consistency across outer loop invocations
   lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
