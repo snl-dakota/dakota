@@ -92,10 +92,13 @@ NonDExpansion::~NonDExpansion()
 
 void NonDExpansion::init_communicators()
 {
-  iteratedModel.init_communicators(maxEvalConcurrency);
+  // should be redundant since contained within recursions below
+  //iteratedModel.init_communicators(maxEvalConcurrency);
 
   if (numSamplesOnExpansion)
     expansionSampler.init_communicators();
+  else
+    uSpaceModel.init_communicators(maxEvalConcurrency);
 
   if (impSampling)
     importanceSampler.init_communicators();
@@ -109,8 +112,11 @@ void NonDExpansion::free_communicators()
 
   if (numSamplesOnExpansion)
     expansionSampler.free_communicators();
+  else
+    uSpaceModel.free_communicators(maxEvalConcurrency);
 
-  iteratedModel.free_communicators(maxEvalConcurrency);
+  // should be redundant since contained within recursions above
+  //iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

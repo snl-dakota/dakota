@@ -139,6 +139,8 @@ void Analyzer::initialize_run()
       iteratedModel.set_evaluation_reference();
 
     // Set the active parallel configuration within the Model
+    //Cout << "Setting comms with maxEvalConcurrency = " << maxEvalConcurrency
+    //     << std::endl;
     iteratedModel.set_communicators(maxEvalConcurrency);
   }
 }
