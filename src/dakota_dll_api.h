@@ -14,6 +14,9 @@
 /** \file dakota_dll_api.h
     \brief API for DLL interactions */
 
+#ifndef DAKOTA_DLL_API_H
+#define DAKOTA_DLL_API_H
+
 #ifdef __MINGW32__
 #ifdef BUILDING_DAKOTA_DLL
 // used when building the API to specify its exports
@@ -62,3 +65,6 @@ extern "C" void DAKOTA_DLL_FN
 dakota_get_variable_info(int id,
 			 char*** pVarNames, int* pNumVarNames, 
 			 char*** pRespNames, int* pNumRespNames);
+
+#endif // DAKOTA_DLL_API_H
+
