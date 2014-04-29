@@ -32,13 +32,12 @@ namespace SIM {
 
 /** The plug-in SerialDirectApplicInterface resides in namespace SIM
     and uses a copy of rosenbrock() to perform serial parameter to
-    response mappings. It may be activated by specifying the
-    --with-plugin configure option, which activates the DAKOTA_PLUGIN
-    macro in dakota_config.h used by main.cpp (which activates the
-    plug-in code block within that file) and activates the PLUGIN_S
-    declaration defined in Makefile.include and used in
-    Makefile.source (which add this class to the build).  Test input
-    files should then use an analysis_driver of "plugin_rosenbrock". */
+    response mappings. It may be activated by specifying the DAKOTA_PLUGIN
+    option (ON by default) in the CMake configuration settings. Enabling the
+    plugin feature activates the DAKOTA_PLUGIN preprocessor directive which
+    is then used at build time to activate additional functionality to support
+    plug-in analysis drivers.  Test input files can then use an
+    analysis_driver of "plugin_rosenbrock" (or "plugin_textbook"). */
 
 class SerialDirectApplicInterface: public Dakota::DirectApplicInterface
 {
