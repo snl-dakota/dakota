@@ -94,27 +94,21 @@ void NonDExpansion::init_communicators()
 {
   iteratedModel.init_communicators(maxEvalConcurrency);
 
-  // uSpaceModel concurrency is defined by the number of samples used
-  // in evaluating the PC expansion
   if (numSamplesOnExpansion)
-    uSpaceModel.init_communicators(
-      numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+    expansionSampler.init_communicators();
 
   if (impSampling)
-    uSpaceModel.init_communicators(
-      importanceSampler.maximum_evaluation_concurrency());
+    importanceSampler.init_communicators();
 }
 
 
 void NonDExpansion::free_communicators()
 {
   if (impSampling)
-    uSpaceModel.free_communicators(
-      importanceSampler.maximum_evaluation_concurrency());
+    importanceSampler.free_communicators();
 
   if (numSamplesOnExpansion)
-    uSpaceModel.free_communicators(
-      numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+    expansionSampler.free_communicators();
 
   iteratedModel.free_communicators(maxEvalConcurrency);
 }

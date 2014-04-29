@@ -162,14 +162,14 @@ namespace Dakota
   {
     iteratedModel.init_communicators(maxEvalConcurrency);
 
-    gpModel.init_communicators(gpEval.maximum_evaluation_concurrency());
-    gpModel.init_communicators(gpFinalEval.maximum_evaluation_concurrency());
+    gpEval.init_communicators();
+    gpFinalEval.init_communicators();
   }
 
   void NonDAdaptiveSampling::free_communicators()
   {
-    gpModel.free_communicators(gpFinalEval.maximum_evaluation_concurrency());
-    gpModel.free_communicators(gpEval.maximum_evaluation_concurrency());
+    gpFinalEval.free_communicators();
+    gpEval.free_communicators();
 
     iteratedModel.free_communicators(maxEvalConcurrency);
   }

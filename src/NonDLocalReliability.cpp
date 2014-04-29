@@ -417,23 +417,10 @@ void NonDLocalReliability::init_communicators()
     // TO DO: distinguish gradient concurrency for truth vs. surrogate?
     //        (probably doesn't matter for surrogate)
 
-    mppModel.init_communicators(mppOptimizer.maximum_evaluation_concurrency());
+    mppOptimizer.init_communicators();
 
-    if (integrationRefinement) {
-      importanceSampler.iterated_model().init_communicators(
-	importanceSampler.maximum_evaluation_concurrency());
-      /*
-      int ais_conc = importanceSampler.maximum_evaluation_concurrency();
-      switch (mppSearchType) {
-      case AMV_X: case AMV_PLUS_X: case TANA_X:
-	importanceSampler.iterated_model().init_communicators(ais_conc); break;
-      case AMV_U: case AMV_PLUS_U: case TANA_U:
-	uSpaceModel.truth_model().init_communicators(ais_conc);	         break;
-      case NO_APPROX:
-	uSpaceModel.init_communicators(ais_conc);                        break;
-      }
-      */
-    }
+    if (integrationRefinement)
+      importanceSampler.init_communicators();
   }
 }
 
@@ -441,12 +428,11 @@ void NonDLocalReliability::init_communicators()
 void NonDLocalReliability::free_communicators()
 {
   if (mppSearchType) {
-    mppModel.free_communicators(mppOptimizer.maximum_evaluation_concurrency());
+    mppOptimizer.free_communicators();
     uSpaceModel.free_communicators(maxEvalConcurrency);
     iteratedModel.free_communicators(maxEvalConcurrency);
     if (integrationRefinement)
-      importanceSampler.iterated_model().free_communicators(
-	importanceSampler.maximum_evaluation_concurrency());
+      importanceSampler.free_communicators();
   }
 }
 
@@ -2672,10 +2658,10 @@ void NonDLocalReliability::method_recourse()
        << "detected method conflict.\n\n";
   if (mppSearchType && npsolFlag) {
 #ifdef HAVE_OPTPP
-    mppModel.free_communicators(mppOptimizer.maximum_evaluation_concurrency());
+    mppOptimizer.free_communicators();
     mppOptimizer.assign_rep(
       new SNLLOptimizer("optpp_q_newton", mppModel), false);
-    mppModel.init_communicators(mppOptimizer.maximum_evaluation_concurrency());
+    mppOptimizer.init_communicators();
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalReliability "
 	 << "(OPT++ NIP unavailable).\n";

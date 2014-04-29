@@ -351,8 +351,7 @@ void SurrBasedLocalMinimizer::init_communicators()
   // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
   // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
   // concurrency is from approxSubProbMinimizer on lowFidelityModel.
-  approxSubProbModel.init_communicators(
-    approxSubProbMinimizer.maximum_evaluation_concurrency());
+  approxSubProbMinimizer.init_communicators();
 }
 
 
@@ -361,8 +360,7 @@ void SurrBasedLocalMinimizer::free_communicators()
   // Virtual destructor handles referenceCount at Strategy level.
 
   // free communicators for approxSubProbModel/iteratedModel
-  approxSubProbModel.free_communicators(
-    approxSubProbMinimizer.maximum_evaluation_concurrency());
+  approxSubProbMinimizer.free_communicators();
 
   // iteratedModel is evaluated to add truth data (single compute_response())
   iteratedModel.free_communicators(maxEvalConcurrency);

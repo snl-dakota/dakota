@@ -322,21 +322,19 @@ void NonDGlobalReliability::init_communicators()
   //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //uSpaceModel.init_communicators(uSpaceMaxConcurrency);
 
-  mppModel.init_communicators(mppOptimizer.maximum_evaluation_concurrency());
+  mppOptimizer.init_communicators();
 
-  uSpaceModel.init_communicators(
-    importanceSampler.maximum_evaluation_concurrency());
+  importanceSampler.init_communicators();
 }
 
 
 void NonDGlobalReliability::free_communicators()
 {
   // deallocate communicators for MMAIS on uSpaceModel
-  uSpaceModel.free_communicators(
-    importanceSampler.maximum_evaluation_concurrency());
+  importanceSampler.free_communicators();
 
   // deallocate communicators for DIRECT on mppModel
-  mppModel.free_communicators(mppOptimizer.maximum_evaluation_concurrency());
+  mppOptimizer.free_communicators();
 
   // mppModel.free_communicators() recursion is currently sufficient for
   // uSpaceModel.  An additional uSpaceModel.free_communicators() call would

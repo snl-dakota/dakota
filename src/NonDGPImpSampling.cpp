@@ -94,15 +94,15 @@ void NonDGPImpSampling::init_communicators()
 {
   iteratedModel.init_communicators(maxEvalConcurrency);
 
-  //gpModel.init_communicators(gpBuild.maximum_evaluation_concurrency());
-  gpModel.init_communicators(gpEval.maximum_evaluation_concurrency());
+  //gpBuild.init_communicators();
+  gpEval.init_communicators();
 } 
 
 
 void NonDGPImpSampling::free_communicators()
 {
-  //gpModel.free_communicators(gpBuild.maximum_evaluation_concurrency());
-  gpModel.free_communicators(gpEval.maximum_evaluation_concurrency());
+  gpEval.free_communicators();
+  //gpBuild.free_communicators();
 
   iteratedModel.init_communicators(maxEvalConcurrency);
 }

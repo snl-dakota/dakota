@@ -163,28 +163,26 @@ void EffGlobalMinimizer::init_communicators()
   // iteratedModel is evaluated to add truth data (single compute_response())
   iteratedModel.init_communicators(maxEvalConcurrency);
 
-  // eifModel.init_communicators() recursion is currently sufficient for
-  // fHatModel.  An additional fHatModel.init_communicators() call would be
-  // motivated by special parallel usage of fHatModel below that is not
-  // otherwise covered by the recursion.
+  // approxSubProbMinimizer.init_communicators() recursion is currently
+  // sufficient for fHatModel.  An additional fHatModel.init_communicators()
+  // call would be motivated by special parallel usage of fHatModel below that
+  // is not otherwise covered by the recursion.
   //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //fHatModel.init_communicators(fHatMaxConcurrency);
 
-  eifModel.init_communicators(
-    approxSubProbMinimizer.maximum_evaluation_concurrency());
+  approxSubProbMinimizer.init_communicators();
 }
 
 
 void EffGlobalMinimizer::free_communicators()
 {
   // deallocate communicators for DIRECT on eifModel
-  eifModel.free_communicators(
-    approxSubProbMinimizer.maximum_evaluation_concurrency());
+  approxSubProbMinimizer.free_communicators();
 
-  // eifModel.free_communicators() recursion is currently sufficient for
-  // fHatModel.  An additional fHatModel.free_communicators() call would be
-  // motivated by special parallel usage of fHatModel below that is not
-  // otherwise covered by the recursion.
+  // approxSubProbMinimizer.free_communicators() recursion is currently
+  // sufficient for fHatModel.  An additional fHatModel.free_communicators()
+  // call would be motivated by special parallel usage of fHatModel below that
+  // is not otherwise covered by the recursion.
   //fHatModel.free_communicators(fHatMaxConcurrency);
 
   // iteratedModel is evaluated to add truth data (single compute_response())

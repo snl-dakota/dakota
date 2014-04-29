@@ -146,16 +146,13 @@ void NonDLocalInterval::init_communicators()
 {
   iteratedModel.init_communicators(maxEvalConcurrency);
 
-  minMaxModel.init_communicators(
-    minMaxOptimizer.maximum_evaluation_concurrency());
+  minMaxOptimizer.init_communicators();
 }
 
 
 void NonDLocalInterval::free_communicators()
 {
-  // deallocate communicators for minMaxOptimizer on minMaxModel
-  minMaxModel.free_communicators(
-    minMaxOptimizer.maximum_evaluation_concurrency());
+  minMaxOptimizer.free_communicators();
 
   iteratedModel.free_communicators(maxEvalConcurrency);
 }
@@ -292,12 +289,10 @@ void NonDLocalInterval::method_recourse()
   if (npsolFlag) {
     // if NPSOL already assigned, then reassign; otherwise just set the flag.
 #ifdef HAVE_OPTPP
-    minMaxModel.free_communicators(
-      minMaxOptimizer.maximum_evaluation_concurrency());
+    minMaxOptimizer.free_communicators();
     minMaxOptimizer.assign_rep(
       new SNLLOptimizer("optpp_q_newton", minMaxModel), false);
-    minMaxModel.init_communicators(
-      minMaxOptimizer.maximum_evaluation_concurrency());
+    minMaxOptimizer.init_communicators();
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";

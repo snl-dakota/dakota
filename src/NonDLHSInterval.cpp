@@ -49,13 +49,13 @@ NonDLHSInterval::~NonDLHSInterval()
 void NonDLHSInterval::init_communicators()
 {
   //iteratedModel.init_communicators(maxEvalConcurrency);
-  iteratedModel.init_communicators(lhsSampler.maximum_evaluation_concurrency());
+  lhsSampler.init_communicators();
 }
 
 
 void NonDLHSInterval::free_communicators()
 {
-  iteratedModel.free_communicators(lhsSampler.maximum_evaluation_concurrency());
+  lhsSampler.free_communicators();
   //iteratedModel.free_communicators(maxEvalConcurrency);
 }
 

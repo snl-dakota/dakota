@@ -75,7 +75,7 @@ NonDGPMSABayesCalibration::~NonDGPMSABayesCalibration()
 
 void NonDGPMSABayesCalibration::init_communicators()
 {
-  iteratedModel.init_communicators(lhsIter.maximum_evaluation_concurrency());
+  lhsIter.init_communicators();
   NonDBayesCalibration::init_communicators();
 }
 
@@ -83,7 +83,7 @@ void NonDGPMSABayesCalibration::init_communicators()
 void NonDGPMSABayesCalibration::free_communicators()
 {
   NonDBayesCalibration::free_communicators();
-  iteratedModel.free_communicators(lhsIter.maximum_evaluation_concurrency());
+  lhsIter.free_communicators();
 }
 
 

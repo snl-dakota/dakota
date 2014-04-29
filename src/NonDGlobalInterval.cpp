@@ -220,16 +220,14 @@ void NonDGlobalInterval::init_communicators()
   //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //fHatModel.init_communicators(fHatMaxConcurrency);
 
-  intervalOptModel.init_communicators(
-    intervalOptimizer.maximum_evaluation_concurrency());
+  intervalOptimizer.init_communicators();
 }
 
 
 void NonDGlobalInterval::free_communicators()
 {
   // deallocate communicators for DIRECT on intervalOptModel
-  intervalOptModel.free_communicators(
-    intervalOptimizer.maximum_evaluation_concurrency());
+  intervalOptimizer.free_communicators();
 
   // intervalOptModel.free_communicators() recursion is currently sufficient
   // for fHatModel.  An additional fHatModel.free_communicators() call would
