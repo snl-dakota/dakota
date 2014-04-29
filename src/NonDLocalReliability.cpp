@@ -406,8 +406,8 @@ NonDLocalReliability::~NonDLocalReliability()
 
 void NonDLocalReliability::init_communicators()
 {
+  iteratedModel.init_communicators(maxEvalConcurrency);
   if (mppSearchType) {
-    iteratedModel.init_communicators(maxEvalConcurrency);
     // maxEvalConcurrency defined from the derivative concurrency in the
     // responses specification.  For FORM/SORM, the NPSOL/OPT++ concurrency
     // is the same, but for approximate methods, the concurrency is dictated
@@ -430,10 +430,10 @@ void NonDLocalReliability::free_communicators()
   if (mppSearchType) {
     mppOptimizer.free_communicators();
     uSpaceModel.free_communicators(maxEvalConcurrency);
-    iteratedModel.free_communicators(maxEvalConcurrency);
     if (integrationRefinement)
       importanceSampler.free_communicators();
   }
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 
