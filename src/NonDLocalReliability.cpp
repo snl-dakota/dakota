@@ -278,15 +278,6 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       mppOptimizer.assign_rep(new SNLLOptimizer("optpp_q_newton", mppModel),
 	false);
 #endif
-
-    // init_communicators() initializes the parallel configuration for
-    // NonDLocalReliability + iteratedModel using maxEvalConcurrency (defined
-    // from the derivative concurrency in the responses specification).  For
-    // FORM/SORM, the NPSOL/OPT++ concurrency is the same, but for approximate
-    // methods, the concurrency is dictated by the gradType/hessType logic in
-    // the instantiate on-the-fly DataFitSurrModel constructor.
-    uSpaceModel.init_communicators(maxEvalConcurrency);
-    mppModel.init_communicators(mppOptimizer.maximum_evaluation_concurrency());
   }
 
   // Map integration specification into integrationOrder.  Second-order
@@ -356,27 +347,19 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
         NonDAdaptImpSampling(g_u_model, sample_type, refine_samples,
 	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
 	  x_model_flag, use_model_bounds), false);
-      g_u_model.init_communicators(
-        importanceSampler.maximum_evaluation_concurrency());
       break;
     }
-    case AMV_U: case AMV_PLUS_U: case TANA_U: {
-      Model& u_truth_model = uSpaceModel.truth_model();
+    case AMV_U: case AMV_PLUS_U: case TANA_U:
       importanceSampler.assign_rep(new
-	NonDAdaptImpSampling(u_truth_model, sample_type, refine_samples,
-	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
-	  x_model_flag, use_model_bounds), false);
-      u_truth_model.init_communicators(
-        importanceSampler.maximum_evaluation_concurrency());
+	NonDAdaptImpSampling(uSpaceModel.truth_model(), sample_type,
+	  refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	  cdfFlag, x_model_flag, use_model_bounds), false);
       break;
-    }
     case NO_APPROX:
       importanceSampler.assign_rep(new
         NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
 	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
 	  x_model_flag, use_model_bounds), false);
-      uSpaceModel.init_communicators(
-        importanceSampler.maximum_evaluation_concurrency());
       break;
     }
   }
@@ -418,25 +401,52 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
 
 NonDLocalReliability::~NonDLocalReliability()
+{ }
+
+
+void NonDLocalReliability::init_communicators()
 {
   if (mppSearchType) {
-    mppModel.free_communicators(mppOptimizer.maximum_evaluation_concurrency());
-    uSpaceModel.free_communicators(maxEvalConcurrency);
+    iteratedModel.init_communicators(maxEvalConcurrency);
+    // maxEvalConcurrency defined from the derivative concurrency in the
+    // responses specification.  For FORM/SORM, the NPSOL/OPT++ concurrency
+    // is the same, but for approximate methods, the concurrency is dictated
+    // by the gradType/hessType logic in the instantiate on-the-fly
+    // DataFitSurrModel constructor.
+    uSpaceModel.init_communicators(maxEvalConcurrency);
+    // TO DO: distinguish gradient concurrency for truth vs. surrogate?
+    //        (probably doesn't matter for surrogate)
+
+    mppModel.init_communicators(mppOptimizer.maximum_evaluation_concurrency());
+
     if (integrationRefinement) {
-      importanceSampler.iterated_model().free_communicators(
+      importanceSampler.iterated_model().init_communicators(
 	importanceSampler.maximum_evaluation_concurrency());
       /*
       int ais_conc = importanceSampler.maximum_evaluation_concurrency();
       switch (mppSearchType) {
       case AMV_X: case AMV_PLUS_X: case TANA_X:
-	importanceSampler.iterated_model().free_communicators(ais_conc); break;
+	importanceSampler.iterated_model().init_communicators(ais_conc); break;
       case AMV_U: case AMV_PLUS_U: case TANA_U:
-	uSpaceModel.truth_model().free_communicators(ais_conc);	         break;
+	uSpaceModel.truth_model().init_communicators(ais_conc);	         break;
       case NO_APPROX:
 	uSpaceModel.init_communicators(ais_conc);                        break;
       }
       */
     }
+  }
+}
+
+
+void NonDLocalReliability::free_communicators()
+{
+  if (mppSearchType) {
+    mppModel.free_communicators(mppOptimizer.maximum_evaluation_concurrency());
+    uSpaceModel.free_communicators(maxEvalConcurrency);
+    iteratedModel.free_communicators(maxEvalConcurrency);
+    if (integrationRefinement)
+      importanceSampler.iterated_model().free_communicators(
+	importanceSampler.maximum_evaluation_concurrency());
   }
 }
 

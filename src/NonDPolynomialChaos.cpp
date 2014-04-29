@@ -299,11 +299,6 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   construct_expansion_sampler();
 
-  // uSpaceModel concurrency is defined by the number of samples used
-  // in evaluating the PC expansion
-  uSpaceModel.init_communicators(
-    numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
-
   if (probDescDB.parallel_library().command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
 	 << numSamplesOnModel << " evaluations to be performed." << std::endl;
@@ -375,11 +370,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 
 
 NonDPolynomialChaos::~NonDPolynomialChaos()
-{
-  if (numSamplesOnExpansion)
-    uSpaceModel.free_communicators(
-      numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
-}
+{ }
 
 
 void NonDPolynomialChaos::

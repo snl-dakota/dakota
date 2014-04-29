@@ -87,10 +87,36 @@ NonDExpansion(unsigned short method_name, Model& model,
 
 
 NonDExpansion::~NonDExpansion()
-{ 
+{ }
+
+
+void NonDExpansion::init_communicators()
+{
+  iteratedModel.init_communicators(maxEvalConcurrency);
+
+  // uSpaceModel concurrency is defined by the number of samples used
+  // in evaluating the PC expansion
+  if (numSamplesOnExpansion)
+    uSpaceModel.init_communicators(
+      numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+
+  if (impSampling)
+    uSpaceModel.init_communicators(
+      importanceSampler.maximum_evaluation_concurrency());
+}
+
+
+void NonDExpansion::free_communicators()
+{
   if (impSampling)
     uSpaceModel.free_communicators(
       importanceSampler.maximum_evaluation_concurrency());
+
+  if (numSamplesOnExpansion)
+    uSpaceModel.free_communicators(
+      numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 
@@ -469,8 +495,6 @@ void NonDExpansion::construct_expansion_sampler()
       importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
 	sample_type, refine_samples, orig_seed, rng, vary_pattern, int_refine,
 	cdfFlag, false, false), false);
-      uSpaceModel.init_communicators(
-	importanceSampler.maximum_evaluation_concurrency());
  
       NonDAdaptImpSampling* imp_sampler_rep = 
         (NonDAdaptImpSampling*)importanceSampler.iterator_rep();

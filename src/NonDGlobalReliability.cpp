@@ -242,13 +242,6 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
   }
 
-  // mppModel.init_communicators() recursion is currently sufficient for
-  // uSpaceModel.  An additional uSpaceModel.init_communicators() call would be
-  // motivated by special parallel usage of uSpaceModel below that is not
-  // otherwise covered by the recursion.
-  //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
-  //uSpaceModel.init_communicators(uSpaceMaxConcurrency);
-
   // Following this ctor, Strategy::init_iterator() initializes the parallel
   // configuration for NonDGlobalReliability + iteratedModel using
   // NonDGlobalReliability's maxEvalConcurrency. During uSpaceModel construction
@@ -292,7 +285,6 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   //mppOptimizer.assign_rep(new
   //  COLINOptimizer<coliny::EAminlp>(mppModel, coliny_seed), false);
   //#endif
-  mppModel.init_communicators(mppOptimizer.maximum_evaluation_concurrency());
 #else
   Cerr << "NCSU DIRECT Optimizer is not available to use in the MPP search " 
        << "in global reliability optimization:  aborting process." << std::endl;
@@ -312,13 +304,32 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples, refine_seed,
 			 rng, vary_pattern, integrationRefinement, cdfFlag,
 			 x_model_flag, use_model_bounds), false);
+}
+
+
+NonDGlobalReliability::~NonDGlobalReliability()
+{ }
+
+
+void NonDGlobalReliability::init_communicators()
+{
+  iteratedModel.init_communicators(maxEvalConcurrency);
+
+  // mppModel.init_communicators() recursion is currently sufficient for
+  // uSpaceModel.  An additional uSpaceModel.init_communicators() call would be
+  // motivated by special parallel usage of uSpaceModel below that is not
+  // otherwise covered by the recursion.
+  //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
+  //uSpaceModel.init_communicators(uSpaceMaxConcurrency);
+
+  mppModel.init_communicators(mppOptimizer.maximum_evaluation_concurrency());
 
   uSpaceModel.init_communicators(
     importanceSampler.maximum_evaluation_concurrency());
 }
 
 
-NonDGlobalReliability::~NonDGlobalReliability()
+void NonDGlobalReliability::free_communicators()
 {
   // deallocate communicators for MMAIS on uSpaceModel
   uSpaceModel.free_communicators(
@@ -332,6 +343,8 @@ NonDGlobalReliability::~NonDGlobalReliability()
   // be motivated by special parallel usage of uSpaceModel below that is not
   // otherwise covered by the recursion.
   //uSpaceModel.free_communicators(uSpaceMaxConcurrency);
+
+  iteratedModel.free_communicators(maxEvalConcurrency);
 }
 
 

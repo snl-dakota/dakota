@@ -58,8 +58,11 @@ public:
   ~NonDLocalReliability();
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
+
+  void init_communicators();
+  void free_communicators();
 
   /// performs an uncertainty propagation using analytical reliability 
   /// methods which solve constrained optimization problems to obtain

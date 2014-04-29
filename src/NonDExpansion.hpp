@@ -47,6 +47,9 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  void init_communicators();
+  void free_communicators();
+
   /// perform a forward uncertainty propagation using PCE/SC methods
   void quantify_uncertainty(); // pure virtual fn. called by NonD
   /// print the final statistics
