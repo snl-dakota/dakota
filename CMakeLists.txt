@@ -69,7 +69,6 @@ set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 
 # Always omit .svn directories, duplicate TPLs, and GPL packages
 # FFTW is GPL, CDDLIB is GPL
-# TODO: review whether want to include FFTW
 set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/"
   "^${Dakota_SOURCE_DIR}/packages/fftw/"
   "^${Dakota_SOURCE_DIR}/packages/hopspack/src/src-citizens/citizen-gss/cddlib/"
@@ -99,8 +98,6 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalSupervised})
   # Be aggressive and remove from source tree
   execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory
     ${Dakota_SOURCE_DIR}/packages/DOT/)
-  # This is now redundant, leave until verified
-  #list(APPEND CPACK_SOURCE_IGNORE_FILES "^${Dakota_SOURCE_DIR}/packages/DOT/")
 endif()
 
 if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
@@ -116,11 +113,6 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
     COMMAND "${CMAKE_COMMAND}" -E remove_directory
       "${Dakota_SOURCE_DIR}/packages/NPSOL"
     )
-  # This is now redundant, leave until verified
-  #list(APPEND CPACK_SOURCE_IGNORE_FILES
-  #  "^${Dakota_SOURCE_DIR}/packages/NPSOL/"
-  #  "^${Dakota_SOURCE_DIR}/packages/NLPQL/"
-  #)
 endif()
 
 
