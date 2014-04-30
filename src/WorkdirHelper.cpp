@@ -141,12 +141,11 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
  */
 std::string WorkdirHelper::which(const std::string& driver_name)
 {
-#if defined(_WIN32)
-  StringArray extensions;
-  extensions.push_back(".com"); extensions.push_back(".exe");
-  //extensions.push_back(".bat");extensions.push_back(".cmd"); // ToDo - ASAP: leverage %PATHEXT% !
-  extensions.push_back(""); // Backward compatibility - some users may already be explicit
+  StringArray extensions = get_pathext(); // expect empty vector on posix
 
+#if defined(_WIN32)
+  extensions.push_back(".com"); extensions.push_back(".exe");
+  
   std::string driver_path;
 
   BOOST_FOREACH(const std::string& e, extensions) {
