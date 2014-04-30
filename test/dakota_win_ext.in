@@ -1,0 +1,30 @@
+# DAKOTA INPUT FILE - dakota_win_ext.in
+# test windows extensions, specifically .BAT script:  dakota_textbook.bat
+
+environment,
+	graphics
+
+method,
+        conmin_mfd,
+        max_iterations = 50,
+        convergence_tolerance = 1e-4
+
+variables,
+        continuous_design = 2
+          initial_point 0.9    1.1
+          lower_bounds  0.5   -2.9
+          upper_bounds  5.8    2.9
+
+interface,
+        fork,
+          analysis_driver = 'dakota_textbook'
+
+responses,
+        objective_functions = 1
+        nonlinear_inequality_constraints = 2
+        numerical_gradients
+          method_source dakota
+          interval_type central
+          fd_gradient_step_size = 1.e-4
+        no_hessians
+

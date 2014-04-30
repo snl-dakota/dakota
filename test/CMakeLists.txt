@@ -34,7 +34,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   list(APPEND test_support_files
     dakota_container.sh dakota_3pc.ac.sh dakota_3pc.if.sh dakota_3pc.of.sh
     dakota_3pc.ac_verb.sh dakota_3pc.if_verb.sh dakota_3pc.of_verb.sh
-    dakota_workdir.py
+    dakota_workdir.py dakota_textbook.bat
     )
 
   # supplemental data
@@ -203,7 +203,11 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_uq_timeseries_ivp_optinterf.in # workdir issue?
       dakota_uq_timeseries_sop_optinterf.in # workdir issue?
       dakota_workdir.in                     # workdir issue?
+      dakota_win_ext.in                     # stability?
       )
+  else()
+    # Remove windows specific filename extensions test from the UNIX suite
+    list(REMOVE_ITEM dakota_test_input_files dakota_win_ext.in)
   endif()
 
   foreach(test_input_file ${dakota_test_input_files})
