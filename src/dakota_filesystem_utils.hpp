@@ -59,12 +59,11 @@ inline std::vector<std::string> get_pathext()
 
   StringArray ext_list;
 
-  if ( !env_ext_str_list )
+  if ( env_ext_str_list )
     boost::split( ext_list, env_ext_str_list, boost::is_any_of(";") );
 
   ext_list.push_back("");  // Backward compatibility:  Some users may
                            // already be explicit and specify filename.ext
-
   return ext_list;
 }
 
