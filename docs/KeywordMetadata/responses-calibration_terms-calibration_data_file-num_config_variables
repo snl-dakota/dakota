@@ -1,8 +1,9 @@
 Blurb::
-Not mentioned in manual
+Add context to data: number of configuration variables.
 Description::
+See \ref responses-calibration_terms-calibration_data_file.
 
-Topics::	not_yet_reviewed, problem
+Topics::	
 Examples::
 Theory::
 Faq::

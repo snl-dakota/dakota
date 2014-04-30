@@ -1,7 +1,9 @@
 Blurb::
 Choose how much each constraint is scaled
 Description::
-Topics::	not_yet_reviewed
+See the \ref method-scaling page for details on how to use this keyword.
+
+Topics::	
 Examples::
 Theory::
 Faq::

@@ -5,16 +5,9 @@ Each entry in
 \c primary_scales may be a user-specified nonzero characteristic value
 to be used in scaling each response. 
 
-Behavior depends on the value of \c primary_scale_type:
-\li <tt>scale_type</tt> - behavior of \c primary_scales
-\li <tt>'none'</tt>     - ignored
-\li <tt>'value'</tt>    - required
-\li <tt>'log'</tt>     - optional
+See the \ref method-scaling page for details on how to use this keyword.
 
-If a single real
-value is specified it will apply to each function. 
-
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

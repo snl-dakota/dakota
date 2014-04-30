@@ -16,7 +16,9 @@ then nonlinear_equality_constraints.
 
 Any linear constraints present in an application need only be input to
 an optimizer at start up and do not need to be part of the data
-returned on every function evaluation. These are therefore specified in the method block.
+returned on every function evaluation. These are therefore specified in the \ref method block.
+
+Bounds on the design variables are specified in the \ref variables block.
 
 <b> Optional Keywords </b>
 
@@ -24,12 +26,11 @@ The optional keywords relate to scaling the objective functions (for better nume
 formulating the problem as minimization or maximization, and dealing with multiple
 objective functions.
 
-If
-scaling is used, it is applied before multi-objective weighted
+If scaling is used, it is applied before multi-objective weighted
 sums are formed.
 
 Topics::	
 Examples::
 Theory::
 Faq::
-See_Also::	responses-calibration_terms, responses-response_functions
+See_Also::	responses-calibration_terms, responses-response_functions, method, variables

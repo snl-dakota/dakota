@@ -1,15 +1,138 @@
 Blurb::
 Supply calibration data in a text file
 Description::
-The specification \c calibration_data_file may be used to
-specify a text file containing \c calibration_terms observed data
+\c calibration_data_file is used to
+specify a text file containing the data which Dakota will
+attempt to match by calibrating the model variables.
+
+The options for \c calibration_data_file are related to either:
+\li format: \c annotate, \c freeform
+\li content: \c num_experiments, \c num_replicates,
+    \c num_config_variables, \c num_std_deviations
+
+<b> Simplest case </b>
+
+In the simplest case, no data content parameters are specified.
+
+In this case, the datafile has \f$ N_{terms} \f$ rows and 1 column,
+where \f$ N_{terms} \f$ is the value of
+\ref responses-calibration_terms.
+
+Dakota will run the analysis driver, which must return 
+\f$ N_{terms} \f$ responses. Then the residuals are computed as:
+\f[ R_{i} = y^{Model}_i - y^{Data}_{i} \f].
+
+The residuals can be weighted using \ref responses-calibration_terms-weights.
+
+
+<b> Simple case </b>
+
+In the simple case, the only data content keyword used is
+\c num_std_deviations.
+
+\c num_std_deviations must be set \f$ = N_{terms} \f$
+, where \f$ N_{terms} \f$ is the value of
+\ref responses-calibration_terms.
+
+In this case, the datafile has \f$ N_{terms} \f$ rows and 
+2 columns. The first column has target data, as in the simplest case,
+and the 2nd column has standard deviations (or weights).
+
+Dakota will run the analysis driver, which must return 
+\f$ N_{terms} \f$ responses. Then the residuals are computed as:
+\f[ R_{i} = \frac{y^{Model}_i - y^{Data}_{i}}{s_i} \f]
+for \f$ i = 1 \dots N_{terms} \f$.
+
+<b> Advanced Case </b>
+????????????????????????
+
+The content of the data file is described by the arguments of four
+parameters. The parameters are optional, and defaults are described below.
+<ul>
+  <li> \c num_experiments ( \f$ N_{exp} \f$ )
+
+    Default: \f$ N_{exp} = N_{terms} \f$ 
+
+    This indicates that the data represents multiple experiments.
+  </li>
+  <li> \c num_replicates ( \f$ N_{rep}\f$ )
+
+    Default: \f$ N_{rep} = [1 \times N_{exp} ] \f$ vector of 1's
+
+    This indicates the number of replicates for each experiment. It
+    is a vector of length \f$ N_{exp} \f$.
+  </li>
+  <li> \c num_config_variables ( \f$ N_{cfg} \f$ )
+
+    This is not yet supported.
+  </li>
+  <li> \c num_std_deviations ( \f$ N_{std} \f$ )
+
+    Default: \f$ N_{std} = 0 \f$ )
+  </li>
+</ul>
+
+
+
+
+\c calibration_terms observed data
 values to be used in computing
 the residuals \f$R_i = y^M_i - y^O_i \f$ where \e M denotes model and
 \e O, observation from the file. In this case the simulator should
 return the actual model response, as %Dakota will compute the residual
 internally using the supplied data.
 
-Topics::	
+We have the capability for the user to specify different
+values for the experimental error, i.e., measurement or observation
+error in the \c calibration_data_file. The keyword \c
+num_std_deviations specifies this. If \c num_std_deviations = 0, the
+user does not specify any experimental error terms in the \c
+calibration_data_file, only the actual observations are specified. If
+the user specifies \c num_std_deviations equal to the number of
+calibration terms, then each row of a freeform \c
+calibration_data_file must contain two times \c calibration_terms.
+The first \c calibration_terms columns are the experimental data, and
+the second \c calibration_terms columns are the experimental standard
+deviations. For example, if the user has three \c calibration terms,
+and specifies \c num_std_deviations = 3, then the calibration data
+must contain six columns. The first three columns will contain the
+data, and the second three columns will contain the experimental error
+for the data in the first three columns. Finally, if the user
+specifies \c num_std_deviations = 1, the same value of the standard
+deviations will be used for all of the calibration terms. In the
+example given above, with three calibration terms, if \c
+num_std_deviations = 1, the there would be four columns in the \c
+calibration_data_file, and the fourth column would contain the
+standard deviation that would be applied to all three calibration
+columns. Note that the standard deviations are given in units of a
+standard deviation or sigma term, not a variance term. These standard
+deviations are used to weight the residuals in the sum-of-squares
+objective.
+
+A more advanced use of the \c calibration_data_file might specify \c
+num_experiments \f$ N_E \f$ and \c num_replicates \f$ N_R \f$,
+indicating that there are multiple experiments, each with 1 or more
+replicates to inform each residual term. When multiple experiments or
+replicates are present, %Dakota will expand the number of residuals
+for the repeat measurement data and difference with the data
+accordingly. For example, if the user has one experiment but five
+replicates were taken, in the example above with three calibration
+terms, the \c calibration_data_file would need to contain five rows
+(one for each replicate), and each row should contain three
+experimental data values that will be differenced with respect to the
+appropriate model response. In this example, \f$ N_E = 1 \f$, and \f$
+N_R = 5\f$. One can have varying numbers of experiments and
+replicates, such as two experiments, one with 3 replicates and one
+with 7 replicates. In this example, \c num_experiments = 2, and the
+number of replicates would be given as an integer vector: \c
+num_replicates = 3 7. In this example, there would be a total of 10
+rows of data in the experimental data file. To summarize, %Dakota
+will calculate the sum of the squared residuals as: \f[f =
+\sum_{i=1}^{N_E}\sum_{j=1}^{{N_R}_i}R_{i,j}^2\f] where the residuals
+now are calculated as: \f[R_{i,j} = y^M_i - y^O_{i,j}. \f]
+
+
+Topics::	problem
 Examples::
 Theory::
 Faq::

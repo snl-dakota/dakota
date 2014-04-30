@@ -1,10 +1,46 @@
 Blurb:: 
 Label the responses
 Description::
-The optional response labels specification \c descriptors is a list of strings which will be printed in %Dakota output to identify the values for particular response functions. The default descriptor strings use a root string plus a numeric identifier. 
-This root string is \c "obj_fn" for objective functions, \c "least_sq_term" for least squares terms, \c "response_fn" for generic response functions, \c "nln_ineq_con" for nonlinear inequality constraints, and \c "nln_eq_con" for nonlinear equality constraints. 
+The optional response labels specification \c descriptors is a list
+of strings which will be printed in %Dakota output to identify the values
+for particular response functions.
+
+Note that the descriptors \b currently must match the order of the values
+in the results file. See the example below.
+
+The default descriptor strings use a root string plus a numeric identifier. 
+This root string is
+\li \c "obj_fn" for objective functions
+\li \c "least_sq_term" for least squares terms
+\li \c "response_fn" for generic response functions
+\li \c "nln_ineq_con" for nonlinear inequality constraints
+\li \c "nln_eq_con" for nonlinear equality constraints
+
 Topics::	
 Examples::
+Note that the descriptors \b currently must match the order of the values
+in the results file.
+
+For example, if the \c responses block contains:
+\verbatim
+  \c descriptors 'x1' 'x2' 'x3'
+\endverbatim
+
+and the results file contains
+
+\verbatim
+  4 x1
+  5 x3
+  6 x2
+\endverbatim
+
+Then Dakota will still report the results as:
+\verbatim
+  x1 = 4
+  x2 = 5
+  x3 = 6
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	

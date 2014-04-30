@@ -1,10 +1,18 @@
 Blurb::
 Tell Dakota whether to minimize or maximize each objective function
 Description::
-The \c sense specification provides strings for declaring
-"minimization" or "maximization" 
-for each of the objective functions, indicating
-the goal for each objective within an optimization. If a single
+The \c sense keyword is used to declare whether an objective function
+should be minimized or maximized.
+
+The strings 
+\li \c "minimization" 
+\li \c "maximization"
+
+Are the only options, but these can be shortened as \c "min" and \c "max".
+
+The number of strings should either be equal to the number of 
+objective functions, or one.
+If a single
 string is specified it will apply to each objective function. 
 
 Topics::	

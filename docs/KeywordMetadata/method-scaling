@@ -1,89 +1,124 @@
 Blurb::
-Turn on scaling for continuous design variables, responses, and constraints
+Turn on scaling for variables, responses, and constraints
 Description::
-Continuous design variable, function, and constraint scaling can be
-turned on for optimizers and least squares minimizers by providing the
-\c scaling keyword. Discrete variable scaling is not supported. When
+Some of the optimization and calibration methods support
+scaling of 
+continuous design variables, objective functions, calibration terms,
+and constraints.
+This is activated by by providing the
+\c scaling keyword.
+Discrete variable scaling is not supported.
+
+When
 scaling is enabled, variables, functions, gradients, Hessians, etc.,
-are transformed such that the optimizer iterates in scaled variable
+are transformed such that the method iterates in scaled variable
 space, whereas evaluations of the computational model as specified in
-the interface are performed on the original problem scale. Therefore
+the interface are performed on the original problem scale.
+Therefore
 using scaling does not require rewriting the interface to the
-simulation code. The user may specify no, one, or a vector of scaling
-type strings through each of the \c scale_types 
-; \c objective_function_scale_types, \c
-calibration_term_scale_types, \c nonlinear_inequality_scale_types,
-\c nonlinear_equality_scale_types; \c
-linear_inequality_scale_types, and \c linear_equality_scale_types
-specifications. Valid options for types
-include
- <tt>'none'</tt> (default), <tt>'value'</tt>, <tt>'auto'</tt>, or
-<tt>'log'</tt>, for no, characteristic value, automatic, or
-logarithmic scaling, respectively, although not all types are valid
-for scaling all entities (see the references for details). If a
-single string is specified using any of these keywords it will apply
-to each component of the relevant vector, e.g., <tt>scale_types =
-'value'</tt> will enable characteristic value scaling for each
-continuous design variable. The user may specify no, one, or a vector
-of nonzero characteristic scale values through each of the \c
-scales; \c objective_function_scales, \c
-calibration_term_scales, \c nonlinear_inequality_scales, \c
-nonlinear_equality_scales; \c
-linear_inequality_scales, and \c linear_equality_scales
-specifications. These values are ignored for
-scaling type <tt>'none'</tt>, required for <tt>'value'</tt>, and
-optional for <tt>'auto'</tt> and <tt>'log'</tt>. If a single value is
-specified using any of these keywords it will apply to each component
-of the relevant vector, e.g., <tt>scales = 3.0</tt> will apply a
-characteristic scaling value of <tt>3.0</tt> to each continuous design
-variable. When the \c scaling keyword is omitted, all \c
+simulation code.
+
+Scaling also requires the specification of additional keywords
+which are found in the \ref method, \ref variables, and \ref responses
+blocks.
+When the \c scaling keyword is omitted, all \c
 *_scale_types and \c *_scales specifications are ignored in the
 method, variables, and responses sections.
 
-When scaling is enabled, the following procedures determine the
-transformations used to scale each component of a variables or
-response vector. A warning is issued if scaling would result in
+This page describes the usage of all scaling related keywords.
+The additional keywords come in pairs, one pair for each set
+of quantities to be scaled.
+These quantities can be
+constraint equations, variables, or responses.
+\li a \c *scales keyword, which gives characteristic values
+\li a \c *scale_type keyword, which determines how to use the 
+  characteristic values
+
+The pair of keywords both take argument(s), and
+the length of the arguments can either be zero, one, or equal
+to the number of quantities to be scaled.
+If one argument is given, it will apply to all quantities in
+the set. See the examples below.
+
+<b> Scale Types </b>
+
+There are four scale types:
+<ol>
+  <li> \c none (default) - no scaling, value of \c *scales keyword is ignored
+  </li>
+  <li> \c value - multiplicative scaling
+  </li>
+  <li> \c auto - automatic scaling
+
+     First the quantity is scaled by the characteristic value, then
+     automatic scaling will be attempted according to the following scheme:
+
+    <ul> 
+      <li> two-sided bounds scaled into the interval [0,1]; 
+      <li> one-sided bound or targets are scaled by the characteristic
+         value, moving the bound or target to 1 and changing the sense of
+         inequalities where necessary;
+      <li> no bounds or targets: no automatic scaling possible, therefore no 
+           scaling for this component 
+    </ul> 
+
+     Automatic scaling is not available for objective functions nor calibration 
+     terms since they lack bound constraints. Futher, when automatically
+     scaled, linear constraints are scaled by characteristic values only, not
+     affinely scaled into [0,1]. 
+  <li> \c log - logarithmic scaling
+
+     First, any characteristic values from the
+     optional \c *_scales specification are applied. Then logarithm base
+     10 scaling is applied.
+
+     Logarithmic scaling is not available for
+     linear constraints.
+
+     When continuous design variables are log
+     scaled, linear constraints are not allowed.
+  </li>
+</ol>
+
+
+<b> Scales </b>
+
+The \c *scales keywords are used to specify the characteristic values.
+These must be non-zero real numbers. The numbers are used according
+to the corresponding \c *scale_type, as described above.
+
+Depending on the scale type, the characteristic values may be required or
+optional.
+\li \c none, \c auto, \c log - optional
+\li \c value - required.
+
+
+
+A warning is issued if scaling would result in
 division by a value smaller in magnitude than <tt>1.0e10*DBL_MIN</tt>.
 User-provided values violating this lower bound are accepted
 unaltered, whereas for automatically calculated scaling, the lower
 bound is enforced.
 
-<ul> 
-<li> None (<tt>'none'</tt>): no scaling performed (\c *_scales ignored)
-on this component
-
-<li> Characteristic value (<tt>'value'</tt>): the corresponding
-quantity is scaled by the (required) characteristic value provided in
-the \c *_scales specification. If the scale value is negative, the
-sense of inequalities are changed accordingly.
-
-<li> Automatic (<tt>'auto'</tt>): First, any characteristic values
-from the optional \c *_scales specification are applied. Then,
-automatic scaling will be attempted according to the following scheme:
-
- <ul> 
- <li> two-sided bounds scaled into the interval [0,1]; 
- <li> one-sided bound or targets are scaled by the characteristic
-value, moving the bound or target to 1 and changing the sense of
-inequalities where necessary;
- <li> no bounds or targets: no automatic scaling possible, therefore no 
-      scaling for this component 
- </ul> 
-
-Automatic scaling is not available for objective functions nor calibration 
-terms since they lack bound constraints. Futher, when automatically
-scaled, linear constraints are scaled by characteristic values only, not
-affinely scaled into [0,1]. 
-
-<li> Logarithmic (<tt>'log'</tt>): First, any characteristic values from the
-optional \c *_scales specification are applied. Then, logarithm base
-10 scaling is applied. Logarithmic scaling is not available for
-linear constraints. Further, when continuous design variables are log
-scaled, linear constraints are not allowed.
-</ul>
-
 Topics::	not_yet_reviewed, method_independent_controls
 Examples::
+The two examples below are equivalent:
+\verbatim
+  responses
+    objective_functions 3
+    sense "maximize"
+    primary_scale_types = "value"
+    primary_scales = 1 1 100
+\endverbatim
+
+\verbatim
+  responses
+    objective_functions 3
+    sense "maximize"
+    primary_scale_types = "value" "value" "value"
+    primary_scales = 1 1 100
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	

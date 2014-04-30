@@ -1,33 +1,9 @@
 Blurb::
 Add context to data: measurement or observation error
 Description::
-We have the capability for the user to specify different
-values for the experimental error, i.e., measurement or observation
-error in the \c calibration_data_file. The keyword \c
-num_std_deviations specifies this. If \c num_std_deviations = 0, the
-user does not specify any experimental error terms in the \c
-calibration_data_file, only the actual observations are specified. If
-the user specifies \c num_std_deviations equal to the number of
-calibration terms, then each row of a freeform \c
-calibration_data_file must contain two times \c calibration_terms.
-The first \c calibration_terms columns are the experimental data, and
-the second \c calibration_terms columns are the experimental standard
-deviations. For example, if the user has three \c calibration terms,
-and specifies \c num_std_deviations = 3, then the calibration data
-must contain six columns. The first three columns will contain the
-data, and the second three columns will contain the experimental error
-for the data in the first three columns. Finally, if the user
-specifies \c num_std_deviations = 1, the same value of the standard
-deviations will be used for all of the calibration terms. In the
-example given above, with three calibration terms, if \c
-num_std_deviations = 1, the there would be four columns in the \c
-calibration_data_file, and the fourth column would contain the
-standard deviation that would be applied to all three calibration
-columns. Note that the standard deviations are given in units of a
-standard deviation or sigma term, not a variance term. These standard
-deviations are used to weight the residuals in the sum-of-squares
-objective.
-Topics::	not_yet_reviewed
+See \ref responses-calibration_terms-calibration_data_file.
+
+Topics::	
 Examples::
 Theory::
 Faq::

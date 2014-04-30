@@ -14,4 +14,4 @@ Topics::	objective_function_pointer
 Examples::
 Theory::
 Faq::
-See_Also::	id_analytic_hessians, id_quasi_hessians 
+See_Also::	responses-mixed_hessians-id_analytic_hessians, responses-mixed_hessians-id_quasi_hessians 
