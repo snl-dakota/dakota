@@ -34,16 +34,16 @@ concurrent evaluation of response data sets for different parameter
 sets. Whenever there exists a set of design point evaluations that are
 independent, Dakota can perform them in parallel.
 
-\textbf{Concurrent Execution of Iterators within a Strategy}: Some of
-the Dakota strategies described in Section~\ref{opt:additional}
+\textbf{Concurrent Execution of Iterators within a Method}: Some of
+the Dakota methods described in Section~\ref{opt:additional}
 generate a sequence of iterator subproblems. For example, the
-Pareto-set and multi-start strategies generate sets of optimization
-subproblems, and the optimization under uncertainty strategy generates
-sets of uncertainty quantification subproblems. Whenever these
-subproblems are independent, Dakota can perform them in parallel.
+Pareto-set and multi-start methods generate sets of optimization
+subproblems, and optimization under uncertainty generates sets of 
+uncertainty quantification subproblems. Whenever these subproblems 
+are independent, Dakota can perform them in parallel.
 
 It is important to recognize that these four parallelism levels are
-nested, in that a strategy can schedule and manage concurrent
+nested, in that a method can schedule and manage concurrent
 iterators, each of which may manage concurrent function evaluations,
 each of which may manage concurrent analyses, each of which may
 execute on multiple processors. 
@@ -85,7 +85,7 @@ function evaluations:
   request from an algorithm (which may involve value, gradient, and
   Hessian data from multiple objective and constraint functions). This
   concept can also be extended to the concurrent execution of multiple
-  ``iterators'' within a ``strategy.'' Examples of algorithms
+  ``iterators'' within a ``method.'' Examples of algorithms
   containing coarse-grained parallelism include:
   \begin{itemize}
   \item \emph{Gradient-based algorithms}: finite difference gradient
@@ -97,7 +97,7 @@ function evaluations:
   \item \emph{Approximate methods}: design of computer experiments for
     building surrogate models.
 
-  \item \emph{Concurrent-iterator strategies}: optimization under
+  \item \emph{Concurrent-iterators}: optimization under
     uncertainty, branch and bound, multi-start local search, Pareto
     set optimization, island-model GAs.
   \end{itemize}
@@ -184,12 +184,11 @@ section.
 
 \subsection{Parallel Dakota algorithms} \label{parallel:algorithms}
 
-In Dakota, the following parallel algorithms, comprised of iterators
-and strategies, provide support for coarse-grained algorithmic
-parallelism.  Note that, even if a particular algorithm is serial in
-terms of its data request concurrency, other concurrency sources
-(e.g., function evaluation coarse-grained and fine-grained
-parallelism) may still be available.
+In Dakota, the following parallel algorithms provide support for 
+coarse-grained algorithmic parallelism.  Note that, even if a 
+particular algorithm is serial in terms of its data request 
+concurrency, other concurrency sources(e.g., function evaluation 
+coarse-grained and fine-grained parallelism) may still be available.
 
 \subsubsection{Parallel iterators}\label{parallel:algorithms:iterators}
 
@@ -278,10 +277,10 @@ parallelism) may still be available.
   generate a single point for evaluation per cycle.
 \end{itemize}
 
-\subsubsection{Parallel strategies}\label{parallel:algorithms:strategies}
+\subsubsection{Parallel methods}\label{parallel:algorithms:strategies}
 
-Certain strategies support concurrency in multiple iterator
-executions. Currently, the strategies which can exploit this level of
+Certain methods support concurrency in multiple iterator
+executions. Currently, the methods which can exploit this level of
 parallelism are:
 
 \begin{itemize}
@@ -849,7 +848,7 @@ message passing parallelism:
 %\end{itemize}
 
 Message passing schedulers may be used for managing concurrent
-iterator executions within a strategy, concurrent evaluations within
+iterator executions within a method, concurrent evaluations within
 an iterator, or concurrent analyses within an evaluation.  In each of
 these cases, the message passing scheduler is currently restricted to
 blocking synchronization, in that all jobs in the queue are completed
@@ -887,10 +886,9 @@ keyword and would appear similar to:
 \end{verbatim}
 \end{small}
 
-The relevant excerpts from the Dakota output for a dedicated master
-partition and dynamic schedule, the default when the maximum concurrency
-(49) exceeds the available capacity (5), would appear similar to the
-following:
+The relevant excerpts from the Dakota output for a peer
+partition and dynamic schedule, both selected automatically, would appear 
+similar to the following:
 \begin{small}
 \begin{verbatim}
     Running MPI executable in parallel on 5 processors.
@@ -901,11 +899,11 @@ following:
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
     concurrent iterators         1                5            peer
-    concurrent evaluations       4                1            ded. master
+    concurrent evaluations       5                1            peer
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
 
-    Total parallelism levels =   1
+    Total parallelism levels =   1 (1 dakota, 0 analysis)
     -----------------------------------------------------------------------------
 
     >>>>> Running dace iterator.
@@ -928,36 +926,36 @@ following:
     (Asynchronous job 49 added to queue)
 
     Blocking synchronize of 49 asynchronous evaluations
-    First pass: assigning 4 jobs among 4 servers
-    Master assigning function evaluation 1 to server 1
-    Master assigning function evaluation 2 to server 2
-    Master assigning function evaluation 3 to server 3
-    Master assigning function evaluation 4 to server 4
-    Second pass: scheduling 45 remaining jobs
-    Waiting on completed jobs
-    job 1 has returned from slave server 1
-    Master assigning function evaluation 5 to server 1
-    job 2 has returned from slave server 2
-    Master assigning function evaluation 6 to server 2
-    Waiting on completed jobs
-    job 3 has returned from slave server 3
-    Master assigning function evaluation 7 to server 3
-    job 4 has returned from slave server 4
-    Master assigning function evaluation 8 to server 4
+    Peer dynamic schedule: first pass assigning 4 jobs among 4 remote peers
+    Peer 1 assigning evaluation 1 to peer 2
+    Peer 1 assigning evaluation 2 to peer 3
+    Peer 1 assigning evaluation 3 to peer 4
+    Peer 1 assigning evaluation 4 to peer 5
+    Peer dynamic schedule: first pass launching 1 local jobs
+    Initiating evaluation 5
+    text_book /tmp/filekww7jU /tmp/filexua0I0 &
+    Peer dynamic schedule: second pass scheduling 44 remaining jobs
+    Evaluation 5 has completed
+    Initiating evaluation 6
+    text_book /tmp/fileDcYc96 /tmp/filetWFpzd &
+    Evaluation 3 has returned from peer server 4
+    Peer 1 assigning evaluation 7 to peer 4
+    Evaluation 1 has returned from peer server 2
+    Peer 1 assigning evaluation 8 to peer 2
 
     <snip>
 
-    job 49 has returned from slave server 2
+    job 48 has returned from peer server 4
 
     <<<<< Iterator dace completed.
 \end{verbatim}
 \end{small}
 where it is evident that each of the 49 jobs is first queued and then
 a blocking synchronization is performed.  This synchronization uses a
-dynamic scheduler that initiates four jobs by sending a message from
-the master to each of the four servers and then replaces completing
-jobs with new ones until all 49 are complete.  It is important to note
-that job execution local to each of the four servers is synchronous.
+dynamic scheduler that initiates five jobs, one on each of five servers, 
+and then replaces completing jobs with new ones until all 49 are complete. 
+It is important to note that job execution local to each of the five servers 
+is synchronous.
 
 
 \subsection{Hybrid Parallelism}\label{parallel:SLP:hybrid}
@@ -1070,11 +1068,11 @@ to the following:
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
     concurrent iterators         1                5            peer
-    concurrent evaluations       4                1            ded. master
+    concurrent evaluations       5                1            peer
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
 
-    Total parallelism levels =   1
+    Total parallelism levels =   1 (1 dakota, 0 analysis)
     -----------------------------------------------------------------------------
 
     >>>>> Running dace iterator.
@@ -1097,55 +1095,49 @@ to the following:
     (Asynchronous job 49 added to queue)
 
     Blocking synchronize of 49 asynchronous evaluations
-    First pass: assigning 8 jobs among 4 servers
-    Master assigning function evaluation 1 to server 1
-    Master assigning function evaluation 2 to server 2
-    Master assigning function evaluation 3 to server 3
-    Master assigning function evaluation 4 to server 4
-    Master assigning function evaluation 5 to server 1
-    Master assigning function evaluation 6 to server 2
-    Master assigning function evaluation 7 to server 3
-    Master assigning function evaluation 8 to server 4
-    Second pass: scheduling 41 remaining jobs
-    Waiting on completed jobs
-
+    Peer dynamic schedule: first pass assigning 8 jobs among 4 remote peers
+    Peer 1 assigning evaluation 1 to peer 2
+    Peer 1 assigning evaluation 2 to peer 3
+    Peer 1 assigning evaluation 3 to peer 4
+    Peer 1 assigning evaluation 4 to peer 5
+    Peer 1 assigning evaluation 6 to peer 2
+    Peer 1 assigning evaluation 7 to peer 3
+    Peer 1 assigning evaluation 8 to peer 4
+    Peer 1 assigning evaluation 9 to peer 5
+    Peer dynamic schedule: first pass launching 2 local jobs
+    
     <snip>
 
-    job 49 has returned from slave server 4
+    Evaluation 49 has returned from peer server 2
 
     <<<<< Iterator dace completed.
 \end{verbatim}
 \end{small}
 where it is evident that each of the 49 jobs is first queued and then
 a blocking synchronization is performed.  This synchronization uses a
-dynamic scheduler that initiates eight jobs by sending two messages to
-each of the four servers and then replaces completing jobs with new
-ones until all 49 are complete.  It is important to note that job
-execution local to each of the four servers is asynchronous.  If the
-available capacity was increased to meet or exceed the maximum
-concurrency (e.g., mpirun on 10 processors with
-\texttt{evaluation\_concurrency = 5}), then a peer partition with
-static schedule would be selected by default.
-
+dynamic scheduler that initiates 10, two on each of five servers, and 
+then replaces completing jobs with new ones until all 49 are complete.  
+It is important to note that job execution local to each of the five 
+servers is asynchronous.
 
 \section{Multilevel parallelism} \label{parallel:MLP}
 
 
 Parallel computers within the Department of Energy national
-laboratories have exceeded a hundred trillion floating point
-operations per second (100 TeraFLOPS) in Linpack benchmarks and are
-expected to achieve PetaFLOPS speeds in the near future. This
+laboratories have achieved nearly 20 quadrillion floating point
+operations per second (20 PetaFLOPS) in Linpack benchmarks and are
+expected to achieve ExaFLOPS speeds within a few years. This
 performance is achieved through the use of massively parallel (MP)
-processing using $O[10^{3}-10^{4}]$ processors. In order to harness
+processing using $O[10^{5}-10^{6}]$ processors. In order to harness
 the power of these machines for performing design, uncertainty
 quantification, and other systems analyses, parallel algorithms are
-needed which are scalable to thousands of processors.
+needed which are scalable to thousands or tens of thousands of processors.
 
 Dakota supports a total of three tiers of scheduling and four levels
 of parallelism which, in combination, can minimize efficiency losses
 and achieve near linear scaling on MP computers. The four levels are:
 \begin{enumerate}
-\item concurrent iterators within a strategy (scheduling performed by
+\item concurrent iterators within a method (scheduling performed by
   Dakota)
 
 \item concurrent function evaluations within each iterator (scheduling
@@ -1385,7 +1377,7 @@ synchronization at this level.
     \textbf{Message Passing} & \textbf{Hybrid} \\
     \hline \hline
     concurrent iterators & & \textbf{X}      & \\
-    within a strategy    & & (blocking only) & \\
+    within a method    & & (blocking only) & \\
     \hline
     concurrent function evaluations & \textbf{X} & \textbf{X} & \textbf{X} \\
     within an iterator          & (system, fork) & (system, fork, direct) &
@@ -1520,43 +1512,28 @@ theoretical work in~\cite{Eld00} to automatically determine an efficient
 parallel configuration, consisting of partitioning and scheduling
 selections for each of the parallelism levels. This logic accounts for
 problem size, the concurrency supported by particular iterative
-algorithms, and any user inputs or overrides. The following points are
-important components of the automatic configuration logic which can be
-helpful in estimating the total number of processors to allocate and
-in selecting configuration overrides:
+algorithms, and any user inputs or overrides. 
 
-\begin{itemize}
-\item If the capacity of the servers in a peer configuration is
-  sufficient to schedule all jobs in one pass, then a peer partition
-  and static schedule will be selected. If this capacity is not
-  sufficient, then a dedicated-master partition and dynamic schedule
-  will be used. These partition selections can be overridden with
-  master/peer specifications for the concurrent iterator, evaluation,
-  and analysis parallelism levels, and the scheduling selections can
-  be overridden with dynamic/static specifications for the concurrent
-  evaluation parallelism level. For example, if it is known that
-  processor speeds and job durations have little variability, then
-  overriding the automatic configuration with a peer/static
-  configuration could eliminate the unnecessary loss of a processor to
-  scheduling.
+With the exception of the concurrent-iterator parallelism level (iterator 
+executions tend to have high variability in duration), concurrency is 
+pushed up. That is, available processors will be assigned to concurrency 
+at the higher parallelism levels first. If more processors are available 
+than needed for concurrency at a level, then the server size is 
+increased to support concurrency in the next lower level of parallelism. 
+This process is continued until all available processors have been 
+assigned. These assignments can be overridden by the user by specifying 
+a number of servers, processors per server, or both, for the concurrent 
+iterator, evaluation, and analysis parallelism levels. For example, if 
+it is desired to parallelize concurrent analyses within each function 
+evaluation, then an \texttt{evaluation\_servers = 1} override would 
+serialize the concurrent function evaluations level and assure 
+processor availability for concurrent analyses.
 
-\item With the exception of the concurrent-iterator parallelism level
-  (iterator executions tend to have high variability in duration),
-  concurrency is pushed up. That is, available processors will be
-  assigned to concurrency at the higher parallelism levels first. If
-  more processors are available than needed for concurrency at a
-  level, then the server size is increased to support concurrency in
-  the next lower level of parallelism. This process is continued until
-  all available processors have been assigned. These assignments can
-  be overridden with a servers specification for the concurrent
-  iterator, evaluation, and analysis parallelism levels and with a
-  processors per analysis specification for the multiprocessor
-  analysis parallelism level. For example, if it is desired to
-  parallelize concurrent analyses within each function evaluation,
-  then an \texttt{evaluation\_servers = 1} override would serialize
-  the concurrent function evaluations level and assure processor
-  availability for concurrent analyses.
-\end{itemize}
+Partition type (master or peer) may also be specified for each level, 
+and peer scheduling type (dynamic or static) may be specified at the 
+level of evaluation concurrency. However, these selections may be 
+overridden by Dakota if they are inconsistent with the number of 
+user-requested servers, processors per server, and available processors.
 
 In the following sections, the user inputs and overrides are
 described, followed by specification examples for single and
@@ -1596,25 +1573,29 @@ to a processor (i.e., asynchronous local parallelism). This
   servers times the number of asynchronous jobs per server.
 \end{itemize}
 
-In addition, \texttt{evaluation\_servers} and
+In addition, \texttt{evaluation\_servers},
+\texttt{processors\_per\_evaluation}, and
 \texttt{evaluation\_scheduling} keywords can be used to
 override the automatic parallelism configuration for concurrent
-function evaluations; \texttt{analysis\_servers} and
-\texttt{analysis\_scheduling} keywords can be used to override
-the automatic parallelism configuration for concurrent analyses; and
+function evaluations. When \texttt{evaluation\_scheduling peer} is
+specified, additional specification of \texttt{dynamic} or
+\texttt{static} is required. To override the automatic parallelism
+configuration for concurrent analyses, the \texttt{analysis\_servers} 
+and \texttt{analysis\_scheduling} keywords may be specified, and
 the \texttt{processors\_per\_analysis} keyword can be used to override
 the automatic parallelism configuration for the size of multiprocessor
 analyses used in a direct function simulation interface. Each of these
 keywords appears as part of the interface commands specification in
 the Dakota Reference Manual~\cite{RefMan}.
 
-\subsection{The strategy specification}\label{parallel:spec:strategy}
+\subsection{The method specification}\label{parallel:spec:method}
 
 To specify concurrency in iterator executions, the
-\texttt{iterator\_servers} and \texttt{iterator\_scheduling} keywords
-are used to override the automatic parallelism configuration. See the
-strategy commands specification in the Dakota Reference
-Manual~\cite{RefMan} for additional information.
+\texttt{iterator\_servers}, \texttt{processors\_per\_iteration}, and
+\texttt{iterator\_scheduling} keywords are used to override the 
+automatic parallelism configuration. See the method commands 
+specification in the Dakota Reference Manual~\cite{RefMan} for 
+additional information.
 
 \subsection{Single-processor Dakota specification}\label{parallel:spec:single}
 
@@ -1757,30 +1738,25 @@ report from the Dakota output:
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
     concurrent iterators         1                4            peer
-    concurrent evaluations       3                1            ded. master
+    concurrent evaluations       4                1            peer
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
 
-    Total parallelism levels =   1
+    Total parallelism levels =   1 (1 dakota, 0 analysis)
     -----------------------------------------------------------------------------
 \end{verbatim}
 \end{small}
 
-The dedicated master partition and dynamic scheduling algorithm are
-automatically selected for the concurrent evaluations parallelism
-level since the number of function evaluations (11) is greater than
-the maximum capacity of the servers (4). Since one of the processors
-is dedicated to being the master, only 3 processors are available for
-computation and the 11 evaluations can be completed in approximately 4
-passes through the servers. If it is known that there is little
-variability in evaluation duration, then this logic could be
+The peer partition and dynamic scheduling algorithm are
+automatically selected for the concurrent evaluations. If a
+dedicated master is desired, then this logic could be
 overridden to use a static schedule through use of the
 \texttt{evaluation\_scheduling peer static} specification:
 \begin{small}
 \begin{verbatim}
     interface,
             system,
-              evaluation_scheduling peer static
+              evaluation_scheduling master
               analysis_drivers = 'text_book'
 \end{verbatim}
 \end{small}
@@ -1796,21 +1772,17 @@ configuration report:
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
     concurrent iterators         1                4            peer
-    concurrent evaluations       4                1            peer
+    concurrent evaluations       3                1            ded. master
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
 
-    Total parallelism levels =   1
+    Total parallelism levels =   1 (1 dakota, 0 analysis)
     -----------------------------------------------------------------------------
 \end{verbatim}
 \end{small}
 
-Now the 11 jobs will be statically distributed among 4 peer servers,
-since the processor previously dedicated to scheduling has been
-converted to a compute server. This could be more efficient if the
-evaluation durations are sufficiently similar, but there is no
-mechanism to adapt to heterogeneity in processor speeds or simulation
-expense.
+Now the 11 jobs will be dynamically distributed among 3 slave servers,
+under the control of 1 dedicated master.
 
 As a related example, consider the case where each of the workstations
 used in the parallel execution has multiple processors. In this case,
@@ -1830,9 +1802,8 @@ specification as was used for the single-processor examples, e.g.:
 
 With 3 function evaluations concurrent on each server, the capacity of
 a 4 processor Dakota execution (syntax: \texttt{mpirun -np 4 dakota -i
-  dakota.in}) has increased to 12 evaluations. Since all 11 jobs can
-now be scheduled in a single pass, a static schedule is automatically
-selected (without any override request):
+  dakota.in}) has increased to 12 evaluations, which run concurrently.
+
 \begin{small}
 \begin{verbatim}
     -----------------------------------------------------------------------------
@@ -1873,28 +1844,24 @@ configuration report:
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
     concurrent iterators         1                6            peer
-    concurrent evaluations       5                1            ded. master
+    concurrent evaluations       6                1            peer 
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
 
-    Total parallelism levels =   1
+    Total parallelism levels =   1 (1 dakota, 0 analysis)
     -----------------------------------------------------------------------------
 \end{verbatim}
 \end{small}
 
 in which all of the processors have been assigned to support
 evaluation concurrency due to the ``push up'' automatic configuration
-logic. Note that the default configuration could be a poor choice in
-this case, since 11 jobs scheduled through 5 servers will likely have
-significant idleness towards the end of the scheduling.  To assign
-some of the available processors to the concurrent analysis level, the
-following input could be used:
+logic.  To assign some of the available processors to the concurrent 
+analysis level, the following input could be used:
 \begin{small}
 \begin{verbatim}
     interface,
              fork
                analysis_drivers = `text_book1' `text_book2' `text_book3'
-               evaluation_scheduling peer static
                evaluation_servers = 2
 \end{verbatim}
 \end{small}
@@ -1912,7 +1879,7 @@ which results in the following 2-level parallel configuration:
     concurrent analyses          3                1            peer
     multiprocessor analysis      1               N/A           N/A
 
-    Total parallelism levels =   2
+    Total parallelism levels =   2 (2 dakota, 0 analysis)
     -----------------------------------------------------------------------------
 \end{verbatim}
 \end{small}
@@ -1954,7 +1921,7 @@ processor Dakota run \\
     concurrent analyses          3                2            peer
     multiprocessor analysis      2               N/A           N/A
 
-    Total parallelism levels =   3
+    Total parallelism levels =   3 (2 dakota, 1 analysis)
     -----------------------------------------------------------------------------
 \end{verbatim}
 \end{small}
@@ -1971,12 +1938,14 @@ interface specifications:
             direct,
               id_interface = 'COARSE'
               analysis_driver = 'sim1'
+              evaluation_servers = 8
               processors_per_analysis = 5
 
     interface,
             direct,
               id_interface = 'FINE'
               analysis_driver = 'sim2'
+              evaluation_servers = 4
               processors_per_analysis = 10
 \end{verbatim}
 \end{small}
@@ -1987,10 +1956,10 @@ and the fine model would employ 4 servers of 10 processors each.
 Next, consider the following 4-level parallel case that employs the
 Pareto set optimization strategy. In this case,
 \texttt{iterator\_servers} and \texttt{iterator\_scheduling peer}
-requests are included in the strategy specification:
+requests are included in the method specification:
 \begin{small}
 \begin{verbatim}
-    strategy,
+    method,
              pareto_set
                iterator_servers = 2
                iterator_scheduling peer
