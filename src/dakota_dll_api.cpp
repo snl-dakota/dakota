@@ -20,11 +20,9 @@
 #include "LibraryEnvironment.hpp"
 #include "ProblemDescDB.hpp"
 #include "PRPMultiIndex.hpp"
-#ifdef DAKOTA_PLUGIN
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "PluginSerialDirectApplicInterface.hpp"
-#endif
 #include "dakota_global_defs.hpp"
 #include "dakota_dll_api.h"
 #include <string>
@@ -206,7 +204,6 @@ void DakotaRunner::start()
 {
   // Any library mode plug-ins would go here.
   // Refer to the library mode documentation in the Developers Manual.
-#ifdef DAKOTA_PLUGIN
   ProblemDescDB& problem_db = dakotaEnv->problem_description_db();
   ModelList& models = problem_db.model_list();
   for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
@@ -219,7 +216,6 @@ void DakotaRunner::start()
       model_interface.assign_rep(new SIM::SerialDirectApplicInterface(problem_db), false);
     }
   }
-#endif
 
   // Execute the Dakota environment assume proceeding beyond help/version/check
   if (!dakotaEnv->check()) {

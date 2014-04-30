@@ -65,11 +65,6 @@ else()
   list(APPEND EXT_TPL_LIBS ${Teuchos_LIBRARIES})
 endif()
 
-option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
-if(DAKOTA_PLUGIN)
-  add_definitions("-DDAKOTA_PLUGIN")
-endif(DAKOTA_PLUGIN)
-
 
 # -----------------
 # Boost Adjustments
@@ -402,6 +397,9 @@ if(HAVE_SYS_WAIT_H AND HAVE_UNISTD_H)
 elseif(WIN32)
   list(APPEND interface_src SpawnApplicInterface.cpp)
 endif()
+## Always build the plugin interfaces  
+set(interface_src ${interface_src} PluginSerialDirectApplicInterface.cpp
+  PluginParallelDirectApplicInterface.cpp)
 
 CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
@@ -418,11 +416,6 @@ endif()
 if(DAKOTA_PYTHON)
   list(APPEND interface_src PythonInterface.cpp)
 endif()
-
-if(DAKOTA_PLUGIN)
-  set(interface_src ${interface_src} PluginSerialDirectApplicInterface.cpp
-      PluginParallelDirectApplicInterface.cpp)
-endif(DAKOTA_PLUGIN)
 
 if(DAKOTA_SCILAB)
   list(APPEND interface_src ScilabInterface.cpp)

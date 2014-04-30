@@ -77,17 +77,11 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   for (size_t i=0; i<numAnalysisDrivers; ++i) {
     sd_iter = driverTypeMap.find(analysisDrivers[i]);//toLower(Drivers[i]));
     if (sd_iter == driverTypeMap.end()) {
-#ifdef DAKOTA_PLUGIN
       if (outputLevel > NORMAL_OUTPUT)
 	Cerr << "Warning: analysis_driver \"" << analysisDrivers[i] << "\" not "
 	     << "available at construct time in TestDriverInterface.\n       "
 	     << "  Subsequent interface plug-in may resolve." << std::endl;
       analysisDriverTypes[i] = NO_DRIVER;
-#else
-      Cerr << "Error: analysis_driver \"" << analysisDrivers[i]
-	   << "\" not supported in TestDriverInterface." << std::endl;
-      abort_handler(-1);
-#endif
     }
     else
       analysisDriverTypes[i] = sd_iter->second;
@@ -95,34 +89,22 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
 
   sd_iter = driverTypeMap.find(iFilterName);  //toLower(iFilterName));
   if (sd_iter == driverTypeMap.end()) {
-#ifdef DAKOTA_PLUGIN
     if (outputLevel > NORMAL_OUTPUT)
       Cerr << "Warning: input filter \"" << iFilterName << "\" not available at"
 	   << " construct time in TestDriverInterface.\n         Subsequent "
 	   << "interface plug-in may resolve." << std::endl;
     iFilterType = NO_DRIVER;
-#else
-    Cerr << "Error: input filter \"" << iFilterName << "\" not supported in "
-	 << "TestDriverInterface." << std::endl;
-    abort_handler(-1);
-#endif
   }
   else
     iFilterType = sd_iter->second;
 
   sd_iter = driverTypeMap.find(oFilterName);  //toLower(oFilterName));
   if (sd_iter == driverTypeMap.end()) {
-#ifdef DAKOTA_PLUGIN
     if (outputLevel > NORMAL_OUTPUT)
       Cerr << "Warning: output filter \"" << oFilterName << "\" not available "
 	   << "at construct time in TestDriverInterface.\n         Subsequent"
 	   << " interface plug-in may resolve." << std::endl;
     oFilterType = NO_DRIVER;
-#else
-    Cerr << "Error: output filter \"" << oFilterName << "\" not supported in "
-	 << "TestDriverInterface." << std::endl;
-    abort_handler(-1);
-#endif
   }
   else
     oFilterType = sd_iter->second;
