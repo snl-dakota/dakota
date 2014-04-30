@@ -23,9 +23,8 @@ Surfpack picks a small feasible region of correlation parameters.
 
 Note that we have found the \c global 
 optimization method to be the most robust.
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::
-Which DIRECT? Which Conmin?
 See_Also::	

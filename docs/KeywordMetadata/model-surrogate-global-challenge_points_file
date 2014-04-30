@@ -1,18 +1,20 @@
 Blurb::
 Specify a datafile of points to compare surrogate responses against
 Description::
-If a file is specified, it must contain variables and function values of
-test data.
+If a file is specified, it must contain variables and response data.
+
 The surrogate is evaluated at the points
 in the file, and the surrogate responses are compared against
 the results in the file.
 
 The requested metrics will be reported for the surrogate
 evaluated at the specified variables versus the function values from
-the challenge data file. The imported points file may be in annotated
+the challenge data file.
+
+The imported points file may be in annotated
 for free-form tabular format.
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::

@@ -20,17 +20,13 @@ Monte Carlo (random) sampling, Latin
 hypercube sampling, orthogonal array sampling, central composite
 design sampling, and Box-Behnken sampling.
 
+Note that the number of samples specified in the method block
+may be overwritten, if the requested number of samples is less than
+\ref model-surrogate-global-minimum_points.
 
 
-Topics::	block_pointer, problem
+Topics::	block_pointer
 Examples::
 Theory::
 Faq::
-Is this right?
-
-Examples?
-
-What else can we say?
-
-Samples? overridden by minimum_points
 See_Also::	
