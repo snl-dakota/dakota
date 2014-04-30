@@ -1,6 +1,10 @@
 Blurb::
+Show all evaluations
 Description::
-Topics::	empty
+\c display_all_evaluations: If this is set, then NOMAD will print out
+its own record of evaluations completed.
+
+Topics::
 Examples::
 Theory::
 Faq::

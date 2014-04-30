@@ -1,6 +1,19 @@
 Blurb::
+Number of processors per iterator server
 Description::
-Topics::	empty
+An important feature for component-based iterators is that execution
+of sub-iterator runs may be performed concurrently.  The \c
+iterator_servers, \c processors_per_iterator, and \c
+iterator_scheduling specifications provide manual overrides for the
+number of concurrent iterator partitions, the size of iterator
+partitions, and the scheduling configuration (\c master or \c peer),
+respectively, for concurrent iterator jobs.  These settings are
+normally determined automatically in the parallel configuration
+routines (see ParallelLibrary) but can be overridden with user inputs
+if desired.  Currently, \c hybrid, \c multi_start, and \c pareto_set
+component-based iterators support concurrency in their sub-iterators.
+
+Topics::
 Examples::
 Theory::
 Faq::

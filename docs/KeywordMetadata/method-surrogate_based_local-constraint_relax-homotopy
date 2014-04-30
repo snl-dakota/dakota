@@ -1,6 +1,13 @@
 Blurb::
+Surrogate-Based local constraint relaxation method for infeasible iterates
 Description::
-Topics::	empty
+Currently, \c homotopy [\ref Perez2004 "Perez et al., 2004"] is the
+only available method for constraint relaxation, and this method is
+dependent on the presence of the NPSOL library within the %Dakota
+executable. Table \ref T5d12 "5.12" summarizes these constraint
+management inputs.
+
+Topics::
 Examples::
 Theory::
 Faq::

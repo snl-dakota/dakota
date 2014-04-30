@@ -1,6 +1,9 @@
 Blurb::
+Number of parents in random shuffle crossover
 Description::
-Topics::	empty
+Number of parents in random shuffle crossover
+
+Topics::
 Examples::
 Theory::
 Faq::

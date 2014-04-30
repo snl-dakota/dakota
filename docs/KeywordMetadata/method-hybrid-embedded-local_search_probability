@@ -1,6 +1,17 @@
 Blurb::
+Probability of executing local searches
 Description::
-Topics::	empty
+In the \c embedded approach, global and local method strings supplied
+with the \c global_method_pointer and \c local_method_pointer
+specifications identify the two methods to be used. As for other
+meta-iterators, method pointers can be replaced by method names and
+optional model pointers.  The \c local_search_probability setting is
+an optional specification for supplying the probability (between 0.0
+and 1.0) of employing local search to improve estimates within the
+global search. \ref T5d6 "Table 5.6" summarizes the embedded hybrid
+inputs.
+
+Topics::
 Examples::
 Theory::
 Faq::

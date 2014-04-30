@@ -1,6 +1,11 @@
 Blurb::
+Set parameter to escape local minima
 Description::
-Topics::	empty
+\c vns: This parameter guides a variable neighborhood.  It roughly
+corresponds to how aggressive NOMAD is in trying to move away from
+local minima.
+
+Topics::
 Examples::
 Theory::
 Faq::

@@ -1,6 +1,19 @@
 Blurb::
+Mesh Adaptive Direct Search Algorithm
 Description::
-Topics::	empty
+The mesh adaptive direct search algorithm [\ref AuLeTr09a "Audet, Le
+Digabel, and Tribes, 2009"] is a generalized pattern search in which
+the set of points evaluated becomes increasingly dense, leading to
+good convergence properties.  It is now made available in %Dakota
+through the NOMAD software [\ref Nomad "Abramson, Audet, Couture,
+Dennis, Le Digabel, and Tribes"].  It can handle unconstrained
+problems as well as those with bound constraints and general nonlinear
+constraints.  Of particular note, it can handle both continuous and
+discrete parameters.  NOMAD is available to the public under the GNU
+LGPL and the source code is included with %Dakota.  NOMAD-specific
+software documentation is available from http://www.gerad.ca/nomad.
+
+Topics::
 Examples::
 Theory::
 Faq::

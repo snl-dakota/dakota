@@ -4,7 +4,7 @@ Description::
 The \c below_limit replacement will only keep designs that are
 dominated by fewer than a limiting number of other designs.
 
-Topics::	problem
+Topics::
 Examples::
 Theory::
 Faq::
