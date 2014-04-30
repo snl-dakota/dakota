@@ -22,7 +22,7 @@
 #   0- 22: serial tests (synch/asynch, blocking/nonblocking)
 #  p0-p21: MPI parallel tests
 # p22-p29: hybrid parallel tests (block/nonblock, peer/master, system/fork)
-
+# Timeout overrides: 4=TA1800 5=TA1800
 # Processor specification for automated parallel tests:
 # p0=2, p1=2, p2=2, p3=2, p4=2, p5=2, p6=2, p7=2, p8=2, p9=3, p10=3, p11=2, p12=2, p13=2, p14=2, p15=2, p16=2, p17=2, p18=2, p19=2, p20=2, p21=3, p22=2, p23=2, p24=3, p25=3, p26=2, p27=2, p28=3, p29=3
 

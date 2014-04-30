@@ -15,7 +15,7 @@
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
-# timeout overrides: 1=TA1800 5=TA1800
+# timeout overrides: 1=TA2100 5=TA1800
 
 environment,
 #	tabular_graphics_data
