@@ -464,7 +464,12 @@ problem_value(string *chain_filename, string *gr_filename, double &gr_threshold,
 
   // parameters to expose to user...
 
-  int chain_tag_len = std::log10(NonDDREAMInstance->numChains - 1) + 1;
+  // DREAM will replace the zeros with unique file tags; use one
+  // placeholder for 1--10 chains, two for 11--100 chains, etc.
+  int chain_tag_len = 1;
+  if (NonDDREAMInstance->numChains > 10)
+    chain_tag_len = 
+      (int) std::ceil(std::log10((double) NonDDREAMInstance->numChains));
   std::string chain_tag(chain_tag_len, '0');
   std::string chain_fname("dakota_dream_chain");
   chain_fname += chain_tag + ".txt";

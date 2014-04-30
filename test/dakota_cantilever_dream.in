@@ -24,7 +24,7 @@ interface,
 
 responses,								
 	calibration_terms = 2
-        calibration_data_file = 'dakota_cant3_withsigma.dat'
+        calibration_data_file = 'dakota_cantilever_dream.withsigma.dat'
           freeform
           num_experiments = 1
           num_replicates = 10
