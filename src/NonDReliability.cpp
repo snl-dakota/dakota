@@ -58,37 +58,38 @@ NonDReliability::~NonDReliability()
 { }
 
 
-void NonDReliability::initialize_graphics()
+void NonDReliability::initialize_graphics(int iterator_server_id)
 {
   // Set up special graphics for CDF/CCDF visualization
   if (totalLevelRequests) {
 
-    ParallelLibrary& parallel_lib = iteratedModel.parallel_library();
-    const OutputManager& mgr = parallel_lib.output_manager();
+    const OutputManager& mgr
+      = iteratedModel.parallel_library().output_manager();
 
-    if (mgr.graph2DFlag) {     // initialize the 2D plots
-      int iterator_server_id
-	= parallel_lib.parallel_configuration().si_parallel_level().server_id();
-      if (iterator_server_id == 1) { // initialize the 2D plots
-	dakota_graphics.create_plots_2d(iteratedModel.current_variables(),
-					iteratedModel.current_response());
-	// Visualize mostProbPointX in the vars windows and CDF/CCDF
-	// probability/reliability-response level pairs in the response windows.
-	dakota_graphics.set_x_labels2d("Response Level");
-	size_t i;
-	for (i=0; i<numFunctions; i++)
-	  dakota_graphics.set_y_label2d(i, "Probability");
-	for (i=0; i<numUncertainVars; i++)
-	  dakota_graphics.set_y_label2d(i+numFunctions, "Most Prob Point");
-      }
+    // For graphics, limit (currently) to server id 1, for both ded master
+    // (parent partition rank 1) and peer partitions (parent partition rank 0)
+    if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+      dakota_graphics.create_plots_2d(iteratedModel.current_variables(),
+				      iteratedModel.current_response());
+      // Visualize mostProbPointX in the vars windows and CDF/CCDF
+      // probability/reliability-response level pairs in the response windows.
+      dakota_graphics.set_x_labels2d("Response Level");
+      size_t i;
+      for (i=0; i<numFunctions; i++)
+	dakota_graphics.set_y_label2d(i, "Probability");
+      for (i=0; i<numUncertainVars; i++)
+	dakota_graphics.set_y_label2d(i+numFunctions, "Most Prob Point");
     }
 
-    //if (mgr.tabularDataFlag) { // initialize the tabular data file
-    //  dakota_graphics.tabular_counter_label("z");
-    //  dakota_graphics.create_tabular_datastream(
-    //    iteratedModel.current_variables(), iteratedModel.current_response(),
-    //    mgr.tabularDataFile);
-    //}
+    /*
+    // For output/restart/tabular data, all Iterator masters stream output
+    if (mgr.tabularDataFlag) { // initialize the tabular data file
+      dakota_graphics.tabular_counter_label("z");
+      dakota_graphics.create_tabular_datastream(
+        iteratedModel.current_variables(), iteratedModel.current_response(),
+        mgr.tabularDataFile);
+    }
+    */
   }
 }
 

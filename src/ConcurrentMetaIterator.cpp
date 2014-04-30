@@ -335,7 +335,18 @@ ConcurrentMetaIterator::~ConcurrentMetaIterator()
 
 
 void ConcurrentMetaIterator::core_run()
-{ iterSched.schedule_iterators(*this, selectedIterator); }
+{
+  // For graphics data, limit to iterator server comm leaders; this is further
+  // segregated within initialize_graphics(): all iterator masters stream
+  // tabular data, but only iterator server 1 generates a graphics window.
+  if (iterSched.iteratorCommRank == 0) {
+    int server_id = iterSched.iteratorServerId;
+    if (server_id > 0 && server_id <= iterSched.numIteratorServers)
+      selectedIterator.initialize_graphics(server_id);
+  }
+
+  iterSched.schedule_iterators(*this, selectedIterator);
+}
 
 
 void ConcurrentMetaIterator::print_results(std::ostream& s)

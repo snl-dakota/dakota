@@ -121,6 +121,14 @@ void EmbedHybridMetaIterator::core_run()
     //globalIterator.set_local_search_probability(localSearchProb);
   }
 
+  // For graphics data, limit to iterator server comm leaders; this is
+  // further segregated within initialize_graphics(): all iterator masters
+  // stream tabular data, but only server 1 generates a graphics window.
+  int server_id = iterSched.iteratorServerId;
+  if (iterSched.iteratorCommRank == 0 && server_id > 0 &&
+      server_id <= iterSched.numIteratorServers)
+    globalIterator.initialize_graphics(server_id);
+
   iterSched.schedule_iterators(*this, globalIterator);
 }
 

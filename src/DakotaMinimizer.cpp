@@ -232,9 +232,6 @@ void Minimizer::update_from_model(const Model& model)
 
 void Minimizer::initialize_run()
 {
-  // set up plotting and data tabulation
-  initialize_graphics();
-
   // Verify that iteratedModel is not null (default ctor and some
   // NoDBBaseConstructor ctors leave iteratedModel uninitialized).
   if (!iteratedModel.is_null()) {

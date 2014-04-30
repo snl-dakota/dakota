@@ -373,11 +373,17 @@ void Environment::execute()
 
     probDescDB.lock(); // prevent run-time DB queries
 
-    // BMA: This requires methodName defined on all ranks for topLevelIterator
+    // topLevelIterator's methodName must be defined on all ranks
     if (topLevelIterator.method_name() & META_BIT) {
-      topLevelIterator.run(Cout);
+      // graphics initialization delegated by MetaIterator
+
+      topLevelIterator.run(Cout); // Iterator executes on all processors
     }
     else {
+      if (output_rank) // set up plotting and data tabulation
+	topLevelIterator.initialize_graphics();
+
+      // segregates parallel execution: Iterator on pl.serverCommRank == 0
       IteratorScheduler::run_iterator(topLevelIterator, //topLevelModel,
         parallelLib.parallel_configuration().w_parallel_level());
     }

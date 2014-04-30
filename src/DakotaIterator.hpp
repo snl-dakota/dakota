@@ -149,7 +149,7 @@ public:
   virtual void response_results_active_set(const ActiveSet& set);
 
   /// initialize the 2D graphics window and the tabular graphics data
-  virtual void initialize_graphics();
+  virtual void initialize_graphics(int iterator_server_id = 1);
 
   /// print the final iterator results
   virtual void print_results(std::ostream& s);

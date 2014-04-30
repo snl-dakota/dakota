@@ -43,7 +43,7 @@ protected:
   //
 
   /// initialize graphics customized for surrogate-based iteration
-  void initialize_graphics();
+  void initialize_graphics(int iterator_server_id = 1);
   void core_run();
   void print_results(std::ostream& s);
 

@@ -155,13 +155,23 @@ void CollabHybridMetaIterator::core_run()
 
   bool lead_rank = iterSched.lead_rank();
   size_t i, num_iterators = methodList.size();
+  int server_id =  iterSched.iteratorServerId;
+  bool    rank0 = (iterSched.iteratorCommRank == 0);
   for (i=0; i<num_iterators; i++) {
 
     if (lead_rank)
       Cout << "\n>>>>> Running Collaborative Hybrid with iterator "
 	   << methodList[i] << ".\n";
 
-    iterSched.schedule_iterators(*this, selectedIterators[i]);
+    Iterator& curr_iterator = selectedIterators[i];
+
+    // For graphics data, limit to iterator server comm leaders; this is
+    // further segregated within initialize_graphics(): all iterator masters
+    // stream tabular data, but only server 1 generates a graphics window.
+    if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
+      curr_iterator.initialize_graphics(server_id);
+
+    iterSched.schedule_iterators(*this, curr_iterator);
   }
 }
 

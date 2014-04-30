@@ -277,18 +277,27 @@ void SeqHybridMetaIterator::run_sequential()
 {
   ParallelLibrary& parallel_lib = iterSched.parallelLib;
   size_t num_iterators = methodList.size();
+  int server_id =  iterSched.iteratorServerId;
+  bool    rank0 = (iterSched.iteratorCommRank == 0);
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
     // each of these is safe for all processors
     Iterator& curr_iterator = selectedIterators[seqCount];
-    Model&    curr_model    = (lightwtCtor) ? iteratedModel :
-      selectedModels[seqCount];
+    Model&    curr_model
+      = (lightwtCtor) ? iteratedModel : selectedModels[seqCount];
  
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running Sequential Hybrid with iterator "
 	   << methodList[seqCount] << ".\n";
 
-    if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    if (server_id <= iterSched.numIteratorServers) {
+
+      // For graphics data, limit to iterator server comm leaders; this is
+      // further segregated within initialize_graphics(): all iterator masters
+      // stream tabular data, but only server 1 generates a graphics window.
+      if (rank0 && server_id > 0)
+	curr_iterator.initialize_graphics(server_id);
+
       // -------------------------------------------------------------
       // Define total number of runs for this iterator in the sequence
       // -------------------------------------------------------------
@@ -305,12 +314,11 @@ void SeqHybridMetaIterator::run_sequential()
 	// update numIteratorJobs
 	if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
 	  // send curr_accepts_multi from 1st iterator master to strategy master
-	  if (iterSched.iteratorCommRank == 0 &&
-	      iterSched.iteratorServerId == 1) {
+	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
 	    parallel_lib.send_si(multi_flag, 0, 0);
 	  }
-	  else if (iterSched.iteratorServerId == 0) {
+	  else if (server_id == 0) {
 	    int multi_flag; MPI_Status status;
 	    parallel_lib.recv_si(multi_flag, 1, 0, status);
 	    curr_accepts_multi = (bool)multi_flag; // int -> bool
@@ -319,7 +327,7 @@ void SeqHybridMetaIterator::run_sequential()
 	  }
 	}
 	else { // static scheduling
-	  if (iterSched.iteratorCommRank == 0)
+	  if (rank0 == 0)
 	    iterSched.numIteratorJobs
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
 	  // bcast numIteratorJobs over iteratorComm
@@ -335,13 +343,13 @@ void SeqHybridMetaIterator::run_sequential()
       //   single instance returns more than used for initialization
       // > can only shrink in the case where single instance returns fewer
       //   than used for initialization
-      if (iterSched.iteratorCommRank == 0)
+      if (rank0)
 	prpResults.resize(iterSched.numIteratorJobs);
 
       // -----------------------------------------
       // Define buffer lengths for message passing
       // -----------------------------------------
-      if (iterSched.messagePass && iterSched.iteratorCommRank == 0) {
+      if (iterSched.messagePass && rank0) {
 	int params_msg_len, results_msg_len;
 	// define params_msg_len
 	if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
@@ -381,8 +389,8 @@ void SeqHybridMetaIterator::run_sequential()
     // Post-process the iterator results
     // ---------------------------------
     // convert prpResults to parameterSets for next iteration
-    if (iterSched.iteratorServerId <= iterSched.numIteratorServers &&
-	iterSched.iteratorCommRank == 0 && seqCount+1 < num_iterators) {
+    if (server_id <= iterSched.numIteratorServers && rank0 &&
+	seqCount+1 < num_iterators) {
       size_t i, j, num_param_sets = 0, cntr = 0, num_prp_i;
       for (i=0; i<iterSched.numIteratorJobs; ++i)
 	num_param_sets += prpResults[i].size();
@@ -403,7 +411,7 @@ void SeqHybridMetaIterator::run_sequential()
       //   peer 1 and the code below enforces repropagation from 1 to 2-n).
       if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
 	  iterSched.numIteratorServers > 1) {
-	if (iterSched.iteratorServerId == 1) { // send complete list
+	if (server_id == 1) { // send complete list
 	  MPIPackBuffer send_buffer;
 	  send_buffer << parameterSets;
 	  int buffer_len = send_buffer.size();
@@ -438,31 +446,40 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
 
   ParallelLibrary& parallel_lib = iterSched.parallelLib;
   size_t num_iterators = methodList.size();
+  int server_id =  iterSched.iteratorServerId;
+  bool    rank0 = (iterSched.iteratorCommRank == 0);
   progressMetric = 1.0;
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
+
+    // TO DO: don't run on ded master (see NOTE 2 above)
+    //if (server_id) {
+
+    Iterator& curr_iterator = selectedIterators[seqCount];
+
+    // For graphics data, limit to iterator server comm leaders; this is
+    // further segregated within initialize_graphics(): all iterator masters
+    // stream tabular data, but only server 1 generates a graphics window.
+    if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
+      curr_iterator.initialize_graphics(server_id);
 
     if (summaryOutputFlag) {
       Cout << "\n>>>>> Running adaptive Sequential Hybrid with iterator "
 	   << methodList[seqCount] << '\n';
 
-      // TO DO: don't run on ded master (see NOTE 2 above)
-      //if (iterSched.iteratorServerId) {
-
-      selectedIterators[seqCount].initialize_run();
+      curr_iterator.initialize_run();
       while (progressMetric >= progressThreshold) {
         //selectedIterators[seqCount]++;
-        const Response& resp_star
-	  = selectedIterators[seqCount].response_results();
+        const Response& resp_star = curr_iterator.response_results();
         //progressMetric = compute_progress(resp_star);
       }
-      selectedIterators[seqCount].finalize_run();
+      curr_iterator.finalize_run();
       Cout << "\n<<<<< Iterator " << methodList[seqCount] << " completed."
 	   << "  Progress metric has fallen below threshold.\n";
 
       // Set the starting point for the next iterator.
       if (seqCount+1 < num_iterators) {//prevent index out of range on last pass
         // Get best pt. from completed iteration.
-        Variables vars_star = selectedIterators[seqCount].variables_results();
+        Variables vars_star = curr_iterator.variables_results();
         // Set best pt. as starting point for subsequent iterator
         selectedModels[seqCount+1].active_variables(vars_star);
       }
@@ -471,7 +488,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
       selectedModels[seqCount].stop_servers();
     }
     else
-      iterSched.run_iterator(selectedIterators[seqCount],
+      iterSched.run_iterator(curr_iterator,
 	parallel_lib.parallel_configuration().si_parallel_level());
   }
 }

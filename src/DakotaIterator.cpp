@@ -1211,35 +1211,31 @@ const VariablesArray& Iterator::initial_points() const
 
 /** This is a convenience function for encapsulating graphics
     initialization operations. */
-void Iterator::initialize_graphics()
+void Iterator::initialize_graphics(int iterator_server_id)
 {
   if (iteratorRep)
     iteratorRep->initialize_graphics();
   else { // no redefinition of virtual fn., use default initialization
+    const OutputManager& mgr
+      = iteratedModel.parallel_library().output_manager();
+    const Variables& vars = iteratedModel.current_variables();
+    const Response&  resp = iteratedModel.current_response();
     bool auto_log = false;
-    ParallelLibrary& parallel_lib = iteratedModel.parallel_library();
-    const OutputManager& mgr = parallel_lib.output_manager();
 
     // For graphics, limit (currently) to server id 1, for both ded master
-    // (meta-iterator partition rank 1) and peer partitions (meta-iterator
-    // partition rank 0)
-    if (mgr.graph2DFlag) {
-      int iterator_server_id
-	= parallel_lib.parallel_configuration().si_parallel_level().server_id();
-      if (iterator_server_id == 1) { // initialize the 2D plots
-	dakota_graphics.create_plots_2d(
-	  iteratedModel.current_variables(), iteratedModel.current_response());
-	auto_log = true;
-      }
-    }
-
-    // For output/restart/tabular data, all Iterator masters stream output
-    if (mgr.tabularDataFlag) { // initialize the tabular data file
-      dakota_graphics.create_tabular_datastream(
-	iteratedModel.current_variables(), iteratedModel.current_response(),
-	mgr.tabularDataFile);
+    // (parent partition rank 1) and peer partitions (parent partition rank 0)
+    if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+      dakota_graphics.create_plots_2d(vars, resp);
       auto_log = true;
     }
+
+    if (mgr.tabularDataFlag) { // initialize the tabular data file
+      // For output/restart/tabular data, all Iterator masters stream output
+      dakota_graphics.create_tabular_datastream(vars, resp,
+						mgr.tabularDataFile);
+      auto_log = true;
+    }
+
     if (auto_log) // turn out automatic graphics logging
       iteratedModel.auto_graphics(true);
   }

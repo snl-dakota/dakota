@@ -110,7 +110,7 @@ SurrBasedMinimizer::~SurrBasedMinimizer()
 { }
 
 
-void SurrBasedMinimizer::initialize_graphics()
+void SurrBasedMinimizer::initialize_graphics(int iterator_server_id)
 {
   // may want to replace customized graphics w/ std graphics for use in
   // Hybrid & Concurrent Strategies
@@ -121,26 +121,21 @@ void SurrBasedMinimizer::initialize_graphics()
     iteratedModel.truth_model() : iteratedModel;
   ParallelLibrary& parallel_lib = truth_model.parallel_library();
   const OutputManager& mgr = parallel_lib.output_manager();
+  const Variables& vars = truth_model.current_variables();
+  const Response&  resp = truth_model.current_response();
 
   // For graphics, limit (currently) to server id 1, for both ded master
-  // (meta-iterator partition rank 1) and peer partitions (meta-iterator
-  // partition rank 0)
-  if (mgr.graph2DFlag) {     // initialize the 2D plots
-    int iterator_server_id
-      = parallel_lib.parallel_configuration().si_parallel_level().server_id();
-    if (iterator_server_id == 1) { // initialize the 2D plots
-      dakota_graphics.create_plots_2d(truth_model.current_variables(),
-				      truth_model.current_response());
-      dakota_graphics.set_x_labels2d("Surr-Based Iteration No.");
-      dakota_graphics.graphics_counter(0); // starting point is iteration 0
-    }
+  // (parent partition rank 1) and peer partitions (parent partition rank 0)
+  if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+    dakota_graphics.create_plots_2d(vars, resp);
+    dakota_graphics.set_x_labels2d("Surr-Based Iteration No.");
+    dakota_graphics.graphics_counter(0); // starting point is iteration 0
   }
 
   // For output/restart/tabular data, all Iterator masters stream output
   if (mgr.tabularDataFlag) { // initialize data tabulation
     dakota_graphics.tabular_counter_label("iter_no");
-    dakota_graphics.create_tabular_datastream(truth_model.current_variables(),
-      truth_model.current_response(), mgr.tabularDataFile);
+    dakota_graphics.create_tabular_datastream(vars, resp, mgr.tabularDataFile);
   }
 
   //}
