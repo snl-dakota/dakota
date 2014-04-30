@@ -123,7 +123,7 @@ void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
 
   // Initialize iterator partitions for one iterator execution at a time
   const ParallelLevel& si_pl = parallel_lib.init_iterator_communicators(0, 0,
-    1, 1, 1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
+    1, parallel_lib.world_size(), 1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
   // set up output streams without iterator tagging
   parallel_lib.manage_outputs_restart(si_pl);
 }
