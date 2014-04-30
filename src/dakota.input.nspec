@@ -1605,7 +1605,9 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 #	      [ experimental_std_deviations REALLIST {N_rem(RealDL,expStdDeviations)} ]
 #             )
 #  	    |
-  	    ( calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,expDataFileName)}
+# The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
+#  	    ( 
+	    calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,expDataFileName)}
               [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
               [ num_replicates INTEGERLIST {N_rem(ivec,numReplicates)} ]
               [ annotated {N_rem(true,expDataFileAnnotated)} | 
@@ -1613,7 +1615,8 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
                 ]
               [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ] 
               [ num_std_deviations INTEGER >= 0 {N_rem(sizet,numExpStdDeviations)} ]
-              )
+#              )
+# The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
             ]  
     	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
   	    [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
