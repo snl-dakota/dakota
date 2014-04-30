@@ -175,6 +175,9 @@ public:
   /// reset sampling iterator to use at least min_samples
   virtual void sampling_reset(int min_samples, bool all_data_flag, 
 			      bool stats_flag);
+  /// set reference number of samples, which is a lower bound during reset 
+  virtual void sampling_reference(int samples_ref);
+
   /// return sampling name
   virtual unsigned short sampling_scheme() const;
 

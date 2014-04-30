@@ -580,9 +580,8 @@ void NonDPolynomialChaos::increment_specification_sequence()
       nond_quad->update(); // sanity check on sizes, likely a no-op
     }
     else { // enforce increment through sampling_reset()
-      NonDSampling* nond_sampling
-	= (NonDSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_sampling->sampling_reference(0); // no lower bound
+      // no lower bound on samples in the subiterator
+      uSpaceModel.subordinate_iterator().sampling_reference(0);
       DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
       dfs_model->total_points(numSamplesOnModel);
     }
@@ -616,9 +615,8 @@ void NonDPolynomialChaos::increment_order()
     nond_quad->update();
   }
   else { // enforce increment through sampling_reset()
-    NonDSampling* nond_sampling
-      = (NonDSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_sampling->sampling_reference(0); // no lower bound
+    // no lower bound on samples in the subiterator
+    uSpaceModel.subordinate_iterator().sampling_reference(0);
     DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
     dfs_model->total_points(numSamplesOnModel);
   }

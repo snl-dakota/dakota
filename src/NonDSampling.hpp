@@ -53,9 +53,6 @@ public:
   /// prints the PDFs computed in compute_statistics()
   void print_pdf_mappings(std::ostream& s) const;
 
-  /// set samplesRef
-  void sampling_reference(int samples_ref);
-
 protected:
 
   //
@@ -83,6 +80,9 @@ protected:
 
   /// resets number of samples and sampling flags
   void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
+
+  /// set reference number of samples, which is a lower bound during reset 
+  void sampling_reference(int samples_ref);
 
   /// return sampleType
   unsigned short sampling_scheme() const;

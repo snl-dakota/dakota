@@ -48,6 +48,7 @@ EfficientSubspaceMethod* EfficientSubspaceMethod::esmInstance(NULL);
 EfficientSubspaceMethod::
 EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
+  seedSpec(probDescDB.get_int("method.random_seed")),
   initialSamples(probDescDB.get_int("method.samples")),    // default 0
   batchSize(probDescDB.get_int("method.nond.batch_size")), // default 0
   subspaceSamples(probDescDB.get_int("method.nond.emulator_samples")), // def 0
@@ -60,26 +61,21 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   //   maxFunctionEvals (default 1000)
   validate_inputs();
   
-  // initialize the fullspace Monte Carlo derivative sampler
+  // initialize the fullspace Monte Carlo derivative sampler; this
+  // will configure it to perform initialSamples
   init_fullspace_sampler();
 
   // would be useful here for setting concurrency, but don't know the
   // sizes yet
   //init_reduced_sampler(subspaceSamples);
 
-  // update the maximum concurrent evals based on self and sub-iterator
-  // typically initialSamples > batchSize, but not required
-  int max_samples = 
-    std::max(std::max(initialSamples, batchSize), subspaceSamples);
-
-  // BMA: include verif_samples
-
-  maxEvalConcurrency *= max_samples;
-  //maxEvalConcurrency
-  // = std::max(maxEvalConcurrency,
-  //	        fullSpaceSampler.maximum_evaluation_concurrency());
-  //maxEvalConcurrency = std::max(maxEvalConcurrency, subspaceSamples);
-  //iteratedModel.init_communicators(maxEvalConcurrency);
+  // The same model is used in multiple contexts, with varying degrees
+  // of concurrency: initialSamples, batchSize, verif_samples, and
+  // finally subspaceSamples.  For now, we configure max eval
+  // concurrency for the initialSamples and allow batches in
+  // subsequent phases; could instead take max of all these if
+  // desired.
+  maxEvalConcurrency *= initialSamples;
 }
 
 
@@ -268,18 +264,20 @@ void EfficientSubspaceMethod::validate_inputs()
 
 void EfficientSubspaceMethod::init_fullspace_sampler()
 {
-  // Make sure this is in ctor
-
   // ----
   // Instantiate the DACE iterator, using default RNG and samples
   // ----
-  int mc_seed = probDescDB.get_int("method.random_seed");
-  std::string sample_type("random"); // use Monte Carlo due to iterative process
+  int mc_seed = (seedSpec) ? seedSpec : generate_system_seed();
+  if (seedSpec) 
+    Cout << "ESM: build seed (user-specified) = " << mc_seed << std::endl;
+  else          
+    Cout << "ESM: build seed (system-generated) = " << mc_seed << std::endl;
+
+  // use Monte Carlo due to iterative growth process
+  unsigned short sample_type = SUBMETHOD_RANDOM;
   std::string rng; // use default random number generator
  
-  // BMA TODO: Ask MSE whether this should be initialSamples or max_samples
-  int max_samples = std::max(initialSamples, batchSize);
- 
+  // configure this sampler initially to work with initialSamples
   Analyzer* ndlhss = 
     new NonDLHSSampling(iteratedModel, sample_type, initialSamples, mc_seed, 
 			rng, ACTIVE_UNIFORM);
@@ -292,27 +290,34 @@ void EfficientSubspaceMethod::init_fullspace_sampler()
 }
 
 
- // this specialization is becuase we are managing some additional helper iterators; note that this overrides the default behavior which recurses into the submodel.
+/**  This specialization is because the model is used in multiple
+     contexts in this iterator, depending on build phase.  Note that
+     this overrides the default behavior at Iterator which recurses
+     into any submodels. */
 void EfficientSubspaceMethod::init_communicators()
 {
-  // only needed if this model will be used in another context with other config
-  // BMA TODO: Ask MSE about managing these counts
-  iteratedModel.init_communicators(batchSamples);
-  iteratedModel.init_communicators(subspaceSamples);
+  // In ESM, the same model will be used in multiple contexts:
+  //  - fullSpaceSampler(iteratedModel) with initialSamples
+  //  - fullSpaceSampler(iteratedModel) with batchSamples
+  //  - direct compute_response() of verif_samples, one at a time
+  //  - reduced_space_sampler(RecastModel(iteratedModel)) with subspaceSamples
 
-  // initialize this with max likely batch size even if future are less
-  // same as maxEvalConcurrency in fullspace sampler
-  fullSpaceSampler.init_communicators();
+  // Instead of using the helper iterators convenience function, we
+  // directly set up communicators for each of the contexts that will
+  // be encountered at run-time
+  iteratedModel.init_communicators(initialSamples);
+  iteratedModel.init_communicators(batchSize);
+  // defer this one to do it on the RecastModel at runtime
+  //  iteratedModel.init_communicators(subspaceSamples);
 }
 
 
 void EfficientSubspaceMethod::free_communicators()
 {
-  // don't need size as iterator knows it (maxEvalConcurrency)
-  fullSpaceSampler.free_communicators();
-
   iteratedModel.free_communicators(subspaceSamples);
-  iteratedModel.free_communicators(batchSamples);
+  iteratedModel.free_communicators(batchSize);
+  // defer this one to do it on the RecastModel at runtime
+  //  iteratedModel.free_communicators(initialSamples);
 }
 
 
@@ -344,7 +349,7 @@ unsigned int EfficientSubspaceMethod::calculate_fullspace_samples()
   // on first pass, use initial build samples
   if (currIter == 1)
     return initialSamples;
-  
+
   unsigned int diff_samples;
 
   // for now only supporting growth by fixed batch size
@@ -378,11 +383,19 @@ generate_fullspace_samples(unsigned int diff_samples)
   dace_set.request_values(request_value);
   fullSpaceSampler.active_set(dace_set);
 
-  // Generate the samples
-
-  // BMA TODO: set the base number of samples with sampling_reference()
-  fullSpaceSample.sampling_reference(diff_samples);
+  // Generate the samples.  Have to adjust the base number of samples
+  // with sampling_reference() since the number of samples may go down
+  // from intialSamples to batchSamples
+  fullSpaceSampler.sampling_reference(diff_samples);
   fullSpaceSampler.sampling_reset(diff_samples, true, false);
+
+  // select the right comm for current model evaluation concurrency
+  // (initial build or batch update)
+  if (currIter == 1)
+    iteratedModel.set_communicators(initialSamples);
+  else
+    iteratedModel.set_communicators(batchSize);
+  // and generate the additional samples
   fullSpaceSampler.run(Cout);
 }
 
@@ -716,6 +729,8 @@ void EfficientSubspaceMethod::reduced_space_uq()
 		    recast_secondary_offset, nonlinear_resp_map, NULL, NULL), 
     false);
 
+  vars_transform_model.init_communicators(subspaceSamples);
+
   // convert the normal distributionsto the reduced space and set in the 
   // reduced model
   uncertain_vars_to_subspace(iteratedModel, vars_transform_model);
@@ -725,22 +740,23 @@ void EfficientSubspaceMethod::reduced_space_uq()
 
   // convenience function from NonD
   // TODO: additional UQ methods, allow seed
-  std::string sample_type("random");
-  int seed = 0;
+  unsigned short sample_type = SUBMETHOD_RANDOM;
+
+  int mc_seed = (seedSpec) ? seedSpec : generate_system_seed();
+  if (seedSpec) 
+    Cout << "ESM: subspace seed (user-specified) = " << mc_seed << std::endl;
+  else          
+    Cout << "ESM: subspace seed (system-generated) = " << mc_seed << std::endl;
+
   // might want true for multiple calls...
   bool vary_pattern = false;
   NonD::construct_lhs(reduced_space_sampler, vars_transform_model, sample_type,
-		      subspaceSamples, seed, String(), vary_pattern);
+		      subspaceSamples, mc_seed, String(), vary_pattern);
 
   bool all_data = true;
   bool gen_stats = true;
   reduced_space_sampler.sampling_reset(subspaceSamples, all_data, gen_stats);
 
-  // initialize the subspace sampler based on subspaceSamples
-  reduced_space_sampler.init_communicators();
-  // BMA TODO: shouldn't need this any longer
-  //  vars_transform_model.init_communicators(subspaceSamples);
-  
   reduced_space_sampler.sub_iterator_flag(false);
   reduced_space_sampler.run(Cout);
 
@@ -748,7 +764,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
   Cout << " --- ESM: Results of reduced-space UQ --- \n";
   reduced_space_sampler.print_results(Cout);
 
-  reduced_space_sampler.free_communicators();
+  vars_transform_model.free_communicators(subspaceSamples);
 
 }
 

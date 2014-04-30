@@ -1,0 +1,35 @@
+# ESM is an experimental capability
+# This is a regression test only, not a verification test
+
+environment 
+	tabular_graphics_data
+
+method,
+	efficient_subspace
+	seed = 24620
+	# initial build samples
+  	samples = 10
+	# additional samples per iteration
+	batch_size = 2
+	# evals in the subspace
+	emulator_samples = 100
+	convergence_tolerance = 1.0e-3
+  	output verbose
+	max_iterations = 10
+
+variables,
+	normal_uncertain = 100
+	  means = 100*0.5
+	  std_deviations = 100*0.2
+
+interface,
+	direct
+   	  analysis_driver = 'scalable_gerstner'
+	  analysis_components = 'aniso2'
+#   	  analysis_driver = 'genz'
+#	  analysis_components = 'os3'
+
+responses,
+	num_response_functions = 1
+	analytic_gradients
+	no_hessians

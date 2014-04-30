@@ -39,6 +39,12 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  /// specialization of init comms due to varied use of the original model
+  void init_communicators();
+
+  /// specialization of free comms due to varied use of the original model
+  void free_communicators();
+
   /// ESM re-implementation of the virtual UQ iterator function
   void quantify_uncertainty();
 
@@ -103,6 +109,9 @@ private:
   
   
   // Data controlling iteration and status
+
+  /// seed controlling all samplers
+  int seedSpec;
 
   /// initial number of samples at which to query the truth model
   int initialSamples;
