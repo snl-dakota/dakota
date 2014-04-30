@@ -169,10 +169,11 @@ unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 
 inline void ConcurrentMetaIterator::update_local_results(int job_index)
 {
-  ParamResponsePair prp_star(selectedIterator.variables_results(),
-    iteratedModel.interface_id(), selectedIterator.response_results(),
-    job_index+1); // deep copy
-  prpResults[job_index] = prp_star;
+  prpResults[job_index]
+    = ParamResponsePair(selectedIterator.variables_results(),
+			iteratedModel.interface_id(),
+			selectedIterator.response_results(),
+			job_index+1); // deep copy
 }
 
 } // namespace Dakota

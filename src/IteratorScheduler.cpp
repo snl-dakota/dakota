@@ -29,7 +29,8 @@ IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers,
   parallelLib(parallel_lib), numIteratorJobs(1),
   numIteratorServers(num_servers), procsPerIterator(procs_per_iterator),
   iteratorCommRank(0), iteratorCommSize(1), iteratorServerId(0),
-  messagePass(false), iteratorScheduling(scheduling)//,maxIteratorConcurrency(1)
+  messagePass(false), iteratorScheduling(scheduling),//maxIteratorConcurrency(1)
+  paramsMsgLen(0), resultsMsgLen(0)
 {
   // TO DO: support for multiple concurrent iterator partitions.
   //
@@ -498,21 +499,23 @@ peer_static_schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
   // ParallelLibrary destructor timings are valid (all parameter sets have
   // completed).  If no synchronization was applied, then the timings would
   // reflect only the completion of the first iterator server.
-  if (iteratorServerId > 1) { // peers 2-n: send results to peer 1
-    for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
-      MPIPackBuffer send_buffer;//(resultsMsgLen);
-      meta_iterator.pack_results_buffer(send_buffer, i);
-      parallelLib.send_si(send_buffer, 0, i+1);
+  if (iteratorCommRank == 0) {
+    if (iteratorServerId > 1) { // peers 2-n: send results to peer 1
+      for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
+	MPIPackBuffer send_buffer;//(resultsMsgLen);
+	meta_iterator.pack_results_buffer(send_buffer, i);
+	parallelLib.send_si(send_buffer, 0, i+1);
+      }
     }
-  }
-  else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
-    for (int i=1; i<numIteratorJobs; i++) { // skip 0 since this is peer 1
-      int source = i%numIteratorServers;
-      if (source) { // parameter set evaluated on peers 2-n
-	MPI_Status status;
-	MPIUnpackBuffer recv_buffer(resultsMsgLen);
-	parallelLib.recv_si(recv_buffer, source, i+1, status);
-	meta_iterator.unpack_results_buffer(recv_buffer, i);
+    else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
+      for (int i=1; i<numIteratorJobs; i++) { // skip 0 since this is peer 1
+	int source = i%numIteratorServers;
+	if (source) { // parameter set evaluated on peers 2-n
+	  MPI_Status status;
+	  MPIUnpackBuffer recv_buffer(resultsMsgLen);
+	  parallelLib.recv_si(recv_buffer, source, i+1, status);
+	  meta_iterator.unpack_results_buffer(recv_buffer, i);
+	}
       }
     }
   }

@@ -202,7 +202,7 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
 
   // estimate params_msg_len and results_msg_len
   if (iterSched.iteratorCommRank == 0) {
-    int params_msg_len, results_msg_len;
+    int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
     // define params_msg_len
     if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
       RealVector rv(param_set_len);
@@ -287,7 +287,7 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
       // rescale (if needed) and append to parameterSets
       size_t cntr = parameterSets.size();
       parameterSets.resize(iterSched.numIteratorJobs);
-      for (i=0; i<num_random_jobs; ++i) {
+      for (i=0; i<num_random_jobs; ++i, ++cntr) {
         if (methodName == MULTI_START)
           parameterSets[cntr] = random_jobs[i];
         else { // scale: multi-objective weights should add to 1
@@ -301,7 +301,6 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
           for (j=0; j<param_set_len; j++)
             parameterSets[cntr][j] = random_jobs[i][j]/sum;
         }
-        cntr++;
       }
     }
 

@@ -126,8 +126,8 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   //if (analysisScheduling == MASTER_SCHEDULING) ++min_procs_per_eval;
 
   // max_procs_per_eval captures available concurrency at the analysis level
-  int max_procs_per_eval = (direct_int)
-                         ? worldSize : std::max(1, numAnalysisDrivers);
+  int max_procs_per_eval
+    = (direct_int) ? worldSize : std::max(1, numAnalysisDrivers);
 
   // Peer dynamic requires asynch local executions and dynamic job assignment
   bool peer_dynamic_avail = (!direct_int && !asynchLocalEvalStatic);
