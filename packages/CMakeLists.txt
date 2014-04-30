@@ -156,6 +156,8 @@ if(HAVE_QUESO)
   externalproject_add(queso_ext
     URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso-0.50.0.tar.gz
     BUILD_IN_SOURCE 1
+#    PATCH_COMMAND 
+#      patch -p0 < ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso.gslcblas.patch
     CONFIGURE_COMMAND "${queso_config_cmd}"
     )
 

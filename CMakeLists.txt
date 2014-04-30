@@ -1,4 +1,4 @@
-# Dakota requires CMake 2.8.9 or newer; some TPLs may require even newer
+## Dakota requires CMake 2.8.9 or newer; some TPLs may require even newer
 cmake_minimum_required(VERSION 2.8.9)
 
 set(CMAKE_MODULE_PATH
@@ -210,7 +210,8 @@ if(DAKOTA_HAVE_GSL)
   # CBLAS and system CBLAS.  This might cause issues when static
   # linking on platforms that don't have a CBLAS, or will require the
   # user to add it to the link libraries at configure time.  Might
-  # prefer to probe for libcblas, then conditionally set this option.
+  # prefer to probe for a library containing cblas_ symbols, then
+  # conditionally set this option.
   set(GSL_WITHOUT_CBLAS TRUE)
   find_package(GSL REQUIRED)
 endif(DAKOTA_HAVE_GSL)
