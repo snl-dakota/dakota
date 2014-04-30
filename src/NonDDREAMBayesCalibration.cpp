@@ -421,9 +421,9 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
 
   result = (result/(NonDDREAMInstance->likelihoodScale));
   result = -0.5*result;
-  Cout << "result final " << result << '\n';
-  Cout << "likelihood is " << exp(result) << '\n';
+  Cout << "Log likelihood is " << result << '\n';
   if (NonDDREAMInstance->outputLevel > NORMAL_OUTPUT) {
+    Cout << "Likelihood is " << exp(result) << '\n';
     std::ofstream QuesoOutput;
     QuesoOutput.open("DreamOutput.txt", std::ios::out | std::ios::app);
     for (i=0; i<num_cont; i++) 

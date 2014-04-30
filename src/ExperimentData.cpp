@@ -39,9 +39,10 @@ read_historical_data(const std::string& expDataFileName,
     total_num_rows+=numReplicates[i];
     max_replicates = (numReplicates[i]>max_replicates) ? numReplicates[i] : max_replicates;
   }
-  Cout << "total number of rows " << total_num_rows << '\n';
-  Cout << "max_replicates " << max_replicates << '\n';
-  Cout << "numFunctions " << numFunctions << '\n';
+  Cout << "Reading Experimental Data." << '\n';
+  Cout << "Total number of rows " << total_num_rows << '\n';
+  Cout << "Max_replicates " << max_replicates << '\n';
+  Cout << "Number of Response Functions " << numFunctions << '\n';
   //yObsFull(extents[numFunctions][numExperiments][max_replicates]);
 
   // Read from a matrix with numExperiments rows and a number of cols
@@ -83,7 +84,7 @@ read_historical_data(const std::string& expDataFileName,
     for (i=0; i<numExperiments; i++){
       for (k=0; k<numReplicates(i); k++){ 
         yObsData[j](i,k) = y_obs_data(numrows_thusfar+k,j);
-        Cout << yObsData[j];
+        //Cout << yObsData[j];
       }
       numrows_thusfar +=numReplicates(i);
     }
@@ -109,7 +110,7 @@ read_historical_data(const std::string& expDataFileName,
             yStdData[j](i,k) = y_std_data(numrows_thusfar+k,0);
           else 
             yStdData[j](i,k) = y_std_data(numrows_thusfar+k,j);
-          Cout << yStdData[j];
+          //Cout << yStdData[j];
       	}
      	numrows_thusfar +=numReplicates(i);
       }
@@ -203,7 +204,7 @@ load_scalar(const std::string& expDataFileName,
 		       expDataFileAnnotated, calc_sigma_from_data,
 		       xObsData, yObsData, yStdData);
 
-  if (verbosity > NORMAL_OUTPUT) {
+  if (verbosity > VERBOSE_OUTPUT) {
     Cout << "xobs_data" << xObsData << '\n';
     for (size_t j = 0; j<numFunctions; j++){ 
       Cout << "yobs_data" << yObsData[j] << '\n';

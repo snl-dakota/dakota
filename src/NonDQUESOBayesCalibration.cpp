@@ -66,14 +66,16 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 {
   // construct emulatorModel, if needed
   NonDBayesCalibration::quantify_uncertainty();
- 
-  Cout << "Standardized space " << standardizedSpace << '\n';
+  standardizedSpace = true; 
   // instantiate QUESO objects and execute
   NonDQUESOInstance=this;
-  Cout << "MCMC type  "<< mcmcType << '\n';
-  Cout << "Rejection type  "<< rejectionType << '\n';
+  Cout << "Running Bayesian Calibration with QUESO " 
+       << "using the following settings: " << '\n';
+  Cout << "Standardized space " << standardizedSpace << '\n';
+  Cout << "MCMC type "<< mcmcType << '\n';
+  Cout << "Rejection type "<< rejectionType << '\n';
   Cout << "Metropolis type " << metropolisType << '\n';
-  Cout << "Num Samples " << numSamples << '\n';
+  Cout << "Number of samples in the MCMC Chain " << numSamples << '\n';
   Cout << "Calibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
   //calibrateSigmaFlag = true;
@@ -105,9 +107,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  Cout << "numExperiment " << numExperiments << '\n';
-  Cout << "numReplicates " << numReplicates << '\n';
-  Cout << " expDataFileName " << expDataFileName << '\n';
+  if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
+    Cout << "number of experiments used in Bayes calibration " 
+         << numExperiments << '\n';
+    Cout << "number of experimental replicates " << numReplicates << '\n';
+    Cout << " File name for experimental data " << expDataFileName << '\n';
+  }
   expData.load_scalar(expDataFileName, "QUESO Bayes Calibration",
 		      numExperiments, numReplicates, 
 		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
@@ -136,7 +141,13 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
   const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
   const RealVector& init_point = emulatorModel.continuous_variables();
-  Cout << "Initial Points " << init_point << '\n';
+  Cout << "\nInitial Point in original, unscaled space "  << '\n'
+       << init_point << '\n';
+  Cout << "Lower bounds of variables in original, unscaled space "  << '\n'
+       << lower_bounds << '\n';
+  Cout << "Upper bounds of variables in original, unscaled space "  << '\n'
+       << upper_bounds << '\n';
+
 
   if (emulatorType == GP_EMULATOR || emulatorType == KRIGING_EMULATOR ||
       emulatorType == NO_EMULATOR) {
@@ -169,7 +180,18 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     }
   }
  
-  Cout << "calibrateSigmaFlag  " << calibrateSigmaFlag << '\n';
+  if (standardizedSpace){
+    for (size_t i=0;i<numContinuousVars;i++) {
+      paramMins[i]=0.0;
+      paramMaxs[i]=1.0;
+      //init_point[i]=(init_point[i]-lower_bounds[i])/(upper_bounds[i]-lower_bounds[i]);
+    }
+  }
+    
+  if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) 
+    Cout << "calibrateSigmaFlag  " << calibrateSigmaFlag << '\n';
+
+  Cout << "Parameter bounds sent to QUESO (may be scaled): " << '\n'; 
   Cout << "paramMins  " << paramMins << '\n';
   Cout << "paramMaxs  " << paramMaxs << '\n';
   // instantiate QUESO parameters and likelihood
@@ -232,11 +254,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   if (strends(rejectionType, "standard"))
     calIpMhOptionsValues->m_drMaxNumExtraStages = 0;
   else if (strends(rejectionType, "delayed"))
-    calIpMhOptionsValues->m_drMaxNumExtraStages = 3;
-  calIpMhOptionsValues->m_drScalesForExtraStages.resize(3);
+    calIpMhOptionsValues->m_drMaxNumExtraStages = 1;
+  calIpMhOptionsValues->m_drScalesForExtraStages.resize(1);
   calIpMhOptionsValues->m_drScalesForExtraStages[0] = 5;
-  calIpMhOptionsValues->m_drScalesForExtraStages[1] = 10;
-  calIpMhOptionsValues->m_drScalesForExtraStages[2] = 20;
+  //calIpMhOptionsValues->m_drScalesForExtraStages[1] = 10;
+  //calIpMhOptionsValues->m_drScalesForExtraStages[2] = 20;
   if (strends(metropolisType, "hastings"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
   else if (strends(metropolisType, "adaptive"))
@@ -260,36 +282,55 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   QUESO::GslVector covDiag(paramSpace.zeroVector());
   //QUESO::GslMatrix proposalCovMatrix(paramSpace.zeroVector());
   for (int i=0;i<numContinuousVars;i++) {
-    if (init_point[i])
-      paramInitials[i]=init_point[i];
+    if (init_point[i]) 
+      if (!standardizedSpace)
+        paramInitials[i]=init_point[i];
+      else
+        paramInitials[i]=(init_point[i]-lower_bounds[i])/(upper_bounds[i]-lower_bounds[i]);
+      //paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
     else 
       paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
   }
-  for (int i=numContinuousVars;i<total_num_params;i++) {
-    paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
-  }
-  Cout << "proposalCovScale " << proposalCovScale << '\n';
+  //for (int i=numContinuousVars;i<total_num_params;i++) {
+  //  paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
+  //}
   if (!proposalCovScale.empty()) {
-    for (int i=0;i<total_num_params;i++) {
-      covDiag[i] =proposalCovScale[i];
-    }
+    Cout << "Scaling factors for the proposal covariance " 
+         << "in the original space. \n" << proposalCovScale << '\n';
+  }
+  if (!proposalCovScale.empty()) {
+    if (!standardizedSpace) 
+      for (int i=0;i<total_num_params;i++) {
+        covDiag[i]=proposalCovScale[i];
+      }
+    else
+      for (int i=0;i<total_num_params;i++) {
+        covDiag[i]=proposalCovScale[i]/((upper_bounds[i]-lower_bounds[i])*(upper_bounds[i]-lower_bounds[i]));
+      }
   }
   else { 
     for (int i=0;i<total_num_params;i++) {
       covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i]);
     }
   }
-  Cout << "covDiag " << covDiag << '\n';
-  Cout << "initParams " << paramInitials << '\n';
+  Cout << "Initial Parameter values sent to QUESO " 
+       << "(may be in scaled space) \n"  << paramInitials << '\n';
+  Cout << "Diagonal elements of the proposal covariance " 
+       << "sent to QUESO (may be in scaled space) \n" << covDiag << '\n';
 
   QUESO::GslMatrix* proposalCovMatrix = postRv.imageSet().vectorSpace().newProposalMatrix(&covDiag,&paramInitials); 
   //QUESO::GslMatrix proposalCovMatrix(covDiag);
-  Cout << "ProposalCovMatrix " << '\n'; 
-  for (size_t i=0;i<total_num_params;i++) {
-    for (size_t j=0;j<total_num_params;j++) 
-       Cout <<  (*proposalCovMatrix)(i,j) << "  " ; 
-  }
+  //(*proposalCovMatrix)(0,1)=0.0099;
+  //(*proposalCovMatrix)(1,0)=0.0099;
   
+  if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
+    Cout << "ProposalCovMatrix " << '\n'; 
+    for (size_t i=0;i<total_num_params;i++) {
+      for (size_t j=0;j<total_num_params;j++) 
+         Cout <<  (*proposalCovMatrix)(i,j) << "  " ; 
+      Cout << '\n'; 
+    }
+  }
   if (strends(mcmcType, "dram"))
     ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues,
                                     paramInitials, proposalCovMatrix);
@@ -304,8 +345,21 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   delete envOptionsValues;
   //MPI_Finalize();
 
+  Cout << "\nThe results of QUESO are in the outputData directory.\n" 
+       <<  "The file display_sub0.txt contains information regarding"
+       <<  " the MCMC process. " << '\n';
+  Cout << "The Matlab files contain the chain values.  The files to " 
+       << "load in Matlab are file_cal_ip_raw.m (the actual chain) " 
+       << "or file_cal_ip_filt.m (the filtered chain, which contains " 
+       << "every 20th step in the chain." << '\n';
+  Cout << "NOTE:  the chain values in these Matlab files are currently " 
+       << "in scaled space. \n  You will have to transform them back to "
+       << "original space by:" << '\n';
+  Cout << "lower_bounds + chain_values * (upper_bounds - lower_bounds)" <<'\n'; 
+  Cout << "The rejection rate is in the tgaCalOutput file. " << '\n';
+  Cout << "We hope to improve the postprocessing of the chains by the " 
+       << "next Dakota release. " << '\n';
   return;
-
 }
 
 
@@ -339,6 +393,17 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   for (i=0; i<num_cont; i++) 
     x(i)=paramValues[i];
   
+  if (NonDQUESOInstance->standardizedSpace){
+    const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
+    const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
+    if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
+      Cout << "Values of theta parameter QUESO is seeing" << x << '\n';
+    for (i=0; i<num_cont; i++) 
+      x(i)=xLow(i)+x(i)*(xHigh(i)-xLow(i));
+    if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
+      Cout << "Values of theta parameters DAKOTA uses" << x << '\n';
+  }
+
   // FOR NOW:  THE GP and the NO EMULATOR case use an unstandardized 
   // space (original) and the PCE or SC cases use a more general standardized space.  
   // We had discussed having QUESO search in the original space:  this may 
@@ -404,8 +469,10 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
 
   result = (result/(NonDQUESOInstance->likelihoodScale));
   result = -0.5*result;
-  Cout << "result final " << result << '\n';
-  Cout << "likelihood is " << exp(result) << '\n';
+  Cout << "Log likelihood is " << result << '\n';
+  if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
+    Cout << "Likelihood is " << exp(result) << '\n';
+  
   if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
     std::ofstream QuesoOutput;
     QuesoOutput.open("QuesoOutput.txt", std::ios::out | std::ios::app);
