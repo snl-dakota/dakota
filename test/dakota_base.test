@@ -3875,6 +3875,9 @@ Test Number 8 succeeded
                       2.9442885534e-06
                       7.0639355476e-10
 <<<<< Best data captured at function evaluation 17
+dakota_cantilever_queso.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1651 total (1651 new, 0 duplicate)
 dakota_coliny.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 105 total (105 new, 0 duplicate)

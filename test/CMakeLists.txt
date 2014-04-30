@@ -192,6 +192,13 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     )
   endif()
 
+  if(NOT HAVE_QUESO)
+    list(REMOVE_ITEM dakota_test_input_files
+    dakota_cantilever_queso.in 
+    )
+  endif()
+
+
   # Remove tests that fail on Windows (for now); the aborts could be
   # managed via gold standards if they don't pop a Windows error dialog
   if (WIN32)
