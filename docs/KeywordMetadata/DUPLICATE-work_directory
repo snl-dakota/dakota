@@ -1,35 +1,16 @@
 Blurb::
 Have Dakota set up working directories before launching analysis driver
 Description::
-It is often convenient to run function evaluations in a different
-directory than the one where Dakota is invoked.
+When performing concurrent evaluations and/or analyses, it is often necessary 
+to cloister input and output files in separate directories to avoid conflicts. 
+When the \c work_directory feature is enabled, Dakota will create a directory for 
+each evaluation/analysis (with optional tagging and saving as with files), and 
+execute the analysis driver from that working directory. 
 
-Say that Dakota is invoked in a directory called \c DakotaDir.
-When the \c work_directory feature is enabled,
-%Dakota will run the function evaluations in \c DakotaDir/workdir/
-If that directory does not exist, it will be created.
-
-The function evaluation proceeds by:
--# changing the <em>present working directory </em> to the newly created work directory
--# adding the Dakota directory, \c DakotaDir, to the \e PATH
--# writing the parameters file
--# running the same commands to launch the analysis_drivers, filters, etc.
--# reading the results file
-!!!!!!!!!!! is this right?
-
-<b> Note several changes in behavior </b>
-
--# The parameters and results file do not appear in the Dakota directory, \c DakotaDir in this example
--# Analysis driver is launched from a different location, be careful with relative paths in the driver
--# I bet there are more !!!!!!!!! expand
-
-<b> Optional Keywords </b>
-
-Optional keywords \c template_directory OR \c template_files are used to automate 
-some of the file management that typically goes in the analysis drivers.
-
-The other keywords modify the name, tagging, and saving of work directories, which
-are analogous to the options that exist for parameters & results files.
+The directory may be \c named with a string, or left anonymous to use temporary 
+file space. If an optional \c template_directory and/or list of 
+\c template_files is specified, Dakota will link (or copy) those files into 
+each working directory.
 
 Topics::	problem
 Examples::

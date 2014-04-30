@@ -24,26 +24,23 @@ Their behavior is described in the \ref interface-analysis_drivers-direct keywor
 
 For external processes using the \ref interface-analysis_drivers-fork keyword, 
 
-In order of increasing complexity, a function evaluation may comprised of:
--# A single analysis driver <br>
-   Function evaluation is contained entirely within a single script/executable. <br>
-   Supply the name of the executable or script
--# A single analysis driver with filters <br>
-   Function evaluation is split into a pre-processing, analysis, post-processing
--# A single analysis driver with environment variables <br>
-   Function evaluation is contained within one analysis driver, but it requires
-   environment variables to be set before running
--# Multiple analysis drivers <br>
-   Drivers are run sequentially and can have any of the above options as well.
+A function evaluation may comprise:
+-# <i>A single analysis driver</i>: Function evaluation, including all pre- and 
+   post-processing is contained entirely within a single script/executable. <br>
+-# <i>A single analysis driver with filters</i>: Function evaluation is 
+   explicitly split into pre-processing (performed by the input filter), 
+   analysis, and post-processing (by the output filter).
+-# <i>A single analysis driver with environment variables</i>: Function 
+   evaluation is contained within one analysis driver, but it requires
+   environment variables to be set before running.
+-# <i>Multiple analysis drivers<i>: Drivers are run sequentially or concurrently
+   (See the \c asynchronous keyword) and can have any of the above options as
+   well.
 
 For details and examples see the Simulation Interface
 Components section of the Interfaces chapter of the User's Manual; for
 details on the filters and environment variables, see the subsection on
 Syntax for Filter and Driver Strings.
-
-!!!!!!!!!!!!!! question - what is the difference between a filter and analysis driver? do filters run once for all function evals?
-what's the point? multiple analysis drivers each get a filter? different directories? why?  why not just have multiple analysis drivers?? do we have any examples?!!!
-what's the use case?
 
 Topics::	problem
 Examples::

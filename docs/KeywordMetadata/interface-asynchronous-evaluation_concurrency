@@ -1,8 +1,10 @@
 Blurb::
-Determine how many concurrent analysis drivers Dakota will schedule
+Determine how many concurrent evaluations Dakota will schedule
 Description::
 
-How is this different from analysis_concurrency?
+When \c asynchronous execution is enabled, the default behavior is to
+launch all available evaluations simultaneously. The \c evaluation_concurrency
+keywrod can be used to limit the number of concurrent evaluations.
 
 Topics:: problem, concurrency_and_parallelism
 Examples::

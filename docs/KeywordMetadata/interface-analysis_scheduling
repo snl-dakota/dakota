@@ -1,5 +1,11 @@
 Blurb::
+Specify the scheduling of concurrent analyses when Dakota is run in parallel
 Description::
+When Dakota is run in parallel, the partition type for the analysis servers 
+are determined automatically. If these settings are undesirable, they may be
+overridden by the user using the \c analysis_scheduling keyword.
+
+The partition type and scheduling are 
 Topics::	empty
 Examples::
 Theory::

@@ -1,7 +1,6 @@
 Blurb::
-Change how Dakota launches the analysis driver(s) and filters
+Specify the command Dakota uses to launch analysis driver(s) and filters
 Description::
-!!!!!! is this correct? it is not mentioned in the manuals!!!!!
 
 The typical commands that Dakota uses to launch analysis drivers are:
 \verbatim
@@ -20,7 +19,7 @@ full command must be specified.
 
 For additional information on invocation syntax, see the Interfaces
 chapter of the Users Manual [\cite UsersMan "Adams et al., 2010"]. 
-Topics::	not_yet_reviewed, problem
+Topics::	problem
 Examples::
 Theory::
 Faq::

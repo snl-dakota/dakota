@@ -6,6 +6,10 @@ results files after the function evaluation is completed.
 
 The default behavior is NOT to save these files.
 
+If \c file_tag is not specified and the saved files would be overwritten
+by a future evaluation, Dakota renames them after the analysis driver has
+run by tagging them with the evaluation number.
+
 File saving is most useful when debugging the
 data communication between %Dakota and the simulation.
 Topics::

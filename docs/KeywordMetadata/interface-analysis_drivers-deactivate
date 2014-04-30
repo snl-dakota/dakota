@@ -1,5 +1,6 @@
 Blurb::
-!! missing content on some child keywords!! Deactivate Dakota features to simplify interface development, increase execution speed, or reduce memory and disk requirements
+Deactivate Dakota features to simplify interface development, 
+increase execution speed, or reduce memory and disk requirements
 Description::
 The optional \c deactivate specification block includes three features
 which a user may deactivate in order to simplify interface development, 
@@ -60,6 +61,13 @@ recommended when function evaluations are costly. \e Note:
 duplication detection within %Dakota can be deactivated, but duplication
 detection features within specific optimizers may still be active.
 
+\li Strict Cache Equality: By default, Dakota's evaluation cache and
+restart capabilities are based on strict binary equality. This provides
+a performance advantage, as it permits a hash-based data structure to 
+be used to search the evaluation cache. However, deactiving strict equality
+may prevent cache misses, which can occur when attempting to use a restart 
+file generated on a different machine.
+
 \li Restart file: deactivation of this feature using a \c deactivate
 \c restart_file specification allows the user to eliminate the output
 of each new function evaluation to the binary restart file. This can
@@ -74,7 +82,7 @@ with the default name \c dakota.rst.
 These three features may be deactivated independently and concurrently.
 
 
-Topics::	problem, not_yet_reviewed
+Topics::	problem
 Examples::
 Theory::
 Faq::

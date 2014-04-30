@@ -1,5 +1,5 @@
 Blurb::
-????????????
+Provide additional identifiers to analysis drivers.
 Description::
 The optional
 \c analysis_components specification allows the user to provide
