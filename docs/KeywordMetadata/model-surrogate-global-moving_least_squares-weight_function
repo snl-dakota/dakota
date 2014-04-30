@@ -1,8 +1,8 @@
 Blurb::
-????
+The weight function used to weight samples in the weighted least squares formulation.
 Description::
-Not mentioned
-Topics::	problem
+The weight function used to weight samples in the weighted least squares formulation.
+Topics::
 Examples::
 Theory::
 Faq::

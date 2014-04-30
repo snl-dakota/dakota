@@ -1,8 +1,9 @@
 Blurb::
-????
+The interpolation type. Linear or cubic.
 Description::
+The interpolation type. Linear or cubic.
 Not mentioned
-Topics::	problem
+Topics::
 Examples::
 Theory::
 Faq::

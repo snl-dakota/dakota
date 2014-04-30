@@ -75,7 +75,7 @@ surrogate model is used by the method.
 Finally, the quality of the surrogate can be tested using the 
 \c metrics and \c challenge_points_file keywords.
 
-Topics::	problem
+Topics::
 Examples::
 Theory::
 Global methods, also referred to as response surface methods,
@@ -117,5 +117,4 @@ Dakota Developers Manual.
 
 
 Faq::
-??? so, what happens if N_tp < N_if?
 See_Also::	model-surrogate-local, model-surrogate-hierarchical, model-surrogate-multipoint

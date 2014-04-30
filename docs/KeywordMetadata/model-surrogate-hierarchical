@@ -1,4 +1,7 @@
 Blurb::
+Hierarchical approximations use corrected results from a low fidelity
+model as an approximation to the results of a high fidelity "truth"
+model.
 Description::
 Hierarchical approximations use corrected results from a low fidelity
 model as an approximation to the results of a high fidelity "truth"
@@ -23,7 +26,7 @@ be used. Refer to \ref model-surrogate-global for additional information on
 available correction approaches.
 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 

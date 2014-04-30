@@ -1,8 +1,8 @@
 Blurb::
-????
+The maximum number of basis allowed to be used in the approximation.
 Description::
-Not mentioned
-Topics::	problem
+The maximum number of basis allowed to be used in the approximation.
+Topics::
 Examples::
 Theory::
 Faq::

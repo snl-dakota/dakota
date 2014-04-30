@@ -1,5 +1,5 @@
 Blurb::
-????
+Identifies the subset of the response functions by number that are to be approximated (the default is all functions).
 Description::
 In the \c surrogate model case, the specification first allows a
 mixture of surrogate and actual response mappings through the use of
@@ -7,10 +7,9 @@ the optional \c id_surrogates specification. This identifies the
 subset of the response functions by number that are to be approximated
 (the default is all functions). The valid response function
 identifiers range from 1 through the total number of response
-functions (see \ref responses-response_functions). Next, the specification selects a
-global, multipoint, local, or hierarchical approximation.
+functions (see \ref responses-response_functions).
 
-Topics::	not_yet_reviewed, problem
+Topics::
 Examples::
 Theory::
 Faq::
