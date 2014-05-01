@@ -1,7 +1,1 @@
-Blurb::  Type of Metropolis algorithm used in DRAM
-Description:: Type of Metropolis algorithm used in DRAM.  There are two options:  hastings or adaptive.  The adaptive method adaptively updates the covariance of the proposal density over time.
-Topics::   	bayesian_calibration
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-metropolis

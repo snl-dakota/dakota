@@ -1,7 +1,1 @@
-Blurb:: A component-based iterator command pointing to a model
-Description:: When a model pointer is provided, it is responsible for identifying the variables, interface, and responses specifications (using variables_pointer, interface_pointer, and responses_pointer from Model Commands) that are used to build the model. If optional model, variables, interface, or responses pointers are not provided, then these components will be constructed using the last specification parsed. If no model pointer string is specified and no model specification is provided by the user, then a default model specification is used (similar to the default environment specification, see Environment Description). This default model specification is of type single with no variables_pointer, interface_pointer, or responses_pointer (see Single Model Controls). It is appropriate to omit a model specification whenever the relationships are unambiguous due to the presence of single variables, interface, and responses specifications.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-model_pointer

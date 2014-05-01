@@ -4,6 +4,9 @@ Description::
 This must point to a model block, identified by \ref model-id_model.
 That model will be run to generate training data, from which a 
 surrogate model will be constructed.
+
+See \ref topic-block_pointer for details about pointers.
+
 Topics::	block_pointer
 Examples::
 Theory::

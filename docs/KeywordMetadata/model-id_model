@@ -1,13 +1,13 @@
 Blurb::
 Give the model block an identifying name, in case of multiple model blocks
 Description::
-The model independent controls include a model identifier string,
-pointers to variables and responses specifications, and a model type
-specification.  The model identifier string is supplied with \c
+The model identifier string is supplied with \c
 id_model and is used to provide a unique identifier string for use
 within method specifications (refer to any of the keywords: \c model_pointer in
 under one of the methods in the \ref method block, for example: 
 \ref method-list_parameter_study-model_pointer)
+
+This is used to determine which model the method will run.
 
 Topics::	block_identifier
 Examples::

@@ -3,6 +3,8 @@ The \c sub_method_pointer specifies the method block for the sub-iterator
 Description::
 The \c sub_method_pointer specifies the method block for the sub-iterator.
 
+See \ref topic-block_pointer for details about pointers.
+
 Nested models may employ mappings for both the variable inputs to the
 sub-model and the response outputs from the sub-model. In the former
 case, the \c primary_variable_mapping and \c

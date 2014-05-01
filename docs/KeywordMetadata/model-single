@@ -5,11 +5,13 @@ The single model is the simplest model type. It uses a single
 \ref interface instance to map \ref variables
 into \ref responses. There is no recursion in this case.
 
-The optional \c interface_pointer specification identifies the interface block
+The optional \ref model-interface_pointer specification identifies the interface block
 by cross-referencing with the \c id_interface string input from a particular interface keyword specification.
-The same logic follows for resposnes and variables.
+This is only necessary when the input file has multiple interface blocks, and you
+wish to explicitly point to the desired block.
+The same logic follows for responses and variables blocks and pointers.
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 The example shows a minimal
 specification for a single model, which is the default model when no

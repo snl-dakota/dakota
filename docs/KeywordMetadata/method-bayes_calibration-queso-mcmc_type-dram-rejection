@@ -1,7 +1,1 @@
-Blurb::  Rejection type used in DRAM	
-Description::  Type of rejection approach used in DRAM.  There are two options:  standard (no delayed rejection) or delayed rejection. 
-Topics::   bayesian_calibration
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-rejection

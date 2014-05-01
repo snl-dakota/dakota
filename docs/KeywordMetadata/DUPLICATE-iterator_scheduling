@@ -1,6 +1,10 @@
 Blurb::
+Change how Dakota schedules concurrent function evaluations
 Description::
-Topics::	empty
+Provide manual
+overrides for the scheduling of concurrent function evaluations.
+
+Topics::	concurrency_and_parallelism, problem
 Examples::
 Theory::
 Faq::

@@ -1,11 +1,11 @@
-Blurb:: Identify which method leads the Dakota study
-
+Blurb::
+Identify which method leads the Dakota study
 Description::
 
 An optional \c top_method_pointer specification may be used to point
 to a particular method specification that will lead the Dakota
-analysis.  The associated string must be a method identifier specified
-via \ref method-id_method.  If \c top_method_pointer is not used, then
+analysis. The associated string must be a method identifier specified
+via \ref method-id_method. If \c top_method_pointer is not used, then
 it will be inferred as decribed in \ref environment (no \c
 top_method_pointer within an environment specification is treated the
 same as no environment specification).
