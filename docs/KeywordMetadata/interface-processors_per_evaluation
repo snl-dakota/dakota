@@ -9,7 +9,7 @@ at the evaluation parallelism level. Refer to ParallelLibrary
 and the Parallel Computing chapter of the Users Manual 
 [\cite UsersMan "Adams et al., 2010"] for additional information.
 
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::

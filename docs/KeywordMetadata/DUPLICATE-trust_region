@@ -18,8 +18,7 @@ command \c contract_threshold sets the minimum acceptable value for
 the trust region ratio, i.e., values below this threshold cause the
 trust region to shrink for the next SBL iteration. The command \c
 expand_threshold determines the trust region value above which the
-trust region will expand for the next SBL iteration. Table \ref T5d11
-"5.11" summarizes these trust region inputs.
+trust region will expand for the next SBL iteration.
 
 Topics::
 Examples::

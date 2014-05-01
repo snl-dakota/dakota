@@ -67,7 +67,7 @@ methods support a similar specification in identifying a sub-method by
 either pointer or by name and either a required (surrogate-based) or
 optional (branch and bound) model pointer. Each of the method
 specifications identified by pointer has the responsibility for
-identifying corresponding model specifications (using \ref method-model_pointer),
+identifying corresponding model specifications (using \c model_pointer),
  whereas methods identified by name cannot
 delegate the need to identify a model by pointer. -->
 
@@ -86,20 +86,20 @@ Examples::
 Several examples follow. The first example shows a minimal
 specification for an optimization method.
 \verbatim
-method,
-	dot_sqp
+method
+  dot_sqp
 \endverbatim
 This example uses all of the defaults for this method. 
 
 A more sophisticated example would be
 \verbatim
 method,
-	id_method = 'NLP1'
-	model_pointer = 'M1'
-	dot_sqp
-	 max_iterations = 50
-	 convergence_tolerance = 1e-4
-	 output verbose
+  id_method = 'NLP1'
+  dot_sqp
+    max_iterations = 50
+    convergence_tolerance = 1e-4
+    output verbose
+    model_pointer = 'M1'
 \endverbatim
 This example demonstrates the use of identifiers and pointers
 as well as some method independent and method
@@ -111,12 +111,12 @@ controls, in that they are defined for a variety of methods (see \ref method-dot
 
 The next example shows a specification for a least squares method.
 \verbatim
-method,
-	optpp_g_newton
-	 max_iterations = 10
-	 convergence_tolerance = 1.e-8
-	 search_method trust_region
-	 gradient_tolerance = 1.e-6
+method
+  optpp_g_newton
+    max_iterations = 10
+    convergence_tolerance = 1.e-8
+    search_method trust_region
+    gradient_tolerance = 1.e-6
 \endverbatim
 Some of the same method independent controls are present along with
 several method dependent controls (\c search_method and \c
@@ -126,21 +126,22 @@ gradient_tolerance) which are only meaningful for OPT++ methods (see
 The next example shows a specification for a nondeterministic method
 with several method dependent controls (refer to \ref method-sampling).
 \verbatim
-method,
-	sampling
-	 samples = 100	seed = 12345
-	 sample_type lhs
-	 response_levels = 1000. 500.
+method
+  sampling
+    samples = 100
+    seed = 12345
+    sample_type lhs
+    response_levels = 1000. 500.
 \endverbatim
 
 The last example shows a specification for a parameter study method
 where, again, each of the controls are method dependent (refer to \ref
 method-vector_parameter_study).
 \verbatim
-method,
-	vector_parameter_study
-	 step_vector = 1. 1. 1.
-	 num_steps = 10
+method
+  vector_parameter_study
+    step_vector = 1. 1. 1.
+    num_steps = 10
 \endverbatim
 
 Theory::

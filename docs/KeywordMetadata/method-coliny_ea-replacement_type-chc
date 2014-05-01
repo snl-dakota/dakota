@@ -4,8 +4,7 @@ Description::
 The \c replacement_type controls how current populations and newly
 generated individuals are combined to create a new population.  Each
 of the \c replacement_type selections accepts an integer value, which
-is referred to below and in \ref T5d24 "Table 5.24" as the \c
-replacement_size:
+is referred as the \c replacement_size:
 
 The \c chc setting creates a new population using (a) the \c
 replacement_size best individuals from the \e combination of the

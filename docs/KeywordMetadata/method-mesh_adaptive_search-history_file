@@ -4,7 +4,7 @@ own output.
 Description::
 \c history_file: This is the name of a file where NOMAD will write its
 own output.
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::

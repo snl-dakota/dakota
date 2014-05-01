@@ -6,7 +6,7 @@ a predetermined fashion. Each completed evaluation is replaced with one
 congruent modulo the evaluation concurrency. For example, with 6 servers, eval 
 number 2 will be replaced by eval number 8.
 
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::

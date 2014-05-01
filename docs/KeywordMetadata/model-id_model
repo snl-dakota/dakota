@@ -5,12 +5,12 @@ The model independent controls include a model identifier string,
 pointers to variables and responses specifications, and a model type
 specification.  The model identifier string is supplied with \c
 id_model and is used to provide a unique identifier string for use
-within method specifications (refer to \c model_pointer in
-method-model_pointer).
+within method specifications (refer to any of the keywords: \c model_pointer in
+under one of the methods in the \ref method block, for example: 
+\ref method-list_parameter_study-model_pointer)
 
-Topics:: block_identifier
+Topics::	block_identifier
 Examples::
 Theory::
 Faq::
-See_Also::
-method-model_pointer	
+See_Also::	method-list_parameter_study-model_pointer

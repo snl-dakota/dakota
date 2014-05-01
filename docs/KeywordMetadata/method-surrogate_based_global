@@ -1,8 +1,10 @@
 Blurb::
 Global Surrogate Based Optimization
 Description::
-The \c surrogate_based_global specification must identify a sub-method
-using either \c approx_method_pointer or \c approx_method_name.
+The \c surrogate_based_global specification must identify:
+\li a sub-method, using either \ref method-surrogate_based_global-method_pointer
+    or \ref method-surrogate_based_global-method_name
+\li \ref method-surrogate_based_global-model_pointer must be used to identify a surrogate model
 
 \c surrogate_based_global works in an iterative scheme where
 optimization is performed on a global surrogate using the same bounds
@@ -21,7 +23,6 @@ each iteration, presumably driving to optimality quickly.
 
 <b> Method Independent Controls </b>
 
-\li \ref method-model_pointer must be used to identify a surrogate model
 \li \ref method-max_iterations is used as a stopping critierion (see note below)
 
 <b> Notes </b>

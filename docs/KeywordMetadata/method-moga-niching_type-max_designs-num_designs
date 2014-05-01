@@ -15,7 +15,7 @@ kept in the population and the remaining ones are bufferred or
 discarded.  Note that like other niching operators, this one will not
 discard an extreme design.
 
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::

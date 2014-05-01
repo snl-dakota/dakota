@@ -10,7 +10,7 @@ it is not randomly selected for replacement; however, the default \c
 new_solutions_generated value is set such that the entire set of newly
 generated individuals will be selected for replacement.
 
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::

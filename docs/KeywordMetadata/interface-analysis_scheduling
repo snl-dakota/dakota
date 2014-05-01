@@ -6,7 +6,7 @@ are determined automatically. If these settings are undesirable, they may be
 overridden by the user using the \c analysis_scheduling keyword.
 
 The partition type and scheduling are 
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::

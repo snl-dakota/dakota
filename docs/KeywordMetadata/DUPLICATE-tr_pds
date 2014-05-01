@@ -19,7 +19,7 @@ pattern search techniques.  Use of a line search is the default for
 bound-constrained and generally-constrained problems, and use of a \c
 trust_region search method is the default for unconstrained problems.
 
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::

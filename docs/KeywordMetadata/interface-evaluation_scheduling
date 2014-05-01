@@ -6,7 +6,7 @@ servers are determined automatically. If these settings are undesirable, they ma
 overridden by the user using the \c evaluation_scheduling keyword.
 
 The partition type and scheduling are 
-Topics::	empty
+Topics::	
 Examples::
 Theory::
 Faq::
