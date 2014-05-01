@@ -1,20 +1,16 @@
 Blurb::
-Change how Dakota schedules concurrent interators
+Specify the number of iterator servers when Dakota is run in parallel
 Description::
-The \c iterator_servers, \c iterator_self_scheduling,
-and \c iterator_static_scheduling specifications provide manual
-overrides for the number of concurrent iterator partitions and the
-scheduling policy for concurrent iterator jobs. These settings are
-normally determined automatically in the parallel configuration
-routines (see ParallelLibrary) but can be overridden with user inputs
-if desired. 
-The \c iterator_servers, \c iterator_self_scheduling, and \c
-iterator_static_scheduling overrides are only useful inputs for those
-strategies supporting concurrency in iterators, i.e., \c multi_start
-and \c pareto_set.
+The optional \c iterator_servers specification supports user override
+ of the automatic parallel configuration for the number of iterator 
+servers. That is, if the automatic configuration is
+undesirable for some reason, the user can enforce a desired number of
+partitions at the iterator parallelism level. Refer to ParallelLibrary 
+and the Parallel Computing chapter of the Users Manual 
+[\cite UsersMan "Adams et al., 2010"] for additional information.
 
 
-Topics::	concurrency_and_parallelism, not_yet_reviewed
+Topics::	concurrency_and_parallelism  
 Examples::
 Theory::
 Faq::

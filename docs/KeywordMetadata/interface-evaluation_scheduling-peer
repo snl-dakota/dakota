@@ -5,7 +5,7 @@ This option overrides the Dakota parallel automatic configuration, forcing
 the use of a peer partition. In a peer partition, all processors are
 available to be assigned to evaluation servers. The scheduling,\c static or
 \c dynamic, must also be specified.
-Topics::	
+Topics::	concurrency_and_parallelism
 Examples::
 Theory::
 Faq::

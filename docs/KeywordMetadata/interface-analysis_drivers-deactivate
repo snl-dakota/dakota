@@ -66,7 +66,7 @@ restart capabilities are based on strict binary equality. This provides
 a performance advantage, as it permits a hash-based data structure to 
 be used to search the evaluation cache. However, deactiving strict equality
 may prevent cache misses, which can occur when attempting to use a restart 
-file generated on a different machine.
+file on a machine different from the one on which it was generated.
 
 \li Restart file: deactivation of this feature using a \c deactivate
 \c restart_file specification allows the user to eliminate the output

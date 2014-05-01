@@ -6,7 +6,8 @@ Description::
 When \c failure_capture \c continuation is enabled and an evaluation fails, 
 then Dakota will attempt to march incrementally from a previous good evaluation 
 (the "source") toward the failing one (the "target"). Further details about the
-algorithm employed by Dakota are supplied in the User's Manual.
+algorithm employed by Dakota are supplied in the User's Manual 
+[\cite UsersMan "Adams et al., 2010"].
 
 Topics::	problem
 Examples::

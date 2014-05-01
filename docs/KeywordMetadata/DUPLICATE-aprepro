@@ -9,7 +9,7 @@ using the \c aprepro specification
 
 Without this keyword, the parameters file are written in
 DPrePro format. DPrePro is a utility included with Dakota,
-described in the Users Manual.
+described in the Users Manual [\cite UsersMan "Adams et al., 2010"].
 
 Topics::	file_formats
 Examples::

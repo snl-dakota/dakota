@@ -1,8 +1,9 @@
 Blurb::
-Change how Dakota schedules concurrent function evaluations
+Specify the scheduling of concurrent iterators when Dakota is run in parallel
 Description::
-Provide manual
-overrides for the scheduling of concurrent function evaluations.
+When Dakota is run in parallel, the partition type of the iterator servers is 
+determined automatically. If this setting is undesirable, it may be
+overridden by the user using the \c iterator_scheduling keyword.
 
 Topics::	concurrency_and_parallelism, problem
 Examples::

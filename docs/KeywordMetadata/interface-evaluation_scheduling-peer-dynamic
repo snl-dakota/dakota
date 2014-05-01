@@ -5,7 +5,7 @@ In \c dynamic scheduling, evaluations are assigned to servers as earlier
 evaluations complete. Dynamic scheduling is advantageous when evaluations
 are of uneven duration.
 
-Topics::	
+Topics::	concurrency_and_parallelism
 Examples::
 Theory::
 Faq::

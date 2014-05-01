@@ -33,7 +33,7 @@ A function evaluation may comprise:
 -# <i>A single analysis driver with environment variables</i>: Function 
    evaluation is contained within one analysis driver, but it requires
    environment variables to be set before running.
--# <i>Multiple analysis drivers<i>: Drivers are run sequentially or concurrently
+-# <i>Multiple analysis drivers</i>: Drivers are run sequentially or concurrently
    (See the \c asynchronous keyword) and can have any of the above options as
    well.
 
