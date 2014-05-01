@@ -314,10 +314,10 @@ void EfficientSubspaceMethod::init_communicators()
 
 void EfficientSubspaceMethod::free_communicators()
 {
-  iteratedModel.free_communicators(subspaceSamples);
   iteratedModel.free_communicators(batchSize);
+  iteratedModel.free_communicators(initialSamples);
   // defer this one to do it on the RecastModel at runtime
-  //  iteratedModel.free_communicators(initialSamples);
+  //  iteratedModel.free_communicators(subspaceSamples);
 }
 
 
