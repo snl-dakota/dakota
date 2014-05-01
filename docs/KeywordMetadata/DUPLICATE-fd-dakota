@@ -1,5 +1,5 @@
 Blurb::
-(Default) Use internal Dakota fd algorithm
+(Default) Use internal Dakota finite differences algorithm
 Description::
 The \c dakota routine is the default since it can execute
 in parallel and exploit the concurrency in finite difference
@@ -14,7 +14,7 @@ will be scaled by the range of each parameter. For \c relative, it
 will be scaled by the parameter value.
 
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::
