@@ -387,6 +387,11 @@ else()
 endif()
 
 add_subdirectory(packages)
+
+# The Dakota DLL API should build on all platforms, though the
+# ModelCenter portion will not
+option(DAKOTA_DLL_API "Enable DAKOTA DLL API." ON)
+
 add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
 if(DAKOTA_ENABLE_TESTS)
@@ -408,10 +413,6 @@ if(ENABLE_DAKOTA_DOCS)
     message(FATAL_ERROR "DAKOTA documentation build only available on UNIX platforms")
   endif()
 endif()
-
-# The Dakota DLL API should build on all platforms, though the
-# ModelCenter portion will not
-option(DAKOTA_DLL_API "Enable DAKOTA DLL API." ON)
 
 add_subdirectory(examples)
 
