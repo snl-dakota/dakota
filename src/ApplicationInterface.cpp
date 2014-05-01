@@ -2137,17 +2137,16 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 {
   MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
   int fn_eval_id = 1, num_jobs;
-  size_t num_active = 0, num_completed;
+  size_t num_active = 0, num_launch = 0, num_completed;
 
   parallelLib.bcast_e(num_jobs);
-  int num_launch = std::min(asynchLocalEvalConcurrency, num_jobs);
 
   do { // main loop
 
     // -------------------------------------------------------------------
     // check for incoming messages & unpack/execute all jobs received
     // -------------------------------------------------------------------
-    while (fn_eval_id && num_active < num_launch) {
+    while (num_active < asynchLocalEvalConcurrency && num_launch < num_jobs) {
       parallelLib.bcast_e(fn_eval_id);
       if (fn_eval_id) {
 	parallelLib.bcast_e(recv_buffer);
@@ -2161,7 +2160,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 	asynchLocalActivePRPQueue.insert(prp);
 	// execute
 	derived_map_asynch(prp);
-	++num_active;
+	++num_active; ++num_launch;
       }
     }
 
@@ -2189,6 +2188,8 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 	}
       }
     }
+    else // catch termination code
+      parallelLib.bcast_e(fn_eval_id);
 
   } while (fn_eval_id || num_active > 0);
 
