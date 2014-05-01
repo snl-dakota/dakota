@@ -61,7 +61,7 @@ options are provided:
  <li> multidimensional integration by Stroud cubature rules 
  and extensions as specified with \c cubature_integrand. 
  <li> multidimensional integration by Latin hypercube sampling
-    (specified with \c expansion_samples). <ul>
+    (specified with \c expansion_samples).
  <li> linear regression (specified with either \c collocation_points or
      \c collocation_ratio).
  <li> coefficient import from a file (specified with \c

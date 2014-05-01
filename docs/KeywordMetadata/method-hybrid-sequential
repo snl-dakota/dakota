@@ -14,7 +14,7 @@ of each method. The number of solutions transferred between methods is
 specified by the particular method through its \c final_solutions
 method control.
 
-For example, if one sets up a two-level strategy with a first method
+For example, if one sets up a two-level study with a first method
 that generates multiple solutions such as a genetic algorithm,
 followed by a second method that is initialized only at a single point
 such as a gradient-based algorithm, it is possible to take the

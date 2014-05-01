@@ -1,7 +1,7 @@
 Blurb::
 Strategy in which a set of methods synergistically seek an optimal design
 Description::
-In a hybrid minimization strategy (\c hybrid), a set of methods
+In a hybrid minimization method (\c hybrid), a set of methods
 synergistically seek an optimal design. The relationships among the
 methods are categorized as:
 \li collaborative

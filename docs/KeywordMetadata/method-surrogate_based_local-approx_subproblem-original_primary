@@ -2,9 +2,9 @@ Blurb::
 Construct approximations of all primary functions
 Description::
 For SBL problems with nonlinear constraints, a number of algorithm
-formulations exist as described in [\ref Eldred2006a "Eldred and
+formulations exist as described in [\cite Eld06b "Eldred and
 Dunlavy, 2006"] and as summarized in the Advanced Examples section of
-the Models chapter of the Users Manual [\ref UsersMan "Adams et al.,
+the Models chapter of the Users Manual [\cite UsersMan "Adams et al.,
 2010"].  First, the "primary" functions (that is, the objective
 functions or calibration terms) in the approximate subproblem can be
 selected to be surrogates of the original primary functions (\c

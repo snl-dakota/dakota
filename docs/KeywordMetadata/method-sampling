@@ -77,7 +77,7 @@ Examples::
 \verbatim
 # tested on Dakota 5.3.1, 131101
 
-strategy
+environment
   tabular_graphics_data
     tabular_graphics_file = 'Sampling_basic.dat'
   single_method

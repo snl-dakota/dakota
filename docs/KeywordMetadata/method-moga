@@ -112,7 +112,7 @@ The basic steps of the \c moga algorithm are as follows:
   <li> Perform post processing
 </ol>
 
-If moga is used in a hybrid optimization strategy (which requires one
+If moga is used in a hybrid optimization method (which requires one
 optimal solution from each individual optimization method to be passed
 to the subsequent optimization method as its starting point), the
 solution in the Pareto set closest to the "utopia" point is given as
@@ -127,9 +127,9 @@ point. There will be a point in the Pareto set that has minimum
 L2-norm distance to this point, for example (10,10) may be such a
 point.
 
-If moga is used in a strategy which may require passing multiple
+If moga is used in a method which may require passing multiple
 solutions to the next level (such as the \c surrogate_based_global
-method or \c hybrid strategy), the \c orthogonal_distance
+method or \c hybrid methods), the \c orthogonal_distance
 postprocessor type may be used to specify the distances between each
 solution value to winnow down the solutions in the full Pareto front
 to a subset which will be passed to the next iteration.

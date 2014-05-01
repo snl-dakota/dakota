@@ -7,7 +7,7 @@ goodness of fit of a global surrogate to its training data.
 The default diagnostics are:
 \li \c sum_squared
 \li \c mean_squared
-\li \croot_mean_squared
+\li \c root_mean_squared
 \li \c sum_abs
 \li \c mean_abs
 \li \c max_abs

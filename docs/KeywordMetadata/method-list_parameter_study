@@ -60,7 +60,7 @@ And here's a full input file:
 
 \verbatim
 # tested on Dakota 5.3.1 on 131101
-strategy
+environment
   tabular_graphics_data
     tabular_graphics_file 'List_param_study.dat'
   single_method

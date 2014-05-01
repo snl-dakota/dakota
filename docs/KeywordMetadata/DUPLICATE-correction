@@ -118,7 +118,7 @@ optimization algorithm. From a mathematical point of view this is
 undesirable, but as a practical matter, the heuristic variants of SBO
 are often effective in finding local minima.
 
-\emph{Usage guidelines:}
+<b> Usage guidelines </b>
 
 \li Both the \c additive zeroth_order and
  \c multiplicative zeroth_order correction methods are

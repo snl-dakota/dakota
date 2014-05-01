@@ -212,7 +212,7 @@ surrogate model types.
    which is likely to find a more optimal value and/or require fewer true 
    function evaluations than the alternative,
    \ref model-surrogate-global-gaussian_process \ref model-surrogate-global-gaussian_process-dakota. However, the 
-   \c surfpack version will likely take more time to build 
+   \ref model-surrogate-global-gaussian_process-surfpack will likely take more time to build 
    than the \c dakota version. Note that currently the 
    \ref method-efficient_global-use_derivatives keyword is not recommended for use with
    EGO based methods.
@@ -227,18 +227,18 @@ surrogate model types.
 <li> For Efficient Global Reliability Analysis (EGRA), the 
    \ref method-global_reliability method:
 
-   the \c surfpack and 
+   the \ref model-surrogate-global-gaussian_process-surfpack and 
    \c dakota versions of the gaussian process tend to give 
    similar answers with the \c dakota version tending to use
    fewer true function evaluations. Since this is based on EGO, it
-   is likely that the default \c surfpack version is more 
+   is likely that the default \ref model-surrogate-global-gaussian_process-surfpack is more 
    accurate, although this has not been rigorously demonstrated.
 </li>
 <li> For EGO based Dempster-Shafer Theory of Evidence, i.e. the 
    \ref method-global_evidence \ref method-global_evidence-ego method, the default
-   \ref model-surrogate-global-gaussian_process \ref surfpack will often use
+   \ref model-surrogate-global-gaussian_process \ref model-surrogate-global-gaussian_process-surfpack often use
    significantly fewer true function evaluations than the 
-   alternative \ref model-surrogate-global-gaussian_process \ref dakota.
+   alternative \ref model-surrogate-global-gaussian_process \ref model-surrogate-global-gaussian_process-dakota.
 </li>
 <li> When using a global surrogate to extrapolate, any of the surrogates:
    <ul>

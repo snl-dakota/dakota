@@ -6,5 +6,4 @@ Topics::
 Examples::
 Theory::
 Faq::
-See_Also:: 
-sobol decay
+See_Also::	method-polynomial_chaos-p_refinement-dimension_adaptive-sobol, method-polynomial_chaos-p_refinement-dimension_adaptive-decay
