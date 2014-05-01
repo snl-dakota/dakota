@@ -1,6 +1,8 @@
 Blurb::
 DREAM (DiffeRential Evolution Adaptive Metropolis) 
 Description::
+The DiffeRential Evolution Adaptive Metropolis algorithm is described in 
+[\cite Vrugt "Vrugt et al. 2009"].
 For the DREAM method, one can define the number of chains used with 
 \c chains. The total number of generations per chain in DREAM is 
 the number of samples (\c samples) divided by the number of chains (\c chains). 

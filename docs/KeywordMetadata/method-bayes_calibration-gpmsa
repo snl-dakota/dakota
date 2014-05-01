@@ -1,12 +1,29 @@
-Blurb::
+Blurb:: Gaussian Process Models for Simulation Analysis (GPMSA)
 Markov Chain Monte Carlo algorithm with Gaussian Process Surrogate
 Description::
+GPMSA (Gaussian Process Models for Simulation Analysis) is another 
+approach that provides the capability for Bayesian
+calibration.
+A key part of GPMSA is the construction of an emulator from simulation runs
+collected at various settings of input parameters. The emulator is a
+statistical model of the system response, and it is used to incorporate
+the observational data to improve system predictions and constrain or
+calibrate the unknown parameters. The GPMSA code draws heavily
+on the theory developed in the seminal Bayesian calibration paper
+by Kennedy and O'Hagan [\cite Kenn01 "Kennedy and O'Hagan 2001"]. 
+The particular approach in GPMSA has been developed
+by the Los Alamos group and document in [\cite Hig08 "Higdon et al. 2008"]. 
+GPMSA uses
+Gaussian process models in the emulation, but the emulator is
+actually a set of basis functions (e.g. from a singular value
+decomposition) which have GPs as the coefficients. 
+
 For the GPMSA method, one can define the number of samples which will be used 
 in construction of the emulator, \c emulator_samples. The emulator 
 involves Gaussian processes in GPMSA, so the user does not specify anything 
 about emulator type. At this point, the only controls active for GPMSA 
 are \c emulator_samples, \c seed and \c rng, and \c samples (the number of MCMC
-samples).  Note the GPMSA method is in a very preliminary state at this time. 
+samples).  NOTE: the GPMSA method is in a very preliminary, prototype state at this time. 
 
 Topics::	package_queso, bayesian_calibration
 Examples::

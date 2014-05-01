@@ -1,10 +1,10 @@
-Blurb::
-Scale the proposal covariance matrix
+Blurb:: Provide values for the diagonals of the proposal covariance matrix.
 Description::
-The use of a scaling factor in the proposal covariance. The proposal jumps are sampled from a multivariate normal distribution !!!!!!!!!! HOW IS THE COV matrix formed??? !!!!!!!!!!!!!!!. 
+This keyword allows the user to specify the proposal covariance matrix for the Monte Carlo Markov Chain algorithm used in Bayesian calibration.  The 
+\c proposal_covariance_scale should be followed by a number of terms equal to the number of variables being calibrated.  Each particular value represents an estimate of the variance in that particular parameter.  This proposal covariance is taken to be the covariance governing a multivariate normal distribution.  Samples are generated from this distribution in the MCMC process.  Thus, this proposal covariance is critical in determining how big the step sizes are in the MCMC chain.
 
-This scales the values on the diagonal of the proposal covariance and may be useful when the input variables being calibrated are of different magnitudes: one may want to take a larger step in a direction with a larger magnitude, for example. The proposal covariance is a list of reals, one for each variable. 
-Topics::	not_yet_reviewed, problem
+This keyword scales the values on the diagonal of the proposal covariance and may be useful when the input variables being calibrated are of different magnitudes: one may want to take a larger step in a direction with a larger magnitude, for example. The proposal covariance is a list of reals, one for each variable. 
+Topics::	bayesian_calibration, problem
 Examples::
 Theory::
 Faq::

@@ -32,10 +32,15 @@ involves multiplying many likelihoods together, where the SSE term is large
 and the likelihood becomes very small). 
 In some respects, the \c likelihood_scale can be seen as a normalizing factor
 for the SSE. If the SSE is large, the \c likelihood_scale should be large. 
-The second factor is a \c proposal_covariance_scale which scales the proposal 
-covariance. This may be useful when the input variables being calibrated 
+The second factor is a \c proposal_covariance_scale.  This allows the user 
+to specify the diagonal values of the proposal 
+covariance matrix. 
+This may be useful when the input variables being calibrated 
 are of different magnitudes: one may want to take a larger step in a direction 
-with a larger magnitude, for example. Finally, we offer the option 
+with a larger magnitude, for example. The \c proposal_covariance_scale 
+should be followed by a list of the size of the number of 
+parameters being calibrated, with values for the proposal covariance diagonal 
+for each.  Finally, we offer the option 
 to calibrate the sigma terms with the \c calibrate_sigma flag. 
 The sigma terms refer to the error associated 
 with the Gaussian process: sigma is used in the likelihood calculation. 

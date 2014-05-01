@@ -2312,7 +2312,7 @@ and the likelihood becomes very small).
 In some respects, the \texttt{likelihood\_scale} can be seen as a normalizing factor
 for the SSE.  If the SSE is large, the likelihood scale should be large.
 The second factor is a \texttt{proposal\_covariance\_scale} 
-which is a vector that controls the scaling of the proposal covariance
+which is a vector that defines the diagonals of the proposal covariance
 in the different input directions. This may be useful when the 
 input variables being calibrated are of different magnitudes:  
 one may want to take a larger step in a direction
@@ -2392,9 +2392,6 @@ error associated with that experiment.
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
-strategy,
-        single_method
-        tabular_graphics_data
 
 method,
         bayes_calibration queso
@@ -2407,9 +2404,10 @@ method,
           samples = 5000 #seed = 348                                    
           rejection delayed
           metropolis adaptive
-          likelihood_scale = 100.0 
+          #likelihood_scale = 100.0 
           output verbose
           #proposal_covariance_scale = 0.1 0.3
+          #calibrate_sigma
  
 variables,
        continuous_design = 2

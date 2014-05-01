@@ -1,6 +1,6 @@
-Blurb::
-Description::
-Topics::	empty
+Blurb:: MCMC type
+Description:: Use of the Delayed Rejection Adaptive Metropolis algorithm (dram).
+Topics::      bayesian_calibration	
 Examples::
 Theory::
 Faq::
