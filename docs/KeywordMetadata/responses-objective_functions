@@ -22,12 +22,11 @@ Bounds on the design variables are specified in the \ref variables block.
 
 <b> Optional Keywords </b>
 
-The optional keywords relate to scaling the objective functions (for better numerical results),
-formulating the problem as minimization or maximization, and dealing with multiple
-objective functions.
-
-If scaling is used, it is applied before multi-objective weighted
-sums are formed.
+The optional keywords relate to scaling the objective functions (for
+better numerical results), formulating the problem as minimization or
+maximization, and dealing with multiple objective functions.  If
+scaling is used, it is applied before multi-objective weighted sums
+are formed.
 
 Topics::	
 Examples::

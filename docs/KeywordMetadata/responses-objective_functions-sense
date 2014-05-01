@@ -1,19 +1,15 @@
 Blurb::
-Tell Dakota whether to minimize or maximize each objective function
+Whether to minimize or maximize each objective function
 Description::
-The \c sense keyword is used to declare whether an objective function
-should be minimized or maximized.
-
-The strings 
+The \c sense keyword is used to declare whether each objective function
+should be minimized or maximized.  The argument options are:
 \li \c "minimization" 
 \li \c "maximization"
+These can be abbreviated to \c "min" and \c "max".
 
-Are the only options, but these can be shortened as \c "min" and \c "max".
-
-The number of strings should either be equal to the number of 
-objective functions, or one.
-If a single
-string is specified it will apply to each objective function. 
+The number of strings should either be equal to the number of
+objective functions, or one.  If a single string is specified it will
+apply to each objective function.
 
 Topics::	
 Examples::

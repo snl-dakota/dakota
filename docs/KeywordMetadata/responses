@@ -1,8 +1,10 @@
 Blurb::
-Denotes a data request from an iterator that is mapped through an interface in a single pass.
+Description of the model output data returned to Dakota upon evaluation of an interface.
+
 Description::
-The \c responses specification in a Dakota input file controls
-the types of data that can be returned from an interface during
+
+The \c responses specification in a Dakota input file indicates the
+types of data that can be returned by an interface when invoked during
 Dakota's execution. The specification includes three groups and two
 optional keywords.
 
@@ -14,7 +16,7 @@ The specification must be one of three types:
 -# a generic response functions specification.
 
 These correspond to optimization, least squares, and uncertainty
-quantification iterators, respectively.
+quantification methods, respectively.
 The response type chosen from Group 1
 should be consistent with the
 iterative technique called for in the method specification.
@@ -30,23 +32,21 @@ derivatives (gradient vectors) for the response
 functions.
 
 The gradient specification also links back to the iterative method
-used. Gradients commonly are needed when the iterative
-study involves gradient-based optimization, reliability analysis for
-uncertainty quantification, or local sensitivity analysis.
-
+used. Gradients commonly are needed when the iterative study involves
+gradient-based optimization, local reliability analysis for
+uncertainty quantification, or local sensitivity analysis.  They can
+optionally be used to build some types of surrogate models.
 
 <b> Group 3 </b> is related to the availability of second
 derivatives (Hessian matrices) for the response
 functions.
 
 Hessian availability for the response functions is similar to the
-gradient availability specifications, with the addition of support
-for "quasi-Hessians":
-
-The Hessian specification also links back to the iterative method in
-use; Hessians commonly would be used in gradient-based
-optimization by full Newton methods or in reliability analysis
-with second-order limit state approximations or second-order
+gradient availability specifications, with the addition of support for
+"quasi-Hessians". The Hessian specification also links back to the
+iterative method in use; Hessians commonly would be used in
+gradient-based optimization by full Newton methods or in reliability
+analysis with second-order limit state approximations or second-order
 probability integrations.
 
 Topics::	block
@@ -67,7 +67,8 @@ responses
 The next example shows a typical specification for a calibration data
 set. The six residual functions will have numerical gradients computed
 using the dakota finite differencing routine with central differences
-of 0.1% (plus/minus delta value = .001*value).
+of 0.1% (plus/minus delta relative to current variables value =
+.001*value).
 
 \verbatim
 responses

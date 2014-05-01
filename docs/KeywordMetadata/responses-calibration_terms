@@ -1,17 +1,26 @@
 Blurb::
 Response type suitable for calibration or least squares
 Description::
-Responses for a calibration study are specified using \c calibration_terms and
-optional keywords for weighting/scaling, data, and
-constraints.
+
+Responses for a calibration study are specified using \c
+calibration_terms and optional keywords for weighting/scaling, data,
+and constraints.  In general when calibrating, Dakota automatically
+tunes parameters \f$ \theta \f$ to minimize discrepancies or residuals
+between the model and the data:
+
+\f[ R_{i} = y^{Model}_i(\theta) - y^{Data}_{i}. \f]
 
 There are two use cases:
+
 \li If \ref responses-calibration_terms-calibration_data_file is NOT
-  specified, then each of the calibration terms is a residual to
-  be driven toward zero.
+  specified, then each of the calibration terms returned to Dakota
+  through the \ref interface is a residual \f$ R_{i} \f$ to be driven
+  toward zero.
+
 \li If \ref responses-calibration_terms-calibration_data_file IS
-  specified, then each of the calibration terms is a response, which will
-  be compared to data in the specified datafile.
+  specified, then each of the calibration terms returned to Dakota
+  must be a response \f$ y^{Model}_i(\theta) \f$, which Dakota will
+  difference with the data in the specified data file.
 
 <b> Constraints </b>
 
@@ -35,32 +44,35 @@ dealing with multiple residuals, and importing data.
 See \ref method-scaling for more details on scaling.
 If scaling is specified, then it is
 applied to each residual prior to squaring: \f[f = \sum_{i=1}^{n} w_i
-(\frac{y^M_i - y^O_i}{s_i})^2\f] 
+(\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f] 
 
 In the case where experimental
 data uncertainties are supplied, then the weights are automatically
 defined to be the inverse of the experimental variance:
-\f[f = \sum_{i=1}^{n} \frac{1}{\sigma^2_i} (\frac{y^M_i - y^O_i}{s_i})^2\f]
+\f[f = \sum_{i=1}^{n} \frac{1}{\sigma^2_i} (\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f]
 
 
 Topics::	
 Examples::
 Theory::
-These types of problems are commonly encountered
-in parameter estimation, system identification, and model
-calibration. Least squares calibration problems are most efficiently
-solved using special-purpose least squares solvers such as
-Gauss-Newton or Levenberg-Marquardt; however, they may also be solved
-using general-purpose optimization algorithms.
 
+%Dakota calibration terms are typically used to solve problems of
+parameter estimation, system identification, and model
+calibration/inversion. Local least squares calibration problems are
+most efficiently solved using special-purpose least squares solvers
+such as Gauss-Newton or Levenberg-Marquardt; however, they may also be
+solved using any general-purpose optimization algorithm in %Dakota.
 While Dakota can solve these problems with either least squares or
 optimization algorithms, the response data sets to be returned from
-the simulator are different. Least squares calibration involves a set
-of residual
-functions whereas optimization involves a single objective function
+the simulator are different when using \ref
+responses-objective_functions versus \ref responses-calibration_terms.
+
+Least squares calibration involves a set of residual
+functions, whereas optimization involves a single objective function
 (sum of the squares of the residuals), i.e., \f[f = \sum_{i=1}^{n}
-R_i^2\f] where \e f is the objective function and the set of \f$R_i\f$
-are the residual functions. Therefore, function values and derivative
+R_i^2 = \sum_{i=1}^{n} \left(y^{Model}_i(\theta) - y^{Data}_{i} \right)^2 \f] 
+where \e f is the objective function and the set of \f$R_i\f$
+are the residual functions, most commonly defined as the difference between a model response and data. Therefore, function values and derivative
 data in the least squares case involve the values and derivatives of
 the residual functions, whereas the optimization case involves values
 and derivatives of the sum of squares objective function. This means that 
@@ -75,5 +87,6 @@ method. Typically, the user must compute the difference between the
 model results and the observations when computing the residuals. 
 However, the user has the option of specifying the observational data 
 (e.g. from physical experiments or other sources) in a file. 
+
 Faq::
 See_Also::	responses-objective_functions, responses-response_functions

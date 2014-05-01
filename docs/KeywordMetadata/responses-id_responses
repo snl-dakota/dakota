@@ -1,11 +1,12 @@
 Blurb::
-Give the block a name, in case of multiple responses blocks
+Name the response block, when there are multiple responses blocks
 Description::
-The optional set identifier specification uses the keyword \c
-id_responses to input a string for use in identifying a particular
-responses specification. A model can then identify the use of this
-response set by specifying the same string in its \c responses_pointer
-specification. For example, a model whose
+
+The optional block identifier \c id_responses specifies a string to
+uniquely identify a particular responses specification (typically used
+when there are multiple present).  A \ref model can then specify or
+point to this response set by specifying the same string in its \c
+responses_pointer specification. For example, a model whose
 specification contains <tt>responses_pointer = 'R1'</tt> will use a
 responses set with <tt>id_responses = 'R1'</tt>.
 

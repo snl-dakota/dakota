@@ -2,10 +2,12 @@ Blurb::
 Supply a characteristic value to scale each reponse
 Description::
 Each entry in
-\c primary_scales may be a user-specified nonzero characteristic value
-to be used in scaling each response. 
+\c primary_scales is a user-specified nonzero characteristic value
+to scale each response.  
 
-See the \ref method-scaling page for details on how to use this keyword.
+The argument may be of length 1 or the number of primary response
+functions.  See the \ref method-scaling page for details on how to use
+this keyword.
 
 Topics::	
 Examples::
