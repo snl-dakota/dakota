@@ -120,14 +120,30 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // the evaluation partition (passing in procsPerAnalysis for procsPerEval
   // would serialize the analysis level).  The min_procs lower bounds are
   // defined bottom up and counter the top-down allocation of resources. 
+  // Similar logic exists in MetaIterator::get_min_procs_per_iterator().
   int min_procs_per_eval = std::max(1, procsPerAnalysisSpec);
   if (numAnalysisServersSpec)
     min_procs_per_eval *= numAnalysisServersSpec;
   //if (analysisScheduling == MASTER_SCHEDULING) ++min_procs_per_eval;
 
-  // max_procs_per_eval captures available concurrency at the analysis level
-  int max_procs_per_eval
-    = (direct_int) ? worldSize : std::max(1, numAnalysisDrivers);
+  // max_procs_per_eval captures available concurrency at the analysis level,
+  // but we also must incorporate explicit user overrides for the analysis level
+  // (user overrides for the eval level can be managed by resolve_inputs()).
+  // Similar logic exists in MetaIterator::get_max_procs_per_iterator().
+  int max_procs_per_eval;
+  if (direct_int)
+    max_procs_per_eval = worldSize;
+  else { // ppa must be 1
+    if (numAnalysisServersSpec) {
+      max_procs_per_eval = numAnalysisServersSpec;
+      int alac = std::max(1, asynchLocalAnalysisConcSpec);
+      if (numAnalysisServersSpec * alac < numAnalysisDrivers &&
+	  analysisScheduling != PEER_SCHEDULING)
+	++max_procs_per_eval;
+    }
+    else
+      max_procs_per_eval = std::max(1, numAnalysisDrivers); // assume peer part
+  }
 
   // Peer dynamic requires asynch local executions and dynamic job assignment
   bool peer_dynamic_avail = (!direct_int && !asynchLocalEvalStatic);
@@ -1173,8 +1189,8 @@ void ApplicationInterface::
 asynchronous_local_evaluations(PRPQueue& local_prp_queue)
 {
   size_t i, static_servers, server_index, num_jobs = local_prp_queue.size(), 
-    num_sends = (asynchLocalEvalConcurrency) ?
-    std::min((size_t)asynchLocalEvalConcurrency, num_jobs) : num_jobs;
+    num_active, /*num_launch,*/ num_sends = (asynchLocalEvalConcurrency) ?
+      std::min((size_t)asynchLocalEvalConcurrency, num_jobs) : num_jobs;
   bool static_limited
     = (asynchLocalEvalStatic && asynchLocalEvalConcurrency > 1);
   if (static_limited)
@@ -1187,7 +1203,7 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
   PRPQueueIter local_prp_iter;
   assign_asynch_local_queue(local_prp_queue, local_prp_iter);
 
-  size_t num_active = asynchLocalActivePRPQueue.size();
+  num_active = /*num_launch =*/ asynchLocalActivePRPQueue.size();
   if (num_active < num_jobs) {
     Cout << "Second pass: ";
     if (static_limited) Cout << "static ";
@@ -1197,6 +1213,15 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
 
   size_t recv_cntr = 0, completed; bool launch;
   while (recv_cntr < num_jobs) {
+
+    /*
+    // SEND TERM ASAP
+    if (multiProcEvalFlag && num_launch == num_jobs) {
+      // stop serve_evaluation_{,a}synch_peer procs
+      int fn_eval_id = 0;
+      parallelLib.bcast_e(fn_eval_id);
+    }
+    */
 
     // Step 2: process completed jobs with wait_local_evaluations()
     if (outputLevel > SILENT_OUTPUT)
@@ -1229,7 +1254,7 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
       }
 
       if (launch) {
-	launch_asynch_local(local_prp_iter); ++num_active;
+	launch_asynch_local(local_prp_iter); ++num_active; /*++num_launch;*/
 	if (static_limited && num_active == asynchLocalEvalConcurrency)
 	  break;
       }
@@ -1277,7 +1302,7 @@ assign_asynch_local_queue(PRPQueue& local_prp_queue,
   //IntSet all_completed; // track all completed evals within local_prp_queue
 
   int fn_eval_id, num_jobs = local_prp_queue.size();
-  if (multiProcEvalFlag)
+  if (multiProcEvalFlag) // TO DO: deactivate this bcast
     parallelLib.bcast_e(num_jobs);
   size_t i, server_index, num_active = 0,
     num_sends = (asynchLocalEvalConcurrency) ?
@@ -1787,7 +1812,7 @@ assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
   int fn_eval_id, num_jobs = local_prp_queue.size();
   size_t server_index, num_active = asynchLocalActivePRPQueue.size();
   bool launch;
-  if (multiProcEvalFlag)
+  if (multiProcEvalFlag) // TO DO: deactivate this bcast
     parallelLib.bcast_e(num_jobs);
 
   // Step 1: launch any new jobs up to asynch concurrency limit (if specified)
@@ -2139,6 +2164,16 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
   int fn_eval_id = 1, num_jobs;
   size_t num_active = 0, num_launch = 0, num_completed;
 
+  // TO DO: redesign this logic for greater generality.
+  // ONE OPTION: MOVE THIS INSIDE LOOP AND SYNC #JOBS THIS PASS
+  // > num_jobs could be inefficient to determine a priori (static_limited)
+  // MORE ATTRACTIVE OPTION: ELIMINATE BCAST & HAVE PEER MASTER SEND TERM ASAP
+  // > straightforward for asynchronous_local_evaluations()
+  // > asynch_local_evaluations_nowait() presents a problem (it can be active in
+  //   the multiProcEvalFlag peer asynch context...) since the job queue can
+  //   dynamically expand/contract across multiple invocations and we want the
+  //   server to remain up --> may need a different implementation for
+  //   serve_evaluations_asynch_peer_nowait()? 
   parallelLib.bcast_e(num_jobs);
 
   do { // main loop
@@ -2209,10 +2244,13 @@ void ApplicationInterface::stop_evaluation_servers()
     if (!ieDedMasterFlag) {
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "Peer 1 stopping" << std::endl;
-      if (multiProcEvalFlag) {// stop serve_evaluation_{synch,asynch}_peer procs
+
+      // TO DO: deactivate this block
+      if (multiProcEvalFlag) {// stop serve_evaluation_{,a}synch_peer procs
         int fn_eval_id = 0;
         parallelLib.bcast_e(fn_eval_id);
       }
+
     }
     MPIPackBuffer send_buffer(0); // empty buffer
     MPI_Request send_request;

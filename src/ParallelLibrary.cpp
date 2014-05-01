@@ -217,20 +217,22 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
   // > improves logic for PUSH_DOWN of concurrency (doesn't delegate more
   //   than lower levels can accommodate)
 
-#ifdef MPI_DEBUG
-  if (print_rank)
-    Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
-	 << num_servers << " procs_per_server = " << procs_per_server
-	 << " avail_procs = " << avail_procs << " max_concurrency = "
-	 << max_concurrency << " capacity_multiplier = " << capacity_multiplier
-	 << " default_config = " << default_config << " scheduling_override = "
-	 << scheduling_override << std::endl;
-#endif
-
   int&  num_servers      = child_pl.numServers;
   int&  procs_per_server = child_pl.procsPerServer;
   int&  proc_remainder   = child_pl.procRemainder;
   bool& ded_master       = child_pl.dedicatedMasterFlag;
+
+//#ifdef MPI_DEBUG
+  if (print_rank)
+    Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
+	 << num_servers << " procs_per_server = " << procs_per_server
+	 << " avail_procs = " << avail_procs << " min_procs_per_server = "
+	 << min_procs_per_server << " max_procs_per_server = "
+	 << max_procs_per_server << " max_concurrency = " << max_concurrency
+	 << " capacity_multiplier = " << capacity_multiplier
+	 << " default_config = " << default_config << " scheduling_override = "
+	 << scheduling_override << std::endl;
+//#endif
 
   const bool master_override = (scheduling_override == MASTER_SCHEDULING);
   const bool peer_override
@@ -569,13 +571,13 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     }
   }
 
-#ifdef MPI_DEBUG
+//#ifdef MPI_DEBUG
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() returns num_servers = "
 	 << num_servers << " procs_per_server = " << procs_per_server
 	 << " proc_remainder = " << proc_remainder << " dedicated master = "
 	 << ded_master << std::endl;
-#endif
+//#endif
 }
 
 

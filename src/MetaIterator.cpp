@@ -74,19 +74,51 @@ get_max_procs_per_iterator(ProblemDescDB& problem_db, int max_eval_concurrency)
   // Define max_procs_per_iterator to estimate maximum processor usage
   // from all lower levels.  With default_config = PUSH_DOWN, this is
   // important to avoid pushing down more resources than can be utilized.
+  // The primary input is algorithmic concurrency, but we also incorporate
+  // explicit user overrides for _lower_ levels (user overrides for the
+  // current level can be managed by resolve_inputs()).
 
   if (problem_db.get_string("interface.type") == "direct")
     return problem_db.parallel_library().world_size();
   else { // processors_per_analysis = 1 for system/fork
-    int max_procs_per_eval
-      = problem_db.get_sa("interface.application.analysis_drivers").size();
-    if (problem_db.get_short("interface.analysis_scheduling") ==
-	MASTER_SCHEDULING)
-      ++max_procs_per_eval;
-    int max_procs_per_iterator = max_procs_per_eval * max_eval_concurrency;
-    if (problem_db.get_short("interface.evaluation_scheduling") ==
-	MASTER_SCHEDULING)
-      ++max_procs_per_iterator;
+    int max_procs_per_eval, max_procs_per_iterator,
+      num_a_serv = problem_db.get_int("interface.analysis_servers"),
+      ppe        = problem_db.get_int("interface.processors_per_evaluation"),
+      num_e_serv = problem_db.get_int("interface.evaluation_servers");
+
+    // compute max_procs_per_eval, incorporating all user overrides
+    if (ppe)
+      max_procs_per_eval = ppe;
+    else {
+      int num_drivers
+	= problem_db.get_sa("interface.application.analysis_drivers").size();
+      if (num_a_serv) {
+	max_procs_per_eval = num_a_serv;
+	int alac = std::max(1, 
+	  problem_db.get_int("interface.asynch_local_analysis_concurrency"));
+	short a_sched = problem_db.get_short("interface.analysis_scheduling");
+	if (num_a_serv * alac < num_drivers && a_sched != PEER_SCHEDULING)
+	  ++max_procs_per_eval;
+      }
+      else
+	max_procs_per_eval = std::max(1, num_drivers); // assume peer partition
+    }
+
+    // compute max_procs_per_iterator (iterator server overrides can be
+    // managed by resolve_inputs())
+    if (num_e_serv) {
+      max_procs_per_iterator = max_procs_per_eval * num_e_serv;
+      int alec = std::max(1, 
+        problem_db.get_int("interface.asynch_local_evaluation_concurrency"));
+      short e_sched = problem_db.get_short("interface.evaluation_scheduling");
+      if (num_e_serv * alec < max_eval_concurrency &&
+	  e_sched != PEER_DYNAMIC_SCHEDULING &&
+	  e_sched != PEER_STATIC_SCHEDULING)
+	++max_procs_per_iterator;
+    }
+    else // assume peer partition
+      max_procs_per_iterator = max_procs_per_eval * max_eval_concurrency;
+
     return max_procs_per_iterator;
   }
 }
