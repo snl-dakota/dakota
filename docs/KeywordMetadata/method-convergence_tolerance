@@ -38,9 +38,8 @@ Notes on each library:
     objective function).
 \li NL2SOL: See \ref method-nl2sol
 
-Topics::	method_independent_controls, problem
+Topics::	method_independent_controls
 Examples::
 Theory::
 Faq::
-is this ever NOT a relative value?
 See_Also::	

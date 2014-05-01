@@ -1,6 +1,9 @@
 Blurb::
 Uncertainty quantification with stochastic collocation
 Description::
+Stochastic collocation is a general framework for approximate representation of random response functions in terms of finite-dimensional interpolation bases.
+The following provides details on the various stochastic collocation method options in Dakota.
+
 The groups and optional keywords relating to method specification are: 
 \li Group 1 
 \li Group 2
@@ -158,11 +161,11 @@ expense is less critical). This option allows for refinement of
 probability and generalized reliability results using importance
 sampling.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 The stochastic collocation (SC) method is very similar to the PCE
-method described above, with the key difference that the orthogonal
+method, with the key difference that the orthogonal
 polynomial basis functions are replaced with interpolation polynomial
 bases. The interpolation polynomials may be either local or global
 and either value-based or gradient-enhanced. In the local case,

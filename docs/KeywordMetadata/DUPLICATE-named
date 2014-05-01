@@ -8,7 +8,7 @@ The directory will be created as a subdirectory of the directory in which Dakota
 If \c named is not used, the default work directory is a temporary file with a
 system-generated name (e.g., \c /tmp/file93vb1z/). 
 
-Topics::	problem
+Topics::
 Examples::
 Theory::
 Faq::

@@ -1,6 +1,9 @@
 Blurb::
 Uncertainty quantification using polynomial chaos expansions
 Description::
+The polynomial chaos expansion (PCE) is a general framework for the approximate representation of random response functions in terms of finite-dimensional series expansions in standardized random variables. The following provides details on the various polynomial chaos method options in Dakota.
+
+
 Groups 1 and 2, plus the optional keywords \c p_refinement and
 \c fixed_seed relate 
 to the specification of a PCE method. In addition, this method
@@ -58,14 +61,12 @@ options are provided:
  <li> multidimensional integration by Stroud cubature rules 
  and extensions as specified with \c cubature_integrand. 
  <li> multidimensional integration by Latin hypercube sampling
-    (specified with \c expansion_samples).
- <ul>
-  <li> linear regression (specified with either \c collocation_points or
+    (specified with \c expansion_samples). <ul>
+ <li> linear regression (specified with either \c collocation_points or
      \c collocation_ratio).
-  <li> coefficient import from a file (specified with \c
+ <li> coefficient import from a file (specified with \c
      import_expansion_file). A total-order expansion is assumed and
      must be specified using \c expansion_order.
- </ul>
 </ul>
 
 <b> Active Variables </b>
@@ -144,7 +145,7 @@ the \c multiplicative case where it is expanded to include all of the
 basis products.
 
 
-Topics::	not_yet_reviewed, problem
+Topics::
 Examples::
 Theory::
 The polynomial chaos expansion (PCE) is a general framework for

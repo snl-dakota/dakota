@@ -12,7 +12,7 @@ file space. If an optional \c template_directory and/or list of
 \c template_files is specified, Dakota will link (or copy) those files into 
 each working directory.
 
-Topics::	problem
+Topics::
 Examples::
 Theory::
 Faq::

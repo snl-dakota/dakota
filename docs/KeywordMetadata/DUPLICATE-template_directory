@@ -3,7 +3,7 @@ Populate each work directory created by Dakota with the contents of a template d
 Description::
 Upon creation of a working directory, all the files in the directory specified by \c template_directory are linked (file system symbolic links) or copied into the working directory. 
 
-Topics::	problem
+Topics::
 Examples::
 Theory::
 Faq::
