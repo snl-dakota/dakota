@@ -1,4 +1,5 @@
 Blurb::
+Specify the number of processors per analysis when Dakota is run in parallel
 Description::
 For direct function interfaces, \c processors_per_analysis is an
 additional optional setting within the required group which can be
