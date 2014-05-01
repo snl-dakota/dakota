@@ -1,8 +1,12 @@
 # TODO: make documentation build cross-platform
 # TODO: dep for latex_modify
 
-# Java is needed for new reference
-find_package(Java REQUIRED)
+find_program(JAVA_EXE java)
+if(${JAVA_EXE} MATCHES "java-NOTFOUND")
+  message(WARNING
+    "Java executable not found.  Cannot build reference manual without java")
+endif()
+
 find_package(Doxygen REQUIRED)
 find_package(LATEX REQUIRED)
 # Only required for PDFs of Doxygen, but unconditional currently
@@ -46,7 +50,7 @@ add_custom_command(
 	  ${ref_topic_md}
 	  ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
 	  ${Dakota_SOURCE_DIR}/docs/Ref_Topics_Intro.dox
-  COMMAND ${Java_JAVA_EXECUTABLE} 
+  COMMAND ${JAVA_EXE} 
   ARGS -jar ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
     ${Dakota_SOURCE_DIR}/src/dakota.input.nspec 
     ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
