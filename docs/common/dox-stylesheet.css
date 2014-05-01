@@ -51,16 +51,17 @@ table.spec-table {
 }
 
 h1 {
+  background-image:url('tab_b.png');
+  background-repeat:repeat-x;
+  background-color: #F9FAFC;
   color:#372317;
-  font-variant: small-caps;
   font-weight: bold;
-  text-align: center;
   text-shadow: 2px 2px 2px #baa588;
   font-family:serif;
-  font-size: 2em;
+  font-size: 1.75em;
   line-height: 0.8em;
   margin: 1em 0 0 0;
-  padding: 0.4em;
+  padding: 0.4em 0 0.4em 0.4em;
 }
 h2 {
   color:#372317;
