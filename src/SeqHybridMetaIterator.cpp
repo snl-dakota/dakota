@@ -327,7 +327,7 @@ void SeqHybridMetaIterator::run_sequential()
 	  }
 	}
 	else { // static scheduling
-	  if (rank0 == 0)
+	  if (rank0)
 	    iterSched.numIteratorJobs
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
 	  // bcast numIteratorJobs over iteratorComm
