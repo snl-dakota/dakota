@@ -91,6 +91,7 @@ add_custom_command(
 add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
           ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
+          ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.tex
   DEPENDS ${dox_ref_deps}
           ${CMAKE_CURRENT_BINARY_DIR}/DakotaReferenceManual.dox
   COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile-ref
@@ -101,6 +102,7 @@ add_custom_command(
 # Overstate deps to force the tag phase for both to go first
 add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html-dev/index.html
+          ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dakota-developers.tag
           ${CMAKE_CURRENT_BINARY_DIR}/dakota-reference.tag
   COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
@@ -123,17 +125,6 @@ add_custom_target(docs-doxygen
           ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
 )
 
-# Use index.html as fake dep; use Perl script to "generate" refman.tex
-add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex
-          ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.tex
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html-dev/index.html 
-          ${CMAKE_CURRENT_BINARY_DIR}/html-ref/index.html
-  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
-  COMMENT "Perl: Modifying Developer's and Reference Manuals for LaTeX"
-)
-
-
 # build PDFs of dev/ref (not portable due to tex modifications)
 
 # Create texmf.cnf to prevent buffer overrun problem 
@@ -154,6 +145,7 @@ add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Developers Manual PDF..."
+  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
   COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'export TEXMFCNF=${CMAKE_CURRENT_BINARY_DIR}:$$TEXMFCNF && make'
   COMMAND ${CMAKE_COMMAND} -E echo "Done."
   COMMENT "LaTeX: Developers to PDF"
@@ -167,6 +159,7 @@ add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.pdf
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.tex
   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Reference Manual PDF..."
+  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
   COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-ref make
   COMMAND ${CMAKE_COMMAND} -E echo "Done."
   COMMENT "LaTeX: Reference to PDF"

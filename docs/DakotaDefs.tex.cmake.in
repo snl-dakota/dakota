@@ -11,22 +11,23 @@
 
 % Most recent SAND report numbers and report date based on
 % Data should be SAND report date and not reflect updates
-\newcommand{\DakotaSANDDate}{December 2009}
-\newcommand{\DakotaSANDDev}{SAND2010-2185}
-\newcommand{\DakotaSANDRef}{SAND2010-2184}
-\newcommand{\DakotaSANDUsers}{SAND2010-2183}
-\newcommand{\DakotaSANDTheory}{SAND2011-9106}
+\newcommand{\DakotaSANDDate}{May 2014}
+\newcommand{\DakotaSANDDev}{SAND2014-xxxx}
+\newcommand{\DakotaSANDRef}{SAND2014-xxxx}
+\newcommand{\DakotaSANDUsers}{SAND2014-xxxx}
+\newcommand{\DakotaSANDTheory}{SAND2014-xxxx}
 
 
 % Need to manually break line or Eldred gets incorrectly split
 \newcommand{\DakotaAuthorSAND}{
 Brian~M.~Adams, Lara~E.~Bauman, William~J.~Bohnhoff, Keith~R.~Dalbey,\\ 
 John~P.~Eddy, Mohamed~S.~Ebeida, Michael~S.~Eldred, Patricia~D.~Hough,\\
-Kenneth~T.~Hu, John~D.~Jakeman, Laura~P.~Swiler, Dena~M.~Vigil
+Kenneth~T.~Hu, John~D.~Jakeman, Laura~P.~Swiler, J.~Adam~Stephens,\\
+Dena~M.~Vigil, Timothy~M.~Wildey
 }
 
 \newcommand{\DakotaAuthorLong}{
-Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, John~D.~Jakeman, Laura~P.~Swiler, J. Adam Stephens\\
+Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, John~D.~Jakeman, Laura~P.~Swiler, J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey\\
 Optimization and Uncertainty Quantification Department\\
 \\
 William~J.~Bohnhoff\\
@@ -34,9 +35,6 @@ Radiation Transport Department\\
 \\
 John~P.~Eddy\\
 System Readiness and Sustainment Technologies Department\\
-\\
-Dena~M.~Vigil\\
-Multiphysics Simulation Technologies Department\\
 \\
 Kenneth~T.~Hu\\
 Validation and Uncertainty Quantification Department\\
@@ -58,7 +56,8 @@ Livermore, CA 94551
 
 \newcommand{\DakotaAuthorFormatted}{
 {\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred,\\ 
-John D. Jakeman, Laura P. Swiler}\\ 
+John D. Jakeman, Laura P. Swiler, J. Adam Stephens,\\
+Dena M. Vigil, Timothy M. Wildey}\\ 
 {\large Optimization and Uncertainty Quantification Department}\\
 \vspace*{0.5cm}
 {\large \bf William J. Bohnhoff}\\
@@ -72,9 +71,6 @@ John D. Jakeman, Laura P. Swiler}\\
 \vspace*{0.5cm}
 {\large \bf Kenneth T. Hu}\\
 {\large Validation and Uncertainty Quantification Department}\\
-\vspace*{0.5cm}
-{\large \bf Dena M. Vigil}\\
-{\large Multiphysics Simulation Technologies Department}\\
 \vspace*{0.5cm}
 {\large Sandia National Laboratories}\\
 {\large P.O. Box 5800}\\
