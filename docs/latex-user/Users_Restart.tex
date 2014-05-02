@@ -13,10 +13,17 @@ response data from all function evaluations so that new executions of
 Dakota can pick up where previous executions left off.
 
 The Dakota restart file (e.g., \texttt{dakota.rst}) is written in a
-portable binary format. The portability derives from use of the XDR
-standard.  As shown in Section~\ref{tutorial:installation:running}, 
-the primary restart commands for Dakota are \texttt{-read\_restart}, 
-\texttt{-write\_restart}, and \texttt{-stop\_restart}.
+binary format, leveraging the Boost.Serialization library. While the
+cross-platform portability may NOT be as general as, say, the XDR standard,
+experience has shown it to be a sufficiently portable format to meet
+most users needs.  Caution should be exercised to ensure consistent
+endian-ness of the computer architectures involved when attempting to leverage
+the restart capability in a multi-host environment.  For example, if a little
+endian host is used to create the restart file, it can only be reliably ported
+and read on a host that is also little endian.  As shown in
+Section~\ref{tutorial:installation:running},
+the primary restart commands for Dakota are
+\texttt{-read\_restart}, \texttt{-write\_restart}, and \texttt{-stop\_restart}.
 
 To write a restart file using a particular name, the
 \texttt{-write\_restart} command line input (may be abbreviated as
@@ -251,8 +258,10 @@ example in Section~\ref{additional:cylinder}):
 This format is not intended for direct viewing (\texttt{print} should
 be used for this purpose). Rather, the neutral file capability has
 been used in the past for managing portability of restart data across
-platforms (recent use of the XDR standard for portable binary formats
-has eliminated this need) or for advanced repair of restart records
+platforms of dissimilar endian-ness of the computer architectures (e.g.
+creator of the file was little endian but need exists to run dakota with
+restart on a big endian host. The neutral file format has also been
+shown to be useful for for advanced repair of restart records
 (in cases where the techniques of Section~\ref{restart:utility:removal} 
 were insufficient).
 
