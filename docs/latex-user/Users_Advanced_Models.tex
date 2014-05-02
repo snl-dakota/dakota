@@ -316,21 +316,20 @@ response functions.
   \label{adv_models:figure08}
 \end{figure}
 
-Figure~\ref{adv_models:figure09} shows a Dakota input file for a
-nested OUU example problem that is based on the textbook test problem.
-In this example, the objective function contains two probability of
-failure estimates, and an inequality constraint contains another
-probability of failure estimate. For this example, failure is defined
-to occur when one of the textbook response functions exceeds its
-threshold value. The environment keyword block at the top of the input
-file identifies the optimization method as the primary or outer
-method, while the nested model identifies the inner sub-method as UQ.
-The environment keyword block is followed by the optimization
-specification, consisting of the optimization method, the continuous
-design variables, and the response quantities that will be used by the
-optimizer. The mapping matrices used for incorporating UQ statistics
-into the optimization response data are described in the Dakota
-Reference Manual~\cite{RefMan}. The uncertainty quantification
+Figure~\ref{adv_models:figure09} shows a Dakota input file for a nested
+OUU example problem that is based on the textbook test problem.
+In this example, the objective
+function contains two probability of failure estimates, and an
+inequality constraint contains another probability of failure
+estimate. For this example, failure is defined to occur when one of
+the textbook response functions exceeds its threshold value. The
+environment keyword block at the top of the input file identifies this as
+an OUU problem. The environment keyword block is followed by the
+optimization specification, consisting of the optimization method, the
+continuous design variables, and the response quantities that will be
+used by the optimizer. The mapping matrices used for incorporating UQ
+statistics into the optimization response data are described in the
+Dakota Reference Manual~\cite{RefMan}. The uncertainty quantification
 specification includes the UQ method, the uncertain variable
 probability distributions, the interface to the simulation code, and
 the UQ response attributes. As with other complex Dakota input files,
