@@ -72,7 +72,7 @@ private:
   int gerstner(); ///< the isotropic/anisotropic Gerstner test function family
   int scalable_gerstner(); ///< scalable versions of the Gerstner test family
 
-  // define coefficients needs for genz model
+  /// define coefficients needs for genz model
   void get_genz_coefficients( int num_dims, Real factor, 
 			      int c_type, 
 			      RealVector &c, RealVector &w );

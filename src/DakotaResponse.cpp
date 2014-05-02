@@ -648,6 +648,7 @@ void ResponseRep::write(MPIPackBuffer& s) const
 }
 
 
+/// convenience fnction to write a serial dense matrix column to an Archive
 template<class Archive, typename OrdinalType, typename ScalarType>
 void ResponseRep::write_sdm_col
 (Archive& ar, int col,
@@ -659,6 +660,7 @@ void ResponseRep::write_sdm_col
     ar & sdm_c[row];
 }
 
+/// convenience fnction to read a serial dense matrix column from an Archive
 template<class Archive, typename OrdinalType, typename ScalarType>
 void ResponseRep::read_sdm_col
 (Archive& ar, int col, Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
@@ -1140,6 +1142,7 @@ void ResponseRep::active_set_derivative_vector(const SizetArray& asdv)
   responseActiveSet.derivative_vector(asdv);
 }
 
+/** Implementation of serialization load for the Response handle */
 template<class Archive>
 void Response::load(Archive& ar, const unsigned int version)
 {
@@ -1152,6 +1155,7 @@ void Response::load(Archive& ar, const unsigned int version)
 }
 
 
+/** Implementation of serialization save for the Response handle */
 template<class Archive>
 void Response::save(Archive& ar, const unsigned int version) const
 {

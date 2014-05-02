@@ -183,7 +183,8 @@ private:
   // Any of this data coming from command line parsing is only valid
   // on rank 0 initially, then broadcast
 
-  String inputFile;       ///< Dakota input file name, e.g., "dakota.in"
+  /// Dakota input file name, e.g., "dakota.in"
+  String inputFile;
   /// alternate input means for library clients: input string
   /// (mutually exclusive with input file)
   String inputString;

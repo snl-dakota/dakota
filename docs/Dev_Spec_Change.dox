@@ -66,7 +66,7 @@ prior to keyword match testing, resulting in case insensitive parsing.
 \li Since the NIDR parser allows abbreviation of
 keywords, you \e must avoid adding a keyword that could be
 misinterpreted as an abbreviation for a different keyword within the
-same top-level keyword, such as "strategy" and "method".  For example, 
+same top-level keyword, such as "environment" and "method".  For example, 
 adding the keyword "expansion" within the method specification would 
 be a mistake if the keyword "expansion_factor" already was being used 
 in this specification.
@@ -119,7 +119,7 @@ often have both startfcn and stopfcn; stopfcn is uncommon but possible
 for lower-level keywords.  The startdata and (if needed) stopdata
 values are usually pointers to little structures that provide keyword-specific
 details to generic functions for startfcn and stopfcn.  Some keywords that
-begin groups (such as "approx_problem" within the top-level "strategy" keyword)
+begin groups (such as "approx_problem" within the top-level "environment" keyword)
 have no need of either a startfcn or a stopfcn; this is indicated by "{0}".
 
 Most of the things within braces in dakota.input.nspec are invocations
@@ -261,10 +261,10 @@ There may be multiple \ref DataMethod "DataMethod",
 \ref DataModel "DataModel", \ref DataVariables "DataVariables", 
 \ref DataInterface "DataInterface", and/or 
 \ref DataResponses "DataResponses" objects.  However, only one 
-strategy specification is currently allowed so a list of 
-\ref DataStrategy "DataStrategy" objects is not needed.  Rather, 
-\ref ProblemDescDB::strategySpec "ProblemDescDB::strategySpec" 
-is the lone \ref DataStrategy "DataStrategy" object.
+ specification is currently allowed so a list of 
+\ref DataEnvironment "DataEnvironment" objects is not needed.  Rather, 
+\ref ProblemDescDB::environmentSpec "ProblemDescDB::environmentSpec" 
+is the lone \ref DataEnvironment "DataEnvironment" object.
 
 To augment the get_<data_type>() functions, add table entries with
 new identifier strings and pointer-to-member values that address the appropriate data attributes
@@ -287,7 +287,7 @@ alphabetically after "method_name.method_setting").
 
 
 In this step, we extend the Data class definitions 
-(\ref DataStrategy "DataStrategy", \ref DataMethod "DataMethod",
+(\ref DataEnvironment "DataEnvironment", \ref DataMethod "DataMethod",
 \ref DataModel "DataModel", \ref DataVariables "DataVariables", 
 \ref DataInterface "DataInterface", and/or
 \ref DataResponses "DataResponses") to

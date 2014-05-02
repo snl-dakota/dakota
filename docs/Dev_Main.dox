@@ -153,7 +153,7 @@ class is currently a placeholder.
 <li> \ref Dakota::ConcurrentMetaIterator "ConcurrentMetaIterator": two 
 similar algorithms are available: (1) multi-start iteration from several
 different starting points, and (2) pareto set optimization for several
-different multiobjective weightings.  Employs a single iterator with a
+different multi-objective weightings.  Employs a single iterator with a
 single model, but runs multiple instances of the iterator concurrently
 for different settings within the model.
 </ul>
@@ -162,22 +162,18 @@ The \ref Dakota::Minimizer "Minimizer" classes address
 optimization and deterministic calibration and are grouped into:
 
 <ul>
+
 <li> Optimization: \ref Dakota::Optimizer "Optimizer" provides a base
-class for the 
-\ref Dakota::DOTOptimizer "DOTOptimizer", 
-\ref Dakota::CONMINOptimizer "CONMINOptimizer", 
-\ref Dakota::NPSOLOptimizer "NPSOLOptimizer", 
-\ref Dakota::NLPQLPOptimizer "NLPQLPOptimizer",
-\ref Dakota::NonlinearCGOptimizer "NonlinearCGOptimizer", and 
-\ref Dakota::SNLLOptimizer "SNLLOptimizer" gradient-based optimization
-libraries and the
-\ref Dakota::APPSOptimizer "APPSOptimizer" (supported by 
-\ref Dakota::APPSEvalMgr "APPSEvalMgr" for function evaluations), 
-\ref Dakota::COLINOptimizer "COLINOptimizer" (supported by 
-\ref Dakota::COLINApplication "COLINApplication" for function evaluations), 
-\ref Dakota::JEGAOptimizer "JEGAOptimizer", and
-\ref Dakota::NCSUOptimizer "NCSUOptimizer" nongradient-based 
-optimization methods and libraries.
+class for gradient-based (e.g., \ref Dakota::CONMINOptimizer
+"CONMINOptimizer" and \ref Dakota::SNLLOptimizer "SNLLOptimizer") and
+derivative-free (e.g., \ref Dakota::NCSUOptimizer "NCSUOptimizer",
+\ref Dakota::JEGAOptimizer "JEGAOptimizer") optimization solvers.
+Most of these are wrappers for third-party libraries that implement
+the optimization algorithms.  Classes \ref Dakota::APPSEvalMgr
+"APPSEvalMgr" and \ref Dakota::COLINApplication "COLINApplication"
+provide the function evaluation interface for \ref
+Dakota::APPSOptimizer "APPSOptimizer" and \ref Dakota::COLINOptimizer
+"COLINOptimizer", respectively.
 
 <li> Parameter estimation: \ref Dakota::LeastSq "LeastSq" provides a
 base class for \ref Dakota::NL2SOLLeastSq "NL2SOLLeastSq", a 
@@ -206,32 +202,26 @@ The \ref Dakota::Analyzer "Analyzer" classes are grouped into:
 <ul>
 
 <li> Uncertainty quantification: \ref Dakota::NonD "NonD" provides a
-base class for non-deterministic methods \ref Dakota::NonDSampling
-"NonDSampling", \ref Dakota::NonDReliability "NonDReliability"
-(reliability analysis), \ref Dakota::NonDExpansion "NonDExpansion"
-(stochastic expansion methods), \ref Dakota::NonDInterval "NonDInterval" 
-(interval-based epistemic methods), \ref Dakota::NonDCalibration
-"NonDCalibration" (nondeterministic calibration), and 
-\ref Dakota::EfficientSubspaceMethod "EfficientSubspaceMethod" (prototype
-input-space dimension reduction method for UQ).
+base class for non-deterministic methods in several categories:
 
-<ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
+<ul> 
+
+<li> Sampling: \ref Dakota::NonDSampling "NonDSampling" is further
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
-class for Latin hypercube and Monte Carlo sampling, the \ref
-Dakota::NonDIncremLHSSampling "NonDIncremLHSSampling" class for
-incremental Latin hypercube sampling, \ref
-Dakota::NonDAdaptImpSampling "NonDAdaptImpSampling" for multimodal
-adaptive importance sampling, and 
-\ref Dakota::NonDGPImpSampling "NonDGPImpSampling" for Gaussian process-based
-importance sampling.
+class for Latin hypercube and Monte Carlo sampling, and a number of
+other classes supporting incremental and adaptive sampling such as
+\ref Dakota::NonDAdaptImpSampling "NonDAdaptImpSampling" for
+multi-modal adaptive importance sampling.
 
-<li> \ref Dakota::NonDReliability "NonDReliability" is further specialized 
-with local and global methods 
-(\ref Dakota::NonDLocalReliability "NonDLocalReliability" and 
-\ref Dakota::NonDGlobalReliability "NonDGlobalReliability"). 
+<li> Reliability Analysis: \ref Dakota::NonDReliability
+"NonDReliability" is further specialized with local and global methods
+(\ref Dakota::NonDLocalReliability "NonDLocalReliability" and \ref
+Dakota::NonDGlobalReliability "NonDGlobalReliability").  \ref
+NonDPOFDarts implements a computational geometry-based reliability
+method.
 
-<li> \ref Dakota::NonDExpansion "NonDExpansion" includes
-specializations for generalized polynomial chaos (\ref
+<li> Stochastic Expansions: \ref Dakota::NonDExpansion "NonDExpansion"
+includes specializations for generalized polynomial chaos (\ref
 Dakota::NonDPolynomialChaos "NonDPolynomialChaos") and stochastic
 collocation (\ref Dakota::NonDStochCollocation "NonDStochCollocation")
 and is supported by the \ref Dakota::NonDIntegration "NonDIntegration"
@@ -240,12 +230,12 @@ Smolyak sparse grid methods (\ref Dakota::NonDCubature "NonDCubature",
 \ref Dakota::NonDQuadrature "NonDQuadrature", and \ref
 Dakota::NonDSparseGrid "NonDSparseGrid").
 
-<li> \ref Dakota::NonDCalibration "NonDCalibration" provides a base 
-class for nondeterministic calibration methods with specialization to
-Bayesian calibration in \ref Dakota::NonDBayesCalibration 
-"NonDBayesCalibration".  Specific Bayesian calibration implementations 
-exist in \ref Dakota::NonDGPMSABayesCalibration "NonDGPMSABayesCalibration" 
-and \ref Dakota::NonDQUESOBayesCalibration "NonDQUESOBayesCalibration".
+<li> Bayesian Calibration: \ref Dakota::NonDCalibration
+"NonDCalibration" provides a base class for nondeterministic
+calibration methods with specialization to Bayesian calibration in
+\ref Dakota::NonDBayesCalibration "NonDBayesCalibration", and specific
+implementations such as \ref Dakota::NonDQUESOBayesCalibration
+"NonDQUESOBayesCalibration".
 
 <li> \ref Dakota::NonDInterval "NonDInterval" provides a base class
 for epistemic interval-based UQ methods.  Three interval analysis
@@ -253,14 +243,13 @@ approaches are provided: LHS (\ref Dakota::NonDLHSInterval
 "NonDLHSInterval"), efficient global optimization (\ref
 Dakota::NonDGlobalInterval "NonDGlobalInterval"), and local
 optimization (\ref Dakota::NonDLocalInterval "NonDLocalInterval").
-Each of these three has specializations for single interval (\ref
-Dakota::NonDLHSSingleInterval "NonDLHSSingleInterval", \ref
-Dakota::NonDGlobalSingleInterval "NonDGlobalSingleInterval", \ref
-Dakota::NonDLocalSingleInterval "NonDLocalSingleInterval") and
-Dempster-Shafer Theory of Evidence (\ref Dakota::NonDLHSEvidence
-"NonDLHSEvidence", \ref Dakota::NonDGlobalEvidence
-"NonDGlobalEvidence", \ref Dakota::NonDLocalEvidence
-"NonDLocalEvidence") approaches.
+Each of these three has specializations for single interval and
+Dempster-Shafer Theory of Evidence approaches.  
+
+<li> Experimental: \ref Dakota::EfficientSubspaceMethod
+"EfficientSubspaceMethod" implements a prototype input-space dimension
+reduction method for UQ.
+
 </ul>
 
 <li> Parameter studies and design of experiments: 
@@ -326,7 +315,7 @@ part of every response evaluation on the top level model.
 <li> \ref Dakota::RecastModel "RecastModel": recasts the inputs and
 outputs of a sub-model for the purposes of variable transformations
 (e.g., variable scaling, transformations to standardized random
-variables) and problem reformulation (e.g., multiobjective
+variables) and problem reformulation (e.g., multi-objective
 optimization, response scaling, augmented Lagrangian merit functions,
 expected improvement).
 </ul>
@@ -480,10 +469,10 @@ not required specialization.
 \section DevServices Services
 
 
-A variety of services are provided in %Dakota for parallel computing,
-failure capturing, restart, graphics, etc.  An overview of the classes
-and member functions involved in performing these services is included
-below.
+A variety of services and utilities are used in %Dakota for parallel
+computing, failure capturing, restart, graphics, etc.  An overview of
+the classes and member functions involved in performing these services
+is included here.
 
 <ul> 
 <li> Multilevel parallel computing: %Dakota supports multiple levels of
@@ -497,21 +486,21 @@ routines for the levels are part of
 \ref Dakota::ApplicationInterface "ApplicationInterface", and 
 \ref Dakota::ForkApplicInterface "ForkApplicInterface".
 
-<li> Parsing: %Dakota employs the NIDR parser (New Input Deck Reader) to
-retrieve information from user input files.  Parsing options are
-processed in \ref Dakota::CommandLineHandler "CommandLineHandler" 
-and parsing occurs in 
-\ref 
-Dakota::ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" 
-called from main.cpp.  NIDR uses the keyword handlers in the
-\ref Dakota::NIDRProblemDescDB "NIDRProblemDescDB" derived class to populate 
-data within the \ref Dakota::ProblemDescDB "ProblemDescDB" base class, 
-which maintains a \ref Dakota::DataEnvironment "DataEnvironment"
-specification and lists of \ref Dakota::DataMethod "DataMethod", 
-\ref Dakota::DataModel "DataModel", \ref Dakota::DataVariables "DataVariables", 
-\ref Dakota::DataInterface "DataInterface", and 
-\ref Dakota::DataResponses "DataResponses" specifications.  Procedures 
-for modifying the parsing subsystem are described in \ref SpecChange.
+<li>Option management: Global options controlling behavior are managed
+in \ref ProgramOptions, with the help of command-line option
+parsing in \ref CommandLineHandler.</li>
+
+<li> Parsing: %Dakota employs NIDR (New Input Deck Reader) via \ref
+Dakota::ProblemDescDB::parse_inputs to parse user input files.  NIDR
+uses the keyword handlers in the \ref Dakota::NIDRProblemDescDB
+"NIDRProblemDescDB" derived class to populate data within the \ref
+Dakota::ProblemDescDB "ProblemDescDB" base class, which maintains a
+\ref Dakota::DataEnvironment "DataEnvironment" specification and lists
+of \ref Dakota::DataMethod "DataMethod", \ref Dakota::DataModel
+"DataModel", \ref Dakota::DataVariables "DataVariables", \ref
+Dakota::DataInterface "DataInterface", and \ref Dakota::DataResponses
+"DataResponses" specifications.  Procedures for modifying the parsing
+subsystem are described in \ref SpecChange.
 
 <li> Failure capturing: Simulation failures can be trapped and managed
 using exception handling in 
@@ -520,11 +509,8 @@ derived classes.
 
 <li> Restart: %Dakota maintains a record of all function evaluations
 both in memory (for capturing any duplication) and on the file system
-(for restarting runs).  Restart options are processed in \ref
-Dakota::CommandLineHandler "CommandLineHandler" and retrieved in
-\ref Dakota::ParallelLibrary::specify_outputs_restart "ParallelLibrary::specify_outputs_restart()", 
-restart file management occurs in \ref
-Dakota::ParallelLibrary::manage_outputs_restart "ParallelLibrary::manage_outputs_restart()", and restart file insertions occur in \ref
+(for restarting runs).  Restart options are managed through \ref
+ProgramOptions (with the help of \ref CommandLineHandler); file management in \ref OutputManager;  and restart file insertions occur in \ref
 Dakota::ApplicationInterface "ApplicationInterface".  The \c 
 dakota_restart_util executable, built from restart_util.cpp, provides 
 a variety of services for interrogating, converting, repairing, 
@@ -553,14 +539,17 @@ objects), it is important to properly manage shallow and deep copies,
 to allow for both efficiency and data independence as needed in a
 particular context.
 
-<li> %Graphics and Output: %Dakota provides 2D iteration history graphics using
-Motif widgets. %Graphics data can also be cataloged in a tabular data
-file for post-processing with 3rd party tools such as Matlab, Tecplot,
-etc.  These capabilities are encapsulated within the 
-\ref Dakota::Graphics "Graphics" class.  An experimental results database 
-is implemented in \ref Dakota::ResultsManager "ResultsManager" and 
-\ref Dakota::ResultsDBAny "ResultsDBAny".
-</ul>
+<li> %Graphics and Output: %Dakota provides 2D iteration history
+graphics using Motif widgets. %Graphics data can also be cataloged in
+a tabular data file for post-processing with 3rd party tools such as
+Matlab, Tecplot, etc.  These capabilities are encapsulated within the
+\ref Dakota::Graphics "Graphics" class.  An experimental results
+database is implemented in \ref Dakota::ResultsManager
+"ResultsManager" and \ref Dakota::ResultsDBAny "ResultsDBAny".
+Options for controlling output and facilities for managing it are in
+\ref OutputManager.
+
+ </ul>
 
 
 \section DevGuidance Development Practices and Guidance

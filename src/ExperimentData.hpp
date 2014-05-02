@@ -39,9 +39,9 @@ void read_historical_data(const std::string& expDataFileName,
                           RealMatrixArray& yObsData,
 			  RealMatrixArray& yStdData);
   
-// special values for sigma_type 
+/// special values for sigma_type 
 enum sigtype { NO_SIGMA, SCALAR_SIGMA, COVARIANCE_MATRIX };
-// special values for experimental data type 
+/// special values for experimental data type 
 enum edtype { SCALAR_DATA, FUNCTIONAL_DATA } ;
 
 
@@ -217,10 +217,16 @@ public:
   //- Heading: Member methods
   //
 
+  /// retrieve the vector of configuration variables for the given
+  /// response and experiment number
   const RealVector& config_vars(size_t response, size_t experiment);
 
+  /// retrieve the data value for the given response, for the given
+  /// experiment and replicate
   Real scalar_data(size_t response, size_t experiment, size_t replicate);
 
+  /// retrieve the standard deviation value for the given response, for
+  /// the given experiment and replicate
   Real scalar_sigma(size_t response, size_t experiment, size_t replicate);
 
   /// At the outer level, ExperimentData will just be a vector of ExpDataPerResponse;

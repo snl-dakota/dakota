@@ -80,7 +80,7 @@ public:
       (OptionalValue).  The third argument is a string giving a brief
       description of the option. This description will be used by
       GetLongOpt::usage.  GetLongOpt, for usage-printing, uses {$val}
-      to represent values needed by the options. {<$val>} is a
+      to represent values needed by the options. {\<$val\>} is a
       mandatory value and {[$val]} is an optional value. The final
       argument to enroll is the default string to be returned if the
       option is not specified. For flags (options with Valueless), use

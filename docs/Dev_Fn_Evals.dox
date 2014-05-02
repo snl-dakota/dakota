@@ -78,7 +78,8 @@ for portions of the scheduling process specific to derived model classes.
 \ref Interface::synch_nowait "Interface::synch_nowait()".
 <li> For application interfaces, these interface synchronization
 functions are responsible for performing evaluation scheduling in 
-one of the following modes:
+one of the following modes: master dynamic, peer dynamic or peer static.
+<!--
   <ul>
   <li> asynchronous local mode (using 
 \ref ApplicationInterface::asynchronous_local_evaluations "ApplicationInterface::asynchronous_local_evaluations()" or 
@@ -105,21 +106,31 @@ interface classes, as well as
 \ref ApplicationInterface::derived_synch "ApplicationInterface::derived_synch()" and
 \ref ApplicationInterface::derived_synch_nowait "ApplicationInterface::derived_synch_nowait()"
 for portions of job capturing specific to derived application interface classes.
+-->
+<li><em>NOTE: The Interface evaluation scheduling in %Dakota was refactored for
+releases 5.4 and 6.0.  Discussion of the new Interface-related
+functions is currently missing here.</em>
 </ul>
 
 
 \section FnEvalsAnalyses Analyses within each function evaluation
 
+<em>NOTE: The Interface evaluation scheduling in %Dakota was refactored
+for releases 5.4 and 6.0.  Discussion of the new Interface-related
+functions for analyses is currently missing here.</em>
 
 The discussion above covers the parallelism level of concurrent 
 function evaluations serving an iterator.  For the parallelism 
 level of concurrent analyses serving a function evaluation, similar 
-schedulers are involved (\ref 
+schedulers are involved 
+<!-- TODO
+(\ref 
 ForkApplicInterface::synchronous_local_analyses "ForkApplicInterface::synchronous_local_analyses()",
 \ref ForkApplicInterface::asynchronous_local_analyses "ForkApplicInterface::asynchronous_local_analyses()",
 \ref ApplicationInterface::self_schedule_analyses "ApplicationInterface::self_schedule_analyses()",
 \ref ApplicationInterface::serve_analyses_synch "ApplicationInterface::serve_analyses_synch()",
 \ref ForkApplicInterface::serve_analyses_asynch "ForkApplicInterface::serve_analyses_asynch()")
+-->
 to support synchronous local, asynchronous local, message passing, and
 hybrid modes.  Not all of the schedulers are elevated to the
 ApplicationInterface level since the system call and direct function

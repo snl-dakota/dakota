@@ -18,7 +18,7 @@
 #include "ProblemDescDB.hpp"
 #include "IteratorScheduler.hpp"
 
-/// Add exedir and . to $PATH
+/// Use NIDR to add exedir and . to $PATH
 extern "C" int nidr_save_exedir(const char*, int);
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";

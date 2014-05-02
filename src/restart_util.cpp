@@ -47,6 +47,7 @@ void concatenate_restart(int argc, char** argv);
 
 } // namespace Dakota
 
+/// Use NIDR to add exedir and . to $PATH
 extern "C" int nidr_save_exedir(const char*, int);
 
 /// The main program for the DAKOTA restart utility.

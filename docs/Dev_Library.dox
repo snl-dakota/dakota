@@ -58,9 +58,9 @@ creating a sandwich, as loosely depicted here:
 [ Application 
 [
 [  ( -----
-[  ( Dakota 
+[  ( Dakota (LibraryEnvironment)
 [  (
-[  (  { Function evaluation callback to Application
+[  (  { Function evaluation callback to Application (via DirectApplicInterface)
 [  (  {  | 
 [ <------/
 [  (  {  
@@ -150,8 +150,9 @@ below, alternate constructors allow constructing based on MPI
 communicators, with delayed finalization, and with %Dakota database
 update function callbacks.  Then the application's function evaluator
 implementing %Dakota's DirectApplicInterface is plugged in with a
-convenience function model_interface_plugins().  Finally, the %Dakota
-analysis is run by calling
+convenience function serial_interface_plugin() or
+parallel_interface_plugin().  Finally, the %Dakota analysis is run by
+calling
 \code 
 env.execute(); 
 \endcode
@@ -240,7 +241,7 @@ In the direct database population approach, %Dakota DataMethod,
 DataModel, DataVariables, DataInterface, and DataResponses objects are
 instantiated and populated with the desired problem data.  These
 objects are then published to the problem database using \ref
-LibraryEnvrionment::insert_nodes() "insert_nodes()" .  An example of
+LibraryEnvironment::insert_nodes() "insert_nodes()" .  An example of
 this approach is available in run_dakota_data() in library_mode.cpp,
 where the OPT++ Quasi-Newton method is configured to work on a plugin
 version of \c text_book or \c rosenbrock.  The data objects are
@@ -342,7 +343,7 @@ vector inputs that can be large scale.
 
 Second, the example demonstrates a user-provided callback function
 which %Dakota will invoke after input parsing to update ProblemDescDB.
-In \c library_mode.cpp, callback_function is a user-provided
+In \c library_mode.cpp, callback_function() is a user-provided
 post-parse callback that implements the type Dakota::DbCallbackFunction.
 
 \code  
@@ -409,10 +410,7 @@ classes of Iterators:
 
 \remarks
 
-Advanced Considerations
-BMA TODO: Review for relevance, then accuracy.
-
-If performing these updates within the constructor of a
+If performing such data updates within the constructor of a
 DirectApplicInterface extension/derivation (see \ref
 DakLibraryDirectAppInt), then this code is sufficient since the
 database is unlocked, the active list nodes of the ProblemDescDB have
@@ -426,34 +424,43 @@ related to Variables and Response objects will have already been
 extracted by the time the Interface constructor is invoked and the
 database update will not propagate.
 
-Therefore, it is preferred to perform these operations at a higher
-level (e.g., within your main program), prior to Environment
-instantiation and execution, such that instantiation order is not an
-issue.  However, in this case, it is necessary to explicitly manage
-the list nodes of the ProblemDescDB using a specification instance
-identifier that corresponds to an identifier from the input file, e.g.:
+Therefore, it is preferred to perform these database set operations at
+a higher level (e.g., within your main program), prior to allowing
+Environment to broadcast, construct, and execute, such that
+instantiation order is not an issue.  However, in this case, it is
+necessary to explicitly manage the list nodes of the ProblemDescDB
+using a specification instance identifier that corresponds to an
+identifier from the input file, e.g.: 
+
 \code
-  problem_db.set_db_variables_node("MY_VARIABLES_ID");
-  Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
-  problem_db.set("variables.continuous_design.initial_point", drv);
-\endcode
-Alternatively, rather than setting just a single data node, all data 
+problem_db.set_db_variables_node("MY_VARIABLES_ID");
+Dakota::RealVector drv(1000, 1.); // vector of length 1000, values
+initialized to 1.
+problem_db.set("variables.continuous_design.initial_point", drv);
+\endcode 
+
+Alternatively, rather than setting just a single data node, all data
 nodes may be set using a method specification identifier:
-\code
-  problem_db.set_db_list_nodes("MY_METHOD_ID");
-\endcode
+
+\code 
+problem_db.set_db_list_nodes("MY_METHOD_ID"); 
+\endcode 
+
 since the method specification is responsible for identifying a model
 specification, which in turn identifies variables, interface, and
 responses specifications.  If hard-wiring specification identifiers is
-undesirable, then
-\code
-  problem_db.resolve_top_method();
-\endcode
+undesirable, then 
+
+\code 
+problem_db.resolve_top_method(); 
+\endcode 
+
 can also be used to deduce the active method specification and set all
 list nodes based on it.  This is most appropriate in the case where
 only single specifications exist for
-method/model/variables/interface/responses.  In each of these cases,
-setting list nodes unlocks the corresponding portions of the database,
+method/model/variables/interface/responses.  This is the approach
+demonstrated in run_dakota_mixed().  In each of these cases, setting
+list nodes unlocks the corresponding portions of the database,
 allowing set/get operations.
 
 
@@ -507,8 +514,8 @@ DirectApplicInterface class attributes.}
 
 The second approach is to derive a new interface from
 DirectApplicInterface and redefine several virtual functions.  As
-demonstrated in PluginSerialDirectApplicInterface and
-PluginParallelDirectApplicInterface, a typical derived class
+demonstrated in SIM::SerialDirectApplicInterface and
+SIM::ParallelDirectApplicInterface, a typical derived class
 declaration might be
 
 \code
@@ -548,63 +555,79 @@ redefinition, and \ref DirectApplicInterface::derived_map_if
 DirectApplicInterface::derived_map_of
 "DirectApplicInterface::derived_map_of()" are optional.
 
-Typically \c derived_map_ac delegates to the main simulation
-application for a function evaluation.  Here %Dakota variables would
-get mapped into the simulations data structures, the simulation
-executed, and derived response data computed for return to %Dakota.
+Typically the new derived_map_ac() implementation delegates to the
+main simulation application for a function evaluation.  Here %Dakota
+variables would get mapped into the simulation's data structures, the
+simulation executed, and derived response data computed for return to
+%Dakota.
 
 Once a derived application class is created, it must be plugged in, or
 registered, with the appropriate Interface in the LibraryEnvironment.
 In MPI cases where %Dakota is potentially managing concurrent
 evaluations of the simulation, the plugin must be configured to run on
 the right MPI sub-communicator, or %Dakota analysis_comm.  The simpler
-case is demonstrated in interface_plugins() in library_mode.cpp, while
-a more advanced case using the analysis communicator is shown in
-model_interface_plugins().  In the simplest case of a single model and
-interface plugin, one could use code like
+case is demonstrated in serial_interface_plugin() in library_mode.cpp,
+while a more advanced case using the analysis communicator is shown in
+parallel_interface_plugin().  
+
+The %Dakota LibraryEnvironment provides a convenience function to
+plugin an Interface.  This example will replace any interface found
+matching the given model, interface, and analysis driver with the
+passed plugin interface:
 
 \code
-// get all interfaces of type direct with analysis_driver plugin_rosenbrock
-Dakota::InterfaceList filt_interfs = env.filtered_interface_list("direct", "plugin_rosenbrock");
-Interface* plugin_interface = filt_interfs.begin();
-// set DB nodes to input specification for this Interface
-problem_db.set_db_interface_node(plugin_interface->interface_id());
-// plug in the new direct interface instance (DB does not need to be set)
-plugin_interface->assign_rep(new SIM::SerialDirectApplicInterface(problem_db), false);
+std::string model_type(""); // demo: empty string will match any model type
+std::string interf_type("direct");
+std::string an_driver("plugin_rosenbrock");
+
+Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+Dakota::Interface* serial_iface = 
+  new SIM::SerialDirectApplicInterface(problem_db);
+
+bool plugged_in =
+  env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
 \endcode
 
-from within the %Dakota namespace to plugin only to the first Interface
-found.  In a more advanced case of multiple models and multiple
-interface plug-ins, one might loop and plug them all in
+The LibraryEnvironment also provides convenience functions that allow
+the client to iterate the lists of available interfaces or models for
+more advanced cases.  For instance if the client knows there is only a
+single interface active, it could get the list of available interfaces
+of length 1 and plugin to the first one.  In the more advanced case
+where the simulation interface instance should manage parallel
+simulations within the context of an MPI communicator, one should pass
+in the relevant analysis communicator(s) to the derived constructor.
+For the latter case of looping over a set of models, the simplest
+approach of passing a single analysis communicator would use code
+similar to
 
-\code
-Dakota::InterfaceList filt_interfs
-  = env.filtered_interface_list("direct", "plugin_rosenbrock");
-for (Dakota::InterfLIter il_iter = filt_interfs.begin();
-     il_iter != filt_interfs.end(); ++il_iter) {
-  // set DB nodes to input specification for this Interface
-  problem_db.set_db_interface_node(il_iter->interface_id());
-  // assign representation
-  il_iter->assign_rep(new SIM::SerialDirectApplicInterface(problem_db),false);
+\code 
+Dakota::ModelList filt_models = 
+  env.filtered_model_list("single", "direct", "plugin_text_book");
+
+Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+Dakota::ModelLIter ml_iter;
+for (ml_iter = filt_models.begin(); ml_iter != filt_models.end(); ++ml_iter) {
+  // set DB nodes to input specification for this Model
+  problem_db.set_db_model_nodes(ml_iter->model_id());
+
+  Dakota::Interface& model_interface = ml_iter->derived_interface();
+
+  // Parallel case: plug in derived Interface object with an analysisComm.
+  // Note: retrieval and passing of analysisComm is necessary only if
+  // parallel operations will be performed in the derived constructor.
+
+  // retrieve the currently active analysisComm from the Model.  In the most
+  // general case, need an array of Comms to cover all Model configurations.
+  const MPI_Comm& analysis_comm = ml_iter->analysis_comm();
+
+  // don't increment ref count since no other envelope shares this letter
+  model_interface.assign_rep(new
+    SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
 }
 \endcode
 
-In the case where the simulation interface instance should manage
-parallel simulations within the context of an MPI communicator, one
-should pass in the relevant analysis communicator(s) to the derived 
-constructor.  For the latter case of looping over a set of models, 
-the simplest approach of passing a single analysis communicator 
-would use code similar to
-\code
-// Assuming set DB nodes for model and retrieved a model iterator ml_iter...
-const MPI_Comm& analysis_comm = ml_iter->parallel_configuration_iterator()
-  ->ea_parallel_level().server_intra_communicator();
-plugin_interface->assign_rep(new
-  SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
-\endcode
-
 The file library_mode.cpp demonstrates each of these approaches.
-Since Models may be used in multiple parallel contexts and may
+Since a Model may be used in multiple parallel contexts and may
 therefore have a set of parallel configurations, a more general
 approach would extract and pass an array of analysis communicators to
 allow initialization for each of the parallel configurations.
@@ -612,9 +635,9 @@ allow initialization for each of the parallel configurations.
 New derived direct interface instances inherit various attributes of
 use in configuring the simulation.  In particular, the
 ApplicationInterface::parallelLib reference provides access to MPI
-communicator data (e.g., the analysis communicators discussed in \ref
-DakLibraryStrat), DirectApplicInterface::analysisDrivers provides the
-analysis driver names specified by the user in the input file, and
+communicator data (e.g., the analysis communicators discussed above),
+DirectApplicInterface::analysisDrivers provides the analysis driver
+names specified by the user in the input file, and
 DirectApplicInterface::analysisComponents provides additional analysis
 component identifiers (such as mesh file names) provided by the user
 which can be used to distinguish different instances of the same
@@ -624,9 +647,9 @@ extracted from the ProblemDescDB) will be set to their defaults
 following construction of the base class instance for the derived
 class plug-in.  It is not until run-time (i.e., within
 derived_map_if/derived_map_ac/derived_map_of) that the parallel
-configuration settings are re-propagated to the plug-in instance.  This
-is the reason that the analysis communicator should be passed in to
-the constructor of a parallel plug-in, if the constructor will be
+configuration settings are re-propagated to the plug-in instance.
+This is the reason that the analysis communicator should be passed in
+to the constructor of a parallel plug-in, if the constructor will be
 responsible for parallel application initialization.
 
 
@@ -735,11 +758,11 @@ synchronized across %Dakota and your application.
 
 } // namespace Dakota
 
-LocalWords:  namespace DakLibrary htmlonly ul li href html UQ Sandia
-LocalWords:  DakLibraryIntro DakLibraryBasic instantiation APIs API
-LocalWords:  DakLibraryConfiguring DakLibraryConfigParse endhtmlonly
-LocalWords:  DakLibraryConfigData DakLibraryConfigMixed endverbatim
-LocalWords:  DakLibraryDirectAppInt DakLibraryExtendDirectAppInt LGPL
+LocalWords:  namespace DakLibrary htmlonly ul li href html UQ Sandia analyses
+LocalWords:  DakLibraryIntro DakLibraryBasic instantiation APIs API plugin 3po
+LocalWords:  DakLibraryConfiguring DakLibraryConfigParse endhtmlonly interf
+LocalWords:  DakLibraryConfigData DakLibraryConfigMixed endverbatim iface lX11
+LocalWords:  DakLibraryDirectAppInt DakLibraryExtendDirectAppInt LGPL funcadd0
 LocalWords:  DakLibraryDeriveDirectAppInt DakLibraryPostRun CMAKE src
 LocalWords:  DakLibraryLinking LibraryEnvironment runtime dakota ol
 LocalWords:  DirectApplicInterface Fortran fortran cpp MPI evaluator
@@ -748,7 +771,7 @@ LocalWords:  ParallelConfiguration intra ProblemDescDB DataMethod dme
 LocalWords:  DataModel DataVariables DataInterface DataResponses dmr
 LocalWords:  rosenbrock SingleModel methodName bcast bool drv ptr ip
 LocalWords:  NIDRProblemDescDB datatype DakLibraryDBNoParse ModelList
-LocalWords:  subclasses TestDriverInterface MatlabInterface
+LocalWords:  subclasses TestDriverInterface MatlabInterface DbCallbackFunction
 LocalWords:  pre sim const PluginSerialDirectApplicInterface filt il
 LocalWords:  PluginParallelDirectApplicInterface destructor interfs
 LocalWords:  SerialDirectApplicInterface redefinitions iter CMake LHS
@@ -758,4 +781,4 @@ LocalWords:  conmin bose fsudace hopspack jega moga soga eutils nlpql
 LocalWords:  ncsuopt cport npsol optpp psuade DGraphics amplsolver lX
 LocalWords:  TPL lpthread ons regex filesystem ACRO lXpm lXm lXt lXmu
 LocalWords:  lXp lXext lSM lICE AMPL dl funcadd libamplsolver GSL GPL
-LocalWords:  gslcblas Newmat lnewmat preprocessor
+LocalWords:  gslcblas Newmat lnewmat preprocessor analysisComm

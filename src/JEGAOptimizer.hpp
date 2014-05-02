@@ -554,6 +554,9 @@ class JEGAOptimizer :
          * This method does some of the initialization work for the algorithm.
          * In particular, it initialized the JEGA core.
          *
+	 * \param problem_db The Dakota::ProblemDescDB with information on how the 
+	 *                   algorithm controls should be set.
+	 *
          * \param model The Dakota::Model that will be used by this optimizer
          *              for problem information, etc.
          */

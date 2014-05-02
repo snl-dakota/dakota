@@ -107,6 +107,7 @@ private:
 
   friend class boost::serialization::access;
 
+  /// implementation of Boost serialize for ActiveSet
   template<class Archive>
   void serialize(Archive& ar, const unsigned int version);
 

@@ -61,6 +61,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env);
     back to the callback function, for example to convey late updates
     to bounds, initial points, etc., to Dakota. */
 struct callback_data {
+  /// upper bound value to pass through parser to callback function
   double rosen_cdv_upper_bd;
 };
 
@@ -152,7 +153,7 @@ int main(int argc, char* argv[])
 // include comments, provided a \n follows each comment.  Before each new 
 // keyword, some white space (a blank or newline) must appear.
 
-// Default input for serial case (rosenbrock):
+/// Default Dakota input string for serial case (rosenbrock):
 static const char serial_input[] = 
   "	method,"
   "		optpp_q_newton"
@@ -169,7 +170,7 @@ static const char serial_input[] =
   "		analytic_gradients"
   "		no_hessians";
 
-// Default input for parallel case (text_book)
+/// Default Dakota input string for parallel case (text_book)
 static const char parallel_input[] = 
   "	method,"
   "		optpp_q_newton"
