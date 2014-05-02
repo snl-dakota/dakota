@@ -2,13 +2,17 @@
 # This file tests the importance sampling capabilities based on LHS. 
 # It is may be integrated into another rosenbrock file but for now 
 # it is cleanest to have a simple, standalone file. 
-# Note the idea is that the 50 sample probability of failure 
-# with standard normal inputs and a response level of 3 is 0.1, 
-# but the "true" probability of failure is 0.0675, which is 
-# what we are trying to attain with the importance sampling.
-# NOTE:  for this test file, the results are more accurate if the 
-# initial number of samples is 100 or larger, but to keep the computational 
-# costs down, it is set to 50 samples. 
+# In the current version of the test, all of the different 
+# importance_sampling versions (import, adapt_import, and mm_adapt_import) 
+# start with 250 samples ("samples = 250"). 
+# Then, more samples are added based on the three types of importance sampling.  
+# Each time samples are added, 100 samples are added around certain points 
+# of interest ("refinement_samples = 100"). 
+# In mm_adapt_sampling, 100 points are added around multiple points of interest 
+# and the process keeps iteratively updating until it converges, which is why 
+# it takes so long. 
+# NOTE:  to keep computational costs down, we could add "max_iterations = 5" 
+# in the method block for adapt_import and mm_adapt_import.
 
 # timeout overrides: 2=TD1200 2=TA2400
 
