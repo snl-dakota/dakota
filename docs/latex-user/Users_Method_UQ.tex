@@ -2377,8 +2377,8 @@ For this example, we are using the \texttt{text\_book} analytic
 example, so we do not need to specify an emulator, but the lines 
 commented out give an idea of the options if the user wanted to 
 specify an emulator. This example is using the full DRAM (delayed
-rejection adaptive metropolis). The likelihood is scaled, but the 
-proposal covariance is not unless the user uncomments that line. 
+rejection adaptive metropolis). The proposal covariance 
+used is the default unless the user uncomments that line. 
 The calibration terms in the responses section refers to the 
 number of outputs that will be used in the calibration process:  
 in this case, it is just one. The calibration data file 
@@ -2404,7 +2404,6 @@ method,
           samples = 5000 #seed = 348                                    
           rejection delayed
           metropolis adaptive
-          #likelihood_scale = 100.0 
           output verbose
           #proposal_covariance_scale = 0.1 0.3
           #calibrate_sigma
@@ -2440,11 +2439,24 @@ Dakota will run the MCMC algorithm and generate a posterior sample of
 $\theta$ in accordance with Bayes Theorem~\ref{eqn:BayesThm} and 
 the likelihood function~\ref{eqn:Likelihood}. The MCMC sample output 
 is put into a directory called \texttt{outputData} in the directory 
-from which Dakota is run. In addition, the MCMC sample chain is 
+from which Dakota is run.  The file \texttt{display\_sub0.txt} 
+contains information regarding the MCMC process.  The 
+Matlab files contained in the \texttt{outputData} directory
+contain the chain files.  The files to load in Matlab are 
+\texttt{file\_cal\_ip\_raw.m} or \texttt{file\_cal\_ip\_filt.m}, containing 
+the full chain or the filtered chain (every 20th step 
+in the chain).  Note that the chain values in these Matlab files 
+are currently in scaled space.  There are instructions in the Dakota 
+run output about how to transform them back to the original space. 
+The rejection rate for the chain is in the file \texttt{tgaCalOutput.m}.
+In addition, if verbose output is specified, 
+the values that Dakota generates are 
 written to a file in the run directory called QuesoOutput.txt. 
 The first columns of this file are the sample inputs, the next columns 
-are the responses, and the final column is the  log of the 
-likelihood.
+are the responses, and the final column is the log of the 
+likelihood.  Note that this file contains ALL values generated, 
+including the ones rejected, so it is not the actual MCMC
+chain which contains only the accepted points.
 
 We expect to continue development of Bayesian calibration methods, 
 so check for updates to this capability. The QUESO and GPMSA capabilities
