@@ -47,7 +47,11 @@ int main(int argc, char* argv[]) {
 
     // return code will be different if modelcenter not enabled
     if (tmp != 1001)
-      std::cout << "Set/Get of mc_ptr_int Failed!" << std::endl;
+      std::cout << "Warning: set/get of mc_ptr_int differ; modelcenter not "
+		<< "working properly." << std::endl;
+
+    // must be set to zero for subsequent runs or memory corruption will occur
+    set_mc_ptr_int(0);
 
     std::cout << "Final Dakota Output:" << std::endl;
     std::cout << dakota_getStatus(id) << std::endl;

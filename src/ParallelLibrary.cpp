@@ -1109,12 +1109,16 @@ void ParallelLibrary::terminate_modelcenter()
     Cerr << "Error: mc_release of API pointer unsuccessful." << std::endl;
     abort_handler(-1);
   }
+  else
+    mc_ptr_int = 0;
   if (dc_ptr_int)
     mc_release_com(ireturn, iprint, dc_ptr_int);
   if (ireturn == -1) {
     Cerr << "Error: mc_release of DC pointer unsuccessful." << std::endl;
     abort_handler(-1);
   }
+  else 
+    dc_ptr_int = 0;
 #endif // DAKOTA_MODELCENTER
 }
 
