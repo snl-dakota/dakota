@@ -2864,6 +2864,9 @@ Test Number 29 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 33
+dakota_cantilever_queso.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1651 total (1651 new, 0 duplicate)
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
