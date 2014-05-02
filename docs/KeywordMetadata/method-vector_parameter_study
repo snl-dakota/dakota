@@ -29,11 +29,10 @@ Examples::
 The following example is a good comparison to the examples on
 \ref method-multidim_parameter_study and \ref method-centered_parameter_study.
 \verbatim
-# tested on Dakota 5.3.1 on 131101
+# tested on Dakota 6.0 on 140501
 environment
   tabular_graphics_data
     tabular_graphics_file = 'rosen_vector.dat'
-  single_method
 
 method
   vector_parameter_study

@@ -75,12 +75,11 @@ variables specification block.
 Topics::	uncertainty_quantification, sampling	
 Examples::
 \verbatim
-# tested on Dakota 5.3.1, 131101
+# tested on Dakota 6.0 on 140501
 
 environment
   tabular_graphics_data
     tabular_graphics_file = 'Sampling_basic.dat'
-  single_method
 
 method
   sampling
@@ -125,4 +124,4 @@ Faq::
 <b>Q: </b> Do I need to keep the LHS* and S4 files?
 <b>A: </b> No
 
-See_Also::	variables-active
+See_Also::	variables-active, method-sampling-sample_type-incremental_lhs

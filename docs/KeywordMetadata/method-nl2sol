@@ -32,6 +32,45 @@ The internal defaults are often functions of machine epsilon
 
 Topics::	nonlinear_least_squares
 Examples::
+An example of \c nl2sol is given below, and is discussed in the User's Manual.
+
+Note that in this usage of \ref responses-calibration_terms, the driver script
+\c rosenbrock, is returning "residuals", which the \c nl2sol method is attempting
+to minimze. Another use case is to provide a data file, which Dakota will 
+attempt to match the model responses to. See \ref responses-calibration_terms-calibration_data_file.
+ 
+\verbatim
+# Dakota Input File: rosen_opt_nls.in
+environment
+  tabular_graphics_data
+    tabular_graphics_file = 'rosen_opt_nls.dat'
+
+method
+  max_iterations = 100
+  convergence_tolerance = 1e-4
+  nl2sol
+
+model
+  single
+
+variables
+  continuous_design = 2
+    initial_point    -1.2      1.0
+    lower_bounds     -2.0     -2.0
+    upper_bounds      2.0      2.0
+    descriptors       'x1'     "x2"
+
+interface
+  analysis_driver = 'rosenbrock'
+    direct
+
+responses
+  calibration_terms = 2
+  analytic_gradients
+  no_hessians
+
+\endverbatim
+
 Theory::
 NL2SOL has a variety of internal controls as described in AT&T Bell
 Labs CS TR 153 (http://cm.bell-labs.com/cm/cs/cstr/153.ps.gz). A

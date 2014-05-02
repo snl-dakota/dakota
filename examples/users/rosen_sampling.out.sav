@@ -1,3059 +1,3051 @@
-DAKOTA version 5.3 released 01/31/2013.
-Subversion revision 1431 built Jan 25 2013 09:59:15.
-Running MPI executable in serial mode.
-Start time: Fri Jan 25 10:02:09 2013
+Running MPI Dakota executable in serial mode.
+Start time: Thu May  1 21:51:09 2014
 
 -----------------------
 Begin DAKOTA input file
 rosen_sampling.in
 -----------------------
-# Dakota INPUT FILE - rosen_sampling.in 
-# Included Dakota example using the rosenbrock analysis code 
-# with a random sampling uncertainty quantification method.  Usage: 	       
-#   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout 
+# Dakota Input File: rosen_sampling.in
+# Usage:
+#   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout
 
-strategy
+environment
   graphics
   tabular_graphics_data
-    tabular_graphics_file = 'rosen_sampling.dat' 
-  single_method
+    tabular_graphics_file = 'rosen_sampling.dat'
 
 method
-  sampling                     
-    sample_type random         
-    samples = 200              
-    seed = 17                  
-    response_levels = 100.0    
+  sampling
+    sample_type random
+    samples = 200
+    seed = 17
+    response_levels = 100.0
 
 model
   single
 
 variables
-  uniform_uncertain = 2      
-    lower_bounds       -2.0  -2.0  
-    upper_bounds        2.0   2.0  
-    descriptors         'x1'  'x2'  
+  uniform_uncertain = 2
+    lower_bounds       -2.0  -2.0
+    upper_bounds        2.0   2.0
+    descriptors         'x1'  'x2'
 
 interface
   analysis_driver = 'rosenbrock'
-    direct          
+    direct
 
 responses
-  response_functions = 1    
-  no_gradients        
+  response_functions = 1
+  no_gradients
   no_hessians
-
 ---------------------
 End DAKOTA input file
 ---------------------
 
-Constructing Single Method Strategy...
+Using Dakota input file 'rosen_sampling.in'
 Writing new restart file dakota.rst
-methodName = nond_sampling
-gradientType = none
-hessianType = none
 
->>>>> Running Single Method Strategy.
+>>>>> Executing environment.
 
->>>>> Running nond_sampling iterator.
+>>>>> Running random_sampling iterator.
 
 NonD random Samples = 200 Seed (user-specified) = 17
 
-------------------------------
-Begin Function Evaluation    1
-------------------------------
-Parameters for function evaluation 1:
+---------------------
+Begin Evaluation    1
+---------------------
+Parameters for evaluation 1:
                       9.0965008456e-01 x1
                      -1.3450707598e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 1:
+Active response data for evaluation 1:
 Active set vector = { 1 }
                       4.7199857691e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    2
-------------------------------
-Parameters for function evaluation 2:
+---------------------
+Begin Evaluation    2
+---------------------
+Parameters for evaluation 2:
                       1.3172190757e+00 x1
                      -3.4774949308e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 2:
+Active response data for evaluation 2:
 Active set vector = { 1 }
                       4.3391270472e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    3
-------------------------------
-Parameters for function evaluation 3:
+---------------------
+Begin Evaluation    3
+---------------------
+Parameters for evaluation 3:
                      -1.5237462698e+00 x1
                      -8.6344626267e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 3:
+Active response data for evaluation 3:
 Active set vector = { 1 }
                       1.0209503872e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    4
-------------------------------
-Parameters for function evaluation 4:
+---------------------
+Begin Evaluation    4
+---------------------
+Parameters for evaluation 4:
                      -1.9604477771e+00 x1
                       1.7161797769e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 4:
+Active response data for evaluation 4:
 Active set vector = { 1 }
                       4.6125190101e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    5
-------------------------------
-Parameters for function evaluation 5:
+---------------------
+Begin Evaluation    5
+---------------------
+Parameters for evaluation 5:
                       2.7930018306e-01 x1
                       3.4174282290e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 5:
+Active response data for evaluation 5:
 Active set vector = { 1 }
                       7.4749826675e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    6
-------------------------------
-Parameters for function evaluation 6:
+---------------------
+Begin Evaluation    6
+---------------------
+Parameters for evaluation 6:
                       1.0335969795e+00 x1
                       1.8912269948e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 6:
+Active response data for evaluation 6:
 Active set vector = { 1 }
                       6.7718273975e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    7
-------------------------------
-Parameters for function evaluation 7:
+---------------------
+Begin Evaluation    7
+---------------------
+Parameters for evaluation 7:
                       8.2540270872e-02 x1
                      -1.4529925445e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 7:
+Active response data for evaluation 7:
 Active set vector = { 1 }
                       2.1394492486e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    8
-------------------------------
-Parameters for function evaluation 8:
+---------------------
+Begin Evaluation    8
+---------------------
+Parameters for evaluation 8:
                      -8.4680401068e-01 x1
                      -1.1419319464e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 8:
+Active response data for evaluation 8:
 Active set vector = { 1 }
                       3.4900212342e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation    9
-------------------------------
-Parameters for function evaluation 9:
+---------------------
+Begin Evaluation    9
+---------------------
+Parameters for evaluation 9:
                      -1.6793946382e+00 x1
                      -1.5224544182e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 9:
+Active response data for evaluation 9:
 Active set vector = { 1 }
                       1.8931883787e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   10
-------------------------------
-Parameters for function evaluation 10:
+---------------------
+Begin Evaluation   10
+---------------------
+Parameters for evaluation 10:
                       1.2272853078e+00 x1
                      -1.4799399516e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 10:
+Active response data for evaluation 10:
 Active set vector = { 1 }
                       8.9177229480e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   11
-------------------------------
-Parameters for function evaluation 11:
+---------------------
+Begin Evaluation   11
+---------------------
+Parameters for evaluation 11:
                      -1.7283985764e+00 x1
                      -1.1713196011e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 11:
+Active response data for evaluation 11:
 Active set vector = { 1 }
                       1.7369071243e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   12
-------------------------------
-Parameters for function evaluation 12:
+---------------------
+Begin Evaluation   12
+---------------------
+Parameters for evaluation 12:
                      -1.1219960041e+00 x1
                      -1.2404650562e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 12:
+Active response data for evaluation 12:
 Active set vector = { 1 }
                       6.2917295531e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   13
-------------------------------
-Parameters for function evaluation 13:
+---------------------
+Begin Evaluation   13
+---------------------
+Parameters for evaluation 13:
                       1.1255377699e+00 x1
                       3.6088148877e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 13:
+Active response data for evaluation 13:
 Active set vector = { 1 }
                       8.2090985358e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   14
-------------------------------
-Parameters for function evaluation 14:
+---------------------
+Begin Evaluation   14
+---------------------
+Parameters for evaluation 14:
                      -6.3349332102e-01 x1
                      -2.1701825131e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 14:
+Active response data for evaluation 14:
 Active set vector = { 1 }
                       4.0901751485e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   15
-------------------------------
-Parameters for function evaluation 15:
+---------------------
+Begin Evaluation   15
+---------------------
+Parameters for evaluation 15:
                      -1.8627472268e+00 x1
                       1.6532116542e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 15:
+Active response data for evaluation 15:
 Active set vector = { 1 }
                       3.3820453712e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   16
-------------------------------
-Parameters for function evaluation 16:
+---------------------
+Begin Evaluation   16
+---------------------
+Parameters for evaluation 16:
                      -3.5910698865e-01 x1
                       1.4354481995e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 16:
+Active response data for evaluation 16:
 Active set vector = { 1 }
                       1.7253888055e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   17
-------------------------------
-Parameters for function evaluation 17:
+---------------------
+Begin Evaluation   17
+---------------------
+Parameters for evaluation 17:
                      -3.2606246136e-01 x1
                       9.7991685476e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 17:
+Active response data for evaluation 17:
 Active set vector = { 1 }
                       7.8076159675e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   18
-------------------------------
-Parameters for function evaluation 18:
+---------------------
+Begin Evaluation   18
+---------------------
+Parameters for evaluation 18:
                      -5.4007297195e-01 x1
                      -1.4348103134e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 18:
+Active response data for evaluation 18:
 Active set vector = { 1 }
                       3.0044829582e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   19
-------------------------------
-Parameters for function evaluation 19:
+---------------------
+Begin Evaluation   19
+---------------------
+Parameters for evaluation 19:
                       1.8292109389e+00 x1
                      -9.2047432717e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 19:
+Active response data for evaluation 19:
 Active set vector = { 1 }
                       1.8209787110e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   20
-------------------------------
-Parameters for function evaluation 20:
+---------------------
+Begin Evaluation   20
+---------------------
+Parameters for evaluation 20:
                      -1.7623206386e+00 x1
                       4.4294796139e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 20:
+Active response data for evaluation 20:
 Active set vector = { 1 }
                       7.1669468426e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   21
-------------------------------
-Parameters for function evaluation 21:
+---------------------
+Begin Evaluation   21
+---------------------
+Parameters for evaluation 21:
                      -6.8924805149e-01 x1
                       1.4506112663e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 21:
+Active response data for evaluation 21:
 Active set vector = { 1 }
                       9.8023025067e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   22
-------------------------------
-Parameters for function evaluation 22:
+---------------------
+Begin Evaluation   22
+---------------------
+Parameters for evaluation 22:
                      -1.7280850736e+00 x1
                       1.5891490942e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 22:
+Active response data for evaluation 22:
 Active set vector = { 1 }
                       2.0263937219e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   23
-------------------------------
-Parameters for function evaluation 23:
+---------------------
+Begin Evaluation   23
+---------------------
+Parameters for evaluation 23:
                       1.8173514614e+00 x1
                       1.9472422190e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 23:
+Active response data for evaluation 23:
 Active set vector = { 1 }
                       1.8441262610e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   24
-------------------------------
-Parameters for function evaluation 24:
+---------------------
+Begin Evaluation   24
+---------------------
+Parameters for evaluation 24:
                      -1.9299917025e+00 x1
                      -2.9903815407e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 24:
+Active response data for evaluation 24:
 Active set vector = { 1 }
                       1.6277669024e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   25
-------------------------------
-Parameters for function evaluation 25:
+---------------------
+Begin Evaluation   25
+---------------------
+Parameters for evaluation 25:
                       1.3519660262e+00 x1
                       8.8509546407e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 25:
+Active response data for evaluation 25:
 Active set vector = { 1 }
                       8.8995352458e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   26
-------------------------------
-Parameters for function evaluation 26:
+---------------------
+Begin Evaluation   26
+---------------------
+Parameters for evaluation 26:
                      -1.7952253437e+00 x1
                       8.5789793171e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 26:
+Active response data for evaluation 26:
 Active set vector = { 1 }
                       5.6710556177e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   27
-------------------------------
-Parameters for function evaluation 27:
+---------------------
+Begin Evaluation   27
+---------------------
+Parameters for evaluation 27:
                      -2.2001574561e-01 x1
                       4.2161457427e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 27:
+Active response data for evaluation 27:
 Active set vector = { 1 }
                       1.5416833119e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   28
-------------------------------
-Parameters for function evaluation 28:
+---------------------
+Begin Evaluation   28
+---------------------
+Parameters for evaluation 28:
                       6.2533408776e-01 x1
                      -2.0419972856e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 28:
+Active response data for evaluation 28:
 Active set vector = { 1 }
                       3.5571731958e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   29
-------------------------------
-Parameters for function evaluation 29:
+---------------------
+Begin Evaluation   29
+---------------------
+Parameters for evaluation 29:
                      -1.2102248967e+00 x1
                       1.3175153947e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 29:
+Active response data for evaluation 29:
 Active set vector = { 1 }
                       7.0497855880e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   30
-------------------------------
-Parameters for function evaluation 30:
+---------------------
+Begin Evaluation   30
+---------------------
+Parameters for evaluation 30:
                      -1.9372152295e+00 x1
                       1.5737254256e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 30:
+Active response data for evaluation 30:
 Active set vector = { 1 }
                       4.8346507343e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   31
-------------------------------
-Parameters for function evaluation 31:
+---------------------
+Begin Evaluation   31
+---------------------
+Parameters for evaluation 31:
                      -1.3413903229e+00 x1
                      -3.9910396747e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 31:
+Active response data for evaluation 31:
 Active set vector = { 1 }
                       4.8879241948e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   32
-------------------------------
-Parameters for function evaluation 32:
+---------------------
+Begin Evaluation   32
+---------------------
+Parameters for evaluation 32:
                      -1.0185104422e+00 x1
                      -1.8949802779e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 32:
+Active response data for evaluation 32:
 Active set vector = { 1 }
                       8.6393839984e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   33
-------------------------------
-Parameters for function evaluation 33:
+---------------------
+Begin Evaluation   33
+---------------------
+Parameters for evaluation 33:
                       1.7999429442e-01 x1
                       6.0038573761e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 33:
+Active response data for evaluation 33:
 Active set vector = { 1 }
                       3.2933422496e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   34
-------------------------------
-Parameters for function evaluation 34:
+---------------------
+Begin Evaluation   34
+---------------------
+Parameters for evaluation 34:
                       5.1903045271e-01 x1
                       6.4259849954e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 34:
+Active response data for evaluation 34:
 Active set vector = { 1 }
                       1.4159595242e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   35
-------------------------------
-Parameters for function evaluation 35:
+---------------------
+Begin Evaluation   35
+---------------------
+Parameters for evaluation 35:
                       2.9443974420e-01 x1
                       3.9697712753e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 35:
+Active response data for evaluation 35:
 Active set vector = { 1 }
                       1.0125329850e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   36
-------------------------------
-Parameters for function evaluation 36:
+---------------------
+Begin Evaluation   36
+---------------------
+Parameters for evaluation 36:
                       9.0061345976e-01 x1
                      -2.0319984108e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 36:
+Active response data for evaluation 36:
 Active set vector = { 1 }
                       1.0289122840e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   37
-------------------------------
-Parameters for function evaluation 37:
+---------------------
+Begin Evaluation   37
+---------------------
+Parameters for evaluation 37:
                       3.9005300868e-01 x1
                       1.6298978217e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 37:
+Active response data for evaluation 37:
 Active set vector = { 1 }
                       3.8380418118e-01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   38
-------------------------------
-Parameters for function evaluation 38:
+---------------------
+Begin Evaluation   38
+---------------------
+Parameters for evaluation 38:
                      -1.4782828884e+00 x1
                       1.5526822582e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 38:
+Active response data for evaluation 38:
 Active set vector = { 1 }
                       4.6164975041e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   39
-------------------------------
-Parameters for function evaluation 39:
+---------------------
+Begin Evaluation   39
+---------------------
+Parameters for evaluation 39:
                      -8.3073056210e-01 x1
                       1.5440400373e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 39:
+Active response data for evaluation 39:
 Active set vector = { 1 }
                       7.6270667331e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   40
-------------------------------
-Parameters for function evaluation 40:
+---------------------
+Begin Evaluation   40
+---------------------
+Parameters for evaluation 40:
                       1.4340986665e+00 x1
                       1.7916920613e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 40:
+Active response data for evaluation 40:
 Active set vector = { 1 }
                       7.2081289062e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   41
-------------------------------
-Parameters for function evaluation 41:
+---------------------
+Begin Evaluation   41
+---------------------
+Parameters for evaluation 41:
                      -1.9572174419e+00 x1
                      -6.1101420410e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 41:
+Active response data for evaluation 41:
 Active set vector = { 1 }
                       1.9816277440e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   42
-------------------------------
-Parameters for function evaluation 42:
+---------------------
+Begin Evaluation   42
+---------------------
+Parameters for evaluation 42:
                       1.2234701123e-01 x1
                      -1.7366493661e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 42:
+Active response data for evaluation 42:
 Active set vector = { 1 }
                       3.0758689165e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   43
-------------------------------
-Parameters for function evaluation 43:
+---------------------
+Begin Evaluation   43
+---------------------
+Parameters for evaluation 43:
                       8.7510431465e-01 x1
                      -1.4706656691e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 43:
+Active response data for evaluation 43:
 Active set vector = { 1 }
                       5.0019685004e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   44
-------------------------------
-Parameters for function evaluation 44:
+---------------------
+Begin Evaluation   44
+---------------------
+Parameters for evaluation 44:
                      -8.0909713544e-01 x1
                      -1.3909120029e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 44:
+Active response data for evaluation 44:
 Active set vector = { 1 }
                       4.2170038530e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   45
-------------------------------
-Parameters for function evaluation 45:
+---------------------
+Begin Evaluation   45
+---------------------
+Parameters for evaluation 45:
                      -7.5792063493e-01 x1
                      -1.6361948103e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 45:
+Active response data for evaluation 45:
 Active set vector = { 1 }
                       4.9178254234e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   46
-------------------------------
-Parameters for function evaluation 46:
+---------------------
+Begin Evaluation   46
+---------------------
+Parameters for evaluation 46:
                      -1.2049044976e+00 x1
                       7.3143723793e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 46:
+Active response data for evaluation 46:
 Active set vector = { 1 }
                       5.6753112531e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   47
-------------------------------
-Parameters for function evaluation 47:
+---------------------
+Begin Evaluation   47
+---------------------
+Parameters for evaluation 47:
                       1.4005633090e+00 x1
                      -9.1471580975e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 47:
+Active response data for evaluation 47:
 Active set vector = { 1 }
                       8.2746681875e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   48
-------------------------------
-Parameters for function evaluation 48:
+---------------------
+Begin Evaluation   48
+---------------------
+Parameters for evaluation 48:
                       1.0527531384e+00 x1
                      -1.9753265372e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 48:
+Active response data for evaluation 48:
 Active set vector = { 1 }
                       9.5087136603e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   49
-------------------------------
-Parameters for function evaluation 49:
+---------------------
+Begin Evaluation   49
+---------------------
+Parameters for evaluation 49:
                      -1.4243843090e+00 x1
                      -1.3418385843e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 49:
+Active response data for evaluation 49:
 Active set vector = { 1 }
                       1.1420457200e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   50
-------------------------------
-Parameters for function evaluation 50:
+---------------------
+Begin Evaluation   50
+---------------------
+Parameters for evaluation 50:
                      -6.7480768170e-01 x1
                       1.6872205548e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 50:
+Active response data for evaluation 50:
 Active set vector = { 1 }
                       1.5455169122e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   51
-------------------------------
-Parameters for function evaluation 51:
+---------------------
+Begin Evaluation   51
+---------------------
+Parameters for evaluation 51:
                       9.8685195670e-02 x1
                       2.1565723512e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 51:
+Active response data for evaluation 51:
 Active set vector = { 1 }
                       5.0526098932e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   52
-------------------------------
-Parameters for function evaluation 52:
+---------------------
+Begin Evaluation   52
+---------------------
+Parameters for evaluation 52:
                       4.9969653599e-02 x1
                      -8.3235805389e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 52:
+Active response data for evaluation 52:
 Active set vector = { 1 }
                       7.0600848129e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   53
-------------------------------
-Parameters for function evaluation 53:
+---------------------
+Begin Evaluation   53
+---------------------
+Parameters for evaluation 53:
                      -4.9290674739e-02 x1
                       1.9706998682e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 53:
+Active response data for evaluation 53:
 Active set vector = { 1 }
                       3.8850980734e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   54
-------------------------------
-Parameters for function evaluation 54:
+---------------------
+Begin Evaluation   54
+---------------------
+Parameters for evaluation 54:
                      -8.0146367755e-01 x1
                       9.8435082007e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 54:
+Active response data for evaluation 54:
 Active set vector = { 1 }
                       1.4942136071e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   55
-------------------------------
-Parameters for function evaluation 55:
+---------------------
+Begin Evaluation   55
+---------------------
+Parameters for evaluation 55:
                       1.6171041131e-01 x1
                       1.8132107733e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 55:
+Active response data for evaluation 55:
 Active set vector = { 1 }
                       3.2006125827e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   56
-------------------------------
-Parameters for function evaluation 56:
+---------------------
+Begin Evaluation   56
+---------------------
+Parameters for evaluation 56:
                       1.3244901672e+00 x1
                      -1.9354041340e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 56:
+Active response data for evaluation 56:
 Active set vector = { 1 }
                       1.3614779169e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   57
-------------------------------
-Parameters for function evaluation 57:
+---------------------
+Begin Evaluation   57
+---------------------
+Parameters for evaluation 57:
                      -1.8437483478e+00 x1
                       2.7601924073e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 57:
+Active response data for evaluation 57:
 Active set vector = { 1 }
                       9.8364262017e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   58
-------------------------------
-Parameters for function evaluation 58:
+---------------------
+Begin Evaluation   58
+---------------------
+Parameters for evaluation 58:
                      -1.7464441229e+00 x1
                      -2.7908429783e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 58:
+Active response data for evaluation 58:
 Active set vector = { 1 }
                       1.1158678412e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   59
-------------------------------
-Parameters for function evaluation 59:
+---------------------
+Begin Evaluation   59
+---------------------
+Parameters for evaluation 59:
                      -1.3963732161e+00 x1
                       5.2979266271e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 59:
+Active response data for evaluation 59:
 Active set vector = { 1 }
                       2.0740120583e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   60
-------------------------------
-Parameters for function evaluation 60:
+---------------------
+Begin Evaluation   60
+---------------------
+Parameters for evaluation 60:
                      -1.6666984186e+00 x1
                       9.0664289892e-03 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 60:
+Active response data for evaluation 60:
 Active set vector = { 1 }
                       7.7374614331e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   61
-------------------------------
-Parameters for function evaluation 61:
+---------------------
+Begin Evaluation   61
+---------------------
+Parameters for evaluation 61:
                      -5.8687499911e-01 x1
                       1.8282960849e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 61:
+Active response data for evaluation 61:
 Active set vector = { 1 }
                       2.2270632372e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   62
-------------------------------
-Parameters for function evaluation 62:
+---------------------
+Begin Evaluation   62
+---------------------
+Parameters for evaluation 62:
                       6.6861146130e-01 x1
                       4.5505198836e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 62:
+Active response data for evaluation 62:
 Active set vector = { 1 }
                       1.1623549854e-01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   63
-------------------------------
-Parameters for function evaluation 63:
+---------------------
+Begin Evaluation   63
+---------------------
+Parameters for evaluation 63:
                       6.9942253083e-01 x1
                      -3.8403909560e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 63:
+Active response data for evaluation 63:
 Active set vector = { 1 }
                       7.6343579902e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   64
-------------------------------
-Parameters for function evaluation 64:
+---------------------
+Begin Evaluation   64
+---------------------
+Parameters for evaluation 64:
                      -1.6050670017e-01 x1
                      -5.1836981531e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 64:
+Active response data for evaluation 64:
 Active set vector = { 1 }
                       3.0954762662e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   65
-------------------------------
-Parameters for function evaluation 65:
+---------------------
+Begin Evaluation   65
+---------------------
+Parameters for evaluation 65:
                      -9.0917657223e-01 x1
                       1.7857542038e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 65:
+Active response data for evaluation 65:
 Active set vector = { 1 }
                       9.5642242614e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   66
-------------------------------
-Parameters for function evaluation 66:
+---------------------
+Begin Evaluation   66
+---------------------
+Parameters for evaluation 66:
                      -1.7598212929e+00 x1
                       6.4359493554e-03 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 66:
+Active response data for evaluation 66:
 Active set vector = { 1 }
                       9.6275729305e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   67
-------------------------------
-Parameters for function evaluation 67:
+---------------------
+Begin Evaluation   67
+---------------------
+Parameters for evaluation 67:
                       1.1548028514e+00 x1
                       1.1781131681e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 67:
+Active response data for evaluation 67:
 Active set vector = { 1 }
                       2.4406349390e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   68
-------------------------------
-Parameters for function evaluation 68:
+---------------------
+Begin Evaluation   68
+---------------------
+Parameters for evaluation 68:
                      -1.3641650220e+00 x1
                      -5.3950542025e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 68:
+Active response data for evaluation 68:
 Active set vector = { 1 }
                       5.8180607790e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   69
-------------------------------
-Parameters for function evaluation 69:
+---------------------
+Begin Evaluation   69
+---------------------
+Parameters for evaluation 69:
                      -1.1379471170e+00 x1
                       1.5246232655e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 69:
+Active response data for evaluation 69:
 Active set vector = { 1 }
                       9.8470096223e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   70
-------------------------------
-Parameters for function evaluation 70:
+---------------------
+Begin Evaluation   70
+---------------------
+Parameters for evaluation 70:
                      -1.2901351862e+00 x1
                       1.2054709159e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 70:
+Active response data for evaluation 70:
 Active set vector = { 1 }
                       2.4360796726e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   71
-------------------------------
-Parameters for function evaluation 71:
+---------------------
+Begin Evaluation   71
+---------------------
+Parameters for evaluation 71:
                      -1.2728889128e+00 x1
                      -1.8521234281e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 71:
+Active response data for evaluation 71:
 Active set vector = { 1 }
                       1.2109010966e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   72
-------------------------------
-Parameters for function evaluation 72:
+---------------------
+Begin Evaluation   72
+---------------------
+Parameters for evaluation 72:
                       7.0480751805e-02 x1
                      -1.9451362779e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 72:
+Active response data for evaluation 72:
 Active set vector = { 1 }
                       3.8115449469e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   73
-------------------------------
-Parameters for function evaluation 73:
+---------------------
+Begin Evaluation   73
+---------------------
+Parameters for evaluation 73:
                       1.8359628338e+00 x1
                      -1.8344995938e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 73:
+Active response data for evaluation 73:
 Active set vector = { 1 }
                       2.7101710856e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   74
-------------------------------
-Parameters for function evaluation 74:
+---------------------
+Begin Evaluation   74
+---------------------
+Parameters for evaluation 74:
                       9.7026488371e-01 x1
                      -5.9168634191e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 74:
+Active response data for evaluation 74:
 Active set vector = { 1 }
                       2.3504053302e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   75
-------------------------------
-Parameters for function evaluation 75:
+---------------------
+Begin Evaluation   75
+---------------------
+Parameters for evaluation 75:
                       1.4881751463e+00 x1
                       4.8585594539e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 75:
+Active response data for evaluation 75:
 Active set vector = { 1 }
                       2.9911648168e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   76
-------------------------------
-Parameters for function evaluation 76:
+---------------------
+Begin Evaluation   76
+---------------------
+Parameters for evaluation 76:
                       1.3913424024e+00 x1
                       9.6439516079e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 76:
+Active response data for evaluation 76:
 Active set vector = { 1 }
                       9.4522428696e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   77
-------------------------------
-Parameters for function evaluation 77:
+---------------------
+Begin Evaluation   77
+---------------------
+Parameters for evaluation 77:
                      -8.1297393050e-01 x1
                      -4.4889854640e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 77:
+Active response data for evaluation 77:
 Active set vector = { 1 }
                       1.2645806262e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   78
-------------------------------
-Parameters for function evaluation 78:
+---------------------
+Begin Evaluation   78
+---------------------
+Parameters for evaluation 78:
                      -5.7511472516e-01 x1
                       1.8569529187e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 78:
+Active response data for evaluation 78:
 Active set vector = { 1 }
                       2.3540840077e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   79
-------------------------------
-Parameters for function evaluation 79:
+---------------------
+Begin Evaluation   79
+---------------------
+Parameters for evaluation 79:
                      -5.1131993253e-01 x1
                      -1.3986093542e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 79:
+Active response data for evaluation 79:
 Active set vector = { 1 }
                       2.7786315422e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   80
-------------------------------
-Parameters for function evaluation 80:
+---------------------
+Begin Evaluation   80
+---------------------
+Parameters for evaluation 80:
                      -8.2133998070e-01 x1
                       2.7139576524e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 80:
+Active response data for evaluation 80:
 Active set vector = { 1 }
                       1.9574593522e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   81
-------------------------------
-Parameters for function evaluation 81:
+---------------------
+Begin Evaluation   81
+---------------------
+Parameters for evaluation 81:
                      -8.6804735195e-01 x1
                      -1.4106000308e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 81:
+Active response data for evaluation 81:
 Active set vector = { 1 }
                       8.3514471013e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   82
-------------------------------
-Parameters for function evaluation 82:
+---------------------
+Begin Evaluation   82
+---------------------
+Parameters for evaluation 82:
                       1.9520266550e+00 x1
                       3.0095127877e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 82:
+Active response data for evaluation 82:
 Active set vector = { 1 }
                       1.2325350459e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   83
-------------------------------
-Parameters for function evaluation 83:
+---------------------
+Begin Evaluation   83
+---------------------
+Parameters for evaluation 83:
                       7.9209728166e-02 x1
                      -1.5089789759e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 83:
+Active response data for evaluation 83:
 Active set vector = { 1 }
                       2.3044706770e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   84
-------------------------------
-Parameters for function evaluation 84:
+---------------------
+Begin Evaluation   84
+---------------------
+Parameters for evaluation 84:
                       1.1890709139e+00 x1
                       1.9425932569e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 84:
+Active response data for evaluation 84:
 Active set vector = { 1 }
                       2.7988499439e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   85
-------------------------------
-Parameters for function evaluation 85:
+---------------------
+Begin Evaluation   85
+---------------------
+Parameters for evaluation 85:
                      -9.0474722814e-01 x1
                       1.3746243743e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 85:
+Active response data for evaluation 85:
 Active set vector = { 1 }
                       3.4547981544e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   86
-------------------------------
-Parameters for function evaluation 86:
+---------------------
+Begin Evaluation   86
+---------------------
+Parameters for evaluation 86:
                       1.0727617647e+00 x1
                      -7.2915195581e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 86:
+Active response data for evaluation 86:
 Active set vector = { 1 }
                       3.5343392402e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   87
-------------------------------
-Parameters for function evaluation 87:
+---------------------
+Begin Evaluation   87
+---------------------
+Parameters for evaluation 87:
                       1.9225378083e+00 x1
                       7.9435637034e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 87:
+Active response data for evaluation 87:
 Active set vector = { 1 }
                       8.4289264563e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   88
-------------------------------
-Parameters for function evaluation 88:
+---------------------
+Begin Evaluation   88
+---------------------
+Parameters for evaluation 88:
                       6.2722317874e-02 x1
                       1.9472418269e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 88:
+Active response data for evaluation 88:
 Active set vector = { 1 }
                       3.7852298582e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   89
-------------------------------
-Parameters for function evaluation 89:
+---------------------
+Begin Evaluation   89
+---------------------
+Parameters for evaluation 89:
                       8.5234562494e-01 x1
                      -5.5756631400e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 89:
+Active response data for evaluation 89:
 Active set vector = { 1 }
                       1.6490265053e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   90
-------------------------------
-Parameters for function evaluation 90:
+---------------------
+Begin Evaluation   90
+---------------------
+Parameters for evaluation 90:
                      -1.7790346071e+00 x1
                      -1.2456631828e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 90:
+Active response data for evaluation 90:
 Active set vector = { 1 }
                       1.9530863655e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   91
-------------------------------
-Parameters for function evaluation 91:
+---------------------
+Begin Evaluation   91
+---------------------
+Parameters for evaluation 91:
                       1.5554593140e+00 x1
                      -7.5798555557e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 91:
+Active response data for evaluation 91:
 Active set vector = { 1 }
                       1.0099205431e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   92
-------------------------------
-Parameters for function evaluation 92:
+---------------------
+Begin Evaluation   92
+---------------------
+Parameters for evaluation 92:
                      -1.4642173247e+00 x1
                      -1.6475991113e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 92:
+Active response data for evaluation 92:
 Active set vector = { 1 }
                       1.4436434675e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   93
-------------------------------
-Parameters for function evaluation 93:
+---------------------
+Begin Evaluation   93
+---------------------
+Parameters for evaluation 93:
                       1.1479418483e+00 x1
                       8.3483066130e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 93:
+Active response data for evaluation 93:
 Active set vector = { 1 }
                       2.3344974314e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   94
-------------------------------
-Parameters for function evaluation 94:
+---------------------
+Begin Evaluation   94
+---------------------
+Parameters for evaluation 94:
                      -4.2764065508e-01 x1
                       1.7429348407e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 94:
+Active response data for evaluation 94:
 Active set vector = { 1 }
                       2.4541635117e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   95
-------------------------------
-Parameters for function evaluation 95:
+---------------------
+Begin Evaluation   95
+---------------------
+Parameters for evaluation 95:
                       9.7430707980e-01 x1
                       1.3861659830e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 95:
+Active response data for evaluation 95:
 Active set vector = { 1 }
                       1.9088095643e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   96
-------------------------------
-Parameters for function evaluation 96:
+---------------------
+Begin Evaluation   96
+---------------------
+Parameters for evaluation 96:
                       2.4603561684e-01 x1
                       6.3130163588e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 96:
+Active response data for evaluation 96:
 Active set vector = { 1 }
                       5.6913654439e-01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   97
-------------------------------
-Parameters for function evaluation 97:
+---------------------
+Begin Evaluation   97
+---------------------
+Parameters for evaluation 97:
                       1.6620822996e-01 x1
                      -2.7590633370e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 97:
+Active response data for evaluation 97:
 Active set vector = { 1 }
                       1.0000872730e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   98
-------------------------------
-Parameters for function evaluation 98:
+---------------------
+Begin Evaluation   98
+---------------------
+Parameters for evaluation 98:
                       5.5008359626e-01 x1
                       8.3837921731e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 98:
+Active response data for evaluation 98:
 Active set vector = { 1 }
                       4.9877578220e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation   99
-------------------------------
-Parameters for function evaluation 99:
+---------------------
+Begin Evaluation   99
+---------------------
+Parameters for evaluation 99:
                      -1.5261109471e+00 x1
                      -7.4445004947e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 99:
+Active response data for evaluation 99:
 Active set vector = { 1 }
                       9.5099974579e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  100
-------------------------------
-Parameters for function evaluation 100:
+---------------------
+Begin Evaluation  100
+---------------------
+Parameters for evaluation 100:
                       3.2309930772e-01 x1
                       1.3754505562e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 100:
+Active response data for evaluation 100:
 Active set vector = { 1 }
                       1.6201688431e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  101
-------------------------------
-Parameters for function evaluation 101:
+---------------------
+Begin Evaluation  101
+---------------------
+Parameters for evaluation 101:
                      -3.8159958739e-01 x1
                       7.0769191347e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 101:
+Active response data for evaluation 101:
 Active set vector = { 1 }
                       3.3501498288e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  102
-------------------------------
-Parameters for function evaluation 102:
+---------------------
+Begin Evaluation  102
+---------------------
+Parameters for evaluation 102:
                       1.2196441367e+00 x1
                       3.3232009038e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 102:
+Active response data for evaluation 102:
 Active set vector = { 1 }
                       1.3349965763e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  103
-------------------------------
-Parameters for function evaluation 103:
+---------------------
+Begin Evaluation  103
+---------------------
+Parameters for evaluation 103:
                      -1.0975080691e+00 x1
                      -1.9371390678e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 103:
+Active response data for evaluation 103:
 Active set vector = { 1 }
                       9.9140419926e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  104
-------------------------------
-Parameters for function evaluation 104:
+---------------------
+Begin Evaluation  104
+---------------------
+Parameters for evaluation 104:
                       3.1713629700e-01 x1
                       1.1668372666e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 104:
+Active response data for evaluation 104:
 Active set vector = { 1 }
                       1.1415773308e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  105
-------------------------------
-Parameters for function evaluation 105:
+---------------------
+Begin Evaluation  105
+---------------------
+Parameters for evaluation 105:
                       4.5446389262e-01 x1
                       9.6029377915e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 105:
+Active response data for evaluation 105:
 Active set vector = { 1 }
                       5.7112473079e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  106
-------------------------------
-Parameters for function evaluation 106:
+---------------------
+Begin Evaluation  106
+---------------------
+Parameters for evaluation 106:
                      -4.2975912523e-01 x1
                       1.1320244912e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 106:
+Active response data for evaluation 106:
 Active set vector = { 1 }
                       9.1787924443e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  107
-------------------------------
-Parameters for function evaluation 107:
+---------------------
+Begin Evaluation  107
+---------------------
+Parameters for evaluation 107:
                      -1.9444125704e-01 x1
                       1.9691046355e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 107:
+Active response data for evaluation 107:
 Active set vector = { 1 }
                       3.7441759017e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  108
-------------------------------
-Parameters for function evaluation 108:
+---------------------
+Begin Evaluation  108
+---------------------
+Parameters for evaluation 108:
                       2.7305287216e-01 x1
                       8.7296705134e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 108:
+Active response data for evaluation 108:
 Active set vector = { 1 }
                       6.4274174053e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  109
-------------------------------
-Parameters for function evaluation 109:
+---------------------
+Begin Evaluation  109
+---------------------
+Parameters for evaluation 109:
                       5.9940282162e-01 x1
                       2.5179230422e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 109:
+Active response data for evaluation 109:
 Active set vector = { 1 }
                       1.3159190312e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  110
-------------------------------
-Parameters for function evaluation 110:
+---------------------
+Begin Evaluation  110
+---------------------
+Parameters for evaluation 110:
                      -1.3634484028e+00 x1
                      -1.4700608803e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 110:
+Active response data for evaluation 110:
 Active set vector = { 1 }
                       1.1138448949e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  111
-------------------------------
-Parameters for function evaluation 111:
+---------------------
+Begin Evaluation  111
+---------------------
+Parameters for evaluation 111:
                      -1.7997673629e+00 x1
                      -6.9792641327e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 111:
+Active response data for evaluation 111:
 Active set vector = { 1 }
                       1.5579056560e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  112
-------------------------------
-Parameters for function evaluation 112:
+---------------------
+Begin Evaluation  112
+---------------------
+Parameters for evaluation 112:
                      -1.2939358139e+00 x1
                       8.4469255526e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 112:
+Active response data for evaluation 112:
 Active set vector = { 1 }
                       7.4081997050e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  113
-------------------------------
-Parameters for function evaluation 113:
+---------------------
+Begin Evaluation  113
+---------------------
+Parameters for evaluation 113:
                       1.6644403469e+00 x1
                      -1.0462157670e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 113:
+Active response data for evaluation 113:
 Active set vector = { 1 }
                       1.4570678130e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  114
-------------------------------
-Parameters for function evaluation 114:
+---------------------
+Begin Evaluation  114
+---------------------
+Parameters for evaluation 114:
                       1.5519297263e+00 x1
                       5.8821337298e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 114:
+Active response data for evaluation 114:
 Active set vector = { 1 }
                       5.5239697052e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  115
-------------------------------
-Parameters for function evaluation 115:
+---------------------
+Begin Evaluation  115
+---------------------
+Parameters for evaluation 115:
                      -1.7434889274e+00 x1
                       6.4360377844e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 115:
+Active response data for evaluation 115:
 Active set vector = { 1 }
                       5.8168014733e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  116
-------------------------------
-Parameters for function evaluation 116:
+---------------------
+Begin Evaluation  116
+---------------------
+Parameters for evaluation 116:
                      -4.9723929726e-02 x1
                      -6.8581290543e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 116:
+Active response data for evaluation 116:
 Active set vector = { 1 }
                       1.6067840058e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  117
-------------------------------
-Parameters for function evaluation 117:
+---------------------
+Begin Evaluation  117
+---------------------
+Parameters for evaluation 117:
                      -1.5013773041e+00 x1
                       3.8516894449e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 117:
+Active response data for evaluation 117:
 Active set vector = { 1 }
                       3.5555985498e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  118
-------------------------------
-Parameters for function evaluation 118:
+---------------------
+Begin Evaluation  118
+---------------------
+Parameters for evaluation 118:
                       2.8166943695e-01 x1
                      -1.0171511527e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 118:
+Active response data for evaluation 118:
 Active set vector = { 1 }
                       1.2074477301e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  119
-------------------------------
-Parameters for function evaluation 119:
+---------------------
+Begin Evaluation  119
+---------------------
+Parameters for evaluation 119:
                       1.6905354178e+00 x1
                       1.5155785345e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 119:
+Active response data for evaluation 119:
 Active set vector = { 1 }
                       7.3291103257e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  120
-------------------------------
-Parameters for function evaluation 120:
+---------------------
+Begin Evaluation  120
+---------------------
+Parameters for evaluation 120:
                      -1.4291809313e-01 x1
                       1.3551202025e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 120:
+Active response data for evaluation 120:
 Active set vector = { 1 }
                       1.7944723495e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  121
-------------------------------
-Parameters for function evaluation 121:
+---------------------
+Begin Evaluation  121
+---------------------
+Parameters for evaluation 121:
                      -1.8349097446e+00 x1
                       1.5898077004e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 121:
+Active response data for evaluation 121:
 Active set vector = { 1 }
                       1.0371072952e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  122
-------------------------------
-Parameters for function evaluation 122:
+---------------------
+Begin Evaluation  122
+---------------------
+Parameters for evaluation 122:
                      -6.9964191783e-01 x1
                      -1.3173921946e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 122:
+Active response data for evaluation 122:
 Active set vector = { 1 }
                       3.2937429407e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  123
-------------------------------
-Parameters for function evaluation 123:
+---------------------
+Begin Evaluation  123
+---------------------
+Parameters for evaluation 123:
                      -4.2713618930e-01 x1
                       1.7910080962e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 123:
+Active response data for evaluation 123:
 Active set vector = { 1 }
                       4.7439023300e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  124
-------------------------------
-Parameters for function evaluation 124:
+---------------------
+Begin Evaluation  124
+---------------------
+Parameters for evaluation 124:
                      -9.9852210097e-01 x1
                      -5.8404032141e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 124:
+Active response data for evaluation 124:
 Active set vector = { 1 }
                       1.1539164913e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  125
-------------------------------
-Parameters for function evaluation 125:
+---------------------
+Begin Evaluation  125
+---------------------
+Parameters for evaluation 125:
                       4.8882051278e-01 x1
                       1.7734687226e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 125:
+Active response data for evaluation 125:
 Active set vector = { 1 }
                       2.3573745846e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  126
-------------------------------
-Parameters for function evaluation 126:
+---------------------
+Begin Evaluation  126
+---------------------
+Parameters for evaluation 126:
                      -4.5223962516e-02 x1
                       1.7415892426e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 126:
+Active response data for evaluation 126:
 Active set vector = { 1 }
                       3.0369383838e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  127
-------------------------------
-Parameters for function evaluation 127:
+---------------------
+Begin Evaluation  127
+---------------------
+Parameters for evaluation 127:
                      -1.1476051575e+00 x1
                       2.7394113317e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 127:
+Active response data for evaluation 127:
 Active set vector = { 1 }
                       1.1340888667e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  128
-------------------------------
-Parameters for function evaluation 128:
+---------------------
+Begin Evaluation  128
+---------------------
+Parameters for evaluation 128:
                       1.5091621038e+00 x1
                      -1.5346572753e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 128:
+Active response data for evaluation 128:
 Active set vector = { 1 }
                       1.4535671206e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  129
-------------------------------
-Parameters for function evaluation 129:
+---------------------
+Begin Evaluation  129
+---------------------
+Parameters for evaluation 129:
                       1.1078983182e+00 x1
                       1.1918286737e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 129:
+Active response data for evaluation 129:
 Active set vector = { 1 }
                       1.3844932676e-01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  130
-------------------------------
-Parameters for function evaluation 130:
+---------------------
+Begin Evaluation  130
+---------------------
+Parameters for evaluation 130:
                       7.7158754505e-01 x1
                      -2.2735723108e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 130:
+Active response data for evaluation 130:
 Active set vector = { 1 }
                       6.7736453325e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  131
-------------------------------
-Parameters for function evaluation 131:
+---------------------
+Begin Evaluation  131
+---------------------
+Parameters for evaluation 131:
                       1.8431510059e+00 x1
                      -4.4117484614e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 131:
+Active response data for evaluation 131:
 Active set vector = { 1 }
                       1.4740273721e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  132
-------------------------------
-Parameters for function evaluation 132:
+---------------------
+Begin Evaluation  132
+---------------------
+Parameters for evaluation 132:
                       1.1403347570e+00 x1
                      -1.6371418759e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 132:
+Active response data for evaluation 132:
 Active set vector = { 1 }
                       8.6291339385e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  133
-------------------------------
-Parameters for function evaluation 133:
+---------------------
+Begin Evaluation  133
+---------------------
+Parameters for evaluation 133:
                       7.0194576122e-01 x1
                       6.4099561982e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 133:
+Active response data for evaluation 133:
 Active set vector = { 1 }
                       2.2871694358e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  134
-------------------------------
-Parameters for function evaluation 134:
+---------------------
+Begin Evaluation  134
+---------------------
+Parameters for evaluation 134:
                       7.0704953466e-01 x1
                       4.0207310021e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 134:
+Active response data for evaluation 134:
 Active set vector = { 1 }
                       1.0432028557e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  135
-------------------------------
-Parameters for function evaluation 135:
+---------------------
+Begin Evaluation  135
+---------------------
+Parameters for evaluation 135:
                      -4.3850202952e-01 x1
                      -1.2200750867e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 135:
+Active response data for evaluation 135:
 Active set vector = { 1 }
                       2.0154511551e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  136
-------------------------------
-Parameters for function evaluation 136:
+---------------------
+Begin Evaluation  136
+---------------------
+Parameters for evaluation 136:
                      -1.1076646335e+00 x1
                      -1.3352867924e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 136:
+Active response data for evaluation 136:
 Active set vector = { 1 }
                       6.6093309679e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  137
-------------------------------
-Parameters for function evaluation 137:
+---------------------
+Begin Evaluation  137
+---------------------
+Parameters for evaluation 137:
                       6.3682158571e-01 x1
                       5.7570449915e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 137:
+Active response data for evaluation 137:
 Active set vector = { 1 }
                       3.0274352922e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  138
-------------------------------
-Parameters for function evaluation 138:
+---------------------
+Begin Evaluation  138
+---------------------
+Parameters for evaluation 138:
                      -1.0544754891e+00 x1
                       1.5132750031e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 138:
+Active response data for evaluation 138:
 Active set vector = { 1 }
                       2.0329569210e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  139
-------------------------------
-Parameters for function evaluation 139:
+---------------------
+Begin Evaluation  139
+---------------------
+Parameters for evaluation 139:
                       5.6349932682e-01 x1
                      -1.8303335905e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 139:
+Active response data for evaluation 139:
 Active set vector = { 1 }
                       4.6152297381e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  140
-------------------------------
-Parameters for function evaluation 140:
+---------------------
+Begin Evaluation  140
+---------------------
+Parameters for evaluation 140:
                       1.6519966954e+00 x1
                      -3.8136484008e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 140:
+Active response data for evaluation 140:
 Active set vector = { 1 }
                       9.6791994803e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  141
-------------------------------
-Parameters for function evaluation 141:
+---------------------
+Begin Evaluation  141
+---------------------
+Parameters for evaluation 141:
                       1.2659554128e+00 x1
                      -1.1803654181e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 141:
+Active response data for evaluation 141:
 Active set vector = { 1 }
                       7.7458437740e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  142
-------------------------------
-Parameters for function evaluation 142:
+---------------------
+Begin Evaluation  142
+---------------------
+Parameters for evaluation 142:
                       3.0241156276e-01 x1
                      -6.4954133797e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 142:
+Active response data for evaluation 142:
 Active set vector = { 1 }
                       5.5393853957e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  143
-------------------------------
-Parameters for function evaluation 143:
+---------------------
+Begin Evaluation  143
+---------------------
+Parameters for evaluation 143:
                       1.3769353684e+00 x1
                      -1.1995591773e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 143:
+Active response data for evaluation 143:
 Active set vector = { 1 }
                       9.5836041146e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  144
-------------------------------
-Parameters for function evaluation 144:
+---------------------
+Begin Evaluation  144
+---------------------
+Parameters for evaluation 144:
                      -1.6706409911e+00 x1
                       7.8016828839e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 144:
+Active response data for evaluation 144:
 Active set vector = { 1 }
                       4.1149335865e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  145
-------------------------------
-Parameters for function evaluation 145:
+---------------------
+Begin Evaluation  145
+---------------------
+Parameters for evaluation 145:
                       1.3127706358e+00 x1
                       1.0567905866e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 145:
+Active response data for evaluation 145:
 Active set vector = { 1 }
                       4.4530202607e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  146
-------------------------------
-Parameters for function evaluation 146:
+---------------------
+Begin Evaluation  146
+---------------------
+Parameters for evaluation 146:
                       9.8514981568e-02 x1
                       6.4445066638e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 146:
+Active response data for evaluation 146:
 Active set vector = { 1 }
                       4.1102855746e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  147
-------------------------------
-Parameters for function evaluation 147:
+---------------------
+Begin Evaluation  147
+---------------------
+Parameters for evaluation 147:
                       1.6908467142e+00 x1
                      -4.1924811434e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 147:
+Active response data for evaluation 147:
 Active set vector = { 1 }
                       1.0751438251e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  148
-------------------------------
-Parameters for function evaluation 148:
+---------------------
+Begin Evaluation  148
+---------------------
+Parameters for evaluation 148:
                      -1.6690580333e+00 x1
                      -6.6497707553e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 148:
+Active response data for evaluation 148:
 Active set vector = { 1 }
                       1.1978788622e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  149
-------------------------------
-Parameters for function evaluation 149:
+---------------------
+Begin Evaluation  149
+---------------------
+Parameters for evaluation 149:
                       1.0457461113e+00 x1
                      -2.7848267928e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 149:
+Active response data for evaluation 149:
 Active set vector = { 1 }
                       1.2576333430e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  150
-------------------------------
-Parameters for function evaluation 150:
+---------------------
+Begin Evaluation  150
+---------------------
+Parameters for evaluation 150:
                       1.2944799364e+00 x1
                       1.7555450909e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 150:
+Active response data for evaluation 150:
 Active set vector = { 1 }
                       7.2458877141e-01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  151
-------------------------------
-Parameters for function evaluation 151:
+---------------------
+Begin Evaluation  151
+---------------------
+Parameters for evaluation 151:
                       2.7196448296e-01 x1
                      -1.8185446784e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 151:
+Active response data for evaluation 151:
 Active set vector = { 1 }
                       3.5868920287e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  152
-------------------------------
-Parameters for function evaluation 152:
+---------------------
+Begin Evaluation  152
+---------------------
+Parameters for evaluation 152:
                      -6.5885514021e-02 x1
                      -1.3711618464e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 152:
+Active response data for evaluation 152:
 Active set vector = { 1 }
                       1.9033689274e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  153
-------------------------------
-Parameters for function evaluation 153:
+---------------------
+Begin Evaluation  153
+---------------------
+Parameters for evaluation 153:
                      -9.1778669506e-01 x1
                      -2.9697120190e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 153:
+Active response data for evaluation 153:
 Active set vector = { 1 }
                       1.3347917956e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  154
-------------------------------
-Parameters for function evaluation 154:
+---------------------
+Begin Evaluation  154
+---------------------
+Parameters for evaluation 154:
                      -1.8833720135e+00 x1
                      -1.4537420366e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 154:
+Active response data for evaluation 154:
 Active set vector = { 1 }
                       2.5091460811e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  155
-------------------------------
-Parameters for function evaluation 155:
+---------------------
+Begin Evaluation  155
+---------------------
+Parameters for evaluation 155:
                      -8.9472768828e-02 x1
                      -1.0701182969e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 155:
+Active response data for evaluation 155:
 Active set vector = { 1 }
                       1.1742201640e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  156
-------------------------------
-Parameters for function evaluation 156:
+---------------------
+Begin Evaluation  156
+---------------------
+Parameters for evaluation 156:
                       6.0967448168e-01 x1
                      -1.8004202675e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 156:
+Active response data for evaluation 156:
 Active set vector = { 1 }
                       4.7196429147e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  157
-------------------------------
-Parameters for function evaluation 157:
+---------------------
+Begin Evaluation  157
+---------------------
+Parameters for evaluation 157:
                      -1.0745374234e+00 x1
                      -1.2558351522e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 157:
+Active response data for evaluation 157:
 Active set vector = { 1 }
                       5.8533825564e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  158
-------------------------------
-Parameters for function evaluation 158:
+---------------------
+Begin Evaluation  158
+---------------------
+Parameters for evaluation 158:
                      -2.8509317897e-02 x1
                       4.5542444102e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 158:
+Active response data for evaluation 158:
 Active set vector = { 1 }
                       1.2579056913e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  159
-------------------------------
-Parameters for function evaluation 159:
+---------------------
+Begin Evaluation  159
+---------------------
+Parameters for evaluation 159:
                      -2.5099205412e-01 x1
                       1.8268402433e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 159:
+Active response data for evaluation 159:
 Active set vector = { 1 }
                       3.1267927585e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  160
-------------------------------
-Parameters for function evaluation 160:
+---------------------
+Begin Evaluation  160
+---------------------
+Parameters for evaluation 160:
                       1.3314837422e+00 x1
                      -3.8570402004e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 160:
+Active response data for evaluation 160:
 Active set vector = { 1 }
                       4.6604497642e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  161
-------------------------------
-Parameters for function evaluation 161:
+---------------------
+Begin Evaluation  161
+---------------------
+Parameters for evaluation 161:
                      -4.1581023391e-01 x1
                      -1.7764135227e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 161:
+Active response data for evaluation 161:
 Active set vector = { 1 }
                       3.8198611858e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  162
-------------------------------
-Parameters for function evaluation 162:
+---------------------
+Begin Evaluation  162
+---------------------
+Parameters for evaluation 162:
                       2.0700548403e-01 x1
                       3.7115622964e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 162:
+Active response data for evaluation 162:
 Active set vector = { 1 }
                       1.1407254927e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  163
-------------------------------
-Parameters for function evaluation 163:
+---------------------
+Begin Evaluation  163
+---------------------
+Parameters for evaluation 163:
                      -1.4057009285e+00 x1
                       1.8665206274e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 163:
+Active response data for evaluation 163:
 Active set vector = { 1 }
                       6.9858629830e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  164
-------------------------------
-Parameters for function evaluation 164:
+---------------------
+Begin Evaluation  164
+---------------------
+Parameters for evaluation 164:
                       1.3254556898e+00 x1
                      -1.6658495273e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 164:
+Active response data for evaluation 164:
 Active set vector = { 1 }
                       1.1715813430e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  165
-------------------------------
-Parameters for function evaluation 165:
+---------------------
+Begin Evaluation  165
+---------------------
+Parameters for evaluation 165:
                       1.5509454170e+00 x1
                      -5.9417630453e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 165:
+Active response data for evaluation 165:
 Active set vector = { 1 }
                       9.0006835089e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  166
-------------------------------
-Parameters for function evaluation 166:
+---------------------
+Begin Evaluation  166
+---------------------
+Parameters for evaluation 166:
                      -1.3664959399e+00 x1
                       1.4351887945e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 166:
+Active response data for evaluation 166:
 Active set vector = { 1 }
                       2.4273276371e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  167
-------------------------------
-Parameters for function evaluation 167:
+---------------------
+Begin Evaluation  167
+---------------------
+Parameters for evaluation 167:
                      -1.0773216942e+00 x1
                       1.4567030575e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 167:
+Active response data for evaluation 167:
 Active set vector = { 1 }
                       1.3081662737e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  168
-------------------------------
-Parameters for function evaluation 168:
+---------------------
+Begin Evaluation  168
+---------------------
+Parameters for evaluation 168:
                      -5.7549884543e-01 x1
                       1.6453411821e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 168:
+Active response data for evaluation 168:
 Active set vector = { 1 }
                       1.7517918484e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  169
-------------------------------
-Parameters for function evaluation 169:
+---------------------
+Begin Evaluation  169
+---------------------
+Parameters for evaluation 169:
                       8.7214877736e-01 x1
                      -7.2534655780e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 169:
+Active response data for evaluation 169:
 Active set vector = { 1 }
                       2.2083298810e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  170
-------------------------------
-Parameters for function evaluation 170:
+---------------------
+Begin Evaluation  170
+---------------------
+Parameters for evaluation 170:
                      -1.8141711829e+00 x1
                      -5.3755431715e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 170:
+Active response data for evaluation 170:
 Active set vector = { 1 }
                       1.4738686013e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  171
-------------------------------
-Parameters for function evaluation 171:
+---------------------
+Begin Evaluation  171
+---------------------
+Parameters for evaluation 171:
                       1.8090730133e+00 x1
                      -1.5755461957e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 171:
+Active response data for evaluation 171:
 Active set vector = { 1 }
                       2.3512475132e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  172
-------------------------------
-Parameters for function evaluation 172:
+---------------------
+Begin Evaluation  172
+---------------------
+Parameters for evaluation 172:
                       9.2844819650e-01 x1
                       1.2567159375e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 172:
+Active response data for evaluation 172:
 Active set vector = { 1 }
                       1.5583919498e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  173
-------------------------------
-Parameters for function evaluation 173:
+---------------------
+Begin Evaluation  173
+---------------------
+Parameters for evaluation 173:
                       8.6257304065e-01 x1
                      -7.9802126624e-02 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 173:
+Active response data for evaluation 173:
 Active set vector = { 1 }
                       6.7889194255e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  174
-------------------------------
-Parameters for function evaluation 174:
+---------------------
+Begin Evaluation  174
+---------------------
+Parameters for evaluation 174:
                      -1.8505015131e-01 x1
                       1.9982240451e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 174:
+Active response data for evaluation 174:
 Active set vector = { 1 }
                       3.8712627906e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  175
-------------------------------
-Parameters for function evaluation 175:
+---------------------
+Begin Evaluation  175
+---------------------
+Parameters for evaluation 175:
                       1.5354568819e+00 x1
                       2.2982975841e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 175:
+Active response data for evaluation 175:
 Active set vector = { 1 }
                       4.5303917999e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  176
-------------------------------
-Parameters for function evaluation 176:
+---------------------
+Begin Evaluation  176
+---------------------
+Parameters for evaluation 176:
                       1.1747465981e+00 x1
                       3.4397489298e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 176:
+Active response data for evaluation 176:
 Active set vector = { 1 }
                       1.0737146571e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  177
-------------------------------
-Parameters for function evaluation 177:
+---------------------
+Begin Evaluation  177
+---------------------
+Parameters for evaluation 177:
                      -1.2339168582e+00 x1
                      -7.6424493641e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 177:
+Active response data for evaluation 177:
 Active set vector = { 1 }
                       5.2793386447e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  178
-------------------------------
-Parameters for function evaluation 178:
+---------------------
+Begin Evaluation  178
+---------------------
+Parameters for evaluation 178:
                       1.8542936938e+00 x1
                       1.1281110272e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 178:
+Active response data for evaluation 178:
 Active set vector = { 1 }
                       5.3447568931e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  179
-------------------------------
-Parameters for function evaluation 179:
+---------------------
+Begin Evaluation  179
+---------------------
+Parameters for evaluation 179:
                      -4.8858374637e-01 x1
                       2.2628138121e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 179:
+Active response data for evaluation 179:
 Active set vector = { 1 }
                       2.2313387629e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  180
-------------------------------
-Parameters for function evaluation 180:
+---------------------
+Begin Evaluation  180
+---------------------
+Parameters for evaluation 180:
                      -1.1192317251e+00 x1
                      -1.0599123528e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 180:
+Active response data for evaluation 180:
 Active set vector = { 1 }
                       5.3929932234e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  181
-------------------------------
-Parameters for function evaluation 181:
+---------------------
+Begin Evaluation  181
+---------------------
+Parameters for evaluation 181:
                       1.8413831852e+00 x1
                       1.6618316909e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 181:
+Active response data for evaluation 181:
 Active set vector = { 1 }
                       2.9960373455e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  182
-------------------------------
-Parameters for function evaluation 182:
+---------------------
+Begin Evaluation  182
+---------------------
+Parameters for evaluation 182:
                       7.2788355313e-01 x1
                       4.0202933457e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 182:
+Active response data for evaluation 182:
 Active set vector = { 1 }
                       1.7069513657e+00 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  183
-------------------------------
-Parameters for function evaluation 183:
+---------------------
+Begin Evaluation  183
+---------------------
+Parameters for evaluation 183:
                      -1.0817894386e+00 x1
                      -1.0578752235e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 183:
+Active response data for evaluation 183:
 Active set vector = { 1 }
                       5.0079624326e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  184
-------------------------------
-Parameters for function evaluation 184:
+---------------------
+Begin Evaluation  184
+---------------------
+Parameters for evaluation 184:
                       1.4561684188e+00 x1
                       1.0014561731e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 184:
+Active response data for evaluation 184:
 Active set vector = { 1 }
                       1.2541754076e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  185
-------------------------------
-Parameters for function evaluation 185:
+---------------------
+Begin Evaluation  185
+---------------------
+Parameters for evaluation 185:
                       1.9070050148e+00 x1
                       1.8247530907e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 185:
+Active response data for evaluation 185:
 Active set vector = { 1 }
                       3.2912626781e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  186
-------------------------------
-Parameters for function evaluation 186:
+---------------------
+Begin Evaluation  186
+---------------------
+Parameters for evaluation 186:
                       6.6053425614e-01 x1
                      -2.4372284580e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 186:
+Active response data for evaluation 186:
 Active set vector = { 1 }
                       4.6359092581e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  187
-------------------------------
-Parameters for function evaluation 187:
+---------------------
+Begin Evaluation  187
+---------------------
+Parameters for evaluation 187:
                      -7.4252570048e-03 x1
                      -3.6534839217e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 187:
+Active response data for evaluation 187:
 Active set vector = { 1 }
                       1.4366879374e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  188
-------------------------------
-Parameters for function evaluation 188:
+---------------------
+Begin Evaluation  188
+---------------------
+Parameters for evaluation 188:
                       1.4396963278e+00 x1
                      -6.4595591184e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 188:
+Active response data for evaluation 188:
 Active set vector = { 1 }
                       7.3931620359e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  189
-------------------------------
-Parameters for function evaluation 189:
+---------------------
+Begin Evaluation  189
+---------------------
+Parameters for evaluation 189:
                      -1.5880245799e+00 x1
                      -1.3245061962e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 189:
+Active response data for evaluation 189:
 Active set vector = { 1 }
                       1.4861219816e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  190
-------------------------------
-Parameters for function evaluation 190:
+---------------------
+Begin Evaluation  190
+---------------------
+Parameters for evaluation 190:
                       9.7586931661e-02 x1
                      -1.2624243582e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 190:
+Active response data for evaluation 190:
 Active set vector = { 1 }
                       1.6259941077e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  191
-------------------------------
-Parameters for function evaluation 191:
+---------------------
+Begin Evaluation  191
+---------------------
+Parameters for evaluation 191:
                       1.9375341516e+00 x1
                       1.4987600604e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 191:
+Active response data for evaluation 191:
 Active set vector = { 1 }
                       5.0950709426e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  192
-------------------------------
-Parameters for function evaluation 192:
+---------------------
+Begin Evaluation  192
+---------------------
+Parameters for evaluation 192:
                       1.1823785743e+00 x1
                      -1.3152226210e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 192:
+Active response data for evaluation 192:
 Active set vector = { 1 }
                       7.3620132173e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  193
-------------------------------
-Parameters for function evaluation 193:
+---------------------
+Begin Evaluation  193
+---------------------
+Parameters for evaluation 193:
                       4.3950630166e-01 x1
                       1.0310522951e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 193:
+Active response data for evaluation 193:
 Active set vector = { 1 }
                       7.0519532867e+01 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  194
-------------------------------
-Parameters for function evaluation 194:
+---------------------
+Begin Evaluation  194
+---------------------
+Parameters for evaluation 194:
                      -1.9955044035e+00 x1
                       1.4303960530e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 194:
+Active response data for evaluation 194:
 Active set vector = { 1 }
                       6.6006061955e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  195
-------------------------------
-Parameters for function evaluation 195:
+---------------------
+Begin Evaluation  195
+---------------------
+Parameters for evaluation 195:
                      -5.6874557491e-01 x1
                      -9.5596421510e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 195:
+Active response data for evaluation 195:
 Active set vector = { 1 }
                       1.6615654500e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  196
-------------------------------
-Parameters for function evaluation 196:
+---------------------
+Begin Evaluation  196
+---------------------
+Parameters for evaluation 196:
                       1.7827327345e+00 x1
                       3.3226588275e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 196:
+Active response data for evaluation 196:
 Active set vector = { 1 }
                       8.1051034438e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  197
-------------------------------
-Parameters for function evaluation 197:
+---------------------
+Begin Evaluation  197
+---------------------
+Parameters for evaluation 197:
                      -1.5753245782e+00 x1
                       7.4972696323e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 197:
+Active response data for evaluation 197:
 Active set vector = { 1 }
                       3.0658718051e+02 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  198
-------------------------------
-Parameters for function evaluation 198:
+---------------------
+Begin Evaluation  198
+---------------------
+Parameters for evaluation 198:
                       1.4841879662e+00 x1
                      -1.0855042255e+00 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 198:
+Active response data for evaluation 198:
 Active set vector = { 1 }
                       1.0815380599e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  199
-------------------------------
-Parameters for function evaluation 199:
+---------------------
+Begin Evaluation  199
+---------------------
+Parameters for evaluation 199:
                      -1.7371907011e+00 x1
                      -3.4343548398e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 199:
+Active response data for evaluation 199:
 Active set vector = { 1 }
                       1.1373038081e+03 response_fn_1
 
 
 
-------------------------------
-Begin Function Evaluation  200
-------------------------------
-Parameters for function evaluation 200:
+---------------------
+Begin Evaluation  200
+---------------------
+Parameters for evaluation 200:
                       1.0952161625e-02 x1
                       7.6108891983e-01 x2
 
 Direct interface: invoking rosenbrock 
 
-Active response data for function evaluation 200:
+Active response data for evaluation 200:
 Active set vector = { 1 }
                       5.8885592954e+01 response_fn_1
 
@@ -3106,8 +3098,8 @@ Partial Rank Correlation Matrix between input and output:
           x2 -5.08762e-01 
 
 
-<<<<< Iterator nond_sampling completed.
-<<<<< Single Method Strategy completed.
+<<<<< Iterator random_sampling completed.
+<<<<< Environment execution completed.
 DAKOTA execution time in seconds:
-  Total CPU        =       0.03 [parent =   0.022997, child =   0.007003]
-  Total wall clock =  0.0287089
+  Total CPU        =       0.16 [parent =   0.154977, child =   0.005023]
+  Total wall clock =   0.264512

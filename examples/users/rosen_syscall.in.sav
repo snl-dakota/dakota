@@ -1,41 +1,37 @@
-# Dakota INPUT FILE - rosen_syscall.in 
-# Included Dakota example using the rosenbrock analysis code 
-# with gradient-based optimization, bounded design variables, and 	    
-# analysis code called with fork.  Usage:				    
-#   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout 
+# Dakota Input File: rosen_syscall.in
+# Usage:
+#   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout
 
-strategy
+environment
   graphics
   tabular_graphics_data
-    tabular_graphics_file = 'rosen_syscall.dat' 
-  single_method
+    tabular_graphics_file = 'rosen_syscall.dat'
 
 method
-  max_iterations = 100      
-  convergence_tolerance = 1e-4    
-  conmin_frcg        
+  max_iterations = 100
+  convergence_tolerance = 1e-4
+  conmin_frcg
 
 model
   single
 
 variables
-  continuous_design = 2                
-    initial_point    -1.2      1.0    
-    lower_bounds     -2.0     -2.0     
-    upper_bounds      2.0      2.0     
-    descriptors       'x1'     "x2"    
+  continuous_design = 2
+    initial_point    -1.2      1.0
+    lower_bounds     -2.0     -2.0
+    upper_bounds      2.0      2.0
+    descriptors       'x1'     "x2"
 
 interface
   analysis_driver = 'rosenbrock'
-    fork                             
-    parameters_file = 'params.in'    
-    results_file    = 'results.out'  
+    fork
+    parameters_file = 'params.in'
+    results_file    = 'results.out'
 
 responses
-  objective_functions = 1             
-  numerical_gradients      
-    method_source dakota      
-    interval_type forward      
-    fd_gradient_step_size = 1.e-5    
+  objective_functions = 1
+  numerical_gradients
+    method_source dakota
+    interval_type forward
+    fd_gradient_step_size = 1.e-5
   no_hessians
-
