@@ -1,0 +1,60 @@
+# DAKOTA INPUT FILE - dakota_multistart_ie.in
+
+# Demonstrate use of parallel iterators with parallel evaluations, in
+# combination with various user overrides of the automatic parallel
+# configuration
+# 0 - iterator_servers = 2. Yields a ded. master partition.
+# 1 - Add iterator_scheduling peer to force a peer partition.
+# 2 - evaluation_servers = 2. -> 4 iterator_servers
+# 3 - i_servers = 2, e_servers = 2 -> Idle processors.
+# 4 - i_servers = 2, e_scheduling master -> 2 evaluation servers of size 3.
+# 5 - i_servers = 4, ppi = 2, i_scheduling master. Ignore sched. request.
+# 6 - i_servers = 4, ppi = 2, e_servers = 2. Specify everything.
+# 7 - e_servers = 3, -> Idle processors
+# 8 - Reduced problem size to lower available eval concurrency
+# 9 - Reduced problem size + evaluation_scheduling master
+ 
+# Check the file dakota.out.1 instead of dakota.out:
+# p1=CheckOutput'dakota.out.1', p2=CheckOutput'dakota.out.1', p5=CheckOutput'dakota.out.1', p6=CheckOutput'dakota.out.1', p9=CheckOutput'dakota.out.1'
+
+# p0=8, p1=8, p2=8, p3=8, p4=8, p5=8, p6=8, p7=8, p8=8, p9=8
+
+environment,
+  top_method_pointer = 'MS'
+
+method,
+  id_method = 'MS'
+#   iterator_servers = 2 		#p0,#p1,#p3,#p4
+#   iterator_servers = 4 		#p5,#p6
+#   processors_per_iterator 2 		#p5,#p6
+#   iterator_scheduling master 		#p5
+#   iterator_scheduling peer 		#p1
+  multi_start
+    method_pointer = 'PS'
+    starting_points = -1.0 
+	              -0.5
+	               0.5
+                       1.0
+	               
+method,
+  id_method = 'PS'
+  vector_parameter_study
+  num_steps = 9				#0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7
+# num_steps = 2				#p8,#p9
+  step_vector = 0.01
+
+variables,
+  continuous_design = 1
+
+interface,
+#  evaluation_servers = 2 		#p2,#p3,#p6
+#  evaluation_servers = 3 		#p7
+#  processors_per_evaluation = 2
+#  evaluation_scheduling master 	#p4,#p9
+  fork
+    analysis_driver = 'text_book'
+
+responses,
+  num_objective_functions = 1
+  no_gradients
+  no_hessians

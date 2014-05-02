@@ -3912,6 +3912,119 @@ Test Number 3 succeeded
         6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
         7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
         8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
+dakota_multistart_ie.in 
+Test Number 0 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.9000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      2.8257610000e-02
+<<<<< Best data captured at function evaluation 20
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 3 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 4 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.1000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.3308633610e+01
+<<<<< Best data captured at function evaluation 10
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 7 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.91    13.30863361 
+        2           -0.5          -0.41     3.95254161 
+        3            0.5           0.59     0.02825761 
+        4              1              1              0 
+Test Number 8 succeeded
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*             f1 
+        1             -1          -0.98    15.36953616 
+        2           -0.5          -0.48     4.79785216 
+        3            0.5           0.52     0.05308416 
+        4              1              1              0 
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.8000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      1.5369536160e+01
+<<<<< Best data captured at function evaluation 3
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.2000000000e-01 cdv_1
+<<<<< Best objective function  =
+                      5.3084160000e-02
+<<<<< Best data captured at function evaluation 6
+<<<<< Results summary:
+   set_id          cdv_1         cdv_1*         obj_fn 
+        1             -1          -0.98    15.36953616 
+        2           -0.5          -0.48     4.79785216 
+        3            0.5           0.52     0.05308416 
+        4              1              1              0 
 dakota_repartition.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 9 total (9 new, 0 duplicate)
