@@ -18,7 +18,8 @@ Keith R. Dalbey
 Mohamed S.Ebeida
 Kenneth T. Hu
 John D. Jakeman
-Laura P. Swiler			        P.O. Box 5800, Mail Stop 1318
+Laura P. Swiler
+Timothy M. Wildey		        P.O. Box 5800, Mail Stop 1318
 Dena M. Vigil				Albuquerque, NM 87185-1318   
 
 Patricia D. Hough			P.O. Box 969, MS 9217
@@ -27,7 +28,7 @@ Lara E. Bauman				Livermore, CA 94551-0969
 ------------------------------------------------------------------------------
 License
 
-DAKOTA is distributed under the GNU Lesser General Public License.  It
+Dakota is distributed under the GNU Lesser General Public License.  It
 is free software; you can redistribute it and/or modify it under the
 terms of the GNU Lesser General Public License as published by the
 Free Software Foundation; either version 2.1 of the License, or (at
@@ -92,9 +93,9 @@ third-party libraries for compilation and operation:
   BLAS/LAPACK	    BSD License, or that of compiler or system-provided libs
   Boost		    Boost Software License
 
-GPL/Other: DAKOTA may optionally depend on GNU GPL-licensed
+GPL/Other: Dakota may optionally depend on GNU GPL-licensed
 components, which are disabled by default, resulting in an
-LGPL-compatible DAKOTA.  Optional GPL capabilities include:
+LGPL-compatible Dakota.  Optional GPL capabilities include:
 
  * dakota/trunk/packages/hopspack/src/src-citizens/citizen-gss/cddlib/;
    enable with CMake setting HAVE_CDDLIB.
@@ -104,7 +105,7 @@ LGPL-compatible DAKOTA.  Optional GPL capabilities include:
    HAVE_FFTW
 
  * GNU Scientific Library: external third-party library; enable with
-   CMake setting DAKOTA_HAVE_GSL and pointer to gsl-config
+   CMake setting Dakota_HAVE_GSL and pointer to gsl-config
 
  * cURL/libcurl: external third-party library, MIT/modified-BSD
    license, but its dependencies have numerous licenses that make it
@@ -118,9 +119,9 @@ system runtimes, Doxygen, LaTeX, CMake, etc.
 ------------------------------------------------------------------------------
 Overview
 
-The DAKOTA (Design Analysis Kit for Optimization and Terascale Applications) 
+The Dakota (Design Analysis Kit for Optimization and Terascale Applications) 
 toolkit provides a flexible, extensible interface between analysis codes and 
-iteration methods. DAKOTA contains algorithms for optimization with gradient 
+iteration methods. Dakota contains algorithms for optimization with gradient 
 and nongradient-based methods; uncertainty quantification with sampling, 
 reliability, stochastic expansion, and epistemic methods; parameter estimation 
 with nonlinear least squares methods; and sensitivity/variance analysis with 
@@ -135,28 +136,29 @@ including support contacts.
 ------------------------------------------------------------------------------
 Distributions
 
-DAKOTA is distributed in binary (executable/library) and source code
+Dakota is distributed in binary (executable/library) and source code
 formats.  Recommendations for getting started with either format can
 be found in INSTALL included with the distribution, but the most up to
-date guidance can be found alongside downloads on the DAKOTA website.
+date guidance can be found alongside downloads on the Dakota website.
 
 ------------------------------------------------------------------------------
 Platforms
 
-DAKOTA operates on most systems running Unix or Linux operating
+Dakota operates on most systems running Unix or Linux operating
 systems as well as on Windows (with or without the help of a Cygwin
-emulation layer).  DAKOTA is developed and most extensively tested on
+emulation layer).  Dakota is developed and most extensively tested on
 Redhat Enterprise Linux with GNU compilers, but additional operating
 systems / compiler combinations are tested nightly as well.  See the
-DAKOTA website for more information on supported platforms for
-particular DAKOTA versions.  DAKOTA was historically tested on
+Dakota website for more information on supported platforms for
+particular Dakota versions.  Dakota was historically tested on
 SGI/IRIX, DEC/OSF, and HP-UX, but these are not actively supported.
 
 ------------------------------------------------------------------------------
 Versions
 
-Versions of the DAKOTA software have been tagged as follows:
+Versions of the Dakota software have been tagged as follows:
 
+6.0		   05/15/14 (refer to svn externals for TPL tags)
 5.4                11/15/13 (refer to svn externals for TPL tags)
 5.3.1              05/15/13 (refer to svn externals for TPL tags)
 5.3                01/31/13 (refer to svn externals for TPL tags)
@@ -187,9 +189,9 @@ Version-1-0         2/18/99
 ------------------------------------------------------------------------------
 Contributing enhancements.
 
-DAKOTA is both a research and a production code and is under active
+Dakota is both a research and a production code and is under active
 development.  Bug reports, suggestions for improvement, and changes to
-support other platforms/compilers are welcome.  See the DAKOTA
+support other platforms/compilers are welcome.  See the Dakota
 Developer Portal at http://dakota.sandia.gov/developer/ for more
 information.
 

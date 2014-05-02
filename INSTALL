@@ -3,12 +3,12 @@ DAKOTA INSTALL
 ==============
 
 The Design Analysis Kit for Optimization and Terascale Applications
-(DAKOTA) is a framework which provides access to a broad variety of
+(Dakota) is a framework which provides access to a broad variety of
 algorithms and services.  Downloading pre-built binaries from the
-DAKOTA web site or accessing a site-supported installation are the
-simplest routes to access DAKOTA.
+Dakota web site or accessing a site-supported installation are the
+simplest routes to access Dakota.
 
-For more experienced users, building DAKOTA from source (either
+For more experienced users, building Dakota from source (either
 downloaded or checked out) allows customization with additional
 packages and porting to additional platforms or operating systems.
 This INSTALL file, in conjunction with platform-specific 
@@ -17,7 +17,7 @@ describe how to install pre-built binaries and setup the environment,
 as well as how to compile from source code.
 
 NOTE: The most up to date installation guidance and tips can be found
-alongside the downloads on the DAKOTA website.
+alongside the downloads on the Dakota website.
 
 
 =================
@@ -36,7 +36,7 @@ Other Resources
 Distribution Contents
 =====================
 
-The directories contained in DAKOTA distributions include:
+The directories contained in Dakota distributions include:
   * bin-dist denotes binary distributions 
     	     (Dakota.release.platform.tar.gz, Dakota.release.platform.zip)
   * src-dist denotes source or checkout distributions
@@ -58,9 +58,9 @@ src-dist      		 Dakota system. Test simulator programs and Dakota
 			 input files are provided for testing different
 			 capabilities. 
 
-bin-dist      include	 Include files for DAKOTA and it's associated TPLs.
+bin-dist      include	 Include files for Dakota and it's associated TPLs.
 
-bin-dist      lib	 Library files for DAKOTA and it's associated TPLs.
+bin-dist      lib	 Library files for Dakota and it's associated TPLs.
 
 src-dist      packages	 Libraries of iterative algorithms provided by
 	      		 commercial vendors and related Sandia projects.
@@ -201,9 +201,9 @@ III. Test Binary Distribution installation.
 
    > dakota -v
    Running serial executable in serial mode.
-   DAKOTA released <release date>.
+   Dakota released <release date>.
    Subversion revision ### build <build data & time>.
-   DAKOTA execution time in seconds;
+   Dakota execution time in seconds;
    Total CPU = ...
    Total wall clock = ...
 
@@ -224,7 +224,7 @@ III. Test Binary Distribution installation.
 Source Quick Start
 ==================
 
-To compile DAKOTA source distributions, use CMake to populate a build
+To compile Dakota source distributions, use CMake to populate a build
 tree for the target platform with generated Makefiles, and then
 execute 'make'.  Given the large number of supported packages,
 specifying a few 'cmake' options and environment variables may be
@@ -235,7 +235,7 @@ The following are instructions for building Dakota on a Unix-like platform
 in a Bash shell. You may need to use appropriate commands to work for your
 particular platform or shell.
 
-1. Install CMake 2.8.4 (or later) and ensure it is in your $PATH.
+1. Install CMake 2.8.9 (or later) and ensure it is in your $PATH.
 
 2. Extract Dakota source archive file. In the example below, Dakota will
    be extracted into the user's home directory, /home/username. 
@@ -290,10 +290,10 @@ Miscellaneous Notes:
 
  * Executing cmake without any options will result in an attempt to
    build with as many vendor algorithms and packages as are available
-   in the distribution.  Options below and on the DAKOTA website
+   in the distribution.  Options below and on the Dakota website
    describe how to turn off features.
 
- * Once make has successfully completed, the generated DAKOTA
+ * Once make has successfully completed, the generated Dakota
    executables (dakota and dakota_restart_util) will reside in
    $DAK_BUILD/src.  If 'make install' is invoked, copies of the
    executables will be placed in CMAKE_INSTALL_PREFIX/bin and copies
