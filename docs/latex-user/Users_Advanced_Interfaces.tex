@@ -1,9 +1,15 @@
 \chapter{Advanced Simulation Code Interfaces}\label{advint}
 
-This chapter will describe algebraic interface mappings based on
-AMPL in Section~\ref{advint:algebraic}, followed by discussion 
-of development and use of direct interfaces in 
-Sections~\ref{advint:direct}--\ref{advint:scilab}.
+This chapter extends the interface discussion in
+Chapter~\ref{interfaces} and its discussion of generic black-box
+interfaces to simulations (Section~\ref{interfaces:building}).  It
+describes specialized, tightly integrated, and advanced interfaces
+through which Dakota can perform function evaluation mappings.  It
+describes AMPL-based algebraic mappings
+(Section~\ref{advint:algebraic}), tight integration of a simulation
+code into Dakota (Section~\ref{advint:direct}), and specialized
+interfaces to Matlab, Python, and Scilab
+(Sections~\ref{advint:existingdirect} and \ref{advint:scilab}).
 
 \section{Algebraic Mappings}\label{advint:algebraic}
 
@@ -729,5 +735,10 @@ function is given with the computation code called
 % LocalWords:  Scilab Yann Collette Chapalain Rosenbrock subdirectory dakota bb
 % LocalWords:  scilab rosenbrock rosen argv pre PID FemTRUSS workspace mlist 1i
 % LocalWords:  Matlab src ScilabInterface BOOL README dakscilab Hessians dbg si
-% LocalWords:  init fp fpp sce xcos pid
+% LocalWords:  init fp fpp sce xcos pid AMPL nl ampl fma auxfiles tb extern CFD
 
+% LocalWords:  DirectFnApplicInterface ModelCenter ActiveSet Sandia Xyce API LD
+% LocalWords:  multiphysics Mathworks R14 R14SP3 CMake FILEPATH YOURPLATFORM py
+% LocalWords:  bashrc matlab myanalysis DirectApplicInterface subscripted NumPy
+% LocalWords:  arrayobject PYTHONPATH numpy numarray kwargs fns fnGrads cv drv
+% LocalWords:  fnHessians fnLabels asv dvv currEvalId
