@@ -113,7 +113,9 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
 
-  bool direct_int = (interfaceType == "direct");
+  bool direct_int         = (interfaceType == "direct");
+  // Peer dynamic requires asynch local executions and dynamic job assignment
+  bool peer_dynamic_avail = (!direct_int && !asynchLocalEvalStatic);
 
   // Define a min_procs_per_eval which captures overrides at the analysis level
   // This is managed separately from procsPerEvalSpec to avoid overconstraining
@@ -138,15 +140,12 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
       max_procs_per_eval = numAnalysisServersSpec;
       int alac = std::max(1, asynchLocalAnalysisConcSpec);
       if (numAnalysisServersSpec * alac < numAnalysisDrivers &&
-	  analysisScheduling != PEER_SCHEDULING)
+	  analysisScheduling != PEER_SCHEDULING) //&& !peer_dynamic_analysis
 	++max_procs_per_eval;
     }
     else
       max_procs_per_eval = std::max(1, numAnalysisDrivers); // assume peer part
   }
-
-  // Peer dynamic requires asynch local executions and dynamic job assignment
-  bool peer_dynamic_avail = (!direct_int && !asynchLocalEvalStatic);
 
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, procsPerEvalSpec, min_procs_per_eval,

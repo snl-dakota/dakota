@@ -97,7 +97,8 @@ get_max_procs_per_iterator(ProblemDescDB& problem_db, int max_eval_concurrency)
 	int alac = std::max(1, 
 	  problem_db.get_int("interface.asynch_local_analysis_concurrency"));
 	short a_sched = problem_db.get_short("interface.analysis_scheduling");
-	if (num_a_serv * alac < num_drivers && a_sched != PEER_SCHEDULING)
+	if (num_a_serv * alac < num_drivers && num_a_serv > 1 &&
+	    a_sched != PEER_SCHEDULING) //&& !peer_dynamic_analysis
 	  ++max_procs_per_eval;
       }
       else
@@ -111,9 +112,15 @@ get_max_procs_per_iterator(ProblemDescDB& problem_db, int max_eval_concurrency)
       int alec = std::max(1, 
         problem_db.get_int("interface.asynch_local_evaluation_concurrency"));
       short e_sched = problem_db.get_short("interface.evaluation_scheduling");
-      if (num_e_serv * alec < max_eval_concurrency &&
+      // for peer dynamic, max_procs_per_eval == 1 is imperfect in that it does
+      // not capture all possibilities, but this is conservative and hopefully
+      // close enough for use in this context (an upper bound estimate).
+      bool peer_dynamic_avail
+	= (problem_db.get_short("interface.local_evaluation_scheduling") !=
+	   STATIC_SCHEDULING && max_procs_per_eval == 1);
+      if (num_e_serv * alec < max_eval_concurrency && num_e_serv > 1 &&
 	  e_sched != PEER_DYNAMIC_SCHEDULING &&
-	  e_sched != PEER_STATIC_SCHEDULING)
+	  e_sched != PEER_STATIC_SCHEDULING  && !peer_dynamic_avail)
 	++max_procs_per_iterator;
     }
     else // assume peer partition

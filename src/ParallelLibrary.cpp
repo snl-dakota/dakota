@@ -222,7 +222,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
   int&  proc_remainder   = child_pl.procRemainder;
   bool& ded_master       = child_pl.dedicatedMasterFlag;
 
-//#ifdef MPI_DEBUG
+#ifdef MPI_DEBUG
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
 	 << num_servers << " procs_per_server = " << procs_per_server
@@ -232,7 +232,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 	 << " capacity_multiplier = " << capacity_multiplier
 	 << " default_config = " << default_config << " scheduling_override = "
 	 << scheduling_override << std::endl;
-//#endif
+#endif
 
   const bool master_override = (scheduling_override == MASTER_SCHEDULING);
   const bool peer_override
@@ -571,13 +571,13 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     }
   }
 
-//#ifdef MPI_DEBUG
+#ifdef MPI_DEBUG
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() returns num_servers = "
 	 << num_servers << " procs_per_server = " << procs_per_server
 	 << " proc_remainder = " << proc_remainder << " dedicated master = "
 	 << ded_master << std::endl;
-//#endif
+#endif
 }
 
 
