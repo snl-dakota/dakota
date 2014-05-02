@@ -3353,8 +3353,6 @@ Test Number 13 succeeded
 dakota_cantilever_dream.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
-         stress: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 dakota_cantilever_ego.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
