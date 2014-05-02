@@ -9,16 +9,16 @@ file.  The syntax of the Dakota input file is described in detail in
 the Dakota Reference Manual~\cite{RefMan}, and the restart file is
 described in Chapter~\ref{restart}.
 
-A Dakota input file may be prepared manually with a text editor such
-as Emacs, Vi, or WordPad, or it may be defined with the JAGUAR Dakota
-graphical user interface.  The JAGUAR Dakota GUI is built on the
-Java-based Eclipse Framework \cite{Eclipse} and presents the Dakota
-input specification options in synchronized text-editing and graphical
-views.  JAGUAR includes templates and wizards for helping create
-Dakota studies and can invoke Dakota to run an analysis.  The Dakota
-GUI for Linux, Windows, and Mac, is available for download from the
-Dakota website \url{http://dakota.sandia.gov/}, along with licensing
-information, separate GUI documentation, and installation tips.
+A Dakota input file may be prepared with a text editor such as Emacs,
+Vi, or WordPad, or with the JAGUAR Dakota graphical user interface.
+The JAGUAR Dakota GUI is built on the Java-based Eclipse Framework
+\cite{Eclipse} and presents the Dakota input specification options in
+synchronized text-editing and graphical views.  JAGUAR includes
+templates and wizards for helping create Dakota studies and can invoke
+Dakota to run an analysis.  The Dakota GUI for Linux, Windows, and
+Mac, is available for download from the Dakota website
+\url{http://dakota.sandia.gov/}, along with licensing information,
+separate GUI documentation, and installation tips.
 
 \subsection{Tabular Data Formats}\label{input:tabularformat}
 
@@ -36,23 +36,22 @@ most integer and floating point formats are acceptable for numeric
 data.  The formats are:
 
 \begin{itemize}
-  \item {\bf Annotated Matrix} (default for all I/O; specified via
-    {\tt annotated}): text file with one leading row of comments/column
-    labels and one leading column of evaluation/row IDs surrounding
-    num\_rows x num\_cols whitespace-separated numeric data, (newlines
-    separating rows are not currently required, but may be in the
-    future).  The numeric data in a row may correspond to variables,
-    variables followed by responses, data point for calibration, etc.,
-    depending on context.
+\item {\bf Annotated Matrix} (default for all tabular I/O; specified
+  via {\tt annotated}): text file with one leading row of
+  comments/column labels and one leading column of evaluation/row IDs
+  surrounding num\_rows x num\_cols whitespace-separated numeric data,
+  (newlines separating rows are not currently required, but may be in
+  the future).  The numeric data in a row may correspond to variables,
+  variables followed by responses, data point for calibration, etc.,
+  depending on context.
 
-   \item {\bf Free-form Matrix} (optional; previously default for
-     samples files and least squares data; specified via {\tt
-       freeform}): text file with no leading row and no leading
-     column.  The num\_rows x num\_cols total numeric data entries may
-     appear separated with any whitespace including arbitrary spaces,
-     tabs, and newlines.  In this format, vectors may therefore appear
-     as a single row or single column (or mixture; entries will
-     populate the vector in order).
+\item {\bf Free-form Matrix} (optional; previously default for samples
+  files and least squares data; specified via {\tt freeform}): text
+  file with no leading row and no leading column.  The num\_rows x
+  num\_cols total numeric data entries may appear separated with any
+  whitespace including arbitrary spaces, tabs, and newlines.  In this
+  format, vectors may therefore appear as a single row or single
+  column (or mixture; entries will populate the vector in order).
 \end{itemize}
 
 {\bf Attention:} Prior to October 2011, calibration and surrogate data
@@ -116,24 +115,28 @@ Polynomial chaos expansion (PCE) methods compute coefficients for
 response expansions which employ a basis of multivariate orthogonal
 polynomials.  Normally, the \texttt{polynomial\_chaos} method
 calculates these coefficients based either on a spectral projection or
-a linear regression (see Section~\ref{uq:expansion}).  However,
-Dakota also supports the option of importing a set of response PCE
-coefficients based on the specification \\
-\texttt{expansion\_import\_file = \emph{STRING}}.  This is useful for
-evaluating moments analytically or computing probabilities numerically
+a linear regression (see Section~\ref{uq:expansion}).  However, Dakota
+also supports the option of importing a set of response PCE
+coefficients from a file specified with \\
+\texttt{import\_expansion\_file = \emph{STRING}}.  Each row of the
+file must be comprised of a coefficient followed by its associated
+multi-index (the same format used for output described in
+Section~\ref{sec:output:pce}).  This file import can be used to
+evaluate moments analytically or compute probabilities numerically
 from a known response expansion.  Refer to the Method Specification
 chapter in the Dakota Reference Manual~\cite{RefMan} for additional
 information on this specification.
 
 \subsection{Surrogate construction from data files}
 
-Global data fit surrogates may be constructed from a variety of data
-sources.  One of these sources is an auxiliary data file, as specified
-by the keywords \texttt{reuse\_samples points\_file = \emph{STRING}}.
-The file may be in annotated (default) or free-form format with
-columns corresponding to variables and responses.  Refer to the Model
-Specification chapter in the Dakota Reference Manual~\cite{RefMan} for
-additional information on this specification.
+Global data fit surrogates, including some stochastic expansions, may
+be constructed from a variety of data sources.  One of these sources
+is an auxiliary data file, as specified by the keyword \texttt{import\
+  points\_file = \emph{STRING}}.  The file may be in annotated
+(default) or free-form format with columns corresponding to variables
+and responses.  Refer to the Model Specification chapter in the Dakota
+Reference Manual~\cite{RefMan} for additional information on this
+specification.
 
 \subsection{Variables/responses import to post-run}
 
@@ -153,4 +156,5 @@ The file is specified at the command line with:
 \end{verbatim}
 \end{small}
 
-%PCE coefficients
+% LocalWords:  WordPad pre num whitespace freeform TPLs SCOLIB JEGA AMPL nl GAs
+% LocalWords:  PCE multi dakota dat varsresponses

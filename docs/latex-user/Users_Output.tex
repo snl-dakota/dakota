@@ -2,20 +2,21 @@
 
 \section{Overview of Output Formats}\label{output:overview}
 
-Given an emphasis on complex numerical simulation codes that run on
-massively parallel supercomputers, Dakota's output has been designed
-to provide a succinct, text-based reporting of the progress of the
-iterations and function evaluations performed by an algorithm. In
-addition, Dakota provides a tabular output format that is useful for
-data visualization with external tools and a basic graphical output
-capability that is useful as a monitoring tool. The JAGUAR Dakota GUI
-is an emerging capability that will provide more advanced
-visualization facilities in time.
+While Dakota primarily targets complex numerical simulation codes run
+on massively parallel supercomputers, Dakota's output aims to provide
+a succinct, text-based reporting of the progress of the iterations and
+function evaluations performed by an algorithm. In addition, Dakota
+provides a tabular output format that is useful for data visualization
+with external tools and a basic graphical output capability that is
+useful as a monitoring tool. The JAGUAR Dakota GUI is an emerging
+capability that will provide more advanced visualization facilities in
+time.  Dakota also has a number of export capabilities described in
+the latter part of this chapter.
 
 \section{Standard Output}\label{output:standard}
 
-Dakota outputs basic information to ``standard out'' (i.e., the
-screen) for each function evaluation, consisting of an evaluation
+Dakota outputs basic information to standard out (screen, terminal,
+or console) for each function evaluation, consisting of an evaluation
 number, parameter values, execution syntax, the active set vector, and
 the response data set. To describe the standard output of Dakota,
 optimization of the ``container'' problem (see
@@ -41,27 +42,31 @@ A partial listing of the Dakota output for the container optimization
 example follows:
 \begin{small}
 \begin{verbatim}
-Running MPI executable in serial mode.
-Dakota version 5.0 released 12/21/2009.
-Subversion revision 5635M built Dec 18 2009 17:19:56.
-Constructing Single Method Strategy...
-Writing new restart file dakota.rst
-methodName = npsol_sqp
-gradientType = numerical
-Numerical gradients using central differences
-to be calculated by the dakota finite difference routine.
-hessianType = none
+Dakota version 5.4+ (stable) released May  2 2014.
+Subversion revision 2508 built May  2 2014 15:26:14.
+Running MPI Dakota executable in serial mode.
+Start time: Fri May  2 15:38:11 2014
 
->>>>> Running Single Method Strategy.
+----------------------------------------------------------------
+Begin DAKOTA input file
+/home/briadam/dakota/build/examples/users/container_opt_npsol.in
+----------------------------------------------------------------
+# Dakota Input File: container_opt_npsol.in
+environment
+  graphics
+
+<SNIP>
+
+---------------------
+End DAKOTA input file
+---------------------
+
+Using Dakota input file '/home/briadam/dakota/build/examples/users/container_opt_npsol.in'
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
 
 >>>>> Running npsol_sqp iterator.
-
-
-
-
-
-                     NPSOL  ---  Version 5.0-2      Sept 1995
-                     ========================================
 
 ------------------------------------------
 Begin Dakota derivative estimation routine
@@ -69,16 +74,16 @@ Begin Dakota derivative estimation routine
 
 >>>>> Initial map for analytic portion of response:
 
-------------------------------
-Begin Function Evaluation    1
-------------------------------
-Parameters for function evaluation 1:
+---------------------
+Begin Evaluation    1
+---------------------
+Parameters for evaluation 1:
                       4.5000000000e+00 H
                       4.5000000000e+00 D
 
-container container.in.1 container.out.1
+blocking fork: container container.in.1 container.out.1
 
-Active response data for function evaluation 1:
+Active response data for evaluation 1:
 Active set vector = { 1 1 }
                       1.0713145108e+02 obj_fn
                       8.0444076396e+00 nln_eq_con_1
@@ -86,16 +91,16 @@ Active set vector = { 1 1 }
 
 >>>>> Dakota finite difference gradient evaluation for x[1] + h:
 
-------------------------------
-Begin Function Evaluation    2
-------------------------------
-Parameters for function evaluation 2:
+---------------------
+Begin Evaluation    2
+---------------------
+Parameters for evaluation 2:
                       4.5045000000e+00 H
                       4.5000000000e+00 D
 
-container container.in.2 container.out.2
+blocking fork: container container.in.2 container.out.2
 
-Active response data for function evaluation 2:
+Active response data for evaluation 2:
 Active set vector = { 1 1 }
                       1.0719761302e+02 obj_fn
                       8.1159770472e+00 nln_eq_con_1
@@ -103,16 +108,16 @@ Active set vector = { 1 1 }
 
 >>>>> Dakota finite difference gradient evaluation for x[1] - h:
 
-------------------------------
-Begin Function Evaluation    3
-------------------------------
-Parameters for function evaluation 3:
+---------------------
+Begin Evaluation    3
+---------------------
+Parameters for evaluation 3:
                       4.4955000000e+00 H
                       4.5000000000e+00 D
 
-container container.in.3 container.out.3
+blocking fork: container container.in.3 container.out.3
 
-Active response data for function evaluation 3:
+Active response data for evaluation 3:
 Active set vector = { 1 1 }
                       1.0706528914e+02 obj_fn
                       7.9728382320e+00 nln_eq_con_1
@@ -120,16 +125,16 @@ Active set vector = { 1 1 }
 
 >>>>> Dakota finite difference gradient evaluation for x[2] + h:
 
-------------------------------
-Begin Function Evaluation    4
-------------------------------
-Parameters for function evaluation 4:
+---------------------
+Begin Evaluation    4
+---------------------
+Parameters for evaluation 4:
                       4.5000000000e+00 H
                       4.5045000000e+00 D
 
-container container.in.4 container.out.4
+blocking fork: container container.in.4 container.out.4
 
-Active response data for function evaluation 4:
+Active response data for evaluation 4:
 Active set vector = { 1 1 }
                       1.0727959301e+02 obj_fn
                       8.1876180243e+00 nln_eq_con_1
@@ -137,16 +142,16 @@ Active set vector = { 1 1 }
 
 >>>>> Dakota finite difference gradient evaluation for x[2] - h:
 
-------------------------------
-Begin Function Evaluation    5
-------------------------------
-Parameters for function evaluation 5:
+---------------------
+Begin Evaluation    5
+---------------------
+Parameters for evaluation 5:
                       4.5000000000e+00 H
                       4.4955000000e+00 D
 
-container container.in.5 container.out.5
+blocking fork: container container.in.5 container.out.5
 
-Active response data for function evaluation 5:
+Active response data for evaluation 5:
 Active set vector = { 1 1 }
                       1.0698339109e+02 obj_fn
                       7.9013403937e+00 nln_eq_con_1
@@ -161,25 +166,21 @@ Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
  [  1.5904312809e+01  3.1808625618e+01 ] nln_eq_con_1 gradient
 
 
-
-
- Majr Minr    Step  Fun  Merit function Norm gZ  Violtn   nZ Penalty Conv
-    0    1 0.0E+00    1  9.90366719E+01 1.6E+00 8.0E+00    1 0.0E+00 F FF     
-
 <SNIP>
+
 
 >>>>> Dakota finite difference gradient evaluation for x[2] - h:
 
-------------------------------
-Begin Function Evaluation   40
-------------------------------
-Parameters for function evaluation 40:
+---------------------
+Begin Evaluation   40
+---------------------
+Parameters for evaluation 40:
                       4.9873894231e+00 H
                       4.0230575428e+00 D
 
-container container.in.40 container.out.40
+blocking fork: container container.in.40 container.out.40
 
-Active response data for function evaluation 40:
+Active response data for evaluation 40:
 Active set vector = { 1 1 }
                       9.8301287596e+01 obj_fn
                      -1.2698647501e-01 nln_eq_con_1
@@ -194,11 +195,6 @@ Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
  [  1.2737124497e+01  3.1548877601e+01 ] nln_eq_con_1 gradient
 
 
-    7    1 1.0E+00    8  9.84324981E+01 4.8E-11 9.7E-12    1 1.7E+02 T TT     
-
- Exit NPSOL - Optimal solution found.
-
- Final nonlinear objective value =    98.43250    
 
 NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
 
@@ -214,30 +210,31 @@ NOTE: see Fortran device 9 file (fort.9 or ftn09)
                      -9.6918029158e-12
 <<<<< Best data captured at function evaluation 36
 
+
 <<<<< Iterator npsol_sqp completed.
-<<<<< Single Method Strategy completed.
-Dakota execution time in seconds:
-  Total CPU        =       0.09 [parent =   0.082988, child =   0.007012]
-  Total wall clock =    0.34364
-Exit graphics window to terminate Dakota.
+<<<<< Environment execution completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.03 [parent =   0.023997, child =   0.006003]
+  Total wall clock =   0.090703
+Exit graphics window to terminate DAKOTA.
 \end{verbatim}
 \end{small}
 
-The first block of lines provide a report on the Dakota configuration
-and settings. The lines that follow, down to the line 
-``\texttt{Exit  NPSOL - Optimal solution found}'', contain information
-about the function evaluations that have been requested by NPSOL and
-performed by Dakota. Evaluations 6 through 39 have been omitted from
-the listing for brevity.
+The output begins with information on the Dakota version, compilation
+date, and run mode.  It then echos the user input file before
+proceeding to execution phase.  The lines following ``\texttt{>>>>>
+  Running npsol\_sqp iterator.}''  show Dakota performing function
+evaluations 1--5 that have been requested by NPSOL. Evaluations 6
+through 39 have been omitted from the listing for brevity.
 
-Following the line ``\texttt{Begin Function Evaluation 1}'', the
-initial values of the design variables, the syntax of the function
-evaluation, and the resulting objective and constraint function values
-are listed. The values of the design variables are labeled with the
-tags \texttt{H} and \texttt{D}, respectively, according to the
-descriptors to these variables given in the input file,
-Figure~\ref{output:incont}.  The values of the objective function
-and volume constraint are labeled with the tags
+Immediately following the line ``\texttt{Begin Function Evaluation
+  1}'', the initial values of the design variables, the syntax of the
+blocking fork function evaluation, and the resulting objective and
+constraint function values returned by the simulation are listed.  The
+values of the design variables are labeled with the tags \texttt{H}
+and \texttt{D}, respectively, according to the descriptors given in
+the input file, Figure~\ref{output:incont}.  The values of the
+objective function and volume constraint are labeled with the tags
 \texttt{obj\_fn} and \texttt{nln\_eq\_con\_1}, respectively. Note that
 the initial design parameters are infeasible since the equality
 constraint is violated ($\ne 0$). However, by the end of the run, the
@@ -279,36 +276,38 @@ function evaluation counts, and a timing summary. In the end, the
 objective function has been minimized and the equality constraint has
 been satisfied (driven to zero within the constraint tolerance).
 
-The Dakota results are intermixed with iteration information from the
-NPSOL library. The lines with the heading ``\texttt{Majr Minr Step Fun
-  Merit function Norm gZ Violtn nZ Penalty Conv}'' come from Fortran
-write statements within NPSOL. The output is mixed since both Dakota
-and NPSOL are writing to the same standard output stream. The relative
-locations of these output contributions can vary depending on the
-specifics of output buffering and flushing on a particular platform
-and depending on whether or not the standard output is being
-redirected to a file. In some cases, output from the optimization
-library may appear on each iteration (as in this example), and in
-other cases, it may appear at the end of the Dakota output. Finally, a
-more detailed summary of the NPSOL iterations is written to the
-Fortran device 9 file (e.g., \texttt{fort.9} or \texttt{ftn09}).
+The Dakota results may be intermixed with iteration information from
+the NPSOL library. For example lines with the heading ``\texttt{Majr
+  Minr Step Fun Merit function Norm gZ Violtn nZ Penalty Conv}'' come
+from Fortran write statements within NPSOL. The output is mixed since
+both Dakota and NPSOL are writing to the same standard output
+stream. The relative locations of these output contributions can vary
+depending on the specifics of output buffering and flushing on a
+particular platform and depending on whether or not the standard
+output is being redirected to a file. In some cases, output from the
+optimization library may appear on each iteration (as in this
+example), and in other cases, it may appear at the end of the Dakota
+output. Finally, a more detailed summary of the NPSOL iterations is
+written to the Fortran device 9 file (e.g., \texttt{fort.9} or
+\texttt{ftn09}).
 
 \section{Tabular Output Data}\label{output:tabular}
 
 Dakota has the capability to print the iteration history in tabular
 form to a file. The keyword\\
-\texttt{tabular\_graphics\_data} needs to be included in the strategy 
-specification (see Figure~\ref{output:incont}). The primary intent
-of this capability is to facilitate the transfer of Dakota's iteration
-history data to an external mathematical analysis and/or graphics
-plotting package (e.g., MATLAB, TECplot, Excel, S-plus, Minitab). Any
-evaluations from Dakota's internal finite differencing are suppressed,
-which leads to better data visualizations. This suppression of lower
-level data is consistent with the data that is sent to the graphics
-windows, as described in Section~\ref{output:graphics}. If this data
-suppression is undesirable, Section~\ref{restart:utility:tabular}
-describes an approach where every function evaluation, even the ones
-from finite differencing, can be saved to a file in tabular format.
+\texttt{tabular\_graphics\_data} needs to be included in the
+environment specification (see Figure~\ref{output:incont}). The
+primary intent of this capability is to facilitate the transfer of
+Dakota's iteration history data to an external mathematical analysis
+and/or graphics plotting package (e.g., MATLAB, TECplot, Excel,
+S-plus, Minitab). Any evaluations from Dakota's internal finite
+differencing are suppressed, to facilitate rapid plotting of the most
+critical data.  This suppression of lower level data is consistent
+with the data that is sent to the graphics windows, as described in
+Section~\ref{output:graphics}. If this data suppression is
+undesirable, Section~\ref{restart:utility:tabular} describes an
+approach where every function evaluation, even the ones from finite
+differencing, can be saved to a file in tabular format.
 
 The default file name for the tabular output data is
 ``\texttt{dakota\_tabular.dat}'' and the output from the ``container''
@@ -347,7 +346,7 @@ the ``container'' optimization problem.} \label{output:tabcont}
 
 Graphics capabilities are available for monitoring the progress of an
 iterative study. The graphics option is invoked by adding the
-\texttt{graphics} flag in the strategy specification of the Dakota
+\texttt{graphics} flag in the environment specification of the Dakota
 input file (see Figure~\ref{output:incont}). The graphics display
 the values of each response function (e.g., objective and constraint
 functions) and each parameter for the function evaluations in the
@@ -401,11 +400,23 @@ Incorrectly spelled specifications, such as
 \texttt{``numericl\_gradients''}, will result in error messages of the form:
 \begin{small}
 \begin{verbatim}
-    Parser detected syntax error: unrecognized identifier 'numericl_gradients'
-      within responses keyword.
-    Please refer to the dakota.input.txt distributed with this executable.
+Input line 31: unrecognized identifier 'numericl_gradients'.
+Input line 31: unrecognized identifier 'method_source'.
+Input line 31: unrecognized identifier 'dakota'.
+Input line 31: unrecognized identifier 'interval_type'.
+Input line 31: unrecognized identifier 'central'.
+Input line 31: unrecognized identifier 'fd_gradient_step_size'.
+Input line 31: One of the following 4 entities
+must be specified for responses...
+	analytic_gradients
+	mixed_gradients
+	no_gradients
+	numerical_gradients
 \end{verbatim}
 \end{small}
+In this example the line numbers given are approximate, as all input
+following an errant keywords is considered a single line through the
+end of the block.
 
 The input parser catches syntax errors, but not logic errors. The fact
 that certain input combinations are erroneous must be detected after
@@ -416,17 +427,11 @@ this error must be detected during set-up of the optimizer (see last
 line of listing):
 \begin{small}
 \begin{verbatim}
-    Running MPI executable in serial mode.
-    Dakota version 4.0 released 05/12/2006.
-    Writing new restart file dakota.rst
-    Constructing Single Method Strategy...
-    methodName = npsol_sqp
-    gradientType = none
-    hessianType = none
-
-    Error: gradient-based optimizers require a gradient specification.
+Error: gradient-based minimizers require a gradient specification.
 \end{verbatim}
 \end{small}
+Many such errors can be detected earlier by running \texttt{dakota
+  -check}.
 
 Another common mistake involves a mismatch between the amount of data
 expected on a function evaluation and the data returned by the user's
@@ -449,6 +454,36 @@ segmentation faults, or other failures, please request help using the
 support mechanisms described on the
 \href{http://dakota.sandia.gov/}{Dakota website}.
 
+
+\section{PCE coefficient export}\label{sec:output:pce}
+
+Polynomial chaos expansion (PCE) methods compute coefficients for
+response expansions which employ a basis of multivariate orthogonal
+polynomials.  The \texttt{polynomial\_chaos} method calculates these
+coefficients based on a number of approaches described in
+Section~\ref{uq:expansion}).  One may output the PCE coefficients to a
+file using the keyword \texttt{export\_expansion\_file =
+  \emph{STRING}}.  Each row of the exported file will contain a
+coefficient, followed by the multi-index indicating which basis terms
+correspond to it.
+
+\section{Surrogate Model Exports}
+
+A number of Dakota surrogate models, including some stochastic
+expansion approaches support the keyword \texttt{export\_points\_file
+  = \emph{STRING}}.  When specified, any approximate evaluations
+performed on the surrogate model will be output to the specified data
+file.  This facilitates plotting or external diagnostics of the
+surrogate model.
+
+In addition the Surfpak family of global surrogate models supports
+export (serialization) of surrogate models to text ({\tt .sps}) or
+binary ({\tt .bsps}) model files.  These files are not human readable
+(and don't contain an explicit algebraic form of the response surface
+model).  Instead they may be imported into the {\tt surfpack}
+executable or library API for evaluation, bypassing the reconstruction
+of the surrogate model from build data.
+
 \section{Variables Output from Pre-run}
 
 The pre-run mode (supported only for select methods) permits
@@ -463,3 +498,7 @@ study, and DACE methods by invoking
 \end{verbatim}
 \end{small}
 for example, to output the variables (samples) in an LHS study.
+
+% LocalWords:  NPSOL npsol sqp fn nln eq infeasible differencing Majr Minr gZ
+% LocalWords:  Violtn nZ Conv Fortran Fortran ftn09 MATLAB TECplot Minitab dat
+% LocalWords:  dakota 2D EPS eps numericl combinations PCE multi Pre pre LHS
