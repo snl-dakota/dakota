@@ -3336,7 +3336,7 @@ Test Number 12 succeeded
                      -9.1579077655e-11
 <<<<< Best data captured at function evaluation 85
 Test Number 13 succeeded
-<<<<< Function evaluation summary: 130 total (65 new, 65 duplicate)
+<<<<< Function evaluation summary: 130 total (117 new, 13 duplicate)
 <<<<< Best parameters          =
                       2.3520340723e+00 w
                       3.3262784853e+00 t
@@ -3348,7 +3348,7 @@ Test Number 13 succeeded
                       7.8235203315e+00
 <<<<< Best constraint values   =
                      -1.6009004240e-02
-                     -9.3419938452e-11
+                     -9.3419161296e-11
 <<<<< Best data captured at function evaluation 121
 dakota_cantilever_dream.in
 Test Number 0 succeeded
@@ -12937,21 +12937,21 @@ Test Number 0 succeeded
                       1.9050696345e-06
 <<<<< Best data captured at function evaluation 38
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 58 total (58 new, 0 duplicate)
+<<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9950073763e-01 x1
-                      9.9880110556e-01 x2
+                      9.9794883595e-01 x1
+                      9.9572819717e-01 x2
 <<<<< Best objective function  =
-                      4.2740595268e-06
-<<<<< Best data captured at function evaluation 56
+                      7.2238178647e-06
+<<<<< Best data captured at function evaluation 54
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 109 total (109 new, 0 duplicate)
+<<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9999712778e-01 x1
-                      9.9999021923e-01 x2
+                     -8.6064674203e-01 x1
+                      7.3943464779e-01 x2
 <<<<< Best objective function  =
-                      1.6374510395e-09
-<<<<< Best data captured at function evaluation 108
+                      3.4621696697e+00
+<<<<< Best data captured at function evaluation 22
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 197 total (197 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -18077,13 +18077,13 @@ Test Number 10 succeeded
                       7.7409023663e-08
 <<<<< Best data captured at function evaluation 76
 Test Number 11 succeeded
-<<<<< Function evaluation summary: 336 total (303 new, 33 duplicate)
+<<<<< Function evaluation summary: 335 total (303 new, 32 duplicate)
 <<<<< Best parameters          =
                       9.9967599585e-01 x1
                       9.9935093870e-01 x2
 <<<<< Best objective function  =
                       1.0511277929e-07
-<<<<< Best data captured at function evaluation 336
+<<<<< Best data captured at function evaluation 335
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =
