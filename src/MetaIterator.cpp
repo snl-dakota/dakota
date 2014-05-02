@@ -83,8 +83,7 @@ get_max_procs_per_iterator(ProblemDescDB& problem_db, int max_eval_concurrency)
   else { // processors_per_analysis = 1 for system/fork
     int max_procs_per_eval, max_procs_per_iterator,
       num_a_serv = problem_db.get_int("interface.analysis_servers"),
-      ppe        = problem_db.get_int("interface.processors_per_evaluation"),
-      num_e_serv = problem_db.get_int("interface.evaluation_servers");
+      ppe = problem_db.get_int("interface.processors_per_evaluation");
 
     // compute max_procs_per_eval, incorporating all user overrides
     if (ppe)
@@ -92,26 +91,30 @@ get_max_procs_per_iterator(ProblemDescDB& problem_db, int max_eval_concurrency)
     else {
       int num_drivers
 	= problem_db.get_sa("interface.application.analysis_drivers").size();
+      short a_sched = problem_db.get_short("interface.analysis_scheduling");
       if (num_a_serv) {
 	max_procs_per_eval = num_a_serv;
 	int alac = std::max(1, 
 	  problem_db.get_int("interface.asynch_local_analysis_concurrency"));
-	short a_sched = problem_db.get_short("interface.analysis_scheduling");
 	if (num_a_serv * alac < num_drivers && num_a_serv > 1 &&
 	    a_sched != PEER_SCHEDULING) //&& !peer_dynamic_analysis
 	  ++max_procs_per_eval;
       }
-      else
-	max_procs_per_eval = std::max(1, num_drivers); // assume peer partition
+      else { // assume peer partition unless explicit override to master
+	max_procs_per_eval = std::max(1, num_drivers);
+	if (a_sched == MASTER_SCHEDULING)
+	  ++max_procs_per_eval;
+      }
     }
 
     // compute max_procs_per_iterator (iterator server overrides can be
     // managed by resolve_inputs())
+    int num_e_serv = problem_db.get_int("interface.evaluation_servers");
+    short e_sched = problem_db.get_short("interface.evaluation_scheduling");
     if (num_e_serv) {
       max_procs_per_iterator = max_procs_per_eval * num_e_serv;
       int alec = std::max(1, 
         problem_db.get_int("interface.asynch_local_evaluation_concurrency"));
-      short e_sched = problem_db.get_short("interface.evaluation_scheduling");
       // for peer dynamic, max_procs_per_eval == 1 is imperfect in that it does
       // not capture all possibilities, but this is conservative and hopefully
       // close enough for use in this context (an upper bound estimate).
@@ -123,8 +126,11 @@ get_max_procs_per_iterator(ProblemDescDB& problem_db, int max_eval_concurrency)
 	  e_sched != PEER_STATIC_SCHEDULING  && !peer_dynamic_avail)
 	++max_procs_per_iterator;
     }
-    else // assume peer partition
+    else { // assume peer partition unless explicit override to master
       max_procs_per_iterator = max_procs_per_eval * max_eval_concurrency;
+      if (e_sched == MASTER_SCHEDULING)
+	++max_procs_per_iterator;
+    }
 
     return max_procs_per_iterator;
   }
