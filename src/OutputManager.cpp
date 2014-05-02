@@ -190,6 +190,7 @@ void OutputManager::output_version(std::ostream& os) const
 void OutputManager::output_startup_message(std::ostream& os) const 
 {
   if (worldRank == 0) {
+    output_version(os);
     // Generate the startup header, now that streams are potentially reassigned
     os << startupMessage << '\n'; 
     std::time_t curr_time = std::time(NULL);

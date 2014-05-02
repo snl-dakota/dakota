@@ -34,9 +34,8 @@ LibraryEnvironment(ProgramOptions prog_opts, bool check_bcast_construct,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts)
 {
-  // BMA TODO: give option for this to library users
-  //  outputManager.output_startup_message();
-  // Also support run modes help, version, check
+  // TODO: support run modes help, version, check
+  outputManager.output_startup_message();
 
   // parse input, and instantiate the topLevelIterator
   parse(check_bcast_construct, callback, callback_data);
@@ -54,8 +53,8 @@ LibraryEnvironment(MPI_Comm dakota_mpi_comm,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts, dakota_mpi_comm)
 { 
-  // BMA TODO: give option for this to library users
-  //  outputManager.output_startup_message();
+  // TODO: support run modes help, version, check
+  outputManager.output_startup_message();
 
   // parse input and instantiate the topLevelIterator
   parse(check_bcast_construct, callback, callback_data);
