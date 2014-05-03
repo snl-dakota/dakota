@@ -89,17 +89,27 @@ namespace Dakota {
 	       // Will be filled by calling 
 	       // load_parameters in the constructor,
 	       // where we have access to the model.
+
+               /// Total across all types of variables
                int numTotalVars;
-       int numNomadNonlinearIneqConstraints;
+
+               /// Number of nonlinear inequality constraints after
+               /// put into the format required by Nomad
+               int numNomadNonlinearIneqConstraints;
 	       
-	       // Parameters.
+	       /// Parameters passes to Nomad
 	       int randomSeed, maxBlackBoxEvals, maxIterations;
                std::string outputFormat, historyFile;
 	       bool displayAll;
 	       Real epsilon, vns;
 	       
+               /// Pointer to Nomad initial point
 	       NOMAD::Point initialPoint;
+
+               /// Pointer to Nomad upper bounds
 	       NOMAD::Point upperBound;
+
+               /// Pointer to Nomad lower bounds
 	       NOMAD::Point lowerBound;
 
        /// map from Dakota constraint number to Nomad constraint number
@@ -135,9 +145,10 @@ namespace Dakota {
 	       Model& _model;
 	       int n_cont,n_disc_int, n_disc_real;
 
+       /// Number of nonlinear constraints after put into Nomad format
        int numNomadNonlinearIneqConstr, numNomadNonlinearEqConstr;
 
-       /// map from Dakota constraint number to APPS constraint number
+       /// map from Dakota constraint number to Nomad constraint number
        std::vector<int> constrMapIndices;
 
        /// multipliers for constraint transformations

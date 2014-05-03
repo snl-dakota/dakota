@@ -58,14 +58,18 @@ namespace Dakota {
          /// Convenience function for Parameter loading.
          void load_parameters(Model &model);
 
+         /// Function evaluation
          double opt_darts_f();
-         
+
+         /// Run the OPT-DARTS method
          void opt_darts_execute(size_t num_dim, size_t budget, double* xmin, double* xmax, double TOL, size_t problem_index, double fw_MC, double fb_MC);
          
+         /// Initialize OPT-DARTS
          void opt_darts_initiate(double* xmin, double* xmax);
          
          void opt_darts_reset_convex_hull();
          
+         /// Choose the next trial iterate
          size_t opt_darts_pick_candidate(size_t ifunc);
          
          void retrieve_extended_neighbors(size_t icandidate);
@@ -78,10 +82,13 @@ namespace Dakota {
          
          void opt_darts_update_K_h_approximate_Voronoi(size_t isample);
          
+         /// Release memory and exit cleanly
          void opt_darts_terminate();
          
+         /// Convenience function for plotting iterates
          void opt_darts_plot_discs_2d(size_t icandidate);
          
+         /// Convenience function for plotting convex hull
          void opt_darts_plot_hull_2d(size_t icandidate, size_t ifunc);
 
          /////////////////////////////////////////////////////////////////////////////////////////
