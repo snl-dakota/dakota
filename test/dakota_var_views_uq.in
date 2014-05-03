@@ -6,6 +6,8 @@
 # default and 'active all' views to catch the most egregious problems.
 # Mix-and-match tests will be captured separately.
 
+# timeout overrides: 2=TD180
+
 method,
 	sampling,				#0,   #9
 	  samples = 100				#0,   #9
