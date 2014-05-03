@@ -59,7 +59,6 @@ If no \texttt{-read\_restart} specification is used, then Dakota will
 not read restart information from any file (i.e., the default is no
 restart processing).
 
-The Dakota restart file (e.g., \texttt{dakota.rst}) is written in a
 A new Dakota feature (as of version 6.0) is an input file specification block
 providing users with additional control in the management of the function
 evaluation cache, duplicate evaluation detection, and restart data file entries. 
@@ -73,7 +72,7 @@ structure to be used to search the evaluation cache.  The use of the
 \texttt{deactivate strict\_cache\_equality} keywords may prevent cache misses,
 which can occur when attempting to use a restart file on a machine different
 from the one on which it was generated. Specifying those keywords in the Dakota
-Dakota input file when performing a restart analysis should be considered
+input file when performing a restart analysis should be considered
 judiciously, on a case-by-case basis, since there will be a performance penalty
 for the non-hashed evaluation cache lookups for detection of duplicates. That
 said, there are situations in which it is desirable to accept the performance
