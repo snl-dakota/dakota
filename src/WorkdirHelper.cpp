@@ -149,10 +149,20 @@ std::string WorkdirHelper::which(const std::string& driver_name)
   std::string driver_path;
 
   BOOST_FOREACH(const std::string& e, extensions) {
+
+    // check with extension as given (potentially mixed case), lower, and upper
     std::string driver_name_we = driver_name;
     driver_name_we += e;
-
     driver_path = po_which(driver_name_we);
+
+    driver_name_we = driver_name;
+    driver_name_we += boost::algorithm::to_lower_copy(e);
+    driver_path = po_which(driver_name_we);
+
+    driver_name_we = driver_name;
+    driver_name_we += boost::algorithm::to_upper_copy(e);
+    driver_path = po_which(driver_name_we);
+
     if( !driver_path.empty() ) {
 #if defined(DEBUG)
       Cout << driver_path << " FOUND when " << e << " appended" << std::endl;
