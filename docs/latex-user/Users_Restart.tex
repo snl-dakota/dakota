@@ -17,7 +17,7 @@ binary format, leveraging the Boost.Serialization library. While the
 cross-platform portability may NOT be as general as, say, the XDR standard,
 experience has shown it to be a sufficiently portable format to meet
 most users needs.  Caution should be exercised to ensure consistent
-endian-ness of the computer architectures involved when attempting to leverage
+endianness of the computer architectures involved when attempting to leverage
 the restart capability in a multi-host environment.  For example, if a little
 endian host is used to create the restart file, it can only be reliably ported
 and read on a host that is also little endian.  As shown in
@@ -45,7 +45,7 @@ to recover and continue a run that terminates prematurely.  Obviously,
 this option is not recommended when function evaluations are costly or
 prone to failure. Please note that using the \texttt{deactivate restart\_file}
 specification will result in a zero length restart file
-with the default name dakota.rst.
+with the default name \texttt{dakota.rst}.
 
 To restart Dakota from a restart file, the \texttt{-read\_restart}
 command line input (may be abbreviated as \texttt{-r}) is used:
@@ -59,24 +59,26 @@ If no \texttt{-read\_restart} specification is used, then Dakota will
 not read restart information from any file (i.e., the default is no
 restart processing).
 
+The Dakota restart file (e.g., \texttt{dakota.rst}) is written in a
 A new Dakota feature (as of version 6.0) is an input file specification block
 providing users with additional control in the management of the function
-evaluation cache, duplicate evaluation detection, and restart data file
-entries.  In the interface’s analysis driver definition, it is possible to
-provide a deactivate specification block; for example ‘deactivate
-strict_cache_equality’.  It should be noted that, by default, Dakota's
+evaluation cache, duplicate evaluation detection, and restart data file entries. 
+In the interface’s analysis driver definition, it is possible to provide
+additional deactivate parameters in the specification block
+(e.g., \texttt{deactivate strict\_cache\_equality}.
+It should be noted that, by default, Dakota's
 evaluation cache and restart capabilities are based on strict binary equality.  
 This provides a performance advantage, as it permits a hash-based data
 structure to be used to search the evaluation cache.  The use of the
-‘deactivate strict_cache_equality’ keywords may prevent cache misses, which can
-occur when attempting to use a restart file on a machine different from the one 
-on which it was generated.  Specifying those keywords in the Dakota input file 
-when performing a restart calculation should be considered judiciously, on a
-case-by-case basis, since there will be a performance penalty for the
-non-hashed (significantly slower) evaluation cache lookups for duplicate
-detection.  That said, there are situations in which it is desirable to accept
-the performance hit of the slower cache lookups (for example a computationally
-expensive analysis driver).
+\texttt{deactivate strict\_cache\_equality} keywords may prevent cache misses,
+which can occur when attempting to use a restart file on a machine different
+from the one on which it was generated. Specifying those keywords in the Dakota
+Dakota input file when performing a restart analysis should be considered
+judiciously, on a case-by-case basis, since there will be a performance penalty
+for the non-hashed evaluation cache lookups for detection of duplicates. That
+said, there are situations in which it is desirable to accept the performance
+hit of the slower cache lookups (for example a computationally expensive
+analysis driver).
 
 If the \texttt{-write\_restart} and \texttt{-read\_restart}
 specifications identify the same file (including the case where
@@ -277,8 +279,8 @@ example in Section~\ref{additional:cylinder}):
 This format is not intended for direct viewing (\texttt{print} should
 be used for this purpose). Rather, the neutral file capability has
 been used in the past for managing portability of restart data across
-platforms of dissimilar endian-ness of the computer architectures (e.g.
-creator of the file was little endian but need exists to run dakota with
+platforms of dissimilar endianness of the computer architectures (e.g.
+creator of the file was little endian but the need exists to run dakota with
 restart on a big endian host. The neutral file format has also been
 shown to be useful for for advanced repair of restart records
 (in cases where the techniques of Section~\ref{restart:utility:removal} 
