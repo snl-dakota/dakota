@@ -1048,6 +1048,12 @@ message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 
 
+option(DAKOTA_API_JAVA "Enable Dakota library Java API" OFF)
+if (DAKOTA_API_JAVA)
+  add_subdirectory(api/java)
+endif()
+
+
 # --- Pass some data back to Trilinos
 
 if (BUILD_IN_TRILINOS)
