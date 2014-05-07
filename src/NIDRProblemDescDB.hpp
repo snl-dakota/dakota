@@ -28,7 +28,7 @@ class ParallelLibrary;
     refer to Dakota/docs/Dev_Spec_Change.dox.  For more on the parsing
     technology, see "Specifying and Reading Program Input with NIDR"
     by David M. Gay (report SAND2008-2261P, which is available in PDF
-    form as http://www.sandia.gov/~dmgay/nidr08.pdf).  Source for the
+    form as http://dakota.sandia.gov/papers/nidr08.pdf).  Source for the
     routines declared herein is NIDRProblemDescDB.cpp, in which most
     routines are so short that a description seems unnecessary. */
 
