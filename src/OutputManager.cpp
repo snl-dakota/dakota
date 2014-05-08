@@ -58,6 +58,11 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
     redirect_cout(prog_opts.output_file());
   }
 
+  //  if error file specified, redirect immediately, possibly rebind later
+  if (worldRank == 0 && prog_opts.user_stderr_redirect()) {
+    redirect_cerr(prog_opts.error_file());
+  }
+
   if (!mpirunFlag
       // || (mpirunFlag && worldRank == 0) 
       )

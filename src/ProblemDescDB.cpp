@@ -1827,9 +1827,13 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
   if ((L = Begins(entry_name, "environment."))) {
     #define P &DataEnvironmentRep::
     static KW<String, DataEnvironmentRep> Sde[] = { // must be sorted
+	{"error_file", P errorFile},
+	{"output_file", P outputFile},
+	{"read_restart", P readRestart},
 	{"results_output_file", P resultsOutputFile},
 	{"tabular_graphics_file", P tabularDataFile},
-	{"top_method_pointer", P topMethodPointer}};
+	{"top_method_pointer", P topMethodPointer},
+	{"write_restart", P writeRestart}};
     #undef P
 
     KW<String, DataEnvironmentRep> *kw;
@@ -2077,7 +2081,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
   if ((L = Begins(entry_name, "environment."))) {
     #define P &DataEnvironmentRep::
     static KW<int, DataEnvironmentRep> Ide[] = { // must be sorted
-        {"output_precision", P outputPrecision}};
+        {"output_precision", P outputPrecision},
+        {"stop_restart", P stopRestart}};
     #undef P
 
     KW<int, DataEnvironmentRep> *kw;

@@ -329,6 +329,7 @@ void Environment::construct()
 
   // extract global output specification data (environment keyword
   // spec) right before run time in case of late library updates to DB
+  programOptions.parse(probDescDB);
   outputManager.parse(probDescDB);
 
   // With respect to Environment interaction with the probDescDB linked lists,

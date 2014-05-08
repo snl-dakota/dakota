@@ -1,4 +1,10 @@
 KEYWORD01 environment {NIDRProblemDescDB::env_start}
+        [ output_file STRING {N_stm(str,outputFile)} ]
+        [ error_file STRING {N_stm(str,errorFile)} ]
+        [ read_restart STRING {N_stm(str,readRestart)}
+	  [ stop_restart INTEGER >= 0 {N_stm(int,stopRestart)} ]
+          ]
+        [ write_restart STRING {N_stm(str,writeRestart)} ]
 	[ graphics {N_stm(true,graphicsFlag)} ]
 	[ tabular_graphics_data {N_stm(true,tabularDataFlag)}
 	  [ tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]

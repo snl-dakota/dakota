@@ -13,6 +13,7 @@
 
 #include "ProgramOptions.hpp"
 #include "CommandLineHandler.hpp"
+#include "ProblemDescDB.hpp"
 
 namespace Dakota {
 
@@ -177,6 +178,9 @@ bool ProgramOptions::proceed_to_run() const
 bool ProgramOptions::user_stdout_redirect() const 
 { return !outputFile.empty(); }
 
+bool ProgramOptions::user_stderr_redirect() const 
+{ return !errorFile.empty(); }
+
 
 void ProgramOptions::input_file(const String& in_file)
 { 
@@ -253,6 +257,32 @@ void ProgramOptions::post_run_input(const String& post_run_in)
 
 void ProgramOptions::post_run_output(const String& post_run_out)
 { postRunOutput = post_run_out; }
+
+
+void ProgramOptions::parse(const ProblemDescDB& problem_db)
+{
+  // environment specification can override ProgramOptions
+  // DB should be valid on all ranks at this point
+  // TODO: add output here, but only on rank 0... so we don't silently surprise the user
+
+  const String& outfile = problem_db.get_string("environment.output_file");
+  if (!outfile.empty()) outputFile = outfile;
+
+  const String& errfile = problem_db.get_string("environment.error_file");
+  if (!errfile.empty()) errorFile = errfile;
+
+  const String& readrst = problem_db.get_string("environment.read_restart");
+  if (!readrst.empty()) readRestartFile = readrst;
+
+  const int& stoprst = problem_db.get_int("environment.stop_restart");
+  if (stoprst > 0) stopRestartEvals = stoprst;
+
+  const String& writerst = problem_db.get_string("environment.write_restart");
+  if (!writerst.empty()) writeRestartFile = writerst;
+}
+
+
+
 
 
 void ProgramOptions::read(MPIUnpackBuffer& s) 

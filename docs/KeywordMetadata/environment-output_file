@@ -1,0 +1,12 @@
+Blurb:: Base filename for output redirection
+
+Description:: Specify a base filename to which Dakota output will be
+directed.  Output will (necessarily) be redirected after the input
+file is parsed.  This option overrides any command-line -output
+option.
+
+Topics::	dakota_IO
+Examples::
+Theory::
+Faq::
+See_Also::	

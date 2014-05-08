@@ -46,6 +46,17 @@ public:
   //- Heading: Data
   //
 
+  /// file name for output redirection (overrides command-line)
+  String outputFile;
+  /// file name for error redirection (overrides command-line)
+  String errorFile;
+  /// file name for restart read (overrides command-line)
+  String readRestart;
+  /// record at which to stop reading restart
+  int stopRestart;
+  /// file name for restart write (overrides command-line)
+  String writeRestart;
+
   /// flags use of graphics by the environment (from the \c graphics
   /// specification in \ref EnvIndControl)
   bool graphicsFlag;

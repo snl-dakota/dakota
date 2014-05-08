@@ -20,7 +20,7 @@ namespace Dakota {
 
 // Default constructor:
 DataEnvironmentRep::DataEnvironmentRep():
-  graphicsFlag(false), tabularDataFlag(false),
+  stopRestart(0), graphicsFlag(false), tabularDataFlag(false),
   tabularDataFile("dakota_tabular.dat"), outputPrecision(0), 
   resultsOutputFlag(false), resultsOutputFile("dakota_results.txt"), 
   referenceCount(1)
@@ -29,21 +29,24 @@ DataEnvironmentRep::DataEnvironmentRep():
 
 void DataEnvironmentRep::write(MPIPackBuffer& s) const
 {
-  s << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
+  s << outputFile << errorFile << readRestart << stopRestart << writeRestart
+    << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }
 
 
 void DataEnvironmentRep::read(MPIUnpackBuffer& s)
 {
-  s >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> outputPrecision
+  s >> outputFile >> errorFile >> readRestart >> stopRestart >> writeRestart
+    >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> outputPrecision
     >> resultsOutputFlag >> resultsOutputFile >> topMethodPointer;
 }
 
 
 void DataEnvironmentRep::write(std::ostream& s) const
 {
-  s << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
+  s << outputFile << errorFile << readRestart << stopRestart << writeRestart
+    << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }
 

@@ -28,6 +28,7 @@
 namespace Dakota {
 
 class CommandLineHandler;
+class ProblemDescDB;
 
 /// ProgramOptions stores options whether from the CLH or from library
 /// user; initially valid only on worldRank = 0, but then broadcast in
@@ -107,6 +108,9 @@ public:
   /// whether the user/client code requested a redirect of stdout
   bool user_stdout_redirect() const;
 
+  /// whether the user/client code requested a redirect of stderr
+  bool user_stderr_redirect() const;
+
 
   //- Set functions
 
@@ -155,6 +159,8 @@ public:
   /// Specify the post-run phase output filename
   void post_run_output(const String& post_run_out);
 
+  /// Extract environment options from ProblemDescDB
+  void parse(const ProblemDescDB& problem_db);
 
   /// helper function for reading some class data from MPI buffer
   void read(MPIUnpackBuffer& s);

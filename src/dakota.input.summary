@@ -1,4 +1,10 @@
 KEYWORD01 environment
+	[ output_file STRING ]
+	[ error_file STRING ]
+	[ read_restart STRING
+	  [ stop_restart INTEGER >= 0 ]
+	  ]
+	[ write_restart STRING ]
 	[ graphics ]
 	[ tabular_graphics_data
 	  [ tabular_graphics_file STRING ]

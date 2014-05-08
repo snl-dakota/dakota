@@ -5853,9 +5853,13 @@ static size_t
 //      MP2(,);
 
 static String
+        MP_(errorFile),
+        MP_(outputFile),
+        MP_(readRestart),
         MP_(resultsOutputFile),
 	MP_(tabularDataFile),
-	MP_(topMethodPointer);
+        MP_(topMethodPointer),
+        MP_(writeRestart);
 
 static bool
 	MP_(graphicsFlag),
@@ -5863,7 +5867,8 @@ static bool
 	MP_(tabularDataFlag);
 
 static int
-        MP_(outputPrecision);
+        MP_(outputPrecision),
+        MP_(stopRestart);
 
 //#undef MP2
 #undef MP_

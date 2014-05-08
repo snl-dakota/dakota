@@ -1,0 +1,9 @@
+Blurb:: Evaluation ID number at which to stop reading restart file
+
+Description:: This option overrides any command-line -stop_restart option.
+
+Topics::	dakota_IO
+Examples::
+Theory::
+Faq::
+See_Also::	

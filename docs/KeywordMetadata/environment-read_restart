@@ -1,0 +1,10 @@
+Blurb:: Base filename for restart file read
+
+Description:: Specify a base filename for the restart file Dakota should read.
+This option overrides any command-line -read_restart option.
+
+Topics::	dakota_IO
+Examples::
+Theory::
+Faq::
+See_Also::	
