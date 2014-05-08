@@ -294,6 +294,22 @@ Environment::~Environment()
 }
 
 
+/** Set the global variable controlling Dakota's exit behavior. Call
+    with no arguments to reset to default behavior. */
+void Environment::exit_mode(const String& mode)
+{
+  if (mode == "exit")
+    abort_mode = ABORT_EXITS;
+  else if (mode == "throw")
+    abort_mode = ABORT_THROWS;
+  else {
+    Cerr << "\nError: unknown exit mode; options are \"exit\" and \"throw\""
+	 << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 /** Parse input file and invoked any callbacks, then optionally check
     and sync database if check_bcast_database = true */
 void Environment::parse(bool check_bcast_database,

@@ -37,6 +37,12 @@ const size_t _NPOS = ~(size_t)0; // one's complement
 // externs
 // Note: Dakota class externs are declared elsewhere in order to maintain a
 // clear hierarchy of dependencies.
+
+/// enum for dakota abort behaviors
+enum {ABORT_EXITS, ABORT_THROWS};
+/// whether dakota exits/aborts or throws on errors
+extern short abort_mode;
+
 extern std::ostream* dakota_cout;
 extern std::ostream* dakota_cerr;
 //extern PRPCache data_pairs;

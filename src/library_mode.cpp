@@ -237,6 +237,9 @@ void /*Dakota::*/run_dakota_data()
   // demonstrate/test).
   Dakota::LibraryEnvironment env(MPI_COMM_WORLD, opts, check_bcast_construct);
 
+  // configure Dakota to throw a std::runtime_error instead of calling exit
+  env.exit_mode("throw");
+
   // Now set the various data to specify the Dakota study
   Dakota::DataMethod   dme; Dakota::DataModel    dmo;
   Dakota::DataVariables dv; Dakota::DataInterface di; Dakota::DataResponses dr;

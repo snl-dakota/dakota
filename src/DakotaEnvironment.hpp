@@ -105,6 +105,9 @@ public:
   /// return the final environment solution (response)
   const Response&  response_results() const;
 
+  /// allow environment clients to set Dakota exit behavior (throw vs. exit)
+  void exit_mode(const String& mode = "exit");
+
 protected:
 
   //

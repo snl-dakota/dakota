@@ -39,6 +39,10 @@ namespace Dakota {
 // --------------------------
 // Instantiate global objects
 // --------------------------
+
+/// by default Dakota exits or calls MPI_Abort on errors
+short abort_mode = ABORT_EXITS; 
+
 std::ostream* dakota_cout = &std::cout; ///< DAKOTA stdout initially points to
   ///< std::cout, but may be redirected to a tagged ofstream if there are
   ///< concurrent iterators.
@@ -95,8 +99,12 @@ void abort_handler(int code)
     // properly terminate in parallel
     Dak_pddb->parallel_library().abort_helper(code);
   }
-  else
-    std::exit(code);
+  else {
+    if (abort_mode == ABORT_THROWS)
+      throw(std::runtime_error("Dakota aborted"));
+    else
+      std::exit(code);
+  }
 }
 
 
