@@ -19,6 +19,10 @@ endif(HAVE_UNISTD_H)
 
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
+  # list of all destination files copied into test/ or subdirs test/dakota_*
+  # so we can have a custom target depend on them
+  set(copied_test_files_abs)
+
   # Configure or copy the dakota_test support files into the build
   # tree with dependency to source files (needed for legacy behavior,
   # but ultimately would like to eliminate)
@@ -28,48 +32,13 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl @ONLY)
 
   # copied primary scripts
-  set(test_support_files dakota_diff.perl) 
+  set(file "dakota_diff.perl")
+  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+    ${CMAKE_CURRENT_BINARY_DIR}/${file})
+  list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
 
-  # analysis driver scripts
-  list(APPEND test_support_files
-    dakota_container.sh dakota_3pc.ac.sh dakota_3pc.if.sh dakota_3pc.of.sh
-    dakota_3pc.ac_verb.sh dakota_3pc.if_verb.sh dakota_3pc.of_verb.sh
-    dakota_workdir.py dakota_textbook.bat
-    )
-
-  # supplemental data
-  list(APPEND test_support_files
-    dakota_coliny.dat dakota_logratio_pce.txt 
-    dakota_pstudy.3.dat dakota_pstudy.7.dat
-    dakota_textbook_nips.lsq.dat dakota_textbook_nips.lsq.ann
-    dakota_uq_textbook_lhs_approx.annotated 
-    dakota_uq_textbook_lhs_approx.freeform
-    )
-
-  # supplementary AMPL files
-  list(APPEND test_support_files
-    dakota_ampl_fma.nl dakota_ampl_fma.row dakota_ampl_fma.col
-    dakota_ampl_tb.nl dakota_ampl_tb.row dakota_ampl_tb.col
-    dakota_ampl_tb.unc.nl dakota_ampl_tb.unc.row dakota_ampl_tb.unc.col
-    )
-
-  # Create a custom command to copy each file to the build directory, but
-  # group them all into a single target
-  set(test_support_files_abs "")
-  foreach(file ${test_support_files})
-    add_file_copy_command(
-      ${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-      ${CMAKE_CURRENT_BINARY_DIR}/${file}
-      )
-    list(APPEND test_support_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
-  endforeach()
-  add_custom_target(dakota_test_support_files ALL 
-    DEPENDS ${test_support_files_abs}
-    COMMENT "Copy DAKOTA test support files to binary test/ directory"
-    )
 
   # Create one CTest per DAKOTA input file, in a protected subdirectory
-  set(copied_test_files_abs "")
 
   file(GLOB dakota_test_input_files 
        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
@@ -217,15 +186,17 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     list(REMOVE_ITEM dakota_test_input_files dakota_win_ext.in)
   endif()
 
+  # Iterate the list of test files and create tests for each
   foreach(test_input_file ${dakota_test_input_files})
 
     # Glob up all files associated with this test input file
+    # These get copied by add_application_test into test/dakota_*/
     get_filename_component(test_name ${test_input_file} NAME_WE)
     file(GLOB test_all_files
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*"
       )
 
-    # add serial test, but don't create custom target
+    # add serial test, but don't create custom target for copied files
     add_application_test(
       ${test_name}
       FILE_DEPENDENCIES "${test_all_files}"
@@ -239,12 +210,22 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       NO_TARGET
       )
 
-    # track all the copied files for later addition to a custom target
+    # the test add makes a copy command without target, now track all
+    # the copied files for later addition to a custom target
     foreach(file ${test_all_files})
       set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/${file}")
       list(APPEND copied_test_files_abs "${copied_file}")
     endforeach()
 
+    # Also copy the aux files into test/ to support direct testing with Perl
+    set(test_aux_files ${test_all_files})
+    list(REMOVE_ITEM test_aux_files ${test_input_file})
+
+    foreach(file ${test_aux_files})
+      add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+	${CMAKE_CURRENT_BINARY_DIR}/${file})
+      list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
+    endforeach()
 
     # only add parallel tests when MPI enabled
     if (DAKOTA_HAVE_MPI)
@@ -283,7 +264,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   add_custom_target(dakota_test_files ALL 
     DEPENDS ${copied_test_files_abs}
     COMMENT 
-      "Copy DAKOTA test inputs and aux files to binary test/ subdirectories"
+      "Copy DAKOTA test inputs and aux files to binary test/ and subdirectories"
     )
 
   # Clean up test dir
