@@ -146,6 +146,7 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Developers Manual PDF..."
   COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
+--developers
   COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'export TEXMFCNF=${CMAKE_CURRENT_BINARY_DIR}:$$TEXMFCNF && make'
   COMMAND ${CMAKE_COMMAND} -E echo "Done."
   COMMENT "LaTeX: Developers to PDF"
@@ -160,6 +161,7 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.tex
   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Reference Manual PDF..."
   COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
+--reference
   COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-ref make
   COMMAND ${CMAKE_COMMAND} -E echo "Done."
   COMMENT "LaTeX: Reference to PDF"
