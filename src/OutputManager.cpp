@@ -82,14 +82,18 @@ void OutputManager::close_streams()
   if (!coutFilename.empty() && output_ofstream.is_open()) {
     output_ofstream.close();
     dakota_cout = &std::cout;
+    coutFilename = "";
   }
   if (!cerrFilename.empty() && error_ofstream.is_open()) {
     error_ofstream.close();
     dakota_cerr = &std::cerr;
+    cerrFilename = "";
   }
 
-  if (restartOutputArchive)
+  if (restartOutputArchive) {    
     delete restartOutputArchive;
+    restartOutputArchive = NULL;
+  }
 
   if (restartOutputFS.is_open())
     restartOutputFS.close();

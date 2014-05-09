@@ -107,6 +107,8 @@ String ProgramOptions::output_file() const
 const String& ProgramOptions::error_file() const
 { return errorFile; }
 
+const String& ProgramOptions::exit_mode() const
+{ return exitMode; }
 
 const String& ProgramOptions::read_restart_file() const
 { return readRestartFile; }
@@ -210,6 +212,8 @@ void ProgramOptions::output_file(const String& out_file)
 void ProgramOptions::error_file(const String& err_file)
 { errorFile = err_file; }
 
+void ProgramOptions::exit_mode(const String& mode)
+{ exitMode = mode; }
 
 void ProgramOptions::read_restart_file(const String& read_rst)
 { readRestartFile = read_rst; }

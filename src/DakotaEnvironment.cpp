@@ -42,6 +42,10 @@ Environment::Environment(BaseConstructor):
   parallelLib(mpiManager, programOptions, outputManager),
   probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
 {
+  // set exit mode as early as possible
+  if (!programOptions.exit_mode().empty())
+    exit_mode(programOptions.exit_mode());
+
   // Initialize paths used by WorkdirHelper
   WorkdirHelper::initialize();
 
@@ -75,6 +79,10 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
   parallelLib(mpiManager, programOptions, outputManager),
   probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
 {
+  // set exit mode as early as possible
+  if (!programOptions.exit_mode().empty())
+    exit_mode(programOptions.exit_mode());
+
   // Initialize paths used by WorkdirHelper and NIDR
 
   // these data were previously statically initialized, so perform first
@@ -110,6 +118,10 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   parallelLib(mpiManager, programOptions, outputManager),
   probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
 {
+  // set exit mode as early as possible
+  if (!programOptions.exit_mode().empty())
+    exit_mode(programOptions.exit_mode());
+
   // Initialize paths used by WorkdirHelper
   WorkdirHelper::initialize();
 

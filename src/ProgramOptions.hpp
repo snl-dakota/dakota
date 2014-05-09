@@ -58,11 +58,13 @@ public:
   bool echo_input() const;
   /// (deprecated) NIDR parser options
   const String& parser_options() const;
-
+  
   /// output (user-provided or default) file base name (no tag)
   String output_file() const;
   /// error file base name (no tag)
   const String& error_file() const;
+  /// behavior of abort_handler (throw or exit)
+  const String& exit_mode() const;
   
   /// restart file base name (no tag)
   const String& read_restart_file() const;
@@ -113,14 +115,15 @@ public:
 
 
   //- Set functions
-
+  
   /// set Dakota input file base name (no tag)
   void input_file(const String& in_file);
   /// set alternate Dakota input string literal
   void input_string(const String& in_string);
   /// set whether to echo input to output
   void echo_input(bool echo_flag);
-
+  /// set behavior for abort_handler
+  void exit_mode(const String& mode);
   /// set base file name for Dakota output
   void output_file(const String& out_file);
   /// set base file name for Dakota errors
@@ -196,6 +199,7 @@ private:
   String inputString;
   bool echoInput;         ///< whether to echo client's input file at parse 
   String parserOptions;   ///< Deprecated option for NIDR parser options
+  String exitMode;        ///< Abort or throw on error
 
   String outputFile;      ///< Dakota output base file name, e.g., "dakota.out"
   String errorFile;       ///< Dakota error base file name, e.g., "dakota.err"
