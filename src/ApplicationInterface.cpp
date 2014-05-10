@@ -157,8 +157,12 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // Initialize communicators for analyses (partitions of evalComm).  This call
   // is protected from an iterator dedicated master in the same way a strategy
   // master never calls init_eval_comms (prevents some warnings in
-  // ParallelLibrary::resolve_inputs).
-  if ( !ieDedMasterFlag || iteratorCommRank ) {
+  // ParallelLibrary::resolve_inputs).  However, a dedicated master can run a
+  // local single-processor job if the algorithm uses a synchronous eval
+  // (see derived_master_overload() usage in Model::compute_response()).
+  if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
+    init_serial_analyses();
+  else {
     int min_procs_per_analysis = 1,
         max_procs_per_analysis = (direct_int) ? worldSize : 1;
 
@@ -169,8 +173,6 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 
     set_analysis_communicators();
   }
-  else
-    init_serial_analyses();
 
   // print parallel configuration (prior to configuration checking
   // so that error messages can be more readily debugged)
@@ -188,13 +190,12 @@ set_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   set_evaluation_communicators(message_lengths);
 
   // Initialize communicators for analyses (partitions of evalComm).  This call
-  // is protected from an iterator dedicated master in the same way a strategy
-  // master never calls init_eval_comms (prevents some warnings in
-  // ParallelLibrary::resolve_inputs).
-  if ( !ieDedMasterFlag || iteratorCommRank )
-    set_analysis_communicators();
-  else
+  // is protected from an iterator dedicated master in cases where local
+  // evaluations are precluded (see comments in init_communicators()).
+  if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
+  else
+    set_analysis_communicators();
 
   // check for configuration errors
   set_communicators_checks(max_eval_concurrency);
@@ -416,15 +417,13 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
 
 void ApplicationInterface::free_communicators()
 {
-  // This call is protected from an iterator dedicated master in the same way a
-  // strategy master never calls init_eval_comms (prevents some warnings in 
-  // ParallelLibrary::resolve_inputs).
-
-  // deallocate partitions of evalComm
-  if ( !ieDedMasterFlag || iteratorCommRank )
+  // Deallocate partitions of evalComm.  This call is protected from an
+  // iterator dedicated master in cases where local evaluations are precluded
+  // (see comments in init_communicators()).
+  if (!ieDedMasterFlag || iteratorCommRank || !multiProcEvalFlag)
     parallelLib.free_analysis_communicators();
 
-  // deallocate partitions of iteratorComm
+  // Deallocate partitions of iteratorComm
   parallelLib.free_evaluation_communicators();
 }
 
