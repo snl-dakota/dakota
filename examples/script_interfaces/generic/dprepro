@@ -3,7 +3,7 @@
 # See documentation at end, or run dprepro --man
 #  dprepro [options] parameters_file template_input_file new_input_file
 
-# Copyright (c) 2001, Sandia National Laboratories.
+# Copyright 2014 Sandia Corporation.
 # This software is distributed with DAKOTA under the GNU LGPL.
 # For more information, see the README file in the top Dakota directory.
 
