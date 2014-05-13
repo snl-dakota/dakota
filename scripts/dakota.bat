@@ -3,7 +3,7 @@
 rem  _______________________________________________________________________
 rem
 rem  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-rem  Copyright (c) 2010, Sandia National Laboratories.
+rem  Copyright 2014 Sandia Corporation.
 rem  This software is distributed under the GNU Lesser General Public License.
 rem  For more information, see the README file in the top Dakota directory.
 rem  _______________________________________________________________________
