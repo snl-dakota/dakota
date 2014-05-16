@@ -55,8 +55,6 @@ PRPCache data_pairs;          ///< contains all parameter/response pairs.
 ResultsManager iterator_results_db;
 
 
-Graphics dakota_graphics;     ///< the global Dakota::Graphics object used by
-                              ///< strategies, models, and approximations
 int write_precision = 10;     ///< used in ostream data output functions
                               ///< (restart_util.cpp overrides default value)
 

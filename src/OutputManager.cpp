@@ -29,7 +29,6 @@ namespace Dakota {
 
 // Note: MSVC requires these externs defined outside any function
 extern PRPCache data_pairs;
-extern Graphics dakota_graphics;
 extern ResultsManager iterator_results_db;
 
 // BMA TODO: consider removing or reimplementing
@@ -104,9 +103,9 @@ void OutputManager::close_streams()
   // were opened.  Do need flag protection, otherwise dummy output
   // manager will close the global streams a second time wrongly.
   if (graph2DFlag)
-    dakota_graphics.close();
+    dakotaGraphics.close();
   if (tabularDataFlag)
-    dakota_graphics.close_tabular();
+    dakotaGraphics.close_tabular();
 
   // TODO: encapsulate tabular stream and graphics object in this
   // class if possible, or at least use this class to delegate to

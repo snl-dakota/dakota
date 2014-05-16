@@ -33,7 +33,6 @@ namespace Dakota
 extern PRPCache        data_pairs;
 extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
 extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
-extern Graphics        dakota_graphics; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
 // minimize dakota_restart_util object file dependencies
@@ -507,8 +506,10 @@ void Model::compute_response()
     else // perform a normal synchronous map
       derived_compute_response(temp_set);
 
-    if (modelAutoGraphicsFlag)
+    if (modelAutoGraphicsFlag) {
+      Graphics& dakota_graphics = parallelLib.output_manager().graphics();
       dakota_graphics.add_datapoint(currentVariables, currentResponse);
+    }
   }
 }
 
@@ -551,8 +552,10 @@ void Model::compute_response(const ActiveSet& set)
       // Perform synchronous eval
       derived_compute_response(set);
 
-    if (modelAutoGraphicsFlag)
+    if (modelAutoGraphicsFlag) {
+      Graphics& dakota_graphics = parallelLib.output_manager().graphics();
       dakota_graphics.add_datapoint(currentVariables, currentResponse);
+    }
   }
 }
 
@@ -693,10 +696,12 @@ const IntResponseMap& Model::synchronize()
 	responseMap[m_it->first] = r_cit->second;
 
     // update graphics
-    if (modelAutoGraphicsFlag)
+    if (modelAutoGraphicsFlag) {
+      Graphics& dakota_graphics = parallelLib.output_manager().graphics();
       for (r_cit  = responseMap.begin(), v_it = varsList.begin();
 	   r_cit != responseMap.end(); ++r_cit, ++v_it)
 	dakota_graphics.add_datapoint(*v_it, r_cit->second);
+    }
     // reset bookkeeping lists
     numFDEvalsMap.clear();
     rawEvalIdMap.clear();
@@ -753,6 +758,7 @@ const IntResponseMap& Model::synchronize_nowait()
       // search for next response set(s) in sequence
       bool found = true;
       while (found) {
+	Graphics& dakota_graphics = parallelLib.output_manager().graphics();
 	int graphics_cntr = dakota_graphics.graphics_counter();
 	// find() is not really necessary due to Map ordering
 	//g_it = graphicsRespMap.begin();

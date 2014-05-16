@@ -31,7 +31,6 @@ static const char rcsId[]="@(#) $Id: SurrBasedLocalMinimizer.cpp 7031 2010-10-22
 
 
 namespace Dakota {
-  extern Graphics dakota_graphics;
   extern PRPCache data_pairs; // global container
 
 // define special values for componentParallelMode
@@ -380,6 +379,9 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
   // reset convergence controls in case of multiple executions
   if (convergenceFlag)
     reset();
+
+  Graphics& dakota_graphics =
+    iteratedModel.parallel_library().output_manager().graphics();
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Model&    truth_model   = iteratedModel.truth_model();

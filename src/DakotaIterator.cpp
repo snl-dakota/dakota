@@ -117,7 +117,6 @@ static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02
 namespace Dakota {
 
 extern ProblemDescDB  dummy_db;        // defined in dakota_global_defs.cpp
-extern Graphics       dakota_graphics; // defined in dakota_global_defs.cpp
 extern ResultsManager iterator_results_db;
 
 
@@ -1210,14 +1209,15 @@ const VariablesArray& Iterator::initial_points() const
 
 
 /** This is a convenience function for encapsulating graphics
-    initialization operations. */
+    initialization operations. It is overridden by derived classes
+    that specialize the graphics display. */
 void Iterator::initialize_graphics(int iterator_server_id)
 {
   if (iteratorRep)
     iteratorRep->initialize_graphics();
   else { // no redefinition of virtual fn., use default initialization
-    const OutputManager& mgr
-      = iteratedModel.parallel_library().output_manager();
+    OutputManager& mgr = iteratedModel.parallel_library().output_manager();
+    Graphics& dakota_graphics = mgr.graphics();
     const Variables& vars = iteratedModel.current_variables();
     const Response&  resp = iteratedModel.current_response();
     bool auto_log = false;

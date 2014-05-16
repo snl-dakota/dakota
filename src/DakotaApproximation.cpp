@@ -29,7 +29,6 @@
 
 
 namespace Dakota {
-  extern Graphics dakota_graphics; // defined in ParallelLibrary.cpp
 
 /** This constructor is the one which must build the base class data
     for all derived classes.  get_approx() instantiates a derived

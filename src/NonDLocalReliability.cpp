@@ -42,7 +42,6 @@ using OPTPP::NLPGradient;
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.cpp 4058 2006-10-25 01:39:40Z mseldre $";
 
 namespace Dakota {
-extern Graphics dakota_graphics; // defined in ParallelLibrary.cpp
 extern PRPCache data_pairs; // global container
 
 
@@ -460,6 +459,9 @@ void NonDLocalReliability::mean_value()
   impFactor.shapeUninitialized(numUncertainVars, numFunctions);
   statCount = 0;
   initialize_final_statistics_gradients();
+
+  Graphics& dakota_graphics =
+    iteratedModel.parallel_library().output_manager().graphics();
 
   // loop over response functions
   size_t i;
@@ -1530,6 +1532,9 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     finalStatistics, warm start, and graphics data. */
 void NonDLocalReliability::update_level_data()
 {
+  Graphics& dakota_graphics =
+    iteratedModel.parallel_library().output_manager().graphics();
+
   bool ria_flag = (levelCount < requestedRespLevels[respFnCount].length());
 
   // Update computed Resp/Prob/Rel/GenRel levels arrays.  finalStatistics

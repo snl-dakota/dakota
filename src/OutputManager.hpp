@@ -16,6 +16,7 @@
 
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
+#include "DakotaGraphics.hpp"
 
 // forward declarations for restart I/O
 namespace boost {
@@ -54,6 +55,9 @@ public:
 
   /// helper to close streams during destructor or abnormal abort
   void close_streams();
+
+  /// retrieve the graphics handler object
+  Graphics& graphics() { return dakotaGraphics; }
 
 
   // -----
@@ -170,6 +174,13 @@ private:
   std::ofstream restartOutputFS;
   /// Binary output archive to which data is written (ptr as no default ctor)
   boost::archive::binary_oarchive *restartOutputArchive;
+
+
+  /// graphics and tabular data output handler used by meta-iterators,
+  /// models, and approximations; encapsulated here so destroyed with
+  /// the OutputManager
+  Graphics dakotaGraphics;     
+
 
 };  // class OutputManager
 

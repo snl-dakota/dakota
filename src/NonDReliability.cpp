@@ -21,7 +21,6 @@
 static const char rcsId[] = "@(#) $Id: NonDReliability.cpp 6793 2010-05-21 00:07:25Z mseldre $";
 
 namespace Dakota {
-extern Graphics dakota_graphics; // defined in ParallelLibrary.cpp
 
 
 NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
@@ -63,8 +62,8 @@ void NonDReliability::initialize_graphics(int iterator_server_id)
   // Set up special graphics for CDF/CCDF visualization
   if (totalLevelRequests) {
 
-    const OutputManager& mgr
-      = iteratedModel.parallel_library().output_manager();
+    OutputManager& mgr = iteratedModel.parallel_library().output_manager();
+    Graphics& dakota_graphics = mgr.graphics();
 
     // For graphics, limit (currently) to server id 1, for both ded master
     // (parent partition rank 1) and peer partitions (parent partition rank 0)

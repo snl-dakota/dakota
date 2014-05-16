@@ -52,7 +52,6 @@ void NNLS_F77( double* a, int& mda, int& m, int& n, double* b, double* x,
 using namespace std;
 
 namespace Dakota {
-  extern Graphics dakota_graphics; // defined in ParallelLibrary.cpp
   extern PRPCache data_pairs; // global container
 
 SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model):
@@ -120,7 +119,8 @@ void SurrBasedMinimizer::initialize_graphics(int iterator_server_id)
                         methodName == SURROGATE_BASED_GLOBAL) ?
     iteratedModel.truth_model() : iteratedModel;
   ParallelLibrary& parallel_lib = truth_model.parallel_library();
-  const OutputManager& mgr = parallel_lib.output_manager();
+  OutputManager& mgr = parallel_lib.output_manager();
+  Graphics& dakota_graphics = mgr.graphics();
   const Variables& vars = truth_model.current_variables();
   const Response&  resp = truth_model.current_response();
 
