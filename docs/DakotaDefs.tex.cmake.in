@@ -15,7 +15,7 @@
 \newcommand{\DakotaSANDDev}{SAND2014-xxxx}
 \newcommand{\DakotaSANDRef}{SAND2014-xxxx}
 \newcommand{\DakotaSANDUsers}{SAND2014-xxxx}
-\newcommand{\DakotaSANDTheory}{SAND2014-xxxx}
+\newcommand{\DakotaSANDTheory}{SAND2014-4253}
 
 
 % Need to manually break line or Eldred gets incorrectly split
@@ -26,38 +26,30 @@ Kenneth~T.~Hu, John~D.~Jakeman, Laura~P.~Swiler, J.~Adam~Stephens,\\
 Dena~M.~Vigil, Timothy~M.~Wildey
 }
 
+\newcommand{\authvskip}{0.25cm}
+
 \newcommand{\DakotaAuthorLong}{
-Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, John~D.~Jakeman, Laura~P.~Swiler, J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey\\
-Optimization and Uncertainty Quantification Department\\
-\\
+Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, John~D.~Jakeman,\\
+Laura~P.~Swiler, J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey\\
+Optimization and Uncertainty Quantification Department \vspace*{\authvskip} \\ 
 William~J.~Bohnhoff\\
-Radiation Transport Department\\
-\\
+Radiation Transport Department \vspace*{\authvskip} \\
 John~P.~Eddy\\
-System Readiness and Sustainment Technologies Department\\
-\\
+System Readiness and Sustainment Technologies Department \vspace*{\authvskip} \\
 Kenneth~T.~Hu\\
-Validation and Uncertainty Quantification Department\\
-\\
+Validation and Uncertainty Quantification Department \vspace*{\authvskip} \\
 Keith~R.~Dalbey\\
-Mission Analysis and Simulation Department\\
-\\
+Mission Analysis and Simulation Department \vspace*{\authvskip} \\
+Lara~E.~Bauman, Patricia~D.~Hough \\
+Quantitative Modeling and Analysis Department \vspace*{\authvskip} \\
 Sandia National Laboratories\\
 P.O. Box 5800\\
 Albuquerque, NM 87185\\
-\\
-Lara~E.~Bauman, Patricia~D.~Hough\\
-Quantitative Modeling and Analysis Department\\
-\\
-Sandia National Laboratories\\
-P.O. Box 969\\
-Livermore, CA 94551
 }
 
 \newcommand{\DakotaAuthorFormatted}{
-{\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred,\\ 
-John D. Jakeman, Laura P. Swiler, J. Adam Stephens,\\
-Dena M. Vigil, Timothy M. Wildey}\\ 
+{\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred, John D. Jakeman,\\
+Laura P. Swiler, J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey}\\ 
 {\large Optimization and Uncertainty Quantification Department}\\
 \vspace*{0.5cm}
 {\large \bf William J. Bohnhoff}\\
@@ -72,16 +64,12 @@ Dena M. Vigil, Timothy M. Wildey}\\
 {\large \bf Kenneth T. Hu}\\
 {\large Validation and Uncertainty Quantification Department}\\
 \vspace*{0.5cm}
-{\large Sandia National Laboratories}\\
-{\large P.O. Box 5800}\\
-{\large Albuquerque, New Mexico 87185}\\
-\vspace*{1cm}
 {\large \bf Lara E. Bauman, Patricia D. Hough}\\
 {\large Quantitative Modeling and Analysis Department}\\
 \vspace*{0.5cm}
 {\large Sandia National Laboratories}\\
-{\large P.O. Box 969}\\
-{\large Livermore, CA 94551}\\
+{\large P.O. Box 5800}\\
+{\large Albuquerque, New Mexico 87185}\\
 }
 
 
