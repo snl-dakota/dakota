@@ -2176,6 +2176,9 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 
   do { // main loop
 
+    // TO DO: generalize for nowait uses where num_jobs expands/shrinks
+    // Preferred approach is to send term code more immediately...
+
     // -------------------------------------------------------------------
     // check for incoming messages & unpack/execute all jobs received
     // -------------------------------------------------------------------
@@ -2221,7 +2224,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 	}
       }
     }
-    else // catch termination code
+    else // catch termination code (short term fix)
       parallelLib.bcast_e(fn_eval_id);
 
   } while (fn_eval_id || num_active > 0);
