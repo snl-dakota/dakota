@@ -53,14 +53,15 @@ variables,
 #	  initial_point = 3				#8
 #         lower_bounds  = 0				#9
 #         upper_bounds  = 6				#9
-#       discrete_design_set_int = 1                     #6,#7,#8,#9,#11
-#	  initial_point = 2				#6
-#	  initial_point = 6				#8
-#	  set_values = 2 4 6 8 10			#6,#7,#8,#9,#11
-#       discrete_design_set_real = 1                    #6,#7,#8,#9,#11
-#	  initial_point = 1.				#6
-#	  initial_point = 5.				#8
-#	  set_values = 1. 3. 5. 7. 9.			#6,#7,#8,#9,#11
+#       discrete_design_set                     	#6,#7,#8,#9,#11
+# 	  integer = 1					#6,#7,#8,#9,#11
+#	    initial_point = 2				#6
+#	    initial_point = 6				#8
+#	    set_values = 2 4 6 8 10			#6,#7,#8,#9,#11
+#         real = 1                    			#6,#7,#8,#9,#11
+#	    initial_point = 1.				#6
+#	    initial_point = 5.				#8
+#	    set_values = 1. 3. 5. 7. 9.			#6,#7,#8,#9,#11
 
 interface,
 	system asynchronous evaluation_concurrency = 5

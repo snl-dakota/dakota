@@ -42,12 +42,13 @@ variables,
 #       discrete_design_range = 2                     #8
 #         lower_bounds  = 0. 0.                       #8
 #         upper_bounds  = 5. 5.                       #8
-#       discrete_design_set_int = 2                   #8
-#         num_set_values = 2 3                        #8
-#         set_values = 4 5 1 2 7                      #8
-#       discrete_design_set_real = 2                  #8
-#         num_set_values = 3 2                        #8
-#         set_values = 1.2 2.3 3.4 7.7 8.8            #8
+#       discrete_design_set  			      #8
+#         integer = 2                  		      #8
+#           num_set_values = 2 3                      #8
+#           set_values = 4 5 1 2 7                    #8
+#         real = 2                  		      #8
+#           num_set_values = 3 2                      #8
+#           set_values = 1.2 2.3 3.4 7.7 8.8          #8
 #       discrete_state_range = 2                      #8
 #         lower_bounds  = 10. 10.                     #8
 #         upper_bounds  = 12. 12.                     #8

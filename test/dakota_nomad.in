@@ -42,14 +42,15 @@ variables,
 #	  lower_bounds       1     1				#1,#4,#5
 #	  upper_bounds       4     9				#1,#4,#5
 #	  descriptors      'y1'   'y2'				#1,#4,#5
-#       discrete_design_set_real = 2				#2,#4,#5
-#         num_set_values = 4 5					#2,#4,#5
-#         set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#2,#4,#5
-#         descriptors      'y3'   'y4' 	       	       		#2,#4,#5
-#       discrete_design_set_int = 2				#3,#4,#5
-#         num_set_values = 2 2	  				#3,#4,#5
-#         set_values = 4 7 8 9					#3,#4,#5
-#         descriptors      'z1'   'z2'				#3,#4,#5
+#       discrete_design_set					#2,#3,#4,#5
+#         real = 2						#2,#4,#5
+#           num_set_values = 4 5				#2,#4,#5
+#           set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#2,#4,#5
+#           descriptors      'y3'   'y4' 	       	       	#2,#4,#5
+#         integer = 2						#3,#4,#5
+#           num_set_values = 2 2	  			#3,#4,#5
+#           set_values = 4 7 8 9				#3,#4,#5
+#           descriptors      'z1'   'z2'			#3,#4,#5
 
 interface,
        direct							#0,#2,#4

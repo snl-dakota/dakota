@@ -199,9 +199,11 @@ public:
   KWH(var_strL);
   KWH(var_true);
   KWH(var_newiarray);
+  KWH(var_newsarray);
   KWH(var_newivec);
   KWH(var_newrvec);
   KWH(var_ivec);
+  KWH(var_svec);
   KWH(var_rvec);
   KWH(var_type);
 

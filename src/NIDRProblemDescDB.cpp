@@ -144,6 +144,7 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
     abort_handler(-1);
   if (parallel_library().command_line_run()) {
     const char *s;
+    // manage dynamic solver plugins specified in the input
 #ifdef DAKOTA_DL_SOLVER
     std::list<DataMethod>::iterator
       Dml  = dataMethodList.begin(),
@@ -180,6 +181,7 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
       }
     }
 #endif
+    // create initial work directories: this should be removed; might need tags
     if (parallel_library().mpirun_flag()) {
       std::list<DataInterface>::iterator
 	Ifl  = dataInterfaceList.begin(),
@@ -404,10 +406,11 @@ enum { // kinds of discrete epistemic uncertain real variables
 
 enum { // kinds of discrete set variables
   DiscSetVar_design_set_int = 0,
-  DiscSetVar_design_set_real = 1,
-  DiscSetVar_state_set_int = 2,
-  DiscSetVar_state_set_real = 3,
-  DiscSetVar_Nkinds = 4	// number of kinds of discrete set variables
+  DiscSetVar_design_set_str = 1,
+  DiscSetVar_design_set_real = 2,
+  DiscSetVar_state_set_int = 3,
+  DiscSetVar_state_set_real = 4,
+  DiscSetVar_Nkinds = 5	// number of kinds of discrete set variables
 };
 
 struct VarLabel {
@@ -421,11 +424,12 @@ struct Var_Info {
   VarLabel  CAUv[ CAUVar_Nkinds],  CEUv[ CEUVar_Nkinds];
   VarLabel DAUIv[DAUIVar_Nkinds], DAURv[DAURVar_Nkinds];
   VarLabel DEUIv[DEUIVar_Nkinds], DEURv[DEURVar_Nkinds];
-  IntArray   *nddsi, *nddsr, *nCI, *nDI, *nhbp, *nhpp, *ndusi, *ndusr,
+  IntArray   *nddsi, *nddss, *nddsr, *nCI, *nDI, *nhbp, *nhpp, *ndusi, *ndusr,
              *ndssi, *ndssr;
   RealVector *ddsr, *CIlb, *CIub, *CIp, *DIp, *DSIp, *DSRp, *dusr,
              *hba, *hbo, *hbc, *hpa, *hpc, *ucm, *dssr;
   IntVector  *ddsi, *DIlb, *DIub, *dusi, *dssi;
+  StringArray *ddss;
 };
 
 struct Var_check
@@ -435,6 +439,7 @@ struct Var_check
   void (*vgen)(DataVariablesRep*, size_t);
 };
 
+/// structure for verifying bounds and initial point for real-valued vars
 struct Var_rcheck
 {
   const char *name;
@@ -446,6 +451,19 @@ struct Var_rcheck
   StringArray DataVariablesRep::* Lbl; // when static, initialized to NULL
 };
 
+/// structure for verifying bounds and initial point for string-valued vars
+// struct Var_scheck
+// {
+//   const char *name;
+//   size_t DataVariablesRep::* n;
+//   void (*vgen)(DataVariablesRep*, size_t);
+//   StringArray DataVariablesRep::* L;   // when static, initialized to NULL
+//   StringArray DataVariablesRep::* U;   // when static, initialized to NULL
+//   StringArray DataVariablesRep::* V;   // when static, initialized to NULL
+//   StringArray DataVariablesRep::* Lbl; // when static, initialized to NULL
+// };
+
+/// structure for verifying bounds and initial point for integer-valued vars
 struct Var_icheck
 {
   const char *name;
@@ -1945,6 +1963,21 @@ var_newiarray(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+var_newsarray(const char *keyname, Values *val, void **g, void *v)
+{
+  Var_Info *vi = *(Var_Info**)g;
+  StringArray *sa;
+  size_t i, n = val->n;
+  const char **z = val->s;
+
+  if (!(sa = new StringArray(n)))
+    botch("new failure in var_newsarray");
+  vi->**(StringArray *Var_Info::**)v = sa;
+  for(i = 0; i < n; i++)
+    (*sa)[i] = z[i];
+}
+
+void NIDRProblemDescDB::
 var_rvec(const char *keyname, Values *val, void **g, void *v)
 {
   RealVector *rv
@@ -1968,6 +2001,19 @@ var_ivec(const char *keyname, Values *val, void **g, void *v)
   for(i = 0; i < n; i++)
     (*iv)[i] = z[i];
 }
+
+// BMA TODO: I believe this duplicative of var_strL.
+// void NIDRProblemDescDB::
+// var_svec(const char *keyname, Values *val, void **g, void *v)
+// {
+//   StringArray *sa = &((*(Var_Info**)g)->dv->**(StringArray DataVariablesRep::**)v);
+//   size_t i, n = val->n;
+//   sa->resize(n);
+
+//   const char **z = val->s;
+//   for(i = 0; i < n; i++)
+//     (*sa)[i] = z[i];
+// }
 
 void NIDRProblemDescDB::
 var_pintz(const char *keyname, Values *val, void **g, void *v)
@@ -2066,7 +2112,7 @@ static void not_div(const char *kind, size_t nsv, size_t m)
 	 kind, (int)nsv, (int)m);
 }
 
-static void suppressed(const char *kind, int ndup, int *ip, Real *rp)
+static void suppressed(const char *kind, int ndup, int *ip, String *sp, Real *rp)
 {
   const char *s;
   int i, nother;
@@ -2079,6 +2125,8 @@ static void suppressed(const char *kind, int ndup, int *ip, Real *rp)
   for(i = 0; i < ndup; ++i)
     if (ip)
       Squawk("Duplicate %s value %d", kind, ip[i]);
+    else if (sp)
+      Squawk("Duplicate %s value %s", kind, sp[i].c_str());
     else
       Squawk("Duplicate %s value %.17g", kind, rp[i]);
   if (nother) {
@@ -2091,6 +2139,11 @@ static void suppressed(const char *kind, int ndup, int *ip, Real *rp)
 static void bad_initial_ivalue(const char *kind, int val)
 {
   Squawk("invalid initial value %d for %s", val, kind);
+}
+
+static void bad_initial_svalue(const char *kind, String val)
+{
+  Squawk("invalid initial value %s for %s", val.c_str(), kind);
 }
 
 static void bad_initial_rvalue(const char *kind, Real val)
@@ -3409,7 +3462,7 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
     }
   }
   if (ndup)
-    suppressed(kind, ndup, dupval, 0);
+    suppressed(kind, ndup, dupval, 0, 0);
 
   // Checks on user-specified initial pt array
   if (!dsi_init_pt.empty()) {
@@ -3462,7 +3515,7 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
     }
   }
   if (ndup)
-    suppressed(kind, ndup, dupval, 0);
+    suppressed(kind, ndup, dupval, 0, 0);
 
   // Checks on user-specified initial pt array
   if (!dsi_init_pt.empty()) {
@@ -3477,6 +3530,51 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
   }
   //else: default initialization performed in Vgen_DIset
 }
+
+static void 
+Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
+	   StringArray *input_dss, StringSetArray& dss_all, StringArray& dss_init_pt)
+{
+  if (!input_dss)
+    return;
+
+  int avg_num_dss, ndup, num_dss_i;
+  String dupval[2], val;
+  size_t i, j, cntr, dss_len = input_dss->size();
+
+  // Process num_set_values key or define default allocation
+  bool key = check_set_keys(num_v, dss_len, kind, input_ndss, avg_num_dss);
+
+  // Insert values into the StringSetArray
+  dss_all.resize(num_v);
+  for (i=cntr=ndup=0; i<num_v; ++i) {
+    num_dss_i = (key) ? (*input_ndss)[i] : avg_num_dss;
+    StringSet& dss_all_i = dss_all[i];
+    for (j=0; j<num_dss_i; ++j, ++cntr) {
+      val = (*input_dss)[cntr];
+      if (!dss_all_i.insert(val).second) // insert returns pair<iterator,bool>
+	if (++ndup <= 2) // warnings suppressed beyond two duplicates
+	  dupval[ndup-1] = val;
+    }
+  }
+  if (ndup)
+    suppressed(kind, ndup, 0, dupval, 0);
+
+  // Checks on user-specified initial pt array
+  if (!dss_init_pt.empty()) {
+    if (dss_init_pt.size() != num_v)
+      wrong_number("initial_point value(s)", kind, num_v, dss_init_pt.size());
+    else // check within admissible set for specified initial pt
+      for (i=0; i<num_v; ++i) {
+	StringSet& dss_all_i = dss_all[i]; val = dss_init_pt[i];
+	if (dss_all_i.find(val) == dss_all_i.end())
+	  bad_initial_svalue(kind, val);
+      }
+  }
+  //else: default initialization performed in Vgen_DSset
+}
+
+
 
 static void 
 Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
@@ -3506,7 +3604,7 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
     }
   }
   if (ndup)
-    suppressed(kind, ndup, 0, dupval);
+    suppressed(kind, ndup, 0, 0, dupval);
 
   // Checks on user-specified initial pt array
   if (!dsr_init_pt.empty()) {
@@ -3559,7 +3657,7 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
     }
   }
   if (ndup)
-    suppressed(kind, ndup, 0, dupval);
+    suppressed(kind, ndup, 0, 0, dupval);
 
   // Checks on user-specified initial pt array
   if (!dsr_init_pt.empty()) {
@@ -3600,6 +3698,34 @@ check_LUV_size(size_t num_v, IntVector& L, IntVector& U, IntVector& V,
   }
   return init_V;
 }
+
+static bool 
+check_LUV_size(size_t num_v, StringArray& L, StringArray& U, StringArray& V,
+	       bool aggregate_LUV, size_t offset)
+{
+  bool init_V = true;
+  if (aggregate_LUV) {
+    int max_index = offset + num_v - 1;
+    if (max_index >= L.size() || max_index >= U.size() ||
+	max_index >= V.size())
+      Squawk("max index %d out of range for aggregate updates in Vgen_DSset",
+	     max_index);
+  }
+  else {
+    if (offset)
+      Squawk("unexpected offset (%d) for non-aggregate mode in Vgen_DSset",
+	     (int)offset);
+    L.resize(num_v);
+    U.resize(num_v);
+    if (V.size() == num_v) // user spec --> already assigned by var_ivec()
+      init_V = false;
+    else
+      V.resize(num_v);
+  }
+  return init_V;
+}
+
+
 
 static bool 
 check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
@@ -3671,6 +3797,43 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
 	  }
 	}
 	V[offset] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
+      }
+    }
+  }
+}
+
+
+/// generate lower, upper, and initial point for string-valued sets
+static void 
+Vgen_DSset(size_t num_v, StringSetArray& sets, StringArray& L, StringArray& U,
+	   StringArray& V, bool aggregate_LUV = false, size_t offset = 0)
+{
+  SSCIter ie, it;
+  int i;
+  size_t num_set_i;
+
+  bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
+
+  for(i = 0; i < num_v; ++i, ++offset) {
+    StringSet& set_i = sets[i];
+    it = set_i.begin(); ie = set_i.end(); num_set_i = set_i.size();
+    if (num_set_i == 0) // should not occur
+      L[offset] = U[offset] = V[offset] = "";
+    else if (num_set_i == 1)
+      L[offset] = U[offset] = V[offset] = *it;
+    else {
+      L[offset] = *it;     // lower bound is first value
+      U[offset] = *(--ie); // upper bound is final value
+      if (init_V) {
+	size_t mid_index = 0;
+	// initial value is at middle index or the one directly below
+	if ( (num_set_i % 2 == 0) )
+	  // initial value is to the left of middle
+	  mid_index = num_set_i / 2 - 1;
+	else 
+	  mid_index = (num_set_i + 1) / 2 - 1;
+	std::advance(it, mid_index);
+	V[offset] = *it;
       }
     }
   }
@@ -3851,6 +4014,22 @@ static void Vgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
 }
 
 static void 
+Vchk_DiscreteDesSetStr(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_design_set_string";
+  Vchk_DSset(dv->numDiscreteDesSetStrVars, kind, vi->nddss, vi->ddss,
+	     dv->discreteDesignSetStr, dv->discreteDesignSetStrVars);
+}
+
+static void Vgen_DiscreteDesSetStr(DataVariablesRep *dv, size_t offset)
+{
+  Vgen_DSset(dv->numDiscreteDesSetStrVars, dv->discreteDesignSetStr,
+	     dv->discreteDesignSetStrLowerBnds,
+	     dv->discreteDesignSetStrUpperBnds,
+	     dv->discreteDesignSetStrVars); // no offset, not aggregate L/U/V
+}
+
+static void 
 Vchk_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_design_set_real";
@@ -3941,6 +4120,8 @@ Var_Name(StringArray *sa, char *buf, size_t i)
   return (const char*)buf;
 }
 
+/// For integer-valued variables: verify lengths of bounds and initial
+/// point, validate bounds and initial point against bounds
 static void Var_boundchk(DataVariablesRep *dv, Var_rcheck *b)
 {
   RealVector *L, *U, *V;
@@ -4010,6 +4191,14 @@ static void Var_boundchk(DataVariablesRep *dv, Var_rcheck *b)
   }
 }
 
+/// For string-valued variables: verify lengths of bounds and initial
+/// point, validate bounds and initial point against bounds
+
+
+
+
+/// For integer-valued variables: verify lengths of bounds and initial
+/// point, validate bounds and initial point against bounds
 static void Var_iboundchk(DataVariablesRep *dv, Var_icheck *ib)
 {
   IntVector *L, *U, *V;
@@ -4113,6 +4302,7 @@ static Var_uinfo DEURVLbl[DEURVar_Nkinds] = {
 };
 static Var_uinfo DiscSetLbl[DiscSetVar_Nkinds] = {
   VarLabelInfo(ddsiv_, DiscreteDesSetInt),
+  VarLabelInfo(ddssv_, DiscreteDesSetStr),
   VarLabelInfo(ddsrv_, DiscreteDesSetReal),
   VarLabelInfo(dssiv_, DiscreteStateSetInt),
   VarLabelInfo(dssrv_, DiscreteStateSetReal)
@@ -4143,6 +4333,7 @@ static VarLabelChk Vlch[] = {
   { AVI numContinuousDesVars, AVI continuousDesignLabels, "cdv_", "cdv_descriptors" },
   { AVI numDiscreteDesRangeVars, AVI discreteDesignRangeLabels, "ddriv_", "ddriv_descriptors" },
   { AVI numDiscreteDesSetIntVars, AVI discreteDesignSetIntLabels, "ddsiv_", "ddsiv_descriptors" },
+  { AVI numDiscreteDesSetStrVars, AVI discreteDesignSetStrLabels, "ddssv_", "ddssv_descriptors" },
   { AVI numDiscreteDesSetRealVars, AVI discreteDesignSetRealLabels, "ddsrv_", "ddsrv_descriptors" },
   { AVI numContinuousStateVars, AVI continuousStateLabels, "csv_", "csv_descriptors" },
   { AVI numDiscreteStateRangeVars, AVI discreteStateRangeLabels, "dsriv_", "dsriv_descriptors" },
@@ -4221,10 +4412,17 @@ static VLint VLI[N_VLI] = {
 static int VLR_aleatory[N_VLR] = { 1, 0, 1, 0 };
 static int VLI_aleatory[N_VLI] = { 1, 0 };
 
+/// Generate check data for variables with just name, size, and a
+/// generator function
 #define Vchk_3(x,y) {#x,&DataVariablesRep::num##y##Vars,Vgen_##y}
-// Some compilers in debug mode (MSVC) don't initialize the trailing
-// two entries to NULL, so be explicit:
+
+/// Generate check data for variables additionally with lower and
+/// upper bounds.  Some compilers in debug mode (MSVC) don't
+/// initialize the trailing two entries to NULL, so be explicit:
 #define Vchk_5(x,y,z) {#x,&DataVariablesRep::num##y##Vars,Vgen_##y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,NULL,NULL}
+
+/// Generate check data for variables additionally with initial point
+/// and labels
 #define Vchk_7(x,y,z) {#x,&DataVariablesRep::num##y##Vars,Vgen_##y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,&DataVariablesRep::z##Vars,&DataVariablesRep::z##Labels}
 
 // Trailing pointers in these initialization lists will be NULL. From C++ 2003:
@@ -4238,6 +4436,7 @@ static Var_check
 	Vchk_3(continuous_state,ContinuousState) },
   var_mp_check_dset[] = {
 	Vchk_3(discrete_design_set_integer,DiscreteDesSetInt),
+	Vchk_3(discrete_design_set_string,DiscreteDesSetStr),
 	Vchk_3(discrete_design_set_real,DiscreteDesSetReal),
 	Vchk_3(discrete_state_set_integer,DiscreteStateSetInt),
 	Vchk_3(discrete_state_set_real,DiscreteStateSetReal) },
@@ -4270,11 +4469,13 @@ static Var_check
   var_mp_check_deur[] = {
 	Vchk_3(discrete_uncertain_set_real,DiscreteUncSetReal) };
 
-// This is used within check_variables_node(): Var_boundchk() is applied
+/// This is used within check_variables_node(): Var_boundchk() is applied
 static Var_rcheck
   var_mp_cbound[] = {
 	Vchk_7(continuous_design,ContinuousDes,continuousDesign),
 	Vchk_7(continuous_state,ContinuousState,continuousState),
+	// BMA TODO: Should these be promoted to Vchk_7 now that they
+	// have initial point in input spec?
 	Vchk_5(normal_uncertain,NormalUnc,normalUnc),
 	Vchk_5(lognormal_uncertain,LognormalUnc,lognormalUnc),
 	Vchk_5(uniform_uncertain,UniformUnc,uniformUnc),
@@ -4282,11 +4483,18 @@ static Var_rcheck
 	Vchk_5(triangular_uncertain,TriangularUnc,triangularUnc),
 	Vchk_5(beta_uncertain,BetaUnc,betaUnc) };
 
-// This is used within check_variables_node(): Var_iboundchk() is applied
+// BMA TODO: Should all discrete sets be validated for initial point
+/// This is used within check_variables_node(): Var_iboundchk() is applied
 static Var_icheck
   var_mp_drange[] = {
 	Vchk_7(discrete_design_range,DiscreteDesRange,discreteDesignRange),
 	Vchk_7(discrete_state_range,DiscreteStateRange,discreteStateRange) };
+
+/// Used to apply Var_sboundcheck to string variables, mainly to check
+/// initial point
+// static Var_scheck
+// var_mp_sbound[] = {
+//   Vchk_7(discrete_design_set_string,DiscreteDesSetStr,discreteDesignSetStr) };
 
 #undef Vchk_7
 #undef Vchk_5
@@ -4390,6 +4598,8 @@ make_variable_defaults(std::list<DataVariables>* dvl)
     for(c=var_mp_check_deur, ce=c + Numberof(var_mp_check_deur); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
+    
+    // check discrete set types
     // these don't use an offset passed into Vgen_Discrete*Set*
     offset = 0;
     for(c=var_mp_check_dset, ce=c + Numberof(var_mp_check_dset); c<ce; ++c)
@@ -4471,7 +4681,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 void NIDRProblemDescDB::check_variables_node(void *v)
 {
   IntArray *Ia; IntVector *Iv; RealVector *Rv; RealSymMatrix *Rm;
-  StringArray *sa;
+  StringArray *sa, *Sa;
   VLreal *vlr; VLint *vli;
   VarLabel *vl;
   VarLabelChk *vlc, *vlce;
@@ -4483,7 +4693,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 #define AVI &Var_Info::
   // Used for deallocation of Var_Info temporary data
   static IntArray   *Var_Info::* Ia_delete[]
-    = { AVI nddsi, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhpp, AVI ndusi,
+    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhpp, AVI ndusi,
 	AVI ndusr, AVI ndssi, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp, AVI DSIp, AVI DSRp,
@@ -4491,6 +4701,8 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
     = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
+  static StringArray *Var_Info::* Sa_delete[]
+    = { AVI ddss };
 #undef AVI
   static char ucmerr[]
     = "Got %lu entries for the uncertain_correlation_matrix\n\
@@ -4631,6 +4843,9 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   Var_icheck *ic, *ice;
   for(ic = var_mp_drange, ice = ic + Numberof(var_mp_drange); ic < ice; ++ic)
     Var_iboundchk(dv, ic);
+  
+  // BMA TODO: Do we need to check anything with sets here?
+
 
   /* finish up and deallocate temporary Var_Info data */
 
@@ -4646,6 +4861,10 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   for(i = 0; i < n; i++)
     if ((Iv = vi->*Iv_delete[i]))
       delete Iv;
+  n = Numberof(Sa_delete);
+  for(i = 0; i < n; i++)
+    if ((Sa = vi->*Sa_delete[i]))
+      delete Sa;
   delete vi;
   if (nerr)
     abort_handler(-1);
@@ -4663,6 +4882,17 @@ static void flatten_num_rva(RealVectorArray *rva, IntArray **pia)
 }
 
 static void flatten_num_rsa(RealSetArray *rsa, IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = rsa->size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = (*rsa)[i].size();
+}
+
+static void flatten_num_ssa(StringSetArray *rsa, IntArray **pia)
 {
   size_t i, m;
   IntArray *ia;
@@ -4767,6 +4997,24 @@ static void flatten_rsa(RealSetArray *rsa, RealVector **prv)
     rs_i = &(*rsa)[i];
     for(rs_it=rs_i->begin(), rs_ite=rs_i->end(); rs_it!=rs_ite; ++rs_it, ++k)
       (*rv)[k] = *rs_it;
+  }
+}
+
+static void flatten_ssa(StringSetArray *ssa, StringArray **psa)
+{
+  size_t i, j, k, m, n;
+  StringArray *sa;
+  StringSet *ss_i;
+  SSIter ss_it, ss_ite;
+
+  m = ssa->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*ssa)[i].size();
+  *psa = sa = new StringArray(n, false);
+  for(i = k = 0; i < m; ++i) {
+    ss_i = &(*ssa)[i];
+    for(ss_it=ss_i->begin(), ss_ite=ss_i->end(); ss_it!=ss_ite; ++ss_it, ++k)
+      (*sa)[k] = *ss_it;
   }
 }
 
@@ -4903,6 +5151,12 @@ check_variables(std::list<DataVariables>* dvl)
 	// Note: set consolidation and/or reordering cannot be undone
 	flatten_num_isa(&dv->discreteDesignSetInt, &vi->nddsi);
 	flatten_isa(&dv->discreteDesignSetInt,     &vi->ddsi);
+      }
+      // discrete design set string vars
+      if ((n = dv->numDiscreteDesSetStrVars)) {
+	// Note: set consolidation and/or reordering cannot be undone
+	flatten_num_ssa(&dv->discreteDesignSetStr, &vi->nddss);
+	flatten_ssa(&dv->discreteDesignSetStr,     &vi->ddss);
       }
       // discrete design set real vars
       if ((n = dv->numDiscreteDesSetRealVars)) {
@@ -5886,6 +6140,7 @@ static size_t
 	MP_(numContinuousStateVars),
 	MP_(numDiscreteDesRangeVars),
 	MP_(numDiscreteDesSetIntVars),
+	MP_(numDiscreteDesSetStrVars),
 	MP_(numDiscreteDesSetRealVars),
 	MP_(numDiscreteIntervalUncVars),
 	MP_(numDiscreteStateRangeVars),
@@ -5929,6 +6184,7 @@ static IntVector
 
 static IntArray
 	VP_(nddsi),
+	VP_(nddss),
 	VP_(nddsr),
 	VP_(ndssi),
 	VP_(ndssr),
@@ -5996,10 +6252,13 @@ static StringArray
 	MP_(continuousStateLabels),
 	MP_(discreteDesignRangeLabels),
 	MP_(discreteDesignSetIntLabels),
+	MP_(discreteDesignSetStrLabels),
 	MP_(discreteDesignSetRealLabels),
 	MP_(discreteStateRangeLabels),
 	MP_(discreteStateSetIntLabels),
-	MP_(discreteStateSetRealLabels);
+        MP_(discreteStateSetRealLabels),
+	MP_(discreteDesignSetStrVars),
+        VP_(ddss);
 
 static Var_brv
 	MP2s(betaUncAlphas,0.),

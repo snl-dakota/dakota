@@ -31,10 +31,11 @@ variables,
 	  lower_bounds = 400 1750 4
 	  upper_bounds = 600 2250 6
 	  descriptors = 'P_mean' 'M_mean' 'Y_mean'		
-	discrete_design_set_int = 1
-#	  initial_point = 1
-	  set_values =  1   2   3   4
-	  descriptors = 'ddsi_ModelForm'		
+	discrete_design_set
+          integer = 1
+#	    initial_point = 1
+	    set_values =  1   2   3   4
+	    descriptors = 'ddsi_ModelForm'		
 
 responses,
 	id_responses = 'SBGO_R'

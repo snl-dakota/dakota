@@ -19,10 +19,11 @@ variables,
 	discrete_design_range = 1		#0,#1
           upper_bounds =  7			#0,#1
           lower_bounds = -3			#0,#1
-	discrete_design_set_int = 1		#0,#1
-          set_values = 3 4 5			#0,#1
-	discrete_design_set_real = 1		#0,#1,#4
-          set_values = 30. 40. 50.		#0,#1,#4
+	discrete_design_set     		#0,#1,#4
+	  integer = 1				#0,#1
+            elements = 3 4 5			#0,#1
+	  real = 1				#0,#1,#4
+            elements = 30. 40. 50.		#0,#1,#4
         normal_uncertain = 1			#0,#2
           means = 69.0       			#0,#2
           std_deviations = 1.0  		#0,#2

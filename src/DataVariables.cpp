@@ -20,7 +20,7 @@ namespace Dakota {
 DataVariablesRep::DataVariablesRep():
   varsView(DEFAULT_VIEW), varsDomain(DEFAULT_DOMAIN),
   uncertainVarsInitPt(false), numContinuousDesVars(0),
-  numDiscreteDesRangeVars(0), numDiscreteDesSetIntVars(0),
+  numDiscreteDesRangeVars(0), numDiscreteDesSetIntVars(0), numDiscreteDesSetStrVars(0),
   numDiscreteDesSetRealVars(0), numNormalUncVars(0), numLognormalUncVars(0),
   numUniformUncVars(0), numLoguniformUncVars(0), numTriangularUncVars(0),
   numExponentialUncVars(0), numBetaUncVars(0), numGammaUncVars(0),
@@ -39,7 +39,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
 {
   s << idVariables << varsView << varsDomain << uncertainVarsInitPt
     << numContinuousDesVars << numDiscreteDesRangeVars
-    << numDiscreteDesSetIntVars << numDiscreteDesSetRealVars << numNormalUncVars
+    << numDiscreteDesSetIntVars << numDiscreteDesSetStrVars << numDiscreteDesSetRealVars << numNormalUncVars
     << numLognormalUncVars << numUniformUncVars << numLoguniformUncVars
     << numTriangularUncVars << numExponentialUncVars << numBetaUncVars
     << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
@@ -56,10 +56,10 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << continuousDesignUpperBnds    << continuousDesignScaleTypes
     << continuousDesignScales       << discreteDesignRangeVars
     << discreteDesignRangeLowerBnds << discreteDesignRangeUpperBnds
-    << discreteDesignSetIntVars     << discreteDesignSetRealVars
-    << discreteDesignSetInt         << discreteDesignSetReal
+    << discreteDesignSetIntVars     << discreteDesignSetStrVars  << discreteDesignSetRealVars
+    << discreteDesignSetInt         << discreteDesignSetStr     << discreteDesignSetReal
     << continuousDesignLabels       << discreteDesignRangeLabels
-    << discreteDesignSetIntLabels   << discreteDesignSetRealLabels;
+    << discreteDesignSetIntLabels   << discreteDesignSetStrLabels << discreteDesignSetRealLabels;
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
@@ -102,6 +102,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
 
   // Inferred arrays
   s << discreteDesignSetIntLowerBnds << discreteDesignSetIntUpperBnds
+    << discreteDesignSetStrLowerBnds << discreteDesignSetStrUpperBnds
     << discreteDesignSetRealLowerBnds << discreteDesignSetRealUpperBnds
     << continuousAleatoryUncVars << continuousAleatoryUncLowerBnds
     << continuousAleatoryUncUpperBnds << continuousAleatoryUncLabels
@@ -124,7 +125,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
 {
   s >> idVariables >> varsView >> varsDomain >> uncertainVarsInitPt
     >> numContinuousDesVars >> numDiscreteDesRangeVars
-    >> numDiscreteDesSetIntVars >> numDiscreteDesSetRealVars >> numNormalUncVars
+    >> numDiscreteDesSetIntVars >> numDiscreteDesSetStrVars >> numDiscreteDesSetRealVars >> numNormalUncVars
     >> numLognormalUncVars >> numUniformUncVars >> numLoguniformUncVars
     >> numTriangularUncVars >> numExponentialUncVars >> numBetaUncVars
     >> numGammaUncVars >> numGumbelUncVars >> numFrechetUncVars
@@ -141,10 +142,10 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> continuousDesignUpperBnds    >> continuousDesignScaleTypes
     >> continuousDesignScales       >> discreteDesignRangeVars
     >> discreteDesignRangeLowerBnds >> discreteDesignRangeUpperBnds
-    >> discreteDesignSetIntVars     >> discreteDesignSetRealVars
-    >> discreteDesignSetInt         >> discreteDesignSetReal
+    >> discreteDesignSetIntVars     >> discreteDesignSetStrVars >> discreteDesignSetRealVars
+    >> discreteDesignSetInt         >> discreteDesignSetStr >> discreteDesignSetReal
     >> continuousDesignLabels       >> discreteDesignRangeLabels
-    >> discreteDesignSetIntLabels   >> discreteDesignSetRealLabels;
+    >> discreteDesignSetIntLabels   >> discreteDesignSetStrLabels >> discreteDesignSetRealLabels;
 
   // Aleatory uncertain arrays
   s >> normalUncMeans >> normalUncStdDevs >> normalUncLowerBnds
@@ -187,6 +188,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
 
   // Inferred arrays
   s >> discreteDesignSetIntLowerBnds >> discreteDesignSetIntUpperBnds
+    >> discreteDesignSetStrLowerBnds >> discreteDesignSetStrUpperBnds
     >> discreteDesignSetRealLowerBnds >> discreteDesignSetRealUpperBnds
     >> continuousAleatoryUncVars >> continuousAleatoryUncLowerBnds
     >> continuousAleatoryUncUpperBnds >> continuousAleatoryUncLabels
@@ -209,7 +211,7 @@ void DataVariablesRep::write(std::ostream& s) const
 {
   s << idVariables << varsView << varsDomain << uncertainVarsInitPt
     << numContinuousDesVars << numDiscreteDesRangeVars
-    << numDiscreteDesSetIntVars << numDiscreteDesSetRealVars << numNormalUncVars
+    << numDiscreteDesSetIntVars << numDiscreteDesSetStrVars << numDiscreteDesSetRealVars << numNormalUncVars
     << numLognormalUncVars << numUniformUncVars << numLoguniformUncVars
     << numTriangularUncVars << numExponentialUncVars << numBetaUncVars
     << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
@@ -226,10 +228,10 @@ void DataVariablesRep::write(std::ostream& s) const
     << continuousDesignUpperBnds    << continuousDesignScaleTypes
     << continuousDesignScales       << discreteDesignRangeVars
     << discreteDesignRangeLowerBnds << discreteDesignRangeUpperBnds
-    << discreteDesignSetIntVars     << discreteDesignSetRealVars
-    << discreteDesignSetInt         << discreteDesignSetReal
+    << discreteDesignSetIntVars     << discreteDesignSetStrVars << discreteDesignSetRealVars
+    << discreteDesignSetInt         << discreteDesignSetStr     << discreteDesignSetReal
     << continuousDesignLabels       << discreteDesignRangeLabels
-    << discreteDesignSetIntLabels   << discreteDesignSetRealLabels;
+    << discreteDesignSetIntLabels   << discreteDesignSetStrLabels << discreteDesignSetRealLabels;
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
@@ -272,6 +274,7 @@ void DataVariablesRep::write(std::ostream& s) const
 
   // Inferred arrays
   s << discreteDesignSetIntLowerBnds << discreteDesignSetIntUpperBnds
+    << discreteDesignSetStrLowerBnds << discreteDesignSetStrUpperBnds
     << discreteDesignSetRealLowerBnds << discreteDesignSetRealUpperBnds
     << continuousAleatoryUncVars << continuousAleatoryUncLowerBnds
     << continuousAleatoryUncUpperBnds << continuousAleatoryUncLabels

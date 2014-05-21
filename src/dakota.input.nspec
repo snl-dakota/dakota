@@ -1306,17 +1306,28 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST LEN discrete_design_range {N_vam(ivec,discreteDesignRangeUpperBnds)} ]
 	  [ descriptors ALIAS ddv_descriptors STRINGLIST LEN discrete_design_range {N_vam(strL,discreteDesignRangeLabels)} ]
 	  ]
-	[ discrete_design_set_integer INTEGER > 0 {N_vam(pintz,numDiscreteDesSetIntVars)}
-	  [ initial_point INTEGERLIST LEN discrete_design_set_integer {N_vam(ivec,discreteDesignSetIntVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_design_set_integer {N_vam(newiarray,Var_Info_nddsi)} ]
-	  set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
-	  [ descriptors STRINGLIST LEN discrete_design_set_integer {N_vam(strL,discreteDesignSetIntLabels)} ]
-	  ]
-	[ discrete_design_set_real INTEGER > 0 {N_vam(pintz,numDiscreteDesSetRealVars)}
-	  [ initial_point REALLIST LEN discrete_design_set_real {N_vam(rvec,discreteDesignSetRealVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_design_set_real {N_vam(newiarray,Var_Info_nddsr)} ]
-	  set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
-	  [ descriptors STRINGLIST LEN discrete_design_set_real {N_vam(strL,discreteDesignSetRealLabels)} ]
+	[ discrete_design_set {0}
+	  [ integer INTEGER > 0 {N_vam(pintz,numDiscreteDesSetIntVars)}
+	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_nddsi)} ]
+	    [ categorical {0} ] # TODO
+	    [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteDesignSetIntVars)} ]
+	    [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteDesignSetIntLabels)} ]
+ 	    ]
+	  [ string INTEGER > 0 {N_vam(pintz,numDiscreteDesSetStrVars)}
+	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_ddss)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_nddss)} ]
+	    [ categorical {0} ] # TODO
+	    [ initial_point STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrVars)} ]
+	    [ descriptors STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrLabels)} ]
+ 	    ]
+	  [ real INTEGER > 0 {N_vam(pintz,numDiscreteDesSetRealVars)}
+	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_nddsr)} ]
+	    [ categorical {0} ] # TODO
+	    [ initial_point REALLIST LEN real {N_vam(rvec,discreteDesignSetRealVars)} ]
+	    [ descriptors STRINGLIST LEN real {N_vam(strL,discreteDesignSetRealLabels)} ]
+ 	    ]
 	  ]
 	[ normal_uncertain INTEGER > 0 {N_vam(pintz,numNormalUncVars)}
 	  means ALIAS nuv_means REALLIST LEN normal_uncertain {N_vam(rvec,normalUncMeans)}

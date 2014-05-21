@@ -1748,17 +1748,28 @@ KEYWORD12 variables
 	  [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST ]
 	  [ descriptors ALIAS ddv_descriptors STRINGLIST ]
 	  ]
-	[ discrete_design_set_integer INTEGER > 0
-	  [ initial_point INTEGERLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values INTEGERLIST
-	  [ descriptors STRINGLIST ]
-	  ]
-	[ discrete_design_set_real INTEGER > 0
-	  [ initial_point REALLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values REALLIST
-	  [ descriptors STRINGLIST ]
+	[ discrete_design_set
+	  [ integer INTEGER > 0
+	    elements ALIAS set_values INTEGERLIST
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    [ categorical ]
+	    [ initial_point INTEGERLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ string INTEGER > 0
+	    elements ALIAS set_values STRINGLIST
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    [ categorical ]
+	    [ initial_point STRINGLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ real INTEGER > 0
+	    elements ALIAS set_values REALLIST
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    [ categorical ]
+	    [ initial_point REALLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
 	  ]
 	[ normal_uncertain INTEGER > 0
 	  means ALIAS nuv_means REALLIST

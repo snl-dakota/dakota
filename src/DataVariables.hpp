@@ -96,10 +96,13 @@ public:
   /// (from the \c discrete_design_range specification in \ref VarDV)
   size_t numDiscreteDesRangeVars;
   /// number of discrete design variables defined by a set of integers
-  /// (from the \c discrete_design_set_integer specification in \ref VarDV)
+  /// (from the \c discrete_design_set integer specification in \ref VarDV)
   size_t numDiscreteDesSetIntVars;
+  /// number of discrete design variables defined by a set of strings
+  /// (from the \c discrete_design_set string specification in \ref VarDV)
+  size_t numDiscreteDesSetStrVars;
   /// number of discrete design variables defined by a set of reals
-  /// (from the \c discrete_design_set_real specification in \ref VarDV)
+  /// (from the \c discrete_design_set real specification in \ref VarDV)
   size_t numDiscreteDesSetRealVars;
   /// number of normal uncertain variables (from the \c normal_uncertain
   /// specification in \ref VarAUV)
@@ -210,19 +213,27 @@ public:
   /// upper_bounds specification in \ref VarDV)
   IntVector discreteDesignRangeUpperBnds;
   /// initial values for the discrete design variables defined by an
-  /// integer set (from the \c discrete_design_set_integer \c initial_point
+  /// integer set (from the \c discrete_design_set integer \c initial_point
   /// specification in \ref VarDV)
   IntVector discreteDesignSetIntVars;
   /// initial values for the discrete design variables defined by a
-  /// real set (from the \c discrete_design_set_real \c initial_point
+  /// string set (from the \c discrete_design_set string \c initial_point
+  /// specification in \ref VarDV)
+  StringArray discreteDesignSetStrVars;
+  /// initial values for the discrete design variables defined by a
+  /// real set (from the \c discrete_design_set real \c initial_point
   /// specification in \ref VarDV)
   RealVector discreteDesignSetRealVars;
   /// complete set of admissible values for each of the discrete design
   /// variables defined by an integer set (from the
-  /// \c discrete_design_set_integer \c set_values specification in \ref VarDV)
+  /// \c discrete_design_set integer \c set_values specification in \ref VarDV)
   IntSetArray discreteDesignSetInt;
   /// complete set of admissible values for each of the discrete design
-  /// variables defined by a real set (from the \c discrete_design_set_real
+  /// variables defined by a string set (from the
+  /// \c discrete_design_set string \c set_values specification in \ref VarDV)
+  StringSetArray discreteDesignSetStr;
+  /// complete set of admissible values for each of the discrete design
+  /// variables defined by a real set (from the \c discrete_design_set real
   /// \c set_values specification in \ref VarDV)
   RealSetArray discreteDesignSetReal;
   /// labels array for the continuous design variables (from the
@@ -233,11 +244,15 @@ public:
   /// specification in \ref VarDV)
   StringArray discreteDesignRangeLabels;
   /// labels array for the discrete design variables defined by an
-  /// integer set (from the \c discrete_design_range \c descriptors
+  /// integer set (from the \c discrete_design set int \c descriptors
   /// specification in \ref VarDV)
   StringArray discreteDesignSetIntLabels;
   /// labels array for the discrete design variables defined by a
-  /// real set (from the \c discrete_design_range \c descriptors
+  /// string set (from the \c discrete_design_set string \c descriptors
+  /// specification in \ref VarDV)
+  StringArray discreteDesignSetStrLabels;
+  /// labels array for the discrete design variables defined by a
+  /// real set (from the \c discrete_design_set real; \c descriptors
   /// specification in \ref VarDV)
   StringArray discreteDesignSetRealLabels;
 
@@ -548,6 +563,10 @@ public:
   IntVector discreteDesignSetIntLowerBnds;
   /// discrete design integer set upper bounds inferred from set values
   IntVector discreteDesignSetIntUpperBnds;
+  /// discrete design string set lower bounds inferred from set values
+  StringArray discreteDesignSetStrLowerBnds;
+  /// discrete design stinr set upper bounds inferred from set values
+  StringArray discreteDesignSetStrUpperBnds;
   /// discrete design real set lower bounds inferred from set values
   RealVector discreteDesignSetRealLowerBnds;
   /// discrete design real set upper bounds inferred from set values
@@ -719,6 +738,7 @@ public:
   size_t design() { return dataVarsRep->numContinuousDesVars +
     dataVarsRep->numDiscreteDesRangeVars +
     dataVarsRep->numDiscreteDesSetIntVars +
+    dataVarsRep->numDiscreteDesSetStrVars +
     dataVarsRep->numDiscreteDesSetRealVars; }
   /// return total number of aleatory uncertain variables
   size_t aleatory_uncertain() { return dataVarsRep->numNormalUncVars +
@@ -750,6 +770,7 @@ public:
   /// return total number of discrete variables
   size_t discrete_variables()   { return dataVarsRep->numDiscreteDesRangeVars +
     dataVarsRep->numDiscreteDesSetIntVars +
+    dataVarsRep->numDiscreteDesSetStrVars +
     dataVarsRep->numDiscreteDesSetRealVars +
     dataVarsRep->numDiscreteStateRangeVars +
     dataVarsRep->numDiscreteStateSetIntVars +

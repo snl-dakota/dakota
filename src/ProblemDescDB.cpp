@@ -1628,6 +1628,29 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
   return abort_handler_t<const IntSetArray&>(-1);
 }
 
+const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_ssa");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<StringSetArray, DataVariablesRep> SSAdv[] = { // must be sorted
+      {"discrete_design_set_string.values", P discreteDesignSetStr}};//,
+      //	{"discrete_state_set_string.values", P discreteStateSetStr}};
+    #undef P
+
+    KW<StringSetArray, DataVariablesRep> *kw;
+    if ((kw = (KW<StringSetArray, DataVariablesRep>*)Binsearch(SSAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_ssa");
+  return abort_handler_t<const StringSetArray&>(-1);
+}
+
 
 const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
@@ -1756,6 +1779,10 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{"discrete_design_range.labels", P discreteDesignRangeLabels},
 	{"discrete_design_set_int.labels", P discreteDesignSetIntLabels},
 	{"discrete_design_set_real.labels", P discreteDesignSetRealLabels},
+	{"discrete_design_set_string.initial_point", P discreteDesignSetStrVars},
+	{"discrete_design_set_string.labels", P discreteDesignSetStrLabels},
+	{"discrete_design_set_string.lower_bounds", P discreteDesignSetStrLowerBnds},
+	{"discrete_design_set_string.upper_bounds", P discreteDesignSetStrUpperBnds},
 	{"discrete_epistemic_uncertain_int.labels",
 	 P discreteIntEpistemicUncLabels},
 	{"discrete_epistemic_uncertain_real.labels",
@@ -2345,6 +2372,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"discrete_design_range", P numDiscreteDesRangeVars},
 	{"discrete_design_set_int", P numDiscreteDesSetIntVars},
 	{"discrete_design_set_real", P numDiscreteDesSetRealVars},
+	{"discrete_design_set_str", P numDiscreteDesSetStrVars},
 	{"discrete_interval_uncertain", P numDiscreteIntervalUncVars},
 	{"discrete_state_range", P numDiscreteStateRangeVars},
 	{"discrete_state_set_int", P numDiscreteStateSetIntVars},
