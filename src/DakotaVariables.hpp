@@ -232,8 +232,8 @@ public:
   /// set an active continuous variable position identifier
   void continuous_variable_id(size_t cv_id, size_t index);
 
-  /// returns the set of discrete variable ids relaxed into a continuous array
-  const SizetArray& relaxed_discrete_ids() const;
+  // returns the set of discrete variable ids relaxed into a continuous array
+  //const SizetArray& relaxed_discrete_ids() const;
 
   // INACTIVE VARIABLES
 
@@ -823,8 +823,8 @@ inline void Variables::continuous_variable_id(size_t cv_id, size_t index)
 }
 
 
-inline const SizetArray& Variables::relaxed_discrete_ids() const
-{ return shared_data().relaxed_discrete_ids(); }
+//inline const SizetArray& Variables::relaxed_discrete_ids() const
+//{ return shared_data().relaxed_discrete_ids(); }
 
 
 inline const RealVector& Variables::inactive_continuous_variables() const

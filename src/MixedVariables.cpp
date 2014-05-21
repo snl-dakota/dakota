@@ -142,52 +142,59 @@ void MixedVariables::build_active_views()
   size_t cv_start, div_start, drv_start, num_cv, num_div, num_drv;
   switch (sharedVarsData.view().first) {
   case EMPTY:
-    Cerr << "Error: active view cannot be EMPTY in MixedVariables."
-	 << std::endl;
-    abort_handler(-1);                                              break;
+    Cerr << "Error: active view cannot be EMPTY in MixedVariables."<< std::endl;
+    abort_handler(-1);                                                break;
   case MIXED_ALL:
     // start at the beginning
     cv_start = div_start = drv_start = 0;
     num_cv  = num_cdv  + num_cauv  + num_ceuv  + num_csv;
     num_div = num_ddiv + num_dauiv + num_deuiv + num_dsiv;
-    num_drv = num_ddrv + num_daurv + num_deurv + num_dsrv;           break;
+    num_dsv = num_ddsv + num_dausv + num_deusv + num_dssv;
+    num_drv = num_ddrv + num_daurv + num_deurv + num_dsrv;            break;
   case MIXED_DESIGN:
     // start at the beginning
     cv_start = div_start = drv_start = 0;
-    num_cv  = num_cdv;
-    num_div = num_ddiv;
-    num_drv = num_ddrv;                                              break;
+    num_cv  = num_cdv;  num_div = num_ddiv;
+    num_dsv = num_ddsv; num_drv = num_ddrv;                           break;
   case MIXED_ALEATORY_UNCERTAIN:
     // skip over the design variables
     cv_start  = num_cdv;  num_cv  = num_cauv;
     div_start = num_ddiv; num_div = num_dauiv;
+    dsv_start = num_ddsv; num_dsv = num_dausv;
     drv_start = num_ddrv; num_drv = num_daurv;                        break;
   case MIXED_EPISTEMIC_UNCERTAIN:
     // skip over the design and aleatory uncertain variables
     cv_start  = num_cdv  + num_cauv;  num_cv  = num_ceuv;
     div_start = num_ddiv + num_dauiv; num_div = num_deuiv;
+    dsv_start = num_ddsv + num_dausv; num_dsv = num_deusv;
     drv_start = num_ddrv + num_daurv; num_drv = num_deurv;            break;
   case MIXED_UNCERTAIN:
     // skip over the design variables
     cv_start  = num_cdv;  num_cv  = num_cauv  + num_ceuv;
     div_start = num_ddiv; num_div = num_dauiv + num_deuiv;
+    dsv_start = num_ddsv; num_dsv = num_dausv + num_deusv;
     drv_start = num_ddrv; num_drv = num_daurv + num_deurv;            break;
   case MIXED_STATE:
     // skip over all the design and uncertain variables
     cv_start  = num_cdv  + num_cauv  + num_ceuv;  num_cv  = num_csv;
     div_start = num_ddiv + num_dauiv + num_deuiv; num_div = num_dsiv;
+    dsv_start = num_ddsv + num_dausv + num_deusv; num_dsv = num_dssv;
     drv_start = num_ddrv + num_daurv + num_deurv; num_drv = num_dsrv; break;
   }
   sharedVarsData.cv_start(cv_start);   sharedVarsData.cv(num_cv);
   sharedVarsData.div_start(div_start); sharedVarsData.div(num_div);
+  sharedVarsData.dsv_start(dsv_start); sharedVarsData.dsv(num_dsv);
   sharedVarsData.drv_start(drv_start); sharedVarsData.drv(num_drv);
   sharedVarsData.initialize_active_components();
   if (num_cv)
     continuousVars
-      = RealVector(Teuchos::View, &allContinuousVars[cv_start],    num_cv);
+      = RealVector(Teuchos::View, &allContinuousVars[cv_start], num_cv);
   if (num_div)
     discreteIntVars
-      = IntVector(Teuchos::View,  &allDiscreteIntVars[div_start],  num_div);
+      = IntVector(Teuchos::View, &allDiscreteIntVars[div_start], num_div);
+  if (num_dsv)
+    discreteStringVars
+      = StringVector(Teuchos::View, &allDiscreteStringVars[dsv_start], num_dsv);
   if (num_drv)
     discreteRealVars
       = RealVector(Teuchos::View, &allDiscreteRealVars[drv_start], num_drv);
