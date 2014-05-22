@@ -11,6 +11,7 @@
 #define MPI_PACK_BUFFER_H
 
 #include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 #include <boost/foreach.hpp>
 
 
@@ -315,6 +316,26 @@ inline void container_write(const ContainerT& c, MPIPackBuffer& s)
   BOOST_FOREACH(const typename ContainerT::value_type& entry, c) {
     s << entry;
   }
+}
+
+
+// BMA TODO: consider extracting as ulong instead of a locale-specific text version?
+/// stream insertion for BitArray
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const BitArray& data)
+{ 
+  // inserts the bitset as text
+  s << data; 
+  return s; 
+}
+
+
+// BMA TODO: consider sending as ulong instead of a locale-specific text version?
+/// stream extraction for BitArray
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, BitArray& data)
+{ 
+  // extracts the bitset as text
+  s >> data;
+  return s;
 }
 
 

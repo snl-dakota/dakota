@@ -1310,21 +1310,20 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ integer INTEGER > 0 {N_vam(pintz,numDiscreteDesSetIntVars)}
 	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_nddsi)} ]
-	    [ categorical {0} ] # TODO
+	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetIntCategorical)} ]
 	    [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteDesignSetIntVars)} ]
 	    [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteDesignSetIntLabels)} ]
  	    ]
 	  [ string INTEGER > 0 {N_vam(pintz,numDiscreteDesSetStrVars)}
 	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_ddss)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_nddss)} ]
-	    [ categorical {0} ] # TODO
 	    [ initial_point STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrVars)} ]
 	    [ descriptors STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrLabels)} ]
  	    ]
 	  [ real INTEGER > 0 {N_vam(pintz,numDiscreteDesSetRealVars)}
 	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_nddsr)} ]
-	    [ categorical {0} ] # TODO
+	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetRealCategorical)} ]
 	    [ initial_point REALLIST LEN real {N_vam(rvec,discreteDesignSetRealVars)} ]
 	    [ descriptors STRINGLIST LEN real {N_vam(strL,discreteDesignSetRealLabels)} ]
  	    ]

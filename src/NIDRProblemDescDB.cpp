@@ -18,6 +18,7 @@
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"     // for DAK_MKDIR, prepend_preferred_env_path
 #include "dakota_filesystem_utils.hpp"  // for get_cwd()
+#include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
 #include <functional>
 #include <stdarg.h>
@@ -1916,6 +1917,26 @@ var_IntLb(const char *keyname, Values *val, void **g, void *v)
   for(i = 0; i < n; i++)
     (*iv)[i] = z[i];
 }
+
+
+/// Map an NIDR STRINGLIST to a BoolDeque based on string values; for
+/// now we require user to specify all N values
+void NIDRProblemDescDB::
+var_categorical(const char *keyname, Values *val, void **g, void *v)
+{
+  BitArray *ba
+    = &((*(Var_Info**)g)->dv->**(BitArray DataVariablesRep::**)v);
+  const char **s = val->s;
+  size_t i, n = val->n;
+
+  // allow strings beginning y Y or T t (yes/true)
+  ba->resize(n);
+  for(i = 0; i < n; i++) {
+    String str_lower(strtolower(s[i]));
+    (*ba)[i] = strbegins(str_lower, "y") || strbegins(str_lower, "t");
+  }
+}
+
 
 void NIDRProblemDescDB::
 var_newrvec(const char *keyname, Values *val, void **g, void *v)
@@ -6259,6 +6280,10 @@ static StringArray
         MP_(discreteStateSetRealLabels),
 	MP_(discreteDesignSetStrVars),
         VP_(ddss);
+
+static BitArray
+        MP_(discreteDesignSetIntCategorical),
+        MP_(discreteDesignSetRealCategorical);
 
 static Var_brv
 	MP2s(betaUncAlphas,0.),

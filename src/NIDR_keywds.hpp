@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1245 distinct keywords (plus 186 aliases) **/
+/** 1244 distinct keywords (plus 186 aliases) **/
 
 static KeyWord
 	kw_1[1] = {
@@ -1962,7 +1962,7 @@ static KeyWord
 		{"upper_bounds",13,0,3,0,0,0.,0.,0,N_vam(ivec,discreteDesignRangeUpperBnds)}
 		},
 	kw_315[7] = {
-		{"categorical",8,0,3},
+		{"categorical",15,0,3,0,0,0.,0.,0,N_vam(categorical,discreteDesignSetIntCategorical)},
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vam(strL,discreteDesignSetIntLabels)},
 		{"elements",13,0,1,1,0,0.,0.,0,N_vam(newivec,Var_Info_ddsi)},
 		{"elements_per_variable",0x80d,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddsi)},
@@ -1971,7 +1971,7 @@ static KeyWord
 		{"set_values",5,0,1,1,0,0.,0.,-4,N_vam(newivec,Var_Info_ddsi)}
 		},
 	kw_316[7] = {
-		{"categorical",8,0,3},
+		{"categorical",15,0,3,0,0,0.,0.,0,N_vam(categorical,discreteDesignSetRealCategorical)},
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vam(strL,discreteDesignSetRealLabels)},
 		{"elements",14,0,1,1,0,0.,0.,0,N_vam(newrvec,Var_Info_ddsr)},
 		{"elements_per_variable",0x80d,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddsr)},
@@ -1979,19 +1979,18 @@ static KeyWord
 		{"num_set_values",0x805,0,2,0,0,0.,0.,-2,N_vam(newiarray,Var_Info_nddsr)},
 		{"set_values",6,0,1,1,0,0.,0.,-4,N_vam(newrvec,Var_Info_ddsr)}
 		},
-	kw_317[7] = {
-		{"categorical",8,0,3},
-		{"descriptors",15,0,5,0,0,0.,0.,0,N_vam(strL,discreteDesignSetStrLabels)},
+	kw_317[6] = {
+		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteDesignSetStrLabels)},
 		{"elements",15,0,1,1,0,0.,0.,0,N_vam(newsarray,Var_Info_ddss)},
 		{"elements_per_variable",0x80d,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddss)},
-		{"initial_point",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteDesignSetStrVars)},
+		{"initial_point",15,0,3,0,0,0.,0.,0,N_vam(strL,discreteDesignSetStrVars)},
 		{"num_set_values",0x805,0,2,0,0,0.,0.,-2,N_vam(newiarray,Var_Info_nddss)},
 		{"set_values",7,0,1,1,0,0.,0.,-4,N_vam(newsarray,Var_Info_ddss)}
 		},
 	kw_318[3] = {
 		{"integer",0x19,7,1,0,kw_315,0.,0.,0,N_vam(pintz,numDiscreteDesSetIntVars)},
 		{"real",0x19,7,3,0,kw_316,0.,0.,0,N_vam(pintz,numDiscreteDesSetRealVars)},
-		{"string",0x19,7,2,0,kw_317,0.,0.,0,N_vam(pintz,numDiscreteDesSetStrVars)}
+		{"string",0x19,6,2,0,kw_317,0.,0.,0,N_vam(pintz,numDiscreteDesSetStrVars)}
 		},
 	kw_319[9] = {
 		{"descriptors",15,0,6,0,0,0.,0.,0,N_vae(deuilbl,DEUIVar_interval)},

@@ -1762,7 +1762,6 @@ TAG "variables/discrete_design_set/integer/descriptors"
 TAG "variables/discrete_design_set/string"
 TAG "variables/discrete_design_set/string/elements"
 TAG "variables/discrete_design_set/string/elements_per_variable"
-TAG "variables/discrete_design_set/string/categorical"
 TAG "variables/discrete_design_set/string/initial_point"
 	DESC "{Initial point} VarCommands.html#VarDDSRV"
 

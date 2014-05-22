@@ -186,6 +186,7 @@ public:
   KWH(var_RealLb);
   KWH(var_RealUb);
   KWH(var_IntLb);
+  KWH(var_categorical);
   KWH(var_caulbl);
   KWH(var_dauilbl);
   KWH(var_daurlbl);

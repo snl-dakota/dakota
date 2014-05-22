@@ -209,6 +209,7 @@ public:
   /// scales array for the continuous design variables (from the
   /// \c continuous_design \c scales specification in \ref VarDV)
   RealVector continuousDesignScales;
+
   /// initial values for the discrete design variables defined by an
   /// integer range (from the \c discrete_design_range \c initial_point
   /// specification in \ref VarDV)
@@ -221,6 +222,7 @@ public:
   /// by an integer range(from the \c discrete_design_range \c
   /// upper_bounds specification in \ref VarDV)
   IntVector discreteDesignRangeUpperBnds;
+
   /// initial values for the discrete design variables defined by an
   /// integer set (from the \c discrete_design_set integer \c initial_point
   /// specification in \ref VarDV)
@@ -245,6 +247,12 @@ public:
   /// variables defined by a real set (from the \c discrete_design_set real
   /// \c set_values specification in \ref VarDV)
   RealSetArray discreteDesignSetReal;
+
+  /// is each ddsi variable strictly categorical (true) or relaxable (false)
+  BitArray discreteDesignSetIntCategorical;
+  /// is each ddsr variable strictly categorical (true) or relaxable (false)
+  BitArray discreteDesignSetRealCategorical;
+
   /// labels array for the continuous design variables (from the
   /// \c continuous_design \c descriptors specification in \ref VarDV)
   StringArray continuousDesignLabels;
