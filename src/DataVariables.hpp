@@ -249,9 +249,9 @@ public:
   RealSetArray discreteDesignSetReal;
 
   /// is each ddsi variable strictly categorical (true) or relaxable (false)
-  BitArray discreteDesignSetIntCategorical;
+  BitArray discreteDesignSetIntCat;
   /// is each ddsr variable strictly categorical (true) or relaxable (false)
-  BitArray discreteDesignSetRealCategorical;
+  BitArray discreteDesignSetRealCat;
 
   /// labels array for the continuous design variables (from the
   /// \c continuous_design \c descriptors specification in \ref VarDV)

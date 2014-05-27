@@ -1183,45 +1183,6 @@ static void Null_rep1(const char *who)
 }
 
 
-const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
-{
-  const char *L;
-
-  if (!dbRep)
-  	Null_rep("get_ba");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<BitArray, DataVariablesRep> BAdv[] = {	// must be sorted
-      // {"variables.binomial_uncertain.categorical", P varName},
-      // {"variables.discrete_design_range.categorical", P varName},
-      {"discrete_design_set_int.categorical", P discreteDesignSetIntCategorical},
-      {"discrete_design_set_real.categorical", P discreteDesignSetRealCategorical},
-      // {"variables.discrete_interval_uncertain.categorical", P varName},
-      // {"variables.discrete_state_range.categorical", P varName},
-      // {"variables.discrete_state_set_int.categorical", P varName},
-      // {"variables.discrete_state_set_real.categorical", P varName},
-      // {"variables.discrete_uncertain_set_int.categorical", P varName},
-      // {"variables.discrete_uncertain_set_real.categorical", P varName},
-      // {"variables.geometric_uncertain.categorical", P varName},
-      // {"variables.histogram_uncertain.point_int.categorical", P varName},
-      // {"variables.histogram_uncertain.point_real.categorical", P varName},
-      // {"variables.hypergeometric_uncertain.categorical", P varName},
-      // {"variables.negative_binomial_uncertain.categorical", P varName},
-      // {"variables.poisson_uncertain.categorical", P varName},
-    };
-    #undef P
-    KW<BitArray, DataVariablesRep> *kw;
-    if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
-  }
-
-  Bad_name(entry_name, "get_ba");
-  return abort_handler_t<const BitArray&>(-1);
-}
-
-
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {
   const char *L;

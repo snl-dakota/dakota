@@ -1962,7 +1962,7 @@ static KeyWord
 		{"upper_bounds",13,0,3,0,0,0.,0.,0,N_vam(ivec,discreteDesignRangeUpperBnds)}
 		},
 	kw_315[7] = {
-		{"categorical",15,0,3,0,0,0.,0.,0,N_vam(categorical,discreteDesignSetIntCategorical)},
+		{"categorical",15,0,3,0,0,0.,0.,0,N_vam(categorical,discreteDesignSetIntCat)},
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vam(strL,discreteDesignSetIntLabels)},
 		{"elements",13,0,1,1,0,0.,0.,0,N_vam(newivec,Var_Info_ddsi)},
 		{"elements_per_variable",0x80d,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddsi)},
@@ -1971,7 +1971,7 @@ static KeyWord
 		{"set_values",5,0,1,1,0,0.,0.,-4,N_vam(newivec,Var_Info_ddsi)}
 		},
 	kw_316[7] = {
-		{"categorical",15,0,3,0,0,0.,0.,0,N_vam(categorical,discreteDesignSetRealCategorical)},
+		{"categorical",15,0,3,0,0,0.,0.,0,N_vam(categorical,discreteDesignSetRealCat)},
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vam(strL,discreteDesignSetRealLabels)},
 		{"elements",14,0,1,1,0,0.,0.,0,N_vam(newrvec,Var_Info_ddsr)},
 		{"elements_per_variable",0x80d,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddsr)},

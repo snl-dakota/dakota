@@ -58,7 +58,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << discreteDesignRangeLowerBnds << discreteDesignRangeUpperBnds
     << discreteDesignSetIntVars     << discreteDesignSetStrVars  << discreteDesignSetRealVars
     << discreteDesignSetInt         << discreteDesignSetStr     << discreteDesignSetReal
-    << discreteDesignSetIntCategorical << discreteDesignSetRealCategorical
+    << discreteDesignSetIntCat      << discreteDesignSetRealCat
     << continuousDesignLabels       << discreteDesignRangeLabels
     << discreteDesignSetIntLabels   << discreteDesignSetStrLabels << discreteDesignSetRealLabels;
 
@@ -145,7 +145,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> discreteDesignRangeLowerBnds >> discreteDesignRangeUpperBnds
     >> discreteDesignSetIntVars     >> discreteDesignSetStrVars >> discreteDesignSetRealVars
     >> discreteDesignSetInt         >> discreteDesignSetStr >> discreteDesignSetReal
-    >> discreteDesignSetIntCategorical >> discreteDesignSetRealCategorical
+    >> discreteDesignSetIntCat      >> discreteDesignSetRealCat
     >> continuousDesignLabels       >> discreteDesignRangeLabels
     >> discreteDesignSetIntLabels   >> discreteDesignSetStrLabels >> discreteDesignSetRealLabels;
 
@@ -232,7 +232,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << discreteDesignRangeLowerBnds << discreteDesignRangeUpperBnds
     << discreteDesignSetIntVars     << discreteDesignSetStrVars << discreteDesignSetRealVars
     << discreteDesignSetInt         << discreteDesignSetStr     << discreteDesignSetReal
-    << discreteDesignSetIntCategorical << discreteDesignSetRealCategorical
+    << discreteDesignSetIntCat      << discreteDesignSetRealCat
     << continuousDesignLabels       << discreteDesignRangeLabels
     << discreteDesignSetIntLabels   << discreteDesignSetStrLabels << discreteDesignSetRealLabels;
 

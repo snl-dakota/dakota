@@ -6282,8 +6282,8 @@ static StringArray
         VP_(ddss);
 
 static BitArray
-        MP_(discreteDesignSetIntCategorical),
-        MP_(discreteDesignSetRealCategorical);
+        MP_(discreteDesignSetIntCat),
+        MP_(discreteDesignSetRealCat);
 
 static Var_brv
 	MP2s(betaUncAlphas,0.),
