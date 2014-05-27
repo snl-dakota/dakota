@@ -192,30 +192,28 @@ inline size_t SharedVariablesDataRep::vc_lookup(unsigned short key) const
 
 inline void SharedVariablesDataRep::size_all_labels()
 {
-  size_t num_acv = variablesCompsTotals[TOTAL_CDV] +
-    variablesCompsTotals[TOTAL_CAUV] + variablesCompsTotals[TOTAL_CEUV] +
-    variablesCompsTotals[TOTAL_CSV];
-  bool relax = ( variablesView.first == RELAXED_ALL ||
-    ( variablesView.first >= RELAXED_DESIGN &&
-      variablesView.first <= RELAXED_STATE ) );
-  if (relax)
-    num_acv += variablesCompsTotals[1] + variablesCompsTotals[2] +
-      variablesCompsTotals[4]  + variablesCompsTotals[5] +
-      variablesCompsTotals[7]  + variablesCompsTotals[8] +
-      variablesCompsTotals[10] + variablesCompsTotals[11];
-  allContinuousLabels.resize(boost::extents[num_acv]);
+  size_t num_acv
+      = variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
+      + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV],
+    num_adiv = allRelaxedDiscreteInt.size(), // updated below for relax non-cat
+    num_adrv = allRelaxedDiscreteReal.size(),// updated below for relax non-cat
+    num_adsv                                 // always categorical
+      = variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV]
+      + variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV];
 
-  size_t num_adiv = variablesCompsTotals[1] + variablesCompsTotals[4] + 
-    variablesCompsTotals[7] + variablesCompsTotals[10];
-  allDiscreteIntLabels.resize(boost::extents[num_adiv]);
+  bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
+  if (relax) { // include discrete design/uncertain/state
+    size_t num_relax_int  = allRelaxedDiscreteInt.count(),
+           num_relax_real = allRelaxedDiscreteReal.count();
+    num_acv  += num_relax_int + num_relax_real;
+    num_adiv -= num_relax_int;
+    num_adrv -= num_relax_real;
+  }
 
-  size_t num_adsv = variablesCompsTotals[2] + variablesCompsTotals[5] +
-    variablesCompsTotals[8] + variablesCompsTotals[11];
+  allContinuousLabels.resize(boost::extents[num_acv]);    // updated size
+  allDiscreteIntLabels.resize(boost::extents[num_adiv]);  // updated size
   allDiscreteStringLabels.resize(boost::extents[num_adsv]);
-
-  size_t num_adrv = variablesCompsTotals[2] + variablesCompsTotals[5] +
-    variablesCompsTotals[8] + variablesCompsTotals[11];
-  allDiscreteRealLabels.resize(boost::extents[num_adrv]);
+  allDiscreteRealLabels.resize(boost::extents[num_adrv]); // updated size
 }
 
 

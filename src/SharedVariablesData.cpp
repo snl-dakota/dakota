@@ -422,30 +422,10 @@ void SharedVariablesDataRep::relax_noncategorical(ProblemDescDB& problem_db)
 
 void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
 {
+  size_all_labels();
+
   size_t i, ardi_cntr = 0, ardr_cntr = 0,
-    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0,
-    num_acv
-      = variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
-      + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV],
-    num_adiv = allRelaxedDiscreteInt.size(), // updated below for relax non-cat
-    num_adrv = allRelaxedDiscreteReal.size(),// updated below for relax non-cat
-    num_adsv                                 // always categorical
-      = variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV]
-      + variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV];
-
-  bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
-  if (relax) { // include discrete design/uncertain/state
-    size_t num_relax_int  = allRelaxedDiscreteInt.count(),
-           num_relax_real = allRelaxedDiscreteReal.count();
-    num_acv  += num_relax_int + num_relax_real;
-    num_adiv -= num_relax_int;
-    num_adrv -= num_relax_real;
-  }
-
-  allContinuousLabels.resize(boost::extents[num_acv]);    // updated size
-  allDiscreteIntLabels.resize(boost::extents[num_adiv]);  // updated size
-  allDiscreteStringLabels.resize(boost::extents[num_adsv]);
-  allDiscreteRealLabels.resize(boost::extents[num_adrv]); // updated size
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
 
   // design
   const StringArray& cdv_labels
@@ -486,8 +466,6 @@ void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
     adiv_offset += ddrv_labels.size();
     copy_data_partial(ddsiv_labels, allDiscreteIntLabels, adiv_offset);
     adiv_offset += ddsiv_labels.size();
-    copy_data_partial(ddssv_labels, allDiscreteStringLabels, adsv_offset);
-    adsv_offset += ddssv_labels.size();
     copy_data_partial(ddsrv_labels, allDiscreteRealLabels, adrv_offset);
     adrv_offset += ddsrv_labels.size();
   }
@@ -505,81 +483,54 @@ void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
   acv_offset += cauv_labels.size();
   copy_data_partial(dausv_labels, allDiscreteStringLabels, adsv_offset);
   adsv_offset += dausv_labels.size();
-
-  // TO HERE
-
   if (relax) {
     // Note: for generality/consistency, we also support {,non}categorical for
     // all discrete aleatory random variables, even though continuous relaxation
     // is a logical stretch for poisson,{,negative_}binominal,{,hyper}geometric
-    size_t dauiv_index = 0;
-    for (i=0; i<num_puv; ++i, ++dauiv_index)
-      if (puv_cat[i]) 
-	allDiscreteIntLabels[adiv_offset++] = dauiv_labels[dauiv_index];
+    size_t num_dauiv = dauiv_labels.size(), num_daurv = daurv_labels.size();
+    for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
+      if (allRelaxedDiscreteInt[ardi_cntr]) 
+	allContinuousLabels[acv_offset++]    = dauiv_labels[i];
       else
-	allContinuousLabels[acv_offset++]   = dauiv_labels[dauiv_index];
-    for (i=0; i<num_buv; ++i, ++dauiv_index)
-      if (buv_cat[i]) 
-	allDiscreteIntLabels[adiv_offset++] = dauiv_labels[dauiv_index];
+	allDiscreteIntLabels[adiv_offset++]  = dauiv_labels[i];
+    for (i=0; i<num_daurv; ++i, ++ardr_cntr)
+      if (allRelaxedDiscreteReal[ardr_cntr])
+	allContinuousLabels[acv_offset++]    = daurv_labels[i];
       else
-	allContinuousLabels[acv_offset++]   = dauiv_labels[dauiv_index];
-    for (i=0; i<num_nbuv; ++i, ++dauiv_index)
-      if (nbuv_cat[i]) 
-	allDiscreteIntLabels[adiv_offset++] = dauiv_labels[dauiv_index];
-      else
-	allContinuousLabels[acv_offset++]   = dauiv_labels[dauiv_index];
-    for (i=0; i<num_guv; ++i, ++dauiv_index)
-      if (guv_cat[i]) 
-	allDiscreteIntLabels[adiv_offset++] = dauiv_labels[dauiv_index];
-      else
-	allContinuousLabels[acv_offset++]   = dauiv_labels[dauiv_index];
-    for (i=0; i<num_hguv; ++i, ++dauiv_index)
-      if (hguv_cat[i]) 
-	allDiscreteIntLabels[adiv_offset++] = dauiv_labels[dauiv_index];
-      else
-	allContinuousLabels[acv_offset++]   = dauiv_labels[dauiv_index];
-    for (i=0; i<num_hupiv; ++i, ++dauiv_index)
-      if (hupiv_cat[i]) 
-	allDiscreteIntLabels[adiv_offset++] = dauiv_labels[dauiv_index];
-      else
-	allContinuousLabels[acv_offset++]   = dauiv_labels[dauiv_index];
-    for (i=0; i<num_huprv; ++i)
-      if (huprv_cat[i])	allDiscreteRealLabels[adrv_offset++] = daurv_labels[i];
-      else              allContinuousLabels[acv_offset++]    = daurv_labels[i];
+	allDiscreteRealLabels[adrv_offset++] = daurv_labels[i];
   }
   else {
     copy_data_partial(dauiv_labels, allDiscreteIntLabels, adiv_offset);
     adiv_offset += dauiv_labels.size();
-    copy_data_partial(dausv_labels, allDiscreteStringLabels, adsv_offset);
-    adsv_offset += dausv_labels.size();
     copy_data_partial(daurv_labels, allDiscreteRealLabels, adrv_offset);
     adrv_offset += daurv_labels.size();
   }
 
   // epistemic uncertain
-  copy_data_partial(problem_db.get_sa(
-    "variables.continuous_epistemic_uncertain.labels"),
-    allContinuousLabels, acv_offset);
-  acv_offset += num_ceuv;
+  const StringArray& ceuv_labels
+    = problem_db.get_sa("variables.continuous_epistemic_uncertain.labels")
   const StringArray& deuiv_labels
     = problem_db.get_sa("variables.discrete_epistemic_uncertain_int.labels");
+  const StringArray& deusv_labels
+    = problem_db.get_sa("variables.discrete_epistemic_uncertain_string.labels");
   const StringArray& deurv_labels
     = problem_db.get_sa("variables.discrete_epistemic_uncertain_real.labels");
+  copy_data_partial(ceuv_labels, allContinuousLabels, acv_offset);
+  acv_offset += ceuv_labels.size();
+  copy_data_partial(deusv_labels, allDiscreteStringLabels, adsv_offset);
+  adsv_offset += deusv_labels.size();
   if (relax) {
-    size_t deuiv_index = 0;
-    for (i=0; i<num_durv; ++i, ++deuiv_index)
-      if (durv_cat[i])
-	allDiscreteIntLabels[adiv_offset++] = deuiv_labels[deuiv_index];
+    size_t num_deuiv = deuiv_labels.size(), num_deurv = deurv_labels.size();
+    for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
+      if (allRelaxedDiscreteInt[ardi_cntr]) 
+	allContinuousLabels[acv_offset++]    = deuiv_labels[i];
       else
-	allContinuousLabels[acv_offset++]   = deuiv_labels[deuiv_index];
-    for (i=0; i<num_dusiv; ++i, ++deuiv_index)
-      if (dusiv_cat[i])
-	allDiscreteIntLabels[adiv_offset++] = deuiv_labels[deuiv_index];
+	allDiscreteIntLabels[adiv_offset++]  = deuiv_labels[i];
+    for (i=0; i<num_deurv; ++i, ++ardr_cntr)
+      if (allRelaxedDiscreteReal[ardr_cntr])
+	allContinuousLabels[acv_offset++]    = deurv_labels[i];
       else
-	allContinuousLabels[acv_offset++]   = deuiv_labels[deuiv_index];
-    for (i=0; i<num_dusrv; ++i)
-      if (dusrv_cat[i]) allDiscreteRealLabels[adrv_offset++] = deurv_labels[i];
-      else              allContinuousLabels[acv_offset++]    = deurv_labels[i];
+	allDiscreteRealLabels[adrv_offset++] = deurv_labels[i];
   }
   else {
     copy_data_partial(deuiv_labels, allDiscreteIntLabels,  adiv_offset);
@@ -589,33 +540,46 @@ void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
   }
 
   // state
-  copy_data_partial(problem_db.get_sa("variables.continuous_state.labels"),
-    allContinuousLabels, acv_offset);
-  acv_offset += num_csv;
+  const StringArray& csv_labels
+    = problem_db.get_sa("variables.continuous_state.labels");
   const StringArray& dsrv_labels
     = problem_db.get_sa("variables.discrete_state_range.labels");
   const StringArray& dssiv_labels
     = problem_db.get_sa("variables.discrete_state_set_int.labels");
+  const StringArray& dsssv_labels
+    = problem_db.get_sa("variables.discrete_state_set_string.labels");
   const StringArray& dssrv_labels
     = problem_db.get_sa("variables.discrete_state_set_real.labels");
+  copy_data_partial(csv_labels, allContinuousLabels, acv_offset);
+  acv_offset += csv_labels.size();
+  copy_data_partial(dsssv_labels, allDiscreteStringLabels, adsv_offset);
+  adsv_offset += dsssv_labels.size();
   if (relax) {
-    for (i=0; i<num_dsrv; ++i)
-      if (dsrv_cat[i]) allDiscreteIntLabels[adiv_offset++]   = dsrv_labels[i];
-      else             allContinuousLabels[acv_offset++]     = dsrv_labels[i];
-    for (i=0; i<num_dssiv; ++i)
-      if (dssiv_cat[i])	allDiscreteIntLabels[adiv_offset++]  = dssiv_labels[i];
-      else              allContinuousLabels[acv_offset++]    = dssiv_labels[i];
-    for (i=0; i<num_dssrv; ++i)
-      if (dssrv_cat[i])	allDiscreteRealLabels[adrv_offset++] = dssrv_labels[i];
-      else              allContinuousLabels[acv_offset++]    = dssrv_labels[i];
+    size_t num_dsrv  = dsrv_labels.size(), num_dssiv = dssiv_labels.size(),
+           num_dssrv = dssrv_labels.size();
+    for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
+      if (allRelaxedDiscreteInt[ardi_cntr])
+	allContinuousLabels[acv_offset++]    = dsrv_labels[i];
+      else
+	allDiscreteIntLabels[adiv_offset++]  = dsrv_labels[i];
+    for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
+      if (allRelaxedDiscreteInt[ardi_cntr])
+	allContinuousLabels[acv_offset++]    = dssiv_labels[i];
+      else
+	allDiscreteIntLabels[adiv_offset++]  = dssiv_labels[i];
+    for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
+      if (allRelaxedDiscreteReal[ardr_cntr])
+	allContinuousLabels[acv_offset++]    = dssrv_labels[i];
+      else
+	allDiscreteRealLabels[adrv_offset++] = dssrv_labels[i];
   }
   else {
-    copy_data_partial(dsrv_labels,  allDiscreteIntLabels,  adiv_offset);
-    adiv_offset += num_dsrv;
-    copy_data_partial(dssiv_labels, allDiscreteIntLabels,  adiv_offset);
-    adiv_offset += num_dssiv;
+    copy_data_partial(dsrv_labels, allDiscreteIntLabels, adiv_offset);
+    adiv_offset += dsrv_labels.size();
+    copy_data_partial(dssiv_labels, allDiscreteIntLabels, adiv_offset);
+    adiv_offset += dssiv_labels.size();
     copy_data_partial(dssrv_labels, allDiscreteRealLabels, adrv_offset);
-    adrv_offset += num_dssrv;
+    adrv_offset += dssrv_labels.size();
   }
 }
 

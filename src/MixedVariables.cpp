@@ -29,17 +29,18 @@ MixedVariables(const ProblemDescDB& problem_db,
   Variables(BaseConstructor(), problem_db, view)
 {
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_cauv = vc_totals[3],
-    num_ceuv  = vc_totals[6],
-    num_acv   = num_cdv + num_cauv + num_ceuv + vc_totals[9],
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_cauv = vc_totals[TOTAL_CAUV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],
+    num_acv   = num_cdv + num_cauv + num_ceuv + vc_totals[TOTAL_CSV],
     num_ddrv  = sharedVarsData.vc_lookup(DISCRETE_DESIGN_RANGE),
     num_ddsiv = sharedVarsData.vc_lookup(DISCRETE_DESIGN_SET_INT),
-    num_dauiv = vc_totals[4], num_deuiv = vc_totals[7],
+    num_dauiv = vc_totals[TOTAL_DAUIV], num_deuiv = vc_totals[TOTAL_DEUIV],
     num_dsrv  = sharedVarsData.vc_lookup(DISCRETE_STATE_RANGE),
-    num_adiv  = vc_totals[1] + num_dauiv + num_deuiv + vc_totals[10],
-    num_daurv = vc_totals[5], num_deurv = vc_totals[8],
-    num_ddsrv = vc_totals[2],
-    num_adrv  = num_ddsrv + num_daurv + num_deurv + vc_totals[11];
+    num_adiv  = vc_totals[TOTAL_DDIV] + num_dauiv + num_deuiv
+              + vc_totals[TOTAL_DSIV],
+    num_daurv = vc_totals[TOTAL_DAURV], num_deurv = vc_totals[TOTAL_DEURV],
+    num_ddsrv = vc_totals[TOTAL_DDRV],
+    num_adrv  = num_ddsrv + num_daurv + num_deurv + vc_totals[TOTAL_DSRV];
 
   allContinuousVars.sizeUninitialized(num_acv);
   allDiscreteIntVars.sizeUninitialized(num_adiv);
@@ -114,13 +115,14 @@ MixedVariables(const ProblemDescDB& problem_db,
 
 void MixedVariables::reshape(const SizetArray& vc_totals)
 {
-  size_t num_acv  = vc_totals[0] + vc_totals[3] + vc_totals[6] + vc_totals[9],
-         num_adiv = vc_totals[1] + vc_totals[4] + vc_totals[7] + vc_totals[10],
-         num_adrv = vc_totals[2] + vc_totals[5] + vc_totals[8] + vc_totals[11];
-
-  allContinuousVars.resize(num_acv);
-  allDiscreteIntVars.resize(num_adiv);
-  allDiscreteRealVars.resize(num_adrv);
+  allContinuousVars.resize(
+    variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV] +
+    variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV]);
+  allDiscreteIntVars.resize(allRelaxedDiscreteInt.size());
+  allDiscreteStringVars.resize(
+    variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV] +
+    variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV]);
+  allDiscreteRealVars.resize(allRelaxedDiscreteReal.size());
 
   build_views(); // construct active/inactive views of all arrays
 }
@@ -132,11 +134,12 @@ void MixedVariables::build_active_views()
   // Don't bleed over any logic about supported view combinations; rather,
   // keep this class general and encapsulated.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv  = vc_totals[11];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddrv  = vc_totals[TOTAL_DDRV],  num_cauv  = vc_totals[TOTAL_CAUV],
+    num_dauiv = vc_totals[TOTAL_DAUIV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deurv = vc_totals[TOTAL_DEURV], num_csv   = vc_totals[TOTAL_CSV],
+    num_dsiv  = vc_totals[TOTAL_DSIV],  num_dsrv  = vc_totals[TOTAL_DSRV];
 
   // Initialize active views
   size_t cv_start, div_start, drv_start, num_cv, num_div, num_drv;
@@ -207,11 +210,12 @@ void MixedVariables::build_inactive_views()
   // Don't bleed over any logic about supported view combinations; rather,
   // keep this class general and encapsulated.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv  = vc_totals[11];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddrv  = vc_totals[TOTAL_DDRV],  num_cauv  = vc_totals[TOTAL_CAUV],
+    num_dauiv = vc_totals[TOTAL_DAUIV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deurv = vc_totals[TOTAL_DEURV], num_csv   = vc_totals[TOTAL_CSV],
+    num_dsiv  = vc_totals[TOTAL_DSIV],  num_dsrv  = vc_totals[TOTAL_DSRV];
 
   // Initialize inactive views
   size_t icv_start, idiv_start, idrv_start, num_icv, num_idiv, num_idrv;
@@ -275,11 +279,12 @@ void MixedVariables::read(std::istream& s)
 {
   // ASCII version.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv = vc_totals[11];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddrv  = vc_totals[TOTAL_DDRV],  num_cauv  = vc_totals[TOTAL_CAUV],
+    num_dauiv = vc_totals[TOTAL_DAUIV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deurv = vc_totals[TOTAL_DEURV], num_csv   = vc_totals[TOTAL_CSV],
+    num_dsiv  = vc_totals[TOTAL_DSIV],  num_dsrv  = vc_totals[TOTAL_DSRV];
   read_data_partial(s, 0, num_cdv, allContinuousVars,
 		    all_continuous_variable_labels());
   read_data_partial(s, 0, num_ddiv, allDiscreteIntVars,
@@ -311,11 +316,12 @@ void MixedVariables::write(std::ostream& s) const
 {
   // ASCII version.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv = vc_totals[11];
+    size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddrv  = vc_totals[TOTAL_DDRV],  num_cauv  = vc_totals[TOTAL_CAUV],
+    num_dauiv = vc_totals[TOTAL_DAUIV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deurv = vc_totals[TOTAL_DEURV], num_csv   = vc_totals[TOTAL_CSV],
+    num_dsiv  = vc_totals[TOTAL_DSIV],  num_dsrv  = vc_totals[TOTAL_DSRV];
   write_data_partial(s, 0, num_cdv, allContinuousVars,
 		     all_continuous_variable_labels());
   write_data_partial(s, 0, num_ddiv, allDiscreteIntVars,
@@ -347,11 +353,12 @@ void MixedVariables::write_aprepro(std::ostream& s) const
 {
   // ASCII version in APREPRO/DPREPRO format.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv = vc_totals[11];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddrv  = vc_totals[TOTAL_DDRV],  num_cauv  = vc_totals[TOTAL_CAUV],
+    num_dauiv = vc_totals[TOTAL_DAUIV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deurv = vc_totals[TOTAL_DEURV], num_csv   = vc_totals[TOTAL_CSV],
+    num_dsiv  = vc_totals[TOTAL_DSIV],  num_dsrv  = vc_totals[TOTAL_DSRV];
   write_data_partial_aprepro(s, 0, num_cdv, allContinuousVars,
 			     all_continuous_variable_labels());
   write_data_partial_aprepro(s, 0, num_ddiv, allDiscreteIntVars,
