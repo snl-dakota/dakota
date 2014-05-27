@@ -16,6 +16,7 @@
 #define SHARED_VARIABLES_DATA_H
 
 #include "dakota_data_types.hpp"
+#include "DataVariables.hpp"
 
 
 namespace Dakota {
@@ -47,12 +48,16 @@ private:
   /// standard constructor
   SharedVariablesDataRep(const ProblemDescDB& problem_db,
 			 const std::pair<short,short>& view);
-  /// medium weight constructor
+  /// medium weight constructor providing detailed variable counts
   SharedVariablesDataRep(const std::pair<short,short>& view,
-			 const std::map<unsigned short, size_t>& vars_comps);
-  /// lightweight constructor
+			 const std::map<unsigned short, size_t>& vars_comps,
+			 const BitArray& all_relax_di,
+			 const BitArray& all_relax_dr);
+  /// lightweight constructor providing variable count totals
   SharedVariablesDataRep(const std::pair<short,short>& view,
-			 const SizetArray& vars_comps_totals);
+			 const SizetArray& vars_comps_totals,
+			 const BitArray& all_relax_di,
+			 const BitArray& all_relax_dr);
   /// default constructor
   SharedVariablesDataRep();
   /// destructor
@@ -62,14 +67,36 @@ private:
   //- Heading: Member functions
   //
 
+  /// populate variables{Components,CompsTotals} from user variable
+  /// type and count specifications
+  void initialize_components_totals(const ProblemDescDB& problem_db);
   /// update variablesCompsTotals from variablesComponents
   void components_to_totals();
 
-  /// size label arrays, with or without discrete relaxation
+  /// populate allRelaxedDiscrete{Int,Real} from user specifications
+  /// (relax variables that are not declared as categorical)
+  void relax_noncategorical(const ProblemDescDB& problem_db);
+
+  /// compute all variables sums from variablesCompsTotals and
+  /// allRelaxedDiscrete{Int,Real}
+  void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
+		  size_t& num_adrv);
+
+  /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels,
+  /// with or without discrete relaxation
   void size_all_labels();
-  /// initialize type arrays, with or without discrete relaxation
+  /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Types,
+  /// with or without discrete relaxation
+  void size_all_types();
+
+  /// aggregate all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels
+  /// from user specification or defaults
+  void initialize_all_labels(const ProblemDescDB& problem_db);
+  /// initialize all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Types,
+  /// with or without discrete relaxation
   void initialize_all_types();
-  /// initialize id arrays, with or without discrete relaxation
+  /// initialize allContinuousIds (discrete not currently needed),
+  /// with or without discrete relaxation
   void initialize_all_ids();
 
   /// initialize activeVarsCompsTotals given {c,di,dr}vStart and num{C,DI,DR}V
@@ -110,17 +137,15 @@ private:
   size_t cvStart;
   /// start index of active discrete integer variables within allDiscreteIntVars
   size_t divStart;
-  /// start index of active discrete string variables within
-  /// allDiscreteStringVars
+  /// start index of active discrete string vars within allDiscreteStringVars
   size_t dsvStart;
   /// start index of active discrete real variables within allDiscreteRealVars
   size_t drvStart;
   /// start index of inactive continuous variables within allContinuousVars
   size_t icvStart;
-  /// start index of inactive discrete integer variables w/i allDiscreteIntVars
+  /// start index of inactive discrete integer vars within allDiscreteIntVars
   size_t idivStart;
-  /// start index of inactive discrete string variables within
-  /// allDiscreteStringVars
+  /// start index of inactive discrete string vars within allDiscreteStringVars
   size_t idsvStart;
   /// start index of inactive discrete real variables within allDiscreteRealVars
   size_t idrvStart;
@@ -153,15 +178,16 @@ private:
 
   /// array of 1-based position identifiers for the all continuous
   /// variables array
-  /** These identifiers define positions of the all continuous
-      variables array within the total variable sequence. */
+  /** These identifiers define positions of the all continuous variables
+      array within the total variable sequence.  A primary use case is
+      for defining derivative ids (DVV) based on an active subset. */
   SizetMultiArray allContinuousIds;
 
-  // array of discrete variable identifiers for which the discrete
-  // requirement is relaxed by merging them into a continuous array
-  //SizetArray relaxedDiscreteIds;
-
+  /// array of booleans to indicate relaxation (promotion from
+  /// DiscreteInt to Continuous) for all specified discrete int variables
   BitArray allRelaxedDiscreteInt;
+  /// array of booleans to indicate relaxation (promotion from
+  /// DiscreteReal to Continuous) for all specified discrete real variables
   BitArray allRelaxedDiscreteReal;
 
   /// number of handle objects sharing svdRep
@@ -190,16 +216,17 @@ inline size_t SharedVariablesDataRep::vc_lookup(unsigned short key) const
 }
 
 
-inline void SharedVariablesDataRep::size_all_labels()
+inline void SharedVariablesDataRep::
+all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
+	   size_t& num_adrv)
 {
-  size_t num_acv
-      = variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
-      + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV],
-    num_adiv = allRelaxedDiscreteInt.size(), // updated below for relax non-cat
-    num_adrv = allRelaxedDiscreteReal.size(),// updated below for relax non-cat
-    num_adsv                                 // always categorical
-      = variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV]
-      + variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV];
+  num_acv = variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
+          + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV];
+  num_adiv = allRelaxedDiscreteInt.size();  // updated below for relax non-cat
+  num_adrv = allRelaxedDiscreteReal.size(); // updated below for relax non-cat
+  num_adsv                                  // always categorical
+    = variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV]
+    + variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV];
 
   bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
   if (relax) { // include discrete design/uncertain/state
@@ -209,11 +236,30 @@ inline void SharedVariablesDataRep::size_all_labels()
     num_adiv -= num_relax_int;
     num_adrv -= num_relax_real;
   }
+}
+
+
+inline void SharedVariablesDataRep::size_all_labels()
+{
+  size_t num_acv, num_adiv, num_adsv, num_adrv;
+  all_counts(num_acv, num_adiv, num_adsv, num_adrv);
 
   allContinuousLabels.resize(boost::extents[num_acv]);    // updated size
   allDiscreteIntLabels.resize(boost::extents[num_adiv]);  // updated size
   allDiscreteStringLabels.resize(boost::extents[num_adsv]);
   allDiscreteRealLabels.resize(boost::extents[num_adrv]); // updated size
+}
+
+
+inline void SharedVariablesDataRep::size_all_types()
+{
+  size_t num_acv, num_adiv, num_adsv, num_adrv;
+  all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+  allContinuousTypes.resize(boost::extents[num_acv]);
+  allDiscreteIntTypes.resize(boost::extents[num_adiv]);
+  allDiscreteStringTypes.resize(boost::extents[num_adsv]);
+  allDiscreteRealTypes.resize(boost::extents[num_adrv]);
 }
 
 
@@ -239,9 +285,16 @@ public:
   /// standard constructor
   SharedVariablesData(const ProblemDescDB& problem_db,
 		      const std::pair<short,short>& view);
-  /// lightweight constructor
+  /// medium weight constructor providing detailed variable counts
   SharedVariablesData(const std::pair<short,short>& view,
-		      const SizetArray& vars_comps_totals);
+		      const std::map<unsigned short, size_t>& vars_comps,
+		      const BitArray& all_relax_di,
+		      const BitArray& all_relax_dr);
+  /// lightweight constructor providing variable count totals
+  SharedVariablesData(const std::pair<short,short>& view,
+		      const SizetArray& vars_comps_totals,
+		      const BitArray& all_relax_di,
+		      const BitArray& all_relax_dr);
   /// copy constructor
   SharedVariablesData(const SharedVariablesData& svd);
   /// destructor
@@ -257,24 +310,6 @@ public:
   /// create a deep copy of the current object and return by value
   SharedVariablesData copy() const;
 
-  /// size labels for all of the continuous variables, with or without
-  /// discrete relaxation
-  void size_all_continuous_labels(bool relax);
-  /// initialize types for all of the continuous variables, with or without
-  /// discrete relaxation
-  void initialize_all_continuous_types(bool relax);
-  /// initialize ids for all of the continuous variables, with or without
-  /// discrete relaxation
-  void initialize_all_continuous_ids(bool relax);
-  /// size labels for all of the discrete integer variables
-  void size_all_discrete_int_labels();
-  /// initialize types for all of the discrete integer variables
-  void initialize_all_discrete_int_types();
-  /// size labels for all of the discrete real variables
-  void size_all_discrete_real_labels();
-  /// initialize types for all of the discrete real variables
-  void initialize_all_discrete_real_types();
-
   /// initialize the active components totals given active variable counts
   void initialize_active_components();
   /// initialize the inactive components totals given inactive variable counts
@@ -288,6 +323,7 @@ public:
 			     size_t num_items);
   /// set continuous label at index start 
   void all_continuous_label(const String& cv_label, size_t index);
+
   /// get num_items discrete integer labels beginning at index start 
   StringMultiArrayView
     all_discrete_int_labels(size_t start, size_t num_items) const;
@@ -296,6 +332,16 @@ public:
 			       size_t start, size_t num_items);
   /// set discrete integer label at index start 
   void all_discrete_int_label(const String& div_label, size_t index);
+
+  /// get num_items discrete string labels beginning at index start 
+  StringMultiArrayView
+    all_discrete_string_labels(size_t start, size_t num_items) const;
+  /// set num_items discrete string labels beginning at index start 
+  void all_discrete_string_labels(StringMultiArrayConstView dsv_labels,
+				  size_t start, size_t num_items);
+  /// set discrete string label at index start 
+  void all_discrete_string_label(const String& dsv_label, size_t index);
+
   /// get num_items discrete real labels beginning at index start 
   StringMultiArrayView
     all_discrete_real_labels(size_t start, size_t num_items) const;
@@ -313,6 +359,7 @@ public:
 			    size_t start, size_t num_items);
   /// set continuous type at index
   void all_continuous_type(unsigned short cv_type, size_t index);
+
   /// get num_items discrete integer types beginning at index start
   UShortMultiArrayConstView
     all_discrete_int_types(size_t start, size_t num_items) const;
@@ -321,6 +368,16 @@ public:
 			      size_t start, size_t num_items);
   /// set discrete integer type at index
   void all_discrete_int_type(unsigned short div_type, size_t index);
+
+  /// get num_items discrete string types beginning at index start
+  UShortMultiArrayConstView
+    all_discrete_string_types(size_t start, size_t num_items) const;
+  /// set num_items discrete string types beginning at index start
+  void all_discrete_string_types(UShortMultiArrayConstView dsv_types,
+			       size_t start, size_t num_items);
+  /// set discrete string type at index
+  void all_discrete_string_type(unsigned short dsv_type, size_t index);
+
   /// get num_items discrete real types beginning at index start
   UShortMultiArrayConstView
     all_discrete_real_types(size_t start, size_t num_items) const;
@@ -373,12 +430,16 @@ public:
   size_t cv_start()   const; ///< get start index of active continuous vars
   size_t div()        const; ///< get number of active discrete int vars
   size_t div_start()  const; ///< get start index of active discrete int vars
+  size_t dsv()        const; ///< get number of active discrete string vars
+  size_t dsv_start()  const; ///< get start index of active discrete string vars
   size_t drv()        const; ///< get number of active discrete real vars
   size_t drv_start()  const; ///< get start index of active discrete real vars
   size_t icv()        const; ///< get number of inactive continuous vars
   size_t icv_start()  const; ///< get start index of inactive continuous vars
   size_t idiv()       const; ///< get number of inactive discrete int vars
   size_t idiv_start() const; ///< get start index of inactive discrete int vars
+  size_t idsv()       const; ///< get number of inactive discrete string vars
+  size_t idsv_start() const; ///< get start index of inactive discr string vars
   size_t idrv()       const; ///< get number of inactive discrete real vars
   size_t idrv_start() const; ///< get start index of inactive discrete real vars
 
@@ -386,14 +447,18 @@ public:
   void cv_start(size_t cvs);   ///< set start index of active continuous vars
   void div(size_t ndiv);       ///< set number of active discrete int vars
   void div_start(size_t divs); ///< set start index of active discrete int vars
+  void dsv(size_t ndsv);       ///< set number of active discrete string vars
+  void dsv_start(size_t dsvs); ///< set start index of active discr string vars
   void drv(size_t ndrv);       ///< set number of active discrete real vars
   void drv_start(size_t drvs); ///< set start index of active discrete real vars
   void icv(size_t nicv);       ///< set number of inactive continuous vars
   void icv_start(size_t icvs); ///< set start index of inactive continuous vars
   void idiv(size_t nidiv);     ///< set number of inactive discrete int vars
-  void idiv_start(size_t idivs); ///< set start index of inactive disc int vars
+  void idiv_start(size_t idivs); ///< set start index of inactive discr int vars
+  void idsv(size_t nidsv);       ///< set number of inactive discr string vars
+  void idsv_start(size_t idsvs); ///< set start index of inact discr string vars
   void idrv(size_t nidrv);       ///< set number of inactive discrete real vars
-  void idrv_start(size_t idrvs); ///< set start index of inactive disc real vars
+  void idrv_start(size_t idrvs); ///< set start index of inact discr real vars
 
 private:
 
@@ -419,8 +484,19 @@ SharedVariablesData(const ProblemDescDB& problem_db,
 
 inline SharedVariablesData::
 SharedVariablesData(const std::pair<short,short>& view,
-		    const SizetArray& vars_comps_totals):
-  svdRep(new SharedVariablesDataRep(view, vars_comps_totals))
+		    const std::map<unsigned short, size_t>& vars_comps,
+		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
+  svdRep(new SharedVariablesDataRep(view, vars_comps, all_relax_di,
+				    all_relax_dr))
+{ }
+
+
+inline SharedVariablesData::
+SharedVariablesData(const std::pair<short,short>& view,
+		    const SizetArray& vars_comps_totals,
+		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
+  svdRep(new SharedVariablesDataRep(view, vars_comps_totals, all_relax_di,
+				    all_relax_dr))
 { }
 
 
@@ -459,34 +535,6 @@ operator=(const SharedVariablesData& svd)
     ++svdRep->referenceCount;
   return *this;
 }
-
-
-inline void SharedVariablesData::size_all_continuous_labels(bool relax)
-{ svdRep->size_all_continuous_labels(relax); }
-
-
-inline void SharedVariablesData::initialize_all_continuous_types(bool relax)
-{ svdRep->initialize_all_continuous_types(relax); }
-
-
-inline void SharedVariablesData::initialize_all_continuous_ids(bool relax)
-{ svdRep->initialize_all_continuous_ids(relax); }
-
-
-inline void SharedVariablesData::size_all_discrete_int_labels()
-{ svdRep->size_all_discrete_int_labels(); }
-
-
-inline void SharedVariablesData::initialize_all_discrete_int_types()
-{ svdRep->initialize_all_discrete_int_types(); }
-
-
-inline void SharedVariablesData::size_all_discrete_real_labels()
-{ svdRep->size_all_discrete_real_labels(); }
-
-
-inline void SharedVariablesData::initialize_all_discrete_real_types()
-{ svdRep->initialize_all_discrete_real_types(); }
 
 
 inline void SharedVariablesData::initialize_active_components()
@@ -540,6 +588,29 @@ all_discrete_int_labels(StringMultiArrayConstView div_labels, size_t start,
 inline void SharedVariablesData::
 all_discrete_int_label(const String& div_label, size_t index)
 { svdRep->allDiscreteIntLabels[index] = div_label; }
+
+
+inline StringMultiArrayView SharedVariablesData::
+all_discrete_string_labels(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteStringLabels[boost::indices[idx_range(start, start+num_items)]];
+}
+
+
+inline void SharedVariablesData::
+all_discrete_string_labels(StringMultiArrayConstView dsv_labels, size_t start,
+			   size_t num_items)
+{
+  svdRep->
+    allDiscreteStringLabels[boost::indices[idx_range(start, start+num_items)]]
+    = dsv_labels;
+}
+
+
+inline void SharedVariablesData::
+all_discrete_string_label(const String& dsv_label, size_t index)
+{ svdRep->allDiscreteStringLabels[index] = dsv_label; }
 
 
 inline StringMultiArrayView SharedVariablesData::
@@ -610,6 +681,29 @@ all_discrete_int_type(unsigned short div_type, size_t index)
 
 
 inline UShortMultiArrayConstView SharedVariablesData::
+all_discrete_string_types(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteStringTypes[boost::indices[idx_range(start, start+num_items)]];
+}
+
+
+inline void SharedVariablesData::
+all_discrete_string_types(UShortMultiArrayConstView dsv_types,
+			  size_t start, size_t num_items)
+{
+  svdRep->
+    allDiscreteStringTypes[boost::indices[idx_range(start, start+num_items)]]
+    = dsv_types;
+}
+
+
+inline void SharedVariablesData::
+all_discrete_string_type(unsigned short dsv_type, size_t index)
+{ svdRep->allDiscreteStringTypes[index] = dsv_type; }
+
+
+inline UShortMultiArrayConstView SharedVariablesData::
 all_discrete_real_types(size_t start, size_t num_items) const
 {
   return svdRep->
@@ -651,10 +745,6 @@ all_continuous_ids(SizetMultiArrayConstView cv_ids,
 
 inline void SharedVariablesData::all_continuous_id(size_t cv_id, size_t index)
 { svdRep->allContinuousIds[index] = cv_id; }
-
-
-//inline const SizetArray& SharedVariablesData::relaxed_discrete_ids() const
-//{ return svdRep->relaxedDiscreteIds; }
 
 
 inline const String& SharedVariablesData::id() const
@@ -701,6 +791,14 @@ inline size_t SharedVariablesData::div_start() const
 { return svdRep->divStart; }
 
 
+inline size_t SharedVariablesData::dsv() const
+{ return svdRep->numDSV; }
+
+
+inline size_t SharedVariablesData::dsv_start() const
+{ return svdRep->dsvStart; }
+
+
 inline size_t SharedVariablesData::drv() const
 { return svdRep->numDRV; }
 
@@ -723,6 +821,14 @@ inline size_t SharedVariablesData::idiv() const
 
 inline size_t SharedVariablesData::idiv_start() const
 { return svdRep->idivStart; }
+
+
+inline size_t SharedVariablesData::idsv() const
+{ return svdRep->numIDSV; }
+
+
+inline size_t SharedVariablesData::idsv_start() const
+{ return svdRep->idsvStart; }
 
 
 inline size_t SharedVariablesData::idrv() const
@@ -749,6 +855,14 @@ inline void SharedVariablesData::div_start(size_t divs)
 { svdRep->divStart = divs; }
 
 
+inline void SharedVariablesData::dsv(size_t ndsv)
+{ svdRep->numDSV = ndsv; }
+
+
+inline void SharedVariablesData::dsv_start(size_t dsvs)
+{ svdRep->dsvStart = dsvs; }
+
+
 inline void SharedVariablesData::drv(size_t ndrv)
 { svdRep->numDRV = ndrv; }
 
@@ -771,6 +885,14 @@ inline void SharedVariablesData::idiv(size_t nidiv)
 
 inline void SharedVariablesData::idiv_start(size_t idivs)
 { svdRep->idivStart = idivs; }
+
+
+inline void SharedVariablesData::idsv(size_t nidsv)
+{ svdRep->numIDSV = nidsv; }
+
+
+inline void SharedVariablesData::idsv_start(size_t idsvs)
+{ svdRep->idsvStart = idsvs; }
 
 
 inline void SharedVariablesData::idrv(size_t nidrv)

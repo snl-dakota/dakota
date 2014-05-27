@@ -39,8 +39,8 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
 {
   initialize_components_totals(problem_db);
   relax_noncategorical(problem_db); // defines allRelaxedDiscrete{Int,Real}
-  initialize_labels(problem_db);
 
+  initialize_all_labels(problem_db);
   initialize_all_types();
   initialize_all_ids();
 
@@ -53,15 +53,19 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
 
 SharedVariablesDataRep::
 SharedVariablesDataRep(const std::pair<short,short>& view,
-		       const SizetArray& vars_comps_totals):
+		       const SizetArray& vars_comps_totals,
+		       const BitArray& all_relax_di,
+		       const BitArray& all_relax_dr):
   variablesCompsTotals(vars_comps_totals), variablesView(view), cvStart(0),
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
   idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
-  numICV(0), numIDIV(0), numIDSV(0), numIDRV(0), referenceCount(1)
+  numICV(0), numIDIV(0), numIDSV(0), numIDRV(0),
+  allRelaxedDiscreteInt(all_relax_di), allRelaxedDiscreteReal(all_relax_dr),
+  referenceCount(1)
 {
-  size_all_labels();    // totals are sufficient to size labels
-  initialize_all_ids(); // totals are sufficient for forming ids
-  // totals are insufficient for forming types
+  size_all_labels();    // lacking DB, can only size labels
+  size_all_types();     // lacking detailed vars_comps, can only size types
+  initialize_all_ids(); // vars_comps_totals sufficient for forming ids
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedVariablesDataRep::SharedVariablesDataRep(view, "
@@ -72,17 +76,21 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
 
 SharedVariablesDataRep::
 SharedVariablesDataRep(const std::pair<short,short>& view,
-		       const std::map<unsigned short, size_t>& vars_comps):
-  variablesComponents(vars_comps), variablesView(view), , cvStart(0),
+		       const std::map<unsigned short, size_t>& vars_comps,
+		       const BitArray& all_relax_di,
+		       const BitArray& all_relax_dr):
+  variablesComponents(vars_comps), variablesView(view), cvStart(0),
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
   idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
-  numICV(0), numIDIV(0), numIDSV(0), numIDRV(0), referenceCount(1)
+  numICV(0), numIDIV(0), numIDSV(0), numIDRV(0),
+  allRelaxedDiscreteInt(all_relax_di), allRelaxedDiscreteReal(all_relax_dr),
+  referenceCount(1)
 {
   components_to_totals();
 
-  size_all_labels();
-  initialize_all_types();
-  initialize_all_ids();
+  size_all_labels();      // lacking DB, can only size labels
+  initialize_all_types(); // vars_comps required for defining types
+  initialize_all_ids();   // vars_comps_totals sufficient for defining ids
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedVariablesDataRep::SharedVariablesDataRep(view, vars_comps) "
@@ -92,7 +100,7 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
 
 
 void SharedVariablesDataRep::
-initialize_components_totals(ProblemDescDB& problem_db)
+initialize_components_totals(const ProblemDescDB& problem_db)
 {
   size_t count;
   // continuous design
@@ -307,7 +315,8 @@ void SharedVariablesDataRep::components_to_totals()
 }
 
 
-void SharedVariablesDataRep::relax_noncategorical(ProblemDescDB& problem_db)
+void SharedVariablesDataRep::
+relax_noncategorical(const ProblemDescDB& problem_db)
 {
   // full length keys, init to false
   allRelaxedDiscreteInt.resize(
@@ -420,12 +429,14 @@ void SharedVariablesDataRep::relax_noncategorical(ProblemDescDB& problem_db)
 }
 
 
-void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
+void SharedVariablesDataRep::
+initialize_all_labels(const ProblemDescDB& problem_db)
 {
   size_all_labels();
 
   size_t i, ardi_cntr = 0, ardr_cntr = 0,
     acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+  bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
 
   // design
   const StringArray& cdv_labels
@@ -472,7 +483,7 @@ void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
 
   // aleatory uncertain
   const StringArray& cauv_labels
-    = problem_db.get_sa("variables.continuous_aleatory_uncertain.labels")
+    = problem_db.get_sa("variables.continuous_aleatory_uncertain.labels");
   const StringArray& dauiv_labels
     = problem_db.get_sa("variables.discrete_aleatory_uncertain_int.labels");
   const StringArray& dausv_labels
@@ -508,7 +519,7 @@ void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
 
   // epistemic uncertain
   const StringArray& ceuv_labels
-    = problem_db.get_sa("variables.continuous_epistemic_uncertain.labels")
+    = problem_db.get_sa("variables.continuous_epistemic_uncertain.labels");
   const StringArray& deuiv_labels
     = problem_db.get_sa("variables.discrete_epistemic_uncertain_int.labels");
   const StringArray& deusv_labels
@@ -534,9 +545,9 @@ void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
   }
   else {
     copy_data_partial(deuiv_labels, allDiscreteIntLabels,  adiv_offset);
-    adiv_offset += num_deuiv;
+    adiv_offset += deuiv_labels.size();
     copy_data_partial(deurv_labels, allDiscreteRealLabels, adrv_offset);
-    adrv_offset += num_deurv;
+    adrv_offset += deurv_labels.size();
   }
 
   // state
@@ -586,32 +597,13 @@ void SharedVariablesDataRep::initialize_labels(ProblemDescDB& problem_db)
 
 void SharedVariablesDataRep::initialize_all_types()
 {
-  size_t i, acv_cntr = 0, adiv_cntr = 0, adsv_cntr = 0, adrv_cntr = 0,
-    num_acv
-      = variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
-      + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV],
-    num_adiv = allRelaxedDiscreteInt.size(),  // to be updated
-    num_adrv = allRelaxedDiscreteReal.size(), // to be updated
-    num_adsv = variablesCompsTotals[TOTAL_DDSV]
-      + variablesCompsTotals[TOTAL_DAUSV] + variablesCompsTotals[TOTAL_DEUSV]
-      + variablesCompsTotals[TOTAL_DSSV];
-
+  size_all_types();
   bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
-  if (relax) { // include discrete design/uncertain/state
-    size_t num_relax_int  = allRelaxedDiscreteInt.count(),
-           num_relax_real = allRelaxedDiscreteReal.count();
-    num_acv  += num_relax_int + num_relax_real;
-    num_adiv -= num_relax_int;
-    num_adrv -= num_relax_real;
-  }
-
-  allContinuousTypes.resize(boost::extents[num_acv]);
-  allDiscreteIntTypes.resize(boost::extents[num_adiv]);
-  allDiscreteStringTypes.resize(boost::extents[num_adsv]);
-  allDiscreteRealTypes.resize(boost::extents[num_adrv]);
 
   // DESIGN
-  size_t num_cdv = vc_lookup(CONTINUOUS_DESIGN),
+  size_t i, act_cntr = 0, adit_cntr = 0, adst_cntr = 0, adrt_cntr = 0,
+    ardi_cntr = 0, ardr_cntr = 0,
+    num_cdv   = vc_lookup(CONTINUOUS_DESIGN),
     num_ddrv  = vc_lookup(DISCRETE_DESIGN_RANGE),
     num_ddsiv = vc_lookup(DISCRETE_DESIGN_SET_INT),
     num_ddssv = vc_lookup(DISCRETE_DESIGN_SET_STRING),
@@ -792,7 +784,7 @@ void SharedVariablesDataRep::initialize_all_types()
   for (i=0; i<num_csv; ++i, ++act_cntr)
     allContinuousTypes[act_cntr] = CONTINUOUS_STATE;
   for (i=0; i<num_dsssv; ++i, ++adst_cntr)
-    allDiscreteStringlTypes[adst_cntr] = DISCRETE_STATE_SET_STRING;
+    allDiscreteStringTypes[adst_cntr] = DISCRETE_STATE_SET_STRING;
   if (relax) {
     for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
       if (allRelaxedDiscreteInt[ardi_cntr])
@@ -823,17 +815,22 @@ void SharedVariablesDataRep::initialize_all_types()
 
 void SharedVariablesDataRep::initialize_all_ids()
 {
-  size_t i, id, acv_cntr = 0, num_cdv = variablesCompsTotals[TOTAL_CDV],
+  size_t i, id, acv_cntr = 0, adiv_cntr = 0, adrv_cntr = 0,
+    num_cdv   = variablesCompsTotals[TOTAL_CDV],
     num_ddiv  = variablesCompsTotals[TOTAL_DDIV],
+    num_ddsv  = variablesCompsTotals[TOTAL_DDSV],
     num_ddrv  = variablesCompsTotals[TOTAL_DDRV],
     num_cauv  = variablesCompsTotals[TOTAL_CAUV],
     num_dauiv = variablesCompsTotals[TOTAL_DAUIV],
+    num_dausv = variablesCompsTotals[TOTAL_DAUSV],
     num_daurv = variablesCompsTotals[TOTAL_DAURV],
     num_ceuv  = variablesCompsTotals[TOTAL_CEUV],
     num_deuiv = variablesCompsTotals[TOTAL_DEUIV],
+    num_deusv = variablesCompsTotals[TOTAL_DEUSV],
     num_deurv = variablesCompsTotals[TOTAL_DEURV],
     num_csv   = variablesCompsTotals[TOTAL_CSV],
     num_dsiv  = variablesCompsTotals[TOTAL_DSIV],
+    num_dssv  = variablesCompsTotals[TOTAL_DSSV],
     num_dsrv  = variablesCompsTotals[TOTAL_DSRV],
     num_acv   = num_cdv + num_cauv + num_ceuv + num_csv;
 
@@ -901,65 +898,6 @@ void SharedVariablesDataRep::initialize_all_ids()
       if (allRelaxedDiscreteReal[adrv_cntr])
 	allContinuousIds[acv_cntr++] = id;
   }
-
-  /*
-  // initialize relaxedDiscreteIds
-  if (relax) {
-    size_t i, offset = 1, cntr = 0,
-      num_mdv  = num_cdv  + num_ddv,  num_mauv = num_cauv + num_dauv,
-      num_meuv = num_ceuv + num_deuv, num_muv  = num_mauv + num_meuv;
-    switch (variablesView.first) {
-    case RELAXED_ALL:
-      relaxedDiscreteIds.resize(num_ddv + num_dauv + num_deuv + num_dsv);
-      offset += num_cdv;
-      for (i=0; i<num_ddv; ++i, ++cntr)
-	relaxedDiscreteIds[cntr] = i + offset;
-      offset += num_ddv + num_cauv;
-      for (i=0; i<num_dauv; ++i, ++cntr)
-	relaxedDiscreteIds[cntr] = i + offset;
-      offset += num_dauv + num_ceuv;
-      for (i=0; i<num_deuv; ++i, ++cntr)
-	relaxedDiscreteIds[cntr] = i + offset;
-      offset += num_deuv + num_csv;
-      for (i=0; i<num_dsv; ++i, ++cntr)
-	relaxedDiscreteIds[cntr] = i + offset;
-      break;
-    case RELAXED_DESIGN:
-      relaxedDiscreteIds.resize(num_ddv);
-      offset += num_cdv;
-      for (i=0; i<num_ddv; ++i)
-	relaxedDiscreteIds[i] = i + offset;
-      break;
-    case RELAXED_ALEATORY_UNCERTAIN:
-      relaxedDiscreteIds.resize(num_dauv);
-      offset += num_mdv + num_cauv;
-      for (i=0; i<num_dauv; ++i, ++cntr)
-	relaxedDiscreteIds[i] = i + offset;
-      break;
-    case RELAXED_EPISTEMIC_UNCERTAIN:
-      relaxedDiscreteIds.resize(num_deuv);
-      offset += num_mdv + num_mauv + num_ceuv;
-      for (i=0; i<num_deuv; ++i, ++cntr)
-	relaxedDiscreteIds[i] = i + offset;
-      break;
-    case RELAXED_UNCERTAIN:
-      relaxedDiscreteIds.resize(num_dauv + num_deuv);
-      offset += num_mdv + num_cauv;
-      for (i=0; i<num_dauv; ++i, ++cntr)
-	relaxedDiscreteIds[cntr] = i + offset;
-      offset += num_dauv + num_ceuv;
-      for (i=0; i<num_deuv; ++i, ++cntr)
-	relaxedDiscreteIds[cntr] = i + offset;
-      break;
-    case RELAXED_STATE:
-      relaxedDiscreteIds.resize(num_dsv);
-      offset += num_mdv + num_muv + num_csv;
-      for (i=0; i<num_dsv; ++i)
-	relaxedDiscreteIds[i] = i + offset;
-      break;
-    }
-  }
-  */
 }
 
 
@@ -981,9 +919,9 @@ void SharedVariablesDataRep::initialize_active_components()
     num_dsiv  = variablesCompsTotals[TOTAL_DSIV],
     num_dssv  = variablesCompsTotals[TOTAL_DSSV],
     num_dsrv  = variablesCompsTotals[TOTAL_DSRV],
-    cv_end    = cvStart  + numCV,  div_end  = divStart + numDIV,
-    drv_end   = drvStart + numDRV, acv_cntr = 0,
-    adiv_cntr = 0, adsv_cntr = 0, adrv_cntr = 0;
+    cv_end    = cvStart  + numCV,  div_end = divStart + numDIV,
+    dsv_end   = dsvStart + numDSV, drv_end = drvStart + numDRV, 
+    acv_cntr = 0, adiv_cntr = 0, adsv_cntr = 0, adrv_cntr = 0;
 
   activeVarsCompsTotals.resize(16);
 
@@ -1132,6 +1070,7 @@ SharedVariablesData SharedVariablesData::copy() const
     svd.svdRep->activeVarsCompsTotals   = svdRep->activeVarsCompsTotals;
     svd.svdRep->inactiveVarsCompsTotals = svdRep->inactiveVarsCompsTotals;
     svd.svdRep->variablesView           = svdRep->variablesView;
+
     svd.svdRep->cvStart   = svdRep->cvStart;
     svd.svdRep->divStart  = svdRep->divStart;
     svd.svdRep->dsvStart  = svdRep->dsvStart;
@@ -1140,6 +1079,7 @@ SharedVariablesData SharedVariablesData::copy() const
     svd.svdRep->idivStart = svdRep->idivStart;
     svd.svdRep->idsvStart = svdRep->idsvStart;
     svd.svdRep->idrvStart = svdRep->idrvStart;
+
     svd.svdRep->numCV     = svdRep->numCV;
     svd.svdRep->numDIV    = svdRep->numDIV;
     svd.svdRep->numDSV    = svdRep->numDSV;
@@ -1162,6 +1102,7 @@ SharedVariablesData SharedVariablesData::copy() const
     svd.svdRep->allDiscreteStringLabels = svdRep->allDiscreteStringLabels;
     svd.svdRep->allDiscreteRealLabels.resize(boost::extents[num_adrv]);
     svd.svdRep->allDiscreteRealLabels = svdRep->allDiscreteRealLabels;
+
     svd.svdRep->allContinuousTypes.resize(boost::extents[num_acv]);
     svd.svdRep->allContinuousTypes = svdRep->allContinuousTypes;
     svd.svdRep->allDiscreteIntTypes.resize(boost::extents[num_adiv]);
@@ -1170,12 +1111,12 @@ SharedVariablesData SharedVariablesData::copy() const
     svd.svdRep->allDiscreteStringTypes = svdRep->allDiscreteStringTypes;
     svd.svdRep->allDiscreteRealTypes.resize(boost::extents[num_adrv]);
     svd.svdRep->allDiscreteRealTypes = svdRep->allDiscreteRealTypes;
+
     svd.svdRep->allContinuousIds.resize(boost::extents[num_acv]);
     svd.svdRep->allContinuousIds = svdRep->allContinuousIds;
 
     svd.svdRep->allRelaxedDiscreteInt  = svdRep->allRelaxedDiscreteInt;
     svd.svdRep->allRelaxedDiscreteReal = svdRep->allRelaxedDiscreteReal;
-    //svd.svdRep->relaxedDiscreteIds   = svdRep->relaxedDiscreteIds;
   }
 
   return svd;

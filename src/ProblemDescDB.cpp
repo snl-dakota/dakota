@@ -1405,7 +1405,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntVector, DataVariablesRep> IVdr[] = {	// must be sorted
+    static KW<IntVector, DataVariablesRep> IVdv[] = {	// must be sorted
 	{"binomial_uncertain.num_trials", P binomialUncNumTrials},
 	{"discrete_aleatory_uncertain_int.initial_point",
 	 P discreteIntAleatoryUncVars},
@@ -1441,7 +1441,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #undef P
 
     KW<IntVector, DataVariablesRep> *kw;
-    if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdr, L)))
+    if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L)))
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
@@ -1466,6 +1466,47 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
   }
   Bad_name(entry_name, "get_iv");
   return abort_handler_t<const IntVector&>(-1);
+}
+
+
+const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+  	Null_rep("get_ba");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<BitArray, DataVariablesRep> BAdv[] = { // must be sorted
+	{"binomial_uncertain.categorical", P binomialUncCat},
+	{"discrete_design_range.categorical", P discreteDesignRangeCat},
+	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
+	{"discrete_design_set_real.categorical", P discreteDesignSetRealCat},
+	{"discrete_interval_uncertain.categorical", P discreteIntervalUncCat},
+	{"discrete_state_range.categorical", P discreteStateRangeCat},
+	{"discrete_state_set_int.categorical", P discreteStateSetIntCat},
+	{"discrete_state_set_real.categorical", P discreteStateSetRealCat},
+	{"discrete_uncertain_set_int.categorical", P discreteUncSetIntCat},
+	{"discrete_uncertain_set_real.categorical", P discreteUncSetRealCat},
+	{"geometric_uncertain.categorical", P geometricUncCat},
+	{"histogram_uncertain.point_int.categorical",
+         P histogramUncPointIntCat},
+	{"histogram_uncertain.point_real.categorical",
+         P histogramUncPointRealCat},
+	{"hypergeometric_uncertain.categorical", P hyperGeomUncCat},
+	{"negative_binomial_uncertain.categorical", P negBinomialUncCat},
+	{"poisson_uncertain.categorical", P poissonUncCat}};
+    #undef P
+
+    KW<BitArray, DataVariablesRep> *kw;
+    if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L)))
+	return dbRep->dataVariablesIter->dataVariablesRep->*kw->p;
+  }
+
+  Bad_name(entry_name, "get_ba");
+  return abort_handler_t<const BitArray&>(-1);
 }
 
 
@@ -2815,6 +2856,46 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 	}
   }
   Bad_name(entry_name, "set(IntVector&)");
+}
+
+
+void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
+{
+  const char *L;
+  if (!dbRep)
+	Null_rep1("set(BitArray&)");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<BitArray, DataVariablesRep> BAdv[] = {	// must be sorted
+	{"binomial_uncertain.categorical", P binomialUncCat},
+	{"discrete_design_range.categorical", P discreteDesignRangeCat},
+	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
+	{"discrete_design_set_real.categorical", P discreteDesignSetRealCat},
+	{"discrete_interval_uncertain.categorical", P discreteIntervalUncCat},
+	{"discrete_state_range.categorical", P discreteStateRangeCat},
+	{"discrete_state_set_int.categorical", P discreteStateSetIntCat},
+	{"discrete_state_set_real.categorical", P discreteStateSetRealCat},
+	{"discrete_uncertain_set_int.categorical", P discreteUncSetIntCat},
+	{"discrete_uncertain_set_real.categorical", P discreteUncSetRealCat},
+	{"geometric_uncertain.categorical", P geometricUncCat},
+	{"histogram_uncertain.point_int.categorical",
+         P histogramUncPointIntCat},
+	{"histogram_uncertain.point_real.categorical",
+         P histogramUncPointRealCat},
+	{"hypergeometric_uncertain.categorical", P hyperGeomUncCat},
+	{"negative_binomial_uncertain.categorical", P negBinomialUncCat},
+	{"poisson_uncertain.categorical", P poissonUncCat}};
+    #undef P
+
+    KW<BitArray, DataVariablesRep> *kw;
+    if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L))) {
+	dbRep->dataVariablesIter->dataVarsRep->*kw->p = ba;
+	return;
+	}
+  }
+  Bad_name(entry_name, "set(BitArray&)");
 }
 
 
