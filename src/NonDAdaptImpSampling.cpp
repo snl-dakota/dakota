@@ -475,7 +475,9 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
   //Real cov_abs_tol = .0001, p_abs_tol = .000001; // absolute tolerances
   RealVectorArray var_samples_u(refineSamples);
   RealVector fn_samples(refineSamples);
-  size_t total_samples = 0, max_samples = refineSamples*maxIterations;
+  size_t total_samples = 0,
+    max_iter    = (maxIterations < 0) ? 100 : maxIterations, // default to 100
+    max_samples = refineSamples * max_iter;
   Real sum_var = 0., cov, old_cov = DBL_MAX, p, sum_p = 0.,
     old_p = (invertProb) ? 1. - probEstimate : probEstimate;
   bool converged = false, p_converged, cov_converged;
@@ -512,7 +514,7 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
       // enforce both probabilities to be non-0/1 and employ a relative tol
       // (during refinement, this enforces non-0/1 p for 2 consecutive
       // iterations).  If the true p is 0 or 1, then we will incur the
-      // overhead of maxIterations in seeking separation.
+      // overhead of max_iter in seeking separation.
       p_converged = false;
       if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
 	  std::abs(p/old_p - 1.) < convergenceTol) // relative p
