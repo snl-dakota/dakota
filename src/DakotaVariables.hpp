@@ -1141,34 +1141,49 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& di_vector,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType3>& dr_vector)
 {
-  size_t i, j, num_cdv = comp_totals[0], num_ddiv = comp_totals[1],
-    num_ddrv  = comp_totals[2],  num_cauv  = comp_totals[3],
-    num_dauiv = comp_totals[4],  num_daurv = comp_totals[5],
-    num_ceuv  = comp_totals[6],  num_deuiv = comp_totals[7],
-    num_deurv = comp_totals[8],  num_csv   = comp_totals[9],
-    num_dsiv  = comp_totals[10], num_dsrv  = comp_totals[11],
-    cv_cntr = 0, div_cntr = 0, drv_cntr = 0;
+  size_t i, j,
+    num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
+    num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
+    num_cauv  = active_totals[TOTAL_CAUV],
+    num_dauiv = active_totals[TOTAL_DAUIV],
+    num_dausv = active_totals[TOTAL_DAUSV],
+    num_daurv = active_totals[TOTAL_DAURV],
+    num_ceuv  = active_totals[TOTAL_CEUV],
+    num_deuiv = active_totals[TOTAL_DEUIV],
+    num_deusv = active_totals[TOTAL_DEUSV],
+    num_deurv = active_totals[TOTAL_DEURV],
+    num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
+    num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
+    cv_cntr = 0, div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
 
   // design
   write_data_partial(s,  cv_cntr, num_cdv,   c_vector);
   write_data_partial(s, div_cntr, num_ddiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_ddsv, ds_vector);
   write_data_partial(s, drv_cntr, num_ddrv, dr_vector);
-  cv_cntr += num_cdv; div_cntr += num_ddiv; drv_cntr += num_ddrv;
+  cv_cntr  += num_cdv;  div_cntr += num_ddiv;
+  dsv_cntr += num_ddsv; drv_cntr += num_ddrv;
   // aleatory uncertain
   write_data_partial(s,  cv_cntr, num_cauv,   c_vector);
   write_data_partial(s, div_cntr, num_dauiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_dausv, ds_vector);
   write_data_partial(s, drv_cntr, num_daurv, dr_vector);
-  cv_cntr += num_cauv; div_cntr += num_dauiv; drv_cntr += num_daurv;
+  cv_cntr  += num_cauv;  div_cntr += num_dauiv;
+  dsv_cntr += num_dausv; drv_cntr += num_daurv;
   // epistemic uncertain
   write_data_partial(s,  cv_cntr, num_ceuv,   c_vector);
   write_data_partial(s, div_cntr, num_deuiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_deusv, ds_vector);
   write_data_partial(s, drv_cntr, num_deurv, dr_vector);
-  cv_cntr += num_ceuv; div_cntr += num_deuiv; drv_cntr += num_deurv;
+  cv_cntr  += num_ceuv;  div_cntr += num_deuiv;
+  dsv_cntr += num_deusv; drv_cntr += num_deurv;
   // state
   write_data_partial(s,  cv_cntr, num_csv,   c_vector);
   write_data_partial(s, div_cntr, num_dsiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_dssv, ds_vector);
   write_data_partial(s, drv_cntr, num_dsrv, dr_vector);
-  //cv_cntr += num_csv; div_cntr += num_dsiv; drv_cntr += num_dsrv;
+  //cv_cntr  += num_csv;  div_cntr += num_dsiv;
+  //dsv_cntr += num_dssv; drv_cntr += num_dsrv;
 }
 
 
@@ -1180,34 +1195,49 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
 			  const std::vector<ScalarType>& di_vector,
 			  const std::vector<ScalarType>& dr_vector)
 {
-  size_t i, j, num_cdv = comp_totals[0], num_ddiv = comp_totals[1],
-    num_ddrv  = comp_totals[2],  num_cauv  = comp_totals[3],
-    num_dauiv = comp_totals[4],  num_daurv = comp_totals[5],
-    num_ceuv  = comp_totals[6],  num_deuiv = comp_totals[7],
-    num_deurv = comp_totals[8],  num_csv   = comp_totals[9],
-    num_dsiv  = comp_totals[10], num_dsrv  = comp_totals[11],
-    cv_cntr = 0, div_cntr = 0, drv_cntr = 0;
+  size_t i, j,
+    num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
+    num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
+    num_cauv  = active_totals[TOTAL_CAUV],
+    num_dauiv = active_totals[TOTAL_DAUIV],
+    num_dausv = active_totals[TOTAL_DAUSV],
+    num_daurv = active_totals[TOTAL_DAURV],
+    num_ceuv  = active_totals[TOTAL_CEUV],
+    num_deuiv = active_totals[TOTAL_DEUIV],
+    num_deusv = active_totals[TOTAL_DEUSV],
+    num_deurv = active_totals[TOTAL_DEURV],
+    num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
+    num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
+    cv_cntr = 0, div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
 
   // design
   write_data_partial(s,  cv_cntr, num_cdv,   c_vector);
   write_data_partial(s, div_cntr, num_ddiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_ddsv, ds_vector);
   write_data_partial(s, drv_cntr, num_ddrv, dr_vector);
-  cv_cntr += num_cdv; div_cntr += num_ddiv; drv_cntr += num_ddrv;
+  cv_cntr  += num_cdv;  div_cntr += num_ddiv;
+  dsv_cntr += num_ddsv; drv_cntr += num_ddrv;
   // aleatory uncertain
   write_data_partial(s,  cv_cntr, num_cauv,   c_vector);
   write_data_partial(s, div_cntr, num_dauiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_dausv, ds_vector);
   write_data_partial(s, drv_cntr, num_daurv, dr_vector);
-  cv_cntr += num_cauv; div_cntr += num_dauiv; drv_cntr += num_daurv;
+  cv_cntr  += num_cauv;  div_cntr += num_dauiv;
+  dsv_cntr += num_dausv; drv_cntr += num_daurv;
   // epistemic uncertain
   write_data_partial(s,  cv_cntr, num_ceuv,   c_vector);
   write_data_partial(s, div_cntr, num_deuiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_deusv, ds_vector);
   write_data_partial(s, drv_cntr, num_deurv, dr_vector);
-  cv_cntr += num_ceuv; div_cntr += num_deuiv; drv_cntr += num_deurv;
+  cv_cntr  += num_ceuv;  div_cntr += num_deuiv;
+  dsv_cntr += num_deusv; drv_cntr += num_deurv;
   // state
   write_data_partial(s,  cv_cntr, num_csv,   c_vector);
   write_data_partial(s, div_cntr, num_dsiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_dssv, ds_vector);
   write_data_partial(s, drv_cntr, num_dsrv, dr_vector);
-  //cv_cntr += num_csv; div_cntr += num_dsiv; drv_cntr += num_dsrv;
+  //cv_cntr  += num_csv;  div_cntr += num_dsiv;
+  //dsv_cntr += num_dssv; drv_cntr += num_dsrv;
 }
 
 } // namespace Dakota

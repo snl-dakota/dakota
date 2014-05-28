@@ -318,20 +318,24 @@ void SharedVariablesDataRep::components_to_totals()
 void SharedVariablesDataRep::
 relax_noncategorical(const ProblemDescDB& problem_db)
 {
-  // full length keys, init to false
-  allRelaxedDiscreteInt.resize(
-    variablesCompsTotals[TOTAL_DDIV] + variablesCompsTotals[TOTAL_DAUIV] +
-    variablesCompsTotals[TOTAL_DEUIV] + variablesCompsTotals[TOTAL_DSIV]);
-  allRelaxedDiscreteReal.resize(
-    variablesCompsTotals[TOTAL_DDRV]  + variablesCompsTotals[TOTAL_DAURV] +
-    variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_DSRV]);
-
   // use of RELAXED domain is independent of active view
   bool relax = ( variablesView.first == RELAXED_ALL ||
 		 ( variablesView.first >= RELAXED_DESIGN &&
 		   variablesView.first <= RELAXED_STATE ) );
-  if (!relax)
+  if (relax) {
+    // full length keys, init to false
+    allRelaxedDiscreteInt.resize(
+      variablesCompsTotals[TOTAL_DDIV] + variablesCompsTotals[TOTAL_DAUIV] +
+      variablesCompsTotals[TOTAL_DEUIV] + variablesCompsTotals[TOTAL_DSIV]);
+    allRelaxedDiscreteReal.resize(
+      variablesCompsTotals[TOTAL_DDRV]  + variablesCompsTotals[TOTAL_DAURV] +
+      variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_DSRV]);
+    allRelaxedDiscreteInt.reset(); allRelaxedDiscreteReal.reset();
+  }
+  else { // use of any() allows Mixed case to employ empty arrays
+    allRelaxedDiscreteInt.clear(); allRelaxedDiscreteReal.clear();
     return;
+  }
 
   // Note: NIDR handles empty and unit length specs
 
@@ -903,29 +907,62 @@ void SharedVariablesDataRep::initialize_all_ids()
 
 void SharedVariablesDataRep::initialize_active_components()
 {
-  size_t i, j, num_cdv = variablesCompsTotals[TOTAL_CDV],
-    num_ddiv  = variablesCompsTotals[TOTAL_DDIV],
-    num_ddsv  = variablesCompsTotals[TOTAL_DDSV],
-    num_ddrv  = variablesCompsTotals[TOTAL_DDRV],
-    num_cauv  = variablesCompsTotals[TOTAL_CAUV],
-    num_dauiv = variablesCompsTotals[TOTAL_DAUIV],
-    num_dausv = variablesCompsTotals[TOTAL_DAUSV],
-    num_daurv = variablesCompsTotals[TOTAL_DAURV],
-    num_ceuv  = variablesCompsTotals[TOTAL_CEUV],
-    num_deuiv = variablesCompsTotals[TOTAL_DEUIV],
-    num_deusv = variablesCompsTotals[TOTAL_DEUSV],
-    num_deurv = variablesCompsTotals[TOTAL_DEURV],
-    num_csv   = variablesCompsTotals[TOTAL_CSV],
-    num_dsiv  = variablesCompsTotals[TOTAL_DSIV],
-    num_dssv  = variablesCompsTotals[TOTAL_DSSV],
-    num_dsrv  = variablesCompsTotals[TOTAL_DSRV],
+  switch (variablesView.first) {
+  case MIXED_ALL:                 case RELAXED_ALL:
+    activeVarsCompsTotals = variablesCompsTotals; break;
+  case MIXED_DESIGN:              case RELAXED_DESIGN:
+    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals[TOTAL_CDV]  = variablesCompsTotals[TOTAL_CDV];
+    activeVarsCompsTotals[TOTAL_DDIV] = variablesCompsTotals[TOTAL_DDIV];
+    activeVarsCompsTotals[TOTAL_DDSV] = variablesCompsTotals[TOTAL_DDSV];
+    activeVarsCompsTotals[TOTAL_DDRV] = variablesCompsTotals[TOTAL_DDRV];
+    break;
+  case MIXED_ALEATORY_UNCERTAIN:  case RELAXED_ALEATORY_UNCERTAIN:
+    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals[TOTAL_CAUV]  = variablesCompsTotals[TOTAL_CAUV];
+    activeVarsCompsTotals[TOTAL_DAUIV] = variablesCompsTotals[TOTAL_DAUIV];
+    activeVarsCompsTotals[TOTAL_DAUSV] = variablesCompsTotals[TOTAL_DAUSV];
+    activeVarsCompsTotals[TOTAL_DAURV] = variablesCompsTotals[TOTAL_DAURV];
+    break;
+  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
+    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals[TOTAL_CEUV]  = variablesCompsTotals[TOTAL_CEUV];
+    activeVarsCompsTotals[TOTAL_DEUIV] = variablesCompsTotals[TOTAL_DEUIV];
+    activeVarsCompsTotals[TOTAL_DEUSV] = variablesCompsTotals[TOTAL_DEUSV];
+    activeVarsCompsTotals[TOTAL_DEURV] = variablesCompsTotals[TOTAL_DEURV];
+    break;
+  case MIXED_UNCERTAIN:           case RELAXED_UNCERTAIN:
+    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals[TOTAL_CAUV]  = variablesCompsTotals[TOTAL_CAUV];
+    activeVarsCompsTotals[TOTAL_DAUIV] = variablesCompsTotals[TOTAL_DAUIV];
+    activeVarsCompsTotals[TOTAL_DAUSV] = variablesCompsTotals[TOTAL_DAUSV];
+    activeVarsCompsTotals[TOTAL_DAURV] = variablesCompsTotals[TOTAL_DAURV];
+    activeVarsCompsTotals[TOTAL_CEUV]  = variablesCompsTotals[TOTAL_CEUV];
+    activeVarsCompsTotals[TOTAL_DEUIV] = variablesCompsTotals[TOTAL_DEUIV];
+    activeVarsCompsTotals[TOTAL_DEUSV] = variablesCompsTotals[TOTAL_DEUSV];
+    activeVarsCompsTotals[TOTAL_DEURV] = variablesCompsTotals[TOTAL_DEURV];
+    break;
+  case MIXED_STATE:               case RELAXED_STATE:
+    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals[TOTAL_CSV]  = variablesCompsTotals[TOTAL_CSV];
+    activeVarsCompsTotals[TOTAL_DSIV] = variablesCompsTotals[TOTAL_DSIV];
+    activeVarsCompsTotals[TOTAL_DSSV] = variablesCompsTotals[TOTAL_DSSV];
+    activeVarsCompsTotals[TOTAL_DSRV] = variablesCompsTotals[TOTAL_DSRV];
+    break;
+  default:
+    // if active view unassigned, error
+    Cerr << "Error: missing active view in SharedVariablesDataRep::"
+	 << "initialize_active_components()" << std::endl;
+    abort_handler(-1);
+    break;
+  }
+
+  /* This logic is insufficient for RelaxedVariables
+
+  size_t i, j, 
     cv_end    = cvStart  + numCV,  div_end = divStart + numDIV,
     dsv_end   = dsvStart + numDSV, drv_end = drvStart + numDRV, 
     acv_cntr = 0, adiv_cntr = 0, adsv_cntr = 0, adrv_cntr = 0;
-
-  activeVarsCompsTotals.resize(16);
-
-  // TO DO: review this logic for case with relaxed discrete vars
 
   // design
   activeVarsCompsTotals[TOTAL_CDV]
@@ -971,34 +1008,64 @@ void SharedVariablesDataRep::initialize_active_components()
     = (adrv_cntr >= drvStart && adrv_cntr < drv_end) ? num_dsrv : 0;
   //acv_cntr  += num_csv;  adiv_cntr += num_dsiv;
   //adsv_cntr += num_dssv; adrv_cntr += num_dsrv;
+  */
 }
 
 
 void SharedVariablesDataRep::initialize_inactive_components()
 {
-  size_t i, j, num_cdv = variablesCompsTotals[TOTAL_CDV],
-    num_ddiv  = variablesCompsTotals[TOTAL_DDIV],
-    num_ddsv  = variablesCompsTotals[TOTAL_DDSV],
-    num_ddrv  = variablesCompsTotals[TOTAL_DDRV],
-    num_cauv  = variablesCompsTotals[TOTAL_CAUV],
-    num_dauiv = variablesCompsTotals[TOTAL_DAUIV],
-    num_dausv = variablesCompsTotals[TOTAL_DAUSV],
-    num_daurv = variablesCompsTotals[TOTAL_DAURV],
-    num_ceuv  = variablesCompsTotals[TOTAL_CEUV],
-    num_deuiv = variablesCompsTotals[TOTAL_DEUIV],
-    num_deusv = variablesCompsTotals[TOTAL_DEUSV],
-    num_deurv = variablesCompsTotals[TOTAL_DEURV],
-    num_csv   = variablesCompsTotals[TOTAL_CSV],
-    num_dsiv  = variablesCompsTotals[TOTAL_DSIV],
-    num_dssv  = variablesCompsTotals[TOTAL_DSSV],
-    num_dsrv  = variablesCompsTotals[TOTAL_DSRV],
+  inactiveVarsCompsTotals.assign(16, 0);
+
+  switch (variablesView.second) {
+  case MIXED_ALL:                 case RELAXED_ALL:
+    Cerr << "Error: inactive view cannot be ALL in SharedVariablesDataRep::"
+	 << "initialize_inactive_components()" << std::endl;
+    abort_handler(-1);
+    //inactiveVarsCompsTotals = variablesCompsTotals;
+    break;
+  case MIXED_DESIGN:              case RELAXED_DESIGN:
+    inactiveVarsCompsTotals[TOTAL_CDV]  = variablesCompsTotals[TOTAL_CDV];
+    inactiveVarsCompsTotals[TOTAL_DDIV] = variablesCompsTotals[TOTAL_DDIV];
+    inactiveVarsCompsTotals[TOTAL_DDSV] = variablesCompsTotals[TOTAL_DDSV];
+    inactiveVarsCompsTotals[TOTAL_DDRV] = variablesCompsTotals[TOTAL_DDRV];
+    break;
+  case MIXED_ALEATORY_UNCERTAIN:  case RELAXED_ALEATORY_UNCERTAIN:
+    inactiveVarsCompsTotals[TOTAL_CAUV]  = variablesCompsTotals[TOTAL_CAUV];
+    inactiveVarsCompsTotals[TOTAL_DAUIV] = variablesCompsTotals[TOTAL_DAUIV];
+    inactiveVarsCompsTotals[TOTAL_DAUSV] = variablesCompsTotals[TOTAL_DAUSV];
+    inactiveVarsCompsTotals[TOTAL_DAURV] = variablesCompsTotals[TOTAL_DAURV];
+    break;
+  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
+    inactiveVarsCompsTotals[TOTAL_CEUV]  = variablesCompsTotals[TOTAL_CEUV];
+    inactiveVarsCompsTotals[TOTAL_DEUIV] = variablesCompsTotals[TOTAL_DEUIV];
+    inactiveVarsCompsTotals[TOTAL_DEUSV] = variablesCompsTotals[TOTAL_DEUSV];
+    inactiveVarsCompsTotals[TOTAL_DEURV] = variablesCompsTotals[TOTAL_DEURV];
+    break;
+  case MIXED_UNCERTAIN:           case RELAXED_UNCERTAIN:
+    inactiveVarsCompsTotals[TOTAL_CAUV]  = variablesCompsTotals[TOTAL_CAUV];
+    inactiveVarsCompsTotals[TOTAL_DAUIV] = variablesCompsTotals[TOTAL_DAUIV];
+    inactiveVarsCompsTotals[TOTAL_DAUSV] = variablesCompsTotals[TOTAL_DAUSV];
+    inactiveVarsCompsTotals[TOTAL_DAURV] = variablesCompsTotals[TOTAL_DAURV];
+    inactiveVarsCompsTotals[TOTAL_CEUV]  = variablesCompsTotals[TOTAL_CEUV];
+    inactiveVarsCompsTotals[TOTAL_DEUIV] = variablesCompsTotals[TOTAL_DEUIV];
+    inactiveVarsCompsTotals[TOTAL_DEUSV] = variablesCompsTotals[TOTAL_DEUSV];
+    inactiveVarsCompsTotals[TOTAL_DEURV] = variablesCompsTotals[TOTAL_DEURV];
+    break;
+  case MIXED_STATE:               case RELAXED_STATE:
+    inactiveVarsCompsTotals[TOTAL_CSV]  = variablesCompsTotals[TOTAL_CSV];
+    inactiveVarsCompsTotals[TOTAL_DSIV] = variablesCompsTotals[TOTAL_DSIV];
+    inactiveVarsCompsTotals[TOTAL_DSSV] = variablesCompsTotals[TOTAL_DSSV];
+    inactiveVarsCompsTotals[TOTAL_DSRV] = variablesCompsTotals[TOTAL_DSRV];
+    break;
+  //default: if inactive view unassigned, leave comp totals initialized to 0
+  }
+
+  /* This logic is insufficient for RelaxedVariables
+
+  size_t i, j,
     icv_end   = icvStart  + numICV,  idiv_end = idivStart + numIDIV,
     idsv_end  = idsvStart + numIDSV, idrv_end = idrvStart + numIDRV,
     acv_cntr = 0, adiv_cntr = 0, adsv_cntr = 0, adrv_cntr = 0;
-
-  inactiveVarsCompsTotals.resize(16);
-
-  // TO DO: review this logic for case with relaxed discrete vars
 
   // design
   inactiveVarsCompsTotals[TOTAL_CDV]
@@ -1044,6 +1111,7 @@ void SharedVariablesDataRep::initialize_inactive_components()
     = (adrv_cntr >= idrvStart && adrv_cntr < idrv_end) ? num_dsrv : 0;
   //acv_cntr  += num_csv;  adiv_cntr += num_dsiv;
   //adsv_cntr += num_dssv; adrv_cntr += num_dsrv;
+  */
 }
 
 

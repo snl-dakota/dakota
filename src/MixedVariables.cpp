@@ -44,6 +44,7 @@ MixedVariables(const ProblemDescDB& problem_db,
 
   allContinuousVars.sizeUninitialized(num_acv);
   allDiscreteIntVars.sizeUninitialized(num_adiv);
+  allDiscreteIntVars.sizeUninitialized(num_adsv);
   allDiscreteRealVars.sizeUninitialized(num_adrv);
 
   int start = 0;

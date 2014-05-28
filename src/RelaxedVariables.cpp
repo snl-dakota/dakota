@@ -131,12 +131,15 @@ void RelaxedVariables::build_active_views()
   // about supported view combinations; rather, keep this class general and
   // encapsulated.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddv = vc_totals[1] + vc_totals[2],
-    num_mdv  = num_cdv + num_ddv, num_cauv = vc_totals[3],
-    num_dauv = vc_totals[4] + vc_totals[5], num_ceuv = vc_totals[6],
-    num_deuv = vc_totals[7] + vc_totals[8], num_mauv = num_cauv + num_dauv,
-    num_meuv = num_ceuv + num_deuv, num_muv = num_mauv + num_meuv,
-    num_csv  = vc_totals[9], num_dsv = vc_totals[10] + vc_totals[11],
+  size_t num_cdv = vc_totals[TOTAL_CDV],
+    num_ddv  = vc_totals[TOTAL_DDIV] + vc_totals[TOTAL_DDRV],
+    num_mdv  = num_cdv + num_ddv, num_cauv = vc_totals[TOTAL_CAUV],
+    num_dauv = vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAURV],
+    num_ceuv = vc_totals[TOTAL_CEUV],
+    num_deuv = vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DEURV],
+    num_mauv = num_cauv + num_dauv, num_meuv = num_ceuv + num_deuv,
+    num_muv  = num_mauv + num_meuv, num_csv  = vc_totals[TOTAL_CSV],
+    num_dsv  = vc_totals[TOTAL_DSIV] + vc_totals[TOTAL_DSRV],
     num_msv  = num_csv + num_dsv;
 
   // Initialize active views

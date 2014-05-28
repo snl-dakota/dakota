@@ -118,16 +118,22 @@ private:
   /// map linking variable types to counts
   std::map<unsigned short, size_t> variablesComponents;
   /// totals for variable type counts for
-  /// {continuous,discrete integer,discrete real}
-  /// {design,aleatory uncertain,epistemic uncertain,state}
+  /// {continuous,discrete integer,discrete string,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}.
+  /** This data reflects the variable counts as originally specified
+      and is not altered by relaxation. */
   SizetArray variablesCompsTotals;
   /// totals for active variable type counts for
-  /// {continuous,discrete integer,discrete real}
-  /// {design,aleatory uncertain,epistemic uncertain,state}
+  /// {continuous,discrete integer,discrete string,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}.
+  /** This data reflects the variable counts as originally specified
+      and is not altered by relaxation. */
   SizetArray activeVarsCompsTotals;
   /// totals for inactive variable type counts for
-  /// {continuous,discrete integer,discrete real}
-  /// {design,aleatory uncertain,epistemic uncertain,state}
+  /// {continuous,discrete integer,discrete string,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}.
+  /** This data reflects the variable counts as originally specified
+      and is not altered by relaxation. */
   SizetArray inactiveVarsCompsTotals;
 
   /// the variables view pair containing active (first) and inactive (second)
@@ -222,11 +228,17 @@ all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
 {
   num_acv = variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
           + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV];
-  num_adiv = allRelaxedDiscreteInt.size();  // updated below for relax non-cat
-  num_adrv = allRelaxedDiscreteReal.size(); // updated below for relax non-cat
-  num_adsv                                  // always categorical
+  // num_adsv is always categorical
+  // num_adiv and num_adrv are updated below for relaxed non-categorical
+  num_adiv
+    = variablesCompsTotals[TOTAL_DDIV]  + variablesCompsTotals[TOTAL_DAUIV]
+    + variablesCompsTotals[TOTAL_DEUIV] + variablesCompsTotals[TOTAL_DSIV];
+  num_adsv
     = variablesCompsTotals[TOTAL_DDSV]  + variablesCompsTotals[TOTAL_DAUSV]
     + variablesCompsTotals[TOTAL_DEUSV] + variablesCompsTotals[TOTAL_DSSV];
+  num_adrv
+    = variablesCompsTotals[TOTAL_DDRV]  + variablesCompsTotals[TOTAL_DAURV]
+    + variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_DSRV];
 
   bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
   if (relax) { // include discrete design/uncertain/state

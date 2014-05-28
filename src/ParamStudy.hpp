@@ -231,13 +231,21 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
   const SharedVariablesData& svd
     = iteratedModel.current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
-  size_t i, num_cdv = active_totals[0], num_ddiv  = active_totals[1],
-    num_ddrv  = active_totals[2],  num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4],  num_daurv = active_totals[5],
-    num_ceuv  = active_totals[6],  num_deuiv = active_totals[7],
-    num_deurv = active_totals[8],  num_csv   = active_totals[9],
-    num_dsiv  = active_totals[10], num_dsrv  = active_totals[11],
-    s_cntr = 0, c_cntr = 0, di_cntr = 0, dr_cntr = 0;
+  size_t i,
+    num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
+    num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
+    num_cauv  = active_totals[TOTAL_CAUV],
+    num_dauiv = active_totals[TOTAL_DAUIV],
+    num_dausv = active_totals[TOTAL_DAUSV],
+    num_daurv = active_totals[TOTAL_DAURV],
+    num_ceuv  = active_totals[TOTAL_CEUV],
+    num_deuiv = active_totals[TOTAL_DEUIV],
+    num_deusv = active_totals[TOTAL_DEUSV],
+    num_deurv = active_totals[TOTAL_DEURV],
+    num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
+    num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
+    s_cntr = 0, c_cntr = 0, di_cntr = 0, ds_cntr = 0, dr_cntr = 0;
+  // TO DO: discrete strings
   for (i=0; i<num_cdv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
   for (i=0; i<num_ddiv; ++i, ++s_cntr, ++di_cntr)
@@ -305,13 +313,21 @@ distribute(const std::vector<ScalarType>& all_data,
   const SharedVariablesData& svd
     = iteratedModel.current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
-  size_t i, num_cdv = active_totals[0], num_ddiv  = active_totals[1],
-    num_ddrv  = active_totals[2],  num_cauv  = active_totals[3],
-    num_dauiv = active_totals[4],  num_daurv = active_totals[5],
-    num_ceuv  = active_totals[6],  num_deuiv = active_totals[7],
-    num_deurv = active_totals[8],  num_csv   = active_totals[9],
-    num_dsiv  = active_totals[10], num_dsrv  = active_totals[11],
-    s_cntr = 0, c_cntr = 0, di_cntr = 0, dr_cntr = 0;
+  size_t i,
+    num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
+    num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
+    num_cauv  = active_totals[TOTAL_CAUV],
+    num_dauiv = active_totals[TOTAL_DAUIV],
+    num_dausv = active_totals[TOTAL_DAUSV],
+    num_daurv = active_totals[TOTAL_DAURV],
+    num_ceuv  = active_totals[TOTAL_CEUV],
+    num_deuiv = active_totals[TOTAL_DEUIV],
+    num_deusv = active_totals[TOTAL_DEUSV],
+    num_deurv = active_totals[TOTAL_DEURV],
+    num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
+    num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
+    s_cntr = 0, c_cntr = 0, di_cntr = 0, ds_cntr = 0, dr_cntr = 0;
+  // TO DO: discrete strings
   for (i=0; i<num_cdv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = all_data[s_cntr];
   for (i=0; i<num_ddiv; ++i, ++s_cntr, ++di_cntr)
