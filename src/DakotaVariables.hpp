@@ -124,16 +124,21 @@ public:
   size_t cv_start()   const; ///< start index of active continuous vars
   size_t div()        const; ///< number of active discrete int vars
   size_t div_start()  const; ///< start index of active discrete int vars
+  size_t dsv()        const; ///< number of active discrete string vars
+  size_t dsv_start()  const; ///< start index of active discrete string vars
   size_t drv()        const; ///< number of active discrete real vars
   size_t drv_start()  const; ///< start index of active discrete real vars
   size_t icv()        const; ///< number of inactive continuous vars
   size_t icv_start()  const; ///< start index of inactive continuous vars
   size_t idiv()       const; ///< number of inactive discrete int vars
   size_t idiv_start() const; ///< start index of inactive discrete int vars
+  size_t idsv()       const; ///< number of inactive discrete string vars
+  size_t idsv_start() const; ///< start index of inactive discrete string vars
   size_t idrv()       const; ///< number of inactive discrete real vars
   size_t idrv_start() const; ///< start index of inactive discrete real vars
   size_t acv()        const; ///< total number of continuous vars
   size_t adiv()       const; ///< total number of discrete integer vars
+  size_t adsv()       const; ///< total number of discrete string vars
   size_t adrv()       const; ///< total number of discrete real vars
 
   /// return sharedVarsData
@@ -165,6 +170,17 @@ public:
   void discrete_int_variable(int di_var, size_t index);
   /// set the active discrete integer variables
   void discrete_int_variables(const IntVector& di_vars);
+  /// return an active discrete string variable
+  const String& discrete_string_variable(size_t index) const;
+  /// return the active discrete string variables (Note: returns a view by
+  /// const reference, but initializing a StringArray from this reference
+  /// invokes the Teuchos matrix copy constructor to create a Teuchos::Copy
+  /// instance; to obtain a mutable view, use discrete_string_variables_view())
+  const StringArray& discrete_string_variables() const;
+  /// set an active discrete string variable
+  void discrete_string_variable(const String& ds_var, size_t index);
+  /// set the active discrete string variables
+  void discrete_string_variables(const StringArray& ds_vars);
   /// return an active discrete real variable
   Real discrete_real_variable(size_t index) const;
   /// return the active discrete real variables (Note: returns a view by
@@ -177,13 +193,15 @@ public:
   /// set the active discrete real variables
   void discrete_real_variables(const RealVector& dr_vars);
 
-  /// copy the active cv/div/drv variables from vars
+  /// copy the active cv/div/dsv/drv variables from vars
   void active_variables(const Variables& vars);
 
   /// return a mutable view of the active continuous variables
   RealVector continuous_variables_view() const;
   /// return a mutable view of the active discrete integer variables
   IntVector discrete_int_variables_view() const;
+  /// return a mutable view of the active discrete string variables
+  StringArray discrete_string_variables_view() const;
   /// return a mutable view of the active discrete real variables
   RealVector discrete_real_variables_view() const;
 
@@ -199,6 +217,12 @@ public:
   void discrete_int_variable_labels(StringMultiArrayConstView div_labels);
   /// set an active discrete integer variable label
   void discrete_int_variable_label(const String& div_label, size_t index);
+  /// return the active discrete string variable labels
+  StringMultiArrayConstView discrete_string_variable_labels() const;
+  /// set the active discrete string variable labels
+  void discrete_string_variable_labels(StringMultiArrayConstView dsv_labels);
+  /// set an active discrete string variable label
+  void discrete_string_variable_label(const String& dsv_label, size_t index);
   /// return the active discrete real variable labels
   StringMultiArrayConstView discrete_real_variable_labels() const;
   /// set the active discrete real variable labels
@@ -218,6 +242,12 @@ public:
   void discrete_int_variable_types(UShortMultiArrayConstView div_types);
   /// set an active discrete integer variable type
   void discrete_int_variable_type(unsigned short div_type, size_t index);
+  /// return the active discrete string variable types
+  UShortMultiArrayConstView discrete_string_variable_types() const;
+  /// set the active discrete string variable types
+  void discrete_string_variable_types(UShortMultiArrayConstView dsv_types);
+  /// set an active discrete string variable type
+  void discrete_string_variable_type(unsigned short dsv_type, size_t index);
   /// return the active discrete real variable types
   UShortMultiArrayConstView discrete_real_variable_types() const;
   /// set the active discrete real variable types
@@ -246,6 +276,10 @@ public:
   /// set the inactive discrete variables
   void inactive_discrete_int_variables(const IntVector& idi_vars);
   /// return the inactive discrete variables
+  const StringArray& inactive_discrete_string_variables() const;
+  /// set the inactive discrete variables
+  void inactive_discrete_string_variables(const StringArray& ids_vars);
+  /// return the inactive discrete variables
   const RealVector& inactive_discrete_real_variables() const;
   /// set the inactive discrete variables
   void inactive_discrete_real_variables(const RealVector& idr_vars);
@@ -260,6 +294,11 @@ public:
   void inactive_discrete_int_variable_labels(
     StringMultiArrayConstView idi_vars);
   /// return the inactive discrete variable labels
+  StringMultiArrayConstView inactive_discrete_string_variable_labels() const;
+  /// set the inactive discrete variable labels
+  void inactive_discrete_string_variable_labels(
+    StringMultiArrayConstView ids_vars);
+  /// return the inactive discrete variable labels
   StringMultiArrayConstView inactive_discrete_real_variable_labels() const;
   /// set the inactive discrete variable labels
   void inactive_discrete_real_variable_labels(
@@ -269,6 +308,8 @@ public:
   UShortMultiArrayConstView inactive_continuous_variable_types() const;
   /// return the inactive discrete integer variable types
   UShortMultiArrayConstView inactive_discrete_int_variable_types() const;
+  /// return the inactive discrete string variable types
+  UShortMultiArrayConstView inactive_discrete_string_variable_types() const;
   /// return the inactive discrete real variable types
   UShortMultiArrayConstView inactive_discrete_real_variable_types() const;
 
@@ -290,6 +331,12 @@ public:
   /// set a variable within the all discrete array
   void all_discrete_int_variable(int adi_var, size_t index);
   /// returns a single array with all discrete variables
+  const StringArray& all_discrete_string_variables() const;
+  /// sets all discrete variables using a single array
+  void all_discrete_string_variables(const StringArray& ads_vars);
+  /// set a variable within the all discrete array
+  void all_discrete_string_variable(const String& ads_var, size_t index);
+  /// returns a single array with all discrete variables
   const RealVector& all_discrete_real_variables() const;
   /// sets all discrete variables using a single array
   void all_discrete_real_variables(const RealVector& adr_vars);
@@ -309,6 +356,12 @@ public:
   /// set a label within the all discrete label array
   void all_discrete_int_variable_label(const String& adiv_label, size_t index);
   /// returns a single array with all discrete variable labels
+  StringMultiArrayView all_discrete_string_variable_labels() const;
+  /// sets all discrete variable labels using a single array
+  void all_discrete_string_variable_labels(StringMultiArrayConstView adsv_labels);
+  /// set a label within the all discrete label array
+  void all_discrete_string_variable_label(const String& adsv_label, size_t index);
+  /// returns a single array with all discrete variable labels
   StringMultiArrayView all_discrete_real_variable_labels() const;
   /// sets all discrete variable labels using a single array
   void all_discrete_real_variable_labels(StringMultiArrayConstView adrv_labels);
@@ -319,6 +372,8 @@ public:
   UShortMultiArrayConstView all_continuous_variable_types() const;
   /// return all discrete variable types
   UShortMultiArrayConstView all_discrete_int_variable_types() const;
+  /// return all discrete variable types
+  UShortMultiArrayConstView all_discrete_string_variable_types() const;
   /// return all discrete variable types
   UShortMultiArrayConstView all_discrete_real_variable_types() const;
 
@@ -383,11 +438,13 @@ protected:
   /// reference-counted instance of shared variables data: id's, labels, counts
   SharedVariablesData sharedVarsData;
 
-  /// array combining all of the continuous variables (design, uncertain, state)
+  /// array combining all of the continuous variables
   RealVector allContinuousVars;
-  /// array combining all of the discrete integer variables (design, state)
+  /// array combining all of the discrete integer variables
   IntVector allDiscreteIntVars;
-  /// array combining all of the discrete real variables (design, state)
+  /// array combining all of the discrete string variables
+  StringMultiArray allDiscreteStringVars;
+  /// array combining all of the discrete real variables
   RealVector allDiscreteRealVars;
 
   //
@@ -400,6 +457,7 @@ protected:
   IntVector discreteIntVars;
   /// the active discrete real variables array view
   RealVector discreteRealVars;
+
   /// the inactive continuous variables array view
   RealVector inactiveContinuousVars;
   /// the inactive discrete integer variables array view
@@ -468,9 +526,10 @@ inline size_t Variables::tv() const
 {
   return (variablesRep) ? variablesRep->allContinuousVars.length() +
     variablesRep->allDiscreteIntVars.length() +
+    variablesRep->allDiscreteStringVars.length()
     variablesRep->allDiscreteRealVars.length() :
     allContinuousVars.length() + allDiscreteIntVars.length() +
-    allDiscreteRealVars.length();
+    allDiscreteStringVars.length() + allDiscreteRealVars.length();
 }
 
 
@@ -488,6 +547,14 @@ inline size_t Variables::div() const
 
 inline size_t Variables::div_start() const
 { return shared_data().div_start(); }
+
+
+inline size_t Variables::dsv() const
+{ return shared_data().dsv(); }
+
+
+inline size_t Variables::dsv_start() const
+{ return shared_data().dsv_start(); }
 
 
 inline size_t Variables::drv() const
@@ -514,6 +581,14 @@ inline size_t Variables::idiv_start() const
 { return shared_data().idiv_start(); }
 
 
+inline size_t Variables::idsv() const
+{ return shared_data().idsv(); }
+
+
+inline size_t Variables::idsv_start() const
+{ return shared_data().idsv_start(); }
+
+
 inline size_t Variables::idrv() const
 { return shared_data().idrv(); }
 
@@ -533,6 +608,13 @@ inline size_t Variables::adiv() const
 {
   return (variablesRep) ? variablesRep->allDiscreteIntVars.length() :
     allDiscreteIntVars.length();
+}
+
+
+inline size_t Variables::adsv() const
+{
+  return (variablesRep) ? variablesRep->allDiscreteStringVars.length() :
+    allDiscreteStringVars.length();
 }
 
 
@@ -595,6 +677,35 @@ inline void Variables::discrete_int_variables(const IntVector& di_vars)
 
 
 inline void Variables::
+discrete_string_variable(const String& ds_var, size_t index)
+{
+  if (variablesRep) variablesRep->discreteStringVars[index] = ds_var;
+  else              discreteStringVars[index] = ds_var;
+}
+
+
+inline const String& Variables::discrete_string_variable(size_t index) const
+{
+  if (variablesRep) return variablesRep->discreteStringVars[index];
+  else              return discreteStringVars[index];
+}
+
+
+inline const StringArray& Variables::discrete_string_variables() const
+{
+  return (variablesRep) ?
+    variablesRep->discreteStringVars : discreteStringVars;
+}
+
+
+inline void Variables::discrete_string_variables(const StringArray& ds_vars)
+{
+  if (variablesRep) variablesRep->discreteStringVars.assign(ds_vars);
+  else              discreteStringVars.assign(ds_vars);
+}
+
+
+inline void Variables::
 discrete_real_variable(Real dr_var, size_t index)
 {
   if (variablesRep) variablesRep->discreteRealVars[index] = dr_var;
@@ -629,6 +740,7 @@ inline void Variables::active_variables(const Variables& vars)
   else {
     if (vars.cv())  continuous_variables(vars.continuous_variables());
     if (vars.div()) discrete_int_variables(vars.discrete_int_variables());
+    if (vars.dsv()) discrete_string_variables(vars.discrete_string_variables());
     if (vars.drv()) discrete_real_variables(vars.discrete_real_variables());
   }
 }
@@ -650,6 +762,16 @@ inline IntVector Variables::discrete_int_variables_view() const
 	      variablesRep->discreteIntVars.length()) :
     IntVector(Teuchos::View, discreteIntVars.values(),
 	      discreteIntVars.length());
+}
+
+
+inline StringArray Variables::discrete_string_variables_view() const
+{
+  return (variablesRep) ?
+    StringArray(Teuchos::View, variablesRep->discreteStringVars.values(),
+	       variablesRep->discreteStringVars.length()) :
+    StringArray(Teuchos::View, discreteStringVars.values(),
+	       discreteStringVars.length());
 }
 
 
@@ -706,6 +828,30 @@ discrete_int_variable_label(const String& div_label, size_t index)
 {
   SharedVariablesData& svd = shared_data();
   svd.all_discrete_int_label(div_label, svd.div_start()+index);
+}
+
+
+inline StringMultiArrayConstView Variables::
+discrete_string_variable_labels() const
+{
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_string_labels(svd.dsv_start(), svd.dsv());
+}
+
+
+inline void Variables::
+discrete_string_variable_labels(StringMultiArrayConstView dsv_labels)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_string_labels(dsv_labels, svd.dsv_start(), svd.dsv());
+}
+
+
+inline void Variables::
+discrete_string_variable_label(const String& dsv_label, size_t index)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_string_label(dsv_label, svd.dsv_start()+index);
 }
 
 
@@ -776,6 +922,30 @@ discrete_int_variable_type(unsigned short div_type, size_t index)
 {
   SharedVariablesData& svd = shared_data();
   svd.all_discrete_int_type(div_type, svd.div_start() + index);
+}
+
+
+inline UShortMultiArrayConstView Variables::
+discrete_string_variable_types() const
+{
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_string_types(svd.dsv_start(), svd.dsv());
+}
+
+
+inline void Variables::
+discrete_string_variable_types(UShortMultiArrayConstView dsv_types)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_string_types(dsv_types, svd.dsv_start(), svd.dsv());
+}
+
+
+inline void Variables::
+discrete_string_variable_type(unsigned short dsv_type, size_t index)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_string_type(dsv_type, svd.dsv_start() + index);
 }
 
 
@@ -857,6 +1027,21 @@ inactive_discrete_int_variables(const IntVector& idi_vars)
 }
 
 
+inline const StringArray& Variables::inactive_discrete_string_variables() const
+{
+  return (variablesRep) ? variablesRep->inactiveDiscreteStringVars :
+    inactiveDiscreteStringVars;
+}
+
+
+inline void Variables::
+inactive_discrete_string_variables(const StringArray& ids_vars)
+{
+  if (variablesRep) variablesRep->inactiveDiscreteStringVars.assign(ids_vars);
+  else              inactiveDiscreteStringVars.assign(ids_vars);
+}
+
+
 inline const RealVector& Variables::inactive_discrete_real_variables() const
 {
   return (variablesRep) ? variablesRep->inactiveDiscreteRealVars :
@@ -905,6 +1090,22 @@ inactive_discrete_int_variable_labels(StringMultiArrayConstView idiv_labels)
 
 
 inline StringMultiArrayConstView Variables::
+inactive_discrete_string_variable_labels() const
+{
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_string_labels(svd.idsv_start(), svd.idsv());
+}
+
+
+inline void Variables::
+inactive_discrete_string_variable_labels(StringMultiArrayConstView idsv_labels)
+{
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_string_labels(idsv_labels, svd.idsv_start(), svd.idsv());
+}
+
+
+inline StringMultiArrayConstView Variables::
 inactive_discrete_real_variable_labels() const
 {
   const SharedVariablesData& svd = shared_data();
@@ -933,6 +1134,14 @@ inactive_discrete_int_variable_types() const
 {
   const SharedVariablesData& svd = shared_data();
   return svd.all_discrete_int_types(svd.idiv_start(), svd.idiv());
+}
+
+
+inline UShortMultiArrayConstView Variables::
+inactive_discrete_string_variable_types() const
+{
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_string_types(svd.idsv_start(), svd.idsv());
 }
 
 
@@ -992,6 +1201,29 @@ inline void Variables::all_discrete_int_variable(int adi_var, size_t index)
 }
 
 
+inline const StringArray& Variables::all_discrete_string_variables() const
+{
+  return (variablesRep) ? variablesRep->allDiscreteStringVars :
+    allDiscreteStringVars;
+}
+
+
+inline void Variables::
+all_discrete_string_variables(const StringArray& ads_vars)
+{
+  if (variablesRep) variablesRep->allDiscreteStringVars.assign(ads_vars);
+  else              allDiscreteStringVars.assign(ads_vars);
+}
+
+
+inline void Variables::
+all_discrete_string_variable(const String& ads_var, size_t index)
+{
+  if (variablesRep) variablesRep->allDiscreteStringVars[index] = ads_var;
+  else              allDiscreteStringVars[index] = ads_var;
+}
+
+
 inline const RealVector& Variables::all_discrete_real_variables() const
 {
   return (variablesRep) ? variablesRep->allDiscreteRealVars :
@@ -1042,6 +1274,21 @@ all_discrete_int_variable_label(const String& adiv_label, size_t index)
 { shared_data().all_discrete_int_label(adiv_label, index); }
 
 
+inline StringMultiArrayView Variables::
+all_discrete_string_variable_labels() const
+{ return shared_data().all_discrete_string_labels(0, adsv()); }
+
+
+inline void Variables::
+all_discrete_string_variable_labels(StringMultiArrayConstView adsv_labels)
+{ shared_data().all_discrete_string_labels(adsv_labels, 0, adsv()); }
+
+
+inline void Variables::
+all_discrete_string_variable_label(const String& adsv_label, size_t index)
+{ shared_data().all_discrete_string_label(adsv_label, index); }
+
+
 inline StringMultiArrayView Variables::all_discrete_real_variable_labels() const
 { return shared_data().all_discrete_real_labels(0, adrv()); }
 
@@ -1064,6 +1311,11 @@ all_continuous_variable_types() const
 inline UShortMultiArrayConstView Variables::
 all_discrete_int_variable_types() const
 { return shared_data().all_discrete_int_types(0, adiv()); }
+
+
+inline UShortMultiArrayConstView Variables::
+all_discrete_string_variable_types() const
+{ return shared_data().all_discrete_string_types(0, adsv()); }
 
 
 inline UShortMultiArrayConstView Variables::

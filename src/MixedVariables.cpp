@@ -194,9 +194,9 @@ void MixedVariables::build_active_views()
   if (num_div)
     discreteIntVars
       = IntVector(Teuchos::View, &allDiscreteIntVars[div_start], num_div);
-  if (num_dsv)
-    discreteStringVars = allDiscreteStringVars[boost::indices[
-      idx_range(dsv_start, dsv_start+num_dsv)]];
+  //if (num_dsv)
+  //  discreteStringVars = allDiscreteStringVars[boost::indices[
+  //    idx_range(dsv_start, dsv_start+num_dsv)]];
   if (num_drv)
     discreteRealVars
       = RealVector(Teuchos::View, &allDiscreteRealVars[drv_start], num_drv);
@@ -269,9 +269,9 @@ void MixedVariables::build_inactive_views()
   if (num_idiv)
     inactiveDiscreteIntVars
       = IntVector(Teuchos::View,  &allDiscreteIntVars[idiv_start],  num_idiv);
-  if (num_idsv)
-    inactiveDiscreteStringVars = allDiscreteStringVars[boost::indices[
-      idx_range(idsv_start, idsv_start+num_idsv)]];
+  //if (num_idsv)
+  //  inactiveDiscreteStringVars = allDiscreteStringVars[boost::indices[
+  //    idx_range(idsv_start, idsv_start+num_idsv)]];
   if (num_idrv)
     inactiveDiscreteRealVars
       = RealVector(Teuchos::View, &allDiscreteRealVars[idrv_start], num_idrv);
