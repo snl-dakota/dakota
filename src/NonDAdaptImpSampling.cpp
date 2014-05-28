@@ -491,11 +491,11 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
     // calculate probability and, optionally, coeff of variation
     calculate_statistics(var_samples_u, fn_samples, total_samples, sum_p, p,
 			 cov_flag, sum_var, cov);
-//#ifdef DEBUG
+#ifdef DEBUG
     Cout << "converge_statistics(): old_p = " << old_p << " p = " << p;
     if (cov_flag) Cout << " old_cov = " << old_cov << " cov = " << cov;
     Cout << std::endl;
-//#endif // DEBUG
+#endif // DEBUG
 
     if (importanceSamplingType == IS) // for IS, only perform one iteration
       converged = true;
