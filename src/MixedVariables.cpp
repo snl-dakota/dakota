@@ -432,19 +432,33 @@ void MixedVariables::write_aprepro(std::ostream& s) const
 			     all_discrete_real_variable_labels());
 }
 
+
 /** Presumes variables object is already appropriately sized to receive! */
 void MixedVariables::read_tabular(std::istream& s)
 {
-  // ASCII version for tabular file I/O.
+  // ASCII version for tabular file I/O
+
+  // TO DO: should we be fully consistent with tabular formats?
+
+  // This simple choice will differ from MixedVars ordering, but tabular 
+  // ordering was already different from other orderings.  For neutral files,
+  // variables type key could define a unique convenient ordering.
   read_data_tabular(s, allContinuousVars);
   read_data_tabular(s, allDiscreteIntVars);
   read_data_tabular(s, allDiscreteStringVars);
   read_data_tabular(s, allDiscreteRealVars);
 }
 
+
 void MixedVariables::write_tabular(std::ostream& s) const
 {
-  // ASCII version for tabular file I/O.
+  // ASCII version for tabular file I/O
+
+  // TO DO: should we be fully consistent with tabular formats?
+
+  // This simple choice will differ from MixedVars ordering, but tabular 
+  // ordering was already different from other orderings.  For neutral files,
+  // variables type key could define a unique convenient ordering.
   write_data_tabular(s, allContinuousVars);
   write_data_tabular(s, allDiscreteIntVars);
   write_data_tabular(s, allDiscreteStringVars);
