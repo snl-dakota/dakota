@@ -526,10 +526,10 @@ inline size_t Variables::tv() const
 {
   return (variablesRep) ? variablesRep->allContinuousVars.length() +
     variablesRep->allDiscreteIntVars.length() +
-    variablesRep->allDiscreteStringVars.length()
+    variablesRep->allDiscreteStringVars.size()
     variablesRep->allDiscreteRealVars.length() :
     allContinuousVars.length() + allDiscreteIntVars.length() +
-    allDiscreteStringVars.length() + allDiscreteRealVars.length();
+    allDiscreteStringVars.size() + allDiscreteRealVars.length();
 }
 
 
@@ -613,8 +613,8 @@ inline size_t Variables::adiv() const
 
 inline size_t Variables::adsv() const
 {
-  return (variablesRep) ? variablesRep->allDiscreteStringVars.length() :
-    allDiscreteStringVars.length();
+  return (variablesRep) ? variablesRep->allDiscreteStringVars.size() :
+    allDiscreteStringVars.size();
 }
 
 

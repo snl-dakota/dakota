@@ -24,11 +24,10 @@ namespace Dakota {
 /// Derived class within the Variables hierarchy which separates
 /// continuous and discrete variables (no domain type array merging).
 
-/** Derived variables classes take different views of the design,
-    uncertain, and state variable types and the continuous and
-    discrete domain types.  The MixedVariables derived class
-    separates the continuous and discrete domain types (see
-    Variables::get_variables(problem_db)). */
+/** Derived variables classes take different views of the design, uncertain,
+    and state variable types and the continuous and discrete domain types.
+    The MixedVariables derived class separates the continuous and discrete
+    domain types (see Variables::get_variables(problem_db)). */
 
 class MixedVariables: public Variables
 {

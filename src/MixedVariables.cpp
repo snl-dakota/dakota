@@ -190,10 +190,10 @@ void MixedVariables::build_active_views()
   sharedVarsData.initialize_active_components();
   if (num_cv)
     continuousVars
-      = RealVector(Teuchos::View, &allContinuousVars[cv_start], num_cv);
+      = RealVector(Teuchos::View, &allContinuousVars[cv_start],    num_cv);
   if (num_div)
     discreteIntVars
-      = IntVector(Teuchos::View, &allDiscreteIntVars[div_start], num_div);
+      = IntVector(Teuchos::View,  &allDiscreteIntVars[div_start],  num_div);
   //if (num_dsv)
   //  discreteStringVars = allDiscreteStringVars[boost::indices[
   //    idx_range(dsv_start, dsv_start+num_dsv)]];
@@ -285,7 +285,7 @@ void MixedVariables::build_inactive_views()
 // is not intended for public consumption.
 void MixedVariables::read(std::istream& s)
 {
-  // ASCII version.
+  // ASCII version
   const SizetArray& vc_totals = sharedVarsData.components_totals();
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
@@ -294,46 +294,53 @@ void MixedVariables::read(std::istream& s)
     num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
     num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
     num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV];
-  read_data_partial(s, 0, num_cdv, allContinuousVars,
-		    all_continuous_variable_labels());
-  read_data_partial(s, 0, num_ddiv, allDiscreteIntVars,
-		    all_discrete_int_variable_labels());
-  read_data_partial(s, 0, num_ddsv, allDiscreteStringVars,
-		    all_discrete_string_variable_labels());
-  read_data_partial(s, 0, num_ddrv, allDiscreteRealVars,
-		    all_discrete_real_variable_labels());
-  read_data_partial(s, num_cdv, num_cauv, allContinuousVars,
-		    all_continuous_variable_labels());
-  read_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntVars,
-		    all_discrete_int_variable_labels());
-  read_data_partial(s, num_ddsv, num_dausv, allDiscreteStringVars,
-		    all_discrete_string_variable_labels());
-  read_data_partial(s, num_ddrv, num_daurv, allDiscreteRealVars,
-		    all_discrete_real_variable_labels());
-  read_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousVars,
-		    all_continuous_variable_labels());
-  read_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntVars,
-		    all_discrete_int_variable_labels());
-  read_data_partial(s, num_ddsv+num_dausv, num_deusv, allDiscreteStringVars,
-		    all_discrete_string_variable_labels());
-  read_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealVars,
-		    all_discrete_real_variable_labels());
-  read_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv, allContinuousVars,
-		    all_continuous_variable_labels());
-  read_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
-		    allDiscreteIntVars, all_discrete_int_variable_labels());
-  read_data_partial(s, num_ddsv+num_dausv+num_deusv, num_dssv,
-		    allDiscreteStringVars,
-		    all_discrete_string_variable_labels());
-  read_data_partial(s, num_ddrv+num_daurv+num_deurv, num_dsrv,
-		    allDiscreteRealVars, all_discrete_real_variable_labels());
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+
+  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
+  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
+  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
+  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
+
+  read_data_partial(s, acv_offset,  num_cdv,  allContinuousVars,   acv_labels);
+  read_data_partial(s, adiv_offset, num_ddiv, allDiscreteIntVars,  adiv_labels);
+  read_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringVars,
+		    adsv_labels);
+  read_data_partial(s, adrv_offset, num_ddrv, allDiscreteRealVars, adrv_labels);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
+
+  read_data_partial(s, acv_offset,  num_cauv,  allContinuousVars,  acv_labels);
+  read_data_partial(s, adiv_offset, num_dauiv, allDiscreteIntVars, adiv_labels);
+  read_data_partial(s, adsv_offset, num_dausv, allDiscreteStringVars,
+		    adsv_labels);
+  read_data_partial(s, adrv_offset, num_daurv, allDiscreteRealVars,
+		    adrv_labels);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  read_data_partial(s, acv_offset,  num_ceuv,  allContinuousVars,  acv_labels);
+  read_data_partial(s, adiv_offset, num_deuiv, allDiscreteIntVars, adiv_labels);
+  read_data_partial(s, adsv_offset, num_deusv, allDiscreteStringVars,
+		    adsv_labels);
+  read_data_partial(s, adrv_offset, num_deurv, allDiscreteRealVars,
+		    adrv_labels);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  read_data_partial(s, acv_offset,  num_csv,  allContinuousVars,   acv_labels);
+  read_data_partial(s, adiv_offset, num_dsiv, allDiscreteIntVars,  adiv_labels);
+  read_data_partial(s, adsv_offset, num_dssv, allDiscreteStringVars,
+		    adsv_labels);
+  read_data_partial(s, adrv_offset, num_dsrv, allDiscreteRealVars, adrv_labels);
+  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
+  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
 }
 
 
 void MixedVariables::write(std::ostream& s) const
 {
-  // ASCII version.
+  // ASCII version
   const SizetArray& vc_totals = sharedVarsData.components_totals();
     size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
@@ -342,46 +349,57 @@ void MixedVariables::write(std::ostream& s) const
     num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
     num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
     num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV];
-  write_data_partial(s, 0, num_cdv, allContinuousVars,
-		     all_continuous_variable_labels());
-  write_data_partial(s, 0, num_ddiv, allDiscreteIntVars,
-		     all_discrete_int_variable_labels());
-  write_data_partial(s, 0, num_ddsv, allDiscreteStringVars,
-		     all_discrete_string_variable_labels());
-  write_data_partial(s, 0, num_ddrv, allDiscreteRealVars,
-		     all_discrete_real_variable_labels());
-  write_data_partial(s, num_cdv, num_cauv, allContinuousVars,
-		     all_continuous_variable_labels());
-  write_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntVars,
-		     all_discrete_int_variable_labels());
-  write_data_partial(s, num_ddsv, num_dausv, allDiscreteStringVars,
-		     all_discrete_string_variable_labels());
-  write_data_partial(s, num_ddrv, num_daurv, allDiscreteRealVars,
-		     all_discrete_real_variable_labels());
-  write_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousVars,
-		     all_continuous_variable_labels());
-  write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntVars,
-		     all_discrete_int_variable_labels());
-  write_data_partial(s, num_ddsv+num_dausv, num_deusv, allDiscreteStringVars,
-		     all_discrete_string_variable_labels());
-  write_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealVars,
-		     all_discrete_real_variable_labels());
-  write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv, allContinuousVars,
-		     all_continuous_variable_labels());
-  write_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
-		     allDiscreteIntVars, all_discrete_int_variable_labels());
-  write_data_partial(s, num_ddsv+num_dausv+num_deusv, num_dssv,
-		     allDiscreteStringVars,
-		     all_discrete_string_variable_labels());
-  write_data_partial(s, num_ddrv+num_daurv+num_deurv, num_dsrv,
-		     allDiscreteRealVars, all_discrete_real_variable_labels());
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+
+  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
+  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
+  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
+  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
+
+  write_data_partial(s, acv_offset,  num_cdv,  allContinuousVars,  acv_labels);
+  write_data_partial(s, adiv_offset, num_ddiv, allDiscreteIntVars, adiv_labels);
+  write_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringVars,
+		     adsv_labels);
+  write_data_partial(s, adrv_offset, num_ddrv, allDiscreteRealVars,
+		     adrv_labels);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
+
+  write_data_partial(s, acv_offset,  num_cauv,  allContinuousVars, acv_labels);
+  write_data_partial(s, adiv_offset, num_dauiv, allDiscreteIntVars,
+		     adiv_labels);
+  write_data_partial(s, adsv_offset, num_dausv, allDiscreteStringVars,
+		     adsv_labels);
+  write_data_partial(s, adrv_offset, num_daurv, allDiscreteRealVars,
+		     adrv_labels);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  write_data_partial(s, acv_offset,  num_ceuv,  allContinuousVars, acv_labels);
+  write_data_partial(s, adiv_offset, num_deuiv, allDiscreteIntVars,
+		     adiv_labels);
+  write_data_partial(s, adsv_offset, num_deusv, allDiscreteStringVars,
+		     adsv_labels);
+  write_data_partial(s, adrv_offset, num_deurv, allDiscreteRealVars,
+		     adrv_labels);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  write_data_partial(s, acv_offset,  num_csv,  allContinuousVars,  acv_labels);
+  write_data_partial(s, adiv_offset, num_dsiv, allDiscreteIntVars, adiv_labels);
+  write_data_partial(s, adsv_offset, num_dssv, allDiscreteStringVars,
+		     adsv_labels);
+  write_data_partial(s, adrv_offset, num_dsrv, allDiscreteRealVars,
+		     adrv_labels);
+  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
+  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
 }
 
 
 void MixedVariables::write_aprepro(std::ostream& s) const
 {
-  // ASCII version in APREPRO/DPREPRO format.
+  // ASCII version in APREPRO/DPREPRO format
   const SizetArray& vc_totals = sharedVarsData.components_totals();
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
@@ -390,46 +408,57 @@ void MixedVariables::write_aprepro(std::ostream& s) const
     num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
     num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
     num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV;
-  write_data_partial_aprepro(s, 0, num_cdv, allContinuousVars,
-			     all_continuous_variable_labels());
-  write_data_partial_aprepro(s, 0, num_ddiv, allDiscreteIntVars,
-			     all_discrete_int_variable_labels());
-  write_data_partial_aprepro(s, 0, num_ddsv, allDiscreteStringVars,
-			     all_discrete_string_variable_labels());
-  write_data_partial_aprepro(s, 0, num_ddrv, allDiscreteRealVars,
-			     all_discrete_real_variable_labels());
-  write_data_partial_aprepro(s, num_cdv, num_cauv, allContinuousVars,
-			     all_continuous_variable_labels());
-  write_data_partial_aprepro(s, num_ddiv, num_dauiv, allDiscreteIntVars,
-			     all_discrete_int_variable_labels());
-  write_data_partial_aprepro(s, num_ddsv, num_dausv, allDiscreteStringVars,
-			     all_discrete_string_variable_labels());
-  write_data_partial_aprepro(s, num_ddrv, num_daurv, allDiscreteRealVars,
-			     all_discrete_real_variable_labels());
-  write_data_partial_aprepro(s, num_cdv+num_cauv, num_ceuv, allContinuousVars,
-			     all_continuous_variable_labels());
-  write_data_partial_aprepro(s, num_ddiv+num_dauiv, num_deuiv,
-			     allDiscreteIntVars,
-			     all_discrete_int_variable_labels());
-  write_data_partial_aprepro(s, num_ddsv+num_dausv, num_deusv,
-			     allDiscreteStringVars,
-			     all_discrete_string_variable_labels());
-  write_data_partial_aprepro(s, num_ddrv+num_daurv, num_deurv,
-			     allDiscreteRealVars,
-			     all_discrete_real_variable_labels());
-  write_data_partial_aprepro(s, num_cdv+num_cauv+num_ceuv, num_csv,
-			     allContinuousVars,
-			     all_continuous_variable_labels());
-  write_data_partial_aprepro(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
-			     allDiscreteIntVars,
-			     all_discrete_int_variable_labels());
-  write_data_partial_aprepro(s, num_ddsv+num_dausv+num_deusv, num_dssv,
-			     allDiscreteStringVars,
-			     all_discrete_string_variable_labels());
-  write_data_partial_aprepro(s, num_ddrv+num_daurv+num_deurv, num_dsrv,
-			     allDiscreteRealVars,
-			     all_discrete_real_variable_labels());
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+
+  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
+  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
+  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
+  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
+
+  write_data_partial_aprepro(s, acv_offset,  num_cdv,  allContinuousVars,
+			     acv_labels);
+  write_data_partial_aprepro(s, adiv_offset, num_ddiv, allDiscreteIntVars,
+			     adiv_labels);
+  write_data_partial_aprepro(s, adsv_offset, num_ddsv, allDiscreteStringVars,
+			     adsv_labels);
+  write_data_partial_aprepro(s, adrv_offset, num_ddrv, allDiscreteRealVars,
+			     adrv_labels);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
+
+  write_data_partial_aprepro(s, acv_offset,  num_cauv,  allContinuousVars,
+			     acv_labels);
+  write_data_partial_aprepro(s, adiv_offset, num_dauiv, allDiscreteIntVars,
+			     adiv_labels);
+  write_data_partial_aprepro(s, adsv_offset, num_dausv, allDiscreteStringVars,
+			     adsv_labels);
+  write_data_partial_aprepro(s, adrv_offset, num_daurv, allDiscreteRealVars,
+			     adrv_labels);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  write_data_partial_aprepro(s, acv_offset,  num_ceuv,  allContinuousVars,
+			     acv_labels);
+  write_data_partial_aprepro(s, adiv_offset, num_deuiv, allDiscreteIntVars,
+			     adiv_labels);
+  write_data_partial_aprepro(s, adsv_offset, num_deusv, allDiscreteStringVars,
+			     adsv_labels);
+  write_data_partial_aprepro(s, adrv_offset, num_deurv, allDiscreteRealVars,
+			     adrv_labels);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  write_data_partial_aprepro(s, acv_offset,  num_csv,  allContinuousVars,
+			     acv_labels);
+  write_data_partial_aprepro(s, adiv_offset, num_dsiv, allDiscreteIntVars,
+			     adiv_labels);
+  write_data_partial_aprepro(s, adsv_offset, num_dssv, allDiscreteStringVars,
+			     adsv_labels);
+  write_data_partial_aprepro(s, adrv_offset, num_dsrv, allDiscreteRealVars,
+			     adrv_labels);
+  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
+  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
 }
 
 
@@ -437,32 +466,88 @@ void MixedVariables::write_aprepro(std::ostream& s) const
 void MixedVariables::read_tabular(std::istream& s)
 {
   // ASCII version for tabular file I/O
+  const SizetArray& vc_totals = sharedVarsData.components_totals();
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
 
-  // TO DO: should we be fully consistent with tabular formats?
+  read_data_partial_tabular(s, acv_offset,  num_cdv,  allContinuousVars);
+  read_data_partial_tabular(s, adiv_offset, num_ddiv, allDiscreteIntVars);
+  read_data_partial_tabular(s, adsv_offset, num_ddsv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_ddrv, allDiscreteRealVars);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
 
-  // This simple choice will differ from MixedVars ordering, but tabular 
-  // ordering was already different from other orderings.  For neutral files,
-  // variables type key could define a unique convenient ordering.
-  read_data_tabular(s, allContinuousVars);
-  read_data_tabular(s, allDiscreteIntVars);
-  read_data_tabular(s, allDiscreteStringVars);
-  read_data_tabular(s, allDiscreteRealVars);
+  read_data_partial_tabular(s, acv_offset,  num_cauv,  allContinuousVars);
+  read_data_partial_tabular(s, adiv_offset, num_dauiv, allDiscreteIntVars);
+  read_data_partial_tabular(s, adsv_offset, num_dausv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_daurv, allDiscreteRealVars);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  read_data_partial_tabular(s, acv_offset,  num_ceuv,  allContinuousVars);
+  read_data_partial_tabular(s, adiv_offset, num_deuiv, allDiscreteIntVars);
+  read_data_partial_tabular(s, adsv_offset, num_deusv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_deurv, allDiscreteRealVars);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  read_data_partial_tabular(s, acv_offset,  num_csv,  allContinuousVars);
+  read_data_partial_tabular(s, adiv_offset, num_dsiv, allDiscreteIntVars);
+  read_data_partial_tabular(s, adsv_offset, num_dssv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_dsrv, allDiscreteRealVars);
+  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
+  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
 }
 
 
 void MixedVariables::write_tabular(std::ostream& s) const
 {
   // ASCII version for tabular file I/O
+  const SizetArray& vc_totals = sharedVarsData.components_totals();
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
 
-  // TO DO: should we be fully consistent with tabular formats?
+  write_data_partial_tabular(s, acv_offset,  num_cdv,  allContinuousVars);
+  write_data_partial_tabular(s, adiv_offset, num_ddiv, allDiscreteIntVars);
+  write_data_partial_tabular(s, adsv_offset, num_ddsv, allDiscreteStringVars);
+  write_data_partial_tabular(s, adrv_offset, num_ddrv, allDiscreteRealVars);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
 
-  // This simple choice will differ from MixedVars ordering, but tabular 
-  // ordering was already different from other orderings.  For neutral files,
-  // variables type key could define a unique convenient ordering.
-  write_data_tabular(s, allContinuousVars);
-  write_data_tabular(s, allDiscreteIntVars);
-  write_data_tabular(s, allDiscreteStringVars);
-  write_data_tabular(s, allDiscreteRealVars);
+  write_data_partial_tabular(s, acv_offset,  num_cauv,  allContinuousVars);
+  write_data_partial_tabular(s, adiv_offset, num_dauiv, allDiscreteIntVars);
+  write_data_partial_tabular(s, adsv_offset, num_dausv, allDiscreteStringVars);
+  write_data_partial_tabular(s, adrv_offset, num_daurv, allDiscreteRealVars);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  write_data_partial_tabular(s, acv_offset,  num_ceuv,  allContinuousVars);
+  write_data_partial_tabular(s, adiv_offset, num_deuiv, allDiscreteIntVars);
+  write_data_partial_tabular(s, adsv_offset, num_deusv, allDiscreteStringVars);
+  write_data_partial_tabular(s, adrv_offset, num_deurv, allDiscreteRealVars);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  write_data_partial_tabular(s, acv_offset,  num_csv,  allContinuousVars);
+  write_data_partial_tabular(s, adiv_offset, num_dsiv, allDiscreteIntVars);
+  write_data_partial_tabular(s, adsv_offset, num_dssv, allDiscreteStringVars);
+  write_data_partial_tabular(s, adrv_offset, num_dsrv, allDiscreteRealVars);
+  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
+  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
 }
 
 } // namespace Dakota
