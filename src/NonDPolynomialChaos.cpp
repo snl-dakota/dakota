@@ -455,8 +455,11 @@ void NonDPolynomialChaos::initialize_u_space_model()
   //       in NonDExpansion::initialize_u_space_model()
   if (expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
     shared_data_rep->cross_validation(crossValidation);
-    if (crossValidation)// && randomSeed)
-      shared_data_rep->random_seed(randomSeed); // reused for CV
+    // TO DO: consider adding support for machine-generated seeds (when no
+    // user spec) as well as seed progressions for varyPattern.  Coordinate
+    // with JDJ on whether Dakota or CV should own these features.
+    if (crossValidation && randomSeed)
+      shared_data_rep->random_seed(randomSeed); // reused among sample set & CV
     if (!noiseTols.empty())
       shared_data_rep->noise_tolerance(noiseTols);
     if (expansionCoeffsApproach == Pecos::LASSO_REGRESSION)
