@@ -104,6 +104,10 @@ private:
   /// number of regression points
   Real termsOrder;
 
+  /// seed for random number generator used for regression with LHS
+  /// and sub-sampled tensor grids
+  int randomSeed;
+
   /// option for regression PCE using a filtered set tensor-product points
   bool tensorRegression;
 

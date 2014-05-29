@@ -85,7 +85,11 @@ public:
   /// return Pecos::SharedPolyApproxData::sobolIndexMap
   const Pecos::BitArrayULongMap& sobol_index_map() const;
 
-  /// invoke Pecos::SharedOrthogPolyApproxData::cross_validation()
+  /// invoke Pecos::SharedRegressOrthogPolyApproxData::random_seed() to
+  /// set the random seed for cross validation
+  void random_seed(int seed);
+  /// invoke Pecos::SharedRegressOrthogPolyApproxData::cross_validation() to
+  /// set the cross validation flag
   void cross_validation(bool flag);
   /// invoke Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag()
   void coefficients_norms_flag(bool flag);
@@ -104,9 +108,11 @@ public:
   /// set the basis configuration options within Pecos::SharedPolyApproxData
   void configuration_options(const Pecos::BasisConfigOptions&     bc_options);
 
+  /// invoke Pecos::SharedRegressOrthogPolyApproxData::noise_tolerance() to
   /// set the noise tolerance(s) for compressed sensing algorithms
   void noise_tolerance(const RealVector& noise_tol);
-  /// set the L2 penalty parameter for LASSO (elastic net variant)
+  /// invoke Pecos::SharedRegressOrthogPolyApproxData::l2_penalty() to set
+  /// the L2 penalty parameter for LASSO (elastic net variant)
   void l2_penalty(Real l2_pen);
 
 protected:
@@ -318,6 +324,13 @@ configuration_options(const Pecos::ExpansionConfigOptions& ec_options)
 inline void SharedPecosApproxData::
 configuration_options(const Pecos::BasisConfigOptions& bc_options)
 { pecosSharedDataRep->configuration_options(bc_options); }
+
+
+inline void SharedPecosApproxData::random_seed(int seed)
+{
+  ((Pecos::SharedRegressOrthogPolyApproxData*)pecosSharedDataRep)->
+    random_seed(seed);
+}
 
 
 inline void SharedPecosApproxData::cross_validation(bool flag)
