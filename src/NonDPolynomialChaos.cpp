@@ -458,7 +458,9 @@ void NonDPolynomialChaos::initialize_u_space_model()
     // TO DO: consider adding support for machine-generated seeds (when no
     // user spec) as well as seed progressions for varyPattern.  Coordinate
     // with JDJ on whether Dakota or CV should own these features.
-    if (crossValidation && randomSeed)
+    //if (crossValidation && randomSeed)
+    if ( (crossValidation || expansionBasisType==Pecos::ADAPTED_BASIS) 
+	 && randomSeed)
       shared_data_rep->random_seed(randomSeed); // reused among sample set & CV
     if (!noiseTols.empty())
       shared_data_rep->noise_tolerance(noiseTols);
