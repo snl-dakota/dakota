@@ -55028,71 +55028,77 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666271e+02  6.0656024184257069e+02
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
-  response_fn_1: 59 val (59 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  4.5566666666663190e+02   P0   P0
-  -4.0000000000628555e+00   P1   P0
-  -5.3333333333326573e+02   P0   P1
-  9.1695238095233299e+02   P2   P0
-  9.6852793443130409e-11   P1   P1
-  2.6666666666662246e+02   P0   P2
-  -4.3808727469712098e-11   P3   P0
-  -1.0666666666665776e+03   P2   P1
-  1.1398638325969800e-11   P1   P2
-  2.5784166010254010e-11   P0   P3
-  3.6571428571428777e+02   P4   P0
-  8.2682629918649603e-11   P3   P1
-  -1.5014839398397451e-11   P2   P2
-  -2.3081892823015722e-11   P1   P3
-  -1.7597482988011210e-11   P0   P4
+  4.5566666666665628e+02   P0   P0
+  -3.9999999999848437e+00   P1   P0
+  -5.3333333333331905e+02   P0   P1
+  9.1695238095235277e+02   P2   P0
+  -2.4966113494542590e-11   P1   P1
+  2.6666666666665816e+02   P0   P2
+  1.2324712875908916e-11   P3   P0
+  -1.0666666666666338e+03   P2   P1
+  6.2800707348914625e-12   P1   P2
+  1.1164496300097012e-12   P0   P3
+  3.6571428571427361e+02   P4   P0
+  -1.7430388773068127e-11   P3   P1
+  -1.3288520489584042e-11   P2   P2
+  -2.9348913396888558e-12   P1   P3
+  -1.0706559221823519e-12   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666663190e+02  6.0656024184252988e+02
+ response_fn_1  4.5566666666665628e+02  6.0656024184256012e+02
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
   response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  4.5566666666666390e+02   P0   P0
-  -3.9999999999986482e+00   P1   P0
-  -5.3333333333332848e+02   P0   P1
-  9.1695238095237505e+02   P2   P0
-  -2.2361207030949475e-12   P1   P1
-  2.6666666666666362e+02   P0   P2
-  3.5441589550765654e-13   P3   P0
-  -1.0666666666666551e+03   P2   P1
-  1.3559841226991561e-12   P1   P2
-  6.5833066771646263e-13   P0   P3
-  3.6571428571428453e+02   P4   P0
-  -1.7408964866010006e-13   P3   P1
-  -6.1623506972606479e-12   P2   P2
-  -1.9731214948637203e-13   P1   P3
-  3.0795673956010121e-13   P0   P4
-Moment-based statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666390e+02  6.0656024184257330e+02
-Test Number 4 succeeded
-<<<<< Function evaluation summary: 63 total (63 new, 0 duplicate)
-  response_fn_1: 63 val (63 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  4.5566666666664878e+02   P0   P0
-  -3.9999999999999241e+00   P1   P0
-  -5.3333333333329961e+02   P0   P1
-  9.1695238095234208e+02   P2   P0
-  0.0000000000000000e+00   P1   P1
-  2.6666666666664042e+02   P0   P2
-  1.8505496795375318e-12   P3   P0
-  -1.0666666666666033e+03   P2   P1
-  -7.6887184803088120e-12   P1   P2
-  1.0397482310705966e-11   P0   P3
-  3.6571428571427759e+02   P4   P0
-  -3.8422247808965179e-12   P3   P1
-  -3.3730505069976388e-11   P2   P2
+  4.5566666666665913e+02   P0   P0
+  -3.9999999999972089e+00   P1   P0
+  -5.3333333333331859e+02   P0   P1
+  9.1695238095236186e+02   P2   P0
+  -8.1047071063580443e-12   P1   P1
+  2.6666666666665742e+02   P0   P2
+  0.0000000000000000e+00   P3   P0
+  -1.0666666666666313e+03   P2   P1
+  6.2115790993303456e-12   P1   P2
+  3.5669285900067200e-12   P0   P3
+  3.6571428571427975e+02   P4   P0
+  -3.9799496406322583e-12   P3   P1
+  -2.2881661722223311e-11   P2   P2
   0.0000000000000000e+00   P1   P3
-  -5.7604321807185124e-12   P0   P4
+  0.0000000000000000e+00   P0   P4
+  -2.1253881551021508e-12   P5   P0
+  1.0166875467502028e-11   P4   P1
+  4.8686583416358463e-12   P3   P2
+  3.3524475029966161e-12   P2   P3
+  -1.4583933661052216e-12   P1   P4
+  0.0000000000000000e+00   P0   P5
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666664878e+02  6.0656024184254625e+02
+ response_fn_1  4.5566666666665913e+02  6.0656024184256285e+02
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  4.5566666666666572e+02   P0   P0
+  -3.9999999999951528e+00   P1   P0
+  -5.3333333333333087e+02   P0   P1
+  9.1695238095238028e+02   P2   P0
+  -9.9707622975092375e-12   P1   P1
+  2.6666666666666356e+02   P0   P2
+  3.3412022391391335e-12   P3   P0
+  -1.0666666666666622e+03   P2   P1
+  3.2804715699778005e-12   P1   P2
+  1.3044528433004982e-12   P0   P3
+  3.6571428571428663e+02   P4   P0
+  -7.8403675741382315e-12   P3   P1
+  -4.7042327083905699e-12   P2   P2
+  0.0000000000000000e+00   P1   P3
+  -9.0688984928719700e-13   P0   P4
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666572e+02  6.0656024184257649e+02
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
   response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
@@ -55116,55 +55122,49 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666509e+02  6.0656024184257546e+02
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
-  response_fn_1: 59 val (59 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  4.5566666666666174e+02   P0   P0
-  -3.9999999999775904e+00   P1   P0
-  -5.3333333333330165e+02   P0   P1
-  9.1695238095245452e+02   P2   P0
-  -5.5364905799190970e-11   P1   P1
-  2.6666666666661035e+02   P0   P2
-  -1.3132244471664536e-11   P3   P0
-  -1.0666666666667725e+03   P2   P1
-  8.2575100996761145e-11   P1   P2
-  6.5269880592415452e-11   P0   P3
-  3.6571428571430067e+02   P4   P0
-  3.5078231677980646e-11   P3   P1
-  9.1298202878474218e-11   P2   P2
-  -2.8783453607541971e-11   P1   P3
-  -4.0101855890927733e-11   P0   P4
+  4.5566666666665657e+02   P0   P0
+  -3.9999999999994245e+00   P1   P0
+  -5.3333333333331882e+02   P0   P1
+  9.1695238095235459e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666665805e+02   P0   P2
+  8.7753759872256135e-13   P3   P0
+  -1.0666666666666338e+03   P2   P1
+  -1.1718631734859820e-12   P1   P2
+  2.1351479631814735e-12   P0   P3
+  3.6571428571427413e+02   P4   P0
+  7.4971670540439915e-13   P3   P1
+  -1.2889676054377983e-11   P2   P2
+  -2.2495548207678627e-12   P1   P3
+  -7.4809737429743761e-13   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666174e+02  6.0656024184259968e+02
+ response_fn_1  4.5566666666665657e+02  6.0656024184256069e+02
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
   response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  4.5566666666665361e+02   P0   P0
-  -3.9999999999983644e+00   P1   P0
-  -5.3333333333330813e+02   P0   P1
-  9.1695238095234731e+02   P2   P0
-  -3.2963304432427303e-12   P1   P1
-  2.6666666666665094e+02   P0   P2
-  -1.3775770036728382e-12   P3   P0
-  -1.0666666666666060e+03   P2   P1
-  2.2108534650847092e-12   P1   P2
-  5.8508398790185917e-12   P0   P3
-  3.6571428571427418e+02   P4   P0
-  0.0000000000000000e+00   P3   P1
-  -3.8481125336191387e-11   P2   P2
-  0.0000000000000000e+00   P1   P3
-  0.0000000000000000e+00   P0   P4
-  -1.6888213499872131e-12   P5   P0
-  1.7823225900668796e-11   P4   P1
-  1.1121743569040575e-12   P3   P2
-  6.2910885062459462e-12   P2   P3
-  -4.6077304782892020e-13   P1   P4
-  -1.6066814552151346e-13   P0   P5
+  4.5566666666666475e+02   P0   P0
+  -3.9999999999987739e+00   P1   P0
+  -5.3333333333333019e+02   P0   P1
+  9.1695238095237733e+02   P2   P0
+  -2.2477742050552382e-12   P1   P1
+  2.6666666666666475e+02   P0   P2
+  4.4316838903138015e-13   P3   P0
+  -1.0666666666666592e+03   P2   P1
+  1.4221556191201411e-12   P1   P2
+  4.7633634535166570e-13   P0   P3
+  3.6571428571428510e+02   P4   P0
+  -5.3673188382352948e-13   P3   P1
+  -3.8994240887010952e-12   P2   P2
+  -2.7040436451264411e-13   P1   P3
+  1.7341208230370312e-13   P0   P4
 Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666665361e+02  6.0656024184255136e+02
+ response_fn_1  4.5566666666666475e+02  6.0656024184257512e+02
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
   response_fn_1: 30 val (30 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
