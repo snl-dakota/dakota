@@ -129,11 +129,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
       problem_db.get_short("model.surrogate.correction_order"));
 
-  bool import_annotated
-    = problem_db.get_bool("model.surrogate.import_points_file_annotated");
-  import_points(import_annotated);
+  import_points(
+    problem_db.get_bool("model.surrogate.import_points_file_annotated"));
   initialize_export();
-  if (import_annotated || exportAnnotated)
+  if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();
 }
 
@@ -242,7 +241,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
   import_points(import_annotated);
   initialize_export();
-  if (import_annotated || exportAnnotated)
+  if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();
 }
 
@@ -261,7 +260,8 @@ void DataFitSurrModel::build_approximation()
   update_actual_model();
 
   // build a local, multipoint, or global data fit approximation.
-  if (strbegins(surrogateType, "local_") || strbegins(surrogateType, "multipoint_")) {
+  if (strbegins(surrogateType, "local_") ||
+      strbegins(surrogateType, "multipoint_")) {
     // NOTE: branch used by SBO
     update_local_multipoint();
     build_local_multipoint();

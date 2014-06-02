@@ -300,9 +300,11 @@ select_rep_points(const RealVectorArray& var_samples_u,
   // pick out failures from input samples
   // calculate beta for failures only
   //TMW: Modified this to exclude the previous repPointsU
-  size_t i, j, cntr, fail_count = 0, num_samples = var_samples_u.size();
+  size_t i, j, cntr, fail_count = 0, safe_count = 0, num_samples = var_samples_u.size();
   RealArray  fail_betas;   fail_betas.reserve(num_samples);
   SizetArray fail_indices; fail_indices.reserve(num_samples);
+  RealArray  safe_dist;   safe_dist.reserve(num_samples);
+  SizetArray safe_indices; safe_indices.reserve(num_samples);
 
   //TMW: Additional variables needed if no failures are found
   size_t closestpt;
@@ -327,21 +329,11 @@ select_rep_points(const RealVectorArray& var_samples_u,
       fail_betas.push_back(sample_i.normFrobenius());
       ++fail_count;
     }
-    else { //TMW: Determine if this point is closest to the failThresh
-      ddist = std::abs(limit_state_fn - failThresh);
-      if (ddist < mindist) {
-	mindist = ddist;
-	closestpt = i;
-	closestbeta = sample_i.normFrobenius();
-      }
+    else { //TMW: Determine the distance from the failThresh
+      safe_indices.push_back(i);
+      safe_dist.push_back(std::abs(limit_state_fn-failThresh));
+      ++safe_count;
     }
-  }
-
-  //TMW: If no points are found in the failure domain, take the closest one
-  if (!fail_count) {
-    fail_count = 1;
-    fail_indices.push_back(closestpt);
-    fail_betas.push_back(closestbeta);
   }
 
   // remove points too close together
@@ -350,55 +342,94 @@ select_rep_points(const RealVectorArray& var_samples_u,
   // pick most probable point from remaining failure points
   // remove all points within the cutoff distance of this point
   // repeat until all failure points exhausted
+  int maxRepPts;
+  if (importanceSamplingType == MMAIS)
+     maxRepPts = num_samples;
+  else
+     maxRepPts = 1;
+
   Real cutoff_distance = 1.5;
-  IntArray min_indx(fail_count);
+  IntArray min_indx(maxRepPts);
   size_t new_rep_pts = 0;
   bool exhausted = false;
-  while (!exhausted) {
-    Real min_beta = 100.;
-    for (i=0; i<fail_count; i++) {
-      Real beta = fail_betas[i];
-      if (beta < min_beta) {
-	min_beta = beta;
-	min_indx[new_rep_pts] = i;
+  if (fail_count > 0) {
+    while (!exhausted && new_rep_pts < maxRepPts) {
+      Real min_beta = 100.;
+      for (i=0; i<fail_count; i++) {
+        Real beta = fail_betas[i];
+        if (beta < min_beta) {
+	  min_beta = beta;
+	  min_indx[new_rep_pts] = i;
+        }
+      }
+      if (min_beta == 100.)  
+        exhausted = true;
+      else {
+        size_t idx = min_indx[new_rep_pts], fail_idx = fail_indices[idx];
+        //TMW: Modified this to exclude the previous repPointsU
+        //const RealVector& ref = (fail_idx < numRepPoints) ?
+	  //repPointsU[fail_idx] : var_samples_u[fail_idx - numRepPoints];
+        const RealVector& ref = var_samples_u[fail_idx];
+        for (i=0; i<fail_count; ++i)
+	  if (fail_betas[i] < 99.) {
+	    fail_idx = fail_indices[i];
+            //TMW: Modified this to exclude the previous repPointsU
+	    //const RealVector& pt = (fail_idx < numRepPoints) ?
+	      //repPointsU[fail_idx] : var_samples_u[fail_idx - numRepPoints];
+	    if (distance(var_samples_u[fail_idx], ref) < cutoff_distance)
+	      fail_betas[i] = 100.;
+	  }
+        ++new_rep_pts;
       }
     }
-    if (min_beta == 100.)  
-      exhausted = true;
-    else {
-      size_t idx = min_indx[new_rep_pts], fail_idx = fail_indices[idx];
-      //TMW: Modified this to exclude the previous repPointsU
-      //const RealVector& ref = (fail_idx < numRepPoints) ?
-	//repPointsU[fail_idx] : var_samples_u[fail_idx - numRepPoints];
-      const RealVector& ref = var_samples_u[fail_idx];
-      for (i=0; i<fail_count; ++i)
-	if (fail_betas[i] < 99.) {
-	  fail_idx = fail_indices[i];
-          //TMW: Modified this to exclude the previous repPointsU
-	  //const RealVector& pt = (fail_idx < numRepPoints) ?
-	    //repPointsU[fail_idx] : var_samples_u[fail_idx - numRepPoints];
-	  if (distance(var_samples_u[fail_idx], ref) < cutoff_distance)
-	    fail_betas[i] = 100.;
-	}
-      ++new_rep_pts;
+  }
+  else { 
+    // TMW: If no points are found in the failure region, we follow a similar 
+    // procedure and select the points closest to the failThresh
+    while (!exhausted && new_rep_pts < maxRepPts) {
+      Real min_dist = 1.0E10;
+      for (i=0; i<safe_count; i++) {
+        Real dist = safe_dist[i];
+        if (dist < min_dist) {
+	  min_dist = dist;
+	  min_indx[new_rep_pts] = i;
+        }
+      }
+      if (min_dist == 1.0E10)  
+        exhausted = true;
+      else {
+        size_t idx = min_indx[new_rep_pts], safe_idx = safe_indices[idx];
+        const RealVector& ref = var_samples_u[safe_idx];
+        for (i=0; i<safe_count; ++i)
+	  if (safe_dist[i] < 1.0E10) {
+	    safe_idx = safe_indices[i];
+	    if (distance(var_samples_u[safe_idx], ref) < cutoff_distance)
+	      safe_dist[i] = 1.0E10;
+	  }
+        ++new_rep_pts;
+      }
     }
+
   }
 
   // store samples in min_indx in repPointsU
   //RealVectorArray prev_rep_pts = repPointsU;
 
   // define repPointsU and calculate repWeights
-  if (importanceSamplingType == IS || importanceSamplingType == AIS)
-    new_rep_pts = 1;
   repPointsU.resize(new_rep_pts);
   repWeights.sizeUninitialized(new_rep_pts);
   Real sum_density = 0.;
   for (i=0; i<new_rep_pts; ++i) {
-    size_t idx = min_indx[i], fail_idx = fail_indices[idx];
+    size_t idx = min_indx[i]; 
+    size_t pt_idx;
+    if (fail_count > 0)
+      pt_idx = fail_indices[idx];
+    else
+      pt_idx = safe_indices[idx];
     //TMW: Modified this to exclude the previous repPointsU
     //repPointsU[i] = (fail_idx < numRepPoints) ? prev_rep_pts[fail_idx] :
       //var_samples_u[fail_idx - numRepPoints];
-    repPointsU[i] = var_samples_u[fail_idx];
+    repPointsU[i] = var_samples_u[pt_idx];
 
     // update uSpaceModel with the u-space rep point so that we can 
     // calculate the density function of the representative point
@@ -444,7 +475,9 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
   //Real cov_abs_tol = .0001, p_abs_tol = .000001; // absolute tolerances
   RealVectorArray var_samples_u(refineSamples);
   RealVector fn_samples(refineSamples);
-  size_t total_samples = 0, max_samples = refineSamples*maxIterations;
+  size_t total_samples = 0,
+    max_iter    = (maxIterations < 0) ? 100 : maxIterations, // default to 100
+    max_samples = refineSamples * max_iter;
   Real sum_var = 0., cov, old_cov = DBL_MAX, p, sum_p = 0.,
     old_p = (invertProb) ? 1. - probEstimate : probEstimate;
   bool converged = false, p_converged, cov_converged;
@@ -481,7 +514,7 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
       // enforce both probabilities to be non-0/1 and employ a relative tol
       // (during refinement, this enforces non-0/1 p for 2 consecutive
       // iterations).  If the true p is 0 or 1, then we will incur the
-      // overhead of maxIterations in seeking separation.
+      // overhead of max_iter in seeking separation.
       p_converged = false;
       if (p > 0. && p < 1. && old_p > 0. && old_p < 1. &&
 	  std::abs(p/old_p - 1.) < convergenceTol) // relative p

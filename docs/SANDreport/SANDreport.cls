@@ -996,7 +996,7 @@
 		\SANDdistInternalM{2}{2497}{Central Technical Files}{8944 (1 electronic and 1 hardcopy)}
 	    }{}
 
-	    \SANDdistInternal{1}{0899}{RIM-Reports Management}{9532 (electronic copy)}
+	    \SANDdistInternal{1}{0899}{Technical Library}{9536 (electronic copy)}
 
 	    % If this report has a Patent Caution or Patent Interest
 	    \ifthenelse{\boolean{distPatent}}   {

@@ -26,8 +26,7 @@ method,
 # 	  expansion_order   = 10		#2,#3,#4,#5,#6,#7
 	  cross_validation    			#0,#1,#2,#3,#4,#5,#6,#7
 	  collocation_ratio = 4 		#0,#1,#9,#10
-#	  collocation_ratio = .9 		#2,#6
-#	  collocation_ratio = .95 		#4
+#	  collocation_ratio = .91 		#2,#4,#6
 #	  collocation_ratio = 3			#3,#5,#7
 #	  collocation_points = 30		#8
 #	  collocation_points = 37		#11

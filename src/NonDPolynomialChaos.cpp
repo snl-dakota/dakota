@@ -39,6 +39,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   expansionImportFile(
     probDescDB.get_string("method.nond.import_expansion_file")),
   collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
+  randomSeed(probDescDB.get_int("method.random_seed")),
   tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
   crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
   noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
@@ -137,8 +138,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	  bool vary_pattern = false;
 	  construct_lhs(u_space_sampler, g_u_model,
 	    probDescDB.get_ushort("method.sample_type"), numSamplesOnModel,
-	    probDescDB.get_int("method.random_seed"),
-	    probDescDB.get_string("method.random_number_generator"),
+	    randomSeed, probDescDB.get_string("method.random_number_generator"),
 	    vary_pattern, ACTIVE);
 	}
       }
@@ -231,8 +231,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	    // NonDQuadrature as needed to satisfy min order constraints (but
 	    // not nested constraints: nestedRules is false to retain m >= p+1).
 	    construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
-				 probDescDB.get_int("method.random_seed"),
-				 quad_order_seq, dim_pref);
+				 randomSeed, quad_order_seq, dim_pref);
 	  }
 	  else { // unstructured grid: LHS samples
 	    // if reusing samples within a refinement strategy, ensure different
@@ -245,8 +244,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	    // unlike expansion_sampler, we use an ACTIVE sampler mode for
 	    // forming the PCE over all active variables.
 	    construct_lhs(u_space_sampler, g_u_model,
-	      probDescDB.get_ushort("method.sample_type"), numSamplesOnModel,
-	      probDescDB.get_int("method.random_seed"),
+	      probDescDB.get_ushort("method.sample_type"),
+	      numSamplesOnModel, randomSeed,
 	      probDescDB.get_string("method.random_number_generator"),
 	      vary_pattern, ACTIVE);
 	  }
@@ -312,7 +311,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
-  crossValidation(false), l2Penalty(0.), normalizedCoeffOutput(false)
+  randomSeed(0), crossValidation(false), l2Penalty(0.),
+  normalizedCoeffOutput(false)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -455,6 +455,13 @@ void NonDPolynomialChaos::initialize_u_space_model()
   //       in NonDExpansion::initialize_u_space_model()
   if (expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
     shared_data_rep->cross_validation(crossValidation);
+    // TO DO: consider adding support for machine-generated seeds (when no
+    // user spec) as well as seed progressions for varyPattern.  Coordinate
+    // with JDJ on whether Dakota or CV should own these features.
+    //if (crossValidation && randomSeed)
+    if ( (crossValidation || expansionBasisType==Pecos::ADAPTED_BASIS) 
+	 && randomSeed)
+      shared_data_rep->random_seed(randomSeed); // reused among sample set & CV
     if (!noiseTols.empty())
       shared_data_rep->noise_tolerance(noiseTols);
     if (expansionCoeffsApproach == Pecos::LASSO_REGRESSION)
