@@ -2,7 +2,8 @@ Blurb:: Base filename for error redirection
 
 Description:: Specify a base filename to which Dakota errors will be
 directed.  Errors will (necessarily) be redirected after the input
-file is parsed.  This option overrides any command-line -error option.
+file is parsed.  This option is overridden by any command-line -error
+option.
 
 Topics::	dakota_IO
 Examples::

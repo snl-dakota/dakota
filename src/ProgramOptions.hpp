@@ -195,6 +195,13 @@ private:
   /// verify consistency of user settings (helpful for library mode especially)
   void validate();
 
+  /// validate user run modes and set userModesFlag
+  void validate_run_modes();
+
+  /// retrieve environment.<db_name> from the problem db and update
+  /// data_member, warning if needed
+  void set_option(const ProblemDescDB& problem_db, const String& db_name, 
+		  String& data_member);
 
   /// cache the world rank to help with conditional output
   int worldRank;

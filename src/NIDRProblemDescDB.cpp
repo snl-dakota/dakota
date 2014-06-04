@@ -5855,15 +5855,25 @@ static size_t
 static String
         MP_(errorFile),
         MP_(outputFile),
+        MP_(postRunInput),
+        MP_(postRunOutput),
+        MP_(preRunInput),
+        MP_(preRunOutput),
         MP_(readRestart),
         MP_(resultsOutputFile),
+        MP_(runInput),
+        MP_(runOutput),
 	MP_(tabularDataFile),
         MP_(topMethodPointer),
         MP_(writeRestart);
 
 static bool
+	MP_(checkFlag),
 	MP_(graphicsFlag),
+	MP_(postRunFlag),
+	MP_(preRunFlag),
         MP_(resultsOutputFlag),
+	MP_(runFlag),
 	MP_(tabularDataFlag);
 
 static int

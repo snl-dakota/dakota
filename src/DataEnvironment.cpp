@@ -20,7 +20,9 @@ namespace Dakota {
 
 // Default constructor:
 DataEnvironmentRep::DataEnvironmentRep():
-  stopRestart(0), graphicsFlag(false), tabularDataFlag(false),
+  checkFlag(false), stopRestart(0), 
+  preRunFlag(false), runFlag(false), postRunFlag(false),
+  graphicsFlag(false), tabularDataFlag(false), 
   tabularDataFile("dakota_tabular.dat"), outputPrecision(0), 
   resultsOutputFlag(false), resultsOutputFile("dakota_results.txt"), 
   referenceCount(1)
@@ -29,7 +31,10 @@ DataEnvironmentRep::DataEnvironmentRep():
 
 void DataEnvironmentRep::write(MPIPackBuffer& s) const
 {
-  s << outputFile << errorFile << readRestart << stopRestart << writeRestart
+  s << checkFlag 
+    << outputFile << errorFile << readRestart << stopRestart << writeRestart
+    << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
+    << runInput << runOutput << postRunInput << postRunOutput
     << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }
@@ -37,7 +42,10 @@ void DataEnvironmentRep::write(MPIPackBuffer& s) const
 
 void DataEnvironmentRep::read(MPIUnpackBuffer& s)
 {
-  s >> outputFile >> errorFile >> readRestart >> stopRestart >> writeRestart
+  s >> checkFlag 
+    >> outputFile >> errorFile >> readRestart >> stopRestart >> writeRestart
+    >> preRunFlag >> runFlag >> postRunFlag >> preRunInput >> preRunOutput
+    >> runInput >> runOutput >> postRunInput >> postRunOutput
     >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> outputPrecision
     >> resultsOutputFlag >> resultsOutputFile >> topMethodPointer;
 }
@@ -45,7 +53,10 @@ void DataEnvironmentRep::read(MPIUnpackBuffer& s)
 
 void DataEnvironmentRep::write(std::ostream& s) const
 {
-  s << outputFile << errorFile << readRestart << stopRestart << writeRestart
+  s << checkFlag 
+    << outputFile << errorFile << readRestart << stopRestart << writeRestart
+    << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
+    << runInput << runOutput << postRunInput << postRunOutput
     << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }

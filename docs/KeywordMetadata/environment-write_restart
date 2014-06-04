@@ -1,7 +1,8 @@
 Blurb:: Base filename for restart file write
 
-Description:: Specify a base filename for the restart file Dakota should write.
-This option overrides any command-line -write_restart option.
+Description:: Specify a base filename for the restart file Dakota
+should write.  This option is overridden by any command-line
+-write_restart option.
 
 Topics::	dakota_IO
 Examples::

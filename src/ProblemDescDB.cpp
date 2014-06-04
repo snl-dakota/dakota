@@ -1829,8 +1829,14 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     static KW<String, DataEnvironmentRep> Sde[] = { // must be sorted
 	{"error_file", P errorFile},
 	{"output_file", P outputFile},
+	{"post_run_input", P postRunInput},
+	{"post_run_output", P postRunOutput},
+	{"pre_run_input", P preRunInput},
+	{"pre_run_output", P preRunOutput},
 	{"read_restart", P readRestart},
 	{"results_output_file", P resultsOutputFile},
+	{"run_input", P runInput},
+	{"run_output", P runOutput},
 	{"tabular_graphics_file", P tabularDataFile},
 	{"top_method_pointer", P topMethodPointer},
 	{"write_restart", P writeRestart}};
@@ -2418,8 +2424,12 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
   if ((L = Begins(entry_name, "environment."))) {
     #define P &DataEnvironmentRep::
     static KW<bool, DataEnvironmentRep> Bde[] = { // must be sorted
+	{"check", P checkFlag},
 	{"graphics", P graphicsFlag},
+	{"post_run", P postRunFlag},
+	{"pre_run", P preRunFlag},
 	{"results_output", P resultsOutputFlag},
+	{"run", P runFlag},
 	{"tabular_graphics_data", P tabularDataFlag}};
     #undef P
 

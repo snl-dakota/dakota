@@ -1,13 +1,26 @@
 KEYWORD01 environment {NIDRProblemDescDB::env_start}
+	[ check {N_stm(true,checkFlag)} ]
         [ output_file STRING {N_stm(str,outputFile)} ]
         [ error_file STRING {N_stm(str,errorFile)} ]
         [ read_restart STRING {N_stm(str,readRestart)}
 	  [ stop_restart INTEGER >= 0 {N_stm(int,stopRestart)} ]
           ]
         [ write_restart STRING {N_stm(str,writeRestart)} ]
+	[ pre_run {N_stm(true,preRunFlag)}
+	  [ input STRING {N_stm(str,preRunInput)} ]
+	  [ output STRING {N_stm(str,preRunOutput)} ]
+	  ]
+	[ run {N_stm(true,runFlag)}
+	  [ input STRING {N_stm(str,runInput)} ]
+	  [ output STRING {N_stm(str,runOutput)} ]
+	  ]
+	[ post_run {N_stm(true,postRunFlag)}
+	  [ input STRING {N_stm(str,postRunInput)} ]
+	  [ output STRING {N_stm(str,postRunOutput)} ]
+	  ]
 	[ graphics {N_stm(true,graphicsFlag)} ]
-	[ tabular_graphics_data {N_stm(true,tabularDataFlag)}
-	  [ tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
+	[ tabular_data ALIAS tabular_graphics_data {N_stm(true,tabularDataFlag)}
+	  [ tabular_data_file ALIAS tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
 	  ]
 	[ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
         [ results_output {N_stm(true,resultsOutputFlag)}

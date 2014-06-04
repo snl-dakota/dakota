@@ -5,6 +5,19 @@ KEYWORD01 environment
 	  [ stop_restart INTEGER >= 0 ]
 	  ]
 	[ write_restart STRING ]
+	[ check ]
+	[ pre_run
+	  [ input STRING ]
+	  [ output STRING ]
+	  ]
+	[ run
+	  [ input STRING ]
+	  [ output STRING ]
+	  ]
+	[ post_run
+	  [ input STRING ]
+	  [ output STRING ]
+	  ]
 	[ graphics ]
 	[ tabular_graphics_data
 	  [ tabular_graphics_file STRING ]

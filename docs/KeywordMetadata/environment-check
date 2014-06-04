@@ -1,0 +1,11 @@
+Blurb:: Invoke Dakota in input check mode
+
+Description:: When specified, Dakota input will be parsed and the
+problem instantiated.  Dakota will exit reporting whether any errors
+were found.
+
+Topics::	command_line_options
+Examples::
+Theory::
+Faq::
+See_Also::	
