@@ -1,0 +1,12 @@
+Blurb:: Base filename for pre-run mode data input
+
+Description:: (For future expansion; not currently used by any
+methods.) Specify a base filename from which Dakota will read any
+pre-run input data. This option is overridden by any command-line
+-pre_run arguments.
+
+Topics::	dakota_IO, command_line_options
+Examples::
+Theory::
+Faq::
+See_Also::	

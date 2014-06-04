@@ -1,0 +1,10 @@
+Blurb:: Invoke Dakota with run mode active
+
+Description:: When specified, Dakota execution will include the run
+mode, which invokes interfaces to map parameters to responses.
+
+Topics::	command_line_options
+Examples::
+Theory::
+Faq::
+See_Also::	

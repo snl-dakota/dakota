@@ -1,20 +1,26 @@
 TAG "environment"
 	DESC "{Environment} The environment specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. EnvCommands.html"
 
+TAG "environment/check"
 TAG "environment/output_file"
 TAG "environment/error_file"
 TAG "environment/read_restart"
 TAG "environment/read_restart/stop_restart"
 TAG "environment/write_restart"
+TAG "environment/pre_run"
+TAG "environment/pre_run/input"
+TAG "environment/pre_run/output"
+TAG "environment/run"
+TAG "environment/run/input"
+TAG "environment/run/output"
+TAG "environment/post_run"
+TAG "environment/post_run/input"
+TAG "environment/post_run/output"
 TAG "environment/graphics"
 	DESC "{Graphics flag} EnvCommands.html#EnvOutput"
 
-TAG "environment/tabular_graphics_data"
-	DESC "{Tabulation of graphics data} EnvCommands.html#EnvOutput"
-
-TAG "environment/tabular_graphics_data/tabular_graphics_file"
-	DESC "{File name for tabular graphics data} EnvCommands.html#EnvOutput"
-
+TAG "environment/tabular_data"
+TAG "environment/tabular_data/tabular_data_file"
 TAG "environment/output_precision"
 	DESC "{Numeric output precision} EnvCommands.html#EnvOutput"
 

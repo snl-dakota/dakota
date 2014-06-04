@@ -1,4 +1,4 @@
-## TODO: make documentation build cross-platform
+# TODO: make documentation build cross-platform
 # TODO: dep for latex_modify
 
 find_program(JAVA_EXE java)

@@ -1,0 +1,12 @@
+Blurb:: Invoke Dakota with post-run mode active
+
+Description:: When specified, Dakota execution will include the
+post-run mode, which analyzes parameter/response data sets and
+computes final results..  This mode is currently useful for parameter
+study, DACE, and Monte Carlo sampling methods.
+
+Topics::	command_line_options
+Examples::
+Theory::
+Faq::
+See_Also::	

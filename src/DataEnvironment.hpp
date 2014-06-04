@@ -46,6 +46,9 @@ public:
   //- Heading: Data
   //
 
+  /// flag for whether to run in check only mode (default false)
+  bool checkFlag;
+
   /// file name for output redirection (overrides command-line)
   String outputFile;
   /// file name for error redirection (overrides command-line)
@@ -56,6 +59,17 @@ public:
   int stopRestart;
   /// file name for restart write (overrides command-line)
   String writeRestart;
+
+  bool preRunFlag;      ///< flags invocation with command line option -pre_run
+  bool runFlag;         ///< flags invocation with command line option -run
+  bool postRunFlag;     ///< flags invocation with command line option -post_run
+
+  String preRunInput;   ///< filename for pre_run input
+  String preRunOutput;  ///< filename for pre_run output
+  String runInput;      ///< filename for run input
+  String runOutput;     ///< filename for run output
+  String postRunInput;  ///< filename for post_run input
+  String postRunOutput; ///< filename for post_run output
 
   /// flags use of graphics by the environment (from the \c graphics
   /// specification in \ref EnvIndControl)

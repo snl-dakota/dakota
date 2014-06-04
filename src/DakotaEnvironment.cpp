@@ -38,7 +38,7 @@ namespace Dakota {
 
 */
 Environment::Environment(BaseConstructor):
-  mpiManager(), programOptions(), outputManager(),
+  mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
   probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
 {

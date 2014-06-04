@@ -29,6 +29,18 @@ namespace Dakota {
 
 
 ProgramOptions::ProgramOptions():
+  worldRank(0),
+  echoInput(true), stopRestartEvals(0),
+  helpFlag(false), versionFlag(false), checkFlag(false), 
+  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
+{
+  // environment settings are overridden by command line options
+  parse_environment_options();
+  validate();
+}
+
+ProgramOptions::ProgramOptions(int world_rank):
+  worldRank(world_rank),
   echoInput(true), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
   preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
@@ -39,6 +51,7 @@ ProgramOptions::ProgramOptions():
 }
 
 ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
+  worldRank(world_rank),
   echoInput(true), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
   preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
@@ -66,12 +79,13 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
   // only specify this file if the user passed the option
   if (clh.retrieve("read_restart")) {
     readRestartFile = clh.retrieve("read_restart");
-      // check for specified, but without arg; use default restart filename
+    // check for specified, but without arg; use default restart filename
     if (readRestartFile.empty())
       readRestartFile = "dakota.rst";
   }
 
-  // don't actually need this protection as CLH has the default value dakota.rst
+  // CLH no longer sets the default value dakota.rst; see
+  // ProgramOptions::write_restart_file() instead
   if (clh.retrieve("write_restart"))
     writeRestartFile = clh.retrieve("write_restart");
   stopRestartEvals = clh.read_restart_evals();
@@ -184,11 +198,17 @@ bool ProgramOptions::user_stderr_redirect() const
 { return !errorFile.empty(); }
 
 
+void ProgramOptions::world_rank(int world_rank)
+{
+  worldRank = world_rank;
+}
+
+
 void ProgramOptions::input_file(const String& in_file)
 { 
   inputFile = in_file; 
   // not an error if client later resolves
-  if ( !inputFile.empty() && !inputString.empty() )
+  if ( !inputFile.empty() && !inputString.empty() && worldRank == 0)
     Cout << "Warning (ProgramOptions): both input file and string specified."
 	 << std::endl;
 }
@@ -197,7 +217,7 @@ void ProgramOptions::input_string(const String& in_string)
 {  
   inputString = in_string; 
   // not an error if client later resolves
-  if ( !inputFile.empty() && !inputString.empty() )
+  if ( !inputFile.empty() && !inputString.empty() && worldRank == 0)
     Cout << "Warning (ProgramOptions): both input file and string specified."
 	 << std::endl;
 }
@@ -265,28 +285,67 @@ void ProgramOptions::post_run_output(const String& post_run_out)
 
 void ProgramOptions::parse(const ProblemDescDB& problem_db)
 {
-  // environment specification can override ProgramOptions
-  // DB should be valid on all ranks at this point
-  // TODO: add output here, but only on rank 0... so we don't silently surprise the user
+  // command line options can override those in the input file, so
+  // warn if both exist; DB should be valid on all ranks at this point
+  
+  // we don't offer an option to override input echo in the input file
+  // since we want to echo the input prior to parsing to help with
+  // debugging
 
-  const String& outfile = problem_db.get_string("environment.output_file");
-  if (!outfile.empty()) outputFile = outfile;
-
-  const String& errfile = problem_db.get_string("environment.error_file");
-  if (!errfile.empty()) errorFile = errfile;
-
-  const String& readrst = problem_db.get_string("environment.read_restart");
-  if (!readrst.empty()) readRestartFile = readrst;
+  set_option(problem_db, "output_file", outputFile);
+  set_option(problem_db, "error_file", errorFile);
+  set_option(problem_db, "read_restart", readRestartFile);
 
   const int& stoprst = problem_db.get_int("environment.stop_restart");
-  if (stoprst > 0) stopRestartEvals = stoprst;
+  if (stoprst > 0) {
+    if (stopRestartEvals == 0)
+      stopRestartEvals = stoprst;
+    else if (worldRank == 0)
+      Cout << "Warning: stop restart evals specified in input file and passed "
+	   << "options; option\n         specifying '" << stopRestartEvals
+	   << "' takes precedence over input file value." << std::endl;
+  }
 
-  const String& writerst = problem_db.get_string("environment.write_restart");
-  if (!writerst.empty()) writeRestartFile = writerst;
+  set_option(problem_db, "write_restart", writeRestartFile);
+
+  // only override if non-default, no need to warn
+  const bool& check_flag = problem_db.get_bool("environment.check");
+  if (!checkFlag && check_flag) {
+    checkFlag = check_flag;
+  }
+
+
+  const bool& pre_run = problem_db.get_bool("environment.pre_run");
+  const bool& run = problem_db.get_bool("environment.run");
+  const bool& post_run = problem_db.get_bool("environment.post_run");
+  
+  // if command line options already set, ignore all input file pre/run/post
+  if (pre_run || run || post_run) {
+    if (userModesFlag) {
+      if (worldRank == 0)
+	Cout << "Warning: run mode options already passed; input file run " 
+	     << "modes will be ignored." << std::endl;
+    }
+    else {
+
+      preRunFlag = pre_run;
+      runFlag = run;
+      postRunFlag = post_run;
+
+      set_option(problem_db, "pre_run_input", preRunInput);
+      set_option(problem_db, "pre_run_output", preRunOutput);
+      set_option(problem_db, "run_input", runInput);
+      set_option(problem_db, "run_output", runOutput);
+      set_option(problem_db, "post_run_input", postRunInput);
+      set_option(problem_db, "post_run_output", postRunOutput);
+    }
+
+    // only call this when user modes haven't already been parsed
+    validate_run_modes();
+
+  }
+
 }
-
-
-
 
 
 void ProgramOptions::read(MPIUnpackBuffer& s) 
@@ -320,6 +379,7 @@ void ProgramOptions::write(MPIPackBuffer& s) const
 
 
 // any environment variables affecting global behavior go here
+// TODO: decide precedence of these vs. CLOpts and input file
 void ProgramOptions::parse_environment_options() {
 
   if (parserOptions.empty()) {
@@ -384,8 +444,21 @@ void ProgramOptions::validate() {
   // }
 
   if ( !inputFile.empty() && !inputString.empty() ) {
-    Cerr << "\nError: both input file and string specified in ProgramOptions"
-	 << std::endl;
+    if (worldRank == 0)
+      Cerr << "\nError: both input file and string specified in ProgramOptions"
+	   << std::endl;
+    abort_handler(-1);
+  }
+
+  validate_run_modes();
+}
+
+
+void ProgramOptions::validate_run_modes() {
+
+  if (preRunFlag && !runFlag && postRunFlag) {
+    Cerr << "\nError: Run phase 'run' is required when specifying both " 
+	 << "'pre_run' and 'post_run'.";
     abort_handler(-1);
   }
 
@@ -396,6 +469,25 @@ void ProgramOptions::validate() {
   }
   else
     userModesFlag = true;  // one or more active user-specified modes
+
+}
+
+
+void ProgramOptions::
+set_option(const ProblemDescDB& problem_db, const String& db_name,
+	   String& data_member) {
+    
+  String lookup_prefix("environment.");
+  const String& db_str = problem_db.get_string(lookup_prefix + db_name);
+  
+  if (!db_str.empty()) {
+    if (data_member.empty())
+      data_member = db_str;
+    else if (worldRank == 0)
+      Cout << "Warning: " << db_name << " specified in input file and passed "
+	   << "options; option\n         specifying '" << data_member
+	   << "' takes precedence over input file value." << std::endl;
+  }
 }
 
 
