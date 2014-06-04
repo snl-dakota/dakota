@@ -176,11 +176,11 @@ public:
   /// const reference, but initializing a StringArray from this reference
   /// invokes the Teuchos matrix copy constructor to create a Teuchos::Copy
   /// instance; to obtain a mutable view, use discrete_string_variables_view())
-  const StringArray& discrete_string_variables() const;
+  StringMultiArrayConstView discrete_string_variables() const;
   /// set an active discrete string variable
   void discrete_string_variable(const String& ds_var, size_t index);
   /// set the active discrete string variables
-  void discrete_string_variables(const StringArray& ds_vars);
+  void discrete_string_variables(StringMultiArrayConstView ds_vars);
   /// return an active discrete real variable
   Real discrete_real_variable(size_t index) const;
   /// return the active discrete real variables (Note: returns a view by
@@ -200,8 +200,9 @@ public:
   RealVector continuous_variables_view() const;
   /// return a mutable view of the active discrete integer variables
   IntVector discrete_int_variables_view() const;
+ 
   /// return a mutable view of the active discrete string variables
-  StringArray discrete_string_variables_view() const;
+  StringMultiArrayView discrete_string_variables_view() const;
   /// return a mutable view of the active discrete real variables
   RealVector discrete_real_variables_view() const;
 
@@ -276,9 +277,9 @@ public:
   /// set the inactive discrete variables
   void inactive_discrete_int_variables(const IntVector& idi_vars);
   /// return the inactive discrete variables
-  const StringArray& inactive_discrete_string_variables() const;
+  StringMultiArrayConstView inactive_discrete_string_variables() const;
   /// set the inactive discrete variables
-  void inactive_discrete_string_variables(const StringArray& ids_vars);
+  void inactive_discrete_string_variables(StringMultiArrayConstView ids_vars);
   /// return the inactive discrete variables
   const RealVector& inactive_discrete_real_variables() const;
   /// set the inactive discrete variables
@@ -331,9 +332,9 @@ public:
   /// set a variable within the all discrete array
   void all_discrete_int_variable(int adi_var, size_t index);
   /// returns a single array with all discrete variables
-  const StringArray& all_discrete_string_variables() const;
+  const StringMultiArray& all_discrete_string_variables() const;
   /// sets all discrete variables using a single array
-  void all_discrete_string_variables(const StringArray& ads_vars);
+  void all_discrete_string_variables(StringMultiArrayConstView ads_vars);
   /// set a variable within the all discrete array
   void all_discrete_string_variable(const String& ads_var, size_t index);
   /// returns a single array with all discrete variables
@@ -455,6 +456,10 @@ protected:
   RealVector continuousVars;
   /// the active discrete integer variables array view
   IntVector discreteIntVars;
+
+  /// the active discrete string variables view
+  StringMultiArrayView discreteStringVars;
+
   /// the active discrete real variables array view
   RealVector discreteRealVars;
 
@@ -462,6 +467,10 @@ protected:
   RealVector inactiveContinuousVars;
   /// the inactive discrete integer variables array view
   IntVector inactiveDiscreteIntVars;
+
+  /// the inactive discrete string variables view
+  StringMultiArrayView inactiveDiscreteStringVars;
+
   /// the inactive discrete real variables array view
   RealVector inactiveDiscreteRealVars;
 
@@ -526,7 +535,7 @@ inline size_t Variables::tv() const
 {
   return (variablesRep) ? variablesRep->allContinuousVars.length() +
     variablesRep->allDiscreteIntVars.length() +
-    variablesRep->allDiscreteStringVars.size()
+    variablesRep->allDiscreteStringVars.size() +
     variablesRep->allDiscreteRealVars.length() :
     allContinuousVars.length() + allDiscreteIntVars.length() +
     allDiscreteStringVars.size() + allDiscreteRealVars.length();
@@ -691,17 +700,19 @@ inline const String& Variables::discrete_string_variable(size_t index) const
 }
 
 
-inline const StringArray& Variables::discrete_string_variables() const
+inline StringMultiArrayConstView Variables::discrete_string_variables() const
 {
   return (variablesRep) ?
     variablesRep->discreteStringVars : discreteStringVars;
 }
 
 
-inline void Variables::discrete_string_variables(const StringArray& ds_vars)
+inline void Variables::discrete_string_variables(StringMultiArrayConstView ds_vars)
 {
-  if (variablesRep) variablesRep->discreteStringVars.assign(ds_vars);
-  else              discreteStringVars.assign(ds_vars);
+  if (variablesRep) variablesRep->discreteStringVars = ds_vars;
+  else              discreteStringVars = ds_vars;
+  // if (variablesRep) variablesRep->discreteStringVars.assign(ds_vars);
+  // else              discreteStringVars.assign(ds_vars);
 }
 
 
@@ -765,13 +776,9 @@ inline IntVector Variables::discrete_int_variables_view() const
 }
 
 
-inline StringArray Variables::discrete_string_variables_view() const
+inline StringMultiArrayView Variables::discrete_string_variables_view() const
 {
-  return (variablesRep) ?
-    StringArray(Teuchos::View, variablesRep->discreteStringVars.values(),
-	       variablesRep->discreteStringVars.length()) :
-    StringArray(Teuchos::View, discreteStringVars.values(),
-	       discreteStringVars.length());
+  return (variablesRep) ? variablesRep->discreteStringVars : discreteStringVars;
 }
 
 
@@ -1027,7 +1034,7 @@ inactive_discrete_int_variables(const IntVector& idi_vars)
 }
 
 
-inline const StringArray& Variables::inactive_discrete_string_variables() const
+inline StringMultiArrayConstView Variables::inactive_discrete_string_variables() const
 {
   return (variablesRep) ? variablesRep->inactiveDiscreteStringVars :
     inactiveDiscreteStringVars;
@@ -1035,10 +1042,10 @@ inline const StringArray& Variables::inactive_discrete_string_variables() const
 
 
 inline void Variables::
-inactive_discrete_string_variables(const StringArray& ids_vars)
+inactive_discrete_string_variables(StringMultiArrayConstView ids_vars)
 {
-  if (variablesRep) variablesRep->inactiveDiscreteStringVars.assign(ids_vars);
-  else              inactiveDiscreteStringVars.assign(ids_vars);
+  if (variablesRep) variablesRep->inactiveDiscreteStringVars = ids_vars;
+  else              inactiveDiscreteStringVars = ids_vars;
 }
 
 
@@ -1201,7 +1208,7 @@ inline void Variables::all_discrete_int_variable(int adi_var, size_t index)
 }
 
 
-inline const StringArray& Variables::all_discrete_string_variables() const
+inline const StringMultiArray& Variables::all_discrete_string_variables() const
 {
   return (variablesRep) ? variablesRep->allDiscreteStringVars :
     allDiscreteStringVars;
@@ -1209,10 +1216,10 @@ inline const StringArray& Variables::all_discrete_string_variables() const
 
 
 inline void Variables::
-all_discrete_string_variables(const StringArray& ads_vars)
+all_discrete_string_variables(StringMultiArrayConstView ads_vars)
 {
-  if (variablesRep) variablesRep->allDiscreteStringVars.assign(ads_vars);
-  else              allDiscreteStringVars.assign(ads_vars);
+  if (variablesRep) variablesRep->allDiscreteStringVars = ads_vars;
+  else              allDiscreteStringVars = ads_vars;
 }
 
 
@@ -1393,6 +1400,11 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& di_vector,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType3>& dr_vector)
 {
+  // BMA to MSE: blatant hacks to get ProblemDescDB compiling
+  const SizetArray active_totals(comp_totals);
+  //  StringMultiArrayConstView ds_vector;
+  StringArray ds_vector;
+
   size_t i, j,
     num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
     num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
@@ -1447,6 +1459,11 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
 			  const std::vector<ScalarType>& di_vector,
 			  const std::vector<ScalarType>& dr_vector)
 {
+  // BMA to MSE: blatant hacks to get ProblemDescDB compiling
+  const SizetArray active_totals(comp_totals);
+  //  StringMultiArrayConstView ds_vector;
+  StringArray ds_vector;
+
   size_t i, j,
     num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
     num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
