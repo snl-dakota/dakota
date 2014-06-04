@@ -222,6 +222,8 @@ public:
   /// by an integer range(from the \c discrete_design_range \c
   /// upper_bounds specification in \ref VarDV)
   IntVector discreteDesignRangeUpperBnds;
+  /// is each ddr var strictly categorical (true) or relaxable (false)
+  BitArray discreteDesignRangeCat;
 
   /// initial values for the discrete design variables defined by an
   /// integer set (from the \c discrete_design_set integer \c initial_point
@@ -248,9 +250,9 @@ public:
   /// \c set_values specification in \ref VarDV)
   RealSetArray discreteDesignSetReal;
 
-  /// is each ddsi variable strictly categorical (true) or relaxable (false)
+  /// is each ddsi var strictly categorical (true) or relaxable (false)
   BitArray discreteDesignSetIntCat;
-  /// is each ddsr variable strictly categorical (true) or relaxable (false)
+  /// is each ddsr var strictly categorical (true) or relaxable (false)
   BitArray discreteDesignSetRealCat;
 
   /// labels array for the continuous design variables (from the
@@ -411,12 +413,19 @@ public:
   /// initial values of the histogram bin uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Bin_Histogram)
   RealVector histogramBinUncVars;
+
+
+  // discrete types
+
   /// lambdas (rate parameter) for the poisson uncertain variables (from
   /// the \c lambdas specification in \ref VarDAUV_Poisson)
   RealVector poissonUncLambdas;
   /// initial values of the poisson uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Poisson)
   IntVector poissonUncVars;
+  /// is each poisson var strictly categorical (true) or relaxable (false)
+  BitArray poissonUncCat;
+
   /// probabilities per each trial (p) for the binomial uncertain variables
   /// from the \c prob_per_trial specification in \ref VarDAUV_Binomial)
   RealVector binomialUncProbPerTrial;
@@ -426,6 +435,9 @@ public:
   /// initial values of the binomial uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Binomial)
   IntVector binomialUncVars;
+  /// is each binomial var strictly categorical (true) or relaxable (false)
+  BitArray binomialUncCat;
+
   /// probabilities per each trial (p) for the negative binomial
   /// uncertain variables from the \c prob_per_trial specification in
   /// \ref VarDAUV_Negative_Binomial)
@@ -436,12 +448,18 @@ public:
   /// initial values of the negative binomial uncertain variables (from the
   /// \c initial_point specification in \ref VarDAUV_Negative_Binomial)
   IntVector negBinomialUncVars;
+  /// is each negbinomial var strictly categorical (true) or relaxable (false)
+  BitArray negBinomialUncCat;
+
   /// probabilities per each trial (p) for the geometric uncertain variables
   /// from the \c prob_per_trial specification in \ref VarDAUV_Geometric)
   RealVector geometricUncProbPerTrial;
   /// initial values of the geometric uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Geometric)
   IntVector geometricUncVars;
+  /// is each geometric var strictly categorical (true) or relaxable (false)
+  BitArray geometricUncCat;
+
   /// Size of total populations (N) for the hypergeometric uncertain variables
   /// from the \c total_population specification in \ref VarDAUV_Hypergeometric)
   IntVector hyperGeomUncTotalPop;
@@ -455,6 +473,9 @@ public:
   /// initial values of the hypergeometric uncertain variables (from the
   /// \c initial_point specification in \ref VarDAUV_Hypergeometric)
   IntVector hyperGeomUncVars;
+  /// is each hypergeom var strictly categorical (true) or relaxable (false)
+  BitArray hyperGeomUncCat;
+
   /// an array containing a vector of (x,c) pairs for each point-based
   /// histogram uncertain variable (see discrete histogram in LHS
   /// manual; from the \c histogram_point_uncertain specification in
@@ -463,6 +484,14 @@ public:
   /// initial values of the histogram point uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Point_Histogram)
   RealVector histogramPointUncVars;
+
+  // BMA TODO: refactor histogram point into int and real variants
+
+  /// is each hupi var strictly categorical (true) or relaxable (false)
+  BitArray histogramUncPointIntCat;
+  /// is each hupr var strictly categorical (true) or relaxable (false)
+  BitArray histogramUncPointRealCat;
+
   /// correlation matrix for all uncertain variables (from the \c
   /// uncertain_correlation_matrix specification in \ref
   /// VarAUV_Correlations). This matrix specifies rank correlations
@@ -487,6 +516,7 @@ public:
   /// initial values of the continuous interval uncertain variables
   /// (from the \c initial_point specification in \ref VarCEUV_Interval)
   RealVector continuousIntervalUncVars;
+
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c discrete_interval_uncertain \c interval_probs
   /// specification in \ref VarDIUV)
@@ -502,6 +532,9 @@ public:
   /// initial values of the discrete interval uncertain variables
   /// (from the \c initial_point specification in \ref VarDIUV)
   IntVector discreteIntervalUncVars;
+  /// is each diu var strictly categorical (true) or relaxable (false)
+  BitArray discreteIntervalUncCat;
+
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
   /// defined by an integer set (from the \c discrete_uncertain_set_integer
@@ -510,6 +543,9 @@ public:
   /// initial values of the discrete uncertain set integer variables
   /// (from the \c initial_point specification in \ref VarDUSIV)
   IntVector discreteUncSetIntVars;
+  /// is each dusi var strictly categorical (true) or relaxable (false)
+  BitArray discreteUncSetIntCat;
+
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
   /// defined by a real set (from the \c discrete_uncertain_set_real
@@ -518,6 +554,8 @@ public:
   /// initial values of the discrete uncertain set real variables
   /// (from the \c initial_point specification in \ref VarDUSRV)
   RealVector discreteUncSetRealVars;
+  /// is each dusr var strictly categorical (true) or relaxable (false)
+  BitArray discreteUncSetRealCat;
 
   // State arrays
 
@@ -530,6 +568,7 @@ public:
   /// upper bounds array for the continuous state variables (from the
   /// \c continuous_state \c upper_bounds specification in \ref VarSV)
   RealVector continuousStateUpperBnds;
+
   /// initial values for the discrete state variables defined by an
   /// integer range (from the \c discrete_state_range \c initial_point
   /// specification in \ref VarSV)
@@ -542,6 +581,9 @@ public:
   /// by an integer range(from the \c discrete_state_range \c
   /// upper_bounds specification in \ref VarSV)
   IntVector discreteStateRangeUpperBnds;
+  /// is each dsr var strictly categorical (true) or relaxable (false)
+  BitArray discreteStateRangeCat;
+
   /// initial values for the discrete state variables defined by an
   /// integer set (from the \c discrete_state_set_integer \c initial_point
   /// specification in \ref VarSV)
@@ -550,6 +592,7 @@ public:
   /// real set (from the \c discrete_state_set_real \c initial_point
   /// specification in \ref VarSV)
   RealVector discreteStateSetRealVars;
+
   /// complete set of admissible values for each of the discrete state
   /// variables defined by an integer set (from the
   /// \c discrete_state_set_integer \c set_values specification in \ref VarSV)
@@ -558,6 +601,12 @@ public:
   /// variables defined by a real set (from the \c discrete_state_set_real
   /// \c set_values specification in \ref VarSV)
   RealSetArray discreteStateSetReal;
+
+  /// is each dssi var strictly categorical (true) or relaxable (false)
+  BitArray discreteStateSetIntCat;
+  /// is each dssr var strictly categorical (true) or relaxable (false)
+  BitArray discreteStateSetRealCat;
+
   /// labels array for the continuous state variables (from the
   /// \c continuous_state \c descriptors specification in \ref VarSV)
   StringArray continuousStateLabels;

@@ -1463,7 +1463,7 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 
     KW<BitArray, DataVariablesRep> *kw;
     if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L)))
-	return dbRep->dataVariablesIter->dataVariablesRep->*kw->p;
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
 
   Bad_name(entry_name, "get_ba");
