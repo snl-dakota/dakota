@@ -1,11 +1,11 @@
 KEYWORD01 environment
+	[ check ]
 	[ output_file STRING ]
 	[ error_file STRING ]
 	[ read_restart STRING
 	  [ stop_restart INTEGER >= 0 ]
 	  ]
 	[ write_restart STRING ]
-	[ check ]
 	[ pre_run
 	  [ input STRING ]
 	  [ output STRING ]
@@ -19,8 +19,8 @@ KEYWORD01 environment
 	  [ output STRING ]
 	  ]
 	[ graphics ]
-	[ tabular_graphics_data
-	  [ tabular_graphics_file STRING ]
+	[ tabular_data ALIAS tabular_graphics_data
+	  [ tabular_data_file ALIAS tabular_graphics_file STRING ]
 	  ]
 	[ output_precision INTEGER >= 0 ]
 	[ results_output

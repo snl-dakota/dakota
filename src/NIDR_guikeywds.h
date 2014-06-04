@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1246 distinct keywords (plus 180 aliases) **/
+/** 1246 distinct keywords (plus 182 aliases) **/
 
 static GuiKeyWord
 	kw_1[2] = {
@@ -13,7 +13,7 @@ static GuiKeyWord
 		{"output",11,0,2,0,19}
 		},
 	kw_3[1] = {
-		{"stop_restart",0x29,0,1,0,9}
+		{"stop_restart",0x29,0,1,0,11}
 		},
 	kw_4[1] = {
 		{"results_output_file",11,0,1,0,43,0,0.,0.,0.,0,"{File name for results output} EnvCommands.html#EnvOutput"}
@@ -22,24 +22,26 @@ static GuiKeyWord
 		{"input",11,0,1,0,23},
 		{"output",11,0,2,0,25}
 		},
-	kw_6[1] = {
-		{"tabular_graphics_file",11,0,1,0,37,0,0.,0.,0.,0,"{File name for tabular graphics data} EnvCommands.html#EnvOutput"}
+	kw_6[2] = {
+		{"tabular_data_file",11,0,1,0,37},
+		{"tabular_graphics_file",3,0,1,0,36}
 		},
-	kw_7[14] = {
-		{"check",8,0,5,0,13},
-		{"error_file",11,0,2,0,5},
+	kw_7[15] = {
+		{"check",8,0,1,0,3},
+		{"error_file",11,0,3,0,7},
 		{"graphics",8,0,9,0,33,0,0.,0.,0.,0,"{Graphics flag} EnvCommands.html#EnvOutput"},
 		{"method_pointer",3,0,13,0,44},
-		{"output_file",11,0,1,0,3},
+		{"output_file",11,0,2,0,5},
 		{"output_precision",0x29,0,11,0,39,0,0.,0.,0.,0,"{Numeric output precision} EnvCommands.html#EnvOutput"},
 		{"post_run",8,2,8,0,27,kw_1},
 		{"pre_run",8,2,6,0,15,kw_2},
-		{"read_restart",11,1,3,0,7,kw_3},
+		{"read_restart",11,1,4,0,9,kw_3},
 		{"results_output",8,1,12,0,41,kw_4,0.,0.,0.,0,"{Enable results output} EnvCommands.html#EnvOutput"},
 		{"run",8,2,7,0,21,kw_5},
-		{"tabular_graphics_data",8,1,10,0,35,kw_6,0.,0.,0.,0,"{Tabulation of graphics data} EnvCommands.html#EnvOutput"},
+		{"tabular_data",8,2,10,0,35,kw_6},
+		{"tabular_graphics_data",0,2,10,0,34,kw_6},
 		{"top_method_pointer",11,0,13,0,45,0,0.,0.,0.,0,"{Method pointer} EnvCommands.html#EnvMethPtr"},
-		{"write_restart",11,0,4,0,11}
+		{"write_restart",11,0,5,0,13}
 		},
 	kw_8[1] = {
 		{"cache_tolerance",10,0,1,0,2293}
@@ -2356,7 +2358,7 @@ static GuiKeyWord
 		{"weibull_uncertain",0x19,7,18,0,2035,kw_326,0.,0.,0.,0,"{weibull uncertain variables} VarCommands.html#VarCAUV_Weibull","Continuous Aleatory Uncertain"}
 		},
 	kw_328[6] = {
-		{"environment",0x108,14,1,1,1,kw_7,0.,0.,0.,0,"{Environment} The environment specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. EnvCommands.html"},
+		{"environment",0x108,15,1,1,1,kw_7,0.,0.,0.,0,"{Environment} The environment specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. EnvCommands.html"},
 		{"interface",0x308,9,5,5,2213,kw_22,0.,0.,0.,0,"{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. InterfCommands.html"},
 		{"method",0x308,90,2,2,47,kw_245,0.,0.,0.,0,"{Method} A method specifies the name and controls of an iterative procedure, e.g., a sensitivity analysis, uncertainty quantification, or optimization method. MethodCommands.html"},
 		{"model",8,7,3,3,1625,kw_275,0.,0.,0.,0,"{Model} A model consists of a model type and maps specified variables through an interface to generate responses. ModelCommands.html"},

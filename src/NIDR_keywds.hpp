@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1246 distinct keywords (plus 180 aliases) **/
+/** 1246 distinct keywords (plus 182 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -22,24 +22,26 @@ static KeyWord
 		{"input",11,0,1,0,0,0.,0.,0,N_stm(str,runInput)},
 		{"output",11,0,2,0,0,0.,0.,0,N_stm(str,runOutput)}
 		},
-	kw_6[1] = {
-		{"tabular_graphics_file",11,0,1,0,0,0.,0.,0,N_stm(str,tabularDataFile)}
+	kw_6[2] = {
+		{"tabular_data_file",11,0,1,0,0,0.,0.,0,N_stm(str,tabularDataFile)},
+		{"tabular_graphics_file",3,0,1,0,0,0.,0.,-1,N_stm(str,tabularDataFile)}
 		},
-	kw_7[14] = {
-		{"check",8,0,5,0,0,0.,0.,0,N_stm(true,checkFlag)},
-		{"error_file",11,0,2,0,0,0.,0.,0,N_stm(str,errorFile)},
+	kw_7[15] = {
+		{"check",8,0,1,0,0,0.,0.,0,N_stm(true,checkFlag)},
+		{"error_file",11,0,3,0,0,0.,0.,0,N_stm(str,errorFile)},
 		{"graphics",8,0,9,0,0,0.,0.,0,N_stm(true,graphicsFlag)},
-		{"method_pointer",3,0,13,0,0,0.,0.,9,N_stm(str,topMethodPointer)},
-		{"output_file",11,0,1,0,0,0.,0.,0,N_stm(str,outputFile)},
+		{"method_pointer",3,0,13,0,0,0.,0.,10,N_stm(str,topMethodPointer)},
+		{"output_file",11,0,2,0,0,0.,0.,0,N_stm(str,outputFile)},
 		{"output_precision",0x29,0,11,0,0,0.,0.,0,N_stm(int,outputPrecision)},
 		{"post_run",8,2,8,0,kw_1,0.,0.,0,N_stm(true,postRunFlag)},
 		{"pre_run",8,2,6,0,kw_2,0.,0.,0,N_stm(true,preRunFlag)},
-		{"read_restart",11,1,3,0,kw_3,0.,0.,0,N_stm(str,readRestart)},
+		{"read_restart",11,1,4,0,kw_3,0.,0.,0,N_stm(str,readRestart)},
 		{"results_output",8,1,12,0,kw_4,0.,0.,0,N_stm(true,resultsOutputFlag)},
 		{"run",8,2,7,0,kw_5,0.,0.,0,N_stm(true,runFlag)},
-		{"tabular_graphics_data",8,1,10,0,kw_6,0.,0.,0,N_stm(true,tabularDataFlag)},
+		{"tabular_data",8,2,10,0,kw_6,0.,0.,0,N_stm(true,tabularDataFlag)},
+		{"tabular_graphics_data",0,2,10,0,kw_6,0.,0.,-1,N_stm(true,tabularDataFlag)},
 		{"top_method_pointer",11,0,13,0,0,0.,0.,0,N_stm(str,topMethodPointer)},
-		{"write_restart",11,0,4,0,0,0.,0.,0,N_stm(str,writeRestart)}
+		{"write_restart",11,0,5,0,0,0.,0.,0,N_stm(str,writeRestart)}
 		},
 	kw_8[1] = {
 		{"cache_tolerance",10,0,1,0,0,0.,0.,0,N_ifm(Real,nearbyEvalCacheTol)}
@@ -2235,7 +2237,7 @@ static KeyWord
 		{"weibull_uncertain",0x19,7,18,0,kw_343,0.,0.,0,N_vam(pintz,numWeibullUncVars)}
 		},
 	kw_345[6] = {
-		{"environment",0x108,14,1,1,kw_7,0.,0.,0,NIDRProblemDescDB::env_start},
+		{"environment",0x108,15,1,1,kw_7,0.,0.,0,NIDRProblemDescDB::env_start},
 		{"interface",0x308,9,5,5,kw_22,0.,0.,0,N_ifm3(start,0,stop)},
 		{"method",0x308,90,2,2,kw_261,0.,0.,0,N_mdm3(start,0,stop)},
 		{"model",8,7,3,3,kw_292,0.,0.,0,N_mom3(start,0,stop)},
