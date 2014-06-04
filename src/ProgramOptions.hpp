@@ -43,6 +43,10 @@ public:
   /// could be used by library clients to late update data)
   ProgramOptions();
 
+  /// constructor that accepts world rank to help with I/O control; allows 
+  /// default constructed ProgramOptions to get rank in library mode
+  ProgramOptions(int world_rank);
+
   /// standard constructor that uses a CommandLineHandler to parse
   /// user options
   ProgramOptions(int argc, char* argv[], int world_rank);
@@ -116,6 +120,9 @@ public:
 
   //- Set functions
   
+  /// set the world rank to govern early conditional output
+  void world_rank(int world_rank);
+
   /// set Dakota input file base name (no tag)
   void input_file(const String& in_file);
   /// set alternate Dakota input string literal
@@ -188,6 +195,9 @@ private:
   /// verify consistency of user settings (helpful for library mode especially)
   void validate();
 
+
+  /// cache the world rank to help with conditional output
+  int worldRank;
 
   // Any of this data coming from command line parsing is only valid
   // on rank 0 initially, then broadcast

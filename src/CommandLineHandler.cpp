@@ -373,11 +373,11 @@ void CommandLineHandler::initialize_options()
 
 
   // The write restart filename string is optional.  
-  // write_restart not invoked: retrieve returns "dakota.rst"
-  // write_restart no value:    retrieve returns "dakota.rst"
+  // write_restart not invoked: retrieve returns NULL
+  // write_restart no value:    retrieve returns enpty string
   // write_restart with value:  retrieve returns value
   enroll("write_restart", GetLongOpt::OptionalValue,
-         "Write a new DAKOTA restart file $val", "dakota.rst");
+         "Write a new DAKOTA restart file $val", NULL);
 
   //enroll("mpi", GetLongOpt::Valueless,
   //       "Turn on message passing within an executable built with MPI", 0);
