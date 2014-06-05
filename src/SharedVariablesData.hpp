@@ -99,6 +99,11 @@ private:
   /// with or without discrete relaxation
   void initialize_all_ids();
 
+  /// initialize {c,di,ds,dr}vStart and num{D,DI,DS,DR}V
+  void initialize_active_start_counts();
+  /// initialize i{c,di,ds,dr}vStart and numI{D,DI,DS,DR}V
+  void initialize_inactive_start_counts();
+
   /// initialize activeVarsCompsTotals given {c,di,dr}vStart and num{C,DI,DR}V
   void initialize_active_components();
   /// initialize inactiveVarsCompsTotals given i{c,di,dr}vStart and
@@ -275,6 +280,20 @@ inline void SharedVariablesDataRep::size_all_types()
 }
 
 
+inline void SharedVariablesDataRep::initialize_active_start_counts()
+{
+  view_start_counts(variablesView.first, cvStart, divStart, dsvStart, drvStart,
+		    numCV, numDIV, numDSV, numDRV);
+}
+
+
+inline void SharedVariablesDataRep::initialize_inactive_start_counts()
+{
+  view_start_counts(variablesView.second, icvStart, idivStart, idsvStart,
+		    idrvStart, numICV, numIDIV, numIDSV, numIDRV);
+}
+
+
 /// Container class encapsulating variables data that can be shared
 /// among a set of Variables instances.
 
@@ -321,6 +340,11 @@ public:
 
   /// create a deep copy of the current object and return by value
   SharedVariablesData copy() const;
+
+  /// initialize start index and counts for active variables
+  void initialize_active_start_counts();
+  /// initialize start index and counts for inactive variables
+  void initialize_inactive_start_counts();
 
   /// initialize the active components totals given active variable counts
   void initialize_active_components();
@@ -547,6 +571,14 @@ operator=(const SharedVariablesData& svd)
     ++svdRep->referenceCount;
   return *this;
 }
+
+
+void SharedVariablesData::initialize_active_start_counts()
+{ svdRep->initialize_active_start_counts(); }
+
+
+void SharedVariablesData::initialize_inactive_start_counts()
+{ svdRep->initialize_inactive_start_counts(); }
 
 
 inline void SharedVariablesData::initialize_active_components()

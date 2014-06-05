@@ -417,20 +417,15 @@ protected:
   Variables(BaseConstructor, const SharedVariablesData& svd);
 
   //
-  //- Heading: Virtual functions
-  //
-
-  /// construct active views of all variables arrays
-  virtual void build_active_views();
-  /// construct inactive views of all variables arrays
-  virtual void build_inactive_views();
-
-  //
   //- Heading: Member functions
   //
 
   /// construct active/inactive views of all variables arrays
   void build_views();
+  /// construct active views of all variables arrays
+  void build_active_views();
+  /// construct inactive views of all variables arrays
+  void build_inactive_views();
 
   //
   //- Heading: Data

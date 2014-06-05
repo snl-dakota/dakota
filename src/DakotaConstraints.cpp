@@ -252,24 +252,73 @@ Constraints::~Constraints()
 
 void Constraints::build_active_views()
 {
-  if (constraintsRep)
-    constraintsRep->build_active_views(); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual build_active_views"
-	 << "() function.\nNo default defined at base class." << std::endl;
+  // Initialize active views
+  if (sharedVarsData.view().first == EMPTY) {
+    Cerr << "Error: active view cannot be EMPTY in VarConstraints."<< std::endl;
     abort_handler(-1);
+  }
+  sharedVarsData.initialize_active_start_counts();
+  sharedVarsData.initialize_active_components();
+
+  size_t num_cv  = sharedVarsData.cv(),    num_div = sharedVarsData.div(),
+       /*num_dsv = sharedVarsData.dsv(),*/ num_drv = sharedVarsData.drv();
+  if (num_cv) {
+    size_t cv_start = sharedVarsData.cv_start();
+    continuousLowerBnds = RealVector(Teuchos::View,
+      &allContinuousLowerBnds[cv_start], num_cv);
+    continuousUpperBnds = RealVector(Teuchos::View,
+      &allContinuousUpperBnds[cv_start], num_cv);
+  }
+  if (num_div) {
+    size_t div_start = sharedVarsData.div_start();
+    discreteIntLowerBnds = IntVector(Teuchos::View,
+      &allDiscreteIntLowerBnds[div_start], num_div);
+    discreteIntUpperBnds = IntVector(Teuchos::View,
+      &allDiscreteIntUpperBnds[div_start], num_div);
+  }
+  if (num_drv) {
+    size_t drv_start = sharedVarsData.drv_start();
+    discreteRealLowerBnds = RealVector(Teuchos::View,
+      &allDiscreteRealLowerBnds[drv_start], num_drv);
+    discreteRealUpperBnds = RealVector(Teuchos::View,
+      &allDiscreteRealUpperBnds[drv_start], num_drv);
   }
 }
 
 
 void Constraints::build_inactive_views()
 {
-  if (constraintsRep)
-    constraintsRep->build_inactive_views(); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual build_inactive_views"
-	 << "() function.\nNo default defined at base class." << std::endl;
+  // Initialize inactive views
+  if (sharedVarsData.view().second == MIXED_ALL ||
+      sharedVarsData.view().second == RELAXED_ALL) {
+    Cerr << "Error: inactive view cannot be ALL in VarConstraints."<< std::endl;
     abort_handler(-1);
+  }
+  sharedVarsData.initialize_inactive_start_counts();
+  sharedVarsData.initialize_inactive_components();
+
+  size_t num_icv  = sharedVarsData.icv(),    num_idiv = sharedVarsData.idiv(),
+       /*num_idsv = sharedVarsData.idsv(),*/ num_idrv = sharedVarsData.idrv();
+  if (num_icv) {
+    size_t icv_start = sharedVarsData.icv_start();
+    inactiveContinuousLowerBnds = RealVector(Teuchos::View,
+      &allContinuousLowerBnds[icv_start], num_icv);
+    inactiveContinuousUpperBnds = RealVector(Teuchos::View,
+      &allContinuousUpperBnds[icv_start], num_icv);
+  }
+  if (num_idiv) {
+    size_t idiv_start = sharedVarsData.idiv_start();
+    inactiveDiscreteIntLowerBnds = IntVector(Teuchos::View,
+      &allDiscreteIntLowerBnds[idiv_start], num_idiv);
+    inactiveDiscreteIntUpperBnds = IntVector(Teuchos::View,
+      &allDiscreteIntUpperBnds[idiv_start], num_idiv);
+  }
+  if (num_idrv) {
+    size_t idrv_start = sharedVarsData.idrv_start();
+    inactiveDiscreteRealLowerBnds = RealVector(Teuchos::View,
+      &allDiscreteRealLowerBnds[idrv_start], num_idrv);
+    inactiveDiscreteRealUpperBnds = RealVector(Teuchos::View,
+      &allDiscreteRealUpperBnds[idrv_start], num_idrv);
   }
 }
 
@@ -437,8 +486,23 @@ void Constraints::reshape(const SizetArray& vc_totals)
   if (constraintsRep) // envelope
     constraintsRep->reshape(vc_totals);
   else { // base class portion invoked by derived class redefinitions
+
+    size_t num_acv, num_adiv, num_adsv, num_adrv;
+    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+    allContinuousLowerBnds.resize(num_acv);
+    allContinuousUpperBnds.resize(num_acv);
+    allDiscreteIntLowerBnds.resize(num_adiv);
+    allDiscreteIntUpperBnds.resize(num_adiv);
+    //allDiscreteStringLowerBnds.resize(num_adsv);
+    //allDiscreteStringUpperBnds.resize(num_adsv);
+    allDiscreteRealLowerBnds.resize(num_adrv);
+    allDiscreteRealUpperBnds.resize(num_adrv);
+
+    build_views();
+
     // reshape base class data that requires number of active variables
-    // (follows build_views() call in derived reshape() definitions)
+    // (follows build_views())
     size_t num_av = continuousLowerBnds.length() +
       discreteIntLowerBnds.length() + discreteRealLowerBnds.length();
     linearIneqConCoeffs.reshape(numLinearIneqCons, num_av);

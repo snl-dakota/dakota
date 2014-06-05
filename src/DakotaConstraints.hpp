@@ -74,9 +74,6 @@ public:
   /// read a variable constraints object from an std::istream
   virtual void read(std::istream& s);
 
-  /// reshape the lower/upper bound arrays within the Constraints hierarchy
-  virtual void reshape(const SizetArray& vc_totals);
-
   //
   //- Heading: Member functions
   //
@@ -256,6 +253,8 @@ public:
   /// Constraints hierarchy
   void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  /// reshape the lower/upper bound arrays
+  void reshape(const SizetArray& vc_totals);
 
   /// sets the inactive view based on higher level (nested) context
   void inactive_view(short view2);
@@ -280,20 +279,15 @@ protected:
   Constraints(BaseConstructor, const SharedVariablesData& svd);
 
   //
-  //- Heading: Virtual functions
-  //
-
-  /// construct active views of all variables bounds arrays
-  virtual void build_active_views();
-  /// construct inactive views of all variables bounds arrays
-  virtual void build_inactive_views();
-
-  //
   //- Heading: Member functions
   //
 
   /// construct active/inactive views of all variables arrays
   void build_views();
+  /// construct active views of all variables bounds arrays
+  void build_active_views();
+  /// construct inactive views of all variables bounds arrays
+  void build_inactive_views();
 
   /// perform checks on user input, convert linear constraint
   /// coefficient input to matrices, and assign defaults
