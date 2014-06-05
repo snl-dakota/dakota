@@ -38,7 +38,7 @@ size_t ResultsID::increment_id(const std::string& method_name,
   // if not found initialize to zero, then increment
   if (it == idMap.end()) {
     pair<map<pair<string, string>, size_t>::iterator, bool>
-      result = idMap.insert(make_pair<pair<string,string>, size_t>(name_id, 0));
+      result = idMap.insert(make_pair(name_id, 0));
     it = result.first;
   }
   return ++it->second;
@@ -52,7 +52,7 @@ size_t ResultsID::get_id(const std::string& method_name,
   // if not found initialize to one
   if (it == idMap.end()) {
     pair<map<pair<string, string>, size_t>::iterator, bool>
-      result = idMap.insert(make_pair<pair<string,string>, size_t>(name_id, 1));
+      result = idMap.insert(make_pair(name_id, 1));
     it = result.first;
   }
   return it->second;
