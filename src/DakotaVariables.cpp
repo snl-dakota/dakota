@@ -477,8 +477,9 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & view;
   SizetArray vars_comps_totals;
   ar & vars_comps_totals;
-
-  SharedVariablesData svd(view, vars_comps_totals);
+  BitArray all_relax_di, all_relax_dr;
+  ar & all_relax_di; ar & all_relax_dr;
+  SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
 
   if (variablesRep) { // should not occur in current usage
     if (sharedVarsData.view() != view) {
@@ -502,6 +503,9 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & variablesRep->allDiscreteIntVars;
   StringMultiArrayView adivl = all_discrete_int_variable_labels();
   ar & adivl;
+  ar & variablesRep->allDiscreteStringVars;
+  StringMultiArrayView adsvl = all_discrete_string_variable_labels();
+  ar & adsvl;
   ar & variablesRep->allDiscreteRealVars;
   StringMultiArrayView adrvl = all_discrete_real_variable_labels();
   ar & adrvl;
@@ -521,12 +525,17 @@ void Variables::save(Archive& ar, const unsigned int version) const
   else { // default implementation for letters
     ar & sharedVarsData.view();
     ar & sharedVarsData.components_totals();
+    ar & sharedVarsData.all_relaxed_discrete_int();
+    ar & sharedVarsData.all_relaxed_discrete_real();
     ar & allContinuousVars;
     StringMultiArrayView acvl = all_continuous_variable_labels();
     ar & acvl; 
     ar & allDiscreteIntVars;
     StringMultiArrayView adivl = all_discrete_int_variable_labels();
     ar & adivl;
+    ar & allDiscreteStringVars;
+    StringMultiArrayView adsvl = all_discrete_string_variable_labels();
+    ar & adsvl;
     ar & allDiscreteRealVars;
     StringMultiArrayView adrvl = all_discrete_real_variable_labels();
     ar & adrvl;
@@ -589,11 +598,23 @@ void Variables::read_annotated(std::istream& s)
   if (s.eof()) // exception handling since EOF may not be captured properly
     throw String("Empty record in Variables::read_annotated(std::istream&)");
   s >> view.second;
-  size_t i, num_vc_totals = 12;
+  size_t i, num_vc_totals = 16;
   SizetArray vars_comps_totals(num_vc_totals);
   for (i=0; i<num_vc_totals; ++i)
     s >> vars_comps_totals[i];
-  SharedVariablesData svd(view, vars_comps_totals);
+  size_t num_adiv
+    = vars_comps_totals[TOTAL_DDIV]  + vars_comps_totals[TOTAL_DAUIV]
+    + vars_comps_totals[TOTAL_DEUIV] + vars_comps_totals[TOTAL_DSIV],
+  num_adrv
+    = vars_comps_totals[TOTAL_DDRV]  + vars_comps_totals[TOTAL_DAURV]
+    + vars_comps_totals[TOTAL_DEURV] + vars_comps_totals[TOTAL_DSRV];
+  BitArray all_relax_di(num_adiv), all_relax_dr(num_adrv);
+  for (i=0; i<num_adiv; ++i)
+    s >> all_relax_di[i];
+  for (i=0; i<num_adrv; ++i)
+    s >> all_relax_dr[i];
+
+  SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
 
   if (variablesRep) { // should not occur in current usage
     if (sharedVarsData.view() != view) {
@@ -614,6 +635,8 @@ void Variables::read_annotated(std::istream& s)
 		      all_continuous_variable_labels());
   read_data_annotated(s, variablesRep->allDiscreteIntVars,
 		      all_discrete_int_variable_labels());
+  read_data_annotated(s, variablesRep->allDiscreteStringVars,
+		      all_discrete_string_variable_labels());
   read_data_annotated(s, variablesRep->allDiscreteRealVars,
 		      all_discrete_real_variable_labels());
   // rebuild active/inactive views
@@ -630,14 +653,23 @@ void Variables::write_annotated(std::ostream& s) const
   else { // default implementation for letters
     const std::pair<short,short>& view = sharedVarsData.view();
     const SizetArray& vc_totals = sharedVarsData.components_totals();
+    const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
+    const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
     s << view.first  << ' ' << view.second << ' ';
-    size_t i, num_vc_totals = vc_totals.size();
+    size_t i, num_vc_totals = vc_totals.size(),
+      num_adiv = all_relax_di.size(), num_adrv = all_relax_dr.size();
     for (i=0; i<num_vc_totals; ++i)
       s << vc_totals[i] << ' ';
+    for (i=0; i<num_adiv; ++i)
+      s << all_relax_di[i];
+    for (i=0; i<num_adrv; ++i)
+      s << all_relax_dr[i];
     write_data_annotated(s, allContinuousVars,
 			 all_continuous_variable_labels());
     write_data_annotated(s, allDiscreteIntVars,
 			 all_discrete_int_variable_labels());
+    write_data_annotated(s, allDiscreteStringVars,
+			 all_discrete_string_variable_labels());
     write_data_annotated(s, allDiscreteRealVars,
 			 all_discrete_real_variable_labels());
     // types/ids not required
@@ -677,11 +709,24 @@ void Variables::read(MPIUnpackBuffer& s)
   if (buffer_has_letter) {
     std::pair<short,short> view;
     s >> view.first >> view.second;
-    size_t i, num_vc_totals = 12;
+    size_t i, num_vc_totals = 16;
     SizetArray vars_comps_totals(num_vc_totals);
     for (i=0; i<num_vc_totals; ++i)
       s >> vars_comps_totals[i];
-    SharedVariablesData svd(view, vars_comps_totals);
+    size_t num_adiv
+      = vars_comps_totals[TOTAL_DDIV]  + vars_comps_totals[TOTAL_DAUIV]
+      + vars_comps_totals[TOTAL_DEUIV] + vars_comps_totals[TOTAL_DSIV],
+    num_adrv
+      = vars_comps_totals[TOTAL_DDRV]  + vars_comps_totals[TOTAL_DAURV]
+      + vars_comps_totals[TOTAL_DEURV] + vars_comps_totals[TOTAL_DSRV];
+    BitArray all_relax_di(num_adiv), all_relax_dr(num_adrv);
+    for (i=0; i<num_adiv; ++i)
+      s >> all_relax_di[i];
+    for (i=0; i<num_adrv; ++i)
+      s >> all_relax_dr[i];
+
+    SharedVariablesData svd(view, vars_comps_totals, all_relax_di,
+			    all_relax_dr);
 
     if (variablesRep) { // should not occur in current usage
       if (sharedVarsData.view() != view) {
@@ -702,6 +747,8 @@ void Variables::read(MPIUnpackBuffer& s)
 	      all_continuous_variable_labels());
     read_data(s, variablesRep->allDiscreteIntVars,
 	      all_discrete_int_variable_labels());
+    read_data(s, variablesRep->allDiscreteStringVars,
+	      all_discrete_string_variable_labels());
     read_data(s, variablesRep->allDiscreteRealVars,
 	      all_discrete_real_variable_labels());
     // rebuild active/inactive views
@@ -725,14 +772,26 @@ void Variables::write(MPIPackBuffer& s) const
     const std::pair<short,short>& view = variablesRep->sharedVarsData.view();
     const SizetArray& vc_totals
       = variablesRep->sharedVarsData.components_totals();
+    const BitArray& all_relax_di
+      = variablesRep->sharedVarsData.all_relaxed_discrete_int();
+    const BitArray& all_relax_dr
+      = variablesRep->sharedVarsData.all_relaxed_discrete_real();
     s << view.first << view.second;
-    size_t i, num_vc_totals = vc_totals.size();;
+    size_t i, num_vc_totals = vc_totals.size(),
+      num_adiv = all_relax_di.size(), num_adrv = all_relax_dr.size();
     for (i=0; i<num_vc_totals; ++i)
       s << vc_totals[i];
+    for (i=0; i<num_adiv; ++i)
+      s << all_relax_di[i];
+    for (i=0; i<num_adrv; ++i)
+      s << all_relax_dr[i];
+
     write_data(s, variablesRep->allContinuousVars,
 	       all_continuous_variable_labels());
     write_data(s, variablesRep->allDiscreteIntVars,
 	       all_discrete_int_variable_labels());
+    write_data(s, variablesRep->allDiscreteStringVars,
+	       all_discrete_string_variable_labels());
     write_data(s, variablesRep->allDiscreteRealVars,
 	       all_discrete_real_variable_labels());
     // types/ids not required
@@ -765,6 +824,8 @@ Variables Variables::copy(bool deep_svd) const
 
     vars.variablesRep->allContinuousVars   = variablesRep->allContinuousVars;
     vars.variablesRep->allDiscreteIntVars  = variablesRep->allDiscreteIntVars;
+    vars.variablesRep->allDiscreteStringVars
+      =  variablesRep->allDiscreteStringVars;
     vars.variablesRep->allDiscreteRealVars = variablesRep->allDiscreteRealVars;
 
     vars.variablesRep->build_views();
@@ -805,7 +866,8 @@ bool nearby(const Variables& vars1, const Variables& vars2, Real tol)
   // tolerance-based equality (ignore labels/types/ids).  Enforce exact equality
   // in discrete real, since these values should not be subject to roundoff.
   return ( nearby(v1_rep->allContinuousVars, v2_rep->allContinuousVars, tol) &&
-	   v1_rep->allDiscreteIntVars     == v2_rep->allDiscreteIntVars &&
+	   v1_rep->allDiscreteIntVars     == v2_rep->allDiscreteIntVars      &&
+	   v1_rep->allDiscreteStringVars  == v2_rep->allDiscreteStringVars   &&
 	   v1_rep->allDiscreteRealVars    == v2_rep->allDiscreteRealVars );
 }
 
@@ -827,9 +889,10 @@ bool operator==(const Variables& vars1, const Variables& vars2)
 
   // Require identical content in variable array lengths and values
   // (ignore labels/types/ids) using Teuchos::SerialDenseVector::operator==
-  return (v1_rep->allContinuousVars   == v2_rep->allContinuousVars  &&
-	  v1_rep->allDiscreteIntVars  == v2_rep->allDiscreteIntVars &&
-	  v1_rep->allDiscreteRealVars == v2_rep->allDiscreteRealVars);
+  return (v1_rep->allContinuousVars     == v2_rep->allContinuousVars     &&
+	  v1_rep->allDiscreteIntVars    == v2_rep->allDiscreteIntVars    &&
+	  v1_rep->allDiscreteStringVars == v2_rep->allDiscreteStringVars &&
+	  v1_rep->allDiscreteRealVars   == v2_rep->allDiscreteRealVars);
 }
 
 
@@ -844,6 +907,7 @@ std::size_t hash_value(const Variables& vars)
   boost::hash_combine(seed, v_rep->sharedVarsData.view());
   boost::hash_combine(seed, v_rep->allContinuousVars);
   boost::hash_combine(seed, v_rep->allDiscreteIntVars);
+  boost::hash_combine(seed, v_rep->allDiscreteStringVars);
   boost::hash_combine(seed, v_rep->allDiscreteRealVars);
   return seed;
 }

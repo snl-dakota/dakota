@@ -30,122 +30,123 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
 		    const SharedVariablesData& svd):
   Constraints(BaseConstructor(), problem_db, svd)
 {
-  const SizetArray& vc_totals = svd.components_totals();
-  size_t num_cdv = vc_totals[0], num_cauv = vc_totals[3],
-    num_ceuv  = vc_totals[6],
-    num_acv   = num_cdv + num_cauv + num_ceuv + vc_totals[9],
-    num_ddrv  = sharedVarsData.vc_lookup(DISCRETE_DESIGN_RANGE),
-    num_ddsiv = sharedVarsData.vc_lookup(DISCRETE_DESIGN_SET_INT),
-    num_dauiv = vc_totals[4], num_deuiv = vc_totals[7],
-    num_dsrv  = sharedVarsData.vc_lookup(DISCRETE_STATE_RANGE),
-    num_adiv  = vc_totals[1] + num_dauiv + num_deuiv + vc_totals[10],
-    num_ddsrv = vc_totals[2], num_daurv = vc_totals[5],
-    num_deurv = vc_totals[8],
-    num_adrv  = num_ddsrv + num_daurv + num_deurv + vc_totals[11];
+  size_t num_acv, num_adiv, num_adsv, num_adrv;
+  svd.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
 
   allContinuousLowerBnds.sizeUninitialized(num_acv);
   allContinuousUpperBnds.sizeUninitialized(num_acv);
   allDiscreteIntLowerBnds.sizeUninitialized(num_adiv);
   allDiscreteIntUpperBnds.sizeUninitialized(num_adiv);
+  //allDiscreteStringLowerBnds.sizeUninitialized(num_adsv);
+  //allDiscreteStringUpperBnds.sizeUninitialized(num_adsv);
   allDiscreteRealLowerBnds.sizeUninitialized(num_adrv);
   allDiscreteRealUpperBnds.sizeUninitialized(num_adrv);
 
   int start = 0;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_design.lower_bounds"), allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_design.upper_bounds"), allContinuousUpperBnds, start);
-  start += num_cdv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.lower_bounds"),
-    allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_cauv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.lower_bounds"),
-    allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_ceuv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_state.lower_bounds"), allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_state.upper_bounds"), allContinuousUpperBnds, start);
+  const RealVector& cdv_l_bnds = problem_db.get_rv(
+    "variables.continuous_design.lower_bounds");
+  const RealVector& cdv_u_bnds = problem_db.get_rv(
+    "variables.continuous_design.upper_bounds");
+  const RealVector& cauv_l_bnds = problem_db.get_rv(
+    "variables.continuous_aleatory_uncertain.lower_bounds");
+  const RealVector& cauv_u_bnds = problem_db.get_rv(
+    "variables.continuous_aleatory_uncertain.upper_bounds");
+  const RealVector& ceuv_l_bnds = problem_db.get_rv(
+    "variables.continuous_epistemic_uncertain.lower_bounds");
+  const RealVector& ceuv_u_bnds = problem_db.get_rv(
+    "variables.continuous_epistemic_uncertain.upper_bounds");
+  const RealVector& csv_l_bnds  = problem_db.get_rv(
+    "variables.continuous_state.lower_bounds");
+  const RealVector& csv_u_bnds  = problem_db.get_rv(
+    "variables.continuous_state.upper_bounds");
+  copy_data_partial(cdv_l_bnds, allContinuousLowerBnds, start);
+  copy_data_partial(cdv_u_bnds, allContinuousUpperBnds, start);
+  start += cdv_l_bnds.size();
+  copy_data_partial(cauv_l_bnds, allContinuousLowerBnds, start);
+  copy_data_partial(cauv_u_bnds, allContinuousUpperBnds, start);
+  start += cauv_l_bnds.size();
+  copy_data_partial(ceuv_l_bnds, allContinuousLowerBnds, start);
+  copy_data_partial(ceuv_u_bnds, allContinuousUpperBnds, start);
+  start += ceuv_l_bnds.size();
+  copy_data_partial(csv_l_bnds, allContinuousLowerBnds, start);
+  copy_data_partial(csv_u_bnds, allContinuousUpperBnds, start);
+  //start += csv_l_bnds.size();
 
   start = 0;
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_design_range.lower_bounds"),
-    allDiscreteIntLowerBnds, start);
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_design_range.upper_bounds"),
-    allDiscreteIntUpperBnds, start);
-  start += num_ddrv;
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_design_set_int.lower_bounds"),
-    allDiscreteIntLowerBnds, start);
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_design_set_int.upper_bounds"),
-    allDiscreteIntUpperBnds, start);
-  start += num_ddsiv;
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.lower_bounds"),
-    allDiscreteIntLowerBnds, start);
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.upper_bounds"),
-    allDiscreteIntUpperBnds, start);
-  start += num_dauiv;
-  copy_data_partial(problem_db.get_iv(
-   "variables.discrete_epistemic_uncertain_int.lower_bounds"),
-   allDiscreteIntLowerBnds, start);
-  copy_data_partial(problem_db.get_iv(
-   "variables.discrete_epistemic_uncertain_int.upper_bounds"),
-   allDiscreteIntUpperBnds, start);
-  start += num_deuiv;
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_state_range.lower_bounds"),
-    allDiscreteIntLowerBnds, start);
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_state_range.upper_bounds"),
-    allDiscreteIntUpperBnds, start);
-  start += num_dsrv;
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_state_set_int.lower_bounds"),
-    allDiscreteIntLowerBnds, start);
-  copy_data_partial(problem_db.get_iv(
-    "variables.discrete_state_set_int.upper_bounds"),
-    allDiscreteIntUpperBnds, start);
+  const IntVector& ddrv_l_bnds = problem_db.get_iv(
+    "variables.discrete_design_range.lower_bounds");
+  const IntVector& ddrv_u_bnds = problem_db.get_iv(
+    "variables.discrete_design_range.upper_bounds");
+  copy_data_partial(ddrv_l_bnds, allDiscreteIntLowerBnds, start);
+  copy_data_partial(ddrv_u_bnds, allDiscreteIntUpperBnds, start);
+  start += ddrv_l_bnds.size();
+  const IntVector& ddsiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_design_set_int.lower_bounds");
+  const IntVector& ddsiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_design_set_int.upper_bounds");
+  copy_data_partial(ddsiv_l_bnds, allDiscreteIntLowerBnds, start);
+  copy_data_partial(ddsiv_u_bnds, allDiscreteIntUpperBnds, start);
+  start += ddsiv_l_bnds.size();
+  const IntVector& dauiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_aleatory_uncertain_int.lower_bounds");
+  const IntVector& dauiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_aleatory_uncertain_int.upper_bounds");
+  copy_data_partial(dauiv_l_bnds, allDiscreteIntLowerBnds, start);
+  copy_data_partial(dauiv_u_bnds, allDiscreteIntUpperBnds, start);
+  start += dauiv_l_bnds.size();
+  const IntVector& deuiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_epistemic_uncertain_int.lower_bounds");
+  const IntVector& deuiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_epistemic_uncertain_int.upper_bounds");
+  copy_data_partial(deuiv_l_bnds, allDiscreteIntLowerBnds, start);
+  copy_data_partial(deuiv_u_bnds, allDiscreteIntUpperBnds, start);
+  start += deuiv_l_bnds.size();
+  const IntVector& dsrv_l_bnds = problem_db.get_iv(
+    "variables.discrete_state_range.lower_bounds");
+  const IntVector& dsrv_u_bnds = problem_db.get_iv(
+    "variables.discrete_state_range.upper_bounds");
+  copy_data_partial(dsrv_l_bnds, allDiscreteIntLowerBnds, start);
+  copy_data_partial(dsrv_u_bnds, allDiscreteIntUpperBnds, start);
+  start += dsrv_l_bnds.size();
+  const IntVector& dssiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_state_set_int.lower_bounds");
+  const IntVector& dssiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_state_set_int.upper_bounds");
+  copy_data_partial(dssiv_l_bnds, allDiscreteIntLowerBnds, start);
+  copy_data_partial(dssiv_u_bnds, allDiscreteIntUpperBnds, start);
+  //start += dssiv_l_bnds.size();
+
+  // discrete string variable bounds?  (not needed for exclusively categorical)
 
   start = 0;
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_design_set_real.lower_bounds"),
-    allDiscreteRealLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_design_set_real.upper_bounds"),
-    allDiscreteRealUpperBnds, start);
-  start += num_ddsrv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.lower_bounds"),
-    allDiscreteRealLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.upper_bounds"),
-    allDiscreteRealUpperBnds, start);
-  start += num_daurv;
-  copy_data_partial(problem_db.get_rv(
-   "variables.discrete_epistemic_uncertain_real.lower_bounds"),
-   allDiscreteRealLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-   "variables.discrete_epistemic_uncertain_real.upper_bounds"),
-   allDiscreteRealUpperBnds, start);
-  start += num_deurv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_state_set_real.lower_bounds"),
-    allDiscreteRealLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_state_set_real.upper_bounds"),
-    allDiscreteRealUpperBnds, start);
+  const RealVector& ddsrv_l_bnds = problem_db.get_rv(
+    "variables.discrete_design_set_real.lower_bounds");
+  const RealVector& ddsrv_u_bnds = problem_db.get_rv(
+    "variables.discrete_design_set_real.upper_bounds");
+  copy_data_partial(ddsrv_l_bnds, allDiscreteRealLowerBnds, start);
+  copy_data_partial(ddsrv_u_bnds, allDiscreteRealUpperBnds, start);
+  start += ddsrv_l_bnds.size();
+  const RealVector& daurv_l_bnds = problem_db.get_rv(
+    "variables.discrete_aleatory_uncertain_real.lower_bounds");
+  const RealVector& daurv_u_bnds = problem_db.get_rv(
+    "variables.discrete_aleatory_uncertain_real.upper_bounds");
+  copy_data_partial(daurv_l_bnds, allDiscreteRealLowerBnds, start);
+  copy_data_partial(daurv_u_bnds, allDiscreteRealUpperBnds, start);
+  start += daurv_l_bnds.size();
+  const RealVector& deurv_l_bnds = problem_db.get_rv(
+    "variables.discrete_epistemic_uncertain_real.lower_bounds");
+  const RealVector& deurv_u_bnds = problem_db.get_rv(
+    "variables.discrete_epistemic_uncertain_real.upper_bounds");
+  copy_data_partial(deurv_l_bnds, allDiscreteRealLowerBnds, start);
+  copy_data_partial(deurv_u_bnds, allDiscreteRealUpperBnds, start);
+  start += deurv_l_bnds.size();
+  const RealVector& dssrv_l_bnds = problem_db.get_rv(
+    "variables.discrete_state_set_real.lower_bounds");
+  const RealVector& dssrv_u_bnds = problem_db.get_rv(
+    "variables.discrete_state_set_real.upper_bounds");
+  copy_data_partial(dssrv_l_bnds, allDiscreteRealLowerBnds, start);
+  copy_data_partial(dssrv_u_bnds, allDiscreteRealUpperBnds, start);
+  //start += dssrv_l_bnds.size();
 
   // construct active/inactive views of all arrays
   build_views();
@@ -174,14 +175,21 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
 
 void MixedVarConstraints::reshape(const SizetArray& vc_totals)
 {
-  size_t num_acv  = vc_totals[0] + vc_totals[3] + vc_totals[6] + vc_totals[9],
-         num_adiv = vc_totals[1] + vc_totals[4] + vc_totals[7] + vc_totals[10],
-         num_adrv = vc_totals[2] + vc_totals[5] + vc_totals[8] + vc_totals[11];
+  size_t num_acv = vc_totals[TOTAL_CDV] + vc_totals[TOTAL_CAUV]
+    + vc_totals[TOTAL_CEUV] + vc_totals[TOTAL_CSV],
+  num_adiv = vc_totals[TOTAL_DDIV] + vc_totals[TOTAL_DAUIV]
+    + vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DSIV],
+  //num_adsv = vc_totals[TOTAL_DDSV] + vc_totals[TOTAL_DAUSV]
+  //  + vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DSSV],
+  num_adrv = vc_totals[TOTAL_DDRV] + vc_totals[TOTAL_DAURV]
+    + vc_totals[TOTAL_DEURV] + vc_totals[TOTAL_DSRV];
 
   allContinuousLowerBnds.resize(num_acv);
   allContinuousUpperBnds.resize(num_acv);
   allDiscreteIntLowerBnds.resize(num_adiv);
   allDiscreteIntUpperBnds.resize(num_adiv);
+  //allDiscreteStringLowerBnds.resize(num_adsv);
+  //allDiscreteStringUpperBnds.resize(num_adsv);
   allDiscreteRealLowerBnds.resize(num_adrv);
   allDiscreteRealUpperBnds.resize(num_adrv);
 
@@ -198,11 +206,14 @@ void MixedVarConstraints::build_active_views()
   // Don't bleed over any logic about supported view combinations; rather,
   // keep this class general and encapsulated.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv  = vc_totals[11];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddrv  = vc_totals[TOTAL_DDRV],   num_cauv  = vc_totals[TOTAL_CAUV],
+    num_dauiv = vc_totals[TOTAL_DAUIV],  num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],   num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deurv = vc_totals[TOTAL_DEURV],  num_csv   = vc_totals[TOTAL_CSV],
+    num_dsiv  = vc_totals[TOTAL_DSIV],   num_dsrv  = vc_totals[TOTAL_DSRV];
+    //num_ddsv  = vc_totals[TOTAL_DDSV],  num_dausv = vc_totals[TOTAL_DAUSV],
+    //num_deusv = vc_totals[TOTAL_DEUSV], num_dssv  = vc_totals[TOTAL_DSSV],
 
   // Initialize active views
   size_t cv_start, div_start, drv_start, num_cv, num_div, num_drv;
@@ -212,32 +223,44 @@ void MixedVarConstraints::build_active_views()
 	 << std::endl;
     abort_handler(-1);                                                break;
   case MIXED_ALL:
-    cv_start = div_start = drv_start = 0;
+    // start at the beginning
+    cv_start = div_start = /*dsv_start =*/ drv_start = 0;
     num_cv  = num_cdv  + num_cauv  + num_ceuv  + num_csv;
     num_div = num_ddiv + num_dauiv + num_deuiv + num_dsiv;
+    //num_dsv = num_ddsv + num_dausv + num_deusv + num_dssv;
     num_drv = num_ddrv + num_daurv + num_deurv + num_dsrv;            break;
   case MIXED_DESIGN:
-    cv_start = div_start = drv_start = 0;
-    num_cv  = num_cdv;
-    num_div = num_ddiv;
+    // start at the beginning
+    cv_start = div_start = /*dsv_start =*/ drv_start = 0;
+    num_cv  = num_cdv;  num_div = num_ddiv;
+    //num_dsv = num_ddsv;
     num_drv = num_ddrv;                                               break;
   case MIXED_ALEATORY_UNCERTAIN:
+    // skip over the design variables
     cv_start  = num_cdv;  num_cv  = num_cauv;
     div_start = num_ddiv; num_div = num_dauiv;
+    //dsv_start = num_ddsv; num_dsv = num_dausv;
     drv_start = num_ddrv; num_drv = num_daurv;                        break;
   case MIXED_EPISTEMIC_UNCERTAIN:
+    // skip over the design and aleatory uncertain variables
     cv_start  = num_cdv  + num_cauv;  num_cv  = num_ceuv;
     div_start = num_ddiv + num_dauiv; num_div = num_deuiv;
+    //dsv_start = num_ddsv + num_dausv; num_dsv = num_deusv;
     drv_start = num_ddrv + num_daurv; num_drv = num_deurv;            break;
   case MIXED_UNCERTAIN:
-    cv_start  = num_cdv;  num_cv  = num_cauv + num_ceuv;
+    // skip over the design variables
+    cv_start  = num_cdv;  num_cv  = num_cauv  + num_ceuv;
     div_start = num_ddiv; num_div = num_dauiv + num_deuiv;
+    //dsv_start = num_ddsv; num_dsv = num_dausv + num_deusv;
     drv_start = num_ddrv; num_drv = num_daurv + num_deurv;            break;
   case MIXED_STATE:
+    // skip over all the design and uncertain variables
     cv_start  = num_cdv  + num_cauv  + num_ceuv;  num_cv  = num_csv;
     div_start = num_ddiv + num_dauiv + num_deuiv; num_div = num_dsiv;
+    //dsv_start = num_ddsv + num_dausv + num_deusv; num_dsv = num_dssv;
     drv_start = num_ddrv + num_daurv + num_deurv; num_drv = num_dsrv; break;
   }
+
   if (num_cv) {
     continuousLowerBnds = RealVector(Teuchos::View,
       &allContinuousLowerBnds[cv_start], num_cv);
@@ -265,44 +288,58 @@ void MixedVarConstraints::build_inactive_views()
   // Don't bleed over any logic about supported view combinations; rather,
   // keep this class general and encapsulated.
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv  = vc_totals[11];
+  size_t  num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddrv  = vc_totals[TOTAL_DDRV],    num_cauv  = vc_totals[TOTAL_CAUV],
+    num_dauiv = vc_totals[TOTAL_DAUIV],   num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],    num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deurv = vc_totals[TOTAL_DEURV],   num_csv   = vc_totals[TOTAL_CSV],
+    num_dsiv  = vc_totals[TOTAL_DSIV],    num_dsrv  = vc_totals[TOTAL_DSRV];
+  //num_ddsv  = vc_totals[TOTAL_DDSV],    num_dausv = vc_totals[TOTAL_DAUSV],
+  //num_deusv = vc_totals[TOTAL_DEUSV],   num_dssv  = vc_totals[TOTAL_DSSV],
 
   // Initialize inactive views
-  size_t icv_start, idiv_start, idrv_start, num_icv, num_idiv, num_idrv;
+  size_t icv_start, idiv_start, idsv_start, idrv_start,
+         num_icv,   num_idiv, /*num_idsv,*/ num_idrv;
   switch (sharedVarsData.view().second) {
   case EMPTY:
-    icv_start = idiv_start = idrv_start = num_icv = num_idiv = num_idrv = 0;
+    icv_start = idiv_start = /*idsv_start =*/ idrv_start =
+      num_icv = num_idiv = /*num_idsv =*/ num_idrv = 0;
     break;
   case MIXED_ALL:
     Cerr << "Error: inactive view cannot be MIXED_ALL in MixedVarConstraints."
 	 << std::endl;
-    abort_handler(-1);                                                  break;
+    abort_handler(-1);                                                   break;
   case MIXED_DESIGN:
-    icv_start = idiv_start = idrv_start = 0;
-    num_icv  = num_cdv;
-    num_idiv = num_ddiv;
-    num_idrv = num_ddrv;                                                break;
+    // start at the beginning
+    icv_start = idiv_start = /*idsv_start =*/ idrv_start = 0;
+    num_icv  = num_cdv;  num_idiv = num_ddiv;
+    /*num_idsv = num_ddsv;*/ num_idrv = num_ddrv;                        break;
   case MIXED_ALEATORY_UNCERTAIN:
+    // skip over the design variables
     icv_start  = num_cdv;  num_icv  = num_cauv;
     idiv_start = num_ddiv; num_idiv = num_dauiv;
-    idrv_start = num_ddrv; num_idrv = num_daurv;                        break;
+    //idsv_start = num_ddsv; num_idsv = num_dausv;
+    idrv_start = num_ddrv; num_idrv = num_daurv;                         break;
   case MIXED_EPISTEMIC_UNCERTAIN:
+    // skip over the design and aleatory uncertain variables
     icv_start  = num_cdv  + num_cauv;  num_icv  = num_ceuv;
     idiv_start = num_ddiv + num_dauiv; num_idiv = num_deuiv;
-    idrv_start = num_ddrv + num_daurv; num_idrv = num_deurv;            break;
+    //idsv_start = num_ddsv + num_dausv; num_idsv = num_deusv;
+    idrv_start = num_ddrv + num_daurv; num_idrv = num_deurv;             break;
   case MIXED_UNCERTAIN:
-    icv_start  = num_cdv;  num_icv  = num_cauv + num_ceuv;
+    // skip over the design variables
+    icv_start  = num_cdv;  num_icv  = num_cauv  + num_ceuv;
     idiv_start = num_ddiv; num_idiv = num_dauiv + num_deuiv;
-    idrv_start = num_ddrv; num_idrv = num_daurv + num_deurv;            break;
+    //idsv_start = num_ddsv; num_idsv = num_dausv + num_deusv;
+    idrv_start = num_ddrv; num_idrv = num_daurv + num_deurv;             break;
   case MIXED_STATE:
+    // skip over all the design and uncertain variables
     icv_start  = num_cdv  + num_cauv  + num_ceuv;  num_icv  = num_csv;
     idiv_start = num_ddiv + num_dauiv + num_deuiv; num_idiv = num_dsiv;
-    idrv_start = num_ddrv + num_daurv + num_deurv; num_idrv = num_dsrv; break;
+    //idsv_start = num_ddsv + num_dausv + num_deusv; num_idsv = num_dssv;
+    idrv_start = num_ddrv + num_daurv + num_deurv; num_idrv = num_dsrv;  break;
   }
+
   if (num_icv) {
     inactiveContinuousLowerBnds = RealVector(Teuchos::View,
       &allContinuousLowerBnds[icv_start], num_icv);
@@ -327,88 +364,140 @@ void MixedVarConstraints::build_inactive_views()
 void MixedVarConstraints::read(std::istream& s)
 {
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv  = vc_totals[11];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    /*num_ddsv = vc_totals[TOTAL_DDSV],*/   num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    /*num_dausv = vc_totals[TOTAL_DAUSV],*/ num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    /*num_deusv = vc_totals[TOTAL_DEUSV],*/ num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    /*num_dssv = vc_totals[TOTAL_DSSV],*/   num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, /*adsv_offset = 0,*/ adrv_offset = 0;
 
-  read_data_partial(s, 0, num_cdv, allContinuousLowerBnds);
-  read_data_partial(s, 0, num_ddiv, allDiscreteIntLowerBnds);
-  read_data_partial(s, 0, num_ddrv, allDiscreteRealLowerBnds);
-  read_data_partial(s, num_cdv, num_cauv, allContinuousLowerBnds);
-  read_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntLowerBnds);
-  read_data_partial(s, num_ddrv, num_daurv, allDiscreteRealLowerBnds);
-  read_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousLowerBnds);
-  read_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntLowerBnds);
-  read_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealLowerBnds);
-  read_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
-		    allContinuousLowerBnds);
-  read_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
-		    allDiscreteIntLowerBnds);
-  read_data_partial(s, num_ddrv+num_daurv+num_deurv, num_dsrv,
-		    allDiscreteRealLowerBnds);
+  // lower bounds
+  read_data_partial(s, acv_offset,  num_cdv,  allContinuousLowerBnds);
+  read_data_partial(s, adiv_offset, num_ddiv, allDiscreteIntLowerBnds);
+  //read_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringLowerBnds);
+  read_data_partial(s, adrv_offset, num_ddrv, allDiscreteRealLowerBnds);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  /*adsv_offset += num_ddsv;*/ adrv_offset += num_ddrv;
 
-  read_data_partial(s, 0, num_cdv, allContinuousUpperBnds);
-  read_data_partial(s, 0, num_ddiv, allDiscreteIntUpperBnds);
-  read_data_partial(s, 0, num_ddrv, allDiscreteRealUpperBnds);
-  read_data_partial(s, num_cdv, num_cauv, allContinuousUpperBnds);
-  read_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntUpperBnds);
-  read_data_partial(s, num_ddrv, num_daurv, allDiscreteRealUpperBnds);
-  read_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousUpperBnds);
-  read_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntUpperBnds);
-  read_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealUpperBnds);
-  read_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
-		    allContinuousUpperBnds);
-  read_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
-		    allDiscreteIntUpperBnds);
-  read_data_partial(s, num_ddrv+num_daurv+num_deurv, num_dsrv,
-		    allDiscreteRealUpperBnds);
+  read_data_partial(s, acv_offset,  num_cauv,  allContinuousLowerBnds);
+  read_data_partial(s, adiv_offset, num_dauiv, allDiscreteIntLowerBnds);
+  //read_data_partial(s, adsv_offset, num_dausv, allDiscreteStringLowerBnds);
+  read_data_partial(s, adrv_offset, num_daurv, allDiscreteRealLowerBnds);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  read_data_partial(s, acv_offset,  num_ceuv,  allContinuousLowerBnds);
+  read_data_partial(s, adiv_offset, num_deuiv, allDiscreteIntLowerBnds);
+  //read_data_partial(s, adsv_offset, num_deusv, allDiscreteStringLowerBnds);
+  read_data_partial(s, adrv_offset, num_deurv, allDiscreteRealLowerBnds);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  read_data_partial(s, acv_offset,  num_csv,  allContinuousLowerBnds);
+  read_data_partial(s, adiv_offset, num_dsiv, allDiscreteIntLowerBnds);
+  //read_data_partial(s, adsv_offset, num_dssv, allDiscreteStringLowerBnds);
+  read_data_partial(s, adrv_offset, num_dsrv, allDiscreteRealLowerBnds);
+
+  // upper bounds
+  cv_offset = adiv_offset = /*adsv_offset =*/ adrv_offset = 0;
+  read_data_partial(s, acv_offset,  num_cdv,  allContinuousUpperBnds);
+  read_data_partial(s, adiv_offset, num_ddiv, allDiscreteIntUpperBnds);
+  //read_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringUpperBnds);
+  read_data_partial(s, adrv_offset, num_ddrv, allDiscreteRealUpperBnds);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  /*adsv_offset += num_ddsv;*/ adrv_offset += num_ddrv;
+
+  read_data_partial(s, acv_offset,  num_cauv,  allContinuousUpperBnds);
+  read_data_partial(s, adiv_offset, num_dauiv, allDiscreteIntUpperBnds);
+  //read_data_partial(s, adsv_offset, num_dausv, allDiscreteStringUpperBnds);
+  read_data_partial(s, adrv_offset, num_daurv, allDiscreteRealUpperBnds);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  read_data_partial(s, acv_offset,  num_ceuv,  allContinuousUpperBnds);
+  read_data_partial(s, adiv_offset, num_deuiv, allDiscreteIntUpperBnds);
+  //read_data_partial(s, adsv_offset, num_deusv, allDiscreteStringUpperBnds);
+  read_data_partial(s, adrv_offset, num_deurv, allDiscreteRealUpperBnds);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  read_data_partial(s, acv_offset,  num_csv,  allContinuousUpperBnds);
+  read_data_partial(s, adiv_offset, num_dsiv, allDiscreteIntUpperBnds);
+  //read_data_partial(s, adsv_offset, num_dssv, allDiscreteStringUpperBnds);
+  read_data_partial(s, adrv_offset, num_dsrv, allDiscreteRealUpperBnds);
 }
 
 
 void MixedVarConstraints::write(std::ostream& s) const
 {
   const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
-    num_ddrv  = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv = vc_totals[6], num_deuiv = vc_totals[7],
-    num_deurv = vc_totals[8], num_csv  = vc_totals[9], num_dsiv = vc_totals[10],
-    num_dsrv  = vc_totals[11];
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    /*num_ddsv = vc_totals[TOTAL_DDSV],*/   num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    /*num_dausv = vc_totals[TOTAL_DAUSV],*/ num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    /*num_deusv = vc_totals[TOTAL_DEUSV],*/ num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    /*num_dssv = vc_totals[TOTAL_DSSV],*/   num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, /*adsv_offset = 0,*/ adrv_offset = 0;
 
-  write_data_partial(s, 0, num_cdv, allContinuousLowerBnds);
-  write_data_partial(s, 0, num_ddiv, allDiscreteIntLowerBnds);
-  write_data_partial(s, 0, num_ddrv, allDiscreteRealLowerBnds);
-  write_data_partial(s, num_cdv, num_cauv, allContinuousLowerBnds);
-  write_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntLowerBnds);
-  write_data_partial(s, num_ddrv, num_daurv, allDiscreteRealLowerBnds);
-  write_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousLowerBnds);
-  write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntLowerBnds);
-  write_data_partial(s, num_ddrv+num_daurv, num_deurv,
-		     allDiscreteRealLowerBnds);
-  write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
-		     allContinuousLowerBnds);
-  write_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
-		    allDiscreteIntLowerBnds);
-  write_data_partial(s, num_ddrv+num_daurv+num_deurv, num_dsrv,
-		    allDiscreteRealLowerBnds);
+  // lower bounds
+  write_data_partial(s, acv_offset,  num_cdv,  allContinuousLowerBnds);
+  write_data_partial(s, adiv_offset, num_ddiv, allDiscreteIntLowerBnds);
+  //write_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringLowerBnds);
+  write_data_partial(s, adrv_offset, num_ddrv, allDiscreteRealLowerBnds);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  /*adsv_offset += num_ddsv;*/ adrv_offset += num_ddrv;
 
-  write_data_partial(s, 0, num_cdv, allContinuousUpperBnds);
-  write_data_partial(s, 0, num_ddiv, allDiscreteIntUpperBnds);
-  write_data_partial(s, 0, num_ddrv, allDiscreteRealUpperBnds);
-  write_data_partial(s, num_cdv, num_cauv, allContinuousUpperBnds);
-  write_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntUpperBnds);
-  write_data_partial(s, num_ddrv, num_daurv, allDiscreteRealUpperBnds);
-  write_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousUpperBnds);
-  write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntUpperBnds);
-  write_data_partial(s, num_ddrv+num_daurv, num_deurv,
-		     allDiscreteRealUpperBnds);
-  write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
-		     allContinuousUpperBnds);
-  write_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
-		    allDiscreteIntUpperBnds);
-  write_data_partial(s, num_ddrv+num_daurv+num_deurv, num_dsrv,
-		    allDiscreteRealUpperBnds);
+  write_data_partial(s, acv_offset,  num_cauv,  allContinuousLowerBnds);
+  write_data_partial(s, adiv_offset, num_dauiv, allDiscreteIntLowerBnds);
+  //write_data_partial(s, adsv_offset, num_dausv, allDiscreteStringLowerBnds);
+  write_data_partial(s, adrv_offset, num_daurv, allDiscreteRealLowerBnds);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  write_data_partial(s, acv_offset,  num_ceuv,  allContinuousLowerBnds);
+  write_data_partial(s, adiv_offset, num_deuiv, allDiscreteIntLowerBnds);
+  //write_data_partial(s, adsv_offset, num_deusv, allDiscreteStringLowerBnds);
+  write_data_partial(s, adrv_offset, num_deurv, allDiscreteRealLowerBnds);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  write_data_partial(s, acv_offset,  num_csv,  allContinuousLowerBnds);
+  write_data_partial(s, adiv_offset, num_dsiv, allDiscreteIntLowerBnds);
+  //write_data_partial(s, adsv_offset, num_dssv, allDiscreteStringLowerBnds);
+  write_data_partial(s, adrv_offset, num_dsrv, allDiscreteRealLowerBnds);
+
+  // upper bounds
+  cv_offset = adiv_offset = /*adsv_offset =*/ adrv_offset = 0;
+  write_data_partial(s, acv_offset,  num_cdv,  allContinuousUpperBnds);
+  write_data_partial(s, adiv_offset, num_ddiv, allDiscreteIntUpperBnds);
+  //write_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringUpperBnds);
+  write_data_partial(s, adrv_offset, num_ddrv, allDiscreteRealUpperBnds);
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  /*adsv_offset += num_ddsv;*/ adrv_offset += num_ddrv;
+
+  write_data_partial(s, acv_offset,  num_cauv,  allContinuousUpperBnds);
+  write_data_partial(s, adiv_offset, num_dauiv, allDiscreteIntUpperBnds);
+  //write_data_partial(s, adsv_offset, num_dausv, allDiscreteStringUpperBnds);
+  write_data_partial(s, adrv_offset, num_daurv, allDiscreteRealUpperBnds);
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  write_data_partial(s, acv_offset,  num_ceuv,  allContinuousUpperBnds);
+  write_data_partial(s, adiv_offset, num_deuiv, allDiscreteIntUpperBnds);
+  //write_data_partial(s, adsv_offset, num_deusv, allDiscreteStringUpperBnds);
+  write_data_partial(s, adrv_offset, num_deurv, allDiscreteRealUpperBnds);
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  write_data_partial(s, acv_offset,  num_csv,  allContinuousUpperBnds);
+  write_data_partial(s, adiv_offset, num_dsiv, allDiscreteIntUpperBnds);
+  //write_data_partial(s, adsv_offset, num_dssv, allDiscreteStringUpperBnds);
+  write_data_partial(s, adrv_offset, num_dsrv, allDiscreteRealUpperBnds);
 }
 
 } // namespace Dakota

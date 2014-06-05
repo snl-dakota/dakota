@@ -172,23 +172,26 @@ Optimizer::Optimizer(unsigned short method_name, Model& model):
 
 Optimizer::
 Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
-	  size_t num_drv, size_t num_lin_ineq, size_t num_lin_eq,
-	  size_t num_nln_ineq, size_t num_nln_eq):
+	  size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
+	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq):
   Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq),
   numObjectiveFns(1), localObjectiveRecast(false)
 {
-  numContinuousVars   = num_cv;
-  numDiscreteIntVars  = num_div;
-  numDiscreteRealVars = num_drv;
-  numFunctions        = numUserPrimaryFns + numNonlinearConstraints;
-  optimizationFlag    = true;
+  numContinuousVars     = num_cv;
+  numDiscreteIntVars    = num_div;
+  numDiscreteStringVars = num_dsv;
+  numDiscreteRealVars   = num_drv;
+  numFunctions          = numUserPrimaryFns + numNonlinearConstraints;
+  optimizationFlag      = true;
 
   // The following "best" initializations are done here instead of in
   // Minimizer for this lightweight case
   std::pair<short,short> view(MIXED_DESIGN, EMPTY);
-  SizetArray vc_totals(12, 0);
-  vc_totals[0] = num_cv; vc_totals[1] = num_div; vc_totals[2] = num_drv;
-  SharedVariablesData svd(view, vc_totals);
+  SizetArray vc_totals(16, 0);
+  vc_totals[0] = num_cv;  vc_totals[1] = num_div;
+  vc_totals[2] = num_dsv; vc_totals[3] = num_drv;
+  BitArray all_relax_di, all_relax_dr; // empty: no relaxation of discrete
+  SharedVariablesData svd(view, vc_totals, all_relax_di, all_relax_dr);
   bestVariablesArray.push_back(Variables(svd));
 
   activeSet.reshape(numFunctions, numContinuousVars);
