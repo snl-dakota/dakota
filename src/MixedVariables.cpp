@@ -28,16 +28,6 @@ MixedVariables(const ProblemDescDB& problem_db,
 	       const std::pair<short,short>& view):
   Variables(BaseConstructor(), problem_db, view)
 {
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
-  allContinuousVars.sizeUninitialized(vc_totals[TOTAL_CDV] +
-    vc_totals[TOTAL_CAUV] + vc_totals[TOTAL_CEUV] + vc_totals[TOTAL_CSV]);
-  allDiscreteIntVars.sizeUninitialized(vc_totals[TOTAL_DDIV] +
-    vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DSIV]);
-  allDiscreteStringVars.sizeUninitialized(vc_totals[TOTAL_DDSV] +
-    vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DSSV]);
-  allDiscreteRealVars.sizeUninitialized(vc_totals[TOTAL_DDRV] +
-    vc_totals[TOTAL_DAURV] + vc_totals[TOTAL_DEURV] + vc_totals[TOTAL_DSRV]);
-
   int start = 0;
   const RealVector& cdv  = problem_db.get_rv(
     "variables.continuous_design.initial_point");
@@ -100,27 +90,11 @@ MixedVariables(const ProblemDescDB& problem_db,
   copy_data_partial(deurv, allDiscreteRealVars, start); start += deurv.size();
   copy_data_partial(dssrv, allDiscreteRealVars, start);
 
-  // construct active/inactive views of all arrays
-  build_views();
-
 #ifdef REFCOUNT_DEBUG
-  Cout << "Letter instantiated: variablesView active = "
-       << sharedVarsData.view().first << " inactive = " 
-       << sharedVarsData.view().second << std::endl;
+  const std::pair<short,short>& view = sharedVarsData.view();
+  Cout << "MixedVariables letter instantiated: view active = "
+       << view.first << " inactive = " << view.second << endl;
 #endif
-}
-
-
-void MixedVariables::reshape(const SizetArray& vc_totals)
-{
-  allContinuousVars.resize(vc_totals[TOTAL_CDV]  + vc_totals[TOTAL_CAUV] +
-			   vc_totals[TOTAL_CEUV] + vc_totals[TOTAL_CSV]);
-  allDiscreteIntVars.resize(allRelaxedDiscreteInt.size());
-  allDiscreteStringVars.resize(vc_totals[TOTAL_DDSV]  + vc_totals[TOTAL_DAUSV] +
-			       vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DSSV]);
-  allDiscreteRealVars.resize(allRelaxedDiscreteReal.size());
-
-  build_views(); // construct active/inactive views of all arrays
 }
 
 

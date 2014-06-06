@@ -30,143 +30,457 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 		      const SharedVariablesData& svd):
   Constraints(BaseConstructor(), problem_db, svd)
 {
-  const SizetArray& vc_totals = svd.components_totals();
-  size_t num_cdv = vc_totals[0], num_cauv = vc_totals[3],
-    num_ceuv  = vc_totals[6], num_csv = vc_totals[9],
-    num_ddrv  = sharedVarsData.vc_lookup(DISCRETE_DESIGN_RANGE),
-    num_ddsiv = sharedVarsData.vc_lookup(DISCRETE_DESIGN_SET_INT),
-    num_dauiv = vc_totals[4], num_deuiv = vc_totals[7],
-    num_dsrv  = sharedVarsData.vc_lookup(DISCRETE_STATE_RANGE),
-    num_dssiv = sharedVarsData.vc_lookup(DISCRETE_STATE_SET_INT),
-    num_ddsrv = vc_totals[2], num_daurv = vc_totals[5],
-    num_deurv = vc_totals[8],
-    num_acv   = num_cdv + num_cauv + num_ceuv + num_csv +
-                vc_totals[1] + num_dauiv + num_deuiv + vc_totals[10] +
-                num_ddsrv + num_daurv + num_deurv + vc_totals[11];
+  const RealVector& cdv_l_bnds = problem_db.get_rv(
+    "variables.continuous_design.lower_bounds");
+  const RealVector& cdv_u_bnds = problem_db.get_rv(
+    "variables.continuous_design.upper_bounds");
+  const RealVector& cauv_l_bnds = problem_db.get_rv(
+    "variables.continuous_aleatory_uncertain.lower_bounds");
+  const RealVector& cauv_u_bnds = problem_db.get_rv(
+    "variables.continuous_aleatory_uncertain.upper_bounds");
+  const RealVector& ceuv_l_bnds = problem_db.get_rv(
+    "variables.continuous_epistemic_uncertain.lower_bounds");
+  const RealVector& ceuv_u_bnds = problem_db.get_rv(
+    "variables.continuous_epistemic_uncertain.upper_bounds");
+  const RealVector& csv_l_bnds  = problem_db.get_rv(
+    "variables.continuous_state.lower_bounds");
+  const RealVector& csv_u_bnds  = problem_db.get_rv(
+    "variables.continuous_state.upper_bounds");
 
-  allContinuousLowerBnds.sizeUninitialized(num_acv);
-  allContinuousUpperBnds.sizeUninitialized(num_acv);
+  const IntVector& ddrv_l_bnds = problem_db.get_iv(
+    "variables.discrete_design_range.lower_bounds");
+  const IntVector& ddrv_u_bnds = problem_db.get_iv(
+    "variables.discrete_design_range.upper_bounds");
+  const IntVector& ddsiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_design_set_int.lower_bounds");
+  const IntVector& ddsiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_design_set_int.upper_bounds");
+  const IntVector& dauiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_aleatory_uncertain_int.lower_bounds");
+  const IntVector& dauiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_aleatory_uncertain_int.upper_bounds");
+  const IntVector& deuiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_epistemic_uncertain_int.lower_bounds");
+  const IntVector& deuiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_epistemic_uncertain_int.upper_bounds");
+  const IntVector& dsrv_l_bnds = problem_db.get_iv(
+    "variables.discrete_state_range.lower_bounds");
+  const IntVector& dsrv_u_bnds = problem_db.get_iv(
+    "variables.discrete_state_range.upper_bounds");
+  const IntVector& dssiv_l_bnds = problem_db.get_iv(
+    "variables.discrete_state_set_int.lower_bounds");
+  const IntVector& dssiv_u_bnds = problem_db.get_iv(
+    "variables.discrete_state_set_int.upper_bounds");
 
-  int start = 0;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_design.lower_bounds"), allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_design.upper_bounds"), allContinuousUpperBnds, start);
-  start += num_cdv;
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_design_range.lower_bounds"),
-    allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_design_range.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_ddrv;
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_design_set_int.lower_bounds"),
-    allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_design_set_int.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_ddsiv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_design_set_real.lower_bounds"),
-    allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_design_set_real.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_ddsrv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.lower_bounds"),
-    allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_cauv;
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.lower_bounds"),
-    allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_dauiv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.lower_bounds"),
-    allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_daurv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.lower_bounds"),
-    allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_ceuv;
-  merge_data_partial(problem_db.get_iv(
-   "variables.discrete_epistemic_uncertain_int.lower_bounds"),
-   allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_iv(
-   "variables.discrete_epistemic_uncertain_int.upper_bounds"),
-   allContinuousUpperBnds, start);
-  start += num_deuiv;
-  copy_data_partial(problem_db.get_rv(
-   "variables.discrete_epistemic_uncertain_real.lower_bounds"),
-   allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-   "variables.discrete_epistemic_uncertain_real.upper_bounds"),
-   allContinuousUpperBnds, start);
-  start += num_deurv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_state.lower_bounds"), allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.continuous_state.upper_bounds"), allContinuousUpperBnds, start);
-  start += num_csv;
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_state_range.lower_bounds"),
-    allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_state_range.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_dsrv;
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_state_set_int.lower_bounds"),
-    allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_iv(
-    "variables.discrete_state_set_int.upper_bounds"),
-    allContinuousUpperBnds, start);
-  start += num_dssiv;
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_state_set_real.lower_bounds"),
-    allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rv(
-    "variables.discrete_state_set_real.upper_bounds"),
-    allContinuousUpperBnds, start);
+  // discrete string variable bounds?  (not needed for exclusively categorical)
 
-  // Construct active/inactive views of all arrays
-  build_views();
+  const RealVector& ddsrv_l_bnds = problem_db.get_rv(
+    "variables.discrete_design_set_real.lower_bounds");
+  const RealVector& ddsrv_u_bnds = problem_db.get_rv(
+    "variables.discrete_design_set_real.upper_bounds");
+  const RealVector& daurv_l_bnds = problem_db.get_rv(
+    "variables.discrete_aleatory_uncertain_real.lower_bounds");
+  const RealVector& daurv_u_bnds = problem_db.get_rv(
+    "variables.discrete_aleatory_uncertain_real.upper_bounds");
+  const RealVector& deurv_l_bnds = problem_db.get_rv(
+    "variables.discrete_epistemic_uncertain_real.lower_bounds");
+  const RealVector& deurv_u_bnds = problem_db.get_rv(
+    "variables.discrete_epistemic_uncertain_real.upper_bounds");
+  const RealVector& dssrv_l_bnds = problem_db.get_rv(
+    "variables.discrete_state_set_real.lower_bounds");
+  const RealVector& dssrv_u_bnds = problem_db.get_rv(
+    "variables.discrete_state_set_real.upper_bounds");
 
-  // Manage linear constraints.
-  manage_linear_constraints(problem_db);
+  size_t i, ardi_cntr = 0, ardr_cntr = 0,
+    acv_offset = 0, adiv_offset = 0, adrv_offset = 0,
+    num_ddrv  = ddrv.size(), num_ddsiv = ddsiv.size(), num_ddsrv = ddsrv.size(),
+    num_dauiv = dauiv.size(), num_daurv = daurv.size(),
+    num_deuiv = deuiv.size(), num_deurv = deurv.size(),
+    num_dsrv  = dsrv.size(), num_dssiv = dssiv.size(), num_dssrv = dssrv.size();
+  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
+  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
+
+  copy_data_partial(cdv_l_bnds, allContinuousLowerBnds, acv_offset);
+  copy_data_partial(cdv_u_bnds, allContinuousUpperBnds, acv_offset);
+  acv_offset += cdv_l_bnds.size();
+  for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr]) {
+      allContinuousLowerBnds[acv_offset]   = (Real)ddrv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]   = (Real)ddrv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteIntLowerBnds[adiv_offset] = ddrv_l_bnds[i];
+      allDiscreteIntUpperBnds[adiv_offset] = ddrv_u_bnds[i];
+      ++adiv_offset;
+    }
+  for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr]) {
+      allContinuousLowerBnds[acv_offset]   = (Real)ddsiv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]   = (Real)ddsiv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteIntLowerBnds[adiv_offset] = ddsiv_l_bnds[i];
+      allDiscreteIntUpperBnds[adiv_offset] = ddsiv_u_bnds[i];
+      ++adiv_offset;
+    }
+  for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr]) {
+      allContinuousLowerBnds[acv_offset]    = ddsrv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]    = ddsrv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteRealLowerBnds[adiv_offset] = ddsrv_l_bnds[i];
+      allDiscreteRealUpperBnds[adiv_offset] = ddsrv_u_bnds[i];
+      ++adrv_offset;
+    }
+
+  copy_data_partial(cauv_l_bnds, allContinuousLowerBnds, acv_offset);
+  copy_data_partial(cauv_u_bnds, allContinuousUpperBnds, acv_offset);
+  acv_offset += cauv_l_bnds.size();
+  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr]) {
+      allContinuousLowerBnds[acv_offset]   = (Real)dauiv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]   = (Real)dauiv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteIntLowerBnds[adiv_offset] = dauiv_l_bnds[i];
+      allDiscreteIntUpperBnds[adiv_offset] = dauiv_u_bnds[i];
+      ++adiv_offset;
+    }
+  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr]) {
+      allContinuousLowerBnds[acv_offset]    = daurv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]    = daurv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteRealLowerBnds[adiv_offset] = daurv_l_bnds[i];
+      allDiscreteRealUpperBnds[adiv_offset] = daurv_u_bnds[i];
+      ++adrv_offset;
+    }
+
+  copy_data_partial(ceuv_l_bnds, allContinuousLowerBnds, acv_offset);
+  copy_data_partial(ceuv_u_bnds, allContinuousUpperBnds, acv_offset);
+  acv_offset += ceuv_l_bnds.size();
+  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr]) {
+      allContinuousLowerBnds[acv_offset]   = (Real)deuiv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]   = (Real)deuiv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteIntLowerBnds[adiv_offset] = deuiv_l_bnds[i];
+      allDiscreteIntUpperBnds[adiv_offset] = deuiv_u_bnds[i];
+      ++adiv_offset;
+    }
+  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr]) {
+      allContinuousLowerBnds[acv_offset]    = deurv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]    = deurv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteRealLowerBnds[adiv_offset] = deurv_l_bnds[i];
+      allDiscreteRealUpperBnds[adiv_offset] = deurv_u_bnds[i];
+      ++adrv_offset;
+    }
+
+  copy_data_partial(csv_l_bnds, allContinuousLowerBnds, acv_offset);
+  copy_data_partial(csv_u_bnds, allContinuousUpperBnds, acv_offset);
+  acv_offset += csv_l_bnds.size();
+  for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr]) {
+      allContinuousLowerBnds[acv_offset]   = (Real)dsrv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]   = (Real)dsrv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteIntLowerBnds[adiv_offset] = dsrv_l_bnds[i];
+      allDiscreteIntUpperBnds[adiv_offset] = dsrv_u_bnds[i];
+      ++adiv_offset;
+    }
+  for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr]) {
+      allContinuousLowerBnds[acv_offset]   = (Real)dssiv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]   = (Real)dssiv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteIntLowerBnds[adiv_offset] = dssiv_l_bnds[i];
+      allDiscreteIntUpperBnds[adiv_offset] = dssiv_u_bnds[i];
+      ++adiv_offset;
+    }
+  for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr]) {
+      allContinuousLowerBnds[acv_offset]    = dssrv_l_bnds[i];
+      allContinuousUpperBnds[acv_offset]    = dssrv_u_bnds[i];
+      ++acv_offset;
+    }
+    else {
+      allDiscreteRealLowerBnds[adiv_offset] = dssrv_l_bnds[i];
+      allDiscreteRealUpperBnds[adiv_offset] = dssrv_u_bnds[i];
+      ++adrv_offset;
+    }
 
 #ifdef REFCOUNT_DEBUG
-  Cout << "Letter instantiated: variablesView active = " 
-       << sharedVarsData.view().first << " inactive = " 
-       << sharedVarsData.view().second << std::endl;
+  const std::pair<short,short>& view = sharedVarsData.view();
+  Cout << "RelaxedVarConstraints letter instantiated: view active = " 
+       << view.first << " inactive = " << view.second << std::endl;
 #endif
 }
 
 
 void RelaxedVarConstraints::read(std::istream& s)
 {
-  read_data(s, allContinuousLowerBnds);
-  read_data(s, allContinuousUpperBnds);
+  const SizetArray& vc_totals = sharedVarsData.components_totals();
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    /*num_ddsv = vc_totals[TOTAL_DDSV],*/   num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    /*num_dausv = vc_totals[TOTAL_DAUSV],*/ num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    /*num_deusv = vc_totals[TOTAL_DEUSV],*/ num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    /*num_dssv = vc_totals[TOTAL_DSSV],*/   num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, /*adsv_offset = 0,*/ adrv_offset = 0, i,
+    ardi_cntr = 0, ardr_cntr = 0;
+  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
+  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
+
+  // design
+  read_data_partial(s, acv_offset, num_cdv, allContinuousLowerBnds);
+  acv_offset += num_cdv;
+  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+  // aleatory uncertain
+  read_data_partial(s, acv_offset, num_cauv, allContinuousLowerBnds);
+  acv_offset += num_cauv;
+  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+  // epistemic uncertain
+  read_data_partial(s, acv_offset, num_ceuv, allContinuousLowerBnds);
+  acv_offset += num_ceuv;
+  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+  // state
+  read_data_partial(s, acv_offset, num_csv, allContinuousLowerBnds);
+  acv_offset += num_csv;
+  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+
+  // design
+  acv_offset = adiv_offset = adrv_offset = ardi_cntr = ardr_cntr = 0;
+  read_data_partial(s, acv_offset, num_cdv, allContinuousUpperBnds);
+  acv_offset += num_cdv;
+  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
+  // aleatory uncertain
+  read_data_partial(s, acv_offset, num_cauv, allContinuousUpperBnds);
+  acv_offset += num_cauv;
+  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
+  // epistemic uncertain
+  read_data_partial(s, acv_offset, num_ceuv, allContinuousUpperBnds);
+  acv_offset += num_ceuv;
+  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
+  // state
+  read_data_partial(s, acv_offset, num_csv, allContinuousUpperBnds);
+  acv_offset += num_csv;
+  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      read_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      read_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      read_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      read_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
 }
 
 
 void RelaxedVarConstraints::write(std::ostream& s) const
 {
-  write_data(s, allContinuousLowerBnds);
-  write_data(s, allContinuousUpperBnds);
+  const SizetArray& vc_totals = sharedVarsData.components_totals();
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    /*num_ddsv = vc_totals[TOTAL_DDSV],*/   num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    /*num_dausv = vc_totals[TOTAL_DAUSV],*/ num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    /*num_deusv = vc_totals[TOTAL_DEUSV],*/ num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    /*num_dssv = vc_totals[TOTAL_DSSV],*/   num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, /*adsv_offset = 0,*/ adrv_offset = 0, i,
+    ardi_cntr = 0, ardr_cntr = 0;
+  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
+  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
+
+  // design
+  write_data_partial(s, acv_offset, num_cdv, allContinuousLowerBnds);
+  acv_offset += num_cdv;
+  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+  // aleatory uncertain
+  write_data_partial(s, acv_offset, num_cauv, allContinuousLowerBnds);
+  acv_offset += num_cauv;
+  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+  // epistemic uncertain
+  write_data_partial(s, acv_offset, num_ceuv, allContinuousLowerBnds);
+  acv_offset += num_ceuv;
+  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+  // state
+  write_data_partial(s, acv_offset, num_csv, allContinuousLowerBnds);
+  acv_offset += num_csv;
+  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousLowerBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntLowerBnds);
+  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousLowerBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealLowerBnds);
+
+  // design
+  acv_offset = adiv_offset = adrv_offset = ardi_cntr = ardr_cntr = 0;
+  write_data_partial(s, acv_offset, num_cdv, allContinuousUpperBnds);
+  acv_offset += num_cdv;
+  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
+  // aleatory uncertain
+  write_data_partial(s, acv_offset, num_cauv, allContinuousUpperBnds);
+  acv_offset += num_cauv;
+  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
+  // epistemic uncertain
+  write_data_partial(s, acv_offset, num_ceuv, allContinuousUpperBnds);
+  acv_offset += num_ceuv;
+  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
+  // state
+  write_data_partial(s, acv_offset, num_csv, allContinuousUpperBnds);
+  acv_offset += num_csv;
+  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_data_partial(s,  acv_offset++, 1,  allContinuousUpperBnds);
+    else
+      write_data_partial(s, adiv_offset++, 1, allDiscreteIntUpperBnds);
+  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_data_partial(s,  acv_offset++, 1,   allContinuousUpperBnds);
+    else
+      write_data_partial(s, adrv_offset++, 1, allDiscreteRealUpperBnds);
 }
 
 } // namespace Dakota

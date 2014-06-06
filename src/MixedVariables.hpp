@@ -57,8 +57,6 @@ protected:
   void read_tabular(std::istream& s);
   void write_tabular(std::ostream& s) const;
 
-  void reshape(const SizetArray& vc_totals);
-
 private:
 
   //
@@ -69,7 +67,7 @@ private:
 
 inline MixedVariables::MixedVariables(const SharedVariablesData& svd):
   Variables(BaseConstructor(), svd)
-{ reshape(svd.components_totals()); }
+{ }
 
 
 inline MixedVariables::~MixedVariables()

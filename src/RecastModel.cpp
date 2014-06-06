@@ -69,6 +69,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
   bool reshape_vars; // only reshape if change in variable type counts
+  SharedVariablesData recast_svd;
   // variables are not mapped: deep copy of vars to allow independence, but 
   // shallow copy of svd since types/labels/ids can be kept consistent
   if (variablesMapping == NULL) {
@@ -83,7 +84,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     reshape_vars = false;
   }
   else { // variables are resized
-    SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
+    recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals);
     currentVariables = Variables(recast_svd);
     reshape_vars = true;
   }
@@ -114,22 +115,20 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 
   // recasting of constraints
   const Constraints& sub_model_cons = subModel.user_defined_constraints();
-  userDefinedConstraints = sub_model_cons.copy();
+  userDefinedConstraints = (reshape_vars) ?
+    Constraints(recast_svd) : sub_model_cons.copy();
   if (secondaryRespMapping) {
     // the recast_secondary_offset cannot in general be inferred from the
     // contributing fns in secondaryRespMapIndices (recast constraints may be
     // defined, e.g., with no contributing fns), and must therefore be passed.
-    const size_t& num_recast_nln_ineq = recast_secondary_offset;
-    size_t num_recast_nln_eq = num_recast_secondary_fns - num_recast_nln_ineq;
+    size_t num_recast_nln_ineq = recast_secondary_offset,
+      num_recast_nln_eq = num_recast_secondary_fns - num_recast_nln_ineq;
     if ( num_recast_nln_ineq != sub_model_cons.num_nonlinear_ineq_constraints()
       || num_recast_nln_eq   != sub_model_cons.num_nonlinear_eq_constraints() )
       userDefinedConstraints.reshape(num_recast_nln_ineq, num_recast_nln_eq,
         sub_model_cons.num_linear_ineq_constraints(),
         sub_model_cons.num_linear_eq_constraints());
   }
-  // could be separate reshapes or could be combined
-  if (reshape_vars)
-    userDefinedConstraints.reshape(vars_comps_totals);
 }
 
 
@@ -161,6 +160,7 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
   bool reshape_vars; // only reshape if change in variable type counts
+  SharedVariablesData recast_svd;
   // variables are not mapped: deep copy of vars to allow independence, but 
   // shallow copy of svd since types/labels/ids can be kept consistent
   if (variablesMapping == NULL) {
@@ -175,7 +175,7 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
     reshape_vars = false;
   }
   else { // variables are resized
-    SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
+    recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals);
     currentVariables = Variables(recast_svd);
     reshape_vars = true;
   }
@@ -193,7 +193,8 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 
   // recasting of constraints
   const Constraints& sub_model_cons = subModel.user_defined_constraints();
-  userDefinedConstraints = sub_model_cons.copy();
+  userDefinedConstraints = (reshape_vars) ?
+    Constraints(recast_svd) : sub_model_cons.copy();
   // the recast_secondary_offset cannot in general be inferred from the
   // contributing fns in secondaryRespMapIndices (recast constraints may be
   // defined, e.g., with no contributing fns), and must therefore be passed.
@@ -204,9 +205,6 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
     userDefinedConstraints.reshape(num_recast_nln_ineq, num_recast_nln_eq,
       sub_model_cons.num_linear_ineq_constraints(),
       sub_model_cons.num_linear_eq_constraints());
-  // could be separate reshapes or could be combined
-  if (reshape_vars)
-    userDefinedConstraints.reshape(vars_comps_totals);
 }
 
 

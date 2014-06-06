@@ -30,18 +30,6 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
 		    const SharedVariablesData& svd):
   Constraints(BaseConstructor(), problem_db, svd)
 {
-  size_t num_acv, num_adiv, num_adsv, num_adrv;
-  svd.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
-
-  allContinuousLowerBnds.sizeUninitialized(num_acv);
-  allContinuousUpperBnds.sizeUninitialized(num_acv);
-  allDiscreteIntLowerBnds.sizeUninitialized(num_adiv);
-  allDiscreteIntUpperBnds.sizeUninitialized(num_adiv);
-  //allDiscreteStringLowerBnds.sizeUninitialized(num_adsv);
-  //allDiscreteStringUpperBnds.sizeUninitialized(num_adsv);
-  allDiscreteRealLowerBnds.sizeUninitialized(num_adrv);
-  allDiscreteRealUpperBnds.sizeUninitialized(num_adrv);
-
   int start = 0;
   const RealVector& cdv_l_bnds = problem_db.get_rv(
     "variables.continuous_design.lower_bounds");
@@ -148,27 +136,10 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
   copy_data_partial(dssrv_u_bnds, allDiscreteRealUpperBnds, start);
   //start += dssrv_l_bnds.size();
 
-  // construct active/inactive views of all arrays
-  build_views();
-
-  // Manage linear constraints.  Verify specification sanity and set defaults
-  // if needed.
-  const std::pair<short,short>& view = sharedVarsData.view();
-  if (view.first == MIXED_ALEATORY_UNCERTAIN  ||
-      view.first == MIXED_EPISTEMIC_UNCERTAIN ||
-      view.first == MIXED_UNCERTAIN) {
-    if ( problem_db.get_rv("method.linear_inequality_constraints").length()
-      || problem_db.get_rv("method.linear_equality_constraints").length() )
-      Cerr << "Warning: linear constraints not supported with nondeterministic "
-	   << "iterators\n         Input will be ignored.";
-    numLinearIneqCons = numLinearEqCons = 0;
-  }
-  else
-    manage_linear_constraints(problem_db);
-
 #ifdef REFCOUNT_DEBUG
-  Cout << "Letter instantiated: view active = " << view.first << " inactive = "
-       << view.second << endl;
+  const std::pair<short,short>& view = sharedVarsData.view();
+  Cout << "MixedVarConstraints letter instantiated: view active = "
+       << view.first << " inactive = " << view.second << endl;
 #endif
 }
 

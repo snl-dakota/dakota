@@ -45,6 +45,9 @@ Variables(BaseConstructor, const ProblemDescDB& problem_db,
 	  const std::pair<short,short>& view):
   sharedVarsData(problem_db, view), variablesRep(NULL), referenceCount(1)
 {
+  shape(); // size all*Vars arrays
+  build_views(); // construct active/inactive views of all arrays
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(BaseConstructor) called to build base class "
        << "data for letter object." << std::endl;
@@ -63,6 +66,9 @@ Variables::
 Variables(BaseConstructor, const SharedVariablesData& svd):
   sharedVarsData(svd), variablesRep(NULL), referenceCount(1)
 {
+  shape(); // size all*Vars arrays
+  build_views(); // construct active/inactive views of all arrays
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(BaseConstructor) called to build base class "
        << "data for letter object." << std::endl;
@@ -900,14 +906,38 @@ Variables Variables::copy(bool deep_svd) const
 }
 
 
-void Variables::reshape(const SizetArray& vc_totals)
+void Variables::shape()
 {
   if (variablesRep) // envelope
-    variablesRep->reshape(vc_totals);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual reshape function.\n"
-	 << "       No default defined at base class." << std::endl;
-    abort_handler(-1);
+    variablesRep->shape();
+  else { // base class implementation for letters
+    size_t num_acv, num_adiv, num_adsv, num_adrv;
+    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+    allContinuousVars.sizeUninitialized(num_acv);
+    allDiscreteIntVars.sizeUninitialized(num_adiv);
+    allDiscreteStringVars.sizeUninitialized(num_adsv);
+    allDiscreteRealVars.sizeUninitialized(num_adrv);
+
+    build_views(); // construct active/inactive views of all arrays
+  }
+}
+
+
+void Variables::reshape()
+{
+  if (variablesRep) // envelope
+    variablesRep->reshape();
+  else { // base class implementation for letters
+    size_t num_acv, num_adiv, num_adsv, num_adrv;
+    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+    allContinuousVars.resize(num_acv);
+    allDiscreteIntVars.resize(num_adiv);
+    allDiscreteStringVars.resize(num_adsv);
+    allDiscreteRealVars.resize(num_adrv);
+
+    build_views(); // construct active/inactive views of all arrays
   }
 }
 

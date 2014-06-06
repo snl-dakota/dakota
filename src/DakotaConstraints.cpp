@@ -52,6 +52,10 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
     problem_db.get_rv("method.linear_equality_targets")),
   constraintsRep(NULL), referenceCount(1)
 {
+  shape(); // size all*{Lower,Upper}Bnds arrays
+  build_views(); // construct active/inactive views of all arrays
+  manage_linear_constraints(problem_db); // manage linear constraints
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Constraints::Constraints(BaseConstructor) called to build base "
        << "class data for letter object." << std::endl;
@@ -72,6 +76,10 @@ Constraints(BaseConstructor, const SharedVariablesData& svd):
   numLinearIneqCons(0), numLinearEqCons(0), constraintsRep(NULL),
   referenceCount(1)
 {
+  shape(); // size all*{Lower,Upper}Bnds arrays
+  build_views(); // construct active/inactive views of all arrays
+  // no linear constraints for this lightweight ctor
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Constraints::Constraints(BaseConstructor) called to build base "
        << "class data for letter object." << std::endl;
@@ -427,29 +435,72 @@ Constraints Constraints::copy() const
 }
 
 
+/** Resizes the derived bounds arrays. */
+void Constraints::shape()
+{
+  if (constraintsRep) // envelope
+    constraintsRep->shape();
+  else { // base class portion invoked by derived class redefinitions
+
+    size_t num_acv, num_adiv, num_adsv, num_adrv;
+    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+    allContinuousLowerBnds.sizeUninitialized(num_acv);
+    allContinuousUpperBnds.sizeUninitialized(num_acv);
+    allDiscreteIntLowerBnds.sizeUninitialized(num_adiv);
+    allDiscreteIntUpperBnds.sizeUninitialized(num_adiv);
+    //allDiscreteStringLowerBnds.sizeUninitialized(num_adsv);
+    //allDiscreteStringUpperBnds.sizeUninitialized(num_adsv);
+    allDiscreteRealLowerBnds.sizeUninitialized(num_adrv);
+    allDiscreteRealUpperBnds.sizeUninitialized(num_adrv);
+  }
+}
+
+
+void Constraints::reshape()
+{
+  if (constraintsRep) // envelope
+    constraintsRep->reshape();
+  else { // base class portion invoked by derived class redefinitions
+
+    size_t num_acv, num_adiv, num_adsv, num_adrv;
+    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+    allContinuousLowerBnds.resize(num_acv);
+    allContinuousUpperBnds.resize(num_acv);
+    allDiscreteIntLowerBnds.resize(num_adiv);
+    allDiscreteIntUpperBnds.resize(num_adiv);
+    //allDiscreteStringLowerBnds.resize(num_adsv);
+    //allDiscreteStringUpperBnds.resize(num_adsv);
+    allDiscreteRealLowerBnds.resize(num_adrv);
+    allDiscreteRealUpperBnds.resize(num_adrv);
+  }
+}
+
+
 void Constraints::
 reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 	size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
-	const SizetArray& vc_totals)
+	const SharedVariablesData& svd)
 {
-  if (constraintsRep) { // envelope
+  if (constraintsRep) // envelope
     constraintsRep->reshape(num_nln_ineq_cons, num_nln_eq_cons,
-			    num_lin_ineq_cons, num_lin_eq_cons);
-    constraintsRep->reshape(vc_totals);
-  }
+			    num_lin_ineq_cons, num_lin_eq_cons, svd);
   else { // base class implementation for letter
+    sharedVarsData = svd;
+    reshape();
+    build_views();
     reshape(num_nln_ineq_cons, num_nln_eq_cons, num_lin_ineq_cons,
 	    num_lin_eq_cons);
-    reshape(vc_totals);
   }
 }
+
 
 /** Resizes the linear and nonlinear constraint arrays at the base
     class.  Does NOT currently resize the derived bounds arrays. */
 void Constraints::
 reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 	size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
-      //const SizetArray& vc_totals)
 {
   if (constraintsRep) // envelope
     constraintsRep->reshape(num_nln_ineq_cons, num_nln_eq_cons,
@@ -464,49 +515,17 @@ reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
     numNonlinearEqCons = num_nln_eq_cons;
     nonlinearEqConTargets.resize(num_nln_eq_cons);
 
+    size_t num_av = continuousLowerBnds.length() +
+      discreteIntLowerBnds.length() + discreteRealLowerBnds.length();
+
     numLinearIneqCons = num_lin_ineq_cons;
     linearIneqConLowerBnds.resize(num_lin_ineq_cons);
     linearIneqConUpperBnds.resize(num_lin_ineq_cons);
-    //linearIneqConCoeffs.reshape(num_lin_ineq_cons);
+    linearIneqConCoeffs.reshape(num_lin_ineq_cons, num_av);
 
     numLinearEqCons = num_lin_eq_cons;
     linearEqConTargets.resize(num_lin_eq_cons);
-    //linearEqConCoeffs.reshape(num_lin_eq_cons);
-
-    //size_t num_vars = num_cv + num_dv;
-    //linearIneqConCoeffs.reshape(num_lin_ineq_cons, num_vars);
-    //linearEqConCoeffs.reshape(num_lin_eq_cons, num_vars);
-  }
-}
-
-
-/** Resizes the derived bounds arrays. */
-void Constraints::reshape(const SizetArray& vc_totals)
-{
-  if (constraintsRep) // envelope
-    constraintsRep->reshape(vc_totals);
-  else { // base class portion invoked by derived class redefinitions
-
-    size_t num_acv, num_adiv, num_adsv, num_adrv;
-    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
-
-    allContinuousLowerBnds.resize(num_acv);
-    allContinuousUpperBnds.resize(num_acv);
-    allDiscreteIntLowerBnds.resize(num_adiv);
-    allDiscreteIntUpperBnds.resize(num_adiv);
-    //allDiscreteStringLowerBnds.resize(num_adsv);
-    //allDiscreteStringUpperBnds.resize(num_adsv);
-    allDiscreteRealLowerBnds.resize(num_adrv);
-    allDiscreteRealUpperBnds.resize(num_adrv);
-
-    build_views();
-
-    // reshape base class data that requires number of active variables
-    // (follows build_views())
-    size_t num_av = continuousLowerBnds.length() +
-      discreteIntLowerBnds.length() + discreteRealLowerBnds.length();
-    linearIneqConCoeffs.reshape(numLinearIneqCons, num_av);
-    linearEqConCoeffs.reshape(numLinearEqCons, num_av);
+    linearEqConCoeffs.reshape(num_lin_eq_cons, num_av);
   }
 }
 

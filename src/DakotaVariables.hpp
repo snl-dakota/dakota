@@ -86,10 +86,6 @@ public:
   //- Heading: Virtual functions
   //
 
-  /// reshapes an existing Variables object based on the incoming
-  /// variablesComponents
-  virtual void reshape(const SizetArray& vc_totals);
-
   // INPUT/OUTPUT
 
   /// read a variables object from an std::istream
@@ -145,6 +141,11 @@ public:
   const SharedVariablesData& shared_data() const;
   /// return sharedVarsData
   SharedVariablesData& shared_data();
+
+  /// shape a Variables object based on sharedVarsData
+  void shape();
+  /// reshape an existing Variables object based on updated sharedVarsData
+  void reshape();
 
   // ACTIVE VARIABLES
 

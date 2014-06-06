@@ -33,14 +33,6 @@ RelaxedVariables(const ProblemDescDB& problem_db,
 		const std::pair<short,short>& view):
   Variables(BaseConstructor(), problem_db, view)
 {
-  size_t num_acv, num_adiv, num_adsv, num_adrv;
-  sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
-
-  allContinuousVars.sizeUninitialized(num_acv);
-  allDiscreteIntVars.sizeUninitialized(num_adiv);
-  allDiscreteStringVars.sizeUninitialized(num_adsv);
-  allDiscreteRealVars.sizeUninitialized(num_adrv);
-
   const RealVector& cdv  = problem_db.get_rv(
     "variables.continuous_design.initial_point");
   const RealVector& cauv = problem_db.get_rv(
@@ -92,11 +84,15 @@ RelaxedVariables(const ProblemDescDB& problem_db,
   copy_data_partial(cdv, allContinuousVars, acv_offset);
   acv_offset += cdv.size();
   for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) allContinuousVars[acv_offset++]    = ddrv[i];
-    else                         allDiscreteIntVars[adiv_offset++]  = ddrv[i];
+    if (all_relax_di[ardi_cntr])
+      allContinuousVars[acv_offset++]   = (Real)ddrv[i];
+    else
+      allDiscreteIntVars[adiv_offset++] = ddrv[i];
   for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) allContinuousVars[acv_offset++]    = ddsiv[i];
-    else                         allDiscreteIntVars[adiv_offset++]  = ddsiv[i];
+    if (all_relax_di[ardi_cntr])
+      allContinuousVars[acv_offset++]   = (Real)ddsiv[i];
+    else
+      allDiscreteIntVars[adiv_offset++] = ddsiv[i];
   copy_data_partial(ddssv, allDiscreteStringVars, adsv_offset);
   adsv_offset += ddssv.size();
   for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
@@ -106,8 +102,10 @@ RelaxedVariables(const ProblemDescDB& problem_db,
   copy_data_partial(cauv, allContinuousVars, acv_offset);
   acv_offset += cauv.size();
   for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) allContinuousVars[acv_offset++]    = dauiv[i];
-    else                         allDiscreteIntVars[adiv_offset++]  = dauiv[i];
+    if (all_relax_di[ardi_cntr])
+      allContinuousVars[acv_offset++]   = (Real)dauiv[i];
+    else
+      allDiscreteIntVars[adiv_offset++] = dauiv[i];
   copy_data_partial(dausv, allDiscreteStringVars, adsv_offset);
   adsv_offset += dausv.size();
   for (i=0; i<num_daurv; ++i, ++ardr_cntr)
@@ -117,8 +115,10 @@ RelaxedVariables(const ProblemDescDB& problem_db,
   copy_data_partial(ceuv, allContinuousVars, acv_offset);
   acv_offset += ceuv.size();
   for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) allContinuousVars[acv_offset++]    = deuiv[i];
-    else                         allDiscreteIntVars[adiv_offset++]  = deuiv[i];
+    if (all_relax_di[ardi_cntr])
+      allContinuousVars[acv_offset++]   = (Real)deuiv[i];
+    else
+      allDiscreteIntVars[adiv_offset++] = deuiv[i];
   copy_data_partial(deusv, allDiscreteStringVars, adsv_offset);
   adsv_offset += deusv.size();
   for (i=0; i<num_deurv; ++i, ++ardr_cntr)
@@ -128,37 +128,26 @@ RelaxedVariables(const ProblemDescDB& problem_db,
   copy_data_partial(csv, allContinuousVars, acv_offset);
   acv_offset += csv.size();
   for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) allContinuousVars[acv_offset++]    = dsrv[i];
-    else                         allDiscreteIntVars[adiv_offset++]  = dsrv[i];
+    if (all_relax_di[ardi_cntr])
+      allContinuousVars[acv_offset++]   = (Real)dsrv[i];
+    else
+      allDiscreteIntVars[adiv_offset++] = dsrv[i];
   for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) allContinuousVars[acv_offset++]    = dssiv[i];
-    else                         allDiscreteIntVars[adiv_offset++]  = dssiv[i];
+    if (all_relax_di[ardi_cntr])
+      allContinuousVars[acv_offset++]   = (Real)dssiv[i];
+    else
+      allDiscreteIntVars[adiv_offset++] = dssiv[i];
   copy_data_partial(dsssv, allDiscreteStringVars, adsv_offset);
   adsv_offset += dsssv.size();
   for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
     if (all_relax_dr[ardr_cntr]) allContinuousVars[acv_offset++]    = dssrv[i];
     else                         allDiscreteRealVars[adrv_offset++] = dssrv[i];
 
-  // Construct active/inactive views of all arrays
-  build_views();
-
 #ifdef REFCOUNT_DEBUG
-  Cout << "Letter instantiated: variablesView active = "
-       << sharedVarsData.view().first << " inactive = "
-       << sharedVarsData.view().second << std::endl;
+  const std::pair<short,short>& view = sharedVarsData.view();
+  Cout << "RelaxedVariables letter instantiated: view active = " 
+       << view.first << " inactive = " << view.second << std::endl;
 #endif
-}
-
-
-void RelaxedVariables::reshape(const SizetArray& vc_totals)
-{
-  size_t i, num_acv = 0, num_totals = vc_totals.size();
-  for (i=0; i<num_totals; ++i)
-    num_acv += vc_totals[i];
-
-  allContinuousVars.resize(num_acv);
-
-  build_views(); // construct active/inactive views of all arrays
 }
 
 

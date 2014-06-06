@@ -70,7 +70,7 @@ private:
 
 inline MixedVarConstraints::MixedVarConstraints(const SharedVariablesData& svd):
   Constraints(BaseConstructor(), svd)
-{ reshape(svd.components_totals()); }
+{ }
 
 
 inline MixedVarConstraints::~MixedVarConstraints()

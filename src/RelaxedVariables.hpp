@@ -42,7 +42,7 @@ public:
 
   /// standard constructor
   RelaxedVariables(const ProblemDescDB& problem_db,
-		  const std::pair<short,short>& view);
+		   const std::pair<short,short>& view);
   /// lightweight constructor
   RelaxedVariables(const SharedVariablesData& svd);
   /// destructor
@@ -60,8 +60,6 @@ protected:
   void read_tabular(std::istream& s);
   void write_tabular(std::ostream& s) const;
 
-  void reshape(const SizetArray& vc_totals);
-
 private:
 
   //
@@ -73,7 +71,7 @@ private:
 
 inline RelaxedVariables::RelaxedVariables(const SharedVariablesData& svd):
   Variables(BaseConstructor(), svd)
-{ reshape(svd.components_totals()); }
+{ }
 
 
 inline RelaxedVariables::~RelaxedVariables()
