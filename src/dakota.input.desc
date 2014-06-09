@@ -2146,34 +2146,26 @@ TAG "variables/discrete_state_range/upper_bounds"
 TAG "variables/discrete_state_range/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDSSIV"
 
-TAG "variables/discrete_state_set_integer" GROUP "State Variables"
-	DESC "{Discrete state set of integer variables} VarCommands.html#VarDSSIV"
-
-TAG "variables/discrete_state_set_integer/initial_state"
-	DESC "{Initial state} VarCommands.html#VarDSSIV"
-
-TAG "variables/discrete_state_set_integer/num_set_values"
-	DESC "{Number of values for each variable} VarCommands.html#VarDUSIV"
-
-TAG "variables/discrete_state_set_integer/set_values"
-	DESC "{Set values} VarCommands.html#VarDUSIV"
-
-TAG "variables/discrete_state_set_integer/descriptors"
+TAG "variables/discrete_state_set"
+TAG "variables/discrete_state_set/integer"
+TAG "variables/discrete_state_set/integer/elements"
+TAG "variables/discrete_state_set/integer/elements_per_variable"
+TAG "variables/discrete_state_set/integer/categorical"
+TAG "variables/discrete_state_set/integer/initial_point"
+TAG "variables/discrete_state_set/integer/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDSSRV"
 
-TAG "variables/discrete_state_set_real" GROUP "State Variables"
-	DESC "{Discrete state set of real variables} VarCommands.html#VarDSSRV"
-
-TAG "variables/discrete_state_set_real/initial_state"
-	DESC "{Initial state} VarCommands.html#VarDSSRV"
-
-TAG "variables/discrete_state_set_real/num_set_values"
-	DESC "{Number of values for each variable} VarCommands.html#VarDUSRV"
-
-TAG "variables/discrete_state_set_real/set_values"
-	DESC "{Set values} VarCommands.html#VarDUSRV"
-
-TAG "variables/discrete_state_set_real/descriptors"
+TAG "variables/discrete_state_set/string"
+TAG "variables/discrete_state_set/string/elements"
+TAG "variables/discrete_state_set/string/elements_per_variable"
+TAG "variables/discrete_state_set/string/initial_point"
+TAG "variables/discrete_state_set/string/descriptors"
+TAG "variables/discrete_state_set/real"
+TAG "variables/discrete_state_set/real/elements"
+TAG "variables/discrete_state_set/real/elements_per_variable"
+TAG "variables/discrete_state_set/real/categorical"
+TAG "variables/discrete_state_set/real/initial_point"
+TAG "variables/discrete_state_set/real/descriptors"
 TAG "interface"
 	DESC "{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. InterfCommands.html"
 

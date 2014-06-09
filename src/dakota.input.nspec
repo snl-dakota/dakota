@@ -1504,19 +1504,28 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST LEN discrete_state_range {N_vam(ivec,discreteStateRangeUpperBnds)} ]
 	  [ descriptors ALIAS dsv_descriptors STRINGLIST LEN discrete_state_range {N_vam(strL,discreteStateRangeLabels)} ]
 	  ]
-	[ discrete_state_set_integer INTEGER > 0 {N_vam(pintz,numDiscreteStateSetIntVars)}
-	  [ initial_state INTEGERLIST LEN discrete_state_set_integer {N_vam(ivec,discreteStateSetIntVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_state_set_integer {N_vam(newiarray,Var_Info_ndssi)} ]
-	  set_values INTEGERLIST {N_vam(newivec,Var_Info_dssi)}
-	  [ descriptors STRINGLIST LEN discrete_state_set_integer {N_vam(strL,discreteStateSetIntLabels)} ]
+	[ discrete_state_set {0}
+	  [ integer INTEGER > 0 {N_vam(pintz,numDiscreteStateSetIntVars)}
+	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_dssi)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_ndssi)} ]
+	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetIntCat)} ]
+	    [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteStateSetIntVars)} ]
+	    [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteStateSetIntLabels)} ]
+ 	    ]
+	  [ string INTEGER > 0 {N_vam(pintz,numDiscreteStateSetStrVars)}
+	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_dsss)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_ndsss)} ]
+	    [ initial_point STRINGLIST LEN string {N_vam(strL,discreteStateSetStrVars)} ]
+	    [ descriptors STRINGLIST LEN string {N_vam(strL,discreteStateSetStrLabels)} ]
+ 	    ]
+	  [ real INTEGER > 0 {N_vam(pintz,numDiscreteStateSetRealVars)}
+	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_ndssr)} ]
+	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetRealCat)} ]
+	    [ initial_point REALLIST LEN real {N_vam(rvec,discreteStateSetRealVars)} ]
+	    [ descriptors STRINGLIST LEN real {N_vam(strL,discreteStateSetRealLabels)} ]
+ 	    ]
 	  ]
-	[ discrete_state_set_real INTEGER > 0 {N_vam(pintz,numDiscreteStateSetRealVars)}
-	  [ initial_state REALLIST LEN discrete_state_set_real {N_vam(rvec,discreteStateSetRealVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_state_set_real {N_vam(newiarray,Var_Info_ndssr)} ]
-	  set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
-	  [ descriptors STRINGLIST LEN discrete_state_set_real {N_vam(strL,discreteStateSetRealLabels)} ]
-	  ]
-
 KEYWORD12 interface {N_ifm3(start,0,stop)}
 	[ id_interface STRING {N_ifm(str,idInterface)} ]
 	[ algebraic_mappings STRING {N_ifm(str,algebraicMappings)} ]

@@ -186,10 +186,13 @@ public:
   /// (from the \c discrete_state_range specification in \ref VarDV)
   size_t numDiscreteStateRangeVars;
   /// number of discrete state variables defined by a set of integers
-  /// (from the \c discrete_state_set_integer specification in \ref VarDV)
+  /// (from the \c discrete_state_set integer specification in \ref VarDV)
   size_t numDiscreteStateSetIntVars;
+  /// number of discrete state variables defined by a set of strings
+  /// (from the \c discrete_state_set string specification in \ref VarDV)
+  size_t numDiscreteStateSetStrVars;
   /// number of discrete state variables defined by a set of reals
-  /// (from the \c discrete_state_set_real specification in \ref VarDV)
+  /// (from the \c discrete_state_set real specification in \ref VarDV)
   size_t numDiscreteStateSetRealVars;
 
   // Design arrays
@@ -585,20 +588,28 @@ public:
   BitArray discreteStateRangeCat;
 
   /// initial values for the discrete state variables defined by an
-  /// integer set (from the \c discrete_state_set_integer \c initial_point
+  /// integer set (from the \c discrete_state_set integer \c initial_point
   /// specification in \ref VarSV)
   IntVector discreteStateSetIntVars;
   /// initial values for the discrete state variables defined by a
-  /// real set (from the \c discrete_state_set_real \c initial_point
+  /// string set (from the \c discrete_state_set string \c initial_point
+  /// specification in \ref VarSV)
+  StringArray discreteStateSetStrVars;
+  /// initial values for the discrete state variables defined by a
+  /// real set (from the \c discrete_state_set real \c initial_point
   /// specification in \ref VarSV)
   RealVector discreteStateSetRealVars;
 
   /// complete set of admissible values for each of the discrete state
   /// variables defined by an integer set (from the
-  /// \c discrete_state_set_integer \c set_values specification in \ref VarSV)
+  /// \c discrete_state_set integer \c set_values specification in \ref VarSV)
   IntSetArray discreteStateSetInt;
   /// complete set of admissible values for each of the discrete state
-  /// variables defined by a real set (from the \c discrete_state_set_real
+  /// variables defined by a string set (from the \c discrete_state_set string
+  /// \c set_values specification in \ref VarSV)
+  StringSetArray discreteStateSetStr;
+  /// complete set of admissible values for each of the discrete state
+  /// variables defined by a real set (from the \c discrete_state_set real
   /// \c set_values specification in \ref VarSV)
   RealSetArray discreteStateSetReal;
 
@@ -615,11 +626,15 @@ public:
   /// specification in \ref VarSV)
   StringArray discreteStateRangeLabels;
   /// labels array for the discrete state variables defined by an
-  /// integer set (from the \c discrete_state_range \c descriptors
+  /// integer set (from the \c discrete_state_set \c descriptors
   /// specification in \ref VarSV)
   StringArray discreteStateSetIntLabels;
   /// labels array for the discrete state variables defined by a
-  /// real set (from the \c discrete_state_range \c descriptors
+  /// string set (from the \c discrete_state_set \c descriptors
+  /// specification in \ref VarSV)
+  StringArray discreteStateSetStrLabels;
+  /// labels array for the discrete state variables defined by a
+  /// real set (from the \c discrete_state_set \c descriptors
   /// specification in \ref VarSV)
   StringArray discreteStateSetRealLabels;
 
@@ -710,6 +725,10 @@ public:
   IntVector discreteStateSetIntLowerBnds;
   /// discrete state integer set upper bounds inferred from set values
   IntVector discreteStateSetIntUpperBnds;
+  /// discrete state string set lower bounds inferred from set values
+  StringArray discreteStateSetStrLowerBnds;
+  /// discrete state string set upper bounds inferred from set values
+  StringArray discreteStateSetStrUpperBnds;
   /// discrete state real set lower bounds inferred from set values
   RealVector discreteStateSetRealLowerBnds;
   /// discrete state real set upper bounds inferred from set values
@@ -829,6 +848,7 @@ public:
   size_t state() { return dataVarsRep->numContinuousStateVars +
     dataVarsRep->numDiscreteStateRangeVars +
     dataVarsRep->numDiscreteStateSetIntVars +
+    dataVarsRep->numDiscreteStateSetStrVars +
     dataVarsRep->numDiscreteStateSetRealVars; }
   /// return total number of continuous variables
   size_t continuous_variables() { return dataVarsRep->numContinuousDesVars +

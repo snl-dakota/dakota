@@ -30,7 +30,7 @@ DataVariablesRep::DataVariablesRep():
   numHistogramPtUncVars(0), numContinuousIntervalUncVars(0),
   numDiscreteIntervalUncVars(0), numDiscreteUncSetIntVars(0),
   numDiscreteUncSetRealVars(0), numContinuousStateVars(0),
-  numDiscreteStateRangeVars(0), numDiscreteStateSetIntVars(0),
+  numDiscreteStateRangeVars(0), numDiscreteStateSetIntVars(0), numDiscreteStateSetStrVars(0),
   numDiscreteStateSetRealVars(0), referenceCount(1)
 { }
 
@@ -49,7 +49,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
     << numDiscreteUncSetIntVars << numDiscreteUncSetRealVars
     << numContinuousStateVars << numDiscreteStateRangeVars
-    << numDiscreteStateSetIntVars << numDiscreteStateSetRealVars;
+    << numDiscreteStateSetIntVars << numDiscreteStateSetStrVars << numDiscreteStateSetRealVars;
 
   // Design arrays
   s << continuousDesignVars         << continuousDesignLowerBnds
@@ -96,10 +96,10 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
   s << continuousStateVars         << continuousStateLowerBnds
     << continuousStateUpperBnds    << discreteStateRangeVars
     << discreteStateRangeLowerBnds << discreteStateRangeUpperBnds << discreteStateRangeCat
-    << discreteStateSetIntVars     << discreteStateSetRealVars
-    << discreteStateSetInt         << discreteStateSetReal << discreteStateSetIntCat << discreteStateSetRealCat
+    << discreteStateSetIntVars     << discreteStateSetStrVars << discreteStateSetRealVars
+    << discreteStateSetInt         << discreteStateSetStr     << discreteStateSetReal << discreteStateSetIntCat << discreteStateSetRealCat
     << continuousStateLabels       << discreteStateRangeLabels
-    << discreteStateSetIntLabels   << discreteStateSetRealLabels;
+    << discreteStateSetIntLabels   << discreteStateSetStrLabels << discreteStateSetRealLabels;
 
   // Inferred arrays
   s << discreteDesignSetIntLowerBnds << discreteDesignSetIntUpperBnds
@@ -118,6 +118,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << discreteRealEpistemicUncVars << discreteRealEpistemicUncLowerBnds
     << discreteRealEpistemicUncUpperBnds << discreteRealEpistemicUncLabels
     << discreteStateSetIntLowerBnds << discreteStateSetIntUpperBnds
+    << discreteStateSetStrLowerBnds << discreteStateSetStrUpperBnds
     << discreteStateSetRealLowerBnds << discreteStateSetRealUpperBnds;
 }
 
@@ -136,7 +137,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> numContinuousIntervalUncVars >> numDiscreteIntervalUncVars
     >> numDiscreteUncSetIntVars >> numDiscreteUncSetRealVars
     >> numContinuousStateVars >> numDiscreteStateRangeVars
-    >> numDiscreteStateSetIntVars >> numDiscreteStateSetRealVars;
+    >> numDiscreteStateSetIntVars >> numDiscreteStateSetStrVars >> numDiscreteStateSetRealVars;
 
   // Design arrays
   s >> continuousDesignVars         >> continuousDesignLowerBnds
@@ -183,10 +184,10 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
   s >> continuousStateVars         >> continuousStateLowerBnds
     >> continuousStateUpperBnds    >> discreteStateRangeVars
     >> discreteStateRangeLowerBnds >> discreteStateRangeUpperBnds >> discreteStateRangeCat
-    >> discreteStateSetIntVars     >> discreteStateSetRealVars
-    >> discreteStateSetInt         >> discreteStateSetReal >> discreteStateSetIntCat >> discreteStateSetRealCat
+    >> discreteStateSetIntVars     >> discreteStateSetStrVars >> discreteStateSetRealVars
+    >> discreteStateSetInt         >> discreteStateSetStr     >> discreteStateSetReal >> discreteStateSetIntCat >> discreteStateSetRealCat
     >> continuousStateLabels       >> discreteStateRangeLabels
-    >> discreteStateSetIntLabels   >> discreteStateSetRealLabels;
+    >> discreteStateSetIntLabels   >> discreteStateSetStrLabels >> discreteStateSetRealLabels;
 
   // Inferred arrays
   s >> discreteDesignSetIntLowerBnds >> discreteDesignSetIntUpperBnds
@@ -205,6 +206,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> discreteRealEpistemicUncVars >> discreteRealEpistemicUncLowerBnds
     >> discreteRealEpistemicUncUpperBnds >> discreteRealEpistemicUncLabels
     >> discreteStateSetIntLowerBnds >> discreteStateSetIntUpperBnds
+    >> discreteStateSetStrLowerBnds >> discreteStateSetStrUpperBnds
     >> discreteStateSetRealLowerBnds >> discreteStateSetRealUpperBnds;
 }
 
@@ -223,7 +225,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
     << numDiscreteUncSetIntVars << numDiscreteUncSetRealVars
     << numContinuousStateVars << numDiscreteStateRangeVars
-    << numDiscreteStateSetIntVars << numDiscreteStateSetRealVars;
+    << numDiscreteStateSetIntVars << numDiscreteStateSetStrVars << numDiscreteStateSetRealVars;
 
   // Design arrays
   s << continuousDesignVars         << continuousDesignLowerBnds
@@ -270,10 +272,10 @@ void DataVariablesRep::write(std::ostream& s) const
   s << continuousStateVars         << continuousStateLowerBnds
     << continuousStateUpperBnds    << discreteStateRangeVars << discreteStateRangeCat
     << discreteStateRangeLowerBnds << discreteStateRangeUpperBnds
-    << discreteStateSetIntVars     << discreteStateSetRealVars
-    << discreteStateSetInt         << discreteStateSetReal << discreteStateSetIntCat << discreteStateSetRealCat
+    << discreteStateSetIntVars     << discreteStateSetStrVars << discreteStateSetRealVars
+    << discreteStateSetInt         << discreteStateSetStr << discreteStateSetReal << discreteStateSetIntCat << discreteStateSetRealCat
     << continuousStateLabels       << discreteStateRangeLabels
-    << discreteStateSetIntLabels   << discreteStateSetRealLabels;
+    << discreteStateSetIntLabels   << discreteStateSetStrLabels << discreteStateSetRealLabels;
 
   // Inferred arrays
   s << discreteDesignSetIntLowerBnds << discreteDesignSetIntUpperBnds
@@ -292,6 +294,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << discreteRealEpistemicUncVars << discreteRealEpistemicUncLowerBnds
     << discreteRealEpistemicUncUpperBnds << discreteRealEpistemicUncLabels
     << discreteStateSetIntLowerBnds << discreteStateSetIntUpperBnds
+    << discreteStateSetStrLowerBnds << discreteStateSetStrUpperBnds
     << discreteStateSetRealLowerBnds << discreteStateSetRealUpperBnds;
 }
 

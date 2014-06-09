@@ -1681,8 +1681,8 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<StringSetArray, DataVariablesRep> SSAdv[] = { // must be sorted
-      {"discrete_design_set_string.values", P discreteDesignSetStr}};//,
-      //	{"discrete_state_set_string.values", P discreteStateSetStr}};
+      {"discrete_design_set_string.values", P discreteDesignSetStr},
+      {"discrete_state_set_string.values", P discreteStateSetStr}};
     #undef P
 
     KW<StringSetArray, DataVariablesRep> *kw;
@@ -1831,7 +1831,11 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	 P discreteRealEpistemicUncLabels},
 	{"discrete_state_range.labels", P discreteStateRangeLabels},
 	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
-	{"discrete_state_set_real.labels", P discreteStateSetRealLabels}};
+	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
+	{"discrete_state_set_string.initial_point", P discreteStateSetStrVars},
+	{"discrete_state_set_string.labels", P discreteStateSetStrLabels},
+	{"discrete_state_set_string.lower_bounds", P discreteStateSetStrLowerBnds},
+	{"discrete_state_set_string.upper_bounds", P discreteStateSetStrUpperBnds}};
     #undef P
 
     KW<StringArray, DataVariablesRep> *kw;
@@ -2425,6 +2429,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"discrete_state_range", P numDiscreteStateRangeVars},
 	{"discrete_state_set_int", P numDiscreteStateSetIntVars},
 	{"discrete_state_set_real", P numDiscreteStateSetRealVars},
+	{"discrete_state_set_str", P numDiscreteStateSetStrVars},
 	{"discrete_uncertain_set_int", P numDiscreteUncSetIntVars},
 	{"discrete_uncertain_set_real", P numDiscreteUncSetRealVars},
 	{"exponential_uncertain", P numExponentialUncVars},
@@ -3117,7 +3122,8 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 	 P discreteRealEpistemicUncLabels},
 	{"discrete_state_range.labels", P discreteStateRangeLabels},
 	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
-	{"discrete_state_set_real.labels", P discreteStateSetRealLabels}};
+	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
+	{"discrete_state_set_str.labels", P discreteStateSetStrLabels}};
     #undef P
 
     KW<StringArray, DataVariablesRep> *kw;

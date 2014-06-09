@@ -1948,17 +1948,27 @@ KEYWORD12 variables
 	  [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST ]
 	  [ descriptors ALIAS dsv_descriptors STRINGLIST ]
 	  ]
-	[ discrete_state_set_integer INTEGER > 0
-	  [ initial_state INTEGERLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values INTEGERLIST
-	  [ descriptors STRINGLIST ]
-	  ]
-	[ discrete_state_set_real INTEGER > 0
-	  [ initial_state REALLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values REALLIST
-	  [ descriptors STRINGLIST ]
+	[ discrete_state_set
+	  [ integer INTEGER > 0
+	    elements ALIAS set_values INTEGERLIST
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    [ categorical STRINGLIST ]
+	    [ initial_point INTEGERLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ string INTEGER > 0
+	    elements ALIAS set_values STRINGLIST
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    [ initial_point STRINGLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ real INTEGER > 0
+	    elements ALIAS set_values REALLIST
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    [ categorical STRINGLIST ]
+	    [ initial_point REALLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
 	  ]
 
 KEYWORD12 interface

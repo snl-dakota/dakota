@@ -410,8 +410,9 @@ enum { // kinds of discrete set variables
   DiscSetVar_design_set_str = 1,
   DiscSetVar_design_set_real = 2,
   DiscSetVar_state_set_int = 3,
-  DiscSetVar_state_set_real = 4,
-  DiscSetVar_Nkinds = 5	// number of kinds of discrete set variables
+  DiscSetVar_state_set_str = 4,
+  DiscSetVar_state_set_real = 5,
+  DiscSetVar_Nkinds = 6	// number of kinds of discrete set variables
 };
 
 struct VarLabel {
@@ -426,11 +427,11 @@ struct Var_Info {
   VarLabel DAUIv[DAUIVar_Nkinds], DAURv[DAURVar_Nkinds];
   VarLabel DEUIv[DEUIVar_Nkinds], DEURv[DEURVar_Nkinds];
   IntArray   *nddsi, *nddss, *nddsr, *nCI, *nDI, *nhbp, *nhpp, *ndusi, *ndusr,
-             *ndssi, *ndssr;
+             *ndssi, *ndsss, *ndssr;
   RealVector *ddsr, *CIlb, *CIub, *CIp, *DIp, *DSIp, *DSRp, *dusr,
              *hba, *hbo, *hbc, *hpa, *hpc, *ucm, *dssr;
   IntVector  *ddsi, *DIlb, *DIub, *dusi, *dssi;
-  StringArray *ddss;
+  StringArray *ddss, *dsss;
 };
 
 struct Var_check
@@ -4117,6 +4118,22 @@ static void Vgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset)
 }
 
 static void 
+Vchk_DiscreteStateSetStr(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_state_set_string";
+  Vchk_DSset(dv->numDiscreteStateSetStrVars, kind, vi->ndsss, vi->dsss, 
+	     dv->discreteStateSetStr, dv->discreteStateSetStrVars);
+}
+
+static void Vgen_DiscreteStateSetStr(DataVariablesRep *dv, size_t offset)
+{
+  Vgen_DSset(dv->numDiscreteStateSetStrVars, dv->discreteStateSetStr,
+	     dv->discreteStateSetStrLowerBnds,
+	     dv->discreteStateSetStrUpperBnds,
+	     dv->discreteStateSetStrVars); // no offset, not aggregate L/U/V
+}
+
+static void 
 Vchk_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_state_set_real";
@@ -4326,6 +4343,7 @@ static Var_uinfo DiscSetLbl[DiscSetVar_Nkinds] = {
   VarLabelInfo(ddssv_, DiscreteDesSetStr),
   VarLabelInfo(ddsrv_, DiscreteDesSetReal),
   VarLabelInfo(dssiv_, DiscreteStateSetInt),
+  VarLabelInfo(dsssv_, DiscreteStateSetStr),
   VarLabelInfo(dssrv_, DiscreteStateSetReal)
 };
 #undef VarLabelInfo
@@ -4359,6 +4377,7 @@ static VarLabelChk Vlch[] = {
   { AVI numContinuousStateVars, AVI continuousStateLabels, "csv_", "csv_descriptors" },
   { AVI numDiscreteStateRangeVars, AVI discreteStateRangeLabels, "dsriv_", "dsriv_descriptors" },
   { AVI numDiscreteStateSetIntVars, AVI discreteStateSetIntLabels, "dssiv_", "dssiv_descriptors" },
+  { AVI numDiscreteStateSetStrVars, AVI discreteStateSetStrLabels, "dsssv_", "dsssv_descriptors" },
   { AVI numDiscreteStateSetRealVars, AVI discreteStateSetRealLabels, "dssrv_", "dssrv_descriptors" },
   { AVI numContinuousDesVars, AVI continuousDesignScaleTypes, 0, "cdv_scale_types" }
 };
@@ -4460,6 +4479,7 @@ static Var_check
 	Vchk_3(discrete_design_set_string,DiscreteDesSetStr),
 	Vchk_3(discrete_design_set_real,DiscreteDesSetReal),
 	Vchk_3(discrete_state_set_integer,DiscreteStateSetInt),
+	Vchk_3(discrete_state_set_string,DiscreteStateSetStr),
 	Vchk_3(discrete_state_set_real,DiscreteStateSetReal) },
   var_mp_check_cau[] = {
 	Vchk_3(normal_uncertain,NormalUnc),
@@ -5256,6 +5276,12 @@ check_variables(std::list<DataVariables>* dvl)
 	// Note: set consolidation and/or reordering cannot be undone
 	flatten_num_isa(&dv->discreteStateSetInt, &vi->ndssi);
 	flatten_isa(&dv->discreteStateSetInt,     &vi->dssi);
+      }
+      // discrete state set string vars
+      if ((n = dv->numDiscreteStateSetStrVars)) {
+	// Note: set consolidation and/or reordering cannot be undone
+	flatten_num_ssa(&dv->discreteStateSetStr, &vi->ndsss);
+	flatten_ssa(&dv->discreteStateSetStr,     &vi->dsss);
       }
       // discrete state set real vars
       if ((n = dv->numDiscreteStateSetRealVars)) {
@@ -6176,6 +6202,7 @@ static size_t
 	MP_(numDiscreteIntervalUncVars),
 	MP_(numDiscreteStateRangeVars),
 	MP_(numDiscreteStateSetIntVars),
+	MP_(numDiscreteStateSetStrVars),
 	MP_(numDiscreteStateSetRealVars),
 	MP_(numDiscreteUncSetIntVars),
 	MP_(numDiscreteUncSetRealVars),
@@ -6218,6 +6245,7 @@ static IntArray
 	VP_(nddss),
 	VP_(nddsr),
 	VP_(ndssi),
+	VP_(ndsss),
 	VP_(ndssr),
 	VP_(ndusi),
 	VP_(ndusr),
@@ -6287,13 +6315,18 @@ static StringArray
 	MP_(discreteDesignSetRealLabels),
 	MP_(discreteStateRangeLabels),
 	MP_(discreteStateSetIntLabels),
+	MP_(discreteStateSetStrLabels),
         MP_(discreteStateSetRealLabels),
 	MP_(discreteDesignSetStrVars),
-        VP_(ddss);
+	MP_(discreteStateSetStrVars),
+        VP_(ddss),
+        VP_(dsss);
 
 static BitArray
         MP_(discreteDesignSetIntCat),
-        MP_(discreteDesignSetRealCat);
+        MP_(discreteDesignSetRealCat),
+        MP_(discreteStateSetIntCat),
+        MP_(discreteStateSetRealCat);
 
 static Var_brv
 	MP2s(betaUncAlphas,0.),
