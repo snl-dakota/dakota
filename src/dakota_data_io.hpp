@@ -298,11 +298,12 @@ void read_data(std::istream& s,
 
 
 /// standard istream extraction operator for partial SerialDenseVector
-template <typename OrdinalType, typename ScalarType>
-void read_data_partial(std::istream& s, size_t start_index, size_t num_items,
-		       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+void read_data_partial(std::istream& s,
+		       OrdinalType2 start_index, OrdinalType2 num_items,
+		       Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v)
 {
-  OrdinalType i, end = start_index + num_items;
+  OrdinalType2 i, end = start_index + num_items;
   if (end > v.length()) {
     Cerr << "Error: indexing in Vector<T>::read_data_partial(istream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
@@ -314,15 +315,16 @@ void read_data_partial(std::istream& s, size_t start_index, size_t num_items,
 
 
 /// standard istream extraction operator for partial SerialDenseVector
-/// with labels
-template <typename OrdinalType, typename ScalarType>
+/// with labels (as StringMultiArray&)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void read_data_partial(std::istream& s,
-		       size_t start_index, size_t num_items,
-		       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+		       OrdinalType2 start_index, OrdinalType2 num_items,
+		       Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v,
 		       StringMultiArray& label_array)
 {
-  OrdinalType i, len = v.length(), end = start_index + num_items;
-  if (end > len) { // start_index >= 0 since size_t
+  OrdinalType1 len = v.length();
+  OrdinalType2 i, end = start_index + num_items;
+  if (end > len) {
     Cerr << "Error: indexing in read_data_partial(std::istream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
     abort_handler(-1);
@@ -335,15 +337,16 @@ void read_data_partial(std::istream& s,
 
 
 /// standard istream extraction operator for partial SerialDenseVector
-/// with labels
-template <typename OrdinalType, typename ScalarType>
+/// with labels (as StringMultiArrayView)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void read_data_partial(std::istream& s,
-		       size_t start_index, size_t num_items,
-		       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+		       OrdinalType2 start_index, OrdinalType2 num_items,
+		       Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v,
 		       StringMultiArrayView label_array)
 {
-  OrdinalType i, len = v.length(), end = start_index + num_items;
-  if (end > len) { // start_index >= 0 since size_t
+  OrdinalType1 len = v.length();
+  OrdinalType2 i, end = start_index + num_items;
+  if (end > len) {
     Cerr << "Error: indexing in read_data_partial(std::istream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
     abort_handler(-1);
@@ -351,6 +354,29 @@ void read_data_partial(std::istream& s,
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in read_data_partial(std::istream) "
 	 << "does not equal length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=start_index; i<end; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
+/// standard istream extraction operator for partial SerialDenseVector
+/// with labels (as StringMultiArrayView)
+template <typename OrdinalType>
+void read_data_partial(std::istream& s, OrdinalType start_index,
+		       OrdinalType num_items, StringMultiArray& v,
+		       StringMultiArrayView label_array)
+{
+  OrdinalType i, len = v.size(), end = start_index + num_items;
+  if (end > len) {
+    Cerr << "Error: indexing in read_data_partial(std::istream) exceeds "
+	 << "length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in read_data_partial(std::istream) "
+	 << "does not equal length of StringMultiArray." << std::endl;
     abort_handler(-1);
   }
   for (i=start_index; i<end; ++i)
@@ -379,11 +405,12 @@ void read_data_tabular(std::istream& s,
 
 
 /// tabular istream extraction operator for partial SerialDenseVector
-template <typename OrdinalType, typename ScalarType>
-void read_data_partial_tabular(std::istream& s, size_t start_index,
-  size_t num_items, Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+void read_data_partial_tabular(std::istream& s,
+  OrdinalType2 start_index, OrdinalType2 num_items,
+  Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v)
 {
-  OrdinalType i, end = start_index + num_items;
+  OrdinalType2 i, end = start_index + num_items;
   if (end > v.length()) {
     Cerr << "Error: indexing in Vector<T>::read_data_partial_tabular(istream) "
 	 << "exceeds length of SerialDenseVector." << std::endl;
@@ -396,6 +423,30 @@ void read_data_partial_tabular(std::istream& s, size_t start_index,
       char err[80];
       std::sprintf(err,
 	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
+      throw String(err);
+    }
+  }
+}
+
+
+/// tabular istream extraction operator for partial SerialDenseVector
+template <typename OrdinalType>
+void read_data_partial_tabular(std::istream& s, OrdinalType start_index,
+			       OrdinalType num_items, StringMultiArray& v)
+{
+  OrdinalType i, end = start_index + num_items;
+  if (end > v.size()) {
+    Cerr << "Error: indexing in Vector<T>::read_data_partial_tabular(istream) "
+	 << "exceeds length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=start_index; i<end; ++i) {
+    if (s)
+      s >> v[i];
+    else {
+      char err[80];
+      std::sprintf(err,
+	      "At EOF: insufficient tabular data for StringMultiArray[%d]", i);
       throw String(err);
     }
   }
@@ -550,11 +601,11 @@ void write_data_aprepro(std::ostream& s,
 
 
 /// standard ostream insertion operator for partial SerialDenseVector
-template <typename ScalarType>
-void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
-			const std::vector<ScalarType>& v)
+template <typename OrdinalType, typename ScalarType>
+void write_data_partial(std::ostream& s, OrdinalType start_index,
+			OrdinalType num_items, const std::vector<ScalarType>& v)
 {
-  size_t i, end = start_index + num_items;
+  OrdinalType i, end = start_index + num_items;
   if (end > v.size()) { 
     Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
 	 << "length of std::vector." << std::endl;
@@ -567,32 +618,34 @@ void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
 
 
 /// standard ostream insertion operator for partial SerialDenseVector
-template <typename OrdinalType, typename ScalarType>
-void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+void write_data_partial(std::ostream& s,
+  OrdinalType2 start_index, OrdinalType2 num_items,
+  const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v)
 {
-  size_t end = start_index + num_items;
+  OrdinalType2 end = start_index + num_items;
   if (end > v.length()) { 
     Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
   s << std::scientific << std::setprecision(write_precision);
-  for (OrdinalType i=start_index; i<end; ++i)
+  for (OrdinalType2 i=start_index; i<end; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] <<'\n';
 }
 
 
 /// standard ostream insertion operator for partial SerialDenseVector
 /// with labels
-template <typename OrdinalType, typename ScalarType>
-void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v, 
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+void write_data_partial(std::ostream& s,
+  OrdinalType2 start_index, OrdinalType2 num_items,
+  const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v, 
   const StringMultiArray& label_array)
 {
-  size_t end = start_index + num_items;
-  OrdinalType i, len = v.length();
-  if (end > len) { // start_index >= 0 since size_t
+  OrdinalType2 i, end = start_index + num_items;
+  OrdinalType1 len = v.length();
+  if (end > len) {
     Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
     abort_handler(-1);
@@ -609,16 +662,41 @@ void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
 }
 
 
+/// standard ostream insertion operator for partial SerialDenseVector
+/// with labels
+template <typename OrdinalType>
+void write_data_partial(std::ostream& s,
+  OrdinalType start_index, OrdinalType num_items,
+  const StringMultiArray& v, StringMultiArrayConstView label_array)
+{
+  OrdinalType i, end = start_index + num_items, len = v.size();
+  if (end > len) {
+    Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
+	 << "length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data_partial(std::ostream) "
+	 << "does not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  //s << std::scientific << std::setprecision(write_precision);
+  for (i=start_index; i<end; ++i)
+    s << "                     " << std::setw(write_precision+7) << v[i] << ' '
+      << label_array[i] << '\n';
+}
+
+
 /// aprepro ostream insertion operator for partial SerialDenseVector with labels
-template <typename OrdinalType, typename ScalarType>
-void write_data_partial_aprepro(std::ostream& s, size_t start_index,
-  size_t num_items,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v, 
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+void write_data_partial_aprepro(std::ostream& s, OrdinalType2 start_index,
+  OrdinalType2 num_items,
+  const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v, 
   const StringMultiArray& label_array)
 {
-  size_t end = start_index + num_items;
-  OrdinalType i, len = v.length();
-  if (end > len) { // start_index >= 0 since size_t
+  OrdinalType2 i, end = start_index + num_items;
+  OrdinalType1 len = v.length();
+  if (end > len) {
     Cerr << "Error: indexing in write_data_partial_aprepro(std::ostream) "
 	 << "exceeds length of SerialDenseVector." << std::endl;
     abort_handler(-1);
@@ -629,6 +707,32 @@ void write_data_partial_aprepro(std::ostream& s, size_t start_index,
     abort_handler(-1);
   }
   s << std::scientific << std::setprecision(write_precision);
+  for (i=start_index; i<end; ++i)
+    s << "                    { " << std::setw(15)
+      << std::setiosflags(std::ios::left)
+      << label_array[i].data() << std::resetiosflags(std::ios::adjustfield)
+      << " = " << std::setw(write_precision+7) << v[i] <<" }\n";
+}
+
+
+/// aprepro ostream insertion operator for partial SerialDenseVector with labels
+template <typename OrdinalType>
+void write_data_partial_aprepro(std::ostream& s, OrdinalType start_index,
+  OrdinalType num_items, const StringMultiArray& v,
+  StringMultiArrayConstView label_array)
+{
+  OrdinalType i, end = start_index + num_items, len = v.size();
+  if (end > len) {
+    Cerr << "Error: indexing in write_data_partial_aprepro(std::ostream) "
+	 << "exceeds length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data_partial_aprepro(std::"
+	 << "ostream) does not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  //s << std::scientific << std::setprecision(write_precision);
   for (i=start_index; i<end; ++i)
     s << "                    { " << std::setw(15)
       << std::setiosflags(std::ios::left)
@@ -681,22 +785,41 @@ void write_data_tabular(std::ostream& s, const ScalarType* ptr,
 
 
 /// tabular ostream insertion operator for partial SerialDenseVector
-template <typename OrdinalType, typename ScalarType>
-void write_data_partial_tabular(std::ostream& s, size_t start_index,
-  size_t num_items,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+void write_data_partial_tabular(std::ostream& s,
+  OrdinalType2 start_index, OrdinalType2 num_items,
+  const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v)
 {
-  size_t end = start_index + num_items;
-  if (end > v.length()) { // start_index >= 0 since size_t
+  OrdinalType2 end = start_index + num_items;
+  if (end > v.length()) {
     Cerr << "Error: indexing in write_data_partial_tabular(std::ostream) "
 	 << "exceeds length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
   s << std::setprecision(write_precision) 
     << std::resetiosflags(std::ios::floatfield);
+  for (OrdinalType2 i=start_index; i<end; ++i)
+    s << std::setw(write_precision+4) << v[i] << ' ';
+}
+
+
+/// tabular ostream insertion operator for partial SerialDenseVector
+template <typename OrdinalType>
+void write_data_partial_tabular(std::ostream& s,
+  OrdinalType start_index, OrdinalType num_items, const StringMultiArray& v)
+{
+  OrdinalType end = start_index + num_items;
+  if (end > v.size()) {
+    Cerr << "Error: indexing in write_data_partial_tabular(std::ostream) "
+	 << "exceeds length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  //s << std::setprecision(write_precision) 
+  //  << std::resetiosflags(std::ios::floatfield);
   for (OrdinalType i=start_index; i<end; ++i)
     s << std::setw(write_precision+4) << v[i] << ' ';
 }
+
 
 /// tabular ostream insertion operator for vector of strings
 inline void write_data_tabular(std::ostream& s, const StringArray& sa)
@@ -707,6 +830,7 @@ inline void write_data_tabular(std::ostream& s, const StringArray& sa)
   for (size_t i=0; i<size_sa; ++i)
     s << std::setw(write_precision+4) << sa[i] << ' ';
 }
+
 
 /// tabular ostream insertion operator for view of StringMultiArray
 inline void write_data_tabular(std::ostream& s, StringMultiArrayConstView ma)

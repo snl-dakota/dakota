@@ -198,10 +198,10 @@ void copy_data(const T* ptr, const size_t ptr_len, std::vector<T>& vec)
 
 
 /// copy Array<Teuchos::SerialDenseVector<OT,ST> > to ST*
-template <typename OrdinalType, typename ScalarType> 
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
 void copy_data(
-  const std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva,
-  ScalarType* ptr, const OrdinalType ptr_len, const String& ptr_type)
+  const std::vector<Teuchos::SerialDenseVector<OrdinalType1, ScalarType> >& va,
+  ScalarType* ptr, const OrdinalType2 ptr_len, const String& ptr_type)
 {
   bool c_type;
   if (strtolower(ptr_type) == "c") // case insensitive
@@ -213,9 +213,9 @@ void copy_data(
 	 << "ST* ptr)" << std::endl;
     abort_handler(-1);
   }
-  OrdinalType i, j, num_vec = sdva.size(), total_len = 0, max_vec_len = 0;
+  OrdinalType2 i, j, num_vec = va.size(), total_len = 0, max_vec_len = 0;
   for (i=0; i<num_vec; ++i) { // loop over vectors in array
-    OrdinalType vec_len = sdva[i].length();
+    OrdinalType1 vec_len = va[i].length();
     total_len += vec_len;
     if (!c_type && vec_len > max_vec_len)
       max_vec_len = vec_len;
@@ -228,27 +228,27 @@ void copy_data(
   int cntr = 0;
   if (c_type) {
     for (i=0; i<num_vec; ++i) { // loop over rows
-      OrdinalType vec_len = sdva[i].length(); // allowed to vary
+      OrdinalType1 vec_len = va[i].length(); // allowed to vary
       for (j=0; j<vec_len; ++j) // loop over columns
-        ptr[cntr++] = sdva[i][j];
+        ptr[cntr++] = va[i][j];
     }
   }
   else {
     for (j=0; j<max_vec_len; ++j) // loop over longest column
       for (i=0; i<num_vec; ++i) // loop over rows
-	if (j < sdva[i].length())
-	  ptr[cntr++] = sdva[i][j];
+	if (j < va[i].length())
+	  ptr[cntr++] = va[i][j];
   }
 }
 
 
 /// copy Teuchos::SerialDenseVector<OT,ST> to Teuchos::SerialDenseMatrix<OT,ST>
-template <typename OrdinalType, typename ScalarType> 
-void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv,
-               Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
-               OrdinalType nr, OrdinalType nc)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
+void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
+               Teuchos::SerialDenseMatrix<OrdinalType1, ScalarType>& sdm,
+               OrdinalType2 nr, OrdinalType2 nc)
 {
-  OrdinalType size_sdv = sdv.length();
+  OrdinalType1 size_sdv = sdv.length();
 
   // This function is set up to do the transformation with either nr or nc or
   // both specified.  To omit nr or nc specification, a 0 is passed.
@@ -288,9 +288,9 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv,
     sdm.shapeUninitialized(nr, nc);
   // sdv is head to tail by rows, which matches the visual matrix format that 
   // a user would employ in specifying a matrix as a <LISTof><REAL>
-  OrdinalType counter = 0;
-  for (OrdinalType i=0; i<nr; ++i)
-    for (OrdinalType j=0; j<nc; ++j, ++counter)
+  OrdinalType1 counter = 0;
+  for (OrdinalType1 i=0; i<nr; ++i)
+    for (OrdinalType1 j=0; j<nc; ++j, ++counter)
       sdm(i,j) = sdv[counter];
 }
 
