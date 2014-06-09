@@ -244,17 +244,18 @@ public:
   /// for use when a deep copy is needed (the representation is _not_ shared)
   Constraints copy() const;
 
-  /// reshape the linear/nonlinear/bound constraint arrays arrays within the
-  /// Constraints hierarchy
+  /// shape the lower/upper bound arrays based on sharedVarsData
+  void shape();
+  /// reshape the linear/nonlinear/bound constraint arrays arrays and
+  /// the lower/upper bound arrays
   void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
-	       const SizetArray& vc_totals);
-  /// reshape the linear/nonlinear constraint arrays within the
-  /// Constraints hierarchy
+	       const SharedVariablesData& svd);
+  /// reshape the lower/upper bound arrays based on sharedVarsData
+  void reshape();
+  /// reshape the linear/nonlinear constraint arrays
   void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
-  /// reshape the lower/upper bound arrays
-  void reshape(const SizetArray& vc_totals);
 
   /// sets the inactive view based on higher level (nested) context
   void inactive_view(short view2);

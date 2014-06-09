@@ -75,14 +75,15 @@ RelaxedVariables(const ProblemDescDB& problem_db,
 
   size_t i, ardi_cntr = 0, ardr_cntr = 0,
     acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0,
-    num_ddrv  = ddrv.size(), num_ddsiv = ddsiv.size(), num_ddsrv = ddsrv.size(),
-    num_dauiv = dauiv.size(), num_daurv = daurv.size(),
-    num_deuiv = deuiv.size(), num_deurv = deurv.size(),
-    num_dsrv  = dsrv.size(), num_dssiv = dssiv.size(), num_dssrv = dssrv.size();
+    num_ddrv  = ddrv.length(),  num_ddsiv = ddsiv.length(),
+    num_ddsrv = ddsrv.length(), num_dauiv = dauiv.length(),
+    num_daurv = daurv.length(), num_deuiv = deuiv.length(),
+    num_deurv = deurv.length(), num_dsrv  = dsrv.length(),
+    num_dssiv = dssiv.length(), num_dssrv = dssrv.length();
   const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
   copy_data_partial(cdv, allContinuousVars, acv_offset);
-  acv_offset += cdv.size();
+  acv_offset += cdv.length();
   for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
       allContinuousVars[acv_offset++]   = (Real)ddrv[i];
@@ -100,7 +101,7 @@ RelaxedVariables(const ProblemDescDB& problem_db,
     else                         allDiscreteRealVars[adrv_offset++] = ddsrv[i];
 
   copy_data_partial(cauv, allContinuousVars, acv_offset);
-  acv_offset += cauv.size();
+  acv_offset += cauv.length();
   for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
       allContinuousVars[acv_offset++]   = (Real)dauiv[i];
@@ -113,7 +114,7 @@ RelaxedVariables(const ProblemDescDB& problem_db,
     else                         allDiscreteRealVars[adrv_offset++] = daurv[i];
 
   copy_data_partial(ceuv, allContinuousVars, acv_offset);
-  acv_offset += ceuv.size();
+  acv_offset += ceuv.length();
   for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
       allContinuousVars[acv_offset++]   = (Real)deuiv[i];
@@ -126,7 +127,7 @@ RelaxedVariables(const ProblemDescDB& problem_db,
     else                         allDiscreteRealVars[adrv_offset++] = deurv[i];
 
   copy_data_partial(csv, allContinuousVars, acv_offset);
-  acv_offset += csv.size();
+  acv_offset += csv.length();
   for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
       allContinuousVars[acv_offset++]   = (Real)dsrv[i];

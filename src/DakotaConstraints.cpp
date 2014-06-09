@@ -457,6 +457,24 @@ void Constraints::shape()
 }
 
 
+void Constraints::
+reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+	size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
+	const SharedVariablesData& svd)
+{
+  if (constraintsRep) // envelope
+    constraintsRep->reshape(num_nln_ineq_cons, num_nln_eq_cons,
+			    num_lin_ineq_cons, num_lin_eq_cons, svd);
+  else { // base class implementation for letter
+    sharedVarsData = svd;
+    reshape();
+    build_views();
+    reshape(num_nln_ineq_cons, num_nln_eq_cons, num_lin_ineq_cons,
+	    num_lin_eq_cons);
+  }
+}
+
+
 void Constraints::reshape()
 {
   if (constraintsRep) // envelope
@@ -474,24 +492,6 @@ void Constraints::reshape()
     //allDiscreteStringUpperBnds.resize(num_adsv);
     allDiscreteRealLowerBnds.resize(num_adrv);
     allDiscreteRealUpperBnds.resize(num_adrv);
-  }
-}
-
-
-void Constraints::
-reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
-	size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
-	const SharedVariablesData& svd)
-{
-  if (constraintsRep) // envelope
-    constraintsRep->reshape(num_nln_ineq_cons, num_nln_eq_cons,
-			    num_lin_ineq_cons, num_lin_eq_cons, svd);
-  else { // base class implementation for letter
-    sharedVarsData = svd;
-    reshape();
-    build_views();
-    reshape(num_nln_ineq_cons, num_nln_eq_cons, num_lin_ineq_cons,
-	    num_lin_eq_cons);
   }
 }
 

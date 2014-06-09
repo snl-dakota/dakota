@@ -81,6 +81,10 @@ private:
   /// allRelaxedDiscrete{Int,Real}
   void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
 		  size_t& num_adrv);
+  /// define start indices and counts for active variables based on view
+  void view_start_counts(short view, size_t& cv_start, size_t& div_start,
+			 size_t& dsv_start, size_t& drv_start, size_t& num_cv,
+			 size_t& num_div, size_t& num_dsv, size_t& num_drv);
 
   /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels,
   /// with or without discrete relaxation
@@ -341,6 +345,12 @@ public:
   /// create a deep copy of the current object and return by value
   SharedVariablesData copy() const;
 
+  /// compute all variables sums from
+  /// SharedVariablesDataRep::variablesCompsTotals and
+  /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
+  void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
+		  size_t& num_adrv);
+
   /// initialize start index and counts for active variables
   void initialize_active_start_counts();
   /// initialize start index and counts for inactive variables
@@ -350,6 +360,11 @@ public:
   void initialize_active_components();
   /// initialize the inactive components totals given inactive variable counts
   void initialize_inactive_components();
+
+  /// return allRelaxedDiscreteInt
+  const BitArray& all_relaxed_discrete_int() const;
+  /// return allRelaxedDiscreteReal
+  const BitArray& all_relaxed_discrete_real() const;
 
   /// get num_items continuous labels beginning at index start 
   StringMultiArrayView
@@ -573,11 +588,17 @@ operator=(const SharedVariablesData& svd)
 }
 
 
-void SharedVariablesData::initialize_active_start_counts()
+inline void SharedVariablesData::
+all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
+	   size_t& num_adrv)
+{ svdRep->all_counts(num_acv, num_adiv, num_adsv, num_adrv); }
+
+
+inline void SharedVariablesData::initialize_active_start_counts()
 { svdRep->initialize_active_start_counts(); }
 
 
-void SharedVariablesData::initialize_inactive_start_counts()
+inline void SharedVariablesData::initialize_inactive_start_counts()
 { svdRep->initialize_inactive_start_counts(); }
 
 
@@ -587,6 +608,14 @@ inline void SharedVariablesData::initialize_active_components()
 
 inline void SharedVariablesData::initialize_inactive_components()
 { svdRep->initialize_inactive_components(); }
+
+
+inline const BitArray& SharedVariablesData::all_relaxed_discrete_int() const
+{ svdRep->allRelaxedDiscreteInt; }
+
+
+inline const BitArray& SharedVariablesData::all_relaxed_discrete_real() const
+{ svdRep->allRelaxedDiscreteReal; }
 
 
 inline StringMultiArrayView SharedVariablesData::

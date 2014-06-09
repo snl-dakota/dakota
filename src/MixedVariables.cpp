@@ -37,9 +37,9 @@ MixedVariables(const ProblemDescDB& problem_db,
     "variables.continuous_epistemic_uncertain.initial_point");
   const RealVector& csv  = problem_db.get_rv(
     "variables.continuous_state.initial_state");
-  copy_data_partial(cdv,  allContinuousVars, start); start += cdv.size();
-  copy_data_partial(cauv, allContinuousVars, start); start += cauv.size();
-  copy_data_partial(ceuv, allContinuousVars, start); start += ceuv.size();
+  copy_data_partial(cdv,  allContinuousVars, start); start += cdv.length();
+  copy_data_partial(cauv, allContinuousVars, start); start += cauv.length();
+  copy_data_partial(ceuv, allContinuousVars, start); start += ceuv.length();
   copy_data_partial(csv,  allContinuousVars, start);
 
   start = 0;
@@ -55,11 +55,11 @@ MixedVariables(const ProblemDescDB& problem_db,
     "variables.discrete_state_range.initial_state");
   const IntVector& dssiv = problem_db.get_iv(
     "variables.discrete_state_set_int.initial_state");
-  copy_data_partial(ddrv,  allDiscreteIntVars, start); start += ddrv.size();
-  copy_data_partial(ddsiv, allDiscreteIntVars, start); start += ddsiv.size();
-  copy_data_partial(dauiv, allDiscreteIntVars, start); start += dauiv.size();
-  copy_data_partial(deuiv, allDiscreteIntVars, start); start += deuiv.size();
-  copy_data_partial(dsrv,  allDiscreteIntVars, start); start += dsrv.size();
+  copy_data_partial(ddrv,  allDiscreteIntVars, start); start += ddrv.length();
+  copy_data_partial(ddsiv, allDiscreteIntVars, start); start += ddsiv.length();
+  copy_data_partial(dauiv, allDiscreteIntVars, start); start += dauiv.length();
+  copy_data_partial(deuiv, allDiscreteIntVars, start); start += deuiv.length();
+  copy_data_partial(dsrv,  allDiscreteIntVars, start); start += dsrv.length();
   copy_data_partial(dssiv, allDiscreteIntVars, start);
 
   start = 0;
@@ -85,9 +85,9 @@ MixedVariables(const ProblemDescDB& problem_db,
    "variables.discrete_epistemic_uncertain_real.initial_point");
   const RealVector& dssrv = problem_db.get_rv(
     "variables.discrete_state_set_real.initial_state");
-  copy_data_partial(ddsrv, allDiscreteRealVars, start); start += ddsrv.size();
-  copy_data_partial(daurv, allDiscreteRealVars, start); start += daurv.size();
-  copy_data_partial(deurv, allDiscreteRealVars, start); start += deurv.size();
+  copy_data_partial(ddsrv, allDiscreteRealVars, start); start += ddsrv.length();
+  copy_data_partial(daurv, allDiscreteRealVars, start); start += daurv.length();
+  copy_data_partial(deurv, allDiscreteRealVars, start); start += deurv.length();
   copy_data_partial(dssrv, allDiscreteRealVars, start);
 
 #ifdef REFCOUNT_DEBUG

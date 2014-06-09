@@ -160,6 +160,7 @@ public:
   void continuous_variable(Real c_var, size_t index);
   /// set the active continuous variables
   void continuous_variables(const RealVector& c_vars);
+
   /// return an active discrete integer variable
   int discrete_int_variable(size_t index) const;
   /// return the active discrete integer variables (Note: returns a view by
@@ -171,6 +172,7 @@ public:
   void discrete_int_variable(int di_var, size_t index);
   /// set the active discrete integer variables
   void discrete_int_variables(const IntVector& di_vars);
+
   /// return an active discrete string variable
   const String& discrete_string_variable(size_t index) const;
   /// return the active discrete string variables (Note: returns a view by
@@ -182,6 +184,7 @@ public:
   void discrete_string_variable(const String& ds_var, size_t index);
   /// set the active discrete string variables
   void discrete_string_variables(StringMultiArrayConstView ds_vars);
+
   /// return an active discrete real variable
   Real discrete_real_variable(size_t index) const;
   /// return the active discrete real variables (Note: returns a view by
@@ -213,18 +216,21 @@ public:
   void continuous_variable_labels(StringMultiArrayConstView cv_labels);
   /// set an active continuous variable label
   void continuous_variable_label(const String& cv_label, size_t index);
+
   /// return the active discrete integer variable labels
   StringMultiArrayConstView discrete_int_variable_labels() const;
   /// set the active discrete integer variable labels
   void discrete_int_variable_labels(StringMultiArrayConstView div_labels);
   /// set an active discrete integer variable label
   void discrete_int_variable_label(const String& div_label, size_t index);
+
   /// return the active discrete string variable labels
   StringMultiArrayConstView discrete_string_variable_labels() const;
   /// set the active discrete string variable labels
   void discrete_string_variable_labels(StringMultiArrayConstView dsv_labels);
   /// set an active discrete string variable label
   void discrete_string_variable_label(const String& dsv_label, size_t index);
+
   /// return the active discrete real variable labels
   StringMultiArrayConstView discrete_real_variable_labels() const;
   /// set the active discrete real variable labels
@@ -238,18 +244,21 @@ public:
   void continuous_variable_types(UShortMultiArrayConstView cv_types);
   /// set an active continuous variable type
   void continuous_variable_type(unsigned short cv_type, size_t index);
+
   /// return the active discrete integer variable types
   UShortMultiArrayConstView discrete_int_variable_types() const;
   /// set the active discrete integer variable types
   void discrete_int_variable_types(UShortMultiArrayConstView div_types);
   /// set an active discrete integer variable type
   void discrete_int_variable_type(unsigned short div_type, size_t index);
+
   /// return the active discrete string variable types
   UShortMultiArrayConstView discrete_string_variable_types() const;
   /// set the active discrete string variable types
   void discrete_string_variable_types(UShortMultiArrayConstView dsv_types);
   /// set an active discrete string variable type
   void discrete_string_variable_type(unsigned short dsv_type, size_t index);
+
   /// return the active discrete real variable types
   UShortMultiArrayConstView discrete_real_variable_types() const;
   /// set the active discrete real variable types
@@ -273,14 +282,17 @@ public:
   const RealVector& inactive_continuous_variables() const;
   /// set the inactive continuous variables
   void inactive_continuous_variables(const RealVector& ic_vars);
+
   /// return the inactive discrete variables
   const IntVector& inactive_discrete_int_variables() const;
   /// set the inactive discrete variables
   void inactive_discrete_int_variables(const IntVector& idi_vars);
+
   /// return the inactive discrete variables
   StringMultiArrayConstView inactive_discrete_string_variables() const;
   /// set the inactive discrete variables
   void inactive_discrete_string_variables(StringMultiArrayConstView ids_vars);
+
   /// return the inactive discrete variables
   const RealVector& inactive_discrete_real_variables() const;
   /// set the inactive discrete variables
@@ -290,16 +302,19 @@ public:
   StringMultiArrayConstView inactive_continuous_variable_labels() const;
   /// set the inactive continuous variable labels
   void inactive_continuous_variable_labels(StringMultiArrayConstView ic_vars);
+
   /// return the inactive discrete variable labels
   StringMultiArrayConstView inactive_discrete_int_variable_labels() const;
   /// set the inactive discrete variable labels
   void inactive_discrete_int_variable_labels(
+
     StringMultiArrayConstView idi_vars);
   /// return the inactive discrete variable labels
   StringMultiArrayConstView inactive_discrete_string_variable_labels() const;
   /// set the inactive discrete variable labels
   void inactive_discrete_string_variable_labels(
     StringMultiArrayConstView ids_vars);
+
   /// return the inactive discrete variable labels
   StringMultiArrayConstView inactive_discrete_real_variable_labels() const;
   /// set the inactive discrete variable labels
@@ -326,18 +341,21 @@ public:
   void all_continuous_variables(const RealVector& ac_vars);
   /// set a variable within the all continuous array
   void all_continuous_variable(Real ac_var, size_t index);
+
   /// returns a single array with all discrete variables
   const IntVector& all_discrete_int_variables() const;
   /// sets all discrete variables using a single array
   void all_discrete_int_variables(const IntVector& adi_vars);
   /// set a variable within the all discrete array
   void all_discrete_int_variable(int adi_var, size_t index);
+
   /// returns a single array with all discrete variables
   const StringMultiArray& all_discrete_string_variables() const;
   /// sets all discrete variables using a single array
   void all_discrete_string_variables(StringMultiArrayConstView ads_vars);
   /// set a variable within the all discrete array
   void all_discrete_string_variable(const String& ads_var, size_t index);
+
   /// returns a single array with all discrete variables
   const RealVector& all_discrete_real_variables() const;
   /// sets all discrete variables using a single array
@@ -351,18 +369,23 @@ public:
   void all_continuous_variable_labels(StringMultiArrayConstView acv_labels);
   /// set a label within the all continuous label array
   void all_continuous_variable_label(const String& acv_label,size_t index);
+
   /// returns a single array with all discrete variable labels
   StringMultiArrayView all_discrete_int_variable_labels() const;
   /// sets all discrete variable labels using a single array
   void all_discrete_int_variable_labels(StringMultiArrayConstView adiv_labels);
   /// set a label within the all discrete label array
   void all_discrete_int_variable_label(const String& adiv_label, size_t index);
+
   /// returns a single array with all discrete variable labels
   StringMultiArrayView all_discrete_string_variable_labels() const;
   /// sets all discrete variable labels using a single array
-  void all_discrete_string_variable_labels(StringMultiArrayConstView adsv_labels);
+  void all_discrete_string_variable_labels(StringMultiArrayConstView
+					   adsv_labels);
   /// set a label within the all discrete label array
-  void all_discrete_string_variable_label(const String& adsv_label, size_t index);
+  void all_discrete_string_variable_label(const String& adsv_label,
+					  size_t index);
+
   /// returns a single array with all discrete variable labels
   StringMultiArrayView all_discrete_real_variable_labels() const;
   /// sets all discrete variable labels using a single array
@@ -452,10 +475,8 @@ protected:
   RealVector continuousVars;
   /// the active discrete integer variables array view
   IntVector discreteIntVars;
-
   /// the active discrete string variables view
   StringMultiArrayView discreteStringVars;
-
   /// the active discrete real variables array view
   RealVector discreteRealVars;
 
@@ -463,10 +484,8 @@ protected:
   RealVector inactiveContinuousVars;
   /// the inactive discrete integer variables array view
   IntVector inactiveDiscreteIntVars;
-
   /// the inactive discrete string variables view
   StringMultiArrayView inactiveDiscreteStringVars;
-
   /// the inactive discrete real variables array view
   RealVector inactiveDiscreteRealVars;
 
@@ -530,10 +549,10 @@ inline SharedVariablesData& Variables::shared_data()
 inline size_t Variables::tv() const
 {
   return (variablesRep) ? variablesRep->allContinuousVars.length() +
-    variablesRep->allDiscreteIntVars.length() +
+    variablesRep->allDiscreteIntVars.length()  +
     variablesRep->allDiscreteStringVars.size() +
     variablesRep->allDiscreteRealVars.length() :
-    allContinuousVars.length() + allDiscreteIntVars.length() +
+    allContinuousVars.length()   + allDiscreteIntVars.length() +
     allDiscreteStringVars.size() + allDiscreteRealVars.length();
 }
 
@@ -703,12 +722,11 @@ inline StringMultiArrayConstView Variables::discrete_string_variables() const
 }
 
 
-inline void Variables::discrete_string_variables(StringMultiArrayConstView ds_vars)
+inline void Variables::
+discrete_string_variables(StringMultiArrayConstView ds_vars)
 {
   if (variablesRep) variablesRep->discreteStringVars = ds_vars;
   else              discreteStringVars = ds_vars;
-  // if (variablesRep) variablesRep->discreteStringVars.assign(ds_vars);
-  // else              discreteStringVars.assign(ds_vars);
 }
 
 
@@ -1374,133 +1392,118 @@ inline std::istream& operator>>(std::istream& s, Variables& vars)
 inline std::ostream& operator<<(std::ostream& s, const Variables& vars)
 { vars.write(s); return s; }
 
+
 /// MPIUnpackBuffer extraction operator for Variables.
 inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, Variables& vars)
 { vars.read(s); return s; }
 
+
 /// MPIPackBuffer insertion operator for Variables.
 inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const Variables& vars)
 { vars.write(s); return s; }
+
 
 /// inequality operator for Variables
 inline bool operator!=(const Variables& vars1, const Variables& vars2)
 { return !(vars1 == vars2); }
 
 
-/// ScalarType1 will be Real, ScalarType2 will be int, and ScalarType3 may be
-/// int or Real, but written for arbitrary types
+/// written for arbitrary types, but typical use will be ScalarType1 = Real,
+/// ScalarType2 = int, ScalarType3 = string, and ScalarType4 = int or Real.
 template <typename OrdinalType, typename ScalarType1, typename ScalarType2,
-          typename ScalarType3>
+          typename ScalarType3, typename ScalarType4>
 inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>&  c_vector,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& di_vector,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType3>& dr_vector)
+  const boost::multi_array<ScalarType3, 1>& ds_array,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType4>& dr_vector)
 {
-  // BMA to MSE: blatant hacks to get ProblemDescDB compiling
-  const SizetArray active_totals(comp_totals);
-  //  StringMultiArrayConstView ds_vector;
-  StringArray ds_vector;
-
   size_t i, j,
-    num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
-    num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
-    num_cauv  = active_totals[TOTAL_CAUV],
-    num_dauiv = active_totals[TOTAL_DAUIV],
-    num_dausv = active_totals[TOTAL_DAUSV],
-    num_daurv = active_totals[TOTAL_DAURV],
-    num_ceuv  = active_totals[TOTAL_CEUV],
-    num_deuiv = active_totals[TOTAL_DEUIV],
-    num_deusv = active_totals[TOTAL_DEUSV],
-    num_deurv = active_totals[TOTAL_DEURV],
-    num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
-    num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
+    num_cdv   = comp_totals[TOTAL_CDV],   num_ddiv  = comp_totals[TOTAL_DDIV],
+    num_ddsv  = comp_totals[TOTAL_DDSV],  num_ddrv  = comp_totals[TOTAL_DDRV],
+    num_cauv  = comp_totals[TOTAL_CAUV],  num_dauiv = comp_totals[TOTAL_DAUIV],
+    num_dausv = comp_totals[TOTAL_DAUSV], num_daurv = comp_totals[TOTAL_DAURV],
+    num_ceuv  = comp_totals[TOTAL_CEUV],  num_deuiv = comp_totals[TOTAL_DEUIV],
+    num_deusv = comp_totals[TOTAL_DEUSV], num_deurv = comp_totals[TOTAL_DEURV],
+    num_csv   = comp_totals[TOTAL_CSV],   num_dsiv  = comp_totals[TOTAL_DSIV],
+    num_dssv  = comp_totals[TOTAL_DSSV],  num_dsrv  = comp_totals[TOTAL_DSRV],
     cv_cntr = 0, div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
 
   // design
   write_data_partial(s,  cv_cntr, num_cdv,   c_vector);
   write_data_partial(s, div_cntr, num_ddiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_ddsv, ds_vector);
+  write_data_partial(s, dsv_cntr, num_ddsv, ds_array);
   write_data_partial(s, drv_cntr, num_ddrv, dr_vector);
   cv_cntr  += num_cdv;  div_cntr += num_ddiv;
   dsv_cntr += num_ddsv; drv_cntr += num_ddrv;
   // aleatory uncertain
   write_data_partial(s,  cv_cntr, num_cauv,   c_vector);
   write_data_partial(s, div_cntr, num_dauiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_dausv, ds_vector);
+  write_data_partial(s, dsv_cntr, num_dausv, ds_array);
   write_data_partial(s, drv_cntr, num_daurv, dr_vector);
   cv_cntr  += num_cauv;  div_cntr += num_dauiv;
   dsv_cntr += num_dausv; drv_cntr += num_daurv;
   // epistemic uncertain
   write_data_partial(s,  cv_cntr, num_ceuv,   c_vector);
   write_data_partial(s, div_cntr, num_deuiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_deusv, ds_vector);
+  write_data_partial(s, dsv_cntr, num_deusv, ds_array);
   write_data_partial(s, drv_cntr, num_deurv, dr_vector);
   cv_cntr  += num_ceuv;  div_cntr += num_deuiv;
   dsv_cntr += num_deusv; drv_cntr += num_deurv;
   // state
   write_data_partial(s,  cv_cntr, num_csv,   c_vector);
   write_data_partial(s, div_cntr, num_dsiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_dssv, ds_vector);
+  write_data_partial(s, dsv_cntr, num_dssv, ds_array);
   write_data_partial(s, drv_cntr, num_dsrv, dr_vector);
   //cv_cntr  += num_csv;  div_cntr += num_dsiv;
   //dsv_cntr += num_dssv; drv_cntr += num_dsrv;
 }
 
 
-/// ScalarType1 will be Real, ScalarType2 will be int, and ScalarType3 may be
-/// int or Real, but written for arbitrary types
 template <typename ScalarType>
 inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
-			  const std::vector<ScalarType>&  c_vector,
-			  const std::vector<ScalarType>& di_vector,
-			  const std::vector<ScalarType>& dr_vector)
+			  const std::vector<ScalarType>&  c_array,
+			  const std::vector<ScalarType>& di_array,
+			  const std::vector<ScalarType>& ds_array,
+			  const std::vector<ScalarType>& dr_array)
 {
-  // BMA to MSE: blatant hacks to get ProblemDescDB compiling
-  const SizetArray active_totals(comp_totals);
-  //  StringMultiArrayConstView ds_vector;
-  StringArray ds_vector;
-
   size_t i, j,
-    num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
-    num_ddsv  = active_totals[TOTAL_DDSV], num_ddrv = active_totals[TOTAL_DDRV],
-    num_cauv  = active_totals[TOTAL_CAUV],
-    num_dauiv = active_totals[TOTAL_DAUIV],
-    num_dausv = active_totals[TOTAL_DAUSV],
-    num_daurv = active_totals[TOTAL_DAURV],
-    num_ceuv  = active_totals[TOTAL_CEUV],
-    num_deuiv = active_totals[TOTAL_DEUIV],
-    num_deusv = active_totals[TOTAL_DEUSV],
-    num_deurv = active_totals[TOTAL_DEURV],
-    num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
-    num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
+    num_cdv   = comp_totals[TOTAL_CDV],   num_ddiv  = comp_totals[TOTAL_DDIV],
+    num_ddsv  = comp_totals[TOTAL_DDSV],  num_ddrv  = comp_totals[TOTAL_DDRV],
+    num_cauv  = comp_totals[TOTAL_CAUV],  num_dauiv = comp_totals[TOTAL_DAUIV],
+    num_dausv = comp_totals[TOTAL_DAUSV], num_daurv = comp_totals[TOTAL_DAURV],
+    num_ceuv  = comp_totals[TOTAL_CEUV],  num_deuiv = comp_totals[TOTAL_DEUIV],
+    num_deusv = comp_totals[TOTAL_DEUSV], num_deurv = comp_totals[TOTAL_DEURV],
+    num_csv   = comp_totals[TOTAL_CSV],   num_dsiv  = comp_totals[TOTAL_DSIV],
+    num_dssv  = comp_totals[TOTAL_DSSV],  num_dsrv  = comp_totals[TOTAL_DSRV],
     cv_cntr = 0, div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
 
   // design
-  write_data_partial(s,  cv_cntr, num_cdv,   c_vector);
-  write_data_partial(s, div_cntr, num_ddiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_ddsv, ds_vector);
-  write_data_partial(s, drv_cntr, num_ddrv, dr_vector);
+  write_data_partial(s,  cv_cntr, num_cdv,   c_array);
+  write_data_partial(s, div_cntr, num_ddiv, di_array);
+  write_data_partial(s, dsv_cntr, num_ddsv, ds_array);
+  write_data_partial(s, drv_cntr, num_ddrv, dr_array);
   cv_cntr  += num_cdv;  div_cntr += num_ddiv;
   dsv_cntr += num_ddsv; drv_cntr += num_ddrv;
   // aleatory uncertain
-  write_data_partial(s,  cv_cntr, num_cauv,   c_vector);
-  write_data_partial(s, div_cntr, num_dauiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_dausv, ds_vector);
-  write_data_partial(s, drv_cntr, num_daurv, dr_vector);
+  write_data_partial(s,  cv_cntr, num_cauv,   c_array);
+  write_data_partial(s, div_cntr, num_dauiv, di_array);
+  write_data_partial(s, dsv_cntr, num_dausv, ds_array);
+  write_data_partial(s, drv_cntr, num_daurv, dr_array);
   cv_cntr  += num_cauv;  div_cntr += num_dauiv;
   dsv_cntr += num_dausv; drv_cntr += num_daurv;
   // epistemic uncertain
-  write_data_partial(s,  cv_cntr, num_ceuv,   c_vector);
-  write_data_partial(s, div_cntr, num_deuiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_deusv, ds_vector);
-  write_data_partial(s, drv_cntr, num_deurv, dr_vector);
+  write_data_partial(s,  cv_cntr, num_ceuv,   c_array);
+  write_data_partial(s, div_cntr, num_deuiv, di_array);
+  write_data_partial(s, dsv_cntr, num_deusv, ds_array);
+  write_data_partial(s, drv_cntr, num_deurv, dr_array);
   cv_cntr  += num_ceuv;  div_cntr += num_deuiv;
   dsv_cntr += num_deusv; drv_cntr += num_deurv;
   // state
-  write_data_partial(s,  cv_cntr, num_csv,   c_vector);
-  write_data_partial(s, div_cntr, num_dsiv, di_vector);
-  write_data_partial(s, dsv_cntr, num_dssv, ds_vector);
-  write_data_partial(s, drv_cntr, num_dsrv, dr_vector);
+  write_data_partial(s,  cv_cntr, num_csv,   c_array);
+  write_data_partial(s, div_cntr, num_dsiv, di_array);
+  write_data_partial(s, dsv_cntr, num_dssv, ds_array);
+  write_data_partial(s, drv_cntr, num_dsrv, dr_array);
   //cv_cntr  += num_csv;  div_cntr += num_dsiv;
   //dsv_cntr += num_dssv; drv_cntr += num_dsrv;
 }

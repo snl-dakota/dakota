@@ -93,16 +93,17 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 
   size_t i, ardi_cntr = 0, ardr_cntr = 0,
     acv_offset = 0, adiv_offset = 0, adrv_offset = 0,
-    num_ddrv  = ddrv.size(), num_ddsiv = ddsiv.size(), num_ddsrv = ddsrv.size(),
-    num_dauiv = dauiv.size(), num_daurv = daurv.size(),
-    num_deuiv = deuiv.size(), num_deurv = deurv.size(),
-    num_dsrv  = dsrv.size(), num_dssiv = dssiv.size(), num_dssrv = dssrv.size();
+    num_ddrv  = ddrv_l_bnds.length(),  num_ddsiv = ddsiv_l_bnds.length(),
+    num_ddsrv = ddsrv_l_bnds.length(), num_dauiv = dauiv_l_bnds.length(),
+    num_daurv = daurv_l_bnds.length(), num_deuiv = deuiv_l_bnds.length(),
+    num_deurv = deurv_l_bnds.length(), num_dsrv  = dsrv_l_bnds.length(),
+    num_dssiv = dssiv_l_bnds.length(), num_dssrv = dssrv_l_bnds.length();
   const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
 
   copy_data_partial(cdv_l_bnds, allContinuousLowerBnds, acv_offset);
   copy_data_partial(cdv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += cdv_l_bnds.size();
+  acv_offset += cdv_l_bnds.length();
   for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr]) {
       allContinuousLowerBnds[acv_offset]   = (Real)ddrv_l_bnds[i];
@@ -139,7 +140,7 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 
   copy_data_partial(cauv_l_bnds, allContinuousLowerBnds, acv_offset);
   copy_data_partial(cauv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += cauv_l_bnds.size();
+  acv_offset += cauv_l_bnds.length();
   for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr]) {
       allContinuousLowerBnds[acv_offset]   = (Real)dauiv_l_bnds[i];
@@ -165,7 +166,7 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 
   copy_data_partial(ceuv_l_bnds, allContinuousLowerBnds, acv_offset);
   copy_data_partial(ceuv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += ceuv_l_bnds.size();
+  acv_offset += ceuv_l_bnds.length();
   for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr]) {
       allContinuousLowerBnds[acv_offset]   = (Real)deuiv_l_bnds[i];
@@ -191,7 +192,7 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 
   copy_data_partial(csv_l_bnds, allContinuousLowerBnds, acv_offset);
   copy_data_partial(csv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += csv_l_bnds.size();
+  acv_offset += csv_l_bnds.length();
   for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr]) {
       allContinuousLowerBnds[acv_offset]   = (Real)dsrv_l_bnds[i];
