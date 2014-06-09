@@ -323,13 +323,13 @@ public:
   /// medium weight constructor providing detailed variable counts
   SharedVariablesData(const std::pair<short,short>& view,
 		      const std::map<unsigned short, size_t>& vars_comps,
-		      const BitArray& all_relax_di,
-		      const BitArray& all_relax_dr);
+		      const BitArray& all_relax_di = BitArray(),
+		      const BitArray& all_relax_dr = BitArray());
   /// lightweight constructor providing variable count totals
   SharedVariablesData(const std::pair<short,short>& view,
 		      const SizetArray& vars_comps_totals,
-		      const BitArray& all_relax_di,
-		      const BitArray& all_relax_dr);
+		      const BitArray& all_relax_di = BitArray(),
+		      const BitArray& all_relax_dr = BitArray());
   /// copy constructor
   SharedVariablesData(const SharedVariablesData& svd);
   /// destructor

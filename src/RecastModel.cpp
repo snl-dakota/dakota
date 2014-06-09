@@ -33,7 +33,8 @@ namespace Dakota {
     for equality constraints, typically num nonlinear ineq constraints. */
 RecastModel::
 RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
-	    const SizetArray& vars_comps_totals, bool nonlinear_vars_mapping,
+	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
+	    const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
 	    void (*variables_map)      (const Variables& recast_vars,
 					Variables& sub_model_vars),
 	    void (*set_map)            (const Variables& recast_vars,
@@ -78,15 +79,23 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   }
   // variables are mapped but not resized: deep copy of vars and svd, since
   // types may change in transformed space
-  else if (vars_comps_totals.empty() || 
-	   sub_model_vars.variables_components_totals() == vars_comps_totals) {
-    currentVariables = sub_model_vars.copy(true); // independent svd
-    reshape_vars = false;
-  }
-  else { // variables are resized
-    recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals);
-    currentVariables = Variables(recast_svd);
-    reshape_vars = true;
+  else {
+    const SharedVariablesData& svd = sub_model_vars.shared_data();
+    if ( ( vars_comps_totals.empty() ||
+	   svd.components_totals()         == vars_comps_totals ) &&
+	 ( all_relax_di.empty() ||
+	   svd.all_relaxed_discrete_int()  == all_relax_di )      &&
+	 ( all_relax_dr.empty() || 
+	   svd.all_relaxed_discrete_real() == all_relax_dr ) ) {
+      currentVariables = sub_model_vars.copy(true); // independent svd
+      reshape_vars = false;
+    }
+    else { // variables are resized
+      recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals,
+				       all_relax_di, all_relax_dr);
+      currentVariables = Variables(recast_svd);
+      reshape_vars = true;
+    }
   }
   // propagate number of active continuous vars to deriv vars
   numDerivVars = currentVariables.cv();
@@ -143,9 +152,9 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     constraints, typically num nonlinear ineq constraints. */
 RecastModel::
 RecastModel(const Model& sub_model, //size_t num_deriv_vars,
-	    const SizetArray& vars_comps_totals,
-	    size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
-	    size_t recast_secondary_offset):
+	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
+	    const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
+	    size_t num_recast_secondary_fns, size_t recast_secondary_offset):
   Model(RecastBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
   subModel(sub_model), nonlinearVarsMapping(false), respMapping(false),
@@ -169,15 +178,23 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   }
   // variables are mapped but not resized: deep copy of vars and svd, since
   // types may change in transformed space
-  else if (vars_comps_totals.empty() || 
-	   sub_model_vars.variables_components_totals() == vars_comps_totals) {
-    currentVariables = sub_model_vars.copy(true); // independent svd
-    reshape_vars = false;
-  }
-  else { // variables are resized
-    recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals);
-    currentVariables = Variables(recast_svd);
-    reshape_vars = true;
+  else {
+    const SharedVariablesData& svd = sub_model_vars.shared_data();
+    if ( ( vars_comps_totals.empty() || 
+	   svd.components_totals()         == vars_comps_totals ) &&
+	 ( all_relax_di.empty() || 
+	   svd.all_relaxed_discrete_int()  == all_relax_di )      &&
+	 ( all_relax_dr.empty() || 
+	   svd.all_relaxed_discrete_real() == all_relax_dr ) ) {
+      currentVariables = sub_model_vars.copy(true); // independent svd
+      reshape_vars = false;
+    }
+    else { // variables are resized
+      recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals,
+				       all_relax_di, all_relax_dr);
+      currentVariables = Variables(recast_svd);
+      reshape_vars = true;
+    }
   }
   // propagate number of active continuous vars to deriv vars
   numDerivVars = currentVariables.cv();

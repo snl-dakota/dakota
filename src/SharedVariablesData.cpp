@@ -910,9 +910,9 @@ view_start_counts(short view, size_t& cv_start, size_t& div_start,
 		  size_t& dsv_start, size_t& drv_start, size_t& num_cv,
 		  size_t& num_div, size_t& num_dsv, size_t& num_drv)
 {
-  size_t , i, offset, start_relax_di = 0, start_relax_dr = 0,
+  size_t i, offset, start_relax_di = 0, start_relax_dr = 0,
     count_relax_di = 0, count_relax_dr = 0,
-    num_cdv = variablesCompsTotals[TOTAL_CDV],
+    num_cdv   = variablesCompsTotals[TOTAL_CDV],
     num_ddiv  = variablesCompsTotals[TOTAL_DDIV],
     num_ddsv  = variablesCompsTotals[TOTAL_DDSV],
     num_ddrv  = variablesCompsTotals[TOTAL_DDRV],
@@ -972,17 +972,23 @@ view_start_counts(short view, size_t& cv_start, size_t& div_start,
     drv_start = num_ddrv + num_daurv + num_deurv; num_drv = num_dsrv; break;
   case RELAXED_ALL:
     // from head to tail
-    cv_start  = 0; num_cv  = allContinuousVars.length();
-    div_start = 0; num_div = allDiscreteIntVars.length();
-    dsv_start = 0; num_dsv = allDiscreteStringVars.length();
-    drv_start = 0; num_drv = allDiscreteRealVars.length();
+    for (i=0; i<num_ddiv; ++i)
+      if (allRelaxedDiscreteInt[i])  ++count_relax_di;
+    for (i=0; i<num_ddrv; ++i)
+      if (allRelaxedDiscreteReal[i]) ++count_relax_dr;
+    cv_start = div_start = dsv_start = drv_start = 0;
+    num_cv  = num_cdv  + num_cauv  + num_ceuv  + num_csv
+            + count_relax_di + count_relax_dr;
+    num_div = num_ddiv + num_dauiv + num_deuiv + num_dsiv - count_relax_di;
+    num_dsv = num_ddsv + num_dausv + num_deusv + num_dssv;
+    num_drv = num_ddrv + num_daurv + num_deurv + num_dsrv - count_relax_dr;
     break;
   case RELAXED_DESIGN:
     // start at head
     for (i=0; i<num_ddiv; ++i)
-      if (all_relax_di[i]) ++count_relax_di;
+      if (allRelaxedDiscreteInt[i])  ++count_relax_di;
     for (i=0; i<num_ddrv; ++i)
-      if (all_relax_dr[i]) ++count_relax_dr;
+      if (allRelaxedDiscreteReal[i]) ++count_relax_dr;
     cv_start  = 0; num_cv  = num_cdv  + count_relax_di + count_relax_dr;
     div_start = 0; num_div = num_ddiv - count_relax_di;
     dsv_start = 0; num_dsv = num_ddsv;
@@ -992,14 +998,14 @@ view_start_counts(short view, size_t& cv_start, size_t& div_start,
     // skip over the design variables
     offset = num_ddiv;
     for (i=0; i<offset; ++i)
-      if (all_relax_di[i])        ++start_relax_di;
+      if (allRelaxedDiscreteInt[i])        ++start_relax_di;
     for (i=0; i<num_dauiv; ++i)
-      if (all_relax_di[offset+i]) ++count_relax_di;
+      if (allRelaxedDiscreteInt[offset+i]) ++count_relax_di;
     offset = num_ddrv;
     for (i=0; i<offset; ++i)
-      if (all_relax_dr[i])        ++start_relax_dr;
+      if (allRelaxedDiscreteReal[i])        ++start_relax_dr;
     for (i=0; i<num_daurv; ++i)
-      if (all_relax_dr[offset+i]) ++count_relax_dr;
+      if (allRelaxedDiscreteReal[offset+i]) ++count_relax_dr;
     cv_start  = num_cdv   + start_relax_di + start_relax_dr;
     div_start = num_ddiv  - start_relax_di;
     dsv_start = num_ddsv;
@@ -1013,14 +1019,14 @@ view_start_counts(short view, size_t& cv_start, size_t& div_start,
     // skip over the design and aleatory variables
     offset = num_ddiv + num_dauiv;
     for (i=0; i<offset; ++i)
-      if (all_relax_di[i])        ++start_relax_di;
+      if (allRelaxedDiscreteInt[i])        ++start_relax_di;
     for (i=0; i<num_deuiv; ++i)
-      if (all_relax_di[offset+i]) ++count_relax_di;
+      if (allRelaxedDiscreteInt[offset+i]) ++count_relax_di;
     offset = num_ddrv + num_daurv;
     for (i=0; i<offset; ++i)
-      if (all_relax_dr[i])        ++start_relax_dr;
+      if (allRelaxedDiscreteReal[i])        ++start_relax_dr;
     for (i=0; i<num_deurv; ++i)
-      if (all_relax_dr[offset+i]) ++count_relax_dr;
+      if (allRelaxedDiscreteReal[offset+i]) ++count_relax_dr;
     cv_start  = num_cdv   + num_cauv  + start_relax_di + start_relax_dr;
     div_start = num_ddiv  + num_dauiv - start_relax_di;
     dsv_start = num_ddsv  + num_dausv;
@@ -1034,14 +1040,14 @@ view_start_counts(short view, size_t& cv_start, size_t& div_start,
     // skip over the design variables
     offset = num_ddiv;
     for (i=0; i<offset; ++i)
-      if (all_relax_di[i])        ++start_relax_di;
+      if (allRelaxedDiscreteInt[i])        ++start_relax_di;
     for (i=0; i<num_dauiv+num_deuiv; ++i)
-      if (all_relax_di[offset+i]) ++count_relax_di;
+      if (allRelaxedDiscreteInt[offset+i]) ++count_relax_di;
     offset = num_ddrv;
     for (i=0; i<offset; ++i)
-      if (all_relax_dr[i])        ++start_relax_dr;
+      if (allRelaxedDiscreteReal[i])        ++start_relax_dr;
     for (i=0; i<num_daurv+num_deurv; ++i)
-      if (all_relax_dr[offset+i]) ++count_relax_dr;
+      if (allRelaxedDiscreteReal[offset+i]) ++count_relax_dr;
     cv_start  = num_cdv   + start_relax_di + start_relax_dr;
     div_start = num_ddiv  - start_relax_di;
     dsv_start = num_ddsv;
@@ -1055,14 +1061,14 @@ view_start_counts(short view, size_t& cv_start, size_t& div_start,
     // skip over the design and uncertain variables
     offset = num_ddiv + num_dauiv + num_deuiv;
     for (i=0; i<offset; ++i)
-      if (all_relax_di[i])        ++start_relax_di;
+      if (allRelaxedDiscreteInt[i])        ++start_relax_di;
     for (i=0; i<num_dsiv; ++i)
-      if (all_relax_di[offset+i]) ++count_relax_di;
+      if (allRelaxedDiscreteInt[offset+i]) ++count_relax_di;
     offset = num_ddrv + num_daurv + num_deurv;
     for (i=0; i<offset; ++i)
-      if (all_relax_dr[i])        ++start_relax_dr;
+      if (allRelaxedDiscreteReal[i])        ++start_relax_dr;
     for (i=0; i<num_dsrv; ++i)
-      if (all_relax_dr[offset+i]) ++count_relax_dr;
+      if (allRelaxedDiscreteReal[offset+i]) ++count_relax_dr;
     cv_start  = num_cdv + num_cauv + num_ceuv + start_relax_di + start_relax_dr;
     div_start = num_ddiv + num_dauiv + num_deuiv - start_relax_di;
     dsv_start = num_ddsv + num_dausv + num_deusv;

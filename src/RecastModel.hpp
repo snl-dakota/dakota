@@ -43,7 +43,8 @@ public:
 
   /// standard constructor
   RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
-	      const SizetArray& vars_comps_total, bool nonlinear_vars_mapping,
+	      const SizetArray& vars_comps_total, const BitArray& all_relax_di,
+	      const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
 	      void (*variables_map)      (const Variables& recast_vars,
 					  Variables& sub_model_vars),
 	      void (*set_map)            (const Variables& recast_vars,
@@ -63,9 +64,9 @@ public:
 					  Response& recast_response));
   /// alternate constructor
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
-	      const SizetArray& vars_comps_totals,
-	      size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
-	      size_t recast_secondary_offset);
+	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
+	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
+	      size_t num_recast_secondary_fns, size_t recast_secondary_offset);
 
   /// destructor
   ~RecastModel();
