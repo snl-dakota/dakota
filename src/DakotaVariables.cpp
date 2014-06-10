@@ -574,7 +574,9 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & variablesRep->allDiscreteIntVars;
   StringMultiArrayView adivl = all_discrete_int_variable_labels();
   ar & adivl;
-  ar & variablesRep->allDiscreteStringVars;
+  StringMultiArrayView adsv = 
+    allDiscreteStringVars[boost::indices[idx_range(0, allDiscreteStringVars.size())]];
+  ar & adsv;
   StringMultiArrayView adsvl = all_discrete_string_variable_labels();
   ar & adsvl;
   ar & variablesRep->allDiscreteRealVars;
@@ -604,7 +606,9 @@ void Variables::save(Archive& ar, const unsigned int version) const
     ar & allDiscreteIntVars;
     StringMultiArrayView adivl = all_discrete_int_variable_labels();
     ar & adivl;
-    ar & allDiscreteStringVars;
+    StringMultiArrayConstView adsv = 
+      allDiscreteStringVars[boost::indices[idx_range(0, allDiscreteStringVars.size())]];
+    ar & adsv;
     StringMultiArrayView adsvl = all_discrete_string_variable_labels();
     ar & adsvl;
     ar & allDiscreteRealVars;
@@ -673,6 +677,7 @@ void Variables::read_annotated(std::istream& s)
   SizetArray vars_comps_totals(num_vc_totals);
   for (i=0; i<num_vc_totals; ++i)
     s >> vars_comps_totals[i];
+  // BMA TODO: verify whether these need to be sized (shouldn't have to be)
   size_t num_adiv
     = vars_comps_totals[TOTAL_DDIV]  + vars_comps_totals[TOTAL_DAUIV]
     + vars_comps_totals[TOTAL_DEUIV] + vars_comps_totals[TOTAL_DSIV],
@@ -680,10 +685,8 @@ void Variables::read_annotated(std::istream& s)
     = vars_comps_totals[TOTAL_DDRV]  + vars_comps_totals[TOTAL_DAURV]
     + vars_comps_totals[TOTAL_DEURV] + vars_comps_totals[TOTAL_DSRV];
   BitArray all_relax_di(num_adiv), all_relax_dr(num_adrv);
-  for (i=0; i<num_adiv; ++i)
-    s >> all_relax_di[i];
-  for (i=0; i<num_adrv; ++i)
-    s >> all_relax_dr[i];
+  s >> all_relax_di;
+  s >> all_relax_dr;
 
   SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
 
@@ -727,14 +730,11 @@ void Variables::write_annotated(std::ostream& s) const
     const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
     const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
     s << view.first  << ' ' << view.second << ' ';
-    size_t i, num_vc_totals = vc_totals.size(),
-      num_adiv = all_relax_di.size(), num_adrv = all_relax_dr.size();
+    size_t i, num_vc_totals = vc_totals.size();
     for (i=0; i<num_vc_totals; ++i)
       s << vc_totals[i] << ' ';
-    for (i=0; i<num_adiv; ++i)
-      s << all_relax_di[i];
-    for (i=0; i<num_adrv; ++i)
-      s << all_relax_dr[i];
+    s << all_relax_di << ' ';
+    s << all_relax_dr << ' ';
     write_data_annotated(s, allContinuousVars,
 			 all_continuous_variable_labels());
     write_data_annotated(s, allDiscreteIntVars,
@@ -784,17 +784,9 @@ void Variables::read(MPIUnpackBuffer& s)
     SizetArray vars_comps_totals(num_vc_totals);
     for (i=0; i<num_vc_totals; ++i)
       s >> vars_comps_totals[i];
-    size_t num_adiv
-      = vars_comps_totals[TOTAL_DDIV]  + vars_comps_totals[TOTAL_DAUIV]
-      + vars_comps_totals[TOTAL_DEUIV] + vars_comps_totals[TOTAL_DSIV],
-    num_adrv
-      = vars_comps_totals[TOTAL_DDRV]  + vars_comps_totals[TOTAL_DAURV]
-      + vars_comps_totals[TOTAL_DEURV] + vars_comps_totals[TOTAL_DSRV];
-    BitArray all_relax_di(num_adiv), all_relax_dr(num_adrv);
-    for (i=0; i<num_adiv; ++i)
-      s >> all_relax_di[i];
-    for (i=0; i<num_adrv; ++i)
-      s >> all_relax_dr[i];
+    BitArray all_relax_di, all_relax_dr;
+    s >> all_relax_di;
+    s >> all_relax_dr;
 
     SharedVariablesData svd(view, vars_comps_totals, all_relax_di,
 			    all_relax_dr);
@@ -848,15 +840,13 @@ void Variables::write(MPIPackBuffer& s) const
     const BitArray& all_relax_dr
       = variablesRep->sharedVarsData.all_relaxed_discrete_real();
     s << view.first << view.second;
-    size_t i, num_vc_totals = vc_totals.size(),
-      num_adiv = all_relax_di.size(), num_adrv = all_relax_dr.size();
+    size_t i, num_vc_totals = vc_totals.size();
     for (i=0; i<num_vc_totals; ++i)
       s << vc_totals[i];
-    for (i=0; i<num_adiv; ++i)
-      s << all_relax_di[i];
-    for (i=0; i<num_adrv; ++i)
-      s << all_relax_dr[i];
-
+    // BMA TODO: This will stream the binary representation of the
+    // array; could make it more efficient
+    s << all_relax_di;
+    s << all_relax_dr;
     write_data(s, variablesRep->allContinuousVars,
 	       all_continuous_variable_labels());
     write_data(s, variablesRep->allDiscreteIntVars,
@@ -916,7 +906,7 @@ void Variables::shape()
 
     allContinuousVars.sizeUninitialized(num_acv);
     allDiscreteIntVars.sizeUninitialized(num_adiv);
-    allDiscreteStringVars.sizeUninitialized(num_adsv);
+    allDiscreteStringVars.resize(boost::extents[num_adsv]);
     allDiscreteRealVars.sizeUninitialized(num_adrv);
 
     build_views(); // construct active/inactive views of all arrays
@@ -934,7 +924,7 @@ void Variables::reshape()
 
     allContinuousVars.resize(num_acv);
     allDiscreteIntVars.resize(num_adiv);
-    allDiscreteStringVars.resize(num_adsv);
+    allDiscreteStringVars.resize(boost::extents[num_adsv]);
     allDiscreteRealVars.resize(num_adrv);
 
     build_views(); // construct active/inactive views of all arrays

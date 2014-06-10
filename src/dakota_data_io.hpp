@@ -72,6 +72,40 @@ void serialize(Archive& ar, Dakota::StringMultiArrayView& label_array,
       ar & label_array[i];
 }
 
+/// save a boost dynamic bitset, size, then contents
+template <class Archive, typename Block, typename Allocator>
+inline void save(Archive &ar, 
+		 boost::dynamic_bitset<Block, Allocator> const &bs,
+		 const unsigned int version)
+{
+  size_t size = bs.size();
+  ar & size;
+
+  // create a vector of blocks and serialize it
+  std::vector<Block> vec_block(bs.num_blocks());
+  to_block_range(bs, vec_block.begin());
+  ar & vec_block;
+}
+
+/// load a boost dynamic bitset, size, then contents
+template <class Archive, typename Block, typename Allocator>
+inline void load(Archive &ar,
+		 boost::dynamic_bitset<Block, Allocator> &bs,
+		 const unsigned int version)
+{
+  size_t size;
+  ar & size;
+
+  bs.resize(size);
+
+  // Load vector
+  std::vector<Block> vec_block;
+  ar & vec_block;
+
+  // Convert vector into a bitset
+  from_block_range(vec_block.begin(), vec_block.end(), bs);
+}
+
 }  // namespace serialization
 }  // namespace boost
 
@@ -79,6 +113,8 @@ void serialize(Archive& ar, Dakota::StringMultiArrayView& label_array,
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::IntVector)
 /// Register separate load/save for RealVector type
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::RealVector)
+/// Register separate load/save for BitArray type
+BOOST_SERIALIZATION_SPLIT_FREE(Dakota::BitArray)
 
 
 namespace Dakota {
