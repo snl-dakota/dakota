@@ -1233,7 +1233,7 @@ inline void Variables::
 all_discrete_string_variables(StringMultiArrayConstView ads_vars)
 {
   if (variablesRep) variablesRep->allDiscreteStringVars = ads_vars;
-  else              allDiscreteStringVars = ads_vars;
+  else              allDiscreteStringVars = ads_vars; // TO DO: check boost size
 }
 
 

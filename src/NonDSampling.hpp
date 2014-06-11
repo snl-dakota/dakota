@@ -130,23 +130,23 @@ protected:
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_design_counts(const Model& model, size_t& num_cdv,
-			  size_t& num_didv,   size_t& num_drdv) const;
+			  size_t& num_ddiv,   size_t& num_ddrv) const;
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
-				    size_t& num_diauv, size_t& num_drauv) const;
+				    size_t& num_dauiv, size_t& num_daurv) const;
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
-				    size_t& num_dieuv, size_t& num_dreuv) const;
+				    size_t& num_deuiv, size_t& num_deurv) const;
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_uncertain_counts(const Model& model, size_t& num_cuv,
-			     size_t& num_diuv,   size_t& num_druv) const;
+			     size_t& num_duiv,   size_t& num_durv) const;
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_state_counts(const Model& model, size_t& num_csv,
-			 size_t& num_disv,   size_t& num_drsv) const;
+			 size_t& num_dsiv,   size_t& num_dsrv) const;
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,

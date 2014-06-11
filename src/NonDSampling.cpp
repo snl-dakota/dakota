@@ -326,8 +326,8 @@ update_model_from_sample(Model& model, const Real* sample_vars)
 /** This function computes total design variable counts, not active counts,
     for use in defining offsets and counts within all variables arrays. */
 void NonDSampling::
-view_design_counts(const Model& model, size_t& num_cdv, size_t& num_didv,
-		   size_t& num_drdv) const
+view_design_counts(const Model& model, size_t& num_cdv, size_t& num_ddiv,
+		   size_t& num_ddrv) const
 {
   const Variables& vars = model.current_variables();
   short active_view = vars.view().first;
@@ -335,8 +335,8 @@ view_design_counts(const Model& model, size_t& num_cdv, size_t& num_didv,
   case RELAXED_ALL: case MIXED_ALL: case RELAXED_DESIGN: case MIXED_DESIGN:
     // design vars are included in active counts from NonD
     num_cdv  = numContDesVars;
-    num_didv = numDiscIntDesVars;
-    num_drdv = numDiscRealDesVars; break;
+    num_ddiv = numDiscIntDesVars;
+    num_ddrv = numDiscRealDesVars; break;
   case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_STATE: {
     // design vars are not included in active counts from NonD
     UShortMultiArrayConstView acv_types
@@ -349,7 +349,7 @@ view_design_counts(const Model& model, size_t& num_cdv, size_t& num_didv,
 			 (unsigned short)DISCRETE_DESIGN_SET_INT) +
 	      std::count(acv_types.begin(), acv_types.end(),
 			 (unsigned short)DISCRETE_DESIGN_SET_REAL);
-    num_didv = num_drdv = 0; // no discrete since relaxed
+    num_ddiv = num_ddrv = 0; // no discrete since relaxed
     break;
   }
   case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_STATE: {
@@ -362,19 +362,19 @@ view_design_counts(const Model& model, size_t& num_cdv, size_t& num_didv,
       = model.all_discrete_real_variable_types();
     num_cdv  = std::count(acv_types.begin(), acv_types.end(),
 			  (unsigned short)CONTINUOUS_DESIGN);
-    num_didv = std::count(adiv_types.begin(), adiv_types.end(),
+    num_ddiv = std::count(adiv_types.begin(), adiv_types.end(),
 			  (unsigned short)DISCRETE_DESIGN_RANGE) +
 	       std::count(adiv_types.begin(), adiv_types.end(),
 			  (unsigned short)DISCRETE_DESIGN_SET_INT);
-    num_drdv = std::count(adrv_types.begin(), adrv_types.end(),
+    num_ddrv = std::count(adrv_types.begin(), adrv_types.end(),
 			  (unsigned short)DISCRETE_DESIGN_SET_REAL);
     break;
   }
   case RELAXED_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
   case   MIXED_UNCERTAIN: case   MIXED_ALEATORY_UNCERTAIN:
     num_cdv  = vars.cv_start();
-    num_didv = vars.div_start();
-    num_drdv = vars.drv_start(); break;
+    num_ddiv = vars.div_start();
+    num_ddrv = vars.drv_start(); break;
   }
 }
 
@@ -384,31 +384,31 @@ view_design_counts(const Model& model, size_t& num_cdv, size_t& num_didv,
     all variables arrays. */
 void NonDSampling::
 view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
-			       size_t& num_diauv,  size_t& num_drauv) const
+			       size_t& num_dauiv,  size_t& num_daurv) const
 {
   const Variables& vars = model.current_variables();
   short active_view = vars.view().first;
   switch (active_view) {
   case RELAXED_ALL: case MIXED_ALL: // UNCERTAIN = subset of ACTIVE
     num_cauv  = numContAleatUncVars;
-    num_diauv = numDiscIntAleatUncVars;
-    num_drauv = numDiscRealAleatUncVars; break;
+    num_dauiv = numDiscIntAleatUncVars;
+    num_daurv = numDiscRealAleatUncVars; break;
   case RELAXED_DESIGN:    case RELAXED_STATE:
   case RELAXED_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
     const Pecos::AleatoryDistParams& adp
       = model.aleatory_distribution_parameters();
-    num_cauv = adp.cauv() + adp.dauv(); num_diauv = num_drauv = 0; break;
+    num_cauv = adp.cauv() + adp.dauv(); num_dauiv = num_daurv = 0; break;
   }
   case MIXED_DESIGN:      case MIXED_STATE:
   case MIXED_UNCERTAIN:   case MIXED_EPISTEMIC_UNCERTAIN: {
     const Pecos::AleatoryDistParams& adp
       = model.aleatory_distribution_parameters();
-    num_cauv  = adp.cauv();  num_diauv = adp.diauv();
-    num_drauv = adp.drauv(); break;
+    num_cauv  = adp.cauv();  num_dauiv = adp.dauiv();
+    num_daurv = adp.daurv(); break;
   }
   case RELAXED_ALEATORY_UNCERTAIN: case MIXED_ALEATORY_UNCERTAIN:
     // ALEATORY_UNCERTAIN = same as ACTIVE
-    num_cauv = vars.cv(); num_diauv = vars.div(); num_drauv = vars.drv(); break;
+    num_cauv = vars.cv(); num_dauiv = vars.div(); num_daurv = vars.drv(); break;
   }
 }
 
@@ -418,31 +418,31 @@ view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
     all variables arrays. */
 void NonDSampling::
 view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
-				size_t& num_dieuv,  size_t& num_dreuv) const
+				size_t& num_deuiv,  size_t& num_deurv) const
 {
   const Variables& vars = model.current_variables();
   short active_view = vars.view().first;
   switch (active_view) {
   case RELAXED_ALL: case MIXED_ALL: // UNCERTAIN = subset of ACTIVE
     num_ceuv  = numContEpistUncVars;
-    num_dieuv = numDiscIntEpistUncVars;
-    num_dreuv = numDiscRealEpistUncVars;                                  break;
+    num_deuiv = numDiscIntEpistUncVars;
+    num_deurv = numDiscRealEpistUncVars;                                  break;
   case RELAXED_DESIGN:             case RELAXED_STATE:
   case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_UNCERTAIN: {
     const Pecos::EpistemicDistParams& edp
       = model.epistemic_distribution_parameters();
-    num_ceuv = edp.ceuv() + edp.deuv(); num_dieuv = num_dreuv = 0;        break;
+    num_ceuv = edp.ceuv() + edp.deuv(); num_deuiv = num_deurv = 0;        break;
   }
   case MIXED_DESIGN:               case MIXED_STATE:
   case MIXED_ALEATORY_UNCERTAIN:   case MIXED_UNCERTAIN: {
     const Pecos::EpistemicDistParams& edp
       = model.epistemic_distribution_parameters();
-    num_ceuv = edp.ceuv(); num_dieuv = edp.dieuv(); num_dreuv = edp.dreuv();
+    num_ceuv = edp.ceuv(); num_deuiv = edp.deuiv(); num_deurv = edp.deurv();
     break;
   }
   case RELAXED_EPISTEMIC_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN:
     // EPISTEMIC_UNCERTAIN = same as ACTIVE
-    num_ceuv = vars.cv(); num_dieuv = vars.div(); num_dreuv = vars.drv(); break;
+    num_ceuv = vars.cv(); num_deuiv = vars.div(); num_deurv = vars.drv(); break;
   }
 }
 
@@ -450,16 +450,16 @@ view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
 /** This function computes total uncertain variable counts, not active counts,
     for use in defining offsets and counts within all variables arrays. */
 void NonDSampling::
-view_uncertain_counts(const Model& model, size_t& num_cuv, size_t& num_diuv,
-		      size_t& num_druv) const
+view_uncertain_counts(const Model& model, size_t& num_cuv, size_t& num_duiv,
+		      size_t& num_durv) const
 {
   const Variables& vars = model.current_variables();
   short active_view = vars.view().first;
   switch (active_view) {
   case RELAXED_ALL: case MIXED_ALL: // UNCERTAIN = subset of ACTIVE
     num_cuv  = numContAleatUncVars     + numContEpistUncVars;
-    num_diuv = numDiscIntAleatUncVars  + numDiscIntEpistUncVars;
-    num_druv = numDiscRealAleatUncVars + numDiscRealEpistUncVars;      break;
+    num_duiv = numDiscIntAleatUncVars  + numDiscIntEpistUncVars;
+    num_durv = numDiscRealAleatUncVars + numDiscRealEpistUncVars;      break;
   case RELAXED_DESIGN:             case RELAXED_STATE:
   case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
     const Pecos::AleatoryDistParams& adp
@@ -467,7 +467,7 @@ view_uncertain_counts(const Model& model, size_t& num_cuv, size_t& num_diuv,
     const Pecos::EpistemicDistParams& edp
       = model.epistemic_distribution_parameters();
     num_cuv  = adp.cauv() + adp.dauv() + edp.ceuv() + edp.deuv();
-    num_diuv = num_druv = 0;                                           break;
+    num_duiv = num_durv = 0;                                           break;
   }
   case MIXED_DESIGN:               case MIXED_STATE:
   case MIXED_ALEATORY_UNCERTAIN:   case MIXED_EPISTEMIC_UNCERTAIN: {
@@ -476,18 +476,18 @@ view_uncertain_counts(const Model& model, size_t& num_cuv, size_t& num_diuv,
     const Pecos::EpistemicDistParams& edp
       = model.epistemic_distribution_parameters();
     num_cuv  = adp.cauv()  + edp.ceuv();
-    num_diuv = adp.diauv() + edp.dieuv();
-    num_druv = adp.drauv() + edp.dreuv();                              break;
+    num_duiv = adp.dauiv() + edp.deuiv();
+    num_durv = adp.daurv() + edp.deurv();                              break;
   }
   case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN: // UNCERTAIN = same as ACTIVE
-    num_cuv = vars.cv(); num_diuv = vars.div(); num_druv = vars.drv(); break;
+    num_cuv = vars.cv(); num_duiv = vars.div(); num_durv = vars.drv(); break;
   }
 }
 
 
 void NonDSampling::
-view_state_counts(const Model& model, size_t& num_csv, size_t& num_disv,
-		  size_t& num_drsv) const
+view_state_counts(const Model& model, size_t& num_csv, size_t& num_dsiv,
+		  size_t& num_dsrv) const
 {
   const Variables& vars = model.current_variables();
   short active_view = vars.view().first;
@@ -495,8 +495,8 @@ view_state_counts(const Model& model, size_t& num_csv, size_t& num_disv,
   case RELAXED_ALL: case MIXED_ALL: case RELAXED_STATE: case MIXED_STATE:
     // state vars are included in active counts from NonD
     num_csv  = numContStateVars;
-    num_disv = numDiscIntStateVars;
-    num_drsv = numDiscRealStateVars; break;
+    num_dsiv = numDiscIntStateVars;
+    num_dsrv = numDiscRealStateVars; break;
   case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_DESIGN: {
     // state vars are not included in active counts from NonD
     UShortMultiArrayConstView acv_types
@@ -509,7 +509,7 @@ view_state_counts(const Model& model, size_t& num_csv, size_t& num_disv,
 			 (unsigned short)DISCRETE_STATE_SET_INT) +
 	      std::count(acv_types.begin(), acv_types.end(),
 			 (unsigned short)DISCRETE_STATE_SET_REAL);
-    num_disv = num_drsv = 0; // no discrete since relaxed
+    num_dsiv = num_dsrv = 0; // no discrete since relaxed
     break;
   }
   case MIXED_ALEATORY_UNCERTAIN: case MIXED_DESIGN: {
@@ -522,19 +522,19 @@ view_state_counts(const Model& model, size_t& num_csv, size_t& num_disv,
       = model.all_discrete_real_variable_types();
     num_csv  = std::count(acv_types.begin(), acv_types.end(),
 			  (unsigned short)CONTINUOUS_STATE);
-    num_disv = std::count(adiv_types.begin(), adiv_types.end(),
+    num_dsiv = std::count(adiv_types.begin(), adiv_types.end(),
 			  (unsigned short)DISCRETE_STATE_RANGE) +
 	       std::count(adiv_types.begin(), adiv_types.end(),
 			  (unsigned short)DISCRETE_STATE_SET_INT);
-    num_drsv = std::count(adrv_types.begin(), adrv_types.end(),
+    num_dsrv = std::count(adrv_types.begin(), adrv_types.end(),
 			  (unsigned short)DISCRETE_STATE_SET_REAL);
     break;
   }
   case RELAXED_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
   case   MIXED_UNCERTAIN: case   MIXED_EPISTEMIC_UNCERTAIN:
     num_csv  = vars.acv()  - vars.cv_start()  - vars.cv();
-    num_disv = vars.adiv() - vars.div_start() - vars.div();
-    num_drsv = vars.adrv() - vars.drv_start() - vars.drv(); break;
+    num_dsiv = vars.adiv() - vars.div_start() - vars.div();
+    num_dsrv = vars.adrv() - vars.drv_start() - vars.drv(); break;
   }
 }
 
@@ -561,12 +561,12 @@ mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
   }
   case EPISTEMIC_UNCERTAIN: {
     // design + A uncertain vars define starting indices
-    size_t num_cdv, num_ddiv, num_ddrv, num_cauv, num_diauv, num_drauv;
+    size_t num_cdv, num_ddiv, num_ddrv, num_cauv, num_dauiv, num_daurv;
     view_design_counts(model, num_cdv, num_ddiv, num_ddrv);
-    view_aleatory_uncertain_counts(model, num_cauv, num_diauv, num_drauv);
+    view_aleatory_uncertain_counts(model, num_cauv, num_dauiv, num_daurv);
     cv_start  = num_cdv  + num_cauv;
-    div_start = num_ddiv + num_diauv;
-    drv_start = num_ddrv + num_drauv;
+    div_start = num_ddiv + num_dauiv;
+    drv_start = num_ddrv + num_daurv;
     // E uncertain vars define counts
     view_epistemic_uncertain_counts(model, num_cv, num_div, num_drv);     break;
   }
