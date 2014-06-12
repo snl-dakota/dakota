@@ -1321,21 +1321,21 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  ]
 	[ discrete_design_set {0}
 	  [ integer INTEGER > 0 {N_vam(pintz,numDiscreteDesSetIntVars)}
-	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_nddsi)} ]
+	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
 	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetIntCat)} ]
 	    [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteDesignSetIntVars)} ]
 	    [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteDesignSetIntLabels)} ]
  	    ]
 	  [ string INTEGER > 0 {N_vam(pintz,numDiscreteDesSetStrVars)}
-	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_ddss)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_nddss)} ]
+	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_ddss)}
 	    [ initial_point STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrVars)} ]
 	    [ descriptors STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrLabels)} ]
  	    ]
 	  [ real INTEGER > 0 {N_vam(pintz,numDiscreteDesSetRealVars)}
-	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_nddsr)} ]
+	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
 	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetRealCat)} ]
 	    [ initial_point REALLIST LEN real {N_vam(rvec,discreteDesignSetRealVars)} ]
 	    [ descriptors STRINGLIST LEN real {N_vam(strL,discreteDesignSetRealLabels)} ]
@@ -1478,20 +1478,33 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ initial_point INTEGERLIST LEN discrete_interval_uncertain {N_vam(ivec,discreteIntervalUncVars)} ]
 	  [ descriptors STRINGLIST LEN discrete_interval_uncertain {N_vae(deuilbl,DEUIVar_interval)} ]
 	  ]
-	[ discrete_uncertain_set_integer INTEGER > 0 {N_vam(pintz,numDiscreteUncSetIntVars)}
-	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_integer {N_vam(newiarray,Var_Info_ndusi)} ]
-	  set_values INTEGERLIST {N_vam(newivec,Var_Info_dusi)}
-	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSIp)} ]
-	  [ initial_point INTEGERLIST LEN discrete_uncertain_set_integer {N_vam(ivec,discreteUncSetIntVars)} ]
-	  [ descriptors STRINGLIST LEN discrete_uncertain_set_integer {N_vae(deuilbl,DEUIVar_set_int)} ]
-	  ]
-	[ discrete_uncertain_set_real INTEGER > 0 {N_vam(pintz,numDiscreteUncSetRealVars)}
-	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_real {N_vam(newiarray,Var_Info_ndusr)} ]
-	  set_values REALLIST {N_vam(newrvec,Var_Info_dusr)}
-	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSRp)} ]
-	  [ initial_point REALLIST LEN discrete_uncertain_set_real {N_vam(rvec,discreteUncSetRealVars)} ]
-	  [ descriptors STRINGLIST LEN discrete_uncertain_set_real {N_vae(deurlbl,DEURVar_set_real)} ]
-	  ]
+	[ discrete_uncertain_set {0}
+	  [ integer INTEGER > 0 {N_vam(pintz,numDiscreteUncSetIntVars)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN integer {N_vam(newiarray,Var_Info_ndusi)} ]
+	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_dusi)}
+	    # BMA TODO: change these semantics?
+	    [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSIp)} ]
+	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteUncSetIntCat)} ]
+	    [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteUncSetIntVars)} ]
+	    [ descriptors STRINGLIST LEN integer {N_vae(deuilbl,DEUIVar_set_int)} ]
+	    ]
+	  [ string INTEGER > 0 {N_vam(pintz,numDiscreteUncSetStrVars)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN string {N_vam(newiarray,Var_Info_nduss)} ]
+	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_duss)}
+	    # BMA TODO: change these semantics?
+	    [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSSp)} ]
+	    [ initial_point STRINGLIST LEN string {N_vam(svec,discreteUncSetStrVars)} ]
+	    [ descriptors STRINGLIST LEN string {N_vae(deuslbl,DEUSVar_set_str)} ]
+	    ]
+	  [ real INTEGER > 0 {N_vam(pintz,numDiscreteUncSetRealVars)}
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN real {N_vam(newiarray,Var_Info_ndusr)} ]
+	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dusr)}
+	    [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSRp)} ]
+	    [ categorical STRINGLIST LEN real {N_vam(categorical,discreteUncSetRealCat)} ]
+	    [ initial_point REALLIST LEN real {N_vam(rvec,discreteUncSetRealVars)} ]
+	    [ descriptors STRINGLIST LEN real {N_vae(deurlbl,DEURVar_set_real)} ]
+	    ]
+          ]
 	[ continuous_state INTEGER > 0 {N_vam(pintz,numContinuousStateVars)}
 	  [ initial_state ALIAS csv_initial_state REALLIST LEN continuous_state {N_vam(rvec,continuousStateVars)} ]
 	  [ lower_bounds ALIAS csv_lower_bounds REALLIST LEN continuous_state {N_vam(rvec,continuousStateLowerBnds)} ]
@@ -1506,21 +1519,21 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  ]
 	[ discrete_state_set {0}
 	  [ integer INTEGER > 0 {N_vam(pintz,numDiscreteStateSetIntVars)}
-	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_dssi)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_ndssi)} ]
+	    elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_dssi)}
 	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetIntCat)} ]
 	    [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteStateSetIntVars)} ]
 	    [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteStateSetIntLabels)} ]
  	    ]
 	  [ string INTEGER > 0 {N_vam(pintz,numDiscreteStateSetStrVars)}
-	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_dsss)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_ndsss)} ]
+	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_dsss)}
 	    [ initial_point STRINGLIST LEN string {N_vam(strL,discreteStateSetStrVars)} ]
 	    [ descriptors STRINGLIST LEN string {N_vam(strL,discreteStateSetStrLabels)} ]
  	    ]
 	  [ real INTEGER > 0 {N_vam(pintz,numDiscreteStateSetRealVars)}
-	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_ndssr)} ]
+	    elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
 	    [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetRealCat)} ]
 	    [ initial_point REALLIST LEN real {N_vam(rvec,discreteStateSetRealVars)} ]
 	    [ descriptors STRINGLIST LEN real {N_vam(strL,discreteStateSetRealLabels)} ]

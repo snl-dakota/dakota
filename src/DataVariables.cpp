@@ -28,7 +28,7 @@ DataVariablesRep::DataVariablesRep():
   numHistogramBinUncVars(0), numPoissonUncVars(0), numBinomialUncVars(0),
   numNegBinomialUncVars(0), numGeometricUncVars(0), numHyperGeomUncVars(0),
   numHistogramPtUncVars(0), numContinuousIntervalUncVars(0),
-  numDiscreteIntervalUncVars(0), numDiscreteUncSetIntVars(0),
+  numDiscreteIntervalUncVars(0), numDiscreteUncSetIntVars(0), numDiscreteUncSetStrVars(0),
   numDiscreteUncSetRealVars(0), numContinuousStateVars(0),
   numDiscreteStateRangeVars(0), numDiscreteStateSetIntVars(0), numDiscreteStateSetStrVars(0),
   numDiscreteStateSetRealVars(0), referenceCount(1)
@@ -47,7 +47,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << numBinomialUncVars << numNegBinomialUncVars << numGeometricUncVars
     << numHyperGeomUncVars << numHistogramPtUncVars
     << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
-    << numDiscreteUncSetIntVars << numDiscreteUncSetRealVars
+    << numDiscreteUncSetIntVars << numDiscreteUncSetStrVars << numDiscreteUncSetRealVars
     << numContinuousStateVars << numDiscreteStateRangeVars
     << numDiscreteStateSetIntVars << numDiscreteStateSetStrVars << numDiscreteStateSetRealVars;
 
@@ -90,6 +90,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
     << discreteIntervalUncUpperBounds << discreteIntervalUncVars << discreteIntervalUncCat
     << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntCat
+    << discreteUncSetStrValuesProbs << discreteUncSetStrVars
     << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealCat;
 
   // State arrays
@@ -115,6 +116,8 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << continuousEpistemicUncUpperBnds << continuousEpistemicUncLabels
     << discreteIntEpistemicUncVars << discreteIntEpistemicUncLowerBnds
     << discreteIntEpistemicUncUpperBnds << discreteIntEpistemicUncLabels
+    << discreteStrEpistemicUncVars << discreteStrEpistemicUncLowerBnds
+    << discreteStrEpistemicUncUpperBnds << discreteStrEpistemicUncLabels
     << discreteRealEpistemicUncVars << discreteRealEpistemicUncLowerBnds
     << discreteRealEpistemicUncUpperBnds << discreteRealEpistemicUncLabels
     << discreteStateSetIntLowerBnds << discreteStateSetIntUpperBnds
@@ -135,7 +138,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> numBinomialUncVars >> numNegBinomialUncVars >> numGeometricUncVars
     >> numHyperGeomUncVars >> numHistogramPtUncVars
     >> numContinuousIntervalUncVars >> numDiscreteIntervalUncVars
-    >> numDiscreteUncSetIntVars >> numDiscreteUncSetRealVars
+    >> numDiscreteUncSetIntVars >> numDiscreteUncSetStrVars >> numDiscreteUncSetRealVars
     >> numContinuousStateVars >> numDiscreteStateRangeVars
     >> numDiscreteStateSetIntVars >> numDiscreteStateSetStrVars >> numDiscreteStateSetRealVars;
 
@@ -178,6 +181,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> discreteIntervalUncBasicProbs >> discreteIntervalUncLowerBounds
     >> discreteIntervalUncUpperBounds >> discreteIntervalUncVars >> discreteIntervalUncCat
     >> discreteUncSetIntValuesProbs >> discreteUncSetIntVars >> discreteUncSetIntCat
+    >> discreteUncSetStrValuesProbs >> discreteUncSetStrVars
     >> discreteUncSetRealValuesProbs >> discreteUncSetRealVars >> discreteUncSetRealCat;
 
   // State arrays
@@ -203,6 +207,8 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> continuousEpistemicUncUpperBnds >> continuousEpistemicUncLabels
     >> discreteIntEpistemicUncVars >> discreteIntEpistemicUncLowerBnds
     >> discreteIntEpistemicUncUpperBnds >> discreteIntEpistemicUncLabels
+    >> discreteStrEpistemicUncVars >> discreteStrEpistemicUncLowerBnds
+    >> discreteStrEpistemicUncUpperBnds >> discreteStrEpistemicUncLabels
     >> discreteRealEpistemicUncVars >> discreteRealEpistemicUncLowerBnds
     >> discreteRealEpistemicUncUpperBnds >> discreteRealEpistemicUncLabels
     >> discreteStateSetIntLowerBnds >> discreteStateSetIntUpperBnds
@@ -223,7 +229,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << numBinomialUncVars << numNegBinomialUncVars << numGeometricUncVars
     << numHyperGeomUncVars << numHistogramPtUncVars
     << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
-    << numDiscreteUncSetIntVars << numDiscreteUncSetRealVars
+    << numDiscreteUncSetIntVars << numDiscreteUncSetStrVars << numDiscreteUncSetRealVars
     << numContinuousStateVars << numDiscreteStateRangeVars
     << numDiscreteStateSetIntVars << numDiscreteStateSetStrVars << numDiscreteStateSetRealVars;
 
@@ -266,6 +272,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
     << discreteIntervalUncUpperBounds << discreteIntervalUncVars << discreteIntervalUncCat
     << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntCat
+    << discreteUncSetStrValuesProbs << discreteUncSetStrVars
     << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealCat;
 
   // State arrays
@@ -291,6 +298,8 @@ void DataVariablesRep::write(std::ostream& s) const
     << continuousEpistemicUncUpperBnds << continuousEpistemicUncLabels
     << discreteIntEpistemicUncVars << discreteIntEpistemicUncLowerBnds
     << discreteIntEpistemicUncUpperBnds << discreteIntEpistemicUncLabels
+    << discreteStrEpistemicUncVars << discreteStrEpistemicUncLowerBnds
+    << discreteStrEpistemicUncUpperBnds << discreteStrEpistemicUncLabels
     << discreteRealEpistemicUncVars << discreteRealEpistemicUncLowerBnds
     << discreteRealEpistemicUncUpperBnds << discreteRealEpistemicUncLabels
     << discreteStateSetIntLowerBnds << discreteStateSetIntUpperBnds

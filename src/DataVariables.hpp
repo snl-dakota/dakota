@@ -174,10 +174,13 @@ public:
   /// \c discrete_interval_uncertain specification in \ref VarEUV)
   size_t numDiscreteIntervalUncVars;
   /// number of discrete epistemic uncertain integer set variables (from
-  /// the \c discrete_uncertain_set_integer specification in \ref VarEUV)
+  /// the \c discrete_uncertain_set integer specification in \ref VarEUV)
   size_t numDiscreteUncSetIntVars;
+  /// number of discrete epistemic uncertain string set variables (from
+  /// the \c discrete_uncertain_set string specification in \ref VarEUV)
+  size_t numDiscreteUncSetStrVars;
   /// number of discrete epistemic uncertain real set variables (from
-  /// the \c discrete_uncertain_set_real specification in \ref VarEUV)
+  /// the \c discrete_uncertain_set real specification in \ref VarEUV)
   size_t numDiscreteUncSetRealVars;
   /// number of continuous state variables (from the \c continuous_state
   /// specification in \ref VarSV)
@@ -540,7 +543,7 @@ public:
 
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
-  /// defined by an integer set (from the \c discrete_uncertain_set_integer
+  /// defined by an integer set (from the \c discrete_uncertain_set integer
   /// \c set_values specification in \ref VarDUSIV)
   IntRealMapArray discreteUncSetIntValuesProbs;
   /// initial values of the discrete uncertain set integer variables
@@ -551,7 +554,16 @@ public:
 
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
-  /// defined by a real set (from the \c discrete_uncertain_set_real
+  /// defined by a string set (from the \c discrete_uncertain_set string
+  /// \c set_values specification in \ref VarDUSIV)
+  StringRealMapArray discreteUncSetStrValuesProbs;
+  /// initial values of the discrete uncertain set integer variables
+  /// (from the \c initial_point specification in \ref VarDUSIV)
+  StringArray discreteUncSetStrVars;
+
+  /// complete set of admissible values with associated basic probability
+  /// assignments for each of the discrete epistemic uncertain variables
+  /// defined by a real set (from the \c discrete_uncertain_set_ eal
   /// \c set_values specification in \ref VarDUSRV)
   RealRealMapArray discreteUncSetRealValuesProbs;
   /// initial values of the discrete uncertain set real variables
@@ -693,6 +705,7 @@ public:
   RealVector discreteRealAleatoryUncUpperBnds;
   /// labels for all discrete real aleatory uncertain variables
   StringArray discreteRealAleatoryUncLabels;
+
   /// array of values for all continuous epistemic uncertain variables
   RealVector continuousEpistemicUncVars;
   /// distribution lower bounds for all continuous epistemic uncertain variables
@@ -701,6 +714,7 @@ public:
   RealVector continuousEpistemicUncUpperBnds;
   /// labels for all continuous epistemic uncertain variables
   StringArray continuousEpistemicUncLabels;
+
   /// array of values for all discrete integer epistemic uncertain variables
   IntVector discreteIntEpistemicUncVars;
   /// distribution lower bounds for all discrete integer epistemic
@@ -711,6 +725,18 @@ public:
   IntVector discreteIntEpistemicUncUpperBnds;
   /// labels for all discrete integer epistemic uncertain variables
   StringArray discreteIntEpistemicUncLabels;
+
+  /// array of values for all discrete string epistemic uncertain variables
+  StringArray discreteStrEpistemicUncVars;
+  /// distribution lower bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrEpistemicUncLowerBnds;
+  /// distribution upper bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrEpistemicUncUpperBnds;
+  /// labels for all discrete string epistemic uncertain variables
+  StringArray discreteStrEpistemicUncLabels;
+
   /// array of values for all discrete real epistemic uncertain variables
   RealVector discreteRealEpistemicUncVars;
   /// distribution lower bounds for all discrete real epistemic
@@ -721,6 +747,7 @@ public:
   RealVector discreteRealEpistemicUncUpperBnds;
   /// labels for all discrete real epistemic uncertain variables
   StringArray discreteRealEpistemicUncLabels;
+
   /// discrete state integer set lower bounds inferred from set values
   IntVector discreteStateSetIntLowerBnds;
   /// discrete state integer set upper bounds inferred from set values

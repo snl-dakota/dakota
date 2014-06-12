@@ -192,6 +192,7 @@ public:
   KWH(var_daurlbl);
   KWH(var_ceulbl);
   KWH(var_deuilbl);
+  KWH(var_deuslbl);
   KWH(var_deurlbl);
   KWH(var_pintz);
   KWH(var_start);
