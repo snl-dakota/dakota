@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1271 distinct keywords (plus 201 aliases) **/
+/** 1272 distinct keywords (plus 201 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -2152,16 +2152,17 @@ static KeyWord
 		{"num_pairs",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nhbp)},
 		{"ordinates",14,0,3,2,0,0.,0.,0,N_vam(newrvec,Var_Info_hbo)}
 		},
-	kw_338[9] = {
-		{"abscissas",14,0,2,1,0,0.,0.,0,N_vam(newrvec,Var_Info_hpa)},
-		{"counts",14,0,3,2,0,0.,0.,0,N_vam(newrvec,Var_Info_hpc)},
-		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(daurlbl,DAURVar_histogram_point)},
-		{"huv_num_point_pairs",5,0,1,0,0,0.,0.,5,N_vam(newiarray,Var_Info_nhpp)},
-		{"huv_point_abscissas",6,0,2,1,0,0.,0.,-4,N_vam(newrvec,Var_Info_hpa)},
-		{"huv_point_counts",6,0,3,2,0,0.,0.,-4,N_vam(newrvec,Var_Info_hpc)},
-		{"huv_point_descriptors",7,0,5,0,0,0.,0.,-4,N_vae(daurlbl,DAURVar_histogram_point)},
-		{"initial_point",14,0,4,0,0,0.,0.,0,N_vam(rvec,histogramPointUncVars)},
-		{"num_pairs",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nhpp)}
+	kw_338[10] = {
+		{"abscissas",14,0,3,2,0,0.,0.,0,N_vam(newrvec,Var_Info_hpra)},
+		{"counts",14,0,4,3,0,0.,0.,0,N_vam(newrvec,Var_Info_hprc)},
+		{"descriptors",15,0,6,0,0,0.,0.,0,N_vae(daurlbl,DAURVar_histogram_point_real)},
+		{"huv_num_point_pairs",5,0,2,0,0,0.,0.,5,N_vam(newiarray,Var_Info_nhprp)},
+		{"huv_point_abscissas",6,0,3,2,0,0.,0.,-4,N_vam(newrvec,Var_Info_hpra)},
+		{"huv_point_counts",6,0,4,3,0,0.,0.,-4,N_vam(newrvec,Var_Info_hprc)},
+		{"huv_point_descriptors",7,0,6,0,0,0.,0.,-4,N_vae(daurlbl,DAURVar_histogram_point_real)},
+		{"initial_point",14,0,5,0,0,0.,0.,0,N_vam(rvec,histogramPointRealUncVars)},
+		{"num_pairs",13,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nhprp)},
+		{"real",0x19,0,1,1,0,0.,0.,0,N_vam(pintz,numHistogramPtRealUncVars)}
 		},
 	kw_339[5] = {
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(dauilbl,DAUIVar_hypergeometric)},
@@ -2276,7 +2277,7 @@ static KeyWord
 		{"geometric_uncertain",0x19,4,22,0,kw_335,0.,0.,0,N_vam(pintz,numGeometricUncVars)},
 		{"gumbel_uncertain",0x19,7,15,0,kw_336,0.,0.,0,N_vam(pintz,numGumbelUncVars)},
 		{"histogram_bin_uncertain",0x19,11,18,0,kw_337,0.,0.,0,N_vam(pintz,numHistogramBinUncVars)},
-		{"histogram_point_uncertain",0x19,9,24,0,kw_338,0.,0.,0,N_vam(pintz,numHistogramPtUncVars)},
+		{"histogram_point_uncertain",8,10,24,0,kw_338},
 		{"hypergeometric_uncertain",0x19,5,23,0,kw_339,0.,0.,0,N_vam(pintz,numHyperGeomUncVars)},
 		{"id_variables",11,0,1,0,0,0.,0.,0,N_vam(str,idVariables)},
 		{"interval_uncertain",0x11,10,26,0,kw_315,0.,0.,-18,N_vam(pintz,numContinuousIntervalUncVars)},

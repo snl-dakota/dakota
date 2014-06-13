@@ -27,7 +27,8 @@ DataVariablesRep::DataVariablesRep():
   numGumbelUncVars(0), numFrechetUncVars(0), numWeibullUncVars(0),
   numHistogramBinUncVars(0), numPoissonUncVars(0), numBinomialUncVars(0),
   numNegBinomialUncVars(0), numGeometricUncVars(0), numHyperGeomUncVars(0),
-  numHistogramPtUncVars(0), numContinuousIntervalUncVars(0),
+  numHistogramPtIntUncVars(0), numHistogramPtStrUncVars(0), numHistogramPtRealUncVars(0), 
+  numContinuousIntervalUncVars(0),
   numDiscreteIntervalUncVars(0), numDiscreteUncSetIntVars(0), numDiscreteUncSetStrVars(0),
   numDiscreteUncSetRealVars(0), numContinuousStateVars(0),
   numDiscreteStateRangeVars(0), numDiscreteStateSetIntVars(0), numDiscreteStateSetStrVars(0),
@@ -45,7 +46,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
     << numWeibullUncVars << numHistogramBinUncVars << numPoissonUncVars
     << numBinomialUncVars << numNegBinomialUncVars << numGeometricUncVars
-    << numHyperGeomUncVars << numHistogramPtUncVars
+    << numHyperGeomUncVars << numHistogramPtIntUncVars << numHistogramPtStrUncVars << numHistogramPtRealUncVars
     << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
     << numDiscreteUncSetIntVars << numDiscreteUncSetStrVars << numDiscreteUncSetRealVars
     << numContinuousStateVars << numDiscreteStateRangeVars
@@ -81,7 +82,10 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << negBinomialUncProbPerTrial << negBinomialUncNumTrials
     << negBinomialUncVars << negBinomialUncCat << geometricUncProbPerTrial << geometricUncVars << geometricUncCat
     << hyperGeomUncTotalPop << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn
-    << hyperGeomUncVars << hyperGeomUncCat << histogramUncPointPairs << histogramPointUncVars << histogramUncPointIntCat << histogramUncPointRealCat
+    << hyperGeomUncVars << hyperGeomUncCat 
+    << histogramUncPointIntPairs << histogramPointIntUncVars << histogramUncPointIntCat 
+    << histogramUncPointStrPairs << histogramPointStrUncVars
+    << histogramUncPointRealPairs << histogramPointRealUncVars << histogramUncPointRealCat 
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
@@ -110,6 +114,8 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << continuousAleatoryUncUpperBnds << continuousAleatoryUncLabels
     << discreteIntAleatoryUncVars << discreteIntAleatoryUncLowerBnds
     << discreteIntAleatoryUncUpperBnds << discreteIntAleatoryUncLabels
+    << discreteStrAleatoryUncVars << discreteStrAleatoryUncLowerBnds
+    << discreteStrAleatoryUncUpperBnds << discreteStrAleatoryUncLabels
     << discreteRealAleatoryUncVars << discreteRealAleatoryUncLowerBnds
     << discreteRealAleatoryUncUpperBnds << discreteRealAleatoryUncLabels
     << continuousEpistemicUncVars << continuousEpistemicUncLowerBnds
@@ -136,7 +142,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> numGammaUncVars >> numGumbelUncVars >> numFrechetUncVars
     >> numWeibullUncVars >> numHistogramBinUncVars >> numPoissonUncVars
     >> numBinomialUncVars >> numNegBinomialUncVars >> numGeometricUncVars
-    >> numHyperGeomUncVars >> numHistogramPtUncVars
+    >> numHyperGeomUncVars >> numHistogramPtIntUncVars >> numHistogramPtStrUncVars >> numHistogramPtRealUncVars
     >> numContinuousIntervalUncVars >> numDiscreteIntervalUncVars
     >> numDiscreteUncSetIntVars >> numDiscreteUncSetStrVars >> numDiscreteUncSetRealVars
     >> numContinuousStateVars >> numDiscreteStateRangeVars
@@ -172,7 +178,10 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> negBinomialUncProbPerTrial >> negBinomialUncNumTrials
     >> negBinomialUncVars >> negBinomialUncCat >> geometricUncProbPerTrial >> geometricUncVars >> geometricUncCat
     >> hyperGeomUncTotalPop >> hyperGeomUncSelectedPop >> hyperGeomUncNumDrawn
-    >> hyperGeomUncVars >>hyperGeomUncCat >> histogramUncPointPairs >> histogramPointUncVars >> histogramUncPointIntCat >> histogramUncPointRealCat
+    >> hyperGeomUncVars >>hyperGeomUncCat 
+    >> histogramUncPointIntPairs >> histogramPointIntUncVars >> histogramUncPointIntCat 
+    >> histogramUncPointStrPairs >> histogramPointStrUncVars
+    >> histogramUncPointRealPairs >> histogramPointRealUncVars >> histogramUncPointRealCat
     >> uncertainCorrelations;
 
   // Epistemic uncertain arrays
@@ -201,6 +210,8 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> continuousAleatoryUncUpperBnds >> continuousAleatoryUncLabels
     >> discreteIntAleatoryUncVars >> discreteIntAleatoryUncLowerBnds
     >> discreteIntAleatoryUncUpperBnds >> discreteIntAleatoryUncLabels
+    >> discreteStrAleatoryUncVars >> discreteStrAleatoryUncLowerBnds
+    >> discreteStrAleatoryUncUpperBnds >> discreteStrAleatoryUncLabels
     >> discreteRealAleatoryUncVars >> discreteRealAleatoryUncLowerBnds
     >> discreteRealAleatoryUncUpperBnds >> discreteRealAleatoryUncLabels
     >> continuousEpistemicUncVars >> continuousEpistemicUncLowerBnds
@@ -227,7 +238,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
     << numWeibullUncVars << numHistogramBinUncVars << numPoissonUncVars
     << numBinomialUncVars << numNegBinomialUncVars << numGeometricUncVars
-    << numHyperGeomUncVars << numHistogramPtUncVars
+    << numHyperGeomUncVars << numHistogramPtIntUncVars << numHistogramPtStrUncVars << numHistogramPtRealUncVars
     << numContinuousIntervalUncVars << numDiscreteIntervalUncVars
     << numDiscreteUncSetIntVars << numDiscreteUncSetStrVars << numDiscreteUncSetRealVars
     << numContinuousStateVars << numDiscreteStateRangeVars
@@ -263,7 +274,10 @@ void DataVariablesRep::write(std::ostream& s) const
     << negBinomialUncProbPerTrial << negBinomialUncNumTrials
     << negBinomialUncVars << negBinomialUncCat << geometricUncProbPerTrial << geometricUncVars << geometricUncCat
     << hyperGeomUncTotalPop << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn
-    << hyperGeomUncVars << hyperGeomUncCat << histogramUncPointPairs << histogramPointUncVars << histogramUncPointIntCat << histogramUncPointRealCat
+    << hyperGeomUncVars << hyperGeomUncCat 
+    << histogramUncPointIntPairs << histogramPointIntUncVars << histogramUncPointIntCat 
+    << histogramUncPointStrPairs << histogramPointStrUncVars
+    << histogramUncPointRealPairs << histogramPointRealUncVars << histogramUncPointRealCat
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
@@ -292,6 +306,8 @@ void DataVariablesRep::write(std::ostream& s) const
     << continuousAleatoryUncUpperBnds << continuousAleatoryUncLabels
     << discreteIntAleatoryUncVars << discreteIntAleatoryUncLowerBnds
     << discreteIntAleatoryUncUpperBnds << discreteIntAleatoryUncLabels
+    << discreteStrAleatoryUncVars << discreteStrAleatoryUncLowerBnds
+    << discreteStrAleatoryUncUpperBnds << discreteStrAleatoryUncLabels
     << discreteRealAleatoryUncVars << discreteRealAleatoryUncLowerBnds
     << discreteRealAleatoryUncUpperBnds << discreteRealAleatoryUncLabels
     << continuousEpistemicUncVars << continuousEpistemicUncLowerBnds

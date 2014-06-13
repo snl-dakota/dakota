@@ -2030,6 +2030,7 @@ TAG "variables/hypergeometric_uncertain/descriptors"
 TAG "variables/histogram_point_uncertain" GROUP "Discrete Aleatory Uncertain"
 	DESC "{histogram point uncertain variables} VarCommands.html#VarDAUV_Point_Histogram"
 
+TAG "variables/histogram_point_uncertain/real"
 TAG "variables/histogram_point_uncertain/num_pairs"
 	DESC "{key to apportionment among point-based histogram variables} VarCommands.html#VarDAUV_Point_Histogram"
 

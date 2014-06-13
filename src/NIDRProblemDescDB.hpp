@@ -189,6 +189,7 @@ public:
   KWH(var_categorical);
   KWH(var_caulbl);
   KWH(var_dauilbl);
+  KWH(var_dauslbl);
   KWH(var_daurlbl);
   KWH(var_ceulbl);
   KWH(var_deuilbl);

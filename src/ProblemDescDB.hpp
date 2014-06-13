@@ -280,6 +280,8 @@ public:
   void set(const String& entry_name, const RealSetArray& rsa);
   /// set an IntRealMapArray within the database based on an identifier string
   void set(const String& entry_name, const IntRealMapArray& irma);
+  /// set a StringRealMapArray within the database based on an identifier string
+  void set(const String& entry_name, const StringRealMapArray& srma);
   /// set a RealRealMapArray within the database based on an identifier string
   void set(const String& entry_name, const RealRealMapArray& rrma);
   /// set a StringArray within the database based on an identifier string

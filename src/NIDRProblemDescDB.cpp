@@ -381,11 +381,17 @@ enum { // kinds of discrete aleatory uncertain integer variables
   DAUIVar_negative_binomial = 2,
   DAUIVar_geometric = 3,
   DAUIVar_hypergeometric = 4,
-  DAUIVar_Nkinds = 5	// number of kinds of dauiv variables
+  DAUIVar_histogram_point_int = 5,
+  DAUIVar_Nkinds = 6	// number of kinds of dauiv variables
+};
+
+enum { // kinds of discrete aleatory uncertain string variables
+  DAUSVar_histogram_point_str = 0,
+  DAUSVar_Nkinds = 1	// number of kinds of dausv variables
 };
 
 enum { // kinds of discrete aleatory uncertain real variables
-  DAURVar_histogram_point = 0,
+  DAURVar_histogram_point_real = 0,
   DAURVar_Nkinds = 1	// number of kinds of daurv variables
 };
 
@@ -429,14 +435,18 @@ struct Var_Info {
   DataVariablesRep *dv;
   DataVariables    *dv_handle;
   VarLabel  CAUv[ CAUVar_Nkinds],  CEUv[ CEUVar_Nkinds];
-  VarLabel DAUIv[DAUIVar_Nkinds], DAURv[DAURVar_Nkinds];
+  VarLabel DAUIv[DAUIVar_Nkinds], DAUSv[DAURVar_Nkinds], DAURv[DAURVar_Nkinds];
   VarLabel DEUIv[DEUIVar_Nkinds], DEUSv[DEUSVar_Nkinds], DEURv[DEURVar_Nkinds];
-  IntArray   *nddsi, *nddss, *nddsr, *nCI, *nDI, *nhbp, *nhpp, *ndusi, *nduss, *ndusr,
+  IntArray   *nddsi, *nddss, *nddsr, *nCI, *nDI, *nhbp,
+             *nhpip, *nhpsp, *nhprp, 
+             *ndusi, *nduss, *ndusr,
              *ndssi, *ndsss, *ndssr;
   RealVector *ddsr, *CIlb, *CIub, *CIp, *DIp, *DSIp, *DSSp, *DSRp, *dusr,
-             *hba, *hbo, *hbc, *hpa, *hpc, *ucm, *dssr;
-  IntVector  *ddsi, *DIlb, *DIub, *dusi, *dssi;
-  StringArray *ddss, *duss, *dsss;
+             *hba, *hbo, *hbc, 
+             *hpic, *hpra, *hprc, *hpsc,
+             *ucm, *dssr;
+  IntVector  *ddsi, *DIlb, *DIub, *hpia, *dusi, *dssi;
+  StringArray *ddss, *hpsa, *duss, *dsss;
 };
 
 struct Var_check
@@ -2803,8 +2813,7 @@ static void
 Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhbp;
-  RealVector *hba, *hbo, *hbc, *hbpi;
-  RealVectorArray *hbp;
+  RealVector *hba, *hbo, *hbc;
   int nhbpi, avg_nhbpi;
   size_t i, j, num_a, num_o, num_c, m, n, tothbp, cntr;
   Real x, y, bin_width, count_sum;
@@ -2848,12 +2857,12 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nhbpi = num_a / m;
     }
-    hbp = &dv->histogramUncBinPairs;
-    hbp->resize(m);
+    RealRealMapArray& hbp = dv->histogramUncBinPairs;
+    hbp.resize(m);
     for (i=cntr=0; i<m; ++i) {
       nhbpi = (key) ? (*nhbp)[i] : avg_nhbpi;
-      hbpi  = &((*hbp)[i]);
-      hbpi->sizeUninitialized(2*nhbpi);
+      // hbpi is map<Real value, Real probability> for a single variable i
+      RealRealMap& hbpi = hbp[i];
       count_sum = 0.;
       for (j=0; j<nhbpi; ++j, ++cntr) {
 	Real x = (*hba)[cntr];                          // abscissas
@@ -2876,38 +2885,41 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	  Squawk("histogram bin y values must end with 0");
 	  return;
 	}
-	(*hbpi)[2*j]   = x; // abscissa
-	(*hbpi)[2*j+1] = y; // count
+	// insert without checking since keys (abscissas) must increase
+	hbpi[x] = y;
       }
-      // normalize counts to sum to 1
-      for (j=0; j<nhbpi-1; ++j)
-	(*hbpi)[2*j+1] /= count_sum;
+      // normalize counts to sum to 1, omitting last value
+      RRMCIter it_end = --(hbpi.end());
+      for (RRMIter it = hbpi.begin(); it != it_end; ++it)
+	it->second /= count_sum;
     }
   }
 }
 
 static void Vgen_HistogramBinUnc(DataVariablesRep *dv, size_t offset)
 {
-  RealVector *L, *U, *V, *r, *IP;
+  RealVector *L, *U, *V, *IP;
   Real mean, stdev;
 
   L = &dv->continuousAleatoryUncLowerBnds;
   U = &dv->continuousAleatoryUncUpperBnds;
   V = &dv->continuousAleatoryUncVars; IP = &dv->histogramBinUncVars;
-  RealVectorArray *A = &dv->histogramUncBinPairs;
+  const RealRealMapArray& A = dv->histogramUncBinPairs;
   size_t i, j, n = dv->numHistogramBinUncVars, num_IP = IP->length();
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    r = &((*A)[j]);
-    (*L)[i] = (*r)[0];
-    (*U)[i] = (*r)[r->length() - 2];
+    // the pairs are sorted, so take the first and next to last
+    // (omitting the trailing zero)
+    const RealRealMap& hist_bin_pairs = A[j];
+    (*L)[i] = hist_bin_pairs.begin()->first;
+    (*U)[i] = (--hist_bin_pairs.end())->first;
     if (num_IP) {
       if      ((*IP)[j] < (*L)[i]) (*V)[i] =  (*L)[i];
       else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
       else                         (*V)[i] = (*IP)[j];
     }
-    else Pecos::moments_from_histogram_bin_params(*r, (*V)[i], stdev);
+    else Pecos::moments_from_histogram_bin_params(hist_bin_pairs, (*V)[i], stdev);
   }
 }
 
@@ -3086,29 +3098,30 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
 }
 
 static void 
-Vchk_HistogramPtUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
-  IntArray *nhpp;
-  RealVector *hpa, *hpc, *hppi;
-  RealVectorArray *hpp;
+  IntArray *nhprp;
+  IntVector *hpia;
+  RealVector *hprc;
   int nhppi, avg_nhppi;
   size_t i, j, num_a, num_c, m, n, tothpp, cntr;
-  Real x, y, bin_width, count_sum;
+  Real y, bin_width, count_sum;
+  int x;
 
-  if (hpa = vi->hpa) {
-    num_a = hpa->length();              // abscissas
-    hpc = vi->hpc; num_c = hpc->length(); // counts
+  if (hpia = vi->hpia) {
+    num_a = hpia->length();              // abscissas
+    hprc = vi->hprc; num_c = hprc->length(); // counts
     if (num_c != num_a) {
       Squawk("Expected %d point counts, not %d", num_a, num_c);
       return;
     }
     bool key;
-    if (nhpp = vi->nhpp) {
+    if (nhprp = vi->nhprp) {
       key = true;
-      m = nhpp->size();
+      m = nhprp->size();
       //dv->numHistogramPtUncVars = m;
       for(i=tothpp=0; i<m; ++i) {
-	tothpp += nhppi = (*nhpp)[i];
+	tothpp += nhppi = (*nhprp)[i];
 	if (nhppi < 1) {
 	  Squawk("num_pairs must be >= 1");
 	  return;
@@ -3121,7 +3134,7 @@ Vchk_HistogramPtUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     }
     else {
       key = false;
-      m = dv->numHistogramPtUncVars;
+      m = dv->numHistogramPtIntUncVars;
       if (num_a % m) {
 	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use num_pairs for unequal apportionment", num_a, m);
 	return;
@@ -3129,17 +3142,18 @@ Vchk_HistogramPtUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nhppi = num_a / m;
     }
-    hpp = &dv->histogramUncPointPairs;
-    hpp->resize(m);
+    IntRealMapArray hpp = dv->histogramUncPointIntPairs;
+    hpp.resize(m);
     for (i=cntr=0; i<m; ++i) {
-      nhppi = (key) ? (*nhpp)[i] : avg_nhppi;
-      hppi  = &((*hpp)[i]);
-      hppi->sizeUninitialized(2*nhppi);
+      nhppi = (key) ? (*nhprp)[i] : avg_nhppi;
+      // hbpi is map<Int value, Real probability> for a single variable i
+      IntRealMap& hppi = hpp[i];
       count_sum = 0.;
       for (j=0; j<nhppi; ++j, ++cntr) {
-	Real x = (*hpa)[cntr]; // abscissas
-	Real y = (*hpc)[cntr]; // counts
-	if (j<nhppi-1 && x >= (*hpa)[cntr+1]) {
+	int x = (*hpia)[cntr]; // abscissas
+	Real y = (*hprc)[cntr]; // counts
+	// BMA: to check?!?  Probably not
+	if (j<nhppi-1 && x >= (*hpia)[cntr+1]) {
 	  Squawk("histogram point x values must increase");
 	  return;
 	}
@@ -3147,46 +3161,290 @@ Vchk_HistogramPtUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	  Squawk("nonpositive intermediate histogram point y value");
 	  return;
 	}
-	(*hppi)[2*j]   = x; // abscissa
-	(*hppi)[2*j+1] = y; // count
+	hppi[x] = y;
 	count_sum += y;
       }
-      // normalize counts to sum to 1
-      for (j=0; j<nhppi; ++j)
-	(*hppi)[2*j+1] /= count_sum;
+      // normalize counts to sum to 1, omitting last value
+      IRMCIter it_end = --(hppi.end());
+      for (IRMIter it = hppi.begin(); it != it_end; ++it)
+	it->second /= count_sum;
     }
   }
 }
 
-static void Vgen_HistogramPtUnc(DataVariablesRep *dv, size_t offset)
+static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
 {
-  RealVector *L, *U, *V, *r, *IP;
-  RealVectorArray *A;
+  IntVector *L, *U, *V, *IP;
   Real mean, stdev;
 
-  L = &dv->discreteRealAleatoryUncLowerBnds;
-  U = &dv->discreteRealAleatoryUncUpperBnds;
-  V = &dv->discreteRealAleatoryUncVars;
-  A = &dv->histogramUncPointPairs; IP = &dv->histogramPointUncVars;
-  size_t i, j, k, last, n = dv->numHistogramPtUncVars, num_IP = IP->length();
+  L = &dv->discreteIntAleatoryUncLowerBnds;
+  U = &dv->discreteIntAleatoryUncUpperBnds;
+  V = &dv->discreteIntAleatoryUncVars;
+  const IntRealMapArray& A = dv->histogramUncPointIntPairs; 
+  IP = &dv->histogramPointIntUncVars;
+  size_t i, j, k, last, n = dv->numHistogramPtIntUncVars;
+  size_t num_IP = IP->length();
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    r = &((*A)[j]);
-    last = r->length() - 2;
-    (*L)[i] = (*r)[0];
-    (*U)[i] = (*r)[last];
+    const IntRealMap& hist_point_pairs = A[j];
+    // BMA TODO: I think this last calculation was wrong?  should be -1
+    //    last = r->length() - 2;
+    (*L)[i] = hist_point_pairs.begin()->first;;
+    (*U)[i] = (--hist_point_pairs.end())->first;
     if (num_IP) {
       if      ((*IP)[j] < (*L)[i]) (*V)[i] =  (*L)[i];
       else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
       else                         (*V)[i] = (*IP)[j];
     }
     else {
-      Pecos::moments_from_histogram_pt_params(*r, mean, stdev);
-      for(k = 0; k < last && (*r)[k+2] <= mean; k += 2); // bracket mean
-      if (k < last && mean - (*r)[k] > (*r)[k+2] - mean) // find closest
-	k += 2;
-      (*V)[i] = (*r)[k];
+      Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
+      if (hist_point_pairs.size() == 1)
+	(*V)[i] = hist_point_pairs.begin()->first;
+      else {
+	IRMCIter it = hist_point_pairs.begin();
+	IRMCIter it_end = hist_point_pairs.end();
+	// find value immediately right of mean (can't be past the end)
+	for( ; it != it_end, it->first <= mean; ++it);
+	// bracket the mean
+	int right_val = it->first;
+	int left_val = (--it)->first;
+	// initialize with value closest to mean
+	(*V)[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+      }
+    }
+  }
+}
+
+static void 
+Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  IntArray *nhpsp;
+  StringArray *hpsa;
+  RealVector *hprc;
+  int nhppi, avg_nhppi;
+  size_t i, j, num_a, num_c, m, n, tothpp, cntr;
+  Real x, y, bin_width, count_sum;
+
+  if (hpsa = vi->hpsa) {
+    num_a = hpsa->size();              // abscissas
+    hprc = vi->hprc; num_c = hprc->length(); // counts
+    if (num_c != num_a) {
+      Squawk("Expected %d point counts, not %d", num_a, num_c);
+      return;
+    }
+    bool key;
+    if (nhpsp = vi->nhpsp) {
+      key = true;
+      m = nhpsp->size();
+      //dv->numHistogramPtUncVars = m;
+      for(i=tothpp=0; i<m; ++i) {
+	tothpp += nhppi = (*nhpsp)[i];
+	if (nhppi < 1) {
+	  Squawk("num_pairs must be >= 1");
+	  return;
+	}
+      }
+      if (num_a != tothpp) {
+	Squawk("Expected %d point abscissas, not %d", tothpp, num_a);
+	return;
+      }
+    }
+    else {
+      key = false;
+      m = dv->numHistogramPtStrUncVars;
+      if (num_a % m) {
+	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use num_pairs for unequal apportionment", num_a, m);
+	return;
+      }
+      else
+	avg_nhppi = num_a / m;
+    }
+    StringRealMapArray hpp = dv->histogramUncPointStrPairs;
+    hpp.resize(m);
+    for (i=cntr=0; i<m; ++i) {
+      nhppi = (key) ? (*nhpsp)[i] : avg_nhppi;
+      // hbpi is map<Real value, Real probability> for a single variable i
+      StringRealMap& hppi = hpp[i];
+      count_sum = 0.;
+      for (j=0; j<nhppi; ++j, ++cntr) {
+	String x = (*hpsa)[cntr]; // abscissas
+	Real y = (*hprc)[cntr]; // counts
+	if (j<nhppi-1 && x >= (*hpsa)[cntr+1]) {
+	  Squawk("histogram point x values must increase");
+	  return;
+	}
+	if (y <= 0.) {
+	  Squawk("nonpositive intermediate histogram point y value");
+	  return;
+	}
+	hppi[x] = y;
+	count_sum += y;
+      }
+      // normalize counts to sum to 1, omitting last value
+      SRMCIter it_end = --(hppi.end());
+      for (SRMIter it = hppi.begin(); it != it_end; ++it)
+	it->second /= count_sum;
+    }
+  }
+}
+
+static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
+{
+  StringArray *L, *U, *V, *IP;
+  Real mean, stdev;
+
+  L = &dv->discreteStrAleatoryUncLowerBnds;
+  U = &dv->discreteStrAleatoryUncUpperBnds;
+  V = &dv->discreteStrAleatoryUncVars;
+  const StringRealMapArray& A = dv->histogramUncPointStrPairs; 
+  IP = &dv->histogramPointStrUncVars;
+  size_t i, j, k, last, n = dv->numHistogramPtStrVars;
+  size_t num_IP = IP->size();
+  if (num_IP) dv->uncertainVarsInitPt = true;
+
+  for(i = offset, j = 0; j < n; ++i, ++j) {
+    const StringRealMap& hist_point_pairs = A[j];
+    // BMA TODO: I think this last calculation was wrong?  should be -1
+    //    last = r->length() - 2;
+    (*L)[i] = hist_point_pairs.begin()->first;;
+    (*U)[i] = (--hist_point_pairs.end())->first;
+    if (num_IP) {
+      if      ((*IP)[j] < (*L)[i]) (*V)[i] =  (*L)[i];
+      else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
+      else                         (*V)[i] = (*IP)[j];
+    }
+    else {
+      Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
+      if (hist_point_pairs.size() == 1)
+	(*V)[i] = hist_point_pairs.begin()->first;
+      else {
+	SRMCIter it = hist_point_pairs.begin();
+	SRMCIter it_end = hist_point_pairs.end();
+	// find value immediately right of mean (can't be past the end)
+	for( ; it != it_end, it->first <= mean; ++it);
+	// bracket the mean
+	String right_val = it->first;
+	String left_val = (--it)->first;
+	// initialize with value closest to mean
+	(*V)[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+      }
+    }
+  }
+}
+
+static void 
+Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  IntArray *nhprp;
+  RealVector *hpra, *hprc;
+  int nhppi, avg_nhppi;
+  size_t i, j, num_a, num_c, m, n, tothpp, cntr;
+  Real x, y, bin_width, count_sum;
+
+  if (hpra = vi->hpra) {
+    num_a = hpra->length();              // abscissas
+    hprc = vi->hprc; num_c = hprc->length(); // counts
+    if (num_c != num_a) {
+      Squawk("Expected %d point counts, not %d", num_a, num_c);
+      return;
+    }
+    bool key;
+    if (nhprp = vi->nhprp) {
+      key = true;
+      m = nhprp->size();
+      //dv->numHistogramPtUncVars = m;
+      for(i=tothpp=0; i<m; ++i) {
+	tothpp += nhppi = (*nhprp)[i];
+	if (nhppi < 1) {
+	  Squawk("num_pairs must be >= 1");
+	  return;
+	}
+      }
+      if (num_a != tothpp) {
+	Squawk("Expected %d point abscissas, not %d", tothpp, num_a);
+	return;
+      }
+    }
+    else {
+      key = false;
+      m = dv->numHistogramPtRealUncVars;
+      if (num_a % m) {
+	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use num_pairs for unequal apportionment", num_a, m);
+	return;
+      }
+      else
+	avg_nhppi = num_a / m;
+    }
+    RealRealMapArray hpp = dv->histogramUncPointRealPairs;
+    hpp.resize(m);
+    for (i=cntr=0; i<m; ++i) {
+      nhppi = (key) ? (*nhprp)[i] : avg_nhppi;
+      // hbpi is map<Real value, Real probability> for a single variable i
+      RealRealMap& hppi = hpp[i];
+      count_sum = 0.;
+      for (j=0; j<nhppi; ++j, ++cntr) {
+	Real x = (*hpra)[cntr]; // abscissas
+	Real y = (*hprc)[cntr]; // counts
+	if (j<nhppi-1 && x >= (*hpra)[cntr+1]) {
+	  Squawk("histogram point x values must increase");
+	  return;
+	}
+	if (y <= 0.) {
+	  Squawk("nonpositive intermediate histogram point y value");
+	  return;
+	}
+	hppi[x] = y;
+	count_sum += y;
+      }
+      // normalize counts to sum to 1, omitting last value
+      RRMCIter it_end = --(hppi.end());
+      for (RRMIter it = hppi.begin(); it != it_end; ++it)
+	it->second /= count_sum;
+    }
+  }
+}
+
+static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
+{
+  RealVector *L, *U, *V, *IP;
+  Real mean, stdev;
+
+  L = &dv->discreteRealAleatoryUncLowerBnds;
+  U = &dv->discreteRealAleatoryUncUpperBnds;
+  V = &dv->discreteRealAleatoryUncVars;
+  const RealRealMapArray& A = dv->histogramUncPointRealPairs; 
+  IP = &dv->histogramPointRealUncVars;
+  size_t i, j, k, last, n = dv->numHistogramPtRealUncVars;
+  size_t num_IP = IP->length();
+  if (num_IP) dv->uncertainVarsInitPt = true;
+
+  for(i = offset, j = 0; j < n; ++i, ++j) {
+    const RealRealMap& hist_point_pairs = A[j];
+    // BMA TODO: I think this last calculation was wrong?  should be -1
+    //    last = r->length() - 2;
+    (*L)[i] = hist_point_pairs.begin()->first;;
+    (*U)[i] = (--hist_point_pairs.end())->first;
+    if (num_IP) {
+      if      ((*IP)[j] < (*L)[i]) (*V)[i] =  (*L)[i];
+      else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
+      else                         (*V)[i] = (*IP)[j];
+    }
+    else {
+      Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
+      if (hist_point_pairs.size() == 1)
+	(*V)[i] = hist_point_pairs.begin()->first;
+      else {
+	RRMCIter it = hist_point_pairs.begin();
+	RRMCIter it_end = hist_point_pairs.end();
+	// find value immediately right of mean (can't be past the end)
+	for( ; it != it_end, it->first <= mean; ++it);
+	// bracket the mean
+	Real right_val = it->first;
+	Real left_val = (--it)->first;
+	// initialize with value closest to mean
+	(*V)[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+      }
     }
   }
 }
@@ -4439,10 +4697,14 @@ static Var_uinfo DAUIVLbl[DAUIVar_Nkinds] = {
   VarLabelInfo(biuv_, BinomialUnc),
   VarLabelInfo(nbuv_, NegBinomialUnc),
   VarLabelInfo(geuv_, GeometricUnc),
-  VarLabelInfo(hguv_, HyperGeomUnc)
+  VarLabelInfo(hguv_, HyperGeomUnc),
+  VarLabelInfo(hpiuv_, HistogramPtIntUnc)
+};
+static Var_uinfo DAUSVLbl[DAURVar_Nkinds] = {
+  VarLabelInfo(hpsuv_, HistogramPtStrUnc)
 };
 static Var_uinfo DAURVLbl[DAURVar_Nkinds] = {
-  VarLabelInfo(hpuv_, HistogramPtUnc)
+  VarLabelInfo(hpruv_, HistogramPtRealUnc)
 };
 static Var_uinfo CEUVLbl[CEUVar_Nkinds] = {
   VarLabelInfo(ciuv_, ContinuousIntervalUnc)
@@ -4537,7 +4799,7 @@ struct VLstr {
 
 enum { N_VLR = 4 };  // number of real-valued   uncertain contiguous containers
 enum { N_VLI = 2 };  // number of int-valued    uncertain contiguous containers
-enum { N_VLS = 1 };  // number of string-valued uncertain contiguous containers
+enum { N_VLS = 2 };  // number of string-valued uncertain contiguous containers
 
 #define AVI (VarLabel Var_Info::*) &Var_Info::	// cast to bypass g++ bug
 #define DVR &DataVariablesRep::
@@ -4577,6 +4839,11 @@ static VLint VLI[N_VLI] = {
 	DVR discreteIntEpistemicUncVars}};
 
 static VLstr VLS[N_VLS] = {
+ {DAUSVar_Nkinds, AVI DAUSv, DAUSVLbl,
+	DVR discreteStrAleatoryUncLabels,
+	DVR discreteStrAleatoryUncLowerBnds,
+	DVR discreteStrAleatoryUncUpperBnds,
+        DVR discreteStrAleatoryUncVars},
  {DEUSVar_Nkinds, AVI DEUSv, DEUSVLbl,
 	DVR discreteStrEpistemicUncLabels,
 	DVR discreteStrEpistemicUncLowerBnds,
@@ -4590,7 +4857,7 @@ static VLstr VLS[N_VLS] = {
 // which of the "all" containers are aleatory (true = 1)
 static int VLR_aleatory[N_VLR] = { 1, 0, 1, 0 };
 static int VLI_aleatory[N_VLI] = { 1, 0 };
-static int VLS_aleatory[N_VLS] = { 0 };
+static int VLS_aleatory[N_VLS] = { 1, 0 };
 
 /// Generate check data for variables with just name, size, and a
 /// generator function
@@ -4641,7 +4908,7 @@ static Var_check
 	Vchk_3(geometric_uncertain,GeometricUnc),
 	Vchk_3(hypergeometric_uncertain,HyperGeomUnc) },
   var_mp_check_daur[] = {
-	Vchk_3(histogram_point_uncertain,HistogramPtUnc) },
+	Vchk_3(histogram_point_real_uncertain,HistogramPtRealUnc) },
   var_mp_check_ceu[] = {
 	Vchk_3(continuous_interval_uncertain,ContinuousIntervalUnc) },
   var_mp_check_deui[] = {
@@ -4931,11 +5198,11 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 #define AVI &Var_Info::
   // Used for deallocation of Var_Info temporary data
   static IntArray   *Var_Info::* Ia_delete[]
-    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhpp, AVI ndusi, AVI nduss,
+    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhprp, AVI ndusi, AVI nduss,
 	AVI ndusr, AVI ndssi, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp, AVI DSIp, AVI DSSp, AVI DSRp,
-	AVI dusr, AVI hba, AVI hbo, AVI hbc, AVI hpa, AVI hpc, AVI ucm,
+	AVI dusr, AVI hba, AVI hbo, AVI hbc, AVI hpra, AVI hprc, AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
     = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
@@ -5490,36 +5757,40 @@ check_variables(std::list<DataVariables>* dvl)
 	flatten_rsa(&dv->discreteDesignSetReal,     &vi->ddsr);
       }
       // histogram bin uncertain vars
-      rva = &dv->histogramUncBinPairs;
-      if ((m = rva->size())) {
+      // convert RealRealMapArray to RealVectors of abscissas and counts
+      const RealRealMapArray& hbp = dv->histogramUncBinPairs;
+      if ((m = hbp.size())) {
 	vi->nhbp = ia = new IntArray(m);
 	for(i = 0; i < m; ++i)
-	  total_prs += (*ia)[i] = (*rva)[i].length() / 2;
+	  total_prs += (*ia)[i] = hbp[i].size();
 	vi->hba = rv_a = new RealVector(total_prs); // abscissas
 	vi->hbc = rv_c = new RealVector(total_prs); // counts
 	vi->hbo = NULL;                            // no ordinates
 	for(i = cntr = 0; i < m; ++i) {
-	  num_prs_i = (*ia)[i];
-	  for(j = 0; j < num_prs_i; ++j, ++cntr) {
-	    (*rv_a)[cntr] = (*rva)[i][2*j];   // abscissas
-	    (*rv_c)[cntr] = (*rva)[i][2*j+1]; // counts only (no ordinates)
+	  RRMCIter it = hbp[i].begin();
+	  RRMCIter it_end = hbp[i].end();
+	  for( ; it != it_end; ++cntr) {
+	    (*rv_a)[cntr] = it->first;   // abscissas
+	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramBinUnc going other direction
 	}
       }
       // histogram point uncertain vars
-      rva = &dv->histogramUncPointPairs;
-      if ((m = rva->size())) {
-	vi->nhpp = ia = new IntArray(m);
+      // convert RealRealMapArray to RealVectors of abscissas and counts
+      const RealRealMapArray& hprp = dv->histogramUncPointRealPairs;
+      if ((m = hprp.size())) {
+	vi->nhprp = ia = new IntArray(m);
 	for(i = 0; i < m; ++i)
-	  total_prs += (*ia)[i] = (*rva)[i].length() / 2;
-	vi->hpa = rv_a = new RealVector(total_prs); // abscissas
-	vi->hpc = rv_c = new RealVector(total_prs); // counts
+	  total_prs += (*ia)[i] = hprp[i].size();
+	vi->hpra = rv_a = new RealVector(total_prs); // abscissas
+	vi->hprc = rv_c = new RealVector(total_prs); // counts
 	for(i = cntr = 0; i < m; ++i) {
-	  num_prs_i = (*ia)[i];
-	  for(j = 0; j < num_prs_i; ++j, ++cntr) {
-	    (*rv_a)[cntr] = (*rva)[i][2*j];   // abscissas
-	    (*rv_c)[cntr] = (*rva)[i][2*j+1]; // counts
+	  RRMCIter it = hprp[i].begin();
+	  RRMCIter it_end = hprp[i].end();
+	  for( ; it != it_end; ++cntr) {
+	    (*rv_a)[cntr] = it->first;   // abscissas
+	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
 	}
@@ -5653,6 +5924,13 @@ void NIDRProblemDescDB::
 var_deuilbl(const char *keyname, Values *val, void **g, void *v)
 {
   VarLabel *vl = &(*(Var_Info**)g)->DEUIv[(char*)v - (char*)0];
+  var_iulbl(keyname, val, vl);
+}
+
+void NIDRProblemDescDB::
+var_dauslbl(const char *keyname, Values *val, void **g, void *v)
+{
+  VarLabel *vl = &(*(Var_Info**)g)->DAUSv[(char*)v - (char*)0];
   var_iulbl(keyname, val, vl);
 }
 
@@ -6511,7 +6789,7 @@ static size_t
 	MP_(numGeometricUncVars),
 	MP_(numGumbelUncVars),
 	MP_(numHistogramBinUncVars),
-	MP_(numHistogramPtUncVars),
+	MP_(numHistogramPtRealUncVars),
 	MP_(numHyperGeomUncVars),
 	MP_(numLognormalUncVars),
 	MP_(numLoguniformUncVars),
@@ -6550,7 +6828,7 @@ static IntArray
 	VP_(nduss),
 	VP_(ndusr),
 	VP_(nhbp),
-	VP_(nhpp),
+	VP_(nhprp),
 	VP_(nCI),
 	VP_(nDI);
 
@@ -6576,7 +6854,7 @@ static RealVector
 	MP_(gumbelUncBetas),
 	MP_(gumbelUncVars),
 	MP_(histogramBinUncVars),
-	MP_(histogramPointUncVars),
+        MP_(histogramPointRealUncVars),
         MP_(negBinomialUncProbPerTrial),
 	MP_(normalUncLowerBnds),
 	MP_(normalUncMeans),
@@ -6599,8 +6877,8 @@ static RealVector
 	VP_(hba),
 	VP_(hbo),
 	VP_(hbc),
-	VP_(hpa),
-	VP_(hpc),
+	VP_(hpra),
+	VP_(hprc),
 	VP_(ucm);
 
 static String

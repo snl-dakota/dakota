@@ -164,9 +164,15 @@ public:
   /// number of hypergeometric uncertain variables (from the \c
   /// hypergeometric_uncertain specification in \ref VarAUV))
   size_t numHyperGeomUncVars;
-  /// number of histogram point uncertain variables (from the \c
+  /// number of integer-valued histogram point uncertain variables (from the \c
   /// histogram_point_uncertain specification in \ref VarAUV)
-  size_t numHistogramPtUncVars;
+  size_t numHistogramPtIntUncVars;
+  /// number of string-valued histogram point uncertain variables (from the \c
+  /// histogram_point_uncertain specification in \ref VarAUV)
+  size_t numHistogramPtStrUncVars;
+  /// number of real-valued histogram point uncertain variables (from the \c
+  /// histogram_point_uncertain specification in \ref VarAUV)
+  size_t numHistogramPtRealUncVars;
   /// number of continuous epistemic interval uncertain variables (from
   /// the \c continuous_interval_uncertain specification in \ref VarEUV)
   size_t numContinuousIntervalUncVars;
@@ -410,16 +416,17 @@ public:
   /// initial values of the weibull uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Weibull)
   RealVector weibullUncVars;
-  /// an array containing a vector of (x,c) pairs for each bin-based
-  /// histogram uncertain variable (see continuous linear histogram in
-  /// LHS manual; from the \c histogram_bin_uncertain specification in
-  /// \ref VarCAUV_Bin_Histogram).  (x,y) ordinate specifications are
+
+  /// An array for each real-valued bin-based histogram uncertain
+  /// variable. Each array entry is a map from a real value to its
+  /// probability. (See continuous linear histogram in LHS manual;
+  /// from the \c histogram_bin_uncertain specification in \ref
+  /// VarCAUV_Bin_Histogram).  (x,y) ordinate specifications are
   /// converted to (x,c) counts within NIDR.
-  RealVectorArray histogramUncBinPairs;
+  RealRealMapArray histogramUncBinPairs;
   /// initial values of the histogram bin uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Bin_Histogram)
   RealVector histogramBinUncVars;
-
 
   // discrete types
 
@@ -482,19 +489,41 @@ public:
   /// is each hypergeom var strictly categorical (true) or relaxable (false)
   BitArray hyperGeomUncCat;
 
-  /// an array containing a vector of (x,c) pairs for each point-based
-  /// histogram uncertain variable (see discrete histogram in LHS
-  /// manual; from the \c histogram_point_uncertain specification in
-  /// \ref VarDAUV_Point_Histogram)
-  RealVectorArray histogramUncPointPairs;
-  /// initial values of the histogram point uncertain variables (from the \c
-  /// initial_point specification in \ref VarDAUV_Point_Histogram)
-  RealVector histogramPointUncVars;
-
-  // BMA TODO: refactor histogram point into int and real variants
-
+  /// An array for each integer-valued point-based histogram uncertain
+  /// variable. Each array entry is a map from an integer value to its
+  /// probability. (See discrete histogram in LHS manual; from the \c
+  /// histogram_point_uncertain specification in \ref
+  /// VarDAUV_Point_Histogram)
+  IntRealMapArray histogramUncPointIntPairs;
+  /// initial values of the real-valued histogram point uncertain
+  /// variables (from the \c initial_point specification in \ref
+  /// VarDAUV_Point_Histogram)
+  IntVector histogramPointIntUncVars;
   /// is each hupi var strictly categorical (true) or relaxable (false)
   BitArray histogramUncPointIntCat;
+ 
+  /// An array for each string-valued point-based histogram uncertain
+  /// variable. Each array entry is a map from a string value to its
+  /// probability. (See discrete histogram in LHS manual; from the \c
+  /// histogram_point_uncertain specification in \ref
+  /// VarDAUV_Point_Histogram)
+  StringRealMapArray histogramUncPointStrPairs;
+  /// initial values of the real-valued histogram point uncertain
+  /// variables (from the \c initial_point specification in \ref
+  /// VarDAUV_Point_Histogram)
+  StringArray histogramPointStrUncVars;
+  // string variables cannot be relaxed, no categorical option
+
+  /// An array for each real-valued point-based histogram uncertain
+  /// variable. Each array entry is a map from a real value to its
+  /// probability. (See discrete histogram in LHS manual; from the \c
+  /// histogram_point_uncertain specification in \ref
+  /// VarDAUV_Point_Histogram)
+  RealRealMapArray histogramUncPointRealPairs;
+  /// initial values of the real-valued histogram point uncertain
+  /// variables (from the \c initial_point specification in \ref
+  /// VarDAUV_Point_Histogram)
+  RealVector histogramPointRealUncVars;
   /// is each hupr var strictly categorical (true) or relaxable (false)
   BitArray histogramUncPointRealCat;
 
@@ -685,6 +714,7 @@ public:
   /// fuv_descriptors, \c wuv_descriptors, and \c hbuv_descriptors
   /// specifications in \ref VarAUV)
   StringArray continuousAleatoryUncLabels;
+
   /// array of values for all discrete integer aleatory uncertain variables
   IntVector discreteIntAleatoryUncVars;
   /// distribution lower bounds for all discrete integer aleatory
@@ -695,6 +725,18 @@ public:
   IntVector discreteIntAleatoryUncUpperBnds;
   /// labels for all discrete integer aleatory uncertain variables
   StringArray discreteIntAleatoryUncLabels;
+
+  /// array of values for all discrete string epistemic uncertain variables
+  StringArray discreteStrAleatoryUncVars;
+  /// distribution lower bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrAleatoryUncLowerBnds;
+  /// distribution upper bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrAleatoryUncUpperBnds;
+  /// labels for all discrete string epistemic uncertain variables
+  StringArray discreteStrAleatoryUncLabels;
+
   /// array of values for all discrete real aleatory uncertain variables
   RealVector discreteRealAleatoryUncVars;
   /// distribution lower bounds for all discrete real aleatory
@@ -862,7 +904,9 @@ public:
     dataVarsRep->numHistogramBinUncVars + dataVarsRep->numPoissonUncVars + 
     dataVarsRep->numBinomialUncVars + dataVarsRep->numNegBinomialUncVars+
     dataVarsRep->numGeometricUncVars + dataVarsRep->numHyperGeomUncVars +
-    dataVarsRep->numHistogramPtUncVars; }
+    dataVarsRep->numHistogramPtIntUncVars + 
+    dataVarsRep->numHistogramPtStrUncVars + 
+    dataVarsRep->numHistogramPtRealUncVars; }
   /// return total number of epistemic uncertain variables
   size_t epistemic_uncertain() { return
     dataVarsRep->numContinuousIntervalUncVars +
@@ -881,6 +925,7 @@ public:
   size_t continuous_variables() { return dataVarsRep->numContinuousDesVars +
     uncertain() + dataVarsRep->numContinuousStateVars; }
   /// return total number of discrete variables
+  // BMA TODO: should point histogram be included here?
   size_t discrete_variables()   { return dataVarsRep->numDiscreteDesRangeVars +
     dataVarsRep->numDiscreteDesSetIntVars +
     dataVarsRep->numDiscreteDesSetStrVars +

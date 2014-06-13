@@ -1898,7 +1898,8 @@ KEYWORD12 variables
 	  [ initial_point INTEGERLIST ]
 	  [ descriptors STRINGLIST ]
 	  ]
-	[ histogram_point_uncertain INTEGER > 0
+	[ histogram_point_uncertain
+	  real INTEGER > 0
 	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST ]
 	  abscissas ALIAS huv_point_abscissas REALLIST
 	  counts ALIAS huv_point_counts REALLIST

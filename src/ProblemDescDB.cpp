@@ -1557,9 +1557,7 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 	{"continuous_interval_uncertain.upper_bounds",
 	 P continuousIntervalUncUpperBounds},
 	{"discrete_interval_uncertain.basic_probs",
-	 P discreteIntervalUncBasicProbs},
-	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
-	{"histogram_uncertain.point_pairs", P histogramUncPointPairs}};
+	 P discreteIntervalUncBasicProbs}};
     #undef P
 
     KW<RealVectorArray, DataVariablesRep> *kw;
@@ -1730,7 +1728,8 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
     #define P &DataVariablesRep::
     static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { // must be sorted
 	{"discrete_uncertain_set_int.values_probs",
-	 P discreteUncSetIntValuesProbs}};
+	 P discreteUncSetIntValuesProbs},
+	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
     #undef P
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
@@ -1753,7 +1752,8 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
     #define P &DataVariablesRep::
     static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
 	{"discrete_uncertain_set_str.values_probs",
-	 P discreteUncSetStrValuesProbs}};
+	 P discreteUncSetStrValuesProbs},
+	{"histogram_uncertain.point_str_pairs", P histogramUncPointStrPairs}};
     #undef P
 
     KW<StringRealMapArray, DataVariablesRep> *kw;
@@ -1777,7 +1777,9 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
     #define P &DataVariablesRep::
     static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = { // must be sorted
 	{"discrete_uncertain_set_real.values_probs",
-	 P discreteUncSetRealValuesProbs}};
+	 P discreteUncSetRealValuesProbs},
+	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
+	{"histogram_uncertain.point_real_pairs", P histogramUncPointRealPairs}};
     #undef P
 
     KW<RealRealMapArray, DataVariablesRep> *kw;
@@ -2471,7 +2473,9 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"geometric_uncertain", P numGeometricUncVars},
 	{"gumbel_uncertain", P numGumbelUncVars},
 	{"histogram_uncertain.bin", P numHistogramBinUncVars},
-	{"histogram_uncertain.point", P numHistogramPtUncVars},
+	{"histogram_uncertain.point_int", P numHistogramPtIntUncVars},
+	{"histogram_uncertain.point_str", P numHistogramPtStrUncVars},
+	{"histogram_uncertain.point_real", P numHistogramPtRealUncVars},
 	{"hypergeometric_uncertain", P numHyperGeomUncVars},
 	{"lognormal_uncertain", P numLognormalUncVars},
 	{"loguniform_uncertain", P numLoguniformUncVars},
@@ -2941,9 +2945,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 	{"continuous_interval_uncertain.upper_bounds",
 	 P continuousIntervalUncUpperBounds},
 	{"discrete_interval_uncertain.basic_probs",
-	 P discreteIntervalUncBasicProbs},
-	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
-	{"histogram_uncertain.point_pairs", P histogramUncPointPairs}};
+	 P discreteIntervalUncBasicProbs}};
     #undef P
 
     KW<RealVectorArray, DataVariablesRep> *kw;
@@ -3058,7 +3060,8 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
     #define P &DataVariablesRep::
     static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { // must be sorted
 	{"discrete_uncertain_set_int.values_probs",
-	 P discreteUncSetIntValuesProbs}};
+	 P discreteUncSetIntValuesProbs},
+	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
     #undef P
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
@@ -3068,6 +3071,29 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
     }
   }
   Bad_name(entry_name, "set(IntRealMapArray&)");
+}
+
+
+void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
+{
+  const char *L;
+  if (!dbRep)
+    Null_rep1("set(StringRealMapArray&)");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+      Locked_db();
+    #define P &DataVariablesRep::
+    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
+	{"histogram_uncertain.point_str_pairs", P histogramUncPointStrPairs}};
+    #undef P
+
+    KW<StringRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L))) {
+      dbRep->dataVariablesIter->dataVarsRep->*kw->p = srma;
+      return;
+    }
+  }
+  Bad_name(entry_name, "set(StringRealMapArray&)");
 }
 
 
