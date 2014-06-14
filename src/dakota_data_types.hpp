@@ -132,6 +132,8 @@ typedef std::map<int, ActiveSet>       IntActiveSetMap;
 typedef std::map<int, Variables>       IntVariablesMap;
 typedef std::map<int, Response>        IntResponseMap;
 typedef std::map<IntArray, size_t>     IntArraySizetMap;
+typedef std::map<RealRealPair, Real>   RealRealPairRealMap;
+typedef std::vector<RealRealPairRealMap> RealRealPairRealMapArray;
 typedef std::multimap<RealRealPair, ParamResponsePair> RealPairPRPMultiMap;
 //typedef std::multimap<Real, ParamResponsePair> RealPRPMultiMap;
 

@@ -212,6 +212,9 @@ protected:
   /// number of discrete integer design variables (modeled using discrete
   /// histogram distributions for All view modes)
   size_t numDiscIntDesVars;
+  /// number of discrete string design variables (modeled using discrete
+  /// histogram distributions for All view modes)
+  size_t numDiscStringDesVars;
   /// number of discrete real design variables (modeled using discrete
   /// histogram distributions for All view modes)
   size_t numDiscRealDesVars;
@@ -223,6 +226,9 @@ protected:
   /// number of discrete integer state variables (modeled using discrete
   /// histogram distributions for All view modes)
   size_t numDiscIntStateVars;
+  /// number of discrete string state variables (modeled using discrete
+  /// histogram distributions for All view modes)
+  size_t numDiscStringStateVars;
   /// number of discrete real state variables (modeled using discrete
   /// histogram distributions for All view modes)
   size_t numDiscRealStateVars;
@@ -263,30 +269,44 @@ protected:
   size_t numGeometricVars;
   /// number of hypergeometric uncertain variables (native space)
   size_t numHyperGeomVars;
-  /// number of histogram point uncertain variables (native space)
-  size_t numHistogramPtVars;
+  /// number of histogram point integer uncertain variables (native space)
+  size_t numHistogramPtIntVars;
+  /// number of histogram point string uncertain variables (native space)
+  size_t numHistogramPtStringVars;
+  /// number of histogram point real uncertain variables (native space)
+  size_t numHistogramPtRealVars;
   /// number of continuous interval uncertain variables (native space)
   size_t numContIntervalVars;
   /// number of discrete interval uncertain variables (native space)
   size_t numDiscIntervalVars;
   /// number of discrete integer set uncertain variables (native space)
   size_t numDiscSetIntUncVars;
+  /// number of discrete integer set uncertain variables (native space)
+  size_t numDiscSetStringUncVars;
   /// number of discrete real set uncertain variables (native space)
   size_t numDiscSetRealUncVars;
 
-  /// total number of aleatory uncertain variables (native space)
+  /// total number of continuous aleatory uncertain variables (native space)
   size_t numContAleatUncVars;
-  /// total number of aleatory uncertain variables (native space)
+  /// total number of discrete integer aleatory uncertain variables
+  /// (native space)
   size_t numDiscIntAleatUncVars;
-  /// total number of aleatory uncertain variables (native space)
+  /// total number of discrete string aleatory uncertain variables
+  /// (native space)
+  size_t numDiscStringAleatUncVars;
+  /// total number of discrete real aleatory uncertain variables (native space)
   size_t numDiscRealAleatUncVars;
   /// total number of aleatory uncertain variables (native space)
   size_t numAleatoryUncVars;
-  /// total number of epistemic uncertain variables (native space)
+  /// total number of continuous epistemic uncertain variables (native space)
   size_t numContEpistUncVars;
-  /// total number of epistemic uncertain variables (native space)
+  /// total number of discrete integer epistemic uncertain variables
+  /// (native space)
   size_t numDiscIntEpistUncVars;
-  /// total number of epistemic uncertain variables (native space)
+  /// total number of discrete string epistemic uncertain variables
+  /// (native space)
+  size_t numDiscStringEpistUncVars;
+  /// total number of discrete real epistemic uncertain variables (native space)
   size_t numDiscRealEpistUncVars;
   /// total number of epistemic uncertain variables (native space)
   size_t numEpistemicUncVars;
@@ -351,6 +371,10 @@ protected:
   Response finalStatistics;
 
 private:
+
+  /// update continuous, discrete int, and discrete real aggregate counts
+  /// based on discrete relaxation
+  void relax_counts(const SharedVariablesData& svd);
 
   /// convenience function for distributing a vector of levels among multiple
   /// response functions if a short-hand specification is employed.
