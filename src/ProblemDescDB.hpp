@@ -216,10 +216,17 @@ public:
   const RealSetArray& get_rsa(const String& entry_name) const;
   /// get an IntRealMapArray out of the database based on an identifier string
   const IntRealMapArray& get_irma(const String& entry_name) const;
-  /// get an StringRealMapArray out of the database based on an identifier string
+  /// get an StringRealMapArray out of the database based on an
+  /// identifier string
   const StringRealMapArray& get_srma(const String& entry_name) const;
   /// get a RealRealMapArray out of the database based on an identifier string
   const RealRealMapArray& get_rrma(const String& entry_name) const;
+  /// get a RealRealPairRealMapArray out of the database based on an
+  /// identifier string
+  const RealRealPairRealMapArray& get_rrrma(const String& entry_name) const;
+  /// get an IntIntPairRealMapArray out of the database based on an
+  /// identifier string
+  const IntIntPairRealMapArray& get_iirma(const String& entry_name) const;
   /// get a StringArray out of the database based on an identifier string
   const StringArray& get_sa(const String& entry_name) const;
   /// get a String2DArray out of the database based on an identifier string

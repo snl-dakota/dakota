@@ -1550,14 +1550,15 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<RealVectorArray, DataVariablesRep> RVAdr[] = { // must be sorted
-	{"continuous_interval_uncertain.basic_probs",
-	 P continuousIntervalUncBasicProbs},
-	{"continuous_interval_uncertain.lower_bounds",
-	 P continuousIntervalUncLowerBounds},
-	{"continuous_interval_uncertain.upper_bounds",
-	 P continuousIntervalUncUpperBounds},
-	{"discrete_interval_uncertain.basic_probs",
-	 P discreteIntervalUncBasicProbs}};
+	// {"continuous_interval_uncertain.basic_probs",
+	//  P continuousIntervalUncBasicProbs},
+	// {"continuous_interval_uncertain.lower_bounds",
+	//  P continuousIntervalUncLowerBounds},
+	// {"continuous_interval_uncertain.upper_bounds",
+	//  P continuousIntervalUncUpperBounds},
+	// {"discrete_interval_uncertain.basic_probs",
+	//  P discreteIntervalUncBasicProbs},
+    };
     #undef P
 
     KW<RealVectorArray, DataVariablesRep> *kw;
@@ -1596,10 +1597,11 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<IntVectorArray, DataVariablesRep> IVAdr[] = { // must be sorted
-	{"discrete_interval_uncertain.lower_bounds",
-	 P discreteIntervalUncLowerBounds},
-	{"discrete_interval_uncertain.upper_bounds",
-	 P discreteIntervalUncUpperBounds}};
+	// {"discrete_interval_uncertain.lower_bounds",
+	//  P discreteIntervalUncLowerBounds},
+	// {"discrete_interval_uncertain.upper_bounds",
+	//  P discreteIntervalUncUpperBounds}
+    };
     #undef P
 
     KW<IntVectorArray, DataVariablesRep> *kw;
@@ -1788,6 +1790,60 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
   }
   Bad_name(entry_name, "get_rrma");
   return abort_handler_t<const RealRealMapArray&>(-1);
+}
+
+
+const RealRealPairRealMapArray& ProblemDescDB::
+get_rrrma(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_rrrma()");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = {
+      // must be sorted
+      {"continuous_interval_uncertain.basic_probs",
+       P continuousIntervalUncBasicProbs}};
+    #undef P
+
+    KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)
+	 Binsearch(RRRMAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_rrrma");
+  return abort_handler_t<const RealRealPairRealMapArray&>(-1);
+}
+
+
+const IntIntPairRealMapArray& ProblemDescDB::
+get_iirma(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_iirma()");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = {
+      // must be sorted
+      {"discrete_interval_uncertain.basic_probs",
+       P discreteIntervalUncBasicProbs}};
+    #undef P
+
+    KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)
+	 Binsearch(IIRMAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_iirma");
+  return abort_handler_t<const IntIntPairRealMapArray&>(-1);
 }
 
 
@@ -2938,14 +2994,15 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
       Locked_db();
     #define P &DataVariablesRep::
     static KW<RealVectorArray, DataVariablesRep> RVAdv[] = { // must be sorted
-	{"continuous_interval_uncertain.basic_probs",
-	 P continuousIntervalUncBasicProbs},
-	{"continuous_interval_uncertain.lower_bounds",
-	 P continuousIntervalUncLowerBounds},
-	{"continuous_interval_uncertain.upper_bounds",
-	 P continuousIntervalUncUpperBounds},
-	{"discrete_interval_uncertain.basic_probs",
-	 P discreteIntervalUncBasicProbs}};
+	// {"continuous_interval_uncertain.basic_probs",
+	//  P continuousIntervalUncBasicProbs},
+	// {"continuous_interval_uncertain.lower_bounds",
+	//  P continuousIntervalUncLowerBounds},
+	// {"continuous_interval_uncertain.upper_bounds",
+	//  P continuousIntervalUncUpperBounds},
+	// {"discrete_interval_uncertain.basic_probs",
+	//  P discreteIntervalUncBasicProbs},
+    };
     #undef P
 
     KW<RealVectorArray, DataVariablesRep> *kw;
@@ -2985,10 +3042,11 @@ void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
       Locked_db();
     #define P &DataVariablesRep::
     static KW<IntVectorArray, DataVariablesRep> IVAdv[] = { // must be sorted
-	{"discrete_interval_uncertain.lower_bounds",
-	 P discreteIntervalUncLowerBounds},
-	{"discrete_interval_uncertain.upper_bounds",
-	 P discreteIntervalUncUpperBounds}};
+	// {"discrete_interval_uncertain.lower_bounds",
+	//  P discreteIntervalUncLowerBounds},
+	// {"discrete_interval_uncertain.upper_bounds",
+	//  P discreteIntervalUncUpperBounds}
+    };
     #undef P
 
     KW<IntVectorArray, DataVariablesRep> *kw;
