@@ -89,10 +89,8 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
-  s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
-    << continuousIntervalUncUpperBounds << continuousIntervalUncVars
-    << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
-    << discreteIntervalUncUpperBounds << discreteIntervalUncVars << discreteIntervalUncCat
+  s << continuousIntervalUncBasicProbs << continuousIntervalUncVars
+    << discreteIntervalUncBasicProbs << discreteIntervalUncVars << discreteIntervalUncCat
     << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntCat
     << discreteUncSetStrValuesProbs << discreteUncSetStrVars
     << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealCat;
@@ -185,10 +183,8 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> uncertainCorrelations;
 
   // Epistemic uncertain arrays
-  s >> continuousIntervalUncBasicProbs >> continuousIntervalUncLowerBounds
-    >> continuousIntervalUncUpperBounds >> continuousIntervalUncVars
-    >> discreteIntervalUncBasicProbs >> discreteIntervalUncLowerBounds
-    >> discreteIntervalUncUpperBounds >> discreteIntervalUncVars >> discreteIntervalUncCat
+  s >> continuousIntervalUncBasicProbs >> continuousIntervalUncVars
+    >> discreteIntervalUncBasicProbs >> discreteIntervalUncVars >> discreteIntervalUncCat
     >> discreteUncSetIntValuesProbs >> discreteUncSetIntVars >> discreteUncSetIntCat
     >> discreteUncSetStrValuesProbs >> discreteUncSetStrVars
     >> discreteUncSetRealValuesProbs >> discreteUncSetRealVars >> discreteUncSetRealCat;
@@ -281,10 +277,8 @@ void DataVariablesRep::write(std::ostream& s) const
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
-  s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
-    << continuousIntervalUncUpperBounds << continuousIntervalUncVars
-    << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
-    << discreteIntervalUncUpperBounds << discreteIntervalUncVars << discreteIntervalUncCat
+  s << continuousIntervalUncBasicProbs << continuousIntervalUncVars
+    << discreteIntervalUncBasicProbs << discreteIntervalUncVars << discreteIntervalUncCat
     << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntCat
     << discreteUncSetStrValuesProbs << discreteUncSetStrVars
     << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealCat;

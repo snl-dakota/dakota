@@ -3456,8 +3456,7 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   IntArray *nI;
   int tot_nI, nIi, avg_nI;
   Real lb, lbj, ub, ubj, default_p;
-  RealVector *LBi, *UBi, *Ilb, *Iub, *Ip, *Pi;
-  RealVectorArray *LB, *UB, *P;
+  RealVector *Ilb, *Iub, *Ip;
 
   if ((Ilb = vi->CIlb) && (Iub = vi->CIub)) {
     num_lb = Ilb->length(); // interval lower_bounds
@@ -3508,20 +3507,18 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nI = num_lb / m;
     }
-    LB = &dv->continuousIntervalUncLowerBounds; LB->resize(m);
-    UB = &dv->continuousIntervalUncUpperBounds; UB->resize(m);
-    P  = &dv->continuousIntervalUncBasicProbs;   P->resize(m);
+    RealRealPairRealMapArray& P = dv->continuousIntervalUncBasicProbs;   
+    P.resize(m);
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
-      LBi = &((*LB)[i]); LBi->sizeUninitialized(nIi);
-      UBi = &((*UB)[i]); UBi->sizeUninitialized(nIi);
-      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nIi);
+      RealRealPairRealMap& Pi = P[i];  
       ub = -(lb = DBL_MAX);
-      if (!num_p) default_p = 1./nIi; // default = equal p per cell
+      if (!num_p) default_p = 1./nIi; // default = equal probability per cell
       for(j=0; j<nIi; ++j, ++k) {
-	(*Pi)[j]  = (num_p) ? (*Ip)[k] : default_p;
-	(*LBi)[j] = lbj = (*Ilb)[k];
-	(*UBi)[j] = ubj = (*Iub)[k];
+	lbj = (*Ilb)[k];
+	ubj = (*Iub)[k];
+	RealRealPair interval(lbj, ubj);
+	Pi[interval]  = (num_p) ? (*Ip)[k] : default_p;
 	if (lb > lbj) lb = lbj;
 	if (ub < ubj) ub = ubj;
       }
@@ -3534,26 +3531,26 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
 {
   Real lb, lbk, ub, ubk, stdev;
-  RealVector *ciLBj, *ciUBj, *ceuLB, *Pj, *ceuUB, *V, *IP;
-  RealVectorArray *ciLB, *ciUB, *P;
+  RealVector *ceuLB, *ceuUB, *V, *IP;
 
   ceuLB = &dv->continuousEpistemicUncLowerBnds;
   ceuUB = &dv->continuousEpistemicUncUpperBnds;
   V     = &dv->continuousEpistemicUncVars;
-  ciLB  = &dv->continuousIntervalUncLowerBounds;
-  ciUB  = &dv->continuousIntervalUncUpperBounds;
-  P     = &dv->continuousIntervalUncBasicProbs;
+  const RealRealPairRealMapArray& P = dv->continuousIntervalUncBasicProbs;
   IP    = &dv->continuousIntervalUncVars;
-  size_t i, j, k, m, n = dv->numContinuousIntervalUncVars,
+  size_t i, j, n = dv->numContinuousIntervalUncVars,
     num_IP = IP->length();
   if (num_IP) dv->uncertainVarsInitPt = true;;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    ciLBj = &((*ciLB)[j]); ciUBj = &((*ciUB)[j]); Pj = &((*P)[j]);
-    m = Pj->length();
     lb = DBL_MAX; ub = -DBL_MAX;
-    for (k=0; k<m; ++k) {
-      lbk = (*ciLBj)[k]; ubk = (*ciUBj)[k];
+    const RealRealPairRealMap& Pj = P[j];
+    RealRealPairRealMap::const_iterator it = Pj.begin();
+    RealRealPairRealMap::const_iterator it_end = Pj.end();
+    for ( ; it != it_end; ++it) {
+      const RealRealPair& interval = it->first;
+      lbk = interval.first; 
+      ubk = interval.second;
       if (lb > lbk) lb = lbk;
       if (ub < ubk) ub = ubk;
     }
@@ -3576,10 +3573,8 @@ Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   IntArray *nI;
   int tot_nI, nIi, avg_nI, lb, lbj, ub, ubj;
   Real default_p;
-  RealVector *Ip, *Pi;
-  RealVectorArray *P;
-  IntVector *LBi, *UBi, *Ilb, *Iub;
-  IntVectorArray *LB, *UB;
+  RealVector *Ip;
+  IntVector *Ilb, *Iub;
 
   if ((Ilb = vi->DIlb) && (Iub = vi->DIub)) {
     num_lb = Ilb->length(); // interval lower_bounds
@@ -3630,20 +3625,18 @@ Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nI = num_lb / m;
     }
-    LB = &dv->discreteIntervalUncLowerBounds; LB->resize(m);
-    UB = &dv->discreteIntervalUncUpperBounds; UB->resize(m);
-    P  = &dv->discreteIntervalUncBasicProbs;   P->resize(m);
+    IntIntPairRealMapArray& P = dv->discreteIntervalUncBasicProbs;   
+    P.resize(m);
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
-      LBi = &((*LB)[i]); LBi->sizeUninitialized(nIi);
-      UBi = &((*UB)[i]); UBi->sizeUninitialized(nIi);
-      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nIi);
+      IntIntPairRealMap& Pi = P[i];  
       lb = INT_MAX; ub = INT_MIN;
-      if (!num_p) default_p = 1./nIi; // default = equal p per cell
+      if (!num_p) default_p = 1./nIi; // default = equal probability per cell
       for(j=0; j<nIi; ++j, ++k) {
-	(*Pi)[j]  = (num_p) ? (*Ip)[k] : default_p;
-	(*LBi)[j] = lbj = (*Ilb)[k];
-	(*UBi)[j] = ubj = (*Iub)[k];
+	lbj = (*Ilb)[k];      
+	ubj = (*Iub)[k];
+	IntIntPair interval(lbj, ubj);
+	Pi[interval]  = (num_p) ? (*Ip)[k] : default_p;
 	if (lb > lbj) lb = lbj;
 	if (ub < ubj) ub = ubj;
       }
@@ -3656,30 +3649,28 @@ Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
 {
   int lb, lbk, ub, ubk, stdev;
-  RealVector *Pj;
-  RealVectorArray *P;
-  IntVector *diLBj, *diUBj, *deuLB, *deuUB, *V, *IP;
-  IntVectorArray *diLB, *diUB;
+  IntVector *deuLB, *deuUB, *V, *IP;
 
   deuLB = &dv->discreteIntEpistemicUncLowerBnds;
   deuUB = &dv->discreteIntEpistemicUncUpperBnds;
   V     = &dv->discreteIntEpistemicUncVars;
-  diLB  = &dv->discreteIntervalUncLowerBounds;
-  diUB  = &dv->discreteIntervalUncUpperBounds;
-  P     = &dv->discreteIntervalUncBasicProbs;
+  const IntIntPairRealMapArray& P = dv->discreteIntervalUncBasicProbs;
   IP    = &dv->discreteIntervalUncVars;
-  size_t i, j, k, m, n = dv->numDiscreteIntervalUncVars, num_IP = IP->length();
+  size_t i, j, n = dv->numDiscreteIntervalUncVars, num_IP = IP->length();
   if (num_IP) dv->uncertainVarsInitPt = true;;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    diLBj = &((*diLB)[j]); diUBj = &((*diUB)[j]); Pj = &((*P)[j]);
-    m = Pj->length();
     ub = INT_MIN; lb = INT_MAX;
-    for (k=0; k<m; ++k) {
-      lbk = (*diLBj)[k]; ubk = (*diUBj)[k];
+    const IntIntPairRealMap& Pj = P[j];
+    IntIntPairRealMap::const_iterator it = Pj.begin();
+    IntIntPairRealMap::const_iterator it_end = Pj.end();
+    for ( ; it != it_end; ++it) {
+      const IntIntPair& interval = it->first;
+      lbk = interval.first; 
+      ubk = interval.second;
       if (lb > lbk) lb = lbk;
       if (ub < ubk) ub = ubk;
-    }
+    }    
     (*deuLB)[i] = lb; (*deuUB)[i] = ub;
     if (num_IP) {
       if      ((*IP)[j] < lb) (*V)[i] = lb;
@@ -5490,6 +5481,32 @@ static void flatten_num_srma(StringRealMapArray *srma, IntArray **pia)
     (*ia)[i] = (*srma)[i].size();
 }
 
+// BMA TODO: These could be combined with the interval flatteners
+// since the data type is so special purpose
+static void flatten_num_rrprma(const RealRealPairRealMapArray& rrprma, 
+			       IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = rrprma.size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = rrprma[i].size();
+}
+
+static void flatten_num_iiprma(const IntIntPairRealMapArray& iiprma, 
+			       IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = iiprma.size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = iiprma[i].size();
+}
+
 static void flatten_rva(RealVectorArray *rva, RealVector **prv)
 {
   size_t i, j, k, m, n;
@@ -5704,6 +5721,66 @@ static void flatten_srma_values(StringRealMapArray *srma, RealVector **prv)
   }
 }
 
+/// Flatten real-valued interval uncertain variable intervals and
+/// probabilities back into separate arrays.
+static void flatten_real_intervals(const RealRealPairRealMapArray& rrprma, 
+				   RealVector **probs, 
+				   RealVector **lb, RealVector** ub)
+{
+  size_t i, j, k, m, n;
+  RealVector *rvp, *rvlb, *rvub;
+
+  m = rrprma.size();
+  for(i = n = 0; i < m; ++i)
+    n += rrprma[i].size();
+  *probs = rvp = new RealVector(n, false);
+  *lb = rvlb = new RealVector(n, false);
+  *ub = rvub = new RealVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    const RealRealPairRealMap& rrprm_i = (rrprma)[i];
+    RealRealPairRealMap::const_iterator rrprm_it = rrprm_i.begin();
+    RealRealPairRealMap::const_iterator rrprm_ite = rrprm_i.end();
+    for ( ; rrprm_it != rrprm_ite; ++rrprm_it, ++k) {
+      const RealRealPair& interval = rrprm_it->first;
+      Real prob = rrprm_it->second;
+      (*rvp)[k] = prob;
+      (*rvlb)[k] = interval.first;
+      (*rvub)[k] = interval.second;
+    }
+  }
+}
+
+/// Flatten integer-valued interval uncertain variable intervals and
+/// probabilities back into separate arrays.
+static void flatten_int_intervals(const IntIntPairRealMapArray& iiprma, 
+				  RealVector **probs, 
+				  IntVector **lb, IntVector** ub)
+{
+  size_t i, j, k, m, n;
+  RealVector *ivp;
+  IntVector *ivlb, *ivub;
+
+  m = iiprma.size();
+  for(i = n = 0; i < m; ++i)
+    n += iiprma[i].size();
+  *probs = ivp = new RealVector(n, false);
+  *lb = ivlb = new IntVector(n, false);
+  *ub = ivub = new IntVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    const IntIntPairRealMap& iiprm_i = iiprma[i];
+    IntIntPairRealMap::const_iterator iiprm_it = iiprm_i.begin();
+    IntIntPairRealMap::const_iterator iiprm_ite = iiprm_i.end();
+    for ( ; iiprm_it != iiprm_ite; ++iiprm_it, ++k) {
+      const IntIntPair& interval = iiprm_it->first;
+      Real prob = iiprm_it->second;
+      (*ivp)[k] = prob;
+      (*ivlb)[k] = interval.first;
+      (*ivub)[k] = interval.second;
+    }
+  }
+}
+
+
 void NIDRProblemDescDB::
 check_variables(std::list<DataVariables>* dvl)
 {
@@ -5800,17 +5877,17 @@ check_variables(std::list<DataVariables>* dvl)
 	flatten_rsm(&dv->uncertainCorrelations, &vi->ucm);
       // continuous interval uncertain vars
       if ((n = dv->numContinuousIntervalUncVars)) {
-	flatten_num_rva(&dv->continuousIntervalUncBasicProbs, &vi->nCI);
-	flatten_rva(&dv->continuousIntervalUncBasicProbs,     &vi->CIp);
-	flatten_rva(&dv->continuousIntervalUncLowerBounds,    &vi->CIlb);
-	flatten_rva(&dv->continuousIntervalUncUpperBounds,    &vi->CIub);
+	flatten_num_rrprma(dv->continuousIntervalUncBasicProbs, &vi->nCI);
+	// unroll the array of maps in to separate variables (p, lb, ub)
+	flatten_real_intervals(dv->continuousIntervalUncBasicProbs, 
+			       &vi->CIp, &vi->CIlb, &vi->CIub);
       }
       // discrete interval uncertain vars
       if ((n = dv->numDiscreteIntervalUncVars)) {
-	flatten_num_rva(&dv->discreteIntervalUncBasicProbs, &vi->nDI);
-	flatten_rva(&dv->discreteIntervalUncBasicProbs,     &vi->DIp);
-	flatten_iva(&dv->discreteIntervalUncLowerBounds,    &vi->DIlb);
-	flatten_iva(&dv->discreteIntervalUncUpperBounds,    &vi->DIub);
+	flatten_num_iiprma(dv->discreteIntervalUncBasicProbs, &vi->nDI);
+	// unroll the array of maps in to separate variables (p, lb, ub)
+	flatten_int_intervals(dv->discreteIntervalUncBasicProbs, 
+			      &vi->DIp, &vi->DIlb, &vi->DIub);
       }
       // discrete uncertain set int vars
       if ((n = dv->numDiscreteUncSetIntVars)) {

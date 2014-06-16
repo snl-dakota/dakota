@@ -1551,13 +1551,7 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
     #define P &DataVariablesRep::
     static KW<RealVectorArray, DataVariablesRep> RVAdr[] = { // must be sorted
 	// {"continuous_interval_uncertain.basic_probs",
-	//  P continuousIntervalUncBasicProbs},
-	// {"continuous_interval_uncertain.lower_bounds",
-	//  P continuousIntervalUncLowerBounds},
-	// {"continuous_interval_uncertain.upper_bounds",
-	//  P continuousIntervalUncUpperBounds},
-	// {"discrete_interval_uncertain.basic_probs",
-	//  P discreteIntervalUncBasicProbs},
+	//  P continuousIntervalUncBasicProbs}
     };
     #undef P
 
@@ -1598,9 +1592,7 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
     #define P &DataVariablesRep::
     static KW<IntVectorArray, DataVariablesRep> IVAdr[] = { // must be sorted
 	// {"discrete_interval_uncertain.lower_bounds",
-	//  P discreteIntervalUncLowerBounds},
-	// {"discrete_interval_uncertain.upper_bounds",
-	//  P discreteIntervalUncUpperBounds}
+	//  P discreteIntervalUncLowerBounds}
     };
     #undef P
 
@@ -2995,13 +2987,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
     #define P &DataVariablesRep::
     static KW<RealVectorArray, DataVariablesRep> RVAdv[] = { // must be sorted
 	// {"continuous_interval_uncertain.basic_probs",
-	//  P continuousIntervalUncBasicProbs},
-	// {"continuous_interval_uncertain.lower_bounds",
-	//  P continuousIntervalUncLowerBounds},
-	// {"continuous_interval_uncertain.upper_bounds",
-	//  P continuousIntervalUncUpperBounds},
-	// {"discrete_interval_uncertain.basic_probs",
-	//  P discreteIntervalUncBasicProbs},
+	//  P continuousIntervalUncBasicProbs}
     };
     #undef P
 
@@ -3043,9 +3029,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
     #define P &DataVariablesRep::
     static KW<IntVectorArray, DataVariablesRep> IVAdv[] = { // must be sorted
 	// {"discrete_interval_uncertain.lower_bounds",
-	//  P discreteIntervalUncLowerBounds},
-	// {"discrete_interval_uncertain.upper_bounds",
-	//  P discreteIntervalUncUpperBounds}
+	//  P discreteIntervalUncLowerBounds}
     };
     #undef P
 

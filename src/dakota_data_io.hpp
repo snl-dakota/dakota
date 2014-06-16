@@ -124,6 +124,41 @@ namespace Dakota {
 // -----------------------
 
 
+/// global MPIPackBuffer insertion operator for std::pair
+template <typename U, typename V>
+std::ostream& operator<<(std::ostream& s, const std::pair<U,V>& data)
+{
+  size_t width = write_precision+7;
+  s << "                     " << std::setw(width) 
+    << data.first << ' ' << data.second << '\n';
+  return s;
+}
+
+
+/// global MPIUnpackBuffer extraction operator for std::pair
+template <typename U, typename V>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::pair<U,V>& data)
+{
+  U first;
+  V second;
+  s >> first; 
+  s >> second;
+  data.first = first;
+  data.second = second;
+
+  return s;
+}
+
+
+/// global MPIPackBuffer insertion operator for std::pair
+template <typename U, typename V>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::pair<U,V>& data)
+{
+  s << data.first << data.second;
+  return s;
+}
+
+
 /// global std::ostream insertion operator for std::set
 template <typename T>
 std::ostream& operator<<(std::ostream& s, const std::set<T>& data)

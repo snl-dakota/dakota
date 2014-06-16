@@ -539,15 +539,7 @@ public:
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c continuous_interval_uncertain \c interval_probs
   /// specification in \ref VarCEUV_Interval)
-  RealVectorArray continuousIntervalUncBasicProbs;
-  /// lower bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c continuous_interval_uncertain \c lower_bounds
-  /// specification in \ref VarCEUV_Interval)
-  RealVectorArray continuousIntervalUncLowerBounds;
-  /// upper bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c continuous_interval_uncertain \c upper_bounds
-  /// specification in \ref VarCEUV_Interval)
-  RealVectorArray continuousIntervalUncUpperBounds;
+  RealRealPairRealMapArray continuousIntervalUncBasicProbs;
   /// initial values of the continuous interval uncertain variables
   /// (from the \c initial_point specification in \ref VarCEUV_Interval)
   RealVector continuousIntervalUncVars;
@@ -555,15 +547,7 @@ public:
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c discrete_interval_uncertain \c interval_probs
   /// specification in \ref VarDIUV)
-  RealVectorArray discreteIntervalUncBasicProbs;
-  /// lower bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c discrete_interval_uncertain \c lower_bounds
-  /// specification in \ref VarDIUV)
-  IntVectorArray discreteIntervalUncLowerBounds;
-  /// upper bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c discrete_interval_uncertain \c upper_bounds
-  /// specification in \ref VarDIUV)
-  IntVectorArray discreteIntervalUncUpperBounds;
+  IntIntPairRealMapArray discreteIntervalUncBasicProbs;
   /// initial values of the discrete interval uncertain variables
   /// (from the \c initial_point specification in \ref VarDIUV)
   IntVector discreteIntervalUncVars;
