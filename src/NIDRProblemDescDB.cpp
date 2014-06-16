@@ -5404,108 +5404,6 @@ void NIDRProblemDescDB::check_variables_node(void *v)
     abort_handler(-1);
 }
 
-static void flatten_num_rva(RealVectorArray *rva, IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = rva->size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = (*rva)[i].length();
-}
-
-static void flatten_num_rsa(RealSetArray *rsa, IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = rsa->size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = (*rsa)[i].size();
-}
-
-static void flatten_num_ssa(StringSetArray *rsa, IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = rsa->size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = (*rsa)[i].size();
-}
-
-static void flatten_num_isa(IntSetArray *isa, IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = isa->size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = (*isa)[i].size();
-}
-
-static void flatten_num_rrma(RealRealMapArray *rrma, IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = rrma->size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = (*rrma)[i].size();
-}
-
-static void flatten_num_irma(IntRealMapArray *irma, IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = irma->size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = (*irma)[i].size();
-}
-
-static void flatten_num_srma(StringRealMapArray *srma, IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = srma->size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = (*srma)[i].size();
-}
-
-// BMA TODO: These could be combined with the interval flatteners
-// since the data type is so special purpose
-static void flatten_num_rrprma(const RealRealPairRealMapArray& rrprma, 
-			       IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = rrprma.size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = rrprma[i].size();
-}
-
-static void flatten_num_iiprma(const IntIntPairRealMapArray& iiprma, 
-			       IntArray **pia)
-{
-  size_t i, m;
-  IntArray *ia;
-
-  m = iiprma.size();
-  *pia = ia = new IntArray(m);
-  for(i = 0; i < m; ++i)
-    (*ia)[i] = iiprma[i].size();
-}
 
 static void flatten_rva(RealVectorArray *rva, RealVector **prv)
 {
@@ -5818,19 +5716,19 @@ check_variables(std::list<DataVariables>* dvl)
       // discrete design set int vars
       if ((n = dv->numDiscreteDesSetIntVars)) {
 	// Note: set consolidation and/or reordering cannot be undone
-	flatten_num_isa(&dv->discreteDesignSetInt, &vi->nddsi);
+	flatten_num_array(dv->discreteDesignSetInt, &vi->nddsi);
 	flatten_isa(&dv->discreteDesignSetInt,     &vi->ddsi);
       }
       // discrete design set string vars
       if ((n = dv->numDiscreteDesSetStrVars)) {
 	// Note: set consolidation and/or reordering cannot be undone
-	flatten_num_ssa(&dv->discreteDesignSetStr, &vi->nddss);
+	flatten_num_array(dv->discreteDesignSetStr, &vi->nddss);
 	flatten_ssa(&dv->discreteDesignSetStr,     &vi->ddss);
       }
       // discrete design set real vars
       if ((n = dv->numDiscreteDesSetRealVars)) {
 	// Note: set consolidation and/or reordering cannot be undone
-	flatten_num_rsa(&dv->discreteDesignSetReal, &vi->nddsr);
+	flatten_num_array(dv->discreteDesignSetReal, &vi->nddsr);
 	flatten_rsa(&dv->discreteDesignSetReal,     &vi->ddsr);
       }
       // histogram bin uncertain vars
@@ -5877,14 +5775,14 @@ check_variables(std::list<DataVariables>* dvl)
 	flatten_rsm(&dv->uncertainCorrelations, &vi->ucm);
       // continuous interval uncertain vars
       if ((n = dv->numContinuousIntervalUncVars)) {
-	flatten_num_rrprma(dv->continuousIntervalUncBasicProbs, &vi->nCI);
+	flatten_num_array(dv->continuousIntervalUncBasicProbs, &vi->nCI);
 	// unroll the array of maps in to separate variables (p, lb, ub)
 	flatten_real_intervals(dv->continuousIntervalUncBasicProbs, 
 			       &vi->CIp, &vi->CIlb, &vi->CIub);
       }
       // discrete interval uncertain vars
       if ((n = dv->numDiscreteIntervalUncVars)) {
-	flatten_num_iiprma(dv->discreteIntervalUncBasicProbs, &vi->nDI);
+	flatten_num_array(dv->discreteIntervalUncBasicProbs, &vi->nDI);
 	// unroll the array of maps in to separate variables (p, lb, ub)
 	flatten_int_intervals(dv->discreteIntervalUncBasicProbs, 
 			      &vi->DIp, &vi->DIlb, &vi->DIub);
@@ -5892,40 +5790,40 @@ check_variables(std::list<DataVariables>* dvl)
       // discrete uncertain set int vars
       if ((n = dv->numDiscreteUncSetIntVars)) {
 	// Note: map consolidation and/or reordering cannot be undone
-	flatten_num_irma(&dv->discreteUncSetIntValuesProbs,    &vi->ndusi);
+	flatten_num_array(dv->discreteUncSetIntValuesProbs,    &vi->ndusi);
 	flatten_irma_keys(&dv->discreteUncSetIntValuesProbs,   &vi->dusi);
 	flatten_irma_values(&dv->discreteUncSetIntValuesProbs, &vi->DSIp);
       }
       // discrete uncertain set str vars
       if ((n = dv->numDiscreteUncSetStrVars)) {
 	// Note: map consolidation and/or reordering cannot be undone
-	flatten_num_srma(&dv->discreteUncSetStrValuesProbs,    &vi->nduss);
+	flatten_num_array(dv->discreteUncSetStrValuesProbs,    &vi->nduss);
 	flatten_srma_keys(&dv->discreteUncSetStrValuesProbs,   &vi->duss);
 	flatten_srma_values(&dv->discreteUncSetStrValuesProbs, &vi->DSSp);
       }
       // discrete uncertain set real vars
       if ((n = dv->numDiscreteUncSetRealVars)) {
 	// Note: map consolidation and/or reordering cannot be undone
-	flatten_num_rrma(&dv->discreteUncSetRealValuesProbs,    &vi->ndusr);
+	flatten_num_array(dv->discreteUncSetRealValuesProbs,    &vi->ndusr);
 	flatten_rrma_keys(&dv->discreteUncSetRealValuesProbs,   &vi->dusr);
 	flatten_rrma_values(&dv->discreteUncSetRealValuesProbs, &vi->DSRp);
       }
       // discrete state set int vars
       if ((n = dv->numDiscreteStateSetIntVars)) {
 	// Note: set consolidation and/or reordering cannot be undone
-	flatten_num_isa(&dv->discreteStateSetInt, &vi->ndssi);
+	flatten_num_array(dv->discreteStateSetInt, &vi->ndssi);
 	flatten_isa(&dv->discreteStateSetInt,     &vi->dssi);
       }
       // discrete state set string vars
       if ((n = dv->numDiscreteStateSetStrVars)) {
 	// Note: set consolidation and/or reordering cannot be undone
-	flatten_num_ssa(&dv->discreteStateSetStr, &vi->ndsss);
+	flatten_num_array(dv->discreteStateSetStr, &vi->ndsss);
 	flatten_ssa(&dv->discreteStateSetStr,     &vi->dsss);
       }
       // discrete state set real vars
       if ((n = dv->numDiscreteStateSetRealVars)) {
 	// Note: set consolidation and/or reordering cannot be undone
-	flatten_num_rsa(&dv->discreteStateSetReal, &vi->ndssr);
+	flatten_num_array(dv->discreteStateSetReal, &vi->ndssr);
 	flatten_rsa(&dv->discreteStateSetReal,     &vi->dssr);
       }
 

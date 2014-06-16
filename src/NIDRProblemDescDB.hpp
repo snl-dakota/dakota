@@ -213,6 +213,24 @@ public:
 #undef KWH
 };
 
+
+/// Free convenience function that flatten sizes of an array of std
+/// containers; takes an array of containers and returns an IntArray
+/// containing the sizes of each container in the input array.  Note:
+/// Did not specialize for vector<RealVector> as no current use cases.
+template <class ContainerT>
+inline void 
+flatten_num_array(const std::vector<ContainerT>& input_array, IntArray** pia)
+{
+  size_t input_len = input_array.size();
+  IntArray *ia;
+
+  *pia = ia = new IntArray(input_len);
+  for(size_t i = 0; i < input_len; ++i)
+    (*ia)[i] = input_array[i].size();
+}
+
+
 } // namespace Dakota
 
 #endif
