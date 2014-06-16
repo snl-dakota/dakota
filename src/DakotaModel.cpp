@@ -3313,16 +3313,23 @@ const BitArray& Model::discrete_int_sets()
   if (modelRep)
     return modelRep->discrete_int_sets();
 
+  // identify discrete integer sets within active discrete int variables
+  // (excluding discrete integer ranges)
+
   short active_view = currentVariables.view().first;
   bool relax = (active_view == RELAXED_ALL ||
     ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
   const SharedVariablesData&  svd = currentVariables.shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
 
-  // distinguish discrete integer ranges from discrete integer sets
   discreteIntSets.resize(currentVariables.div()); discreteIntSets.reset();
   size_t i, di_cntr = 0;
   if (relax) {
+    // This case is complicated by the promotion of active discrete variables
+    // into active continuous variables.  all_relax_di and ardi_cntr operate
+    // over all of the discrete variables from the input specification, but
+    // discreteIntSets operates only over the non-relaxed/categorical active
+    // discrete variables, for which it distinguishes sets from ranges.
     const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
     const SizetArray& all_totals = svd.components_totals();
     size_t ardi_cntr = 0;
@@ -3331,11 +3338,11 @@ const BitArray& Model::discrete_int_sets()
       size_t num_ddsiv = discreteDesignSetIntValues.size(),
 	num_ddriv = all_totals[TOTAL_DDIV] - num_ddsiv;
       for (i=0; i<num_ddriv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  ++di_cntr;
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;                  // leave bit as false
       for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  { discreteIntSets.set(di_cntr); ++di_cntr; }
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  { discreteIntSets.set(di_cntr); ++di_cntr; } // set bit to true
     }
     else ardi_cntr += all_totals[TOTAL_DDIV];
     // discrete aleatory uncertain
@@ -3343,11 +3350,11 @@ const BitArray& Model::discrete_int_sets()
       size_t num_dausiv = aleatDistParams.histogram_point_int_pairs().size(),
 	num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv; 
       for (i=0; i<num_dauriv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  ++di_cntr;
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;                  // leave bit as false
       for (i=0; i<num_dausiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  { discreteIntSets.set(di_cntr); ++di_cntr; }
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  { discreteIntSets.set(di_cntr); ++di_cntr; } // set bit to true
     }
     else ardi_cntr += all_totals[TOTAL_DAUIV];
     // discrete epistemic uncertain
@@ -3357,11 +3364,11 @@ const BitArray& Model::discrete_int_sets()
 	num_deusiv
 	  = epistDistParams.discrete_set_int_values_probabilities().size();
       for (i=0; i<num_deuriv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  ++di_cntr;
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;                  // leave bit as false
       for (i=0; i<num_deusiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  { discreteIntSets.set(di_cntr); ++di_cntr; }
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  { discreteIntSets.set(di_cntr); ++di_cntr; } // set bit to true
     }
     else ardi_cntr += all_totals[TOTAL_DEUIV];
     // discrete state
@@ -3369,11 +3376,11 @@ const BitArray& Model::discrete_int_sets()
       size_t num_dssiv = discreteStateSetIntValues.size(),
 	num_dsriv = all_totals[TOTAL_DSIV] - num_dssiv;
       for (i=0; i<num_dsriv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  ++di_cntr;
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;                  // leave bit as false
       for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr])
-	  { discreteIntSets.set(di_cntr); ++di_cntr; }
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  { discreteIntSets.set(di_cntr); ++di_cntr; } // set bit to true
     }
   }
   else { // MIXED_*
@@ -3499,11 +3506,149 @@ const IntSetArray& Model::discrete_set_int_values()
       activeDiscSetIntValues[i+offset] = discreteStateSetIntValues[i];
     break;
   }
-  default:
-    activeDiscSetIntValues.clear(); break; // TO DO
+  default: { // RELAXED_*
+    const SharedVariablesData& svd = currentVariables.shared_data();
+    const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
+    const SizetArray& all_totals = svd.components_totals();
+    const SizetArray& active_totals = svd.active_components_totals();
+    size_t i, di_cntr = 0, ardi_cntr = 0;
+    // discrete design
+    if (active_totals[TOTAL_DDIV]) {
+      size_t num_ddsiv = discreteDesignSetIntValues.size(),
+	num_ddriv = all_totals[TOTAL_DDIV] - num_ddsiv;
+      for (i=0; i<num_ddriv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;
+      for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
+	  activeDiscSetIntValues[di_cntr] = discreteDesignSetIntValues[i];
+	  ++di_cntr;
+	}
+    }
+    else ardi_cntr += all_totals[TOTAL_DDIV];
+    // discrete aleatory uncertain
+    if (active_totals[TOTAL_DAUIV]) {
+      const IntRealMapArray& h_pt_prs
+	= aleatDistParams.histogram_point_int_pairs();
+      size_t num_dausiv = h_pt_prs.size(),
+	num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv; 
+      for (i=0; i<num_dauriv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;
+      for (i=0; i<num_dausiv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
+	  map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[di_cntr]);
+	  ++di_cntr;
+	}
+    }
+    else ardi_cntr += all_totals[TOTAL_DAUIV];
+    // discrete epistemic uncertain
+    if (active_totals[TOTAL_DEUIV]) {
+      const IntRealMapArray& deusi_vals_probs
+       = epistDistParams.discrete_set_int_values_probabilities();
+      size_t num_deuriv
+	  = epistDistParams.discrete_interval_basic_probabilities().size(),
+	num_deusiv = deusi_vals_probs.size();
+      for (i=0; i<num_deuriv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;
+      for (i=0; i<num_deusiv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
+	  map_keys_to_set(deusi_vals_probs[i], activeDiscSetIntValues[di_cntr]);
+	  ++di_cntr;
+	}
+    }
+    else ardi_cntr += all_totals[TOTAL_DEUIV];
+    // discrete state
+    if (active_totals[TOTAL_DSIV]) {
+      size_t num_dssiv = discreteStateSetIntValues.size(),
+	num_dsriv = all_totals[TOTAL_DSIV] - num_dssiv;
+      for (i=0; i<num_dsriv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  ++di_cntr;                  // leave bit as false
+      for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
+	  activeDiscSetIntValues[di_cntr] = discreteStateSetIntValues[i];
+	  ++di_cntr;
+	}
+    }
+    break;
+  }
   }
 
   return activeDiscSetIntValues;
+}
+
+
+const StringSetArray& Model::discrete_set_string_values()
+{
+  if (modelRep)
+    return modelRep->discrete_set_string_values();
+
+  switch (currentVariables.view().first) {
+  case MIXED_DESIGN: case RELAXED_DESIGN:
+    return discreteDesignSetStringValues; break;
+  case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN: {
+    const StringRealMapArray& h_pt_prs
+      = aleatDistParams.histogram_point_string_pairs();
+    size_t i, num_dausrv = h_pt_prs.size();
+    activeDiscSetStringValues.resize(num_dausrv);
+    for (i=0; i<num_dausrv; ++i)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i]);
+    break;
+  }
+  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
+    const StringRealMapArray& deusr_vals_probs
+      = epistDistParams.discrete_set_string_values_probabilities();
+    size_t i, num_deusrv = deusr_vals_probs.size();
+    activeDiscSetStringValues.resize(num_deusrv);
+    for (i=0; i<num_deusrv; ++i)
+      map_keys_to_set(deusr_vals_probs[i], activeDiscSetStringValues[i]);
+    break;
+  }
+  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
+    const StringRealMapArray& h_pt_prs
+      = aleatDistParams.histogram_point_string_pairs();
+    const StringRealMapArray& deusr_vals_probs
+      = epistDistParams.discrete_set_string_values_probabilities();
+    size_t i, num_dausrv = h_pt_prs.size(),
+      num_deusrv = deusr_vals_probs.size();
+    activeDiscSetStringValues.resize(num_dausrv+num_deusrv);
+    for (i=0; i<num_dausrv; ++i)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i]);
+    for (i=0; i<num_deusrv; ++i)
+      map_keys_to_set(deusr_vals_probs[i],
+		      activeDiscSetStringValues[i+num_dausrv]);
+    break;
+  }
+  case MIXED_STATE: case RELAXED_STATE:
+    return discreteStateSetStringValues; break;
+  case MIXED_ALL: case RELAXED_ALL: {
+    const StringRealMapArray& h_pt_prs
+      = aleatDistParams.histogram_point_string_pairs();
+    const StringRealMapArray& deusr_vals_probs
+      = epistDistParams.discrete_set_string_values_probabilities();
+    size_t i, offset, num_ddsiv = discreteDesignSetStringValues.size(),
+      num_dausrv = h_pt_prs.size(), num_deusrv = deusr_vals_probs.size(),
+      num_dssiv = discreteStateSetStringValues.size();
+    activeDiscSetStringValues.resize(num_ddsiv  + num_dausrv +
+				   num_deusrv + num_dssiv);
+    for (i=0; i<num_ddsiv; ++i)
+      activeDiscSetStringValues[i] = discreteDesignSetStringValues[i];
+    offset = num_ddsiv;
+    for (i=0; i<num_dausrv; ++i)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i+offset]);
+    offset += num_dausrv;
+    for (i=0; i<num_deusrv; ++i)
+      map_keys_to_set(deusr_vals_probs[i], activeDiscSetStringValues[i+offset]);
+    offset += num_deusrv;
+    for (i=0; i<num_dssiv; ++i)
+      activeDiscSetStringValues[i+offset] = discreteStateSetStringValues[i];
+    break;
+  }
+  }
+
+  return activeDiscSetStringValues; // if not previously returned
 }
 
 
@@ -3573,8 +3718,57 @@ const RealSetArray& Model::discrete_set_real_values()
       activeDiscSetRealValues[i+offset] = discreteStateSetRealValues[i];
     break;
   }
-  default:
-    activeDiscSetRealValues.clear(); break; // TO DO
+  default: { // RELAXED_*
+    const SharedVariablesData& svd = currentVariables.shared_data();
+    const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
+    const SizetArray& all_totals = svd.components_totals();
+    const SizetArray& active_totals = svd.active_components_totals();
+    size_t i, dr_cntr = 0, ardr_cntr = 0;
+    // discrete design
+    if (active_totals[TOTAL_DDRV]) {
+      size_t num_ddsrv = discreteDesignSetRealValues.size();
+      for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
+	  activeDiscSetRealValues[dr_cntr] = discreteDesignSetRealValues[i];
+	  ++dr_cntr;
+	}
+    }
+    else ardr_cntr += all_totals[TOTAL_DDRV];
+    // discrete aleatory uncertain
+    if (active_totals[TOTAL_DAURV]) {
+      const RealRealMapArray& h_pt_prs
+	= aleatDistParams.histogram_point_real_pairs();
+      size_t num_dausrv = h_pt_prs.size(); 
+      for (i=0; i<num_dausrv; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
+	  map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[dr_cntr]);
+	  ++dr_cntr;
+	}
+    }
+    else ardr_cntr += all_totals[TOTAL_DAURV];
+    // discrete epistemic uncertain
+    if (active_totals[TOTAL_DEURV]) {
+      const RealRealMapArray& deusr_vals_probs
+       = epistDistParams.discrete_set_real_values_probabilities();
+      size_t num_deusrv = deusr_vals_probs.size();
+      for (i=0; i<num_deusrv; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
+	  map_keys_to_set(deusr_vals_probs[i],activeDiscSetRealValues[dr_cntr]);
+	  ++dr_cntr;
+	}
+    }
+    else ardr_cntr += all_totals[TOTAL_DEURV];
+    // discrete state
+    if (active_totals[TOTAL_DSRV]) {
+      size_t num_dssrv = discreteStateSetRealValues.size();
+      for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
+	  activeDiscSetRealValues[dr_cntr] = discreteStateSetRealValues[i];
+	  ++dr_cntr;
+	}
+    }
+    break;
+  }
   }
 
   return activeDiscSetRealValues; // if not previously returned

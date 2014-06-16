@@ -350,7 +350,7 @@ public:
   void all_discrete_int_variable(int adi_var, size_t index);
 
   /// returns a single array with all discrete variables
-  const StringMultiArray& all_discrete_string_variables() const;
+  StringMultiArrayConstView all_discrete_string_variables() const;
   /// sets all discrete variables using a single array
   void all_discrete_string_variables(StringMultiArrayConstView ads_vars);
   /// set a variable within the all discrete array
@@ -1222,10 +1222,12 @@ inline void Variables::all_discrete_int_variable(int adi_var, size_t index)
 }
 
 
-inline const StringMultiArray& Variables::all_discrete_string_variables() const
+inline StringMultiArrayConstView Variables::
+all_discrete_string_variables() const
 {
-  return (variablesRep) ? variablesRep->allDiscreteStringVars :
-    allDiscreteStringVars;
+  return (variablesRep) ?
+    variablesRep->allDiscreteStringVars[boost::indices[idx_range(0, adsv())]] :
+    allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
 }
 
 
