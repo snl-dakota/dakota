@@ -1681,7 +1681,7 @@ KEYWORD model
 	      | combined
 	      ]
 	    [ metrics ALIAS diagnostics STRINGLIST
-	      [ cross_validate
+	      [ cross_validation
 		[ folds INTEGER
 		| percent REAL ]
 		]

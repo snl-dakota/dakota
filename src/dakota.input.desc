@@ -1620,11 +1620,13 @@ TAG "model/surrogate/global/correction/combined"
 TAG "model/surrogate/global/metrics"
 	DESC "{Compute surrogate diagnostics} ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/metrics/cross_validate"
-TAG "model/surrogate/global/metrics/cross_validate/folds"
+TAG "model/surrogate/global/metrics/cross_validation"
+	DESC "{Perform cross validation} ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/metrics/cross_validation/folds"
 	DESC "{Number cross validation folds} ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/metrics/cross_validate/percent"
+TAG "model/surrogate/global/metrics/cross_validation/percent"
 	DESC "{Percent points per CV fold} ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/metrics/press"

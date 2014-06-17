@@ -968,6 +968,8 @@ std::size_t hash_value(const Variables& vars)
   // require identical views and variables data
   Variables *v_rep = vars.variablesRep;
   boost::hash_combine(seed, v_rep->sharedVarsData.view());
+  // hash_value() for SerialDenseVectors and StringMultiArrays defined
+  // in dakota_data_util.hpp
   boost::hash_combine(seed, v_rep->allContinuousVars);
   boost::hash_combine(seed, v_rep->allDiscreteIntVars);
   boost::hash_combine(seed, v_rep->allDiscreteStringVars);

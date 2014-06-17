@@ -1729,7 +1729,7 @@ static GuiKeyWord
 		{"percent",10,0,1,0,1785,0,0.,0.,0.,0,"{Percent points per CV fold} ModelCommands.html#ModelSurrG"}
 		},
 	kw_254[2] = {
-		{"cross_validate",8,2,1,0,1781,kw_253},
+		{"cross_validation",8,2,1,0,1781,kw_253,0.,0.,0.,0,"{Perform cross validation} ModelCommands.html#ModelSurrG"},
 		{"press",8,0,2,0,1787,0,0.,0.,0.,0,"{Perform PRESS cross validation} ModelCommands.html#ModelSurrG"}
 		},
 	kw_255[2] = {

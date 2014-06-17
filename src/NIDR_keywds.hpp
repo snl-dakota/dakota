@@ -1612,7 +1612,7 @@ static KeyWord
 		{"percent",10,0,1,0,0,0.,0.,0,N_mom(Real,percentFold)}
 		},
 	kw_270[2] = {
-		{"cross_validate",8,2,1,0,kw_269,0.,0.,0,N_mom(true,crossValidateFlag)},
+		{"cross_validation",8,2,1,0,kw_269,0.,0.,0,N_mom(true,crossValidateFlag)},
 		{"press",8,0,2,0,0,0.,0.,0,N_mom(true,pressFlag)}
 		},
 	kw_271[2] = {

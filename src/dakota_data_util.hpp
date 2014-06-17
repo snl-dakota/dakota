@@ -20,9 +20,16 @@
 #include <algorithm>
 
 
-// ------------------------
-// templated hash functions
-// ------------------------
+// --------------
+// hash functions
+// --------------
+namespace boost {
+
+size_t hash_value(const Dakota::StringMultiArray& sma)
+{ return boost::hash_range( sma.begin(), sma.end() ); }
+
+} // namespace boost
+
 namespace Teuchos {
 
 template<typename OrdinalType, typename ScalarType>
@@ -30,7 +37,6 @@ size_t hash_value(const SerialDenseVector<OrdinalType, ScalarType>& sdv)
 { return boost::hash_range( sdv.values(), sdv.values() + sdv.length() ); }
 
 } // namespace Teuchos
-
 
 namespace Dakota {
 
