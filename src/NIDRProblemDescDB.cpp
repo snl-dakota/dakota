@@ -3097,6 +3097,9 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
+
+/// Check the histogram point integer input data, normalize the
+/// counts, and populate DataVariables::histogramUncPointIntPairs
 static void 
 Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3142,7 +3145,7 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nhppi = num_a / m;
     }
-    IntRealMapArray hpp = dv->histogramUncPointIntPairs;
+    IntRealMapArray& hpp = dv->histogramUncPointIntPairs;
     hpp.resize(m);
     for (i=cntr=0; i<m; ++i) {
       nhppi = (key) ? (*nhprp)[i] : avg_nhppi;
@@ -3152,7 +3155,7 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       for (j=0; j<nhppi; ++j, ++cntr) {
 	int x = (*hpia)[cntr]; // abscissas
 	Real y = (*hprc)[cntr]; // counts
-	// BMA: to check?!?  Probably not
+	// BMA: to check?!?  Probably could relax
 	if (j<nhppi-1 && x >= (*hpia)[cntr+1]) {
 	  Squawk("histogram point x values must increase");
 	  return;
@@ -3164,43 +3167,45 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	hppi[x] = y;
 	count_sum += y;
       }
-      // normalize counts to sum to 1, omitting last value
-      IRMCIter it_end = --(hppi.end());
+      // normalize counts to sum to 1
+      IRMCIter it_end = hppi.end();
       for (IRMIter it = hppi.begin(); it != it_end; ++it)
 	it->second /= count_sum;
     }
   }
 }
 
+
+/// Use the integer-valued point histogram data to initialize the lower,
+/// upper, and initial values of the variables, using value closest to
+/// mean if no initial point.
 static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
 {
-  IntVector *L, *U, *V, *IP;
-  Real mean, stdev;
-
-  L = &dv->discreteIntAleatoryUncLowerBnds;
-  U = &dv->discreteIntAleatoryUncUpperBnds;
-  V = &dv->discreteIntAleatoryUncVars;
   const IntRealMapArray& A = dv->histogramUncPointIntPairs; 
-  IP = &dv->histogramPointIntUncVars;
+
+  IntVector& L = dv->discreteIntAleatoryUncLowerBnds;
+  IntVector& U = dv->discreteIntAleatoryUncUpperBnds;
+  IntVector& V = dv->discreteIntAleatoryUncVars;
+  IntVector&  IP = dv->histogramPointIntUncVars;
+
   size_t i, j, k, last, n = dv->numHistogramPtIntUncVars;
-  size_t num_IP = IP->length();
+  size_t num_IP = IP.length();
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
     const IntRealMap& hist_point_pairs = A[j];
-    // BMA TODO: I think this last calculation was wrong?  should be -1
-    //    last = r->length() - 2;
-    (*L)[i] = hist_point_pairs.begin()->first;;
-    (*U)[i] = (--hist_point_pairs.end())->first;
+    L[i] = hist_point_pairs.begin()->first;;
+    U[i] = (--hist_point_pairs.end())->first;
     if (num_IP) {
-      if      ((*IP)[j] < (*L)[i]) (*V)[i] =  (*L)[i];
-      else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
-      else                         (*V)[i] = (*IP)[j];
+      if      (IP[j] < L[i]) V[i] =  L[i];
+      else if (IP[j] > U[i]) V[i] =  U[i];
+      else                   V[i] = IP[j];
     }
     else {
+      Real mean, stdev;
       Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
       if (hist_point_pairs.size() == 1)
-	(*V)[i] = hist_point_pairs.begin()->first;
+	V[i] = hist_point_pairs.begin()->first;
       else {
 	IRMCIter it = hist_point_pairs.begin();
 	IRMCIter it_end = hist_point_pairs.end();
@@ -3210,12 +3215,14 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
 	int right_val = it->first;
 	int left_val = (--it)->first;
 	// initialize with value closest to mean
-	(*V)[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+	V[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
       }
     }
   }
 }
 
+/// Check the histogram point string input data, normalize the
+/// counts, and populate DataVariables::histogramUncPointStrPairs
 static void 
 Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3260,7 +3267,7 @@ Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nhppi = num_a / m;
     }
-    StringRealMapArray hpp = dv->histogramUncPointStrPairs;
+    StringRealMapArray& hpp = dv->histogramUncPointStrPairs;
     hpp.resize(m);
     for (i=cntr=0; i<m; ++i) {
       nhppi = (key) ? (*nhpsp)[i] : avg_nhppi;
@@ -3281,58 +3288,62 @@ Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	hppi[x] = y;
 	count_sum += y;
       }
-      // normalize counts to sum to 1, omitting last value
-      SRMCIter it_end = --(hppi.end());
+      // normalize counts to sum to 1
+      SRMCIter it_end = hppi.end();
       for (SRMIter it = hppi.begin(); it != it_end; ++it)
 	it->second /= count_sum;
     }
   }
 }
 
+
+/// Use the string-valued point histogram data to initialize the lower,
+/// upper, and initial values of the variables, using index closest to
+/// mean index if no initial point.
 static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
 {
-  StringArray *L, *U, *V, *IP;
-  Real mean, stdev;
-
-  L = &dv->discreteStrAleatoryUncLowerBnds;
-  U = &dv->discreteStrAleatoryUncUpperBnds;
-  V = &dv->discreteStrAleatoryUncVars;
   const StringRealMapArray& A = dv->histogramUncPointStrPairs; 
-  IP = &dv->histogramPointStrUncVars;
-  size_t i, j, k, last, n = dv->numHistogramPtStrVars;
-  size_t num_IP = IP->size();
+
+  StringArray& L = dv->discreteStrAleatoryUncLowerBnds;
+  StringArray& U = dv->discreteStrAleatoryUncUpperBnds;
+  StringArray& V = dv->discreteStrAleatoryUncVars;
+  StringArray& IP = dv->histogramPointStrUncVars;
+
+  size_t i, j, k, last, n = dv->numHistogramPtStrUncVars;
+  size_t num_IP = IP.size();
+
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
     const StringRealMap& hist_point_pairs = A[j];
-    // BMA TODO: I think this last calculation was wrong?  should be -1
-    //    last = r->length() - 2;
-    (*L)[i] = hist_point_pairs.begin()->first;;
-    (*U)[i] = (--hist_point_pairs.end())->first;
+    L[i] = hist_point_pairs.begin()->first;;
+    U[i] = (--hist_point_pairs.end())->first;
     if (num_IP) {
-      if      ((*IP)[j] < (*L)[i]) (*V)[i] =  (*L)[i];
-      else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
-      else                         (*V)[i] = (*IP)[j];
+      if      (IP[j] < L[i]) V[i] =  L[i];
+      else if (IP[j] > U[i]) V[i] =  U[i];
+      else                   V[i] = IP[j];
     }
     else {
+      // for string-valued histograms, mean and stddev are of
+      // zero-based indices from beginning of the map
+      Real mean, stdev;
       Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
       if (hist_point_pairs.size() == 1)
-	(*V)[i] = hist_point_pairs.begin()->first;
+	V[i] = hist_point_pairs.begin()->first;
       else {
+	size_t mean_index = boost::math::iround(mean);
 	SRMCIter it = hist_point_pairs.begin();
-	SRMCIter it_end = hist_point_pairs.end();
-	// find value immediately right of mean (can't be past the end)
-	for( ; it != it_end, it->first <= mean; ++it);
-	// bracket the mean
-	String right_val = it->first;
-	String left_val = (--it)->first;
+	std::advance(it, mean_index);
 	// initialize with value closest to mean
-	(*V)[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+	V[i] = it->first;
       }
     }
   }
 }
 
+
+/// Check the histogram point integer real data, normalize the
+/// counts, and populate DataVariables::histogramUncPointRealPairs
 static void 
 Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3376,7 +3387,7 @@ Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       else
 	avg_nhppi = num_a / m;
     }
-    RealRealMapArray hpp = dv->histogramUncPointRealPairs;
+    RealRealMapArray& hpp = dv->histogramUncPointRealPairs;
     hpp.resize(m);
     for (i=cntr=0; i<m; ++i) {
       nhppi = (key) ? (*nhprp)[i] : avg_nhppi;
@@ -3397,43 +3408,45 @@ Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	hppi[x] = y;
 	count_sum += y;
       }
-      // normalize counts to sum to 1, omitting last value
-      RRMCIter it_end = --(hppi.end());
+      // normalize counts to sum to 1
+      RRMCIter it_end = hppi.end();
       for (RRMIter it = hppi.begin(); it != it_end; ++it)
 	it->second /= count_sum;
     }
   }
 }
 
+
+/// Use the real-valued point histogram data to initialize the lower,
+/// upper, and initial values of the variables, using value closest to
+/// mean if no initial point.
 static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
 {
-  RealVector *L, *U, *V, *IP;
-  Real mean, stdev;
-
-  L = &dv->discreteRealAleatoryUncLowerBnds;
-  U = &dv->discreteRealAleatoryUncUpperBnds;
-  V = &dv->discreteRealAleatoryUncVars;
   const RealRealMapArray& A = dv->histogramUncPointRealPairs; 
-  IP = &dv->histogramPointRealUncVars;
+
+  RealVector& L = dv->discreteRealAleatoryUncLowerBnds;
+  RealVector& U = dv->discreteRealAleatoryUncUpperBnds;
+  RealVector& V = dv->discreteRealAleatoryUncVars;
+  RealVector& IP = dv->histogramPointRealUncVars;
+
   size_t i, j, k, last, n = dv->numHistogramPtRealUncVars;
-  size_t num_IP = IP->length();
+  size_t num_IP = IP.length();
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
     const RealRealMap& hist_point_pairs = A[j];
-    // BMA TODO: I think this last calculation was wrong?  should be -1
-    //    last = r->length() - 2;
-    (*L)[i] = hist_point_pairs.begin()->first;;
-    (*U)[i] = (--hist_point_pairs.end())->first;
+    L[i] = hist_point_pairs.begin()->first;;
+    U[i] = (--hist_point_pairs.end())->first;
     if (num_IP) {
-      if      ((*IP)[j] < (*L)[i]) (*V)[i] =  (*L)[i];
-      else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
-      else                         (*V)[i] = (*IP)[j];
+      if      (IP[j] < L[i]) V[i] =  L[i];
+      else if (IP[j] > U[i]) V[i] =  U[i];
+      else                   V[i] = IP[j];
     }
     else {
+      Real mean, stdev;
       Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
       if (hist_point_pairs.size() == 1)
-	(*V)[i] = hist_point_pairs.begin()->first;
+	V[i] = hist_point_pairs.begin()->first;
       else {
 	RRMCIter it = hist_point_pairs.begin();
 	RRMCIter it_end = hist_point_pairs.end();
@@ -3443,11 +3456,12 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
 	Real right_val = it->first;
 	Real left_val = (--it)->first;
 	// initialize with value closest to mean
-	(*V)[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+	V[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
       }
     }
   }
 }
+
 
 static void 
 Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
