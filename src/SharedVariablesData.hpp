@@ -696,7 +696,7 @@ all_discrete_real_labels(size_t start, size_t num_items) const
 
 inline void SharedVariablesData::
 all_discrete_real_labels(StringMultiArrayConstView drv_labels, size_t start,
-		      size_t num_items)
+			 size_t num_items)
 {
   svdRep->
     allDiscreteRealLabels[boost::indices[idx_range(start, start+num_items)]]

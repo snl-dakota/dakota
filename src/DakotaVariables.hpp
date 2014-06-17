@@ -204,9 +204,8 @@ public:
   RealVector continuous_variables_view() const;
   /// return a mutable view of the active discrete integer variables
   IntVector discrete_int_variables_view() const;
- 
   /// return a mutable view of the active discrete string variables
-  StringMultiArrayView discrete_string_variables_view() const;
+  StringMultiArrayView discrete_string_variables_view();
   /// return a mutable view of the active discrete real variables
   RealVector discrete_real_variables_view() const;
 
@@ -475,8 +474,9 @@ protected:
   RealVector continuousVars;
   /// the active discrete integer variables array view
   IntVector discreteIntVars;
-  /// the active discrete string variables view
-  StringMultiArrayView discreteStringVars;
+  // the active discrete string variables view
+  /* don't cache an explicit view; rather generate on the fly as for labels */
+  //StringMultiArrayView discreteStringVars;
   /// the active discrete real variables array view
   RealVector discreteRealVars;
 
@@ -484,8 +484,9 @@ protected:
   RealVector inactiveContinuousVars;
   /// the inactive discrete integer variables array view
   IntVector inactiveDiscreteIntVars;
-  /// the inactive discrete string variables view
-  StringMultiArrayView inactiveDiscreteStringVars;
+  // the inactive discrete string variables view
+  /* don't cache an explicit view; rather generate on the fly as for labels */
+  //StringMultiArrayView inactiveDiscreteStringVars;
   /// the inactive discrete real variables array view
   RealVector inactiveDiscreteRealVars;
 
@@ -548,10 +549,7 @@ inline SharedVariablesData& Variables::shared_data()
 // member function call when the function could be redefined).
 inline size_t Variables::tv() const
 {
-  return (variablesRep) ? variablesRep->allContinuousVars.length() +
-    variablesRep->allDiscreteIntVars.length()  +
-    variablesRep->allDiscreteStringVars.size() +
-    variablesRep->allDiscreteRealVars.length() :
+  return (variablesRep) ? variablesRep->tv() :
     allContinuousVars.length()   + allDiscreteIntVars.length() +
     allDiscreteStringVars.size() + allDiscreteRealVars.length();
 }
@@ -703,30 +701,39 @@ inline void Variables::discrete_int_variables(const IntVector& di_vars)
 inline void Variables::
 discrete_string_variable(const String& ds_var, size_t index)
 {
-  if (variablesRep) variablesRep->discreteStringVars[index] = ds_var;
-  else              discreteStringVars[index] = ds_var;
+  if (variablesRep)
+    variablesRep->discrete_string_variable(ds_var, index);
+  else
+    allDiscreteStringVars[sharedVarsData.dsv_start()+index] = ds_var;
 }
 
 
 inline const String& Variables::discrete_string_variable(size_t index) const
 {
-  if (variablesRep) return variablesRep->discreteStringVars[index];
-  else              return discreteStringVars[index];
+  if (variablesRep)
+    return variablesRep->discrete_string_variable(index);
+  else
+    return allDiscreteStringVars[sharedVarsData.dsv_start()+index];
 }
 
 
 inline StringMultiArrayConstView Variables::discrete_string_variables() const
 {
   return (variablesRep) ?
-    variablesRep->discreteStringVars : discreteStringVars;
+    variablesRep->discrete_string_variables() :
+    allDiscreteStringVars[boost::indices[idx_range(sharedVarsData.dsv_start(),
+						   sharedVarsData.dsv())]];
 }
 
 
 inline void Variables::
 discrete_string_variables(StringMultiArrayConstView ds_vars)
 {
-  if (variablesRep) variablesRep->discreteStringVars = ds_vars;
-  else              discreteStringVars = ds_vars;
+  if (variablesRep)
+    variablesRep->discrete_string_variables(ds_vars);
+  else
+    allDiscreteStringVars[boost::indices[
+      idx_range(sharedVarsData.dsv_start(), sharedVarsData.dsv())]] = ds_vars;
 }
 
 
@@ -790,9 +797,13 @@ inline IntVector Variables::discrete_int_variables_view() const
 }
 
 
-inline StringMultiArrayView Variables::discrete_string_variables_view() const
+/** same as discrete_string_variables(), except mutable view */
+inline StringMultiArrayView Variables::discrete_string_variables_view()
 {
-  return (variablesRep) ? variablesRep->discreteStringVars : discreteStringVars;
+  return (variablesRep) ?
+    variablesRep->discrete_string_variables_view() :
+    allDiscreteStringVars[boost::indices[idx_range(sharedVarsData.dsv_start(),
+						   sharedVarsData.dsv())]];
 }
 
 
@@ -1048,18 +1059,23 @@ inactive_discrete_int_variables(const IntVector& idi_vars)
 }
 
 
-inline StringMultiArrayConstView Variables::inactive_discrete_string_variables() const
+inline StringMultiArrayConstView Variables::
+inactive_discrete_string_variables() const
 {
-  return (variablesRep) ? variablesRep->inactiveDiscreteStringVars :
-    inactiveDiscreteStringVars;
+  return (variablesRep) ? variablesRep->inactive_discrete_string_variables() :
+    allDiscreteStringVars[boost::indices[idx_range(sharedVarsData.idsv_start(),
+						   sharedVarsData.idsv())]];
 }
 
 
 inline void Variables::
 inactive_discrete_string_variables(StringMultiArrayConstView ids_vars)
 {
-  if (variablesRep) variablesRep->inactiveDiscreteStringVars = ids_vars;
-  else              inactiveDiscreteStringVars = ids_vars;
+  if (variablesRep)
+    variablesRep->inactive_discrete_string_variables(ids_vars);
+  else
+    allDiscreteStringVars[boost::indices[
+      idx_range(sharedVarsData.idsv_start(),sharedVarsData.idsv())]] = ids_vars;
 }
 
 

@@ -297,30 +297,6 @@ Variables::~Variables()
 }
 
 
-void Variables::build_active_views()
-{
-  if (variablesRep)
-    variablesRep->build_active_views(); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual build_active_views"
-	 << "() function.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Variables::build_inactive_views()
-{
-  if (variablesRep)
-    variablesRep->build_inactive_views(); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual build_inactive_views"
-	 << "() function.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
 void Variables::inactive_view(short view2)
 {
   if (variablesRep)
@@ -496,6 +472,7 @@ void Variables::build_active_views()
   if (num_div)
     discreteIntVars = IntVector(Teuchos::View,
       &allDiscreteIntVars[sharedVarsData.div_start()],  num_div);
+  // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_dsv) {
   //  size_t dsv_start = sharedVarsData.dsv_start();
   //  discreteStringVars = allDiscreteStringVars[boost::indices[
@@ -529,6 +506,7 @@ void Variables::build_inactive_views()
   if (num_idiv)
     inactiveDiscreteIntVars = IntVector(Teuchos::View,
       &allDiscreteIntVars[sharedVarsData.idiv_start()],  num_idiv);
+  // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_idsv) {
   //  size_t idsv_start = sharedVarsData.idsv_start();
   //  inactiveDiscreteStringVars = allDiscreteStringVars[boost::indices[
