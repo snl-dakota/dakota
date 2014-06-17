@@ -368,6 +368,21 @@ void read_data(std::istream& s,
 }
 
 
+/// standard istream extraction operator for StringMultiArray with labels
+inline void read_data(std::istream& s, StringMultiArray& v,
+		      StringMultiArrayView label_array)
+{
+  size_t i, len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in read_data(std::istream) does not "
+	 << "equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
 /// standard istream extraction operator for partial SerialDenseVector
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void read_data_partial(std::istream& s,
@@ -432,7 +447,7 @@ void read_data_partial(std::istream& s,
 }
 
 
-/// standard istream extraction operator for partial SerialDenseVector
+/// standard istream extraction operator for partial StringMultiArray
 /// with labels (as StringMultiArrayView)
 template <typename OrdinalType>
 void read_data_partial(std::istream& s, OrdinalType start_index,
@@ -561,7 +576,25 @@ void read_data_annotated(std::istream& s,
 }
 
 
-/// standard ostream insertion operator for full SerialDenseVector
+/// annotated istream extraction operator for StringMultiArray with labels
+inline void read_data_annotated(std::istream& s, StringMultiArray& v,
+				StringMultiArrayView label_array)
+{
+  size_t i, len;
+  s >> len;
+  if( len != v.size() )
+    v.resize(boost::extents[len]);
+  if( len != label_array.size() ) {
+    Cerr << "Error: size of label_array in read_data_annotated(std::istream) "
+	 << "does not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
+/// standard ostream insertion operator for pointer
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s, const ScalarType* v, OrdinalType len)
 {
@@ -786,7 +819,7 @@ void write_data_partial_aprepro(std::ostream& s, OrdinalType2 start_index,
 }
 
 
-/// aprepro ostream insertion operator for partial SerialDenseVector with labels
+/// aprepro ostream insertion operator for partial StringMultiArray with labels
 template <typename OrdinalType>
 void write_data_partial_aprepro(std::ostream& s, OrdinalType start_index,
   OrdinalType num_items, const StringMultiArray& v,
@@ -825,6 +858,22 @@ void write_data_annotated(std::ostream& s,
     abort_handler(-1);
   }
   s << len << ' ' << std::scientific << std::setprecision(write_precision);
+  for (i=0; i<len; ++i)
+    s << v[i] << ' ' << label_array[i] << ' ';
+}
+
+
+/// annotated ostream insertion operator for StringMultiArray with labels
+inline void write_data_annotated(std::ostream& s, const StringMultiArray& v,
+				 StringMultiArrayConstView label_array)
+{
+  size_t i, len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data_annotated(std::ostream) "
+	 << "does not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  s << len << ' ';// << std::scientific << std::setprecision(write_precision);
   for (i=0; i<len; ++i)
     s << v[i] << ' ' << label_array[i] << ' ';
 }
@@ -967,6 +1016,24 @@ void read_data(MPIUnpackBuffer& s,
 }
 
 
+/// standard MPI buffer extraction operator for StringMultiArray with labels
+inline void read_data(MPIUnpackBuffer& s, StringMultiArray& v,
+		      StringMultiArrayView label_array)
+{
+  size_t i, len;
+  s >> len;
+  if( len != v.size() )
+    v.resize(boost::extents[len]);
+  if( len != label_array.size() ) {
+    Cerr << "Error: size of label_array in read_data(MPIUnpackBuffer&) does "
+	 << "not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<len; ++i)
+    s >> v[i] >> label_array[i];
+}
+
+
 /// standard MPI buffer insertion operator for full SerialDenseVector
 /// with labels
 template <typename OrdinalType, typename ScalarType>
@@ -978,6 +1045,22 @@ void write_data(MPIPackBuffer& s,
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data(MPIPackBuffer) "
 	 << "does not equal length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  s << len;
+  for (i=0; i<len; ++i)
+    s << v[i] << label_array[i];
+}
+
+
+/// standard MPI buffer insertion operator for StringMultiArray with labels
+inline void write_data(MPIPackBuffer& s, const StringMultiArray& v,
+		       StringMultiArrayConstView label_array)
+{
+  size_t i, len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data(MPIPackBuffer) "
+	 << "does not equal length of StringMultiArray." << std::endl;
     abort_handler(-1);
   }
   s << len;
