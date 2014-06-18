@@ -106,7 +106,8 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
       0 : numNonlinearConstraints;
     Sizet2DArray recast_vars_map, recast_primary_resp_map(num_recast_primary),
       recast_secondary_resp_map(num_recast_secondary);
-    SizetArray recast_vars_comps_total; // default: empty; no change in size
+    SizetArray recast_vars_comps_total;  // default: empty; no change in size
+    BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
     BoolDequeArray nonlinear_resp_map(num_recast_primary+num_recast_secondary);
     if (approxSubProbObj == ORIGINAL_PRIMARY) {
       for (i=0; i<num_recast_primary; i++) {
@@ -149,10 +150,10 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
       = (!optimizationFlag && approxSubProbObj == SINGLE_OBJECTIVE &&
 	 iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
     approxSubProbModel.assign_rep(new RecastModel(iteratedModel,
-      recast_vars_map, recast_vars_comps_total, false, NULL, set_recast, 
-      recast_primary_resp_map, recast_secondary_resp_map, recast_offset,
-      nonlinear_resp_map, approx_subprob_objective_eval,
-      approx_subprob_constraint_eval), false);
+      recast_vars_map, recast_vars_comps_total, all_relax_di, all_relax_dr,
+      false, NULL, set_recast, recast_primary_resp_map,
+      recast_secondary_resp_map, recast_offset, nonlinear_resp_map,
+      approx_subprob_objective_eval, approx_subprob_constraint_eval), false);
   }
 
   // Instantiate the approximate sub-problem minimizer

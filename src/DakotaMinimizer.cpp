@@ -98,8 +98,9 @@ void Minimizer::update_from_model(const Model& model)
 {
   Iterator::update_from_model(model);
 
-  numContinuousVars   = model.cv();  numDiscreteIntVars = model.div();
-  numDiscreteRealVars = model.drv(); numFunctions       = model.num_functions();
+  numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
+  numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
+  numFunctions          = model.num_functions();
 
   bool err_flag = false;
   // Check for correct bit associated within methodName
@@ -112,7 +113,8 @@ void Minimizer::update_from_model(const Model& model)
   if (methodName == MOGA      || methodName == SOGA ||
       methodName == COLINY_EA || methodName == SURROGATE_BASED_GLOBAL ||
       methodName == MESH_ADAPTIVE_SEARCH ) {
-    if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteRealVars) {
+    if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
+	!numDiscreteRealVars) {
       Cerr << "\nError: " << method_enum_to_string(methodName)
 	   << " requires active variables." << std::endl;
       err_flag = true;
@@ -124,7 +126,7 @@ void Minimizer::update_from_model(const Model& model)
 	   << " requires active continuous variables." << std::endl;
       err_flag = true;
     }
-    if (numDiscreteIntVars || numDiscreteRealVars)
+    if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
       Cerr << "\nWarning: discrete design variables ignored by "
 	   << method_enum_to_string(methodName) << std::endl;
   }
@@ -417,13 +419,14 @@ bool Minimizer::data_transform_model(bool weight_flag)
 
 
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
-  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  SizetArray recast_vars_comps_total;  // default: empty; no change in size
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   iteratedModel.assign_rep(new
-    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
-		nonlinear_vars_map, vars_recast, set_recast, 
-		primary_resp_map_indices, secondary_resp_map_indices, 
-		recast_secondary_offset, nonlinear_resp_map, 
-		pri_resp_recast, sec_resp_recast), false);
+    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total,
+		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
+		set_recast, primary_resp_map_indices,
+		secondary_resp_map_indices, recast_secondary_offset,
+		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
 
   // Preserve weights through data transformations
   bool recurse_flag = false;
@@ -513,10 +516,12 @@ void Minimizer::scale_model()
   // themselves.
 
   // iteratedModel becomes the sub-model of a RecastModel:
-  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  SizetArray recast_vars_comps_total;  // default: empty; no change in size
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   iteratedModel.assign_rep(new
-      RecastModel(iteratedModel, recast_vars_comps_total, numUserPrimaryFns, 
-		  numNonlinearConstraints, numNonlinearIneqConstraints), false);
+      RecastModel(iteratedModel, recast_vars_comps_total, all_relax_di,
+		  all_relax_dr, numUserPrimaryFns, numNonlinearConstraints,
+		  numNonlinearIneqConstraints), false);
 
   // initialize_scaling function needs to modify the iteratedModel
   initialize_scaling();
@@ -1989,6 +1994,9 @@ void Minimizer::archive_allocate_best(size_t num_points)
     resultsDB.array_allocate<IntVector>
       (run_identifier(), resultsNames.best_div, num_points, md);
   }
+  if (numDiscreteStringVars) {
+    // BMA TO DO
+  }
   if (numDiscreteRealVars) {
     // labels
     resultsDB.insert
@@ -2028,6 +2036,9 @@ archive_best(size_t point_index,
     resultsDB.array_insert<IntVector>
       (run_identifier(), resultsNames.best_div, point_index,
        best_vars.discrete_int_variables());
+  if (numDiscreteStringVars) {
+    // BMA TO DO
+  }
   if (numDiscreteRealVars)
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.best_drv, point_index,

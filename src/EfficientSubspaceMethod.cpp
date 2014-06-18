@@ -719,13 +719,14 @@ void EfficientSubspaceMethod::reduced_space_uq()
 
   // TODO: this is hardwiring the number of aleatory uncertain
   // aleatory uncertain (normal) variables in the reduced space
-  SizetArray recast_vars_comps_total(12, 0);
-  recast_vars_comps_total[3] = reducedRank;
+  SizetArray recast_vars_comps_total(16, 0);
+  recast_vars_comps_total[TOTAL_CAUV] = reducedRank;
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
 
   vars_transform_model.assign_rep(
     new RecastModel(iteratedModel, vars_map_indices, recast_vars_comps_total,
-		    nonlinear_vars_map, map_xi_to_x, NULL, 
-		    primary_resp_map_indices,  secondary_resp_map_indices, 
+		    all_relax_di, all_relax_dr, nonlinear_vars_map, map_xi_to_x,
+		    NULL, primary_resp_map_indices,  secondary_resp_map_indices,
 		    recast_secondary_offset, nonlinear_resp_map, NULL, NULL), 
     false);
 

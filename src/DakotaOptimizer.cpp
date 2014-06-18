@@ -238,7 +238,7 @@ void Optimizer::print_results(std::ostream& s)
       if (num_primary_fns > 1) s << "<<<<< Best objective functions "; 
       else                       s << "<<<<< Best objective function  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, 0, num_primary_fns, best_fns); 
+      write_data_partial(s, (size_t)0, num_primary_fns, best_fns); 
     }
     else {
       const RealVector& lsq_weights
@@ -259,13 +259,13 @@ void Optimizer::print_results(std::ostream& s)
       if (num_primary_fns > 1) s << "<<<<< Best residual terms "; 
       else                       s << "<<<<< Best residual term  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, 0, num_primary_fns, best_fns); 
+      write_data_partial(s, (size_t)0, num_primary_fns, best_fns); 
     }
 
     if (numNonlinearConstraints) { 
       s << "<<<<< Best constraint values   "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, num_primary_fns, numNonlinearConstraints,best_fns); 
+      write_data_partial(s, num_primary_fns, numNonlinearConstraints, best_fns);
     } 
     // lookup evaluation id where best occurred.  This cannot be catalogued
     // directly because the optimizers track the best iterate internally and
@@ -405,13 +405,14 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
 
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total; // default: empty; no change in size
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
 
   iteratedModel.assign_rep(new
     RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
-		nonlinear_vars_map, vars_recast, set_recast, 
-		primary_resp_map_indices, secondary_resp_map_indices, 
-		recast_secondary_offset, nonlinear_resp_map, 
-		pri_resp_recast, sec_resp_recast), false);
+		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
+		set_recast, primary_resp_map_indices,
+		secondary_resp_map_indices, recast_secondary_offset,
+		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
 
   // if Gauss-Newton recasting, then the RecastModel Response needs to
   // allocate space for a Hessian (default copy of sub-model response

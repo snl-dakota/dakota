@@ -209,10 +209,11 @@ protected:
 
   // Isolate complexity by letting Model::currentVariables/currentResponse
   // manage details.  Then Iterator only needs the following:
-  size_t numFunctions;        ///< number of response functions
-  size_t numContinuousVars;   ///< number of active continuous vars
-  size_t numDiscreteIntVars;  ///< number of active discrete integer vars
-  size_t numDiscreteRealVars; ///< number of active discrete real vars
+  size_t numFunctions;          ///< number of response functions
+  size_t numContinuousVars;     ///< number of active continuous vars
+  size_t numDiscreteIntVars;    ///< number of active discrete integer vars
+  size_t numDiscreteStringVars; ///< number of active discrete string vars
+  size_t numDiscreteRealVars;   ///< number of active discrete real vars
 
   Real constraintTol;   ///< optimizer/least squares constraint tolerance
 
@@ -232,11 +233,11 @@ protected:
   size_t numLinearEqConstraints;
 
   /// total number of nonlinear constraints
-  int numNonlinearConstraints;
+  size_t numNonlinearConstraints;
   /// total number of linear constraints
-  int numLinearConstraints;
+  size_t numLinearConstraints;
   /// total number of linear and nonlinear constraints
-  int numConstraints;
+  size_t numConstraints;
 
   /// number of RecastModels locally (in Minimizer or derived classes)
   /// layered over the initially passed in Model

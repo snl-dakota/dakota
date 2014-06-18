@@ -139,10 +139,11 @@ protected:
 
   // Isolate complexity by letting Model::currentVariables/currentResponse
   // manage details.  Then Iterator only needs the following:
-  size_t numFunctions;        ///< number of response functions
-  size_t numContinuousVars;   ///< number of active continuous vars
-  size_t numDiscreteIntVars;  ///< number of active discrete integer vars
-  size_t numDiscreteRealVars; ///< number of active discrete real vars
+  size_t numFunctions;          ///< number of response functions
+  size_t numContinuousVars;     ///< number of active continuous vars
+  size_t numDiscreteIntVars;    ///< number of active discrete integer vars
+  size_t numDiscreteStringVars; ///< number of active discrete string vars
+  size_t numDiscreteRealVars;   ///< number of active discrete real vars
 
   /// switch for allSamples (compact mode) instead of allVariables (normal mode)
   bool compactMode;
