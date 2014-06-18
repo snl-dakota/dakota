@@ -58,8 +58,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   // assure proper list node settings.
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
-  size_t num_vars = actualModelVars.cv() + actualModelVars.div()
-                  + actualModelVars.drv();
+  size_t num_vars = actualModelVars.cv()  + actualModelVars.div()
+                  + actualModelVars.dsv() + actualModelVars.drv();
   sharedData = SharedApproxData(problem_db, num_vars);
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it] = Approximation(problem_db, sharedData);
@@ -132,8 +132,8 @@ ApproximationInterface(const String& approx_type,
 
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
-  size_t num_vars = actualModelVars.cv() + actualModelVars.div()
-                  + actualModelVars.drv();
+  size_t num_vars = actualModelVars.cv()  + actualModelVars.div()
+                  + actualModelVars.dsv() + actualModelVars.drv();
   sharedData = SharedApproxData(approx_type, approx_order, num_vars,
 				data_order, output_level);
   for (int i=0; i<num_fns; i++) {
@@ -231,6 +231,9 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
       if (vars.adiv())
 	actualModelVars.discrete_int_variables(
 	  vars.all_discrete_int_variables());
+      if (vars.adsv())
+	actualModelVars.discrete_string_variables(
+	  vars.all_discrete_string_variables());
       if (vars.adrv())
 	actualModelVars.discrete_real_variables(
 	  vars.all_discrete_real_variables());
@@ -243,6 +246,9 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
       if (vars.div())
 	actualModelVars.all_discrete_int_variables(
 	  vars.discrete_int_variables());
+      if (vars.dsv())
+	actualModelVars.all_discrete_string_variables(
+	  vars.discrete_string_variables());
       if (vars.drv())
 	actualModelVars.all_discrete_real_variables(
 	  vars.discrete_real_variables());
@@ -801,10 +807,9 @@ approximation_variances(const Variables& vars)
 
 void ApproximationInterface::read_challenge_points()
 {
-  size_t num_vars = actualModelVars.cv() + actualModelVars.div()
-    + actualModelVars.drv();
-  size_t num_fns = functionSurfaces.size();
-  size_t num_cols = num_vars+num_fns;
+  size_t num_vars = actualModelVars.cv()  + actualModelVars.div()
+                  + actualModelVars.dsv() + actualModelVars.drv(),
+    num_fns = functionSurfaces.size(), num_cols = num_vars + num_fns;
 
   RealArray pts_array;
   TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
@@ -812,7 +817,7 @@ void ApproximationInterface::read_challenge_points()
   size_t num_points = pts_array.size()/num_cols;
   // use a real vector for convenience
   RealVector pts_vec(Teuchos::View, &pts_array[0], pts_array.size());
-  copy_data<int, Real>(pts_vec, challengePoints, num_points, num_cols);
+  copy_data(pts_vec, challengePoints, num_points, num_cols);
 }
 
 } // namespace Dakota

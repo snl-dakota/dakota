@@ -968,7 +968,7 @@ void Analyzer::print_results(std::ostream& s)
   // Single and Multipoint results summary
   // -------------------------------------
   RealPairPRPMultiMap::iterator it = bestVarsRespMap.begin();
-  size_t i, offset, num_fns, num_best_map = bestVarsRespMap.size();
+  size_t i, offset = 0, num_fns, num_best_map = bestVarsRespMap.size();
   for (i=1; it!=bestVarsRespMap.end(); ++i, ++it) {
     const ParamResponsePair& best_pr = it->second;
     const Variables&  best_vars = best_pr.prp_parameters();
@@ -981,13 +981,13 @@ void Analyzer::print_results(std::ostream& s)
       if (numObjFns > 1) s << "<<<<< Best objective functions ";
       else               s << "<<<<< Best objective function  ";
       if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
-      write_data_partial(s, 0, numObjFns, best_fns);
+      write_data_partial(s, offset, numObjFns, best_fns);
       offset = numObjFns;
     }
     else if (numLSqTerms) {
       s << "<<<<< Best residual terms      ";
       if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
-      write_data_partial(s, 0, numLSqTerms, best_fns);
+      write_data_partial(s, offset, numLSqTerms, best_fns);
       offset = numLSqTerms;
     }
     if (num_fns > offset) {

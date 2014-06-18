@@ -1799,7 +1799,7 @@ size_t NestedModel::cv_index_map(size_t cv_index)
       num_dauv = vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAUSV]
         + vc_totals[TOTAL_DAURV],
       num_deuv = vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DEUSV]
-        + vc_totals[TOTAL_DEURV],
+        + vc_totals[TOTAL_DEURV];
     // active cv order is cdv,cauv,ceuv,csv; aggregated order is
     // cdv/ddiv/ddrv,cauv/dauiv/daurv,ceuv/deuiv/deurv,csv/dsiv/dsrv:
     if (cv_index < num_cdv)                            // continuous design
@@ -1847,11 +1847,12 @@ size_t NestedModel::div_index_map(size_t div_index)
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
     size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv  = vc_totals[TOTAL_DDIV],
-      num_ddrv  = vc_totals[TOTAL_DDRV],   num_cauv  = vc_totals[TOTAL_CAUV],
-      num_dauiv = vc_totals[TOTAL_DAUIV],  num_dausv = vc_totals[TOTAL_DAUSV],
-      num_daurv = vc_totals[TOTAL_DAURV],  num_ceuv  = vc_totals[TOTAL_CEUV],
-      num_deuiv = vc_totals[TOTAL_DEUIV],  num_deusv = vc_totals[TOTAL_DEUSV],
-      num_deurv = vc_totals[TOTAL_DEURV],  num_csv   = vc_totals[TOTAL_CSV];
+      num_ddsv  = vc_totals[TOTAL_DDSV],   num_ddrv  = vc_totals[TOTAL_DDRV],
+      num_cauv  = vc_totals[TOTAL_CAUV],   num_dauiv = vc_totals[TOTAL_DAUIV],
+      num_dausv = vc_totals[TOTAL_DAUSV],  num_daurv = vc_totals[TOTAL_DAURV],
+      num_ceuv  = vc_totals[TOTAL_CEUV],   num_deuiv = vc_totals[TOTAL_DEUIV],
+      num_deusv = vc_totals[TOTAL_DEUSV],  num_deurv = vc_totals[TOTAL_DEURV],
+      num_csv   = vc_totals[TOTAL_CSV];
     // active div order is ddiv,dauiv,deuiv,dsiv; aggregated order is
     // cdv/ddiv/ddsv/ddrv,cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv,
     // csv/dsiv/dssv/dsrv:
@@ -1867,10 +1868,12 @@ size_t NestedModel::div_index_map(size_t div_index)
 	     + num_ceuv + num_deusv + num_deurv + num_csv;
     break;
   }
-  case RELAXED_: // TO DO
-  case RELAXED_: // TO DO
-  case RELAXED_: // TO DO
-  case RELAXED_: // TO DO
+  case RELAXED_DESIGN: // TO DO
+  case RELAXED_ALEATORY_UNCERTAIN: // TO DO
+  case RELAXED_EPISTEMIC_UNCERTAIN: // TO DO
+  case RELAXED_UNCERTAIN: // TO DO
+  case RELAXED_STATE: // TO DO
+  case RELAXED_ALL: // TO DO
   default: // MIXED for single variable types
     offset = currentVariables.cv(); break;
   }

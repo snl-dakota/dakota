@@ -232,10 +232,11 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   // configure a RecastModel with one objective and one equality constraint
   // using the alternate minimalist constructor
   if (mppSearchType) {
-    SizetArray recast_vars_comps_total; // default: empty; no change in size
+    SizetArray recast_vars_comps_total;  // default: empty; no change in size
+    BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
     mppModel.assign_rep(
-      new RecastModel(uSpaceModel, recast_vars_comps_total, 1, 1, 0),
-      false);
+      new RecastModel(uSpaceModel, recast_vars_comps_total,
+		      all_relax_di, all_relax_dr, 1, 1, 0), false);
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
     mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 
