@@ -1454,18 +1454,29 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ initial_point INTEGERLIST LEN hypergeometric_uncertain {N_vam(IntLb,hyperGeomUncVars)} ]
 	  [ descriptors STRINGLIST LEN hypergeometric_uncertain {N_vae(dauilbl,DAUIVar_hypergeometric)} ]
 	  ]
-
-	# BMA TODO: consider removing some aliases
 	[ histogram_point_uncertain {0}
- 	  real INTEGER > 0 {N_vam(pintz,numHistogramPtRealUncVars)}
-	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST LEN real {N_vam(newiarray,Var_Info_nhprp)} ]
-	  abscissas ALIAS huv_point_abscissas REALLIST {N_vam(newrvec,Var_Info_hpra)}
-	  counts ALIAS huv_point_counts REALLIST {N_vam(newrvec,Var_Info_hprc)}
-	  [ initial_point REALLIST LEN real {N_vam(rvec,histogramPointRealUncVars)} ]
-	  [ descriptors ALIAS huv_point_descriptors STRINGLIST LEN real {N_vae(daurlbl,DAURVar_histogram_point_real)} ]
-	  ]
-
-
+ 	  [ integer INTEGER > 0 {N_vam(pintz,numHistogramPtIntUncVars)}
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN integer {N_vam(newiarray,Var_Info_nhpip)} ]
+	    abscissas INTEGERLIST {N_vam(newivec,Var_Info_hpia)}
+	    counts REALLIST {N_vam(newrvec,Var_Info_hpic)}
+	    [ initial_point INTEGERLIST LEN integer {N_vam(ivec,histogramPointIntUncVars)} ]
+	    [ descriptors STRINGLIST LEN integer {N_vae(dauilbl,DAUIVar_histogram_point_int)} ]
+	    ]
+	  [ string INTEGER > 0 {N_vam(pintz,numHistogramPtStrUncVars)}
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN string {N_vam(newiarray,Var_Info_nhpsp)} ]
+	    abscissas STRINGLIST {N_vam(newsarray,Var_Info_hpsa)}
+	    counts REALLIST {N_vam(newrvec,Var_Info_hpsc)}
+	    [ initial_point STRINGLIST LEN string {N_vam(svec,histogramPointStrUncVars)} ]
+	    [ descriptors STRINGLIST LEN string {N_vae(dauslbl,DAUSVar_histogram_point_str)} ]
+	    ]
+	  [ real INTEGER > 0 {N_vam(pintz,numHistogramPtRealUncVars)}
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN real {N_vam(newiarray,Var_Info_nhprp)} ]
+	    abscissas REALLIST {N_vam(newrvec,Var_Info_hpra)}
+	    counts REALLIST {N_vam(newrvec,Var_Info_hprc)}
+	    [ initial_point REALLIST LEN real {N_vam(rvec,histogramPointRealUncVars)} ]
+	    [ descriptors STRINGLIST LEN real {N_vae(daurlbl,DAURVar_histogram_point_real)} ]
+	    ]
+          ]
 	[ uncertain_correlation_matrix REALLIST {N_vam(newrvec,Var_Info_ucm)} ]
 	[ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0 {N_vam(pintz,numContinuousIntervalUncVars)}
 	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST LEN continuous_interval_uncertain {N_vam(newiarray,Var_Info_nCI)} ]

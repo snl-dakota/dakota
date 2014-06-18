@@ -435,7 +435,7 @@ struct Var_Info {
   DataVariablesRep *dv;
   DataVariables    *dv_handle;
   VarLabel  CAUv[ CAUVar_Nkinds],  CEUv[ CEUVar_Nkinds];
-  VarLabel DAUIv[DAUIVar_Nkinds], DAUSv[DAURVar_Nkinds], DAURv[DAURVar_Nkinds];
+  VarLabel DAUIv[DAUIVar_Nkinds], DAUSv[DAUSVar_Nkinds], DAURv[DAURVar_Nkinds];
   VarLabel DEUIv[DEUIVar_Nkinds], DEUSv[DEUSVar_Nkinds], DEURv[DEURVar_Nkinds];
   IntArray   *nddsi, *nddss, *nddsr, *nCI, *nDI, *nhbp,
              *nhpip, *nhpsp, *nhprp, 
@@ -443,7 +443,7 @@ struct Var_Info {
              *ndssi, *ndsss, *ndssr;
   RealVector *ddsr, *CIlb, *CIub, *CIp, *DIp, *DSIp, *DSSp, *DSRp, *dusr,
              *hba, *hbo, *hbc, 
-             *hpic, *hpra, *hprc, *hpsc,
+             *hpic, *hpsc, *hpra, *hprc,
              *ucm, *dssr;
   IntVector  *ddsi, *DIlb, *DIub, *hpia, *dusi, *dssi;
   StringArray *ddss, *hpsa, *duss, *dsss;
@@ -3103,9 +3103,9 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
 static void 
 Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
-  IntArray *nhprp;
+  IntArray *nhpip;
   IntVector *hpia;
-  RealVector *hprc;
+  RealVector *hpic;
   int nhppi, avg_nhppi;
   size_t i, j, num_a, num_c, m, n, tothpp, cntr;
   Real y, bin_width, count_sum;
@@ -3113,18 +3113,18 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 
   if (hpia = vi->hpia) {
     num_a = hpia->length();              // abscissas
-    hprc = vi->hprc; num_c = hprc->length(); // counts
+    hpic = vi->hpic; num_c = hpic->length(); // counts
     if (num_c != num_a) {
       Squawk("Expected %d point counts, not %d", num_a, num_c);
       return;
     }
     bool key;
-    if (nhprp = vi->nhprp) {
+    if (nhpip = vi->nhpip) {
       key = true;
-      m = nhprp->size();
+      m = nhpip->size();
       //dv->numHistogramPtUncVars = m;
       for(i=tothpp=0; i<m; ++i) {
-	tothpp += nhppi = (*nhprp)[i];
+	tothpp += nhppi = (*nhpip)[i];
 	if (nhppi < 1) {
 	  Squawk("num_pairs must be >= 1");
 	  return;
@@ -3148,13 +3148,13 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     IntRealMapArray& hpp = dv->histogramUncPointIntPairs;
     hpp.resize(m);
     for (i=cntr=0; i<m; ++i) {
-      nhppi = (key) ? (*nhprp)[i] : avg_nhppi;
+      nhppi = (key) ? (*nhpip)[i] : avg_nhppi;
       // hbpi is map<Int value, Real probability> for a single variable i
       IntRealMap& hppi = hpp[i];
       count_sum = 0.;
       for (j=0; j<nhppi; ++j, ++cntr) {
 	int x = (*hpia)[cntr]; // abscissas
-	Real y = (*hprc)[cntr]; // counts
+	Real y = (*hpic)[cntr]; // counts
 	// BMA: to check?!?  Probably could relax
 	if (j<nhppi-1 && x >= (*hpia)[cntr+1]) {
 	  Squawk("histogram point x values must increase");
@@ -3228,14 +3228,14 @@ Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhpsp;
   StringArray *hpsa;
-  RealVector *hprc;
+  RealVector *hpsc;
   int nhppi, avg_nhppi;
   size_t i, j, num_a, num_c, m, n, tothpp, cntr;
   Real x, y, bin_width, count_sum;
 
   if (hpsa = vi->hpsa) {
     num_a = hpsa->size();              // abscissas
-    hprc = vi->hprc; num_c = hprc->length(); // counts
+    hpsc = vi->hpsc; num_c = hpsc->length(); // counts
     if (num_c != num_a) {
       Squawk("Expected %d point counts, not %d", num_a, num_c);
       return;
@@ -3276,7 +3276,7 @@ Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       count_sum = 0.;
       for (j=0; j<nhppi; ++j, ++cntr) {
 	String x = (*hpsa)[cntr]; // abscissas
-	Real y = (*hprc)[cntr]; // counts
+	Real y = (*hpsc)[cntr]; // counts
 	if (j<nhppi-1 && x >= (*hpsa)[cntr+1]) {
 	  Squawk("histogram point x values must increase");
 	  return;
@@ -4705,7 +4705,7 @@ static Var_uinfo DAUIVLbl[DAUIVar_Nkinds] = {
   VarLabelInfo(hguv_, HyperGeomUnc),
   VarLabelInfo(hpiuv_, HistogramPtIntUnc)
 };
-static Var_uinfo DAUSVLbl[DAURVar_Nkinds] = {
+static Var_uinfo DAUSVLbl[DAUSVar_Nkinds] = {
   VarLabelInfo(hpsuv_, HistogramPtStrUnc)
 };
 static Var_uinfo DAURVLbl[DAURVar_Nkinds] = {
@@ -4911,7 +4911,10 @@ static Var_check
 	Vchk_3(binomial_uncertain,BinomialUnc),
 	Vchk_3(negative_binomial_uncertain,NegBinomialUnc),
 	Vchk_3(geometric_uncertain,GeometricUnc),
-	Vchk_3(hypergeometric_uncertain,HyperGeomUnc) },
+	Vchk_3(hypergeometric_uncertain,HyperGeomUnc),
+	Vchk_3(histogram_point_int_uncertain,HistogramPtIntUnc) },
+  var_mp_check_daus[] = {
+	Vchk_3(histogram_point_str_uncertain,HistogramPtStrUnc) },
   var_mp_check_daur[] = {
 	Vchk_3(histogram_point_real_uncertain,HistogramPtRealUnc) },
   var_mp_check_ceu[] = {
@@ -5053,6 +5056,11 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 	{ (*ic->vgen)(dv, offset); } // offset not used
     // discrete int aleatory uncertain use offset passed into Vgen_*Unc
     for(c=var_mp_check_daui, ce=c + Numberof(var_mp_check_daui); c<ce; ++c)
+      if ((n = dv->*c->n) > 0)
+	{ (*c->vgen)(dv, offset); offset += n; }
+    // discrete string aleatory uncertain use offset passed into Vgen_*Unc
+    offset = 0.;
+    for(c=var_mp_check_daus, ce=c + Numberof(var_mp_check_daus); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
     // discrete real aleatory uncertain use offset passed into Vgen_*Unc
@@ -5203,11 +5211,11 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 #define AVI &Var_Info::
   // Used for deallocation of Var_Info temporary data
   static IntArray   *Var_Info::* Ia_delete[]
-    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhprp, AVI ndusi, AVI nduss,
+    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss,
 	AVI ndusr, AVI ndssi, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp, AVI DSIp, AVI DSSp, AVI DSRp,
-	AVI dusr, AVI hba, AVI hbo, AVI hbc, AVI hpra, AVI hprc, AVI ucm,
+	AVI dusr, AVI hba, AVI hbo, AVI hbc, AVI hpic, AVI hpsc, AVI hpra, AVI hprc, AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
     = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
@@ -5707,6 +5715,8 @@ check_variables(std::list<DataVariables>* dvl)
     DataVariablesRep *dv;
     IntArray *ia;
     RealSymMatrix *rsm;
+    IntVector *iv_a;
+    StringArray *sa_a;
     RealVector *rv, *rv_a, *rv_c;
     RealVectorArray *rva;
     Var_Info *vi;
@@ -5765,7 +5775,48 @@ check_variables(std::list<DataVariables>* dvl)
 	  // normalization occurs in Vchk_HistogramBinUnc going other direction
 	}
       }
-      // histogram point uncertain vars
+
+      // histogram point int uncertain vars
+      // convert IntRealMapArray to Int/RealVectors of abscissas and counts
+      const IntRealMapArray& hpip = dv->histogramUncPointIntPairs;
+      if ((m = hpip.size())) {
+	vi->nhpip = ia = new IntArray(m);
+	for(i = 0; i < m; ++i)
+	  total_prs += (*ia)[i] = hpip[i].size();
+	vi->hpia = iv_a = new IntVector(total_prs); // abscissas
+	vi->hpic = rv_c = new RealVector(total_prs); // counts
+	for(i = cntr = 0; i < m; ++i) {
+	  IRMCIter it = hpip[i].begin();
+	  IRMCIter it_end = hpip[i].end();
+	  for( ; it != it_end; ++cntr) {
+	    (*iv_a)[cntr] = it->first;   // abscissas
+	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
+	  }
+	  // normalization occurs in Vchk_HistogramPtUnc going other direction
+	}
+      }
+
+      // histogram point string uncertain vars
+      // convert StringRealMapArray to String/RealVectors of abscissas and counts
+      const StringRealMapArray& hpsp = dv->histogramUncPointStrPairs;
+      if ((m = hpsp.size())) {
+	vi->nhpsp = ia = new IntArray(m);
+	for(i = 0; i < m; ++i)
+	  total_prs += (*ia)[i] = hpsp[i].size();
+	vi->hpsa = sa_a = new StringArray(total_prs); // abscissas
+	vi->hpsc = rv_c = new RealVector(total_prs); // counts
+	for(i = cntr = 0; i < m; ++i) {
+	  SRMCIter it = hpsp[i].begin();
+	  SRMCIter it_end = hpsp[i].end();
+	  for( ; it != it_end; ++cntr) {
+	    (*sa_a)[cntr] = it->first;   // abscissas
+	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
+	  }
+	  // normalization occurs in Vchk_HistogramPtUnc going other direction
+	}
+      }
+
+      // histogram point real uncertain vars
       // convert RealRealMapArray to RealVectors of abscissas and counts
       const RealRealMapArray& hprp = dv->histogramUncPointRealPairs;
       if ((m = hprp.size())) {
@@ -5784,6 +5835,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
 	}
       }
+
       // uncertain correlation matrix
       if (dv->uncertainCorrelations.numRows())
 	flatten_rsm(&dv->uncertainCorrelations, &vi->ucm);
@@ -6778,6 +6830,8 @@ static size_t
 	MP_(numGeometricUncVars),
 	MP_(numGumbelUncVars),
 	MP_(numHistogramBinUncVars),
+	MP_(numHistogramPtIntUncVars),
+	MP_(numHistogramPtStrUncVars),
 	MP_(numHistogramPtRealUncVars),
 	MP_(numHyperGeomUncVars),
 	MP_(numLognormalUncVars),
@@ -6803,6 +6857,8 @@ static IntVector
 	MP_(discreteStateSetIntVars),
 	MP_(discreteUncSetIntVars),
 	VP_(DIub),
+        MP_(histogramPointIntUncVars),
+        VP_(hpia),
         VP_(dssi),
         VP_(dusi);
 
@@ -6817,6 +6873,8 @@ static IntArray
 	VP_(nduss),
 	VP_(ndusr),
 	VP_(nhbp),
+	VP_(nhpip),
+	VP_(nhpsp),
 	VP_(nhprp),
 	VP_(nCI),
 	VP_(nDI);
@@ -6866,6 +6924,8 @@ static RealVector
 	VP_(hba),
 	VP_(hbo),
 	VP_(hbc),
+	VP_(hpic),
+	VP_(hpsc),
 	VP_(hpra),
 	VP_(hprc),
 	VP_(ucm);
@@ -6888,6 +6948,8 @@ static StringArray
 	MP_(discreteDesignSetStrVars),
 	MP_(discreteUncSetStrVars),
 	MP_(discreteStateSetStrVars),
+        MP_(histogramPointStrUncVars),
+        VP_(hpsa),
         VP_(ddss),
         VP_(duss),
         VP_(dsss);

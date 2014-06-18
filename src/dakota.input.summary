@@ -1899,12 +1899,27 @@ KEYWORD12 variables
 	  [ descriptors STRINGLIST ]
 	  ]
 	[ histogram_point_uncertain
-	  real INTEGER > 0
-	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST ]
-	  abscissas ALIAS huv_point_abscissas REALLIST
-	  counts ALIAS huv_point_counts REALLIST
-	  [ initial_point REALLIST ]
-	  [ descriptors ALIAS huv_point_descriptors STRINGLIST ]
+	  [ integer INTEGER > 0
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST ]
+	    abscissas INTEGERLIST
+	    counts REALLIST
+	    [ initial_point INTEGERLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ string INTEGER > 0
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST ]
+	    abscissas STRINGLIST
+	    counts REALLIST
+	    [ initial_point STRINGLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ real INTEGER > 0
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST ]
+	    abscissas REALLIST
+	    counts REALLIST
+	    [ initial_point REALLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
 	  ]
 	[ uncertain_correlation_matrix REALLIST ]
 	[ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0
