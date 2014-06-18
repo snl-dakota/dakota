@@ -23,6 +23,7 @@
 #include <boost/serialization/utility.hpp>  // for std::pair
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/array.hpp>
 
 //#define REFCOUNT_DEBUG
 
@@ -552,9 +553,14 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & variablesRep->allDiscreteIntVars;
   StringMultiArrayView adivl = all_discrete_int_variable_labels();
   ar & adivl;
-  StringMultiArrayView adsv = 
-    allDiscreteStringVars[boost::indices[idx_range(0, allDiscreteStringVars.size())]];
-  ar & adsv;
+  // BMA: mirroring the save function due to const-correct needs there
+  // This is safe because get_variables will size the array
+  // StringMultiArrayView adsvars = 
+  //   allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
+  // ar & adsvars;
+  ar & boost::serialization::
+    make_array(allDiscreteStringVars.data(), 
+	       allDiscreteStringVars.num_elements());
   StringMultiArrayView adsvl = all_discrete_string_variable_labels();
   ar & adsvl;
   ar & variablesRep->allDiscreteRealVars;
@@ -584,9 +590,13 @@ void Variables::save(Archive& ar, const unsigned int version) const
     ar & allDiscreteIntVars;
     StringMultiArrayView adivl = all_discrete_int_variable_labels();
     ar & adivl;
-    StringMultiArrayConstView adsv = 
-      allDiscreteStringVars[boost::indices[idx_range(0, allDiscreteStringVars.size())]];
-    ar & adsv;
+    // BMA: not sure why we can't get this const-correct...
+    //StringMultiArrayConstView adsvars = 
+    //  allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
+    //ar << adsvars;
+    ar & boost::serialization::
+      make_array(allDiscreteStringVars.data(), 
+		 allDiscreteStringVars.num_elements());
     StringMultiArrayView adsvl = all_discrete_string_variable_labels();
     ar & adsvl;
     ar & allDiscreteRealVars;
