@@ -166,7 +166,7 @@ private:
   /// array of discrete int evaluation points for the list_parameter_study
   IntVectorArray listDIVPoints;
   /// array of discrete int evaluation points for the list_parameter_study
-  String2DArray listDSVPoints;
+  StringMulti2DArray listDSVPoints;
   /// array of discrete real evaluation points for the list_parameter_study
   RealVectorArray listDRVPoints;
 
@@ -175,7 +175,7 @@ private:
   /// the continuous starting point for vector and centered parameter studies
   IntVector initialDIVPoint;
   /// the continuous starting point for vector and centered parameter studies
-  StringArray initialDSVPoint;
+  StringMultiArray initialDSVPoint;
   /// the continuous starting point for vector and centered parameter studies
   RealVector initialDRVPoint;
 
@@ -701,7 +701,8 @@ inline void ParamStudy::reset(Variables& vars)
 {
   if (numContinuousVars)     vars.continuous_variables(initialCVPoint);
   if (numDiscreteIntVars)    vars.discrete_int_variables(initialDIVPoint);
-  if (numDiscreteStringVars) vars.discrete_string_variables(initialDSVPoint);
+  if (numDiscreteStringVars) vars.discrete_string_variables(
+    initialDSVPoint[boost::indices[idx_range(0, numDiscreteStringVars)]]);
   if (numDiscreteRealVars)   vars.discrete_real_variables(initialDRVPoint);
 }
 

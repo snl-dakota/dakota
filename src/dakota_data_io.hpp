@@ -704,7 +704,7 @@ void write_data_aprepro(std::ostream& s,
 }
 
 
-/// standard ostream insertion operator for partial SerialDenseVector
+/// standard ostream insertion operator for partial std::vector
 template <typename OrdinalType, typename ScalarType>
 void write_data_partial(std::ostream& s, OrdinalType start_index,
 			OrdinalType num_items, const std::vector<ScalarType>& v)
@@ -766,12 +766,29 @@ void write_data_partial(std::ostream& s,
 }
 
 
-/// standard ostream insertion operator for partial SerialDenseVector
+/// standard ostream insertion operator for partial StringMultiArray
+template <typename OrdinalType>
+void write_data_partial(std::ostream& s, OrdinalType start_index,
+			OrdinalType num_items, const StringMultiArray& v)
+{
+  OrdinalType i, end = start_index + num_items, len = v.size();
+  if (end > len) {
+    Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
+	 << "length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  //s << std::scientific << std::setprecision(write_precision);
+  for (i=start_index; i<end; ++i)
+    s << "                     " << std::setw(write_precision+7) << v[i] <<'\n';
+}
+
+
+/// standard ostream insertion operator for partial StringMultiArray
 /// with labels
 template <typename OrdinalType>
-void write_data_partial(std::ostream& s,
-  OrdinalType start_index, OrdinalType num_items,
-  const StringMultiArray& v, StringMultiArrayConstView label_array)
+void write_data_partial(std::ostream& s, OrdinalType start_index,
+			OrdinalType num_items, const StringMultiArray& v,
+			StringMultiArrayConstView label_array)
 {
   OrdinalType i, end = start_index + num_items, len = v.size();
   if (end > len) {
@@ -892,7 +909,7 @@ void write_data_tabular(std::ostream& s,
 }
 
 
-/// tabular ostream insertion operator for full SerialDenseVector
+/// tabular ostream insertion operator for pointer
 template <typename OrdinalType, typename ScalarType>
 void write_data_tabular(std::ostream& s, const ScalarType* ptr,
 			OrdinalType num_items)
@@ -923,7 +940,7 @@ void write_data_partial_tabular(std::ostream& s,
 }
 
 
-/// tabular ostream insertion operator for partial SerialDenseVector
+/// tabular ostream insertion operator for partial StringMultiArray
 template <typename OrdinalType>
 void write_data_partial_tabular(std::ostream& s,
   OrdinalType start_index, OrdinalType num_items, const StringMultiArray& v)

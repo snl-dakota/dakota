@@ -1433,7 +1433,59 @@ template <typename OrdinalType, typename ScalarType1, typename ScalarType2,
 inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>&  c_vector,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& di_vector,
-  const boost::multi_array<ScalarType3, 1>& ds_array,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType3>& ds_vector,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType4>& dr_vector)
+{
+  size_t i, j,
+    num_cdv   = comp_totals[TOTAL_CDV],   num_ddiv  = comp_totals[TOTAL_DDIV],
+    num_ddsv  = comp_totals[TOTAL_DDSV],  num_ddrv  = comp_totals[TOTAL_DDRV],
+    num_cauv  = comp_totals[TOTAL_CAUV],  num_dauiv = comp_totals[TOTAL_DAUIV],
+    num_dausv = comp_totals[TOTAL_DAUSV], num_daurv = comp_totals[TOTAL_DAURV],
+    num_ceuv  = comp_totals[TOTAL_CEUV],  num_deuiv = comp_totals[TOTAL_DEUIV],
+    num_deusv = comp_totals[TOTAL_DEUSV], num_deurv = comp_totals[TOTAL_DEURV],
+    num_csv   = comp_totals[TOTAL_CSV],   num_dsiv  = comp_totals[TOTAL_DSIV],
+    num_dssv  = comp_totals[TOTAL_DSSV],  num_dsrv  = comp_totals[TOTAL_DSRV],
+    cv_cntr = 0, div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
+
+  // design
+  write_data_partial(s,  cv_cntr, num_cdv,   c_vector);
+  write_data_partial(s, div_cntr, num_ddiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_ddsv, ds_vector);
+  write_data_partial(s, drv_cntr, num_ddrv, dr_vector);
+  cv_cntr  += num_cdv;  div_cntr += num_ddiv;
+  dsv_cntr += num_ddsv; drv_cntr += num_ddrv;
+  // aleatory uncertain
+  write_data_partial(s,  cv_cntr, num_cauv,   c_vector);
+  write_data_partial(s, div_cntr, num_dauiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_dausv, ds_vector);
+  write_data_partial(s, drv_cntr, num_daurv, dr_vector);
+  cv_cntr  += num_cauv;  div_cntr += num_dauiv;
+  dsv_cntr += num_dausv; drv_cntr += num_daurv;
+  // epistemic uncertain
+  write_data_partial(s,  cv_cntr, num_ceuv,   c_vector);
+  write_data_partial(s, div_cntr, num_deuiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_deusv, ds_vector);
+  write_data_partial(s, drv_cntr, num_deurv, dr_vector);
+  cv_cntr  += num_ceuv;  div_cntr += num_deuiv;
+  dsv_cntr += num_deusv; drv_cntr += num_deurv;
+  // state
+  write_data_partial(s,  cv_cntr, num_csv,   c_vector);
+  write_data_partial(s, div_cntr, num_dsiv, di_vector);
+  write_data_partial(s, dsv_cntr, num_dssv, ds_vector);
+  write_data_partial(s, drv_cntr, num_dsrv, dr_vector);
+  //cv_cntr  += num_csv;  div_cntr += num_dsiv;
+  //dsv_cntr += num_dssv; drv_cntr += num_dsrv;
+}
+
+
+/// written for arbitrary types, but typical use will be ScalarType1 = Real,
+/// ScalarType2 = int, ScalarType3 = string, and ScalarType4 = int or Real.
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2,
+          typename ScalarType3, typename ScalarType4>
+inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>&  c_vector,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& di_vector,
+  const boost::multi_array<ScalarType3, 1>&                   ds_array,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType4>& dr_vector)
 {
   size_t i, j,

@@ -71,6 +71,7 @@ typedef std::vector<StringArray>    String2DArray;
 
 typedef boost::multi_array_types::index_range       idx_range;
 typedef boost::multi_array<String, 1>               StringMultiArray;
+typedef boost::multi_array<String, 2>               StringMulti2DArray;
 typedef StringMultiArray::array_view<1>::type       StringMultiArrayView;
 typedef StringMultiArray::const_array_view<1>::type StringMultiArrayConstView;
 typedef boost::multi_array<unsigned short, 1>       UShortMultiArray;

@@ -64,7 +64,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       if (numSteps && iteratedModel.parallel_library().command_line_check()) {
 	initialCVPoint  = iteratedModel.continuous_variables();      // view
 	initialDIVPoint = iteratedModel.discrete_int_variables();    // view
-	initialDSVPoint = iteratedModel.discrete_string_variables(); // view
+	initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
 	initialDRVPoint = iteratedModel.discrete_real_variables();   // view
 	final_point_to_step_vector(); // covers check_ranges_sets(numSteps)
       }
@@ -76,8 +76,9 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       if (check_num_steps(
 	  probDescDB.get_int("method.parameter_study.num_steps")))
 	err_flag = true;
+      // discrete initial pts needed for check_sets(); reassigned in pre-run
       initialDIVPoint = iteratedModel.discrete_int_variables();    // view
-      initialDSVPoint = iteratedModel.discrete_string_variables(); // view
+      initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
       initialDRVPoint = iteratedModel.discrete_real_variables();   // view
       if (check_ranges_sets(numSteps))
 	err_flag = true;
@@ -136,7 +137,7 @@ void ParamStudy::pre_run()
       methodName == CENTERED_PARAMETER_STUDY) {
     copy_data(vars.continuous_variables(),      initialCVPoint);  // copy
     copy_data(vars.discrete_int_variables(),    initialDIVPoint); // copy
-    copy_data(vars.discrete_string_variables(), initialDSVPoint); // copy
+    initialDSVPoint = vars.discrete_string_variables();           // copy
     copy_data(vars.discrete_real_variables(),   initialDRVPoint); // copy
   }
 
@@ -189,7 +190,8 @@ void ParamStudy::pre_run()
     if (outputLevel > SILENT_OUTPUT) {
       Cout << "\nCentered parameter study with steps per variable\n";
       write_ordered(Cout, svd.active_components_totals(), contStepsPerVariable,
-		    discIntStepsPerVariable, discRealStepsPerVariable);
+		    discIntStepsPerVariable, discStringStepsPerVariable,
+		    discRealStepsPerVariable);
       Cout << "and increments of\n";
       write_ordered(Cout, svd.active_components_totals(), contStepVector,
 		    discIntStepVector, discStringStepVector,
@@ -256,14 +258,15 @@ void ParamStudy::sample()
     if (numDiscreteIntVars)
       allVariables[i].discrete_int_variables(listDIVPoints[i]);
     if (numDiscreteStringVars)
-      allVariables[i].discrete_string_variables(listDSVPoints[i]);
+      allVariables[i].discrete_string_variables(
+	listDSVPoints[boost::indices[i][idx_range(0, numDiscreteStringVars)]]);
     if (numDiscreteRealVars)
       allVariables[i].discrete_real_variables(listDRVPoints[i]);
   }
   // free up redundant memory
   listCVPoints.clear();
   listDIVPoints.clear();
-  listDSVPoints.clear();
+  listDSVPoints.resize(boost::extents[0][0]);
   listDRVPoints.clear();
 }
 
@@ -322,7 +325,7 @@ void ParamStudy::vector_loop()
 void ParamStudy::centered_loop()
 {
   size_t k, cntr = 0, dsi_cntr = 0;
-  String cv_str("cv"), div_str("div"), drv_str("drv");
+  String cv_str("cv"), div_str("div"), dsv_str("dsv"), drv_str("drv");
 
   // Always evaluate center point, even if steps_per_variable = 0
   if (outputLevel > SILENT_OUTPUT)
@@ -334,7 +337,8 @@ void ParamStudy::centered_loop()
   if (numDiscreteIntVars)
     allVariables[cntr].discrete_int_variables(initialDIVPoint);
   if (numDiscreteStringVars)
-    allVariables[cntr].discrete_string_variables(initialDSVPoint);
+    allVariables[cntr].discrete_string_variables(
+      initialDSVPoint[boost::indices[idx_range(0, numDiscreteStringVars)]]);
   if (numDiscreteRealVars)
     allVariables[cntr].discrete_real_variables(initialDRVPoint);
   ++cntr;
@@ -419,7 +423,7 @@ void ParamStudy::multidim_loop()
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
   size_t i, j, p_cntr, dsi_cntr,
     num_c_di_vars    = numContinuousVars + numDiscreteIntVars,
-    num_c_di_ds_vars = num_c_di_vars + numDiscreteStringVars
+    num_c_di_ds_vars = num_c_di_vars + numDiscreteStringVars,
     num_vars = num_c_di_ds_vars + numDiscreteRealVars;
   UShortArray multidim_indices(num_vars, 0), partition_limits(num_vars);
   copy_data_partial(contVarPartitions, partition_limits, 0);
@@ -483,7 +487,8 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
   numEvals = len_lop / num_vars;
   if (numContinuousVars)     listCVPoints.resize(numEvals);
   if (numDiscreteIntVars)    listDIVPoints.resize(numEvals);
-  if (numDiscreteStringVars) listDSVPoints.resize(numEvals);
+  if (numDiscreteStringVars)
+    listDSVPoints.resize(boost::extents[numEvals][numDiscreteStringVars]);
   if (numDiscreteRealVars)   listDRVPoints.resize(numEvals);
 
   const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
@@ -492,19 +497,20 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
 
   bool err = false;
-  RealVector empty_rv; IntVector empty_iv; StringArray empty_sa;
+  RealVector empty_rv; IntVector empty_iv; StringMultiArray empty_sa;
   for (i=0, start=0; i<numEvals; ++i) {
     RealVector& list_cv_i  = (numContinuousVars)  ? listCVPoints[i]  : empty_rv;
     IntVector&  list_div_i = (numDiscreteIntVars) ? listDIVPoints[i] : empty_iv;
-    StringArray& list_dsv_i = (numDiscreteStringVars) ?
-      listDSVPoints[i] : empty_sa;
+    StringMultiArrayView list_dsv_i = (numDiscreteStringVars) ?
+      listDSVPoints[boost::indices[i][idx_range(0, numDiscreteStringVars)]] :
+      empty_sa[boost::indices[idx_range(0, 0)]];
     RealVector& list_drv_i = (numDiscreteRealVars) ?
       listDRVPoints[i] : empty_rv;
 
     // take a view of each sample and partition it into {c,di,dr} components
     RealVector all_sample(Teuchos::View, const_cast<Real*>(&list_of_pts[start]),
 			  num_vars);
-    distribute(all_sample, list_cv_i, list_div_i, list_dsv_i, list_drv_i);
+    //distribute(all_sample, list_cv_i, list_div_i, list_dsv_i, list_drv_i);// TO DO
     start += num_vars;
 
     // Check for admissible set values
@@ -567,19 +573,21 @@ void ParamStudy::distribute_partitions()
 
   initialCVPoint.sizeUninitialized(numContinuousVars);
   initialDIVPoint.sizeUninitialized(numDiscreteIntVars);
-  initialDSVPoint.resize(numDiscreteStringVars);
+  initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
   initialDRVPoint.sizeUninitialized(numDiscreteRealVars);
 
-  const RealVector&       c_vars = iteratedModel.continuous_variables();
-  const IntVector&       di_vars = iteratedModel.discrete_int_variables();
-  const StringArray&     ds_vars = iteratedModel.discrete_string_variables();
-  const RealVector&      dr_vars = iteratedModel.discrete_real_variables();
-  const RealVector&     c_l_bnds = iteratedModel.continuous_lower_bounds();
-  const RealVector&     c_u_bnds = iteratedModel.continuous_upper_bounds();
-  const IntVector&     di_l_bnds = iteratedModel.discrete_int_lower_bounds();
-  const IntVector&     di_u_bnds = iteratedModel.discrete_int_upper_bounds();
-  const RealVector&    dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
-  const RealVector&    dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
+  const RealVector&          c_vars = iteratedModel.continuous_variables();
+  const IntVector&          di_vars = iteratedModel.discrete_int_variables();
+  StringMultiArrayConstView ds_vars = iteratedModel.discrete_string_variables();
+  const RealVector&         dr_vars = iteratedModel.discrete_real_variables();
+
+  const RealVector&  c_l_bnds = iteratedModel.continuous_lower_bounds();
+  const RealVector&  c_u_bnds = iteratedModel.continuous_upper_bounds();
+  const IntVector&  di_l_bnds = iteratedModel.discrete_int_lower_bounds();
+  const IntVector&  di_u_bnds = iteratedModel.discrete_int_upper_bounds();
+  const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
+  const RealVector& dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
+
   const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
   const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
   const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
@@ -659,8 +667,10 @@ void ParamStudy::distribute_partitions()
 
 void ParamStudy::final_point_to_step_vector()
 {
-  RealVector cv_final, drv_final; IntVector div_final; StringArray dsv_final;
-  distribute(finalPoint, cv_final, div_final, dsv_final, drv_final);
+  RealVector cv_final, drv_final;
+  IntVector div_final;
+  StringMultiArray dsv_final;
+  //distribute(finalPoint, cv_final, div_final, dsv_final, drv_final);// TO DO
 
   const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
   const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
