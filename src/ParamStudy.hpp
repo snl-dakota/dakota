@@ -85,8 +85,9 @@ private:
   bool distribute(
     const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>& c_data,
+    //boost::multi_array<ScalarTypeDS, 1>& ds_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
-    boost::multi_array<ScalarTypeDS, 1>& ds_data,
+    Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDS>& ds_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data);
 
   /// distributes incoming all array in standard variable ordering among
@@ -121,11 +122,11 @@ private:
   /// sanity check for vector parameter study
   bool check_ranges_sets(int num_steps);
   /// sanity check for centered parameter study
-  bool check_ranges_sets(const IntVector& c_steps, const IntVector& di_steps,
-			 const IntVector& dr_steps);
+  bool check_ranges_sets(const IntVector& c_steps,  const IntVector& di_steps,
+			 const IntVector& ds_steps, const IntVector& dr_steps);
   /// sanity check for increments along int/real set dimensions
-  bool check_sets(const IntVector& c_steps, const IntVector& di_steps,
-		  const IntVector& dr_steps);
+  bool check_sets(const IntVector& c_steps,  const IntVector& di_steps,
+		  const IntVector& ds_steps, const IntVector& dr_steps);
 
   /// check for integer remainder and return step
   int integer_step(int range, int num_steps) const;
@@ -183,7 +184,7 @@ private:
   /// the n-dimensional discrete value or index increment
   IntVector discIntStepVector;
   /// the n-dimensional discrete value or index increment
-  StringArray discStringStepVector;
+  IntVector discStringStepVector;
   /// the n-dimensional discrete real index increment
   IntVector discRealStepVector;
 
@@ -201,7 +202,7 @@ private:
   IntVector discIntStepsPerVariable;
   /// number of offsets in the plus and the minus direction for each
   /// discrete string variable in a centered_parameter_study
-  StringArray discStringStepsPerVariable;
+  IntVector discStringStepsPerVariable;
   /// number of offsets in the plus and the minus direction for each
   /// discrete real variable in a centered_parameter_study
   IntVector discRealStepsPerVariable;
@@ -230,7 +231,8 @@ bool ParamStudy::
 distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>&   c_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
-	   boost::multi_array<ScalarTypeDS, 1>&                   ds_data,
+	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDS>& ds_data,
+	   //boost::multi_array<ScalarTypeDS, 1>&                 ds_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data)
 {
   size_t num_vars = numContinuousVars     + numDiscreteIntVars
@@ -242,7 +244,7 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
   }
   c_data.sizeUninitialized(numContinuousVars);
   di_data.sizeUninitialized(numDiscreteIntVars);
-  ds_data.resize(boost::extents[numDiscreteStringVars]);
+  ds_data.sizeUninitialized(numDiscreteStringVars);//resize(boost::extents[numDiscreteStringVars]);
   dr_data.sizeUninitialized(numDiscreteRealVars);
 
   // Extract in order:
@@ -268,9 +270,9 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
     c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
   for (i=0; i<num_ddiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
-   for (i=0; i<num_ddsv; ++i, ++s_cntr, ++ds_cntr)
+  for (i=0; i<num_ddsv; ++i, ++s_cntr, ++ds_cntr)
     ds_data[ds_cntr] = static_cast<ScalarTypeDS>(all_data[s_cntr]);
- for (i=0; i<num_ddrv; ++i, ++s_cntr, ++dr_cntr)
+  for (i=0; i<num_ddrv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
   for (i=0; i<num_cauv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
@@ -324,11 +326,13 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
 template <typename ScalarType> 
 bool ParamStudy::
 distribute(const std::vector<ScalarType>& all_data,
-	   std::vector<ScalarType>& c_data, std::vector<ScalarType>& di_data,
+	   std::vector<ScalarType>& c_data,
+	   std::vector<ScalarType>& di_data,
+	   std::vector<ScalarType>& ds_data,
 	   std::vector<ScalarType>& dr_data)
 {
-  size_t num_vars
-    = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  size_t num_vars = numContinuousVars + numDiscreteIntVars
+                  + numDiscreteStringVars + numDiscreteRealVars;
   if (all_data.size() != num_vars) {
     Cerr << "\nError: ParamStudy::distribute() input length must be "
 	 << num_vars << '.' << std::endl;
@@ -336,6 +340,7 @@ distribute(const std::vector<ScalarType>& all_data,
   }
   c_data.resize(numContinuousVars);
   di_data.resize(numDiscreteIntVars);
+  ds_data.resize(numDiscreteStringVars);
   dr_data.resize(numDiscreteRealVars);
 
   // Extract in order:
@@ -357,29 +362,36 @@ distribute(const std::vector<ScalarType>& all_data,
     num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
     num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
     s_cntr = 0, c_cntr = 0, di_cntr = 0, ds_cntr = 0, dr_cntr = 0;
-  // TO DO: discrete strings
   for (i=0; i<num_cdv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = all_data[s_cntr];
   for (i=0; i<num_ddiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_ddsv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = all_data[s_cntr];
   for (i=0; i<num_ddrv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = all_data[s_cntr];
   for (i=0; i<num_cauv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = all_data[s_cntr];
   for (i=0; i<num_dauiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_dausv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = all_data[s_cntr];
   for (i=0; i<num_daurv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = all_data[s_cntr];
   for (i=0; i<num_ceuv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = all_data[s_cntr];
   for (i=0; i<num_deuiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_deusv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = all_data[s_cntr];
   for (i=0; i<num_deurv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = all_data[s_cntr];
   for (i=0; i<num_csv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = all_data[s_cntr];
   for (i=0; i<num_dsiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = all_data[s_cntr];
+  for (i=0; i<num_dssv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = all_data[s_cntr];
   for (i=0; i<num_dsrv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = all_data[s_cntr];
 
@@ -392,6 +404,10 @@ distribute(const std::vector<ScalarType>& all_data,
   if (numDiscreteIntVars) {
     Cout << "discrete int vector:\n";
     write_data(Cout, di_data);
+  }
+  if (numDiscreteStringVars) {
+    Cout << "discrete string array:\n";
+    write_data(Cout, ds_data);
   }
   if (numDiscreteRealVars) {
     Cout << "discrete real vector:\n";
