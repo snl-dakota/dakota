@@ -1956,7 +1956,8 @@ update_response(const Variables& vars, Response& new_response,
        surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
        original_set.derivative_vector() ==
        currentVariables.continuous_variable_ids() &&
-       (hessianType == "quasi" || (hessianType == "mixed" && !hessIdQuasi.empty())) )
+       ( hessianType == "quasi" ||
+	 ( hessianType == "mixed" && !hessIdQuasi.empty() ) ) )
     update_quasi_hessians(vars, new_response, original_set);
 
   // overlay Hessian data as needed

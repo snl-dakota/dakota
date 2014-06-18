@@ -25,7 +25,7 @@
 // --------------
 namespace boost {
 
-size_t hash_value(const Dakota::StringMultiArray& sma)
+inline size_t hash_value(const Dakota::StringMultiArray& sma)
 { return boost::hash_range( sma.begin(), sma.end() ); }
 
 } // namespace boost
