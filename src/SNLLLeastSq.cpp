@@ -565,9 +565,9 @@ void SNLLLeastSq::post_run(std::ostream& s)
          << std::endl;
     //abort_handler(-1);
   }
-  else
-    copy_data_partial(cache_it->prp_response().function_values(), 0,
-		      numLeastSqTerms, best_fns, 0); // unscaled -> user/native
+  else // unscaled -> user/native
+    copy_data_partial(cache_it->prp_response().function_values(), (size_t)0,
+		      numLeastSqTerms, best_fns, (size_t)0);
   activeSet.request_values(1); // restore
 
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.

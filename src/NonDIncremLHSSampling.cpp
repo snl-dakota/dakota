@@ -79,21 +79,21 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     abort_handler(-1);
   }
 
-  if ((numGumbelVars > 0) || (numFrechetVars > 0)) {
+  if (numGumbelVars > 0 || numFrechetVars > 0) {
     Cout << "Error: The Gumbel and Frechet distributions are not "
  	 << "supported in incremental LHS sampling. " << std::endl;
     abort_handler(-1);
   }
 
-  if ((numPoissonVars > 0) || (numBinomialVars > 0) ||
-	(numNegBinomialVars > 0) || (numGeometricVars > 0) ||
-        (numHyperGeomVars > 0)) {
+  if (numPoissonVars > 0 || numBinomialVars > 0 || numNegBinomialVars > 0 ||
+      numGeometricVars > 0 || numHyperGeomVars > 0) {
     Cout << "Error: Discrete distribution types are not "
  	 << "supported in incremental LHS sampling.  " << std::endl;
     abort_handler(-1);
   }
   
-  if ((numHistogramBinVars > 0) || (numHistogramPtVars > 0)) {
+  if (numHistogramBinVars > 0 || numHistogramPtIntVars > 0 ||
+      numHistogramPtStringVars > 0 || numHistogramPtRealVars > 0) {
     Cout << "Error: Histogram variables, including point and bin, are not "
  	 << "supported in incremental LHS sampling. " << std::endl;
     abort_handler(-1);

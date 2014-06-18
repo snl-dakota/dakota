@@ -234,15 +234,19 @@ void NonDSampling::get_parameter_sets(Model& model)
       dsriv_u_bnds = IntVector(Teuchos::View,
 	const_cast<int*>(&all_di_u_bnds[di_start]), num_dsriv);
     }
-    RealSetArray empty_rsa; IntSetArray empty_isa;
-    const IntSetArray&  di_design_sets = (numDiscIntDesVars) ?
-      model.discrete_design_set_int_values()  : empty_isa;
-    const RealSetArray& dr_design_sets = (numDiscRealDesVars) ?
-      model.discrete_design_set_real_values() : empty_rsa;
-    const IntSetArray&  di_state_sets  = (numDiscIntStateVars) ?
-      model.discrete_state_set_int_values()   : empty_isa;
-    const RealSetArray& dr_state_sets  = (numDiscRealStateVars) ?
-      model.discrete_state_set_real_values()  : empty_rsa;
+    IntSetArray empty_isa; StringSetArray empty_ssa; RealSetArray empty_rsa;
+    const IntSetArray&    di_design_sets = (numDiscIntDesVars) ?
+      model.discrete_design_set_int_values()    : empty_isa;
+    const StringSetArray& ds_design_sets = (numDiscStringDesVars) ?
+      model.discrete_design_set_string_values() : empty_ssa;
+    const RealSetArray&   dr_design_sets = (numDiscRealDesVars) ?
+      model.discrete_design_set_real_values()   : empty_rsa;
+    const IntSetArray&    di_state_sets  = (numDiscIntStateVars) ?
+      model.discrete_state_set_int_values()     : empty_isa;
+    const StringSetArray& ds_state_sets  = (numDiscStringStateVars) ?
+      model.discrete_state_set_string_values()  : empty_ssa;
+    const RealSetArray&   dr_state_sets  = (numDiscRealStateVars) ?
+      model.discrete_state_set_real_values()    : empty_rsa;
 
     // Call LHS to generate the specified samples within the specified
     // distributions.  Use model distribution parameters unless ACTIVE
@@ -252,35 +256,37 @@ void NonDSampling::get_parameter_sets(Model& model)
 	   model_view ==   MIXED_DESIGN || model_view ==   MIXED_STATE ) ) {
       Pecos::AleatoryDistParams empty_adp; Pecos::EpistemicDistParams empty_edp;
       lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-	ddriv_u_bnds, di_design_sets, dr_design_sets, csv_l_bnds, csv_u_bnds,
-	dsriv_l_bnds, dsriv_u_bnds, di_state_sets, dr_state_sets, empty_adp,
-	empty_edp, numSamples, allSamples, sampleRanks);
+	ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
+	csv_l_bnds, csv_u_bnds,	dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
+	ds_state_sets, dr_state_sets, empty_adp, empty_edp, numSamples,
+	allSamples, sampleRanks);
     }
     else if ( samplingVarsMode == ACTIVE &&
 	      ( model_view == RELAXED_ALEATORY_UNCERTAIN ||
 		model_view == MIXED_ALEATORY_UNCERTAIN ) ) {
       Pecos::EpistemicDistParams empty_edp;
       lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-	ddriv_u_bnds, di_design_sets, dr_design_sets, csv_l_bnds, csv_u_bnds,
-	dsriv_l_bnds, dsriv_u_bnds, di_state_sets, dr_state_sets,
-	model.aleatory_distribution_parameters(), empty_edp, numSamples,
-	allSamples, sampleRanks);
+	ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
+	csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
+	ds_state_sets, dr_state_sets, model.aleatory_distribution_parameters(),
+	empty_edp, numSamples, allSamples, sampleRanks);
     }
     else if ( samplingVarsMode == ACTIVE &&
 	      ( model_view == RELAXED_EPISTEMIC_UNCERTAIN ||
 		model_view == MIXED_EPISTEMIC_UNCERTAIN ) ) {
       Pecos::AleatoryDistParams empty_adp;
       lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-	ddriv_u_bnds, di_design_sets, dr_design_sets, csv_l_bnds, csv_u_bnds,
-	dsriv_l_bnds, dsriv_u_bnds, di_state_sets, dr_state_sets, empty_adp,
+	ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
+	csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
+	ds_state_sets, dr_state_sets, empty_adp,
 	model.epistemic_distribution_parameters(), numSamples, allSamples,
 	sampleRanks);
     }
     else 
       lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-        ddriv_u_bnds, di_design_sets, dr_design_sets, csv_l_bnds, csv_u_bnds,
-	dsriv_l_bnds, dsriv_u_bnds, di_state_sets, dr_state_sets,
-	model.aleatory_distribution_parameters(),
+        ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
+	csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
+	ds_state_sets, dr_state_sets, model.aleatory_distribution_parameters(),
 	model.epistemic_distribution_parameters(), numSamples, allSamples,
 	sampleRanks);
     break;

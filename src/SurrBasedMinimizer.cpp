@@ -735,7 +735,7 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
     else
       s << "<<<<< Best residual terms      ";
     if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
-    write_data_partial(s, 0, numUserPrimaryFns, best_fns);
+    write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
     size_t num_cons = numFunctions - numUserPrimaryFns;
     if (num_cons) {
       s << "<<<<< Best constraint values   ";

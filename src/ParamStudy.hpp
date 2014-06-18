@@ -79,21 +79,23 @@ private:
   bool load_distribute_points(const String& points_filename, bool annotated);
 
   /// distributes incoming all vector in standard variable ordering among
-  /// continuous, discrete int, and discrete real vectors
+  /// continuous, discrete int, discrete string, and discrete real vectors
   template <typename OrdinalType,  typename ScalarTypeA, typename ScalarTypeC,
-	    typename ScalarTypeDI, typename ScalarTypeDR> 
+	    typename ScalarTypeDI, typename ScalarTypeDS,typename ScalarTypeDR> 
   bool distribute(
     const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>& c_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
+    boost::multi_array<ScalarTypeDS, 1>& ds_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data);
 
   /// distributes incoming all array in standard variable ordering among
-  /// continuous, discrete int, and discrete real arrays
+  /// continuous, discrete int, discrete string, and discrete real arrays
   template <typename ScalarType> 
   bool distribute(const std::vector<ScalarType>& all_data,
 		  std::vector<ScalarType>& c_data,
 		  std::vector<ScalarType>& di_data,
+		  std::vector<ScalarType>& ds_data,
 		  std::vector<ScalarType>& dr_data);
 
   /// distributes incoming list_of_pts among listCVPoints, listDIVPoints,
@@ -101,7 +103,7 @@ private:
   bool distribute_list_of_points(const RealVector& list_of_pts);
   /// compute step vectors from finalPoint, initial points, and numSteps
   void final_point_to_step_vector();
-  /// compute step vectors from {cont,discInt,discReal}VarPartitions
+  /// compute step vectors from {cont,discInt,discString,discReal}VarPartitions
   /// and global bounds
   void distribute_partitions();
 
@@ -138,6 +140,9 @@ private:
   /// helper function for performing a discrete step in an integer set variable
   void dsi_step(size_t di_index, int increment, const IntSet& values,
 		Variables& vars);
+  /// helper function for performing a discrete step in an string set variable
+  void dss_step(size_t ds_index, int increment, const StringSet& values,
+		Variables& vars);
   /// helper function for performing a discrete step in a real set variable
   void dsr_step(size_t dr_index, int increment, const RealSet& values,
 		Variables& vars);
@@ -159,6 +164,8 @@ private:
   RealVectorArray listCVPoints;
   /// array of discrete int evaluation points for the list_parameter_study
   IntVectorArray listDIVPoints;
+  /// array of discrete int evaluation points for the list_parameter_study
+  String2DArray listDSVPoints;
   /// array of discrete real evaluation points for the list_parameter_study
   RealVectorArray listDRVPoints;
 
@@ -167,12 +174,16 @@ private:
   /// the continuous starting point for vector and centered parameter studies
   IntVector initialDIVPoint;
   /// the continuous starting point for vector and centered parameter studies
+  StringArray initialDSVPoint;
+  /// the continuous starting point for vector and centered parameter studies
   RealVector initialDRVPoint;
 
   /// the n-dimensional continuous increment
   RealVector contStepVector;
   /// the n-dimensional discrete value or index increment
   IntVector discIntStepVector;
+  /// the n-dimensional discrete value or index increment
+  StringArray discStringStepVector;
   /// the n-dimensional discrete real index increment
   IntVector discRealStepVector;
 
@@ -189,6 +200,9 @@ private:
   /// discrete integer variable in a centered_parameter_study
   IntVector discIntStepsPerVariable;
   /// number of offsets in the plus and the minus direction for each
+  /// discrete string variable in a centered_parameter_study
+  StringArray discStringStepsPerVariable;
+  /// number of offsets in the plus and the minus direction for each
   /// discrete real variable in a centered_parameter_study
   IntVector discRealStepsPerVariable;
 
@@ -198,6 +212,9 @@ private:
   /// number of partitions for each discrete integer variable in a
   /// multidim_parameter_study
   UShortArray discIntVarPartitions;
+  /// number of partitions for each discrete string variable in a
+  /// multidim_parameter_study
+  UShortArray discStringVarPartitions;
   /// number of partitions for each discrete real variable in a
   /// multidim_parameter_study
   UShortArray discRealVarPartitions;
@@ -207,16 +224,17 @@ private:
 inline ParamStudy::~ParamStudy() { }
 
 
-template <typename OrdinalType,  typename ScalarTypeA, typename ScalarTypeC,
-	  typename ScalarTypeDI, typename ScalarTypeDR> 
+template <typename OrdinalType,  typename ScalarTypeA,  typename ScalarTypeC,
+	  typename ScalarTypeDI, typename ScalarTypeDS, typename ScalarTypeDR> 
 bool ParamStudy::
 distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>&   c_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
+	   boost::multi_array<ScalarTypeDS, 1>&                   ds_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data)
 {
-  size_t num_vars
-    = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  size_t num_vars = numContinuousVars     + numDiscreteIntVars
+                  + numDiscreteStringVars + numDiscreteRealVars;
   if (all_data.length() != num_vars) {
     Cerr << "\nError: ParamStudy::distribute() input length must be "
 	 << num_vars << '.' << std::endl;
@@ -224,6 +242,7 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
   }
   c_data.sizeUninitialized(numContinuousVars);
   di_data.sizeUninitialized(numDiscreteIntVars);
+  ds_data.resize(boost::extents[numDiscreteStringVars]);
   dr_data.sizeUninitialized(numDiscreteRealVars);
 
   // Extract in order:
@@ -245,29 +264,36 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
     num_csv   = active_totals[TOTAL_CSV],  num_dsiv = active_totals[TOTAL_DSIV],
     num_dssv  = active_totals[TOTAL_DSSV], num_dsrv = active_totals[TOTAL_DSRV],
     s_cntr = 0, c_cntr = 0, di_cntr = 0, ds_cntr = 0, dr_cntr = 0;
-  // TO DO: discrete strings
   for (i=0; i<num_cdv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
   for (i=0; i<num_ddiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
-  for (i=0; i<num_ddrv; ++i, ++s_cntr, ++dr_cntr)
+   for (i=0; i<num_ddsv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = static_cast<ScalarTypeDS>(all_data[s_cntr]);
+ for (i=0; i<num_ddrv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
   for (i=0; i<num_cauv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
   for (i=0; i<num_dauiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
+  for (i=0; i<num_dausv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = static_cast<ScalarTypeDS>(all_data[s_cntr]);
   for (i=0; i<num_daurv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
   for (i=0; i<num_ceuv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
   for (i=0; i<num_deuiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
+  for (i=0; i<num_deusv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = static_cast<ScalarTypeDS>(all_data[s_cntr]);
   for (i=0; i<num_deurv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
   for (i=0; i<num_csv; ++i, ++s_cntr, ++c_cntr)
     c_data[c_cntr]   = static_cast<ScalarTypeC>(all_data[s_cntr]);
   for (i=0; i<num_dsiv; ++i, ++s_cntr, ++di_cntr)
     di_data[di_cntr] = static_cast<ScalarTypeDI>(all_data[s_cntr]);
+  for (i=0; i<num_dssv; ++i, ++s_cntr, ++ds_cntr)
+    ds_data[ds_cntr] = static_cast<ScalarTypeDS>(all_data[s_cntr]);
   for (i=0; i<num_dsrv; ++i, ++s_cntr, ++dr_cntr)
     dr_data[dr_cntr] = static_cast<ScalarTypeDR>(all_data[s_cntr]);
 
@@ -280,6 +306,10 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
   if (numDiscreteIntVars) {
     Cout << "discrete int vector:\n";
     write_data(Cout, di_data);
+  }
+  if (numDiscreteStringVars) {
+    Cout << "discrete string array:\n";
+    write_data(Cout, ds_data);
   }
   if (numDiscreteRealVars) {
     Cout << "discrete real vector:\n";
@@ -391,8 +421,8 @@ inline bool ParamStudy::check_num_steps(int num_steps)
 inline bool ParamStudy::check_final_point(const RealVector& final_pt)
 {
   // basic final_point checks only, check_vector() performs integrated checks
-  size_t num_vars
-    = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+  size_t num_vars = numContinuousVars     + numDiscreteIntVars
+                  + numDiscreteStringVars + numDiscreteRealVars;
   if (final_pt.length() != num_vars) {
     Cerr << "\nError: final_point must be of dimension " << num_vars
 	 << " in vector_parameter_study." << std::endl;
@@ -406,17 +436,20 @@ inline bool ParamStudy::check_final_point(const RealVector& final_pt)
 inline bool ParamStudy::check_steps_per_variable(const IntVector& steps_per_var)
 {
   size_t spv_len = steps_per_var.length(),
-    num_vars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+    num_vars = numContinuousVars     + numDiscreteIntVars +
+               numDiscreteStringVars + numDiscreteRealVars;
   // allow spv_len of 1 or num_vars
   if (spv_len == num_vars)
     distribute(steps_per_var, contStepsPerVariable, discIntStepsPerVariable,
-	       discRealStepsPerVariable);
+	       discStringStepsPerVariable, discRealStepsPerVariable);
   else if (spv_len == 1) {
     int steps = steps_per_var[0];
     contStepsPerVariable.sizeUninitialized(numContinuousVars);
     contStepsPerVariable = steps;
     discIntStepsPerVariable.sizeUninitialized(numDiscreteIntVars);
     discIntStepsPerVariable = steps;
+    discStringStepsPerVariable.sizeUninitialized(numDiscreteStringVars);
+    discStringStepsPerVariable = steps;
     discRealStepsPerVariable.sizeUninitialized(numDiscreteRealVars);
     discRealStepsPerVariable = steps;
   }
@@ -430,6 +463,8 @@ inline bool ParamStudy::check_steps_per_variable(const IntVector& steps_per_var)
     spv_sum += std::abs(contStepsPerVariable[i]);
   for (i=0; i<numDiscreteIntVars; ++i)
     spv_sum += std::abs(discIntStepsPerVariable[i]);
+  for (i=0; i<numDiscreteStringVars; ++i)
+    spv_sum += std::abs(discStringStepsPerVariable[i]);
   for (i=0; i<numDiscreteRealVars; ++i)
     spv_sum += std::abs(discRealStepsPerVariable[i]);
   numEvals = 2*spv_sum + 1;
@@ -441,19 +476,21 @@ inline bool ParamStudy::check_variable_partitions(const UShortArray& partitions)
 {
   size_t i, vp_len = partitions.size();
   // allow vp_len of 1 or num_vars
-  if (vp_len == numContinuousVars + numDiscreteIntVars + numDiscreteRealVars)
+  if (vp_len == numContinuousVars     + numDiscreteIntVars +
+                numDiscreteStringVars + numDiscreteRealVars)
     distribute(partitions, contVarPartitions, discIntVarPartitions,
-	       discRealVarPartitions);
+	       discStringVarPartitions, discRealVarPartitions);
   else if (vp_len == 1) {
     unsigned short part = partitions[0];
     contVarPartitions.assign(numContinuousVars, part);
     discIntVarPartitions.assign(numDiscreteIntVars, part);
+    discStringVarPartitions.assign(numDiscreteStringVars, part);
     discRealVarPartitions.assign(numDiscreteRealVars, part);
   }
   else {
     Cerr << "\nError: partitions must be of length 1 or "
-	 << numContinuousVars + numDiscreteIntVars + numDiscreteRealVars
-	 << " in multidim_parameter_study." << std::endl;
+	 << numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
+            numDiscreteRealVars << " in multidim_parameter_study." << std::endl;
     return true;
   }
   numEvals = 1;
@@ -461,6 +498,8 @@ inline bool ParamStudy::check_variable_partitions(const UShortArray& partitions)
     numEvals *= contVarPartitions[i] + 1;
   for (i=0; i<numDiscreteIntVars; ++i)
     numEvals *= discIntVarPartitions[i] + 1;
+  for (i=0; i<numDiscreteStringVars; ++i)
+    numEvals *= discStringVarPartitions[i] + 1;
   for (i=0; i<numDiscreteRealVars; ++i)
     numEvals *= discRealVarPartitions[i] + 1;
   return false;
@@ -504,27 +543,31 @@ inline bool ParamStudy::check_finite_bounds()
 inline bool ParamStudy::check_ranges_sets(int num_steps)
 {
   // convert scalar to a single vector
-  IntVector c_steps_per_var(numContinuousVars,   false),
-           di_steps_per_var(numDiscreteIntVars,  false),
-           dr_steps_per_var(numDiscreteRealVars, false);
+  IntVector c_steps_per_var(numContinuousVars,     false),
+           di_steps_per_var(numDiscreteIntVars,    false),
+           ds_steps_per_var(numDiscreteStringVars, false),
+           dr_steps_per_var(numDiscreteRealVars,   false);
   c_steps_per_var  = num_steps;
   di_steps_per_var = num_steps;
+  ds_steps_per_var = num_steps;
   dr_steps_per_var = num_steps;
-  return check_sets(c_steps_per_var, di_steps_per_var, dr_steps_per_var);
+  return check_sets(c_steps_per_var, di_steps_per_var, ds_steps_per_var,
+		    dr_steps_per_var);
 }
 
 
 inline bool ParamStudy::
 check_ranges_sets(const IntVector& c_steps_per_var,
 		  const IntVector& di_steps_per_var,
+		  const IntVector& ds_steps_per_var,
 		  const IntVector& dr_steps_per_var)
 {
   // convert vector to plus and minus vector steps
-  IntVector c_steps(c_steps_per_var), di_steps(di_steps_per_var),
-           dr_steps(dr_steps_per_var);
-  bool err = check_sets(c_steps, di_steps, dr_steps); // positive offsets
+  IntVector c_steps(c_steps_per_var),  di_steps(di_steps_per_var),
+           ds_steps(ds_steps_per_var), dr_steps(dr_steps_per_var);
+  bool err = check_sets(c_steps, di_steps, ds_steps, dr_steps); // + offsets
   c_steps.scale(-1); di_steps.scale(-1); dr_steps.scale(-1);
-  if (check_sets(c_steps, di_steps, dr_steps))        // negative offsets
+  if (check_sets(c_steps, di_steps, ds_steps, dr_steps))        // - offsets
     err = true;
   return err;
 }
@@ -596,6 +639,28 @@ dsi_step(size_t di_index, int increment, const IntSet& values, Variables& vars)
 
 
 inline void ParamStudy::
+dss_step(size_t ds_index, int increment, const StringSet& values,
+	 Variables& vars)
+{
+  // valid values and indices are checked for set types
+  size_t index0 = set_value_to_index(initialDSVPoint[ds_index], values);
+  if (index0 == _NPOS) {
+    Cerr << "\nError: value " << initialDSVPoint[ds_index] << " does not exist "
+	 << "within discrete string set in ParamStudy::dss_step()."<< std::endl;
+    abort_handler(-1);
+  }
+  int index = index0 + increment * discStringStepVector[ds_index]; // +/- steps
+  if (index >= 0 && index < values.size())
+    vars.discrete_string_variable(set_index_to_value(index, values), ds_index);
+  else {
+    Cerr << "\nError: index " << index << " out of range within discrete "
+	 << "string set in ParamStudy::dsr_step()." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+inline void ParamStudy::
 dsr_step(size_t dr_index, int increment, const RealSet& values, Variables& vars)
 {
   // valid values and indices are checked for set types
@@ -618,9 +683,10 @@ dsr_step(size_t dr_index, int increment, const RealSet& values, Variables& vars)
 
 inline void ParamStudy::reset(Variables& vars)
 {
-  if (numContinuousVars)   vars.continuous_variables(initialCVPoint);
-  if (numDiscreteIntVars)  vars.discrete_int_variables(initialDIVPoint);
-  if (numDiscreteRealVars) vars.discrete_real_variables(initialDRVPoint);
+  if (numContinuousVars)     vars.continuous_variables(initialCVPoint);
+  if (numDiscreteIntVars)    vars.discrete_int_variables(initialDIVPoint);
+  if (numDiscreteStringVars) vars.discrete_string_variables(initialDSVPoint);
+  if (numDiscreteRealVars)   vars.discrete_real_variables(initialDRVPoint);
 }
 
 

@@ -158,19 +158,20 @@ void ParamStudy::pre_run()
       if (outputLevel > SILENT_OUTPUT) {
 	Cout << "\nVector parameter study for " << numSteps
 	     << " steps starting from\n";
-	write_ordered(Cout, svd.active_components_totals(),
-		      initialCVPoint, initialDIVPoint, initialDRVPoint);
+	write_ordered(Cout, svd.active_components_totals(), initialCVPoint,
+		      initialDIVPoint, initialDSVPoint, initialDRVPoint);
 	Cout << "with a step vector of\n";
-	write_ordered(Cout, svd.active_components_totals(),
-		      contStepVector, discIntStepVector, discRealStepVector);
+	write_ordered(Cout, svd.active_components_totals(), contStepVector,
+		      discIntStepVector, discStringStepVector,
+		      discRealStepVector);
 	Cout << '\n';
       }
     }
     else { // final_point & num_steps
       if (outputLevel > SILENT_OUTPUT) {
 	Cout << "\nVector parameter study from\n";
-	write_ordered(Cout, svd.active_components_totals(),
-		      initialCVPoint, initialDIVPoint, initialDRVPoint);
+	write_ordered(Cout, svd.active_components_totals(), initialCVPoint,
+		      initialDIVPoint, initialDSVPoint, initialDRVPoint);
 	Cout << "to\n";
 	write_data(Cout, finalPoint);
 	Cout << "using " << numSteps << " steps\n\n";
@@ -186,11 +187,12 @@ void ParamStudy::pre_run()
       write_ordered(Cout, svd.active_components_totals(), contStepsPerVariable,
 		    discIntStepsPerVariable, discRealStepsPerVariable);
       Cout << "and increments of\n";
-      write_ordered(Cout, svd.active_components_totals(),
-		    contStepVector, discIntStepVector, discRealStepVector);
+      write_ordered(Cout, svd.active_components_totals(), contStepVector,
+		    discIntStepVector, discStringStepVector,
+		    discRealStepVector);
       Cout << "with the following center point:\n";
-      write_ordered(Cout, svd.active_components_totals(),
-		    initialCVPoint, initialDIVPoint, initialDRVPoint);
+      write_ordered(Cout, svd.active_components_totals(), initialCVPoint,
+		    initialDIVPoint, initialDSVPoint, initialDRVPoint);
       Cout << '\n';
     }
     centered_loop();
@@ -199,7 +201,8 @@ void ParamStudy::pre_run()
     if (outputLevel > SILENT_OUTPUT) {
       Cout << "\nMultidimensional parameter study variable partitions of\n";
       write_ordered(Cout, svd.active_components_totals(), contVarPartitions,
-		    discIntVarPartitions, discRealVarPartitions);
+		    discIntVarPartitions, discStringVarPartitions,
+		    discRealVarPartitions);
     }
     distribute_partitions();
     multidim_loop();
