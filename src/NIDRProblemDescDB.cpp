@@ -5501,7 +5501,7 @@ static void flatten_ssa(StringSetArray *ssa, StringArray **psa)
   m = ssa->size();
   for(i = n = 0; i < m; ++i)
     n += (*ssa)[i].size();
-  *psa = sa = new StringArray(n, false);
+  *psa = sa = new StringArray(n);
   for(i = k = 0; i < m; ++i) {
     ss_i = &(*ssa)[i];
     for(ss_it=ss_i->begin(), ss_ite=ss_i->end(); ss_it!=ss_ite; ++ss_it, ++k)
