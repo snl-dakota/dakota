@@ -673,8 +673,8 @@ void ParamStudy::distribute_partitions()
     Cout << "discIntStepVector:\n";  write_data(Cout, discIntStepVector);
   }
   if (numDiscreteStringVars) {
-    Cout << "ds_vars:\n";            write_data(Cout, ds_vars);
-    Cout << "initialDSVPoint:\n";    write_data(Cout, initialDSVPoint);
+    Cout << "ds_vars:\n";              write_data(Cout, ds_vars);
+    Cout << "initialDSVPoint:\n";      write_data(Cout, initialDSVPoint);
     Cout << "discStringStepVector:\n"; write_data(Cout, discStringStepVector);
   }
   if (numDiscreteRealVars) {

@@ -3446,6 +3446,8 @@ const IntSetArray& Model::discrete_set_int_values()
   if (modelRep)
     return modelRep->discrete_set_int_values();
 
+  // TO DO: return if already defined (previous call)
+
   switch (currentVariables.view().first) {
   case MIXED_DESIGN:
     return discreteDesignSetIntValues; break;
@@ -3586,6 +3588,8 @@ const StringSetArray& Model::discrete_set_string_values()
   if (modelRep)
     return modelRep->discrete_set_string_values();
 
+  // TO DO: return if already defined (previous call)
+
   switch (currentVariables.view().first) {
   case MIXED_DESIGN: case RELAXED_DESIGN:
     return discreteDesignSetStringValues; break;
@@ -3657,6 +3661,8 @@ const RealSetArray& Model::discrete_set_real_values()
 {
   if (modelRep)
     return modelRep->discrete_set_real_values();
+
+  // TO DO: return if already defined (previous call)
 
   switch (currentVariables.view().first) {
   case MIXED_DESIGN:
