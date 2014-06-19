@@ -61,7 +61,7 @@ variables,
 	    descriptors = 'X1_mean' 'X3_mean'		#0,#1
 #	    descriptors = 'X3_mean' 'X4_mean'		#4
 #	active all    		  			#2
-#	histogram_point = 2				#2
+#	histogram_point real = 2			#2
 #	  abscissas     = 50. 60. 70. 80. 90.		#2
 #			  30. 40. 50. 60. 70.		#2
 #	  counts        = 10  20  30  20  10 		#2

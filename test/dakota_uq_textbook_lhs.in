@@ -52,12 +52,13 @@ variables,
 #       discrete_state_range = 2                      #8
 #         lower_bounds  = 10. 10.                     #8
 #         upper_bounds  = 12. 12.                     #8
-#       discrete_state_set_int = 2                    #8
-#         num_set_values = 2 2                        #8
-#         set_values = 4 5 1 3                        #8
-#       discrete_state_set_real = 2                   #8
-#         num_set_values = 2 2                        #8
-#         set_values = 1.2 2.3 7.7 8.8                #8
+#       discrete_state_set                    	      #8
+#         integer = 2                    	      #8
+#           num_set_values = 2 2                      #8
+#           set_values = 4 5 1 3                      #8
+#         real = 2                   		      #8
+#           num_set_values = 2 2                      #8
+#           set_values = 1.2 2.3 7.7 8.8              #8
 	normal_uncertain = 2                          #0,#1,#2,#3,#4,#5,#7,#8,#p0
 	  means             =  248.89, 593.33         #0,#1,#2,#3,#4,#5,#7,#8,#p0
 	  std_deviations    =   12.4,   29.7          #0,#1,#2,#3,#4,#5,#7,#8,#p0
@@ -95,11 +96,12 @@ variables,
 #          selected_population = 20 30                #6,#7
 #          num_drawn         =  5  10                 #6,#7
 #	  descriptors       =  'TF1hg'  'TF2hg'       #6,#7
-	histogram_point_uncertain = 1                 #0,#1,#2,#3,#4,#5,#7,#p0
-	  num_pairs   =   2                           #0,#1,#2,#3,#4,#5,#7,#p0
-	  abscissas   = 3 4                           #0,#1,#2,#3,#4,#5,#7,#p0
-	  counts      = 1 1                           #0,#1,#2,#3,#4,#5,#7,#p0
-	  descriptors = 'TF3h'                        #0,#1,#2,#3,#4,#5,#7,#p0
+	histogram_point_uncertain                     #0,#1,#2,#3,#4,#5,#7,#p0
+	  real = 1                 		      #0,#1,#2,#3,#4,#5,#7,#p0
+	    num_pairs   =   2                         #0,#1,#2,#3,#4,#5,#7,#p0
+	    abscissas   = 3 4                         #0,#1,#2,#3,#4,#5,#7,#p0
+	    counts      = 1 1                         #0,#1,#2,#3,#4,#5,#7,#p0
+	    descriptors = 'TF3h'                      #0,#1,#2,#3,#4,#5,#7,#p0
 #	continuous_interval_uncertain = 2	      #9
 #	  num_intervals  =     2         3	      #9
 #	  interval_probs = .4 .6 .3 .5  .2    	      #9
@@ -110,12 +112,13 @@ variables,
 #	  interval_probs = .4 .6 .4 .2 .4 	      #9
 #	  lower_bounds   =  2  4  1  3  9    	      #9      
 #	  upper_bounds   =  5  8  4  6 10	      #9	      
-#	discrete_uncertain_set_int = 1		      #9
-#	  set_probs  = .4 .3 .2 .1	      	      #9
-#	  set_values =  2  4  5  8	      	      #9
-#	discrete_uncertain_set_real = 1		      #9
-#	  set_probs  =  .1  .2  .3  .4	      	      #9
-#	  set_values = 3.1 5.2 6.3 7.4	      	      #9
+#	discrete_uncertain_set		      	      #9
+#	  integer = 1		      		      #9
+#	    set_probs  = .4 .3 .2 .1	      	      #9
+#	    set_values =  2  4  5  8	      	      #9
+#	  real = 1		      		      #9
+#	    set_probs  =  .1  .2  .3  .4	      #9
+#	    set_values = 3.1 5.2 6.3 7.4	      #9
 
 interface,
 	system asynch evaluation_concurrency = 5
