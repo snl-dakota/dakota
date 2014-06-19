@@ -115,9 +115,10 @@ variables,
 					0   0   1 0 0
 					0   0   0 1 0
 					0   0   0 0 1
-	discrete_state_set_integer = 1
-	  set_values     = 1   2   3   4
-	  descriptors    = 'ModelForm'	
+	discrete_state_set
+	  integer = 1
+	    set_values     = 1   2   3   4
+	    descriptors    = 'ModelForm'	
 
 interface,
 	id_interface = 'ALEAT_I'

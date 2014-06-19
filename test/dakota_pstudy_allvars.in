@@ -76,7 +76,8 @@ variables,
           total_population    = 50 		#0,#3
           selected_population = 20		#0,#3
           num_drawn           =  5 		#0,#3
-	histogram_point_uncertain = 1		#0,#3,#4
+	histogram_point_uncertain		#0,#3,#4
+          real = 1		    		#0,#3,#4
 	  abscissas   = 3 4 5			#0,#3,#4
 	  counts      = 1 1 1			#0,#3,#4
 	continuous_interval_uncertain = 1	#0,#3
@@ -87,22 +88,24 @@ variables,
 	  interval_probabilities = .4 .6	#0,#3
 	  lower_bounds = 2 4	      		#0,#3
 	  upper_bounds = 5 8			#0,#3
-	discrete_uncertain_set_int = 1		#0,#3
-	  set_probabilities = .4 .3 .2 .1	#0,#3
-	  set_values        =  2  4  5  8	#0,#3
-	discrete_uncertain_set_real = 1		#0,#3,#4
-	  set_probabilities =  .1  .2  .3  .4	#0,#3,#4
-	  set_values        = 3.1 5.2 6.3 7.4	#0,#3,#4
+	discrete_uncertain_set			#0,#3,#4
+	  integer = 1				#0,#3
+	    set_probabilities = .4 .3 .2 .1	#0,#3
+	    set_values        =  2  4  5  8	#0,#3
+	  real = 1		       	  	#0,#3,#4
+	    set_probabilities =  .1  .2  .3  .4	#0,#3,#4
+	    set_values        = 3.1 5.2 6.3 7.4	#0,#3,#4
 	continuous_state = 1			#0,#1
           upper_bounds = 20.			#0,#1
           lower_bounds = 10.			#0,#1
 	discrete_state_range = 1		#0,#1
           upper_bounds =  7			#0,#1
           lower_bounds = -3			#0,#1
-	discrete_state_set_int = 1		#0,#1,#4
-          set_values = 3 4 5			#0,#1,#4
-	discrete_state_set_real = 1		#0,#1
-          set_values = 30. 40. 50.		#0,#1
+	discrete_state_set			#0,#1,#4
+	  integer = 1				#0,#1,#4
+            set_values = 3 4 5			#0,#1,#4
+	  real = 1				#0,#1
+            set_values = 30. 40. 50.		#0,#1
 
 interface,								 
 	direct					 
