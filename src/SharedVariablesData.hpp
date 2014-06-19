@@ -611,11 +611,11 @@ inline void SharedVariablesData::initialize_inactive_components()
 
 
 inline const BitArray& SharedVariablesData::all_relaxed_discrete_int() const
-{ svdRep->allRelaxedDiscreteInt; }
+{ return svdRep->allRelaxedDiscreteInt; }
 
 
 inline const BitArray& SharedVariablesData::all_relaxed_discrete_real() const
-{ svdRep->allRelaxedDiscreteReal; }
+{ return svdRep->allRelaxedDiscreteReal; }
 
 
 inline StringMultiArrayView SharedVariablesData::
