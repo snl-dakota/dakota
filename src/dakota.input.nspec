@@ -1466,7 +1466,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN string {N_vam(newiarray,Var_Info_nhpsp)} ]
 	    abscissas STRINGLIST {N_vam(newsarray,Var_Info_hpsa)}
 	    counts REALLIST {N_vam(newrvec,Var_Info_hpsc)}
-	    [ initial_point STRINGLIST LEN string {N_vam(svec,histogramPointStrUncVars)} ]
+	    [ initial_point STRINGLIST LEN string {N_vam(strL,histogramPointStrUncVars)} ]
 	    [ descriptors STRINGLIST LEN string {N_vae(dauslbl,DAUSVar_histogram_point_str)} ]
 	    ]
 	  [ real INTEGER > 0 {N_vam(pintz,numHistogramPtRealUncVars)}
@@ -1509,7 +1509,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	    elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_duss)}
 	    # BMA TODO: change these semantics?
 	    [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSSp)} ]
-	    [ initial_point STRINGLIST LEN string {N_vam(svec,discreteUncSetStrVars)} ]
+	    [ initial_point STRINGLIST LEN string {N_vam(strL,discreteUncSetStrVars)} ]
 	    [ descriptors STRINGLIST LEN string {N_vae(deuslbl,DEUSVar_set_str)} ]
 	    ]
 	  [ real INTEGER > 0 {N_vam(pintz,numDiscreteUncSetRealVars)}
