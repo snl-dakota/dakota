@@ -85,7 +85,6 @@ private:
   bool distribute(
     const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>& c_data,
-    //boost::multi_array<ScalarTypeDS, 1>& ds_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDS>& ds_data,
     Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data);
@@ -110,6 +109,8 @@ private:
 
   /// perform error checks on numSteps
   bool check_num_steps(int num_steps);
+  /// perform error checks on numSteps
+  bool check_step_vector(const RealVector& step_vector);
   /// perform error checks on finalPoint
   bool check_final_point(const RealVector& final_pt);
   /// perform error checks on stepsPerVariable
@@ -179,17 +180,25 @@ private:
   /// the continuous starting point for vector and centered parameter studies
   RealVector initialDRVPoint;
 
+  /// the continuous ending point for vector_parameter_study
+  RealVector finalCVPoint;
+  /// the discrete int range value or set index ending point for
+  /// vector_parameter_study
+  IntVector finalDIVPoint;
+  /// the discrete string set index ending point for vector_parameter_study
+  IntVector finalDSVPoint;
+  /// the discrete real set index ending point for vector_parameter_study
+  IntVector finalDRVPoint;
+
   /// the n-dimensional continuous increment
   RealVector contStepVector;
-  /// the n-dimensional discrete value or index increment
+  /// the n-dimensional discrete integer range value or set index increment
   IntVector discIntStepVector;
-  /// the n-dimensional discrete value or index increment
+  /// the n-dimensional discrete string set index increment
   IntVector discStringStepVector;
-  /// the n-dimensional discrete real index increment
+  /// the n-dimensional discrete real set index increment
   IntVector discRealStepVector;
 
-  /// the ending point for vector_parameter_study (a specification option)
-  RealVector finalPoint;
   /// the number of times continuous/discrete step vectors are applied
   /// for vector_parameter_study (a specification option)
   int numSteps;
@@ -232,7 +241,6 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeC>&   c_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDI>& di_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDS>& ds_data,
-	   //boost::multi_array<ScalarTypeDS, 1>&                 ds_data,
 	   Teuchos::SerialDenseVector<OrdinalType, ScalarTypeDR>& dr_data)
 {
   size_t num_vars = numContinuousVars     + numDiscreteIntVars
@@ -244,7 +252,7 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
   }
   c_data.sizeUninitialized(numContinuousVars);
   di_data.sizeUninitialized(numDiscreteIntVars);
-  ds_data.sizeUninitialized(numDiscreteStringVars);//resize(boost::extents[numDiscreteStringVars]);
+  ds_data.sizeUninitialized(numDiscreteStringVars);
   dr_data.sizeUninitialized(numDiscreteRealVars);
 
   // Extract in order:
@@ -310,7 +318,7 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
     write_data(Cout, di_data);
   }
   if (numDiscreteStringVars) {
-    Cout << "discrete string array:\n";
+    Cout << "discrete string vector:\n";
     write_data(Cout, ds_data);
   }
   if (numDiscreteRealVars) {
@@ -398,11 +406,11 @@ distribute(const std::vector<ScalarType>& all_data,
 #ifdef DEBUG
   Cout << "distribute():\n";
   if (numContinuousVars) {
-    Cout << "continuous vector:\n";
+    Cout << "continuous array:\n";
     write_data(Cout, c_data);
   }
   if (numDiscreteIntVars) {
-    Cout << "discrete int vector:\n";
+    Cout << "discrete int array:\n";
     write_data(Cout, di_data);
   }
   if (numDiscreteStringVars) {
@@ -410,7 +418,7 @@ distribute(const std::vector<ScalarType>& all_data,
     write_data(Cout, ds_data);
   }
   if (numDiscreteRealVars) {
-    Cout << "discrete real vector:\n";
+    Cout << "discrete real array:\n";
     write_data(Cout, dr_data);
   }
 #endif // DEBUG
@@ -421,22 +429,36 @@ distribute(const std::vector<ScalarType>& all_data,
 
 inline bool ParamStudy::check_num_steps(int num_steps)
 {
-  // basic num_steps checks only, check_vector() performs integrated checks
-  bool err = false;
+  // basic num_steps checks only; additional checks occur downstream
   if (num_steps < 0) {
     Cerr << "\nError: num_steps must be nonnegative in "
 	 << "vector_parameter_study." << std::endl;
-    err = true;
+    return true;
   }
   numSteps = num_steps;
   numEvals = numSteps + 1;
-  return err;
+  return false;
+}
+
+
+inline bool ParamStudy::check_step_vector(const RealVector& step_vec)
+{
+  // basic final_point checks only, additional checks occur downstream
+  size_t num_vars = numContinuousVars     + numDiscreteIntVars
+                  + numDiscreteStringVars + numDiscreteRealVars;
+  if (step_vec.length() != num_vars) {
+    Cerr << "\nError: step_vector must be of dimension " << num_vars
+	 << " in vector_parameter_study." << std::endl;
+    return true;
+  }
+  return distribute(step_vec, contStepVector, discIntStepVector,
+		    discStringStepVector, discRealStepVector);
 }
 
 
 inline bool ParamStudy::check_final_point(const RealVector& final_pt)
 {
-  // basic final_point checks only, check_vector() performs integrated checks
+  // basic final_point checks only, additional checks occur downstream
   size_t num_vars = numContinuousVars     + numDiscreteIntVars
                   + numDiscreteStringVars + numDiscreteRealVars;
   if (final_pt.length() != num_vars) {
@@ -444,8 +466,8 @@ inline bool ParamStudy::check_final_point(const RealVector& final_pt)
 	 << " in vector_parameter_study." << std::endl;
     return true;
   }
-  finalPoint = final_pt;
-  return false;
+  return distribute(final_pt, finalCVPoint, finalDIVPoint, finalDSVPoint,
+		    finalDRVPoint);
 }
 
 
@@ -592,8 +614,8 @@ check_ranges_sets(const IntVector& c_steps_per_var,
 inline int ParamStudy::integer_step(int range, int num_steps) const
 {
   if (range % num_steps) {
-    Cerr << "\nError: numSteps results in nonintegral division of integer "
-	 << "range defined by start and final points." << std::endl;
+    Cerr << "\nError: numSteps results in nonintegral division of integer/"
+	 << "index range defined by start and final points." << std::endl;
     abort_handler(-1);
   }
   return range / num_steps;

@@ -52,9 +52,11 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     const RealVector& step_vector
       = probDescDB.get_rv("method.parameter_study.step_vector");
     if (step_vector.empty()) { // final_point & num_steps spec.
+      // check length and distribute
       if (check_final_point(
 	  probDescDB.get_rv("method.parameter_study.final_point")))
 	err_flag = true;
+      // check value
       if (check_num_steps(
 	  probDescDB.get_int("method.parameter_study.num_steps")))
 	err_flag = true;
@@ -70,10 +72,11 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       }
     }
     else { // step_vector & num_steps spec.
-      if (distribute(step_vector, contStepVector, discIntStepVector,
-		     discStringStepVector, discRealStepVector))
+      // check length and distribute
+      if (check_step_vector(step_vector))
 	err_flag = true;
-      if (check_num_steps(
+       // check value
+     if (check_num_steps(
 	  probDescDB.get_int("method.parameter_study.num_steps")))
 	err_flag = true;
       // discrete initial pts needed for check_sets(); reassigned in pre-run
@@ -86,9 +89,8 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     break;
   }
   case CENTERED_PARAMETER_STUDY:
-    if (distribute(probDescDB.get_rv("method.parameter_study.step_vector"),
-		   contStepVector, discIntStepVector, discStringStepVector,
-		   discRealStepVector))
+    if (check_step_vector(
+	probDescDB.get_rv("method.parameter_study.step_vector")))
       err_flag = true;
     if (check_steps_per_variable(
 	probDescDB.get_iv("method.parameter_study.steps_per_variable")))
@@ -159,7 +161,9 @@ void ParamStudy::pre_run()
     sample();
     break;
   case VECTOR_PARAMETER_STUDY:
-    if (finalPoint.empty()) { // step_vector & num_steps
+    if (!contStepVector.empty()       || !discIntStepVector.empty() ||
+	!discStringStepVector.empty() || !discRealStepVector.empty()) {
+      // step_vector & num_steps
       if (outputLevel > SILENT_OUTPUT) {
 	Cout << "\nVector parameter study for " << numSteps
 	     << " steps starting from\n";
@@ -178,7 +182,8 @@ void ParamStudy::pre_run()
 	write_ordered(Cout, svd.active_components_totals(), initialCVPoint,
 		      initialDIVPoint, initialDSVPoint, initialDRVPoint);
 	Cout << "to\n";
-	write_data(Cout, finalPoint);
+	write_ordered(Cout, svd.active_components_totals(), finalCVPoint,
+		      finalDIVPoint, finalDSVPoint, finalDRVPoint);
 	Cout << "using " << numSteps << " steps\n\n";
       }
       if (numSteps) // define step vectors from initial, final, & num steps
@@ -485,11 +490,11 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     return true;
   }
   numEvals = len_lop / num_vars;
-  if (numContinuousVars)     listCVPoints.resize(numEvals);
-  if (numDiscreteIntVars)    listDIVPoints.resize(numEvals);
+  if (numContinuousVars)   listCVPoints.resize(numEvals);
+  if (numDiscreteIntVars)  listDIVPoints.resize(numEvals);
   if (numDiscreteStringVars)
     listDSVPoints.resize(boost::extents[numEvals][numDiscreteStringVars]);
-  if (numDiscreteRealVars)   listDRVPoints.resize(numEvals);
+  if (numDiscreteRealVars) listDRVPoints.resize(numEvals);
 
   const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
   const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
@@ -506,36 +511,53 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       empty_sa[boost::indices[idx_range(0, 0)]];
     RealVector& list_drv_i = (numDiscreteRealVars) ?
       listDRVPoints[i] : empty_rv;
+    IntVector div_combined, dsv_indices, drv_indices;
 
     // take a view of each sample and partition it into {c,di,dr} components
     RealVector all_sample(Teuchos::View, const_cast<Real*>(&list_of_pts[start]),
 			  num_vars);
-    //distribute(all_sample, list_cv_i, list_div_i, list_dsv_i, list_drv_i);// TO DO
+    // if list_of_pts contains range and set values:
+    //distribute(all_sample, list_cv_i, list_div_i, list_dsv_i, list_drv_i);
+    // if list_of_pts contains range values and set indices:
+    distribute(all_sample, list_cv_i, div_combined, dsv_indices, drv_indices);
     start += num_vars;
 
     // Check for admissible set values
     for (j=0, dsi_cntr=0; j<numDiscreteIntVars; ++j) {
       if (di_set_bits[j]) {
-	if (set_value_to_index(list_div_i[j], dsi_values[dsi_cntr]) == _NPOS) {
-	  Cerr << "\nError: list value " << list_div_i[j] << " not admissible "
-	       << "for discrete int set " << dsi_cntr+1 << '.' << std::endl;
-	  err = true;
-	}
+	// if set values:
+	//if (set_value_to_index(list_div_i[j], dsi_values[dsi_cntr]) == _NPOS){
+	//  Cerr << "\nError: list value " << list_div_i[j]<< " not admissible "
+	//       << "for discrete int set " << dsi_cntr+1 << '.' << std::endl;
+	//  err = true;
+	//}
+	// if set indices:
+	list_div_i[j]
+	  = set_index_to_value(div_combined[j], dsi_values[dsi_cntr]);
 	++dsi_cntr;
       }
+      else // range values
+	list_div_i[j] = div_combined[j];
     }
     for (j=0; j<numDiscreteStringVars; ++j)
-      if (set_value_to_index(list_dsv_i[j], dss_values[j]) == _NPOS) {
-	Cerr << "\nError: list value " << list_dsv_i[j] << " not admissible "
-	     << "for discrete string set " << j+1 << '.' << std::endl;
-	err = true;
-      }
+      // if set values:
+      //if (set_value_to_index(list_dsv_i[j], dss_values[j]) == _NPOS) {
+      //  Cerr << "\nError: list value " << list_dsv_i[j] << " not admissible "
+      //       << "for discrete string set " << j+1 << '.' << std::endl;
+      //  err = true;
+      //}
+      // if set indices:
+      list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
+
     for (j=0; j<numDiscreteRealVars; ++j)
-      if (set_value_to_index(list_drv_i[j], dsr_values[j]) == _NPOS) {
-	Cerr << "\nError: list value " << list_drv_i[j] << " not admissible "
-	     << "for discrete real set " << j+1 << '.' << std::endl;
-	err = true;
-      }
+      // if set values:
+      //if (set_value_to_index(list_drv_i[j], dsr_values[j]) == _NPOS) {
+      //  Cerr << "\nError: list value " << list_drv_i[j] << " not admissible "
+      //       << "for discrete real set " << j+1 << '.' << std::endl;
+      //  err = true;
+      //}
+      // if set indices:
+      list_drv_i[j] = set_index_to_value(drv_indices[j], dsr_values[j]);
   }
 
 #ifdef DEBUG
@@ -551,7 +573,8 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     }
     if (numDiscreteStringVars) {
       Cout << "Eval " << i << " discrete string:\n";
-      write_data(Cout, listDSVPoints[i]);
+      write_data(Cout,
+	listDSVPoints[boost::indices[i][idx_range(0, numDiscreteStringVars)]]);
     }
     if (numDiscreteRealVars) {
       Cout << "Eval " << i << " discrete real:\n";
@@ -667,10 +690,9 @@ void ParamStudy::distribute_partitions()
 
 void ParamStudy::final_point_to_step_vector()
 {
-  RealVector cv_final, drv_final;
-  IntVector div_final;
-  StringMultiArray dsv_final;
-  //distribute(finalPoint, cv_final, div_final, dsv_final, drv_final);// TO DO
+  //RealVector cv_final, drv_final; IntVector div_final;
+  //StringMultiArray dsv_final;
+  //distribute(finalPoint, cv_final, div_final, dsv_final, drv_final);
 
   const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
   const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
@@ -681,7 +703,7 @@ void ParamStudy::final_point_to_step_vector()
   // active continuous
   contStepVector.sizeUninitialized(numContinuousVars);
   for (j=0; j<numContinuousVars; ++j)
-    contStepVector[j] = (cv_final[j] - initialCVPoint[j]) / numSteps;
+    contStepVector[j] = (finalCVPoint[j] - initialCVPoint[j]) / numSteps;
 
   // active discrete int: ranges and sets
   discIntStepVector.sizeUninitialized(numDiscreteIntVars);
@@ -689,26 +711,35 @@ void ParamStudy::final_point_to_step_vector()
     if (di_set_bits[j]) {
       discIntStepVector[j] = index_step(
         set_value_to_index(initialDIVPoint[j], dsi_values[dsi_cntr]),
-        set_value_to_index(div_final[j],       dsi_values[dsi_cntr]), numSteps);
+	// for final point defined as index:
+        finalDIVPoint[j], numSteps);
+	// for final point defined as admissible value:
+        //set_value_to_index(div_final[j], dsi_values[dsi_cntr]), numSteps);
       ++dsi_cntr;
     }
     else
       discIntStepVector[j]
-	= integer_step(div_final[j] - initialDIVPoint[j], numSteps);
+	= integer_step(finalDIVPoint[j] - initialDIVPoint[j], numSteps);
 
   // active discrete string: sets only
   discStringStepVector.sizeUninitialized(numDiscreteStringVars);
   for (j=0; j<numDiscreteStringVars; ++j)
     discStringStepVector[j] = index_step(
       set_value_to_index(initialDSVPoint[j], dss_values[j]),
-      set_value_to_index(dsv_final[j],       dss_values[j]), numSteps);
+      // for final point defined as index:
+      finalDSVPoint[j], numSteps);
+      // for final point defined as admissible value:
+      //set_value_to_index(dsv_final[j], dss_values[j]), numSteps);
 
   // active discrete real: sets only
   discRealStepVector.sizeUninitialized(numDiscreteRealVars);
   for (j=0; j<numDiscreteRealVars; ++j)
     discRealStepVector[j] = index_step(
       set_value_to_index(initialDRVPoint[j], dsr_values[j]),
-      set_value_to_index(drv_final[j],       dsr_values[j]), numSteps);
+      // for final point defined as index:
+      finalDRVPoint[j], numSteps);
+      // for final point defined as admissible value:
+      //set_value_to_index(drv_final[j], dsr_values[j]), numSteps);
 
 #ifdef DEBUG
   Cout << "final_point_to_step_vector():\n";
