@@ -1745,9 +1745,9 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
-	{"discrete_uncertain_set_str.values_probs",
+	{"discrete_uncertain_set_string.values_probs",
 	 P discreteUncSetStrValuesProbs},
-	{"histogram_uncertain.point_str_pairs", P histogramUncPointStrPairs}};
+	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
     #undef P
 
     KW<StringRealMapArray, DataVariablesRep> *kw;
@@ -1891,6 +1891,14 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	 P discreteIntAleatoryUncLabels},
 	{"discrete_aleatory_uncertain_real.labels",
 	 P discreteRealAleatoryUncLabels},
+	{"discrete_aleatory_uncertain_string.initial_point",
+	 P discreteStrAleatoryUncVars},
+	{"discrete_aleatory_uncertain_string.labels",
+	 P discreteStrAleatoryUncLabels},
+	{"discrete_aleatory_uncertain_string.lower_bounds",
+	 P discreteStrAleatoryUncLowerBnds},
+	{"discrete_aleatory_uncertain_string.upper_bounds",
+	 P discreteStrAleatoryUncUpperBnds},
 	{"discrete_design_range.labels", P discreteDesignRangeLabels},
 	{"discrete_design_set_int.labels", P discreteDesignSetIntLabels},
 	{"discrete_design_set_real.labels", P discreteDesignSetRealLabels},
@@ -1900,20 +1908,20 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{"discrete_design_set_string.upper_bounds", P discreteDesignSetStrUpperBnds},
 	{"discrete_epistemic_uncertain_int.labels",
 	 P discreteIntEpistemicUncLabels},
-	{"discrete_epistemic_uncertain_str.initial_point",
-	 P discreteStrEpistemicUncVars},
-	{"discrete_epistemic_uncertain_str.labels",
-	 P discreteStrEpistemicUncLabels},
-	{"discrete_epistemic_uncertain_str.lower_bounds",
-	 P discreteStrEpistemicUncLowerBnds},
-	{"discrete_epistemic_uncertain_str.upper_bounds",
-	 P discreteStrEpistemicUncUpperBnds},
 	{"discrete_epistemic_uncertain_real.labels",
 	 P discreteRealEpistemicUncLabels},
+	{"discrete_epistemic_uncertain_string.initial_point",
+	 P discreteStrEpistemicUncVars},
+	{"discrete_epistemic_uncertain_string.labels",
+	 P discreteStrEpistemicUncLabels},
+	{"discrete_epistemic_uncertain_string.lower_bounds",
+	 P discreteStrEpistemicUncLowerBnds},
+	{"discrete_epistemic_uncertain_string.upper_bounds",
+	 P discreteStrEpistemicUncUpperBnds},
 	{"discrete_state_range.labels", P discreteStateRangeLabels},
 	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
 	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
-	{"discrete_state_set_string.initial_point", P discreteStateSetStrVars},
+	{"discrete_state_set_string.initial_state", P discreteStateSetStrVars},
 	{"discrete_state_set_string.labels", P discreteStateSetStrLabels},
 	{"discrete_state_set_string.lower_bounds", P discreteStateSetStrLowerBnds},
 	{"discrete_state_set_string.upper_bounds", P discreteStateSetStrUpperBnds},
@@ -2506,15 +2514,15 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"discrete_design_range", P numDiscreteDesRangeVars},
 	{"discrete_design_set_int", P numDiscreteDesSetIntVars},
 	{"discrete_design_set_real", P numDiscreteDesSetRealVars},
-	{"discrete_design_set_str", P numDiscreteDesSetStrVars},
+	{"discrete_design_set_string", P numDiscreteDesSetStrVars},
 	{"discrete_interval_uncertain", P numDiscreteIntervalUncVars},
 	{"discrete_state_range", P numDiscreteStateRangeVars},
 	{"discrete_state_set_int", P numDiscreteStateSetIntVars},
 	{"discrete_state_set_real", P numDiscreteStateSetRealVars},
-	{"discrete_state_set_str", P numDiscreteStateSetStrVars},
+	{"discrete_state_set_string", P numDiscreteStateSetStrVars},
 	{"discrete_uncertain_set_int", P numDiscreteUncSetIntVars},
-	{"discrete_uncertain_set_str", P numDiscreteUncSetStrVars},
 	{"discrete_uncertain_set_real", P numDiscreteUncSetRealVars},
+	{"discrete_uncertain_set_string", P numDiscreteUncSetStrVars},
 	{"exponential_uncertain", P numExponentialUncVars},
 	{"frechet_uncertain", P numFrechetUncVars},
 	{"gamma_uncertain", P numGammaUncVars},
@@ -2522,8 +2530,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"gumbel_uncertain", P numGumbelUncVars},
 	{"histogram_uncertain.bin", P numHistogramBinUncVars},
 	{"histogram_uncertain.point_int", P numHistogramPtIntUncVars},
-	{"histogram_uncertain.point_str", P numHistogramPtStrUncVars},
 	{"histogram_uncertain.point_real", P numHistogramPtRealUncVars},
+	{"histogram_uncertain.point_string", P numHistogramPtStrUncVars},
 	{"hypergeometric_uncertain", P numHyperGeomUncVars},
 	{"lognormal_uncertain", P numLognormalUncVars},
 	{"loguniform_uncertain", P numLoguniformUncVars},
@@ -3126,7 +3134,7 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
       Locked_db();
     #define P &DataVariablesRep::
     static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
-	{"histogram_uncertain.point_str_pairs", P histogramUncPointStrPairs}};
+	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
     #undef P
 
     KW<StringRealMapArray, DataVariablesRep> *kw;
@@ -3224,7 +3232,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 	{"discrete_state_range.labels", P discreteStateRangeLabels},
 	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
 	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
-	{"discrete_state_set_str.labels", P discreteStateSetStrLabels}};
+	{"discrete_state_set_string.labels", P discreteStateSetStrLabels}};
     #undef P
 
     KW<StringArray, DataVariablesRep> *kw;
