@@ -2157,7 +2157,7 @@ static GuiKeyWord
 		{"descriptors",15,0,5,0,2265,0,0.,0.,0.,0,0,0,"integer"},
 		{"elements",13,0,2,1,2259},
 		{"elements_per_variable",0x80d,0,1,0,2257,0,0.,0.,0.,0,0,0,"integer"},
-		{"initial_point",13,0,4,0,2263,0,0.,0.,0.,0,0,0,"integer"},
+		{"initial_state",13,0,4,0,2263,0,0.,0.,0.,0,"{Initial state} VarCommands.html#VarDSSIV",0,"integer"},
 		{"num_set_values",0x805,0,1,0,2256,0,0.,0.,0.,0,0,0,"integer"},
 		{"set_values",5,0,2,1,2258}
 		},
@@ -2166,7 +2166,7 @@ static GuiKeyWord
 		{"descriptors",15,0,5,0,2287,0,0.,0.,0.,0,0,0,"real"},
 		{"elements",14,0,2,1,2281},
 		{"elements_per_variable",0x80d,0,1,0,2279,0,0.,0.,0.,0,0,0,"real"},
-		{"initial_point",14,0,4,0,2285,0,0.,0.,0.,0,0,0,"real"},
+		{"initial_state",14,0,4,0,2285,0,0.,0.,0.,0,0,0,"real"},
 		{"num_set_values",0x805,0,1,0,2278,0,0.,0.,0.,0,0,0,"real"},
 		{"set_values",6,0,2,1,2280}
 		},
@@ -2174,7 +2174,7 @@ static GuiKeyWord
 		{"descriptors",15,0,4,0,2275,0,0.,0.,0.,0,0,0,"string"},
 		{"elements",15,0,2,1,2271},
 		{"elements_per_variable",0x80d,0,1,0,2269,0,0.,0.,0.,0,0,0,"string"},
-		{"initial_point",15,0,3,0,2273,0,0.,0.,0.,0,0,0,"string"},
+		{"initial_state",15,0,3,0,2273,0,0.,0.,0.,0,"{Initial state} VarCommands.html#VarDSSRV",0,"string"},
 		{"num_set_values",0x805,0,1,0,2268,0,0.,0.,0.,0,0,0,"string"},
 		{"set_values",7,0,2,1,2270}
 		},

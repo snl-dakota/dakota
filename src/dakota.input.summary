@@ -1980,20 +1980,20 @@ KEYWORD12 variables
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
 	    elements ALIAS set_values INTEGERLIST
 	    [ categorical STRINGLIST ]
-	    [ initial_point INTEGERLIST ]
+	    [ initial_state INTEGERLIST ]
 	    [ descriptors STRINGLIST ]
 	    ]
 	  [ string INTEGER > 0
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
 	    elements ALIAS set_values STRINGLIST
-	    [ initial_point STRINGLIST ]
+	    [ initial_state STRINGLIST ]
 	    [ descriptors STRINGLIST ]
 	    ]
 	  [ real INTEGER > 0
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
 	    elements ALIAS set_values REALLIST
 	    [ categorical STRINGLIST ]
-	    [ initial_point REALLIST ]
+	    [ initial_state REALLIST ]
 	    [ descriptors STRINGLIST ]
 	    ]
 	  ]
