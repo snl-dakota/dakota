@@ -60,10 +60,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void reshape(const SizetArray& vc_totals);
-  void build_active_views();
-  void build_inactive_views();
-
 private:
 
   //
@@ -74,7 +70,7 @@ private:
 
 inline MixedVarConstraints::MixedVarConstraints(const SharedVariablesData& svd):
   Constraints(BaseConstructor(), svd)
-{ reshape(svd.components_totals()); }
+{ }
 
 
 inline MixedVarConstraints::~MixedVarConstraints()

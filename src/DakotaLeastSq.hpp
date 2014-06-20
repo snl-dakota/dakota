@@ -70,7 +70,7 @@ protected:
   //- Heading: Data
   //
 
-  int numLeastSqTerms; ///< number of least squares terms
+  size_t numLeastSqTerms; ///< number of least squares terms
 
   /// pointer to LeastSq instance used in static member functions
   static LeastSq* leastSqInstance;

@@ -1182,6 +1182,7 @@ static void Null_rep1(const char *who)
   abort_handler(-1);
 }
 
+
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {
   const char *L;
@@ -1365,7 +1366,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntVector, DataVariablesRep> IVdr[] = {	// must be sorted
+    static KW<IntVector, DataVariablesRep> IVdv[] = {	// must be sorted
 	{"binomial_uncertain.num_trials", P binomialUncNumTrials},
 	{"discrete_aleatory_uncertain_int.initial_point",
 	 P discreteIntAleatoryUncVars},
@@ -1401,7 +1402,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #undef P
 
     KW<IntVector, DataVariablesRep> *kw;
-    if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdr, L)))
+    if ((kw = (KW<IntVector, DataVariablesRep>*)Binsearch(IVdv, L)))
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
@@ -1426,6 +1427,47 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
   }
   Bad_name(entry_name, "get_iv");
   return abort_handler_t<const IntVector&>(-1);
+}
+
+
+const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+  	Null_rep("get_ba");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<BitArray, DataVariablesRep> BAdv[] = { // must be sorted
+	{"binomial_uncertain.categorical", P binomialUncCat},
+	{"discrete_design_range.categorical", P discreteDesignRangeCat},
+	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
+	{"discrete_design_set_real.categorical", P discreteDesignSetRealCat},
+	{"discrete_interval_uncertain.categorical", P discreteIntervalUncCat},
+	{"discrete_state_range.categorical", P discreteStateRangeCat},
+	{"discrete_state_set_int.categorical", P discreteStateSetIntCat},
+	{"discrete_state_set_real.categorical", P discreteStateSetRealCat},
+	{"discrete_uncertain_set_int.categorical", P discreteUncSetIntCat},
+	{"discrete_uncertain_set_real.categorical", P discreteUncSetRealCat},
+	{"geometric_uncertain.categorical", P geometricUncCat},
+	{"histogram_uncertain.point_int.categorical",
+         P histogramUncPointIntCat},
+	{"histogram_uncertain.point_real.categorical",
+         P histogramUncPointRealCat},
+	{"hypergeometric_uncertain.categorical", P hyperGeomUncCat},
+	{"negative_binomial_uncertain.categorical", P negBinomialUncCat},
+	{"poisson_uncertain.categorical", P poissonUncCat}};
+    #undef P
+
+    KW<BitArray, DataVariablesRep> *kw;
+    if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+
+  Bad_name(entry_name, "get_ba");
+  return abort_handler_t<const BitArray&>(-1);
 }
 
 
@@ -1508,16 +1550,9 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<RealVectorArray, DataVariablesRep> RVAdr[] = { // must be sorted
-	{"continuous_interval_uncertain.basic_probs",
-	 P continuousIntervalUncBasicProbs},
-	{"continuous_interval_uncertain.lower_bounds",
-	 P continuousIntervalUncLowerBounds},
-	{"continuous_interval_uncertain.upper_bounds",
-	 P continuousIntervalUncUpperBounds},
-	{"discrete_interval_uncertain.basic_probs",
-	 P discreteIntervalUncBasicProbs},
-	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
-	{"histogram_uncertain.point_pairs", P histogramUncPointPairs}};
+	// {"continuous_interval_uncertain.basic_probs",
+	//  P continuousIntervalUncBasicProbs}
+    };
     #undef P
 
     KW<RealVectorArray, DataVariablesRep> *kw;
@@ -1556,10 +1591,9 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<IntVectorArray, DataVariablesRep> IVAdr[] = { // must be sorted
-	{"discrete_interval_uncertain.lower_bounds",
-	 P discreteIntervalUncLowerBounds},
-	{"discrete_interval_uncertain.upper_bounds",
-	 P discreteIntervalUncUpperBounds}};
+	// {"discrete_interval_uncertain.lower_bounds",
+	//  P discreteIntervalUncLowerBounds}
+    };
     #undef P
 
     KW<IntVectorArray, DataVariablesRep> *kw;
@@ -1628,6 +1662,29 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
   return abort_handler_t<const IntSetArray&>(-1);
 }
 
+const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_ssa");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<StringSetArray, DataVariablesRep> SSAdv[] = { // must be sorted
+      {"discrete_design_set_string.values", P discreteDesignSetStr},
+      {"discrete_state_set_string.values", P discreteStateSetStr}};
+    #undef P
+
+    KW<StringSetArray, DataVariablesRep> *kw;
+    if ((kw = (KW<StringSetArray, DataVariablesRep>*)Binsearch(SSAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_ssa");
+  return abort_handler_t<const StringSetArray&>(-1);
+}
+
 
 const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
@@ -1665,7 +1722,8 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
     #define P &DataVariablesRep::
     static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { // must be sorted
 	{"discrete_uncertain_set_int.values_probs",
-	 P discreteUncSetIntValuesProbs}};
+	 P discreteUncSetIntValuesProbs},
+	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
     #undef P
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
@@ -1674,6 +1732,30 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
   }
   Bad_name(entry_name, "get_irma");
   return abort_handler_t<const IntRealMapArray&>(-1);
+}
+
+const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_srma");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
+	{"discrete_uncertain_set_string.values_probs",
+	 P discreteUncSetStrValuesProbs},
+	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
+    #undef P
+
+    KW<StringRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_srma");
+  return abort_handler_t<const StringRealMapArray&>(-1);
 }
 
 
@@ -1689,7 +1771,9 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
     #define P &DataVariablesRep::
     static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = { // must be sorted
 	{"discrete_uncertain_set_real.values_probs",
-	 P discreteUncSetRealValuesProbs}};
+	 P discreteUncSetRealValuesProbs},
+	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
+	{"histogram_uncertain.point_real_pairs", P histogramUncPointRealPairs}};
     #undef P
 
     KW<RealRealMapArray, DataVariablesRep> *kw;
@@ -1698,6 +1782,60 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
   }
   Bad_name(entry_name, "get_rrma");
   return abort_handler_t<const RealRealMapArray&>(-1);
+}
+
+
+const RealRealPairRealMapArray& ProblemDescDB::
+get_rrrma(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_rrrma()");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = {
+      // must be sorted
+      {"continuous_interval_uncertain.basic_probs",
+       P continuousIntervalUncBasicProbs}};
+    #undef P
+
+    KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)
+	 Binsearch(RRRMAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_rrrma");
+  return abort_handler_t<const RealRealPairRealMapArray&>(-1);
+}
+
+
+const IntIntPairRealMapArray& ProblemDescDB::
+get_iirma(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_iirma()");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = {
+      // must be sorted
+      {"discrete_interval_uncertain.basic_probs",
+       P discreteIntervalUncBasicProbs}};
+    #undef P
+
+    KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)
+	 Binsearch(IIRMAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_iirma");
+  return abort_handler_t<const IntIntPairRealMapArray&>(-1);
 }
 
 
@@ -1753,16 +1891,41 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	 P discreteIntAleatoryUncLabels},
 	{"discrete_aleatory_uncertain_real.labels",
 	 P discreteRealAleatoryUncLabels},
+	{"discrete_aleatory_uncertain_string.initial_point",
+	 P discreteStrAleatoryUncVars},
+	{"discrete_aleatory_uncertain_string.labels",
+	 P discreteStrAleatoryUncLabels},
+	{"discrete_aleatory_uncertain_string.lower_bounds",
+	 P discreteStrAleatoryUncLowerBnds},
+	{"discrete_aleatory_uncertain_string.upper_bounds",
+	 P discreteStrAleatoryUncUpperBnds},
 	{"discrete_design_range.labels", P discreteDesignRangeLabels},
 	{"discrete_design_set_int.labels", P discreteDesignSetIntLabels},
 	{"discrete_design_set_real.labels", P discreteDesignSetRealLabels},
+	{"discrete_design_set_string.initial_point", P discreteDesignSetStrVars},
+	{"discrete_design_set_string.labels", P discreteDesignSetStrLabels},
+	{"discrete_design_set_string.lower_bounds", P discreteDesignSetStrLowerBnds},
+	{"discrete_design_set_string.upper_bounds", P discreteDesignSetStrUpperBnds},
 	{"discrete_epistemic_uncertain_int.labels",
 	 P discreteIntEpistemicUncLabels},
 	{"discrete_epistemic_uncertain_real.labels",
 	 P discreteRealEpistemicUncLabels},
+	{"discrete_epistemic_uncertain_string.initial_point",
+	 P discreteStrEpistemicUncVars},
+	{"discrete_epistemic_uncertain_string.labels",
+	 P discreteStrEpistemicUncLabels},
+	{"discrete_epistemic_uncertain_string.lower_bounds",
+	 P discreteStrEpistemicUncLowerBnds},
+	{"discrete_epistemic_uncertain_string.upper_bounds",
+	 P discreteStrEpistemicUncUpperBnds},
 	{"discrete_state_range.labels", P discreteStateRangeLabels},
 	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
-	{"discrete_state_set_real.labels", P discreteStateSetRealLabels}};
+	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
+	{"discrete_state_set_string.initial_state", P discreteStateSetStrVars},
+	{"discrete_state_set_string.labels", P discreteStateSetStrLabels},
+	{"discrete_state_set_string.lower_bounds", P discreteStateSetStrLowerBnds},
+	{"discrete_state_set_string.upper_bounds", P discreteStateSetStrUpperBnds},
+	{"discrete_uncertain_set_string.initial_point", P discreteUncSetStrVars}};
     #undef P
 
     KW<StringArray, DataVariablesRep> *kw;
@@ -2351,19 +2514,24 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"discrete_design_range", P numDiscreteDesRangeVars},
 	{"discrete_design_set_int", P numDiscreteDesSetIntVars},
 	{"discrete_design_set_real", P numDiscreteDesSetRealVars},
+	{"discrete_design_set_string", P numDiscreteDesSetStrVars},
 	{"discrete_interval_uncertain", P numDiscreteIntervalUncVars},
 	{"discrete_state_range", P numDiscreteStateRangeVars},
 	{"discrete_state_set_int", P numDiscreteStateSetIntVars},
 	{"discrete_state_set_real", P numDiscreteStateSetRealVars},
+	{"discrete_state_set_string", P numDiscreteStateSetStrVars},
 	{"discrete_uncertain_set_int", P numDiscreteUncSetIntVars},
 	{"discrete_uncertain_set_real", P numDiscreteUncSetRealVars},
+	{"discrete_uncertain_set_string", P numDiscreteUncSetStrVars},
 	{"exponential_uncertain", P numExponentialUncVars},
 	{"frechet_uncertain", P numFrechetUncVars},
 	{"gamma_uncertain", P numGammaUncVars},
 	{"geometric_uncertain", P numGeometricUncVars},
 	{"gumbel_uncertain", P numGumbelUncVars},
 	{"histogram_uncertain.bin", P numHistogramBinUncVars},
-	{"histogram_uncertain.point", P numHistogramPtUncVars},
+	{"histogram_uncertain.point_int", P numHistogramPtIntUncVars},
+	{"histogram_uncertain.point_real", P numHistogramPtRealUncVars},
+	{"histogram_uncertain.point_string", P numHistogramPtStrUncVars},
 	{"hypergeometric_uncertain", P numHyperGeomUncVars},
 	{"lognormal_uncertain", P numLognormalUncVars},
 	{"loguniform_uncertain", P numLoguniformUncVars},
@@ -2760,6 +2928,46 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 }
 
 
+void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
+{
+  const char *L;
+  if (!dbRep)
+	Null_rep1("set(BitArray&)");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<BitArray, DataVariablesRep> BAdv[] = {	// must be sorted
+	{"binomial_uncertain.categorical", P binomialUncCat},
+	{"discrete_design_range.categorical", P discreteDesignRangeCat},
+	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
+	{"discrete_design_set_real.categorical", P discreteDesignSetRealCat},
+	{"discrete_interval_uncertain.categorical", P discreteIntervalUncCat},
+	{"discrete_state_range.categorical", P discreteStateRangeCat},
+	{"discrete_state_set_int.categorical", P discreteStateSetIntCat},
+	{"discrete_state_set_real.categorical", P discreteStateSetRealCat},
+	{"discrete_uncertain_set_int.categorical", P discreteUncSetIntCat},
+	{"discrete_uncertain_set_real.categorical", P discreteUncSetRealCat},
+	{"geometric_uncertain.categorical", P geometricUncCat},
+	{"histogram_uncertain.point_int.categorical",
+         P histogramUncPointIntCat},
+	{"histogram_uncertain.point_real.categorical",
+         P histogramUncPointRealCat},
+	{"hypergeometric_uncertain.categorical", P hyperGeomUncCat},
+	{"negative_binomial_uncertain.categorical", P negBinomialUncCat},
+	{"poisson_uncertain.categorical", P poissonUncCat}};
+    #undef P
+
+    KW<BitArray, DataVariablesRep> *kw;
+    if ((kw = (KW<BitArray, DataVariablesRep>*)Binsearch(BAdv, L))) {
+	dbRep->dataVariablesIter->dataVarsRep->*kw->p = ba;
+	return;
+	}
+  }
+  Bad_name(entry_name, "set(BitArray&)");
+}
+
+
 void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 {
   if (!dbRep)
@@ -2786,16 +2994,9 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
       Locked_db();
     #define P &DataVariablesRep::
     static KW<RealVectorArray, DataVariablesRep> RVAdv[] = { // must be sorted
-	{"continuous_interval_uncertain.basic_probs",
-	 P continuousIntervalUncBasicProbs},
-	{"continuous_interval_uncertain.lower_bounds",
-	 P continuousIntervalUncLowerBounds},
-	{"continuous_interval_uncertain.upper_bounds",
-	 P continuousIntervalUncUpperBounds},
-	{"discrete_interval_uncertain.basic_probs",
-	 P discreteIntervalUncBasicProbs},
-	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
-	{"histogram_uncertain.point_pairs", P histogramUncPointPairs}};
+	// {"continuous_interval_uncertain.basic_probs",
+	//  P continuousIntervalUncBasicProbs}
+    };
     #undef P
 
     KW<RealVectorArray, DataVariablesRep> *kw;
@@ -2835,10 +3036,9 @@ void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
       Locked_db();
     #define P &DataVariablesRep::
     static KW<IntVectorArray, DataVariablesRep> IVAdv[] = { // must be sorted
-	{"discrete_interval_uncertain.lower_bounds",
-	 P discreteIntervalUncLowerBounds},
-	{"discrete_interval_uncertain.upper_bounds",
-	 P discreteIntervalUncUpperBounds}};
+	// {"discrete_interval_uncertain.lower_bounds",
+	//  P discreteIntervalUncLowerBounds}
+    };
     #undef P
 
     KW<IntVectorArray, DataVariablesRep> *kw;
@@ -2910,7 +3110,8 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
     #define P &DataVariablesRep::
     static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { // must be sorted
 	{"discrete_uncertain_set_int.values_probs",
-	 P discreteUncSetIntValuesProbs}};
+	 P discreteUncSetIntValuesProbs},
+	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
     #undef P
 
     KW<IntRealMapArray, DataVariablesRep> *kw;
@@ -2920,6 +3121,29 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
     }
   }
   Bad_name(entry_name, "set(IntRealMapArray&)");
+}
+
+
+void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
+{
+  const char *L;
+  if (!dbRep)
+    Null_rep1("set(StringRealMapArray&)");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+      Locked_db();
+    #define P &DataVariablesRep::
+    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
+	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
+    #undef P
+
+    KW<StringRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<StringRealMapArray, DataVariablesRep>*)Binsearch(SRMAdv, L))) {
+      dbRep->dataVariablesIter->dataVarsRep->*kw->p = srma;
+      return;
+    }
+  }
+  Bad_name(entry_name, "set(StringRealMapArray&)");
 }
 
 
@@ -3007,7 +3231,8 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 	 P discreteRealEpistemicUncLabels},
 	{"discrete_state_range.labels", P discreteStateRangeLabels},
 	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
-	{"discrete_state_set_real.labels", P discreteStateSetRealLabels}};
+	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
+	{"discrete_state_set_string.labels", P discreteStateSetStrLabels}};
     #undef P
 
     KW<StringArray, DataVariablesRep> *kw;

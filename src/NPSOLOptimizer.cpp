@@ -134,9 +134,9 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
 			 double*, int&),
   const int& derivative_level, const Real& conv_tol): // SOLBase default ctor
-  Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, lin_ineq_coeffs.numRows(),
-	    lin_eq_coeffs.numRows(), nonlin_ineq_lower_bnds.length(),
-	    nonlin_eq_targets.length()),
+  Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
+	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length()),
   setUpType("user_functions"), initialPoint(initial_point), 
   lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
   userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)
@@ -240,7 +240,7 @@ NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& initial_point,
   not_available("NPSOL");
   return 0;
 #else
-  return new NPSOLOptimizer( initial_point, var_lower_bnds, var_upper_bnds,
+  return new NPSOLOptimizer(initial_point, var_lower_bnds, var_upper_bnds,
 	       lin_ineq_coeffs, lin_ineq_lower_bnds, lin_ineq_upper_bnds,
 	       lin_eq_coeffs, lin_eq_targets, nonlin_ineq_lower_bnds,
 	       nonlin_ineq_upper_bnds, nonlin_eq_targets, user_obj_eval,

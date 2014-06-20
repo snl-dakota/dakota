@@ -23,6 +23,7 @@
 #include <boost/serialization/utility.hpp>  // for std::pair
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/array.hpp>
 
 //#define REFCOUNT_DEBUG
 
@@ -45,6 +46,9 @@ Variables(BaseConstructor, const ProblemDescDB& problem_db,
 	  const std::pair<short,short>& view):
   sharedVarsData(problem_db, view), variablesRep(NULL), referenceCount(1)
 {
+  shape(); // size all*Vars arrays
+  build_views(); // construct active/inactive views of all arrays
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(BaseConstructor) called to build base class "
        << "data for letter object." << std::endl;
@@ -63,6 +67,9 @@ Variables::
 Variables(BaseConstructor, const SharedVariablesData& svd):
   sharedVarsData(svd), variablesRep(NULL), referenceCount(1)
 {
+  shape(); // size all*Vars arrays
+  build_views(); // construct active/inactive views of all arrays
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::Variables(BaseConstructor) called to build base class "
        << "data for letter object." << std::endl;
@@ -291,30 +298,6 @@ Variables::~Variables()
 }
 
 
-void Variables::build_active_views()
-{
-  if (variablesRep)
-    variablesRep->build_active_views(); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual build_active_views"
-	 << "() function.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Variables::build_inactive_views()
-{
-  if (variablesRep)
-    variablesRep->build_inactive_views(); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual build_inactive_views"
-	 << "() function.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
 void Variables::inactive_view(short view2)
 {
   if (variablesRep)
@@ -468,7 +451,74 @@ void Variables::check_view_compatibility()
     abort_handler(-1);
 }
 
-  
+
+void Variables::build_active_views()
+{
+  // called only from letters
+
+  // Initialize active view vectors and counts
+  if (sharedVarsData.view().first == EMPTY) {
+    Cerr << "Error: active view cannot be EMPTY in Variables::"
+	 << "build_active_views()." << std::endl;
+    abort_handler(-1);
+  }
+  sharedVarsData.initialize_active_start_counts();
+  sharedVarsData.initialize_active_components();
+
+  size_t num_cv  = sharedVarsData.cv(),    num_div = sharedVarsData.div(),
+       /*num_dsv = sharedVarsData.dsv(),*/ num_drv = sharedVarsData.drv();
+  if (num_cv)
+    continuousVars = RealVector(Teuchos::View,
+      &allContinuousVars[sharedVarsData.cv_start()],    num_cv);
+  if (num_div)
+    discreteIntVars = IntVector(Teuchos::View,
+      &allDiscreteIntVars[sharedVarsData.div_start()],  num_div);
+  // as for label arrays, generate StringMultiArrayViews on the fly
+  //if (num_dsv) {
+  //  size_t dsv_start = sharedVarsData.dsv_start();
+  //  discreteStringVars = allDiscreteStringVars[boost::indices[
+  //    idx_range(dsv_start, dsv_start+num_dsv)]];
+  //}
+  if (num_drv)
+    discreteRealVars = RealVector(Teuchos::View,
+      &allDiscreteRealVars[sharedVarsData.drv_start()], num_drv);
+}
+
+
+void Variables::build_inactive_views()
+{
+  // called only from letters
+
+  // Initialize inactive view vectors and counts
+  if (sharedVarsData.view().second == MIXED_ALL ||
+      sharedVarsData.view().second == RELAXED_ALL) {
+    Cerr << "Error: inactive view cannot be ALL in Variables::"
+	 << "build_inactive_views()." << std::endl;
+    abort_handler(-1);
+  }
+  sharedVarsData.initialize_inactive_start_counts();
+  sharedVarsData.initialize_inactive_components();
+
+  size_t num_icv  = sharedVarsData.icv(),    num_idiv = sharedVarsData.idiv(),
+       /*num_idsv = sharedVarsData.idsv(),*/ num_idrv = sharedVarsData.idrv();
+  if (num_icv)
+    inactiveContinuousVars = RealVector(Teuchos::View,
+      &allContinuousVars[sharedVarsData.icv_start()],    num_icv);
+  if (num_idiv)
+    inactiveDiscreteIntVars = IntVector(Teuchos::View,
+      &allDiscreteIntVars[sharedVarsData.idiv_start()],  num_idiv);
+  // as for label arrays, generate StringMultiArrayViews on the fly
+  //if (num_idsv) {
+  //  size_t idsv_start = sharedVarsData.idsv_start();
+  //  inactiveDiscreteStringVars = allDiscreteStringVars[boost::indices[
+  //    idx_range(idsv_start, idsv_start+num_idsv)]];
+  //}
+  if (num_idrv)
+    inactiveDiscreteRealVars = RealVector(Teuchos::View,
+      &allDiscreteRealVars[sharedVarsData.idrv_start()], num_idrv);
+}
+
+
 template<class Archive> 
 void Variables::load(Archive& ar, const unsigned int version)
 {
@@ -477,8 +527,9 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & view;
   SizetArray vars_comps_totals;
   ar & vars_comps_totals;
-
-  SharedVariablesData svd(view, vars_comps_totals);
+  BitArray all_relax_di, all_relax_dr;
+  ar & all_relax_di; ar & all_relax_dr;
+  SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
 
   if (variablesRep) { // should not occur in current usage
     if (sharedVarsData.view() != view) {
@@ -502,6 +553,16 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & variablesRep->allDiscreteIntVars;
   StringMultiArrayView adivl = all_discrete_int_variable_labels();
   ar & adivl;
+  // BMA: mirroring the save function due to const-correct needs there
+  // This is safe because get_variables will size the array
+  // StringMultiArrayView adsvars = 
+  //   allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
+  // ar & adsvars;
+  ar & boost::serialization::
+    make_array(allDiscreteStringVars.data(), 
+	       allDiscreteStringVars.num_elements());
+  StringMultiArrayView adsvl = all_discrete_string_variable_labels();
+  ar & adsvl;
   ar & variablesRep->allDiscreteRealVars;
   StringMultiArrayView adrvl = all_discrete_real_variable_labels();
   ar & adrvl;
@@ -521,12 +582,23 @@ void Variables::save(Archive& ar, const unsigned int version) const
   else { // default implementation for letters
     ar & sharedVarsData.view();
     ar & sharedVarsData.components_totals();
+    ar & sharedVarsData.all_relaxed_discrete_int();
+    ar & sharedVarsData.all_relaxed_discrete_real();
     ar & allContinuousVars;
     StringMultiArrayView acvl = all_continuous_variable_labels();
     ar & acvl; 
     ar & allDiscreteIntVars;
     StringMultiArrayView adivl = all_discrete_int_variable_labels();
     ar & adivl;
+    // BMA: not sure why we can't get this const-correct...
+    //StringMultiArrayConstView adsvars = 
+    //  allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
+    //ar << adsvars;
+    ar & boost::serialization::
+      make_array(allDiscreteStringVars.data(), 
+		 allDiscreteStringVars.num_elements());
+    StringMultiArrayView adsvl = all_discrete_string_variable_labels();
+    ar & adsvl;
     ar & allDiscreteRealVars;
     StringMultiArrayView adrvl = all_discrete_real_variable_labels();
     ar & adrvl;
@@ -589,11 +661,22 @@ void Variables::read_annotated(std::istream& s)
   if (s.eof()) // exception handling since EOF may not be captured properly
     throw String("Empty record in Variables::read_annotated(std::istream&)");
   s >> view.second;
-  size_t i, num_vc_totals = 12;
+  size_t i, num_vc_totals = 16;
   SizetArray vars_comps_totals(num_vc_totals);
   for (i=0; i<num_vc_totals; ++i)
     s >> vars_comps_totals[i];
-  SharedVariablesData svd(view, vars_comps_totals);
+  // BMA TODO: verify whether these need to be sized (shouldn't have to be)
+  size_t num_adiv
+    = vars_comps_totals[TOTAL_DDIV]  + vars_comps_totals[TOTAL_DAUIV]
+    + vars_comps_totals[TOTAL_DEUIV] + vars_comps_totals[TOTAL_DSIV],
+  num_adrv
+    = vars_comps_totals[TOTAL_DDRV]  + vars_comps_totals[TOTAL_DAURV]
+    + vars_comps_totals[TOTAL_DEURV] + vars_comps_totals[TOTAL_DSRV];
+  BitArray all_relax_di(num_adiv), all_relax_dr(num_adrv);
+  s >> all_relax_di;
+  s >> all_relax_dr;
+
+  SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
 
   if (variablesRep) { // should not occur in current usage
     if (sharedVarsData.view() != view) {
@@ -614,6 +697,8 @@ void Variables::read_annotated(std::istream& s)
 		      all_continuous_variable_labels());
   read_data_annotated(s, variablesRep->allDiscreteIntVars,
 		      all_discrete_int_variable_labels());
+  read_data_annotated(s, variablesRep->allDiscreteStringVars,
+		      all_discrete_string_variable_labels());
   read_data_annotated(s, variablesRep->allDiscreteRealVars,
 		      all_discrete_real_variable_labels());
   // rebuild active/inactive views
@@ -630,14 +715,20 @@ void Variables::write_annotated(std::ostream& s) const
   else { // default implementation for letters
     const std::pair<short,short>& view = sharedVarsData.view();
     const SizetArray& vc_totals = sharedVarsData.components_totals();
+    const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
+    const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
     s << view.first  << ' ' << view.second << ' ';
     size_t i, num_vc_totals = vc_totals.size();
     for (i=0; i<num_vc_totals; ++i)
       s << vc_totals[i] << ' ';
+    s << all_relax_di << ' ';
+    s << all_relax_dr << ' ';
     write_data_annotated(s, allContinuousVars,
 			 all_continuous_variable_labels());
     write_data_annotated(s, allDiscreteIntVars,
 			 all_discrete_int_variable_labels());
+    write_data_annotated(s, allDiscreteStringVars,
+			 all_discrete_string_variable_labels());
     write_data_annotated(s, allDiscreteRealVars,
 			 all_discrete_real_variable_labels());
     // types/ids not required
@@ -677,11 +768,16 @@ void Variables::read(MPIUnpackBuffer& s)
   if (buffer_has_letter) {
     std::pair<short,short> view;
     s >> view.first >> view.second;
-    size_t i, num_vc_totals = 12;
+    size_t i, num_vc_totals = 16;
     SizetArray vars_comps_totals(num_vc_totals);
     for (i=0; i<num_vc_totals; ++i)
       s >> vars_comps_totals[i];
-    SharedVariablesData svd(view, vars_comps_totals);
+    BitArray all_relax_di, all_relax_dr;
+    s >> all_relax_di;
+    s >> all_relax_dr;
+
+    SharedVariablesData svd(view, vars_comps_totals, all_relax_di,
+			    all_relax_dr);
 
     if (variablesRep) { // should not occur in current usage
       if (sharedVarsData.view() != view) {
@@ -702,6 +798,8 @@ void Variables::read(MPIUnpackBuffer& s)
 	      all_continuous_variable_labels());
     read_data(s, variablesRep->allDiscreteIntVars,
 	      all_discrete_int_variable_labels());
+    read_data(s, variablesRep->allDiscreteStringVars,
+	      all_discrete_string_variable_labels());
     read_data(s, variablesRep->allDiscreteRealVars,
 	      all_discrete_real_variable_labels());
     // rebuild active/inactive views
@@ -725,14 +823,24 @@ void Variables::write(MPIPackBuffer& s) const
     const std::pair<short,short>& view = variablesRep->sharedVarsData.view();
     const SizetArray& vc_totals
       = variablesRep->sharedVarsData.components_totals();
+    const BitArray& all_relax_di
+      = variablesRep->sharedVarsData.all_relaxed_discrete_int();
+    const BitArray& all_relax_dr
+      = variablesRep->sharedVarsData.all_relaxed_discrete_real();
     s << view.first << view.second;
-    size_t i, num_vc_totals = vc_totals.size();;
+    size_t i, num_vc_totals = vc_totals.size();
     for (i=0; i<num_vc_totals; ++i)
       s << vc_totals[i];
+    // BMA TODO: This will stream the binary representation of the
+    // array; could make it more efficient
+    s << all_relax_di;
+    s << all_relax_dr;
     write_data(s, variablesRep->allContinuousVars,
 	       all_continuous_variable_labels());
     write_data(s, variablesRep->allDiscreteIntVars,
 	       all_discrete_int_variable_labels());
+    write_data(s, variablesRep->allDiscreteStringVars,
+	       all_discrete_string_variable_labels());
     write_data(s, variablesRep->allDiscreteRealVars,
 	       all_discrete_real_variable_labels());
     // types/ids not required
@@ -765,6 +873,8 @@ Variables Variables::copy(bool deep_svd) const
 
     vars.variablesRep->allContinuousVars   = variablesRep->allContinuousVars;
     vars.variablesRep->allDiscreteIntVars  = variablesRep->allDiscreteIntVars;
+    vars.variablesRep->allDiscreteStringVars
+      =  variablesRep->allDiscreteStringVars;
     vars.variablesRep->allDiscreteRealVars = variablesRep->allDiscreteRealVars;
 
     vars.variablesRep->build_views();
@@ -774,14 +884,38 @@ Variables Variables::copy(bool deep_svd) const
 }
 
 
-void Variables::reshape(const SizetArray& vc_totals)
+void Variables::shape()
 {
   if (variablesRep) // envelope
-    variablesRep->reshape(vc_totals);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual reshape function.\n"
-	 << "       No default defined at base class." << std::endl;
-    abort_handler(-1);
+    variablesRep->shape();
+  else { // base class implementation for letters
+    size_t num_acv, num_adiv, num_adsv, num_adrv;
+    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+    allContinuousVars.sizeUninitialized(num_acv);
+    allDiscreteIntVars.sizeUninitialized(num_adiv);
+    allDiscreteStringVars.resize(boost::extents[num_adsv]);
+    allDiscreteRealVars.sizeUninitialized(num_adrv);
+
+    build_views(); // construct active/inactive views of all arrays
+  }
+}
+
+
+void Variables::reshape()
+{
+  if (variablesRep) // envelope
+    variablesRep->reshape();
+  else { // base class implementation for letters
+    size_t num_acv, num_adiv, num_adsv, num_adrv;
+    sharedVarsData.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+
+    allContinuousVars.resize(num_acv);
+    allDiscreteIntVars.resize(num_adiv);
+    allDiscreteStringVars.resize(boost::extents[num_adsv]);
+    allDiscreteRealVars.resize(num_adrv);
+
+    build_views(); // construct active/inactive views of all arrays
   }
 }
 
@@ -805,7 +939,8 @@ bool nearby(const Variables& vars1, const Variables& vars2, Real tol)
   // tolerance-based equality (ignore labels/types/ids).  Enforce exact equality
   // in discrete real, since these values should not be subject to roundoff.
   return ( nearby(v1_rep->allContinuousVars, v2_rep->allContinuousVars, tol) &&
-	   v1_rep->allDiscreteIntVars     == v2_rep->allDiscreteIntVars &&
+	   v1_rep->allDiscreteIntVars     == v2_rep->allDiscreteIntVars      &&
+	   v1_rep->allDiscreteStringVars  == v2_rep->allDiscreteStringVars   &&
 	   v1_rep->allDiscreteRealVars    == v2_rep->allDiscreteRealVars );
 }
 
@@ -827,9 +962,10 @@ bool operator==(const Variables& vars1, const Variables& vars2)
 
   // Require identical content in variable array lengths and values
   // (ignore labels/types/ids) using Teuchos::SerialDenseVector::operator==
-  return (v1_rep->allContinuousVars   == v2_rep->allContinuousVars  &&
-	  v1_rep->allDiscreteIntVars  == v2_rep->allDiscreteIntVars &&
-	  v1_rep->allDiscreteRealVars == v2_rep->allDiscreteRealVars);
+  return (v1_rep->allContinuousVars     == v2_rep->allContinuousVars     &&
+	  v1_rep->allDiscreteIntVars    == v2_rep->allDiscreteIntVars    &&
+	  v1_rep->allDiscreteStringVars == v2_rep->allDiscreteStringVars &&
+	  v1_rep->allDiscreteRealVars   == v2_rep->allDiscreteRealVars);
 }
 
 
@@ -842,8 +978,11 @@ std::size_t hash_value(const Variables& vars)
   // require identical views and variables data
   Variables *v_rep = vars.variablesRep;
   boost::hash_combine(seed, v_rep->sharedVarsData.view());
+  // hash_value() for SerialDenseVectors and StringMultiArrays defined
+  // in dakota_data_util.hpp
   boost::hash_combine(seed, v_rep->allContinuousVars);
   boost::hash_combine(seed, v_rep->allDiscreteIntVars);
+  boost::hash_combine(seed, v_rep->allDiscreteStringVars);
   boost::hash_combine(seed, v_rep->allDiscreteRealVars);
   return seed;
 }

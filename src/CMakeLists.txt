@@ -895,6 +895,9 @@ if (DAKOTA_HAVE_MPI)
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
+#add_executable(test_sv test_stringvars.cpp)
+#target_link_libraries(test_sv ${DAKOTA_ALL_LIBS})
+
 if(DAKOTA_DLL_API)
   if (DAKOTA_MODELCENTER)
     # setup link dirs before inclusion of dll_api library

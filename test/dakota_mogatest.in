@@ -57,10 +57,11 @@ variables,
 #	  lower_bounds     -20	-20		#2
 #	  upper_bounds      2.	2.		#3
 #	  lower_bounds     -2.	-2.		#3
-#       discrete_design_set_integer = 3               #4,#5,#6,#7
-#	  initial_point     0    0	 0	#4,#5,#6,#7
-#	  num_set_values = 5 5 5                #4,#5,#6,#7
-#          set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#4,#5,#6,#7
+#       discrete_design_set                     #4,#5,#6,#7
+#	  integer = 3              		#4,#5,#6,#7
+#	    initial_point     0    0	 0	#4,#5,#6,#7
+#	    num_set_values = 5 5 5              #4,#5,#6,#7
+#             set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#4,#5,#6,#7
 
 interface,
 	fork                                    #0,#1,#2,#4,#5,#6,#7

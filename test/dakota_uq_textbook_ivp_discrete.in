@@ -34,14 +34,15 @@ variables,
 	  lower_bounds = 35. 25.
 	  upper_bounds = 45. 35.
 	  descriptors = 'X1_mean' 'X2_mean'		
-	discrete_uncertain_set_int = 1
-#	  set_probs  = .1 .2 .4 .2 .1
-	  set_values =  1  2  3  4  5
-	  descriptors = 'ModelForm'		
-        discrete_uncertain_set_real = 2             
-          num_set_values = 3 2                         
-#          set_probs = 0.3 0.7 
-          set_values = 1.1 2.3 4.5 1.2 2.4          
+	discrete_uncertain_set
+	  integer = 1
+#	    set_probs  = .1 .2 .4 .2 .1
+	    set_values =  1  2  3  4  5
+	    descriptors = 'ModelForm'		
+          real = 2             
+            num_set_values = 3 2                         
+#           set_probs = 0.3 0.7 
+            set_values = 1.1 2.3 4.5 1.2 2.4          
 
 responses,
 	id_responses = 'EPIST_R'
@@ -78,13 +79,14 @@ variables,
 	  means          =  40.  30.  20.  10.	
 	  std_deviations =   8.   6.   4.   2.	
 	  descriptors      'X1' 'X2' 'X3' 'X4'	
-	discrete_state_set_integer = 1
-	  set_values     = 1 2 3 4 5
-	  descriptors    = 'dssi_ModelForm'	
-        discrete_state_set_real = 2
-          num_set_values = 3 2
-	  set_values = 1.1 2.3 4.5 1.2 2.4
-	  descriptors      'X5' 'X6'
+	discrete_state_set
+	  integer = 1
+	    set_values     = 1 2 3 4 5
+	    descriptors    = 'dssi_ModelForm'	
+          real = 2
+            num_set_values = 3 2
+	    set_values = 1.1 2.3 4.5 1.2 2.4
+	    descriptors      'X5' 'X6'
 	
 interface,
 	id_interface = 'ALEAT_I'

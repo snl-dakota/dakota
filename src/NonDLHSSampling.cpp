@@ -85,10 +85,11 @@ void NonDLHSSampling::pre_run()
 
 void NonDLHSSampling::post_input()
 {
-  size_t cv_start, num_cv, div_start, num_div, drv_start, num_drv;
-  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div, drv_start, 
-	      num_drv);
-  size_t num_vars = num_cv + num_div + num_drv;
+  size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+    drv_start, num_drv;
+  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+	      dsv_start, num_dsv, drv_start, num_drv);
+  size_t num_vars = num_cv + num_div + num_dsv + num_drv;
   // call convenience function from Analyzer
   read_variables_responses(numSamples, num_vars);
 }

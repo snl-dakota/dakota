@@ -26,12 +26,13 @@ variables,
           interval_probs =  1.0
           lower_bounds = 2. 
           upper_bounds = 3.
-        discrete_uncertain_set_int = 1
-          set_values = 3 4 
-          set_probabilities = 0.4 0.6
-        discrete_uncertain_set_real = 1
-          set_values = 3.2 6.2
-          set_probabilities = 0.2 0.8
+        discrete_uncertain_set
+	  integer = 1
+            set_values = 3 4 
+            set_probabilities = 0.4 0.6
+          real = 1
+            set_values = 3.2 6.2
+            set_probabilities = 0.2 0.8
 
 interface,
         direct

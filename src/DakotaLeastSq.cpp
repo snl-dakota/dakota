@@ -163,14 +163,15 @@ void LeastSq::weight_model()
     = secondary_resp_copier;
 
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
-  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  SizetArray recast_vars_comps_total;  // default: empty; no change in size
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
 
   iteratedModel.assign_rep(new
     RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
-		nonlinear_vars_map, vars_recast, set_recast, 
-		primary_resp_map_indices, secondary_resp_map_indices, 
-		recast_secondary_offset, nonlinear_resp_map, 
-		pri_resp_recast, sec_resp_recast), false);
+		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
+		set_recast, primary_resp_map_indices,
+		secondary_resp_map_indices, recast_secondary_offset,
+		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
 
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
@@ -222,7 +223,7 @@ void LeastSq::print_results(std::ostream& s)
   // Print best response functions
   if (numLeastSqTerms > 1) s << "<<<<< Best residual terms      =\n";
   else                     s << "<<<<< Best residual term       =\n";
-  write_data_partial(s, 0, numLeastSqTerms, fn_vals_star);
+  write_data_partial(s, (size_t)0, numLeastSqTerms, fn_vals_star);
 
   size_t num_cons = numFunctions - numLeastSqTerms;
   if (num_cons) {

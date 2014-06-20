@@ -44,7 +44,7 @@ public:
   RelaxedVarConstraints(const SharedVariablesData& svd);
   /// standard constructor
   RelaxedVarConstraints(const ProblemDescDB& problem_db,
-		    const SharedVariablesData& svd);
+			const SharedVariablesData& svd);
   /// destructor
   ~RelaxedVarConstraints();
 
@@ -61,10 +61,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void reshape(const SizetArray& vc_totals);
-  void build_active_views();
-  void build_inactive_views();
-
 private:
 
   //
@@ -76,7 +72,7 @@ private:
 inline RelaxedVarConstraints::
 RelaxedVarConstraints(const SharedVariablesData& svd):
   Constraints(BaseConstructor(), svd)
-{ reshape(svd.components_totals()); }
+{ }
 
 
 inline RelaxedVarConstraints::~RelaxedVarConstraints()

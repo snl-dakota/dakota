@@ -316,12 +316,15 @@ public:
   size_t  tv()  const; ///< returns total number of vars
   size_t  cv()  const; ///< returns number of active continuous variables
   size_t div()  const; ///< returns number of active discrete integer vars
+  size_t dsv()  const; ///< returns number of active discrete string vars
   size_t drv()  const; ///< returns number of active discrete real vars
   size_t icv()  const; ///< returns number of inactive continuous variables
   size_t idiv() const; ///< returns number of inactive discrete integer vars
+  size_t idsv() const; ///< returns number of inactive discrete string vars
   size_t idrv() const; ///< returns number of inactive discrete real vars
   size_t acv()  const; ///< returns total number of continuous variables
   size_t adiv() const; ///< returns total number of discrete integer vars
+  size_t adsv() const; ///< returns total number of discrete string vars
   size_t adrv() const; ///< returns total number of discrete real vars
 
   /// set the active variables in currentVariables
@@ -339,6 +342,12 @@ public:
   void discrete_int_variables(const IntVector& d_vars);
   /// set an active discrete integer variable in currentVariables
   void discrete_int_variable(int d_var, size_t i);
+  /// return the active discrete string variables from currentVariables
+  StringMultiArrayConstView discrete_string_variables() const;
+  /// set the active discrete string variables in currentVariables
+  void discrete_string_variables(StringMultiArrayConstView d_vars);
+  /// set an active discrete string variable in currentVariables
+  void discrete_string_variable(const String& d_var, size_t i);
   /// return the active discrete real variables from currentVariables
   const RealVector& discrete_real_variables() const;
   /// set the active discrete real variables in currentVariables
@@ -358,6 +367,12 @@ public:
   void discrete_int_variable_types(UShortMultiArrayConstView div_types);
   /// set an active discrete variable type in currentVariables
   void discrete_int_variable_type(unsigned short div_type, size_t i);
+  /// return the active discrete variable types from currentVariables
+  UShortMultiArrayConstView discrete_string_variable_types() const;
+  /// set the active discrete variable types in currentVariables
+  void discrete_string_variable_types(UShortMultiArrayConstView div_types);
+  /// set an active discrete variable type in currentVariables
+  void discrete_string_variable_type(unsigned short div_type, size_t i);
   /// return the active discrete variable types from currentVariables
   UShortMultiArrayConstView discrete_real_variable_types() const;
   /// set the active discrete variable types in currentVariables
@@ -379,6 +394,10 @@ public:
   const IntVector& inactive_discrete_int_variables() const;
   /// set the inactive discrete variables in currentVariables
   void inactive_discrete_int_variables(const IntVector& i_d_vars);
+  /// return the inactive discrete variables in currentVariables
+  StringMultiArrayConstView inactive_discrete_string_variables() const;
+  /// set the inactive discrete variables in currentVariables
+  void inactive_discrete_string_variables(StringMultiArrayConstView i_d_vars);
   /// return the inactive discrete variables in currentVariables
   const RealVector& inactive_discrete_real_variables() const;
   /// set the inactive discrete variables in currentVariables
@@ -402,6 +421,12 @@ public:
   /// set a variable within the all discrete variables in currentVariables
   void all_discrete_int_variable(int a_d_var, size_t i);
   /// return all discrete variables in currentVariables
+  StringMultiArrayConstView all_discrete_string_variables() const;
+  /// set all discrete variables in currentVariables
+  void all_discrete_string_variables(StringMultiArrayConstView a_d_vars);
+  /// set a variable within the all discrete variables in currentVariables
+  void all_discrete_string_variable(const String& a_d_var, size_t i);
+  /// return all discrete variables in currentVariables
   const RealVector& all_discrete_real_variables() const;
   /// set all discrete variables in currentVariables
   void all_discrete_real_variables(const RealVector& a_d_vars);
@@ -413,6 +438,8 @@ public:
   /// return all discrete variable types from currentVariables
   UShortMultiArrayConstView all_discrete_int_variable_types()  const;
   /// return all discrete variable types from currentVariables
+  UShortMultiArrayConstView all_discrete_string_variable_types()  const;
+  /// return all discrete variable types from currentVariables
   UShortMultiArrayConstView all_discrete_real_variable_types() const;
   /// return all continuous variable identifiers from currentVariables
   SizetMultiArrayConstView  all_continuous_variable_ids()      const;
@@ -423,6 +450,12 @@ public:
   /// define the sets of values available for each of the discrete
   /// design set integer variables
   void discrete_design_set_int_values(const IntSetArray& isa);
+  /// return the sets of values available for each of the discrete
+  /// design set string variables
+  const StringSetArray& discrete_design_set_string_values() const;
+  /// define the sets of values available for each of the discrete
+  /// design set string variables
+  void discrete_design_set_string_values(const StringSetArray& ssa);
   /// return the sets of values available for each of the discrete
   /// design set real variables
   const RealSetArray& discrete_design_set_real_values() const;
@@ -437,6 +470,12 @@ public:
   /// state set integer variables
   void discrete_state_set_int_values(const IntSetArray& isa);
   /// return the sets of values available for each of the discrete
+  /// state set string variables
+  const StringSetArray& discrete_state_set_string_values() const;
+  /// define the sets of values available for each of the discrete
+  /// state set string variables
+  void discrete_state_set_string_values(const StringSetArray& ssa);
+  /// return the sets of values available for each of the discrete
   /// state set real variables
   const RealSetArray& discrete_state_set_real_values() const;
   /// define the sets of values available for each of the discrete
@@ -445,12 +484,17 @@ public:
 
   /// define and return discreteIntSets
   const BitArray& discrete_int_sets();
+  // define and return discreteStringSets
+  //const BitArray& discrete_string_sets();
   // define and return discreteRealSets
   //const BitArray& discrete_real_sets();
 
   /// return the sets of values available for each of the active
   /// discrete set integer variables (aggregated in activeDiscSetIntValues)
   const IntSetArray& discrete_set_int_values();
+  /// return the sets of values available for each of the active
+  /// discrete set string variables (aggregated in activeDiscSetStringValues)
+  const StringSetArray& discrete_set_string_values();
   /// return the sets of values available for each of the active
   /// discrete set real variables (aggregated in activeDiscSetRealValues)
   const RealSetArray& discrete_set_real_values();
@@ -486,6 +530,10 @@ public:
   /// set the active discrete variable labels in currentVariables
   void discrete_int_variable_labels(StringMultiArrayConstView d_v_labels);
   /// return the active discrete variable labels from currentVariables
+  StringMultiArrayConstView discrete_string_variable_labels()   const;
+  /// set the active discrete variable labels in currentVariables
+  void discrete_string_variable_labels(StringMultiArrayConstView d_v_labels);
+  /// return the active discrete variable labels from currentVariables
   StringMultiArrayConstView discrete_real_variable_labels()   const;
   /// set the active discrete variable labels in currentVariables
   void discrete_real_variable_labels(StringMultiArrayConstView d_v_labels);
@@ -499,6 +547,11 @@ public:
   StringMultiArrayConstView inactive_discrete_int_variable_labels() const;
   /// set the inactive discrete variable labels in currentVariables
   void inactive_discrete_int_variable_labels(
+    StringMultiArrayConstView i_d_v_labels);
+  /// return the inactive discrete variable labels in currentVariables
+  StringMultiArrayConstView inactive_discrete_string_variable_labels() const;
+  /// set the inactive discrete variable labels in currentVariables
+  void inactive_discrete_string_variable_labels(
     StringMultiArrayConstView i_d_v_labels);
   /// return the inactive discrete variable labels in currentVariables
   StringMultiArrayConstView inactive_discrete_real_variable_labels() const;
@@ -519,6 +572,14 @@ public:
   /// set a label within the all discrete labels in currentVariables
   void all_discrete_int_variable_label(const String& a_d_v_label,
 				       size_t i);
+  /// return all discrete variable labels in currentVariables
+  StringMultiArrayConstView all_discrete_string_variable_labels() const;
+  /// set all discrete variable labels in currentVariables
+  void all_discrete_string_variable_labels(StringMultiArrayConstView
+					   a_d_v_labels);
+  /// set a label within the all discrete labels in currentVariables
+  void all_discrete_string_variable_label(const String& a_d_v_label,
+					  size_t i);
   /// return all discrete variable labels in currentVariables
   StringMultiArrayConstView all_discrete_real_variable_labels() const;
   /// set all discrete variable labels in currentVariables
@@ -991,6 +1052,9 @@ protected:
   /// array of IntSet's, each containing the set of allowable integer
   /// values corresponding to a discrete design integer set variable
   IntSetArray discreteDesignSetIntValues;
+  /// array of IntSet's, each containing the set of allowable integer
+  /// values corresponding to a discrete design string set variable
+  StringSetArray discreteDesignSetStringValues;
   /// array of RealSet's, each containing the set of allowable real
   /// values corresponding to a discrete design real set variable
   RealSetArray discreteDesignSetRealValues;
@@ -998,6 +1062,9 @@ protected:
   /// array of IntSet's, each containing the set of allowable integer
   /// values corresponding to a discrete state integer set variable
   IntSetArray discreteStateSetIntValues;
+  /// array of IntSet's, each containing the set of allowable integer
+  /// values corresponding to a discrete state string set variable
+  StringSetArray discreteStateSetStringValues;
   /// array of RealSet's, each containing the set of allowable real
   /// values corresponding to a discrete state real set variable
   RealSetArray discreteStateSetRealValues;
@@ -1157,11 +1224,17 @@ private:
   /// set integer variables
   IntSetArray activeDiscSetIntValues;
   /// aggregation of the admissible value sets for all active discrete
+  /// set string variables
+  StringSetArray activeDiscSetStringValues;
+  /// aggregation of the admissible value sets for all active discrete
   /// set real variables
   RealSetArray activeDiscSetRealValues;
   /// key for identifying discrete integer set variables within the
   /// active discrete integer variables
   BitArray discreteIntSets;
+  // key for identifying discrete string set variables within the active
+  // discrete string variables
+  //BitArray discreteStringSets;
   // key for identifying discrete real set variables within the active
   // discrete real variables
   //BitArray discreteRealSets;
@@ -1187,6 +1260,12 @@ inline size_t Model::div() const
 }
 
 
+inline size_t Model::dsv() const
+{
+  return (modelRep) ? modelRep->currentVariables.dsv() : currentVariables.dsv();
+}
+
+
 inline size_t Model::drv() const
 {
   return (modelRep) ? modelRep->currentVariables.drv() : currentVariables.drv();
@@ -1203,6 +1282,13 @@ inline size_t Model::idiv() const
 {
   return (modelRep) ? modelRep->currentVariables.idiv()
                     : currentVariables.idiv();
+}
+
+
+inline size_t Model::idsv() const
+{
+  return (modelRep) ? modelRep->currentVariables.idsv()
+                    : currentVariables.idsv();
 }
 
 
@@ -1223,6 +1309,13 @@ inline size_t Model::adiv() const
 {
   return (modelRep) ? modelRep->currentVariables.adiv()
                     : currentVariables.adiv();
+}
+
+
+inline size_t Model::adsv() const
+{
+  return (modelRep) ? modelRep->currentVariables.adsv()
+                    : currentVariables.adsv();
 }
 
 
@@ -1279,6 +1372,27 @@ inline void Model::discrete_int_variable(int d_var, size_t i)
 {
   if (modelRep) modelRep->currentVariables.discrete_int_variable(d_var, i);
   else          currentVariables.discrete_int_variable(d_var, i);
+}
+
+
+inline StringMultiArrayConstView Model::discrete_string_variables() const
+{
+  return (modelRep) ? modelRep->currentVariables.discrete_string_variables()
+                    : currentVariables.discrete_string_variables();
+}
+
+
+inline void Model::discrete_string_variables(StringMultiArrayConstView d_vars) 
+{
+  if (modelRep) modelRep->currentVariables.discrete_string_variables(d_vars);
+  else          currentVariables.discrete_string_variables(d_vars);
+}
+
+
+inline void Model::discrete_string_variable(const String& d_var, size_t i) 
+{
+  if (modelRep) modelRep->currentVariables.discrete_string_variable(d_var, i);
+  else          currentVariables.discrete_string_variable(d_var, i);
 }
 
 
@@ -1351,6 +1465,34 @@ inline void Model::discrete_int_variable_type(unsigned short div_type, size_t i)
     modelRep->currentVariables.discrete_int_variable_type(div_type, i);
   else
     currentVariables.discrete_int_variable_type(div_type, i);
+}
+
+
+inline UShortMultiArrayConstView Model::discrete_string_variable_types() const
+{
+  return (modelRep) ?
+    modelRep->currentVariables.discrete_string_variable_types() :
+    currentVariables.discrete_string_variable_types();
+}
+
+
+inline void Model::
+discrete_string_variable_types(UShortMultiArrayConstView dsv_types)
+{
+  if (modelRep)
+    modelRep->currentVariables.discrete_string_variable_types(dsv_types);
+  else
+    currentVariables.discrete_string_variable_types(dsv_types);
+}
+
+
+inline void Model::
+discrete_string_variable_type(unsigned short dsv_type, size_t i)
+{
+  if (modelRep)
+    modelRep->currentVariables.discrete_string_variable_type(dsv_type, i);
+  else
+    currentVariables.discrete_string_variable_type(dsv_type, i);
 }
 
 
@@ -1440,6 +1582,25 @@ inline void Model::inactive_discrete_int_variables(const IntVector& i_d_vars)
 }
 
 
+inline StringMultiArrayConstView Model::
+inactive_discrete_string_variables() const
+{
+  return (modelRep) ?
+    modelRep->currentVariables.inactive_discrete_string_variables() :
+    currentVariables.inactive_discrete_string_variables();
+}
+
+
+inline void Model::
+inactive_discrete_string_variables(StringMultiArrayConstView i_d_vars)
+{
+  if (modelRep)
+    modelRep->currentVariables.inactive_discrete_string_variables(i_d_vars);
+  else
+    currentVariables.inactive_discrete_string_variables(i_d_vars);
+}
+
+
 inline const RealVector& Model::inactive_discrete_real_variables() const
 {
   return (modelRep) ?
@@ -1518,6 +1679,32 @@ inline void Model::all_discrete_int_variable(int a_d_var, size_t i)
 }
 
 
+inline StringMultiArrayConstView Model::all_discrete_string_variables() const
+{
+  return (modelRep) ? modelRep->currentVariables.all_discrete_string_variables()
+                    : currentVariables.all_discrete_string_variables();
+}
+
+
+inline void Model::
+all_discrete_string_variables(StringMultiArrayConstView a_d_vars)
+{
+  if (modelRep)
+    modelRep->currentVariables.all_discrete_string_variables(a_d_vars);
+  else
+    currentVariables.all_discrete_string_variables(a_d_vars);
+}
+
+
+inline void Model::all_discrete_string_variable(const String& a_d_var, size_t i)
+{
+  if (modelRep)
+    modelRep->currentVariables.all_discrete_string_variable(a_d_var, i);
+  else
+    currentVariables.all_discrete_string_variable(a_d_var, i);
+}
+
+
 inline const RealVector& Model::all_discrete_real_variables() const
 {
   return (modelRep) ? modelRep->currentVariables.all_discrete_real_variables()
@@ -1558,6 +1745,15 @@ inline UShortMultiArrayConstView Model::all_discrete_int_variable_types() const
 }
 
 
+inline UShortMultiArrayConstView Model::
+all_discrete_string_variable_types() const
+{
+  return (modelRep) ?
+    modelRep->currentVariables.all_discrete_string_variable_types() :
+    currentVariables.all_discrete_string_variable_types();
+}
+
+
 inline UShortMultiArrayConstView Model::all_discrete_real_variable_types() const
 {
   return (modelRep) ?
@@ -1587,6 +1783,20 @@ inline void Model::discrete_design_set_int_values(const IntSetArray& isa)
 }
 
 
+inline const StringSetArray& Model::discrete_design_set_string_values() const
+{
+  return (modelRep) ? modelRep->discreteDesignSetStringValues
+                    : discreteDesignSetStringValues;
+}
+
+
+inline void Model::discrete_design_set_string_values(const StringSetArray& ssa)
+{
+  if (modelRep) modelRep->discreteDesignSetStringValues = ssa;
+  else          discreteDesignSetStringValues = ssa;
+}
+
+
 inline const RealSetArray& Model::discrete_design_set_real_values() const
 {
   return (modelRep) ? modelRep->discreteDesignSetRealValues
@@ -1612,6 +1822,20 @@ inline void Model::discrete_state_set_int_values(const IntSetArray& isa)
 {
   if (modelRep) modelRep->discreteStateSetIntValues = isa;
   else          discreteStateSetIntValues = isa;
+}
+
+
+inline const StringSetArray& Model::discrete_state_set_string_values() const
+{
+  return (modelRep) ? modelRep->discreteStateSetStringValues
+                    : discreteStateSetStringValues;
+}
+
+
+inline void Model::discrete_state_set_string_values(const StringSetArray& ssa)
+{
+  if (modelRep) modelRep->discreteStateSetStringValues = ssa;
+  else          discreteStateSetStringValues = ssa;
 }
 
 
@@ -1697,6 +1921,24 @@ discrete_int_variable_labels(StringMultiArrayConstView d_v_labels)
 }
 
 
+inline StringMultiArrayConstView Model::discrete_string_variable_labels() const
+{
+  return (modelRep) ?
+    modelRep->currentVariables.discrete_string_variable_labels() :
+    currentVariables.discrete_string_variable_labels();
+}
+
+
+inline void Model::
+discrete_string_variable_labels(StringMultiArrayConstView d_v_labels)
+{
+  if (modelRep)
+    modelRep->currentVariables.discrete_string_variable_labels(d_v_labels);
+  else
+    currentVariables.discrete_string_variable_labels(d_v_labels);
+}
+
+
 inline StringMultiArrayConstView Model::discrete_real_variable_labels() const
 {
   return (modelRep) ? modelRep->currentVariables.discrete_real_variable_labels()
@@ -1751,6 +1993,26 @@ inactive_discrete_int_variable_labels(StringMultiArrayConstView i_d_v_labels)
       currentVariables.inactive_discrete_int_variable_labels(i_d_v_labels);
   else
     currentVariables.inactive_discrete_int_variable_labels(i_d_v_labels);
+}
+
+
+inline StringMultiArrayConstView Model::
+inactive_discrete_string_variable_labels() const
+{
+  return (modelRep) ? 
+    modelRep->currentVariables.inactive_discrete_string_variable_labels() :
+    currentVariables.inactive_discrete_string_variable_labels();
+}
+
+
+inline void Model::
+inactive_discrete_string_variable_labels(StringMultiArrayConstView i_d_v_labels)
+{
+  if (modelRep)
+    modelRep->
+      currentVariables.inactive_discrete_string_variable_labels(i_d_v_labels);
+  else
+    currentVariables.inactive_discrete_string_variable_labels(i_d_v_labels);
 }
 
 
@@ -1827,6 +2089,37 @@ all_discrete_int_variable_label(const String& a_d_v_label, size_t i)
     modelRep->currentVariables.all_discrete_int_variable_label(a_d_v_label, i);
   else
     currentVariables.all_discrete_int_variable_label(a_d_v_label, i);
+}
+
+
+inline StringMultiArrayConstView Model::
+all_discrete_string_variable_labels() const
+{
+  return (modelRep) ? 
+    modelRep->currentVariables.all_discrete_string_variable_labels() :
+    currentVariables.all_discrete_string_variable_labels();
+}
+
+
+inline void Model::
+all_discrete_string_variable_labels(StringMultiArrayConstView a_d_v_labels)
+{
+  if (modelRep)
+    modelRep->
+      currentVariables.all_discrete_string_variable_labels(a_d_v_labels);
+  else
+    currentVariables.all_discrete_string_variable_labels(a_d_v_labels);
+}
+
+
+inline void Model::
+all_discrete_string_variable_label(const String& a_d_v_label, size_t i)
+{
+  if (modelRep)
+    modelRep->
+      currentVariables.all_discrete_string_variable_label(a_d_v_label, i);
+  else
+    currentVariables.all_discrete_string_variable_label(a_d_v_label, i);
 }
 
 

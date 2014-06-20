@@ -24,11 +24,10 @@ namespace Dakota {
 /// Derived class within the Variables hierarchy which separates
 /// continuous and discrete variables (no domain type array merging).
 
-/** Derived variables classes take different views of the design,
-    uncertain, and state variable types and the continuous and
-    discrete domain types.  The MixedVariables derived class
-    separates the continuous and discrete domain types (see
-    Variables::get_variables(problem_db)). */
+/** Derived variables classes take different views of the design, uncertain,
+    and state variable types and the continuous and discrete domain types.
+    The MixedVariables derived class separates the continuous and discrete
+    domain types (see Variables::get_variables(problem_db)). */
 
 class MixedVariables: public Variables
 {
@@ -58,11 +57,6 @@ protected:
   void read_tabular(std::istream& s);
   void write_tabular(std::ostream& s) const;
 
-  void reshape(const SizetArray& vc_totals);
-
-  void build_active_views();
-  void build_inactive_views();
-
 private:
 
   //
@@ -73,7 +67,7 @@ private:
 
 inline MixedVariables::MixedVariables(const SharedVariablesData& svd):
   Variables(BaseConstructor(), svd)
-{ reshape(svd.components_totals()); }
+{ }
 
 
 inline MixedVariables::~MixedVariables()

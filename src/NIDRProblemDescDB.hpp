@@ -186,11 +186,14 @@ public:
   KWH(var_RealLb);
   KWH(var_RealUb);
   KWH(var_IntLb);
+  KWH(var_categorical);
   KWH(var_caulbl);
   KWH(var_dauilbl);
+  KWH(var_dauslbl);
   KWH(var_daurlbl);
   KWH(var_ceulbl);
   KWH(var_deuilbl);
+  KWH(var_deuslbl);
   KWH(var_deurlbl);
   KWH(var_pintz);
   KWH(var_start);
@@ -199,14 +202,34 @@ public:
   KWH(var_strL);
   KWH(var_true);
   KWH(var_newiarray);
+  KWH(var_newsarray);
   KWH(var_newivec);
   KWH(var_newrvec);
   KWH(var_ivec);
+  KWH(var_svec);
   KWH(var_rvec);
   KWH(var_type);
 
 #undef KWH
 };
+
+
+/// Free convenience function that flatten sizes of an array of std
+/// containers; takes an array of containers and returns an IntArray
+/// containing the sizes of each container in the input array.  Note:
+/// Did not specialize for vector<RealVector> as no current use cases.
+template <class ContainerT>
+inline void 
+flatten_num_array(const std::vector<ContainerT>& input_array, IntArray** pia)
+{
+  size_t input_len = input_array.size();
+  IntArray *ia;
+
+  *pia = ia = new IntArray(input_len);
+  for(size_t i = 0; i < input_len; ++i)
+    (*ia)[i] = input_array[i].size();
+}
+
 
 } // namespace Dakota
 

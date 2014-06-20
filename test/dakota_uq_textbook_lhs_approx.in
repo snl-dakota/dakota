@@ -47,11 +47,11 @@ variables,
 #	  std_deviations    =  0.5	 0.5		#0,#1,#2,#3,#4,#6,#7
 	  error_factors     =  1.1  1.1			#0,#1,#2,#3,#4,#6,#7
 	  descriptors       =  'TF1ln' 'TF1ln'		#0,#1,#2,#3,#4,#6,#7
-#	discrete_uncertain_set_int = 1					#4
+#	discrete_uncertain_set integer = 1				#4
 #	  set_probs  = .1 .2 .4 .2 .1					#4
 #	  set_values =  1  2  3  4  5					#4
 #	  descriptors = 'ModelForm'					#4
-#	histogram_point_uncertain 2					#5
+#	histogram_point_uncertain real = 2				#5
 #	  num_pairs 7 7		  					#5
 #	  abscissas 0.200 2.166 4.133 6.100 8.067 10.033 12.000		#5
 #	            0.200 2.166 4.133 6.100 8.067 10.033 12.000		#5

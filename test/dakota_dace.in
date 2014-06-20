@@ -53,9 +53,10 @@ variables,
 	  initial_state       4.0
 	  lower_bounds        0.0
 	  upper_bounds        8.0
-#	discrete_design_set_integer = 2		#8
-#	  num_set_values = 4 5	      		#8
-#	  set_values = -4 -3 -2 -1 0 1 2 3 4	#8
+#	discrete_design_set			#8
+#         integer = 2				#8
+#	    num_set_values = 4 5	      	#8
+#	    set_values = -4 -3 -2 -1 0 1 2 3 4	#8
 
 interface,
 	id_interface = 'I1'

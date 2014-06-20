@@ -158,14 +158,15 @@ variables,
 #	  upper_bounds       4     9	#27,#28,#29,#30,#31
 #	  descriptors      'y1'   'y2'	#22,#23,#24,#25,#26
 #	  descriptors      'y1'   'y2'	#27,#28,#29,#30,#31
-#       discrete_design_set_real = 2                          #32
-#         num_set_values = 4 5                                #32
-#         set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7    #32
-#         descriptors      'y1'   'y2'                        #32
-#       discrete_design_set_int = 2                           #32
-#         num_set_values = 2 2                                #32
-#         set_values = 4 7 8 9                                #32
-#         descriptors      'z1'   'z2'                        #32
+#       discrete_design_set					#32
+#         real = 2						#32
+#           num_set_values = 4 5                                #32
+#           set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7    #32
+#           descriptors      'y1'   'y2'                        #32
+#         integer = 2                           		#32
+#           num_set_values = 2 2                                #32
+#           set_values = 4 7 8 9                                #32
+#           descriptors      'z1'   'z2'                        #32
 
 interface,
 	system asynch				#0,#1

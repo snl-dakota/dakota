@@ -41,16 +41,25 @@ enum { EMPTY=0, RELAXED_ALL, MIXED_ALL,
 // SharedVariablesData::all*Types (Note: these differ from the
 // pecos_global_defs.hpp enumeration, which is focused on ranVarTypesX/U)
 enum { CONTINUOUS_DESIGN=1, DISCRETE_DESIGN_RANGE, DISCRETE_DESIGN_SET_INT,
-       DISCRETE_DESIGN_SET_REAL, NORMAL_UNCERTAIN, LOGNORMAL_UNCERTAIN,
-       UNIFORM_UNCERTAIN, LOGUNIFORM_UNCERTAIN, TRIANGULAR_UNCERTAIN,
-       EXPONENTIAL_UNCERTAIN, BETA_UNCERTAIN, GAMMA_UNCERTAIN, GUMBEL_UNCERTAIN,
-       FRECHET_UNCERTAIN, WEIBULL_UNCERTAIN, HISTOGRAM_BIN_UNCERTAIN,
-       POISSON_UNCERTAIN, BINOMIAL_UNCERTAIN, NEGATIVE_BINOMIAL_UNCERTAIN,
-       GEOMETRIC_UNCERTAIN, HYPERGEOMETRIC_UNCERTAIN, HISTOGRAM_POINT_UNCERTAIN,
+       DISCRETE_DESIGN_SET_STRING, DISCRETE_DESIGN_SET_REAL, NORMAL_UNCERTAIN,
+       LOGNORMAL_UNCERTAIN, UNIFORM_UNCERTAIN, LOGUNIFORM_UNCERTAIN,
+       TRIANGULAR_UNCERTAIN, EXPONENTIAL_UNCERTAIN, BETA_UNCERTAIN,
+       GAMMA_UNCERTAIN, GUMBEL_UNCERTAIN, FRECHET_UNCERTAIN, WEIBULL_UNCERTAIN,
+       HISTOGRAM_BIN_UNCERTAIN, POISSON_UNCERTAIN, BINOMIAL_UNCERTAIN,
+       NEGATIVE_BINOMIAL_UNCERTAIN, GEOMETRIC_UNCERTAIN,
+       HYPERGEOMETRIC_UNCERTAIN, HISTOGRAM_POINT_UNCERTAIN_INT,
+       HISTOGRAM_POINT_UNCERTAIN_STRING, HISTOGRAM_POINT_UNCERTAIN_REAL,
        CONTINUOUS_INTERVAL_UNCERTAIN, DISCRETE_INTERVAL_UNCERTAIN,
-       DISCRETE_UNCERTAIN_SET_INT, DISCRETE_UNCERTAIN_SET_REAL,
-       CONTINUOUS_STATE, DISCRETE_STATE_RANGE, DISCRETE_STATE_SET_INT,
+       DISCRETE_UNCERTAIN_SET_INT, DISCRETE_UNCERTAIN_SET_STRING,
+       DISCRETE_UNCERTAIN_SET_REAL, CONTINUOUS_STATE, DISCRETE_STATE_RANGE,
+       DISCRETE_STATE_SET_INT, DISCRETE_STATE_SET_STRING,
        DISCRETE_STATE_SET_REAL };
+
+// special values for indexing of SharedVariablesData::variablesCompsTotals
+enum { TOTAL_CDV=0, TOTAL_DDIV,  TOTAL_DDSV,  TOTAL_DDRV,
+       TOTAL_CAUV,  TOTAL_DAUIV, TOTAL_DAUSV, TOTAL_DAURV,
+       TOTAL_CEUV,  TOTAL_DEUIV, TOTAL_DEUSV, TOTAL_DEURV,
+       TOTAL_CSV,   TOTAL_DSIV,  TOTAL_DSSV,  TOTAL_DSRV };
 
 
 /// Body class for variables specification data.
@@ -96,10 +105,13 @@ public:
   /// (from the \c discrete_design_range specification in \ref VarDV)
   size_t numDiscreteDesRangeVars;
   /// number of discrete design variables defined by a set of integers
-  /// (from the \c discrete_design_set_integer specification in \ref VarDV)
+  /// (from the \c discrete_design_set integer specification in \ref VarDV)
   size_t numDiscreteDesSetIntVars;
+  /// number of discrete design variables defined by a set of strings
+  /// (from the \c discrete_design_set string specification in \ref VarDV)
+  size_t numDiscreteDesSetStrVars;
   /// number of discrete design variables defined by a set of reals
-  /// (from the \c discrete_design_set_real specification in \ref VarDV)
+  /// (from the \c discrete_design_set real specification in \ref VarDV)
   size_t numDiscreteDesSetRealVars;
   /// number of normal uncertain variables (from the \c normal_uncertain
   /// specification in \ref VarAUV)
@@ -152,9 +164,15 @@ public:
   /// number of hypergeometric uncertain variables (from the \c
   /// hypergeometric_uncertain specification in \ref VarAUV))
   size_t numHyperGeomUncVars;
-  /// number of histogram point uncertain variables (from the \c
+  /// number of integer-valued histogram point uncertain variables (from the \c
   /// histogram_point_uncertain specification in \ref VarAUV)
-  size_t numHistogramPtUncVars;
+  size_t numHistogramPtIntUncVars;
+  /// number of string-valued histogram point uncertain variables (from the \c
+  /// histogram_point_uncertain specification in \ref VarAUV)
+  size_t numHistogramPtStrUncVars;
+  /// number of real-valued histogram point uncertain variables (from the \c
+  /// histogram_point_uncertain specification in \ref VarAUV)
+  size_t numHistogramPtRealUncVars;
   /// number of continuous epistemic interval uncertain variables (from
   /// the \c continuous_interval_uncertain specification in \ref VarEUV)
   size_t numContinuousIntervalUncVars;
@@ -162,10 +180,13 @@ public:
   /// \c discrete_interval_uncertain specification in \ref VarEUV)
   size_t numDiscreteIntervalUncVars;
   /// number of discrete epistemic uncertain integer set variables (from
-  /// the \c discrete_uncertain_set_integer specification in \ref VarEUV)
+  /// the \c discrete_uncertain_set integer specification in \ref VarEUV)
   size_t numDiscreteUncSetIntVars;
+  /// number of discrete epistemic uncertain string set variables (from
+  /// the \c discrete_uncertain_set string specification in \ref VarEUV)
+  size_t numDiscreteUncSetStrVars;
   /// number of discrete epistemic uncertain real set variables (from
-  /// the \c discrete_uncertain_set_real specification in \ref VarEUV)
+  /// the \c discrete_uncertain_set real specification in \ref VarEUV)
   size_t numDiscreteUncSetRealVars;
   /// number of continuous state variables (from the \c continuous_state
   /// specification in \ref VarSV)
@@ -174,10 +195,13 @@ public:
   /// (from the \c discrete_state_range specification in \ref VarDV)
   size_t numDiscreteStateRangeVars;
   /// number of discrete state variables defined by a set of integers
-  /// (from the \c discrete_state_set_integer specification in \ref VarDV)
+  /// (from the \c discrete_state_set integer specification in \ref VarDV)
   size_t numDiscreteStateSetIntVars;
+  /// number of discrete state variables defined by a set of strings
+  /// (from the \c discrete_state_set string specification in \ref VarDV)
+  size_t numDiscreteStateSetStrVars;
   /// number of discrete state variables defined by a set of reals
-  /// (from the \c discrete_state_set_real specification in \ref VarDV)
+  /// (from the \c discrete_state_set real specification in \ref VarDV)
   size_t numDiscreteStateSetRealVars;
 
   // Design arrays
@@ -197,6 +221,7 @@ public:
   /// scales array for the continuous design variables (from the
   /// \c continuous_design \c scales specification in \ref VarDV)
   RealVector continuousDesignScales;
+
   /// initial values for the discrete design variables defined by an
   /// integer range (from the \c discrete_design_range \c initial_point
   /// specification in \ref VarDV)
@@ -209,22 +234,39 @@ public:
   /// by an integer range(from the \c discrete_design_range \c
   /// upper_bounds specification in \ref VarDV)
   IntVector discreteDesignRangeUpperBnds;
+  /// is each ddr var strictly categorical (true) or relaxable (false)
+  BitArray discreteDesignRangeCat;
+
   /// initial values for the discrete design variables defined by an
-  /// integer set (from the \c discrete_design_set_integer \c initial_point
+  /// integer set (from the \c discrete_design_set integer \c initial_point
   /// specification in \ref VarDV)
   IntVector discreteDesignSetIntVars;
   /// initial values for the discrete design variables defined by a
-  /// real set (from the \c discrete_design_set_real \c initial_point
+  /// string set (from the \c discrete_design_set string \c initial_point
+  /// specification in \ref VarDV)
+  StringArray discreteDesignSetStrVars;
+  /// initial values for the discrete design variables defined by a
+  /// real set (from the \c discrete_design_set real \c initial_point
   /// specification in \ref VarDV)
   RealVector discreteDesignSetRealVars;
   /// complete set of admissible values for each of the discrete design
   /// variables defined by an integer set (from the
-  /// \c discrete_design_set_integer \c set_values specification in \ref VarDV)
+  /// \c discrete_design_set integer \c set_values specification in \ref VarDV)
   IntSetArray discreteDesignSetInt;
   /// complete set of admissible values for each of the discrete design
-  /// variables defined by a real set (from the \c discrete_design_set_real
+  /// variables defined by a string set (from the
+  /// \c discrete_design_set string \c set_values specification in \ref VarDV)
+  StringSetArray discreteDesignSetStr;
+  /// complete set of admissible values for each of the discrete design
+  /// variables defined by a real set (from the \c discrete_design_set real
   /// \c set_values specification in \ref VarDV)
   RealSetArray discreteDesignSetReal;
+
+  /// is each ddsi var strictly categorical (true) or relaxable (false)
+  BitArray discreteDesignSetIntCat;
+  /// is each ddsr var strictly categorical (true) or relaxable (false)
+  BitArray discreteDesignSetRealCat;
+
   /// labels array for the continuous design variables (from the
   /// \c continuous_design \c descriptors specification in \ref VarDV)
   StringArray continuousDesignLabels;
@@ -233,11 +275,15 @@ public:
   /// specification in \ref VarDV)
   StringArray discreteDesignRangeLabels;
   /// labels array for the discrete design variables defined by an
-  /// integer set (from the \c discrete_design_range \c descriptors
+  /// integer set (from the \c discrete_design set int \c descriptors
   /// specification in \ref VarDV)
   StringArray discreteDesignSetIntLabels;
   /// labels array for the discrete design variables defined by a
-  /// real set (from the \c discrete_design_range \c descriptors
+  /// string set (from the \c discrete_design_set string \c descriptors
+  /// specification in \ref VarDV)
+  StringArray discreteDesignSetStrLabels;
+  /// labels array for the discrete design variables defined by a
+  /// real set (from the \c discrete_design_set real; \c descriptors
   /// specification in \ref VarDV)
   StringArray discreteDesignSetRealLabels;
 
@@ -370,21 +416,29 @@ public:
   /// initial values of the weibull uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Weibull)
   RealVector weibullUncVars;
-  /// an array containing a vector of (x,c) pairs for each bin-based
-  /// histogram uncertain variable (see continuous linear histogram in
-  /// LHS manual; from the \c histogram_bin_uncertain specification in
-  /// \ref VarCAUV_Bin_Histogram).  (x,y) ordinate specifications are
+
+  /// An array for each real-valued bin-based histogram uncertain
+  /// variable. Each array entry is a map from a real value to its
+  /// probability. (See continuous linear histogram in LHS manual;
+  /// from the \c histogram_bin_uncertain specification in \ref
+  /// VarCAUV_Bin_Histogram).  (x,y) ordinate specifications are
   /// converted to (x,c) counts within NIDR.
-  RealVectorArray histogramUncBinPairs;
+  RealRealMapArray histogramUncBinPairs;
   /// initial values of the histogram bin uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Bin_Histogram)
   RealVector histogramBinUncVars;
+
+  // discrete types
+
   /// lambdas (rate parameter) for the poisson uncertain variables (from
   /// the \c lambdas specification in \ref VarDAUV_Poisson)
   RealVector poissonUncLambdas;
   /// initial values of the poisson uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Poisson)
   IntVector poissonUncVars;
+  /// is each poisson var strictly categorical (true) or relaxable (false)
+  BitArray poissonUncCat;
+
   /// probabilities per each trial (p) for the binomial uncertain variables
   /// from the \c prob_per_trial specification in \ref VarDAUV_Binomial)
   RealVector binomialUncProbPerTrial;
@@ -394,6 +448,9 @@ public:
   /// initial values of the binomial uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Binomial)
   IntVector binomialUncVars;
+  /// is each binomial var strictly categorical (true) or relaxable (false)
+  BitArray binomialUncCat;
+
   /// probabilities per each trial (p) for the negative binomial
   /// uncertain variables from the \c prob_per_trial specification in
   /// \ref VarDAUV_Negative_Binomial)
@@ -404,12 +461,18 @@ public:
   /// initial values of the negative binomial uncertain variables (from the
   /// \c initial_point specification in \ref VarDAUV_Negative_Binomial)
   IntVector negBinomialUncVars;
+  /// is each negbinomial var strictly categorical (true) or relaxable (false)
+  BitArray negBinomialUncCat;
+
   /// probabilities per each trial (p) for the geometric uncertain variables
   /// from the \c prob_per_trial specification in \ref VarDAUV_Geometric)
   RealVector geometricUncProbPerTrial;
   /// initial values of the geometric uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Geometric)
   IntVector geometricUncVars;
+  /// is each geometric var strictly categorical (true) or relaxable (false)
+  BitArray geometricUncCat;
+
   /// Size of total populations (N) for the hypergeometric uncertain variables
   /// from the \c total_population specification in \ref VarDAUV_Hypergeometric)
   IntVector hyperGeomUncTotalPop;
@@ -423,14 +486,47 @@ public:
   /// initial values of the hypergeometric uncertain variables (from the
   /// \c initial_point specification in \ref VarDAUV_Hypergeometric)
   IntVector hyperGeomUncVars;
-  /// an array containing a vector of (x,c) pairs for each point-based
-  /// histogram uncertain variable (see discrete histogram in LHS
-  /// manual; from the \c histogram_point_uncertain specification in
-  /// \ref VarDAUV_Point_Histogram)
-  RealVectorArray histogramUncPointPairs;
-  /// initial values of the histogram point uncertain variables (from the \c
-  /// initial_point specification in \ref VarDAUV_Point_Histogram)
-  RealVector histogramPointUncVars;
+  /// is each hypergeom var strictly categorical (true) or relaxable (false)
+  BitArray hyperGeomUncCat;
+
+  /// An array for each integer-valued point-based histogram uncertain
+  /// variable. Each array entry is a map from an integer value to its
+  /// probability. (See discrete histogram in LHS manual; from the \c
+  /// histogram_point_uncertain specification in \ref
+  /// VarDAUV_Point_Histogram)
+  IntRealMapArray histogramUncPointIntPairs;
+  /// initial values of the real-valued histogram point uncertain
+  /// variables (from the \c initial_point specification in \ref
+  /// VarDAUV_Point_Histogram)
+  IntVector histogramPointIntUncVars;
+  /// is each hupi var strictly categorical (true) or relaxable (false)
+  BitArray histogramUncPointIntCat;
+ 
+  /// An array for each string-valued point-based histogram uncertain
+  /// variable. Each array entry is a map from a string value to its
+  /// probability. (See discrete histogram in LHS manual; from the \c
+  /// histogram_point_uncertain specification in \ref
+  /// VarDAUV_Point_Histogram)
+  StringRealMapArray histogramUncPointStrPairs;
+  /// initial values of the real-valued histogram point uncertain
+  /// variables (from the \c initial_point specification in \ref
+  /// VarDAUV_Point_Histogram)
+  StringArray histogramPointStrUncVars;
+  // string variables cannot be relaxed, no categorical option
+
+  /// An array for each real-valued point-based histogram uncertain
+  /// variable. Each array entry is a map from a real value to its
+  /// probability. (See discrete histogram in LHS manual; from the \c
+  /// histogram_point_uncertain specification in \ref
+  /// VarDAUV_Point_Histogram)
+  RealRealMapArray histogramUncPointRealPairs;
+  /// initial values of the real-valued histogram point uncertain
+  /// variables (from the \c initial_point specification in \ref
+  /// VarDAUV_Point_Histogram)
+  RealVector histogramPointRealUncVars;
+  /// is each hupr var strictly categorical (true) or relaxable (false)
+  BitArray histogramUncPointRealCat;
+
   /// correlation matrix for all uncertain variables (from the \c
   /// uncertain_correlation_matrix specification in \ref
   /// VarAUV_Correlations). This matrix specifies rank correlations
@@ -443,49 +539,51 @@ public:
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c continuous_interval_uncertain \c interval_probs
   /// specification in \ref VarCEUV_Interval)
-  RealVectorArray continuousIntervalUncBasicProbs;
-  /// lower bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c continuous_interval_uncertain \c lower_bounds
-  /// specification in \ref VarCEUV_Interval)
-  RealVectorArray continuousIntervalUncLowerBounds;
-  /// upper bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c continuous_interval_uncertain \c upper_bounds
-  /// specification in \ref VarCEUV_Interval)
-  RealVectorArray continuousIntervalUncUpperBounds;
+  RealRealPairRealMapArray continuousIntervalUncBasicProbs;
   /// initial values of the continuous interval uncertain variables
   /// (from the \c initial_point specification in \ref VarCEUV_Interval)
   RealVector continuousIntervalUncVars;
+
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c discrete_interval_uncertain \c interval_probs
   /// specification in \ref VarDIUV)
-  RealVectorArray discreteIntervalUncBasicProbs;
-  /// lower bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c discrete_interval_uncertain \c lower_bounds
-  /// specification in \ref VarDIUV)
-  IntVectorArray discreteIntervalUncLowerBounds;
-  /// upper bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c discrete_interval_uncertain \c upper_bounds
-  /// specification in \ref VarDIUV)
-  IntVectorArray discreteIntervalUncUpperBounds;
+  IntIntPairRealMapArray discreteIntervalUncBasicProbs;
   /// initial values of the discrete interval uncertain variables
   /// (from the \c initial_point specification in \ref VarDIUV)
   IntVector discreteIntervalUncVars;
+  /// is each diu var strictly categorical (true) or relaxable (false)
+  BitArray discreteIntervalUncCat;
+
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
-  /// defined by an integer set (from the \c discrete_uncertain_set_integer
+  /// defined by an integer set (from the \c discrete_uncertain_set integer
   /// \c set_values specification in \ref VarDUSIV)
   IntRealMapArray discreteUncSetIntValuesProbs;
   /// initial values of the discrete uncertain set integer variables
   /// (from the \c initial_point specification in \ref VarDUSIV)
   IntVector discreteUncSetIntVars;
+  /// is each dusi var strictly categorical (true) or relaxable (false)
+  BitArray discreteUncSetIntCat;
+
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
-  /// defined by a real set (from the \c discrete_uncertain_set_real
+  /// defined by a string set (from the \c discrete_uncertain_set string
+  /// \c set_values specification in \ref VarDUSIV)
+  StringRealMapArray discreteUncSetStrValuesProbs;
+  /// initial values of the discrete uncertain set integer variables
+  /// (from the \c initial_point specification in \ref VarDUSIV)
+  StringArray discreteUncSetStrVars;
+
+  /// complete set of admissible values with associated basic probability
+  /// assignments for each of the discrete epistemic uncertain variables
+  /// defined by a real set (from the \c discrete_uncertain_set_ eal
   /// \c set_values specification in \ref VarDUSRV)
   RealRealMapArray discreteUncSetRealValuesProbs;
   /// initial values of the discrete uncertain set real variables
   /// (from the \c initial_point specification in \ref VarDUSRV)
   RealVector discreteUncSetRealVars;
+  /// is each dusr var strictly categorical (true) or relaxable (false)
+  BitArray discreteUncSetRealCat;
 
   // State arrays
 
@@ -498,6 +596,7 @@ public:
   /// upper bounds array for the continuous state variables (from the
   /// \c continuous_state \c upper_bounds specification in \ref VarSV)
   RealVector continuousStateUpperBnds;
+
   /// initial values for the discrete state variables defined by an
   /// integer range (from the \c discrete_state_range \c initial_point
   /// specification in \ref VarSV)
@@ -510,22 +609,40 @@ public:
   /// by an integer range(from the \c discrete_state_range \c
   /// upper_bounds specification in \ref VarSV)
   IntVector discreteStateRangeUpperBnds;
+  /// is each dsr var strictly categorical (true) or relaxable (false)
+  BitArray discreteStateRangeCat;
+
   /// initial values for the discrete state variables defined by an
-  /// integer set (from the \c discrete_state_set_integer \c initial_point
+  /// integer set (from the \c discrete_state_set integer \c initial_point
   /// specification in \ref VarSV)
   IntVector discreteStateSetIntVars;
   /// initial values for the discrete state variables defined by a
-  /// real set (from the \c discrete_state_set_real \c initial_point
+  /// string set (from the \c discrete_state_set string \c initial_point
+  /// specification in \ref VarSV)
+  StringArray discreteStateSetStrVars;
+  /// initial values for the discrete state variables defined by a
+  /// real set (from the \c discrete_state_set real \c initial_point
   /// specification in \ref VarSV)
   RealVector discreteStateSetRealVars;
+
   /// complete set of admissible values for each of the discrete state
   /// variables defined by an integer set (from the
-  /// \c discrete_state_set_integer \c set_values specification in \ref VarSV)
+  /// \c discrete_state_set integer \c set_values specification in \ref VarSV)
   IntSetArray discreteStateSetInt;
   /// complete set of admissible values for each of the discrete state
-  /// variables defined by a real set (from the \c discrete_state_set_real
+  /// variables defined by a string set (from the \c discrete_state_set string
+  /// \c set_values specification in \ref VarSV)
+  StringSetArray discreteStateSetStr;
+  /// complete set of admissible values for each of the discrete state
+  /// variables defined by a real set (from the \c discrete_state_set real
   /// \c set_values specification in \ref VarSV)
   RealSetArray discreteStateSetReal;
+
+  /// is each dssi var strictly categorical (true) or relaxable (false)
+  BitArray discreteStateSetIntCat;
+  /// is each dssr var strictly categorical (true) or relaxable (false)
+  BitArray discreteStateSetRealCat;
+
   /// labels array for the continuous state variables (from the
   /// \c continuous_state \c descriptors specification in \ref VarSV)
   StringArray continuousStateLabels;
@@ -534,11 +651,15 @@ public:
   /// specification in \ref VarSV)
   StringArray discreteStateRangeLabels;
   /// labels array for the discrete state variables defined by an
-  /// integer set (from the \c discrete_state_range \c descriptors
+  /// integer set (from the \c discrete_state_set \c descriptors
   /// specification in \ref VarSV)
   StringArray discreteStateSetIntLabels;
   /// labels array for the discrete state variables defined by a
-  /// real set (from the \c discrete_state_range \c descriptors
+  /// string set (from the \c discrete_state_set \c descriptors
+  /// specification in \ref VarSV)
+  StringArray discreteStateSetStrLabels;
+  /// labels array for the discrete state variables defined by a
+  /// real set (from the \c discrete_state_set \c descriptors
   /// specification in \ref VarSV)
   StringArray discreteStateSetRealLabels;
 
@@ -548,6 +669,10 @@ public:
   IntVector discreteDesignSetIntLowerBnds;
   /// discrete design integer set upper bounds inferred from set values
   IntVector discreteDesignSetIntUpperBnds;
+  /// discrete design string set lower bounds inferred from set values
+  StringArray discreteDesignSetStrLowerBnds;
+  /// discrete design stinr set upper bounds inferred from set values
+  StringArray discreteDesignSetStrUpperBnds;
   /// discrete design real set lower bounds inferred from set values
   RealVector discreteDesignSetRealLowerBnds;
   /// discrete design real set upper bounds inferred from set values
@@ -573,6 +698,7 @@ public:
   /// fuv_descriptors, \c wuv_descriptors, and \c hbuv_descriptors
   /// specifications in \ref VarAUV)
   StringArray continuousAleatoryUncLabels;
+
   /// array of values for all discrete integer aleatory uncertain variables
   IntVector discreteIntAleatoryUncVars;
   /// distribution lower bounds for all discrete integer aleatory
@@ -583,6 +709,18 @@ public:
   IntVector discreteIntAleatoryUncUpperBnds;
   /// labels for all discrete integer aleatory uncertain variables
   StringArray discreteIntAleatoryUncLabels;
+
+  /// array of values for all discrete string epistemic uncertain variables
+  StringArray discreteStrAleatoryUncVars;
+  /// distribution lower bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrAleatoryUncLowerBnds;
+  /// distribution upper bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrAleatoryUncUpperBnds;
+  /// labels for all discrete string epistemic uncertain variables
+  StringArray discreteStrAleatoryUncLabels;
+
   /// array of values for all discrete real aleatory uncertain variables
   RealVector discreteRealAleatoryUncVars;
   /// distribution lower bounds for all discrete real aleatory
@@ -593,6 +731,7 @@ public:
   RealVector discreteRealAleatoryUncUpperBnds;
   /// labels for all discrete real aleatory uncertain variables
   StringArray discreteRealAleatoryUncLabels;
+
   /// array of values for all continuous epistemic uncertain variables
   RealVector continuousEpistemicUncVars;
   /// distribution lower bounds for all continuous epistemic uncertain variables
@@ -601,6 +740,7 @@ public:
   RealVector continuousEpistemicUncUpperBnds;
   /// labels for all continuous epistemic uncertain variables
   StringArray continuousEpistemicUncLabels;
+
   /// array of values for all discrete integer epistemic uncertain variables
   IntVector discreteIntEpistemicUncVars;
   /// distribution lower bounds for all discrete integer epistemic
@@ -611,6 +751,18 @@ public:
   IntVector discreteIntEpistemicUncUpperBnds;
   /// labels for all discrete integer epistemic uncertain variables
   StringArray discreteIntEpistemicUncLabels;
+
+  /// array of values for all discrete string epistemic uncertain variables
+  StringArray discreteStrEpistemicUncVars;
+  /// distribution lower bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrEpistemicUncLowerBnds;
+  /// distribution upper bounds for all discrete string epistemic
+  /// uncertain variables
+  StringArray discreteStrEpistemicUncUpperBnds;
+  /// labels for all discrete string epistemic uncertain variables
+  StringArray discreteStrEpistemicUncLabels;
+
   /// array of values for all discrete real epistemic uncertain variables
   RealVector discreteRealEpistemicUncVars;
   /// distribution lower bounds for all discrete real epistemic
@@ -621,10 +773,15 @@ public:
   RealVector discreteRealEpistemicUncUpperBnds;
   /// labels for all discrete real epistemic uncertain variables
   StringArray discreteRealEpistemicUncLabels;
+
   /// discrete state integer set lower bounds inferred from set values
   IntVector discreteStateSetIntLowerBnds;
   /// discrete state integer set upper bounds inferred from set values
   IntVector discreteStateSetIntUpperBnds;
+  /// discrete state string set lower bounds inferred from set values
+  StringArray discreteStateSetStrLowerBnds;
+  /// discrete state string set upper bounds inferred from set values
+  StringArray discreteStateSetStrUpperBnds;
   /// discrete state real set lower bounds inferred from set values
   RealVector discreteStateSetRealLowerBnds;
   /// discrete state real set upper bounds inferred from set values
@@ -719,6 +876,7 @@ public:
   size_t design() { return dataVarsRep->numContinuousDesVars +
     dataVarsRep->numDiscreteDesRangeVars +
     dataVarsRep->numDiscreteDesSetIntVars +
+    dataVarsRep->numDiscreteDesSetStrVars +
     dataVarsRep->numDiscreteDesSetRealVars; }
   /// return total number of aleatory uncertain variables
   size_t aleatory_uncertain() { return dataVarsRep->numNormalUncVars +
@@ -730,7 +888,9 @@ public:
     dataVarsRep->numHistogramBinUncVars + dataVarsRep->numPoissonUncVars + 
     dataVarsRep->numBinomialUncVars + dataVarsRep->numNegBinomialUncVars+
     dataVarsRep->numGeometricUncVars + dataVarsRep->numHyperGeomUncVars +
-    dataVarsRep->numHistogramPtUncVars; }
+    dataVarsRep->numHistogramPtIntUncVars + 
+    dataVarsRep->numHistogramPtStrUncVars + 
+    dataVarsRep->numHistogramPtRealUncVars; }
   /// return total number of epistemic uncertain variables
   size_t epistemic_uncertain() { return
     dataVarsRep->numContinuousIntervalUncVars +
@@ -743,13 +903,16 @@ public:
   size_t state() { return dataVarsRep->numContinuousStateVars +
     dataVarsRep->numDiscreteStateRangeVars +
     dataVarsRep->numDiscreteStateSetIntVars +
+    dataVarsRep->numDiscreteStateSetStrVars +
     dataVarsRep->numDiscreteStateSetRealVars; }
   /// return total number of continuous variables
   size_t continuous_variables() { return dataVarsRep->numContinuousDesVars +
     uncertain() + dataVarsRep->numContinuousStateVars; }
   /// return total number of discrete variables
+  // BMA TODO: should point histogram be included here?
   size_t discrete_variables()   { return dataVarsRep->numDiscreteDesRangeVars +
     dataVarsRep->numDiscreteDesSetIntVars +
+    dataVarsRep->numDiscreteDesSetStrVars +
     dataVarsRep->numDiscreteDesSetRealVars +
     dataVarsRep->numDiscreteStateRangeVars +
     dataVarsRep->numDiscreteStateSetIntVars +

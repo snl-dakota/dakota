@@ -95,7 +95,7 @@ NCSUOptimizer(const RealVector& var_l_bnds,
 	      const int& max_eval,
 	      double (*user_obj_eval) (const RealVector &x),
 	      double min_box_size, double vol_box_size, double solution_target):
-  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0, 0, 0, 0),
+  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0, 0, 0, 0, 0),
   setUpType(SETUP_USERFUNC), minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), lowerBounds(var_l_bnds), 
   upperBounds(var_u_bnds), userObjectiveEval(user_obj_eval)

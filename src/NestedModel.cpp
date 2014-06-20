@@ -1775,8 +1775,8 @@ void NestedModel::update_sub_model()
 }
 
 
-/** maps index within active continuous variables to index within
-    aggregated active continuous/discrete-int/discrete-real variables. */
+/** maps index within active continuous variables to index within aggregated
+    active continuous/discrete-int/discrete-string/discrete-real variables. */
 size_t NestedModel::cv_index_map(size_t cv_index)
 {
   size_t offset;
@@ -1784,19 +1784,22 @@ size_t NestedModel::cv_index_map(size_t cv_index)
   case MIXED_UNCERTAIN: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
-    size_t num_cauv = vc_totals[3], num_dauv = vc_totals[4] + vc_totals[5];
     //  active cv order is cauv,ceuv;
     // aggregated order is cauv/dauiv/daurv,ceuv/deuiv/deurv:
-    offset = (cv_index < num_cauv) ? 0 : num_dauv;
+    offset = (cv_index < vc_totals[TOTAL_CAUV]) ? 0 :
+      vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DAURV];
     break;
   }
   case MIXED_ALL: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
-    size_t num_cdv = vc_totals[0], num_cauv = vc_totals[3],
-      num_ceuv = vc_totals[6], num_ddv  = vc_totals[1] + vc_totals[2],
-      num_dauv = vc_totals[4] + vc_totals[5],
-      num_deuv = vc_totals[7] + vc_totals[8];
+    size_t num_cdv = vc_totals[TOTAL_CDV], num_cauv = vc_totals[TOTAL_CAUV],
+      num_ceuv = vc_totals[TOTAL_CEUV], num_ddv  = vc_totals[TOTAL_DDIV]
+        + vc_totals[TOTAL_DDSV] + vc_totals[TOTAL_DDRV],
+      num_dauv = vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAUSV]
+        + vc_totals[TOTAL_DAURV],
+      num_deuv = vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DEUSV]
+        + vc_totals[TOTAL_DEURV];
     // active cv order is cdv,cauv,ceuv,csv; aggregated order is
     // cdv/ddiv/ddrv,cauv/dauiv/daurv,ceuv/deuiv/deurv,csv/dsiv/dsrv:
     if (cv_index < num_cdv)                            // continuous design
@@ -1809,15 +1812,21 @@ size_t NestedModel::cv_index_map(size_t cv_index)
       offset = num_ddv + num_dauv + num_deuv;
     break;
   }
-  default: // MIXED for single variable types, RELAXED for all variable types
+  case RELAXED_DESIGN: // TO DO
+  case RELAXED_ALEATORY_UNCERTAIN: // TO DO
+  case RELAXED_EPISTEMIC_UNCERTAIN: // TO DO
+  case RELAXED_UNCERTAIN: // TO DO
+  case RELAXED_STATE: // TO DO
+  case RELAXED_ALL: // TO DO
+  default: // MIXED for single variable types
     offset = 0; break;
   }
   return cv_index + offset;
 }
 
 
-/** maps index within active discrete int variables to index within
-    aggregated active continuous/discrete-int/discrete-real variables. */
+/** maps index within active discrete int variables to index within aggregated
+    active continuous/discrete-int/discrete-string/discrete-real variables. */
 size_t NestedModel::div_index_map(size_t div_index)
 {
   size_t offset;
@@ -1825,44 +1834,55 @@ size_t NestedModel::div_index_map(size_t div_index)
   case MIXED_UNCERTAIN: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
-    size_t num_cauv  = vc_totals[3], num_dauiv = vc_totals[4],
-           num_daurv = vc_totals[5], num_ceuv  = vc_totals[6];
+    size_t num_cauv  = vc_totals[TOTAL_CAUV],
+      num_dauiv = vc_totals[TOTAL_DAUIV], num_dausv = vc_totals[TOTAL_DAUSV],
+      num_daurv = vc_totals[TOTAL_DAURV], num_ceuv  = vc_totals[TOTAL_CEUV];
     // active div order is dauiv/deuiv
-    // aggregated order is cauv/dauiv/daurv,ceuv/deuiv/deurv:
-    offset = (div_index < num_dauiv) ? num_cauv : // discrete int aleatory
-      num_cauv + num_daurv + num_ceuv;            // discrete int epistemic
+    // aggregated order is cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv:
+    offset = (div_index < num_dauiv) ? num_cauv :  // discrete int aleatory
+      num_cauv + num_dausv + num_daurv + num_ceuv; // discrete int epistemic
     break;
   }
   case MIXED_ALL: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
-    size_t num_cdv = vc_totals[0], num_ddiv  = vc_totals[1],
-      num_ddrv  = vc_totals[2],    num_cauv  = vc_totals[3],
-      num_dauiv = vc_totals[4],    num_daurv = vc_totals[5],
-      num_ceuv  = vc_totals[6],    num_deuiv = vc_totals[7],
-      num_deurv = vc_totals[8],    num_csv   = vc_totals[9];
+    size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv  = vc_totals[TOTAL_DDIV],
+      num_ddsv  = vc_totals[TOTAL_DDSV],   num_ddrv  = vc_totals[TOTAL_DDRV],
+      num_cauv  = vc_totals[TOTAL_CAUV],   num_dauiv = vc_totals[TOTAL_DAUIV],
+      num_dausv = vc_totals[TOTAL_DAUSV],  num_daurv = vc_totals[TOTAL_DAURV],
+      num_ceuv  = vc_totals[TOTAL_CEUV],   num_deuiv = vc_totals[TOTAL_DEUIV],
+      num_deusv = vc_totals[TOTAL_DEUSV],  num_deurv = vc_totals[TOTAL_DEURV],
+      num_csv   = vc_totals[TOTAL_CSV];
     // active div order is ddiv,dauiv,deuiv,dsiv; aggregated order is
-    // cdv/ddiv/ddrv,cauv/dauiv/daurv,ceuv/deuiv/deurv,csv/dsiv/dsrv:
+    // cdv/ddiv/ddsv/ddrv,cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv,
+    // csv/dsiv/dssv/dsrv:
     if (div_index < num_ddiv)                              // disc int design
       offset = num_cdv;
     else if (div_index < num_ddiv + num_dauiv)             // disc int aleatory
-      offset = num_cdv + num_ddrv + num_cauv;
+      offset = num_cdv + num_ddsv + num_ddrv + num_cauv;
     else if (div_index < num_ddiv + num_dauiv + num_deuiv) // disc int epistemic
-      offset = num_cdv + num_ddrv + num_cauv + num_daurv + num_ceuv;
+      offset = num_cdv + num_ddsv + num_ddrv + num_cauv + num_dausv + num_daurv
+	     + num_ceuv;
     else                                                   // disc int state
-      offset = num_cdv + num_ddrv + num_cauv + num_daurv + num_ceuv + num_deurv
-	     + num_csv;
+      offset = num_cdv + num_ddsv + num_ddrv + num_cauv + num_dausv + num_daurv
+	     + num_ceuv + num_deusv + num_deurv + num_csv;
     break;
   }
-  default: // MIXED for single variable types; RELAXED should not occur
+  case RELAXED_DESIGN: // TO DO
+  case RELAXED_ALEATORY_UNCERTAIN: // TO DO
+  case RELAXED_EPISTEMIC_UNCERTAIN: // TO DO
+  case RELAXED_UNCERTAIN: // TO DO
+  case RELAXED_STATE: // TO DO
+  case RELAXED_ALL: // TO DO
+  default: // MIXED for single variable types
     offset = currentVariables.cv(); break;
   }
   return div_index + offset;
 }
 
 
-/** maps index within active discrete real variables to index within
-    aggregated active continuous/discrete-int/discrete-real variables. */
+/** maps index within active discrete real variables to index within aggregated
+    active continuous/discrete-int/discrete-string/discrete-real variables. */
 size_t NestedModel::drv_index_map(size_t drv_index)
 {
   size_t offset;
@@ -1870,35 +1890,41 @@ size_t NestedModel::drv_index_map(size_t drv_index)
   case MIXED_UNCERTAIN: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
-    size_t num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-      num_daurv = vc_totals[5], num_ceuv = vc_totals[6],
-      num_deuiv = vc_totals[7];
+    size_t num_cauv = vc_totals[TOTAL_CAUV], num_dauiv = vc_totals[TOTAL_DAUIV],
+      num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
+      num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+      num_deusv = vc_totals[TOTAL_DEUSV];
     // active drv order is daurv/deurv
-    // aggregated order is cauv/dauiv/daurv,ceuv/deuiv/deurv:
-    offset = (drv_index < num_daurv) ? num_cauv + num_dauiv : // dr aleatory
-      num_cauv + num_dauiv + num_ceuv + num_deuiv;            // dr epistemic
+    // aggregated order is cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv:
+    offset = (drv_index < num_daurv) ?
+      num_cauv + num_dauiv + num_dausv : // dr aleatory
+      num_cauv + num_dauiv + num_dausv + num_ceuv + num_deuiv + num_deusv; 
+                                         // dr epistemic
     break;
   }
   case MIXED_ALL: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
-    size_t num_cdv = vc_totals[0], num_ddiv  = vc_totals[1],
-      num_ddrv  = vc_totals[2],    num_cauv  = vc_totals[3],
-      num_dauiv = vc_totals[4],    num_daurv = vc_totals[5],
-      num_ceuv  = vc_totals[6],    num_deuiv = vc_totals[7],
-      num_deurv = vc_totals[8],    num_csv   = vc_totals[9],
-      num_dsiv  = vc_totals[10];
+    size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv  = vc_totals[TOTAL_DDIV],
+      num_ddsv  = vc_totals[TOTAL_DDSV],   num_ddrv  = vc_totals[TOTAL_DDRV],
+      num_cauv  = vc_totals[TOTAL_CAUV],   num_dauiv = vc_totals[TOTAL_DAUIV],
+      num_dausv = vc_totals[TOTAL_DAUSV],  num_daurv = vc_totals[TOTAL_DAURV],
+      num_ceuv  = vc_totals[TOTAL_CEUV],   num_deuiv = vc_totals[TOTAL_DEUIV],
+      num_deusv = vc_totals[TOTAL_DEUSV],  num_deurv = vc_totals[TOTAL_DEURV],
+      num_csv   = vc_totals[TOTAL_CSV],    num_dsiv  = vc_totals[TOTAL_DSIV],
+      num_dssv  = vc_totals[TOTAL_DSSV];
     // active drv order is ddrv,daurv,deurv,dsrv; aggregated order is
     // cdv/ddiv/ddrv,cauv/dauiv/daurv,ceuv/deuiv/deurv,csv/dsiv/dsrv:
     if (drv_index < num_ddrv)                             // disc real design
-      offset = num_cdv + num_ddiv;
+      offset = num_cdv + num_ddiv + num_ddsv;
     else if (drv_index < num_ddrv + num_daurv)            // disc real aleatory
-      offset = num_cdv + num_ddiv + num_cauv + num_dauiv;
+      offset = num_cdv + num_ddiv + num_ddsv + num_cauv + num_dauiv + num_dausv;
     else if (drv_index < num_ddrv + num_daurv + num_deurv)// disc real epistemic
-      offset = num_cdv + num_ddiv + num_cauv + num_dauiv + num_ceuv + num_deuiv;
+      offset = num_cdv + num_ddiv + num_ddsv + num_cauv + num_dauiv + num_dausv
+	     + num_ceuv + num_deuiv + num_deusv;
     else                                                  // disc real state
-      offset = num_cdv + num_ddiv + num_cauv + num_dauiv + num_ceuv + num_deuiv
-	     + num_csv + num_dsiv;
+      offset = num_cdv + num_ddiv + num_ddsv + num_cauv + num_dauiv + num_dausv
+	     + num_ceuv + num_deuiv + num_deusv + num_csv + num_dsiv + num_dssv;
     break;
   }
   default: // MIXED for single variable types; RELAXED should not occur
@@ -1914,42 +1940,48 @@ size_t NestedModel::ccv_index_map(size_t ccv_index)
 {
   size_t offset;
   const SizetArray& vc_totals = currentVariables.variables_components_totals();
-  size_t num_cdv = vc_totals[0];
+  size_t num_cdv = vc_totals[TOTAL_CDV];
   switch (currentVariables.view().first) { // active view
   case MIXED_DESIGN:  // complement is cauv/ceuv/csv
     offset = num_cdv; break;
-  case MIXED_ALEATORY_UNCERTAIN: { // complement is cdv/ceuv/csv
-    size_t num_cauv = vc_totals[3];
-    offset = (ccv_index < num_cdv) ? 0 : num_cauv; break;
-  }
-  case MIXED_EPISTEMIC_UNCERTAIN: { // complement is cdv/cauv/csv
-    size_t num_cauv = vc_totals[3], num_ceuv = vc_totals[6];
-    offset = (ccv_index < num_cdv+num_cauv) ? 0 : num_ceuv; break;
-  }
-  case MIXED_UNCERTAIN: { // complement is cdv/csv
-    size_t num_cauv = vc_totals[3], num_ceuv = vc_totals[6];
-    offset = (ccv_index < num_cdv) ? 0 : num_cauv+num_ceuv; break;
-  }
-  case RELAXED_DESIGN: { // complement is auv/euv/sv
-    size_t num_dv = num_cdv + vc_totals[1] + vc_totals[2];
-    offset = num_dv; break;
-  }
+  case MIXED_ALEATORY_UNCERTAIN: // complement is cdv/ceuv/csv
+    offset = (ccv_index < num_cdv) ? 0 : vc_totals[TOTAL_CAUV]; break;
+  case MIXED_EPISTEMIC_UNCERTAIN: // complement is cdv/cauv/csv
+    offset = (ccv_index < num_cdv+vc_totals[TOTAL_CAUV])
+           ? 0 : vc_totals[TOTAL_CEUV];
+    break;
+  case MIXED_UNCERTAIN: // complement is cdv/csv
+    offset = (ccv_index < num_cdv)
+           ? 0 : vc_totals[TOTAL_CAUV] + vc_totals[TOTAL_CEUV];
+    break;
+  case RELAXED_DESIGN: // complement is auv/euv/sv
+    offset = num_cdv + vc_totals[TOTAL_DDIV] + vc_totals[TOTAL_DDSV]
+      + vc_totals[TOTAL_DDRV]; // TO DO
+    break;
   case RELAXED_ALEATORY_UNCERTAIN: { // complement is dv/euv/sv
-    size_t num_dv  = num_cdv + vc_totals[1] + vc_totals[2],
-           num_auv = vc_totals[3] + vc_totals[4] + vc_totals[5];
-    offset = (ccv_index < num_dv) ? 0 : num_auv; break;
+    size_t num_dv  = num_cdv + vc_totals[TOTAL_DDIV]
+      + vc_totals[TOTAL_DDSV] + vc_totals[TOTAL_DDRV],
+      num_auv = vc_totals[TOTAL_CAUV]  + vc_totals[TOTAL_DAUIV]
+	      + vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DAURV];
+    offset = (ccv_index < num_dv) ? 0 : num_auv; break; // TO DO
   }
   case RELAXED_EPISTEMIC_UNCERTAIN: { // complement is dv/auv/sv
-    size_t num_dv  = num_cdv + vc_totals[1] + vc_totals[2],
-           num_auv = vc_totals[3] + vc_totals[4] + vc_totals[5],
-           num_euv = vc_totals[6] + vc_totals[7] + vc_totals[8];
-    offset = (ccv_index < num_dv+num_auv) ? 0 : num_euv; break;
+    size_t num_dv  = num_cdv + vc_totals[TOTAL_DDIV]
+      + vc_totals[TOTAL_DDSV] + vc_totals[TOTAL_DDRV],
+      num_auv = vc_totals[TOTAL_CAUV]  + vc_totals[TOTAL_DAUIV]
+	      + vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DAURV],
+      num_euv = vc_totals[TOTAL_CEUV]  + vc_totals[TOTAL_DEUIV]
+              + vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DEURV];
+    offset = (ccv_index < num_dv + num_auv) ? 0 : num_euv; break;
   }
   case RELAXED_UNCERTAIN: { // complement is dv/sv
-    size_t num_dv  = num_cdv + vc_totals[1] + vc_totals[2],
-           num_auv = vc_totals[3] + vc_totals[4] + vc_totals[5],
-           num_euv = vc_totals[6] + vc_totals[7] + vc_totals[8];
-    offset = (ccv_index < num_dv) ? 0 : num_auv+num_euv; break;
+    size_t num_dv  = num_cdv + vc_totals[TOTAL_DDIV]
+      + vc_totals[TOTAL_DDSV] + vc_totals[TOTAL_DDRV],
+      num_auv = vc_totals[TOTAL_CAUV]  + vc_totals[TOTAL_DAUIV]
+	      + vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DAURV],
+      num_euv = vc_totals[TOTAL_CEUV]  + vc_totals[TOTAL_DEUIV]
+	      + vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DEURV];
+    offset = (ccv_index < num_dv) ? 0 : num_auv + num_euv; break;
   }
   case MIXED_STATE: case RELAXED_STATE:
     offset = 0; break;
@@ -1968,22 +2000,19 @@ size_t NestedModel::cdiv_index_map(size_t cdiv_index)
 {
   size_t offset;
   const SizetArray& vc_totals = currentVariables.variables_components_totals();
-  size_t num_ddiv = vc_totals[1];
+  size_t num_ddiv = vc_totals[TOTAL_DDIV];
   switch (currentVariables.view().first) { // active view
   case MIXED_DESIGN:  // complement is dauiv/deuiv/dsiv
     offset = num_ddiv; break;
-  case MIXED_ALEATORY_UNCERTAIN: { // complement is ddiv/deuiv/dsiv
-    size_t num_dauiv = vc_totals[4];
-    offset = (cdiv_index < num_ddiv) ? 0 : num_dauiv; break;
-  }
-  case MIXED_EPISTEMIC_UNCERTAIN: { // complement is ddiv/dauiv/dsiv
-    size_t num_dauiv = vc_totals[4], num_deuiv = vc_totals[7];
-    offset = (cdiv_index < num_ddiv+num_dauiv) ? 0 : num_deuiv; break;
-  }
-  case MIXED_UNCERTAIN: { // complement is ddiv/dsiv
-    size_t num_dauiv = vc_totals[4], num_deuiv = vc_totals[7];
-    offset = (cdiv_index < num_ddiv) ? 0 : num_dauiv+num_deuiv; break;
-  }
+  case MIXED_ALEATORY_UNCERTAIN: // complement is ddiv/deuiv/dsiv
+    offset = (cdiv_index < num_ddiv) ? 0 : vc_totals[TOTAL_DAUIV]; break;
+  case MIXED_EPISTEMIC_UNCERTAIN: // complement is ddiv/dauiv/dsiv
+    offset = (cdiv_index < num_ddiv + vc_totals[TOTAL_DAUIV])
+           ? 0 : vc_totals[TOTAL_DEUIV];
+    break;
+  case MIXED_UNCERTAIN: // complement is ddiv/dsiv
+    offset = (cdiv_index < num_ddiv)
+           ? 0 : vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DEUIV]; break;
   case MIXED_STATE:
     offset = 0; break;
   default: // MIXED_ALL, RELAXED_*
@@ -2001,22 +2030,19 @@ size_t NestedModel::cdrv_index_map(size_t cdrv_index)
 {
   size_t offset;
   const SizetArray& vc_totals = currentVariables.variables_components_totals();
-  size_t num_ddrv = vc_totals[2];
+  size_t num_ddrv = vc_totals[TOTAL_DDRV];
   switch (currentVariables.view().first) { // active view
   case MIXED_DESIGN:  // complement is daurv/deurv/dsrv
     offset = num_ddrv; break;
-  case MIXED_ALEATORY_UNCERTAIN: { // complement is ddrv/deurv/dsrv
-    size_t num_daurv = vc_totals[5];
-    offset = (cdrv_index < num_ddrv) ? 0 : num_daurv; break;
-  }
-  case MIXED_EPISTEMIC_UNCERTAIN: { // complement is ddrv/daurv/dsrv
-    size_t num_daurv = vc_totals[5], num_deurv = vc_totals[8];
-    offset = (cdrv_index < num_ddrv+num_daurv) ? 0 : num_deurv; break;
-  }
-  case MIXED_UNCERTAIN: { // complement is ddrv/dsrv
-    size_t num_daurv = vc_totals[5], num_deurv = vc_totals[8];
-    offset = (cdrv_index < num_ddrv) ? 0 : num_daurv+num_deurv; break;
-  }
+  case MIXED_ALEATORY_UNCERTAIN: // complement is ddrv/deurv/dsrv
+    offset = (cdrv_index < num_ddrv) ? 0 : vc_totals[TOTAL_DAURV]; break;
+  case MIXED_EPISTEMIC_UNCERTAIN: // complement is ddrv/daurv/dsrv
+    offset = (cdrv_index < num_ddrv + vc_totals[TOTAL_DAURV])
+           ? 0 : vc_totals[TOTAL_DEURV]; break;
+  case MIXED_UNCERTAIN: // complement is ddrv/dsrv
+    offset = (cdrv_index < num_ddrv)
+           ? 0 : vc_totals[TOTAL_DAURV] + vc_totals[TOTAL_DEURV];
+    break;
   case MIXED_STATE:
     offset = 0; break;
   default: // MIXED_ALL, RELAXED_*

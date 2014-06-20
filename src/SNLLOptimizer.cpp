@@ -417,7 +417,7 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
   void (*user_con_eval) (int mode, int n, const RealVector& x, 
 			 RealVector& g, RealMatrix& grad_g,
 			 int& result_mode) ): // use default SNLLBase ctor
-  Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0,
+  Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length()),
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),

@@ -36,11 +36,12 @@ variables,
 	  lower_bounds = 400 1750 4
 	  upper_bounds = 600 2250 6
 	  descriptors = 'P_mean' 'M_mean' 'Y_mean'		
-	discrete_uncertain_set_int = 1
-	  set_values =  1   2   3   4
-#	  set_values =  1   2   4         # model 3 has most nonlinear discrep
-#	  set_values =  1   2		  # models 1,2 are most similar
-	  descriptors = 'EpistModelForm'		
+	discrete_uncertain_set
+	  integer = 1
+	    set_values =  1   2   3   4
+#	    set_values =  1   2   4         # model 3 has most nonlinear discrep
+#	    set_values =  1   2		  # models 1,2 are most similar
+	    descriptors = 'EpistModelForm'		
 
 responses,
 	id_responses = 'EPIST_R'
@@ -94,9 +95,10 @@ variables,
 					0   0   1 0 0
 					0   0   0 1 0
 					0   0   0 0 1
-	discrete_state_set_integer = 1
-	  set_values     = 1   2   3   4
-	  descriptors    = 'ModelForm'	
+	discrete_state_set
+	  integer = 1
+	    set_values     = 1   2   3   4
+	    descriptors    = 'ModelForm'	
 
 interface,
 	id_interface = 'ALEAT_I'

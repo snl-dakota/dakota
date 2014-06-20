@@ -2174,7 +2174,8 @@ void NonDExpansion::print_results(std::ostream& s)
 {
   s << std::scientific << std::setprecision(write_precision);
 
-  print_coefficients(s);
+  if (outputLevel >= NORMAL_OUTPUT)
+    print_coefficients(s);
   s << "-----------------------------------------------------------------------"
     << "------\nStatistics derived analytically from polynomial expansion:\n";
   print_moments(s);

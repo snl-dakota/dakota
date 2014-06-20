@@ -1681,7 +1681,7 @@ KEYWORD model
 	      | combined
 	      ]
 	    [ metrics ALIAS diagnostics STRINGLIST
-	      [ cross_validate
+	      [ cross_validation
 		[ folds INTEGER
 		| percent REAL ]
 		]
@@ -1761,17 +1761,27 @@ KEYWORD12 variables
 	  [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST ]
 	  [ descriptors ALIAS ddv_descriptors STRINGLIST ]
 	  ]
-	[ discrete_design_set_integer INTEGER > 0
-	  [ initial_point INTEGERLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values INTEGERLIST
-	  [ descriptors STRINGLIST ]
-	  ]
-	[ discrete_design_set_real INTEGER > 0
-	  [ initial_point REALLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values REALLIST
-	  [ descriptors STRINGLIST ]
+	[ discrete_design_set
+	  [ integer INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values INTEGERLIST
+	    [ categorical STRINGLIST ]
+	    [ initial_point INTEGERLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ string INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values STRINGLIST
+	    [ initial_point STRINGLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ real INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values REALLIST
+	    [ categorical STRINGLIST ]
+	    [ initial_point REALLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
 	  ]
 	[ normal_uncertain INTEGER > 0
 	  means ALIAS nuv_means REALLIST
@@ -1888,12 +1898,28 @@ KEYWORD12 variables
 	  [ initial_point INTEGERLIST ]
 	  [ descriptors STRINGLIST ]
 	  ]
-	[ histogram_point_uncertain INTEGER > 0
-	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST ]
-	  abscissas ALIAS huv_point_abscissas REALLIST
-	  counts ALIAS huv_point_counts REALLIST
-	  [ initial_point REALLIST ]
-	  [ descriptors ALIAS huv_point_descriptors STRINGLIST ]
+	[ histogram_point_uncertain
+	  [ integer INTEGER > 0
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST ]
+	    abscissas INTEGERLIST
+	    counts REALLIST
+	    [ initial_point INTEGERLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ string INTEGER > 0
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST ]
+	    abscissas STRINGLIST
+	    counts REALLIST
+	    [ initial_point STRINGLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ real INTEGER > 0
+	    [ pairs_per_variable ALIAS num_pairs INTEGERLIST ]
+	    abscissas REALLIST
+	    counts REALLIST
+	    [ initial_point REALLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
 	  ]
 	[ uncertain_correlation_matrix REALLIST ]
 	[ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0
@@ -1912,19 +1938,30 @@ KEYWORD12 variables
 	  [ initial_point INTEGERLIST ]
 	  [ descriptors STRINGLIST ]
 	  ]
-	[ discrete_uncertain_set_integer INTEGER > 0
-	  [ num_set_values INTEGERLIST ]
-	  set_values INTEGERLIST
-	  [ set_probabilities ALIAS set_probs REALLIST ]
-	  [ initial_point INTEGERLIST ]
-	  [ descriptors STRINGLIST ]
-	  ]
-	[ discrete_uncertain_set_real INTEGER > 0
-	  [ num_set_values INTEGERLIST ]
-	  set_values REALLIST
-	  [ set_probabilities ALIAS set_probs REALLIST ]
-	  [ initial_point REALLIST ]
-	  [ descriptors STRINGLIST ]
+	[ discrete_uncertain_set
+	  [ integer INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values INTEGERLIST
+	    [ set_probabilities ALIAS set_probs REALLIST ]
+	    [ categorical STRINGLIST ]
+	    [ initial_point INTEGERLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ string INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values STRINGLIST
+	    [ set_probabilities ALIAS set_probs REALLIST ]
+	    [ initial_point STRINGLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ real INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values REALLIST
+	    [ set_probabilities ALIAS set_probs REALLIST ]
+	    [ categorical STRINGLIST ]
+	    [ initial_point REALLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
 	  ]
 	[ continuous_state INTEGER > 0
 	  [ initial_state ALIAS csv_initial_state REALLIST ]
@@ -1938,17 +1975,27 @@ KEYWORD12 variables
 	  [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST ]
 	  [ descriptors ALIAS dsv_descriptors STRINGLIST ]
 	  ]
-	[ discrete_state_set_integer INTEGER > 0
-	  [ initial_state INTEGERLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values INTEGERLIST
-	  [ descriptors STRINGLIST ]
-	  ]
-	[ discrete_state_set_real INTEGER > 0
-	  [ initial_state REALLIST ]
-	  [ num_set_values INTEGERLIST ]
-	  set_values REALLIST
-	  [ descriptors STRINGLIST ]
+	[ discrete_state_set
+	  [ integer INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values INTEGERLIST
+	    [ categorical STRINGLIST ]
+	    [ initial_state INTEGERLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ string INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values STRINGLIST
+	    [ initial_state STRINGLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
+	  [ real INTEGER > 0
+	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
+	    elements ALIAS set_values REALLIST
+	    [ categorical STRINGLIST ]
+	    [ initial_state REALLIST ]
+	    [ descriptors STRINGLIST ]
+	    ]
 	  ]
 
 KEYWORD12 interface

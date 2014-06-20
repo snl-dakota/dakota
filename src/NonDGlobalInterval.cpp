@@ -153,9 +153,11 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor: the recast fn pointers are reset for
   // each level within the run fn.
-  SizetArray recast_vars_comps_total; // default: empty; no change in size
-  intervalOptModel.assign_rep(new
-    RecastModel(fHatModel, recast_vars_comps_total, 1, 0, 0), false);
+  SizetArray recast_vars_comps_total;  // default: empty; no change in size
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  intervalOptModel.assign_rep(
+    new RecastModel(fHatModel, recast_vars_comps_total,
+		    all_relax_di, all_relax_dr, 1, 0, 0), false);
 
   // Instantiate the optimizer used on the GP.
   // TO DO: add support for discrete EGO

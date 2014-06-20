@@ -75,8 +75,9 @@ void Analyzer::update_from_model(const Model& model)
 {
   Iterator::update_from_model(model);
 
-  numContinuousVars   = model.cv();  numDiscreteIntVars = model.div();
-  numDiscreteRealVars = model.drv(); numFunctions       = model.num_functions();
+  numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
+  numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
+  numFunctions          = model.num_functions();
 
   bool err_flag = false;
   // Check for correct bit associated within methodName
@@ -92,7 +93,8 @@ void Analyzer::update_from_model(const Model& model)
       methodName == VECTOR_PARAMETER_STUDY   || methodName == RANDOM_SAMPLING ||
       methodName == GLOBAL_INTERVAL_EST      || methodName == GLOBAL_EVIDENCE ||
       methodName == ADAPTIVE_SAMPLING ) {
-    if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteRealVars) {
+    if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
+	!numDiscreteRealVars) {
       Cerr << "\nError: " << method_enum_to_string(methodName)
 	   << " requires active variables." << std::endl;
       err_flag = true;
@@ -104,7 +106,7 @@ void Analyzer::update_from_model(const Model& model)
 	   << " requires active continuous variables." << std::endl;
       err_flag = true;
     }
-    if (numDiscreteIntVars || numDiscreteRealVars)
+    if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
       Cerr << "\nWarning: discrete design variables ignored by "
 	   << method_enum_to_string(methodName) << std::endl;
   }
@@ -819,6 +821,8 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
 	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
 	  << T4[k][i+offset] << ' ' << div_labels[i] << '\n';
     offset += numDiscreteIntVars;
+    //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
+    //offset += numDiscreteStringVars;
     for (i=0; i<numDiscreteRealVars; ++i)
       if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
@@ -968,7 +972,7 @@ void Analyzer::print_results(std::ostream& s)
   // Single and Multipoint results summary
   // -------------------------------------
   RealPairPRPMultiMap::iterator it = bestVarsRespMap.begin();
-  size_t i, offset, num_fns, num_best_map = bestVarsRespMap.size();
+  size_t i, offset = 0, num_fns, num_best_map = bestVarsRespMap.size();
   for (i=1; it!=bestVarsRespMap.end(); ++i, ++it) {
     const ParamResponsePair& best_pr = it->second;
     const Variables&  best_vars = best_pr.prp_parameters();
@@ -981,13 +985,13 @@ void Analyzer::print_results(std::ostream& s)
       if (numObjFns > 1) s << "<<<<< Best objective functions ";
       else               s << "<<<<< Best objective function  ";
       if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
-      write_data_partial(s, 0, numObjFns, best_fns);
+      write_data_partial(s, offset, numObjFns, best_fns);
       offset = numObjFns;
     }
     else if (numLSqTerms) {
       s << "<<<<< Best residual terms      ";
       if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
-      write_data_partial(s, 0, numLSqTerms, best_fns);
+      write_data_partial(s, offset, numLSqTerms, best_fns);
       offset = numLSqTerms;
     }
     if (num_fns > offset) {

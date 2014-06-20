@@ -35,10 +35,11 @@ variables,
 	  lower_bounds = -1. -1.
 	  upper_bounds =  1.  1.
 	  descriptors = 'x1_mean' 'x2_mean'		
-	discrete_uncertain_set_int = 1
-#	  set_probs  = .5 .5
-	  set_values =  1  2
-	  descriptors = 'EpistModelForm'		
+	discrete_uncertain_set
+	  integer = 1
+#	    set_probs  = .5 .5
+	    set_values =  1  2
+	    descriptors = 'EpistModelForm'		
 
 responses,
 	id_responses = 'EPIST_R'
@@ -70,9 +71,10 @@ variables,
 	  means          =   0.  0.
 	  std_deviations =   1.  1.
 	  descriptors      'x1' 'x2'
-	discrete_state_set_integer = 1
-	  set_values     = 1 2
-	  descriptors    = 'ModelForm'	
+	discrete_state_set
+	  integer = 1
+	    set_values     = 1 2
+	    descriptors    = 'ModelForm'	
 
 interface,
 	id_interface = 'ALEAT_I'
