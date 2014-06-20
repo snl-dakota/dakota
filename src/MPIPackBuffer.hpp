@@ -319,22 +319,40 @@ inline void container_write(const ContainerT& c, MPIPackBuffer& s)
 }
 
 
-// BMA TODO: consider extracting as ulong instead of a locale-specific text version?
 /// stream insertion for BitArray
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const BitArray& data)
+template <typename Block, typename Allocator>
+inline MPIPackBuffer& 
+operator<<(MPIPackBuffer& s, const boost::dynamic_bitset<Block, Allocator>& bs)
 { 
-  // inserts the bitset as text
-  s << data; 
+  size_t size = bs.size();
+  s << size;
+
+  // create a vector of blocks and insert it it
+  std::vector<Block> vec_block(bs.num_blocks());
+  to_block_range(bs, vec_block.begin());
+  s << vec_block;
+
   return s; 
 }
 
 
-// BMA TODO: consider sending as ulong instead of a locale-specific text version?
 /// stream extraction for BitArray
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, BitArray& data)
+template <typename Block, typename Allocator>
+inline MPIUnpackBuffer& 
+operator>>(MPIUnpackBuffer& s, boost::dynamic_bitset<Block, Allocator>& bs)
 { 
-  // extracts the bitset as text
-  s >> data;
+  size_t size;
+  s >> size;
+
+  bs.resize(size);
+
+  // Load vector
+  std::vector<Block> vec_block;
+  s >> vec_block;
+
+  // Convert vector into a bitset
+  from_block_range(vec_block.begin(), vec_block.end(), bs);
+
   return s;
 }
 

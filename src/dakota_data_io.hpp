@@ -75,7 +75,7 @@ void serialize(Archive& ar, Dakota::StringMultiArrayView& label_array,
 /// save a boost dynamic bitset, size, then contents
 template <class Archive, typename Block, typename Allocator>
 inline void save(Archive &ar, 
-		 boost::dynamic_bitset<Block, Allocator> const &bs,
+		 const boost::dynamic_bitset<Block, Allocator>& bs,
 		 const unsigned int version)
 {
   size_t size = bs.size();
