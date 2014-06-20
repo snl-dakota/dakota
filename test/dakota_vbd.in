@@ -34,7 +34,7 @@ variables,
 	uniform_uncertain = 2
 	  lower_bounds = 0 0
 	  upper_bounds =  1 1
-#       histogram_point_uncertain = 2		#4      
+#       histogram_point_uncertain real = 2	#4      
 #	  num_pairs = 2 3 			#4
 #	  abscissas = 1.2 1.4 0 1 2		#4
 #	  counts = 1 1 1 1 1  	  		#4
