@@ -522,7 +522,8 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     distribute(all_sample, list_cv_i, div_combined, dsv_indices, drv_indices);
     start += num_vars;
 
-    // Check for admissible set values
+    // Promote set indices to admissible set values
+    if (numDiscreteIntVars) list_div_i.sizeUninitialized(numDiscreteIntVars);
     for (j=0, dsi_cntr=0; j<numDiscreteIntVars; ++j) {
       if (di_set_bits[j]) {
 	// if set values:
@@ -539,6 +540,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       else // range values
 	list_div_i[j] = div_combined[j];
     }
+
     for (j=0; j<numDiscreteStringVars; ++j)
       // if set values:
       //if (set_value_to_index(list_dsv_i[j], dss_values[j]) == _NPOS) {
@@ -549,6 +551,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       // if set indices:
       list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
 
+    if (numDiscreteRealVars) list_drv_i.sizeUninitialized(numDiscreteRealVars);
     for (j=0; j<numDiscreteRealVars; ++j)
       // if set values:
       //if (set_value_to_index(list_drv_i[j], dsr_values[j]) == _NPOS) {
