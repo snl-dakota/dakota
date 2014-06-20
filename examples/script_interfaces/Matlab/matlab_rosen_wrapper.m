@@ -1,5 +1,5 @@
 % matlab_rosen_wrapper.m
-function f(params,results)
+function matlab_rosen_wrapper(params,results)
 
 %--------------------------------------------------------------
 % Set any fixed/default values needed for your analysis .m code

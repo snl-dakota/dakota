@@ -366,8 +366,8 @@ void APPSOptimizer::initialize_variables_and_constraints()
   const RealVector& linear_eq_targets = iteratedModel.linear_eq_constraint_targets();
 
   for (int i=0; i<numLinearIneqConstraints; i++) {
-    for (int j=0; j<numContinuousVars; j++)
-      tmp_vector[j] = linear_ineq_coeffs[i][j];
+    for (int j=0; j<numContinuousVars; j++) 
+      tmp_vector[j] = linear_ineq_coeffs(i,j);
     lin_ineq_coeffs.addRow(tmp_vector);
     if (linear_ineq_lower_bnds[i] > -bigRealBoundSize)
       lin_ineq_lower_bnds[i] = linear_ineq_lower_bnds[i];
@@ -380,7 +380,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   }
   for (int i=0; i<numLinearEqConstraints; i++) {
     for (int j=0; j<numContinuousVars; j++)
-      tmp_vector[j] = linear_eq_coeffs[i][j];
+      tmp_vector[j] = linear_eq_coeffs(i,j);
     lin_eq_coeffs.addRow(tmp_vector);
     lin_eq_targets[i] = linear_eq_targets[i];
   }

@@ -213,13 +213,13 @@ void COLINApplication::set_problem(Model& model) {
     size_t ndx = 0, ndy = 0;
     for (i=0; i<model.num_linear_ineq_constraints(); i++) {
       for (j=0; domain_size>j; j++)
-	linear_coeffs[ndx][ndy++] = linear_ineq_coeffs[i][j];
+	linear_coeffs(ndx,ndy++) = linear_ineq_coeffs(i,j);
       ndx++;
     }
 
     for (i=0; i<model.num_linear_eq_constraints(); i++) {
       for (j=0; domain_size>j; j++)
-	linear_coeffs[ndx][ndy++] = linear_eq_coeffs[i][j];
+	linear_coeffs(ndx,ndy++) = linear_eq_coeffs(i,j);
       ndx++;
     }
  
