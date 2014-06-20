@@ -16,7 +16,7 @@ method,
 #	  compute probabilities
 #	    samples = 100000 seed = 1237 fixed_seed
 #	  complementary distribution			#2,#3,#6,#7,#8
-	  output silent
+#	  output silent
 
 variables,
 #	continuous_design = 2				#8
