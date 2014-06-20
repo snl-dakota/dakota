@@ -10,7 +10,7 @@ method,
 	  series system			#0,#2
 #	  parallel system		#1,#3
 	  complementary distribution	#0,#2
-	  output silent
+	  output silent			#0,#1
 
 variables,
 	normal_uncertain = 11

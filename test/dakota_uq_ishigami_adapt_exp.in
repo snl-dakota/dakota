@@ -18,7 +18,7 @@ method,
           cumulative distribution
 # Minimum VBD control automatically enforced for tests 4/5/6/7:
 #	  variance_based_decomp interaction_order = 1
-	  output silent
+#	  output silent
 
 variables,
 	uniform_uncertain = 3
