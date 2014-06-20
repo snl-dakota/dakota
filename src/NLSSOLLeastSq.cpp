@@ -156,7 +156,13 @@ void NLSSOLLeastSq::minimize_residuals()
   // Use data structures in the NLSSOL call that are NOT updated in
   // constraint_eval or least_sq_eval [Using overlapping arrays causes
   // erroneous behavior].
-  int        num_cv = numContinuousVars;
+
+  // casts for Fortran interface
+  int num_cv = numContinuousVars;
+  int num_least_sq_terms = numLeastSqTerms;
+  int num_linear_constraints = numLinearConstraints;
+  int num_nonlinear_constraints = numNonlinearConstraints;
+
   double     local_f_val = 0.;
   RealVector local_lsq_vals(numLeastSqTerms);
   RealVector local_lsq_offsets(numLeastSqTerms, true);
@@ -192,9 +198,9 @@ void NLSSOLLeastSq::minimize_residuals()
 		 iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
 		 iteratedModel.nonlinear_eq_constraint_targets());
 
-  NLSSOL_F77( numLeastSqTerms, num_cv, numLinearConstraints,
-	      numNonlinearConstraints, linConstraintArraySize,
-	      nlnConstraintArraySize, numLeastSqTerms, num_cv,
+  NLSSOL_F77( num_least_sq_terms, num_cv, num_linear_constraints,
+	      num_nonlinear_constraints, linConstraintArraySize,
+	      nlnConstraintArraySize, num_least_sq_terms, num_cv,
 	      linConstraintMatrixF77, augmented_l_bnds.values(),
 	      augmented_u_bnds.values(), constraint_eval, least_sq_eval,
 	      informResult, numberIterations, &constraintState[0],

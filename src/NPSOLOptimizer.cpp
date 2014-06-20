@@ -346,7 +346,11 @@ void NPSOLOptimizer::find_optimum_on_model()
 
   fnEvalCntr = 0; // prevent current iterator from continuing previous counting
 
-  int        num_cv = numContinuousVars;
+  // casts for Fortran interface
+  int num_cv = numContinuousVars;
+  int num_linear_constraints = numLinearConstraints;
+  int num_nonlinear_constraints = numNonlinearConstraints;
+
   double     local_f_val = 0.;
   RealVector local_f_grad(numContinuousVars, true);
 
@@ -379,7 +383,7 @@ void NPSOLOptimizer::find_optimum_on_model()
 		 iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
 		 iteratedModel.nonlinear_eq_constraint_targets());
 
-  NPSOL_F77( num_cv, numLinearConstraints, numNonlinearConstraints, 
+  NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
 	     linConstraintArraySize, nlnConstraintArraySize, num_cv, 
 	     linConstraintMatrixF77, augmented_l_bnds.values(),
 	     augmented_u_bnds.values(), constraint_eval, objective_eval,
@@ -444,12 +448,18 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   //     Solve the problem.
   //------------------------------------------------------------------
 
-  int i, num_cv = numContinuousVars;
+  int i;
+
+  // casts for Fortran interface
+  int num_cv = numContinuousVars;
+  int num_linear_constraints = numLinearConstraints;
+  int num_nonlinear_constraints = numNonlinearConstraints;
+
   double     local_f_val = 0.;
   RealVector local_f_grad(numContinuousVars, true);
   RealVector local_c_vals(nlnConstraintArraySize);
   
-  NPSOL_F77( num_cv, numLinearConstraints, numNonlinearConstraints, 
+  NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
 	     linConstraintArraySize, nlnConstraintArraySize, num_cv, 
 	     linConstraintMatrixF77, lowerBounds.values(), upperBounds.values(),
 	     userConstraintEval, userObjectiveEval, informResult,
