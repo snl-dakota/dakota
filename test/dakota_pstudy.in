@@ -23,10 +23,12 @@ method,
 #	list_parameter_study				#3,#7
 #	  list_of_points = 1.1 1.2 1.3 1.4 1.5 1.6	#3
 #			   1.7 1.8 1.9 2.0 2.1 2.2	#3
-#	  list_of_points = 1.1 1.2 1.3 1 2 3.		#7
-#			   1.4 1.5 1.6 2 4 5.		#7
-#			   1.7 1.8 1.9 3 6 7.		#7
-#			   2.0 2.1 2.2 4 8 9.		#7
+#	  discrete set types use an index (marked i) in point list
+#                                        i i
+#	  list_of_points = 1.1 1.2 1.3 1 0 1		#7
+#			   1.4 1.5 1.6 2 1 2		#7
+#			   1.7 1.8 1.9 3 2 3		#7
+#			   2.0 2.1 2.2 4 3 4		#7
 # Tests 10 and 11 mirror 3 and 7, but with user-specified points
 #	list_parameter_study				#10,#11
 #	  import_points_file = 'dakota_pstudy.3.dat'	#10
