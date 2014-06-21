@@ -77,28 +77,25 @@ private:
   /// (relax variables that are not declared as categorical)
   void relax_noncategorical(const ProblemDescDB& problem_db);
 
-  /// compute all variables sums from variablesCompsTotals and
-  /// allRelaxedDiscrete{Int,Real}
+  /// compute all variables sums from variablesCompsTotals
   void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
 		  size_t& num_adrv) const;
-  /// compute design variables sums from variablesCompsTotals and
-  /// allRelaxedDiscrete{Int,Real}
+  /// adjust counts based on allRelaxedDiscrete{Int,Real}
+  void relax_counts(size_t& num_cv, size_t& num_div, size_t& num_drv,
+		    size_t offset_di, size_t offset_dr) const;
+  /// compute design variables sums from variablesCompsTotals
   void design_counts(size_t& num_cdv, size_t& num_ddiv, size_t& num_ddsv,
 		     size_t& num_ddrv) const;
-  /// compute aleatory uncertain variables sums from variablesCompsTotals and
-  /// allRelaxedDiscrete{Int,Real}
+  /// compute aleatory uncertain variables sums from variablesCompsTotals
   void aleatory_uncertain_counts(size_t& num_cauv,  size_t& num_dauiv,
 				 size_t& num_dausv, size_t& num_daurv) const;
-  /// compute epistemic uncertain variables sums from variablesCompsTotals and
-  /// allRelaxedDiscrete{Int,Real}
+  /// compute epistemic uncertain variables sums from variablesCompsTotals
   void epistemic_uncertain_counts(size_t& num_ceuv,  size_t& num_deuiv,
 				  size_t& num_deusv, size_t& num_deurv) const;
-  /// compute uncertain variables sums from variablesCompsTotals and
-  /// allRelaxedDiscrete{Int,Real}
+  /// compute uncertain variables sums from variablesCompsTotals
   void uncertain_counts(size_t& num_cuv,  size_t& num_duiv,
 			size_t& num_dusv, size_t& num_durv) const;
-  /// compute state variables sums from variablesCompsTotals and
-  /// allRelaxedDiscrete{Int,Real}
+  /// compute state variables sums from variablesCompsTotals
   void state_counts(size_t& num_csv,  size_t& num_dsiv,
 		    size_t& num_dssv, size_t& num_dsrv) const;
 
@@ -282,6 +279,24 @@ all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
 
 
 inline void SharedVariablesDataRep::
+relax_counts(size_t& num_cv, size_t& num_div, size_t& num_drv,
+	     size_t offset_di, size_t offset_dr) const
+{
+  size_t i, num_relax_int  = 0, num_relax_real = 0,
+    end_di = num_div + offset_di, end_dr = num_drv + offset_dr;
+  for (i=offset_di; i<end_di; ++i)
+    if (allRelaxedDiscreteInt[i])
+      ++num_relax_int;
+  for (i=offset_dr; i<end_dr; ++i)
+    if (allRelaxedDiscreteReal[i])
+      ++num_relax_real;
+  num_cv  += num_relax_int + num_relax_real;
+  num_div -= num_relax_int;
+  num_drv -= num_relax_real;
+}
+
+
+inline void SharedVariablesDataRep::
 design_counts(size_t& num_cdv, size_t& num_ddiv, size_t& num_ddsv,
 	      size_t& num_ddrv) const
 {
@@ -290,18 +305,8 @@ design_counts(size_t& num_cdv, size_t& num_ddiv, size_t& num_ddsv,
   num_ddsv = variablesCompsTotals[TOTAL_DDSV];
   num_ddrv = variablesCompsTotals[TOTAL_DDRV];
 
-  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
-    size_t i, num_relax_int  = 0, num_relax_real = 0;
-    for (i=0; i<num_ddiv; ++i)
-      if (allRelaxedDiscreteInt[i])
-	++num_relax_int;
-    for (i=0; i<num_ddrv; ++i)
-      if (allRelaxedDiscreteReal[i])
-	++num_relax_real;
-    num_cdv  += num_relax_int + num_relax_real;
-    num_ddiv -= num_relax_int;
-    num_ddrv -= num_relax_real;
-  }
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any())
+    relax_counts(num_cdv, num_ddiv, num_ddrv, 0, 0);
 }
 
 
@@ -314,20 +319,10 @@ aleatory_uncertain_counts(size_t& num_cauv,  size_t& num_dauiv,
   num_dausv = variablesCompsTotals[TOTAL_DAUSV];
   num_daurv = variablesCompsTotals[TOTAL_DAURV];
 
-  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
-    size_t i, num_relax_int  = 0, num_relax_real = 0,
-      offset_di = variablesCompsTotals[TOTAL_DDIV],
-      offset_dr = variablesCompsTotals[TOTAL_DDRV];
-    for (i=0; i<num_dauiv; ++i)
-      if (allRelaxedDiscreteInt[offset_di+i])
-	++num_relax_int;
-    for (i=0; i<num_daurv; ++i)
-      if (allRelaxedDiscreteReal[offset_dr+i])
-	++num_relax_real;
-    num_cauv  += num_relax_int + num_relax_real;
-    num_dauiv -= num_relax_int;
-    num_daurv -= num_relax_real;
-  }
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any())
+    relax_counts(num_cauv, num_dauiv, num_daurv,
+		 variablesCompsTotals[TOTAL_DDIV],
+		 variablesCompsTotals[TOTAL_DDRV]);
 }
 
 
@@ -340,22 +335,12 @@ epistemic_uncertain_counts(size_t& num_ceuv,  size_t& num_deuiv,
   num_deusv = variablesCompsTotals[TOTAL_DEUSV];
   num_deurv = variablesCompsTotals[TOTAL_DEURV];
 
-  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
-    size_t i, num_relax_int  = 0, num_relax_real = 0,
-      offset_di = variablesCompsTotals[TOTAL_DDIV]
-                + variablesCompsTotals[TOTAL_DAUIV],
-      offset_dr = variablesCompsTotals[TOTAL_DDRV]
-                + variablesCompsTotals[TOTAL_DAURV];
-    for (i=0; i<num_deuiv; ++i)
-      if (allRelaxedDiscreteInt[offset_di+i])
-	++num_relax_int;
-    for (i=0; i<num_deurv; ++i)
-      if (allRelaxedDiscreteReal[offset_dr+i])
-	++num_relax_real;
-    num_ceuv  += num_relax_int + num_relax_real;
-    num_deuiv -= num_relax_int;
-    num_deurv -= num_relax_real;
-  }
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any())
+    relax_counts(num_ceuv, num_deuiv, num_deurv,
+		 variablesCompsTotals[TOTAL_DDIV] +
+		 variablesCompsTotals[TOTAL_DAUIV],
+		 variablesCompsTotals[TOTAL_DDRV] +
+		 variablesCompsTotals[TOTAL_DAURV]);
 }
 
 
@@ -372,20 +357,9 @@ uncertain_counts(size_t& num_cuv,  size_t& num_duiv,
   num_durv = variablesCompsTotals[TOTAL_DAURV]
            + variablesCompsTotals[TOTAL_DEURV];
 
-  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
-    size_t i, num_relax_int  = 0, num_relax_real = 0,
-      offset_di = variablesCompsTotals[TOTAL_DDIV],
-      offset_dr = variablesCompsTotals[TOTAL_DDRV];
-    for (i=0; i<num_duiv; ++i)
-      if (allRelaxedDiscreteInt[offset_di+i])
-	++num_relax_int;
-    for (i=0; i<num_durv; ++i)
-      if (allRelaxedDiscreteReal[offset_dr+i])
-	++num_relax_real;
-    num_cuv  += num_relax_int + num_relax_real;
-    num_duiv -= num_relax_int;
-    num_durv -= num_relax_real;
-  }
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any())
+    relax_counts(num_cuv, num_duiv, num_durv, variablesCompsTotals[TOTAL_DDIV],
+		 variablesCompsTotals[TOTAL_DDRV]);
 }
 
 
@@ -398,24 +372,13 @@ state_counts(size_t& num_csv,  size_t& num_dsiv,
   num_dssv = variablesCompsTotals[TOTAL_DSSV];
   num_dsrv = variablesCompsTotals[TOTAL_DSRV];
 
-  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
-    size_t i, num_relax_int  = 0, num_relax_real = 0,
-      offset_di = variablesCompsTotals[TOTAL_DDIV]
-                + variablesCompsTotals[TOTAL_DAUIV]
-                + variablesCompsTotals[TOTAL_DEUIV],
-      offset_dr = variablesCompsTotals[TOTAL_DDRV]
-                + variablesCompsTotals[TOTAL_DAURV]
-                + variablesCompsTotals[TOTAL_DEURV];
-    for (i=0; i<num_dsiv; ++i)
-      if (allRelaxedDiscreteInt[offset_di+i])
-	++num_relax_int;
-    for (i=0; i<num_dsrv; ++i)
-      if (allRelaxedDiscreteReal[offset_dr+i])
-	++num_relax_real;
-    num_csv  += num_relax_int + num_relax_real;
-    num_dsiv -= num_relax_int;
-    num_dsrv -= num_relax_real;
-  }
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any())
+    relax_counts(num_csv, num_dsiv, num_dsrv, variablesCompsTotals[TOTAL_DDIV] +
+		 variablesCompsTotals[TOTAL_DAUIV] +
+		 variablesCompsTotals[TOTAL_DEUIV],
+		 variablesCompsTotals[TOTAL_DDRV]  +
+		 variablesCompsTotals[TOTAL_DAURV] +
+		 variablesCompsTotals[TOTAL_DEURV]);
 }
 
 
