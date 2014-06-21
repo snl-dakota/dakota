@@ -482,8 +482,10 @@ public:
   /// state set real variables
   void discrete_state_set_real_values(const RealSetArray& rsa);
 
-  /// define and return discreteIntSets
+  /// define and return discreteIntSets using active view from currentVariables
   const BitArray& discrete_int_sets();
+  /// define and return discreteIntSets using passed active view
+  const BitArray& discrete_int_sets(short active_view);
   // define and return discreteStringSets
   //const BitArray& discrete_string_sets();
   // define and return discreteRealSets
@@ -493,11 +495,20 @@ public:
   /// discrete set integer variables (aggregated in activeDiscSetIntValues)
   const IntSetArray& discrete_set_int_values();
   /// return the sets of values available for each of the active
+  /// discrete set integer variables (aggregated in activeDiscSetIntValues)
+  const IntSetArray& discrete_set_int_values(short active_view);
+  /// return the sets of values available for each of the active
   /// discrete set string variables (aggregated in activeDiscSetStringValues)
   const StringSetArray& discrete_set_string_values();
   /// return the sets of values available for each of the active
+  /// discrete set string variables (aggregated in activeDiscSetStringValues)
+  const StringSetArray& discrete_set_string_values(short active_view);
+  /// return the sets of values available for each of the active
   /// discrete set real variables (aggregated in activeDiscSetRealValues)
   const RealSetArray& discrete_set_real_values();
+  /// return the sets of values available for each of the active
+  /// discrete set real variables (aggregated in activeDiscSetRealValues)
+  const RealSetArray& discrete_set_real_values(short active_view);
 
   /// return aleatDistParams
   Pecos::AleatoryDistParams& aleatory_distribution_parameters();
@@ -1850,6 +1861,45 @@ inline void Model::discrete_state_set_real_values(const RealSetArray& rsa)
 {
   if (modelRep) modelRep->discreteStateSetRealValues = rsa;
   else          discreteStateSetRealValues = rsa;
+}
+
+
+inline const BitArray& Model::discrete_int_sets()
+{
+  if (modelRep)
+    return modelRep->discrete_int_sets(modelRep->currentVariables.view().first);
+  else
+    return discrete_int_sets(currentVariables.view().first);
+}
+
+
+inline const IntSetArray& Model::discrete_set_int_values()
+{
+  if (modelRep)
+    return modelRep->
+      discrete_set_int_values(modelRep->currentVariables.view().first);
+  else
+    return discrete_set_int_values(currentVariables.view().first);
+}
+
+
+inline const StringSetArray& Model::discrete_set_string_values()
+{
+  if (modelRep)
+    return modelRep->
+      discrete_set_string_values(modelRep->currentVariables.view().first);
+  else
+    return discrete_set_string_values(currentVariables.view().first);
+}
+
+
+inline const RealSetArray& Model::discrete_set_real_values()
+{
+  if (modelRep)
+    return modelRep->
+      discrete_set_real_values(modelRep->currentVariables.view().first);
+  else
+    return discrete_set_real_values(currentVariables.view().first);
 }
 
 

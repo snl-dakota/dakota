@@ -3309,15 +3309,14 @@ void Model::inactive_view(short view, bool recurse_flag)
 }
 
 
-const BitArray& Model::discrete_int_sets()
+const BitArray& Model::discrete_int_sets(short active_view)
 {
   if (modelRep)
-    return modelRep->discrete_int_sets();
+    return modelRep->discrete_int_sets(active_view);
 
   // identify discrete integer sets within active discrete int variables
   // (excluding discrete integer ranges)
 
-  short active_view = currentVariables.view().first;
   bool relax = (active_view == RELAXED_ALL ||
     ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
   const SharedVariablesData&  svd = currentVariables.shared_data();
@@ -3441,14 +3440,14 @@ const BitArray& Model::discrete_real_sets()
 */
 
 
-const IntSetArray& Model::discrete_set_int_values()
+const IntSetArray& Model::discrete_set_int_values(short active_view)
 {
   if (modelRep)
-    return modelRep->discrete_set_int_values();
+    return modelRep->discrete_set_int_values(active_view);
 
-  // TO DO: return if already defined (previous call)
+  // TO DO: return if already defined by a previous invocation
 
-  switch (currentVariables.view().first) {
+  switch (active_view) {
   case MIXED_DESIGN:
     return discreteDesignSetIntValues; break;
   case MIXED_ALEATORY_UNCERTAIN: {
@@ -3583,14 +3582,14 @@ const IntSetArray& Model::discrete_set_int_values()
 }
 
 
-const StringSetArray& Model::discrete_set_string_values()
+const StringSetArray& Model::discrete_set_string_values(short active_view)
 {
   if (modelRep)
-    return modelRep->discrete_set_string_values();
+    return modelRep->discrete_set_string_values(active_view);
 
   // TO DO: return if already defined (previous call)
 
-  switch (currentVariables.view().first) {
+  switch (active_view) {
   case MIXED_DESIGN: case RELAXED_DESIGN:
     return discreteDesignSetStringValues; break;
   case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN: {
@@ -3657,14 +3656,14 @@ const StringSetArray& Model::discrete_set_string_values()
 }
 
 
-const RealSetArray& Model::discrete_set_real_values()
+const RealSetArray& Model::discrete_set_real_values(short active_view)
 {
   if (modelRep)
-    return modelRep->discrete_set_real_values();
+    return modelRep->discrete_set_real_values(active_view);
 
   // TO DO: return if already defined (previous call)
 
-  switch (currentVariables.view().first) {
+  switch (active_view) {
   case MIXED_DESIGN:
     return discreteDesignSetRealValues; break;
   case MIXED_ALEATORY_UNCERTAIN: {

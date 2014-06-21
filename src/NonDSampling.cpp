@@ -327,7 +327,12 @@ update_model_from_sample(Model& model, const Real* sample_vars)
   for (i=div_start; i<end; ++i, ++cntr)
     model.all_discrete_int_variable((int)sample_vars[cntr], i);
   // sampled discrete string vars
-  const StringSetArray& all_dss_values = model./*all_*/discrete_set_string_values();
+  short active_view = model.current_variables().view().first;
+  bool relax = (active_view == RELAXED_ALL ||
+    ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
+  short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
+  const StringSetArray& all_dss_values
+    = model.discrete_set_string_values(all_view);
   end = dsv_start + num_dsv;
   for (i=dsv_start; i<end; ++i, ++cntr)
     model.all_discrete_string_variable(set_index_to_value(
@@ -339,14 +344,21 @@ update_model_from_sample(Model& model, const Real* sample_vars)
 }
 
 
+/** This function and its helpers to follow are needed since NonDSampling
+    supports a richer set of sampling modes than just the active variable 
+    subset.  mode_counts() manages the samplingVarsMode setting, while its
+    helper functions (view_{design,aleatory_uncertain,epistemic_uncertain,
+    uncertain,state}_counts) manage the active variables view.  Similar 
+    to the computation of starts and counts in creating active variable
+    views, the results of this function are starts and counts for use
+    within model.all_*() set/get functions. */
 void NonDSampling::
-mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
-	    size_t& div_start, size_t& num_div,
-	    size_t& dsv_start, size_t& num_dsv,
-	    size_t& drv_start, size_t& num_drv) const
+mode_counts(const Model& model, size_t& cv_start,  size_t& num_cv,
+	    size_t& div_start,  size_t& num_div,   size_t& dsv_start,
+	    size_t& num_dsv,    size_t& drv_start, size_t& num_drv) const
 {
-  cv_start = num_cv = div_start = num_div = dsv_start = num_dsv
-    = drv_start = num_drv = 0;
+  cv_start = div_start = dsv_start = drv_start = 0;
+  num_cv   = num_div   = num_dsv   = num_drv   = 0;
   switch (samplingVarsMode) {
   case ALEATORY_UNCERTAIN:
     // design vars define starting indices
