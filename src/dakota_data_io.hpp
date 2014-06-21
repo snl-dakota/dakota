@@ -683,6 +683,16 @@ void write_data(std::ostream& s,
 }
 
 
+/// standard ostream insertion operator for partial StringMultiArray
+inline void write_data(std::ostream& s, const StringMultiArray& v)
+{
+  size_t i, len = v.size();
+  //s << std::scientific << std::setprecision(write_precision);
+  for (i=0; i<len; ++i)
+    s << "                     " << std::setw(write_precision+7) << v[i] <<'\n';
+}
+
+
 /// aprepro ostream insertion operator for full SerialDenseVector with labels
 template <typename OrdinalType, typename ScalarType>
 void write_data_aprepro(std::ostream& s,

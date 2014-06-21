@@ -298,10 +298,8 @@ void ParamStudy::vector_loop()
 
     // active discrete int: ranges and sets
     for (j=0, dsi_cntr=0; j<numDiscreteIntVars; ++j)
-      if (di_set_bits[j])
-	dsi_step(j, i, dsi_values[dsi_cntr++], vars);
-      else
-	dri_step(j, i, vars);
+      if (di_set_bits[j]) dsi_step(j, i, dsi_values[dsi_cntr++], vars);
+      else                dri_step(j, i, vars);
 
     // active discrete string: sets only
     for (j=0; j<numDiscreteStringVars; ++j)
@@ -643,8 +641,9 @@ void ParamStudy::distribute_partitions()
   for (i=0; i<numDiscreteStringVars; ++i) {
     part = discStringVarPartitions[i];
     if (part) {
-      //initialDSVPoint[i]      = ds_l_bnds[i]; // TO DO
-      discStringStepVector[i] = integer_step(dss_values[i].size() - 1, part);
+      const StringSet& dss_vals_i = dss_values[i];
+      initialDSVPoint[i]      = *dss_vals_i.begin();
+      discStringStepVector[i] = integer_step(dss_vals_i.size() - 1, part);
     }
     else
       { initialDRVPoint[i] = dr_vars[i]; discRealStepVector[i] = 0; }
