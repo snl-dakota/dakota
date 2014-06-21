@@ -80,11 +80,33 @@ private:
   /// compute all variables sums from variablesCompsTotals and
   /// allRelaxedDiscrete{Int,Real}
   void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
-		  size_t& num_adrv);
+		  size_t& num_adrv) const;
+  /// compute design variables sums from variablesCompsTotals and
+  /// allRelaxedDiscrete{Int,Real}
+  void design_counts(size_t& num_cdv, size_t& num_ddiv, size_t& num_ddsv,
+		     size_t& num_ddrv) const;
+  /// compute aleatory uncertain variables sums from variablesCompsTotals and
+  /// allRelaxedDiscrete{Int,Real}
+  void aleatory_uncertain_counts(size_t& num_cauv,  size_t& num_dauiv,
+				 size_t& num_dausv, size_t& num_daurv) const;
+  /// compute epistemic uncertain variables sums from variablesCompsTotals and
+  /// allRelaxedDiscrete{Int,Real}
+  void epistemic_uncertain_counts(size_t& num_ceuv,  size_t& num_deuiv,
+				  size_t& num_deusv, size_t& num_deurv) const;
+  /// compute uncertain variables sums from variablesCompsTotals and
+  /// allRelaxedDiscrete{Int,Real}
+  void uncertain_counts(size_t& num_cuv,  size_t& num_duiv,
+			size_t& num_dusv, size_t& num_durv) const;
+  /// compute state variables sums from variablesCompsTotals and
+  /// allRelaxedDiscrete{Int,Real}
+  void state_counts(size_t& num_csv,  size_t& num_dsiv,
+		    size_t& num_dssv, size_t& num_dsrv) const;
+
   /// define start indices and counts for active variables based on view
   void view_start_counts(short view, size_t& cv_start, size_t& div_start,
-			 size_t& dsv_start, size_t& drv_start, size_t& num_cv,
-			 size_t& num_div, size_t& num_dsv, size_t& num_drv);
+			 size_t& dsv_start, size_t& drv_start,
+			 size_t& num_cv, size_t& num_div, size_t& num_dsv,
+			 size_t& num_drv) const;
 
   /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels,
   /// with or without discrete relaxation
@@ -233,7 +255,7 @@ inline size_t SharedVariablesDataRep::vc_lookup(unsigned short key) const
 
 inline void SharedVariablesDataRep::
 all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
-	   size_t& num_adrv)
+	   size_t& num_adrv) const
 {
   num_acv = variablesCompsTotals[TOTAL_CDV]  + variablesCompsTotals[TOTAL_CAUV]
           + variablesCompsTotals[TOTAL_CEUV] + variablesCompsTotals[TOTAL_CSV];
@@ -249,13 +271,150 @@ all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
     = variablesCompsTotals[TOTAL_DDRV]  + variablesCompsTotals[TOTAL_DAURV]
     + variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_DSRV];
 
-  bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
-  if (relax) { // include discrete design/uncertain/state
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
     size_t num_relax_int  = allRelaxedDiscreteInt.count(),
            num_relax_real = allRelaxedDiscreteReal.count();
     num_acv  += num_relax_int + num_relax_real;
     num_adiv -= num_relax_int;
     num_adrv -= num_relax_real;
+  }
+}
+
+
+inline void SharedVariablesDataRep::
+design_counts(size_t& num_cdv, size_t& num_ddiv, size_t& num_ddsv,
+	      size_t& num_ddrv) const
+{
+  num_cdv  = variablesCompsTotals[TOTAL_CDV];
+  num_ddiv = variablesCompsTotals[TOTAL_DDIV];
+  num_ddsv = variablesCompsTotals[TOTAL_DDSV];
+  num_ddrv = variablesCompsTotals[TOTAL_DDRV];
+
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
+    size_t i, num_relax_int  = 0, num_relax_real = 0;
+    for (i=0; i<num_ddiv; ++i)
+      if (allRelaxedDiscreteInt[i])
+	++num_relax_int;
+    for (i=0; i<num_ddrv; ++i)
+      if (allRelaxedDiscreteReal[i])
+	++num_relax_real;
+    num_cdv  += num_relax_int + num_relax_real;
+    num_ddiv -= num_relax_int;
+    num_ddrv -= num_relax_real;
+  }
+}
+
+
+inline void SharedVariablesDataRep::
+aleatory_uncertain_counts(size_t& num_cauv,  size_t& num_dauiv,
+			  size_t& num_dausv, size_t& num_daurv) const
+{
+  num_cauv  = variablesCompsTotals[TOTAL_CAUV];
+  num_dauiv = variablesCompsTotals[TOTAL_DAUIV];
+  num_dausv = variablesCompsTotals[TOTAL_DAUSV];
+  num_daurv = variablesCompsTotals[TOTAL_DAURV];
+
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
+    size_t i, num_relax_int  = 0, num_relax_real = 0,
+      offset_di = variablesCompsTotals[TOTAL_DDIV],
+      offset_dr = variablesCompsTotals[TOTAL_DDRV];
+    for (i=0; i<num_dauiv; ++i)
+      if (allRelaxedDiscreteInt[offset_di+i])
+	++num_relax_int;
+    for (i=0; i<num_daurv; ++i)
+      if (allRelaxedDiscreteReal[offset_dr+i])
+	++num_relax_real;
+    num_cauv  += num_relax_int + num_relax_real;
+    num_dauiv -= num_relax_int;
+    num_daurv -= num_relax_real;
+  }
+}
+
+
+inline void SharedVariablesDataRep::
+epistemic_uncertain_counts(size_t& num_ceuv,  size_t& num_deuiv,
+			   size_t& num_deusv, size_t& num_deurv) const
+{
+  num_ceuv  = variablesCompsTotals[TOTAL_CEUV];
+  num_deuiv = variablesCompsTotals[TOTAL_DEUIV];
+  num_deusv = variablesCompsTotals[TOTAL_DEUSV];
+  num_deurv = variablesCompsTotals[TOTAL_DEURV];
+
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
+    size_t i, num_relax_int  = 0, num_relax_real = 0,
+      offset_di = variablesCompsTotals[TOTAL_DDIV]
+                + variablesCompsTotals[TOTAL_DAUIV],
+      offset_dr = variablesCompsTotals[TOTAL_DDRV]
+                + variablesCompsTotals[TOTAL_DAURV];
+    for (i=0; i<num_deuiv; ++i)
+      if (allRelaxedDiscreteInt[offset_di+i])
+	++num_relax_int;
+    for (i=0; i<num_deurv; ++i)
+      if (allRelaxedDiscreteReal[offset_dr+i])
+	++num_relax_real;
+    num_ceuv  += num_relax_int + num_relax_real;
+    num_deuiv -= num_relax_int;
+    num_deurv -= num_relax_real;
+  }
+}
+
+
+inline void SharedVariablesDataRep::
+uncertain_counts(size_t& num_cuv,  size_t& num_duiv,
+		 size_t& num_dusv, size_t& num_durv) const
+{
+  num_cuv  = variablesCompsTotals[TOTAL_CAUV]
+           + variablesCompsTotals[TOTAL_CEUV];
+  num_duiv = variablesCompsTotals[TOTAL_DAUIV]
+           + variablesCompsTotals[TOTAL_DEUIV];
+  num_dusv = variablesCompsTotals[TOTAL_DAUSV]
+           + variablesCompsTotals[TOTAL_DEUSV];
+  num_durv = variablesCompsTotals[TOTAL_DAURV]
+           + variablesCompsTotals[TOTAL_DEURV];
+
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
+    size_t i, num_relax_int  = 0, num_relax_real = 0,
+      offset_di = variablesCompsTotals[TOTAL_DDIV],
+      offset_dr = variablesCompsTotals[TOTAL_DDRV];
+    for (i=0; i<num_duiv; ++i)
+      if (allRelaxedDiscreteInt[offset_di+i])
+	++num_relax_int;
+    for (i=0; i<num_durv; ++i)
+      if (allRelaxedDiscreteReal[offset_dr+i])
+	++num_relax_real;
+    num_cuv  += num_relax_int + num_relax_real;
+    num_duiv -= num_relax_int;
+    num_durv -= num_relax_real;
+  }
+}
+
+
+inline void SharedVariablesDataRep::
+state_counts(size_t& num_csv,  size_t& num_dsiv,
+	     size_t& num_dssv, size_t& num_dsrv) const
+{
+  num_csv  = variablesCompsTotals[TOTAL_CSV];
+  num_dsiv = variablesCompsTotals[TOTAL_DSIV];
+  num_dssv = variablesCompsTotals[TOTAL_DSSV];
+  num_dsrv = variablesCompsTotals[TOTAL_DSRV];
+
+  if (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any()) {
+    size_t i, num_relax_int  = 0, num_relax_real = 0,
+      offset_di = variablesCompsTotals[TOTAL_DDIV]
+                + variablesCompsTotals[TOTAL_DAUIV]
+                + variablesCompsTotals[TOTAL_DEUIV],
+      offset_dr = variablesCompsTotals[TOTAL_DDRV]
+                + variablesCompsTotals[TOTAL_DAURV]
+                + variablesCompsTotals[TOTAL_DEURV];
+    for (i=0; i<num_dsiv; ++i)
+      if (allRelaxedDiscreteInt[offset_di+i])
+	++num_relax_int;
+    for (i=0; i<num_dsrv; ++i)
+      if (allRelaxedDiscreteReal[offset_dr+i])
+	++num_relax_real;
+    num_csv  += num_relax_int + num_relax_real;
+    num_dsiv -= num_relax_int;
+    num_dsrv -= num_relax_real;
   }
 }
 
@@ -349,7 +508,32 @@ public:
   /// SharedVariablesDataRep::variablesCompsTotals and
   /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
   void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
-		  size_t& num_adrv);
+		  size_t& num_adrv) const;
+  /// compute design variables sums from
+  /// SharedVariablesDataRep::variablesCompsTotals and
+  /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
+  void design_counts(size_t& num_cdv, size_t& num_ddiv, size_t& num_ddsv,
+		     size_t& num_ddrv) const;
+  /// compute aleatory uncertain variables sums from
+  /// SharedVariablesDataRep::variablesCompsTotals and
+  /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
+  void aleatory_uncertain_counts(size_t& num_cauv,  size_t& num_dauiv,
+				 size_t& num_dausv, size_t& num_daurv) const;
+  /// compute epistemic uncertain variables sums from
+  /// SharedVariablesDataRep::variablesCompsTotals and
+  /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
+  void epistemic_uncertain_counts(size_t& num_ceuv,  size_t& num_deuiv,
+				  size_t& num_deusv, size_t& num_deurv) const;
+  /// compute uncertain variables sums from
+  /// SharedVariablesDataRep::variablesCompsTotals and
+  /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
+  void uncertain_counts(size_t& num_cuv,  size_t& num_duiv,
+			size_t& num_dusv, size_t& num_durv) const;
+  /// compute state variables sums from
+  /// SharedVariablesDataRep::variablesCompsTotals and
+  /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
+  void state_counts(size_t& num_csv,  size_t& num_dsiv,
+		    size_t& num_dssv, size_t& num_dsrv) const;
 
   /// initialize start index and counts for active variables
   void initialize_active_start_counts();
@@ -590,8 +774,42 @@ operator=(const SharedVariablesData& svd)
 
 inline void SharedVariablesData::
 all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
-	   size_t& num_adrv)
+	   size_t& num_adrv) const
 { svdRep->all_counts(num_acv, num_adiv, num_adsv, num_adrv); }
+
+
+inline void SharedVariablesData::
+design_counts(size_t& num_cdv, size_t& num_ddiv, size_t& num_ddsv,
+	      size_t& num_ddrv) const
+{ svdRep->design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv); }
+
+
+inline void SharedVariablesData::
+aleatory_uncertain_counts(size_t& num_cauv,  size_t& num_dauiv,
+			  size_t& num_dausv, size_t& num_daurv) const
+{
+  svdRep->aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+}
+
+
+inline void SharedVariablesData::
+epistemic_uncertain_counts(size_t& num_ceuv,  size_t& num_deuiv,
+			   size_t& num_deusv, size_t& num_deurv) const
+{
+  svdRep->epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+}
+
+
+inline void SharedVariablesData::
+uncertain_counts(size_t& num_cuv, size_t& num_duiv, size_t& num_dusv,
+		 size_t& num_durv) const
+{ svdRep->uncertain_counts(num_cuv, num_duiv, num_dusv, num_durv); }
+
+
+inline void SharedVariablesData::
+state_counts(size_t& num_csv, size_t& num_dsiv, size_t& num_dssv,
+	     size_t& num_dsrv) const
+{ svdRep->state_counts(num_csv, num_dsiv, num_dssv, num_dsrv); }
 
 
 inline void SharedVariablesData::initialize_active_start_counts()

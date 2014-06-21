@@ -1780,50 +1780,48 @@ void NestedModel::update_sub_model()
 size_t NestedModel::cv_index_map(size_t cv_index)
 {
   size_t offset;
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (currentVariables.view().first) { // active view
-  case MIXED_UNCERTAIN: {
-    const SizetArray& vc_totals
-      = currentVariables.variables_components_totals();
+  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
+    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
+    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
     //  active cv order is cauv,ceuv;
-    // aggregated order is cauv/dauiv/daurv,ceuv/deuiv/deurv:
-    offset = (cv_index < vc_totals[TOTAL_CAUV]) ? 0 :
-      vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DAURV];
+    // aggregated order is cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv:
+    offset = (cv_index < num_cauv) ? 0 : num_dauiv + num_dausv + num_daurv;
     break;
   }
-  case MIXED_ALL: {
-    const SizetArray& vc_totals
-      = currentVariables.variables_components_totals();
-    size_t num_cdv = vc_totals[TOTAL_CDV], num_cauv = vc_totals[TOTAL_CAUV],
-      num_ceuv = vc_totals[TOTAL_CEUV], num_ddv  = vc_totals[TOTAL_DDIV]
-        + vc_totals[TOTAL_DDSV] + vc_totals[TOTAL_DDRV],
-      num_dauv = vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAUSV]
-        + vc_totals[TOTAL_DAURV],
-      num_deuv = vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DEUSV]
-        + vc_totals[TOTAL_DEURV];
-    // active cv order is cdv,cauv,ceuv,csv; aggregated order is
-    // cdv/ddiv/ddrv,cauv/dauiv/daurv,ceuv/deuiv/deurv,csv/dsiv/dsrv:
-    if (cv_index < num_cdv)                            // continuous design
+  case MIXED_ALL: case RELAXED_ALL: {
+    size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
+    svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+    if (cv_index < num_cdv)
       offset = 0;
-    else if (cv_index < num_cdv + num_cauv)            // continuous aleatory
-      offset = num_ddv;
-    else if (cv_index < num_cdv + num_cauv + num_ceuv) // continuous epistemic
-      offset = num_ddv + num_dauv;
-    else                                               // continuous state
-      offset = num_ddv + num_dauv + num_deuv;
+    else {
+      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
+      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+      if (cv_index < num_cdv + num_cauv)            // continuous aleatory
+	offset = num_ddiv + num_ddsv + num_ddrv;
+      else {
+	size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
+	svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv,
+				       num_deurv);
+	if (cv_index < num_cdv + num_cauv + num_ceuv) // continuous epistemic
+	  offset = num_ddiv  + num_ddsv  + num_ddrv
+	         + num_dauiv + num_dausv + num_daurv;
+	else                                              // continuous state
+	  offset = num_ddiv  + num_ddsv  + num_ddrv
+	         + num_dauiv + num_dausv + num_daurv
+	         + num_deuiv + num_deusv + num_deurv;
+      }
+    }
     break;
   }
-  case RELAXED_DESIGN: // TO DO
-  case RELAXED_ALEATORY_UNCERTAIN: // TO DO
-  case RELAXED_EPISTEMIC_UNCERTAIN: // TO DO
-  case RELAXED_UNCERTAIN: // TO DO
-  case RELAXED_STATE: // TO DO
-  case RELAXED_ALL: // TO DO
-  default: // MIXED for single variable types
+  default: // MIXED and RELAXED for single variable types
     offset = 0; break;
   }
   return cv_index + offset;
 }
 
+// ----- TO HERE -----
 
 /** maps index within active discrete int variables to index within aggregated
     active continuous/discrete-int/discrete-string/discrete-real variables. */
@@ -1927,7 +1925,13 @@ size_t NestedModel::drv_index_map(size_t drv_index)
 	     + num_ceuv + num_deuiv + num_deusv + num_csv + num_dsiv + num_dssv;
     break;
   }
-  default: // MIXED for single variable types; RELAXED should not occur
+  case RELAXED_DESIGN: // TO DO
+  case RELAXED_ALEATORY_UNCERTAIN: // TO DO
+  case RELAXED_EPISTEMIC_UNCERTAIN: // TO DO
+  case RELAXED_UNCERTAIN: // TO DO
+  case RELAXED_STATE: // TO DO
+  case RELAXED_ALL: // TO DO
+  default: // MIXED for single variable types
     offset = currentVariables.cv() + currentVariables.div(); break;
   }
   return drv_index + offset;
@@ -1972,7 +1976,7 @@ size_t NestedModel::ccv_index_map(size_t ccv_index)
 	      + vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DAURV],
       num_euv = vc_totals[TOTAL_CEUV]  + vc_totals[TOTAL_DEUIV]
               + vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DEURV];
-    offset = (ccv_index < num_dv + num_auv) ? 0 : num_euv; break;
+    offset = (ccv_index < num_dv + num_auv) ? 0 : num_euv; break; // TO DO
   }
   case RELAXED_UNCERTAIN: { // complement is dv/sv
     size_t num_dv  = num_cdv + vc_totals[TOTAL_DDIV]
@@ -1981,7 +1985,7 @@ size_t NestedModel::ccv_index_map(size_t ccv_index)
 	      + vc_totals[TOTAL_DAUSV] + vc_totals[TOTAL_DAURV],
       num_euv = vc_totals[TOTAL_CEUV]  + vc_totals[TOTAL_DEUIV]
 	      + vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DEURV];
-    offset = (ccv_index < num_dv) ? 0 : num_auv + num_euv; break;
+    offset = (ccv_index < num_dv) ? 0 : num_auv + num_euv; break; // TO DO
   }
   case MIXED_STATE: case RELAXED_STATE:
     offset = 0; break;

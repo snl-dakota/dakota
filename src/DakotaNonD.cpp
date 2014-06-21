@@ -68,6 +68,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   bool err_flag = false;
   const Variables& vars = iteratedModel.current_variables();
   short active_view = vars.view().first;
+  const SharedVariablesData& svd = vars.shared_data();
 
   // initialize aleatory uncertain variables
   if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
@@ -88,10 +89,6 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
     numWeibullVars = probDescDB.get_sizet("variables.weibull_uncertain");
     numHistogramBinVars
       = probDescDB.get_sizet("variables.histogram_uncertain.bin");
-    numContAleatUncVars = numNormalVars + numLognormalVars + numUniformVars +
-      numLoguniformVars + numTriangularVars + numExponentialVars + numBetaVars +
-      numGammaVars + numGumbelVars + numFrechetVars + numWeibullVars +
-      numHistogramBinVars;
 
     numPoissonVars = probDescDB.get_sizet("variables.poisson_uncertain");
     numBinomialVars = probDescDB.get_sizet("variables.binomial_uncertain");
@@ -102,18 +99,18 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
       = probDescDB.get_sizet("variables.hypergeometric_uncertain");
     numHistogramPtIntVars
       = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
-    numDiscIntAleatUncVars = numPoissonVars + numBinomialVars +
-      numNegBinomialVars + numGeometricVars + numHyperGeomVars +
-      numHistogramPtIntVars;
 
-    numDiscStringAleatUncVars = numHistogramPtStringVars
+    numHistogramPtStringVars
       = probDescDB.get_sizet("variables.histogram_uncertain.point_string");
 
-    numDiscRealAleatUncVars = numHistogramPtRealVars
+    numHistogramPtRealVars
       = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
 
-    numAleatoryUncVars = numContAleatUncVars + numDiscIntAleatUncVars +
-      numDiscStringAleatUncVars + numDiscRealAleatUncVars;
+    svd.aleatory_uncertain_counts(numContAleatUncVars, numDiscIntAleatUncVars,
+				  numDiscStringAleatUncVars,
+				  numDiscRealAleatUncVars);
+    numAleatoryUncVars = numContAleatUncVars       + numDiscIntAleatUncVars
+                       + numDiscStringAleatUncVars + numDiscRealAleatUncVars;
   }
 
   // initialize epistemic uncertain variables
@@ -121,21 +118,23 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
       active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
       active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
       active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
-    numContEpistUncVars = numContIntervalVars
+    numContIntervalVars
       = probDescDB.get_sizet("variables.continuous_interval_uncertain");
 
     numDiscIntervalVars
       = probDescDB.get_sizet("variables.discrete_interval_uncertain");
     numDiscSetIntUncVars
       = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
-    numDiscIntEpistUncVars = numDiscIntervalVars + numDiscSetIntUncVars;
 
-    numDiscStringEpistUncVars = numDiscSetStringUncVars
+    numDiscSetStringUncVars
       = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
 
-    numDiscRealEpistUncVars = numDiscSetRealUncVars
+    numDiscSetRealUncVars
       = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
 
+    svd.epistemic_uncertain_counts(numContEpistUncVars, numDiscIntEpistUncVars,
+				   numDiscStringEpistUncVars,
+				   numDiscRealEpistUncVars);
     numEpistemicUncVars = numContEpistUncVars + numDiscIntEpistUncVars +
       numDiscStringEpistUncVars + numDiscRealEpistUncVars;
   }
@@ -150,37 +149,20 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   // initialize design variables (if active)
   if (active_view == RELAXED_ALL    || active_view == MIXED_ALL ||
       active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
-    numContDesVars = probDescDB.get_sizet("variables.continuous_design");
-    numDiscIntDesVars
-      = probDescDB.get_sizet("variables.discrete_design_range")
-      + probDescDB.get_sizet("variables.discrete_design_set_int");
-    numDiscStringDesVars
-      = probDescDB.get_sizet("variables.discrete_design_set_string");
-    numDiscRealDesVars
-      = probDescDB.get_sizet("variables.discrete_design_set_real");
+    svd.design_counts(numContDesVars, numDiscIntDesVars, numDiscStringDesVars,
+		      numDiscRealDesVars);
     numDesignVars = numContDesVars + numDiscIntDesVars + numDiscStringDesVars
-      + numDiscRealDesVars;
+                  + numDiscRealDesVars;
   }
 
   // initialize state variables (if active)
   if (active_view == RELAXED_ALL   || active_view == MIXED_ALL ||
       active_view == RELAXED_STATE || active_view == MIXED_STATE) {
-    numContStateVars = probDescDB.get_sizet("variables.continuous_state");
-    numDiscIntStateVars
-      = probDescDB.get_sizet("variables.discrete_state_range")
-      + probDescDB.get_sizet("variables.discrete_state_set_int");
-    numDiscStringStateVars
-      = probDescDB.get_sizet("variables.discrete_state_set_string");
-    numDiscRealStateVars
-      = probDescDB.get_sizet("variables.discrete_state_set_real");
-    numStateVars = numContStateVars + numDiscIntStateVars
-      + numDiscStringStateVars + numDiscRealStateVars;
+    svd.state_counts(numContStateVars, numDiscIntStateVars,
+		     numDiscStringStateVars, numDiscRealStateVars);
+    numStateVars = numContStateVars       + numDiscIntStateVars
+                 + numDiscStringStateVars + numDiscRealStateVars;
   }
-
-  // adjust counts due to discrete relaxation
-  if ( active_view == RELAXED_ALL ||
-       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) )
-    relax_counts(vars.shared_data());
 
   if ( !numUncertainVars && !numDesignVars && !numStateVars ) {
     Cerr << "\nError: number of active variables must be nonzero in Dakota::"
@@ -249,6 +231,7 @@ NonD::NonD(unsigned short method_name, Model& model):
   bool err_flag = false;
   const Variables& vars = model.current_variables();
   short active_view = vars.view().first;
+  const SharedVariablesData& svd = vars.shared_data();
 
   // initialize aleatory uncertain variables
   if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
@@ -268,10 +251,6 @@ NonD::NonD(unsigned short method_name, Model& model):
     numFrechetVars      = adp.frechet_alphas().length();
     numWeibullVars      = adp.weibull_alphas().length();
     numHistogramBinVars = adp.histogram_bin_pairs().size();
-    numContAleatUncVars = numNormalVars + numLognormalVars + numUniformVars +
-      numLoguniformVars + numTriangularVars + numExponentialVars + numBetaVars +
-      numGammaVars + numGumbelVars + numFrechetVars + numWeibullVars +
-      numHistogramBinVars;
 
     numPoissonVars     = adp.poisson_lambdas().length();
     numBinomialVars    = adp.binomial_probability_per_trial().length();
@@ -280,17 +259,15 @@ NonD::NonD(unsigned short method_name, Model& model):
     numHyperGeomVars   = adp.hypergeometric_num_drawn().length();
     numHistogramPtIntVars = adp.histogram_point_int_pairs().size();
 
-    numDiscIntAleatUncVars = numPoissonVars + numBinomialVars +
-      numNegBinomialVars + numGeometricVars + numHyperGeomVars +
-      numHistogramPtIntVars;
+    numHistogramPtStringVars = adp.histogram_point_string_pairs().size();
 
-    numDiscStringAleatUncVars = numHistogramPtStringVars =
-      adp.histogram_point_string_pairs().size();
-    numDiscRealAleatUncVars = numHistogramPtRealVars =
-      adp.histogram_point_real_pairs().size();
+    numHistogramPtRealVars   = adp.histogram_point_real_pairs().size();
 
-    numAleatoryUncVars = numContAleatUncVars + numDiscIntAleatUncVars +
-      numDiscRealAleatUncVars;
+    svd.aleatory_uncertain_counts(numContAleatUncVars, numDiscIntAleatUncVars,
+				  numDiscStringAleatUncVars,
+				  numDiscRealAleatUncVars);
+    numAleatoryUncVars = numContAleatUncVars       + numDiscIntAleatUncVars
+                       + numDiscStringAleatUncVars + numDiscRealAleatUncVars;
   }
 
   // initialize epistemic uncertain variables
@@ -299,18 +276,21 @@ NonD::NonD(unsigned short method_name, Model& model):
       active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
       active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
     Pecos::EpistemicDistParams& edp = model.epistemic_distribution_parameters();
-    numContEpistUncVars = numContIntervalVars =
-      edp.continuous_interval_basic_probabilities().size();
+    numContIntervalVars  = edp.continuous_interval_basic_probabilities().size();
 
     numDiscIntervalVars  = edp.discrete_interval_basic_probabilities().size();
     numDiscSetIntUncVars = edp.discrete_set_int_values_probabilities().size();
-    numDiscIntEpistUncVars = numDiscIntervalVars + numDiscSetIntUncVars;
 
-    numDiscRealEpistUncVars = numDiscSetRealUncVars =
-      edp.discrete_set_real_values_probabilities().size();
+    numDiscSetStringUncVars
+      = edp.discrete_set_string_values_probabilities().size();
 
-    numEpistemicUncVars = numContEpistUncVars + numDiscIntEpistUncVars +
-      numDiscRealEpistUncVars;
+    numDiscSetRealUncVars = edp.discrete_set_real_values_probabilities().size();
+
+    svd.epistemic_uncertain_counts(numContEpistUncVars, numDiscIntEpistUncVars,
+				   numDiscStringEpistUncVars,
+				   numDiscRealEpistUncVars);
+    numEpistemicUncVars = numContEpistUncVars       + numDiscIntEpistUncVars
+                        + numDiscStringEpistUncVars + numDiscRealEpistUncVars;
   }
 
   // default mode definition (can be overridden in derived classes, e.g.,
@@ -321,33 +301,22 @@ NonD::NonD(unsigned short method_name, Model& model):
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
 
   // initialize design variables (if active)
-  const SharedVariablesData& svd = vars.shared_data();
-  const SizetArray& vc_totals = svd.components_totals();
   if (active_view == RELAXED_ALL    || active_view == MIXED_ALL ||
       active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
-    numContDesVars       = vc_totals[TOTAL_CDV];
-    numDiscIntDesVars    = vc_totals[TOTAL_DDIV];
-    numDiscStringDesVars = vc_totals[TOTAL_DDSV];
-    numDiscRealDesVars   = vc_totals[TOTAL_DDRV];
-    numDesignVars = numContDesVars + numDiscIntDesVars + numDiscStringDesVars +
-      numDiscRealDesVars;
+    svd.design_counts(numContDesVars, numDiscIntDesVars, numDiscStringDesVars,
+		      numDiscRealDesVars);
+    numDesignVars = numContDesVars       + numDiscIntDesVars
+                  + numDiscStringDesVars + numDiscRealDesVars;
   }
 
   // initialize state variables (if active)
   if (active_view == RELAXED_ALL   || active_view == MIXED_ALL ||
       active_view == RELAXED_STATE || active_view == MIXED_STATE) {
-    numContStateVars       = vc_totals[TOTAL_CSV];
-    numDiscIntStateVars    = vc_totals[TOTAL_DSIV];
-    numDiscStringStateVars = vc_totals[TOTAL_DSSV];
-    numDiscRealStateVars   = vc_totals[TOTAL_DSRV];
-    numStateVars = numContStateVars + numDiscIntStateVars
-      + numDiscStringStateVars + numDiscRealStateVars;
+    svd.state_counts(numContStateVars, numDiscIntStateVars,
+		     numDiscStringStateVars, numDiscRealStateVars);
+    numStateVars = numContStateVars       + numDiscIntStateVars
+                 + numDiscStringStateVars + numDiscRealStateVars;
   }
-
-  // adjust counts due to discrete relaxation
-  if ( active_view == RELAXED_ALL ||
-       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) )
-    relax_counts(svd);
 
   if ( !numUncertainVars && !numDesignVars && !numStateVars ) {
     Cerr << "\nError: number of active variables must be nonzero in Dakota::"
@@ -400,74 +369,6 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 
   numContinuousVars  = numUniformVars;
   numDiscreteIntVars = numDiscreteStringVars = numDiscreteRealVars = 0;
-}
-
-
-void NonD::relax_counts(const SharedVariablesData& svd)
-{
-  const SizetArray&  vc_totals = svd.components_totals();
-  const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
-  size_t i, offset_di, offset_dr, num_relax_int = 0, num_relax_real = 0,
-    num_ddiv  = vc_totals[TOTAL_DDIV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_dauiv = vc_totals[TOTAL_DAUIV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_deuiv = vc_totals[TOTAL_DEUIV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_dsiv  = vc_totals[TOTAL_DSIV],  num_dsrv  = vc_totals[TOTAL_DSRV];
-
-  // design
-  if (numDiscIntDesVars || numDiscRealDesVars) {
-    for (i=0; i<num_ddiv; ++i)
-      if (all_relax_di[i])
-	++num_relax_int;
-    for (i=0; i<num_ddrv; ++i)
-      if (all_relax_dr[i])
-	++num_relax_real;
-    numContDesVars     += num_relax_int + num_relax_real;
-    numDiscIntDesVars  -= num_relax_int;
-    numDiscRealDesVars -= num_relax_real;
-  }
-  offset_di = num_ddiv; offset_dr = num_ddrv;
-  // aleatory uncertain
-  if (numDiscIntAleatUncVars || numDiscRealAleatUncVars) {
-    num_relax_int = num_relax_real = 0;
-    for (i=0; i<num_dauiv; ++i)
-      if (all_relax_di[offset_di+i])
-	++num_relax_int;
-    for (i=0; i<num_daurv; ++i)
-      if (all_relax_dr[offset_dr+i])
-	++num_relax_real;
-    numContAleatUncVars     += num_relax_int + num_relax_real;
-    numDiscIntAleatUncVars  -= num_relax_int;
-    numDiscRealAleatUncVars -= num_relax_real;
-  }
-  offset_di += num_dauiv; offset_dr += num_daurv;
-  // epistemic uncertain
-  if (numDiscIntEpistUncVars || numDiscRealEpistUncVars) {
-    num_relax_int = num_relax_real = 0;
-    for (i=0; i<num_deuiv; ++i)
-      if (all_relax_di[offset_di+i])
-	++num_relax_int;
-    for (i=0; i<num_deurv; ++i)
-      if (all_relax_dr[offset_dr+i])
-	++num_relax_real;
-    numContEpistUncVars     += num_relax_int + num_relax_real;
-    numDiscIntEpistUncVars  -= num_relax_int;
-    numDiscRealEpistUncVars -= num_relax_real;
-  }
-  offset_di += num_deuiv; offset_dr += num_deurv;
-  // state
-  if (numDiscIntStateVars || numDiscRealStateVars) {
-    num_relax_int = num_relax_real = 0;
-    for (i=0; i<num_dsiv; ++i)
-      if (all_relax_di[offset_di+i])
-	++num_relax_int;
-    for (i=0; i<num_dsrv; ++i)
-      if (all_relax_dr[offset_dr+i])
-	++num_relax_real;
-    numContStateVars     += num_relax_int + num_relax_real;
-    numDiscIntStateVars  -= num_relax_int;
-    numDiscRealStateVars -= num_relax_real;
-  }
 }
 
 

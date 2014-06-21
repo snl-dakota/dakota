@@ -908,7 +908,7 @@ void SharedVariablesDataRep::initialize_all_ids()
 void SharedVariablesDataRep::
 view_start_counts(short view, size_t& cv_start, size_t& div_start,
 		  size_t& dsv_start, size_t& drv_start, size_t& num_cv,
-		  size_t& num_div, size_t& num_dsv, size_t& num_drv)
+		  size_t& num_div, size_t& num_dsv, size_t& num_drv) const
 {
   size_t i, offset, start_relax_di = 0, start_relax_dr = 0,
     count_relax_di = 0, count_relax_dr = 0,

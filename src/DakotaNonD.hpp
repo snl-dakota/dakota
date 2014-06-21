@@ -372,10 +372,6 @@ protected:
 
 private:
 
-  /// update continuous, discrete int, and discrete real aggregate counts
-  /// based on discrete relaxation
-  void relax_counts(const SharedVariablesData& svd);
-
   /// convenience function for distributing a vector of levels among multiple
   /// response functions if a short-hand specification is employed.
   void distribute_levels(RealVectorArray& levels, bool ascending = true);
