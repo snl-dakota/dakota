@@ -187,13 +187,13 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 	 << "NonD." << std::endl;
     err_flag = true;
   }
-  if (numContinuousVars + numDiscreteIntVars + numDiscreteRealVars !=
-      numDesignVars     + numUncertainVars   + numStateVars) {
+  if (numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
+      numDiscreteRealVars != numDesignVars + numUncertainVars + numStateVars) {
     Cerr << "\nError: inconsistent active variable counts ("
-	 << numContinuousVars + numDiscreteIntVars + numDiscreteRealVars << ", "
-	 << numDesignVars + numUncertainVars + numStateVars << ") in Dakota::"
-	 << "NonD(Model&) for method " << method_enum_to_string(methodName)
-	 << '.' << std::endl;
+	 << numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
+            numDiscreteRealVars << ", " << numDesignVars + numUncertainVars +
+            numStateVars << ") in Dakota::" << "NonD(Model&) for method "
+	 << method_enum_to_string(methodName) << '.' << std::endl;
     err_flag = true;
   }
 
@@ -354,12 +354,12 @@ NonD::NonD(unsigned short method_name, Model& model):
 	 << "NonD." << std::endl;
     err_flag = true;
   }
-  if (numContinuousVars + numDiscreteIntVars + numDiscreteRealVars !=
-      numDesignVars     + numUncertainVars   + numStateVars) {
+  if (numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
+      numDiscreteRealVars != numDesignVars + numUncertainVars + numStateVars) {
     Cout << "\nError: inconsistent active variable counts ("
-	 << numContinuousVars + numDiscreteIntVars + numDiscreteRealVars << ", "
-	 << numDesignVars     + numUncertainVars   + numStateVars
-	 << ") in Dakota::NonD(Model&)." << std::endl;
+	 << numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
+            numDiscreteRealVars << ", " << numDesignVars + numUncertainVars +
+            numStateVars << ") in Dakota::NonD(Model&)." << std::endl;
     err_flag = true;
   }
 
@@ -399,7 +399,7 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
   // initial points or multibjective weight sets.
 
   numContinuousVars  = numUniformVars;
-  numDiscreteIntVars = numDiscreteRealVars = 0;
+  numDiscreteIntVars = numDiscreteStringVars = numDiscreteRealVars = 0;
 }
 
 
@@ -1384,6 +1384,8 @@ void NonD::initialize_random_variable_types(short u_space_type)
 
   // discrete int aleatory uncertain
 
+  // discrete string aleatory uncertain
+
   // discrete real aleatory uncertain
   /*
   for (i=0; i<numHistogramPtVars; ++i, ++av_cntr) {
@@ -1404,6 +1406,8 @@ void NonD::initialize_random_variable_types(short u_space_type)
   }
 
   // discrete int epistemic uncertain
+
+  // discrete string epistemic uncertain
 
   // discrete real epistemic uncertain
 
@@ -1643,6 +1647,8 @@ void NonD::initialize_random_variable_parameters()
 
   // discrete int aleatory uncertain
 
+  // discrete string aleatory uncertain
+
   // discrete real aleatory uncertain
   /*
   if (numHistogramPtVars) {
@@ -1668,6 +1674,8 @@ void NonD::initialize_random_variable_parameters()
   }
 
   // discrete int epistemic uncertain
+
+  // discrete string epistemic uncertain
 
   // discrete real epistemic uncertain
 

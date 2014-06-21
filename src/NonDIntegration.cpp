@@ -35,7 +35,7 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
   //, standAloneMode(true)
 {
   // Check for suitable distribution types.
-  if (numDiscreteIntVars || numDiscreteRealVars) {
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete random variables are not currently supported in "
 	 << "NonDIntegration." << std::endl;
     abort_handler(-1);

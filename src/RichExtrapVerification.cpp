@@ -39,12 +39,14 @@ void RichExtrapVerification::pre_run()
   // Capture any changes resulting from the strategy layer's
   // passing of best variable info between iterators.
   if (studyType == ) {
-    copy_data(iteratedModel.continuous_variables(),    initialCVPoint);  // copy
-    copy_data(iteratedModel.discrete_int_variables(),  initialDIVPoint); // copy
-    copy_data(iteratedModel.discrete_real_variables(), initialDRVPoint); // copy
+    copy_data(iteratedModel.continuous_variables(),     initialCVPoint); // copy
+    copy_data(iteratedModel.discrete_int_variables(),   initialDIVPoint);// copy
+    copy_data(iteratedModel.discrete_string_variables(),initialDSVPoint);// copy
+    copy_data(iteratedModel.discrete_real_variables(),  initialDRVPoint);// copy
   }
 
-  size_t i, num_vars = numContinuousVars+numDiscreteIntVars+numDiscreteRealVars;
+  size_t i, num_vars = numContinuousVars     + numDiscreteIntVars
+                     + numDiscreteStringVars + numDiscreteRealVars;
   if (allSamples.numRows() != num_vars || allSamples.numCols() != numEvals)
     allSamples.shapeUninitialized(num_vars, numEvals);
   if ( outputLevel > SILENT_OUTPUT &&
@@ -108,6 +110,7 @@ extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
   for (size_t i=0; i<3; i++) {
     iteratedModel.continuous_variable(refine_triple[i], factorIndex);
     //iteratedModel.discrete_int_variables(di_vars);
+    //iteratedModel.discrete_string_variables(ds_vars);
     //iteratedModel.discrete_real_variables(dr_vars);
     iteratedModel.asynch_compute_response(activeSet);
   }

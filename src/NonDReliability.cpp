@@ -33,7 +33,7 @@ NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
   //refinementSeed(probDescDB.get_int("method.random_seed"))
 {
   // Check for suitable distribution types.
-  if (numDiscreteIntVars || numDiscreteRealVars) {
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "Error: discrete random variables are not supported in reliability "
 	 << "methods." << std::endl;
     abort_handler(-1);

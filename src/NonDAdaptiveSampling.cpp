@@ -206,7 +206,7 @@ namespace Dakota
 		////***END ATTENTION***
 
 		// BMA: you should just be able to use numContinuousVars for now, or this:
-		//  size_t dim = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
+		//  size_t dim = numContinuousVars + numDiscreteIntVars + numDiscreteStringVars + numDiscreteRealVars;
 		int dim = 0;
 		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(0);
 

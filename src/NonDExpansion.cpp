@@ -157,7 +157,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
   bool err_flag = false;
 
   // Check for suitable distribution types.
-  if (numDiscreteIntVars || numDiscreteRealVars) {
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete random variables are not currently supported in "
 	 << "NonDExpansion." << std::endl;
     err_flag = true;

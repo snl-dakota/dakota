@@ -38,7 +38,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   bool err_flag = false;
 
   // Check for suitable active var types (discrete epistemic not supported)
-  if (numDiscreteIntVars || numDiscreteRealVars) {
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete variables are not currently supported in "
 	 << "NonDLocalInterval." << std::endl;
     err_flag = true;

@@ -683,7 +683,7 @@ void write_data(std::ostream& s,
 }
 
 
-/// standard ostream insertion operator for partial StringMultiArray
+/// standard ostream insertion operator for StringMultiArray
 inline void write_data(std::ostream& s, const StringMultiArray& v)
 {
   size_t i, len = v.size();
