@@ -737,7 +737,11 @@ KEYWORD12 method
 	    [ basis_type
 	      tensor_product
 	      | total_order
-	      | adapted
+	      |
+	      ( adapted
+		generalized
+		| expanding_front
+		)
 	      ]
 	    ( collocation_points INTEGERLIST
 	      | collocation_ratio REAL

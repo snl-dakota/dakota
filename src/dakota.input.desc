@@ -779,6 +779,8 @@ TAG "method/polynomial_chaos/expansion_order/basis_type"
 TAG "method/polynomial_chaos/expansion_order/basis_type/tensor_product"
 TAG "method/polynomial_chaos/expansion_order/basis_type/total_order"
 TAG "method/polynomial_chaos/expansion_order/basis_type/adapted"
+TAG "method/polynomial_chaos/expansion_order/basis_type/adapted/generalized"
+TAG "method/polynomial_chaos/expansion_order/basis_type/adapted/expanding_front"
 TAG "method/polynomial_chaos/expansion_order/collocation_points"
 	DESC "{Number collocation points to estimate coeffs} MethodCommands.html#MethodNonDPCE"
 

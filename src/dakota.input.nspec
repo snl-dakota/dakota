@@ -522,7 +522,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      	  [ basis_type {0}
 			    tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
 			    | total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
-			    | adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS)}
+			    | ( adapted {0}
+			      	generalized {N_mdm(type,expansionBasisType_ADAPTED_BASIS_GENERALIZED)}
+				| expanding_front {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+			      )
 			  ]
 		      	  ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
 		            | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}

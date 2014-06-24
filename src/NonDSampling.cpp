@@ -318,15 +318,15 @@ update_model_from_sample(Model& model, const Real* sample_vars)
   mode_counts(model, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
 	      drv_start, num_drv);
 
-  // sampled continuous vars
+  // sampled continuous vars (by value)
   size_t end = cv_start + num_cv;
   for (i=cv_start; i<end; ++i, ++cntr)
     model.all_continuous_variable(sample_vars[cntr], i);
-  // sampled discrete int vars
+  // sampled discrete int vars (by value cast from Real)
   end = div_start + num_div;
   for (i=div_start; i<end; ++i, ++cntr)
     model.all_discrete_int_variable((int)sample_vars[cntr], i);
-  // sampled discrete string vars
+  // sampled discrete string vars (by index cast from Real)
   short active_view = model.current_variables().view().first;
   bool relax = (active_view == RELAXED_ALL ||
     ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
@@ -337,7 +337,7 @@ update_model_from_sample(Model& model, const Real* sample_vars)
   for (i=dsv_start; i<end; ++i, ++cntr)
     model.all_discrete_string_variable(set_index_to_value(
       (size_t)sample_vars[cntr], all_dss_values[i]), i);
-  // sampled discrete real vars
+  // sampled discrete real vars (by value)
   end = drv_start + num_drv;
   for (i=drv_start; i<end; ++i, ++cntr)
     model.all_discrete_real_variable(sample_vars[cntr], i);

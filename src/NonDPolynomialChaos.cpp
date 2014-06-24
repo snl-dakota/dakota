@@ -177,7 +177,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	      Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
 	  size_t exp_terms;
 	  switch (expansionBasisType) {
-	  case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS:
+	  case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS_GENERALIZED:
+	  case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
 	    exp_terms =
 	      Pecos::SharedPolyApproxData::total_order_terms(exp_order);
 	    break;
@@ -459,8 +460,10 @@ void NonDPolynomialChaos::initialize_u_space_model()
     // user spec) as well as seed progressions for varyPattern.  Coordinate
     // with JDJ on whether Dakota or CV should own these features.
     //if (crossValidation && randomSeed)
-    if ( (crossValidation || expansionBasisType==Pecos::ADAPTED_BASIS) 
-	 && randomSeed)
+    if ( ( crossValidation ||
+	   expansionBasisType == Pecos::ADAPTED_BASIS_GENERALIZED ||
+	   expansionBasisType == Pecos::ADAPTED_BASIS_EXPANDING_FRONT ) &&
+	 randomSeed )
       shared_data_rep->random_seed(randomSeed); // reused among sample set & CV
     if (!noiseTols.empty())
       shared_data_rep->noise_tolerance(noiseTols);
