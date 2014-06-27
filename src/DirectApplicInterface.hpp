@@ -115,14 +115,17 @@ protected:
   //
 
   /// convenience function for local test simulators which sets per-evaluation
-  /// variable and active set attributes
-  void set_local_data(const Variables& vars, const ActiveSet& set);
+  /// variable and active set attributes; derived classes 
+  /// reimplementing this likely need to invoke the base class API
+  virtual void set_local_data(const Variables& vars, const ActiveSet& set);
   /// convenience function for local test simulators which sets per-evaluation
-  /// response attributes
-  void set_local_data(const Response& response);
+  /// response attributes; derived classes
+  /// reimplementing this likely need to invoke the base class API
+  virtual void set_local_data(const Response& response);
   /// convenience function for local test simulators which sets per-evaluation
-  /// variable, active set, and response attributes
-  void set_local_data(const Variables& vars, const ActiveSet& set,
+  /// variable, active set, and response attributes; derived classes
+  /// reimplementing this likely need to invoke the base class API
+  virtual void set_local_data(const Variables& vars, const ActiveSet& set,
 		      const Response& response);
 
   /// convenience function for local test simulators which overlays
