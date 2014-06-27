@@ -19,6 +19,7 @@ echo "\\endverbatim" >> DakotaInputSpec.dox
 # and the input spec summary
 cat $src_docs/Ref_Main.dox \
   $src_docs/Ref_Sample_Inputs.dox \
+  $src_docs/Ref_Test_Problems.dox \
   $src_docs/Ref_Input_Spec.dox \
   $src_docs/Ref_Spec_Summary.dox DakotaInputSpec.dox \
   DakotaTopics.dox \

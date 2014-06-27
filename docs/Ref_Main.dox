@@ -54,6 +54,9 @@ To find more information about a Dakota related topic
 -# Browse the Topics Area on the left navigation pane
 -# Navigate through the topics pages, starting from the \subpage topics
 
+A small number of examples are included (see \ref input_file_examples)
+along with a description of the test problems (see \ref test_problems).
+
 A bibliography for the Reference Manual is provided in 
 \ref citelist
 

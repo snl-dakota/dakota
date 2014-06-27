@@ -8,7 +8,7 @@ dakota.input.summary file that describe the problem to be solved by
 <b> Sample 1: Optimization </b>
 
 The following sample input file shows single-method optimization of
-the Textbook Example using DOT's modified method of feasible
+the Textbook Example (see \ref textbook) using DOT's modified method of feasible
 directions. A similar file is available as \c
 Dakota/examples/users/textbook_opt_conmin.in.
 
@@ -52,7 +52,7 @@ responses
 
 
 The following sample input file shows a nonlinear least squares
-(calibration) solution of the Rosenbrock Example using the NL2SOL
+(calibration) solution of the Rosenbrock Example (see \ref rosenbrock) using the NL2SOL
 method. A similar file is available as \c
 Dakota/examples/users/rosen_opt_nls.in
 
@@ -95,7 +95,7 @@ responses
 <b> Sample 3: Nondeterministic Analysis </b>
 
 The following sample input file shows Latin Hypercube Monte Carlo
-sampling using the Textbook Example. A similar file is available as \c
+sampling using the Textbook Example (see \ref textbook). A similar file is available as \c
 Dakota/test/dakota_uq_textbook_lhs.in.
 
 <!-- \include dakota_textbook_lhs.in -->
@@ -149,7 +149,7 @@ responses,
 <b> Sample 4: Parameter Study </b>
 
 The following sample input file shows a 1-D vector parameter study
-using the Textbook Example. It makes use of the default environment and
+using the Textbook Example (see \ref textbook). It makes use of the default environment and
 model specifications,
 so they can be omitted. A similar file is available in the test
 directory as \c Dakota/examples/users/rosen_ps_vector.in.
@@ -190,7 +190,7 @@ responses
 The following sample input file shows a hybrid environment using three
 methods. It employs a genetic algorithm, pattern search, and full
 Newton gradient-based optimization in succession to solve the Textbook
-Example. A similar file is available as \c
+Example (see \ref textbook). A similar file is available as \c
 Dakota/examples/users/textbook_hybrid_strat.in.
 
 <!-- \include dakota_hybrid.in -->
