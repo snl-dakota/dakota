@@ -44,6 +44,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
   refineControl(
     probDescDB.get_short("method.nond.expansion_refinement_control")),
+  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
   expSampling(false), impSampling(false),
@@ -72,7 +73,7 @@ NonDExpansion(unsigned short method_name, Model& model,
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
-  ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
+  softConvLimit(3), ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), expSampling(false),
   impSampling(false), vbdFlag(false), vbdOrderLimit(0), vbdDropTol(-1.),
   covarianceControl(DEFAULT_COVARIANCE)
@@ -410,7 +411,7 @@ void NonDExpansion::initialize_u_space_model()
   Pecos::ExpansionConfigOptions
     ec_options(expansionCoeffsApproach, expansionBasisType,
 	       outputLevel, vbdFlag, vbdOrderLimit, refineControl,
-	       maxIterations, convergenceTol);
+	       maxIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
 
   // if all variables mode, initialize key to random variable subset

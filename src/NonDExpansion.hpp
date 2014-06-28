@@ -195,6 +195,10 @@ protected:
   /// DIMENSION_ADAPTIVE_CONTROL_GENERALIZED
   short refineControl;
 
+  /// number of consecutive iterations within tolerance required to
+  /// indicate soft convergence
+  unsigned short softConvLimit;
+
   /// symmetric matrix of analytic response covariance (full response
   /// covariance option)
   RealSymMatrix respCovariance;

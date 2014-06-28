@@ -174,10 +174,10 @@ private:
   short convergenceFlag;
   /// number of consecutive candidate point rejections.  If the
   /// count reaches softConvLimit, stop SBLM.
-  short softConvCount;
+  unsigned short softConvCount;
   /// the limit on consecutive candidate point rejections.  If
   /// exceeded by softConvCount, stop SBLM.
-  short softConvLimit;
+  unsigned short softConvLimit;
 
   /// flags the use/availability of truth gradients within the SBLM process
   bool truthGradientFlag;

@@ -44,6 +44,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
   noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
+  initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
+  numAdvance(probDescDB.get_ushort("method.nond.adapted_basis.advancements")),
   expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
   dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
@@ -312,8 +314,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
-  randomSeed(0), crossValidation(false), l2Penalty(0.),
-  normalizedCoeffOutput(false)
+  randomSeed(0), crossValidation(false), l2Penalty(0.), initSGLevel(0),
+  numAdvance(3), normalizedCoeffOutput(false)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -455,20 +457,13 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // Note: regression solver type is transferred via expansionCoeffsApproach
   //       in NonDExpansion::initialize_u_space_model()
   if (expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-    shared_data_rep->cross_validation(crossValidation);
     // TO DO: consider adding support for machine-generated seeds (when no
     // user spec) as well as seed progressions for varyPattern.  Coordinate
     // with JDJ on whether Dakota or CV should own these features.
-    //if (crossValidation && randomSeed)
-    if ( ( crossValidation ||
-	   expansionBasisType == Pecos::ADAPTED_BASIS_GENERALIZED ||
-	   expansionBasisType == Pecos::ADAPTED_BASIS_EXPANDING_FRONT ) &&
-	 randomSeed )
-      shared_data_rep->random_seed(randomSeed); // reused among sample set & CV
-    if (!noiseTols.empty())
-      shared_data_rep->noise_tolerance(noiseTols);
-    if (expansionCoeffsApproach == Pecos::LASSO_REGRESSION)
-      shared_data_rep->l2_penalty(l2Penalty);
+    Pecos::RegressionConfigOptions
+      rc_options(crossValidation, randomSeed, noiseTols, l2Penalty,
+		 false, initSGLevel, 2, numAdvance);
+    shared_data_rep->configuration_options(rc_options);
   }
 
   // perform last due to numSamplesOnModel update

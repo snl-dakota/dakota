@@ -63,7 +63,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   //approxSubProbObj(ORIGINAL_PRIMARY),approxSubProbCon(ORIGINAL_CONSTRAINTS),
   //meritFnType(AUGMENTED_LAGRANGIAN_MERIT), acceptLogic(FILTER),
   penaltyIterOffset(-200), convergenceFlag(0), softConvCount(0),
-  softConvLimit(probDescDB.get_int("method.sbl.soft_convergence_limit")),
+  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type")),
   multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
@@ -325,6 +325,10 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1);
   }
 #endif
+
+  // Set method-specific default for softConvLimit
+  if (!softConvLimit)
+    softConvLimit = 5;
 
   // Set the minimum trust region size.  For kriging, the minimum trust region
   // must be set to O(10^-2 10^-3).  Otherwise, the correlation matrix becomes

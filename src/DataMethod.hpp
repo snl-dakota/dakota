@@ -363,10 +363,8 @@ public:
   RealVector concurrentParameterSets;
 
   /// number of consecutive iterations with change less than
-  /// convergenceTolerance required to trigger convergence within
-  /// the surrogate-based local method (from the \c
-  /// soft_convergence_limit specification in \ref MethodSBL)
-  int surrBasedLocalSoftConvLimit;
+  /// convergenceTolerance required to trigger convergence
+  unsigned short softConvLimit;
   /// flag to indicate user-specification of a bypass of any/all
   /// layerings in evaluating truth response values in SBL.
   bool surrBasedLocalLayerBypass;
@@ -831,6 +829,12 @@ public:
   /// flag indicating the use of cross-validation across expansion orders
   /// (given a prescribed maximum order) and, for some methods, noise tolerances
   bool crossValidation;
+  /// initial grid level for the ADAPTED_BASIS_GENERALIZED approach to
+  /// defining the candidate basis for sparse recovery (compressed sensing)
+  unsigned short adaptedBasisInitLevel;
+  /// initial grid level for the ADAPTED_BASIS_EXPANDING_FRONT approach to
+  /// defining the candidate basis for sparse recovery (compressed sensing)
+  unsigned short adaptedBasisAdvancements;
   /// flag indicating the output of PCE coefficients corresponding to
   /// normalized basis polynomials
   bool normalizedCoeffs;

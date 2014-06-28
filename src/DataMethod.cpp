@@ -32,11 +32,11 @@ DataMethodRep::DataMethodRep():
   //hybridProgThresh(0.5),
   concurrentRandomJobs(0),
   // Local surrogate-based opt/NLS
-  surrBasedLocalSoftConvLimit(5),        surrBasedLocalLayerBypass(false),
-  surrBasedLocalTRInitSize(0.4),         surrBasedLocalTRMinSize(1.0e-6),
-  surrBasedLocalTRContractTrigger(0.25), surrBasedLocalTRExpandTrigger(0.75),
-  surrBasedLocalTRContract(0.25),        surrBasedLocalTRExpand(2.0),
-  surrBasedLocalSubProbObj(ORIGINAL_PRIMARY),
+  softConvLimit(0), // dummy value -> method-specific default
+  surrBasedLocalLayerBypass(false),      surrBasedLocalTRInitSize(0.4),
+  surrBasedLocalTRMinSize(1.0e-6),       surrBasedLocalTRContractTrigger(0.25),
+  surrBasedLocalTRExpandTrigger(0.75),   surrBasedLocalTRContract(0.25),
+  surrBasedLocalTRExpand(2.0), surrBasedLocalSubProbObj(ORIGINAL_PRIMARY),
   surrBasedLocalSubProbCon(ORIGINAL_CONSTRAINTS),
   surrBasedLocalMeritFn(AUGMENTED_LAGRANGIAN_MERIT),
   surrBasedLocalAcceptLogic(FILTER),     surrBasedLocalConstrRelax(NO_RELAX),
@@ -165,7 +165,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << concurrentRandomJobs << concurrentParameterSets;
 
   // Surrogate-based
-  s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass
+  s << softConvLimit << surrBasedLocalLayerBypass
     << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
     << surrBasedLocalTRContractTrigger << surrBasedLocalTRExpandTrigger
     << surrBasedLocalTRContract << surrBasedLocalTRExpand
@@ -289,7 +289,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> concurrentRandomJobs >> concurrentParameterSets;
 
   // Surrogate-based
-  s >> surrBasedLocalSoftConvLimit >> surrBasedLocalLayerBypass
+  s >> softConvLimit >> surrBasedLocalLayerBypass
     >> surrBasedLocalTRInitSize >> surrBasedLocalTRMinSize
     >> surrBasedLocalTRContractTrigger >> surrBasedLocalTRExpandTrigger
     >> surrBasedLocalTRContract >> surrBasedLocalTRExpand
@@ -414,7 +414,7 @@ void DataMethodRep::write(std::ostream& s) const
     << concurrentRandomJobs << concurrentParameterSets;
 
   // Surrogate-based
-  s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass
+  s << softConvLimit << surrBasedLocalLayerBypass
     << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
     << surrBasedLocalTRContractTrigger << surrBasedLocalTRExpandTrigger
     << surrBasedLocalTRContract << surrBasedLocalTRExpand

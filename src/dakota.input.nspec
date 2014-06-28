@@ -118,7 +118,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  method_pointer ALIAS approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
 	  | method_name ALIAS approx_method_name STRING {N_mdm(str,subMethodName)}
 	  model_pointer ALIAS approx_model_pointer STRING {N_mdm(str,modelPointer)}
-	  [ soft_convergence_limit INTEGER {N_mdm(int,surrBasedLocalSoftConvLimit)} ]
+	  [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
 	  [ truth_surrogate_bypass {N_mdm(true,surrBasedLocalLayerBypass)} ]
 	  [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
 	    [ initial_size REAL {N_mdm(Real,surrBasedLocalTRInitSize)} ]
@@ -508,13 +508,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 #		      | piecewise {NIDRProblemDescDB::method_piecewise}
 		    ]
 		    ( quadrature_order INTEGERLIST {N_mdm(usharray,quadratureOrder)}
-		      | ( sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
-		          [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
-			    | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
-			)
-			[ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-		        [ nested {N_mdm(type,nestingOverride_NESTED)}
-			  | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
+		      | 
+		      ( sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+		        [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
+			  | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
+		      )
+		      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+		      [ nested {N_mdm(type,nestingOverride_NESTED)}
+		        | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    )
 		    | cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
 		    | ( ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
@@ -523,8 +524,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			    tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
 			    | total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
 			    | ( adapted {0}
-			      	generalized {N_mdm(type,expansionBasisType_ADAPTED_BASIS_GENERALIZED)}
-				| expanding_front {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+			      	( generalized {N_mdm(type,expansionBasisType_ADAPTED_BASIS_GENERALIZED)}
+				  [ initial_level INTEGER {N_mdm(ushint,adaptedBasisInitLevel)} ]
+				)
+				|
+				( expanding_front {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+				  [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
+				)
+				[ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
 			      )
 			  ]
 		      	  ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}

@@ -6275,7 +6275,10 @@ static RealVectorArray
 	MP_(responseLevels);
 
 static unsigned short
+	MP_(adaptedBasisAdvancements),
+	MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
+	MP_(softConvLimit),
 	MP_(vbdOrder);
 
 static SizetArray
@@ -6378,7 +6381,6 @@ static int
 	MP_(randomSeed),
 	MP_(refineSamples),
 	MP_(searchSchemeSize),
-	MP_(surrBasedLocalSoftConvLimit),
 	MP_(totalPatternSize),
 	MP_(verifyLevel);
 

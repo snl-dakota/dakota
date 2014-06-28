@@ -2290,7 +2290,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"processors_per_iterator", P procsPerIterator},
 	{"random_seed", P randomSeed},
 	{"samples", P numSamples},
-	{"sbl.soft_convergence_limit", P surrBasedLocalSoftConvLimit},
 	{"symbols", P numSymbols}};
     #undef P
 
@@ -2445,11 +2444,14 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<unsigned short, DataMethodRep> UShdmo[] = { // must be sorted
 	{"algorithm", P methodName},
+	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
+	{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.cubature_integrand", P cubIntOrder},
 	{"nond.integration_refinement", P integrationRefine},
 	{"nond.reliability_search_type", P reliabilitySearchType},
 	{"nond.vbd_interaction_order", P vbdOrder},
 	{"sample_type", P sampleType},
+	{"soft_convergence_limit", P softConvLimit},
 	{"sub_method", P subMethod}};
     #undef P
 

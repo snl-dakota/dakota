@@ -739,8 +739,14 @@ KEYWORD12 method
 	      | total_order
 	      |
 	      ( adapted
-		generalized
-		| expanding_front
+		( generalized
+		  [ initial_level INTEGER ]
+		  )
+		|
+		( expanding_front
+		  [ advancements INTEGER ]
+		  )
+		[ soft_convergence_limit INTEGER ]
 		)
 	      ]
 	    ( collocation_points INTEGERLIST
