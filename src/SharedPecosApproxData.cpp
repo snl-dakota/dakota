@@ -32,14 +32,15 @@ SharedPecosApproxData(const String& approx_type,
   // override selected ConfigOptions defaults, as supported by SharedApproxData
   // API.  All options are updated later in NonD*::initialize_u_space_model(),
   // so this step is not strictly required and is more for completeness.
-  Pecos::ExpansionConfigOptions ec_options; // set defaults
-  Pecos::BasisConfigOptions     bc_options; // set defaults
+  Pecos::ExpansionConfigOptions  ec_options; // set defaults
+  Pecos::BasisConfigOptions      bc_options; // set defaults
+  Pecos::RegressionConfigOptions rc_options; // set defaults
   ec_options.outputLevel = outputLevel;
   bc_options.useDerivs   = (buildDataOrder > 1);
 
   pecosSharedData =
     Pecos::SharedBasisApproxData(basis_type, approx_order, numVars,
-				 ec_options, bc_options);
+				 ec_options, bc_options, rc_options);
   pecosSharedDataRep
     = (Pecos::SharedPolyApproxData*)pecosSharedData.data_rep();
 }
@@ -57,14 +58,15 @@ SharedPecosApproxData(ProblemDescDB& problem_db, size_t num_vars):
   // override selected ConfigOptions defaults, as supported by SharedApproxData
   // API.  All options are updated later in NonD*::initialize_u_space_model(),
   // so this step is not strictly required and is more for completeness.
-  Pecos::ExpansionConfigOptions ec_options; // set defaults
-  Pecos::BasisConfigOptions     bc_options; // set defaults
+  Pecos::ExpansionConfigOptions  ec_options; // set defaults
+  Pecos::BasisConfigOptions      bc_options; // set defaults
+  Pecos::RegressionConfigOptions rc_options; // set defaults
   ec_options.outputLevel = outputLevel;
   bc_options.useDerivs   = (buildDataOrder > 1);
 
   pecosSharedData =
     Pecos::SharedBasisApproxData(basis_type, approx_order, numVars,
-				 ec_options, bc_options);
+				 ec_options, bc_options, rc_options);
   pecosSharedDataRep
     = (Pecos::SharedPolyApproxData*)pecosSharedData.data_rep();
 }
