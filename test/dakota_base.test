@@ -54034,6 +54034,53 @@ response_fn_1 Sobol' indices:
                       4.9746891382737729e-01  7.0363551328281182e-01 x1
                       2.9636448671718818e-01  5.0253108617262265e-01 x2
                       2.0616659945543453e-01 x1 x2 
+dakota_uq_rosenbrock_pce_lls_adapted.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+  response_fn_1: 14 val (14 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  4.5566666666666686e+02   P0   P0
+  -3.9999999999996474e+00   P1   P0
+  9.1695238095238085e+02   P2   P0
+  -5.3333333333333360e+02   P0   P1
+  2.6666666666666663e+02   P0   P2
+  0.0000000000000000e+00   P3   P0
+  3.6571428571428538e+02   P4   P0
+  0.0000000000000000e+00   P1   P1
+  -1.0666666666666670e+03   P2   P1
+  2.1887092492008158e-13   P1   P2
+  0.0000000000000000e+00   P2   P2
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666686e+02  6.0656024184257831e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      4.9746891382737729e-01  7.0363551328281226e-01 x1
+                      2.9636448671718779e-01  5.0253108617262277e-01 x2
+                      2.0616659945543495e-01 x1 x2 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+  response_fn_1: 14 val (14 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  4.5566666666666760e+02   P0   P0
+  -3.9999999999999498e+00   P1   P0
+  -5.3333333333333246e+02   P0   P1
+  9.1695238095238119e+02   P2   P0
+  0.0000000000000000e+00   P1   P1
+  2.6666666666666589e+02   P0   P2
+  -6.8380470222749718e-13   P3   P0
+  -1.0666666666666601e+03   P2   P1
+  0.0000000000000000e+00   P1   P2
+  1.9968045059448666e-12   P0   P3
+  3.6571428571428555e+02   P4   P0
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  4.5566666666666760e+02  6.0656024184257717e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      4.9746891382737951e-01  7.0363551328281249e-01 x1
+                      2.9636448671718757e-01  5.0253108617262066e-01 x2
+                      2.0616659945543303e-01 x1 x2 
 dakota_uq_rosenbrock_pce_lls_cv.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)

@@ -1,0 +1,45 @@
+
+environment,
+	#graphics
+	output_precision = 16
+
+method,
+	polynomial_chaos
+# For adapted generalized, the starting candidate basis is determined by
+# initial_level and multiIndexGrowthFactor, such that expansion_order and
+# collocation_ratio only define the sample size.  For adapted expanding_front,
+# they define both the starting total-order candidate basis and the sample size.
+ 	  expansion_order   = 4
+# 	  expansion_order   = 2
+#	  collocation_ratio = 0.9
+	  collocation_points = 14
+# Basis adaptation algorithm:
+	  basis_type
+	    adapted generalized			#0
+	      initial_level = 0			#0
+#	    adapted expanding_front		#1
+#	      advancements = 3			#1
+	  soft_convergence_limit = 2
+# CV settings:
+	  seed = 1234567
+# CS and VBD settings:
+	  omp
+#	  basis_pursuit	  		
+	  variance_based_decomp #interaction_order = 1
+	  output verbose
+
+variables,
+	uniform_uncertain = 2
+	  lower_bounds = -2. -2.
+	  upper_bounds =  2.  2.
+	  descriptors  = 'x1' 'x2'		
+
+interface,
+	direct
+	analysis_driver = 'rosenbrock'		
+
+responses,
+	response_functions = 1
+	no_gradients			
+	no_hessians
+
