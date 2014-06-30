@@ -1302,7 +1302,6 @@ int TestDriverInterface::genz()
   RealVector c, w;
   get_genz_coefficients( numVars, factor, 
 			 coeff_type, c, w );
-  c.print(std::cout);
   Real pi = 4.0 * std::atan( 1.0 );
 
   // **** f:
