@@ -185,8 +185,10 @@ void NonDInterval::calculate_cells_and_bpas()
     numCells *= prev_bpa_len = dsr_vals_probs[i].size();
   }
  
-  Cout << "scale factor " << scale_factor << " prev_bpa_len " << prev_bpa_len
-       << " numCells "    << numCells << '\n';
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "scale factor:\n" << scale_factor
+	 << "prev_bpa_len = " << prev_bpa_len
+	 << ", numCells = "   << numCells << '\n';
 
   // shape cell length
   if (numContIntervalVars) {
@@ -292,18 +294,27 @@ void NonDInterval::calculate_cells_and_bpas()
     }
   }
 
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  //StringMultiArrayConstView dsv_labels
+  //  = iteratedModel.discrete_string_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
   for (i=0; i<numCells; ++i) {
-    Cout << "Cell " << i << '\n';
+    Cout << "Cell " << i+1 << ":\n";
     for (j=0; j<numContIntervalVars; ++j)
-      Cout << cellContLowerBounds[i][j] << "  "
-	   << cellContUpperBounds[i][j] << "\n";
+      Cout << cv_labels[j] << ": [ " << cellContLowerBounds[i][j] << ", "
+	   << cellContUpperBounds[i][j] << " ]\n";
     for (j=0; j<numDiscIntervalVars; ++j)
-      Cout << cellIntRangeLowerBounds[i][j] << "  "
-	   << cellIntRangeUpperBounds[i][j] << "\n";
+      Cout << div_labels[j] << ": [ " << cellIntRangeLowerBounds[i][j] << ", "
+	   << cellIntRangeUpperBounds[i][j] << " ]\n";
     for (j=0; j<numDiscSetIntUncVars; ++j)
-      Cout << cellIntSetBounds[i][j] << "  "  << "\n";
+      Cout  << div_labels[j+numDiscIntervalVars] << ": [ "
+	    << cellIntSetBounds[i][j] << " ]\n";
     for (j=0; j<numDiscSetRealUncVars; ++j)
-      Cout << cellRealSetBounds[i][j] << "  "  << "\n";
+      Cout  << drv_labels[j] << ": [ " << cellRealSetBounds[i][j] << " ]\n";
   }
 
   // shape belief/plausibility structure arrays

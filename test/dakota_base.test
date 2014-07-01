@@ -62281,9 +62281,9 @@ Test Number 3 succeeded
    0.0000000000e+00   1.2189499948e-01   6.7590202943e-01
    2.5000000000e-01   1.2189499948e-01   6.7590202943e-01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 68 total (57 new, 11 duplicate)
-  response_fn_1: 44 val (40 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 30 val (23 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 63 total (51 new, 12 duplicate)
+  response_fn_1: 38 val (33 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 31 val (24 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   0.0000000000e+00   0.0000000000e+00
@@ -62292,9 +62292,9 @@ Test Number 4 succeeded
    8.0000000000e-01   9.3000000000e-01   1.0000000000e+00
   Probability Level  Belief Resp Level   Plaus Resp Level
   -----------------  -----------------   ----------------
-   2.5000000000e-01   2.6569966958e-01   6.2500211701e-02
-   5.0000000000e-01   3.0259950662e-01   6.2600095213e-02
-   7.5000000000e-01   6.8169656331e-01   6.4105243264e-02
+   2.5000000000e-01   2.6569900873e-01   6.2500094084e-02
+   5.0000000000e-01   3.0259950662e-01   6.2652511423e-02
+   7.5000000000e-01   6.8169656331e-01   6.4126682544e-02
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   3.0000000000e-02   6.5000000000e-01
@@ -62303,13 +62303,13 @@ Test Number 4 succeeded
    8.0000000000e-01   7.2000000000e-01   1.0000000000e+00
   Probability Level  Belief Resp Level   Plaus Resp Level
   -----------------  -----------------   ----------------
-   2.5000000000e-01   6.5999458078e-01   1.6935107724e-06
+   2.5000000000e-01   6.5999819359e-01   5.0805442674e-06
    5.0000000000e-01   6.9999689524e-01   1.1000129836e-01
-   7.5000000000e-01   8.4999689524e-01   1.1000129836e-01
+   7.5000000000e-01   8.4999068572e-01   1.1000129836e-01
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 39 total (29 new, 10 duplicate)
-  response_fn_1: 21 val (16 n, 5 d), 21 grad (16 n, 5 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 18 val (13 n, 5 d), 18 grad (13 n, 5 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 34 total (24 new, 10 duplicate)
+  response_fn_1: 17 val (12 n, 5 d), 17 grad (12 n, 5 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 17 val (12 n, 5 d), 17 grad (12 n, 5 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   0.0000000000e+00   0.0000000000e+00
