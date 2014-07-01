@@ -972,7 +972,7 @@ void Analyzer::print_results(std::ostream& s)
   // Single and Multipoint results summary
   // -------------------------------------
   RealPairPRPMultiMap::iterator it = bestVarsRespMap.begin();
-  size_t i, offset = 0, num_fns, num_best_map = bestVarsRespMap.size();
+  size_t i, offset, num_fns, num_best_map = bestVarsRespMap.size();
   for (i=1; it!=bestVarsRespMap.end(); ++i, ++it) {
     const ParamResponsePair& best_pr = it->second;
     const Variables&  best_vars = best_pr.prp_parameters();
@@ -980,7 +980,7 @@ void Analyzer::print_results(std::ostream& s)
     s << "<<<<< Best parameters          ";
     if (num_best_map > 1) s << "(set " << i << ") ";
     s << "=\n" << best_vars;
-    num_fns = best_fns.length();
+    num_fns = best_fns.length(); offset = 0;
     if (numObjFns) {
       if (numObjFns > 1) s << "<<<<< Best objective functions ";
       else               s << "<<<<< Best objective function  ";
