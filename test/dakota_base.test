@@ -5585,14 +5585,14 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 256 total (256 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8063661524e-01 x2
+                      2.8063661506e-01 x2
                       0.0000000000e+00 x3
                       2.7755575616e-17 x4
-                      0.0000000000e+00 x5
-                      7.5347776338e-01 x6
+                     -3.4694469520e-18 x5
+                      7.5347771456e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759945994e+00
+                      1.0759945995e+00
 <<<<< Best data captured at function evaluation 242
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1000 total (966 new, 34 duplicate)
@@ -5621,18 +5621,18 @@ Test Number 2 succeeded
                       1.0763895707e+00
 <<<<< Best data captured at function evaluation 331
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 130 total (130 new, 0 duplicate)
+<<<<< Function evaluation summary: 94 total (94 new, 0 duplicate)
 <<<<< Best parameters          =
-                      7.1880834746e-01 x1
-                      4.9508942525e-01 x2
+                      5.9768464590e-01 x1
+                      4.9512176525e-01 x2
                       0.0000000000e+00 x3
-                      1.7808160606e-01 x4
-                      3.2941170936e-01 x5
-                      4.7484593829e-01 x6
-                      4.8493830866e-01 x7
+                      3.4546116824e-01 x4
+                      4.1400710363e-01 x5
+                      4.8395461632e-01 x6
+                      4.8620411823e-01 x7
 <<<<< Best objective function  =
-                      1.1713290296e+00
-<<<<< Best data captured at function evaluation 109
+                      1.2396553141e+00
+<<<<< Best data captured at function evaluation 71
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 107 total (107 new, 0 duplicate)
 <<<<< Best parameters          =
