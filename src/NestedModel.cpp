@@ -2547,12 +2547,13 @@ size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
       sacvm_target == Pecos::CSV_UPR_BND)
     return pacvm_index; // no offset since all_continuous_* used to update
   else {
-    const SharedVariablesData& svd = currentVariables.shared_data();
+    const SharedVariablesData& submodel_svd
+      = subModel.current_variables().shared_data();
     size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-    svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+    submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
     Pecos::AleatoryDistParams& submodel_adp
       = subModel.aleatory_distribution_parameters();
-    size_t num_nuv   = submodel_adp.normal_means().length(),
+    size_t num_nuv = submodel_adp.normal_means().length(),
       num_lnuv  = std::max(submodel_adp.lognormal_means().length(),
 			   submodel_adp.lognormal_lambdas().length()),
       num_uuv   = submodel_adp.uniform_lower_bounds().length(),
@@ -2615,9 +2616,10 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
       sadivm_target == Pecos::DSRIV_UPR_BND)
     return padivm_index; // no offset since all_discrete_int_* used to update
   else {
-    const SharedVariablesData& svd = currentVariables.shared_data();
+    const SharedVariablesData& submodel_svd
+      = subModel.current_variables().shared_data();
     size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-    svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+    submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
     Pecos::AleatoryDistParams& submodel_adp
       = subModel.aleatory_distribution_parameters();
     size_t num_puv = submodel_adp.poisson_lambdas().length(),
@@ -2655,9 +2657,10 @@ size_t NestedModel::sm_adsv_index_map(size_t padsvm_index, short sadsvm_target)
   //case Pecos::DSSSV_LWR_BND: case Pecos::DSSSV_UPR_BND:
   //  return padsvm_index; break;
   //case Pecos::DAUSV_DISTRIBUTION_PARAMETER:
-  //  const SharedVariablesData& svd = currentVariables.shared_data();
+  //  const SharedVariablesData& submodel_svd
+  //    = subModel.current_variables().shared_data();
   //  size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  //  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  //  submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   //  return padsvm_index - num_ddsv;
   //  break;
   //}
@@ -2677,9 +2680,10 @@ size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
   //case Pecos::DSSRV_LWR_BND: case Pecos::DSSRV_UPR_BND:
   //  return padrvm_index; break;
   //case Pecos::DAURV_DISTRIBUTION_PARAMETER:
-  //  const SharedVariablesData& svd = currentVariables.shared_data();
+  //  const SharedVariablesData& submodel_svd
+  //    = subModel.current_variables().shared_data();
   //  size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  //  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  //  submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   //  return padrvm_index - num_ddrv;
   //  break;
   //}
