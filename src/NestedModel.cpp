@@ -108,8 +108,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     num_var_map_2 = secondary_var_mapping.size(),
     num_curr_cv   = currentVariables.cv(),
     num_curr_div  = currentVariables.div(),
+    num_curr_dsv  = currentVariables.dsv(),
     num_curr_drv  = currentVariables.drv(),
-    num_curr_vars = num_curr_cv + num_curr_div + num_curr_drv;
+    num_curr_vars = num_curr_cv + num_curr_div + num_curr_dsv + num_curr_drv;
   // Error checks: maps can be empty strings, but must be present to assure
   // correct association.
   if ( ( num_var_map_1 && num_var_map_1 != num_curr_vars ) ||
@@ -121,13 +122,16 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // active are sized based on totals due to different mapping options
   active1ACVarMapIndices.resize(num_curr_vars);
   active1ADIVarMapIndices.resize(num_curr_vars);
+  active1ADSVarMapIndices.resize(num_curr_vars);
   active1ADRVarMapIndices.resize(num_curr_vars);
   extraCVarsData.resize(num_curr_cv);
   extraDIVarsData.resize(num_curr_div);
+  extraDSVarsData.resize(num_curr_dsv);
   extraDRVarsData.resize(num_curr_drv);
   if (num_var_map_2) {
     active2ACVarMapTargets.resize(num_curr_vars);
     active2ADIVarMapTargets.resize(num_curr_vars);
+    active2ADSVarMapTargets.resize(num_curr_vars);
     active2ADRVarMapTargets.resize(num_curr_vars);
   }
   short inactive_sm_view = EMPTY;
@@ -135,18 +139,23 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     = currentVariables.continuous_variable_types();
   UShortMultiArrayConstView curr_di_types
     = currentVariables.discrete_int_variable_types();
+  UShortMultiArrayConstView curr_ds_types
+    = currentVariables.discrete_string_variable_types();
   UShortMultiArrayConstView curr_dr_types
     = currentVariables.discrete_real_variable_types();
   UShortMultiArrayConstView submodel_a_c_types
     = subModel.all_continuous_variable_types();
   UShortMultiArrayConstView submodel_a_di_types
     = subModel.all_discrete_int_variable_types();
+  UShortMultiArrayConstView submodel_a_ds_types
+    = subModel.all_discrete_string_variable_types();
   UShortMultiArrayConstView submodel_a_dr_types
     = subModel.all_discrete_real_variable_types();
-  size_t curr_i, sm_acv_cntr = 0, sm_adiv_cntr = 0, sm_adrv_cntr = 0,
-    sm_acv_avail = 0, sm_adiv_avail = 0, sm_adrv_avail = 0;
+  size_t curr_i, sm_acv_cntr = 0, sm_adiv_cntr = 0, sm_adsv_cntr = 0,
+    sm_adrv_cntr = 0, sm_acv_avail = 0, sm_adiv_avail = 0, sm_adsv_avail = 0,
+    sm_adrv_avail = 0;
   unsigned short prev_c_type = USHRT_MAX, prev_di_type = USHRT_MAX,
-    prev_dr_type = USHRT_MAX;
+    prev_ds_type = USHRT_MAX, prev_dr_type = USHRT_MAX;
   String empty_str;
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
@@ -156,7 +165,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
       // for default mappings between consistent types, propagate bounds/labels
-      extraCVarsData[i] = true;
+      extraCVarsData.set(i);
       // default mapping: inactive subModel vars = active currentVariables
       update_inactive_view(currentVariables.view().first, inactive_sm_view);
       // Can't use label matching, since subModel labels may not be updated
@@ -176,7 +185,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 				  submodel_a_c_types.end(), curr_c_type);
       }
       active1ACVarMapIndices[curr_i]  = sm_acv_offset + sm_acv_cntr++;
-      active1ADIVarMapIndices[curr_i] = active1ADRVarMapIndices[curr_i] = _NPOS;
+      active1ADIVarMapIndices[curr_i] = active1ADSVarMapIndices[curr_i]
+	= active1ADRVarMapIndices[curr_i] = _NPOS;
       prev_c_type = curr_c_type;
       if (sm_acv_cntr > sm_acv_avail) {
 	Cerr << "\nError: default insertions of type '" << curr_c_type
@@ -185,10 +195,11 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       }
       if (num_var_map_2)
 	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
-	  = active2ADRVarMapTargets[curr_i] = Pecos::NO_TARGET;
+	  = active2ADSVarMapTargets[curr_i] = active2ADRVarMapTargets[curr_i]
+	  = Pecos::NO_TARGET;
     }
     else {
-      extraCVarsData[i] = false; // not a default mapping based on types
+      extraCVarsData.reset(i); // not a default mapping based on types
       const String& map2
 	= (num_var_map_2) ? secondary_var_mapping[curr_i] : empty_str;
       resolve_real_variable_mapping(map1, map2, curr_i, inactive_sm_view);
@@ -202,7 +213,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
       // for default mappings between consistent types, propagate bounds/labels
-      extraDIVarsData[i] = true;
+      extraDIVarsData.set(i);
       // default mapping: inactive subModel vars = active currentVariables
       update_inactive_view(currentVariables.view().first, inactive_sm_view);
       // Can't use label matching, since subModel labels may not be updated
@@ -222,7 +233,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 				   submodel_a_di_types.end(), curr_di_type);
       }
       active1ADIVarMapIndices[curr_i] = sm_adiv_offset + sm_adiv_cntr++;
-      active1ACVarMapIndices[curr_i]  = active1ADRVarMapIndices[curr_i] = _NPOS;
+      active1ACVarMapIndices[curr_i]  = active1ADSVarMapIndices[curr_i]
+	= active1ADRVarMapIndices[curr_i] = _NPOS;
       prev_di_type = curr_di_type;
       if (sm_adiv_cntr > sm_adiv_avail) {
 	Cerr << "\nError: default insertions of type '" << curr_di_type
@@ -231,13 +243,62 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       }
       if (num_var_map_2)
 	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
-	  = active2ADRVarMapTargets[curr_i] = Pecos::NO_TARGET;
+	  = active2ADSVarMapTargets[curr_i] = active2ADRVarMapTargets[curr_i]
+	  = Pecos::NO_TARGET;
     }
     else {
-      extraDIVarsData[i] = false; // not a default mapping based on types
+      extraDIVarsData.reset(i); // not a default mapping based on types
       const String& map2
 	= (num_var_map_2) ? secondary_var_mapping[curr_i] : empty_str;
       resolve_integer_variable_mapping(map1, map2, curr_i, inactive_sm_view);
+    }
+  }
+
+  // Map ACTIVE DISCRETE STRING VARIABLES from currentVariables
+  for (i=0; i<num_curr_dsv; ++i) {
+    curr_i = dsv_index_map(i);
+    const String& map1
+      = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
+    if (map1.empty()) {
+      // for default mappings between consistent types, propagate bounds/labels
+      extraDSVarsData.set(i);
+      // default mapping: inactive subModel vars = active currentVariables
+      update_inactive_view(currentVariables.view().first, inactive_sm_view);
+      // Can't use label matching, since subModel labels may not be updated
+      // until runtime.  index() returns the _first_ instance of the type.
+      unsigned short curr_ds_type = curr_ds_types[i];
+      size_t sm_adsv_offset = find_index(submodel_a_ds_types, curr_ds_type);
+      if (sm_adsv_offset == _NPOS) {
+	Cerr << "\nError: active discrete string variable type '"
+	     << curr_ds_type << "' could not be matched within all sub-model "
+	     << "discrete string variable types." << std::endl;
+	abort_handler(-1);
+      }
+      // For multiple types, sm_adsv_cntr must be reset to 0 at the type change
+      if (curr_ds_type != prev_ds_type) {
+	sm_adsv_cntr  = 0;
+	sm_adsv_avail = std::count(submodel_a_ds_types.begin(),
+				   submodel_a_ds_types.end(), curr_ds_type);
+      }
+      active1ADSVarMapIndices[curr_i] = sm_adsv_offset + sm_adsv_cntr++;
+      active1ACVarMapIndices[curr_i]  = active1ADIVarMapIndices[curr_i]
+	= active1ADRVarMapIndices[curr_i] = _NPOS;
+      prev_ds_type = curr_ds_type;
+      if (sm_adsv_cntr > sm_adsv_avail) {
+	Cerr << "\nError: default insertions of type '" << curr_ds_type
+	     << "' exceed sub-model allocation." << std::endl;
+	abort_handler(-1);
+      }
+      if (num_var_map_2)
+	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
+	  = active2ADSVarMapTargets[curr_i] = active2ADRVarMapTargets[curr_i]
+	  = Pecos::NO_TARGET;
+    }
+    else {
+      extraDSVarsData.reset(i); // not a default mapping based on types
+      const String& map2
+	= (num_var_map_2) ? secondary_var_mapping[curr_i] : empty_str;
+      resolve_string_variable_mapping(map1, map2, curr_i, inactive_sm_view);
     }
   }
 
@@ -248,7 +309,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
       // for default mappings between consistent types, propagate bounds/labels
-      extraDRVarsData[i] = true;
+      extraDRVarsData.set(i);
       // default mapping: inactive subModel vars = active currentVariables
       update_inactive_view(currentVariables.view().first, inactive_sm_view);
       // Can't use label matching, since subModel labels may not be updated
@@ -268,7 +329,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 				   submodel_a_dr_types.end(), curr_dr_type);
       }
       active1ADRVarMapIndices[curr_i] = sm_adrv_offset + sm_adrv_cntr++;
-      active1ACVarMapIndices[curr_i]  = active1ADIVarMapIndices[curr_i] = _NPOS;
+      active1ACVarMapIndices[curr_i]  = active1ADIVarMapIndices[curr_i]
+	= active1ADSVarMapIndices[curr_i] = _NPOS;
       prev_dr_type = curr_dr_type;
       if (sm_adrv_cntr > sm_adrv_avail) {
 	Cerr << "\nError: default insertions of type '" << curr_dr_type
@@ -277,10 +339,11 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       }
       if (num_var_map_2)
 	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
-	  = active2ADRVarMapTargets[curr_i] = Pecos::NO_TARGET;
+	  = active2ADSVarMapTargets[curr_i] = active2ADRVarMapTargets[curr_i]
+	  = Pecos::NO_TARGET;
     }
     else {
-      extraDRVarsData[i] = false; // not a default mapping based on types
+      extraDRVarsData.reset(i); // not a default mapping based on types
       const String& map2
 	= (num_var_map_2) ? secondary_var_mapping[curr_i] : empty_str;
       resolve_real_variable_mapping(map1, map2, curr_i, inactive_sm_view);
@@ -289,6 +352,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   size_t num_curr_ccv = currentVariables.acv() - num_curr_cv,//active complement
     num_curr_cdiv = currentVariables.adiv() - num_curr_div, // active complement
+    num_curr_cdsv = currentVariables.adsv() - num_curr_dsv, // active complement
     num_curr_cdrv = currentVariables.adrv() - num_curr_drv; // active complement
   // complement can be sized based on corresponding currentVariables sizes
   // due to restriction to default mappings
@@ -296,16 +360,20 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     complement1ACVarMapIndices.resize(num_curr_ccv);
   if (num_curr_cdiv)
     complement1ADIVarMapIndices.resize(num_curr_cdiv);
+  if (num_curr_cdsv)
+    complement1ADSVarMapIndices.resize(num_curr_cdsv);
   if (num_curr_cdrv)
     complement1ADRVarMapIndices.resize(num_curr_cdrv);
   UShortMultiArrayConstView curr_ac_types
     = currentVariables.all_continuous_variable_types();
   UShortMultiArrayConstView curr_adi_types
     = currentVariables.all_discrete_int_variable_types();
+  UShortMultiArrayConstView curr_ads_types
+    = currentVariables.all_discrete_string_variable_types();
   UShortMultiArrayConstView curr_adr_types
     = currentVariables.all_discrete_real_variable_types();
   unsigned short prev_ac_type = USHRT_MAX, prev_adi_type = USHRT_MAX,
-    prev_adr_type = USHRT_MAX;
+    prev_ads_type = USHRT_MAX, prev_adr_type = USHRT_MAX;
 
   // Map COMPLEMENT CONTINUOUS VARIABLES from currentVariables
   for (i=0; i<num_curr_ccv; ++i) {
@@ -363,6 +431,34 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     }
   }
 
+  // Map COMPLEMENT DISCRETE STRING VARIABLES from currentVariables
+  for (i=0; i<num_curr_cdsv; ++i) {
+    curr_i = cdsv_index_map(i);
+    // Can't use label matching, since subModel labels may not be updated
+    // until runtime.  index() returns the _first_ instance of the type.
+    unsigned short curr_ads_type = curr_ads_types[curr_i];
+    size_t sm_adsv_offset = find_index(submodel_a_ds_types, curr_ads_type);
+    if (sm_adsv_offset == _NPOS) {
+      Cerr << "\nError: complement discrete string variable type '"
+	   << curr_ads_type << "' could not be matched within all sub-model "
+	   << "discrete string variable types." << std::endl;
+      abort_handler(-1);
+    }
+    // For multiple types, sm_adsv_cntr must be reset to 0 at the type change
+    if (curr_ads_type != prev_ads_type) {
+      sm_adsv_cntr  = 0;
+      sm_adsv_avail = std::count(submodel_a_ds_types.begin(),
+				 submodel_a_ds_types.end(), curr_ads_type);
+    }
+    complement1ADSVarMapIndices[i] = sm_adsv_offset + sm_adsv_cntr++;
+    prev_ads_type = curr_ads_type;
+    if (sm_adsv_cntr > sm_adsv_avail) {
+      Cerr << "\nError: default insertions of type '" << curr_ads_type
+	   << "' exceed sub-model allocation." << std::endl;
+      abort_handler(-1);
+    }
+  }
+
   // Map COMPLEMENT DISCRETE REAL VARIABLES from currentVariables
   for (i=0; i<num_curr_cdrv; ++i) {
     curr_i = cdrv_index_map(i);
@@ -394,12 +490,15 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 #ifdef DEBUG
   Cout << "\nactive primary variable mapping indices\nACV:\n"
        << active1ACVarMapIndices << "ADIV:\n" << active1ADIVarMapIndices
+       << "ADSV:\n" << active1ADSVarMapIndices
        << "ADRV:\n" << active1ADRVarMapIndices
        << "\nactive secondary variable mapping targets:\nACV:\n"
        << active2ACVarMapTargets << "ADIV:\n" << active2ADIVarMapTargets 
+       << "ADSV:\n" << active2ADSVarMapTargets 
        << "ADRV:\n" << active2ADRVarMapTargets
        << "\ncomplement primary variable mapping indices\nACV:\n"
        << complement1ACVarMapIndices << "ADIV:\n" << complement1ADIVarMapIndices
+       << "ADSV:\n" << complement1ADSVarMapIndices
        << "ADRV:\n" << complement1ADRVarMapIndices << '\n';
 #endif // DEBUG
 
@@ -415,8 +514,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     subIterator = problem_db.get_iterator();
   subIterator.sub_iterator_flag(true);
   subIterator.active_variable_mappings(active1ACVarMapIndices,
-    active1ADIVarMapIndices, active1ADRVarMapIndices, active2ACVarMapTargets,
-    active2ADIVarMapTargets, active2ADRVarMapTargets);
+    active1ADIVarMapIndices, active1ADSVarMapIndices, active1ADRVarMapIndices,
+    active2ACVarMapTargets,  active2ADIVarMapTargets, active2ADSVarMapTargets,
+    active2ADRVarMapTargets);
 
   problem_db.set_db_method_node(method_index); // restore method only
   problem_db.set_db_model_nodes(model_index);  // restore all model nodes
@@ -481,6 +581,8 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
     = subModel.all_continuous_variable_types();
   UShortMultiArrayConstView submodel_a_di_types
     = subModel.all_discrete_int_variable_types();
+  UShortMultiArrayConstView submodel_a_ds_types
+    = subModel.all_discrete_string_variable_types();
   UShortMultiArrayConstView submodel_a_dr_types
     = subModel.all_discrete_real_variable_types();
   Pecos::AleatoryDistParams& submodel_adp
@@ -490,9 +592,12 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       = find_index(subModel.all_continuous_variable_labels(), map1),
     adi_index1 = active1ADIVarMapIndices[curr_index]
       = find_index(subModel.all_discrete_int_variable_labels(), map1),
+    ads_index1 = active1ADSVarMapIndices[curr_index]
+      = find_index(subModel.all_discrete_string_variable_labels(), map1),
     adr_index1 = active1ADRVarMapIndices[curr_index]
       = find_index(subModel.all_discrete_real_variable_labels(), map1);
-  if (ac_index1 == _NPOS && adi_index1 == _NPOS && adr_index1 == _NPOS) {
+  if (ac_index1  == _NPOS && adi_index1 == _NPOS &&
+      ads_index1 == _NPOS && adr_index1 == _NPOS) {
     Cerr << "\nError: primary mapping " << map1 << " could not be matched "
 	 << "within any sub-model variable labels." << std::endl;
     abort_handler(-1);
@@ -506,14 +611,19 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	   find_index(subModel.discrete_int_variable_labels(), map1) == _NPOS)
     // inactive DIV target
     update_inactive_view(submodel_a_di_types[adi_index1], inactive_sm_view);
+  else if (ads_index1 != _NPOS &&
+	   find_index(subModel.discrete_string_variable_labels(),map1) == _NPOS)
+    // inactive DSV target
+    update_inactive_view(submodel_a_ds_types[ads_index1], inactive_sm_view);
   else if (adr_index1 != _NPOS &&
 	   find_index(subModel.discrete_real_variable_labels(), map1) == _NPOS)
     // inactive DRV target
     update_inactive_view(submodel_a_dr_types[adr_index1], inactive_sm_view);
 
-  if (!active2ACVarMapTargets.empty()) {
+  if (!active2ACVarMapTargets.empty()) { // indicates num_var_map_2
     if (map2.empty())
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
+	= active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     else if (ac_index1 != _NPOS) {
       unsigned short type = submodel_a_c_types[ac_index1];
@@ -729,8 +839,8 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	     << "variable targets." << std::endl;
 	abort_handler(-1);
       }
-      active2ADIVarMapTargets[curr_index] = active2ADRVarMapTargets[curr_index]
-	= Pecos::NO_TARGET;
+      active2ADIVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
     else if (adi_index1 != _NPOS) {
       unsigned short type = submodel_a_di_types[adi_index1];
@@ -776,8 +886,17 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	     << "variable targets." << std::endl;
 	abort_handler(-1);
       }
-      active2ACVarMapTargets[curr_index] = active2ADRVarMapTargets[curr_index]
-	= Pecos::NO_TARGET;
+      active2ACVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
+    }
+    else if (ads_index1 != _NPOS) {
+      unsigned short type = submodel_a_ds_types[ads_index1];
+      Cerr << "\nError: " << type << " variable type not supported in "
+	   << "secondary real mappings\n       for primary discrete string "
+	   << "variable targets." << std::endl;
+      abort_handler(-1);
+      active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
     else if (adr_index1 != _NPOS) {
       unsigned short type = submodel_a_dr_types[adr_index1];
@@ -786,7 +905,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	   << "variable targets." << std::endl;
       abort_handler(-1);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
-	= Pecos::NO_TARGET;
+	= active2ADSVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
   }
 }
@@ -800,6 +919,8 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
     = subModel.all_continuous_variable_types();
   UShortMultiArrayConstView submodel_a_di_types
     = subModel.all_discrete_int_variable_types();
+  UShortMultiArrayConstView submodel_a_ds_types
+    = subModel.all_discrete_string_variable_types();
   UShortMultiArrayConstView submodel_a_dr_types
     = subModel.all_discrete_real_variable_types();
 
@@ -807,9 +928,12 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
       = find_index(subModel.all_continuous_variable_labels(), map1),
     adi_index1 = active1ADIVarMapIndices[curr_index]
       = find_index(subModel.all_discrete_int_variable_labels(), map1),
+    ads_index1 = active1ADSVarMapIndices[curr_index]
+      = find_index(subModel.all_discrete_string_variable_labels(), map1),
     adr_index1 = active1ADRVarMapIndices[curr_index]
       = find_index(subModel.all_discrete_real_variable_labels(), map1);
-  if (ac_index1 == _NPOS && adi_index1 == _NPOS && adr_index1 == _NPOS) {
+  if (ac_index1  == _NPOS && adi_index1 == _NPOS &&
+      ads_index1 == _NPOS && adr_index1 == _NPOS) {
     Cerr << "\nError: primary mapping " << map1 << " could not be matched "
 	 << "within any sub-model variable labels." << std::endl;
     abort_handler(-1);
@@ -823,23 +947,28 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	   find_index(subModel.discrete_int_variable_labels(), map1) == _NPOS)
     // inactive DIV target
     update_inactive_view(submodel_a_di_types[adi_index1], inactive_sm_view);
+  else if (ads_index1 != _NPOS &&
+	   find_index(subModel.discrete_string_variable_labels(),map1) == _NPOS)
+    // inactive DSV target
+    update_inactive_view(submodel_a_ds_types[ads_index1], inactive_sm_view);
   else if (adr_index1 != _NPOS &&
 	   find_index(subModel.discrete_real_variable_labels(), map1) == _NPOS)
     // inactive DRV target
     update_inactive_view(submodel_a_dr_types[adr_index1], inactive_sm_view);
 
-  if (!active2ACVarMapTargets.empty()) {
+  if (!active2ACVarMapTargets.empty()) { // indicates num_var_map_2
     if (map2.empty())
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
-	= active2ADIVarMapTargets[curr_index] = Pecos::NO_TARGET;
+	= active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     else if (ac_index1 != _NPOS) {
       unsigned short type = submodel_a_c_types[ac_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary integer mappings\n       for primary continuous "
 	   << "variable targets." << std::endl;
       abort_handler(-1);
-      active2ADIVarMapTargets[curr_index] = active2ADRVarMapTargets[curr_index]
-	= Pecos::NO_TARGET;
+      active2ADIVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
     else if (adi_index1 != _NPOS) {
       unsigned short type = submodel_a_di_types[adi_index1];
@@ -902,8 +1031,17 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	     << "integer variable targets." << std::endl;
 	abort_handler(-1);
       }
-      active2ACVarMapTargets[curr_index] = active2ADRVarMapTargets[curr_index]
-	= Pecos::NO_TARGET;
+      active2ACVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
+    }
+    else if (ads_index1 != _NPOS) {
+      unsigned short type = submodel_a_ds_types[ads_index1];
+      Cerr << "\nError: " << type << " variable type not supported in "
+	   << "secondary integer mappings\n       for primary discrete string "
+	   << "variable targets." << std::endl;
+      abort_handler(-1);
+      active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
     else if (adr_index1 != _NPOS) {
       unsigned short type = submodel_a_dr_types[adr_index1];
@@ -912,7 +1050,97 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	   << "variable targets." << std::endl;
       abort_handler(-1);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
-	= Pecos::NO_TARGET;
+	= active2ADSVarMapTargets[curr_index] = Pecos::NO_TARGET;
+    }
+  }
+}
+
+
+void NestedModel::
+resolve_string_variable_mapping(const String& map1, const String& map2,
+				size_t curr_index, short& inactive_sm_view)
+{
+  UShortMultiArrayConstView submodel_a_c_types
+    = subModel.all_continuous_variable_types();
+  UShortMultiArrayConstView submodel_a_di_types
+    = subModel.all_discrete_int_variable_types();
+  UShortMultiArrayConstView submodel_a_ds_types
+    = subModel.all_discrete_string_variable_types();
+  UShortMultiArrayConstView submodel_a_dr_types
+    = subModel.all_discrete_real_variable_types();
+
+  size_t ac_index1 = active1ACVarMapIndices[curr_index]
+      = find_index(subModel.all_continuous_variable_labels(), map1),
+    adi_index1 = active1ADIVarMapIndices[curr_index]
+      = find_index(subModel.all_discrete_int_variable_labels(), map1),
+    ads_index1 = active1ADSVarMapIndices[curr_index]
+      = find_index(subModel.all_discrete_string_variable_labels(), map1),
+    adr_index1 = active1ADRVarMapIndices[curr_index]
+      = find_index(subModel.all_discrete_real_variable_labels(), map1);
+  if (ac_index1  == _NPOS && adi_index1 == _NPOS &&
+      ads_index1 == _NPOS && adr_index1 == _NPOS) {
+    Cerr << "\nError: primary mapping " << map1 << " could not be matched "
+	 << "within any sub-model variable labels." << std::endl;
+    abort_handler(-1);
+  }
+
+  if (ac_index1 != _NPOS &&
+      find_index(subModel.continuous_variable_labels(), map1) == _NPOS)
+    // inactive CV target
+    update_inactive_view(submodel_a_c_types[ac_index1], inactive_sm_view);
+  else if (adi_index1 != _NPOS &&
+	   find_index(subModel.discrete_int_variable_labels(), map1) == _NPOS)
+    // inactive DIV target
+    update_inactive_view(submodel_a_di_types[adi_index1], inactive_sm_view);
+  else if (ads_index1 != _NPOS &&
+	   find_index(subModel.discrete_string_variable_labels(),map1) == _NPOS)
+    // inactive DSV target
+    update_inactive_view(submodel_a_ds_types[ads_index1], inactive_sm_view);
+  else if (adr_index1 != _NPOS &&
+	   find_index(subModel.discrete_real_variable_labels(), map1) == _NPOS)
+    // inactive DRV target
+    update_inactive_view(submodel_a_dr_types[adr_index1], inactive_sm_view);
+
+  if (!active2ACVarMapTargets.empty()) { // indicates num_var_map_2
+    if (map2.empty())
+      active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
+	= active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
+    else if (ac_index1 != _NPOS) {
+      unsigned short type = submodel_a_c_types[ac_index1];
+      Cerr << "\nError: " << type << " variable type not supported in "
+	   << "secondary string mappings\n       for primary continuous "
+	   << "variable targets." << std::endl;
+      abort_handler(-1);
+      active2ADIVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
+    }
+    else if (adi_index1 != _NPOS) {
+      unsigned short type = submodel_a_di_types[adi_index1];
+      Cerr << "\nError: " << type << " variable type not supported in "
+	   << "secondary string mappings\n       for primary discrete integer "
+	   << "variable targets." << std::endl;
+      abort_handler(-1);
+      active2ACVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
+    }
+    else if (ads_index1 != _NPOS) {
+      unsigned short type = submodel_a_ds_types[ads_index1];
+      Cerr << "\nError: " << type << " variable type not supported in "
+	   << "secondary string mappings\n       for primary discrete string "
+	   << "variable targets." << std::endl;
+      abort_handler(-1);
+      active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
+	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
+    }
+    else if (adr_index1 != _NPOS) {
+      unsigned short type = submodel_a_dr_types[adr_index1];
+      Cerr << "\nError: " << type << " variable type not supported in "
+	   << "secondary string mappings\n       for primary discrete real "
+	   << "variable targets." << std::endl;
+      abort_handler(-1);
+      active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
+	= active2ADSVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
   }
 }
@@ -1581,6 +1809,7 @@ void NestedModel::update_sub_model()
     curr_i = cv_index_map(i);
     size_t pacvm_index = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
+      padsvm_index = active1ADSVarMapIndices[curr_i],
       padrvm_index = active1ADRVarMapIndices[curr_i];
     if (pacvm_index != _NPOS) {
       short sacvm_target
@@ -1606,6 +1835,12 @@ void NestedModel::update_sub_model()
       size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
       real_variable_mapping(curr_c_vars[i], mapped_index, sadivm_target);
     }
+    else if (padsvm_index != _NPOS) {
+      short sadsvm_target = (num_var_map_2) ? active2ADSVarMapTargets[curr_i]
+	: Pecos::NO_TARGET;
+      size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+      real_variable_mapping(curr_c_vars[i], mapped_index, sadsvm_target);
+    }
     else if (padrvm_index != _NPOS) {
       short sadrvm_target = (num_var_map_2) ? active2ADRVarMapTargets[curr_i]
 	: Pecos::NO_TARGET;
@@ -1627,6 +1862,7 @@ void NestedModel::update_sub_model()
     curr_i = div_index_map(i);
     size_t pacvm_index = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
+      padsvm_index = active1ADSVarMapIndices[curr_i],
       padrvm_index = active1ADRVarMapIndices[curr_i];
     if (pacvm_index != _NPOS) {
       short sacvm_target
@@ -1652,11 +1888,63 @@ void NestedModel::update_sub_model()
 	integer_variable_mapping(curr_di_vars[i], mapped_index, sadivm_target);
       }
     }
+    else if (padsvm_index != _NPOS) {
+      short sadsvm_target = (num_var_map_2) ?
+	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
+      size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+      integer_variable_mapping(curr_di_vars[i], mapped_index, sadsvm_target);
+    }
     else if (padrvm_index != _NPOS) {
       short sadrvm_target = (num_var_map_2) ?
 	active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
       size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
       integer_variable_mapping(curr_di_vars[i], mapped_index, sadrvm_target);
+    }
+  }
+
+  // Map ACTIVE DISCRETE STRING VARIABLES from currentVariables
+  size_t num_curr_dsv = currentVariables.dsv();
+  StringMultiArrayConstView curr_ds_vars
+    = currentVariables.discrete_string_variables();
+  StringMultiArrayConstView curr_ds_labels
+    = currentVariables.discrete_string_variable_labels();
+  for (i=0; i<num_curr_dsv; ++i) {
+    curr_i = dsv_index_map(i);
+    size_t pacvm_index  = active1ACVarMapIndices[curr_i],
+      padivm_index = active1ADIVarMapIndices[curr_i],
+      padsvm_index = active1ADSVarMapIndices[curr_i],
+      padrvm_index = active1ADRVarMapIndices[curr_i];
+    if (pacvm_index != _NPOS) {
+      short sacvm_target = (num_var_map_2) ?
+	active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
+      size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+      string_variable_mapping(curr_ds_vars[i], mapped_index, sacvm_target);
+    }
+    else if (padivm_index != _NPOS) {
+      short sadivm_target = (num_var_map_2) ?
+	active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
+      size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+      string_variable_mapping(curr_ds_vars[i], mapped_index, sadivm_target);
+    }
+    else if (padsvm_index != _NPOS) {
+      short sadsvm_target = (num_var_map_2) ?
+	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
+      if (sadsvm_target == Pecos::NO_TARGET) {
+	subModel.all_discrete_string_variable(curr_ds_vars[i], padsvm_index);
+	if (extraDSVarsData[i] && !nestedModelEvalCntr)
+	  subModel.all_discrete_string_variable_label(curr_ds_labels[i],
+						      padsvm_index);
+      }
+      else {
+	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	string_variable_mapping(curr_ds_vars[i], mapped_index, sadsvm_target);
+      }
+    }
+    else if (padrvm_index != _NPOS) {
+      short sadrvm_target = (num_var_map_2) ?
+	active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
+      size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+      string_variable_mapping(curr_ds_vars[i], mapped_index, sadrvm_target);
     }
   }
 
@@ -1673,6 +1961,7 @@ void NestedModel::update_sub_model()
     curr_i = drv_index_map(i);
     size_t pacvm_index  = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
+      padsvm_index = active1ADSVarMapIndices[curr_i],
       padrvm_index = active1ADRVarMapIndices[curr_i];
     if (pacvm_index != _NPOS) {
       short sacvm_target = (num_var_map_2) ?
@@ -1685,6 +1974,12 @@ void NestedModel::update_sub_model()
 	active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
       size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
       real_variable_mapping(curr_dr_vars[i], mapped_index, sadivm_target);
+    }
+    else if (padsvm_index != _NPOS) {
+      short sadsvm_target = (num_var_map_2) ?
+	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
+      size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+      real_variable_mapping(curr_dr_vars[i], mapped_index, sadsvm_target);
     }
     else if (padrvm_index != _NPOS) {
       short sadrvm_target = (num_var_map_2) ?
@@ -1749,6 +2044,22 @@ void NestedModel::update_sub_model()
     if (!nestedModelEvalCntr)
       subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
 					       c1_index);
+  }
+
+  // Map COMPLEMENT DISCRETE STRING VARIABLES from currentVariables into
+  // corresponding subModel type (using same logic as default active mapping)
+  size_t num_curr_cdsv = currentVariables.adsv() - num_curr_dsv;
+  StringMultiArrayConstView curr_ads_vars
+    = currentVariables.all_discrete_string_variables();
+  StringMultiArrayConstView curr_ads_labels
+    = currentVariables.all_discrete_string_variable_labels();
+  for (i=0; i<num_curr_cdsv; ++i) {
+    curr_i = cdsv_index_map(i);
+    size_t c1_index = complement1ADSVarMapIndices[i];
+    subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
+    if (!nestedModelEvalCntr)
+      subModel.all_discrete_string_variable_label(curr_ads_labels[curr_i],
+						  c1_index);
   }
 
   // Map COMPLEMENT DISCRETE REAL VARIABLES from currentVariables into
@@ -2499,6 +2810,23 @@ integer_variable_mapping(const int& i_var, size_t mapped_index,
     abort_handler(-1);
   }
 }
+
+
+void NestedModel::
+string_variable_mapping(const String& s_var, size_t mapped_index,
+			 short svm_target)
+{
+  Pecos::AleatoryDistParams& submodel_adp
+    = subModel.aleatory_distribution_parameters();
+
+  switch (svm_target) {
+  case Pecos::NO_TARGET: default:
+    Cerr << "\nError: secondary mapping target unmatched for string value "
+	 << "insertion in NestedModel::string_variable_mapping()" << std::endl;
+    abort_handler(-1);
+  }
+}
+
 
 void NestedModel::eval_tag_prefix(const String& eval_id_str)
 {

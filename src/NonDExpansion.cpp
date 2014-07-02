@@ -761,8 +761,9 @@ void NonDExpansion::compute_expansion()
       u_space_sampler_rep->distribution_parameter_derivatives(dist_param_deriv);
       if (dist_param_deriv)
 	u_space_sampler.active_variable_mappings(primaryACVarMapIndices,
-	  primaryADIVarMapIndices, primaryADRVarMapIndices,
-	  secondaryACVarMapTargets, secondaryADIVarMapTargets,
+	  primaryADIVarMapIndices, primaryADSVarMapIndices,
+	  primaryADRVarMapIndices, secondaryACVarMapTargets,
+	  secondaryADIVarMapTargets, secondaryADSVarMapTargets,
 	  secondaryADRVarMapTargets);
 
       // Set the u_space_sampler DVV, managing different gradient modes & their

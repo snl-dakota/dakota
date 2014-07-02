@@ -258,9 +258,11 @@ public:
   /// set primaryA{CV,DIV,DRV}MapIndices, secondaryA{CV,DIV,DRV}MapTargets
   void active_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
 				const SizetArray& dr_index1,
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
 				const ShortArray& dr_target2);
 
   /// function to check iteratorRep (does this envelope contain a letter?)
@@ -365,6 +367,9 @@ protected:
   /// "primary" all discrete int variable mapping indices flowed down from
   /// higher level iteration
   SizetArray primaryADIVarMapIndices;
+  /// "primary" all discrete string variable mapping indices flowed down from
+  /// higher level iteration
+  SizetArray primaryADSVarMapIndices;
   /// "primary" all discrete real variable mapping indices flowed down from
   /// higher level iteration
   SizetArray primaryADRVarMapIndices;
@@ -374,6 +379,9 @@ protected:
   /// "secondary" all discrete int variable mapping targets flowed down
   /// from higher level iteration
   ShortArray secondaryADIVarMapTargets;
+  /// "secondary" all discrete string variable mapping targets flowed down
+  /// from higher level iteration
+  ShortArray secondaryADSVarMapTargets;
   /// "secondary" all discrete real variable mapping targets flowed down
   /// from higher level iteration
   ShortArray secondaryADRVarMapTargets;
@@ -529,25 +537,31 @@ inline const ActiveSet& Iterator::active_set() const
 inline void Iterator::
 active_variable_mappings(const SizetArray& c_index1,
 			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
 			 const SizetArray& dr_index1,
 			 const ShortArray& c_target2,
 			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
   if (iteratorRep) {
     iteratorRep->primaryACVarMapIndices    = c_index1;
     iteratorRep->primaryADIVarMapIndices   = di_index1;
+    iteratorRep->primaryADSVarMapIndices   = ds_index1;
     iteratorRep->primaryADRVarMapIndices   = dr_index1;
     iteratorRep->secondaryACVarMapTargets  = c_target2;
     iteratorRep->secondaryADIVarMapTargets = di_target2;
+    iteratorRep->secondaryADSVarMapTargets = ds_target2;
     iteratorRep->secondaryADRVarMapTargets = dr_target2;
   }
   else {
     primaryACVarMapIndices    = c_index1;
     primaryADIVarMapIndices   = di_index1;
+    primaryADSVarMapIndices   = ds_index1;
     primaryADRVarMapIndices   = dr_index1;
     secondaryACVarMapTargets  = c_target2;
     secondaryADIVarMapTargets = di_target2;
+    secondaryADSVarMapTargets = ds_target2;
     secondaryADRVarMapTargets = dr_target2;
   }
 }

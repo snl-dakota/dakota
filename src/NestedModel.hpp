@@ -151,6 +151,10 @@ private:
   void resolve_integer_variable_mapping(const String& map1, const String& map2,
 					size_t curr_index,
 					short& inactive_sm_view);
+  /// for a named string mapping, resolve primary index and secondary target
+  void resolve_string_variable_mapping(const String& map1, const String& map2,
+				       size_t curr_index,
+				       short& inactive_sm_view);
 
   /// offset pacvm_index based on sacvm_target to create mapped_index
   size_t sm_acv_index_map(size_t  pacvm_index,  short sacvm_target);
@@ -189,6 +193,9 @@ private:
   /// insert i_var into appropriate recipient
   void integer_variable_mapping(const int& i_var, size_t mapped_index,
 				short svm_target);
+  /// insert s_var into appropriate recipient
+  void string_variable_mapping(const String& s_var, size_t mapped_index,
+			       short svm_target);
 
   /// define the evaluation requirements for the optionalInterface
   /// (interface_set) and the subIterator (sub_iterator_set) from the
@@ -268,12 +275,17 @@ private:
   /// "primary" variable mappings for inserting active discrete int
   /// currentVariables within all discrete int subModel variables.  No
   /// secondary mappings are defined for discrete int variables, so the
-  /// insertions replace the subModel variable values.
+  /// active variables replace the subModel variable values.
   SizetArray active1ADIVarMapIndices;
+  /// "primary" variable mappings for inserting active discrete string
+  /// currentVariables within all discrete string subModel variables.  No
+  /// secondary mappings are defined for discrete string variables, so the
+  /// active variables replace the subModel variable values.
+  SizetArray active1ADSVarMapIndices;
   /// "primary" variable mappings for inserting active discrete real
   /// currentVariables within all discrete real subModel variables.  No
   /// secondary mappings are defined for discrete real variables, so the
-  /// insertions replace the subModel variable values.
+  /// active variables replace the subModel variable values.
   SizetArray active1ADRVarMapIndices;
   //
   /// "secondary" variable mappings for inserting active continuous
@@ -285,6 +297,10 @@ private:
   /// currentVariables into sub-parameters (e.g., bounds for discrete
   /// design/state variables) within all discrete int subModel variables.
   ShortArray active2ADIVarMapTargets;
+  /// "secondary" variable mappings for inserting active discrete string
+  /// currentVariables into sub-parameters (e.g., bounds for discrete
+  /// design/state variables) within all discrete string subModel variables.
+  ShortArray active2ADSVarMapTargets;
   /// "secondary" variable mappings for inserting active discrete real
   /// currentVariables into sub-parameters (e.g., bounds for discrete
   /// design/state variables) within all discrete real subModel variables.
@@ -297,18 +313,25 @@ private:
   /// discrete int currentVariables within all discrete int subModel variables
   SizetArray complement1ADIVarMapIndices;
   /// "primary" variable mappings for inserting the complement of the active
+  /// discrete string currentVariables within all discrete string subModel
+  /// variables
+  SizetArray complement1ADSVarMapIndices;
+  /// "primary" variable mappings for inserting the complement of the active
   /// discrete real currentVariables within all discrete real subModel variables
   SizetArray complement1ADRVarMapIndices;
   //
   /// flags for updating subModel continuous bounds and labels, one
   /// for each active continuous variable in currentVariables
-  BoolDeque extraCVarsData;
+  BitArray extraCVarsData;
   /// flags for updating subModel discrete int bounds and labels, one
   /// for each active discrete int variable in currentVariables
-  BoolDeque extraDIVarsData;
+  BitArray extraDIVarsData;
+  /// flags for updating subModel discrete string labels, one for each
+  /// active discrete string variable in currentVariables
+  BitArray extraDSVarsData;
   /// flags for updating subModel discrete real bounds and labels, one
   /// for each active discrete real variable in currentVariables
-  BoolDeque extraDRVarsData;
+  BitArray extraDRVarsData;
 
   // Attributes pertaining to response_mapping (NOTE: these are opt.
   // specific for now -> generalize for UOO and others):
