@@ -1333,6 +1333,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
     #define P &DataResponsesRep::
     static KW<RealVector, DataResponsesRep> RVdr[] = {	// must be sorted
+	{"coordinate_list", P coordsPerField},
 	{"exp_config_variables", P expConfigVars},
 	{"exp_observations", P expObservations},
 	{"exp_std_deviations", P expStdDeviations},
@@ -1406,7 +1407,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   else if ((L = Begins(entry_name, "method."))) {
-	if (dbRep->variablesDBLocked)
+	if (dbRep->methodDBLocked)
 		Locked_db();
     #define P &DataMethodRep::
     static KW<IntVector, DataMethodRep> IVdme[] = {	// must be sorted
@@ -1419,11 +1420,18 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if ((kw = (KW<IntVector, DataMethodRep>*)Binsearch(IVdme, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
   }
-  else if (Begins(entry_name, "responses.")) {
-    if (dbRep->interfaceDBLocked)
+  else if (L = Begins(entry_name, "responses.")) {
+    if (dbRep->responsesDBLocked)
       Locked_db();
-    else if (entry_name == "responses.num_replicates")
-      return dbRep->dataResponsesIter->dataRespRep->numReplicates;
+    #define P &DataResponsesRep::
+    static KW<IntVector, DataResponsesRep> IVdr[] = {	// must be sorted
+	{"lengths", P fieldLengths},
+	{"num_coordinates_per_field", P numCoordsPerField},
+	{"num_replicates", P numReplicates}};
+    #undef P
+    KW<IntVector, DataResponsesRep> *kw;
+    if ((kw = (KW<IntVector, DataResponsesRep>*)Binsearch(IVdr, L)))
+      return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_iv");
   return abort_handler_t<const IntVector&>(-1);
@@ -2128,6 +2136,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	Locked_db();
     #define P &DataResponsesRep::
     static KW<String, DataResponsesRep> Sdr[] = {	// must be sorted
+	{"coord_data_filename", P coordDataFileName},
 	{"exp_data_filename", P expDataFileName},
 	{"fd_gradient_step_type", P fdGradStepType},
 	{"fd_hessian_step_type", P fdHessStepType},
@@ -2569,11 +2578,17 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     static KW<size_t, DataResponsesRep> Szdr[] = {	// must be sorted
 	{"config_vars", P numExpConfigVars},
 	{"experiments", P numExperiments},
+	{"field_calibration_terms", P numFieldLeastSqTerms},
+	{"field_objectives", P numFieldObjectiveFunctions},
+	{"field_responses", P numFieldResponseFunctions},
 	{"least_squares_terms", P numLeastSqTerms},
 	{"nonlinear_equality_constraints", P numNonlinearEqConstraints},
 	{"nonlinear_inequality_constraints", P numNonlinearIneqConstraints},
 	{"objective_functions", P numObjectiveFunctions},
 	{"response_functions", P numResponseFunctions},
+	{"scalar_calibration_terms", P numScalarLeastSqTerms},
+	{"scalar_objectives", P numScalarObjectiveFunctions},
+	{"scalar_responses", P numScalarResponseFunctions},
 	{"std_deviations", P numExpStdDeviations}};
     #undef P
 

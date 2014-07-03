@@ -1668,6 +1668,12 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
 	    ]
+          [ scalar_objectives INTEGER >= 0 {N_rem(sizet,numScalarObjectiveFunctions)}]   
+          [ field_objectives INTEGER >=0 {N_rem(sizet,numFieldObjectiveFunctions)} 
+ 	    ( lengths INTEGERLIST {N_rem(ivec,fieldLengths)} )
+            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)}] 
+            [ coordinate_list REALLIST {N_rem(RealL,coordsPerField)} 		              | coordinate_data_file STRING {N_rem(str,coordDataFileName)} ]
+            ]            
 	  )
 	|
 	( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(sizet,numLeastSqTerms)}
@@ -1706,8 +1712,22 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
   	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
   	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
   	    ]
+          [ scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)}]   
+          [ field_calibration_terms INTEGER >=0 {N_rem(sizet,numFieldLeastSqTerms)} 
+ 	    ( lengths INTEGERLIST {N_rem(ivec,fieldLengths)} )
+            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)}] 
+            [ coordinate_list REALLIST {N_rem(RealL,coordsPerField)} 		              | coordinate_data_file STRING {N_rem(str,coordDataFileName)} ]
+            ]            
   	  )
-  	| response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
+  	| 
+        ( response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
+          [ scalar_responses INTEGER >= 0 {N_rem(sizet,numScalarResponseFunctions)} ]   
+          [ field_responses INTEGER >=0  {N_rem(sizet,numFieldResponseFunctions)}
+ 	    ( lengths INTEGERLIST {N_rem(ivec,fieldLengths)} )
+            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)}] 
+            [ coordinate_list REALLIST {N_rem(RealL,coordsPerField)} 		              | coordinate_data_file STRING {N_rem(str,coordDataFileName)} ]
+            ]            
+	  )
 	no_gradients {N_rem(lit,gradientType_none)}
 	| analytic_gradients {N_rem(lit,gradientType_analytic)}
 	|

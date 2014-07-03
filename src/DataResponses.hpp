@@ -70,6 +70,18 @@ public:
   /// number of generic response functions (from the \c
   /// num_response_functions specification in \ref RespFnGen)
   size_t numResponseFunctions;
+  ///  scalar_objectives:  number of objective functions which are scalar
+  size_t numScalarObjectiveFunctions;
+  ///  field_objectives:  number of objective functions which are field-valued
+  size_t numFieldObjectiveFunctions;
+  ///  scalar_calibration_terms:  number of calibration terms which are scalar
+  size_t numScalarLeastSqTerms;
+  ///  field_calibration_terms:  number of calibration terms which are field-valued
+  size_t numFieldLeastSqTerms;
+  ///  scalar_responses:  number of response functions which are scalar
+  size_t numScalarResponseFunctions;
+  ///  field_responses:  number of response functions which are field-valued
+  size_t numFieldResponseFunctions;
 
   // response set weights, bounds, targets
 
@@ -200,6 +212,18 @@ public:
   /// mixed Hessian analytic identifiers (from the \c id_analytic_hessians
   /// specification in \ref RespHessMixed)
   IntSet idAnalyticHessians;
+
+  // Field Data specification
+
+  /// number of entries in each field
+  IntVector fieldLengths;
+  /// number of coordinates per field
+  IntVector numCoordsPerField;
+  /// values of coordinates per field
+  RealVector coordsPerField;
+  /// data file which contains the values of the coordinates per field
+  String coordDataFileName;
+
 
 private:
 

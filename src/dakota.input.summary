@@ -2104,6 +2104,13 @@ KEYWORD12 responses
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST ]
 	    ]
+	  [ scalar_objectives INTEGER >= 0 ]
+	  [ field_objectives INTEGER >= 0
+	    lengths INTEGERLIST
+	    [ num_coordinates_per_field INTEGERLIST ]
+	    [ coordinate_list REALLIST
+	    | coordinate_data_file STRING ]
+	    ]
 	  )
 	|
 	( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0
@@ -2129,8 +2136,24 @@ KEYWORD12 responses
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST ]
 	    ]
+	  [ scalar_calibration_terms INTEGER >= 0 ]
+	  [ field_calibration_terms INTEGER >= 0
+	    lengths INTEGERLIST
+	    [ num_coordinates_per_field INTEGERLIST ]
+	    [ coordinate_list REALLIST
+	    | coordinate_data_file STRING ]
+	    ]
 	  )
-	| response_functions ALIAS num_response_functions INTEGER >= 0
+	|
+	( response_functions ALIAS num_response_functions INTEGER >= 0
+	  [ scalar_responses INTEGER >= 0 ]
+	  [ field_responses INTEGER >= 0
+	    lengths INTEGERLIST
+	    [ num_coordinates_per_field INTEGERLIST ]
+	    [ coordinate_list REALLIST
+	    | coordinate_data_file STRING ]
+	    ]
+	  )
 	no_gradients
 	| analytic_gradients
 	|

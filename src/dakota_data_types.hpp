@@ -80,6 +80,9 @@ typedef UShortMultiArray::const_array_view<1>::type UShortMultiArrayConstView;
 typedef boost::multi_array<size_t, 1>               SizetMultiArray;
 typedef SizetMultiArray::array_view<1>::type        SizetMultiArrayView;
 typedef SizetMultiArray::const_array_view<1>::type  SizetMultiArrayConstView;
+typedef boost::multi_array<Real, 1>                 RealMultiArray;
+typedef boost::multi_array<Real, 2>                 RealMulti2DArray;
+typedef boost::multi_array<Real, 3>                 RealMulti3DArray;
 
 typedef std::vector<RealVector>        RealVectorArray;
 typedef std::vector<RealVectorArray>   RealVector2DArray;
@@ -92,7 +95,10 @@ typedef std::vector<ParamResponsePair> PRPArray;
 typedef std::vector<PRPArray>          PRP2DArray;
 typedef std::vector<Model>             ModelArray;
 typedef std::vector<Iterator>          IteratorArray;
-
+typedef std::vector<RealMultiArray>    BoostMAArray;
+typedef std::vector<RealMulti2DArray>  BoostMA2DArray;
+typedef std::vector<RealMulti3DArray>  BoostMA3DArray;
+ 
 typedef std::list<bool>                BoolList;
 typedef std::list<int>                 IntList;
 typedef std::list<size_t>              SizetList;

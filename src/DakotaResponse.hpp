@@ -178,6 +178,15 @@ private:
   /// second derivatives of the response functions
   RealSymMatrixArray functionHessians;
 
+  /// abstract set of response field value functions
+  BoostMAArray fieldValues;
+  /// first derivatives of the response field value functions
+  /** the gradient vectors (plural) are column vectors in the matrix
+      (singular) with (row, col) = (variable index, response fn index). */
+  BoostMA2DArray fieldGradients;
+  /// second derivatives of the response field value functions
+  BoostMA3DArray fieldHessians;
+
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
 
@@ -324,6 +333,34 @@ public:
   void function_hessian(const RealSymMatrix& function_hessian, size_t i);
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& function_hessians);
+
+  /// return a field value
+  const RealMultiArray& field_value(size_t i) const;
+  /// return a "view" of a field value for updating in place
+  RealMultiArray& field_value_view(size_t i);
+  /// return all field values
+  const BoostMAArray& field_values() const;
+  /// return all field values as a view for updating in place
+  BoostMAArray field_values_view();
+  /// set a field value
+  void field_value(const RealMultiArray& field_val, size_t i);
+  /// set all field values
+  void field_values(const BoostMAArray& field_vals);
+
+  /// return the i-th field gradient as a const 
+  const RealMulti2DArray& field_gradient(const int& i) const;
+  /// return the i-th field gradient
+  RealMulti2DArray& field_gradient_view(const int& i) const; 
+  /// return all field gradients
+  const BoostMA2DArray& field_gradients() const;
+  /// return all function gradients as a view for updating in place
+  BoostMA2DArray field_gradients_view();
+  /// set a function gradient
+  void field_gradient(const RealMulti2DArray& field_grad, const int& i);
+  /// set all function gradients
+  void field_gradients(const BoostMA2DArray& field_grads);
+ 
+  /// TODO:  field Hessians
 
   /// read a response object from an std::istream
   void read(std::istream& s);
@@ -513,6 +550,31 @@ function_hessian(const RealSymMatrix& function_hessian, size_t i)
 inline void Response::
 function_hessians(const RealSymMatrixArray& function_hessians)
 { responseRep->functionHessians = function_hessians; }
+
+
+inline const RealMultiArray& Response::field_value(size_t i) const
+{ return responseRep->fieldValues[i]; }
+
+
+inline RealMultiArray& Response::field_value_view(size_t i)
+{ return responseRep->fieldValues[i]; }
+
+
+inline const BoostMAArray& Response::field_values() const
+{ return responseRep->fieldValues; }
+
+
+inline BoostMAArray Response::field_values_view()
+{
+}
+
+
+inline void Response::field_value(const RealMultiArray& field_val, size_t i)
+{ responseRep->fieldValues[i] = field_val; }
+
+
+inline void Response::field_values(const BoostMAArray& field_vals)
+{ responseRep->fieldValues = field_vals; }
 
 
 inline const ActiveSet& Response::active_set() const

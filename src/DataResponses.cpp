@@ -24,6 +24,9 @@ DataResponsesRep::DataResponsesRep(): numObjectiveFunctions(0),
   expDataFileAnnotated(true), ignoreBounds(false), centralHess(false), 
   methodSource("dakota"), intervalType("forward"), 
   fdGradStepType("relative"), fdHessStepType("relative"), 
+  numScalarObjectiveFunctions(0), numFieldObjectiveFunctions(0),
+  numScalarLeastSqTerms(0), numFieldLeastSqTerms(0),
+  numScalarResponseFunctions(0), numFieldResponseFunctions(0),
   referenceCount(1)
 { }
 
@@ -49,7 +52,13 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << quasiHessianType << methodSource << intervalType << fdGradStepSize
     << fdGradStepType << fdHessStepSize << fdHessStepType
     << idNumericalGrads << idAnalyticGrads
-    << idNumericalHessians << idQuasiHessians << idAnalyticHessians;
+    << idNumericalHessians << idQuasiHessians << idAnalyticHessians
+    // field data
+    << numScalarObjectiveFunctions << numFieldObjectiveFunctions 
+    << numScalarLeastSqTerms << numFieldLeastSqTerms 
+    << numScalarResponseFunctions << numFieldResponseFunctions 
+    << fieldLengths << numCoordsPerField << coordsPerField
+    << coordDataFileName;
 }
 
 
@@ -74,7 +83,13 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> quasiHessianType >> methodSource >> intervalType >> fdGradStepSize
     >> fdGradStepType >> fdHessStepSize >> fdHessStepType
     >> idNumericalGrads >> idAnalyticGrads
-    >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians;
+    >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians
+    // field data
+    >> numScalarObjectiveFunctions >> numFieldObjectiveFunctions 
+    >> numScalarLeastSqTerms >> numFieldLeastSqTerms 
+    >> numScalarResponseFunctions >> numFieldResponseFunctions 
+    >> fieldLengths >> numCoordsPerField >> coordsPerField
+    >> coordDataFileName;
 }
 
 
@@ -99,7 +114,13 @@ void DataResponsesRep::write(std::ostream& s) const
     << quasiHessianType << methodSource << intervalType << fdGradStepSize
     << fdGradStepType << fdHessStepSize << fdHessStepType
     << idNumericalGrads << idAnalyticGrads
-    << idNumericalHessians << idQuasiHessians << idAnalyticHessians;
+    << idNumericalHessians << idQuasiHessians << idAnalyticHessians
+    // field data
+    << numScalarObjectiveFunctions << numFieldObjectiveFunctions 
+    << numScalarLeastSqTerms << numFieldLeastSqTerms 
+    << numScalarResponseFunctions << numFieldResponseFunctions 
+    << fieldLengths << numCoordsPerField << coordsPerField
+    << coordDataFileName;
 }
 
 

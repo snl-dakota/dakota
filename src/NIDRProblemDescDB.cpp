@@ -6698,9 +6698,12 @@ static IntSet
 	MP_(idQuasiHessians);
 
 static IntVector
+	MP_(fieldLengths),
+	MP_(numCoordsPerField),
 	MP_(numReplicates);
 
 static RealVector
+	MP_(coordsPerField),
 	MP_(expConfigVars),
 	MP_(expObservations),
 	MP_(expStdDeviations),
@@ -6739,6 +6742,7 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
+	MP_(coordDataFileName),
 	MP_(expDataFileName),
         MP_(idResponses);
 
@@ -6758,11 +6762,17 @@ static size_t
 	MP_(numExpStdDeviations),
 	MP_(numExpConfigVars),
         MP_(numExperiments),
+	MP_(numFieldLeastSqTerms),
+	MP_(numFieldObjectiveFunctions),
+	MP_(numFieldResponseFunctions),
 	MP_(numLeastSqTerms),
 	MP_(numNonlinearEqConstraints),
 	MP_(numNonlinearIneqConstraints),
 	MP_(numObjectiveFunctions),
-	MP_(numResponseFunctions);
+	MP_(numResponseFunctions),
+	MP_(numScalarLeastSqTerms),
+	MP_(numScalarObjectiveFunctions),
+	MP_(numScalarResponseFunctions);
 
 #undef MP2
 #undef MP_
