@@ -14,7 +14,6 @@
 #define DAKOTA_GRAPHICS_H
 
 #include "dakota_system_defs.hpp"
-#include "dakota_data_types.hpp"
 
 #ifdef HAVE_X_GRAPHICS
 class Graphics2D;
@@ -26,14 +25,9 @@ class Variables;
 class Response;
 
 
-/// The Graphics class provides a single interface to 2D (motif)
-/// and 3D (PLPLOT) graphics as well as tabular cataloguing of data
-/// for post-processing with Matlab, Tecplot, etc. 
-
-/** There is only one Graphics object (dakotaGraphics) and it is
-    global (for convenient access from strategies, models, and
-    approximations). */
-
+/// The Graphics class provides a single interface to 2D (motif) and
+/// 3D (PLPLOT) graphics; there is only one instance of this
+/// OutputManager::dakotaGraphics.
 class Graphics
 {
 public:
@@ -44,14 +38,10 @@ public:
   /// creates the 2d graphics window and initializes the plots
   void create_plots_2d(const Variables& vars, const Response& response);
 
-  /// opens the tabular data file stream and prints the headings
-  void create_tabular_datastream(const Variables& vars,
-				 const Response& response,
-				 const std::string& tabular_data_file);
-
-  /// adds data to each window in the 2d graphics and adds a row to
-  /// the tabular data file based on the results of a model evaluation
-  void add_datapoint(const Variables& vars, const Response& response);
+  /// adds data to each window in the 2d graphics based on the results
+  /// of a model evaluation
+  void add_datapoint(int graphics_cntr,
+		     const Variables& vars, const Response& response);
 
   /// adds data to a single window in the 2d graphics
   void add_datapoint(int i, double x, double y);
@@ -67,9 +57,6 @@ public:
   /// close graphics windows
   void close();
 
-  /// close tabular datastream
-  void close_tabular();
-
   /// set x label for each plot equal to x_label
   void set_x_labels2d(const char* x_label);
   /// set y label for each plot equal to y_label
@@ -80,14 +67,6 @@ public:
   /// set y label for ith plot equal to y_label
   void set_y_label2d(int i, const char* y_label);
 
-  /// set graphicsCntr equal to cntr
-  void graphics_counter(int cntr);
-  /// return graphicsCntr
-  int graphics_counter() const;
-
-  /// set tabularCntrLabel equal to label
-  void tabular_counter_label(const std::string& label);
-
 private:
 
 #ifdef HAVE_X_GRAPHICS
@@ -96,29 +75,9 @@ private:
 
   bool win2dOn; ///< flag to indicate if 2D graphics window is active
   //bool win3dOn; // flag to indicate if 3D graphics window is active
-  bool tabularDataFlag; ///< flag to indicate if tabular data stream is active
 
-  /// used for x axis values in 2D graphics and for 1st column in tabular data
-  int graphicsCntr;
-
-  /// label for counter used in first line comment w/i the tabular data file
-  std::string tabularCntrLabel;
-
-  /// file stream for tabulation of graphics data within compute_response
-  std::ofstream tabularDataFStream;
 };
 
-
-inline void Graphics::graphics_counter(int cntr)
-{ graphicsCntr = cntr; }
-
-
-inline int Graphics::graphics_counter() const
-{ return graphicsCntr; }
-
-
-inline void Graphics::tabular_counter_label(const std::string& label)
-{ tabularCntrLabel = label; }
 
 } // namespace Dakota
 

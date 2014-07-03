@@ -127,15 +127,16 @@ void SurrBasedMinimizer::initialize_graphics(int iterator_server_id)
   // For graphics, limit (currently) to server id 1, for both ded master
   // (parent partition rank 1) and peer partitions (parent partition rank 0)
   if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
+    mgr.graphics_counter(0); // starting point is iteration 0
     dakota_graphics.create_plots_2d(vars, resp);
     dakota_graphics.set_x_labels2d("Surr-Based Iteration No.");
-    dakota_graphics.graphics_counter(0); // starting point is iteration 0
   }
 
   // For output/restart/tabular data, all Iterator masters stream output
   if (mgr.tabularDataFlag) { // initialize data tabulation
-    dakota_graphics.tabular_counter_label("iter_no");
-    dakota_graphics.create_tabular_datastream(vars, resp, mgr.tabularDataFile);
+    mgr.graphics_counter(0); // starting point is iteration 0
+    mgr.tabular_counter_label("iter_no");
+    mgr.create_tabular_datastream(vars, resp);
   }
 
   //}

@@ -86,7 +86,7 @@ void NonDReliability::initialize_graphics(int iterator_server_id)
       dakota_graphics.tabular_counter_label("z");
       dakota_graphics.create_tabular_datastream(
         iteratedModel.current_variables(), iteratedModel.current_response(),
-        mgr.tabularDataFile);
+        );
     }
     */
   }

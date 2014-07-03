@@ -385,8 +385,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
   if (convergenceFlag)
     reset();
 
-  Graphics& dakota_graphics =
-    iteratedModel.parallel_library().output_manager().graphics();
+  OutputManager& output_mgr = iteratedModel.parallel_library().output_manager();
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Model&    truth_model   = iteratedModel.truth_model();
@@ -528,8 +527,8 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 
       // Update graphics for iteration 0 (initial guess).
       if (sbIterNum == 0)
-	dakota_graphics.add_datapoint(iteratedModel.current_variables(),
-				      responseCenterTruth.second);
+	output_mgr.add_datapoint(iteratedModel.current_variables(),
+				 responseCenterTruth.second);
 
       if (!convergenceFlag) {
 	// **************************************
@@ -629,8 +628,8 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 
       // record the iteration results (irregardless of new center)
       iteratedModel.continuous_variables(varsCenter.continuous_variables());
-      dakota_graphics.add_datapoint(iteratedModel.current_variables(),
-				    responseCenterTruth.second);
+      output_mgr.add_datapoint(iteratedModel.current_variables(),
+			       responseCenterTruth.second);
 
       // If the soft convergence criterion is satisfied for a user-specified
       // number of iterations (softConvLimit), then SBLM is deemed converged.

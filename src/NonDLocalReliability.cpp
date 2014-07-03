@@ -461,6 +461,8 @@ void NonDLocalReliability::mean_value()
   statCount = 0;
   initialize_final_statistics_gradients();
 
+  // local reliability data aren't output to tabular, so send directly
+  // to graphics window only
   Graphics& dakota_graphics =
     iteratedModel.parallel_library().output_manager().graphics();
 
@@ -1533,6 +1535,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     finalStatistics, warm start, and graphics data. */
 void NonDLocalReliability::update_level_data()
 {
+  // local reliability data aren't output to tabular, so send directly
+  // to graphics window only
   Graphics& dakota_graphics =
     iteratedModel.parallel_library().output_manager().graphics();
 

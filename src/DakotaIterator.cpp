@@ -1229,10 +1229,9 @@ void Iterator::initialize_graphics(int iterator_server_id)
       auto_log = true;
     }
 
-    if (mgr.tabularDataFlag) { // initialize the tabular data file
-      // For output/restart/tabular data, all Iterator masters stream output
-      dakota_graphics.create_tabular_datastream(vars, resp,
-						mgr.tabularDataFile);
+    // initialize the tabular data file on all iterator masters
+    if (mgr.tabularDataFlag) {
+      mgr.create_tabular_datastream(vars, resp);
       auto_log = true;
     }
 

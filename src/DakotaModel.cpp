@@ -506,8 +506,8 @@ void Model::compute_response()
       derived_compute_response(temp_set);
 
     if (modelAutoGraphicsFlag) {
-      Graphics& dakota_graphics = parallelLib.output_manager().graphics();
-      dakota_graphics.add_datapoint(currentVariables, currentResponse);
+      OutputManager& output_mgr = parallelLib.output_manager();
+      output_mgr.add_datapoint(currentVariables, currentResponse);
     }
   }
 }
@@ -552,8 +552,8 @@ void Model::compute_response(const ActiveSet& set)
       derived_compute_response(set);
 
     if (modelAutoGraphicsFlag) {
-      Graphics& dakota_graphics = parallelLib.output_manager().graphics();
-      dakota_graphics.add_datapoint(currentVariables, currentResponse);
+      OutputManager& output_mgr = parallelLib.output_manager();
+      output_mgr.add_datapoint(currentVariables, currentResponse);
     }
   }
 }
@@ -696,10 +696,10 @@ const IntResponseMap& Model::synchronize()
 
     // update graphics
     if (modelAutoGraphicsFlag) {
-      Graphics& dakota_graphics = parallelLib.output_manager().graphics();
+      OutputManager& output_mgr = parallelLib.output_manager();
       for (r_cit  = responseMap.begin(), v_it = varsList.begin();
 	   r_cit != responseMap.end(); ++r_cit, ++v_it)
-	dakota_graphics.add_datapoint(*v_it, r_cit->second);
+	output_mgr.add_datapoint(*v_it, r_cit->second);
     }
     // reset bookkeeping lists
     numFDEvalsMap.clear();
@@ -757,8 +757,8 @@ const IntResponseMap& Model::synchronize_nowait()
       // search for next response set(s) in sequence
       bool found = true;
       while (found) {
-	Graphics& dakota_graphics = parallelLib.output_manager().graphics();
-	int graphics_cntr = dakota_graphics.graphics_counter();
+	OutputManager& output_mgr = parallelLib.output_manager();
+	int graphics_cntr = output_mgr.graphics_counter();
 	// find() is not really necessary due to Map ordering
 	//g_it = graphicsRespMap.begin();
 	//if (g_it == graphicsRespMap.end() || g_it->first != graphics_cntr)
@@ -766,7 +766,7 @@ const IntResponseMap& Model::synchronize_nowait()
 	if (g_it == graphicsRespMap.end())
 	  found = false;
 	else {
-	  dakota_graphics.add_datapoint(varsList.front(), g_it->second);
+	  output_mgr.add_datapoint(varsList.front(), g_it->second);
 	  varsList.pop_front();
 	  graphicsRespMap.erase(g_it);
 	}

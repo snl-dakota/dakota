@@ -1032,6 +1032,7 @@ void ParallelLibrary::manage_outputs_restart(const ParallelLevel& pl)
       MPIPackBuffer send_buffer;
       send_buffer << stdout_redirect_required
 		  << programOptions
+		  << outputManager.graph2DFlag 
 		  << outputManager.tabularDataFlag 
 		  << outputManager.tabularDataFile
 		  << outputManager.resultsOutputFlag 
@@ -1048,6 +1049,7 @@ void ParallelLibrary::manage_outputs_restart(const ParallelLevel& pl)
     bcast(recv_buffer, pl.hubServerIntraComm);
     recv_buffer >> stdout_redirect_required 
 		>> programOptions
+		>> outputManager.graph2DFlag 
 		>> outputManager.tabularDataFlag 
 		>> outputManager.tabularDataFile
 		>> outputManager.resultsOutputFlag 

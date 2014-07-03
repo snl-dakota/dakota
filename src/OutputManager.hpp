@@ -36,8 +36,10 @@ class ParamResponsePair;
 // TODO: consider maintaining a list of redirections and pop them off
 // TODO: better error checking in each function
 
-/// Class to manage redirection of stdout/stderr, and keep track of
-/// current redir state, and manage rank 0 output
+/// Class to manage redirection of stdout/stderr, keep track of
+/// current redir state, and manage rank 0 output.  Also manage
+/// tabular data output for post-processing with Matlab, Tecplot,
+/// etc. and delegate to Graphics for X Windows Graphics
 class OutputManager {
 
 public:
@@ -106,12 +108,36 @@ public:
 
 
   // -----
+  // Graphics and tabular output
+  // -----
+
+  /// adds data to each window in the 2d graphics and adds a row to
+  /// the tabular data file based on the results of a model evaluation
+  void add_datapoint(const Variables& vars, const Response& response);
+  
+  /// initialize the tabular datastream on iterator leaders
+  void create_tabular_datastream(const Variables& vars, const Response& resp);
+
+  /// close tabular datastream
+  void close_tabular();
+
+  /// set graphicsCntr equal to cntr
+  void graphics_counter(int cntr);
+
+  /// return graphicsCntr
+  int graphics_counter() const;
+
+  /// set tabularCntrLabel equal to label
+  void tabular_counter_label(const std::string& label);
+
+
+  // -----
   // Data to later be made private
   // -----
 
-  bool graph2DFlag;       ///< flag for using 2D graphics plots
-  bool tabularDataFlag;   ///< flag for file tabulation of graphics data
-  bool resultsOutputFlag; ///< whether to output results data
+  bool graph2DFlag;       ///< whether user requested 2D graphics plots
+  bool tabularDataFlag;   ///< whether user requested tabular data file
+  bool resultsOutputFlag; ///< whether user requested results data output
 
    // // For items from the environment spec, can use DataEnvironment defaults
    //  tabular_filename       = outputManager.tabularDataFile;
@@ -181,8 +207,20 @@ private:
   /// the OutputManager
   Graphics dakotaGraphics;     
 
+  // For tabular output
+  // -----
+
+  /// used for x axis values in 2D graphics and for 1st column in tabular data
+  int graphicsCntr;
+
+  /// file stream for tabulation of graphics data within compute_response
+  std::ofstream tabularDataFStream;
+
+  /// label for counter used in first line comment w/i the tabular data file
+  std::string tabularCntrLabel;
 
 };  // class OutputManager
+
 
 } //namespace Dakota
 

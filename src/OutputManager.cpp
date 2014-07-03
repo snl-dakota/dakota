@@ -24,6 +24,7 @@
 #include "ResultsManager.hpp"
 #include "DakotaBuildInfo.hpp"
 
+#include "dakota_tabular_io.hpp"
 
 namespace Dakota {
 
@@ -39,7 +40,9 @@ void start_dakota_heartbeat(int);
 
 OutputManager::OutputManager():
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false), 
-  worldRank(0), mpirunFlag(false), restartOutputArchive(NULL)
+  worldRank(0), mpirunFlag(false), restartOutputArchive(NULL),
+  graphicsCntr(1), tabularCntrLabel("eval_id")
+
 { }
 
 
@@ -50,7 +53,9 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
 	      bool dakota_mpirun_flag):
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false),
   worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag),
-  restartOutputArchive(NULL)
+  restartOutputArchive(NULL),
+  graphicsCntr(1), tabularCntrLabel("eval_id")
+
 {
   //  if output file specified, redirect immediately, possibly rebind later
   if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
@@ -100,16 +105,20 @@ void OutputManager::close_streams()
   // After completion of timings in ParallelLibrary... 
   //
   // Don't need rank-based protection as will only be closed if they
-  // were opened.  Do need flag protection, otherwise dummy output
+  // were opened.  Do need user flag protection, otherwise dummy output
   // manager will close the global streams a second time wrongly.
-  if (graph2DFlag)
-    dakotaGraphics.close();
-  if (tabularDataFlag)
-    dakotaGraphics.close_tabular();
+  // BMA TODO: consider adding flag to track whether active...
+  if (graph2DFlag || tabularDataFlag) {
+    if (graph2DFlag)
+      dakotaGraphics.close();
+    // only close tabular stream if initialization was previously performed
+    // not an error when not open so all ranks can call this
+    if (tabularDataFlag && tabularDataFStream.is_open())
+      tabularDataFStream.close();
 
-  // TODO: encapsulate tabular stream and graphics object in this
-  // class if possible, or at least use this class to delegate to
-  // graphics so we know that the stream was opened.
+    // could omit entirely or do this unconditionally...
+    graphicsCntr = 1;
+  }
 }
 
 
@@ -226,6 +235,92 @@ void OutputManager::append_restart(const ParamResponsePair& prp)
   // flush is critical so we have a complete restart record should Dakota abort
   restartOutputFS.flush();
 }
+
+
+/** Opens the tabular data file stream and prints headings, one for
+    each active continuous and discrete variable and one for each response
+    function, using the variable and response function labels. This
+    tabular data is used for post-processing of DAKOTA results in
+    Matlab, Tecplot, etc. */
+void OutputManager::
+create_tabular_datastream(const Variables& vars, const Response& response)
+{
+  // For output/restart/tabular data, all Iterator masters stream
+  // output so tabular graphics files need to be tagged
+
+  // tabular data file set up
+  // prevent multiple opens of tabular_data_file
+  if (!tabularDataFStream.is_open()) {
+    TabularIO::open_file(tabularDataFStream, tabularDataFile + fileTag, 
+			 "DakotaGraphics");
+  }
+
+  bool active_only = true;
+  bool response_labels = true;
+  bool annotated = true;  // tabular graphics data only supports annotated
+  if (annotated)
+    TabularIO::write_header_tabular(tabularDataFStream, vars, response,
+				    tabularCntrLabel, active_only,
+				    response_labels);
+}
+
+
+/** Adds data to each 2d plot and each tabular data column (one for
+    each active variable and for each response function).
+    graphicsCntr is used for the x axis in the graphics and the first
+    column in the tabular data.  */
+void OutputManager::
+add_datapoint(const Variables& vars, const Response& response)
+{
+  // If the response data only contains derivative info, then there are no
+  // response function values to record in either the graphics window or the
+  // tabular data file.
+  bool plot_data = false;
+  const ShortArray& asv = response.active_set_request_vector();
+  int i, num_fns = asv.size();
+  for (i=0; i<num_fns; ++i) {
+    if (asv[i] & 1) {
+      plot_data = true;
+      break;
+    }
+  }
+  if (!plot_data)
+    return;
+  
+  // post to the X graphics plots
+  dakotaGraphics.add_datapoint(graphicsCntr, vars, response);
+  
+  // whether the file is open, not whether the user asked
+  if (tabularDataFStream.is_open()) {
+    // In the tabular graphics file, only the *active* variables are tabulated
+    // for top level evaluations/iterations in the strategy.  This differs from
+    // the "to_tabular" option of dakota_restart_util, which tabulates all
+    // variables for all application interface evaluations.
+
+    // NOTE: could add ability to monitor response data subsets based on
+    // user specification.
+    bool active_only = true;
+    bool write_responses = true;
+    TabularIO::write_data_tabular(tabularDataFStream, vars, response,
+				  graphicsCntr, active_only, write_responses);
+  }
+
+  // Only increment the graphics counter if posting data (incrementing on every
+  // call regardless of data posting causes skipping in the response plots).
+  ++graphicsCntr;
+}
+
+
+void OutputManager::tabular_counter_label(const std::string& label)
+{ tabularCntrLabel = label; }
+
+
+void OutputManager::graphics_counter(int cntr)
+{ graphicsCntr = cntr; }
+
+
+int OutputManager::graphics_counter() const
+{ return graphicsCntr; }
 
 
 void OutputManager::redirect_cout(const String& new_filename)
