@@ -1051,6 +1051,69 @@ message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 
 
+# Build the XML to NIDR translator, to be used only by Dakota maintainers
+option(DAKOTA_XML_SPEC "Enable Dakota XML spec and tools" OFF)
+if (DAKOTA_XML_SPEC)
+  find_package(Java 1.6 REQUIRED)
+
+  set(nidr2xml_src 
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/NIDRToXMLTranslator.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/nidr/antlr/*.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/DescFile.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/Indenter.java
+    )
+
+  add_custom_command(
+    OUTPUT xml2nidr/gov/sandia/dart/dakota/NIDRToXMLTranslator.class
+      xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.class
+      # for make clean:
+      xml2nidr/gov
+    DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
+      ${nidr2xml_src}
+    COMMAND ${Java_JAVAC_EXECUTABLE} -d ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr
+      -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar 
+      ${nidr2xml_src}
+    )
+
+  # BMA: temporary copies until we can add command line args to the java utils
+  include(AddFileCopyCommand)
+  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.nspec)
+  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
+    ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.desc)
+
+# workaround for make clean
+#set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "gov")
+
+  # Use dakota.input.nspec and dakota.input.desc to generate dakota.gen.xml
+  add_custom_command(
+    OUTPUT dakota.gen.xml
+    DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
+      ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr/gov/sandia/dart/dakota/NIDRToXMLTranslator.class
+      ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.nspec
+      ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.desc
+    COMMAND ${Java_JAVA_EXECUTABLE} 
+      -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar:${CMAKE_CURRENT_BINARY_DIR}/xml2nidr 
+      gov.sandia.dart.dakota.NIDRToXMLTranslator
+    )
+
+  # Use dakota.gen.xml to create dakota.input.gen.nspec
+  add_custom_command(
+    OUTPUT dakota.input.gen.nspec
+    DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
+      ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.class
+    COMMAND ${Java_JAVA_EXECUTABLE} 
+      -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar:${CMAKE_CURRENT_BINARY_DIR}/xml2nidr 
+      gov.sandia.dart.dakota.XMLToNIDRTranslator
+    )
+
+  # Create targets, always generate XML -> NIDR during ALL target
+  add_custom_target(dakota-gen-xml DEPENDS dakota.gen.xml)
+  add_custom_target(dakota-gen-nspec ALL DEPENDS dakota.input.gen.nspec)
+
+endif()
+
 option(DAKOTA_API_JAVA "Enable Dakota library Java API" OFF)
 if (DAKOTA_API_JAVA)
   add_subdirectory(api/java)
