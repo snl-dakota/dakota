@@ -291,6 +291,10 @@ public:
   void set(const String& entry_name, const StringRealMapArray& srma);
   /// set a RealRealMapArray within the database based on an identifier string
   void set(const String& entry_name, const RealRealMapArray& rrma);
+  /// set a RealRealPairRealMapArray in the db based on an identifier string
+  void set(const String& entry_name, const RealRealPairRealMapArray& iirma);
+  /// set an IntIntPairRealMapArray in the db based on an identifier string
+  void set(const String& entry_name, const IntIntPairRealMapArray& iirma);
   /// set a StringArray within the database based on an identifier string
   void set(const String& entry_name, const StringArray& sa);
 

@@ -1553,21 +1553,7 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 
   if (!dbRep)
     Null_rep("get_rva");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealVectorArray, DataVariablesRep> RVAdr[] = { // must be sorted
-	// {"continuous_interval_uncertain.basic_probs",
-	//  P continuousIntervalUncBasicProbs}
-    };
-    #undef P
-
-    KW<RealVectorArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealVectorArray, DataVariablesRep>*)Binsearch(RVAdr, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "method."))) {
+  if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
@@ -1594,21 +1580,7 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 
   if (!dbRep)
     Null_rep("get_iva");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-	Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntVectorArray, DataVariablesRep> IVAdr[] = { // must be sorted
-	// {"discrete_interval_uncertain.lower_bounds",
-	//  P discreteIntervalUncLowerBounds}
-    };
-    #undef P
-
-    KW<IntVectorArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntVectorArray, DataVariablesRep>*)Binsearch(IVAdr, L)))
-	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
-  }
-
+  // BMA: no current use cases
   Bad_name(entry_name, "get_iva");
   return abort_handler_t<const IntVectorArray&>(-1);
 }
@@ -3006,23 +2978,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
   const char *L;
   if (!dbRep)
     Null_rep1("set(RealVectorArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<RealVectorArray, DataVariablesRep> RVAdv[] = { // must be sorted
-	// {"continuous_interval_uncertain.basic_probs",
-	//  P continuousIntervalUncBasicProbs}
-    };
-    #undef P
-
-    KW<RealVectorArray, DataVariablesRep> *kw;
-    if ((kw = (KW<RealVectorArray, DataVariablesRep>*)Binsearch(RVAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rva;
-      return;
-    }
-  }
-  else if ((L = Begins(entry_name, "method.nond."))) {
+  if ((L = Begins(entry_name, "method.nond."))) {
     if (dbRep->methodDBLocked)
       Locked_db();
     #define P &DataMethodRep::
@@ -3048,22 +3004,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
   const char *L;
   if (!dbRep)
     Null_rep1("set(IntVectorArray&)");
-  if ((L = Begins(entry_name, "variables."))) {
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-    #define P &DataVariablesRep::
-    static KW<IntVectorArray, DataVariablesRep> IVAdv[] = { // must be sorted
-	// {"discrete_interval_uncertain.lower_bounds",
-	//  P discreteIntervalUncLowerBounds}
-    };
-    #undef P
-
-    KW<IntVectorArray, DataVariablesRep> *kw;
-    if ((kw = (KW<IntVectorArray, DataVariablesRep>*)Binsearch(IVAdv, L))) {
-      dbRep->dataVariablesIter->dataVarsRep->*kw->p = iva;
-      return;
-    }
-  }
+  // BMA: No current use cases
   Bad_name(entry_name, "set(IntVectorArray&)");
 }
 
@@ -3185,6 +3126,54 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
     }
   }
   Bad_name(entry_name, "set(RealRealMapArray&)");
+}
+
+void ProblemDescDB::
+set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
+{
+  const char *L;
+  if (!dbRep)
+    Null_rep1("set(RealRealPairRealMapArray&)");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+      Locked_db();
+    #define P &DataVariablesRep::
+    static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = { // must be sorted
+	{"continuous_interval_uncertain.basic_probs",
+	 P continuousIntervalUncBasicProbs}};
+    #undef P
+
+    KW<RealRealPairRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<RealRealPairRealMapArray, DataVariablesRep>*)Binsearch(RRRMAdv, L))) {
+      dbRep->dataVariablesIter->dataVarsRep->*kw->p = rrrma;
+      return;
+    }
+  }
+  Bad_name(entry_name, "set(RealRealPairRealMapArray&)");
+}
+
+void ProblemDescDB::
+set(const String& entry_name, const IntIntPairRealMapArray& iirma)
+{
+  const char *L;
+  if (!dbRep)
+    Null_rep1("set(IntIntPairRealMapArray&)");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+      Locked_db();
+    #define P &DataVariablesRep::
+    static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = { // must be sorted
+	{"discrete_interval_uncertain.basic_probs",
+	 P discreteIntervalUncBasicProbs}};
+    #undef P
+
+    KW<IntIntPairRealMapArray, DataVariablesRep> *kw;
+    if ((kw = (KW<IntIntPairRealMapArray, DataVariablesRep>*)Binsearch(IIRMAdv, L))) {
+      dbRep->dataVariablesIter->dataVarsRep->*kw->p = iirma;
+      return;
+    }
+  }
+  Bad_name(entry_name, "set(IntIntPairRealMapArray&)");
 }
 
 
