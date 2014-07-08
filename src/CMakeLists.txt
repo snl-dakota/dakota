@@ -1056,22 +1056,32 @@ option(DAKOTA_XML_SPEC "Enable Dakota XML spec and tools" OFF)
 if (DAKOTA_XML_SPEC)
   find_package(Java 1.6 REQUIRED)
 
-  set(nidr2xml_src 
-    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/NIDRToXMLTranslator.java
-    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.java
-    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/nidr/antlr/*.java
-    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/DescFile.java
-    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/Indenter.java
+  set(Dakota_Java_Pkg_Path_Str gov/sandia/dart/dakota)
+  #set(Dakota_Java_Pkg gov.sandia.dart.dakota)
+
+  set(nidr2xml_BINARY_DIR 
+    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/dakota-gen-nspec.dir/xml2nidr
     )
 
+  set(nidr2xml_src 
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/${Dakota_Java_Pkg_Path_Str}/NIDRToXMLTranslator.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/${Dakota_Java_Pkg_Path_Str}/XMLToNIDRTranslator.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/${Dakota_Java_Pkg_Path_Str}/nidr/antlr/*.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/${Dakota_Java_Pkg_Path_Str}/DescFile.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/${Dakota_Java_Pkg_Path_Str}/Indenter.java
+    )
+
+  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+    ${nidr2xml_BINARY_DIR}/)
+
   add_custom_command(
-    OUTPUT xml2nidr/gov/sandia/dart/dakota/NIDRToXMLTranslator.class
-      xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.class
+    OUTPUT xml2nidr/${Dakota_Java_Pkg_Path_Str}/NIDRToXMLTranslator.class
+      xml2nidr/${Dakota_Java_Pkg_Path_Str}/XMLToNIDRTranslator.class
       # for make clean:
       xml2nidr/gov
     DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
       ${nidr2xml_src}
-    COMMAND ${Java_JAVAC_EXECUTABLE} -d ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr
+    COMMAND ${Java_JAVAC_EXECUTABLE} -d ${nidr2xml_BINARY_DIR}
       -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar 
       ${nidr2xml_src}
     )
@@ -1090,7 +1100,7 @@ if (DAKOTA_XML_SPEC)
   add_custom_command(
     OUTPUT dakota.gen.xml
     DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
-      ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr/gov/sandia/dart/dakota/NIDRToXMLTranslator.class
+      ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr/${Dakota_Java_Pkg_Path_Str}/NIDRToXMLTranslator.class
       ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.nspec
       ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.desc
     COMMAND ${Java_JAVA_EXECUTABLE} 
@@ -1102,7 +1112,7 @@ if (DAKOTA_XML_SPEC)
   add_custom_command(
     OUTPUT dakota.input.gen.nspec
     DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
-      ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.class
+      ${CMAKE_CURRENT_BINARY_DIR}/xml2nidr/${Dakota_Java_Pkg_Path_Str}/XMLToNIDRTranslator.class
     COMMAND ${Java_JAVA_EXECUTABLE} 
       -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar:${CMAKE_CURRENT_BINARY_DIR}/xml2nidr 
       gov.sandia.dart.dakota.XMLToNIDRTranslator
