@@ -663,7 +663,7 @@ compute_statistics(const RealMatrix&     vars_samples,
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
     // archive the correlations to the results DB
     nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-				      div_labels, /*dsv_labels,*/ drv_labels,
+				      div_labels, dsv_labels, drv_labels,
 				      iteratedModel.response_labels());
   }
   if (!finalStatistics.is_null())
@@ -1156,7 +1156,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
         adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
       drv_labels =
         adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
-    nonDSampCorr.print_correlations(s, cv_labels, div_labels, /*dsv_labels,*/
+    nonDSampCorr.print_correlations(s, cv_labels, div_labels, dsv_labels,
 				    drv_labels,iteratedModel.response_labels());
   }
 }

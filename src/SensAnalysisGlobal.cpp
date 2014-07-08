@@ -428,6 +428,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 		     ResultsManager& iterator_results,
 		     StringMultiArrayConstView cv_labels,
 		     StringMultiArrayConstView div_labels,
+		     StringMultiArrayConstView dsv_labels,
 		     StringMultiArrayConstView drv_labels,
 		     const StringArray& resp_labels) const
 {
@@ -438,9 +439,9 @@ archive_correlations(const StrStrSizet& run_identifier,
       simpleCorr.numCols() == num_in_out) {
     MetaDataType md;
     md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
     md["Column labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_all,
 			    simpleCorr, md);
@@ -449,7 +450,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 	   simpleCorr.numCols() == numFns) {
     MetaDataType md;
     md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
     md["Column labels"] = make_metadatavalue(resp_labels);
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_io,
@@ -460,7 +461,7 @@ archive_correlations(const StrStrSizet& run_identifier,
       partialCorr.numCols() == numFns) {
     MetaDataType md;
     md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
     md["Column labels"] = make_metadatavalue(resp_labels);
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_partial_io,
@@ -473,9 +474,9 @@ archive_correlations(const StrStrSizet& run_identifier,
       simpleRankCorr.numCols() == num_in_out) {
     MetaDataType md;
     md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
     md["Column labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, resp_labels);
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_rank_all,
 			    simpleRankCorr, md);
@@ -484,7 +485,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 	   simpleRankCorr.numCols() == numFns) {
     MetaDataType md;
     md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
     md["Column labels"] = make_metadatavalue(resp_labels);
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_rank_io,
@@ -497,7 +498,7 @@ archive_correlations(const StrStrSizet& run_identifier,
       partialRankCorr.numCols() == numFns) {
     MetaDataType md;
     md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, drv_labels, StringArray());
+      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
     md["Column labels"] = make_metadatavalue(resp_labels);
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_partial_rank_io,
@@ -509,6 +510,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 void SensAnalysisGlobal::
 print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 		   StringMultiArrayConstView div_labels,
+		   StringMultiArrayConstView dsv_labels,
 		   StringMultiArrayConstView drv_labels,
 		   const StringArray& resp_labels) const
 {
@@ -525,8 +527,8 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
   }
 
   size_t i, j, num_cv = cv_labels.size(), num_div = div_labels.size(),
-    num_drv = drv_labels.size();
-  if (num_cv+num_div+num_drv != numVars) {
+    num_dsv = dsv_labels.size(), num_drv = drv_labels.size();
+  if (num_cv+num_div+num_dsv+num_drv != numVars) {
     Cerr << "Error: Number of variable labels (" << num_cv+num_div+num_drv
 	 << ") passed to print_correlations not equal to number of input "
 	 << "variables (" << numVars << ") in compute_correlations()." << std::endl;
@@ -542,6 +544,8 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
       s << std::setw(12) << cv_labels[i] << ' ';
     for (i=0; i<num_div; ++i)
       s << std::setw(12) << div_labels[i] << ' ';
+    for (i=0; i<num_dsv; ++i)
+      s << std::setw(12) << dsv_labels[i] << ' ';
     for (i=0; i<num_drv; ++i)
       s << std::setw(12) << drv_labels[i] << ' ';
     for (i=0; i<numFns; ++i)
@@ -552,8 +556,10 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 	s << std::setw(12) << cv_labels[i] << ' ';
       else if (i<num_cv+num_div)
 	s << std::setw(12) << div_labels[i-num_cv] << ' ';
+      else if (i<num_cv+num_div+num_dsv)
+	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
       else if (i<numVars)
-	s << std::setw(12) << drv_labels[i-num_cv-num_div] << ' ';
+	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
       else
 	s << std::setw(12) << resp_labels[i-numVars] << ' ';
       for (j=0; j<=i; ++j)
@@ -573,8 +579,10 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 	s << std::setw(12) << cv_labels[i] << ' ';
       else if (i<num_cv+num_div)
 	s << std::setw(12) << div_labels[i-num_cv] << ' ';
+      else if (i<num_cv+num_div+num_dsv)
+	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
       else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div] << ' ';
+	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
       for (j=0; j<numFns; ++j)
 	s << std::setw(12) << simpleCorr(i,j) << ' ';
       s << '\n';
@@ -593,8 +601,10 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 	s << std::setw(12) << cv_labels[i] << ' ';
       else if (i<num_cv+num_div)
 	s << std::setw(12) << div_labels[i-num_cv] << ' ';
+      else if (i<num_cv+num_div+num_dsv)
+	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
       else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div] << ' ';
+	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
       for (j=0; j<numFns; ++j)
 	s << std::setw(12) << partialCorr(i,j) << ' ';
       s << '\n';
@@ -616,6 +626,8 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
       s << std::setw(12) << cv_labels[i] << ' ';
     for (i=0; i<num_div; ++i)
       s << std::setw(12) << div_labels[i] << ' ';
+    for (i=0; i<num_dsv; ++i)
+      s << std::setw(12) << dsv_labels[i] << ' ';
     for (i=0; i<num_drv; ++i)
       s << std::setw(12) << drv_labels[i] << ' ';
     for (i=0; i<numFns; ++i)
@@ -626,8 +638,10 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 	s << std::setw(12) << cv_labels[i] << ' ';
       else if (i<num_cv+num_div)
 	s << std::setw(12) << div_labels[i-num_cv] << ' ';
+      else if (i<num_cv+num_div+num_dsv)
+	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
       else if (i<numVars)
-	s << std::setw(12) << drv_labels[i-num_cv-num_div] << ' ';
+	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
       else
 	s << std::setw(12) << resp_labels[i-numVars] << ' ';
       for (j=0; j<=i; ++j)
@@ -647,8 +661,10 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 	s << std::setw(12) << cv_labels[i] << ' ';
       else if (i<num_cv+num_div)
 	s << std::setw(12) << div_labels[i-num_cv] << ' ';
+      else if (i<num_cv+num_div+num_dsv)
+	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
       else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div] << ' ';
+	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
       for (j=0; j<numFns; ++j)
 	s << std::setw(12) << simpleRankCorr(i,j) << ' ';
       s << '\n';
@@ -667,8 +683,10 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 	s << std::setw(12) << cv_labels[i] << ' ';
       else if (i<num_cv+num_div)
 	s << std::setw(12) << div_labels[i-num_cv] << ' ';
+      else if (i<num_cv+num_div+num_dsv)
+	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
       else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div] << ' ';
+	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
       for (j=0; j<numFns; ++j)
 	s << std::setw(12) << partialRankCorr(i,j) << ' ';
       s << '\n';

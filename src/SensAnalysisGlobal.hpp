@@ -64,6 +64,7 @@ public:
 			    ResultsManager& iterator_results,
 			    StringMultiArrayConstView cv_labels,
 			    StringMultiArrayConstView div_labels,
+			    StringMultiArrayConstView dsv_labels,
 			    StringMultiArrayConstView drv_labels,
 			    const StringArray& resp_labels) const;
 
@@ -74,6 +75,7 @@ public:
   /// prints the correlations computed in compute_correlations()
   void print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 			  StringMultiArrayConstView div_labels,
+			  StringMultiArrayConstView dsv_labels,
 			  StringMultiArrayConstView drv_labels,
 			  const StringArray& resp_labels) const;
 

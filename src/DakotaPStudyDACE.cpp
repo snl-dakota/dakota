@@ -99,12 +99,13 @@ void PStudyDACE::print_results(std::ostream& s)
 	= empty[boost::indices[idx_range(0, 0)]];
       pStudyDACESensGlobal.print_correlations(s,
 	iteratedModel.continuous_variable_labels(), empty_view, empty_view,
-        iteratedModel.response_labels());
+        empty_view, iteratedModel.response_labels());
     }
     else // ParamStudy includes active discrete vars
       pStudyDACESensGlobal.print_correlations(s,
         iteratedModel.continuous_variable_labels(),
         iteratedModel.discrete_int_variable_labels(),
+        iteratedModel.discrete_string_variable_labels(),
         iteratedModel.discrete_real_variable_labels(),
         iteratedModel.response_labels());
   }
