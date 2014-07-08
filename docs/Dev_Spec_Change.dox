@@ -37,6 +37,73 @@ new input syntax), specification maintenance mode must be enabled at
 This will enable regeneration of NIDR and %Dakota components which must
 be updated following a spec change.
 
+
+\section ModXMLSpec New XML specification
+
+The authoritative source for %Dakota input grammar is migrating from
+the NIDR-based \c dakota/src/dakota.input.nspec to XML \c
+dakota/src/dakota.input.xml.  The schema defining valid XML content
+will be in \c dakota/src/dakota.xsd.  In the transition period,
+%Dakota input grammar will be edited in the \c .xml file and
+translated using Java and ANTLR to \c .nspec for consumption by the
+%Dakota build process.
+
+When committing changes to XML, verify NIDR doesn't change in
+unepected ways. Especially if you are not a core %Dakota developer.
+
+\subsection ModXMLSpecReq XML Build Requirements
+
+Editing the XML and then compiling %Dakota requires
+
+ - Java Development Kit (JDK) for Java 6, providing the Java compiler
+   javac.  Version 1.6 or newer should work.  Can satisfy on RHEL6
+   with RPM packages \c java-1.6.0-openjdk-devel and \c
+   java-1.6.0-openjdk.  This is needed to build the Java/ANTLR XML to
+   NIDR translator.
+
+\subsection ModXMLSpecTools XML Editing Tools
+
+The following tools will make editing dakota.input.xml easier.
+
+<ul> 
+<li> Recommended: Eclipse Web Tools Platform</li>
+  <ol>
+  <li> Download Eclipse Standard (Classic)</li>
+  <li> Configure proxy if needed, setting to manual:
+       Window > Preferences > General > Network Connection > Proxy
+  <li> Install Web Tools Platform
+       - Help > Install New Software
+       - Work With: Kepler - http://download.eclipse.org/releases/kepler
+       - Search "Eclipse X" and install two packages under Web, XML, Java
+         - Eclipse XML Editors and Tools
+         - Eclipse XSL Developer Tools
+       - Optionally install C/C++ Development Tools
+  </li>
+
+  <li> Optional: add Subclipse for subversion (Subversive is the other
+       major competing tool and I don't think requires JavaHL)
+       Help > Install New Software
+       * Work With: http://subclipse.tigris.org/update_1.6.x
+       * Install Subclipse
+       * On Linux: yum install subversion-javahl.x86_64
+  </li>
+
+  <li> Alternately install Eclipse for Java or Eclipse Java EE
+       development which includes webtools, then optionally add
+       subclipse and C/C++ dev</li>
+
+  </ol>
+
+  <li> Alternate: Emacs.  Emacs supports an Nxml mode.  You can tell
+       it where to find the schema, edit XML, and have it perform
+       validation against the schema.  See help at
+       http://www.gnu.org/software/emacs/manual/html_mono/nxml-mode.html
+       </li>
+
+ <li> Alternate: XMLSpy</li>
+</ul>
+
+
 \section ModSpec Modify dakota.input.nspec
 
 The master input specification dakota.input.nspec in Dakota/src is the
