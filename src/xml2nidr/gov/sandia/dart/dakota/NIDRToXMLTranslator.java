@@ -447,7 +447,7 @@ public class NIDRToXMLTranslator extends NIDRBaseListener{
 				path.push(name);
 				try {
 					String parentLabel = getParentLabel(getPath(path));
-					if (parentLabel != null && !parentLabel.isEmpty()) {
+					if (parentLabel != null && !parentLabel.trim().isEmpty()) {
 						label = parentLabel;
 						break;
 					} 

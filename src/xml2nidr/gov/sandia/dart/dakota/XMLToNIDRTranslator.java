@@ -27,8 +27,23 @@ import org.xml.sax.SAXParseException;
 public class XMLToNIDRTranslator {			
 
 	public static void main(String[] args) throws Exception {		
-		InputSource inputSource = new InputSource(new FileReader("dakota.gen.xml"));
-		XMLToNIDRTranslator translator = new XMLToNIDRTranslator(inputSource, new FileWriter("dakota.input.gen.nspec"));			
+		
+		// default file names for backward compatibility only
+		// can be removed or changed once DWB doesn't need them for testing
+		String dakota_xml = "dakota.gen.xml";
+		String dakota_nspec = "dakota.input.gen.nspec";
+		
+		if (args.length !=0 && args.length != 2) {
+			System.err.println("Usage: XMLToNIDRTranslator [ dakota.xml dakota.input.nspec ]");
+			System.exit(1);
+		}
+		if (args.length > 0) {
+			dakota_xml = args[0];
+			dakota_nspec = args[1];
+		}
+		
+		InputSource inputSource = new InputSource(new FileReader(dakota_xml));
+		XMLToNIDRTranslator translator = new XMLToNIDRTranslator(inputSource, new FileWriter(dakota_nspec));			
 		try {
 			translator.writeNIDRFile();
 		} finally {
