@@ -324,9 +324,8 @@ sub gui_groups {
     #                                                                                                                                        
     $desc =~ s/(_design")/$1 GROUP "Design Variables"/g;                                                                                     
     $desc =~ s/(discrete_design_range")/$1 GROUP "Design Variables"/g;
-    $desc =~ s/(discrete_design_set_integer")/$1 GROUP "Design Variables"/g;                                                                 
-    $desc =~ s/(discrete_design_set_real")/$1 GROUP "Design Variables"/g;
-
+    $desc =~ s/(discrete_design_set")/$1 GROUP "Design Variables"/g;                                                                 
+  
     ## NOTE: lognormal and loguniform are covered by these matches                                                                           
     my @uc = ("normal", "uniform", "triangular", "exponential", "beta",
               "gamma", "gumbel", "frechet", "weibull", "histogram_bin");
@@ -344,13 +343,11 @@ sub gui_groups {
     $desc =~ s/(uncertain_correlation_matrix")/$1 GROUP "Aleatory Uncertain Correlations"/g;                                                 
                                                                                                                                              
     $desc =~ s/(interval_uncertain")/$1 GROUP "Epistemic Uncertain"/g;
-    $desc =~ s/(uncertain_set_integer")/$1 GROUP "Epistemic Uncertain"/g;
-    $desc =~ s/(uncertain_set_real")/$1 GROUP "Epistemic Uncertain"/g;
+    $desc =~ s/(uncertain_set")/$1 GROUP "Epistemic Uncertain"/g;
 
     $desc =~ s/(continuous_state")/$1 GROUP "State Variables"/g;                                                                             
     $desc =~ s/(discrete_state_range")/$1 GROUP "State Variables"/g;
-    $desc =~ s/(discrete_state_set_integer")/$1 GROUP "State Variables"/g;                                                                   
-    $desc =~ s/(discrete_state_set_real")/$1 GROUP "State Variables"/g;
+    $desc =~ s/(discrete_state_set")/$1 GROUP "State Variables"/g;                                                                   
 
     #                                                                                                                                        
     # Group methods                                                                                                                          

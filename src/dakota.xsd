@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE DAKOTA_SCHEMA  [
+    <!ENTITY content
+        "<choice minOccurs='1' maxOccurs='1'>
+				<element name='keyword' type='dak:keywordType'></element>
+				<element name='ref' type='dak:refType'></element>		
+				<element name='oneOf' type='dak:oneOfType' minOccurs='0' maxOccurs='unbounded'></element>
+				<element name='required' type='dak:requiredType' minOccurs='0' maxOccurs='unbounded'></element>
+                <element name='optional' type='dak:optionalType' minOccurs='0' maxOccurs='unbounded'></element>                
+			</choice>"
+    >
+]>
+
+<schema targetNamespace="http://www.sandia.gov/dakota/1.0" 
+			xmlns="http://www.w3.org/2001/XMLSchema" 
+			xmlns:dak="http://www.sandia.gov/dakota/1.0"
+			elementFormDefault="qualified">		
+			
+	<!--  Root element -->
+	<element name="document" type="dak:documentType">
+		<keyref name="keywordIdRef" refer="dak:keywordIds">
+			<selector xpath=".//dak:ref" />
+			<field xpath="@id" />
+		</keyref>
+		<key name="keywordIds">
+			<selector xpath=".//dak:keyword" />
+			<field xpath="@id" />
+		</key>
+	</element>
+    
+	<complexType name="aliasType">
+		<attribute name="name" type="string"></attribute>
+	</complexType>
+	
+	<complexType name="paramType">
+		<attribute name="type" type="dak:argTypeType"></attribute>
+		<attribute name="constraint" type="string"></attribute>
+        <attribute name="in_taglist" type="string" use="optional" ></attribute>                        
+        <attribute name="taglist" type="string" use="optional" ></attribute>                        
+                
+	</complexType>
+	
+	<complexType name="inputType">
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			&content;
+		</sequence>
+	</complexType>
+	
+	<complexType name="oneOfType"> 
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			&content;
+		</sequence>
+        <attribute name="label" type="string" use="optional" ></attribute>               
+	</complexType>
+	
+	<complexType name="requiredType">
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			&content;
+		</sequence>
+	</complexType>
+    
+    <complexType name="optionalType">
+        <sequence minOccurs="0" maxOccurs="unbounded">
+            &content;
+        </sequence>
+    </complexType>
+	
+	<complexType name="refType">
+		<attribute name="id" type="string"></attribute>		
+	</complexType>
+	
+	<complexType name="keywordType">
+		<sequence minOccurs="1" maxOccurs="1">
+			<element name="alias" type="dak:aliasType" minOccurs="0"
+				maxOccurs="unbounded">
+			</element>
+			<element name="param" type="dak:paramType" minOccurs="0"
+				maxOccurs="unbounded">
+			</element>
+			<sequence minOccurs="0" maxOccurs="unbounded">
+				&content;
+			</sequence>
+		</sequence>	
+		
+		<attribute name="name" type="string" use="required"></attribute>
+		<attribute name="id" type="string" use="optional"></attribute>
+		<attribute name="maxOccurs" type="dak:minMaxType" use="optional" default="1"></attribute>
+        <attribute name="minOccurs" type="dak:minMaxType" use="optional" default="1"></attribute>      
+		<attribute name="code" type="string" use="required"></attribute>		
+        <attribute name="label" type="string" use="optional" ></attribute>
+        <attribute name="help" type="string" use="optional" ></attribute>           
+	    <attribute name="group" type="string" use="optional" ></attribute>                                                  
+	</complexType>
+
+	<simpleType name="argTypeType">
+		<restriction base="string">
+			<enumeration value="INTEGER"></enumeration>	
+			<enumeration value="INTEGERLIST"></enumeration>
+			<enumeration value="REAL"></enumeration>
+			<enumeration value="REALLIST"></enumeration>
+			<enumeration value="STRING"></enumeration>
+			<enumeration value="STRINGLIST"></enumeration>
+			<enumeration value="INPUT_FILE"></enumeration>
+            <enumeration value="OUTPUT_FILE"></enumeration>            
+		</restriction>
+	</simpleType>
+
+    <simpleType name="minMaxType">
+        <restriction base="string">
+            <pattern value="(unbounded)|(0|[1-9]+[0-9]*)" />
+        </restriction>
+    </simpleType>
+
+    <complexType name="documentType">
+    	<sequence minOccurs="1">
+    		<element name="input" type="dak:inputType"/>
+    		<sequence>
+    			<element name="keyword" type="dak:keywordType" maxOccurs="unbounded" minOccurs="0"></element>
+    		</sequence>
+    	</sequence>
+    </complexType>
+</schema>

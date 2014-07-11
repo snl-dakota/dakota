@@ -1582,9 +1582,9 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 	    [ file_tag {N_ifm(true,fileTagFlag)} ]
 	    [ file_save {N_ifm(true,fileSaveFlag)} ]
 	    [ work_directory {N_ifm(true,useWorkdir)}
-	        [named STRING {N_ifm(str,workDir)} ]
-	        [directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
-	        [directory_save ALIAS dir_save {N_ifm(true,dirSave)} ]
+	        [ named STRING {N_ifm(str,workDir)} ]
+	        [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
+	        [ directory_save ALIAS dir_save {N_ifm(true,dirSave)} ]
 	        [ template_directory STRING {N_ifm(str,templateDir)}
 		  | template_files STRINGLIST {N_ifm(strL,templateFiles)}
 	          [ copy {N_ifm(true,templateCopy)} ]
@@ -1668,10 +1668,10 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
 	    ]
-          [ scalar_objectives INTEGER >= 0 {N_rem(sizet,numScalarObjectiveFunctions)}]   
-          [ field_objectives INTEGER >=0 {N_rem(sizet,numFieldObjectiveFunctions)} 
- 	    ( lengths INTEGERLIST {N_rem(ivec,fieldLengths)} )
-            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)}] 
+          [ scalar_objectives INTEGER >= 0 {N_rem(sizet,numScalarObjectiveFunctions)} ]   
+          [ field_objectives INTEGER >= 0 {N_rem(sizet,numFieldObjectiveFunctions)} 
+ 	    lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
+            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ] 
             [ coordinate_list REALLIST {N_rem(RealL,coordsPerField)} 		              | coordinate_data_file STRING {N_rem(str,coordDataFileName)} ]
             ]            
 	  )
@@ -1712,19 +1712,19 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
   	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
   	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
   	    ]
-          [ scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)}]   
-          [ field_calibration_terms INTEGER >=0 {N_rem(sizet,numFieldLeastSqTerms)} 
- 	    ( lengths INTEGERLIST {N_rem(ivec,fieldLengths)} )
-            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)}] 
+          [ scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]   
+          [ field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)} 
+ 	    lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
+            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ] 
             [ coordinate_list REALLIST {N_rem(RealL,coordsPerField)} 		              | coordinate_data_file STRING {N_rem(str,coordDataFileName)} ]
             ]            
   	  )
   	| 
         ( response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
           [ scalar_responses INTEGER >= 0 {N_rem(sizet,numScalarResponseFunctions)} ]   
-          [ field_responses INTEGER >=0  {N_rem(sizet,numFieldResponseFunctions)}
- 	    ( lengths INTEGERLIST {N_rem(ivec,fieldLengths)} )
-            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)}] 
+          [ field_responses INTEGER >= 0  {N_rem(sizet,numFieldResponseFunctions)}
+ 	    lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
+            [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ] 
             [ coordinate_list REALLIST {N_rem(RealL,coordsPerField)} 		              | coordinate_data_file STRING {N_rem(str,coordDataFileName)} ]
             ]            
 	  )
@@ -1737,7 +1737,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	    )
 	  | numerical_gradients {N_rem(lit,gradientType_numerical)}
 	  [ method_source {0} ] # formerly required for dakota | vendor
-	  [ (dakota {N_rem(lit,methodSource_dakota)}
+	  [ ( dakota {N_rem(lit,methodSource_dakota)}
 		[ ignore_bounds {N_rem(true,ignoreBounds)} ]
 		[ relative {N_rem(lit,fdGradStepType_relative)}
 		  | absolute {N_rem(lit,fdGradStepType_absolute)}
