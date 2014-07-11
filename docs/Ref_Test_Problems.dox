@@ -16,7 +16,7 @@ Additional test problems are described in the User's Manual.
 The two-variable version of the ``textbook'' test problem provides
 a nonlinearly constrained optimization test case. It is formulated as:
 \anchor textbookform
-\f{align}
+\f{align}{
 \texttt{minimize }   & f = (x_1-1)^{4}+(x_2-1)^{4}     \nonumber \\
 \texttt{subject to } & g_1 = x_1^2-\frac{x_2}{2} \le 0 \tag{textbookform} \\
                      & g_2 = x_2^2-\frac{x_1}{2} \le 0 \nonumber \\
