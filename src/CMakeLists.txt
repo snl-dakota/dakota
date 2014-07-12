@@ -1054,53 +1054,26 @@ message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 # Build the XML to NIDR translator, to be used only by Dakota maintainers
 option(DAKOTA_XML_SPEC "Enable Dakota XML spec and tools" OFF)
 
-# WJB- ToDo:  DAKOTA_XML_SPEC in ON whne SPEC_MAINT is on
-#             Move xml2nidr CMakeLists.txt and logic into xml2nidr for modularity
+# WJB- ToDo:  set DAKOTA_XML_SPEC to ON when SPEC_MAINT is on
+#             Consider: Moving logic into xml2nidr/CMakeLists.txt (modularity?)
 if (DAKOTA_XML_SPEC)
   find_package(Java 1.6 REQUIRED)
   include(UseJava)
 
-  #set(Dakota_Java_Pkg_Path_Str gov/sandia/dart/dakota)
-
-  set(xml2nidr_BINARY_DIR 
-    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/dakota-gen-nspec.dir/xml2nidr
-    )
-
-  set(xml2nidr_src 
+  add_jar(XMLToNIDRTranslator
     ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.java
     ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/Indenter.java
     )
-# WJB    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/NIDRToXMLTranslator.java
-# WJB    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/DescFile.java
 
+  get_target_property(xml2nidrJar XMLToNIDRTranslator JAR_FILE)
+  #message(STATUS "xml2nidrJarFile: ${xml2nidrJar}")
+  #add_test(NAME TestXml2NidrTransUsage COMMAND ${Java_JAVA_EXECUTABLE} -cp ${xml2nidrJar} gov.sandia.dart.dakota.XMLToNIDRTranslator)
 
-  #add_jar(HelloWorld ${nidr2xml_src})
-  add_jar(XMLToNIDRTranslator ${nidr2xml_src})
-
-  get_target_property(_x2nTransJarFile XMLToNIDRTranslator JAR_FILE)
-  #get_target_property(_classDir XMLToNIDRTranslator CLASSDIR)
-
-  message(STATUS "x2nTransJar file ${_x2nTransJarFile}")
-  #message(STATUS "Class compiled to ${_classDir}")
-
-
-  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
-    ${xml2nidr_BINARY_DIR}/)
-
-  #add_custom_command(
-  #  OUTPUT ${xml2nidr_BINARY_DIR}/gov/sandia/dart/dakota/NIDRToXMLTranslator.class
-  #    ${xml2nidr_BINARY_DIR}/gov/sandia/dart/dakota/XMLToNIDRTranslator.class
-  #    # for make clean:
-  #    xml2nidr/gov
-  #  DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
-  #    ${xml2nidr_src}
-  #  COMMAND ${Java_JAVAC_EXECUTABLE} -d ${xml2nidr_BINARY_DIR}
-  #    -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar 
-  #    ${xml2nidr_src}
-  #  )
-
-  # BMA: temporary copies until we can add command line args to the java utils
   # WJB: pretty sure this piece is DONE, but comment-out (remove next iter)
+  #execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+  #  ${xml2nidr_BINARY_DIR}/)
+  #
+  # BMA: temporary copies until we can add command line args to the java utils
   #include(AddFileCopyCommand)
   #add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
   #  ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.nspec)
@@ -1110,30 +1083,22 @@ if (DAKOTA_XML_SPEC)
 # workaround for make clean
 #set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "gov")
 
-  # Use dakota.input.nspec and dakota.input.desc to generate dakota.gen.xml
-  #add_custom_command(
-  #  OUTPUT dakota.gen.xml
-  #  DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
-  #    ${xml2nidr_BINARY_DIR}/gov/sandia/dart/dakota/NIDRToXMLTranslator.class
-  #    ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.nspec
-  #    ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.desc
-  #  COMMAND ${Java_JAVA_EXECUTABLE} 
-  #    -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar:${xml2nidr_BINARY_DIR}
-  #    gov.sandia.dart.dakota.NIDRToXMLTranslator
-  #  )
 
-  # Use dakota.gen.xml to create dakota.input.gen.nspec
+  # Use dakota.gen.xml to create dakota.input.gen.nspec (ask BMA: .gen substr ?)
+  # WJB - Weekend ToDo? leverage cmd line params recently added by BMA
+  #                     also to tired to specify binaryJarFile properly
+  #                     LASTLY, combine with add_custom_target seems appropriate
   add_custom_command(
     OUTPUT dakota.input.gen.nspec
     DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
-      ${xml2nidr_BINARY_DIR}/gov/sandia/dart/dakota/XMLToNIDRTranslator.class
-    COMMAND ${Java_JAVA_EXECUTABLE} 
-      -classpath ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar:${xml2nidr_BINARY_DIR} 
+      ${CMAKE_CURRENT_BINARY_DIR}/XMLToNIDRTranslator.jar
+    COMMAND ${Java_JAVA_EXECUTABLE} -classpath
+      ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar:${CMAKE_CURRENT_BINARY_DIR}/XMLToNIDRTranslator.jar
       gov.sandia.dart.dakota.XMLToNIDRTranslator
     )
 
   # Create targets, always generate XML -> NIDR during ALL target
-  #add_custom_target(dakota-gen-xml DEPENDS dakota.gen.xml)
+  # WJB: nit-picky, but why hyphens rather than underscores like other targets?
   add_custom_target(dakota-gen-nspec ALL DEPENDS dakota.input.gen.nspec)
 
 endif()
