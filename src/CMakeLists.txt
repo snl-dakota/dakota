@@ -1069,37 +1069,24 @@ if (DAKOTA_XML_SPEC)
   #message(STATUS "xml2nidrJarFile: ${xml2nidrJar}")
   #add_test(NAME TestXml2NidrTransUsage COMMAND ${Java_JAVA_EXECUTABLE} -cp ${xml2nidrJar} gov.sandia.dart.dakota.XMLToNIDRTranslator)
 
-  # WJB: pretty sure this piece is DONE, but comment-out (remove next iter)
-  #execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
-  #  ${xml2nidr_BINARY_DIR}/)
-  #
-  # BMA: temporary copies until we can add command line args to the java utils
-  #include(AddFileCopyCommand)
-  #add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-  #  ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.nspec)
-  #add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
-  #  ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.desc)
-
-# workaround for make clean
-#set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "gov")
-
-
-  # Use dakota.gen.xml to create dakota.input.gen.nspec (ask BMA: .gen substr ?)
-  # WJB - Weekend ToDo? leverage cmd line params recently added by BMA
-  #                     also to tired to specify binaryJarFile properly
+  # Use dakota.xml to create dakota.input.nspec
+  # WJB - Weekend ToDo? too tired to specify binaryJarFile properly
   #                     LASTLY, combine with add_custom_target seems appropriate
   add_custom_command(
-    OUTPUT dakota.input.gen.nspec
-    DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
       ${CMAKE_CURRENT_BINARY_DIR}/XMLToNIDRTranslator.jar
-    COMMAND ${Java_JAVA_EXECUTABLE} -classpath
-      ${Dakota_SOURCE_DIR}/docs/nidr2refman_lib/antlr-runtime-4.1.jar:${CMAKE_CURRENT_BINARY_DIR}/XMLToNIDRTranslator.jar
+    COMMAND ${Java_JAVA_EXECUTABLE}
+      -classpath ${CMAKE_CURRENT_BINARY_DIR}/XMLToNIDRTranslator.jar
       gov.sandia.dart.dakota.XMLToNIDRTranslator
+      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
+      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     )
 
   # Create targets, always generate XML -> NIDR during ALL target
   # WJB: nit-picky, but why hyphens rather than underscores like other targets?
-  add_custom_target(dakota-gen-nspec ALL DEPENDS dakota.input.gen.nspec)
+  add_custom_target(dakota-gen-nspec ALL 
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec)
 
 endif()
 
