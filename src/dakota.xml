@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Generated code: DO NOT EDIT -->
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
   <input>
@@ -99,12 +98,16 @@
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
       <oneOf>
+        <!-- Begin group for concurrent iterator spec: -->
         <required>
           <oneOf>
             <keyword  id="hybrid" name="hybrid" code="{N_mdm(utype,methodName_HYBRID)}" label="Hybrid meta-iterator" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
               <oneOf>
                 <keyword  id="sequential" name="sequential" code="{N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}" label="Sequential hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
                   <alias name="uncoupled"/>
+                  <!-- #	      [ adaptive {N_mdm(lit,seqHybridType_adaptive)}
+                       #	      	progress_threshold REAL {N_mdm(Real,hybridProgThresh)} ]
+                    -->	
                   <oneOf>
                     <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
                       <param type="STRINGLIST" />
@@ -146,6 +149,9 @@
                   </keyword>
                 </keyword>
                 <keyword  id="collaborative" name="collaborative" code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" label="Collaborative hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+                  <!-- #	      abo {N_mdm(lit,hybridCollabType_abo)}
+                       #	      | hops {N_mdm(lit,hybridCollabType_hops)}
+                    -->
                   <oneOf>
                     <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
                       <param type="STRINGLIST" />
@@ -216,12 +222,29 @@
             <oneOf>
               <keyword  id="master" name="master" code="{N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
               <keyword  id="peer" name="peer" code="{N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
+              <!-- #	    | ( peer {0}
+                   #	      	dynamic  {N_mdm(type,iteratorScheduling_PEER_DYNAMIC_SCHEDULING)}
+                   #	      	| static {N_mdm(type,iteratorScheduling_PEER_STATIC_SCHEDULING)} )
+				-->
             </oneOf>
           </keyword>
           <keyword  id="processors_per_iterator" name="processors_per_iterator" code="{N_mdm(pint,procsPerIterator)}" label="processors_per_iterator" help="" minOccurs="0" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
         </required>
+        <!-- # Note: branch_and_bound and surrogate_based_{local,global} are not meta-iterators and use a Model-based
+			 # ctor chain. Therefore, they differ in their model_pointer spec from hybrid & concurrent meta-iterators
+			 # (they require their own Model, not just a sub-model for the sub-method).
+			 #	|
+             #	( branch_and_bound
+             #	  method_pointer ALIAS branch_method_pointer STRING {N_mdm(str,subMethodPointer)}
+             #	  | method_name ALIAS branch_method_name STRING {N_mdm(str,subMethodName)}
+             #	  [ model_pointer ALIAS branch_model_pointer STRING {N_mdm(str,modelPointer)} ]
+             #	  [ num_samples_at_node INTEGER {N_mdm(int,branchBndNumSamplesNode)} ]
+             #	  [ num_samples_at_root INTEGER {N_mdm(int,branchBndNumSamplesRoot)} ]
+             #	)
+         -->
+        <!-- # Note: SBL/SBG do not manage linear constraints; spec delegated to approx-method -->
         <keyword  id="surrogate_based_local" name="surrogate_based_local" code="{N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)}" label="surrogate_based_local" help="" minOccurs="1" group="Surrogate-based Methods" >
           <oneOf>
             <keyword  id="method_pointer2" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer" help="MethodCommands.html#MethodMetaParetoSet"  >
@@ -309,8 +332,10 @@
           </keyword>
           <keyword  id="replace_points" name="replace_points" code="{N_mdm(true,surrBasedGlobalReplacePts)}" label="Replace points used in surrogate construction with best points from previous iteration" help="MethodCommands.html#MethodSBG" minOccurs="0" />
         </keyword>
+        <!-- Begin group for model_pointer spec? -->
         <required>
           <oneOf>
+            <!-- Begin group for linear ineq/eq constraints? -->
             <required>
               <oneOf>
                 <required>
@@ -344,6 +369,7 @@
                   </oneOf>
                 </required>
                 <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
+		  <!-- store method name AND incoming STRING -->
                   <param type="STRING" />
                 </keyword>
                 <required>
@@ -368,6 +394,9 @@
                   </keyword>
                 </required>
                 <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" />
+                <!-- #	    reduced_sqp
+                     #	    |
+                 -->
                 <required>
                   <oneOf>
                     <keyword  id="optpp_cg" name="optpp_cg" code="{N_mdm(utype,methodName_OPTPP_CG)}" label="optpp_cg" help=""  group="Optimization: Local, Derivative-based" />
@@ -573,6 +602,7 @@
                       <keyword  id="simple_random" name="simple_random" code="{N_mdm(lit,initializationType_random)}" label="simple_random" help=""  />
                       <keyword  id="unique_random" name="unique_random" code="{N_mdm(lit,initializationType_unique_random)}" label="unique_random" help=""  />
                       <keyword  id="flat_file" name="flat_file" code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" label="flat_file" help=""  >
+                        <!-- store init type AND incoming STRING -->
                         <param type="STRING" />
                       </keyword>
                     </oneOf>
@@ -590,6 +620,7 @@
                       </keyword>
                       <keyword  id="shuffle_random" name="shuffle_random" code="{N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}" label="shuffle_random" help="" minOccurs="1" >
                         <keyword  id="num_parents" name="num_parents" code="{N_mdm(pintz,numParents)}" label="num_parents" help="" minOccurs="0" >
+                          <!-- should the min be 2? -->
                           <param type="INTEGER" constraint="> 0" />
                         </keyword>
                         <keyword  id="num_offspring" name="num_offspring" code="{N_mdm(pintz,numOffspring)}" label="num_offspring" help="" minOccurs="0" >
@@ -658,6 +689,7 @@
                 <required>
                   <oneOf>
                     <required>
+                      <!-- Begin groupings for coliny keywords? -->
                       <oneOf>
                         <keyword  id="coliny_pattern_search" name="coliny_pattern_search" code="{N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}" label="coliny_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
                           <keyword  id="constant_penalty" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" />
@@ -748,6 +780,7 @@
                       <keyword  id="simple_random1" name="simple_random" code="{N_mdm(lit,initializationType_random)}" label="simple_random" help=""  />
                       <keyword  id="unique_random1" name="unique_random" code="{N_mdm(lit,initializationType_unique_random)}" label="unique_random" help=""  />
                       <keyword  id="flat_file1" name="flat_file" code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" label="flat_file" help=""  >
+                        <!-- store init type AND incoming STRING -->
                         <param type="STRING" />
                       </keyword>
                     </oneOf>
@@ -912,6 +945,7 @@
                 <param type="INTEGER" constraint="> 0" />
               </keyword>
             </keyword>
+            <!-- Begin group for samples and seed? -->
             <required>
               <oneOf>
                 <required>
@@ -937,6 +971,7 @@
                               <oneOf>
                                 <keyword  id="askey" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey" help=""  />
                                 <keyword  id="wiener" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener" help=""  />
+                                <!-- #		      | piecewise {NIDRProblemDescDB::method_piecewise} -->
                               </oneOf>
                             </optional>
                             <oneOf>
@@ -1075,6 +1110,7 @@
                                     <keyword  id="collocation_points1" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="collocation_points" help=""  >
                                       <param type="INTEGERLIST" />
                                     </keyword>
+                                    <!-- #		          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
                                     <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" />
                                     <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid" help="" minOccurs="0" >
                                       <param type="INTEGERLIST" />
@@ -1814,6 +1850,7 @@
                   </keyword>
                 </keyword>
               </oneOf>
+              <!-- # TO DO: flatten this group and review contexts for inclusion: -->
               <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples" help="" minOccurs="0" >
                 <param type="INTEGER" />
               </keyword>
@@ -2159,6 +2196,7 @@
                           <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="quadratic" help=""  />
                         </oneOf>
                       </keyword>
+                      <!-- # using generic STRING to avoid collision with local/global below -->
                       <keyword  id="optimization_method" name="optimization_method" code="{N_mom(str,krigingOptMethod)}" label="Surfpack GP optimization method" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
                         <param type="STRING" />
                       </keyword>
@@ -2178,6 +2216,9 @@
                       <keyword  id="correlation_lengths" name="correlation_lengths" code="{N_mom(RealDL,krigingCorrelations)}" label="Surfpack GP correlation lengths" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
                         <param type="REALLIST" />
                       </keyword>
+                      <!-- #	        [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
+                           #	        [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
+                       -->
                       <keyword  id="export_model_file" name="export_model_file" code="{N_mom(str, approxExportModelFile)}" label="export_model_file" help="" minOccurs="0" >
                         <param type="OUTPUT_FILE" />
                       </keyword>
@@ -2223,6 +2264,9 @@
                     <param type="OUTPUT_FILE" />
                   </keyword>
                 </keyword>
+                <!-- #	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
+                     #	    | interpolation_polynomial {N_mom(lit,surrogateType_global_interpolation_polynomial)}
+                 -->
                 <keyword  id="radial_basis" name="radial_basis" code="{N_mom(lit,surrogateType_global_radial_basis)}" label="radial_basis" help="" minOccurs="1" >
                   <keyword  id="bases" name="bases" code="{N_mom(shint,rbfBases)}" label="RBF number of bases" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
                     <param type="INTEGER" />
@@ -2381,6 +2425,10 @@
               <oneOf>
                 <keyword  id="master1" name="master" code="{N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
                 <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
+				<!-- #	      | ( peer {0}
+                     #	          dynamic  {N_mom(type,subMethodScheduling_PEER_DYNAMIC_SCHEDULING)}
+                     #	      	  | static {N_mom(type,subMethodScheduling_PEER_STATIC_SCHEDULING)} ) 
+				  -->
               </oneOf>
             </keyword>
             <keyword  id="processors_per_iterator1" name="processors_per_iterator" code="{N_mom(pint,subMethodProcs)}" label="processors_per_iterator" help="" minOccurs="0" >
@@ -2994,6 +3042,7 @@
             <alias name="set_values"/>
             <param type="INTEGERLIST" />
           </keyword>
+          <!-- BMA TODO: change these semantics? -->
           <keyword  id="set_probabilities" name="set_probabilities" code="{N_vam(newrvec,Var_Info_DSIp)}" label="Probabilities for each set member" help="VarCommands.html#VarDUSIV" minOccurs="0" >
             <alias name="set_probs"/>
             <param type="REALLIST" />
@@ -3018,6 +3067,7 @@
             <alias name="set_values"/>
             <param type="STRINGLIST" />
           </keyword>
+          <!-- BMA TODO: change these semantics? -->
           <keyword  id="set_probabilities1" name="set_probabilities" code="{N_vam(newrvec,Var_Info_DSSp)}" label="Probabilities for each set member" help="VarCommands.html#VarDUSRV" minOccurs="0" >
             <alias name="set_probs"/>
             <param type="REALLIST" />
@@ -3220,7 +3270,11 @@
               <param type="INTEGER" constraint="> 0" />
             </keyword>
           </keyword>
+          <!-- TODO: processors per analysis? -->
           <keyword  id="matlab" name="matlab" code="{N_ifm(lit,interfaceType_matlab)}" label="Matlab interface " help="InterfCommands.html#InterfApplicMSP"  />
+          <!-- #	  | modelcenter {N_ifm(lit,interfaceType_modelcenter)}
+               #	  | plugin {N_ifm(lit,interfaceType_plugin)}
+            -->
           <keyword  id="python" name="python" code="{N_ifm(lit,interfaceType_python)}" label="Python interface " help="InterfCommands.html#InterfApplicMSP" minOccurs="1" >
             <keyword  id="numpy" name="numpy" code="{N_ifm(true,numpyFlag)}" label="Python NumPy dataflow" help="InterfCommands.html#InterfApplicMSP" minOccurs="0" />
           </keyword>
@@ -3288,6 +3342,10 @@
         <oneOf>
           <keyword  id="master3" name="master" code="{N_ifm(type,analysisScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
           <keyword  id="peer3" name="peer" code="{N_ifm(type,analysisScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
+          <!-- #	  | ( peer {0}
+               #	      dynamic  {N_ifm(type,analysisScheduling_PEER_DYNAMIC_SCHEDULING)}
+               #	      | static {N_ifm(type,analysisScheduling_PEER_STATIC_SCHEDULING)} )
+            -->
         </oneOf>
       </keyword>
     </keyword>
@@ -3301,6 +3359,10 @@
         <alias name="response_descriptors"/>
         <param type="STRINGLIST" />
       </keyword>
+      <!-- # Note: since NIDR does not support BOOLLIST or ENUMLIST, we employ one of two different approaches below for array alternation:
+           #       (1) id_* lists used when there are conditional sub-specifications (e.g., mixed grads, mixed Hessians)
+           #       (2) STRINGLISTs used for alternation without conditional sub-specifications (e.g., scale_types)
+        -->
       <oneOf>
         <keyword  id="objective_functions" name="objective_functions" code="{N_rem(sizet,numObjectiveFunctions)}" label="Optimization" help="RespCommands.html#RespFnOpt" minOccurs="1" >
           <alias name="num_objective_functions"/>
@@ -3398,6 +3460,16 @@
             <alias name="least_squares_weights"/>
             <param type="REALLIST" constraint="LEN calibration_terms" />
           </keyword>
+          <!-- #           ( calibration_data_arrays {0}
+               #             [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
+               #             [ experimental_config_variables REALLIST {N_rem(RealDL,expConfigVars)} ]
+               #	      [ experimental_observations REALLIST {N_rem(RealDL,expObservations)} ]
+               #	      [ experimental_std_deviations REALLIST {N_rem(RealDL,expStdDeviations)} ]
+               #             )
+               #  	    |
+               # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
+               #  	    ( 
+           -->
           <keyword  id="calibration_data_file" name="calibration_data_file" code="{N_rem(str,expDataFileName)}" label="Calibration data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
             <alias name="least_squares_data_file"/>
             <param type="STRING" />
@@ -3420,6 +3492,9 @@
               <param type="INTEGER" constraint=">= 0" />
             </keyword>
           </keyword>
+          <!-- #              )
+               # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
+            -->
           <keyword  id="nonlinear_inequality_constraints1" name="nonlinear_inequality_constraints" code="{N_rem(sizet,numNonlinearIneqConstraints)}" label="Number of nonlinear inequality constraints" help="RespCommands.html#RespFnLS" minOccurs="0" >
             <alias name="num_nonlinear_inequality_constraints"/>
             <param type="INTEGER" constraint=">= 0" />
@@ -3521,6 +3596,7 @@
             </keyword>
             <keyword  id="numerical_gradients" name="numerical_gradients" code="{N_rem(lit,gradientType_numerical)}" label="Numerical gradients" help="RespCommands.html#RespGradNum"  />
           </oneOf>
+          <!-- # formerly required for dakota | vendor -->
           <keyword  id="method_source" name="method_source" code="{0}" label="method_source" help="" minOccurs="0" />
           <optional>
             <oneOf>
@@ -3537,6 +3613,7 @@
               <keyword  id="vendor" name="vendor" code="{N_rem(lit,methodSource_vendor)}" label="vendor" help=""  />
             </oneOf>
           </optional>
+          <!-- # formerly required for forward or central -->
           <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type" help="" minOccurs="0" />
           <optional>
             <oneOf>
