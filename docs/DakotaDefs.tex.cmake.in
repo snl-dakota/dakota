@@ -29,14 +29,14 @@ Dena~M.~Vigil, Timothy~M.~Wildey
 \newcommand{\authvskip}{0.25cm}
 
 \newcommand{\DakotaAuthorLong}{
-{\bf Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, John~D.~Jakeman,}\\
-{\bf Laura~P.~Swiler, J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
+{Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, John~D.~Jakeman,}\\
+{Laura~P.~Swiler, J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
 {\sl Optimization and Uncertainty Quantification Department} \vspace*{\authvskip} \\ 
-{\bf William~J.~Bohnhoff,} {\sl Radiation Transport Department} \vspace*{\authvskip} \\
-{\bf John~P.~Eddy,} {\sl System Readiness and Sustainment Technologies Department} \vspace*{\authvskip} \\
-{\bf Kenneth~T.~Hu, } {\sl Validation and Uncertainty Quantification Department} \vspace*{\authvskip} \\
-{\bf Keith~R.~Dalbey,} {\sl Mission Analysis and Simulation Department} \vspace*{\authvskip} \\
-{\bf Lara~E.~Bauman, Patricia~D.~Hough} \\
+{William~J.~Bohnhoff,} {\sl Radiation Transport Department} \vspace*{\authvskip} \\
+{John~P.~Eddy,} {\sl System Readiness and Sustainment Technologies Department} \vspace*{\authvskip} \\
+{Kenneth~T.~Hu, } {\sl Validation and Uncertainty Quantification Department} \vspace*{\authvskip} \\
+{Keith~R.~Dalbey,} {\sl Mission Analysis and Simulation Department} \vspace*{\authvskip} \\
+{Lara~E.~Bauman, Patricia~D.~Hough} \\
 {\sl Quantitative Modeling and Analysis Department} \vspace*{\authvskip} \\
 Sandia National Laboratories\\
 P.O. Box 5800\\
