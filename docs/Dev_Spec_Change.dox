@@ -44,7 +44,7 @@ The authoritative source for valid %Dakota input grammar is now \c
 dakota/src/dakota.xml.  The schema defining valid content for this XML
 file is in \c dakota/src/dakota.xsd.  In the transition period (until
 parser work is complete), %Dakota input grammar will be edited in the
-\c .xml file and translated using Java and ANTLR to \c
+\c .xml file and translated using Java to \c
 dakota/src/dakota.input.nspec for consumption by the %Dakota build
 process.
 
@@ -78,9 +78,9 @@ Editing the XML and then compiling %Dakota requires
  - Java Development Kit (JDK) for Java 6, providing the Java compiler
    javac.  Version 1.6 or newer should work.  Can satisfy on RHEL6
    with RPM packages \c java-1.6.0-openjdk-devel and \c
-   java-1.6.0-openjdk.  This is needed to build the Java/ANTLR XML to
+   java-1.6.0-openjdk.  This is needed to build the Java-based XML to
    NIDR translator.  If this becomes too burdensome, we can check in
-   the generated \c XMLToNIDRTranslator.jar.
+   the generated \c xml2nidr.jar file.
 
 \subsection ModXMLSpecTools XML Editing Tools
 
