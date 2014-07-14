@@ -40,16 +40,36 @@ be updated following a spec change.
 
 \section ModXMLSpec New XML specification
 
-The authoritative source for %Dakota input grammar is migrating from
-the NIDR-based \c dakota/src/dakota.input.nspec to XML \c
-dakota/src/dakota.input.xml.  The schema defining valid XML content
-will be in \c dakota/src/dakota.xsd.  In the transition period,
-%Dakota input grammar will be edited in the \c .xml file and
-translated using Java and ANTLR to \c .nspec for consumption by the
-%Dakota build process.
+The authoritative source for valid %Dakota input grammar is now \c
+dakota/src/dakota.xml.  The schema defining valid content for this XML
+file is in \c dakota/src/dakota.xsd.  In the transition period (until
+parser work is complete), %Dakota input grammar will be edited in the
+\c .xml file and translated using Java and ANTLR to \c
+dakota/src/dakota.input.nspec for consumption by the %Dakota build
+process.
 
-When committing changes to XML, verify NIDR doesn't change in
-unepected ways. Especially if you are not a core %Dakota developer.
+Process overview for updating the XML input definition:
+<ul>
+
+<li> Make sure ENABLE_SPEC_MAINT is enabled in your build and necessary
+     Java development tools are installed (see below).</li>
+
+<li> Edit the XML spec in \c dakota.xml.</li>
+
+<li> Perform a make in \c dakota.build/src which will regenerate \c \c
+     dakota.source/src/dakota.input.nspec.</li>
+
+<li> Review that any changes induced in the \c dakota.input.nspec file
+     are as expected.</li>
+
+<li> Proceed with verifying code changes and making downstream parse
+     handler changes as normal.</li>
+
+<li> Commit the modified \c dakota.xml and \c dakota.input.nspec with
+     other code changes.</li>
+
+</ul>
+
 
 \subsection ModXMLSpecReq XML Build Requirements
 
@@ -59,14 +79,18 @@ Editing the XML and then compiling %Dakota requires
    javac.  Version 1.6 or newer should work.  Can satisfy on RHEL6
    with RPM packages \c java-1.6.0-openjdk-devel and \c
    java-1.6.0-openjdk.  This is needed to build the Java/ANTLR XML to
-   NIDR translator.
+   NIDR translator.  If this becomes too burdensome, we can check in
+   the generated \c XMLToNIDRTranslator.jar.
 
 \subsection ModXMLSpecTools XML Editing Tools
 
 The following tools will make editing dakota.input.xml easier.
 
 <ul> 
-<li> Recommended: Eclipse Web Tools Platform</li>
+
+<li> <b>Recommended: Eclipse Web Tools Platform.</b> Includes both
+     graphical and text editors.
+  
   <ol>
   <li> Download Eclipse Standard (Classic)</li>
   <li> Configure proxy if needed, setting to manual:
@@ -93,18 +117,110 @@ The following tools will make editing dakota.input.xml easier.
        subclipse and C/C++ dev</li>
 
   </ol>
+</li>
 
-  <li> Alternate: Emacs.  Emacs supports an Nxml mode.  You can tell
-       it where to find the schema, edit XML, and have it perform
-       validation against the schema.  See help at
-       http://www.gnu.org/software/emacs/manual/html_mono/nxml-mode.html
-       </li>
+<li> <b>Alternate: Emacs or your usual editor.</b> For example, Emacs
+     supports an Nxml mode.  You can tell it where to find the schema,
+     edit XML, and have it perform validation against the schema.  See
+     help at
+     http://www.gnu.org/software/emacs/manual/html_mono/nxml-mode.html
+     </li>
 
- <li> Alternate: XMLSpy</li>
+<li> <b>Other Suggested Alternates:</b> XMLSpy, DreamWeaver, XML Copy
+     Editor</li>
+
 </ul>
 
 
-\section ModSpec Modify dakota.input.nspec
+\subsection ModXMLSpecFeatures XML Features (with map to NIDR)
+
+Out of necessity, the initial %Dakota XML \c dakota.xml closely mirrors
+\c dakota.input.nspec.  Valid %Dakota input grammar is constrained by
+\c dakota.xml, an XML document which must validate against \c
+dakota.xsd.  The top-level element of interest is \c <input>, which is
+comprised of a sequence of content elements (keywords, alternates,
+etc.), which may themselves contain additional child content elements.
+The key content types are:
+
+<ul>
+
+<li> <b>Keyword (\c <keyword>):</b>, specified with the \c <keyword>
+     element whose definition is given by keywordType in \c
+     dakota.xsd.  The required attributes are: 
+     <ul>
+
+     <li><b>name:</b> the keyword name as it will be given in user
+         input; must follow same uniqueness rules are historical
+         NIDR.</li>
+
+     <li><b>code:</b> the verbatim NIDR handler to be invoked when
+         parsed.  In NIDR this was specified with {N_macro(...)}.</li>
+
+     </ul>
+
+     Optional/useful parser-related elements/attributes in order of
+     importance are: <ul>
+
+     <li><b>param sub-element:</b>Parameters and data types: A keyword
+     	 may have an associated parameter element with a specified
+     	 data type: \c <param \c type="PARAMTYPE" />.  NIDR data types
+     	 remain the same (INTEGER, REAL, STRING and LISTs thereof, but
+     	 new data types INPUT_FILE and OUTPUT_FILE add convenience for
+     	 the GUI, mapping to STRING for NIDR purposes.  Parameters can
+     	 also include attributes \c constraint, \c in_taglist, or \c
+     	 taglist, which are used to help validate the user-specified
+     	 parameter value.  For example <code>constraint >= 0 LEN
+     	 normal_uncertain</code></li>
+
+     <li><b>alias sub-element:</b> historical aliases for this keyword
+         (can appear multiple times).  Alias has a single attribute
+         <b>name</b></li>
+
+     <li><b>id:</b> unique ID for the keyword, usually name with an
+         integer appended</li>
+
+     <li><b>minOccurs:</b> minimum occurrences of the keyword in
+         current context (set to 1 for required, 0 for optional)</li>
+
+     <li><b>maxOccurs:</b> maximum occurrences of the keyword in
+         current context (for example environment may appear at most once)</li>
+  
+     </ul>
+
+     And optional/useful GUI-related attributes are:
+     <ul>
+
+     <li><b>help:</b> a pointer to the corresponding reference manual
+         section (deprecated as not needed with new reference manual
+         format which mirrors keyword hierarchy)</li>
+
+     <li><b>label:</b> a friendly label for the keyword to use in the GUI </li>
+
+     <li><b>group:</b> category or group for this keyword, e.g.,
+         optimization vs. parameter study </li>
+
+     </ul>
+
+<li> <b>Alternation (\c <oneOf>):</b> Alternation of groups of content
+     is done with the element \c <oneOf> which indicates that its
+     immediate children are alternates.  In NIDR this was done with
+     the pipe symbol: OptionA | OptionB </li>
+
+<li> <b>Required Group (\c <required>):</b> A required group can be specified by
+     enclosing the contents in the \c <required> element.  In NIDR
+     this was done by enclosing the content in parentheses: ( required
+     group... ) </li>
+
+<li> <b>Optional Group (\c <optional>):</b> An optional group can be
+     specified by enclosing the contents in the \c <optional> element.
+     In NIDR this was done by enclosing the content in brackets: [
+     optional group... ] </li>
+
+</ul>
+
+
+
+\section ModSpec Deprecated: Modify dakota.input.nspec
 
 The master input specification dakota.input.nspec in Dakota/src is the
 primary file to update when making a specification change.  It uses
