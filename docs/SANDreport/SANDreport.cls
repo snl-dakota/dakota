@@ -1621,13 +1621,13 @@
 		    % \vskip 60\p@					% deleted
 		    \begin{center}%					% \maketitle from report.cls
 			{\LARGE \@title \par}%				% \maketitle from report.cls
-			\vskip 3em%					% \maketitle from report.cls
+			\vskip 1em%					% \maketitle from report.cls
 			{\large						% \maketitle from report.cls
 			\lineskip .75em%				% \maketitle from report.cls
 			\begin{tabular}[t]{c}%				% \maketitle from report.cls
 			    \@author					% \maketitle from report.cls
 			\end{tabular}\par}%				% \maketitle from report.cls
-			\vskip 1.5em%					% \maketitle from report.cls
+			%\vskip 1em%					% \maketitle from report.cls
 			% {\large \@date \par}%				% deleted
 		    \end{center}\par					% \maketitle from report.cls
 		    \@thanks						% \maketitle from report.cls
@@ -1692,7 +1692,7 @@
 	\if@titlepage							% abstract from report.cls
 	    \renewenvironment{abstract}{%				% abstract from report.cls
 		% \titlepage						% deleted
-		\null\vfil						% abstract from report.cls
+		%\null\vfil						% abstract from report.cls
 		\@beginparpenalty\@lowpenalty				% abstract from report.cls
 		\begin{center}%						% abstract from report.cls
 		    \bfseries \abstractname				% abstract from report.cls
