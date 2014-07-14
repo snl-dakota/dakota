@@ -1050,41 +1050,36 @@ set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 
-
 # Build the XML to NIDR translator, to be used only by Dakota maintainers
-option(DAKOTA_XML_SPEC "Enable Dakota XML spec and tools" OFF)
+#option(DAKOTA_XML_SPEC "Enable Dakota XML spec and tools" OFF)
 
-# WJB- ToDo:  set DAKOTA_XML_SPEC to ON when SPEC_MAINT is on
-#             Consider: Moving logic into xml2nidr/CMakeLists.txt (modularity?)
-if (DAKOTA_XML_SPEC)
+# WJB- ToDo:  Consider: Moving logic into xml2nidr/CMakeLists.txt (modularity?) 
+if (ENABLE_SPEC_MAINT)
+  #add_subdirectory(xml2nidr)
   find_package(Java 1.6 REQUIRED)
   include(UseJava)
 
-  add_jar(XMLToNIDRTranslator
+  # WJB- ToDo: If Java MATCHES "-NOTFOUND" then issue stop message
+
+  add_jar(xml2nidr
     ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.java
     ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/Indenter.java
     )
 
-  get_target_property(xml2nidrJar XMLToNIDRTranslator JAR_FILE)
-  #message(STATUS "xml2nidrJarFile: ${xml2nidrJar}")
-  #add_test(NAME TestXml2NidrTransUsage COMMAND ${Java_JAVA_EXECUTABLE} -cp ${xml2nidrJar} gov.sandia.dart.dakota.XMLToNIDRTranslator)
+  get_target_property(xml2nidrJar xml2nidr JAR_FILE)
 
+  # WJB - Perhaps combine custom_comman with custom_target?
   # Use dakota.xml to create dakota.input.nspec
-  # WJB - Weekend ToDo? too tired to specify binaryJarFile properly
-  #                     LASTLY, combine with add_custom_target seems appropriate
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
-      ${CMAKE_CURRENT_BINARY_DIR}/XMLToNIDRTranslator.jar
-    COMMAND ${Java_JAVA_EXECUTABLE}
-      -classpath ${CMAKE_CURRENT_BINARY_DIR}/XMLToNIDRTranslator.jar
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml ${xml2nidrJar}
+    COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidrJar}
       gov.sandia.dart.dakota.XMLToNIDRTranslator
       ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
       ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     )
 
-  # Create targets, always generate XML -> NIDR during ALL target
-  # WJB: nit-picky, but why hyphens rather than underscores like other targets?
+  # Create target, always generate XML -> NIDR during ALL target
   add_custom_target(dakota-gen-nspec ALL 
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec)
 
