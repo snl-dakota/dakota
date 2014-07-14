@@ -45,15 +45,24 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   // NonDIntegration ctor
   check_variables(natafTransform.x_types());
 
+  Pecos::ExpansionConfigOptions
+    ec_options(Pecos::QUADRATURE,
+	       probDescDB.get_short("method.nond.expansion_basis_type"),
+	       outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
+	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
+	       probDescDB.get_short("method.nond.expansion_refinement_control"),
+	       maxIterations, convergenceTol,
+	       probDescDB.get_ushort("method.soft_convergence_limit"));
+
   bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
     probDescDB.get_short("method.nond.expansion_refinement_type") ==
     Pecos::H_REFINEMENT);
   bool use_derivs = probDescDB.get_bool("method.derivative_usage");
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-
   Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
 				       equidist_rules, use_derivs);
-  tpqDriver->initialize_grid(natafTransform.u_types(), bc_options);
+
+  tpqDriver->initialize_grid(natafTransform.u_types(), ec_options, bc_options);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
   maxEvalConcurrency *= tpqDriver->grid_size();

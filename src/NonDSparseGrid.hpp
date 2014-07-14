@@ -41,7 +41,7 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDSparseGrid(Model& model, short exp_coeffs_approach,
+  NonDSparseGrid(Model& model, short exp_coeffs_soln_approach,
 		 const UShortArray& ssg_level_seq, const RealVector& dim_pref,
 		 //short sparse_grid_usage,
 		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,

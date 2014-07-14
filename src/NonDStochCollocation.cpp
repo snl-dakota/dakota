@@ -62,6 +62,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
     = probDescDB.get_rv("method.nond.dimension_preference");
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
+    expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
@@ -171,7 +172,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
-    // expansionBasisType left as Pecos::DEFAULT_BASIS
+    expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
     break;
   case Pecos::COMBINED_SPARSE_GRID:

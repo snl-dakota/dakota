@@ -1838,17 +1838,19 @@ void NonDExpansion::archive_moments()
     if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
       // Pecos provides central moments
       const RealVector& exp_moments = poly_approx_rep->expansion_moments();
-      const RealVector& num_moments = poly_approx_rep->numerical_moments();
-      size_t exp_mom = exp_moments.length(), num_mom = num_moments.length();
+      const RealVector& num_int_moments
+	= poly_approx_rep->numerical_integration_moments();
+      size_t exp_mom = exp_moments.length(),
+	num_int_mom  = num_int_moments.length();
       if (exp_mom)  exp_active = true;
-      if (num_mom)  num_active = true;
+      if (num_int_mom)  num_active = true;
       for (size_t j=0; j<exp_mom; ++j)
 	exp_matrix(j,i) = exp_moments[j];
       for (size_t j=exp_mom; j<4; ++j)
 	exp_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
-      for (size_t j=0; j<num_mom; ++j)
-	num_matrix(j,i) = num_moments[j];
-      for (size_t j=num_mom; j<4; ++j)
+      for (size_t j=0; j<num_int_mom; ++j)
+	num_matrix(j,i) = num_int_moments[j];
+      for (size_t j=num_int_mom; j<4; ++j)
 	num_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
     }
   }
@@ -1857,7 +1859,8 @@ void NonDExpansion::archive_moments()
     MetaDataType md_moments; 
     md_moments["Row Labels"] = 
       make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral"); 
-    md_moments["Column Labels"] = make_metadatavalue(iteratedModel.response_labels()); 
+    md_moments["Column Labels"]
+      = make_metadatavalue(iteratedModel.response_labels()); 
     resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, 
 		     exp_matrix, md_moments); 
   }
@@ -1865,7 +1868,8 @@ void NonDExpansion::archive_moments()
     MetaDataType md_moments; 
     md_moments["Row Labels"] = 
       make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral"); 
-    md_moments["Column Labels"] = make_metadatavalue(iteratedModel.response_labels()); 
+    md_moments["Column Labels"]
+      = make_metadatavalue(iteratedModel.response_labels()); 
     resultsDB.insert(run_identifier(), resultsNames.moments_central_num, 
 		     num_matrix, md_moments); 
   }
@@ -1958,55 +1962,57 @@ void NonDExpansion::print_moments(std::ostream& s)
   //   exp only:     PCE with unstructured grids (regression, exp sampling)
   // Also handle numerical exception of negative variance in either exp or num
   PecosApproximation* poly_approx_rep;
-  size_t exp_mom, num_mom; bool exception = false, prev_exception = false;
-  RealVector std_exp_moments, std_num_moments;
+  size_t exp_mom, num_int_mom; bool exception = false, prev_exception = false;
+  RealVector std_exp_moments, std_num_int_moments;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
       // Pecos provides central moments
       const RealVector& exp_moments = poly_approx_rep->expansion_moments();
-      const RealVector& num_moments = poly_approx_rep->numerical_moments();
-      exp_mom = exp_moments.length(); num_mom = num_moments.length();
-      if ( (exp_mom == 2 && exp_moments[1] <  0.) ||
-	   (num_mom == 2 && num_moments[1] <  0.) ||
-	   (exp_mom >  2 && exp_moments[1] <= 0.) ||
-	   (num_mom >  2 && num_moments[1] <= 0.) ) {
+      const RealVector& num_int_moments
+	= poly_approx_rep->numerical_integration_moments();
+      exp_mom = exp_moments.length(); num_int_mom = num_int_moments.length();
+      if ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
+	   (num_int_mom == 2 && num_int_moments[1] <  0.) ||
+	   (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
+	   (num_int_mom >  2 && num_int_moments[1] <= 0.) ) {
 	if (i==0 || !prev_exception)
 	  s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
 	    << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
 	    << "4thCentral\n";
-	if (exp_mom && num_mom) s << fn_labels[i];
-	else                    s << std::setw(14) << fn_labels[i];
+	if (exp_mom && num_int_mom) s << fn_labels[i];
+	else                        s << std::setw(14) << fn_labels[i];
 	if (exp_mom) {
-	  if (num_mom)          s << '\n' << std::setw(14) << "expansion:  ";
+	  if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
 	  for (j=0; j<exp_mom; ++j)
 	    s << ' ' << std::setw(width) << exp_moments[j];
 	}
-	if (num_mom) {
-	  if (exp_mom)          s << '\n' << std::setw(14) << "numerical:  ";
-	  for (j=0; j<num_mom; ++j)
-	    s << ' ' << std::setw(width) << num_moments[j];
+	if (num_int_mom) {
+	  if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+	  for (j=0; j<num_int_mom; ++j)
+	    s << ' ' << std::setw(width) << num_int_moments[j];
 	}
 	exception = prev_exception = true;
       }
       else {
 	if (i==0 || prev_exception)
 	  s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
-	    << std::setw(width+1)  << "Skewness"
-	    << std::setw(width+2)  << "Kurtosis\n";
-	if (exp_mom && num_mom) s << fn_labels[i];
-	else                    s << std::setw(14) << fn_labels[i];
+	    << std::setw(width+1)  << "Skewness" << std::setw(width+2)
+	    << "Kurtosis\n";
+	if (exp_mom && num_int_mom) s << fn_labels[i];
+	else                        s << std::setw(14) << fn_labels[i];
 	if (exp_mom) {
 	  poly_approx_rep->standardize_moments(exp_moments, std_exp_moments);
-	  if (num_mom)          s << '\n' << std::setw(14) << "expansion:  ";
+	  if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
 	  for (j=0; j<exp_mom; ++j)
 	    s << ' ' << std::setw(width) << std_exp_moments[j];
 	}
-	if (num_mom) {
-	  poly_approx_rep->standardize_moments(num_moments, std_num_moments);
-	  if (exp_mom)          s << '\n' << std::setw(14) << "numerical:  ";
-	  for (j=0; j<num_mom; ++j)
-	    s << ' ' << std::setw(width) << std_num_moments[j];
+	if (num_int_mom) {
+	  poly_approx_rep->
+	    standardize_moments(num_int_moments, std_num_int_moments);
+	  if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+	  for (j=0; j<num_int_mom; ++j)
+	    s << ' ' << std::setw(width) << std_num_int_moments[j];
 	}
 	prev_exception = false;
       }

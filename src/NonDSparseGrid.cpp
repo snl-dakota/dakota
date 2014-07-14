@@ -36,37 +36,46 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   ssgLevelRef(ssgLevelSeqSpec[sequenceIndex])
 {
+  short exp_basis_type
+    = probDescDB.get_short("method.nond.expansion_basis_type");
+  short exp_coeffs_soln_approach
+    = (exp_basis_type == Pecos::HIERARCHICAL_INTERPOLANT)
+    ? Pecos::HIERARCHICAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+
   // initialize the numerical integration driver
-  short exp_coeffs_approach =
-    //problemDescDB.get_short("method.nond.sparse_grid_type")
-    Pecos::COMBINED_SPARSE_GRID;
-  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_approach);
+  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_soln_approach);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // initialize_random_variables() called in NonDIntegration ctor
   check_variables(natafTransform.x_types());
 
+  // define ExpansionConfigOptions
   short refine_type
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
-  short growth_override = probDescDB.get_short("method.nond.growth_override");
-  bool use_derivs = probDescDB.get_bool("method.derivative_usage");
+  Pecos::ExpansionConfigOptions
+    ec_options(exp_coeffs_soln_approach, exp_basis_type, outputLevel,
+	       probDescDB.get_bool("method.variance_based_decomp"),
+	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
+	       /*refine_type,*/ refine_control, maxIterations, convergenceTol,
+	       probDescDB.get_ushort("method.soft_convergence_limit"));
 
-  bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
+  // define BasisConfigOptions
   bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
 		       != Pecos::NON_NESTED);
-  bool track_uniq_prod_wts = false;
-  bool track_colloc_indices
-    = (exp_coeffs_approach == Pecos::COMBINED_SPARSE_GRID);
   bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
 			  refine_type == Pecos::H_REFINEMENT);
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  // moderate growth is helpful for iso and aniso sparse grids, but
-  // not necessary for generalized grids
-  //short refine_type
-  //  = probDescDB.get_short("method.nond.expansion_refinement_type");
+  Pecos::BasisConfigOptions
+    bc_options(nested_rules, piecewise_basis, equidist_rules,
+	       probDescDB.get_bool("method.derivative_usage"));
+
+  // initialize ssgDriver
   short growth_rate;
+  short growth_override = probDescDB.get_short("method.nond.growth_override");
+  // moderate growth is helpful for iso and aniso sparse grids, but not
+  // necessary for generalized grids
   if (growth_override == Pecos::UNRESTRICTED ||
       refine_control  == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
     // unstructured index set evolution: no motivation to restrict
@@ -78,12 +87,13 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
-
-  Pecos::BasisConfigOptions bc_options(nested_rules, piecewise_basis,
-				       equidist_rules, use_derivs);
+  bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
+  bool track_uniq_prod_wts = false;
+  bool track_colloc_indices
+    = (exp_coeffs_soln_approach == Pecos::COMBINED_SPARSE_GRID);
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
-    dimPrefSpec, bc_options, growth_rate, /*refine_type,*/ refine_control,
-    store_colloc, track_uniq_prod_wts, track_colloc_indices);
+    dimPrefSpec, ec_options, bc_options, growth_rate, store_colloc,
+    track_uniq_prod_wts, track_colloc_indices);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
 
@@ -94,7 +104,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of sparse grids within PCE and SC. */
 NonDSparseGrid::
-NonDSparseGrid(Model& model, short exp_coeffs_approach,
+NonDSparseGrid(Model& model, short exp_coeffs_soln_approach,
 	       const UShortArray& ssg_level_seq,
 	       const RealVector& dim_pref, short growth_rate,
 	       short refine_control, bool track_uniq_prod_wts,
@@ -103,7 +113,7 @@ NonDSparseGrid(Model& model, short exp_coeffs_approach,
   ssgLevelSeqSpec(ssg_level_seq), ssgLevelRef(ssgLevelSeqSpec[sequenceIndex])
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_approach);
+  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_soln_approach);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // propagate general settings (not inferrable from the basis of polynomials)
