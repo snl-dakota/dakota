@@ -463,7 +463,7 @@ inline void Iterator::method_string(const String& m_str)
 
 inline String Iterator::method_string() const
 {
-  return (iteratorRep) ? iteratorRep->method_enum_to_string(methodName) :
+  return (iteratorRep) ? iteratorRep->method_string() :
     method_enum_to_string(methodName);
 }
 
