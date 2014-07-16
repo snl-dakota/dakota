@@ -1214,7 +1214,7 @@ const VariablesArray& Iterator::initial_points() const
 void Iterator::initialize_graphics(int iterator_server_id)
 {
   if (iteratorRep)
-    iteratorRep->initialize_graphics();
+    iteratorRep->initialize_graphics(iterator_server_id);
   else { // no redefinition of virtual fn., use default initialization
     OutputManager& mgr = iteratedModel.parallel_library().output_manager();
     Graphics& dakota_graphics = mgr.graphics();

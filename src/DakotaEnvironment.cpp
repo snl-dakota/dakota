@@ -410,7 +410,7 @@ void Environment::execute()
     }
     else {
       if (output_rank) // set up plotting and data tabulation
-	topLevelIterator.initialize_graphics();
+	topLevelIterator.initialize_graphics(); // default to server_id = 1
 
       // segregates parallel execution: Iterator on pl.serverCommRank == 0
       IteratorScheduler::run_iterator(topLevelIterator, //topLevelModel,
