@@ -446,6 +446,24 @@ inline const Response& NonD::response_results() const
 inline void NonD::response_results_active_set(const ActiveSet& set)
 { finalStatistics.active_set(set); }
 
+
+/** Map the variables from iterator space (u) to simulation space (x). */
+inline void NonD::
+vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
+{
+  nondInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
+					    x_vars.continuous_variables_view());
+}
+
+
+/** Map the variables from simulation space (x) to iterator space (u). */
+inline void NonD::
+vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
+{
+  nondInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
+					    u_vars.continuous_variables_view());
+}
+
 } // namespace Dakota
 
 #endif

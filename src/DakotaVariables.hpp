@@ -782,15 +782,11 @@ inline void Variables::active_variables(const Variables& vars)
 
 
 inline RealVector& Variables::continuous_variables_view()
-{
-  return (variablesRep) ? variablesRep->continuousVars : continuousVars;
-}
+{ return (variablesRep) ? variablesRep->continuousVars : continuousVars; }
 
 
 inline IntVector& Variables::discrete_int_variables_view()
-{
-  return (variablesRep) ? variablesRep->discreteIntVars : discreteIntVars;
-}
+{ return (variablesRep) ? variablesRep->discreteIntVars : discreteIntVars; }
 
 
 /** same as discrete_string_variables(), except mutable view */
@@ -804,9 +800,7 @@ inline StringMultiArrayView Variables::discrete_string_variables_view()
 
 
 inline RealVector& Variables::discrete_real_variables_view()
-{
-  return (variablesRep) ? variablesRep->discreteRealVars : discreteRealVars;
-}
+{ return (variablesRep) ? variablesRep->discreteRealVars : discreteRealVars; }
 
 
 inline StringMultiArrayConstView Variables::continuous_variable_labels() const

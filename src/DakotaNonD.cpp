@@ -826,22 +826,6 @@ construct_lhs(Iterator& u_space_sampler, Model& u_model,
 }
 
 
-/** Map the variables from iterator space (u) to simulation space (x). */
-void NonD::vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
-{
-  RealVector& x = x_vars.continuous_variables_view();
-  nondInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(), x);  
-}
-
-
-/** Map the variables from simulation space (x) to iterator space (u). */
-void NonD::vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
-{
-  RealVector& u = u_vars.continuous_variables_view();
-  nondInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(), u);
-}
-
-
 /** Define the DVV for x-space derivative evaluations by augmenting
     the iterator requests to account for correlations. */
 void NonD::set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
