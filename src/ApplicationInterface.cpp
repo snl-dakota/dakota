@@ -30,6 +30,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   multiProcAnalysisFlag(false), asynchLocalAnalysisFlag(false),
   numAnalysisDrivers(
     problem_db.get_sa("interface.application.analysis_drivers").size()),
+  failureMessage("Failure captured"),
   worldSize(parallelLib.world_size()), worldRank(parallelLib.world_rank()),
   iteratorCommSize(1), iteratorCommRank(0), ieMessagePass(false),
   numEvalServersSpec(problem_db.get_int("interface.evaluation_servers")),
@@ -2471,7 +2472,7 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
     while (fail_flag) {
       fail_flag = 0; // reset each time prior to derived_map
       ++retries;
-      Cout << "Failure captured: retry attempt number " << retries << ".\n";
+      Cout << failureMessage << ": retry attempt number " << retries << ".\n";
       try { derived_map(vars, set, response, failed_eval_id); }
       catch(int fail_code) { 
         //Cout << "Caught int in manage_failure" << std::endl;
@@ -2484,7 +2485,7 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
     }
   }
   else if (failAction == "recover") {
-    Cout << "Failure captured: recovering with specified function values.\n";
+    Cout << failureMessage << ": recovering with specified function values.\n";
     if (failRecoveryFnVals.length() != response.num_functions() ) {
       Cerr << "Error: length of recovery function values specification\n"
            << "       must equal the total number of functions." << std::endl;
@@ -2515,7 +2516,8 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
     else
       source_pair = get_source_pair(vars); // also the serial case
 
-    Cout << "\nFailure captured: halving interval and retrying." << std::endl;
+    Cout << '\n' << failureMessage << ": halving interval and retrying." 
+	 << std::endl;
 
     // Now that source pt. is available, call the continuation algorithm.  
     // Mimic retry case in use of failed_eval_id to manage file names.
@@ -2524,7 +2526,7 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
 
   }
   else { // default is abort
-    Cerr << "Failure captured: aborting..." << std::endl;
+    Cerr << failureMessage << ": aborting..." << std::endl;
     abort_handler(-1);
   }
 }

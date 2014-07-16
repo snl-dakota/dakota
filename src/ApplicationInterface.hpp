@@ -232,6 +232,10 @@ protected:
   /// and test_local_evaluations()
   IntSet completionSet;
 
+  /// base message for managing failed evals; will be followed with
+  /// more details in screen output
+  String failureMessage;
+
 private:
 
   //
