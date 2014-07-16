@@ -469,6 +469,8 @@ inline const RealVector& Response::function_values() const
 
 inline RealVector Response::function_values_view()
 {
+  // Caution/Bug: with some compilers the Teuchos::View may be copy
+  // constructed into a Teuchos::Copy, decoupling the view from the data
   return RealVector(Teuchos::View, responseRep->functionValues.values(),
 		    responseRep->functionValues.length());
 }
@@ -487,7 +489,11 @@ inline const Real* Response::function_gradient(const int& i) const
 
 
 inline RealVector Response::function_gradient_view(const int& i) const
-{ return Teuchos::getCol(Teuchos::View, responseRep->functionGradients, i); }
+{   
+  // Caution/Bug: with some compilers the Teuchos::View may be copy
+  // constructed into a Teuchos::Copy, decoupling the view from the data
+  return Teuchos::getCol(Teuchos::View, responseRep->functionGradients, i); 
+}
 
 
 inline RealVector Response::function_gradient_copy(const int& i) const
@@ -500,6 +506,8 @@ inline const RealMatrix& Response::function_gradients() const
 
 inline RealMatrix Response::function_gradients_view()
 {
+  // Caution/Bug: with some compilers the Teuchos::View may be copy
+  // constructed into a Teuchos::Copy, decoupling the view from the data
   return RealMatrix(Teuchos::View, responseRep->functionGradients,
 		    responseRep->functionGradients.numRows(),
 		    responseRep->functionGradients.numCols());
@@ -521,6 +529,8 @@ inline const RealSymMatrix& Response::function_hessian(size_t i) const
 
 inline RealSymMatrix Response::function_hessian_view(size_t i) const
 {
+  // Caution/Bug: with some compilers the Teuchos::View may be copy
+  // constructed into a Teuchos::Copy, decoupling the view from the data
   return RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
 		       responseRep->functionHessians[i].numRows());
 }
@@ -538,6 +548,8 @@ inline RealSymMatrixArray Response::function_hessians_view()
     fn_hessians_view[i]
       = RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
 		      responseRep->functionHessians[i].numRows());
+  // Caution/Bug: with some compilers the Teuchos::View may be copy
+  // constructed into a Teuchos::Copy, decoupling the view from the data
   return fn_hessians_view;
 }
 

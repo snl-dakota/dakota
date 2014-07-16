@@ -201,13 +201,13 @@ public:
   void active_variables(const Variables& vars);
 
   /// return a mutable view of the active continuous variables
-  RealVector continuous_variables_view() const;
+  RealVector& continuous_variables_view();
   /// return a mutable view of the active discrete integer variables
-  IntVector discrete_int_variables_view() const;
+  IntVector& discrete_int_variables_view();
   /// return a mutable view of the active discrete string variables
   StringMultiArrayView discrete_string_variables_view();
   /// return a mutable view of the active discrete real variables
-  RealVector discrete_real_variables_view() const;
+  RealVector& discrete_real_variables_view();
 
   /// return the active continuous variable labels
   StringMultiArrayConstView continuous_variable_labels() const;
@@ -668,6 +668,7 @@ inline const RealVector& Variables::continuous_variables() const
 inline void Variables::
 continuous_variables(const RealVector& c_vars)
 {
+  // continuousVars is a view; carefully assign to update the data it points to
   if (variablesRep) variablesRep->continuousVars.assign(c_vars);
   else              continuousVars.assign(c_vars);
 }
@@ -693,6 +694,7 @@ inline const IntVector& Variables::discrete_int_variables() const
 
 inline void Variables::discrete_int_variables(const IntVector& di_vars)
 {
+  // discreteIntVars is a view; carefully assign to update the data it points to
   if (variablesRep) variablesRep->discreteIntVars.assign(di_vars);
   else              discreteIntVars.assign(di_vars);
 }
@@ -758,6 +760,7 @@ inline const RealVector& Variables::discrete_real_variables() const
 
 inline void Variables::discrete_real_variables(const RealVector& dr_vars)
 {
+  // discreteRealVars is a view; carefully assign to update the data it points to
   if (variablesRep) variablesRep->discreteRealVars.assign(dr_vars);
   else              discreteRealVars.assign(dr_vars);
 }
@@ -778,22 +781,15 @@ inline void Variables::active_variables(const Variables& vars)
 }
 
 
-inline RealVector Variables::continuous_variables_view() const
+inline RealVector& Variables::continuous_variables_view()
 {
-  return (variablesRep) ?
-    RealVector(Teuchos::View, variablesRep->continuousVars.values(),
-	       variablesRep->continuousVars.length()) :
-    RealVector(Teuchos::View, continuousVars.values(), continuousVars.length());
+  return (variablesRep) ? variablesRep->continuousVars : continuousVars;
 }
 
 
-inline IntVector Variables::discrete_int_variables_view() const
+inline IntVector& Variables::discrete_int_variables_view()
 {
-  return (variablesRep) ?
-    IntVector(Teuchos::View, variablesRep->discreteIntVars.values(),
-	      variablesRep->discreteIntVars.length()) :
-    IntVector(Teuchos::View, discreteIntVars.values(),
-	      discreteIntVars.length());
+  return (variablesRep) ? variablesRep->discreteIntVars : discreteIntVars;
 }
 
 
@@ -807,13 +803,9 @@ inline StringMultiArrayView Variables::discrete_string_variables_view()
 }
 
 
-inline RealVector Variables::discrete_real_variables_view() const
+inline RealVector& Variables::discrete_real_variables_view()
 {
-  return (variablesRep) ?
-    RealVector(Teuchos::View, variablesRep->discreteRealVars.values(),
-	       variablesRep->discreteRealVars.length()) :
-    RealVector(Teuchos::View, discreteRealVars.values(),
-	       discreteRealVars.length());
+  return (variablesRep) ? variablesRep->discreteRealVars : discreteRealVars;
 }
 
 
@@ -1039,6 +1031,7 @@ inline const RealVector& Variables::inactive_continuous_variables() const
 inline void Variables::
 inactive_continuous_variables(const RealVector& ic_vars)
 {
+  // carefully use assign to update the data the view points to
   if (variablesRep) variablesRep->inactiveContinuousVars.assign(ic_vars);
   else              inactiveContinuousVars.assign(ic_vars);
 }
@@ -1054,6 +1047,7 @@ inline const IntVector& Variables::inactive_discrete_int_variables() const
 inline void Variables::
 inactive_discrete_int_variables(const IntVector& idi_vars)
 {
+  // carefully use assign to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteIntVars.assign(idi_vars);
   else              inactiveDiscreteIntVars.assign(idi_vars);
 }
@@ -1089,6 +1083,7 @@ inline const RealVector& Variables::inactive_discrete_real_variables() const
 inline void Variables::
 inactive_discrete_real_variables(const RealVector& idr_vars)
 {
+  // carefully use assign to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteRealVars.assign(idr_vars);
   else              inactiveDiscreteRealVars.assign(idr_vars);
 }
