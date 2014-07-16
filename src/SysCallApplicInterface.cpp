@@ -173,7 +173,7 @@ void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
           if (++map_iter->second > 100) {
             Cerr << "Error: too many failed reads for file " << file_to_test 
                  << "\n       check data format and completeness" << std::endl;
-            abort_handler(-1);
+            abort_handler(INTERFACE_ERROR);
           }
         }
         else

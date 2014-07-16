@@ -62,7 +62,7 @@ process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
     // file write race condition since the process has completed -> an 
     // exception involving an incomplete file/data set is a true error.
     Cerr << err_msg << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   catch(int fail_code) { // If an int exception ("fail" detected in results 
@@ -483,7 +483,7 @@ void ProcessHandleApplicInterface::check_wait(pid_t pid, int status)
       // 3-piece interface here, based on pid's obtained from any asynch forks.
       // This would be beneficial on systems that do not perform a complete
       // cleanup when one (asynch) child process dies.
-      abort_handler(-1);
+      abort_handler(INTERFACE_ERROR);
     }
 #endif // HAVE_SYS_WAIT_H
   }

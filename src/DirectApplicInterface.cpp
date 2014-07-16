@@ -184,7 +184,7 @@ int DirectApplicInterface::derived_map_if(const String& if_name)
   //else {
     Cerr << if_name << " is not available as an input filter within "
          << "DirectApplicInterface." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   //}
 
   //std::map<String, driver_t>::iterator sd_iter = driverTypeMap.find(if_name);
@@ -229,7 +229,7 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
   int fail_code = 0;
   Cerr << ac_name << " is not available as an analysis driver within "
        << "DirectApplicInterface." << std::endl;
-  abort_handler(-1);
+  abort_handler(INTERFACE_ERROR);
 
   // Failure capturing
   if (fail_code)
@@ -248,7 +248,7 @@ int DirectApplicInterface::derived_map_of(const String& of_name)
   //else {
     Cerr << of_name << " is not available as an output filter within "
          << "DirectApplicInterface." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   //}
 
   //std::map<String, driver_t>::iterator sd_iter = driverTypeMap.find(of_name);
@@ -383,7 +383,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
 	if (v_iter == varTypeMap.end()) {
 	  Cerr << "Error: label \"" << acv_labels[i]//label_i
 	       << "\" not supported in analysis driver." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(INTERFACE_ERROR);
 	}
 	else
 	  xCMLabels[i] = v_iter->second;
@@ -394,7 +394,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
 	if (v_iter == varTypeMap.end()) {
 	  Cerr << "Error: label \"" << adiv_labels[i]//label_i
 	       << "\" not supported in analysis driver." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(INTERFACE_ERROR);
 	}
 	else
 	  xDIMLabels[i] = v_iter->second;
@@ -405,7 +405,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
 	if (v_iter == varTypeMap.end()) {
 	  Cerr << "Error: label \"" << adrv_labels[i]//label_i
 	       << "\" not supported in analysis driver." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(INTERFACE_ERROR);
 	}
 	else
 	  xDRMLabels[i] = v_iter->second;
@@ -454,7 +454,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
       if (acv_index == _NPOS) {
 	Cerr << "Error: dvv value " << directFnDVV[i] << " not present in all "
 	     << "continuous variable ids." << std::endl;
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
       else
 	varTypeDVV[i] = xCMLabels[acv_index];

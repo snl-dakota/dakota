@@ -11,6 +11,7 @@
 //-               implementations
 //- Owner:        Mike Eldred
 
+#include <boost/system/system_error.hpp>
 #include "dakota_global_defs.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
@@ -82,6 +83,7 @@ void abort_handler(int code)
   //       difficult to debug within GDB.
   //abort();
 
+  // BMA TODO: do we want to maintain this?
   if (code > 1) // code = 2 (Cntl-C signal), 0 (normal), & -1/1 (abnormal)
     Cout << "Signal Caught!" << std::endl;
 
@@ -98,11 +100,21 @@ void abort_handler(int code)
     Dak_pddb->parallel_library().abort_helper(code);
   }
   else {
-    if (abort_mode == ABORT_THROWS)
-      throw(std::runtime_error("Dakota aborted"));
-    else
-      std::exit(code);
+    abort_throw_or_exit(code);
   }
+}
+
+
+void abort_throw_or_exit(int code)
+{
+  if (abort_mode == ABORT_THROWS) {
+    // throw a Boost exception that inherits from std::runtime_error, but
+    // embeds the error code (since system_error is C++11 and newer)
+    boost::system::error_code ecode(code, boost::system::generic_category());
+    throw(boost::system::system_error(ecode, "Dakota aborted"));
+  }
+  else
+    std::exit(code);  // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
 }
 
 

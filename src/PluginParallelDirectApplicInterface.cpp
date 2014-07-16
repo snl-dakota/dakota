@@ -57,7 +57,7 @@ int ParallelDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
   else  {
     Cerr << ac_name << " is not available as an analysis within "
          << "SIM::ParallelDirectApplicInterface." << std::endl;
-    Dakota::abort_handler(-1);
+    Dakota::abort_handler(Dakota::INTERFACE_ERROR);
   }
 
   // Failure capturing
@@ -90,7 +90,7 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
     //else {
     //  Cerr << ac_name << " is not available as an analysis within "
     //       << "SIM::SerialDirectApplicInterface." << std::endl;
-    //  Dakota::abort_handler(-1);
+    //  Dakota::abort_handler(Dakota::INTERFACE_ERROR);
     //}
 
     // indicate completion of job to ApplicationInterface schedulers
@@ -108,14 +108,14 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   if (num_fns > 3) {
     Cerr << "Error: Bad number of functions in plug-in parallel direct "
 	 << "interface." << std::endl;
-    Dakota::abort_handler(-1);
+    Dakota::abort_handler(Dakota::INTERFACE_ERROR);
   }
   // The presence of discrete variables can cause offsets in directFnDVV which
   // the text_book derivative logic does not currently account for.
   if (numADIV || numADRV) {
     Cerr << "Error: plug-in parallel direct interface assumes no discrete "
 	 << "variables." << std::endl;
-    Dakota::abort_handler(-1);
+    Dakota::abort_handler(Dakota::INTERFACE_ERROR);
   }
 
   // **********************************

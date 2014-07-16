@@ -1140,21 +1140,14 @@ void ParallelLibrary::abort_helper(int code) {
   MPI_Initialized(&initialized);
   if (initialized)
     MPI_Abort(dakotaMPIComm, code);
-  else {
-    if (abort_mode == ABORT_THROWS)
-      throw(std::runtime_error("Dakota aborted"));
-    else
-      std::exit(code);
-  }
+  else
+    abort_throw_or_exit(code);  // defined in global_defs
 #else // DAKOTA_HAVE_MPI
 
 #ifdef DAKOTA_MODELCENTER
   throw(std::logic_error("ModelCenter error"));
 #else
-  if (abort_mode == ABORT_THROWS)
-    throw(std::runtime_error("Dakota aborted"));
-  else
-    std::exit(code); // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
+  abort_throw_or_exit(code);  // defined in global_defs
 #endif // MODELCENTER
 
 #endif // DAKOTA_HAVE_MPI

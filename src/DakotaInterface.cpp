@@ -99,14 +99,14 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     FILE* ampl_nl = jac0dim(nonconst_stub, stub_str_len);
     if (!ampl_nl) {
       Cerr << "\nError: failure opening " << ampl_file_name << std::endl;
-      abort_handler(-1);
+      abort_handler(IO_ERROR);
     }
     int rtn = (hess_flag) ? pfgh_read(ampl_nl, ASL_return_read_err)
                           :   fg_read(ampl_nl, ASL_return_read_err);
     if (rtn) {
       Cerr << "\nError: AMPL processing problem with " << ampl_file_name
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(IO_ERROR);
     }
 
     // extract input/output tag lists
@@ -115,7 +115,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     std::ifstream ampl_col(col.c_str());
     if (!ampl_col) {
       Cerr << "\nError: failure opening " << ampl_col << std::endl;
-      abort_handler(-1);
+      abort_handler(IO_ERROR);
     }
     algebraicVarTags.resize(n_var);
     for (size_t i=0; i<n_var; i++) {
@@ -125,14 +125,14 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
       else {
 	Cerr << "\nError: failure reading AMPL col file " << ampl_col 
 	     << std::endl;
-	abort_handler(-1);
+	abort_handler(IO_ERROR);
       }
     }
 
     std::ifstream ampl_row(row.c_str());
     if (!ampl_row) {
       Cerr << "\nError: failure opening " << ampl_row << std::endl;
-      abort_handler(-1);
+      abort_handler(IO_ERROR);
     }
     algebraicFnTags.resize(n_obj+n_con);
     algebraicFnTypes.resize(n_obj+n_con);
@@ -146,7 +146,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
       else {
 	Cerr << "\nError: failure reading AMPL row file " << ampl_row 
 	     << std::endl;
-	abort_handler(-1);
+	abort_handler(IO_ERROR);
       }
     }
 
@@ -591,7 +591,7 @@ init_algebraic_mappings(const Variables& vars, const Response& response)
       Cerr << "\nError: AMPL column label " << algebraicVarTags[i] << " does "
 	   <<"not exist in DAKOTA continuous variable descriptors.\n"
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(INTERFACE_ERROR);
     }
     else {
       algebraicACVIndices[i] = acv_index;
@@ -607,7 +607,7 @@ init_algebraic_mappings(const Variables& vars, const Response& response)
     if (fn_index == _NPOS) {
       Cerr << "\nError: AMPL row label " << algebraicFnTags[i] << " does not "
 	   <<"exist in DAKOTA response descriptors.\n" << std::endl;
-      abort_handler(-1);
+      abort_handler(INTERFACE_ERROR);
     }
     else
       algebraicFnIndices[i] = fn_index;
@@ -698,7 +698,7 @@ algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
 	fn_val = conival(-1-algebraicFnTypes[i], nl_vars, &err);
       if (err) {
 	Cerr << "\nError: AMPL processing failure in objval().\n" << std::endl;
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
       algebraic_response.function_value(fn_val, i);
     }
@@ -711,7 +711,7 @@ algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
 	congrd(-1-algebraicFnTypes[i], nl_vars, fn_grad.values(), &err);
       if (err) {
 	Cerr << "\nError: AMPL processing failure in objgrad().\n" << std::endl;
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
     }
     // nl_vars -> response Hessians via AMPL
@@ -879,7 +879,7 @@ int Interface::algebraic_function_type(String functionTag)
 
   Cerr << "Error: No function type available for \'" << functionTag << "\' " 
        << "via algebraic_mappings interface." << std::endl;
-  abort_handler(-1);
+  abort_handler(INTERFACE_ERROR);
 #else
   return 0;
 #endif // HAVE_AMPL

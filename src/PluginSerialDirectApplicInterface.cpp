@@ -46,7 +46,7 @@ int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
   else {
     Cerr << ac_name << " is not available as an analysis within "
          << "SIM::SerialDirectApplicInterface." << std::endl;
-    Dakota::abort_handler(-1);
+    Dakota::abort_handler(Dakota::INTERFACE_ERROR);
   }
 
   // Failure capturing
@@ -87,7 +87,7 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
     //else {
     //  Cerr << ac_name << " is not available as an analysis within "
     //       << "SIM::SerialDirectApplicInterface." << std::endl;
-    //  Dakota::abort_handler(-1);
+    //  Dakota::abort_handler(Dakota::INTERFACE_ERROR);
     //}
 
     // indicate completion of job to ApplicationInterface schedulers
@@ -103,7 +103,7 @@ rosenbrock(const Dakota::RealVector& c_vars, short asv, Dakota::Real& fn_val,
   if (c_vars.length() != 2) {
     Cerr << "Error: Bad number of variables in rosenbrock direct fn."
 	 << std::endl;
-    Dakota::abort_handler(-1);
+    Dakota::abort_handler(Dakota::INTERFACE_ERROR);
   }
 
   Dakota::Real x1 = c_vars[0], x2 = c_vars[1], f0 = x2 - x1*x1, f1 = 1. - x1;

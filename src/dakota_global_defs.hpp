@@ -40,10 +40,26 @@ const size_t _NPOS = ~(size_t)0; // one's complement
 //extern PRPCache data_pairs;
 //extern ParallelLibrary dummy_lib;
 
+/// enum for Dakota abort reasons; using negative numbers to avoid
+/// clash with signal codes 1--64 in signum.h
+enum {
+  IO_ERROR        = -5, // error with core file I/O
+  INTERFACE_ERROR = -4, // error with map invocation (user workflow/driver): 
+                        // analysis driver, if/of
+  CONSTRUCT_ERROR = -3,
+  PARSE_ERROR     = -2,
+  OTHER_ERROR     = -1  // the historical Dakota default error
+};
+
 /// enum for dakota abort behaviors
 enum {ABORT_EXITS, ABORT_THROWS};
+
 /// whether dakota exits/aborts or throws on errors
 extern short abort_mode;
+
+/// throw or exit depending on abort_mode
+void abort_throw_or_exit(int code);
+
 extern std::ostream* dakota_cout;
 extern std::ostream* dakota_cerr;
 extern int write_precision;

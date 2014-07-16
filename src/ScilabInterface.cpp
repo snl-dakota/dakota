@@ -505,7 +505,7 @@ int ScilabInterface::scilab_engine_run(const String& ac_name)
   if (function_name.size() == 0) {
     Cerr << "\nError: invalid Scilab function '" << ac_name
 	 << "' specified in analysis_drivers." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // build up an analysis command to execute in Matlab:

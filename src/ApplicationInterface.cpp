@@ -2479,7 +2479,7 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
         fail_flag = 1;
 	if (retries >= failRetryLimit) {
 	  Cerr << "Retry limit exceeded.  Aborting..." << std::endl;
-          abort_handler(-1);
+          abort_handler(INTERFACE_ERROR);
 	}
       }
     }
@@ -2527,7 +2527,7 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
   }
   else { // default is abort
     Cerr << failureMessage << ": aborting..." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 }
 
@@ -2624,7 +2624,7 @@ continuation(const Variables& target_vars, const ActiveSet& set,
       if (failures > MAX_FAILURES) {
 	Cerr << "\n\nInterval halving limit exceeded in continuation: "
 	     << "aborting..." << std::endl;
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
 
       // take a half-step back from the failed current point (and don't update

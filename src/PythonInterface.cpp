@@ -154,7 +154,7 @@ int PythonInterface::python_run(const String& ac_name)
   if (module_name.size() == 0 || function_name.size() == 0) {
     Cerr << "\nError: invalid Python analysis_driver '" << ac_name
 	 << "'\n       Should have form 'module:function'." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // import the module and function and test for callable
@@ -163,14 +163,14 @@ int PythonInterface::python_run(const String& ac_name)
     Cerr << "Error (PythonInterface): Failure importing module '" 
 	 << module_name  << "'.\n                         Consider setting "
 	 << "PYTHONPATH." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   PyObject *pFunc = PyObject_GetAttrString(pModule, function_name.c_str());
   if (!pFunc || !PyCallable_Check(pFunc)) {
     Cerr << "Error (PythonInterface): Function '" << function_name  
 	 << "' not found or not callable" << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // perform analysis
@@ -182,7 +182,7 @@ int PythonInterface::python_run(const String& ac_name)
     // TODO: better error reporting from Python
     Cerr << "Error (PythonInterface): Unknown error evaluating python "
 	 << "function." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   Py_DECREF(pDict);
@@ -211,33 +211,33 @@ int PythonInterface::python_run(const String& ac_name)
       if ( !(obj = PyDict_GetItemString(retVal, "fns")) ) {
 	Cerr << "Python dictionary must contain list 'fns'" << std::endl;
 	Py_DECREF(retVal);
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
       if (!python_convert(obj, fnVals, numFns)) {
 	Py_DECREF(retVal);
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
     }
     if (gradFlag) {
       if ( !(obj = PyDict_GetItemString(retVal, "fnGrads")) ) {
 	Cerr << "Python dictionary must contain list 'fnGrads'" << std::endl;
 	Py_DECREF(retVal);
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
       if (!python_convert(obj, fnGrads)) {
 	Py_DECREF(retVal);
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
     }
     if (hessFlag) {
       if ( !(obj = PyDict_GetItemString(retVal, "fnHessians")) ) {
 	Cerr << "Python dictionary must contain list 'fnHessians'" << std::endl;
 	Py_DECREF(retVal);
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
       if (!python_convert(obj, fnHessians)){
 	Py_DECREF(retVal);
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
     }
     // optional returns
@@ -248,7 +248,7 @@ int PythonInterface::python_run(const String& ac_name)
       if (!PyList_Check(obj) || PyList_Size(obj) != numFns) {
 	Cerr << "'fnLabels' must be list of length numFns." << std::endl;
 	Py_DECREF(retVal);
-	abort_handler(-1);
+	abort_handler(INTERFACE_ERROR);
       }
       for (int i=0; i<numFns; ++i)
 	fnLabels[i] = PyString_AsString(PyList_GetItem(obj, i));

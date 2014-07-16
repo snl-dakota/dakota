@@ -72,7 +72,7 @@ void NIDRProblemDescDB::botch(const char *fmt, ...)
   std::vfprintf(stderr, fmt, ap);
   std::fputs(".\n", stderr);
   va_end(ap);
-  abort_handler(-1);
+  abort_handler(PARSE_ERROR);
 }
 
 void NIDRProblemDescDB::squawk(const char *fmt, ...)
@@ -128,7 +128,7 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
   }
   else {
     Cerr << "\nError: NIDR parser called with no input." << std::endl;
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   }
 
   // // nidr_parse parses the input file and invokes the keyword handlers
@@ -139,10 +139,10 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
   FILE *dump_file = NULL;
   if (nidr_parse(parser_options.c_str(), dump_file)) {
     //Cerr << "\nErrors parsing input file." << std::endl;
-    abort_handler(-1); // allows proper abort in parallel case
+    abort_handler(PARSE_ERROR); // allows proper abort in parallel case
   }
   if (nerr)
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   if (parallel_library().command_line_run()) {
     const char *s;
     // manage dynamic solver plugins specified in the input
@@ -1741,7 +1741,7 @@ make_response_defaults(std::list<DataResponses>* drl)
       delete iv;
     }
     if (nerr)
-      abort_handler(-1);
+      abort_handler(PARSE_ERROR);
   }
 }
 
@@ -5423,7 +5423,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
       delete Sa;
   delete vi;
   if (nerr)
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
 }
 
 

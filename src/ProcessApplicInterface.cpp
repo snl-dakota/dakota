@@ -60,7 +60,7 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
     std::string driver_path = WorkdirHelper::which(driver_and_args[0]);
     if ( driver_path.empty() ) {
       Cout << driver_and_args[0] << ": Command not found.\n" << std::endl;
-      abort_handler(-1);
+      abort_handler(INTERFACE_ERROR);
     }
     else if (driver_path.substr(0, 4) == DAK_PATH_ENV_NAME) {
       // Allow legacy logic to proceed normally
@@ -113,7 +113,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     // set.  In the synchronous case, there is no potential for an incomplete 
     // file resulting from a race condition -> echo the error and abort.
     Cerr << err_msg << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // Do not call manage_failure() from the following catch since the recursion 
@@ -466,7 +466,7 @@ write_parameters_file(const Variables& vars, const ActiveSet& set,
   if (!parameter_stream) {
     Cerr << "\nError: cannot create parameters file " << params_fname
          << std::endl;
-    abort_handler(-1);
+    abort_handler(IO_ERROR);
   }
   StringMultiArrayConstView acv_labels  = vars.all_continuous_variable_labels();
   SizetMultiArrayConstView  acv_ids     = vars.all_continuous_variable_ids();
@@ -582,7 +582,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
       if (!recovery_stream) {
 	Cerr << "\nError: cannot open results file " << results_filenames[i]
 	     << std::endl;
-	abort_handler(-1); // will clean up files unless file_save was specified
+	abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
       }
       recovery_stream >> partial_response;
       response.overlay(partial_response);
@@ -593,7 +593,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
     if (!recovery_stream) {
       Cerr << "\nError: cannot open results file " << results_filename
 	   << std::endl;
-      abort_handler(-1); // will clean up files unless file_save was specified
+      abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
     }
     recovery_stream >> response;
   }

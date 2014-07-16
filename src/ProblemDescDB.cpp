@@ -204,7 +204,7 @@ parse_inputs(const ProgramOptions& prog_opts,
 	   !prog_opts.input_string().empty() ) {
 	Cerr << "\nError: parse_inputs called with both input file and input "
 	     << "string." << std::endl;
-	abort_handler(-1);
+	abort_handler(PARSE_ERROR);
       }
 
       if (prog_opts.echo_input())
@@ -472,7 +472,7 @@ void ProblemDescDB::check_input()
 
     if (num_errors) {
       Cerr << num_errors << " input specification errors detected." <<std::endl;
-      abort_handler(-1);
+      abort_handler(PARSE_ERROR);
     }
   }
 }
@@ -543,7 +543,7 @@ void ProblemDescDB::resolve_top_method()
 	Cerr << "\nError: ProblemDescDB::resolve_top_method() failed to "
 	     << "determine active method specification.\n       Please resolve "
 	     << "method pointer ambiguities." << std::endl;
-	abort_handler(-1);
+	abort_handler(PARSE_ERROR);
       }
       else {
 	const String& method_id = *method_ids.begin();
@@ -3279,7 +3279,7 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
       if (!inputstream.good()) {
 	Cerr << "\nError: Could not open input file '" << dakota_input_file 
 	     << "' for reading." << std::endl;
-	abort_handler(-1);
+	abort_handler(IO_ERROR);
       }
 
       // BMA TODO: could enable this now

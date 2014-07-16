@@ -264,7 +264,7 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
   default: {
     Cerr << "Error: analysis_driver '" << ac_name << "' is not available in "
 	 << "the direct interface." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   }
 
@@ -297,12 +297,12 @@ int TestDriverInterface::cantilever()
        (gradFlag && numVars == 4 && numDerivVars != 4) ) { // design insertion
     Cerr << "Error: Bad number of variables in cantilever direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
    if (numFns != 3) {
     Cerr << "Error: Bad number of functions in cantilever direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // Compute the cross-sectional area, stress, and displacement of the
@@ -506,12 +506,12 @@ int TestDriverInterface::mod_cantilever()
        (gradFlag && numVars == 4 && numDerivVars != 4) ) { // design insertion
     Cerr << "Error: Bad number of variables in cantilever direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
    if (numFns != 3) {
     Cerr << "Error: Bad number of functions in cantilever direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // Compute the cross-sectional area, stress, and displacement of the
@@ -624,15 +624,15 @@ int TestDriverInterface::cyl_head()
   }
   if (numVars != 2 || numADIV || numADRV || (gradFlag && numDerivVars != 2)) {
     Cerr << "Error: Bad number of variables in cyl_head direct fn." <<std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 4) {
     Cerr << "Error: Bad number of functions in cyl_head direct fn." <<std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (hessFlag) {
     Cerr << "Error: Hessians not supported in cyl_head direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   Real exhaust_offset = 1.34;
@@ -705,12 +705,12 @@ int TestDriverInterface::multimodal()
        ( ( gradFlag || hessFlag ) && numDerivVars != 2 ) ) {
     Cerr << "Error: Bad number of variables in multimodal direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 1) {
     Cerr << "Error: Bad number of functions in multimodal direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // **** f:
@@ -744,12 +744,12 @@ int TestDriverInterface::rosenbrock()
   if (numACV != 2 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 2) { // 1 fn -> opt, 2 fns -> least sq
     Cerr << "Error: Bad number of functions in rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   bool least_sq_flag = (numFns > 1) ? true : false;
@@ -830,17 +830,17 @@ int TestDriverInterface::generalized_rosenbrock()
   if (numADIV || numADRV) {
     Cerr << "Error: discrete variables not supported in generalized_rosenbrock "
 	 << "direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if ( (directFnASV[0] & 6) && numVars != numDerivVars ) {
     Cerr << "Error: DVV subsets not supported in generalized_rosenbrock direct "
 	 << "fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 1) {
     Cerr << "Error: Bad number of functions in generalized_rosenbrock direct "
 	 << "fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   for (size_t i=1; i<numVars; ++i) {
@@ -883,17 +883,17 @@ int TestDriverInterface::extended_rosenbrock()
   if (numADIV || numADRV) {
     Cerr << "Error: discrete variables not supported in extended_rosenbrock "
 	 << "direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if ( (directFnASV[0] & 6) && numVars != numDerivVars ) {
     Cerr << "Error: DVV subsets not supported in extended_rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 1) {
     Cerr << "Error: Bad number of functions in extended_rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   const Real alpha = 100.;
@@ -937,12 +937,12 @@ int TestDriverInterface::lf_rosenbrock()
   if (numACV != 2 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in lf_rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 1) {
     Cerr << "Error: Bad number of functions in lf_rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   Real x1 = xCM[VAR_x1],     x2 = xCM[VAR_x2],
@@ -986,12 +986,12 @@ int TestDriverInterface::mf_rosenbrock()
   if (numVars != 3 || numADRV) {
     Cerr << "Error: Bad number of variables in mf_rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 1) {
     Cerr << "Error: Bad number of functions in mf_rosenbrock direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   switch (xDIM[VAR_MForm]) {
@@ -1013,15 +1013,15 @@ int TestDriverInterface::gerstner()
   }
   if (numVars != 2 || numADIV || numADRV || (gradFlag && numDerivVars != 2)) {
     Cerr << "Error: Bad number of variables in gerstner direct fn."<< std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 1) {
     Cerr << "Error: Bad number of functions in gerstner direct fn."<< std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (hessFlag) {
     Cerr << "Error: Hessians not supported in gerstner direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   const Real& x = xC[0]; const Real& y = xC[1];
@@ -1044,7 +1044,7 @@ int TestDriverInterface::gerstner()
   else {
     Cerr << "Error: analysis component specification required in gerstner "
 	 << "direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // **** f:
@@ -1091,17 +1091,17 @@ int TestDriverInterface::scalable_gerstner()
   if (numADIV || numADRV) {
     Cerr << "Error: Bad variable types in scalable_gerstner direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 1) {
     Cerr << "Error: Bad number of functions in scalable_gerstner direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (hessFlag) {
     Cerr << "Error: Hessians not supported in scalable_gerstner direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   String an_comp = (!analysisComponents.empty() && 
@@ -1123,7 +1123,7 @@ int TestDriverInterface::scalable_gerstner()
   else {
     Cerr << "Error: analysis component specification required in gerstner "
 	 << "direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // **** f:
@@ -1262,17 +1262,17 @@ int TestDriverInterface::genz()
   if (numADIV || numADRV) {
     Cerr << "Error: Bad variable types in genz direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 1) {
     Cerr << "Error: Bad number of functions in genz direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (hessFlag) {
     Cerr << "Error: Hessians not supported in genz direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
 
@@ -1296,7 +1296,7 @@ int TestDriverInterface::genz()
   else {
     Cerr << "Error: analysis component specification required in gerstner "
 	 << "direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   } 
 
   RealVector c, w;
@@ -1343,12 +1343,12 @@ int TestDriverInterface::log_ratio()
        ( ( gradFlag || hessFlag ) && numDerivVars != 2 ) ) {
     Cerr << "Error: Bad number of variables in log_ratio direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 1) {
     Cerr << "Error: Bad number of functions in log_ratio direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   const Real& x1 = xC[0]; const Real& x2 = xC[1];
@@ -1384,7 +1384,7 @@ int TestDriverInterface::short_column()
   if (numACV != 5 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in short_column direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   size_t ai, lsi;
   if (numFns == 1)      // option for limit state only
@@ -1394,7 +1394,7 @@ int TestDriverInterface::short_column()
   else {
     Cerr << "Error: Bad number of functions in short_column direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // b = xC[0] = column base   (design var.)
@@ -1482,7 +1482,7 @@ int TestDriverInterface::short_column()
 	else { // unsupported cross-derivative
 	  Cerr << "Error: unsupported Hessian cross term in short_column."
 	       << std::endl;
-	  abort_handler(-1);
+	  abort_handler(INTERFACE_ERROR);
 	}
 
   return 0; // no failure
@@ -1499,7 +1499,7 @@ int TestDriverInterface::lf_short_column()
   if (numVars != 5 || numADIV || numADRV) {
     Cerr << "Error: Bad number of variables in lf_short_column direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   short form = 2; // high fidelity case is form 1
@@ -1524,12 +1524,12 @@ int TestDriverInterface::mf_short_column()
   if (numACV != 5 || numADIV > 1 || numADRV) {
     Cerr << "Error: Bad number of variables in mf_short_column direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 2) {
     Cerr << "Error: Bad number of functions in mf_short_column direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   int form = xDIM[VAR_MForm];
@@ -1560,7 +1560,7 @@ int TestDriverInterface::alternate_short_column_forms(int form)
   else {
     Cerr << "Error: Bad number of functions in alternate_short_column_forms "
 	 << "direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // b = xC[0] = column base   (design var.)
@@ -1600,7 +1600,7 @@ int TestDriverInterface::side_impact_cost()
   if (numVars != 7 || numFns != 1) {
     Cerr << "Error: wrong number of inputs/outputs in side_impact_cost."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // **** f:
@@ -1629,7 +1629,7 @@ int TestDriverInterface::side_impact_perf()
   if (numVars != 11 || numFns != 10) {
     Cerr << "Error: wrong number of inputs/outputs in side_impact_perf."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // **** f:
@@ -1682,7 +1682,7 @@ int TestDriverInterface::side_impact_perf()
     Cerr << "Error: Hessians not currently supported in side_impact_perf()."
 	 << std::endl;
   if (grad_flag || hess_flag)
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
 
   return 0; // no failure
 }
@@ -1693,7 +1693,7 @@ int TestDriverInterface::steel_column_cost()
   if (numVars != 3 || numFns != 1) {
     Cerr << "Error: wrong number of inputs/outputs in steel_column_cost."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // In the steel column description in Kuschel & Rackwitz, Cost is _not_
@@ -1741,7 +1741,7 @@ int TestDriverInterface::steel_column_perf()
   if (numVars != 9 || numFns != 1) {
     Cerr << "Error: wrong number of inputs/outputs in steel_column_perf."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // In the steel column description in Kuschel & Rackwitz, Cost is _not_
@@ -1891,7 +1891,7 @@ int TestDriverInterface::steel_column_perf()
 	else { // unsupported derivative
 	  Cerr << "Error: unsupported Hessian cross term in steel_column."
 	       << std::endl;
-	  abort_handler(-1);
+	  abort_handler(INTERFACE_ERROR);
 	}
 
   return 0; // no failure
@@ -1908,7 +1908,7 @@ int TestDriverInterface::sobol_rational()
   if (numVars != 2 || numFns != 1) {
     Cerr << "Error: Bad number of inputs/outputs in sobol_rational direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // f = (x2 + 0.5)^4 / (x1 + 0.5)^2 
@@ -1946,7 +1946,7 @@ int TestDriverInterface::sobol_g_function()
   if (numVars < 1 || numVars > 10 || numFns != 1) {
     Cerr << "Error: Bad number of inputs/outputs in sobol_g_function direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // Sobol g-Function: see Storlie et al. SAND2008-6570
@@ -1994,7 +1994,7 @@ int TestDriverInterface::sobol_ishigami()
   if (numVars != 3 || numFns != 1) {
     Cerr << "Error: Bad number of inputs/outputs in sobol_ishigami direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // Ishigami Function: see Storlie et al. SAND2008-6570
@@ -2034,14 +2034,14 @@ int TestDriverInterface::text_book()
   if (numFns > 3) {
     Cerr << "Error: Bad number of functions in text_book direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   // The presence of discrete variables can cause offsets in directFnDVV which
   // the text_book derivative logic does not currently account for.
   if ( (gradFlag || hessFlag) && (numADIV || numADRV) ) {
     Cerr << "Error: text_book direct fn assumes no discrete variables in "
 	 << "derivative mode." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   text_book1(); // objective fn val/grad/Hessian
@@ -2423,17 +2423,17 @@ int TestDriverInterface::text_book_ouu()
   if (numVars < 4 || numVars % 2 || numADIV || numADRV) {
     Cerr << "Error: Bad number of variables in text_book_ouu direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 3) {
     Cerr << "Error: Bad number of functions in text_book_ouu direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (hessFlag) {
     Cerr << "Error: Hessians not supported in text_book_ouu direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   size_t i, split = 2 + (numVars - 2)/2; // split the uncertain vars among d1,d2
@@ -2523,7 +2523,7 @@ int TestDriverInterface::scalable_text_book()
   if (numADIV || numADRV) {
     Cerr << "Error: scalable_text_book direct fn does not support discrete "
 	 << "variables." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // **********************************
@@ -2613,12 +2613,12 @@ int TestDriverInterface::scalable_monomials()
   if (numADIV || numADRV) {
     Cerr << "Error: scalable_monomials direct fn does not support discrete "
 	 << "variables." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 1) {
     Cerr << "Error: Bad number of functions in scalable_monomials direct fn."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // get power of monomial from analysis components, if available (default to 1)
@@ -2937,16 +2937,16 @@ int TestDriverInterface::salinas()
 {
   if (numFns < 1 || numFns > 3) {
     Cerr << "Error: Bad number of functions in salinas direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (numVars < 1) {
     Cerr << "Error: Bad number of variables in salinas direct fn." << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
   if (gradFlag || hessFlag) {
     Cerr << "Error: analytic derivatives not yet supported in salinas direct "
 	 << "fn." <<std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
 
   // ------------------------
@@ -3133,35 +3133,35 @@ int TestDriverInterface::mc_api_run()
 		    analysisComponents[analysisDriverIndex][0].c_str());
     else
       ireturn = -1;
-    if(ireturn == -1 || mc_ptr_int == 0) abort_handler(-1);
+    if(ireturn == -1 || mc_ptr_int == 0) abort_handler(INTERFACE_ERROR);
   }
 
   // continuous variables
   for(i=0; i<numACV; ++i) {
     const char* inStr = xCLabels[i].c_str();
     mc_set_value(ireturn,iprint,mc_ptr_int,xC[i],inStr);
-    if(ireturn == -1) abort_handler(-1);
+    if(ireturn == -1) abort_handler(INTERFACE_ERROR);
   }
 
   // discrete, integer-valued variables (actual values sent, not indices)
   for(i=0; i<numADIV; ++i) {
     const char* inStr = xDILabels[i].c_str();
     mc_set_value(ireturn,iprint,mc_ptr_int,xDI[i],inStr);
-    if(ireturn == -1) abort_handler(-1);
+    if(ireturn == -1) abort_handler(INTERFACE_ERROR);
   }
 
   // discrete, real-valued variables (actual values sent, not indices)
   for(i=0; i<numADRV; ++i) {
     const char* inStr = xDRLabels[i].c_str();
     mc_set_value(ireturn,iprint,mc_ptr_int,xDR[i],inStr);
-    if(ireturn == -1) abort_handler(-1);
+    if(ireturn == -1) abort_handler(INTERFACE_ERROR);
   }
 
   int out_var_act_len = fnLabels.size();
   if (out_var_act_len != numFns) {
     Cerr << "Error: Mismatch in the number of responses in mc_api_run."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(INTERFACE_ERROR);
   }
  
   for (i=0; i<out_var_act_len; ++i) {
@@ -3180,13 +3180,13 @@ int TestDriverInterface::mc_api_run()
     if (directFnASV[i] & 2) {
       Cerr << "Error: Analytic gradients not supported in mc_api_run."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(INTERFACE_ERROR);
     }
     // **** d^2f/dx^2:
     if (directFnASV[i] & 4) {
       Cerr << "Error: Analytic Hessians not supported in mc_api_run."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(INTERFACE_ERROR);
     }
     
   }
