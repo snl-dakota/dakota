@@ -641,8 +641,8 @@ compute_statistics(const RealMatrix&     vars_samples,
       resultsDB.insert(run_identifier(), resultsNames.cv_labels, cv_labels);
     if (num_div)
       resultsDB.insert(run_identifier(), resultsNames.div_labels, div_labels);
-    //if (num_dsv)
-    //  resultsDB.insert(run_identifier(), resultsNames.dsv_labels, dsv_labels);
+    if (num_dsv)
+      resultsDB.insert(run_identifier(), resultsNames.dsv_labels, dsv_labels);
     if (num_drv)
       resultsDB.insert(run_identifier(), resultsNames.drv_labels, drv_labels);
     resultsDB.insert(run_identifier(), resultsNames.fn_labels, 

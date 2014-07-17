@@ -17,6 +17,7 @@
 
 #include "dakota_results_types.hpp"
 #include "ResultsDBAny.hpp"
+#include "dakota_data_util.hpp"
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -116,6 +117,7 @@ public:
     // optimization
     best_cv("Best Continuous Variables"),
     best_div("Best Discrete Integer Variables"),
+    best_dsv("Best Discrete String Variables"),
     best_drv("Best Discrete Real Variables"),
     best_fns("Best Functions"),
 
@@ -151,6 +153,7 @@ public:
     // labels for variables/resposes
     cv_labels("Continuous Variable Labels"),
     div_labels("Discrete Integer Variable Labels"),
+    dsv_labels("Discrete String Variable Labels"),
     drv_labels("Discrete Real Variable Labels"),
     fn_labels("Function Labels")
 
@@ -162,6 +165,7 @@ public:
   // optimization (all used)
   std::string best_cv;
   std::string best_div;
+  std::string best_dsv;
   std::string best_drv;
   std::string best_fns;
 
@@ -197,6 +201,7 @@ public:
   // labels for variables/resposes (all used)
   std::string cv_labels;
   std::string div_labels;
+  std::string dsv_labels;
   std::string drv_labels;
   std::string fn_labels;
 };
@@ -268,12 +273,8 @@ public:
   {
     std::vector<std::string> vs_labels;
     if (coreDBActive || hdf5DBActive) {
-      // convert to standard data type
-      // consider adding to data_utils
-      size_t size_sma = sma_labels.size();
-      vs_labels.resize(size_sma);
-      for (size_t i=0; i<size_sma; ++i)
-	vs_labels[i] = sma_labels[i];
+      // convert to standard data type to store
+      copy_data(sma_labels, vs_labels);
     }
    if (coreDBActive)
       coreDB->insert(iterator_id, data_name, vs_labels, metadata);
@@ -322,6 +323,29 @@ public:
 #endif
   }
 
+  /// specialization: insert a SMACV into a previously allocated array
+  /// of StringArrayStoredType at index specified; metadata must be
+  /// specified at allocation
+  template<typename StoredType>
+  void
+  array_insert(const StrStrSizet& iterator_id,
+	       const std::string& data_name,
+	       size_t index,
+	       StringMultiArrayConstView sent_data)
+  {
+    // copy the data to native container for storage
+    StringArray sent_data_sa;
+    copy_data(sent_data, sent_data_sa);
+
+    if (coreDBActive)
+      coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
+				       sent_data_sa);
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, 
+				       sent_data_sa);
+#endif
+  }
 
 private:
 

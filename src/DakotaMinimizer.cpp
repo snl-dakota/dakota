@@ -1995,7 +1995,17 @@ void Minimizer::archive_allocate_best(size_t num_points)
       (run_identifier(), resultsNames.best_div, num_points, md);
   }
   if (numDiscreteStringVars) {
-    // BMA TO DO
+    // labels
+    resultsDB.insert
+      (run_identifier(), resultsNames.dsv_labels, 
+       variables_results().discrete_string_variable_labels());
+    // best variables, with labels in metadata
+    MetaDataType md;
+    md["Array Spans"] = make_metadatavalue("Best Sets");
+    md["Row Labels"] = 
+      make_metadatavalue(variables_results().discrete_string_variable_labels()); 
+    resultsDB.array_allocate<StringArray>
+      (run_identifier(), resultsNames.best_dsv, num_points, md);
   }
   if (numDiscreteRealVars) {
     // labels
@@ -2037,7 +2047,9 @@ archive_best(size_t point_index,
       (run_identifier(), resultsNames.best_div, point_index,
        best_vars.discrete_int_variables());
   if (numDiscreteStringVars) {
-    // BMA TO DO
+    resultsDB.array_insert<StringArray>
+      (run_identifier(), resultsNames.best_dsv, point_index,
+       best_vars.discrete_string_variables());
   }
   if (numDiscreteRealVars)
     resultsDB.array_insert<RealVector>
