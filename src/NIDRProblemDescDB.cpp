@@ -48,6 +48,10 @@ extern ProblemDescDB *Dak_pddb;
 extern "C" FILE *nidrin;
 extern "C" int nidr_parse(const char*, FILE*);
 
+/// maximum error length is roughly 100 lines at 80 char; using fixed
+/// error length instead of investing in converting to vsnprintf (C++11)
+const size_t NIDR_MAX_ERROR_LEN = 8192;
+
 int NIDRProblemDescDB::nerr = 0;
 NIDRProblemDescDB* NIDRProblemDescDB::pDDBInstance(NULL);
 
@@ -68,10 +72,11 @@ void NIDRProblemDescDB::botch(const char *fmt, ...)
 {
   va_list ap;
   va_start(ap, fmt);
-  std::fprintf(stderr, "\nError: ");
-  std::vfprintf(stderr, fmt, ap);
-  std::fputs(".\n", stderr);
+  char msg[NIDR_MAX_ERROR_LEN];
+  std::vsprintf(msg, fmt, ap);
   va_end(ap);
+  Cerr << "\nError: " << msg << ".\n";
+
   abort_handler(PARSE_ERROR);
 }
 
@@ -79,10 +84,11 @@ void NIDRProblemDescDB::squawk(const char *fmt, ...)
 {
   va_list ap;
   va_start(ap, fmt);
-  std::fprintf(stderr, "\nError: ");
-  std::vfprintf(stderr, fmt, ap);
-  std::fputs(".\n", stderr);
+  char msg[NIDR_MAX_ERROR_LEN];
+  std::vsprintf(msg, fmt, ap);
   va_end(ap);
+  Cerr << "\nError: " << msg << ".\n";
+
   ++nerr;
 }
 
@@ -90,10 +96,10 @@ void NIDRProblemDescDB::warn(const char *fmt, ...)
 {
   va_list ap;
   va_start(ap, fmt);
-  std::fprintf(stderr, "\nWarning: ");
-  std::vfprintf(stderr, fmt, ap);
-  std::fputs(".\n", stderr);
+  char msg[NIDR_MAX_ERROR_LEN];
+  std::vsprintf(msg, fmt, ap);
   va_end(ap);
+  Cerr << "\Warning: " << msg << ".\n";
 }
 
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
