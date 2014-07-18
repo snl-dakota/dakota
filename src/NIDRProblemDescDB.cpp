@@ -99,7 +99,7 @@ void NIDRProblemDescDB::warn(const char *fmt, ...)
   char msg[NIDR_MAX_ERROR_LEN];
   std::vsprintf(msg, fmt, ap);
   va_end(ap);
-  Cerr << "\Warning: " << msg << ".\n";
+  Cerr << "\nWarning: " << msg << ".\n";
 }
 
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
