@@ -1238,7 +1238,7 @@ void TestDriverInterface::get_genz_coefficients( int num_dims, Real factor,
 	for ( int d = 0; d < num_dims; d++ )
 	  {
 	    w[d] = 0.;
-	    c[d] = std::exp( (d+1)*std::log( 1.e-8 ) / num_dims );
+	    c[d] = std::exp( (Real)(d+1)*std::log( 1.e-8 ) / (Real)num_dims );
 	    csum += c[d];
 	  }
 	for ( int d = 0; d < num_dims; d++ )
@@ -1319,10 +1319,9 @@ int TestDriverInterface::genz()
       fnVals[0] = 1.0;
       for ( int d = 0; d < numVars; d++ )
 	{
-	  fnVals[0] *= ( 1.0 / ( c[d] * c[d] ) + ( xC[d] - w[d] ) * 
-			 ( xC[d] - w[d] ) );
+	  fnVals[0] += c[d]* xC[d];
 	}
-      fnVals[0] = 1.0 / fnVals[0];
+      fnVals[0] = 1.0 / std::pow( fnVals[0], (Real)(numVars+1) );
       break;
     }
     }
