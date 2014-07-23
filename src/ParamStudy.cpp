@@ -460,22 +460,103 @@ void ParamStudy::multidim_loop()
 
 
 /** Load from file and distribute points; using this function to
-    manage construction of the temporary array */
+    manage construction of the temporary arrays.  Historically all
+    data was read as a real (mixture of values and indices), but now
+    points_file is valued-based (reals, integers, strings) so file
+    input matches tabular data output.  Return false on success. */
 bool ParamStudy::
 load_distribute_points(const String& points_filename, bool annotated)
 {
-  // don't know the size until the file is read, so use dynamic container
-  RealArray point_list;
-  size_t num_vars = numContinuousVars     + numDiscreteIntVars
-                  + numDiscreteStringVars + numDiscreteRealVars;
-  TabularIO::read_data_tabular(points_filename, "List Parameter Study",
-			       point_list, annotated, num_vars);
-  // now get a view of it
-  RealVector list_of_pts(Teuchos::View, &point_list[0], point_list.size());
-  return distribute_list_of_points(list_of_pts);
+  bool err = false;
+
+  // don't know the size until the file is read, so the reader grows
+  // the containers as the read takes place
+
+  // read only the active variables from the points_file
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  const SizetArray& active_totals = svd.active_components_totals();
+
+  // Could read into these dynamically or into a temporary and then allocate
+  numEvals = TabularIO::
+    read_vars_tabular(points_filename, "List Parameter Study", 
+		      active_totals, listCVPoints, listDIVPoints, 
+		      listDSVPoints, listDRVPoints, annotated);
+  if (numEvals == 0) err = true;
+
+
+  // validation of data: consider moving reader into this class and
+  // validating while reading...
+  for (size_t i=0; i<numEvals; ++i) {
+
+    // validate continuous values read
+    const RealVector& c_lb = iteratedModel.continuous_lower_bounds();
+    const RealVector& c_ub = iteratedModel.continuous_upper_bounds();
+
+    for (size_t j=0; j<numContinuousVars; ++j)
+      if (listCVPoints[i][j] < c_lb[j] || listCVPoints[i][j] > c_ub[j]) {
+	Cerr << "\nError: list value " << listCVPoints[i][j] 
+	     << " outside bounds for continuous variable " << j+1 << '.' 
+	     << std::endl;
+	err = true;
+      }
+
+    // validate discrete integers (sets and ranges) read
+    const BitArray& di_set_bits = iteratedModel.discrete_int_sets();
+    const IntSetArray& dsi_vals = iteratedModel.discrete_set_int_values();
+    const IntVector& di_lb = iteratedModel.discrete_int_lower_bounds();
+    const IntVector& di_ub = iteratedModel.discrete_int_upper_bounds();
+
+    for (size_t j=0, dsi_cntr=0, dri_cntr=0; j<numDiscreteIntVars; ++j)
+      if (di_set_bits[j]) {
+	// set values
+	if (set_value_to_index(listDIVPoints[i][j], dsi_vals[dsi_cntr]) 
+	    == _NPOS) {
+	  Cerr << "\nError: list value " << listDIVPoints[i][j] 
+	       << " not admissble for discrete int set " << dsi_cntr+1 << '.'
+	       << std::endl;
+	  err = true;
+	}
+      }
+      else {
+	// range values: validate bounds
+	if (listDIVPoints[i][j] < di_lb[j] || listDIVPoints[i][j] > di_ub[j]) {
+	  Cerr << "\nError: list value " << listDIVPoints[i][j] 
+	       << " outside bounds for discrete int range variable " << j+1 
+	       << '.' << std::endl;
+	  err = true;
+	}
+      }
+
+    // validate discrete string sets read
+    const StringSetArray& dss_vals = iteratedModel.discrete_set_string_values();
+    for (size_t j=0; j<numDiscreteStringVars; ++j)
+      if (set_value_to_index(listDSVPoints[i][j], dss_vals[j]) == _NPOS) {
+        Cerr << "\nError: list value " << listDSVPoints[i][j] 
+	     << " not admissible for discrete string set " << j+1 << '.' 
+	     << std::endl;
+        err = true;
+      }
+
+    const RealSetArray& dsr_vals = iteratedModel.discrete_set_real_values();
+    for (size_t j=0; j<numDiscreteRealVars; ++j)
+      if (set_value_to_index(listDRVPoints[i][j], dsr_vals[j]) == _NPOS) {
+        Cerr << "\nError: list value " << listDRVPoints[i][j] 
+	     << " not admissible for discrete real set " << j+1 << '.' 
+	     << std::endl;
+        err = true;
+      }
+
+  } // for each eval
+
+  return err;
+
 }
 
 
+/** Parse list of points into typed data containers; list_of_pts will
+    contain values for continuous and discrete integer range, but
+    indices for all discrete set types (int, string, real) */
 bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
 {
   size_t i, j, dsi_cntr, start, len_lop = list_of_pts.length(),

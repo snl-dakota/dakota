@@ -76,6 +76,8 @@ private:
   /// defined by a set of multidimensional partitions
   void multidim_loop();
 
+  /// load list of points from data file and distribute among
+  /// listCVPoints, listDIVPoints, listDSVPoints, and listDRVPoints
   bool load_distribute_points(const String& points_filename, bool annotated);
 
   /// distributes incoming all vector in standard variable ordering among
@@ -98,8 +100,8 @@ private:
 		  std::vector<ScalarType>& ds_data,
 		  std::vector<ScalarType>& dr_data);
 
-  /// distributes incoming list_of_pts among listCVPoints, listDIVPoints,
-  /// and listDRVPoints
+  /// distributes list_of_pts coming from user spec among
+  /// listCVPoints, listDIVPoints, listDSVPoints, and listDRVPoints
   bool distribute_list_of_points(const RealVector& list_of_pts);
   /// compute step vectors from finalPoint, initial points, and numSteps
   void final_point_to_step_vector();
@@ -166,18 +168,18 @@ private:
   RealVectorArray listCVPoints;
   /// array of discrete int evaluation points for the list_parameter_study
   IntVectorArray listDIVPoints;
-  /// array of discrete int evaluation points for the list_parameter_study
+  /// array of discrete string evaluation points for the list_parameter_study
   StringMulti2DArray listDSVPoints;
   /// array of discrete real evaluation points for the list_parameter_study
   RealVectorArray listDRVPoints;
 
-  /// the continuous starting point for vector and centered parameter studies
+  /// the continuous start point for vector and centered parameter studies
   RealVector initialCVPoint;
-  /// the continuous starting point for vector and centered parameter studies
+  /// the discrete int start point for vector and centered parameter studies
   IntVector initialDIVPoint;
-  /// the continuous starting point for vector and centered parameter studies
+  /// the discrete string start point for vector and centered parameter studies
   StringMultiArray initialDSVPoint;
-  /// the continuous starting point for vector and centered parameter studies
+  /// the discrete real start point for vector and centered parameter studies
   RealVector initialDRVPoint;
 
   /// the continuous ending point for vector_parameter_study
