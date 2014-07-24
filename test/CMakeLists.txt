@@ -296,6 +296,7 @@ set(dakota_test_executables
   cantilever3
   container
   cyl_head
+  gerstner_string
   herbie
   illumination
   lf_rosenbrock

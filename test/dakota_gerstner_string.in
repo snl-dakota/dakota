@@ -1,0 +1,40 @@
+# DAKOTA INPUT FILE - dakota_rosenbrock.in
+
+# This input file tests the string variable capability.
+#
+environment,
+        tabular_graphics_data
+#	output_precision = 16
+
+method,
+        #multidim_parameter_study
+        #partitions = 3 3 2
+        sampling 
+        sample_type lhs 
+        samples = 60
+        seed = 5837
+
+variables,
+        active all
+	uniform_uncertain = 2
+	  lower_bounds      0.  0.
+	  upper_bounds      1.  1.
+	  descriptors =    'x' 'y'
+        discrete_uncertain_set string = 1
+          elements_per_variable = 3
+          elements = 'iso1' 'iso2' 'iso3'
+          #elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2' 'aniso3'
+          set_probabilities = 1. 1. 1.   
+          descriptors = 'ancomp'
+
+interface,
+        system
+          analysis_driver = 'gerstner_string'
+          parameters_file = 'params.in'
+          results_file = 'results.out'
+          file_save file_tag
+
+responses,
+        response_functions = 1
+        no_gradients
+        no_hessians
