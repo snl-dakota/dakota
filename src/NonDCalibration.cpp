@@ -49,12 +49,34 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
     found_error = true;
   }
 
-  // for backward compatibility with single experiment data files
-  if (!expDataFileName.empty() && numExperiments == 0) {
-    numExperiments = 1;
-    numReplicates.resize(1);
-    numReplicates(0) = 1;
+  // input spec may get expanded to allow data via input file, but
+  // currently data file is required
+  if (expDataFileName.empty()) {
+    Cerr << "\nError (NonDCalibration): Bayesian methods require calibration "
+	 << "data file." << std::endl;
+    found_error = true;
   }
+
+  // for backward compatibility with single experiment data files:
+  // numExperiments defaults to 1 in DataResponses, but may need to
+  // set the replicates
+  if (numReplicates.length() == 0) {
+    numReplicates.resize(numExperiments);
+    // default is 1 replicate
+    numReplicates = 1;
+  }
+  // expand replicates for each experiment, if needed
+  // resize should preserve zeroth entry
+  else if (numReplicates.length() == 1) {
+    numReplicates.resize(numExperiments);
+    for (size_t i=1; i<numExperiments; ++i) 
+      numReplicates[i] = numReplicates[0];
+  }
+  else {
+    Cerr << "Error in replicate length" << std::endl;
+    found_error = true;
+  }
+
   if (numExpConfigVars > 0) {
 
     // would need to trap error if all_variables were later allowed
