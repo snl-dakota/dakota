@@ -1,18 +1,18 @@
-# DAKOTA INPUT FILE - dakota_rosenbrock.in
+# This input file tests the string variable capability by using a
+# string variable to specify the analysis component for anisotropy
+# level to Gerstner.
 
-# This input file tests the string variable capability.
-#
 environment,
         tabular_graphics_data
 #	output_precision = 16
 
 method,
-        #multidim_parameter_study
-        #partitions = 3 3 2
-        sampling 
-        sample_type lhs 
-        samples = 60
-        seed = 5837
+        multidim_parameter_study	#0
+        partitions = 3 3 2		#0
+#        sampling			#1
+#        sample_type lhs 		#1
+#        samples = 60			#1
+#        seed = 5837			#1
 
 variables,
         active all
@@ -28,11 +28,11 @@ variables,
           descriptors = 'ancomp'
 
 interface,
-        system
+        fork asynchronous evaluation_concurrency = 4
           analysis_driver = 'gerstner_string'
           parameters_file = 'params.in'
           results_file = 'results.out'
-          file_save file_tag
+          file_tag
 
 responses,
         response_functions = 1

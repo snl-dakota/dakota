@@ -247,8 +247,12 @@ void ParamStudy::post_input()
 void ParamStudy::post_run(std::ostream& s)
 {
   bool log_resp_flag = (!subIteratorFlag);
-  if (methodName == MULTIDIM_PARAMETER_STUDY && log_resp_flag)
-    pStudyDACESensGlobal.compute_correlations(allVariables, allResponses);
+  if (methodName == MULTIDIM_PARAMETER_STUDY && log_resp_flag) {
+    // have to map the string variable values back to indices for correlations
+    const StringSetArray& dss_vals = iteratedModel.discrete_set_string_values();
+    pStudyDACESensGlobal.compute_correlations(allVariables, allResponses, 
+					      dss_vals);
+  }
 
   Analyzer::post_run(s);
 }

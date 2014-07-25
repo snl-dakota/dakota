@@ -53,7 +53,8 @@ public:
   /// computes four correlation matrices for input and output data
   /// simple, partial, simple rank, and partial rank
   void compute_correlations(const VariablesArray& vars_samples,
-			    const IntResponseMap& resp_samples);
+			    const IntResponseMap& resp_samples,
+			    const StringSetArray& dss_vals);
   /// computes four correlation matrices for input and output data
   /// simple, partial, simple rank, and partial rank
   void compute_correlations(const RealMatrix&     vars_samples,

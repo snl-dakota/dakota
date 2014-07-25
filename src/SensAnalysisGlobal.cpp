@@ -31,9 +31,11 @@ bool SensAnalysisGlobal::rank_sort(const int& x, const int& y)
 { return rawData[x]<rawData[y]; }
 
 
+/** This version is used when full variables objects are being processed */
 void SensAnalysisGlobal::
 compute_correlations(const VariablesArray& vars_samples,
-		     const IntResponseMap& resp_samples)
+		     const IntResponseMap& resp_samples,
+		     const StringSetArray& dss_vals)
 {
   using boost::math::isfinite;
 
@@ -52,9 +54,10 @@ compute_correlations(const VariablesArray& vars_samples,
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
   }
-  size_t i, j, k, num_cv = vars_samples[0].cv(),
-    num_div = vars_samples[0].div(), num_drv = vars_samples[0].drv();
-  numVars = num_cv + num_div + num_drv;
+  size_t i, j, k;
+  size_t num_cv = vars_samples[0].cv(), num_div = vars_samples[0].div(), 
+    num_dsv = vars_samples[0].dsv(), num_drv = vars_samples[0].drv();
+  numVars = num_cv + num_div + num_dsv + num_drv;
   numFns  = resp_samples.begin()->second.num_functions();
 
   //simple correlation coefficients
@@ -80,8 +83,15 @@ compute_correlations(const VariablesArray& vars_samples,
 	total_data(i, s_cntr) = vars_j.continuous_variable(i);
       for (i=0; i<num_div; ++i)
 	total_data(i+num_cv, s_cntr) = (Real)vars_j.discrete_int_variable(i);
+      for (i=0; i<num_dsv; ++i) {
+	const String& val = vars_j.discrete_string_variable(i);
+	size_t ind = set_value_to_index(val, dss_vals[i]);
+	// use one-based index for consistency with LHS
+	total_data(i+num_cv+num_div, s_cntr) = (Real) ind + 1;
+      }
       for (i=0; i<num_drv; ++i)
-	total_data(i+num_cv+num_div, s_cntr) = vars_j.discrete_real_variable(i);
+	total_data(i+num_cv+num_div+num_dsv, s_cntr) = 
+	  vars_j.discrete_real_variable(i);
       const Response& resp_j = it->second;
       for (i=0; i<numFns; ++i)
 	total_data(i+numVars, s_cntr) = resp_j.function_value(i);
@@ -108,10 +118,18 @@ compute_correlations(const VariablesArray& vars_samples,
 	  else if (i<num_cv+num_div)
 	    rawData[s_cntr]
 	      = (Real)vars_samples[j].discrete_int_variable(i-num_cv);
+	  else if (i<num_cv+num_div+num_dsv) {
+	    const String& val = 
+	      vars_samples[j].discrete_string_variable(i-num_cv-num_div);
+	    size_t ind = set_value_to_index(val, dss_vals[i-num_cv-num_div]);
+	    // use one-based index for consistency with LHS
+	    rawData[s_cntr] = (Real) ind + 1;
+	  }
 	  else if (i<numVars)
 	    rawData[s_cntr]
-	      = vars_samples[j].discrete_real_variable(i-num_cv-num_div);
-	  rank_col[s_cntr] = s_cntr; ++s_cntr;
+	      = vars_samples[j].discrete_real_variable(i-num_cv-num_div-num_dsv);
+	  rank_col[s_cntr] = s_cntr; 
+	  ++s_cntr;
 	}
     }
     else {
@@ -137,7 +155,7 @@ compute_correlations(const VariablesArray& vars_samples,
   corrComputed = true;
 }
 
-
+/** This version is used when compact samples matrix is being processed */
 void SensAnalysisGlobal::
 compute_correlations(const RealMatrix&     vars_samples,
 		     const IntResponseMap& resp_samples)
