@@ -5203,6 +5203,57 @@ Partial Rank Correlation Matrix between input and output:
               4.11205e-01 
 <<<<< Function evaluation summary: 125 total (125 new, 0 duplicate)
   response_fn_1: 125 val (125 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+dakota_gerstner_string.in
+
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 48 total (48 new, 0 duplicate)
+Simple Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1
+           x  1.00000e+00
+           y  6.93889e-18  1.00000e+00
+      ancomp  6.93889e-18 -1.38778e-17  1.00000e+00
+response_fn_1 -5.03253e-02 -5.03253e-02 -9.36961e-01  1.00000e+00
+Partial Correlation Matrix between input and output:
+             response_fn_1
+           x -1.45537e-01
+           y -1.45537e-01
+      ancomp -9.39343e-01
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1
+           x  1.00000e+00
+           y -1.35693e-02  1.00000e+00
+      ancomp -1.90187e-01 -4.24881e-01  1.00000e+00
+response_fn_1  6.77377e-02  4.05992e-02 -8.57251e-01  1.00000e+00
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1
+           x -3.66488e-01
+           y -7.31520e-01
+      ancomp -9.38284e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+response_fn_1:  Min = 6.6824445465e-08  Max = 2.9558884857e+01
+Simple Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1
+           x  1.00000e+00
+           y -3.63213e-02  1.00000e+00
+      ancomp  1.29291e-01  6.59701e-02  1.00000e+00
+response_fn_1 -1.99952e-01 -4.10176e-02 -9.40791e-01  1.00000e+00
+Partial Correlation Matrix between input and output:
+             response_fn_1
+           x -2.30847e-01
+           y  5.31773e-02
+      ancomp -9.41724e-01
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        x            y       ancomp response_fn_1
+           x  1.00000e+00
+           y -3.68991e-02  1.00000e+00
+      ancomp  1.46263e-01  3.85663e-02  1.00000e+00
+response_fn_1 -2.36343e-01 -1.18311e-01 -8.80133e-01  1.00000e+00
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1
+           x -2.40861e-01
+           y -1.93021e-01
+      ancomp -8.82309e-01
 dakota_graphics1.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)

@@ -37,7 +37,7 @@ int main(int argc, char** argv)
   string thisstring; 
   fin >> thisstring;
   fin.ignore(256, '\n');
-  cout << thisstring << "this string";
+  //cout << thisstring << "this string";
 
   // Get the ASV vector and ignore the labels
   fin >> num_fns >> fns_text;
@@ -83,8 +83,8 @@ int main(int argc, char** argv)
          << "direct fn." << std::endl;
     exit(-1);
   }
-  cout << even_coeff << "even_coeff" << "\n";
-  cout << odd_coeff << "odd_coeff" << "\n";
+  //cout << even_coeff << "even_coeff" << "\n";
+  //cout << odd_coeff << "odd_coeff" << "\n";
   vector<double> xC;
   xC.resize(2);
   xC[0]=x[0];
