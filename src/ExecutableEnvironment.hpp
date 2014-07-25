@@ -15,14 +15,9 @@
 #ifndef EXECUTABLE_ENVIRONMENT_H
 #define EXECUTABLE_ENVIRONMENT_H
 
-#include <boost/shared_ptr.hpp>
 #include "DakotaEnvironment.hpp"
 
 namespace Dakota {
-
-// forward declaration due to PIMPL for conditional compilation of curl
-class TrackerHTTP;
-
 
 /// Environment corresponding to execution as a stand-alone application.
 
@@ -63,10 +58,6 @@ private:
   //- Heading: Data members
   //
 
-  /// posts usage data to Web server; using shared_ptr due to
-  /// potentially incomplete type and requirements for checked_delete
-  /// in debug builds (scoped_ptr would suffice)
-  boost::shared_ptr<TrackerHTTP> usageTracker; 
 };
 
 } // namespace Dakota

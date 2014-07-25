@@ -17,9 +17,11 @@
 #include <string>
 #include <curl/curl.h>
 #include "dakota_system_defs.hpp"
-#include "ProblemDescDB.hpp"
 
 namespace Dakota {
+
+// forward declarations
+class ProblemDescDB;
 
 /// TrackerHTTP: a usage tracking module that uses HTTP/HTTPS via the
 /// curl library
@@ -27,9 +29,8 @@ class TrackerHTTP {
 
 public:
 
-  // default constructor is allowed, but doesn't track methods used
-  // and outputs on all ranks
-  //TrackerHTTP();
+  /// default constructor is allowed, but doesn't generate output
+  TrackerHTTP();
 
   /// standard constructor with ProblemDescDB, rank
   TrackerHTTP(int world_rank = 0);

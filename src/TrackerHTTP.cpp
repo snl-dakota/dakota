@@ -17,6 +17,7 @@
 #include <sys/utsname.h>
 #include "dakota_data_types.hpp"
 #include "TrackerHTTP.hpp"
+#include "ProblemDescDB.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaBuildInfo.hpp"
 
@@ -52,19 +53,16 @@ enum {TH_SILENT_OUTPUT, TH_QUIET_OUTPUT, TH_NORMAL_OUTPUT, TH_VERBOSE_OUTPUT,
 // Public implementations
 //
 
-//TrackerHTTP::TrackerHTTP(): 
-//  curlPtr(NULL), devNull(NULL), timeoutSeconds(2), dakotaVersion("unknown"), 
-//  outputLevel(TH_SILENT_OUTPUT)
-//{ initialize(); }
+TrackerHTTP::TrackerHTTP(): 
+  curlPtr(NULL), devNull(NULL), timeoutSeconds(2), dakotaVersion("unknown"), 
+  outputLevel(TH_SILENT_OUTPUT)
+{ /* no-op */ }
 
-//TrackerHTTP::TrackerHTTP(ProblemDescDB& problem_db, int world_rank): 
 TrackerHTTP::TrackerHTTP(int world_rank): 
   curlPtr(NULL), devNull(NULL), timeoutSeconds(2), dakotaVersion("unknown"),
   outputLevel(TH_SILENT_OUTPUT)
 {
   initialize(world_rank);
-  //if (curlPtr != NULL)
-  //  populate_method_list(problem_db); // MSE: postpone
 }
 
 TrackerHTTP::~TrackerHTTP() 
@@ -78,11 +76,11 @@ TrackerHTTP::~TrackerHTTP()
  } 
 }
 
-//void TrackerHTTP::post_start()
 void TrackerHTTP::post_start(ProblemDescDB& problem_db)
 {
   if (curlPtr == NULL) return;
-  else                 populate_method_list(problem_db); // MSE: postponed
+  
+  populate_method_list(problem_db);
 
   startTime = std::time(NULL);  // archive the start time
   
@@ -128,11 +126,6 @@ void TrackerHTTP::post_finish(unsigned runtime)
 
 void TrackerHTTP::initialize(int world_rank)
 {
-  // Avoid tracking if user specified none or on rank > 0
-  char *ptr_notrack = std::getenv("DAKOTA_NO_TRACKING");
-  if (ptr_notrack != NULL || world_rank > 0)
-    return;
-
   dakotaVersion = DakotaBuildInfo::get_rev_number();
 
   curlPtr = curl_easy_init();

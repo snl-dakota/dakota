@@ -482,6 +482,7 @@ public:
   /// state set real variables
   void discrete_state_set_real_values(const RealSetArray& rsa);
 
+  // array indicating which discrete integer variables are set vs. range?
   /// define and return discreteIntSets using active view from currentVariables
   const BitArray& discrete_int_sets();
   /// define and return discreteIntSets using passed active view

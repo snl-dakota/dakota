@@ -14,10 +14,6 @@
 #include "ExecutableEnvironment.hpp"
 #include "ProblemDescDB.hpp"
 
-#ifdef DAKOTA_USAGE_TRACKING
-#include "TrackerHTTP.hpp"
-#endif
-
 static const char rcsId[]="@(#) $Id: ExecutableEnvironment.cpp 6492 2009-12-19 00:04:28Z briadam $";
 
 
@@ -70,18 +66,7 @@ void ExecutableEnvironment::execute()
   sigchld_save = std::signal(SIGCHLD, SIG_DFL);
 #endif
 
-#ifdef DAKOTA_USAGE_TRACKING
-  usageTracker.reset( new TrackerHTTP(parallelLib.world_rank()) );
-  // must wait for iterators to be instantiated; positive side effect is that 
-  // we don't track dakota -version, -help, and errant usage
-  usageTracker->post_start(probDescDB);
-#endif
-
   Environment::execute();
-
-#ifdef DAKOTA_USAGE_TRACKING
-  usageTracker->post_finish();
-#endif
 
 #ifndef _WIN32
   std::signal(SIGCHLD, sigchld_save);

@@ -22,6 +22,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaIterator.hpp"
+#include "UsageTracker.hpp"
 
 /// The primary namespace for DAKOTA
 
@@ -151,6 +152,9 @@ protected:
 
   Iterator topLevelIterator;  ///< the top level (meta-)iterator
   //Model  topLevelModel;     //   the top level Model for non-meta-iteration
+
+  /// tool for Dakota usage tracking (this is a thin wrapper class)
+  UsageTracker usageTracker;
 
 private:
 

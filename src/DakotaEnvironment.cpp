@@ -40,7 +40,8 @@ namespace Dakota {
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
+  probDescDB(parallelLib), usageTracker(mpiManager.world_rank()),
+  environmentRep(NULL), referenceCount(1)
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -77,7 +78,8 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 		mpiManager.mpirun_flag()),
   // now instantiate the parallel library and problem description DB
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
+  probDescDB(parallelLib), usageTracker(mpiManager.world_rank()),
+  environmentRep(NULL), referenceCount(1)
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -116,7 +118,8 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), environmentRep(NULL), referenceCount(1)
+  probDescDB(parallelLib), usageTracker(mpiManager.world_rank()),
+  environmentRep(NULL), referenceCount(1)
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -396,6 +399,11 @@ void Environment::execute()
   if (environmentRep)
     environmentRep->execute();
   else {
+
+    // must wait for iterators to be instantiated; positive side effect is that 
+    // we don't track dakota -version, -help, and errant usage
+    usageTracker.post_start(probDescDB);
+
     bool output_rank = (parallelLib.world_rank() == 0);
     if (output_rank)
       Cout << "\n>>>>> Executing environment.\n";
@@ -418,6 +426,9 @@ void Environment::execute()
     }
     if (output_rank)
       Cout << "<<<<< Environment execution completed.\n";
+  
+    usageTracker.post_finish();
+
   }
 }
 

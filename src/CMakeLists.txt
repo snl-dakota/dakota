@@ -349,7 +349,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     CommandLineHandler.cpp DakotaGraphics.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
-    ExperimentData.cpp
+    ExperimentData.cpp UsageTracker.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
