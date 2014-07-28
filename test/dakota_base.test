@@ -5204,7 +5204,6 @@ Partial Rank Correlation Matrix between input and output:
 <<<<< Function evaluation summary: 125 total (125 new, 0 duplicate)
   response_fn_1: 125 val (125 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
 dakota_gerstner_string.in
-
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 48 total (48 new, 0 duplicate)
 Simple Correlation Matrix among all inputs and outputs:
