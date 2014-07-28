@@ -189,20 +189,13 @@ void read_data_tabular(const std::string& input_filename,
 		       );
 
 /// read specified input data file into arrays with sizes specified
-/// by the passed vc_totals array
-size_t read_vars_tabular(const std::string& input_filename, 
+/// by the passed vc_totals array; used in ParamStudy
+size_t read_data_tabular(const std::string& input_filename, 
 			 const std::string& context_message,
 			 const SizetArray& vc_totals,
 			 RealVectorArray& cva, IntVectorArray& diva, 
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
 			 bool annotated);
-
-/// helper function for above read and MixedVariables to read from stream
-/// into arrays with sizes specified by the passed vc_totals array
-void read_vars_tabular(std::istream& s, const SizetArray& vc_totals,
-		       RealVector& cv, IntVector& div, 
-		       StringMultiArray& dsv, RealVector& drv);
-
 
 } // namespace TabularIO
 

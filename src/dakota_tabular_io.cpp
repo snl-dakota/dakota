@@ -72,12 +72,7 @@ void write_header_tabular(std::ostream& tabular_ostream,
   }
   else {
     // output all variable labels
-    Dakota::write_data_tabular(tabular_ostream, 
-			       vars.all_continuous_variable_labels());
-    Dakota::write_data_tabular(tabular_ostream, 
-		       vars.all_discrete_int_variable_labels());
-    Dakota::write_data_tabular(tabular_ostream, 
-		       vars.all_discrete_real_variable_labels());
+    vars.write_tabular_labels(tabular_ostream);
   }
   if (response_labels)
     Dakota::write_data_tabular(tabular_ostream, response.function_labels());
@@ -495,7 +490,7 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
-size_t read_vars_tabular(const std::string& input_filename, 
+size_t read_data_tabular(const std::string& input_filename, 
 			 const std::string& context_message,
 			 const SizetArray& vc_totals,
 			 RealVectorArray& cva, IntVectorArray& diva, 
@@ -531,7 +526,6 @@ size_t read_vars_tabular(const std::string& input_filename,
 
   try {
 
-
     if (annotated) {
       input_stream >> std::ws;
       read_header_tabular(input_stream);
@@ -546,6 +540,7 @@ size_t read_vars_tabular(const std::string& input_filename,
 	  break;
       }
       
+      // free function from Variables to read in input spec order into arrays
       read_vars_tabular(input_stream, vc_totals, cv, div, dsv, drv);
 
       ++num_evals;
@@ -590,66 +585,6 @@ size_t read_vars_tabular(const std::string& input_filename,
 
   return num_evals;
 }
-
-
-/** Tabular reader that reads data in order design, aleatory,
-    epistemic, state according to counts in vc_totals (extract in
-    order: cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv,
-    csv/dsiv/dsrv, which might reflect active or all depending on
-    context. Assumes container sized, since might be a view into a
-    larger array.
-
-    Used in MixedVariables:read_tabular and by above fn for ParamStudy
-*/
-void read_vars_tabular(std::istream& s, const SizetArray& vc_totals,
-		       RealVector& cv, IntVector& div, 
-		       StringMultiArray& dsv, RealVector& drv)
-{
-
-  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
-
-  // read design variables
-  read_data_partial_tabular(s, acv_offset,  num_cdv,  cv);
-  read_data_partial_tabular(s, adiv_offset, num_ddiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_ddsv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_ddrv, drv);
-  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
-  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
-
-  // read aleatory uncertain variables
-  read_data_partial_tabular(s, acv_offset,  num_cauv,  cv); 
-  read_data_partial_tabular(s, adiv_offset, num_dauiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_dausv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_daurv, drv);
-  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
-  adsv_offset += num_dausv; adrv_offset += num_daurv;
-
-  // read epistemic uncertain variables
-  read_data_partial_tabular(s, acv_offset,  num_ceuv,  cv); 
-  read_data_partial_tabular(s, adiv_offset, num_deuiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_deusv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_deurv, drv);
-  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
-  adsv_offset += num_deusv; adrv_offset += num_deurv;
-
-  // read state variables
-  read_data_partial_tabular(s, acv_offset,  num_csv,  cv); 
-  read_data_partial_tabular(s, adiv_offset, num_dsiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_dssv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_dsrv, drv);
-  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
-  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
-
-}
-
 
 
 } // namespace TabularIO

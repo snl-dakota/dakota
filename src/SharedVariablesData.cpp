@@ -32,8 +32,8 @@ SharedVariablesDataRep::
 SharedVariablesDataRep(const ProblemDescDB& problem_db,
 		       const std::pair<short,short>& view):
   variablesId(problem_db.get_string("variables.id")),
-  variablesCompsTotals(16, 0), variablesView(view), cvStart(0), divStart(0),
-  dsvStart(0), drvStart(0), icvStart(0), idivStart(0), idsvStart(0),
+  variablesCompsTotals(NUM_VC_TOTALS, 0), variablesView(view), cvStart(0), 
+  divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0), idsvStart(0),
   idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0), numICV(0),
   numIDIV(0), numIDSV(0), numIDRV(0), referenceCount(1)
 {
@@ -265,7 +265,7 @@ initialize_components_totals(const ProblemDescDB& problem_db)
 
 void SharedVariablesDataRep::components_to_totals()
 {
-  variablesCompsTotals.resize(16);
+  variablesCompsTotals.resize(NUM_VC_TOTALS);
 
   // continuous design
   variablesCompsTotals[TOTAL_CDV] = vc_lookup(CONTINUOUS_DESIGN);
@@ -1088,28 +1088,28 @@ void SharedVariablesDataRep::initialize_active_components()
   case MIXED_ALL:                 case RELAXED_ALL:
     activeVarsCompsTotals = variablesCompsTotals; break;
   case MIXED_DESIGN:              case RELAXED_DESIGN:
-    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals.assign(NUM_VC_TOTALS, 0);
     activeVarsCompsTotals[TOTAL_CDV]  = variablesCompsTotals[TOTAL_CDV];
     activeVarsCompsTotals[TOTAL_DDIV] = variablesCompsTotals[TOTAL_DDIV];
     activeVarsCompsTotals[TOTAL_DDSV] = variablesCompsTotals[TOTAL_DDSV];
     activeVarsCompsTotals[TOTAL_DDRV] = variablesCompsTotals[TOTAL_DDRV];
     break;
   case MIXED_ALEATORY_UNCERTAIN:  case RELAXED_ALEATORY_UNCERTAIN:
-    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals.assign(NUM_VC_TOTALS, 0);
     activeVarsCompsTotals[TOTAL_CAUV]  = variablesCompsTotals[TOTAL_CAUV];
     activeVarsCompsTotals[TOTAL_DAUIV] = variablesCompsTotals[TOTAL_DAUIV];
     activeVarsCompsTotals[TOTAL_DAUSV] = variablesCompsTotals[TOTAL_DAUSV];
     activeVarsCompsTotals[TOTAL_DAURV] = variablesCompsTotals[TOTAL_DAURV];
     break;
   case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals.assign(NUM_VC_TOTALS, 0);
     activeVarsCompsTotals[TOTAL_CEUV]  = variablesCompsTotals[TOTAL_CEUV];
     activeVarsCompsTotals[TOTAL_DEUIV] = variablesCompsTotals[TOTAL_DEUIV];
     activeVarsCompsTotals[TOTAL_DEUSV] = variablesCompsTotals[TOTAL_DEUSV];
     activeVarsCompsTotals[TOTAL_DEURV] = variablesCompsTotals[TOTAL_DEURV];
     break;
   case MIXED_UNCERTAIN:           case RELAXED_UNCERTAIN:
-    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals.assign(NUM_VC_TOTALS, 0);
     activeVarsCompsTotals[TOTAL_CAUV]  = variablesCompsTotals[TOTAL_CAUV];
     activeVarsCompsTotals[TOTAL_DAUIV] = variablesCompsTotals[TOTAL_DAUIV];
     activeVarsCompsTotals[TOTAL_DAUSV] = variablesCompsTotals[TOTAL_DAUSV];
@@ -1120,7 +1120,7 @@ void SharedVariablesDataRep::initialize_active_components()
     activeVarsCompsTotals[TOTAL_DEURV] = variablesCompsTotals[TOTAL_DEURV];
     break;
   case MIXED_STATE:               case RELAXED_STATE:
-    activeVarsCompsTotals.assign(16, 0);
+    activeVarsCompsTotals.assign(NUM_VC_TOTALS, 0);
     activeVarsCompsTotals[TOTAL_CSV]  = variablesCompsTotals[TOTAL_CSV];
     activeVarsCompsTotals[TOTAL_DSIV] = variablesCompsTotals[TOTAL_DSIV];
     activeVarsCompsTotals[TOTAL_DSSV] = variablesCompsTotals[TOTAL_DSSV];
@@ -1191,7 +1191,7 @@ void SharedVariablesDataRep::initialize_active_components()
 
 void SharedVariablesDataRep::initialize_inactive_components()
 {
-  inactiveVarsCompsTotals.assign(16, 0);
+  inactiveVarsCompsTotals.assign(NUM_VC_TOTALS, 0);
 
   switch (variablesView.second) {
   case MIXED_ALL:                 case RELAXED_ALL:

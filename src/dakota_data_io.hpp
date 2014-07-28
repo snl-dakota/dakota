@@ -124,7 +124,7 @@ namespace Dakota {
 // -----------------------
 
 
-/// global MPIPackBuffer insertion operator for std::pair
+/// global ostream insertion operator for std::pair
 template <typename U, typename V>
 std::ostream& operator<<(std::ostream& s, const std::pair<U,V>& data)
 {

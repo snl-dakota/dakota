@@ -255,7 +255,7 @@ create_tabular_datastream(const Variables& vars, const Response& response)
 			 "DakotaGraphics");
   }
 
-  bool active_only = true;
+  bool active_only = false;
   bool response_labels = true;
   bool annotated = true;  // tabular graphics data only supports annotated
   if (annotated)
@@ -299,7 +299,7 @@ add_datapoint(const Variables& vars, const Response& response)
 
     // NOTE: could add ability to monitor response data subsets based on
     // user specification.
-    bool active_only = true;
+    bool active_only = false;
     bool write_responses = true;
     TabularIO::write_data_tabular(tabularDataFStream, vars, response,
 				  graphicsCntr, active_only, write_responses);

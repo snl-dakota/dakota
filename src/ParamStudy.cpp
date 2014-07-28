@@ -483,7 +483,7 @@ load_distribute_points(const String& points_filename, bool annotated)
 
   // Could read into these dynamically or into a temporary and then allocate
   numEvals = TabularIO::
-    read_vars_tabular(points_filename, "List Parameter Study", 
+    read_data_tabular(points_filename, "List Parameter Study", 
 		      active_totals, listCVPoints, listDIVPoints, 
 		      listDSVPoints, listDRVPoints, annotated);
   if (numEvals == 0) err = true;

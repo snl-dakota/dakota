@@ -289,10 +289,10 @@ void MixedVariables::read_tabular(std::istream& s)
   // ASCII version for tabular file I/O
   const SizetArray& vc_totals = sharedVarsData.components_totals();
 
-  // delegate to tabular data helper since shared with other code
-  TabularIO::
-    read_vars_tabular(s, vc_totals, allContinuousVars, allDiscreteIntVars, 
-		      allDiscreteStringVars, allDiscreteRealVars);
+  // make use of free function in Variables since multiple clients
+  // need this prototype
+  read_vars_tabular(s, vc_totals, allContinuousVars, allDiscreteIntVars, 
+		    allDiscreteStringVars, allDiscreteRealVars);
 }
 
 

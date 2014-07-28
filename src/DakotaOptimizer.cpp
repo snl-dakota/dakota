@@ -187,9 +187,9 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
   // The following "best" initializations are done here instead of in
   // Minimizer for this lightweight case
   std::pair<short,short> view(MIXED_DESIGN, EMPTY);
-  SizetArray vc_totals(16, 0);
-  vc_totals[0] = num_cv;  vc_totals[1] = num_div;
-  vc_totals[2] = num_dsv; vc_totals[3] = num_drv;
+  SizetArray vc_totals(NUM_VC_TOTALS, 0);
+  vc_totals[TOTAL_CDV] = num_cv;  vc_totals[TOTAL_DDIV] = num_div;
+  vc_totals[TOTAL_DDSV] = num_dsv; vc_totals[TOTAL_DDRV] = num_drv;
   BitArray all_relax_di, all_relax_dr; // empty: no relaxation of discrete
   SharedVariablesData svd(view, vc_totals, all_relax_di, all_relax_dr);
   bestVariablesArray.push_back(Variables(svd));

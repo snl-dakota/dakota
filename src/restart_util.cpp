@@ -384,30 +384,21 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
       break;
     }
 
+    // TODO: print an interface column when multiple are present
     const String& new_interf = current_pair.interface_id();
     if (num_evals == 0 || new_interf != curr_interf) {
       curr_interf = new_interf;
       // Header (note: use matlab comment syntax "%"):
-      const Variables& vars = current_pair.prp_parameters();
-      StringMultiArrayConstView acv_labels
-	= vars.all_continuous_variable_labels();
-      StringMultiArrayConstView adiv_labels
-	= vars.all_discrete_int_variable_labels();
-      StringMultiArrayConstView adrv_labels
-	= vars.all_discrete_real_variable_labels();
-      const StringArray& fn_labels
-	= current_pair.prp_response().function_labels();
-      size_t num_acv = acv_labels.size(), num_adiv = adiv_labels.size(),
-	num_adrv = adrv_labels.size(), num_fns = fn_labels.size();
       if (!curr_interf.empty())
 	tabular_text << "%Interface = " << curr_interf << '\n';
       tabular_text << "%eval_id ";
-      for (j=0; j<num_acv; ++j)
-	tabular_text << setw(14) << acv_labels[j].data() << ' ';
-      for (j=0; j<num_adiv; ++j)
-	tabular_text << setw(14) << adiv_labels[j].data() << ' ';
-      for (j=0; j<num_adrv; ++j)
-	tabular_text << setw(14) << adrv_labels[j].data() << ' ';
+
+      const Variables& vars = current_pair.prp_parameters();
+      vars.write_tabular_labels(tabular_text);
+
+      const StringArray& fn_labels
+	= current_pair.prp_response().function_labels();
+      size_t num_fns = fn_labels.size();
       for (j=0; j<num_fns; ++j)
 	tabular_text << setw(14) << fn_labels[j].data() << ' ';
       tabular_text << '\n';

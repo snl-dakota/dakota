@@ -553,14 +553,25 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & variablesRep->allDiscreteIntVars;
   StringMultiArrayView adivl = all_discrete_int_variable_labels();
   ar & adivl;
-  // BMA: mirroring the save function due to const-correct needs there
+
+  // BMA: Approach 1; mirroring save function due to const-correct needs there
   // This is safe because get_variables will size the array
   // StringMultiArrayView adsvars = 
   //   allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
   // ar & adsvars;
-  ar & boost::serialization::
-    make_array(allDiscreteStringVars.data(), 
-	       allDiscreteStringVars.num_elements());
+
+  // Mirror of Approach 2 below
+  // ar & boost::serialization::
+  //   make_array(allDiscreteStringVars.data(), 
+  // 	       allDiscreteStringVars.num_elements());
+
+  // Current implementation
+  size_t len;
+  ar & len;
+  variablesRep->allDiscreteStringVars.resize(boost::extents[len]);
+  for (size_t i=0; i<len; ++i)
+    ar & variablesRep->allDiscreteStringVars[i];
+
   StringMultiArrayView adsvl = all_discrete_string_variable_labels();
   ar & adsvl;
   ar & variablesRep->allDiscreteRealVars;
@@ -590,13 +601,23 @@ void Variables::save(Archive& ar, const unsigned int version) const
     ar & allDiscreteIntVars;
     StringMultiArrayView adivl = all_discrete_int_variable_labels();
     ar & adivl;
-    // BMA: not sure why we can't get this const-correct...
+
+    // BMA: Approach 1; not sure why we can't get this const-correct...
     //StringMultiArrayConstView adsvars = 
     //  allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
     //ar << adsvars;
-    ar & boost::serialization::
-      make_array(allDiscreteStringVars.data(), 
-		 allDiscreteStringVars.num_elements());
+
+    // BMA: Approach 2; makes bad alloc
+    // ar & boost::serialization::
+    //   make_array(allDiscreteStringVars.data(), 
+    // 		 allDiscreteStringVars.num_elements());
+
+    // BMA: doing this for now
+    size_t len = allDiscreteStringVars.size();
+    ar & len;
+    for (size_t i=0; i<len; ++i)
+      ar & allDiscreteStringVars[i];
+
     StringMultiArrayView adsvl = all_discrete_string_variable_labels();
     ar & adsvl;
     ar & allDiscreteRealVars;
@@ -658,23 +679,35 @@ void Variables::read_annotated(std::istream& s)
   // ASCII version for neutral file I/O.
   std::pair<short,short> view;
   s >> view.first;
-  if (s.eof()) // exception handling since EOF may not be captured properly
+  // exception handling since EOF may not be captured properly; shouldn't get 
+  // hit if loops wrapping this read whitespace before reading Variables...
+  if (s.eof())
     throw String("Empty record in Variables::read_annotated(std::istream&)");
   s >> view.second;
-  size_t i, num_vc_totals = 16;
-  SizetArray vars_comps_totals(num_vc_totals);
-  for (i=0; i<num_vc_totals; ++i)
+  size_t i;
+  SizetArray vars_comps_totals(NUM_VC_TOTALS);
+  for (i=0; i<NUM_VC_TOTALS; ++i)
     s >> vars_comps_totals[i];
+  // for annotated (neutral), read the binary representation (string of 0/1)
+
   // BMA TODO: verify whether these need to be sized (shouldn't have to be)
-  size_t num_adiv
-    = vars_comps_totals[TOTAL_DDIV]  + vars_comps_totals[TOTAL_DAUIV]
-    + vars_comps_totals[TOTAL_DEUIV] + vars_comps_totals[TOTAL_DSIV],
-  num_adrv
-    = vars_comps_totals[TOTAL_DDRV]  + vars_comps_totals[TOTAL_DAURV]
-    + vars_comps_totals[TOTAL_DEURV] + vars_comps_totals[TOTAL_DSRV];
-  BitArray all_relax_di(num_adiv), all_relax_dr(num_adrv);
-  s >> all_relax_di;
-  s >> all_relax_dr;
+  // size_t num_adiv
+  //   = vars_comps_totals[TOTAL_DDIV]  + vars_comps_totals[TOTAL_DAUIV]
+  //   + vars_comps_totals[TOTAL_DEUIV] + vars_comps_totals[TOTAL_DSIV],
+  // num_adrv
+  //   = vars_comps_totals[TOTAL_DDRV]  + vars_comps_totals[TOTAL_DAURV]
+  //   + vars_comps_totals[TOTAL_DEURV] + vars_comps_totals[TOTAL_DSRV];
+  // BitArray all_relax_di(num_adiv), all_relax_dr(num_adrv);
+  BitArray all_relax_di, all_relax_dr;
+
+  // the bit arrays can be length 0; have to conditionally read their data
+  size_t ardi_size, ardr_size;
+  s >> ardi_size;
+  if (ardi_size > 0)
+    s >> all_relax_di;
+  s >> ardr_size;
+  if (ardr_size > 0)
+    s >> all_relax_dr;
 
   SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
 
@@ -718,11 +751,13 @@ void Variables::write_annotated(std::ostream& s) const
     const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
     const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
     s << view.first  << ' ' << view.second << ' ';
-    size_t i, num_vc_totals = vc_totals.size();
-    for (i=0; i<num_vc_totals; ++i)
+    size_t i;
+    for (i=0; i<NUM_VC_TOTALS; ++i)
       s << vc_totals[i] << ' ';
-    s << all_relax_di << ' ';
-    s << all_relax_dr << ' ';
+    // for annotated (neutral), write the binary representation (string of 0/1)
+    // have to write the size as a flag since they may be length 0 in the mixed case
+    s << all_relax_di.size() << ' ' << all_relax_di << ' ';
+    s << all_relax_dr.size() << ' ' << all_relax_dr << ' ';
     write_data_annotated(s, allContinuousVars,
 			 all_continuous_variable_labels());
     write_data_annotated(s, allDiscreteIntVars,
@@ -760,6 +795,68 @@ void Variables::write_tabular(std::ostream& s) const
 }
 
 
+/** Tabular output is always in input specification order, so can
+    write labels independent of Mixed vs. Relaxed */
+void Variables::write_tabular_labels(std::ostream& s) const
+{
+  if (variablesRep)
+    variablesRep->write_tabular_labels(s); // envelope fwd to letter
+  else {
+
+    // ASCII version for tabular file I/O
+    const SizetArray& vc_totals = sharedVarsData.components_totals();
+    size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+      num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
+      num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+      num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
+      num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+      num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
+      num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+      num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+      acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+ 
+    StringMultiArrayConstView 
+      acv_labels  = all_continuous_variable_labels(),
+      adiv_labels = all_discrete_int_variable_labels(),
+      adsv_labels = all_discrete_string_variable_labels(),
+      adrv_labels = all_discrete_real_variable_labels();
+ 
+    // write design
+    write_data_partial_tabular(s, acv_offset,  num_cdv,  acv_labels);
+    write_data_partial_tabular(s, adiv_offset, num_ddiv, adiv_labels);
+    write_data_partial_tabular(s, adsv_offset, num_ddsv, adsv_labels);
+    write_data_partial_tabular(s, adrv_offset, num_ddrv, adrv_labels);
+    acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+    adsv_offset += num_ddsv; adrv_offset += num_ddrv;
+
+    // write aleatory uncertain
+    write_data_partial_tabular(s, acv_offset,  num_cauv,  acv_labels); 
+    write_data_partial_tabular(s, adiv_offset, num_dauiv, adiv_labels);
+    write_data_partial_tabular(s, adsv_offset, num_dausv, adsv_labels);
+    write_data_partial_tabular(s, adrv_offset, num_daurv, adrv_labels);
+    acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+    adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+    // write epistemic uncertain
+    write_data_partial_tabular(s, acv_offset,  num_ceuv,  acv_labels); 
+    write_data_partial_tabular(s, adiv_offset, num_deuiv, adiv_labels);
+    write_data_partial_tabular(s, adsv_offset, num_deusv, adsv_labels);
+    write_data_partial_tabular(s, adrv_offset, num_deurv, adrv_labels);
+    acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+    adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+    // write state
+    write_data_partial_tabular(s, acv_offset,  num_csv,  acv_labels); 
+    write_data_partial_tabular(s, adiv_offset, num_dsiv, adiv_labels);
+    write_data_partial_tabular(s, adsv_offset, num_dssv, adsv_labels);
+    write_data_partial_tabular(s, adrv_offset, num_dsrv, adrv_labels);
+    //acv_offset  += num_csv;  adiv_offset += num_dsiv;
+    //adsv_offset += num_dssv; adrv_offset += num_dsrv;
+
+  }
+}
+
+
 void Variables::read(MPIUnpackBuffer& s)
 {
   // MPI buffer version: allow passing of an empty envelope.
@@ -768,9 +865,9 @@ void Variables::read(MPIUnpackBuffer& s)
   if (buffer_has_letter) {
     std::pair<short,short> view;
     s >> view.first >> view.second;
-    size_t i, num_vc_totals = 16;
-    SizetArray vars_comps_totals(num_vc_totals);
-    for (i=0; i<num_vc_totals; ++i)
+    size_t i;
+    SizetArray vars_comps_totals(NUM_VC_TOTALS);
+    for (i=0; i<NUM_VC_TOTALS; ++i)
       s >> vars_comps_totals[i];
     BitArray all_relax_di, all_relax_dr;
     s >> all_relax_di;
@@ -828,11 +925,9 @@ void Variables::write(MPIPackBuffer& s) const
     const BitArray& all_relax_dr
       = variablesRep->sharedVarsData.all_relaxed_discrete_real();
     s << view.first << view.second;
-    size_t i, num_vc_totals = vc_totals.size();
-    for (i=0; i<num_vc_totals; ++i)
+    size_t i;
+    for (i=0; i<NUM_VC_TOTALS; ++i)
       s << vc_totals[i];
-    // BMA TODO: This will stream the binary representation of the
-    // array; could make it more efficient
     s << all_relax_di;
     s << all_relax_dr;
     write_data(s, variablesRep->allContinuousVars,

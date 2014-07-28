@@ -55,11 +55,13 @@ enum { CONTINUOUS_DESIGN=1, DISCRETE_DESIGN_RANGE, DISCRETE_DESIGN_SET_INT,
        DISCRETE_STATE_SET_INT, DISCRETE_STATE_SET_STRING,
        DISCRETE_STATE_SET_REAL };
 
-// special values for indexing of SharedVariablesData::variablesCompsTotals
+// special values for indexing of SharedVariablesData::variablesCompsTotals;
+// last value is used for sizing arrays of vars_comps_totals
 enum { TOTAL_CDV=0, TOTAL_DDIV,  TOTAL_DDSV,  TOTAL_DDRV,
        TOTAL_CAUV,  TOTAL_DAUIV, TOTAL_DAUSV, TOTAL_DAURV,
        TOTAL_CEUV,  TOTAL_DEUIV, TOTAL_DEUSV, TOTAL_DEURV,
-       TOTAL_CSV,   TOTAL_DSIV,  TOTAL_DSSV,  TOTAL_DSRV };
+       TOTAL_CSV,   TOTAL_DSIV,  TOTAL_DSSV,  TOTAL_DSRV,
+       NUM_VC_TOTALS};
 
 
 /// Body class for variables specification data.
