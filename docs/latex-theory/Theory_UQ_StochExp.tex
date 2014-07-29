@@ -1333,6 +1333,124 @@ $\| \hat{f}_{\boldsymbol{\beta}}(\mathbf{x})-f(\mathbf{x})\|_{L^2(\rho)}$ and ch
 \boldsymbol{\beta}^\star = \text{arg min}\, CV(\hat{f}_{\boldsymbol{\beta}})\mathrm{Var}[e(\hat{f}_{\boldsymbol{\beta}}^{-k})]
 \end{equation}
 to construct the final ``best'' PCE approximation of $f$ that the training data can produce. 
+\subsection{Iterative basis selection}
+\label{sec:iterative-basis-selection}
+When the coefficients of a PCE can be well approximated by a sparse vector, $\ell_1$-minimization is extremely effective at recovering the coefficients of that PCE. 
+It is possible, however, to further increase the efficacy of $\ell_1$-minimization by leveraging realistic models of structural dependencies between the values and 
+locations of the PCE coefficients. For example~\cite{Baraniuk_CDH_IEEIT_2010,Duarte_WB_SPARS_2005,La_D_IEEEIP_2006} have successfully increased the performance
+of $\ell_1$-minimization when recovering wavelet coefficients that exhibit a tree-like structure. In this vein, we propose an algorithm for identifying the large coefficients
+of PC expansions that form a semi-connected subtree of the PCE coefficient tree.
+
+The coefficients of polynomial chaos expansions often form a multi-dimensional tree.
+Given an ancestor basis term $\phi_{\boldsymbol{\lambda}}$ of degree $\left\lVert \boldsymbol{\lambda} \right\rVert_{1}$ we define the indices of its children as $\boldsymbol{\lambda}+\mathbf{e}_k$, $k=1,\ldots,d$,
+where $\mathbf{e}_k=(0,\ldots,1,\ldots,0)$ is the unit vector co-directional with the $k$-th dimension.
+% We refer to the basis terms with $\hat{\boldsymbol{\lambda}}-\be_k$ as ancestors of the basis indexed by $\hat{\boldsymbol{\lambda}}$.
+An example of a typical PCE tree is depicted in Figure~\ref{fig:pce-tree}. In this figure, as often in practice, the magnitude of the ancestors of a PCE coefficient is a
+reasonable indicator of the size of the child coefficient. In practice, some branches (connections) between levels of the tree may be missing. We refer to trees with missing branches 
+as semi-connected trees.
+
+In the following we present a method for estimating PCE coefficients that leverages the tree structure of 
+PCE coefficients to increase the accuracy of coefficient estimates obtained by $\ell_1$-minimization.
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/pce-tree.pdf}
+\caption{Tree structure of the coefficients of a two dimensional PCE with a total-degree basis of order 3. For clarity we only depict one connection per node, but in $d$ dimensions a node of a given
+degree $p$ will be a child of up to $d$ nodes of degree $p-1$. For example, not only is the basis $\boldsymbol{\phi}_{[1,1]}$ a child of $\boldsymbol{\phi}_{[1,0]}$ (as depicted) but it is
+ also a child of $\boldsymbol{\phi}_{[0,1]}$} 
+\label{fig:pce-tree}
+\end{figure}
+
+Typically $\ell_1$-minimization is applied to an a priori chosen and fixed basis set $\Lambda$. However the accuracy of coefficients obtained by $\ell_1$-minimization can be increased by
+adaptively selecting the PCE basis.
+
+To select a basis for $\ell_1$-minimization we employ a four step iterative procedure involving restriction, expansion, identification and selection. 
+The iterative basis selection procedure is outlined in Algorithm~\ref{alg:basis-selection}. A graphical version of the algorithm is also presented in Figure~\ref{fig:basis-selection-alg}.
+The latter emphasizes the four stages of basis selection, that is restriction, growth, identification and selection. These four stages are also highlighted in 
+Algorithm~\ref{alg:basis-selection} using the corresponding colors in Figure~\ref{fig:basis-selection-alg}.
+
+To initiate the basis selection algorithm, we first define a basis set $\Lambda^{(0)}$ and use $\ell_1$-minimization to identify the largest coefficients $\boldsymbol{\alpha}^{(0)}$. The choice of $\Lambda^{(0)}$
+can sometimes affect the performance of the basis selection algorithm. We found a good choice to be $\Lambda^{(0)}=\Lambda_{p,1}$,
+where $p$ is the degree that gives $\lvert\Lambda^d_{p,1}\rvert$ closest to $10M$, i.e. $\Lambda^d_{p,1} = \argmin_{\Lambda^d_{p,1}\in\{\Lambda^d_{1,1},\Lambda^d_{2,1},\ldots\}}\abs{\lvert\Lambda^d_{p,1}\rvert-10M}$.
+Given a basis $\Lambda^{(k)}$ and corresponding coefficients $\boldsymbol{\alpha}^{(k)}$ we reduce the basis to a set $\Lambda^{(k)}_\varepsilon$ containing only the terms with non-zero coefficients. 
+This restricted basis is then expanded $T$ times using an algorithm which we will describe in Section~\ref{sec:basisexp}. $\ell_1$-minimization is then applied to each of the expanded basis 
+sets $\Lambda^{(k,t)}$ for $t=1,\dots, T$.
+Each time $\ell_1$-minimization is used, we employ cross validation to choose $\varepsilon$. Therefore, at every basis set considered during the evolution of the algorithm we have a measure
+of the expected accuracy of the PCE coefficients. At each step in the algorithm we choose the basis set that results in the lowest cross validation~error.
+
+
+\begin{algorithm}[H]
+%\dontprintsemicolon%
+\DontPrintSemicolon % Some LaTeX compilers require you to use \dontprintsemicolon instead
+\footnotesize
+$\Lambda^{\star} = \Lambda^{(0)} = \Lambda^d_{p,1} = \argmin_{\Lambda^d_{p,1}\in\{\Lambda^d_{1,1},\Lambda^d_{2,1},\ldots\}}\abs{\card{\Lambda^d_{p,1}}-10M}$\;
+$\boldsymbol{\alpha}^{(0)}$, $e_{\mathrm{cv}}^{(0)}$ = $\ell_1$-minimization[$\boldsymbol{\phi}(\Lambda^{(0)})$,$\mathbf{f}$]\;
+$T=3$, $e_{\mathrm{cv}}^\star = \infty$, $k = 1$\;
+\While{TRUE}{
+  $e_{\mathrm{cv}}^{(k)}=\infty$\;
+  \RHiLi$\Lambda^{(k,0)}=\{\boldsymbol{\lambda}:\boldsymbol{\lambda}\in\Lambda^{(k-1)}, \boldsymbol{\alpha}_{\boldsymbol{\lambda}}^{(k)} \ne 0\}$\;
+  \For{$t\in\{1,\ldots,T\}$}{
+     \EHiLi$\Lambda^{(k,t)}$ = EXPAND[$\Lambda^{(k,t-1)}$]\;
+     \IHiLi$\boldsymbol{\alpha}^{(k,t)}$, $e_{\mathrm{cv}}^{(k,t)}$ = $\ell_1$-minimization[$\boldsymbol{\phi}(\Lambda^{(k,t)})$,$\mathbf{f}$]\;
+     \If {$e_{\mathrm{cv}}^{(k,t)}<e_{\mathrm{cv}}^{(k)}$} {\SHiLi$e_{\mathrm{cv}}^{(k)}=e_{\mathrm{cv}}^{(k,t)}$, $\boldsymbol{\alpha}^{(k)}=\boldsymbol{\alpha}^{(k,t)}$, $\Lambda^{(k)}=\Lambda^{(k,t)}$}
+ }
+  \If{$e_{\mathrm{cv}}^{(k)} > e_{\mathrm{cv}}^\star$}{ TERMINATE }
+  $\alpha^\star=\boldsymbol{\alpha}^{(k)},\; \Lambda^\star=\Lambda^{(k)},\; e_{\mathrm{cv}}^\star=e_{\mathrm{cv}}^{(k)}$\;%, $\Lambda^\star=\{\boldsymbol{\lambda}:\boldsymbol{\lambda}\in\Lambda^{(k)}, \boldsymbol{\alpha}_{\boldsymbol{\lambda}} \ne 0\}$, $\boldsymbol{\alpha}^\star = \{\boldsymbol{\alpha}_{\boldsymbol{\lambda}} : \boldsymbol{\lambda}\in\Lambda^{(k)} ,\boldsymbol{\alpha}_{\boldsymbol{\lambda}}\ne 0\}$\;
+%   $k=k+1$\;
+}
+\caption{$\Lambda^\star$,$\boldsymbol{\alpha}^\star$=BASIS\_SELECTION[$\boldsymbol{\phi}$,$\mathbf{f}$,$\varepsilon$] }
+\label{alg:basis-selection}
+\end{algorithm}
+
+\begin{figure}
+%\includegraphics[width=1\textwidth]{basis-adaptation-algorithm-summary}
+\hspace{-2cm}\includegraphics[width=1.3\textwidth]{images/basis-adaptation-algorithm-summary}
+\caption{Graphical depiction of the basis adaptation algorithm.}
+\label{fig:basis-selection-alg}
+\end{figure}
+\subsubsection{Basis expansion} \label{sec:basisexp}
+
+Define $\{\boldsymbol{\lambda}+\mathbf{e}_j:1\le j\le d\}$ the forward neighborhood of an index $\boldsymbol{\lambda}$ and similarly let $\{\boldsymbol{\lambda}-\mathbf{e}_j:1\le j\le d\}$ denote the backward neighborhood.
+To expand a basis set $\Lambda$ we must first find the forward neighbors $\mathcal{F}=\{\boldsymbol{\lambda}+\mathbf{e}_j : \boldsymbol{\lambda}\in\Lambda, 1\le j\le d \}$ of all indices $\boldsymbol{\lambda}\in\Lambda$.
+The expanded basis is then given by 
+\[
+\Lambda^+=\Lambda\cup\mathcal{A},\quad \mathcal{A}=\{\boldsymbol{\lambda}: \boldsymbol{\lambda}\in\mathcal{F}, \boldsymbol{\lambda}-\mathbf{e}_n\in\Lambda\text{ for }1\le n\le d,\, \lambda_k > 1\}
+\]
+where we have used the following admissibility criteria 
+\begin{equation}
+\label{eq:admissibility}
+\boldsymbol{\lambda}-\mathbf{e}_n\in\Lambda\text{ for }1\le n\le d,\, \lambda_k > 1
+\end{equation}
+to target PCE basis indices that are likely to have large PCE coefficients. A forward neighbor is admissible only if its backward neighbors exist in all dimensions. 
+If the backward neighbors do not exist then $\ell_1$-minimization has previously identified that the coefficients of these backward neighbors are negligible. 
+
+The admissibility criterion is explained graphically in Figure~\ref{fig:index-dmissibiliy-examples}. In the left graphic, 
+both children of the current index are admissible, because its backwards neighbors exist in every dimension. 
+In the right graphic only the child in the vertical dimension is admissible,
+as not all parents of the horizontal child exist. 
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=0.95\textwidth]{images/index-expansion}
+\caption{Identification of the admissible indices of an index (red). The indices of the current basis $\Lambda$ are gray and admissible indices are striped. A index is admissible only if
+its backwards neighbors exists in every dimension.}
+\label{fig:index-dmissibiliy-examples}
+\end{center}
+\end{figure}
+
+At the $k$-th iteration of Algorithm~\ref{alg:basis-selection}, $\ell_1$-minimization is applied to $\Lambda^{(k-1)}$ and used to identify the significant coefficients of the PCE and their corresponding basis terms $\Lambda^{(k,0)}$. 
+The set of non-zero coefficients $\Lambda^{(k,0)}$ identified by $\ell_1$-minimization is then expanded. 
+% The key to the proposed method working well is to ensure the basis generated by expansion is able capture higher degree terms without increasing the mutual coherence
+% to a point which degrades the ability of $\ell_1$-minimization to recover those higher order terms. 
+The \texttt{EXPAND} routine expands an index set by one polynomial degree,
+but sometimes it may be necessary to expand the basis $\Lambda^{(k)}$ more than once.\footnote{The choice of $T>1$ enables the basis selection algorithm to be applied to semi-connected 
+tree structures as well as fully connected trees. Setting $T>1$ allows us to prevent premature termination of
+the algorithm if most of the coefficients of the children of the current set $\Lambda^{(k)}$ are small but the coefficients of the children's children are not.}
+%For example by more than one degree to avoid situations when no basis terms one degree higher are significant, but basis terms two or three degrees higher are. 
+To generate these higher degree index sets \texttt{EXPAND} is applied recursively to $\Lambda^{(k,0)}$ up to a fixed number of $T$ times.
+Specifically, the following sets are generated
+$$\Lambda^{(k,t)}=\Lambda^{(k,t-1)}\cup\{\boldsymbol{\lambda}:\boldsymbol{\lambda}-\mathbf{e}_n\in\Lambda^{(k,t-1)},1\le n\le d,\, \lambda_n > 1\}.$$  
+As the number of expansion steps $T$ increases the number of terms in the expanded basis increases rapidly and
+degradation in the performance of $\ell_1$-minimization can result (this is similar to what happens when increasing the degree of a total degree basis). 
+To avoid degradation of the solution, we use cross validation to choose the number of inner expansion steps $t\in[1,T]$.
 
 \subsection{Orthogonal Least Interpolation}
 Orthogonal least interpolation (OLI)~\cite{narayan12} enables the construction of  interpolation polynomials based on arbitrarily located grids in arbitrary dimensions. The interpolation polynomials can be constructed using using orthogonal polynomials corresponding to the probability distribution function of the uncertain random variables. 
