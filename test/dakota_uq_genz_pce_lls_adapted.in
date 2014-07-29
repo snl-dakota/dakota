@@ -1,0 +1,55 @@
+
+environment,
+	#graphics
+	output_precision = 16
+
+method,
+	polynomial_chaos
+# For adapted generalized, the starting candidate basis is determined by
+# initial_level and multiIndexGrowthFactor, such that expansion_order and
+# collocation_ratio only define the sample size.  For adapted expanding_front,
+# they define both the starting total-order candidate basis and the sample size.
+ 	  expansion_order   = 4
+# 	  expansion_order   = 2
+#	  collocation_ratio = 0.9
+	  collocation_points = 70		#0,#1,#2,#3,#4
+#	  collocation_points = 100		#5,#6,#7
+# Basis adaptation algorithm:
+	  basis_type
+#	    adapted generalized			##
+#	      initial_level = 0			##
+	    adapted expanding_front		#0,#1,#2,#3,#4,#5,#6,#7
+	      advancements = 3			#0,#1,#2,#3,#4,#5,#6,#7
+	  soft_convergence_limit = 1
+          convergence_tolerance = 0 # this is important
+# CV settings:
+	  seed = 1234567
+# CS and VBD settings:
+	  omp					#0,#5
+#	  lars					#1,#6
+#	  lasso					#2,#7
+#	  basis_pursuit	  			#3
+#	  bpdn	  				#4
+	  variance_based_decomp #interaction_order = 1
+	  output silent
+
+variables,
+	uniform_uncertain = 2			#0,#1,#2,#3,#4
+	  lower_bounds = 0. 0.			#0,#1,#2,#3,#4
+	  upper_bounds = 1. 1. 			#0,#1,#2,#3,#4
+	  descriptors  = 'x1' 'x2'		#0,#1,#2,#3,#4
+
+#	uniform_uncertain = 10			#5,#6,#7
+#	  lower_bounds = 10*0.			#5,#6,#7
+#	  upper_bounds = 10*1. 			#5,#6,#7
+
+interface,
+	direct
+	analysis_driver = 'genz'		
+	analysis_components = 'cp3'
+
+responses,
+	response_functions = 1
+	no_gradients			
+	no_hessians
+
