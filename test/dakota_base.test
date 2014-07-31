@@ -39195,6 +39195,38 @@ response_fn_1 Sobol' indices:
                       1.0697834732546499e-07 uuv_1 uuv_2 uuv_8 uuv_10 
                       1.1051309091994926e-06 uuv_3 uuv_4 uuv_9 uuv_10 
                       1.3913762488695247e-07 uuv_1 uuv_7 uuv_9 uuv_10 
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  7.1999640073788806e-01  1.3946993690354229e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.9999998912007071e-01  9.9999998979993110e-01 x1
+                      1.0200068998779908e-08  1.0879929394156369e-08 x2
+                      6.7986039537646083e-10 x1 x2 
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+Moment-based statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  3.3254716811128870e-01  1.9888549572321565e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.6195569810077586e-01  9.7291376810131303e-01 uuv_1
+                      2.6401265179911843e-02  3.7094607618427956e-02 uuv_2
+                      6.6170475062926214e-04  9.3859179242131770e-04 uuv_3
+                      1.4798088918507056e-05  2.1810413277762872e-05 uuv_4
+                      3.6611484275046211e-07  8.3218028110418557e-07 uuv_5
+                      1.0681840485622512e-02  0.0000000000000000e+00 uuv_6
+                      2.6593732893499469e-04  0.0000000000000000e+00 uuv_7
+                      7.6780898533720878e-06  0.0000000000000000e+00 uuv_8
+                      6.6207588959065242e-06  0.0000000000000000e+00 uuv_9
+                      3.5341317330798161e-07  0.0000000000000000e+00 uuv_10
+                      2.2908628507979730e-07 uuv_1 uuv_5 
+                      2.8109068275005898e-08 uuv_2 uuv_5 
+                      3.8152290041310640e-08 uuv_4 uuv_5 
+                      3.2716230036887774e-06 uuv_1 uuv_2 uuv_3 
+                      1.7071779495760963e-07 uuv_1 uuv_2 uuv_5 
 dakota_uq_gerstner_adapt_gsg.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 65 total (65 new, 0 duplicate)
