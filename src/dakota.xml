@@ -3419,9 +3419,11 @@
             </keyword>
           </keyword>
           <keyword  id="scalar_objectives" name="scalar_objectives" code="{N_rem(sizet,numScalarObjectiveFunctions)}" label="scalar_objectives" help="" minOccurs="0" >
+            <alias name="num_scalar_objectives"/>
             <param type="INTEGER" constraint=">= 0" />
           </keyword>
           <keyword  id="field_objectives" name="field_objectives" code="{N_rem(sizet,numFieldObjectiveFunctions)}" label="field_objectives" help="" minOccurs="0" >
+            <alias name="num_field_objectives"/>
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths" help=""  >
               <param type="INTEGERLIST" />
@@ -3532,9 +3534,11 @@
             </keyword>
           </keyword>
           <keyword  id="scalar_calibration_terms" name="scalar_calibration_terms" code="{N_rem(sizet,numScalarLeastSqTerms)}" label="scalar_calibration_terms" help="" minOccurs="0" >
+            <alias name="num_scalar_calibration_terms"/>
             <param type="INTEGER" constraint=">= 0" />
           </keyword>
           <keyword  id="field_calibration_terms" name="field_calibration_terms" code="{N_rem(sizet,numFieldLeastSqTerms)}" label="field_calibration_terms" help="" minOccurs="0" >
+            <alias name="num_field_calibration_terms"/>
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths1" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths" help=""  >
               <param type="INTEGERLIST" />
@@ -3558,9 +3562,11 @@
           <alias name="num_response_functions"/>
           <param type="INTEGER" constraint=">= 0" />
           <keyword  id="scalar_responses" name="scalar_responses" code="{N_rem(sizet,numScalarResponseFunctions)}" label="scalar_responses" help="" minOccurs="0" >
+            <alias name="num_scalar_responses"/>
             <param type="INTEGER" constraint=">= 0" />
           </keyword>
           <keyword  id="field_responses" name="field_responses" code="{N_rem(sizet,numFieldResponseFunctions)}" label="field_responses" help="" minOccurs="0" >
+            <alias name="num_field_responses"/>
             <param type="INTEGER" constraint=">= 0" />
             <keyword  id="lengths2" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths" help=""  >
               <param type="INTEGERLIST" />
