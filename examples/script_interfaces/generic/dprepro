@@ -34,8 +34,10 @@ $f  = "-?\\d+\\.\\d*|-?\\.\\d+";                        # floating point
 $i  = "-?\\d+";                                         # integer
 $ui = "\\d+";                                           # unsigned integer
 # Note: these should be protected within () due to OR's
-$v  = "$e|$f|$i";       # value (numeric field: exponential, float, or int)
 $t  = "\\w+(?::\\w+)*"; # tag (colon separated alphanumeric blocks:)
+$v  = "$e|$f|$i|$t";    # value (numeric field: exponential, float, int, or 
+                        # string, with same admissible characters as tag)
+
 
 # Regular expression for an even number of backslashes
 my $enbs  = "(?<!\\\\)(\\\\\\\\)*";
@@ -62,7 +64,9 @@ while (<DAKOTA_PARAMS>) { # read each line of file, one at a time
     # extract tag/value pair from each field
     if ( ( ($value, $tag) = ($field =~ m/^($v)\s+($t)$/o) ) ||       # Standard
          ( ($tag, $value) = ($field =~ m/^\{\s*($t)\s*=\s*($v)\s*\}$/o))){# Apr
-      $value =~ s/[dD]/e/o;      # convert any F77 dbl prec exponents
+      # No longer convert exponents as dprepro mainly intended for Dakota
+      # and not compatible with string-valued variables
+      #$value =~ s/[dD]/e/o;      # convert any F77 dbl prec exponents
       $values_p1{$tag} = $value; # store in hash
     }
   }
@@ -126,7 +130,9 @@ while (<TEMPLATE_SIMULATION>) {
         # Case 2a: assignment of numerical value
         # ($v = exponential notation $e, floating point $f, or integer $i)
         if ($assign =~ m/^($v)$/o) {
-          $assign =~ s/[dD]/e/o;               # convert F77 dbl prec exponents
+	  # No longer convert exponents as dprepro mainly intended for Dakota
+	  # and not compatible with string-valued variables
+          #$assign =~ s/[dD]/e/o;               # convert F77 dbl prec exponents
 	  $value = $assign;
         }
 

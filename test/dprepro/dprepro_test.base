@@ -4,6 +4,11 @@
 4.0
 mydefault = 8
 
+# Set a default string and make sure used
+nonsense
+nonsense = nonsense
+stringfromfile = sense
+
 
 # Inline vs. next line override of default from parameters file; internal 2984
 # In both cases the parameter file should override the default

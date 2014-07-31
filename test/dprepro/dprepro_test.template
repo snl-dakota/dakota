@@ -4,6 +4,11 @@
 { mydefault = 4.0 }
 mydefault = { 2 * mydefault }
 
+# Set a default string and make sure used
+{ mydefaultstring = nonsense }
+nonsense = {mydefaultstring}
+stringfromfile = {teststr}
+
 
 # Inline vs. next line override of default from parameters file; internal 2984
 # In both cases the parameter file should override the default
