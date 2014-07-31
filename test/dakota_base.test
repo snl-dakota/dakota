@@ -4088,14 +4088,14 @@ Test Number 19 succeeded
                       1.0138163430e-01
 <<<<< Best data captured at function evaluation 187
 Test Number 20 succeeded
-<<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.7228874109e-01 x1
-                      1.0239841112e+00 x2
-                      9.8964139888e-01 x3
+                      9.8328200713e-01 x1
+                      9.7106863745e-01 x2
+                      9.9080625443e-01 x3
 <<<<< Best objective function  =
-                      9.3210342083e-07
-<<<<< Best data captured at function evaluation 25
+                      7.8586858645e-07
+<<<<< Best data captured at function evaluation 26
 Test Number 21 succeeded
 <<<<< Function evaluation summary: 71 total (71 new, 0 duplicate)
 <<<<< Best parameters          =
