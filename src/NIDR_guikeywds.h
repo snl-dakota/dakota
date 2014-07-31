@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1307 distinct keywords (plus 200 aliases) **/
+/** 1307 distinct keywords (plus 206 aliases) **/
 
 static GuiKeyWord
 	kw_1[2] = {
@@ -1909,7 +1909,7 @@ static GuiKeyWord
 		{"scales",0x80e,0,4,0,2493,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
 		{"upper_bounds",14,0,2,0,2489,0,0.,0.,0.,0,"{Nonlinear inequality upper bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
 		},
-	kw_283[17] = {
+	kw_283[19] = {
 		{"calibration_data_file",11,6,4,0,2471,kw_279,0.,0.,0.,0,"{Calibration data file name} RespCommands.html#RespFnLS"},
 		{"calibration_term_scale_types",0x807,0,1,0,2464,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"calibration_term_scales",0x806,0,2,0,2466,0,0.,0.,0.,0,0,0,"calibration_terms"},
@@ -1921,8 +1921,10 @@ static GuiKeyWord
 		{"least_squares_weights",6,0,3,0,2468,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"nonlinear_equality_constraints",0x29,6,6,0,2495,kw_281,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnLS"},
 		{"nonlinear_inequality_constraints",0x29,8,5,0,2485,kw_282,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnLS"},
+		{"num_field_calibration_terms",0x21,4,8,0,2504,kw_280},
 		{"num_nonlinear_equality_constraints",0x21,6,6,0,2494,kw_281},
 		{"num_nonlinear_inequality_constraints",0x21,8,5,0,2484,kw_282},
+		{"num_scalar_calibration_terms",0x21,0,7,0,2502},
 		{"primary_scale_types",0x80f,0,1,0,2465,0,0.,0.,0.,0,"{Calibration scaling types} RespCommands.html#RespFnLS",0,"calibration_terms"},
 		{"primary_scales",0x80e,0,2,0,2467,0,0.,0.,0.,0,"{Calibration scales} RespCommands.html#RespFnLS",0,"calibration_terms"},
 		{"scalar_calibration_terms",0x29,0,7,0,2503},
@@ -1991,13 +1993,15 @@ static GuiKeyWord
 		{"scales",0x80e,0,4,0,2441,0,0.,0.,0.,0,"{Nonlinear constraint scales (for inequalities or equalities)} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
 		{"upper_bounds",14,0,2,0,2437,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"}
 		},
-	kw_293[13] = {
+	kw_293[15] = {
 		{"field_objectives",0x29,4,8,0,2453,kw_290},
 		{"multi_objective_weights",6,0,4,0,2430,0,0.,0.,0.,0,0,0,"objective_functions"},
 		{"nonlinear_equality_constraints",0x29,6,6,0,2443,kw_291,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnOpt"},
 		{"nonlinear_inequality_constraints",0x29,8,5,0,2433,kw_292,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnOpt"},
+		{"num_field_objectives",0x21,4,8,0,2452,kw_290},
 		{"num_nonlinear_equality_constraints",0x21,6,6,0,2442,kw_291},
 		{"num_nonlinear_inequality_constraints",0x21,8,5,0,2432,kw_292},
+		{"num_scalar_objectives",0x21,0,7,0,2450},
 		{"objective_function_scale_types",0x807,0,2,0,2426,0,0.,0.,0.,0,0,0,"objective_functions"},
 		{"objective_function_scales",0x806,0,3,0,2428,0,0.,0.,0.,0,0,0,"objective_functions"},
 		{"primary_scale_types",0x80f,0,2,0,2427,0,0.,0.,0.,0,"{Objective function scaling types} RespCommands.html#RespFnOpt",0,"objective_functions"},
@@ -2012,8 +2016,10 @@ static GuiKeyWord
 		{"lengths",13,0,1,1,2521},
 		{"num_coordinates_per_field",13,0,2,0,2523}
 		},
-	kw_295[2] = {
+	kw_295[4] = {
 		{"field_responses",0x29,4,2,0,2519,kw_294},
+		{"num_field_responses",0x21,4,2,0,2518,kw_294},
+		{"num_scalar_responses",0x21,0,1,0,2516},
 		{"scalar_responses",0x29,0,1,0,2517}
 		},
 	kw_296[8] = {
@@ -2045,23 +2051,23 @@ static GuiKeyWord
 	kw_300[19] = {
 		{"analytic_gradients",8,0,4,2,2531,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
 		{"analytic_hessians",8,0,5,3,2587,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
-		{"calibration_terms",0x29,17,3,1,2463,kw_283,0.,0.,0.,0,"{{Calibration (Least squares)} Number of calibration terms} RespCommands.html#RespFnLS"},
+		{"calibration_terms",0x29,19,3,1,2463,kw_283,0.,0.,0.,0,"{{Calibration (Least squares)} Number of calibration terms} RespCommands.html#RespFnLS"},
 		{"descriptors",15,0,2,0,2421,0,0.,0.,0.,0,"{Response labels} RespCommands.html#RespLabels"},
 		{"id_responses",11,0,1,0,2419,0,0.,0.,0.,0,"{Responses set identifier} RespCommands.html#RespSetId"},
-		{"least_squares_terms",0x21,17,3,1,2462,kw_283},
+		{"least_squares_terms",0x21,19,3,1,2462,kw_283},
 		{"mixed_gradients",8,10,4,2,2533,kw_285,0.,0.,0.,0,"{Mixed gradients} RespCommands.html#RespGradMixed"},
 		{"mixed_hessians",8,8,5,3,2589,kw_289,0.,0.,0.,0,"{Mixed Hessians} RespCommands.html#RespHessMixed"},
 		{"no_gradients",8,0,4,2,2529,0,0.,0.,0.,0,"@"},
 		{"no_hessians",8,0,5,3,2563,0,0.,0.,0.,0,"@"},
-		{"num_least_squares_terms",0x21,17,3,1,2462,kw_283},
-		{"num_objective_functions",0x21,13,3,1,2422,kw_293},
-		{"num_response_functions",0x21,2,3,1,2514,kw_295},
+		{"num_least_squares_terms",0x21,19,3,1,2462,kw_283},
+		{"num_objective_functions",0x21,15,3,1,2422,kw_293},
+		{"num_response_functions",0x21,4,3,1,2514,kw_295},
 		{"numerical_gradients",8,8,4,2,2539,kw_296,0.,0.,0.,0,"{Numerical gradients} RespCommands.html#RespGradNum"},
 		{"numerical_hessians",8,7,5,3,2565,kw_297,0.,0.,0.,0,"{Numerical Hessians} RespCommands.html#RespHessNum"},
-		{"objective_functions",0x29,13,3,1,2423,kw_293,0.,0.,0.,0,"{{Optimization} Number of objective functions} RespCommands.html#RespFnOpt"},
+		{"objective_functions",0x29,15,3,1,2423,kw_293,0.,0.,0.,0,"{{Optimization} Number of objective functions} RespCommands.html#RespFnOpt"},
 		{"quasi_hessians",8,2,5,3,2579,kw_299,0.,0.,0.,0,"{Quasi Hessians} RespCommands.html#RespHessQuasi"},
 		{"response_descriptors",7,0,2,0,2420},
-		{"response_functions",0x29,2,3,1,2515,kw_295,0.,0.,0.,0,"{{Generic responses} Number of response functions} RespCommands.html#RespFnGen"}
+		{"response_functions",0x29,4,3,1,2515,kw_295,0.,0.,0.,0,"{{Generic responses} Number of response functions} RespCommands.html#RespFnGen"}
 		},
 	kw_301[6] = {
 		{"aleatory",8,0,1,1,1873},

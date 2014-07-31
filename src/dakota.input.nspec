@@ -2033,8 +2033,8 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
       [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
      ]
-    [ scalar_objectives INTEGER >= 0 {N_rem(sizet,numScalarObjectiveFunctions)} ]
-    [ field_objectives INTEGER >= 0 {N_rem(sizet,numFieldObjectiveFunctions)}
+    [ scalar_objectives ALIAS num_scalar_objectives INTEGER >= 0 {N_rem(sizet,numScalarObjectiveFunctions)} ]
+    [ field_objectives ALIAS num_field_objectives INTEGER >= 0 {N_rem(sizet,numFieldObjectiveFunctions)}
       lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ 
@@ -2071,8 +2071,8 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
       [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
      ]
-    [ scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]
-    [ field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)}
+    [ scalar_calibration_terms ALIAS num_scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]
+    [ field_calibration_terms ALIAS num_field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)}
       lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ 
@@ -2084,8 +2084,8 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
    )
   |
   ( response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
-    [ scalar_responses INTEGER >= 0 {N_rem(sizet,numScalarResponseFunctions)} ]
-    [ field_responses INTEGER >= 0 {N_rem(sizet,numFieldResponseFunctions)}
+    [ scalar_responses ALIAS num_scalar_responses INTEGER >= 0 {N_rem(sizet,numScalarResponseFunctions)} ]
+    [ field_responses ALIAS num_field_responses INTEGER >= 0 {N_rem(sizet,numFieldResponseFunctions)}
       lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ 

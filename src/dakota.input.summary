@@ -2104,8 +2104,8 @@ KEYWORD12 responses
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST ]
 	    ]
-	  [ scalar_objectives INTEGER >= 0 ]
-	  [ field_objectives INTEGER >= 0
+	  [ scalar_objectives ALIAS num_scalar_objectives INTEGER >= 0 ]
+	  [ field_objectives ALIAS num_field_objectives INTEGER >= 0
 	    lengths INTEGERLIST
 	    [ num_coordinates_per_field INTEGERLIST ]
 	    [ coordinate_list REALLIST
@@ -2136,8 +2136,8 @@ KEYWORD12 responses
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST ]
 	    ]
-	  [ scalar_calibration_terms INTEGER >= 0 ]
-	  [ field_calibration_terms INTEGER >= 0
+	  [ scalar_calibration_terms ALIAS num_scalar_calibration_terms INTEGER >= 0 ]
+	  [ field_calibration_terms ALIAS num_field_calibration_terms INTEGER >= 0
 	    lengths INTEGERLIST
 	    [ num_coordinates_per_field INTEGERLIST ]
 	    [ coordinate_list REALLIST
@@ -2146,8 +2146,8 @@ KEYWORD12 responses
 	  )
 	|
 	( response_functions ALIAS num_response_functions INTEGER >= 0
-	  [ scalar_responses INTEGER >= 0 ]
-	  [ field_responses INTEGER >= 0
+	  [ scalar_responses ALIAS num_scalar_responses INTEGER >= 0 ]
+	  [ field_responses ALIAS num_field_responses INTEGER >= 0
 	    lengths INTEGERLIST
 	    [ num_coordinates_per_field INTEGERLIST ]
 	    [ coordinate_list REALLIST
