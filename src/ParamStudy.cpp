@@ -66,6 +66,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       if (numSteps && iteratedModel.parallel_library().command_line_check()) {
 	initialCVPoint  = iteratedModel.continuous_variables();      // view
 	initialDIVPoint = iteratedModel.discrete_int_variables();    // view
+	initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
 	initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
 	initialDRVPoint = iteratedModel.discrete_real_variables();   // view
 	final_point_to_step_vector(); // covers check_ranges_sets(numSteps)
@@ -81,6 +82,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
 	err_flag = true;
       // discrete initial pts needed for check_sets(); reassigned in pre-run
       initialDIVPoint = iteratedModel.discrete_int_variables();    // view
+      initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
       initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
       initialDRVPoint = iteratedModel.discrete_real_variables();   // view
       if (check_ranges_sets(numSteps))
@@ -95,8 +97,10 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     if (check_steps_per_variable(
 	probDescDB.get_iv("method.parameter_study.steps_per_variable")))
       err_flag = true;
-    initialDIVPoint = iteratedModel.discrete_int_variables();  // view
-    initialDRVPoint = iteratedModel.discrete_real_variables(); // view
+    initialDIVPoint = iteratedModel.discrete_int_variables();    // view
+    initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
+    initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
+    initialDRVPoint = iteratedModel.discrete_real_variables();   // view
     if (check_ranges_sets(contStepsPerVariable, discIntStepsPerVariable,
 			  discStringStepsPerVariable, discRealStepsPerVariable))
       err_flag = true;
@@ -139,6 +143,7 @@ void ParamStudy::pre_run()
       methodName == CENTERED_PARAMETER_STUDY) {
     copy_data(vars.continuous_variables(),      initialCVPoint);  // copy
     copy_data(vars.discrete_int_variables(),    initialDIVPoint); // copy
+    initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
     initialDSVPoint = vars.discrete_string_variables();           // copy
     copy_data(vars.discrete_real_variables(),   initialDRVPoint); // copy
   }
@@ -510,7 +515,7 @@ load_distribute_points(const String& points_filename, bool annotated)
     const IntVector& di_lb = iteratedModel.discrete_int_lower_bounds();
     const IntVector& di_ub = iteratedModel.discrete_int_upper_bounds();
 
-    for (size_t j=0, dsi_cntr=0, dri_cntr=0; j<numDiscreteIntVars; ++j)
+    for (size_t j=0, dsi_cntr=0; j<numDiscreteIntVars; ++j)
       if (di_set_bits[j]) {
 	// set values
 	if (set_value_to_index(listDIVPoints[i][j], dsi_vals[dsi_cntr]) 
@@ -520,6 +525,7 @@ load_distribute_points(const String& points_filename, bool annotated)
 	       << std::endl;
 	  err = true;
 	}
+	++dsi_cntr;
       }
       else {
 	// range values: validate bounds

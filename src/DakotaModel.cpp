@@ -90,10 +90,14 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   outputLevel(problem_db.get_short("method.output")),
   discreteDesignSetIntValues(
     problem_db.get_isa("variables.discrete_design_set_int.values")),
+  discreteDesignSetStringValues(
+    problem_db.get_ssa("variables.discrete_design_set_string.values")),
   discreteDesignSetRealValues(
     problem_db.get_rsa("variables.discrete_design_set_real.values")),
   discreteStateSetIntValues(
     problem_db.get_isa("variables.discrete_state_set_int.values")),
+  discreteStateSetStringValues(
+    problem_db.get_ssa("variables.discrete_state_set_string.values")),
   discreteStateSetRealValues(
     problem_db.get_rsa("variables.discrete_state_set_real.values")),
   aleatDistParams(problem_db.get_rv("variables.normal_uncertain.means"),
