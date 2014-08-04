@@ -179,11 +179,11 @@ void TrackerHTTP::populate_method_list(ProblemDescDB& problem_db)
   // TODO: consider sorting and removing duplicates -- probably not
   // TODO: fix trailing comma
   // TODO: consider "uses_method"
-  IteratorList dakota_iterators = problem_db.iterator_list();
-  IterLIter itit  = dakota_iterators.begin();
-  IterLIter itend = dakota_iterators.end();
+  const IteratorList& dakota_iterators = problem_db.iterator_list();
+  IteratorList::const_iterator itit  = dakota_iterators.begin();
+  IteratorList::const_iterator itend = dakota_iterators.end();
   for ( ; itit != itend; ++itit)
-    methodList += itit->method_name() + ",";
+    methodList += itit->method_string() + ",";
 }
 
 
