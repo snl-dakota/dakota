@@ -14270,13 +14270,13 @@ Test Number 0 succeeded
                       3.0891089364e-14
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 19474 total (19474 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 19595 total (19595 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 5501 total (5501 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.4193989147e-01 x1
-                      8.8694240080e-01 x2
+                      9.8706088390e-01 x1
+                      9.7429609026e-01 x2
 <<<<< Best objective function  =
-                      3.3804846892e-03
+                      1.6742548891e-04
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1264 total (1264 new, 0 duplicate)

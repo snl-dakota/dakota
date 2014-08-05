@@ -61,6 +61,7 @@ model,
 ### Section to specify surface fit method.
 	  polynomial quadratic 			#0
 #	  neural_network			#1
+#	    nodes = 10  # to get historical behavior on test 1
 #	  gaussian_process surfpack		#2,#3,#9,#10,#11
 #	   correlation_lengths 0.79 0.76	#3
 #	  mars					#4
