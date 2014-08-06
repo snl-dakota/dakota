@@ -10,9 +10,7 @@
 //- Description:  Class implementation
 //- Owner:        Brian Adams
 
-#include "PythonInterface.hpp"
-#include "DataMethod.hpp"
-#include "ProblemDescDB.hpp"
+// Include Python headers first to avoid _POSIX_C_SOURCE redefinition warnings
 
 // This hacks around lack of a packaged Python debug lib by default on Windows.
 #if defined(_DEBUG) && defined(_MSC_VER)
@@ -27,22 +25,32 @@
 #include <arrayobject.h>
 #endif
 
+#include "PythonInterface.hpp"
+#include "dakota_global_defs.hpp"
+#include "DataMethod.hpp"
+#include "ProblemDescDB.hpp"
+
+
 namespace Dakota {
 
 PythonInterface::PythonInterface(const ProblemDescDB& problem_db)
   : DirectApplicInterface(problem_db),
-    userNumpyFlag(problem_db.get_bool("interface.python.numpy"))
+    userNumpyFlag(problem_db.get_bool("interface.python.numpy")),
+    ownPython(false)
 {
-  Py_Initialize();
-  if (Py_IsInitialized()) {
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Python interpreter initialized for direct function evaluation."
-	   << std::endl;
-  }
-  else {
-    Cerr << "Error: Could not initialize Python for direct function "
-	 << "evaluation." << std::endl;
-    abort_handler(-1);
+  if (!Py_IsInitialized()) {
+    Py_Initialize();
+    ownPython = true;
+    if (Py_IsInitialized()) {
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Python interpreter initialized for direct function evaluation."
+	     << std::endl;
+    }
+    else {
+      Cerr << "Error: Could not initialize Python for direct function "
+	   << "evaluation." << std::endl;
+      abort_handler(-1);
+    }
   }
 
   if (userNumpyFlag) {
@@ -64,7 +72,7 @@ PythonInterface::PythonInterface(const ProblemDescDB& problem_db)
 
 
 PythonInterface::~PythonInterface() {
-  if (Py_IsInitialized()) {
+  if (ownPython && Py_IsInitialized()) {
     Py_Finalize();
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Python interpreter terminated." << std::endl;
@@ -72,7 +80,7 @@ PythonInterface::~PythonInterface() {
 }
 
 
-/// Python specialization of dervied analysis components
+/// Python specialization of derived analysis components
 int PythonInterface::derived_map_ac(const String& ac_name)
 {
 #ifdef MPI_DEBUG
@@ -154,6 +162,8 @@ int PythonInterface::python_run(const String& ac_name)
   if (module_name.size() == 0 || function_name.size() == 0) {
     Cerr << "\nError: invalid Python analysis_driver '" << ac_name
 	 << "'\n       Should have form 'module:function'." << std::endl;
+    Py_DECREF(pDict);
+    Py_DECREF(pArgs);
     abort_handler(INTERFACE_ERROR);
   }
 
@@ -163,6 +173,8 @@ int PythonInterface::python_run(const String& ac_name)
     Cerr << "Error (PythonInterface): Failure importing module '" 
 	 << module_name  << "'.\n                         Consider setting "
 	 << "PYTHONPATH." << std::endl;
+    Py_DECREF(pDict);
+    Py_DECREF(pArgs);
     abort_handler(INTERFACE_ERROR);
   }
 
@@ -170,6 +182,9 @@ int PythonInterface::python_run(const String& ac_name)
   if (!pFunc || !PyCallable_Check(pFunc)) {
     Cerr << "Error (PythonInterface): Function '" << function_name  
 	 << "' not found or not callable" << std::endl;
+    Py_DECREF(pDict);
+    Py_DECREF(pArgs);
+    Py_DECREF(pModule);
     abort_handler(INTERFACE_ERROR);
   }
 
@@ -177,23 +192,35 @@ int PythonInterface::python_run(const String& ac_name)
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Info (PythonInterface): Calling function " << function_name 
 	 << " in module " << module_name << "." << std::endl;
+  PyErr_Clear();
   PyObject *retVal = PyObject_Call(pFunc, pArgs, pDict);
-  if (!retVal) {
-    // TODO: better error reporting from Python
-    Cerr << "Error (PythonInterface): Unknown error evaluating python "
-	 << "function." << std::endl;
-    abort_handler(INTERFACE_ERROR);
-  }
 
   Py_DECREF(pDict);
   Py_DECREF(pArgs);    
-  Py_DECREF(pFunc);
   Py_DECREF(pModule);
+  Py_DECREF(pFunc);
+
+  if (!retVal) {
+    if (PyErr_Occurred()) {
+      if (abort_mode == ABORT_EXITS)  // If abort throws, caller must report.
+        PyErr_Print();
+    }
+    else {
+      Cerr << "Error (PythonInterface): Unknown error evaluating python "
+          << "function." << std::endl;
+    }
+    // abort_handler manages exit vs. throw
+    //    abort_handler(INTERFACE_ERROR);
+    // by throwing an int, we allow manage_failures to try again if desired
+    fail_code = INTERFACE_ERROR;
+    throw(fail_code);
+  }
+
 
   // process the return data
 
   bool fn_flag = false;
-  for (int i=0; i<numFns; ++i)
+  for (size_t i=0; i<numFns; ++i)
     if (directFnASV[i] & 1) {
       fn_flag = true;
       break;
@@ -250,7 +277,7 @@ int PythonInterface::python_run(const String& ac_name)
 	Py_DECREF(retVal);
 	abort_handler(INTERFACE_ERROR);
       }
-      for (int i=0; i<numFns; ++i)
+      for (size_t i=0; i<numFns; ++i)
 	fnLabels[i] = PyString_AsString(PyList_GetItem(obj, i));
     }
   }
@@ -280,7 +307,7 @@ python_convert_int(const ArrayT& src, Size sz, PyObject** dst)
       return(false);
     }
     PyArrayObject *pao = (PyArrayObject *) *dst;
-    for (int i=0; i<sz; ++i)
+    for (Size i=0; i<sz; ++i)
       *(int *)(pao->data + i*(pao->strides[0])) = (int) src[i];
   }
   else 
@@ -290,7 +317,7 @@ python_convert_int(const ArrayT& src, Size sz, PyObject** dst)
       Cerr << "Error creating Python list." << std::endl;
       return(false);
     }
-    for (int i=0; i<sz; ++i)
+    for (Size i=0; i<sz; ++i)
       PyList_SetItem(*dst, i, PyInt_FromLong((long) src[i]));
   }
   return(true);
@@ -507,8 +534,8 @@ bool PythonInterface::python_convert(PyObject *pym, RealMatrix &rm)
       return(false);
     }
     PyArrayObject *pao = (PyArrayObject *) pym;
-    for (int i=0; i<numFns; ++i)
-      for (int j=0; j<numDerivVars; ++j)
+    for (size_t i=0; i<numFns; ++i)
+      for (size_t j=0; j<numDerivVars; ++j)
 	rm(j,i) = *(double *)(pao->data + i*(pao->strides[0]) + 
 			      j*(pao->strides[1]));
   }
@@ -520,7 +547,7 @@ bool PythonInterface::python_convert(PyObject *pym, RealMatrix &rm)
       Cerr << "Python matrix must have " << numFns << "rows." << std::endl;
       return(false);
     }
-    for (int i=0; i<numFns; ++i) {
+    for (size_t i=0; i<numFns; ++i) {
       val = PyList_GetItem(pym, i);
       if (PyList_Check(val)) {
 	// use the helper to convert this column of the gradients
@@ -555,8 +582,8 @@ bool PythonInterface::python_convert(PyObject *pym,
       return(false);
     }
     PyArrayObject *pao = (PyArrayObject *) pym;
-    for (int i=0; i<numDerivVars; ++i)
-      for (int j=0; j<=i; ++j)
+    for (size_t i=0; i<numDerivVars; ++i)
+      for (size_t j=0; j<=i; ++j)
 	rm(i,j) = *(double *)(pao->data + i*(pao->strides[0]) + 
 			       j*(pao->strides[1]));
   }
@@ -568,7 +595,7 @@ bool PythonInterface::python_convert(PyObject *pym,
       return(false);
     }
     PyObject *pyv, *val;
-    for (int i=0; i<numDerivVars; ++i) {
+    for (size_t i=0; i<numDerivVars; ++i) {
       pyv = PyList_GetItem(pym, i);
       if (!PyList_Check(pyv) || PyList_Size(pyv) != numDerivVars) {
 	Cerr << "Python vector must have length " << numDerivVars << "." 
@@ -612,9 +639,9 @@ python_convert(PyObject *pyma, RealSymMatrixArray &rma)
       return(false);
     }
     PyArrayObject *pao = (PyArrayObject *) pyma;
-    for (int i=0; i<numFns; ++i)
-      for (int j=0; j<numDerivVars; ++j)
-	for (int k=0; k<=j; ++k)
+    for (size_t i=0; i<numFns; ++i)
+      for (size_t j=0; j<numDerivVars; ++j)
+	for (size_t k=0; k<=j; ++k)
 	  rma[i](j,k) = *(double *)(pao->data + i*(pao->strides[0]) + 
 				    j*(pao->strides[1]) +
 				    k*(pao->strides[2]));
@@ -628,7 +655,7 @@ python_convert(PyObject *pyma, RealSymMatrixArray &rma)
 	   << std::endl;
       return(false);
     }
-    for (int i=0; i<numFns; ++i) {
+    for (size_t i=0; i<numFns; ++i) {
       val = PyList_GetItem(pyma, i);
       if (PyList_Check(val)) {
 	if (!python_convert(val, rma[i]))

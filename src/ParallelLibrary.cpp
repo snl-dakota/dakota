@@ -35,6 +35,7 @@ static const char rcsId[]="@(#) $Id: ParallelLibrary.cpp 7013 2010-10-08 01:03:3
 
 namespace Dakota {
 
+// Note: MSVC requires these defined outside any function
 extern MPIManager     dummy_mpi_mgr; // defined in dakota_global_defs.cpp
 extern ProgramOptions dummy_prg_opt; // defined in dakota_global_defs.cpp
 extern OutputManager  dummy_out_mgr; // defined in dakota_global_defs.cpp
