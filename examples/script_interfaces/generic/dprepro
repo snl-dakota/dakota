@@ -35,8 +35,10 @@ $i  = "-?\\d+";                                         # integer
 $ui = "\\d+";                                           # unsigned integer
 # Note: these should be protected within () due to OR's
 $t  = "\\w+(?::\\w+)*"; # tag (colon separated alphanumeric blocks:)
-$v  = "$e|$f|$i|$t";    # value (numeric field: exponential, float, int, or 
-                        # string, with same admissible characters as tag)
+$s  = "\"*$t\"*";       # string (tag with optional double quotes;
+                        #         Dakota only uses double quotes, not single)
+$v  = "$e|$f|$i|$s";    # value (numeric field: exponential, float, int, or 
+                        # quoted string, with same admissible characters as tag)
 
 
 # Regular expression for an even number of backslashes
@@ -67,6 +69,9 @@ while (<DAKOTA_PARAMS>) { # read each line of file, one at a time
       # No longer convert exponents as dprepro mainly intended for Dakota
       # and not compatible with string-valued variables
       #$value =~ s/[dD]/e/o;      # convert any F77 dbl prec exponents
+      if ( $value =~ m/^\"*($t)\"*$/o ) {
+        $value = $1;  # remove quotes that appeared in the params file
+      }
       $values_p1{$tag} = $value; # store in hash
     }
   }
@@ -148,7 +153,10 @@ while (<TEMPLATE_SIMULATION>) {
           $value = eval $assign;
           if ($@) { die "Eval error: $@"; }
         }
-        $values_p2{$tag} = $value;          # store in priority 2 hash
+        if ( $value =~ m/^\"*($t)\"*$/o ) {
+	  $value = $1;  # remove quotes that appeared in the assignment
+	}
+	$values_p2{$tag} = $value;          # store in priority 2 hash
 
       }
       my $fv = format_value($value);

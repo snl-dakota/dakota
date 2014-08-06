@@ -75,3 +75,4 @@
 {test75=-1.0E+3}
 {test76=-1.0E-3}
 {teststr = sense}
+{quotedstr = "quote"}

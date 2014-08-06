@@ -847,6 +847,7 @@ void write_data_partial_aprepro(std::ostream& s, OrdinalType2 start_index,
 
 
 /// aprepro ostream insertion operator for partial StringMultiArray with labels
+/// (string variables must be quoted for use with aprepro)
 template <typename OrdinalType>
 void write_data_partial_aprepro(std::ostream& s, OrdinalType start_index,
   OrdinalType num_items, const StringMultiArray& v,
@@ -868,7 +869,7 @@ void write_data_partial_aprepro(std::ostream& s, OrdinalType start_index,
     s << "                    { " << std::setw(15)
       << std::setiosflags(std::ios::left)
       << label_array[i].data() << std::resetiosflags(std::ios::adjustfield)
-      << " = " << std::setw(write_precision+7) << v[i] <<" }\n";
+      << " = " << std::setw(write_precision+7) << '"' << v[i] << '"' << " }\n";
 }
 
 
@@ -1383,6 +1384,26 @@ inline void array_write(std::ostream& s, const ArrayT& v,
   for (register typename ArrayT::size_type i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7)
       << v[i] << ' ' << label_array[i] << '\n';
+}
+
+/// write array to std::ostream (APREPRO format)
+/// specialize for StringArray: values need quoting
+inline void array_write_aprepro(std::ostream& s, const StringArray& v,
+                                const std::vector<String>& label_array)
+{
+  s << std::scientific << std::setprecision(write_precision);
+  StringArray::size_type len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in vector<T>::write() does not equal "
+	 << "length of vector." << std::endl;
+    abort_handler(-1);
+  }
+  for (StringArray::size_type i=0; i<len; ++i)
+    s << "                    { "
+      << std::setw(15) << std::setiosflags(std::ios::left)
+      << label_array[i].c_str() << std::resetiosflags(std::ios::adjustfield)
+      << " = " << std::setw(write_precision+7)
+      << '"' << v[i] << '"' << " }\n";
 }
 
 

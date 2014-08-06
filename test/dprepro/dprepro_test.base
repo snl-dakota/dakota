@@ -6,9 +6,11 @@ mydefault = 8
 
 # Set a default string and make sure used
 nonsense
+testp2hash
 nonsense = nonsense
 stringfromfile = sense
-
+quotedstring = quote
+quotedstringinfile = testp2hash
 
 # Inline vs. next line override of default from parameters file; internal 2984
 # In both cases the parameter file should override the default
