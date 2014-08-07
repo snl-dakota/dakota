@@ -14,6 +14,7 @@
 #define WORKDIR_HELPER_H
 
 #include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 //#include <boost/shared_array.hpp>   WJB - ToDo: look into improved mem mgmt
 //                                    e.g. use of malloc w/o free is undesirable
 
@@ -96,6 +97,25 @@ public:
   /// Returns the string representing the path to the analysis driver,
   //  including typical windows extensions
   static std::string which(const std::string& driver_name);
+
+
+  /// recursively copy a list of source_paths (files, directories, symlinks),
+  /// potentially including wildcards, to destination_path
+  static void copy_items(const StringArray& source_paths,
+			 const bfs::path& destination_path,
+			 bool overwrite) 
+  { };
+
+  /// top-level link a list of source_paths (files, directories, symlinks),
+  /// potentially including wildcards, from destination_path
+  static void link_items(const StringArray& source_paths,
+			 const bfs::path& destination_path,
+			 bool overwrite);
+
+  /// link from path dest_link to a single path (file, dir, link) in
+  /// source directory
+  static void link(const bfs::path& src_path, const bfs::path& dest_link,
+		   bool overwrite);
 
 
 private:

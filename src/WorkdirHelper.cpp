@@ -11,7 +11,7 @@
 //- Owner:        Bill Bohnhoff
 
 #include "WorkdirHelper.hpp"
-#include "dakota_data_types.hpp"
+#include "dakota_data_util.hpp"  // for strcontains
 #include "dakota_global_defs.hpp"
 #include "dakota_filesystem_utils.hpp" // undesirable dependency for workdir_adjust
                               // WJB: wd_adjust has a MAJOR dependency on statics in dakota_filesystem_utils.cpp
@@ -420,5 +420,68 @@ WorkdirHelper::arg_adjust(bool cmd_line_args,
 
   return av;
 }
+
+
+// BMA TODO: link first, then copy so we skip if not replacing...
+
+/** Iterate source items (paths or wildcards), linking each of them
+    from the destination.  If overwrite, remove and replace any
+    existing destination target, otherwise, allow to persist */
+void WorkdirHelper::link_items(const StringArray& source_items,
+			       const bfs::path& destination_path,
+			       bool overwrite) 
+{
+  // iterate the items and link each entry or expanded wildcard
+  StringArray::const_iterator src_it  = source_items.begin();
+  StringArray::const_iterator src_end = source_items.end();
+  for( ; src_it != src_end; ++src_it) {
+
+    // TODO: more efficient
+    //    if ( contains_wildcard(*src_it) ) {
+    if ( strcontains(*src_it, "*") || strcontains(*src_it, "?") ) {
+      //   iterate paths matching the wildcard;
+    }
+    else {
+
+      //   link the path;
+      bfs::path src_path(*src_it);
+      if (bfs::exists(src_path)) {
+	bfs::path src_filename = src_path.filename();
+	link(src_path, destination_path / src_filename, overwrite);
+      }
+      else {
+	Cout << "Warning: path " << src_path 
+	     << " specified to link to does not exist. Skipping." << std::endl;
+      }
+
+    }
+
+  }
+
+}
+
+/** Both paths must be fully resolved. Assumes source file exists
+    since it was iterated in the calling context. If overwrite, any
+    existing path dest_link will be removed prior to creating the new
+    link. */
+void WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_link,
+			 bool overwrite)
+{
+  // symlink facilities require a qualifed source and destination
+  // name, be absolute for now
+  
+  if (overwrite && bfs::exists(dest_link))
+    bfs::remove_all(dest_link);
+
+  // now, only make the link if the dest doesn't exist
+  if (!bfs::exists(dest_link)) {
+    if (bfs::is_directory(src_path))
+      bfs::create_directory_symlink(src_path, dest_link);
+    else
+      bfs::create_symlink(src_path, dest_link);
+  }
+
+}
+
 
 } // namespace Dakota
