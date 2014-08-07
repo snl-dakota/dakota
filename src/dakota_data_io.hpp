@@ -637,12 +637,18 @@ void write_data(std::ostream& s,
 }
 
 
-#ifdef __SUNPRO_CC
+//#ifdef __SUNPRO_CC
 // custom func needed for SunPro CC 5.10
 /* WJB - ToDo (after 1.5 release):  Dig deeper into this new "ambiguity" that
          has surprisingly cropped up on Solaris
 "DakotaMinimizer.cpp", line 691: Could not find a match for Dakota::write_data ...
 */
+
+// BMA: Also needed for MSVS 2008, and probably in general as a
+// const_array_view shouldn't be convertible to const multi_array&
+// Could consider a single implementation with a forward from const &
+// to const view
+
 /// standard ostream insertion operator for full SerialDenseVector with labels
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s,
@@ -660,7 +666,7 @@ void write_data(std::ostream& s,
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
 }
-#endif
+//#endif
 
 
 /// standard ostream insertion operator for full SerialDenseVector
@@ -780,6 +786,27 @@ void write_data_partial(std::ostream& s,
 template <typename OrdinalType>
 void write_data_partial(std::ostream& s, OrdinalType start_index,
 			OrdinalType num_items, const StringMultiArray& v)
+{
+  OrdinalType i, end = start_index + num_items, len = v.size();
+  if (end > len) {
+    Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
+	 << "length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  //s << std::scientific << std::setprecision(write_precision);
+  for (i=start_index; i<end; ++i)
+    s << "                     " << std::setw(write_precision+7) << v[i] <<'\n';
+}
+
+
+// BMA: Implementation accepting a const_array_view since can't
+// convert to const& prototype above.  Could convert const & to a view
+// and pass to this function to have a single implementation...
+
+/// standard ostream insertion operator for partial StringMultiArray
+template <typename OrdinalType>
+void write_data_partial(std::ostream& s, OrdinalType start_index,
+			OrdinalType num_items, StringMultiArrayConstView v)
 {
   OrdinalType i, end = start_index + num_items, len = v.size();
   if (end > len) {
@@ -951,10 +978,32 @@ void write_data_partial_tabular(std::ostream& s,
 }
 
 
-/// tabular ostream insertion operator for partial StringMultiArray
+/// tabular ostream insertion operator for partial StringMultiArray (const &)
 template <typename OrdinalType>
 void write_data_partial_tabular(std::ostream& s,
   OrdinalType start_index, OrdinalType num_items, const StringMultiArray& v)
+{
+  OrdinalType end = start_index + num_items;
+  if (end > v.size()) {
+    Cerr << "Error: indexing in write_data_partial_tabular(std::ostream) "
+	 << "exceeds length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  //s << std::setprecision(write_precision) 
+  //  << std::resetiosflags(std::ios::floatfield);
+  for (OrdinalType i=start_index; i<end; ++i)
+    s << std::setw(write_precision+4) << v[i] << ' ';
+}
+
+
+// BMA: Implementation accepting a const_array_view since can't
+// convert to const& prototype above.  Could convert const & to a view
+// and pass to this function to have a single implementation...
+
+/// tabular ostream insertion operator for partial StringMultiArray (const view)
+template <typename OrdinalType>
+void write_data_partial_tabular(std::ostream& s,
+  OrdinalType start_index, OrdinalType num_items, StringMultiArrayConstView v)
 {
   OrdinalType end = start_index + num_items;
   if (end > v.size()) {
