@@ -431,7 +431,7 @@ bfs::path WorkdirHelper::system_tmp_name(const std::string& prefix)
   // TODO: try/catch
   bfs::path temp_directory = bfs::temp_directory_path();
   // generate a 6 hex character unique name
-  std::string temp_name_pattern(prefix + "_%%%%%%");
+  std::string temp_name_pattern(prefix + "_%%%%%%%%");
   bfs::path temp_name = bfs::unique_path(temp_name_pattern);
   return (temp_directory / temp_name);
 

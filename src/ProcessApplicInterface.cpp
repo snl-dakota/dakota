@@ -193,31 +193,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
     fullEvalId = eval_id_tag;
 
     if (specifiedParamsFileName.empty()) { // no user spec -> use temp files
-//#ifdef LINUX
-      /*
-      // mkstemp generates a unique filename using tmp_str _and_ creates the
-      // file.  This prevents potential issues with race conditions, but has
-      // the undesirable feature of requiring additional file deletions in the
-      // case of secondary tagging for multiple analysis drivers.
-      char tmp_str[20] = "/tmp/dakvars_XXXXXX";
-      mkstemp(tmp_str); // replaces XXXXXX with unique id
-      paramsFileName = tmp_str;
-      */
-//#else
-      // tmpnam generates a unique filename that does not exist at the time of
-      // invocation, but does not create the file.  It is more dangerous than
-      // mkstemp, since multiple applications could potentially generate the
-      // same temp filename prior to creating the file.
-      paramsFileName = std::tmpnam(NULL);
-
-#ifdef _MSC_VER
-      // Add the temporary directory in front. Windows always puts a backslash
-      // in front of the filename, which would place the file in the current
-      // working directory.
-      paramsFileName = (bfs::temp_directory_path()
-                        /= paramsFileName.substr(1)).string();
-#endif
-//#endif
+      paramsFileName = WorkdirHelper::system_tmp_name("dakota_params").string();
     }
     else {
       paramsFileName = specifiedParamsFileName;
@@ -225,31 +201,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 	paramsFileName += fullEvalId;
     }
     if (specifiedResultsFileName.empty()) { // no user spec -> use temp files
-//#ifdef LINUX
-      /*
-      // mkstemp generates a unique filename using tmp_str _and_ creates the
-      // file.  This prevents potential issues with race conditions, but has
-      // the undesirable feature of requiring additional file deletions in the
-      // case of secondary tagging for multiple analysis drivers.
-      char tmp_str[20] = "/tmp/dakresp_XXXXXX";
-      mkstemp(tmp_str); // replaces XXXXXX with unique id
-      resultsFileName = tmp_str;
-      */
-//#else
-      // tmpnam generates a unique filename that does not exist at the time of
-      // invocation, but does not create the file.  It is more dangerous than
-      // mkstemp, since multiple applications could potentially generate the
-      // same temp filename prior to creating the file.
-      resultsFileName = std::tmpnam(NULL);
-
-#ifdef _MSC_VER
-      // Add the temporary directory in front. Windows always puts a backslash
-      // in front of the filename, which would place the file in the current
-      // working directory.
-      resultsFileName = (bfs::temp_directory_path()
-                         /= resultsFileName.substr(1)).string();
-#endif
-//#endif
+      resultsFileName = WorkdirHelper::system_tmp_name("dakota_results").string();
     }
     else {
       resultsFileName = specifiedResultsFileName;
@@ -258,14 +210,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
     }
     if (useWorkdir) {
 	if (!workDir.length()) {
-          workDir = std::tmpnam(NULL);
-
-#ifdef _MSC_VER
-          // Add the temp directory in front. Windows always puts a backslash
-          // in front of the filename, which would place the file in the current
-          // working directory.
-          workDir = (bfs::temp_directory_path() /= workDir.substr(1)).string();
-#endif
+          workDir = WorkdirHelper::system_tmp_name("dakota_work").string();
           dirDel = true;
           dirSave = false;
 	}
