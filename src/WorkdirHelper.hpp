@@ -56,6 +56,9 @@ namespace bfs = boost::filesystem;
 
 namespace Dakota {
 
+/// define directory creation options
+enum { DIR_CLEAN, DIR_PERSIST, DIR_ERROR };
+
 class WorkdirHelper
 {
   //
@@ -98,6 +101,17 @@ public:
   //  including typical windows extensions
   static std::string which(const std::string& driver_name);
 
+  /// get a valid path to a temporary file/directory in the system tmp
+  /// path whose name starts with the passed prefix
+  static bfs::path system_tmp_name(const std::string& prefix);
+
+  /// Create a directory, with options for remove or error
+  static bool create_directory(const bfs::path& dir_path,
+			       short mkdir_option);
+
+  /// Remove a path (file, directory, or symlink) without regard to its
+  /// type.  Only error if existed and there's an error in the remove.
+  static void recursive_remove(const bfs::path& rm_path);
 
   /// recursively copy a list of source_paths (files, directories, symlinks),
   /// potentially including wildcards, to destination_path

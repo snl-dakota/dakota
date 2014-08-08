@@ -422,6 +422,121 @@ WorkdirHelper::arg_adjust(bool cmd_line_args,
 }
 
 
+
+bfs::path WorkdirHelper::system_tmp_name(const std::string& prefix)
+{
+  // TODO: split into a separate filename and directory portion to
+  // migrate sooner than later for param file name generation.
+  // TODO: tmp files in . or /tmp?   Could offer option.
+  // TODO: try/catch
+  bfs::path temp_directory = bfs::temp_directory_path();
+  // generate a 6 hex character unique name
+  std::string temp_name_pattern(prefix + "_%%%%%%");
+  bfs::path temp_name = bfs::unique_path(temp_name_pattern);
+  return (temp_directory / temp_name);
+
+// OLD RATIONALE:
+//#ifdef LINUX
+      /*
+      // mkstemp generates a unique filename using tmp_str _and_ creates the
+      // file.  This prevents potential issues with race conditions, but has
+      // the undesirable feature of requiring additional file deletions in the
+      // case of secondary tagging for multiple analysis drivers.
+      char tmp_str[20] = "/tmp/dakvars_XXXXXX";
+      mkstemp(tmp_str); // replaces XXXXXX with unique id
+      paramsFileName = tmp_str;
+      */
+//#else
+      // tmpnam generates a unique filename that does not exist at the time of
+      // invocation, but does not create the file.  It is more dangerous than
+      // mkstemp, since multiple applications could potentially generate the
+      // same temp filename prior to creating the file.
+      //paramsFileName = std::tmpnam(NULL);
+//#endif
+// END RATIONALE
+}
+
+
+/** mkdir_option is DIR_CLEAN (remove and recreate), DIR_PERSIST
+    (leave existing), or DIR_ERROR (don't allow existing) returns
+    whether a new directory was created. */
+bool WorkdirHelper::create_directory(const bfs::path& dir_path,
+				     short mkdir_option)
+{
+  bool dir_created = false;  // whether this function created a new directory
+
+  // remove any existing directory if requested
+  if (mkdir_option == DIR_CLEAN && bfs::exists(dir_path))
+    recursive_remove(dir_path);
+
+   // now conditionally create a new one
+  if (bfs::exists(dir_path)) {
+
+    if (mkdir_option == DIR_ERROR) {
+      // DIR_ERROR or failure in removal
+      Cerr << "Error: Directory " << dir_path << " exists (disallowed).\n"
+	   << std::endl;
+      abort_handler(-1);
+    }
+
+    // DIR_PERSIST case
+    if (!bfs::is_directory(dir_path)) {
+      Cerr << "Error: Directory " << dir_path << " exists (permitted), but "
+	   << "is not a directory." << std::endl;
+      abort_handler(-1);
+    }
+
+    // check permissions; syntax requires Boost 1.49 or newer
+    bfs::perms dir_perms = bfs::status(dir_path).permissions();
+    // TODO: verify owner_all on Windows?
+    //      if ( !(dir_perms & owner_all) ) {
+    if ( !(dir_perms & bfs::owner_write) ) {
+      Cerr << "Error: Directory " << dir_path << " exists (permitted), but "
+	   << "not writable." << std::endl;
+      abort_handler(-1);
+    }
+
+  }
+  else {
+
+    try {
+      // directory does not exist, create recursively (as if mkdir -p, we hope)
+      bfs::create_directories(dir_path);
+      dir_created = true;
+
+      // Shouldn't need this as create_directory is probably already more
+      // permissive than we want...
+
+      // make sure new directory has at least rwx (might also have s)
+      // TODO: make sure any intermediate paths have right permissions
+      //bfs::permissions(dir_path, bfs::add_perms | bfs::owner_all);
+    }
+    catch (const bfs::filesystem_error& e) {
+      Cerr << "\nError: could not create directory " << dir_path << ";\n" 
+	   << e.what() << std::endl;
+      abort_handler(IO_ERROR);
+    }
+
+  }
+
+  return dir_created;
+}
+
+
+void WorkdirHelper::recursive_remove(const bfs::path& rm_path)
+{
+  try {
+    if (bfs::exists(rm_path))
+      bfs::remove_all(rm_path);
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not remove path " << rm_path << ";\n" 
+        << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+}
+
+
 // BMA TODO: link first, then copy so we skip if not replacing...
 
 /** Iterate source items (paths or wildcards), linking each of them
