@@ -884,6 +884,13 @@ if(MSVC)
 endif()
 
 
+#--- WJB:  move into ../test/workdir_utils_coverage.cpp ASAP
+option(TEST_WORKDIR "Build workdir utils coverage tests." ON)
+if (TEST_WORKDIR)
+  add_executable(test_workdir_utils test_workdir_utils.cpp)
+  target_link_libraries(test_workdir_utils ${DAKOTA_ALL_LIBS})
+endif()
+
 #--- Add Dakota executables, with custom commands and properties
 
 add_executable(dakota main.cpp)
