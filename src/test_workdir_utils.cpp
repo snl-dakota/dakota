@@ -32,7 +32,6 @@ namespace TestWorkdir {
 
 int main()
 {
-#if 0
   // argc/argv??
 
   //bfs::path fq_search(argv[1]);
@@ -69,7 +68,6 @@ int main()
   }
 
   //return status;
-#endif
 return 0;
 }
 
