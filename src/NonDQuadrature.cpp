@@ -150,8 +150,12 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     // infer nestedRules
     for (size_t i=0; i<numContinuousVars; ++i) {
       short rule = poly_basis[i].collocation_rule();
+      // Distinguish between rules that *support* vs. *require* nesting, since
+      // TPQ should allow unrestricted order specifications where supported.
+      // > GENZ_KEISTER and GAUSS_PATTERSON are only defined as nested rules
+      // > NEWTON_COTES, CLENSHAW_CURTIS, FEJER2 support nesting but also allow
+      //   arbitrary order specification
       if (rule == Pecos::GENZ_KEISTER || rule == Pecos::GAUSS_PATTERSON)// ||
-	// TO DO: re-activate when INTERPOLATION_MODE is active
 	//rule == Pecos::NEWTON_COTES || rule == Pecos::CLENSHAW_CURTIS ||
 	//rule == Pecos::FEJER2)
 	{ nestedRules = true; break; }
