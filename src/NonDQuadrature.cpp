@@ -150,9 +150,10 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     // infer nestedRules
     for (size_t i=0; i<numContinuousVars; ++i) {
       short rule = poly_basis[i].collocation_rule();
-      if (rule == Pecos::GENZ_KEISTER || rule == Pecos::GAUSS_PATTERSON ||
-	  rule == Pecos::NEWTON_COTES || rule == Pecos::CLENSHAW_CURTIS ||
-	  rule == Pecos::FEJER2)
+      if (rule == Pecos::GENZ_KEISTER || rule == Pecos::GAUSS_PATTERSON)// ||
+	// TO DO: re-activate when INTERPOLATION_MODE is active
+	//rule == Pecos::NEWTON_COTES || rule == Pecos::CLENSHAW_CURTIS ||
+	//rule == Pecos::FEJER2)
 	{ nestedRules = true; break; }
     }
     reset();
