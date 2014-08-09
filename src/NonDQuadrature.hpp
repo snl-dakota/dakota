@@ -51,15 +51,16 @@ public:
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
   NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
-		 const RealVector& dim_pref);
+		 const RealVector& dim_pref, short driver_mode);
   /// alternate constructor for instantiations "on the fly" that
   /// generate a filtered tensor product sample set
   NonDQuadrature(Model& model, int num_filt_samples,
-		 const RealVector& dim_pref);
+		 const RealVector& dim_pref, short driver_mode);
   /// alternate constructor for instantiations "on the fly" that
   /// sample randomly from a tensor product multi-index
   NonDQuadrature(Model& model, int num_rand_samples, int seed,
-		 const UShortArray& quad_order_seq, const RealVector& dim_pref);
+		 const UShortArray& quad_order_seq, const RealVector& dim_pref,
+		 short driver_mode);
 
   //
   //- Heading: Virtual function redefinitions

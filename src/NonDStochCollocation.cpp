@@ -284,15 +284,14 @@ void NonDStochCollocation::initialize_u_space_model()
 				       true, useDerivs);
 
   // build a polynomial basis for purposes of defining collocation pts/wts
-  std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
+  std::vector<Pecos::BasisPolynomial> driver_basis;
   Pecos::SharedInterpPolyApproxData::construct_basis(natafTransform.u_types(),
-    iteratedModel.aleatory_distribution_parameters(), bc_options,
-    num_int_poly_basis);
+    iteratedModel.aleatory_distribution_parameters(), bc_options, driver_basis);
 
   // set the polynomial basis within the NonDIntegration instance
   NonDIntegration* u_space_sampler_rep
     = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-  u_space_sampler_rep->initialize_grid(num_int_poly_basis);
+  u_space_sampler_rep->initialize_grid(driver_basis);
 
   // perform last due to numSamplesOnModel update
   NonDExpansion::initialize_u_space_model();

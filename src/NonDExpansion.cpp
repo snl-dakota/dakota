@@ -268,8 +268,11 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   nestedRules = ( ruleNestingOverride == Pecos::NESTED ||
 		  ( refineType && ruleNestingOverride != Pecos::NON_NESTED ) );
 
+  short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
+                    ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
+
   u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, quad_order_seq, dim_pref), false);
+    NonDQuadrature(g_u_model, quad_order_seq, dim_pref, driver_mode), false);
 }
 
 
@@ -297,8 +300,11 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
     (refineType && ruleNestingOverride != Pecos::NON_NESTED));
   */
 
+  short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
+                    ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
+
   u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, filtered_samples, dim_pref), false);
+    NonDQuadrature(g_u_model, filtered_samples, dim_pref, driver_mode), false);
 }
 
 
@@ -328,8 +334,12 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
     (refineType && ruleNestingOverride != Pecos::NON_NESTED));
   */
 
-  u_space_sampler.assign_rep(new NonDQuadrature(
-    g_u_model, random_samples, seed, quad_order_seq, dim_pref), false);
+  short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
+                    ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
+
+  u_space_sampler.assign_rep(new
+    NonDQuadrature(g_u_model, random_samples, seed, quad_order_seq, dim_pref,
+		   driver_mode), false);
 }
 
 
@@ -366,17 +376,25 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
       refineControl      == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
     // unstructured index set evolution: no motivation to restrict
     growth_rate = Pecos::UNRESTRICTED_GROWTH;
+  // piecewise bases can be MODERATE *when* we distinguish INTERPOLATION_MODE
+  // TO DO: comment out this else block when re-activating INTERPOLATION_MODE
   else if (piecewiseBasis)
     // no reason to match Gaussian precision, but restriction still useful:
     // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
     // and is more consistent with UNRESTRICTED generalized sparse grids.
     growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
-  else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
+  else
+    // INTEGRATION_MODE:   standardize on precision: i = 2m-1 = 2(2l+1)-1 = 4l+1
+    // INTERPOLATION_MODE: standardize on number of interp pts: m = 2l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
 
+  short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
+                    ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
+
   u_space_sampler.assign_rep(new
-    NonDSparseGrid(g_u_model, expansionCoeffsApproach, ssg_level_seq, dim_pref,
-		   growth_rate, refineControl, track_wts, track_colloc), false);
+    NonDSparseGrid(g_u_model, ssg_level_seq, dim_pref, expansionCoeffsApproach,
+		   driver_mode, growth_rate, refineControl, track_wts,
+		   track_colloc), false);
 }
 
 

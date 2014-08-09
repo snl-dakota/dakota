@@ -73,13 +73,15 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
     evaluation of numerical quadrature points. */
 NonDQuadrature::
 NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
-	       const RealVector& dim_pref):
+	       const RealVector& dim_pref, short driver_mode):
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref), nestedRules(false),
   quadOrderSeqSpec(quad_order_seq), numSamples(0), quadMode(FULL_TENSOR)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
   tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+
+  tpqDriver->mode(driver_mode);
 
   // local natafTransform not yet updated: x_types would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
@@ -91,7 +93,8 @@ NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of filtered tensor quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref): 
+NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref,
+	       short driver_mode): 
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref),
   nestedRules(false), // minimize zeros introduced into Vandermonde matrix
   quadMode(FILTERED_TENSOR), numSamples(num_filt_samples)
@@ -99,6 +102,8 @@ NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref):
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
   tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+
+  tpqDriver->mode(driver_mode);
 
   // local natafTransform not yet updated: x_types would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
@@ -111,7 +116,8 @@ NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref):
     evaluation of random sampling from a tensor quadrature multi-index. */
 NonDQuadrature::
 NonDQuadrature(Model& model, int num_rand_samples, int seed,
-	       const UShortArray& quad_order_seq, const RealVector& dim_pref): 
+	       const UShortArray& quad_order_seq, const RealVector& dim_pref,
+	       short driver_mode): 
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref),
   nestedRules(false), // minimize zeros introduced into Vandermonde matrix
   quadOrderSeqSpec(quad_order_seq), quadMode(RANDOM_TENSOR),
@@ -120,6 +126,8 @@ NonDQuadrature(Model& model, int num_rand_samples, int seed,
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
   tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+
+  tpqDriver->mode(driver_mode);
 
   // local natafTransform not yet updated: x_types would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
@@ -141,15 +149,10 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
   case FULL_TENSOR:
     // infer nestedRules
     for (size_t i=0; i<numContinuousVars; ++i) {
-      short colloc_rule = poly_basis[i].collocation_rule();
-      if (colloc_rule == Pecos::GENZ_KEISTER    ||
-	  colloc_rule == Pecos::GAUSS_PATTERSON) //||
-	// don't need to enforce a growth pattern for these;
-	// also SLOW_RESTRICTED_GROWTH is not currently supported
-	// in tpqDriver->nested_quadrature_order()
-	//colloc_rule == Pecos::NEWTON_COTES    ||
-	//colloc_rule == Pecos::CLENSHAW_CURTIS ||
-	//colloc_rule == Pecos::FEJER2)
+      short rule = poly_basis[i].collocation_rule();
+      if (rule == Pecos::GENZ_KEISTER || rule == Pecos::GAUSS_PATTERSON ||
+	  rule == Pecos::NEWTON_COTES || rule == Pecos::CLENSHAW_CURTIS ||
+	  rule == Pecos::FEJER2)
 	{ nestedRules = true; break; }
     }
     reset();
