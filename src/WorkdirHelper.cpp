@@ -422,6 +422,34 @@ WorkdirHelper::arg_adjust(bool cmd_line_args,
 }
 
 
+/** Input: path_with_wc; Output: search_dir, wild_card */
+void WorkdirHelper::split_wildcard(const std::string& path_with_wc, 
+				   bfs::path& search_dir, std::string& wild_card)
+{
+  // could coerce string to path in passing args...
+  bfs::path fq_search(path_with_wc);
+
+  // TODO: better way to do this (trailing slash yields filename of .)
+  // want to allow matching /tmp/foo/ as /tmp with entry foo so foo
+  // gets copied or linked
+
+  // BUT if fq_search is a symlink, perhaps want to resolve it...
+  // In Posix, trailing slash on symlink means follow it
+
+  if ( boost::equals( (--fq_search.end())->native(), ".") )
+    fq_search.remove_filename();
+  
+  search_dir = fq_search.parent_path();
+
+  // could instead consider the Dakota runtime PWD
+  if (search_dir.empty())
+    search_dir = ".";
+
+  // might we need wstring on Windows?
+  wild_card = fq_search.filename().native();
+
+}
+
 
 bfs::path WorkdirHelper::system_tmp_name(const std::string& prefix)
 {

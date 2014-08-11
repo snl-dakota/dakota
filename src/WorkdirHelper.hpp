@@ -18,6 +18,10 @@
 //#include <boost/shared_array.hpp>   WJB - ToDo: look into improved mem mgmt
 //                                    e.g. use of malloc w/o free is undesirable
 
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/iterator/filter_iterator.hpp>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 namespace bfs = boost::filesystem;
@@ -58,6 +62,63 @@ namespace Dakota {
 
 /// define directory creation options
 enum { DIR_CLEAN, DIR_PERSIST, DIR_ERROR };
+
+
+// Notes on wildcard matching:
+
+// decent example: http://www.cplusplus.com/forum/general/88115/
+
+// see   http://www.tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm
+//       http://en.wikipedia.org/wiki/Glob_%28programming%29
+//       "man 7 glob" 
+// for more globbing we could support
+// later: {} [] ! 
+
+// supporting [] could be tricky due to order precedence
+
+// TODO: escape various things:
+// http://stackoverflow.com/questions/3300419/file-name-matching-with-wildcard
+
+
+/// Predicate that returns true when the passed path matches the
+/// wild_card with which it was configured.  
+/// Currently supports * and ?.
+struct MatchesWC {
+
+  /// ctor that builds and stores the regular expression
+  MatchesWC(const std::string& wild_card)
+  { 
+    std::string file_regex(wild_card);
+
+    // map * and ? wildcards to regular expression syntax
+    boost::replace_all(file_regex, ".", "\\.") ;
+    boost::replace_all(file_regex, "*", ".*") ;
+    boost::replace_all(file_regex, "?", "(.{1,1})") ;
+
+    boost::regex::flag_type regex_opts = boost::regex::normal;
+#ifdef _WIN32
+    // allow case insensitive match on native Windows
+    regex_opts |= boost::regex::icase;
+#endif
+
+    wildCardRegEx.assign(file_regex, regex_opts);
+  }
+
+  /// return true is dir_entry matches wildCardRegEx
+  bool operator()(const bfs::path& dir_entry) 
+  {  
+    // TODO: decide about locale, native, etc.
+    return boost::regex_match(dir_entry.filename().native(), wildCardRegEx);
+  }
+
+  /// archived RegEx
+  boost::regex wildCardRegEx;
+};
+
+/// a glob_iterator filters a directory_iterator based on a wildcard predicate
+typedef boost::filter_iterator<MatchesWC, bfs::directory_iterator> glob_iterator;
+
+
 
 class WorkdirHelper
 {
@@ -100,6 +161,12 @@ public:
   /// Returns the string representing the path to the analysis driver,
   //  including typical windows extensions
   static std::string which(const std::string& driver_name);
+
+  /// given a string with an optional path and a wildcard, e.g.,
+  /// /tmp/D*.?pp, parse it into the search path /tmp (default .) and
+  /// the wildcard D*.?pp
+  static void split_wildcard(const std::string& path_with_wc, 
+			     bfs::path& search_dir, std::string& wild_card);
 
   /// get a valid path to a temporary file/directory in the system tmp
   /// path whose name starts with the passed prefix

@@ -35,39 +35,22 @@ int main()
   // argc/argv??
 
   //bfs::path fq_search(argv[1]);
-  bfs::path fq_search( std::getenv("HOME") );
+  std::string fq_search(std::getenv("HOME"));
+  fq_search += "/d*";
 
-  // TODO: better way to do this (trailing slash yields filename of .)
-  // want to allow matching /tmp/foo/ as /tmp with entry foo so foo
-  // gets copied or linked
-
-  // BUT if fq_search is a symlink, perhaps want to resolve it...
-  // In Posix, trailing slash on symlink means follow it
-
-  if ( boost::equals( (--fq_search.end())->native(), ".") )
-    ;//fq_search.remove_filename();
-
-  bfs::path search_dir = fq_search.parent_path();
-
-  // could instead consider the Dakota runtime PWD
-    //search_dir = std::getenv(PWD);
-  if (search_dir.empty())
-    search_dir = ".";
-
-  std::string wild_card = fq_search.filename().native();
+  bfs::path search_dir;
+  std::string wild_card;
+  WorkdirHelper::split_wildcard(fq_search, search_dir, wild_card);
 
   std::cout << "Searching " << search_dir << " for " << wild_card << std::endl;
 
-  bfs::directory_iterator dir_it(search_dir);
-  bfs::directory_iterator dir_end;
-  for ( ; dir_it != dir_end; ++dir_it) {
-    ;//if (matches_wildcard(dir_it->path().filename(), wild_card))
-      std::cout << "in wildcard: " << dir_it->path() << std::endl;
-    //else
-    //  std::cout << "NOT in wildcard: " << dir_it->path() << std::endl;
-  }
+  MatchesWC wc_predicate(wild_card);
+  glob_iterator fit(wc_predicate, bfs::directory_iterator(search_dir));
+  glob_iterator fitend(wc_predicate, bfs::directory_iterator());
+
+  for ( ; fit != fitend; ++fit)
+    std::cout << "in wildcard: " << fit->path() << std::endl;
 
   //return status;
-return 0;
+  return 0;
 }
-
