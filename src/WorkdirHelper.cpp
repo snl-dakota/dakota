@@ -502,14 +502,14 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
 
     if (mkdir_option == DIR_ERROR) {
       // DIR_ERROR or failure in removal
-      Cerr << "Error: Directory " << dir_path << " exists (disallowed).\n"
+      Cerr << "\nError: Directory " << dir_path << " exists (disallowed).\n"
 	   << std::endl;
       abort_handler(-1);
     }
 
     // DIR_PERSIST case
     if (!bfs::is_directory(dir_path)) {
-      Cerr << "Error: Directory " << dir_path << " exists (permitted), but "
+      Cerr << "\nError: Directory " << dir_path << " exists (permitted), but "
 	   << "is not a directory." << std::endl;
       abort_handler(-1);
     }
@@ -519,7 +519,7 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
     // TODO: verify owner_all on Windows?
     //      if ( !(dir_perms & owner_all) ) {
     if ( !(dir_perms & bfs::owner_write) ) {
-      Cerr << "Error: Directory " << dir_path << " exists (permitted), but "
+      Cerr << "\nError: Directory " << dir_path << " exists (permitted), but "
 	   << "not writable." << std::endl;
       abort_handler(-1);
     }

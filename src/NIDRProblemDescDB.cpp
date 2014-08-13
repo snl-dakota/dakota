@@ -188,20 +188,6 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
       }
     }
 #endif
-    // create initial work directories: this should be removed; might need tags
-    if (parallel_library().mpirun_flag()) {
-      std::list<DataInterface>::iterator
-	Ifl  = dataInterfaceList.begin(),
-	Ifle = dataInterfaceList.end();
-      DataInterfaceRep *Ir;
-      struct stat sb;
-
-      for(; Ifl != Ifle; Ifl++) {
-	Ir = Ifl->dataIfaceRep;
-	if ((s = (Ir->workDir).c_str()) && *s && stat(s,&sb))
-	  DAK_MKDIR(s, 0700);
-      }
-    }
   }
 }
 

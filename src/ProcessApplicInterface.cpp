@@ -76,6 +76,30 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
 
   if (num_programs > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;
+
+  // BMA: logic moved from NIDRProblemDescDB to consolidate for
+  // refactor; need to assess side effects of moving.
+
+  // TODO: Why was the parser making a workdir?  I believe this
+  // explains the extra untagged dir that remains at end of run...  Make
+  // sure workdir creation works in parallel in the interfaces, making
+  // and removing them on eval comm rank 0 as needed.
+  
+  // Maybe DMG was checking to make sure that the work directory stuff
+  // was valid at construct time, in which case we can just do in the
+  // interface ctor...  Don't believe we should try to make
+  // directories until run time.
+
+  // the first two conditionals are from derived_parse_inputs; the
+  // last is since parsing only takes place on rank 0
+  if (parallelLib.command_line_run() && parallelLib.mpirun_flag() && 
+      parallelLib.world_rank() == 0) {
+    bfs::path wd(workDir);
+    if ( !bfs::exists(wd) )
+      WorkdirHelper::create_directory(wd, DIR_PERSIST);
+    // DIR_PERSIST shouldn't be encountered, but using more premissive option
+    // TODO: DMG was setting permissions 0700
+  }
 }
 
 
@@ -84,6 +108,12 @@ ProcessApplicInterface::~ProcessApplicInterface()
   if (dirDel && 
       (templateDir.length() || templateFiles.size() || rmdir(workDir.c_str())))
     rec_rmdir(workDir.c_str());
+  // BMA: this breaks current tests; not sure why
+  // if (dirDel && 
+  //     (templateDir.length() || templateFiles.size() )) {
+  //   bfs::path wd(workDir);
+  //   WorkdirHelper::recursive_remove(wd);
+  // }
 }
 
 
