@@ -259,7 +259,7 @@ SeqHybridMetaIterator::~SeqHybridMetaIterator()
 	deallocate(selectedIterators[i], selectedModels[i]);
   }
 
-  // si_pl parallelism level is deallocated in ~MetaIterator
+  // mi_pl parallelism level is deallocated in ~MetaIterator
 }
 
 
@@ -316,11 +316,11 @@ void SeqHybridMetaIterator::run_sequential()
 	  // send curr_accepts_multi from 1st iterator master to strategy master
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
-	    parallel_lib.send_si(multi_flag, 0, 0);
+	    parallel_lib.send_mi(multi_flag, 0, 0);
 	  }
 	  else if (server_id == 0) {
 	    int multi_flag; MPI_Status status;
-	    parallel_lib.recv_si(multi_flag, 1, 0, status);
+	    parallel_lib.recv_mi(multi_flag, 1, 0, status);
 	    curr_accepts_multi = (bool)multi_flag; // int -> bool
 	    iterSched.numIteratorJobs
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
@@ -415,14 +415,14 @@ void SeqHybridMetaIterator::run_sequential()
 	  MPIPackBuffer send_buffer;
 	  send_buffer << parameterSets;
 	  int buffer_len = send_buffer.size();
-	  parallel_lib.bcast_si(buffer_len);
-	  parallel_lib.bcast_si(send_buffer);
+	  parallel_lib.bcast_mi(buffer_len);
+	  parallel_lib.bcast_mi(send_buffer);
 	}
 	else { // replace partial list
 	  int buffer_len;
-	  parallel_lib.bcast_si(buffer_len);
+	  parallel_lib.bcast_mi(buffer_len);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallel_lib.bcast_si(recv_buffer);
+	  parallel_lib.bcast_mi(recv_buffer);
 	  recv_buffer >> parameterSets;
 	}
       }
@@ -489,7 +489,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
     }
     else
       iterSched.run_iterator(curr_iterator,
-	parallel_lib.parallel_configuration().si_parallel_level());
+	parallel_lib.parallel_configuration().mi_parallel_level());
   }
 }
 

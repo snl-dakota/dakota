@@ -3010,13 +3010,13 @@ void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
     modelRep->init_communicators(max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
-    // Undefined si_pl can happen for IteratorScheduler::
+    // Undefined mi_pl can happen for IteratorScheduler::
     // init_evaluation_concurrency(), as estimation of concurrency involves
     // instantiation of Iterators prior to init_iterator_parallelism, and some
     // Iterators invoke init_communicators() for contained helper iterators.
     // Abandoning a parallel configuration means that these iterator instances
-    // should be discarded and replaced once the si_pl context is available.
-    if (!parallelLib.si_parallel_level_defined())
+    // should be discarded and replaced once the mi_pl context is available.
+    if (!parallelLib.mi_parallel_level_defined())
       return;
 
     // matches bcast in Model::serve_configurations() called from
@@ -3024,7 +3024,7 @@ void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
     // are present in Iterator instantiations, only the matching Model instance
     // participates in this collective communication.
     if (initCommsBcastFlag &&
-	modelPCIter->si_parallel_level().server_communicator_rank() == 0)
+	modelPCIter->mi_parallel_level().server_communicator_rank() == 0)
       parallelLib.bcast_i(max_eval_concurrency);
 
     // estimate messageLengths

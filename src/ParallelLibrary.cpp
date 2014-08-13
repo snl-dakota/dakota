@@ -713,7 +713,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   // Create parent-child intracommunicator used to avoid broadcasting over all
   // of parent Comm when all you really need is the child rank == 0 processors.
-  // Exclude any idle partition (example: bcast_si() in MetaIterators).
+  // Exclude any idle partition (example: bcast_mi() in MetaIterators).
   color = (child_pl.serverCommRank == 0 &&
 	   child_pl.serverId <= child_pl.numServers) ? 1 : 0;
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
@@ -893,7 +893,7 @@ void ParallelLibrary::print_configuration()
   // stratDedicatedMasterFlag in IteratorScheduler::self_schedule_iterators().
 
   const ParallelConfiguration& pc = *currPCIter;
-  const ParallelLevel& si_pl = pc.si_parallel_level();
+  const ParallelLevel& mi_pl = pc.mi_parallel_level();
   const ParallelLevel& ie_pl = pc.ie_parallel_level();
   const ParallelLevel& ea_pl = pc.ea_parallel_level();
 
@@ -906,7 +906,7 @@ void ParallelLibrary::print_configuration()
   // partitioning.  This requires up to two messages (within the confines of
   // the existing communicator and send/recv structure) to jump these two gaps
   // in partitioning participation.
-  if ( si_pl.serverId == 1 && ie_pl.dedicatedMasterFlag && 
+  if ( mi_pl.serverId == 1 && ie_pl.dedicatedMasterFlag && 
        ie_pl.serverId == 1 && ie_pl.serverCommRank == 0 ) {
     // eval server 1 master sends analysis info to iterator server 1 master
     MPIPackBuffer send_buffer(64); // 3 ints+1 short+1 bool < ~16 bytes
@@ -921,7 +921,7 @@ void ParallelLibrary::print_configuration()
     anal_remainder = ea_pl.procRemainder;
   bool  eval_ded_master_flag = ea_pl.dedicatedMasterFlag;
   short dak_par_levels = pc.numParallelLevels;
-  if (si_pl.serverId == 1 && si_pl.serverCommRank == 0) {
+  if (mi_pl.serverId == 1 && mi_pl.serverCommRank == 0) {
     if (ie_pl.dedicatedMasterFlag) {
       // iterator server 1 master recv's analysis info from eval server 1 master
       MPIUnpackBuffer recv_buffer(64);
@@ -930,13 +930,13 @@ void ParallelLibrary::print_configuration()
       recv_buffer >> num_anal_srv >> p_per_anal >> anal_remainder
 		  >> eval_ded_master_flag >> dak_par_levels;
     }
-    if (si_pl.dedicatedMasterFlag) {
+    if (mi_pl.dedicatedMasterFlag) {
       // iterator server 1 master sends combined info to strategy master
       MPIPackBuffer send_buffer(64);
       send_buffer << ie_pl.numServers << ie_pl.procsPerServer
                   << ie_pl.dedicatedMasterFlag << num_anal_srv << p_per_anal
                   << anal_remainder << eval_ded_master_flag << dak_par_levels;
-      send_si(send_buffer, 0, 1002);
+      send_mi(send_buffer, 0, 1002);
     }
   }
 
@@ -946,11 +946,11 @@ void ParallelLibrary::print_configuration()
   if (worldRank == 0) { // does all output
     int  num_eval_srv = ie_pl.numServers, p_per_eval = ie_pl.procsPerServer;
     bool iterator_ded_master_flag = ie_pl.dedicatedMasterFlag;
-    if (si_pl.dedicatedMasterFlag) {
+    if (mi_pl.dedicatedMasterFlag) {
       // strategy master receives combined info from iterator server 1 master
       MPIUnpackBuffer recv_buffer(64); // 5 ints+1 short+2 bools < ~22 bytes
       MPI_Status status;
-      recv_si(recv_buffer, 1, 1002, status);
+      recv_mi(recv_buffer, 1, 1002, status);
       recv_buffer >> num_eval_srv >> p_per_eval >> iterator_ded_master_flag
                   >> num_anal_srv >> p_per_anal >> anal_remainder
 		  >> eval_ded_master_flag >> dak_par_levels;
@@ -962,9 +962,9 @@ void ParallelLibrary::print_configuration()
 	 << "Level\t\t\tnum_servers    procs_per_server    partition\n"
 	 << "-----\t\t\t-----------    ----------------    ---------\n"
 	 << "concurrent iterators\t  " << std::setw(4)
-         << si_pl.numServers << "\t\t   " << std::setw(4)
-	 << si_pl.procsPerServer << "\t\t   ";
-    if (si_pl.dedicatedMasterFlag) Cout << "ded. master\n";
+         << mi_pl.numServers << "\t\t   " << std::setw(4)
+	 << mi_pl.procsPerServer << "\t\t   ";
+    if (mi_pl.dedicatedMasterFlag) Cout << "ded. master\n";
     else                           Cout << "peer\n";
 
     // Iterator diagnostics

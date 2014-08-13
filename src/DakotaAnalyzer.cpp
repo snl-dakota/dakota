@@ -35,7 +35,7 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
 {
   // no partitioning: si parallel level same as world parallel level
   //ParallelLibrary& parallel_lib = problem_db.parallel_library();
-  //if (!parallel_lib.si_parallel_level_defined())
+  //if (!parallel_lib.mi_parallel_level_defined())
   //  IteratorScheduler::init_serial_iterators(parallel_lib); // serialize level
 
   // set_db_list_nodes() is set by a higher context

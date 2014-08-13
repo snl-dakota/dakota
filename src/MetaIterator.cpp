@@ -43,7 +43,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
 
 MetaIterator::~MetaIterator()
 {
-  // deallocate the si_pl parallelism level
+  // deallocate the mi_pl parallelism level
   iterSched.free_iterator_parallelism();
 }
 
@@ -149,7 +149,7 @@ allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
   if (the_model.is_null())
     the_model = probDescDB.get_model();
   iterSched.init_iterator(probDescDB, the_iterator, the_model,
-    probDescDB.parallel_library().parallel_configuration().si_parallel_level());
+    probDescDB.parallel_library().parallel_configuration().mi_parallel_level());
   probDescDB.set_db_list_nodes(method_index);            // restore
 }
 
@@ -167,7 +167,7 @@ allocate_by_name(const String& method_string, const String& model_ptr,
   if (the_model.is_null())
     the_model = probDescDB.get_model();
   iterSched.init_iterator(method_string, the_iterator, the_model,
-    probDescDB.parallel_library().parallel_configuration().si_parallel_level());
+    probDescDB.parallel_library().parallel_configuration().mi_parallel_level());
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
 }
@@ -234,7 +234,7 @@ estimate_by_name(const String& method_string, const String& model_ptr,
 void MetaIterator::deallocate(Iterator& the_iterator, Model& the_model)
 {
   iterSched.free_iterator(the_iterator,
-    probDescDB.parallel_library().parallel_configuration().si_parallel_level());
+    probDescDB.parallel_library().parallel_configuration().mi_parallel_level());
 }
 
 

@@ -783,16 +783,16 @@ void HierarchSurrModel::component_parallel_mode(short mode)
       parallelLib.parallel_configuration_iterator(
         lowFidelityModel.parallel_configuration_iterator());
       const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-      if (parallelLib.si_parallel_level_defined() && 
-	  pc.si_parallel_level().server_communicator_size() > 1)
+      if (parallelLib.mi_parallel_level_defined() && 
+	  pc.mi_parallel_level().server_communicator_size() > 1)
 	lowFidelityModel.stop_servers();
     }
     else if (componentParallelMode == HF_MODEL) {
       parallelLib.parallel_configuration_iterator(
         highFidelityModel.parallel_configuration_iterator());
       const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-      if (parallelLib.si_parallel_level_defined() && 
-	  pc.si_parallel_level().server_communicator_size() > 1)
+      if (parallelLib.mi_parallel_level_defined() && 
+	  pc.mi_parallel_level().server_communicator_size() > 1)
 	highFidelityModel.stop_servers();
     }
   }
@@ -807,9 +807,9 @@ void HierarchSurrModel::component_parallel_mode(short mode)
 
   // retrieve new ParallelConfiguration data
   int new_iter_comm_size = 1;
-  if (parallelLib.si_parallel_level_defined()) {
+  if (parallelLib.mi_parallel_level_defined()) {
     const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-    new_iter_comm_size = pc.si_parallel_level().server_communicator_size();
+    new_iter_comm_size = pc.mi_parallel_level().server_communicator_size();
   }
 
   // activate the new serve mode (matches HierarchSurrModel::serve())

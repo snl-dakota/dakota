@@ -244,8 +244,8 @@ public:
 
   /// return the ParallelLevel corresponding to wPLIter
   const ParallelLevel&  w_parallel_level() const;
-  /// return the ParallelLevel corresponding to siPLIter
-  const ParallelLevel& si_parallel_level() const;
+  /// return the ParallelLevel corresponding to miPLIters[index]
+  const ParallelLevel& mi_parallel_level(size_t index = _NPOS) const;
   /// return the ParallelLevel corresponding to iePLIter
   const ParallelLevel& ie_parallel_level() const;
   /// return the ParallelLevel corresponding to eaPLIter
@@ -271,9 +271,8 @@ private:
   ParLevLIter wPLIter;
 
   /// list iterator for concurrent iterator partitions
-  /// (there may be more than one per parallel configuration instance)
-  ParLevLIter siPLIter;
-  //std::list<ParLevLIter> siPLIters;
+  /// (there may be multiple per parallel configuration instance)
+  std::vector<ParLevLIter> miPLIters;
 
   /// list iterator identifying the iterator-evaluation parallelLevel 
   /// (there can only be one)
@@ -286,7 +285,7 @@ private:
 
 
 inline ParallelConfiguration::ParallelConfiguration(): numParallelLevels(0)
-  //wPLIter(NULL), siPLIter(NULL), iePLIter(NULL), eaPLIter(NULL)
+  //wPLIter(NULL), iePLIter(NULL), eaPLIter(NULL)
 { }
 
 inline ParallelConfiguration::~ParallelConfiguration()
@@ -295,10 +294,10 @@ inline ParallelConfiguration::~ParallelConfiguration()
 inline void ParallelConfiguration::assign(const ParallelConfiguration& pc)
 {
   numParallelLevels = pc.numParallelLevels;
-  wPLIter  = pc.wPLIter;
-  siPLIter = pc.siPLIter;
-  iePLIter = pc.iePLIter;
-  eaPLIter = pc.eaPLIter;
+  wPLIter   = pc.wPLIter;
+  miPLIters = pc.miPLIters;
+  iePLIter  = pc.iePLIter;
+  eaPLIter  = pc.eaPLIter;
 }
 
 inline ParallelConfiguration::
@@ -312,8 +311,12 @@ operator=(const ParallelConfiguration& pc)
 inline const ParallelLevel& ParallelConfiguration::w_parallel_level()  const
 { return *wPLIter; }
 
-inline const ParallelLevel& ParallelConfiguration::si_parallel_level() const
-{ return *siPLIter; }
+/** If a meaningful index is not provided, return the last mi parallel
+    level.  This is useful within the Model context, for which we need
+    the lowest level partition after any meta-iterator recursions. */
+inline const ParallelLevel& ParallelConfiguration::
+mi_parallel_level(size_t index) const
+{ return (index == _NPOS) ? *miPLIters.back() : *miPLIters[index]; }
 
 inline const ParallelLevel& ParallelConfiguration::ie_parallel_level() const
 { return *iePLIter; }
@@ -377,7 +380,7 @@ public:
     short analysis_scheduling, bool peer_dynamic_avail);
 
   /// deallocate iterator communicators
-  void free_iterator_communicators();
+  void free_iterator_communicators(size_t index = _NPOS);
   /// deallocate evaluation communicators
   void free_evaluation_communicators();
   /// deallocate analysis communicators
@@ -418,22 +421,27 @@ public:
   const String& command_line_post_run_input() const;  ///< postRunInput filename
   const String& command_line_post_run_output() const; ///< postRunOutput fname
 
-  /// blocking send at the strategy-iterator communication level
-  void  send_si(int& send_int, int dest, int tag);
-  /// blocking receive at the strategy-iterator communication level
-  void  recv_si(int& recv_int, int source, int tag, MPI_Status& status);
+  /// process _NPOS default and perform error checks
+  void check_mi_index(size_t& index) const;
 
   /// blocking send at the strategy-iterator communication level
-  void  send_si(MPIPackBuffer& send_buff, int dest, int tag);
-  /// nonblocking send at the strategy-iterator communication level
-  void isend_si(MPIPackBuffer& send_buff, int dest, int tag, 
-		MPI_Request& send_req);
+  void  send_mi(int& send_int, int dest, int tag, size_t index = _NPOS);
   /// blocking receive at the strategy-iterator communication level
-  void  recv_si(MPIUnpackBuffer& recv_buff, int source, int tag, 
-		MPI_Status& status);
+  void  recv_mi(int& recv_int, int source, int tag, MPI_Status& status,
+		size_t index = _NPOS);
+
+  /// blocking send at the strategy-iterator communication level
+  void  send_mi(MPIPackBuffer& send_buff, int dest, int tag,
+		size_t index = _NPOS);
+  /// nonblocking send at the strategy-iterator communication level
+  void isend_mi(MPIPackBuffer& send_buff, int dest, int tag, 
+		MPI_Request& send_req, size_t index = _NPOS);
+  /// blocking receive at the strategy-iterator communication level
+  void  recv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, 
+		MPI_Status& status, size_t index = _NPOS);
   /// nonblocking receive at the strategy-iterator communication level
-  void irecv_si(MPIUnpackBuffer& recv_buff, int source, int tag, 
-		MPI_Request& recv_req);
+  void irecv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, 
+		MPI_Request& recv_req, size_t index = _NPOS);
 
   /// blocking send at the iterator-evaluation communication level
   void  send_ie(MPIPackBuffer& send_buff, int dest, int tag);
@@ -461,40 +469,40 @@ public:
   /// broadcast an integer across MPI_COMM_WORLD
   void bcast_w(int& data);
   /// broadcast an integer across an iterator communicator
-  void bcast_i(int& data);
+  void bcast_i(int& data, size_t index = _NPOS);
   /// broadcast a short integer across an iterator communicator
-  void bcast_i(short& data);
+  void bcast_i(short& data, size_t index = _NPOS);
   /// broadcast an integer across an evaluation communicator
   void bcast_e(int& data);
   /// broadcast an integer across an analysis communicator
   void bcast_a(int& data);
   /// broadcast an integer across a strategy-iterator intra communicator
-  void bcast_si(int& data);
+  void bcast_mi(int& data, size_t index = _NPOS);
   /// broadcast a packed buffer across MPI_COMM_WORLD
   void bcast_w(MPIPackBuffer& send_buff);
   /// broadcast a packed buffer across an iterator communicator
-  void bcast_i(MPIPackBuffer& send_buff);
+  void bcast_i(MPIPackBuffer& send_buff, size_t index = _NPOS);
   /// broadcast a packed buffer across an evaluation communicator
   void bcast_e(MPIPackBuffer& send_buff);
   /// broadcast a packed buffer across an analysis communicator
   void bcast_a(MPIPackBuffer& send_buff);
   /// broadcast a packed buffer across a strategy-iterator intra communicator
-  void bcast_si(MPIPackBuffer& send_buff);
+  void bcast_mi(MPIPackBuffer& send_buff, size_t index = _NPOS);
   /// matching receive for packed buffer broadcast across MPI_COMM_WORLD
   void bcast_w(MPIUnpackBuffer& recv_buff);
   /// matching receive for packed buffer bcast across an iterator communicator
-  void bcast_i(MPIUnpackBuffer& recv_buff);
+  void bcast_i(MPIUnpackBuffer& recv_buff, size_t index = _NPOS);
   /// matching receive for packed buffer bcast across an evaluation communicator
   void bcast_e(MPIUnpackBuffer& recv_buff);
   /// matching receive for packed buffer bcast across an analysis communicator
   void bcast_a(MPIUnpackBuffer& recv_buff);
   /// matching recv for packed buffer bcast across a strat-iterator intra comm
-  void bcast_si(MPIUnpackBuffer& recv_buff);
+  void bcast_mi(MPIUnpackBuffer& recv_buff, size_t index = _NPOS);
 
   /// enforce MPI_Barrier on MPI_COMM_WORLD
   void barrier_w();
   /// enforce MPI_Barrier on an iterator communicator
-  void barrier_i();
+  void barrier_i(size_t index = _NPOS);
   /// enforce MPI_Barrier on an evaluation communicator
   void barrier_e();
   /// enforce MPI_Barrier on an analysis communicator
@@ -550,8 +558,8 @@ public:
   /// parallel level
   bool  w_parallel_level_defined() const;
   /// test current parallel configuration for definition of
-  /// strategy-iterator parallel level
-  bool si_parallel_level_defined() const;
+  /// meta-iterator-iterator parallel level
+  bool mi_parallel_level_defined(size_t index = _NPOS) const;
   /// test current parallel configuration for definition of
   /// iterator-evaluation parallel level
   bool ie_parallel_level_defined() const;
@@ -768,17 +776,17 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
   // All processors invoke init_iterator_comms
   // All strategy procs except ded master invoke init_eval_comms
   // All iterator procs except ded master invoke init_analysis_comms
-  if ( currPCIter->siPLIter == parallelLevels.end() )
-    return false; // PC incomplete if si level undefined
-  else { // si level defined
-    const ParallelLevel& si_pl = currPCIter->si_parallel_level();
-    if (si_pl.dedicatedMasterFlag && worldRank == 0)
-      return true; // PC complete at si level for strategy ded master
+  if ( currPCIter->miPLIters.empty() )
+    return false; // PC incomplete if mi level undefined
+  else { // mi level defined
+    const ParallelLevel& mi_pl = currPCIter->mi_parallel_level();
+    if (mi_pl.dedicatedMasterFlag && worldRank == 0)
+      return true; // PC complete at mi level for strategy ded master
     else if ( currPCIter->iePLIter == parallelLevels.end() )
       return false; // PC incomplete for other procs if ie level undefined
     else { // ie level defined
       const ParallelLevel& ie_pl = currPCIter->ie_parallel_level();
-      if (ie_pl.dedicatedMasterFlag && si_pl.serverCommRank == 0)
+      if (ie_pl.dedicatedMasterFlag && mi_pl.serverCommRank == 0)
 	return true;  // PC complete at ie level for iterator ded master
       else if ( currPCIter->eaPLIter == parallelLevels.end() )
 	return false; // PC incomplete for other procs if ea level undefined
@@ -795,26 +803,35 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
     first partial configuration). */
 inline void ParallelLibrary::increment_parallel_configuration()
 {
-  // The world level is set in the ParallelLib ctor, the si level is
+  // The world level is set in the ParallelLib ctor, the mi level is
   // defined in the Strategy ctor, and the ie and ea levels are defined in
   // ApplicationInterface::init_communicators().  Any undefined iterators
   // are initialized to their "singular values" (NULL should not be used).
   ParallelConfiguration pc;
 
-  // Approach 1 does not hard-wire pc.siPLIter and relies on assignment in
-  // init_evaluation_communicators():
+  // Approach 1 does not assign to pc.miPLIters (relies on assignment in
+  // init_evaluation_communicators()):
   //pc.wPLIter  = parallelLevels.begin();
-  //pc.siPLIter = pc.iePLIter = pc.eaPLIter = parallelLevels.end();
+  // leave pc.miPLIters as empty vector
+  //pc.iePLIter = pc.eaPLIter = parallelLevels.end();
 
   // Approach 2 is more bullet proof, but also less flexible:
   ParLevLIter pl_iter = parallelLevels.begin();
-  pc.wPLIter  =   pl_iter;
-  // In the first call from the ParallelLibrary ctor, this sets the siPLIter
+  pc.wPLIter = pl_iter;
+  // In the first call from the ParallelLibrary ctor, this sets pl_iter
   // to parallelLevels.end() as there's only one ParallelLevel in the list:
-  pc.siPLIter = ++pl_iter;
-  // Inherit parallelism level count from si_pl partitioning
-  pc.numParallelLevels
-    = (pl_iter != parallelLevels.end() && pl_iter->messagePass) ? 1 : 0;
+  ++pl_iter;
+  if (pl_iter == parallelLevels.end()) {
+    // leave miPLIters empty
+    pc.numParallelLevels = 0;
+  }
+  else { // TO DO: this logic only goes one deep...  recurse all of miPLIters?
+         //        need to review uses of increment_parallel_configuration()
+         //        (if always limited to ie/ea, then recurse all of mi)
+    pc.miPLIters.push_back(pl_iter);
+    // inherit parallelism level count from previous mi_pl partitioning
+    pc.numParallelLevels = (pl_iter->messagePass) ? 1 : 0;
+  }
   // ie and ea levels to be defined by Model::init_communicators()
   pc.iePLIter = pc.eaPLIter = parallelLevels.end();
 
@@ -834,10 +851,16 @@ inline bool ParallelLibrary::w_parallel_level_defined() const
 }
 
 
-inline bool ParallelLibrary::si_parallel_level_defined() const
+inline bool ParallelLibrary::mi_parallel_level_defined(size_t index) const
 {
-  return ( currPCIter != parallelConfigurations.end() &&
-	   currPCIter->siPLIter != parallelLevels.end() );
+  if (currPCIter == parallelConfigurations.end())
+    return false;
+  else if (index == _NPOS) // check for trailing entry (default=last partition)
+    return ( !currPCIter->miPLIters.empty() &&
+	      currPCIter->miPLIters.back() != parallelLevels.end() );
+  else // specific mi parallel level from index
+    return ( index < currPCIter->miPLIters.size() &&
+	     currPCIter->miPLIters[index] != parallelLevels.end() );
 }
 
 
@@ -880,7 +903,7 @@ init_iterator_communicators(int iterator_servers, int procs_per_iterator,
 		     max_procs_per_iterator, max_iterator_concurrency,
 		     asynch_local_iterator_concurrency, default_config,
 		     iterator_scheduling, peer_dynamic_avail);
-  currPCIter->siPLIter = currPLIter;
+  currPCIter->miPLIters.push_back(currPLIter);
   return *currPLIter;
 }
 
@@ -893,26 +916,29 @@ init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
 			      short default_config, short evaluation_scheduling,
 			      bool peer_dynamic_avail)
 {
-  /*
   // handle case where there is a new parallel configuration instance, but
   // init_iterator_communicators has not been called again.
-  if ( parallelLevels.end() == currPCIter->siPLIter ) {
+  if ( currPCIter->miPLIters.empty() ) {
+    /*
     if (parallelConfigurations.size() > 1) {
       // if used, then this needs to be replaced with a while loop,
-      // since the valid siPLIter could be several PC's back
-      ParConfigLIter prev_pc_iter = currPCIter; prev_pc_iter--;
-      currPCIter->siPLIter = prev_pc_iter->siPLIter;
-      if ( currPCIter->siPLIter->communicator_split() )
-        ++currPCIter->numParallelLevels;
+      // since the valid miPLIter could be several PC's back
+      ParConfigLIter prev_pc_iter = currPCIter; --prev_pc_iter;
+      currPCIter->miPLIters = prev_pc_iter->miPLIters;
+      for (pl_iter =currPCIter->miPLIters.begin();
+           pl_iter!=currPCIter->miPLIters.end(); ++pl_iter)
+        if (pl_iter->message_pass())
+          ++currPCIter->numParallelLevels;
     }
     else {
+    */
       Cerr << "Error: init_evaluation_communicators() called without preceding "
 	   << "init_iterator_communicators() call." << std::endl;
       abort_handler(-1);
-    }
+    //}
   }
-  */
-  init_communicators(*currPCIter->siPLIter, evaluation_servers,
+
+  init_communicators(*currPCIter->miPLIters.back(), evaluation_servers,
 		     procs_per_evaluation, min_procs_per_eval,
 		     max_procs_per_eval, max_evaluation_concurrency,
 		     asynch_local_evaluation_concurrency, default_config,
@@ -941,8 +967,11 @@ init_analysis_communicators(int analysis_servers, int procs_per_analysis,
 }
 
 
-inline void ParallelLibrary::free_iterator_communicators()
-{ free_communicators(*currPCIter->siPLIter); }
+inline void ParallelLibrary::free_iterator_communicators(size_t index)
+{
+  if (index == _NPOS) free_communicators(*currPCIter->miPLIters.back());
+  else                free_communicators(*currPCIter->miPLIters[index]);
+}
 
 
 inline void ParallelLibrary::free_evaluation_communicators()
@@ -1061,18 +1090,49 @@ send(int& send_int, int dest, int tag, ParallelLevel& parent_pl,
 }
 
 
-inline void ParallelLibrary::send_si(int& send_int, int dest, int tag)
-{ send(send_int, dest, tag, *parallelLevels.begin(), *currPCIter->siPLIter); }
+inline void ParallelLibrary::check_mi_index(size_t& index) const
+{
+  size_t num_mi_pl = currPCIter->miPLIters.size();
+  if (!num_mi_pl) {
+    Cerr << "Error: mi level send/recv called with no mi parallelism levels "
+	 << "defined." << std::endl;
+    abort_handler(-1);
+  }
+  if (index == _NPOS) index = num_mi_pl - 1; // last entry
+  else if (index >= num_mi_pl) {
+    Cerr << "Error: mi level send/recv called with index out of bounds."
+	 << std::endl;
+    abort_handler(-1);
+  }
+}
 
 
 inline void ParallelLibrary::
-send_si(MPIPackBuffer& send_buff, int dest, int tag)
-{ send(send_buff, dest, tag, *parallelLevels.begin(), *currPCIter->siPLIter);}
+send_mi(int& send_int, int dest, int tag, size_t index)
+{
+  check_mi_index(index);
+  ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  send(send_int, dest, tag, parent_pl, *currPCIter->miPLIters[index]);
+}
+
+
+inline void ParallelLibrary::
+send_mi(MPIPackBuffer& send_buff, int dest, int tag, size_t index)
+{
+  check_mi_index(index);
+  ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  send(send_buff, dest, tag, parent_pl, *currPCIter->miPLIters[index]);
+}
 
 
 inline void ParallelLibrary::
 send_ie(MPIPackBuffer& send_buff, int dest, int tag)
-{ send(send_buff, dest, tag, *currPCIter->siPLIter, *currPCIter->iePLIter);}
+{
+  send(send_buff, dest, tag, *currPCIter->miPLIters.back(),
+       *currPCIter->iePLIter);
+}
 
 
 inline void ParallelLibrary::send_ea(int& send_int, int dest, int tag)
@@ -1120,17 +1180,21 @@ isend(int& send_int, int dest, int tag, MPI_Request& send_req,
 
 
 inline void ParallelLibrary::
-isend_si(MPIPackBuffer& send_buff, int dest, int tag, MPI_Request& send_req)
+isend_mi(MPIPackBuffer& send_buff, int dest, int tag, MPI_Request& send_req,
+	 size_t index)
 {
-  isend(send_buff, dest, tag, send_req, *parallelLevels.begin(),
-	*currPCIter->siPLIter);
+  check_mi_index(index);
+  ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  isend(send_buff, dest, tag, send_req, parent_pl,
+	*currPCIter->miPLIters[index]);
 }
 
 
 inline void ParallelLibrary::
 isend_ie(MPIPackBuffer& send_buff, int dest, int tag, MPI_Request& send_req)
 {
-  isend(send_buff, dest, tag, send_req, *currPCIter->siPLIter,
+  isend(send_buff, dest, tag, send_req, *currPCIter->miPLIters.back(),
 	*currPCIter->iePLIter);
 }
 
@@ -1184,25 +1248,31 @@ recv(int& recv_int, int source, int tag, MPI_Status& status,
 
 
 inline void ParallelLibrary::
-recv_si(int& recv_int, int source, int tag, MPI_Status& status)
+recv_mi(int& recv_int, int source, int tag, MPI_Status& status, size_t index)
 {
-  recv(recv_int, source, tag, status, *parallelLevels.begin(),
-       *currPCIter->siPLIter);
+  check_mi_index(index);
+  ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  recv(recv_int, source, tag, status, parent_pl, *currPCIter->miPLIters[index]);
 }
 
 
 inline void ParallelLibrary::
-recv_si(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Status& status)
+recv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Status& status,
+	size_t index)
 {
-  recv(recv_buff, source, tag, status, *parallelLevels.begin(),
-       *currPCIter->siPLIter);
+  check_mi_index(index);
+  ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  recv(recv_buff, source, tag, status, parent_pl,
+       *currPCIter->miPLIters[index]);
 }
 
 
 inline void ParallelLibrary::
 recv_ie(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Status& status)
 {
-  recv(recv_buff, source, tag, status, *currPCIter->siPLIter,
+  recv(recv_buff, source, tag, status, *currPCIter->miPLIters.back(),
        *currPCIter->iePLIter);
 }
 
@@ -1256,17 +1326,21 @@ irecv(int& recv_int, int source, int tag, MPI_Request& recv_req,
 
 
 inline void ParallelLibrary::
-irecv_si(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Request& recv_req)
+irecv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Request& recv_req,
+	 size_t index)
 {
-  irecv(recv_buff, source, tag, recv_req, *parallelLevels.begin(),
-	*currPCIter->siPLIter);
+  check_mi_index(index);
+  ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  irecv(recv_buff, source, tag, recv_req, parent_pl,
+	*currPCIter->miPLIters[index]);
 }
 
 
 inline void ParallelLibrary::
 irecv_ie(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Request& recv_req)
 {
-  irecv(recv_buff, source, tag, recv_req, *currPCIter->siPLIter,
+  irecv(recv_buff, source, tag, recv_req, *currPCIter->miPLIters.back(),
 	*currPCIter->iePLIter);
 }
 
@@ -1306,12 +1380,18 @@ inline void ParallelLibrary::bcast_w(int& data)
 { bcast(data, currPCIter->wPLIter->serverIntraComm); }
 
 
-inline void ParallelLibrary::bcast_i(int& data)
-{ bcast(data, currPCIter->siPLIter->serverIntraComm); }
+inline void ParallelLibrary::bcast_i(int& data,	size_t index)
+{
+  check_mi_index(index);
+  bcast(data, currPCIter->miPLIters[index]->serverIntraComm);
+}
 
 
-inline void ParallelLibrary::bcast_i(short& data)
-{ bcast(data, currPCIter->siPLIter->serverIntraComm); }
+inline void ParallelLibrary::bcast_i(short& data, size_t index)
+{
+  check_mi_index(index);
+  bcast(data, currPCIter->miPLIters[index]->serverIntraComm);
+}
 
 
 inline void ParallelLibrary::bcast_e(int& data)
@@ -1322,8 +1402,11 @@ inline void ParallelLibrary::bcast_a(int& data)
 { bcast(data, currPCIter->eaPLIter->serverIntraComm); }
 
 
-inline void ParallelLibrary::bcast_si(int& data)
-{ bcast(data, currPCIter->siPLIter->hubServerIntraComm); }
+inline void ParallelLibrary::bcast_mi(int& data, size_t index)
+{
+  check_mi_index(index);
+  bcast(data, currPCIter->miPLIters[index]->hubServerIntraComm);
+}
 
 
 inline void ParallelLibrary::
@@ -1341,8 +1424,11 @@ inline void ParallelLibrary::bcast_w(MPIPackBuffer& send_buff)
 { bcast(send_buff, currPCIter->wPLIter->serverIntraComm); }
 
 
-inline void ParallelLibrary::bcast_i(MPIPackBuffer& send_buff)
-{ bcast(send_buff, currPCIter->siPLIter->serverIntraComm); }
+inline void ParallelLibrary::bcast_i(MPIPackBuffer& send_buff, size_t index)
+{
+  check_mi_index(index);
+  bcast(send_buff, currPCIter->miPLIters[index]->serverIntraComm);
+}
 
 
 inline void ParallelLibrary::bcast_e(MPIPackBuffer& send_buff)
@@ -1353,8 +1439,11 @@ inline void ParallelLibrary::bcast_a(MPIPackBuffer& send_buff)
 { bcast(send_buff, currPCIter->eaPLIter->serverIntraComm); }
 
 
-inline void ParallelLibrary::bcast_si(MPIPackBuffer& send_buff)
-{ bcast(send_buff, currPCIter->siPLIter->hubServerIntraComm); }
+inline void ParallelLibrary::bcast_mi(MPIPackBuffer& send_buff, size_t index)
+{
+  check_mi_index(index);
+  bcast(send_buff, currPCIter->miPLIters[index]->hubServerIntraComm);
+}
 
 
 inline void ParallelLibrary::
@@ -1372,8 +1461,11 @@ inline void ParallelLibrary::bcast_w(MPIUnpackBuffer& recv_buff)
 { bcast(recv_buff, currPCIter->wPLIter->serverIntraComm); }
 
 
-inline void ParallelLibrary::bcast_i(MPIUnpackBuffer& recv_buff)
-{ bcast(recv_buff, currPCIter->siPLIter->serverIntraComm); }
+inline void ParallelLibrary::bcast_i(MPIUnpackBuffer& recv_buff, size_t index)
+{
+  check_mi_index(index);
+  bcast(recv_buff, currPCIter->miPLIters[index]->serverIntraComm);
+}
 
 
 inline void ParallelLibrary::bcast_e(MPIUnpackBuffer& recv_buff)
@@ -1384,8 +1476,11 @@ inline void ParallelLibrary::bcast_a(MPIUnpackBuffer& recv_buff)
 { bcast(recv_buff, currPCIter->eaPLIter->serverIntraComm); }
 
 
-inline void ParallelLibrary::bcast_si(MPIUnpackBuffer& recv_buff)
-{ bcast(recv_buff, currPCIter->siPLIter->hubServerIntraComm); }
+inline void ParallelLibrary::bcast_mi(MPIUnpackBuffer& recv_buff, size_t index)
+{
+  check_mi_index(index);
+  bcast(recv_buff, currPCIter->miPLIters[index]->hubServerIntraComm);
+}
 
 
 inline void ParallelLibrary::barrier(const MPI_Comm& comm)
@@ -1401,8 +1496,11 @@ inline void ParallelLibrary::barrier_w()
 { barrier(currPCIter->wPLIter->serverIntraComm); }
 
 
-inline void ParallelLibrary::barrier_i()
-{ barrier(currPCIter->siPLIter->serverIntraComm); }
+inline void ParallelLibrary::barrier_i(size_t index)
+{
+  check_mi_index(index);
+  barrier(currPCIter->miPLIters[index]->serverIntraComm);
+}
 
 
 inline void ParallelLibrary::barrier_e()

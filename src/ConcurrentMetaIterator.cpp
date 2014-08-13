@@ -88,14 +88,14 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   // It is not practical to estimate the evaluation concurrency without 
   // instantiating the iterator (see, e.g., NonDPolynomialChaos), and here we
   // have a circular dependency: we need the evaluation concurrency from the
-  // iterator to estimate the max_ppi for input to the si_pl partition, but
-  // we want to segregate iterator construction based on the si_pl partition.
+  // iterator to estimate the max_ppi for input to the mi_pl partition, but
+  // we want to segregate iterator construction based on the mi_pl partition.
   // To resolve this dependency, we instantiate the iterator based on the w_pl
-  // level and then augment it below based on the si_pl level.  We avoid
+  // level and then augment it below based on the mi_pl level.  We avoid
   // repeated instantiations by the check on iterator.is_null() as well as
   // through the lookup in problem_db_get_iterator() (concurr_iter_ptr case);
   // this requires that no calls to init_comms occur at construct time, since
-  // the si_pl basis for this is not yet available.
+  // the mi_pl basis for this is not yet available.
   const ParallelLevel& w_pl
     = parallel_lib.parallel_configuration().w_parallel_level();
   int max_eval_conc = (lightwtCtor) ?
@@ -118,18 +118,18 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   // Instantiate the iterator.
   // Note: the parallel configuration may have been incremented, so do not
   // assume the same config as used above for w_pl.
-  const ParallelLevel& si_pl
-    = parallel_lib.parallel_configuration().si_parallel_level();
+  const ParallelLevel& mi_pl
+    = parallel_lib.parallel_configuration().mi_parallel_level();
   if (lightwtCtor) {
     iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
-			    si_pl);
+			    mi_pl);
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
       Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
     if (!model_ptr.empty())
       problem_db.set_db_model_nodes(restore_index); // restore
   }
   else {
-    iterSched.init_iterator(problem_db, selectedIterator, iteratedModel, si_pl);
+    iterSched.init_iterator(problem_db, selectedIterator, iteratedModel, mi_pl);
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
       Cout << "Concurrent Iterator = "
 	   << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
@@ -186,7 +186,7 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
 
   // Instantiate the iterator
   iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
-			  pc.si_parallel_level());
+			  pc.mi_parallel_level());
   if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
     Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
 
@@ -266,20 +266,20 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
       if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
 	  iterSched.numIteratorServers > 1) {
 	ParallelLibrary& parallel_lib = iterSched.parallelLib;
-	// For static scheduling, bcast all random jobs over si_intra_comm (not 
+	// For static scheduling, bcast all random jobs over mi_intra_comm (not 
 	// necessary for self-scheduling as jobs are assigned from the master).
 	if (iterSched.lead_rank()) {
 	  MPIPackBuffer send_buffer;
 	  send_buffer << random_jobs;
 	  int buffer_len = send_buffer.size();
-	  parallel_lib.bcast_si(buffer_len);
-	  parallel_lib.bcast_si(send_buffer);
+	  parallel_lib.bcast_mi(buffer_len);
+	  parallel_lib.bcast_mi(send_buffer);
 	}
 	else {
 	  int buffer_len;
-	  parallel_lib.bcast_si(buffer_len);
+	  parallel_lib.bcast_mi(buffer_len);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallel_lib.bcast_si(recv_buffer);
+	  parallel_lib.bcast_mi(recv_buffer);
 	  recv_buffer >> random_jobs;
 	}
       }
@@ -327,10 +327,10 @@ ConcurrentMetaIterator::~ConcurrentMetaIterator()
     // The strategy dedicated master processor is excluded.
     ParallelLibrary& parallel_lib = probDescDB.parallel_library();
     iterSched.free_iterator(selectedIterator,
-      parallel_lib.parallel_configuration().si_parallel_level());
+      parallel_lib.parallel_configuration().mi_parallel_level());
   }
 
-  // si_pl parallelism level is deallocated in ~MetaIterator
+  // mi_pl parallelism level is deallocated in ~MetaIterator
 }
 
 

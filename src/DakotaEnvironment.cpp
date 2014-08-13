@@ -384,7 +384,7 @@ void Environment::construct()
     topLevelIterator = probDescDB.get_iterator(); // all procs
   }
   else {
-    IteratorScheduler::init_serial_iterators(parallelLib); // serialize si_pl
+    IteratorScheduler::init_serial_iterators(parallelLib); // serialize mi_pl
     //topLevelModel = probDescDB.get_model(); // if access needed downstream
     Model top_level_model = probDescDB.get_model();
     IteratorScheduler::init_iterator(probDescDB, topLevelIterator,
@@ -464,7 +464,7 @@ void Environment::destruct()
     // deallocate communicator partitions for topLevelIterator
     IteratorScheduler::free_iterator(topLevelIterator, //topLevelModel,
       parallelLib.parallel_configuration().w_parallel_level());
-    // deallocate the (serialized) si_pl parallelism level
+    // deallocate the (serialized) mi_pl parallelism level
     IteratorScheduler::free_iterator_parallelism(parallelLib);
   }
 }

@@ -218,8 +218,6 @@ set_evaluation_communicators(const IntArray& message_lengths)
   lenPRPairMessage     = message_lengths[3];
 
   const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-  const ParallelLevel& si_pl = pc.si_parallel_level();
-  const ParallelLevel& ie_pl = pc.ie_parallel_level();
 
   // Pull data from (the lowest) concurrent iterator partition.  The active
   // parallel configuration is managed in Strategy::init_communicators().
@@ -229,11 +227,13 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // > Future concurrent iterator partitioning within nested models would also 
   //   dictate that iterator comm attributes get set at init time rather than
   //   construct time.
-  iteratorCommSize = si_pl.server_communicator_size();
-  iteratorCommRank = si_pl.server_communicator_rank();
+  const ParallelLevel& mi_pl = pc.mi_parallel_level(); // last mi level
+  iteratorCommSize = mi_pl.server_communicator_size();
+  iteratorCommRank = mi_pl.server_communicator_rank();
 
   // These attributes are set by init_evaluation_communicators and are not 
   // available for use in the constructor.
+  const ParallelLevel& ie_pl = pc.ie_parallel_level();
   ieDedMasterFlag = ie_pl.dedicated_master();
   ieMessagePass   = ie_pl.message_pass();
   numEvalServers  = ie_pl.num_servers(); // may differ from numEvalServersSpec

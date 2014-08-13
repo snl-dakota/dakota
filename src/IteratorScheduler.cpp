@@ -81,21 +81,21 @@ init_iterator_parallelism(int max_iterator_concurrency,
   // Initialize iterator partitions after parsing but prior to output/restart.
   // The default setting for max_iterator_concurrency is the number of specified
   // iterator servers, which will yield a peer partition.
-  const ParallelLevel& si_pl = parallelLib.init_iterator_communicators(
+  const ParallelLevel& mi_pl = parallelLib.init_iterator_communicators(
     numIteratorServers, procsPerIterator, min_procs_per_iterator,
     max_procs_per_iterator, max_iterator_concurrency, default_config,
     iteratorScheduling, false);// peer_dynamic not available prior to threading
 
   // retrieve the partition data
-  //dedicatedMaster = si_pl.dedicated_master();
-  messagePass        = si_pl.message_pass();
-  iteratorCommRank   = si_pl.server_communicator_rank();
-  iteratorCommSize   = si_pl.server_communicator_size();
-  iteratorServerId   = si_pl.server_id();
+  //dedicatedMaster = mi_pl.dedicated_master();
+  messagePass        = mi_pl.message_pass();
+  iteratorCommRank   = mi_pl.server_communicator_rank();
+  iteratorCommSize   = mi_pl.server_communicator_size();
+  iteratorServerId   = mi_pl.server_id();
 
   // update requests with actual
-  numIteratorServers = si_pl.num_servers();
-  iteratorScheduling = (si_pl.dedicated_master())
+  numIteratorServers = mi_pl.num_servers();
+  iteratorScheduling = (mi_pl.dedicated_master())
                      ? MASTER_SCHEDULING : PEER_SCHEDULING;
 
   // Manage ostream output and binary restart input/output.  If concurrent
@@ -109,7 +109,7 @@ init_iterator_parallelism(int max_iterator_concurrency,
   // strategy level.  For concurrent iterators within a nested model, iterator
   // output will be suppressed but restart will need some additional attention.
   // -->> second level of tagging?  e.g., dakota.rst.1.3?
-  parallelLib.manage_outputs_restart(si_pl);
+  parallelLib.manage_outputs_restart(mi_pl);
 }
 
 
@@ -122,16 +122,16 @@ void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
   // update IteratorScheduler state.
 
   // Initialize iterator partitions for one iterator execution at a time
-  const ParallelLevel& si_pl = parallel_lib.init_iterator_communicators(0, 0,
+  const ParallelLevel& mi_pl = parallel_lib.init_iterator_communicators(0, 0,
     1, parallel_lib.world_size(), 1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
   // set up output streams without iterator tagging
-  parallel_lib.manage_outputs_restart(si_pl);
+  parallel_lib.manage_outputs_restart(mi_pl);
 }
 
 
 void IteratorScheduler::free_iterator_parallelism()
 {
-  // deallocate the si_pl parallelism level
+  // deallocate the mi_pl parallelism level
   parallelLib.free_iterator_communicators();
 }
 
@@ -139,7 +139,7 @@ void IteratorScheduler::free_iterator_parallelism()
 /** Static version */
 void IteratorScheduler::free_iterator_parallelism(ParallelLibrary& parallel_lib)
 {
-  // deallocate the si_pl parallelism level (static version)
+  // deallocate the mi_pl parallelism level (static version)
   parallel_lib.free_iterator_communicators();
 }
 
@@ -367,9 +367,9 @@ master_dynamic_schedule_iterators(Iterator& meta_iterator)
     meta_iterator.pack_parameters_buffer(send_buffers[i], i);
     // pre-post receives
     recv_buffers[i].resize(resultsMsgLen);
-    parallelLib.irecv_si(recv_buffers[i], i+1, i+1, recv_requests[i]);
+    parallelLib.irecv_mi(recv_buffers[i], i+1, i+1, recv_requests[i]);
     // nonblocking sends: master quickly assigns first num_sends jobs
-    parallelLib.isend_si(send_buffers[i], i+1, i+1, send_request);
+    parallelLib.isend_mi(send_buffers[i], i+1, i+1, send_request);
     parallelLib.free(send_request); // no test/wait on send_request
   }
 
@@ -396,10 +396,10 @@ master_dynamic_schedule_iterators(Iterator& meta_iterator)
 					      send_cntr);
 	  // pre-post receive
           recv_buffers[send_cntr].resize(resultsMsgLen);
-          parallelLib.irecv_si(recv_buffers[send_cntr], server_id, send_cntr+1, 
+          parallelLib.irecv_mi(recv_buffers[send_cntr], server_id, send_cntr+1, 
                                recv_requests[server_index]);
           // send next job to open server
-          parallelLib.isend_si(send_buffers[server_index], server_id,
+          parallelLib.isend_mi(send_buffers[server_index], server_id,
                                send_cntr+1, send_request);
           parallelLib.free(send_request); // no test/wait on send_request
           send_cntr++;
@@ -439,7 +439,7 @@ void IteratorScheduler::stop_iterator_servers()
       // nonblocking sends: master posts all terminate messages without waiting
       // for completion.  Bcast cannot be used since all procs must call it and
       // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.
-      parallelLib.isend_si(send_buffer, server_id, term_tag, send_request);
+      parallelLib.isend_mi(send_buffer, server_id, term_tag, send_request);
       parallelLib.free(send_request); // no test/wait on send_request
     }
   else
@@ -455,9 +455,9 @@ void IteratorScheduler::stop_iterator_servers()
   // partitions which have interComms from server 0 to servers 1-n:
   // > dedicated master: server_id = #servers+1 -> interComm[#servers]
   // > peer:             server_id = #servers   -> interComm[#servers-1]
-  if (parallelLib.parallel_configuration().si_parallel_level().
+  if (parallelLib.parallel_configuration().mi_parallel_level().
       idle_partition()) {
-    parallelLib.isend_si(send_buffer, server_id, term_tag, send_request);
+    parallelLib.isend_mi(send_buffer, server_id, term_tag, send_request);
     parallelLib.free(send_request); // no test/wait on send_request
   }
 }
@@ -466,8 +466,8 @@ void IteratorScheduler::stop_iterator_servers()
 void IteratorScheduler::
 peer_static_schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 {
-  const ParallelLevel& si_pl
-    = parallelLib.parallel_configuration().si_parallel_level();
+  const ParallelLevel& mi_pl
+    = parallelLib.parallel_configuration().mi_parallel_level();
   for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
 
     // Set starting point or obj fn weighting set
@@ -479,7 +479,7 @@ peer_static_schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
     }
 
     // Run the iterator on the model for this iterator job
-    run_iterator(sub_iterator, si_pl);
+    run_iterator(sub_iterator, mi_pl);
 
     // collect results on peer 1
     if (iteratorCommRank == 0) {
@@ -504,7 +504,7 @@ peer_static_schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
       for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
 	MPIPackBuffer send_buffer;//(resultsMsgLen);
 	meta_iterator.pack_results_buffer(send_buffer, i);
-	parallelLib.send_si(send_buffer, 0, i+1);
+	parallelLib.send_mi(send_buffer, 0, i+1);
       }
     }
     else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
@@ -513,7 +513,7 @@ peer_static_schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 	if (source) { // parameter set evaluated on peers 2-n
 	  MPI_Status status;
 	  MPIUnpackBuffer recv_buffer(resultsMsgLen);
-	  parallelLib.recv_si(recv_buffer, source, i+1, status);
+	  parallelLib.recv_mi(recv_buffer, source, i+1, status);
 	  meta_iterator.unpack_results_buffer(recv_buffer, i);
 	}
       }
@@ -527,8 +527,8 @@ peer_static_schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 void IteratorScheduler::
 serve_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 {
-  const ParallelLevel& si_pl
-    = parallelLib.parallel_configuration().si_parallel_level();
+  const ParallelLevel& mi_pl
+    = parallelLib.parallel_configuration().mi_parallel_level();
   RealArray param_set;
   int job_id = 1;
   while (job_id) {
@@ -537,7 +537,7 @@ serve_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
     if (iteratorCommRank == 0) {
       MPI_Status status;
       MPIUnpackBuffer recv_buffer(paramsMsgLen);
-      parallelLib.recv_si(recv_buffer, 0, MPI_ANY_TAG, status);
+      parallelLib.recv_mi(recv_buffer, 0, MPI_ANY_TAG, status);
       job_id = status.MPI_TAG;
       if (job_id)
 	meta_iterator.unpack_parameters_buffer(recv_buffer);
@@ -553,7 +553,7 @@ serve_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 	iterator_start_time = parallelLib.parallel_time();
 
       // Run the iterator on the model for the received job
-      run_iterator(sub_iterator, si_pl);
+      run_iterator(sub_iterator, mi_pl);
 
       if (iteratorCommRank == 0) {
 	Real iterator_end_time = parallelLib.parallel_time();
@@ -564,7 +564,7 @@ serve_iterators(Iterator& meta_iterator, Iterator& sub_iterator)
 	meta_iterator.update_local_results(job_index);
         MPIPackBuffer send_buffer(resultsMsgLen);
 	meta_iterator.pack_results_buffer(send_buffer, job_index);
-        parallelLib.send_si(send_buffer, 0, job_id);
+        parallelLib.send_mi(send_buffer, 0, job_id);
       }
     }
   }
