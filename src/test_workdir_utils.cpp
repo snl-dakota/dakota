@@ -7,98 +7,103 @@
     _______________________________________________________________________ */
 
 #include "WorkdirHelper.hpp"
-#include "dakota_data_util.hpp"  // for strcontains
-#include "dakota_global_defs.hpp"
+//#include "dakota_global_defs.hpp"
 //#include "dakota_filesystem_utils.hpp"
 
 // Boost.Test
 #include <boost/test/minimal.hpp>
 
 //#include <boost/assign/std/vector.hpp>
-//#include <boost/foreach.hpp>
+#include <boost/foreach.hpp>
 
 #include <cassert>
 #include <iostream>
-
-int test_main( int argc, char* argv[] );  // prototype for users test_main()
-
-//using namespace Dakota;
 
 
 namespace Dakota {
 namespace TestWorkdir {
 
 // ToDo:  Populate a handful of workdir util "unit" tests
-class caller {
-public:
-    // constructor
-    caller( int argc, char** argv )
-    : m_argc( argc ), m_argv( argv ) {}
 
-    // execution monitor hook implementation
-    int operator()()
-    {
-      //bfs::path fq_search(argv[1]);
-      std::string fq_search(std::getenv("PWD"));
-      fq_search += "/../test/d*.sh";
+//int count_driver_scripts();
+int list_driver_scripts(const std::string& glob_string)
+{
+  bfs::path search_dir;
+  std::string wild_card;
+  WorkdirHelper::split_wildcard(glob_string, search_dir, wild_card);
 
-      bfs::path search_dir;
-      std::string wild_card;
-      WorkdirHelper::split_wildcard(fq_search, search_dir, wild_card);
+  std::cout << "Searching " << search_dir << " for " << wild_card << std::endl;
 
-      std::cout << "Searching " << search_dir << " for " << wild_card << std::endl;
+  MatchesWC wc_predicate(wild_card);
+//
+  glob_iterator fit(wc_predicate, bfs::directory_iterator(search_dir));
+  glob_iterator fitend(wc_predicate, bfs::directory_iterator());
+  for ( ; fit != fitend; ++fit)
+    std::cout << "ls: " << fit->path() << std::endl;
+//
+  return boost::exit_success;
+}
 
-      MatchesWC wc_predicate(wild_card);
-      glob_iterator fit(wc_predicate, bfs::directory_iterator(search_dir));
-      glob_iterator fitend(wc_predicate, bfs::directory_iterator());
 
-      for ( ; fit != fitend; ++fit)
-        std::cout << "in wildcard: " << fit->path() << std::endl;
+int test_rmdir(bfs::path& wd)
+{
+  std::cout << "OK to remove EMPTY dir:  " << wd << std::endl;
+  WorkdirHelper::recursive_remove(wd);
 
-      //BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
-      return 0;
+  return boost::exit_success;
+}
+
+
+int test_create_and_remove_dir(const std::string& dir_name)
+{
+  bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
+  WorkdirHelper::create_directory(wd, DIR_CLEAN);
+
+  if( bfs::exists(wd) && is_directory(wd) ) {
+    std::cout << "in newly created dir: " << wd << std::endl;
+//
+    bfs::directory_iterator it(wd), eod;
+    BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) )   
+    { 
+      std::cout << "iterating filesIn created dir.. " << "\tWJB should NOT see this line"  << std::endl;
+      if( is_regular_file(p) )
+      {
+        // no files (yet)
+      } 
     }
+//
+    std::cout << "DONE iterating newly created/EMPTY dir:  " << wd << std::endl;
 
-private:
-    // Data members
-    int         m_argc;
-    char**      m_argv;
-}; // caller
+    int status = test_rmdir(wd);
+    return status;
+  }
+  else
+    BOOST_ERROR( "Ouch..." );
+}
 
 } // end namespace TestWorkdir
+} // end namespace Dakota
 
-} // namespace Dakota
 
 
+// NOTE: Boost.Test framework provides the main progran driver
 
 //____________________________________________________________________________//
 
 int test_main( int argc, char* argv[] )      // note the name!
 {
-  //using namespace boost::minimal_test;
   using namespace Dakota::TestWorkdir;
+  //using Dakota::WorkdirHelper;;
 
-  try {
-    ::boost::execution_monitor ex_mon;
-    int run_result = ex_mon.execute( caller( argc, argv ) );
-  }
-  catch( boost::execution_exception const& exex ) {
-    if( exex.code() != boost::execution_exception::no_error )
-      BOOST_ERROR( (std::string( "exception \"" ).
-                            append( exex.what().begin(), exex.what().end() ).
-                            append( "\" caught" ) ).c_str() );
-    std::cerr << "\n**** Testing aborted.";
-  }
+  //bfs::path fq_search(argv[1]);
+  std::string fq_search(std::getenv("PWD"));
+  fq_search += "/../test/d*.sh";
+  int run_result = 0;
 
-/*
-  if( boost::minimal_test::errors_counter() != 0 ) {
-    std::cerr << "\n**** " << boost::minimal_test::errors_counter()
-              << " error" << (boost::minimal_test::errors_counter() > 1 ? "s" : "" )
-              << " detected\n";
+  run_result = list_driver_scripts(fq_search);
+  run_result = test_create_and_remove_dir("dak_wd");
 
-    return boost::exit_test_failure;
-  }
-*/
+  //BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
   return boost::exit_success;
 }
