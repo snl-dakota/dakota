@@ -424,7 +424,8 @@ WorkdirHelper::arg_adjust(bool cmd_line_args,
 
 /** Input: path_with_wc; Output: search_dir, wild_card */
 void WorkdirHelper::split_wildcard(const std::string& path_with_wc, 
-				   bfs::path& search_dir, std::string& wild_card)
+				   bfs::path& search_dir, 
+				   bfs::path& wild_card)
 {
   // could coerce string to path in passing args...
   bfs::path fq_search(path_with_wc);
@@ -446,7 +447,7 @@ void WorkdirHelper::split_wildcard(const std::string& path_with_wc,
     search_dir = ".";
 
   // might we need wstring on Windows?
-  wild_card = fq_search.filename().native();
+  wild_card = fq_search.filename();
 
 }
 
@@ -585,7 +586,7 @@ void WorkdirHelper::link_items(const StringArray& source_items,
       //   iterate paths matching the wildcard;
       std::string glob_string = *src_it;
       bfs::path root_dir;
-      std::string wild_card;
+      bfs::path wild_card;
       WorkdirHelper::split_wildcard(glob_string, root_dir, wild_card);
 
       MatchesWC wc_predicate(wild_card);

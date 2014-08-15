@@ -89,10 +89,10 @@ struct MatchesWC {
   // manage generically in this struct by converting where needed
  
   /// ctor that builds and stores the regular expression
-  MatchesWC(const std::string& wild_card)
+  MatchesWC(const bfs::path& wild_card)
   { 
-    // this will always convert wstring -> string, not opposite
-    bfs::path::string_type file_regex(wild_card.begin(), wild_card.end());
+
+    bfs::path::string_type file_regex(wild_card.native());
 
     // map * and ? wildcards to regular expression syntax
     boost::replace_all(file_regex, ".", "\\.") ;
@@ -169,9 +169,10 @@ public:
 
   /// given a string with an optional path and a wildcard, e.g.,
   /// /tmp/D*.?pp, parse it into the search path /tmp (default .) and
-  /// the wildcard D*.?pp
+  /// the wildcard D*.?pp.  Return wild_card as path to reduce wstring
+  /// conversions
   static void split_wildcard(const std::string& path_with_wc, 
-			     bfs::path& search_dir, std::string& wild_card);
+			     bfs::path& search_dir, bfs::path& wild_card);
 
   /// get a valid path to a temporary file/directory in the system tmp
   /// path whose name starts with the passed prefix

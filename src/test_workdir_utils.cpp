@@ -29,7 +29,7 @@ namespace TestWorkdir {
 int list_driver_scripts(const std::string& glob_string)
 {
   bfs::path search_dir;
-  std::string wild_card;
+  bfs::path wild_card;
   WorkdirHelper::split_wildcard(glob_string, search_dir, wild_card);
 
   std::cout << "Searching " << search_dir << " for " << wild_card << std::endl;
