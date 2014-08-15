@@ -23,25 +23,30 @@
 namespace Dakota {
 namespace TestWorkdir {
 
-// ToDo:  Populate a handful of workdir util "unit" tests
-
-//int count_driver_scripts();
-int list_driver_scripts(const std::string& glob_string)
+void count_driver_scripts(const std::string& glob_string)
 {
   bfs::path search_dir;
   bfs::path wild_card;
   WorkdirHelper::split_wildcard(glob_string, search_dir, wild_card);
 
-  std::cout << "Searching " << search_dir << " for " << wild_card << std::endl;
+#if defined(DEBUG)
+  std::cout << "Listing driver scripts in " << search_dir
+            << " by wildcard " << wild_card << std::endl;
+#endif
 
   MatchesWC wc_predicate(wild_card);
-//
   glob_iterator fit(wc_predicate, bfs::directory_iterator(search_dir));
   glob_iterator fitend(wc_predicate, bfs::directory_iterator());
-  for ( ; fit != fitend; ++fit)
+  size_t file_count = 0;
+  for ( ; fit != fitend; ++fit) {
+#if defined(DEBUG)
     std::cout << "ls: " << fit->path() << std::endl;
-//
-  return boost::exit_success;
+#endif
+    BOOST_CHECK( is_regular_file( fit->path() ) );
+    ++file_count;
+  }
+
+  BOOST_CHECK( file_count >= 7 );
 }
 
 
@@ -122,7 +127,7 @@ int test_main( int argc, char* argv[] )      // note the name!
   fq_search += "/../test/d*.sh";
   int run_result = 0;
 
-  run_result = list_driver_scripts(fq_search);
+  count_driver_scripts(fq_search);
   test_create_and_remove_dir("dak_wd");
 
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
