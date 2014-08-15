@@ -583,6 +583,25 @@ void WorkdirHelper::link_items(const StringArray& source_items,
     //    if ( contains_wildcard(*src_it) ) {
     if ( strcontains(*src_it, "*") || strcontains(*src_it, "?") ) {
       //   iterate paths matching the wildcard;
+      std::string glob_string = *src_it;
+      bfs::path root_dir;
+      std::string wild_card;
+      WorkdirHelper::split_wildcard(glob_string, root_dir, wild_card);
+
+      MatchesWC wc_predicate(wild_card);
+      glob_iterator fit(wc_predicate, bfs::directory_iterator(root_dir));
+      glob_iterator fitend(wc_predicate, bfs::directory_iterator());
+      for ( ; fit != fitend; ++fit) {
+        bfs::path src_path = fit->path();
+        if (bfs::exists(src_path)) {
+	  bfs::path src_filename = src_path.filename();
+	  link(src_path, destination_path / src_filename, overwrite);
+        }
+        else {
+	  Cout << "Warning: path " << src_path 
+	       << " specified to link to does not exist. Skipping." << std::endl;
+        }
+      }
     }
     else {
 

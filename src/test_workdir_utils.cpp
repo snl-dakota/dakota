@@ -45,37 +45,59 @@ int list_driver_scripts(const std::string& glob_string)
 }
 
 
-int test_rmdir(bfs::path& wd)
+//void test_cp_template_files_into_wd(bfs::path& wd)
+void test_ln_template_files_into_wd(bfs::path& wd)
 {
-  std::cout << "OK to remove EMPTY dir:  " << wd << std::endl;
-  WorkdirHelper::recursive_remove(wd);
+  //std::cout << "OK to cp template files into EMPTY dir:  " << wd << std::endl;
+  std::string template_path_str( std::getenv("PWD") );
+  template_path_str += "/../test/dakota_workdir.templatedir/*";
 
-  return boost::exit_success;
+  StringArray template_items(1, template_path_str);
+  //WorkdirHelper::copy_items(template_items, wd, true);
+  WorkdirHelper::link_items(template_items, wd, true);
+
+  // double-check contents of expected items in the wd
+  bfs::directory_iterator it(wd), eod;
+  size_t file_count = 0; size_t link_count = 0; size_t dir_count = 0;
+  BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) ) { 
+    if( is_regular_file(p) ) {
+      ++file_count;
+      //std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
+    } 
+    //else if( is_link(p) ) {
+      //++link_count;
+      //std::cout << "counting links poplated wdir.. currentLCount is: " << link_count << std::endl;
+    //} 
+    else if( is_directory(p) ) {
+      ++dir_count;
+      //std::cout << "counting dirs poplated wdir.. currentDCount is: " << dir_count << std::endl;
+    } 
+  }
+
+  BOOST_CHECK( !wd.empty() );
+  BOOST_CHECK( file_count+link_count+dir_count >= 3 );
+  //std::cout << "DONE iterating dir:  " << wd << std::endl;
+
+  //BOOST_CHECK( bfs::exists(wd += "/dakota_workdir.templatedir.dat") );
+}
+
+void test_rmdir(bfs::path& wd)
+{
+  WorkdirHelper::recursive_remove(wd);
+  BOOST_CHECK( !bfs::exists(wd) );
 }
 
 
-int test_create_and_remove_dir(const std::string& dir_name)
+void test_create_and_remove_dir(const std::string& dir_name)
 {
   bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
-    std::cout << "in newly created dir: " << wd << std::endl;
-//
-    bfs::directory_iterator it(wd), eod;
-    BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) )   
-    { 
-      std::cout << "iterating filesIn created dir.. " << "\tWJB should NOT see this line"  << std::endl;
-      if( is_regular_file(p) )
-      {
-        // no files (yet)
-      } 
-    }
-//
-    std::cout << "DONE iterating newly created/EMPTY dir:  " << wd << std::endl;
+    test_ln_template_files_into_wd(wd);
 
-    int status = test_rmdir(wd);
-    return status;
+    //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
+    test_rmdir(wd); // WJB: comment-out for manual inspection after a testrun
   }
   else
     BOOST_ERROR( "Ouch..." );
@@ -101,9 +123,9 @@ int test_main( int argc, char* argv[] )      // note the name!
   int run_result = 0;
 
   run_result = list_driver_scripts(fq_search);
-  run_result = test_create_and_remove_dir("dak_wd");
+  test_create_and_remove_dir("dak_wd");
 
-  //BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
+  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
   return boost::exit_success;
 }
