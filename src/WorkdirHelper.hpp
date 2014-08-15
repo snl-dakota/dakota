@@ -85,10 +85,14 @@ enum { DIR_CLEAN, DIR_PERSIST, DIR_ERROR };
 /// Currently supports * and ?.
 struct MatchesWC {
 
+  // path value_type on Windows is wchar, otherwise char; try to
+  // manage generically in this struct by converting where needed
+ 
   /// ctor that builds and stores the regular expression
   MatchesWC(const std::string& wild_card)
   { 
-    std::string file_regex(wild_card);
+    // this will always convert wstring -> string, not opposite
+    bfs::path::string_type file_regex(wild_card.begin(), wild_card.end());
 
     // map * and ? wildcards to regular expression syntax
     boost::replace_all(file_regex, ".", "\\.") ;
@@ -107,12 +111,13 @@ struct MatchesWC {
   /// return true is dir_entry matches wildCardRegEx
   bool operator()(const bfs::path& dir_entry) 
   {  
-    // TODO: decide about locale, native, etc.
+    // generic vs. native shouldn't matter for the filename part;
+    // using native in case we extend the regex to directories later
     return boost::regex_match(dir_entry.filename().native(), wildCardRegEx);
   }
 
-  /// archived RegEx
-  boost::regex wildCardRegEx;
+  /// archived RegEx; wchar-based on Windows
+  boost::basic_regex<bfs::path::value_type> wildCardRegEx;
 };
 
 /// a glob_iterator filters a directory_iterator based on a wildcard predicate
