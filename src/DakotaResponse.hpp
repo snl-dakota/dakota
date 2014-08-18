@@ -166,7 +166,19 @@ private:
 
   /// number of handle objects sharing responseRep
   int referenceCount;
-
+  /// number of scalar responses
+  size_t numScalarResponses;
+  /// number of field responses
+  size_t numFieldResponses;
+  /// number of total responses (may be redundant, leaving in for now)
+  size_t numTotalResponses;
+  /// index of field lengths for field data 
+  IntVector fieldLengths;
+  /// dimensions of each function
+  IntVectorArray numCoordsPerField;
+  /// independent coordinate values 
+  RealVectorArray coordsValuesPerField;
+  
   // An abstract set of functions and their first and second derivatives.
 
   /// abstract set of response functions
@@ -177,15 +189,6 @@ private:
   RealMatrix functionGradients;
   /// second derivatives of the response functions
   RealSymMatrixArray functionHessians;
-
-  /// abstract set of response field value functions
-  BoostMAArray fieldValues;
-  /// first derivatives of the response field value functions
-  /** the gradient vectors (plural) are column vectors in the matrix
-      (singular) with (row, col) = (variable index, response fn index). */
-  BoostMA2DArray fieldGradients;
-  /// second derivatives of the response field value functions
-  BoostMA3DArray fieldHessians;
 
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
@@ -263,6 +266,16 @@ public:
 
   /// return the number of response functions
   size_t num_functions() const;
+  /// number of scalar responses 
+  size_t num_scalar_responses() const;
+  /// number of field responses
+  size_t num_field_responses() const;
+  /// number of total responses (may be redundant, leaving in for now)
+  size_t num_total_responses() const;
+  /// index of field lengths for field data 
+  IntVector field_lengths() const;
+  /// dimensions of each function
+  IntVectorArray num_coords_per_field();
 
   /// return the active set
   const ActiveSet& active_set() const;
@@ -334,34 +347,11 @@ public:
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& function_hessians);
 
-  /// return a field value
-  const RealMultiArray& field_value(size_t i) const;
   /// return a "view" of a field value for updating in place
-  RealMultiArray& field_value_view(size_t i);
-  /// return all field values
-  const BoostMAArray& field_values() const;
-  /// return all field values as a view for updating in place
-  BoostMAArray field_values_view();
+  RealVector field_values_view(size_t i);
   /// set a field value
-  void field_value(const RealMultiArray& field_val, size_t i);
-  /// set all field values
-  void field_values(const BoostMAArray& field_vals);
-
-  /// return the i-th field gradient as a const 
-  const RealMulti2DArray& field_gradient(const int& i) const;
-  /// return the i-th field gradient
-  RealMulti2DArray& field_gradient_view(const int& i) const; 
-  /// return all field gradients
-  const BoostMA2DArray& field_gradients() const;
-  /// return all function gradients as a view for updating in place
-  BoostMA2DArray field_gradients_view();
-  /// set a function gradient
-  void field_gradient(const RealMulti2DArray& field_grad, const int& i);
-  /// set all function gradients
-  void field_gradients(const BoostMA2DArray& field_grads);
- 
-  /// TODO:  field Hessians
-
+  void field_values(const RealVector& field_val, size_t i);
+  
   /// read a response object from an std::istream
   void read(std::istream& s);
   /// write a response object to an std::ostream
@@ -450,10 +440,20 @@ private:
   ResponseRep* responseRep;
 };
 
-
 inline size_t Response::num_functions() const
 { return responseRep->functionValues.length(); }
 
+inline size_t Response::num_scalar_responses() const
+{ return responseRep->numScalarResponses; }
+
+inline size_t Response::num_field_responses() const
+{ return responseRep->numFieldResponses; }
+
+inline size_t Response::num_total_responses() const
+{ return responseRep->numTotalResponses; }
+
+inline IntVector Response::field_lengths() const
+{ return responseRep->fieldLengths; }
 
 inline const Real& Response::function_value(size_t i) const
 { return responseRep->functionValues[i]; }
@@ -467,6 +467,19 @@ inline const RealVector& Response::function_values() const
 { return responseRep->functionValues; }
 
 
+inline RealVector Response::field_values_view(size_t i) 
+{
+  size_t j, cntr = responseRep->numScalarResponses; 
+  for (j=0; j<i; j++)
+    cntr += responseRep->fieldLengths(j);
+
+  int len_field_i = responseRep->fieldLengths(i);
+
+  return RealVector(Teuchos::View, &responseRep->functionValues[cntr], 
+		    len_field_i);
+}
+
+
 inline RealVector Response::function_values_view()
 {
   // Caution/Bug: with some compilers the Teuchos::View may be copy
@@ -478,6 +491,17 @@ inline RealVector Response::function_values_view()
 
 inline void Response::function_value(const Real& function_val, size_t i)
 { responseRep->functionValues[i] = function_val; }
+
+
+inline void Response::field_values(const RealVector& field_val, size_t i)
+{ size_t j, cntr = responseRep->numScalarResponses; 
+  for (j=0; j<i; j++)
+    cntr+=responseRep->fieldLengths(j);
+  for (j=0; j<responseRep->fieldLengths(i); j++){
+    responseRep->functionValues[cntr] = field_val[j]; 
+    cntr++;
+  }
+}
 
 
 inline void Response::function_values(const RealVector& function_vals)
@@ -562,31 +586,6 @@ function_hessian(const RealSymMatrix& function_hessian, size_t i)
 inline void Response::
 function_hessians(const RealSymMatrixArray& function_hessians)
 { responseRep->functionHessians = function_hessians; }
-
-
-inline const RealMultiArray& Response::field_value(size_t i) const
-{ return responseRep->fieldValues[i]; }
-
-
-inline RealMultiArray& Response::field_value_view(size_t i)
-{ return responseRep->fieldValues[i]; }
-
-
-inline const BoostMAArray& Response::field_values() const
-{ return responseRep->fieldValues; }
-
-
-inline BoostMAArray Response::field_values_view()
-{
-}
-
-
-inline void Response::field_value(const RealMultiArray& field_val, size_t i)
-{ responseRep->fieldValues[i] = field_val; }
-
-
-inline void Response::field_values(const BoostMAArray& field_vals)
-{ responseRep->fieldValues = field_vals; }
 
 
 inline const ActiveSet& Response::active_set() const

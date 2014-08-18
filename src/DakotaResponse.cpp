@@ -144,13 +144,50 @@ ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
   referenceCount(1), functionLabels(problem_db.get_sa("responses.labels")),
   responsesId(problem_db.get_string("responses.id"))
 {
-  size_t num_resp_fns
-    = problem_db.get_sizet("responses.num_response_functions");
-  size_t num_fns = (num_resp_fns) ? num_resp_fns :
-    problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
-    std::max(problem_db.get_sizet("responses.num_objective_functions"),
-	     problem_db.get_sizet("responses.num_least_squares_terms"));
+  size_t sum_field_lengths= 0;
+  size_t numFieldResponses = 
+    problem_db.get_sizet("responses.num_field_responses")+
+    problem_db.get_sizet("responses.num_field_objectives")+
+    problem_db.get_sizet("responses.num_field_calibration_terms");
+  Cout << "num_field_fns " << numFieldResponses << std::endl;
+  if (numFieldResponses > 0) {
+    numScalarResponses =  problem_db.get_sizet("responses.num_scalar_responses")+ 
+        problem_db.get_sizet("responses.num_scalar_objectives")+
+        problem_db.get_sizet("responses.num_scalar_calibration_terms");
+    if ((numFieldResponses + numScalarResponses) !=
+         problem_db.get_sizet("responses.num_response_functions")) 
+          Cerr << "Warning: number of scalar and field response functions must sum " 
+	       << "to total number of response functions." << std::endl;
+    numTotalResponses = numScalarResponses + numFieldResponses;
+  }      
+  if (numFieldResponses > 0) {
+    fieldLengths.resize(numFieldResponses);
+    fieldLengths = problem_db.get_iv("responses.lengths");
+    for (size_t i=0; i<numFieldResponses; i++) 
+      sum_field_lengths += fieldLengths(i);
+  }
+  size_t num_fns;
+  if (numFieldResponses == 0) {
+    size_t num_resp_fns
+      = problem_db.get_sizet("responses.num_response_functions");
+    num_fns = (num_resp_fns) ? num_resp_fns :
+      problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
+      problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
+      std::max(problem_db.get_sizet("responses.num_objective_functions"),
+	       problem_db.get_sizet("responses.num_least_squares_terms"));
+  } 
+  else {
+    size_t num_scalar_resp_fns
+      = problem_db.get_sizet("responses.num_scalar_responses");
+    size_t num_scalar_fns = (num_scalar_resp_fns) ? num_scalar_resp_fns :
+      problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
+      problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
+      std::max(problem_db.get_sizet("responses.num_scalar_objectives"),
+	       problem_db.get_sizet("responses.num_scalar_calibration_terms"));
+      num_fns = num_scalar_fns + sum_field_lengths;
+  }
+   
+  Cout << "num_fns " << num_fns << std::endl;
   if (num_fns == 0)
     Cerr << "Warning: total number of response functions is zero.  This is "
 	 << "admissible in rare cases (e.g., nested overlays)." << std::endl;
@@ -189,6 +226,22 @@ ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
   ShortArray asv(num_fns, asv_value);
   responseActiveSet.request_vector(asv);
   responseActiveSet.derivative_vector(vars.continuous_variable_ids());
+  
+  // need to append per field id
+  if (numFieldResponses > 0) {
+    size_t num_resp_fns
+      = problem_db.get_sizet("responses.num_response_functions");
+    StringArray origLabels(num_resp_fns);
+    origLabels=functionLabels;
+    size_t cntr = 0;
+    functionLabels.resize(num_fns);
+    for (size_t i=0; i<numFieldResponses; i++){
+      for (size_t j=0; j<fieldLengths(i); j++){
+        build_label(functionLabels[numScalarResponses+cntr+j],origLabels[numScalarResponses+i],j+1);
+      }
+      cntr+=fieldLengths(i);
+    }
+  }
 }
 
 
