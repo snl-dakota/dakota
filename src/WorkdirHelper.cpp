@@ -21,6 +21,17 @@
 #include <boost/foreach.hpp>
 #include <cassert>
 
+// BMA TODO: Boost versions <= 1.49 do not include these mappings,
+// perhaps due to conflicts with v2?
+#if BOOST_VERSION / 100 % 1000 < 50
+namespace boost {
+  namespace filesystem {
+    using filesystem3::copy;
+    using filesystem3::copy_directory;
+  }
+}
+#endif
+
 
 namespace Dakota {
 
@@ -566,14 +577,14 @@ void WorkdirHelper::recursive_remove(const bfs::path& rm_path)
 }
 
 
-// BMA TODO: link first, then copy so we skip if not replacing...
-
-/** Iterate source items (paths or wildcards), linking each of them
-    from the destination.  If overwrite, remove and replace any
-    existing destination target, otherwise, allow to persist */
-void WorkdirHelper::link_items(const StringArray& source_items,
-			       const bfs::path& destination_path,
-			       bool overwrite) 
+/** Kernel for copy or link file operation.  Iterate source items
+    (paths or wildcards), copying/linking each of them to the
+    destination.  If overwrite, remove and replace any existing
+    destination target (at top-level), otherwise, allow to persist */
+void WorkdirHelper::file_op_items(const file_op_function& file_op, 
+				  const StringArray& source_items,
+				  const bfs::path& destination_dir,
+				  bool overwrite) 
 {
   // iterate the items and link each entry or expanded wildcard
   StringArray::const_iterator src_it  = source_items.begin();
@@ -596,37 +607,55 @@ void WorkdirHelper::link_items(const StringArray& source_items,
         bfs::path src_path = fit->path();
         if (bfs::exists(src_path)) {
 	  bfs::path src_filename = src_path.filename();
-	  // when relative, assume relative to current path
-	  if (src_path.is_relative())
-	    link(bfs::current_path()/src_path, destination_path/src_filename,
-		 overwrite);
-	  else
-	    link(src_path, destination_path/src_filename, overwrite);
+	  file_op(src_path, destination_dir/src_filename, overwrite);
         }
         else {
-	  Cout << "Warning: path " << src_path 
-	       << " specified to link to does not exist. Skipping." << std::endl;
+	  Cout << "Warning: path " << src_path << " specified to link/copy "
+	       << "does not exist. Skipping." << std::endl;
         }
       }
     }
     else {
-
-      //   link the path;
+      // perform file_op directly on the path;
       bfs::path src_path(*src_it);
       if (bfs::exists(src_path)) {
 	bfs::path src_filename = src_path.filename();
-	link(src_path, destination_path / src_filename, overwrite);
+	file_op(src_path, destination_dir/src_filename, overwrite);
       }
       else {
-	Cout << "Warning: path " << src_path 
-	     << " specified to link to does not exist. Skipping." << std::endl;
+	Cout << "Warning: path " << src_path << " specified to link/copy "
+	     << "does not exist. Skipping." << std::endl;
       }
-
     }
 
-  }
+  } // for each item
 
 }
+
+
+/** Iterate source items (paths or wildcards), linking each of them
+    from the destination.  If overwrite, remove and replace any
+    existing destination target, otherwise, allow to persist */
+void WorkdirHelper::link_items(const StringArray& source_items,
+			       const bfs::path& destination_path,
+			       bool overwrite) 
+{
+  file_op_function file_op = &WorkdirHelper::link;
+  file_op_items(file_op, source_items, destination_path, false);
+}
+
+
+/** Iterate source items (paths or wildcards), copying each of them
+    into the destination.  If overwrite, remove and replace any
+    existing destination target, otherwise, allow to persist */
+void WorkdirHelper::copy_items(const StringArray& source_items,
+			       const bfs::path& destination_path,
+			       bool overwrite) 
+{
+  file_op_function file_op = &WorkdirHelper::recursive_copy;
+  file_op_items(file_op, source_items, destination_path, false);
+}
+
 
 /** Both paths must be fully resolved. Assumes source file exists
     since it was iterated in the calling context. If overwrite, any
@@ -638,19 +667,54 @@ void WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_link,
   // symlink facilities require a qualifed source and destination
   // name, be absolute for now
   
+  // when relative, assume relative to current path
+  bfs::path fq_src_path(src_path);
+  if (src_path.is_relative())
+    fq_src_path = bfs::current_path() / src_path;
+
   if (overwrite && bfs::exists(dest_link))
     bfs::remove_all(dest_link);
 
   // now, only make the link if the dest doesn't exist
   if (!bfs::exists(dest_link)) {
-    if (bfs::is_directory(src_path))
-      bfs::create_directory_symlink(src_path, dest_link);
+    if (bfs::is_directory(fq_src_path))
+      bfs::create_directory_symlink(fq_src_path, dest_link);
     else
-      bfs::create_symlink(src_path, dest_link);
+      bfs::create_symlink(fq_src_path, dest_link);
   }
 
 }
 
+
+/// note dest_path is the actual target of the copy, not the containing folder
+/// (may need to reconsider)
+void WorkdirHelper::recursive_copy(const bfs::path& src_path, 
+				   const bfs::path& dest_path, bool overwrite)
+{
+  // TODO: gentler overwrite of contents, not top-level paths
+  if (overwrite && bfs::exists(dest_path))
+    bfs::remove_all(dest_path);
+
+  if (!bfs::exists(dest_path)) {
+    if (bfs::is_directory(src_path)) {
+
+      //bfs::create_directory(dest_path);
+      bfs::copy_directory(src_path, dest_path);
+
+      bfs::directory_iterator dir_it(src_path);
+      bfs::directory_iterator dir_end;
+      for ( ; dir_it != dir_end; ++dir_it) {
+	// TODO: try/catch
+	bfs::path src_item(dir_it->path());
+	recursive_copy(src_item, dest_path / src_item.filename(), overwrite);
+      }
+    }
+    else {
+      // copy a file or symlink
+      bfs::copy(src_path, dest_path);
+    }
+  }
+}
 
 
 // TODO: Boost 1.50 and newer support concat (+=) on paths, remove

@@ -26,6 +26,8 @@
 #include <boost/filesystem/path.hpp>
 namespace bfs = boost::filesystem;
 
+#include <boost/function.hpp>
+
 #if defined(_WIN32) || defined(_WIN64)
 
   #define NOMINMAX
@@ -62,6 +64,13 @@ namespace Dakota {
 
 /// define directory creation options
 enum { DIR_CLEAN, DIR_PERSIST, DIR_ERROR };
+
+
+// define a function type that maps src to dest with option to overwrite
+typedef 
+boost::function<void (const bfs::path& src_path, 
+		      const bfs::path& dest_path, bool overwrite)> 
+file_op_function;
 
 
 // Notes on wildcard matching:
@@ -191,12 +200,19 @@ public:
   /// type.  Only error if existed and there's an error in the remove.
   static void recursive_remove(const bfs::path& rm_path);
 
-  /// recursively copy a list of source_paths (files, directories, symlinks),
-  /// potentially including wildcards, to destination_path
+  /// recursively perform file_op (copy or link) on a list of
+  /// source_paths (files, directories, symlinks), which potentially
+  /// include wildcards, to destination_dir
+  static void file_op_items(const file_op_function& file_op,
+			    const StringArray& source_paths,
+			    const bfs::path& destination_dir,
+			    bool overwrite);
+
+  /// copy a list of source_paths (files, directories, symlinks),
+  /// potentially including wildcards to destination_path
   static void copy_items(const StringArray& source_paths,
 			 const bfs::path& destination_path,
-			 bool overwrite) 
-  { };
+			 bool overwrite);
 
   /// top-level link a list of source_paths (files, directories, symlinks),
   /// potentially including wildcards, from destination_path
@@ -209,6 +225,8 @@ public:
   static void link(const bfs::path& src_path, const bfs::path& dest_link,
 		   bool overwrite);
 
+  static void recursive_copy(const bfs::path& src_path, 
+			     const bfs::path& dest_path, bool overwrite);
 
 private:
 
