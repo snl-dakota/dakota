@@ -149,7 +149,6 @@ ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
     problem_db.get_sizet("responses.num_field_responses")+
     problem_db.get_sizet("responses.num_field_objectives")+
     problem_db.get_sizet("responses.num_field_calibration_terms");
-  Cout << "num_field_fns " << numFieldResponses << std::endl;
   if (numFieldResponses > 0) {
     numScalarResponses =  problem_db.get_sizet("responses.num_scalar_responses")+ 
         problem_db.get_sizet("responses.num_scalar_objectives")+
@@ -187,7 +186,6 @@ ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
       num_fns = num_scalar_fns + sum_field_lengths;
   }
    
-  Cout << "num_fns " << num_fns << std::endl;
   if (num_fns == 0)
     Cerr << "Warning: total number of response functions is zero.  This is "
 	 << "admissible in rare cases (e.g., nested overlays)." << std::endl;
