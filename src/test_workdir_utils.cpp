@@ -93,7 +93,7 @@ void test_rmdir(bfs::path& wd)
 }
 
 
-void test_create_and_remove_dir(const std::string& dir_name)
+void test_create_and_remove_tmpdir(const std::string& dir_name)
 {
   bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
@@ -103,6 +103,25 @@ void test_create_and_remove_dir(const std::string& dir_name)
 
     //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
     test_rmdir(wd); // WJB: comment-out for manual inspection after a testrun
+  }
+  else
+    BOOST_ERROR( "Ouch..." );
+}
+
+
+void test_create_and_remove_wd_in_rundir(const std::string& dir_name)
+{
+  //bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
+  bfs::path wd( dir_name );
+  WorkdirHelper::create_directory(wd, DIR_CLEAN);
+
+  if( bfs::exists(wd) && is_directory(wd) ) {
+    test_ln_template_files_into_wd(wd);
+
+    //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
+#if 0
+    test_rmdir(wd); // WJB: comment-out for manual inspection after a testrun
+#endif
   }
   else
     BOOST_ERROR( "Ouch..." );
@@ -128,7 +147,8 @@ int test_main( int argc, char* argv[] )      // note the name!
   int run_result = 0;
 
   count_driver_scripts(fq_search);
-  test_create_and_remove_dir("dak_wd");
+  test_create_and_remove_tmpdir("dak_wd");
+  test_create_and_remove_wd_in_rundir("workdir");
 
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
