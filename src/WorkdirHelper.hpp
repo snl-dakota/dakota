@@ -174,6 +174,11 @@ public:
   static void split_wildcard(const std::string& path_with_wc, 
 			     bfs::path& search_dir, bfs::path& wild_card);
 
+
+  /// concatenate a string onto the end of a path
+  static bfs::path concat_path(const bfs::path& p_in, const String& tag);
+
+
   /// get a valid path to a temporary file/directory in the system tmp
   /// path whose name starts with the passed prefix
   static bfs::path system_tmp_name(const std::string& prefix);

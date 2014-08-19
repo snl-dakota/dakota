@@ -596,7 +596,12 @@ void WorkdirHelper::link_items(const StringArray& source_items,
         bfs::path src_path = fit->path();
         if (bfs::exists(src_path)) {
 	  bfs::path src_filename = src_path.filename();
-	  link(src_path, destination_path / src_filename, overwrite);
+	  // when relative, assume relative to current path
+	  if (src_path.is_relative())
+	    link(bfs::current_path()/src_path, destination_path/src_filename,
+		 overwrite);
+	  else
+	    link(src_path, destination_path/src_filename, overwrite);
         }
         else {
 	  Cout << "Warning: path " << src_path 
@@ -644,6 +649,16 @@ void WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_link,
       bfs::create_symlink(src_path, dest_link);
   }
 
+}
+
+
+
+// TODO: Boost 1.50 and newer support concat (+=) on paths, remove
+// this function when we allow that version
+bfs::path WorkdirHelper::concat_path(const bfs::path& p_in, const String& tag)
+{
+  bfs::path::string_type p_in_str = p_in.generic_string();
+  return (p_in_str + tag);
 }
 
 
