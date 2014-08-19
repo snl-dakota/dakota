@@ -21,6 +21,8 @@
 #include "DakotaIterator.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataModel.hpp"
+#include "PRPMultiIndex.hpp"
+#include "IteratorScheduler.hpp"
 
 
 namespace Dakota {
@@ -67,8 +69,8 @@ protected:
   void derived_compute_response(const ActiveSet& set);
   /// portion of asynch_compute_response() specific to NestedModel
   void derived_asynch_compute_response(const ActiveSet& set);
-  // portion of synchronize() specific to NestedModel
-  //const IntResponseMap& derived_synchronize();
+  /// portion of synchronize() specific to NestedModel
+  const IntResponseMap& derived_synchronize();
   // portion of synchronize_nowait() specific to NestedModel
   //const IntResponseMap& derived_synchronize_nowait();
 
@@ -210,6 +212,16 @@ private:
   void response_mapping(const Response& interface_response,
 			const Response& sub_iterator_response,
 			Response& mapped_response);
+  /// assign the response from the optional interface evaluation
+  /// within the total response for the model
+  void interface_response_overlay(const Response& opt_interface_response,
+				  Response& mapped_response);
+  /// overlay the sub-iteration response within the total response for
+  /// the model using the primaryCoeffs/secondaryCoeffs mappings
+  void iterator_response_overlay(const Response& sub_iterator_response,
+				 Response& mapped_response);
+  /// check function counts for the mapped_asv
+  void check_response_map(const ShortArray& mapped_asv);
 
   /// update inactive variables view for subIterator based on new_view
   void update_inactive_view(short new_view, short& view);
@@ -227,6 +239,11 @@ private:
   /// derived_asynch_compute_response()
   int nestedModelEvalCntr;
 
+  /// used to return a map of nested responses (including subIterator
+  /// and optionalInterface contributions) for aggregation and rekeying
+  /// at the base class level
+  IntResponseMap nestedResponseMap;
+
   // attributes pertaining to the subIterator/subModel pair:
   //
   /// the sub-iterator that is executed on every evaluation of this model
@@ -237,6 +254,17 @@ private:
       optimization under uncertainty by having NestedModels contain
       SurrogateModels and vice versa. */
   Model subModel;
+  /// job queue for asynchronous execution of subIterator jobs
+  PRPQueue beforeSynchSubIterPRPQueue;
+  /// scheduling object for concurrent iterator parallelism
+  IteratorScheduler subIterSched;
+  // subIterator evaluation counter (since Iterator::execNum
+  // increments at run time rather than queue load time)
+  //int subIteratorEvalId;
+  // mapping from subIterator evaluation counter to nested model counter
+  // (different when subIterator evaluations do not occur on every nested
+  // model evaluation due to variable ASV content)
+  //IntIntMap subIteratorIdMap;
   /// number of sub-iterator response functions prior to mapping
   size_t numSubIterFns;
   /// number of top-level inequality constraints mapped from the
@@ -255,6 +283,10 @@ private:
   String optInterfacePointer;
   /// the response object resulting from optional interface evaluations
   Response optInterfaceResponse;
+  /// mapping from optionalInterface evaluation counter to nested model
+  /// counter (different when optionalInterface evaluations do not occur
+  /// on every nested model evaluation due to variable ASV content)
+  IntIntMap optInterfaceIdMap;
   /// number of primary response functions (objective/least squares/generic
   /// functions) resulting from optional interface evaluations
   size_t numOptInterfPrimary;
@@ -485,6 +517,57 @@ inline void NestedModel::serve(int max_eval_concurrency)
 
 inline void NestedModel::stop_servers()
 { component_parallel_mode(0); }
+
+
+/** In the OUU case,
+\verbatim
+optionalInterface fns = {f}, {g} (deterministic primary functions, constraints)
+subIterator fns       = {S}      (UQ response statistics)
+
+Problem formulation for mapped functions:
+                  minimize    {f} + [W]{S}
+                  subject to  {g_l} <= {g}    <= {g_u}
+                              {a_l} <= [A]{S} <= {a_u}
+                              {g}    == {g_t}
+                              [A]{S} == {a_t}
+\endverbatim
+
+where [W] is the primary_mapping_matrix user input (primaryRespCoeffs
+class attribute), [A] is the secondary_mapping_matrix user input
+(secondaryRespCoeffs class attribute), {{g_l},{a_l}} are the top level
+inequality constraint lower bounds, {{g_u},{a_u}} are the top level
+inequality constraint upper bounds, and {{g_t},{a_t}} are the top
+level equality constraint targets.
+
+NOTE: optionalInterface/subIterator primary fns (obj/lsq/generic fns)
+overlap but optionalInterface/subIterator secondary fns (ineq/eq 
+constraints) do not.  The [W] matrix can be specified so as to allow
+
+\li some purely deterministic primary functions and some combined:
+    [W] filled and [W].num_rows() < {f}.length() [combined first] 
+    \e or [W].num_rows() == {f}.length() and [W] contains rows of 
+    zeros [combined last]
+\li some combined and some purely stochastic primary functions:
+    [W] filled and [W].num_rows() > {f}.length()
+\li separate deterministic and stochastic primary functions:
+    [W].num_rows() > {f}.length() and [W] contains {f}.length()
+    rows of zeros.
+
+If the need arises, could change constraint definition to allow overlap
+as well: {g_l} <= {g} + [A]{S} <= {g_u} with [A] usage the same as for
+[W] above.
+
+In the UOO case, things are simpler, just compute statistics of each 
+optimization response function: [W] = [I], {f}/{g}/[A] are empty. */
+inline void NestedModel::
+response_mapping(const Response& opt_interface_response,
+		 const Response& sub_iterator_response,
+		 Response& mapped_response)
+{
+  check_response_map(mapped_response.active_set_request_vector());
+  interface_response_overlay(opt_interface_response, mapped_response);
+  iterator_response_overlay(sub_iterator_response, mapped_response);
+}
 
 
 inline const String& NestedModel::interface_id() const

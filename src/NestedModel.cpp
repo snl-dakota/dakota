@@ -26,6 +26,10 @@ namespace Dakota {
 
 NestedModel::NestedModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db), nestedModelEvalCntr(0),
+  subIterSched(problem_db.parallel_library(),
+	       problem_db.get_int("model.nested.sub_method_servers"),
+	       problem_db.get_int("model.nested.sub_method_processors"),
+	       problem_db.get_short("model.nested.sub_method_scheduling")),
   optInterfacePointer(problem_db.get_string("model.interface_pointer"))
 {
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
@@ -1151,8 +1155,10 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
     responses, and map these to the total model response. */
 void NestedModel::derived_compute_response(const ActiveSet& set)
 {
+  ++nestedModelEvalCntr;
+
   // Set currentResponse asv and extract opt_interface_set/sub_iterator_set
-  currentResponse.active_set(set);
+  currentResponse.active_set(set); currentResponse.reset();
   ActiveSet opt_interface_set, sub_iterator_set;
   bool      opt_interface_map, sub_iterator_map;
   set_mapping(set, opt_interface_set, opt_interface_map,
@@ -1162,58 +1168,56 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
   // optInterfaceResponse by map):
   if (opt_interface_map) {
     Cout << "\n----------------------------------------------------------------"
-	 << "--\nNestedModel Evaluation " << std::setw(4)
-	 << nestedModelEvalCntr+1 << ": performing optional interface mapping\n"
-	 << "------------------------------------------------------------------"
-	 << '\n';
+	 << "--\nNestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr
+	 << ": performing optional interface mapping\n-------------------------"
+	 << "-----------------------------------------\n";
     component_parallel_mode(OPTIONAL_INTERFACE);
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' + 
-	boost::lexical_cast<String>(nestedModelEvalCntr+1);
+	boost::lexical_cast<String>(nestedModelEvalCntr);
       // don't apply a redundant interface eval id
       bool append_iface_tag = false;
       optionalInterface.eval_tag_prefix(eval_tag, append_iface_tag);
     }
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse);
+    // map optInterface results into their contribution to currentResponse
+    interface_response_overlay(optInterfaceResponse, currentResponse);
   }
 
   if (sub_iterator_map) {
     // need comm set up and master break off
     // (see IteratorScheduler::run_iterator())
-    Cout << "\n-------------------------------------------------\n"
-	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr+1 
-	 << ": running sub_iterator"
-	 << "\n-------------------------------------------------\n";
+    Cout << "\n-------------------------------------------------\nNestedModel "
+	 << "Evaluation " << std::setw(4) << nestedModelEvalCntr << ": running "
+	 << "sub_iterator\n-------------------------------------------------\n";
     component_parallel_mode(SUB_MODEL);
     update_sub_model();
     subIterator.response_results_active_set(sub_iterator_set);
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' + 
-	boost::lexical_cast<String>(nestedModelEvalCntr+1);
+	boost::lexical_cast<String>(nestedModelEvalCntr);
       subIterator.eval_tag_prefix(eval_tag);
     }
     // output suppressed by default, unless sub-iterator is verbose:
     subIterator.run(Cout);
-    Cout << "\nActive response data from sub_iterator:\n"
-	 << subIterator.response_results() << '\n';
+    const Response& sub_iter_resp = subIterator.response_results();
+    Cout << "\nActive response data from sub_iterator:\n"<< sub_iter_resp<<'\n';
+    // map subIterator results into their contribution to currentResponse
+    iterator_response_overlay(sub_iter_resp, currentResponse);
   }
-  // Perform mapping of optInterface & subIterator results to currentResponse
-  response_mapping(optInterfaceResponse, subIterator.response_results(),
-		   currentResponse);
 
-  ++nestedModelEvalCntr;
+  Cout << "\n---------------------------\nNestedModel total response:"
+       << "\n---------------------------\n\nActive response data from nested "
+       << "mapping:\n" << currentResponse << '\n';
 }
 
 
-/** Not currently supported by NestedModels (need to add concurrent
-    iterator support).  As a result, derived_synchronize() and
-    derived_synchronize_nowait() are inactive as well). */
+/** Asynchronous execution of subIterator on subModel and, optionally,
+    optionalInterface. */
 void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
 {
-  Cerr << "\nError: derived_asynch_compute_response not yet available in "
-       << "NestedModel." << std::endl;
-  abort_handler(-1);
+  ++nestedModelEvalCntr;
 
   // Set currentResponse asv and extract opt_interface_set/sub_iterator_set
   currentResponse.active_set(set);
@@ -1222,72 +1226,98 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
   set_mapping(set, opt_interface_set, opt_interface_map,
 	           sub_iterator_set,  sub_iterator_map);
 
+  //nestedVarsMap[nestedModelEvalCntr] = currentVariables.copy();
+  Response& nested_resp = nestedResponseMap[nestedModelEvalCntr];
+  nested_resp = currentResponse.copy(); nested_resp.reset();
+
   // Perform optionalInterface map (opt_interface_set is updated within
   // optInterfaceResponse by map):
   if (opt_interface_map) {
     Cout << "\n----------------------------------------------------------------"
 	 << "--\nNestedModel Evaluation " << std::setw(4)
-	 << nestedModelEvalCntr+1 << ": performing optional interface mapping\n"
+	 << nestedModelEvalCntr << ": queueing optional interface mapping\n"
 	 << "------------------------------------------------------------------"
 	 << '\n';
     // don't need to set component parallel mode since this only queues the job
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse, true);
+    optInterfaceIdMap[optionalInterface.evaluation_id()] = nestedModelEvalCntr;
   }
 
   if (sub_iterator_map) {
     // need comm set up and master break off
     // (see IteratorScheduler::run_iterator())
     Cout << "\n-------------------------------------------------\n"
-	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr+1 
-	 << ": running sub_iterator"
+	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr 
+	 << ": queueing sub_iterator"
 	 << "\n-------------------------------------------------\n";
 
-    // *** Need concurrent iterator support ***
+    // load up queue of iterator jobs to be scheduled in derived synchronize:
+    // > use the subIterator's method id as the PRP interface id
+    // > the subIterator's execNum cannot be used as the execution counter for
+    //   mapping since it doesn't increment until run time (see Iterator::run())
+    //++subIteratorEvalId;
+    subIterator.response_results_active_set(sub_iterator_set);
+    ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
+				   subIterator.response_results(),
+				   nestedModelEvalCntr);//subIteratorEvalId);
+    beforeSynchSubIterPRPQueue.insert(current_pair); // OR iterSched.queue(current_pair);
+    //Cout << "(Nested model asynchronous job " << subIteratorEvalId 
+    //     << " added to queue)\n";
+    //subIteratorIdMap[subIteratorEvalId] = nestedModelEvalCntr;
+  }
+}
 
-    // Only makes sense for message passing (can't launch an asynch local 
-    // iterator): load up queue of iterator jobs to be scheduled in derived 
-    // synchronize fns.
-    /*
-    subIteratorEvalId++;
-    ParamResponsePair current_pair(vars, nestedModelId, response,
-                                   subIteratorEvalId);
-    beforeSynchPRPQueue.insert(current_pair);
-    // jobs are not queued until call to synch() to allow self-scheduling.
-    Cout << "(Nested model asynchronous job " << subIteratorEvalId 
-         << " added to queue)\n";
-    */
+
+/** Recovery of asynchronous subIterator executions and, optionally,
+    asynchronous optionalInterface mappings. */
+const IntResponseMap& NestedModel::derived_synchronize()
+{
+  nestedResponseMap.clear();
+
+  // TO DO: scheduling is currently sequential, but could be overlapped as
+  // in HierarchSurrModel, given nowait support in iterSched
+
+  IntResponseMap::const_iterator cit;
+  if (!optInterfacePointer.empty()) {
+    component_parallel_mode(OPTIONAL_INTERFACE);
+    const IntResponseMap& opt_int_resp_map = optionalInterface.synch();
+    // overlay response sets
+    for (cit=opt_int_resp_map.begin(); cit!=opt_int_resp_map.end(); ++cit) {
+      int nested_id = optInterfaceIdMap[cit->first];
+      interface_response_overlay(cit->second, nestedResponseMap[nested_id]);
+    }
+    // update bookkeeping
+    optInterfaceIdMap.clear();
   }
 
-  ++nestedModelEvalCntr;
-  //varsMap[nestedModelEvalCntr] = currentVariables.copy();
+  if (!beforeSynchSubIterPRPQueue.empty()) {
+    // schedule beforeSynchSubIterPRPQueue jobs ...
+    component_parallel_mode(SUB_MODEL);
+    //subIterSched.schedule_iterators(...);
+    const IntResponseMap& sub_iter_resp_map = subModel.synchronize();//subIterSched.results();
+    // overlay response sets
+    for (cit=sub_iter_resp_map.begin(); cit!=sub_iter_resp_map.end(); ++cit)
+      iterator_response_overlay(cit->second, nestedResponseMap[cit->first]);
+    // update bookkeeping
+    beforeSynchSubIterPRPQueue.clear(); // OR iterSched.clear();
+  }
+
+  //nestedVarsMap.clear();
+  return nestedResponseMap;
 }
 
 
 /* Asynchronous response computations are not currently supported by
-   NestedModels.  Return a dummy to satisfy the compiler. */
-//const IntResponseMap& NestedModel::derived_synchronize()
-//{
-//  Cerr << "\nError: derived_synchronize not yet available in NestedModel."
-//       << std::endl;
-//  abort_handler(-1);
-//
-//  varsMap.clear();
-//  return responseMap;
-//}
+   NestedModels.  Return a dummy to satisfy the compiler.
+const IntResponseMap& NestedModel::derived_synchronize_nowait()
+{
+  // TO DO: will require nowait support in iterSched
 
-
-/* Asynchronous response computations are not currently supported by
-   NestedModels.  Return a dummy to satisfy the compiler. */
-//const IntResponseMap& NestedModel::derived_synchronize_nowait()
-//{
-//  Cerr << "\nError: derived_synchronize_nowait not yet available in "
-//       << "NestedModel." << std::endl;
-//  abort_handler(-1);
-//
-//  varsMap.erase(eval_id);
-//  return responseMap;
-//}
+  //nestedVarsMap.erase(eval_id);
+  return nestedResponseMap;
+}
+*/
 
 
 void NestedModel::
@@ -1415,161 +1445,53 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
 }
 
 
-/** In the OUU case,
-\verbatim
-optionalInterface fns = {f}, {g} (deterministic primary functions, constraints)
-subIterator fns       = {S}      (UQ response statistics)
-
-Problem formulation for mapped functions:
-                  minimize    {f} + [W]{S}
-                  subject to  {g_l} <= {g}    <= {g_u}
-                              {a_l} <= [A]{S} <= {a_u}
-                              {g}    == {g_t}
-                              [A]{S} == {a_t}
-\endverbatim
-
-where [W] is the primary_mapping_matrix user input (primaryRespCoeffs
-class attribute), [A] is the secondary_mapping_matrix user input
-(secondaryRespCoeffs class attribute), {{g_l},{a_l}} are the top level
-inequality constraint lower bounds, {{g_u},{a_u}} are the top level
-inequality constraint upper bounds, and {{g_t},{a_t}} are the top
-level equality constraint targets.
-
-NOTE: optionalInterface/subIterator primary fns (obj/lsq/generic fns)
-overlap but optionalInterface/subIterator secondary fns (ineq/eq 
-constraints) do not.  The [W] matrix can be specified so as to allow
-
-\li some purely deterministic primary functions and some combined:
-    [W] filled and [W].num_rows() < {f}.length() [combined first] 
-    \e or [W].num_rows() == {f}.length() and [W] contains rows of 
-    zeros [combined last]
-\li some combined and some purely stochastic primary functions:
-    [W] filled and [W].num_rows() > {f}.length()
-\li separate deterministic and stochastic primary functions:
-    [W].num_rows() > {f}.length() and [W] contains {f}.length()
-    rows of zeros.
-
-If the need arises, could change constraint definition to allow overlap
-as well: {g_l} <= {g} + [A]{S} <= {g_u} with [A] usage the same as for
-[W] above.
-
-In the UOO case, things are simpler, just compute statistics of each 
-optimization response function: [W] = [I], {f}/{g}/[A] are empty. */
-void NestedModel::response_mapping(const Response& opt_interface_response,
-				   const Response& sub_iterator_response,
-				   Response& mapped_response)
+void NestedModel::
+interface_response_overlay(const Response& opt_interface_response,
+			   Response& mapped_response)
 {
   // mapped data initialization
   const ShortArray& mapped_asv = mapped_response.active_set_request_vector();
   const SizetArray& mapped_dvv = mapped_response.active_set_derivative_vector();
-  size_t i, j, k, l, m_index, oi_index, num_mapped_fns = mapped_asv.size(),
-    num_mapped_deriv_vars = mapped_dvv.size();
-  bool grad_flag = false, hess_flag = false;
-  for (i=0; i<num_mapped_fns; ++i) {
-    if (mapped_asv[i] & 2)
-      grad_flag = true;
-    if (mapped_asv[i] & 4)
-      hess_flag = true;
-  }
-  // Sanity check on derivative compatibility: (1) the optional interface
-  // response must have the same DVV, (2) the derivatives in the sub-iterator
-  // response must be with respect to the same variables; but since the
-  // numbering may be different following insertion/augmentation, only the
-  // DVV length is verified.
-  if ( (grad_flag || hess_flag) &&
-       (sub_iterator_response.active_set_derivative_vector().size() !=
-	num_mapped_deriv_vars || (!optInterfacePointer.empty() &&
-	opt_interface_response.active_set_derivative_vector() != mapped_dvv))) {
+  size_t i, m_index, oi_index, num_mapped_fns = mapped_asv.size();
+  bool deriv_flag = false;
+  for (i=0; i<num_mapped_fns; ++i)
+    { if (mapped_asv[i] & 6) deriv_flag = true; break; }
+  // Sanity checks: the optional interface response must have the same DVV
+  if ( deriv_flag &&
+       opt_interface_response.active_set_derivative_vector() != mapped_dvv ) {
     Cerr << "\nError: derivative variables vector mismatch in NestedModel::"
-         << "response_mapping()." << std::endl;
+         << "interface_response_overlay()." << std::endl;
     abort_handler(-1);
   }
-
-  // counter initialization & sanity checking
-  size_t num_opt_interf_fns     = (optInterfacePointer.empty()) ? 0 :
-                                  opt_interface_response.num_functions(),
-    num_opt_interf_con          = numOptInterfIneqCon + numOptInterfEqCon,
-    num_sub_iter_mapped_primary = primaryRespCoeffs.numRows(),
-    num_sub_iter_mapped_con     = secondaryRespCoeffs.numRows(),
-    num_mapped_primary          = std::max(numOptInterfPrimary, 
-					   num_sub_iter_mapped_primary);
-  // NOTE: numSubIterFns != num_sub_iter_mapped_primary+num_sub_iter_mapped_con
-  // since subIterator response is converted to sub_iter_mapped_primary/con
-  // through the action of [W] and [A].
-  if (num_opt_interf_fns      != numOptInterfPrimary + num_opt_interf_con
-   || num_sub_iter_mapped_con != numSubIterMappedIneqCon + numSubIterMappedEqCon
-   || num_mapped_fns          != num_mapped_primary + num_opt_interf_con +
-                                 num_sub_iter_mapped_con) {
-    Cerr << "\nError: bad function counts in NestedModel::response_mapping()."
-         << std::endl;
-    abort_handler(-1);
-  }
+  check_response_map(mapped_asv);
 
   // build mapped response data:
 
-  mapped_response.reset_inactive();
-  RealVector mapped_vals = mapped_response.function_values_view();
-  RealMatrix empty_rm; RealSymMatrixArray empty_rma;
-  const RealVector& sub_iterator_vals
-    = sub_iterator_response.function_values();
-  const RealMatrix& sub_iterator_grads
-    = (grad_flag) ? sub_iterator_response.function_gradients() : empty_rm;
-  const RealSymMatrixArray& sub_iterator_hessians
-    = (hess_flag) ? sub_iterator_response.function_hessians()  : empty_rma;
-
-  // {f} + [W]{S}:
-  for (i=0; i<num_mapped_primary; ++i) {
-    if (mapped_asv[i] & 1) { // mapped_vals
-      mapped_vals[i] = (i<numOptInterfPrimary) ?
-	opt_interface_response.function_value(i) : 0.; // {f}
-      if (i<num_sub_iter_mapped_primary) {
-        Real& inner_prod = mapped_vals[i];
-        for (j=0; j<numSubIterFns; ++j)
-          inner_prod += primaryRespCoeffs(i,j)*sub_iterator_vals[j]; // [W]{S}
-      }
-    }
-    if (mapped_asv[i] & 2) { // mapped_grads
-      RealVector mapped_grad = mapped_response.function_gradient_view(i);
-      if (i<numOptInterfPrimary)
-	copy_data(opt_interface_response.function_gradient(i),
-		  (int)num_mapped_deriv_vars, mapped_grad); // {f}
-      else
-	mapped_grad = 0.;
-      if (i<num_sub_iter_mapped_primary) {
-        for (j=0; j<num_mapped_deriv_vars; ++j) {
-          Real& inner_prod = mapped_grad[j]; // [W]{S}
-          for (k=0; k<numSubIterFns; ++k)
-            inner_prod += primaryRespCoeffs(i,k)*sub_iterator_grads(j,k);
-	}
-      }
-    }
-    if (mapped_asv[i] & 4) { // mapped_hessians
-      RealSymMatrix mapped_hess = mapped_response.function_hessian_view(i);
-      if (i<numOptInterfPrimary)
-        mapped_hess.assign(opt_interface_response.function_hessian(i)); // {f}
-      else
-	mapped_hess = 0.;
-      if (i<num_sub_iter_mapped_primary) {
-        for (j=0; j<num_mapped_deriv_vars; ++j) {
-          for (k=0; k<=j; ++k) {
-            Real& inner_prod = mapped_hess(j,k); // [W]{S}
-            for (l=0; l<numSubIterFns; ++l)
-              inner_prod += primaryRespCoeffs(i,l)
-                         *  sub_iterator_hessians[l](j,k);
-	  }
-	}
-      }
-    }
+  // {f}:
+  for (i=0; i<numOptInterfPrimary; ++i) {
+    if (mapped_asv[i] & 1) 
+      mapped_response.function_value(
+	opt_interface_response.function_value(i), i);
+    if (mapped_asv[i] & 2)
+      mapped_response.function_gradient(
+	opt_interface_response.function_gradient_view(i), i);
+    if (mapped_asv[i] & 4)
+      mapped_response.function_hessian(
+	opt_interface_response.function_hessian(i), i);
   }
 
   // {g}:
+  size_t num_opt_interf_con = numOptInterfIneqCon + numOptInterfEqCon,
+    num_mapped_1
+      = std::max(numOptInterfPrimary, (size_t)primaryRespCoeffs.numRows());
   for (i=0; i<num_opt_interf_con; ++i) {
-    oi_index = i+numOptInterfPrimary;
-    m_index  = i + num_mapped_primary; // {g_l} <= {g} <= {g_u}
-    if (i>=numOptInterfIneqCon)     // {g} == {g_t}
+    oi_index = i + numOptInterfPrimary;
+    m_index  = i + num_mapped_1; // {g_l} <= {g} <= {g_u}
+    if (i>=numOptInterfIneqCon)  //          {g} == {g_t}
       m_index += numOptInterfIneqCon + numSubIterMappedIneqCon;
     if (mapped_asv[m_index] & 1) // mapped_vals
-      mapped_vals[m_index] = opt_interface_response.function_value(oi_index);
+      mapped_response.function_value(
+	opt_interface_response.function_value(oi_index), m_index);
     if (mapped_asv[m_index] & 2) // mapped_grads
       mapped_response.function_gradient(
 	opt_interface_response.function_gradient_view(oi_index), m_index);
@@ -1577,14 +1499,76 @@ void NestedModel::response_mapping(const Response& opt_interface_response,
       mapped_response.function_hessian(
 	opt_interface_response.function_hessian(oi_index), m_index);
   }
+}
+
+
+void NestedModel::
+iterator_response_overlay(const Response& sub_iterator_response,
+			  Response& mapped_response)
+{
+  // mapped data initialization
+  const ShortArray& mapped_asv = mapped_response.active_set_request_vector();
+  const SizetArray& mapped_dvv = mapped_response.active_set_derivative_vector();
+  size_t i, j, k, l, m_index, num_mapped_fns = mapped_asv.size(),
+    num_mapped_deriv_vars = mapped_dvv.size();
+  bool deriv_flag = false;
+  for (i=0; i<num_mapped_fns; ++i)
+    { if (mapped_asv[i] & 6) deriv_flag = true; break; }
+  // Sanity checks: the derivatives in the sub-iterator response must be with
+  // respect to the same variables; but since the numbering may be different
+  // following insertion/augmentation, only the DVV length is verified.
+  if ( deriv_flag && num_mapped_deriv_vars !=
+       sub_iterator_response.active_set_derivative_vector().size() ) {
+    Cerr << "\nError: derivative variables vector mismatch in NestedModel::"
+         << "iterator_response_overlay()." << std::endl;
+    abort_handler(-1);
+  }
+  check_response_map(mapped_asv);
+
+  // build mapped response data:
+
+  RealVector mapped_vals = mapped_response.function_values_view();
+  const RealVector& sub_iterator_vals = sub_iterator_response.function_values();
+  const RealMatrix& sub_iterator_grads
+    = sub_iterator_response.function_gradients();
+  const RealSymMatrixArray& sub_iterator_hessians
+    = sub_iterator_response.function_hessians();
+
+  // [W]{S}:
+  size_t num_sub_iter_mapped_1 = primaryRespCoeffs.numRows();
+  for (i=0; i<num_sub_iter_mapped_1; ++i) {
+    if (mapped_asv[i] & 1) { // mapped_vals
+      Real& inner_prod = mapped_vals[i];
+      for (j=0; j<numSubIterFns; ++j)
+	inner_prod += primaryRespCoeffs(i,j)*sub_iterator_vals[j]; // [W]{S}
+    }
+    if (mapped_asv[i] & 2) { // mapped_grads
+      RealVector mapped_grad = mapped_response.function_gradient_view(i);
+      for (j=0; j<num_mapped_deriv_vars; ++j) {
+	Real& inner_prod = mapped_grad[j]; // [W]{S}
+	for (k=0; k<numSubIterFns; ++k)
+	  inner_prod += primaryRespCoeffs(i,k)*sub_iterator_grads(j,k);
+      }
+    }
+    if (mapped_asv[i] & 4) { // mapped_hessians
+      RealSymMatrix mapped_hess = mapped_response.function_hessian_view(i);
+      for (j=0; j<num_mapped_deriv_vars; ++j) {
+	for (k=0; k<=j; ++k) {
+	  Real& inner_prod = mapped_hess(j,k); // [W]{S}
+	  for (l=0; l<numSubIterFns; ++l)
+	    inner_prod += primaryRespCoeffs(i,l)*sub_iterator_hessians[l](j,k);
+	}
+      }
+    }
+  }
 
   // [A]{S}:
-  for (i=0; i<num_sub_iter_mapped_con; ++i) {
-    m_index = i + num_mapped_primary;
-    if (i<numSubIterMappedIneqCon) // {a_l} <= [A]{S} <= {a_u}
-      m_index += numOptInterfIneqCon;
-    else                           // [A]{S} == {a_t}
-      m_index += num_opt_interf_con + numSubIterMappedIneqCon;
+  size_t num_sub_iter_mapped_2 = secondaryRespCoeffs.numRows(),
+    num_mapped_1 = std::max(numOptInterfPrimary, num_sub_iter_mapped_1);
+  for (i=0; i<num_sub_iter_mapped_2; ++i) {
+    m_index = i + num_mapped_1 + numOptInterfIneqCon;// {a_l} <= [A]{S} <= {a_u}
+    if (i>=numSubIterMappedIneqCon)
+      m_index += numOptInterfEqCon + numSubIterMappedIneqCon; // [A]{S} == {a_t}
     if (mapped_asv[m_index] & 1) { // mapped_vals
       Real& inner_prod = mapped_vals[m_index]; inner_prod = 0.;
       for (j=0; j<numSubIterFns; ++j)
@@ -1611,10 +1595,27 @@ void NestedModel::response_mapping(const Response& opt_interface_response,
       }
     }
   }
+}
 
-  Cout << "\n---------------------------\nNestedModel total response:"
-       << "\n---------------------------\n\nActive response data from nested "
-       << "mapping:\n" << mapped_response << '\n';
+
+void NestedModel::check_response_map(const ShortArray& mapped_asv)
+{
+  // counter initialization & sanity checking
+  // NOTE: numSubIterFns != num_sub_iter_mapped_primary+num_sub_iter_mapped_con
+  // since subIterator response is converted to sub_iter_mapped_primary/con
+  // through the action of [W] and [A].
+  size_t num_opt_interf_con = numOptInterfIneqCon + numOptInterfEqCon,
+    num_sub_iter_mapped_1 = primaryRespCoeffs.numRows(),
+    num_sub_iter_mapped_2 = secondaryRespCoeffs.numRows(),
+    num_mapped_1 = std::max(numOptInterfPrimary, num_sub_iter_mapped_1);
+  if (mapped_asv.size() !=
+      num_mapped_1 + num_opt_interf_con + num_sub_iter_mapped_2 ||
+      num_sub_iter_mapped_2 !=
+      numSubIterMappedIneqCon + numSubIterMappedEqCon) {
+    Cerr << "\nError: bad function counts in NestedModel::check_response_map()."
+         << std::endl;
+    abort_handler(-1);
+  }
 }
 
 
