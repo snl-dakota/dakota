@@ -65,7 +65,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
   BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) ) { 
     if( is_regular_file(p) ) {
       ++file_count;
-      std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
+      //std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
     } 
     //else if( is_link(p) ) {
       //++link_count;
@@ -73,7 +73,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
     //} 
     else if( is_directory(p) ) {
       ++dir_count;
-      std::cout << "counting dirs poplated wdir.. currentDCount is: " << dir_count << std::endl;
+      //std::cout << "counting dirs poplated wdir.. currentDCount is: " << dir_count << std::endl;
     } 
   }
 
@@ -130,7 +130,7 @@ void test_create_and_remove_tmpdir(const std::string& dir_name, bool copy=false)
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
-    (copy) ? test_ln_template_files_into_wd(wd)
+    (copy) ? test_cp_template_files_into_wd(wd)
            : test_ln_template_files_into_wd(wd);
 
     //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
@@ -153,7 +153,7 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
            : test_ln_template_files_into_wd(wd);
 
     //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
-#if 0
+#if 1
     test_rmdir(wd); // WJB: comment-out for manual inspection after a testrun
 #endif
   }
@@ -185,10 +185,8 @@ int test_main( int argc, char* argv[] )      // note the name!
   test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
 
   bool do_copy = true;
-#if 0
   test_create_and_remove_tmpdir("dak_wd", do_copy);
   test_create_and_remove_wd_in_rundir("workdir", do_copy);
-#endif
 
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
