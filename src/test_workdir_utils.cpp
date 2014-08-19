@@ -50,15 +50,46 @@ void count_driver_scripts(const std::string& glob_string)
 }
 
 
-//void test_cp_template_files_into_wd(bfs::path& wd)
-void test_ln_template_files_into_wd(bfs::path& wd)
+void test_cp_template_files_into_wd(bfs::path& wd)
 {
-  //std::cout << "OK to cp template files into EMPTY dir:  " << wd << std::endl;
+  //std::cout << "OK to COPY template files into EMPTY dir:  " << wd << std::endl;
   std::string template_path_str( std::getenv("PWD") );
   template_path_str += "/../test/dakota_workdir.templatedir/*";
 
   StringArray template_items(1, template_path_str);
-  //WorkdirHelper::copy_items(template_items, wd, true);
+  WorkdirHelper::copy_items(template_items, wd, true);
+
+  // double-check contents of expected items in the wd
+  bfs::directory_iterator it(wd), eod;
+  size_t file_count = 0; size_t link_count = 0; size_t dir_count = 0;
+  BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) ) { 
+    if( is_regular_file(p) ) {
+      ++file_count;
+      std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
+    } 
+    //else if( is_link(p) ) {
+      //++link_count;
+      //std::cout << "counting links poplated wdir.. currentLCount is: " << link_count << std::endl;
+    //} 
+    else if( is_directory(p) ) {
+      ++dir_count;
+      std::cout << "counting dirs poplated wdir.. currentDCount is: " << dir_count << std::endl;
+    } 
+  }
+
+  BOOST_CHECK( !wd.empty() );
+  BOOST_CHECK( file_count+link_count+dir_count >= 3 );
+  //std::cout << "DONE iterating dir:  " << wd << std::endl;
+}
+
+
+void test_ln_template_files_into_wd(bfs::path& wd)
+{
+  //std::cout << "OK to LINK template files into EMPTY dir:  " << wd << std::endl;
+  std::string template_path_str( std::getenv("PWD") );
+  template_path_str += "/../test/dakota_workdir.templatedir/*";
+
+  StringArray template_items(1, template_path_str);
   WorkdirHelper::link_items(template_items, wd, true);
 
   // double-check contents of expected items in the wd
@@ -93,13 +124,14 @@ void test_rmdir(bfs::path& wd)
 }
 
 
-void test_create_and_remove_tmpdir(const std::string& dir_name)
+void test_create_and_remove_tmpdir(const std::string& dir_name, bool copy=false)
 {
   bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
-    test_ln_template_files_into_wd(wd);
+    (copy) ? test_ln_template_files_into_wd(wd)
+           : test_ln_template_files_into_wd(wd);
 
     //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
     test_rmdir(wd); // WJB: comment-out for manual inspection after a testrun
@@ -109,14 +141,16 @@ void test_create_and_remove_tmpdir(const std::string& dir_name)
 }
 
 
-void test_create_and_remove_wd_in_rundir(const std::string& dir_name)
+void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
+  bool copy=false)
 {
   //bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
   bfs::path wd( dir_name );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
-    test_ln_template_files_into_wd(wd);
+    (copy) ? test_cp_template_files_into_wd(wd)
+           : test_ln_template_files_into_wd(wd);
 
     //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
 #if 0
@@ -147,8 +181,14 @@ int test_main( int argc, char* argv[] )      // note the name!
   int run_result = 0;
 
   count_driver_scripts(fq_search);
-  test_create_and_remove_tmpdir("dak_wd");
-  test_create_and_remove_wd_in_rundir("workdir");
+  test_create_and_remove_tmpdir("dak_wd");        // SYM LINKS used by default
+  test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
+
+  bool do_copy = true;
+#if 0
+  test_create_and_remove_tmpdir("dak_wd", do_copy);
+  test_create_and_remove_wd_in_rundir("workdir", do_copy);
+#endif
 
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
