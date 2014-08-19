@@ -1295,6 +1295,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
     // schedule beforeSynchSubIterPRPQueue jobs ...
     component_parallel_mode(SUB_MODEL);
     //subIterSched.schedule_iterators(...);
+    // callback needs to: update_sub_model(), eval_tag_prefix(), etc.
     const IntResponseMap& sub_iter_resp_map = subModel.synchronize();//subIterSched.results();
     // overlay response sets
     for (cit=sub_iter_resp_map.begin(); cit!=sub_iter_resp_map.end(); ++cit)
@@ -1796,6 +1797,7 @@ void NestedModel::update_sub_model()
   // additional parameter mappings, such as setting the mean of a weibull.
 
   size_t i, num_var_map_2 = active2ACVarMapTargets.size();
+  bool first_eval = (nestedModelEvalCntr == 1);
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   size_t curr_i, num_curr_cv = currentVariables.cv();
@@ -1820,7 +1822,7 @@ void NestedModel::update_sub_model()
 	if (extraCVarsData[i]) {
 	  subModel.all_continuous_lower_bound(curr_c_l_bnds[i], pacvm_index);
 	  subModel.all_continuous_upper_bound(curr_c_u_bnds[i], pacvm_index);
-	  if (!nestedModelEvalCntr)
+	  if (first_eval)
 	    subModel.all_continuous_variable_label(curr_c_labels[i],
 						   pacvm_index);
 	}
@@ -1879,7 +1881,7 @@ void NestedModel::update_sub_model()
 	if (extraDIVarsData[i]) {
 	  subModel.all_discrete_int_lower_bound(curr_di_l_bnds[i],padivm_index);
 	  subModel.all_discrete_int_upper_bound(curr_di_u_bnds[i],padivm_index);
-	  if (!nestedModelEvalCntr)
+	  if (first_eval)
 	    subModel.all_discrete_int_variable_label(curr_di_labels[i],
 						     padivm_index);
 	}
@@ -1932,7 +1934,7 @@ void NestedModel::update_sub_model()
 	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
       if (sadsvm_target == Pecos::NO_TARGET) {
 	subModel.all_discrete_string_variable(curr_ds_vars[i], padsvm_index);
-	if (extraDSVarsData[i] && !nestedModelEvalCntr)
+	if (extraDSVarsData[i] && first_eval)
 	  subModel.all_discrete_string_variable_label(curr_ds_labels[i],
 						      padsvm_index);
       }
@@ -1992,7 +1994,7 @@ void NestedModel::update_sub_model()
 						 padrvm_index);
 	  subModel.all_discrete_real_upper_bound(curr_dr_u_bnds[i],
 						 padrvm_index);
-	  if (!nestedModelEvalCntr)
+	  if (first_eval)
 	    subModel.all_discrete_real_variable_label(curr_dr_labels[i],
 						      padrvm_index);
 	}
@@ -2021,7 +2023,7 @@ void NestedModel::update_sub_model()
     subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
     subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
     subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
-    if (!nestedModelEvalCntr)
+    if (first_eval)
       subModel.all_continuous_variable_label(curr_ac_labels[curr_i], c1_index);
   }
 
@@ -2042,7 +2044,7 @@ void NestedModel::update_sub_model()
     subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
     subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
     subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
-    if (!nestedModelEvalCntr)
+    if (first_eval)
       subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
 					       c1_index);
   }
@@ -2058,7 +2060,7 @@ void NestedModel::update_sub_model()
     curr_i = cdsv_index_map(i);
     size_t c1_index = complement1ADSVarMapIndices[i];
     subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
-    if (!nestedModelEvalCntr)
+    if (first_eval)
       subModel.all_discrete_string_variable_label(curr_ads_labels[curr_i],
 						  c1_index);
   }
@@ -2080,7 +2082,7 @@ void NestedModel::update_sub_model()
     subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
     subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
     subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
-    if (!nestedModelEvalCntr)
+    if (first_eval)
       subModel.all_discrete_real_variable_label(curr_adr_labels[curr_i],
 						c1_index);
   }
