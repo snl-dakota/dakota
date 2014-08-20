@@ -153,7 +153,7 @@ create_analysis_process(bool block_flag, bool new_group)
     // as the second argument.
 
     av = WorkdirHelper::arg_adjust(commandLineArgs, argList, arg_list,
-                                   useWorkdir ? curWorkdir : no_workdir);
+                                   useWorkdir ? curWorkdir.string() : no_workdir);
 
     // replace the child process with the fork target defined in arg_list
     status = execvp(av[0], (char*const*)av);

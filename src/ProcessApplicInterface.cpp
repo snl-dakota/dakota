@@ -18,6 +18,58 @@
 #include "WorkdirHelper.hpp"
 #include "dakota_filesystem_utils.hpp"
 #include <algorithm>
+#include <boost/filesystem/fstream.hpp>
+
+/** 
+    Work directory TODO
+    
+    * Remove legacy utilities (once concepts migrated)
+
+    * Update search paths for driver check to work with lists of wildcards
+ 
+    * Update input spec to use copy_files/link_files instead of
+      template_directory/template_files
+    
+    * Remove directories during file_cleanup()
+
+    - In general review cases with race conditions such as single dir
+      getting created / removed for each eval.
+
+    - Verify creation/removal in parallel runs (eval_comm_rank 0?);
+      are there scenarios where we should create once ahead of time?
+
+    - Challenge of shared vs. distinct filesystems
+
+    - Verify template files exist at parse and that workdir parent exists
+
+    - Verify behavior when directory exitsts
+  
+    - Allow recursive copy to descend to overwrite leaf nodes when
+      directories already exist
+
+    - Old code setting permissions mask 0700
+
+    - Workdir with multiple analysis components (per analysis)
+
+    - Workdirs shared for each unique concurrent eval (not per eval ID)
+
+    - Evaluate environment variables
+
+    - How to manage drivers that want just param names in the work
+      dir?!?  I think arg_adjust is removing the directory args that
+      aren't needed.
+
+    - Consider making the class members for directories and files bfs::paths
+
+    - Behavior of file_save when directory not saved
+
+    - Error checking:
+      * directory was created
+      * directory path is a directory
+      * directory has rwx for user
+      * population worked
+      * try/catch around all fs operations
+*/
 
 
 namespace Dakota {
@@ -38,17 +90,16 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   specifiedResultsFileName(
     problem_db.get_string("interface.application.results_file")),
   allowExistingResults(problem_db.get_bool("interface.allow_existing_results")),
-  analysisComponents(
-    problem_db.get_s2a("interface.application.analysis_components")),
   useWorkdir(problem_db.get_bool("interface.useWorkdir")),
-  workDir(problem_db.get_string("interface.workDir")),
+  workDirName(problem_db.get_string("interface.workDir")),
   dirTag(problem_db.get_bool("interface.dirTag")),
-  dirSave(problem_db.get_bool("interface.dirSave")), dirDel(false),
+  dirSave(problem_db.get_bool("interface.dirSave")),
   templateDir(problem_db.get_string("interface.templateDir")),
   templateFiles(problem_db.get_sa("interface.templateFiles")),
   templateCopy(problem_db.get_bool("interface.templateCopy")),
   templateReplace(problem_db.get_bool("interface.templateReplace")),
-  haveTemplateDir(false), haveWorkdir(false)
+  analysisComponents(
+    problem_db.get_s2a("interface.application.analysis_components"))
 {
   size_t num_programs = programNames.size();
   if (num_programs > 0 && !programNames[0].empty()) {
@@ -57,10 +108,12 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
 
     boost::split( driver_and_args, programNames[0], boost::is_any_of("\t ") );
 
+    // BMA TODO: this will fail until the env path includes wildcards
+    // from template dir/files....
     std::string driver_path = WorkdirHelper::which(driver_and_args[0]);
     if ( driver_path.empty() ) {
       Cout << driver_and_args[0] << ": Command not found.\n" << std::endl;
-      abort_handler(INTERFACE_ERROR);
+      // BMA TODO: abort_handler(INTERFACE_ERROR);
     }
     else if (driver_path.substr(0, 4) == DAK_PATH_ENV_NAME) {
       // Allow legacy logic to proceed normally
@@ -77,44 +130,13 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   if (num_programs > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;
 
-  // BMA: logic moved from NIDRProblemDescDB to consolidate for
-  // refactor; need to assess side effects of moving.
+  // BMA TODO: warn and validate/update fileTag / dirTag based on local concurrency
 
-  // TODO: Why was the parser making a workdir?  I believe this
-  // explains the extra untagged dir that remains at end of run...  Make
-  // sure workdir creation works in parallel in the interfaces, making
-  // and removing them on eval comm rank 0 as needed.
-  
-  // Maybe DMG was checking to make sure that the work directory stuff
-  // was valid at construct time, in which case we can just do in the
-  // interface ctor...  Don't believe we should try to make
-  // directories until run time.
-
-  // the first two conditionals are from derived_parse_inputs; the
-  // last is since parsing only takes place on rank 0
-  if (parallelLib.command_line_run() && parallelLib.mpirun_flag() && 
-      parallelLib.world_rank() == 0) {
-    bfs::path wd(workDir);
-    if ( !bfs::exists(wd) )
-      WorkdirHelper::create_directory(wd, DIR_PERSIST);
-    // DIR_PERSIST shouldn't be encountered, but using more premissive option
-    // TODO: DMG was setting permissions 0700
-  }
 }
 
 
 ProcessApplicInterface::~ProcessApplicInterface() 
-{
-  if (dirDel && 
-      (templateDir.length() || templateFiles.size() || rmdir(workDir.c_str())))
-    rec_rmdir(workDir.c_str());
-  // BMA: this breaks current tests; not sure why
-  // if (dirDel && 
-  //     (templateDir.length() || templateFiles.size() )) {
-  //   bfs::path wd(workDir);
-  //   WorkdirHelper::recursive_remove(wd);
-  // }
-}
+{  /* empty dtor */  }
 
 
 // -------------------------------------------------------
@@ -196,12 +218,6 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
   // However, if temporary file names are used, then evalCommRank 0 must define
   // the names and broadcast them to other evalComm procs.
 
-  // BMA NOTE: the file and/or directory names might also be adjusted
-  // by workdir, so may need to broadcast in that case too!
-
-  // BMA NOTE: We allow run without tag, but then tag at cleanup when
-  // saving
-
   // Behavior has been simplified to tag with either hierarchical tag,
   // e.g. 4.9.2, or just eval id tag, .2.  If directory_tag, workdirs
   // are tagged, if file_tag, directories are tagged, or both if both
@@ -212,126 +228,114 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 	? pc.ie_parallel_level().server_communicator_rank() : 0;
   int analysis_servers = parallelLib.ea_parallel_level_defined()
 	? pc.ea_parallel_level().num_servers() : 1;
-  bool bcast_flag = ( analysis_servers > 1 && ( specifiedParamsFileName.empty()
-		   || specifiedResultsFileName.empty() ) ) ? true : false;
-  int k;
-  size_t i, n;
+
+  // technically don't need to broadcast in some useWorkdir subcases
+  // like absolute params/results filenames
+  bool dynamic_filenames = specifiedParamsFileName.empty() || 
+    specifiedResultsFileName.empty() || useWorkdir;
+
+  bool bcast_flag = ( analysis_servers > 1 &&  dynamic_filenames );
 
   if (eval_comm_rank == 0 || !bcast_flag) {
 
     // eval_tag_prefix will be empty if no hierarchical tagging
     fullEvalId = eval_id_tag;
 
-    if (specifiedParamsFileName.empty()) { // no user spec -> use temp files
-      paramsFileName = WorkdirHelper::system_tmp_name("dakota_params").string();
-    }
-    else {
-      paramsFileName = specifiedParamsFileName;
-      if (fileTagFlag)
-	paramsFileName += fullEvalId;
-    }
-    if (specifiedResultsFileName.empty()) { // no user spec -> use temp files
-      resultsFileName = WorkdirHelper::system_tmp_name("dakota_results").string();
-    }
-    else {
-      resultsFileName = specifiedResultsFileName;
-      if (fileTagFlag)
-	resultsFileName += fullEvalId;
-    }
+    // establish the workdir name first, since parameters files might go in it
+    bool wd_created = false;
     if (useWorkdir) {
-	if (!workDir.length()) {
-          workDir = WorkdirHelper::system_tmp_name("dakota_work").string();
-          dirDel = true;
-          dirSave = false;
-	}
 
-	std::string wd = workDir;
-	struct stat sb;
-	if (dirTag) {
-	  if (!haveWorkdir) {
-	    //if (stat(wd.c_str(), &sb)) {  // WJB: slight chance some team
-            //                                      members prefer "extra" dir
-	    if (stat(".", &sb)) {
-                        /*
-			if (DAK_MKDIR(wd.c_str(),0700)) {
-			  Cerr << "\nError: cannot create directory \""
-			       << wd << "\"." << std::endl;
-			  abort_handler(-1);
-			} */
-			if (!dirSave && !fileSaveFlag)
-			  dirDel = true;
-            }
-            haveWorkdir = true;
-	  }
-          wd += fullEvalId;
-	}
+      // curWorkdir is used by Fork/SysCall arg_adjust
+      curWorkdir = get_workdir_name();
+      // TODO: Create with 0700 mask?
+      wd_created = WorkdirHelper::create_directory(curWorkdir, DIR_PERSIST);
 
-	if (!haveTemplateDir) {
-		if ((k = stat(wd.c_str(), &sb)) || dirTag) {
-			if (!k && templateReplace) {
-				rec_rmdir(wd.c_str());
-				k = 1;
-			}
-			if (k) {
-				if (DAK_MKDIR(wd.c_str(),0700)) {
-			          Cerr << "\nError: cannot create directory \""
-			               << wd << "\"." << std::endl;
-			          abort_handler(-1);
-			        }
-				if (!dirSave && !dirTag)
-					dirDel = true;
-			}
-		}
-#if !defined(S_ISDIR)
-# define S_ISDIR(mode) ((mode) & _S_IFDIR)
-#endif
-		else if (!S_ISDIR(sb.st_mode)) {
-			Cerr << "\nError: \"" << wd << "\" exists but is not a directory."
-				<< std::endl;
-			abort_handler(-1);
-		}
-		else if ((sb.st_mode & 0700) != 0700) {
-			Cerr << "\nError: directory \"" << wd
-				<< "\" exists but has wrong permissions." << std::endl;
-			abort_handler(-1);
-		}
-		if (!dirTag)
-			haveTemplateDir = true;
-		if (templateDir.length()) {
-			if ((k = rec_cp(templateDir.c_str(), wd.c_str(), templateCopy, 1, templateReplace))) {
-				Cerr << "Error in rec_cp(\""
-					<< templateDir << "\", \""
-					<< wd << "\")." << std::endl;
-				abort_handler(-1);
-			}
-		}
-		else for(n = templateFiles.size(), i = 0; i < n; ++i) {
-		        if ((k = rec_cp(templateFiles[i].c_str(), wd.c_str(), templateCopy, 0, templateReplace))) {
-				Cerr << "Error in rec_cp(\""
-					<< templateFiles[i] << "\", \""
-					<< wd << "\")." << std::endl;
-				abort_handler(-1);
-			}
-		}
-	}
+      // for now assume templateDir maps to copy_files and template
+      // files maps to link_files
+      if (!templateDir.empty()) {
+	StringArray template_dirs;
+	template_dirs.push_back(templateDir);
+	WorkdirHelper::copy_items(template_dirs, curWorkdir, templateReplace);
+      }
+      // copy/link tolerate empty items
+      WorkdirHelper::link_items(templateFiles, curWorkdir, templateReplace);
 
-	curWorkdir = wd;
+    }
+    // non-empty createdDir communicates to write_parameters_files that
+    // the directory was created specifically for this eval and should
+    // be removed when results collected
+    if (wd_created)
+      createdDir = curWorkdir;
+    else
+      createdDir.clear();
 
-	boost::filesystem::path wd_path(wd);
-	boost::filesystem::path pfile_path(paramsFileName);
-	boost::filesystem::path rfile_path(resultsFileName);
-	// want the platform-dependent (native) string format here...
-	// consider native_string? Table in BFS V3 doc is confusing or wrong.
-	paramsFileName  = (wd_path / pfile_path.filename()).string();
-	resultsFileName = (wd_path / rfile_path.filename()).string();
+    // define paramsFileName for use in write_parameters_files
+    
+    bfs::path params_path(specifiedParamsFileName);
 
+    // no user spec -> use temp files, possibly in workdir; generate relative
+    if (specifiedParamsFileName.empty())
+      params_path = bfs::unique_path("dakota_params_%%%%%%%%");
+
+    // append tag for all cases (previously temp files weren't tagged)
+    if (fileTagFlag)
+      params_path = WorkdirHelper::concat_path(params_path, fullEvalId);
+
+    // if a relative path, prepend with workdir or tmp, else use absolute name
+    // BMA TODO: don't use native string here...
+    if (params_path.is_relative()) {
+      if (useWorkdir) {
+	paramsFileName = (curWorkdir / params_path).string();
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "\nAdjusting parameters_file to " << paramsFileName 
-	       << " due to work_directory usage.\nAdjusting results_file to "
-	       << resultsFileName << " due to work_directory usage." 
-	       << std::endl;
+	       << " due to work_directory usage." << std::endl;
+      }
+      else if (specifiedParamsFileName.empty()) {
+	// historically temp files go in /tmp or C:\temp, not rundir
+	paramsFileName = (bfs::temp_directory_path() / params_path).string();
+      }
+      else
+	paramsFileName = params_path.string();
     }
+    else
+      paramsFileName = params_path.string();
+    
+
+    // define resultsFileName for use in write_parameters_files
+
+    bfs::path results_path(specifiedResultsFileName);
+
+    // no user spec -> use temp files, possibly in workdir; generate relative
+    if (specifiedResultsFileName.empty())
+      results_path = bfs::unique_path("dakota_results_%%%%%%%%");
+
+    // append tag for all cases (previously temp files weren't tagged)
+    if (fileTagFlag)
+      results_path = WorkdirHelper::concat_path(results_path, fullEvalId);
+
+    // if a relative path, prepend with workdir or tmp, else use absolute name
+    // BMA TODO: don't use native string here...
+    if (results_path.is_relative()) {
+      if (useWorkdir) {
+	resultsFileName = (curWorkdir / results_path).string();
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "\nAdjusting results_file to " << resultsFileName 
+	       << " due to work_directory usage." <<std::endl;
+      }
+      else if (specifiedResultsFileName.empty()) {
+	// historically temp files go in /tmp or C:\temp, not rundir
+	resultsFileName = (bfs::temp_directory_path() / results_path).string();
+      }
+      else
+	resultsFileName = results_path.string();
+    }
+    else
+      resultsFileName = results_path.string();
+
   }
+
+  // Not broadcasting curWorkdir as we don't want other ranks to
+  // remove it later.
 
   if (bcast_flag) {
     // Note that evalComm and evalAnalysisIntraComm are equivalent in this case
@@ -342,18 +346,17 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
       MPIPackBuffer send_buffer;
       send_buffer << paramsFileName << resultsFileName << fullEvalId;
       // bcast buffer length so that other procs can allocate MPIUnpackBuffer
-      //int buffer_len = send_buffer.len();
-      //parallelLib.bcast_e(buffer_len);
+      int buffer_len = send_buffer.size();
+      parallelLib.bcast_e(buffer_len);
       // broadcast actual buffer
       parallelLib.bcast_e(send_buffer);
     }
     else {
       // receive incoming buffer length and allocate space for MPIUnpackBuffer
-      //int buffer_len;
-      //parallelLib.bcast_e(buffer_len);
+      int buffer_len;
+      parallelLib.bcast_e(buffer_len);
       // receive incoming buffer
-      //MPIUnpackBuffer recv_buffer(buffer_len);
-      MPIUnpackBuffer recv_buffer(512); // 512 should be plenty for 2 filenames
+      MPIUnpackBuffer recv_buffer(buffer_len);
       parallelLib.bcast_e(recv_buffer);
       recv_buffer >> paramsFileName >> resultsFileName >> fullEvalId;
     }
@@ -365,21 +368,20 @@ void ProcessApplicInterface::
 write_parameters_files(const Variables& vars,    const ActiveSet& set,
 		       const Response& response, const int id)
 {
-  std::pair<std::string,std::string> file_names(paramsFileName,resultsFileName);
+  PathTriple file_names(paramsFileName, resultsFileName, createdDir);
 
   // If a new evaluation, insert the modified file names into map for use in
   // identifying the proper file names within read_results_files for the case
   // of asynch fn evaluations.  If a replacement eval (e.g., failure capturing
   // with retry or continuation), then overwrite old file names with new ones.
-  std::map<int, std::pair<std::string, std::string> >::iterator map_iter
-    = fileNameMap.find(id);
+  std::map<int, PathTriple>::iterator map_iter = fileNameMap.find(id);
   if (map_iter != fileNameMap.end()) {
     // remove old files.  This is only necessary for the tmp file case, since
     // all other cases (including tagged) will overwrite the old files.  Since
     // we don't want to save tmp files, don't bother to check fileSaveFlag.
     // Also don't check allow existing results since they may be bogus.
-    std::remove((map_iter->second).first.c_str());  // parameters file name
-    std::remove((map_iter->second).second.c_str()); // results file name
+    bfs::remove((map_iter->second).get<0>());  // parameters file name
+    bfs::remove((map_iter->second).get<1>());  // results file name
     // replace file names in map, avoiding 2nd lookup
     map_iter->second = file_names;
   }
@@ -526,36 +528,32 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
   // (which rules out making the file names into attributes of
   // ProcessApplicInterface or rebuilding the file name from the root name
   // plus the counter).
-  std::map<int, std::pair<std::string, std::string> >::iterator map_iter =
-    fileNameMap.find(id);
-  const std::string& params_filename  = (map_iter->second).first;
-  const std::string& results_filename = (map_iter->second).second;
+  std::map<int, PathTriple>::iterator map_iter = fileNameMap.find(id);
+  const bfs::path& params_path  = (map_iter->second).get<0>();
+  const bfs::path& results_path = (map_iter->second).get<1>();
+  const bfs::path& workdir_path = (map_iter->second).get<2>();
 
   // If multiple analysis programs are used, then results_filename is tagged
   // with program number (to match ProcessApplicInterface::spawn_evaluation)
   // e.g. results.out.20.2 is the 2nd analysis results from the 20th fn eval.
-  size_t i, num_programs = programNames.size();
-  StringArray results_filenames;
-  if (num_programs > 1) { // append program counter to results file
-    results_filenames.resize(num_programs);
-    for (i=0; i<num_programs; ++i) {
-      const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
-      results_filenames[i] = results_filename + prog_num;
-    }
-  }
 
   // Read the results file(s).  If there's more than one program, then partial
   // responses must be overlaid to create the total response.  If an output
   // filter is used, then it has the responsibility to perform the overlay and
   // map results.out.[eval#].[1->num_programs] to results.out.[eval#].  If no
   // output filter is used, then perform the overlay here.
+
+  size_t num_programs = programNames.size();
   if (num_programs > 1 && oFilterName.empty()) {
     response.reset();
     Response partial_response = response.copy();
-    for (i=0; i<num_programs; ++i) {
-      std::ifstream recovery_stream(results_filenames[i].c_str());
+    for (size_t i=0; i<num_programs; ++i) {
+      const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
+      bfs::path prog_tagged_results
+	= WorkdirHelper::concat_path(results_path, prog_num);
+      bfs::ifstream recovery_stream(prog_tagged_results);
       if (!recovery_stream) {
-	Cerr << "\nError: cannot open results file " << results_filenames[i]
+	Cerr << "\nError: cannot open results file " << prog_tagged_results
 	     << std::endl;
 	abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
       }
@@ -564,148 +562,232 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
     }
   }
   else {
-    std::ifstream recovery_stream(results_filename.c_str());
+    bfs::ifstream recovery_stream(results_path);
     if (!recovery_stream) {
-      Cerr << "\nError: cannot open results file " << results_filename
+      Cerr << "\nError: cannot open results file " << results_path
 	   << std::endl;
       abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
     }
     recovery_stream >> response;
   }
 
-  // Clean up files based on fileSaveFlag.
-  if (!fileSaveFlag) {
-    if (!suppressOutput && outputLevel > NORMAL_OUTPUT) {
-      Cout << "Removing " << params_filename.c_str();
-      if (multipleParamsFiles) {
-        if (!iFilterName.empty())
-          Cout << " and " << params_filename.c_str();
-        Cout << ".[1-" << num_programs << ']';
-      }
-      Cout << " and " << results_filename;
-      if (num_programs > 1) {
-        if (!oFilterName.empty())
-          Cout << " and " << results_filename;
-        Cout << ".[1-" << num_programs << ']';
-      }
-      Cout << '\n';
-    }
-    if (!multipleParamsFiles || !iFilterName.empty())
-      std::remove(params_filename.c_str());
-    if (multipleParamsFiles) {
-      for (i=0; i<num_programs; ++i) {
-        const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
-	const std::string tag_params_filename = params_filename + prog_num;
-	std::remove(tag_params_filename.c_str());
-      }
-    }
-    if (num_programs == 1 || !oFilterName.empty())
-      std::remove(results_filename.c_str());
+  // remove the workdir if in the map and we're not saving
+  bool removing_workdir = (!workdir_path.empty() && !dirSave);
 
-    if (num_programs > 1)
-      for (i=0; i<num_programs; ++i)
-	std::remove(results_filenames[i].c_str());
+  if (fileSaveFlag) {
 
-    // optionally remove the work_directory 
-    // BMA: appears we only want to remove if tagged, since otherwise
-    // needs to be reused.  Later fix this.
-    //    if (useWorkdir && !dirSave) {
-    if (useWorkdir && !dirSave && dirTag) {
-      std::string wd = workDir;
-      //if (dirTag) {
-      // can't rely on class member due to split call to write/read 
-      wd += eval_id_tag;   
-      //}
-      rec_rmdir(wd.c_str());
-    }
-  }
+    // Prevent overwriting of files with reused names for which a file_save 
+    // request has been given.  Assume tmp files always unique.
 
-  // Prevent overwriting of files with reused names for which a file_save
-  // request has been given.
-  // BMA TODO: remove confounding with dirTag
-  if ( fileSaveFlag && !fileTagFlag && !dirTag &&
-       ( !specifiedParamsFileName.empty() ||
-	 !specifiedResultsFileName.empty() ) ) {
-    // specifiedParamsFileName/specifiedResultsFileName are original user input
-    if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-      Cout << "Files with nonunique names will be tagged for file_save:\n";
+    // Cases (work in progress):
+    //  * no workdir --> tag if needed (old behavior)
+    //  * workdir, shared, saved --> tag if needed
+    //  * a workdir can be unique via dir_tag or tmp files
+    //    - workdir, unique, saved --> done no tag
+    //    - workdir, not saved --> tag and move to rundir
+    //  * when workdir and absolute path to files tag in abs path
 
-    if (!specifiedParamsFileName.empty()) {
-      const std::string new_str = specifiedParamsFileName + eval_id_tag;
-      if (!multipleParamsFiles || !iFilterName.empty()) {
-	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-	  Cout << "Moving " << specifiedParamsFileName << " to " << new_str
-               << '\n';
-	rename(specifiedParamsFileName.c_str(), new_str.c_str());
+    if ( useWorkdir ) {
+      if ( dirSave ) {
+	// if saving the directory, just need to make sure filenames are unique
+	// use legacy tagging mechanism within the workdir
+	// TODO: don't need to tag if workdir is unique per eval...
+	if (!fileTagFlag && !dirTag && !workDirName.empty())
+	  autotag_files(params_path, results_path, eval_id_tag);
       }
-      if (multipleParamsFiles) { // append program counters to old/new strings
-        for (i=0; i<num_programs; ++i) {
-          const std::string prog_num("."+boost::lexical_cast<std::string>(i+1));
-          const std::string old_tagged_str = specifiedParamsFileName + prog_num;
-          const std::string new_tagged_str = new_str + prog_num;
-          if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-            Cout << "Moving " << old_tagged_str << " to " << new_tagged_str
-                 << '\n';
-          rename(old_tagged_str.c_str(), new_tagged_str.c_str());
-	}
+      else {
+	// work_directory getting removed; unique tag the files into the rundir
+	// take the filename off the path and use with rundir
+	// TODO: do we even need to support this?
+	// TODO: distinguish between params in vs. not in (absolute
+	// path) the workdir
+	// autotag_files(params_path, results_path, eval_id_tag,
+	// 	      bfs::current_path());
+	;
       }
     }
-    if (!specifiedResultsFileName.empty()) {
-      const std::string new_str = specifiedResultsFileName + eval_id_tag;
-      if (num_programs == 1 || !oFilterName.empty()) {
-        if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-          Cout << "Moving " << specifiedResultsFileName << " to "
-               << new_str << '\n';
-        rename(specifiedResultsFileName.c_str(), new_str.c_str());
-      }
-      if (num_programs > 1) { // append program counters to old/new strings
-        for (i=0; i<num_programs; ++i) {
-          const std::string prog_num("."+boost::lexical_cast<std::string>(i+1));
-          const std::string old_tagged_str = specifiedResultsFileName+prog_num;
-          const std::string new_tagged_str = new_str + prog_num;
-          if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-            Cout << "Moving " << old_tagged_str << " to " << new_tagged_str
-                 << '\n';
-          rename(old_tagged_str.c_str(), new_tagged_str.c_str());
-	}
+    else {
+      // simple case; no workdir --> old behavior, tagging if needed
+      // in place (whether relative or absolute)
+      if (!fileTagFlag) {
+	autotag_files(params_path, results_path, eval_id_tag);
       }
     }
   }
-
+  else
+    remove_params_results_files(params_path, results_path);
+ 
+  // Now that files are handled, conditionally remove the work directory
+  if (removing_workdir) {
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << "Removing work_directory " << workdir_path << std::endl;
+    WorkdirHelper::recursive_remove(workdir_path);
+  }
   // Remove the evaluation which has been processed from the bookkeeping
   fileNameMap.erase(map_iter);
 }
 
 
+/** Move specified params and results files to unique tagged versions
+    when needed */
+void ProcessApplicInterface::autotag_files(const bfs::path& params_path, 
+					   const bfs::path& results_path,
+					   const String& eval_id_tag
+					   //, const bfs::path dest_dir
+					   ) const
+
+{
+  size_t num_programs = programNames.size();
+
+  if ((!specifiedParamsFileName.empty() || !specifiedParamsFileName.empty()) && 
+      !suppressOutput && outputLevel > NORMAL_OUTPUT)
+    Cout << "Files with nonunique names will be tagged for file_save:\n";
+
+  if (!specifiedParamsFileName.empty()) {
+    bfs::path eval_tagged_params = 
+      WorkdirHelper::concat_path(params_path, eval_id_tag);
+
+    if (!multipleParamsFiles || !iFilterName.empty()) {
+      if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
+	Cout << "Moving " << params_path << " to " << eval_tagged_params << '\n';
+      bfs::rename(params_path, eval_tagged_params);
+    }
+    if (multipleParamsFiles) { // append program counters to old/new strings
+      for (size_t i=0; i<num_programs; ++i) {
+	const std::string prog_num("."+boost::lexical_cast<std::string>(i+1));
+	const bfs::path prog_tagged_old = 
+	  WorkdirHelper::concat_path(params_path, prog_num);
+	const bfs::path eval_prog_tagged_new = 
+	  WorkdirHelper::concat_path(eval_tagged_params, prog_num);
+	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
+	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
+	       << '\n';
+	bfs::rename(prog_tagged_old, eval_prog_tagged_new);
+      }
+    }
+  }
+
+  if (!specifiedResultsFileName.empty()) {
+    bfs::path eval_tagged_results = 
+      WorkdirHelper::concat_path(results_path, eval_id_tag);
+
+    if (num_programs == 1 || !oFilterName.empty()) {
+      if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
+	Cout << "Moving " << results_path << " to "
+	     << eval_tagged_results << '\n';
+      bfs::rename(results_path, eval_tagged_results);
+    }
+    if (num_programs > 1) { // append program counters to old/new strings
+      for (size_t i=0; i<num_programs; ++i) {
+	const std::string prog_num("."+boost::lexical_cast<std::string>(i+1));
+	const bfs::path prog_tagged_old = 
+	  WorkdirHelper::concat_path(results_path, prog_num);
+	const bfs::path eval_prog_tagged_new = 
+	  WorkdirHelper::concat_path(eval_tagged_results, prog_num);
+	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
+	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
+	       << '\n';
+	bfs::rename(prog_tagged_old, eval_prog_tagged_new);
+      }
+    }
+  }
+
+}
+
+void ProcessApplicInterface::
+remove_params_results_files(const bfs::path& params_path, 
+			    const bfs::path& results_path) const
+{
+  size_t num_programs = programNames.size();
+
+  if (!suppressOutput && outputLevel > NORMAL_OUTPUT) {
+    Cout << "Removing " << params_path;
+    if (multipleParamsFiles) {
+      if (!iFilterName.empty())
+	Cout << " and " << params_path;
+      Cout << ".[1-" << num_programs << ']';
+    }
+    Cout << " and " << results_path;
+    if (num_programs > 1) {
+      if (!oFilterName.empty())
+	Cout << " and " << results_path;
+      Cout << ".[1-" << num_programs << ']';
+    }
+    Cout << '\n';
+  }
+
+  if (!multipleParamsFiles || !iFilterName.empty())
+    bfs::remove(params_path);
+
+  if (multipleParamsFiles) {
+    for (size_t i=0; i<num_programs; ++i) {
+      const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
+      const bfs::path tagged_params = 
+	WorkdirHelper::concat_path(params_path, prog_num);
+      bfs::remove(tagged_params);
+    }
+  }
+
+  if (num_programs == 1 || !oFilterName.empty())
+    bfs::remove(results_path);
+
+  if (num_programs > 1)
+    for (size_t i=0; i<num_programs; ++i) {
+      const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
+      const bfs::path tagged_results = 
+	WorkdirHelper::concat_path(results_path, prog_num);
+      bfs::remove(tagged_results);
+    }
+}
+
+
+// TODO: remove directories as well
+/** Remove any files still referenced in the fileNameMap */
 void ProcessApplicInterface::file_cleanup() const
 {
   if (fileSaveFlag)
     return;
 
-  bool rrf = !multipleParamsFiles || !iFilterName.empty();
-  std::string tname;
-
-  std::map<int, std::pair<std::string, std::string> >::const_iterator
+  std::map<int, PathTriple>::const_iterator
     file_name_map_it  = fileNameMap.begin(),
     file_name_map_end = fileNameMap.end();
   for(; file_name_map_it != file_name_map_end; ++file_name_map_it) {
-    const std::string& parfile = (file_name_map_it->second).first;
-    const std::string& resfile = (file_name_map_it->second).second;
-    if (rrf) {
-      std::remove(parfile.c_str());
-      std::remove(resfile.c_str());
+    const bfs::path& parfile = (file_name_map_it->second).get<0>();
+    const bfs::path& resfile = (file_name_map_it->second).get<1>();
+    if (!multipleParamsFiles || !iFilterName.empty()) {
+      bfs::remove(parfile);
+      bfs::remove(resfile);
     }
     if (multipleParamsFiles) {
       size_t i, num_programs = programNames.size();
       for(i=1; i<=num_programs; ++i) {
         std::string prog_num("." + boost::lexical_cast<std::string>(i));
-	tname = parfile + prog_num;
-	std::remove(tname.c_str());
-	tname = resfile + prog_num;
-	std::remove(tname.c_str());
+	bfs::path pname = WorkdirHelper::concat_path(parfile, prog_num);
+	bfs::remove(pname);
+	bfs::path rname = WorkdirHelper::concat_path(resfile, prog_num);
+	bfs::remove(rname);
       }
     }
   }
 }
+
+
+// get the current work directory name
+bfs::path ProcessApplicInterface::get_workdir_name()
+{
+  // PDH suggets making in rundir instead of tmp area...
+  bfs::path wd_name = workDirName.empty() ? 
+    WorkdirHelper::system_tmp_name("dakota_work") :
+    workDirName;
+
+  // we allow tagging of tmp dirs in case the user's script needs the tag
+  if (dirTag)
+    return WorkdirHelper::concat_path(wd_name, fullEvalId);
+
+  return wd_name;
+}
+
+
+
 
 } // namespace Dakota

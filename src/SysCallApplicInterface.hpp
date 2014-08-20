@@ -64,7 +64,7 @@ private:
 
   /// detect completion of a function evaluation through existence of
   /// the necessary results file(s)
-  bool system_call_file_test(const std::string& root_file);
+  bool system_call_file_test(const bfs::path& root_file);
 
   /// spawn a complete function evaluation
   void spawn_evaluation_to_shell(bool block_flag);

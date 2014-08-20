@@ -20,8 +20,15 @@
 typedef intptr_t pid_t;
 #endif
 
+#include <boost/tuple/tuple.hpp>
+#include <boost/filesystem/path.hpp>
+namespace bfs = boost::filesystem;
 
 namespace Dakota {
+
+/// Triplet of filesystem paths: e.g., params, results, workdir 
+typedef boost::tuple<bfs::path, bfs::path, bfs::path> PathTriple;
+
 
 /// Derived application interface class that spawns a simulation code
 /// using a separate process and communicates with it through files.
@@ -56,6 +63,23 @@ protected:
   const StringArray& analysis_drivers() const;
 
   void file_cleanup() const;
+
+
+  /// Remove (potentially autotagged for multiple programs) parameters
+  /// and results files with passed root names
+  void remove_params_results_files(const bfs::path& params_path, 
+				   const bfs::path& results_path) const;
+
+
+  /// Utility to automatically tag parameters and results files with
+  /// passed root names (the files may already need per-program
+  /// tagging)
+  void autotag_files(const bfs::path& params_path, 
+		     const bfs::path& results_path,
+		     const String& eval_id_tag
+		     //, const bfs::path dest_dir = bfs::path()
+		     ) const;
+
 
   //
   //- Heading: New virtual functions
@@ -92,6 +116,10 @@ protected:
   void read_results_files(Response& response, const int id,
 			  const String& eval_id_tag);
 
+  /// construct a work directory name (tmp or named), with optional tag
+  bfs::path get_workdir_name();
+
+
   //
   //- Heading: Data
   //
@@ -120,11 +148,12 @@ protected:
   /// the name of the parameters file from user specification
   std::string specifiedParamsFileName;
   /// the parameters file name actually used (modified with tagging or
-  /// temp files)
+  /// temp files); only valid from define_filenames to write_parameters_files
   std::string paramsFileName;
   /// the name of the results file from user specification
   std::string specifiedResultsFileName;
-  /// the results file name actually used (modified with tagging or temp files)
+  /// the results file name actually used (modified with tagging or
+  /// temp files); only valid from define_filenames to write_parameters_files
   std::string resultsFileName;
   /// complete evalIdTag, possibly including hierarchical tagging and
   /// final eval id, but not program numbers, for passing to
@@ -135,25 +164,31 @@ protected:
   /// exist; user may override with this flag and we'll try to gather
   /// and only fork if needed
   bool allowExistingResults;
-  /// working directory when useWorkdir is true
-  std::string curWorkdir;
 
-  /// stores parameters and results file names used in spawning function
-  /// evaluations.  Map key is the function evaluation identifier.
-  std::map<int, std::pair<std::string, std::string> > fileNameMap;
+  /// Maps function evaluation ID to triples (parameters, results, and
+  /// workdir) paths used in spawning function evaluations.  Workdir
+  /// will be empty if not created specifically for this eval.
+  std::map<int, PathTriple> fileNameMap;
 
-  /// whether to use a new or specified work_directory
+  // work_directory creation/removal controls
+
+  /// whether to use a work_directory
   bool useWorkdir;
-  /// its name, if specified...
-  std::string workDir;
+  /// work_directory name, if specified...
+  std::string workDirName;
   /// whether to tag the working directory
   bool dirTag;
   /// whether dir_save was specified
   bool dirSave;
-  /// whether to delete the directory when Dakota terminates
-  bool dirDel;
-  /// for dirTag, whether we have workDir
-  bool haveWorkdir;
+  /// active working directory for this evaluation; valid only from
+  /// define_filenames to create_evaluation_process
+  bfs::path curWorkdir;
+
+  /// non-empty if created for this eval; valid only from
+  /// define_filenames to write_parameters_files
+  bfs::path createdDir;
+
+  // work directory population controls
 
   /// template directory (if specified)
   std::string templateDir;
@@ -163,11 +198,6 @@ protected:
   bool templateCopy;
   /// whether to replace existing files
   bool templateReplace;
-  /// state variable for template directory
-  bool haveTemplateDir;
-
-  /// Dakota directory (if needed)
-  std::string dakDir;
 
 private:
 

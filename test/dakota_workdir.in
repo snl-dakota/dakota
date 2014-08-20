@@ -56,9 +56,9 @@ interface
 #	directory_tag						#1,#2,#9,#p1
 #	directory_save  					#2,#9
 # 	template_files = 'dakota_workdir.root.dat' 		#3,#5
-# 	template_directory = 'dakota_workdir.templatedir'	#4,#6
+# 	template_directory = 'dakota_workdir.templatedir/*'	#4,#6
 #         copy							#5,#6
-# 	template_directory = 'dakota_workdir.templatedir'	#7
+# 	template_directory = 'dakota_workdir.templatedir/*'	#7
 #	parameters_file = 'params.in'				#8
 #	parameters_file = '/tmp/params.in'			#9
 #	  file_save						#9
