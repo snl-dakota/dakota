@@ -17,13 +17,13 @@
 
 //#include "Scheduler.hpp"
 #include "DataMethod.hpp"
+#include "ParallelLibrary.hpp"
 
 
 namespace Dakota {
 
 class Iterator;
 class Model;
-class ParallelLibrary;
 class ProblemDescDB;
 
 
@@ -108,17 +108,21 @@ public:
   /// short convenience function for distributing control among
   /// master_dynamic_schedule_iterators(), serve_iterators(), and
   /// peer_static_schedule_iterators()
-  void schedule_iterators(Iterator& meta_iterator, Iterator& sub_iterator);
+  template <typename MetaType>
+  void schedule_iterators(MetaType& meta_object, Iterator& sub_iterator);
   /// executed by the scheduler master to manage a dynamic schedule of
   /// iterator jobs among slave iterator servers
-  void master_dynamic_schedule_iterators(Iterator& meta_iterator);
+  template <typename MetaType>
+  void master_dynamic_schedule_iterators(MetaType& meta_object);
   /// executed by the scheduler master to terminate slave iterator servers
   void stop_iterator_servers();
   /// executed on the slave iterator servers to perform iterator jobs
   /// assigned by the scheduler master
-  void serve_iterators(Iterator& meta_iterator, Iterator& sub_iterator);
+  template <typename MetaType>
+  void serve_iterators(MetaType& meta_object, Iterator& sub_iterator);
   /// executed on iterator peers to manage a static schedule of iterator jobs
-  void peer_static_schedule_iterators(Iterator& meta_iterator,
+  template <typename MetaType>
+  void peer_static_schedule_iterators(MetaType& meta_object,
 				      Iterator& sub_iterator);
 
   /// update paramsMsgLen and resultsMsgLen
@@ -182,6 +186,224 @@ inline bool IteratorScheduler::lead_rank() const
 inline void IteratorScheduler::
 iterator_message_lengths(int params_msg_len, int results_msg_len)
 { paramsMsgLen = params_msg_len; resultsMsgLen = results_msg_len; }
+
+
+/** This implementation supports the scheduling of multiple jobs using
+    a single iterator/model pair.  Additional future (overloaded)
+    implementations could involve independent iterator instances. */
+template <typename MetaType> void IteratorScheduler::
+schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
+{
+  if (iteratorScheduling == MASTER_SCHEDULING) { //(dedicatedMaster) {
+    if (lead_rank()) { // strategy master
+      master_dynamic_schedule_iterators(meta_object);
+      stop_iterator_servers();
+    }
+    else // slave iterator servers
+      serve_iterators(meta_object, sub_iterator);
+  }
+  else { // static scheduling of iterator jobs
+    if (iteratorServerId <= numIteratorServers) {
+      // jobs are not assigned by messages: stop_iterator_servers() is only
+      // required for an idle server partition
+      peer_static_schedule_iterators(meta_object, sub_iterator);
+      if (lead_rank())
+	stop_iterator_servers(); // stop an idle server partition, if present
+    }
+    else // for occupying an idle server partition (no jobs)
+      serve_iterators(meta_object, sub_iterator);
+  }
+}
+
+
+/** This function is adapted from
+    ApplicationInterface::master_dynamic_schedule_evaluations(). */
+template <typename MetaType> void IteratorScheduler::
+master_dynamic_schedule_iterators(MetaType& meta_object)
+{
+  // init_communicators() is called on the iterator servers, but not on
+  // the strategy master.  Therefore, match collective communications.
+  parallelLib.print_configuration(); // matches call within init_communicators()
+
+  int i, num_sends = std::min(numIteratorServers, numIteratorJobs);
+  Cout << "Master dynamic schedule: first pass assigning " << num_sends
+       << " iterator jobs among " << numIteratorServers << " servers\n";
+
+  MPIPackBuffer*   send_buffers  = new MPIPackBuffer   [num_sends];
+  MPIUnpackBuffer* recv_buffers  = new MPIUnpackBuffer [numIteratorJobs];
+  MPI_Request      send_request; // only 1 needed since no test/wait on sends
+  MPI_Request*     recv_requests = new MPI_Request     [num_sends];
+
+  // assign 1st num_sends jobs
+  for (i=0; i<num_sends; i++) {
+    // pack the ith parameter set
+    //send_buffers[i].resize(paramsMsgLen);
+    meta_object.pack_parameters_buffer(send_buffers[i], i);
+    // pre-post receives
+    recv_buffers[i].resize(resultsMsgLen);
+    parallelLib.irecv_mi(recv_buffers[i], i+1, i+1, recv_requests[i]);
+    // nonblocking sends: master quickly assigns first num_sends jobs
+    parallelLib.isend_mi(send_buffers[i], i+1, i+1, send_request);
+    parallelLib.free(send_request); // no test/wait on send_request
+  }
+
+  // schedule remaining jobs
+  if (num_sends < numIteratorJobs) {
+    Cout << "Master dynamic schedule: second pass scheduling "
+	 << numIteratorJobs-num_sends << " remaining iterator jobs\n";
+    int send_cntr = num_sends, recv_cntr = 0, out_count;
+    MPI_Status* status_array = new MPI_Status [num_sends];
+    int*        index_array  = new int        [num_sends];
+    while (recv_cntr < numIteratorJobs) {
+      parallelLib.waitsome(num_sends, recv_requests, out_count, index_array, 
+			   status_array);
+      recv_cntr += out_count;
+      for (i=0; i<out_count; i++) {
+        int server_index = index_array[i]; // index of completed recv_request
+        int server_id    = server_index + 1;        // 1 to numIteratorServers
+        int job_id       = status_array[i].MPI_TAG; // 1 to numIteratorJobs
+        int job_index    = job_id - 1;              // 0 to numIteratorJobs-1
+	meta_object.unpack_results_buffer(recv_buffers[job_index], job_index);
+        if (send_cntr < numIteratorJobs) {
+          send_buffers[server_index].reset();// reuse send_buffers/recv_requests
+	  meta_object.pack_parameters_buffer(send_buffers[server_index],
+					     send_cntr);
+	  // pre-post receive
+          recv_buffers[send_cntr].resize(resultsMsgLen);
+          parallelLib.irecv_mi(recv_buffers[send_cntr], server_id, send_cntr+1, 
+                               recv_requests[server_index]);
+          // send next job to open server
+          parallelLib.isend_mi(send_buffers[server_index], server_id,
+                               send_cntr+1, send_request);
+          parallelLib.free(send_request); // no test/wait on send_request
+          send_cntr++;
+        }
+      }
+    }
+    delete [] status_array;
+    delete [] index_array;
+  }
+  else { // all jobs assigned in first pass
+    Cout << "Master dynamic schedule: waiting on all iterator jobs."
+	 << std::endl;
+    parallelLib.waitall(numIteratorJobs, recv_requests);
+    // All buffers received, now generate rawResponseArray
+    for (i=0; i<numIteratorJobs; i++)
+      meta_object.unpack_results_buffer(recv_buffers[i], i);
+  }
+  // deallocate MPI & buffer arrays
+  delete [] send_buffers;
+  delete [] recv_buffers;
+  delete [] recv_requests;
+}
+
+
+template <typename MetaType> void IteratorScheduler::
+peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
+{
+  const ParallelLevel& mi_pl
+    = parallelLib.parallel_configuration().mi_parallel_level();
+  for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
+
+    // Set starting point or obj fn weighting set
+    Real iterator_start_time;
+    if (iteratorCommRank == 0) {
+      meta_object.initialize_iterator(i);
+      if (messagePass)
+        iterator_start_time = parallelLib.parallel_time();
+    }
+
+    // Run the iterator on the model for this iterator job
+    run_iterator(sub_iterator, mi_pl);
+
+    // collect results on peer 1
+    if (iteratorCommRank == 0) {
+      // report iterator timings (to tagged output if concurrent iterators)
+      if (messagePass) {
+        Real iterator_end_time = parallelLib.parallel_time();
+        Cout << "\nParameter set " << i+1 << " elapsed time = "
+             << iterator_end_time - iterator_start_time << " (start: "
+             << iterator_start_time << ", end: " << iterator_end_time << ")\n";
+      }
+      meta_object.update_local_results(i);
+    }
+  }
+
+  // Collect results from iterator peers for output in results summary.
+  // This also synchronizes the concurrent iterator servers so that the
+  // ParallelLibrary destructor timings are valid (all parameter sets have
+  // completed).  If no synchronization was applied, then the timings would
+  // reflect only the completion of the first iterator server.
+  if (iteratorCommRank == 0) {
+    if (iteratorServerId > 1) { // peers 2-n: send results to peer 1
+      for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
+	MPIPackBuffer send_buffer;//(resultsMsgLen);
+	meta_object.pack_results_buffer(send_buffer, i);
+	parallelLib.send_mi(send_buffer, 0, i+1);
+      }
+    }
+    else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
+      for (int i=1; i<numIteratorJobs; i++) { // skip 0 since this is peer 1
+	int source = i%numIteratorServers;
+	if (source) { // parameter set evaluated on peers 2-n
+	  MPI_Status status;
+	  MPIUnpackBuffer recv_buffer(resultsMsgLen);
+	  parallelLib.recv_mi(recv_buffer, source, i+1, status);
+	  meta_object.unpack_results_buffer(recv_buffer, i);
+	}
+      }
+    }
+  }
+}
+
+
+/** This function is similar in structure to
+    ApplicationInterface::serve_evaluations_synch(). */
+template <typename MetaType> void IteratorScheduler::
+serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
+{
+  const ParallelLevel& mi_pl
+    = parallelLib.parallel_configuration().mi_parallel_level();
+  RealArray param_set;
+  int job_id = 1;
+  while (job_id) {
+
+    // receive job from master
+    if (iteratorCommRank == 0) {
+      MPI_Status status;
+      MPIUnpackBuffer recv_buffer(paramsMsgLen);
+      parallelLib.recv_mi(recv_buffer, 0, MPI_ANY_TAG, status);
+      job_id = status.MPI_TAG;
+      if (job_id)
+	meta_object.unpack_parameters_buffer(recv_buffer);
+    }
+    if (iteratorCommSize > 1) // must Bcast job_id over iteratorComm
+      parallelLib.bcast_i(job_id);
+
+    if (job_id) {
+
+      // Set starting point or obj fn weighting set
+      Real iterator_start_time;
+      if (iteratorCommRank == 0)
+	iterator_start_time = parallelLib.parallel_time();
+
+      // Run the iterator on the model for the received job
+      run_iterator(sub_iterator, mi_pl);
+
+      if (iteratorCommRank == 0) {
+	Real iterator_end_time = parallelLib.parallel_time();
+	Cout << "\nParameter set " << job_id << " elapsed time = "
+	     << iterator_end_time - iterator_start_time << " (start: "
+	     << iterator_start_time << ", end: " << iterator_end_time <<")\n";
+	int job_index = job_id - 1;
+	meta_object.update_local_results(job_index);
+        MPIPackBuffer send_buffer(resultsMsgLen);
+	meta_object.pack_results_buffer(send_buffer, job_index);
+        parallelLib.send_mi(send_buffer, 0, job_id);
+      }
+    }
+  }
+}
 
 } // namespace Dakota
 

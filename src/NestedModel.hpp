@@ -46,6 +46,13 @@ namespace Dakota {
 
 class NestedModel: public Model
 {
+  //
+  //- Heading: Friends
+  //
+
+  /// protect scheduler callback functions from general access
+  friend class IteratorScheduler;
+
 public:
   
   //
@@ -61,10 +68,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  // Perform the response computation portions specific to this derived 
-  // class.  In this case, this involves running the subIterator on the 
-  // subModel.
-  //
+  // Perform the response computation portions specific to this derived class.
+  // In this case, this involves running the subIterator on the subModel.
+
   /// portion of compute_response() specific to NestedModel
   void derived_compute_response(const ActiveSet& set);
   /// portion of asynch_compute_response() specific to NestedModel
@@ -136,14 +142,29 @@ protected:
 				bool relative_count = true) const;
 
   /// set the hierarchical eval ID tag prefix
-  virtual void eval_tag_prefix(const String& eval_id_str);
+  void eval_tag_prefix(const String& eval_id_str);
 
+  //
+  //- Heading: Member functions
+  //
+
+  void initialize_iterator(int job_index);
+  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
+  void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer);
+  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
+  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
+  void update_local_results(int job_index);
 
 private:
 
   //
   //- Heading: Convenience member functions
   //
+
+  /// lower level function shared by initialize_iterator(int) and
+  /// unpack_parameters_buffer()
+  void initialize_iterator(const Variables& vars, const ActiveSet& set,
+			   int eval_id);
 
   /// for a named real mapping, resolve primary index and secondary target
   void resolve_real_variable_mapping(const String& map1, const String& map2,
@@ -168,26 +189,27 @@ private:
   size_t sm_adrv_index_map(size_t padrvm_index, short sadrvm_target);
 
   /// offset cv_index to create index into aggregated primary/secondary arrays
-  size_t cv_index_map(size_t cv_index);
+  size_t cv_index_map(size_t cv_index, const Variables& vars);
   /// offset div_index to create index into aggregated primary/secondary arrays
-  size_t div_index_map(size_t div_index);
+  size_t div_index_map(size_t div_index, const Variables& vars);
   /// offset dsv_index to create index into aggregated primary/secondary arrays
-  size_t dsv_index_map(size_t dsv_index);
+  size_t dsv_index_map(size_t dsv_index,
+		       const Variables& vars);
   /// offset drv_index to create index into aggregated primary/secondary arrays
-  size_t drv_index_map(size_t drv_index);
+  size_t drv_index_map(size_t drv_index, const Variables& vars);
 
   /// offset active complement ccv_index to create index into all
   /// continuous arrays
-  size_t ccv_index_map(size_t ccv_index);
+  size_t ccv_index_map(size_t ccv_index, const Variables& vars);
   /// offset active complement cdiv_index to create index into all
   /// discrete int arrays
-  size_t cdiv_index_map(size_t cdiv_index);
+  size_t cdiv_index_map(size_t cdiv_index, const Variables& vars);
   /// offset active complement cdsv_index to create index into all
   /// discrete string arrays
-  size_t cdsv_index_map(size_t cdsv_index);
+  size_t cdsv_index_map(size_t cdsv_index, const Variables& vars);
   /// offset active complement cdrv_index to create index into all
   /// discrete real arrays
-  size_t cdrv_index_map(size_t cdrv_index);
+  size_t cdrv_index_map(size_t cdrv_index, const Variables& vars);
 
   /// insert r_var into appropriate recipient
   void real_variable_mapping(const Real& r_var, size_t mapped_index,
@@ -229,7 +251,7 @@ private:
   void update_inactive_view(unsigned short type, short& view);
 
   /// update subModel with current variable values/bounds/labels
-  void update_sub_model();
+  void update_sub_model(const Variables& vars, const Constraints& cons);
 
   //
   //- Heading: Data members
@@ -255,9 +277,9 @@ private:
       SurrogateModels and vice versa. */
   Model subModel;
   /// job queue for asynchronous execution of subIterator jobs
-  PRPQueue beforeSynchSubIterPRPQueue;
+  PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
-  IteratorScheduler subIterSched;
+  IteratorScheduler subIteratorSched;
   // subIterator evaluation counter (since Iterator::execNum
   // increments at run time rather than queue load time)
   //int subIteratorEvalId;
@@ -614,6 +636,95 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts
   subModel.print_evaluation_summary(s, minimal_header, false);
+}
+
+
+inline void NestedModel::initialize_iterator(int job_index)
+{
+  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index);
+  if (prp_it == subIteratorPRPQueue.end()) {
+    Cerr << "Error: lookup failure in NestedModel::initialize_iterator()"
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  initialize_iterator(prp_it->prp_parameters(), prp_it->active_set(),
+		      prp_it->eval_id());
+}
+
+
+inline void NestedModel::
+initialize_iterator(const Variables& vars, const ActiveSet& set, int eval_id)
+{
+  update_sub_model(vars, userDefinedConstraints);
+  subIterator.response_results_active_set(set);
+  if (hierarchicalTagging) {
+    String eval_tag
+      = evalTagPrefix + '.' + boost::lexical_cast<String>(eval_id);
+    subIterator.eval_tag_prefix(eval_tag);
+  }
+}
+
+
+inline void NestedModel::
+pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
+{
+  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index);
+  if (prp_it == subIteratorPRPQueue.end()) {
+    Cerr << "Error: lookup failure in NestedModel::pack_parameters_buffer()"
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  send_buffer << prp_it->prp_parameters() << prp_it->active_set()
+	      << prp_it->eval_id();
+}
+
+
+inline void NestedModel::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
+{
+  Variables vars; ActiveSet set; int eval_id;
+  recv_buffer >> vars >> set >> eval_id;
+  initialize_iterator(vars, set, eval_id);
+}
+
+
+inline void NestedModel::
+pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
+{
+  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index);
+  if (prp_it == subIteratorPRPQueue.end()) {
+    Cerr << "Error: lookup failure in NestedModel::pack_results_buffer()"
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  send_buffer << prp_it->prp_response();
+}
+
+
+inline void NestedModel::
+unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
+{
+  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index);
+  if (prp_it == subIteratorPRPQueue.end()) {
+    Cerr << "Error: lookup failure in NestedModel::unpack_results_buffer()"
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  Response resp = prp_it->prp_response(); // shallow copy
+  recv_buffer >> resp;
+}
+
+
+inline void NestedModel::update_local_results(int job_index)
+{
+  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index);
+  if (prp_it == subIteratorPRPQueue.end()) {
+    // TO DO: if DNE on server, then need to construct?
+  }
+  else {
+    //prp_it->prp_parameters(subIterator.variables_results()); // not used
+    Response resp = prp_it->prp_response(); // shallow copy
+    resp.update(subIterator.response_results());
+  }
 }
 
 } // namespace Dakota

@@ -26,10 +26,10 @@ namespace Dakota {
 
 NestedModel::NestedModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db), nestedModelEvalCntr(0),
-  subIterSched(problem_db.parallel_library(),
-	       problem_db.get_int("model.nested.sub_method_servers"),
-	       problem_db.get_int("model.nested.sub_method_processors"),
-	       problem_db.get_short("model.nested.sub_method_scheduling")),
+  subIteratorSched(problem_db.parallel_library(),
+		   problem_db.get_int("model.nested.sub_method_servers"),
+		   problem_db.get_int("model.nested.sub_method_processors"),
+		   problem_db.get_short("model.nested.sub_method_scheduling")),
   optInterfacePointer(problem_db.get_string("model.interface_pointer"))
 {
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
@@ -164,7 +164,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   for (i=0; i<num_curr_cv; ++i) {
-    curr_i = cv_index_map(i);
+    curr_i = cv_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -212,7 +212,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE INTEGER VARIABLES from currentVariables
   for (i=0; i<num_curr_div; ++i) {
-    curr_i = div_index_map(i);
+    curr_i = div_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -260,7 +260,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE STRING VARIABLES from currentVariables
   for (i=0; i<num_curr_dsv; ++i) {
-    curr_i = dsv_index_map(i);
+    curr_i = dsv_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -308,7 +308,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE REAL VARIABLES from currentVariables
   for (i=0; i<num_curr_drv; ++i) {
-    curr_i = drv_index_map(i);
+    curr_i = drv_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -381,7 +381,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT CONTINUOUS VARIABLES from currentVariables
   for (i=0; i<num_curr_ccv; ++i) {
-    curr_i = ccv_index_map(i);
+    curr_i = ccv_index_map(i, currentVariables);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_ac_type = curr_ac_types[curr_i];
@@ -409,7 +409,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT DISCRETE INTEGER VARIABLES from currentVariables
   for (i=0; i<num_curr_cdiv; ++i) {
-    curr_i = cdiv_index_map(i);
+    curr_i = cdiv_index_map(i, currentVariables);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_adi_type = curr_adi_types[curr_i];
@@ -437,7 +437,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT DISCRETE STRING VARIABLES from currentVariables
   for (i=0; i<num_curr_cdsv; ++i) {
-    curr_i = cdsv_index_map(i);
+    curr_i = cdsv_index_map(i, currentVariables);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_ads_type = curr_ads_types[curr_i];
@@ -465,7 +465,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT DISCRETE REAL VARIABLES from currentVariables
   for (i=0; i<num_curr_cdrv; ++i) {
-    curr_i = cdrv_index_map(i);
+    curr_i = cdrv_index_map(i, currentVariables);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_adr_type = curr_adr_types[curr_i];
@@ -1192,7 +1192,7 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
 	 << "Evaluation " << std::setw(4) << nestedModelEvalCntr << ": running "
 	 << "sub_iterator\n-------------------------------------------------\n";
     component_parallel_mode(SUB_MODEL);
-    update_sub_model();
+    update_sub_model(currentVariables, userDefinedConstraints);
     subIterator.response_results_active_set(sub_iterator_set);
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' + 
@@ -1207,9 +1207,10 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
     iterator_response_overlay(sub_iter_resp, currentResponse);
   }
 
-  Cout << "\n---------------------------\nNestedModel total response:"
-       << "\n---------------------------\n\nActive response data from nested "
-       << "mapping:\n" << currentResponse << '\n';
+  Cout << "\n---------------------------\nNestedModel Evaluation "
+       << std::setw(4) << nestedModelEvalCntr << " total response:"
+       << "\n---------------------------\n\nActive response data "
+       << "from nested mapping:\n" << currentResponse << '\n';
 }
 
 
@@ -1261,9 +1262,7 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
     ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
 				   subIterator.response_results(),
 				   nestedModelEvalCntr);//subIteratorEvalId);
-    beforeSynchSubIterPRPQueue.insert(current_pair); // OR iterSched.queue(current_pair);
-    //Cout << "(Nested model asynchronous job " << subIteratorEvalId 
-    //     << " added to queue)\n";
+    subIteratorPRPQueue.insert(current_pair);
     //subIteratorIdMap[subIteratorEvalId] = nestedModelEvalCntr;
   }
 }
@@ -1275,36 +1274,42 @@ const IntResponseMap& NestedModel::derived_synchronize()
 {
   nestedResponseMap.clear();
 
-  // TO DO: scheduling is currently sequential, but could be overlapped as
-  // in HierarchSurrModel, given nowait support in iterSched
+  // TO DO: optInt/subIter scheduling is currently sequential, but could be
+  // overlapped as in HierarchSurrModel, given IteratorScheduler nowait support
 
-  IntResponseMap::const_iterator cit;
+  IntRespMCIter rit;
   if (!optInterfacePointer.empty()) {
     component_parallel_mode(OPTIONAL_INTERFACE);
     const IntResponseMap& opt_int_resp_map = optionalInterface.synch();
     // overlay response sets
-    for (cit=opt_int_resp_map.begin(); cit!=opt_int_resp_map.end(); ++cit) {
-      int nested_id = optInterfaceIdMap[cit->first];
-      interface_response_overlay(cit->second, nestedResponseMap[nested_id]);
+    for (rit=opt_int_resp_map.begin(); rit!=opt_int_resp_map.end(); ++rit) {
+      int nested_cntr = optInterfaceIdMap[rit->first];
+      interface_response_overlay(rit->second, nestedResponseMap[nested_cntr]);
     }
     // update bookkeeping
     optInterfaceIdMap.clear();
   }
 
-  if (!beforeSynchSubIterPRPQueue.empty()) {
-    // schedule beforeSynchSubIterPRPQueue jobs ...
+  if (!subIteratorPRPQueue.empty()) {
+    // schedule subIteratorPRPQueue jobs
     component_parallel_mode(SUB_MODEL);
-    //subIterSched.schedule_iterators(...);
-    // callback needs to: update_sub_model(), eval_tag_prefix(), etc.
-    const IntResponseMap& sub_iter_resp_map = subModel.synchronize();//subIterSched.results();
+    subIteratorSched.schedule_iterators(*this, subIterator);
+    // TO DO's: init_iterator_parallelism, *MsgLens
     // overlay response sets
-    for (cit=sub_iter_resp_map.begin(); cit!=sub_iter_resp_map.end(); ++cit)
-      iterator_response_overlay(cit->second, nestedResponseMap[cit->first]);
+    for (PRPQueueIter qit=subIteratorPRPQueue.begin();
+	 qit!=subIteratorPRPQueue.end(); ++qit)
+      iterator_response_overlay(qit->prp_response(),
+				nestedResponseMap[qit->eval_id()]);
     // update bookkeeping
-    beforeSynchSubIterPRPQueue.clear(); // OR iterSched.clear();
+    subIteratorPRPQueue.clear();
   }
 
   //nestedVarsMap.clear();
+  for (rit=nestedResponseMap.begin(); rit!=nestedResponseMap.end(); ++rit)
+    Cout << "\n---------------------------\nNestedModel Evaluation "
+	 << std::setw(4) << rit->first << " total response:"
+	 << "\n---------------------------\n\nActive response data "
+	 << "from nested mapping:\n" << rit->second << '\n';
   return nestedResponseMap;
 }
 
@@ -1313,7 +1318,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
    NestedModels.  Return a dummy to satisfy the compiler.
 const IntResponseMap& NestedModel::derived_synchronize_nowait()
 {
-  // TO DO: will require nowait support in iterSched
+  // TO DO: will require nowait support in IteratorScheduler
 
   //nestedVarsMap.erase(eval_id);
   return nestedResponseMap;
@@ -1761,7 +1766,8 @@ void NestedModel::update_inactive_view(unsigned short type, short& view)
 }
 
 
-void NestedModel::update_sub_model()
+void NestedModel::
+update_sub_model(const Variables& vars, const Constraints& cons)
 {
   // Update subModel variables using active currentVariables through a
   // combination of variable insertions and augmentations.  Insertions
@@ -1800,16 +1806,14 @@ void NestedModel::update_sub_model()
   bool first_eval = (nestedModelEvalCntr == 1);
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
-  size_t curr_i, num_curr_cv = currentVariables.cv();
-  const RealVector& curr_c_vars = currentVariables.continuous_variables();
-  const RealVector& curr_c_l_bnds
-    = userDefinedConstraints.continuous_lower_bounds();
-  const RealVector& curr_c_u_bnds
-    = userDefinedConstraints.continuous_upper_bounds();
+  size_t curr_i, num_curr_cv = vars.cv();
+  const RealVector& curr_c_vars   = vars.continuous_variables();
+  const RealVector& curr_c_l_bnds = cons.continuous_lower_bounds();
+  const RealVector& curr_c_u_bnds = cons.continuous_upper_bounds();
   StringMultiArrayConstView curr_c_labels
-    = currentVariables.continuous_variable_labels();
+    = vars.continuous_variable_labels();
   for (i=0; i<num_curr_cv; ++i) {
-    curr_i = cv_index_map(i);
+    curr_i = cv_index_map(i, vars);
     size_t pacvm_index = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
       padsvm_index = active1ADSVarMapIndices[curr_i],
@@ -1853,16 +1857,14 @@ void NestedModel::update_sub_model()
   }
 
   // Map ACTIVE DISCRETE INTEGER VARIABLES from currentVariables
-  size_t num_curr_div = currentVariables.div();
-  const IntVector& curr_di_vars = currentVariables.discrete_int_variables();
-  const IntVector& curr_di_l_bnds
-    = userDefinedConstraints.discrete_int_lower_bounds();
-  const IntVector& curr_di_u_bnds
-    = userDefinedConstraints.discrete_int_upper_bounds();
+  size_t num_curr_div = vars.div();
+  const IntVector& curr_di_vars   = vars.discrete_int_variables();
+  const IntVector& curr_di_l_bnds = cons.discrete_int_lower_bounds();
+  const IntVector& curr_di_u_bnds = cons.discrete_int_upper_bounds();
   StringMultiArrayConstView curr_di_labels
-    = currentVariables.discrete_int_variable_labels();
+    = vars.discrete_int_variable_labels();
   for (i=0; i<num_curr_div; ++i) {
-    curr_i = div_index_map(i);
+    curr_i = div_index_map(i, vars);
     size_t pacvm_index = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
       padsvm_index = active1ADSVarMapIndices[curr_i],
@@ -1906,13 +1908,12 @@ void NestedModel::update_sub_model()
   }
 
   // Map ACTIVE DISCRETE STRING VARIABLES from currentVariables
-  size_t num_curr_dsv = currentVariables.dsv();
-  StringMultiArrayConstView curr_ds_vars
-    = currentVariables.discrete_string_variables();
+  size_t num_curr_dsv = vars.dsv();
+  StringMultiArrayConstView curr_ds_vars = vars.discrete_string_variables();
   StringMultiArrayConstView curr_ds_labels
-    = currentVariables.discrete_string_variable_labels();
+    = vars.discrete_string_variable_labels();
   for (i=0; i<num_curr_dsv; ++i) {
-    curr_i = dsv_index_map(i);
+    curr_i = dsv_index_map(i, vars);
     size_t pacvm_index  = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
       padsvm_index = active1ADSVarMapIndices[curr_i],
@@ -1952,16 +1953,14 @@ void NestedModel::update_sub_model()
   }
 
   // Map ACTIVE DISCRETE REAL VARIABLES from currentVariables
-  size_t num_curr_drv = currentVariables.drv();
-  const RealVector& curr_dr_vars = currentVariables.discrete_real_variables();
-  const RealVector& curr_dr_l_bnds
-    = userDefinedConstraints.discrete_real_lower_bounds();
-  const RealVector& curr_dr_u_bnds
-    = userDefinedConstraints.discrete_real_upper_bounds();
+  size_t num_curr_drv = vars.drv();
+  const RealVector& curr_dr_vars   = vars.discrete_real_variables();
+  const RealVector& curr_dr_l_bnds = cons.discrete_real_lower_bounds();
+  const RealVector& curr_dr_u_bnds = cons.discrete_real_upper_bounds();
   StringMultiArrayConstView curr_dr_labels
-    = currentVariables.discrete_real_variable_labels();
+    = vars.discrete_real_variable_labels();
   for (i=0; i<num_curr_drv; ++i) {
-    curr_i = drv_index_map(i);
+    curr_i = drv_index_map(i, vars);
     size_t pacvm_index  = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
       padsvm_index = active1ADSVarMapIndices[curr_i],
@@ -2008,17 +2007,14 @@ void NestedModel::update_sub_model()
 
   // Map COMPLEMENT CONTINUOUS VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
-  size_t num_curr_ccv = currentVariables.acv() - num_curr_cv;
-  const RealVector& curr_ac_vars
-    = currentVariables.all_continuous_variables();
-  const RealVector& curr_ac_l_bnds
-    = userDefinedConstraints.all_continuous_lower_bounds();
-  const RealVector& curr_ac_u_bnds
-    = userDefinedConstraints.all_continuous_upper_bounds();
+  size_t num_curr_ccv = vars.acv() - num_curr_cv;
+  const RealVector& curr_ac_vars   = vars.all_continuous_variables();
+  const RealVector& curr_ac_l_bnds = cons.all_continuous_lower_bounds();
+  const RealVector& curr_ac_u_bnds = cons.all_continuous_upper_bounds();
   StringMultiArrayConstView curr_ac_labels
-    = currentVariables.all_continuous_variable_labels();
+    = vars.all_continuous_variable_labels();
   for (i=0; i<num_curr_ccv; ++i) {
-    curr_i = ccv_index_map(i);
+    curr_i = ccv_index_map(i, vars);
     size_t c1_index = complement1ACVarMapIndices[i];
     subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
     subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
@@ -2029,17 +2025,14 @@ void NestedModel::update_sub_model()
 
   // Map COMPLEMENT DISCRETE INTEGER VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
-  size_t num_curr_cdiv = currentVariables.adiv() - num_curr_div;
-  const IntVector& curr_adi_vars
-    = currentVariables.all_discrete_int_variables();
-  const IntVector& curr_adi_l_bnds
-    = userDefinedConstraints.all_discrete_int_lower_bounds();
-  const IntVector& curr_adi_u_bnds
-    = userDefinedConstraints.all_discrete_int_upper_bounds();
+  size_t num_curr_cdiv = vars.adiv() - num_curr_div;
+  const IntVector& curr_adi_vars   = vars.all_discrete_int_variables();
+  const IntVector& curr_adi_l_bnds = cons.all_discrete_int_lower_bounds();
+  const IntVector& curr_adi_u_bnds = cons.all_discrete_int_upper_bounds();
   StringMultiArrayConstView curr_adi_labels
-    = currentVariables.all_discrete_int_variable_labels();
+    = vars.all_discrete_int_variable_labels();
   for (i=0; i<num_curr_cdiv; ++i) {
-    curr_i = cdiv_index_map(i);
+    curr_i = cdiv_index_map(i, vars);
     size_t c1_index = complement1ADIVarMapIndices[i];
     subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
     subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
@@ -2051,13 +2044,13 @@ void NestedModel::update_sub_model()
 
   // Map COMPLEMENT DISCRETE STRING VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
-  size_t num_curr_cdsv = currentVariables.adsv() - num_curr_dsv;
+  size_t num_curr_cdsv = vars.adsv() - num_curr_dsv;
   StringMultiArrayConstView curr_ads_vars
-    = currentVariables.all_discrete_string_variables();
+    = vars.all_discrete_string_variables();
   StringMultiArrayConstView curr_ads_labels
-    = currentVariables.all_discrete_string_variable_labels();
+    = vars.all_discrete_string_variable_labels();
   for (i=0; i<num_curr_cdsv; ++i) {
-    curr_i = cdsv_index_map(i);
+    curr_i = cdsv_index_map(i, vars);
     size_t c1_index = complement1ADSVarMapIndices[i];
     subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
     if (first_eval)
@@ -2067,17 +2060,14 @@ void NestedModel::update_sub_model()
 
   // Map COMPLEMENT DISCRETE REAL VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
-  size_t num_curr_cdrv = currentVariables.adrv() - num_curr_drv;
-  const RealVector& curr_adr_vars
-    = currentVariables.all_discrete_real_variables();
-  const RealVector& curr_adr_l_bnds
-    = userDefinedConstraints.all_discrete_real_lower_bounds();
-  const RealVector& curr_adr_u_bnds
-    = userDefinedConstraints.all_discrete_real_upper_bounds();
+  size_t num_curr_cdrv = vars.adrv() - num_curr_drv;
+  const RealVector& curr_adr_vars   = vars.all_discrete_real_variables();
+  const RealVector& curr_adr_l_bnds = cons.all_discrete_real_lower_bounds();
+  const RealVector& curr_adr_u_bnds = cons.all_discrete_real_upper_bounds();
   StringMultiArrayConstView curr_adr_labels
-    = currentVariables.all_discrete_real_variable_labels();
+    = vars.all_discrete_real_variable_labels();
   for (i=0; i<num_curr_cdrv; ++i) {
-    curr_i = cdrv_index_map(i);
+    curr_i = cdrv_index_map(i, vars);
     size_t c1_index = complement1ADRVarMapIndices[i];
     subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
     subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
@@ -2091,10 +2081,10 @@ void NestedModel::update_sub_model()
 
 /** maps index within active continuous variables to index within aggregated
     active continuous/discrete-int/discrete-string/discrete-real variables. */
-size_t NestedModel::cv_index_map(size_t cv_index)
+  size_t NestedModel::cv_index_map(size_t cv_index, const Variables& vars)
 {
   size_t offset;
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   switch (svd.view().first) { // active view
   case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
     //  active cv order is cauv,ceuv;
@@ -2141,10 +2131,10 @@ size_t NestedModel::cv_index_map(size_t cv_index)
 
 /** maps index within active discrete int variables to index within aggregated
     active continuous/discrete-int/discrete-string/discrete-real variables. */
-size_t NestedModel::div_index_map(size_t div_index)
+size_t NestedModel::div_index_map(size_t div_index, const Variables& vars)
 {
   size_t offset;
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   switch (svd.view().first) { // active view
   case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
     // active div order is dauiv/deuiv
@@ -2192,7 +2182,7 @@ size_t NestedModel::div_index_map(size_t div_index)
     break;
   }
   default: // MIXED and RELAXED for single variable types
-    offset = currentVariables.cv(); break;
+    offset = vars.cv(); break;
   }
   return div_index + offset;
 }
@@ -2201,10 +2191,10 @@ size_t NestedModel::div_index_map(size_t div_index)
 /** maps index within active discrete string variables to index within
     aggregated active continuous/discrete-int/discrete-string/discrete-string
     variables. */
-size_t NestedModel::dsv_index_map(size_t dsv_index)
+size_t NestedModel::dsv_index_map(size_t dsv_index, const Variables& vars)
 {
   size_t offset;
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   switch (svd.view().first) { // active view
   case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
     // active dsv order is dausv/deusv
@@ -2254,7 +2244,7 @@ size_t NestedModel::dsv_index_map(size_t dsv_index)
     break;
   }
   default: // MIXED and RELAXED for single variable types
-    offset = currentVariables.cv() + currentVariables.div(); break;
+    offset = vars.cv() + vars.div(); break;
   }
   return dsv_index + offset;
 }
@@ -2262,10 +2252,10 @@ size_t NestedModel::dsv_index_map(size_t dsv_index)
 
 /** maps index within active discrete real variables to index within aggregated
     active continuous/discrete-int/discrete-string/discrete-real variables. */
-size_t NestedModel::drv_index_map(size_t drv_index)
+size_t NestedModel::drv_index_map(size_t drv_index, const Variables& vars)
 {
   size_t offset;
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   switch (svd.view().first) { // active view
   case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
     // active drv order is daurv/deurv
@@ -2317,9 +2307,7 @@ size_t NestedModel::drv_index_map(size_t drv_index)
     break;
   }
   default: // MIXED and RELAXED for single variable types
-    offset = currentVariables.cv() + currentVariables.div()
-           + currentVariables.dsv();
-    break;
+    offset = vars.cv() + vars.div() + vars.dsv(); break;
   }
   return drv_index + offset;
 }
@@ -2327,9 +2315,9 @@ size_t NestedModel::drv_index_map(size_t drv_index)
 
 /** maps index within complement of active continuous variables to
     index within all continuous variables. */
-size_t NestedModel::ccv_index_map(size_t ccv_index)
+size_t NestedModel::ccv_index_map(size_t ccv_index, const Variables& vars)
 {
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
   svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   switch (svd.view().first) { // active view
@@ -2382,9 +2370,9 @@ size_t NestedModel::ccv_index_map(size_t ccv_index)
 
 /** maps index within complement of active discrete int variables to
     index within all discrete int variables. */
-size_t NestedModel::cdiv_index_map(size_t cdiv_index)
+size_t NestedModel::cdiv_index_map(size_t cdiv_index, const Variables& vars)
 {
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
   svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   switch (svd.view().first) { // active view
@@ -2436,9 +2424,9 @@ size_t NestedModel::cdiv_index_map(size_t cdiv_index)
 
 /** maps index within complement of active discrete string variables to
     index within all discrete string variables. */
-size_t NestedModel::cdsv_index_map(size_t cdsv_index)
+size_t NestedModel::cdsv_index_map(size_t cdsv_index, const Variables& vars)
 {
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
   svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   switch (svd.view().first) { // active view
@@ -2490,9 +2478,9 @@ size_t NestedModel::cdsv_index_map(size_t cdsv_index)
 
 /** maps index within complement of active discrete real variables to
     index within all discrete real variables. */
-size_t NestedModel::cdrv_index_map(size_t cdrv_index)
+size_t NestedModel::cdrv_index_map(size_t cdrv_index, const Variables& vars)
 {
-  const SharedVariablesData& svd = currentVariables.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
   svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   switch (svd.view().first) { // active view

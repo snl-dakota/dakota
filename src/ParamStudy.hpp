@@ -333,8 +333,7 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
 }
 
 
-template <typename ScalarType> 
-bool ParamStudy::
+template <typename ScalarType> bool ParamStudy::
 distribute(const std::vector<ScalarType>& all_data,
 	   std::vector<ScalarType>& c_data,
 	   std::vector<ScalarType>& di_data,

@@ -35,6 +35,13 @@ namespace Dakota {
 
 class ConcurrentMetaIterator: public MetaIterator
 {
+  //
+  //- Heading: Friends
+  //
+
+  /// protect scheduler callback functions from general access
+  friend class IteratorScheduler;
+
 public:
 
   //

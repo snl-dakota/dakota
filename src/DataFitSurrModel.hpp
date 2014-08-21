@@ -229,7 +229,7 @@ protected:
 				bool relative_count = true) const;
 
   /// set the hierarchical eval ID tag prefix
-  virtual void eval_tag_prefix(const String& eval_id_str);
+  void eval_tag_prefix(const String& eval_id_str);
 
 private:
 

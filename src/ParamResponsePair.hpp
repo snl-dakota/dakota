@@ -106,21 +106,21 @@ public:
   //
 
   /// return the evaluation identifier
-  int eval_id()                             const;
+  int eval_id() const;
   /// set the evaluation identifier
   void eval_id(int id);
   /// return the interface identifier from the response object
-  const String& interface_id()              const;
+  const String& interface_id() const;
   /// return the aggregate eval/interface identifier from the response object
   const IntStringPair& eval_interface_ids() const;
   /// return the parameters object
-  const Variables& prp_parameters()         const;
+  const Variables& prp_parameters() const;
   /// return the response object
-  const Response&  prp_response()           const;
+  const Response& prp_response() const;
   /// set the response object
   void prp_response(const Response& response);
   /// return the active set object from the response object
-  const ActiveSet& active_set()             const;
+  const ActiveSet& active_set() const;
   /// set the active set object within the response object
   void active_set(const ActiveSet& set);
 
