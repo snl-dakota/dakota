@@ -280,7 +280,7 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
 
   static std::string no_workdir;
   CommandShell shell(useWorkdir ? curWorkdir.string() : no_workdir);
-  const char* s = useWorkdir ? curWorkdir.c_str() : 0;
+  const char* s = useWorkdir ? curWorkdir.string().c_str() : 0;
   size_t num_programs = programNames.size(),
     wd_strlen = useWorkdir ? curWorkdir.string().size() : 0;
   bool needparen;

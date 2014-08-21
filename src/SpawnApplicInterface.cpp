@@ -158,7 +158,7 @@ create_analysis_process(bool block_flag, bool new_group)
   static std::string no_workdir;
 
   av = WorkdirHelper::arg_adjust(commandLineArgs, argList, arg_list,
-				 useWorkdir ? curWorkdir : no_workdir);
+				 useWorkdir ? curWorkdir.string() : no_workdir);
   if (block_flag) status = _spawnvp(  _P_WAIT, av[0], av);
   else               pid = _spawnvp(_P_NOWAIT, av[0], av);
 

@@ -19,6 +19,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+#include <boost/version.hpp>
 #include <cassert>
 
 // BMA TODO: Boost versions <= 1.49 do not include these mappings,
@@ -721,8 +722,11 @@ void WorkdirHelper::recursive_copy(const bfs::path& src_path,
 // this function when we allow that version
 bfs::path WorkdirHelper::concat_path(const bfs::path& p_in, const String& tag)
 {
-  bfs::path::string_type p_in_str = p_in.generic_string();
-  return (p_in_str + tag);
+  // explicit template argument to avoid conversion ambiguity
+  bfs::path::string_type p_in_str = p_in.generic_string<bfs::path::string_type>();
+  // may need to convert from string to wstring
+  bfs::path::string_type tag_str(tag.begin(), tag.end());
+  return (p_in_str + tag_str);
 }
 
 
