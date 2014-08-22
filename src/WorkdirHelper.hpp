@@ -68,7 +68,7 @@ enum { DIR_CLEAN, DIR_PERSIST, DIR_ERROR };
 
 // define a function type that maps src to dest with option to overwrite
 typedef 
-boost::function<void (const bfs::path& src_path, 
+boost::function<bool (const bfs::path& src_path, 
 		      const bfs::path& dest_path, bool overwrite)> 
 file_op_function;
 
@@ -200,33 +200,63 @@ public:
   /// type.  Only error if existed and there's an error in the remove.
   static void recursive_remove(const bfs::path& rm_path);
 
-  /// recursively perform file_op (copy or link) on a list of
-  /// source_paths (files, directories, symlinks), which potentially
-  /// include wildcards, to destination_dir
-  static void file_op_items(const file_op_function& file_op,
-			    const StringArray& source_paths,
-			    const bfs::path& destination_dir,
-			    bool overwrite);
+
+  // Convenience functions which invoke file_op_items() with various kernels
+
+  /// top-level link a list of source_paths (files, directories,
+  /// symlinks), potentially including wildcards, from
+  /// destination_dir, which must exist
+  static void link_items(const StringArray& source_itemss,
+			 const bfs::path& dest_dir,
+			 bool overwrite);
 
   /// copy a list of source_paths (files, directories, symlinks),
-  /// potentially including wildcards to destination_path
-  static void copy_items(const StringArray& source_paths,
-			 const bfs::path& destination_path,
+  /// potentially including wildcards into destination_dir, which must
+  /// exist
+  static void copy_items(const StringArray& source_items,
+			 const bfs::path& dest_dir,
 			 bool overwrite);
 
-  /// top-level link a list of source_paths (files, directories, symlinks),
-  /// potentially including wildcards, from destination_path
-  static void link_items(const StringArray& source_paths,
-			 const bfs::path& destination_path,
-			 bool overwrite);
+  /// prepend any directories (including wildcards) found in
+  /// source_items to the preferred environment path
+  static void prepend_path_items(const StringArray& source_items);
 
-  /// link from path dest_link to a single path (file, dir, link) in
-  /// source directory
-  static void link(const bfs::path& src_path, const bfs::path& dest_link,
-		   bool overwrite);
+  /// check whether any of the passed source items are filesystem
+  /// equivalent to the destination path, return true if any one is
+  /// equivalent to dest
+  static bool check_equivalent_dest(const StringArray& source_items,
+				    const bfs::path& dest_dir);
 
-  static void recursive_copy(const bfs::path& src_path, 
-			     const bfs::path& dest_path, bool overwrite);
+
+  // Kernels for file operations to apply when iterating directory
+  // entries or wildcards.  All must be of type file_op_function.
+
+  /// create link from dest_dir/src_path.filename() to a single path
+  /// (file, dir, link) in source directory
+  static bool link(const bfs::path& src_path,
+		   const bfs::path& dest_dir, bool overwrite);
+ 
+  /// Recrusive copy of src_path into dest_dir, with optional
+  /// top-level overwrite (remove/recreate) of
+  /// dest_dir/src_path.filename()
+  static bool recursive_copy(const bfs::path& src_path, 
+			     const bfs::path& dest_dir, bool overwrite);
+ 
+  /// prepend the env path with source path if it's a directory
+  static bool prepend_path_item(const bfs::path& src_path, 
+				const bfs::path& dest_dir, bool overwrite);
+
+  /// return true if the src and dest are filesystem equivalent
+  static bool check_equivalent(const bfs::path& src_path, 
+			       const bfs::path& dest_dir, bool overwrite);
+
+  /// recursively perform file_op (copy, path adjust, etc.) on a list
+  /// of source_paths (files, directories, symlinks), which
+  /// potentially include wildcards, w.r.t. destination_dir
+  static bool file_op_items(const file_op_function& file_op,
+			    const StringArray& source_paths,
+			    const bfs::path& dest_dir,
+			    bool overwrite);
 
 private:
 

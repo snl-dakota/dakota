@@ -176,13 +176,11 @@ public:
   bool dirTag;
   /// whether dir_save was specified
   bool dirSave;
-  /// template directory (if specified)
-  String templateDir;
-  /// template files (if specified)
-  StringArray templateFiles;
-  /// whether to force a copy (versus link) every time
-  bool templateCopy;
-  /// whether to replace existing files
+  /// files to link into work directories
+  StringArray linkFiles;
+  /// files to copy into work directories
+  StringArray copyFiles;
+  /// whether to replace / overwrite existing files
   bool templateReplace;
   /// Python interface: use NumPy data structures (default is list data)
   bool numpyFlag;

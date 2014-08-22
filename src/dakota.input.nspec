@@ -1946,13 +1946,9 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
         [ named STRING {N_ifm(str,workDir)} ]
         [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
         [ directory_save ALIAS dir_save {N_ifm(true,dirSave)} ]
-        [ 
-          template_directory STRING {N_ifm(str,templateDir)}
-          |
-          template_files STRINGLIST {N_ifm(strL,templateFiles)}
-          [ copy {N_ifm(true,templateCopy)} ]
-          [ replace {N_ifm(true,templateReplace)} ]
-         ]
+        [ link_files STRINGLIST {N_ifm(strL,linkFiles)} ]
+        [ copy_files STRINGLIST {N_ifm(strL,copyFiles)} ]
+        [ replace {N_ifm(true,templateReplace)} ]
        ]
      )
     |

@@ -2028,11 +2028,9 @@ KEYWORD12 interface
 	      [ named STRING ]
 	      [ directory_tag ALIAS dir_tag ]
 	      [ directory_save ALIAS dir_save ]
-	      [ template_directory STRING
-		| template_files STRINGLIST
-		[ copy ]
-		[ replace ]
-		]
+	      [ link_files STRINGLIST ]
+	      [ copy_files STRINGLIST ]
+	      [ replace ]
 	      ]
 	    )
 	  |

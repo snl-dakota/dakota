@@ -769,17 +769,9 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   DataInterfaceRep *di = ii->di;
   StringArray *sa;
   const char *s;
-  int ac, ec, j, nd, same;
+  int ac, ec, j, nd;
   void (*Complain)(const char *fmt, ...);
   size_t i, n;
-  static const char samefmt[] =
-    "template_directory and work_directory name are both \"%s\"";
-  static const char samefmt2[] =
-    "work_directory template file %d are both \"%s\"";
-  struct stat sb1;
-#ifndef _WIN32
-  struct stat sb2;
-#endif
 
   nd = di->analysisDrivers.size();
   ac = di->asynchLocalAnalysisConcurrency;
@@ -804,8 +796,14 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
 	  : Dak_pddb->parallel_library().command_line_run() ? squawk : 0)) {
     sa = &di->analysisDrivers;
     n = sa->size();
-    if (di->templateDir.c_str())
-      WorkdirHelper::prepend_preferred_env_path(di->templateDir.c_str());
+
+    // BMA TODO: This could go here or in Interface ctor, probably
+    // better at parse time... Also should do not_executable warn here
+
+    // Prepend any directories from linkFiles and copyFiles to env
+    // path to help find drivers
+    WorkdirHelper::prepend_path_items(di->linkFiles);
+    WorkdirHelper::prepend_path_items(di->copyFiles);
 #ifdef DEBUG_NOT_EXECUTABLE
     for(i = 0; i < n; ++i)
       if ((j = not_executable(s = (*sa)[i], di->templateDir)))
@@ -814,38 +812,14 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
 		 : "exists but is not executable");
 #endif
   }
-  same = 0;
-  if (di->workDir.length() > 0) {
-    if (di->templateDir.length() > 0) {
-      same = di->templateDir == di->workDir;
-#ifndef _WIN32
-      if (!same
-	  && !stat(di->workDir.data(), &sb1)
-	  && !stat(di->templateDir.data(), &sb2))
-	same = sb1.st_dev == sb2.st_dev
-	  && sb1.st_rdev == sb2.st_rdev
-	  && sb1.st_ino == sb2.st_ino;
-#endif
-      if (same)
-	squawk(samefmt, di->workDir.data());
-    }
-    else if ((n = di->templateFiles.size() > 0)
-	     && !stat(di->workDir.data(), &sb1)) {
-      for(i = 0; i < n; ++i) {
-	if (di->templateFiles[i] == di->workDir
-#ifndef _WIN32
-	    || (!stat(di->templateFiles[i].data(), &sb2)
-		&& sb1.st_dev == sb2.st_dev
-		&& sb1.st_rdev == sb2.st_rdev
-		&& sb1.st_ino == sb2.st_ino)
-#endif
-	    ) {
-	  squawk(samefmt2, (int)(i+1), di->workDir.data());
-	  break;
-	}
-      }
-    }
-  }
+
+  // Check to make sure none of the linkFiles nor copyFiles are the
+  // same as the workDir (could combine into single loop with above)
+  if (!di->workDir.empty())
+    if (WorkdirHelper::check_equivalent_dest(di->linkFiles, di->workDir) ||
+	WorkdirHelper::check_equivalent_dest(di->copyFiles, di->workDir))
+      ++nerr;
+
   pDDBInstance->dataInterfaceList.push_back(*ii->di_handle);
   delete ii->di_handle;
   delete ii;
@@ -6029,7 +6003,6 @@ static String
 	MP_(outputFilter),
 	MP_(parametersFile),
 	MP_(resultsFile),
-	MP_(templateDir),
 	MP_(workDir);
 
 static String2DArray
@@ -6037,7 +6010,8 @@ static String2DArray
 
 static StringArray
 	MP_(analysisDrivers),
-	MP_(templateFiles);
+        MP_(copyFiles),
+	MP_(linkFiles);
 
 static bool
 	MP_(activeSetVectorFlag),
@@ -6051,7 +6025,6 @@ static bool
 	MP_(nearbyEvalCacheFlag),
 	MP_(numpyFlag),
 	MP_(restartFileFlag),
-	MP_(templateCopy),
 	MP_(templateReplace),
 	MP_(useWorkdir),
 	MP_(verbatimFlag);

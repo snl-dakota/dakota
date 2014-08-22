@@ -29,7 +29,7 @@ DataInterfaceRep::DataInterfaceRep():
   evalCacheFlag(true), nearbyEvalCacheFlag(false),
   nearbyEvalCacheTol(DBL_EPSILON), // default relative tolerance is tight
   restartFileFlag(true), referenceCount(1), useWorkdir(false), dirTag(false),
-  dirSave(false), templateCopy(false), templateReplace(false), numpyFlag(false)
+  dirSave(false), templateReplace(false), numpyFlag(false)
   // asynchLocal{Eval,Analysis}Concurrency, procsPer{Eval,Analysis} and
   // {eval,analysis}Servers default to zero in order to allow detection of
   // user overrides > 0
@@ -48,8 +48,8 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
     << analysisScheduling << procsPerAnalysis << failAction << retryLimit
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << nearbyEvalCacheFlag << nearbyEvalCacheTol << restartFileFlag
-    << useWorkdir << workDir << dirTag << dirSave << templateDir
-    << templateFiles << templateCopy << templateReplace << numpyFlag;
+    << useWorkdir << workDir << dirTag << dirSave << linkFiles
+    << copyFiles << templateReplace << numpyFlag;
 }
 
 
@@ -65,8 +65,8 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
     >> analysisScheduling >> procsPerAnalysis >> failAction >> retryLimit
     >> recoveryFnVals >> activeSetVectorFlag >> evalCacheFlag
     >> nearbyEvalCacheFlag >> nearbyEvalCacheTol >> restartFileFlag
-    >> useWorkdir >> workDir >> dirTag >> dirSave >> templateDir
-    >> templateFiles >> templateCopy >> templateReplace >> numpyFlag;
+    >> useWorkdir >> workDir >> dirTag >> dirSave >> linkFiles
+    >> copyFiles >> templateReplace >> numpyFlag;
 }
 
 
@@ -82,8 +82,8 @@ void DataInterfaceRep::write(std::ostream& s) const
     << analysisScheduling << procsPerAnalysis << failAction << retryLimit
     << recoveryFnVals << activeSetVectorFlag << evalCacheFlag
     << nearbyEvalCacheFlag << nearbyEvalCacheTol << restartFileFlag
-    << useWorkdir << workDir << dirTag << dirSave << templateDir
-    << templateFiles << templateCopy << templateReplace << numpyFlag;
+    << useWorkdir << workDir << dirTag << dirSave << linkFiles
+    << copyFiles << templateReplace << numpyFlag;
 }
 
 

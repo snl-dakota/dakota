@@ -191,11 +191,9 @@ protected:
   // work directory population controls
 
   /// template directory (if specified)
-  std::string templateDir;
+  StringArray linkFiles;
   /// template files (if specified)
-  StringArray templateFiles;
-  /// whether to force a copy (versus link) every time
-  bool templateCopy;
+  StringArray copyFiles;
   /// whether to replace existing files
   bool templateReplace;
 

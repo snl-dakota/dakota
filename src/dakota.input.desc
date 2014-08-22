@@ -2243,16 +2243,9 @@ TAG "interface/analysis_drivers/system/work_directory/directory_tag"
 TAG "interface/analysis_drivers/system/work_directory/directory_save"
 	DESC "{Save work directory} InterfCommands.html#InterfApplicF"
 
-TAG "interface/analysis_drivers/system/work_directory/template_directory"
-	DESC "{Template directory} InterfCommands.html#InterfApplicF"
-
-TAG "interface/analysis_drivers/system/work_directory/template_files"
-	DESC "{Template files} InterfCommands.html#InterfApplicF"
-
-TAG "interface/analysis_drivers/system/work_directory/template_directory/copy"
-	DESC "{Copy template files} InterfCommands.html#InterfApplicF"
-
-TAG "interface/analysis_drivers/system/work_directory/template_directory/replace"
+TAG "interface/analysis_drivers/system/work_directory/link_files"
+TAG "interface/analysis_drivers/system/work_directory/copy_files"
+TAG "interface/analysis_drivers/system/work_directory/replace"
 	DESC "{Replace existing files} InterfCommands.html#InterfApplicF"
 
 TAG "interface/analysis_drivers/direct"

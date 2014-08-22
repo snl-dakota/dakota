@@ -578,15 +578,18 @@ void WorkdirHelper::recursive_remove(const bfs::path& rm_path)
 }
 
 
-/** Kernel for copy or link file operation.  Iterate source items
-    (paths or wildcards), copying/linking each of them to the
-    destination.  If overwrite, remove and replace any existing
-    destination target (at top-level), otherwise, allow to persist */
-void WorkdirHelper::file_op_items(const file_op_function& file_op, 
+/** Iterator implementation for copy, link, etc file operation.
+    Iterate source items (paths or wildcards), performing file_op on
+    each w.r.t. destination.  If overwrite, remove and replace any
+    existing destination target (at top-level), otherwise, allow to
+    persist.  Return code true indicates abnormal behavior. */
+bool WorkdirHelper::file_op_items(const file_op_function& file_op, 
 				  const StringArray& source_items,
-				  const bfs::path& destination_dir,
+				  const bfs::path& dest_dir,
 				  bool overwrite) 
 {
+  bool return_code = false;
+
   // iterate the items and link each entry or expanded wildcard
   StringArray::const_iterator src_it  = source_items.begin();
   StringArray::const_iterator src_end = source_items.end();
@@ -608,7 +611,8 @@ void WorkdirHelper::file_op_items(const file_op_function& file_op,
         bfs::path src_path = fit->path();
         if (bfs::exists(src_path)) {
 	  bfs::path src_filename = src_path.filename();
-	  file_op(src_path, destination_dir/src_filename, overwrite);
+	  if (file_op(src_path, dest_dir, overwrite))
+	    return_code = true;
         }
         else {
 	  Cout << "Warning: path " << src_path << " specified to link/copy "
@@ -621,7 +625,8 @@ void WorkdirHelper::file_op_items(const file_op_function& file_op,
       bfs::path src_path(*src_it);
       if (bfs::exists(src_path)) {
 	bfs::path src_filename = src_path.filename();
-	file_op(src_path, destination_dir/src_filename, overwrite);
+	if (file_op(src_path, dest_dir, overwrite))
+	  return_code = true;
       }
       else {
 	Cout << "Warning: path " << src_path << " specified to link/copy "
@@ -631,6 +636,7 @@ void WorkdirHelper::file_op_items(const file_op_function& file_op,
 
   } // for each item
 
+  return return_code;
 }
 
 
@@ -638,11 +644,11 @@ void WorkdirHelper::file_op_items(const file_op_function& file_op,
     from the destination.  If overwrite, remove and replace any
     existing destination target, otherwise, allow to persist */
 void WorkdirHelper::link_items(const StringArray& source_items,
-			       const bfs::path& destination_path,
+			       const bfs::path& dest_dir,
 			       bool overwrite) 
 {
   file_op_function file_op = &WorkdirHelper::link;
-  file_op_items(file_op, source_items, destination_path, false);
+  file_op_items(file_op, source_items, dest_dir, false);
 }
 
 
@@ -650,24 +656,41 @@ void WorkdirHelper::link_items(const StringArray& source_items,
     into the destination.  If overwrite, remove and replace any
     existing destination target, otherwise, allow to persist */
 void WorkdirHelper::copy_items(const StringArray& source_items,
-			       const bfs::path& destination_path,
+			       const bfs::path& dest_dir,
 			       bool overwrite) 
 {
   file_op_function file_op = &WorkdirHelper::recursive_copy;
-  file_op_items(file_op, source_items, destination_path, false);
+  file_op_items(file_op, source_items, dest_dir, false);
 }
 
 
-/** Both paths must be fully resolved. Assumes source file exists
-    since it was iterated in the calling context. If overwrite, any
-    existing path dest_link will be removed prior to creating the new
-    link. */
-void WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_link,
+void WorkdirHelper::prepend_path_items(const StringArray& source_items)
+{
+  file_op_function file_op = &WorkdirHelper::prepend_path_item;
+  bfs::path dummy_path;
+  file_op_items(file_op, source_items, dummy_path, false);
+}
+
+
+bool WorkdirHelper::check_equivalent_dest(const StringArray& source_items,
+					  const bfs::path& dest_dir)
+{
+  file_op_function file_op = &WorkdirHelper::check_equivalent;
+  return file_op_items(file_op, source_items, dest_dir, false);
+}
+
+
+/** Assumes source file exists since it was iterated in the calling
+    context. If overwrite, any existing file in dest_dir will be
+    removed prior to creating the new link. */
+bool WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_dir,
 			 bool overwrite)
 {
   // symlink facilities require a qualifed source and destination
   // name, be absolute for now
   
+  bfs::path dest_link = dest_dir / src_path.filename();
+
   // when relative, assume relative to current path
   bfs::path fq_src_path(src_path);
   if (src_path.is_relative())
@@ -683,38 +706,66 @@ void WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_link,
     else
       bfs::create_symlink(fq_src_path, dest_link);
   }
-
 }
 
 
-/// note dest_path is the actual target of the copy, not the containing folder
+/// note dest_dir is the containing folder for the src_path contents
+/// to be placed in for consistency with other convenience functions
 /// (may need to reconsider)
-void WorkdirHelper::recursive_copy(const bfs::path& src_path, 
-				   const bfs::path& dest_path, bool overwrite)
+bool WorkdirHelper::recursive_copy(const bfs::path& src_path, 
+				   const bfs::path& dest_dir, bool overwrite)
 {
+  // precondition: dest exists and is a dir
+  if (!bfs::exists(dest_dir) || !bfs::is_directory(dest_dir))
+    abort_handler(-1);
+
+  bfs::path dest_path = dest_dir / src_path.filename();
+  
   // TODO: gentler overwrite of contents, not top-level paths
   if (overwrite && bfs::exists(dest_path))
     bfs::remove_all(dest_path);
 
   if (!bfs::exists(dest_path)) {
+
+    // non-recursive copy of file or directory or symlink into dest
+    bfs::copy(src_path, dest_path);
+    //bfs::create_directory(dest_path);
+    //bfs::copy_directory(src_path, dest_path);
+
     if (bfs::is_directory(src_path)) {
-
-      //bfs::create_directory(dest_path);
-      bfs::copy_directory(src_path, dest_path);
-
       bfs::directory_iterator dir_it(src_path);
       bfs::directory_iterator dir_end;
       for ( ; dir_it != dir_end; ++dir_it) {
 	// TODO: try/catch
 	bfs::path src_item(dir_it->path());
-	recursive_copy(src_item, dest_path / src_item.filename(), overwrite);
+	recursive_copy(src_item, dest_path, overwrite);
       }
     }
-    else {
-      // copy a file or symlink
-      bfs::copy(src_path, dest_path);
-    }
   }
+}
+
+
+/// prepend the env path with source path if it's a directory or
+/// directory symlink
+bool WorkdirHelper::prepend_path_item(const bfs::path& src_path, 
+				      const bfs::path& dest_dir, bool overwrite)
+{
+  // BMA TODO: this should use wstring vs. string...
+  // Change once we upgrade preferred path to a set of BFS paths
+  if (bfs::is_directory(src_path))
+    prepend_preferred_env_path(src_path.string());
+}
+
+
+bool WorkdirHelper::check_equivalent(const bfs::path& src_path, 
+				     const bfs::path& dest_dir, bool overwrite)
+{
+  if (bfs::equivalent(src_path, dest_dir)) {
+    Cerr << "Error: specified link/copy_file " << src_path << "\n"
+	 << "       is same as work_directory " << dest_dir << "." << std::endl;
+    return true;
+  }
+  return false;
 }
 
 

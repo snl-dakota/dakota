@@ -3251,18 +3251,13 @@
               <keyword  id="directory_save" name="directory_save" code="{N_ifm(true,dirSave)}" label="directory_save" help="" minOccurs="0" >
                 <alias name="dir_save"/>
               </keyword>
-              <optional>
-                <oneOf>
-                  <keyword  id="template_directory" name="template_directory" code="{N_ifm(str,templateDir)}" label="template_directory" help=""  >
-                    <param type="STRING" />
-                  </keyword>
-                  <keyword  id="template_files" name="template_files" code="{N_ifm(strL,templateFiles)}" label="template_files" help=""  >
-                    <param type="STRINGLIST" />
-                  </keyword>
-                </oneOf>
-                <keyword  id="copy" name="copy" code="{N_ifm(true,templateCopy)}" label="copy" help="" minOccurs="0" />
-                <keyword  id="replace" name="replace" code="{N_ifm(true,templateReplace)}" label="replace" help="" minOccurs="0" />
-              </optional>
+              <keyword  id="link_files" name="link_files" code="{N_ifm(strL,linkFiles)}" label="Files to link" help="" minOccurs="0" >
+                <param type="STRINGLIST" />
+              </keyword>
+              <keyword  id="copy_files" name="copy_files" code="{N_ifm(strL,copyFiles)}" label="Files to copy" help="" minOccurs="0" >
+                <param type="STRINGLIST" />
+              </keyword>
+              <keyword  id="replace" name="replace" code="{N_ifm(true,templateReplace)}" label="replace" help="" minOccurs="0" />
             </keyword>
           </required>
           <keyword  id="direct" name="direct" code="{N_ifm(lit,interfaceType_direct)}" label="Direct function interface " help="InterfCommands.html#InterfApplicDF" minOccurs="1" >

@@ -94,9 +94,8 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   workDirName(problem_db.get_string("interface.workDir")),
   dirTag(problem_db.get_bool("interface.dirTag")),
   dirSave(problem_db.get_bool("interface.dirSave")),
-  templateDir(problem_db.get_string("interface.templateDir")),
-  templateFiles(problem_db.get_sa("interface.templateFiles")),
-  templateCopy(problem_db.get_bool("interface.templateCopy")),
+  linkFiles(problem_db.get_sa("interface.linkFiles")),
+  copyFiles(problem_db.get_sa("interface.copyFiles")),
   templateReplace(problem_db.get_bool("interface.templateReplace")),
   analysisComponents(
     problem_db.get_s2a("interface.application.analysis_components"))
@@ -108,12 +107,12 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
 
     boost::split( driver_and_args, programNames[0], boost::is_any_of("\t ") );
 
-    // BMA TODO: this will fail until the env path includes wildcards
-    // from template dir/files....
     std::string driver_path = WorkdirHelper::which(driver_and_args[0]);
     if ( driver_path.empty() ) {
-      Cout << driver_and_args[0] << ": Command not found.\n" << std::endl;
-      // BMA TODO: abort_handler(INTERFACE_ERROR);
+      Cout << "\nWarning (analysis_driver): '" << driver_and_args[0] 
+	   << "': command not found.\n" << std::endl;
+      // we decided not to make this a fatal error as it's too fragile
+      //abort_handler(INTERFACE_ERROR);
     }
     else if (driver_path.substr(0, 4) == DAK_PATH_ENV_NAME) {
       // Allow legacy logic to proceed normally
@@ -244,23 +243,15 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
     // establish the workdir name first, since parameters files might go in it
     bool wd_created = false;
     if (useWorkdir) {
-
       // curWorkdir is used by Fork/SysCall arg_adjust
       curWorkdir = get_workdir_name();
       // TODO: Create with 0700 mask?
       wd_created = WorkdirHelper::create_directory(curWorkdir, DIR_PERSIST);
-
-      // for now assume templateDir maps to copy_files and template
-      // files maps to link_files
-      if (!templateDir.empty()) {
-	StringArray template_dirs;
-	template_dirs.push_back(templateDir);
-	WorkdirHelper::copy_items(template_dirs, curWorkdir, templateReplace);
-      }
       // copy/link tolerate empty items
-      WorkdirHelper::link_items(templateFiles, curWorkdir, templateReplace);
-
+      WorkdirHelper::copy_items(copyFiles, curWorkdir, templateReplace);
+      WorkdirHelper::link_items(linkFiles, curWorkdir, templateReplace);
     }
+
     // non-empty createdDir communicates to write_parameters_files that
     // the directory was created specifically for this eval and should
     // be removed when results collected

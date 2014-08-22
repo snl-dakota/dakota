@@ -1918,7 +1918,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     #define P &DataInterfaceRep::
     static KW<StringArray, DataInterfaceRep> SAdi[] = {	// must be sorted
 	{ "application.analysis_drivers", P analysisDrivers},
-	{ "templateFiles", P templateFiles}};
+	{ "copyFiles", P copyFiles},
+	{ "linkFiles", P linkFiles}};
     #undef P
 
     KW<StringArray, DataInterfaceRep> *kw;
@@ -2094,7 +2095,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"failure_capture.action", P failAction},
 	{"id", P idInterface},
 	{"synchronization", P interfaceSynchronization},
-	{"templateDir", P templateDir},
 	{"type", P interfaceType},
 	{"workDir", P workDir}};
     #undef P
@@ -2681,7 +2681,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nearby_evaluation_cache", P nearbyEvalCacheFlag},
 	{"python.numpy", P numpyFlag},
 	{"restart_file", P restartFileFlag},
-	{"templateCopy", P templateCopy},
 	{"templateReplace", P templateReplace},
 	{"useWorkdir", P useWorkdir}};
     #undef P
