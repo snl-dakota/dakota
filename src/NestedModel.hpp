@@ -476,6 +476,7 @@ derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
   if (!optInterfacePointer.empty())
     optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
 
+  /* COMMENT OUT PRIOR TO NEXT COMMIT
   // initializations for subIteratorSched:
   // > incoming max_eval_concurrency is for concurrent execs of NestedModel,
   //   which must be distinguished from concurrent executions of its subModel.
@@ -487,6 +488,7 @@ derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
   // > message lengths: vars/set from this model, final results from subIterator
   MPIPackBuffer buff; buff << subIterator.response_results();
   subIteratorSched.iterator_message_lengths(messageLengths[1], buff.size());
+  */
 
   // max concurrency does not require a bcast as in Strategy::init_comms
   // since all procs instantiate subIterator
