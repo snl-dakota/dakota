@@ -706,6 +706,8 @@ bool WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_dir,
     else
       bfs::create_symlink(fq_src_path, dest_link);
   }
+
+  return false;
 }
 
 
@@ -742,6 +744,8 @@ bool WorkdirHelper::recursive_copy(const bfs::path& src_path,
       }
     }
   }
+
+  return false;
 }
 
 
@@ -754,6 +758,8 @@ bool WorkdirHelper::prepend_path_item(const bfs::path& src_path,
   // Change once we upgrade preferred path to a set of BFS paths
   if (bfs::is_directory(src_path))
     prepend_preferred_env_path(src_path.string());
+
+  return false;
 }
 
 
