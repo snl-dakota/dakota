@@ -3062,9 +3062,9 @@ void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
     }
     else
       modelPCIter = map_iter->second;
-      //  Parallel configuration already exists within the Model for this
-      //  concurrency level.  Configurations must also exist for any sub-models
-      //  -> no call to derived_init_communicators() needed.
+      // Parallel configuration already exists within the Model for this
+      // concurrency level.  Configurations must also exist for any sub-models
+      // -> no call to derived_init_communicators() needed.
   }
 }
 
@@ -3179,8 +3179,8 @@ MPI_Comm Model::analysis_comm() const
   if (modelRep) // envelope fwd to letter
     return modelRep->analysis_comm();
   else
-    return 
-      parallel_configuration_iterator()->ea_parallel_level().server_intra_communicator();
+    return parallel_configuration_iterator()->
+      ea_parallel_level().server_intra_communicator();
 }
 
 

@@ -475,6 +475,19 @@ derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
   // initialize optionalInterface for parallel operations
   if (!optInterfacePointer.empty())
     optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
+
+  // initializations for subIteratorSched:
+  // > incoming max_eval_concurrency is for concurrent execs of NestedModel,
+  //   which must be distinguished from concurrent executions of its subModel.
+  // > leave default_config as PUSH_DOWN since sub-iterator run times will
+  //   tend to be heterogeneous
+  subIteratorSched.init_iterator_parallelism(max_eval_concurrency,
+    subIterator.get_min_procs_per_iterator(),
+    subIterator.get_max_procs_per_iterator(subIterator.maximum_evaluation_concurrency())); // TO DO: correct max_eval_concurrency? Are list nodes set properly post construct time?
+  // > message lengths: vars/set from this model, final results from subIterator
+  MPIPackBuffer buff; buff << subIterator.response_results();
+  subIteratorSched.iterator_message_lengths(messageLengths[1], buff.size());
+
   // max concurrency does not require a bcast as in Strategy::init_comms
   // since all procs instantiate subIterator
   if (recurse_flag)

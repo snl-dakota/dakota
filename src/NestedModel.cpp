@@ -515,7 +515,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // Due to this view updating reqmt, rely on retrieval of the subModel already
   // instantiated above when subIterator ctor calls problem_db.get_model().
   //if (iteratorCommRank == 0) // only master needs an iterator object
-    subIterator = problem_db.get_iterator();
+  subIterator = problem_db.get_iterator();// TO DO: subIterSched.init_iterator()
   subIterator.sub_iterator_flag(true);
   subIterator.active_variable_mappings(active1ACVarMapIndices,
     active1ADIVarMapIndices, active1ADSVarMapIndices, active1ADRVarMapIndices,
@@ -1294,7 +1294,6 @@ const IntResponseMap& NestedModel::derived_synchronize()
     // schedule subIteratorPRPQueue jobs
     component_parallel_mode(SUB_MODEL);
     subIteratorSched.schedule_iterators(*this, subIterator);
-    // TO DO's: init_iterator_parallelism, *MsgLens
     // overlay response sets
     for (PRPQueueIter qit=subIteratorPRPQueue.begin();
 	 qit!=subIteratorPRPQueue.end(); ++qit)

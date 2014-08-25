@@ -104,8 +104,8 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     iterSched.init_evaluation_concurrency(problem_db, selectedIterator,
 					  iteratedModel, w_pl);
   // min and max ppi need DB list nodes set to sub-iterator/sub-model
-  int min_ppi = get_min_procs_per_iterator(problem_db),
-      max_ppi = get_max_procs_per_iterator(problem_db, max_eval_conc);
+  int min_ppi = get_min_procs_per_iterator(),
+      max_ppi = get_max_procs_per_iterator(max_eval_conc);
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
   summaryOutputFlag = iterSched.lead_rank();
@@ -173,8 +173,8 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
     iterSched.init_evaluation_concurrency(concurr_iter_name, selectedIterator,
 					  iteratedModel, pc.w_parallel_level());
   // min and max ppi need DB list nodes set to sub-iterator/sub-model
-  int min_ppi = get_min_procs_per_iterator(problem_db),
-      max_ppi = get_max_procs_per_iterator(problem_db, max_eval_conc);
+  int min_ppi = get_min_procs_per_iterator(),
+      max_ppi = get_max_procs_per_iterator(max_eval_conc);
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
   summaryOutputFlag = iterSched.lead_rank();

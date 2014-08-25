@@ -58,12 +58,6 @@ protected:
   //- Heading: Convenience member functions
   //
 
-  /// compute a minimum iterator partition size based on lower level overrides
-  int get_min_procs_per_iterator(ProblemDescDB& problem_db);
-  /// compute a maximum iterator partition size based on lower level concurrency
-  int get_max_procs_per_iterator(ProblemDescDB& problem_db,
-				 int max_eval_concurrency);
-
   /// initialize the_iterator and the_model based on method_ptr
   void allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 			   Model& the_model);
