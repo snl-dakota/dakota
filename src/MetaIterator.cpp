@@ -104,8 +104,8 @@ estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 					    the_model, pc.w_parallel_level());
 
   // needs to follow set_db_list_nodes
-  int min_ppi = get_min_procs_per_iterator(),
-      max_ppi = get_max_procs_per_iterator(max_eval_concurrency);
+  int min_ppi = probDescDB.get_min_procs_per_iterator(),
+      max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_concurrency);
 
   probDescDB.set_db_list_nodes(method_index);            // restore
   return std::pair<int, int>(min_ppi, max_ppi);
@@ -133,8 +133,8 @@ estimate_by_name(const String& method_string, const String& model_ptr,
 					    the_model, pc.w_parallel_level());
 
   // needs to follow set_db_list_nodes
-  int min_ppi = get_min_procs_per_iterator(),
-      max_ppi = get_max_procs_per_iterator(max_eval_concurrency);
+  int min_ppi = probDescDB.get_min_procs_per_iterator(),
+      max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_concurrency);
 
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore

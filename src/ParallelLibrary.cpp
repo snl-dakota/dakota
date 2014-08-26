@@ -61,11 +61,9 @@ ParallelLibrary::
 ParallelLibrary(const MPIManager& mpi_mgr, ProgramOptions& prog_opts,
 		OutputManager& output_mgr): 
   mpiManager(mpi_mgr), programOptions(prog_opts), outputManager(output_mgr),
-  dakotaMPIComm(mpiManager.dakota_mpi_comm()),
-  worldRank(mpiManager.world_rank()), worldSize(mpiManager.world_size()), 
-  mpirunFlag(mpiManager.mpirun_flag()), dummyFlag(false), 
-  outputTimings(programOptions.proceed_to_run()), startClock(0),
-  currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
+  dummyFlag(false), outputTimings(programOptions.proceed_to_run()),
+  startClock(0), currPLIter(parallelLevels.end()),
+  currPCIter(parallelConfigurations.end())
 {
   initialize_timers();
   init_mpi_comm();
@@ -79,25 +77,24 @@ void ParallelLibrary::init_mpi_comm()
   ParallelLevel pl;
   String start_msg("Running Dakota executable.");
 #ifdef DAKOTA_HAVE_MPI // mpi available
-  if (mpirunFlag) {
-    pl.serverIntraComm = dakotaMPIComm;
-    pl.serverCommRank  = worldRank;
-    pl.serverCommSize  = worldSize;
-
+  if (mpiManager.mpirun_flag()) {
+    pl.serverIntraComm = mpiManager.dakota_mpi_comm();
     startMPITime = MPI_Wtime();
   }
   else
     pl.serverIntraComm = MPI_COMM_NULL;
+  pl.serverCommRank = mpiManager.world_rank();
+  pl.serverCommSize = mpiManager.world_size();
   
-  if (worldSize > 1) {
+  if (pl.serverCommSize > 1) {
     start_msg = "Running MPI Dakota executable in parallel on ";
-    start_msg += boost::lexical_cast<std::string>(worldSize) + 
+    start_msg += boost::lexical_cast<std::string>(pl.serverCommSize) + 
       " processors.";
   }
   else
     start_msg = "Running MPI Dakota executable in serial mode.";
 #else // mpi not available
-  if (mpirunFlag) {
+  if (mpiManager.mpirun_flag()) {
     Cerr << "Error: Attempting to run serial executable in parallel."
 	 << std::endl;
     abort_handler(-1);
@@ -690,7 +687,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     MPI_Intercomm_create(child_pl.serverIntraComm, 0, parent_pl.serverIntraComm,
 			 0, color, &child_pl.hubServerInterComm);
 #ifdef MPI_DEBUG
-  Cout << "worldRank = " << worldRank << " child comm rank = " 
+  Cout << "worldRank = " << mpiManager.world_rank() << " child comm rank = " 
        << child_pl.serverCommRank << " child comm size = "
        << child_pl.serverCommSize << '\n';
   int size, remote_size;
@@ -845,7 +842,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     MPI_Intercomm_create(child_pl.serverIntraComm, 0, parent_pl.serverIntraComm,
 			 0, color, &child_pl.hubServerInterComm);
 #ifdef MPI_DEBUG
-  Cout << "worldRank = " << worldRank << " child comm rank = " 
+  Cout << "worldRank = " << mpiManager.world_rank() << " child comm rank = " 
        << child_pl.serverCommRank << " child comm size = "
        << child_pl.serverCommSize << '\n';
   int size, remote_size;
@@ -943,7 +940,7 @@ void ParallelLibrary::print_configuration()
   // -----------------------------------
   // worldRank == 0 prints configuration
   // -----------------------------------
-  if (worldRank == 0) { // does all output
+  if (mpiManager.world_rank() == 0) { // does all output
     int  num_eval_srv = ie_pl.numServers, p_per_eval = ie_pl.procsPerServer;
     bool iterator_ded_master_flag = ie_pl.dedicatedMasterFlag;
     if (mi_pl.dedicatedMasterFlag) {
@@ -1020,7 +1017,7 @@ void ParallelLibrary::manage_outputs_restart(const ParallelLevel& pl)
 
   // Synchronize necessary data from worldRank 0 to iterator masters
   bool stdout_redirect_required;
-  if (worldRank == 0) {
+  if (mpiManager.world_rank() == 0) {
 
     // If iterator servers are in use, then always segregate the std
     // output.  However, for std error, assume that this should remain
@@ -1140,7 +1137,7 @@ void ParallelLibrary::abort_helper(int code) {
   int initialized = 0;
   MPI_Initialized(&initialized);
   if (initialized)
-    MPI_Abort(dakotaMPIComm, code);
+    MPI_Abort(mpiManager.dakota_mpi_comm(), code);
   else
     abort_throw_or_exit(code);  // defined in global_defs
 #else // DAKOTA_HAVE_MPI
@@ -1227,9 +1224,9 @@ void ParallelLibrary::output_timers()
     totalWC   = WallClockSeconds() - startWCTime;
 #endif // DAKOTA_UTILIB
 
-  if (mpirunFlag) { // MPI functions are available
+  if (mpiManager.mpirun_flag()) { // MPI functions are available
 #ifdef DAKOTA_HAVE_MPI
-    if (worldRank==0) {
+    if (mpiManager.world_rank()==0) {
       Real runWC = parallel_time();
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
 	   << "DAKOTA master processor execution time in seconds:\n"

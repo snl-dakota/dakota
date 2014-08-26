@@ -228,11 +228,6 @@ public:
   /// set the maximum evaluation concurrency supported by the iterator
   void maximum_evaluation_concurrency(int max_conc);
 
-  /// compute a minimum iterator partition size based on lower level overrides
-  int get_min_procs_per_iterator();
-  /// compute a maximum iterator partition size based on lower level concurrency
-  int get_max_procs_per_iterator(int max_eval_concurrency);
-
   /// set the method convergence tolerance (convergenceTol)
   void convergence_tolerance(Real conv_tol);
   /// return the method convergence tolerance (convergenceTol)

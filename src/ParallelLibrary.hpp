@@ -533,9 +533,9 @@ public:
   //
 
   // TODO: rename to reflect dakotaMPIComm
-  int world_size() const;     ///< return Dakota's worldSize
-  int world_rank() const;     ///< return Dakota's worldRank
-  bool mpirun_flag() const;   ///< return mpirunFlag
+  int world_size() const; ///< return MPIManager::worldSize
+  int world_rank() const; ///< return MPIManager::worldRank
+  bool mpirun_flag() const;   ///< return MPIManager::mpirunFlag
   bool is_null() const;       ///< return dummyFlag
   Real parallel_time() const; ///< returns current MPI wall clock time
 
@@ -554,8 +554,7 @@ public:
   void increment_parallel_configuration();
   // decrement currPCIter
   //void decrement_parallel_configuration();
-  /// test current parallel configuration for definition of world
-  /// parallel level
+  /// test current parallel configuration for definition of world parallel level
   bool  w_parallel_level_defined() const;
   /// test current parallel configuration for definition of
   /// meta-iterator-iterator parallel level
@@ -687,14 +686,7 @@ private:
   /// Non-const output handler to help with file redirection
   OutputManager& outputManager;
 
-  // TODO: Update rank, size, etc. names to reflect DAKOTA's top-level MPI_Comm
-  MPI_Comm dakotaMPIComm; ///< MPI_Comm on which DAKOTA is running
-  int  worldRank;     ///< rank in MPI_Comm in which DAKOTA is running
-  int  worldSize;     ///< size of MPI_Comm in which DAKOTA is running
-  bool mpirunFlag;    ///< flag for a parallel mpirun/yod launch
-
   bool dummyFlag;     ///< prevents multiple MPI_Finalize calls due to dummy_lib
-
   bool outputTimings; ///< timing info only beyond help/version/check
   Real startCPUTime;  ///< start reference for UTILIB CPU timer
   Real startWCTime;   ///< start reference for UTILIB wall clock timer
@@ -727,15 +719,15 @@ inline OutputManager& ParallelLibrary::output_manager()
 
 
 inline int ParallelLibrary::world_rank() const
-{ return worldRank; }
+{ return mpiManager.world_rank(); }
 
 
 inline int ParallelLibrary::world_size() const
-{ return worldSize; }
+{ return mpiManager.world_size(); }
 
 
 inline bool ParallelLibrary::mpirun_flag() const
-{ return mpirunFlag; }
+{ return mpiManager.mpirun_flag(); }
 
 
 inline bool ParallelLibrary::is_null() const
@@ -745,7 +737,7 @@ inline bool ParallelLibrary::is_null() const
 inline Real ParallelLibrary::parallel_time() const
 {
 #ifdef DAKOTA_HAVE_MPI
-  return (mpirunFlag) ? MPI_Wtime() - startMPITime : 0.;
+  return (mpiManager.mpirun_flag()) ? MPI_Wtime() - startMPITime : 0.;
 #else
   return 0.;
 #endif // DAKOTA_HAVE_MPI
@@ -780,7 +772,7 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
     return false; // PC incomplete if mi level undefined
   else { // mi level defined
     const ParallelLevel& mi_pl = currPCIter->mi_parallel_level();
-    if (mi_pl.dedicatedMasterFlag && worldRank == 0)
+    if (mi_pl.dedicatedMasterFlag && mpiManager.world_rank() == 0)
       return true; // PC complete at mi level for strategy ded master
     else if ( currPCIter->iePLIter == parallelLevels.end() )
       return false; // PC incomplete for other procs if ie level undefined
@@ -1044,7 +1036,7 @@ check_error(const String& err_source, int err_code)
   // NOTE: for error code meanings, see mpi/include/mpi_errno.h
   if (err_code) {
     Cerr << "Error: " << err_source << " returns with error code " << err_code
-	 << " on processor " << worldRank << std::endl;
+	 << " on processor " << mpiManager.world_rank() << std::endl;
     abort_handler(-1);
   }
 }

@@ -14,13 +14,12 @@
 #include "dakota_system_defs.hpp"
 #include "MPIManager.hpp"
 
-
 namespace Dakota {
 
 
 MPIManager::MPIManager():
-  dakotaMPIComm(MPI_COMM_WORLD), worldRank(0), worldSize(1), mpirunFlag(false), 
-  ownMPIFlag(false)
+  dakotaMPIComm(MPI_COMM_WORLD), dakotaWorldRank(0), dakotaWorldSize(1),
+  mpirunFlag(false), ownMPIFlag(false)
 {
   // MPI check for library clients not passing any options or MPI
   // comm, since that will invoke this default ctor.  
@@ -32,16 +31,16 @@ MPIManager::MPIManager():
   MPI_Initialized(&initialized);
   if (initialized) {
     mpirunFlag = true;
-    MPI_Comm_rank(dakotaMPIComm, &worldRank);
-    MPI_Comm_size(dakotaMPIComm, &worldSize);
+    MPI_Comm_rank(dakotaMPIComm, &dakotaWorldRank);
+    MPI_Comm_size(dakotaMPIComm, &dakotaWorldSize);
   }
 #endif
 }
 
 
 MPIManager::MPIManager(int& argc, char**& argv):
-  dakotaMPIComm(MPI_COMM_WORLD), worldRank(0), worldSize(1), mpirunFlag(false), 
-  ownMPIFlag(false)
+  dakotaMPIComm(MPI_COMM_WORLD), dakotaWorldRank(0), dakotaWorldSize(1),
+  mpirunFlag(false), ownMPIFlag(false)
 {
   // detect parallel launch of DAKOTA using mpirun/mpiexec/poe/etc.
   mpirunFlag = detect_parallel_launch(argc, argv);
@@ -53,8 +52,8 @@ MPIManager::MPIManager(int& argc, char**& argv):
   if (mpirunFlag) {
     MPI_Init(&argc, &argv); // See comment above regarding argv and argc
     ownMPIFlag = true; // own MPI_Init, so call MPI_Finalize in destructor 
-    MPI_Comm_rank(dakotaMPIComm, &worldRank);
-    MPI_Comm_size(dakotaMPIComm, &worldSize);
+    MPI_Comm_rank(dakotaMPIComm, &dakotaWorldRank);
+    MPI_Comm_size(dakotaMPIComm, &dakotaWorldSize);
   }
 #endif
   
@@ -62,7 +61,7 @@ MPIManager::MPIManager(int& argc, char**& argv):
 
 
 MPIManager::MPIManager(MPI_Comm dakota_mpi_comm):
-  dakotaMPIComm(dakota_mpi_comm), worldRank(0), worldSize(1),
+  dakotaMPIComm(dakota_mpi_comm), dakotaWorldRank(0), dakotaWorldSize(1),
   mpirunFlag(false), ownMPIFlag(false)
 {
 #ifdef DAKOTA_HAVE_MPI
@@ -71,8 +70,8 @@ MPIManager::MPIManager(MPI_Comm dakota_mpi_comm):
   MPI_Initialized(&initialized);
   if (initialized) {
     mpirunFlag = true;
-    MPI_Comm_rank(dakotaMPIComm, &worldRank);
-    MPI_Comm_size(dakotaMPIComm, &worldSize);
+    MPI_Comm_rank(dakotaMPIComm, &dakotaWorldRank);
+    MPI_Comm_size(dakotaMPIComm, &dakotaWorldSize);
   }
 #endif
 }
@@ -88,19 +87,6 @@ MPIManager::~MPIManager()
 }
 
 
-MPI_Comm MPIManager::dakota_mpi_comm() const 
-{ return dakotaMPIComm; }
-
-int MPIManager::world_rank() const 
-{ return worldRank; }
-
-int MPIManager::world_size() const 
-{ return worldSize; }
-
-bool MPIManager::mpirun_flag() const 
-{ return mpirunFlag; }
-
-  
 // Consider having the output manager queue up any messages prior to
 // rebinding cout/cerr
 bool MPIManager::detect_parallel_launch(int& argc, char**& argv)

@@ -63,12 +63,25 @@ public:
 private:
 
   MPI_Comm dakotaMPIComm; ///< MPI_Comm on which DAKOTA is running
-  int  worldRank;     ///< rank in MPI_Comm in which DAKOTA is running
-  int  worldSize;     ///< size of MPI_Comm in which DAKOTA is running
-  bool mpirunFlag;    ///< flag for a parallel mpirun/yod launch
-  bool ownMPIFlag;    ///< flag for ownership of MPI_Init/MPI_Finalize
+  int dakotaWorldRank;    ///< rank in MPI_Comm in which DAKOTA is running
+  int dakotaWorldSize;    ///< size of MPI_Comm in which DAKOTA is running
+  bool mpirunFlag;        ///< flag for a parallel mpirun/yod launch
+  bool ownMPIFlag;        ///< flag for ownership of MPI_Init/MPI_Finalize
 
 };  // class MPIManager
+
+
+inline MPI_Comm MPIManager::dakota_mpi_comm() const 
+{ return dakotaMPIComm; }
+
+inline int MPIManager::world_rank() const
+{ return dakotaWorldRank; }
+
+inline int MPIManager::world_size() const
+{ return dakotaWorldSize; }
+
+inline bool MPIManager::mpirun_flag() const 
+{ return mpirunFlag; }
 
 }  // namespace Dakota
 

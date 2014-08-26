@@ -1114,6 +1114,149 @@ const Response& ProblemDescDB::get_response(const Variables& vars)
 }
 
 
+int ProblemDescDB::
+get_min_procs_per_evaluation(int ppa_spec, int num_a_serv_spec)
+{
+  // Note: valid for envelope (intended) or letter (should not happen)
+
+  // Define min_procs_per_evaluation to accomodate any lower level overrides
+  // (ppe_spec handled elsewhere).
+  // With default_config = PUSH_DOWN, this is less critical.
+  int min_procs_per_eval = std::max(1, ppa_spec);
+  if (num_a_serv_spec)
+    min_procs_per_eval *= num_a_serv_spec;
+  //if (a_sched_spec == MASTER_SCHEDULING) ++min_procs_per_eval;
+
+  return min_procs_per_eval;
+}
+
+
+int ProblemDescDB::
+get_max_procs_per_evaluation(int num_drivers, int num_a_serv_spec,
+			     short a_sched_spec, int alac_spec)
+{
+  // Notes:
+  // > compute max_procs_per_eval, incorporating all lower level (analysis) 
+  //   overrides (ppe_spec handled within ParallelLibrary::resolve_inputs())
+  // > Handle direct_int case outside of this static function to avoid pushing
+  //   static requirements onto MPIManager
+
+  //if (direct_int)
+  //  return MPIManager::world_size();
+  //else { // ppa = 1 for system/fork
+
+    int max_procs_per_eval;
+    //if (ppe_spec)
+    //  max_procs_per_eval = ppe_spec;
+    //else {
+      if (num_a_serv_spec) {
+	max_procs_per_eval = num_a_serv_spec;
+	int alac = std::max(1, alac_spec);
+	if (num_a_serv_spec * alac < num_drivers && num_a_serv_spec > 1 &&
+	    a_sched_spec != PEER_SCHEDULING) //&& !peer_dynamic_analysis
+	  ++max_procs_per_eval;
+      }
+      else { // assume peer partition unless explicit override to master
+	max_procs_per_eval = std::max(1, num_drivers);
+	if (a_sched_spec == MASTER_SCHEDULING)
+	  ++max_procs_per_eval;
+      }
+    //}
+
+    return max_procs_per_eval;
+  //}
+}
+
+
+int ProblemDescDB::get_min_procs_per_evaluation()
+{
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
+
+  return get_min_procs_per_evaluation(
+    get_int("interface.direct.processors_per_analysis"),
+    get_int("interface.analysis_servers"));
+}
+
+
+int ProblemDescDB::get_max_procs_per_evaluation()
+{
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
+
+  return (get_string("interface.type") == "direct") ?
+    parallelLib.world_size() :
+    get_max_procs_per_evaluation(
+      get_sa("interface.application.analysis_drivers").size(),
+      get_int("interface.analysis_servers"),
+      get_short("interface.analysis_scheduling"),
+      get_int("interface.asynch_local_analysis_concurrency"));
+}
+
+
+int ProblemDescDB::get_min_procs_per_iterator()
+{
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
+
+  // Define min_procs_per_iterator to accomodate any lower level overrides
+  // (ppi_spec handled elsewhere).
+  // Note: with default_config = PUSH_DOWN, this logic is less critical.
+  int min_procs_per_eval = get_min_procs_per_evaluation(),
+      ppe_spec = get_int("interface.processors_per_evaluation"),
+      num_e_serv_spec = get_int("interface.evaluation_servers");
+  int min_procs_per_iterator = std::max(min_procs_per_eval, ppe_spec);
+  if (num_e_serv_spec)
+    min_procs_per_iterator *= num_e_serv_spec;
+  //if (e_sched_spec == MASTER_SCHEDULING) ++min_procs_per_iterator;
+  return min_procs_per_iterator;
+}
+
+
+int ProblemDescDB::get_max_procs_per_iterator(int max_eval_concurrency)
+{
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
+
+  // Define max_procs_per_iterator to estimate maximum processor usage
+  // from all lower levels.  With default_config = PUSH_DOWN, this is
+  // important to avoid pushing down more resources than can be utilized.
+  // The primary input is algorithmic concurrency, but we also incorporate
+  // explicit user overrides for _lower_ levels (user overrides for the
+  // current level can be managed by resolve_inputs()).
+
+  if (get_string("interface.type") == "direct")
+    return parallelLib.world_size();
+  else { // processors_per_analysis = 1 for system/fork
+    int max_procs_per_eval = get_max_procs_per_evaluation(),
+        max_procs_per_iterator,
+        num_e_serv_spec = get_int("interface.evaluation_servers");
+    short e_sched_spec = get_short("interface.evaluation_scheduling");
+    // compute max_procs_per_iterator, incorporating all lower level overrides
+    // (ppi_spec handled within ParallelLibrary::resolve_inputs())
+    if (num_e_serv_spec) {
+      max_procs_per_iterator = max_procs_per_eval * num_e_serv_spec;
+      int alec
+	= std::max(1, get_int("interface.asynch_local_evaluation_concurrency"));
+      // for peer dynamic, max_procs_per_eval == 1 is imperfect in that it
+      // does not capture all possibilities, but this is conservative and
+      // hopefully close enough for this context (an upper bound estimate).
+      bool peer_dynamic_avail
+	= (get_short("interface.local_evaluation_scheduling") !=
+	   STATIC_SCHEDULING && max_procs_per_eval == 1);
+      if (num_e_serv_spec * alec < max_eval_concurrency &&
+	  num_e_serv_spec > 1 &&
+	  e_sched_spec != PEER_DYNAMIC_SCHEDULING &&
+	  e_sched_spec != PEER_STATIC_SCHEDULING  && !peer_dynamic_avail)
+	++max_procs_per_iterator;
+    }
+    else { // assume peer partition unless explicit override to master
+      max_procs_per_iterator = max_procs_per_eval * max_eval_concurrency;
+      if (e_sched_spec == MASTER_SCHEDULING)
+	++max_procs_per_iterator;
+    }
+
+    return max_procs_per_iterator;
+  }
+}
+
+
  static void*
 binsearch(void *kw, size_t kwsize, size_t n, const char* key)
 {

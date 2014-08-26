@@ -298,6 +298,25 @@ public:
   /// set a StringArray within the database based on an identifier string
   void set(const String& entry_name, const StringArray& sa);
 
+  // These functions use values out of the database and are more convenient
+  // to locate within the DB in terms of parallel existence & code reuse
+
+  /// compute minimum evaluation partition size based on passed overrides
+  static int get_min_procs_per_evaluation(int ppa_spec, int num_a_serv_spec);
+  /// compute maximum evaluation partition size based on passed overrides
+  static int get_max_procs_per_evaluation(int num_drivers, int num_a_serv_spec,
+					  short a_sched_spec, int alac_spec);
+
+  /// compute minimum evaluation partition size based on lower level overrides
+  int get_min_procs_per_evaluation();
+  /// compute maximum evaluation partition size based on lower level concurrency
+  int get_max_procs_per_evaluation();
+
+  /// compute minimum iterator partition size based on lower level overrides
+  int get_min_procs_per_iterator();
+  /// compute maximum iterator partition size based on lower level concurrency
+  int get_max_procs_per_iterator(int max_eval_concurrency);
+
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
 

@@ -26,7 +26,7 @@ namespace Dakota {
 
 NestedModel::NestedModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db), nestedModelEvalCntr(0),
-  subIteratorSched(problem_db.parallel_library(),
+  subIteratorSched(parallelLib,
 		   problem_db.get_int("model.nested.sub_method_servers"),
 		   problem_db.get_int("model.nested.sub_method_processors"),
 		   problem_db.get_short("model.nested.sub_method_scheduling")),
@@ -512,10 +512,23 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   if (inactive_sm_view != EMPTY)
     subModel.inactive_view(inactive_sm_view); // recurse
 
+  /*
+  const ParallelLevel& prev_pl
+    = parallelLib.parallel_configuration().mi_parallel_level(index);
+  int max_eval_conc
+    = subIteratorSched.init_evaluation_concurrency(problem_db, subIterator,
+						   subModel, prev_pl);
+  // min and max ppi need DB list nodes set to sub-iterator/sub-model
+  int min_ppi = probDescDB.get_min_procs_per_iterator(),
+      max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_conc);
+
+  subIteratorSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi); // TO DO: another dependency issue!
+
   // Due to this view updating reqmt, rely on retrieval of the subModel already
   // instantiated above when subIterator ctor calls problem_db.get_model().
-  //if (iteratorCommRank == 0) // only master needs an iterator object
-  subIterator = problem_db.get_iterator();// TO DO: subIterSched.init_iterator()
+  subIteratorSched.init_iterator(probDescDB, subIterator, subModel, mi_pl);// TO DO: define mi_pl; verify subModel passing is OK
+  */
+  subIterator = problem_db.get_iterator();
   subIterator.sub_iterator_flag(true);
   subIterator.active_variable_mappings(active1ACVarMapIndices,
     active1ADIVarMapIndices, active1ADSVarMapIndices, active1ADRVarMapIndices,

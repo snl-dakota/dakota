@@ -123,30 +123,14 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // the evaluation partition (passing in procsPerAnalysis for procsPerEval
   // would serialize the analysis level).  The min_procs lower bounds are
   // defined bottom up and counter the top-down allocation of resources. 
-  // Similar logic exists in MetaIterator::get_min_procs_per_iterator().
-  int min_procs_per_eval = std::max(1, procsPerAnalysisSpec);
-  if (numAnalysisServersSpec)
-    min_procs_per_eval *= numAnalysisServersSpec;
-  //if (analysisScheduling == MASTER_SCHEDULING) ++min_procs_per_eval;
-
-  // max_procs_per_eval captures available concurrency at the analysis level,
-  // but we also must incorporate explicit user overrides for the analysis level
-  // (user overrides for the eval level can be managed by resolve_inputs()).
-  // Similar logic exists in MetaIterator::get_max_procs_per_iterator().
-  int max_procs_per_eval;
-  if (direct_int)
-    max_procs_per_eval = worldSize;
-  else { // ppa must be 1
-    if (numAnalysisServersSpec) {
-      max_procs_per_eval = numAnalysisServersSpec;
-      int alac = std::max(1, asynchLocalAnalysisConcSpec);
-      if (numAnalysisServersSpec * alac < numAnalysisDrivers &&
-	  analysisScheduling != PEER_SCHEDULING) //&& !peer_dynamic_analysis
-	++max_procs_per_eval;
-    }
-    else
-      max_procs_per_eval = std::max(1, numAnalysisDrivers); // assume peer part
-  }
+  int min_procs_per_eval = ProblemDescDB::get_min_procs_per_evaluation(
+    procsPerAnalysisSpec, numAnalysisServersSpec);
+  // max_procs_per_eval captures available concurrency and explicit user
+  // overrides at the analysis level (user overrides for the evaluation
+  // level can be managed by resolve_inputs()).
+  int max_procs_per_eval = (direct_int) ? worldSize :
+    ProblemDescDB::get_max_procs_per_evaluation(numAnalysisDrivers,
+      numAnalysisServersSpec, analysisScheduling, asynchLocalAnalysisConcSpec);
 
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, procsPerEvalSpec, min_procs_per_eval,
@@ -166,7 +150,6 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   else {
     int min_procs_per_analysis = 1,
         max_procs_per_analysis = (direct_int) ? worldSize : 1;
-
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
       numAnalysisServersSpec, procsPerAnalysisSpec, min_procs_per_analysis,
       max_procs_per_analysis, numAnalysisDrivers, asynchLocalAnalysisConcSpec,
