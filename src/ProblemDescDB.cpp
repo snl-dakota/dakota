@@ -1138,11 +1138,11 @@ get_max_procs_per_evaluation(int num_drivers, int num_a_serv_spec,
   // Notes:
   // > compute max_procs_per_eval, incorporating all lower level (analysis) 
   //   overrides (ppe_spec handled within ParallelLibrary::resolve_inputs())
-  // > Handle direct_int case outside of this static function to avoid pushing
-  //   static requirements onto MPIManager
+  // > the direct_int case is handled outside of this static function to
+  //   avoid pushing static requirements onto MPIManager
 
   //if (direct_int)
-  //  return MPIManager::world_size();
+  //  return MPIManager::world_size(); // if static data/accessor
   //else { // ppa = 1 for system/fork
 
     int max_procs_per_eval;

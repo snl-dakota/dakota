@@ -79,12 +79,11 @@ void ParallelLibrary::init_mpi_comm()
 #ifdef DAKOTA_HAVE_MPI // mpi available
   if (mpiManager.mpirun_flag()) {
     pl.serverIntraComm = mpiManager.dakota_mpi_comm();
-    startMPITime = MPI_Wtime();
+    pl.serverCommRank  = mpiManager.world_rank();
+    pl.serverCommSize  = mpiManager.world_size();
+    startMPITime       = MPI_Wtime();
   }
-  else
-    pl.serverIntraComm = MPI_COMM_NULL;
-  pl.serverCommRank = mpiManager.world_rank();
-  pl.serverCommSize = mpiManager.world_size();
+  // else default ParallelLevel values apply
   
   if (pl.serverCommSize > 1) {
     start_msg = "Running MPI Dakota executable in parallel on ";
@@ -99,10 +98,8 @@ void ParallelLibrary::init_mpi_comm()
 	 << std::endl;
     abort_handler(-1);
   }
-  else { // use defaults: worldRank = 0, worldSize = 1
-    pl.serverIntraComm = MPI_COMM_NULL;
+  else // default ParallelLevel values apply
     start_msg = "Running serial Dakota executable in serial mode.";
-  }
 #endif // DAKOTA_HAVE_MPI
   outputManager.startup_message(start_msg);
 
