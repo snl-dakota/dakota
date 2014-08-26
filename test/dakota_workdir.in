@@ -53,15 +53,18 @@ interface
 
     work_directory
       named 'trydir'
-#	directory_tag						#1,#2,#9,#p1
+# TODO: disable tag for p0 depending on parallel concurrency
+#	directory_tag						#1,#2,#9,#p0,#p1
 #	directory_save  					#2,#9
-# 	template_files = 'dakota_workdir.root.dat' 		#3,#5
-# 	template_directory = 'dakota_workdir.templatedir/*'	#4,#6
-#         copy							#5,#6
-# 	template_directory = 'dakota_workdir.templatedir/*'	#7
+# 	link_files = 'dakota_workdir.root.dat' 			#3
+#	link_files = 'dakota_workdir.templatedir/*'		#4,#7
+# 	copy_files = 'dakota_workdir.root.dat' 			#5
+#	copy_files = 'dakota_workdir.templatedir/*'		#6
 #	parameters_file = 'params.in'				#8
 #	parameters_file = '/tmp/params.in'			#9
 #	  file_save						#9
+# TODO: autotag when concurrent evals are possible...
+#	  file_tag						#9
 
 responses
   objective_functions = 1             
