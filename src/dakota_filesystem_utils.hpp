@@ -81,20 +81,6 @@ inline void putenv_impl(const char* name_and_value)
          << ") failed in putenv_impl()" << std::endl;
     abort_handler(-1);
   }
-
-/* WJB: alternate impl IF I believe what I read at following site:
-  // http://stackoverflow.com/questions/5873029/questions-about-putenv-and-setenv
-  std::vector<std::string> var_name_and_val_tokens;
-
-  boost::split( var_name_and_val_tokens,
-                name_and_value, boost::is_any_of("=") );
-
-  if ( setenv(var_name_and_val_tokens[0].c_str(),
-              var_name_and_val_tokens[1].c_str(), true) ) {
-    Cerr << "\nError: setenv(" << name_and_value
-         << ") failed in putenv_impl()" << std::endl;
-  }
-*/
 }
 
 } // namespace Dakota

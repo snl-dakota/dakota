@@ -28,36 +28,43 @@ namespace bfs = boost::filesystem;
 
 #include <boost/function.hpp>
 
+/// BEGIN: Section to be cleaned up and hopefully moved to .cpp file
+/// after dakota_filesystem_utils is retired
 #if defined(_WIN32) || defined(_WIN64)
 
   #define NOMINMAX
   #include <io.h>
   #include "dakota_windows.h"
-  #include <direct.h>
+  #include <direct.h>               // remove when _mkdir no longer needed
+  // consider using _chdir if appropriate, since has same API?
   #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
-  #define DAK_MKDIR(a,b) _mkdir(a)
+  #define DAK_MKDIR(a,b) _mkdir(a)  // to be removed
   #define DAK_MAXPATHLEN MAX_PATH
   #define DAK_PATH_ENV_NAME "Path"
   #define DAK_PATH_SEP ';'
-  #define DAK_SLASH '\\'
+  #define DAK_SLASH '\\'            // likely not needed with BFS
 
 #elif defined(HAVE_UNISTD_H) 
-
+  // probably not necessary to tie conditional compilation to build 
+  //#if defined(HAVE_UNISTD_H) 
   #include <unistd.h>
-  #include <sys/param.h>
+  //#endif
+  #include <sys/param.h>             // for MAXPATHLEN?
   #define DAK_CHDIR chdir
-  #define DAK_MKDIR(a,b) mkdir(a,b)
+  #define DAK_MKDIR(a,b) mkdir(a,b)  // to be removed
   #define DAK_MAXPATHLEN MAXPATHLEN
   #define DAK_PATH_ENV_NAME "PATH"
   #define DAK_PATH_SEP ':'
-  #define DAK_SLASH '/'
+  #define DAK_SLASH '/'              // likely not needed with BFS
 
 #endif // _WIN32 or _WIN64
 
 #include <sys/stat.h>
-#include <string>
-#include <utility>
-#include <vector>
+//#include <string>
+//#include <utility>
+//#include <vector>
+
+/// END: Section to be cleaned up and hopefully moved to .cpp file
 
 
 namespace Dakota {
@@ -169,8 +176,16 @@ public:
   /// Query for dakota's startup $PWD
   static const std::string& startup_pwd() { return startupPWD; }
 
+  /// change current directory 
+  static void change_directory(const bfs::path& new_dir);
+
   /// Prepend $PATH environment variable with an extra_path
   static void prepend_preferred_env_path(const std::string& extra_path);
+
+  /// Set an environment variable
+  static void set_environment(const std::string& env_name, 
+			      const std::string& env_val, 
+			      bool overwrite_flag = true);
 
   /// Returns the string representing the path to the analysis driver,
   //  including typical windows extensions
