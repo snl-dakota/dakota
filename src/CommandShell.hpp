@@ -37,8 +37,8 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  CommandShell(const std::string& work_dir); ///< constructor
-  ~CommandShell();                           ///< destructor
+  CommandShell();   ///< constructor
+  ~CommandShell();  ///< destructor
 
   //
   //- Heading: Operator overloaded functions
@@ -66,9 +66,6 @@ private:
   //- Heading: Data members
   //
 
-  /// To convey working directory when useWorkdir is true:
-  const std::string& workDir;
-
   /// The command string that is constructed through one or more <<
   /// insertions and then executed by flush
   std::string sysCommand;
@@ -82,8 +79,8 @@ private:
 
 
 /// constructor
-inline CommandShell::CommandShell(const std::string& work_dir) :
-  workDir(work_dir), asynchFlag(false), suppressOutputFlag(false)
+inline CommandShell::CommandShell() :
+  asynchFlag(false), suppressOutputFlag(false)
 { }
 
 /// destructor

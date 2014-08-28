@@ -95,6 +95,9 @@ void start_dakota_heartbeat(int seconds)
 	}
 
 
+#ifdef DEBUG_LEGACY_WORKDIR
+
+
 /* Adding sftw.c, sftw.h and rec_cp, rec_rm here for simplicity... */
 
 #include <fcntl.h>
@@ -973,5 +976,9 @@ void workdir_adjust(const std::string& workdir)
     putenv_impl( wd_path[appdrive].c_str() );
 #endif
 }
+
+
+#endif  // DEBUG_LEGACY_WORKDIR
+
 
 } // namespace Dakota

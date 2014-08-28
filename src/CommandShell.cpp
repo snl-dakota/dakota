@@ -24,18 +24,18 @@ namespace Dakota {
     sysCommand to Cout if suppressOutputFlag is not set. */
 CommandShell& CommandShell::flush()
 {
-  if (asynchFlag)
+  if (asynchFlag) {
 #if !defined(_MSC_VER)
     sysCommand += " &";
 #else
+    // TODO: review whether there's a better means on Windows that won't
+    // pop a window per start?
     sysCommand = "start \"SystemInterface-Evaluation\" " + sysCommand;
 #endif
+  }
 
   if (!suppressOutputFlag)
     Cout << sysCommand << std::endl;  // output the cmd string for verification
-
-  if ( !workDir.empty() )
-    WorkdirHelper::change_cwd(workDir);
 
 #ifdef HAVE_SYSTEM
   std::system(sysCommand.c_str());
@@ -44,9 +44,6 @@ CommandShell& CommandShell::flush()
        << " NOT support system calls" << std::endl;
   abort_handler(-1);
 #endif
-
-  if ( !workDir.empty() )
-    WorkdirHelper::reset();
 
   sysCommand.clear();
   return *this;

@@ -16,7 +16,7 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include <algorithm>
-
+#include <boost/algorithm/string.hpp>  // for split
 
 namespace Dakota {
 
@@ -512,5 +512,39 @@ void ProcessHandleApplicInterface::analysis_process_group_id(pid_t pgid)
 
 pid_t ProcessHandleApplicInterface::analysis_process_group_id() const
 { return 0; } // dummy default
+
+
+/** This function allocates memory that is implicitly freed when the
+    child exits (control never returns to caller). */
+const char** ProcessHandleApplicInterface::create_command_arguments() const
+{
+  // At a minimum need to split on whitespace
+  // TODO: allow quoted strings within
+  StringArray driver_and_args;
+  boost::split( driver_and_args, argList[0], boost::is_any_of("\t ") );
+
+  // if commandLineArgs, include params/results files at end
+  size_t nargs = driver_and_args.size();
+  if (commandLineArgs)
+    nargs += 2;
+  // ideally would use char *const argv[],
+  const char** av = new const char*[nargs+1];  // need extra NULL
+
+  size_t i = 0;
+  for ( ; i<driver_and_args.size(); ++i)
+    av[i] = driver_and_args[i].c_str();
+  // put params/results filenames if needed
+  if (commandLineArgs) {
+    av[i++] = argList[1].c_str();
+    av[i++] = argList[2].c_str();
+  }
+    
+  // last entry must be null-terminated
+  av[i] = NULL;
+
+  return av;
+
+}
+
 
 } // namespace Dakota

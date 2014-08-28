@@ -582,6 +582,9 @@ iface_true(const char *keyname, Values *val, void **g, void *v)
   (*(Iface_Info**)g)->di->**(bool DataInterfaceRep::**)v = true;
 }
 
+
+#ifdef DEBUG_NOT_EXECUTABLE
+
 /*
  *  not_executable(const char *driver_name) checks whether driver_name is an 
  *  executable file appearing somewhere in $PATH and returns 0 if so,
@@ -760,6 +763,8 @@ int not_executable(const char *driver_name, const char *tdir)
     std::free(a0);
   return rc;
 }
+
+#endif  // DEBUG_NOT_EXECUTABLE
 
 
 void NIDRProblemDescDB::

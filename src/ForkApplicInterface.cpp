@@ -120,10 +120,9 @@ size_t ForkApplicInterface::test_local_analyses_send(int analysis_id)
 pid_t ForkApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
-  const char *arg_list[4], **av;
+  const char** av;
   int status;
   pid_t pid = 0;
-  static std::string no_workdir;
 
   // vfork() should be used here since there is an immediate execvp(). This 
   // conserves memory over fork().  If some platforms have problems with a
@@ -148,18 +147,24 @@ create_analysis_process(bool block_flag, bool new_group)
     if (!block_flag) // only child sets group id -> avoids race with execvp
       join_analysis_process_group(new_group);
 
-    // Convert argList StringArray to an array of const char*'s.  An arg_list
-    // entry is passed as the first argument, and the entire arg_list is cast
-    // as the second argument.
+    // Set PATH, environment, and change directory
+    // Only the child changes directory; shouldn't have to restore with reset
+    prepare_process_environment();
 
-    av = WorkdirHelper::arg_adjust(commandLineArgs, argList, arg_list,
-                                   useWorkdir ? curWorkdir.string() : no_workdir);
+    // Convert argList StringArray to an array of const char*'s. 
+    // This fails if done earlier in this block, which begs the question:
+    // Are these operations safe in the child before exec?
+    av = create_command_arguments();
 
     // replace the child process with the fork target defined in arg_list
     status = execvp(av[0], (char*const*)av);
     // if execvp returns then it failed; exit gracefully. 
     _exit(status); // since this is a copy of the parent, use _exit
     // so that the parent i/o stream is not prematurely flushed and closed.
+
+    // child never returns to here; no need to free memory (implicit cleanup)
+    //delete[] av;
+
   }
   else { // parent
 

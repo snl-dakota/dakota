@@ -152,17 +152,21 @@ void SpawnApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 pid_t SpawnApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
-  const char *arg_list[4], **av;
+  const char **av;
   pid_t status;
   pid_t pid = 0;
-  static std::string no_workdir;
 
-  av = WorkdirHelper::arg_adjust(commandLineArgs, argList, arg_list,
-				 useWorkdir ? curWorkdir.string() : no_workdir);
+  // Set PATH, environment, and change directory
+  // Only the child changes directory; shouldn't have to restore with reset
+  prepare_process_environment();
+
+  // Convert argList StringArray to an array of const char*'s. 
+  av = create_command_arguments();
+
   if (block_flag) status = _spawnvp(  _P_WAIT, av[0], av);
   else               pid = _spawnvp(_P_NOWAIT, av[0], av);
 
-  if (curWorkdir.c_str())
+  if (useWorkdir)
     WorkdirHelper::reset();
 
   return(pid);

@@ -110,6 +110,12 @@ protected:
   /// set argList for execution of the specified analysis driver
   void driver_argument_list(int analysis_id);
 
+  /// parse argList into argument array suitable for passing to
+  /// execvp, appending parameters and results filenames if requested
+  /// by commandLineArgs
+  const char** create_command_arguments() const; 
+
+
   //
   //- Heading: Data
   //
@@ -133,6 +139,7 @@ private:
 };
 
 
+/** argList sized 3 for [driver name, input file, output file] */
 inline ProcessHandleApplicInterface::
 ProcessHandleApplicInterface(const ProblemDescDB& problem_db):
   ProcessApplicInterface(problem_db), argList(3)

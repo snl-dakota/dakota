@@ -118,7 +118,9 @@ protected:
 
   /// construct a work directory name (tmp or named), with optional tag
   bfs::path get_workdir_name();
-
+  
+  /// set PATH, environment variables, and change directory prior to fork/system
+  void prepare_process_environment();
 
   //
   //- Heading: Data
@@ -150,11 +152,19 @@ protected:
   /// the parameters file name actually used (modified with tagging or
   /// temp files); only valid from define_filenames to write_parameters_files
   std::string paramsFileName;
+
+  /// actual, qualified name of the params file written, possibly with workdir
+  std::string paramsFileWritten;
+
   /// the name of the results file from user specification
   std::string specifiedResultsFileName;
   /// the results file name actually used (modified with tagging or
   /// temp files); only valid from define_filenames to write_parameters_files
   std::string resultsFileName;
+
+  /// actual, qualified name of the results file written, possibly with workdir
+  std::string resultsFileWritten;
+
   /// complete evalIdTag, possibly including hierarchical tagging and
   /// final eval id, but not program numbers, for passing to
   /// write_parameters_files

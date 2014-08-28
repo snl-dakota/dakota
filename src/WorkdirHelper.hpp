@@ -38,7 +38,7 @@ namespace bfs = boost::filesystem;
   #include <direct.h>               // remove when _mkdir no longer needed
   // consider using _chdir if appropriate, since has same API?
   #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
-  #define DAK_MKDIR(a,b) _mkdir(a)  // to be removed
+//  #define DAK_MKDIR(a,b) _mkdir(a)  // to be removed
   #define DAK_MAXPATHLEN MAX_PATH
   #define DAK_PATH_ENV_NAME "Path"
   #define DAK_PATH_SEP ';'
@@ -51,7 +51,7 @@ namespace bfs = boost::filesystem;
   //#endif
   #include <sys/param.h>             // for MAXPATHLEN?
   #define DAK_CHDIR chdir
-  #define DAK_MKDIR(a,b) mkdir(a,b)  // to be removed
+//  #define DAK_MKDIR(a,b) mkdir(a,b)  // to be removed
   #define DAK_MAXPATHLEN MAXPATHLEN
   #define DAK_PATH_ENV_NAME "PATH"
   #define DAK_PATH_SEP ':'
@@ -147,13 +147,6 @@ class WorkdirHelper
   //- Heading: Friends
   //
 
-  friend class CommandShell;                       // calls change_cwd, reset
-#if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H)
-  friend class ForkApplicInterface;                // calls arg_adjust
-#elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
-  friend class SpawnApplicInterface;               // calls arg_adjust
-#endif // HAVE_SYS_WAIT_H, HAVE_UNISTD_H
-
   /// Treat get_npath as a legacy, "blackbox" utility
 #ifdef DEBUG_GET_NPATH
   /** get_npath "shuffles" the string representing the current $PATH variable
@@ -162,11 +155,13 @@ class WorkdirHelper
   friend void get_npath(int,std::string*);         // dakPreferredEnvPath access
 #endif
 
+#ifdef DEBUG_LEGACY_WORKDIR
   /// Treat my_cp as a legacy, "blackbox" utility
   /** my_cp is a wrapper around 'cp -r'.  The extra layer allows for symlink
       to be used instead of file copy. */
   friend int my_cp(const char*, const struct stat*,
                    int, int, void*);               // calls symlink
+#endif
 
 public:
 
@@ -272,6 +267,9 @@ public:
 			    const StringArray& source_paths,
 			    const bfs::path& dest_dir,
 			    bool overwrite);
+  ///  Resets the working directory "state" to its initial state when
+  ///  DAKOTA  was launched
+  static void reset();
 
 private:
 
@@ -287,15 +285,17 @@ private:
   /// Tokenizes $PATH environment variable into a "list" of directories
   static std::vector<std::string> tokenize_env_path(const std::string& path);
 
+#ifdef DEBUG_LEGACY_WORKDIR
   /// "Helper"/wrapper for system symlink when "from" needs path adjustment
   static int symlink(const char* from, const char* to);
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
-  static void reset();                                // old nm: workdir_reset
 
   static const char** arg_adjust(bool cmd_line_args,
                                  const std::vector<std::string>& args,
                                  const char **av, const std::string& workdir);
+#endif
+
   //
   //- Heading: Data
   //
@@ -326,8 +326,10 @@ private:
 };
 
 
+#ifdef DEBUG_LEGACY_WORKDIR
 /// Utility function from legacy, "not_executable" module -- DO NOT TOUCH!
 const char** arg_list_adjust(const char **, void **);
+#endif
 
 /// Helper for "which" - sets complete_filepath from dir_path/file_name combo
 inline bool contains(const bfs::path& dir_path, const std::string& file_name,

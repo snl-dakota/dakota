@@ -28,10 +28,11 @@
 
 namespace Dakota {
 
-
+#ifdef DEBUG_LEGACY_WORKDIR
 int rec_cp(const char *from, const char *todir, int copy,
            int flatten, int replace);
 int rec_rmdir(const char*);
+#endif
 
 
 /// Portability adapter for getcwd
@@ -68,9 +69,11 @@ inline std::vector<std::string> get_pathext()
 }
 
 
+#ifdef DEBUG_LEGACY_WORKDIR
 // WJB:  MAJOR OVERHAUL required to make this function a member of 
 //       WorkdirHelper (logically belongs there, but worth the effort?)
 void workdir_adjust(const std::string& workdir);
+#endif
 
 
 /// Utility function from borrowed from boost/test

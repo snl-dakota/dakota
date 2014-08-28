@@ -254,8 +254,6 @@ std::string WorkdirHelper::po_which(const std::string& driver_name)
 }
 
 
-/** Resets the working directory "state" to its initial state when DAKOTA 
-    was launched */
 void WorkdirHelper::reset()
 {
   if (DAK_CHDIR( startupPWD.c_str() )) {
@@ -267,6 +265,8 @@ void WorkdirHelper::reset()
   putenv_impl(dakPreferredEnvPath.c_str());
 }
 
+
+#ifdef DEBUG_LEGACY_WORKDIR
 
 /** Change directory to workdir and make necessary adjustments
     to $PATH (and drive for Windows platform) */
@@ -451,6 +451,9 @@ WorkdirHelper::arg_adjust(bool cmd_line_args,
     const char* t;
     // WJB: more effective STL/Boost.Regex utils for this loop?
     //      also, how bout a more portable (BstFS) way to manage '/' vs. '\'
+
+    // BMA: I think this is stripping the leading workdir from any
+    // entries in args
     for(i = 1; (t = av[i]); ++i)
       if (!std::strncmp(s, t, len) && t[len] == '/')
         av[i] = t + len + 1;
@@ -458,6 +461,9 @@ WorkdirHelper::arg_adjust(bool cmd_line_args,
 
   return av;
 }
+
+
+#endif  // DEBUG_LEGACY_WORKDIR
 
 
 /** Input: path_with_wc; Output: search_dir, wild_card */

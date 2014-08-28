@@ -27,9 +27,6 @@
 
     * Update search paths for driver check to work with lists of wildcards
  
-    * Update input spec to use copy_files/link_files instead of
-      template_directory/template_files
-    
     * Remove directories during file_cleanup()
 
     - In general review cases with race conditions such as single dir
@@ -37,6 +34,8 @@
 
     - Verify creation/removal in parallel runs (eval_comm_rank 0?);
       are there scenarios where we should create once ahead of time?
+
+    - Enforce tagging when asynch is possible
 
     - Challenge of shared vs. distinct filesystems
 
@@ -69,6 +68,24 @@
       * directory has rwx for user
       * population worked
       * try/catch around all fs operations
+
+    - Verify correct handling of relative vs. absolute files/dirs
+
+    - Enforce that first argument must be an executable program for
+      all drivers; at least for fork
+
+    - Historical behaviors / features to consider
+      * Template dirs on PATH: likely no longer
+      * Allow nested quotes in driver, at least one level: 
+          analysis_driver = 'ad.sh "-opt foo -opt1 goo"' p.in.1 r.out.1
+
+      * Env vars will be carried along for now, not expanded before
+        eval; set some helpful env vars before the eval.
+
+      * Allowed FOO=zorch and would set that in the environment; could
+        allow separate env var specification; otherwise likely remove
+
+    - TODO: pass environment to exec as separate pointer
 */
 
 
@@ -129,7 +146,39 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   if (num_programs > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;
 
-  // BMA TODO: warn and validate/update fileTag / dirTag based on local concurrency
+  // BMA: This is not quite correct as final
+  // asynchLocalEvalConcurrency isn't known until set_communicators.
+  // Might need to manage this there.
+
+  // TODO: change synchronization to enum
+
+  // For asynch local we require tagged directories (if active) or files
+  // bool require_unique = (interfaceSynchronization == "asynchronous") && 
+  //   asynchLocalEvalConcSpec != 1;
+
+  // For MPI parallelism we allow non-tagged dirs / files since
+  // nodes may not share a common filesystem (could consider enforcing
+  // tagged even in this case), but can't check until comms are set...
+  //  bool suggest_unique = (if MPI concurrency)
+
+  /*
+  if (require_unique) {
+    if (useWorkdir && !dirTag && !workDirName.empty()) {
+      Cout << "\nWarning: Concurrent local evaluations with named " 
+	   << "work_directory require"
+	   << "\n         directory_tag; enabling tagging." << std::endl;
+      dirTag = true;
+    }
+    else if (!fileTagFlag && 
+	     (!specifiedParamsFileName.empty() || 
+	      !specifiedResultsFileName.empty()) ) {
+      Cout << "\nWarning: Concurrent local evaluations with named " 
+	   << "parameters_file or results_file"
+	   << "\n require file_tag; enabling tagging." << std::endl;
+      fileTag = true;
+    }
+  }
+  */
 
 }
 
@@ -260,7 +309,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
     else
       createdDir.clear();
 
-    // define paramsFileName for use in write_parameters_files
+    // define paramsFleName for use in write_parameters_files
     
     bfs::path params_path(specifiedParamsFileName);
 
@@ -272,11 +321,18 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
     if (fileTagFlag)
       params_path = WorkdirHelper::concat_path(params_path, fullEvalId);
 
+    // TODO: do we want to modify the parameters file here or later?
+    // Need to differentiate where the file is written, removed,
+    // etc. from the name of it as passed to the analysis driver
+
+    // could we consider the tmpdir to be a workdir...?
+
     // if a relative path, prepend with workdir or tmp, else use absolute name
     // BMA TODO: don't use native string here...
+    paramsFileName = paramsFileWritten = params_path.string();
     if (params_path.is_relative()) {
       if (useWorkdir) {
-	paramsFileName = (curWorkdir / params_path).string();
+	paramsFileWritten = (curWorkdir / params_path).string();
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "\nAdjusting parameters_file to " << paramsFileName 
 	       << " due to work_directory usage." << std::endl;
@@ -284,6 +340,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
       else if (specifiedParamsFileName.empty()) {
 	// historically temp files go in /tmp or C:\temp, not rundir
 	paramsFileName = (bfs::temp_directory_path() / params_path).string();
+	paramsFileWritten = paramsFileName;
       }
       else
 	paramsFileName = params_path.string();
@@ -306,9 +363,10 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 
     // if a relative path, prepend with workdir or tmp, else use absolute name
     // BMA TODO: don't use native string here...
+    resultsFileName = resultsFileWritten = results_path.string();
     if (results_path.is_relative()) {
       if (useWorkdir) {
-	resultsFileName = (curWorkdir / results_path).string();
+	resultsFileWritten = (curWorkdir / results_path).string();
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "\nAdjusting results_file to " << resultsFileName 
 	       << " due to work_directory usage." <<std::endl;
@@ -316,6 +374,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
       else if (specifiedResultsFileName.empty()) {
 	// historically temp files go in /tmp or C:\temp, not rundir
 	resultsFileName = (bfs::temp_directory_path() / results_path).string();
+	resultsFileWritten = resultsFileName;
       }
       else
 	resultsFileName = results_path.string();
@@ -359,7 +418,7 @@ void ProcessApplicInterface::
 write_parameters_files(const Variables& vars,    const ActiveSet& set,
 		       const Response& response, const int id)
 {
-  PathTriple file_names(paramsFileName, resultsFileName, createdDir);
+  PathTriple file_names(paramsFileWritten, resultsFileWritten, createdDir);
 
   // If a new evaluation, insert the modified file names into map for use in
   // identifying the proper file names within read_results_files for the case
@@ -401,9 +460,9 @@ write_parameters_files(const Variables& vars,    const ActiveSet& set,
     if (!analysisComponents.empty())
       copy_data(analysisComponents, all_an_comps);
     if (!allowExistingResults)
-      std::remove(resultsFileName.c_str());
+      std::remove(resultsFileWritten.c_str());
     write_parameters_file(vars, set, response, prog, all_an_comps,
-			  paramsFileName);
+			  paramsFileWritten);
   }
   // If analysis components are used for multiple analysis drivers, then the
   // parameters filename is tagged with program number, e.g. params.in.20.2
@@ -411,8 +470,8 @@ write_parameters_files(const Variables& vars,    const ActiveSet& set,
   if (multipleParamsFiles) { // append prog counter
     for (size_t i=0; i<num_programs; ++i) {
       std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
-      std::string tag_results_fname = resultsFileName + prog_num;
-      std::string tag_params_fname  = paramsFileName  + prog_num;
+      std::string tag_results_fname = resultsFileWritten + prog_num;
+      std::string tag_params_fname  = paramsFileWritten  + prog_num;
       if (!allowExistingResults)
 	std::remove(tag_results_fname.c_str());
       write_parameters_file(vars, set, response, programNames[i],
@@ -779,6 +838,19 @@ bfs::path ProcessApplicInterface::get_workdir_name()
 }
 
 
+void ProcessApplicInterface::prepare_process_environment()
+{
+  if (useWorkdir)
+    WorkdirHelper::change_directory(curWorkdir);
+
+  // setenv()/putenv() of DAKOTA_PARAMETERS_FILE/DAKOTA_RESULTS_FILE
+  WorkdirHelper::set_environment("DAKOTA_PARAMETERS_FILE", paramsFileName);
+  WorkdirHelper::set_environment("DAKOTA_RESULTS_FILE", resultsFileName);
+
+  // prepend env path with run dir (already on path) and startup dir
+  if (useWorkdir && curWorkdir.is_absolute())
+    WorkdirHelper::prepend_path_item(curWorkdir, bfs::path(), false);
+}
 
 
 } // namespace Dakota

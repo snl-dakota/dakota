@@ -279,7 +279,7 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
   // be able to manage tagged files and/or working subdirectories.
 
   static std::string no_workdir;
-  CommandShell shell(useWorkdir ? curWorkdir.string() : no_workdir);
+  CommandShell shell;
   const char* s = useWorkdir ? curWorkdir.string().c_str() : 0;
   size_t num_programs = programNames.size(),
     wd_strlen = useWorkdir ? curWorkdir.string().size() : 0;
@@ -335,7 +335,10 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
   // suppressOutput and spawn the process.
   shell.asynch_flag(!block_flag);
   shell.suppress_output_flag(suppressOutput);
+
+  prepare_process_environment();
   shell << flush;
+  if (useWorkdir)  WorkdirHelper::reset();
 }
 
 
@@ -346,8 +349,7 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
     externally. */
 void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
 {
-  static std::string no_workdir;
-  CommandShell shell(useWorkdir ? curWorkdir.string() : no_workdir);
+  CommandShell shell;
 
   shell << iFilterName;
   if (commandLineArgs)
@@ -355,7 +357,10 @@ void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
 
   shell.asynch_flag(!block_flag);
   shell.suppress_output_flag(suppressOutput);
+
+  prepare_process_environment();
   shell << flush;
+  if (useWorkdir)  WorkdirHelper::reset();
 }
 
 
@@ -366,8 +371,7 @@ void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
 void SysCallApplicInterface::
 spawn_analysis_to_shell(int analysis_id, bool block_flag)
 {
-  static std::string no_workdir;
-  CommandShell shell(useWorkdir ? curWorkdir.string() : no_workdir);
+  CommandShell shell;
 
   shell << programNames[analysis_id-1];
   if (commandLineArgs) {
@@ -385,7 +389,10 @@ spawn_analysis_to_shell(int analysis_id, bool block_flag)
 
   shell.asynch_flag(!block_flag);
   shell.suppress_output_flag(suppressOutput);
+
+  prepare_process_environment();
   shell << flush;
+  if (useWorkdir)  WorkdirHelper::reset();
 }
 
 
@@ -396,8 +403,7 @@ spawn_analysis_to_shell(int analysis_id, bool block_flag)
     externally. */
 void SysCallApplicInterface::spawn_output_filter_to_shell(bool block_flag)
 {
-  static std::string no_workdir;
-  CommandShell shell(useWorkdir ? curWorkdir.string() : no_workdir);
+  CommandShell shell;
 
   shell << oFilterName;
   if (commandLineArgs)
@@ -405,7 +411,10 @@ void SysCallApplicInterface::spawn_output_filter_to_shell(bool block_flag)
 
   shell.asynch_flag(!block_flag);
   shell.suppress_output_flag(suppressOutput);
+
+  prepare_process_environment();
   shell << flush;
+  if (useWorkdir)  WorkdirHelper::reset();
 }
 
 } // namespace Dakota
