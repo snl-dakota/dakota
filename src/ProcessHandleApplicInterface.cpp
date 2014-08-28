@@ -17,6 +17,7 @@
 #include "ParallelLibrary.hpp"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>  // for split
+#include <boost/tokenizer.hpp>
 
 namespace Dakota {
 
@@ -514,14 +515,23 @@ pid_t ProcessHandleApplicInterface::analysis_process_group_id() const
 { return 0; } // dummy default
 
 
-/** This function allocates memory that is implicitly freed when the
-    child exits (control never returns to caller). */
+/** This function will split the analysis command in argList[0] based
+    on whitespace, but preserve spaces within quoted strings, such
+    that quoted strings can be passed as single command arguments.
+    NOTE: This function allocates memory that is implicitly freed when
+    the child exits (control never returns to caller). */
 const char** ProcessHandleApplicInterface::create_command_arguments() const
 {
-  // At a minimum need to split on whitespace
-  // TODO: allow quoted strings within
-  StringArray driver_and_args;
-  boost::split( driver_and_args, argList[0], boost::is_any_of("\t ") );
+  using boost::escaped_list_separator;
+  using boost::tokenizer;
+
+  StringArray driver_and_args;  // to hold tokens of argList[0]
+
+  // tokenize on whistespace, preserving quoted strings and escapes,
+  // so the outermost quoted strings become single command-line args
+  escaped_list_separator<char> els("\\", " \t", "\"'");
+  tokenizer<escaped_list_separator<char> > tok(argList[0], els);
+  std::copy(tok.begin(), tok.end(), std::back_inserter(driver_and_args));
 
   // if commandLineArgs, include params/results files at end
   size_t nargs = driver_and_args.size();

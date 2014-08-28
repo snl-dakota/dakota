@@ -76,16 +76,18 @@
 
     - Historical behaviors / features to consider
       * Template dirs on PATH: likely no longer
-      * Allow nested quotes in driver, at least one level: 
-          analysis_driver = 'ad.sh "-opt foo -opt1 goo"' p.in.1 r.out.1
-
-      * Env vars will be carried along for now, not expanded before
-        eval; set some helpful env vars before the eval.
 
       * Allowed FOO=zorch and would set that in the environment; could
         allow separate env var specification; otherwise likely remove
 
     - TODO: pass environment to exec as separate pointer
+
+   TESTING NEEDS
+    - Allow nested quotes in driver, at least one level: 
+      analysis_driver = 'ad.sh "-opt foo -opt1 goo"' p.in.1 r.out.1
+
+    - Env vars will be carried along for now, not expanded before
+      eval; set some helpful env vars before the eval.
 */
 
 
