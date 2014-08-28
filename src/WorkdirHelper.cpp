@@ -55,7 +55,13 @@ void WorkdirHelper::change_directory(const bfs::path& new_dir)
   // TODO: check DAK_MAXPATHLEN? (advice varies on practicality)
   //  bfs::path::string_type new_dir_str = new_dir.native();
   // path::c_str() should return right width string...
-  if (DAK_CHDIR(new_dir.c_str())) {
+  int retcode = -1;
+#if defined(_WIN32) || defined(_WIN64)
+  retcode = _wchdir(new_dir.c_str());  // path::value_type is wchar on Windows
+#else
+  retcode = chdir(new_dir.c_str());
+#endif
+  if (retcode) {
     Cerr << "\nError: failed to change directory to " << new_dir << std::endl;
     abort_handler(-1);
   }
@@ -108,11 +114,15 @@ void WorkdirHelper::set_environment(const std::string& env_name,
   // revert to legacy implementation if needed
   //std::string putenv_str(env_name + '=' + env_val);
   //putenv_impl(putenv_str.c_str());
-
-  if ( setenv(env_name.c_str(), env_val.c_str(), overwrite) ) {
+  int retcode = -1;
+#if defined(_WIN32) || defined(_WIN64)
+  retcode = SetEnvironmentVariable(env_name.c_str(), env_val.c_str()) ? 0 : -1;
+#else
+  retcode = setenv(env_name.c_str(), env_val.c_str(), overwrite);
+#endif
+  if (retcode)
     Cout << "\nWarning: set_environment " << env_name << " = " << env_val 
          << "failed."<< std::endl;
-  }
 }
 
 
