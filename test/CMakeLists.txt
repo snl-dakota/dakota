@@ -178,6 +178,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_rbdo_steel_column_analytic2.in # abort: LAPACK error
       dakota_uq_timeseries_ivp_optinterf.in # workdir issue?
       dakota_uq_timeseries_sop_optinterf.in # workdir issue?
+      dakota_rosenbrock_importance.in       # File IO/performance issue?
       dakota_workdir.in                     # workdir issue?
       dakota_win_ext.in                     # stability?
       )
@@ -362,6 +363,10 @@ if(DAKOTA_ENABLE_UNIT_TESTS)
   add_test(stream_unit_tests stream_unit_tests)
 
   add_executable(container_unit_tests container_unit_tests.cpp)
+
+  add_executable(test_workdir_utils test_workdir_utils.cpp)
+  target_link_libraries(test_workdir_utils ${DAKOTA_ALL_LIBS})
+  add_test(test_workdir_utils test_workdir_utils)
 
 endif()
 
