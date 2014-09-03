@@ -148,39 +148,58 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   if (num_programs > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;
 
-  // BMA: This is not quite correct as final
-  // asynchLocalEvalConcurrency isn't known until set_communicators.
-  // Might need to manage this there.
+  // RATIONALE: While a user might truly want concurrent evaluations
+  // with non-unique work_directory and/or parameters/results files,
+  // it could too easily lead to errors or surprising results.
+  // Moreover, with asynch it's not clear which eval would make the
+  // directory.  We therefore force tagging on either the directory or
+  // the parameters/results files.
 
-  // TODO: change synchronization to enum
+  // EDGE CASE: For MPI parallelism we could allow non-tagged dirs /
+  // files since nodes may not share a common filesystem.  However, we
+  // consider this an edge case and prefer to be robust, requiring
+  // unique files/dirs.
 
-  // For asynch local we require tagged directories (if active) or files
-  // bool require_unique = (interfaceSynchronization == "asynchronous") && 
-  //   asynchLocalEvalConcSpec != 1;
+  // BMA TODO: extend this to the message-passing concurrent
+  // evaluation case in init_communicators.  Can't rely on
+  // asynchLocalEvalConcurrency because this is set per parallel
+  // configuration in set_communicators.
 
-  // For MPI parallelism we allow non-tagged dirs / files since
-  // nodes may not share a common filesystem (could consider enforcing
-  // tagged even in this case), but can't check until comms are set...
-  //  bool suggest_unique = (if MPI concurrency)
+  bool require_unique =
+    (interface_synchronization() == ASYNCHRONOUS_INTERFACE) &&
+    (asynchLocalEvalConcSpec != 1);
 
-  /*
   if (require_unique) {
-    if (useWorkdir && !dirTag && !workDirName.empty()) {
-      Cout << "\nWarning: Concurrent local evaluations with named " 
-	   << "work_directory require"
-	   << "\n         directory_tag; enabling tagging." << std::endl;
-      dirTag = true;
+    if (useWorkdir) {
+      if (!dirTag && !workDirName.empty()) {
+	Cout << "\nWarning: Concurrent local evaluations with named " 
+	     << "work_directory require\n         directory_tag; "
+	     << "enabling directory_tag." << std::endl;
+	dirTag = true;
+      }
+      // even with a work_directory, there might be absolute
+      // params/results paths...
+      bfs::path spf_path(specifiedParamsFileName);
+      bfs::path srf_path(specifiedResultsFileName);
+      // an empty path is not absolute, so no need to check empty
+      bool exist_abs_filenames = 
+	spf_path.is_absolute() || srf_path.is_absolute(); 
+      if (!fileTagFlag && exist_abs_filenames) {
+	Cout << "\nWarning: Concurrent local evaluations with absolute named " 
+	     << "parameters_file or\n         results_file require file_tag; "
+	     << "enabling file_tag." << std::endl;
+	fileTagFlag = true;
+      }
     }
     else if (!fileTagFlag && 
 	     (!specifiedParamsFileName.empty() || 
 	      !specifiedResultsFileName.empty()) ) {
       Cout << "\nWarning: Concurrent local evaluations with named " 
-	   << "parameters_file or results_file"
-	   << "\n require file_tag; enabling tagging." << std::endl;
-      fileTag = true;
+	   << "parameters_file or\n         results_file require file_tag; "
+	   << "enabling file_tag." << std::endl;
+      fileTagFlag = true;
     }
   }
-  */
 
 }
 

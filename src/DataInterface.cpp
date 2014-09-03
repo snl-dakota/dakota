@@ -20,7 +20,7 @@ namespace Dakota {
 DataInterfaceRep::DataInterfaceRep():
   allowExistingResultsFlag(false), verbatimFlag(false), apreproFlag(false),
   fileTagFlag(false), fileSaveFlag(false),
-  interfaceSynchronization("synchronous"), asynchLocalEvalConcurrency(0),
+  interfaceSynchronization(SYNCHRONOUS_INTERFACE), asynchLocalEvalConcurrency(0),
   asynchLocalEvalScheduling(DEFAULT_SCHEDULING),
   asynchLocalAnalysisConcurrency(0), evalServers(0),
   evalScheduling(DEFAULT_SCHEDULING), procsPerEval(0), analysisServers(0),

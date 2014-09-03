@@ -2237,7 +2237,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"application.results_file", P resultsFile},
 	{"failure_capture.action", P failAction},
 	{"id", P idInterface},
-	{"synchronization", P interfaceSynchronization},
 	{"type", P interfaceType},
 	{"workDir", P workDir}};
     #undef P
@@ -2544,7 +2543,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
     static KW<short, DataInterfaceRep> Shdi[] = { // must be sorted
 	{"analysis_scheduling", P analysisScheduling},
 	{"evaluation_scheduling", P evalScheduling},
-	{"local_evaluation_scheduling", P asynchLocalEvalScheduling}};
+	{"local_evaluation_scheduling", P asynchLocalEvalScheduling},
+	{"synchronization", P interfaceSynchronization}};
     #undef P
 
     KW<short, DataInterfaceRep> *kw;

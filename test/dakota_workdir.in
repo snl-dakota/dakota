@@ -38,7 +38,6 @@ interface
 # This is masking a problem on Mac, where tests 4 and 6 don't work with fork
   system	#0,#2,#4,#6,#8,#p0
 #  fork		#1,#3,#5,#7,#9,#p1
-    # Testing workdir without concurrent evaluations is kind of silly
 #    asynchronous evaluation_concurrency = 2	     	     	#1,#2,#9,#p1
     analysis_driver = 'dakota_workdir.py'			#0,#p0
 #    analysis_driver = 'dakota_workdir.py tag'			#1,#p1
@@ -63,8 +62,6 @@ interface
 #	parameters_file = 'params.in'				#8
 #	parameters_file = '/tmp/params.in'			#9
 #	  file_save						#9
-# TODO: autotag when concurrent evals are possible...
-#	  file_tag						#9
 
 responses
   objective_functions = 1             

@@ -236,7 +236,7 @@ protected:
   void component_parallel_mode(short mode);
 
   /// return subModel local synchronization setting
-  String local_eval_synchronization();
+  short local_eval_synchronization();
   /// return subModel local evaluation concurrency
   int local_eval_concurrency();
   /// flag which prevents overloading the master with a multiprocessor
@@ -563,7 +563,7 @@ inline void RecastModel::component_parallel_mode(short mode)
 }
 
 
-inline String RecastModel::local_eval_synchronization()
+inline short RecastModel::local_eval_synchronization()
 { return subModel.local_eval_synchronization(); }
 
 

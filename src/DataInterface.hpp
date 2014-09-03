@@ -22,6 +22,10 @@
 
 namespace Dakota {
 
+
+/// interface synchronization types 
+enum { SYNCHRONOUS_INTERFACE, ASYNCHRONOUS_INTERFACE };
+
 /// define algebraic function types
 enum { OBJECTIVE, INEQUALITY_CONSTRAINT, EQUALITY_CONSTRAINT };
 
@@ -108,7 +112,7 @@ public:
   /// parallel mode for a simulation-based interface: synchronous or
   /// asynchronous (from the \c asynchronous specification in \ref
   /// InterfIndControl)
-  String interfaceSynchronization;
+  short interfaceSynchronization;
   /// evaluation concurrency for asynchronous simulation-based interfaces (from
   /// the \c evaluation_concurrency specification in \ref InterfIndControl)
   int asynchLocalEvalConcurrency;

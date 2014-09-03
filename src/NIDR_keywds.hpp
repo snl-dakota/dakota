@@ -125,7 +125,7 @@ static KeyWord
 		{"analysis_drivers",15,12,3,0,kw_15,0.,0.,0,N_ifm(strL,analysisDrivers)},
 		{"analysis_scheduling",8,2,9,0,kw_16},
 		{"analysis_servers",0x19,0,8,0,0,0.,0.,0,N_ifm(pint,analysisServers)},
-		{"asynchronous",8,3,4,0,kw_18,0.,0.,0,N_ifm(lit,interfaceSynchronization_asynchronous)},
+		{"asynchronous",8,3,4,0,kw_18,0.,0.,0,N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)},
 		{"evaluation_scheduling",8,2,6,0,kw_20},
 		{"evaluation_servers",0x19,0,5,0,0,0.,0.,0,N_ifm(pint,evalServers)},
 		{"id_interface",11,0,1,0,0,0.,0.,0,N_ifm(str,idInterface)},

@@ -436,11 +436,11 @@ inline void NestedModel::surrogate_response_mode(short mode)
 
 /* Used in setting Model::asynchEvalFlag.  subModel synchronization
    is used for setting asynchEvalFlag within subModel. */
-//inline String NestedModel::local_eval_synchronization()
+//inline short NestedModel::local_eval_synchronization()
 //{
 //  return ( optInterfacePointer.empty() ||
 //	   optionalInterface.asynch_local_evaluation_concurrency() == 1 ) ?
-//    String("synchronous") : optionalInterface.interface_synchronization();
+//    SYNCHRONOUS_INTERFACE: optionalInterface.interface_synchronization();
 //}
 
 

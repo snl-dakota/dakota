@@ -28,6 +28,10 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   evalCommSize(1), evalCommRank(0), evalServerId(1), eaDedMasterFlag(false),
   analysisCommSize(1), analysisCommRank(0), analysisServerId(1),
   multiProcAnalysisFlag(false), asynchLocalAnalysisFlag(false),
+  asynchLocalEvalConcSpec(
+    problem_db.get_int("interface.asynch_local_evaluation_concurrency")),
+  asynchLocalAnalysisConcSpec(
+    problem_db.get_int("interface.asynch_local_analysis_concurrency")),
   numAnalysisDrivers(
     problem_db.get_sa("interface.application.analysis_drivers").size()),
   failureMessage("Failure captured"),
@@ -43,14 +47,10 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   lenPRPairMessage(0),
   evalScheduling(problem_db.get_short("interface.evaluation_scheduling")),
   analysisScheduling(problem_db.get_short("interface.analysis_scheduling")),
-  asynchLocalEvalConcSpec(
-    problem_db.get_int("interface.asynch_local_evaluation_concurrency")),
-  asynchLocalAnalysisConcSpec(
-    problem_db.get_int("interface.asynch_local_analysis_concurrency")),
   asynchLocalEvalStatic(
     problem_db.get_short("interface.local_evaluation_scheduling") ==
     STATIC_SCHEDULING),
-  interfaceSynchronization(problem_db.get_string("interface.synchronization")),
+  interfaceSynchronization(problem_db.get_short("interface.synchronization")),
   //headerFlag(true),
   asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
   evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
@@ -294,7 +294,8 @@ void ApplicationInterface::set_analysis_communicators()
   // a limit (default is unlimited).  In the message passing case, the user
   // must explicitly specify analysis concurrency to get hybrid parallelism
   // (default is no analysis concurrency).
-  if ( numAnalysisDrivers > 1 && interfaceSynchronization == "asynchronous" &&
+  if ( numAnalysisDrivers > 1 && 
+       interfaceSynchronization == ASYNCHRONOUS_INTERFACE &&
        ( asynchLocalAnalysisConcurrency > 1 || ( !eaMessagePass &&
         !asynchLocalAnalysisConcurrency ) ) )
     asynchLocalAnalysisFlag = true;
@@ -350,7 +351,7 @@ check_asynchronous(bool warn, int max_eval_concurrency)
 {
   bool issue_flag = false, asynch_local_eval_flag
     = ( max_eval_concurrency > 1 &&
-	interfaceSynchronization == "asynchronous" &&
+	interfaceSynchronization == ASYNCHRONOUS_INTERFACE &&
 	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
 	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
 
@@ -375,7 +376,7 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
 {
   bool issue_flag = false, asynch_local_eval_flag
     = ( max_eval_concurrency > 1 &&
-	interfaceSynchronization == "asynchronous" &&
+	interfaceSynchronization == ASYNCHRONOUS_INTERFACE &&
 	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
 	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
 

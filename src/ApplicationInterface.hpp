@@ -73,7 +73,7 @@ protected:
   int asynch_local_evaluation_concurrency() const;
 
   /// return interfaceSynchronization
-  String interface_synchronization() const;
+  short interface_synchronization() const;
 
   /// return evalCacheFlag
   bool evaluation_cache() const;
@@ -223,6 +223,11 @@ protected:
   /// scheduling and specifies hybrid concurrency when message passing
   int asynchLocalAnalysisConcurrency;
   // NOTE: make private when analysis schedulers are elevated
+
+  /// user specification for asynchronous local evaluation concurrency
+  int asynchLocalEvalConcSpec;
+  /// user specification for asynchronous local analysis concurrency
+  int asynchLocalAnalysisConcSpec;
 
   /// the number of analysis drivers used for each function evaluation
   /// (from the analysis_drivers interface specification)
@@ -416,11 +421,6 @@ private:
   /// the auto-configure logic in ParallelLibrary::resolve_inputs().
   short analysisScheduling;
 
-  /// user specification for asynchronous local evaluation concurrency
-  int asynchLocalEvalConcSpec;
-  /// user specification for asynchronous local analysis concurrency
-  int asynchLocalAnalysisConcSpec;
-
   /// limits the number of concurrent evaluations in asynchronous local
   /// scheduling and specifies hybrid concurrency when message passing
   int asynchLocalEvalConcurrency;
@@ -435,7 +435,7 @@ private:
 
   /// interface synchronization specification: synchronous (default)
   /// or asynchronous
-  String interfaceSynchronization;
+  short interfaceSynchronization;
 
   // used by synch_nowait to manage output frequency (since this
   // function may be called many times prior to any completions)
@@ -543,7 +543,7 @@ inline int ApplicationInterface::asynch_local_evaluation_concurrency() const
 { return asynchLocalEvalConcurrency; }
 
 
-inline String ApplicationInterface::interface_synchronization() const
+inline short ApplicationInterface::interface_synchronization() const
 { return interfaceSynchronization; }
 
 

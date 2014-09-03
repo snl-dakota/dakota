@@ -987,12 +987,12 @@ int Interface::asynch_local_evaluation_concurrency() const
 }
 
 
-String Interface::interface_synchronization() const
+short Interface::interface_synchronization() const
 {
   if (interfaceRep) // envelope fwd to letter
     return interfaceRep->interface_synchronization(); // ApplicationInterfaces
   else // letter lacking redefinition of virtual fn.
-    return String("synchronous"); // default (ApproximationInterfaces)
+    return SYNCHRONOUS_INTERFACE; // default (ApproximationInterfaces)
 }
 
 

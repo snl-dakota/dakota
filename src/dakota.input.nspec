@@ -1983,7 +1983,7 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
       [ restart_file {N_ifm(false,restartFileFlag)} ]
      ]
    ]
-  [ asynchronous {N_ifm(lit,interfaceSynchronization_asynchronous)}
+  [ asynchronous {N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}
     [ evaluation_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]
     [ local_evaluation_scheduling {0}
       dynamic {N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}

@@ -794,7 +794,7 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
     warn("asynchronous option not required for evaluation and analysis.\n\t"
 	 "Concurrency limited to %d and %d.\n\t"
 	 "Synchronous operations will be used", ec, ac);
-    di->interfaceSynchronization = "synchronous";
+    di->interfaceSynchronization = SYNCHRONOUS_INTERFACE;
   }
   if ((di->interfaceType == "system" || di->interfaceType == "fork")
       && (Complain = Dak_pddb->parallel_library().command_line_check() ? warn
@@ -5981,7 +5981,6 @@ static Iface_mp_ilit
 static Iface_mp_lit
 	MP2(failAction,abort),
 	MP2(failAction,continuation),
-	MP2(interfaceSynchronization,asynchronous),
 	MP2(interfaceType,direct),
 	MP2(interfaceType,fork),
 	MP2(interfaceType,grid),
@@ -5999,7 +5998,9 @@ static Iface_mp_type
 	MP2s(evalScheduling,PEER_DYNAMIC_SCHEDULING),
 	MP2s(evalScheduling,PEER_STATIC_SCHEDULING),
 	MP2s(asynchLocalEvalScheduling,DYNAMIC_SCHEDULING),
-	MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING);
+        MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING),
+        MP2s(interfaceSynchronization,ASYNCHRONOUS_INTERFACE),
+        MP2s(interfaceSynchronization,SYNCHRONOUS_INTERFACE);
 
 static String
 	MP_(algebraicMappings),

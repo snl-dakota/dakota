@@ -74,7 +74,7 @@ protected:
   void component_parallel_mode(short mode);
 
   /// return userDefinedInterface synchronization setting
-  String local_eval_synchronization();
+  short local_eval_synchronization();
   /// return userDefinedInterface asynchronous evaluation concurrency
   int local_eval_concurrency();
 
@@ -165,10 +165,10 @@ inline const IntResponseMap& SingleModel::derived_synchronize_nowait()
 { return userDefinedInterface.synch_nowait(); }
 
 
-inline String SingleModel::local_eval_synchronization()
+inline short SingleModel::local_eval_synchronization()
 {
   return ( userDefinedInterface.asynch_local_evaluation_concurrency() == 1 ) ?
-    String("synchronous") : userDefinedInterface.interface_synchronization();
+    SYNCHRONOUS_INTERFACE : userDefinedInterface.interface_synchronization();
 }
 
 

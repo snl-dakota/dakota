@@ -2955,12 +2955,12 @@ void Model::component_parallel_mode(short mode)
     but not asynch local.
 \li DataFitSurrModels: while asynch evals on approximations will work due
     to some added bookkeeping, avoiding them is preferable. */
-String Model::local_eval_synchronization()
+short Model::local_eval_synchronization()
 {
   if (modelRep) // should not occur: protected fn only used by the letter
     return modelRep->local_eval_synchronization(); // envelope fwd to letter
   else // letter lacking redefinition of virtual fn.
-    return String("synchronous"); // default for Nested/DataFitSurr models
+    return SYNCHRONOUS_INTERFACE; // default for Nested/DataFitSurr models
 }
 
 
@@ -3135,7 +3135,7 @@ void Model::set_communicators(int max_eval_concurrency, bool recurse_flag)
 
       // Note: local_eval_synchronization() handles case of eval concurrency==1
       bool asynch_local_eval
-	= (local_eval_synchronization() == "asynchronous") ? true : false;
+	= (local_eval_synchronization() == ASYNCHRONOUS_INTERFACE) ? true : false;
       if ( ie_pl.message_pass() || asynch_local_eval )
 	asynchEvalFlag = true;
 
@@ -3247,7 +3247,7 @@ void Model::init_serial()
 
     // restricted parallelism support: allow local asynchronous
     // operations but not message passing parallelism.
-    if ( local_eval_synchronization() == "asynchronous" )
+    if ( local_eval_synchronization() == ASYNCHRONOUS_INTERFACE )
       asynchEvalFlag = true;
   }
 }

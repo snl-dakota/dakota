@@ -3299,7 +3299,7 @@
           <keyword  id="restart_file" name="restart_file" code="{N_ifm(false,restartFileFlag)}" label="restart_file" help="" minOccurs="0" />
         </keyword>
       </keyword>
-      <keyword  id="asynchronous" name="asynchronous" code="{N_ifm(lit,interfaceSynchronization_asynchronous)}" label="Asynchronous interface usage" help="InterfCommands.html#InterfIndControl" minOccurs="0" >
+      <keyword  id="asynchronous" name="asynchronous" code="{N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}" label="Asynchronous interface usage" help="InterfCommands.html#InterfIndControl" minOccurs="0" >
         <keyword  id="evaluation_concurrency" name="evaluation_concurrency" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Asynchronous evaluation concurrency" help="InterfCommands.html#InterfIndControl" minOccurs="0" >
           <param type="INTEGER" constraint="> 0" />
         </keyword>

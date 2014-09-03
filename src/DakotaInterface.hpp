@@ -114,7 +114,7 @@ public:
   virtual int asynch_local_evaluation_concurrency() const;
 
   /// return the user-specified interface synchronization
-  virtual String interface_synchronization() const;
+  virtual short interface_synchronization() const;
 
   /// returns the minimum number of points required to build a particular
   /// ApproximationInterface (used by DataFitSurrModels).

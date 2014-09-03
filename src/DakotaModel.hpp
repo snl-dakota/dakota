@@ -206,7 +206,7 @@ public:
   virtual void component_parallel_mode(short mode);
 
   /// return derived model synchronization setting
-  virtual String local_eval_synchronization();
+  virtual short local_eval_synchronization();
   /// return derived model asynchronous evaluation concurrency
   virtual int local_eval_concurrency();
 
